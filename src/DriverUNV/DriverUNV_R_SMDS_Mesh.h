@@ -6,25 +6,24 @@
 #include "SMDS_Mesh.hxx"
 #include "Mesh_Reader.h"
 
-class DriverUNV_R_SMDS_Mesh : public Mesh_Reader {
+class DriverUNV_R_SMDS_Mesh:public Mesh_Reader
+{
 
-  public :
-    DriverUNV_R_SMDS_Mesh();
-    ~DriverUNV_R_SMDS_Mesh();
+  public:DriverUNV_R_SMDS_Mesh();
+	~DriverUNV_R_SMDS_Mesh();
 
-    void Add();
-    void Read();
-    void SetMesh(Handle(SMDS_Mesh)& aMesh);
-    void SetFile(string);
+	void Add();
+	void Read();
+	void SetMesh(SMDS_Mesh * aMesh);
+	void SetFile(string);
 
-    void SetFileId(FILE*);
-    void SetMeshId(int);
+	void SetFileId(FILE *);
+	void SetMeshId(int);
 
-  private :
-    Handle_SMDS_Mesh myMesh;
-    string myFile; 
-    FILE* myFileId;
-    int myMeshId;
+  private:  SMDS_Mesh * myMesh;
+	string myFile;
+	FILE *myFileId;
+	int myMeshId;
 
 };
 #endif

@@ -36,28 +36,27 @@ extern "C"
 #include <med.h>
 }
 
-class DriverMED_R_SMESHDS_Mesh : public Mesh_Reader {
+class DriverMED_R_SMESHDS_Mesh:public Mesh_Reader
+{
 
-  public :
-    DriverMED_R_SMESHDS_Mesh();
-    ~DriverMED_R_SMESHDS_Mesh();
+  public:DriverMED_R_SMESHDS_Mesh();
+	~DriverMED_R_SMESHDS_Mesh();
 
-    void Read();
-    void ReadMySelf();
-    void Add();
+	void Read();
+	void ReadMySelf();
+	void Add();
 
-    void SetMesh(Handle(SMDS_Mesh)& aMesh);
-    void SetFile(string);
-    void SetFileId(med_idt);
-    void SetMeshId(int);
+	void SetMesh(SMDS_Mesh * aMesh);
+	void SetFile(string);
+	void SetFileId(med_idt);
+	void SetMeshId(int);
 
-    void LinkMeshToShape(string , string , vector<int>);
+	void LinkMeshToShape(string, string, vector < int >);
 
-private :
-    Handle_SMDS_Mesh myMesh;
-    string myFile; 
-    med_idt myFileId;
-    int myMeshId;
+  private:  SMDS_Mesh * myMesh;
+	string myFile;
+	med_idt myFileId;
+	int myMeshId;
 
 };
 #endif

@@ -37,27 +37,26 @@ extern "C"
 #include <med.h>
 }
 
-class DriverMED_W_SMESHDS_Mesh : public Mesh_Writer {
+class DriverMED_W_SMESHDS_Mesh:public Mesh_Writer
+{
 
-  public :
-    DriverMED_W_SMESHDS_Mesh();
-    ~DriverMED_W_SMESHDS_Mesh();
+  public:DriverMED_W_SMESHDS_Mesh();
+	~DriverMED_W_SMESHDS_Mesh();
 
-    void Add(); 
-    void Write();
-    void SetMesh(Handle(SMDS_Mesh)& aMesh);
-    void SetFile(string);
+	void Add();
+	void Write();
+	void SetMesh(SMDS_Mesh * aMesh);
+	void SetFile(string);
 
-    void SetFileId(med_idt);
-    void SetMeshId(int);
+	void SetFileId(med_idt);
+	void SetMeshId(int);
 
-    void CreateFamily(char*, char*, int, med_int);
+	void CreateFamily(char *, char *, int, med_int);
 
-private :
-    Handle_SMDS_Mesh myMesh;
-    string myFile; 
-    med_idt myFileId;
-    int myMeshId;
+  private:  SMDS_Mesh * myMesh;
+	string myFile;
+	med_idt myFileId;
+	int myMeshId;
 
 };
 #endif

@@ -31,19 +31,22 @@ using namespace std;
 
 #include <stdio.h>
 
-extern "C" 
+extern "C"
 {
-  Document_Writer* Wmaker() {
-    return new DriverMED_W_SMESHDS_Document;
-  }
+	Document_Writer *Wmaker()
+	{
+		return new DriverMED_W_SMESHDS_Document;
+	}
 }
 
-DriverMED_W_SMESHDS_Document::DriverMED_W_SMESHDS_Document() {
-;
+DriverMED_W_SMESHDS_Document::DriverMED_W_SMESHDS_Document()
+{
+	;
 }
 
-DriverMED_W_SMESHDS_Document::~DriverMED_W_SMESHDS_Document() {
-;
+DriverMED_W_SMESHDS_Document::~DriverMED_W_SMESHDS_Document()
+{
+	;
 }
 
 //void DriverMED_W_SMESHDS_Document::SetFile(string aFile) {
@@ -54,47 +57,47 @@ DriverMED_W_SMESHDS_Document::~DriverMED_W_SMESHDS_Document() {
 //myDocument = aDocument;
 //}
 
-void DriverMED_W_SMESHDS_Document::Write() {
+void DriverMED_W_SMESHDS_Document::Write()
+{
 
-  med_err ret = 0;
-  med_idt fid;
-  med_int nmaa,numero,nb_of_meshes;
-  med_mode_switch mode_coo;
-  med_connectivite typ_con;
+	med_err ret = 0;
+	med_idt fid;
+	med_int nmaa, numero, nb_of_meshes;
+	med_mode_switch mode_coo;
+	med_connectivite typ_con;
 
-  SCRUTE(myFile);
-  Handle(SMESHDS_Mesh) myMesh;
+	SCRUTE(myFile);
+	SMESHDS_Mesh * myMesh;
 
   /******** Nombre de maillages ********/
-  nb_of_meshes = myDocument->NbMeshes(); //voir avec Yves
-  MESSAGE("nb_of_meshes = "<<nb_of_meshes<<"\n");
-  SCRUTE(nb_of_meshes);
-  //nb_of_meshes = 1;
-  numero = 0;
+	nb_of_meshes = myDocument->NbMeshes();	//voir avec Yves
+	MESSAGE("nb_of_meshes = " << nb_of_meshes << "\n");
+	SCRUTE(nb_of_meshes);
+	//nb_of_meshes = 1;
+	numero = 0;
 
-  string myClass = string("SMESHDS_Mesh");
-  string myExtension = string("MED");
+	string myClass = string("SMESHDS_Mesh");
+	string myExtension = string("MED");
 
-  //while (numero<nb_of_meshes) {
-  //numero++;
-  //myMesh = myDocument->GetMesh(numero);
+	//while (numero<nb_of_meshes) {
+	//numero++;
+	//myMesh = myDocument->GetMesh(numero);
 
-  myDocument->InitMeshesIterator();
-  if (nb_of_meshes!=0)
-  for (;myDocument->MoreMesh();myDocument->NextMesh()) {
-    numero++;
-    myMesh = myDocument->CurrentMesh();
+	myDocument->InitMeshesIterator();
+	if (nb_of_meshes != 0)
+		while(myDocument->MoreMesh())
+		{
+			numero++;
+			myMesh = myDocument->NextMesh();
 
-    DriverMED_W_SMESHDS_Mesh* myWriter = new DriverMED_W_SMESHDS_Mesh;
+			DriverMED_W_SMESHDS_Mesh *myWriter = new DriverMED_W_SMESHDS_Mesh;
 
-    myWriter->SetMesh(myMesh);
-    myWriter->SetFile(myFile);
-    //myWriter->SetFileId(fid);
-    myWriter->SetMeshId(numero);
+			myWriter->SetMesh(myMesh);
+			myWriter->SetFile(myFile);
+			//myWriter->SetFileId(fid);
+			myWriter->SetMeshId(numero);
 
-    //myWriter->Write();
-    myWriter->Add();
-  }
-
-
+			//myWriter->Write();
+			myWriter->Add();
+		}
 }

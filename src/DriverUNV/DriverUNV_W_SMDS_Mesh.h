@@ -7,25 +7,24 @@
 #include "SMDS_Mesh.hxx"
 #include "Mesh_Writer.h"
 
-class DriverUNV_W_SMDS_Mesh : public Mesh_Writer {
+class DriverUNV_W_SMDS_Mesh:public Mesh_Writer
+{
 
-  public :
-    DriverUNV_W_SMDS_Mesh();
-    ~DriverUNV_W_SMDS_Mesh();
+  public:DriverUNV_W_SMDS_Mesh();
+	~DriverUNV_W_SMDS_Mesh();
 
-    void Add();
-    void Write();
-    void SetMesh(Handle(SMDS_Mesh)& aMesh);
-    void SetFile(string);
+	void Add();
+	void Write();
+	void SetMesh(SMDS_Mesh * aMesh);
+	void SetFile(string);
 
-    void SetFileId(FILE*);
-    void SetMeshId(int);
+	void SetFileId(FILE *);
+	void SetMeshId(int);
 
-private :
-    Handle_SMDS_Mesh myMesh;
-    string myFile; 
-    FILE* myFileId;
-    int myMeshId;
+  private:  SMDS_Mesh * myMesh;
+	string myFile;
+	FILE *myFileId;
+	int myMeshId;
 
 };
 #endif
