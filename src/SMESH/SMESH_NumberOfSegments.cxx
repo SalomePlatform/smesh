@@ -27,7 +27,6 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_NumberOfSegments.hxx"
 
 //=============================================================================
@@ -36,12 +35,12 @@ using namespace std;
  */
 //=============================================================================
 
-SMESH_NumberOfSegments::SMESH_NumberOfSegments(int hypId, int studyId, SMESH_Gen* gen)
- : SMESH_Hypothesis(hypId, studyId, gen)
+SMESH_NumberOfSegments::SMESH_NumberOfSegments(int hypId, int studyId,
+	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
 {
-  _numberOfSegments = 1;
-  _scaleFactor = 1.0;
-  _name = "NumberOfSegments";
+	_numberOfSegments = 1;
+	_scaleFactor = 1.0;
+	_name = "NumberOfSegments";
 }
 
 //=============================================================================
@@ -61,15 +60,16 @@ SMESH_NumberOfSegments::~SMESH_NumberOfSegments()
 //=============================================================================
 
 void SMESH_NumberOfSegments::SetNumberOfSegments(int segmentsNumber)
-  throw (SALOME_Exception)
+throw(SALOME_Exception)
 {
-  int oldNumberOfSegments = _numberOfSegments;
-  if (segmentsNumber <= 0) 
-    throw SALOME_Exception(LOCALIZED("number of segments must be positive"));
-  _numberOfSegments = segmentsNumber;
+	int oldNumberOfSegments = _numberOfSegments;
+	if (segmentsNumber <= 0)
+		throw
+			SALOME_Exception(LOCALIZED("number of segments must be positive"));
+	_numberOfSegments = segmentsNumber;
 
-  if (oldNumberOfSegments != _numberOfSegments)
-    NotifySubMeshesHypothesisModification();
+	if (oldNumberOfSegments != _numberOfSegments)
+		NotifySubMeshesHypothesisModification();
 }
 
 //=============================================================================
@@ -78,9 +78,9 @@ void SMESH_NumberOfSegments::SetNumberOfSegments(int segmentsNumber)
  */
 //=============================================================================
 
-int SMESH_NumberOfSegments::GetNumberOfSegments()
+int SMESH_NumberOfSegments::GetNumberOfSegments() const
 {
-  return _numberOfSegments;
+	return _numberOfSegments;
 }
 
 //=============================================================================
@@ -90,13 +90,13 @@ int SMESH_NumberOfSegments::GetNumberOfSegments()
 //=============================================================================
 
 void SMESH_NumberOfSegments::SetScaleFactor(double scaleFactor)
-  throw (SALOME_Exception)
+throw(SALOME_Exception)
 {
-  if (scaleFactor < 0) 
-    throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
-  _scaleFactor = scaleFactor;
+	if (scaleFactor < 0)
+		throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
+	_scaleFactor = scaleFactor;
 
-  NotifySubMeshesHypothesisModification();
+	NotifySubMeshesHypothesisModification();
 }
 
 //=============================================================================
@@ -105,9 +105,9 @@ void SMESH_NumberOfSegments::SetScaleFactor(double scaleFactor)
  */
 //=============================================================================
 
-double SMESH_NumberOfSegments::GetScaleFactor()
+double SMESH_NumberOfSegments::GetScaleFactor() const
 {
-  return _scaleFactor;
+	return _scaleFactor;
 }
 
 //=============================================================================
@@ -118,7 +118,7 @@ double SMESH_NumberOfSegments::GetScaleFactor()
 
 ostream & SMESH_NumberOfSegments::SaveTo(ostream & save)
 {
-  return save << this;
+	return save << this;
 }
 
 //=============================================================================
@@ -129,7 +129,7 @@ ostream & SMESH_NumberOfSegments::SaveTo(ostream & save)
 
 istream & SMESH_NumberOfSegments::LoadFrom(istream & load)
 {
-  return load >> (*this);
+	return load >> (*this);
 }
 
 //=============================================================================
@@ -138,10 +138,10 @@ istream & SMESH_NumberOfSegments::LoadFrom(istream & load)
  */
 //=============================================================================
 
-ostream& operator << (ostream & save, SMESH_NumberOfSegments & hyp)
+ostream & operator <<(ostream & save, SMESH_NumberOfSegments & hyp)
 {
-  save << hyp._numberOfSegments;
-  return save;
+	save << hyp._numberOfSegments;
+	return save;
 }
 
 //=============================================================================
@@ -150,13 +150,14 @@ ostream& operator << (ostream & save, SMESH_NumberOfSegments & hyp)
  */
 //=============================================================================
 
-istream& operator >> (istream & load, SMESH_NumberOfSegments & hyp)
+istream & operator >>(istream & load, SMESH_NumberOfSegments & hyp)
 {
-  bool isOK = true;
-  int a;
-  isOK = (load >> a);
-  if (isOK) hyp._numberOfSegments = a;
-  else load.clear(ios::badbit | load.rdstate());
-  return load;
+	bool isOK = true;
+	int a;
+	isOK = (load >> a);
+	if (isOK)
+		hyp._numberOfSegments = a;
+	else
+		load.clear(ios::badbit | load.rdstate());
+	return load;
 }
-

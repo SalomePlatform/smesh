@@ -42,12 +42,12 @@ public:
   void SetNumberOfSegments(int segmentsNumber)
     throw (SALOME_Exception);
 
-  int GetNumberOfSegments();
+  int GetNumberOfSegments() const;
 
   void SetScaleFactor(double scaleFactor)
     throw (SALOME_Exception);
 
-  double GetScaleFactor();
+  double GetScaleFactor() const;
 
   virtual ostream & SaveTo(ostream & save);
   virtual istream & LoadFrom(istream & load);
