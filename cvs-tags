@@ -33,3 +33,6 @@ V1_3_1: 2004-01-05 14:28
 
 merge_1_2_d: 2003-01-20 11:25
 	Branch to merge Release 1.2d of Salome Pro.
+
+V1_4_0b: 2004-01-30 15:42
+	Pre-release of 1.4.0. Include the merge of the branch merge_1_2_d.
