@@ -1,4 +1,4 @@
-foldersTree = gFld("<b>SALOME v.1.3.0 </b>", "", "")
+foldersTree = gFld("<b>SALOME v.1.4.0 </b>", "", "")
      insDoc(foldersTree, gLnk("Main Page", "", "main.html"))
 
 aux1 = insFld(foldersTree, gFld("TUI Reference Guide", ""))
