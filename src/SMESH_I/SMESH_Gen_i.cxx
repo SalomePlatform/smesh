@@ -975,13 +975,15 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    
 	    // write reference on a shape if exists
 	    SALOMEDS::SObject_var myRef;
+            bool shapeRefFound = false;
 	    bool found = gotBranch->FindSubObject( GetRefOnShapeTag(), myRef );
 	    if ( found ) {
 	      SALOMEDS::SObject_var myShape;
 	      bool ok = myRef->ReferencedObject( myShape );
 	      if ( ok ) {
+                shapeRefFound = (! CORBA::is_nil( myShape->GetObject() ));
 		string myRefOnObject = myShape->GetID();
-		if ( myRefOnObject.length() > 0 ) {
+		if ( shapeRefFound && myRefOnObject.length() > 0 ) {
 		  aSize[ 0 ] = myRefOnObject.length() + 1;
 		  aDataset = new HDFdataset( "Ref on shape", aTopGroup, HDF_STRING, aSize, 1 );
 		  aDataset->CreateOnDisk();
@@ -990,11 +992,19 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		}
 	      }
 	    }
+            // maybe a shape was deleted in the study
+            if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() ) {
+              TopoDS_Shape nullShape;
+              myLocMesh.ShapeToMesh( nullShape ); // remove shape referring data
+            }
 
 	    // write applied hypotheses if exist
 	    SALOMEDS::SObject_var myHypBranch;
 	    found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch );
-	    if ( found ) {
+	    if ( found && !shapeRefFound ) { // remove applied hyps
+              myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
+            }
+	    if ( found && shapeRefFound ) {
 	      aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
 	      aGroup->CreateOnDisk();
 
@@ -1033,7 +1043,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    // write applied algorithms if exist
 	    SALOMEDS::SObject_var myAlgoBranch;
 	    found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
-	    if ( found ) {
+	    if ( found && !shapeRefFound ) { // remove applied hyps
+              myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myAlgoBranch );
+            }
+	    if ( found && shapeRefFound ) {
 	      aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
 	      aGroup->CreateOnDisk();
 
@@ -1070,9 +1083,48 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    }
 
 	    // --> submesh objects sub-branches
+
 	    for ( int i = GetSubMeshOnVertexTag(); i <= GetSubMeshOnCompoundTag(); i++ ) {
 	      SALOMEDS::SObject_var mySubmeshBranch;
 	      found = gotBranch->FindSubObject( i, mySubmeshBranch );
+
+              if ( found ) // check if there is shape reference in submeshes
+              {
+                bool hasShapeRef = false;
+		SALOMEDS::ChildIterator_var itSM =
+                  myCurrentStudy->NewChildIterator( mySubmeshBranch );
+		for ( ; itSM->More(); itSM->Next() ) {
+		  SALOMEDS::SObject_var mySubRef, myShape, mySObject = itSM->Value();
+                  if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
+                    mySubRef->ReferencedObject( myShape );
+                  if ( !CORBA::is_nil( myShape ) && !CORBA::is_nil( myShape->GetObject() ))
+                    hasShapeRef = true;
+                  else
+                  { // remove one submesh
+                    if ( shapeRefFound )
+                    { // unassign hypothesis
+                      SMESH::SMESH_subMesh_var mySubMesh =
+                        SMESH::SMESH_subMesh::_narrow( SObjectToObject( mySObject ));
+                      if ( !mySubMesh->_is_nil() ) {
+                        int shapeID = mySubMesh->GetId();
+                        TopoDS_Shape S = mySMESHDSMesh->IndexToShape( shapeID );
+                        const list<const SMESHDS_Hypothesis*>& hypList =
+                          mySMESHDSMesh->GetHypothesis( S );
+                        list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+                        while ( hyp != hypList.end() ) {
+                          int hypID = (*hyp++)->GetID(); // goto next here because
+                          myLocMesh.RemoveHypothesis( S, hypID ); // hypList changes here
+                        }
+                      }
+                    }
+                    myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( mySObject );
+                  }
+                } // loop on submeshes of a type
+                if ( !shapeRefFound || !hasShapeRef ) { // remove the whole submeshes branch
+                  myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( mySubmeshBranch );
+                  found = false;
+                }
+              }  // end check if there is shape reference in submeshes
 	      if ( found ) {
 		char name_meshgroup[ 30 ];
 		if ( i == GetSubMeshOnVertexTag() )
@@ -1099,7 +1151,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		for ( ; itSM->More(); itSM->Next() ) {
 		  SALOMEDS::SObject_var mySObject = itSM->Value();
 		  CORBA::Object_var anSubObject = SObjectToObject( mySObject );
-		  if ( !CORBA::is_nil( anSubObject ) ) {
+		  if ( !CORBA::is_nil( anSubObject ))
+                  {
 		    SMESH::SMESH_subMesh_var mySubMesh = SMESH::SMESH_subMesh::_narrow( anSubObject ) ;
 		    int subid = myStudyContext->findId( string( GetORB()->object_to_string( anSubObject ) ) );
 		      
@@ -1109,31 +1162,18 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		    aSubGroup = new HDFgroup( submeshGrpName, aGroup );
 		    aSubGroup->CreateOnDisk();
 
-//		    // Put submesh data to MED convertor
-//		    if ( myImpl->_mapSubMesh.find( mySubMesh->GetId() ) != myImpl->_mapSubMesh.end() ) {
-//		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving submesh with ID = "
-//                              << mySubMesh->GetId() << " to MED file" );
-//		      ::SMESH_subMesh* aLocalSubmesh = myImpl->_mapSubMesh[mySubMesh->GetId()];
-//		      myWriter.AddSubMesh( aLocalSubmesh->GetSubMeshDS(), subid );
-//		    }
-		    
-		    // write reference on a shape if exists
-		    SALOMEDS::SObject_var mySubRef;
-		    found = mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef );
-		    if ( found ) {
-		      SALOMEDS::SObject_var myShape;
-		      bool ok = mySubRef->ReferencedObject( myShape );
-		      if ( ok ) {
-			string myRefOnObject = myShape->GetID();
-			if ( myRefOnObject.length() > 0 ) {
-			  aSize[ 0 ] = myRefOnObject.length() + 1;
-			  aDataset = new HDFdataset( "Ref on shape", aSubGroup, HDF_STRING, aSize, 1 );
-			  aDataset->CreateOnDisk();
-			  aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
-			  aDataset->CloseOnDisk();
-			}
-		      }
-		    }
+		    // write reference on a shape, already checked if it exists
+                    SALOMEDS::SObject_var mySubRef, myShape;
+                    if ( mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ))
+                      mySubRef->ReferencedObject( myShape );
+                    string myRefOnObject = myShape->GetID();
+                    if ( myRefOnObject.length() > 0 ) {
+                      aSize[ 0 ] = myRefOnObject.length() + 1;
+                      aDataset = new HDFdataset( "Ref on shape", aSubGroup, HDF_STRING, aSize, 1 );
+                      aDataset->CreateOnDisk();
+                      aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                      aDataset->CloseOnDisk();
+                    }
 
 		    // write applied hypotheses if exist
 		    SALOMEDS::SObject_var mySubHypBranch;
@@ -1257,6 +1297,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
 		    // Store the group contents into MED file
 		    if ( myLocMesh.GetGroup( myGroupImpl->GetLocalID() ) ) {
+
 		      if(MYDEBUG) MESSAGE( "VSR - SMESH_Gen_i::Save(): saving group with StoreName = "
                               << grpName << " to MED file" );
 		      SMESHDS_GroupBase* aGrpBaseDS =
@@ -1274,7 +1315,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       if ( aGeomGrp ) {
                         SALOMEDS::SObject_var mySubRef, myShape;
                         if (mySObject->FindSubObject( GetRefOnShapeTag(), mySubRef ) &&
-                            mySubRef->ReferencedObject( myShape ))
+                            mySubRef->ReferencedObject( myShape ) &&
+                            !CORBA::is_nil( myShape->GetObject() ))
                         {
                           string myRefOnObject = myShape->GetID();
                           if ( myRefOnObject.length() > 0 ) {
@@ -1287,13 +1329,18 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                             aDataset->CloseOnDisk();
                           }
                         }
+                        else // shape ref is invalid:
+                        {
+                          // save a group on geometry as ordinary group
+                          myWriter.AddGroup( aGeomGrp );
+                        }
                       }
 		    }
 		  }
 		}
 		aGroup->CloseOnDisk();
 	      }
-	    }
+	    } // loop on groups 
 
 	    if ( strcmp( strHasData.c_str(), "1" ) == 0 )
             {
@@ -1303,135 +1350,138 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
               // Store node positions on sub-shapes (SMDS_Position):
 
-              aGroup = new HDFgroup( "Node Positions", aTopGroup );
-              aGroup->CreateOnDisk();
-
-              // in aGroup, create 5 datasets to contain:
-              // "Nodes on Edges" - ID of node on edge
-              // "Edge positions" - U parameter on node on edge
-              // "Nodes on Faces" - ID of node on face
-              // "Face U positions" - U parameter of node on face
-              // "Face V positions" - V parameter of node on face
-
-              // Find out nb of nodes on edges and faces
-              // Collect corresponing sub-meshes
-              int nbEdgeNodes = 0, nbFaceNodes = 0;
-              list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
-              // loop on SMESHDS_SubMesh'es
-              const map<int,SMESHDS_SubMesh*>& aSubMeshes = mySMESHDSMesh->SubMeshes();
-              map<int,SMESHDS_SubMesh*>::const_iterator itSubM ( aSubMeshes.begin() );
-              for ( ; itSubM != aSubMeshes.end() ; itSubM++ )
+              if ( !mySMESHDSMesh->SubMeshes().empty() )
               {
-                SMESHDS_SubMesh* aSubMesh = (*itSubM).second;
-                if ( aSubMesh->IsComplexSubmesh() )
-                  continue; // submesh containing other submeshs
-                int nbNodes = aSubMesh->NbNodes();
-                if ( nbNodes == 0 ) continue;
-                
-                int aShapeID = (*itSubM).first;
-                int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
-                // write only SMDS_FacePosition and SMDS_EdgePosition
-                switch ( aShapeType ) {
-                case TopAbs_FACE:
-                  nbFaceNodes += nbNodes;
-                  aFaceSM.push_back( aSubMesh );
-                  break;
-                case TopAbs_EDGE:
-                  nbEdgeNodes += nbNodes;
-                  aEdgeSM.push_back( aSubMesh );
-                  break;
-                default:
-                  continue;
-                }
-              }
-              // Treat positions on edges or faces
-              for ( int onFace = 0; onFace < 2; onFace++ )
-              {
-                // Create arrays to store in datasets
-                int iNode = 0, nbNodes = ( onFace ? nbFaceNodes : nbEdgeNodes );
-                if (!nbNodes) continue;
-                int* aNodeIDs = new int [ nbNodes ];
-                double* aUPos = new double [ nbNodes ];
-                double* aVPos = ( onFace ? new double[ nbNodes ] : 0 );
+                aGroup = new HDFgroup( "Node Positions", aTopGroup );
+                aGroup->CreateOnDisk();
 
-                // Fill arrays
-                // loop on sub-meshes
-                list<SMESHDS_SubMesh*> * pListSM = ( onFace ? &aFaceSM : &aEdgeSM );
-                list<SMESHDS_SubMesh*>::iterator itSM = pListSM->begin();
-                for ( ; itSM != pListSM->end(); itSM++ )
+                // in aGroup, create 5 datasets to contain:
+                // "Nodes on Edges" - ID of node on edge
+                // "Edge positions" - U parameter on node on edge
+                // "Nodes on Faces" - ID of node on face
+                // "Face U positions" - U parameter of node on face
+                // "Face V positions" - V parameter of node on face
+
+                // Find out nb of nodes on edges and faces
+                // Collect corresponing sub-meshes
+                int nbEdgeNodes = 0, nbFaceNodes = 0;
+                list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
+                // loop on SMESHDS_SubMesh'es
+                const map<int,SMESHDS_SubMesh*>& aSubMeshes = mySMESHDSMesh->SubMeshes();
+                map<int,SMESHDS_SubMesh*>::const_iterator itSubM ( aSubMeshes.begin() );
+                for ( ; itSubM != aSubMeshes.end() ; itSubM++ )
                 {
-                  SMESHDS_SubMesh* aSubMesh = (*itSM);
+                  SMESHDS_SubMesh* aSubMesh = (*itSubM).second;
                   if ( aSubMesh->IsComplexSubmesh() )
                     continue; // submesh containing other submeshs
+                  int nbNodes = aSubMesh->NbNodes();
+                  if ( nbNodes == 0 ) continue;
 
-                  SMDS_NodeIteratorPtr itNode = aSubMesh->GetNodes();
-                  // loop on nodes in aSubMesh
-                  while ( itNode->more() )
-                  {
-                    //node ID
-                    const SMDS_MeshNode* node = itNode->next();
-                    aNodeIDs [ iNode ] = node->GetID();
-
-                    // Position
-                    const SMDS_PositionPtr pos = node->GetPosition();
-                    if ( onFace ) { // on FACE
-                      const SMDS_FacePosition* fPos =
-                        dynamic_cast<const SMDS_FacePosition*>( pos.get() );
-                      if ( fPos ) {
-                        aUPos[ iNode ] = fPos->GetUParameter();
-                        aVPos[ iNode ] = fPos->GetVParameter();
-                        iNode++;
-                      }
-                      else
-                        nbNodes--;
-                    }
-                    else { // on EDGE
-                      const SMDS_EdgePosition* ePos =
-                        dynamic_cast<const SMDS_EdgePosition*>( pos.get() );
-                      if ( ePos ) {
-                        aUPos[ iNode ] = ePos->GetUParameter();
-                        iNode++;
-                      }
-                      else
-                        nbNodes--;
-                    }
-                  } // loop on nodes in aSubMesh
-                } // loop on sub-meshes
-
-                // Write datasets
-                if ( nbNodes )
-                {
-                  aSize[ 0 ] = nbNodes;
-                  // IDS
-                  string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
-                  aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_INT32, aSize, 1 );
-                  aDataset->CreateOnDisk();
-                  aDataset->WriteOnDisk( aNodeIDs );
-                  aDataset->CloseOnDisk();
-                  
-                  // U Positions
-                  aDSName = ( onFace ? "Face U positions" : "Edge positions");
-                  aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_FLOAT64, aSize, 1);
-                  aDataset->CreateOnDisk();
-                  aDataset->WriteOnDisk( aUPos );
-                  aDataset->CloseOnDisk();
-                  // V Positions
-                  if ( onFace ) {
-                    aDataset = new HDFdataset( "Face V positions", aGroup, HDF_FLOAT64, aSize, 1);
-                    aDataset->CreateOnDisk();
-                    aDataset->WriteOnDisk( aVPos );
-                    aDataset->CloseOnDisk();
+                  int aShapeID = (*itSubM).first;
+                  int aShapeType = mySMESHDSMesh->IndexToShape( aShapeID ).ShapeType();
+                  // write only SMDS_FacePosition and SMDS_EdgePosition
+                  switch ( aShapeType ) {
+                  case TopAbs_FACE:
+                    nbFaceNodes += nbNodes;
+                    aFaceSM.push_back( aSubMesh );
+                    break;
+                  case TopAbs_EDGE:
+                    nbEdgeNodes += nbNodes;
+                    aEdgeSM.push_back( aSubMesh );
+                    break;
+                  default:
+                    continue;
                   }
                 }
-                delete [] aNodeIDs;
-                delete [] aUPos;
-                if ( aVPos ) delete [] aVPos;
+                // Treat positions on edges or faces
+                for ( int onFace = 0; onFace < 2; onFace++ )
+                {
+                  // Create arrays to store in datasets
+                  int iNode = 0, nbNodes = ( onFace ? nbFaceNodes : nbEdgeNodes );
+                  if (!nbNodes) continue;
+                  int* aNodeIDs = new int [ nbNodes ];
+                  double* aUPos = new double [ nbNodes ];
+                  double* aVPos = ( onFace ? new double[ nbNodes ] : 0 );
 
-              } // treat positions on edges or faces
+                  // Fill arrays
+                  // loop on sub-meshes
+                  list<SMESHDS_SubMesh*> * pListSM = ( onFace ? &aFaceSM : &aEdgeSM );
+                  list<SMESHDS_SubMesh*>::iterator itSM = pListSM->begin();
+                  for ( ; itSM != pListSM->end(); itSM++ )
+                  {
+                    SMESHDS_SubMesh* aSubMesh = (*itSM);
+                    if ( aSubMesh->IsComplexSubmesh() )
+                      continue; // submesh containing other submeshs
 
-              // close "Node Positions" group
-              aGroup->CloseOnDisk(); 
+                    SMDS_NodeIteratorPtr itNode = aSubMesh->GetNodes();
+                    // loop on nodes in aSubMesh
+                    while ( itNode->more() )
+                    {
+                      //node ID
+                      const SMDS_MeshNode* node = itNode->next();
+                      aNodeIDs [ iNode ] = node->GetID();
 
+                      // Position
+                      const SMDS_PositionPtr pos = node->GetPosition();
+                      if ( onFace ) { // on FACE
+                        const SMDS_FacePosition* fPos =
+                          dynamic_cast<const SMDS_FacePosition*>( pos.get() );
+                        if ( fPos ) {
+                          aUPos[ iNode ] = fPos->GetUParameter();
+                          aVPos[ iNode ] = fPos->GetVParameter();
+                          iNode++;
+                        }
+                        else
+                          nbNodes--;
+                      }
+                      else { // on EDGE
+                        const SMDS_EdgePosition* ePos =
+                          dynamic_cast<const SMDS_EdgePosition*>( pos.get() );
+                        if ( ePos ) {
+                          aUPos[ iNode ] = ePos->GetUParameter();
+                          iNode++;
+                        }
+                        else
+                          nbNodes--;
+                      }
+                    } // loop on nodes in aSubMesh
+                  } // loop on sub-meshes
+
+                  // Write datasets
+                  if ( nbNodes )
+                  {
+                    aSize[ 0 ] = nbNodes;
+                    // IDS
+                    string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
+                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_INT32, aSize, 1 );
+                    aDataset->CreateOnDisk();
+                    aDataset->WriteOnDisk( aNodeIDs );
+                    aDataset->CloseOnDisk();
+
+                    // U Positions
+                    aDSName = ( onFace ? "Face U positions" : "Edge positions");
+                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_FLOAT64, aSize, 1);
+                    aDataset->CreateOnDisk();
+                    aDataset->WriteOnDisk( aUPos );
+                    aDataset->CloseOnDisk();
+                    // V Positions
+                    if ( onFace ) {
+                      aDataset = new HDFdataset( "Face V positions", aGroup, HDF_FLOAT64, aSize, 1);
+                      aDataset->CreateOnDisk();
+                      aDataset->WriteOnDisk( aVPos );
+                      aDataset->CloseOnDisk();
+                    }
+                  }
+                  delete [] aNodeIDs;
+                  delete [] aUPos;
+                  if ( aVPos ) delete [] aVPos;
+
+                } // treat positions on edges or faces
+
+                // close "Node Positions" group
+                aGroup->CloseOnDisk(); 
+
+              } // if ( there are submeshes in SMESHDS_Mesh )
             } // if ( hasData )
 
 	    // close mesh HDF group
