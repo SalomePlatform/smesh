@@ -70,9 +70,8 @@ class SMESH_MeshEditor {
   // with a quadrangle built on the same 4 nodes.
   // Return false if proper faces not found
 
-  bool Reorient (const SMDS_MeshElement * theFace);
-  // Reverse the normal of theFace
-  // Return false if theFace is null
+  bool Reorient (const SMDS_MeshElement * theElement);
+  // Reverse theElement orientation
 
 
   bool TriToQuad (std::set<const SMDS_MeshElement*> &  theElems,

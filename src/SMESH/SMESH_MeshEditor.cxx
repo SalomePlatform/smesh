@@ -470,34 +470,40 @@ bool SMESH_MeshEditor::DeleteDiag (const SMDS_MeshNode * theNode1,
 
 //=======================================================================
 //function : Reorient
-//purpose  : Reverse the normal of theFace
-//           Return false if theFace is null
+//purpose  : Reverse theElement orientation
 //=======================================================================
 
-bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theFace)
+bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
 {
-  if (!theFace) return false;
-  const SMDS_FaceOfNodes* F = dynamic_cast<const SMDS_FaceOfNodes*>( theFace );
-  if (!F) return false;
+  if (!theElem)
+    return false;
+  SMDS_ElemIteratorPtr it = theElem->nodesIterator();
+  if ( !it || !it->more() )
+    return false;
 
-  const SMDS_MeshNode* aNodes [4], *tmpNode;
-  int i = 0;
-  SMDS_ElemIteratorPtr it = theFace->nodesIterator();
-  while ( it->more() )
-    aNodes[ i++ ] = static_cast<const SMDS_MeshNode*>( it->next() );
+  switch ( theElem->GetType() ) {
+    
+  case SMDSAbs_Edge:
+  case SMDSAbs_Face:
+  {
+    int i = theElem->NbNodes();
+    vector<const SMDS_MeshNode*> aNodes( i );
+    while ( it->more() )
+      aNodes[ --i ]= static_cast<const SMDS_MeshNode*>( it->next() );
+    return GetMeshDS()->ChangeElementNodes( theElem, &aNodes[0], theElem->NbNodes() );
+  }
+  case SMDSAbs_Volume:
+  {
+    SMDS_VolumeTool vTool;
+    if ( !vTool.Set( theElem ))
+      return false;
+    vTool.Inverse();
+    return GetMeshDS()->ChangeElementNodes( theElem, vTool.GetNodes(), vTool.NbNodes() );
+  }
+  default:;
+  }
 
-  // exchange nodes with indeces 0 and 2
-  tmpNode = aNodes[ 0 ];
-  aNodes[ 0 ] = aNodes[ 2 ];
-  aNodes[ 2 ] = tmpNode;
-
-  //MESSAGE( theFace );
-
-  GetMeshDS()->ChangeElementNodes( theFace, aNodes, theFace->NbNodes() );
-
-  //MESSAGE( theFace );
-
-  return true;
+  return false;
 }
 
 //=======================================================================
