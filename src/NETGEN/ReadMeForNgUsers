@@ -1,7 +1,19 @@
 The Netgen 4.3 from the web location : http://www.hpfem.jku.at/netgen/ is used
 in the SMESH Module of Salome2 distribution.
 
-Assumptions on the Netgen installation
+How to build Netgen for Salome
+------------------------------
+
+Patch the official netgen 4.3 distribution:
+
+$ cd netgen43
+$ patch -p1 < patch_directory/netgen43ForSalome.patch
+
+Then run makeForSalome.sh:
+$ sh makeForSalome.sh
+
+
+Additional information for maintainers
 --------------------------------------
 
 The SMESH Engine of SALOME2 (particularly the m4 file check_Netgen.m4) assume
