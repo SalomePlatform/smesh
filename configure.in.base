@@ -243,6 +243,14 @@ CHECK_CAS
 
 echo
 echo ---------------------------------------------
+echo Testing html generators
+echo ---------------------------------------------
+echo
+
+CHECK_HTML_GENERATORS
+
+echo
+echo ---------------------------------------------
 echo Testing Kernel
 echo ---------------------------------------------
 echo
@@ -264,7 +272,7 @@ echo ---------------------------------------------
 echo
 
 echo Configure
-variables="cc_ok lex_yacc_ok python_ok java_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok mico_ok occ_ok Kernel_ok Geom_Ok"
+variables="cc_ok lex_yacc_ok python_ok java_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok mico_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_Ok"
 
 for var in $variables
 do
