@@ -992,11 +992,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		}
 	      }
 	    }
-            // maybe a shape was deleted in the study
-            if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() ) {
-              TopoDS_Shape nullShape;
-              myLocMesh.ShapeToMesh( nullShape ); // remove shape referring data
-            }
 
 	    // write applied hypotheses if exist
 	    SALOMEDS::SObject_var myHypBranch;
@@ -1043,7 +1038,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	    // write applied algorithms if exist
 	    SALOMEDS::SObject_var myAlgoBranch;
 	    found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
-	    if ( found && !shapeRefFound ) { // remove applied hyps
+	    if ( found && !shapeRefFound ) { // remove applied algos
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myAlgoBranch );
             }
 	    if ( found && shapeRefFound ) {
@@ -1112,7 +1107,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                           mySMESHDSMesh->GetHypothesis( S );
                         list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
                         while ( hyp != hypList.end() ) {
-                          int hypID = (*hyp++)->GetID(); // goto next here because
+                          int hypID = (*hyp++)->GetID(); // goto next hyp here because
                           myLocMesh.RemoveHypothesis( S, hypID ); // hypList changes here
                         }
                       }
@@ -1251,7 +1246,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	      }
 	    }
             // All sub-meshes will be stored in MED file
-            myWriter.AddAllSubMeshes();
+            if ( shapeRefFound )
+              myWriter.AddAllSubMeshes();
 
 	    // groups root sub-branch
 	    SALOMEDS::SObject_var myGroupsBranch;
@@ -1347,6 +1343,11 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               // Flush current mesh information into MED file
 	      myWriter.Perform();
 
+              // maybe a shape was deleted in the study
+              if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() ) {
+                TopoDS_Shape nullShape;
+                myLocMesh.ShapeToMesh( nullShape ); // remove shape referring data
+              }
 
               // Store node positions on sub-shapes (SMDS_Position):
 
@@ -1878,43 +1879,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	    }
 	  }
 
-	  // try to get applied hypotheses
-	  if ( aTopGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
-	    aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
-	    aGroup->OpenOnDisk();
-	    // get number of applied hypotheses
-	    int aNbSubObjects = aGroup->nInternalObjects(); 
-	    for ( int j = 0; j < aNbSubObjects; j++ ) {
-	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-	      aGroup->InternalObjectIndentify( j, name_dataset );
-	      // check if it is a hypothesis
-	      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
-		aDataset = new HDFdataset( name_dataset, aGroup );
-		aDataset->OpenOnDisk();
-		size = aDataset->GetSize();
-		char* refFromFile = new char[ size ];
-		aDataset->ReadFromDisk( refFromFile );
-		aDataset->CloseOnDisk();
-
-		// san - it is impossible to recover applied hypotheses using their entries within Load() method
-		
-		//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-		//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-		int id = atoi( refFromFile );
-		string anIOR = myStudyContext->getIORbyOldId( id );
-		if ( !anIOR.empty() ) {
-		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-		  if ( !CORBA::is_nil( hypObject ) ) {
-		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
-		  }
-		}
-	      }
-	    }
-	    aGroup->CloseOnDisk();
-	  }
-
 	  // try to get applied algorithms
 	  if ( aTopGroup->ExistInternalObject( "Applied Algorithms" ) ) {
 	    aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
@@ -1935,6 +1899,43 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		aDataset->CloseOnDisk();
 
 		// san - it is impossible to recover applied algorithms using their entries within Load() method
+		
+		//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+		//CORBA::Object_var hypObject = SObjectToObject( hypSO );
+		int id = atoi( refFromFile );
+		string anIOR = myStudyContext->getIORbyOldId( id );
+		if ( !anIOR.empty() ) {
+		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+		  if ( !CORBA::is_nil( hypObject ) ) {
+		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
+		  }
+		}
+	      }
+	    }
+	    aGroup->CloseOnDisk();
+	  }
+
+	  // try to get applied hypotheses
+	  if ( aTopGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
+	    aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
+	    aGroup->OpenOnDisk();
+	    // get number of applied hypotheses
+	    int aNbSubObjects = aGroup->nInternalObjects(); 
+	    for ( int j = 0; j < aNbSubObjects; j++ ) {
+	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+	      aGroup->InternalObjectIndentify( j, name_dataset );
+	      // check if it is a hypothesis
+	      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
+		aDataset = new HDFdataset( name_dataset, aGroup );
+		aDataset->OpenOnDisk();
+		size = aDataset->GetSize();
+		char* refFromFile = new char[ size ];
+		aDataset->ReadFromDisk( refFromFile );
+		aDataset->CloseOnDisk();
+
+		// san - it is impossible to recover applied hypotheses using their entries within Load() method
 		
 		//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
 		//CORBA::Object_var hypObject = SObjectToObject( hypSO );
@@ -2039,43 +2040,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 //		      myReader.GetSubMesh( aSubMeshDS, subid );
 //		  }
 		    
-		  // try to get applied hypotheses
-		  if ( aSubGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
-		    // open "applied hypotheses" HDF group
-		    aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
-		    aSubSubGroup->OpenOnDisk();
-		    // get number of applied hypotheses
-		    int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
-		    for ( int l = 0; l < aNbSubObjects; l++ ) {
-		      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-		      aSubSubGroup->InternalObjectIndentify( l, name_dataset );
-		      // check if it is a hypothesis
-		      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
-			aDataset = new HDFdataset( name_dataset, aSubSubGroup );
-			aDataset->OpenOnDisk();
-			size = aDataset->GetSize();
-			char* refFromFile = new char[ size ];
-			aDataset->ReadFromDisk( refFromFile );
-			aDataset->CloseOnDisk();
-			
-			//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-			//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-			int id = atoi( refFromFile );
-			string anIOR = myStudyContext->getIORbyOldId( id );
-			if ( !anIOR.empty() ) {
-			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-			  if ( !CORBA::is_nil( hypObject ) ) {
-			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
-			  }
-			}
-		      }
-		    }
-		    // close "applied hypotheses" HDF group
-		    aSubSubGroup->CloseOnDisk();
-		  }
-	
 		  // try to get applied algorithms
 		  if ( aSubGroup->ExistInternalObject( "Applied Algorithms" ) ) {
 		    // open "applied algorithms" HDF group
@@ -2113,6 +2077,43 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		    aSubSubGroup->CloseOnDisk();
 		  }
 		  
+		  // try to get applied hypotheses
+		  if ( aSubGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
+		    // open "applied hypotheses" HDF group
+		    aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
+		    aSubSubGroup->OpenOnDisk();
+		    // get number of applied hypotheses
+		    int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
+		    for ( int l = 0; l < aNbSubObjects; l++ ) {
+		      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+		      aSubSubGroup->InternalObjectIndentify( l, name_dataset );
+		      // check if it is a hypothesis
+		      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
+			aDataset = new HDFdataset( name_dataset, aSubSubGroup );
+			aDataset->OpenOnDisk();
+			size = aDataset->GetSize();
+			char* refFromFile = new char[ size ];
+			aDataset->ReadFromDisk( refFromFile );
+			aDataset->CloseOnDisk();
+			
+			//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+			//CORBA::Object_var hypObject = SObjectToObject( hypSO );
+			int id = atoi( refFromFile );
+			string anIOR = myStudyContext->getIORbyOldId( id );
+			if ( !anIOR.empty() ) {
+			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+			  if ( !CORBA::is_nil( hypObject ) ) {
+			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
+			  }
+			}
+		      }
+		    }
+		    // close "applied hypotheses" HDF group
+		    aSubSubGroup->CloseOnDisk();
+		  }
+
 		  // close submesh HDF group
 		  aSubGroup->CloseOnDisk();
 		}
