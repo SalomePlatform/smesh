@@ -32,6 +32,7 @@
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include <TopExp_Explorer.hxx>
 #include <TopExp.hxx>
 #include <TopoDS_Iterator.hxx>
@@ -55,8 +56,37 @@ SMESHDS_Mesh::SMESHDS_Mesh(int MeshID):myMeshID(MeshID)
 //=======================================================================
 void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 {
-	myShape = S;
-	TopExp::MapShapes(myShape, myIndexToShape);
+  if ( !myShape.IsNull() && S.IsNull() )
+  {
+    // removal of a shape to mesh, delete ...
+    // - hypotheses
+    myShapeToHypothesis.clear();
+    // - shape indices in SMDS_Position of nodes
+    map<int,SMESHDS_SubMesh*>::iterator i_sub = myShapeIndexToSubMesh.begin();
+    for ( ; i_sub != myShapeIndexToSubMesh.end(); i_sub++ ) {
+      if ( !i_sub->second->IsComplexSubmesh() ) {
+        SMDS_NodeIteratorPtr nIt = i_sub->second->GetNodes();
+        while ( nIt->more() )
+          nIt->next()->GetPosition()->SetShapeId( 0 );
+      }
+    }
+    // - sub-meshes
+    myIndexToShape.Clear();
+    myShapeIndexToSubMesh.clear();
+    // - groups on geometry
+    set<SMESHDS_GroupBase*>::iterator gr = myGroups.begin();
+    while ( gr != myGroups.end() ) {
+      if ( dynamic_cast<SMESHDS_GroupOnGeom*>( *gr ))
+        myGroups.erase( gr++ );
+      else
+        gr++;
+    }
+  }
+  else {
+    myShape = S;
+    if ( !S.IsNull() )
+      TopExp::MapShapes(myShape, myIndexToShape);
+  }
 }
 
 //=======================================================================

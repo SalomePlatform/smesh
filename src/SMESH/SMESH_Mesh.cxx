@@ -33,6 +33,7 @@
 #include "SMESH_Group.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Script.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 #include "SMDS_MeshVolume.hxx"
 
 #include "utilities.h"
@@ -110,15 +111,39 @@ SMESH_Mesh::~SMESH_Mesh()
  */
 //=============================================================================
 
-void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape){
+void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
+{
   if(MYDEBUG) MESSAGE("SMESH_Mesh::ShapeToMesh");
-  if (_isShapeToMesh)
-    throw
-      SALOME_Exception(LOCALIZED
-		       ("a shape to mesh as already been defined"));
+
+  if ( !_myMeshDS->ShapeToMesh().IsNull() && aShape.IsNull() )
+  {
+    // removal of a shape to mesh, delete objects referring to sub-shapes:
+    // - sub-meshes
+    map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.begin();
+    for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
+      delete i_sm->second;
+    _mapSubMesh.clear();
+    //  - groups on geometry
+    map <int, SMESH_Group *>::iterator i_gr = _mapGroup.begin();
+    while ( i_gr != _mapGroup.end() ) {
+      if ( dynamic_cast<SMESHDS_GroupOnGeom*>( i_gr->second->GetGroupDS() )) {
+        _myMeshDS->RemoveGroup( i_gr->second->GetGroupDS() );
+        delete i_gr->second;
+        _mapGroup.erase( i_gr++ );
+      }
+      else
+        i_gr++;
+    }
+    _mapAncestors.Clear();
+    _mapPropagationChains.Clear();
+  }
+  else
+  {
+    if (_isShapeToMesh)
+      throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
+  }
   _isShapeToMesh = true;
   _myMeshDS->ShapeToMesh(aShape);
-  
   // NRI : 24/02/03
   //EAP: 1/9/04 TopExp::MapShapes(aShape, _subShapes); USE the same map of _myMeshDS
 }
@@ -132,7 +157,7 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
 {
   if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
-    throw SALOME_Exception(LOCALIZED("a shape to mesh as already been defined"));
+    throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
   _isShapeToMesh = true;
   DriverUNV_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
@@ -157,7 +182,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
 {
   if(MYDEBUG) MESSAGE("MEDToMesh - theFileName = "<<theFileName<<", mesh name = "<<theMeshName);
   if(_isShapeToMesh)
-    throw SALOME_Exception(LOCALIZED("a shape to mesh as already been defined"));
+    throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
   _isShapeToMesh = true;
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
@@ -199,7 +224,7 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
 {
   if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
-    throw SALOME_Exception(LOCALIZED("a shape to mesh as already been defined"));
+    throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
   _isShapeToMesh = true;
   DriverSTL_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
