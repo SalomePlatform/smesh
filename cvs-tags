@@ -7,3 +7,6 @@ V1_2_1:	?
 V1_2_2:	2003-09-26 17:00
 	New data structure in SMDS.
 
+nadir_1_2_2: 2003-10-06 12:50
+	Branch after V1_2_2. Developpement branch for user nadir
+
