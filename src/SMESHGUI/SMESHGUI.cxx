@@ -1,12 +1,32 @@
-using namespace std;
-//  File      : SMESHGUI.cxx
-//  Created   : Sun May 05 11:49:46 2002
-//  Author    : Nicolas REJNERI
-//  Project   : SALOME
-//  Module    : SMESH
-//  Copyright : Open CASCADE 2002
+//  SMESH SMESHGUI : GUI for SMESH component
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESHGUI.cxx
+//  Author : Nicolas REJNERI
+//  Module : SMESH
 //  $Header$
 
+using namespace std;
 #include "SMESHGUI.h"
 #include "SMESHGUI_AddHypothesisDlg.h"
 #include "SMESHGUI_AddAlgorithmDlg.h"
@@ -55,11 +75,6 @@ using namespace std;
 #include "OCCViewer_ViewPort.h"
 #include "OCCViewer_ViewPort3d.h"
 #include "OCCViewer_Viewer3d.h"
-
-#include "VTKViewer_RenderWindowInteractor.h"
-#include "VTKViewer_ViewFrame.h"
-//#include "QAD_ViewPort.h"
-//#include "QAD_ViewPort3d.h"
 
 #include "GEOM_Client.hxx"
 #include "GEOM_InteractiveObject.hxx"
@@ -111,25 +126,11 @@ using namespace std;
 #include <qradiobutton.h> 
 
 // VTK Includes
-#include <vtkPoints.h>
-#include <vtkDataSetMapper.h>
-#include <vtkPolyVertex.h>
-#include <vtkVertex.h>
-#include <vtkLine.h>
-#include <vtkTriangle.h>
-#include <vtkPointSet.h>
-#include <vtkShrinkFilter.h>
-#include <vtkMaskPoints.h>
-#include <vtkExtractEdges.h>
-#include <vtkFeatureEdges.h>
-#include <vtkTubeFilter.h>
-#include <vtkExtractEdges.h>
+#include "VTKViewer_Common.h"
+#include "VTKViewer_ViewFrame.h"
 #include <vtkLegendBoxActor.h>
-#include <vtkGlyphSource2D.h>
-#include <vtkIdFilter.h>
-#include <vtkLabeledDataMapper.h>
-#include <vtkCellCenters.h>
-#include <vtkSelectVisiblePoints.h>
+#include <vtkFeatureEdges.h>
+
 
 // Open CASCADE Includes
 #include <gp_Pnt.hxx>
@@ -2583,11 +2584,13 @@ bool SMESHGUI::OnGUIEvent(int theCommandID,	QAD_Desktop* parent)
 		ptIds->SetValue(id, idSMDS);
 	      }
 
-	      vtkScalars* newScalars = vtkScalars::New();
-	      newScalars->SetData(ptIds);
-	      ptGrid->GetPointData()->SetScalars(newScalars);
-
-	      newScalars->Delete();
+// mpv porting vtk4.2.2
+	      // 	      vtkScalars* newScalars = vtkScalars::New();
+	      // 	      newScalars->SetData(ptIds);
+	      // 	      ptGrid->GetPointData()->SetScalars(newScalars);
+	      ptGrid->GetPointData()->SetScalars(ptIds);
+	      // 	      newScalars->Delete();
+// mpv
 	      ptIds->Delete();
 	      
 	      vtkMaskPoints* mask = vtkMaskPoints::New();
@@ -2667,11 +2670,14 @@ bool SMESHGUI::OnGUIEvent(int theCommandID,	QAD_Desktop* parent)
 		cellIds->SetValue(id, idSMDS);
 	      }
 
-	      vtkScalars* newScalars = vtkScalars::New();
-	      newScalars->SetData(cellIds);
-	      elGrid->GetCellData()->SetScalars(newScalars);
+// mpv porting vk4.2.2
+	      // 	      vtkScalars* newScalars = vtkScalars::New();
+	      // 	      newScalars->SetData(cellIds);
+	      elGrid->GetCellData()->SetScalars(cellIds);
+	      // 	      elGrid->GetCellData()->SetScalars(newScalars);
+	      // 	      newScalars->Delete();
+//mpv
 
-	      newScalars->Delete();
 	      cellIds->Delete();
 	    
 	      vtkCellCenters* cc = vtkCellCenters::New();
@@ -4529,7 +4535,11 @@ void SMESHGUI::Control(int theCommandID)
   QApplication::setOverrideCursor( Qt::waitCursor );
   DisplayScalarBar( false );
 
-  vtkScalars *scalars = vtkScalars::New();
+// mpv porting vtk 4.2.2
+//  vtkScalars *scalars = vtkScalars::New();
+  vtkIntArray *scalars = vtkIntArray::New();
+  scalars->SetNumberOfComponents(1);
+
   vtkDataSetMapper* meshMapper = 0;
   SALOME_Selection* Sel = SALOME_Selection::Selection( myActiveStudy->getSelection() );
   int nbSel = Sel->IObjectCount();
@@ -4560,7 +4570,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (len == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,len);
+// mpv porting vtk 4.2.2
+// 	      scalars->InsertScalar(i,len);
+	      scalars->InsertTuple1(i,len);
 	    }
 	  }
 	  if (ValidateScalars && (MeshActor->getDisplayMode()!=0))
@@ -4576,7 +4588,9 @@ void SMESHGUI::Control(int theCommandID)
   	    if (area == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,area);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,area);
+	      scalars->InsertTuple1(i,area);
 	    }
 	  }
 	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
@@ -4592,7 +4606,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (taper == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,taper);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,taper);
+	      scalars->InsertTuple1(i,taper);
 	    }
 	  }
 	  break;
@@ -4606,7 +4622,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (aspect == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,aspect);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,aspect);
+	      scalars->InsertTuple1(i,aspect);
 	    }
 	  }
 	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
@@ -4622,7 +4640,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (angle == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,angle);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,angle);
+	      scalars->InsertTuple1(i,angle);
 	    }
 	  }
 	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
@@ -4638,7 +4658,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (Warp == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,Warp);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,Warp);
+	      scalars->InsertTuple1(i,Warp);
 	    }
 	  }
 	  break;
@@ -4652,7 +4674,9 @@ void SMESHGUI::Control(int theCommandID)
 	    if (angle == 0) continue;
 	    else {
 	      ValidateScalars = true;
-	      scalars->InsertScalar(i,angle);
+// mpv porting vtk 4.2.2
+//	      scalars->InsertScalar(i,angle);
+	      scalars->InsertTuple1(i,angle);
 	    }
 	  }
 	  break;
