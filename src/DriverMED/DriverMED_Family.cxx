@@ -350,14 +350,16 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
 {
   // Elements
   set<const SMDS_MeshElement *>::iterator anIter = by->myElements.begin();
-  for (; anIter != by->myElements.end(); anIter++)
+  while ( anIter != by->myElements.end())
   {
     if (myElements.find(*anIter) != myElements.end())
     {
       common->myElements.insert(*anIter);
       myElements.erase(*anIter);
-      by->myElements.erase(*anIter);
+      by->myElements.erase(anIter++);
     }
+    else
+      anIter++;
   }
 
   if (!common->IsEmpty())
