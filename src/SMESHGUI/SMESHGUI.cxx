@@ -3560,77 +3560,83 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 	SALOME_Selection *Sel =
 		SALOME_Selection::Selection(smeshGUI->myActiveStudy->getSelection());
 	int nbSel = Sel->IObjectCount();
-	if (nbSel == 1)
+  if ( nbSel == 1 )
+    {
+      Standard_Boolean res;
+      Handle(SALOME_InteractiveObject) IObject = Sel->firstIObject();
+      SMESH::SMESH_Mesh_var aMesh = smeshGUI->ConvertIOinMesh( IObject, res );
+      if ( res )
 	{
-		Standard_Boolean res;
-		Handle(SALOME_InteractiveObject) IObject = Sel->firstIObject();
-		SMESH::SMESH_Mesh_var aMesh = smeshGUI->ConvertIOinMesh(IObject, res);
-		if (res)
+	  QString filename;
+	  if (theCommandID==122)
+	    { // EXPORT MED
+	      filename = QAD_FileDlg::getFileName(parent,
+						  "",
+						  tr("MED files (*.med)"),
+						  tr("Export mesh"),
+						  false);
+	      if ( !filename.isEmpty() )
 		{
-			if (theCommandID == 122)
-			{					// EXPORT MED
-				QString filename = QAD_FileDlg::getFileName(parent,
-					"",
-					tr("MED files (*.med)"),
-					tr("Export mesh"),
-					false);
-				if (!filename.isEmpty())
-				{
-					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportMED(filename.latin1());
-					QApplication::restoreOverrideCursor();
-				}
-			}
-			else if (theCommandID == 121)
-			{					// EXPORT DAT
-				QString filename = QAD_FileDlg::getFileName(parent,
-					"",
-					tr("DAT files (*.dat)"),
-					tr("Export mesh"),
-					false);
-				if (!filename.isEmpty())
-				{
-					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportDAT(filename.latin1());
-					QApplication::restoreOverrideCursor();
-				}
-			}
-			else if (theCommandID == 123)
-			{					// EXPORT UNV
-				QString filename = QAD_FileDlg::getFileName(parent,
-					"",
-					tr("IDEAS files (*.unv)"),
-					tr("Export mesh"),
-					false);
-				if (!filename.isEmpty())
-				{
-					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportUNV(filename.latin1());
-					QApplication::restoreOverrideCursor();
-				}
-				else
-					aMesh->ExportDAT(filename.latin1());
-
-				QApplication::restoreOverrideCursor();
-
-				if (IObject->hasEntry())
-				{
-					MESSAGE("---");
-					SALOMEDS::SObject_var SO =
-						smeshGUI->myStudy->FindObjectID(IObject->getEntry());
-					SALOMEDS::GenericAttribute_var anAttr;
-					SALOMEDS::AttributeComment_var aFileName;
-					SALOMEDS::StudyBuilder_var aStudyBuilder =
-						smeshGUI->myStudy->NewBuilder();
-					anAttr =
-						aStudyBuilder->FindOrCreateAttribute(SO,
-						"AttributeComment");
-					aFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
-					aFileName->SetValue(filename.latin1());
-				}
-			}
+		  QApplication::setOverrideCursor( Qt::waitCursor );
+		  aMesh->ExportMED( filename.latin1() );
+		  QApplication::restoreOverrideCursor();
 		}
+	    }
+	  else if (theCommandID==121)
+	    { // EXPORT DAT
+	      filename = QAD_FileDlg::getFileName(parent,
+						  "",
+						  tr("DAT files (*.dat)"),
+						  tr("Export mesh"),
+						  false);
+	      if ( !filename.isEmpty() )
+		{
+		  QApplication::setOverrideCursor( Qt::waitCursor );
+		  aMesh->ExportDAT( filename.latin1() );
+		  QApplication::restoreOverrideCursor();
+		}
+	    }
+	  else if (theCommandID==123)
+	    { // EXPORT UNV
+	      filename = QAD_FileDlg::getFileName(parent,
+						  "",
+						  tr("IDEAS files (*.unv)"),
+						  tr("Export mesh"),
+						  false);
+	      if ( !filename.isEmpty() )
+		{
+		  QApplication::setOverrideCursor( Qt::waitCursor );
+		  aMesh->ExportUNV( filename.latin1() );
+		  QApplication::restoreOverrideCursor();
+		}
+	    }
+	  else 
+	    aMesh->ExportDAT( filename.latin1() );
+      
+	  SCRUTE(filename.latin1());
+	  if ( IObject->hasEntry() && !filename.isEmpty() )
+	    {
+	      SALOMEDS::SObject_var SO = smeshGUI->myStudy->FindObjectID( IObject->getEntry() );
+	      SALOMEDS::GenericAttribute_var anAttr;
+	      SALOMEDS::AttributeComment_var    aFileName;
+	      SALOMEDS::StudyBuilder_var aStudyBuilder = smeshGUI->myStudy->NewBuilder();
+	      anAttr = aStudyBuilder->FindOrCreateAttribute(SO, "AttributeComment");
+	      aFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
+	      aFileName->SetValue(filename.latin1());
+              //PN 20/03/03 -- ajout d'un attribut MEDFILE pour selection dans Efficas
+              if (theCommandID==122)
+              { // EXPORT MED
+                    QString medfilename="FICHIERMED"+filename;
+                    anAttr = aStudyBuilder->FindOrCreateAttribute(SO, "AttributeComment");
+                    SALOMEDS::AttributeComment_var MEDFileName;
+                    MEDFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
+                    MEDFileName->SetValue(medfilename.latin1());
+              } // EXPORT MED
+
+	    }      
+	  QApplication::restoreOverrideCursor();
 	}
+    }
 }
 
 //=============================================================================
