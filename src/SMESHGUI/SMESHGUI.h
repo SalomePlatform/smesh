@@ -88,7 +88,7 @@ private :
 
   //  vtkScalarBarActor*    myScalarBar;
 
-  Handle_SMESHDS_Document   myDocument;//NBU
+  SMESHDS_Document *        myDocument;//NBU
 
   bool                      myAutomaticUpdate;
 

@@ -2823,7 +2823,7 @@ void SMESHGUI::Import_Mesh(QAD_Desktop* parent, int theCommandID)
 //    Mesh_Reader* myReader = SMESHDriver::GetMeshReader(myExtension, myClass);
     
     int myMeshId = (smeshGUI->myDocument)->NewMesh();
-    Handle(SMDS_Mesh) myMesh = (smeshGUI->myDocument)->GetMesh(myMeshId);
+    SMDS_Mesh* myMesh = (smeshGUI->myDocument)->GetMesh(myMeshId);
 
     myReader->SetFile(string(filename.latin1()));
     myReader->SetMesh(myMesh);
@@ -2940,7 +2940,7 @@ void SMESHGUI::Import_Document(QAD_Desktop* parent, int theCommandID)
     QApplication::setOverrideCursor( Qt::waitCursor );
     string myClass = string("SMESHDS_Document");
 //    Document_Reader* myReader = SMESHDriver::GetDocumentReader(myExtension, myClass);
-    Handle(SMESHDS_Document) newDocument = new SMESHDS_Document(1);
+	SMESHDS_Document* newDocument = new SMESHDS_Document(1);
 
     myReader->SetFile(string(filename.latin1()));
     myReader->SetDocument(smeshGUI->myDocument);
