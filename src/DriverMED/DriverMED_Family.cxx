@@ -193,10 +193,10 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
     aFamilies.push_back(aFreeVolumesFam);
   }
 
-//   DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
-//   aNullFam->SetId(0);
-//   aNullFam->myType = SMDSAbs_All;
-//   aFamilies.push_back(aNullFam);
+  DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
+  aNullFam->SetId(0);
+  aNullFam->myType = SMDSAbs_All;
+  aFamilies.push_back(aNullFam);
 
   return aFamilies;
 }
@@ -222,18 +222,21 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   }
 
   aValue = aStr.str();
-
+  /*
   MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
   MED::TIntVector anAttrIds (1, myId);        // Id=0,
   MED::TIntVector anAttrVals (1, myId);       // Value=0
-
+  */
+  
   MED::PFamilyInfo anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 						     aValue,
 						     myId,
-						     myGroupNames,
-						     anAttrDescs,
-						     anAttrIds,
-						     anAttrVals);
+						     myGroupNames);
+/* 						     
+						    anAttrDescs,
+						    anAttrIds,
+						    anAttrVals);
+*/
 
 //  cout << endl;
 //  cout << "Groups: ";
