@@ -141,4 +141,50 @@ public:
   DEFINE_STANDARD_RTTI(SMESHGUI_TriangleFilter)
 };
 
+/*
+  Class       : SMESHGUI_FacesFilter
+  Description : Verify whether selected cell is any face
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_FacesFilter, SMESHGUI_Filter)
+
+class SMESHGUI_FacesFilter : public SMESHGUI_Filter
+{
+
+public:
+                              SMESHGUI_FacesFilter();
+  virtual                     ~SMESHGUI_FacesFilter();
+
+  virtual bool                IsValid( const int theCellId ) const;
+  virtual bool                IsObjValid( const int theObjId ) const;
+  virtual int                 GetId() const;
+  virtual bool                IsNodeFilter() const;  
+
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_FacesFilter)
+};
+
+/*
+  Class       : SMESHGUI_VolumesFilter
+  Description : Verify whether selected cell is any volume
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
+
+class SMESHGUI_VolumesFilter : public SMESHGUI_Filter
+{
+
+public:
+                              SMESHGUI_VolumesFilter();
+  virtual                     ~SMESHGUI_VolumesFilter();
+
+  virtual bool                IsValid( const int theCellId ) const;
+  virtual bool                IsObjValid( const int theObjId ) const;
+  virtual int                 GetId() const;
+  virtual bool                IsNodeFilter() const;  
+
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_VolumesFilter)
+};
+
 #endif

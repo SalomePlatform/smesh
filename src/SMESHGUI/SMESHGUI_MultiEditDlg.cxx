@@ -372,6 +372,9 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
   if ( myBusy || !isEnabled() ) return;
   myBusy = true;
 
+  myMesh = SMESH::SMESH_Mesh::_nil();
+  myActor = 0;
+
   int nbSel = mySelection->IObjectCount();
   myListBox->clearSelection();
 
@@ -428,17 +431,14 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
 
   if ( nbSel == 1 ) {
     myActor = SMESH::FindActorByEntry(mySelection->firstIObject()->getEntry());
-    if (!myActor)
+    if ( !myActor && !myMesh->_is_nil() )
       myActor = SMESH::FindActorByObject( myMesh );
     VTKViewer_InteractorStyleSALOME* aStyle = SMESH::GetInteractorStyle();
-    Handle(VTKViewer_Filter) aFilter1 = aStyle->GetFilter( myFilterType );
-    Handle(VTKViewer_Filter) aFilter2 = aStyle->GetFilter( SMESHGUI_FaceFilter );
-    if ( !aFilter1.IsNull() )
-      aFilter1->SetActor( myActor );
-    if ( !aFilter2.IsNull() )
-      aFilter2->SetActor( myActor );
-    if ( myActor )
-      SMESH::SetPickable(myActor);
+    Handle(VTKViewer_Filter) aFilter = aStyle->GetFilter( myFilterType );
+    if ( !aFilter.IsNull() && myActor ) {
+      aFilter->SetActor( myActor );
+      //SMESH::SetPickable( myActor );
+    }
   }
   myBusy = false;
 
@@ -535,18 +535,15 @@ void SMESHGUI_MultiEditDlg::onFilterAccepted()
 }
 
 //=======================================================================
-// name    : SMESHGUI_MultiEditDlg::onAddBtn
+// name    : SMESHGUI_MultiEditDlg::isIdValid
 // Purpose : Verify whether Id of element satisfies to filters from viewer
 //=======================================================================
 bool SMESHGUI_MultiEditDlg::isIdValid( const int theId ) const
 {
   VTKViewer_InteractorStyleSALOME* aStyle = SMESH::GetInteractorStyle();
-  Handle(SMESHGUI_Filter) aFilter1 =
+  Handle(SMESHGUI_Filter) aFilter =
     Handle(SMESHGUI_Filter)::DownCast( aStyle->GetFilter( myFilterType ) );
-  Handle(SMESHGUI_Filter) aFilter2 =
-    Handle(SMESHGUI_Filter)::DownCast( aStyle->GetFilter( SMESHGUI_FaceFilter ) );
-  return ( aFilter1.IsNull() || aFilter1->IsObjValid( theId ) ) &&
-         ( aFilter2.IsNull() || aFilter2->IsObjValid( theId ) );
+  return ( !aFilter.IsNull() && aFilter->IsObjValid( theId ) );
 }
 
 //=======================================================================
@@ -575,7 +572,7 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
       SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>( anIter.Value() );
       if ( !aSubMesh->_is_nil() )
       {
-        if ( aSubMesh->GetFather()->GetId() == myMesh->GetId() )
+        if ( !myMesh->_is_nil() && aSubMesh->GetFather()->GetId() == myMesh->GetId() )
         {
           SMESH::long_array_var anIds = aSubMesh->GetElementsId();
           for ( int i = 0, n = anIds->length(); i < n; i++ )
@@ -594,9 +591,9 @@ void SMESHGUI_MultiEditDlg::onAddBtn()
     {
       SMESH::SMESH_GroupBase_var aGroup =
         SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Value() );
-      if ( !aGroup->_is_nil() && aGroup->GetType() == SMESH::FACE )
+      if ( !aGroup->_is_nil() && ( aGroup->GetType() == SMESH::FACE || aGroup->GetType() == SMESH::VOLUME ) )
       {
-        if ( aGroup->GetMesh()->GetId() == myMesh->GetId() )
+        if ( !myMesh->_is_nil() && aGroup->GetMesh()->GetId() == myMesh->GetId() )
         {
           SMESH::long_array_var anIds = aGroup->GetListOfID();
           for ( int i = 0, n = anIds->length(); i < n; i++ )
@@ -854,18 +851,18 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
     QAD_Application::getDesktop()->SetSelectionMode( ActorSelection, true );
     mySelection->AddFilter( myGroupFilter );
   }
-  else
-  {
-    if ( myFilterType == SMESHGUI_VolumeFilter ) {
-      QAD_Application::getDesktop()->SetSelectionMode( VolumeSelection, true );
-    }
-    else {
-      QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
-      if ( myFilterType == SMESHGUI_TriaFilter )
-	SMESH::SetFilter( new SMESHGUI_TriangleFilter() );
-      else if ( myFilterType == SMESHGUI_QuadFilter )
-	SMESH::SetFilter( new SMESHGUI_QuadrangleFilter() );
-    }
+  if ( myFilterType == SMESHGUI_VolumeFilter ) {
+    QAD_Application::getDesktop()->SetSelectionMode( VolumeSelection, true );
+    SMESH::SetFilter( new SMESHGUI_VolumesFilter() );
+  }
+  else {
+    QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+    if ( myFilterType == SMESHGUI_TriaFilter )
+      SMESH::SetFilter( new SMESHGUI_TriangleFilter() );
+    else if ( myFilterType == SMESHGUI_QuadFilter )
+      SMESH::SetFilter( new SMESHGUI_QuadrangleFilter() );
+    else
+      SMESH::SetFilter( new SMESHGUI_FacesFilter() );
   }
 }
 
@@ -883,6 +880,8 @@ bool SMESHGUI_MultiEditDlg::onApply()
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
   if ( aMeshEditor->_is_nil()  )
     return false;
+
+  myBusy = true;
 
   SMESH::long_array_var anIds = getIds();
 
@@ -903,6 +902,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
     updateButtons();
   }
 
+  myBusy = false;
   return aResult;
 }
 
@@ -928,8 +928,7 @@ void SMESHGUI_MultiEditDlg::on3d2dChanged(int type)
       myFilterType = SMESHGUI_FaceFilter;
     setSelectionMode();
 
-    if ( myActor )
-      mySelection->AddIObject( myActor->getIO(), true );
+    myActor = 0;
   }
 }
 

@@ -50,6 +50,12 @@ IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_QuadrangleFilter, SMESHGUI_Filter)
 IMPLEMENT_STANDARD_HANDLE(SMESHGUI_TriangleFilter, SMESHGUI_Filter)
 IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_TriangleFilter, SMESHGUI_Filter)
 
+IMPLEMENT_STANDARD_HANDLE(SMESHGUI_FacesFilter, SMESHGUI_Filter)
+IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_FacesFilter, SMESHGUI_Filter)
+
+IMPLEMENT_STANDARD_HANDLE(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
+IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_VolumesFilter, SMESHGUI_Filter)
+
 /*
   Class       : SMESHGUI_PredicateFilter
   Description : Selection filter for VTK viewer. This class aggregate object
@@ -212,7 +218,7 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
   
-  return anElem != 0 ? anElem->GetType() != SMDSAbs_Face || anElem->NbNodes() == 4 : false;
+  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
 }
 
 //=======================================================================
@@ -231,7 +237,7 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem != 0 ? anElem->GetType() != SMDSAbs_Face || anElem->NbNodes() == 4 : false;
+  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
 }
 
 //=======================================================================
@@ -289,7 +295,7 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
-  return anElem != 0 ? anElem->GetType() != SMDSAbs_Face || anElem->NbNodes() == 3 : false;
+  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
 }
 
 //=======================================================================
@@ -308,7 +314,7 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem != 0 ? anElem->GetType() != SMDSAbs_Face || anElem->NbNodes() == 3 : false;
+  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
 }
 
 //=======================================================================
@@ -326,6 +332,159 @@ int SMESHGUI_TriangleFilter::GetId() const
 // Purpose : Returns true if filter is intended for nodes
 //=======================================================================
 bool SMESHGUI_TriangleFilter::IsNodeFilter() const
+{
+  return false;
+}
+
+/*
+  Class       : SMESHGUI_FacesFilter
+  Description : Verify whether selected cell is any face
+*/
+
+
+//=======================================================================
+// name    : SMESHGUI_FacesFilter::SMESHGUI_FacesFilter
+// Purpose : Constructor
+//=======================================================================
+SMESHGUI_FacesFilter::SMESHGUI_FacesFilter()
+: SMESHGUI_Filter()
+{
+}
+
+SMESHGUI_FacesFilter::~SMESHGUI_FacesFilter()
+{
+}
+
+//=======================================================================
+// name    : SMESHGUI_FacesFilter::IsValid
+// Purpose : Verify whether selected cell is face
+//=======================================================================
+bool SMESHGUI_FacesFilter::IsValid( const int theCellId ) const
+{
+  if ( myActor == 0 )
+    return false;
+
+  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
+  if ( anActor->GetObject() == 0 )
+    return false;
+  
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
+
+  return anElem && anElem->GetType() == SMDSAbs_Face;
+}
+
+//=======================================================================
+// name    : SMESHGUI_FacesFilter::IsValid
+// Purpose : Verify whether selected cell is face
+//=======================================================================
+bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
+{
+  if ( myActor == 0 )
+    return false;
+
+  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
+  if ( anActor->GetObject() == 0 )
+    return false;
+  
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
+
+  return anElem && anElem->GetType() == SMDSAbs_Face;
+}
+
+//=======================================================================
+// name    : SMESHGUI_FacesFilter::GetId
+// Purpose : Get ID of the filter. Must return value from SMESHGUI_FilterType
+//           enumeration. All filters must have different ids
+//=======================================================================
+int SMESHGUI_FacesFilter::GetId() const
+{
+  return SMESHGUI_FaceFilter;
+}
+
+//=======================================================================
+// name    : SMESHGUI_FacesFilter::IsNodeFilter
+// Purpose : Returns true if filter is intended for nodes
+//=======================================================================
+bool SMESHGUI_FacesFilter::IsNodeFilter() const
+{
+  return false;
+}
+
+
+/*
+  Class       : SMESHGUI_VolumesFilter
+  Description : Verify whether selected cell is any volume
+*/
+
+
+//=======================================================================
+// name    : SMESHGUI_VolumesFilter::SMESHGUI_VolumesFilter
+// Purpose : Constructor
+//=======================================================================
+SMESHGUI_VolumesFilter::SMESHGUI_VolumesFilter()
+: SMESHGUI_Filter()
+{
+}
+
+SMESHGUI_VolumesFilter::~SMESHGUI_VolumesFilter()
+{
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumesFilter::IsValid
+// Purpose : Verify whether selected cell is volume
+//=======================================================================
+bool SMESHGUI_VolumesFilter::IsValid( const int theCellId ) const
+{
+  if ( myActor == 0 )
+    return false;
+
+  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
+  if ( anActor->GetObject() == 0 )
+    return false;
+  
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
+
+  return anElem && anElem->GetType() == SMDSAbs_Volume;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumesFilter::IsValid
+// Purpose : Verify whether selected cell is volume
+//=======================================================================
+bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
+{
+  if ( myActor == 0 )
+    return false;
+
+  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
+  if ( anActor->GetObject() == 0 )
+    return false;
+  
+  SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
+  const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
+
+  return anElem && anElem->GetType() == SMDSAbs_Volume;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumesFilter::GetId
+// Purpose : Get ID of the filter. Must return value from SMESHGUI_FilterType
+//           enumeration. All filters must have different ids
+//=======================================================================
+int SMESHGUI_VolumesFilter::GetId() const
+{
+  return SMESHGUI_VolumeFilter;
+}
+
+//=======================================================================
+// name    : SMESHGUI_VolumesFilter::IsNodeFilter
+// Purpose : Returns true if filter is intended for nodes
+//=======================================================================
+bool SMESHGUI_VolumesFilter::IsNodeFilter() const
 {
   return false;
 }
