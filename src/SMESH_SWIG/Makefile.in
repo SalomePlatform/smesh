@@ -83,6 +83,7 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_hexaedre.py \
 		   SMESH_Sphere.py \
 		   SMESH_GroupFromGeom.py \
+		   SMESH_Nut.py \
 		   SMESH_GroupLyingOnGeom.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
