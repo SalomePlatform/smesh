@@ -115,8 +115,9 @@ void SMESHGUI_doubleParameter::InitializeWidget( QWidget* theQWidget) const
 {
   QAD_SpinBoxDbl * aSpin = dynamic_cast< QAD_SpinBoxDbl *>( theQWidget );
   if ( aSpin ) {
+    aSpin->setPrecision( _decimals );
+    aSpin->setDblPrecision( _bottom );
     aSpin->setRange( _bottom, _top );
-    ((QDoubleValidator*)(aSpin->validator()))->setRange( _bottom, _top, _decimals );
     aSpin->setValue( _initValue );
     aSpin->setLineStep( _step );
   }
