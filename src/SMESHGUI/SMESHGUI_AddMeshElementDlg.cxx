@@ -398,9 +398,9 @@ void SMESHGUI_AddMeshElementDlg::Init( SALOME_Selection* Sel )
   SMESH::SetPointRepresentation(true);
   QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
 
-  SelectionIntoArgument();
-
   myBusy = false;
+  
+  SelectionIntoArgument();
 }
 
 //=================================================================================
