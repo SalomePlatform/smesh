@@ -32,9 +32,6 @@
 
 #include "SMESH_1D_Algo.hxx"
 
-#include <TopoDS_Shape.hxx>
-#include <TopTools_ListOfShape.hxx>
-
 class TopoDS_Edge;
 
 class StdMeshers_Regular_1D:
@@ -52,7 +49,7 @@ public:
 		       const TopoDS_Shape& aShape);
 
   virtual const std::list <const SMESHDS_Hypothesis *> &
-          GetUsedHypothesis (SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+    GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);
@@ -60,13 +57,6 @@ public:
   friend istream & operator >> (istream & load, StdMeshers_Regular_1D & hyp);
 
 protected:
-
-  Standard_Boolean IsPropagated (SMESH_Mesh         & theMesh,
-                                 const TopoDS_Shape & theShape);
-
-  void GetOppositeEdges (const TopoDS_Shape&   theShape,
-                         const TopoDS_Shape&   theEdge,
-                         TopTools_ListOfShape& theOppositeEdges) const;
 
   bool computeInternalParameters (const TopoDS_Edge&    theEdge,
                                   std::list< double > & theParameters ) const;

@@ -123,6 +123,8 @@ class SMESH_subMesh
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
   
+  SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
+  // check if there are several applicable hypothesis on fathers
 
  protected:
   void InsertDependence(const TopoDS_Shape aSubShape);
@@ -149,9 +151,6 @@ class SMESH_subMesh
   bool ApplyToCollection (SMESH_Algo*         theAlgo,
                           const TopoDS_Shape& theCollection);
   // Apply theAlgo to all subshapes in theCollection
-
-  SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
-  // check if there are several applicable hypothesis on fathers
 
   const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,

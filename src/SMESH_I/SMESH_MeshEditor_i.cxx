@@ -252,7 +252,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
 CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theObject)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
-  Reorient(anElementsId);
+  return Reorient(anElementsId);
 }
 
 //=============================================================================
@@ -298,7 +298,7 @@ CORBA::Boolean
 				       CORBA::Double               MaxAngle)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
-  TriToQuad(anElementsId, Criterion, MaxAngle);
+  return TriToQuad(anElementsId, Criterion, MaxAngle);
 }
 
 //=============================================================================
@@ -365,7 +365,7 @@ CORBA::Boolean
 				      CORBA::Boolean            Diag13)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SplitQuad(anElementsId, Diag13);
+  return SplitQuad(anElementsId, Diag13);
 }
 
 //=============================================================================

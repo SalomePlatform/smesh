@@ -529,7 +529,10 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
   myMesh = SMESH::GetMeshByIO( mySelection->firstIObject() );
   if(myMesh->_is_nil())
     return;
+
   myActor = SMESH::FindActorByObject(myMesh);
+  if (!myActor)
+    myActor = SMESH::FindActorByEntry(IO->getEntry());
   if (!myActor)
     return;
   

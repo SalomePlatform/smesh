@@ -347,6 +347,8 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name
   this->move( x, y );
   this->show();
 
+  cout<<"----"<<this->height()<<endl;
+  cout<<"----"<<this->width()<<endl;
   // init dialog with current selection
   onSelectionChanged();
 }

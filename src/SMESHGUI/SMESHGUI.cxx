@@ -34,6 +34,7 @@
 #include "SMESHGUI_RemoveNodesDlg.h"
 #include "SMESHGUI_RemoveElementsDlg.h"
 #include "SMESHGUI_MeshInfosDlg.h"
+#include "SMESHGUI_StandardMeshInfosDlg.h"
 #include "SMESHGUI_Preferences_ColorDlg.h"
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 #include "SMESHGUI_Preferences_SelectionDlg.h"
@@ -626,6 +627,16 @@ namespace{
 
   void OnEditDelete()
   {
+    // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
+    QString aParentComponent = ((SALOMEGUI_Desktop*)QAD_Application::getDesktop())->getComponentFromSelection();
+    if ( aParentComponent != QAD_Application::getDesktop()->getActiveComponent() )  {
+      QAD_MessageBox::warn1 ( QAD_Application::getDesktop(),
+			      QObject::tr("ERR_ERROR"), 
+			      QObject::tr("NON_SMESH_OBJECTS_SELECTED").arg(QAD_Application::getDesktop()->getComponentUserName( "SMESH" )),
+			      QObject::tr("BUT_OK") );
+      return;
+    }
+    // VSR 17/11/04: check if all objects selected belong to SMESH component <-- finish
     if (QAD_MessageBox::warn2
 	(QAD_Application::getDesktop(),
 	 QObject::tr("SMESH_WRN_WARNING"),
@@ -712,32 +723,35 @@ namespace{
  *
  */
 //=============================================================================
-class CustomItem:public QCustomMenuItem
+class CustomItem : public QCustomMenuItem
 {
- public:
-  CustomItem(const QString & s, const QFont & f):string(s), font(f)
-  {
-  };
-  ~CustomItem()
-  {
-  }
+public:
+  CustomItem(const QString& s, const QFont& f) : myString(s), myFont(f) {}
+  ~CustomItem() {}
 
-  void paint(QPainter * p, const QColorGroup & /*cg */ , bool /*act */ ,
-             bool /*enabled */ , int x, int y, int w, int h)
+  void paint(QPainter* p, const QColorGroup& cg, bool act, bool /*enabled*/, int x, int y, int w, int h)
   {
-    p->setFont(font);
-    p->drawText(x, y, w, h,
-                AlignHCenter | AlignVCenter | ShowPrefix | DontClip, string);
+    p->save();
+    p->fillRect( x, y, w, h, act ? cg.highlight() : cg.mid() );
+    p->setPen( act ? cg.highlightedText() : cg.buttonText() );
+    p->setFont( myFont );
+    p->drawText( x, y, w, h, AlignHCenter | AlignVCenter | ShowPrefix | DontClip | SingleLine, myString );
+    p->restore();
   }
 
   QSize sizeHint()
   {
-    return QFontMetrics(font).
-      size(AlignHCenter | AlignVCenter | ShowPrefix | DontClip, string);
+    return QFontMetrics( myFont ).size( AlignHCenter | AlignVCenter | ShowPrefix | DontClip | SingleLine, myString );
   }
- private:
-  QString string;
-  QFont font;
+
+  bool fullSpan() const
+  {
+    return true;
+  }
+
+private:
+  QString myString;
+  QFont   myFont;
 };
 
 //=============================================================================
@@ -1542,6 +1556,29 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       break;
     }
 
+  case 902:					// STANDARD MESH INFOS
+    {
+      EmitSignalDeactivateDialog();
+      SALOME_Selection *Sel =
+	SALOME_Selection::Selection(myActiveStudy->getSelection());
+      if ( Sel->IObjectCount() > 1 ) { // a dlg for each IO
+        SALOME_ListIO IOs; IOs = Sel->StoredIObjects(); // list copy
+        SALOME_ListIteratorOfListIO It (IOs);
+        for ( ; It.More(); It.Next() ) {
+          Sel->ClearIObjects();
+          Sel->AddIObject( It.Value() );
+          SMESHGUI_StandardMeshInfosDlg *aDlg = new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
+        }
+        // restore selection
+        Sel->ClearIObjects();
+        for (It.Initialize( IOs ) ; It.More(); It.Next() )
+          Sel->AddIObject( It.Value() );
+      }
+      else
+        SMESHGUI_StandardMeshInfosDlg *aDlg = new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
+      break;
+    } 
+    
   case 1001:					// AUTOMATIC UPDATE PREFERENCES
     {
       parent->menuBar()->setItemChecked(1001, !parent->menuBar()->isItemChecked(1001));
@@ -2246,7 +2283,7 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
       if ( topItem >= 0 ) {
 	if ( theParent == "Viewer" ) {
 	  // set bold font for popup menu's TopLabel item (Viewer popup)
-	  QFont fnt = QApplication::font(); fnt.setBold( TRUE );
+	  QFont fnt = popup->font(); fnt.setBold( TRUE );
 	  popup->removeItem( QAD_TopLabel_Popup_ID );
 	  popup->insertItem( new CustomItem( QString( IObject->getName() ), fnt ), QAD_TopLabel_Popup_ID, topItem );
 	}
@@ -2438,7 +2475,7 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	int topItem = popup->indexOf( QAD_TopLabel_Popup_ID );
 	if ( topItem >= 0 ) {
 	  // set bold font for popup menu's TopLabel item
-	  QFont fnt = QApplication::font(); fnt.setBold( TRUE );
+	  QFont fnt = popup->font(); fnt.setBold( TRUE );
 	  popup->removeItem( QAD_TopLabel_Popup_ID );
 	  popup->insertItem( new CustomItem( QString("%1 ").arg( nbSel ) + type + "(s) ", fnt ), QAD_TopLabel_Popup_ID, topItem );
 	}

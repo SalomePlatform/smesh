@@ -29,12 +29,17 @@
 #ifndef _SMESH_MESH_HXX_
 #define _SMESH_MESH_HXX_
 
+#include "SMESH_Hypothesis.hxx"
+//#include "SMESH_subMesh.hxx"
+
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_Command.hxx"
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_subMesh.hxx"
 #include "SMDSAbs_ElementType.hxx"
+
+#include "NMTTools_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
+
+#include "Utils_SALOME_Exception.hxx"
 
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -62,6 +67,9 @@
 class SMESH_Gen;
 class SMESH_Group;
 class TopTools_ListOfShape;
+class SMESH_subMesh;
+
+typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
 class SMESH_Mesh
 {
@@ -167,8 +175,34 @@ public:
   list<int> GetGroupIds();
   
   void RemoveGroup (const int theGroupID);
+
+  // Propagation hypothesis management
+
+  bool IsLocal1DHypothesis (const TopoDS_Shape& theEdge);
+  // Returns true, if a local 1D hypothesis is set directly on <theEdge>
+
+  bool IsPropagationHypothesis (const TopoDS_Shape& theEdge);
+  // Returns true, if a local Propagation hypothesis is set directly on <theEdge>
+
+  bool IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
+                               TopoDS_Shape&       theMainEdge);
+  // Returns true, if a local 1D hypothesis is
+  // propagated on <theEdge> from some other edge.
+  // Returns through <theMainEdge> the edge, from
+  // which the 1D hypothesis is propagated on <theEdge>
+
+  bool RebuildPropagationChains();
+  bool RemovePropagationChain (const TopoDS_Shape& theMainEdge);
+  bool BuildPropagationChain (const TopoDS_Shape& theMainEdge);
+
+  //
   
   ostream& Dump(ostream & save);
+  
+private:
+  // Propagation hypothesis management
+  void CleanMeshOnPropagationChain(const TopoDS_Shape& theMainEdge);
+  //
   
 private:
   int _id;					// id given by creator (unique within the creator instance)
@@ -186,6 +220,8 @@ private:
   SMESH_Gen *_gen;
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
+
+  IndexedMapOfChain _mapPropagationChains; // Propagation hypothesis management
 };
 
 #endif

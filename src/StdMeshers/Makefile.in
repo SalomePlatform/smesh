@@ -70,6 +70,7 @@ LIB_SRC = \
 	StdMeshers_Regular_1D.cxx \
 	StdMeshers_Quadrangle_2D.cxx \
 	StdMeshers_MEFISTO_2D.cxx \
+	StdMeshers_Penta_3D.cxx \
 	StdMeshers_Hexa_3D.cxx
 
 LIB_SERVER_IDL = 
@@ -82,8 +83,8 @@ BIN_SRC =
 
 # additionnal information to compil and link file
 CPPFLAGS+= $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS+= $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 
-LDFLAGS+= -lSMESHimpl -lMEFISTO2D -L${KERNEL_ROOT_DIR}/lib/salome
+LDFLAGS+= -lSMESHimpl -lMEFISTO2D -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
 
 @CONCLUDE@

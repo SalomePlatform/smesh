@@ -560,7 +560,10 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
   myMesh = SMESH::GetMeshByIO(IO);
   if(myMesh->_is_nil())
     return;
+  
   myActor = SMESH::FindActorByObject(myMesh);
+  if (!myActor)
+    myActor = SMESH::FindActorByEntry(IO->getEntry());
   if (!myActor)
     return;
     

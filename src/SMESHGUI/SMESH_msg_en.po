@@ -722,6 +722,10 @@ msgstr "Rotation"
 msgid "SMESH_MESHINFO_TITLE"
 msgstr "Mesh Infos"
 
+#Standard Mesh Infos
+msgid "SMESH_STANDARD_MESHINFO_TITLE"
+msgstr "Standard Mesh Infos"
+
 #Mesh Infos
 msgid "SMESH_MESHINFO_NAME"
 msgstr "Name"
@@ -789,6 +793,10 @@ msgstr "Heterogenous"
 #No valid selection :
 msgid "SMESH_BAD_SELECTION"
 msgstr "No valid selection"
+
+#Information :
+msgid "SMESH_INFORMATION"
+msgstr "Information"
 
 # --------- Create hypotheses/algorithms ---------
 
@@ -1665,8 +1673,8 @@ msgstr "Number of digits after point"
 msgid "SMESHGUI_PrecisionDlg::NOT_USE"
 msgstr "Do not use"
 
-
-
+msgid "NON_SMESH_OBJECTS_SELECTED"
+msgstr "There are objects selected which do not belong to %1 component."
 
 
 

@@ -39,7 +39,7 @@
 #include "MED_Utilities.hxx"
 
 #define _EDF_NODE_IDS_
-#define _ELEMENTS_BY_DIM_
+//#define _ELEMENTS_BY_DIM_
 
 using namespace std;
 
@@ -234,9 +234,9 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	}
 
 	double EPS = 1.0E-7;
-	anIsXDimension = (aBounds[1] - aBounds[0]) > EPS;
-	anIsYDimension = (aBounds[3] - aBounds[2]) > EPS;
-	anIsZDimension = (aBounds[5] - aBounds[4]) > EPS;
+	anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
+	anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
+	anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
 
 	aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
 	if(!aMeshDimension)

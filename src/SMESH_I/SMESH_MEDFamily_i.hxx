@@ -57,13 +57,13 @@ public :
   SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
 		    string name, string description, SALOME_MED::medEntityMesh entity );
   SMESH_MEDFamily_i(const SMESH_MEDFamily_i & f);
-
-        // IDL Methods
-        void setProtocol(SALOME::TypeOfCommunication typ) {}
-        void release() {}
-        SALOME::Sender_ptr getSenderForNumber(long int) {return SALOME::Sender::_nil();}
-        SALOME::Sender_ptr getSenderForNumberIndex() {return SALOME::Sender::_nil();}
-
+  
+  // IDL Methods
+  void setProtocol(SALOME::TypeOfCommunication typ) {}
+  void release() {}
+  SALOME::Sender_ptr getSenderForNumber(long int) {return SALOME::Sender::_nil();}
+  SALOME::Sender_ptr getSenderForNumberIndex() {return SALOME::Sender::_nil();}
+  
   CORBA::Long            getIdentifier()      
     throw (SALOME::SALOME_Exception);
   CORBA::Long            getNumberOfAttributes() 

@@ -208,12 +208,21 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
   // mesh the rest subshapes starting from vertices
   // -----------------------------------------------
 
-  smToCompute = sm->GetFirstToCompute();
-  while (smToCompute)
+  int i, nbSub = smMap.size();
+  map<int, SMESH_subMesh*>::const_iterator itSub = smMap.begin();
+  for ( i = 0; i <= nbSub; ++i ) // loop on the whole map plus <sm>
   {
+    if ( itSub == smMap.end() )
+      smToCompute = sm;
+    else
+      smToCompute = (itSub++)->second;
+    if (smToCompute->GetComputeState() != SMESH_subMesh::READY_TO_COMPUTE) {
+      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
+        ret = false;
+      continue;
+    }
     TopoDS_Shape subShape = smToCompute->GetSubShape();
-    int dim = GetShapeDim(subShape);
-    if (dim > 0)
+    if ( subShape.ShapeType() != TopAbs_VERTEX )
     {
       if ( !smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE) )
         ret = false;
@@ -229,22 +238,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
         smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE);
       }
     }
-    smToCompute = sm->GetFirstToCompute();
   }
 
-  if (!ret) return false;
-
-  // JFA for PAL6524: if there are failed sub-meshes, return Standard_False
-  const map < int, SMESH_subMesh * >&subMeshes = sm->DependsOn();
-  map < int, SMESH_subMesh * >::const_iterator itsub;
-  for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++) {
-    SMESH_subMesh *smi = (*itsub).second;
-    if (smi->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) return false;
-  }
-  if (sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) return false;
-
-  MESSAGE( "VSR - SMESH_Gen::Compute() finished" );
-  return true;
+  MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
+  return ret;
 }
 
 

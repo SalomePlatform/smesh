@@ -44,7 +44,8 @@ EXPORT_HEADERS= \
 	SMESH_3D_Algo_i.hxx \
 	SMESH_subMesh_i.hxx \
 	SMESH_Mesh_i.hxx \
-	SMESH_Hypothesis_i.hxx
+	SMESH_Hypothesis_i.hxx \
+	SMESH.hxx
 
 EXPORT_PYSCRIPTS = smeshpy.py SMESH_test.py
 

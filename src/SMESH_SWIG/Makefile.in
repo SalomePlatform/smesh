@@ -74,6 +74,12 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_controls.py \
 		   SMESH_freebord.py \
 		   SMESH_blocks.py \
+		   SMESH_BelongToGeom.py \
+		   SMESH_GroupFromGeom2.py \
+		   SMESH_box.py \
+		   SMESH_demo_hexa2_upd.py \
+		   SMESH_hexaedre.py \
+		   SMESH_Sphere.py \
 		   SMESH_GroupFromGeom.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \

@@ -10,6 +10,8 @@ import salome
 
 import StdMeshers
 
+import SMESH
+
 # Variables
 # ---------
 
@@ -97,5 +99,28 @@ class MeshHexaImpl:
     def Compute(self):
         smesh.Compute(self.mesh, self.piece)
         salome.sg.updateObjBrowser(1)
+
+    # Creates mesh group based on a geometric group
+    # --------------------
+
+    def Group(self, grp, name=""):
+        if name == "":
+            name = grp.GetName()
+        tgeo = geompy.GroupOp.GetType(grp)
+        if tgeo == geompy.ShapeType["VERTEX"]:
+            type = SMESH.NODE
+        elif tgeo == geompy.ShapeType["EDGE"]:
+            type = SMESH.EDGE
+        elif tgeo == geompy.ShapeType["FACE"]:
+            type = SMESH.FACE
+        elif tgeo == geompy.ShapeType["SOLID"]:
+            type = SMESH.VOLUME
+        return self.mesh.CreateGroupFromGEOM(type, name, grp)
+
+    # Export mesh in a MED file
+    # --------------------
+
+    def ExportMED(self, filename, groups=1):
+        self.mesh.ExportMED(filename, groups)
 
 MeshHexa = MeshHexaImpl

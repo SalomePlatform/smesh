@@ -66,6 +66,7 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_RemoveNodesDlg.cxx \
 		SMESHGUI_RemoveElementsDlg.cxx \
 		SMESHGUI_MeshInfosDlg.cxx \
+		SMESHGUI_StandardMeshInfosDlg.cxx \
 		SMESHGUI_Preferences_ColorDlg.cxx \
 		SMESHGUI_Preferences_ScalarBarDlg.cxx \
 		SMESHGUI_Preferences_SelectionDlg.cxx \
@@ -119,6 +120,7 @@ LIB_MOC = \
 		SMESHGUI_RemoveNodesDlg.h \
 		SMESHGUI_RemoveElementsDlg.h \
 		SMESHGUI_MeshInfosDlg.h \
+		SMESHGUI_StandardMeshInfosDlg.h \
 		SMESHGUI_Preferences_ColorDlg.h \
 		SMESHGUI_Preferences_ScalarBarDlg.h \
 		SMESHGUI_Preferences_SelectionDlg.h \

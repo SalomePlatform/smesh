@@ -745,7 +745,8 @@ void SMESHGUI_EditHypothesesDlg::InitGeom()
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
   if ( !myGeomShape->_is_nil() && (!myMesh->_is_nil() || !mySubMesh->_is_nil()) ) {
-    SALOMEDS::SObject_var aSO = SMESH::GetActiveStudyDocument()->FindObjectIOR( myGeomShape->GetName() );
+    SALOMEDS::Study_var aStudy = SMESH::GetActiveStudyDocument();
+    SALOMEDS::SObject_var aSO = aStudy->FindObjectIOR( aStudy->ConvertObjectToIOR(myGeomShape) );
     if ( !aSO->_is_nil() ) {
       if (aSO->FindAttribute(anAttr, "AttributeName") ) {
 	aName = SALOMEDS::AttributeName::_narrow(anAttr);

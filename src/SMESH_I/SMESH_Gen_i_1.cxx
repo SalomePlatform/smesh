@@ -33,6 +33,8 @@
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Group_i.hxx"
 
+#include "SMESH.hxx"
+
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 
 #include "utilities.h"
@@ -45,28 +47,6 @@ static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
-
-// Tags definition ===========================================================
-// Top level
-long Tag_HypothesisRoot         = 1; // hypotheses root
-long Tag_AlgorithmsRoot         = 2; // algorithms root
-// Mesh/Submesh
-long Tag_RefOnShape             = 1; // references to shape
-long Tag_RefOnAppliedHypothesis = 2; // applied hypotheses root
-long Tag_RefOnAppliedAlgorithms = 3; // applied algorithms root
-// Mesh only
-long Tag_SubMeshOnVertex        = 4; // sub-meshes roots by type
-long Tag_SubMeshOnEdge          = 5; // ...
-long Tag_SubMeshOnWire          = 6; // ...
-long Tag_SubMeshOnFace          = 7; // ...
-long Tag_SubMeshOnShell         = 8; // ...
-long Tag_SubMeshOnSolid         = 9; // ...
-long Tag_SubMeshOnCompound      = 10; // ...
-long Tag_NodeGroups             = 11; // Group roots by type
-long Tag_EdgeGroups             = 12; // ...
-long Tag_FaceGroups             = 13; // ...
-long Tag_VolumeGroups           = 14; // ...
-// ===========================================================================
 
 //=============================================================================
 /*!

@@ -30,6 +30,7 @@ using namespace std;
 using namespace std;
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_subMesh.hxx"
 #include "utilities.h"
 
 //=============================================================================

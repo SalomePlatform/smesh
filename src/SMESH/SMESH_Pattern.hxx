@@ -30,7 +30,6 @@
 #include <iostream>
 
 #include <TopoDS_Shape.hxx>
-//#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <gp_XYZ.hxx>
 #include <gp_XY.hxx>

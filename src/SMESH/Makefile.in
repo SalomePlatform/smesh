@@ -45,6 +45,7 @@ EXPORT_HEADERS= \
 	SMESH_3D_Algo.hxx \
 	SMESH_Group.hxx \
 	SMESH_MeshEditor.hxx \
+	SMESH_Block.hxx \
 	SMESH_Pattern.hxx
 
 EXPORT_PYSCRIPTS =
@@ -61,6 +62,7 @@ LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_3D_Algo.cxx \
 	  SMESH_Group.cxx \
 	  SMESH_MeshEditor.cxx \
+	  SMESH_Block.cxx \
 	  SMESH_Pattern.cxx
 
 LIB_SERVER_IDL = 
@@ -73,10 +75,10 @@ BIN_SRC =
 
 # additionnal information to compile and link file
 CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-
-LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSMESHDS -lMeshDriverDAT -lMeshDriverSTL -lMeshDriverMED -lMeshDriverUNV
+           -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+           -I${GEOM_ROOT_DIR}/include/salome
+LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lNMTTools -lSMESHDS -lMeshDriverDAT -lMeshDriverSTL -lMeshDriverMED -lMeshDriverUNV
 
 @CONCLUDE@
 

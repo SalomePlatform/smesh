@@ -32,16 +32,20 @@ using namespace std;
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Algo.hxx"
+
 #include "utilities.h"
 #include "OpUtil.hxx"
 
+#include <BRep_Builder.hxx>
+
 #include <TopExp.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopoDS_Compound.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
-#include <TopoDS_Compound.hxx>
-#include <BRep_Builder.hxx>
 
 #ifdef _DEBUG_
 #include <gp_Pnt.hxx>
@@ -550,6 +554,43 @@ SMESH_Hypothesis::Hypothesis_Status
 
     if ( !_meshDS->AddHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
+
+    // Serve Propagation of 1D hypothesis
+    if (event == ADD_HYP) {
+      bool isPropagationOk = true;
+      string hypName = anHyp->GetName();
+
+      if (hypName == "Propagation") {
+        if (_subShape.ShapeType() == TopAbs_EDGE) {
+          isPropagationOk = _father->BuildPropagationChain(_subShape);
+        } else {
+          TopExp_Explorer exp (_subShape, TopAbs_EDGE);
+          TopTools_MapOfShape aMap;
+          for (; exp.More(); exp.Next()) {
+            if (aMap.Add(exp.Current())) {
+              if (!_father->BuildPropagationChain(exp.Current())) {
+                isPropagationOk = false;
+              }
+            }
+          }
+        }
+      } else if (anHyp->GetDim() == 1) { // Only 1D hypothesis can be propagated
+        if (_subShape.ShapeType() == TopAbs_EDGE) {
+          TopoDS_Shape aMainEdge;
+          if (_father->IsPropagatedHypothesis(_subShape, aMainEdge)) {
+            isPropagationOk = _father->RebuildPropagationChains();
+          } else if (_father->IsPropagationHypothesis(_subShape)) {
+            isPropagationOk = _father->BuildPropagationChain(_subShape);
+          } else {
+          }
+        }
+      } else {
+      }
+
+      if (!isPropagationOk && ret < SMESH_Hypothesis::HYP_CONCURENT) {
+        ret = SMESH_Hypothesis::HYP_CONCURENT;
+      }
+    } // Serve Propagation of 1D hypothesis
   }
 
   // --------------------------
@@ -559,6 +600,51 @@ SMESH_Hypothesis::Hypothesis_Status
   {
     if (!_meshDS->RemoveHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_OK; // nothing changes
+
+    // Serve Propagation of 1D hypothesis
+    if (event == REMOVE_HYP) {
+      bool isPropagationOk = true;
+      string hypName = anHyp->GetName();
+
+      if (hypName == "Propagation") {
+        if (_subShape.ShapeType() == TopAbs_EDGE) {
+          if (!_father->RemovePropagationChain(_subShape)) {
+            return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
+          }
+          // rebuild propagation chains, because removing one
+          // chain can resolve concurention, existing before
+          isPropagationOk = _father->RebuildPropagationChains();
+        } else {
+          TopExp_Explorer exp (_subShape, TopAbs_EDGE);
+          TopTools_MapOfShape aMap;
+          for (; exp.More(); exp.Next()) {
+            if (aMap.Add(exp.Current())) {
+              if (!_father->RemovePropagationChain(exp.Current())) {
+                return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
+              }
+            }
+          }
+          // rebuild propagation chains, because removing one
+          // chain can resolve concurention, existing before
+          if (!_father->RebuildPropagationChains()) {
+            isPropagationOk = false;
+          }
+        }
+      } else { // if (hypName == "Propagation")
+        if (anHyp->GetDim() == 1) // Only 1D hypothesis can be propagated
+        {
+          if (_subShape.ShapeType() == TopAbs_EDGE) {
+            isPropagationOk = _father->RebuildPropagationChains();
+            if (!isPropagationOk && ret < SMESH_Hypothesis::HYP_CONCURENT)
+              ret = SMESH_Hypothesis::HYP_CONCURENT;
+          }
+        }
+      }
+
+      if (!isPropagationOk && ret < SMESH_Hypothesis::HYP_CONCURENT) {
+        ret = SMESH_Hypothesis::HYP_CONCURENT;
+      }
+    } // Serve Propagation of 1D hypothesis
   }
 
   // ------------------
@@ -843,22 +929,9 @@ SMESH_Hypothesis::Hypothesis_Status
     ASSERT(0);
     break;
   }
-  // ----------------------------------------
-  // check concurent hypotheses on ansestors
-  // ----------------------------------------
-  if (ret < SMESH_Hypothesis::HYP_CONCURENT &&
-      (event == ADD_FATHER_HYP ||
-       event == ADD_FATHER_ALGO ||
-       event == REMOVE_FATHER_HYP ||
-       event == REMOVE_FATHER_ALGO ||
-       event == REMOVE_ALGO ||
-       event == REMOVE_HYP))
-  {
-    ret = CheckConcurentHypothesis( anHyp->GetType() );
-  }
 
   if ((_algoState != oldAlgoState) || modifiedHyp)
-    int retc = ComputeStateEngine(MODIF_ALGO_STATE);
+    ComputeStateEngine(MODIF_ALGO_STATE);
 
   return ret;
 }

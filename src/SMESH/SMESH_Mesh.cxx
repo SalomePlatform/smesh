@@ -46,11 +46,18 @@
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
 
+#include <BRepTools_WireExplorer.hxx>
+#include <BRep_Builder.hxx>
+#include <gp_Pnt.hxx>
+
 #include <TCollection_AsciiString.hxx>
-#include <memory>
-#include <TopTools_ListOfShape.hxx>
 #include <TopExp.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_Array1OfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+
+#include <memory>
+
 #include "Utils_ExceptHandlers.hxx"
 
 #ifdef _DEBUG_
@@ -254,8 +261,7 @@ SMESH_Hypothesis::Hypothesis_Status
   }
 
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
-  if(MYDEBUG) SCRUTE( anHyp->GetName() );
-  int event;
+  MESSAGE( "SMESH_Mesh::AddHypothesis " << anHyp->GetName() );
 
   bool isGlobalHyp = IsMainShape( aSubShape );
 
@@ -272,6 +278,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // shape 
 
+  int event;
   if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
     event = SMESH_subMesh::ADD_HYP;
   else
@@ -290,10 +297,26 @@ SMESH_Hypothesis::Hypothesis_Status
       subMesh->SubMeshesAlgoStateEngine(event, anHyp);
     if (ret2 > ret)
       ret = ret2;
+
+    // check concurent hypotheses on ansestors
+    if (ret < SMESH_Hypothesis::HYP_CONCURENT && !isGlobalHyp )
+    {
+      const map < int, SMESH_subMesh * >& smMap = subMesh->DependsOn();
+      map < int, SMESH_subMesh * >::const_iterator smIt = smMap.begin();
+      for ( ; smIt != smMap.end(); smIt++ ) {
+        if ( smIt->second->IsApplicableHypotesis( anHyp )) {
+          ret2 = smIt->second->CheckConcurentHypothesis( anHyp->GetType() );
+          if (ret2 > ret) {
+            ret = ret2;
+            break;
+          }
+        }
+      }
+    }
   }
 
-  subMesh->DumpAlgoState(true);
-  if(MYDEBUG) SCRUTE(ret);
+  if(MYDEBUG) subMesh->DumpAlgoState(true);
+  SCRUTE(ret);
   return ret;
 }
 
@@ -347,22 +370,44 @@ SMESH_Hypothesis::Hypothesis_Status
   else
     event = SMESH_subMesh::REMOVE_ALGO;
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
-  
+
+  // there may appear concurrent hyps that were covered by the removed hyp
+  if (ret < SMESH_Hypothesis::HYP_CONCURENT &&
+      subMesh->IsApplicableHypotesis( anHyp ) &&
+      subMesh->CheckConcurentHypothesis( anHyp->GetType() ) != SMESH_Hypothesis::HYP_OK)
+    ret = SMESH_Hypothesis::HYP_CONCURENT;
+
   // subShapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
       !subMesh->IsApplicableHypotesis( anHyp )) // is removed from father
+  {
+    if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
+      event = SMESH_subMesh::REMOVE_FATHER_HYP;
+    else
+      event = SMESH_subMesh::REMOVE_FATHER_ALGO;
+    SMESH_Hypothesis::Hypothesis_Status ret2 =
+      subMesh->SubMeshesAlgoStateEngine(event, anHyp);
+    if (ret2 > ret) // more severe
+      ret = ret2;
+
+    // check concurent hypotheses on ansestors
+    if (ret < SMESH_Hypothesis::HYP_CONCURENT && !IsMainShape( aSubShape ) )
     {
-      if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-	event = SMESH_subMesh::REMOVE_FATHER_HYP;
-      else
-	event = SMESH_subMesh::REMOVE_FATHER_ALGO;
-      SMESH_Hypothesis::Hypothesis_Status ret2 =
-	subMesh->SubMeshesAlgoStateEngine(event, anHyp);
-      if (ret2 > ret) // more severe
-	ret = ret2;
+      const map < int, SMESH_subMesh * >& smMap = subMesh->DependsOn();
+      map < int, SMESH_subMesh * >::const_iterator smIt = smMap.begin();
+      for ( ; smIt != smMap.end(); smIt++ ) {
+        if ( smIt->second->IsApplicableHypotesis( anHyp )) {
+          ret2 = smIt->second->CheckConcurentHypothesis( anHyp->GetType() );
+          if (ret2 > ret) {
+            ret = ret2;
+            break;
+          }
+        }
+      }
     }
+  }
   
-  subMesh->DumpAlgoState(true);
+  if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
   return ret;
 }
@@ -862,6 +907,256 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
   GetMeshDS()->RemoveGroup( _mapGroup[theGroupID]->GetGroupDS() );
   _mapGroup.erase (theGroupID);
   delete _mapGroup[theGroupID];
+}
+
+//=============================================================================
+/*!
+ *  IsLocal1DHypothesis
+ *  Check, if there is 1D hypothesis assigned directly on <theEdge>
+ */
+//=============================================================================
+bool SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
+{
+  const SMESHDS_Mesh* meshDS = GetMeshDS();
+  const list<const SMESHDS_Hypothesis*>& listHyp = meshDS->GetHypothesis(theEdge);
+  list<const SMESHDS_Hypothesis*>::const_iterator it = listHyp.begin();
+
+  for (; it != listHyp.end(); it++) {
+    const SMESH_Hypothesis * aHyp = static_cast<const SMESH_Hypothesis*>(*it);
+    if (aHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO &&
+        aHyp->GetDim() == 1) { // 1D Hypothesis found
+      return true;
+    }
+  }
+  return false;
+}
+
+//=============================================================================
+/*!
+ *  IsPropagationHypothesis
+ */
+//=============================================================================
+bool SMESH_Mesh::IsPropagationHypothesis (const TopoDS_Shape& theEdge)
+{
+  return _mapPropagationChains.Contains(theEdge);
+}
+
+//=============================================================================
+/*!
+ *  IsPropagatedHypothesis
+ */
+//=============================================================================
+bool SMESH_Mesh::IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
+                                         TopoDS_Shape&       theMainEdge)
+{
+  int nbChains = _mapPropagationChains.Extent();
+  for (int i = 1; i <= nbChains; i++) {
+    const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
+    if (aChain.Contains(theEdge)) {
+      theMainEdge = _mapPropagationChains.FindKey(i);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//=============================================================================
+/*!
+ *  CleanMeshOnPropagationChain
+ */
+//=============================================================================
+void SMESH_Mesh::CleanMeshOnPropagationChain (const TopoDS_Shape& theMainEdge)
+{
+  const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromKey(theMainEdge);
+  int i, nbEdges = aChain.Extent();
+  for (i = 1; i <= nbEdges; i++) {
+    TopoDS_Shape anEdge = aChain.FindKey(i);
+    SMESH_subMesh *subMesh = GetSubMesh(anEdge);
+    SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
+    if (subMeshDS && subMeshDS->NbElements() > 0) {
+      subMesh->ComputeStateEngine(SMESH_subMesh::CLEANDEP);
+    }
+  }
+}
+
+//=============================================================================
+/*!
+ *  RebuildPropagationChains
+ *  Rebuild all existing propagation chains.
+ *  Have to be used, if 1D hypothesis have been assigned/removed to/from any edge
+ */
+//=============================================================================
+bool SMESH_Mesh::RebuildPropagationChains()
+{
+  bool ret = true;
+
+  // Clean all chains, because they can be not up-to-date
+  int i, nbChains = _mapPropagationChains.Extent();
+  for (i = 1; i <= nbChains; i++) {
+    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
+    CleanMeshOnPropagationChain(aMainEdge);
+    _mapPropagationChains.ChangeFromIndex(i).Clear();
+  }
+
+  // Build all chains
+  for (i = 1; i <= nbChains; i++) {
+    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
+    if (!BuildPropagationChain(aMainEdge))
+      ret = false;
+    CleanMeshOnPropagationChain(aMainEdge);
+  }
+
+  return ret;
+}
+
+//=============================================================================
+/*!
+ *  RemovePropagationChain
+ *  Have to be used, if Propagation hypothesis is removed from <theMainEdge>
+ */
+//=============================================================================
+bool SMESH_Mesh::RemovePropagationChain (const TopoDS_Shape& theMainEdge)
+{
+  if (!_mapPropagationChains.Contains(theMainEdge))
+    return false;
+
+  // Clean mesh elements and nodes, built on the chain
+  CleanMeshOnPropagationChain(theMainEdge);
+
+  // Clean the chain
+  _mapPropagationChains.ChangeFromKey(theMainEdge).Clear();
+
+  // Remove the chain from the map
+  int i = _mapPropagationChains.FindIndex(theMainEdge);
+  TopoDS_Vertex anEmptyShape;
+  BRep_Builder BB;
+  BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
+  TopTools_IndexedMapOfShape anEmptyMap;
+  _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
+
+  return true;
+}
+
+//=============================================================================
+/*!
+ *  BuildPropagationChain
+ */
+//=============================================================================
+bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
+{
+  if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
+
+  // Add new chain, if there is no
+  if (!_mapPropagationChains.Contains(theMainEdge)) {
+    TopTools_IndexedMapOfShape aNewChain;
+    _mapPropagationChains.Add(theMainEdge, aNewChain);
+  }
+
+  // Check presence of 1D hypothesis to be propagated
+  if (!IsLocal1DHypothesis(theMainEdge)) {
+    MESSAGE("Warning: There is no 1D hypothesis to propagate. Please, assign.");
+    return true;
+  }
+
+  // Edges, on which the 1D hypothesis will be propagated from <theMainEdge>
+  TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.ChangeFromKey(theMainEdge);
+  if (aChain.Extent() > 0) {
+    CleanMeshOnPropagationChain(theMainEdge);
+    aChain.Clear();
+  }
+
+  // At first put <theMainEdge> in the chain
+  aChain.Add(theMainEdge);
+
+  // List of edges, added to chain on the previous cycle pass
+  TopTools_ListOfShape listPrevEdges;
+  listPrevEdges.Append(theMainEdge);
+
+//   5____4____3____4____5____6
+//   |    |    |    |    |    |
+//   |    |    |    |    |    |
+//   4____3____2____3____4____5
+//   |    |    |    |    |    |      Number in the each knot of
+//   |    |    |    |    |    |      grid indicates cycle pass,
+//   3____2____1____2____3____4      on which corresponding edge
+//   |    |    |    |    |    |      (perpendicular to the plane
+//   |    |    |    |    |    |      of view) will be found.
+//   2____1____0____1____2____3
+//   |    |    |    |    |    |
+//   |    |    |    |    |    |
+//   3____2____1____2____3____4
+
+  // Collect all edges pass by pass
+  while (listPrevEdges.Extent() > 0) {
+    // List of edges, added to chain on this cycle pass
+    TopTools_ListOfShape listCurEdges;
+
+    // Find the next portion of edges
+    TopTools_ListIteratorOfListOfShape itE (listPrevEdges);
+    for (; itE.More(); itE.Next()) {
+      TopoDS_Shape anE = itE.Value();
+
+      // Iterate on faces, having edge <anE>
+      TopTools_ListIteratorOfListOfShape itA (GetAncestors(anE));
+      for (; itA.More(); itA.Next()) {
+        TopoDS_Shape aW = itA.Value();
+
+        // There are objects of different type among the ancestors of edge
+        if (aW.ShapeType() == TopAbs_WIRE) {
+          TopoDS_Shape anOppE;
+
+          BRepTools_WireExplorer aWE (TopoDS::Wire(aW));
+          Standard_Integer nb = 1, found = 0;
+          TopTools_Array1OfShape anEdges (1,4);
+          for (; aWE.More(); aWE.Next(), nb++) {
+            if (nb > 4) {
+              found = 0;
+              break;
+            }
+            anEdges(nb) = aWE.Current();
+            if (!_mapAncestors.Contains(anEdges(nb))) {
+              MESSAGE("WIRE EXPLORER HAVE GIVEN AN INVALID EDGE !!!");
+              break;
+            } else {
+              int ind = _mapAncestors.FindIndex(anEdges(nb));
+              anEdges(nb) = _mapAncestors.FindKey(ind);
+            }
+            if (anEdges(nb).IsSame(anE)) found = nb;
+          }
+
+          if (nb == 5 && found > 0) {
+            // Quadrangle face found, get an opposite edge
+            Standard_Integer opp = found + 2;
+            if (opp > 4) opp -= 4;
+            anOppE = anEdges(opp);
+
+            if (!aChain.Contains(anOppE)) {
+              if (!IsLocal1DHypothesis(anOppE)) {
+                TopoDS_Shape aMainEdgeForOppEdge;
+                if (IsPropagatedHypothesis(anOppE, aMainEdgeForOppEdge)) {
+                  // Collision!
+                  MESSAGE("Error: Collision between propagated hypotheses");
+                  CleanMeshOnPropagationChain(theMainEdge);
+                  aChain.Clear();
+                  return false;
+                } else {
+                  // Add found edge to the chain
+                  aChain.Add(anOppE);
+                  listCurEdges.Append(anOppE);
+                }
+              }
+            }
+          } // if (nb == 5 && found > 0)
+        } // if (aF.ShapeType() == TopAbs_WIRE)
+      } // for (; itF.More(); itF.Next())
+    } // for (; itE.More(); itE.Next())
+
+    listPrevEdges = listCurEdges;
+  } // while (listPrevEdges.Extent() > 0)
+
+  CleanMeshOnPropagationChain(theMainEdge);
+  return true;
 }
 
 //=======================================================================

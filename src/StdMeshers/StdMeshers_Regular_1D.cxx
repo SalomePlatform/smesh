@@ -1,23 +1,23 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-//
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 //
 //
 //
@@ -38,7 +38,6 @@ using namespace std;
 #include "StdMeshers_Arithmetic1D.hxx"
 #include "StdMeshers_StartEndLength.hxx"
 #include "StdMeshers_Deflection1D.hxx"
-#include "StdMeshers_Propagation.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -48,18 +47,13 @@ using namespace std;
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
-#include <BRepTools_WireExplorer.hxx>
-
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Shape.hxx>
-#include <TopTools_Array1OfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-
 #include <GeomAdaptor_Curve.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_UniformAbscissa.hxx>
 #include <GCPnts_UniformDeflection.hxx>
-
 #include <Standard_ErrorHandler.hxx>
 #include <Precision.hxx>
 
@@ -68,7 +62,7 @@ using namespace std;
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -88,7 +82,7 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -98,7 +92,7 @@ StdMeshers_Regular_1D::~StdMeshers_Regular_1D()
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -186,7 +180,7 @@ bool StdMeshers_Regular_1D::CheckHypothesis
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge,
@@ -316,7 +310,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
       theParams.push_back( param );
     }
     return true;
-
+    
   }
 
   case ARITHMETIC_1D: {
@@ -363,7 +357,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -419,7 +413,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     // only internal nodes receive an edge position with param on curve
 
     const SMDS_MeshNode * idPrev = idFirst;
-
+    
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++)
     {
       double param = *itU;
@@ -429,7 +423,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
       meshDS->SetNodeOnEdge(node, E);
 
-      // **** edgePosition associe au point = param.
+      // **** edgePosition associe au point = param. 
       SMDS_EdgePosition* epos =
         dynamic_cast<SMDS_EdgePosition *>(node->GetPosition().get());
       epos->SetUParameter(param);
@@ -476,130 +470,48 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
 //=============================================================================
 /*!
- *  GetUsedHypothesis
+ *  See comments in SMESH_Algo.cxx
  */
 //=============================================================================
 
-const list <const SMESHDS_Hypothesis *> & StdMeshers_Regular_1D::GetUsedHypothesis
-  (SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+const list <const SMESHDS_Hypothesis *> & StdMeshers_Regular_1D::GetUsedHypothesis(
+	SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
   _usedHypList.clear();
-  _usedHypList = GetAppliedHypothesis(aMesh, aShape); // copy
+  _usedHypList = GetAppliedHypothesis(aMesh, aShape);	// copy
   int nbHyp = _usedHypList.size();
-
-  // try to find being propagated hypothesis
-  string propName = StdMeshers_Propagation::GetName();
-  if (nbHyp == 0) {
-    // Get all opposite edges
-    TopTools_ListOfShape anOppositeEdges;
-    TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
-    GetOppositeEdges(mainShape, aShape, anOppositeEdges);
-    TopTools_ListIteratorOfListOfShape oppIt (anOppositeEdges);
-    for (; oppIt.More(); oppIt.Next()) {
-      const TopoDS_Shape& oppE = oppIt.Value();
-
-      // Find Propagation hypothesis on the opposite edge
-      if (IsPropagated(aMesh, oppE)) {
-
-        // Get hypothesis, used by the opposite edge
-        _usedHypList = SMESH_Algo::GetUsedHypothesis(aMesh, oppE);
-        nbHyp = _usedHypList.size();
-        if (nbHyp == 1)
-          break;
-      }
+  if (nbHyp == 0)
+  {
+    // Check, if propagated from some other edge
+    TopoDS_Shape aMainEdge;
+    if (aShape.ShapeType() == TopAbs_EDGE &&
+        aMesh.IsPropagatedHypothesis(aShape, aMainEdge))
+    {
+      // Propagation of 1D hypothesis from <aMainEdge> on this edge
+      _usedHypList = GetAppliedHypothesis(aMesh, aMainEdge);	// copy
+      nbHyp = _usedHypList.size();
     }
   }
-
-  // try to find relevant 1D hypothesis on ancestors
-  if (nbHyp == 0) {
-    TopTools_ListIteratorOfListOfShape ancIt (aMesh.GetAncestors(aShape));
-    for (; ancIt.More(); ancIt.Next()) {
+  if (nbHyp == 0)
+  {
+    TopTools_ListIteratorOfListOfShape ancIt( aMesh.GetAncestors( aShape ));
+    for (; ancIt.More(); ancIt.Next())
+    {
       const TopoDS_Shape& ancestor = ancIt.Value();
-      _usedHypList = GetAppliedHypothesis(aMesh, ancestor); // copy
+      _usedHypList = GetAppliedHypothesis(aMesh, ancestor);	// copy
       nbHyp = _usedHypList.size();
       if (nbHyp == 1)
         break;
     }
   }
-
   if (nbHyp > 1)
-    _usedHypList.clear(); //only one compatible hypothesis allowed
+    _usedHypList.clear();	//only one compatible hypothesis allowed
   return _usedHypList;
 }
 
 //=============================================================================
 /*!
- *  Is Propagation hypothesis assigned to theShape or its ancestors
- */
-//=============================================================================
-Standard_Boolean StdMeshers_Regular_1D::IsPropagated (SMESH_Mesh         & theMesh,
-                                                      const TopoDS_Shape & theShape)
-{
-  const SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
-
-  // try to find Propagation hypothesis on theShape
-  const list<const SMESHDS_Hypothesis*> & listHyp = meshDS->GetHypothesis(theShape);
-
-  list<const SMESHDS_Hypothesis*>::const_iterator it = listHyp.begin();
-  for (; it != listHyp.end(); it++) {
-    const SMESHDS_Hypothesis *anHyp = *it;
-    if (anHyp->GetName() == StdMeshers_Propagation::GetName())
-      return Standard_True;
-  }
-
-  // try to find Propagation hypothesis on ancestors
-  TopTools_ListIteratorOfListOfShape ancIt (theMesh.GetAncestors(theShape));
-  for (; ancIt.More(); ancIt.Next()) {
-    const TopoDS_Shape& ancestor = ancIt.Value();
-    const list<const SMESHDS_Hypothesis*> & listAncHyp = meshDS->GetHypothesis(ancestor);
-
-    list<const SMESHDS_Hypothesis*>::const_iterator itAnc = listAncHyp.begin();
-    for (; itAnc != listAncHyp.end(); itAnc++) {
-      const SMESHDS_Hypothesis *anHyp = *itAnc;
-      if (anHyp->GetName() == StdMeshers_Propagation::GetName())
-        return Standard_True;
-    }
-  }
-
-  return Standard_False;
-}
-
-//=============================================================================
-/*!
- * GetOppositeEdges() - get all edges of theShape,
- * laying on any quadrangle face in front of theEdge
- */
-//=============================================================================
-void StdMeshers_Regular_1D::GetOppositeEdges (const TopoDS_Shape&   theShape,
-                                              const TopoDS_Shape&   theEdge,
-                                              TopTools_ListOfShape& theOppositeEdges) const
-{
-  TopExp_Explorer aWires (theShape, TopAbs_WIRE);
-  for (; aWires.More(); aWires.Next()) {
-    const TopoDS_Shape& aWire = aWires.Current();
-    BRepTools_WireExplorer aWE (TopoDS::Wire(aWire));
-    Standard_Integer nb = 1, found = 0;
-    TopTools_Array1OfShape anEdges (1,4);
-    for (; aWE.More(); aWE.Next(), nb++) {
-      if (nb > 4) {
-        found = 0;
-        break;
-      }
-      anEdges(nb) = aWE.Current();
-      if (anEdges(nb).IsSame(theEdge))
-        found = nb;
-    }
-    if (nb == 5 && found > 0) {
-      Standard_Integer opp = found + 2;
-      if (opp > 4) opp -= 4;
-      theOppositeEdges.Append(anEdges(opp));
-    }
-  }
-}
-
-//=============================================================================
-/*!
- *
+ *  
  */
 //=============================================================================
 
@@ -610,7 +522,7 @@ ostream & StdMeshers_Regular_1D::SaveTo(ostream & save)
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -621,7 +533,7 @@ istream & StdMeshers_Regular_1D::LoadFrom(istream & load)
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 
@@ -632,7 +544,7 @@ ostream & operator <<(ostream & save, StdMeshers_Regular_1D & hyp)
 
 //=============================================================================
 /*!
- *
+ *  
  */
 //=============================================================================
 

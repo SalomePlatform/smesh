@@ -38,6 +38,8 @@ mesh_hypo_length.png \
 mesh_hypo_segment.png \
 mesh_hypo_volume.png \
 mesh_info.png \
+advanced_mesh_info.png \
+standard_mesh_info.png \
 mesh_init.png \
 mesh_length.png \
 mesh_free_edges.png \

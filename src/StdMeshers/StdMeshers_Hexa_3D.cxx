@@ -55,6 +55,11 @@ using namespace std;
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
 
+//modified by NIZNHY-PKV Wed Nov 17 15:31:58 2004 f
+#include <StdMeshers_Penta_3D.hxx>
+
+static bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape);
+//modified by NIZNHY-PKV Wed Nov 17 15:32:00 2004 t
 
 //=============================================================================
 /*!
@@ -155,15 +160,14 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 {
   Unexpect aCatch(SalomeException);
 	MESSAGE("StdMeshers_Hexa_3D::Compute");
-
-	bool isOk = false;
+	//bool isOk = false;
 	SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-	SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+	//SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
 	//const SMESHDS_SubMesh *& subMeshDS = theSubMesh->GetSubMeshDS();
 
 	// 0.  - shape and face mesh verification
 	// 0.1 - shape must be a solid (or a shell) with 6 faces
-	//MESSAGE("---");
+	MESSAGE("---");
 
 	vector < SMESH_subMesh * >meshFaces;
 	for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
@@ -184,40 +188,56 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 	for (int i = 0; i < 6; i++)
 	{
-		TopoDS_Shape aShape = meshFaces[i]->GetSubShape();
-		SMESH_Algo *algo = _gen->GetAlgo(aMesh, aShape);
-		string algoName = algo->GetName();
-		if (algoName != "Quadrangle_2D")
-		{
-			// *** delete _quads
-			SCRUTE(algoName);
-//			ASSERT(0);
-			return false;
-		}
-		StdMeshers_Quadrangle_2D *quadAlgo =
-			dynamic_cast < StdMeshers_Quadrangle_2D * >(algo);
-		ASSERT(quadAlgo);
-		try
-		{
-			_quads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aShape);
-			// *** to delete after usage
-		}
-		catch(SALOME_Exception & S_ex)
-		{
-			// *** delete _quads
-			// *** throw exception
-//			ASSERT(0);
-                        return false;
-		}
+	  TopoDS_Shape aFace = meshFaces[i]->GetSubShape();
+	  SMESH_Algo *algo = _gen->GetAlgo(aMesh, aFace);
+	  string algoName = algo->GetName();
+          bool isAllQuad = false;
+	  if (algoName == "Quadrangle_2D") {
+            SMESHDS_SubMesh * sm = meshDS->MeshElements( aFace );
+            if ( sm ) {
+              isAllQuad = true;
+              SMDS_ElemIteratorPtr eIt = sm->GetElements();
+              while ( isAllQuad && eIt->more() )
+                isAllQuad = ( eIt->next()->NbNodes() == 4 );
+            }
+          }
+          if ( ! isAllQuad ) {
+	    //modified by NIZNHY-PKV Wed Nov 17 15:31:37 2004 f
+            bool bIsOk;
+            //
+            bIsOk=ComputePentahedralMesh(aMesh, aShape);
+            if (bIsOk) {
+              return true;
+            }
+	    //modified by NIZNHY-PKV Wed Nov 17 15:31:42 2004 t
+	    SCRUTE(algoName);
+	    //			ASSERT(0);
+	    return false;
+	  }
+	  StdMeshers_Quadrangle_2D *quadAlgo =
+	    dynamic_cast < StdMeshers_Quadrangle_2D * >(algo);
+	  ASSERT(quadAlgo);
+	  try
+	    {
+	      _quads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aFace);
+	      // *** to delete after usage
+	    }
+	  catch(SALOME_Exception & S_ex)
+	    {
+	      // *** delete _quads
+	      // *** throw exception
+	      //			ASSERT(0);
+	      return false;
+	    }
 
-                // 0.2.1 - number of points on the opposite edges must be the same
-                if (_quads[i]->nbPts[0] != _quads[i]->nbPts[2] ||
-                    _quads[i]->nbPts[1] != _quads[i]->nbPts[3])
-                {
-                  MESSAGE("different number of points on the opposite edges of face " << i);
-//                  ASSERT(0);
-                  return false;
-                }
+	  // 0.2.1 - number of points on the opposite edges must be the same
+	  if (_quads[i]->nbPts[0] != _quads[i]->nbPts[2] ||
+	      _quads[i]->nbPts[1] != _quads[i]->nbPts[3])
+	    {
+	      MESSAGE("different number of points on the opposite edges of face " << i);
+	      //                  ASSERT(0);
+	      return false;
+	    }
 	}
 
 	// 1.  - identify faces and vertices of the "cube"
@@ -1023,3 +1043,35 @@ istream & operator >>(istream & load, StdMeshers_Hexa_3D & hyp)
 {
   return hyp.LoadFrom( load );
 }
+
+//modified by NIZNHY-PKV Wed Nov 17 15:34:13 2004 f
+///////////////////////////////////////////////////////////////////////////////
+//ZZ
+//#include <stdio.h>
+
+//=======================================================================
+//function : ComputePentahedralMesh
+//purpose  : 
+//=======================================================================
+bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape)
+{
+  //printf(" ComputePentahedralMesh HERE\n");
+  //
+  bool bOK;
+  int iErr;
+  StdMeshers_Penta_3D anAlgo;
+  //
+  bOK=anAlgo.Compute(aMesh, aShape);
+  /*
+  iErr=anAlgo.ErrorStatus();
+  
+  if (iErr) {
+    printf("  *** Error# %d\n", iErr);
+  }
+  else {
+    printf("  *** No errors# %d\n", iErr);
+  }
+  */
+  return bOK;
+}
+
