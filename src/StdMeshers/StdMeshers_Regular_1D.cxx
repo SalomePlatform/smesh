@@ -505,7 +505,9 @@ const list <const SMESHDS_Hypothesis *> & StdMeshers_Regular_1D::GetUsedHypothes
         aMesh.IsPropagatedHypothesis(aShape, _mainEdge))
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge
-      _usedHypList = GetAppliedHypothesis(aMesh, _mainEdge);	// copy
+      //_usedHypList = GetAppliedHypothesis(aMesh, _mainEdge);	// copy
+      // use a general method in order not to nullify _mainEdge
+      _usedHypList = SMESH_Algo::GetUsedHypothesis(aMesh, _mainEdge);	// copy
       nbHyp = _usedHypList.size();
     }
   }
