@@ -121,7 +121,11 @@ class SMESH_subMesh
   // return true if theHypothesis can be attached to me:
   // its dimention is checked
 
-  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const;
+  static bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
+                                    const TopAbs_ShapeEnum  theShapeType);
+
+  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const
+  { return IsApplicableHypotesis( theHypothesis, _subShape.ShapeType() ); }
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
   
