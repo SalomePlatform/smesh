@@ -27,121 +27,128 @@
 //  $Header: 
 
 using namespace std;
-#include "SMESHDS_SubMesh.ixx"
-#include "SMDS_MapIteratorOfExtendedMap.hxx"
+#include "SMESHDS_SubMesh.hxx"
 
 //=======================================================================
 //function : SMESHDS_SubMesh
 //purpose  : 
 //=======================================================================
-SMESHDS_SubMesh::SMESHDS_SubMesh(const Handle(SMDS_Mesh)& M) : myMesh(M)
+SMESHDS_SubMesh::SMESHDS_SubMesh(const SMDS_Mesh * M):myMesh(M)
 {
-  myListOfEltIDIsUpdate  = Standard_False;
-  myListOfNodeIDIsUpdate = Standard_False;
+	myListOfEltIDIsUpdate = false;
+	myListOfNodeIDIsUpdate = false;
 }
 
 //=======================================================================
 //function : AddElement
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::AddElement (const Handle(SMDS_MeshElement)& ME) 
+void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 {
-  myElements.Add(ME);
-  myListOfEltIDIsUpdate = Standard_False;
+	myElements.insert(ME);
+	myListOfEltIDIsUpdate = false;
 }
 
 //=======================================================================
 //function : RemoveElement
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::RemoveElement(const Handle(SMDS_MeshElement)& ME) 
+void SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
 {
-  myElements.Remove(ME);
-  myListOfEltIDIsUpdate = Standard_False;
+	myElements.erase(ME);
+	myListOfEltIDIsUpdate = false;
 }
+
 //=======================================================================
 //function : AddNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::AddNode (const Handle(SMDS_MeshNode)& N) 
+void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 {
-  myNodes.Add(N);
-  myListOfNodeIDIsUpdate = Standard_False;
+	myNodes.insert(N);
+	myListOfNodeIDIsUpdate = false;
 }
 
 //=======================================================================
 //function : RemoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::RemoveNode (const Handle(SMDS_MeshNode)& N) 
+void SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 {
-  myNodes.Remove(N);
-  myListOfNodeIDIsUpdate = Standard_False;
+	myNodes.erase(N);
+	myListOfNodeIDIsUpdate = false;
 }
 
 //=======================================================================
 //function : NbElements
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_SubMesh::NbElements() 
+int SMESHDS_SubMesh::NbElements() const
 {
-  return myElements.Extent();
+	return myElements.size();
 }
 
 //=======================================================================
 //function : GetElements
 //purpose  : 
 //=======================================================================
-const SMDS_MapOfMeshElement& SMESHDS_SubMesh::GetElements() 
+const set<const SMDS_MeshElement*> & SMESHDS_SubMesh::GetElements()
 {
-  return myElements;
+	return myElements;
 }
+
 //=======================================================================
 //function : NbNodes
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_SubMesh::NbNodes() 
+int SMESHDS_SubMesh::NbNodes() const
 {
-  return myNodes.Extent();
+	return myNodes.size();
 }
 
 //=======================================================================
 //function : GetNodes
 //purpose  : 
 //=======================================================================
-const SMDS_MapOfMeshElement& SMESHDS_SubMesh::GetNodes() 
+const set<const SMDS_MeshNode*> & SMESHDS_SubMesh::GetNodes() const
 {
-  return myNodes;
+	return myNodes;
 }
 
 //=======================================================================
 //function : GetIDElements
 //purpose  : 
 //=======================================================================
-const TColStd_ListOfInteger& SMESHDS_SubMesh::GetIDElements()
+const vector<int> & SMESHDS_SubMesh::GetIDElements()
 {
-  if (!myListOfEltIDIsUpdate) {
-    myListOfEltID.Clear();
-    for (SMDS_MapIteratorOfExtendedMap it(myElements); it.More(); it.Next()) {
-      myListOfEltID.Append(it.Key()->GetID());
-    }
-    myListOfEltIDIsUpdate = Standard_True;
-  }
-  return myListOfEltID;
+	if (!myListOfEltIDIsUpdate)
+	{
+		myListOfEltID.clear();
+		set<const SMDS_MeshElement*>::iterator it=myElements.begin();
+		for (; it!=myElements.end(); it++)
+		{
+			myListOfEltID.push_back((*it)->GetID());
+		}
+		myListOfEltIDIsUpdate = true;
+	}
+	return myListOfEltID;
 }
 
 //=======================================================================
 //function : GetIDNodes
 //purpose  : 
 //=======================================================================
-const TColStd_ListOfInteger& SMESHDS_SubMesh::GetIDNodes()
+const vector<int> & SMESHDS_SubMesh::GetIDNodes()
 {
-  if (!myListOfNodeIDIsUpdate) {
-    myListOfNodeID.Clear();
-    for (SMDS_MapIteratorOfExtendedMap it(myNodes); it.More(); it.Next()) {
-      myListOfNodeID.Append(it.Key()->GetID());
-    }
-    myListOfNodeIDIsUpdate = Standard_True;
-  }
-  return myListOfNodeID;
+	if (!myListOfNodeIDIsUpdate)
+	{
+		myListOfNodeID.clear();
+		set<const SMDS_MeshNode*>::iterator it=myNodes.begin();
+		for (; it!=myNodes.end(); it++)
+		{
+			myListOfNodeID.push_back((*it)->GetID());
+		}
+		myListOfNodeIDIsUpdate = true;
+	}
+	return myListOfNodeID;
 }

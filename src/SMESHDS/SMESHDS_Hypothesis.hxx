@@ -38,9 +38,7 @@
 #include <istream.h>
 #include <ostream.h>
 #endif
-  
-// class istream;
-// class ostream;
+using namespace std;  
 
 class SMESHDS_Hypothesis
 {
@@ -48,9 +46,9 @@ public:
   SMESHDS_Hypothesis(int hypId);
   virtual ~SMESHDS_Hypothesis();
 
-  const char* GetName();
-  int GetID();
-  int GetType();
+  const char* GetName() const;
+  int GetID() const;
+  int GetType() const;
 
   virtual ostream & SaveTo(ostream & save)=0;
   virtual istream & LoadFrom(istream & load)=0;

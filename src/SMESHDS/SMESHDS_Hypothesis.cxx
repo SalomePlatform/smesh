@@ -63,7 +63,7 @@ SMESHDS_Hypothesis::~SMESHDS_Hypothesis()
  */
 //=============================================================================
 
-const char* SMESHDS_Hypothesis::GetName()
+const char* SMESHDS_Hypothesis::GetName() const
 {
 //   MESSAGE("SMESHDS_Hypothesis::GetName");
 //   SCRUTE(_name);
@@ -77,7 +77,7 @@ const char* SMESHDS_Hypothesis::GetName()
  */
 //=============================================================================
 
-int SMESHDS_Hypothesis::GetID()
+int SMESHDS_Hypothesis::GetID() const
 {
 //   MESSAGE("SMESHDS_Hypothesis::GetId");
 //   SCRUTE(_hypId);
@@ -90,7 +90,7 @@ int SMESHDS_Hypothesis::GetID()
  */
 //=============================================================================
 
-int SMESHDS_Hypothesis::GetType()
+int SMESHDS_Hypothesis::GetType() const
 {
 //   MESSAGE("SMESHDS_Hypothesis::GetType");
 //   SCRUTE(_type);

@@ -26,64 +26,51 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
-#include "SMESHDS_Mesh.ixx"
-#include "SMESHDS_Hypothesis.hxx"
-#include "SMESHDS_DataMapOfShapeListOfPtrHypothesis.hxx"
-#include "SMESHDS_ListIteratorOfListOfPtrHypothesis.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include <TopExp_Explorer.hxx>
 #include <TopExp.hxx>
 
-#include <Standard_NullObject.hxx>
 #include "utilities.h"
-
 //=======================================================================
 //function : Create
 //purpose  : 
 //=======================================================================
-SMESHDS_Mesh::SMESHDS_Mesh(const Standard_Integer MeshID) : myMeshID( MeshID)
+SMESHDS_Mesh::SMESHDS_Mesh(int MeshID):myMeshID(MeshID)
 {
-  myScript = new SMESHDS_Script();
+	myScript = new SMESHDS_Script();
 }
 
 //=======================================================================
 //function : ShapeToMesh
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape& S) 
+void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 {
-  myShape = S;
-  TopExp::MapShapes(myShape,myIndexToShape);
+	myShape = S;
+	TopExp::MapShapes(myShape, myIndexToShape);
 }
-  
-  
+
 //=======================================================================
 //function : AddHypothesis
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape& SS,
-					     const SMESHDS_PtrHypothesis& H) 
+bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
+	const SMESHDS_Hypothesis * H)
 {
-  if (!myShapeToHypothesis.IsBound(SS)){
-    SMESHDS_ListOfPtrHypothesis empty;
-    myShapeToHypothesis.Bind(SS,empty);
-  }
-  else {
-    //Check if the Hypothesis is still present
-    SMESHDS_ListOfPtrHypothesis& Hypos = myShapeToHypothesis.ChangeFind (SS);
+	list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis[SS];
 
-    for (SMESHDS_ListIteratorOfListOfPtrHypothesis it(Hypos); it.More(); it.Next()) {
-      if (H == it.Value()) {
-	return Standard_False;
-      }
-    }
-  }
-  myShapeToHypothesis(SS).Append(H);
-  return Standard_True;
+	//Check if the Hypothesis is still present
+	list<const SMESHDS_Hypothesis*>::iterator ith=alist.begin();
+
+	for (; ith!=alist.end(); ith++)
+		if (H == *ith) return false;
+
+	alist.push_back(H);
+	return true;
 }
 
 //=======================================================================
@@ -91,530 +78,476 @@ Standard_Boolean SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape& SS,
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape& S,
-						const SMESHDS_PtrHypothesis& H) 
+bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape & S,
+	const SMESHDS_Hypothesis * H)
 {
-  if (myShapeToHypothesis.IsBound(S)){
-    SMESHDS_ListOfPtrHypothesis& Hypos = myShapeToHypothesis.ChangeFind (S);
-    for (SMESHDS_ListIteratorOfListOfPtrHypothesis it(Hypos); it.More(); it.Next()) {
-      if (H == it.Value()) {
-	Hypos.Remove(it);
-	return Standard_True;
-      }
-    }
-  }
-  return Standard_False;
+	ShapeToHypothesis::iterator its=myShapeToHypothesis.find(S);
+	if(its!=myShapeToHypothesis.end())
+	{
+		list<const SMESHDS_Hypothesis*>::iterator ith=(*its).second.begin();
+
+		for (; ith!=(*its).second.end(); ith++)
+			if (H == *ith)
+			{
+				(*its).second.erase(ith);
+				return true;
+			}
+	}
+	return false;
 }
-  
-  
+
 //=======================================================================
 //function : AddNode
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::AddNode(const Standard_Real x,
-				       const Standard_Real y,
-				       const Standard_Real z) 
+SMDS_MeshNode* SMESHDS_Mesh::AddNode(double x, double y, double z)
 {
-  Standard_Integer NodeID = SMDS_Mesh::AddNode(x,y,z);
-  myScript->AddNode(NodeID,x,y,z);
-  return NodeID;
+	SMDS_MeshNode* node = SMDS_Mesh::AddNode(x, y, z);
+	if(node!=NULL) myScript->AddNode(node->GetID(), x, y, z);
+	return node;
 }
 
 //=======================================================================
 //function : MoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::MoveNode(const Standard_Integer ID,
-					const Standard_Real x,
-					const Standard_Real y,
-					const Standard_Real z) 
+void SMESHDS_Mesh::MoveNode(int ID, double x, double y, double z)
 {
-
-  Handle(SMDS_MeshNode) Node = Handle(SMDS_MeshNode)::DownCast(FindNode(ID));
-  gp_Pnt P(x,y,z);
-  Node->SetPnt(P);
-  myScript->MoveNode(ID,x,y,z);
+	SMDS_MeshNode * node=const_cast<SMDS_MeshNode*>(FindNode(ID));
+	node->setXYZ(x,y,z);
+	myScript->MoveNode(ID, x, y, z);
 }
-
-
 
 //=======================================================================
 //function : AddEdge
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::AddEdge(const Standard_Integer idnode1,
-				       const Standard_Integer idnode2) 
+SMDS_MeshEdge* SMESHDS_Mesh::AddEdge(int idnode1, int idnode2)
 {
-  Standard_Integer ID = SMDS_Mesh::AddEdge(idnode1,idnode2);
-  myScript->AddEdge (ID,idnode1,idnode2);
-  return ID;
-}
-
-
-//=======================================================================
-//function :AddFace
-//purpose  : 
-//=======================================================================
-Standard_Integer SMESHDS_Mesh::AddFace(const Standard_Integer idnode1,
-				       const Standard_Integer idnode2,
-				       const Standard_Integer idnode3) 
-{
-  Standard_Integer ID = SMDS_Mesh::AddFace(idnode1,idnode2,idnode3);
-  myScript->AddFace (ID,idnode1,idnode2,idnode3);
-  return ID;
+	SMDS_MeshEdge* e = SMDS_Mesh::AddEdge(idnode1, idnode2);
+	if(e!=NULL) myScript->AddEdge(e->GetID(), idnode1, idnode2);
+	return e;
 }
 
 //=======================================================================
 //function :AddFace
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::AddFace(const Standard_Integer idnode1,
-				       const Standard_Integer idnode2,
-				       const Standard_Integer idnode3,
-				       const Standard_Integer idnode4) 
+SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3)
 {
-  Standard_Integer ID = SMDS_Mesh::AddFace(idnode1,idnode2,idnode3,idnode4);
-  myScript->AddFace (ID,idnode1,idnode2,idnode3,idnode4);
-  return ID;
+	SMDS_MeshFace *f = SMDS_Mesh::AddFace(idnode1, idnode2, idnode3);
+	if(f!=NULL) myScript->AddFace(f->GetID(), idnode1, idnode2, idnode3);
+	return f;
 }
 
-
 //=======================================================================
-//function :AddVolume
+//function :AddFace
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::AddVolume(const Standard_Integer idnode1,
-					 const Standard_Integer idnode2,
-					 const Standard_Integer idnode3,
-					 const Standard_Integer idnode4) 
+SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3,
+	int idnode4)
 {
-  Standard_Integer ID = SMDS_Mesh::AddVolume(idnode1,idnode2,idnode3,idnode4);
-  myScript->AddVolume (ID,idnode1,idnode2,idnode3,idnode4);
-  return ID;
-}
-
-
-//=======================================================================
-//function :AddVolume
-//purpose  : 
-//=======================================================================
-Standard_Integer SMESHDS_Mesh::AddVolume(const Standard_Integer idnode1,
-					 const Standard_Integer idnode2,
-					 const Standard_Integer idnode3,
-					 const Standard_Integer idnode4,
-					 const Standard_Integer idnode5) 
-{
-  Standard_Integer ID = SMDS_Mesh::AddVolume(idnode1,idnode2,idnode3,idnode4,idnode5);
-  myScript->AddVolume (ID,idnode1,idnode2,idnode3,idnode4,idnode5);
-  return ID;
-}
-
-
-//=======================================================================
-//function :AddVolume
-//purpose  : 
-//=======================================================================
-Standard_Integer SMESHDS_Mesh::AddVolume(const Standard_Integer idnode1,
-					 const Standard_Integer idnode2,
-					 const Standard_Integer idnode3,
-					 const Standard_Integer idnode4,
-					 const Standard_Integer idnode5,
-					 const Standard_Integer idnode6) 
-{
-  Standard_Integer ID = SMDS_Mesh::AddVolume(idnode1,idnode2,idnode3,idnode4,idnode5,idnode6);
-  myScript->AddVolume (ID,idnode1,idnode2,idnode3,idnode4,idnode5,idnode6);
-  return ID;
+	SMDS_MeshFace *f = SMDS_Mesh::AddFace(idnode1, idnode2, idnode3, idnode4);
+	if(f!=NULL)
+		myScript->AddFace(f->GetID(), idnode1, idnode2, idnode3, idnode4);
+	return f;
 }
 
 //=======================================================================
 //function :AddVolume
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::AddVolume(const Standard_Integer idnode1,
-					 const Standard_Integer idnode2,
-					 const Standard_Integer idnode3,
-					 const Standard_Integer idnode4,
-					 const Standard_Integer idnode5,
-					 const Standard_Integer idnode6,
-					 const Standard_Integer idnode7,
-					 const Standard_Integer idnode8) 
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4)
 {
-  Standard_Integer ID = SMDS_Mesh::AddVolume(idnode1,idnode2,idnode3,idnode4,idnode5,idnode6,idnode7,idnode8);
-  myScript->AddVolume (ID,idnode1,idnode2,idnode3,idnode4,idnode5,idnode6,idnode7,idnode8);
-  return ID;
+ 	SMDS_MeshVolume *f = SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3,
+		idnode4);
+	if(f!=NULL)
+		myScript->AddVolume(f->GetID(), idnode1, idnode2, idnode3, idnode4);
+	return f;
 }
 
+//=======================================================================
+//function :AddVolume
+//purpose  : 
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5)
+{
+	SMDS_MeshVolume *v = SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3,
+		idnode4, idnode5);
+	if(v!=NULL)
+		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
+			idnode5);
+	return v;
+}
+
+//=======================================================================
+//function :AddVolume
+//purpose  : 
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6)
+{
+	SMDS_MeshVolume *v=
+		SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3, idnode4, idnode5,
+		idnode6);
+	if(v!=NULL) 
+		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
+			idnode5, idnode6);
+	return v;
+}
+
+//=======================================================================
+//function :AddVolume
+//purpose  : 
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
+{
+	SMDS_MeshVolume *v=
+		SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3, idnode4, idnode5,
+		idnode6, idnode7, idnode8);
+	if(v!=NULL)
+		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
+			idnode5, idnode6, idnode7, idnode8);
+	return v;
+}
 
 //=======================================================================
 //function : RemoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::RemoveNode(const Standard_Integer ID) 
+void SMESHDS_Mesh::RemoveNode(int ID)
 {
-  SMDS_Mesh::RemoveNode (ID);
-  myScript->RemoveNode  (ID);
+	SMDS_Mesh::RemoveNode(ID);
+	myScript->RemoveNode(ID);
 }
-
-
 
 //=======================================================================
 //function : RemoveElement
 //purpose  : 
 //========================================================================
-void SMESHDS_Mesh::RemoveElement(const Standard_Integer ID) 
+void SMESHDS_Mesh::RemoveElement(int ID)
 {
-  SMDS_Mesh::RemoveElement (ID);
-  myScript->RemoveElement  (ID);
+	SMDS_Mesh::RemoveElement(ID);
+	myScript->RemoveElement(ID);
 }
 
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeInVolume (const Handle(SMDS_MeshNode)& aNode,
-				    const TopoDS_Shell& S) 
+void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode * aNode,
+	const TopoDS_Shell & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetNodeOnVolume");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-  
-  //Set Position on Node
-  //Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (myFaceToId(S),0.,0.);;
-  //aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
+
+	int Index = myIndexToShape.FindIndex(S);
+
+	//Set Position on Node
+	//Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (myFaceToId(S),0.,0.);;
+	//aNode->SetPosition(aPos);
+
+	//Update or build submesh
+	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
+	if (it==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnFace (const Handle(SMDS_MeshNode)& aNode,
-				  const TopoDS_Face& S) 
+void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode * aNode,
+	const TopoDS_Face & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetNodeOnFace");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-  
-  //Set Position on Node
-  Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (Index,0.,0.);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
+
+	int Index = myIndexToShape.FindIndex(S);
+
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_FacePosition(Index, 0., 0.));
+
+	//Update or build submesh
+	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
+	if (it==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnEdge (const Handle(SMDS_MeshNode)& aNode,
-				  const TopoDS_Edge& S) 
+void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode * aNode,
+	const TopoDS_Edge & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetNodeOnEdge");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-  
-  //Set Position on Node
-  Handle (SMDS_EdgePosition) aPos = new SMDS_EdgePosition (Index,0.);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
-  
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
+
+	int Index = myIndexToShape.FindIndex(S);
+
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_EdgePosition(Index, 0.));
+
+	//Update or build submesh
+	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
+	if (it==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnVertex (const Handle(SMDS_MeshNode)& aNode,
-				    const TopoDS_Vertex& S) 
-{ 
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetNodeOnVertex");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-  
-  //Set Position on Node
-  Handle (SMDS_VertexPosition) aPos = new SMDS_VertexPosition (Index);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
-}
+void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode * aNode,
+	const TopoDS_Vertex & S)
+{
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
+	int Index = myIndexToShape.FindIndex(S);
+
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_VertexPosition(Index));
+
+	//Update or build submesh
+	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
+	if (it==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
+}
 
 //=======================================================================
 //function : UnSetNodeOnShape
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::UnSetNodeOnShape(const Handle(SMDS_MeshNode)& aNode) 
-{ 
-  MESSAGE("not implemented");
+void SMESHDS_Mesh::UnSetNodeOnShape(const SMDS_MeshNode* aNode)
+{
+	MESSAGE("not implemented");
 }
-
 
 //=======================================================================
 //function : SetMeshElementOnShape
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetMeshElementOnShape (const Handle(SMDS_MeshElement)& anElement,
-					   const TopoDS_Shape& S) 
+void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement * anElement,
+	const TopoDS_Shape & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetMeshElementOnShape");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-  
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddElement (anElement);
+	int Index = myIndexToShape.FindIndex(S);
+
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddElement(anElement);
 }
 
 //=======================================================================
 //function : UnSetMeshElementOnShape
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::UnSetMeshElementOnShape (const Handle(SMDS_MeshElement)& anElement,
-					     const TopoDS_Shape& S)
-  
+void SMESHDS_Mesh::
+UnSetMeshElementOnShape(const SMDS_MeshElement * anElement,
+	const TopoDS_Shape & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::UnSetMeshElementOnShape");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
-  if (myShapeIndexToSubMesh.IsBound(Index)) 
-    myShapeIndexToSubMesh(Index)->RemoveElement (anElement);
+	int Index = myIndexToShape.FindIndex(S);
+
+	if (myShapeIndexToSubMesh.find(Index)!=myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]->RemoveElement(anElement);
 }
 
 //=======================================================================
 //function : ShapeToMesh
 //purpose  : 
 //=======================================================================
-TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() 
+TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() const
 {
-  return myShape;
+	return myShape;
 }
 
-//=======================================================================
-//function : MeshElements
-//purpose  : 
-//=======================================================================
-Handle_SMESHDS_SubMesh SMESHDS_Mesh::MeshElements(const TopoDS_Shape& S) 
+///////////////////////////////////////////////////////////////////////////////
+/// Return the sub mesh linked to the a given TopoDS_Shape or NULL if the given
+/// TopoDS_Shape is unknown
+///////////////////////////////////////////////////////////////////////////////
+SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const TopoDS_Shape & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::MeshElements");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
-  if (myShapeIndexToSubMesh.IsBound(Index)) 
-    return myShapeIndexToSubMesh(Index);
-  Handle(SMESHDS_SubMesh) SM;
-  return SM;
+	int Index = myIndexToShape.FindIndex(S);
+	if (myShapeIndexToSubMesh.find(Index)!=myShapeIndexToSubMesh.end())
+		return myShapeIndexToSubMesh[Index];
+	else
+		return NULL;
 }
 
 //=======================================================================
 //function : GetHypothesis
 //purpose  : 
 //=======================================================================
-const SMESHDS_ListOfPtrHypothesis&  SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape& S) 
+
+const list<const SMESHDS_Hypothesis*>& SMESHDS_Mesh::GetHypothesis(
+	const TopoDS_Shape & S) const
 {
-  if (myShapeToHypothesis.IsBound(S))
-    return myShapeToHypothesis(S);
- 
-  static SMESHDS_ListOfPtrHypothesis empty;
-  return empty;
+	if (myShapeToHypothesis.find(S)!=myShapeToHypothesis.end())
+		return myShapeToHypothesis.find(S)->second;
+
+	static list<const SMESHDS_Hypothesis*> empty;
+	return empty;
 }
 
 //=======================================================================
 //function : GetScript
 //purpose  : 
 //=======================================================================
-const Handle (SMESHDS_Script)&  SMESHDS_Mesh::GetScript() 
+SMESHDS_Script* SMESHDS_Mesh::GetScript()
 {
-  return myScript;
+	return myScript;
 }
 
 //=======================================================================
 //function : ClearScript
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::ClearScript() 
+void SMESHDS_Mesh::ClearScript()
 {
-  myScript->Clear();
+	myScript->Clear();
 }
 
 //=======================================================================
 //function : HasMeshElements
 //purpose  : 
 //=======================================================================
-Standard_Boolean SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape& S) 
+bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::MeshElements");
-  
-  Standard_Integer Index = myIndexToShape.FindIndex(S);
-
-  return myShapeIndexToSubMesh.IsBound(Index);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
+	int Index = myIndexToShape.FindIndex(S);
+	return myShapeIndexToSubMesh.find(Index)!=myShapeIndexToSubMesh.end();
 }
 
 //=======================================================================
 //function : HasHypothesis
 //purpose  : 
 //=======================================================================
-Standard_Boolean SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape& S) 
+bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 {
-  return myShapeToHypothesis.IsBound(S);
+	return myShapeToHypothesis.find(S)!=myShapeToHypothesis.end();
 }
 
 //=======================================================================
 //function : NewSubMesh 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::NewSubMesh(const Standard_Integer Index) 
+void SMESHDS_Mesh::NewSubMesh(int Index)
 {
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+	{
+		SMESHDS_SubMesh* SM = new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=SM;
+	}
 }
 
 //=======================================================================
 //function : IndexToShape
 //purpose  : 
 //=======================================================================
-TopoDS_Shape SMESHDS_Mesh::IndexToShape(const Standard_Integer ShapeIndex)
+TopoDS_Shape SMESHDS_Mesh::IndexToShape(int ShapeIndex)
 {
-  return  myIndexToShape.FindKey(ShapeIndex);
-} 
+	return myIndexToShape.FindKey(ShapeIndex);
+}
 
 //=======================================================================
 //function : ShapeToIndex
 //purpose  : 
 //=======================================================================
-Standard_Integer SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape& S) 
+int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S)
 {
-  if (myShape.IsNull()) 
-    Standard_NullObject::Raise("SMESHDS_Mesh::SetNodeOnVolume");
-  
-  return  myIndexToShape.FindIndex(S);
+	if (myShape.IsNull()) MESSAGE("myShape is NULL");
+	return myIndexToShape.FindIndex(S);
 }
 
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeInVolume (const Handle(SMDS_MeshNode)& aNode,
-				    const Standard_Integer Index) 
+void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 {
-  
-  //Set Position on Node
-  //Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (myFaceToId(S),0.,0.);;
-  //aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
+	//Set Position on Node
+	//Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (myFaceToId(S),0.,0.);;
+	//aNode->SetPosition(aPos);
+
+	//Update or build submesh
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnFace
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnFace (const Handle(SMDS_MeshNode)& aNode,
-				  const Standard_Integer Index) 
+void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode* aNode, int Index)
 {
-  
-  //Set Position on Node
-  Handle (SMDS_FacePosition) aPos = new SMDS_FacePosition (Index,0.,0.);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_FacePosition(Index, 0., 0.));
+
+	//Update or build submesh
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnEdge (const Handle(SMDS_MeshNode)& aNode,
-				  const Standard_Integer Index) 
+void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode* aNode, int Index)
 {
-  
-  //Set Position on Node
-  Handle (SMDS_EdgePosition) aPos = new SMDS_EdgePosition (Index,0.);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
-  
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_EdgePosition(Index, 0.));
+
+	//Update or build submesh
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnVertex (const Handle(SMDS_MeshNode)& aNode,
-				    const Standard_Integer Index) 
-{ 
-  //Set Position on Node
-  Handle (SMDS_VertexPosition) aPos = new SMDS_VertexPosition (Index);;
-  aNode->SetPosition(aPos);
-  
-  //Update or build submesh
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddNode (aNode);
+void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode* aNode, int Index)
+{
+	//Set Position on Node
+	aNode->SetPosition(new SMDS_VertexPosition(Index));
+
+	//Update or build submesh
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
 
 //=======================================================================
 //function : SetMeshElementOnShape
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::SetMeshElementOnShape (const Handle(SMDS_MeshElement)& anElement,
-					  const Standard_Integer Index) 
+void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
+	int Index)
 {
-  if (!myShapeIndexToSubMesh.IsBound(Index)) {
-    Handle(SMESHDS_SubMesh) SM = new  SMESHDS_SubMesh (this);
-    myShapeIndexToSubMesh.Bind(Index,SM);
-  }
-  myShapeIndexToSubMesh(Index)->AddElement (anElement);
+	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+
+	myShapeIndexToSubMesh[Index]->AddElement(anElement);
 }

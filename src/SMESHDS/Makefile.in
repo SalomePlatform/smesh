@@ -36,36 +36,13 @@ VPATH=.:@srcdir@:@top_srcdir@/idl
 # Libraries targets
 
 LIB = libSMESHDS.la 
-LIB_SRC = SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh_0.cxx \
-	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis_0.cxx \
-	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis_0.cxx \
-	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh_0.cxx \
-	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh_0.cxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh_0.cxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis_0.cxx \
-	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis_0.cxx \
-	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh_0.cxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh_0.cxx \
-	SMESHDS_DataMapOfIntegerMesh_0.cxx \
-	SMESHDS_DataMapOfIntegerPtrHypothesis_0.cxx \
-	SMESHDS_DataMapOfShapeListOfPtrHypothesis_0.cxx \
-	SMESHDS_DataMapOfShapeSubMesh_0.cxx \
-	SMESHDS_DataMapOfIntegerSubMesh_0.cxx \
+LIB_SRC = \
 	SMESHDS_Document.cxx \
 	SMESHDS_Hypothesis.cxx \
-	SMESHDS_ListIteratorOfListOfAsciiString_0.cxx \
-	SMESHDS_ListIteratorOfListOfPtrHypothesis_0.cxx \
-	SMESHDS_ListIteratorOfListOfCommand_0.cxx \
-	SMESHDS_ListNodeOfListOfAsciiString_0.cxx \
-	SMESHDS_ListNodeOfListOfPtrHypothesis_0.cxx \
-	SMESHDS_ListNodeOfListOfCommand_0.cxx \
-	SMESHDS_ListOfAsciiString_0.cxx \
-	SMESHDS_ListOfPtrHypothesis_0.cxx \
-	SMESHDS_ListOfCommand_0.cxx \
-	SMESHDS_Mesh.cxx \
 	SMESHDS_Script.cxx \
 	SMESHDS_Command.cxx \
-	SMESHDS_SubMesh.cxx 
+	SMESHDS_SubMesh.cxx \
+	SMESHDS_Mesh.cxx
 
 LIB_CLIENT_IDL = 
 LIB_SERVER_IDL = 
@@ -77,47 +54,10 @@ BIN_CLIENT_IDL =
 BIN_SERVER_IDL = 
 
 # header files 
-EXPORT_HEADERS= Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx \
-	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx \
-	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx \
-	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx \
-	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx \
-	Handle_SMESHDS_Document.hxx \
-	Handle_SMESHDS_ListNodeOfListOfAsciiString.hxx \
-	Handle_SMESHDS_ListNodeOfListOfPtrHypothesis.hxx \
-	Handle_SMESHDS_ListNodeOfListOfCommand.hxx \
-	Handle_SMESHDS_Mesh.hxx \
-	Handle_SMESHDS_Script.hxx \
-	Handle_SMESHDS_Command.hxx \
-	Handle_SMESHDS_SubMesh.hxx \
-	SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh.hxx \
-	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis.hxx \
-	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis.hxx \
-	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh.hxx \
-	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh.hxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx \
-	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx \
-	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx \
-	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx \
-	SMESHDS_DataMapOfIntegerMesh.hxx \
-	SMESHDS_DataMapOfIntegerPtrHypothesis.hxx \
-	SMESHDS_DataMapOfShapeListOfPtrHypothesis.hxx \
-	SMESHDS_DataMapOfShapeSubMesh.hxx \
-	SMESHDS_DataMapOfIntegerSubMesh.hxx \
+EXPORT_HEADERS= \
 	SMESHDS_Document.hxx \
 	SMESHDS_Hypothesis.hxx \
-	SMESHDS_ListIteratorOfListOfAsciiString.hxx \
-	SMESHDS_ListIteratorOfListOfPtrHypothesis.hxx \
-	SMESHDS_ListIteratorOfListOfCommand.hxx \
-	SMESHDS_ListNodeOfListOfAsciiString.hxx \
-	SMESHDS_ListNodeOfListOfPtrHypothesis.hxx \
-	SMESHDS_ListNodeOfListOfCommand.hxx \
-	SMESHDS_ListOfAsciiString.hxx \
-	SMESHDS_ListOfPtrHypothesis.hxx \
-	SMESHDS_ListOfCommand.hxx \
 	SMESHDS_Mesh.hxx \
-	SMESHDS_PtrHypothesis.hxx \
 	SMESHDS_Script.hxx \
 	SMESHDS_Command.hxx \
 	SMESHDS_CommandType.hxx \
@@ -126,7 +66,7 @@ EXPORT_HEADERS= Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx \
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(OCC_LIBS)
+LDFLAGS  += $(OCC_KERNEL_LIBS)
 
 
 # additional file to be cleaned
@@ -135,4 +75,3 @@ CLEAN =
 DISTCLEAN =
 
 @CONCLUDE@
-
