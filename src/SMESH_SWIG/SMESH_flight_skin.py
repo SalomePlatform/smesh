@@ -98,13 +98,6 @@ mefisto2D = hypothesis._narrow(SMESH.SMESH_MEFISTO_2D)
 mefistoID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(mefisto2D) )
 smeshgui.SetName(mefistoID, "MEFISTO_2D")
 
-print "-------------------------- NETGEN_3D"
-
-hypothesis=gen.CreateHypothesis("NETGEN_3D")
-netgen3D = hypothesis._narrow(SMESH.SMESH_NETGEN_3D)
-netgenID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(netgen3D) )
-smeshgui.SetName(netgenID, "NETGEN_3D")
-
 # ---- init a Mesh with the shell
 
 mesh=gen.Init(idShape)
