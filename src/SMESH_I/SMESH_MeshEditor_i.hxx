@@ -34,30 +34,27 @@
 
 #include "SMESHDS_Mesh.hxx"
 
-
-class SMESH_MeshEditor_i:
-  public POA_SMESH::SMESH_MeshEditor
+class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
-public:
-  SMESH_MeshEditor_i(const Handle(SMESHDS_Mesh)& theMesh);
+  public:
+	SMESH_MeshEditor_i(SMESHDS_Mesh * theMesh);
 
-  virtual ~SMESH_MeshEditor_i() {};
+	virtual ~ SMESH_MeshEditor_i()
+	{
+	};
 
-  // --- CORBA
-  CORBA::Boolean RemoveElements(const SMESH::long_array& IDsOfElements);
-  CORBA::Boolean RemoveNodes(const SMESH::long_array& IDsOfNodes);
+	// --- CORBA
+	CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
+	CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
 
-  CORBA::Boolean AddNode(CORBA::Double x,
-			 CORBA::Double y,
-			 CORBA::Double z);
-  CORBA::Boolean AddEdge(const SMESH::long_array& IDsOfNodes);
-  CORBA::Boolean AddFace(const SMESH::long_array& IDsOfNodes);
-  CORBA::Boolean AddVolume(const SMESH::long_array& IDsOfNodes);
+	CORBA::Boolean AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
+	CORBA::Boolean AddEdge(const SMESH::long_array & IDsOfNodes);
+	CORBA::Boolean AddFace(const SMESH::long_array & IDsOfNodes);
+	CORBA::Boolean AddVolume(const SMESH::long_array & IDsOfNodes);
 
-private:
-  SMESH::SMESH_subMesh_var _myMesh;
-  Handle (SMESHDS_Mesh) _myMeshDS;
+  private:
+	SMESH::SMESH_subMesh_var _myMesh;
+	SMESHDS_Mesh *_myMeshDS;
 };
 
 #endif
-

@@ -571,7 +571,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
 	int meshId = myMesh->GetId();
 	SMESH_Mesh_i* meshServant = myStudyContext->mapMesh_i[meshId];
 	::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
-	Handle(SMESHDS_Mesh) mySMESHDSMesh = myLocMesh.GetMeshDS();
+	SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 	
 	SCRUTE(mySMESHDSMesh->NbNodes());
 	if (mySMESHDSMesh->NbNodes()>0) {//checks if the mesh is not empty
@@ -1136,7 +1136,7 @@ bool SMESH_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
 	      int meshId = myNewMesh->GetId();
 	      SMESH_Mesh_i* meshServant = myStudyContext->mapMesh_i[meshId];
 	      ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
-	      Handle(SMESHDS_Mesh) mySMESHDSMesh = myLocMesh.GetMeshDS();
+	      SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 		    
 	      DriverMED_R_SMESHDS_Mesh* myReader = new DriverMED_R_SMESHDS_Mesh;
 		    

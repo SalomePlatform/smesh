@@ -1,28 +1,28 @@
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+// SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// Copyright (C) 2003 OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+//
+// See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
-//  File   : SMESH_MEDSupport_i.hxx
-//  Module : SMESH
+// File : SMESH_MEDSupport_i.hxx
+// Module : SMESH
 
 #ifndef _MED_SMESH_MEDSUPPORT_I_HXX_
 #define _MED_SMESH_MEDSUPPORT_I_HXX_
@@ -40,62 +40,52 @@
 
 class SMESH_subMesh_i;
 
-class SMESH_MEDSupport_i: 
-  public POA_SALOME_MED::SUPPORT,
-  public PortableServer::RefCountServantBase 
+class SMESH_MEDSupport_i:
+	public POA_SALOME_MED::SUPPORT, public PortableServer::RefCountServantBase
 {
+  public:
 
-protected :
-    SMESH_MEDSupport_i();
-    ~SMESH_MEDSupport_i();
+// Constructors and associated internal methods
+	SMESH_MEDSupport_i(SMESH_subMesh_i * sm,
+		string name, string description, SALOME_MED::medEntityMesh entity);
+	SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
 
+// IDL Methods
+	char *getName() throw(SALOME::SALOME_Exception);
+	char *getDescription() throw(SALOME::SALOME_Exception);
+	SALOME_MED::MESH_ptr getMesh() throw(SALOME::SALOME_Exception);
+	CORBA::Boolean isOnAllElements() throw(SALOME::SALOME_Exception);
+	SALOME_MED::medEntityMesh getEntity() throw(SALOME::SALOME_Exception);
+	CORBA::Long getNumberOfElements(SALOME_MED::medGeometryElement geomElement)
+		throw(SALOME::SALOME_Exception);
+	Engines::long_array * getNumber(SALOME_MED::medGeometryElement geomElement)
+		throw(SALOME::SALOME_Exception);
+	Engines::long_array * getNumberIndex() throw(SALOME::SALOME_Exception);
+	CORBA::Long getNumberOfGaussPoints(SALOME_MED::
+		medGeometryElement geomElement) throw(SALOME::SALOME_Exception);
+	SALOME_MED::medGeometryElement_array *
+		getTypes() throw(SALOME::SALOME_Exception);
+	CORBA::Long getCorbaIndex() throw(SALOME::SALOME_Exception);
+	void createSeq() throw(SALOME::SALOME_Exception);
 
-public :
-  
-  Handle_SMESHDS_SubMesh  _subMeshDS;
-  ::SMESH_subMesh_i*      _subMesh_i;
+  public: //public field
+	const SMESHDS_SubMesh * _subMeshDS;
+	::SMESH_subMesh_i * _subMesh_i;
 
-  Handle_SMESHDS_Mesh     _meshDS;
-    string                   _name;
-    string		     _description;
-    bool		     _isOnAllElements;
-    bool		     _seqNumber;
-    int			     _seqLength;
+	SMESHDS_Mesh * _meshDS;
+	string _name;
+	string _description;
+	bool _isOnAllElements;
+	bool _seqNumber;
+	int _seqLength;
 
-    SALOME_MED::medEntityMesh         _entity;
-    SALOME_MED::medGeometryElement *  _geometricType;
-    int				      _numberOfGeometricType;
+	SALOME_MED::medEntityMesh _entity;
+	SALOME_MED::medGeometryElement * _geometricType;
+	int _numberOfGeometricType;
 
-
-public:
-
-    // Constructors and associated internal methods
-  SMESH_MEDSupport_i(SMESH_subMesh_i* sm,
-		     string name, 
-		     string description,
-		     SALOME_MED::medEntityMesh entity);
-  SMESH_MEDSupport_i(const SMESH_MEDSupport_i & s);
-  
-  // IDL Methods
-  char *               getName() 	 throw (SALOME::SALOME_Exception);
-  char *               getDescription()  throw (SALOME::SALOME_Exception);
-  SALOME_MED::MESH_ptr getMesh() 	 throw (SALOME::SALOME_Exception);
-  CORBA::Boolean       isOnAllElements() throw (SALOME::SALOME_Exception);
-  SALOME_MED::medEntityMesh getEntity()  throw (SALOME::SALOME_Exception);
-  CORBA::Long          getNumberOfElements(SALOME_MED::medGeometryElement geomElement) 
-    throw (SALOME::SALOME_Exception);
-  Engines::long_array* getNumber(SALOME_MED::medGeometryElement geomElement) 
-    throw (SALOME::SALOME_Exception);
-  Engines::long_array* getNumberIndex() 
-    throw (SALOME::SALOME_Exception);
-  CORBA::Long          getNumberOfGaussPoints(SALOME_MED::medGeometryElement geomElement) 
-    throw (SALOME::SALOME_Exception);
-  SALOME_MED::medGeometryElement_array* getTypes() 
-    throw (SALOME::SALOME_Exception);
-  CORBA::Long 	       getCorbaIndex()   throw (SALOME::SALOME_Exception);
-  void 		       createSeq()       throw (SALOME::SALOME_Exception);
-  
-
+  protected:
+	SMESH_MEDSupport_i();
+	~SMESH_MEDSupport_i();
 };
 
 #endif /* _MED_MEDSUPPORT_I_HXX_ */
