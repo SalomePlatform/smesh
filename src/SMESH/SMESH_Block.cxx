@@ -240,6 +240,42 @@ bool SMESH_Block::ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const
 }
 
 //=======================================================================
+//function : ShellPoint
+//purpose  : computes coordinates of a point in shell by points on sub-shapes;
+//           thePointOnShape[ subShapeID ] must be a point on a subShape
+//=======================================================================
+
+bool SMESH_Block::ShellPoint(const gp_XYZ&         theParams,
+                             const vector<gp_XYZ>& thePointOnShape,
+                             gp_XYZ&               thePoint )
+{
+  if ( thePointOnShape.size() < ID_F1yz )
+    return false;
+
+  double x = theParams.X(), y = theParams.Y(), z = theParams.Z();
+  double x1 = 1. - x,       y1 = 1. - y,       z1 = 1. - z;
+  const vector<gp_XYZ>& p = thePointOnShape;
+
+  thePoint = 
+    x1 * p[ID_F0yz] + x * p[ID_F1yz]
+      + y1 * p[ID_Fx0z] + y * p[ID_Fx1z]
+        + z1 * p[ID_Fxy0] + z * p[ID_Fxy1]
+          + x1 * (y1 * (z1 * p[ID_V000] + z * p[ID_V001])
+                  + y * (z1 * p[ID_V010] + z * p[ID_V011]))
+            + x * (y1 * (z1 * p[ID_V100] + z * p[ID_V101])
+                   + y * (z1 * p[ID_V110] + z * p[ID_V111]));
+  thePoint -=
+    x1 * (y1 * p[ID_E00z] + y * p[ID_E01z])
+      + x * (y1 * p[ID_E10z] + y * p[ID_E11z])
+        + y1 * (z1 * p[ID_Ex00] + z * p[ID_Ex01])
+          + y * (z1 * p[ID_Ex10] + z * p[ID_Ex11])
+            + z1 * (x1 * p[ID_E0y0] + x * p[ID_E1y0])
+              + z * (x1 * p[ID_E0y1] + x * p[ID_E1y1]);
+
+  return true;
+}
+
+//=======================================================================
 //function : NbVariables
 //purpose  : 
 //=======================================================================
