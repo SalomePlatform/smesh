@@ -79,7 +79,8 @@ mesh_wireframe.png \
 mesh_wrap.png \
 ModuleMesh.png \
 select1.png \
-SMESH_en.xml
+SMESH_en.xml \
+SMESHCatalog.xml
 
 # copy header files in common directory
 ifeq ($(HAVE_SSTREAM),yes)
