@@ -39,16 +39,21 @@ EXPORT_HEADERS= DriverMED_R_SMDS_Mesh.h DriverMED_R_SMESHDS_Mesh.h DriverMED_R_S
 
 # Libraries targets
 LIB = libMeshDriverMED.la
-LIB_SRC = DriverMED_R_SMDS_Mesh.cxx DriverMED_R_SMESHDS_Mesh.cxx DriverMED_R_SMESHDS_Document.cxx DriverMED_W_SMDS_Mesh.cxx DriverMED_W_SMESHDS_Mesh.cxx DriverMED_W_SMESHDS_Document.cxx 
+LIB_SRC = \
+	DriverMED_R_SMDS_Mesh.cxx \
+	DriverMED_R_SMESHDS_Mesh.cxx \
+	DriverMED_R_SMESHDS_Document.cxx \
+	DriverMED_W_SMDS_Mesh.cxx \
+	DriverMED_W_SMESHDS_Document.cxx \
+	DriverMED_W_SMESHDS_Mesh.cxx
 
 LIB_CLIENT_IDL =
-
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(OCC_LIBS) $(MED2_LIBS) -lMeshDriver -lmed
+LDFLAGS  += $(MED2_LIBS) -lMeshDriver -lmed
 
 %_moc.cxx: %.h
 	$(MOC) $< -o $@
