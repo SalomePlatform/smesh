@@ -1615,8 +1615,8 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
                                      nextNod[ i0 ], nextNod[ 1 ], nextNod[ i2 ] );
 
       else if ( nbSame == 1 )  // --- pyramid
-        aNewElem = aMesh->AddVolume (prevNod[ iAfterSame ],  prevNod[ iBeforeSame ],
-                                     nextNod[ iBeforeSame ], nextNod[ iAfterSame ],
+        aNewElem = aMesh->AddVolume (prevNod[ iBeforeSame ], prevNod[ iAfterSame ],
+                                     nextNod[ iAfterSame ],  nextNod[ iBeforeSame ],
                                      nextNod[ iSameNode ]);
 
       else // 2 same nodes:      --- tetrahedron
@@ -1632,26 +1632,26 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
 
       else if ( nbSame == 1 )  // --- pyramid + pentahedron
       {
-        aNewElem = aMesh->AddVolume (prevNod[ iAfterSame ],  prevNod[ iBeforeSame ],
-                                     nextNod[ iBeforeSame ], nextNod[ iAfterSame ],
+        aNewElem = aMesh->AddVolume (prevNod[ iBeforeSame ], prevNod[ iAfterSame ],
+                                     nextNod[ iAfterSame ],  nextNod[ iBeforeSame ],
                                      nextNod[ iSameNode ]);
         newElems.push_back( aNewElem );
-        aNewElem = aMesh->AddVolume (prevNod[ iBeforeSame ], prevNod[ iOpposSame ],
-                                     prevNod[ iAfterSame ],  nextNod[ iBeforeSame ],
-                                     nextNod[ iOpposSame ],  nextNod[ iAfterSame ] );
+        aNewElem = aMesh->AddVolume (prevNod[ iAfterSame ],  prevNod[ iOpposSame ],
+                                     prevNod[ iBeforeSame ], nextNod[ iAfterSame ],
+                                     nextNod[ iOpposSame ],  nextNod[ iBeforeSame ] );
       }
       else if ( nbSame == 2 )  // pentahedron
       {
         if ( prevNod[ iBeforeSame ] == nextNod[ iBeforeSame ] )
           // iBeforeSame is same too
-          aNewElem = aMesh->AddVolume (prevNod[ iOpposSame ], prevNod[ iBeforeSame ],
-                                       nextNod[ iOpposSame ], prevNod[ iAfterSame ],
-                                       prevNod[ iSameNode ],  nextNod[ iAfterSame ]);
+          aNewElem = aMesh->AddVolume (prevNod[ iBeforeSame ], prevNod[ iOpposSame ],
+                                       nextNod[ iOpposSame ],  prevNod[ iSameNode ],
+                                       prevNod[ iAfterSame ],  nextNod[ iAfterSame ]);
         else
           // iAfterSame is same too
-          aNewElem = aMesh->AddVolume (prevNod[ iBeforeSame ], prevNod[ iSameNode ],
-                                       nextNod[ iBeforeSame ], prevNod[ iOpposSame ],
-                                       prevNod[ iAfterSame ],  nextNod[ iOpposSame ]);
+          aNewElem = aMesh->AddVolume (prevNod[ iSameNode ],   prevNod[ iBeforeSame ],
+                                       nextNod[ iBeforeSame ], prevNod[ iAfterSame ],
+                                       prevNod[ iOpposSame ],  nextNod[ iOpposSame ]);
       }
       break;
     }
