@@ -11,15 +11,6 @@ VPATH=.:$(srcdir):${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome:${ME
 @COMMENCE@
 
 IDL_FILES = \
-  SALOME_Component.idl \
-  SALOMEDS.idl \
-  SALOMEDS_Attributes.idl \
-  SALOME_Exception.idl \
-  Logger.idl \
-  SALOME_ModuleCatalog.idl \
-  MED.idl \
-  GEOM_Shape.idl \
-  GEOM_Gen.idl \
   SMESH_Gen.idl \
   SMESH_Mesh.idl \
   SMESH_Hypothesis.idl \

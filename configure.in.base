@@ -191,7 +191,7 @@ CHECK_CORBA
 
 AC_SUBST_FILE(CORBA)
 corba=make_$ORB
-CORBA=salome_adm/unix/$corba
+CORBA=adm_local/unix/$corba
 
 echo
 echo ---------------------------------------------
@@ -294,7 +294,7 @@ echo
 
 dnl generals files which could be included in every makefile
 
-AC_SUBST_FILE(COMMENCE) COMMENCE=salome_adm/unix/make_commence
+AC_SUBST_FILE(COMMENCE) COMMENCE=adm_local/unix/make_commence
 AC_SUBST_FILE(CONCLUDE) CONCLUDE=salome_adm/unix/make_conclude
 AC_SUBST_FILE(MODULE) MODULE=salome_adm/unix/make_module
 

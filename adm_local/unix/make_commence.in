@@ -1,0 +1,249 @@
+# common directories to put headerfiles
+inc_builddir=$(top_builddir)/include/salome
+
+@SET_MAKE@
+SHELL=/bin/sh
+
+# header missing
+
+HAVE_SSTREAM=@HAVE_SSTREAM@
+
+
+LIBS=@LIBS@ 
+LDFLAGS=@LDFLAGS@ -L$(top_builddir)/lib/salome -Xlinker -rpath-link -Xlinker -L$(top_builddir)/lib/salome
+# add libstdc++ to link c++ library with libtool !
+LDFLAGS+= -lstdc++
+
+CP=@CP@
+
+# CPP
+
+CPP=@CPP@
+CXXCPP=@CXXCPP@
+CPPFLAGS=@CPPFLAGS@ -I$(inc_builddir) -I$(srcdir) -I.
+
+# C
+
+CC = @CC@
+CFLAGS = @CFLAGS@
+C_DEPEND_FLAG = @C_DEPEND_FLAG@
+
+# C++
+
+CXX = @CXX@
+CXXFLAGS = @CXXFLAGS@ 
+CXX_DEPEND_FLAG = @CXX_DEPEND_FLAG@
+
+# JAVA
+
+JAVA_INCLUDES = @JAVA_INCLUDES@
+JAVA_LIBS = @JAVA_LIBS@
+JAVA_LDPATH = @JAVA_LDPATH@
+
+# PYTHON
+
+PYTHON = @PYTHON@
+PYTHONHOME = @PYTHONHOME@
+PYTHON_INCLUDES = @PYTHON_INCLUDES@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_VERSION = @PYTHON_VERSION@
+PYTHON_SITE = @PYTHON_SITE@
+PYTHON_SITE_INSTALL = @PYTHON_SITE_INSTALL@
+
+# QT
+
+QT_ROOT = @QT_ROOT@
+QT_INCLUDES = @QT_INCLUDES@
+QT_MT_INCLUDES = @QT_INCLUDES@ -DQT_THREAD_SUPPORT
+QT_LIBS = @QT_LIBS@
+QT_MT_LIBS = @QT_MT_LIBS@
+
+MOC = @MOC@
+UIC = @UIC@
+
+
+#QWT
+
+QWT_INCLUDES=@QWT_INCLUDES@
+QWT_LIBS=@QWT_LIBS@
+
+# SIP
+SIP = @SIP@
+SIP_INCLUDES = @SIP_INCLUDES@
+SIP_LIBS = @SIP_LIBS@
+
+# PYQT
+PYQT_SIPS = @PYQT_SIPS@
+PYQT_LIBS = @PYQT_LIBS@
+
+# openGL
+OGL_INCLUDES=@OGL_INCLUDES@
+OGL_LIBS=@OGL_LIBS@
+
+# VTK
+VTK_INCLUDES=@VTK_INCLUDES@
+VTK_LIBS=@VTK_LIBS@
+
+# HDF5
+
+HDF5_INCLUDES=@HDF5_INCLUDES@
+HDF5_LIBS=@HDF5_LIBS@
+HDF5_MT_LIBS=@HDF5_MT_LIBS@
+
+# MED2
+
+MED2_INCLUDES=@MED2_INCLUDES@
+MED2_LIBS=@MED2_LIBS@
+MED2_MT_LIBS=@MED2_MT_LIBS@
+
+# OpenCasCade
+
+OCC_INCLUDES=@CAS_CPPFLAGS@
+OCC_CXXFLAGS=@CAS_CXXFLAGS@
+
+OCC_KERNEL_LIBS=@CAS_KERNEL@
+OCC_OCAF_LIBS=@CAS_OCAF@
+OCC_VIEWER_LIBS=@CAS_VIEWER@
+OCC_MODELER_LIBS=@CAS_MODELER@
+OCC_DATAEXCHANGE_LIBS=@CAS_DATAEXCHANGE@
+OCC_LIBS=@CAS_LDFLAGS@
+
+# MPICH
+
+MPICH_INCLUDES=@MPICH_INCLUDES@
+MPICH_LIBS=@MPICH_LIBS@
+
+# Swig C++ Python
+
+SWIG       = @SWIG@
+SWIG_FLAGS = @SWIG_FLAGS@ -I$(inc_builddir) -I$(srcdir) -I.
+
+# OMNIORB
+
+OMNIORB_ROOT        = @OMNIORB_ROOT@
+OMNIORB_INCLUDES    = @OMNIORB_INCLUDES@
+OMNIORB_LIBS        = @OMNIORB_LIBS@
+OMNIORB_CXXFLAGS    = @OMNIORB_CXXFLAGS@
+
+OMNIORB_IDL         = @OMNIORB_IDL@
+OMNIORB_IDLCXXFLAGS = @OMNIORB_IDLCXXFLAGS@
+OMNIORB_IDLPYFLAGS  = @OMNIORB_IDLPYFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome
+
+OMNIORB_IDL_CLN_H   = @OMNIORB_IDL_CLN_H@
+OMNIORB_IDL_CLN_CXX = @OMNIORB_IDL_CLN_CXX@
+OMNIORB_IDL_CLN_OBJ = @OMNIORB_IDL_CLN_OBJ@
+
+OMNIORB_IDL_SRV_H   = @OMNIORB_IDL_SRV_H@
+OMNIORB_IDL_SRV_CXX = @OMNIORB_IDL_SRV_CXX@
+OMNIORB_IDL_SRV_OBJ = @OMNIORB_IDL_SRV_OBJ@
+
+# Default ORB
+
+CORBA_ROOT        = @CORBA_ROOT@
+CORBA_INCLUDES    = @CORBA_INCLUDES@
+CORBA_LIBS        = @CORBA_LIBS@
+CORBA_CXXFLAGS    = @CORBA_CXXFLAGS@
+
+IDLCXXFLAGS = @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome
+IDLPYFLAGS  = @IDLPYFLAGS@
+
+IDL = @IDL@
+
+IDL_CLN_H   = @IDL_CLN_H@
+IDL_CLN_CXX = @IDL_CLN_CXX@
+IDL_CLN_OBJ = @IDL_CLN_OBJ@
+
+IDL_SRV_H   = @IDL_SRV_H@
+IDL_SRV_CXX = @IDL_SRV_CXX@
+IDL_SRV_OBJ = @IDL_SRV_OBJ@
+
+CPPFLAGS+= $(CORBA_INCLUDES) 
+CXXFLAGS+= $(CORBA_CXXFLAGS)
+
+# add corba libs when link salome application ! 
+#LDFLAGS+= $(CORBA_LIBS)
+LIBS+=$(CORBA_LIBS)
+
+## Shared libraries
+LT_STATIC_EXEC=@LT_STATIC_EXEC@
+DYNAMIC_DIRS=@DYNAMIC_DIRS@
+LT_LIB=libtool
+LT=$(top_builddir)/libtool
+LT_COMPILE=$(LT) --mode=compile $(CC)
+LT_LINK_LIB=$(LT_LIB) --mode=link $(CC) -rpath $(libdir)
+LT_LINK_EXE=$(LT) --mode=link $(CC) $(LT_STATIC_EXEC) -dlopen self -rpath $(bindir) $(DYNAMIC_DIRS)
+LT_RUN=$(LT) --mode=execute
+LT_INSTALL_PROG=$(LT) --mode=install $(INSTALL_PROGRAM)
+LT_INSTALL_LIB=$(LT) --mode=install $(INSTALL_DATA)
+LT_UNINSTALL=$(LT) --mode=uninstall $(RM)
+
+INSTALL=@INSTALL@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+INSTALL_DATA=@INSTALL_DATA@
+
+# create a symbolic link (or a copie ?)
+LN_S=@LN_S@
+
+## Installation points
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@/salome
+libdir=@libdir@/salome
+# warning : if user give this path in configure we could have salome/salome :-(
+includedir=@includedir@/salome
+datadir=@datadir@/salome
+idldir=$(prefix)/idl/salome
+sharedpydir=@libdir@/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
+
+docdir=$(datadir)/doc
+
+#
+# begin of package rules
+#
+
+.PHONY: all lib bin inc resources tests install uninstall dep depend depend_idl cleandep mostlyclean clean distclean
+
+.SUFFIXES: .cxx .cc .c .f .o .lo .idl .py .i .ui .po .qm
+
+all:
+	$(MAKE) inc
+	$(MAKE) depend_idl
+	$(MAKE) depend
+	$(MAKE) lib
+	$(MAKE) bin
+	$(MAKE) resources
+
+#
+# add target to build administrative files
+#
+
+Makefile: $(top_builddir)/config.status $(srcdir)/Makefile.in
+	cd $(top_builddir) ; ./config.status
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	cd $(top_builddir) ; ./config.status --recheck
+
+# VPATH contain $(srcdir), so make configure is good in top_srcdir and we must add target configure otherwise :-)
+ifneq ($(top_srcdir),$(srcdir))
+configure: $(top_srcdir)/configure
+endif
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.in $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) ; autoconf
+
+$(top_srcdir)/configure.in: $(top_srcdir)/configure.in.base
+	cd $(top_srcdir) && ./build_configure
+
+
+ACLOCAL_SRC = \
+ac_cxx_bool.m4                    check_corba.m4     check_vtk.m4	\
+ac_cxx_depend_flag.m4             check_hdf5.m4      enable_pthreads.m4	\
+ac_cxx_mutable.m4                 check_mico.m4      libtool.m4		\
+ac_cxx_namespaces.m4              check_omniorb.m4   pyembed.m4		\
+ac_cxx_partial_specialization.m4  check_opengl.m4    python.m4		\
+ac_cxx_typename.m4                check_pthreads.m4  check_cas.m4	\
+ac_cc_warnings.m4                 check_qt.m4        check_med2.m4      \
+check_swig.m4 
+
+$(top_srcdir)/aclocal.m4: $(ACLOCAL_SRC:%=@KERNEL_ROOT_DIR@/salome_adm/unix/config_files/%)
+	cd $(top_srcdir) ; aclocal --acdir=adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files
