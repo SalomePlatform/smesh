@@ -1476,6 +1476,24 @@ msgstr "Use Base Point"
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_BASE_POINT"
 msgstr "Base Point"
 
+msgid "SMESHGUI_ExtrusionAlongPathDlg::NO_ELEMENTS_SELECTED"
+msgstr "No mesh elements are selected for extrusion"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SELECTED_PATH_IS_NOT_EDGE"
+msgstr "Path mesh should be of edge type"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::BAD_SHAPE_TYPE"
+msgstr "The shape selected for the path is not edge"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::EXTR_BAD_STARTING_NODE"
+msgstr "Wrong path starting node"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::WRONG_ANGLES_NUMBER"
+msgstr "The number of angles should correspond to the number of path nodes"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::CANT_GET_TANGENT"
+msgstr "Can't get tangent for one of the path nodes"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_RevolutionDlg::REVOLUTION_AROUND_AXIS"

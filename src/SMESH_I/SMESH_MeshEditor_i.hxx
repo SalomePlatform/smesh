@@ -105,23 +105,25 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 			    const SMESH::DirStruct &  StepVector,
 			    CORBA::Long               NbOfSteps);
   
-  void ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
-                          SMESH::SMESH_Mesh_ptr       PathMesh,
-                          GEOM::GEOM_Object_ptr       PathShape,
-                          CORBA::Long                 NodeStart,
-                          CORBA::Boolean              HasAngles,
-                          const SMESH::double_array & Angles,
-                          CORBA::Boolean              HasRefPoint,
-                          const SMESH::PointStruct &  RefPoint);
-
-  void ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
-                                SMESH::SMESH_Mesh_ptr       PathMesh,
-                                GEOM::GEOM_Object_ptr       PathShape,
-                                CORBA::Long                 NodeStart,
-                                CORBA::Boolean              HasAngles,
-                                const SMESH::double_array & Angles,
-                                CORBA::Boolean              HasRefPoint,
-                                const SMESH::PointStruct &  RefPoint);
+  SMESH::SMESH_MeshEditor::Extrusion_Error
+    ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
+                       SMESH::SMESH_Mesh_ptr       PathMesh,
+                       GEOM::GEOM_Object_ptr       PathShape,
+                       CORBA::Long                 NodeStart,
+                       CORBA::Boolean              HasAngles,
+                       const SMESH::double_array & Angles,
+                       CORBA::Boolean              HasRefPoint,
+                       const SMESH::PointStruct &  RefPoint);
+  
+  SMESH::SMESH_MeshEditor::Extrusion_Error
+    ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
+                             SMESH::SMESH_Mesh_ptr       PathMesh,
+                             GEOM::GEOM_Object_ptr       PathShape,
+                             CORBA::Long                 NodeStart,
+                             CORBA::Boolean              HasAngles,
+                             const SMESH::double_array & Angles,
+                             CORBA::Boolean              HasRefPoint,
+                             const SMESH::PointStruct &  RefPoint);
 
   void Mirror(const SMESH::long_array &           IDsOfElements,
               const SMESH::AxisStruct &           Axis,

@@ -122,13 +122,23 @@ class SMESH_MeshEditor {
   // Generate new elements by extrusion of theElements 
   // by theStep by theNbSteps
 
-  int ExtrusionAlongTrack (std::set<const SMDS_MeshElement*> & theElements,
-			   SMESH_subMesh*                      theTrackPattern,
-			   const SMDS_MeshNode*                theNodeStart,
-			   const bool                          theHasAngles,
-			   std::list<double>&                  theAngles,
-			   const bool                          theHasRefPoint,
-			   const gp_Pnt&                       theRefPoint);
+  enum Extrusion_Error {
+    EXTR_OK,
+    EXTR_NO_ELEMENTS, 
+    EXTR_PATH_NOT_EDGE,
+    EXTR_BAD_PATH_SHAPE,
+    EXTR_BAD_STARTING_NODE,
+    EXTR_BAD_ANGLES_NUMBER,
+    EXTR_CANT_GET_TANGENT
+    };
+  
+  Extrusion_Error ExtrusionAlongTrack (std::set<const SMDS_MeshElement*> & theElements,
+                                       SMESH_subMesh*                      theTrackPattern,
+                                       const SMDS_MeshNode*                theNodeStart,
+                                       const bool                          theHasAngles,
+                                       std::list<double>&                  theAngles,
+                                       const bool                          theHasRefPoint,
+                                       const gp_Pnt&                       theRefPoint);
   // Generate new elements by extrusion of theElements along path given by theTrackPattern,
   // theHasAngles are the rotation angles, base point can be given by theRefPoint
 

@@ -579,9 +579,9 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     int j = 0;
     bool bOk;
     for ( int i = 0; i < AnglesList->count(); i++ ) {
-      long angle = AnglesList->text( i ).toLong( &bOk );
+      double angle = AnglesList->text( i ).toDouble( &bOk );
       if  ( bOk )
-	anAngles[ j++ ] = angle;
+	anAngles[ j++ ] = angle*PI/180;
     }
     anAngles->length( j );
   }
@@ -597,9 +597,52 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   try {
     QAD_WaitCursor wc;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    aMeshEditor->ExtrusionAlongPath( anElementsId.inout(), myPathMesh, myPathShape, aNodeStart, 
-				     AnglesCheck->isChecked(), anAngles.inout(), 
-				     BasePointCheck->isChecked(), aBasePoint );
+    SMESH::SMESH_MeshEditor::Extrusion_Error retVal = 
+      aMeshEditor->ExtrusionAlongPath( anElementsId.inout(), myPathMesh, myPathShape, aNodeStart, 
+				       AnglesCheck->isChecked(), anAngles.inout(), 
+				       BasePointCheck->isChecked(), aBasePoint );
+
+    wc.stop();
+    switch ( retVal ) {
+    case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "NO_ELEMENTS_SELECTED" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "SELECTED_PATH_IS_NOT_EDGE" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "BAD_SHAPE_TYPE" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "EXTR_BAD_STARTING_NODE" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_ANGLES_NUMBER:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "WRONG_ANGLES_NUMBER" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_CANT_GET_TANGENT:
+      QAD_MessageBox::warn1( QAD_Application::getDesktop(),
+			     tr( "SMESH_ERROR" ),
+			     tr( "CANT_GET_TANGENT" ),
+			     tr( "SMESH_BUT_OK" ) );
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_OK:
+      break;
+    }
   }
   catch( ... ) {
     return false;
@@ -937,14 +980,11 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument( QToolButton* button
     QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
 
     if ( !myPathMesh->_is_nil() ) {
-      TColStd_MapOfInteger aTypes;
-      aTypes.Add( TopAbs_EDGE );
-      aTypes.Add( TopAbs_WIRE );
       GEOM::GEOM_Object_var aMainShape = myPathMesh->GetShapeToMesh();
       SMESH_Actor* aPathActor = SMESH::FindActorByObject( myPathMesh );
 
       if ( !aMainShape->_is_nil() && aPathActor )
-	mySelection->AddFilter( new SMESH_NumberFilter( "GEOM", TopAbs_SHAPE, -1, aTypes, aMainShape ) );
+	mySelection->AddFilter( new SMESH_NumberFilter( "GEOM", TopAbs_SHAPE, -1, TopAbs_EDGE, aMainShape ) );
 	//SMESH::SetPickable( aPathActor );
     }
   }

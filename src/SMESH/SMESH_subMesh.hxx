@@ -58,6 +58,8 @@ class SMESH_subMesh
   //   bool Contains(const TopoDS_Shape & aSubShape)
   //     throw (SALOME_Exception);
 
+  SMESH_Mesh* GetFather() { return _father; }
+  
   SMESHDS_SubMesh * GetSubMeshDS();
 
   SMESHDS_SubMesh* CreateSubMeshDS();

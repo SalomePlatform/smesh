@@ -533,35 +533,52 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
   ExtrusionSweep(anElementsId, theStepVector, theNbOfSteps);
 }
 
+#define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
+
+static SMESH::SMESH_MeshEditor::Extrusion_Error convExtrError( const::SMESH_MeshEditor::Extrusion_Error e )
+{
+  switch ( e ) {
+  RETCASE( EXTR_OK );
+  RETCASE( EXTR_NO_ELEMENTS );
+  RETCASE( EXTR_PATH_NOT_EDGE );
+  RETCASE( EXTR_BAD_PATH_SHAPE );
+  RETCASE( EXTR_BAD_STARTING_NODE );
+  RETCASE( EXTR_BAD_ANGLES_NUMBER );
+  RETCASE( EXTR_CANT_GET_TANGENT );
+  }
+  return SMESH::SMESH_MeshEditor::EXTR_OK;
+}
+
 //=======================================================================
 //function : ExtrusionAlongPath
 //purpose  : 
 //=======================================================================
 
-void SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOfElements,
-					    SMESH::SMESH_Mesh_ptr       thePathMesh,
-					    GEOM::GEOM_Object_ptr       thePathShape,
-					    CORBA::Long                 theNodeStart,
-					    CORBA::Boolean              theHasAngles,
-					    const SMESH::double_array & theAngles,
-					    CORBA::Boolean              theHasRefPoint,
-					    const SMESH::PointStruct &  theRefPoint)
+SMESH::SMESH_MeshEditor::Extrusion_Error
+  SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOfElements,
+					 SMESH::SMESH_Mesh_ptr       thePathMesh,
+					 GEOM::GEOM_Object_ptr       thePathShape,
+					 CORBA::Long                 theNodeStart,
+					 CORBA::Boolean              theHasAngles,
+					 const SMESH::double_array & theAngles,
+					 CORBA::Boolean              theHasRefPoint,
+					 const SMESH::PointStruct &  theRefPoint)
 {
   SMESHDS_Mesh*  aMesh = GetMeshDS();
 
   if ( thePathMesh->_is_nil() || thePathShape->_is_nil() )
-    return;
+    return SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
 
   SMESH_Mesh_i* aMeshImp = dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( thePathMesh ).in() );
   TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
   SMESH_subMesh* aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
 
   if ( !aSubMesh )
-    return;
+    return SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
 
   SMDS_MeshNode* nodeStart = (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(theNodeStart);
   if ( !nodeStart )
-    return;
+    return SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
 
   set<const SMDS_MeshElement*> elements;
   for (int i = 0; i < theIDsOfElements.length(); i++)
@@ -581,7 +598,7 @@ void SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOf
   gp_Pnt refPnt( theRefPoint.x, theRefPoint.y, theRefPoint.z );
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  int res = anEditor.ExtrusionAlongTrack( elements, aSubMesh, nodeStart, theHasAngles, angles, theHasRefPoint, refPnt );
+  return convExtrError( anEditor.ExtrusionAlongTrack( elements, aSubMesh, nodeStart, theHasAngles, angles, theHasRefPoint, refPnt ) );
 }
 
 //=======================================================================
@@ -589,17 +606,18 @@ void SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOf
 //purpose  : 
 //=======================================================================
 
-void SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
-						  SMESH::SMESH_Mesh_ptr       thePathMesh,
-						  GEOM::GEOM_Object_ptr       thePathShape,
-						  CORBA::Long                 theNodeStart,
-						  CORBA::Boolean              theHasAngles,
-						  const SMESH::double_array & theAngles,
-						  CORBA::Boolean              theHasRefPoint,
-						  const SMESH::PointStruct &  theRefPoint)
+SMESH::SMESH_MeshEditor::Extrusion_Error
+  SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
+					       SMESH::SMESH_Mesh_ptr       thePathMesh,
+					       GEOM::GEOM_Object_ptr       thePathShape,
+					       CORBA::Long                 theNodeStart,
+					       CORBA::Boolean              theHasAngles,
+					       const SMESH::double_array & theAngles,
+					       CORBA::Boolean              theHasRefPoint,
+					       const SMESH::PointStruct &  theRefPoint)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
-  ExtrusionAlongPath( anElementsId, thePathMesh, thePathShape, theNodeStart, theHasAngles, theAngles, theHasRefPoint, theRefPoint );
+  return ExtrusionAlongPath( anElementsId, thePathMesh, thePathShape, theNodeStart, theHasAngles, theAngles, theHasRefPoint, theRefPoint );
 }
 
 //=======================================================================
@@ -815,7 +833,7 @@ void SMESH_MeshEditor_i::MergeEqualElements()
 
 #define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
 
-SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Sew_Error e )
+static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Sew_Error e )
 {
   switch ( e ) {
   RETCASE( SEW_OK );
