@@ -877,7 +877,7 @@ bool SMESH_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
   _NS->init_orb( _orb ) ;
   SALOME_LifeCycleCORBA* myEnginesLifeCycle = new SALOME_LifeCycleCORBA(_NS);
   Engines::Component_var geomEngine =
-    myEnginesLifeCycle->FindOrLoad_Component("FactoryServer","Geometry");
+    myEnginesLifeCycle->FindOrLoad_Component("FactoryServer","GEOM");
   GEOM::GEOM_Gen_var myGeomEngine = GEOM::GEOM_Gen::_narrow(geomEngine);
 
 

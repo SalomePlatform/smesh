@@ -60,7 +60,7 @@ def MakeCompound(lstShells) :
 
 # -----------------------------------------------------------------------------
 
-geom = salome.lcc.FindOrLoadComponent("FactoryServer", "Geometry")
+geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 myBuilder = salome.myStudy.NewBuilder()
 
 ShapeTypeCompSolid = 1

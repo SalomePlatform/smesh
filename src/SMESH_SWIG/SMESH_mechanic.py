@@ -19,7 +19,7 @@ import geompy
 
 
 # ---------------------------- GEOM --------------------------------------
-geom = salome.lcc.FindOrLoadComponent("FactoryServer", "Geometry")
+geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 myBuilder = salome.myStudy.NewBuilder()
 #from geompy import gg
 

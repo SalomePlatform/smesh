@@ -15,7 +15,7 @@ class smeshpy:
 
     def __init__(self):
         try:
-            self._geom = salome.lcc.FindOrLoadComponent("FactoryServer","Geometry")
+            self._geom = salome.lcc.FindOrLoadComponent("FactoryServer","GEOM")
             self._smesh = salome.lcc.FindOrLoadComponent("FactoryServer","SMESH")
         except:
             MESSAGE( "exception in smeshpy:__init__" )
@@ -59,7 +59,7 @@ class smeshpy:
 ##def SmeshInit(shapeId):
 ##    import salome
 ##    import SMESH
-##    geom = salome.lcc.FindOrLoadComponent("FactoryServer", "Geometry")
+##    geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 ##    smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 ##    shape = salome.IDToObject(shapeId)
 ##    studyId = salome.myStudyId

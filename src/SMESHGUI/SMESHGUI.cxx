@@ -215,7 +215,7 @@ SMESHGUI* SMESHGUI::GetOrCreateSMESHGUI( QAD_Desktop* desktop )
     Engines::Component_var comp = desktop->getEngine("FactoryServer", "SMESH");
     smeshGUI->myComponentMesh = SMESH::SMESH_Gen::_narrow(comp);
     
-    Engines::Component_var comp1 = desktop->getEngine("FactoryServer", "Geometry");    
+    Engines::Component_var comp1 = desktop->getEngine("FactoryServer", "GEOM");    
     smeshGUI->myComponentGeom = GEOM::GEOM_Gen::_narrow(comp1);
       
     /* GetCurrentStudy */
