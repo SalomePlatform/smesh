@@ -24,4 +24,6 @@ nadir_update_MED_v1_3_0: 2003-11-17 10:22
 
 V1_3_0b2: 2003-11-18
 	Second pre-release of 1.3.0. Synchronization of API with MED 1.3.
-	
+
+V1_3_0: 2003-11-25 08:52
+	Release 1.3.0.

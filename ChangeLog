@@ -4,6 +4,71 @@
 #cvs2cl.pl -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2003-11-27 11:45  Jerome Robert <jerome.robert@eads.net>
+
+	* resources/SMESH_en.xml, resources/SMESH_fr.xml,
+	src/SMESHGUI/SMESHGUI.cxx: [Bug SMESH839] Spelling: Hypotheses -
+	Hexa?edron (i,j,k). Bug Fixed.
+
+2003-11-25 08:52  tag V1_3_0
+
+2003-11-25 08:52  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* bin/VERSION, INSTALL: NRI: 1.3.0 version.
+
+2003-11-24 13:26  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* resources/mesh_tree_algo_netgen.png: file
+	mesh_tree_algo_netgen.png was initially added on branch
+	nadir_1_2_2.
+
+2003-11-24 13:25  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* resources/mesh_algo_netgen.png: file mesh_algo_netgen.png was
+	initially added on branch nadir_1_2_2.
+
+2003-11-24 13:20  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_I/SMESH_NETGEN_3D_i.cxx: file SMESH_NETGEN_3D_i.cxx was
+	initially added on branch nadir_1_2_2.
+
+2003-11-24 13:20  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_I/SMESH_NETGEN_3D_i.hxx: file SMESH_NETGEN_3D_i.hxx was
+	initially added on branch nadir_1_2_2.
+
+2003-11-24 13:17  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH/SMESH_NETGEN_3D.cxx: file SMESH_NETGEN_3D.cxx was
+	initially added on branch nadir_1_2_2.
+
+2003-11-24 13:17  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH/SMESH_NETGEN_3D.hxx: file SMESH_NETGEN_3D.hxx was
+	initially added on branch nadir_1_2_2.
+
+2003-11-20 12:45  tag V1_3_0_b3
+
+2003-11-20 12:45  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/INPUT/sources/: Application-About.png,
+	Application-About1.jpg, application.gif, application.jpg,
+	bg_salome.gif, bg_salomepro.gif, doxygen.css: NRI : Update images.
+
+2003-11-20 12:44  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/INPUT/doxyfile: NRI : Generate TreeView.
+
+2003-11-20 12:43  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/Makefile.in: NRI : Add static directory.
+
+2003-11-18 15:01  tag V1_3_0b2
+
+2003-11-18 15:01  Jerome Robert <jerome.robert@eads.net>
+
+	* ChangeLog, INSTALL, cvs-tags: update for V1_3_0_b2
+
 2003-11-18 09:19  Nadir Bouhamou <nadir.bouhamou@cea.fr>
 
 	* src/SMESH_I/: SMESH_MEDFamily_i.cxx, SMESH_MEDFamily_i.hxx,
