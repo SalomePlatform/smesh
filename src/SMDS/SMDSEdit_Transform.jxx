@@ -1,0 +1,12 @@
+#ifndef _SMDS_Mesh_HeaderFile
+#include "SMDS_Mesh.hxx"
+#endif
+#ifndef _gp_Trsf_HeaderFile
+#include <gp_Trsf.hxx>
+#endif
+#ifndef _SMDS_ListOfMeshElement_HeaderFile
+#include "SMDS_ListOfMeshElement.hxx"
+#endif
+#ifndef _SMDSEdit_Transform_HeaderFile
+#include "SMDSEdit_Transform.hxx"
+#endif

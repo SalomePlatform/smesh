@@ -1,0 +1,51 @@
+// File:	SMDS_MeshEdge.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+//=======================================================================
+//function : ComputeKey
+//purpose  : compute the Key of the edge based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshEdge::ComputeKey()
+{
+  //  myKey = (myNodes[0] << 2) + myNodes[1];
+   myKey = myNodes[0] + myNodes[1];
+}
+
+//=======================================================================
+//function : GetKey
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshEdge::GetKey() const
+{
+   return myKey;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshEdge::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshEdge::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+

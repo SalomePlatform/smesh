@@ -1,0 +1,28 @@
+// File:	SMDS_MeshElementsIterator.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+#include <Standard_NoSuchObject.hxx>
+
+//=======================================================================
+//function : More
+//purpose  : 
+//=======================================================================
+
+inline Standard_Boolean SMDS_MeshElementsIterator::More() const
+{
+  return myMapIterator.More();
+}
+
+//=======================================================================
+//function : Value
+//purpose  : 
+//=======================================================================
+
+inline const Handle(SMDS_MeshElement)& SMDS_MeshElementsIterator::Value() const
+{
+  Standard_NoSuchObject_Raise_if(!More(),"SMDS_MeshElementsIterator::Value");  
+  return myCurrentMeshElement;
+}

@@ -1,0 +1,103 @@
+// File:	SMDS_MeshNode.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+
+//=======================================================================
+//function : GetKey
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshNode::GetKey() const
+{
+  return myID;
+}
+
+//=======================================================================
+//function : X
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Real SMDS_MeshNode::X() const
+{
+  return myPnt.X();
+}
+
+//=======================================================================
+//function : Y
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Real SMDS_MeshNode::Y() const
+{
+  return myPnt.Y();
+}
+
+//=======================================================================
+//function : Z
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Real SMDS_MeshNode::Z() const
+{
+  return myPnt.Z();
+}
+
+//=======================================================================
+//function : Pnt
+//purpose  : 
+//           
+//=======================================================================
+
+inline gp_Pnt SMDS_MeshNode::Pnt() const
+{
+  return myPnt;
+}
+
+//=======================================================================
+//function : Pnt
+//purpose  : 
+//           
+//=======================================================================
+
+inline void SMDS_MeshNode::SetPnt(const gp_Pnt& P)
+{
+  myPnt = P;
+}
+
+//=======================================================================
+//function : AddInverseElement
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_MeshNode::AddInverseElement(const Handle(SMDS_MeshElement)& ME)
+{
+  myInverseElements.Append(ME);
+}
+
+//=======================================================================
+//function : InverseElements
+//purpose  : 
+//=======================================================================
+
+inline const SMDS_ListOfMeshElement& SMDS_MeshNode::InverseElements() const
+{
+  return myInverseElements;
+}
+
+//=======================================================================
+//function : ClearInverseElements
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_MeshNode::ClearInverseElements()
+{
+  myInverseElements.Clear();
+}
+

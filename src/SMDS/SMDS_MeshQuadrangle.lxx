@@ -1,0 +1,53 @@
+// File:	SMDS_MeshQuadrangle.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshQuadrangle::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshQuadrangle::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+
+//=======================================================================
+//function : ComputeKey
+//purpose  : compute the Key of the face based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshQuadrangle::ComputeKey()
+{
+  //  myKey = (myNodes[0] << 3) + (myNodes[1] << 2) + (myNodes[2] << 1) + myNodes[3];
+    myKey = myNodes[0]  + myNodes[1]  + myNodes[2]  + myNodes[3];
+}
+
+//=======================================================================
+//function : GetEdgeDefinedByNodes
+//purpose  : 
+//=======================================================================
+inline void SMDS_MeshQuadrangle::GetEdgeDefinedByNodes(const Standard_Integer rank, 
+						Standard_Integer& idnode1,
+						Standard_Integer& idnode2) const
+{
+  idnode1 = myNodes[rank-1];
+  idnode2 = myNodes[rank % myNbNodes];
+}
+

@@ -1,0 +1,60 @@
+-- File:	SMDS_MapOfMeshElement.cdl
+-- Created:	Fri Jan 25 11:39:17 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MapOfMeshElement from SMDS inherits ExtendedMap from SMDS
+
+	---Purpose:  Redefinition/definition  of methods of Map from TCollection
+
+uses
+    MeshElement from SMDS
+
+raises
+    NoSuchObject from Standard
+
+is
+    Create(NbBuckets : Integer =1) returns MapOfMeshElement from SMDS;
+   ---Purpose: Creates   a Map with  <NbBuckets> buckets. Without
+   --          arguments the map is automatically dimensioned.
+   ---C++: inline
+
+    Find(me; K : MeshElement) returns MeshElement
+	---Level: Public
+	---Purpose: Returns  the Item stored  with the Key  <K> in the Map. 
+        ---Trigger: An exception is raised when <K> is not in the map.
+    raises NoSuchObject from Standard  
+	---C++: alias operator()
+	---C++: return const &
+    is static;
+    
+    ChangeFind(me : in out; K : MeshElement) returns MeshElement
+	---Level: Public
+	---Purpose: Returns the  Item stored with  the Key  <K> in the
+	-- Map. This Item can be   modified with  the  syntax
+	-- aMap(K) = newItem; 
+        ---Trigger: An exception is raised when <K> is not in the map.
+	---C++: alias operator()
+	---C++: return &
+    raises NoSuchObject from Standard 
+    is static;
+
+    FindID(me; ID : Integer) returns MeshElement
+	---Level: Public
+	---Purpose: Returns  the Item stored  with the ID in the Map. 
+        ---Trigger: An exception is raised when ID is not in the map.
+    raises NoSuchObject from Standard  
+	---C++: alias operator()
+	---C++: return const &
+    is static;
+    
+
+    ContainsID(me; ID : Integer) returns Boolean
+	---Level: Public
+	---Purpose: Returns True  if the ID is stored  in the
+	-- map <me>.
+    is static;
+    
+end MapOfMeshElement;

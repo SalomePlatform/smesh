@@ -1,0 +1,56 @@
+// File:	SMDS_MeshTriangle.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshTriangle::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshTriangle::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+//=======================================================================
+//function : ComputeKey
+//purpose  : compute the Key of the face based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshTriangle::ComputeKey()
+{
+  //  myKey = (myNodes[0] << 2) + (myNodes[1] << 1) + (myNodes[2]);
+  myKey = myNodes[0] + myNodes[1] + myNodes[2];
+}
+
+
+//=======================================================================
+//function : GetEdgeDefinedByNodes
+//purpose  : 
+//=======================================================================
+inline void SMDS_MeshTriangle::GetEdgeDefinedByNodes(const Standard_Integer rank, 
+						     Standard_Integer& idnode1,
+						     Standard_Integer& idnode2) const
+{
+  idnode1 = myNodes[rank-1];
+  idnode2 = myNodes[rank % myNbNodes];
+}
+
+

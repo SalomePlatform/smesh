@@ -1,0 +1,35 @@
+-- File:	SMDSControl_MeshBoundary.cdl
+-- Created:	Tue Mar 12 23:36:11 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+deferred class MeshBoundary from SMDSControl inherits TShared from MMgt
+
+	---Purpose:  common   interface  for  classes   which  extract
+	--          boundaries from a mesh
+
+uses
+
+    Mesh from SMDS
+
+is
+    Initialize;
+    ---Purpose: Initialize an empty MeshBoundary
+
+
+    Initialize (M : Mesh from SMDS);
+    ---Purpose: Initialize a MeshBoundary.
+
+
+    Compute(me: mutable) is deferred;
+    
+    ResultMesh(me: mutable) returns Mesh from SMDS;
+    
+
+fields
+    myMesh : Mesh from SMDS is protected;
+    myBoundaryMesh : Mesh from SMDS is protected;
+
+end MeshBoundary;

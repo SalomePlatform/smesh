@@ -1,0 +1,26 @@
+-- File:	SMDS_MeshNodeIDFactory.cdl
+-- Created:	Tue May  7 16:18:08 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+private class MeshNodeIDFactory from SMDS inherits MeshIDFactory
+
+	---Purpose: 
+
+is
+
+    Create returns mutable MeshNodeIDFactory from SMDS;
+
+    GetFreeID(me:mutable) returns Integer is redefined static;
+    	---Purpose: returns a free identifier for mesh from
+    	--          the pool of ID
+        ---C++: inline
+	
+    ReleaseID(me: mutable;ID :Integer) is redefined static;
+    	---Purpose: free the ID and give it back to the pool of ID
+        ---C++: inline
+
+
+end MeshNodeIDFactory;

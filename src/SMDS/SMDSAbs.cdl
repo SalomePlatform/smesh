@@ -1,0 +1,24 @@
+-- File:	SMDSAbs.cdl
+-- Created:	Mon Jun  3 11:57:33 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+package SMDSAbs 
+
+	---Purpose: This package provides enumeration and resources
+	--          for SMDS mesh
+is
+
+    enumeration ElementType is
+        All,
+    	Node,
+	Edge,
+	Face,
+	Volume
+    end ElementType;
+    ---Purpose: type of mesh elements
+
+
+end SMDSAbs;

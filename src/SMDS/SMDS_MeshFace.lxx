@@ -1,0 +1,16 @@
+// File:	SMDS_MeshFace.lxx
+// Created:	Tue May  7 18:09:59 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : GetKey
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshFace::GetKey() const
+{
+   return myKey;
+}
+

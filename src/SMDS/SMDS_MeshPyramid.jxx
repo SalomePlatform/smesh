@@ -1,0 +1,6 @@
+#ifndef _Standard_ConstructionError_HeaderFile
+#include <Standard_ConstructionError.hxx>
+#endif
+#ifndef _SMDS_MeshPyramid_HeaderFile
+#include "SMDS_MeshPyramid.hxx"
+#endif

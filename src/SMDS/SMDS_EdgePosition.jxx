@@ -1,0 +1,6 @@
+#ifndef _gp_Pnt_HeaderFile
+#include <gp_Pnt.hxx>
+#endif
+#ifndef _SMDS_EdgePosition_HeaderFile
+#include "SMDS_EdgePosition.hxx"
+#endif

@@ -1,0 +1,408 @@
+-- File:	SMDS_Mesh.cdl
+-- Created:	Wed Jan 23 12:08:54 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class Mesh from SMDS inherits MeshObject from SMDS
+
+	---Purpose: 
+
+uses
+    MeshNodeIDFactory from SMDS,
+    MeshElementIDFactory from SMDS,
+    ListOfMeshElement from SMDS,
+    ListOfMesh from SMDS,
+    MapOfMeshOrientedElement from SMDS,
+    MeshElement from SMDS,
+    MeshNode from SMDS,
+    ListIteratorOfListOfMesh from SMDS   
+raises
+
+    NoSuchObject from Standard
+is
+
+    ---================================
+    ---Category: public API methods
+    --           Mesh creation
+    --=================================
+
+    Create(nbnodes: Integer = 10; nbedges : Integer = 10; 
+    	   nbfaces : Integer = 10; nbvolumes : Integer = 10) returns mutable Mesh;
+    ---Purpose:  create a  new mesh.   It is  possible to  specify the
+    --          initial size  of elements.   
+    --          It is recommended  to set the size of mesh elements
+    --          in the constructor to avoid too much resizing of data storage
+
+    AddSubMesh(me: mutable) returns Mesh from SMDS
+    ---Purpose: create an submesh.
+    --          uses a private constructor to create a instance of the submesh
+    --          and attach it to the mesh parent.
+    is static;
+
+
+
+    ---================================
+    ---Category: public API methods
+    --           Mesh Element creation
+    --=================================
+
+    -- *** Nodes *** --
+   
+   
+    AddNode(me: mutable; x,y,z : Real) returns Integer
+    ---Purpose: create an instance of  MeshNode and add it to the mesh
+    --          if the mesh  has a parent then the  node is also added
+    --          to the parent mesh.
+    --          Returns a generated ID for the created node.
+    is virtual;
+
+    AddNodeWithID(me: mutable; x,y,z : Real; ID: Integer) returns Boolean
+    ---Purpose: create an instance of  MeshNode and add it to the mesh
+    --          if the mesh  has a parent then the  node is also added
+    --          to the parent mesh.
+    --          returns False in case the ID already exists
+    is virtual;
+
+    AddNode(me: mutable; ID : Integer) returns Boolean
+    ---Purpose: add  an existing node in  the mesh. This  is useful to
+    --          add a node from a parent mesh to the submesh
+    is virtual;
+
+
+    -- *** Edges *** --
+   
+    AddEdge(me: mutable; idnode1, idnode2 : Integer) returns Integer
+    ---Purpose: create an instance of MeshEdge and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddEdgeWithID(me: mutable; idnode1, idnode2, ID : Integer) returns Boolean
+    ---Purpose: create an instance of MeshEdge and add it to the mesh
+    is virtual;
+
+
+    -- *** Faces *** --
+   
+    AddFace(me: mutable; idnode1, idnode2, idnode3 : Integer) returns Integer
+    ---Purpose: create an instance of MeshFace and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddFaceWithID(me: mutable; idnode1, idnode2, idnode3, ID : Integer) returns Boolean
+    ---Purpose: create an instance of MeshFace and add it to the mesh
+    is virtual;
+
+
+    AddFace(me: mutable; idnode1, idnode2, idnode3, idnode4 : Integer) 
+    returns Integer
+    ---Purpose: create an instance of MeshFace and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddFaceWithID(me: mutable; idnode1, idnode2, idnode3, idnode4, ID : Integer) 
+    returns Boolean
+    ---Purpose: create an instance of MeshFace and add it to the mesh
+    is virtual;
+
+
+
+    -- *** Volumes *** --
+
+    AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4 : Integer) 
+    returns Integer
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddVolumeWithID(me: mutable; idnode1, idnode2, idnode3, idnode4, ID : Integer) 
+    returns Boolean
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is virtual;
+
+    AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5 : Integer) 
+    returns Integer
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddVolumeWithID(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, ID : Integer) 
+    returns Boolean
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is virtual;
+
+    AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6 : Integer) 
+    returns Integer
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddVolumeWithID(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6, ID : Integer) 
+    returns Boolean
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is virtual;
+
+    AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
+    	    	    	   idnode7, idnode8 : Integer) 
+    returns Integer
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    --          returns the id of the element. Returns 0 if creation failed
+    is virtual;
+
+    AddVolumeWithID(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
+    	    	    	   idnode7, idnode8, ID : Integer) 
+    returns Boolean
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is virtual;
+
+
+    AddVolume(me: mutable; node1, node2, node3, node4 : MeshElement) 
+    returns MeshElement from SMDS
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is static;
+
+    AddVolume(me: mutable; node1, node2, node3, node4, node5 : MeshElement) 
+    returns MeshElement from SMDS
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is static;
+
+    AddVolume(me: mutable; node1, node2, node3, node4, node5, node6 : MeshElement) 
+    returns MeshElement from SMDS
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is static;
+
+    AddVolume(me: mutable; node1, node2, node3, node4, 
+    	    	    	   node5, node6, node7, node8 : MeshElement) 
+    returns MeshElement from SMDS
+    ---Purpose: create an instance of MeshVolume and add it to the mesh
+    is static;
+
+
+
+    ---================================
+    ---Category: public API methods
+    --           Mesh Element deletion
+    --=================================
+
+
+    RemoveNode(me: mutable; IDnode: Integer)
+    ---Purpose: remove the node IDnode in the mesh and in all the children mesh
+    --          if it exists, it remains in the parent mesh
+    --          if the mesh has no parent, then ID is released
+    is virtual;
+    
+    RemoveEdge(me: mutable; idnode1, idnode2 : Integer)
+    ---Purpose: remove the edge defined by idnode1,idnode2 in the mesh
+    is virtual;
+    
+    RemoveFace(me: mutable; idnode1, idnode2, idnode3 : Integer)
+    ---Purpose: remove the face defined by idnode1,idnode2,idnode3 in the mesh
+    is virtual;
+    
+    RemoveFace(me: mutable; idnode1, idnode2, idnode3, idnode4 : Integer)
+    ---Purpose: remove the face defined by idnode1,idnode2,idnode3,idnode4 in the mesh
+    is virtual;
+
+    RemoveElement(me: mutable; IDelem : Integer;removenodes : Boolean = Standard_False)
+    ---Purpose: remove the mesh element IDelem
+    --          Caution : Cannot be used to remove nodes, instead
+    --          use method RemoveNode
+    is virtual;
+
+    RemoveElement(me: mutable; elem: MeshElement;removenodes : Boolean = Standard_False)
+    is static;
+
+    RemoveFromParent(me: mutable)
+    returns Boolean
+    ---Purpose: remove this from its parent
+    --          if this has no parent then it returns False (True otherwise)
+    is virtual;
+
+    RemoveSubMesh(me: mutable; aMesh : Mesh from SMDS)
+    returns Boolean
+    ---Purpose: remove aMesh from the list of Children
+    --          if the submesh does not belong to this, it returns False
+    --          (True otherwiswe)
+    is virtual;
+
+    ---================================
+    ---Category: public API methods
+    --           Mesh exploration
+    --=================================
+
+    GetNode(me; rank: Integer; ME: MeshElement) returns MeshNode from SMDS
+    is static;
+
+    FindNode(me; idnode: Integer) returns MeshElement from SMDS
+    ---Purpose: return the meshnode idnode in the mesh
+    is static;
+
+    FindEdge(me; idnode1, idnode2: Integer) returns MeshElement from SMDS
+    ---Purpose: 
+    is static;
+
+    FindFace(me; idnode1, idnode2, idnode3: Integer) returns MeshElement from SMDS
+    ---Purpose: 
+    is static;
+
+    FindFace(me; idnode1, idnode2, idnode3, idnode4: Integer) returns MeshElement from SMDS
+    ---Purpose: 
+    is static;
+
+    FindElement(me; IDelem: Integer) returns MeshElement from SMDS
+    ---Purpose:  returns the mesh element corresponding to IDelem
+    is static;
+
+    Contains(me; elem: MeshElement) returns Boolean
+    ---Purpose: 
+    is static;
+
+    RebuildAllInverseConnections(me: mutable)
+    ---Purpose: clean the inverse connections and rebuild them
+    --          completely. If the mesh has children, the 
+    --          inverse connections are also rebuilt
+    is static;
+
+    SubMeshIterator(me;itmsh: out ListIteratorOfListOfMesh from SMDS)
+    ---Purpose: 
+    is static;
+
+    
+    NbNodes(me) returns Integer;
+    ---C++: inline
+
+    NbEdges(me) returns Integer;
+    ---C++: inline
+
+    NbFaces(me) returns Integer;
+    ---C++: inline
+
+    NbVolumes(me) returns Integer;
+    ---C++: inline
+
+    NbSubMesh(me) returns Integer;
+    ---C++: inline
+
+    DumpNodes(me);
+
+    DumpEdges(me);
+
+    DumpFaces(me);
+
+    DumpVolumes(me);
+
+    DebugStats(me);
+
+
+
+    ---Category: private or protected methods
+    --           
+
+    Create(parent: Mesh; nbnodes: Integer = 10) returns mutable Mesh
+    ---Purpose: constructor used internally to create submesh
+    --          
+    is private;
+    
+    AddNode(me: mutable; node : MeshElement ) returns Boolean
+    ---Purpose: add a node in the mesh
+    --          if the mesh has parent, the node is also added to the parent.
+    --          returns False if the node is invalid ( null handle)
+    is private;
+
+    CreateEdge(me; ID, idnode1, idnode2 : Integer) returns MeshElement from SMDS;
+
+    CreateFace(me; ID, idnode1, idnode2, idnode3 : Integer) returns MeshElement from SMDS;
+
+    CreateFace(me; ID, idnode1, idnode2, idnode3, idnode4 : Integer) 
+    returns MeshElement from SMDS;
+
+    CreateVolume(me; ID, idnode1, idnode2, idnode3, idnode4 : Integer) 
+    returns MeshElement from SMDS;
+
+    CreateVolume(me; ID, idnode1, idnode2, idnode3, idnode4, idnode5 : Integer) 
+    returns MeshElement from SMDS;
+
+    CreateVolume(me; ID, idnode1, idnode2, idnode3, idnode4, idnode5, idnode6 : Integer) 
+    returns MeshElement from SMDS;
+
+    CreateVolume(me; ID, idnode1, idnode2, idnode3, idnode4, idnode5, idnode6, idnode7, idnode8 : Integer) 
+    returns MeshElement from SMDS;
+
+
+    FindNode(me; node: MeshElement) returns MeshElement from SMDS
+    ---Purpose: 
+    is protected;
+
+    FindEdge(me; edge: MeshElement) returns MeshElement from SMDS
+    ---Purpose: 
+    is protected;
+
+    FindFace(me; face: MeshElement) returns MeshElement from SMDS
+    ---Purpose: 
+    is protected;
+
+    FindVolume(me; volume: MeshElement) returns MeshElement from SMDS
+    ---Purpose: 
+    is protected;
+
+
+    RemoveInverseElement(me; node,parent : MeshElement)
+    ---Purpose: 
+    is protected;
+
+    FreeNode(me: mutable; node: MeshElement)
+    is private;
+
+    RemoveNode(me: mutable; node: MeshElement) returns Boolean
+    is protected;
+
+    RemoveEdge(me: mutable; edge: MeshElement)
+    is protected;
+    
+    RemoveFace(me: mutable; face: MeshElement)
+    is protected;
+
+    RemoveVolume(me: mutable; volume: MeshElement)
+    is protected;
+
+
+
+    GetNode(me; ID: Integer) returns MeshElement from SMDS
+    is protected;
+
+    RemoveAncestors(me: mutable; ME: MeshElement from SMDS; map: MapOfMeshOrientedElement from SMDS)
+    is protected;
+
+    BuildMapNodeAncestors(me; ME: MeshElement from SMDS;map: in out MapOfMeshOrientedElement from SMDS)
+    is private;
+
+    BuildMapEdgeAncestors(me; ME: MeshElement from SMDS;map: in out MapOfMeshOrientedElement from SMDS)
+    is private;
+
+    BuildMapFaceAncestors(me; ME: MeshElement from SMDS;map: in out MapOfMeshOrientedElement from SMDS)
+    is private;
+
+    RebuildInverseConnections(me: mutable)
+    ---Purpose: 
+    is private;
+
+
+fields
+
+    myNodes     : MapOfMeshOrientedElement      from SMDS;
+    myEdges     : MapOfMeshOrientedElement	from SMDS;
+    myFaces     : MapOfMeshOrientedElement	from SMDS;
+    myVolumes   : MapOfMeshOrientedElement	from SMDS;
+    myParent    : Mesh from SMDS;
+    myChildren  : ListOfMesh from SMDS;
+    myNodeIDFactory : MeshNodeIDFactory from SMDS;
+    myElementIDFactory : MeshElementIDFactory from SMDS;
+    myHasInverse : Boolean;
+friends
+     class MeshVolumesIterator from SMDS,
+     class MeshFacesIterator from SMDS,
+     class MeshEdgesIterator from SMDS,
+     class MeshNodesIterator from SMDS
+   
+end Mesh;

@@ -1,0 +1,16 @@
+// File:	SMDS_MeshVolume.lxx
+// Created:	Tue May  7 18:15:11 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : GetKey
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshVolume::GetKey() const
+{
+   return myKey;
+}
+

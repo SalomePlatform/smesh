@@ -1,0 +1,35 @@
+-- File:	SMDS_MeshVolume.cdl
+-- Created:	Wed Jan 23 16:17:22 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+deferred class MeshVolume from SMDS inherits MeshElement from SMDS
+
+	---Purpose: 
+
+uses
+  MeshElement from SMDS
+    
+raises 
+  ConstructionError   from Standard
+
+is
+
+    Initialize(ID: Integer; NbConnections : Integer) returns mutable MeshVolume;
+    
+
+    ComputeKey(me: mutable) is deferred;
+    ---Purpose: compute the  ID of the volume  based on the  id's of its
+    --          bounding nodes
+
+    GetKey(me) returns Integer is redefined static;    
+    ---C++: inline
+
+    Print(me; OS: in out OStream) is redefined virtual;
+
+fields
+    myKey : Integer is protected;
+
+end MeshVolume;

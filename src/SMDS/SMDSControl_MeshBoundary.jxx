@@ -1,0 +1,6 @@
+#ifndef _SMDS_Mesh_HeaderFile
+#include "SMDS_Mesh.hxx"
+#endif
+#ifndef _SMDSControl_MeshBoundary_HeaderFile
+#include "SMDSControl_MeshBoundary.hxx"
+#endif

@@ -1,0 +1,26 @@
+// File:	SMDS_SpacePosition.lxx
+// Created:	Mon May 13 14:24:22 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : SetCoords
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_SpacePosition::SetCoords(const Standard_Real x,
+					  const Standard_Real y,
+					  const Standard_Real z)
+{
+  myCoords.SetCoord(x,y,z);
+}
+
+//=======================================================================
+//function : SetCoords
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_SpacePosition::SetCoords(const gp_Pnt& aCoords)
+{
+  myCoords = aCoords;
+}

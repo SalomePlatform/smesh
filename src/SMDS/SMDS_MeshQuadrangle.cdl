@@ -1,0 +1,43 @@
+-- File:	SMDS_MeshQuadrangle.cdl
+-- Created:	Wed Jan 23 16:16:09 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MeshQuadrangle from SMDS inherits MeshFace from SMDS
+
+	---Purpose: 
+
+uses
+    MeshElement from SMDS
+
+is
+
+    Create (ID,idnode1,idnode2,idnode3,idnode4: Integer) returns mutable MeshQuadrangle;
+    	---Purpose: constructor for a quandrangle
+    
+    ComputeKey(me: mutable) is redefined static;
+    ---Purpose: compute the  ID of the face  based on the  id's of its
+    --          bounding nodes
+    ---C++: inline
+
+    GetEdgeDefinedByNodes(me; rank: Integer; idnode1, idnode2 : out Integer) is redefined static;
+    ---Purpose: returns the idnodes of the ith edge (rank) of the face
+    --          rank must be comprised between 1 and myNbConnections included.
+    ---C++: inline
+    
+    GetConnections(me) returns Address is redefined static;
+    ---C++: inline
+
+    GetConnection(me; rank: Integer) returns Integer is redefined static;
+    ---C++: inline
+
+    SetConnections(me: mutable; idnode1,idnode2,idnode3,idnode4: Integer) is private; 
+
+
+fields
+    
+    myNodes : Integer [4];
+
+end MeshQuadrangle;

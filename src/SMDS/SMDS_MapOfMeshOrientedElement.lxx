@@ -1,0 +1,12 @@
+// File:	SMDS_MapOfMeshOrientedElement.lxx
+// Created:	Fri Jan 25 11:43:44 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+#include <Standard_NoSuchObject.hxx>
+
+inline SMDS_MapOfMeshOrientedElement::SMDS_MapOfMeshOrientedElement(
+                                 const Standard_Integer NbBuckets ):
+       SMDS_ExtendedOrientedMap( NbBuckets )
+{}
+

@@ -1,0 +1,39 @@
+-- File:	SMDSControl.cdl
+-- Created:	Fri Mar 15 11:05:03 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+package SMDSControl 
+
+	---Purpose: provides classes for controlling the mesh
+	--          according to several criteria
+
+uses
+
+    SMDS
+    
+is
+
+    ---Category: Classes
+    --           
+
+    deferred class MeshBoundary;
+	class BoundaryEdges;
+    
+    	class BoundaryFaces;
+    
+    ---Category: Package methods
+    --           
+    
+    ComputeNeighborFaces(M:Mesh from SMDS; ME: MeshElement from SMDS; idnode1,idnode2: Integer)
+    returns Integer;
+
+    ComputeNeighborVolumes(M:Mesh from SMDS; ME: MeshElement from SMDS; idnode1,idnode2,idnode3: Integer)
+    returns Integer;
+
+    ComputeNeighborVolumes(M:Mesh from SMDS; ME: MeshElement from SMDS; idnode1,idnode2,idnode3,idnode4: Integer)
+    returns Integer;
+
+end SMDSControl;

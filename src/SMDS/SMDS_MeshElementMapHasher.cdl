@@ -1,0 +1,31 @@
+-- File:	SMDS_MeshElementMapHasher.cdl
+-- Created:	Wed Jan 23 14:04:07 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MeshElementMapHasher from SMDS 
+
+	---Purpose: 
+
+uses
+    MeshElement from SMDS
+
+
+is
+    HashCode(myclass; ME: MeshElement from SMDS; Upper : Integer) returns Integer;
+	---Purpose: Returns a HasCode value  for  the  Key <K>  in the
+	--          range 0..Upper.
+	--
+	---C++: inline
+	
+    IsEqual(myclass; ME1, ME2 : MeshElement from SMDS) returns Boolean;
+	---Purpose: Returns True  when the two  keys are the same. Two
+	--          same  keys  must   have  the  same  hashcode,  the
+	--          contrary is not necessary.
+	--          
+	---C++: inline
+    
+
+end MeshElementMapHasher;

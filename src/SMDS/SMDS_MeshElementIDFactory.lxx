@@ -1,0 +1,56 @@
+// File:	SMDS_MeshElementIDFactory.lxx
+// Created:	Tue May  7 16:30:34 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : GetFreeID
+//purpose  : 
+//=======================================================================
+inline Standard_Integer  SMDS_MeshElementIDFactory::GetFreeID()
+{
+  if (myPoolOfID.IsEmpty()) {
+    ++myMaxID;
+    while (myIDElements.IsBound(myMaxID)) ++myMaxID;
+    return myMaxID;
+  } else {
+    Standard_Integer ID = myPoolOfID.Top();
+    myPoolOfID.Pop();
+    return ID;
+  }
+
+}
+
+//=======================================================================
+//function : ReleaseID
+//purpose  : 
+//=======================================================================
+inline void SMDS_MeshElementIDFactory::ReleaseID(const Standard_Integer ID)
+{
+  myIDElements.UnBind(ID);
+  if (ID < myMaxID)
+    myPoolOfID.Push(ID);
+
+}
+
+//=======================================================================
+//function : BindID
+//purpose  : 
+//=======================================================================
+inline Standard_Boolean SMDS_MeshElementIDFactory::BindID(const Standard_Integer ID,
+					      const Handle(SMDS_MeshElement)& elem)
+{
+  return myIDElements.Bind(ID,elem);
+
+}
+
+//=======================================================================
+//function : MeshElement
+//purpose  : 
+//=======================================================================
+inline Handle(SMDS_MeshElement) SMDS_MeshElementIDFactory::MeshElement(const Standard_Integer ID) const
+{
+  return myIDElements.Find(ID);
+
+}
+

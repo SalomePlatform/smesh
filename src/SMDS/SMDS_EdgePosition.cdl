@@ -1,0 +1,36 @@
+-- File:	SMDS_EdgePosition.cdl
+-- Created:	Mon May 13 14:44:40 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class EdgePosition from SMDS inherits Position from SMDS
+
+	---Purpose: used to characterize a MeshNode with a CAD edge
+
+uses
+    Pnt from gp
+
+is
+
+    Create returns mutable EdgePosition;
+    ---Purpose: empty constructor. the edge is not set
+
+    Create(aEdgeId : Integer; aUParam : Real) returns mutable EdgePosition;
+
+    Coords(me) returns Pnt from gp is redefined virtual;
+    ---Purpose: returns the resulting 3d point to be set
+    --          in the MeshNode instance
+    
+    SetUParameter(me: mutable; aUparam : Real);
+    ---C++: inline
+
+    GetUParameter(me) returns Real;
+    ---C++: inline
+    
+fields
+
+    myUParameter : Real;
+    
+end EdgePosition;

@@ -1,0 +1,9 @@
+#ifndef _Standard_NoSuchObject_HeaderFile
+#include <Standard_NoSuchObject.hxx>
+#endif
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif
+#ifndef _SMDS_MapOfMeshOrientedElement_HeaderFile
+#include "SMDS_MapOfMeshOrientedElement.hxx"
+#endif

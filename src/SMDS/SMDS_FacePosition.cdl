@@ -1,0 +1,44 @@
+-- File:	SMDS_FacePosition.cdl
+-- Created:	Mon May 13 14:53:10 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class FacePosition from SMDS  inherits Position from SMDS
+
+	---Purpose: used to characterize a MeshNode with a CAD face
+
+uses
+    Pnt from gp
+
+is
+
+    Create returns mutable FacePosition;
+    ---Purpose: empty constructor. the face is not set
+
+    Create(aFaceId : Integer; aUParam,aVParam : Real) 
+    returns mutable FacePosition;
+
+    Coords(me) returns Pnt from gp is redefined virtual;
+    ---Purpose: returns the resulting 3d point to be set
+    --          in the MeshNode instance
+    
+    SetUParameter(me: mutable; aUparam : Real);
+    ---C++: inline
+
+    SetVParameter(me: mutable; aVparam : Real);
+    ---C++: inline
+
+    GetUParameter(me) returns Real;
+    ---C++: inline
+
+    GetVParameter(me) returns Real;
+    ---C++: inline
+
+fields
+
+    myUParameter : Real;
+    myVParameter : Real;
+
+end FacePosition;

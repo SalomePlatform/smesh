@@ -1,0 +1,47 @@
+-- File:	SMDSEdit_Transform.cdl
+-- Created:	Wed May 15 21:45:47 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class Transform from SMDSEdit 
+
+	---Purpose: tool to modify  a Mesh or MeshElements by applying
+	--          a transformation
+
+uses
+  Mesh from SMDS,
+  ListOfMeshElement from SMDS,
+  Trsf from gp
+  
+is
+    Create (aMesh : Mesh from SMDS; aTrsf: Trsf from gp) 
+    returns Transform from SMDSEdit;
+    ---Purpose: create a transform tool on a whole mesh
+
+    Create (aMesh : Mesh from SMDS; aListOfME : ListOfMeshElement from SMDS;
+    	    aTrsf : Trsf from gp)
+    returns Transform from SMDSEdit;
+    ---Purpose: create  a transform  tool to be  applied on a  list of
+    --          meshelements from the mesh aMesh. MeshElements from the
+    --          list that do not belong to the mesh will not be treated
+
+    Perform (me: in out);
+    ---Purpose: Perform  the current transformation on the  Mesh or on
+    --          the list of meshelements if it is not empty
+    
+    SetTrsf(me: in out; aTrsf: Trsf from gp);
+    ---Purpose: replace the field myTrsf by the one given in argument
+    --          This can be used to apply another transformation on a mesh
+    --          without creating another instance of SMDSEdit_Transform
+
+    GetTrsf(me) returns Trsf from gp;
+    ---Purpose: returns the stored Trsf
+     
+    
+fields
+    myMesh     : Mesh from SMDS;
+    myTrsf     : Trsf from gp;
+    myListOfME : ListOfMeshElement from SMDS;
+end Transform;
