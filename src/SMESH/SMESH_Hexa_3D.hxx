@@ -123,7 +123,7 @@ protected:
 		int i, int j, int k,
 		int nbx, int nby, int nbz,
 		Point3DStruct *np,
-		const Handle(SMESHDS_Mesh)& meshDS);
+		const SMESHDS_Mesh* meshDS);
 
   CubeStruct _cube;
   FaceQuadStruct* _quads[6];
