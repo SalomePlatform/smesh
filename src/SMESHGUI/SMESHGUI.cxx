@@ -1527,19 +1527,19 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 		// create group for each type o elements
 		QString aName = IObject->getName();
 		if (aNodes->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::NODE, aName);
+		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::NODE, aName + "_Nodes");
 		  aGroup->Add(aNodes.inout());
 		}
 		if (aEdges->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::EDGE, aName);
+		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::EDGE, aName + "_Edges");
 		  aGroup->Add(aEdges.inout());
 		}
 		if (aFaces->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::FACE, aName);
+		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::FACE, aName + "_Faces");
 		  aGroup->Add(aFaces.inout());
 		}
 		if (aVolumes->length() > 0) {
-		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::VOLUME, aName);
+		  SMESH::SMESH_Group_var aGroup = SMESH::AddGroup(aMesh, SMESH::VOLUME, aName + "_Volumes");
 		  aGroup->Add(aVolumes.inout());
 		}
 		myActiveStudy->updateObjBrowser(true);
