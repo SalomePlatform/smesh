@@ -26,7 +26,7 @@ LIB_SERVER_IDL =
 CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
 
-LDFLAGS += $(OCC_LIBS) -lg2c
+LDFLAGS += -lg2c
 
 @CONCLUDE@
 
