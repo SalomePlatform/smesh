@@ -1,14 +1,33 @@
-using namespace std;
-//=============================================================================
-// File      : SMESH_NumberOfSegments.cxx
-// Created   : sam mai 18 08:11:15 CEST 2002
-// Author    : Paul RASCLE, EDF
-// Project   : SALOME
-// Copyright : EDF 2002
-// $Header$
-//=============================================================================
-using namespace std;
+//  SMESH SMESH : implementaion of SMESH idl descriptions
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESH_NumberOfSegments.cxx
+//  Author : Paul RASCLE, EDF
+//  Module : SMESH
+//  $Header$
 
+using namespace std;
+using namespace std;
 #include "SMESH_NumberOfSegments.hxx"
 
 //=============================================================================
@@ -21,6 +40,7 @@ SMESH_NumberOfSegments::SMESH_NumberOfSegments(int hypId, int studyId, SMESH_Gen
  : SMESH_Hypothesis(hypId, studyId, gen)
 {
   _numberOfSegments = 1;
+  _scaleFactor = 1.0;
   _name = "NumberOfSegments";
 }
 
@@ -61,6 +81,33 @@ void SMESH_NumberOfSegments::SetNumberOfSegments(int segmentsNumber)
 int SMESH_NumberOfSegments::GetNumberOfSegments()
 {
   return _numberOfSegments;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+void SMESH_NumberOfSegments::SetScaleFactor(double scaleFactor)
+  throw (SALOME_Exception)
+{
+  if (scaleFactor < 0) 
+    throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
+  _scaleFactor = scaleFactor;
+
+  NotifySubMeshesHypothesisModification();
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+double SMESH_NumberOfSegments::GetScaleFactor()
+{
+  return _scaleFactor;
 }
 
 //=============================================================================
