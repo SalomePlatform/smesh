@@ -265,7 +265,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
         int i, NbPoints = 1 + (int) _value[ NB_SEGMENTS_IND ];
         for ( i = 2; i < NbPoints; i++ )
         {
-          double param = factor * (1 - pow(alpha, i - 1));
+          double param = f + factor * (1 - pow(alpha, i - 1));
           theParams.push_back( param );
         }
         return true;
