@@ -132,6 +132,8 @@ namespace SMESH{
   void RemoveFilter(int theId, 
 		    VTKViewer_InteractorStyleSALOME* theStyle = GetInteractorStyle());
 
+  void RemoveFilters(VTKViewer_InteractorStyleSALOME* theStyle = GetInteractorStyle());
+
   bool IsValid(SALOME_Actor* theActor, int theCellId,
 	       VTKViewer_InteractorStyleSALOME* theStyle = GetInteractorStyle());
 

@@ -20,6 +20,7 @@
 
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_Filter.h"
 
 #include <vtkRenderer.h>
 #include <vtkActorCollection.h>
