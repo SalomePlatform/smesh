@@ -1,0 +1,166 @@
+<HTML><b>
+<table width="100%" BORDER>
+<tr bgcolor="#FFFFCC">
+<td colspan="11"><font size="+3"><b><div align="center"><i>interface SMESH_Mesh</i></div></b></font></td>
+</tr>
+<td width="50%" bgcolor= "lightgreen" ><font size="+2"><div align="center"><b><i>IDL file</i></b></div></font></td>
+<td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_subMesh  GetElementsOnShape ( in GEOM_Shape aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetElementsOnShape ( aSubShape )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddHypothesis ( in GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddHypothesis ( aSubShape, anHyp )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  RemoveHypothesis ( in GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = RemoveHypothesis ( aSubShape, anHyp )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>ListOfHypothesis  GetHypothesisList ( in GEOM_Shape aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetHypothesisList ( aSubShape )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>log_array  GetLog ( in boolean clearAfterGet )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetLog ( clearAfterGet )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ClearLog (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ClearLog (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetId (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetStudyId (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetStudyId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_MeshEditor  GetMeshEditor (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetMeshEditor (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExportDAT ( in string file )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExportDAT ( file )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExportMED ( in string file )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExportMED ( file )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExportUNV ( in string file )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExportUNV ( file )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>MESH  GetMEDMesh (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetMEDMesh (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbNodes (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbNodes (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbEdges (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbEdges (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbFaces (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbFaces (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbTriangles (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbTriangles (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbQuadrangles (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbQuadrangles (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbVolumes (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbVolumes (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbTetras (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbTetras (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbHexas (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbHexas (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbSubMesh (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbSubMesh (  )</b></div></td>
+</tr>
+</table><br>
+<table width="100%" BORDER>
+<tr bgcolor="#FFFFCC">
+<td colspan="11"><font size="+3"><b><div align="center"><i>interface SMESH_subMesh</i></div></b></font></td>
+</tr>
+<td width="50%" bgcolor= "lightgreen" ><font size="+2"><div align="center"><b><i>IDL file</i></b></div></font></td>
+<td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetNumberOfElements (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNumberOfElements (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetNumberOfNodes (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNumberOfNodes (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetElementsId (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetElementsId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetNodesId (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNodesId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  GetFather (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetFather (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetId (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>FAMILY  GetFamily (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetFamily (  )</b></div></td>
+</tr>
+</table><br>
+<table width="100%" BORDER>
+<tr bgcolor="#FFFFCC">
+<td colspan="11"><font size="+3"><b><div align="center"><i>interface SMESH_MeshEditor</i></div></b></font></td>
+</tr>
+<td width="50%" bgcolor= "lightgreen" ><font size="+2"><div align="center"><b><i>IDL file</i></b></div></font></td>
+<td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  RemoveElements ( in long_array IDsOfElements )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = RemoveElements ( IDsOfElements )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  RemoveNodes ( in long_array IDsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = RemoveNodes ( IDsOfNodes )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddNode ( in double x, in double y, in double z )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddNode ( x, y, z )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddEdge ( in long_array IDsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddEdge ( IDsOfNodes )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddFace ( in long_array IDsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddFace ( IDsOfNodes )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddVolume ( in long_array IDsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddVolume ( IDsOfNodes )</b></div></td>
+</tr>
+</table><br>
+</b></HTML>

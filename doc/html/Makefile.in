@@ -1,0 +1,38 @@
+# -* Makefile *- 
+#
+# Author : Vasily Rusyaev (Open Cascade NN)
+# Date : 13/02/2003
+# $Header: 
+#
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+doxygen=@DOXYGEN@
+
+@COMMENCE@
+
+doc:
+	cp -fr $(srcdir)/INPUT ./; \
+	cd INPUT; \
+	sed 's|../../../share/salome|../$(top_srcdir)|' doxyfile > doxyfile1; \
+	mv -f doxyfile1 doxyfile; \
+	$(doxygen) ./doxyfile; \
+	cd ..; \
+	cp -f $(srcdir)/INPUT/sources/doxygen.css ./html/doxygen.css
+	cp -fr $(srcdir)/INPUT/sources/ html/
+	cp -fr $(srcdir)/INPUT/exemple/ html/
+	cp -fr $(srcdir)/INPUT/HTML/  html/
+
+clean:
+	rm -rf html
+
+distclean: clean
+	rm -rf INPUT
+
+install:
+	cp -rf html $(docdir)
+
+uninstall:
+	rm -rf $(docdir)/html
