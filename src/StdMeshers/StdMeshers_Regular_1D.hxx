@@ -59,7 +59,8 @@ public:
 protected:
 
   bool computeInternalParameters (const TopoDS_Edge&    theEdge,
-                                  std::list< double > & theParameters ) const;
+                                  std::list< double > & theParameters,
+                                  const bool            theReverse) const;
 
   enum HypothesisType { LOCAL_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, NONE };
 
@@ -70,11 +71,14 @@ protected:
     END_LENGTH_IND   = 1,
     DEFLECTION_IND   = 0
     };
-  
+
   HypothesisType _hypType;
 
   double _value[2];
-  
+
+  // a source of propagated hypothesis, is set by CheckHypothesis()
+  // always called before Compute()
+  TopoDS_Shape _mainEdge;
 };
 
 #endif
