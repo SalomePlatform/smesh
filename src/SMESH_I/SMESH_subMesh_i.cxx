@@ -94,11 +94,24 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
-  SMESHDS_SubMesh* aSubMeshDS = _mesh_i->_mapSubMesh[_localId]->GetSubMeshDS();
-  if ( aSubMeshDS == NULL )
-    return 0;
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
-  return aSubMeshDS->NbElements();
+  int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
+
+  // volumes are bound to shell
+  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  {
+    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
+    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
+    for ( ; exp.More(); exp.Next() )
+    {
+      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
+      if ( aSubMeshDS )
+        nbElems += aSubMeshDS->NbElements();
+    }
+  }
+  return nbElems;
 }
 
 //=============================================================================
@@ -115,12 +128,36 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return 0;
 
-  SMESHDS_SubMesh* aSubMeshDS = _mesh_i->_mapSubMesh[_localId]->GetSubMeshDS();
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
+
+  set<int> nodeIds;
+
+  // node are bound to shell instead of solid
+  if ( all && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  {
+    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
+    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
+    for ( ; exp.More(); exp.Next() )
+    {
+      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
+      if ( aSubMeshDS ) {
+        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* anElem = eIt->next();
+          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+          while ( nIt->more() )
+            nodeIds.insert( nIt->next()->GetID() );
+        }
+      }
+    }
+    return nodeIds.size();
+  }
+
   if ( aSubMeshDS == NULL )
     return 0;
 
   if ( all ) { // all nodes of submesh elements
-    set<int> nodeIds;
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
     while ( eIt->more() ) {
       const SMDS_MeshElement* anElem = eIt->next();
@@ -150,15 +187,41 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
 
-  SMESHDS_SubMesh* aSubMeshDS = _mesh_i->_mapSubMesh[_localId]->GetSubMeshDS();
-  if ( aSubMeshDS == NULL )
-    return aResult._retn();
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
-  aResult->length( aSubMeshDS->NbElements() );
-  SMDS_ElemIteratorPtr anIt = aSubMeshDS->GetElements();
-  for ( int i = 0, n = aSubMeshDS->NbElements(); i < n && anIt->more(); i++ )
-    aResult[i] = anIt->next()->GetID();
+  int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
+  list<SMESHDS_SubMesh*> smList;
+  if ( nbElems )
+    smList.push_back( aSubMeshDS );
 
+  // volumes are bound to shell
+  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  {
+    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
+    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
+    for ( ; exp.More(); exp.Next() )
+    {
+      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
+      if ( aSubMeshDS ) {
+        smList.push_back( aSubMeshDS );
+        nbElems += aSubMeshDS->NbElements();
+      }
+    }
+  }
+
+  if ( nbElems )
+  {
+    aResult->length( nbElems );
+    list<SMESHDS_SubMesh*>::iterator sm = smList.begin();
+    for ( int i = 0; sm != smList.end(); sm++ )
+    {
+      aSubMeshDS = *sm;
+      SMDS_ElemIteratorPtr anIt = aSubMeshDS->GetElements();
+      for ( int n = aSubMeshDS->NbElements(); i < n && anIt->more(); i++ )
+        aResult[i] = anIt->next()->GetID();
+    }
+  }
   return aResult._retn();
 }
 
@@ -179,19 +242,49 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
     return aResult._retn();
 
-  SMESHDS_SubMesh* aSubMeshDS = _mesh_i->_mapSubMesh[_localId]->GetSubMeshDS();
-  if ( aSubMeshDS == NULL )
-    return aResult._retn();
-
-  // No sense in returning ids of elements along with ids of nodes:
-  // when theElemType == SMESH::ALL, return node ids only if
-  // there are no elements
-  bool retNodes = (theElemType == SMESH::NODE ||
-                   (theElemType == SMESH::ALL && aSubMeshDS->NbElements() == 0));
+  ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
+  SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
   // PAL5440, return all nodes belonging to elements of submesh
   set<int> nodeIds;
-  if ( retNodes ) {
+  int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
+
+  // volumes may be bound to shell instead of solid
+  list< SMESHDS_SubMesh* > smList;
+  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  {
+    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
+    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
+    for ( ; exp.More(); exp.Next() )
+    {
+      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
+      if ( !aSubMeshDS ) continue;
+      if ( theElemType == SMESH::NODE )
+      {
+        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* anElem = eIt->next();
+          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+          while ( nIt->more() )
+            nodeIds.insert( nIt->next()->GetID() );
+        }
+      }
+      else
+      {
+        smList.push_back( aSubMeshDS );
+        nbElems += aSubMeshDS->NbElements();
+      }
+    }
+    aSubMeshDS = 0;
+  }
+  else
+  {
+    if ( nbElems )
+      smList.push_back( aSubMeshDS );
+  }
+
+  if ( theElemType == SMESH::NODE && aSubMeshDS )
+  {
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
     while ( eIt->more() ) {
       const SMDS_MeshElement* anElem = eIt->next();
@@ -200,28 +293,31 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
         nodeIds.insert( nIt->next()->GetID() );
     }
   }
-  
-  if ( theElemType == SMESH::ALL )
-    aResult->length( aSubMeshDS->NbElements() + nodeIds.size());
-  else if ( theElemType == SMESH::NODE )
+
+  if ( theElemType == SMESH::NODE )
     aResult->length( nodeIds.size() );
   else
-    aResult->length( aSubMeshDS->NbElements() );
+    aResult->length( nbElems );
 
   int i = 0, n = aResult->length();
 
-  if ( retNodes && !nodeIds.empty() ) {
+  if ( theElemType == SMESH::NODE && !nodeIds.empty() ) {
     set<int>::iterator idIt = nodeIds.begin();
     for ( ; i < n && idIt != nodeIds.end() ; i++, idIt++ )
       aResult[i] = *idIt;
   }
 
-  if ( theElemType == SMESH::ALL || theElemType != SMESH::NODE ) {
-    SMDS_ElemIteratorPtr anIt = aSubMeshDS->GetElements();
-    while ( i < n && anIt->more() ) {
-      const SMDS_MeshElement* anElem = anIt->next();
-      if ( theElemType == SMESH::ALL || anElem->GetType() == (SMDSAbs_ElementType)theElemType )
-	aResult[i++] = anElem->GetID();
+  if ( theElemType != SMESH::NODE ) {
+    list<SMESHDS_SubMesh*>::iterator sm = smList.begin();
+    for ( i = 0; sm != smList.end(); sm++ )
+    {
+      aSubMeshDS = *sm;
+      SMDS_ElemIteratorPtr anIt = aSubMeshDS->GetElements();
+      while ( i < n && anIt->more() ) {
+        const SMDS_MeshElement* anElem = anIt->next();
+        if ( theElemType == SMESH::ALL || anElem->GetType() == (SMDSAbs_ElementType)theElemType )
+          aResult[i++] = anElem->GetID();
+      }
     }
   }
 
@@ -241,20 +337,7 @@ SMESH::long_array* SMESH_subMesh_i::GetNodesId()
 {
   Unexpect aCatch(SALOME_SalomeException);
   MESSAGE("SMESH_subMesh_i::GetNodesId");
-  SMESH::long_array_var aResult = new SMESH::long_array();
-
-  if ( _mesh_i->_mapSubMesh.find( _localId ) == _mesh_i->_mapSubMesh.end() )
-    return aResult._retn();
-
-  SMESHDS_SubMesh* aSubMeshDS = _mesh_i->_mapSubMesh[_localId]->GetSubMeshDS();
-  if ( aSubMeshDS == NULL )
-    return aResult._retn();
-
-  aResult->length( aSubMeshDS->NbNodes() );
-  SMDS_NodeIteratorPtr anIt = aSubMeshDS->GetNodes();
-  for ( int i = 0, n = aSubMeshDS->NbNodes(); i < n && anIt->more(); i++ )
-    aResult[i] = anIt->next()->GetID();
-
+  SMESH::long_array_var aResult = GetElementsByType( SMESH::NODE );
   return aResult._retn();
 }
 
