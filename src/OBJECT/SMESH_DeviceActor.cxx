@@ -162,15 +162,14 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
     //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
     myIsShrinkable = true;
 
-    myExtractGeometry->SetInput(theGrid);
+    myExtractUnstructuredGrid->SetInput(theGrid);
 
-    myExtractUnstructuredGrid->SetInput(myExtractGeometry->GetOutput());
     myMergeFilter->SetGeometry(myExtractUnstructuredGrid->GetOutput());
-    
-    theGrid = static_cast<vtkUnstructuredGrid*>(myMergeFilter->GetOutput());
+
+    myExtractGeometry->SetInput(myMergeFilter->GetOutput());
 
     int anId = 0;
-    myPassFilter[ anId ]->SetInput( theGrid );
+    myPassFilter[ anId ]->SetInput( myExtractGeometry->GetOutput() );
     myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
@@ -233,16 +232,14 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
     if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
 	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId2);
+	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
 	double aValue = aNumericalFunctor->GetValue(anObjId);
 	aScalars->SetValue(i,aValue);
       }
     }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
       for(vtkIdType i = 0; i < aNbCells; i++){
 	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
-	vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
-	vtkIdType anObjId = myVisualObj->GetElemObjId(anId2);
+	vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
 	bool aValue = aPredicate->IsSatisfy(anObjId);
 	aScalars->SetValue(i,aValue);
       }
@@ -361,8 +358,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
       anIdList->SetNumberOfIds(2);
       
       MultiConnection2D::MValues::const_iterator anIter = aValues.begin();
-      int i = 0;
-      for(vtkIdType aVtkId; anIter != aValues.end(); anIter++,i++){
+      for(vtkIdType aVtkId = 0; anIter != aValues.end(); anIter++,aVtkId++){
 	const MultiConnection2D::Value& aValue = (*anIter).first;
 	int aNode[2] = {
 	  myVisualObj->GetNodeVTKId(aValue.myPntId[0]),
@@ -373,7 +369,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 	  anIdList->SetId( 1, aNode[1] );
 	  aConnectivity->InsertNextCell( anIdList );
 	  aCellTypesArray->InsertNextValue( VTK_LINE );
-	  aScalars->SetValue(i,(*anIter).second);
+	  aScalars->SetValue(aVtkId,(*anIter).second);
 	}
       }
       
