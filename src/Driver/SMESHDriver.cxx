@@ -73,7 +73,7 @@ void * SMESHDriver::getMeshDriver(string extension, string type)
 	void * handle = dlopen(libName.c_str(), RTLD_LAZY);
 	if(!handle)
 	{
-		fputs (dlerror(), stderr);
+		cerr << dlerror() << endl;
 		return NULL;
 	}
 	else
@@ -83,7 +83,7 @@ void * SMESHDriver::getMeshDriver(string extension, string type)
 		factory = (void * (*)()) dlsym(handle, symbol.c_str());
 		if(factory==NULL)
 		{
-			fputs (dlerror(), stderr);
+			cerr << dlerror() << endl;
 			return NULL;
 		}
 		else return factory();
@@ -96,7 +96,7 @@ void * SMESHDriver::getMeshDocumentDriver(string extension)
 	void * handle = dlopen(libName.c_str(), RTLD_LAZY);
 	if(!handle)
 	{
-		fputs (dlerror(), stderr);
+		cerr << dlerror() << endl;
 		return NULL;
 	}
 	else
@@ -106,7 +106,7 @@ void * SMESHDriver::getMeshDocumentDriver(string extension)
 		factory = (void * (*)()) dlsym(handle, symbol.c_str());
 		if(factory==NULL)
 		{
-			fputs (dlerror(), stderr);
+			cerr << dlerror() << endl;
 			return NULL;
 		}
 		else return factory();
