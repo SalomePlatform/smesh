@@ -1,21 +1,19 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
+
+import smesh
 
 import math
 
-# Piece
-# -----
-
-# A centered holed cube
-
 # Geometry
-# --------
+# ========
+
+# A centered holed cube build by  build by points, edges, faces and solids
+
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -100,17 +98,25 @@ piece = MakeGlueFaces(c_cpd, 1.e-5)
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Hole1pyGibi")
+piece_id = addToStudy(piece, "ex05_hole1build")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Hole1pyGibiHexa")
+hexa = smesh.Mesh(piece, "ex05_hole1build:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
 
-m_hexa.Compute()
+algo.NumberOfSegments(6, 3)
+
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

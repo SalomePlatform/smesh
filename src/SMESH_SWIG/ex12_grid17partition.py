@@ -1,22 +1,21 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
-
-# grid compound of 17 x 17 elements
-# an element is compound of 3 cylinders concentriques
-# an element is centered in a square of the grid
-# prisme the grid
+import smesh
 
 # Geometry
-# --------
+# ========
+
+# grid compound of 17 x 17 elements
+# an element is compound of 3 concentric cylinders
+# an element is centered in a square of the grid
+
+# prism the grid, and mesh it in hexahedral way
+
+# Values
+# ------
 
 g_x = 0
 g_y = 0
@@ -29,14 +28,12 @@ g_rayon1 = 20
 g_rayon2 = 30
 g_rayon3 = 40
 
-# The real value for CEA, but need 3 days for computing
-#g_grid = 17
-g_grid = 3
+g_grid = 17
 
 g_trim = 1000
 
-# Solids
-# ------
+# Solids and rotation to prevent repair
+# -------------------------------------
 
 s_boite = MakeBox(g_x-g_arete, g_y-g_hauteur, g_z-g_arete,  g_x+g_arete, g_y+g_hauteur, g_z+g_arete)
 
@@ -75,34 +72,42 @@ p_tools.append(MakePlane(s_centre, MakeVectorDXDYDZ(-1, 0, 1), g_trim))
 
 p_partie = MakePartition([s_blo1, s_blo2, s_blo3, s_blo5], p_tools, [], [], ShapeType["SOLID"])
 
-# Compound
-# --------
+# Compound and glue
+# -----------------
 
-c_cpd = SubShapeAll(p_partie, ShapeType["SOLID"])
-c_cpd.append(s_blo4)
+c_blocs = SubShapeAll(p_partie, ShapeType["SOLID"])
+c_blocs.append(s_blo4)
 
-c_element = MakeCompound(c_cpd)
+c_cpd = MakeCompound(c_blocs)
+
+c_element = MakeGlueFaces(c_cpd, 1e-4)
 
 # Grid
 # ----
 
-piece = MakeMultiTranslation2D(c_element, MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid,
-                                          MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
+piece = MakeMultiTranslation2D(c_element, MakeVectorDXDYDZ(1, 0, 0), 2*g_arete, g_grid, MakeVectorDXDYDZ(0, 0, 1), 2*g_arete, g_grid)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Grid17partition")
+piece_id = addToStudy(piece, "ex12_grid17partition")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Grid17partitionHexa")
+hexa = smesh.Mesh(piece, "ex12_grid17partition:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.NumberOfSegments(2)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

@@ -1,21 +1,19 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
+
+import smesh
 
 import math
 
-# Piece
-# -----
-
-# grid compound by a square with a cylinder on each vertex
-
 # Geometry
-# --------
+# ========
+
+# Element of a grid compound by a square with a cylinder on each vertex build by points, edges, faces and solids
+
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -84,31 +82,34 @@ pieceSolid1 = MakePrismVecH(pieceFace1, pieceVector, hauteur)
 pieceSolid2 = MakePrismVecH(pieceFace2, pieceVector, hauteur)
 pieceSolid3 = MakePrismVecH(pieceFace3, pieceVector, hauteur)
 
-# Compound
-# --------
+# Compound and glue
+# -----------------
 
-c_l = []
-c_l.append(pieceSolid1)
-c_l.append(pieceSolid2)
-c_l.append(pieceSolid3)
+c_cpd = MakeCompound([pieceSolid1, pieceSolid2, pieceSolid3])
 
-c_cpd = MakeCompound(c_l)
 piece = MakeGlueFaces(c_cpd, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Grid4pyGibi")
+piece_id = addToStudy(piece, "ex09_grid4build")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Grid4pyGibiHexa")
+hexa = smesh.Mesh(piece, "ex09_grid4build:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.NumberOfSegments(6)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

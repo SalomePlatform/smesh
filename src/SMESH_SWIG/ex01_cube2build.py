@@ -1,16 +1,14 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
+
+import smesh
 
 # Geometry
 # ========
 
-# A small cube centered and put on a great cube
+# A small cube centered and put on a great cube build by points, edges, faces and solids
 
 # Points
 # ------
@@ -258,13 +256,12 @@ c_l.append(greatBlock13)
 c_l.append(greatBlock23)
 c_l.append(greatBlock33)
 
-c_cpd = MakeCompound(c_l)
-piece = MakeGlueFaces(c_cpd, 1.e-5)
+piece = MakeCompound(c_l)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Cubes2pyGibi")
+piece_id = addToStudy(piece, "ex01_cube2build")
 
 # Meshing
 # =======
@@ -272,24 +269,25 @@ piece_id = addToStudy(piece, "Cubes2pyGibi")
 # Create hexahedrical mesh on piece
 # ---------------------------------
 
-m_hexa=MeshHexa(piece, 4, "Cubes2pyGibiHexa")
+hexa = smesh.Mesh(piece, "ex01_cube2build:hexa")
 
-# Get edges
-# ---------
+algo = hexa.Segment()
+algo.NumberOfSegments(4)
 
-e_edges = SubShapeAllSorted(piece, ShapeType["EDGE"])
+hexa.Quadrangle()
+
+hexa.Hexahedron()
 
 # Create local hypothesis
 # -----------------------
 
-m_local=3
+algo = hexa.Segment(greatEdgeX111)
 
-m_i=10
-while m_i<18:
-    m_hexa.local(e_edges[m_i], m_local)
-    m_i=m_i+1
+algo.Arithmetic1D(1, 4)
 
-# Compute
-# -------
+algo.Propagation()
 
-m_hexa.Compute()
+# Compute the mesh
+# ----------------
+
+hexa.Compute()

@@ -1,19 +1,17 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
-
-# grid compound by a square with a cylinder on each vertex
+import smesh
 
 # Geometry
-# --------
+# ========
+
+# Element of a grid compound by a square with a cylinder on each vertex build by using partition
+
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -56,17 +54,24 @@ piece = MakePartition([pieceCut4], tools, [], [], ShapeType["SOLID"])
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Grid4partition")
+piece_id = addToStudy(piece, "ex10_grid4geometry")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Grid4partitionHexa")
+hexa = smesh.Mesh(piece, "ex10_grid4geometry:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.NumberOfSegments(10)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

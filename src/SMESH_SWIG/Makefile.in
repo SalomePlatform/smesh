@@ -39,22 +39,29 @@ LIB_SRC =
 
 SWIG_DEF = libSMESH_Swig.i
 EXPORT_PYSCRIPTS = libSMESH_Swig.py \
-		   meshpy.py \
+		   smesh.py \
 		   batchmode_smesh.py \
 		   batchmode_mefisto.py \
-		   cube2pyGibi.py \
-		   cube2geometry.py \
-		   cube2partition.py \
-		   grid4pyGibi.py \
-		   grid4partition.py \
-		   grid3partition.py \
-		   grid17partition.py \
-		   hole1geometry.py \
-		   hole1partition.py \
-		   hole1pyGibi.py \
-		   hole2pyGibi.py \
-		   cyl2geometry.py \
-		   cyl2complementary.py \
+		   ex00_all.py \
+		   ex01_cube2build.py \
+		   ex02_cube2primitive.py \
+		   ex03_cube2partition.py \
+		   ex04_cube5tetraHexa.py \
+		   ex05_hole1build.py \
+		   ex06_hole1boolean.py \
+		   ex07_hole1partition.py \
+		   ex08_hole2build.py \
+		   ex09_grid4build.py \
+		   ex10_grid4geometry.py \
+		   ex11_grid3partition.py \
+		   ex12_grid17partition.py \
+		   ex13_hole1partial.py \
+		   ex14_cyl1holed.py \
+		   ex15_cyl2geometry.py \
+		   ex16_cyl2complementary.py \
+		   ex17_dome1.py \
+		   ex18_dome2.py \
+		   ex19_sphereINcube.py \
                    SMESH_test.py\
                    SMESH_test0.py\
 		   SMESH_test1.py \

@@ -1,17 +1,18 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
+import smesh
 
-# Creer la geometrie en bloc hexahedrique d'une piece en forme de T composee de 2 cylindres de diametre different dont les axes se coupent orthogonalement,
-# puis mailler en hexahedrique.
+# Geometrie
+# =========
+
+# Construire avec des hexahedres une piece faite de 2 cylindres de diametre different
+# et dont les axes se coupent orthogonalement, puis mailler.
+
+# Valeurs
+# -------
 
 cx = 0
 cy = 0
@@ -25,13 +26,10 @@ p_hauteur = 500
 
 g_trim = 1000
 
-# Geometrie
-# =========
-
-cpd = []
-
 # Gros cylindre
 # -------------
+
+cpd = []
 
 g_base = MakeVertex(cx, cy, cz)
 g_dir  = MakeVectorDXDYDZ(0, 0, 1)
@@ -39,7 +37,7 @@ t_hauteur = p_rayon+10.0
 
 g_cyl = MakeCylinder(g_base, g_dir, g_rayon, g_hauteur)
 
-g_coupe = MakeVectorDXDYDZ(1, 0, 0)
+g_coupe   = MakeVectorDXDYDZ(1, 0, 0)
 
 g_tools = []
 g_tools.append(MakePlane(MakeVertex(cx+t_hauteur, cy, cz), g_coupe, g_trim))
@@ -149,23 +147,29 @@ cpd = cpd + r_element
 # Compound
 # --------
 
-comp_all = MakeCompound(cpd)
-piece = BlocksOp.RemoveExtraEdges(comp_all)
+piece = RemoveExtraEdges(MakeCompound(cpd))
 
 # Ajouter la piece dans l'etude
 # -----------------------------
 
-piece_id = addToStudy(piece, "T2Cylindres")
+piece_id = addToStudy(piece, "ex15_cyl2geometry")
 
-# Maillage
-# ========
+# Meshing
+# =======
 
-# Mailler des hexahedres
-# ----------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "T2CylindresHexa")
+hexa = smesh.Mesh(piece, "ex15_cyl2geometry:hexa")
 
-# Calculer le maillage
-# --------------------
+algo = hexa.Segment()
+algo.NumberOfSegments(12)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

@@ -1,19 +1,17 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
-
-# A holed cube
+import smesh
 
 # Geometry
-# --------
+# ========
+
+# A not centered holed cube build by boolean geometric operations
+
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -75,11 +73,11 @@ holeSolid = MakeCylinder(holePoint, baseVector, rayon, hauteur)
 
 baseHexa1 = MakeCut(baseSolid1, holeSolid)
 baseHexa2 = MakeCut(baseSolid2, holeSolid)
-baseHexa3 = MakeCut(baseSolid3, MakeRotation(holeSolid, baseVector, 3.141592653))
+baseHexa3 = MakeCut(baseSolid3, holeSolid)
 baseHexa4 = MakeCut(baseSolid4, holeSolid)
 
-# Compound
-# --------
+# Compound, glue and repair
+# -------------------------
 
 c_l = []
 c_l.append(baseHexa1)
@@ -88,22 +86,54 @@ c_l.append(baseHexa3)
 c_l.append(baseHexa4)
 
 c_cpd = MakeCompound(c_l)
-piece = MakeGlueFaces(c_cpd, 1.e-5)
+c_glu = MakeGlueFaces(c_cpd, 1.e-5)
+piece = RemoveExtraEdges(c_glu)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Hole1geometry")
+piece_id = addToStudy(piece, "ex06_hole1boolean")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Hole1geometryHexa")
+hexa = smesh.Mesh(piece, "ex06_hole1boolean:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
 
-m_hexa.Compute()
+algo.NumberOfSegments(11)
+
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Create local hypothesis
+# -----------------------
+
+edge1 = GetEdgeNearPoint(piece, MakeVertex(ox, oy, oz-largeur1))
+algo1 = hexa.Segment(edge1)
+algo1.NumberOfSegments(3)
+algo1.Propagation()
+
+edge2 = GetEdgeNearPoint(piece, MakeVertex(ox-longueur1, oy, oz))
+algo2 = hexa.Segment(edge2)
+algo2.NumberOfSegments(5)
+algo2.Propagation()
+
+edge3 = GetEdgeNearPoint(piece, MakeVertex(ox, oy, oz+largeur2))
+algo3 = hexa.Segment(edge3)
+algo3.NumberOfSegments(7)
+algo3.Propagation()
+
+edge4 = GetEdgeNearPoint(piece, MakeVertex(ox+longueur2, oy, oz))
+algo4 = hexa.Segment(edge4)
+algo4.NumberOfSegments(9)
+algo4.Propagation()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

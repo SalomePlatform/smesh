@@ -1,19 +1,17 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
-
-# A twice holed cube
+import smesh
 
 # Geometry
-# --------
+# ========
+
+# A twice holed cube build by points, edges, faces and solids
+
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -37,10 +35,10 @@ piecePoint4 = MakeVertex(ox         , oy, oz+largeur)
 
 cz = oz+largeur/2
 
-cylPoint1 = MakeVertex(ox+cylindre         , oy, cz-rayon)
-cylPoint2 = MakeVertex(ox+longueur-cylindre, oy, cz-rayon)
-cylPoint3 = MakeVertex(ox+longueur-cylindre, oy, cz+rayon)
-cylPoint4 = MakeVertex(ox+cylindre         , oy, cz+rayon)
+cylPoint1    = MakeVertex(ox+cylindre         , oy, cz-rayon)
+cylPoint2    = MakeVertex(ox+longueur-cylindre, oy, cz-rayon)
+cylPoint3    = MakeVertex(ox+longueur-cylindre, oy, cz+rayon)
+cylPoint4    = MakeVertex(ox+cylindre         , oy, cz+rayon)
 
 # Edges
 # -----
@@ -81,33 +79,34 @@ pieceSolid3 = MakePrismVecH(pieceFace3, pieceVector, hauteur)
 pieceSolid4 = MakePrismVecH(pieceFace4, pieceVector, hauteur)
 pieceSolid5 = MakePrismVecH(pieceFace5, pieceVector, hauteur)
 
-# Compound
-# --------
+# Compound and glue
+# -----------------
 
-c_l = []
-c_l.append(pieceSolid1)
-c_l.append(pieceSolid2)
-c_l.append(pieceSolid3)
-c_l.append(pieceSolid4)
-c_l.append(pieceSolid5)
+c_cpd = MakeCompound([pieceSolid1, pieceSolid2, pieceSolid3, pieceSolid4, pieceSolid5])
 
-c_cpd = MakeCompound(c_l)
 piece = MakeGlueFaces(c_cpd, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Hole2pyGibi")
+piece_id = addToStudy(piece, "ex08_hole2build")
 
 # Meshing
 # =======
 
-# Create hexahedrical mesh on piece
-# ---------------------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "Hole2pyGibiHexa")
+hexa = smesh.Mesh(piece, "ex08_hole2build:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.NumberOfSegments(7)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

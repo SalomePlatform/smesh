@@ -1,19 +1,17 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
-
-# A small cube centered and put on a great cube
+import smesh
 
 # Geometry
-# --------
+# ========
+
+# A small cube centered and put on a great cube build with partition
+
+# Values
+# ------
 
 g_ox = 0
 g_oy = 0
@@ -46,28 +44,22 @@ s_haut = MakeBoxTwoPnt(v_3, v_4)
 
 p_dir1 = MakeVectorDXDYDZ(1, 0, 0)
 p_dir2 = MakeVectorDXDYDZ(0, 0, 1)
+p_dir3 = MakeVectorDXDYDZ(0, 1, 0)
 
 p_tools = []
+
 p_tools.append(MakePlane(v_3, p_dir1, g_trim))
 p_tools.append(MakePlane(v_4, p_dir1, g_trim))
 p_tools.append(MakePlane(v_3, p_dir2, g_trim))
 p_tools.append(MakePlane(v_4, p_dir2, g_trim))
+p_tools.append(MakePlane(v_3, p_dir3, g_trim))
 
-p_element = MakePartition([s_base], p_tools, [], [], ShapeType["SOLID"])
-
-# Compound
-# --------
-
-c_element = SubShapeAll(p_element, ShapeType["SOLID"])
-c_element.append(s_haut)
-
-c_cpd = MakeCompound(c_element)
-piece = MakeGlueFaces(c_cpd, 1.e-5)
+piece = MakePartition([s_base, s_haut], p_tools, [], [], ShapeType["SOLID"])
 
 # Study
 # -----
 
-piece_id = addToStudy(piece, "Cubes2partition")
+piece_id = addToStudy(piece, "ex03_cube2partition")
 
 # Meshing
 # =======
@@ -75,9 +67,16 @@ piece_id = addToStudy(piece, "Cubes2partition")
 # Create hexahedrical mesh on piece
 # ---------------------------------
 
-m_hexa=MeshHexa(piece, 4, "Cubes2partitionHexa")
+hexa = smesh.Mesh(piece, "ex03_cube2partition:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.NumberOfSegments(5)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Compute the mesh
+# ----------------
+
+hexa.Compute()

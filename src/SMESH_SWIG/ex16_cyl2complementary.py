@@ -1,18 +1,19 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
 
-# Piece
-# -----
+import smesh
+
+# Geometry
+# ========
 
 # Create the hexahedrical block geometry of a holed parallelepipede.
 # The hole has a T form composed by 2 cylinders with different radius, and their axis are normal.
 # This piece is meshed in hexahedrical.
+
+# Values
+# ------
 
 gx = 0
 gy = 0
@@ -26,9 +27,6 @@ g_rayonGrand = 70
 g_rayonPetit = 50
 
 g_trim = 1000
-
-# Geometry
-# ========
 
 # The parallelepipede
 # -------------------
@@ -79,24 +77,42 @@ d_element[10] = MakeCut(d_element[10], c_cyl)
 # Compound
 # --------
 
-comp_all = MakeCompound(d_element)
-piece = BlocksOp.RemoveExtraEdges(comp_all)
-#piece = MakeCompound(d_element)
+piece = RemoveExtraEdges(MakeCompound(d_element))
 
 # Add piece in study
 # ------------------
 
-piece_id = addToStudy(piece, "BoxHoled2Cylinders")
+piece_id = addToStudy(piece, "ex16_cyl2complementary")
 
 # Meshing
 # =======
 
-# Mesh with hexahedrons
-# ---------------------
+# Create a hexahedral mesh
+# ------------------------
 
-m_hexa=MeshHexa(piece, 4, "BoxHoled2CylindersHexa")
+hexa = smesh.Mesh(piece, "ex16_cyl2complementary:hexa")
 
-# Compute mesh
-# ------------
+algo = hexa.Segment()
+algo.NumberOfSegments(12)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Define local hypothesis
+# -----------------------
+
+def local(x, y, z, d):
+    edge = GetEdgeNearPoint(piece, MakeVertex(x, y, z))
+    algo = hexa.Segment(edge)
+    algo.NumberOfSegments(d)
+    algo.Propagation()
+
+local(gx     , gy+g_dy, gz+g_dz, 7)
+local(gx+g_dx, gy+g_dy, gz     , 21)
+local(gx+g_dx, gy-g_dy, gz     , 21)
+
+# Mesh calculus
+# -------------
+
+hexa.Compute()

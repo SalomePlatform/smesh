@@ -1,19 +1,17 @@
-# CEA/LGLS 2004, Francis KLOSS (OCC)
-# ==================================
-
-# Import
-# ------
+# CEA/LGLS 2004-2005, Francis KLOSS (OCC)
+# =======================================
 
 from geompy import *
-from meshpy import *
+
+import smesh
 
 # Geometry
 # ========
 
-# Piece
-# -----
+# A small cube centered and put on a great cube build by primitive geometric functionalities
 
-# A small cube centered and put on a great cube
+# Values
+# ------
 
 ox = 0
 oy = 0
@@ -29,13 +27,10 @@ blockPoint211 = MakeVertex(ox+arete, oy, oz)
 blockPoint112 = MakeVertex(ox      , oy, oz+arete)
 blockPoint212 = MakeVertex(ox+arete, oy, oz+arete)
 
-# Faces
-# -----
+# Face and solid
+# --------------
 
 blockFace1 = MakeQuad4Vertices(blockPoint111, blockPoint211, blockPoint212, blockPoint112)
-
-# Solids
-# ------
 
 blockSolid11  = MakePrismVecH(blockFace1, MakeVectorDXDYDZ(0, 1, 0), arete)
 
@@ -55,8 +50,8 @@ blockSolid33  = MakeTranslation(blockSolid23, arete, 0, 0)
 
 blockSolid111 = MakeTranslation(blockSolid22, 0, arete, 0)
 
-# Compound
-# --------
+# Compound and glue
+# -----------------
 
 c_l = []
 c_l.append(blockSolid11)
@@ -71,12 +66,13 @@ c_l.append(blockSolid33)
 c_l.append(blockSolid111)
 
 c_cpd = MakeCompound(c_l)
+
 piece = MakeGlueFaces(c_cpd, 1.e-5)
 
 # Add in study
 # ------------
 
-piece_id = addToStudy(piece, "Cubes2geometry")
+piece_id = addToStudy(piece, "ex02_cube2primitive")
 
 # Meshing
 # =======
@@ -84,9 +80,16 @@ piece_id = addToStudy(piece, "Cubes2geometry")
 # Create hexahedrical mesh on piece
 # ---------------------------------
 
-m_hexa=MeshHexa(piece, 4, "Cubes2geometryHexa")
+hexa = smesh.Mesh(piece, "ex02_cube2primitive:hexa")
 
-# Compute
-# -------
+algo = hexa.Segment()
+algo.LocalLength(1)
 
-m_hexa.Compute()
+hexa.Quadrangle()
+
+hexa.Hexahedron()
+
+# Compute the mesh
+# ----------------
+
+hexa.Compute()
