@@ -46,10 +46,11 @@ public:
   SMESHGUI_aParameter(const QString& label):_label(label) {}
   virtual ~SMESHGUI_aParameter();
 
-  enum Type { INT, DOUBLE };
+  enum Type { INT, DOUBLE, TEXT };
   virtual Type GetType() const = 0;
   virtual bool GetNewInt( int & Value ) const = 0;
   virtual bool GetNewDouble( double & Value ) const = 0;
+  virtual bool GetNewText( QString & Value ) const = 0;
   virtual void InitializeWidget( QWidget* ) const = 0;
   virtual void TakeValue( QWidget* ) = 0;
 
@@ -76,6 +77,7 @@ public:
   virtual Type GetType() const;
   virtual bool GetNewInt( int & Value ) const;
   virtual bool GetNewDouble( double & Value ) const;
+  virtual bool GetNewText( QString & Value ) const;
   virtual void InitializeWidget( QWidget* ) const;
   virtual void TakeValue( QWidget* );
 
@@ -105,6 +107,7 @@ public:
   virtual Type GetType() const;
   virtual bool GetNewInt( int & Value ) const;
   virtual bool GetNewDouble( double & Value ) const;
+  virtual bool GetNewText( QString & Value ) const;
   virtual void InitializeWidget( QWidget* ) const;
   virtual void TakeValue( QWidget* );
 
@@ -112,6 +115,28 @@ public:
   double _top, _bottom, _step;
   double _initValue, _newValue;
   int _decimals;
+};
+
+
+//=================================================================================
+// class    : SMESHGUI_strParameter
+// purpose  :
+//=================================================================================
+class SMESHGUI_strParameter: public SMESHGUI_aParameter
+{ 
+public:
+  SMESHGUI_strParameter(const QString& initValue = "",
+			const QString& label     = QString::null);
+  QString InitValue() { return _initValue; }
+  virtual Type GetType() const;
+  virtual bool GetNewInt( int & Value ) const;
+  virtual bool GetNewDouble( double & Value ) const;
+  virtual bool GetNewText( QString & Value ) const;
+  virtual void InitializeWidget( QWidget* ) const;
+  virtual void TakeValue( QWidget* );
+
+ private:
+  QString _initValue, _newValue;
 };
 
 #endif // SMESHGUI_aParameter.h

@@ -42,6 +42,7 @@
 #include <qlayout.h>
 #include <qspinbox.h>
 #include <qvalidator.h>
+#include <qtextedit.h>
 
 using namespace std;
 
@@ -97,7 +98,7 @@ void SMESHGUI_aParameterDlg::init()
     QLabel * label = new QLabel( GroupC1, "TextLabel" );
     GroupC1Layout->addWidget( label, row, 0 );
     label->setText( param->Label() );
-    QWidget* aSpinWidget;
+    QWidget* aSpinWidget = 0;
     switch ( param->GetType() ) {
     case SMESHGUI_aParameter::DOUBLE: {
       SMESHGUI_SpinBox* spin = new SMESHGUI_SpinBox( GroupC1 );
@@ -110,13 +111,22 @@ void SMESHGUI_aParameterDlg::init()
       aSpinWidget = spin;
       break;
     }
+    case SMESHGUI_aParameter::TEXT: {
+      QTextEdit* edit = new QTextEdit( GroupC1 );
+      edit->setWordWrap( QTextEdit::NoWrap );
+      edit->setTextFormat( Qt::PlainText );
+      aSpinWidget = edit;
+      break;
+    }
     default:;
     }
-    GroupC1Layout->addWidget( aSpinWidget, row, 1 );
-    aSpinWidget->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
-    aSpinWidget->setMinimumSize( 150, 0 );
-    param->InitializeWidget( aSpinWidget );
-    mySpinList.push_back( aSpinWidget );
+    if ( aSpinWidget ) {
+      GroupC1Layout->addWidget( aSpinWidget, row, 1 );
+      aSpinWidget->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+      aSpinWidget->setMinimumSize( 150, 0 );
+      param->InitializeWidget( aSpinWidget );
+      mySpinList.push_back( aSpinWidget );
+    }
   }
   
   /***************************************************************/

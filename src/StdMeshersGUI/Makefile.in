@@ -50,7 +50,8 @@ LIB_MOC = \
 	StdMeshersGUI_CreateHypothesisDlg.h \
 	StdMeshersGUI_CreateStdHypothesisDlg.h 
 
-EXPORT_HEADERS = StdMeshersGUI_CreateHypothesisDlg.h
+EXPORT_HEADERS = StdMeshersGUI_CreateHypothesisDlg.h \
+		 StdMeshersGUI_Parameters.h
 
 LIB_CLIENT_IDL = \
 	SALOME_Exception.idl \

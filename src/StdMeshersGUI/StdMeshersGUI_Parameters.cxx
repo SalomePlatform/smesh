@@ -207,16 +207,22 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr       
   params = "";
   list<SMESHGUI_aParameterPtr>::iterator paramIt = paramList.begin();
   for ( ; paramIt != paramList.end(); paramIt++) {
-    int aIntValue;
-    double aDoubleValue;
     if (params.compare("")) params += " ; ";
-    if ((*paramIt)->GetType() == SMESHGUI_aParameter::INT) {
-      (*paramIt)->GetNewInt(aIntValue);
-      params += QString::number(aIntValue);;
+
+    if ((*paramIt)->GetType() == SMESHGUI_aParameter::DOUBLE ) {
+      double aDoubleValue = 0.;
+      (*paramIt)->GetNewDouble(aDoubleValue);
+      params += QString::number(aDoubleValue);
+    }
+    else if ((*paramIt)->GetType() == SMESHGUI_aParameter::TEXT ) {
+      QString aStrValue( "" );
+      (*paramIt)->GetNewText(aStrValue);
+      params += aStrValue.simplifyWhiteSpace();
     }
     else {
-      (*paramIt)->GetNewDouble(aDoubleValue);
-	params += QString::number(aDoubleValue);
+      int aIntValue = 0;
+      (*paramIt)->GetNewInt(aIntValue);
+      params += QString::number(aIntValue);;
     }
   }
 }

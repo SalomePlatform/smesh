@@ -29,7 +29,11 @@
   
 #include <qspinbox.h>
 #include <qvalidator.h>
+#include <qtextedit.h>
+
 #include "QAD_SpinBoxDbl.h"
+
+#include <utilities.h>
 
 SMESHGUI_aParameter::~SMESHGUI_aParameter() {}
 
@@ -55,6 +59,10 @@ bool SMESHGUI_intParameter::GetNewInt( int & theValue ) const
   return _newValue != _initValue;
 }
 bool SMESHGUI_intParameter::GetNewDouble( double & Value ) const
+{
+  return false;
+}
+bool SMESHGUI_intParameter::GetNewText( QString & Value ) const
 {
   return false;
 }
@@ -101,6 +109,10 @@ bool SMESHGUI_doubleParameter::GetNewDouble( double & Value ) const
   Value = _newValue;
   return _newValue != _initValue;
 }
+bool SMESHGUI_doubleParameter::GetNewText( QString & Value ) const
+{
+  return false;
+}
 void SMESHGUI_doubleParameter::InitializeWidget( QWidget* theQWidget) const
 {
   QAD_SpinBoxDbl * aSpin = dynamic_cast< QAD_SpinBoxDbl *>( theQWidget );
@@ -116,4 +128,48 @@ void SMESHGUI_doubleParameter::TakeValue( QWidget* theQWidget)
   QAD_SpinBoxDbl * aSpin = dynamic_cast< QAD_SpinBoxDbl *>( theQWidget );
   if ( aSpin )
     _newValue = aSpin->value();
+}
+
+//=================================================================================
+// class    : SMESHGUI_strParameter
+// purpose  :
+//=================================================================================
+SMESHGUI_strParameter::SMESHGUI_strParameter(const QString& theInitValue,
+                                             const QString& theLabel)
+     :SMESHGUI_aParameter(theLabel),
+      _initValue( theInitValue )
+{
+  MESSAGE("SMESHGUI_strParameter::SMESHGUI_strParameter")
+}
+SMESHGUI_aParameter::Type SMESHGUI_strParameter::GetType() const
+{
+  return SMESHGUI_aParameter::TEXT;
+}
+bool SMESHGUI_strParameter::GetNewInt( int & theValue ) const
+{
+  return false;
+}
+bool SMESHGUI_strParameter::GetNewDouble( double & Value ) const
+{
+  return false;
+}
+bool SMESHGUI_strParameter::GetNewText( QString & theValue ) const
+{
+  theValue = _newValue;
+  return _newValue != _initValue;
+}
+void SMESHGUI_strParameter::InitializeWidget( QWidget* theQWidget) const
+{
+  MESSAGE("SMESHGUI_strParameter::InitializeWidget")
+  QTextEdit * anEdit = dynamic_cast< QTextEdit *>( theQWidget );
+  if ( anEdit ) {
+    anEdit->setText( _initValue );
+  }
+}
+void SMESHGUI_strParameter::TakeValue( QWidget* theQWidget)
+{
+  MESSAGE("SMESHGUI_strParameter::TakeValue")
+  QTextEdit * anEdit = dynamic_cast< QTextEdit *>( theQWidget );
+  if ( anEdit )
+    _newValue = anEdit->text();
 }
