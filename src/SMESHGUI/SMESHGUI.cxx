@@ -400,6 +400,7 @@ void SMESHGUI::activeStudyChanged( QAD_Desktop* parent )
 bool SMESHGUI::DefineDlgPosition(QWidget* aDlg, int& x, int& y)
 {
   /* Here the position is on the bottom right corner - 10 */
+	aDlg->resize(QSize().expandedTo(aDlg->minimumSizeHint()));
   QAD_Desktop* PP = QAD_Application::getDesktop() ;
   x = abs ( PP->x() + PP->size().width()  - aDlg->size().width()  - 10 ) ;
   y = abs ( PP->y() + PP->size().height() - aDlg->size().height() - 10 ) ;
