@@ -30,6 +30,7 @@ using namespace std;
 #include "SMESH_Algo.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_HypoFilter.hxx"
 
 #include <GeomAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
@@ -91,30 +92,18 @@ const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
 const list <const SMESHDS_Hypothesis *> & SMESH_Algo::GetUsedHypothesis(
 	SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-	_usedHypList.clear();
-	_usedHypList = GetAppliedHypothesis(aMesh, aShape);	// copy
-	int nbHyp = _usedHypList.size();
-	if (nbHyp == 0)
-	{
-          TopTools_ListIteratorOfListOfShape ancIt( aMesh.GetAncestors( aShape ));
-          for (; ancIt.More(); ancIt.Next())
-          {
-            const TopoDS_Shape& ancestor = ancIt.Value();
-            _usedHypList = GetAppliedHypothesis(aMesh, ancestor);	// copy
-            nbHyp = _usedHypList.size();
-            if (nbHyp == 1)
-              break;
-          }
-// 		TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
-// 		if (!mainShape.IsSame(aShape))
-// 		{
-// 			_usedHypList = GetAppliedHypothesis(aMesh, mainShape);	// copy
-// 			nbHyp = _usedHypList.size();
-// 		}
-	}
-	if (nbHyp > 1)
-		_usedHypList.clear();	//only one compatible hypothesis allowed
-	return _usedHypList;
+  _usedHypList.clear();
+  if ( !_compatibleHypothesis.empty() )
+  {
+    SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( _compatibleHypothesis[0] ));
+    for ( int i = 1; i < _compatibleHypothesis.size(); ++i )
+      filter.Or( filter.HasName( _compatibleHypothesis[ i ] ));
+
+    aMesh.GetHypotheses( aShape, filter, _usedHypList, true );
+    if ( _usedHypList.size() > 1 )
+      _usedHypList.clear();	//only one compatible hypothesis allowed
+  }
+  return _usedHypList;
 }
 
 //=============================================================================
@@ -128,34 +117,16 @@ const list <const SMESHDS_Hypothesis *> & SMESH_Algo::GetUsedHypothesis(
 const list<const SMESHDS_Hypothesis *> & SMESH_Algo::GetAppliedHypothesis(
 	SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-	const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-	const list<const SMESHDS_Hypothesis*> & listHyp = meshDS->GetHypothesis(aShape);
-	list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
-
-	int hypType;
-	string hypName;
-
-	_appliedHypList.clear();
-	while (it!=listHyp.end())
-	{
-		const SMESHDS_Hypothesis *anHyp = *it;
-		hypType = anHyp->GetType();
-		//SCRUTE(hypType);
-		if (hypType == SMESHDS_Hypothesis::PARAM_ALGO)
-		{
-			hypName = anHyp->GetName();
-			vector < string >::iterator ith =
-				find(_compatibleHypothesis.begin(), _compatibleHypothesis.end(),
-				hypName);
-			if (ith != _compatibleHypothesis.end())	// count only relevant 
-			{
-				_appliedHypList.push_back(anHyp);
-				//SCRUTE(hypName);
-			}
-		}
-		it++;
-	}
-	return _appliedHypList;
+  _appliedHypList.clear();
+  if ( !_compatibleHypothesis.empty() )
+  {
+    SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( _compatibleHypothesis[0] ));
+    for ( int i = 1; i < _compatibleHypothesis.size(); ++i )
+      filter.Or( filter.HasName( _compatibleHypothesis[ i ] ));
+    
+    aMesh.GetHypotheses( aShape, filter, _appliedHypList, false );
+  }
+  return _appliedHypList;
 }
 
 //=============================================================================
