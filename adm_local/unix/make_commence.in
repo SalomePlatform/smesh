@@ -127,7 +127,7 @@ OMNIORB_CXXFLAGS    = @OMNIORB_CXXFLAGS@
 
 OMNIORB_IDL         = @OMNIORB_IDL@
 OMNIORB_IDLCXXFLAGS = @OMNIORB_IDLCXXFLAGS@
-OMNIORB_IDLPYFLAGS  = @OMNIORB_IDLPYFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome
+OMNIORB_IDLPYFLAGS  = @OMNIORB_IDLPYFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
 
 OMNIORB_IDL_CLN_H   = @OMNIORB_IDL_CLN_H@
 OMNIORB_IDL_CLN_CXX = @OMNIORB_IDL_CLN_CXX@
@@ -144,7 +144,7 @@ CORBA_INCLUDES    = @CORBA_INCLUDES@
 CORBA_LIBS        = @CORBA_LIBS@
 CORBA_CXXFLAGS    = @CORBA_CXXFLAGS@
 
-IDLCXXFLAGS = @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome
+IDLCXXFLAGS = @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
 IDLPYFLAGS  = @IDLPYFLAGS@
 
 IDL = @IDL@
