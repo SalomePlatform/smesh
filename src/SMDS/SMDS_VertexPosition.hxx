@@ -27,86 +27,16 @@
 #ifndef _SMDS_VertexPosition_HeaderFile
 #define _SMDS_VertexPosition_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_VertexPosition_HeaderFile
-#include "Handle_SMDS_VertexPosition.hxx"
-#endif
-
-#ifndef _SMDS_Position_HeaderFile
 #include "SMDS_Position.hxx"
-#endif
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-class gp_Pnt;
 
+class SMDS_VertexPosition:public SMDS_Position
+{
 
-class SMDS_VertexPosition : public SMDS_Position {
-
-public:
-
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT SMDS_VertexPosition();
-Standard_EXPORT SMDS_VertexPosition(const Standard_Integer aVertexId);
-Standard_EXPORT virtual  gp_Pnt Coords() const;
-Standard_EXPORT ~SMDS_VertexPosition();
-
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_VertexPosition_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-
-
- // Fields PROTECTED
- //
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-
-
+  public:	
+	SMDS_TypeOfPosition GetTypeOfPosition() const;
+	SMDS_VertexPosition(int aVertexId=0);
+	const double *Coords() const;
+	~SMDS_VertexPosition();
 };
-
-
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
 
 #endif

@@ -27,17 +27,13 @@
 #ifndef _SMDS_TypeOfPosition_HeaderFile
 #define _SMDS_TypeOfPosition_HeaderFile
 
-enum SMDS_TypeOfPosition { 
- SMDS_TOP_UNSPEC,
-SMDS_TOP_3DSPACE,
-SMDS_TOP_VERTEX,
-SMDS_TOP_EDGE,
-SMDS_TOP_FACE
+enum SMDS_TypeOfPosition
+{
+	SMDS_TOP_UNSPEC,
+	SMDS_TOP_3DSPACE,
+	SMDS_TOP_VERTEX,
+	SMDS_TOP_EDGE,
+	SMDS_TOP_FACE
 };
-
-
-#ifndef _Standard_PrimitiveTypes_HeaderFile
-#include <Standard_PrimitiveTypes.hxx>
-#endif
 
 #endif

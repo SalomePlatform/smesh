@@ -25,8 +25,7 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_FacePosition.ixx"
+#include "SMDS_FacePosition.hxx"
 #include "utilities.h"
 
 //=======================================================================
@@ -34,20 +33,10 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_FacePosition::SMDS_FacePosition()
-  :SMDS_Position(0,SMDS_TOP_FACE),myUParameter(0.),myVParameter(0.)
-{
-}
-
-//=======================================================================
-//function : SMDS_FacePosition
-//purpose  : 
-//=======================================================================
-
-SMDS_FacePosition::SMDS_FacePosition(const Standard_Integer aEdgeId,
-				     const Standard_Real aUParam,
-				     const Standard_Real aVParam)
-  :SMDS_Position(aEdgeId,SMDS_TOP_FACE),
+SMDS_FacePosition::SMDS_FacePosition(const int aEdgeId,
+				     const double aUParam,
+				     const double aVParam)
+  :SMDS_Position(aEdgeId),
    myUParameter(aUParam),myVParameter(aVParam)
 {
 }
@@ -56,9 +45,51 @@ SMDS_FacePosition::SMDS_FacePosition(const Standard_Integer aEdgeId,
 //function : Coords
 //purpose  : 
 //=======================================================================
-
-gp_Pnt SMDS_FacePosition::Coords() const
+const double *SMDS_FacePosition::Coords() const
 {
-  MESSAGE( "SMDS_FacePosition::Coords not implemented" );
-  return gp_Pnt(0,0,0);
+	static double origin[]={0,0,0};
+	MESSAGE("SMDS_EdgePosition::Coords not implemented");
+	return origin;
+}
+
+/**
+*/
+SMDS_TypeOfPosition SMDS_FacePosition::GetTypeOfPosition() const
+{
+	return SMDS_TOP_FACE;
+}
+
+void SMDS_FacePosition::SetUParameter(double aUparam)
+{
+	myUParameter = aUparam;
+}
+
+//=======================================================================
+//function : SetVParameter
+//purpose  : 
+//=======================================================================
+
+void SMDS_FacePosition::SetVParameter(double aVparam)
+{
+	myVParameter = aVparam;
+}
+
+//=======================================================================
+//function : GetUParameter
+//purpose  : 
+//=======================================================================
+
+double SMDS_FacePosition::GetUParameter() const 
+{
+	return myUParameter;
+}
+
+//=======================================================================
+//function : GetVParameter
+//purpose  : 
+//=======================================================================
+
+double SMDS_FacePosition::GetVParameter() const 
+{
+	return myVParameter;
 }

@@ -25,15 +25,36 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshElementIDFactory.ixx"
+
+#include "SMDS_MeshElementIDFactory.hxx"
+#include "SMDS_MeshElement.hxx"
 
 //=======================================================================
 //function : SMDS_MeshElementIDFactory
 //purpose  : 
 //=======================================================================
-
-SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory() : SMDS_MeshIDFactory()
+SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():SMDS_MeshIDFactory()
 {
 }
 
+//=======================================================================
+//function : BindID
+//purpose  : 
+//=======================================================================
+bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
+{
+	bool bound=myIDElements.insert(
+		map<int, SMDS_MeshElement*>::value_type(ID,elem)).second;
+	if(bound) elem->myID=ID;
+	return bound;
+}
+
+//=======================================================================
+//function : MeshElement
+//purpose  : 
+//=======================================================================
+SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
+{
+    map<int, SMDS_MeshElement*>::iterator it=myIDElements.find(ID);
+    if(it==myIDElements.end()) return NULL; else return (*it).second;
+}

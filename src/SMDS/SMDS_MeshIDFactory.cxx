@@ -25,16 +25,34 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshIDFactory.ixx"
 
+#include "SMDS_MeshIDFactory.hxx"
 
 //=======================================================================
 //function : SMDS_MeshIDFactory
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshIDFactory::SMDS_MeshIDFactory() : myMaxID(0)
+SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(0)
 {
 }
 
+int SMDS_MeshIDFactory::GetFreeID()
+{
+	if (myPoolOfID.empty()) return ++myMaxID;
+	else
+	{
+		int ID = myPoolOfID.top();
+		myPoolOfID.pop();
+		return ID;
+	}
+}
+
+//=======================================================================
+//function : ReleaseID
+//purpose  : 
+//=======================================================================
+void SMDS_MeshIDFactory::ReleaseID(const int ID)
+{
+	if (ID < myMaxID) myPoolOfID.push(ID);
+}

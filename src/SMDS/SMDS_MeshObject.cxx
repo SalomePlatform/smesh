@@ -25,5 +25,4 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshObject.ixx"
+#include "SMDS_MeshObject.hxx"

@@ -25,8 +25,7 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_EdgePosition.ixx"
+#include "SMDS_EdgePosition.hxx"
 #include "utilities.h"
 
 //=======================================================================
@@ -34,19 +33,8 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_EdgePosition::SMDS_EdgePosition()
-  :SMDS_Position(0,SMDS_TOP_EDGE),myUParameter(0.)
-{
-}
-
-//=======================================================================
-//function : SMDS_EdgePosition
-//purpose  : 
-//=======================================================================
-
-SMDS_EdgePosition::SMDS_EdgePosition(const Standard_Integer aEdgeId,
-				     const Standard_Real aUParam)
-  :SMDS_Position(aEdgeId,SMDS_TOP_EDGE),myUParameter(aUParam)
+SMDS_EdgePosition::SMDS_EdgePosition(const int aEdgeId,
+	const double aUParam):SMDS_Position(aEdgeId), myUParameter(aUParam)
 {
 }
 
@@ -55,8 +43,31 @@ SMDS_EdgePosition::SMDS_EdgePosition(const Standard_Integer aEdgeId,
 //purpose  : 
 //=======================================================================
 
-gp_Pnt SMDS_EdgePosition::Coords() const
+const double *SMDS_EdgePosition::Coords() const
 {
-  MESSAGE( "SMDS_EdgePosition::Coords not implemented" );
-  return gp_Pnt(0,0,0);
+	static double origin[]={0,0,0};
+	MESSAGE("SMDS_EdgePosition::Coords not implemented");
+	return origin;
+}
+
+/**
+*/
+SMDS_TypeOfPosition SMDS_EdgePosition::GetTypeOfPosition() const
+{
+	return SMDS_TOP_EDGE;
+}
+
+void SMDS_EdgePosition::SetUParameter(double aUparam)
+{
+	myUParameter = aUparam;
+}
+
+//=======================================================================
+//function : GetUParameter
+//purpose  : 
+//=======================================================================
+
+double SMDS_EdgePosition::GetUParameter() const 
+{
+	return myUParameter;
 }

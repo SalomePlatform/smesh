@@ -25,47 +25,35 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_SpacePosition.ixx"
+#include "SMDS_SpacePosition.hxx"
 
 //=======================================================================
 //function : SMDS_SpacePosition
 //purpose  : 
 //=======================================================================
 
-SMDS_SpacePosition::SMDS_SpacePosition()
-  :SMDS_Position(0,SMDS_TOP_3DSPACE),myCoords(0.,0.,0.)
+SMDS_SpacePosition::SMDS_SpacePosition(double x, double y, double z):
+	SMDS_Position(0)
 {
+	myCoords[0]=x;
+	myCoords[1]=y;
+	myCoords[2]=z;
 }
 
-//=======================================================================
-//function : SMDS_SpacePosition
-//purpose  : 
-//=======================================================================
-
-SMDS_SpacePosition::SMDS_SpacePosition(const Standard_Real x,
-				       const Standard_Real y,
-				       const Standard_Real z)
-  :SMDS_Position(0,SMDS_TOP_3DSPACE),myCoords(x,y,z)
+/**
+*/
+SMDS_TypeOfPosition SMDS_SpacePosition::GetTypeOfPosition() const
 {
+	return SMDS_TOP_3DSPACE;
 }
 
-//=======================================================================
-//function : SMDS_SpacePosition
-//purpose  : 
-//=======================================================================
-
-SMDS_SpacePosition::SMDS_SpacePosition(const gp_Pnt& aCoords)
-  :SMDS_Position(0,SMDS_TOP_3DSPACE),myCoords(aCoords)
+const double * SMDS_SpacePosition::Coords() const
 {
+	return myCoords;
 }
 
-//=======================================================================
-//function : Coords
-//purpose  : 
-//=======================================================================
-
-gp_Pnt SMDS_SpacePosition::Coords() const
+SMDS_SpacePosition * SMDS_SpacePosition::originSpacePosition()
 {
-  return myCoords;
+	static SMDS_SpacePosition * staticpos=new SMDS_SpacePosition();
+	return staticpos;
 }

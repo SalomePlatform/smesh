@@ -25,8 +25,7 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_VertexPosition.ixx"
+#include "SMDS_VertexPosition.hxx"
 #include "utilities.h"
 
 //=======================================================================
@@ -34,29 +33,25 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-SMDS_VertexPosition::SMDS_VertexPosition()
-  :SMDS_Position(0,SMDS_TOP_VERTEX)
+SMDS_VertexPosition:: SMDS_VertexPosition(const int aVertexId)
+	:SMDS_Position(aVertexId)
 {
 }
-
-//=======================================================================
-//function : SMDS_VertexPosition
-//purpose  : 
-//=======================================================================
-
-SMDS_VertexPosition::SMDS_VertexPosition(const Standard_Integer aVertexId)
-  :SMDS_Position(aVertexId,SMDS_TOP_VERTEX)
-{
-}
-
 
 //=======================================================================
 //function : Coords
 //purpose  : 
 //=======================================================================
 
-gp_Pnt SMDS_VertexPosition::Coords() const
+const double *SMDS_VertexPosition::Coords() const
 {
-  MESSAGE( "SMDS_VertexPosition::Coords not implemented" );
-  return gp_Pnt(0,0,0);
+	const static double origin[]={0,0,0};
+	MESSAGE("SMDS_EdgePosition::Coords not implemented");
+	return origin;
+}
+
+
+SMDS_TypeOfPosition SMDS_VertexPosition::GetTypeOfPosition() const
+{
+	return SMDS_TOP_VERTEX;
 }

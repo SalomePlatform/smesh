@@ -27,93 +27,23 @@
 #ifndef _SMDS_EdgePosition_HeaderFile
 #define _SMDS_EdgePosition_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_EdgePosition_HeaderFile
-#include "Handle_SMDS_EdgePosition.hxx"
-#endif
-
-#ifndef _Standard_Real_HeaderFile
-#include <Standard_Real.hxx>
-#endif
-#ifndef _SMDS_Position_HeaderFile
 #include "SMDS_Position.hxx"
-#endif
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-class gp_Pnt;
 
+class SMDS_EdgePosition:public SMDS_Position
+{
 
-class SMDS_EdgePosition : public SMDS_Position {
+  public:
+	SMDS_EdgePosition(const int aEdgeId=0, const double aUParam=0);
+	const virtual double * Coords() const;
+	SMDS_TypeOfPosition GetTypeOfPosition() const;
+	void SetUParameter(double aUparam);
+	double GetUParameter() const;
+	 ~SMDS_EdgePosition();
 
-public:
+  private:
 
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT SMDS_EdgePosition();
-Standard_EXPORT SMDS_EdgePosition(const Standard_Integer aEdgeId,const Standard_Real aUParam);
-Standard_EXPORT virtual  gp_Pnt Coords() const;
-Standard_EXPORT inline   void SetUParameter(const Standard_Real aUparam) ;
-Standard_EXPORT inline   Standard_Real GetUParameter() const;
-Standard_EXPORT ~SMDS_EdgePosition();
-
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_EdgePosition_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-
-
- // Fields PROTECTED
- //
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-Standard_Real myUParameter;
-
+	double myUParameter;
 
 };
-
-
-#include "SMDS_EdgePosition.lxx"
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
 
 #endif

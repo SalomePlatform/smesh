@@ -27,90 +27,20 @@
 #ifndef _SMDS_MeshIDFactory_HeaderFile
 #define _SMDS_MeshIDFactory_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_MeshIDFactory_HeaderFile
-#include "Handle_SMDS_MeshIDFactory.hxx"
-#endif
-
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-#ifndef _TColStd_StackOfInteger_HeaderFile
-#include <TColStd_StackOfInteger.hxx>
-#endif
-#ifndef _SMDS_MeshObject_HeaderFile
 #include "SMDS_MeshObject.hxx"
-#endif
+#include <stack>
+using namespace std;
 
+class SMDS_MeshIDFactory:public SMDS_MeshObject
+{
+  public:
+	virtual int GetFreeID();
+	virtual void ReleaseID(int ID);
 
-class SMDS_MeshIDFactory : public SMDS_MeshObject {
-
-public:
-
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT virtual  Standard_Integer GetFreeID()  = 0;
-Standard_EXPORT virtual  void ReleaseID(const Standard_Integer ID)  = 0;
-Standard_EXPORT ~SMDS_MeshIDFactory();
-
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_MeshIDFactory_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-Standard_EXPORT SMDS_MeshIDFactory();
-
-
- // Fields PROTECTED
- //
-Standard_Integer myMaxID;
-TColStd_StackOfInteger myPoolOfID;
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-
-
+  protected:
+	SMDS_MeshIDFactory();
+	int myMaxID;
+	stack<int> myPoolOfID;
 };
-
-
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
 
 #endif

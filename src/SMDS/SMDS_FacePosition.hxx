@@ -27,96 +27,23 @@
 #ifndef _SMDS_FacePosition_HeaderFile
 #define _SMDS_FacePosition_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_FacePosition_HeaderFile
-#include "Handle_SMDS_FacePosition.hxx"
-#endif
-
-#ifndef _Standard_Real_HeaderFile
-#include <Standard_Real.hxx>
-#endif
-#ifndef _SMDS_Position_HeaderFile
 #include "SMDS_Position.hxx"
-#endif
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-class gp_Pnt;
 
+class SMDS_FacePosition:public SMDS_Position
+{
 
-class SMDS_FacePosition : public SMDS_Position {
+  public:
+	SMDS_FacePosition(int aFaceId=0, double aUParam=0,
+		double aVParam=0);
+	const virtual double * Coords() const;
+	SMDS_TypeOfPosition GetTypeOfPosition() const;
+	void SetUParameter(double aUparam);
+	void SetVParameter(double aVparam);
+	double GetUParameter() const;
+	double GetVParameter() const;
 
-public:
-
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT SMDS_FacePosition();
-Standard_EXPORT SMDS_FacePosition(const Standard_Integer aFaceId,const Standard_Real aUParam,const Standard_Real aVParam);
-Standard_EXPORT virtual  gp_Pnt Coords() const;
-Standard_EXPORT inline   void SetUParameter(const Standard_Real aUparam) ;
-Standard_EXPORT inline   void SetVParameter(const Standard_Real aVparam) ;
-Standard_EXPORT inline   Standard_Real GetUParameter() const;
-Standard_EXPORT inline   Standard_Real GetVParameter() const;
-Standard_EXPORT ~SMDS_FacePosition();
-
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_FacePosition_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-
-
- // Fields PROTECTED
- //
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-Standard_Real myUParameter;
-Standard_Real myVParameter;
-
-
+  private:
+	double myUParameter;
+	double myVParameter;
 };
-
-
-#include "SMDS_FacePosition.lxx"
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
-
 #endif

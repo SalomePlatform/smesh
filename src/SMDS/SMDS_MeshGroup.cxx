@@ -25,16 +25,15 @@
 //  Module : SMESH
 
 using namespace std;
-#include "SMDS_MeshGroup.ixx"
-#include "SMDS_ListIteratorOfListOfMeshGroup.hxx"
-
+#include "SMDS_MeshGroup.hxx"
+#include "utilities.h"
 //=======================================================================
 //function : SMDS_MeshGroup
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshGroup::SMDS_MeshGroup(const Handle(SMDS_Mesh)& aMesh)
-  :myMesh(aMesh),myType(SMDSAbs_All)
+SMDS_MeshGroup::SMDS_MeshGroup(const SMDS_Mesh * aMesh)
+	:myMesh(aMesh),myType(SMDSAbs_All), myParent(NULL)
 {
 }
 
@@ -43,8 +42,8 @@ SMDS_MeshGroup::SMDS_MeshGroup(const Handle(SMDS_Mesh)& aMesh)
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshGroup::SMDS_MeshGroup(const Handle(SMDS_MeshGroup)& parent)
-  :myMesh(parent->myMesh),myType(SMDSAbs_All),myParent(parent)
+SMDS_MeshGroup::SMDS_MeshGroup(SMDS_MeshGroup * parent)
+	:myMesh(parent->myMesh),myType(SMDSAbs_All), myParent(parent)
 {
 }
 
@@ -53,13 +52,11 @@ SMDS_MeshGroup::SMDS_MeshGroup(const Handle(SMDS_MeshGroup)& parent)
 //purpose  : 
 //=======================================================================
 
-Handle(SMDS_MeshGroup) SMDS_MeshGroup::AddSubGroup()
+const SMDS_MeshGroup *SMDS_MeshGroup::AddSubGroup()
 {
-  Handle(SMDS_MeshGroup) subgroup = new SMDS_MeshGroup(this);
-  if (!subgroup.IsNull()) {
-    myChildren.Append(subgroup);
-  }
-  return subgroup;
+	const SMDS_MeshGroup * subgroup = new SMDS_MeshGroup(this);
+	myChildren.insert(myChildren.end(),subgroup);
+	return subgroup;
 }
 
 //=======================================================================
@@ -67,21 +64,21 @@ Handle(SMDS_MeshGroup) SMDS_MeshGroup::AddSubGroup()
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMDS_MeshGroup::RemoveSubGroup(const Handle(SMDS_MeshGroup)& aGroup)
+bool SMDS_MeshGroup::RemoveSubGroup(const SMDS_MeshGroup * aGroup)
 {
-  Standard_Boolean found = Standard_False;
+	bool found = false;	
+	list<const SMDS_MeshGroup*>::iterator itgroup;
+	for(itgroup=myChildren.begin(); itgroup!=myChildren.end(); itgroup++)
+	{
+		const SMDS_MeshGroup* subgroup=*itgroup;
+		if (subgroup == aGroup)
+		{
+			found = true;
+			myChildren.erase(itgroup);
+		}
+	}
 
-  SMDS_ListIteratorOfListOfMeshGroup itgroup(myChildren);
-  for (;itgroup.More() && !found; itgroup.Next()) {
-    Handle(SMDS_MeshGroup) subgroup;
-    subgroup = itgroup.Value();
-    if (subgroup == aGroup) {
-      found = Standard_True;
-      myChildren.Remove(itgroup);
-    }
-  }
-
-  return found;
+	return found;
 }
 
 //=======================================================================
@@ -89,15 +86,15 @@ Standard_Boolean SMDS_MeshGroup::RemoveSubGroup(const Handle(SMDS_MeshGroup)& aG
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMDS_MeshGroup::RemoveFromParent()
+bool SMDS_MeshGroup::RemoveFromParent()
 {
-  if (myParent.IsNull())
-    return Standard_False;
-
-  return (myParent->RemoveSubGroup(this));
-
+	
+	if (myParent==NULL) return false;
+	else
+	{
+		return (myParent->RemoveSubGroup(this));
+	}
 }
-
 //=======================================================================
 //function : Clear
 //purpose  : 
@@ -105,8 +102,8 @@ Standard_Boolean SMDS_MeshGroup::RemoveFromParent()
 
 void SMDS_MeshGroup::Clear()
 {
-  myElements.Clear();
-  myType = SMDSAbs_All;
+	myElements.clear();
+	myType = SMDSAbs_All;
 }
 
 //=======================================================================
@@ -114,9 +111,9 @@ void SMDS_MeshGroup::Clear()
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMDS_MeshGroup::IsEmpty() const
+bool SMDS_MeshGroup::IsEmpty() const
 {
-  return myElements.IsEmpty();
+	return myElements.empty();
 }
 
 //=======================================================================
@@ -124,9 +121,9 @@ Standard_Boolean SMDS_MeshGroup::IsEmpty() const
 //purpose  : 
 //=======================================================================
 
-Standard_Integer SMDS_MeshGroup::Extent() const
+int SMDS_MeshGroup::Extent() const
 {
-  return myElements.Extent();
+	return myElements.size();
 }
 
 //=======================================================================
@@ -134,31 +131,25 @@ Standard_Integer SMDS_MeshGroup::Extent() const
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshGroup::Add(const Handle(SMDS_MeshElement)& ME)
+void SMDS_MeshGroup::Add(const SMDS_MeshElement * ME)
 {
-  // the type of the group is determined by the first element added
-  if (myElements.IsEmpty()) {
-    myType = ME->GetType();
-  }
-
-  if (ME->GetType() != myType) { 
-    Standard_TypeMismatch::Raise("SMDS_MeshGroup::Add");
-  }
-
-  myElements.Add(ME);
+	// the type of the group is determined by the first element added
+	if (myElements.empty()) myType = ME->GetType();
+	else if (ME->GetType() != myType)
+		MESSAGE("SMDS_MeshGroup::Add : Type Mismatch");
+	
+	myElements.insert(ME);
 }
-
 
 //=======================================================================
 //function : Remove
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshGroup::Remove(const Handle(SMDS_MeshElement)& ME)
+void SMDS_MeshGroup::Remove(const SMDS_MeshElement * ME)
 {
-  myElements.Remove(ME);
-  if (myElements.IsEmpty())
-    myType = SMDSAbs_All;
+	myElements.erase(ME);
+	if (myElements.empty()) myType = SMDSAbs_All;
 }
 
 //=======================================================================
@@ -168,7 +159,7 @@ void SMDS_MeshGroup::Remove(const Handle(SMDS_MeshElement)& ME)
 
 SMDSAbs_ElementType SMDS_MeshGroup::Type() const
 {
-  return myType;
+	return myType;
 }
 
 //=======================================================================
@@ -176,7 +167,7 @@ SMDSAbs_ElementType SMDS_MeshGroup::Type() const
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean SMDS_MeshGroup::Contains(const Handle(SMDS_MeshElement)& ME) const
+bool SMDS_MeshGroup::Contains(const SMDS_MeshElement * ME) const
 {
-  return myElements.Contains(ME);
+	return myElements.find(ME)!=myElements.end();
 }

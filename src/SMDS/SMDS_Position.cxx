@@ -25,16 +25,33 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_Position.ixx"
+#include "SMDS_Position.hxx"
 
 //=======================================================================
 //function : SMDS_Position
 //purpose  : 
 //=======================================================================
 
-SMDS_Position::SMDS_Position(const Standard_Integer aShapeId, 
-			     const SMDS_TypeOfPosition aType)
-  :myShapeId(aShapeId),myType(aType)
+SMDS_Position::SMDS_Position(int aShapeId) :myShapeId(aShapeId)
 {
+}
+
+//=======================================================================
+//function : SetShapeId
+//purpose  : 
+//=======================================================================
+
+void SMDS_Position::SetShapeId(int aShapeId)
+{
+	myShapeId = aShapeId;
+}
+
+//=======================================================================
+//function : GetShapeId
+//purpose  : 
+//=======================================================================
+
+int SMDS_Position::GetShapeId() const
+{
+	return myShapeId;
 }
