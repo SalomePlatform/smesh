@@ -50,5 +50,12 @@ class StdMeshersGUI_Parameters
   
   static bool SetParameters(SMESH::SMESH_Hypothesis_ptr               hyp,
 			    const std::list<SMESHGUI_aParameterPtr> & params );
+
+  static void SetInitValue(SMESHGUI_aParameterPtr param,
+                           int                    initValue);
+  static void SetInitValue(SMESHGUI_aParameterPtr param,
+                           double                 initValue);
+  static void SetInitValue(SMESHGUI_aParameterPtr param,
+                           const char*            initValue);
 };
 #endif
