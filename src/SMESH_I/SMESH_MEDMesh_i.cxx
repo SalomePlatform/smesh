@@ -1205,7 +1205,17 @@ SMESH_MEDMesh_i::getElementType(SALOME_MED::medEntityMesh entity,
   return (SALOME_MED::medGeometryElement) 0;
 }
 
+//=============================================================================
+/*!
+ * Test if this and other aggregate the same MESH
+ */
+//=============================================================================
 CORBA::Boolean SMESH_MEDMesh_i::areEquals(SALOME_MED::MESH_ptr other)
+  throw (SALOME::SALOME_Exception)
 {
+  MESSAGE("!!!! NOT YET IMPLEMENTED !!!!!");
+  
+  THROW_SALOME_CORBA_EXCEPTION("Unimplemented Method", SALOME::BAD_PARAM);
+
   return false;
 }
