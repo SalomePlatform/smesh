@@ -79,7 +79,7 @@ static int MYDEBUG = 0;
 SMESH_Mesh::SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen, SMESHDS_Document * myDocument)
 : _groupId( 0 )
 {
-  INFOS("SMESH_Mesh::SMESH_Mesh(int localId)");
+  INFOS("SMESH_Mesh::SMESH_Mesh; this = "<<this);
 	_id = localId;
 	_studyId = studyId;
 	_gen = gen;
@@ -97,7 +97,7 @@ SMESH_Mesh::SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen, SMESHDS_Docume
 
 SMESH_Mesh::~SMESH_Mesh()
 {
-  INFOS("SMESH_Mesh::~SMESH_Mesh");
+  INFOS("SMESH_Mesh::~SMESH_Mesh; this = "<<this);
 
   // delete groups
   map < int, SMESH_Group * >::iterator itg;
