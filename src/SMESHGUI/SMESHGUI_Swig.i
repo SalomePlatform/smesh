@@ -32,11 +32,11 @@
 
 %include "typemaps.i"
 
-class SMESHGUI_Swig
+class SMESH_Swig
 {
  public:
-  SMESHGUI_Swig();
-  ~SMESHGUI_Swig();
+  SMESH_Swig();
+  ~SMESH_Swig();
 
   void Init(int studyID);
 
