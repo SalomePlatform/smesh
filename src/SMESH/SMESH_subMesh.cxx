@@ -792,20 +792,17 @@ SMESH_Hypothesis::Hypothesis_Status
       ASSERT(algo);
       if (!algo->CheckHypothesis((*_father),_subShape, ret ))
       {
-        MESSAGE("two applying algo on the same shape not allowed");
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
         if ( !SMESH_Hypothesis::IsStatusFatal( ret ))
           // ret should be fatal: anHyp was not added
           ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
-      else if (SMESH_Hypothesis::IsStatusFatal( ret ))
-      {
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
-      }
       else if (!_father->IsUsedHypothesis(  anHyp, _subShape ))
-      {
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
         ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+
+      if (SMESH_Hypothesis::IsStatusFatal( ret ))
+      {
+        MESSAGE("do not add extra hypothesis");
+        _meshDS->RemoveHypothesis(_subShape, anHyp);
       }
       else
       {
@@ -815,11 +812,19 @@ SMESH_Hypothesis::Hypothesis_Status
     }
     case ADD_ALGO: {           //already existing algo : on father ?
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
-      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-        SetAlgoState(HYP_OK);
+      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+        // check if algo changes
+        SMESH_HypoFilter f;
+        f.Init(   SMESH_HypoFilter::IsAlgo() );
+        f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
+        f.AndNot( SMESH_HypoFilter::Is( algo ));
+        const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( _subShape, f, true );
+        if (prevAlgo && 
+            string(algo->GetName()) != string(prevAlgo->GetName()) )
+          modifiedHyp = true;
+      }
       else
         SetAlgoState(MISSING_HYP);
-      modifiedHyp = true;
       break;
     }
     case REMOVE_HYP: {
@@ -840,13 +845,13 @@ SMESH_Hypothesis::Hypothesis_Status
       }
       else
       {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo remains
+          if ( anHyp != algo && strcmp( anHyp->GetName(), algo->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        // check if same algo remains
-        if ( anHyp != algo && strcmp( anHyp->GetName(), algo->GetName()) )
-          modifiedHyp = true;
       }
       break;
     }
@@ -855,7 +860,6 @@ SMESH_Hypothesis::Hypothesis_Status
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
       {
-        SetAlgoState(HYP_OK);
         if (_father->IsUsedHypothesis( anHyp, _subShape )) // new Hyp
           modifiedHyp = true;
       }
@@ -863,27 +867,35 @@ SMESH_Hypothesis::Hypothesis_Status
         SetAlgoState(MISSING_HYP);
       break;
     }
-    case ADD_FATHER_ALGO: {    // a new algo on father
+    case ADD_FATHER_ALGO: {
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
-      if ( algo == anHyp ) {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+      if ( algo == anHyp ) { // a new algo on father
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo changes
+          SMESH_HypoFilter f;
+          f.Init(   SMESH_HypoFilter::IsAlgo() );
+          f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
+          f.AndNot( SMESH_HypoFilter::Is( algo ));
+          const SMESH_Hypothesis* prevAlgo = _father->GetHypothesis( _subShape, f, true );
+          if (prevAlgo && 
+              string(algo->GetName()) != string(prevAlgo->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        modifiedHyp = true;
       }
       break;
     }
     case REMOVE_FATHER_HYP: {
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
       ASSERT(algo);
-      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-        SetAlgoState(HYP_OK);
+      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+        // is there the same local hyp or maybe a new father algo applied?
+        if ( !GetSimilarAttached( _subShape, anHyp ) )
+          modifiedHyp = true;
+      }
       else
         SetAlgoState(MISSING_HYP);
-      // is there the same local hyp or maybe a new father algo applied?
-      if ( !GetSimilarAttached( _subShape, anHyp ) )
-        modifiedHyp = true;
       break;
     }
     case REMOVE_FATHER_ALGO: {
@@ -894,13 +906,13 @@ SMESH_Hypothesis::Hypothesis_Status
       }
       else
       {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo changes
+          if ( string(algo->GetName()) != string( anHyp->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        // is there the same local algo or maybe a new father algo applied?
-        if ( !GetSimilarAttached( _subShape, anHyp ))
-          modifiedHyp = true;
       }
       break;
     }
@@ -1485,20 +1497,20 @@ void SMESH_subMesh::UpdateDependantsState(const compute_event theEvent)
 
 void SMESH_subMesh::CleanDependants()
 {
-  //MESSAGE("SMESH_subMesh::CleanDependants: shape type " << _subShape.ShapeType() );
-
   TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    //MESSAGE("ancestor shape type " << ancestor.ShapeType() );
-    SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
-    if (aSubMesh)
-      aSubMesh->ComputeStateEngine(CLEANDEP);
+    // PAL8021. do not go upper than SOLID, else ComputeStateEngine(CLEANDEP)
+    // will erase mesh on other shapes in a compound
+    if ( ancestor.ShapeType() >= TopAbs_SOLID ) {
+      SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
+      if (aSubMesh)
+        aSubMesh->ComputeStateEngine(CLEANDEP);
+    }
   }
   ComputeStateEngine(CLEAN);
 }
-
 
 //=============================================================================
 /*!
