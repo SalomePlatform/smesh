@@ -21,10 +21,10 @@
 //
 //
 //
-//  File   : SMESH_Actor.cxx
-//  Author : Nicolas REJNERI
+//  File   : SMESH_DeviceActor.cxx
+//  Author : 
 //  Module : SMESH
-//  $Header$Header: /home/server/cvs/SMESH/SMESH_SRC/src/OBJECT/SMESH_DeviceActor.cxx,v 1.7 2005/02/02 12:17:51 apo Exp $
+//  $Header$
 
 
 #include "SMESH_DeviceActor.h"
@@ -76,7 +76,6 @@ vtkStandardNewMacro(SMESH_DeviceActor);
 
 
 SMESH_DeviceActor::SMESH_DeviceActor(){
-  if(MYDEBUG) MESSAGE("SMESH_DeviceActor");
   myIsShrunk = false;
   myIsShrinkable = false;
   myRepresentation = eSurface;
@@ -93,7 +92,9 @@ SMESH_DeviceActor::SMESH_DeviceActor(){
   myShrinkFilter = vtkShrinkFilter::New();
 
   myExtractGeometry = SMESH_ExtractGeometry::New();
+  myExtractGeometry->SetReleaseDataFlag(true);
   myExtractGeometry->SetStoreMapping(true);
+  myIsImplicitFunctionUsed = false;
 
   myExtractUnstructuredGrid = SALOME_ExtractUnstructuredGrid::New();
   myExtractUnstructuredGrid->SetStoreMapping(true);
@@ -160,6 +161,23 @@ void SMESH_DeviceActor::Init(TVisualObjPtr theVisualObj,
 }
 
 
+void
+SMESH_DeviceActor::
+SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
+{
+  if(myIsImplicitFunctionUsed == theIsImplicitFunctionUsed)
+    return;
+
+  int anId = 0;
+  if(theIsImplicitFunctionUsed)
+    myPassFilter[ anId ]->SetInput( myExtractGeometry->GetOutput() );
+  else
+    myPassFilter[ anId ]->SetInput( myMergeFilter->GetOutput() );
+    
+  myIsImplicitFunctionUsed = theIsImplicitFunctionUsed;
+}
+
+
 void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
   if(theGrid){
     //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
@@ -172,7 +190,7 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
     myExtractGeometry->SetInput(myMergeFilter->GetOutput());
 
     int anId = 0;
-    myPassFilter[ anId ]->SetInput( myExtractGeometry->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myMergeFilter->GetOutput() );
     myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
@@ -513,9 +531,9 @@ void SMESH_DeviceActor::UnShrink() {
 }
 
 
-void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){ 
+void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
   switch(theMode){
-  case ePoint: 
+  case ePoint:
     myGeomFilter->SetInside(true);
     GetProperty()->SetRepresentation(0);
     break;
@@ -524,8 +542,8 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
     GetProperty()->SetRepresentation(1);
     break;
   default :
-    GetProperty()->SetRepresentation(theMode);
     myGeomFilter->SetInside(false);
+    GetProperty()->SetRepresentation(theMode);
   }
   myRepresentation = theMode;
   GetProperty()->Modified();
@@ -552,14 +570,18 @@ int SMESH_DeviceActor::GetVisibility(){
 
 
 int SMESH_DeviceActor::GetNodeObjId(int theVtkID){
-  vtkIdType anID = myExtractGeometry->GetNodeObjId(theVtkID);
+  vtkIdType anID = theVtkID;
+
+  if(IsImplicitFunctionUsed())
+    anID = myExtractGeometry->GetNodeObjId(theVtkID);
+
   vtkIdType aRetID = myVisualObj->GetNodeObjId(anID);
   if(MYDEBUG) MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
 float* SMESH_DeviceActor::GetNodeCoord(int theObjID){
-  vtkDataSet* aDataSet = myExtractGeometry->GetInput();
+  vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
   float* aCoord = aDataSet->GetPoint(anID);
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
@@ -571,12 +593,17 @@ int SMESH_DeviceActor::GetElemObjId(int theVtkID){
   vtkIdType anId = myGeomFilter->GetElemObjId(theVtkID);
   if(anId < 0) 
     return -1;
-  vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
+
+  vtkIdType anId2 = anId;
+  if(IsImplicitFunctionUsed())
+    anId2 = myExtractGeometry->GetElemObjId(anId);
   if(anId2 < 0) 
     return -1;
+
   vtkIdType anId3 = myExtractUnstructuredGrid->GetInputId(anId2);
   if(anId3 < 0) 
     return -1;
+
   vtkIdType aRetID = myVisualObj->GetElemObjId(anId3);
   if(MYDEBUG) 
      MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);

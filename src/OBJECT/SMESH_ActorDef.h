@@ -32,6 +32,28 @@
 #include "SMESH_Actor.h"
 #include "SMESH_Object.h"
 
+#include <vtkSmartPointer.h>
+
+template <class T>
+class TVTKSmartPtr: public vtkSmartPointer<T>
+{
+public:
+  TVTKSmartPtr() {}
+  TVTKSmartPtr(T* r, bool theIsOwner = false): vtkSmartPointer<T>(r) { 
+    if(r && theIsOwner) 
+      r->Delete();
+  }
+  TVTKSmartPtr& operator()(T* r, bool theIsOwner = false){ 
+    vtkSmartPointer<T>::operator=(r); 
+    if(r && theIsOwner) 
+      r->Delete();
+    return *this;
+  }
+  TVTKSmartPtr& operator=(T* r){ vtkSmartPointer<T>::operator=(r); return *this;}
+  T* Get() const { return GetPointer();}
+};
+
+
 class vtkProperty;
 class vtkShrinkFilter;
 class vtkPolyDataMapper;
@@ -153,7 +175,10 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual void SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane);
   virtual void GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane);
 
-  virtual vtkImplicitBoolean* GetPlaneContainer(); 
+  virtual void RemoveAllClippingPlanes();
+  virtual vtkIdType GetNumberOfClippingPlanes();
+  virtual vtkPlane* GetClippingPlane(vtkIdType theID);
+  virtual vtkIdType AddClippingPlane(vtkPlane* thePlane); 
 
   virtual TVisualObjPtr GetObject() { return myVisualObj;}
 
@@ -161,6 +186,9 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
  protected:
+  void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
+  bool IsImplicitFunctionUsed() const;
+
   TVisualObjPtr myVisualObj;
   vtkTimeStamp* myTimeStamp;
 
@@ -213,7 +241,9 @@ class SMESH_ActorDef : public SMESH_Actor{
   vtkSelectVisiblePoints* myClsSelectVisiblePoints;
 
   vtkImplicitBoolean* myImplicitBoolean;
-
+  typedef TVTKSmartPtr<vtkPlane> TPlanePtr;
+  typedef std::vector<TPlanePtr> TCippingPlaneCont;
+  TCippingPlaneCont myCippingPlaneCont;
   long myControlsPrecision;
 
   SMESH_ActorDef();

@@ -383,10 +383,6 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 }
 
 
-//=======================================================================
-// function : ClickOnApply()
-// purpose  :
-//=======================================================================
 void SMESHGUI_ClippingDlg::ClickOnApply()
 {
   if (!myActor)
@@ -395,17 +391,13 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
   if ( SMESHGUI::GetSMESHGUI()->GetActiveStudy()->getActiveStudyFrame()->getTypeView() == VIEW_VTK ) {
     QAD_WaitCursor wc;
     
-    vtkImplicitBoolean* aBoolean = myActor->GetPlaneContainer();
-    vtkImplicitFunctionCollection* aCollection = aBoolean->GetFunction();
-    aCollection->RemoveAllItems();
-    aBoolean->Modified(); // VTK bug
-    aCollection->InitTraversal();
-    
+    myActor->RemoveAllClippingPlanes();
+
     SMESH::TPlanes::iterator anIter = myPlanes.begin();
     for (;anIter != myPlanes.end();anIter++){
       OrientedPlane* anOrientedPlane = OrientedPlane::New();
       anOrientedPlane->ShallowCopy(anIter->GetPointer());
-      aCollection->AddItem(anOrientedPlane);
+      myActor->AddClippingPlane(anOrientedPlane);
       anOrientedPlane->Delete();
     }
 
@@ -446,20 +438,22 @@ void SMESHGUI_ClippingDlg::onSelectionChanged()
       Handle(SALOME_InteractiveObject) IOS = mySelection->firstIObject();
       myActor = SMESH::FindActorByEntry(IOS->getEntry());
       if ( myActor ){
-	vtkImplicitBoolean* aBoolean = myActor->GetPlaneContainer();
-	vtkImplicitFunctionCollection* aCollection = aBoolean->GetFunction();
-	aCollection->InitTraversal();
 	std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
 	myPlanes.clear();
-	while(vtkImplicitFunction* aFunction = aCollection->GetNextItem()){
-	  if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
-	    OrientedPlane* anOrientedPlane = OrientedPlane::New(SMESH::GetActiveStudy());
-	    SMESH::TVTKPlane aTVTKPlane(anOrientedPlane);
-	    anOrientedPlane->Delete();
-	    aTVTKPlane->ShallowCopy(aPlane);
-	    myPlanes.push_back(aTVTKPlane);
+
+	vtkIdType anId = 0, anEnd = myActor->GetNumberOfClippingPlanes();
+	for(; anId < anEnd; anId++){
+	  if(vtkImplicitFunction* aFunction = myActor->GetClippingPlane(anId)){
+	    if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
+	      OrientedPlane* anOrientedPlane = OrientedPlane::New(SMESH::GetActiveStudy());
+	      SMESH::TVTKPlane aTVTKPlane(anOrientedPlane);
+	      anOrientedPlane->Delete();
+	      aTVTKPlane->ShallowCopy(aPlane);
+	      myPlanes.push_back(aTVTKPlane);
+	    }
 	  }
 	}
+
 	std::for_each(myPlanes.begin(),myPlanes.end(),
 		      TSetVisiblity(PreviewCheckBox->isChecked()));
       }
@@ -634,7 +628,9 @@ void SMESHGUI_ClippingDlg::setRotation( const double theRot1, const double theRo
 // function : SetCurrentPlaneParam
 // purpose  :
 //=======================================================================
-void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
+void
+SMESHGUI_ClippingDlg::
+SetCurrentPlaneParam()
 {
   if(myPlanes.empty() || myIsSelectPlane)
     return;
