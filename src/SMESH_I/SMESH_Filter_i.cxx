@@ -668,6 +668,21 @@ Controls::PredicatePtr Predicate_i::GetPredicate()
   return myPredicatePtr;
 }
 
+/*
+  Class       : BadOrientedVolume_i
+  Description : Verify whether a mesh volume is incorrectly oriented from
+                the point of view of MED convention
+*/
+BadOrientedVolume_i::BadOrientedVolume_i()
+{
+  Controls::PredicatePtr control( new Controls::BadOrientedVolume() );
+  myFunctorPtr = myPredicatePtr = control;
+};
+
+FunctorType BadOrientedVolume_i::GetFunctorType()
+{
+  return SMESH::FT_BadOrientedVolume;
+}
 
 /*
   Class       : BelongToGeom_i
@@ -1363,6 +1378,13 @@ RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
   return anObj._retn();
 }
 
+BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
+{
+  SMESH::BadOrientedVolume_i* aServant = new SMESH::BadOrientedVolume_i();
+  SMESH::BadOrientedVolume_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
 LessThan_ptr FilterManager_i::CreateLessThan()
 {
   SMESH::LessThan_i* aServant = new SMESH::LessThan_i();
@@ -1614,6 +1636,20 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       return true;
     }
+  case FT_BadOrientedVolume:
+    {
+      BadOrientedVolume_i* aPred = dynamic_cast<BadOrientedVolume_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_BadOrientedVolume;
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
   case FT_LessThan:
   case FT_MoreThan:
   case FT_EqualTo:
@@ -1787,6 +1823,11 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           tmpPred->SetRangeStr( aThresholdStr );
           tmpPred->SetElementType( aTypeOfElem );
           aPredicate = tmpPred;
+        }
+        break;
+      case SMESH::FT_BadOrientedVolume:
+        {
+          aPredicate = aFilterMgr->CreateBadOrientedVolume();
         }
         break;
               
@@ -1992,6 +2033,7 @@ static inline LDOMString toString( const long theType )
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
     case FT_LyingOnGeom     : return "Lying on Geom";
+    case FT_BadOrientedVolume: return "Bad Oriented Volume";
     case FT_RangeOfIds      : return "Range of IDs";
     case FT_FreeBorders     : return "Free borders";
     case FT_FreeEdges       : return "Free edges";
@@ -2033,6 +2075,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
+  else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
   else if ( theStr.equals( "Less than"                    ) ) return FT_LessThan;
   else if ( theStr.equals( "More than"                    ) ) return FT_MoreThan;
   else if ( theStr.equals( "Equal to"                     ) ) return FT_EqualTo;

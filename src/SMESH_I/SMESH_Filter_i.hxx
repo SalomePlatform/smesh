@@ -317,6 +317,19 @@ protected:
 
 
 /*
+  Class       : BadOrientedVolume_i
+  Description : Verify whether a mesh volume is incorrectly oriented from
+                the point of view of MED convention
+*/
+class BadOrientedVolume_i: public virtual POA_SMESH::BadOrientedVolume,
+                           public virtual Predicate_i
+{
+ public:
+  BadOrientedVolume_i();
+  FunctorType                     GetFunctorType();
+};
+
+/*
   Class       : BelongToGeom_i
   Description : Predicate for selection on geometrical support
 */
@@ -705,6 +718,8 @@ public:
   FreeEdges_ptr             CreateFreeEdges();
 
   RangeOfIds_ptr            CreateRangeOfIds();
+
+  BadOrientedVolume_ptr     CreateBadOrientedVolume();
 
   LessThan_ptr              CreateLessThan();
   MoreThan_ptr              CreateMoreThan();

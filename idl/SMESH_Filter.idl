@@ -62,6 +62,7 @@ module SMESH
     FT_BelongToCylinder,
     FT_LyingOnGeom,
     FT_RangeOfIds,
+    FT_BadOrientedVolume,
     FT_LessThan,
     FT_MoreThan,
     FT_EqualTo,
@@ -136,6 +137,13 @@ module SMESH
   {
     boolean IsSatisfy( in long thEntityId );
   };
+
+  /*!
+  * Logical functor (predicate) "Bad Oriented Volume".
+  * Verify whether a mesh volume is incorrectly oriented from
+  * the point of view of MED convention
+  */
+  interface BadOrientedVolume: Predicate {};
 
   /*!
   * Logical functor (predicate) "Belong To Geometry".
@@ -382,6 +390,8 @@ module SMESH
     FreeEdges         CreateFreeEdges();
 
     RangeOfIds        CreateRangeOfIds();
+
+    BadOrientedVolume CreateBadOrientedVolume();
 
     /*!
     *  Create comparators ( predicates )
