@@ -1,6 +1,6 @@
-This is SMESH V1_3_0_b1
+This is SMESH V1_3_0_b2
 
 Compatible with :
 	GEOM	"2003/11/06 16:33:45 UTC"
 	KERNEL	V1_3_0_b2
-	MED		MergeV1_2c-1
+	MED		V1_3_0_b1

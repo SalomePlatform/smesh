@@ -1,9 +1,26 @@
 ###############################################################################
 #This is the SMESH change log. Do not modify because it is automatically
 #created with :
-#cvs2cl.pl -l "-b -rmerge_1_2_c__1_2_2" -U users.cvs2cl --header header.cvs2cl \
-# -T -b --utc
+#cvs2cl.pl -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
+
+2003-11-18 09:19  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_I/: SMESH_MEDFamily_i.cxx, SMESH_MEDFamily_i.hxx,
+	SMESH_MEDMesh_i.cxx, SMESH_MEDMesh_i.hxx, SMESH_MEDSupport_i.cxx,
+	SMESH_MEDSupport_i.hxx: merge with the branch
+	nadir_update_MED_v1_3_0 (branch to build the V1_3_0 version of the
+	module.
+
+2003-11-17 09:22  Jerome Robert <jerome.robert@eads.net>
+
+	* cvs-tags: update
+
+2003-11-12 13:20  tag V1_3_0_b1
+
+2003-11-12 13:20  Jerome Robert <jerome.robert@eads.net>
+
+	* ChangeLog, INSTALL, cvs-tags, bin/VERSION: Update for V1.3.0b1
 
 2003-11-12 11:40  Jerome Robert <jerome.robert@eads.net>
 
@@ -40,13 +57,6 @@
 	* src/SMESHGUI/SMESHGUI.cxx: When the main window was maximized
 	some dialogs were cropped at the bottom of the screen. It's now
 	fixed.
-
-2003-10-19 11:49  tag MergeV1_2c-1
-
-2003-10-19 11:49  Paul Rascle <paul.rascle@edf.fr>
-
-	* src/: OBJECT/SMESH_Actor.cxx, SMESHGUI/SMESHGUI.cxx
-	(merge_1_2_c__1_2_2): PR: Merge V1_2c - step 1
 
 2003-10-17 16:31  Jerome Robert <jerome.robert@eads.net>
 
@@ -106,6 +116,8 @@
 
 	* adm_local/unix/config_files/check_Netgen.m4: file check_Netgen.m4
 	was initially added on branch nadir_1_2_2.
+
+2003-10-06 10:50  tag MergeV1_2c-1
 
 2003-10-06 10:50  Jerome Robert <jerome.robert@eads.net>
 
