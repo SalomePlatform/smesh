@@ -3492,6 +3492,7 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 		SMESH::SMESH_Mesh_var aMesh = smeshGUI->ConvertIOinMesh(IObject, res);
 		if (res)
 		{
+			QString filename;
 			if (theCommandID == 122)
 			{					// EXPORT MED
 				QString filename = QAD_FileDlg::getFileName(parent,
@@ -3533,27 +3534,38 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 					aMesh->Export(filename.latin1(), "UNV");
 					QApplication::restoreOverrideCursor();
 				}
-				else
-					aMesh->Export(filename.latin1(), "DAT");
-
-				QApplication::restoreOverrideCursor();
-
-				if (IObject->hasEntry())
-				{
-					MESSAGE("---");
-					SALOMEDS::SObject_var SO =
-						smeshGUI->myStudy->FindObjectID(IObject->getEntry());
-					SALOMEDS::GenericAttribute_var anAttr;
-					SALOMEDS::AttributeComment_var aFileName;
-					SALOMEDS::StudyBuilder_var aStudyBuilder =
-						smeshGUI->myStudy->NewBuilder();
-					anAttr =
-						aStudyBuilder->FindOrCreateAttribute(SO,
-						"AttributeComment");
-					aFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
-					aFileName->SetValue(filename.latin1());
-				}
 			}
+			else
+				aMesh->Export(filename.latin1(), "DAT");
+
+			if (IObject->hasEntry())
+			{
+				MESSAGE("---");
+				SALOMEDS::SObject_var SO =
+					smeshGUI->myStudy->FindObjectID(IObject->getEntry());
+				SALOMEDS::GenericAttribute_var anAttr;
+				SALOMEDS::AttributeComment_var aFileName;
+
+				SALOMEDS::StudyBuilder_var aStudyBuilder =
+					smeshGUI->myStudy->NewBuilder();
+
+				anAttr =
+					aStudyBuilder->FindOrCreateAttribute(SO, "AttributeComment");
+				aFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
+				aFileName->SetValue(filename.latin1());
+
+				// Add a MEDFILE attribute to make selection in Efficas
+				if (theCommandID == 122)
+				{ // EXPORT MED
+					QString medfilename="FICHIERMED"+filename;
+					anAttr = aStudyBuilder->FindOrCreateAttribute(SO, "AttributeComment");
+					SALOMEDS::AttributeComment_var MEDFileName;
+					MEDFileName = SALOMEDS::AttributeComment::_narrow(anAttr);
+					MEDFileName->SetValue(medfilename.latin1());
+				} // EXPORT MED
+			}
+
+			QApplication::restoreOverrideCursor();
 		}
 	}
 }
@@ -4125,7 +4137,7 @@ SMESH_Actor *SMESHGUI::ReadScript(SMESH::SMESH_Mesh_ptr aMesh)
 				}
 				case SMESH::ADD_EDGE:
 				{
-					//          AddEdges( MeshActor, aSeq[ind].number, aSeq[ind].coords, aSeq[ind].indexes );
+					AddEdges( MeshActor, aSeq[ind].number, aSeq[ind].coords, aSeq[ind].indexes );
 					break;
 				}
 				case SMESH::ADD_TRIANGLE:
@@ -4228,7 +4240,7 @@ void SMESHGUI::Dump(SMESH_Actor * Mactor)
 void SMESHGUI::AddNodes(SMESH_Actor * Mactor, int number,
 	const SMESH::double_array & coords, const SMESH::long_array & indexes)
 {
-	MESSAGE("SMESHGUI::AddNodes(number="<<number<<", indexes.length()="<<indexes.length()<<")");
+	//MESSAGE("SMESHGUI::AddNodes(number="<<number<<", indexes.length()="<<indexes.length()<<")");
 	QApplication::setOverrideCursor(Qt::waitCursor);
 	if (Mactor->GetMapper() == NULL)
 	{
@@ -4949,8 +4961,8 @@ void SMESHGUI::AddEdge(SMESH_Actor * Mactor, int idedge, int idnode1,
 void SMESHGUI::AddTriangles(SMESH_Actor * Mactor, int number,
 	const SMESH::double_array & coords, const SMESH::long_array & indexes)
 {
-	MESSAGE("SMESHGUI::AddTriangles(number="<<number<<", indexes.length="
-		<<indexes.length()<<")");
+//	MESSAGE("SMESHGUI::AddTriangles(number="<<number<<", indexes.length="
+//		<<indexes.length()<<")");
 
 	QApplication::setOverrideCursor(Qt::waitCursor);
 	//vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( Mactor->DataSource );
