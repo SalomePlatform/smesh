@@ -1145,7 +1145,6 @@ void SMESH_Gen_i::loadAppliedAlgorithms(HDFgroup * hdfGroupMeshId,
 		char *refFromFile = new char[dataset->GetSize()];
 		dataset->ReadFromDisk(refFromFile);
 		dataset->CloseOnDisk();
-		delete dataset;
 
 		if (_found)
 		{
@@ -1216,7 +1215,6 @@ void SMESH_Gen_i::loadSubMeshes(HDFgroup * hdfGroupMeshId, char * msgname,
 		char *refFromFile = new char[hdf_dataset->GetSize()];
 		hdf_dataset->ReadFromDisk(refFromFile);
 		hdf_dataset->CloseOnDisk();
-		delete hdf_dataset;
 
 		bool _found3 = false;
 		SALOMEDS::SObject_var GSO = Study->FindObjectID(refFromFile);
@@ -1372,10 +1370,8 @@ void SMESH_Gen_i::loadSubMeshes(HDFgroup * hdfGroupMeshId, char * msgname,
 			}
 		}
 		hdf_subgroupmyTag->CloseOnDisk();
-		delete hdf_subgroupmyTag;
 	}
 	hdf_subgroupmyLevel1Tag->CloseOnDisk();
-	delete hdf_subgroupmyLevel1Tag;
 }
 
 GEOM::GEOM_Gen_var SMESH_Gen_i::getGeomEngine()
