@@ -154,7 +154,7 @@ class MeshHexaImpl:
             type = SMESH.VOLUME
         return self.mesh.CreateGroupFromGEOM(type, name, grp)
 
-    def ExportMED(self, filename, groups=1):
+    def ExportMED(self, filename, groups=0):
         """
          Export mesh in a MED file
          \param filename Name for MED file to be created
