@@ -68,6 +68,7 @@ class SMESH_Gen;
 class SMESH_Group;
 class TopTools_ListOfShape;
 class SMESH_subMesh;
+class SMESH_HypoFilter;
 
 typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
@@ -102,7 +103,16 @@ public:
   const list <const SMESHDS_Hypothesis * >&
   GetHypothesisList(const TopoDS_Shape & aSubShape) const
     throw(SALOME_Exception);
+
+  const SMESH_Hypothesis * GetHypothesis(const TopoDS_Shape &    aSubShape,
+                                         const SMESH_HypoFilter& aFilter,
+                                         const bool              andAncestors) const;
   
+  bool GetHypotheses(const TopoDS_Shape &                aSubShape,
+                     const SMESH_HypoFilter&             aFilter,
+                     list <const SMESHDS_Hypothesis * >& aHypList,
+                     const bool                          andAncestors) const;
+
   const list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
   
   void ClearLog() throw(SALOME_Exception);
@@ -132,7 +142,7 @@ public:
   
   bool IsMainShape(const TopoDS_Shape& theShape) const;
 
-  const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape);
+  const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape) const;
   // return list of ancestors of theSubShape in the order
   // that lower dimention shapes come first.
   
@@ -183,8 +193,8 @@ public:
 
   // Propagation hypothesis management
 
-  bool IsLocal1DHypothesis (const TopoDS_Shape& theEdge);
-  // Returns true, if a local 1D hypothesis is set directly on <theEdge>
+  const SMESH_Hypothesis* IsLocal1DHypothesis (const TopoDS_Shape& theEdge);
+  // Returns a local 1D hypothesis used for theEdge.
 
   bool IsPropagationHypothesis (const TopoDS_Shape& theEdge);
   // Returns true, if a local Propagation hypothesis is set directly on <theEdge>

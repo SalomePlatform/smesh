@@ -31,6 +31,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Group.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Script.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
@@ -56,6 +57,7 @@
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_Array1OfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 
 #include <memory>
 
@@ -134,7 +136,6 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
       else
         i_gr++;
     }
-    _mapAncestors.Clear();
     _mapPropagationChains.Clear();
   }
   else
@@ -144,6 +145,17 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   }
   _isShapeToMesh = true;
   _myMeshDS->ShapeToMesh(aShape);
+
+  // fill _mapAncestors
+  _mapAncestors.Clear();
+  int desType, ancType;
+  for ( desType = TopAbs_EDGE; desType > TopAbs_COMPOUND; desType-- )
+    for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
+      TopExp::MapShapesAndAncestors ( aShape,
+                                     (TopAbs_ShapeEnum) desType,
+                                     (TopAbs_ShapeEnum) ancType,
+                                     _mapAncestors );
+
   // NRI : 24/02/03
   //EAP: 1/9/04 TopExp::MapShapes(aShape, _subShapes); USE the same map of _myMeshDS
 }
@@ -462,6 +474,87 @@ SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
   return _myMeshDS->GetHypothesis(aSubShape);
 }
 
+//=======================================================================
+//function : GetHypothesis
+//purpose  : 
+//=======================================================================
+
+const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubShape,
+                                                   const SMESH_HypoFilter& aFilter,
+                                                   const bool              andAncestors) const
+{
+  {
+    const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+    for ( ; hyp != hypList.end(); hyp++ ) {
+      const SMESH_Hypothesis * h = static_cast<const SMESH_Hypothesis*>( *hyp );
+      if ( aFilter.IsOk( h, aSubShape))
+        return h;
+    }
+  }
+  if ( andAncestors )
+  {
+    TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
+    for (; it.More(); it.Next() )
+    {
+      const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
+      list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+      for ( ; hyp != hypList.end(); hyp++ ) {
+        const SMESH_Hypothesis * h = static_cast<const SMESH_Hypothesis*>( *hyp );
+        if (aFilter.IsOk( h, it.Value() ))
+          return h;
+      }
+    }
+  }
+  return 0;
+}
+
+//=======================================================================
+//function : GetHypotheses
+//purpose  : 
+//=======================================================================
+
+bool SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
+                               const SMESH_HypoFilter&             aFilter,
+                               list <const SMESHDS_Hypothesis * >& aHypList,
+                               const bool                          andAncestors) const
+{
+  int nbHyp = 0;
+  {
+    const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+    for ( ; hyp != hypList.end(); hyp++ )
+      if ( aFilter.IsOk (static_cast<const SMESH_Hypothesis*>( *hyp ), aSubShape)) {
+        aHypList.push_back( *hyp );
+        nbHyp++;
+      }
+  }
+  // get hypos from shape of one type only: if any hypo is found on edge, do
+  // not look up on faces
+  if ( !nbHyp && andAncestors )
+  {
+    TopTools_MapOfShape map;
+    TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
+    int shapeType = it.More() ? it.Value().ShapeType() : TopAbs_SHAPE;
+    for (; it.More(); it.Next() )
+    {
+      if ( nbHyp && shapeType != it.Value().ShapeType() )
+        break;
+      shapeType = it.Value().ShapeType();
+      if ( !map.Add( it.Value() ))
+        continue;
+      const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
+      list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+      for ( ; hyp != hypList.end(); hyp++ )
+        if (aFilter.IsOk( static_cast<const SMESH_Hypothesis*>( *hyp ), it.Value() )) {
+        aHypList.push_back( *hyp );
+        nbHyp++;
+      }
+    }
+  }
+  return nbHyp;
+}
+
 //=============================================================================
 /*!
  * 
@@ -575,10 +668,10 @@ throw(SALOME_Exception)
 bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
                                   const TopoDS_Shape & aSubShape)
 {
+  SMESH_Hypothesis* hyp = static_cast<SMESH_Hypothesis*>(anHyp);
   // check if anHyp is applicable to aSubShape
   SMESH_subMesh * subMesh = GetSubMeshContaining( aSubShape );
-  if (!subMesh ||
-      !subMesh->IsApplicableHypotesis(static_cast<SMESH_Hypothesis*>(anHyp)))
+  if ( !subMesh || !subMesh->IsApplicableHypotesis( hyp ))
     return false;
 
   SMESH_Algo *algo = _gen->GetAlgo(*this, aSubShape);
@@ -593,37 +686,12 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
     // look trough hypotheses used by algo
     const list <const SMESHDS_Hypothesis * >&usedHyps =
       algo->GetUsedHypothesis(*this, aSubShape);
-    list <const SMESHDS_Hypothesis * >::const_iterator itl;
-    for (itl = usedHyps.begin(); itl != usedHyps.end(); itl++)
-      if (anHyp == (*itl))
-        return true;
+    return ( find( usedHyps.begin(), usedHyps.end(), anHyp ) != usedHyps.end() );
   }
-  else
-  {
-    // look through all assigned hypotheses
-    {
-      const list <const SMESHDS_Hypothesis * >&usedHyps =
-        _myMeshDS->GetHypothesis( aSubShape );
-      list <const SMESHDS_Hypothesis * >::const_iterator itl;
-      for (itl = usedHyps.begin(); itl != usedHyps.end(); itl++)
-        if (anHyp == (*itl))
-          return true;
-    }
 
-    // on ancestors
-    TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
-    for (; it.More(); it.Next())
-    {
-      const list <const SMESHDS_Hypothesis * >&usedHyps =
-        _myMeshDS->GetHypothesis( aSubShape );
-      list <const SMESHDS_Hypothesis * >::const_iterator itl;
-      for (itl = usedHyps.begin(); itl != usedHyps.end(); itl++)
-        if (anHyp == (*itl))
-          return true;
-    }
-  }
-    
-  return false;
+  // look through all assigned hypotheses
+  SMESH_HypoFilter filter( SMESH_HypoFilter::Is( hyp ));
+  return GetHypothesis( aSubShape, filter, true );
 }
 
 
@@ -849,18 +917,8 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::IsNotConformAllowed");
 
-  const list<const SMESHDS_Hypothesis*>& listHyp =
-    _myMeshDS->GetHypothesis( _myMeshDS->ShapeToMesh() );
-  list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
-  while (it!=listHyp.end())
-  {
-    const SMESHDS_Hypothesis *aHyp = *it;
-    string hypName = aHyp->GetName();
-    if ( hypName == "NotConformAllowed" )
-      return true;
-    it++;
-  }
-  return false;
+  SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
+  return GetHypothesis( _myMeshDS->ShapeToMesh(), filter, false );
 }
 
 //=======================================================================
@@ -941,23 +999,16 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
 //=============================================================================
 /*!
  *  IsLocal1DHypothesis
- *  Check, if there is 1D hypothesis assigned directly on <theEdge>
+ *  Returns a local 1D hypothesis used for theEdge
  */
 //=============================================================================
-bool SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
+const SMESH_Hypothesis* SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
 {
-  const SMESHDS_Mesh* meshDS = GetMeshDS();
-  const list<const SMESHDS_Hypothesis*>& listHyp = meshDS->GetHypothesis(theEdge);
-  list<const SMESHDS_Hypothesis*>::const_iterator it = listHyp.begin();
+  SMESH_HypoFilter filter( SMESH_HypoFilter::HasDim( 1 ));
+  filter.AndNot( SMESH_HypoFilter::IsAlgo() );
+  filter.AndNot( SMESH_HypoFilter::IsGlobal( GetMeshDS()->ShapeToMesh() ));
 
-  for (; it != listHyp.end(); it++) {
-    const SMESH_Hypothesis * aHyp = static_cast<const SMESH_Hypothesis*>(*it);
-    if (aHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO &&
-        aHyp->GetDim() == 1) { // 1D Hypothesis found
-      return true;
-    }
-  }
-  return false;
+  return GetHypothesis( theEdge, filter, true );
 }
 
 //=============================================================================
@@ -1078,11 +1129,15 @@ bool SMESH_Mesh::RemovePropagationChain (const TopoDS_Shape& theMainEdge)
 
   // Remove the chain from the map
   int i = _mapPropagationChains.FindIndex(theMainEdge);
-  TopoDS_Vertex anEmptyShape;
-  BRep_Builder BB;
-  BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
-  TopTools_IndexedMapOfShape anEmptyMap;
-  _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
+  if ( i == _mapPropagationChains.Extent() )
+    _mapPropagationChains.RemoveLast();
+  else {
+    TopoDS_Vertex anEmptyShape;
+    BRep_Builder BB;
+    BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
+    TopTools_IndexedMapOfShape anEmptyMap;
+    _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
+  }
 
   return true;
 }
@@ -1103,7 +1158,8 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
   }
 
   // Check presence of 1D hypothesis to be propagated
-  if (!IsLocal1DHypothesis(theMainEdge)) {
+  const SMESH_Hypothesis* aMainHyp = IsLocal1DHypothesis(theMainEdge);
+  if (!aMainHyp) {
     MESSAGE("Warning: There is no 1D hypothesis to propagate. Please, assign.");
     return true;
   }
@@ -1177,24 +1233,27 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
             if (opp > 4) opp -= 4;
             anOppE = anEdges(opp);
 
-            if (!aChain.Contains(anOppE)) {
-              if (!IsLocal1DHypothesis(anOppE)) {
-                TopoDS_Shape aMainEdgeForOppEdge;
-                if (IsPropagatedHypothesis(anOppE, aMainEdgeForOppEdge)) {
-                  // Collision!
-                  MESSAGE("Error: Collision between propagated hypotheses");
-                  CleanMeshOnPropagationChain(theMainEdge);
-                  aChain.Clear();
-                  return false;
-                } else {
+            // add anOppE to aChain if ...
+            if (!aChain.Contains(anOppE)) { // ... anOppE is not in aChain
+              if (!IsLocal1DHypothesis(anOppE)) { // ... no other 1d hyp on anOppE
+                TopoDS_Shape aMainEdgeForOppEdge; // ... no other hyp is propagated to anOppE
+                if (!IsPropagatedHypothesis(anOppE, aMainEdgeForOppEdge))
+                {
                   // Add found edge to the chain oriented so that to
-                  // have it in aChain co-directed with theMainEdge
+                  // have it co-directed with a forward MainEdge
                   TopAbs_Orientation ori = anE.Orientation();
                   if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
                     ori = TopAbs::Reverse( ori );
                   anOppE.Orientation( ori );
                   aChain.Add(anOppE);
                   listCurEdges.Append(anOppE);
+                }
+                else {
+                  // Collision!
+                  MESSAGE("Error: Collision between propagated hypotheses");
+                  CleanMeshOnPropagationChain(theMainEdge);
+                  aChain.Clear();
+                  return ( aMainHyp == IsLocal1DHypothesis(aMainEdgeForOppEdge) );
                 }
               }
             }
@@ -1216,20 +1275,8 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
 //           that lower dimention shapes come first.
 //=======================================================================
 
-const TopTools_ListOfShape& SMESH_Mesh::GetAncestors(const TopoDS_Shape& theS)
+const TopTools_ListOfShape& SMESH_Mesh::GetAncestors(const TopoDS_Shape& theS) const
 {
-  if ( _mapAncestors.IsEmpty() )
-  {
-    // fill _mapAncestors
-    int desType, ancType;
-    for ( desType = TopAbs_EDGE; desType > TopAbs_COMPOUND; desType-- )
-      for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
-        TopExp::MapShapesAndAncestors (_myMeshDS->ShapeToMesh(),
-                                       (TopAbs_ShapeEnum) desType,
-                                       (TopAbs_ShapeEnum) ancType,
-                                       _mapAncestors );
-  }
-
   if ( _mapAncestors.Contains( theS ) )
     return _mapAncestors.FindFromKey( theS );
 
