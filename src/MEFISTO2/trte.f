@@ -2982,7 +2982,6 @@ c        une arete de sommet ns
          if( narete .le. 0 ) then
 c           erreur: le point appartient a aucune arete
             write(imprim,*) 'sommet ',ns,' dans aucune arete'
-            pause
             ierr = 11
             return
          endif
@@ -4394,7 +4393,6 @@ c        ----------------------------------
 c
       else if( nbar .le. 2 ) then
          write(imprim,*) 'erreur trchtd: cf<3 aretes'
-         pause
          namin  = 0
          namin0 = 0
          return
@@ -5472,7 +5470,6 @@ c              l'arete appartient a 2 triangles differents de nt0
 c              anomalie. chainage des triangles des aretes defectueux
 c              a corriger
                write(imprim,*) 'pause dans tridcf'
-               pause
                ierr = 5
                return
             endif
@@ -6008,7 +6005,6 @@ c     recherche du numero de l'arete noaret dans le triangle nt1
  10   continue
 c     impossible d'arriver ici sans bogue!
       write(imprim,*) 'pause dans te2t2t 1'
-      pause
 c
 c     l'arete de sommets 2 et 3
  15   if( n1 .lt. 3 ) then
@@ -6033,7 +6029,6 @@ c     recherche du numero de l'arete noaret dans le triangle nt2
  20   continue
 c     impossible d'arriver ici sans bogue!
       write(imprim,*) 'pause dans te2t2t 2'
-      pause
 c
 c     l'arete de sommets 1 et 4
  25   if( n1 .lt. 3 ) then
@@ -7103,7 +7098,6 @@ c
 c
 c        erreur: le point np n'est pas dans l'un des nbtr triangles
          write(imprim,10010) np
-         pause
          ierr = 3
          return
 c
@@ -7190,7 +7184,6 @@ c           l'arete noar n'a pas ete retrouvee dans le chainage => erreur
      %      ' st2=',nosoar(2,noar),' ligne=',nosoar(3,noar),
      %      ' tr1=',nosoar(4,noar),' tr2=',nosoar(5,noar)
             write(imprim,*) 'chainages=',(nosoar(i,noar),i=6,mosoar)
-            pause
 c           l'arete n'est pas detruite
             return
 c
@@ -7827,7 +7820,6 @@ c        les sens ns1->ns2 et ns2->ns1 ne donne pas de solution!
          write(imprim,*)'tefoar:arete ',ns1,' - ',ns2,' a imposer'
          write(imprim,*)'tefoar:anomalie sommet ',ns1,
      %   'non dans le triangle de sommets ',(nosotr(i),i=1,3)
-         pause
          ierr = 11
          return
       endif
@@ -7959,7 +7951,6 @@ c           ici le sommet nsp est trop proche de l'arete perdue ns1-ns2
 c              point utilisateur ou frontalier non supprimable
                ierr = 11
                write(imprim,*) 'pause dans tefoar 1', d, d3, d4, d12
-               pause
                return
             endif
 c
@@ -7983,7 +7974,6 @@ ccc     %                      ncroug, ncblan )
 ccc               tratri = .false.
                ierr = 11
                write(imprim,*) 'pause dans tefoar 2'
-               pause
                return
             endif
 c
@@ -8055,7 +8045,6 @@ c           redemarrage avec le triangle nt0 et l'arete na0
 c
             write(imprim,*) 'tefoar: algorithme defaillant'
             ierr = 11
-            pause
             return
          endif
  50   continue
@@ -8067,7 +8056,6 @@ c     rotation autour du sommet par l'arete suivant na1
       write(imprim,*) 'les lignes fermees doivent etre disjointes'
       write(imprim,*) 'verifiez si elles ne se coupent pas'
       ierr = 13
-      pause
       return
 c
 c     cas sans probleme : intersection differente de celle initiale
