@@ -374,11 +374,11 @@ SMESH::long_array* SMESH_Pattern_i::GetKeyPoints()
 //purpose  : 
 //=======================================================================
 
-SMESH::array_of_long_array* SMESH_Pattern_i::GetElementPoints()
+SMESH::array_of_long_array* SMESH_Pattern_i::GetElementPoints(CORBA::Boolean applied)
 {
   SMESH::array_of_long_array_var arrayOfArray = new SMESH::array_of_long_array;
 
-  const list< list< int > >& listOfIdList = myPattern.GetElementPointIDs();
+  const list< list< int > >& listOfIdList = myPattern.GetElementPointIDs(applied);
   arrayOfArray->length( listOfIdList.size() );
   list< list< int > >::const_iterator llIt = listOfIdList.begin();
   for ( int i = 0 ; llIt != listOfIdList.end(); llIt++, i++ )

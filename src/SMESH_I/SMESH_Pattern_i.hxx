@@ -87,7 +87,7 @@ class SMESH_Pattern_i:
 
   SMESH::long_array* GetKeyPoints();
 
-  SMESH::array_of_long_array* GetElementPoints();
+  SMESH::array_of_long_array* GetElementPoints(CORBA::Boolean applied);
 
 
  private:

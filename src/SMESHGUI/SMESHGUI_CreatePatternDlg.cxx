@@ -677,7 +677,7 @@ void SMESHGUI_CreatePatternDlg::displayPreview()
     {
       SMESH::point_array_var pnts = myPattern->GetPoints();
       SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
-      SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints();
+      SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints(false);
 
       if ( pnts->length()       == 0 ||
            keyPoints->length()  == 0 ||

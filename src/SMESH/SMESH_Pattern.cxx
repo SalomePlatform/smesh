@@ -3306,17 +3306,37 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
       }
     }
     // set element on a shape
-    if ( elem && onMeshElements )
+    if ( elem && onMeshElements ) // applied to mesh elements
     {
       int elemIndex = iElem / nbElems;
-      if ( shapeIDs[ elemIndex ] > 0 )
-        aMeshDS->SetMeshElementOnShape( elem, shapeIDs[ elemIndex ] );
+      int shapeID = shapeIDs[ elemIndex ];
+      if ( shapeID > 0 ) {
+        aMeshDS->SetMeshElementOnShape( elem, shapeID );
+        // set nodes on a shape
+        TopoDS_Shape S = aMeshDS->IndexToShape( shapeID );
+        if ( S.ShapeType() == TopAbs_SOLID ) {
+          TopoDS_Iterator shellIt( S );
+          if ( shellIt.More() )
+            shapeID = aMeshDS->ShapeToIndex( shellIt.Value() );
+        }
+        SMDS_ElemIteratorPtr noIt = elem->nodesIterator();
+        while ( noIt->more() ) {
+          SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>
+            ( static_cast<const SMDS_MeshNode*>( noIt->next() ));
+          if ( !node->GetPosition() || !node->GetPosition()->GetShapeId() ) {
+            if ( S.ShapeType() == TopAbs_FACE )
+              aMeshDS->SetNodeOnFace( node, shapeID );
+            else
+              aMeshDS->SetNodeInVolume( node, shapeID );
+          }
+        }
+      }
       // add elem in groups
       list< SMESHDS_Group* >::iterator g = groups[ elemIndex ].begin();
       for ( ; g != groups[ elemIndex ].end(); ++g )
         (*g)->SMDSGroup().Add( elem );
     }
-    if ( elem && !myShape.IsNull() )
+    if ( elem && !myShape.IsNull() ) // applied to shape
       aMeshDS->SetMeshElementOnShape( elem, myShape );
   }
 
@@ -3342,7 +3362,7 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
       }
       elemIDs.push_back( myElements[ i ]->GetID() );
     }
-    // remove refined elements and their nodes
+    // remove refined elements
     editor.Remove( elemIDs, false );
   }
 
@@ -3768,9 +3788,13 @@ bool SMESH_Pattern::GetMappedPoints ( list< const gp_XYZ * > & thePoints ) const
       thePoints.push_back( & (*pVecIt).myXYZ.XYZ() );
   }
   else { // applied to mesh elements
+    const gp_XYZ * definedXYZ = & myPoints[ myKeyPointIDs.front() ].myXYZ.XYZ();
     vector<gp_XYZ>::const_iterator xyz = myXYZ.begin();
     for ( ; xyz != myXYZ.end(); ++xyz )
-      thePoints.push_back( & (*xyz) );
+      if ( !isDefined( *xyz ))
+        thePoints.push_back( definedXYZ );
+      else
+        thePoints.push_back( & (*xyz) );
   }
   return !thePoints.empty();
 }

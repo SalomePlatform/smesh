@@ -1604,9 +1604,7 @@ static set<const SMDS_MeshElement*> * intersectionOfSets(
 static set<const SMDS_MeshElement*> * getFinitElements(const SMDS_MeshElement * element)
 {
 	int numberOfSets=element->NbNodes();
-	auto_ptr<set<const SMDS_MeshElement*> > pInitSet
-	  (new set<const SMDS_MeshElement*>[numberOfSets]);
-	set<const SMDS_MeshElement*> *initSet = &(*pInitSet);
+ 	set<const SMDS_MeshElement*> *initSet = new set<const SMDS_MeshElement*>[numberOfSets];
 
 	SMDS_ElemIteratorPtr itNodes=element->nodesIterator();
 
@@ -1622,8 +1620,9 @@ static set<const SMDS_MeshElement*> * getFinitElements(const SMDS_MeshElement * 
 
 		i++;
 	}
-	
-	return intersectionOfSets(initSet, numberOfSets);
+	set<const SMDS_MeshElement*> *retSet=intersectionOfSets(initSet, numberOfSets);
+        delete [] initSet;
+	return retSet;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

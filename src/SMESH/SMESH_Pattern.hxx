@@ -190,8 +190,8 @@ class SMESH_Pattern {
   // Return indices of key-points within the sequences returned by
   // GetPoints() and GetMappedPoints()
   
-  const std::list< std::list< int > >& GetElementPointIDs () const
-  { return myElemXYZIDs.empty() ? myElemPointIDs : myElemXYZIDs; }
+  const std::list< std::list< int > >& GetElementPointIDs (bool applied) const
+  { return myElemXYZIDs.empty() || !applied ? myElemPointIDs : myElemXYZIDs; }
   // Return nodal connectivity of the elements of the pattern
 
   void DumpPoints() const;
