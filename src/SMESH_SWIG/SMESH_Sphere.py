@@ -29,7 +29,7 @@
 from geompy import *
 from math import *
 
-from meshpy import *
+import smesh
 
 # It is an example of creating a hexahedrical mesh on a sphere.
 #
@@ -103,5 +103,9 @@ Id_Result      = addToStudy(Result, "Result")
 
 #-----------------------------------------------------------------------
 #Meshing
-my_hexa = MeshHexa(Result, NbSeg, "Sphere_Mesh")
+my_hexa = smesh.Mesh(Result, "Sphere_Mesh")
+algo = my_hexa.Segment()
+algo.NumberOfSegments(NbSeg)
+my_hexa.Quadrangle()
+my_hexa.Hexahedron()
 my_hexa.Compute()
