@@ -1,4 +1,4 @@
-//  SMESH Driver : implementaion of driver for reading and writing	
+//  SMESH Driver : implementaion of driver for reading and writing  
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
@@ -30,16 +30,15 @@
 #include "SMESHDS_Document.hxx"
 #include <string>
 
-class Document_Writer {
+class Document_Writer
+{
 
-  public :
-    virtual void Write() =0;
-    void SetFile(string);
-    void SetDocument(Handle(SMESHDS_Document)&);
+  public:virtual void Write() = 0;
+	void SetFile(string);
+	void SetDocument(SMESHDS_Document *);
 
-  protected :
-    Handle_SMESHDS_Document myDocument;
-    string myFile;
+  protected:  SMESHDS_Document * myDocument;
+	string myFile;
 
 };
 #endif

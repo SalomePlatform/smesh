@@ -1,4 +1,4 @@
-//  SMESH Driver : implementaion of driver for reading and writing	
+//  SMESH Driver : implementaion of driver for reading and writing  
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
@@ -29,11 +29,12 @@ using namespace std;
 
 #include "utilities.h"
 
-void Document_Reader::SetFile(string aFile) {
-  myFile = aFile;
+void Document_Reader::SetFile(string aFile)
+{
+	myFile = aFile;
 }
 
-void Document_Reader::SetDocument(Handle(SMESHDS_Document)& aDoc) {
-  myDocument = aDoc;
+void Document_Reader::SetDocument(SMESHDS_Document * aDoc)
+{
+	myDocument = aDoc;
 }
-
