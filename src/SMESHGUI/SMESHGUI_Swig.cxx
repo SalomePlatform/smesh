@@ -104,6 +104,9 @@ void SMESH_Swig::Init(int studyID)
     myStudyBuilder->DefineComponentInstance(father, CompMesh );
     if (aLocked) myStudy->GetProperties()->SetLocked(true);
   }
+
+  mySComponentMesh=father;
+
   // Tags definition 
   Tag_HypothesisRoot  = 1;
   Tag_AlgorithmsRoot  = 2;
@@ -136,6 +139,7 @@ const char* SMESH_Swig::AddNewMesh(const char* IOR)
   SALOMEDS::AttributePixMap_var     aPixmap;
 
   SALOMEDS::SObject_var HypothesisRoot;
+  ASSERT(!mySComponentMesh->_is_nil());
   if (!mySComponentMesh->FindSubObject (Tag_HypothesisRoot, HypothesisRoot)) {
     HypothesisRoot = myStudyBuilder->NewObjectToTag (mySComponentMesh, Tag_HypothesisRoot);
     anAttr = myStudyBuilder->FindOrCreateAttribute(HypothesisRoot, "AttributeName");
