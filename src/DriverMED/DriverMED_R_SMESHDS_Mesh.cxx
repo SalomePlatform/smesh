@@ -309,21 +309,35 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		break;
 	      }
 	      vector<TInt> aNodeIds(aNbNodes);
+	      bool anIsValidConnect = false;
+
+	      try{
 #ifdef _EDF_NODE_IDS_
-	      if(anIsNodeNum) {
-		for(int i = 0; i < aNbNodes; i++){
-		  aNodeIds[i] = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
+		if(anIsNodeNum) {
+		  for(int i = 0; i < aNbNodes; i++){
+		    aNodeIds[i] = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
+		  }
+		}else{
+		  for(int i = 0; i < aNbNodes; i++){
+		    aNodeIds[i] = aCellInfo->GetConn(iElem,i);
+		  }
 		}
-	      }else{
+#else
 		for(int i = 0; i < aNbNodes; i++){
 		  aNodeIds[i] = aCellInfo->GetConn(iElem,i);
 		}
-	      }
-#else
-	      for(int i = 0; i < aNbNodes; i++){
-		aNodeIds[i] = aCellInfo->GetConn(iElem,i);
-	      }
 #endif
+		anIsValidConnect = true;
+	      }catch(const std::exception& exc){
+		//INFOS("Follow exception was cought:\n\t"<<exc.what());
+		aResult = DRS_FAIL;
+	      }catch(...){
+		//INFOS("Unknown exception was cought !!!");
+		aResult = DRS_FAIL;
+	      }
+	      
+	      if(!anIsValidConnect)
+		continue;
 
 	      bool isRenum = false;
 	      SMDS_MeshElement* anElement = NULL;
