@@ -215,19 +215,17 @@ private:
   //
   
 private:
-  int _id;					// id given by creator (unique within the creator instance)
-  int _studyId;
-  int _idDoc;					// id given by SMESHDS_Document
-  int _groupId;                                   // id generator for group objects
-  bool _isShapeToMesh;		                // set to true when a shape is given (only once)
-  list<const SMESHDS_Hypothesis *> _subShapeHypothesisList;
-  list <SMESH_subMesh *> _subMeshesUsingHypothesisList;
-  SMESHDS_Document * _myDocument;
-  SMESHDS_Mesh * _myMeshDS;
-  //TopTools_IndexedMapOfShape _subShapes; USE the same map of _myMeshDS
+  int                        _id;           // id given by creator (unique within the creator instance)
+  int                        _studyId;
+  int                        _idDoc;        // id given by SMESHDS_Document
+  int                        _groupId;      // id generator for group objects
+  bool                       _isShapeToMesh;// set to true when a shape is given (only once)
+  list <SMESH_subMesh *>     _subMeshesUsingHypothesisList;
+  SMESHDS_Document *         _myDocument;
+  SMESHDS_Mesh *             _myMeshDS;
   map <int, SMESH_subMesh *> _mapSubMesh;
   map <int, SMESH_Group *>   _mapGroup;
-  SMESH_Gen *_gen;
+  SMESH_Gen *                _gen;
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
