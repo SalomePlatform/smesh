@@ -127,6 +127,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkActorCollection.h>
 #include <vtkScalarBarActor.h>
+#include <vtkUnstructuredGrid.h>
 
 #include "utilities.h"
 
@@ -2583,6 +2584,14 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	    popup->removeItem( 1134 );                             // Clipping
 	    popup->removeItem( 2000 );                             // Scalar Bar
 	  }
+	  // VSR 03/02/05 - check if actor is empty ----- start -----
+	  vtkUnstructuredGrid* vtkGrid = anActor->GetUnstructuredGrid();
+	  if ( vtkGrid->GetNumberOfPoints() + vtkGrid->GetNumberOfCells() == 0 ) {
+	    popup->removeItem( QAD_Display_Popup_ID );
+	    popup->removeItem( QAD_DisplayOnly_Popup_ID );
+	    popup->removeItem( QAD_Erase_Popup_ID );
+	  }
+	  // VSR 03/02/05 - check if actor is empty ----- finish -----
 	}
 	else {
 	  // object doesn't have actor
