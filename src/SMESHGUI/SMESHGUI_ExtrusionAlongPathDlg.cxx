@@ -180,6 +180,35 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( QWidget* parent,
   PathGrpLayout->addWidget( SelectStartPointButton, 2, 1 );
   PathGrpLayout->addWidget( StartPointLineEdit,     2, 2 );
 
+  // Controls for base point defining
+  BasePointCheck = new QCheckBox( tr( "SMESH_USE_BASE_POINT" ), ArgumentsGrp );
+
+  BasePointGrp = new QGroupBox( tr( "SMESH_BASE_POINT" ), ArgumentsGrp );
+  BasePointGrp->setColumnLayout( 0, Qt::Vertical );
+  BasePointGrp->layout()->setSpacing( 0 ); BasePointGrp->layout()->setMargin( 0 );
+  QGridLayout* BasePointGrpLayout = new QGridLayout( BasePointGrp->layout() );
+  BasePointGrpLayout->setAlignment( Qt::AlignTop );
+  BasePointGrpLayout->setSpacing( 6 ); BasePointGrpLayout->setMargin( 11 );
+  
+  SelectBasePointButton = new QToolButton( BasePointGrp );
+  SelectBasePointButton->setPixmap( selectImage );
+
+  XLab  = new QLabel( tr( "SMESH_X" ), BasePointGrp );
+  XSpin = new SMESHGUI_SpinBox( BasePointGrp );
+  YLab  = new QLabel( tr( "SMESH_Y" ), BasePointGrp );
+  YSpin = new SMESHGUI_SpinBox( BasePointGrp );
+  ZLab  = new QLabel( tr( "SMESH_Z" ), BasePointGrp );
+  ZSpin = new SMESHGUI_SpinBox( BasePointGrp );
+
+  // layouting
+  BasePointGrpLayout->addWidget( SelectBasePointButton, 0, 0 );
+  BasePointGrpLayout->addWidget( XLab,                  0, 1 );
+  BasePointGrpLayout->addWidget( XSpin,                 0, 2 );
+  BasePointGrpLayout->addWidget( YLab,                  0, 3 );
+  BasePointGrpLayout->addWidget( YSpin,                 0, 4 );
+  BasePointGrpLayout->addWidget( ZLab,                  0, 5 );
+  BasePointGrpLayout->addWidget( ZSpin,                 0, 6 );
+
   // Controls for angles defining
   AnglesCheck = new QCheckBox( tr( "SMESH_USE_ANGLES" ), ArgumentsGrp );
   
@@ -212,46 +241,17 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( QWidget* parent,
   AnglesGrpLayout->addWidget(          AngleSpin,  0,    2    );
   AnglesGrpLayout->setRowStretch( 1, 10 );
   
-  // Controls for base point defining
-  BasePointCheck = new QCheckBox( tr( "SMESH_USE_BASE_POINT" ), ArgumentsGrp );
-
-  BasePointGrp = new QGroupBox( tr( "SMESH_BASE_POINT" ), ArgumentsGrp );
-  BasePointGrp->setColumnLayout( 0, Qt::Vertical );
-  BasePointGrp->layout()->setSpacing( 0 ); BasePointGrp->layout()->setMargin( 0 );
-  QGridLayout* BasePointGrpLayout = new QGridLayout( BasePointGrp->layout() );
-  BasePointGrpLayout->setAlignment( Qt::AlignTop );
-  BasePointGrpLayout->setSpacing( 6 ); BasePointGrpLayout->setMargin( 11 );
-  
-  SelectBasePointButton = new QToolButton( BasePointGrp );
-  SelectBasePointButton->setPixmap( selectImage );
-
-  XLab  = new QLabel( tr( "SMESH_X" ), BasePointGrp );
-  XSpin = new SMESHGUI_SpinBox( BasePointGrp );
-  YLab  = new QLabel( tr( "SMESH_Y" ), BasePointGrp );
-  YSpin = new SMESHGUI_SpinBox( BasePointGrp );
-  ZLab  = new QLabel( tr( "SMESH_Z" ), BasePointGrp );
-  ZSpin = new SMESHGUI_SpinBox( BasePointGrp );
-
-  // layouting
-  BasePointGrpLayout->addWidget( SelectBasePointButton, 0, 0 );
-  BasePointGrpLayout->addWidget( XLab,                  0, 1 );
-  BasePointGrpLayout->addWidget( XSpin,                 0, 2 );
-  BasePointGrpLayout->addWidget( YLab,                  0, 3 );
-  BasePointGrpLayout->addWidget( YSpin,                 0, 4 );
-  BasePointGrpLayout->addWidget( ZLab,                  0, 5 );
-  BasePointGrpLayout->addWidget( ZSpin,                 0, 6 );
-
   // layouting
   ArgumentsGrpLayout->addWidget(          ElementsLab,            0,    0    );
   ArgumentsGrpLayout->addWidget(          SelectElementsButton,   0,    1    );
   ArgumentsGrpLayout->addWidget(          ElementsLineEdit,       0,    2    );
   ArgumentsGrpLayout->addMultiCellWidget( MeshCheck,              1, 1, 0, 2 );
   ArgumentsGrpLayout->addMultiCellWidget( PathGrp,                2, 2, 0, 2 );
-  ArgumentsGrpLayout->addWidget(          AnglesCheck,            3,    0    );
-  ArgumentsGrpLayout->addMultiCellWidget( AnglesGrp,              3, 4, 1, 2 );
-  ArgumentsGrpLayout->addWidget(          BasePointCheck,         5,    0    );
-  ArgumentsGrpLayout->addMultiCellWidget( BasePointGrp,           5, 6, 1, 2 );
-  ArgumentsGrpLayout->setRowStretch( 4, 10 );
+  ArgumentsGrpLayout->addWidget(          BasePointCheck,         3,    0    );
+  ArgumentsGrpLayout->addMultiCellWidget( BasePointGrp,           3, 4, 1, 2 );
+  ArgumentsGrpLayout->addWidget(          AnglesCheck,            5,    0    );
+  ArgumentsGrpLayout->addMultiCellWidget( AnglesGrp,              5, 6, 1, 2 );
+  ArgumentsGrpLayout->setRowStretch( 6, 10 );
 
   /***************************************************************/
   // common buttons group box

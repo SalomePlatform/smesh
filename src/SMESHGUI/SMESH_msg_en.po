@@ -1468,7 +1468,7 @@ msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
 msgstr "Use Angles"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_ANGLES"
-msgstr "Angles"
+msgstr "Rotation Angles"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_BASE_POINT"
 msgstr "Use Base Point"
