@@ -125,6 +125,9 @@ int SMDS_MeshElement::NbFaces() const
 SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
+	/** @todo Check that iterator in the child classes return elements
+	in the same order for each different implementation (i.e: SMDS_VolumeOfNodes
+	and SMDS_VolumeOfFaces */
 	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
 	{
 		const SMDS_MeshElement * myElement;
