@@ -1,0 +1,96 @@
+//=============================================================================
+// File      : SMESH_Gen.idl
+// Created   : jeu avr 11 15:26:35 CEST 2002
+// Author    : Paul RASCLE, EDF
+// Project   : SALOME
+// Copyright : EDF 2002
+// $Header$
+//=============================================================================
+
+#ifndef _SMESH_GEN_IDL_
+#define _SMESH_GEN_IDL_
+
+#include "SALOME_Exception.idl"
+#include "SALOME_Component.idl"
+#include "SALOMEDS.idl"
+
+#include "GEOM_Gen.idl"
+#include "GEOM_Shape.idl"
+
+#include "SMESH_Mesh.idl"
+#include "SMESH_Hypothesis.idl"
+
+module SMESH
+{
+  typedef sequence<GEOM::GEOM_Shape> shape_array;
+
+  interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
+  {
+    /*!
+     * Create an hypothesis that can be shared by differents parts of the mesh.
+     * An hypothesis is either:
+     * - a method used to generate or modify a part of the mesh (algorithm).
+     * - a parameter or a law used by an algorithm.
+     * Algorithms are 1D, 2D or 3D.
+     */
+    SMESH_Hypothesis CreateHypothesis( in string anHyp,
+				       in long studyId)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a Mesh object, given a geometry shape.
+     * Mesh is created empty (no points, no elements).
+     * Shape is explored via GEOM_Client to create local copies.
+     * of TopoDS_Shapes and bind CORBA references of shape & subshapes
+     * with TopoDS_Shapes
+     */
+     SMESH_Mesh Init(in GEOM::GEOM_Gen geomEngine,
+		     in long studyId,
+		     in GEOM::GEOM_Shape aShape)
+       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a Mesh object, without a geometry shape reference
+     */
+//      SMESH_Mesh NewEmpty(in GEOM::GEOM_Gen geomEngine,
+// 			 in long studyId)
+//        raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Mesh a subShape. 
+     * First, verify list of hypothesis associated with the subShape,
+     * return NOK if hypothesis are not sufficient
+     */
+    boolean Compute(in SMESH_Mesh aMesh, in GEOM::GEOM_Shape aSubShape)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+
+    boolean IsReadyToCompute(in SMESH_Mesh aMesh, in GEOM::GEOM_Shape aSubShape)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+    long_array GetSubShapesId(in GEOM::GEOM_Gen geomEngine,
+			     in long studyId,
+			     in GEOM::GEOM_Shape mainShape,
+			     in shape_array listOfSubShape)
+       raises (SALOME::SALOME_Exception);
+    
+    /*!
+     * 
+     */
+    //    long_array GetSubMeshesState(in GEOM::GEOM_Gen geomEngine,
+    //				 in long studyId,
+    //				 in shape_array listOfSubShape)
+    //  raises (SALOME::SALOME_Exception);
+    
+
+  };
+
+};
+
+#endif

@@ -1,0 +1,32 @@
+-- File:	SMDS_MeshIDFactory.cdl
+-- Created:	Thu Jan 24 12:00:41 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+private deferred class MeshIDFactory from SMDS inherits MeshObject
+
+	---Purpose: 
+
+uses
+    StackOfInteger from TColStd
+
+is
+
+    Initialize returns mutable MeshIDFactory from SMDS;
+    
+    GetFreeID(me:mutable) returns Integer is deferred;
+    	---Purpose: returns a free identifier for mesh from
+    	--          the pool of ID
+
+	
+    ReleaseID(me: mutable;ID :Integer) is deferred;
+    	---Purpose: free the ID and give it back to the pool of ID
+
+    
+fields
+    myMaxID : Integer is protected;
+    myPoolOfID : StackOfInteger from TColStd is protected;
+    
+end MeshIDFactory;

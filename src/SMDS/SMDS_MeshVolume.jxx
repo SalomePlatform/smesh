@@ -1,0 +1,6 @@
+#ifndef _Standard_ConstructionError_HeaderFile
+#include <Standard_ConstructionError.hxx>
+#endif
+#ifndef _SMDS_MeshVolume_HeaderFile
+#include "SMDS_MeshVolume.hxx"
+#endif

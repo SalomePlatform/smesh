@@ -1,0 +1,14 @@
+// File:	SMDS_MeshGroup.lxx
+// Created:	Fri Jun  7 12:00:06 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : Elements
+//purpose  : 
+//=======================================================================
+
+inline const SMDS_MapOfMeshElement& SMDS_MeshGroup::Elements() const
+{
+  return myElements;
+}

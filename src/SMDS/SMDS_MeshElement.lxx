@@ -1,0 +1,131 @@
+// File:	SMDS_MeshElement.lxx
+// Created:	Thu Jan 24 09:45:40 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+//=======================================================================
+//function : HashCode
+//purpose  : 
+//=======================================================================
+inline Standard_Integer SMDS_MeshElement::HashCode(const Standard_Integer Upper) const
+{
+  return (GetKey() % Upper);
+}
+
+//=======================================================================
+//function : IsEqual
+//purpose  : 
+//=======================================================================
+
+inline Standard_Boolean SMDS_MeshElement::IsEqual(const Handle(SMDS_MeshElement)& other) const
+{
+  if (this->NbNodes()!=other->NbNodes())
+    return Standard_False;
+  Standard_Integer *c1,*c2;
+  Standard_Integer n = this->NbNodes();
+
+  c1 = (Standard_Integer *)this->GetConnections();
+  c2 = (Standard_Integer *)other->GetConnections();
+  if (*c1 != *c2)
+    return Standard_False;
+
+  n--;
+  c1++;
+  c2++;
+
+  for (;n--; c1++,c2++) {
+    if (*c1 != *c2) {
+      return Standard_False;
+    }
+  }
+
+  return Standard_True;
+
+}
+
+//=======================================================================
+//function : IsSame
+//purpose  : 
+//=======================================================================
+
+inline Standard_Boolean SMDS_MeshElement::IsSame(const Handle(SMDS_MeshElement)& other) const
+{
+  if (this->NbNodes()!=other->NbNodes())
+    return Standard_False;
+  Standard_Integer *c1,*c2;
+  Standard_Integer n = this->NbNodes();
+
+  c1 = (Standard_Integer *)this->GetConnections();
+  c2 = (Standard_Integer *)other->GetConnections();
+  if (*c1 != *c2)
+    return Standard_False;
+
+  n--;
+  c1++;
+  c2++;
+
+  Standard_Integer off = n-1;
+
+  for (;n--; c1++,c2++) {
+    if (*c1 != *c2 && *c1 != *(c2+off)) {
+      return Standard_False;
+    }
+    off -= 2;
+  }
+
+  return Standard_True;
+}
+
+//=======================================================================
+//function : IsNodeInElement
+//purpose  : 
+//=======================================================================
+inline Standard_Boolean SMDS_MeshElement::IsNodeInElement(const Standard_Integer idnode) const
+{
+  if (idnode < GetConnection(1))
+    return Standard_False;
+
+  Standard_Integer *c;
+  c = (Standard_Integer *)this->GetConnections();
+  Standard_Integer n = myNbNodes;
+
+  for (;n--; c++) {
+    if (*c == idnode)
+      return Standard_True;
+  }
+
+  return Standard_False;
+}
+
+
+//=======================================================================
+//function : NbNodes
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshElement::NbNodes() const
+{
+  return myNbNodes;
+}
+
+//=======================================================================
+//function : GetID
+//purpose  : 
+//=======================================================================
+inline Standard_Integer SMDS_MeshElement::GetID() const
+{
+  return myID;
+}
+
+//=======================================================================
+//function : GetType
+//purpose  : 
+//=======================================================================
+inline SMDSAbs_ElementType SMDS_MeshElement::GetType() const
+{
+  return myType;
+}
+
+
+

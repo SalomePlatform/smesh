@@ -1,0 +1,81 @@
+#==============================================================================
+#  File      : Makefile.in
+#  Created   : lun mai  6 13:33:11 CEST 2002
+#  Author    : Paul RASCLE, EDF
+#  Project   : SALOME
+#  Copyright : EDF 2002
+#  $Header$
+#==============================================================================
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+
+
+@COMMENCE@
+
+# header files  
+EXPORT_HEADERS= \
+	SMESH_Gen.hxx \
+	SMESH_Mesh.hxx \
+	SMESH_subMesh.hxx \
+	SMESH_Hypothesis.hxx \
+	SMESH_HypothesisFactory.hxx \
+	SMESH_Algo.hxx \
+	SMESH_1D_Algo.hxx \
+	SMESH_2D_Algo.hxx \
+	SMESH_3D_Algo.hxx \
+	SMESH_NumberOfSegments.hxx \
+	SMESH_LocalLength.hxx \
+	SMESH_LengthFromEdges.hxx \
+	SMESH_MaxElementArea.hxx \
+	SMESH_MaxElementVolume.hxx \
+	SMESH_Regular_1D.hxx \
+	SMESH_Quadrangle_2D.hxx \
+	SMESH_MEFISTO_2D.hxx \
+	SMESH_Hexa_3D.hxx \
+	SMESH_HypothesisCreator.hxx
+
+EXPORT_PYSCRIPTS =
+
+# Libraries targets
+
+LIB= libSMESHimpl.la
+
+LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
+	  SMESH_Hypothesis.cxx \
+          SMESH_HypothesisFactory.cxx \
+	  SMESH_Algo.cxx \
+	  SMESH_1D_Algo.cxx \
+	  SMESH_2D_Algo.cxx \
+	  SMESH_3D_Algo.cxx \
+	  SMESH_NumberOfSegments.cxx \
+	  SMESH_LocalLength.cxx \
+	  SMESH_LengthFromEdges.cxx \
+	  SMESH_MaxElementArea.cxx \
+	  SMESH_MaxElementVolume.cxx \
+	  SMESH_Regular_1D.cxx \
+	  SMESH_Quadrangle_2D.cxx \
+	  SMESH_MEFISTO_2D.cxx \
+	  SMESH_Hexa_3D.cxx
+
+LIB_SERVER_IDL = 
+
+LIB_CLIENT_IDL =
+
+# Executables targets
+BIN = 
+BIN_SRC = 
+
+# additionnal information to compil and link file
+CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES)
+
+#IDLCXXFLAGS+= -Wbtp
+
+LDFLAGS+=  $(OCC_LIBS) $(HDF5_LIBS) $(MED2_LIBS) -lOpUtil -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV
+
+@CONCLUDE@
+

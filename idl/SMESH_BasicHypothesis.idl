@@ -1,0 +1,64 @@
+//=============================================================================
+// File      : SMESH_BasicHypothesis.idl
+// Created   : mer mai 15 13:37:18 CEST 2002
+// Author    : Paul RASCLE, EDF
+// Project   : SALOME
+// Copyright : EDF 2002
+// $Header$
+//=============================================================================
+
+#ifndef _SMESH_BASICHYPOTHESIS_IDL_
+#define _SMESH_BASICHYPOTHESIS_IDL_
+
+#include "SALOME_Exception.idl"
+#include "SMESH_Hypothesis.idl"
+
+
+module SMESH
+{
+  interface SMESH_LocalLength : SMESH_Hypothesis
+  {
+    void SetLength(in double length) 
+      raises (SALOME::SALOME_Exception);
+    double GetLength();
+  };
+
+  interface SMESH_NumberOfSegments : SMESH_Hypothesis
+  {
+    void SetNumberOfSegments(in long segmentsNumber) 
+      raises (SALOME::SALOME_Exception);
+    long GetNumberOfSegments();
+  };
+
+  interface SMESH_MaxElementArea : SMESH_Hypothesis
+  {
+    void SetMaxElementArea(in double area) 
+      raises (SALOME::SALOME_Exception);
+    double GetMaxElementArea();
+  };
+
+  interface SMESH_MaxElementVolume : SMESH_Hypothesis
+  {
+    void SetMaxElementVolume(in double volume) 
+      raises (SALOME::SALOME_Exception);
+    double GetMaxElementVolume();
+  };
+
+  interface SMESH_Regular_1D : SMESH_1D_Algo
+  {
+  };
+
+  interface SMESH_MEFISTO_2D : SMESH_2D_Algo
+  {
+  };
+
+  interface SMESH_Quadrangle_2D : SMESH_2D_Algo
+  {
+  };
+
+  interface SMESH_Hexa_3D : SMESH_3D_Algo
+  {
+  };
+};
+
+#endif

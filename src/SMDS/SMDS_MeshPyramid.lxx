@@ -1,0 +1,61 @@
+// File:	SMDS_MeshPyramid.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshPyramid::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshPyramid::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+//=======================================================================
+//function : ComputeKey
+//purpose  : compute the Key of the volume based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshPyramid::ComputeKey()
+{
+  //  myKey = (myNodes[0]<<4) + (myNodes[1]<<3) + (myNodes[2]<<2) + (myNodes[3]<<1) + myNodes[4];
+  myKey = myNodes[0] + myNodes[1] + myNodes[2] + myNodes[3] + myNodes[4];
+}
+
+//=======================================================================
+//function : NbEdges
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshPyramid::NbEdges() const
+{
+  return 8;
+}
+
+//=======================================================================
+//function : NbFaces
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshPyramid::NbFaces() const
+{
+  return 5;
+}
+

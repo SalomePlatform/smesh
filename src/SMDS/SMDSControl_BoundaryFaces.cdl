@@ -1,0 +1,31 @@
+-- File:	SMDSControl_BoundaryFaces.cdl
+-- Created:	Tue Mar 12 23:31:59 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class BoundaryFaces from SMDSControl inherits MeshBoundary from SMDSControl
+
+	---Purpose: compute  the boudary faces  of a mesh that  is the
+	--          faces that are shared  by only one volume the result
+	--          is a new  mesh created in the same  factory as the
+	--          original mesh that contains only faces
+
+uses
+
+    Mesh from SMDS,
+    MapOfMeshElement from SMDS
+    
+is
+
+    Create(M: Mesh from SMDS) returns BoundaryFaces from SMDSControl;
+    
+    Compute(me: mutable) is redefined virtual;
+
+    
+fields
+
+    myBoundaryFaces : MapOfMeshElement from SMDS;
+    
+end BoundaryFaces;

@@ -1,0 +1,119 @@
+//=============================================================================
+// File      : SMESH_Hexa_3D.hxx
+// Created   : sam mai 18 23:15:26 CEST 2002
+// Author    : Paul RASCLE, EDF
+// Project   : SALOME
+// Copyright : EDF 2002
+// $Header$
+//=============================================================================
+
+#ifndef _SMESH_HEXA_3D_HXX_
+#define _SMESH_HEXA_3D_HXX_
+
+#include "SMESH_3D_Algo.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_Quadrangle_2D.hxx"
+#include "Utils_SALOME_Exception.hxx"
+
+typedef struct point3Dstruct
+{
+  int nodeId;
+} Point3DStruct;
+
+typedef double Pt3[3];
+
+typedef struct conv2dstruct
+{
+  double a1; // X = a1*x + b1*y + c1 
+  double b1; // Y = a2*x + b2*y + c2
+  double c1; // a1, b1 a2, b2 in {-1,0,1}
+  double a2; // c1, c2 in {0,1}
+  double b2;
+  double c2;
+  int ia;    // I = ia*i + ib*j + ic
+  int ib;
+  int ic;
+  int ja;    // J = ja*i + jb*j + jc
+  int jb;
+  int jc;
+} Conv2DStruct;
+
+typedef struct cubeStruct
+{
+  TopoDS_Vertex V000;
+  TopoDS_Vertex V001;
+  TopoDS_Vertex V010;
+  TopoDS_Vertex V011;
+  TopoDS_Vertex V100;
+  TopoDS_Vertex V101;
+  TopoDS_Vertex V110;
+  TopoDS_Vertex V111;
+  faceQuadStruct* quad_X0;
+  faceQuadStruct* quad_X1;
+  faceQuadStruct* quad_Y0;
+  faceQuadStruct* quad_Y1;
+  faceQuadStruct* quad_Z0;
+  faceQuadStruct* quad_Z1;
+  Point3DStruct* np; // normalised 3D coordinates
+} CubeStruct;
+
+class SMESH_Hexa_3D:
+  public SMESH_3D_Algo
+{
+public:
+  SMESH_Hexa_3D(int hypId, int studyId, SMESH_Gen* gen);
+  virtual ~SMESH_Hexa_3D();
+
+  virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
+			       const TopoDS_Shape& aShape);
+
+  virtual bool Compute(SMESH_Mesh& aMesh,
+		       const TopoDS_Shape& aShape)
+    throw (SALOME_Exception);
+
+  ostream & SaveTo(ostream & save);
+  istream & LoadFrom(istream & load);
+  friend ostream & operator << (ostream & save, SMESH_Hexa_3D & hyp);
+  friend istream & operator >> (istream & load, SMESH_Hexa_3D & hyp);
+
+protected:
+  TopoDS_Edge
+  EdgeNotInFace(SMESH_Mesh& aMesh,
+		const TopoDS_Shape& aShape,
+		const TopoDS_Face& aFace,
+		const TopoDS_Vertex& aVertex,
+		const TopTools_IndexedDataMapOfShapeListOfShape& MS);
+
+  int GetFaceIndex(SMESH_Mesh& aMesh,
+		   const TopoDS_Shape& aShape,
+		   const vector<SMESH_subMesh*>& meshFaces,
+		   const TopoDS_Vertex& V0,
+		   const TopoDS_Vertex& V1,
+		   const TopoDS_Vertex& V2,
+		   const TopoDS_Vertex& V3);
+
+  void GetConv2DCoefs(const faceQuadStruct& quad,
+		      const TopoDS_Shape& aShape,
+		      const TopoDS_Vertex& V0,
+		      const TopoDS_Vertex& V1,
+		      const TopoDS_Vertex& V2,
+		      const TopoDS_Vertex& V3,
+		      Conv2DStruct& conv);
+
+  void GetPoint(Pt3 p,
+		int i, int j, int k,
+		int nbx, int nby, int nbz,
+		Point3DStruct *np,
+		const Handle(SMESHDS_Mesh)& meshDS);
+
+  CubeStruct _cube;
+  FaceQuadStruct* _quads[6];
+  int _indX0;
+  int _indX1;
+  int _indY0;
+  int _indY1;
+  int _indZ0;
+  int _indZ1;
+};
+
+#endif

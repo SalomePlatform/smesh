@@ -1,0 +1,44 @@
+// File:	SMDS_FacePosition.lxx
+// Created:	Mon May 13 14:55:03 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : SetUParameter
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_FacePosition::SetUParameter(const Standard_Real aUparam)
+{
+  myUParameter = aUparam;
+}
+
+//=======================================================================
+//function : SetVParameter
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_FacePosition::SetVParameter(const Standard_Real aVparam)
+{
+  myVParameter = aVparam;
+}
+
+//=======================================================================
+//function : GetUParameter
+//purpose  : 
+//=======================================================================
+
+inline Standard_Real SMDS_FacePosition::GetUParameter() const 
+{
+  return myUParameter;
+}
+
+//=======================================================================
+//function : GetVParameter
+//purpose  : 
+//=======================================================================
+
+inline Standard_Real SMDS_FacePosition::GetVParameter() const 
+{
+  return myVParameter;
+}

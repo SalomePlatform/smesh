@@ -1,0 +1,45 @@
+-- File:	SMDS_MeshElementIDFactory.cdl
+-- Created:	Tue May  7 16:19:36 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+private class MeshElementIDFactory from SMDS inherits MeshIDFactory
+
+	---Purpose: 
+
+uses
+    DataMapOfIntegerMeshElement from SMDS,
+    MeshElement from SMDS
+
+is
+
+    Create returns mutable MeshElementIDFactory from SMDS;
+
+    GetFreeID(me:mutable) returns Integer is redefined static;
+    	---Purpose: returns a free identifier for mesh from
+    	--          the pool of ID
+        ---C++: inline
+	
+    ReleaseID(me: mutable;ID :Integer) is redefined static;
+    	---Purpose: free the ID and give it back to the pool of ID
+        ---C++: inline
+
+    BindID(me: mutable;ID :Integer; elem : MeshElement from SMDS )
+    returns Boolean;
+    	---Purpose: bind the ID with the mesh element
+    	--          returns False if the ID is already bound.
+    	--          In this case the element is not replaced
+        ---C++: inline
+
+    MeshElement(me;ID :Integer) returns MeshElement from SMDS;
+    	---Purpose: returns the MeshElement associated with ID
+    	--          raises an exception if the ID is not bound
+        ---C++: inline
+
+
+fields
+    myIDElements : DataMapOfIntegerMeshElement from SMDS;
+    
+end MeshElementIDFactory;

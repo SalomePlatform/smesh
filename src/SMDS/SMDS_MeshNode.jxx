@@ -1,0 +1,12 @@
+#ifndef _SMDS_Position_HeaderFile
+#include "SMDS_Position.hxx"
+#endif
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif
+#ifndef _SMDS_ListOfMeshElement_HeaderFile
+#include "SMDS_ListOfMeshElement.hxx"
+#endif
+#ifndef _SMDS_MeshNode_HeaderFile
+#include "SMDS_MeshNode.hxx"
+#endif

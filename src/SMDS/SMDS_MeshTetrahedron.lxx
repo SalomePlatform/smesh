@@ -1,0 +1,62 @@
+// File:	SMDS_MeshTetrahedron.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshTetrahedron::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshTetrahedron::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+//=======================================================================
+//function : ComputeKey
+//purpose  : compute the Key of the volume based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshTetrahedron::ComputeKey()
+{
+  //  myKey = (myNodes[0]<<3) + (myNodes[1]<<2) + (myNodes[2]<<1) + myNodes[3];
+   myKey = myNodes[0] + myNodes[1] + myNodes[2] + myNodes[3];
+}
+
+
+//=======================================================================
+//function : NbEdges
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshTetrahedron::NbEdges() const
+{
+  return 6;
+}
+
+//=======================================================================
+//function : NbFaces
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshTetrahedron::NbFaces() const
+{
+  return 4;
+}
+

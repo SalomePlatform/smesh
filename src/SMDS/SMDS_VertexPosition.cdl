@@ -1,0 +1,26 @@
+-- File:	SMDS_VertexPosition.cdl
+-- Created:	Mon May 13 14:39:09 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class VertexPosition from SMDS inherits Position from SMDS
+
+	---Purpose: used to characterize a MeshNode with a CAD vertex
+
+uses
+    Pnt from gp
+
+is
+
+    Create returns mutable VertexPosition;
+    ---Purpose: empty constructor. the vertex is not set
+
+    Create(aVertexId : Integer) returns mutable VertexPosition;
+    
+    Coords(me) returns Pnt from gp is redefined virtual;
+    ---Purpose: returns the resulting 3d point to be set
+    --          in the MeshNode instance
+    
+end VertexPosition;

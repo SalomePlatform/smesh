@@ -1,0 +1,24 @@
+// File:	SMDS_EdgePosition.lxx
+// Created:	Mon May 13 14:47:40 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : SetUParameter
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_EdgePosition::SetUParameter(const Standard_Real aUparam)
+{
+  myUParameter = aUparam;
+}
+
+//=======================================================================
+//function : GetUParameter
+//purpose  : 
+//=======================================================================
+
+inline Standard_Real SMDS_EdgePosition::GetUParameter() const 
+{
+  return myUParameter;
+}

@@ -1,0 +1,15 @@
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif
+#ifndef _Standard_NoMoreObject_HeaderFile
+#include <Standard_NoMoreObject.hxx>
+#endif
+#ifndef _Standard_NoSuchObject_HeaderFile
+#include <Standard_NoSuchObject.hxx>
+#endif
+#ifndef _SMDS_Mesh_HeaderFile
+#include "SMDS_Mesh.hxx"
+#endif
+#ifndef _SMDS_MeshElementsIterator_HeaderFile
+#include "SMDS_MeshElementsIterator.hxx"
+#endif

@@ -1,0 +1,15 @@
+-- File:	SMDS_MeshObject.cdl
+-- Created:	Wed Jan 23 12:01:38 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+deferred class MeshObject from SMDS inherits TShared from MMgt
+
+	---Purpose: 
+
+is
+
+
+end MeshObject;

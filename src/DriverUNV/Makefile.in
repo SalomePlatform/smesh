@@ -1,0 +1,41 @@
+# -* Makefile *- 
+#
+# Author : Marc Tajchman (CEA)
+# Date : 5/07/2001
+# $Header$
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+
+@COMMENCE@
+
+# header files 
+EXPORT_HEADERS= DriverUNV_R_SMDS_Mesh.h DriverUNV_R_SMESHDS_Mesh.h DriverUNV_R_SMESHDS_Document.h \
+                DriverUNV_W_SMDS_Mesh.h DriverUNV_W_SMESHDS_Mesh.h DriverUNV_W_SMESHDS_Document.h 
+
+# Libraries targets
+LIB = libMeshDriverUNV.la
+LIB_SRC = DriverUNV_R_SMDS_Mesh.cxx DriverUNV_R_SMESHDS_Mesh.cxx DriverUNV_R_SMESHDS_Document.cxx \
+          DriverUNV_W_SMDS_Mesh.cxx DriverUNV_W_SMESHDS_Mesh.cxx DriverUNV_W_SMESHDS_Document.cxx 
+
+LIB_CLIENT_IDL =
+
+LIB_SERVER_IDL =
+
+# additionnal information to compil and link file
+CPPFLAGS += $(OCC_INCLUDES)
+CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES)
+LDFLAGS  += $(OCC_LIBS) $(MED2_LIBS) -lMeshDriver
+
+%_moc.cxx: %.h
+	$(MOC) $< -o $@
+
+@CONCLUDE@
+
+
+

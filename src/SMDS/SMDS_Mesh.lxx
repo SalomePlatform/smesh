@@ -1,0 +1,57 @@
+// File:	SMDS_Mesh.lxx
+// Created:	Thu Jan 24 09:45:40 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+//=======================================================================
+//function : NbNodes
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Mesh::NbNodes() const
+{
+  return myNodes.Extent();
+}
+
+//=======================================================================
+//function : NbEdges
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Mesh::NbEdges() const
+{
+  return myEdges.Extent();
+}
+
+//=======================================================================
+//function : NbFaces
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Mesh::NbFaces() const
+{
+  return myFaces.Extent();
+}
+
+//=======================================================================
+//function : NbVolumes
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Mesh::NbVolumes() const
+{
+  return myVolumes.Extent();
+}
+
+
+//=======================================================================
+//function : NbSubMesh
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Mesh::NbSubMesh() const
+{
+  return myChildren.Extent();
+}
+
+

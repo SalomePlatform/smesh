@@ -1,0 +1,148 @@
+-- File:	SMDS.cdl
+-- Created:	Wed Jan 23 11:53:00 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+package SMDS 
+
+	---Purpose: This package provides the classes Mesh and MeshElement
+	--          
+	--          class Mesh: 
+	--          -  contains the main definition of the 
+	--             mesh and have access to the MeshElement objects
+	--             
+	--          class MeshElement:  
+	--           -  defines the  topological constituants of the Mesh (i.e
+	--              the Node, Edge, Face and Volume entities.
+	--              
+	--          These two last classes  inherits from an abstract
+	--          class MeshObject.
+
+uses
+    SMDSAbs,
+    MMgt,
+    TCollection,
+    TColStd,
+    TColgp,
+    gp
+    
+    
+is
+
+    ---=================================
+    ---Category: enumerations
+    --           
+    ---=================================
+
+    enumeration TypeOfPosition is
+    	TOP_UNSPEC,
+    	TOP_3DSPACE,
+    	TOP_VERTEX,
+	TOP_EDGE,
+	TOP_FACE
+    end TypeOfPosition;
+    ---Purpose: defines the type of position of a node (see SMDS_Position)
+    --          TOP_UNSPEC   : node position not specfied
+    --          TOP_3DSPACE  : just a 3d point in space not related
+    --                         to a CAD geometry
+    --          TOP_VERTEX   : to characterize a node with a CAD vertex
+    --          TOP_EDGE     : to characterize a node with a CAD edge
+    --          TOP_FACE     : to characterize a node with a CAD face
+    
+    ---=====================================
+    ---Category: public classes
+    --           Mesh object related classes
+    ---=====================================
+
+    class MeshOrientedElementMapHasher;
+
+    class MeshElementMapHasher;
+    
+    class PntHasher;
+
+    deferred class MeshObject;
+
+    	class Mesh;
+
+    	deferred class MeshElement;
+	         class MeshNode;
+	         class MeshEdge;
+		 deferred class MeshFace;
+		    class MeshTriangle;
+		    class MeshQuadrangle;
+		 deferred class MeshVolume;
+		    class MeshTetrahedron;
+		    class MeshPyramid;
+		    class MeshPrism;
+		    class MeshHexahedron;
+		       
+    private deferred class MeshIDFactory;
+             private class MeshNodeIDFactory;
+             private class MeshElementIDFactory;
+
+    deferred class MeshElementsIterator;
+           class MeshVolumesIterator;
+           class MeshFacesIterator;
+           class MeshEdgesIterator;
+           class MeshNodesIterator;
+
+
+    deferred class Position;
+    	   class SpacePosition;
+    	   class VertexPosition;
+    	   class EdgePosition;
+    	   class FacePosition;
+
+    ---=================================
+    ---Category: public classes
+    --           Mesh group
+    ---=================================
+
+    class MeshGroup;
+    
+    ---=================================
+    ---Category: public classes
+    --           Mesh collection classes
+    ---=================================
+
+    class ExtendedMap
+    	instantiates Map from TCollection (MeshElement from SMDS,
+	    	    	    	    MeshElementMapHasher from SMDS);
+    	
+    class ExtendedOrientedMap
+    	instantiates Map from TCollection (MeshElement from SMDS,
+	    	    	    	    MeshOrientedElementMapHasher from SMDS);
+    	
+    class DataMapOfPntInteger
+    	instantiates DataMap from TCollection (Pnt from gp,
+                                               Integer,
+	    	    	    	               PntHasher from SMDS);
+    class DataMapOfIntegerMeshElement  instantiates
+    	  DataMap from TCollection(Integer,MeshElement from SMDS,
+    	    	    	    	   MapIntegerHasher from TColStd);
+
+    class ListOfMeshElement
+    	instantiates List from TCollection (MeshElement from SMDS);
+
+    class ListOfMesh
+    	instantiates List from TCollection (Mesh from SMDS);
+
+    class MapOfMeshElement;
+
+    class MapOfMeshOrientedElement;
+
+    class SequenceOfMesh
+    	instantiates Sequence from TCollection (Mesh from SMDS);
+
+    class HSequenceOfMesh
+    	instantiates HSequence from TCollection (Mesh from SMDS,
+    	    	    	    	    	    	 SequenceOfMesh from SMDS);
+
+
+    class ListOfMeshGroup
+    	instantiates List from TCollection(MeshGroup from SMDS);
+
+end SMDS;
+

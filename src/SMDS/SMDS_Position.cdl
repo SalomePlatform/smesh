@@ -1,0 +1,48 @@
+-- File:	SMDS_Position.cdl
+-- Created:	Mon May 13 13:40:18 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+deferred class Position from SMDS inherits  TShared from MMgt
+
+	---Purpose: abstract  class to define  the different positions
+	--          of a node related to the underlying geometry (CAD model)
+
+uses
+    Pnt from gp,
+    TypeOfPosition from SMDS
+    
+is
+
+    Initialize(aShapeId: Integer; 
+    	       aType: TypeOfPosition from SMDS = SMDS_TOP_UNSPEC) 
+    returns mutable Position;
+
+    Coords(me) returns Pnt from gp is deferred;
+    ---Purpose: returns the resulting 3d point to be set
+    --          in the MeshNode instance
+    --          must be redefined by inherited classes
+    
+    GetTypeOfPosition(me) returns TypeOfPosition from SMDS;
+    ---Purpose: returns the type of position
+    --          
+    ---C++: inline
+    
+    SetShapeId(me: mutable; aShapeId: Integer);
+    ---Purpose: Sets the ShapeId of the position
+    --          
+    ---C++: inline
+
+    GetShapeId(me) returns Integer;
+    ---Purpose: Returns the ShapeId of the position
+    --          
+    ---C++: inline
+
+
+fields
+
+    myShapeId : Integer;
+    myType    : TypeOfPosition from SMDS;    
+end Position;

@@ -1,0 +1,34 @@
+-- File:	SMDS_MeshNodesIterator.cdl
+-- Created:	Thu Jan 24 12:00:41 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MeshNodesIterator from SMDS inherits MeshElementsIterator
+
+	---Purpose: The Iterator objet to iterate on all faces of a mesh
+	--          
+
+uses
+    Mesh from SMDS,
+    MeshElement from SMDS
+
+raises
+    NoMoreObject,
+    NoSuchObject
+
+is
+
+    Create returns MeshNodesIterator from SMDS;
+	---Purpose: Creates an empty Iterator.
+    
+    Create(M : Mesh from SMDS) returns MeshNodesIterator from SMDS;
+	---Purpose: Creates an Iterator on faces of mesh <M>.
+
+    Initialize(me : in out; M      : Mesh from SMDS)
+	---Purpose: Reset the Iterator on the faces of mesh <M>.
+    is redefined static;
+    
+    
+end MeshNodesIterator;

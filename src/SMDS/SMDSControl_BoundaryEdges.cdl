@@ -1,0 +1,29 @@
+-- File:	SMDSControl_BoundaryEdges.cdl
+-- Created:	Wed Feb 20 19:17:20 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class BoundaryEdges from SMDSControl inherits MeshBoundary from SMDSControl
+
+	---Purpose: compute  the boudary edges  of a mesh that  is the
+	--          edges that are shared  by only one face the result
+	--          is a new  mesh created in the same  factory as the
+	--          original mesh that contains only edges
+
+uses
+
+    Mesh from SMDS,
+    MapOfMeshElement from SMDS
+is
+
+    Create(M: Mesh from SMDS) returns BoundaryEdges from SMDSControl;
+    
+    Compute(me: mutable) is redefined virtual;
+
+fields
+
+    myBoundaryEdges : MapOfMeshElement from SMDS;
+    
+end BoundaryEdges;

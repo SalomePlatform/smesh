@@ -1,0 +1,38 @@
+-- File:	SMDS_SpacePosition.cdl
+-- Created:	Mon May 13 14:06:42 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+class SpacePosition from SMDS inherits Position from SMDS
+
+	---Purpose: used to characterize a MeshNode with a 3D point
+	--          in space not related to any underlying geometry (CAD)
+
+uses
+    Pnt from gp
+
+is
+
+    Create returns mutable SpacePosition;
+    ---Purpose: empty constructor. the coords are not set
+
+    Create(x, y, z : Real) returns mutable SpacePosition;
+    
+    Create(aCoords : Pnt from gp) returns mutable SpacePosition;
+    
+    Coords(me) returns Pnt from gp is redefined virtual;
+    ---Purpose: returns the resulting 3d point to be set
+    --          in the MeshNode instance
+    
+    SetCoords(me: mutable; x, y, z : Real);
+    ---C++: inline
+    
+    SetCoords(me: mutable; aCoords : Pnt from gp);
+    ---C++: inline
+    
+fields
+    myCoords : Pnt from gp;
+    
+end SpacePosition;

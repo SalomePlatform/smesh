@@ -1,0 +1,63 @@
+#==============================================================================
+#  File      : Makefile.in
+#  Created   : mar mai 21 09:12:43 CEST 2002
+#  Author    : Paul RASCLE, EDF
+#  Project   : SALOME
+#  Copyright : EDF 2002
+#  $Header$
+#==============================================================================
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+
+
+@COMMENCE@
+
+EXPORT_PYSCRIPTS = smeshpy.py SMESH_test.py
+
+# Libraries targets
+
+LIB= libSMESHEngine.la
+
+LIB_SRC = SMESH_Gen_i.cxx SMESH_Mesh_i.cxx SMESH_MEDMesh_i.cxx \
+          SMESH_MEDFamily_i.cxx SMESH_MEDSupport_i.cxx \
+          SMESH_subMesh_i.cxx \
+          SMESH_MeshEditor_i.cxx \
+          SMESH_Hypothesis_i.cxx \
+          SMESH_topo.cxx SMESH_HypothesisFactory_i.cxx \
+          SMESH_Algo_i.cxx \
+          SMESH_1D_Algo_i.cxx \
+          SMESH_2D_Algo_i.cxx \
+          SMESH_3D_Algo_i.cxx \
+          SMESH_NumberOfSegments_i.cxx \
+          SMESH_LocalLength_i.cxx \
+          SMESH_MaxElementArea_i.cxx \
+          SMESH_MaxElementVolume_i.cxx \
+          SMESH_Regular_1D_i.cxx \
+          SMESH_Quadrangle_2D_i.cxx \
+          SMESH_MEFISTO_2D_i.cxx \
+          SMESH_Hexa_3D_i.cxx
+
+LIB_SERVER_IDL = SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Mesh.idl \
+                 SALOME_Component.idl SALOME_Exception.idl \
+                 SMESH_BasicHypothesis.idl
+
+LIB_CLIENT_IDL = SALOMEDS.idl GEOM_Gen.idl GEOM_Shape.idl MED.idl SALOMEDS_Attributes.idl
+
+# Executables targets
+BIN = 
+BIN_SRC = 
+
+# additionnal information to compil and link file
+CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES)
+
+#IDLCXXFLAGS+= -Wbtp
+
+LDFLAGS+=  $(OCC_LIBS) $(HDF5_LIBS) $(MED2_LIBS) -lSMESHimpl -lSalomeContainer -lSalomeNS -lSalomeDS -lRegistry -lSalomeHDFPersist -lOpUtil -lGeometryClient -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriverMED -lSalomeLifeCycleCORBA
+
+@CONCLUDE@
+

@@ -1,0 +1,34 @@
+// File:	SMDS_Position.lxx
+// Created:	Mon May 13 13:47:03 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@localhost.localdomain>
+
+//=======================================================================
+//function : GetTypeOfPosition
+//purpose  : 
+//=======================================================================
+
+inline SMDS_TypeOfPosition SMDS_Position::GetTypeOfPosition() const
+{
+  return myType;
+}
+
+//=======================================================================
+//function : SetShapeId
+//purpose  : 
+//=======================================================================
+
+inline void SMDS_Position::SetShapeId(const Standard_Integer aShapeId)
+{
+  myShapeId = aShapeId;
+}
+
+//=======================================================================
+//function : GetShapeId
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_Position::GetShapeId() const
+{
+  return myShapeId;
+}

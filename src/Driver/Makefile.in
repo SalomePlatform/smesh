@@ -1,0 +1,39 @@
+# -* Makefile *- 
+#
+# Author : Marc Tajchman (CEA)
+# Date : 5/07/2001
+# $Header$
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+
+@COMMENCE@
+
+# header files 
+EXPORT_HEADERS= Document_Reader.h Document_Writer.h Mesh_Reader.h Mesh_Writer.h
+
+# Libraries targets
+LIB = libMeshDriver.la
+LIB_SRC = Document_Reader.cxx Document_Writer.cxx Mesh_Reader.cxx Mesh_Writer.cxx
+
+LIB_CLIENT_IDL =
+
+LIB_SERVER_IDL =
+
+# additionnal information to compil and link file
+CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -rdynamic -ldl -I${KERNEL_ROOT_DIR}/include/salome
+LDFLAGS  += $(OCC_LIBS) $(MED2_LIBS) -lSMESHDS -lSMDS
+
+%_moc.cxx: %.h
+	$(MOC) $< -o $@
+
+@CONCLUDE@
+
+
+

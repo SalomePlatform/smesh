@@ -1,0 +1,38 @@
+-- File:	SMDS_MeshEdge.cdl
+-- Created:	Wed Jan 23 16:15:51 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MeshEdge from SMDS inherits MeshElement from SMDS
+
+	---Purpose: 
+
+is
+    Create (ID,idnode1,idnode2: Integer) returns mutable MeshEdge;
+
+    ComputeKey(me: mutable);
+    ---Purpose: compute the  ID of the edge  based on the  id's of its
+    --          bounding nodes
+    ---C++: inline
+
+    GetKey(me) returns Integer is redefined static;    
+    ---C++: inline
+
+    GetConnections(me) returns Address is redefined static;
+    ---C++: inline
+
+    GetConnection(me; rank: Integer) returns Integer is redefined static;
+    ---C++: inline
+
+    SetConnections(me: mutable; idnode1,idnode2: Integer) is private;
+
+    Print(me; OS: in out OStream) is redefined static;
+    
+fields
+    
+    myKey : Integer;
+    myNodes : Integer [2];
+
+end MeshEdge;

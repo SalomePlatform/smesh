@@ -1,0 +1,40 @@
+# -* Makefile *- 
+#
+# Author : Patrick GOLDBRONN (CEA)
+# Date : 29/06/2001
+# $Header$
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl
+
+
+@COMMENCE@
+
+# Libraries targets
+
+LIB = libSMESHFiltersSelection.la 
+LIB_SRC = SMESH_TypeFilter.cxx 
+
+LIB_CLIENT_IDL = SALOME_Component.idl SALOMEDS.idl SALOME_Exception.idl
+
+# header files 
+EXPORT_HEADERS= SMESH_Type.h \
+		SMESH_TypeFilter.hxx \
+		Handle_SMESH_TypeFilter.hxx 
+
+# additionnal information to compil and link file
+CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES)
+CXXFLAGS += $(OCC_CXXFLAGS)
+LDFLAGS  += $(OCC_LIBS)
+
+# additional file to be cleaned
+MOSTLYCLEAN =
+CLEAN =
+DISTCLEAN =
+
+@CONCLUDE@
+

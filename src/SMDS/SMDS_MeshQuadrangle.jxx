@@ -1,0 +1,3 @@
+#ifndef _SMDS_MeshQuadrangle_HeaderFile
+#include "SMDS_MeshQuadrangle.hxx"
+#endif

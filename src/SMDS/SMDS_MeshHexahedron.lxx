@@ -1,0 +1,63 @@
+// File:	SMDS_MeshHexahedron.lxx
+// Created:	Thu Jan 24 17:06:47 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+
+//=======================================================================
+//function : GetConnections
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Address SMDS_MeshHexahedron::GetConnections() const
+{
+  return (Standard_Address)&myNodes;
+}
+
+//=======================================================================
+//function : GetConnection
+//purpose  : 
+//           
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshHexahedron::GetConnection(const Standard_Integer rank) const
+{
+  return myNodes[rank-1];
+}
+
+//=======================================================================
+//function : ComputKey
+//purpose  : compute theKey of the volume based on the ids of its bounding nodes
+//           
+//=======================================================================
+
+inline void SMDS_MeshHexahedron::ComputeKey()
+{
+  //  myKey = (myNodes[0]<<8) + (myNodes[1]<<7) + (myNodes[2]<<6) + (myNodes[3]<<5) 
+  //	+(myNodes[4]<<4) + (myNodes[5]<<3) + (myNodes[6]<<2) + myNodes[7];
+   myKey = myNodes[0] + myNodes[1] + myNodes[2] + myNodes[3] 
+  	+ myNodes[4] + myNodes[5] + myNodes[6] + myNodes[7];
+}
+
+//=======================================================================
+//function : NbEdges
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshHexahedron::NbEdges() const
+{
+  return 12;
+}
+
+//=======================================================================
+//function : NbFaces
+//purpose  : 
+//=======================================================================
+
+inline Standard_Integer SMDS_MeshHexahedron::NbFaces() const
+{
+  return 6;
+}
+

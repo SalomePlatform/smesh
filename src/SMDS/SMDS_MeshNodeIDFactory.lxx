@@ -1,0 +1,34 @@
+// File:	SMDS_MeshNodeIDFactory.lxx
+// Created:	Thu Jan 24 12:10:57 2002
+// Author:	Jean-Michel BOULCOURT
+//		<jmb@coulox.paris1.matra-dtv.fr>
+
+
+//=======================================================================
+//function : GetFreeID
+//purpose  : 
+//=======================================================================
+inline Standard_Integer  SMDS_MeshNodeIDFactory::GetFreeID()
+{
+  if (myPoolOfID.IsEmpty())
+    return ++myMaxID;
+  else {
+    Standard_Integer ID = myPoolOfID.Top();
+    myPoolOfID.Pop();
+    return ID;
+  }
+
+}
+
+//=======================================================================
+//function : ReleaseID
+//purpose  : 
+//=======================================================================
+inline void SMDS_MeshNodeIDFactory::ReleaseID(const Standard_Integer ID)
+{
+  if (ID < myMaxID)
+    myPoolOfID.Push(ID);
+
+}
+
+

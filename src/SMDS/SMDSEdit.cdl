@@ -1,0 +1,24 @@
+-- File:	SMDSEdit.cdl
+-- Created:	Wed May 15 21:35:28 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@localhost.localdomain>
+---Copyright:	 Matra Datavision 2002
+
+
+package SMDSEdit 
+
+        ---Level : Public. 
+        --  All methods of all  classes will be public.
+
+	---Purpose: This package provides tool classes to edit or modify
+        --          Meshes or MeshElements
+	--          
+
+uses
+    SMDS,
+    gp
+is
+    class Transform;
+    ---Purpose: tool class to modify a Mesh or MeshElements by a Transformation
+    
+end SMDSEdit;

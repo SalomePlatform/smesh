@@ -1,0 +1,18 @@
+#ifndef _TColgp_HArray1OfDir_HeaderFile
+#include <TColgp_HArray1OfDir.hxx>
+#endif
+#ifndef _Standard_OutOfRange_HeaderFile
+#include <Standard_OutOfRange.hxx>
+#endif
+#ifndef _SMDS_ListOfMeshElement_HeaderFile
+#include "SMDS_ListOfMeshElement.hxx"
+#endif
+#ifndef _gp_Vec_HeaderFile
+#include <gp_Vec.hxx>
+#endif
+#ifndef _gp_Dir_HeaderFile
+#include <gp_Dir.hxx>
+#endif
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif

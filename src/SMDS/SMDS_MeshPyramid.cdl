@@ -1,0 +1,68 @@
+-- File:	SMDS_MeshPyramid.cdl
+-- Created:	Wed Jan 23 16:17:22 2002
+-- Author:	Jean-Michel BOULCOURT
+--		<jmb@coulox.paris1.matra-dtv.fr>
+---Copyright:	 Matra Datavision 2002
+
+
+class MeshPyramid from SMDS inherits MeshVolume from SMDS
+
+	---Purpose: 
+
+uses
+  MeshElement from SMDS
+    
+raises 
+  ConstructionError   from Standard
+
+is
+
+    Create (ID,idnode1,idnode2,idnode3,idnode4,idnode5: Integer) returns mutable MeshPyramid;
+    	---Purpose: constructor for a pyramid
+
+
+    GetFaceDefinedByNodes(me; rank: Integer; idnode : Address; nb: out Integer) 
+    is redefined static;
+    ---Purpose: returns the idnodes of the ith face (rank) of the volume
+    --          rank must be comprised between 1 and myNbConnections included.
+    
+    GetEdgeDefinedByNodes(me; rank: Integer; idnode1 : out Integer; idnode2: out Integer) 
+    is redefined static;
+    ---Purpose: returns the idnodes of the ith edge (rank) of the volume
+    --          rank must be comprised between 1 and myNbConnections included.
+    
+    ComputeKey(me: mutable);
+    ---Purpose: compute the  ID of the volume  based on the  id's of its
+    --          bounding nodes
+    ---C++: inline
+
+
+    SetConnections(me: mutable; idnode1,idnode2,idnode3,idnode4,idnode5: Integer) is private;
+
+    GetConnections(me) returns Address is redefined static;
+    ---C++: inline
+
+    GetConnection(me; rank: Integer) returns Integer is redefined static;
+    ---C++: inline
+
+    NbEdges(me) returns Integer
+    is redefined static;
+    ---C++: inline
+
+    NbFaces(me) returns Integer
+    is redefined static;
+    ---C++: inline
+
+    NodesOfFace(myclass; rankface,ranknode: Integer) 
+    returns Integer;
+    ---Purpose: returns the rank node in mynodes. Useful to extract faces from volume
+    --          
+
+    NodesOfEdge(me;  rankedge: Integer; ranknode: Integer) returns Integer;
+
+    
+fields
+    
+    myNodes : Integer [5];
+
+end MeshPyramid;

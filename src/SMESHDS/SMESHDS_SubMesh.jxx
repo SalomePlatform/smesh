@@ -1,0 +1,18 @@
+#ifndef _SMDS_Mesh_HeaderFile
+#include "SMDS_Mesh.hxx"
+#endif
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif
+#ifndef _SMDS_MeshNode_HeaderFile
+#include "SMDS_MeshNode.hxx"
+#endif
+#ifndef _SMDS_MapOfMeshElement_HeaderFile
+#include "SMDS_MapOfMeshElement.hxx"
+#endif
+#ifndef _TColStd_ListOfInteger_HeaderFile
+#include <TColStd_ListOfInteger.hxx>
+#endif
+#ifndef _SMESHDS_SubMesh_HeaderFile
+#include "SMESHDS_SubMesh.hxx"
+#endif
