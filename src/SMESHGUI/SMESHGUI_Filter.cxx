@@ -83,8 +83,8 @@ bool SMESHGUI_PredicateFilter::IsValid( const int theCellId ) const
   if ( myActor == 0 || myPred->_is_nil() )
     return false;
 
-  SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
-  if ( anActor->GetObject() == 0 )
+  SMESH_Actor* anActor = dynamic_cast<SMESH_Actor*>( myActor );
+  if ( !anActor || anActor->GetObject() == 0 )
     return false;
   
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
