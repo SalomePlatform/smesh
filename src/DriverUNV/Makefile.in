@@ -35,18 +35,23 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= DriverUNV_R_SMDS_Mesh.h DriverUNV_R_SMESHDS_Mesh.h DriverUNV_R_SMESHDS_Document.h \
-                DriverUNV_W_SMDS_Mesh.h DriverUNV_W_SMESHDS_Mesh.h DriverUNV_W_SMESHDS_Document.h 
+EXPORT_HEADERS = \
+	DriverUNV_R_SMDS_Mesh.h \
+	DriverUNV_W_SMDS_Mesh.h 
+	#DriverUNV_W_SMESHDS_Mesh.h \
+	#DriverUNV_W_SMESHDS_Document.h \
+	#DriverUNV_R_SMESHDS_Mesh.h \
+	#DriverUNV_R_SMESHDS_Document.h \
 
 # Libraries targets
 LIB = libMeshDriverUNV.la
 LIB_SRC = \
 	DriverUNV_R_SMDS_Mesh.cxx \
-	DriverUNV_R_SMESHDS_Mesh.cxx \
-	DriverUNV_R_SMESHDS_Document.cxx \
-	DriverUNV_W_SMESHDS_Document.cxx \
-	DriverUNV_W_SMDS_Mesh.cxx \
-	DriverUNV_W_SMESHDS_Mesh.cxx 
+	DriverUNV_W_SMDS_Mesh.cxx 
+	#DriverUNV_W_SMESHDS_Mesh.cxx \
+	#DriverUNV_R_SMESHDS_Mesh.cxx \
+	#DriverUNV_R_SMESHDS_Document.cxx \
+	#DriverUNV_W_SMESHDS_Document.cxx \
 
 LIB_CLIENT_IDL =
 

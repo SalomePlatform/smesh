@@ -87,26 +87,6 @@ using namespace std;
 #include "SALOMEGUI_QtCatchCorbaException.hxx"
 #include "utilities.h"
 
-#include "SMDS_Mesh.hxx"
-#include "SMESHDS_Document.hxx"
-#include "Document_Reader.h"
-#include "Document_Writer.h"
-#include "Mesh_Reader.h"
-#include "Mesh_Writer.h"
-
-#include "DriverDAT_R_SMESHDS_Document.h"
-#include "DriverMED_R_SMESHDS_Document.h"
-#include "DriverUNV_R_SMESHDS_Document.h"
-#include "DriverDAT_W_SMESHDS_Document.h"
-#include "DriverMED_W_SMESHDS_Document.h"
-#include "DriverUNV_W_SMESHDS_Document.h"
-#include "DriverDAT_R_SMESHDS_Mesh.h"
-#include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverUNV_R_SMESHDS_Mesh.h"
-#include "DriverDAT_W_SMESHDS_Mesh.h"
-#include "DriverMED_W_SMESHDS_Mesh.h"
-#include "DriverUNV_W_SMESHDS_Mesh.h"
-
 // QT Includes
 #define	 INCLUDE_MENUITEM_DEF
 #include <qapplication.h>
@@ -236,8 +216,6 @@ SMESHGUI *SMESHGUI::GetOrCreateSMESHGUI(QAD_Desktop * desktop)
 
 		smeshGUI->myStudyAPI =
 			SMESHGUI_StudyAPI(smeshGUI->myStudy, smeshGUI->myComponentMesh);
-
-		smeshGUI->myDocument = new SMESHDS_Document(1);	//NBU
 
 		smeshGUI->mySimulationActors = vtkActorCollection::New();
 		smeshGUI->mySimulationActors2D = vtkActor2DCollection::New();
@@ -2104,8 +2082,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 	case 112:
 	case 111:
 	{
-		Import_Document(parent, theCommandID);	//NBU
-		//Import_Mesh(parent,theCommandID);
+		smeshGUI->Import_Document(parent, theCommandID);
 		break;
 	}
 
@@ -3503,58 +3480,6 @@ SALOMEDS::Study::ListOfSObject *
  *
  */
 //=============================================================================
-void SMESHGUI::Import_Mesh(QAD_Desktop * parent, int theCommandID)
-{
-	QString filter;
-	string myExtension;
-	Mesh_Reader *myReader;
-
-	if (theCommandID == 113)
-	{
-		filter = tr("MED files (*.med)");
-		myExtension = string("MED");
-		myReader = new DriverMED_R_SMESHDS_Mesh;
-	}
-	else if (theCommandID == 112)
-	{
-		filter = tr("IDEAS files (*.unv)");
-		myExtension = string("UNV");
-	}
-	else if (theCommandID == 111)
-	{
-		filter = tr("DAT files (*.dat)");
-		myExtension = string("MED");
-		myReader = new DriverDAT_R_SMESHDS_Mesh;
-	}
-
-	QString filename = QAD_FileDlg::getFileName(parent,
-		"",
-		filter,
-		tr("Import mesh"),
-		true);
-	if (!filename.isEmpty())
-	{
-		QApplication::setOverrideCursor(Qt::waitCursor);
-		string myClass = string("SMESHDS_Mesh");
-//    Mesh_Reader* myReader = SMESHDriver::GetMeshReader(myExtension, myClass);
-
-		int myMeshId = (smeshGUI->myDocument)->NewMesh();
-		SMDS_Mesh *myMesh = (smeshGUI->myDocument)->GetMesh(myMeshId);
-
-		myReader->SetFile(string(filename.latin1()));
-		myReader->SetMesh(myMesh);
-		myReader->SetMeshId(myMeshId);
-		myReader->Read();
-
-		QApplication::restoreOverrideCursor();
-	}
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
 void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 {
 	SALOME_Selection *Sel =
@@ -3577,7 +3502,7 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 				if (!filename.isEmpty())
 				{
 					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportMED(filename.latin1());
+					aMesh->Export(filename.latin1(), "MED");
 					QApplication::restoreOverrideCursor();
 				}
 			}
@@ -3591,7 +3516,7 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 				if (!filename.isEmpty())
 				{
 					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportDAT(filename.latin1());
+					aMesh->Export(filename.latin1(), "DAT");
 					QApplication::restoreOverrideCursor();
 				}
 			}
@@ -3605,11 +3530,11 @@ void SMESHGUI::Export_Mesh(QAD_Desktop * parent, int theCommandID)
 				if (!filename.isEmpty())
 				{
 					QApplication::setOverrideCursor(Qt::waitCursor);
-					aMesh->ExportUNV(filename.latin1());
+					aMesh->Export(filename.latin1(), "UNV");
 					QApplication::restoreOverrideCursor();
 				}
 				else
-					aMesh->ExportDAT(filename.latin1());
+					aMesh->Export(filename.latin1(), "DAT");
 
 				QApplication::restoreOverrideCursor();
 
@@ -3642,90 +3567,49 @@ void SMESHGUI::Import_Document(QAD_Desktop * parent, int theCommandID)
 {
 	QString filter;
 	string myExtension;
-	Document_Reader *myReader;
 
 	if (theCommandID == 113)
 	{
 		filter = tr("MED files (*.med)");
 		myExtension = string("MED");
-		myReader = new DriverMED_R_SMESHDS_Document;
 	}
 	else if (theCommandID == 112)
 	{
 		filter = tr("IDEAS files (*.unv)");
 		myExtension = string("UNV");
-		myReader = new DriverUNV_R_SMESHDS_Document;
 	}
 	else if (theCommandID == 111)
 	{
 		filter = tr("DAT files (*.dat)");
 		myExtension = string("DAT");
-		myReader = new DriverDAT_R_SMESHDS_Document;
 	}
 
-	QString filename = QAD_FileDlg::getFileName(parent,
-		"",
-		filter,
-		tr("Import document"),
-		true);
+	QString filename = QAD_FileDlg::getFileName(parent, "", filter,
+		tr("Import document"), true);
+
 	if (!filename.isEmpty())
 	{
 		QApplication::setOverrideCursor(Qt::waitCursor);
-		string myClass = string("SMESHDS_Document");
-//    Document_Reader* myReader = SMESHDriver::GetDocumentReader(myExtension, myClass);
-		SMESHDS_Document *newDocument = new SMESHDS_Document(1);
-
-		myReader->SetFile(string(filename.latin1()));
-		myReader->SetDocument(smeshGUI->myDocument);
-		myReader->Read();
-		QApplication::restoreOverrideCursor();
-	}
-}
-
-void SMESHGUI::Export_Document(QAD_Desktop * parent, int theCommandID)
-{
-	QString filter;
-	Document_Writer *myWriter;
-	string myExtension;
-
-	if (theCommandID == 122)
-	{
-		filter = tr("MED files (*.med)");
-		myExtension = string("MED");
-		myWriter = new DriverMED_W_SMESHDS_Document;
-	}
-	else if (theCommandID == 121)
-	{
-		filter = tr("DAT files (*.dat)");
-		myExtension = string("DAT");
-		myWriter = new DriverDAT_W_SMESHDS_Document;
-	}
-	else if (theCommandID == 123)
-	{
-		filter = tr("IDEAS files (*.unv)");
-		myExtension = string("UNV");
-		myWriter = new DriverUNV_W_SMESHDS_Document;
-	}
-
-	QString filename = QAD_FileDlg::getFileName(parent,
-		"",
-		filter,
-		tr("Export document"),
-		false);
-	if (!filename.isEmpty())
-	{
-		QApplication::setOverrideCursor(Qt::waitCursor);
-		string myClass = string("SMESHDS_Document");
-		//Document_Writer* myWriter = SMESHDriver::GetDocumentWriter(myExtension, myClass);
-
-		myWriter->SetFile(string(filename.latin1()));
-		myWriter->SetDocument(smeshGUI->myDocument);
-
-		//StudyContextStruct* myStudyContext = _impl.GetStudyContext(myStudyId);
-		//Handle(SMESHDS_Document) myDocument = myStudyContext->myDocument;
-		//myWriter->SetDocument(myDocument);
-
-		myWriter->Write();
+		try
+		{
+			if (!myComponentMesh->_is_nil())
+			{
+				SMESH::SMESH_Mesh_var aMesh =
+					myComponentMesh->Import(myStudyId, filename.latin1(),
+					myExtension.c_str());
+	
+				if (!aMesh->_is_nil())
+				{
+					SALOMEDS::SObject_var SM = myStudyAPI.AddNewMesh(aMesh);
+					myStudyAPI.SetName(SM, filename);
+				}
+			}
+		}
+		catch(const SALOME::SALOME_Exception & S_ex)
+		{
+			QtCatchCorbaException(S_ex);
+		}
+		myActiveStudy->updateObjBrowser(true);
 		QApplication::restoreOverrideCursor();
 	}
 }
@@ -3816,9 +3700,6 @@ bool SMESHGUI::SetSettings(QAD_Desktop * parent)
 		parent->menuBar()->setItemChecked(1001, false);
 		smeshGUI->myAutomaticUpdate = false;
 	}
-
-	/* menus disable */
-	parent->menuBar()->setItemEnabled(11, false);	// IMPORT
 
 	return true;
 }
@@ -4098,13 +3979,13 @@ bool SMESHGUI::CustomPopup(QAD_Desktop * parent,
 	return false;
 }
 
-//=============================================================================
-/*! Method:  BuildPresentation(const Handle(SALOME_InteractiveObject)& theIO)
- *  Purpose: ensures that the actor for the given <theIO> exists in the active VTK view
+/**
+ * Ensures that the actor for the given <theIO> exists in the active VTK view
+ * @TODO Handle multiple selection.
  */
-//=============================================================================
 void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 {
+	MESSAGE("SMESHGUI::BuildPresentation("<<theIO->getEntry()<<")");
 	/* Create or retrieve an object SMESHGUI */
 	SMESHGUI::GetOrCreateSMESHGUI(QAD_Application::getDesktop());
 
@@ -4113,7 +3994,8 @@ void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 	if (activeFrame->getTypeView() == VIEW_VTK)
 	{
 		// VTK
-		SALOMEDS::SObject_var fatherSF =
+		// Some ideas to handle multiple selection...
+		/*SALOMEDS::SObject_var fatherSF =
 			smeshGUI->myStudy->FindObjectID(activeFrame->entry());
 
 		SALOME_Selection *Sel =
@@ -4121,8 +4003,8 @@ void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 			getSelection());
 		SALOME_ListIteratorOfListIO It(Sel->StoredIObjects());
 
-//    for(;It.More();It.Next()) {
-//      Handle(SALOME_InteractiveObject) IObject = It.Value();
+	    for(;It.More();It.Next()) {
+      Handle(SALOME_InteractiveObject) IObject = It.Value();*/
 		Handle(SALOME_InteractiveObject) IObject = theIO;
 		if (IObject->hasEntry())
 		{
@@ -4130,42 +4012,39 @@ void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 			Standard_Boolean res;
 			SMESH_Actor *ac =
 				smeshGUI->FindActorByEntry(IObject->getEntry(), res, false);
-
-			// Actor not found at all -> mesh is not computed -> do nothing!!!
+			
 			if (!res)
 			{
-				/*SMESH::SMESH_Mesh_var aM;
-				 * SALOMEDS::SObject_var aMorSM = smeshGUI->myStudy->FindObjectID( IObject->getEntry() );
-				 * SALOMEDS::SObject_var father = aMorSM->GetFather();
-				 * SALOMEDS::SObject_var fatherComp = aMorSM->GetFatherComponent();
-				 * 
-				 * // Non-displayable objects (Hypo, Algo) have tags < 3 or have a father different from component
-				 * if (aMorSM->Tag() < 3 || strcmp(father->GetID(), fatherComp->GetID()) != 0)
-				 * continue;
-				 * 
-				 * SALOMEDS::GenericAttribute_var anAttr;
-				 * SALOMEDS::AttributeIOR_var     anIOR;
-				 * if ( !aMorSM->_is_nil() ) {
-				 * if (aMorSM->FindAttribute(anAttr, "AttributeIOR") ) {
-				 * anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-				 * aM = SMESH::SMESH_Mesh::_narrow( _orb->string_to_object(anIOR->Value()) );
-				 * }
-				 * }
-				 * 
-				 * if (!aM->_is_nil()) {
-				 * smeshGUI->InitActor(aM);
-				 * ac = smeshGUI->ReadScript(aM);
-				 * }
-				 * 
-				 * if (ac) {
-				 * smeshGUI->DisplayActor( ac, true );
-				 * smeshGUI->DisplayEdges( ac ); 
-				 * smeshGUI->ChangeRepresentation( ac, ac->getDisplayMode() );
-				 * } */
-//    continue;
+				SALOMEDS::SObject_var aMorSM=smeshGUI->myStudy->FindObjectID( IObject->getEntry());
+				SALOMEDS::GenericAttribute_var anAttr;
+				SALOMEDS::AttributeIOR_var     anIOR;
+				if(aMorSM->FindAttribute(anAttr, "AttributeIOR"))
+				{
+					anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+					SMESH::SMESH_Mesh_var aM =
+						SMESH::SMESH_Mesh::_narrow( _orb->string_to_object(anIOR->Value()));
+					if(!aM->_is_nil())
+					{
+						smeshGUI->InitActor(aM);
+						ac = smeshGUI->ReadScript(aM);
+						smeshGUI->DisplayActor( ac, true );
+						smeshGUI->DisplayEdges( ac );
+						smeshGUI->ChangeRepresentation( ac, ac->getDisplayMode() );
+					}
+					else
+					{
+						MESSAGE("Do not know how to display something which is not a SMESH_Mesh");
+					}
+				}
+				else
+				{
+					MESSAGE("The object "<<theIO->getEntry()<<
+						" do not have \"AttributeIOR\" attribute");
+				}
 			}
 			else
-			{					// The actor exists in some view
+			{
+				// The actor exists in some view
 				// Check whether the actor belongs to the active view
 				VTKViewer_RenderWindowInteractor *rwInter =
 					((VTKViewer_ViewFrame *) activeFrame->getRightFrame()->
@@ -4188,12 +4067,11 @@ void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 				smeshGUI->ChangeRepresentation(ac, ac->getDisplayMode());
 			}
 		}
-//    }
 	}
 	else
 	{
-	MESSAGE
-			("BuildPresentation() must not be called while non-VTK view is active")}
+		MESSAGE("BuildPresentation() must not be called while non-VTK view is active");
+	}
 }
 
 //=============================================================================
@@ -4216,13 +4094,14 @@ void SMESHGUI::setOrb()
 	ASSERT(!CORBA::is_nil(_orb));
 }
 
-//=============================================================================
-/*!
- *
+/**
+ * Get the history of all commands made in the SMESH server. This list of command
+ * is used to display the mesh in the VTK view
+ * @TODO Handle the REMOVE_ALL command.
  */
-//=============================================================================
 SMESH_Actor *SMESHGUI::ReadScript(SMESH::SMESH_Mesh_ptr aMesh)
 {
+	MESSAGE("SMESHGUI::ReadScript");
 	SMESH_Actor *MeshActor;
 	if (!aMesh->_is_nil())
 	{
@@ -4231,11 +4110,8 @@ SMESH_Actor *SMESHGUI::ReadScript(SMESH::SMESH_Mesh_ptr aMesh)
 		if (result)
 		{
 			SMESH::log_array_var aSeq = aMesh->GetLog(true);
-
-			if (aSeq->length() == 0)
-			{
-				MESSAGE("ReadScript(): log is empty") return MeshActor;
-			}
+			MESSAGE("SMESHGUI::ReadScript: The log contains "<<aSeq->length()
+				<<" commands.");
 
 			for (unsigned int ind = 0; ind < aSeq->length(); ind++)
 			{
@@ -4296,6 +4172,10 @@ SMESH_Actor *SMESHGUI::ReadScript(SMESH::SMESH_Mesh_ptr aMesh)
 						aSeq[ind].coords, aSeq[ind].indexes);
 					break;
 				}
+				case SMESH::REMOVE_ALL:
+					MESSAGE("REMOVE_ALL command not yet implemented");
+					break;
+				default: MESSAGE("Warning: Unknown script command.");
 				}
 			}
 			return MeshActor;
@@ -4348,6 +4228,7 @@ void SMESHGUI::Dump(SMESH_Actor * Mactor)
 void SMESHGUI::AddNodes(SMESH_Actor * Mactor, int number,
 	const SMESH::double_array & coords, const SMESH::long_array & indexes)
 {
+	MESSAGE("SMESHGUI::AddNodes(number="<<number<<", indexes.length()="<<indexes.length()<<")");
 	QApplication::setOverrideCursor(Qt::waitCursor);
 	if (Mactor->GetMapper() == NULL)
 	{
@@ -4405,8 +4286,9 @@ void SMESHGUI::AddNode(SMESH_Actor * Mactor, int idnode, float x, float y,
 	float z)
 {
 	QApplication::setOverrideCursor(Qt::waitCursor);
-	MESSAGE("SMESHGUI::AddNode " << idnode << " : " << x << ";" << y << ";" <<
-		z) if (Mactor->GetMapper() == NULL)
+	MESSAGE("SMESHGUI::AddNode " << idnode << " : " << x << ";" << y << ";" << z);
+	
+	if (Mactor->GetMapper() == NULL)
 	{
 		vtkPoints *Pts = vtkPoints::New();
 		int idVTK = Pts->InsertNextPoint(x, y, z);
@@ -5067,6 +4949,9 @@ void SMESHGUI::AddEdge(SMESH_Actor * Mactor, int idedge, int idnode1,
 void SMESHGUI::AddTriangles(SMESH_Actor * Mactor, int number,
 	const SMESH::double_array & coords, const SMESH::long_array & indexes)
 {
+	MESSAGE("SMESHGUI::AddTriangles(number="<<number<<", indexes.length="
+		<<indexes.length()<<")");
+
 	QApplication::setOverrideCursor(Qt::waitCursor);
 	//vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( Mactor->DataSource );
 	SMESH_Grid *ugrid = SMESH_Grid::SafeDownCast(Mactor->DataSource);
@@ -6011,6 +5896,7 @@ void SMESHGUI::InitActor(SMESH::SMESH_Mesh_ptr aMesh)
 //=============================================================================
 void SMESHGUI::Update()
 {
+	MESSAGE("SMESHGUI::Update");
 	if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK)
 	{							//VTK
 		vtkRenderer *theRenderer =

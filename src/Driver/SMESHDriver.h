@@ -32,14 +32,17 @@
 #include "Mesh_Reader.h"
 #include "Mesh_Writer.h"
 
-class SMESHDriver {
-
+class SMESHDriver
+{
   public :
-    static Document_Reader* GetDocumentReader(string Extension, string Class);
-    static Document_Writer* GetDocumentWriter(string Extension, string Class);
+    static Document_Reader* GetDocumentReader(string Extension);
+    static Document_Writer* GetDocumentWriter(string Extension);
 
-    static Mesh_Reader* GetMeshReader(string Extension, string Class);
-    static Mesh_Writer* GetMeshWriter(string Extension, string Class);
+    static Mesh_Reader* GetMeshReader(string Extension);
+    static Mesh_Writer* GetMeshWriter(string Extension);
 
+  private:
+	static void * getMeshDriver(string Extension, string type);
+	static void * getMeshDocumentDriver(string Extension);
 };
 #endif

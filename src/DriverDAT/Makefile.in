@@ -35,11 +35,23 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= DriverDAT_R_SMDS_Mesh.h DriverDAT_R_SMESHDS_Mesh.h DriverDAT_R_SMESHDS_Document.h DriverDAT_W_SMDS_Mesh.h DriverDAT_W_SMESHDS_Mesh.h DriverDAT_W_SMESHDS_Document.h 
+EXPORT_HEADERS = \
+	DriverDAT_R_SMDS_Mesh.h \
+	DriverDAT_R_SMESHDS_Mesh.h \
+	DriverDAT_W_SMDS_Mesh.h \
+	DriverDAT_W_SMESHDS_Mesh.h 
+#	DriverDAT_W_SMESHDS_Document.h \
+#	DriverDAT_R_SMESHDS_Document.h \
 
 # Libraries targets
 LIB = libMeshDriverDAT.la
-LIB_SRC = DriverDAT_R_SMDS_Mesh.cxx DriverDAT_R_SMESHDS_Mesh.cxx DriverDAT_R_SMESHDS_Document.cxx DriverDAT_W_SMDS_Mesh.cxx DriverDAT_W_SMESHDS_Mesh.cxx DriverDAT_W_SMESHDS_Document.cxx 
+LIB_SRC = \
+	DriverDAT_R_SMDS_Mesh.cxx \
+	DriverDAT_R_SMESHDS_Mesh.cxx \
+	DriverDAT_W_SMDS_Mesh.cxx \
+	DriverDAT_W_SMESHDS_Mesh.cxx 
+	#DriverDAT_W_SMESHDS_Document.cxx \
+	#DriverDAT_R_SMESHDS_Document.cxx \
 
 LIB_CLIENT_IDL =
 

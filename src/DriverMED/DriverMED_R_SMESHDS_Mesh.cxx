@@ -31,6 +31,18 @@ using namespace std;
 
 #include <stdlib.h>
 
+extern "C"
+{
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createMEDMeshReader()
+{
+	return new DriverMED_R_SMESHDS_Mesh();
+}
+
+}
+
 DriverMED_R_SMESHDS_Mesh::DriverMED_R_SMESHDS_Mesh()
 {
 	myFileId = -1;

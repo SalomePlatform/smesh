@@ -1271,7 +1271,7 @@ SMDS_Iterator<const SMDS_MeshNode *> * SMDS_Mesh::nodesIterator() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-///Return an iterator on volumes of the current mesh. Once used this iterator
+///Return an iterator on egdes of the current mesh. Once used this iterator
 ///must be free by the caller
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_Iterator<const SMDS_MeshEdge *> * SMDS_Mesh::edgesIterator() const
@@ -1573,4 +1573,127 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement * elem,
 		
 	delete s2;
 	delete s1;
+}
+
+/**
+ * Concat the coordinates of all nodes in an array.
+ * Its used to display the mesh.
+ * @return A array of size 3*NbNodes() containing the coordinates of nodes.
+ */
+double * SMDS_Mesh::getNodesCoordinates()
+{
+	double * toReturn=new double[3*NbNodes()];
+	SMDS_Iterator<const SMDS_MeshNode*> * it=nodesIterator();
+	int i=0;
+	while(it->more())
+	{
+		const SMDS_MeshNode * n=it->next();
+		toReturn[i]=n->X();
+		i++;
+		toReturn[i]=n->Y();
+		i++;
+		toReturn[i]=n->Z();
+		i++;
+	}
+	delete it;
+	return toReturn;
+}
+
+/**
+ * Concat the id of all nodes in an array.
+ * Its used to display the mesh.
+ * @return A array of size NbNodes() containing the ids of nodes.
+ */
+long * SMDS_Mesh::getNodesID()
+{
+	long * toReturn=new long[NbNodes()];
+	SMDS_Iterator<const SMDS_MeshNode*> * it=nodesIterator();
+	int i=0;
+	while(it->more())
+	{
+		const SMDS_MeshNode * n=it->next();		
+		toReturn[i]=n->GetID();
+		i++;
+	}
+	delete it;
+	return toReturn;
+}
+
+/**
+ * Concat the id of nodes of edges in an array.
+ * Array format is {edge_id, node1_id, node2_id}
+ * Its used to display the mesh.
+ * @return A array of size 3*NbEdges() containing the edges.
+ */
+long * SMDS_Mesh::getEdgesIndices()
+{
+	long * toReturn=new long[NbEdges()*3];
+	SMDS_Iterator<const SMDS_MeshEdge*> * it=edgesIterator();
+	int i=0;
+	
+	while(it->more())
+	{
+		const SMDS_MeshEdge * e=it->next();
+		toReturn[i]=e->GetID();
+		i++;
+		SMDS_Iterator<const SMDS_MeshElement*> * itn=e->nodesIterator();
+		while(itn->more())
+		{
+			const SMDS_MeshElement * n=itn->next();
+			toReturn[i]=n->GetID();
+			i++;
+		}
+		delete itn;
+	}
+	delete it;
+	return toReturn;
+}
+
+/**
+ * Concat the id of nodes of triangles in an array.
+ * Array format is {tria_id, node1_id, node2_id, node3_id}
+ * Its used to display the mesh.
+ * @return A array of size 4*NbTriangles() containing the edges.
+ */
+long * SMDS_Mesh::getTrianglesIndices()
+{
+	long * toReturn=new long[NbTriangles()*4];
+	SMDS_Iterator<const SMDS_MeshFace*> * it=facesIterator();
+	int i=0;
+	while(it->more())
+	{
+		const SMDS_MeshFace * f=it->next();
+		if(f->NbNodes()==3)
+		{
+			toReturn[i]=f->GetID();
+			i++;		
+			SMDS_Iterator<const SMDS_MeshElement*> * itn=f->nodesIterator();
+			while(itn->more())
+			{
+				const SMDS_MeshElement * n=itn->next();
+				toReturn[i]=n->GetID();
+				i++;
+			}
+			delete itn;
+		}
+	}
+	delete it;
+	return toReturn;
+}
+
+/**
+ * Return the number of 3 nodes faces in the mesh.
+ * This method run in O(n).
+ * @return The number of face whose number of nodes is 3
+ */
+int SMDS_Mesh::NbTriangles() const
+{
+	SMDS_Iterator<const SMDS_MeshFace*> * it=facesIterator();
+	int toReturn=0;
+	while(it->more())
+	{
+		const SMDS_MeshFace * f=it->next();
+		if(f->NbNodes()==3) toReturn++;
+	}
+	return toReturn;
 }

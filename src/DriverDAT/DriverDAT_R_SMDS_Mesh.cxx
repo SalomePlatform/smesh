@@ -24,10 +24,20 @@
 //  File   : DriverDAT_R_SMDS_Mesh.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "DriverDAT_R_SMDS_Mesh.h"
-
 #include "utilities.h"
+
+extern "C"
+{
+
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createDATMeshReader()
+{
+	return new DriverDAT_R_SMDS_Mesh();
+}
+}
 
 DriverDAT_R_SMDS_Mesh::DriverDAT_R_SMDS_Mesh()
 {

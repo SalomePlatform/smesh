@@ -99,7 +99,7 @@ SMESHGUI_StudyAPI::SMESHGUI_StudyAPI ( SALOMEDS::Study_ptr aStudy,
   // NRI
 
   SALOMEDS::SComponent_var father = aStudy->FindComponent("MESH");
-  SALOMEDS::GenericAttribute_var anAttr;
+  /*SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var    aName;
   SALOMEDS::AttributePixMap_var  aPixmap;
   
@@ -115,7 +115,7 @@ SMESHGUI_StudyAPI::SMESHGUI_StudyAPI ( SALOMEDS::Study_ptr aStudy,
   aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
   
   myStudyBuilder->DefineComponentInstance(father, CompMesh );
-  mySComponentMesh = SALOMEDS::SComponent::_narrow( father );
+  mySComponentMesh = SALOMEDS::SComponent::_narrow( father );*/
 }
 
 //=======================================================================

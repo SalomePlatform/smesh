@@ -167,6 +167,7 @@ class SMDS_Mesh:public SMDS_MeshObject
 	int NbNodes() const;
 	int NbEdges() const;
 	int NbFaces() const;
+	int NbTriangles() const;
 	int NbVolumes() const;
 	int NbSubMesh() const;
 	void DumpNodes() const;
@@ -183,6 +184,11 @@ class SMDS_Mesh:public SMDS_MeshObject
     void setConstructionEdges(bool);
     void setConstructionFaces(bool);
 	void setInverseElements(bool);
+
+	double * getNodesCoordinates();
+	long * getNodesID();
+	long * getEdgesIndices();
+	long * getTrianglesIndices();
 
   private:
     SMDS_Mesh(SMDS_Mesh * parent);

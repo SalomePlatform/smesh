@@ -126,6 +126,6 @@ CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYT
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 #$(OCC_CXXFLAGS)
 
-LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGEOMClient -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGEOMClient $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
 
 @CONCLUDE@

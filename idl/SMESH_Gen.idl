@@ -104,7 +104,13 @@ module SMESH
     //				 in shape_array listOfSubShape)
     //  raises (SALOME::SALOME_Exception);
     
-
+	/**
+	 * Import a mesh from a file.
+	 * @param fileName file name to be imported.
+	 * @param fileType Currently it could be either "DAT", "UNV" or "MED".
+	 * @param studyId The id of the current study.
+	 */
+	SMESH_Mesh Import(in long studyId, in string fileName, in string fileType);
   };
 
 };

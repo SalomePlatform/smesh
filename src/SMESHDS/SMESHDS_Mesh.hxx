@@ -133,7 +133,8 @@ class SMESHDS_Mesh:public SMDS_Mesh
 	void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
 	void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
 	 ~SMESHDS_Mesh();
-
+	void logFullUpdate();
+	
   private:
 	struct HashTopoDS_Shape
     {

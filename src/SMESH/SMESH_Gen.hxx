@@ -69,7 +69,8 @@ class SMESH_Gen
 
 	static int GetShapeDim(const TopoDS_Shape & aShape);
 	SMESH_Algo *GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
-
+	SMESH_Mesh *Import(int studyId, const char * fileName, const char * fileType);
+ 
 	// inherited methods from SALOMEDS::Driver
 
 	void Save(int studyId, const char *aUrlOfFile);

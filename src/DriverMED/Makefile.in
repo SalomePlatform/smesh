@@ -19,12 +19,9 @@
 # 
 #  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 #
-#
-#
 #  File   : Makefile.in
 #  Author : Marc Tajchman (CEA)
 #  Module : SMESH
-#  $Header$
 
 top_srcdir=@top_srcdir@
 top_builddir=../..
@@ -35,18 +32,23 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= DriverMED_R_SMDS_Mesh.h DriverMED_R_SMESHDS_Mesh.h DriverMED_R_SMESHDS_Document.h DriverMED_W_SMDS_Mesh.h DriverMED_W_SMESHDS_Mesh.h DriverMED_W_SMESHDS_Document.h 
+EXPORT_HEADERS = \
+	DriverMED_R_SMESHDS_Mesh.h \
+	DriverMED_R_SMESHDS_Document.h \
+	DriverMED_R_SMDS_Mesh.h \
+	DriverMED_W_SMESHDS_Mesh.h 
+	#DriverMED_W_SMDS_Mesh.h \
+	#DriverMED_W_SMESHDS_Document.h 
 
 # Libraries targets
 LIB = libMeshDriverMED.la
 LIB_SRC = \
-	DriverMED_R_SMDS_Mesh.cxx \
 	DriverMED_R_SMESHDS_Mesh.cxx \
 	DriverMED_R_SMESHDS_Document.cxx \
-	DriverMED_W_SMDS_Mesh.cxx \
-	DriverMED_W_SMESHDS_Document.cxx \
-	DriverMED_W_SMESHDS_Mesh.cxx
-
+	DriverMED_R_SMDS_Mesh.cxx \
+	DriverMED_W_SMESHDS_Mesh.cxx 
+	#DriverMED_W_SMDS_Mesh.cxx \
+	#DriverMED_W_SMESHDS_Document.cxx 
 LIB_CLIENT_IDL =
 LIB_SERVER_IDL =
 

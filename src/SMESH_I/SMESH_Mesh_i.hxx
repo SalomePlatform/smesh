@@ -91,6 +91,9 @@ public:
   CORBA::Long GetStudyId()
     throw (SALOME::SALOME_Exception);
 
+  void Export(const char* fileName, const char* fileType)
+	throw (SALOME::SALOME_Exception);
+
   // --- C++ interface
 
   void SetImpl(::SMESH_Mesh* impl);
@@ -99,13 +102,6 @@ public:
   GEOM::GEOM_Gen_ptr GetGeomEngine();
   void SetIor(SMESH::SMESH_Mesh_ptr myIor);
   SMESH::SMESH_Mesh_ptr GetIor();
-
-  void ExportMED( const char* file )
-    throw (SALOME::SALOME_Exception);
-  void ExportDAT( const char* file )
-    throw (SALOME::SALOME_Exception);
-  void ExportUNV( const char* file )
-    throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
     throw (SALOME::SALOME_Exception);
@@ -142,7 +138,7 @@ public:
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-
+  SMESH::log_array_var createUpdateAllCommand(SMESH::log_array_var log, int * index);
   ::SMESH_Mesh* _impl;  // :: force no namespace here
   SMESH_Gen_i* _gen_i;
   //   CORBA::ORB_ptr _orb;

@@ -35,11 +35,21 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= Document_Reader.h Document_Writer.h Mesh_Reader.h Mesh_Writer.h
+EXPORT_HEADERS = \
+	SMESHDriver.h \
+	Document_Reader.h \
+	Document_Writer.h \
+	Mesh_Reader.h \
+	Mesh_Writer.h
 
 # Libraries targets
 LIB = libMeshDriver.la
-LIB_SRC = Document_Reader.cxx Document_Writer.cxx Mesh_Reader.cxx Mesh_Writer.cxx
+LIB_SRC = \
+	SMESHDriver.cxx \
+	Document_Reader.cxx \
+	Document_Writer.cxx 
+#	Mesh_Reader.cxx \
+#	Mesh_Writer.cxx \
 
 LIB_CLIENT_IDL =
 

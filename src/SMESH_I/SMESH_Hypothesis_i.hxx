@@ -44,7 +44,8 @@ public:
 
   char* GetName();
   CORBA::Long GetId();
-
+  ::SMESH_Hypothesis* getImpl();
+  
 protected:
   ::SMESH_Hypothesis* _baseImpl;
   ::SMESH_Gen* _genImpl;

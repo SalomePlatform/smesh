@@ -1,12 +1,6 @@
-using namespace std;
 #include "DriverUNV_W_SMDS_Mesh.h"
-
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-
-
-
-
 
 #include <utilities.h>
 
@@ -18,6 +12,19 @@ using namespace std;
 #define sELT_VOLU_DESC  "%10d        %2d         1         1         9         %1d\n"
 #define sELT_BEAM_DESC1 "%10d        %2d         1         1         7         %1d\n"
 #define sELT_BEAM_DESC2 "         0         1         1\n"
+
+extern "C"
+{
+
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createUNVMeshWriter()
+{
+	return new DriverUNV_W_SMDS_Mesh();
+}
+
+}
 
 DriverUNV_W_SMDS_Mesh::DriverUNV_W_SMDS_Mesh()
 {
@@ -89,7 +96,6 @@ void DriverUNV_W_SMDS_Mesh::Write()
 	SCRUTE(nb_of_volumes);
 
 	fprintf(stdout, "%d %d\n", nbNodes, nbCells);
-	fprintf(myFileId, "%d %d\n", nbNodes, nbCells);
 
   /****************************************************************************
   *                       ECRITURE DES NOEUDS                                 *

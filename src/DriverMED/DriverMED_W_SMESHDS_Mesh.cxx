@@ -33,6 +33,18 @@ using namespace std;
 #include <vector>
 #include "utilities.h"
 
+extern "C"
+{
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createMEDMeshWriter()
+{
+	return new DriverMED_W_SMESHDS_Mesh();
+}
+
+}
+
 DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh()
 {
 	;
@@ -65,19 +77,7 @@ void DriverMED_W_SMESHDS_Mesh::SetMeshId(int aMeshId)
 
 void DriverMED_W_SMESHDS_Mesh::Write()
 {
-
-	string myClass = string("SMDS_Mesh");
-	string myExtension = string("MED");
-
-	DriverMED_W_SMDS_Mesh *myWriter = new DriverMED_W_SMDS_Mesh;
-
-	myWriter->SetMesh(myMesh);
-	//  myWriter->SetFile(myFile);
-	myWriter->SetMeshId(myMeshId);
-	myWriter->SetFileId(myFileId);
-
-	myWriter->Write();
-
+	Add();
 }
 
 void DriverMED_W_SMESHDS_Mesh::Add()
@@ -520,40 +520,45 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	{
 		int nbFamillesElts = 0;
 		SMESHDS_Mesh * mySMESHDSMesh = dynamic_cast<SMESHDS_Mesh *>(myMesh);
-		TopTools_IndexedMapOfShape myIndexToShape;
-		TopExp::MapShapes(mySMESHDSMesh->ShapeToMesh(), myIndexToShape);
-
 		map<int,int> mapFamille;
 
-		if (besoinfamilledemaille == 1)
+		if(!mySMESHDSMesh->ShapeToMesh().IsNull())
 		{
-			int t;
-			for (t = 1; t <= myIndexToShape.Extent(); t++)
-			{
-				const TopoDS_Shape S = myIndexToShape(t);
-				if (mySMESHDSMesh->HasMeshElements(S))
-				{
-					//MESSAGE ("********* Traitement de la Famille "<<-t);
+			TopTools_IndexedMapOfShape myIndexToShape;
+			TopExp::MapShapes(mySMESHDSMesh->ShapeToMesh(), myIndexToShape);
 
-					SMESHDS_SubMesh * SM = mySMESHDSMesh->MeshElements(S);
-					SMDS_Iterator<const SMDS_MeshElement*> * ite=SM->GetElements();
-					bool plein = false;
-					while(ite->more())
+
+			if (besoinfamilledemaille == 1)
+			{
+				int t;
+				for (t = 1; t <= myIndexToShape.Extent(); t++)
+				{
+					const TopoDS_Shape S = myIndexToShape(t);
+					if (mySMESHDSMesh->HasMeshElements(S))
 					{
-						mapFamille[ite->next()->GetID()] = -t;
-						plein = true;
-					}
-					if (plein)
-					{
-						nbFamillesElts++;
-						char famille[MED_TAILLE_NOM + 1];
-						sprintf(famille, "E%d", t);
-						CreateFamily(strdup(nommaa), strdup(famille), -t,
-							attvalabs++);
+						//MESSAGE ("********* Traitement de la Famille "<<-t);
+	
+						SMESHDS_SubMesh * SM = mySMESHDSMesh->MeshElements(S);
+						SMDS_Iterator<const SMDS_MeshElement*> * ite=SM->GetElements();
+						bool plein = false;
+						while(ite->more())
+						{
+							mapFamille[ite->next()->GetID()] = -t;
+							plein = true;
+						}
+						if (plein)
+						{
+							nbFamillesElts++;
+							char famille[MED_TAILLE_NOM + 1];
+							sprintf(famille, "E%d", t);
+							CreateFamily(strdup(nommaa), strdup(famille), -t,
+								attvalabs++);
+						}
 					}
 				}
 			}
 		}
+		else besoinfamilledemaille = 0;
 
 		int indice = 1;
 		for (i = 0; i < MED_NBR_GEOMETRIE_MAILLE; i++)

@@ -96,6 +96,8 @@ public:
                                    const SMESH::shape_array& listOfSubShape)
     throw (SALOME::SALOME_Exception);
 
+	SMESH::SMESH_Mesh_ptr Import(CORBA::Long studyId, const char* fileName,
+		const char* fileType);
 
   // inherited methods from SALOMEDS::Driver
 
@@ -153,6 +155,24 @@ protected:
                                GEOM::GEOM_Shape_ptr aShape);
   
 private:
+	void loadMesh(char * name, HDFfile * hdf_file, char * meshFile,
+		SALOMEDS::Study_var study);
+	void loadHypothesis(char * name, HDFfile * hdf_file, char * hypothesisFile,
+		int studyId);
+	void loadAlgorithms(char * name, HDFfile * hdf_file, char * algorithmsFile,
+		int studyId);
+	void loadAppliedHypothesis(HDFgroup * hdfGroupMeshId, bool _found,
+		SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh,
+		GEOM::GEOM_Shape_var aShape);
+	GEOM::GEOM_Gen_var getGeomEngine();
+	GEOM::GEOM_Shape_var getShape(SALOMEDS::Study_var Study, char * refFromFile);
+
+void loadAppliedAlgorithms(HDFgroup * hdfGroupMeshId, 
+	bool _found, SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh, 
+	GEOM::GEOM_Shape_var aShape);
+void loadSubMeshes(HDFgroup * hdfGroupMeshId, char * msgname,
+	SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh);
+			
   SMESH_HypothesisFactory_i _hypothesisFactory_i;
   ::SMESH_Gen _impl;  // no namespace here
   int _localId; // unique Id of created objects, within SMESH_Gen_i entity

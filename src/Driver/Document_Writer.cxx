@@ -18,14 +18,9 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : Document_Writer.cxx
-//  Module : SMESH
 
-using namespace std;
 #include "Document_Writer.h"
+#include "utilities.h"
 
 void Document_Writer::SetFile(string aFile)
 {
@@ -35,4 +30,29 @@ void Document_Writer::SetFile(string aFile)
 void Document_Writer::SetDocument(SMESHDS_Document * aDoc)
 {
 	myDocument = aDoc;
+}
+
+void Document_Writer::Write()
+{
+	SCRUTE(myFile);
+	SMESHDS_Mesh * myMesh;
+	int nb_of_meshes = myDocument->NbMeshes();	//voir avec Yves
+	SCRUTE(nb_of_meshes);
+
+	int numero = 0;
+
+	myDocument->InitMeshesIterator();
+	while(myDocument->MoreMesh())
+	{
+		numero++;
+		myMesh = myDocument->NextMesh();
+		myWriter->SetMesh(myMesh);
+		myWriter->SetFile(myFile);
+		myWriter->SetMeshId(numero);
+		myWriter->Add();
+	}
+}
+
+Document_Writer::Document_Writer(Mesh_Writer* writer): myWriter(writer)
+{
 }

@@ -162,18 +162,15 @@ CORBA::Boolean
 	return ret;
 };
 
-//=============================================================================
-/*!
- *  
+/**
+ *@TODO Not implemented
  */
-//=============================================================================
-
 SMESH::ListOfHypothesis *
 	SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Shape_ptr aSubShape)
 throw(SALOME::SALOME_Exception)
 {
-	MESSAGE("GetHypothesisList");
-	// ****
+	MESSAGE("GetHypothesisList: Not implemented");
+	return NULL;
 };
 
 //=============================================================================
@@ -230,25 +227,101 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetElementsOnShape(GEOM::
 	return SMESH::SMESH_subMesh::_duplicate(_mapSubMeshIor[subMeshId]);
 }
 
-//=============================================================================
-/*!
- *  
+/**
+ * Translate the UpdateAll SMESHDS_Command to a set of SMESH::log_command.
+ * As the input log need to be resized, it is realocated.
+ * @param logBlock The log where to insert created commands
+ * @param index The place where to insert created commands in log. It is updated
+ * with the place to put new elements.
+ * @return The realocated and resized log.
+ * @TODO Add support for other type of elements
  */
-//=============================================================================
+SMESH::log_array_var SMESH_Mesh_i::
+	createUpdateAllCommand(SMESH::log_array_var log, int * index)
+{
+	MESSAGE("SMESH_Mesh_i::createUpdateAllCommand");
+	SMESH::log_array_var aLog=new SMESH::log_array(log->length()+3);
+	aLog->length(log->length()+3);
+	
+	for(int i=0;i<*index;i++)
+	{		
+		aLog[i]=log[i];
+	}
+	
+	log->length(0);
+	int id=*index;
+		
+	//Remove all elements
+	aLog[id].commandType=SMESH::REMOVE_ALL;
+	id++;
+	
+	//Export nodes
+	aLog[id].commandType=SMESH::ADD_NODE;
+	aLog[id].number=_impl->GetMeshDS()->NbNodes();
 
+	double * nodesCoordinates=_impl->GetMeshDS()->getNodesCoordinates();
+	aLog[id].coords=SMESH::double_array(
+		aLog[id].number*3,
+		aLog[id].number*3,
+		nodesCoordinates);
+
+	long * nodesID=_impl->GetMeshDS()->getNodesID();
+	aLog[id].indexes=SMESH::long_array(
+		aLog[id].number,
+		aLog[id].number,
+		nodesID);
+
+	id++;
+	
+	MESSAGE("Export edges");
+	//Export edges
+	aLog[id].commandType=SMESH::ADD_EDGE;
+	aLog[id].number=_impl->GetMeshDS()->NbEdges();	
+	aLog[id].coords.length(0);
+
+	long * edgesIndices=_impl->GetMeshDS()->getEdgesIndices();
+	aLog[id].indexes=SMESH::long_array(
+		aLog[id].number*3,
+		aLog[id].number*3,
+		edgesIndices);
+
+	id++;
+	
+	MESSAGE("Export triangles");
+	//Export triangles
+	aLog[id].commandType=SMESH::ADD_TRIANGLE;
+	aLog[id].number=_impl->GetMeshDS()->NbTriangles();	
+	aLog[id].coords.length(0);
+
+	long * triasIndices=_impl->GetMeshDS()->getTrianglesIndices();
+	aLog[id].indexes=SMESH::long_array(
+		aLog[id].number*4,
+		aLog[id].number*4,
+		triasIndices);
+
+	(*index)=id;
+	return aLog;
+}
+
+/**
+ * Return the log of the current mesh. CORBA wrap of the SMESH::GetLog method
+ * with a special treatment for SMESHDS_UpdateAll commands
+ * @param clearAfterGet Tell if the log must be cleared after being returned
+ * @return the log
+ */
 SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
-throw(SALOME::SALOME_Exception)
+	throw(SALOME::SALOME_Exception)
 {
 	MESSAGE("SMESH_Mesh_i::GetLog");
 
 	SMESH::log_array_var aLog;
-	try
-	{
+	/*try
+	{*/
 		list < SMESHDS_Command * >logDS = _impl->GetLog();
 		aLog = new SMESH::log_array;
 		int indexLog = 0;
 		int lg = logDS.size();
-		SCRUTE(lg);
+		MESSAGE("Number of command in the log: "<<lg);
 		aLog->length(lg);
 		list < SMESHDS_Command * >::iterator its = logDS.begin();
 		while (its != logDS.end())
@@ -267,32 +340,38 @@ throw(SALOME::SALOME_Exception)
 			//SCRUTE(rnum);
 			list < double >::const_iterator ir = coordList.begin();
 			aLog[indexLog].commandType = comType;
-			aLog[indexLog].number = lgcom;
-			aLog[indexLog].coords.length(rnum);
-			aLog[indexLog].indexes.length(inum);
-			for (int i = 0; i < rnum; i++)
+			if(comType==SMESHDS_UpdateAll)
 			{
-				aLog[indexLog].coords[i] = *ir;
-				//MESSAGE(" "<<i<<" "<<ir.Value());
-				ir++;
+				aLog=createUpdateAllCommand(aLog, &indexLog);
 			}
-			for (int i = 0; i < inum; i++)
+			else
 			{
-				aLog[indexLog].indexes[i] = *ii;
-				//MESSAGE(" "<<i<<" "<<ii.Value());
-				ii++;
+				aLog[indexLog].number = lgcom;
+				aLog[indexLog].coords.length(rnum);
+				aLog[indexLog].indexes.length(inum);
+				for (int i = 0; i < rnum; i++)
+				{
+					aLog[indexLog].coords[i] = *ir;
+					//MESSAGE(" "<<i<<" "<<ir.Value());
+					ir++;
+				}
+				for (int i = 0; i < inum; i++)
+				{
+					aLog[indexLog].indexes[i] = *ii;
+					//MESSAGE(" "<<i<<" "<<ii.Value());
+					ii++;
+				}
+				indexLog++;
 			}
-			indexLog++;
 			its++;
 		}
-		if (clearAfterGet)
-			_impl->ClearLog();
-	}
+		if (clearAfterGet) _impl->ClearLog();
+		return aLog._retn();
+	/*}
 	catch(SALOME_Exception & S_ex)
 	{
 		THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
-	}
-	return aLog._retn();
+	}*/
 }
 
 //  SMESH::string_array* SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
@@ -530,25 +609,6 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
  */
 //=============================================================================
 
-void SMESH_Mesh_i::ExportMED(const char *file) throw(SALOME::SALOME_Exception)
-{
-	_impl->ExportMED(file);
-}
-void SMESH_Mesh_i::ExportDAT(const char *file) throw(SALOME::SALOME_Exception)
-{
-	_impl->ExportDAT(file);
-}
-void SMESH_Mesh_i::ExportUNV(const char *file) throw(SALOME::SALOME_Exception)
-{
-	_impl->ExportUNV(file);
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
 SALOME_MED::MESH_ptr SMESH_Mesh_i::GetMEDMesh()throw(SALOME::SALOME_Exception)
 {
 	SMESH_MEDMesh_i *aMedMesh = new SMESH_MEDMesh_i(this);
@@ -624,4 +684,15 @@ CORBA::Long SMESH_Mesh_i::NbHexas()throw(SALOME::SALOME_Exception)
 CORBA::Long SMESH_Mesh_i::NbSubMesh()throw(SALOME::SALOME_Exception)
 {
 	return _impl->NbSubMesh();
+}
+
+/*!
+ * Export mesh to a file
+ * @param fileName file name where to export the file
+ * @param fileType Currently it could be either "DAT", "UNV" or "MED".
+ */
+void SMESH_Mesh_i::Export(const char* fileName, const char* fileType)
+	throw (SALOME::SALOME_Exception)
+{
+	_impl->Export(fileName, fileType);
 }

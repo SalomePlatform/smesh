@@ -32,13 +32,8 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESHDS_Script.hxx"
 #include "SMDS_MeshVolume.hxx"
-
 #include "utilities.h"
-
-#include "Mesh_Writer.h"
-#include "DriverMED_W_SMESHDS_Mesh.h"
-#include "DriverDAT_W_SMESHDS_Mesh.h"
-#include "DriverUNV_W_SMESHDS_Mesh.h"
+#include "SMESHDriver.h"
 
 #include <TCollection_AsciiString.hxx>
 
@@ -415,37 +410,22 @@ throw(SALOME_Exception)
 	return _subMeshesUsingHypothesisList;
 }
 
-//=============================================================================
 /*!
- *
+ * Export mesh to a file
+ * @param fileName file name where to export the file
+ * @param fileType Currently it could be either "DAT", "UNV" or "MED".
  */
-//=============================================================================
-
-void SMESH_Mesh::ExportMED(const char *file) throw(SALOME_Exception)
+void SMESH_Mesh::Export(const char *fileName, const char *fileType)
+	throw(SALOME_Exception)
 {
-	Mesh_Writer *myWriter = new DriverMED_W_SMESHDS_Mesh;
-	myWriter->SetFile(string(file));
-	myWriter->SetMesh(_myMeshDS);
-	MESSAGE(" _idDoc " << _idDoc) myWriter->SetMeshId(_idDoc);
-	myWriter->Add();
-}
-
-void SMESH_Mesh::ExportDAT(const char *file) throw(SALOME_Exception)
-{
-	Mesh_Writer *myWriter = new DriverDAT_W_SMESHDS_Mesh;
-	myWriter->SetFile(string(file));
-	myWriter->SetMesh(_myMeshDS);
-	myWriter->SetMeshId(_idDoc);
-	myWriter->Add();
-}
-
-void SMESH_Mesh::ExportUNV(const char *file) throw(SALOME_Exception)
-{
-	Mesh_Writer *myWriter = new DriverUNV_W_SMESHDS_Mesh;
-	myWriter->SetFile(string(file));
-	myWriter->SetMesh(_myMeshDS);
-	myWriter->SetMeshId(_idDoc);
-	myWriter->Add();
+	MESSAGE("SMESH_Mesh::Export("<<fileName<<","<<fileType<<")");
+	Mesh_Writer * writer = SMESHDriver::GetMeshWriter(string(fileType));
+	if(writer!=NULL)
+	{
+		writer->SetMesh(GetMeshDS());
+		writer->SetFile(string(fileName));
+		writer->Write();
+	}
 }
 
 //=============================================================================

@@ -28,17 +28,21 @@
 #define _INCLUDE_DOCUMENT_WRITER
 
 #include "SMESHDS_Document.hxx"
+#include "Mesh_Writer.h"
 #include <string>
 
 class Document_Writer
 {
 
-  public:virtual void Write() = 0;
+  public:virtual void Write();
 	void SetFile(string);
 	void SetDocument(SMESHDS_Document *);
+	Document_Writer(Mesh_Writer* );
 
-  protected:  SMESHDS_Document * myDocument;
+  protected:
+	SMESHDS_Document * myDocument;
 	string myFile;
+	Mesh_Writer * myWriter;
 
 };
 #endif

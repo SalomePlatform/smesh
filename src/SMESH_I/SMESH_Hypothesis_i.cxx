@@ -81,3 +81,8 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
   MESSAGE("GetId");
   return _baseImpl->GetID();
 }
+
+::SMESH_Hypothesis* SMESH_Hypothesis_i::getImpl()
+{
+	return _baseImpl;
+}

@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
 #include "SMESHDS_Script.hxx"
 
 //=======================================================================
@@ -320,4 +319,13 @@ void SMESHDS_Script::Clear()
 const list<SMESHDS_Command*>& SMESHDS_Script::GetCommands()
 {
 	return myCommands;
+}
+
+/**
+ * Add UpdateAll command to the log of this mesh. Once interpreted by the
+ * graphical client it will (re)draw the full mesh.
+ */
+void SMESHDS_Script::UpdateAll()
+{
+	myCommands.insert(myCommands.end(), new SMESHDS_Command(SMESHDS_UpdateAll));
 }

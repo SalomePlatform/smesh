@@ -24,17 +24,25 @@
 //  File   : DriverDAT_W_SMDS_Mesh.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "DriverDAT_W_SMDS_Mesh.h"
-
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-
 #include "utilities.h"
+
+extern "C"
+{
+
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createDATMeshWriter()
+{
+	return new DriverDAT_W_SMDS_Mesh();
+}
+}
 
 DriverDAT_W_SMDS_Mesh::DriverDAT_W_SMDS_Mesh()
 {
-	;
 }
 
 DriverDAT_W_SMDS_Mesh::~DriverDAT_W_SMDS_Mesh()
@@ -64,12 +72,12 @@ void DriverDAT_W_SMDS_Mesh::SetMeshId(int aMeshId)
 
 void DriverDAT_W_SMDS_Mesh::Add()
 {
-	;
+	MESSAGE("Adding a mesh to a DAT document. As DAT do not support more than one mesh in a file, the previous mesh is deleted");
+	Write();
 }
 
 void DriverDAT_W_SMDS_Mesh::Write()
 {
-
 	int nbNodes, nbCells;
 	int i;
 
@@ -80,7 +88,7 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
 		exit(EXIT_FAILURE);
 	}
-	SCRUTE(myMesh);
+
   /****************************************************************************
   *                       NOMBRES D'OBJETS                                    *
   ****************************************************************************/
@@ -97,9 +105,6 @@ void DriverDAT_W_SMDS_Mesh::Write()
 	nb_of_faces = myMesh->NbFaces();
 	nb_of_volumes = myMesh->NbVolumes();
 	nbCells = nb_of_edges + nb_of_faces + nb_of_volumes;
-	SCRUTE(nb_of_edges);
-	SCRUTE(nb_of_faces);
-	SCRUTE(nb_of_volumes);
 
 	fprintf(stdout, "%d %d\n", nbNodes, nbCells);
 	fprintf(myFileId, "%d %d\n", nbNodes, nbCells);
@@ -118,7 +123,8 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		fprintf(myFileId, "%d %e %e %e\n", node->GetID(), node->X(),
 			node->Y(), node->Z());
 	}
-	
+	delete itNodes;
+
   /****************************************************************************
   *                       ECRITURE DES ELEMENTS                                *
   ****************************************************************************/
@@ -127,10 +133,10 @@ void DriverDAT_W_SMDS_Mesh::Write()
 	fprintf(stdout, "(**************************)");
 	/* Ecriture des connectivites, noms, numeros des mailles */
 
-	SMDS_Iterator<const SMDS_MeshEdge *> * itEdges=myMesh->edgesIterator();
+	SMDS_Iterator<const SMDS_MeshEdge*> * itEdges=myMesh->edgesIterator();
 	while(itEdges->more())
 	{
-		const SMDS_MeshElement * elem = itEdges->next();
+		const SMDS_MeshEdge * elem = itEdges->next();
 
 		switch (elem->NbNodes())
 		{
@@ -146,11 +152,13 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
-		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
-
+		SMDS_Iterator<const SMDS_MeshElement *> * itNodes=elem->nodesIterator();
+		while(itNodes->more())
+			fprintf(myFileId, "%d ", itNodes->next()->GetID());
+		
 		fprintf(myFileId, "\n");
 	}
+	delete itEdges;
 
 	SMDS_Iterator<const SMDS_MeshFace *> * itFaces=myMesh->facesIterator();
 	while(itFaces->more())
@@ -176,13 +184,16 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
-		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
-
+		SMDS_Iterator<const SMDS_MeshElement *> * itNodes=elem->nodesIterator();
+		while(itNodes->more())
+			fprintf(myFileId, "%d ", itNodes->next()->GetID());
+		delete itNodes;
+	
 		fprintf(myFileId, "\n");
 	}
+	delete itFaces;
 
-	SMDS_Iterator<const SMDS_MeshVolume *> * itVolumes=myMesh->volumesIterator();
+	SMDS_Iterator<const SMDS_MeshVolume*> * itVolumes=myMesh->volumesIterator();
 	while(itVolumes->more())
 	{
 		const SMDS_MeshElement * elem = itVolumes->next();
@@ -196,11 +207,14 @@ void DriverDAT_W_SMDS_Mesh::Write()
 		}
 		}
 
-		SMDS_Iterator<const SMDS_MeshElement *> * it=elem->nodesIterator();
-		while(it->more()) fprintf(myFileId, "%d ", it->next()->GetID());
+		SMDS_Iterator<const SMDS_MeshElement *> * itNodes=elem->nodesIterator();
+		while(itNodes->more())
+			fprintf(myFileId, "%d ", itNodes->next()->GetID());
+		delete itNodes;	
 
 		fprintf(myFileId, "\n");
 	}
+	delete itVolumes;
 
 	fclose(myFileId);
 }

@@ -1,4 +1,4 @@
-//  SMESH Driver : implementaion of driver for reading and writing	
+//  SMESH Driver : implementation of driver for reading and writing	
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
@@ -18,122 +18,97 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : SMESHDriver.cxx
-//  Module : SMESH
 
-using namespace std;
 #include "SMESHDriver.h"
 
 #include <dlfcn.h>
 #include <utilities.h>
 
-//A enlever
-#include "DriverMED_R_SMESHDS_Document.h"
-#include "DriverMED_R_SMESHDS_Mesh.h"
-#include "DriverMED_R_SMDS_Mesh.h"
-#include "DriverMED_W_SMESHDS_Document.h"
-#include "DriverMED_W_SMESHDS_Mesh.h"
-#include "DriverMED_W_SMDS_Mesh.h"
+Document_Reader* SMESHDriver::GetDocumentReader(string Extension)
+{
+	// if there is not document reader in the driver create a default
+	// one with the mesh reader.
+	Document_Reader * docReader=
+		(Document_Reader*)getMeshDocumentDriver(Extension);
 
-#include "DriverDAT_R_SMESHDS_Document.h"
-#include "DriverDAT_R_SMESHDS_Mesh.h"
-#include "DriverDAT_R_SMDS_Mesh.h"
-#include "DriverDAT_W_SMESHDS_Document.h"
-#include "DriverDAT_W_SMESHDS_Mesh.h"
-#include "DriverDAT_W_SMDS_Mesh.h"
-//
-
-Document_Reader* SMESHDriver::GetDocumentReader(string Extension, string Class) {
-  if (Extension==string("MED")) {
-    DriverMED_R_SMESHDS_Document* myDriver = new DriverMED_R_SMESHDS_Document();
-    return (myDriver);
-  }
-  else if (Extension==string("DAT")) {
-    DriverDAT_R_SMESHDS_Document* myDriver = new DriverDAT_R_SMESHDS_Document();
-    return (myDriver);
-  }
-  else {
-    MESSAGE("No driver known for this extension");
-    return (Document_Reader*)NULL;
-  }
-
-
+	if(docReader==NULL)
+	{
+		Mesh_Reader * reader=GetMeshReader(Extension);
+		if(reader==NULL)
+		{
+	    	MESSAGE("No driver known for this extension");
+			return NULL;
+		}
+		return new Document_Reader(reader);
+	}
+	else return docReader;
 }
 
-Document_Writer* SMESHDriver::GetDocumentWriter(string Extension, string Class) {
-  if (Extension==string("MED")) {
-    DriverMED_W_SMESHDS_Document* myDriver = new DriverMED_W_SMESHDS_Document();
-    return (myDriver);
-  }    
-  else if (Extension==string("DAT")) {
-    DriverDAT_W_SMESHDS_Document* myDriver = new DriverDAT_W_SMESHDS_Document();
-    return (myDriver);
-  }    
-  else {
-    MESSAGE("No driver known for this extension");
-    return (Document_Writer*)NULL;
-  }
-
-
+Document_Writer* SMESHDriver::GetDocumentWriter(string Extension)
+{
+	Mesh_Writer * writer=GetMeshWriter(Extension);
+	if(writer==NULL)
+	{
+    	MESSAGE("No driver known for this extension");
+		return NULL;
+	}
+	return new Document_Writer(writer);
 }
 
-Mesh_Reader* SMESHDriver::GetMeshReader(string Extension, string Class) {
-  if (Extension==string("MED")) {
-
-  if (strcmp(Class.c_str(),"SMESHDS_Mesh")==0) {
-    DriverMED_R_SMESHDS_Mesh* myDriver = new DriverMED_R_SMESHDS_Mesh();
-    return (myDriver);
-  }
-  else if (strcmp(Class.c_str(),"SMDS_Mesh")==0) {
-    DriverMED_R_SMDS_Mesh* myDriver = new DriverMED_R_SMDS_Mesh();
-    return (myDriver);
-  }
-
-  }
-  else if (Extension==string("DAT")) {
-
-  if (strcmp(Class.c_str(),"SMESHDS_Mesh")==0) {
-    DriverDAT_R_SMESHDS_Mesh* myDriver = new DriverDAT_R_SMESHDS_Mesh();
-    return (myDriver);
-  }
-  else if (strcmp(Class.c_str(),"SMDS_Mesh")==0) {
-    DriverDAT_R_SMDS_Mesh* myDriver = new DriverDAT_R_SMDS_Mesh();
-    return (myDriver);
-  }
-
-  }
-
-
+Mesh_Reader* SMESHDriver::GetMeshReader(string extension)
+{
+	void * driver = getMeshDriver(extension, string("Reader"));
+	return (Mesh_Reader*)driver;
 }
 
-Mesh_Writer* SMESHDriver::GetMeshWriter(string Extension, string Class) {
-  if (Extension==string("MED")) {
-
-  if (strcmp(Class.c_str(),"SMESHDS_Mesh")==0) {
-    DriverMED_W_SMESHDS_Mesh* myDriver = new DriverMED_W_SMESHDS_Mesh();
-    return (myDriver);
-  }
-  else if (strcmp(Class.c_str(),"SMDS_Mesh")==0) {
-    DriverMED_W_SMDS_Mesh* myDriver = new DriverMED_W_SMDS_Mesh();
-    return (myDriver);
-  }
-
-  }
-  else if (Extension==string("DAT")) {
-
-  if (strcmp(Class.c_str(),"SMESHDS_Mesh")==0) {
-    DriverDAT_W_SMESHDS_Mesh* myDriver = new DriverDAT_W_SMESHDS_Mesh();
-    return (myDriver);
-  }
-  else if (strcmp(Class.c_str(),"SMDS_Mesh")==0) {
-    DriverDAT_W_SMDS_Mesh* myDriver = new DriverDAT_W_SMDS_Mesh();
-    return (myDriver);
-  }
-
-  }
-
+Mesh_Writer* SMESHDriver::GetMeshWriter(string extension)
+{
+	void * driver = getMeshDriver(extension, string("Writer"));
+	return (Mesh_Writer*)driver;
 }
 
+void * SMESHDriver::getMeshDriver(string extension, string type)
+{
+	string libName = string("libMeshDriver")+extension+string(".so");
+	void * handle = dlopen(libName.c_str(), RTLD_LAZY);
+	if(!handle)
+	{
+		fputs (dlerror(), stderr);
+		return NULL;
+	}
+	else
+	{
+		void * (*factory)();
+		string symbol = string("SMESH_create")+extension+string("Mesh")+type;
+		factory = (void * (*)()) dlsym(handle, symbol.c_str());
+		if(factory==NULL)
+		{
+			fputs (dlerror(), stderr);
+			return NULL;
+		}
+		else return factory();
+	}
+}
+
+void * SMESHDriver::getMeshDocumentDriver(string extension)
+{
+	string libName = string("libMeshDriver")+extension+string(".so");
+	void * handle = dlopen(libName.c_str(), RTLD_LAZY);
+	if(!handle)
+	{
+		fputs (dlerror(), stderr);
+		return NULL;
+	}
+	else
+	{
+		void * (*factory)();
+		string symbol = string("SMESH_create")+extension+string("DocumentReader");
+		factory = (void * (*)()) dlsym(handle, symbol.c_str());
+		if(factory==NULL)
+		{
+			fputs (dlerror(), stderr);
+			return NULL;
+		}
+		else return factory();
+	}
+}

@@ -3,6 +3,20 @@ using namespace std;
 
 #include "utilities.h"
 
+
+extern "C"
+{
+
+/**
+ * Factory function which will be called by SMESHDriver
+ */
+void * SMESH_createUNVMeshReader()
+{
+	return new DriverUNV_R_SMDS_Mesh();
+}
+
+}
+
 DriverUNV_R_SMDS_Mesh::DriverUNV_R_SMDS_Mesh()
 {
 	;

@@ -38,3 +38,16 @@ void Document_Reader::SetDocument(SMESHDS_Document * aDoc)
 {
 	myDocument = aDoc;
 }
+
+void Document_Reader::Read()
+{
+	int myMeshId = myDocument->NewMesh();
+	SMDS_Mesh * myMesh = myDocument->GetMesh(myMeshId);
+	myReader->SetMesh(myMesh);
+	myReader->SetFile(myFile);
+	myReader->Read();
+}
+
+Document_Reader::Document_Reader(Mesh_Reader* reader): myReader(reader)
+{
+}

@@ -101,9 +101,8 @@ class SMESH_Mesh
 		GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
 		throw(SALOME_Exception);
 
-	void ExportDAT(const char *file) throw(SALOME_Exception);
-	void ExportMED(const char *file) throw(SALOME_Exception);
-	void ExportUNV(const char *file) throw(SALOME_Exception);
+	void Export(const char *fileName, const char *fileType)
+		throw(SALOME_Exception);
 
 	int NbNodes() throw(SALOME_Exception);
 

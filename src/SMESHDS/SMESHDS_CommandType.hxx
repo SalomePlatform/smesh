@@ -38,7 +38,8 @@ SMESHDS_AddPrism,
 SMESHDS_AddHexahedron,
 SMESHDS_RemoveNode,
 SMESHDS_RemoveElement,
-SMESHDS_MoveNode
+SMESHDS_MoveNode,
+SMESHDS_UpdateAll
 };
 
 

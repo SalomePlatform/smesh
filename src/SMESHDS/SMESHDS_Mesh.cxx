@@ -577,3 +577,12 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
 SMESHDS_Mesh::~SMESHDS_Mesh()
 {
 }
+
+/**
+ * Add FULL_UPDATE command to the log of this mesh. Once interpreted by the
+ * graphical client it will (re)draw the full mesh.
+ */
+void SMESHDS_Mesh::logFullUpdate()
+{
+	myScript->UpdateAll();
+}

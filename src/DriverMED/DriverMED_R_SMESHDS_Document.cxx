@@ -31,13 +31,14 @@ using namespace std;
 
 extern "C"
 {
-	Document_Reader *maker()
+	void * SMESH_createMEDDocumentReader()
 	{
 		return new DriverMED_R_SMESHDS_Document;
 	}
 }
 
 DriverMED_R_SMESHDS_Document::DriverMED_R_SMESHDS_Document()
+	:Document_Reader(new DriverMED_R_SMESHDS_Mesh())
 {
 	;
 }
@@ -59,8 +60,6 @@ void DriverMED_R_SMESHDS_Document::Read()
 	med_int nmaa;
 
 	int myMeshId;
-
-	//string myFile = string("/home/home_users/cai/projects/salome_prev04/SALOME_ROOT/data/fra1.med");
 
 /****************************************************************************
   *                      OUVERTURE DU FICHIER EN LECTURE                      *

@@ -97,3 +97,7 @@ int SMESHDS_Hypothesis::GetType() const
   return _type;
 }
 
+void SMESHDS_Hypothesis::SetID(int id)
+{
+	_hypId=id;
+}

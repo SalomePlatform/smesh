@@ -88,8 +88,6 @@ private :
 
   //  vtkScalarBarActor*    myScalarBar;
 
-  SMESHDS_Document *        myDocument;//NBU
-
   bool                      myAutomaticUpdate;
 
 public :
@@ -303,9 +301,7 @@ public :
   static void setOrb();
 
   /* Import/Export */ //NBU
-  static void Import_Document(QAD_Desktop* parent, int theCommandID);
-  static void Export_Document(QAD_Desktop* parent, int theCommandID);
-  static void Import_Mesh(QAD_Desktop* parent, int theCommandID);
+  void Import_Document(QAD_Desktop* parent, int theCommandID);
   static void Export_Mesh(QAD_Desktop* parent, int theCommandID);
 
 signals:
