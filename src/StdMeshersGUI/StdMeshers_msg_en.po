@@ -1,0 +1,49 @@
+# This is a Qt message file in .po format.  Each msgid starts with
+# a scope.  This scope should *NOT* be translated - eg. "Foo::Bar"
+# would be translated to "Pub", not "Foo::Pub".
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
+"PO-Revision-Date: YYYY-MM-DD\n"
+"Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+
+
+# -------------- Local Length --------------
+
+msgid "SMESH_LOCAL_LENGTH_HYPOTHESIS"
+msgstr "Local Length"
+
+msgid "SMESH_LOCAL_LENGTH_TITLE"
+msgstr "Hypothesis Construction"
+
+# ----------- Number of Segments -----------
+
+msgid "SMESH_NB_SEGMENTS_HYPOTHESIS"
+msgstr "Number of Segments"
+
+msgid "SMESH_NB_SEGMENTS_TITLE"
+msgstr "Hypothesis Construction"
+
+# ----------- Max. Element Area ------------
+
+msgid "SMESH_MAX_ELEMENT_AREA"
+msgstr "Max. Area"
+
+msgid "SMESH_MAX_ELEMENT_AREA_HYPOTHESIS"
+msgstr "Max. Element Area"
+
+msgid "SMESH_MAX_ELEMENT_AREA_TITLE"
+msgstr "Hypothesis Construction"
+
+# ---------- Max. Element Volume -----------
+
+msgid "SMESH_MAX_ELEMENT_VOLUME"
+msgstr "Max. Volume"
+
+msgid "SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS"
+msgstr "Max. Element Volume"
+
+msgid "SMESH_MAX_ELEMENT_VOLUME_TITLE"
+msgstr "Hypothesis Construction"

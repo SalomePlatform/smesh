@@ -34,8 +34,8 @@
 #include "SMESH_TypeFilter.hxx"
 
 // QT Includes
-#include <qvariant.h>
 #include <qdialog.h>
+#include <qstringlist.h>
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -43,17 +43,11 @@
 #include CORBA_SERVER_HEADER(GEOM_Shape)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QVBoxLayout; 
-class QHBoxLayout; 
-class QGridLayout; 
-class QButtonGroup;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QRadioButton;
 class SMESHGUI;
-
 
 //=================================================================================
 // class    : SMESHGUI_AddSubMeshDlg
@@ -67,44 +61,36 @@ public:
     SMESHGUI_AddSubMeshDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_AddSubMeshDlg();
 
-private:
-
-    void Init( SALOME_Selection* Sel ) ;
+protected:
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;
 
+private:
+    void Init( SALOME_Selection* Sel ) ;
+
+    void UpdateControlState();
+
+private:
     SMESHGUI*                     mySMESHGUI ;
     SALOME_Selection*             mySelection ;
              
-    GEOM::GEOM_Shape_var                myGeomShape ;
-    int                           myConstructorId ; 
-    QLineEdit*                    myEditCurrentArgument; 
-
     SMESH::SMESH_Mesh_var         myMesh;
-    SMESH::SMESH_subMesh_var      mySubMesh;
-
-    QString                       myNameSubMesh ;
+    GEOM::GEOM_Shape_var          myGeomShape ;
+    QLineEdit*                    myEditCurrentArgument; 
 
     Handle(SALOME_TypeFilter)     myGeomFilter;
     Handle(SMESH_TypeFilter)      myMeshFilter;
     Handle(SMESH_TypeFilter)      myHypothesisFilter;
     Handle(SMESH_TypeFilter)      myAlgorithmFilter;
 
-    SALOME_ListIO                 HypoList;
-    SALOME_ListIO                 AlgoList;
+    QStringList                   HypoList;
+    QStringList                   AlgoList;
 
-    bool                          myOkHypothesis;
-    bool                          myOkAlgorithm;
-
-    SMESH::SMESH_Hypothesis_var   myHypothesis;
-    SMESH::SMESH_Hypothesis_var   myAlgorithm;
-
-    QButtonGroup* GroupConstructors;
-    QRadioButton* Constructor1;
     QGroupBox*    GroupButtons;
     QPushButton*  buttonOk;
-    QPushButton*  buttonCancel;
     QPushButton*  buttonApply;
+    QPushButton*  buttonCancel;
+
     QGroupBox*    GroupC1;
     QLabel*       TextLabel_NameMesh ;
     QLineEdit*    LineEdit_NameMesh ;
@@ -124,22 +110,13 @@ private:
     QLineEdit*    LineEditC1A1Algo;
 
 private slots:
-
-    void ConstructorsClicked(int constructorId);
     void ClickOnOk();
+    bool ClickOnApply();
     void ClickOnCancel();
-    void ClickOnApply();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
-    void TextChangedInLineEdit(const QString& newText) ;
-
-protected:
-    QGridLayout* SMESHGUI_AddSubMeshDlgLayout;
-    QGridLayout* GroupConstructorsLayout;
-    QGridLayout* GroupButtonsLayout;
-    QGridLayout* GroupC1Layout;
 };
 
 #endif // DIALOGBOX_ADD_SUBMESH_H

@@ -29,111 +29,92 @@ Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& 
   if ( !meshFilter->IsOk(anObj) ) 
     return false;
 
+  bool Ok = false;
+
   if ( anObj->hasEntry() ) {
     QAD_Study* ActiveStudy = QAD_Application::getDesktop()->getActiveStudy();
     SALOMEDS::Study_var aStudy = ActiveStudy->getStudyDocument();
     SALOMEDS::SObject_var obj = aStudy->FindObjectID( anObj->getEntry() );
 
-    bool Ok = false;
+    SALOMEDS::SObject_var objFather = obj->GetFather();
+    SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
+    
+    if ( strlen( obj->GetID() ) <= strlen( objComponent->GetID() ) )
+      return false;
 
     switch ( myKind )
       {
       case HYPOTHESIS:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
 	  if (( objFather->Tag() == 1 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
 	    Ok = true;
 	  break;
 	}
       case ALGORITHM:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
 	  if (( objFather->Tag() == 2 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
 	    Ok = true;
 	  break;
 	}
       case MESH:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() >= 3 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) == 0 ) )
 	    Ok = true;
 	  break;
 	}
       case SUBMESH:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
-	  if (( objFather->Tag() >= 4 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  if (( objFather->Tag() >= 4 && objFather->Tag() < 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
 	    Ok = true;
 	  break;
 	}
       case MESHorSUBMESH:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() >= 3 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) == 0 ) )
 	    Ok = true;
 
-	   if (( objFather->Tag() >= 4 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  if (( objFather->Tag() >= 4 && objFather->Tag() < 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
 	    Ok = true;
 
 	  break;
 	}
-      case SUBMESH_VERTEX:
+      case SUBMESH_VERTEX:  // Label "SubMeshes on vertexes"
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() == 4 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_EDGE:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() == 5 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_FACE:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() == 6 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_SOLID:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() == 7 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_COMPOUND:
 	{
-	  SALOMEDS::SObject_var objFather = obj->GetFather();
-	  SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-	  
 	  if (( obj->Tag() == 8 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
+      case GROUP:
+	{
+	  if (( objFather->Tag() >= 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	    Ok = true;
+	  break;
+	}
       }
-
-    if ( Ok )
-      return true;
   }
-  return false;
+  return Ok;
 }

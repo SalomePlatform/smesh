@@ -36,7 +36,6 @@ class SMDS_VertexPosition:public SMDS_Position
 	SMDS_TypeOfPosition GetTypeOfPosition() const;
 	SMDS_VertexPosition(int aVertexId=0);
 	const double *Coords() const;
-	~SMDS_VertexPosition();
 };
 
 #endif

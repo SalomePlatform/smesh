@@ -58,3 +58,27 @@ SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
     map<int, SMDS_MeshElement*>::iterator it=myIDElements.find(ID);
     if(it==myIDElements.end()) return NULL; else return (*it).second;
 }
+
+
+//=======================================================================
+//function : GetFreeID
+//purpose  : 
+//=======================================================================
+int SMDS_MeshElementIDFactory::GetFreeID()
+{
+  int ID;
+  do {
+    ID = SMDS_MeshIDFactory::GetFreeID();
+  } while (myIDElements.find(ID) != myIDElements.end());
+  return ID;
+}
+
+//=======================================================================
+//function : ReleaseID
+//purpose  : 
+//=======================================================================
+void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
+{
+  myIDElements.erase(ID);
+  SMDS_MeshIDFactory::ReleaseID(ID);
+}

@@ -27,14 +27,14 @@ from SMESH_test1 import *
 # ---- compute box
 
 print "-------------------------- compute box"
-ret=gen.Compute(mesh,idbox)
+ret=smesh.Compute(mesh,box)
 print ret
 log=mesh.GetLog(0); # no erase trace
 for linelog in log:
     print linelog
 
 
-sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(1);
 
 # ---- compute edge
 

@@ -25,14 +25,10 @@
 #  $Header$
 
 import salome
-from salome import sg
-
 import geompy
-
 import math
 
 geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
-myBuilder = salome.myStudy.NewBuilder()
 
 ShapeTypeCompSolid = 1
 ShapeTypeSolid     = 2
@@ -290,9 +286,10 @@ cylcongy0 = geom.MakeCylinder(pcyly0, vx, rayonConge, longueurPlq +2*marge)
 bcong1=geom.MakeBoolean(bcong1,cylcongx0,2)
 bcong2=geom.MakeBoolean(bcong2,cylcongx0,2)
 bcong1=geom.MakeBoolean(bcong1,cylcongy0,2)
+#NRI : inverse order of BOP
+bcong3=geom.MakeBoolean(bcong3,cylcongy0,2)
 bcong3=geom.MakeBoolean(bcong3,cylcongx3,2)
 bcong4=geom.MakeBoolean(bcong4,cylcongx3,2)
-bcong3=geom.MakeBoolean(bcong3,cylcongy0,2)
 
 pf1 = geom.MakePointStruct(0., y0h, z3)
 pf2 = geom.MakePointStruct(0., y1, z3)

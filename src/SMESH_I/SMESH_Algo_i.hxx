@@ -34,23 +34,23 @@
 
 #include "SMESH_Hypothesis_i.hxx"
 
-#include "SMESH_Algo.hxx"
-
+// ======================================================
+// Generic algorithm
+// ======================================================
 class SMESH_Algo_i:
-  public POA_SMESH::SMESH_Algo,
-  public SMESH_Hypothesis_i
+  public virtual POA_SMESH::SMESH_Algo,
+  public virtual SMESH_Hypothesis_i
 {
 public:
-  SMESH_Algo_i();
+  // Constructor : placed in protected section to prohibit creation of generic class instance
+  SMESH_Algo_i( PortableServer::POA_ptr thePOA );
 
+public:
+  // Destructor
   virtual ~SMESH_Algo_i();
-
+  
+  // Gets list of compatible hypotheses
   SMESH::ListOfHypothesisName* GetCompatibleHypothesis();
-
-protected:
-  virtual void SetImpl(::SMESH_Algo* impl);
-
-  ::SMESH_Algo* _impl;
 };
 
 #endif

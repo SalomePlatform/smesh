@@ -32,6 +32,7 @@
 #include "SMDS_Iterator.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
 
+#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <iostream>
 
@@ -39,6 +40,10 @@ using namespace std;
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
 class SMDS_MeshFace;	
+class SMDS_MeshElement;
+
+typedef SMDS_Iterator<const SMDS_MeshElement *> SMDS_ElemIterator;
+typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshElement *> > SMDS_ElemIteratorPtr;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Base class for elements
@@ -47,10 +52,10 @@ class SMDS_MeshElement:public SMDS_MeshObject
 {
 
   public:
-	SMDS_Iterator<const SMDS_MeshElement *> * nodesIterator() const;
-	SMDS_Iterator<const SMDS_MeshElement *> * edgesIterator() const;
-	SMDS_Iterator<const SMDS_MeshElement *> * facesIterator() const;
-	virtual SMDS_Iterator<const SMDS_MeshElement *> *
+	SMDS_ElemIteratorPtr nodesIterator() const;
+	SMDS_ElemIteratorPtr edgesIterator() const;
+	SMDS_ElemIteratorPtr facesIterator() const;
+	virtual SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
 	virtual int NbNodes() const;

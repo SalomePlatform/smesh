@@ -26,10 +26,10 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_MoveNodesDlg.h"
-#include "SMESHGUI.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESH_Actor.h"
+#include "SMESHGUI.h"
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
@@ -53,8 +53,7 @@ using namespace std;
 // Open CASCADE Include
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
-// VTK Include
-#include <vtkActor.h>
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_MoveNodesDlg()
@@ -309,7 +308,7 @@ void SMESHGUI_MoveNodesDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_MoveNodesDlg::ClickOnCancel()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( 4 );
+  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   mySMESHGUI->EraseSimulationActors();
@@ -347,9 +346,9 @@ void SMESHGUI_MoveNodesDlg::SelectionIntoArgument()
     return ;
   }
   
-  if ( mySelection->SelectionMode() != 1 ){
+  if ( mySelection->SelectionMode() != NodeSelection ){
     QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_YES") );
+			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
     return;
   }
 

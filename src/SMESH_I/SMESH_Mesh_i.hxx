@@ -31,46 +31,62 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
 #include CORBA_CLIENT_HEADER(GEOM_Shape)
 #include CORBA_CLIENT_HEADER(MED)
 
 class SMESH_Gen_i;
+class SMESH_Group_i;
 
+#include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_Gen_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_topo.hxx"
 
 #include <map>
 
+#include "SALOME_GenericObj_i.hh"
+
 class SMESH_Mesh_i:
-  public POA_SMESH::SMESH_Mesh
+  public virtual POA_SMESH::SMESH_Mesh,
+  public virtual SALOME::GenericObj_i
 {
 public:
-  SMESH_Mesh_i(SMESH_Gen_i* myGen_i,
-	       GEOM::GEOM_Gen_ptr geomEngine,
-	       CORBA::Long studyId,
-	       ::SMESH_Mesh * impl);
+  SMESH_Mesh_i();
+  SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
+                SMESH_Gen_i*            myGen_i,
+	        CORBA::Long             studyId );
 
   virtual ~SMESH_Mesh_i();
 
   // --- CORBA
-
-  CORBA::Boolean AddHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
-			       SMESH::SMESH_Hypothesis_ptr anHyp)
+  void SetShape( GEOM::GEOM_Shape_ptr theShape )
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Boolean  RemoveHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
-				   SMESH::SMESH_Hypothesis_ptr anHyp)
+  SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+                                         SMESH::SMESH_Hypothesis_ptr anHyp)
+    throw (SALOME::SALOME_Exception);
+
+  SMESH::Hypothesis_Status RemoveHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+                                            SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);
 
   SMESH::ListOfHypothesis* GetHypothesisList(GEOM::GEOM_Shape_ptr aSubShape)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_subMesh_ptr GetElementsOnShape(GEOM::GEOM_Shape_ptr aSubShape)
+  SMESH::SMESH_subMesh_ptr GetSubMesh(GEOM::GEOM_Shape_ptr aSubShape, const char* theName)
+    throw (SALOME::SALOME_Exception);
+
+  void RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
+    throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Group_ptr CreateGroup( SMESH::ElementType theElemType, const char* theName )
+    throw (SALOME::SALOME_Exception);
+  
+  void RemoveGroup( SMESH::SMESH_Group_ptr theGroup )
     throw (SALOME::SALOME_Exception);
 
 //    SMESH::string_array* GetLog(CORBA::Boolean clearAfterGet)
@@ -90,17 +106,25 @@ public:
   CORBA::Long GetStudyId()
     throw (SALOME::SALOME_Exception);
 
-  void Export(const char* fileName, const char* fileType)
-	throw (SALOME::SALOME_Exception);
-
   // --- C++ interface
 
   void SetImpl(::SMESH_Mesh* impl);
-
   ::SMESH_Mesh& GetImpl();         // :: force no namespace here
-  GEOM::GEOM_Gen_ptr GetGeomEngine();
-  void SetIor(SMESH::SMESH_Mesh_ptr myIor);
-  SMESH::SMESH_Mesh_ptr GetIor();
+
+  SMESH_Gen_i* GetGen() { return _gen_i; }
+  
+  /*!
+   * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
+   */
+  SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
+    throw (SALOME::SALOME_Exception);
+
+  void ExportMED( const char* file, CORBA::Boolean auto_groups )
+    throw (SALOME::SALOME_Exception);
+  void ExportDAT( const char* file )
+    throw (SALOME::SALOME_Exception);
+  void ExportUNV( const char* file )
+    throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
     throw (SALOME::SALOME_Exception);
@@ -129,23 +153,49 @@ public:
   CORBA::Long NbHexas()
     throw (SALOME::SALOME_Exception);
   
-  CORBA::Long NbSubMesh()
+  CORBA::Long NbPyramids()
     throw (SALOME::SALOME_Exception);
   
+  CORBA::Long NbPrisms()
+    throw (SALOME::SALOME_Exception);
+  
+  CORBA::Long NbSubMesh()
+    throw (SALOME::SALOME_Exception);
+
+  char* Dump();
+  
+  // Internal methods not available through CORBA
+  // They are called by corresponding interface methods
+  SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+                                                    SMESH::SMESH_Hypothesis_ptr anHyp);
+
+  SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Shape_ptr aSubShape,
+                                                       SMESH::SMESH_Hypothesis_ptr anHyp);
+  
+  bool setShape( GEOM::GEOM_Shape_ptr theShape );
+
+  int importMEDFile( const char* theFileName, const char* theMeshName );
+
+  SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Shape_ptr theSubShape );
+
+  void removeSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh, GEOM::GEOM_Shape_ptr theSubShape );
+
+  SMESH::SMESH_Group_ptr createGroup( SMESH::ElementType theElemType, const char* theName );
+
+  void removeGroup( const int theId );
 
   map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-  SMESH::log_array_var createUpdateAllCommand(SMESH::log_array_var log, int * index);
+  static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here
   SMESH_Gen_i* _gen_i;
-  //   CORBA::ORB_ptr _orb;
-//   SMESH_topo* _topo;   // all local TopoDS_Shape of subShapes
-  GEOM::GEOM_Gen_var _geom;
-  CORBA::Long _studyId;
-  map<int, SMESH::SMESH_subMesh_ptr> _mapSubMeshIor;
-  SMESH::SMESH_Mesh_var _myIor;
+  int _id;          // id given by creator (unique within the creator instance)
+  int _studyId;
+  map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
+  map<int, SMESH::SMESH_Group_ptr>      _mapGroups;
+  map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
 };
 
 #endif

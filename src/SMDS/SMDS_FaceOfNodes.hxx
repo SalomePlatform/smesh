@@ -31,16 +31,19 @@ class SMDS_FaceOfNodes:public SMDS_MeshFace
 {
   public:
 	void Print(ostream & OS) const;
-	SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
-		SMDS_MeshNode* node3);
-	SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
-		SMDS_MeshNode* node3, SMDS_MeshNode* node4);
+	SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+                         const SMDS_MeshNode* node2,
+                         const SMDS_MeshNode* node3);
+	SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+                         const SMDS_MeshNode* node2,
+                         const SMDS_MeshNode* node3,
+                         const SMDS_MeshNode* node4);
 		
 	int NbEdges() const;
 	int NbFaces() const;
 	int NbNodes() const;
   protected:
-  	SMDS_Iterator<const SMDS_MeshElement *> *
+  	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:

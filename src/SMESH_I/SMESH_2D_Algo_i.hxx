@@ -34,21 +34,20 @@
 
 #include "SMESH_Algo_i.hxx"
 
-#include "SMESH_2D_Algo.hxx"
-
+// ======================================================
+// Generic 2D algorithm
+// ======================================================
 class SMESH_2D_Algo_i:
-  public POA_SMESH::SMESH_2D_Algo,
-  public SMESH_Algo_i
+  public virtual POA_SMESH::SMESH_2D_Algo,
+  public virtual SMESH_Algo_i
 {
-public:
-  SMESH_2D_Algo_i();
-
-  virtual ~SMESH_2D_Algo_i();
-
 protected:
-  virtual void SetImpl(::SMESH_2D_Algo* impl);
+  // Constructor : placed in protected section to prohibit creation of generic class instance
+  SMESH_2D_Algo_i( PortableServer::POA_ptr thePOA );
 
-  ::SMESH_2D_Algo* _impl;
+public:
+  // Destructor
+  virtual ~SMESH_2D_Algo_i();
 };
 
 #endif

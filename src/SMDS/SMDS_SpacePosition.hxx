@@ -37,8 +37,7 @@ class SMDS_SpacePosition:public SMDS_Position
 	const virtual double * Coords() const;
 	virtual inline SMDS_TypeOfPosition GetTypeOfPosition() const;
 	inline void SetCoords(const double x, const double y, const double z);
-	 ~SMDS_SpacePosition();
-	 static SMDS_SpacePosition * originSpacePosition();
+        static SMDS_PositionPtr originSpacePosition();
   private:
 	double myCoords[3];	
 };

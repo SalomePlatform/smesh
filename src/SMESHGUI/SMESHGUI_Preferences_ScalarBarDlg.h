@@ -29,11 +29,8 @@
 #ifndef SMESHGUI_PREFERENCES_SCALARBARDLG_H
 #define SMESHGUI_PREFERENCES_SCALARBARDLG_H
 
-#include <qvariant.h>
 #include <qdialog.h>
-class QVBoxLayout; 
-class QHBoxLayout; 
-class QGridLayout; 
+
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
@@ -41,54 +38,78 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QToolButton;
 class QRadioButton;
 class QSpinBox;
+class QAD_SpinBoxDbl;
+class SALOME_Selection;
+class SMESH_Actor;
 
 class SMESHGUI_Preferences_ScalarBarDlg : public QDialog
 { 
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, WFlags fl = 0 );
-    ~SMESHGUI_Preferences_ScalarBarDlg();
-
-    QButtonGroup* ButtonGroup_Orientation;
-    QRadioButton* RadioHoriz;
-    QRadioButton* RadioVert;
-    QGroupBox* Properties;
-    QLabel* NumberLabels;
-    QLabel* NumberColors;
-    QSpinBox* SpinBoxLabels;
-    QSpinBox* SpinBoxColors;
-    QLabel* TextLabel2;
-    QComboBox* ComboBox1;
-    QCheckBox* Shadow;
-    QCheckBox* Italic;
-    QCheckBox* Bold;
-    QGroupBox* GroupBox5;
-    QLineEdit* LineEditWidth;
-    QLineEdit* LineEditHeight;
-    QLabel* Height;
-    QLabel* Width;
-    QPushButton* buttonCancel;
-    QPushButton* buttonOk;
+  ~SMESHGUI_Preferences_ScalarBarDlg();
+  static void ScalarBarPreferences( QWidget* parent );
+  static void ScalarBarProperties ( QWidget* parent, SALOME_Selection* Sel );
 
 protected:
-    QGridLayout* grid;
-    QGridLayout* grid_2;
-    QGridLayout* grid_3;
-    QGridLayout* grid_4;
-    QGridLayout* grid_5;
-    QGridLayout* grid_6;
-    QGridLayout* grid_7;
-    QGridLayout* grid_8;
-    QGridLayout* grid_9;
-    QGridLayout* grid_10;
-    QGridLayout* grid_11;
-    QGridLayout* grid_12;
-    QGridLayout* grid_13;
-    QGridLayout* grid_14;
-    QGridLayout* grid_15;
+  SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent = 0, SALOME_Selection* Sel = 0, bool modal = FALSE );
+  static SMESHGUI_Preferences_ScalarBarDlg* myDlg;
+  void closeEvent( QCloseEvent* e );
+  void setOriginAndSize( const double x, const double y, const double w, const double h );
+
+protected slots:
+  void onOk();
+  bool onApply();
+  void onCancel();
+  void onTitleColor();
+  void onLabelsColor();
+  void onSelectionChanged();
+  void onXYChanged();
+  void onOrientationChanged();
+
+private:
+  SALOME_Selection*  mySelection;
+  SMESH_Actor*       myActor;
+  double             myIniX, myIniY, myIniW, myIniH;
+  int                myIniOrientation;
+
+  QGroupBox*         myRangeGrp;
+  QLineEdit*         myMinEdit;
+  QLineEdit*         myMaxEdit;
+
+  QGroupBox*         myFontGrp;
+  QToolButton*       myTitleColorBtn;
+  QComboBox*         myTitleFontCombo;
+  QCheckBox*         myTitleBoldCheck;
+  QCheckBox*         myTitleItalicCheck;
+  QCheckBox*         myTitleShadowCheck;
+  QToolButton*       myLabelsColorBtn;
+  QComboBox*         myLabelsFontCombo;
+  QCheckBox*         myLabelsBoldCheck;
+  QCheckBox*         myLabelsItalicCheck;
+  QCheckBox*         myLabelsShadowCheck;
+  
+  QGroupBox*         myLabColorGrp;
+  QSpinBox*          myColorsSpin;
+  QSpinBox*          myLabelsSpin;
+
+  QButtonGroup*      myOrientationGrp;
+  QRadioButton*      myVertRadioBtn;
+  QRadioButton*      myHorizRadioBtn;
+
+  QGroupBox*         myOriginDimGrp;
+  QAD_SpinBoxDbl*    myXSpin;
+  QAD_SpinBoxDbl*    myYSpin;
+  QAD_SpinBoxDbl*    myWidthSpin;
+  QAD_SpinBoxDbl*    myHeightSpin;
+
+  QGroupBox*         myButtonGrp;
+  QPushButton*       myOkBtn;
+  QPushButton*       myApplyBtn;
+  QPushButton*       myCancelBtn;
 };
 
 #endif // SMESHGUI_PREFERENCES_SCALARBARDLG_H

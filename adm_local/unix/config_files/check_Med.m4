@@ -45,7 +45,7 @@ if test -f ${MED_DIR}/bin/salome/libMEDMEM_Swig.py ; then
    AC_SUBST(MED_ROOT_DIR)
 
 else
-   AC_MSG_WARN("Cannot find compiled Med module distribution")
+   AC_MSG_WARN("Cannot find Med module sources")
 fi
   
 AC_MSG_RESULT(for Med: $Med_ok)

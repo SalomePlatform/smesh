@@ -36,7 +36,11 @@ template<typename VALUE> class SMDS_Iterator
 	virtual VALUE next()=0;
 	
 	/// Delete the current element and step to the next one
-	virtual void remove(){};
+	virtual void remove(){}
+	
+	/// Provide virtual destructor just for case if some derived iterator
+        /// must have a destructor
+	virtual ~SMDS_Iterator(){}
 };
 
 #endif

@@ -22,13 +22,10 @@ if myStudyBuilder is None:
 father = myStudy.FindComponent("MESH")
 if father is None:
         father = myStudyBuilder.NewComponent("MESH")
-        A1 = myStudyBuilder.FindOrCreateAttribute(father, "AttributeName");
-        FName = A1._narrow(SALOMEDS.AttributeName)
-        #FName.SetValue("Mesh")	
+        FName = myStudyBuilder.FindOrCreateAttribute(father, "AttributeName");
 	Comp = modulecatalog.GetComponent( "SMESH" )
 	FName.SetValue( Comp._get_componentusername() )
-      	A2 = myStudyBuilder.FindOrCreateAttribute(father, "AttributePixMap");
-      	aPixmap = A2._narrow(SALOMEDS.AttributePixMap);
+      	aPixmap = myStudyBuilder.FindOrCreateAttribute(father, "AttributePixMap");
 	aPixmap.SetPixMap( "ICON_OBJBROWSER_Mesh" );
 
 myStudyBuilder.DefineComponentInstance(father,smesh)
@@ -67,113 +64,111 @@ def Init():
   	 pass
 #------------------------------------------------------------
 def AddNewMesh(IOR):
+	# VSR: added temporarily - objects are published automatically by the engine
+	aSO = myStudy.FindObjectIOR( IOR )
+	if aSO is not None:
+		return aSO.GetID()
+	# VSR ######################################################################
+	
 	res,HypothesisRoot = mySComponentMesh.FindSubObject ( Tag_HypothesisRoot )
 	if HypothesisRoot is None or res == 0:
 		HypothesisRoot = myStudyBuilder.NewObjectToTag(mySComponentMesh, Tag_HypothesisRoot)
-		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeName")
-		aName = anAttr._narrow(SALOMEDS.AttributeName)
-    		aName.SetValue("Hypothesis Definition")
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributePixMap")
-    		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap)
+		aName = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeName")
+    		aName.SetValue("Hypotheses")
+    		aPixmap = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributePixMap")
     		aPixmap.SetPixMap( "mesh_tree_hypo.png" )
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeSelectable")
-    		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable)
+    		aSelAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeSelectable")
     		aSelAttr.SetSelectable(0);
 
 	res, AlgorithmsRoot = mySComponentMesh.FindSubObject (Tag_AlgorithmsRoot)
 	if AlgorithmsRoot is None  or res == 0:
     		AlgorithmsRoot = myStudyBuilder.NewObjectToTag (mySComponentMesh, Tag_AlgorithmsRoot)
-		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeName")
-    		aName = anAttr._narrow(SALOMEDS.AttributeName)
-		aName.SetValue("Algorithms Definition");
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributePixMap");
-    		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
+		aName = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeName")
+		aName.SetValue("Algorithms");
+    		aPixmap = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributePixMap");
     		aPixmap.SetPixMap( "mesh_tree_algo.png" );
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeSelectable");
-    		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+    		aSelAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeSelectable");
     		aSelAttr.SetSelectable(0);
 
 	HypothesisRoot = HypothesisRoot._narrow(SALOMEDS.SObject)
 	newMesh = myStudyBuilder.NewObject(mySComponentMesh)
-	newMesh = newMesh._narrow(SALOMEDS.SObject)
-  	anAttr = myStudyBuilder.FindOrCreateAttribute(newMesh, "AttributePixMap")
-  	aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap)
+  	aPixmap = myStudyBuilder.FindOrCreateAttribute(newMesh, "AttributePixMap")
   	aPixmap.SetPixMap( "mesh_tree_mesh.png" )
-  	anAttr = myStudyBuilder.FindOrCreateAttribute(newMesh, "AttributeIOR")
-  	anIOR = anAttr._narrow(SALOMEDS.AttributeIOR)
+  	anIOR = myStudyBuilder.FindOrCreateAttribute(newMesh, "AttributeIOR")
   	anIOR.SetValue(IOR)
   	return newMesh.GetID()
 
 #------------------------------------------------------------	
 def AddNewHypothesis(IOR):
+	# VSR: added temporarily - objects are published automatically by the engine
+	aSO = myStudy.FindObjectIOR( IOR )
+	if aSO is not None:
+		return aSO.GetID()
+	# VSR ######################################################################
+
 	res, HypothesisRoot = mySComponentMesh.FindSubObject (Tag_HypothesisRoot)
   	if HypothesisRoot is None or res == 0:
     		HypothesisRoot = myStudyBuilder.NewObjectToTag (mySComponentMesh, Tag_HypothesisRoot)
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeName");
-    		aName = anAttr._narrow(SALOMEDS.AttributeName);
-    		aName.SetValue("Hypothesis Definition");
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeSelectable");
-    		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+    		aName = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeName");
+    		aName.SetValue("Hypotheses");
+    		aSelAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributeSelectable");
     		aSelAttr.SetSelectable(0);
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributePixMap");
-    		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
+    		aPixmap = myStudyBuilder.FindOrCreateAttribute(HypothesisRoot, "AttributePixMap");
     		aPixmap.SetPixMap( "mesh_tree_hypo.png" );
  
   	# Add New Hypothesis
   	newHypo = myStudyBuilder.NewObject(HypothesisRoot)
-	newHypo = newHypo._narrow(SALOMEDS.SObject)
-  	anAttr  = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributePixMap")
-  	aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap)
+  	aPixmap = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributePixMap")
 	H = orb.string_to_object(IOR)
-  	H = H._narrow( SMESH.SMESH_Hypothesis );
  	aType = H.GetName();
   	aPixmap.SetPixMap( "mesh_tree_hypo.png_" + aType );
-	anAttr = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributeIOR");
-  	anIOR = anAttr._narrow(SALOMEDS.AttributeIOR);
+	anIOR = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributeIOR");
   	anIOR.SetValue(IOR);
   	return newHypo.GetID();
 
 #------------------------------------------------------------
 def AddNewAlgorithms(IOR):
+	# VSR: added temporarily - objects are published automatically by the engine
+	aSO = myStudy.FindObjectIOR( IOR )
+	if aSO is not None:
+		return aSO.GetID()
+	# VSR ######################################################################
+
 	res, AlgorithmsRoot = mySComponentMesh.FindSubObject (Tag_AlgorithmsRoot)
   	if  AlgorithmsRoot is None or res == 0:
     		AlgorithmsRoot = myStudyBuilde.NewObjectToTag (mySComponentMesh, Tag_AlgorithmsRoot)
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeName")
-    		aName = anAttr._narrow(SALOMEDS.AttributeName);
-    		aName.SetValue("Algorithms Definition");
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeSelectable")
-    		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+    		aName = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeName")
+    		aName.SetValue("Algorithms");
+    		aSelAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeSelectable")
     		aSelAttr.SetSelectable(0);
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributePixMap");
-    		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
+    		aPixmap = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributePixMap");
     		aPixmap.SetPixMap( "mesh_tree_algo.png" );
 
   # Add New Algorithms
   	newHypo = myStudyBuilder.NewObject(AlgorithmsRoot)
-	newHypo = newHypo._narrow(SALOMEDS.SObject)
-  	anAttr = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributePixMap");
+  	aPixmap = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributePixMap");
   	aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
 	H = orb.string_to_object(IOR)
-  	H = H._narrow( SMESH.SMESH_Hypothesis);
   	aType = H.GetName();	#QString in fact
   	aPixmap.SetPixMap( "mesh_tree_algo.png_" + aType );
-  	anAttr = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributeIOR");
-  	anIOR = anAttr._narrow(SALOMEDS.AttributeIOR);
+  	anIOR = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributeIOR");
   	anIOR.SetValue(IOR);
  	return newHypo.GetID();
 
 
 #------------------------------------------------------------
 def SetShape(ShapeEntry, MeshEntry):
-
 	SO_MorSM = myStudy.FindObjectID( MeshEntry )
-	SO_MorSM = SO_MorSM._narrow(SALOMEDS.SObject)
   	SO_GeomShape = myStudy.FindObjectID( ShapeEntry );
-	SO_GeomShape = SO_GeomShape._narrow(SALOMEDS.SObject)
 
   	if SO_MorSM is not None and SO_GeomShape is not None :
+		# VSR: added temporarily - shape reference is published automatically by the engine
+		res, Ref = SO_MorSM.FindSubObject( Tag_RefOnShape );
+		if res == 1 :
+			return;
+		# VSR ######################################################################
+	
     		SO = myStudyBuilder.NewObjectToTag (SO_MorSM, Tag_RefOnShape);
-		SO = SO._narrow(SALOMEDS.SObject)
     		myStudyBuilder.Addreference (SO,SO_GeomShape);
   
 
@@ -188,19 +183,28 @@ def SetHypothesis(Mesh_Or_SubMesh_Entry, Hypothesis_Entry):
     	res, AHR = SO_MorSM.FindSubObject (Tag_RefOnAppliedHypothesis)
     	if  AHR is None or res == 0: 
       		AHR = myStudyBuilder.NewObjectToTag (SO_MorSM, Tag_RefOnAppliedHypothesis);
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeName");
-      		aName = anAttr._narrow(SALOMEDS.AttributeName);
-      		aName.SetValue("Applied Hypothesis");
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeSelectable");
-      		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+      		aName = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeName");
+		
+		# The same name as in SMESH_Mesh_i::AddHypothesis() ##################
+      		aName.SetValue("Applied hypotheses");
+		
+      		aSelAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeSelectable");
       		aSelAttr.SetSelectable(0);
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributePixMap");
-      		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
+      		aPixmap = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributePixMap");
       		aPixmap.SetPixMap( "mesh_tree_hypo.png" );
-    		
-    		SO = myStudyBuilder.NewObject(AHR);
-		SO = SO._narrow(SALOMEDS.SObject)
-    		myStudyBuilder.Addreference (SO,SO_Hypothesis);
+		
+	# VSR: added temporarily - reference to applied hypothesis is published automatically by the engine
+	else :
+		it = myStudy.NewChildIterator(AHR);
+		while it.More() :
+			res, Ref = it.Value().ReferencedObject();
+			if res and Ref is not None and Ref.GetID() == Hypothesis_Entry :
+				return;
+			it.Next();
+	# VSR ######################################################################
+	
+	SO = myStudyBuilder.NewObject(AHR);
+    	myStudyBuilder.Addreference (SO,SO_Hypothesis);
 
 #------------------------------------------------------------
 def SetAlgorithms(Mesh_Or_SubMesh_Entry, Algorithms_Entry):
@@ -211,16 +215,26 @@ def SetAlgorithms(Mesh_Or_SubMesh_Entry, Algorithms_Entry):
     	res, AHR = SO_MorSM.FindSubObject (Tag_RefOnAppliedAlgorithms);
     	if AHR is None or res == 0: 
       		AHR = myStudyBuilder.NewObjectToTag (SO_MorSM, Tag_RefOnAppliedAlgorithms);
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeName");
-      		aName = anAttr._narrow(SALOMEDS.AttributeName);
-      		aName.SetValue("Applied Algorithm");
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeSelectable");
-      		aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+      		aName = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeName");
+
+		# The same name as in SMESH_Mesh_i::AddHypothesis() ##################
+      		aName.SetValue("Applied algorithms");
+		
+      		aSelAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributeSelectable");
       		aSelAttr.SetSelectable(0);
-      		anAttr = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributePixMap");
-      		aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap);
+      		aPixmap = myStudyBuilder.FindOrCreateAttribute(AHR, "AttributePixMap");
       		aPixmap.SetPixMap( "mesh_tree_algo.png" );
-    
+			
+	# VSR: added temporarily - reference to applied hypothesis is published automatically by the engine
+	else :
+		it = myStudy.NewChildIterator(AHR);
+		while it.More() :
+			res, Ref = it.Value().ReferencedObject();
+			if res and Ref is not None and Ref.GetID() == Algorithms_Entry :
+				return;
+			it.Next();
+	# VSR ######################################################################
+	
     	SO = myStudyBuilder.NewObject(AHR);
     	myStudyBuilder.Addreference (SO,SO_Algorithms);
   
@@ -234,40 +248,41 @@ def UnSetHypothesis( Applied_Hypothesis_Entry ):
 
 #------------------------------------------------------------
 def AddSubMesh ( SO_Mesh_Entry, SM_IOR, ST):
+	# VSR: added temporarily - objects are published automatically by the engine
+	aSO = myStudy.FindObjectIOR( SM_IOR )
+	if aSO is not None:
+		return aSO.GetID()
+	# VSR ######################################################################
+	
 	SO_Mesh = myStudy.FindObjectID( SO_Mesh_Entry )
   	if ( SO_Mesh ) : 
     
     		if  ST == ShapeTypeCompSolid : 
 			Tag_Shape = Tag_SubMeshOnSolid;    
-			Name = "SubMeshes On Solid";
+			Name = "SubMeshes on Solid";
     		elif ST == ShapeTypeFace :
 			Tag_Shape = Tag_SubMeshOnFace;     
-			Name = "SubMeshes On Face";
+			Name = "SubMeshes on Face";
     		elif ST == ShapeTypeEdge :
 			Tag_Shape = Tag_SubMeshOnEdge;     
-			Name = "SubMeshes On Edge";
+			Name = "SubMeshes on Edge";
     		elif ST == ShapeTypeVertex :
 			Tag_Shape = Tag_SubMeshOnVertex;   
-			Name = "SubMeshes On Vertex";
+			Name = "SubMeshes on Vertex";
     		else :
       			Tag_Shape = Tag_SubMeshOnCompound; 
-			Name = "SubMeshes On Compound";
+			Name = "SubMeshes on Compound";
     		
 		res, SubmeshesRoot = SO_Mesh.FindSubObject (Tag_Shape)
     		if SubmeshesRoot is None or res == 0:
       			SubmeshesRoot = myStudyBuilder.NewObjectToTag (SO_Mesh, Tag_Shape);
-      			anAttr = myStudyBuilder.FindOrCreateAttribute(SubmeshesRoot, "AttributeName");
-			
-      			aName = anAttr._narrow(SALOMEDS.AttributeName);
+      			aName = myStudyBuilder.FindOrCreateAttribute(SubmeshesRoot, "AttributeName");
       			aName.SetValue(Name);
-      			anAttr = myStudyBuilder.FindOrCreateAttribute(SubmeshesRoot, "AttributeSelectable");
-      			aSelAttr = anAttr._narrow(SALOMEDS.AttributeSelectable);
+      			aSelAttr = myStudyBuilder.FindOrCreateAttribute(SubmeshesRoot, "AttributeSelectable");
       			aSelAttr.SetSelectable(0);
     		
     		SO = myStudyBuilder.NewObject (SubmeshesRoot); 
-		SO = SO._narrow(SALOMEDS.SObject)
-    		anAttr = myStudyBuilder.FindOrCreateAttribute(SO, "AttributeIOR");
-    		anIOR = anAttr._narrow(SALOMEDS.AttributeIOR);
+    		anIOR = myStudyBuilder.FindOrCreateAttribute(SO, "AttributeIOR");
     		anIOR.SetValue(SM_IOR);
     		return  SO.GetID();
  	 
@@ -275,24 +290,28 @@ def AddSubMesh ( SO_Mesh_Entry, SM_IOR, ST):
 
 #------------------------------------------------------------
 def AddSubMeshOnShape (Mesh_Entry, GeomShape_Entry, SM_IOR, ST) :
-  SO_GeomShape = myStudy.FindObjectID( GeomShape_Entry );
-  if  SO_GeomShape != None : 
-    	SM_Entry = AddSubMesh (Mesh_Entry,SM_IOR,ST);
-    	SO_SM = myStudy.FindObjectID( SM_Entry );
+	# VSR: added temporarily - objects are published automatically by the engine
+	aSO = myStudy.FindObjectIOR( SM_IOR )
+	if aSO is not None:
+		return aSO.GetID()
+	# VSR ######################################################################
+	SO_GeomShape = myStudy.FindObjectID( GeomShape_Entry );
+	if  SO_GeomShape != None : 
+		SM_Entry = AddSubMesh (Mesh_Entry,SM_IOR,ST);
+		SO_SM = myStudy.FindObjectID( SM_Entry );
 
-    	if  SO_SM != None :
-      		SetShape (GeomShape_Entry, SM_Entry);
-      		return SO_SM.GetID();
+		if  SO_SM != None :
+			SetShape (GeomShape_Entry, SM_Entry);
+			return SM_Entry;
     
-  return None;
+	return None;
 
 
 #------------------------------------------------------------
 def SetName(Entry, Name):
 	SO = myStudy.FindObjectID( Entry );
   	if SO != None : 
-   		anAttr = myStudyBuilder.FindOrCreateAttribute(SO, "AttributeName");
-    		aName = anAttr._narrow(SALOMEDS.AttributeName);
+   		aName = myStudyBuilder.FindOrCreateAttribute(SO, "AttributeName");
     		aName.SetValue(Name);
   
 

@@ -1,0 +1,44 @@
+
+# -* Makefile *- 
+#
+# Author : Patrick GOLDBRONN (CEA)
+# Date : 30/11/2001
+# $Header$
+#
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+SUBDIRS= tui gui
+
+@COMMENCE@
+
+docs:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done; \
+	cp -f $(srcdir)/SMESH_index.html SMESH_index.html
+
+clean:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done
+
+distclean: clean
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done
+
+install:
+	$(MAKE) docs
+	(cd tui && $(MAKE) install);
+	(cd gui && $(MAKE) install);
+	cp -f SMESH_index.html $(docdir)
+
+uninstall:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done; \
+	rm -fr $(docdir)/SMESH_index.html

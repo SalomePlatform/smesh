@@ -30,67 +30,142 @@
 #include "SMESH_Hypothesis.idl"
 
 
-module SMESH
+/*!
+ * StdMeshers: interfaces to standard hypotheses and algorithms
+ */
+module StdMeshers
 {
-  interface SMESH_LocalLength : SMESH_Hypothesis
+  /*!
+   * StdMeshers_LocalLength: interface of "Average length" hypothesis
+   */
+  interface StdMeshers_LocalLength : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets <length> parameter value
+     */
     void SetLength(in double length) 
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <length> parameter value
+     */
     double GetLength();
   };
 
-  interface SMESH_NumberOfSegments : SMESH_Hypothesis
+  /*!
+   * StdMeshers_NumberOfSegments: interface of "Nb. Segments" hypothesis
+   */
+  interface StdMeshers_NumberOfSegments : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets <number of segments> parameter value
+     */
     void SetNumberOfSegments(in long segmentsNumber) 
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <number of segments> parameter value
+     */
     long GetNumberOfSegments();
+
+    /*!
+     * Sets <scale factor> parameter value
+     */
     void SetScaleFactor(in double scaleFactor)
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <scale factor> parameter value
+     */
     double GetScaleFactor();
   };
 
-  interface SMESH_MaxElementArea : SMESH_Hypothesis
+  /*!
+   * StdMeshers_MaxElementArea: interface of "Max. Triangle Area" hypothesis
+   */
+  interface StdMeshers_MaxElementArea : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets <maximum element area> parameter value
+     */
     void SetMaxElementArea(in double area) 
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <maximum element area> parameter value
+     */
     double GetMaxElementArea();
   };
 
-  interface SMESH_LengthFromEdges : SMESH_Hypothesis
+  /*!
+   * StdMeshers_LengthFromEdges: interface of "Length From Edges (2D Hyp. for Triangulator)" hypothesis
+   */
+  interface StdMeshers_LengthFromEdges : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets <mode> parameter value
+     */
     void SetMode(in long mode) 
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <mode> parameter value
+     */
     long GetMode();
   };
 
-  interface SMESH_MaxElementVolume : SMESH_Hypothesis
+  /*!
+   * StdMeshers_MaxElementVolume: interface of "Max. Hexahedron or Tetrahedron Volume" hypothesis
+   */
+  interface StdMeshers_MaxElementVolume : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets <maximum element volume> parameter value
+     */
     void SetMaxElementVolume(in double volume) 
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <maximum element volume> parameter value
+     */
     double GetMaxElementVolume();
   };
 
-  interface SMESH_Regular_1D : SMESH_1D_Algo
+  /*!
+   * StdMeshers_NotConformAllowed: interface of "Not Conform Mesh Allowed" hypothesis.
+   * Presence of this hypothesis permits to algorithm generation of not conform mesh.
+   */
+  interface StdMeshers_NotConformAllowed : SMESH::SMESH_Hypothesis
   {
   };
 
-  interface SMESH_MEFISTO_2D : SMESH_2D_Algo
+  /*!
+   * StdMeshers_Regular_1D: interface of "Wire discretisation" algorithm
+   */
+  interface StdMeshers_Regular_1D : SMESH::SMESH_1D_Algo
   {
   };
 
-  interface SMESH_Quadrangle_2D : SMESH_2D_Algo
+  /*!
+   * StdMeshers_MEFISTO_2D: interface of "Triangle (Mefisto)" algorithm
+   */
+  interface StdMeshers_MEFISTO_2D : SMESH::SMESH_2D_Algo
   {
   };
 
-  interface SMESH_Hexa_3D : SMESH_3D_Algo
+  /*!
+   * StdMeshers_Quadrangle_2D: interface of "Quadrangle (Mapping)" algorithm
+   */
+  interface StdMeshers_Quadrangle_2D : SMESH::SMESH_2D_Algo
   {
   };
 
-#ifdef HAVE_NETGEN
-  interface SMESH_NETGEN_3D : SMESH_3D_Algo
+  /*!
+   * StdMeshers_Hexa_3D: interface of "Hexahedron (i,j,k)" algorithm
+   */
+  interface StdMeshers_Hexa_3D : SMESH::SMESH_3D_Algo
   {
   };
-#endif
 
 };
 

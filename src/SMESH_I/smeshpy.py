@@ -44,14 +44,15 @@ class smeshpy:
             self._smesh = salome.lcc.FindOrLoadComponent("FactoryServer","SMESH")
         except:
             MESSAGE( "exception in smeshpy:__init__" )
-        self._studyId = salome.myStudyId
+        self._study = salome.myStudy
+        self._smesh.SetCurrentStudy(self._study)
 
     #--------------------------------------------------------------------------
 
-    def Init(self, shapeId):
+    def CreateMesh(self, shapeId):
         try:
             shape = salome.IDToObject(shapeId)
-            aMesh = self._smesh.Init(self._geom, self._studyId, shape)
+            aMesh = self._smesh.CreateMesh(shape)
             return aMesh
         except:
             MESSAGE( "exception in smeshpy:Init" )
@@ -59,9 +60,9 @@ class smeshpy:
 
     #--------------------------------------------------------------------------
 
-    def CreateHypothesis(self, name):
+    def CreateHypothesis(self, name, libname):
         try:
-            hyp = self._smesh.CreateHypothesis(name,self._studyId)
+            hyp = self._smesh.CreateHypothesis(name, libname)
             return hyp
         except:
             MESSAGE( "exception in smeshpy:CreateHypothesis" )

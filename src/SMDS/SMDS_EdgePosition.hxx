@@ -38,7 +38,6 @@ class SMDS_EdgePosition:public SMDS_Position
 	SMDS_TypeOfPosition GetTypeOfPosition() const;
 	void SetUParameter(double aUparam);
 	double GetUParameter() const;
-	 ~SMDS_EdgePosition();
 
   private:
 

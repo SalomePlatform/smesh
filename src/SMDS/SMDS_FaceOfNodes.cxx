@@ -56,42 +56,47 @@ void SMDS_FaceOfNodes::Print(ostream & OS) const
 	OS << myNodes[i] << ") " << endl;
 }
 
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_FaceOfNodes::
+class SMDS_FaceOfNodes_MyIterator:public SMDS_ElemIterator
+{
+  const vector<const SMDS_MeshNode*>& mySet;
+  int index;
+ public:
+  SMDS_FaceOfNodes_MyIterator(const vector<const SMDS_MeshNode*>& s):
+    mySet(s),index(0) {}
+
+  bool more()
+  {
+    return index<mySet.size();
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    index++;
+    return mySet[index-1];
+  }	
+};
+SMDS_ElemIteratorPtr SMDS_FaceOfNodes::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
-	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		const vector<const SMDS_MeshNode*>& mySet;
-		int index;
-	  public:
-		MyIterator(const vector<const SMDS_MeshNode*>& s):mySet(s),index(0)
-		{}
-
-		bool more()
-		{
-			return index<mySet.size();
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			index++;
-			return mySet[index-1];
-		}	
-	};
-
-	switch(type)
-	{
-	case SMDSAbs_Face:return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
-	case SMDSAbs_Node:return new MyIterator(myNodes);
-	case SMDSAbs_Edge:
-		MESSAGE("Error : edge iterator for SMDS_FaceOfNodes not implemented");
-		break;
-	default:return new SMDS_IteratorOfElements(this,type,new MyIterator(myNodes));
-	}
+  switch(type)
+  {
+  case SMDSAbs_Face:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes));
+  case SMDSAbs_Edge:
+    MESSAGE("Error : edge iterator for SMDS_FaceOfNodes not implemented");
+    break;
+  default:
+    return SMDS_ElemIteratorPtr
+      (new SMDS_IteratorOfElements
+       (this,type,SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes))));
+  }
 }
 
-SMDS_FaceOfNodes::SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
-	SMDS_MeshNode* node3)
+SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+                                   const SMDS_MeshNode* node2,
+                                   const SMDS_MeshNode* node3)
 {
 	myNodes.resize(3);
 	myNodes[0]=node1;
@@ -99,8 +104,10 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
 	myNodes[2]=node3;
 }
 
-SMDS_FaceOfNodes::SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
-	SMDS_MeshNode* node3, SMDS_MeshNode* node4)
+SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
+                                   const SMDS_MeshNode* node2,
+                                   const SMDS_MeshNode* node3,
+                                   const SMDS_MeshNode* node4)
 {
 	myNodes.resize(4);
 	myNodes[0]=node1;
@@ -112,7 +119,7 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
 /*bool operator<(const SMDS_FaceOfNodes& f1, const SMDS_FaceOfNodes& f2)
 {
 	set<SMDS_MeshNode> set1,set2;
-	SMDS_Iterator<const SMDS_MeshElement*> * it;
+	SMDS_ElemIteratorPtr it;
 	const SMDS_MeshNode * n;
 
 	it=f1.nodesIterator();

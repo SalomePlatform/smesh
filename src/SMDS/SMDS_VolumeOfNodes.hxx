@@ -36,32 +36,32 @@ class SMDS_VolumeOfNodes:public SMDS_MeshVolume
 	
   public:
 	SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4);
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4);
 	SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5);
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5);
 	SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5,
-		SMDS_MeshNode * node6);
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5,
+		const SMDS_MeshNode * node6);
 	SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5,
-		SMDS_MeshNode * node6,
-		SMDS_MeshNode * node7,
-		SMDS_MeshNode * node8);
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5,
+		const SMDS_MeshNode * node6,
+		const SMDS_MeshNode * node7,
+		const SMDS_MeshNode * node8);
 
 	void Print(ostream & OS) const;
 	int NbFaces() const;
@@ -69,7 +69,7 @@ class SMDS_VolumeOfNodes:public SMDS_MeshVolume
 	int NbEdges() const;
 	SMDSAbs_ElementType GetType() const;	
   protected:
-	SMDS_Iterator<const SMDS_MeshElement *> *
+	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 	vector<const SMDS_MeshNode *> myNodes;
 };

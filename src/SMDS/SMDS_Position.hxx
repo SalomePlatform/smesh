@@ -28,6 +28,10 @@
 #define _SMDS_Position_HeaderFile
 
 #include "SMDS_TypeOfPosition.hxx"
+#include <boost/shared_ptr.hpp>
+
+class SMDS_Position;
+typedef boost::shared_ptr<SMDS_Position> SMDS_PositionPtr;
 
 class SMDS_Position
 {
@@ -37,7 +41,7 @@ class SMDS_Position
 	virtual inline SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
 	void SetShapeId(int aShapeId);
 	int GetShapeId() const;
-	 ~SMDS_Position();
+	virtual ~SMDS_Position() {}
 
   protected:
 	  SMDS_Position(int aShapeId);

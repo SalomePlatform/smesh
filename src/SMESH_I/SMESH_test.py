@@ -25,6 +25,8 @@
 #  Module : SMESH
 
 import SMESH
+import StdMeshers
+
 import smeshpy
 import salome
 from salome import sg
@@ -76,41 +78,41 @@ ide=geompy.addToStudyInFather(face,edge,name)
 
 # ---- launch SMESH, init a Mesh with the box
 gen=smeshpy.smeshpy()
-mesh=gen.Init(idb)
+mesh=gen.CreateMesh(idb)
 
 # ---- create Hypothesis
 
 print "-------------------------- create Hypothesis"
 print "-------------------------- LocalLength"
-hyp1=gen.CreateHypothesis("LocalLength")
+hyp1=gen.CreateHypothesis("LocalLength","libStdMeshersEngine.so")
 print hyp1.GetName()
 print hyp1.GetId()
-hypo1 = hyp1._narrow(SMESH.SMESH_LocalLength)
+hypo1 = hyp1._narrow(StdMeshers.StdMeshers_LocalLength)
 print hypo1.GetLength()
 hypo1.SetLength(100)
 print hypo1.GetLength()
 
 print "-------------------------- bidon"
-hyp3=gen.CreateHypothesis("bidon")
+hyp3=gen.CreateHypothesis("bidon","")
 
 print "-------------------------- NumberOfSegments"
-hyp3=gen.CreateHypothesis("NumberOfSegments")
-hypo3=hyp3._narrow(SMESH.SMESH_NumberOfSegments)
+hyp3=gen.CreateHypothesis("NumberOfSegments","libStdMeshersEngine.so")
+hypo3=hyp3._narrow(StdMeshers.StdMeshers_NumberOfSegments)
 hypo3.SetNumberOfSegments(7)
 print hypo3.GetName()
 print hypo3.GetNumberOfSegments()
 print hypo3.GetId()
 
 print "-------------------------- MaxElementArea"
-hyp4=gen.CreateHypothesis("MaxElementArea")
-hypo4=hyp4._narrow(SMESH.SMESH_MaxElementArea)
+hyp4=gen.CreateHypothesis("MaxElementArea","libStdMeshersEngine.so")
+hypo4=hyp4._narrow(StdMeshers.StdMeshers_MaxElementArea)
 hypo4.SetMaxElementArea(5000)
 print hypo4.GetName()
 print hypo4.GetMaxElementArea()
 print hypo4.GetId()
 
 print "-------------------------- Regular_1D"
-alg1=gen.CreateHypothesis("Regular_1D")
+alg1=gen.CreateHypothesis("Regular_1D","libStdMeshersEngine.so")
 print alg1.GetName()
 print alg1.GetId()
 algo1=alg1._narrow(SMESH.SMESH_Algo)
@@ -118,18 +120,18 @@ listHyp=algo1.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
     
-algo_1=alg1._narrow(SMESH.SMESH_Regular_1D)
+algo_1=alg1._narrow(StdMeshers.StdMeshers_Regular_1D)
 print algo_1.GetId()
 
 print "-------------------------- MEFISTO_2D"
-alg2=gen.CreateHypothesis("MEFISTO_2D")
+alg2=gen.CreateHypothesis("MEFISTO_2D","libStdMeshersEngine.so")
 print alg2.GetName()
 print alg2.GetId()
 algo2=alg2._narrow(SMESH.SMESH_Algo)
 listHyp=algo2.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
-algo_2=alg2._narrow(SMESH.SMESH_MEFISTO_2D)
+algo_2=alg2._narrow(StdMeshers.StdMeshers_MEFISTO_2D)
 print algo_2.GetId()
 
 # ---- add hypothesis to edge

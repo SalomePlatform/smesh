@@ -73,6 +73,9 @@ void SMESH_Swig::Init(int studyID)
   Engines::Component_var comp = QAD_Application::getDesktop()->getEngine("FactoryServer", "SMESH");
   SMESH::SMESH_Gen_var CompMesh = SMESH::SMESH_Gen::_narrow(comp);
 
+  Engines::Component_var comp1 = QAD_Application::getDesktop()->getEngine("FactoryServer", "GEOM");
+  GEOM::GEOM_Gen_var CompGeom = GEOM::GEOM_Gen::_narrow(comp1);
+
   QAD_ResourceMgr* resMgr = QAD_Desktop::createResourceManager();
   if ( resMgr ) {
     QString msg;
@@ -83,6 +86,9 @@ void SMESH_Swig::Init(int studyID)
   CORBA::Object_var obj = QAD_Application::getDesktop()->getNameService()->Resolve("/myStudyManager");
   SALOMEDS::StudyManager_var myStudyMgr = SALOMEDS::StudyManager::_narrow(obj);
   myStudy = myStudyMgr->GetStudyByID(studyID);
+
+  CompMesh->SetCurrentStudy( myStudy.in() ); 
+
   myStudyBuilder = myStudy->NewBuilder();
   SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var    aName;
@@ -104,8 +110,7 @@ void SMESH_Swig::Init(int studyID)
     myStudyBuilder->DefineComponentInstance(father, CompMesh );
     if (aLocked) myStudy->GetProperties()->SetLocked(true);
   }
-
-  mySComponentMesh=father;
+  mySComponentMesh = SALOMEDS::SComponent::_narrow( father );
 
   // Tags definition 
   Tag_HypothesisRoot  = 1;
@@ -131,6 +136,12 @@ SMESH_Swig::~SMESH_Swig()
 const char* SMESH_Swig::AddNewMesh(const char* IOR)
 {
   MESSAGE("AddNewMesh");
+
+  // VSR: added temporarily - to be removed - objects are published automatically by engine
+  SALOMEDS::SObject_var SO = myStudy->FindObjectIOR( IOR );
+  if ( !SO->_is_nil() )
+    return SO->GetID();
+
   //Find or Create Hypothesis root
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
@@ -139,7 +150,6 @@ const char* SMESH_Swig::AddNewMesh(const char* IOR)
   SALOMEDS::AttributePixMap_var     aPixmap;
 
   SALOMEDS::SObject_var HypothesisRoot;
-  ASSERT(!mySComponentMesh->_is_nil());
   if (!mySComponentMesh->FindSubObject (Tag_HypothesisRoot, HypothesisRoot)) {
     HypothesisRoot = myStudyBuilder->NewObjectToTag (mySComponentMesh, Tag_HypothesisRoot);
     anAttr = myStudyBuilder->FindOrCreateAttribute(HypothesisRoot, "AttributeName");
@@ -181,6 +191,12 @@ const char* SMESH_Swig::AddNewMesh(const char* IOR)
 const char* SMESH_Swig::AddNewHypothesis(const char* IOR)
 {
   MESSAGE("AddNewHypothesis");
+
+  // VSR: added temporarily - to be removed - objects are published automatically by engine
+  SALOMEDS::SObject_var SO = myStudy->FindObjectIOR( IOR );
+  if ( !SO->_is_nil() )
+    return SO->GetID();
+
   //Find or Create Hypothesis root
   SALOMEDS::SObject_var             HypothesisRoot;
   SALOMEDS::GenericAttribute_var    anAttr;
@@ -225,6 +241,12 @@ const char* SMESH_Swig::AddNewHypothesis(const char* IOR)
 const char* SMESH_Swig::AddNewAlgorithms(const char* IOR)
 {
   MESSAGE("AddNewAlgorithms");
+
+  // VSR: added temporarily - to be removed - objects are published automatically by engine
+  SALOMEDS::SObject_var SO = myStudy->FindObjectIOR( IOR );
+  if ( !SO->_is_nil() )
+    return SO->GetID();
+
   //Find or Create Algorithms root
   SALOMEDS::SObject_var             AlgorithmsRoot;
   SALOMEDS::GenericAttribute_var    anAttr;

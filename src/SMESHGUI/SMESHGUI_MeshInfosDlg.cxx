@@ -32,369 +32,413 @@ using namespace std;
 #include "SMESHGUI.h"
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
+#include "QAD_WaitCursor.h"
 #include "utilities.h"
 
 // QT Includes
 #include <qgroupbox.h>
 #include <qlabel.h>
+#include <qframe.h>
+#include <qwidgetstack.h>
 #include <qlayout.h>
-#include <qvariant.h>
-#include <qtooltip.h>
-#include <qwhatsthis.h>
 #include <qmap.h>
+#include <qpushbutton.h>
 
-/* 
- *  Constructs a SMESHGUI_MeshInfosDlg which is a child of 'parent', with the 
- *  name 'name' and widget flags set to 'f' 
- *
- *  The dialog will by default be modeless, unless you set 'modal' to
- *  TRUE to construct a modal dialog.
+#define COLONIZE( str )   ( QString( str ).contains( ":" ) > 0 ? QString( str ) : QString( str ) + " :"  )
+
+//=================================================================================
+/*!
+ *  SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg
+ * 
+ *  Constructor
  */
-SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name, SALOME_Selection* Sel, bool modal, WFlags fl )
-    : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+//=================================================================================
+SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg( QWidget* parent,  const char* name, bool modal, WFlags fl )
+     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose )
 {
-    if ( !name )
-	setName( "SMESHGUI_MeshInfosDlg" );
-    setCaption( tr( "SMESH_MESHINFO_TITLE"  ) );
-    setSizeGripEnabled( TRUE );
+  if ( !name )
+      setName( "SMESHGUI_MeshInfosDlg" );
+  setCaption( tr( "SMESH_MESHINFO_TITLE"  ) );
+  setSizeGripEnabled( TRUE );
 
-    SMESHGUI_MeshInfosDlgLayout = new QVBoxLayout( this ); 
-    SMESHGUI_MeshInfosDlgLayout->setSpacing( 6 );
-    SMESHGUI_MeshInfosDlgLayout->setMargin( 11 );
+  myStartSelection = true;
+  myIsActiveWindow = true;
 
-    /****************************************************************/
-    GroupBox1 = new QGroupBox( this, "GroupBox1" );
-    GroupBox1->setTitle( tr( "SMESH_MESHINFO_NB1D"  ) );
-    GroupBox1->setColumnLayout(0, Qt::Vertical );
-    GroupBox1->layout()->setSpacing( 0 );
-    GroupBox1->layout()->setMargin( 0 );
-    QGridLayout* GroupBox1Layout = new QGridLayout( GroupBox1->layout() );
-    GroupBox1Layout->setAlignment( Qt::AlignTop );
-    GroupBox1Layout->setSpacing( 6 );
-    GroupBox1Layout->setMargin( 11 );
+  QVBoxLayout* aTopLayout = new QVBoxLayout( this ); 
+  aTopLayout->setSpacing( 6 );  aTopLayout->setMargin( 11 );
 
-    TextLabel11 = new QLabel( GroupBox1, "TextLabel11" );
-    TextLabel11->setMinimumWidth( 100 );
-    TextLabel11->setText( tr( "SMESH_MESHINFO_NODES"  ) );
-    GroupBox1Layout->addWidget( TextLabel11, 0, 0 );
+  // select button & label
+  QPixmap image0( QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr( "ICON_SELECT" ) ) );
+  mySelectBtn = new QPushButton( this, "mySelectBtn" );
+  mySelectBtn->setPixmap( image0 );
+  mySelectBtn->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
 
-    TextLabel12 = new QLabel( GroupBox1, "TextLabel12" );
-    TextLabel12->setMinimumWidth( 100 );
-    TextLabel12->setText( tr( "SMESH_MESHINFO_EDGES"  ) );
-    GroupBox1Layout->addWidget( TextLabel12, 1, 0 );
+  mySelectLab = new QLabel( this, "mySelectLab" );
+  mySelectLab->setAlignment( AlignCenter );
+  QFont fnt = mySelectLab->font(); fnt.setBold( true );
+  mySelectLab->setFont( fnt );
 
-    TextLabel13 = new QLabel( GroupBox1, "TextLabel13" );
-    TextLabel13->setMinimumWidth( 100 );
-    GroupBox1Layout->addWidget( TextLabel13, 0, 1 );
+  QHBoxLayout* aSelectLayout = new QHBoxLayout; 
+  aSelectLayout->setMargin( 0 ); aSelectLayout->setSpacing( 0 );
+  aSelectLayout->addWidget( mySelectBtn ); 
+  aSelectLayout->addWidget( mySelectLab );
 
-    TextLabel14 = new QLabel( GroupBox1, "TextLabel14" );
-    TextLabel14->setMinimumWidth( 100 );
-    GroupBox1Layout->addWidget( TextLabel14, 1, 1 );
-    SMESHGUI_MeshInfosDlgLayout->addWidget( GroupBox1 );
+  // top widget stack
+  myWGStack = new QWidgetStack( this );
 
-    /****************************************************************/
-    GroupBox2 = new QGroupBox( this, "GroupBox2" );
-    GroupBox2->setTitle( tr( "SMESH_MESHINFO_NB2D"  ) );
-    GroupBox2->setColumnLayout(0, Qt::Vertical );
-    GroupBox2->layout()->setSpacing( 0 );
-    GroupBox2->layout()->setMargin( 0 );
-    QGridLayout* GroupBox2Layout = new QGridLayout( GroupBox2->layout() );
-    GroupBox2Layout->setAlignment( Qt::AlignTop );
-    GroupBox2Layout->setSpacing( 6 );
-    GroupBox2Layout->setMargin( 11 );
+  // no valid selection
+  QWidget* myBadWidget = new QWidget( myWGStack );
+  QVBoxLayout* aBadLayout = new QVBoxLayout( myBadWidget ); 
+  QLabel* myBadLab = new QLabel( tr( "SMESH_BAD_SELECTION" ), myBadWidget, "myBadLab" );
+  myBadLab->setAlignment( Qt::AlignCenter ); 
+  myBadLab->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Expanding ) );
+  aBadLayout->addWidget( myBadLab );
+  myWGStack->addWidget( myBadWidget, 0 );
+  
+  // mesh
+  myMeshWidget = new QWidget( myWGStack );
+  QGridLayout* aMeshLayout = new QGridLayout( myMeshWidget ); 
+  aMeshLayout->setSpacing( 6 );  aMeshLayout->setMargin( 0 );
+  myWGStack->addWidget( myMeshWidget );
+  
+  // --> name
+  QLabel* myMeshNameLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_NAME" ) ), myMeshWidget, "myMeshNameLab" );
+  myMeshName    = new QLabel( myMeshWidget, "myMeshName" );
+  myMeshName->setMinimumWidth( 100 );
+  QFrame* line1 = new QFrame( myMeshWidget );
+  line1->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  
+  // --> nodes
+  QLabel* myMeshNbNodesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_NODES" ) ), myMeshWidget, "myMeshNbNodesLab" );
+  myMeshNbNodes    = new QLabel( myMeshWidget, "myMeshNbNodes" );
+  myMeshNbNodes->setMinimumWidth( 100 );
+  
+  // --> edges
+  QLabel* myMeshNbEdgesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_EDGES" ) ), myMeshWidget, "myMeshNbEdgesLab" );
+  myMeshNbEdges    = new QLabel( myMeshWidget, "myMeshNbEdges" );
+  myMeshNbEdges->setMinimumWidth( 100 );
+  
+  // --> faces
+  myMeshFacesGroup = new QGroupBox( tr( "SMESH_MESHINFO_FACES" ), myMeshWidget, "myMeshFacesGroup" );
+  myMeshFacesGroup->setColumnLayout(0, Qt::Vertical );
+  myMeshFacesGroup->layout()->setSpacing( 0 );  myMeshFacesGroup->layout()->setMargin( 0 );
+  QGridLayout* myMeshFacesGroupLayout = new QGridLayout( myMeshFacesGroup->layout() );
+  myMeshFacesGroupLayout->setAlignment( Qt::AlignTop );
+  myMeshFacesGroupLayout->setSpacing( 6 );  myMeshFacesGroupLayout->setMargin( 11 );
 
-    TextLabel21 = new QLabel( GroupBox2, "TextLabel21" );
-    TextLabel21->setMinimumWidth( 100 );
-    TextLabel21->setText( tr( "SMESH_MESHINFO_TRIANGLES"  ) );
-    GroupBox2Layout->addWidget( TextLabel21, 0, 0 );
+  // --> faces --> total
+  QLabel* myMeshNbFacesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TOTAL" ) ), myMeshFacesGroup, "myMeshNbFacesLab" );
+  myMeshNbFacesLab->setFont( fnt );
+  myMeshNbFaces    = new QLabel( myMeshFacesGroup, "myMeshNbFaces" );
+  myMeshNbFaces->setMinimumWidth( 100 );
+  myMeshNbFaces->setFont( fnt );
+  
+  // --> faces --> triangles
+  QLabel* myMeshNbTrianglesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TRIANGLES" ) ), myMeshFacesGroup, "myMeshNbTrianglesLab" );
+  myMeshNbTriangles    = new QLabel( myMeshFacesGroup, "myMeshNbTriangles" );
+  myMeshNbTriangles->setMinimumWidth( 100 );
+  
+  // --> faces --> quadrangles
+  QLabel* myMeshNbQuadranglesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_QUADRANGLES" ) ), myMeshFacesGroup, "myMeshNbQuadranglesLab" );
+  myMeshNbQuadrangles    = new QLabel( myMeshFacesGroup, "myMeshNbQuadrangles" );
+  myMeshNbQuadrangles->setMinimumWidth( 100 );
+  
+  myMeshFacesGroupLayout->addWidget( myMeshNbFacesLab,       0, 0 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbFaces,          0, 1 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbTrianglesLab,   1, 0 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbTriangles,      1, 1 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbQuadranglesLab, 2, 0 );
+  myMeshFacesGroupLayout->addWidget( myMeshNbQuadrangles,    2, 1 );
+  
+  // --> volumes
+  myMeshVolumesGroup = new QGroupBox( tr( "SMESH_MESHINFO_VOLUMES" ), myMeshWidget, "myMeshVolumesGroup" );
+  myMeshVolumesGroup->setColumnLayout(0, Qt::Vertical );
+  myMeshVolumesGroup->layout()->setSpacing( 0 );  myMeshVolumesGroup->layout()->setMargin( 0 );
+  QGridLayout* myMeshVolumesGroupLayout = new QGridLayout( myMeshVolumesGroup->layout() );
+  myMeshVolumesGroupLayout->setAlignment( Qt::AlignTop );
+  myMeshVolumesGroupLayout->setSpacing( 6 );  myMeshVolumesGroupLayout->setMargin( 11 );
+  
+  // --> volumes --> total
+  QLabel* myMeshNbVolumesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TOTAL" ) ), myMeshVolumesGroup, "myMeshNbVolumesLab" );
+  myMeshNbVolumesLab->setFont( fnt );
+  myMeshNbVolumes    = new QLabel( myMeshVolumesGroup, "myMeshNbVolumes" );
+  myMeshNbVolumes->setMinimumWidth( 100 );
+  myMeshNbVolumes->setFont( fnt );
+  
+  // --> volumes --> tetrahedrons
+  QLabel* myMeshNbTetraLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TETRAS" ) ), myMeshVolumesGroup, "myMeshNbTetraLab" );
+  myMeshNbTetra    = new QLabel( myMeshVolumesGroup, "myMeshNbTetra" );
+  myMeshNbTetra->setMinimumWidth( 100 );
+  
+  // --> volumes --> hexahedrons
+  QLabel* myMeshNbHexaLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_HEXAS" ) ), myMeshVolumesGroup, "myMeshNbHexaLab" );
+  myMeshNbHexa    = new QLabel( myMeshVolumesGroup, "myMeshNbHexa" );
+  myMeshNbHexaLab->setMinimumWidth( 100 );
+  
+  // --> volumes --> prisms
+  QLabel* myMeshNbPrismLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_PRISMS" ) ), myMeshVolumesGroup, "myMeshNbPrismLab" );
+  myMeshNbPrism    = new QLabel( myMeshVolumesGroup, "myMeshNbPrism" );
+  myMeshNbPrism->setMinimumWidth( 100 );
+  
+  // --> volumes --> pyramids
+  QLabel* myMeshNbPyraLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_PYRAS" ) ), myMeshVolumesGroup, "myMeshNbPyraLab" );
+  myMeshNbPyra    = new QLabel( myMeshVolumesGroup, "myMeshNbPyra" );
+  myMeshNbPyra->setMinimumWidth( 100 );
+  
+  myMeshVolumesGroupLayout->addWidget( myMeshNbVolumesLab, 0, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbVolumes,    0, 1 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbTetraLab,   1, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbTetra,      1, 1 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbHexaLab,    2, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbHexa,       2, 1 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPrismLab,   3, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPrism,      3, 1 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPyraLab,    4, 0 );
+  myMeshVolumesGroupLayout->addWidget( myMeshNbPyra,       4, 1 );
+  
+  aMeshLayout->addWidget( myMeshNameLab,          0, 0 );
+  aMeshLayout->addWidget( myMeshName,             0, 1 );
+  aMeshLayout->addMultiCellWidget( line1,   1, 1, 0, 1 );
+  aMeshLayout->addWidget( myMeshNbNodesLab,       2, 0 );
+  aMeshLayout->addWidget( myMeshNbNodes,          2, 1 );
+  aMeshLayout->addWidget( myMeshNbEdgesLab,       3, 0 );
+  aMeshLayout->addWidget( myMeshNbEdges,          3, 1 );
+  aMeshLayout->addMultiCellWidget( myMeshFacesGroup,   4, 4, 0, 1 );
+  aMeshLayout->addMultiCellWidget( myMeshVolumesGroup, 5, 5, 0, 1 );
+  aMeshLayout->addItem( new QSpacerItem( 5, 5, QSizePolicy::Minimum, QSizePolicy::Expanding ), 6, 0 );
 
-    TextLabel22 = new QLabel( GroupBox2, "TextLabel22" );
-    TextLabel22->setMinimumWidth( 100 );
-    TextLabel22->setText( tr( "SMESH_MESHINFO_QUADRANGLES"  ) );
-    GroupBox2Layout->addWidget( TextLabel22, 1, 0 );
+  // submesh
+  mySubMeshWidget = new QWidget( myWGStack );
+  QGridLayout* aSubMeshLayout = new QGridLayout( mySubMeshWidget ); 
+  aSubMeshLayout->setSpacing( 6 );  aSubMeshLayout->setMargin( 0 );
+  myWGStack->addWidget( mySubMeshWidget );
+  
+  // --> name
+  QLabel* mySubMeshNameLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_NAME" ) ), mySubMeshWidget, "mySubMeshNameLab" );
+  mySubMeshName    = new QLabel( mySubMeshWidget, "mySubMeshName" );
+  mySubMeshName->setMinimumWidth( 100 );
+  QFrame* line2 = new QFrame( mySubMeshWidget );
+  line2->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  
+  // --> nodes
+  QLabel* mySubMeshNbNodesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_NODES" ) ), mySubMeshWidget, "mySubMeshNbNodesLab" );
+  mySubMeshNbNodes    = new QLabel( mySubMeshWidget, "mySubMeshNbNodes" );
+  mySubMeshNbNodes->setMinimumWidth( 100 );
+  
+  // --> elements
+  mySubMeshElementsGroup = new QGroupBox( tr( "SMESH_MESHINFO_ELEMENTS" ), mySubMeshWidget, "mySubMeshElementsGroup" );
+  mySubMeshElementsGroup->setColumnLayout(0, Qt::Vertical );
+  mySubMeshElementsGroup->layout()->setSpacing( 0 );  mySubMeshElementsGroup->layout()->setMargin( 0 );
+  QGridLayout* mySubMeshElementsGroupLayout = new QGridLayout( mySubMeshElementsGroup->layout() );
+  mySubMeshElementsGroupLayout->setAlignment( Qt::AlignTop );
+  mySubMeshElementsGroupLayout->setSpacing( 6 );  mySubMeshElementsGroupLayout->setMargin( 11 );
 
-    TextLabel23 = new QLabel( GroupBox2, "TextLabel23" );
-    TextLabel23->setMinimumWidth( 100 );
-    GroupBox2Layout->addWidget( TextLabel23, 0, 1 );
-    
-    TextLabel24 = new QLabel( GroupBox2, "TextLabel24" );
-    TextLabel24->setMinimumWidth( 100 );
-    GroupBox2Layout->addWidget( TextLabel24, 1, 1 );
-    SMESHGUI_MeshInfosDlgLayout->addWidget( GroupBox2 );
+  // --> elements --> total
+  QLabel* mySubMeshNbElementsLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TOTAL" ) ), mySubMeshElementsGroup, "mySubMeshNbElementsLab" );
+  mySubMeshNbElementsLab->setFont( fnt );
+  mySubMeshNbElements    = new QLabel( mySubMeshElementsGroup, "mySubMeshNbElements" );
+  mySubMeshNbElements->setMinimumWidth( 100 );
+  mySubMeshNbElements->setFont( fnt );
+  
+  // --> elements --> edges
+  QLabel* mySubMeshNbEdgesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_EDGES" ) ), mySubMeshElementsGroup, "mySubMeshNbEdgesLab" );
+  mySubMeshNbEdges    = new QLabel( mySubMeshElementsGroup, "mySubMeshNbEdges" );
+  mySubMeshNbEdges->setMinimumWidth( 100 );
+  
+  // --> elements --> faces
+  QLabel* mySubMeshNbFacesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_FACES" ) ), mySubMeshElementsGroup, "mySubMeshNbFacesLab" );
+  mySubMeshNbFaces    = new QLabel( mySubMeshElementsGroup, "mySubMeshNbFaces" );
+  mySubMeshNbFaces->setMinimumWidth( 100 );
+  
+  // --> elements --> volumes
+  QLabel* mySubMeshNbVolumesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_VOLUMES" ) ), mySubMeshElementsGroup, "mySubMeshNbVolumesLab" );
+  mySubMeshNbVolumes    = new QLabel( mySubMeshElementsGroup, "mySubMeshNbVolumes" );
+  mySubMeshNbVolumes->setMinimumWidth( 100 );
+  
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbElementsLab, 0, 0 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbElements,    0, 1 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbEdgesLab,    1, 0 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbEdges,       1, 1 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbFacesLab,    2, 0 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbFaces,       2, 1 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbVolumesLab,  3, 0 );
+  mySubMeshElementsGroupLayout->addWidget( mySubMeshNbVolumes,     3, 1 );
 
-    /****************************************************************/
-    GroupBox3 = new QGroupBox( this, "GroupBox3" );
-    GroupBox3->setTitle( tr( "SMESH_MESHINFO_NB3D"  ) );
-    GroupBox3->setColumnLayout(0, Qt::Vertical );
-    GroupBox3->layout()->setSpacing( 0 );
-    GroupBox3->layout()->setMargin( 0 );
-    QGridLayout* GroupBox3Layout = new QGridLayout( GroupBox3->layout() );
-    GroupBox3Layout->setAlignment( Qt::AlignTop );
-    GroupBox3Layout->setSpacing( 6 );
-    GroupBox3Layout->setMargin( 11 );
+  aSubMeshLayout->addWidget( mySubMeshNameLab,          0, 0 );
+  aSubMeshLayout->addWidget( mySubMeshName,             0, 1 );
+  aSubMeshLayout->addMultiCellWidget( line2,      1, 1, 0, 1 );
+  aSubMeshLayout->addWidget( mySubMeshNbNodesLab,       2, 0 );
+  aSubMeshLayout->addWidget( mySubMeshNbNodes,          2, 1 );
+  aSubMeshLayout->addMultiCellWidget( mySubMeshElementsGroup, 3, 3, 0, 1 );
+  aSubMeshLayout->addItem( new QSpacerItem( 5, 5, QSizePolicy::Minimum, QSizePolicy::Expanding ), 4, 0 );
 
-    TextLabel31 = new QLabel( GroupBox3, "TextLabel31" );
-    TextLabel31->setMinimumWidth( 100 );
-    TextLabel31->setText( tr( "SMESH_MESHINFO_TETRAS"  ) );
-    GroupBox3Layout->addWidget( TextLabel31, 0, 0 );
+  // group
+  myGroupWidget = new QWidget( myWGStack );
+  QGridLayout* myGroupWidgetLayout = new QGridLayout( myGroupWidget ); 
+  myGroupWidgetLayout->setSpacing( 6 );  myGroupWidgetLayout->setMargin( 0 );
+  myWGStack->addWidget( myGroupWidget );
+  
+  // --> name
+  QLabel* myGroupNameLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_NAME" ) ), myGroupWidget, "myGroupNameLab" );
+  myGroupName = new QLabel( myGroupWidget, "myGroupName" );
+  myGroupName->setMinimumWidth( 100 );
+  QFrame* line3 = new QFrame( myGroupWidget );
+  line3->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+  
+  // --> type
+  QLabel* myGroupTypeLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_TYPE" ) ), myGroupWidget, "myGroupTypeLab" );
+  myGroupType = new QLabel( myGroupWidget, "myGroupType" );
+  myGroupType->setMinimumWidth( 100 );
 
-    TextLabel32 = new QLabel( GroupBox3, "TextLabel32" );
-    TextLabel32->setMinimumWidth( 100 );
-    TextLabel32->setText( tr( "SMESH_MESHINFO_HEXAS"  ) );
-    GroupBox3Layout->addWidget( TextLabel32, 1, 0 );
+  // --> number of entities
+  QLabel* myGroupNbLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_ENTITIES" ) ), myGroupWidget, "myGroupNbLab" );
+  myGroupNb = new QLabel( myGroupWidget, "myGroupNb" );
+  myGroupNb->setMinimumWidth( 100 );
+  
+  myGroupWidgetLayout->addWidget( myGroupNameLab,       0, 0 );
+  myGroupWidgetLayout->addWidget( myGroupName,          0, 1 );
+  myGroupWidgetLayout->addMultiCellWidget( line3, 1, 1, 0, 1 );
+  myGroupWidgetLayout->addWidget( myGroupTypeLab,       2, 0 );
+  myGroupWidgetLayout->addWidget( myGroupType,          2, 1 );
+  myGroupWidgetLayout->addWidget( myGroupNbLab,         3, 0 );
+  myGroupWidgetLayout->addWidget( myGroupNb,            3, 1 );
+  myGroupWidgetLayout->addItem( new QSpacerItem( 5, 5, QSizePolicy::Minimum, QSizePolicy::Expanding ), 4, 0 );
 
-    TextLabel33 = new QLabel( GroupBox3, "TextLabel33" );
-    TextLabel33->setMinimumWidth( 100 );
-    GroupBox3Layout->addWidget( TextLabel33, 0, 1 );
+  // buttons
+  myButtonsGroup = new QGroupBox( this, "myButtonsGroup" );
+  myButtonsGroup->setColumnLayout(0, Qt::Vertical );
+  myButtonsGroup->layout()->setSpacing( 0 );  myButtonsGroup->layout()->setMargin( 0 );
+  QHBoxLayout* myButtonsGroupLayout = new QHBoxLayout( myButtonsGroup->layout() );
+  myButtonsGroupLayout->setAlignment( Qt::AlignTop );
+  myButtonsGroupLayout->setSpacing( 6 ); myButtonsGroupLayout->setMargin( 11 );
+  
+  // buttons --> OK button
+  myOkBtn = new QPushButton( tr( "SMESH_BUT_OK"  ), myButtonsGroup, "myOkBtn" );
+  myOkBtn->setAutoDefault( TRUE ); myOkBtn->setDefault( TRUE );
+  myButtonsGroupLayout->addStretch();
+  myButtonsGroupLayout->addWidget( myOkBtn );
+  myButtonsGroupLayout->addStretch();
 
-    TextLabel34 = new QLabel( GroupBox3, "TextLabel34" );
-    TextLabel34->setMinimumWidth( 100 );
-    GroupBox3Layout->addWidget( TextLabel34, 1, 1 );
-    SMESHGUI_MeshInfosDlgLayout->addWidget( GroupBox3 );
+  aTopLayout->addLayout( aSelectLayout );
+  aTopLayout->addWidget( myWGStack );
+  aTopLayout->addWidget( myButtonsGroup );
+  
+  mySelection = SALOME_Selection::Selection( SMESHGUI::GetSMESHGUI()->GetActiveStudy()->getSelection() );
+  SMESHGUI::GetSMESHGUI()->SetActiveDialogBox( this ) ;
 
-    /****************************************************************/
-    QGroupBox* GroupButtons = new QGroupBox( this, "GroupButtons" );
-    GroupButtons->setColumnLayout(0, Qt::Vertical );
-    GroupButtons->layout()->setSpacing( 0 );
-    GroupButtons->layout()->setMargin( 0 );
-    QGridLayout* GroupButtonsLayout = new QGridLayout( GroupButtons->layout() );
-    GroupButtonsLayout->setAlignment( Qt::AlignTop );
-    GroupButtonsLayout->setSpacing( 6 );
-    GroupButtonsLayout->setMargin( 11 );
+  // connect signals
+  connect( myOkBtn,                  SIGNAL( clicked() ),                      this, SLOT( close() ) );
+  connect( mySelectBtn,              SIGNAL( clicked() ),                      this, SLOT( onStartSelection() ) );
+  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ),        this, SLOT( close() ) ) ;
+  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
+  connect( mySelection,              SIGNAL( currentSelectionChanged() ),      this, SLOT( onSelectionChanged() ) );
 
-    GroupButtonsLayout->addItem( new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum ), 0, 0 );
-    buttonOk = new QPushButton( GroupButtons, "buttonOk" );
-    buttonOk->setText( tr( "SMESH_BUT_OK"  ) );
-    buttonOk->setAutoDefault( TRUE );
-    buttonOk->setDefault( TRUE );
-    GroupButtonsLayout->addWidget( buttonOk, 0, 1 );
-    GroupButtonsLayout->addItem( new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum ), 0, 2 );
-    SMESHGUI_MeshInfosDlgLayout->addWidget( GroupButtons );
-    /****************************************************************/
+  // resize and move dialog, then show
+  int x, y;
+  SMESHGUI::GetSMESHGUI()->DefineDlgPosition( this, x, y );
+  this->move( x, y );
+  this->show();
 
-    Init( Sel ) ; 
+  // init dialog with current selection
+  onSelectionChanged();
 }
 
-/*  
- *  Destroys the object and frees any allocated resources
+//=================================================================================
+/*!
+ *  SMESHGUI_MeshInfosDlg::~SMESHGUI_MeshInfosDlg
+ * 
+ *  Destructor
  */
+//=================================================================================
 SMESHGUI_MeshInfosDlg::~SMESHGUI_MeshInfosDlg()
 {
-    // no need to delete child widgets, Qt does it all for us
 }
 
 //=================================================================================
-// function : Init()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MeshInfosDlg::Init( SALOME_Selection* Sel )
-{  
-  mySelection = Sel ;
-
-  mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
-  myStudy = mySMESHGUI->GetActiveStudy()->getStudyDocument();
-
-  Engines::Component_var comp = QAD_Application::getDesktop()->getEngine("FactoryServer", "SMESH");
-  myCompMesh = SMESH::SMESH_Gen::_narrow(comp);
-
-  int nbSel = mySelection->IObjectCount();
-
-  TextLabel13->setText( "0" );
-  TextLabel14->setText( "0" );
-  TextLabel23->setText( "0" );
-  TextLabel24->setText( "0" );
-  TextLabel33->setText( "0" );
-  TextLabel34->setText( "0" );
-
-  //gets the selected mesh
-  if ( nbSel == 1 ) {
-    Handle(SALOME_InteractiveObject) IObject = mySelection->firstIObject();
-    Standard_Boolean res;
-    myMesh = mySMESHGUI->ConvertIOinMesh( IObject, res );
-    if ( res )
-      DumpMeshInfos();
-  }
-
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
-
-  /* signals and slots connections */
-  connect( buttonOk,    SIGNAL( clicked() ),                      this, SLOT( ClickOnOk() ) );
-  connect( mySMESHGUI,  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
-  connect( mySelection, SIGNAL( currentSelectionChanged() ),      this, SLOT( SelectionIntoArgument() ) );
-  /* to close dialog if study change */
-  connect( mySMESHGUI,  SIGNAL ( SignalCloseAllDialogs() ),       this, SLOT( ClickOnOk() ) ) ;
- 
-  /* Move widget on the botton right corner of main widget */
-  int x, y ;
-  mySMESHGUI->DefineDlgPosition( this, x, y ) ;
-  this->move( x, y ) ;
-  this->show() ; /* Displays Dialog */ 
-
-  return ;
-}
-
-//=================================================================================
-// function : genEdgeKey
-// purpose  : edge counting helper;
-//            packs two long integers into one 8-byte value (treated as double by the caller);
-//            the order of arguments is insignificant
-//=================================================================================
-void genEdgeKey(long a, long b, void* key)
-{
-  long* lKey = (long*)key;
-  *lKey     = (a < b) ? a : b;
-  *(++lKey) = (a < b) ? b : a;
-}
-
-//=================================================================================
-// function : DumpMeshInfos()
-// purpose  :
+/*!
+ *  SMESHGUI_MeshInfosDlg::DumpMeshInfos
+ */
 //=================================================================================
 void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 {
-  int nbOfNodes = myMesh->NbNodes();
-  int nbOfEdges = myMesh->NbEdges();
-  int nbOfTriangles = myMesh->NbTriangles();
-  int nbOfQuadrangles = myMesh->NbQuadrangles();
-  int nbOfTetras = myMesh->NbTetras();
-  int nbOfHexas = myMesh->NbHexas();
-
-  /*
-  int nbOfNodes = 0 ;
-  int nbOfEdges = 0 ;
-  int nbOfTriangles = 0 ;
-  int nbOfQuadrangles = 0 ;
-  int nbOfTetras = 0 ;
-  int nbOfHexas = 0 ;
-  int nbCells = 0 ;
-  int CellType = 0 ;
-  QMap<double, char> aMapOfEdges;
-
-  Standard_Boolean result;
-  SMESH_Actor* MeshActor = mySMESHGUI->FindActor(myMesh, result, true);
-
-  if ( result ) {
-    vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( MeshActor->DataSource );
-    vtkPoints *Pts = ugrid->GetPoints();
-    nbOfNodes = Pts->GetNumberOfPoints();
-    int nbCells = ugrid->GetNumberOfCells();
-
-    for ( int i = 0; i < nbCells; i++ ) {
-      vtkCell* cellPtr = ugrid->GetCell(i);
-      CellType = cellPtr->GetCellType();
-      switch (CellType)
-	{
-	case 3: //Edges
-	  {
-	    nbOfEdges++;
-	    break;
-	  }
-	case 5: //Triangles
-	  {
-	    nbOfTriangles++;
-	    
-	    for (int edgeNum = 0; edgeNum < 3; edgeNum++) {
-	      vtkCell* edgePtr = cellPtr->GetEdge(edgeNum);
-	      double anEdgeKey;
-	      genEdgeKey(edgePtr->GetPointId(0), edgePtr->GetPointId(1), &anEdgeKey);
-	      if (!aMapOfEdges.contains(anEdgeKey)) {
-		nbOfEdges++;
-		aMapOfEdges.insert(anEdgeKey, 0);
-	      }
-	    }
-	    break;
-	  }
-	case 9: //Quadrangles
-	  {
-	    nbOfQuadrangles++;
-	    
-	    for (int edgeNum = 0; edgeNum < 4; edgeNum++) {
-	      vtkCell* edgePtr = cellPtr->GetEdge(edgeNum);
-	      double anEdgeKey;
-	      genEdgeKey(edgePtr->GetPointId(0), edgePtr->GetPointId(1), &anEdgeKey);
-	      if (!aMapOfEdges.contains(anEdgeKey)) {
-		nbOfEdges++;
-		aMapOfEdges.insert(anEdgeKey, 0);
-	      }
-	    }
-	    break;
-	  }
-	case 10: //Tetraedras
-	  {
-	    nbOfTetras++;
-
-	    for (int edgeNum = 0; edgeNum < 6; edgeNum++) {
-	      vtkCell* edgePtr = cellPtr->GetEdge(edgeNum);
-	      double anEdgeKey;
-	      genEdgeKey(edgePtr->GetPointId(0), edgePtr->GetPointId(1), &anEdgeKey);
-	      if (!aMapOfEdges.contains(anEdgeKey)) {
-		nbOfEdges++;
-		aMapOfEdges.insert(anEdgeKey, 0);
-	      }
-	    }
-	    break;
-	  }
-	case 12: //Hexahedras
-	  {
-	    nbOfHexas++;
-
-	    for (int edgeNum = 0; edgeNum < 12; edgeNum++) {
-	      vtkCell* edgePtr = cellPtr->GetEdge(edgeNum);
-	      double anEdgeKey;
-	      genEdgeKey(edgePtr->GetPointId(0), edgePtr->GetPointId(1), &anEdgeKey);
-	      if (!aMapOfEdges.contains(anEdgeKey)) {
-		nbOfEdges++;
-		aMapOfEdges.insert(anEdgeKey, 0);
-	      }
-	    }
-	    break;
-	  }
+  QAD_WaitCursor wc;
+  int nbSel = mySelection->IObjectCount();
+  if ( nbSel == 1 ) {
+    myStartSelection = false;
+    mySelectLab->setText( "" );
+    Handle(SALOME_InteractiveObject) IObject = mySelection->firstIObject();
+    SALOMEDS::SObject_var aSO = SMESHGUI::GetSMESHGUI()->GetStudy()->FindObjectID( IObject->getEntry() );
+    if ( !aSO->_is_nil() ) {
+      CORBA::Object_var anObject = aSO->GetObject();
+      if ( !CORBA::is_nil( anObject ) ) {
+	SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( anObject );
+	if ( !aMesh->_is_nil() ) {
+	  myWGStack->raiseWidget( myMeshWidget );
+	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_OBJECT_MESH") +"]" );
+	  myMeshName->setText( aSO->GetName() );
+	  myMeshNbNodes->setNum( (int)aMesh->NbNodes() );
+	  myMeshNbEdges->setNum( (int)aMesh->NbEdges() );
+	  myMeshNbFaces->setNum( (int)aMesh->NbFaces() );
+	  myMeshNbTriangles->setNum( (int)aMesh->NbTriangles() );
+	  myMeshNbQuadrangles->setNum( (int)aMesh->NbQuadrangles() );
+	  myMeshNbVolumes->setNum( (int)aMesh->NbVolumes() );
+	  myMeshNbTetra->setNum( (int)aMesh->NbTetras() );
+	  myMeshNbHexa->setNum( (int)aMesh->NbHexas() );
+	  myMeshNbPrism->setNum( (int)aMesh->NbPrisms() );
+	  myMeshNbPyra->setNum( (int)aMesh->NbPyramids() );
+	  return;
 	}
+	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( anObject );
+	if ( !aSubMesh->_is_nil() ) {
+	  myWGStack->raiseWidget( mySubMeshWidget );
+	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_SUBMESH") +"]" );
+	  mySubMeshName->setText( aSO->GetName() );
+	  mySubMeshNbNodes->setNum( (int)aSubMesh->GetNumberOfNodes() );
+	  mySubMeshNbElements->setNum( (int)aSubMesh->GetNumberOfElements() );
+	  mySubMeshNbEdges->setNum( (int)( aSubMesh->GetElementsByType( SMESH::EDGE )->length() ) );
+	  mySubMeshNbFaces->setNum( (int)( aSubMesh->GetElementsByType( SMESH::FACE )->length() ) );
+	  mySubMeshNbVolumes->setNum( (int)( aSubMesh->GetElementsByType( SMESH::VOLUME )->length() ) );
+	  return;
+	}
+	SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( anObject );
+	if ( !aGroup->_is_nil() ) {
+	  myWGStack->raiseWidget( myGroupWidget );
+	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_GROUP") +"]" );
+	  myGroupName->setText( aSO->GetName() );
+	  int aType = aGroup->GetType();
+	  QString strType;
+	  switch ( aType ) {
+	  case SMESH::NODE:
+	    strType = "SMESH_MESHINFO_NODES"; break;
+	  case SMESH::EDGE:
+	    strType = "SMESH_MESHINFO_EDGES"; break;
+	  case SMESH::FACE:
+	    strType = "SMESH_MESHINFO_FACES"; break;
+	  case SMESH::VOLUME:
+	    strType = "SMESH_MESHINFO_VOLUMES"; break;
+	  default:
+	    strType = "SMESH_MESHINFO_ALL_TYPES"; break;
+	  }
+	  
+	  myGroupType->setText( tr( strType ) );
+	  myGroupNb->setNum( (int)aGroup->Size() );
+	  return;
+	}
+      }
     }
   }
-  */
-  TextLabel13->setText( tr( "%1" ).arg(nbOfNodes) );
-  TextLabel14->setText( tr( "%1" ).arg(nbOfEdges) );
-  TextLabel23->setText( tr( "%1" ).arg(nbOfTriangles) );
-  TextLabel24->setText( tr( "%1" ).arg(nbOfQuadrangles) );
-  TextLabel33->setText( tr( "%1" ).arg(nbOfTetras) );
-  TextLabel34->setText( tr( "%1" ).arg(nbOfHexas) );
-}
-
-//=================================================================================
-// function : ClickOnOk()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MeshInfosDlg::ClickOnOk()
-{
-  disconnect( mySelection, 0, this, 0 );
-  mySMESHGUI->ResetState() ;
-  reject() ;
-  return ;
+  myWGStack->raiseWidget( 0 );
+  setCaption( tr( "SMESH_MESHINFO_TITLE" ) );
 }
 
 //=================================================================================
 // function : SelectionIntoArgument()
 // purpose  : Called when selection has changed
 //=================================================================================
-void SMESHGUI_MeshInfosDlg::SelectionIntoArgument()
+void SMESHGUI_MeshInfosDlg::onSelectionChanged()
 {
-  TextLabel13->setText( "0" );
-  TextLabel14->setText( "0" );
-  TextLabel23->setText( "0" );
-  TextLabel24->setText( "0" );
-  TextLabel33->setText( "0" );
-  TextLabel34->setText( "0" );
-
-  int nbSel = mySelection->IObjectCount();
-  if ( nbSel == 1 ) {
-    Handle(SALOME_InteractiveObject) IObject = mySelection->firstIObject();
-    Standard_Boolean res;
-    myMesh = mySMESHGUI->ConvertIOinMesh( IObject, res );
-    if ( res ) 
-      DumpMeshInfos();
-  }
-  return ; 
+  if ( myStartSelection )
+    DumpMeshInfos();
 }
 
 
@@ -404,20 +448,21 @@ void SMESHGUI_MeshInfosDlg::SelectionIntoArgument()
 //=================================================================================
 void SMESHGUI_MeshInfosDlg::closeEvent( QCloseEvent* e )
 {
-  disconnect( mySelection, 0, this, 0 );
-  mySMESHGUI->ResetState() ;
-  reject() ;
-  return ;
+  SMESHGUI::GetSMESHGUI()->ResetState();
+  QDialog::closeEvent( e );
 }
 
 
 //=================================================================================
-// function : enterEvent()
-// purpose  : when mouse enter onto the QWidget
+// function : windowActivationChange()
+// purpose  : called when window is activated/deactivated
 //=================================================================================
-void SMESHGUI_MeshInfosDlg::enterEvent( QEvent *  )
+void SMESHGUI_MeshInfosDlg::windowActivationChange( bool oldActive )
 {
-  ActivateThisDialog() ;
+  QDialog::windowActivationChange( oldActive );
+  if ( isActiveWindow() && myIsActiveWindow != isActiveWindow() )
+    ActivateThisDialog() ;
+  myIsActiveWindow = isActiveWindow();
 }
 
 
@@ -428,8 +473,6 @@ void SMESHGUI_MeshInfosDlg::enterEvent( QEvent *  )
 void SMESHGUI_MeshInfosDlg::DeactivateActiveDialog()
 {
   disconnect( mySelection, 0, this, 0 );
-
-  return ;
 }
 
 
@@ -440,8 +483,18 @@ void SMESHGUI_MeshInfosDlg::DeactivateActiveDialog()
 void SMESHGUI_MeshInfosDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate any active dialog */
-  mySMESHGUI->EmitSignalDeactivateDialog() ;
-
-  return ;
+  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog() ;
+  connect( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
 }
 
+//=================================================================================
+// function : onStartSelection()
+// purpose  : starts selection
+//=================================================================================
+void SMESHGUI_MeshInfosDlg::onStartSelection()
+{
+  myStartSelection = true;
+  onSelectionChanged();
+  myStartSelection = true;
+  mySelectLab->setText( tr( "INF_SELECT_OBJECT" ) );
+}

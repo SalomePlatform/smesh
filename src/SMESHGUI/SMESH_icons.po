@@ -59,22 +59,6 @@ msgstr "mesh_connectivity.png"
 # Hypothesis
 #-----------------------------------------------------------
 
-#Hypo Local Length
-msgid "ICON_DLG_LOCAL_LENGTH"
-msgstr "mesh_hypo_length.png"
-
-#Hypo Nb Segments
-msgid "ICON_DLG_NB_SEGMENTS"
-msgstr "mesh_hypo_segment.png"
-
-#Hypo Max Area
-msgid "ICON_DLG_MAX_ELEMENT_AREA"
-msgstr "mesh_hypo_area.png"
-
-#Hypo Max Volume
-msgid "ICON_DLG_MAX_ELEMENT_VOLUME"
-msgstr "mesh_hypo_volume.png"
-
 #Set Algo
 msgid "ICON_DLG_ADD_ALGORITHM"
 msgstr "mesh_set_algo.png"
@@ -118,53 +102,40 @@ msgstr "mesh_hexa.png"
 
 
 #-----------------------------------------------------------
-# ObjectBrother
+# ObjectBrowser
 #-----------------------------------------------------------
 
 #mesh_tree_mesh
 msgid "ICON_SMESH_TREE_MESH"
 msgstr "mesh_tree_mesh.png"	
 
+#mesh_tree_group
+msgid "ICON_SMESH_TREE_GROUP"
+msgstr "mesh_tree_group.png"	
+
 #mesh_tree_algo
 msgid "ICON_SMESH_TREE_ALGO"
 msgstr "mesh_tree_algo.png"
-
-#mesh_tree_algo_regular
-msgid "ICON_SMESH_TREE_ALGO_Regular_1D"
-msgstr "mesh_tree_algo_regular.png"
-
-#mesh_tree_algo_hexa
-msgid "ICON_SMESH_TREE_ALGO_Hexa_3D"
-msgstr "mesh_tree_algo_hexa.png"
-
-#mesh_tree_algo_mefisto
-msgid "ICON_SMESH_TREE_ALGO_MEFISTO_2D"
-msgstr "mesh_tree_algo_mefisto.png"
-
-#mesh_tree_algo_quad
-msgid "ICON_SMESH_TREE_ALGO_Quadrangle_2D"
-msgstr "mesh_tree_algo_quad.png"
 
 #mesh_tree_hypo
 msgid "ICON_SMESH_TREE_HYPO"
 msgstr "mesh_tree_hypo.png"
 
-#mesh_tree_hypo_area
-msgid "ICON_SMESH_TREE_HYPO_MaxElementArea"
-msgstr "mesh_tree_hypo_area.png"
-
-#mesh_tree_hypo_length
-msgid "ICON_SMESH_TREE_HYPO_LocalLength"
-msgstr "mesh_tree_hypo_length.png"
-
-#mesh_tree_hypo_segment
-msgid "ICON_SMESH_TREE_HYPO_NumberOfSegments"
-msgstr "mesh_tree_hypo_segment.png"
-
-#mesh_tree_hypo_volume
-msgid "ICON_SMESH_TREE_HYPO_MaxElementVolume"
-msgstr "mesh_tree_hypo_volume.png"
-
 #mesh_tree_mesh_warn
 msgid "ICON_SMESH_TREE_MESH_WARN"
 msgstr "mesh_tree_mesh_warn.png"
+
+#mesh_tree_mesh
+msgid "ICON_SMESH_TREE_MESH_IMPORTED"
+msgstr "mesh_tree_importedmesh.png"
+
+
+#-----------------------------------------------------------
+# Group
+#-----------------------------------------------------------
+
+msgid "ICON_EDIT_GROUP"
+msgstr "mesh_edit_group.png"
+
+msgid "ICON_CONSTRUCT_GROUP"
+msgstr "mesh_make_group.png"

@@ -45,7 +45,7 @@ ostream & operator <<(ostream & OS, const SMDS_MeshElement * ME)
 /// Create an iterator which iterate on nodes owned by the element.
 /// This method call elementsIterator().
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::nodesIterator() const
+SMDS_ElemIteratorPtr SMDS_MeshElement::nodesIterator() const
 {
 	return elementsIterator(SMDSAbs_Node);
 }
@@ -54,7 +54,7 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::nodesIterator() cons
 /// Create an iterator which iterate on edges linked with or owned by the element.
 /// This method call elementsIterator().
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::edgesIterator() const
+SMDS_ElemIteratorPtr SMDS_MeshElement::edgesIterator() const
 {
 	return elementsIterator(SMDSAbs_Edge);
 }
@@ -63,7 +63,7 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::edgesIterator() cons
 /// Create an iterator which iterate on faces linked with or owned by the element.
 /// This method call elementsIterator().
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::facesIterator() const
+SMDS_ElemIteratorPtr SMDS_MeshElement::facesIterator() const
 {
 	return elementsIterator(SMDSAbs_Face);
 }
@@ -74,13 +74,12 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::facesIterator() cons
 int SMDS_MeshElement::NbNodes() const
 {
 	int nbnodes=0;
-	SMDS_Iterator<const SMDS_MeshElement *> * it=nodesIterator();
+	SMDS_ElemIteratorPtr it=nodesIterator();
 	while(it->more())
 	{
 		it->next();
 		nbnodes++;
 	}
-	delete it;
 	return nbnodes;
 }
 
@@ -90,13 +89,12 @@ int SMDS_MeshElement::NbNodes() const
 int SMDS_MeshElement::NbEdges() const
 {
 	int nbedges=0;
-	SMDS_Iterator<const SMDS_MeshElement *> * it=edgesIterator();
+	SMDS_ElemIteratorPtr it=edgesIterator();
 	while(it->more())
 	{
 		it->next();
 		nbedges++;
 	}
-	delete it;
 	return nbedges;
 }
 
@@ -106,55 +104,52 @@ int SMDS_MeshElement::NbEdges() const
 int SMDS_MeshElement::NbFaces() const
 {
 	int nbfaces=0;
-	SMDS_Iterator<const SMDS_MeshElement *> * it=facesIterator();
+	SMDS_ElemIteratorPtr it=facesIterator();
 	while(it->more())
 	{
 		it->next();
 		nbfaces++;
 	}
-	delete it;
 	return nbfaces;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-///Create and iterator which iterate on elements linked with the current element.
-///The iterator must be free by the caller (call delete myIterator).
+///Create an iterator which iterate on elements linked with the current element.
 ///@param type The of elements on which you want to iterate
-///@return An iterator, that you must free when you no longer need it
+///@return A smart pointer to iterator, you are not to take care of freeing memory
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::
+class SMDS_MeshElement_MyIterator:public SMDS_ElemIterator
+{
+  const SMDS_MeshElement * myElement;
+  bool myMore;
+ public:
+  SMDS_MeshElement_MyIterator(const SMDS_MeshElement * element):
+    myElement(element),myMore(true) {}
+
+  bool more()
+  {
+    return myMore;
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    myMore=false;
+    return myElement;	
+  }	
+};
+SMDS_ElemIteratorPtr SMDS_MeshElement::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
 	/** @todo Check that iterator in the child classes return elements
 	in the same order for each different implementation (i.e: SMDS_VolumeOfNodes
 	and SMDS_VolumeOfFaces */
-	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		const SMDS_MeshElement * myElement;
-		bool myMore;
-	  public:
-		MyIterator(const SMDS_MeshElement * element):
-			myElement(element),myMore(true)
-		{
-		}
-
-		bool more()
-		{
-			return myMore;
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			myMore=false;
-			return myElement;	
-		}	
-	};
 	
-	if(type==GetType()) return new MyIterator(this);
+	if(type==GetType())
+          return SMDS_ElemIteratorPtr(new SMDS_MeshElement_MyIterator(this));
 	else 
 	{
-		MESSAGE("Iterator not implemented");		
-		return NULL;
+          MESSAGE("Iterator not implemented");
+          return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
 	}
 }
 

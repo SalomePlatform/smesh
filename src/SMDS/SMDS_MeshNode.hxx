@@ -46,22 +46,21 @@ class SMDS_MeshNode:public SMDS_MeshElement
 	void RemoveInverseElement(const SMDS_MeshElement * parent);
 	void ClearInverseElements();
 	bool emptyInverseElements();
-	SMDS_Iterator<const SMDS_MeshElement*> * GetInverseElementIterator() const;	
-	void SetPosition(SMDS_Position * aPos);
-	SMDS_Position *GetPosition();
-	const SMDS_Position *GetPosition() const;
+	SMDS_ElemIteratorPtr GetInverseElementIterator() const;	
+	void SetPosition(const SMDS_PositionPtr& aPos);
+	const SMDS_PositionPtr& GetPosition() const;
 	SMDSAbs_ElementType GetType() const;
 	int NbNodes() const;
 	void setXYZ(double x, double y, double z);
 	friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
 
   protected:
-	SMDS_Iterator<const SMDS_MeshElement *> *
+	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
 	double myX, myY, myZ;
-	SMDS_Position *myPosition;
+	SMDS_PositionPtr myPosition;
 	set<const SMDS_MeshElement*> myInverseElements;
 };
 

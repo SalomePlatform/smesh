@@ -247,7 +247,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( 4 );
+  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   reject() ;
@@ -273,9 +273,9 @@ void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
   if(nbElements < 1)
     return ;
   
-  if ( mySelection->SelectionMode() != 3 ) {
+  if ( mySelection->SelectionMode() != CellSelection ) {
     QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_ELEMENTS"), tr ("SMESH_BUT_YES") );
+			    tr ("SMESH_WRN_SELECTIONMODE_ELEMENTS"), tr ("SMESH_BUT_OK") );
     return;
   }
 

@@ -247,7 +247,7 @@ void SMESHGUI_DiagonalInversionDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_DiagonalInversionDlg::ClickOnCancel()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( 4 );
+  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   reject() ;
@@ -265,7 +265,7 @@ void SMESHGUI_DiagonalInversionDlg::SelectionIntoArgument()
   myOkElements = false;
   QString aString = "";
 
-  if ( mySelection->SelectionMode() != 2 ) {
+  if ( mySelection->SelectionMode() != EdgeSelection ) {
     return;
   }
 

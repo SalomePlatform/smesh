@@ -34,21 +34,20 @@
 
 #include "SMESH_Algo_i.hxx"
 
-class SMESH_3D_Algo;
-
+// ======================================================
+// Generic 3D algorithm
+// ======================================================
 class SMESH_3D_Algo_i:
-  public POA_SMESH::SMESH_3D_Algo,
-  public SMESH_Algo_i
+  public virtual POA_SMESH::SMESH_3D_Algo,
+  public virtual SMESH_Algo_i
 {
-public:
-  SMESH_3D_Algo_i();
-
-  virtual ~SMESH_3D_Algo_i();
-
 protected:
-  virtual void SetImpl(::SMESH_3D_Algo* impl);
+  // Constructor : placed in protected section to prohibit creation of generic class instance
+  SMESH_3D_Algo_i( PortableServer::POA_ptr thePOA );
 
-  ::SMESH_3D_Algo* _impl;
+public:
+  // Destructor
+  virtual ~SMESH_3D_Algo_i();
 };
 
 #endif

@@ -28,22 +28,17 @@
 #define _INCLUDE_DOCUMENT_READER
 
 #include "SMESHDS_Document.hxx"
-#include "Mesh_Reader.h"
 #include <string>
 
 class Document_Reader
 {
   public:
-	virtual void Read();
+	virtual void Read() = 0;
 	void SetFile(string);
 	void SetDocument(SMESHDS_Document *);
-	Document_Reader(Mesh_Reader*);
 
   protected:
-	SMESHDS_Document * myDocument;
+	  SMESHDS_Document * myDocument;
 	string myFile;
-
-  private:
-	Mesh_Reader* myReader;
 };
 #endif

@@ -54,5 +54,5 @@ int SMDS_MeshIDFactory::GetFreeID()
 //=======================================================================
 void SMDS_MeshIDFactory::ReleaseID(const int ID)
 {
-	if (ID < myMaxID) myPoolOfID.push(ID);
+  if (ID > 0 && ID < myMaxID) myPoolOfID.push(ID);
 }

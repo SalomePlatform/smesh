@@ -28,14 +28,14 @@
 /// 5,1 and 7,3 are an edges.
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5,
-		SMDS_MeshNode * node6,
-		SMDS_MeshNode * node7,
-		SMDS_MeshNode * node8)
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5,
+		const SMDS_MeshNode * node6,
+		const SMDS_MeshNode * node7,
+		const SMDS_MeshNode * node8)
 {
 	myNodes.resize(8);
 	myNodes[0]=node1;
@@ -49,10 +49,10 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 }
 
 SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4)
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4)
 {
 	myNodes.resize(4);
 	myNodes[0]=node1;
@@ -62,11 +62,11 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 }
 
 SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5)
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5)
 {
 	myNodes.resize(5);
 	myNodes[0]=node1;
@@ -77,12 +77,12 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 }
 
 SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
-		SMDS_MeshNode * node1,
-		SMDS_MeshNode * node2,
-		SMDS_MeshNode * node3,
-		SMDS_MeshNode * node4,
-		SMDS_MeshNode * node5,
-		SMDS_MeshNode * node6)
+		const SMDS_MeshNode * node1,
+		const SMDS_MeshNode * node2,
+		const SMDS_MeshNode * node3,
+		const SMDS_MeshNode * node4,
+		const SMDS_MeshNode * node5,
+		const SMDS_MeshNode * node6)
 {
 	myNodes.resize(6);
 	myNodes[0]=node1;
@@ -134,34 +134,39 @@ int SMDS_VolumeOfNodes::NbEdges() const
 	}
 }
 
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_VolumeOfNodes::
+class SMDS_VolumeOfNodes_MyIterator:public SMDS_ElemIterator
+{
+  const vector<const SMDS_MeshNode*>& mySet;
+  int index;
+ public:
+  SMDS_VolumeOfNodes_MyIterator(const vector<const SMDS_MeshNode*>& s):
+    mySet(s),index(0) {}
+
+  bool more()
+  {
+    return index<mySet.size();
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    index++;
+    return mySet[index-1];
+  }
+};
+
+SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
-	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		const vector<const SMDS_MeshNode*>& mySet;
-		int index;
-	  public:
-		MyIterator(const vector<const SMDS_MeshNode*>& s):mySet(s),index(0)
-		{}
-
-		bool more()
-		{
-			return index<mySet.size();
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			index++;
-			return mySet[index-1];
-		}	
-	};
-	switch(type)
-	{
-	case SMDSAbs_Volume:return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
-	case SMDSAbs_Node:return new MyIterator(myNodes);
-	default: MESSAGE("ERROR : Iterator not implemented");
-	}
+  switch(type)
+  {
+  case SMDSAbs_Volume:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr(new SMDS_VolumeOfNodes_MyIterator(myNodes));
+  default:
+    MESSAGE("ERROR : Iterator not implemented");
+    return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
+  }
 }
 
 SMDSAbs_ElementType SMDS_VolumeOfNodes::GetType() const

@@ -33,20 +33,17 @@ using namespace std;
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
+#include "QAD_WaitCursor.h"
+#include "QAD_Operation.h"
+
 #include "utilities.h"
 
 // QT Includes
-#include <qbuttongroup.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
-#include <qradiobutton.h>
 #include <qlayout.h>
-#include <qvariant.h>
-#include <qtooltip.h>
-#include <qwhatsthis.h>
-#include <qimage.h>
 #include <qpixmap.h>
 
 //VRV: porting on Qt 3.0.5
@@ -54,6 +51,38 @@ using namespace std;
 #include <qlistbox.h>
 #endif
 //VRV: porting on Qt 3.0.5
+
+class ListBoxIOR : public QListBoxText
+{
+public:
+  enum { RTTI_IOR = 1000 };
+
+public:
+  ListBoxIOR( QListBox* listbox, 
+              const char* ior,
+              const QString& text = QString::null)
+  : QListBoxText( listbox, text ), myIOR( ior ) {}
+  virtual ~ListBoxIOR() {};
+  virtual int rtti() const { return RTTI_IOR; }
+  const char* GetIOR() { return myIOR.c_str(); }
+
+private:
+  string myIOR;
+};
+
+#define ALLOW_CHANGE_SHAPE 0
+
+int findItem( QListBox* listBox, const string& ior )
+{
+  for ( int i = 0; i < listBox->count(); i++ ) {
+    if ( listBox->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( listBox->item( i ) );
+      if ( anItem && ior == string( anItem->GetIOR() ) )
+	return i;
+    }
+  }
+  return -1;
+}
 
 //=================================================================================
 // class    : SMESHGUI_EditHypothesesDlg()
@@ -63,238 +92,131 @@ using namespace std;
 //            TRUE to construct a modal dialog.
 //=================================================================================
 SMESHGUI_EditHypothesesDlg::SMESHGUI_EditHypothesesDlg( QWidget* parent, const char* name, SALOME_Selection* Sel, bool modal, WFlags fl )
-    : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+  : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose ),
+    myImportedMesh( false )
 {
-    QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_EDIT_MESH")));
     QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
     if ( !name )
-	setName( "SMESHGUI_EditHypothesesDlg" );
-    resize( 417, 573 ); 
+        setName( "SMESHGUI_EditHypothesesDlg" );
     setCaption( tr( "SMESH_EDIT_HYPOTHESES"  ) );
     setSizeGripEnabled( TRUE );
-    SMESHGUI_EditHypothesesDlgLayout = new QGridLayout( this ); 
+    QGridLayout* SMESHGUI_EditHypothesesDlgLayout = new QGridLayout( this ); 
     SMESHGUI_EditHypothesesDlgLayout->setSpacing( 6 );
     SMESHGUI_EditHypothesesDlgLayout->setMargin( 11 );
 
     /***************************************************************/
-    GroupConstructors = new QButtonGroup( this, "GroupConstructors" );
-    GroupConstructors->setTitle( tr( "SMESH_HYPOTHESES"  ) );
-    GroupConstructors->setExclusive( TRUE );
-    GroupConstructors->setColumnLayout(0, Qt::Vertical );
-    GroupConstructors->layout()->setSpacing( 0 );
-    GroupConstructors->layout()->setMargin( 0 );
-    GroupConstructorsLayout = new QGridLayout( GroupConstructors->layout() );
-    GroupConstructorsLayout->setAlignment( Qt::AlignTop );
-    GroupConstructorsLayout->setSpacing( 6 );
-    GroupConstructorsLayout->setMargin( 11 );
-    Constructor1 = new QRadioButton( GroupConstructors, "Constructor1" );
-    Constructor1->setText( tr( ""  ) );
-    Constructor1->setPixmap( image1 );
-    Constructor1->setChecked( TRUE );
-    Constructor1->setSizePolicy( QSizePolicy( (QSizePolicy::SizeType)1, (QSizePolicy::SizeType)0, Constructor1->sizePolicy().hasHeightForWidth() ) );
-    Constructor1->setMinimumSize( QSize( 50, 0 ) );
-    GroupConstructorsLayout->addWidget( Constructor1, 0, 0 );
-    QSpacerItem* spacer = new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-    GroupConstructorsLayout->addItem( spacer, 0, 1 );
-    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupConstructors, 0, 0 );
-    
-    /***************************************************************/
-    GroupButtons = new QGroupBox( this, "GroupButtons" );
-    GroupButtons->setGeometry( QRect( 10, 10, 281, 96 ) ); 
-    GroupButtons->setTitle( tr( ""  ) );
-    GroupButtons->setColumnLayout(0, Qt::Vertical );
-    GroupButtons->layout()->setSpacing( 0 );
-    GroupButtons->layout()->setMargin( 0 );
-    GroupButtonsLayout = new QGridLayout( GroupButtons->layout() );
-    GroupButtonsLayout->setAlignment( Qt::AlignTop );
-    GroupButtonsLayout->setSpacing( 6 );
-    GroupButtonsLayout->setMargin( 11 );
-    buttonCancel = new QPushButton( GroupButtons, "buttonCancel" );
-    buttonCancel->setText( tr( "SMESH_BUT_CLOSE"  ) );
-    buttonCancel->setAutoDefault( TRUE );
-    buttonCancel->setDefault( TRUE );
-    buttonCancel->setEnabled( TRUE ) ;
-    
-    GroupButtonsLayout->addWidget( buttonCancel, 0, 3 );
-    buttonApply = new QPushButton( GroupButtons, "buttonApply" );
-    buttonApply->setText( tr( "SMESH_BUT_APPLY"  ) );
-    buttonApply->setAutoDefault( TRUE );
-    buttonApply->setDefault( FALSE );
-    buttonApply->setEnabled( FALSE ) ;
-    
-    GroupButtonsLayout->addWidget( buttonApply, 0, 1 );
-    QSpacerItem* spacer_9 = new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-    GroupButtonsLayout->addItem( spacer_9, 0, 2 );
-    buttonOk = new QPushButton( GroupButtons, "buttonOk" );
-    buttonOk->setText( tr( "SMESH_BUT_OK"  ) );
-    
-    buttonOk->setAutoDefault( TRUE );
-    buttonOk->setDefault( FALSE );
-    buttonOk->setEnabled( FALSE ) ;
-    
-    GroupButtonsLayout->addWidget( buttonOk, 0, 0 );
-    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupButtons, 5, 0 );
-
-    /***************************************************************/
-    GroupC1 = new QGroupBox( this, "GroupC1" );
-    GroupC1->setTitle( tr( "SMESH_ARGUMENTS"  ) );
-    GroupC1->setMinimumSize( QSize( 0, 0 ) );
-    GroupC1->setFrameShape( QGroupBox::Box );
-    GroupC1->setFrameShadow( QGroupBox::Sunken );
+    GroupC1 = new QGroupBox( tr( "SMESH_ARGUMENTS" ), this, "GroupC1" );
     GroupC1->setColumnLayout(0, Qt::Vertical );
     GroupC1->layout()->setSpacing( 0 );
     GroupC1->layout()->setMargin( 0 );
-    GroupC1Layout = new QGridLayout( GroupC1->layout() );
+    QGridLayout* GroupC1Layout = new QGridLayout( GroupC1->layout() );
     GroupC1Layout->setAlignment( Qt::AlignTop );
     GroupC1Layout->setSpacing( 6 );
     GroupC1Layout->setMargin( 11 );
 
-    TextLabelC1A1 = new QLabel( GroupC1, "TextLabelC1A1" );
-    TextLabelC1A1->setText( tr( "SMESH_OBJECT_MESHorSUBMESH"  ) );
-    TextLabelC1A1->setMinimumSize( QSize( 50, 0 ) );
-    TextLabelC1A1->setFrameShape( QLabel::NoFrame );
-    TextLabelC1A1->setFrameShadow( QLabel::Plain );
+    TextLabelC1A1 = new QLabel( tr( "SMESH_OBJECT_MESHorSUBMESH" ), GroupC1, "TextLabelC1A1" );
     GroupC1Layout->addWidget( TextLabelC1A1, 0, 0 );
     SelectButtonC1A1 = new QPushButton( GroupC1, "SelectButtonC1A1" );
-    SelectButtonC1A1->setText( tr( ""  ) );
     SelectButtonC1A1->setPixmap( image0 );
-    SelectButtonC1A1->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
     GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
 
-    TextLabelC1A2 = new QLabel( GroupC1, "TextLabelC1A2" );
-    TextLabelC1A2->setText( tr( "SMESH_OBJECT_GEOM"  ) );
-    TextLabelC1A2->setMinimumSize( QSize( 50, 0 ) );
-    TextLabelC1A2->setFrameShape( QLabel::NoFrame );
-    TextLabelC1A2->setFrameShadow( QLabel::Plain );
+    TextLabelC1A2 = new QLabel( tr( "SMESH_OBJECT_GEOM" ), GroupC1, "TextLabelC1A2" );
     GroupC1Layout->addWidget( TextLabelC1A2, 1, 0 );
     SelectButtonC1A2 = new QPushButton( GroupC1, "SelectButtonC1A2" );
-    SelectButtonC1A2->setText( tr( ""  ) );
     SelectButtonC1A2->setPixmap( image0 );
     SelectButtonC1A2->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A2, 1, 1 );
     LineEditC1A2 = new QLineEdit( GroupC1, "LineEditC1A2" );
     GroupC1Layout->addWidget( LineEditC1A2, 1, 2 );
 
-    GroupHypotheses = new QGroupBox( this, "GroupHypotheses" );
-    GroupHypotheses->setTitle( tr( "SMESH_HYPOTHESES"  ) );
+    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupC1, 0, 0 );
+
+    /***************************************************************/
+    GroupHypotheses = new QGroupBox( tr( "SMESH_HYPOTHESES" ), this, "GroupHypotheses" );
     GroupHypotheses->setColumnLayout(0, Qt::Vertical );
     GroupHypotheses->layout()->setSpacing( 0 );
     GroupHypotheses->layout()->setMargin( 0 );
-    grid_3 = new QGridLayout( GroupHypotheses->layout() );
-    grid_3->setGeometry( QRect( 12, 18, 139, 110 ) ); 
+    QGridLayout* grid_3 = new QGridLayout( GroupHypotheses->layout() );
     grid_3->setAlignment( Qt::AlignTop );
     grid_3->setSpacing( 6 );
     grid_3->setMargin( 11 );
 
-    hbox_2 = new QHBoxLayout; 
-    hbox_2->setSpacing( 6 );
-    hbox_2->setMargin( 0 );
-
-    vbox = new QVBoxLayout; 
-    vbox->setSpacing( 6 );
-    vbox->setMargin( 0 );
-
-    TextHypDefinition = new QLabel( GroupHypotheses, "TextHypDefinition" );
-    TextHypDefinition->setText( tr( "SMESH_AVAILABLE"  ) );
-    vbox->addWidget( TextHypDefinition );
+    TextHypDefinition = new QLabel( tr( "SMESH_AVAILABLE" ), GroupHypotheses, "TextHypDefinition" );
+    grid_3->addWidget( TextHypDefinition, 0, 0 );
 
     ListHypDefinition = new QListBox( GroupHypotheses, "ListHypDefinition" );
-    ListHypDefinition->setMinimumSize( 100, 50);
-//      ListHypDefinition->setRowMode(4);
-//      ListHypDefinition->setRowMode( QListBox::FixedNumber );
-//    ListHypDefinition->setLineWidth( 4 );
-//      ListHypDefinition->setColumnMode( QListBox::Variable );
-//      ListHypDefinition->setVariableHeight( FALSE );
-//      ListHypDefinition->insertItem( tr( "New Item" ) );
-    vbox->addWidget( ListHypDefinition );
-    hbox_2->addLayout( vbox );
+    ListHypDefinition->setMinimumSize( 100, 100 );
+    grid_3->addWidget( ListHypDefinition, 1, 0 );
 
-    vbox_2 = new QVBoxLayout; 
-    vbox_2->setSpacing( 6 );
-    vbox_2->setMargin( 0 );
-
-    TextHypAssignation = new QLabel( GroupHypotheses, "TextHypAssignation" );
-    TextHypAssignation->setText( tr( "SMESH_EDIT_USED"  ) );
-    vbox_2->addWidget( TextHypAssignation );
+    TextHypAssignation = new QLabel( tr( "SMESH_EDIT_USED" ), GroupHypotheses, "TextHypAssignation" );
+    grid_3->addWidget( TextHypAssignation, 0, 1 );
 
     ListHypAssignation = new QListBox( GroupHypotheses, "ListHypAssignation" );
-    ListHypAssignation->setMinimumSize( 100, 50);
-//      ListHypAssignation->setRowMode(4); 
-//      ListHypAssignation->setRowMode( QListBox::FixedNumber );
-//    ListHypAssignation->setLineWidth( 4 );
-//      ListHypAssignation->setColumnMode( QListBox::Variable );
-//      ListHypAssignation->setVariableHeight( FALSE );
-//      ListHypAssignation->insertItem( tr( "New Item" ) );
-    vbox_2->addWidget( ListHypAssignation );
-    hbox_2->addLayout( vbox_2 );
+    ListHypAssignation->setMinimumSize( 100, 100 );
+    grid_3->addWidget( ListHypAssignation, 1, 1 );
 
-    grid_3->addLayout( hbox_2, 0, 0 );
+    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupHypotheses, 1, 0 );
 
-    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupHypotheses, 2, 0 );
-
-    GroupAlgorithms = new QGroupBox( this, "GroupAlgorithms" );
-    GroupAlgorithms->setTitle( tr( "SMESH_ADD_ALGORITHM"  ) );
+    /***************************************************************/
+    GroupAlgorithms = new QGroupBox( tr( "SMESH_ADD_ALGORITHM" ), this, "GroupAlgorithms" );
     GroupAlgorithms->setColumnLayout(0, Qt::Vertical );
     GroupAlgorithms->layout()->setSpacing( 0 );
     GroupAlgorithms->layout()->setMargin( 0 );
-    grid_4 = new QGridLayout( GroupAlgorithms->layout() );
-    grid_4->setGeometry( QRect( 12, 18, 139, 110 ) ); 
+    QGridLayout* grid_4 = new QGridLayout( GroupAlgorithms->layout() );
     grid_4->setAlignment( Qt::AlignTop );
     grid_4->setSpacing( 6 );
     grid_4->setMargin( 11 );
 
-    hbox_3 = new QHBoxLayout; 
-    hbox_3->setSpacing( 6 );
-    hbox_3->setMargin( 0 );
-
-    vbox_3 = new QVBoxLayout; 
-    vbox_3->setSpacing( 6 );
-    vbox_3->setMargin( 0 );
-
-    TextAlgoDefinition = new QLabel( GroupAlgorithms, "TextAlgoDefinition" );
-    TextAlgoDefinition->setText( tr( "SMESH_AVAILABLE"  ) );
-    vbox_3->addWidget( TextAlgoDefinition );
+    TextAlgoDefinition = new QLabel( tr( "SMESH_AVAILABLE" ), GroupAlgorithms, "TextAlgoDefinition" );
+    grid_4->addWidget( TextAlgoDefinition, 0, 0 );
 
     ListAlgoDefinition = new QListBox( GroupAlgorithms, "ListAlgoDefinition" );
-    ListAlgoDefinition->setMinimumSize( 100, 50);
-//      ListAlgoDefinition->setRowMode(4);
-//      ListAlgoDefinition->setRowMode( QListBox::FixedNumber );
-//    ListAlgoDefinition->setLineWidth( 4 );
-//      ListAlgoDefinition->setColumnMode( QListBox::Variable );
-//      ListAlgoDefinition->setVariableHeight( FALSE );
-//      ListAlgoDefinition->insertItem( tr( "New Item" ) );
-    vbox_3->addWidget( ListAlgoDefinition );
-    hbox_3->addLayout( vbox_3 );
+    ListAlgoDefinition->setMinimumSize( 100, 100 );
+    grid_4->addWidget( ListAlgoDefinition, 1, 0 );
 
-    vbox_4 = new QVBoxLayout; 
-    vbox_4->setSpacing( 6 );
-    vbox_4->setMargin( 0 );
-
-    TextAlgoAssignation = new QLabel( GroupAlgorithms, "TextAlgoAssignation" );
-    TextAlgoAssignation->setText( tr( "SMESH_EDIT_USED"  ) );
-    vbox_4->addWidget( TextAlgoAssignation );
+    TextAlgoAssignation = new QLabel( tr( "SMESH_EDIT_USED" ), GroupAlgorithms, "TextAlgoAssignation" );
+    grid_4->addWidget( TextAlgoAssignation, 0, 1 );
 
     ListAlgoAssignation = new QListBox( GroupAlgorithms, "ListAlgoAssignation" );
-    ListAlgoAssignation ->setMinimumSize( 100, 50);
-//      ListAlgoAssignation->setRowMode(4);
-//      ListAlgoAssignation->setRowMode( QListBox::FixedNumber );
-//    ListAlgoAssignation->setLineWidth( 4 );
-//      ListAlgoAssignation->setColumnMode( QListBox::Variable );
-//      ListAlgoAssignation->setVariableHeight( FALSE );
-//      ListAlgoAssignation->insertItem( tr( "New Item" ) );
-    vbox_4->addWidget( ListAlgoAssignation );
-    hbox_3->addLayout( vbox_4 );
+    ListAlgoAssignation ->setMinimumSize( 100, 100 );
+    grid_4->addWidget( ListAlgoAssignation, 1, 1 );
 
-    grid_4->addLayout( hbox_3, 0, 0 );
-    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupAlgorithms, 3, 0 );
+    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupAlgorithms, 2, 0 );
 
-    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupC1, 1, 0 );
     /***************************************************************/
+    GroupButtons = new QGroupBox( this, "GroupButtons" );
+    GroupButtons->setColumnLayout(0, Qt::Vertical );
+    GroupButtons->layout()->setSpacing( 0 );
+    GroupButtons->layout()->setMargin( 0 );
+    QGridLayout* GroupButtonsLayout = new QGridLayout( GroupButtons->layout() );
+    GroupButtonsLayout->setAlignment( Qt::AlignTop );
+    GroupButtonsLayout->setSpacing( 6 );
+    GroupButtonsLayout->setMargin( 11 );
 
+    buttonOk = new QPushButton( tr( "SMESH_BUT_OK" ), GroupButtons, "buttonOk" );
+    buttonOk->setAutoDefault( TRUE );
+    buttonOk->setDefault( FALSE );
+    GroupButtonsLayout->addWidget( buttonOk, 0, 0 );
+
+    buttonApply = new QPushButton( tr( "SMESH_BUT_APPLY" ), GroupButtons, "buttonApply" );
+    buttonApply->setAutoDefault( TRUE );
+    buttonApply->setDefault( FALSE );
+    GroupButtonsLayout->addWidget( buttonApply, 0, 1 );
+
+    GroupButtonsLayout->addItem( new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum ), 0, 2 );
+
+    buttonCancel = new QPushButton( tr( "SMESH_BUT_CLOSE" ), GroupButtons, "buttonCancel" );
+    buttonCancel->setAutoDefault( TRUE );
+    buttonCancel->setDefault( TRUE );
+    buttonCancel->setEnabled( TRUE ) ;
+    GroupButtonsLayout->addWidget( buttonCancel, 0, 3 );
+
+    SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupButtons, 4, 0 );
+
+    /***************************************************************/
     Init(Sel) ;
-
 }
 
 
@@ -314,19 +236,12 @@ SMESHGUI_EditHypothesesDlg::~SMESHGUI_EditHypothesesDlg()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::Init( SALOME_Selection* Sel )
 {
-  GroupC1->show();
-  myConstructorId = 0 ;
-  Constructor1->setChecked( TRUE );
-  myEditCurrentArgument = LineEditC1A1 ;	
   mySelection = Sel;
   mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
   InitHypDefinition();
   InitAlgoDefinition();
-
-  InitHypAssignation();
-  InitAlgoAssignation();
 
   myGeomFilter = new SALOME_TypeFilter( "GEOM" );
   myMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
@@ -336,40 +251,79 @@ void SMESHGUI_EditHypothesesDlg::Init( SALOME_Selection* Sel )
   mySubMesh = SMESH::SMESH_subMesh::_nil();
 
   /* signals and slots connections */
-  connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) ) ;
-  connect( GroupConstructors, SIGNAL(clicked(int) ), SLOT( ConstructorsClicked(int) ) );
+  connect( buttonOk,     SIGNAL( clicked() ), this, SLOT( ClickOnOk() ) );
+  connect( buttonApply,  SIGNAL( clicked() ), this, SLOT( ClickOnApply() ) );
+  connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) );
 
-  connect( SelectButtonC1A1, SIGNAL (clicked() ),   this, SLOT( SetEditCurrentArgument() ) ) ;
-  connect( SelectButtonC1A2, SIGNAL (clicked() ),   this, SLOT( SetEditCurrentArgument() ) ) ;
+  connect( SelectButtonC1A1, SIGNAL (clicked() ), this, SLOT( SetEditCurrentArgument() ) ) ;
+  connect( SelectButtonC1A2, SIGNAL (clicked() ), this, SLOT( SetEditCurrentArgument() ) ) ;
 
-  connect( mySelection, SIGNAL( currentSelectionChanged() ),     this, SLOT( SelectionIntoArgument() ) );
-  connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
-  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
+  connect( mySelection, SIGNAL( currentSelectionChanged() ),      this, SLOT( SelectionIntoArgument() ) );
+  connect( mySMESHGUI,  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
+  connect( mySMESHGUI,  SIGNAL( SignalCloseAllDialogs() ),        this, SLOT( ClickOnCancel() ) ) ;
  
-  connect( ListHypAssignation, SIGNAL( clicked(QListBoxItem*) ), this, SLOT( removeItem(QListBoxItem*) ) );
-  connect( ListAlgoAssignation, SIGNAL( clicked(QListBoxItem*) ), this, SLOT( removeItem(QListBoxItem*) ) );
+  connect( ListHypAssignation,  SIGNAL( doubleClicked(QListBoxItem*) ), this, SLOT( removeItem(QListBoxItem*) ) );
+  connect( ListAlgoAssignation, SIGNAL( doubleClicked(QListBoxItem*) ), this, SLOT( removeItem(QListBoxItem*) ) );
  
-  connect( ListHypDefinition, SIGNAL( clicked(QListBoxItem*) ), this, SLOT( addItem(QListBoxItem*) ) );
-  connect( ListAlgoDefinition, SIGNAL( clicked(QListBoxItem*) ), this, SLOT( addItem(QListBoxItem*) ) );
+  connect( ListHypDefinition,  SIGNAL( doubleClicked(QListBoxItem*) ), this, SLOT( addItem(QListBoxItem*) ) );
+  connect( ListAlgoDefinition, SIGNAL( doubleClicked(QListBoxItem*) ), this, SLOT( addItem(QListBoxItem*) ) );
 
   int x, y ;
   mySMESHGUI->DefineDlgPosition( this, x, y ) ;
   this->move( x, y ) ;
   this->show() ; 
+
+  LineEditC1A1->setFocus() ;
+  myEditCurrentArgument = LineEditC1A1;
+  mySelection->ClearFilters() ;   
+  mySelection->AddFilter(myMeshOrSubMeshFilter) ;
+
   SelectionIntoArgument();
 
-  return ;
+  UpdateControlState();
 }
 
 
 //=================================================================================
-// function : ConstructorsClicked()
-// purpose  : Radio button management
+// function : ClickOnOk()
+// purpose  :
 //=================================================================================
-void SMESHGUI_EditHypothesesDlg::ConstructorsClicked(int constructorId)
+void SMESHGUI_EditHypothesesDlg::ClickOnOk()
 {
-  return ;
+  if ( ClickOnApply() )
+    ClickOnCancel() ;
 }
+
+//=================================================================================
+// function : ClickOnApply()
+// purpose  :
+//=================================================================================
+bool SMESHGUI_EditHypothesesDlg::ClickOnApply()
+{
+  bool aRes = false;
+
+  QAD_WaitCursor wc;
+
+  QAD_Operation* op = new QAD_Operation( mySMESHGUI->GetActiveStudy() );
+
+  // start transaction
+  op->start();
+  
+  if ( !myMesh->_is_nil() )
+    aRes = StoreMesh();
+  else if ( !mySubMesh->_is_nil() )
+    aRes = StoreSubMesh();
+
+  if ( aRes )
+    // commit transaction
+    op->finish();
+  else
+    // abort transaction
+    op->abort();
+
+  return aRes;
+}
+
 
 //=================================================================================
 // function : ClickOnCancel()
@@ -377,11 +331,7 @@ void SMESHGUI_EditHypothesesDlg::ConstructorsClicked(int constructorId)
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::ClickOnCancel()
 {
-  disconnect( mySelection, 0, this, 0 );
-  mySMESHGUI->ResetState() ;
-  mySelection->ClearFilters() ;
-  reject() ;
-  return ;
+  close();
 }
 
 
@@ -391,75 +341,52 @@ void SMESHGUI_EditHypothesesDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::SelectionIntoArgument()
 {
-  myEditCurrentArgument->setText("") ;
   QString aString = ""; 
 
   int nbSel = mySMESHGUI->GetNameOfSelectedIObjects(mySelection, aString) ;
-
-  switch (myConstructorId) 
-    {
-    case 0:
-      {
-	if ( myEditCurrentArgument == LineEditC1A1 ) {
-	  if ( nbSel != 1 ) {
-	    myOkHypothesis = false;
-	    myOkAlgorithm = false;
-	    myMesh = SMESH::SMESH_Mesh::_nil();
-	    mySubMesh = SMESH::SMESH_subMesh::_nil();
-	    InitHypAssignation();
-	    InitAlgoAssignation();
-	    InitGeom();
-	    return ;
-	  } else {
-	    Standard_Boolean testResult ;
-	    Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-	    myMesh = mySMESHGUI->ConvertIOinMesh(IO, testResult) ;
-	    if( !testResult ) {
-	      myMesh = SMESH::SMESH_Mesh::_nil();
-
-	      mySubMesh = mySMESHGUI->ConvertIOinSubMesh(IO, testResult) ;
-	      if( !testResult ) {
-		mySubMesh = SMESH::SMESH_subMesh::_nil();
-		InitHypAssignation();
-		InitAlgoAssignation();
-		InitGeom();
-		return ;
-	      }
-	    }
-	    InitHypAssignation();
-	    InitAlgoAssignation();
-	    InitGeom();
-	  }
-	} else if ( myEditCurrentArgument == LineEditC1A2 ) {
-	  if ( nbSel != 1 ) {
-	    myOkHypothesis = false;
-	    myOkAlgorithm = false;
-	    myGeomShape = GEOM::GEOM_Shape::_nil();
-	    InitHypAssignation();
-	    InitAlgoAssignation();
-	    InitGeom();
-	    return ;
-	  } else {
-	    Standard_Boolean testResult ;
-	    Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-	    myGeomShape = mySMESHGUI->ConvertIOinGEOMShape(IO, testResult) ;
-	    if( !testResult ) {
-	      myGeomShape = GEOM::GEOM_Shape::_nil();
-	      InitHypAssignation();
-	      InitAlgoAssignation();
-	      InitGeom();
-	      return ;
-	    }
-	    InitHypAssignation();
-	    InitAlgoAssignation();
-	    InitGeom();	    
-	  }
-	} 
-	break;
+  
+  if ( myEditCurrentArgument == LineEditC1A1 ) {
+    if ( nbSel != 1 ) {
+      myMesh      = SMESH::SMESH_Mesh::_nil();
+      mySubMesh   = SMESH::SMESH_subMesh::_nil();
+      aString     = "";
+    } else {
+      Standard_Boolean testResult ;
+      Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
+      myMesh = mySMESHGUI->ConvertIOinMesh(IO, testResult) ;
+      if( !testResult ) {
+	myMesh = SMESH::SMESH_Mesh::_nil();
+	mySubMesh = mySMESHGUI->ConvertIOinSubMesh(IO, testResult) ;
+	if( !testResult ) {
+	  mySubMesh = SMESH::SMESH_subMesh::_nil();
+	  aString = "";
+	}
       }
     }
-  
-  myEditCurrentArgument->setText(aString) ;
+    myEditCurrentArgument->setText( aString );
+    
+    myGeomShape = GEOM::GEOM_Shape::_nil(); // InitGeom() will try to retrieve a shape from myMesh or mySubMesh
+    InitGeom();
+    
+    myImportedMesh = myGeomShape->_is_nil();
+    
+    InitHypAssignation();
+    InitAlgoAssignation();
+  } 
+  else if ( myEditCurrentArgument == LineEditC1A2 ) {
+    if ( nbSel != 1 )
+      myGeomShape = GEOM::GEOM_Shape::_nil();
+    else {
+      Standard_Boolean testResult ;
+      Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
+      myGeomShape = mySMESHGUI->ConvertIOinGEOMShape(IO, testResult) ;
+      if( !testResult )
+	myGeomShape = GEOM::GEOM_Shape::_nil();
+    }
+    InitGeom();
+  } 
+
+  UpdateControlState();
 }
 
 
@@ -470,26 +397,18 @@ void SMESHGUI_EditHypothesesDlg::SelectionIntoArgument()
 void SMESHGUI_EditHypothesesDlg::SetEditCurrentArgument()
 {
   QPushButton* send = (QPushButton*)sender();
-  switch (myConstructorId)
-    {
-    case 0: /* default constructor */
-      {	
-	if(send == SelectButtonC1A1) {
-	  LineEditC1A1->setFocus() ;
-	  myEditCurrentArgument = LineEditC1A1;
-	  mySelection->ClearFilters() ;	  
-	  mySelection->AddFilter(myMeshOrSubMeshFilter) ;
-	} else if (send == SelectButtonC1A2) {
-	  LineEditC1A2->setFocus() ;
-	  myEditCurrentArgument = LineEditC1A2;
-	  mySelection->ClearFilters() ;
-	  mySelection->AddFilter(myGeomFilter) ;
-	} 
-	SelectionIntoArgument() ;
-	break;
-      }
-    }
-  return ;
+  if(send == SelectButtonC1A1) {
+    LineEditC1A1->setFocus() ;
+    myEditCurrentArgument = LineEditC1A1;
+    mySelection->ClearFilters() ;   
+    mySelection->AddFilter(myMeshOrSubMeshFilter) ;
+  } else if (send == SelectButtonC1A2) {
+    LineEditC1A2->setFocus() ;
+    myEditCurrentArgument = LineEditC1A2;
+    mySelection->ClearFilters() ;
+    mySelection->AddFilter(myGeomFilter) ;
+  } 
+  SelectionIntoArgument() ;
 }
 
 //=================================================================================
@@ -498,9 +417,8 @@ void SMESHGUI_EditHypothesesDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::DeactivateActiveDialog()
 {
-  if ( GroupConstructors->isEnabled() ) {
+  if ( GroupC1->isEnabled() ) {
     disconnect( mySelection, 0, this, 0 );
-    GroupConstructors->setEnabled(false) ;
     GroupC1->setEnabled(false) ;
     GroupButtons->setEnabled(false) ;
   }
@@ -514,11 +432,9 @@ void SMESHGUI_EditHypothesesDlg::DeactivateActiveDialog()
 void SMESHGUI_EditHypothesesDlg::ActivateThisDialog()
 {
   mySMESHGUI->EmitSignalDeactivateDialog() ;   
-  GroupConstructors->setEnabled(true) ;
   GroupC1->setEnabled(true) ;
   GroupButtons->setEnabled(true) ;
   connect ( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
-  return ;
 }
 
 
@@ -528,10 +444,8 @@ void SMESHGUI_EditHypothesesDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::enterEvent(QEvent* e)
 {
-  if ( GroupConstructors->isEnabled() )
-    return ;  
-  ActivateThisDialog() ;
-  return ;
+  if ( !GroupC1->isEnabled() )
+    ActivateThisDialog();
 }
 
 
@@ -541,72 +455,31 @@ void SMESHGUI_EditHypothesesDlg::enterEvent(QEvent* e)
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::closeEvent( QCloseEvent* e )
 {
-  this->ClickOnCancel() ;
-  return ;
+  disconnect( mySelection, 0, this, 0 );
+  mySMESHGUI->ResetState() ;
+  mySelection->ClearFilters() ;
+  QDialog::closeEvent( e );
 }
 
+
 //=================================================================================
-// function : TextChangedInLineEdit()
+// function : removeItem()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditHypothesesDlg::TextChangedInLineEdit(const QString& newText)
-{  
-  QLineEdit* send = (QLineEdit*)sender();
-  QString newT = strdup(newText) ;
-  
-  return ;
-}
-
-void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* i)
+void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* item)
 {
-  if (!i) return;
+  const QObject* aSender = sender();
 
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
-  int index = ListHypAssignation->index( i );
-  if ( index != -1 ) {
-    if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
-      SMESH::SMESH_Hypothesis_var Hyp = 
-	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR( mapNameIOR[ string((const char*)(i->text())) ].c_str() ) );
-  
-      if ( !myMesh->_is_nil() ) {
-	SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh(myMesh);
-	mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh(aMesh, Hyp);
-	//	mySMESHGUI->GetStudyAPI().ModifiedMesh( aMesh, false );
-	mySMESHGUI->GetActiveStudy()->updateObjBrowser();
-      }
-      if ( !mySubMesh->_is_nil() ) {
-	SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindSubMesh(mySubMesh);
-	mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh(aSubMesh, Hyp);
-	//	mySMESHGUI->GetStudyAPI().ModifiedMesh( aSubMesh, false );
-	mySMESHGUI->GetActiveStudy()->updateObjBrowser();
-      }
-      
-      ListHypAssignation->removeItem( index );
-    }
-    return;
+  if (!item) return;
+
+  if ( aSender == ListHypAssignation ) {
+    ListHypAssignation->removeItem( ListHypAssignation->index( item ) );
   } 
-  index = ListAlgoAssignation->index( i );
-  if ( index != -1 ) {
-    if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
-      SMESH::SMESH_Hypothesis_var Hyp = 
-	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
-      
-      if ( !myMesh->_is_nil() ) {
-	SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh(myMesh);
-	mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh(aMesh, Hyp);
-	//	mySMESHGUI->GetStudyAPI().ModifiedMesh( aMesh, false );
-	mySMESHGUI->GetActiveStudy()->updateObjBrowser();
-      }
-      if ( !mySubMesh->_is_nil() ) {
-	SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindSubMesh(mySubMesh);
-	mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh(aSubMesh, Hyp);
-	//	mySMESHGUI->GetStudyAPI().ModifiedMesh( aSubMesh, false );
-	mySMESHGUI->GetActiveStudy()->updateObjBrowser();
-      }
-
-      ListAlgoAssignation->removeItem( index );
-    } 
+  else if ( aSender == ListAlgoAssignation ) {
+    ListAlgoAssignation->removeItem( ListAlgoAssignation->index( item ) );
   }
+
+  UpdateControlState();
 }
 
 
@@ -614,43 +487,45 @@ void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* i)
 // function : addItem()
 // purpose  :
 //=================================================================================
-void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* i)
+void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* item)
 {
-  if (!i) return;
+  const QObject* aSender = sender();
 
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
-  if ( ListHypDefinition->findItem( i->text() ) ) {
-    if ( !ListHypAssignation->findItem( i->text() ) ) {
-      ListHypAssignation->insertItem( i->text() );
-      
-      if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
-	SMESH::SMESH_Hypothesis_var Hyp = 
-	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
-      
-	if ( !myMesh->_is_nil() )
-	  mySMESHGUI->AddHypothesisOnMesh(myMesh, Hyp);
-	if ( !mySubMesh->_is_nil() )
-	  mySMESHGUI->AddHypothesisOnSubMesh(mySubMesh, Hyp);
+  if (!item) return;
+
+  ListBoxIOR* i = 0;
+  if ( item->rtti() == ListBoxIOR::RTTI_IOR )
+    i = (ListBoxIOR*)item;
+  if (!i) return;
+  
+  bool isFound = false;
+
+  if ( aSender == ListHypDefinition ) {
+    for ( int j = 0, n = ListHypAssignation->count(); !isFound && j < n; j++ ) {
+      if ( ListHypAssignation->item( j )->rtti() == ListBoxIOR::RTTI_IOR ) {
+	ListBoxIOR* anItem = (ListBoxIOR*)ListHypAssignation->item( j );
+	isFound = !strcmp( anItem->GetIOR(), i->GetIOR() );
       }
     }
-    return;
+    if ( !isFound )
+      ListBoxIOR* anItem = new ListBoxIOR( ListHypAssignation, 
+					   strdup( i->GetIOR() ), 
+					   strdup( i->text().latin1() ) );
   }
-  if ( ListAlgoDefinition->findItem( i->text() ) ) {
-    if ( !ListAlgoAssignation->findItem( i->text() ) ) {
-      ListAlgoAssignation->insertItem( i->text() );
-      
-      if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
-	SMESH::SMESH_Hypothesis_var Hyp = 
-	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
-      
-	if ( !myMesh->_is_nil() )
-	  mySMESHGUI->AddAlgorithmOnMesh(myMesh, Hyp);
-	if ( !mySubMesh->_is_nil() )
-	  mySMESHGUI->AddAlgorithmOnSubMesh(mySubMesh, Hyp);
+  else if ( aSender == ListAlgoDefinition ) {
+    for ( int j = 0, n = ListAlgoAssignation->count(); !isFound && j < n; j++ ) {
+      if ( ListAlgoAssignation->item( j )->rtti() == ListBoxIOR::RTTI_IOR ) {
+	ListBoxIOR* anItem = (ListBoxIOR*)ListAlgoAssignation->item( j );
+	isFound = !strcmp( anItem->GetIOR(), i->GetIOR() );
       }
     }
+    if ( !isFound )
+      ListBoxIOR* anItem = new ListBoxIOR( ListAlgoAssignation, 
+					   strdup( i->GetIOR() ), 
+					   strdup( i->text().latin1() ) );
   }
-  mySMESHGUI->GetActiveStudy()->updateObjBrowser();
+
+  UpdateControlState();
 }
 
 
@@ -660,7 +535,12 @@ void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* i)
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::InitHypDefinition()
 {
+  ListHypDefinition->clear();
+
   SALOMEDS::SComponent_var father = mySMESHGUI->GetStudy()->FindComponent("MESH");
+  if ( father->_is_nil() )
+    return;
+
   SALOMEDS::SObject_var           HypothesisRoot;
   SALOMEDS::GenericAttribute_var  anAttr;
   SALOMEDS::AttributeName_var     aName;
@@ -672,13 +552,13 @@ void SMESHGUI_EditHypothesesDlg::InitHypDefinition()
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if (Obj->FindAttribute(anAttr, "AttributeName") ) {
-	aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	ListHypDefinition->insertItem(aName->Value());
-	
-	if (Obj->FindAttribute(anAttr, "AttributeIOR")) {
-	  anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-	  mapNameIOR[ aName->Value() ] = anIOR->Value();
-	}
+        aName = SALOMEDS::AttributeName::_narrow(anAttr);
+        if (Obj->FindAttribute(anAttr, "AttributeIOR")) {
+          anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+          ListBoxIOR* anItem = new ListBoxIOR( ListHypDefinition, 
+                                               anIOR->Value(), 
+                                               aName->Value() );
+        }
       }
     }
   }
@@ -692,42 +572,40 @@ void SMESHGUI_EditHypothesesDlg::InitHypAssignation()
 {
   MESSAGE ( " InitHypAssignation " << myMesh->_is_nil() )
   MESSAGE ( " InitHypAssignation " << mySubMesh->_is_nil() )
+
+  myMapOldHypos.clear();
   ListHypAssignation->clear();
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
-  int Tag_RefOnAppliedHypothesis = 2;
-  SALOMEDS::SObject_var             AHR, aRef;
+  if ( myImportedMesh )
+    return;
+
+  SALOMEDS::SObject_var             aMorSM, AHR, aRef;
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
+  SALOMEDS::AttributeIOR_var        anIOR;
+  SMESHGUI_StudyAPI                 myStudyAPI = mySMESHGUI->GetStudyAPI();
 
-  if ( !myMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh( myMesh );
-    if ( aMesh->FindSubObject (2, AHR)) {
-      SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
-      for (; it->More();it->Next()) {
-	SALOMEDS::SObject_var Obj = it->Value();
-	if ( Obj->ReferencedObject(aRef) ) {
-	  if (aRef->FindAttribute(anAttr, "AttributeName") ) {
-	      aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	    ListHypAssignation->insertItem(aName->Value());
+  if ( !myMesh->_is_nil() )
+    aMorSM = myStudyAPI.FindObject( myMesh );
+  else if ( !mySubMesh->_is_nil() )
+    aMorSM = myStudyAPI.FindObject( mySubMesh );
+
+  if ( !aMorSM->_is_nil() && aMorSM->FindSubObject (2, AHR)) {
+    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
+    for (; it->More();it->Next()) {
+      SALOMEDS::SObject_var Obj = it->Value();
+      if ( Obj->ReferencedObject(aRef) ) {
+        if (aRef->FindAttribute(anAttr, "AttributeName") ) {
+	  aName = SALOMEDS::AttributeName::_narrow(anAttr);
+	  if (aRef->FindAttribute(anAttr, "AttributeIOR")) {
+	    anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+	    ListBoxIOR* anItem = new ListBoxIOR( ListHypAssignation, 
+						 anIOR->Value(), 
+						 aName->Value() );
+	    myMapOldHypos[ anIOR->Value() ] = ListHypAssignation->index( anItem );
 	  }
 	}
       }
     }
-  }
-  if ( !mySubMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindSubMesh( mySubMesh );
-    if ( aSubMesh->FindSubObject (2, AHR)) {
-      SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
-      for (; it->More();it->Next()) {
-	SALOMEDS::SObject_var Obj = it->Value();
-	if ( Obj->ReferencedObject(aRef) ) {
-	  if (aRef->FindAttribute(anAttr, "AttributeName") ) {
-	    aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	    ListHypAssignation->insertItem(aName->Value());
-	  }
-	}
-      }
-    }    
   }
 }
 
@@ -737,25 +615,29 @@ void SMESHGUI_EditHypothesesDlg::InitHypAssignation()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::InitAlgoDefinition()
 {
+  ListAlgoDefinition->clear();
+
   SALOMEDS::SComponent_var father = mySMESHGUI->GetStudy()->FindComponent("MESH");
+  if ( father->_is_nil() )
+    return;
+
   SALOMEDS::SObject_var          AlgorithmsRoot;
   SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var    aName;
   SALOMEDS::AttributeIOR_var     anIOR;
 
-  int Tag_AlgorithmsRoot = 2;
   if (father->FindSubObject (2, AlgorithmsRoot)) {
     SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AlgorithmsRoot);
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if (Obj->FindAttribute(anAttr, "AttributeName") ) {
-	aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	ListAlgoDefinition->insertItem(aName->Value());
-
-	if (Obj->FindAttribute(anAttr, "AttributeIOR")) {
-	  anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-	  mapNameIOR[ aName->Value() ] = anIOR->Value();
-	}
+        aName = SALOMEDS::AttributeName::_narrow(anAttr);
+        if (Obj->FindAttribute(anAttr, "AttributeIOR")) {
+          anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+          ListBoxIOR* anItem = new ListBoxIOR( ListAlgoDefinition, 
+                                               anIOR->Value(), 
+                                               aName->Value() );
+        }
       }
     }
   }
@@ -770,38 +652,36 @@ void SMESHGUI_EditHypothesesDlg::InitAlgoAssignation()
 {
   MESSAGE ( " InitAlgoAssignation " << myMesh->_is_nil() )
   MESSAGE ( " InitAlgoAssignation " << mySubMesh->_is_nil() )
+
+  myMapOldAlgos.clear();
   ListAlgoAssignation->clear();
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
-  int Tag_RefOnAppliedAlgorithms = 3;
-  SALOMEDS::SObject_var             AHR, aRef;
+  if ( myImportedMesh )
+    return;
+
+  SALOMEDS::SObject_var             aMorSM, AHR, aRef;
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
-  
-  if ( !myMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh( myMesh );
-    if ( aMesh->FindSubObject (3, AHR) ) {
-      SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
-      for (; it->More();it->Next()) {
-	SALOMEDS::SObject_var Obj = it->Value();
-	if ( Obj->ReferencedObject(aRef) ) {
-	  if (aRef->FindAttribute(anAttr, "AttributeName") ) {
-	    aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	    ListAlgoAssignation->insertItem(aName->Value());
-	  }
-	}
-      }
-    }
-  }
-  if ( !mySubMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindSubMesh( mySubMesh );
-    if ( aSubMesh->FindSubObject (3, AHR) ) {
-      SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
-      for (; it->More();it->Next()) {
-	SALOMEDS::SObject_var Obj = it->Value();
-	if ( Obj->ReferencedObject(aRef) ) {
-	  if (aRef->FindAttribute(anAttr, "AttributeName") ) {
-	    aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	    ListAlgoAssignation->insertItem(aName->Value());
+  SALOMEDS::AttributeIOR_var        anIOR;
+  SMESHGUI_StudyAPI                 myStudyAPI = mySMESHGUI->GetStudyAPI();  
+
+  if ( !myMesh->_is_nil() )
+    aMorSM = myStudyAPI.FindObject( myMesh );
+  else if ( !mySubMesh->_is_nil() )
+    aMorSM = myStudyAPI.FindObject( mySubMesh );
+
+  if ( !aMorSM->_is_nil() && aMorSM->FindSubObject (3, AHR)) {
+    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
+    for (; it->More();it->Next()) {
+      SALOMEDS::SObject_var Obj = it->Value();
+      if ( Obj->ReferencedObject(aRef) ) {
+        if (aRef->FindAttribute(anAttr, "AttributeName") ) {
+	  aName = SALOMEDS::AttributeName::_narrow(anAttr);
+	  if (aRef->FindAttribute(anAttr, "AttributeIOR")) {
+	    anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+	    ListBoxIOR* anItem = new ListBoxIOR( ListAlgoAssignation, 
+						 anIOR->Value(), 
+						 aName->Value() );
+	    myMapOldAlgos[ anIOR->Value() ] = ListAlgoAssignation->index( anItem );
 	  }
 	}
       }
@@ -818,13 +698,13 @@ void SMESHGUI_EditHypothesesDlg::InitGeom()
   LineEditC1A2->setText("") ;
   SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
 
-  if ( !myMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh( myMesh );
+  if ( myGeomShape->_is_nil() && !myMesh->_is_nil() ) {
+    SALOMEDS::SObject_var aMesh = myStudyAPI.FindObject( myMesh );
     if ( !aMesh->_is_nil() )
       myGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh(aMesh);
   }
-  if ( !mySubMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindSubMesh( mySubMesh );
+  if ( myGeomShape->_is_nil() && !mySubMesh->_is_nil() ) {
+    SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindObject( mySubMesh );
     if ( !aSubMesh->_is_nil() )
       myGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh(aSubMesh);
   }
@@ -835,9 +715,203 @@ void SMESHGUI_EditHypothesesDlg::InitGeom()
     SALOMEDS::SObject_var aSO = mySMESHGUI->GetStudy()->FindObjectIOR( myGeomShape->Name() );
     if ( !aSO->_is_nil() ) {
       if (aSO->FindAttribute(anAttr, "AttributeName") ) {
-	aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	LineEditC1A2->setText( QString(aName->Value()) ) ;
+        aName = SALOMEDS::AttributeName::_narrow(anAttr);
+        LineEditC1A2->setText( QString(aName->Value()) ) ;
       }
     }
   }
+}
+
+//=================================================================================
+// function : UpdateControlState()
+// purpose  :
+//=================================================================================
+void SMESHGUI_EditHypothesesDlg::UpdateControlState()
+{
+  bool isEnabled = ( !myMesh   ->_is_nil() && !myGeomShape->_is_nil() &&   ListHypAssignation->count() && ListAlgoAssignation->count() ) ||
+                   ( !mySubMesh->_is_nil() && !myGeomShape->_is_nil() && ( ListHypAssignation->count() || ListAlgoAssignation->count() ) );
+
+  buttonOk   ->setEnabled( isEnabled && !myImportedMesh );
+  buttonApply->setEnabled( isEnabled && !myImportedMesh );
+
+  SelectButtonC1A2   ->setEnabled( ALLOW_CHANGE_SHAPE && !myImportedMesh );
+  LineEditC1A2       ->setEnabled( ALLOW_CHANGE_SHAPE && !myImportedMesh );
+  ListHypDefinition  ->setEnabled( !myImportedMesh );
+  ListHypAssignation ->setEnabled( !myImportedMesh );
+  ListAlgoDefinition ->setEnabled( !myImportedMesh );
+  ListAlgoAssignation->setEnabled( !myImportedMesh );
+}
+
+//=================================================================================
+// function : StoreMesh()
+// purpose  :
+//=================================================================================
+bool SMESHGUI_EditHypothesesDlg::StoreMesh()
+{
+  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
+  MapIOR anOldHypos, aNewHypos;
+  if ( myGeomShape->_is_nil() )
+    return false;
+  // 1. Check whether the geometric shape has changed
+  SALOMEDS::SObject_var aMeshSO = myStudyAPI.FindObject( myMesh );
+  GEOM::GEOM_Shape_var aIniGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh( aMeshSO );
+  bool bShapeChanged = aIniGeomShape->_is_nil() || !aIniGeomShape->_is_equivalent( myGeomShape );
+  if ( bShapeChanged ) {
+    // VSR : TODO : Set new shape - not supported yet by SMESH engine
+    // 1) remove all old hypotheses and algorithms and also submeshes
+    // 2) set new shape
+  }
+  MapIOR::iterator it;
+  // 2. remove not used hypotheses from the mesh
+  for ( it = myMapOldHypos.begin(); it != myMapOldHypos.end(); ++it ) {
+    string ior = it->first;
+    int index = findItem( ListHypAssignation, ior );
+    if ( index < 0 ) {
+      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+      if ( !CORBA::is_nil( anObject ) ) {
+	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	if ( !aHyp->_is_nil() )
+	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ) )
+	    return false;
+      }
+    }
+  }
+  // 3. remove not used algorithms from the mesh
+  for ( it = myMapOldAlgos.begin(); it != myMapOldAlgos.end(); ++it ) {
+    string ior = it->first;
+    int index = findItem( ListAlgoAssignation, ior );
+    if ( index < 0 ) {
+      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+      if ( !CORBA::is_nil( anObject ) ) {
+	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	if ( !aHyp->_is_nil() )
+	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ) )
+	    return false;
+      }
+    }
+  }
+  // 4. Add new hypotheses
+  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
+    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
+	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+	  if ( !CORBA::is_nil( anObject ) ) {
+	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	    if ( !aHyp->_is_nil() )
+	      if ( !mySMESHGUI->AddHypothesisOnMesh( myMesh, aHyp ) )
+		return false;
+	  }
+	}
+      }
+    }
+  }
+  // 4. Add new algorithms
+  for ( int i = 0; i < ListAlgoAssignation->count(); i++ ) {
+    if ( ListAlgoAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListAlgoAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldAlgos.find( ior ) == myMapOldAlgos.end() ) {
+	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+	  if ( !CORBA::is_nil( anObject ) ) {
+	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	    if ( !aHyp->_is_nil() )
+	      if ( !mySMESHGUI->AddAlgorithmOnMesh( myMesh, aHyp ) )
+		return false;
+	  }
+	}
+      }
+    }
+  }
+  return true;
+}
+
+//=================================================================================
+// function : StoreSubMesh()
+// purpose  :
+//=================================================================================
+bool SMESHGUI_EditHypothesesDlg::StoreSubMesh()
+{
+  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
+  MapIOR anOldHypos, aNewHypos;
+  if ( myGeomShape->_is_nil() )
+    return false;
+  // 1. Check whether the geometric shape has changed
+  SALOMEDS::SObject_var aSubMeshSO = myStudyAPI.FindObject( mySubMesh );
+  GEOM::GEOM_Shape_var aIniGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh( aSubMeshSO );
+  bool bShapeChanged = aIniGeomShape->_is_nil() || !aIniGeomShape->_is_equivalent( myGeomShape );
+  if ( bShapeChanged ) {
+    // VSR : TODO : Set new shape - not supported yet by engine
+    // 1) remove all old hypotheses and algorithms
+    // 2) set new shape
+  }
+  MapIOR::iterator it;
+  // 2. remove not used hypotheses from the submesh
+  for ( it = myMapOldHypos.begin(); it != myMapOldHypos.end(); ++it ) {
+    string ior = it->first;
+    int index = findItem( ListHypAssignation, ior );
+    if ( index < 0 ) {
+      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+      if ( !CORBA::is_nil( anObject ) ) {
+	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	if ( !aHyp->_is_nil() )
+	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ) )
+	    return false;
+      }
+    }
+  }
+  // 3. remove not used algorithms from the submesh
+  for ( it = myMapOldAlgos.begin(); it != myMapOldAlgos.end(); ++it ) {
+    string ior = it->first;
+    int index = findItem( ListAlgoAssignation, ior );
+    if ( index < 0 ) {
+      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+      if ( !CORBA::is_nil( anObject ) ) {
+	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	if ( !aHyp->_is_nil() )
+	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ) )
+	    return false;
+      }
+    }
+  }
+  // 4. Add new hypotheses
+  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
+    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
+	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+	  if ( !CORBA::is_nil( anObject ) ) {
+	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	    if ( !aHyp->_is_nil() )
+	      if ( !mySMESHGUI->AddHypothesisOnSubMesh( mySubMesh, aHyp ) )
+		return false;
+	  }
+	}
+      }
+    }
+  }
+  // 4. Add new algorithms
+  for ( int i = 0; i < ListAlgoAssignation->count(); i++ ) {
+    if ( ListAlgoAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListAlgoAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldAlgos.find( ior ) == myMapOldAlgos.end() ) {
+	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
+	  if ( !CORBA::is_nil( anObject ) ) {
+	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
+	    if ( !aHyp->_is_nil() )
+	      if ( !mySMESHGUI->AddAlgorithmOnSubMesh( mySubMesh, aHyp ) )
+		return false;
+	  }
+	}
+      }
+    }
+  }
+  return true;
 }

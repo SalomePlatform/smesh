@@ -54,6 +54,8 @@ using namespace std;
 
 # include "Utils_ORB_INIT.hxx"
 # include "Utils_SINGLETON.hxx"
+# include "Utils_ExceptHandlers.hxx"
+
 extern "C"
 {
 #include <stdio.h>
@@ -254,7 +256,7 @@ SALOME_MED::double_array * SMESH_MEDMesh_i::getCoordinates(
 		myseq->length(nbNodes * spaceDimension);
 		int i = 0;
 
-		SMDS_Iterator<const SMDS_MeshNode *> * itNodes=_meshDS->nodesIterator();
+		SMDS_NodeIteratorPtr itNodes=_meshDS->nodesIterator();
 		while(itNodes->more())
 		{
 			const SMDS_MeshNode* node = itNodes->next();
@@ -280,7 +282,6 @@ SALOME_MED::double_array * SMESH_MEDMesh_i::getCoordinates(
 			}
 			i++;
 		}
-		delete itNodes;
 	}
 	catch(...)
 	{
@@ -949,7 +950,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 		int trouveSeg3 = 0;
 		SALOME_MED::medGeometryElement medElement;
 
-		SMDS_Iterator<const SMDS_MeshEdge*> * itEdges=_meshDS->edgesIterator();
+		SMDS_EdgeIteratorPtr itEdges=_meshDS->edgesIterator();
 		while(itEdges->more())
 		{
 			const SMDS_MeshEdge* elem = itEdges->next();
@@ -987,13 +988,11 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 			int longueur = _seq_elemId[index]->length();
 			_seq_elemId[index]->length(longueur + nb_of_nodes);
 
-			SMDS_Iterator<const SMDS_MeshNode*> * itn=_meshDS->nodesIterator();
+			SMDS_NodeIteratorPtr itn=_meshDS->nodesIterator();
 
 			for(int k=0; itn->more(); k++)
 				_seq_elemId[index][longueur + k] = itn->next()->GetID()+1;
-			delete itn;
 		}
-		delete itEdges;
 
 		_mapNbTypes[SALOME_MED::MED_EDGE] = trouveSeg2 + trouveSeg3;
 
@@ -1008,7 +1007,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 		_mapIndToSeqElts[SALOME_MED::MED_QUAD4] = _indexElts++;
 		_mapIndToVectTypes[SALOME_MED::MED_FACE] = _indexEnts++;
 
-		SMDS_Iterator<const SMDS_MeshFace*> * itFaces=_meshDS->facesIterator();
+		SMDS_FaceIteratorPtr itFaces=_meshDS->facesIterator();
 		while(itFaces->more())
 		{
 			const SMDS_MeshFace * elem = itFaces->next();
@@ -1059,13 +1058,11 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 			int longueur = _seq_elemId[index]->length();
 			_seq_elemId[index]->length(longueur + nb_of_nodes);
 
-			SMDS_Iterator<const SMDS_MeshNode*> * itn=_meshDS->nodesIterator();
+			SMDS_NodeIteratorPtr itn=_meshDS->nodesIterator();
 
 			for(int k=0; itn->more(); k++)
 				_seq_elemId[index][longueur + k] = itn->next()->GetID()+1;
-			delete itn;
 		} //itFaces
-		delete itFaces;
 
 		_mapNbTypes[SALOME_MED::MED_FACE] =
 			trouveTria3 + trouveTria6 + trouveQuad4;
@@ -1076,7 +1073,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 
 		int trouveHexa8 = 0;
 
-		SMDS_Iterator<const SMDS_MeshVolume*> * itVolumes=_meshDS->volumesIterator();
+		SMDS_VolumeIteratorPtr itVolumes=_meshDS->volumesIterator();
 		while(itVolumes->more())
 		{
 			const SMDS_MeshVolume * elem = itVolumes->next();
@@ -1094,12 +1091,10 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 			int longueur = _seq_elemId[index]->length();
 			_seq_elemId[index]->length(longueur + nb_of_nodes);
 
-			SMDS_Iterator<const SMDS_MeshNode*> * itn=_meshDS->nodesIterator();
+			SMDS_NodeIteratorPtr itn=_meshDS->nodesIterator();
 			for(int k=0; itn->more(); k++)
 				_seq_elemId[index][longueur + k] = itn->next()->GetID()+1;
-			delete itn;
 		}
-		delete itVolumes;
 
 		_mapNbTypes[SALOME_MED::MED_CELL] = trouveHexa8;
 		_mapNbTypes[SALOME_MED::MED_ALL_ENTITIES]
@@ -1116,6 +1111,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 //=============================================================================
 void SMESH_MEDMesh_i::createFamilies() throw(SALOME::SALOME_Exception)
 {
+  Unexpect aCatch(SALOME_SalomeException);
 	string famDes = ("Je ne sais pas");
 	string famName0 = "Famille_";
 	string famName;

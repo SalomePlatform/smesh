@@ -1,0 +1,33 @@
+#  Copyright (C) 2003  CEA/DEN, EDF R&D
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Vasily Rusyaev (Open Cascade NN)
+#  Module : doc
+#  $Header: 
+
+top_srcdir=@top_srcdir@
+top_builddir=../../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+@COMMENCE@
+
+docs:
+	cp -fr $(srcdir)/SMESH ./
+	-find $(PWD) -name CVS -exec rm -rf {} \;
+
+clean:
+	rm -fr `ls | grep -v "Makefile"`
+
+distclean: clean
+	rm -fr SMESH
+
+install:
+	mkdir -p $(docdir)/gui
+	cp -rf SMESH $(docdir)/gui
+	-find $(PWD) -name CVS -exec rm -rf {} \;
+
+uninstall:
+	rm -rf $(docdir)/gui/SMESH

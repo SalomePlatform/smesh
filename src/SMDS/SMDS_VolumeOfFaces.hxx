@@ -21,7 +21,7 @@
 //
 //
 //
-//  File   : SMDS_MeshVolume.hxx
+//  File   : SMDS_VolumeOfFaces.hxx
 //  Module : SMESH
 
 #ifndef _SMDS_VolumeOfFaces_HeaderFile
@@ -38,22 +38,29 @@ class SMDS_VolumeOfFaces:public SMDS_MeshVolume
 {
 	
   public:
-	SMDS_VolumeOfFaces(SMDS_MeshFace * face1, SMDS_MeshFace * face2,
-		SMDS_MeshFace * face3, SMDS_MeshFace * face4);
-	SMDS_VolumeOfFaces(SMDS_MeshFace * face1, SMDS_MeshFace * face2,
-		SMDS_MeshFace * face3, SMDS_MeshFace * face4,
-		SMDS_MeshFace * face5);
-	SMDS_VolumeOfFaces(SMDS_MeshFace * face1, SMDS_MeshFace * face2,
-		SMDS_MeshFace * face3, SMDS_MeshFace * face4,
-		SMDS_MeshFace * face5,SMDS_MeshFace * face6);
+	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+                           const SMDS_MeshFace * face2,
+                           const SMDS_MeshFace * face3,
+                           const SMDS_MeshFace * face4);
+	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+                           const SMDS_MeshFace * face2,
+                           const SMDS_MeshFace * face3,
+                           const SMDS_MeshFace * face4,
+                           const SMDS_MeshFace * face5);
+	SMDS_VolumeOfFaces(const SMDS_MeshFace * face1,
+                           const SMDS_MeshFace * face2,
+                           const SMDS_MeshFace * face3,
+                           const SMDS_MeshFace * face4,
+                           const SMDS_MeshFace * face5,
+                           const SMDS_MeshFace * face6);
 
 	void Print(ostream & OS) const;
 	
 	int NbFaces() const;
 
   protected:
-	SMDS_Iterator<const SMDS_MeshElement *> *
+	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
-	vector<SMDS_MeshFace *> myFaces;
+	vector<const SMDS_MeshFace *> myFaces;
 };
 #endif

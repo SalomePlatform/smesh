@@ -207,7 +207,7 @@ void DriverMED_W_SMDS_Mesh::Write()
 	for (i = 0; i < MED_NBR_GEOMETRIE_MAILLE; i++)
 		nmailles[i] = 0;
 
-	SMDS_Iterator<const SMDS_MeshFace *> * itFaces=myMesh->facesIterator();
+	SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
 	int nb_of_nodes, nb_of_faces;
 	nb_of_faces = myMesh->NbFaces();
 	//SCRUTE(nb_of_faces);
@@ -251,7 +251,7 @@ void DriverMED_W_SMDS_Mesh::Write()
 
 	}
 
-	SMDS_Iterator<const SMDS_MeshVolume*> * itVolumes=myMesh->volumesIterator();
+	SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
 	while(itVolumes->more())
 	{
 		const SMDS_MeshVolume * elem = itVolumes->next();
@@ -295,7 +295,7 @@ void DriverMED_W_SMDS_Mesh::Write()
 	nomnoe = "";
 
 	i = 0;
-	SMDS_Iterator<const SMDS_MeshNode *> * itNodes=myMesh->nodesIterator();
+	SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
 	while(itNodes->more())
 	{		
 		const SMDS_MeshNode * node = itNodes->next();
@@ -370,8 +370,7 @@ void DriverMED_W_SMDS_Mesh::Write()
 					//elem_id=*(numele+j);
 					//fprintf(stdout,"%d \n",myId);
 
-					SMDS_Iterator<const SMDS_MeshElement *> * itNode=
-						elem->nodesIterator();
+					SMDS_ElemIteratorPtr itNode= elem->nodesIterator();
 
 					while(itNode->more())
 					{

@@ -5,6 +5,23 @@
 #%Make geometry (like CEA script (A1)) using Partition algorithm% from OCC
 # -- Rayon de la bariere
 
+import salome
+import geompy
+
+import StdMeshers
+import NETGENPlugin
+
+geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
+smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
+
+geom.GetCurrentStudy(salome.myStudy._get_StudyId())
+smesh.SetCurrentStudy(salome.myStudy)
+
+smeshgui = salome.ImportComponentGUI("SMESH")
+smeshgui.Init(salome.myStudyId);
+
+#---------------------------------------------------------------
+
 barier_height = 7.0
 barier_radius = 5.6 / 2 # Rayon de la bariere
 colis_radius = 1.0 / 2  # Rayon du colis
@@ -18,9 +35,6 @@ from math import sqrt
 colis_center = sqrt(2.0)*colis_step/2
 
 # --
-
-import geompy
-geom = geompy.geom
 
 boolean_common  = 1
 boolean_cut     = 2
@@ -115,17 +129,6 @@ print " check status ", status
 
 # ---- launch SMESH
 
-import salome
-from salome import sg
-
-import SMESH
-import smeshpy
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-gen=smeshpy.smeshpy()
-
 # ---- create Hypothesis
 
 print "-------------------------- create Hypothesis (In this case global hypothesis are used)"
@@ -134,44 +137,37 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 10
 
-hyp1=gen.CreateHypothesis("NumberOfSegments")
-hypNbSeg=hyp1._narrow(SMESH.SMESH_NumberOfSegments)
+hypNbSeg=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
-hypNbSegID = hypNbSeg.GetId()
 print hypNbSeg.GetName()
-print hypNbSegID
+print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
 
-idseg = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypNbSeg) )
-smeshgui.SetName(idseg, "NumberOfSegments")
+smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 0.1
 
-hyp2=gen.CreateHypothesis("MaxElementArea")
-hypArea=hyp2._narrow(SMESH.SMESH_MaxElementArea)
+hypArea=smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
 hypArea.SetMaxElementArea(maxElementArea)
 print hypArea.GetName()
 print hypArea.GetId()
 print hypArea.GetMaxElementArea()
 
-idarea = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypArea) )
-smeshgui.SetName(idarea, "MaxElementArea")
+smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_0.1")
 
 print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 0.5
 
-hyp3=gen.CreateHypothesis("MaxElementVolume")
-hypVolume=hyp3._narrow(SMESH.SMESH_MaxElementVolume)
+hypVolume=smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
 hypVolume.SetMaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
 
-idvolume = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypVolume) )
-smeshgui.SetName(idvolume, "MaxElementVolume")
+smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_0.5")
 
 # ---- create Algorithms
 
@@ -179,67 +175,53 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-hypothesis=gen.CreateHypothesis("Regular_1D")
-regular1D = hypothesis._narrow(SMESH.SMESH_Regular_1D)
-regularID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(regular1D) )
-smeshgui.SetName(regularID, "Wire Discretisation")
+regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-hypothesis=gen.CreateHypothesis("MEFISTO_2D")
-mefisto2D = hypothesis._narrow(SMESH.SMESH_MEFISTO_2D)
-mefistoID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(mefisto2D) )
-smeshgui.SetName(mefistoID, "MEFISTO_2D")
+mefisto2D=smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"
 
-hypothesis=gen.CreateHypothesis("NETGEN_3D")
-netgen3D = hypothesis._narrow(SMESH.SMESH_NETGEN_3D)
-netgenID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(netgen3D) )
-smeshgui.SetName(netgenID, "NETGEN_3D")
+netgen3D=smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
+smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
 
 # ---- init a Mesh with the alveole
+shape_mesh = salome.IDToObject( idalveole )
 
-mesh=gen.Init(idalveole)
-idmesh = smeshgui.AddNewMesh( salome.orb.object_to_string(mesh) )
-smeshgui.SetName(idmesh, "MeshAlveole")
-smeshgui.SetShape(idalveole, idmesh)
+mesh=smesh.CreateMesh(shape_mesh)
+smeshgui.SetName(salome.ObjectToID(mesh), "MeshAlveole")
 
 # ---- add hypothesis to alveole
 
 print "-------------------------- add hypothesis to alveole"
 
-ret=mesh.AddHypothesis(alveole,regular1D)
-print ret
-ret=mesh.AddHypothesis(alveole,hypNbSeg)
-print ret
-ret=mesh.AddHypothesis(alveole,mefisto2D)
-print ret
-ret=mesh.AddHypothesis(alveole,hypArea)
-print ret
-ret=mesh.AddHypothesis(alveole,netgen3D)
-print ret
-ret=mesh.AddHypothesis(alveole,hypVolume)
-print ret
+mesh.AddHypothesis(shape_mesh,regular1D)
+mesh.AddHypothesis(shape_mesh,hypNbSeg)
 
-smeshgui.SetAlgorithms( idmesh, regularID)
-smeshgui.SetHypothesis( idmesh, idseg )
-smeshgui.SetAlgorithms( idmesh, mefistoID )
-smeshgui.SetHypothesis( idmesh, idarea )
-smeshgui.SetAlgorithms( idmesh, netgenID )
-smeshgui.SetHypothesis( idmesh, idvolume )
+mesh.AddHypothesis(shape_mesh,mefisto2D)
+mesh.AddHypothesis(shape_mesh,hypArea)
 
-sg.updateObjBrowser(1)
-
+mesh.AddHypothesis(shape_mesh,netgen3D)
+mesh.AddHypothesis(shape_mesh,hypVolume)
 
 print "-------------------------- compute the mesh of alveole "
-ret=gen.Compute(mesh,idalveole)
-print ret
+ret=smesh.Compute(mesh,shape_mesh)
+
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
+    print "Information about the Mesh_mechanic:"
+    print "Number of nodes      : ", mesh.NbNodes()
+    print "Number of edges      : ", mesh.NbEdges()
+    print "Number of faces      : ", mesh.NbFaces()
+    print "Number of triangles  : ", mesh.NbTriangles()
+    print "Number of volumes: ", mesh.NbVolumes()
+    print "Number of tetrahedrons: ", mesh.NbTetras() 
 else:
     print "problem when computing the mesh"
-
-sg.updateObjBrowser(1)
+    
+salome.sg.updateObjBrowser(1)

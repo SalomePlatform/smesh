@@ -27,7 +27,6 @@ bool SMDS_IteratorOfElements::subMore()
 	{
 		if(t1Iterator->more())
 		{
-			if(t2Iterator!=NULL) delete t2Iterator;
 			t2Iterator=t1Iterator->next()->elementsIterator(myType);
 			return subMore();
 		}
@@ -39,13 +38,8 @@ bool SMDS_IteratorOfElements::subMore()
 const SMDS_MeshElement * SMDS_IteratorOfElements::subNext()
 {
 	if((t2Iterator==NULL)||(!t2Iterator->more()))
-	{
 		if(t1Iterator->more())
-		{
-			if(t2Iterator!=NULL) delete t2Iterator;
 			t2Iterator=t1Iterator->next()->elementsIterator(myType);
-		}
-	}
 	return t2Iterator->next();
 }
 
@@ -54,9 +48,12 @@ const SMDS_MeshElement * SMDS_IteratorOfElements::subNext()
 /// to the element element. it is the iterator to get connectivity of element
 //////////////////////////////////////////////////////////////////////////////
 SMDS_IteratorOfElements::SMDS_IteratorOfElements(const SMDS_MeshElement * element,
-	SMDSAbs_ElementType type, SMDS_Iterator<const SMDS_MeshElement *>* it)
-	:t1Iterator(it), t2Iterator(NULL), myType(type), myElement(element),
-	myProxyElement(NULL)
+                                                 SMDSAbs_ElementType type,
+                                                 const SMDS_ElemIteratorPtr& it)
+     : t1Iterator(it),
+       t2Iterator(SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL)),
+       myType(type), myElement(element),
+       myProxyElement(NULL)
 {
 	while(subMore())
 		alreadyReturnedElements.insert(subNext());
@@ -81,7 +78,7 @@ bool SMDS_IteratorOfElements::more()
 
 			if(myReverseIteration)
 			{
-				SMDS_Iterator<const SMDS_MeshElement*> * it=
+				SMDS_ElemIteratorPtr it=
 					myProxyElement->elementsIterator(myElement->GetType());
 				while(it->more())
 				{				
@@ -102,10 +99,4 @@ const SMDS_MeshElement * SMDS_IteratorOfElements::next()
 	const SMDS_MeshElement *e=myProxyElement;
 	myProxyElement=NULL;
 	return e;
-}
-
-SMDS_IteratorOfElements::~SMDS_IteratorOfElements()
-{
-	delete t1Iterator;
-	if(t2Iterator!=NULL) delete t2Iterator;
 }

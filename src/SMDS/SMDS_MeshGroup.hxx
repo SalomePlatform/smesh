@@ -33,25 +33,44 @@ using namespace std;
 class SMDS_MeshGroup:public SMDS_MeshObject
 {
   public:
-	SMDS_MeshGroup(const SMDS_Mesh * aMesh);
-	const SMDS_MeshGroup * AddSubGroup();
-	virtual bool RemoveSubGroup(const SMDS_MeshGroup* aGroup);
+	SMDS_MeshGroup(const SMDS_Mesh * theMesh,
+                       const SMDSAbs_ElementType theType = SMDSAbs_All);
+	const SMDS_MeshGroup * AddSubGroup
+                      (const SMDSAbs_ElementType theType = SMDSAbs_All);
+	virtual bool RemoveSubGroup(const SMDS_MeshGroup* theGroup);
 	virtual bool RemoveFromParent();
-	void Clear();
-	void Add(const SMDS_MeshElement * ME);
-	void Remove(const SMDS_MeshElement * ME);
-	bool IsEmpty() const;
-	int Extent() const;
-	SMDSAbs_ElementType Type() const;
-	bool Contains(const SMDS_MeshElement * ME) const;
-	
-	 ~SMDS_MeshGroup();
+
+        const SMDS_Mesh* GetMesh() const { return myMesh; }
+
+        void SetType (const SMDSAbs_ElementType theType);
+        void Clear();
+	void Add(const SMDS_MeshElement * theElem);
+	void Remove(const SMDS_MeshElement * theElem);
+	bool IsEmpty() const { return myElements.empty(); }
+	int Extent() const { return myElements.size(); }
+
+        SMDSAbs_ElementType GetType() const { return myType; }
+
+	bool Contains(const SMDS_MeshElement * theElem) const;
+
+        void InitIterator() const
+        { const_cast<iterator&>(myIterator) = myElements.begin(); }
+
+        bool More() const { return myIterator != myElements.end(); }
+
+        const SMDS_MeshElement* Next() const
+        { return *(const_cast<iterator&>(myIterator))++; }
+
   private:
-	SMDS_MeshGroup(SMDS_MeshGroup* parent);
-	const SMDS_Mesh *myMesh;
-	SMDSAbs_ElementType myType;
-	set<const SMDS_MeshElement *> myElements;
-	SMDS_MeshGroup * myParent;
-	list<const SMDS_MeshGroup*> myChildren;
+	SMDS_MeshGroup(SMDS_MeshGroup* theParent,
+                       const SMDSAbs_ElementType theType = SMDSAbs_All);
+
+        typedef set<const SMDS_MeshElement *>::iterator iterator;
+	const SMDS_Mesh *                       myMesh;
+	SMDSAbs_ElementType                     myType;
+	set<const SMDS_MeshElement *>           myElements;
+	SMDS_MeshGroup *                        myParent;
+	list<const SMDS_MeshGroup*>             myChildren;
+        iterator                                myIterator;
 };
 #endif

@@ -48,7 +48,6 @@ public:
 
   const char* GetName() const;
   int GetID() const;
-  void SetID(int id);
   int GetType() const;
 
   virtual ostream & SaveTo(ostream & save)=0;

@@ -28,7 +28,6 @@
 #define _SMDS_MeshElementIDFactory_HeaderFile
 
 #include "SMDS_MeshIDFactory.hxx"
-#include <SMDS_Iterator.hxx>
 
 #include <map>
 using namespace std;
@@ -41,6 +40,8 @@ class SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 	SMDS_MeshElementIDFactory();
 	bool BindID(int ID, SMDS_MeshElement * elem);
 	SMDS_MeshElement * MeshElement(int ID);
+	virtual int GetFreeID();
+	virtual void ReleaseID(int ID);
   private:
 	map<int, SMDS_MeshElement *> myIDElements;
 

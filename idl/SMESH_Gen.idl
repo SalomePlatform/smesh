@@ -39,19 +39,35 @@
 module SMESH
 {
   typedef sequence<GEOM::GEOM_Shape> shape_array;
+  typedef sequence<SMESH_Mesh> mesh_array;
+
+  interface FilterManager;
 
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
+
+    FilterManager CreateFilterManager();
+
     /*!
-     * Create an hypothesis that can be shared by differents parts of the mesh.
+      Set the current study
+     */
+    void SetCurrentStudy( in SALOMEDS::Study theStudy );
+
+    /*!
+      Get the current study
+     */
+    SALOMEDS::Study GetCurrentStudy();
+
+    /*!
+     * Create a hypothesis that can be shared by differents parts of the mesh.
      * An hypothesis is either:
      * - a method used to generate or modify a part of the mesh (algorithm).
      * - a parameter or a law used by an algorithm.
      * Algorithms are 1D, 2D or 3D.
      */
-    SMESH_Hypothesis CreateHypothesis( in string anHyp,
-				       in long studyId)
-      raises (SALOME::SALOME_Exception);
+    SMESH_Hypothesis CreateHypothesis( in string theHypName,
+				       in string theLibName )
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * Create a Mesh object, given a geometry shape.
@@ -60,57 +76,53 @@ module SMESH
      * of TopoDS_Shapes and bind CORBA references of shape & subshapes
      * with TopoDS_Shapes
      */
-     SMESH_Mesh Init(in GEOM::GEOM_Gen geomEngine,
-		     in long studyId,
-		     in GEOM::GEOM_Shape aShape)
-       raises (SALOME::SALOME_Exception);
+    SMESH_Mesh CreateMesh( in GEOM::GEOM_Shape theShape )
+      raises ( SALOME::SALOME_Exception );
+    
+    /*!
+     * Create Mesh object(s) importing data from given MED file
+     */
+     mesh_array CreateMeshesFromMED( in string theFileName,
+				     out SMESH::DriverMED_ReadStatus theStatus )
+       raises ( SALOME::SALOME_Exception );
 
     /*!
      * Create a Mesh object, without a geometry shape reference
      */
-//      SMESH_Mesh NewEmpty(in GEOM::GEOM_Gen geomEngine,
-// 			 in long studyId)
-//        raises (SALOME::SALOME_Exception);
+//      SMESH_Mesh NewEmpty()
+//        raises ( SALOME::SALOME_Exception );
 
     /*!
      * Mesh a subShape. 
      * First, verify list of hypothesis associated with the subShape,
      * return NOK if hypothesis are not sufficient
      */
-    boolean Compute(in SMESH_Mesh aMesh, in GEOM::GEOM_Shape aSubShape)
-      raises (SALOME::SALOME_Exception);
+    boolean Compute( in SMESH_Mesh       theMesh, 
+		     in GEOM::GEOM_Shape theSubShape )
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * 
      */
 
-    boolean IsReadyToCompute(in SMESH_Mesh aMesh, in GEOM::GEOM_Shape aSubShape)
-      raises (SALOME::SALOME_Exception);
+    boolean IsReadyToCompute( in SMESH_Mesh       theMesh, 
+			      in GEOM::GEOM_Shape theSubShape )
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * 
      */
-    long_array GetSubShapesId(in GEOM::GEOM_Gen geomEngine,
-			     in long studyId,
-			     in GEOM::GEOM_Shape mainShape,
-			     in shape_array listOfSubShape)
-       raises (SALOME::SALOME_Exception);
+    long_array GetSubShapesId( in GEOM::GEOM_Shape theMainShape,
+			       in shape_array      theListOfSubShape )
+       raises ( SALOME::SALOME_Exception );
     
     /*!
      * 
      */
-    //    long_array GetSubMeshesState(in GEOM::GEOM_Gen geomEngine,
-    //				 in long studyId,
-    //				 in shape_array listOfSubShape)
-    //  raises (SALOME::SALOME_Exception);
+    //    long_array GetSubMeshesState( in shape_array theListOfSubShape )
+    //  raises ( SALOME::SALOME_Exception );
     
-	/**
-	 * Import a mesh from a file.
-	 * @param fileName file name to be imported.
-	 * @param fileType Currently it could be either "DAT", "UNV" or "MED".
-	 * @param studyId The id of the current study.
-	 */
-	SMESH_Mesh Import(in long studyId, in string fileName, in string fileType);
+
   };
 
 };

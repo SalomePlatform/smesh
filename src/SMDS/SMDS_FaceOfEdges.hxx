@@ -31,10 +31,13 @@ class SMDS_FaceOfEdges:public SMDS_MeshFace
 {
   public:
 	void Print(ostream & OS) const;
-	SMDS_FaceOfEdges(SMDS_MeshEdge* edge1, SMDS_MeshEdge* edge2,
-		SMDS_MeshEdge* edge3);
-	SMDS_FaceOfEdges(SMDS_MeshEdge* edge1, SMDS_MeshEdge* edge2,
-		SMDS_MeshEdge* edge3, SMDS_MeshEdge* edge4);
+	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
+                         const SMDS_MeshEdge* edge2,
+                         const SMDS_MeshEdge* edge3);
+	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
+                         const SMDS_MeshEdge* edge2,
+                         const SMDS_MeshEdge* edge3,
+                         const SMDS_MeshEdge* edge4);
 		
 	SMDSAbs_ElementType GetType() const;
 	int NbEdges() const;
@@ -42,7 +45,7 @@ class SMDS_FaceOfEdges:public SMDS_MeshFace
 //	friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
 
   protected:
-  	SMDS_Iterator<const SMDS_MeshElement *> *
+  	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:

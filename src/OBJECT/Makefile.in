@@ -27,31 +27,32 @@
 top_srcdir=@top_srcdir@
 top_builddir=../..
 srcdir=@srcdir@
-VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 @COMMENCE@
 
-EXPORT_HEADERS = SMESH_Actor.h \
-		 SMESH_Grid.h
+EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h
 
 
 # Libraries targets
 
 LIB = libSMESHObject.la
-LIB_SRC = SMESH_Actor.cxx \
-	  SMESH_Grid.cxx
+LIB_SRC = SMESH_Object.cxx SMESH_DeviceActor.cxx SMESH_Actor.cxx
 
-LIB_CLIENT_IDL = 
+LIB_CLIENT_IDL = SALOME_Exception.idl \
+		 SALOME_GenericObj.idl \
+		 SMESH_Mesh.idl \
+		 SMESH_Filter.idl \
+		 SMESH_Group.idl
+
 
 # Executables targets
 BIN = 
 BIN_SRC	=
 
-CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS+=$(QT_MT_LIBS) $(OCC_KERNEL_LIBS) $(VTK_LIBS) $(OGL_LIBS) $(PYTHON_LIBS) -lSalomeObject -L${KERNEL_ROOT_DIR}/lib/salome
-
-%_moc.cxx: %.h
-	$(MOC) $< -o $@
-
+CPPFLAGS+=$(OCC_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+	  $(BOOST_CPPFLAGS) $(QT_INCLUDES)
+LDFLAGS+=$(OCC_KERNEL_LIBS) $(VTK_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lSMDS \
+         -lSalomeGUI -lSalomeObject -lOpUtil
 
 @CONCLUDE@

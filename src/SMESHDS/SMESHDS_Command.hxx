@@ -29,7 +29,6 @@
 
 #include "SMESHDS_CommandType.hxx"
 #include <list>
-using namespace std;
 
 class SMESHDS_Command
 {

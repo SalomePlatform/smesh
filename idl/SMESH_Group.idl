@@ -1,0 +1,103 @@
+//  Copyright (C) 2004  CEA 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESH_Group.idl
+//  Author : Sergey ANIKIN, OCC
+//  $Header$
+
+#ifndef _SMESH_GROUP_IDL_
+#define _SMESH_GROUP_IDL_
+
+#include "SALOME_Exception.idl"
+#include "SALOME_GenericObj.idl"
+
+#include "SMESH_Mesh.idl"
+
+module SMESH
+{
+  /*!
+   * SMESH_Group: interface of group object
+   */
+  interface SMESH_Group : SALOME::GenericObj
+  {
+    /*!
+     * Sets group name
+     */
+    void SetName( in string name );
+
+    /*!
+     * Returns group name
+     */
+    string GetName();
+
+    /*!
+     * Returns group type (type of elements in the group)
+     */
+    ElementType GetType();
+
+    /*!
+     * Returns the number of elements in the group
+     */
+    long Size();
+
+    /*!
+     * Returns true if the group does not contain any elements
+     */
+    boolean IsEmpty();
+
+    /*!
+     * Clears the group's contents
+     */
+    void Clear();
+
+    /*!
+     * returns true if the group contains an element with ID == <elem_id> 
+     */
+    boolean Contains( in long elem_id );
+
+    /*!
+     * Adds elements to the group
+     */
+    long Add( in long_array elem_ids );
+
+    /*!
+     * Returns ID of an element at position <elem_index>
+     */
+    long GetID( in long elem_index );
+
+    /*!
+     * Returns a sequence of all element IDs in the group
+     */
+    long_array GetListOfID();
+
+    /*!
+     * Removes elements from the group
+     */
+    long Remove( in long_array elem_ids );
+
+    /*!
+     * Returns the mesh object this group belongs to
+     */
+    SMESH_Mesh GetMesh();
+  }; 
+};
+
+
+#endif

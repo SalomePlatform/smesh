@@ -123,7 +123,7 @@ EXPORT_HEADERS= \
 #SMDS_MeshNodeIDFactory.hxx
 
 # additionnal information to compil and link file
-CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += -L${KERNEL_ROOT_DIR}/lib/salome
 

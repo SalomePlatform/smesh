@@ -30,38 +30,46 @@
 #define SMESHGUI_HeaderFile
 
 #include "TColStd_MapOfInteger.hxx"
+#include <map>
 
 #include "SMESHDS_Document.hxx"
 
 // SALOME Includes
+#include "SALOMEGUI.h"
 #include "QAD_Desktop.h"
 #include "SALOME_Selection.h"
 #include "SALOME_InteractiveObject.hxx"
 
-#include "SMESH_Actor.h"
-
 #include "SMESHGUI_StudyAPI.h"
+#include "SMESHGUI_Hypotheses.h"
 
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
-#include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 #include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
+#include CORBA_SERVER_HEADER(SMESH_Filter)
 
 // QT Includes
 #include <qstringlist.h>
 
-// VTK Inlcudes
-#include <vtkScalarBarActor.h>
+// VTK Inlcludes
+
+class vtkActorCollection;
+class vtkActor2DCollection;
+class vtkScalarBarActor;
+class vtkActor;
+
+class SMESH_Actor;
 
 //=================================================================================
 // class    : SMESHGUI
 // purpose  :
 //=================================================================================
-class SMESHGUI : public QObject
+class SMESHGUI : public SALOMEGUI
 {
   Q_OBJECT
 
@@ -88,11 +96,20 @@ private :
 
   //  vtkScalarBarActor*    myScalarBar;
 
+  SMESHDS_Document *        myDocument;//NBU
+
   bool                      myAutomaticUpdate;
+
+  SMESH::FilterManager_var  myFilterMgr;
+
+  // Hypotheses/algorithms from plugin libraries
+  map<string, HypothesisData*>                    myHypothesesMap;
+  map<string, HypothesisData*>                    myAlgorithmsMap;
+  map<string, SMESHGUI_GenericHypothesisCreator*> myHypCreatorMap;
 
 public :
 
-  SMESHGUI();
+  SMESHGUI( const QString& name = "", QObject* parent = 0 );
   ~SMESHGUI();
 
   static SMESHGUI*    GetOrCreateSMESHGUI( QAD_Desktop* desktop );
@@ -103,8 +120,6 @@ public :
   SALOMEDS::Study_ptr GetStudy();
   SMESHGUI_StudyAPI   GetStudyAPI();
 
-  vtkScalarBarActor*  GetScalarBar();
-
   QDialog*            GetActiveDialogBox() ;               
   void                SetActiveDialogBox(QDialog* aDlg) ;  
 
@@ -113,104 +128,75 @@ public :
   bool                DefineDlgPosition(QWidget* aDlg, int& x, int& y) ;
 
 
-  /* Managed by IAPP */
-  Standard_EXPORT  static bool OnGUIEvent ( int theCommandID, QAD_Desktop* parent) ; 
-  Standard_EXPORT  static bool OnMousePress ( QMouseEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static bool OnMouseMove  ( QMouseEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static bool OnKeyPress   ( QKeyEvent* pe, QAD_Desktop* parent, 
-					      QAD_StudyFrame* studyFrame );
-  Standard_EXPORT  static void activeStudyChanged ( QAD_Desktop* parent ); 
-  Standard_EXPORT  static bool SetSettings ( QAD_Desktop* parent );
-  Standard_EXPORT  static void DefinePopup( QString & theContext, 
-					    QString & theParent, 
-					    QString & theObject );
-  Standard_EXPORT  static bool CustomPopup ( QAD_Desktop* parent,
-					     QPopupMenu* popup,
-					     const QString& theContext,
-					     const QString& theParent,
-					     const QString& theObject );
-  Standard_EXPORT  static void BuildPresentation(const Handle(SALOME_InteractiveObject)&);
+  virtual bool OnGUIEvent        (int theCommandID, QAD_Desktop* parent);
+  virtual bool OnMousePress      (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool OnMouseMove       (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool OnKeyPress        (QKeyEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
+  virtual bool ActiveStudyChanged( QAD_Desktop* parent );
+  virtual bool SetSettings       ( QAD_Desktop* parent );
+  virtual void DefinePopup       ( QString & theContext, QString & theParent, QString & theObject );
+  virtual bool CustomPopup       ( QAD_Desktop* parent, QPopupMenu* popup, const QString & theContext,
+                                   const QString & theParent, const QString & theObject );
+  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)& theIO );
+  virtual void SupportedViewType (int* buffer, int bufferSize);
+  virtual void Deactivate        ();
 
   void OnEditDelete();
 
   /* Mesh Management */
   SMESH::SMESH_Mesh_ptr       InitMesh( GEOM::GEOM_Shape_ptr aShape, QString NameMesh );
   SMESH::SMESH_subMesh_ptr    AddSubMesh( SMESH::SMESH_Mesh_ptr aMesh, GEOM::GEOM_Shape_ptr aShape, QString NameMesh );
+  SMESH::SMESH_Group_ptr      AddGroup( SMESH::SMESH_Mesh_ptr aMesh, SMESH::ElementType aType, QString aName );
 
-  /* Hypothesis Management */
-  SMESH::SMESH_Hypothesis_ptr CreateHypothesis( QString TypeHypothesis, QString NameHypothesis );
-  void AddHypothesisOnMesh( SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp ) ;
-  void AddHypothesisOnSubMesh( SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp ) ;
+  /* Hypotheses and Algorithms Management */
+  void InitAvailableHypotheses ();
+  QStringList GetAvailableHypotheses (const bool isAlgo);
+  HypothesisData* GetHypothesisData (const char* aHypType);
+  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator (const QString& aHypType);
 
-  void RemoveHypothesisOrAlgorithmOnMesh( const Handle(SALOME_InteractiveObject)& IObject ) ;
-  void RemoveHypothesisOrAlgorithmOnMesh( SALOMEDS::SObject_ptr MorSM, SMESH::SMESH_Hypothesis_ptr anHyp ) ;
+  SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const QString& aHypType,
+						const QString& aHypName,
+						const bool     isAlgo = false);
 
-  void CreateLocalLength( QString TypeHypothesis, QString NameHypothesis, double Length );
-  void CreateNbSegments( QString TypeHypothesis, QString NameHypothesis, int nbSegments );
-  void CreateMaxElementArea( QString TypeHypothesis, QString NameHypothesis, double MaxArea );
-  void CreateMaxElementVolume( QString TypeHypothesis, QString NameHypothesis, double MaxVolume );
+  bool AddHypothesisOnMesh (SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
+  bool AddAlgorithmOnMesh  (SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
 
-  /* Algorithms Management */
-  void AddAlgorithmOnMesh( SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp );
-  void AddAlgorithmOnSubMesh( SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp );
-  void CreateAlgorithm( QString TypeAlgo, QString NameAlgo );
+  bool AddHypothesisOnSubMesh (SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
+  bool AddAlgorithmOnSubMesh  (SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
+
+  bool RemoveHypothesisOrAlgorithmOnMesh (const Handle(SALOME_InteractiveObject)& IObject);
+  bool RemoveHypothesisOrAlgorithmOnMesh (SALOMEDS::SObject_ptr MorSM,
+					  SMESH::SMESH_Hypothesis_ptr anHyp);
+
+  void SetPickable(SMESH_Actor* theActor = NULL);
 
   /* NODES */
   void ViewNodes();
   vtkActor* SimulationMoveNode(SMESH_Actor* Mactor, int idnode);
   void MoveNode( SMESH::SMESH_Mesh_ptr aMesh, int idnode, float x, float y, float z);
-  void AddNode(SMESH_Actor*, int idnode, float x, float y, float z) ; 
-  void AddNodes( SMESH_Actor* Mactor, int number, 
-		 const SMESH::double_array& coords, const SMESH::long_array& indexes);
 
   void DisplaySimulationNode( SMESH::SMESH_Mesh_ptr aMesh, float x, float y, float z);
   void DisplaySimulationMoveNode( vtkActor* ac, int idnode, float x, float y, float z);
 
-  void RemoveNode(SMESH_Actor*, int idnode) ;
   void RemoveNodes(SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex) ;
-  void RemoveNodes(SMESH_Actor* Mactor, int number, 
-		   const SMESH::double_array& coords, const SMESH::long_array& indexes);
 
   /* EDGES */
-  void AddEdge(SMESH_Actor*, int idedge, int idnode1, int idnode2) ;
-  void AddEdges( SMESH_Actor* Mactor, int number, 
-		 const SMESH::double_array& coords, const SMESH::long_array& indexes);
   void DisplayEdges(SMESH_Actor* ac, bool visibility = true);
   void DisplayEdgesConnectivityLegendBox(vtkActor *ac);
   void DisplaySimulationEdge( SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex );
 
   /* TRIANGLES */
-  void AddTriangle(SMESH_Actor*, int idtri, int idnode1, int idnode2, int idnode3) ;
-  void AddTriangles( SMESH_Actor* Mactor, int number, 
-		     const SMESH::double_array& coords, const SMESH::long_array& indexes);
   void DisplaySimulationTriangle( SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex, bool reverse );
 
   /* QUADRANGLES */
-  void AddQuadrangle(SMESH_Actor*, int idquad, int idnode1, int idnode2, 
-		      int idnode3, int idnode4) ;
-  void AddQuadrangles( SMESH_Actor* Mactor, int number, 
-		       const SMESH::double_array& coords, const SMESH::long_array& indexes);
   void DisplaySimulationQuadrangle( SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex, bool reverse );
 
   /* VOLUMES */
-  void AddTetra(SMESH_Actor*, int idtetra, int idnode1, int idnode2, 
-		 int idnode3, int idnode4) ;
-  void AddHexaedre(SMESH_Actor*, int idhexa, int idnode1, int idnode2, 
-		    int idnode3, int idnode4, int idnode5, int idnode6, int idnode7, int idnode8) ;
-  void AddTetras( SMESH_Actor* Mactor, int number, 
-		       const SMESH::double_array& coords, const SMESH::long_array& indexes);
-  void AddHexaedres( SMESH_Actor* Mactor, int number, 
-		       const SMESH::double_array& coords, const SMESH::long_array& indexes);
   void DisplaySimulationTetra( SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex );
   void DisplaySimulationHexa( SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex );
 
   /* ELEMENTS */
-  void RemoveElement(SMESH_Actor*, int idnode);
   void RemoveElements(SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex) ;
-  void RemoveElements(SMESH_Actor* Mactor, int number, 
-		      const SMESH::double_array& coords, const SMESH::long_array& indexes);
   void OrientationElements(SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex);
   void DiagonalInversion(SMESH::SMESH_Mesh_ptr aMesh, const TColStd_MapOfInteger& MapIndex);
 
@@ -237,6 +223,7 @@ public :
 
   SMESH::SMESH_Mesh_ptr       ConvertIOinMesh(const Handle(SALOME_InteractiveObject)& IO, Standard_Boolean& testResult) ;
   SMESH::SMESH_subMesh_ptr    ConvertIOinSubMesh(const Handle(SALOME_InteractiveObject)& IO, Standard_Boolean& testResult) ;
+  SMESH::SMESH_Group_ptr      ConvertIOinSMESHGroup(const Handle(SALOME_InteractiveObject)& IO, Standard_Boolean& testResult) ;
 
   /* Geometry Client */
   GEOM::GEOM_Shape_ptr        ConvertIOinGEOMShape( const Handle(SALOME_InteractiveObject)& IO, 
@@ -255,7 +242,7 @@ public :
   void SetViewMode(int commandId);
   void ChangeRepresentation( SMESH_Actor* ac, int type );
 
-  SMESH_Actor* FindActor(SMESH::SMESH_Mesh_ptr aMesh, 
+  SMESH_Actor* FindActor(CORBA::Object_ptr theObj, 
 			 Standard_Boolean& testResult,
 			 bool onlyInActiveView);
   SMESH_Actor* FindActorByEntry(QString entry, 
@@ -280,10 +267,7 @@ public :
 			    QString Bold, QString Italic, QString Shadow, QString Font, 
 			    QString Orientation, float Width, float Height, 
 			    int NbColors, int NbLabels);
-  void DisplayScalarBar(bool visibility);
-  void UpdateScalarBar(float MinRange, float MaxRange);
-
-  void SetDisplaySettings(); 
+  void SetDisplaySettings();    
 
   SALOMEDS::Study::ListOfSObject* GetMeshesUsingAlgoOrHypothesis( SMESH::SMESH_Hypothesis_ptr AlgoOrHyp ) ;
 
@@ -301,8 +285,11 @@ public :
   static void setOrb();
 
   /* Import/Export */ //NBU
-  void Import_Document(QAD_Desktop* parent, int theCommandID);
+  static void Import_Mesh(QAD_Desktop* parent, int theCommandID);
   static void Export_Mesh(QAD_Desktop* parent, int theCommandID);
+
+  /* Filter manager */
+  SMESH::FilterManager_ptr GetFilterMgr();
 
 signals:
   void SignalDeactivateActiveDialog() ;

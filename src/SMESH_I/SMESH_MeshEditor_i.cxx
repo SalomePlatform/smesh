@@ -61,8 +61,14 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveElements(const SMESH::
 	for (int i = 0; i < IDsOfElements.length(); i++)
 	{
 		CORBA::Long index = IDsOfElements[i];
-		_myMeshDS->RemoveElement(_myMeshDS->FindElement(index));
-		MESSAGE("Element " << index << " was removed")
+                const SMDS_MeshElement * elem = _myMeshDS->FindElement(index);
+                // an element may be removed as a result of preceding
+                // loop removal
+                if ( elem )
+                {
+                  _myMeshDS->RemoveElement( elem );
+                  MESSAGE("Element " << index << " was removed");
+                }
 	}
 	return true;
 };

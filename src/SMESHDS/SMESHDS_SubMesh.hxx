@@ -36,13 +36,13 @@ class SMESHDS_SubMesh
 {
   public:
 	void AddElement(const SMDS_MeshElement * ME);
-	void RemoveElement(const SMDS_MeshElement * ME);
+	bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
 	void AddNode(const SMDS_MeshNode * ME);
-	void RemoveNode(const SMDS_MeshNode * ME);
+	bool RemoveNode(const SMDS_MeshNode * ME); // ret true if ME was in
 	int NbElements() const;
-	SMDS_Iterator<const SMDS_MeshElement*> * GetElements() const;
+	SMDS_ElemIteratorPtr GetElements() const;
 	int NbNodes() const;
-	SMDS_Iterator<const SMDS_MeshNode*> * GetNodes() const;
+	SMDS_NodeIteratorPtr GetNodes() const;
 
   private:
 	const SMDS_Mesh * myMesh;

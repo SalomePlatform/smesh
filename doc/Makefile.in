@@ -11,9 +11,11 @@ top_builddir=..
 srcdir=@srcdir@
 VPATH=.:@srcdir@
 
-SUBDIRS=html 
+SUBDIRS= salome
 
-doc:
+@COMMENCE@
+
+docs:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done
@@ -28,6 +30,11 @@ distclean: clean
 	done
 
 install:
+	@@SETX@; for d in $(SUBDIRS); do 	\
+	   (cd $$d && $(MAKE) $@) || exit 1; 	\
+	done
+
+uninstall:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done

@@ -52,7 +52,6 @@ class SMESHDS_Script
 	void RemoveElement(int ElementID);
 	void Clear();
 	const list<SMESHDS_Command*> & GetCommands();
-	void UpdateAll();
 	~SMESHDS_Script();
   
   private:

@@ -1,0 +1,188 @@
+#######################################################################################
+# File   : PluginMeshers.txt
+# Author : Julia DOROVSKIKH
+# Module : SMESH
+# $Header$
+#######################################################################################
+#
+# How to add your own mesher (as a set of hypotheses and algorithms) to the application
+#
+#######################################################################################
+
+1. Create mesher plugin package, e.g. MyMesher.
+
+2. Create XML file to describe all algorithms and hypotheses, provided by plugin package
+   (see SMESH_SRC/resources/SMESH_Meshers.xml for example).
+
+   <meshers-group name="MyName"
+                  resources="MyResourceKey"
+                  server-lib="libMyServerLib.so"
+	          gui-lib="libMyClientLib.so">
+     <hypotheses>
+       <hypothesis type="MyHypType1"
+		   label-id="My beautiful hypothesis name"
+		   icon-id="my_hypo_1_icon.png"/>
+     </hypotheses>
+     <algorithms>
+       <algorithm type="MyAlgType1"
+		  label-id="My beautiful algorithm name"
+		  icon-id="my_algo_1_icon.png"/>
+     </algorithms>
+   </meshers-group>
+
+   Attributes of <meshers-group> tag:
+
+        - value of <name> attribute is used to collect hypotheses/algoritms in groups;
+          you can also use this attribute for short description of your mesher plugin
+
+        - value of <resources> attribute (MyResourceKey) is used to access resources
+          (messages and icons) from GUI (see paragraphs 4.2 and 5);
+          currently it should coincide with the name of plugin package; this limitation
+          will be eliminated in the further development.
+
+        - value of <server-lib> attribute describes the name of your mesher's
+          server plugin library (See paragraph 3)
+
+        - value of <gui-lib> attribute describes the name of your mesher's
+          client plugin library (See paragraph 4)
+
+   Attributes of <hypothesis/algorithm> tag:
+
+        - value of <type> attribute is an unique name of the hypothesis/algorithm
+
+          * It is a value of _name field of your hypothesis class
+            (see paragraph 3, implementation of constructor of
+             StdMeshers_LocalLength class: _name = "LocalLength")
+
+          * It is a key to each certain hypothesis class
+            (see paragraph 3, implementation of "GetHypothesisCreator()" method in StdMeshers_i.cxx)
+
+          * It is a key to each certain hypothesis GUI
+            (see paragraph 4, implementation of "StdMeshersGUI_HypothesisCreator::CreateHypothesis()"
+             and "StdMeshersGUI_HypothesisCreator::EditHypothesis()" methods in StdMeshersGUI.cxx)
+
+          * It is a key to each certain hypothesis icon in Object Browser
+            (see paragraph 4.2.1)
+
+        - value of <label-id> attribute is displayed in the GUI in the list
+          of available hypotheses/algorithms ("Create Hypothesis/Algorithm" dialog)
+
+        - value of <icon-id> attribute is a name of icon file, which is displayed in GUI
+          in the list of available hypotheses/algorithms ("Create Hypothesis/Algorithm" dialog)
+
+   Note: All attributes values are accessible in your GUI via HypothesisData class
+         (see paragraph 4.1)
+
+   Note: The environment variable SMESH_MeshersList contains the list of plugins names, 
+         separated by colon (":") symbol, e.g.:
+
+	 setenv SMESH_MeshersList StdMeshers:NETGENPlugin
+
+	 Please, pay attention that StdMeshers should also be included into this environment variable,
+	 if you want to use standard hypotheses/algorithms, provided with SMESH module.
+	 
+	 The SALOME automatically locates XML files, searching them in the following directories:
+
+         ${<PLUGINNAME>_ROOT_DIR}/share/salome/resources
+         ${SALOME_<PluginName>Resources}
+         ${HOME}/.salome/resources
+         ${KERNEL_ROOT_DIR}/share/salome/resources
+
+	 where <PluginName> is a name of each mesher plugin package
+
+3. Build server plugin library <libMyServerLib.so>.
+
+   3.1. Define interface to your hypotheses and algorithms.
+
+        Example: SMESH_SRC/idl/SMESH_BasicHypothesis.idl
+                 NETGENPLUGIN_SRC/src/NETGENPlugin_Algorithm.idl
+
+   3.2. Implement functionality of your hypotheses and algorithms.
+        Inherit corresponding classes from SMESH.
+
+        Example: SMESH_SRC/src/StdMeshers/StdMeshers_*
+                 NETGENPLUGIN_SRC/src/NETGENPlugin_NETGEN_3D
+
+   3.3. Implement interface to your hypotheses and algorithms.
+        Inherit corresponding classes from SMESH_I.
+
+        Example: SMESH_SRC/src/StdMeshers_I/SMESH_*_i
+                 NETGENPLUGIN_SRC/src/NETGENPlugin_NETGEN_3D_i
+
+   3.4. Implement being exported method.
+
+        GenericHypothesisCreator_i* GetHypothesisCreator (const char* aHypType)
+
+	<aHypType> is a value of <type> attribute in the XML-description file
+
+        Example: SMESH_SRC/src/StdMeshers_I/StdMeshers_i.cxx
+                 NETGENPLUGIN_SRC/src/NETGENPlugin_i.cxx
+
+4. Build client (GUI) plugin library <libMyClientLib.so>.
+   This step is required only if your hypotheses/algorithms need specific GUI for their construction.
+
+   4.1. Implement the required GUI (e.g. construction dialog boxes).
+
+        Example: SMESH_SRC/src/StdMeshersGUI/StdMeshersGUI_*Dlg
+
+        Note: all data from XML-description files is accessible in your GUI via HypothesisData class
+              (mySMESHGUI->GetHypothesisData (aHypType),
+              see SMESHGUI_Hypotheses.h for HypothesisData definition)
+
+   4.2. Provide icons and messages for your GUI.
+
+        4.2.1. Implement resource files
+               MyResourceKey_icons.po and MyResourceKey_msg_en.po
+
+               Example: SMESH_SRC/src/StdMeshersGUI/StdMeshers_*.po
+                        NETGENPLUGIN_SRC/src/NETGENPlugin_icons.po
+
+               Note: ICON_SMESH_TREE_HYPO_MyHypType1 is ID of icon for Object Browser
+                     for hypothesis with type="MyHypType1".
+
+                     ICON_SMESH_TREE_ALGO_MyAlgType1 is ID of icon for Object Browser
+                     for algorithm with type="MyAlgType1".
+
+               See paragraph 2 for definition of MyResourceKey, MyHypType1, MyAlgType1.
+
+        4.2.2. Define environment variable SALOME_<MyResourceKey>Resources to point to the 
+               directory where resources are situated.
+
+               Example: setenv SALOME_StdMeshersResources ${SMESH_ROOT_DIR}/share/salome/resources
+
+   4.3. Implement your Hypothesis Creator and being exported method
+
+        SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator
+          (QString aHypType, QString aServerLibName, SMESHGUI* aSMESHGUI)
+
+	<aHypType> is to pass a value of <type> attribute in XML-description file;
+	<aServerLibName> is to pass a value of <server-lib> attribute in XML-description file.
+
+        Example: SMESH_SRC/src/StdMeshersGUI/StdMeshersGUI.cxx
+
+5. If your hypotheses/algorithms do not need specific GUI,
+   but you want to provide icons for object browser, see 4.2 paragrath
+
+6. Setup your SALOME environment.
+
+   6.1. Add your plugin to the LD_LIBRARY_PATH, PYTHONPATH (and maybe PATH) environment variables, e.g.:
+
+      setenv PATH <path-to-my-plugin>/bin/salome:${PATH}
+      setenv LD_LIBRARY_PATH <path-to-my-plugin>/lib/salome:${LD_LIBRARY_PATH}
+      setenv PYTHONPATH <path-to-my-plugin>/lib/python2.2/site-packages/salome:${PYTHONPATH}
+   
+   6.2. Set mesher plugin resources environment variable (see 4.2.2 paragraph)
+
+Note: If you use runSalome.py script from KERNEL package to launch SALOME, you may not to set 
+      environment variables, because this script sets them itself. All what you should do is
+      to add <plugin> section to your ${HOME}/.salome/salome.launch file for SMESH module section:
+
+      ...
+      <modules-list>
+          ...
+	  <module name="SMESH">
+              <plugin name="MyMesher"/>
+          </module>
+          ...
+      </modules-list>
+      ...

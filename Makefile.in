@@ -14,7 +14,7 @@ VPATH=.:@srcdir@:@top_srcdir@/bin:@top_srcdir@/resources:./bin:@top_srcdir@/idl
 
 @COMMENCE@
 
-SUBDIRS = idl src
+SUBDIRS = idl src doc
 
 RESOURCES_FILES = \
 delete.png  \
@@ -40,6 +40,8 @@ mesh_hypo_volume.png \
 mesh_info.png \
 mesh_init.png \
 mesh_length.png \
+mesh_free_edges.png \
+mesh_multi_edges.png \
 mesh_line_n.png \
 mesh_line.png \
 mesh_move_node.png \
@@ -71,6 +73,7 @@ mesh_tree_hypo.png \
 mesh_tree_hypo_segment.png \
 mesh_tree_hypo_volume.png \
 mesh_tree_mesh.png \
+mesh_tree_importedmesh.png \
 mesh_tree_mesh_warn.png \
 mesh_triangle_n.png \
 mesh_triangle.png \
@@ -78,10 +81,16 @@ mesh_update.png \
 mesh_vertex_n.png \
 mesh_vertex.png \
 mesh_wireframe.png \
+mesh_points.png \
 mesh_wrap.png \
+mesh_tree_group.png \
+mesh_edit_group.png \
+mesh_make_group.png \
 ModuleMesh.png \
 select1.png \
 SMESH_en.xml \
+SMESH.config \
+StdMeshers.xml \
 SMESHCatalog.xml \
 flight_solid.brep
 
@@ -104,10 +113,10 @@ include/salome/SALOMEconfig.h: salome_adm/unix/SALOMEconfig.ref
 # test if SALOMEconfig.h has changed (contents)
 salome_adm/unix/SALOMEconfig.ref: salome_adm/unix/SALOMEconfig.h
 	@if ! [ -a $@ ]; then \
-	  cp -p $< $@;        \
+	  cp -p -f $< $@;        \
 	fi;		      \
 	if ! cmp $< $@; then  \
-	  cp -p $< $@;        \
+	  cp -p -f $< $@;        \
 	fi;		      \
 
 include/salome/sstream: salome_adm/unix/sstream
@@ -131,7 +140,7 @@ install-include: $(include_list)
 	$(INSTALL) -d  $(includedir)
 	@for f in X $(include_list); do				\
 	   if test $$f != X; then				\
-	     ($(INSTALL_DATA) $$f $(includedir)/. || exit 1);	\
+	     ($(INSTALL_DATA) -p $$f $(includedir)/. || exit 1);	\
 	   fi;							\
 	done
 

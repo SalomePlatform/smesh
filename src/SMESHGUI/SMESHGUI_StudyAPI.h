@@ -37,6 +37,7 @@
 #include CORBA_SERVER_HEADER(GEOM_Shape)
 #include CORBA_SERVER_HEADER(SALOMEDS)
 #include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
+#include CORBA_SERVER_HEADER(SALOME_GenericObj)
 	
 class SMESH_subMesh_ptr;
 
@@ -62,7 +63,7 @@ class SMESHGUI_StudyAPI {
 
   SALOMEDS::SObject_ptr AddSubMeshOnShape (SALOMEDS::SObject_ptr SO_Mesh, SALOMEDS::SObject_ptr SO_GeomShape, SMESH::SMESH_subMesh_ptr SM, GEOM::shape_type ST);
 
-  void Update(SMESH::SMESH_Gen_ptr Gen);
+  void Update(SALOMEDS::Study_ptr aStudy);
 
   void ModifiedMesh( SALOMEDS::SObject_ptr MorSM, bool right);
 
@@ -84,23 +85,14 @@ class SMESHGUI_StudyAPI {
   
   SALOMEDS::SObject_ptr GetMeshOrSubmesh  (SALOMEDS::SObject_ptr SO);
 
-  SALOMEDS::SObject_ptr FindMesh       (SMESH::SMESH_Mesh_ptr M);
+  SALOMEDS::SObject_ptr FindObject(CORBA::Object_ptr theObject);
 
-  SALOMEDS::SObject_ptr FindHypothesisOrAlgorithms (SMESH::SMESH_Hypothesis_ptr H);
-
-  SALOMEDS::SObject_ptr FindSubMesh    (SMESH::SMESH_subMesh_ptr SM);
-
-  //SALOMEDS::ListOfSObject_ptr FindMesh    (SALOMEDS_SObject_ptr SO_GeomShape);
-  //SALOMEDS_SObject_ptr        FindSubMesh (SALOMEDS_SObject_ptr SO_Mesh, SALOMEDS_SObject_ptr SO_GeomShape);
-    
   static void setOrb();
 
   private:
   //fields
   SALOMEDS::Study_var        myStudy;
   SALOMEDS::StudyBuilder_var myStudyBuilder;
-  SALOMEDS::SComponent_var   mySComponentMesh;
- 
 };
 #endif
 

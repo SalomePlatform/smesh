@@ -52,8 +52,8 @@ const double * SMDS_SpacePosition::Coords() const
 	return myCoords;
 }
 
-SMDS_SpacePosition * SMDS_SpacePosition::originSpacePosition()
+SMDS_PositionPtr SMDS_SpacePosition::originSpacePosition()
 {
-	static SMDS_SpacePosition * staticpos=new SMDS_SpacePosition();
-	return staticpos;
+  static SMDS_PositionPtr staticpos (new SMDS_SpacePosition());
+  return staticpos;
 }

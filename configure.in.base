@@ -113,6 +113,14 @@ dnl
 
 AC_CXX_HAVE_SSTREAM
 
+echo
+echo ---------------------------------------------
+echo BOOST Library
+echo ---------------------------------------------
+echo
+
+CHECK_BOOST
+
 dnl
 dnl ---------------------------------------------
 dnl testing MPICH
@@ -275,20 +283,12 @@ CHECK_MED
 
 echo
 echo ---------------------------------------------
-echo Testing Netgen
-echo ---------------------------------------------
-echo
-
-CHECK_NETGEN
-
-echo
-echo ---------------------------------------------
 echo Summary
 echo ---------------------------------------------
 echo
 
 echo Configure
-variables="cc_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok Netgen_ok"
+variables="cc_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
 
 for var in $variables
 do
@@ -318,7 +318,7 @@ else
 fi
 
 # make other build directories
-for rep in salome_adm adm_local doc bin/salome include/salome lib/salome share/salome/resources share/salome/doc idl
+for rep in salome_adm adm_local doc bin/salome include/salome lib/salome share/salome/resources idl
 do
 #   if test ! -d $rep ; then
 #      eval mkdir $rep
@@ -351,14 +351,15 @@ dnl copy shells and utilities contained in the bin directory
 dnl excluding .in files (treated in AC-OUTPUT below) and CVS 
 dnl directory
 
-cd bin
+mkdir -p bin/salome
+cd bin/salome
 for i in $ROOT_SRCDIR/bin/*
 do
   local_bin=`echo $i | sed -e "s,$ROOT_SRCDIR,.,"`
   case "$local_bin" in
         *.in | *~)                    ;;
-        ./bin/CVS)                    ;;
-        *) ln -fs $i; echo $local_bin ;;
+        ./bin/CVS | ./bin/salome)                    ;;
+        *) /usr/bin/install -C $i .; echo $local_bin ;;
   esac
 done
 cd $ROOT_BUILDDIR

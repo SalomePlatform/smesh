@@ -36,17 +36,21 @@
 #include CORBA_CLIENT_HEADER(GEOM_Shape)
 #include CORBA_CLIENT_HEADER(MED)
 
+#include "SALOME_GenericObj_i.hh"
+
 class SMESH_Gen_i;
 class SMESH_Mesh_i;
 
 class SMESH_subMesh_i:
-  public POA_SMESH::SMESH_subMesh
+  public virtual POA_SMESH::SMESH_subMesh,
+  public virtual SALOME::GenericObj_i
 {
 public:
   SMESH_subMesh_i();
-  SMESH_subMesh_i(SMESH_Gen_i* gen_i,
-		  SMESH_Mesh_i* mesh_i,
-		  int localId);
+  SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
+                   SMESH_Gen_i*            gen_i,
+		   SMESH_Mesh_i*           mesh_i,
+		   int                     localId );
   ~SMESH_subMesh_i();
 
   CORBA::Long GetNumberOfElements()
@@ -56,6 +60,9 @@ public:
     throw (SALOME::SALOME_Exception);
   
   SMESH::long_array* GetElementsId()
+    throw (SALOME::SALOME_Exception);
+
+  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
   
   SMESH::long_array* GetNodesId()

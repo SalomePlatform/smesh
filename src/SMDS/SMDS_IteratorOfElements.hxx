@@ -25,7 +25,7 @@
 
 using namespace std;
 
-class SMDS_IteratorOfElements:public SMDS_Iterator<const SMDS_MeshElement *>
+class SMDS_IteratorOfElements:public SMDS_ElemIterator
 {
   public:
 /////////////////////////////////////////////////////////////////////////////
@@ -33,14 +33,14 @@ class SMDS_IteratorOfElements:public SMDS_Iterator<const SMDS_MeshElement *>
 /// to the element element. it is the iterator to get connectivity of element
 //////////////////////////////////////////////////////////////////////////////
 	SMDS_IteratorOfElements(const SMDS_MeshElement * element,
-		SMDSAbs_ElementType type, SMDS_Iterator<const SMDS_MeshElement *>* it);
+                                SMDSAbs_ElementType type,
+                                const SMDS_ElemIteratorPtr& it);
 	bool more();
 	const SMDS_MeshElement * next();
-	~SMDS_IteratorOfElements();
 
   private:
-	SMDS_Iterator<const SMDS_MeshElement *> * t2Iterator;
-	SMDS_Iterator<const SMDS_MeshElement *> * t1Iterator;
+	SMDS_ElemIteratorPtr t2Iterator;
+	SMDS_ElemIteratorPtr t1Iterator;
 	SMDSAbs_ElementType myType;	
 	const SMDS_MeshElement * myProxyElement;
 	const SMDS_MeshElement * myElement;		

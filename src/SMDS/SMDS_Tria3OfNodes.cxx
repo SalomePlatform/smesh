@@ -56,42 +56,48 @@ void SMDS_Tria3OfNodes::Print(ostream & OS) const
 	OS << myNodes[i] << ") " << endl;
 }
 
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_Tria3OfNodes::
+class SMDS_Tria3OfNodes_MyIterator:public SMDS_ElemIterator
+{
+  const SMDS_MeshNode * const* mySet;
+  int index;
+ public:
+  SMDS_Tria3OfNodes_MyIterator(const SMDS_MeshNode * const* s):
+    mySet(s),index(0) {}
+
+  bool more()
+  {
+    return index<3;
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    index++;
+    return mySet[index-1];
+  }
+};
+
+SMDS_ElemIteratorPtr SMDS_Tria3OfNodes::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
-	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		const SMDS_MeshNode * const* mySet;
-		int index;
-	  public:
-		MyIterator(const SMDS_MeshNode * const* s):mySet(s),index(0)
-		{}
-
-		bool more()
-		{
-			return index<3;
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			index++;
-			return mySet[index-1];
-		}	
-	};
-
-	switch(type)
-	{
-	case SMDSAbs_Face:return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
-	case SMDSAbs_Node:return new MyIterator(myNodes);
-	case SMDSAbs_Edge:
-		MESSAGE("Error : edge iterator for SMDS_FaceOfNodes not implemented");
-		break;
-	default:return new SMDS_IteratorOfElements(this,type,new MyIterator(myNodes));
-	}
+  switch(type)
+  {
+  case SMDSAbs_Face:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr(new SMDS_Tria3OfNodes_MyIterator(myNodes));
+  case SMDSAbs_Edge:
+    MESSAGE("Error : edge iterator for SMDS_FaceOfNodes not implemented");
+    break;
+  default:
+    return SMDS_ElemIteratorPtr
+      (new SMDS_IteratorOfElements
+       (this,type,SMDS_ElemIteratorPtr(new SMDS_Tria3OfNodes_MyIterator(myNodes))));
+  }
 }
 
-SMDS_Tria3OfNodes::SMDS_Tria3OfNodes(SMDS_MeshNode* node1, SMDS_MeshNode* node2,
-	SMDS_MeshNode* node3)
+SMDS_Tria3OfNodes::SMDS_Tria3OfNodes(const SMDS_MeshNode* node1,
+                                     const SMDS_MeshNode* node2,
+                                     const SMDS_MeshNode* node3)
 {
 	myNodes[0]=node1;
 	myNodes[1]=node2;

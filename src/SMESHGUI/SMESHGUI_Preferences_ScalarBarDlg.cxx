@@ -28,6 +28,7 @@
 
 using namespace std;
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
+#include "SMESHGUI.h"
 
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -36,171 +37,695 @@ using namespace std;
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
+#include <qtoolbutton.h>
 #include <qradiobutton.h>
 #include <qspinbox.h>
 #include <qlayout.h>
-#include <qvariant.h>
-#include <qtooltip.h>
-#include <qwhatsthis.h>
+#include <qvalidator.h>
+#include <qcolordialog.h>
 
-/* 
- *  Constructs a SMESHGUI_Preferences_ScalarBarDlg which is a child of 'parent', with the 
- *  name 'name' and widget flags set to 'f' 
+#include <vtkTextProperty.h>
+#include <vtkScalarBarActor.h>
+
+#include "QAD_SpinBoxDbl.h"
+#include "QAD_Config.h"
+#include "SALOME_Selection.h"
+#include "SMESHGUI.h"
+#include "SMESH_Actor.h"
+
+#define MINIMUM_WIDTH 70
+#define MARGIN_SIZE   11
+#define SPACING_SIZE   6
+
+#define DEF_VER_X  0.01
+#define DEF_VER_Y  0.10
+#define DEF_VER_H  0.80
+#define DEF_VER_W  0.10
+#define DEF_HOR_X  0.20
+#define DEF_HOR_Y  0.01
+#define DEF_HOR_H  0.12
+#define DEF_HOR_W  0.60
+
+// Only one instance is allowed
+SMESHGUI_Preferences_ScalarBarDlg* SMESHGUI_Preferences_ScalarBarDlg::myDlg = 0;
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties
  *
- *  The dialog will by default be modeless, unless you set 'modal' to
- *  TRUE to construct a modal dialog.
+ *  Gets the only instance of "Scalar Bar Properties" dialog box
  */
-SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent,  const char* name, bool modal, WFlags fl )
-    : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties(QWidget* parent, 
+							    SALOME_Selection* Sel)
 {
-    if ( !name )
-	setName( "SMESHGUI_Preferences_ScalarBarDlg" );
-    setCaption( tr( "SMESH_PREFERENCES_SCALARBAR"  ) );
-    setSizeGripEnabled( TRUE );
-
-    grid = new QGridLayout( this ); 
-    grid->setSpacing( 6 );
-    grid->setMargin( 11 );
-
-    /******************************************************************************/
-    Properties = new QGroupBox( this, "Properties" );
-    Properties->setTitle( tr( "SMESH_PROPERTIES"  ) );
-    Properties->setColumnLayout(0, Qt::Vertical );
-    Properties->layout()->setSpacing( 0 );
-    Properties->layout()->setMargin( 0 );
-    grid_4 = new QGridLayout( Properties->layout() );
-    grid_4->setAlignment( Qt::AlignTop );
-    grid_4->setSpacing( 6 );
-    grid_4->setMargin( 11 );
-
-    /* Font */
-    grid_5 = new QGridLayout; 
-    grid_5->setSpacing( 6 );
-    grid_5->setMargin( 0 );
-    TextLabel2 = new QLabel( Properties, "TextLabel2" );
-    TextLabel2->setText( tr( "SMESH_FONT"  ) );
-    grid_5->addWidget( TextLabel2, 0, 0 );
-    ComboBox1 = new QComboBox( FALSE, Properties, "ComboBox1" );
-    ComboBox1->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-    ComboBox1->insertItem( tr( "SMESH_FONT_ARIAL" ) );
-    ComboBox1->insertItem( tr( "SMESH_FONT_COURIER" ) );
-    ComboBox1->insertItem( tr( "SMESH_FONT_TIMES" ) );
-    grid_5->addWidget( ComboBox1, 0, 1 );
-    grid_4->addLayout( grid_5, 0, 0 );
-    
-    /* Font attributes */
-    grid_6 = new QGridLayout; 
-    grid_6->setSpacing( 6 );
-    grid_6->setMargin( 0 );
-    Bold = new QCheckBox( Properties, "Bold" );
-    Bold->setText( tr( "SMESH_FONT_BOLD"  ) );
-    grid_6->addWidget( Bold, 0, 0 );
-    Italic = new QCheckBox( Properties, "Italic" );
-    Italic->setText( tr( "SMESH_FONT_ITALIC"  ) );
-    grid_6->addWidget( Italic, 0, 1 );
-    Shadow = new QCheckBox( Properties, "Shadow" );
-    Shadow->setText( tr( "SMESH_FONT_SHADOW"  ) );
-    grid_6->addWidget( Shadow, 0, 2 );
-    grid_4->addLayout( grid_6, 1, 0 );
-
-    grid_7 = new QGridLayout; 
-    grid_7->setSpacing( 6 );
-    grid_7->setMargin( 0 );
-    NumberColors = new QLabel( Properties, "NumberColors" );
-    NumberColors->setText( tr( "SMESH_NUMBEROFCOLORS"  ) );
-    grid_7->addWidget( NumberColors, 0, 0 );
-    SpinBoxColors = new QSpinBox( Properties, "SpinBoxColors" );
-    SpinBoxColors->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-    SpinBoxColors->setMinValue( 1 );
-    grid_7->addWidget( SpinBoxColors, 0, 1 );
-    NumberLabels = new QLabel( Properties, "NumberLabels" );
-    NumberLabels->setText( tr( "SMESH_NUMBEROFLABELS"  ) );
-    grid_7->addWidget( NumberLabels, 1, 0 );
-    SpinBoxLabels = new QSpinBox( Properties, "SpinBoxLabels" );
-    SpinBoxLabels->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-    SpinBoxLabels->setMinValue( 1 );
-    grid_7->addWidget( SpinBoxLabels, 1, 1 );
-    grid_4->addLayout( grid_7, 2, 0 );
-
-    grid->addWidget( Properties, 0, 0 );
-
-    /******************************************************************************/
-    ButtonGroup_Orientation = new QButtonGroup( this, "ButtonGroup_Orientation" );
-    ButtonGroup_Orientation->setTitle( tr( "SMESH_ORIENTATION"  ) );
-    ButtonGroup_Orientation->setColumnLayout(0, Qt::Vertical );
-    ButtonGroup_Orientation->layout()->setSpacing( 0 );
-    ButtonGroup_Orientation->layout()->setMargin( 0 );
-    grid_2 = new QGridLayout( ButtonGroup_Orientation->layout() );
-    grid_2->setAlignment( Qt::AlignTop );
-    grid_2->setSpacing( 6 );
-    grid_2->setMargin( 11 );
-    RadioVert = new QRadioButton( ButtonGroup_Orientation, "RadioVert" );
-    RadioVert->setText( tr( "SMESH_VERTICAL"  ) );
-    RadioHoriz = new QRadioButton( ButtonGroup_Orientation, "RadioHoriz" );
-    RadioHoriz->setText( tr( "SMESH_HORIZONTAL"  ) );
-    grid_2->addWidget( RadioVert, 0, 0 );
-    grid_2->addWidget( RadioHoriz, 0, 1 );
-
-    grid->addWidget( ButtonGroup_Orientation, 1, 0 );
-
-    /******************************************************************************/
-    GroupBox5 = new QGroupBox( this, "GroupBox5" );
-    GroupBox5->setTitle( tr( "SMESH_DIMENSIONS"  ) );
-    GroupBox5->setColumnLayout(0, Qt::Vertical );
-    GroupBox5->layout()->setSpacing( 0 );
-    GroupBox5->layout()->setMargin( 0 );
-    grid_11 = new QGridLayout( GroupBox5->layout() );
-    grid_11->setAlignment( Qt::AlignTop );
-    grid_11->setSpacing( 6 );
-    grid_11->setMargin( 11 );
-
-    LineEditWidth = new QLineEdit( GroupBox5, "LineEditWidth" );
-    grid_11->addWidget( LineEditWidth, 0, 0 );
-    Width = new QLabel( GroupBox5, "Width" );
-    Width->setText( tr( "SMESH_WIDTH"  ) );
-    grid_11->addWidget( Width, 0, 1 );
-    LineEditHeight = new QLineEdit( GroupBox5, "LineEditHeight" );
-    grid_11->addWidget( LineEditHeight, 1, 0 );
-    Height = new QLabel( GroupBox5, "Height" );
-    Height->setText( tr( "SMESH_HEIGHT"  ) );
-    grid_11->addWidget( Height, 1, 1 );
-
-    grid->addWidget( GroupBox5, 2, 0 );
-
-    /***************************************************************/
-    QGroupBox* GroupButtons = new QGroupBox( this, "GroupButtons" );
-    GroupButtons->setGeometry( QRect( 10, 10, 281, 48 ) ); 
-    GroupButtons->setTitle( tr( ""  ) );
-    GroupButtons->setColumnLayout(0, Qt::Vertical );
-    GroupButtons->layout()->setSpacing( 0 );
-    GroupButtons->layout()->setMargin( 0 );
-    grid_15 = new QGridLayout( GroupButtons->layout() );
-    grid_15->setAlignment( Qt::AlignTop );
-    grid_15->setSpacing( 6 );
-    grid_15->setMargin( 11 );
-    buttonOk = new QPushButton( GroupButtons, "buttonOk" );
-    buttonOk->setText( tr( "SMESH_BUT_OK"  ) );
-    buttonOk->setAutoDefault( TRUE );
-    buttonOk->setDefault( TRUE );
-    grid_15->addWidget( buttonOk, 0, 0 );
-    grid_15->addItem( new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum ), 0, 1 );
-    buttonCancel = new QPushButton( GroupButtons, "buttonCancel" );
-    buttonCancel->setText( tr( "SMESH_BUT_CANCEL"  ) );
-    buttonCancel->setAutoDefault( TRUE );
-    grid_15->addWidget( buttonCancel, 0, 2 );
-
-    grid->addWidget( GroupButtons, 3, 0 );
-
-    // signals and slots connections
-    connect( buttonOk,     SIGNAL( clicked() ), this, SLOT( accept() ) );
-    connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( reject() ) );
+  if ( !myDlg ) {
+    myDlg = new SMESHGUI_Preferences_ScalarBarDlg( parent, Sel, false );
+    myDlg->show();
+  }
+  else {
+    myDlg->show();
+    myDlg->setActiveWindow();
+    myDlg->raise();
+    myDlg->setFocus();
+  }
 }
 
-/*  
- *  Destroys the object and frees any allocated resources
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences
+ *
+ *  Opens "Scalar Bar Preferences" dialog box
  */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( QWidget* parent )
+{
+  SMESHGUI_Preferences_ScalarBarDlg* aDlg = new SMESHGUI_Preferences_ScalarBarDlg( parent, 0, true );
+  aDlg->exec();
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg
+ *
+ *  Constructor
+ */
+//=================================================================================================
+SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg(QWidget* parent, 
+								     SALOME_Selection* Sel, 
+								     bool modal)
+     : QDialog( parent, 0, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose )
+{
+  setName( "SMESHGUI_Preferences_ScalarBarDlg" );
+  setCaption( Sel ? tr( "SMESH_PROPERTIES_SCALARBAR" ) : tr( "SMESH_PREFERENCES_SCALARBAR" ) );
+  setSizeGripEnabled( TRUE );
+
+  mySelection = Sel;
+  myActor = 0;
+
+  /******************************************************************************/
+  // Top layout
+  QGridLayout* aTopLayout = new QGridLayout( this );
+  aTopLayout->setSpacing( SPACING_SIZE ); aTopLayout->setMargin( MARGIN_SIZE );
+  int aRow = 0;
+
+  /******************************************************************************/
+  // Scalar range
+  if ( mySelection ) {
+    myRangeGrp = new QGroupBox ( tr( "SMESH_RANGE_SCALARBAR" ), this, "myRangeGrp" );
+    myRangeGrp->setColumnLayout( 0, Qt::Vertical );
+    myRangeGrp->layout()->setSpacing( 0 ); myRangeGrp->layout()->setMargin( 0 );
+    QGridLayout* myRangeGrpLayout = new QGridLayout( myRangeGrp->layout() );
+    myRangeGrpLayout->setAlignment( Qt::AlignTop );
+    myRangeGrpLayout->setSpacing( SPACING_SIZE ); myRangeGrpLayout->setMargin( MARGIN_SIZE );
+    
+    myMinEdit = new QLineEdit( myRangeGrp, "myMinEdit" );
+    myMinEdit->setMinimumWidth( MINIMUM_WIDTH );
+    myMinEdit->setValidator( new QDoubleValidator( this ) );
+
+    myMaxEdit = new QLineEdit( myRangeGrp, "myMaxEdit" );
+    myMaxEdit->setMinimumWidth( MINIMUM_WIDTH );
+    myMaxEdit->setValidator( new QDoubleValidator( this ) );
+
+    myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MIN" ), myRangeGrp, "myMinLab" ), 0, 0 );
+    myRangeGrpLayout->addWidget( myMinEdit, 0, 1 );
+    myRangeGrpLayout->addWidget( new QLabel( tr( "SMESH_RANGE_MAX" ), myRangeGrp, "myMaxLab" ), 0, 2 );
+    myRangeGrpLayout->addWidget( myMaxEdit, 0, 3 );
+
+    aTopLayout->addWidget( myRangeGrp, aRow, 0 );
+    aRow++;
+  }
+
+  /******************************************************************************/
+  // Text properties
+  myFontGrp = new QGroupBox ( tr( "SMESH_FONT_SCALARBAR" ), this, "myFontGrp" );
+  myFontGrp->setColumnLayout( 0, Qt::Vertical );
+  myFontGrp->layout()->setSpacing( 0 ); myFontGrp->layout()->setMargin( 0 );
+  QGridLayout* myFontGrpLayout = new QGridLayout( myFontGrp->layout() );
+  myFontGrpLayout->setAlignment( Qt::AlignTop );
+  myFontGrpLayout->setSpacing( SPACING_SIZE ); myFontGrpLayout->setMargin( MARGIN_SIZE );
+    
+  myTitleColorBtn = new QToolButton( myFontGrp, "myTitleColorBtn" );
+  
+  myTitleFontCombo = new QComboBox( false, myFontGrp, "myTitleFontCombo" );
+  myTitleFontCombo->setMinimumWidth( MINIMUM_WIDTH );
+  myTitleFontCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  myTitleFontCombo->insertItem( tr( "SMESH_FONT_ARIAL" ) );
+  myTitleFontCombo->insertItem( tr( "SMESH_FONT_COURIER" ) );
+  myTitleFontCombo->insertItem( tr( "SMESH_FONT_TIMES" ) );
+  
+  myTitleBoldCheck   = new QCheckBox( tr( "SMESH_FONT_BOLD" ),   myFontGrp, "myTitleBoldCheck" );
+  myTitleItalicCheck = new QCheckBox( tr( "SMESH_FONT_ITALIC" ), myFontGrp, "myTitleItalicCheck" );
+  myTitleShadowCheck = new QCheckBox( tr( "SMESH_FONT_SHADOW" ), myFontGrp, "myTitleShadowCheck" );
+
+  myLabelsColorBtn = new QToolButton( myFontGrp, "myLabelsColorBtn" );
+  
+  myLabelsFontCombo = new QComboBox( false, myFontGrp, "myLabelsFontCombo" );
+  myLabelsFontCombo->setMinimumWidth( MINIMUM_WIDTH );
+  myLabelsFontCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  myLabelsFontCombo->insertItem( tr( "SMESH_FONT_ARIAL" ) );
+  myLabelsFontCombo->insertItem( tr( "SMESH_FONT_COURIER" ) );
+  myLabelsFontCombo->insertItem( tr( "SMESH_FONT_TIMES" ) );
+  
+  myLabelsBoldCheck   = new QCheckBox( tr( "SMESH_FONT_BOLD" ),   myFontGrp, "myLabelsBoldCheck" );
+  myLabelsItalicCheck = new QCheckBox( tr( "SMESH_FONT_ITALIC" ), myFontGrp, "myLabelsItalicCheck" );
+  myLabelsShadowCheck = new QCheckBox( tr( "SMESH_FONT_SHADOW" ), myFontGrp, "myLabelsShadowCheck" );
+
+  myFontGrpLayout->addWidget( new QLabel( tr( "SMESH_TITLE" ), myFontGrp, "myFontTitleLab" ), 0, 0 );
+  myFontGrpLayout->addWidget( myTitleColorBtn,    0, 1 );
+  myFontGrpLayout->addWidget( myTitleFontCombo,   0, 2 );
+  myFontGrpLayout->addWidget( myTitleBoldCheck,   0, 3 );
+  myFontGrpLayout->addWidget( myTitleItalicCheck, 0, 4 );
+  myFontGrpLayout->addWidget( myTitleShadowCheck, 0, 5 );
+  
+  myFontGrpLayout->addWidget( new QLabel( tr( "SMESH_LABELS" ), myFontGrp, "myFontLabelsLab" ), 1, 0 );
+  myFontGrpLayout->addWidget( myLabelsColorBtn,    1, 1 );
+  myFontGrpLayout->addWidget( myLabelsFontCombo,   1, 2 );
+  myFontGrpLayout->addWidget( myLabelsBoldCheck,   1, 3 );
+  myFontGrpLayout->addWidget( myLabelsItalicCheck, 1, 4 );
+  myFontGrpLayout->addWidget( myLabelsShadowCheck, 1, 5 );
+
+  aTopLayout->addWidget( myFontGrp, aRow, 0 );
+  aRow++;
+
+  /******************************************************************************/
+  // Labels & Colors
+  myLabColorGrp = new QGroupBox ( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), this, "myLabColorGrp" );
+  myLabColorGrp->setColumnLayout( 0, Qt::Vertical );
+  myLabColorGrp->layout()->setSpacing( 0 ); myLabColorGrp->layout()->setMargin( 0 );
+  QGridLayout* myLabColorGrpLayout = new QGridLayout( myLabColorGrp->layout() );
+  myLabColorGrpLayout->setAlignment( Qt::AlignTop );
+  myLabColorGrpLayout->setSpacing( SPACING_SIZE ); myLabColorGrpLayout->setMargin( MARGIN_SIZE );
+    
+  myColorsSpin = new QSpinBox( 2, 256, 1, myLabColorGrp, "myColorsSpin" );
+  myColorsSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myColorsSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myLabelsSpin = new QSpinBox( 2, 65, 1, myLabColorGrp, "myLabelsSpin" );
+  myLabelsSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myLabelsSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myLabColorGrpLayout->addWidget( new QLabel( tr( "SMESH_NUMBEROFCOLORS" ), myLabColorGrp, "myNbColorLab" ), 0, 0 );
+  myLabColorGrpLayout->addWidget( myColorsSpin, 0, 1 );
+  myLabColorGrpLayout->addWidget( new QLabel( tr( "SMESH_NUMBEROFLABELS" ), myLabColorGrp, "myNbLabsLab" ), 0, 2 );
+  myLabColorGrpLayout->addWidget( myLabelsSpin, 0, 3 );
+
+  aTopLayout->addWidget( myLabColorGrp, aRow, 0 );
+  aRow++;
+
+  /******************************************************************************/
+  // Orientation
+  myOrientationGrp = new QButtonGroup ( tr( "SMESH_ORIENTATION" ), this, "myOrientationGrp" );
+  myOrientationGrp->setColumnLayout( 0, Qt::Vertical );
+  myOrientationGrp->layout()->setSpacing( 0 ); myOrientationGrp->layout()->setMargin( 0 );
+  QGridLayout* myOrientationGrpLayout = new QGridLayout( myOrientationGrp->layout() );
+  myOrientationGrpLayout->setAlignment( Qt::AlignTop );
+  myOrientationGrpLayout->setSpacing( SPACING_SIZE ); myOrientationGrpLayout->setMargin( MARGIN_SIZE );
+    
+  myVertRadioBtn  = new QRadioButton( tr( "SMESH_VERTICAL" ),   myOrientationGrp, "myVertRadioBtn" );
+  myHorizRadioBtn = new QRadioButton( tr( "SMESH_HORIZONTAL" ), myOrientationGrp, "myHorizRadioBtn" );
+  myVertRadioBtn->setChecked( true );
+
+  myOrientationGrpLayout->addWidget( myVertRadioBtn,  0, 0 );
+  myOrientationGrpLayout->addWidget( myHorizRadioBtn, 0, 1 );
+
+  aTopLayout->addWidget( myOrientationGrp, aRow, 0 );
+  aRow++;
+
+  /******************************************************************************/
+  // Position & Size
+  myOriginDimGrp = new QGroupBox ( tr( "SMESH_POSITION_SIZE_SCALARBAR" ), this, "myOriginDimGrp" );
+  myOriginDimGrp->setColumnLayout( 0, Qt::Vertical );
+  myOriginDimGrp->layout()->setSpacing( 0 ); myOriginDimGrp->layout()->setMargin( 0 );
+  QGridLayout* myOriginDimGrpLayout = new QGridLayout( myOriginDimGrp->layout() );
+  myOriginDimGrpLayout->setAlignment( Qt::AlignTop );
+  myOriginDimGrpLayout->setSpacing( SPACING_SIZE ); myOriginDimGrpLayout->setMargin( MARGIN_SIZE );
+    
+  myXSpin = new QAD_SpinBoxDbl( myOriginDimGrp, 0.0, 1.0, 0.1 );
+  myXSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myXSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myYSpin = new QAD_SpinBoxDbl( myOriginDimGrp, 0.0, 1.0, 0.1 );
+  myYSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myYSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myWidthSpin = new QAD_SpinBoxDbl( myOriginDimGrp, 0.0, 1.0, 0.1 );
+  myWidthSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myWidthSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myHeightSpin = new QAD_SpinBoxDbl( myOriginDimGrp, 0.0, 1.0, 0.1 );
+  myHeightSpin->setMinimumWidth( MINIMUM_WIDTH );
+  myHeightSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  myOriginDimGrpLayout->addWidget( new QLabel( tr( "SMESH_X_SCALARBAR" ), myOriginDimGrp, "myXLab" ), 0, 0 );
+  myOriginDimGrpLayout->addWidget( myXSpin, 0, 1 );
+  myOriginDimGrpLayout->addWidget( new QLabel( tr( "SMESH_Y_SCALARBAR" ), myOriginDimGrp, "myYLab" ), 0, 2 );
+  myOriginDimGrpLayout->addWidget( myYSpin, 0, 3 );
+  myOriginDimGrpLayout->addWidget( new QLabel( tr( "SMESH_WIDTH" ),  myOriginDimGrp, "myWidthLab" ),  1, 0 );
+  myOriginDimGrpLayout->addWidget( myWidthSpin, 1, 1 );
+  myOriginDimGrpLayout->addWidget( new QLabel( tr( "SMESH_HEIGHT" ), myOriginDimGrp, "myHeightLab" ), 1, 2 );
+  myOriginDimGrpLayout->addWidget( myHeightSpin, 1, 3 );
+
+  aTopLayout->addWidget( myOriginDimGrp, aRow, 0 );
+  aRow++;
+
+  /***************************************************************/
+  // Common buttons
+  myButtonGrp = new QGroupBox( this, "myButtonGrp" );
+  myButtonGrp->setColumnLayout(0, Qt::Vertical );
+  myButtonGrp->layout()->setSpacing( 0 ); myButtonGrp->layout()->setMargin( 0 );
+  QHBoxLayout* myButtonGrpLayout = new QHBoxLayout( myButtonGrp->layout() );
+  myButtonGrpLayout->setAlignment( Qt::AlignTop );
+  myButtonGrpLayout->setSpacing( SPACING_SIZE ); myButtonGrpLayout->setMargin( MARGIN_SIZE );
+
+  myOkBtn = new QPushButton( tr( "SMESH_BUT_OK" ), myButtonGrp, "myOkBtn" );
+  myOkBtn->setAutoDefault( TRUE ); myOkBtn->setDefault( TRUE );
+  myButtonGrpLayout->addWidget( myOkBtn );
+  if ( mySelection ) {
+    myApplyBtn = new QPushButton( tr( "SMESH_BUT_APPLY" ), myButtonGrp, "myApplyBtn" );
+    myApplyBtn->setAutoDefault( TRUE );
+    myButtonGrpLayout->addWidget( myApplyBtn );
+  }
+  myButtonGrpLayout->addStretch();
+  myCancelBtn = new QPushButton( tr( "SMESH_BUT_CANCEL" ), myButtonGrp, "myCancelBtn" );
+  if ( mySelection )
+    myCancelBtn->setText( tr( "SMESH_BUT_CLOSE" ) );
+  myCancelBtn->setAutoDefault( TRUE );
+  myButtonGrpLayout->addWidget( myCancelBtn );
+
+  aTopLayout->addWidget( myButtonGrp, aRow, 0 );
+
+  /***************************************************************/
+  // Init
+  // --> first init from preferences
+  QColor titleColor( 255, 255, 255 );
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarTitleColor" ) ) {
+    QStringList aTColor = QStringList::split(  ":", QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleColor" ), false );
+    titleColor = QColor( ( aTColor.count() > 0 ? aTColor[0].toInt() : 255 ), 
+			 ( aTColor.count() > 1 ? aTColor[1].toInt() : 255 ), 
+			 ( aTColor.count() > 2 ? aTColor[2].toInt() : 255 ) );
+  }
+  myTitleColorBtn->setPaletteBackgroundColor( titleColor );
+  myTitleFontCombo->setCurrentItem( 0 );
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarTitleFont" ) ) {
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Arial" )
+      myTitleFontCombo->setCurrentItem( 0 );
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Courier" )
+      myTitleFontCombo->setCurrentItem( 1 );
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Times" )
+      myTitleFontCombo->setCurrentItem( 2 );
+  }
+  myTitleBoldCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleBold" ) == "true" );
+  myTitleItalicCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleItalic" ) == "true" );
+  myTitleShadowCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleShadow" ) == "true" );
+
+  QColor labelColor( 255, 255, 255 );
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarLabelColor" ) ) {
+    QStringList aLColor = QStringList::split( ":", QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelColor" ), false );
+    labelColor = QColor( ( aLColor.count() > 0 ? aLColor[0].toInt() : 255 ), 
+			 ( aLColor.count() > 1 ? aLColor[1].toInt() : 255 ), 
+			 ( aLColor.count() > 2 ? aLColor[2].toInt() : 255 ) );
+  }
+  myLabelsColorBtn->setPaletteBackgroundColor( labelColor );
+  myLabelsFontCombo->setCurrentItem( 0 );
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarLabelFont" ) ) {
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Arial" )
+      myLabelsFontCombo->setCurrentItem( 0 );
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Courier" )
+      myLabelsFontCombo->setCurrentItem( 1 );
+    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Times" )
+      myLabelsFontCombo->setCurrentItem( 2 );
+  }
+  myLabelsBoldCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelBold" ) == "true" );
+  myLabelsItalicCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelItalic" ) == "true" );
+  myLabelsShadowCheck->setChecked( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelShadow" ) == "true" );
+
+  int aNbColors = 64;
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarNbOfColors" ) )
+    aNbColors = QAD_CONFIG->getSetting( "SMESH:ScalarBarNbOfColors" ).toInt();
+  myColorsSpin->setValue( aNbColors );
+  int aNbLabels = 5;
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarNbOfLabels" ) )
+    aNbLabels = QAD_CONFIG->getSetting( "SMESH:ScalarBarNbOfLabels" ).toInt();
+  myLabelsSpin->setValue( aNbLabels );
+
+  QString aOrientation = QAD_CONFIG->getSetting( "SMESH:ScalarBarOrientation" );
+  if ( aOrientation == "Horizontal" )
+    myHorizRadioBtn->setChecked( true );
+  else
+    myVertRadioBtn->setChecked( true );
+  myIniOrientation = myVertRadioBtn->isChecked();
+
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarXPosition" ) )
+    myIniX = QAD_CONFIG->getSetting( "SMESH:ScalarBarXPosition" ).toDouble();
+  else
+    myIniX = myHorizRadioBtn->isChecked() ? DEF_HOR_X : DEF_VER_X;
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarYPosition" ) )
+    myIniY = QAD_CONFIG->getSetting( "SMESH:ScalarBarYPosition" ).toDouble();
+  else
+    myIniY = myHorizRadioBtn->isChecked() ? DEF_HOR_Y : DEF_VER_Y;
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarWidth" ) )
+    myIniW = QAD_CONFIG->getSetting( "SMESH:ScalarBarWidth" ).toDouble();
+  else
+    myIniW = myHorizRadioBtn->isChecked() ? DEF_HOR_W : DEF_VER_W;
+  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarHeight" ) )
+    myIniH = QAD_CONFIG->getSetting( "SMESH:ScalarBarHeight" ).toDouble();
+  else
+    myIniH = myHorizRadioBtn->isChecked() ? DEF_HOR_H : DEF_VER_H;
+  setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
+
+  if ( mySelection ) {
+    // --> then init from selection if necessary
+    onSelectionChanged();
+  }
+  
+  /***************************************************************/
+  // Connect section
+  connect( myTitleColorBtn,     SIGNAL( clicked() ), this, SLOT( onTitleColor() ) );
+  connect( myLabelsColorBtn,    SIGNAL( clicked() ), this, SLOT( onLabelsColor() ) );
+  connect( myOkBtn,             SIGNAL( clicked() ), this, SLOT( onOk() ) );
+  connect( myCancelBtn,         SIGNAL( clicked() ), this, SLOT( onCancel() ) );
+  connect( myXSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
+  connect( myYSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
+  connect( myOrientationGrp,    SIGNAL( clicked( int ) ), this, SLOT( onOrientationChanged() ) );
+  if ( mySelection ) {
+    connect( myApplyBtn,        SIGNAL( clicked() ), this, SLOT( onApply() ) );
+    connect( mySelection,       SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
+  }
+  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ), this, SLOT( onCancel() ) ) ;
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::~SMESHGUI_Preferences_ScalarBarDlg
+ *
+ *  Destructor
+ */
+//=================================================================================================
 SMESHGUI_Preferences_ScalarBarDlg::~SMESHGUI_Preferences_ScalarBarDlg()
 {
-    // no need to delete child widgets, Qt does it all for us
 }
 
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onOk
+ *
+ *  OK button slot
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onOk()
+{
+  if ( onApply() )
+    onCancel();
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onApply
+ *
+ *  Apply button slot
+ */
+//=================================================================================================
+bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
+{
+  if ( mySelection ) {
+    // Scalar Bar properties
+    if ( !myActor )
+      return false;
+    vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
+
+    vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
+    QColor aTColor = myTitleColorBtn->paletteBackgroundColor();
+    aTitleTextPrp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
+    if ( myTitleFontCombo->currentItem() == 0 )
+      aTitleTextPrp->SetFontFamilyToArial();
+    else if ( myTitleFontCombo->currentItem() == 1 )
+      aTitleTextPrp->SetFontFamilyToCourier();
+    else
+      aTitleTextPrp->SetFontFamilyToTimes();
+    aTitleTextPrp->SetBold( myTitleBoldCheck->isChecked() );
+    aTitleTextPrp->SetItalic( myTitleItalicCheck->isChecked() );
+    aTitleTextPrp->SetShadow( myTitleShadowCheck->isChecked() );
+    myScalarBarActor->SetTitleTextProperty( aTitleTextPrp );
+
+    vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
+    QColor aLColor = myLabelsColorBtn->paletteBackgroundColor();
+    aLabelsTextPrp->SetColor( aLColor.red()/255., aLColor.green()/255., aLColor.blue()/255. );
+    if ( myLabelsFontCombo->currentItem() == 0 )
+      aLabelsTextPrp->SetFontFamilyToArial();
+    else if ( myLabelsFontCombo->currentItem() == 1 )
+      aLabelsTextPrp->SetFontFamilyToCourier();
+    else
+      aLabelsTextPrp->SetFontFamilyToTimes();
+    aLabelsTextPrp->SetBold( myLabelsBoldCheck->isChecked() );
+    aLabelsTextPrp->SetItalic( myLabelsItalicCheck->isChecked() );
+    aLabelsTextPrp->SetShadow( myLabelsShadowCheck->isChecked() );
+    myScalarBarActor->SetLabelTextProperty( aLabelsTextPrp );
+
+    myScalarBarActor->SetNumberOfLabels( myLabelsSpin->value() );
+    myScalarBarActor->SetMaximumNumberOfColors( myColorsSpin->value() );
+
+    if ( myHorizRadioBtn->isChecked() )
+      myScalarBarActor->SetOrientationToHorizontal();
+    else
+      myScalarBarActor->SetOrientationToVertical();
+
+    myScalarBarActor->SetPosition( myXSpin->value(), myYSpin->value() );
+    myScalarBarActor->SetWidth( myWidthSpin->value() );
+    myScalarBarActor->SetHeight( myHeightSpin->value() );
+
+    double aMin = myMinEdit->text().toDouble();
+    double aMax = myMaxEdit->text().toDouble();
+    myScalarBarActor->GetLookupTable()->SetRange( aMin, aMax );
+    SMESHGUI::GetSMESHGUI()->UpdateView();
+  }
+  else {
+    // Scalar Bar preferences
+    QColor titleColor = myTitleColorBtn->paletteBackgroundColor();
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleColor",  QString().sprintf( "%d:%d:%d", titleColor.red(), titleColor.green(), titleColor.blue() ) );
+    if ( myTitleFontCombo->currentItem() == 0 )
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleFont", "Arial" );
+    else if ( myTitleFontCombo->currentItem() == 1 )
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleFont", "Courier" );
+    else
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleFont", "Times" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleBold",   myTitleBoldCheck->isChecked() ?   "true" : "false" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleItalic", myTitleItalicCheck->isChecked() ? "true" : "false" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarTitleShadow", myTitleShadowCheck->isChecked() ? "true" : "false" );
+
+    QColor labelColor = myLabelsColorBtn->paletteBackgroundColor();
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelColor",  QString().sprintf( "%d:%d:%d", labelColor.red(), labelColor.green(),labelColor. blue() ) );
+    if ( myLabelsFontCombo->currentItem() == 0 )
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelFont", "Arial" );
+    else if ( myLabelsFontCombo->currentItem() == 1 )
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelFont", "Courier" );
+    else
+      QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelFont", "Times" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelBold",   myLabelsBoldCheck->isChecked() ?   "true" : "false" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelItalic", myLabelsItalicCheck->isChecked() ? "true" : "false" );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarLabelShadow", myLabelsShadowCheck->isChecked() ? "true" : "false" );
+
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarNbOfColors", myColorsSpin->value() );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarNbOfLabels", myLabelsSpin->value() );
+
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarOrientation", myHorizRadioBtn->isChecked() ? "Horizontal" : "Vertical" );
+    
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarXPosition", myXSpin->value() );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarYPosition", myYSpin->value() );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarWidth",     myWidthSpin->value() );
+    QAD_CONFIG->addSetting( "SMESH:ScalarBarHeight",    myHeightSpin->value() );
+  }
+  return true;
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onCancel
+ *
+ *  Cancel button slot
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onCancel()
+{
+  close();
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onTitleColor
+ *
+ *  Change Title color button slot
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onTitleColor()
+{
+  QColor aColor = myTitleColorBtn->paletteBackgroundColor();
+  aColor = QColorDialog::getColor( aColor, this );
+  if ( aColor.isValid() ) 
+    myTitleColorBtn->setPaletteBackgroundColor( aColor );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onLabelsColor
+ *
+ *  Change Labels color button slot
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onLabelsColor()
+{
+  QColor aColor = myLabelsColorBtn->paletteBackgroundColor();
+  aColor = QColorDialog::getColor( aColor, this );
+  if ( aColor.isValid() ) 
+    myLabelsColorBtn->setPaletteBackgroundColor( aColor );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged
+ *
+ *  Called when selection changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
+{
+  if( mySelection ) {
+    if ( mySelection->IObjectCount() == 1 ) {
+      Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject();
+      if( anIO->hasEntry() ) {
+	Standard_Boolean isOk;
+	SMESH_Actor* anActor = SMESHGUI::GetSMESHGUI()->FindActorByEntry( anIO->getEntry(), isOk, true );
+	if ( isOk && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+	  myActor = anActor;
+	  vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
+	  
+	  double aMin = 0.0, aMax = 0.0;
+	  if ( myScalarBarActor->GetLookupTable() ) {
+	    float *range = myScalarBarActor->GetLookupTable()->GetRange();
+	    myMinEdit->setText( QString::number( range[0] ) );
+	    myMaxEdit->setText( QString::number( range[1] ) );
+	  }
+
+	  vtkTextProperty* aTitleTextPrp = myScalarBarActor->GetTitleTextProperty();
+	  float aTColor[3];
+	  aTitleTextPrp->GetColor( aTColor );
+	  myTitleColorBtn->setPaletteBackgroundColor( QColor( (int)( aTColor[0]*255 ), (int)( aTColor[1]*255 ), (int)( aTColor[2]*255 ) ) );
+	  myTitleFontCombo->setCurrentItem( aTitleTextPrp->GetFontFamily() );
+	  myTitleBoldCheck->setChecked( aTitleTextPrp->GetBold() );
+	  myTitleItalicCheck->setChecked( aTitleTextPrp->GetItalic() );
+	  myTitleShadowCheck->setChecked( aTitleTextPrp->GetShadow() );
+
+	  vtkTextProperty* aLabelsTextPrp = myScalarBarActor->GetLabelTextProperty();
+	  float aLColor[3];
+	  aLabelsTextPrp->GetColor( aLColor );
+	  myLabelsColorBtn->setPaletteBackgroundColor( QColor( (int)( aLColor[0]*255 ), (int)( aLColor[1]*255 ), (int)( aLColor[2]*255 ) ) );
+	  myLabelsFontCombo->setCurrentItem( aLabelsTextPrp->GetFontFamily() );
+	  myLabelsBoldCheck->setChecked( aLabelsTextPrp->GetBold() );
+	  myLabelsItalicCheck->setChecked( aLabelsTextPrp->GetItalic() );
+	  myLabelsShadowCheck->setChecked( aLabelsTextPrp->GetShadow() );
+
+	  myLabelsSpin->setValue( myScalarBarActor->GetNumberOfLabels() );
+	  myColorsSpin->setValue( myScalarBarActor->GetMaximumNumberOfColors() );
+
+	  if ( myScalarBarActor->GetOrientation() == VTK_ORIENT_VERTICAL )
+	    myVertRadioBtn->setChecked( true );
+	  else
+	    myHorizRadioBtn->setChecked( true );
+	  myIniOrientation = myVertRadioBtn->isChecked();
+	  
+	  myIniX = myScalarBarActor->GetPosition()[0];
+	  myIniY = myScalarBarActor->GetPosition()[1];
+	  myIniW = myScalarBarActor->GetWidth();
+	  myIniH = myScalarBarActor->GetHeight();
+	  setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
+
+	  myRangeGrp->setEnabled( true );
+	  myFontGrp->setEnabled( true );
+	  myLabColorGrp->setEnabled( true );
+	  myOrientationGrp->setEnabled( true );
+	  myOriginDimGrp->setEnabled( true );
+	  myOkBtn->setEnabled( true );
+	  myApplyBtn->setEnabled( true );
+	  return;
+	}
+      }
+    }
+    myActor = 0;
+    myRangeGrp->setEnabled( false );
+    myFontGrp->setEnabled( false );
+    myLabColorGrp->setEnabled( false );
+    myOrientationGrp->setEnabled( false );
+    myOriginDimGrp->setEnabled( false );
+    myOkBtn->setEnabled( false );
+    myApplyBtn->setEnabled( false );
+  }
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::closeEvent
+ *
+ *  Close event handler
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::closeEvent( QCloseEvent* e )
+{
+  if ( mySelection ) // "Properties" dialog box
+    myDlg = 0;
+  QDialog::closeEvent( e );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onXYChanged
+ *
+ *  Called when X, Y values are changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onXYChanged()
+{
+  myWidthSpin->setMaxValue( 1.0 - myXSpin->value() );
+  myHeightSpin->setMaxValue( 1.0 - myYSpin->value() );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize
+ *
+ *  Called when X, Y values are changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize( const double x,
+							  const double y,
+							  const double w,
+							  const double h )
+{
+  blockSignals( true );
+  myXSpin->setValue( x );
+  myYSpin->setValue( y );
+  myWidthSpin->setMaxValue( 1.0 );
+  myWidthSpin->setValue( w );
+  myHeightSpin->setMaxValue( 1.0 );
+  myHeightSpin->setValue( h );
+  blockSignals( false );
+  onXYChanged();
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged
+ *
+ *  Called when orientation is changed
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged() 
+{
+  int aOrientation = myVertRadioBtn->isChecked();
+  if ( aOrientation == myIniOrientation )
+    setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
+  else
+    setOriginAndSize( aOrientation ? DEF_VER_X : DEF_HOR_X, 
+		      aOrientation ? DEF_VER_Y : DEF_HOR_Y, 
+		      aOrientation ? DEF_VER_W : DEF_HOR_W, 
+		      aOrientation ? DEF_VER_H : DEF_HOR_H );
+}

@@ -27,13 +27,30 @@
 #define _SMESH_MESH_IDL_
 
 #include "SALOME_Exception.idl"
-#include "SMESH_Hypothesis.idl"
+//#include "SMESH_Hypothesis.idl"
 
-#include "GEOM_Shape.idl"
-#include "MED.idl"
+#include "SALOME_GenericObj.idl"
+//#include "GEOM_Shape.idl"
+//#include "MED.idl"
+
+module GEOM
+{
+  interface GEOM_Shape;
+};
+
+
+module SALOME_MED
+{
+  interface MESH;
+  interface FAMILY;
+};
+
 
 module SMESH
 {
+  interface SMESH_Hypothesis;
+  typedef sequence<SMESH_Hypothesis> ListOfHypothesis;
+
   typedef sequence<double> double_array ;
   typedef sequence<long> long_array ;
   typedef sequence<string> string_array ;
@@ -49,8 +66,7 @@ module SMESH
       ADD_PRISM,
       ADD_HEXAHEDRON,
       REMOVE_NODE,
-      REMOVE_ELEMENT,
-	  REMOVE_ALL
+      REMOVE_ELEMENT
     };
 
   struct log_block
@@ -60,12 +76,56 @@ module SMESH
     double_array coords;
     long_array indexes;
   };
+
   
+  /*!
+   * Enumeration for element type, like in SMDS
+   */
+  enum ElementType
+  {
+    ALL,
+    NODE,
+    EDGE,
+    FACE,
+    VOLUME
+  };
+  
+  /*!
+   * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods) 
+   */  
+  enum Hypothesis_Status // in the order of severity
+  {
+    HYP_OK,
+    HYP_MISSING,      // algo misses a hypothesis
+    HYP_CONCURENT,    // several applicable hypotheses
+    HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
+    HYP_UNKNOWN_FATAL,//  --- all statuses below should be considered as fatal
+                      //      for Add/RemoveHypothesis operations
+    HYP_INCOMPATIBLE, // hypothesis does not fit algo
+    HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
+    HYP_ALREADY_EXIST,// such hypothesis already exist
+    HYP_BAD_DIM       // bad dimension
+  }; 
+  
+  /*!
+   * Enumeration for DriverMED read status (used by ImportMEDFile() method)
+   */  
+  enum DriverMED_ReadStatus // in the order of severity
+  {
+    DRS_OK,
+    DRS_EMPTY,          // a MED file contains no mesh with the given name
+    DRS_WARN_RENUMBER,  // a MED file has overlapped ranges of element numbers,
+                        // so the numbers from the file are ignored
+    DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
+    DRS_FAIL            // general failure (exception etc.)
+  }; 
+
   typedef sequence<log_block> log_array;
 
+  interface SMESH_Group;
   interface SMESH_subMesh;
   interface SMESH_MeshEditor;
-  interface SMESH_Mesh
+  interface SMESH_Mesh : SALOME::GenericObj
   {
     /*!
      * Associate a Shape to a Mesh created with NewEmpty
@@ -80,7 +140,7 @@ module SMESH
      * SubMesh will be used instead of SubShape in a next idl version to 
      * adress a specific subMesh...
      */
-    SMESH_subMesh GetElementsOnShape(in GEOM::GEOM_Shape aSubShape)
+    SMESH_subMesh GetSubMesh(in GEOM::GEOM_Shape aSubShape, in string name)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -88,6 +148,25 @@ module SMESH
      */
 //     SMESH_subMesh NewEmpty()
 //       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Remove a submesh
+     */
+    void RemoveSubMesh(in SMESH_subMesh aSubMesh)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a group
+     */
+    SMESH_Group CreateGroup( in ElementType elem_type,
+			     in string name )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Remove a group
+     */
+    void RemoveGroup(in SMESH_Group aGroup)
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Add hypothesis to the mesh, under a particular subShape
@@ -106,7 +185,8 @@ module SMESH
      *   (or one previous hypothesis on the subShape)
      * raises exception if hypothesis has not been created
      */
-    boolean AddHypothesis(in GEOM::GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp)
+    Hypothesis_Status AddHypothesis(in GEOM::GEOM_Shape aSubShape,
+				    in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
 //     boolean AddHypothesis(in SMESH_subMesh aSubMesh, in SMESH_Hypothesis anHyp)
 //       raises (SALOME::SALOME_Exception);
@@ -115,8 +195,8 @@ module SMESH
     /*!
      * Remove an hypothesis previouly added with AddHypothesis.
      */
-    boolean RemoveHypothesis(in GEOM::GEOM_Shape aSubShape,
-			     in SMESH_Hypothesis anHyp)
+    Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Shape aSubShape,
+				       in SMESH_Hypothesis anHyp)
       raises (SALOME::SALOME_Exception);
 //     boolean RemoveHypothesis(in SMESH_subMesh aSubMesh,
 // 			     in SMESH_Hypothesis anHyp)
@@ -162,11 +242,13 @@ module SMESH
        raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export mesh to a file
-	 * @param fileName file name where to export the file
-	 * @param fileType Currently it could be either "DAT", "UNV" or "MED".
+     * Export Mesh with DAT and MED Formats
      */
-    void Export( in string fileName, in string fileType )
+    void ExportDAT( in string file )
+      raises (SALOME::SALOME_Exception);
+    void ExportMED( in string file, in boolean auto_groups )
+      raises (SALOME::SALOME_Exception);
+    void ExportUNV( in string file )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -199,11 +281,19 @@ module SMESH
     long NbHexas()
       raises (SALOME::SALOME_Exception);
 
+    long NbPyramids()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPrisms()
+      raises (SALOME::SALOME_Exception);
+
     long NbSubMesh()
       raises (SALOME::SALOME_Exception);
+
+    string Dump();
   };
 
-  interface SMESH_subMesh
+  interface SMESH_subMesh : SALOME::GenericObj
   {
     /*!
      * 
@@ -221,6 +311,12 @@ module SMESH
      * 
      */
     long_array GetElementsId()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+    long_array GetElementsByType( in ElementType theType )
       raises (SALOME::SALOME_Exception);
 
     /*!

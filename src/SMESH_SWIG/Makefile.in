@@ -43,6 +43,7 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_test1.py \
 		   SMESH_test2.py \
 		   SMESH_test3.py \
+	           SMESH_test4.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
 		   SMESH_fixation.py \
@@ -53,12 +54,10 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_box2_tetra.py \
 		   SMESH_box3_tetra.py \
 		   SMESH_flight_skin.py \
-		   SMESH_Partition1_tetra.py \
-		   SMESH_box_hexa.py \
-		   SMESH_demo_hexa2.py \
-		   SMESH_demo_hexa.py \
-		   SMESH_demo_tetra2.py \
-		   SMESH_demo_tetra.py
+		   SMESH_Partition1_tetra.py\
+		   batchmode_mefisto.py \
+		   SMESH_controls.py \
+		   SMESH_freebord.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_Exception.idl \
@@ -68,14 +67,16 @@ LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SMESH_Mesh.idl \
 		 SMESH_Hypothesis.idl \
 		 SMESH_BasicHypothesis.idl \
+		 SMESH_Group.idl \
 		 SALOME_ModuleCatalog.idl \
 		 SALOME_Component.idl \
+		 SALOME_GenericObj.idl \
 		 MED.idl
 
 EXPORT_SHAREDPYSCRIPTS=SMESH_shared_modules.py
 
 CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -DHAVE_CONFIG_H
 LIBS+= $(PYTHON_LIBS)
-LDFLAGS+= -lSMESHGUI
+LDFLAGS+= -lSMESHGUI -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeGenericObj
 
 @CONCLUDE@

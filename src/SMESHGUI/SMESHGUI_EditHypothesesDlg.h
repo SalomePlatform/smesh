@@ -34,7 +34,6 @@
 #include "SMESH_TypeFilter.hxx"
 
 // QT Includes
-#include <qvariant.h>
 #include <qdialog.h>
 
 // IDL Headers
@@ -46,21 +45,15 @@
 #include <map>
 #include <string>
 
-using namespace std;
-
-class QVBoxLayout; 
-class QHBoxLayout; 
-class QGridLayout; 
-class QButtonGroup;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QRadioButton;
 class QListBox;
 class QListBoxItem;
 class SMESHGUI;
 
+typedef map<string, int> MapIOR;
 
 //=================================================================================
 // class    : SMESHGUI_EditHypothesesDlg
@@ -74,11 +67,12 @@ public:
     SMESHGUI_EditHypothesesDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_EditHypothesesDlg();
 
-private:
+protected:
+    virtual void closeEvent( QCloseEvent* e ); 
+    virtual void enterEvent ( QEvent* );
 
+private:
     void Init( SALOME_Selection* Sel ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;
 
     void InitHypDefinition();
     void InitAlgoDefinition();
@@ -87,11 +81,16 @@ private:
 
     void InitGeom();
 
+    void UpdateControlState();
+
+    bool StoreMesh();
+    bool StoreSubMesh();
+
+private:
     SMESHGUI*                     mySMESHGUI ;
     SALOME_Selection*             mySelection ;
              
     GEOM::GEOM_Shape_var          myGeomShape ;
-    int                           myConstructorId ; 
     QLineEdit*                    myEditCurrentArgument; 
 
     SMESH::SMESH_Mesh_var         myMesh;
@@ -100,78 +99,46 @@ private:
     Handle(SALOME_TypeFilter)     myGeomFilter;
     Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
 
-    map<string,string>            mapNameIOR;
+    MapIOR                        myMapOldHypos, myMapOldAlgos;
 
-    SALOME_ListIO                 HypoList;
-    SALOME_ListIO                 AlgoList;
-
-    bool                          myOkHypothesis;
-    bool                          myOkAlgorithm;
-
-    SMESH::SMESH_Hypothesis_var   myHypothesis;
-    SMESH::SMESH_Hypothesis_var   myAlgorithm;
-
-    SMESH::ListOfHypothesis_var   myLHypothesis;
-    SMESH::ListOfHypothesis_var   myLAlgorithm;
+    bool                          myImportedMesh;
  
-    QButtonGroup* GroupConstructors;
-    QRadioButton* Constructor1;
     QGroupBox*    GroupButtons;
     QPushButton*  buttonOk;
-    QPushButton*  buttonCancel;
     QPushButton*  buttonApply;
-    QGroupBox*    GroupC1;
+    QPushButton*  buttonCancel;
 
+    QGroupBox*    GroupC1;
     QLabel*       TextLabelC1A1;
     QPushButton*  SelectButtonC1A1;
     QLineEdit*    LineEditC1A1;
-
     QLabel*       TextLabelC1A2;
     QPushButton*  SelectButtonC1A2;
     QLineEdit*    LineEditC1A2;
 
-    QGroupBox* GroupHypotheses;
-    QLabel* TextHypDefinition;
-    QListBox* ListHypDefinition;
-    QLabel* TextHypAssignation;
-    QListBox* ListHypAssignation;
+    QGroupBox*    GroupHypotheses;
+    QLabel*       TextHypDefinition;
+    QListBox*     ListHypDefinition;
+    QLabel*       TextHypAssignation;
+    QListBox*     ListHypAssignation;
 
-    QGroupBox* GroupAlgorithms;
-    QLabel* TextAlgoDefinition;
-    QListBox* ListAlgoDefinition;
-    QLabel* TextAlgoAssignation;
-    QListBox* ListAlgoAssignation;
+    QGroupBox*    GroupAlgorithms;
+    QLabel*       TextAlgoDefinition;
+    QListBox*     ListAlgoDefinition;
+    QLabel*       TextAlgoAssignation;
+    QListBox*     ListAlgoAssignation;
 
 private slots:
-
-    void ConstructorsClicked(int constructorId);
+    void ClickOnOk();
+    bool ClickOnApply();
     void ClickOnCancel();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
-    void TextChangedInLineEdit(const QString& newText) ;
 
     void removeItem(QListBoxItem*);
     void addItem(QListBoxItem*);
-
-protected:
-    QGridLayout* SMESHGUI_EditHypothesesDlgLayout;
-    QGridLayout* GroupConstructorsLayout;
-    QGridLayout* GroupButtonsLayout;
-    QGridLayout* GroupC1Layout;
-
-    QGridLayout* grid_3;
-    QGridLayout* grid_4;
-
-    QHBoxLayout* hbox_2;
-    QHBoxLayout* hbox_3;
-
-    QVBoxLayout* vbox;
-    QVBoxLayout* vbox_2;
-    QVBoxLayout* vbox_3;
-    QVBoxLayout* vbox_4;
-
 };
 
 #endif // DIALOGBOX_EDIT_HYPOTHESES_H

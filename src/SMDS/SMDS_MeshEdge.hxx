@@ -34,7 +34,8 @@ class SMDS_MeshEdge:public SMDS_MeshElement
 {
 
   public:
-	SMDS_MeshEdge(SMDS_MeshNode * node1, SMDS_MeshNode * node2);
+	SMDS_MeshEdge(const SMDS_MeshNode * node1,
+                      const SMDS_MeshNode * node2);
 	void Print(ostream & OS) const;
 
 	SMDSAbs_ElementType GetType() const;
@@ -42,11 +43,11 @@ class SMDS_MeshEdge:public SMDS_MeshElement
 	int NbEdges() const;
 	friend bool operator<(const SMDS_MeshEdge& e1, const SMDS_MeshEdge& e2);
   protected:
-	SMDS_Iterator<const SMDS_MeshElement *> *
+	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	SMDS_MeshNode* myNodes[2];
+	const SMDS_MeshNode* myNodes[2];
 
 };
 #endif

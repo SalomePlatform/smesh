@@ -27,45 +27,35 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_1D_Algo_i.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_HypothesisFactory.hxx"
 
-#include "Utils_CorbaException.hxx"
 #include "utilities.h"
 
 //=============================================================================
 /*!
- *  
+ *  SMESH_1D_Algo_i::SMESH_1D_Algo_i
+ * 
+ *  Constructor
  */
 //=============================================================================
 
-SMESH_1D_Algo_i::SMESH_1D_Algo_i()
+SMESH_1D_Algo_i::SMESH_1D_Algo_i( PortableServer::POA_ptr thePOA )
+     : SALOME::GenericObj_i( thePOA ), 
+       SMESH_Hypothesis_i( thePOA ), 
+       SMESH_Algo_i( thePOA )
 {
-  MESSAGE("SMESH_1D_Algo_i::SMESH_1D_Algo_i");
+  MESSAGE( "SMESH_1D_Algo_i::SMESH_1D_Algo_i" );
 }
 
 //=============================================================================
 /*!
- *  
+ *  SMESH_1D_Algo_i::~SMESH_1D_Algo_i
+ * 
+ *  Destructor
  */
 //=============================================================================
 
 SMESH_1D_Algo_i::~SMESH_1D_Algo_i()
 {
-  MESSAGE("SMESH_1D_Algo_i::~SMESH_1D_Algo_i");
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-void SMESH_1D_Algo_i::SetImpl(::SMESH_1D_Algo* impl)
-{
-  MESSAGE("SMESH_1D_Algo_i::SetImpl");
-  SMESH_Algo_i::SetImpl(impl);
-  _impl = impl;
+  MESSAGE( "SMESH_1D_Algo_i::~SMESH_1D_Algo_i" );
 }

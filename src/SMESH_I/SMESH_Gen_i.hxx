@@ -38,11 +38,8 @@
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
-
-class SMESH_Mesh_i;
-
-#include "SMESH_HypothesisFactory_i.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_Hypothesis_i.hxx"
 #include "SALOME_Component_i.hxx"
 #include "SALOME_NamingService.hxx"
 
@@ -50,140 +47,268 @@ class SMESH_Mesh_i;
 #include "SMESH_topo.hxx"
 #include "GEOM_Client.hxx"
 
-#include <HDFOI.hxx>
-
 #include <map>
 
-typedef struct studyContext_iStruct
-{
-  map<int,SMESH_Mesh_i*> mapMesh_i;
-} StudyContext_iStruct;
+class SMESH_Mesh_i;
+class SALOME_LifeCycleCORBA;
 
-class SMESH_Gen_i:
-  public POA_SMESH::SMESH_Gen,
-  public Engines_Component_i 
+// ===========================================================
+// Study context - stores study-connected objects references
+// ==========================================================
+class StudyContext
 {
 public:
+  // constructor
+  StudyContext() {}
+  // destructor
+  ~StudyContext() 
+  { 
+    mapIdToIOR.clear();
+    mapIdToId.clear();
+  }
+  // register object in the internal map and return its id
+  int addObject( string theIOR )
+  {
+    int nextId = getNextId();
+    mapIdToIOR[ nextId ]  = theIOR;
+    return nextId;
+  }
+  // find the object id in the internal map by the IOR
+  int findId( string theIOR )
+  {
+    map<int, string>::iterator imap;
+    for ( imap = mapIdToIOR.begin(); imap != mapIdToIOR.end(); ++imap ) {
+      if ( imap->second == theIOR )
+        return imap->first;
+    }
+    return 0;
+  }
+  // get object's IOR by id
+  string getIORbyId( const int theId )
+  {
+    if ( mapIdToIOR.find( theId ) != mapIdToIOR.end() )
+      return mapIdToIOR[ theId ];
+    return string( "" );
+  }
+  // get object's IOR by old id
+  string getIORbyOldId( const int theOldId )
+  {
+    if ( mapIdToId.find( theOldId ) != mapIdToId.end() )
+      return getIORbyId( mapIdToId[ theOldId ] );
+    return string( "" );
+  }
+  // maps old object id to the new one (used when restoring data)
+  void mapOldToNew( const int oldId, const int newId ) {
+    mapIdToId[ oldId ] = newId;
+  }
+    
+private:
+  // get next free object identifier
+  int getNextId()
+  {
+    int id = 1;
+    while( mapIdToIOR.find( id ) != mapIdToIOR.end() )
+      id++;
+    return id;
+  }
 
+  map<int, string> mapIdToIOR;      // persistent-to-transient map
+  map<int, int>    mapIdToId;       // used to translate object from persistent to transient form
+};
+
+// ===========================================================
+// SMESH module's engine
+// ==========================================================
+class SMESH_Gen_i:
+  public virtual POA_SMESH::SMESH_Gen,
+  public virtual Engines_Component_i 
+{
+public:
+  // Get ORB object
+  static CORBA::ORB_var GetORB() { return myOrb;}
+  // Get SMESH module's POA object
+  static PortableServer::POA_var GetPOA() { return myPoa;}
+  // Get Naming Service object
+  static SALOME_NamingService* GetNS();
+  // Get SALOME_LifeCycleCORBA object
+  static SALOME_LifeCycleCORBA* GetLCC();
+  // Retrieve and get GEOM engine reference
+  static GEOM::GEOM_Gen_ptr GetGeomEngine();
+  // Get object of the CORBA reference
+  static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
+  // Get CORBA object corresponding to the SALOMEDS::SObject
+  static CORBA::Object_var SObjectToObject( SALOMEDS::SObject_ptr theSObject );
+
+  // Default constructor
   SMESH_Gen_i();
-  SMESH_Gen_i(CORBA::ORB_ptr orb,
-              PortableServer::POA_ptr poa,
-              PortableServer::ObjectId * contId, 
-              const char *instanceName, 
-              const char *interfaceName);
+  // Standard constructor
+  SMESH_Gen_i( CORBA::ORB_ptr            orb,
+               PortableServer::POA_ptr   poa,
+               PortableServer::ObjectId* contId, 
+               const char*               instanceName, 
+               const char*               interfaceName );
+  // Destructor
   virtual ~SMESH_Gen_i();
   
-  SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const char* anHyp,
-                                               CORBA::Long studyId)
-    throw (SALOME::SALOME_Exception);
+  // *****************************************
+  // Interface methods
+  // *****************************************
+
+  // Set current study
+  void SetCurrentStudy( SALOMEDS::Study_ptr theStudy );
+  // Get current study
+  SALOMEDS::Study_ptr GetCurrentStudy();
+
+  // Create hypothesis/algorothm of given type
+  SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
+                                                const char* theLibName)
+    throw ( SALOME::SALOME_Exception );
   
-  SMESH::SMESH_Mesh_ptr Init(GEOM::GEOM_Gen_ptr geomEngine,
-                             CORBA::Long studyId,
-                             GEOM::GEOM_Shape_ptr aShape)
-    throw (SALOME::SALOME_Exception);
+  // Create empty mesh on a shape
+  SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Shape_ptr theShape )
+    throw ( SALOME::SALOME_Exception );
 
-  SMESH::SMESH_Mesh_ptr Init(GEOM::GEOM_Gen_ptr geomEngine,
-                             CORBA::Long studyId,
-                             GEOM::GEOM_Shape_ptr aShape,
-							 int meshID)
-    throw (SALOME::SALOME_Exception);
+  //  Create mesh(es) and import data from MED file
+  SMESH::mesh_array* CreateMeshesFromMED( const char* theFileName,
+                                          SMESH::DriverMED_ReadStatus& theStatus )
+    throw ( SALOME::SALOME_Exception );
 
-  CORBA::Boolean Compute(SMESH::SMESH_Mesh_ptr aMesh,
-                         GEOM::GEOM_Shape_ptr aShape)
-    throw (SALOME::SALOME_Exception);
+  // Compute mesh on a shape
+  CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
+                          GEOM::GEOM_Shape_ptr  theShape )
+    throw ( SALOME::SALOME_Exception );
 
-  CORBA::Boolean IsReadyToCompute(SMESH::SMESH_Mesh_ptr aMesh,
-                                  GEOM::GEOM_Shape_ptr aShape)
-    throw (SALOME::SALOME_Exception);
+  // Returns true if mesh contains enough data to be computed
+  CORBA::Boolean IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
+                                   GEOM::GEOM_Shape_ptr  theShape )
+    throw ( SALOME::SALOME_Exception );
 
-  SMESH::long_array* GetSubShapesId(GEOM::GEOM_Gen_ptr geomEngine,
-                                   CORBA::Long studyId,
-                                   GEOM::GEOM_Shape_ptr mainShape,
-                                   const SMESH::shape_array& listOfSubShape)
-    throw (SALOME::SALOME_Exception);
+  // Get sub-shapes unique ID's list
+  SMESH::long_array* GetSubShapesId( GEOM::GEOM_Shape_ptr      theMainShape,
+                                     const SMESH::shape_array& theListOfSubShape )
+    throw ( SALOME::SALOME_Exception );
 
-	SMESH::SMESH_Mesh_ptr Import(CORBA::Long studyId, const char* fileName,
-		const char* fileType);
 
-  // inherited methods from SALOMEDS::Driver
+  // ****************************************************
+  // Interface inherited methods (from SALOMEDS::Driver)
+  // ****************************************************
 
-  SALOMEDS::TMPFile* Save(SALOMEDS::SComponent_ptr theComponent,
-			  const char* theURL,
-			  bool isMultiFile);
-  bool Load(SALOMEDS::SComponent_ptr theComponent,
-	    const SALOMEDS::TMPFile& theStream,
-	    const char* theURL,
-	    bool isMultiFile);
+  // Save SMESH data
+  SALOMEDS::TMPFile* Save( SALOMEDS::SComponent_ptr theComponent,
+			   const char*              theURL,
+			   bool                     isMultiFile );
+  // Load SMESH data
+  bool Load( SALOMEDS::SComponent_ptr theComponent,
+	     const SALOMEDS::TMPFile& theStream,
+	     const char*              theURL,
+	     bool                     isMultiFile );
+  // Save SMESH data in ASCII format
+  SALOMEDS::TMPFile* SaveASCII( SALOMEDS::SComponent_ptr theComponent,
+			        const char*              theURL,
+			        bool                     isMultiFile );
+  // Load SMESH data in ASCII format
+  bool LoadASCII( SALOMEDS::SComponent_ptr theComponent,
+		  const SALOMEDS::TMPFile& theStream,
+		  const char*              theURL,
+		  bool                     isMultiFile );
 
-  SALOMEDS::TMPFile* SaveASCII(SALOMEDS::SComponent_ptr theComponent,
-			       const char* theURL,
-			       bool isMultiFile);
-  bool LoadASCII(SALOMEDS::SComponent_ptr theComponent,
-		 const SALOMEDS::TMPFile& theStream,
-		 const char* theURL,
-		 bool isMultiFile);
+  // Create filter manager
+  SMESH::FilterManager_ptr CreateFilterManager();
 
-  void Close(SALOMEDS::SComponent_ptr theComponent);
+  // Clears study-connected data when it is closed
+  void Close( SALOMEDS::SComponent_ptr theComponent );
+  
+  // Get component data type
   char* ComponentDataType();
     
-  char* IORToLocalPersistentID(SALOMEDS::SObject_ptr theSObject,
-			       const char* IORString,
-			       CORBA::Boolean isMultiFile,
-			       CORBA::Boolean isASCII);
-  char* LocalPersistentIDToIOR(SALOMEDS::SObject_ptr theSObject,
-			       const char* aLocalPersistentID,
-			       CORBA::Boolean isMultiFile,
-			       CORBA::Boolean isASCII);
+  // Transform data from transient form to persistent
+  char* IORToLocalPersistentID( SALOMEDS::SObject_ptr theSObject,
+			        const char*           IORString,
+			        CORBA::Boolean        isMultiFile,
+			        CORBA::Boolean        isASCII );
+  // Transform data from persistent form to transient
+  char* LocalPersistentIDToIOR( SALOMEDS::SObject_ptr theSObject,
+			        const char*           aLocalPersistentID,
+			        CORBA::Boolean        isMultiFile,
+			        CORBA::Boolean        isASCII );
 
-  bool CanPublishInStudy(CORBA::Object_ptr theIOR) { return false; }
-  SALOMEDS::SObject_ptr PublishInStudy(SALOMEDS::Study_ptr theStudy,
-		                       SALOMEDS::SObject_ptr theSObject,
-		                       CORBA::Object_ptr theObject,
-		                       const char* theName) throw (SALOME::SALOME_Exception) {
+  // Returns true if object can be published in the study
+  bool CanPublishInStudy( CORBA::Object_ptr theIOR );
+  // Publish object in the study
+  SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::Study_ptr   theStudy,
+		                        SALOMEDS::SObject_ptr theSObject,
+		                        CORBA::Object_ptr     theObject,
+		                        const char*           theName ) 
+    throw ( SALOME::SALOME_Exception );
+
+  // Copy-paste methods - returns true if object can be copied to the clipboard
+  CORBA::Boolean CanCopy( SALOMEDS::SObject_ptr theObject ) { return false; }
+  // Copy-paste methods - copy object to the clipboard
+  SALOMEDS::TMPFile* CopyFrom( SALOMEDS::SObject_ptr theObject, CORBA::Long& theObjectID ) { return false; }
+  // Copy-paste methods - returns true if object can be pasted from the clipboard
+  CORBA::Boolean CanPaste( const char* theComponentName, CORBA::Long theObjectID ) { return false; }
+  // Copy-paste methods - paste object from the clipboard
+  SALOMEDS::SObject_ptr PasteInto( const SALOMEDS::TMPFile& theStream,
+				   CORBA::Long              theObjectID,
+				   SALOMEDS::SObject_ptr    theObject ) {
     SALOMEDS::SObject_var aResultSO;
     return aResultSO._retn();
   }
 
-  CORBA::Boolean CanCopy(SALOMEDS::SObject_ptr theObject) {return false;}
-  SALOMEDS::TMPFile* CopyFrom(SALOMEDS::SObject_ptr theObject, CORBA::Long& theObjectID) {return false;}
-  CORBA::Boolean CanPaste(const char* theComponentName, CORBA::Long theObjectID) {return false;}
-  SALOMEDS::SObject_ptr PasteInto(const SALOMEDS::TMPFile& theStream,
-				  CORBA::Long theObjectID,
-				  SALOMEDS::SObject_ptr theObject) {
-    SALOMEDS::SObject_var aResultSO;
-    return aResultSO._retn();
-  }
+  // *****************************************
+  // Internal methods
+  // *****************************************
+public:
+  // Get shape reader
+  GEOM_Client* GetShapeReader();
 
-  GEOM_Client* _ShapeReader;
-protected:
-  SMESH_topo* ExploreMainShape(GEOM::GEOM_Gen_ptr geomEngine,
-                               CORBA::Long studyId,
-                               GEOM::GEOM_Shape_ptr aShape);
+  // Tags definition 
+  static long GetHypothesisRootTag();
+  static long GetAlgorithmsRootTag();
+  static long GetRefOnShapeTag();
+  static long GetRefOnAppliedHypothesisTag();
+  static long GetRefOnAppliedAlgorithmsTag();
+  static long GetSubMeshOnVertexTag();
+  static long GetSubMeshOnEdgeTag();
+  static long GetSubMeshOnFaceTag();
+  static long GetSubMeshOnSolidTag();
+  static long GetSubMeshOnCompoundTag();
+  static long GetNodeGroupsTag();
+  static long GetEdgeGroupsTag();
+  static long GetFaceGroupsTag();
+  static long GetVolumeGroupsTag();
+
+  //  Get study context
+  StudyContext* GetCurrentStudyContext();
   
 private:
-	void loadMesh(char * name, HDFfile * hdf_file, char * meshFile,
-		SALOMEDS::Study_var study);
-	void loadHypothesis(char * name, HDFfile * hdf_file, char * hypothesisFile,
-		int studyId);
-	void loadAlgorithms(char * name, HDFfile * hdf_file, char * algorithmsFile,
-		int studyId);
-	void loadAppliedHypothesis(HDFgroup * hdfGroupMeshId, bool _found,
-		SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh,
-		GEOM::GEOM_Shape_var aShape);
-	GEOM::GEOM_Gen_var getGeomEngine();
-	GEOM::GEOM_Shape_var getShape(SALOMEDS::Study_var Study, char * refFromFile);
+  // Create hypothesis of given type
+  SMESH::SMESH_Hypothesis_ptr createHypothesis( const char* theHypName,
+                                                const char* theLibName)
+    throw ( SALOME::SALOME_Exception );
+  
+  // Create empty mesh on shape
+  SMESH::SMESH_Mesh_ptr createMesh()
+    throw ( SALOME::SALOME_Exception );
 
-void loadAppliedAlgorithms(HDFgroup * hdfGroupMeshId, 
-	bool _found, SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh, 
-	GEOM::GEOM_Shape_var aShape);
-void loadSubMeshes(HDFgroup * hdfGroupMeshId, char * msgname,
-	SALOMEDS::Study_var Study, SMESH::SMESH_Mesh_var myNewMesh);
-			
-  SMESH_HypothesisFactory_i _hypothesisFactory_i;
-  ::SMESH_Gen _impl;  // no namespace here
+  static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
+  
+private:
 
-  map<int, StudyContext_iStruct*> _mapStudyContext_i;
-  map <string, string> _SMESHCorbaObj;
+  static CORBA::ORB_var          myOrb;         // ORB reference
+  static PortableServer::POA_var myPoa;         // POA reference
+  static SALOME_NamingService*   myNS;          // Naming Service
+  static SALOME_LifeCycleCORBA*  myLCC;         // Life Cycle CORBA
+
+  ::SMESH_Gen               myGen;              // SMESH_Gen local implementation
+
+  // hypotheses managing
+  map<string, GenericHypothesisCreator_i*> myHypCreatorMap;
+
+  map<int, StudyContext*>   myStudyContextMap;  // Map of study context objects
+
+  GEOM_Client*              myShapeReader;      // Shape reader
+  SALOMEDS::Study_var       myCurrentStudy;     // Current study
 };
 
 #endif

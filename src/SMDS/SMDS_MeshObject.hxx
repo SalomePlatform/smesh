@@ -29,6 +29,7 @@
 
 class SMDS_MeshObject
 {
-  public:
+ public:
+  virtual ~SMDS_MeshObject() {}
 };
 #endif

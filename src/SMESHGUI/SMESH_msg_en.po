@@ -38,10 +38,33 @@ msgstr "&No"
 msgid "SMESH_BUT_CANCEL"
 msgstr "&Cancel"
 
+#Add
+msgid "SMESH_BUT_ADD"
+msgstr "A&dd"
+
+#Remove
+msgid "SMESH_BUT_REMOVE"
+msgstr "&Remove"
+
+#Set Filters
+msgid "SMESH_BUT_FILTER"
+msgstr "Set &Filters"
+
+#Sort
+msgid "SMESH_BUT_SORT"
+msgstr "&Sort List"
+
+#Create
+msgid "SMESH_BUT_CREATE"
+msgstr "Create"
 
 #-------------------------------------------------------------------------
 # WARNING
 #-------------------------------------------------------------------------
+
+#Error
+msgid "SMESH_ERROR"
+msgstr "Error"
 
 #Warning
 msgid "SMESH_WRN_WARNING"
@@ -83,6 +106,9 @@ msgstr "Activate Nodes Selection Mode"
 msgid "SMESH_WRN_SELECTIONMODE_DIAGONAL"
 msgstr "Activate Link Selection Mode"
 
+#Empty name
+msgid "SMESH_WRN_EMPTY_NAME" 
+msgstr "Empty name is not valid"
 
 #-------------------------------------------------------------------------
 # MEN
@@ -114,19 +140,19 @@ msgstr "SubMeshes On Compound"
 
 #Applied Algorithm
 msgid "SMESH_MEN_APPLIED_ALGORIHTMS"
-msgstr "Applied Algorithm"
+msgstr "Applied Algorithms"
 
 #Applied Hypothesis
 msgid "SMESH_MEN_APPLIED_HYPOTHESIS"
-msgstr "Applied Hypothesis"
+msgstr "Applied Hypotheses"
 
 #Hypothesis Definition
 msgid "SMESH_MEN_HYPOTHESIS"
-msgstr "Hypothesis Definition"
+msgstr "Hypotheses"
 
 #Algorithms Definition
 msgid "SMESH_MEN_ALGORITHMS"
-msgstr "Algorithms Definition"
+msgstr "Algorithms"
 
 
 #-------------------------------------------------------------------------
@@ -207,6 +233,18 @@ msgstr "SubMesh"
 
 # -------------- Hypothesis / Algorithm --------------
 
+#Meshers file
+msgid "MESHERS_FILE_NO_VARIABLE"
+msgstr "Environment variable SMESH_MeshersList is not defined"
+
+#Meshers file
+msgid "MESHERS_FILE_CANT_OPEN"
+msgstr "Can not open resource file"
+
+#Meshers file
+msgid "MESHERS_FILE_CHECK_VARIABLE"
+msgstr "Check environment variable SMESH_MeshersList"
+
 #Hypothesis
 msgid "SMESH_ADD_HYPOTHESIS"
 msgstr "Hypothesis"
@@ -219,14 +257,6 @@ msgstr "Hypothesis Assignation"
 msgid "SMESH_OBJECT_HYPOTHESIS"
 msgstr "Hypothesis"
 
-#Local Length
-msgid "SMESH_LOCAL_LENGTH_HYPOTHESIS"
-msgstr "Local Length"
-
-#Hypothesis Construction
-msgid "SMESH_LOCAL_LENGTH_TITLE"
-msgstr "Hypothesis Construction"
-
 #Algorithms
 msgid "SMESH_ADD_ALGORITHM"
 msgstr "Algorithms"
@@ -238,38 +268,6 @@ msgstr "Algorithms Assignation"
 #Algorithm
 msgid "SMESH_OBJECT_ALGORITHM"
 msgstr "Algorithm"
-
-#Number of Segments
-msgid "SMESH_NB_SEGMENTS_HYPOTHESIS"
-msgstr "Number of Segments"
-
-#Hypothesis Construction
-msgid "SMESH_NB_SEGMENTS_TITLE"
-msgstr "Hypothesis Construction"
-
-#Max. Area
-msgid "SMESH_MAX_ELEMENT_AREA"
-msgstr "Max. Area"
-
-#Max. Element Area
-msgid "SMESH_MAX_ELEMENT_AREA_HYPOTHESIS"
-msgstr "Max. Element Area"
-
-#Hypothesis Construction
-msgid "SMESH_MAX_ELEMENT_AREA_TITLE"
-msgstr "Hypothesis Construction"
-
-#Max. Volume
-msgid "SMESH_MAX_ELEMENT_VOLUME"
-msgstr "Max. Volume"
-
-#Max. Element Volume
-msgid "SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS"
-msgstr "Max. Element Volume"
-
-#Hypothesis Construction
-msgid "SMESH_MAX_ELEMENT_VOLUME_TITLE"
-msgstr "Hypothesis Construction"
 
 
 # -------------- Nodes / Segments / Elements --------------
@@ -391,87 +389,118 @@ msgstr "Add Hexahedron"
 
 #Opacity
 msgid "SMESH_TRANSPARENCY_OPAQUE"
-msgstr "Opacity"
+msgstr "---> Opaque"
 
 #Transparency
 msgid "SMESH_TRANSPARENCY_TITLE"
-msgstr "Transparency"
+msgstr "Change Transparency"
 
 #Fully Transparency
 msgid "SMESH_TRANSPARENCY_TRANSPARENT"
-msgstr "Fully Transparency"
+msgstr "Transparent <---"
 
 
 # -------------- Preferences -----------
+
+#Scalar Bar Preferences
+msgid "SMESH_PROPERTIES_SCALARBAR"
+msgstr "Scalar Bar Properties"
+
+#Scalar Bar Properties
+msgid "SMESH_PREFERENCES_SCALARBAR"
+msgstr "Scalar Bar Preferences"
+
+#Scalar Bar Range
+msgid "SMESH_RANGE_SCALARBAR"
+msgstr "Scalar Range"
+
+#Scalar Bar Range Min Value
+msgid "SMESH_RANGE_MIN"
+msgstr "Min value:"
+
+#Scalar Bar Range Max Value
+msgid "SMESH_RANGE_MAX"
+msgstr "Max value:"
+
+#Scalar Bar Font
+msgid "SMESH_FONT_SCALARBAR"
+msgstr "Font"
 
 #Arial
 msgid "SMESH_FONT_ARIAL"
 msgstr "Arial"
 
-#Bold
-msgid "SMESH_FONT_BOLD"
-msgstr "Bold"
-
 #Courier
 msgid "SMESH_FONT_COURIER"
 msgstr "Courier"
-
-#Dimensions
-msgid "SMESH_DIMENSIONS"
-msgstr "Dimensions"
-
-#Font
-msgid "SMESH_FONT"
-msgstr "Font"
-
-#Height
-msgid "SMESH_HEIGHT"
-msgstr "Height"
-
-#Horizontal
-msgid "SMESH_HORIZONTAL"
-msgstr "Horizontal"
-
-#Italic
-msgid "SMESH_FONT_ITALIC"
-msgstr "Italic"
-
-#Scalar Bar Preferences
-msgid "SMESH_PREFERENCES_SCALARBAR"
-msgstr "Scalar Bar Preferences"
-
-#Number Of Colors
-msgid "SMESH_NUMBEROFCOLORS"
-msgstr "Number Of Colors"
-
-#Number Of Labels
-msgid "SMESH_NUMBEROFLABELS"
-msgstr "Number Of Labels"
-
-#Orientation
-msgid "SMESH_ORIENTATION"
-msgstr "Orientation"
-
-#Properties
-msgid "SMESH_PROPERTIES"
-msgstr "Properties"
-
-#Shadow
-msgid "SMESH_FONT_SHADOW"
-msgstr "Shadow"
 
 #Times
 msgid "SMESH_FONT_TIMES"
 msgstr "Times"
 
+#Bold
+msgid "SMESH_FONT_BOLD"
+msgstr "Bold"
+
+#Italic
+msgid "SMESH_FONT_ITALIC"
+msgstr "Italic"
+
+#Shadow
+msgid "SMESH_FONT_SHADOW"
+msgstr "Shadow"
+
+#Title
+msgid "SMESH_TITLE"
+msgstr "Title:"
+
+#Labels
+msgid "SMESH_LABELS"
+msgstr "Labels:"
+
+#Colors & Labels
+msgid "SMESH_LABELS_COLORS_SCALARBAR"
+msgstr "Colors && Labels"
+
+#Number Of Colors
+msgid "SMESH_NUMBEROFCOLORS"
+msgstr "Nb of colors:"
+
+#Number Of Labels
+msgid "SMESH_NUMBEROFLABELS"
+msgstr "Nb of labels:"
+
+#Orientation
+msgid "SMESH_ORIENTATION"
+msgstr "Orientation"
+
 #Vertical
 msgid "SMESH_VERTICAL"
 msgstr "Vertical"
 
+#Horizontal
+msgid "SMESH_HORIZONTAL"
+msgstr "Horizontal"
+
+#Position & Size
+msgid "SMESH_POSITION_SIZE_SCALARBAR"
+msgstr "Origin && Size"
+
+#X
+msgid "SMESH_X_SCALARBAR"
+msgstr "X:"
+
+#Y
+msgid "SMESH_Y_SCALARBAR"
+msgstr "Y:"
+
 #Width
 msgid "SMESH_WIDTH"
-msgstr "Width"
+msgstr "Width:"
 
+#Height
+msgid "SMESH_HEIGHT"
+msgstr "Height:"
 
 # -------------- ScalarBar --------------
 
@@ -485,7 +514,7 @@ msgstr "Min"
 
 #ScalarBar
 msgid "SMESH_SCALARBAR"
-msgstr "ScalarBar"
+msgstr "Scalar Bar"
 
 #Update View
 msgid "SMESH_UPDATEVIEW"
@@ -509,10 +538,6 @@ msgstr "Manifold Edges"
 #Non Manifold Edges
 msgid "SMESH_NONMANIFOLDEDGES"
 msgstr "Non Manifold Edges"
-
-#Edges Connectivity
-msgid "SMESH_EDGES_CONNECTIVITY"
-msgstr "Edges Connectivity"
 
 #Edges Connectivity
 msgid "SMESH_EDGES_CONNECTIVITY_TITLE"
@@ -551,72 +576,87 @@ msgstr "Diagonal Inversion"
 msgid "SMESH_MESHINFO_TITLE"
 msgstr "Mesh Infos"
 
-#Number Of 1D Elements
-msgid "SMESH_MESHINFO_NB1D"
-msgstr "Number Of 1D Elements"
+#Mesh Infos
+msgid "SMESH_MESHINFO_NAME"
+msgstr "Name"
 
-#Number Of 2D Elements
-msgid "SMESH_MESHINFO_NB2D"
-msgstr "Number Of 2D Elements"
-
-#Number Of 3D Elements
-msgid "SMESH_MESHINFO_NB3D"
-msgstr "Number Of 3D Elements"
+#Faces :
+msgid "SMESH_MESHINFO_ELEMENTS"
+msgstr "Elements"
 
 #Edges :
 msgid "SMESH_MESHINFO_EDGES"
-msgstr "Edges :"
+msgstr "Edges"
 
 #Nodes :
 msgid "SMESH_MESHINFO_NODES"
-msgstr "Nodes :"
+msgstr "Nodes"
+
+#Faces :
+msgid "SMESH_MESHINFO_FACES"
+msgstr "Faces"
+
+#Total :
+msgid "SMESH_MESHINFO_TOTAL"
+msgstr "Total"
 
 #Triangles :
 msgid "SMESH_MESHINFO_TRIANGLES"
-msgstr "Triangles :"
+msgstr "Triangles"
 
 #Quadrangles :
 msgid "SMESH_MESHINFO_QUADRANGLES"
-msgstr "Quadrangles :"
+msgstr "Quadrangles"
+
+#Volumes :
+msgid "SMESH_MESHINFO_VOLUMES"
+msgstr "Volumes"
 
 #Tetrahedrons :
 msgid "SMESH_MESHINFO_TETRAS"
-msgstr "Tetrahedrons :"
+msgstr "Tetrahedrons"
 
 #Hexahedrons :
 msgid "SMESH_MESHINFO_HEXAS"
-msgstr "Hexahedrons :"
+msgstr "Hexahedrons"
 
+#Pyramids :
+msgid "SMESH_MESHINFO_PYRAS"
+msgstr "Pyramids"
 
-# -------------- Controls --------------
+#Prisms :
+msgid "SMESH_MESHINFO_PRISMS"
+msgstr "Prisms"
 
-#Length
-msgid "SMESH_CONTROL_LENGTH_EDGES"
-msgstr "Length"
+#Type :
+msgid "SMESH_MESHINFO_TYPE"
+msgstr "Type"
 
-#Area
-msgid "SMESH_CONTROL_AREA_ELEMENTS"
-msgstr "Area"
+#Entities :
+msgid "SMESH_MESHINFO_ENTITIES"
+msgstr "Entities"
 
-#Taper
-msgid "SMESH_CONTROL_TAPER_ELEMENTS"
-msgstr "Taper"
+#All types :
+msgid "SMESH_MESHINFO_ALL_TYPES"
+msgstr "Heterogenous"
 
-#Aspect Ratio
-msgid "SMESH_CONTROL_ASPECTRATIO_ELEMENTS"
-msgstr "Aspect Ratio"
+#No valid selection :
+msgid "SMESH_BAD_SELECTION"
+msgstr "No valid selection"
 
-#Minimum Angle
-msgid "SMESH_CONTROL_MINIMUMANGLE_ELEMENTS"
-msgstr "Minimum Angle"
+# --------- Create hypotheses/algorithms ---------
 
-#Warp
-msgid "SMESH_CONTROL_WARP_ELEMENTS"
-msgstr "Warp"
+msgid "SMESH_CREATE_HYPOTHESES"
+msgstr "Create hypotheses"
 
-#Skew
-msgid "SMESH_CONTROL_SKEW_ELEMENTS"
-msgstr "Skew"
+msgid "SMESH_CREATE_ALGORITHMS"
+msgstr "Create algorithms"
+
+msgid "SMESH_AVAILABLE_ALGORITHMS"
+msgstr "Available algorithms"
+
+msgid "SMESH_AVAILABLE_HYPOTHESES"
+msgstr "Available hypotheses"
 
 # -------------- Edit --------------
 
@@ -636,3 +676,247 @@ msgstr "Available"
 msgid "SMESH_EDIT_USED"
 msgstr "Used"
 
+# -------------- Group --------------
+
+#Create Group
+msgid "SMESH_CREATE_GROUP_TITLE"
+msgstr "Create Group"
+
+#Edit Group
+msgid "SMESH_EDIT_GROUP_TITLE"
+msgstr "Edit Group"
+
+#Elements Type
+msgid "SMESH_ELEMENTS_TYPE"
+msgstr "Elements Type"
+
+#Face
+msgid "SMESH_FACE"
+msgstr "Face"
+
+#Volume
+msgid "SMESH_VOLUME"
+msgstr "Volume"
+
+#Content
+msgid "SMESH_CONTENT"
+msgstr "Content"
+
+#Select rom
+msgid "SMESH_SELECT_FROM"
+msgstr "Select From"
+
+#Group
+msgid "SMESH_GROUP"
+msgstr "Group"
+
+#%1 SubMeshes
+msgid "SMESH_SUBMESH_SELECTED"
+msgstr "%1 SubMeshes"
+
+#%1 Groups
+msgid "SMESH_GROUP_SELECTED"
+msgstr "%1 Groups"
+
+
+# -------------- Preferences - Selection --------------
+msgid "SMESH_PREF_SELECTION"
+msgstr "Preferences - Selection"
+
+msgid "SMESH_SELECTION"
+msgstr "Selection"
+
+msgid "SMESH_PRESELECTION"
+msgstr "Preselection"
+
+msgid "SMESH_HILIGHT_COLOR"
+msgstr "Highlight Color"
+
+msgid "SMESH_ELEMENTS_COLOR"
+msgstr "Mesh Element Color"
+
+msgid "SMESH_PRECISION"
+msgstr "Precision"
+
+msgid "SMESH_OUTLINE_COLOR"
+msgstr "Mesh Object Color"
+
+
+# -------------- SMESHGUI_FilterDlg --------------
+msgid "SMESHGUI_FilterDlg::FACES_TLT"
+msgstr "Filter for Faces"
+
+msgid "SMESHGUI_FilterDlg::EDGES_TLT"
+msgstr "Filter for Edges"
+
+msgid "SMESHGUI_FilterDlg::ADD"
+msgstr "Add"
+
+msgid "SMESHGUI_FilterDlg::REMOVE"
+msgstr "Remove"
+
+msgid "SMESHGUI_FilterDlg::CRITERION"
+msgstr "Criterion"
+
+msgid "SMESHGUI_FilterDlg::COMPARE"
+msgstr "Compare"
+
+msgid "SMESHGUI_FilterDlg::THRESHOLD_VALUE"
+msgstr "Threshold value"
+
+msgid "SMESHGUI_FilterDlg::UNARY"
+msgstr "Unary"
+
+msgid "SMESHGUI_FilterDlg::BINARY"
+msgstr "Binary"
+
+msgid "SMESHGUI_FilterDlg::FREE_BORDERS"
+msgstr "Free borders"
+
+msgid "SMESHGUI_FilterDlg::MULTI_BORDERS"
+msgstr "Borders at multi-connections"
+
+msgid "SMESHGUI_FilterDlg::LENGTH"
+msgstr "Length"
+
+msgid "SMESHGUI_FilterDlg::ASPECT_RATIO"
+msgstr "Aspect ratio"
+
+msgid "SMESHGUI_FilterDlg::WARPING"
+msgstr "Warping"
+
+msgid "SMESHGUI_FilterDlg::MINIMUM_ANGLE"
+msgstr "Minimum angle"
+
+msgid "SMESHGUI_FilterDlg::TAPER"
+msgstr "Taper"
+
+msgid "SMESHGUI_FilterDlg::SKEW"
+msgstr "Skew"
+
+msgid "SMESHGUI_FilterDlg::AREA"
+msgstr "Area"
+
+msgid "SMESHGUI_FilterDlg::LESS_THAN"
+msgstr "Less than"
+
+msgid "SMESHGUI_FilterDlg::MORE_THAN"
+msgstr "More than"
+
+msgid "SMESHGUI_FilterDlg::EQUAL_TO"
+msgstr "Equal to"
+
+msgid "SMESHGUI_FilterDlg::NOT"
+msgstr "Not"
+
+msgid "SMESHGUI_FilterDlg::AND"
+msgstr "And"
+
+msgid "SMESHGUI_FilterDlg::OR"
+msgstr "Or"
+
+msgid "SMESHGUI_FilterDlg::ERROR"
+msgstr "Threshold value is not correctly specified\nPlease enter correct value and try again"
+
+msgid "SMESHGUI_FilterDlg::MULTIEDGES_ERROR"
+msgstr "Threshold value of borders at multi-connections can not be equal 1\nPlease enter correct value and try again"
+
+msgid "SMESHGUI_FilterDlg::SOURCE"
+msgstr "Source"
+
+msgid "SMESHGUI_FilterDlg::MESH"
+msgstr "Mesh"
+
+msgid "SMESHGUI_FilterDlg::SELECTION"
+msgstr "Current Selection"
+
+msgid "SMESHGUI_FilterDlg::CURRENT_GROUP"
+msgstr "Current Group"
+
+msgid "SMESHGUI_FilterDlg::NONE"
+msgstr "None"
+
+msgid "SMESHGUI_FilterDlg::SET_IN_VIEWER"
+msgstr "Insert filter in viewer"
+
+msgid "SMESHGUI_FilterDlg::CLEAR"
+msgstr "Clear"
+
+# -------------- SMESHGUI --------------
+msgid "SMESHGUI::MESH_IS_NOT_SELECTED"
+msgstr "There is no selected mesh\nPlease, select a mesh and try again"
+
+msgid "SMESHGUI::NOT_A_VTK_VIEWER"
+msgstr "This command is available in VTK viewer only\nPlease, create VTK viewer and try again"
+
+msgid "SMESHGUI::LENGTH_EDGES"
+msgstr "Length"
+
+msgid "SMESHGUI::FREE_BORDERS"
+msgstr "Free borders"
+
+msgid "SMESHGUI::MULTI_BORDERS"
+msgstr "Borders at multi-connections"
+
+msgid "SMESHGUI::AREA_ELEMENTS"
+msgstr "Area"
+
+msgid "SMESHGUI::TAPER_ELEMENTS"
+msgstr "Taper"
+
+msgid "SMESHGUI::ASPECTRATIO_ELEMENTS"
+msgstr "Aspect Ratio"
+
+msgid "SMESHGUI::MINIMUMANGLE_ELEMENTS"
+msgstr "Minimum Angle"
+
+msgid "SMESHGUI::WARP_ELEMENTS"
+msgstr "Warp"
+
+msgid "SMESHGUI::SKEW_ELEMENTS"
+msgstr "Skew"
+
+msgid "SMESH_INSUFFICIENT_DATA"
+msgstr "Insufficient input value"
+
+msgid "SMESH_HYP_1"
+msgstr "Algorithm misses a hypothesis"
+
+msgid "SMESH_HYP_2"
+msgstr "Concurrent hypotheses on a shape"
+
+msgid "SMESH_HYP_3"
+msgstr "Hypothesis has a bad parameter value"
+
+msgid "SMESH_HYP_4"
+msgstr "Unknown fatal error while assigning hypothesis"
+
+msgid "SMESH_HYP_5"
+msgstr "Hypothesis is not suitable in the current context"
+
+msgid "SMESH_HYP_6"
+msgstr "Non-conform mesh is produced using applied hypotheses"
+
+msgid "SMESH_HYP_7"
+msgstr "Such hypothesis is already assigned to the shape"
+
+msgid "SMESH_HYP_8"
+msgstr "Hypothesis and submesh dimensions mismatch"
+
+msgid "SMESH_DRS_1"
+msgstr "MED file contains no mesh with the given name"
+
+msgid "SMESH_DRS_2"
+msgstr ""
+"MED file has overlapped ranges of element numbers,\n"
+"     the numbers from the file are ignored"
+
+msgid "SMESH_DRS_3"
+msgstr "Some elements were skipped due to incorrect file data"
+
+msgid "SMESH_DRS_4"
+msgstr "    The file is incorrect,\n"
+       "some information will be missed"
+
+msgid "INF_SELECT_OBJECT"
+msgstr "Select an object"

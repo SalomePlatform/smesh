@@ -1,0 +1,81 @@
+#  SMESH StdMeshers : implementaion of SMESH idl descriptions
+#
+#  Copyright (C) 2003  CEA
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+#  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Julia DOROVSKIKH
+#  Module : SMESH
+#  $Header$
+
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
+
+
+@COMMENCE@
+
+# header files  
+EXPORT_HEADERS = \
+	StdMeshers_LengthFromEdges.hxx \
+	StdMeshers_LocalLength.hxx \
+	StdMeshers_NumberOfSegments.hxx \
+	StdMeshers_MaxElementArea.hxx \
+	StdMeshers_MaxElementVolume.hxx \
+	StdMeshers_NotConformAllowed.hxx \
+	StdMeshers_Regular_1D.hxx \
+	StdMeshers_Quadrangle_2D.hxx \
+	StdMeshers_MEFISTO_2D.hxx \
+	StdMeshers_Hexa_3D.hxx
+
+EXPORT_PYSCRIPTS =
+
+# Libraries targets
+
+LIB = libStdMeshers.la
+
+LIB_SRC = \
+	StdMeshers_LengthFromEdges.cxx \
+	StdMeshers_LocalLength.cxx \
+	StdMeshers_MaxElementArea.cxx \
+	StdMeshers_MaxElementVolume.cxx \
+	StdMeshers_NumberOfSegments.cxx \
+	StdMeshers_NotConformAllowed.cxx \
+	StdMeshers_Regular_1D.cxx \
+	StdMeshers_Quadrangle_2D.cxx \
+	StdMeshers_MEFISTO_2D.cxx \
+	StdMeshers_Hexa_3D.cxx
+
+LIB_SERVER_IDL = 
+
+LIB_CLIENT_IDL =
+
+# Executables targets
+BIN = 
+BIN_SRC = 
+
+# additionnal information to compil and link file
+CPPFLAGS+= $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+CXXFLAGS+= $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
+
+LDFLAGS+= -lSMESHimpl -lMEFISTO2D -L${KERNEL_ROOT_DIR}/lib/salome
+
+@CONCLUDE@

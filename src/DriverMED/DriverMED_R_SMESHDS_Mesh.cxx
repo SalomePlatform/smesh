@@ -24,676 +24,580 @@
 //  File   : DriverMED_R_SMESHDS_Mesh.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMDS_Mesh.h"
 #include "utilities.h"
 
+#include "DriverMED_Family.h"
+
+#include "SMESHDS_Group.hxx"
+
+#include "MEDA_Wrapper.hxx"
+#include "MED_Utilities.hxx"
+
 #include <stdlib.h>
 
-extern "C"
-{
-/**
- * Factory function which will be called by SMESHDriver
- */
-void * SMESH_createMEDMeshReader()
-{
-	return new DriverMED_R_SMESHDS_Mesh();
-}
-
-}
-
 DriverMED_R_SMESHDS_Mesh::DriverMED_R_SMESHDS_Mesh()
+     :
+       myMesh (NULL),
+       myFile (""),
+       myFileId (-1),
+       myMeshId (-1)
 {
-	myFileId = -1;
 }
 
 DriverMED_R_SMESHDS_Mesh::~DriverMED_R_SMESHDS_Mesh()
 {
-	;
+//  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
+//  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+//  {
+//    delete (*aFamsIter).second;
+//  }
 }
 
 void DriverMED_R_SMESHDS_Mesh::SetMesh(SMDS_Mesh * aMesh)
 {
-	//myMesh = SMESHDS_Mesh *::DownCast(aMesh);
-	myMesh = aMesh;
+  myMesh = aMesh;
 }
 
 void DriverMED_R_SMESHDS_Mesh::SetFile(string aFile)
 {
-	myFile = aFile;
+  myFile = aFile;
 }
 
 void DriverMED_R_SMESHDS_Mesh::SetFileId(med_idt aFileId)
 {
-	myFileId = aFileId;
+  myFileId = aFileId;
 }
 
 void DriverMED_R_SMESHDS_Mesh::SetMeshId(int aMeshId)
 {
-	myMeshId = aMeshId;
+  myMeshId = aMeshId;
+}
+
+void DriverMED_R_SMESHDS_Mesh::SetMeshName(string theMeshName)
+{
+  myMeshName = theMeshName;
 }
 
 void DriverMED_R_SMESHDS_Mesh::Read()
 {
 
-	string myClass = string("SMDS_Mesh");
-	string myExtension = string("MED");
+  string myClass = string("SMDS_Mesh");
+  string myExtension = string("MED");
 
-	DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
+  DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
 
-	myReader->SetMesh(myMesh);
-	myReader->SetMeshId(myMeshId);
-	myReader->SetFile(myFile);
-	myReader->SetFileId(-1);
+  myReader->SetMesh(myMesh);
+  myReader->SetMeshId(myMeshId);
+  myReader->SetFile(myFile);
+  myReader->SetFileId(-1);
 
-	myReader->Read();
-
+  myReader->Read();
 }
 
 void DriverMED_R_SMESHDS_Mesh::Add()
 {
+  string myClass = string("SMDS_Mesh");
+  string myExtension = string("MED");
 
-	string myClass = string("SMDS_Mesh");
-	string myExtension = string("MED");
+  DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
 
-	DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
+  myReader->SetMesh(myMesh);
+  myReader->SetMeshId(myMeshId);
 
-	myReader->SetMesh(myMesh);
-	myReader->SetMeshId(myMeshId);
+  SCRUTE(myFileId);
+  myReader->SetFileId(myFileId);
 
-	SCRUTE(myFileId);
-	myReader->SetFileId(myFileId);
-
-	myReader->Read();
-
+  myReader->Read();
 }
 
-void DriverMED_R_SMESHDS_Mesh::ReadMySelf()
-{
 
-	med_err ret = 0;
-	int i, j, k, l;
-	int numero;
-	char message[200];
-	bool ok;
-	/* nombre d'objets MED */
-	char nom_universel[MED_TAILLE_LNOM + 1];
-	med_int long_fichier_en_tete;
-	char *fichier_en_tete;
-	char version_hdf[10];
-	char version_med[10];
-	med_int nmaa, mdim, nnoe;
-	med_int nmai[MED_NBR_GEOMETRIE_MAILLE], nfac[MED_NBR_GEOMETRIE_FACE];
-	med_int nare[MED_NBR_GEOMETRIE_ARETE];
-	/* nom du maillage */
-	char nommaa[MED_TAILLE_NOM + 1];
-	/* noeuds */
-	med_float *coo;
-	char nomcoo[3 * MED_TAILLE_PNOM + 1];
-	char unicoo[3 * MED_TAILLE_PNOM + 1];
-	char *nomnoe;
-	med_int *numnoe;
-	med_int *nufano;
-	med_repere rep;
-	med_booleen inonoe, inunoe;
-	med_mode_switch mode_coo;
-	char str[MED_TAILLE_PNOM + 1];
-	/* elements */
-	med_int nsup;
-	med_int edim;
-	med_int taille;
-	med_int elem_id;
-	med_int cmpt = 0;
-	med_int *connectivite;
-	char *nomele;
-	med_int *numele;
-	med_int *nufael;
-	med_booleen inoele, inuele;
-	med_connectivite typ_con;
-	med_geometrie_element typgeo;
-	med_geometrie_element typmai[MED_NBR_GEOMETRIE_MAILLE] =
-		{ MED_POINT1, MED_SEG2,
-		MED_SEG3, MED_TRIA3,
-		MED_TRIA6, MED_QUAD4,
-		MED_QUAD8, MED_TETRA4,
-		MED_TETRA10, MED_HEXA8,
-		MED_HEXA20, MED_PENTA6,
-		MED_PENTA15, MED_PYRA5,
-		MED_PYRA13
-	};
-	med_int desmai[MED_NBR_GEOMETRIE_MAILLE] =
-		{ 0, 2, 3, 3, 3, 4, 4, 4, 4, 6, 6, 5, 5, 5, 5 };
-	med_int nmailles[MED_NBR_GEOMETRIE_MAILLE];
-	char nommai[MED_NBR_GEOMETRIE_MAILLE][MED_TAILLE_NOM + 1] = { "MED_POINT1",
-		"MED_SEG2",
-		"MED_SEG3",
-		"MED_TRIA3",
-		"MED_TRIA6",
-		"MED_QUAD4",
-		"MED_QUAD8",
-		"MED_TETRA4",
-		"MED_TETRA10",
-		"MED_HEXA8",
-		"MED_HEXA20",
-		"MED_PENTA6",
-		"MED_PENTA15",
-		"MED_PYRA5",
-		"MED_PYRA13"
-	};
-	med_geometrie_element typfac[MED_NBR_GEOMETRIE_FACE] =
-		{ MED_TRIA3, MED_TRIA6,
-		MED_QUAD4, MED_QUAD8
-	};
-	med_int desfac[MED_NBR_GEOMETRIE_FACE] = { 3, 3, 4, 4 };
-	med_int nfaces[MED_NBR_GEOMETRIE_FACE];
-	char nomfac[MED_NBR_GEOMETRIE_FACE][MED_TAILLE_NOM + 1] =
-		{ "MED_TRIA3", "MED_TRIA6",
-		"MED_QUAD4", "MED_QUAD8"
-	};
-	med_geometrie_element typare[MED_NBR_GEOMETRIE_ARETE] =
-		{ MED_SEG2, MED_SEG3 };
-	med_int desare[MED_NBR_GEOMETRIE_ARETE] = { 2, 3 };
-	med_int naretes[MED_NBR_GEOMETRIE_ARETE];
-	char nomare[MED_NBR_GEOMETRIE_ARETE][MED_TAILLE_NOM + 1] =
-		{ "MED_SEG2", "MED_SEG3" };
-	/* familles */
-	med_int nfam;
-	med_int natt, ngro;
-	char *attdes, *gro;
-	med_int *attval, *attide;
-	char nomfam[MED_TAILLE_NOM + 1];
-	med_int numfam;
-	char str1[MED_TAILLE_DESC + 1];
-	char str2[MED_TAILLE_LNOM + 1];
-	string fam;
-	string fam_type;
-	string fam_id;
-
-	char *file2Read;
-	bool locally_managed;
-
-	if (myFileId == -1)
-		locally_managed = true;
-	else
-		locally_managed = false;
-
-	if (locally_managed)
-	{
-		file2Read = (char *)myFile.c_str();
-		myFileId = MEDouvrir(file2Read, MED_LECT);
-		if (myFileId < 0)
-		{
-			fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n",
-				file2Read);
-			exit(EXIT_FAILURE);
-		}
-		numero = 1;
-	}
-	else
-		numero = myMeshId;
-	sprintf(nommaa, "Mesh %d", myMeshId);	//pour load
-	SCRUTE(nommaa);
-
-	typ_con = MED_NOD;
-	mode_coo = MED_FULL_INTERLACE;
-	mdim = 3;
-
-	SMESHDS_Mesh * mySMESHDSMesh = dynamic_cast<SMESHDS_Mesh *>(myMesh);
-
-	//TopoDS_Shape myShape = mySMESHDSMesh->ShapeToMesh();
-
-  /****************************************************************************
-  *                       NOMBRES D'OBJETS MED                                *
-  ****************************************************************************/
-	fprintf(stdout, "\n(****************************)\n");
-	fprintf(stdout, "(* INFORMATIONS GENERALES : *)\n");
-	fprintf(stdout, "(****************************)\n");
-
-	/* lecture du nom et de la dimension du maillage */
-	/*!  fprintf(stdout,"%d %d\n",myFileId,numero);
-	 * ret = MEDmaaInfo(myFileId,numero,nommaa,&mdim);
-	 * fprintf(stdout,"%d\n",ret);
-	 * if (ret < 0)
-	 * {
-	 * fprintf(stderr,">> ERREUR : lecture du nom du maillage \n");
-	 * exit(EXIT_FAILURE);
-	 * }
-	 * fprintf(stdout,"- Nom du maillage : <<%s>>\n",nommaa);
-	 * fprintf(stdout,"- Dimension du maillage : %d\n",mdim);
-	 */
-	/* Combien de noeuds ? */
-	nnoe =
-		MEDnEntMaa(myFileId, nommaa, MED_COOR, MED_NOEUD, MED_POINT1, typ_con);
-	if (nnoe < 0)
-	{
-		fprintf(stderr, ">> ERREUR : lecture du nombre de noeuds \n");
-		exit(EXIT_FAILURE);
-	}
-	fprintf(stdout, "- Nombre de noeuds : %d \n", nnoe);
-
-	/* Combien de mailles, faces ou aretes ? */
-	for (i = 0; i < MED_NBR_GEOMETRIE_MAILLE; i++)
-	{
-		nmailles[i] =
-			MEDnEntMaa(myFileId, nommaa, MED_CONN, MED_MAILLE, typmai[i],
-			typ_con);
-		if (nmailles[i] < 0)
-		{
-			fprintf(stderr, ">> ERREUR : lecture du nombre de mailles \n");
-			exit(EXIT_FAILURE);
-		}
-		fprintf(stdout, "- Nombre de mailles de type %s : %d \n", nommai[i],
-			nmailles[i]);
-	}
-
-	for (i = 0; i < MED_NBR_GEOMETRIE_FACE; i++)
-	{
-		nfaces[i] = MEDnEntMaa(myFileId, nommaa, MED_CONN, MED_FACE, typfac[i],
-			typ_con);
-		if (nfaces[i] < 0)
-		{
-			fprintf(stderr, ">> ERREUR : lecture du nombre de faces \n");
-			exit(EXIT_FAILURE);
-		}
-		fprintf(stdout, "- Nombre de faces de type %s : %d \n", nomfac[i],
-			nfaces[i]);
-	}
-
-	for (i = 0; i < MED_NBR_GEOMETRIE_ARETE; i++)
-	{
-		naretes[i] =
-			MEDnEntMaa(myFileId, nommaa, MED_CONN, MED_ARETE, typare[i],
-			typ_con);
-		if (naretes[i] < 0)
-		{
-			fprintf(stderr, ">> ERREUR : lecture du nombre d'aretes \n");
-			exit(EXIT_FAILURE);
-		}
-		fprintf(stdout, "- Nombre d'aretes de type %s : %d \n", nomare[i],
-			naretes[i]);
-	}
-
-	/* nombre de familles */
-	nfam = MEDnFam(myFileId, nommaa, 0, MED_FAMILLE);
-	if (nfam < 0)
-	{
-		fprintf(stderr, ">> ERREUR : lecture du nombre de familles \n");
-		exit(EXIT_FAILURE);
-	}
-	fprintf(stdout, "- Nombre de familles : %d \n", nfam);
-
-	vector < int >family[nfam];
-
-  /****************************************************************************
-  *                       LECTURE DES NOEUDS                                  *
-  ****************************************************************************/
-	fprintf(stdout, "\n(************************)\n");
-	fprintf(stdout, "(* NOEUDS DU MAILLAGE : *)\n");
-	fprintf(stdout, "(************************)\n");
-
-	/* Allocations memoires */
-	/* table des coordonnees 
-	 * profil : (dimension * nombre de noeuds ) */
-	coo = (med_float *) malloc(sizeof(med_float) * nnoe * mdim);
-	/* table  des numeros, des numeros de familles des noeuds
-	 * profil : (nombre de noeuds) */
-	numnoe = (med_int *) malloc(sizeof(med_int) * nnoe);
-	nufano = (med_int *) malloc(sizeof(med_int) * nnoe);
-	/* table des noms des noeuds 
-	 * profil : (nnoe*MED_TAILLE_PNOM+1) */
-	nomnoe = (char *)malloc(MED_TAILLE_PNOM * nnoe + 1);
-
-	/* lecture des noeuds : 
-	 * - coordonnees
-	 * - noms (optionnel dans un fichier MED) 
-	 * - numeros (optionnel dans un fichier MED) 
-	 * - numeros des familles */
-	ret = MEDnoeudsLire(myFileId, nommaa, mdim, coo, mode_coo, &rep,
-		nomcoo, unicoo, nomnoe, &inonoe, numnoe, &inunoe, nufano, nnoe);
-	if (ret < 0)
-		strcpy(message, ">> ERREUR : lecture des noeuds \n");
-
-	if (inunoe)
-	{
-		for (int i = 0; i < nnoe; i++)
-		{
-			ok = mySMESHDSMesh->AddNodeWithID(coo[i * 3], coo[i * 3 + 1],
-				coo[i * 3 + 2], numnoe[i]);
-			//fprintf(Out,"%d %f %f %f\n",numnoe[i],coo[i*3],coo[i*3+1],coo[i*3+2]);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < nnoe; i++)
-		{
-			ok = mySMESHDSMesh->AddNodeWithID(coo[i * 3], coo[i * 3 + 1],
-				coo[i * 3 + 2], i + 1);
-			//fprintf(Out,"%d %f %f %f\n",numnoe[i],coo[i*3],coo[i*3+1],i);
-			family[*(nufano + i)].push_back(numnoe[i]);
-		}
-	}
-
-	fprintf(stdout, "\n- Numeros des familles des noeuds : \n");
-	for (i = 0; i < nnoe; i++)
-		fprintf(stdout, " %d ", *(nufano + i));
-	fprintf(stdout, "\n");
-
-	/* liberation memoire */
-	free(coo);
-	free(nomnoe);
-	free(numnoe);
-	free(nufano);
-
-  /****************************************************************************
-  *                       LECTURE DES ELEMENTS                                *
-  ****************************************************************************/
-	fprintf(stdout, "\n(**************************)\n");
-	fprintf(stdout, "(* ELEMENTS DU MAILLAGE : *)\n");
-	fprintf(stdout, "(**************************)");
-	//fprintf(Out,"CELLS\n");
-	/* Lecture des connectivites, noms, numeros des mailles */
-	//printf("%d %d %d %d\n",nmailles[3],nmailles[4],nmailles[5],nmailles[9]);
-
-	if (ret == 0)
-		for (i = 0; i < MED_NBR_GEOMETRIE_MAILLE; i++)
-		{
-			if (nmailles[i] > 0 && ret == 0)
-			{
-				/* dimension de la maille */
-				edim = typmai[i] / 100;
-				nsup = 0;
-				if (mdim == 2 || mdim == 3)
-					if (edim == 1)
-						nsup = 1;
-				if (mdim == 3)
-					if (edim == 2)
-						nsup = 1;
-
-				taille = nsup + typmai[i] % 100;
-				//taille = typmai[i]%100;
-
-				/* allocation memoire */
-				connectivite = (med_int *) malloc(sizeof(med_int) *
-					taille * nmailles[i]);
-				nomele = (char *)malloc(sizeof(char) * MED_TAILLE_PNOM *
-					nmailles[i] + 1);
-				numele = (med_int *) malloc(sizeof(med_int) * nmailles[i]);
-				nufael = (med_int *) malloc(sizeof(med_int) * nmailles[i]);
-
-				/* lecture des données */
-				ret =
-					MEDelementsLire(myFileId, nommaa, mdim, connectivite,
-					mode_coo, nomele, &inoele, numele, &inuele, nufael,
-					nmailles[i], MED_MAILLE, typmai[i], typ_con);
-
-				switch (typmai[i])
-				{
-				case MED_TRIA3:
-				{
-					if (inuele)
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							elem_id = *(numele + j);
-							ok = mySMESHDSMesh->AddFaceWithID(*(connectivite +
-									j * (taille - nsup)),
-								*(connectivite + j * (taille - nsup) + 1),
-								*(connectivite + j * (taille - nsup) + 2),
-								elem_id);
-							//fprintf(Out,"%d %d %d %d\n",elem_id,*(connectivite+j*(taille-nsup)),*(connectivite+j*(taille-nsup)+1),*(connectivite+j*(taille-nsup)+2));
-						}
-					}
-					else
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							cmpt++;
-							ok = mySMESHDSMesh->AddFaceWithID(*(connectivite +
-									j * (taille)),
-								*(connectivite + j * (taille) + 1),
-								*(connectivite + j * (taille) + 2), cmpt);
-							//fprintf(Out,"%d %d %d %d\n",j,*(connectivite+j*(taille)),*(connectivite+j*(taille)+1),*(connectivite+j*(taille)+2));
-						}
-					}
-
-					break;
-				}
-				case MED_QUAD4:
-				{
-					if (inuele)
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							elem_id = *(numele + j);
-							ok = mySMESHDSMesh->AddFaceWithID(*(connectivite +
-									j * (taille - nsup)),
-								*(connectivite + j * (taille - nsup) + 1),
-								*(connectivite + j * (taille - nsup) + 2),
-								*(connectivite + j * (taille - nsup) + 3),
-								elem_id);
-							//fprintf(Out,"%d %d %d %d\n",elem_id,*(connectivite+j*(taille-nsup)),*(connectivite+j*(taille-nsup)+1),*(connectivite+j*(taille-nsup)+2),*(connectivite+j*(taille-nsup)+3));
-						}
-					}
-					else
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							cmpt++;
-							ok = myMesh->AddFaceWithID(*(connectivite +
-									j * (taille)),
-								*(connectivite + j * (taille) + 1),
-								*(connectivite + j * (taille) + 2),
-								*(connectivite + j * (taille) + 3), cmpt);
-							//fprintf(Out,"%d %d %d %d\n",j,*(connectivite+j*(taille)),*(connectivite+j*(taille)+1),*(connectivite+j*(taille)+2),*(connectivite+j*(taille)+3));
-						}
-					}
-					break;
-				}
-				case MED_TETRA4:
-				{
-					if (inuele)
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							elem_id = *(numele + j);
-							ok = mySMESHDSMesh->AddVolumeWithID(*(connectivite +
-									j * (taille - nsup)),
-								*(connectivite + j * (taille - nsup) + 1),
-								*(connectivite + j * (taille - nsup) + 2),
-								*(connectivite + j * (taille - nsup) + 3),
-								elem_id);
-							//fprintf(Out,"%d %d %d %d\n",elem_id,*(connectivite+j*(taille-nsup)),*(connectivite+j*(taille-nsup)+1),*(connectivite+j*(taille-nsup)+2),*(connectivite+j*(taille-nsup)+3));
-						}
-					}
-					else
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							cmpt++;
-							ok = mySMESHDSMesh->AddVolumeWithID(*(connectivite +
-									j * (taille)),
-								*(connectivite + j * (taille) + 1),
-								*(connectivite + j * (taille) + 2),
-								*(connectivite + j * (taille) + 3), cmpt);
-							//fprintf(Out,"%d %d %d %d\n",j,*(connectivite+j*(taille)),*(connectivite+j*(taille)+1),*(connectivite+j*(taille)+2),*(connectivite+j*(taille)+3));
-						}
-					}
-					break;
-				}
-				case MED_HEXA8:
-				{
-					if (inuele)
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							elem_id = *(numele + j);
-							ok = mySMESHDSMesh->AddVolumeWithID(*(connectivite +
-									j * (taille - nsup)),
-								*(connectivite + j * (taille - nsup) + 1),
-								*(connectivite + j * (taille - nsup) + 2),
-								*(connectivite + j * (taille - nsup) + 3),
-								*(connectivite + j * (taille - nsup) + 4),
-								*(connectivite + j * (taille - nsup) + 5),
-								*(connectivite + j * (taille - nsup) + 6),
-								*(connectivite + j * (taille - nsup) + 7),
-								elem_id);
-							//fprintf(Out,"%d %d %d %d\n",elem_id,*(connectivite+j*(taille-nsup)),*(connectivite+j*(taille-nsup)+1),*(connectivite+j*(taille-nsup)+2),*(connectivite+j*(taille-nsup)+3),*(connectivite+j*(taille-nsup)+4),*(connectivite+j*(taille-nsup)+5),*(connectivite+j*(taille-nsup)+6),*(connectivite+j*(taille-nsup)+7));
-						}
-					}
-					else
-					{
-						for (j = 0; j < nmailles[i]; j++)
-						{
-							cmpt++;
-							ok = mySMESHDSMesh->AddVolumeWithID(*(connectivite +
-									j * (taille)),
-								*(connectivite + j * (taille) + 1),
-								*(connectivite + j * (taille) + 2),
-								*(connectivite + j * (taille) + 3),
-								*(connectivite + j * (taille) + 4),
-								*(connectivite + j * (taille) + 5),
-								*(connectivite + j * (taille) + 6),
-								*(connectivite + j * (taille) + 7), cmpt);
-							//fprintf(Out,"%d %d %d %d\n",j,*(connectivite+j*(taille)),*(connectivite+j*(taille)+1),*(connectivite+j*(taille)+2),*(connectivite+j*(taille)+3),*(connectivite+j*(taille)+4),*(connectivite+j*(taille)+5),*(connectivite+j*(taille)+6),*(connectivite+j*(taille)+7));
-						}
-					}
-					break;
-				}
-				default:
-				{
-					break;
-				}
-				}
-
-				fprintf(stdout, "\n  - Numéros de familles : \n");
-				for (j = 0; j < nmailles[i]; j++)
-					fprintf(stdout, " %d ", *(nufael + j));
-
-				/* liberation memoire */
-				free(connectivite);
-				free(nomele);
-				free(numele);
-				free(nufael);
-			}
-		}
-
-  /****************************************************************************
-   *                       LECTURE DES FAMILLES                                *
-   ****************************************************************************/
-	printf("\n(*************************)\n");
-	printf("(* FAMILLES DU MAILLAGE : *)\n");
-	printf("(*************************)\n");
-	if (ret == 0)
-		for (i = 0; i < nfam; i++)
-		{
-
-			/* nombre de groupes */
-			ngro = MEDnFam(myFileId, nommaa, i + 1, MED_GROUPE);
-			if (ngro < 0)
-			{
-				ret = -1;
-				strcpy(message,
-					">> ERREUR : lecture du nombre de groupes d'une famille \n");
-			}
-
-			/* nombre d'attributs */
-			if (ret == 0)
-			{
-				natt = MEDnFam(myFileId, nommaa, i + 1, MED_ATTR);
-				if (natt < 0)
-				{
-					ret = -1;
-					strcpy(message,
-						">> ERREUR : lecture du nombre d'attributs d'une famille\n");
-				}
-			}
-
-			if (ret == 0)
-				fprintf(stdout, "- Famille %d a %d attributs et %d groupes \n",
-					i + 1, natt, ngro);
-
-			/* nom,numero,attributs,groupes */
-			if (ret == 0)
-			{
-				attide = (med_int *) malloc(sizeof(med_int) * natt);
-				attval = (med_int *) malloc(sizeof(med_int) * natt);
-				attdes = (char *)malloc(MED_TAILLE_DESC * natt + 1);
-				gro = (char *)malloc(MED_TAILLE_LNOM * ngro + 1);
-				ret =
-					MEDfamInfo(myFileId, nommaa, i + 1, nomfam, &numfam, attide,
-					attval, attdes, &natt, gro, &ngro);
-
-				fam = string(nomfam);
-				fam_type = fam.substr(1, 1);
-				fam_id = fam.substr(2, 1);
-				if ((fam_type == string("V")) || (fam_type == string("A")) ||
-					(fam_type == string("F")))
-					LinkMeshToShape(fam_type, fam_id, family[i]);
-
-				fprintf(stdout, "  - Famille de nom %s et de numero %d : \n",
-					nomfam, numfam);
-				fprintf(stdout, "  - Attributs : \n");
-				for (j = 0; j < natt; j++)
-				{
-					strncpy(str1, attdes + j * MED_TAILLE_DESC,
-						MED_TAILLE_DESC);
-					str1[MED_TAILLE_DESC] = '\0';
-					fprintf(stdout, "   ide = %d - val = %d - des = %s\n",
-						*(attide + j), *(attval + j), str1);
-				}
-				free(attide);
-				free(attval);
-				free(attdes);
-				fprintf(stdout, "  - Groupes :\n");
-				for (j = 0; j < ngro; j++)
-				{
-					strncpy(str2, gro + j * MED_TAILLE_LNOM, MED_TAILLE_LNOM);
-					str2[MED_TAILLE_LNOM] = '\0';
-					fprintf(stdout, "   gro = %s\n", str2);
-				}
-				free(gro);
-			}
-		}
-
-	if (locally_managed)
-		ret = MEDfermer(myFileId);
-
+static const SMDS_MeshNode* 
+FindNode(const SMDS_Mesh* theMesh, med_int theId){
+  const SMDS_MeshNode* aNode = theMesh->FindNode(theId);
+  if(aNode) return aNode;
+  EXCEPTION(runtime_error,"SMDS_Mesh::FindNode - cannot find a SMDS_MeshNode for ID = "<<theId);
 }
 
-void DriverMED_R_SMESHDS_Mesh::LinkMeshToShape(string fam_type, string fam_id,
-	vector < int >myNodes)
+
+DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 {
+  ReadStatus result = DRS_FAIL;
+  try{
+    using namespace MEDA;
 
-	SMESHDS_Mesh * mySMESHDSMesh = dynamic_cast<SMESHDS_Mesh *>(myMesh);
+    myFamilies.clear();
+    MESSAGE("ReadMySelf - myFile : "<<myFile);
+    TWrapper aMed(myFile);
 
-	int id = atoi(fam_id.c_str());
-	if (fam_type == string("V"))
-	{							//Linked to a vertex
-		for (int i = 0; i < myNodes.size(); i++)
-		{
-			const SMDS_MeshNode * node = mySMESHDSMesh->FindNode(myNodes[i]);
-			//const TopoDS_Vertex& S;//le recuperer !!!
-			//mySMESHDSMesh->SetNodeOnVertex (node,S);
-		}
-	}
-	else if (fam_type == string("E"))
-	{							//Linked to an edge
-		for (int i = 0; i < myNodes.size(); i++)
-		{
-			const SMDS_MeshNode * node = mySMESHDSMesh->FindNode(myNodes[i]);
-			//const TopoDS_Edge& S;//le recuperer !!!
-			//mySMESHDSMesh->SetNodeOnEdge (node,S);
-		}
-	}
-	else if (fam_type == string("F"))
-	{							//Linked to a face
-		for (int i = 0; i < myNodes.size(); i++)
-		{
-			const SMDS_MeshNode * node = mySMESHDSMesh->FindNode(myNodes[i]);
-			//const TopoDS_Face& S;//le recuperer !!!
-			//mySMESHDSMesh->SetNodeOnFace (node,S);
-		}
-	}
+    result = DRS_EMPTY;
+    if(med_int aNbMeshes = aMed.GetNbMeshes()){
+      for(int iMesh = 0; iMesh < aNbMeshes; iMesh++){
+	// Reading the MED mesh
+	//---------------------
+	PMeshInfo aMeshInfo = aMed.GetMeshInfo(iMesh);
+        string aMeshName;
+        if (myMeshId != -1) {
+          ostringstream aMeshNameStr;
+          aMeshNameStr<<myMeshId;
+          aMeshName = aMeshNameStr.str();
+        } else {
+          aMeshName = myMeshName;
+        }
+	MESSAGE("ReadMySelf - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
+	if(aMeshName != aMeshInfo->GetName()) continue;
+        result = DRS_OK;
+	med_int aMeshDim = aMeshInfo->GetDim();
+	
+        // Reading MED families to the temporary structure
+	//------------------------------------------------
+        med_int aNbFams = aMed.GetNbFamilies(aMeshInfo);
+        MESSAGE("Read " << aNbFams << " families");
+        for (med_int iFam = 0; iFam < aNbFams; iFam++) {
+          PFamilyInfo aFamilyInfo = aMed.GetFamilyInfo(aMeshInfo, iFam);
+          med_int aFamId = aFamilyInfo->GetId();
+          MESSAGE("Family " << aFamId << " :");
 
+//if (aFamId >= FIRST_VALID_FAMILY) {
+            DriverMED_FamilyPtr aFamily (new DriverMED_Family);
+
+            med_int aNbGrp = aFamilyInfo->GetNbGroup();
+            MESSAGE("belong to " << aNbGrp << " groups");
+            for (med_int iGr = 0; iGr < aNbGrp; iGr++) {
+              string aGroupName = aFamilyInfo->GetGroupName(iGr);
+              MESSAGE(aGroupName);
+              aFamily->AddGroupName(aGroupName);
+            }
+//        aFamily->SetId(aFamId);
+            myFamilies[aFamId] = aFamily;
+//          }
+        }
+
+        // Reading MED nodes to the corresponding SMDS structure
+	//------------------------------------------------------
+	PNodeInfo aNodeInfo = aMed.GetNodeInfo(aMeshInfo);
+	med_booleen anIsNodeNum = aNodeInfo->IsElemNum();
+	med_int aNbElems = aNodeInfo->GetNbElem();
+	MESSAGE("ReadMySelf - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
+        for(med_int iElem = 0; iElem < aNbElems; iElem++){
+          double aCoords[3] = {0.0, 0.0, 0.0};
+          for(med_int iDim = 0; iDim < aMeshDim; iDim++)
+            aCoords[iDim] = aNodeInfo->GetNodeCoord(iElem,iDim);
+          const SMDS_MeshNode* aNode;
+          if(anIsNodeNum) {
+	    aNode = myMesh->AddNodeWithID
+              (aCoords[0],aCoords[1],aCoords[2],aNodeInfo->GetElemNum(iElem));
+          } else {
+	    aNode = myMesh->AddNode
+              (aCoords[0],aCoords[1],aCoords[2]);
+          }
+          //cout<<aNode->GetID()<<": "<<aNode->X()<<", "<<aNode->Y()<<", "<<aNode->Z()<<endl;
+
+          // Save reference to this node from its family
+          med_int aFamNum = aNodeInfo->GetFamNum(iElem);
+          if (myFamilies.find(aFamNum) != myFamilies.end())
+          {
+            myFamilies[aFamNum]->AddElement(aNode);
+            myFamilies[aFamNum]->SetType(SMDSAbs_Node);
+          }
+        }
+
+	// Reading pre information about all MED cells
+	//--------------------------------------------
+        bool takeNumbers = true;  // initially we trust the numbers from file
+	MED::TEntityInfo aEntityInfo = aMed.GetEntityInfo(aMeshInfo);
+	MED::TEntityInfo::iterator anEntityIter = aEntityInfo.begin();
+	for(; anEntityIter != aEntityInfo.end(); anEntityIter++){
+	  const med_entite_maillage& anEntity = anEntityIter->first;
+	  if(anEntity == MED_NOEUD) continue;
+	  // Reading MED cells to the corresponding SMDS structure
+	  //------------------------------------------------------
+	  const MED::TGeom& aTGeom = anEntityIter->second;
+	  MED::TGeom::const_iterator anTGeomIter = aTGeom.begin();
+	  for(; anTGeomIter != aTGeom.end(); anTGeomIter++){
+	    const med_geometrie_element& aGeom = anTGeomIter->first;
+	    if(aGeom == MED_POINT1) continue;
+	    PCellInfo aCellInfo = aMed.GetCellInfo(aMeshInfo,anEntity,aGeom);
+	    med_booleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : MED_FAUX;
+	    med_int aNbElems = aCellInfo->GetNbElem();
+	    MESSAGE("ReadMySelf - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
+	    MESSAGE("ReadMySelf - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
+
+	    for(int iElem = 0; iElem < aNbElems; iElem++){
+	      med_int aNbNodes = -1;
+	      switch(aGeom){
+	      case MED_SEG2:
+	      case MED_SEG3:
+		aNbNodes = 2;
+		break;
+	      case MED_TRIA3:
+	      case MED_TRIA6:
+		aNbNodes = 3;
+		break;
+		break;
+	      case MED_QUAD4:
+	      case MED_QUAD8:
+		aNbNodes = 4;
+                break;
+              case MED_TETRA4:
+	      case MED_TETRA10:
+		aNbNodes = 4;
+		break;
+	      case MED_PYRA5:
+	      case MED_PYRA13:
+		aNbNodes = 5;
+		break;
+	      case MED_PENTA6:
+	      case MED_PENTA15:
+		aNbNodes = 6;
+		break;
+	      case MED_HEXA8:
+	      case MED_HEXA20:
+		aNbNodes = 8;
+		break;
+	      }
+	      vector<med_int> aNodeIds(aNbNodes);
+	      if(anIsNodeNum) {
+		for(int i = 0; i < aNbNodes; i++){
+		  aNodeIds.at(i) = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
+		}
+	      }else{
+		for(int i = 0; i < aNbNodes; i++){
+		  aNodeIds.at(i) = aCellInfo->GetConn(iElem,i);
+		}
+	      }
+	      //if(anIsElemNum)
+	      //	cout<<aCellInfo->GetElemNum(iElem)<<": ";
+	      //else
+	      //	cout<<iElem<<": ";
+	      //for(int i = 0; i < aNbNodes; i++){
+	      //	cout<<aNodeIds.at(i)<<", ";
+	      //}
+
+	      bool isRenum = false;
+	      SMDS_MeshElement* anElement = NULL;
+	      med_int aFamNum = aCellInfo->GetFamNum(iElem);
+	      try{
+		switch(aGeom){
+		case MED_SEG2:
+		case MED_SEG3:
+		  if(anIsElemNum)
+		    anElement = myMesh->AddEdgeWithID(aNodeIds.at(0),
+						      aNodeIds.at(1),
+						      aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds.at(0)),
+						FindNode(myMesh,aNodeIds.at(1)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_TRIA3:
+		case MED_TRIA6:
+		  aNbNodes = 3;
+		  if(anIsElemNum)
+		    anElement = myMesh->AddFaceWithID(aNodeIds.at(0),
+						      aNodeIds.at(1),
+						      aNodeIds.at(2),
+						      aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds.at(0)),
+						FindNode(myMesh,aNodeIds.at(1)),
+						FindNode(myMesh,aNodeIds.at(2)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_QUAD4:
+		case MED_QUAD8:
+		  aNbNodes = 4;
+		  // There is some differnce between SMDS and MED
+		  if(anIsElemNum)
+		    anElement = myMesh->AddFaceWithID(aNodeIds.at(0),
+						      aNodeIds.at(1),
+						      aNodeIds.at(2),
+						      aNodeIds.at(3),
+						      aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds.at(0)),
+						FindNode(myMesh,aNodeIds.at(1)),
+						FindNode(myMesh,aNodeIds.at(2)),
+						FindNode(myMesh,aNodeIds.at(3)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_TETRA4:
+		case MED_TETRA10:
+		  aNbNodes = 4;
+		  if(anIsElemNum)
+		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
+							aNodeIds.at(1),
+							aNodeIds.at(2),
+							aNodeIds.at(3),
+							aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
+						  FindNode(myMesh,aNodeIds.at(1)),
+						  FindNode(myMesh,aNodeIds.at(2)),
+						  FindNode(myMesh,aNodeIds.at(3)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_PYRA5:
+		case MED_PYRA13:
+		  aNbNodes = 5;
+		  // There is some differnce between SMDS and MED
+		  if(anIsElemNum)
+		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
+							aNodeIds.at(1),
+							aNodeIds.at(2),
+							aNodeIds.at(3),
+							aNodeIds.at(4),
+							aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
+						  FindNode(myMesh,aNodeIds.at(1)),
+						  FindNode(myMesh,aNodeIds.at(2)),
+						  FindNode(myMesh,aNodeIds.at(3)),
+						  FindNode(myMesh,aNodeIds.at(4)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_PENTA6:
+		case MED_PENTA15:
+		  aNbNodes = 6;
+		  if(anIsElemNum)
+		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
+							aNodeIds.at(1),
+							aNodeIds.at(2),
+							aNodeIds.at(3),
+							aNodeIds.at(4),
+							aNodeIds.at(5),
+							aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
+						  FindNode(myMesh,aNodeIds.at(1)),
+						  FindNode(myMesh,aNodeIds.at(2)),
+						  FindNode(myMesh,aNodeIds.at(3)),
+						  FindNode(myMesh,aNodeIds.at(4)),
+						  FindNode(myMesh,aNodeIds.at(5)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		case MED_HEXA8:
+		case MED_HEXA20:
+		  aNbNodes = 8;
+		  if(anIsElemNum)
+		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
+							aNodeIds.at(1),
+							aNodeIds.at(2),
+							aNodeIds.at(3),
+							aNodeIds.at(4),
+							aNodeIds.at(5),
+							aNodeIds.at(6),
+							aNodeIds.at(7),
+							aCellInfo->GetElemNum(iElem));
+		  if (!anElement) {
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
+						  FindNode(myMesh,aNodeIds.at(1)),
+						  FindNode(myMesh,aNodeIds.at(2)),
+						  FindNode(myMesh,aNodeIds.at(3)),
+						  FindNode(myMesh,aNodeIds.at(4)),
+						  FindNode(myMesh,aNodeIds.at(5)),
+						  FindNode(myMesh,aNodeIds.at(6)),
+						  FindNode(myMesh,aNodeIds.at(7)));
+		    isRenum = anIsElemNum;
+		  }
+		  break;
+		}
+	      }catch(const std::exception& exc){
+		//INFOS("Follow exception was cought:\n\t"<<exc.what());
+		result = DRS_FAIL;
+	      }catch(...){
+		//INFOS("Unknown exception was cought !!!");
+		result = DRS_FAIL;
+	      }
+		
+              if (!anElement) {
+                result = DRS_WARN_SKIP_ELEM;
+              }
+              else {
+                if (isRenum) {
+                  anIsElemNum = MED_FAUX;
+                  takeNumbers = false;
+                  if (result < DRS_WARN_RENUMBER)
+                    result = DRS_WARN_RENUMBER;
+                }
+                if (myFamilies.find(aFamNum) != myFamilies.end()) {
+                  // Save reference to this element from its family
+                  myFamilies[aFamNum]->AddElement(anElement);
+                  myFamilies[aFamNum]->SetType(anElement->GetType());
+                }
+              }
+            }
+	  }
+	}
+	break;
+      }
+    }
+  }catch(const std::exception& exc){
+    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    result = DRS_FAIL;
+  }catch(...){
+    INFOS("Unknown exception was cought !!!");
+    result = DRS_FAIL;
+  }
+  MESSAGE("ReadMySelf - result status = "<<result);
+  return result;
+}
+
+list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames()
+{
+  list<string> aMeshNames;
+
+  try {
+    using namespace MEDA;
+
+    MESSAGE("GetMeshNames - myFile : " << myFile);
+    TWrapper aMed (myFile);
+
+    if (med_int aNbMeshes = aMed.GetNbMeshes()) {
+      for (int iMesh = 0; iMesh < aNbMeshes; iMesh++) {
+	// Reading the MED mesh
+	//---------------------
+	PMeshInfo aMeshInfo = aMed.GetMeshInfo(iMesh);
+	aMeshNames.push_back(aMeshInfo->GetName());
+      }
+    }
+  }catch(const std::exception& exc){
+    INFOS("Follow exception was cought:\n\t"<<exc.what());
+  }catch(...){
+    INFOS("Unknown exception was cought !!!");
+  }
+
+  return aMeshNames;
+}
+
+list<string> DriverMED_R_SMESHDS_Mesh::GetGroupNames()
+{
+  list<string> aResult;
+  set<string> aResGroupNames;
+
+  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
+  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  {
+    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
+    const MED::TStringSet& aGroupNames = aFamily->GetGroupNames();
+    set<string>::iterator aGrNamesIter = aGroupNames.begin();
+    for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
+    {
+      string aName = *aGrNamesIter;
+      // Check, if this is a Group or SubMesh name
+//if (aName.substr(0, 5) == string("Group")) {
+        if (aResGroupNames.find(aName) == aResGroupNames.end()) {
+          aResGroupNames.insert(aName);
+          aResult.push_back(aName);
+        }
+//    }
+    }
+  }
+
+  return aResult;
+}
+
+void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
+{
+  string aGroupName (theGroup->GetStoreName());
+  MESSAGE("Get Group " << aGroupName);
+
+  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
+  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  {
+    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
+    if (aFamily->MemberOf(aGroupName))
+    {
+      const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
+      set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      for (; anElemsIter != anElements.end(); anElemsIter++)
+      {
+        theGroup->SMDS_MeshGroup::Add(*anElemsIter);
+      }
+    }
+  }
+}
+
+void DriverMED_R_SMESHDS_Mesh::GetSubMesh (SMESHDS_SubMesh* theSubMesh,
+                                           const int theId)
+{
+  char submeshGrpName[ 30 ];
+  sprintf( submeshGrpName, "SubMesh %d", theId );
+  string aName (submeshGrpName);
+  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
+  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  {
+    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
+    if (aFamily->MemberOf(aName))
+    {
+      const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
+      set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      if (aFamily->GetType() == SMDSAbs_Node)
+      {
+        for (; anElemsIter != anElements.end(); anElemsIter++)
+        {
+          const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>(*anElemsIter);
+          theSubMesh->AddNode(node);
+        }
+      }
+      else
+      {
+        for (; anElemsIter != anElements.end(); anElemsIter++)
+        {
+          theSubMesh->AddElement(*anElemsIter);
+        }
+      }
+    }
+  }
+}
+
+void DriverMED_R_SMESHDS_Mesh::CreateAllSubMeshes ()
+{
+  SMESHDS_Mesh* aSMESHDSMesh = dynamic_cast<SMESHDS_Mesh*>(myMesh);
+  if (!aSMESHDSMesh) {
+    EXCEPTION(runtime_error,"Can not cast SMDS_Mesh to SMESHDS_Mesh");
+  }
+  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
+  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  {
+    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
+    MED::TStringSet aGroupNames = aFamily->GetGroupNames();
+    set<string>::iterator aGrNamesIter = aGroupNames.begin();
+    for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
+    {
+      string aName = *aGrNamesIter;
+      // Check, if this is a Group or SubMesh name
+      if (aName.substr(0, 7) == string("SubMesh"))
+      {
+        int Id = atoi(string(aName).substr(7).c_str());
+        set<const SMDS_MeshElement *> anElements = aFamily->GetElements();
+        set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+        if (aFamily->GetType() == SMDSAbs_Node)
+        {
+          for (; anElemsIter != anElements.end(); anElemsIter++)
+          {
+            const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>(*anElemsIter);
+            aSMESHDSMesh->SetNodeInVolume(node, Id);
+//            aSMESHDSMesh->SetNodeOnFace(node, Id);
+//            aSMESHDSMesh->SetNodeOnEdge(node, Id);
+//            aSMESHDSMesh->SetNodeOnVertex(node, Id);
+          }
+        }
+        else
+        {
+          for (; anElemsIter != anElements.end(); anElemsIter++)
+          {
+            aSMESHDSMesh->SetMeshElementOnShape(*anElemsIter, Id);
+          }
+        }
+      }
+    }
+  }
 }

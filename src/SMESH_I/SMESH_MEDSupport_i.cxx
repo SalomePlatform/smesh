@@ -28,6 +28,7 @@ using namespace std;
 #include "SMESH_MEDSupport_i.hxx"
 #include "utilities.h"
 #include "Utils_CorbaException.hxx"
+#include "Utils_ExceptHandlers.hxx"
 
 #include <TopoDS_Iterator.hxx>
 #include "SMESHDS_Mesh.hxx"
@@ -35,6 +36,7 @@ using namespace std;
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
+
 
 //=============================================================================
 /*!
@@ -296,6 +298,7 @@ CORBA::Long SMESH_MEDSupport_i::getNumberOfElements(SALOME_MED::
 SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
 	SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
 {
+  Unexpect aCatch(SALOME_SalomeException);
 	if (_subMeshDS==NULL)
 		THROW_SALOME_CORBA_EXCEPTION("No associated Support",
 			SALOME::INTERNAL_ERROR);
@@ -309,13 +312,12 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
 	int i = 0;
 	myseq->length(_subMeshDS->NbNodes());
 
-	SMDS_Iterator<const SMDS_MeshNode*> * it = _subMeshDS->GetNodes();
+	SMDS_NodeIteratorPtr it = _subMeshDS->GetNodes();
 	while(it->more())
 	{
 		myseq[i] = it->next()->GetID();
 		i++;
 	};
-	delete it;
 
 	SCRUTE(myseq->length());
 	MESSAGE("End of SMESH_MEDSupport_i::getNumber");

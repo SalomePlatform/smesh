@@ -61,7 +61,7 @@ void SMDS_MeshNode::Print(ostream & OS) const
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshNode::SetPosition(SMDS_Position * aPos)
+void SMDS_MeshNode::SetPosition(const SMDS_PositionPtr& aPos)
 {
 	myPosition = aPos;
 }
@@ -71,94 +71,92 @@ void SMDS_MeshNode::SetPosition(SMDS_Position * aPos)
 //purpose  : 
 //=======================================================================
 
-SMDS_Position *SMDS_MeshNode::GetPosition()
+const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 {
 	return myPosition;
 }
 
-const SMDS_Position *SMDS_MeshNode::GetPosition() const
+class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 {
-	return myPosition;
-}
-/**
-*/
-SMDS_Iterator<const SMDS_MeshElement*> * SMDS_MeshNode::
+  const set<const SMDS_MeshElement*>& mySet;
+  set<const SMDS_MeshElement*>::iterator myIterator;
+ public:
+  SMDS_MeshNode_MyInvIterator(const set<const SMDS_MeshElement*>& s):
+    mySet(s)
+  {
+    myIterator=mySet.begin();
+  }
+
+  bool more()
+  {
+    return myIterator!=mySet.end();
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    const SMDS_MeshElement* current=*myIterator;
+    myIterator++;
+    return current;	
+  }	
+};
+
+SMDS_ElemIteratorPtr SMDS_MeshNode::
 	GetInverseElementIterator() const
 {
-	class SMDS_InverseElementIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		const set<const SMDS_MeshElement*>& mySet;
-		set<const SMDS_MeshElement*>::iterator myIterator;
-	  public:
-		SMDS_InverseElementIterator(const set<const SMDS_MeshElement*>& s):mySet(s)
-		{
-			myIterator=mySet.begin();
-		}
-
-		bool more()
-		{
-			return myIterator!=mySet.end();
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			const SMDS_MeshElement* current=*myIterator;
-			myIterator++;
-			return current;	
-		}	
-	};
-	return new SMDS_InverseElementIterator(myInverseElements);
+  return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(myInverseElements));
 }
 
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshNode::
+// Same as GetInverseElementIterator but the create iterator only return
+// wanted type elements.
+class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
+{
+  set<const SMDS_MeshElement*> mySet;
+  set<const SMDS_MeshElement*>::iterator myIterator;
+ public:
+  SMDS_MeshNode_MyIterator(SMDSAbs_ElementType type,
+                           const set<const SMDS_MeshElement*>& s)
+  {
+    const SMDS_MeshElement * e;
+    bool toInsert;
+    set<const SMDS_MeshElement*>::iterator it=s.begin();
+    while(it!=s.end())
+    {
+      e=*it;
+      switch(type)
+      {
+      case SMDSAbs_Edge: toInsert=true; break;
+      case SMDSAbs_Face: toInsert=(e->GetType()!=SMDSAbs_Edge); break;
+      case SMDSAbs_Volume: toInsert=(e->GetType()==SMDSAbs_Volume); break;
+      }
+      if(toInsert) mySet.insert(e);
+      it++;
+    }
+    myIterator=mySet.begin();
+  }
+
+  bool more()
+  {
+    return myIterator!=mySet.end();
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    const SMDS_MeshElement* current=*myIterator;
+    myIterator++;
+    return current;
+  }
+};
+
+SMDS_ElemIteratorPtr SMDS_MeshNode::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
-	// Same as GetInverseElementIterator but the create iterator only return
-	// wanted type elements.
-	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
-	{
-		set<const SMDS_MeshElement*> mySet;
-		set<const SMDS_MeshElement*>::iterator myIterator;
-	  public:
-		MyIterator(SMDSAbs_ElementType type,
-			const set<const SMDS_MeshElement*>& s) 
-		{
-			const SMDS_MeshElement * e;
-			bool toInsert;
-			set<const SMDS_MeshElement*>::iterator it=s.begin();
-			while(it!=s.end())
-			{
-				e=*it;
-				switch(type)
-				{
-				case SMDSAbs_Edge: toInsert=true; break;
-				case SMDSAbs_Face: toInsert=(e->GetType()!=SMDSAbs_Edge); break;
-				case SMDSAbs_Volume: toInsert=(e->GetType()==SMDSAbs_Volume); break;
-				}
-				if(toInsert) mySet.insert(e);
-				it++;
-			}	
-			myIterator=mySet.begin();
-		}
-
-		bool more()
-		{
-			return myIterator!=mySet.end();
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			const SMDS_MeshElement* current=*myIterator;
-			myIterator++;
-			return current;	
-		}	
-	};
-
-	if(type==SMDSAbs_Node)
-		return SMDS_MeshElement::elementsIterator(SMDSAbs_Node); 
-	else
-		return new SMDS_IteratorOfElements(this,type,
-			new MyIterator(type, myInverseElements));
+  if(type==SMDSAbs_Node)
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Node); 
+  else
+    return SMDS_ElemIteratorPtr
+      (new SMDS_IteratorOfElements
+       (this,type,
+        SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyIterator(type, myInverseElements))));
 }
 
 int SMDS_MeshNode::NbNodes() const

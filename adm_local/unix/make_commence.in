@@ -34,6 +34,10 @@ CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ 
 CXX_DEPEND_FLAG = @CXX_DEPEND_FLAG@
 
+# BOOST Library
+
+BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
+
 # JAVA
 
 JAVA_INCLUDES = @JAVA_INCLUDES@
@@ -127,7 +131,8 @@ OMNIORB_CXXFLAGS    = @OMNIORB_CXXFLAGS@
 
 OMNIORB_IDL         = @OMNIORB_IDL@
 OMNIORB_IDLCXXFLAGS = @OMNIORB_IDLCXXFLAGS@
-OMNIORB_IDLPYFLAGS  = @OMNIORB_IDLPYFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
+OMNIORB_IDLPYFLAGS  = @OMNIORB_IDLPYFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl/salome \
+	-I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
 
 OMNIORB_IDL_CLN_H   = @OMNIORB_IDL_CLN_H@
 OMNIORB_IDL_CLN_CXX = @OMNIORB_IDL_CLN_CXX@
@@ -144,7 +149,8 @@ CORBA_INCLUDES    = @CORBA_INCLUDES@
 CORBA_LIBS        = @CORBA_LIBS@
 CORBA_CXXFLAGS    = @CORBA_CXXFLAGS@
 
-IDLCXXFLAGS = -bcxx @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
+IDLCXXFLAGS = -bcxx @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl/salome \
+	-I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
 IDLPYFLAGS  = @IDLPYFLAGS@
 
 IDL = @IDL@
@@ -195,13 +201,13 @@ datadir=@datadir@/salome
 idldir=$(prefix)/idl/salome
 sharedpydir=@libdir@/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
 
-docdir=$(datadir)/doc
+docdir=${prefix}/doc/salome
 
 #
 # begin of package rules
 #
 
-.PHONY: all lib bin inc resources tests install uninstall dep depend depend_idl cleandep mostlyclean clean distclean
+.PHONY: all lib bin inc resources docs tests install uninstall dep depend depend_idl cleandep mostlyclean clean distclean
 
 .SUFFIXES: .cxx .cc .c .f .o .lo .idl .py .i .ui .po .qm
 
@@ -243,11 +249,7 @@ ac_cxx_namespaces.m4              check_omniorb.m4   pyembed.m4		\
 ac_cxx_partial_specialization.m4  check_opengl.m4    python.m4		\
 ac_cxx_typename.m4                check_pthreads.m4  check_cas.m4	\
 ac_cc_warnings.m4                 check_qt.m4        check_med2.m4      \
-check_swig.m4 
-
-#ifeq (@WITHNETGEN@,yes)
-#  ACLOCAL_SRC += check_Netgen.m4
-#endif
+check_swig.m4                     check_boost.m4 
 
 $(top_srcdir)/aclocal.m4: $(ACLOCAL_SRC:%=@KERNEL_ROOT_DIR@/salome_adm/unix/config_files/%)
 	cd $(top_srcdir) ; aclocal --acdir=adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files

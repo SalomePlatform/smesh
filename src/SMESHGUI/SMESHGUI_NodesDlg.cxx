@@ -284,7 +284,7 @@ void SMESHGUI_NodesDlg::ClickOnApply()
 //=======================================================================
 void SMESHGUI_NodesDlg::ClickOnCancel()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( 4 );
+  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   myMeshGUI->ResetState() ;
   myMeshGUI->EraseSimulationActors() ;
@@ -316,12 +316,12 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
     return ;
   }
   
-  if ( mySelection->SelectionMode() != 1 ) {
+  if ( mySelection->SelectionMode() != NodeSelection ) {
     SpinBox_X->SetValue(0.0) ;
     SpinBox_Y->SetValue(0.0) ;
     SpinBox_Z->SetValue(0.0) ;
     QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_YES") );
+			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
     return;
   }
 
@@ -345,7 +345,7 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
 
     Standard_Boolean result;
     SMESH_Actor* ac = myMeshGUI->FindActor( myMesh, result, true );
-    vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( ac->DataSource );
+    vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( ac->GetUnstructuredGrid() );
     float *p0 = ugrid->GetPoint(idNodes[0]);
 
     SpinBox_X->SetValue( p0[0] ) ;

@@ -36,7 +36,8 @@
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshEdge::SMDS_MeshEdge(SMDS_MeshNode * node1, SMDS_MeshNode * node2)
+SMDS_MeshEdge::SMDS_MeshEdge(const SMDS_MeshNode * node1,
+                             const SMDS_MeshNode * node2)
 {	
 	myNodes[0]=node1;
 	myNodes[1]=node2;
@@ -68,36 +69,40 @@ SMDSAbs_ElementType SMDS_MeshEdge::GetType() const
 	return SMDSAbs_Edge;
 }
 
-SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshEdge::
+class SMDS_MeshEdge_MyNodeIterator:public SMDS_ElemIterator
+{
+  const SMDS_MeshNode *const* myNodes;
+  int myIndex;
+ public:
+  SMDS_MeshEdge_MyNodeIterator(const SMDS_MeshNode * const* nodes):
+    myNodes(nodes),myIndex(0) {}
+
+  bool more()
+  {
+    return myIndex<2;
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    myIndex++;
+    return myNodes[myIndex-1];
+  }
+};
+
+SMDS_ElemIteratorPtr SMDS_MeshEdge::
 	elementsIterator(SMDSAbs_ElementType type) const
 {
-	class MyNodeIterator:public SMDS_Iterator<const SMDS_MeshElement *>
-	{
-		SMDS_MeshNode *const* myNodes;
-		int myIndex;
-	  public:
-		MyNodeIterator(SMDS_MeshNode * const* nodes):myNodes(nodes),myIndex(0)
-		{}	
-
-		bool more()
-		{
-			return myIndex<2;
-		}
-
-		const SMDS_MeshElement* next()
-		{
-			myIndex++;
-			return myNodes[myIndex-1];
-		}	
-	};
-
-	switch(type)
-	{
-	case SMDSAbs_Edge:return SMDS_MeshElement::elementsIterator(SMDSAbs_Edge); 
-	case SMDSAbs_Node:return new MyNodeIterator(myNodes);
-	default: return new SMDS_IteratorOfElements(this,type, nodesIterator());
-	}
-
+  switch(type)
+  {
+  case SMDSAbs_Edge:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Edge); 
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr(new SMDS_MeshEdge_MyNodeIterator(myNodes));
+  default:
+    return SMDS_ElemIteratorPtr
+      (new SMDS_IteratorOfElements
+       (this,type, SMDS_ElemIteratorPtr(new SMDS_MeshEdge_MyNodeIterator(myNodes))));
+  }
 }
 
 bool operator<(const SMDS_MeshEdge & e1, const SMDS_MeshEdge & e2)

@@ -17,7 +17,7 @@
      <submenu label-id="Import" item-id="11" pos-id="8">
 	<popup-item item-id="111" pos-id="" label-id="DAT file" icon-id="" tooltip-id="" accel-id="Ctrl+B" toggle-id="" execute-action=""/>
        	<popup-item item-id="112" pos-id="" label-id="UNV File" icon-id="" tooltip-id="" accel-id="Ctrl+I" toggle-id="" execute-action=""/> 
-       	<popup-item item-id="113" pos-id="" label-id="MED File" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/> 
+       	<popup-item item-id="113" pos-id="" label-id="MED File" icon-id="" tooltip-id="" accel-id="Ctrl+M" toggle-id="" execute-action=""/> 
       </submenu>
       <endsubmenu />
       <submenu label-id="Export" item-id="12" pos-id="9">
@@ -37,17 +37,8 @@
 
 <!-- ************************** Hypothesis  (menubar)  ************************************ -->
 <menu-item label-id="Hypotheses" item-id="50" pos-id="3">
-	<popup-item item-id="5030" pos-id="" label-id="Average length" icon-id="mesh_hypo_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="5031" pos-id="" label-id="Nb. Segments" icon-id="mesh_hypo_segment.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="5032" pos-id="" label-id="Max. Triangle Area" icon-id="mesh_hypo_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="5033" pos-id="" label-id="Max. Hexahedron or Tetrahedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="5034" pos-id="" label-id="Length From Edges (2D Hyp. for Triangulator)" icon-id="mesh_hypo_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-    <separator pos-id=""/>
-       <popup-item item-id="5000" pos-id="" label-id="Wire discretisation" icon-id="mesh_algo_regular.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-       <popup-item item-id="5010" pos-id="" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-       <popup-item item-id="5011" pos-id="" label-id="Quadrangle (Mapping)" icon-id="mesh_algo_quad.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-       <popup-item item-id="5020" pos-id="" label-id="Hexahedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-       <popup-item item-id="5021" pos-id="" label-id="Tetrahedron (Netgen)" icon-id="mesh_algo_tetra.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+       <popup-item item-id="5000" pos-id="" label-id="Create Hypothesis" icon-id="mesh_hypo_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+       <popup-item item-id="5010" pos-id="" label-id="Create Algorithm" icon-id="mesh_algo_mefisto.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
 
 <!-- ************************** Mesh  (menubar)  ************************************ -->
@@ -57,6 +48,8 @@
      <popup-item item-id="704" pos-id="" label-id="Edit Hyp." icon-id="mesh_edit.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <separator pos-id=""/>
      <popup-item item-id="701" pos-id="" label-id="Compute" icon-id="mesh_compute.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <separator pos-id=""/>
+     <popup-item item-id="801" pos-id="" label-id="Create Group" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <separator pos-id=""/>
      <popup-item item-id="900" pos-id="" label-id="Mesh Infos" icon-id="mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
@@ -90,8 +83,8 @@
      </submenu>
      <endsubmenu />
      <popup-item item-id="405" pos-id="" label-id="Move Node" icon-id="mesh_move_node.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-     <popup-item item-id="806" pos-id="" label-id="Orientation" icon-id="mesh_orientation.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-     <popup-item item-id="807" pos-id="" label-id="Diagonal Inversion" icon-id="mesh_diagonal.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="406" pos-id="" label-id="Orientation" icon-id="mesh_orientation.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="407" pos-id="" label-id="Diagonal Inversion" icon-id="mesh_diagonal.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
 
 <!-- ************************** Numbering  (menubar)  ************************************ -->
@@ -111,7 +104,7 @@
     <endsubmenu /> 
     <popup-item item-id="1001" pos-id="" label-id="Automatic Update" icon-id="" tooltip-id="" accel-id="" toggle-id="false" execute-action=""/>
     <separator pos-id=""/>
-      <popup-item item-id="1003" pos-id="" label-id="Colors - Size" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    <popup-item item-id="1003" pos-id="" label-id="Colors - Size" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
     <separator pos-id=""/>
     <popup-item item-id="1005" pos-id="" label-id="Scalars Bar" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
@@ -139,11 +132,15 @@
    <popup-item item-id="701" pos-id="" label-id="Compute" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
+   <popup-item item-id="801" pos-id="" label-id="Create Group" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <separator pos-id=""/>
    <popup-item item-id="1101" pos-id="" label-id="Rename" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </popupmenu>
 
 <popupmenu label-id="Popup for ObjectBrowser" context-id="" parent-id="ObjectBrowser" object-id="SubMesh">
    <popup-item item-id="706" pos-id="" label-id="Edit Local Hyp." icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+   <separator pos-id=""/>
+   <popup-item item-id="802" pos-id="" label-id="Construct Group" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
 </popupmenu>
 
 <popupmenu label-id="Popup for ObjectBrowser" context-id="" parent-id="ObjectBrowser" object-id="Hypothesis">
@@ -151,11 +148,11 @@
    <popup-item item-id="1102" pos-id="" label-id="Unassign Hyp." icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1101" pos-id="" label-id="Rename" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </popupmenu>
+
 <popupmenu label-id="Popup for ObjectBrowser" context-id="" parent-id="ObjectBrowser" object-id="Algorithm">
    <popup-item item-id="1102" pos-id="" label-id="Unassign Algo." icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1101" pos-id="" label-id="Rename" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </popupmenu>
-
 
 
 <popupmenu label-id="Popup for Viewer" context-id="" parent-id="Viewer" object-id="Mesh">
@@ -195,17 +192,8 @@
 </toolbar>
 
 <toolbar label-id="Hypotheses Toolbar">
-   <toolbutton-item item-id="5030" label-id="Average length" icon-id="mesh_hypo_length.png" tooltip-id="Avreage length Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5031" label-id="Segments" icon-id="mesh_hypo_segment.png" tooltip-id="Nb. Segments Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5032" label-id="Max. Triangle Area" icon-id="mesh_hypo_area.png" tooltip-id="Max. Triangle Area Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5033" label-id="Max. Hexahedron or Tetrahedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="Max. Hexahedron or Tetrahedron Volume Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5034" label-id="Length From Edges (2D Hyp. for Triangulator)" icon-id="mesh_hypo_length.png" tooltip-id="Length From Edges Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <separatorTB/>
-   <toolbutton-item item-id="5000" label-id="Wire Discretisation" icon-id="mesh_algo_regular.png" tooltip-id="Wire Discratisation Algorithm" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5010" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="Triangle (Mefisto) Algorithm" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5011" label-id="Quadrangle (Mapping)" icon-id="mesh_algo_quad.png" tooltip-id="Quadrangle (Mapping) Algorithm" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5020" label-id="Hexahedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="Hexahedron (i,j,k) Algorithm" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5021" label-id="Tetrahedron (Netgen)" icon-id="mesh_algo_hexa.png" tooltip-id="Tetrahedron (Netgen) Delaunay Algorithm" accel-id="" toggle-id="" execute-action=""/>
+   <toolbutton-item item-id="5000" label-id="Create Hypothesis" icon-id="mesh_hypo_length.png" tooltip-id="Create Hypothesis" accel-id="" toggle-id="" execute-action=""/>
+   <toolbutton-item item-id="5010" label-id="Create Algorithm" icon-id="mesh_algo_mefisto.png" tooltip-id="Create Algorithm" accel-id="" toggle-id="" execute-action=""/>
 </toolbar>
 
 <toolbar label-id="Controls toolbar">
@@ -233,8 +221,8 @@
 
 <toolbar label-id="Modification toolbar">
      <toolbutton-item item-id="405" label-id="Move Node" icon-id="mesh_move_node.png" tooltip-id="Move Node" accel-id="" toggle-id="" execute-action=""/>
-     <toolbutton-item item-id="806" label-id="Orientation" icon-id="mesh_orientation.png" tooltip-id="Orientation" accel-id="" toggle-id="" execute-action=""/>
-     <toolbutton-item item-id="807" label-id="Diagonal Inversion" icon-id="mesh_diagonal.png" tooltip-id="Diagonal Inversion" accel-id="" toggle-id="" execute-action=""/>
+     <toolbutton-item item-id="406" label-id="Orientation" icon-id="mesh_orientation.png" tooltip-id="Orientation" accel-id="" toggle-id="" execute-action=""/>
+     <toolbutton-item item-id="407" label-id="Diagonal Inversion" icon-id="mesh_diagonal.png" tooltip-id="Diagonal Inversion" accel-id="" toggle-id="" execute-action=""/>
 </toolbar>
 
 <toolbar label-id="Display Mode Toolbar">

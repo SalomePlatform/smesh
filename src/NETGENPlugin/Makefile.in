@@ -1,0 +1,67 @@
+#  SMESH NETGENPlugin : implementaion of SMESH idl descriptions
+#
+#  Copyright (C) 2004  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Julia DOROVSKIKH
+#  Module : SMESH
+#  $Header$
+
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:
+
+
+@COMMENCE@
+
+EXPORT_PYSCRIPTS =
+
+# .po files to transform in .qm
+PO_FILES = NETGENPlugin_icons.po
+
+# Libraries targets
+LIB = libNETGENEngine.la
+LIB_SRC = \
+	NETGENPlugin_NETGEN_3D.cxx \
+	NETGENPlugin_NETGEN_3D_i.cxx \
+	NETGENPlugin_i.cxx
+
+LIB_SERVER_IDL = SMESH_NetgenAlgorithm.idl
+
+LIB_CLIENT_IDL = SMESH_Gen.idl SMESH_Mesh.idl SMESH_Group.idl
+
+# Executables targets
+BIN = 
+BIN_SRC = 
+
+# additionnal information to compil and link file
+NETGEN_INCLUDES=@NETGEN_INCLUDES@
+
+CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+           -I${GEOM_ROOT_DIR}/include/salome $(NETGEN_INCLUDES) $(BOOST_CPPFLAGS)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+           -I${GEOM_ROOT_DIR}/include/salome $(NETGEN_INCLUDES)
+
+LDFLAGS+= $(HDF5_LIBS) -lSMESHimpl -lSMESHEngine -lStdMeshers -lStdMeshersEngine -lNETGEN -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeGenericObj
+
+@CONCLUDE@

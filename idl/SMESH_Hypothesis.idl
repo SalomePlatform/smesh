@@ -27,15 +27,11 @@
 #define _SMESH_HYPOTHESIS_IDL_
 
 #include "SALOME_Exception.idl"
+#include "SALOME_GenericObj.idl"
 
 module SMESH
 {
-  interface SMESH_Hypothesis;
-
-  typedef sequence<SMESH_Hypothesis> ListOfHypothesis;
-  typedef sequence<string> ListOfHypothesisName;
-
-  interface SMESH_Hypothesis
+  interface SMESH_Hypothesis : SALOME::GenericObj
   {
     /*!
      * Get the Hypothesis typeName 
@@ -43,10 +39,17 @@ module SMESH
     string GetName();
 
     /*!
+     * Get the Hypothesis plugin library Name 
+     */
+    string GetLibName();
+
+    /*!
      * Get the internal Id 
      */
     long GetId();
- };
+  };
+
+  typedef sequence<string> ListOfHypothesisName;
 
   interface SMESH_Algo : SMESH_Hypothesis
   {

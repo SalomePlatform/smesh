@@ -251,7 +251,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( 4 );
+  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   mySMESHGUI->EraseSimulationActors();
@@ -278,9 +278,9 @@ void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
   if(nbNodes < 1)
     return ;
   
-  if ( mySelection->SelectionMode() != 1 ){
+  if ( mySelection->SelectionMode() != NodeSelection ){
     QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_YES") );
+			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
     return;
   }
 

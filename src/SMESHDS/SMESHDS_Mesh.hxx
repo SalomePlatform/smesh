@@ -49,103 +49,158 @@
 	#include <hash_map.h>
 #else
 	#include <ext/hash_map>
-	using namespace __gnu_cxx;
+	namespace gstd = __gnu_cxx;
 #endif
 #endif
 
-using namespace std;
+class SMESHDS_Mesh:public SMDS_Mesh{
+public:
+  SMESHDS_Mesh(int MeshID);
+  void ShapeToMesh(const TopoDS_Shape & S);
+  bool AddHypothesis(const TopoDS_Shape & SS, const SMESHDS_Hypothesis * H);
+  bool RemoveHypothesis(const TopoDS_Shape & S, const SMESHDS_Hypothesis * H);
+  
+  virtual SMDS_MeshNode* AddNodeWithID(double x, double y, double z, int ID);
+  virtual SMDS_MeshNode * AddNode(double x, double y, double z);
+  
+  virtual SMDS_MeshEdge* AddEdgeWithID(int n1, int n2, int ID);
+  virtual SMDS_MeshEdge* AddEdgeWithID(const SMDS_MeshNode * n1,
+				       const SMDS_MeshNode * n2, 
+				       int ID);
+  virtual SMDS_MeshEdge* AddEdge(const SMDS_MeshNode * n1,
+				 const SMDS_MeshNode * n2);
+  
+  virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int ID);
+  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshNode * n1,
+				       const SMDS_MeshNode * n2,
+				       const SMDS_MeshNode * n3, 
+				       int ID);
+  virtual SMDS_MeshFace* AddFace(const SMDS_MeshNode * n1,
+				 const SMDS_MeshNode * n2,
+				 const SMDS_MeshNode * n3);
 
-class SMESHDS_Mesh:public SMDS_Mesh
-{
+  virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int n4, int ID);
+  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshNode * n1,
+				       const SMDS_MeshNode * n2,
+				       const SMDS_MeshNode * n3,
+				       const SMDS_MeshNode * n4, 
+				       int ID);
+  virtual SMDS_MeshFace* AddFace(const SMDS_MeshNode * n1,
+				 const SMDS_MeshNode * n2,
+				 const SMDS_MeshNode * n3,
+				 const SMDS_MeshNode * n4);
 
-  public:
+  virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4, int ID);
+  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshNode * n1,
+					   const SMDS_MeshNode * n2,
+					   const SMDS_MeshNode * n3,
+					   const SMDS_MeshNode * n4, 
+					   int ID);
+  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshNode * n1,
+				     const SMDS_MeshNode * n2,
+				     const SMDS_MeshNode * n3,
+				     const SMDS_MeshNode * n4);
 
-	SMESHDS_Mesh(int MeshID);
-	void ShapeToMesh(const TopoDS_Shape & S);
-	bool AddHypothesis(const TopoDS_Shape & SS, const SMESHDS_Hypothesis * H);
-	bool RemoveHypothesis(const TopoDS_Shape & S, const SMESHDS_Hypothesis * H);
-	SMDS_MeshNode * AddNode(double x, double y, double z);
-	void RemoveNode(const SMDS_MeshNode *);
-	void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
-	SMDS_MeshEdge* AddEdge(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2);
-	SMDS_MeshFace* AddFace(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3);
-	SMDS_MeshFace* AddFace(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3,
-		const SMDS_MeshNode * n4);
-	SMDS_MeshVolume* AddVolume(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3,
-		const SMDS_MeshNode * n4);
-	SMDS_MeshVolume* AddVolume(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3,
-		const SMDS_MeshNode * n4,
-		const SMDS_MeshNode * n5);
-	SMDS_MeshVolume* AddVolume(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3,
-		const SMDS_MeshNode * n4,
-		const SMDS_MeshNode * n5,
-		const SMDS_MeshNode * n6);
-	SMDS_MeshVolume* AddVolume(
-		const SMDS_MeshNode * n1,
-		const SMDS_MeshNode * n2,
-		const SMDS_MeshNode * n3,
-		const SMDS_MeshNode * n4,
-		const SMDS_MeshNode * n5,
-		const SMDS_MeshNode * n6,
-		const SMDS_MeshNode * n7,
-		const SMDS_MeshNode * n8);
-	
-	void RemoveElement(const SMDS_MeshElement *);
-	void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
-	void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S);
-	void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S);
-	void SetNodeOnVertex(SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
-	void UnSetNodeOnShape(const SMDS_MeshNode * aNode);
-	void SetMeshElementOnShape(const SMDS_MeshElement * anElt,
-		const TopoDS_Shape & S);
-	void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt,
-		const TopoDS_Shape & S);
-	TopoDS_Shape ShapeToMesh() const;
-	bool HasMeshElements(const TopoDS_Shape & S);
-	SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S);
-	bool HasHypothesis(const TopoDS_Shape & S);
-	const list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
-	SMESHDS_Script * GetScript();
-	void ClearScript();
-	int ShapeToIndex(const TopoDS_Shape & aShape);
-	TopoDS_Shape IndexToShape(int ShapeIndex);
-	void NewSubMesh(int Index);
-	void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
-	void SetNodeOnFace(SMDS_MeshNode * aNode, int Index);
-	void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index);
-	void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
-	void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
-	 ~SMESHDS_Mesh();
-	void logFullUpdate();
-	
-  private:
-	struct HashTopoDS_Shape
-    {
-		size_t operator()(const TopoDS_Shape& S) const {return S.HashCode(2147483647);}
-    };
-	typedef hash_map<TopoDS_Shape, list<const SMESHDS_Hypothesis*>,HashTopoDS_Shape > ShapeToHypothesis;
-	int myMeshID;
-	TopoDS_Shape myShape;
-  	TopTools_IndexedMapOfShape myIndexToShape;
-	map<int,SMESHDS_SubMesh*> myShapeIndexToSubMesh;
-	ShapeToHypothesis myShapeToHypothesis;
-	SMESHDS_Script * myScript;
+  virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4, int n5, int ID);
+  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshNode * n1,
+					   const SMDS_MeshNode * n2,
+					   const SMDS_MeshNode * n3,
+					   const SMDS_MeshNode * n4,
+					   const SMDS_MeshNode * n5, 
+					   int ID);
+  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshNode * n1,
+				     const SMDS_MeshNode * n2,
+				     const SMDS_MeshNode * n3,
+				     const SMDS_MeshNode * n4,
+				     const SMDS_MeshNode * n5);
+
+  virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4, int n5, int n6, int ID);
+  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshNode * n1,
+					   const SMDS_MeshNode * n2,
+					   const SMDS_MeshNode * n3,
+					   const SMDS_MeshNode * n4,
+					   const SMDS_MeshNode * n5,
+					   const SMDS_MeshNode * n6, 
+					   int ID);
+  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshNode * n1,
+				     const SMDS_MeshNode * n2,
+				     const SMDS_MeshNode * n3,
+				     const SMDS_MeshNode * n4,
+				     const SMDS_MeshNode * n5,
+				     const SMDS_MeshNode * n6);
+
+  virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8, int ID);
+  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshNode * n1,
+					   const SMDS_MeshNode * n2,
+					   const SMDS_MeshNode * n3,
+					   const SMDS_MeshNode * n4,
+					   const SMDS_MeshNode * n5,
+					   const SMDS_MeshNode * n6,
+					   const SMDS_MeshNode * n7,
+					   const SMDS_MeshNode * n8, 
+					   int ID);
+  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshNode * n1,
+				     const SMDS_MeshNode * n2,
+				     const SMDS_MeshNode * n3,
+				     const SMDS_MeshNode * n4,
+				     const SMDS_MeshNode * n5,
+				     const SMDS_MeshNode * n6,
+				     const SMDS_MeshNode * n7,
+				     const SMDS_MeshNode * n8);
+  
+  void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
+  virtual void RemoveNode(const SMDS_MeshNode *);
+  void RemoveElement(const SMDS_MeshElement *);
+
+  void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
+  void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S);
+  void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S);
+  void SetNodeOnVertex(SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
+  void UnSetNodeOnShape(const SMDS_MeshNode * aNode);
+  void SetMeshElementOnShape(const SMDS_MeshElement * anElt,
+			     const TopoDS_Shape & S);
+  void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt,
+			       const TopoDS_Shape & S);
+  TopoDS_Shape ShapeToMesh() const;
+  bool HasMeshElements(const TopoDS_Shape & S);
+  SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S);
+  SMESHDS_SubMesh * MeshElements(const int Index);
+  list<int> SubMeshIndices();
+  const std::map<int,SMESHDS_SubMesh*>& SubMeshes()
+  { return myShapeIndexToSubMesh; }
+
+  bool HasHypothesis(const TopoDS_Shape & S);
+  const list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
+  SMESHDS_Script * GetScript();
+  void ClearScript();
+  int ShapeToIndex(const TopoDS_Shape & aShape);
+  TopoDS_Shape IndexToShape(int ShapeIndex);
+
+  void NewSubMesh(int Index);
+  void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
+  void SetNodeOnFace(SMDS_MeshNode * aNode, int Index);
+  void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index);
+  void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
+  void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
+
+  ~SMESHDS_Mesh();
+  
+private:
+  struct HashTopoDS_Shape{
+    size_t operator()(const TopoDS_Shape& S) const {
+      return S.HashCode(2147483647);
+    }
+  };
+  typedef std::list<const SMESHDS_Hypothesis*> THypList;
+  typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
+  ShapeToHypothesis myShapeToHypothesis;
+
+  int myMeshID;
+  TopoDS_Shape myShape;
+  TopTools_IndexedMapOfShape myIndexToShape;
+  std::map<int,SMESHDS_SubMesh*> myShapeIndexToSubMesh;
+  SMESHDS_Script* myScript;
 };
+
+
 #endif

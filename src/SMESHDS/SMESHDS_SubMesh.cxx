@@ -42,9 +42,12 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 //function : RemoveElement
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
+bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
 {
-	myElements.erase(ME);
+  if ( NbElements() )
+    return myElements.erase(ME);
+  
+  return false;
 }
 
 //=======================================================================
@@ -60,9 +63,12 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 //function : RemoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
+bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 {
-	myNodes.erase(N);
+  if ( NbNodes() )
+    return myNodes.erase(N);
+
+  return false;
 }
 
 //=======================================================================
@@ -85,8 +91,9 @@ int SMESHDS_SubMesh::NbNodes() const
 
 template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
 {
-	const set<const T*>& mySet;
-	set<const T*>::const_iterator myIt;
+  typedef const set<const T*> TSet;
+  typename TSet::const_iterator myIt;
+  TSet& mySet;
 
   public:
 	MySetIterator(const set<const T*>& s):mySet(s), myIt(s.begin())
@@ -108,17 +115,17 @@ template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
 ///Return an iterator on the elements of submesh
 ///The created iterator must be free by the caller
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshElement*> * SMESHDS_SubMesh::GetElements() const
+SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
 {
-	return new MySetIterator<SMDS_MeshElement>(myElements);
+  return SMDS_ElemIteratorPtr(new MySetIterator<SMDS_MeshElement>(myElements));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///Return an iterator on the nodes of submesh
 ///The created iterator must be free by the caller
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Iterator<const SMDS_MeshNode*> * SMESHDS_SubMesh::GetNodes() const
+SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
 {
-	return new MySetIterator<SMDS_MeshNode>(myNodes);
+  return SMDS_NodeIteratorPtr(new MySetIterator<SMDS_MeshNode>(myNodes));
 }
 

@@ -1,0 +1,78 @@
+#  SMESH StdMeshersGUI : GUI for StdMeshers plugin
+#
+#  Copyright (C) 2003  CEA
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+#  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Julia DOROVSKIKH
+#  Module : SMESH
+#  $Header$
+
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+
+
+@COMMENCE@
+
+# .po files to transform in .qm
+ PO_FILES = \
+	StdMeshers_icons.po \
+	StdMeshers_msg_en.po
+
+# Libraries targets
+LIB = libStdMeshersGUI.la
+LIB_SRC = \
+	StdMeshersGUI.cxx \
+	StdMeshersGUI_LocalLengthDlg.cxx \
+	StdMeshersGUI_NbSegmentsDlg.cxx \
+	StdMeshersGUI_MaxElementAreaDlg.cxx \
+	StdMeshersGUI_MaxElementVolumeDlg.cxx
+
+LIB_MOC = \
+	StdMeshersGUI_LocalLengthDlg.h \
+	StdMeshersGUI_NbSegmentsDlg.h \
+	StdMeshersGUI_MaxElementAreaDlg.h \
+	StdMeshersGUI_MaxElementVolumeDlg.h
+
+LIB_CLIENT_IDL = \
+	SALOME_Exception.idl \
+	SMESH_Gen.idl \
+	SMESH_Mesh.idl \
+	SMESH_Group.idl \
+	SMESH_Filter.idl \
+	SMESH_Hypothesis.idl \
+	SMESH_BasicHypothesis.idl \
+	MED.idl
+
+LIB_SERVER_IDL = 
+
+# additionnal information to compil and link file
+
+CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
+            $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
+            $(BOOST_CPPFLAGS)
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+#$(OCC_CXXFLAGS)
+
+LDFLAGS += -lSMESHGUI $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+
+@CONCLUDE@

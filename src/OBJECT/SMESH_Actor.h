@@ -30,126 +30,205 @@
 #define SMESH_ACTOR_H
 
 #include "SALOME_Actor.h"
+#include "SMESH_Object.h"
 
-// VTK Includes
-#include <vtkActor.h>
-#include <vtkDataSetMapper.h>
-#include <vtkUnstructuredGridReader.h>
+class vtkProperty;
+class vtkShrinkFilter;
+class vtkPolyDataMapper;
+class vtkUnstructuredGrid;
+class vtkMergeFilter;
+class vtkPolyData;
 
-// Open CASCADE Includes
-#include <TColStd_IndexedMapOfInteger.hxx>
-#include <TColStd_DataMapOfIntegerInteger.hxx>
+class vtkMapper;
+class vtkActor2D;
+class vtkMaskPoints;
+class vtkLabeledDataMapper;
+class vtkSelectVisiblePoints;
 
-typedef struct rgbStruct
-{
-  float r;
-  float g;
-  float b;
-} RGBStruct;
+class vtkScalarBarActor;
+class vtkLookupTable;
 
-class SMESH_Actor : public SALOME_Actor {
+class SMESH_DeviceActor;
+class SALOME_ExtractUnstructuredGrid;
+
+
+class SMESH_Actor : public SALOME_Actor{
+  friend class SMESH_VisualObj;
 
  public:
   vtkTypeMacro(SMESH_Actor,SALOME_Actor);
+  static SMESH_Actor* New(TVisualObjPtr theVisualObj, 
+			  SMESH::FilterManager_ptr theFilterMgr,
+			  const char* theEntry, 
+			  const char* theName,
+			  int theIsClear);
+  
+  virtual void ReleaseGraphicsResources(vtkWindow *renWin);
+  virtual int RenderOpaqueGeometry(vtkViewport *viewport);
+  virtual int RenderTranslucentGeometry(vtkViewport *viewport);
+  virtual void Render(vtkRenderer *ren);
 
-  static SMESH_Actor* New();
+  virtual void AddToRender(vtkRenderer* theRenderer); 
+  virtual void RemoveFromRender(vtkRenderer* theRenderer);
 
-  // Description:
-  // This causes the actor to be rendered. It, in turn, will render the actor`s
-  // property and then mapper.
-  virtual void Render(vtkRenderer *, vtkMapper *);
-
-  // Description:
-  // This method is used internally by the rendering process.
-  // We overide the superclass method to properly set the estimated render time.
-  int RenderOpaqueGeometry(vtkViewport *viewport);
-
-  void ShallowCopy(vtkProp *prop);
-
-  void setReader(vtkUnstructuredGridReader* r) ;
-  vtkUnstructuredGridReader* getReader();
-
-  // Highlight
   virtual bool hasHighlight() { return true; }  
+  virtual void highlight(Standard_Boolean highlight);  
+  virtual void SetPreSelected(Standard_Boolean presel = Standard_False);
 
-  vtkMapper* getMapper();
+  virtual bool IsInfinitive();  
 
-  void setDisplayMode(int);
+  virtual void SetOpacity(float theValue);
+  virtual float GetOpacity();
 
-  void SetColor(float r,float g,float b);
-  void GetColor(float& r,float& g,float& b);
-  void SetHighlightColor(float r,float g,float b);
-  void GetHighlightColor(float& r,float& g,float& b);
-  void SetPreselectedColor(float r,float g,float b);
-  void GetPreselectedColor(float& r,float& g,float& b);
+  void SetSufaceColor(float r,float g,float b);
+  void GetSufaceColor(float& r,float& g,float& b);
+
+  void SetBackSufaceColor(float r,float g,float b);
+  void GetBackSufaceColor(float& r,float& g,float& b);
 
   void SetEdgeColor(float r,float g,float b);
   void GetEdgeColor(float& r,float& g,float& b);
-  void SetEdgeHighlightColor(float r,float g,float b);
-  void GetEdgeHighlightColor(float& r,float& g,float& b);
-  void SetEdgePreselectedColor(float r,float g,float b);
-  void GetEdgePreselectedColor(float& r,float& g,float& b);
 
   void SetNodeColor(float r,float g,float b);
   void GetNodeColor(float& r,float& g,float& b);
+
+  void SetHighlightColor(float r,float g,float b);
+  void GetHighlightColor(float& r,float& g,float& b);
+
+  void SetPreHighlightColor(float r,float g,float b);
+  void GetPreHighlightColor(float& r,float& g,float& b);
  
-  void SetNodeSize(int size) ;
-  int  GetNodeSize() ;
+  float GetLineWidth();
+  void SetLineWidth(float theVal);
 
+  void SetNodeSize(float size) ;
+  float GetNodeSize() ;
 
-  void ClearNode();
-  void ClearElement();
+  virtual int GetObjId(int theVtkID);
+  virtual TVectorId GetVtkId(int theObjID);
 
-  void RemoveNode(int idSMESHDSnode);
-  void RemoveElement(int idSMESHDSelement);
+  virtual int GetNodeObjId(int theVtkID);
+  virtual TVectorId GetNodeVtkId(int theObjID);
 
-  void AddNode(int idSMESHDSnode, int idVTKnode);
-  void AddElement(int idSMESHDSelement, int idVTKelement);
+  virtual int GetElemObjId(int theVtkID);
+  virtual TVectorId GetElemVtkId(int theObjID);
 
-  int GetIdVTKNode(int idSMESHDSnode);
-  int GetIdVTKElement(int idSMESHDSelement);
+  virtual int GetObjDimension( const int theObjId );
 
-  int GetIdSMESHDSNode(int idVTKnode);
-  int GetIdSMESHDSElement(int idVTKelement);
+  virtual void SetVisibility(int theMode);
 
-  void SetIdsVTKNode(const TColStd_DataMapOfIntegerInteger& mapVTK);
-  void SetIdsSMESHDSNode(const TColStd_DataMapOfIntegerInteger& mapSMESHDS);
+  enum EReperesent { ePoint, eEdge, eSurface};
+  virtual void SetRepresentation(int theMode);
+  void SetPointRepresentation(int theIsPointsVisible);
+  bool GetPointRepresentation(){ return myIsPointsVisible;}
 
-  void SetIdsVTKElement(const TColStd_DataMapOfIntegerInteger& mapVTK);
-  void SetIdsSMESHDSElement(const TColStd_DataMapOfIntegerInteger& mapSMESHDS);
+  virtual vtkPolyData* GetPolyDataInput(); 
+  virtual void SetTransform(SALOME_Transform* theTransform); 
 
-  vtkDataSet* DataSource;
-  vtkActor*   EdgeDevice;
-  vtkActor*   EdgeShrinkDevice;
+  vtkUnstructuredGrid* GetUnstructuredGrid();
+  virtual vtkMapper* GetMapper();
 
   float GetShrinkFactor();
   void  SetShrinkFactor(float value );
 
-  void GetChildActors(vtkActorCollection*);
+  bool IsShrunkable() { return myIsShrinkable;}
+  bool IsShrunk() { return myIsShrunk;}
+  void SetShrink(); 
+  void UnShrink(); 
 
-  void SetVisibility(bool visibility);
+  void SetPointsLabeled(bool theIsPointsLabeled);
+  bool GetPointsLabeled(){ return myIsPointsLabeled;}
+
+  void SetCellsLabeled(bool theIsCellsLabeled);
+  bool GetCellsLabeled(){ return myIsCellsLabeled;}
+
+  enum eControl{eNone, eLengthEdges, eFreeBorders, eMultiConnection, 
+		eArea, eTaper, eAspectRatio, eMinimumAngle, eWarping, eSkew};
+  void SetControlMode(eControl theMode);
+  eControl GetControlMode(){ return myColorMode;}
+
+  enum e1DControl{e1DNone, e1DColored, e1DHighlited};
+  e1DControl Get1DControlMode(){ return my1DColorMode;}
+
+  vtkScalarBarActor* GetScalarBarActor(){ return myScalarBarActor;}
+
+  TVisualObjPtr GetObject() { return myVisualObj;}
 
  protected:
+  TVisualObjPtr myVisualObj;
+
+  SMESH::FilterManager_var myFilterMgr;
+  vtkScalarBarActor* myScalarBarActor;
+  vtkLookupTable* myLookupTable;
+
+  vtkProperty* mySurfaceProp;
+  vtkProperty* myBackSurfaceProp;
+  vtkProperty* myEdgeProp;
+  vtkProperty* myNodeProp;
+
+  SMESH_DeviceActor* myBaseActor;
+  SMESH_DeviceActor* myNodeActor;
+  SMESH_DeviceActor* myPickableActor;
+
+  vtkProperty* myHighlightProp;
+  vtkProperty* myPreselectProp;
+  SMESH_DeviceActor* myHighlitableActor;
+
+  eControl myColorMode;
+  SMESH_DeviceActor* my2DActor;
+  SMESH_DeviceActor* my3DActor;
+  SMESH_DeviceActor* myControlActor;
+
+  e1DControl my1DColorMode;
+  vtkProperty* my1DProp;
+  SMESH_DeviceActor* my1DActor;
+  vtkProperty* my1DExtProp;
+  SMESH_DeviceActor* my1DExtActor;
+
+  bool myIsPointsVisible;
+
+  bool myIsShrinkable;
+  bool myIsShrunk;
+  
+  bool myIsPointsLabeled;
+  vtkUnstructuredGrid* myPointsNumDataSet;
+  vtkActor2D *myPointLabels;
+  vtkMaskPoints* myPtsMaskPoints;
+  vtkLabeledDataMapper* myPtsLabeledDataMapper;
+  vtkSelectVisiblePoints* myPtsSelectVisiblePoints;
+
+  bool myIsCellsLabeled;
+  vtkUnstructuredGrid* myCellsNumDataSet;
+  vtkActor2D *myCellsLabels;
+  vtkMaskPoints* myClsMaskPoints;
+  vtkCellCenters* myCellCenters;
+  vtkLabeledDataMapper* myClsLabeledDataMapper;
+  vtkSelectVisiblePoints* myClsSelectVisiblePoints;
 
   SMESH_Actor();
   ~SMESH_Actor();
-  SMESH_Actor(const SMESH_Actor&) {};
-  void operator=(const SMESH_Actor&) {};
 
-  vtkUnstructuredGridReader* myReader;
+  void Init(TVisualObjPtr theVisualObj, 
+	    SMESH::FilterManager_ptr theFilterMgr,
+	    const char* theEntry, 
+	    const char* theName,
+	    int theIsClear);
 
-  float myShrinkFactor;
+  void SetUnstructuredGrid(vtkUnstructuredGrid* theGrid);
+  void SetIsShrunkable(bool theShrunkable);
+  void UpdateHighlight();
 
-  RGBStruct edgeColor;
-  RGBStruct edgeHighlightColor;
-  RGBStruct edgePreselectedColor;
+ private:
+  // hide the two parameter Render() method from the user and the compiler.
+  virtual void Render(vtkRenderer *, vtkMapper *) {};
+  virtual void ShallowCopy(vtkProp *prop);
+  virtual void SetMapper(vtkMapper *);
+  static SMESH_Actor* New();
 
-  RGBStruct actorColor;
-  RGBStruct actorHighlightColor;
-  RGBStruct actorPreselectedColor;
-
-  RGBStruct actorNodeColor; // LPN
-  int       actorNodeSize;  // LPN
-
+  // Not implemented.
+  SMESH_Actor(const SMESH_Actor&);  
+  void operator=(const SMESH_Actor&);
 };
+
+
 #endif //SMESH_ACTOR_H

@@ -35,9 +35,6 @@ geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 myBuilder = salome.myStudy.NewBuilder()
 from geompy import gg
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
-
 ShapeTypeCompSolid = 1
 ShapeTypeSolid = 2
 ShapeTypeShell = 3

@@ -4,22 +4,24 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 
+import os
 import salome
-from salome import sg
-
 import geompy
 
-import SMESH
-import smeshpy
+import StdMeshers
 
-geom = geompy.geom
-myBuilder = geompy.myBuilder
+geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
+smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
+
+smeshgui = salome.ImportComponentGUI("SMESH")
+smeshgui.Init(salome.myStudyId);
+
+
+# ---------------------------- GEOM --------------------------------------
 
 ShapeTypeShell     = 3
 ShapeTypeFace      = 4
 ShapeTypeEdge      = 6
-
-import os
 
 # import a BRep
 #before running this script, please be sure about
@@ -43,12 +45,8 @@ print "number of Shells in flight : ",len(subShellList)
 print "number of Faces in flight : ",len(subFaceList)
 print "number of Edges in flight : ",len(subEdgeList)
 
-# ---- launch SMESH
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-gen=smeshpy.smeshpy()
+### ---------------------------- SMESH --------------------------------------
 
 # ---- create Hypothesis
 
@@ -58,27 +56,23 @@ print "-------------------------- LocalLength"
 
 lengthOfSegments = 0.3
 
-hypothesis=gen.CreateHypothesis("LocalLength")
-hypLength=hypothesis._narrow(SMESH.SMESH_LocalLength)
+hypLength=smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
 hypLength.SetLength(lengthOfSegments)
-hypLengthID = hypLength.GetId()
+
 print hypLength.GetName()
-print hypLengthID
+print  hypLength.GetId()
 print hypLength.GetLength()
 
-idlen = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypLength) )
-smeshgui.SetName(idlen, "LocalLength")
+smeshgui.SetName(salome.ObjectToID(hypLength), "LocalLength_0.3")
 
 print "-------------------------- LengthFromEdges"
 
-hypothesis=gen.CreateHypothesis("LengthFromEdges")
-hypLengthFromEdge=hypothesis._narrow(SMESH.SMESH_LengthFromEdges)
-hypLengthFromEdgeID = hypLengthFromEdge.GetId()
-print hypLengthFromEdge.GetName()
-print hypLengthFromEdgeID
+hypLengthFromEdge=smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
 
-idlenfromedge = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypLengthFromEdge) )
-smeshgui.SetName(idlenfromedge, "LengthFromEdge")
+print hypLengthFromEdge.GetName()
+print hypLengthFromEdge.GetId()
+
+smeshgui.SetName(salome.ObjectToID(hypLengthFromEdge), "LengthFromEdge")
 
 # ---- create Algorithms
 
@@ -86,54 +80,46 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-hypothesis=gen.CreateHypothesis("Regular_1D")
-regular1D = hypothesis._narrow(SMESH.SMESH_Regular_1D)
-regularID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(regular1D) )
-smeshgui.SetName(regularID, "Wire Discretisation")
+regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+
+smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-hypothesis=gen.CreateHypothesis("MEFISTO_2D")
-mefisto2D = hypothesis._narrow(SMESH.SMESH_MEFISTO_2D)
-mefistoID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(mefisto2D) )
-smeshgui.SetName(mefistoID, "MEFISTO_2D")
+mefisto2D=smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+
+smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 # ---- init a Mesh with the shell
+shape_mesh = salome.IDToObject( idShape )
 
-mesh=gen.Init(idShape)
-idmesh = smeshgui.AddNewMesh( salome.orb.object_to_string(mesh) )
-smeshgui.SetName(idmesh, "MeshFlight")
-smeshgui.SetShape(idShape, idmesh)
+mesh=smesh.CreateMesh(shape_mesh)
+smeshgui.SetName(salome.ObjectToID(mesh), "MeshFlight")
 
 # ---- add hypothesis to flight
 
 print "-------------------------- add hypothesis to flight"
 
-ret=mesh.AddHypothesis(shape,regular1D)
-print ret
-ret=mesh.AddHypothesis(shape,hypLength)
-print ret
-ret=mesh.AddHypothesis(shape,mefisto2D)
-print ret
-ret=mesh.AddHypothesis(shape,hypLengthFromEdge)
-print ret
+mesh.AddHypothesis(shape_mesh,regular1D)
+mesh.AddHypothesis(shape_mesh,hypLength)
+mesh.AddHypothesis(shape_mesh,mefisto2D)
+mesh.AddHypothesis(shape_mesh,hypLengthFromEdge)
 
-smeshgui.SetAlgorithms( idmesh, regularID)
-smeshgui.SetHypothesis( idmesh, idlen )
-smeshgui.SetAlgorithms( idmesh, mefistoID )
-smeshgui.SetHypothesis( idmesh, idlenfromedge)
-
-sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(1)
 
 
 print "-------------------------- compute the skin flight"
-ret=gen.Compute(mesh,idShape)
+ret=smesh.Compute(mesh,shape_mesh)
 print ret
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
+    print "Information about the Mesh_mechanic_tetra:"
+    print "Number of nodes      : ", mesh.NbNodes()
+    print "Number of edges      : ", mesh.NbEdges()
+    print "Number of faces      : ", mesh.NbFaces()
+    print "Number of triangles  : ", mesh.NbTriangles()
+    print "Number of volumes    : ", mesh.NbVolumes()
 else:
     print "probleme when computing the mesh"
-
-sg.updateObjBrowser(1)

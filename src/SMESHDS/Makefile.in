@@ -42,7 +42,8 @@ LIB_SRC = \
 	SMESHDS_Script.cxx \
 	SMESHDS_Command.cxx \
 	SMESHDS_SubMesh.cxx \
-	SMESHDS_Mesh.cxx
+	SMESHDS_Mesh.cxx \
+	SMESHDS_Group.cxx
 
 LIB_CLIENT_IDL = 
 LIB_SERVER_IDL = 
@@ -61,10 +62,11 @@ EXPORT_HEADERS= \
 	SMESHDS_Script.hxx \
 	SMESHDS_Command.hxx \
 	SMESHDS_CommandType.hxx \
-	SMESHDS_SubMesh.hxx 
+	SMESHDS_SubMesh.hxx \
+	SMESHDS_Group.hxx
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += $(OCC_KERNEL_LIBS)
 

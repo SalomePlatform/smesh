@@ -24,22 +24,19 @@
 #  Module : SMESH
 #  $Header$
 
-import SMESH
-import smeshpy
 import salome
-from salome import sg
-import math
-
 import geompy
 
-# ---------------------------- GEOM --------------------------------------
-geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
-myBuilder = salome.myStudy.NewBuilder()
-#from geompy import gg
+import StdMeshers
+import NETGENPlugin
+
+geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
+smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
 smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
+smeshgui.Init(salome.myStudyId);
 
+# ---------------------------- GEOM --------------------------------------
 ShapeTypeCompSolid = 1
 ShapeTypeSolid     = 2
 ShapeTypeShell     = 3
@@ -124,131 +121,100 @@ print "number of Edges in mechanic : ",len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
 
-# ---- launch SMESH, init a Mesh with shape 'mechanic'
-
-gen  = smeshpy.smeshpy()
-mesh = gen.Init( idMechanic )
-
-idmesh = smeshgui.AddNewMesh( salome.orb.object_to_string(mesh) )
-smeshgui.SetName( idmesh, "Mesh_mechanic" )
-smeshgui.SetShape( idMechanic, idmesh )
-
 print "-------------------------- NumberOfSegments"
 
 numberOfSegment = 10
 
-hypNumberOfSegment = gen.CreateHypothesis( "NumberOfSegments" )
-hypNbSeg = hypNumberOfSegment._narrow( SMESH.SMESH_NumberOfSegments )
+hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
 hypNbSeg.SetNumberOfSegments(numberOfSegment)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
 
-idSeg = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypNbSeg) )
-smeshgui.SetName(idSeg, "NumberOfSegments")
+smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 20
 
-hypMaxElementArea = gen.CreateHypothesis( "MaxElementArea" )
-hypArea = hypMaxElementArea._narrow( SMESH.SMESH_MaxElementArea )
+hypArea = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
 hypArea.SetMaxElementArea(maxElementArea)
 print hypArea.GetName()
 print hypArea.GetId()
 print hypArea.GetMaxElementArea()
 
-idArea = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypArea) )
-smeshgui.SetName(idArea, "MaxElementArea")
+smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_20")
 
 print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 20
 
-hypMaxElementVolume = gen.CreateHypothesis( "MaxElementVolume" )
-hypVolume = hypMaxElementVolume._narrow( SMESH.SMESH_MaxElementVolume )
+hypVolume = smesh.CreateHypothesis( "MaxElementVolume", "libStdMeshersEngine.so" )
 hypVolume.SetMaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
 
-idVolume = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypVolume) )
-smeshgui.SetName(idVolume, "MaxElementArea")
+smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_20")
 
 print "-------------------------- Regular_1D"
 
-alg1D = gen.CreateHypothesis( "Regular_1D" )
-algo1D   = alg1D._narrow( SMESH.SMESH_Algo )
-listHyp =algo1D.GetCompatibleHypothesis()
+algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
+listHyp =algoReg1D.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
-algoReg1D = alg1D._narrow( SMESH.SMESH_Regular_1D )
 print algoReg1D.GetName()
 print algoReg1D.GetId()
 
-idReg1D = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(algoReg1D) )
-smeshgui.SetName( idReg1D, "Regular_1D" )
+smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D" )
 
 print "-------------------------- MEFISTO_2D"
 
-alg2D = gen.CreateHypothesis( "MEFISTO_2D" )
-algo2D = alg2D._narrow( SMESH.SMESH_Algo )
-listHyp = algo2D.GetCompatibleHypothesis()
+algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
+listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
-algoMef = alg2D._narrow( SMESH.SMESH_MEFISTO_2D )
 print algoMef.GetName()
 print algoMef.GetId()
 
-idMef = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(algoMef) )
-smeshgui.SetName( idMef, "MEFISTO_2D" )
+smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D" )
 
 print "-------------------------- NETGEN_3D"
 
-alg3D = gen.CreateHypothesis( "NETGEN_3D" )
-algo3D = alg3D._narrow( SMESH.SMESH_Algo )
-listHyp = algo3D.GetCompatibleHypothesis()
+algoNg = smesh.CreateHypothesis( "NETGEN_3D", "libNETGENEngine.so" )
+listHyp = algoNg.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
-algoNg = alg3D._narrow( SMESH.SMESH_NETGEN_3D )
 print algoNg.GetName()
 print algoNg.GetId()
 
-idNg = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(algoNg) )
-smeshgui.SetName( idNg, "NETGEN_2D" )
+smeshgui.SetName(salome.ObjectToID(algoNg), "NETGEN_3D" )
 
 print "-------------------------- add hypothesis to main mechanic"
 
 shape_mesh = salome.IDToObject( idMechanic  )
-submesh    = mesh.GetElementsOnShape( shape_mesh )
 
-ret = mesh.AddHypothesis( shape_mesh, algoReg1D )   # Regular 1D/wire discretisation
-print ret
-ret = mesh.AddHypothesis( shape_mesh, algoMef )     # MEFISTO 2D
-print ret
-ret = mesh.AddHypothesis( shape_mesh, algoNg )     # NETGEN 3D
-print ret
-ret = mesh.AddHypothesis( shape_mesh, hypNbSeg )   # nb segments
-print ret
-ret = mesh.AddHypothesis( shape_mesh, hypArea )    # max area
-print ret
-ret = mesh.AddHypothesis( shape_mesh, hypVolume )    # max volume
-print ret
+mesh = smesh.CreateMesh(shape_mesh)
+smeshgui.SetName(salome.ObjectToID(mesh), "Mesh_mechanic_tetra" );
 
-smeshgui.SetAlgorithms( idmesh, idReg1D );  # Regular 1D/wire discretisation
-smeshgui.SetAlgorithms( idmesh, idMef );    # MEFISTO 2D
-smeshgui.SetAlgorithms( idmesh, idNg );    # NETGEN 3D
-smeshgui.SetHypothesis( idmesh, idSeg );    # nb segments
-smeshgui.SetHypothesis( idmesh, idArea );  # max area
-smeshgui.SetHypothesis( idmesh, idVolume );  # max volume
+mesh.AddHypothesis( shape_mesh, algoReg1D )   # Regular 1D/wire discretisation
+mesh.AddHypothesis( shape_mesh, algoMef )     # MEFISTO 2D
+mesh.AddHypothesis( shape_mesh, algoNg )     # NETGEN 3D
 
-sg.updateObjBrowser(1);
+mesh.AddHypothesis( shape_mesh, hypNbSeg )   # nb segments
+mesh.AddHypothesis( shape_mesh, hypArea )    # max area
+mesh.AddHypothesis( shape_mesh, hypVolume )    # max volume
 
 print "-------------------------- compute the mesh of the mechanic piece"
-ret=gen.Compute(mesh,idMechanic)
-print ret
-log=mesh.GetLog(0) # no erase trace
-for linelog in log:
-    print linelog
+smesh.Compute(mesh,shape_mesh)
 
-sg.updateObjBrowser(1)
+print "Information about the Mesh_mechanic_tetra:"
+print "Number of nodes      : ", mesh.NbNodes()
+print "Number of edges      : ", mesh.NbEdges()
+print "Number of faces      : ", mesh.NbFaces()
+print "Number of triangles  : ", mesh.NbTriangles()
+print "Number of volumes: ", mesh.NbVolumes()
+print "Number of tetrahedrons: ", mesh.NbTetras()
+
+salome.sg.updateObjBrowser(1);
+

@@ -27,12 +27,9 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_Algo_i.hxx"
-#include "SMESH_Gen.hxx"
-#include "SMESH_HypothesisFactory.hxx"
+#include "SMESH_Algo.hxx"
 
-#include "Utils_CorbaException.hxx"
 #include "utilities.h"
 
 #include <string>
@@ -40,56 +37,49 @@ using namespace std;
 
 //=============================================================================
 /*!
- *  
+ *  SMESH_Algo_i::SMESH_Algo_i
+ * 
+ *  Constructor
  */
 //=============================================================================
 
-SMESH_Algo_i::SMESH_Algo_i()
+SMESH_Algo_i::SMESH_Algo_i( PortableServer::POA_ptr thePOA )
+     : SALOME::GenericObj_i( thePOA ), 
+       SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE("SMESH_Algo_i::SMESH_Algo_i");
+  MESSAGE( "SMESH_Algo_i::SMESH_Algo_i" );
 }
 
 //=============================================================================
 /*!
- *  
+ *  SMESH_Algo_i::~SMESH_Algo_i
+ * 
+ *  Destructor
  */
 //=============================================================================
 
 SMESH_Algo_i::~SMESH_Algo_i()
 {
-  MESSAGE("SMESH_Algo_i::~SMESH_Algo_i");
+  MESSAGE( "SMESH_Algo_i::~SMESH_Algo_i" );
 }
 
 //=============================================================================
 /*!
- *  
+ *  SMESH_Algo_i::GetCompatibleHypothesis
+ * 
+ *  Gets list of compatible hypotheses
  */
 //=============================================================================
 
 SMESH::ListOfHypothesisName* SMESH_Algo_i::GetCompatibleHypothesis()
 {
-  MESSAGE("SMESH_Algo_i::GetCompatibleHypothesis");
-  SMESH::ListOfHypothesisName_var listOfHypothesis 
-    = new SMESH::ListOfHypothesisName;
-  const vector<string> & hypList = _impl->GetCompatibleHypothesis();
+  MESSAGE( "SMESH_Algo_i::GetCompatibleHypothesis" );
+  SMESH::ListOfHypothesisName_var listOfHypothesis = new SMESH::ListOfHypothesisName;
+  const vector<string>& hypList = ( ( ::SMESH_Algo* )myBaseImpl )->GetCompatibleHypothesis();
   int nbHyp = hypList.size();
-  listOfHypothesis->length(nbHyp);
-  for (int i=0; i<nbHyp; i++)
-    {
-      listOfHypothesis[i] = hypList[i].c_str();
-    }
+  listOfHypothesis->length( nbHyp );
+  for ( int i = 0; i < nbHyp; i++ ) {
+    listOfHypothesis[ i ] = strdup( hypList[ i ].c_str() );
+  }
   return listOfHypothesis._retn();
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-void SMESH_Algo_i::SetImpl(::SMESH_Algo* impl)
-{
-  MESSAGE("SMESH_Algo_i::SetImpl");
-  //SMESH_Algo_i::SetImpl(impl);
-  _impl = impl;
 }

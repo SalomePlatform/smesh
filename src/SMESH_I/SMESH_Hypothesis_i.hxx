@@ -32,24 +32,77 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
-class SMESH_Gen;
-class SMESH_Hypothesis;
+#include "SMESH_Hypothesis.hxx"
+#include "SALOME_GenericObj_i.hh"
 
+#include "SMESH_Gen.hxx"
+
+// ======================================================
+// Generic hypothesis
+// ======================================================
 class SMESH_Hypothesis_i:
-  public POA_SMESH::SMESH_Hypothesis
+  public virtual POA_SMESH::SMESH_Hypothesis,
+  public virtual SALOME::GenericObj_i
 {
 public:
-  SMESH_Hypothesis_i();
+  // Constructor : placed in protected section to prohibit creation of generic class instance
+  SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA );
+
+public:
+  // Destructor
   virtual ~SMESH_Hypothesis_i();
 
+  // Get type name of hypothesis
   char* GetName();
+
+  // Get plugin library name of hypothesis
+  char* GetLibName();
+
+  // Set plugin library name of hypothesis
+  void SetLibName( const char* theLibName );
+
+  // Get unique id of hypothesis
   CORBA::Long GetId();
-  ::SMESH_Hypothesis* getImpl();
+
+  // Get implementation
+  ::SMESH_Hypothesis* GetImpl();
+  
+  // Persistence
+  virtual char* SaveTo();
+  virtual void  LoadFrom( const char* theStream );
   
 protected:
-  ::SMESH_Hypothesis* _baseImpl;
-  ::SMESH_Gen* _genImpl;
-  int _id;
+  ::SMESH_Hypothesis* myBaseImpl;    // base hypothesis implementation
+};
+
+// ======================================================
+// Generic hypothesis creator
+// ======================================================
+class GenericHypothesisCreator_i
+{
+public:
+  // Create a hypothesis
+  virtual SMESH_Hypothesis_i* Create(PortableServer::POA_ptr thePOA,
+                                     int                     theStudyId,
+                                     ::SMESH_Gen*            theGenImpl) = 0;
+};
+
+//=============================================================================
+//
+// Specific Hypothesis Creators are generated with a template which inherits a
+// generic hypothesis creator. Each creator returns an hypothesis of the type
+// given in the template. 
+//
+//=============================================================================
+template <class T> class HypothesisCreator_i: public GenericHypothesisCreator_i
+{
+public:
+  virtual SMESH_Hypothesis_i* Create (PortableServer::POA_ptr thePOA,
+                                      int                     theStudyId,
+                                      ::SMESH_Gen*            theGenImpl) 
+  {
+    return new T (thePOA, theStudyId, theGenImpl);
+  };
 };
 
 #endif

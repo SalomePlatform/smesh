@@ -47,7 +47,7 @@ if test -f ${GEOM_DIR}/bin/salome/libGEOM_Swig.py ; then
 else
    AC_MSG_WARN("Cannot find compiled Geom module distribution")
 fi
-  
+
 AC_MSG_RESULT(for Geom: $Geom_ok)
  
 ])dnl

@@ -6,7 +6,7 @@
 top_srcdir=@top_srcdir@
 top_builddir=..
 srcdir=@srcdir@
-VPATH=.:$(srcdir):${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+VPATH=.:${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
 
 @COMMENCE@
 
@@ -14,16 +14,21 @@ IDL_FILES = \
   SMESH_Gen.idl \
   SMESH_Mesh.idl \
   SMESH_Hypothesis.idl \
-  SMESH_BasicHypothesis.idl
+  SMESH_BasicHypothesis.idl \
+  SMESH_Filter.idl \
+  SMESH_Group.idl
 
 PY_CLIENT_IDL = $(IDL_FILES)
 
 # we copy all idl file in $(top_builddir)/idl
-inc: $(IDL_FILES:%=$(top_builddir)/idl/%)
+inc: $(top_builddir)/idl/salome $(IDL_FILES:%=$(top_builddir)/idl/salome/%)
 
-$(IDL_FILES:%=$(top_builddir)/idl/%):$(top_builddir)/idl/%:%
+$(top_builddir)/idl/salome:
+	mkdir $@
+
+$(IDL_FILES:%=$(top_builddir)/idl/salome/%):$(IDL_FILES:%=$(top_srcdir)/idl/%)
 #	$(CP) $< $@
-	cp -f $< $@
+	cp -f $^ $(top_builddir)/idl/salome
 
 
 lib: pyidl
@@ -35,7 +40,7 @@ pyidl: $(PYTHON_BUILD_SITE) $(IDL_FILES:%.idl=$(PYTHON_BUILD_SITE)/%_idl.py)
 $(PYTHON_BUILD_SITE):
 	$(INSTALL) -d  $@
 
-$(PYTHON_BUILD_SITE)/%_idl.py: %.idl
+$(PYTHON_BUILD_SITE)/%_idl.py: $(top_builddir)/idl/salome/%.idl
 	$(OMNIORB_IDL) $(OMNIORB_IDLPYFLAGS) -C$(PYTHON_BUILD_SITE) $<
 
 
@@ -43,12 +48,12 @@ $(PYTHON_BUILD_SITE)/%_idl.py: %.idl
 install: install-pyidl install-idl
 
 # create directory $(idldir) and copy idl files into it
-install-idl: $(IDL_FILES)
+install-idl: $(IDL_FILES:%=$(top_builddir)/idl/salome/%)
 	$(INSTALL) -d  $(idldir)
 	$(INSTALL_DATA) $^ $(idldir)
 
 
-install-pyidl: $(IDL_FILES)
+install-pyidl: $(IDL_FILES:%=$(top_builddir)/idl/salome/%)
 	$(INSTALL) -d  $(PYTHON_SITE_INSTALL)
 	@for file in $^ dummy; do \
 	  if [ $$file != "dummy" ]; then \
@@ -63,6 +68,6 @@ cleandep:
 
 distclean:
 	-$(RM) *.py
-	-$(RM) $(IDL_FILES:%=$(top_builddir)/idl/%)
+	-$(RM) $(IDL_FILES:%=$(top_builddir)/idl/salome/%)
 	-$(RM) Makefile
 

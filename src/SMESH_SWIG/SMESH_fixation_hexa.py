@@ -5,14 +5,13 @@
 #
 
 import SMESH_fixation
-import SMESH
-import smeshpy
+
+import StdMeshers
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp
 geompy = SMESH_fixation.geompy
 salome = SMESH_fixation.salome
-sg = SMESH_fixation.sg
 
 ShapeTypeShell     = 3
 ShapeTypeFace      = 4
@@ -30,12 +29,11 @@ print "number of Edges in compshell : ",len(subEdgeList)
 status=geompy.CheckShape(compshell)
 print " check status ", status
 
-### ---- launch SMESH
+### ---------------------------- SMESH --------------------------------------
+smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
 smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId)
-
-gen=smeshpy.smeshpy()
 
 ### ---- create Hypothesis
 
@@ -45,16 +43,14 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 5
 
-hyp1=gen.CreateHypothesis("NumberOfSegments")
-hypNbSeg=hyp1._narrow(SMESH.SMESH_NumberOfSegments)
+hypNbSeg=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
-hypNbSegID = hypNbSeg.GetId()
+
 print hypNbSeg.GetName()
-print hypNbSegID
+print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
 
-idseg = smeshgui.AddNewHypothesis( salome.orb.object_to_string(hypNbSeg) )
-smeshgui.SetName(idseg, "NumberOfSegments")
+smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_5")
 
 # ---- create Algorithms
 
@@ -62,61 +58,54 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-hypothesis=gen.CreateHypothesis("Regular_1D")
-regular1D = hypothesis._narrow(SMESH.SMESH_Regular_1D)
-regularID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(regular1D) )
-smeshgui.SetName(regularID, "Wire Discretisation")
+regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+
+smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- Quadrangle_2D"
 
-hypothesis=gen.CreateHypothesis("Quadrangle_2D")
-quad2D = hypothesis._narrow(SMESH.SMESH_Quadrangle_2D)
-quadID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(quad2D) )
-smeshgui.SetName(quadID, "Quadrangle_2D")
+quad2D=smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
+
+smeshgui.SetName(salome.ObjectToID(quad2D), "Quadrangle_2D")
 
 print "-------------------------- Hexa_3D"
 
-hypothesis=gen.CreateHypothesis("Hexa_3D")
-hexa3D = hypothesis._narrow(SMESH.SMESH_Hexa_3D)
-hexaID = smeshgui.AddNewAlgorithms( salome.orb.object_to_string(hexa3D) )
-smeshgui.SetName(hexaID, "Hexa_3D")
+hexa3D=smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+
+smeshgui.SetName(salome.ObjectToID(hexa3D), "Hexa_3D")
 
 # ---- init a Mesh with the compshell
+shape_mesh = salome.IDToObject( idcomp  )
 
-mesh=gen.Init(idcomp)
-idmesh = smeshgui.AddNewMesh( salome.orb.object_to_string(mesh) )
-smeshgui.SetName(idmesh, "MeshcompShel")
-smeshgui.SetShape(idcomp, idmesh)
+mesh=smesh.CreateMesh(shape_mesh)
+smeshgui.SetName(salome.ObjectToID(mesh), "MeshCompShell")
+
 
 # ---- add hypothesis to compshell
 
 print "-------------------------- add hypothesis to compshell"
 
-ret=mesh.AddHypothesis(compshell,regular1D)
-print ret
-ret=mesh.AddHypothesis(compshell,hypNbSeg)
-print ret
-ret=mesh.AddHypothesis(compshell,quad2D)
-print ret
-ret=mesh.AddHypothesis(compshell,hexa3D)
-print ret
+mesh.AddHypothesis(shape_mesh,regular1D)
+mesh.AddHypothesis(shape_mesh,hypNbSeg)
 
-smeshgui.SetAlgorithms( idmesh, regularID)
-smeshgui.SetHypothesis( idmesh, idseg )
-smeshgui.SetAlgorithms( idmesh, quadID )
-smeshgui.SetAlgorithms( idmesh, hexaID )
+mesh.AddHypothesis(shape_mesh,quad2D)
+mesh.AddHypothesis(shape_mesh,hexa3D)
 
-sg.updateObjBrowser(1)
-
+salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute compshell"
-ret=gen.Compute(mesh,idcomp)
+ret=smesh.Compute(mesh, shape_mesh)
 print ret
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
+    print "Information about the MeshcompShel:"
+    print "Number of nodes       : ", mesh.NbNodes()
+    print "Number of edges       : ", mesh.NbEdges()
+    print "Number of faces       : ", mesh.NbFaces()
+    print "Number of quadrangles : ", mesh.NbQuadrangles()
+    print "Number of volumes     : ", mesh.NbVolumes()
+    print "Number of hexahedrons : ", mesh.NbHexas()
 else:
     print "problem when Computing the mesh"
-
-sg.updateObjBrowser(1)
