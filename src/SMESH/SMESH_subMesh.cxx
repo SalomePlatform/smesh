@@ -1550,7 +1550,7 @@ static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
 
 void SMESH_subMesh::RemoveSubMeshElementsAndNodes()
 {
-  SCRUTE(_subShape.ShapeType());
+  //SCRUTE(_subShape.ShapeType());
 
   removeSubMesh( _meshDS, _subShape );
 
