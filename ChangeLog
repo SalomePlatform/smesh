@@ -4,6 +4,23 @@
 #cvs2cl.pl --accum -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2004-03-23 09:53  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHGUI/SMESHGUI.cxx: Add a MEDFILE attribut for selection
+	  in Efficas. Patch submited by P. Rascle on 2004-03-22.
+	* src/SMDS/SMDS_Position.cxx: Fix bug SMESH5512 (Crash on DEBIAN
+	  woody, V1_4_0b).
+
+2004-03-16 12:51  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHGUI/SMESHGUI_Swig.cxx: Fix bug SMESH5451: SMESH_mechanic
+	  script aborts.
+	* doc/html/SMESHTutorial_1/: ControlFeature.png, ImportResult.png,
+	  MeshInit.png, MeshResult.png, MeshResult2.png, SMESHOverview.png,
+	  SMESHTutorial_1.html, SelectAlgorithms.png, SetColor.png,
+	  SubMeshContruction.png, SubShapesSelection.png: Add a small
+	  tutorial.
+
 2004-03-15 18:42  Jerome Robert <jerome.robert@eads.net>
 
 	* Merge br_enable_import_mesh. Enable import mesh and save/load SMESH study.
