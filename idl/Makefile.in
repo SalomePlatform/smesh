@@ -6,7 +6,7 @@
 top_srcdir=@top_srcdir@
 top_builddir=..
 srcdir=@srcdir@
-VPATH=.:$(srcdir):${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome
+VPATH=.:$(srcdir):${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
 
 @COMMENCE@
 
@@ -17,6 +17,7 @@ IDL_FILES = \
   SALOME_Exception.idl \
   Logger.idl \
   SALOME_ModuleCatalog.idl \
+  MED.idl \
   GEOM_Shape.idl \
   GEOM_Gen.idl \
   SMESH_Gen.idl \
