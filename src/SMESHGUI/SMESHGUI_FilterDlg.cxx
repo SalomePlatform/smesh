@@ -2443,7 +2443,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject() ;
   GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>( anIO ) ;
   if ( !anObj->_is_nil() )
-    myTable->SetThreshold( aRow, anIO->getName() );
+    myTable->SetThreshold( aRow, GEOMBase::GetName(anObj) );
 }
 
 //=======================================================================
