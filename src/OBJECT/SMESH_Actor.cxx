@@ -1064,8 +1064,10 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       my3DActor->VisibilityOn();
     }
     
-    if(myIsPointsLabeled) 
+    if(myIsPointsLabeled){
       myPointLabels->VisibilityOn();
+      myNodeActor->VisibilityOn();
+    }
 
     if(myIsCellsLabeled) 
       myCellsLabels->VisibilityOn();
