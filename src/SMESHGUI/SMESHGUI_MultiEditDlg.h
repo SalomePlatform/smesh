@@ -100,7 +100,7 @@ protected:
   void                      hideEvent ( QHideEvent * );                        /* ESC key */
   QFrame*                   createButtonFrame( QWidget* );
   QFrame*                   createMainFrame  ( QWidget*, const bool );
-  bool                      isValid( const bool );
+  bool                      isValid( const bool ) const;
   SMESH::long_array_var     getIds();
   void                      updateButtons();
   void                      setSelectionMode();
@@ -143,7 +143,6 @@ protected:
   Handle(SMESH_TypeFilter)  myGroupFilter;
   bool                      myBusy;
   int                       myEntityType;
-  Handle(SALOME_InteractiveObject) myIO;
 };
 
 /*
