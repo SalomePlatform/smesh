@@ -17,4 +17,8 @@ MergeV1_2c-1: 2003-10-19 13:49
 	End of merge_1_2_c__1_2_2 branch. This branch is ready to be merge with the head.
 
 V1_3_0b1: 2003-11-12
-	First pre-release of 1.3.0. Include the merge of 1.2c branch.	
+	First pre-release of 1.3.0. Include the merge of 1.2c branch.
+
+nadir_update_MED_v1_3_0: 2003-11-17 10:22
+	New branch for user nadir. Synchronization of API with MED 1.3.
+
