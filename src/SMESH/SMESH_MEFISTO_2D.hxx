@@ -79,8 +79,8 @@ public:
 protected:
   double _edgeLength;
   double _maxElementArea;
-  SMESH_MaxElementArea* _hypMaxElementArea;
-  SMESH_LengthFromEdges* _hypLengthFromEdges;
+  const SMESH_MaxElementArea* _hypMaxElementArea;
+  const SMESH_LengthFromEdges* _hypLengthFromEdges;
 };
 
 #endif

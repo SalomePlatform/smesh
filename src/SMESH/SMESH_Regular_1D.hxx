@@ -56,8 +56,8 @@ protected:
   double _localLength;
   int _numberOfSegments;
   double _scaleFactor;
-  SMESH_LocalLength* _hypLocalLength;
-  SMESH_NumberOfSegments* _hypNumberOfSegments;
+  const SMESH_LocalLength* _hypLocalLength;
+  const SMESH_NumberOfSegments* _hypNumberOfSegments;
 };
 
 #endif
