@@ -1,0 +1,157 @@
+-- File      : SMESHDS_Mesh.cdl
+-- Created   : 
+-- Author    : Yves FRICAUD, OCC
+-- Project   : SALOME
+-- Copyright : OCC
+
+
+class Mesh from SMESHDS inherits Mesh from SMDS
+
+uses 
+	Mesh                              from SMDS,
+	MeshNode	                  from SMDS,	
+	MeshEdge                          from SMDS,	
+	MeshFace                          from SMDS,	
+	MeshElement                       from SMDS,	
+	Shell                             from TopoDS,
+	Shape                             from TopoDS,
+	Face                              from TopoDS,
+	Edge                              from TopoDS,
+	Vertex                            from TopoDS,
+	SubMesh	                          from SMESHDS,
+	PtrHypothesis                     from SMESHDS,
+	ListOfPtrHypothesis               from SMESHDS,
+	Script                            from SMESHDS,
+	IndexedMapOfShape                 from TopTools,
+	DataMapOfIntegerSubMesh           from SMESHDS,
+	DataMapOfShapeListOfPtrHypothesis from SMESHDS
+
+	
+is
+
+	Create (MeshID : Integer from Standard) returns mutable Mesh from SMESHDS;
+	
+-- Building
+
+	ShapeToMesh (me: mutable; S : Shape from TopoDS);
+
+   	AddHypothesis(me: mutable; SS : in Shape from TopoDS; H : PtrHypothesis from SMESHDS)
+	returns Boolean;	
+
+   	RemoveHypothesis(me: mutable; S : in Shape from TopoDS; H : PtrHypothesis from SMESHDS)
+	returns Boolean;	
+
+	
+	-- Building Node
+	
+	AddNode(me: mutable; x,y,z : Real) returns Integer from Standard
+	is redefined;
+
+	RemoveNode (me: mutable; ID: Integer) is redefined;
+	
+	MoveNode (me: mutable; ID: Integer; x,y,z: Real);
+  	
+	
+	-- Building Edge
+    	AddEdge(me: mutable; idnode1, idnode2 : Integer) returns Integer from Standard
+	is redefined;
+
+	-- Building Face
+    	AddFace(me: mutable; idnode1, idnode2, idnode3 : Integer) returns Integer from Standard
+	-- To build a Triangle
+	is redefined;
+
+
+    	AddFace(me: mutable; idnode1, idnode2, idnode3 , idnode4 : Integer) returns Integer from Standard
+	-- To build a quadrangle
+	is redefined;
+
+	-- Building Volume
+	
+	AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4 : Integer) returns Integer
+	-- To build a Tetrahedron
+	is redefined;
+
+	AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5 : Integer) returns Integer
+	-- To build a Pyramid
+	is redefined;
+
+	AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6 : Integer) returns Integer
+	-- To build a Prism
+	is redefined;
+
+	AddVolume(me: mutable; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6, idnode7, idnode8 : Integer) returns Integer
+	-- To build a Hexahedron
+	is redefined;
+
+
+        RemoveElement(me: mutable; IDelem : Integer)
+	is redefined;
+
+	-- Binding  BRep and MeshElements
+
+	SetNodeInVolume (me: mutable; aNode : MeshNode from SMDS ; S : Shell  from TopoDS);
+
+	SetNodeOnFace  (me: mutable; aNode : MeshNode from SMDS ; S : Face  from TopoDS);
+
+	SetNodeOnEdge  (me: mutable; aNode : MeshNode from SMDS ; S : Edge   from TopoDS);
+
+	SetNodeOnVertex(me: mutable; aNode : MeshNode from SMDS ; S : Vertex from TopoDS);
+
+	UnSetNodeOnShape (me: mutable; aNode : MeshNode from SMDS);
+
+	SetMeshElementOnShape (me: mutable; anElt : MeshElement from SMDS ; S : Shape from TopoDS);
+
+	UnSetMeshElementOnShape (me: mutable; anElt : MeshElement from SMDS ; S : Shape from TopoDS) ;
+
+-- Exploration 
+
+	ShapeToMesh (me: mutable) returns Shape from TopoDS;
+
+	HasMeshElements (me: mutable; S : Shape from TopoDS)  returns Boolean from Standard;
+
+	MeshElements (me: mutable; S : Shape from TopoDS)  returns SubMesh from SMESHDS;
+
+	HasHypothesis (me: mutable; S : Shape from TopoDS)  returns Boolean from Standard;
+
+	GetHypothesis (me: mutable; S : Shape from TopoDS) 
+	---C++ : return const &	
+	returns ListOfPtrHypothesis from SMESHDS;	
+
+-- Historic of commands
+	
+	GetScript(me: mutable) returns Script from SMESHDS;
+	---C++ : return const &
+
+
+	ClearScript(me: mutable);
+
+-- Methods for persitance
+
+	ShapeToIndex (me : mutable; aShape : Shape from TopoDS) returns Integer from Standard;
+
+	IndexToShape (me : mutable; ShapeIndex : Integer from Standard) returns Shape from TopoDS;
+
+	NewSubMesh (me : mutable; Index : Integer from Standard);
+
+	SetNodeInVolume (me: mutable; aNode : MeshNode from SMDS ; Index : Integer from Standard);
+
+	SetNodeOnFace  (me: mutable; aNode : MeshNode from SMDS ;  Index : Integer from Standard);
+
+	SetNodeOnEdge  (me: mutable; aNode : MeshNode from SMDS ;  Index : Integer from Standard);
+
+	SetNodeOnVertex(me: mutable; aNode : MeshNode from SMDS ;  Index : Integer from Standard);
+
+	SetMeshElementOnShape (me: mutable; anElt : MeshElement from SMDS ; Index : Integer from Standard);
+
+
+fields
+
+	myMeshID              : Integer                           from Standard;	
+	myShape               : Shape                             from TopoDS;
+	myIndexToShape        : IndexedMapOfShape                 from TopTools; -- Gives Index from Shape and Shape from Index
+	myShapeIndexToSubMesh : DataMapOfIntegerSubMesh           from SMESHDS ;
+	myShapeToHypothesis   : DataMapOfShapeListOfPtrHypothesis from SMESHDS; 
+	myScript              : Script                            from SMESHDS;
+
+end Mesh;

@@ -1,0 +1,62 @@
+-- File      : SMESHDS_Script.cdl
+-- Created   : 
+-- Author    : Yves FRICAUD, OCC
+-- Project   : SALOME
+-- Copyright : OCC
+
+class Command from SMESHDS inherits TShared from MMgt
+
+uses 
+
+	Integer        from Standard,
+	Real           from Standard,
+	CommandType    from SMESHDS,
+	ListOfReal     from TColStd,
+	ListOfInteger  from TColStd
+
+is
+
+	Create (aType : CommandType from SMESHDS) returns Command from SMESHDS;
+
+	AddNode(me: mutable; NewNodeID : Integer; x,y,z : Real); 
+		
+    	AddEdge(me: mutable; NewEdgeID : Integer; idnode1, idnode2 : Integer); 
+
+    	AddFace(me: mutable; NewFaceID : Integer; idnode1, idnode2, idnode3 : Integer);
+
+    	AddFace(me: mutable; NewFaceID : Integer; idnode1, idnode2, idnode3, idnode4 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6, idnode7, idnode8 : Integer);
+    
+	MoveNode(me: mutable; NewNodeID : Integer; x,y,z : Real); 
+
+        RemoveNode (me: mutable; NodeID : Integer);
+
+        RemoveElement(me: mutable; ElementID : Integer);
+		
+	GetType (me: mutable) returns CommandType from SMESHDS;	
+	
+	GetNumber (me: mutable) returns Integer from Standard;
+
+	GetIndexes 	(me: mutable) 
+	---C++ :return const &		
+	returns  ListOfInteger  from TColStd;
+
+	GetCoords 	(me: mutable) 
+	---C++ :return const &		
+	returns  ListOfReal  from TColStd;
+
+
+
+fields
+	myType     : CommandType from SMESHDS;	
+	myNumber   : Integer from Standard;	
+	myReals    : ListOfReal from TColStd;
+	myIntegers : ListOfInteger  from TColStd;
+end Script;

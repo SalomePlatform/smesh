@@ -1,0 +1,6 @@
+#ifndef _SMESHDS_Mesh_HeaderFile
+#include "SMESHDS_Mesh.hxx"
+#endif
+#ifndef _SMESHDS_Document_HeaderFile
+#include "SMESHDS_Document.hxx"
+#endif

@@ -1,0 +1,52 @@
+-- File      : SMESHDS_Script.cdl
+-- Created   : 
+-- Author    : Yves FRICAUD, OCC
+-- Project   : SALOME
+-- Copyright : OCC
+
+class Script from SMESHDS inherits TShared from MMgt
+
+uses 
+	Integer        from Standard,
+	Real           from Standard,
+	CString        from Standard,
+	ListOfCommand  from SMESHDS
+
+is
+
+	--Building
+	AddNode(me: mutable; NewNodeID : Integer; x,y,z : Real); 
+		
+    	AddEdge(me: mutable; NewEdgeID : Integer; idnode1, idnode2 : Integer); 
+
+    	AddFace(me: mutable; NewFaceID : Integer; idnode1, idnode2, idnode3 : Integer);
+
+    	AddFace(me: mutable; NewFaceID : Integer; idnode1, idnode2, idnode3, idnode4 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6 : Integer);
+
+    	AddVolume(me: mutable; NewVolID : Integer; idnode1, idnode2, idnode3, idnode4, idnode5, idnode6, idnode7, idnode8 : Integer);
+
+
+	MoveNode(me: mutable; NewNodeID : Integer; x,y,z : Real); 
+    
+        RemoveNode (me: mutable; NodeID : Integer);
+
+        RemoveElement(me: mutable; ElementID : Integer);
+		
+	Clear (me : mutable);
+
+	-- Querry
+
+	GetCommands (me : mutable) returns ListOfCommand from SMESHDS;
+	---C++ :return const &	
+fields
+	
+	myCommands : ListOfCommand from SMESHDS;
+
+
+end Script;

@@ -1,0 +1,6 @@
+#ifndef _SMESHDS_ListOfCommand_HeaderFile
+#include "SMESHDS_ListOfCommand.hxx"
+#endif
+#ifndef _SMESHDS_Script_HeaderFile
+#include "SMESHDS_Script.hxx"
+#endif

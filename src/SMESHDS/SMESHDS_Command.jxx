@@ -1,0 +1,9 @@
+#ifndef _TColStd_ListOfInteger_HeaderFile
+#include <TColStd_ListOfInteger.hxx>
+#endif
+#ifndef _TColStd_ListOfReal_HeaderFile
+#include <TColStd_ListOfReal.hxx>
+#endif
+#ifndef _SMESHDS_Command_HeaderFile
+#include "SMESHDS_Command.hxx"
+#endif

@@ -1,0 +1,62 @@
+-- File      : SMESHDS_SubMesh.cdl
+-- Created   : 
+-- Author    : Yves FRICAUD, OCC
+-- Project   : SALOME
+-- Copyright : OCC
+
+class SubMesh from SMESHDS inherits TShared from MMgt
+
+uses 
+	Mesh              from SMDS,
+	MeshElement       from SMDS,
+	MeshNode          from SMDS,
+	ListOfInteger     from TColStd,	
+	MapOfMeshElement  from SMDS	
+
+is
+
+	Create (M : Mesh from SMDS) returns mutable SubMesh from SMESHDS;
+	
+	-- Build
+
+	AddElement   (me : mutable; ME : MeshElement from SMDS);
+
+        RemoveElement    (me: mutable; ME : MeshElement from SMDS);
+
+	AddNode    (me : mutable; ME : MeshNode from SMDS);
+
+        RemoveNode (me: mutable; ME : MeshNode from SMDS);
+
+	
+	-- Querry
+
+	NbElements (me: mutable) returns Integer from Standard;
+
+	GetElements (me: mutable ) returns MapOfMeshElement from SMDS;
+	---C++ : return const &
+
+	GetIDElements (me: mutable) returns ListOfInteger from TColStd;
+	---C++ : return const &
+
+	NbNodes (me: mutable) returns Integer from Standard;
+
+	GetNodes (me: mutable ) returns MapOfMeshElement from SMDS;
+	---C++ : return const &
+
+	GetIDNodes (me: mutable) returns ListOfInteger from TColStd;
+	---C++ : return const &
+
+fields
+
+	myMesh                  : Mesh              from SMDS;
+	myElements              : MapOfMeshElement  from SMDS;
+	myNodes                 : MapOfMeshElement  from SMDS;
+
+	myListOfEltIDIsUpdate   : Boolean           from Standard;
+	myListOfEltID           : ListOfInteger     from TColStd;
+
+	myListOfNodeIDIsUpdate  : Boolean           from Standard;
+	myListOfNodeID          : ListOfInteger     from TColStd;
+	
+
+end SubMesh;

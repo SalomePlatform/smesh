@@ -1,0 +1,70 @@
+-- File      : SMESHDS.cdl
+-- Created   : 
+-- Author    : Yves FRICAUD, OCC
+-- Project   : SALOME
+-- Copyright : OCC
+
+
+package SMESHDS
+
+uses 
+	Standard,
+	TColStd,
+	SMDS,
+	TCollection,
+	TopoDS,
+	TopTools
+
+is
+
+	enumeration  
+	CommandType  is AddNode,  AddEdge,  AddTriangle,  AddQuadrangle,   AddTetrahedron,  AddPyramid,  
+	AddPrism,  AddHexahedron, RemoveNode, RemoveElement, MoveNode 
+	end CommandType;	
+	
+	class Document;
+	
+	class Mesh;
+
+	class SubMesh;
+
+	imported Hypothesis;
+
+	pointer PtrHypothesis to Hypothesis from SMESHDS;
+	
+	class Script;
+
+	class Command;
+
+
+
+	class DataMapOfShapeSubMesh instantiates DataMap from TCollection (Shape from TopoDS,
+									   SubMesh from SMESHDS,
+								           ShapeMapHasher from TopTools);
+
+	class DataMapOfIntegerSubMesh instantiates  DataMap from TCollection (Integer          from Standard,
+								              SubMesh          from SMESHDS,
+								              MapIntegerHasher from TColStd);	
+
+
+	class DataMapOfIntegerPtrHypothesis instantiates  DataMap from TCollection (Integer from Standard,
+									            PtrHypothesis from SMESHDS,
+										    MapIntegerHasher from TColStd);	
+											
+	class DataMapOfIntegerMesh instantiates  DataMap from TCollection (Integer from Standard,
+								           Mesh    from SMESHDS,
+								           MapIntegerHasher from TColStd);	
+											    
+	class ListOfPtrHypothesis instantiates List from TCollection (PtrHypothesis from SMESHDS);
+
+	
+	class DataMapOfShapeListOfPtrHypothesis instantiates DataMap from TCollection (Shape from TopoDS,
+								       	    	    ListOfPtrHypothesis from SMESHDS, 
+										    ShapeMapHasher from TopTools);
+
+	class ListOfAsciiString  instantiates List from TCollection (AsciiString from TCollection);
+
+	class ListOfCommand      instantiates List from TCollection (Command from SMESHDS);
+								 
+
+end SMESHDS;

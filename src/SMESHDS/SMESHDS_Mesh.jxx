@@ -1,0 +1,30 @@
+#ifndef _SMESHDS_Script_HeaderFile
+#include "SMESHDS_Script.hxx"
+#endif
+#ifndef _TopoDS_Shape_HeaderFile
+#include <TopoDS_Shape.hxx>
+#endif
+#ifndef _SMDS_MeshNode_HeaderFile
+#include "SMDS_MeshNode.hxx"
+#endif
+#ifndef _TopoDS_Face_HeaderFile
+#include <TopoDS_Face.hxx>
+#endif
+#ifndef _TopoDS_Edge_HeaderFile
+#include <TopoDS_Edge.hxx>
+#endif
+#ifndef _TopoDS_Vertex_HeaderFile
+#include <TopoDS_Vertex.hxx>
+#endif
+#ifndef _SMDS_MeshElement_HeaderFile
+#include "SMDS_MeshElement.hxx"
+#endif
+#ifndef _SMESHDS_SubMesh_HeaderFile
+#include "SMESHDS_SubMesh.hxx"
+#endif
+#ifndef _SMESHDS_ListOfPtrHypothesis_HeaderFile
+#include "SMESHDS_ListOfPtrHypothesis.hxx"
+#endif
+#ifndef _SMESHDS_Mesh_HeaderFile
+#include "SMESHDS_Mesh.hxx"
+#endif
