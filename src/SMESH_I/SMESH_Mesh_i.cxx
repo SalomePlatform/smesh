@@ -262,6 +262,12 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
   list<int> aGroupIds = _impl->GetGroupIds();
   for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
     SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
+
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
+    aGroupImpl->Register();
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+
     SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
     _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
 
