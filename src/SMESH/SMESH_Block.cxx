@@ -26,6 +26,9 @@
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
+#include <Extrema_ExtPC.hxx>
+#include <Extrema_POnCurv.hxx>
+#include <GeomAdaptor_Curve.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
@@ -381,9 +384,24 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
                                     gp_XYZ&       theParams,
                                     const int     theShapeID)
 {
+  if ( VertexParameters( theShapeID, theParams ))
+    return true;
+
+  if ( IsEdgeID( theShapeID )) {
+    TEdge& e = myEdge[ theShapeID - ID_Ex00 ];
+    GeomAdaptor_Curve curve( e.myC3d );
+    double f = Min( e.myFirst, e.myLast ), l = Max( e.myFirst, e.myLast );
+    Extrema_ExtPC anExtPC( thePoint, curve, f, l );
+    int i, nb = anExtPC.IsDone() ? anExtPC.NbExt() : 0;
+    for ( i = 1; i <= nb; i++ ) {
+      if ( anExtPC.IsMin( i ))
+        return EdgeParameters( theShapeID, anExtPC.Point( i ).Parameter(), theParams );
+    }
+    return false;
+  }
+
 //   MESSAGE( endl<<"SMESH_Block::ComputeParameters( "
 //           <<thePoint.X()<<", "<<thePoint.Y()<<", "<<thePoint.Z()<<")");
-
   myPoint = thePoint.XYZ();
 
   myParam.SetCoord( -1,-1,-1 );
@@ -491,6 +509,42 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
   theParams = myParam;
 
   return true;
+}
+
+//=======================================================================
+//function : VertexParameters
+//purpose  : return parameters of a vertex given by TShapeID
+//=======================================================================
+
+bool SMESH_Block::VertexParameters(const int theVertexID, gp_XYZ& theParams)
+{
+  switch ( theVertexID ) {
+  case ID_V000: theParams.SetCoord(0., 0., 0.); return true;
+  case ID_V100: theParams.SetCoord(1., 0., 0.); return true;
+  case ID_V110: theParams.SetCoord(1., 1., 0.); return true;
+  case ID_V010: theParams.SetCoord(0., 1., 0.); return true;
+  default:;
+  }
+  return false;
+}
+
+//=======================================================================
+//function : EdgeParameters
+//purpose  : return parameters of a point given by theU on edge
+//=======================================================================
+
+bool SMESH_Block::EdgeParameters(const int theEdgeID, const double theU, gp_XYZ& theParams)
+{
+  if ( IsEdgeID( theEdgeID )) {
+    vector< int > vertexVec;
+    GetEdgeVertexIDs( theEdgeID, vertexVec );
+    VertexParameters( vertexVec[0], theParams );
+    TEdge& e = myEdge[ theEdgeID - ID_Ex00 ];
+    double param = ( theU - e.myFirst ) / ( e.myLast - e.myFirst );
+    theParams.SetCoord( e.myCoordInd, param );
+    return true;
+  }
+  return false;
 }
 
 //=======================================================================

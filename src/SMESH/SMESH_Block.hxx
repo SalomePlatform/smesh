@@ -122,7 +122,14 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   bool ComputeParameters (const gp_Pnt& thePoint,
                           gp_XYZ&       theParams,
                           const int     theShapeID = ID_Shell);
-  // compute point parameters in the block
+  // compute point parameters in the block.
+  // Note: for edges, it is better to use EdgeParameters()
+
+  bool VertexParameters(const int theVertexID, gp_XYZ& theParams);
+  // return parameters of a vertex given by TShapeID
+
+  bool EdgeParameters(const int theEdgeID, const double theU, gp_XYZ& theParams);
+  // return parameters of a point given by theU on edge
 
   static void GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec );
   // return edges IDs of a face in the order u0, u1, 0v, 1v
