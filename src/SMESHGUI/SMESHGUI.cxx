@@ -848,6 +848,8 @@ void SMESHGUI::CreateAlgorithm( QString TypeAlgo, QString NameAlgo )
       Hyp = myComponentMesh->CreateHypothesis( TypeAlgo, myStudyId );
     else if ( TypeAlgo.compare("Hexa_3D") == 0 )
       Hyp = myComponentMesh->CreateHypothesis( TypeAlgo, myStudyId );
+    else if ( TypeAlgo.compare("NETGEN_3D") == 0 )
+      Hyp = myComponentMesh->CreateHypothesis( TypeAlgo, myStudyId );
     
     if ( !Hyp->_is_nil() ) {
       SALOMEDS::SObject_var SHyp = myStudyAPI.AddNewAlgorithms( Hyp );
@@ -930,7 +932,7 @@ void SMESHGUI::CreateMaxElementVolume( QString TypeHypothesis, QString NameHypot
  *
  */
 //=============================================================================
-void SMESHGUI::CreateNbSegments( QString TypeHypothesis, QString NameHypothesis, double nbSegments )
+void SMESHGUI::CreateNbSegments( QString TypeHypothesis, QString NameHypothesis, int nbSegments )
 {
   QApplication::setOverrideCursor( Qt::waitCursor );
   try {
@@ -1368,13 +1370,29 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
       float backfacecolor[3];
       float nodecolor[3];
       ac->GetColor(color[0],color[1],color[2]);
-      QColor c(color[0]*255,color[1]*255,color[2]*255);
+//       QColor c(color[0]*255,color[1]*255,color[2]*255);
+      int c0 = int(color[0]*255);
+      int c1 = int(color[1]*255);
+      int c2 = int(color[2]*255);
+      QColor c( c0, c1, c2 );
       ac->GetEdgeColor(edgecolor[0],edgecolor[1],edgecolor[2]);
-      QColor e(edgecolor[0]*255,edgecolor[1]*255,edgecolor[2]*255);
+//       QColor e(edgecolor[0]*255,edgecolor[1]*255,edgecolor[2]*255);
+      c0 = int(edgecolor[0]*255);
+      c1 = int(edgecolor[1]*255);
+      c2 = int(edgecolor[2]*255);
+      QColor e( c0, c1, c2 );
       ac->GetBackfaceProperty()->GetColor(backfacecolor);
-      QColor b(backfacecolor[0]*255,backfacecolor[1]*255,backfacecolor[2]*255);
+//       QColor b(backfacecolor[0]*255,backfacecolor[1]*255,backfacecolor[2]*255);
+      c0 = int(backfacecolor[0]*255);
+      c1 = int(backfacecolor[1]*255);
+      c2 = int(backfacecolor[2]*255);
+      QColor b( c0, c1, c2 );
       ac->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2] ) ;
-      QColor n(nodecolor[0]*255, nodecolor[1]*255, nodecolor[2]*255 ) ;
+//       QColor n(nodecolor[0]*255, nodecolor[1]*255, nodecolor[2]*255 ) ;
+      c0 = int(nodecolor[0]*255);
+      c1 = int(nodecolor[1]*255);
+      c2 = int(nodecolor[2]*255);
+      QColor n( c0, c1, c2 ) ;
 
       int Edgewidth = (int)ac->EdgeDevice->GetProperty()->GetLineWidth();
       if ( Edgewidth == 0 )
@@ -2292,7 +2310,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID,	QAD_Desktop* parent)
 	      double beforeMaxVolume = MEV->GetMaxElementVolume() ;
 	      double MaxVolume = smeshGUI->Parameter( res, 
 			 			      beforeMaxVolume,
-						      tr("SMESH_MAX_ELEMENT_AREA_HYPOTHESIS"), 
+						      tr("SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS"), 
 						      tr("SMESH_VALUE"), 
 						      1.0E-5, 1E6, 6 ) ;
 	      if ( res && MaxVolume != beforeMaxVolume ) {
@@ -2497,6 +2515,11 @@ bool SMESHGUI::OnGUIEvent(int theCommandID,	QAD_Desktop* parent)
     case 5020: 
       {
 	smeshGUI->CreateAlgorithm("Hexa_3D","Hexahedron (i,j,k)");	
+	break;
+      }
+    case 5021: 
+      {
+	smeshGUI->CreateAlgorithm("NETGEN_3D","Tetrahedron (Netgen)");	
 	break;
       }
 
@@ -5234,7 +5257,8 @@ void SMESHGUI::DisplaySimulationNode( SMESH::SMESH_Mesh_ptr aMesh, float x, floa
     QString SCb = QAD_CONFIG->getSetting("SMESH:SettingsNodeColorBlue");
     QColor nodecolor(SCr.toInt(), SCg.toInt(), SCb.toInt());
     if ( !nodecolor.isValid() )
-      nodecolor = QColor(0.,1.,0.);
+//       nodecolor = QColor(0.,1.,0.);
+      nodecolor = QColor(0,1,0);
 
     node->GetProperty()->SetColor( float(nodecolor.red())/255.,
 				   float(nodecolor.green())/255.,

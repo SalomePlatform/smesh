@@ -242,7 +242,8 @@ void SMESHGUI_NbSegmentsDlg::ClickOnApply()
     case 0 :
       { 
 	myNbSeg = SpinBox_NbSeg->value() ;
-	mySMESHGUI->CreateNbSegments( "NumberOfSegments", myNameHypothesis, myNbSeg );
+	int nbSegInt = int(myNbSeg);
+	mySMESHGUI->CreateNbSegments( "NumberOfSegments", myNameHypothesis, nbSegInt );
       	break ;
       }
     }

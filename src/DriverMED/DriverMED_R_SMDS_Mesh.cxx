@@ -456,6 +456,36 @@ void DriverMED_R_SMDS_Mesh::Read()
 					}
 					break;
 				}
+				case MED_TETRA4:
+				{
+					if (inuele)
+					{
+						for (j = 0; j < nmailles[i]; j++)
+						{
+							elem_id = *(numele + j);
+							ok = myMesh->AddVolumeWithID(*(connectivite +
+									j * (taille)),
+								*(connectivite + j * (taille) + 1),
+								*(connectivite + j * (taille) + 2),
+								*(connectivite + j * (taille) + 3), elem_id);
+							//fprintf(Out,"%d %d %d %d\n",elem_id,*(connectivite+j*(taille-nsup)),*(connectivite+j*(taille-nsup)+1),*(connectivite+j*(taille-nsup)+2),*(connectivite+j*(taille-nsup)+3));
+						}
+					}
+					else
+					{
+						for (j = 0; j < nmailles[i]; j++)
+						{
+							cmpt++;
+							ok = myMesh->AddVolumeWithID(*(connectivite +
+									j * (taille)),
+								*(connectivite + j * (taille) + 1),
+								*(connectivite + j * (taille) + 2),
+								*(connectivite + j * (taille) + 3), cmpt);
+							//fprintf(Out,"%d %d %d %d\n",j,*(connectivite+j*(taille)),*(connectivite+j*(taille)+1),*(connectivite+j*(taille)+2),*(connectivite+j*(taille)+3));
+						}
+					}
+					break;
+				}
 				case MED_HEXA8:
 				{
 					if (inuele)

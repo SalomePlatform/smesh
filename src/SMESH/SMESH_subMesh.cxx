@@ -249,12 +249,60 @@ bool SMESH_subMesh::SubMeshesComputed() throw(SALOME_Exception)
 	for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
 	{
 		SMESH_subMesh *sm = (*itsub).second;
+
+		const TopoDS_Shape & ss = sm->GetSubShape();
+		int type = ss.ShapeType();
 //       SCRUTE(sm->GetId());
 //       SCRUTE(sm->GetComputeState());
 		bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
 		if (!computeOk)
 		{
 			subMeshesComputed = false;
+
+			switch (type)
+			  {
+			  case TopAbs_COMPOUND:
+			    {
+			      MESSAGE("The not computed sub mesh is a COMPOUND");
+			      break;
+			    }
+			  case TopAbs_COMPSOLID:
+			    {
+			      MESSAGE("The not computed sub mesh is a COMPSOLID");
+			      break;
+			    }
+			  case TopAbs_SHELL:
+			    {
+			      MESSAGE("The not computed sub mesh is a SHEL");
+			      break;
+			    }
+			  case TopAbs_WIRE:
+			    {
+			      MESSAGE("The not computed sub mesh is a WIRE");
+			      break;
+			    }
+			  case TopAbs_SOLID:
+			    {
+			      MESSAGE("The not computed sub mesh is a SOLID");
+			      break;
+			    }
+			  case TopAbs_FACE:
+			    {
+			      MESSAGE("The not computed sub mesh is a FACE");
+			      break;
+			    }
+			  case TopAbs_EDGE:
+			    {
+			      MESSAGE("The not computed sub mesh is a EDGE");
+			      break;
+			    }
+			  default:
+			    {
+			      MESSAGE("The not computed sub mesh is of unknown type");
+			      break;
+			    }
+			  }
+
 			SCRUTE(sm->GetId());
 			break;
 		}

@@ -245,5 +245,9 @@ ac_cxx_typename.m4                check_pthreads.m4  check_cas.m4	\
 ac_cc_warnings.m4                 check_qt.m4        check_med2.m4      \
 check_swig.m4 
 
+#ifeq (@WITHNETGEN@,yes)
+#  ACLOCAL_SRC += check_Netgen.m4
+#endif
+
 $(top_srcdir)/aclocal.m4: $(ACLOCAL_SRC:%=@KERNEL_ROOT_DIR@/salome_adm/unix/config_files/%)
 	cd $(top_srcdir) ; aclocal --acdir=adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files

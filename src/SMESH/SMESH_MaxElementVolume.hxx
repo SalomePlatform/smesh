@@ -26,3 +26,31 @@
 //  Module : SMESH
 //  $Header$
 
+#ifndef _SMESH_MAXELEMENTVOLUME_HXX_
+#define _SMESH_MAXELEMENTVOLUME_HXX_
+
+#include "SMESH_Hypothesis.hxx"
+#include "Utils_SALOME_Exception.hxx"
+
+class SMESH_MaxElementVolume:
+  public SMESH_Hypothesis
+{
+public:
+  SMESH_MaxElementVolume(int hypId, int studyId, SMESH_Gen* gen);
+  virtual ~SMESH_MaxElementVolume();
+
+  void SetMaxVolume(double maxVolume)
+    throw (SALOME_Exception);
+
+  double GetMaxVolume() const;
+
+  virtual ostream & SaveTo(ostream & save);
+  virtual istream & LoadFrom(istream & load);
+  friend ostream & operator << (ostream & save, SMESH_MaxElementVolume & hyp);
+  friend istream & operator >> (istream & load, SMESH_MaxElementVolume & hyp);
+
+protected:
+  double _maxVolume;
+};
+
+#endif

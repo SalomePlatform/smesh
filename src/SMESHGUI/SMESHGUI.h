@@ -150,7 +150,7 @@ public :
   void RemoveHypothesisOrAlgorithmOnMesh( SALOMEDS::SObject_ptr MorSM, SMESH::SMESH_Hypothesis_ptr anHyp ) ;
 
   void CreateLocalLength( QString TypeHypothesis, QString NameHypothesis, double Length );
-  void CreateNbSegments( QString TypeHypothesis, QString NameHypothesis, double nbSegments );
+  void CreateNbSegments( QString TypeHypothesis, QString NameHypothesis, int nbSegments );
   void CreateMaxElementArea( QString TypeHypothesis, QString NameHypothesis, double MaxArea );
   void CreateMaxElementVolume( QString TypeHypothesis, QString NameHypothesis, double MaxVolume );
 

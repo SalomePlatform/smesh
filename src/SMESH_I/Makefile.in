@@ -54,6 +54,7 @@ LIB_SRC = SMESH_Gen_i.cxx SMESH_Mesh_i.cxx SMESH_MEDMesh_i.cxx \
           SMESH_NumberOfSegments_i.cxx \
           SMESH_LocalLength_i.cxx \
           SMESH_MaxElementArea_i.cxx \
+	  SMESH_LengthFromEdges_i.cxx \
           SMESH_MaxElementVolume_i.cxx \
           SMESH_Regular_1D_i.cxx \
           SMESH_Quadrangle_2D_i.cxx \
@@ -77,6 +78,11 @@ CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR
 #IDLCXXFLAGS+= -Wbtp
 
 LDFLAGS+= $(HDF5_LIBS) $(MED2_LIBS) -lSMESHimpl -lSalomeContainer -lSalomeNS -lSalomeDS -lRegistry -lSalomeHDFPersist -lOpUtil -lGEOMClient -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriverMED -lSalomeLifeCycleCORBA -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+
+ifeq (@WITHNETGEN@,yes)
+  LIB_SRC += SMESH_NETGEN_3D_i.cxx
+  LDFLAGS += -lNETGEN
+endif
 
 @CONCLUDE@
 

@@ -123,7 +123,7 @@ msgstr "mesh_vertex.png"
 msgid "ICON_DLG_LINE"
 msgstr "mesh_line.png"
 
-#triangle
+#Triangle
 msgid "ICON_DLG_TRIANGLE"
 msgstr "mesh_triangle.png"
 
@@ -131,11 +131,11 @@ msgstr "mesh_triangle.png"
 msgid "ICON_DLG_QUADRANGLE"
 msgstr "mesh_quad.png"
 
-#triangle
+#Tetrahedrons
 msgid "ICON_DLG_TETRAS"
 msgstr "mesh_tetra.png"
 
-#Quadrangle
+#Hexahedrons
 msgid "ICON_DLG_HEXAS"
 msgstr "mesh_hexa.png"
 
@@ -167,6 +167,10 @@ msgstr "mesh_tree_algo_mefisto.png"
 #mesh_tree_algo_quad
 msgid "ICON_SMESH_TREE_ALGO_Quadrangle_2D"
 msgstr "mesh_tree_algo_quad.png"
+
+#mesh_tree_algo_netgen
+msgid "ICON_SMESH_TREE_ALGO_NETGEN_3D"
+msgstr "mesh_tree_algo_netgen.png"
 
 #mesh_tree_hypo
 msgid "ICON_SMESH_TREE_HYPO"

@@ -23,6 +23,7 @@ mesh_algo_hexa.png \
 mesh_algo_mefisto.png \
 mesh_algo_quad.png \
 mesh_algo_regular.png \
+mesh_algo_tetra.png \
 mesh_angle.png \
 mesh_area.png \
 mesh_aspect.png \
@@ -63,6 +64,7 @@ mesh_tree_algo_mefisto.png \
 mesh_tree_algo.png \
 mesh_tree_algo_quad.png \
 mesh_tree_algo_regular.png \
+mesh_tree_algo_tetra.png \
 mesh_tree_hypo_area.png \
 mesh_tree_hypo_length.png \
 mesh_tree_hypo.png \
@@ -80,7 +82,8 @@ mesh_wrap.png \
 ModuleMesh.png \
 select1.png \
 SMESH_en.xml \
-SMESHCatalog.xml
+SMESHCatalog.xml \
+flight_solid.brep
 
 BIN_SCRIPT= \
 VERSION

@@ -337,7 +337,6 @@ SALOME_MED::long_array *
 	THROW_SALOME_CORBA_EXCEPTION("Not Implemented", SALOME::BAD_PARAM);
 	return NULL;
 }
-
 //=============================================================================
 /*!
  * CORBA: Array containing indexes for elements included in the support  

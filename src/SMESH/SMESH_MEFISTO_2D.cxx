@@ -259,14 +259,15 @@ bool SMESH_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 		nblf, nudslf, uvslf, nbpti, uvpti, nbst, uvst, nbt, nust, ierr);
 
 	if (ierr == 0)
-	{
-		MESSAGE("... End Triangulation");
-		//SCRUTE(nbst);
-		//SCRUTE(nbt);
-		StoreResult(aMesh, nbst, uvst, nbt, nust, F,
+	  {
+	    MESSAGE("... End Triangulation Generated Triangle Number " << nbt);
+	    MESSAGE("                                    Node Number " << nbst);
+	    //SCRUTE(nbst);
+	    //SCRUTE(nbt);
+	    StoreResult(aMesh, nbst, uvst, nbt, nust, F,
 			faceIsForward, mefistoToDS);
-		isOk = true;
-	}
+	    isOk = true;
+	  }
 	else
 	{
 		MESSAGE("Error in Triangulation");

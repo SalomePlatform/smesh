@@ -41,10 +41,12 @@ using namespace std;
 #include "SMESH_LengthFromEdges.hxx"
 #include "SMESH_NumberOfSegments.hxx"
 #include "SMESH_MaxElementArea.hxx"
+#include "SMESH_MaxElementVolume.hxx"
 #include "SMESH_Regular_1D.hxx"
 #include "SMESH_MEFISTO_2D.hxx"
 #include "SMESH_Quadrangle_2D.hxx"
 #include "SMESH_Hexa_3D.hxx"
+#include "SMESH_NETGEN_3D.hxx"
 
 //---------------------------------------
 
@@ -87,11 +89,12 @@ _creatorMap["LocalLength"] = new SMESH_HypothesisCreator<SMESH_LocalLength>;
 _creatorMap["NumberOfSegments"] = new SMESH_HypothesisCreator<SMESH_NumberOfSegments>;
 _creatorMap["LengthFromEdges"] = new SMESH_HypothesisCreator<SMESH_LengthFromEdges>;
 _creatorMap["MaxElementArea"] = new SMESH_HypothesisCreator<SMESH_MaxElementArea>;
+_creatorMap["MaxElementVolume"] = new SMESH_HypothesisCreator<SMESH_MaxElementVolume>;
 _creatorMap["Regular_1D"] = new SMESH_HypothesisCreator<SMESH_Regular_1D>;
 _creatorMap["MEFISTO_2D"] = new SMESH_HypothesisCreator<SMESH_MEFISTO_2D>;
 _creatorMap["Quadrangle_2D"] = new SMESH_HypothesisCreator<SMESH_Quadrangle_2D>;
 _creatorMap["Hexa_3D"] = new SMESH_HypothesisCreator<SMESH_Hexa_3D>;
-
+_creatorMap["NETGEN_3D"] = new SMESH_HypothesisCreator<SMESH_NETGEN_3D>;
 //---------------------------------------
 }
 

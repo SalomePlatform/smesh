@@ -21,38 +21,39 @@
 //
 //
 //
-//  File   : SMESH_MaxElementVolume_i.hxx
-//  Author : Paul RASCLE, EDF
+//  File   : SMESH_LengthFromEdges_i.hxx
+//  Author : Nadir BOUHAMOU CEA/DEN, Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
 
-#ifndef _SMESH_MAXELEMENTVOLUME_I_HXX_
-#define _SMESH_MAXELEMENTVOLUME_I_HXX_
+#ifndef _SMESH_LENGTHFROMEDGES_I_HXX_
+#define _SMESH_LENGTHFROMEDGES_I_HXX_
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
 #include "SMESH_Hypothesis_i.hxx"
 
-#include "SMESH_MaxElementVolume.hxx"
+#include "SMESH_LengthFromEdges.hxx"
 
-class SMESH_MaxElementVolume_i:
-  public POA_SMESH::SMESH_MaxElementVolume,
+class SMESH_LengthFromEdges_i:
+  public POA_SMESH::SMESH_LengthFromEdges,
   public SMESH_Hypothesis_i
 {
 public:
-  SMESH_MaxElementVolume_i(const char* anHyp,
-			   int studyId,
-			   ::SMESH_Gen* genImpl);
-  virtual ~SMESH_MaxElementVolume_i();
+  SMESH_LengthFromEdges_i(const char* anHyp,
+		      int studyId,
+		      ::SMESH_Gen* genImpl);
+  virtual ~SMESH_LengthFromEdges_i();
 
-  void SetMaxElementVolume(CORBA::Double volume)
+  void SetMode(CORBA::Long mode)
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Double GetMaxElementVolume();
+  CORBA::Long GetMode();
 
 protected:
-  ::SMESH_MaxElementVolume* _impl;
+  ::SMESH_LengthFromEdges* _impl;
 };
 
 #endif
+

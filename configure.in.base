@@ -275,12 +275,20 @@ CHECK_MED
 
 echo
 echo ---------------------------------------------
+echo Testing Netgen
+echo ---------------------------------------------
+echo
+
+CHECK_NETGEN
+
+echo
+echo ---------------------------------------------
 echo Summary
 echo ---------------------------------------------
 echo
 
 echo Configure
-variables="cc_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
+variables="cc_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok Netgen_ok"
 
 for var in $variables
 do

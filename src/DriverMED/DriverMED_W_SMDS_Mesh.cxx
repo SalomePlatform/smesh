@@ -266,6 +266,12 @@ void DriverMED_W_SMDS_Mesh::Write()
 			nmailles[9]++;
 			break;
 		}
+		case 4 :
+		{
+		        elem_Id[7].push_back(elem->GetID());
+			nmailles[7]++;
+			break;
+		}
 		}
 	}
 

@@ -1,0 +1,152 @@
+# -* Makefile *- 
+#
+# Author : Nadir Bouhamou (CEA)
+# Module : SMESH
+# Date : 10/10/2003
+#
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+@COMMENCE@
+
+# Libraries targets
+LIB = libNETGEN.la
+
+# additionnal information to compil and link file
+CPPFLAGS += -DSOLIDGEOM -DLINUX $(OCC_INCLUDES)
+CXXFLAGS += -DSOLIDGEOM -DLINUX $(OCC_CXXFLAGS)
+
+LDFLAGS += $(OCC_LIBS) -lg2c
+
+NETGEN_LIBS_DIR=@NETGEN_LIBS_DIR@
+
+LIB_OBJ_O = linopt.o \
+	bfgs.o \
+        linsearch.o \
+	global.o \
+	bisect.o \
+	meshtool.o \
+	refine.o \
+	ruler3.o \
+	improve3.o \
+	adfront3.o \
+	tetrarls.o \
+	prism2rls.o \
+	pyramidrls.o \
+	pyramid2rls.o \
+	netrule3.o \
+	ruler2.o \
+	meshclass.o \
+	improve2.o \
+	adfront2.o \
+	netrule2.o \
+	triarls.o \
+	geomsearch.o \
+	secondorder.o \
+	meshtype.o \
+	parser3.o \
+	quadrls.o \
+	specials.o \
+	parser2.o \
+	meshing2.o \
+	meshing3.o \
+	meshfunc.o \
+	localh.o \
+	improve2gen.o \
+	delaunay.o \
+	boundarylayer.o \
+	msghandler.o \
+	meshfunc2d.o \
+	smoothing2.o \
+	smoothing3.o \
+	topology.o \
+	curvedelems.o \
+	clusters.o \
+	zrefine.o \
+	ngexception.o \
+	geomtest3d.o \
+	geom2d.o \
+	geom3d.o \
+	adtree.o \
+	transform3d.o \
+	geomfuncs.o \
+	polynomial.o \
+	densemat.o \
+	vector.o \
+	basemat.o \
+	sparsmat.o \
+	algprim.o \
+	brick.o \
+	manifold.o \
+	bspline2d.o \
+	meshsurf.o \
+	csgeom.o \
+	polyhedra.o \
+	curve2d.o \
+	singularref.o \
+	edgeflw.o \
+	solid.o \
+	explicitcurve2d.o \
+	specpoin.o \
+	gencyl.o \
+	revolution.o \
+	genmesh.o \
+	spline3d.o \
+	surface.o \
+	identify.o \
+	triapprox.o \
+	meshstlsurface.o \
+	stlline.o \
+	stltopology.o \
+	stltool.o \
+	stlgeom.o \
+	stlgeomchart.o \
+	stlgeommesh.o \
+	table.o \
+	optmem.o \
+	spbita2d.o \
+	hashtabl.o \
+	sort.o \
+	flags.o \
+	seti.o \
+	bitarray.o \
+	array.o \
+	symbolta.o \
+	mystring.o \
+	moveablemem.o \
+	spline2d.o \
+	splinegeometry2.o \
+	ngnewdelete.o \
+	nglib.o
+
+$(LIB_OBJ_O):
+	ar x $(NETGEN_LIBS_DIR)/libnginterface.a
+	ar x $(NETGEN_LIBS_DIR)/libcsg.a
+	ar x $(NETGEN_LIBS_DIR)/libgprim.a
+	ar x $(NETGEN_LIBS_DIR)/libmesh.a
+	ar x $(NETGEN_LIBS_DIR)/libopti.a
+	ar x $(NETGEN_LIBS_DIR)/libgen.a
+	ar x $(NETGEN_LIBS_DIR)/libla.a
+	ar x $(NETGEN_LIBS_DIR)/libstlgeom.a
+	ar x $(NETGEN_LIBS_DIR)/libgeom2d.a
+	rm -rf sgparser.o hprefinement.o parthreads.o writediffpack.o writepermas.o writeuser.o dynamicmem.o importsolution.o readuser.o writefeap.o writetecplot.o wuchemnitz.o extrusion.o writeabaqus.o writefluent.o writetochnog.o csgparser.o geom2dmesh.o
+
+LIB_OBJ_LO = $(LIB_OBJ_O:%.o=%.lo)
+
+#implicits rules
+
+.o.lo:
+	ln -s $< $@ || true
+
+@CONCLUDE@
+
+$(LIB): $(LIB_OBJ_O) $(LIB_OBJ_LO)
+	@$(LT) --mode=link $(CXX) -rpath $(libdir) -o $@ $(CXXFLAGS) $(LIB_OBJ_LO) $(LDFLAGS) $(LIBS)
+
+mostlyclean: cleandep
+	-$(RM) $(LIB_OBJ_O) $(LIB_OBJ_LO)

@@ -21,14 +21,14 @@
 //
 //
 //
-//  File   : SMESH_MaxElementVolume_i.cxx
-//  Author : Paul RASCLE, EDF
+//  File   : SMESH_LengthFromEdges_i.cxx
+//  Author : Nadir BOUHAMOU CEA/DEN, Paul RASCLE, EDF
 //  Module : SMESH
 //  $Header$
 
 using namespace std;
-
-#include "SMESH_MaxElementVolume_i.hxx"
+using namespace std;
+#include "SMESH_LengthFromEdges_i.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypothesisFactory.hxx"
 
@@ -42,14 +42,14 @@ using namespace std;
  */
 //=============================================================================
 
-SMESH_MaxElementVolume_i::SMESH_MaxElementVolume_i(const char* anHyp,
-						   int studyId,
-						   ::SMESH_Gen* genImpl)
+SMESH_LengthFromEdges_i::SMESH_LengthFromEdges_i(const char* anHyp,
+						 int studyId,
+						 ::SMESH_Gen* genImpl)
 {
-  MESSAGE("SMESH_MaxElementVolume_i::SMESH_MaxElementVolume_i");
-  _impl = new ::SMESH_MaxElementVolume(genImpl->_hypothesisFactory.GetANewId(),
-				       studyId,
-				       genImpl);
+  MESSAGE("SMESH_LengthFromEdges_i::SMESH_LengthFromEdges_i");
+  _impl = new ::SMESH_LengthFromEdges(genImpl->_hypothesisFactory.GetANewId(),
+				      studyId,
+				      genImpl);
   _baseImpl = _impl;
 }
 
@@ -59,9 +59,8 @@ SMESH_MaxElementVolume_i::SMESH_MaxElementVolume_i(const char* anHyp,
  */
 //=============================================================================
 
-SMESH_MaxElementVolume_i::~SMESH_MaxElementVolume_i()
+SMESH_LengthFromEdges_i::~SMESH_LengthFromEdges_i()
 {
-  MESSAGE("SMESH_MaxElementVolume_i::~SMESH_MaxElementVolume_i()");
 }
 
 //=============================================================================
@@ -70,13 +69,13 @@ SMESH_MaxElementVolume_i::~SMESH_MaxElementVolume_i()
  */
 //=============================================================================
 
-void SMESH_MaxElementVolume_i::SetMaxElementVolume(CORBA::Double volume)
+void SMESH_LengthFromEdges_i::SetMode(CORBA::Long mode)
   throw (SALOME::SALOME_Exception)
 {
   ASSERT(_impl);
   try
     {
-      _impl->SetMaxVolume(volume);
+      _impl->SetMode(mode);
     }
   catch (SALOME_Exception& S_ex)
     {
@@ -91,9 +90,9 @@ void SMESH_MaxElementVolume_i::SetMaxElementVolume(CORBA::Double volume)
  */
 //=============================================================================
 
-CORBA::Double SMESH_MaxElementVolume_i::GetMaxElementVolume()
+CORBA::Long SMESH_LengthFromEdges_i::GetMode()
 {
   ASSERT(_impl);
-  return _impl->GetMaxVolume();
+  return _impl->GetMode();
 }
 

@@ -53,6 +53,7 @@ using namespace std;
 #include "SMESH_LocalLength_i.hxx"
 #include "SMESH_NumberOfSegments_i.hxx"
 #include "SMESH_MaxElementArea_i.hxx"
+#include "SMESH_MaxElementVolume_i.hxx"
 
 #include "SMESHDS_Document.hxx"
 
@@ -465,7 +466,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
 //************branch 1 : hypothesis
     if (gotBranch->Tag()==Tag_HypothesisRoot) { //hypothesis = tag 1
 
-      double length,maxElementsArea;
+      double length,maxElementsArea,maxElementsVolume;
       int numberOfSegments;
 
       destFile = fopen( hypofile.ToCString() ,"w");
@@ -494,6 +495,11 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
             SMESH::SMESH_MaxElementArea_var MEA = SMESH::SMESH_MaxElementArea::_narrow( myHyp );
             maxElementsArea = MEA->GetMaxElementArea();
             fprintf(destFile,"%f\n",maxElementsArea);
+          }
+          else if (strcmp(myHyp->GetName(),"MaxElementVolume")==0) {
+            SMESH::SMESH_MaxElementVolume_var MEV = SMESH::SMESH_MaxElementVolume::_narrow( myHyp );
+            maxElementsVolume = MEV->GetMaxElementVolume();
+            fprintf(destFile,"%f\n",maxElementsVolume);
           }
         }
       }
@@ -945,7 +951,7 @@ bool SMESH_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
 //***************
       if (strcmp(name,"Hypothesis")==0) {
         
-        double length,maxElementsArea;
+        double length,maxElementsArea,maxElementsVolume;
         int numberOfSegments;
 
         hdf_group[Tag_HypothesisRoot] = new HDFgroup(name,hdf_file); 
@@ -998,6 +1004,16 @@ bool SMESH_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
             MEA->SetMaxElementArea(maxElementsArea);
             string iorString = _orb->object_to_string(MEA);
             sprintf(objectId,"%d",MEA->GetId());
+            _SMESHCorbaObj[string("Hypo_")+string(objectId)] = iorString;
+          }
+          else if (strcmp(aLine,"MaxElementVolume")==0) {
+            SMESH::SMESH_Hypothesis_var myHyp  = this->CreateHypothesis(aLine,studyId);
+            SMESH::SMESH_MaxElementVolume_var MEV = SMESH::SMESH_MaxElementVolume::_narrow( myHyp );
+            fscanf(loadedFile,"%s",aLine);
+            maxElementsVolume = atof(aLine);
+            MEV->SetMaxElementVolume(maxElementsVolume);
+            string iorString = _orb->object_to_string(MEV);
+            sprintf(objectId,"%d",MEV->GetId());
             _SMESHCorbaObj[string("Hypo_")+string(objectId)] = iorString;
           }
           

@@ -1,0 +1,90 @@
+The Netgen 4.3 from the web location : http://www.hpfem.jku.at/netgen/ is used
+in the SMESH Module of Salome2 distribution.
+
+Assumptions on the Netgen installation
+--------------------------------------
+
+The SMESH Engine of SALOME2 (particularly the m4 file check_Netgen.m4) assume
+that Netgen is installed in the directory <netgen_installation_path> as follow:
+
+prompt> ls <netgen_installation_path>
+
+bin/  cshrc_for_netgen  doc/  include/  lib/  tutorials/
+
+prompt> ls <netgen_installation_path>/bin
+
+LINUX/
+
+prompt> ls <netgen_installation_path>/bin/LINUX/
+
+demoapp/  ng  ng.tcl  ngtcltk/  startup.tcl
+
+prompt> ls <netgen_installation_path>/bin/LINUX/demoapp/
+
+demoapp.tcl
+
+prompt> ls <netgen_installation_path>/bin/LINUX/ngtcltk/
+
+dialog.tcl   menustat.tcl  ngicon.tcl    parameters.tcl
+drawing.tcl  nghelp.tcl    ngvisual.tcl  variables.tcl
+
+prompt> ls <netgen_installation_path>/doc/
+
+ng4.pdf  usenetgen.ps
+
+prompt> ls <netgen_installation_path>/include/
+
+nglib.h
+
+prompt> ls <netgen_installation_path>/lib/
+
+LINUX/
+
+prompt> ls <netgen_installation_path>/lib/LINUX/
+
+libcsg.a  libgeom2d.a  libla.a    libnginterface.a  libstlgeom.a
+libgen.a  libgprim.a   libmesh.a  libopti.a         libvis.a
+
+prompt> ls <netgen_installation_path>/tutorials/
+
+boxcyl.geo          cylinder.geo     ficherea.geo   part1.stl         square.in2d
+cone.geo            cylsphere.geo    hinge.stl      sculpture.geo     trafo.geo
+cubeandspheres.geo  demo2d.in2d      lshape3d.geo   shaft.geo         twobricks.geo
+cube.geo            ellipsoid.geo    manyholes.geo  sphere.geo        twocubes.geo
+cubemcyl.geo        ellipticcyl.geo  matrix.geo     sphereincube.geo  twocyl.geo
+cubemsphere.geo
+
+All *.tcl files are needed to control and initiate the Netgen mesher throughout its
+MHI (Machine Human Interface).<netgen_installation_path>/bin/LINUX/ng is the Netgen
+executable with its embarked MHI. All the libraries *.a should be compiled without
+the option -DOPENGL which is only needed for the Netgen MHI. netgen43 is assumed to
+be the directory downloaded from the above web location archive of Netgen. The library
+<netgen_installation_path>/lib/LINUX/libnginterface.a should contain the objects
+nglib.o (from netgen43/libsrc/interface/nglib.cpp) and ngnewdelete.o
+(from netgen43/ngtcltk/ngnewdelete.cpp).
+
+To have that kind of distribution from the version in the above web location you
+should first compile Netgen as suggested in the netgen43/README.INSTALL file. It will
+then produce the executable ng linked statically with the libraries *.a. Then modify
+the Makefiles to remove -DOPENGL from compiler flags list, add the objects nglib.o
+and ngnewdelete.o to the library libnginterface.a and recompile the libraries only.
+
+From the above web location perhaps, you will have to alter some Netgen sources to
+compile them; if you find any difficulties to do that, just ask me.
+
+Nadir
+
+********************************
+* Dr Nadir Bouhamou            *
+* Ingénieur-chercheur          *
+* Engineer-Researcher          *
+*                              *
+* CEA Saclay                   *
+* DEN/DM2S/SFME/LGLS           *
+* Bat 454 Pièce 5A             *
+* 91191 Gif-Sur-Yvette cédex   *
+*                              *
+* Tél: +33 (0)1 69 08 73 07    *
+* Fax: +33 (0)1 69 08 96 96    *
+* email: nadir.bouhamou@cea.fr *
+********************************
