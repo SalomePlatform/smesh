@@ -44,7 +44,6 @@
 
 #include "SMESH_Gen.hxx"
 #include "GEOM_Client.hxx"
-#include "SMESH_Factory.hxx"
 
 #include <map>
 
@@ -120,8 +119,7 @@ private:
 // ==========================================================
 class SMESH_Gen_i:
   public virtual POA_SMESH::SMESH_Gen,
-  public virtual Engines_Component_i,
-  public virtual SMESH::Factory
+  public virtual Engines_Component_i 
 {
 public:
   // Get last created instance of the class
@@ -209,11 +207,6 @@ public:
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)
   // ****************************************************
-  virtual 
-  SALOMEDS::TMPFile* 
-  DumpPython(CORBA::Object_ptr theStudy,
-	     CORBA::Boolean theIsPublished,
-	     CORBA::Boolean& theIsValidScript);
 
   // Save SMESH data
   SALOMEDS::TMPFile* Save( SALOMEDS::SComponent_ptr theComponent,
@@ -377,6 +370,5 @@ private:
   GEOM_Client*              myShapeReader;      // Shape reader
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
 };
-
 
 #endif

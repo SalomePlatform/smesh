@@ -418,7 +418,6 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
-  SetStudyID(studyId);
   // set current study for geom engine
   /*
   if ( !CORBA::is_nil( GetGeomEngine() ) )
@@ -491,9 +490,6 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  using namespace SMESH;
-  FactoryHandler aFactory;
-
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMesh" );
   // create mesh
   SMESH::SMESH_Mesh_var mesh = this->createMesh();
@@ -504,15 +500,6 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
   // publish mesh in the study
   if ( CanPublishInStudy( mesh ) )
     PublishMesh( myCurrentStudy, mesh.in() );
-
-  CORBA::String_var anEntry = theShapeObject->GetEntry();
-  aFactory->Register(TInvocationID(TResultCont(1,meshServant->GetID()),
-				   GetID(),
-				   "SMESH_Mesh",
-				   "CreateMesh",
-				   TArgumentCont(),
-				   anEntry.in()));
-
   return mesh._retn();
 }
 
@@ -555,9 +542,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
      throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
-  using namespace SMESH;
-  FactoryHandler aFactory;
-
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
 
   // Retrieve mesh names from the file
@@ -570,7 +554,6 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
   if(theStatus == SMESH::DRS_OK){
     aResult->length( aNames.size() );
-    TResultCont aResultCont;
     int i = 0;
     
     // Iterate through all meshes and create mesh objects
@@ -591,15 +574,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 	theStatus = status1;
 
       aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
-
-      aResultCont.push_back(meshServant->GetID());
     }
-    aFactory->Register(TInvocationID(aResultCont,
-				     GetID(),
-				     "SMESH_Mesh",
-				     "CreateMeshesFromMED",
-				     TArgumentCont(1,std::string(theFileName)),
-				     ""));
   }
   return aResult._retn();
 }
@@ -802,10 +777,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 				      bool                     isMultiFile )
 {
   INFOS( "SMESH_Gen_i::Save" );
-
-  CORBA::Boolean anIsValidScript;
-  SALOMEDS::Study_var aStudy = theComponent->GetStudy(); 
-  SALOMEDS::TMPFile_var aDump = DumpPython(aStudy,false,anIsValidScript);
 
 //  ASSERT( theComponent->GetStudy()->StudyId() == myCurrentStudy->StudyId() )
   // san -- in case <myCurrentStudy> differs from theComponent's study,
