@@ -24,6 +24,8 @@
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_VolumeOfFaces.hxx"
 #include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_Tria3OfNodes.hxx"
+#include "SMDS_HexahedronOfNodes.hxx"
 #include "SMDS_FaceOfEdges.hxx"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -593,10 +595,10 @@ SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 }
 	
 ///////////////////////////////////////////////////////////////////////////////
-///Create a new prism and add it to the mesh.
+///Create a new hexahedron and add it to the mesh.
 ///Nodes 1,2,3,4 and 5,6,7,8 are quadrangle and 5,1 and 7,3 are an edges.
 ///@param ID The ID of the new volume
-///@return The created prism or NULL if an edge with this ID already exists
+///@return The created prism or NULL if an hexadron with this ID already exists
 ///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -638,7 +640,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
 	}
 	else
 	{
-		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5,node6,
+		volume=new SMDS_HexahedronOfNodes(node1,node2,node3,node4,node5,node6,
 			node7,node8);
 		myVolumes.insert(volume);
 	}
@@ -690,7 +692,7 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(SMDS_MeshNode * node1,
 	}
 	else
 	{
-		SMDS_MeshFace * face = new SMDS_FaceOfNodes(node1,node2,node3);
+		SMDS_MeshFace * face = new SMDS_Tria3OfNodes(node1,node2,node3);
 		myFaces.insert(face);
 		return face;
 	}
