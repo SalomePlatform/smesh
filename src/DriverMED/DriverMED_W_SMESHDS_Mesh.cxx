@@ -384,7 +384,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       SMDS_MED_ENTITY = eARETE;
 #endif
       SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-      TInt aNbConnectivity = MED::GetNbConnectivities(eSEG2);
+      TInt aNbConnectivity = MED::GetNbNodes(eSEG2);
       MED::TIntVector anElemNums(aNbElems);
       MED::TIntVector aFamilyNums(aNbElems);
       MED::TIntVector aConnectivity(aNbElems*aNbConnectivity);
@@ -424,7 +424,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 #ifdef _ELEMENTS_BY_DIM_
       SMDS_MED_ENTITY = eFACE;
 #endif
-      TInt aNbTriaConn = MED::GetNbConnectivities(eTRIA3);
+      TInt aNbTriaConn = MED::GetNbNodes(eTRIA3);
       MED::TIntVector anTriaElemNums; 
       anTriaElemNums.reserve(aNbElems);
       MED::TIntVector aTriaFamilyNums;
@@ -432,7 +432,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       MED::TIntVector aTriaConn;
       aTriaConn.reserve(aNbElems*aNbTriaConn);
 
-      TInt aNbQuadConn = MED::GetNbConnectivities(eQUAD4);
+      TInt aNbQuadConn = MED::GetNbNodes(eQUAD4);
       MED::TIntVector aQuadElemNums;
       aQuadElemNums.reserve(aNbElems);
       MED::TIntVector aQuadFamilyNums;
@@ -531,7 +531,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 #ifdef _ELEMENTS_BY_DIM_
       SMDS_MED_ENTITY = eMAILLE;
 #endif
-      TInt aNbTetraConn = MED::GetNbConnectivities(eTETRA4);
+      TInt aNbTetraConn = MED::GetNbNodes(eTETRA4);
       MED::TIntVector anTetraElemNums; 
       anTetraElemNums.reserve(aNbElems);
       MED::TIntVector aTetraFamilyNums;
@@ -539,7 +539,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       MED::TIntVector aTetraConn;
       aTetraConn.reserve(aNbElems*aNbTetraConn);
 
-      TInt aNbPyraConn = MED::GetNbConnectivities(ePYRA5);
+      TInt aNbPyraConn = MED::GetNbNodes(ePYRA5);
       MED::TIntVector anPyraElemNums; 
       anPyraElemNums.reserve(aNbElems);
       MED::TIntVector aPyraFamilyNums;
@@ -547,7 +547,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       MED::TIntVector aPyraConn;
       aPyraConn.reserve(aNbElems*aNbPyraConn);
 
-      TInt aNbPentaConn = MED::GetNbConnectivities(ePENTA6);
+      TInt aNbPentaConn = MED::GetNbNodes(ePENTA6);
       MED::TIntVector anPentaElemNums; 
       anPentaElemNums.reserve(aNbElems);
       MED::TIntVector aPentaFamilyNums;
@@ -555,7 +555,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       MED::TIntVector aPentaConn;
       aPentaConn.reserve(aNbElems*aNbPentaConn);
 
-      TInt aNbHexaConn = MED::GetNbConnectivities(eHEXA8);
+      TInt aNbHexaConn = MED::GetNbNodes(eHEXA8);
       MED::TIntVector aHexaElemNums;
       aHexaElemNums.reserve(aNbElems);
       MED::TIntVector aHexaFamilyNums;
