@@ -42,6 +42,7 @@
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
+#include "SMESH_Factory.hxx"
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
@@ -50,7 +51,8 @@ class SMESH_GroupBase_i;
 
 class SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
-  public virtual SALOME::GenericObj_i
+  public virtual SALOME::GenericObj_i,
+  public virtual SMESH::Base
 {
   SMESH_Mesh_i();
   SMESH_Mesh_i(const SMESH_Mesh_i&);
