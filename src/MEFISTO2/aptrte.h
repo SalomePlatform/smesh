@@ -1,3 +1,29 @@
+//  SMESH MEFISTO2 : algorithm for meshing
+//
+//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.ann.jussieu.fr/~perronne or email Perronnet@ann.jussieu.fr
+//
+//
+//
+//  File   : aptrte.h
+//  Author: Alain PERRONNET
+//  Module : SMESH
+
 #ifndef aptrte__h
 #define aptrte__h
 

@@ -1,14 +1,33 @@
-using namespace std;
-//=============================================================================
-// File      : SMESH_Regular_1D.cxx
-// Created   : sam mai 18 08:11:58 CEST 2002
-// Author    : Paul RASCLE, EDF
-// Project   : SALOME
-// Copyright : EDF 2002
-// $Header$
-//=============================================================================
-using namespace std;
+//  SMESH SMESH : implementaion of SMESH idl descriptions
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESH_Regular_1D.cxx
+//  Author : Paul RASCLE, EDF
+//  Module : SMESH
+//  $Header$
 
+using namespace std;
+using namespace std;
 #include "SMESH_Regular_1D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -151,6 +170,7 @@ bool SMESH_Regular_1D::CheckHypothesis(SMESH_Mesh& aMesh,
       _hypNumberOfSegments = dynamic_cast<SMESH_NumberOfSegments*> (theHyp);
       ASSERT(_hypNumberOfSegments);
       _numberOfSegments = _hypNumberOfSegments->GetNumberOfSegments();
+      _scaleFactor = _hypNumberOfSegments->GetScaleFactor();
       _localLength = 0;
       isOk = true;
     }
@@ -229,6 +249,18 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh& aMesh,
       for (int i=2; i<NbPoints; i++)
 	{
 	  double param = Discret.Parameter(i);
+
+	  if(_numberOfSegments > 1)
+	    {
+	      double epsilon = 0.001;
+	      if( fabs(_scaleFactor-1.0) > epsilon )
+		{
+		  double alpha = pow(_scaleFactor, 1.0/(_numberOfSegments-1) );
+		  double d = length*(1-pow(alpha,i-1))/(1-pow(alpha,_numberOfSegments));
+		  param = d;
+		}
+	    }
+
 	  gp_Pnt P = Curve->Value(param);
       
 	  //Add the Node in the DataStructure

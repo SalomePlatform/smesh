@@ -1,15 +1,35 @@
-# -* Makefile *- 
+#  SMESH SMESHGUI : GUI for SMESH component
 #
-# Author : Nicolas REJNERI
-# Date   : Sun May 05 11:45:40 2002
-# $Header$
+#  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 #
+#
+#
+#  File   : Makefile.in
+#  Author : Nicolas REJNERI
+#  Module : SMESH
+#  $Header$
 
-# source path
 top_srcdir=@top_srcdir@
-top_builddir=../..
+top_builddir=../../..
 srcdir=@srcdir@
-VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+VPATH=.:@srcdir@:@top_srcdir@/idl
 
 
 @COMMENCE@
@@ -20,8 +40,8 @@ EXPORT_HEADERS= SMESHGUI_Swig.hxx \
 
 # .po files to transform in .qm
 PO_FILES = \
-	   SMESH_icons.po \
-	   SMESH_msg_en.po
+	   SMESHGUI_icons.po \
+	   SMESHGUI_msg_en.po
 
 # Libraries targets
 LIB = libSMESHGUI.la
@@ -102,10 +122,10 @@ LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
 
-CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) $(MED2_INCLUDES)
+CXXFLAGS += 
 #$(OCC_CXXFLAGS)
 
-LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGeometryClient -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV $(OCC_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome
+LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGeometryClient -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV $(OCC_LIBS)
 
 @CONCLUDE@

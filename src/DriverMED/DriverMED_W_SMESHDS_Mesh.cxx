@@ -1,3 +1,30 @@
+//  SMESH DriverMED : driver to read and write 'med' files
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : DriverMED_W_SMESHDS_Mesh.cxx
+//  Module : SMESH
+
+using namespace std;
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMDS_Mesh.h"
 
@@ -179,22 +206,72 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
   /****************************************************************************
    *                       NOMBRES D'OBJETS MED                               *
    ****************************************************************************/
-  fprintf(stdout,"\n(****************************)\n");
-  fprintf(stdout,"(* INFORMATIONS GENERALES : *)\n");
-  fprintf(stdout,"(****************************)\n");
+  MESSAGE("(****************************)");
+  MESSAGE("(* INFORMATIONS GENERALES : *)");
+  MESSAGE("(****************************)");
 
   /* calcul de la dimension */
   mdim=2;
   double epsilon=0.00001;
+  double nodeRefX;
+  double nodeRefY;
+  double nodeRefZ;
+
+  bool dimX = true;
+  bool dimY = true;
+  bool dimZ = true;
+
   SMDS_MeshNodesIterator myItNodes(myMesh);
+  int inode = 0;
   for (;myItNodes.More();myItNodes.Next()) {
     const Handle(SMDS_MeshElement)& elem = myItNodes.Value();
     const Handle(SMDS_MeshNode)& node = myMesh->GetNode(1,elem);
-    if ( fabs(node->Z()) > epsilon ) {
-      mdim=3;
+    if ( inode == 0 ) {
+      nodeRefX = fabs(node->X());
+      nodeRefY = fabs(node->Y());
+      nodeRefZ = fabs(node->Z());
+    }
+    SCRUTE( inode );
+    SCRUTE( nodeRefX );
+    SCRUTE( nodeRefY );
+    SCRUTE( nodeRefZ );
+
+    if ( inode !=0 ) {
+      if ( (fabs(fabs(node->X()) - nodeRefX) > epsilon ) && dimX )
+	dimX = false;
+      if ( (fabs(fabs(node->Y()) - nodeRefY) > epsilon ) && dimY )
+	dimY = false;
+      if ( (fabs(fabs(node->Z()) - nodeRefZ) > epsilon ) && dimZ )
+	dimZ = false;
+    }
+    if ( !dimX && !dimY && !dimZ ) {
+      mdim = 3;
       break;
     }
+    inode++;
   }
+
+  if ( mdim != 3 ) {
+    if ( dimX && dimY && dimZ )
+      mdim = 0;
+    else if ( !dimX ) {
+      if ( dimY && dimZ )
+	mdim = 1;
+      else if (( dimY && !dimZ ) || ( !dimY && dimZ ) )
+	mdim = 2;
+    } else if ( !dimY ) {
+      if ( dimX && dimZ )
+	mdim = 1;
+      else if (( dimX && !dimZ ) || ( !dimX && dimZ ) )
+	mdim = 2;
+    } else if ( !dimZ ) {
+      if ( dimY && dimX )
+	mdim = 1;
+      else if (( dimY && !dimX ) || ( !dimY && dimX ) )
+	mdim = 2;
+    }
+  }
+
   MESSAGE ( " mdim " << mdim );
 
   /* creation du maillage */
@@ -284,9 +361,9 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                *
    ****************************************************************************/
-  fprintf(stdout,"\n(************************)\n");
-  fprintf(stdout,"(* NOEUDS DU MAILLAGE : *)\n");
-  fprintf(stdout,"(************************)\n");
+  MESSAGE("(************************)");
+  MESSAGE("(* NOEUDS DU MAILLAGE : *)");
+  MESSAGE("(************************)");
 
   /* Allocations memoires */
   /* table des coordonnees
@@ -338,9 +415,27 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
 	coo[i*3]=node->X();
 	coo[i*3+1]=node->Y();
 	coo[i*3+2]=node->Z();
+      } else if(mdim==2) {
+	if ( dimX ) {
+	  coo[i*2]=node->Y();
+	  coo[i*2+1]=node->Z();
+	} 
+	if ( dimY ) {
+	  coo[i*2]=node->X();
+	  coo[i*2+1]=node->Z();
+	} 
+	if ( dimZ ) {
+	  coo[i*2]=node->X();
+	  coo[i*2+1]=node->Y();
+	} 
       } else {
-	coo[i*2]=node->X();
-	coo[i*2+1]=node->Y();
+	if ( ! dimX ) {
+	  coo[i]=node->X();
+	} else if ( ! dimY ) {
+	  coo[i]=node->Y();
+	} else {
+	  coo[i]=node->Z();
+	}
       }
       mapNoeud[node->GetID()] = i+1;
 
@@ -387,10 +482,10 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
   /****************************************************************************
    *                       ECRITURE DES ELEMENTS                              *
    ****************************************************************************/
-  fprintf(stdout,"\n(**************************)\n");
-  fprintf(stdout,"(* ELEMENTS DU MAILLAGE : *)\n");
-  fprintf(stdout,"(**************************)\n");
-
+  MESSAGE("(**************************)");
+  MESSAGE("(* ELEMENTS DU MAILLAGE : *)");
+  MESSAGE("(**************************)");
+  
   /* Ecriture des connectivites, noms, numeros des mailles */
 
   if (ret == 0)

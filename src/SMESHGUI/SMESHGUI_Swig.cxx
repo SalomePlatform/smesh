@@ -1,14 +1,32 @@
-using namespace std;
-//  File      : SMESH_Swig.cxx
-//  Created   : Mon Jun 17 13:41:43 2002
-//  Author    : Nicolas REJNERI
-
-//  Project   : SALOME
-//  Module    : SMESH
-//  Copyright : Open CASCADE 2002
+//  SMESH SMESHGUI : GUI for SMESH component
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESHGUI_Swig.cxx
+//  Author : Nicolas REJNERI
+//  Module : SMESH
 //  $Header$
 
-
+using namespace std;
 #include "SMESHGUI_Swig.hxx"
 
 #include "Utils_ORB_INIT.hxx"
@@ -43,13 +61,13 @@ static CORBA::Object_ptr StringToObject (const char* ior)
   return _orb->string_to_object(ior);
 }
 
-SMESH_Swig::SMESH_Swig()
+SMESHGUI_Swig::SMESHGUI_Swig()
 {
   MESSAGE("Constructeur");
   setOrb();
 }
 
-void SMESH_Swig::Init(int studyID)
+void SMESHGUI_Swig::Init(int studyID)
 {
   MESSAGE("Init");
   Engines::Component_var comp = QAD_Application::getDesktop()->getEngine("FactoryServer", "SMESH");
@@ -58,7 +76,7 @@ void SMESH_Swig::Init(int studyID)
   QAD_ResourceMgr* resMgr = QAD_Desktop::createResourceManager();
   if ( resMgr ) {
     QString msg;
-    if (!resMgr->loadResources( "SMESH", msg ))
+    if (!resMgr->loadResources( "SMESHGUI", msg ))
       MESSAGE ( msg )
   }
 
@@ -76,8 +94,7 @@ void SMESH_Swig::Init(int studyID)
     father = myStudyBuilder->NewComponent("MESH");
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
-    //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
-    aName->SetValue( QAD_Application::getDesktop()->getComponentUserName( "SMESH" ) );
+    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
@@ -100,13 +117,13 @@ void SMESH_Swig::Init(int studyID)
   Tag_SubMeshOnCompound = 8;
 }
 
-SMESH_Swig::~SMESH_Swig()
+SMESHGUI_Swig::~SMESHGUI_Swig()
 {
   MESSAGE("Destructeur");
 }
 
 
-const char* SMESH_Swig::AddNewMesh(const char* IOR)
+const char* SMESHGUI_Swig::AddNewMesh(const char* IOR)
 {
   MESSAGE("AddNewMesh");
   //Find or Create Hypothesis root
@@ -155,7 +172,7 @@ const char* SMESH_Swig::AddNewMesh(const char* IOR)
   return SALOMEDS::SObject::_narrow( newMesh )->GetID();
 }
 
-const char* SMESH_Swig::AddNewHypothesis(const char* IOR)
+const char* SMESHGUI_Swig::AddNewHypothesis(const char* IOR)
 {
   MESSAGE("AddNewHypothesis");
   //Find or Create Hypothesis root
@@ -199,7 +216,7 @@ const char* SMESH_Swig::AddNewHypothesis(const char* IOR)
   return SALOMEDS::SObject::_narrow(newHypo)->GetID();
 }
 
-const char* SMESH_Swig::AddNewAlgorithms(const char* IOR)
+const char* SMESHGUI_Swig::AddNewAlgorithms(const char* IOR)
 {
   MESSAGE("AddNewAlgorithms");
   //Find or Create Algorithms root
@@ -243,7 +260,7 @@ const char* SMESH_Swig::AddNewAlgorithms(const char* IOR)
   return SALOMEDS::SObject::_narrow(newHypo)->GetID();
 }
 
-void SMESH_Swig::SetShape(const char* ShapeEntry, const char* MeshEntry)
+void SMESHGUI_Swig::SetShape(const char* ShapeEntry, const char* MeshEntry)
 {
   SALOMEDS::SObject_var SO_MorSM = myStudy->FindObjectID( MeshEntry );
   SALOMEDS::SObject_var SO_GeomShape = myStudy->FindObjectID( ShapeEntry );
@@ -254,7 +271,7 @@ void SMESH_Swig::SetShape(const char* ShapeEntry, const char* MeshEntry)
   }
 }
 
-void SMESH_Swig::SetHypothesis(const char* Mesh_Or_SubMesh_Entry, const char* Hypothesis_Entry)
+void SMESHGUI_Swig::SetHypothesis(const char* Mesh_Or_SubMesh_Entry, const char* Hypothesis_Entry)
 {
   SALOMEDS::SObject_var SO_MorSM = myStudy->FindObjectID( Mesh_Or_SubMesh_Entry );
   SALOMEDS::SObject_var SO_Hypothesis = myStudy->FindObjectID( Hypothesis_Entry );
@@ -283,7 +300,7 @@ void SMESH_Swig::SetHypothesis(const char* Mesh_Or_SubMesh_Entry, const char* Hy
     myStudyBuilder->Addreference (SO,SO_Hypothesis);
   }
 }
-void SMESH_Swig::SetAlgorithms(const char* Mesh_Or_SubMesh_Entry, const char* Algorithms_Entry)
+void SMESHGUI_Swig::SetAlgorithms(const char* Mesh_Or_SubMesh_Entry, const char* Algorithms_Entry)
 {
   SALOMEDS::SObject_var SO_MorSM = myStudy->FindObjectID( Mesh_Or_SubMesh_Entry );
   SALOMEDS::SObject_var SO_Algorithms = myStudy->FindObjectID( Algorithms_Entry );
@@ -312,7 +329,7 @@ void SMESH_Swig::SetAlgorithms(const char* Mesh_Or_SubMesh_Entry, const char* Al
   }
 }
 
-void SMESH_Swig::UnSetHypothesis(const char* Applied_Hypothesis_Entry )
+void SMESHGUI_Swig::UnSetHypothesis(const char* Applied_Hypothesis_Entry )
 {
   SALOMEDS::SObject_var SO_Applied_Hypothesis = myStudy->FindObjectID( Applied_Hypothesis_Entry );
   if ( !SO_Applied_Hypothesis->_is_nil() )
@@ -320,7 +337,7 @@ void SMESH_Swig::UnSetHypothesis(const char* Applied_Hypothesis_Entry )
 }
 
 
-const char* SMESH_Swig::AddSubMesh(const char* SO_Mesh_Entry, const char* SM_IOR, int ST)
+const char* SMESHGUI_Swig::AddSubMesh(const char* SO_Mesh_Entry, const char* SM_IOR, int ST)
 {
   SALOMEDS::SObject_var SO_Mesh = myStudy->FindObjectID( SO_Mesh_Entry );
   if ( !SO_Mesh->_is_nil() ) {
@@ -358,7 +375,7 @@ const char* SMESH_Swig::AddSubMesh(const char* SO_Mesh_Entry, const char* SM_IOR
   return "";
 }
 
-const char* SMESH_Swig::AddSubMeshOnShape(const char* Mesh_Entry, const char* GeomShape_Entry, 
+const char* SMESHGUI_Swig::AddSubMeshOnShape(const char* Mesh_Entry, const char* GeomShape_Entry, 
 					     const char* SM_IOR, int ST)
 {
   SALOMEDS::SObject_var SO_GeomShape = myStudy->FindObjectID( GeomShape_Entry );
@@ -373,12 +390,12 @@ const char* SMESH_Swig::AddSubMeshOnShape(const char* Mesh_Entry, const char* Ge
   return "";
 }
 
-void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
+void SMESHGUI_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
 {
   //  SMESH_Actor* Mesh = smeshGUI->ReadScript(aM);
 }
 
-void SMESH_Swig::SetName(const char* Entry, const char* Name)
+void SMESHGUI_Swig::SetName(const char* Entry, const char* Name)
 {
   SALOMEDS::SObject_var SO = myStudy->FindObjectID( Entry );
   SALOMEDS::GenericAttribute_var anAttr;
@@ -391,7 +408,7 @@ void SMESH_Swig::SetName(const char* Entry, const char* Name)
 }
 
 
-void SMESH_Swig::setOrb()
+void SMESHGUI_Swig::setOrb()
 {
   try {
     ORB_INIT &init = *SINGLETON_<ORB_INIT>::Instance();

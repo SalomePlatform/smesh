@@ -1,13 +1,32 @@
-using namespace std;
-//  File      : SMESHGUI_EditHypothesesDlg.cxx
-//  Created   : Fri Aug 02 09:14:56 2002
-//  Author    : Nicolas REJNERI
-
-//  Project   : SALOME
-//  Module    : SMESH
-//  Copyright : Open CASCADE 2002
+//  SMESH SMESHGUI : GUI for SMESH component
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESHGUI_EditHypothesesDlg.cxx
+//  Author : Nicolas REJNERI
+//  Module : SMESH
 //  $Header$
 
+using namespace std;
 #include "SMESHGUI_EditHypothesesDlg.h"
 #include "SMESHGUI.h"
 #include "SALOME_ListIteratorOfListIO.hxx"
@@ -545,9 +564,9 @@ void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* i)
   SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
   int index = ListHypAssignation->index( i );
   if ( index != -1 ) {
-    if (mapNameIOR.find( string(i->text()) ) != mapNameIOR.end()) {
+    if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
       SMESH::SMESH_Hypothesis_var Hyp = 
-	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR( mapNameIOR[ string(i->text()) ].c_str() ) );
+	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR( mapNameIOR[ string((const char*)(i->text())) ].c_str() ) );
   
       if ( !myMesh->_is_nil() ) {
 	SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh(myMesh);
@@ -568,9 +587,9 @@ void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* i)
   } 
   index = ListAlgoAssignation->index( i );
   if ( index != -1 ) {
-    if (mapNameIOR.find( string(i->text()) ) != mapNameIOR.end()) {
+    if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
       SMESH::SMESH_Hypothesis_var Hyp = 
-	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string(i->text()) ].c_str()) );
+	SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
       
       if ( !myMesh->_is_nil() ) {
 	SALOMEDS::SObject_var aMesh = myStudyAPI.FindMesh(myMesh);
@@ -604,9 +623,9 @@ void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* i)
     if ( !ListHypAssignation->findItem( i->text() ) ) {
       ListHypAssignation->insertItem( i->text() );
       
-      if (mapNameIOR.find( string(i->text()) ) != mapNameIOR.end()) {
+      if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
 	SMESH::SMESH_Hypothesis_var Hyp = 
-	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string(i->text()) ].c_str()) );
+	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
       
 	if ( !myMesh->_is_nil() )
 	  mySMESHGUI->AddHypothesisOnMesh(myMesh, Hyp);
@@ -620,9 +639,9 @@ void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* i)
     if ( !ListAlgoAssignation->findItem( i->text() ) ) {
       ListAlgoAssignation->insertItem( i->text() );
       
-      if (mapNameIOR.find( string(i->text()) ) != mapNameIOR.end()) {
+      if (mapNameIOR.find( string((const char*)(i->text())) ) != mapNameIOR.end()) {
 	SMESH::SMESH_Hypothesis_var Hyp = 
-	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string(i->text()) ].c_str()) );
+	  SMESH::SMESH_Hypothesis::_narrow( myStudyAPI.StringToIOR(mapNameIOR[ string((const char*)(i->text())) ].c_str()) );
       
 	if ( !myMesh->_is_nil() )
 	  mySMESHGUI->AddAlgorithmOnMesh(myMesh, Hyp);
