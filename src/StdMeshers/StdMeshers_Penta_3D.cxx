@@ -24,35 +24,36 @@
 //  File   : StdMeshers_Penta_3D.cxx
 //  Module : SMESH
 
-using namespace std;
-
-#include <StdMeshers_Penta_3D.hxx>
-
-#include <stdio.h>
-
-#include <algorithm>
+#include "StdMeshers_Penta_3D.hxx"
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
 
-#include <TopAbs_ShapeEnum.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopExp.hxx>
-#include <SMESH_Mesh.hxx>
-#include <SMESH_subMesh.hxx>
-#include <SMESHDS_SubMesh.hxx>
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_VolumeOfNodes.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
-#include <SMDS_MeshElement.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopoDS_Vertex.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopoDS.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
+#include <TopAbs_ShapeEnum.hxx>
+#include <TopExp.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Shell.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <gp_Pnt.hxx>
+
+#include <stdio.h>
+#include <algorithm>
+
+using namespace std;
 
 typedef map < int, int, less<int> >::iterator   \
   StdMeshers_IteratorOfDataMapOfIntegerInteger;
@@ -380,11 +381,12 @@ void StdMeshers_Penta_3D::FindNodeOnShape(const TopoDS_Shape& aS,
 {
   myErrorStatus=0;
   //
-  double aX, aY, aZ, aD, aTol2;
+  double aX, aY, aZ, aD, aTol2, minD;
   gp_Pnt aP1, aP2;
   //
   SMESH_Mesh* pMesh=GetMesh();
   aTol2=myTol3D*myTol3D;
+  minD = 1.e100;
   SMDS_MeshNode* pNode=NULL;
   //
   myBlock.Point(aParams, aS, aP1);
@@ -399,18 +401,20 @@ void StdMeshers_Penta_3D::FindNodeOnShape(const TopoDS_Shape& aS,
     aP2.SetCoord(aX, aY, aZ);
     aD=(double)aP1.SquareDistance(aP2);
     //printf("** D=%lf ", aD, aTol2);
-    if (aD<aTol2) {
+    if (aD < minD) {
       pNode=(SMDS_MeshNode*)aNode;
       aTN.SetNode(pNode);
+      minD = aD;
       //printf(" Ok\n");
-      return; 
+      if (aD<aTol2)
+        return; 
     }
   }
   //
   //printf(" KO\n");
-  aTN.SetNode(pNode);
-  MESSAGE("StdMeshers_Penta_3D::FindNodeOnShape(), can not find the node");
-  myErrorStatus=11; // can not find the node;
+  //aTN.SetNode(pNode);
+  //MESSAGE("StdMeshers_Penta_3D::FindNodeOnShape(), can not find the node");
+  //myErrorStatus=11; // can not find the node;
 }
 
 //=======================================================================
@@ -482,6 +486,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       ++k;
     }
     //
+    bool forward = true;
     for (i=0; i<ik; ++i){
       i1=i;
       i2=i+1;
@@ -496,16 +501,45 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
 	const SMDS_MeshNode* aN2=aTN2.Node();
 	aN[j+nbFaceNodes]=aN2;
       }
-      //
+      // check if volume orientation will be ok
+      if ( i == 0 ) {
+        SMDS_VolumeTool vTool;
+        switch ( nbFaceNodes ) {
+        case 3: {
+          SMDS_VolumeOfNodes tmpVol (aN[0], aN[1], aN[2],
+                                     aN[3], aN[4], aN[5]);
+          vTool.Set( &tmpVol );
+          break;
+        }
+        case 4: {
+          SMDS_VolumeOfNodes tmpVol(aN[0], aN[1], aN[2], aN[3],
+                                    aN[4], aN[5], aN[6], aN[7]);
+          vTool.Set( &tmpVol );
+          break;
+        }
+        default:
+          continue;
+        }
+        forward = vTool.IsForward();
+      }
+      // add volume
       SMDS_MeshVolume* aV = 0;
       switch ( nbFaceNodes ) {
       case 3:
-	aV = meshDS->AddVolume(aN[0], aN[1], aN[2],
-                               aN[3], aN[4], aN[5]);
+        if ( forward )
+          aV = meshDS->AddVolume(aN[0], aN[1], aN[2],
+                                 aN[3], aN[4], aN[5]);
+        else
+          aV = meshDS->AddVolume(aN[0], aN[2], aN[1],
+                                 aN[3], aN[5], aN[4]);
         break;
       case 4:
-	aV = meshDS->AddVolume(aN[0], aN[1], aN[2], aN[3],
-                               aN[4], aN[5], aN[6], aN[7]);
+        if ( forward )
+          aV = meshDS->AddVolume(aN[0], aN[1], aN[2], aN[3],
+                                 aN[4], aN[5], aN[6], aN[7]);
+        else
+          aV = meshDS->AddVolume(aN[0], aN[3], aN[2], aN[1],
+                                 aN[4], aN[7], aN[6], aN[5]);
         break;
       default:
         continue;

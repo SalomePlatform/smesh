@@ -37,6 +37,8 @@ using namespace std;
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMDS_VolumeOfNodes.hxx"
 
 #include <TopExp.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
@@ -56,7 +58,7 @@ using namespace std;
 #include "Utils_ExceptHandlers.hxx"
 
 //modified by NIZNHY-PKV Wed Nov 17 15:31:58 2004 f
-#include <StdMeshers_Penta_3D.hxx>
+#include "StdMeshers_Penta_3D.hxx"
 
 static bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape);
 //modified by NIZNHY-PKV Wed Nov 17 15:32:00 2004 t
@@ -701,11 +703,34 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		}
 	}
 
+  // find orientation of furute volumes according to MED convention
+  vector< bool > forward( nbx * nby );
+  SMDS_VolumeTool vTool;
+  for (int i = 0; i < nbx - 1; i++)
+    for (int j = 0; j < nby - 1; j++)
+    {
+      int n1 = j * nbx + i;
+      int n2 = j * nbx + i + 1;
+      int n3 = (j + 1) * nbx + i + 1;
+      int n4 = (j + 1) * nbx + i;
+      int n5 = nbx * nby + j * nbx + i;
+      int n6 = nbx * nby + j * nbx + i + 1;
+      int n7 = nbx * nby + (j + 1) * nbx + i + 1;
+      int n8 = nbx * nby + (j + 1) * nbx + i;
+
+      SMDS_VolumeOfNodes tmpVol (np[n1].node,np[n2].node,np[n3].node,np[n4].node,
+                                 np[n5].node,np[n6].node,np[n7].node,np[n8].node);
+      vTool.Set( &tmpVol );
+      forward[ n1 ] = vTool.IsForward();
+    }
+
 	//2.1 - for each node of the cube (less 3 *1 Faces):
 	//      - store hexahedron in SMESHDS
 	MESSAGE("Storing hexahedron into the DS");
 	for (int i = 0; i < nbx - 1; i++)
 		for (int j = 0; j < nby - 1; j++)
+                {
+                        bool isForw = forward.at( j * nbx + i );
 			for (int k = 0; k < nbz - 1; k++)
 			{
 				int n1 = k * nbx * nby + j * nbx + i;
@@ -717,46 +742,32 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int n7 = (k + 1) * nbx * nby + (j + 1) * nbx + i + 1;
 				int n8 = (k + 1) * nbx * nby + (j + 1) * nbx + i;
 
-//    MESSAGE(" "<<n1<<" "<<n2<<" "<<n3<<" "<<n4<<" "<<n5<<" "<<n6<<" "<<n7<<" "<<n8);
-				//MESSAGE(" "<<np[n1].nodeId<<" "<<np[n2].nodeId<<" "<<np[n3].nodeId<<" "<<np[n4].nodeId<<" "<<np[n5].nodeId<<" "<<np[n6].nodeId<<" "<<np[n7].nodeId<<" "<<np[n8].nodeId);
+				SMDS_MeshVolume * elt;
+                                if ( isForw )
+                                  elt = meshDS->AddVolume(np[n1].node,
+                                                          np[n2].node,
+                                                          np[n3].node,
+                                                          np[n4].node,
+                                                          np[n5].node,
+                                                          np[n6].node,
+                                                          np[n7].node,
+                                                          np[n8].node);
+                                else
+                                  elt = meshDS->AddVolume(np[n1].node,
+                                                          np[n4].node,
+                                                          np[n3].node,
+                                                          np[n2].node,
+                                                          np[n5].node,
+                                                          np[n8].node,
+                                                          np[n7].node,
+                                                          np[n6].node);
 
-				SMDS_MeshVolume * elt = meshDS->AddVolume(np[n1].node,
-					np[n2].node,
-					np[n3].node,
-					np[n4].node,
-					np[n5].node,
-					np[n6].node,
-					np[n7].node,
-					np[n8].node);
-				 ;
 				meshDS->SetMeshElementOnShape(elt, aShell);
 
-				// *** 5 tetrahedres ... verifier orientations,
-				//     mettre en coherence &vec quadrangles-> triangles
-				//     choisir afficher 1 parmi edges, face et volumes
-//    int tetra1 = meshDS->AddVolume(np[n1].nodeId,
-//                   np[n2].nodeId,
-//                   np[n4].nodeId,
-//                   np[n5].nodeId);
-//    int tetra2 = meshDS->AddVolume(np[n2].nodeId,
-//                   np[n3].nodeId,
-//                   np[n4].nodeId,
-//                   np[n7].nodeId);
-//    int tetra3 = meshDS->AddVolume(np[n5].nodeId,
-//                   np[n6].nodeId,
-//                   np[n7].nodeId,
-//                   np[n2].nodeId);
-//    int tetra4 = meshDS->AddVolume(np[n5].nodeId,
-//                   np[n7].nodeId,
-//                   np[n8].nodeId,
-//                   np[n4].nodeId);
-//    int tetra5 = meshDS->AddVolume(np[n5].nodeId,
-//                   np[n7].nodeId,
-//                   np[n2].nodeId,
-//                   np[n4].nodeId);
 
-			}
-
+                              }
+                      }
+  if ( np ) delete [] np;
 	//MESSAGE("End of StdMeshers_Hexa_3D::Compute()");
 	return true;
 }
