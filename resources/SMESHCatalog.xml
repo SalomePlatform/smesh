@@ -16,8 +16,8 @@
 		<component-username>Mesh</component-username>
 		<component-type>MESH</component-type>
 		<component-author>NRI</component-author>
-		<component-version>2.1.0</component-version>
-		<component-comment>New Mesh component</component-comment>
+		<component-version>2.2.0</component-version>
+		<component-comment>Mesh component</component-comment>
 		<component-multistudy>1</component-multistudy>
 		<component-icone>ModuleMesh.png</component-icone>
 
