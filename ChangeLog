@@ -1,8 +1,15 @@
 ###############################################################################
 #This is the SMESH change log. Do not modify because it is automatically
 #created with :
-#cvs2cl.pl -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
+#cvs2cl.pl --accum -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
+
+2004-02-02 16:43  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/SMDS_Mesh.cxx: Fix a bug (crash when adding an
+	  hexahedron from ids).
+
+2004-01-30 15:42  tag V1_4_0b
 
 2004-01-30 13:18  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
 
