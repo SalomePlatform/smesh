@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<tocdata>
+<book name="SMESH module" >
+  <item name="Introduction to SMESH" url="files/introduction_to_smesh.htm" />
+  <item name="Running SMESH module" url="files/running_smesh_module.htm" />
+  <book name="Creating meshes" >
+    <item name="About meshes" url="files/about_meshes.htm" />
+    <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
+    <book name="Defining hypotheses" >
+      <item name="About hypotheses" url="files/about_hypotheses.htm" />
+      <item name="Local Length hypothesis" url="files/local_length_hypothesis.htm" />
+      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Max Element Area hypothesis" url="files/max._element_area_hypothesis.htm" />
+      <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
+    </book>
+    <book name="Defining meshing algorithms" >
+      <item name="About meshing algorithms" url="files/about_meshing_algorithms.htm" />
+      <book name="1D meshing algorithms" >
+        <item name="Wire discretization" url="files/1d_meshing_algorithm.htm" />
+      </book>
+      <book name="2D meshing algorithms" >
+        <item name="Triangle meshing algorithm" url="files/2d_meshing_algorithm.htm" />
+        <item name="Quadrangle meshing algorithm" url="files/2d_(quadrangle)_meshing_algorithm.htm" />
+      </book>
+      <book name="3D meshing algorithms" >
+        <item name="Hexahedron meshing algorithm" url="files/3d_meshing_algorithm.htm" />
+        <item name="Tetrahedron (Netgen) meshing algorithm" url="files/tetrahedron_(netgen)_meshing_algorithm.htm" />
+      </book>
+    </book>
+    <item name="Constructing meshes" url="files/constructing_meshes.htm" />
+    <item name="Constructing submeshes" url="files/constructing_submeshes.htm" />
+    <item name="Computing meshes" url="files/computing_meshes.htm" />
+  </book>
+  <book name="Editing meshes" >
+    <item name="Reassigning hypotheses and algorithms" url="files/reassigning_hypotheses_and_algorithms.htm" />
+    <item name="Editing hypotheses" url="files/editing_hypotheses.htm" />
+  </book>
+  <book name="Quality controls" >
+    <item name="About quality controls" url="files/about_quality_controls.htm" />
+    <item name="Length of edges" url="files/length_of_edges.htm" />
+    <item name="Area of elements" url="files/area_of_elements.htm" />
+    <item name="Taper" url="files/taper.htm" />
+    <item name="Aspect Ratio" url="files/aspect_ratio.htm" />
+    <item name="Minimum angle" url="files/minimum_angle.htm" />
+    <item name="Warping" url="files/warp.htm" />
+    <item name="Skew angle" url="files/skew.htm" />
+  </book>
+  <book name="Modifying meshes" >
+    <item name="About modification of meshes" url="files/about_modification_of_meshes.htm" />
+    <item name="Adding nodes and elements" url="files/adding_nodes_and_elements.htm" />
+    <item name="Removing nodes and elements" url="files/removing_nodes_and_elements.htm" />
+    <item name="Displacing nodes" url="files/displacing_nodes.htm" />
+    <item name="Changing orientation of elements" url="files/changing_orientation_of_elements.htm" />
+    <item name="Diagonal inversion of elements" url="files/diagonal_iversion_of_elements.htm" />
+  </book>
+  <book name="Mesh info" >
+    <item name="Viewing mesh info" url="files/viewing_mesh_info.htm" />
+    <item name="Displaying nodes numbers" url="files/displaying_nodes_numbers.htm" />
+    <item name="Displaying elements numbers" url="files/displaying_elements_numbers.htm" />
+  </book>
+  <book name="Setting SMESH preferences" >
+    <item name="Visualization modes" url="files/visualization_modes.htm" />
+    <item name="Visualization properties" url="files/visualization_properties.htm" />
+    <item name="View update" url="files/view_update.htm" />
+    <item name="Scalar Bar properties" url="files/scalar_bar_properties.htm" />
+  </book>
+</book>
+
+</tocdata>

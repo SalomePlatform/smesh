@@ -1,0 +1,30 @@
+<HTML><b>
+<table width="100%" BORDER>
+<tr bgcolor="#FFFFCC">
+<td colspan="11"><font size="+3"><b><div align="center"><i>interface SMESH_Gen</i></div></b></font></td>
+</tr>
+<td width="50%" bgcolor= "lightgreen" ><font size="+2"><div align="center"><b><i>IDL file</i></b></div></font></td>
+<td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Hypothesis  CreateHypothesis ( in string anHyp, in long studyId )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateHypothesis ( anHyp, studyId )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  Init ( in GEOM_Gen geomEngine, in long studyId, in GEOM_Shape aShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Init ( geomEngine, studyId, aShape )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  Compute ( in SMESH_Mesh aMesh, in GEOM_Shape aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Compute ( aMesh, aSubShape )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  IsReadyToCompute ( in SMESH_Mesh aMesh, in GEOM_Shape aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = IsReadyToCompute ( aMesh, aSubShape )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetSubShapesId ( in GEOM_Gen geomEngine, in long studyId, in GEOM_Shape mainShape, in shape_array listOfSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetSubShapesId ( geomEngine, studyId, mainShape, listOfSubShape )</b></div></td>
+</tr>
+</table><br>
+</b></HTML>

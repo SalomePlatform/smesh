@@ -31,7 +31,6 @@
 
 #include "Utils_SALOME_Exception.hxx"
 
-#include "SMESH_HypothesisFactory.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_1D_Algo.hxx"
@@ -55,43 +54,53 @@ typedef struct studyContextStruct
 
 class SMESH_Gen
 {
-  public:
-	SMESH_Gen();
-	~SMESH_Gen();
+ public:
+  SMESH_Gen();
+  ~SMESH_Gen();
 
-	SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
-		throw(SALOME_Exception);
-	SMESH_Mesh *Init(int studyId, const TopoDS_Shape & aShape, int meshID = -1)
-		throw(SALOME_Exception);
-	bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
-		throw(SALOME_Exception);
-	StudyContextStruct *GetStudyContext(int studyId);
+//  SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
+//    throw(SALOME_Exception);
+  SMESH_Mesh* CreateMesh(int studyId)
+    throw(SALOME_Exception);
+  bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
-	static int GetShapeDim(const TopoDS_Shape & aShape);
-	SMESH_Algo *GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
-	SMESH_Mesh *Import(int studyId, const char * fileName, const char * fileType);
- 
-	// inherited methods from SALOMEDS::Driver
+  bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
+  // notify on bad state of attached algos, return false
+  // if Compute() would fail because of some algo bad state
 
-	void Save(int studyId, const char *aUrlOfFile);
-	void Load(int studyId, const char *aUrlOfFile);
-	void Close(int studyId);
-	const char *ComponentDataType();
 
-	const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
-	const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
+  StudyContextStruct *GetStudyContext(int studyId);
 
-	SMESH_HypothesisFactory _hypothesisFactory;
+  static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
+  static int GetShapeDim(const TopoDS_Shape & aShape)
+  { return GetShapeDim( aShape.ShapeType() ); }
+  SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+  static bool IsGlobalAlgo(const SMESH_Algo* theAlgo, SMESH_Mesh& aMesh);
 
-	  map < int, SMESH_Algo * >_mapAlgo;
-	  map < int, SMESH_1D_Algo * >_map1D_Algo;
-	  map < int, SMESH_2D_Algo * >_map2D_Algo;
-	  map < int, SMESH_3D_Algo * >_map3D_Algo;
+  // inherited methods from SALOMEDS::Driver
 
-  private:
-	int _localId;				// unique Id of created objects, within SMESH_Gen entity
-	  map < int, StudyContextStruct * >_mapStudyContext;
-	  map < int, SMESH_Hypothesis * >_mapHypothesis;
+  void Save(int studyId, const char *aUrlOfFile);
+  void Load(int studyId, const char *aUrlOfFile);
+  void Close(int studyId);
+  const char *ComponentDataType();
+
+  const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
+  const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
+
+  int GetANewId();
+
+  map < int, SMESH_Algo * >_mapAlgo;
+  map < int, SMESH_1D_Algo * >_map1D_Algo;
+  map < int, SMESH_2D_Algo * >_map2D_Algo;
+  map < int, SMESH_3D_Algo * >_map3D_Algo;
+
+ private:
+
+  int _localId;				// unique Id of created objects, within SMESH_Gen entity
+  map < int, StudyContextStruct * >_mapStudyContext;
+
+  // hypotheses managing
+  int _hypId;
 };
 
 #endif

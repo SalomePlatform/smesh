@@ -36,17 +36,39 @@ class SMESH_Gen;
 class SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
 public:
+  enum Hypothesis_Status // in the order of severity
+  {
+    HYP_OK,
+    HYP_MISSING,      // algo misses a hypothesis
+    HYP_CONCURENT,    // several applicable hypotheses
+    HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
+    HYP_UNKNOWN_FATAL,//  --- all statuses below should be considered as fatal
+                      //      for Add/RemoveHypothesis operations
+    HYP_INCOMPATIBLE, // hypothesis does not fit algo
+    HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
+    HYP_ALREADY_EXIST,// such hypothesis already exist
+    HYP_BAD_DIM       // bad dimension
+  };
+  static bool IsStatusFatal(Hypothesis_Status theStatus)
+  { return theStatus >= HYP_UNKNOWN_FATAL; }
+
   SMESH_Hypothesis(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~SMESH_Hypothesis();
-  int GetDim();
-  int GetStudyId();
+  int GetDim() const;
+  int GetStudyId() const;
   void NotifySubMeshesHypothesisModification();
-  int GetShapeType();
+  int GetShapeType() const;
+  const char* GetLibName() const;
+  void  SetLibName(const char* theLibName);
 
 protected:
   SMESH_Gen* _gen;
   int _studyId;
   int _shapeType;
+  int _param_algo_dim;
+
+private:
+  string _libName;
 };
 
 #endif

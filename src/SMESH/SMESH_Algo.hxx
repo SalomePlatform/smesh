@@ -39,7 +39,7 @@
 #include <list>
 using namespace std;
 
-class SMESH_gen;
+class SMESH_Gen;
 class SMESH_Mesh;
 
 class SMESH_Algo:public SMESH_Hypothesis
@@ -49,10 +49,11 @@ class SMESH_Algo:public SMESH_Hypothesis
 	  virtual ~ SMESH_Algo();
 
 	const vector < string > &GetCompatibleHypothesis();
-	virtual bool CheckHypothesis(SMESH_Mesh & aMesh,
-		const TopoDS_Shape & aShape);
+	virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
+                                     const TopoDS_Shape& aShape,
+                                     SMESH_Hypothesis::Hypothesis_Status& aStatus) = 0;
 
-	virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+	virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 
 	virtual const list <const SMESHDS_Hypothesis *> &
 		GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
@@ -62,15 +63,29 @@ class SMESH_Algo:public SMESH_Hypothesis
 
 	static double EdgeLength(const TopoDS_Edge & E);
 
-	virtual ostream & SaveTo(ostream & save);
-	virtual istream & LoadFrom(istream & load);
-	friend ostream & operator <<(ostream & save, SMESH_Algo & hyp);
-	friend istream & operator >>(istream & load, SMESH_Algo & hyp);
+ public:
+        // algo features
 
-  protected:
-	  vector<string> _compatibleHypothesis;
-	  list<const SMESHDS_Hypothesis *> _appliedHypList;
-	  list<const SMESHDS_Hypothesis *> _usedHypList;
+        // SMESH_Hypothesis::GetDim();
+        // 1 - dimention of target mesh
+
+        bool OnlyUnaryInput() const { return _onlyUnaryInput; }
+        // 2 - is collection of tesselatable shapes inacceptable as input;
+        // "collection" means a shape containing shapes of dim equal
+        // to GetDim().
+        // Algo which can process a collection shape should expect
+        // an input temporary shape that is neither MainShape nor
+        // its child.
+        
+        bool NeedDescretBoundary() const { return _requireDescretBoundary; }
+        // 3 - is a Dim-1 mesh prerequisite
+
+ protected:
+        bool _onlyUnaryInput;
+        bool _requireDescretBoundary;
+        vector<string> _compatibleHypothesis;
+        list<const SMESHDS_Hypothesis *> _appliedHypList;
+        list<const SMESHDS_Hypothesis *> _usedHypList;
 };
 
 #endif

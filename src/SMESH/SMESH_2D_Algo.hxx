@@ -41,13 +41,6 @@ public:
 
   int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
-
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream& operator << (ostream & save, SMESH_2D_Algo & hyp);
-  friend istream& operator >> (istream & load, SMESH_2D_Algo & hyp);
-
-protected:
 };
 
 #endif

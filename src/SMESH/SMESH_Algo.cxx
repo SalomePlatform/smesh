@@ -27,7 +27,6 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_Algo.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -39,6 +38,8 @@ using namespace std;
 #include "utilities.h"
 
 #include <algorithm>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 
 //=============================================================================
 /*!
@@ -52,6 +53,8 @@ SMESH_Algo::SMESH_Algo(int hypId, int studyId,
 //   _compatibleHypothesis.push_back("hypothese_bidon");
 	_type = ALGO;
 	gen->_mapAlgo[hypId] = this;
+
+        _onlyUnaryInput = _requireDescretBoundary = true;
 }
 
 //=============================================================================
@@ -77,77 +80,6 @@ const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
 
 //=============================================================================
 /*!
- *  
- */
-//=============================================================================
-
-ostream & SMESH_Algo::SaveTo(ostream & save)
-{
-	return save << this;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-istream & SMESH_Algo::LoadFrom(istream & load)
-{
-	return load >> (*this);
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-ostream & operator <<(ostream & save, SMESH_Algo & hyp)
-{
-	return save;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-istream & operator >>(istream & load, SMESH_Algo & hyp)
-{
-	return load;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-bool SMESH_Algo::CheckHypothesis(SMESH_Mesh & aMesh,
-	const TopoDS_Shape & aShape)
-{
-	MESSAGE("SMESH_Algo::CheckHypothesis");
-	ASSERT(0);					// use method from derived classes
-	return false;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-bool SMESH_Algo::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
-{
-	MESSAGE("SMESH_Algo::Compute");
-	ASSERT(0);					// use method from derived classes
-	return false;
-}
-
-//=============================================================================
-/*!
  *  List the hypothesis used by the algorithm associated to the shape.
  *  Hypothesis associated to father shape -are- taken into account (see
  *  GetAppliedHypothesis). Relevant hypothesis have a name (type) listed in
@@ -164,12 +96,21 @@ const list <const SMESHDS_Hypothesis *> & SMESH_Algo::GetUsedHypothesis(
 	int nbHyp = _usedHypList.size();
 	if (nbHyp == 0)
 	{
-		TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
-		if (!mainShape.IsSame(aShape))
-		{
-			_usedHypList = GetAppliedHypothesis(aMesh, mainShape);	// copy
-			nbHyp = _usedHypList.size();
-		}
+          TopTools_ListIteratorOfListOfShape ancIt( aMesh.GetAncestors( aShape ));
+          for (; ancIt.More(); ancIt.Next())
+          {
+            const TopoDS_Shape& ancestor = ancIt.Value();
+            _usedHypList = GetAppliedHypothesis(aMesh, ancestor);	// copy
+            nbHyp = _usedHypList.size();
+            if (nbHyp == 1)
+              break;
+          }
+// 		TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
+// 		if (!mainShape.IsSame(aShape))
+// 		{
+// 			_usedHypList = GetAppliedHypothesis(aMesh, mainShape);	// copy
+// 			nbHyp = _usedHypList.size();
+// 		}
 	}
 	if (nbHyp > 1)
 		_usedHypList.clear();	//only one compatible hypothesis allowed

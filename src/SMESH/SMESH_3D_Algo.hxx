@@ -37,13 +37,6 @@ class SMESH_3D_Algo:
 public:
   SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~SMESH_3D_Algo();
-
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream& operator << (ostream & save, SMESH_3D_Algo & hyp);
-  friend istream& operator >> (istream & load, SMESH_3D_Algo & hyp);
-
-protected:
 };
 
 #endif

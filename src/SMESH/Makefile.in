@@ -29,7 +29,7 @@
 top_srcdir=@top_srcdir@
 top_builddir=../..
 srcdir=@srcdir@
-VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 
 @COMMENCE@
@@ -40,22 +40,11 @@ EXPORT_HEADERS= \
 	SMESH_Mesh.hxx \
 	SMESH_subMesh.hxx \
 	SMESH_Hypothesis.hxx \
-	SMESH_HypothesisFactory.hxx \
 	SMESH_Algo.hxx \
 	SMESH_1D_Algo.hxx \
 	SMESH_2D_Algo.hxx \
 	SMESH_3D_Algo.hxx \
-	SMESH_NumberOfSegments.hxx \
-	SMESH_LocalLength.hxx \
-	SMESH_LengthFromEdges.hxx \
-	SMESH_MaxElementArea.hxx \
-	SMESH_MaxElementVolume.hxx \
-	SMESH_Regular_1D.hxx \
-	SMESH_Quadrangle_2D.hxx \
-	SMESH_MEFISTO_2D.hxx \
-	SMESH_Hexa_3D.hxx \
-	SMESH_NETGEN_3D.hxx \
-	SMESH_HypothesisCreator.hxx
+	SMESH_Group.hxx
 
 EXPORT_PYSCRIPTS =
 
@@ -65,20 +54,11 @@ LIB= libSMESHimpl.la
 
 LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_Hypothesis.cxx \
-          SMESH_HypothesisFactory.cxx \
 	  SMESH_Algo.cxx \
 	  SMESH_1D_Algo.cxx \
 	  SMESH_2D_Algo.cxx \
 	  SMESH_3D_Algo.cxx \
-	  SMESH_NumberOfSegments.cxx \
-	  SMESH_LocalLength.cxx \
-	  SMESH_LengthFromEdges.cxx \
-	  SMESH_MaxElementArea.cxx \
-	  SMESH_MaxElementVolume.cxx \
-	  SMESH_Regular_1D.cxx \
-	  SMESH_Quadrangle_2D.cxx \
-	  SMESH_MEFISTO_2D.cxx \
-	  SMESH_Hexa_3D.cxx
+	  SMESH_Group.cxx
 
 LIB_SERVER_IDL = 
 
@@ -89,20 +69,13 @@ BIN =
 BIN_SRC = 
 
 # additionnal information to compil and link file
-CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+           $(BOOST_CPPFLAGS)
 CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 
 #IDLCXXFLAGS+= -Wbtp
 
-LDFLAGS+= $(HDF5_LIBS) $(MED2_LIBS) -lOpUtil -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriver -L${KERNEL_ROOT_DIR}/lib/salome
-
-ifeq (@WITHNETGEN@,yes)
-  LIB_SRC+= SMESH_NETGEN_3D.cxx
-  NETGEN_INCLUDES=@NETGEN_INCLUDES@
-  CPPFLAGS+= $(NETGEN_INCLUDES)
-  CXXFLAGS+= $(NETGEN_INCLUDES)
-  LDFLAGS+=  -lNETGEN
-endif
+LDFLAGS+= $(HDF5_LIBS) $(MED2_LIBS) -lOpUtil -lSMESHDS -lSMDS -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV -L${KERNEL_ROOT_DIR}/lib/salome
 
 @CONCLUDE@
 

@@ -31,6 +31,7 @@
 
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 #include <TopoDS_Shape.hxx>
 #include <TColStd_IndexedMapOfTransient.hxx>
@@ -42,90 +43,136 @@
 
 class SMESH_Mesh;
 class SMESH_Hypothesis;
+class SMESH_Algo;
+class SMESH_Gen;
 
 class SMESH_subMesh
 {
-  public:
-	SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
+ public:
+  SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
 		const TopoDS_Shape & aSubShape);
-	virtual ~ SMESH_subMesh();
+  virtual ~ SMESH_subMesh();
 
-	int GetId();
+  int GetId() const;
 
-//   bool Contains(const TopoDS_Shape & aSubShape)
-//     throw (SALOME_Exception);
+  //   bool Contains(const TopoDS_Shape & aSubShape)
+  //     throw (SALOME_Exception);
 
-	SMESHDS_SubMesh * GetSubMeshDS() throw(SALOME_Exception);
+  SMESHDS_SubMesh * GetSubMeshDS();
 
-	SMESH_subMesh *GetFirstToCompute() throw(SALOME_Exception);
+  SMESHDS_SubMesh* CreateSubMeshDS();
+  // Explicit SMESHDS_SubMesh creation method, required for persistence mechanism
 
-	const map < int, SMESH_subMesh * >&DependsOn();
-	const map < int, SMESH_subMesh * >&Dependants();
+  SMESH_subMesh *GetFirstToCompute();
 
-	const TopoDS_Shape & GetSubShape();
+  const map < int, SMESH_subMesh * >&DependsOn();
+  //const map < int, SMESH_subMesh * >&Dependants();
 
-	bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
+  const TopoDS_Shape & GetSubShape();
 
-	enum compute_state
-	{ NOT_READY, READY_TO_COMPUTE,
-		COMPUTE_OK, FAILED_TO_COMPUTE
-	};
-	enum algo_state
-	{ NO_ALGO, MISSING_HYP, HYP_OK };
-	enum algo_event
-	{ ADD_HYP, ADD_ALGO,
-		REMOVE_HYP, REMOVE_ALGO,
-		ADD_FATHER_HYP, ADD_FATHER_ALGO,
-		REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO
-	};
-	enum compute_event
-	{ MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
-		CLEAN, CLEANDEP, SUBMESH_COMPUTED
-	};
+  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
 
-	bool AlgoStateEngine(int event, SMESH_Hypothesis * anHyp)
-		throw(SALOME_Exception);
+  enum compute_state
+  {
+    NOT_READY, READY_TO_COMPUTE,
+    COMPUTE_OK, FAILED_TO_COMPUTE
+    };
+  enum algo_state
+  {
+    NO_ALGO, MISSING_HYP, HYP_OK
+    };
+  enum algo_event
+  {
+    ADD_HYP, ADD_ALGO,
+    REMOVE_HYP, REMOVE_ALGO,
+    ADD_FATHER_HYP, ADD_FATHER_ALGO,
+    REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO
+    };
+  enum compute_event
+  {
+    MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
+    CLEAN, CLEANDEP, SUBMESH_COMPUTED, SUBMESH_RESTORED
+    };
 
-	void SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp)
-		throw(SALOME_Exception);
+  SMESH_Hypothesis::Hypothesis_Status
+    AlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
 
-	void DumpAlgoState(bool isMain);
+  SMESH_Hypothesis::Hypothesis_Status
+    SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
 
-	bool ComputeStateEngine(int event) throw(SALOME_Exception);
+  int GetAlgoState() { return _algoState; }
 
-	int GetComputeState()
-	{
-		return _computeState;
-	};
+  void DumpAlgoState(bool isMain);
 
-  protected:
-	void InsertDependence(const TopoDS_Shape aSubShape);
-//   void FinalizeDependence(list<TopoDS_Shape>& shapeList);
+  bool ComputeStateEngine(int event);
 
-	bool SubMeshesComputed() throw(SALOME_Exception);
+  int GetComputeState()
+  {
+    return _computeState;
+  };
 
-	bool SubMeshesReady();
+  bool IsConform(const SMESH_Algo* theAlgo);
+  // check if a conform mesh will be produced by the Algo
 
-	void RemoveSubMeshElementsAndNodes();
-	void UpdateDependantsState();
-	void CleanDependants();
-	void ExtractDependants(const TopTools_IndexedDataMapOfShapeListOfShape & M,
-		const TopAbs_ShapeEnum etype);
-	void SetAlgoState(int state);
+  bool CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) const;
+  // return true if theHypothesis can be attached to me:
+  // its dimention is checked
 
-	TopoDS_Shape _subShape;
-	SMESHDS_Mesh * _meshDS;
-	SMESHDS_SubMesh * _subMeshDS;
-	int _Id;
-	SMESH_Mesh *_father;
-	map < int, SMESH_subMesh * >_mapDepend;
-	map < int, SMESH_subMesh * >_mapDependants;
-	bool _dependenceAnalysed;
-	bool _dependantsFound;
+  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const;
+  // return true if theHypothesis can be used to mesh me:
+  // its shape type is checked
+  
 
-	int _algoState;
-	int _oldAlgoState;
-	int _computeState;
+ protected:
+  void InsertDependence(const TopoDS_Shape aSubShape);
+
+  bool SubMeshesComputed();
+
+  bool SubMeshesReady();
+
+  void RemoveSubMeshElementsAndNodes();
+  void UpdateDependantsState(const compute_event theEvent);
+  void UpdateSubMeshState(const compute_state theState);
+  void ComputeSubMeshStateEngine(int event);
+  void CleanDependants();
+  void CleanDependsOn();
+  void SetAlgoState(int state);
+
+  bool IsMeshComputed() const;
+  // check if _subMeshDS contains mesh elements
+
+  TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
+  // return a shape containing all sub-shapes of the MainShape that can be
+  // meshed at once along with _subShape
+
+  bool ApplyToCollection (SMESH_Algo*         theAlgo,
+                          const TopoDS_Shape& theCollection);
+  // Apply theAlgo to all subshapes in theCollection
+
+  SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
+  // check if there are several applicable hypothesis on fathers
+
+  int GetNbAttached(const TopoDS_Shape&      theShape,
+                    const SMESH_Hypothesis * theHyp,
+                    const bool               theAlgos = false);
+  // return nb of hypotheses attached to theShape.
+  // If theHyp is provided, similar but not same hypotheses
+  // are countered; else only applicable ones are countered
+  // depending on theAlgos flag
+  
+  TopoDS_Shape _subShape;
+  SMESHDS_Mesh * _meshDS;
+  SMESHDS_SubMesh * _subMeshDS;
+  int _Id;
+  SMESH_Mesh *_father;
+  map < int, SMESH_subMesh * >_mapDepend;
+  //map < int, SMESH_subMesh * >_mapDependants;
+  bool _dependenceAnalysed;
+  //bool _dependantsFound;
+
+  int _algoState;
+  //int _oldAlgoState;
+  int _computeState;
 
 };
 

@@ -48,8 +48,8 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
   StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
   myStudyContext->mapHypothesis[_hypId] = this;
   _type = PARAM_ALGO;
-//   _shapeType = -1; // to be set by algo with TopAbs_Enum
   _shapeType = 0; // to be set by algo with TopAbs_Enum
+  _param_algo_dim = -1; // to be set by algo parameter
 }
 
 //=============================================================================
@@ -69,7 +69,7 @@ SMESH_Hypothesis::~SMESH_Hypothesis()
  */
 //=============================================================================
 
-int SMESH_Hypothesis::GetDim()
+int SMESH_Hypothesis::GetDim() const
 {
   int dim = -1;
   switch (_type)
@@ -77,6 +77,7 @@ int SMESH_Hypothesis::GetDim()
     case ALGO_1D: dim = 1; break;
     case ALGO_2D: dim = 2; break;
     case ALGO_3D: dim = 3; break;
+    case PARAM_ALGO: dim = _param_algo_dim; break;
     }
   return dim;
 }
@@ -87,7 +88,7 @@ int SMESH_Hypothesis::GetDim()
  */
 //=============================================================================
 
-int SMESH_Hypothesis::GetShapeType()
+int SMESH_Hypothesis::GetShapeType() const
 {
   return _shapeType;
 }
@@ -98,7 +99,7 @@ int SMESH_Hypothesis::GetShapeType()
  */
 //=============================================================================
 
-int SMESH_Hypothesis::GetStudyId()
+int SMESH_Hypothesis::GetStudyId() const
 {
   return _studyId;
 }
@@ -133,3 +134,28 @@ void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
     }
 }
 
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+
+const char* SMESH_Hypothesis::GetLibName() const
+{
+//   MESSAGE("SMESHDS_Hypothesis::GetLibName");
+//   SCRUTE(_LibName);
+//   SCRUTE(&_LibName);
+  return _libName.c_str();
+}
+
+//=============================================================================
+/*!
+ * 
+ */
+//=============================================================================
+
+void SMESH_Hypothesis::SetLibName(const char* theLibName)
+{
+//   MESSAGE("SMESHDS_Hypothesis::SetLibName");
+  _libName = string(theLibName);
+}

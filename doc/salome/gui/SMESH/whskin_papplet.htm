@@ -1,0 +1,357 @@
+<html>
+<head>
+<title>Navigation Pane</title>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+<meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
+<meta name "description" content="WebHelp 2002">
+<SCRIPT LANGUAGE="JavaScript1.2" ARCHIVE="nsdnsfix.jar" ID="ChangeProfileScriptinNavPane2"> var sd_strAgent	= navigator.userAgent.toLowerCase(); 	var sd_strVersion  = navigator.appVersion.toLowerCase();  var sd_nVerMajor	= parseInt(sd_strVersion);  var	sd_nVerMinor	= parseFloat(sd_strVersion); var	sd_bNS	    = ((sd_strAgent.indexOf("mozilla") != -1) && ((sd_strAgent.indexOf('spoofer') == -1) && (sd_strAgent.indexOf('compatible') == -1))); var 	sd_bNS4			= ((sd_bNS) && (sd_nVerMajor >= 4)); if (sd_nVerMinor == 4.60) 	{  netscape.security.PrivilegeManager.enablePrivilege("UniversalPreferencesRead");  var sd_prefValue = navigator.preference("security.lower_java_network_security_by_trusting_proxies"); if (!sd_prefValue) { alert("There are some limitations in Netscape 4.6. Please download and install the latest version of Netscape. Your current Netscape profile needs to be modified. Select 'Remember this decision' and click 'Grant' when prompted to allow the modifications. Click OK to proceed."); netscape.security.PrivilegeManager.enablePrivilege("UniversalPreferencesWrite"); navigator.preference("security.lower_java_network_security_by_trusting_proxies", true); alert("Please restart Netscape"); window.close(); } } </SCRIPT>
+<script language="javascript" src="whver.js"></script>
+<script language="javascript1.2" src="whmsg.js"></script>
+<script language="javascript1.2" src="whproxy.js"></script>
+<script language="javascript1.2" src="whutils.js"></script>
+<script language="javascript1.2">
+<!--
+var gsInitPane="toc";
+var gsCurrentPane="";
+var gbLoading = "unknown";
+var gbTryTime = 0;
+var gbMaxTryTime = 6;
+var gbPassPhase0 = 0;
+var gbretried = 0;
+var gbmaxretry = 3;
+var gbretrytime = new Array();
+
+var origWidth = 0;
+var origHeight = 0;
+
+gbretrytime[0]= 5000;
+gbretrytime[1]= 30000;
+gbretrytime[2]= 60000;
+
+function addPane(sName, sFile)
+{
+}
+
+function setShowPane(sName)
+{
+	gsInitPane=sName;
+}
+  addPane("toc","whtdhtml.htm");
+  addPane("fts","whfdhtml.htm");
+  addPane("glo","whgdhtml.htm");
+  setShowPane("toc");
+
+
+function window_unload()
+{
+	if (!gbNav4 || gbNav6) // resize will call unload, but the register code will never be called on Netscape 4.
+	{
+		UnRegisterListener2(this, WH_MSG_SHOWTOC);
+		UnRegisterListener2(this, WH_MSG_SHOWIDX);
+		UnRegisterListener2(this, WH_MSG_SHOWFTS);
+		UnRegisterListener2(this, WH_MSG_SHOWGLO);
+		UnRegisterListener2(this, WH_MSG_SYNCTOC);
+		UnRegisterListener2(this, WH_MSG_SEARCHTHIS);
+		UnRegisterListener2(this, WH_MSG_GETPANEINFO);
+	}
+}
+
+function window_OnLoad()
+{
+	if (gsInitPane == "toc")
+	{
+		var oMsg=new whMessage(WH_MSG_SHOWTOC,this,1,null)
+		SendMessage(oMsg);	
+	}
+	else if (gsInitPane=="idx")
+	{
+		var oMsg=new whMessage(WH_MSG_SHOWIDX,this,1,null)
+		SendMessage(oMsg);	
+	}
+	else if (gsInitPane=="fts")
+	{
+		var oMsg=new whMessage(WH_MSG_SHOWFTS,this,1,null)
+		SendMessage(oMsg);	
+	}
+	else if (gsInitPane=="glo")
+	{
+		var oMsg=new whMessage(WH_MSG_SHOWGLO,this,1,null)
+		SendMessage(oMsg);	
+	}
+	
+}
+
+function onResize()
+{
+	if (gbIE4)
+	{
+		if(document.body)
+		{
+			if(document.body.clientWidth > 1 && document.body.clientHeight>1)
+			{
+				var oMsg = new whMessage(WH_MSG_RESIZEPANE, this, 1, null);
+				SendMessage(oMsg);
+			}
+		}
+	}
+	else 
+	{
+		if (window.innerWidth != 0 && window.innerHeight != 0)
+		{
+			var oMsg = new whMessage(WH_MSG_RESIZEPANE, this, 1, null);
+			SendMessage(oMsg);
+		}
+	}
+}
+
+function CheckLoadingPhase0()
+{
+	if (!gbPassPhase0) {
+		setTimeout("CheckLoadingPhase0()", 1000);
+		document.applets[0];
+		gbPassPhase0 = 1;
+	}
+	else {
+		CheckLoadingPhase1();
+	}
+}
+
+function CheckLoadingPhase1()
+{
+	if (gbNav4) {
+		if ("unknown" == gbLoading && document.readystate < 4) {
+			setTimeout("CheckLoadingPhase1()", 1000);
+		}
+		else if ("unknown" == gbLoading) {
+			CheckLoadingPhase2();
+		}
+	}
+}
+
+function CheckLoadingPhase2()
+{
+	if (gbNav4) {
+		gbTryTime ++;
+		if ("unknown" == gbLoading) {
+			if (gbTryTime <= gbMaxTryTime )
+				setTimeout("CheckLoadingPhase2()", 1000);
+			else {
+				if (gnVerMinor != 4.60) {
+					if (gnVerMinor >= 4.06)
+						document.location.href = "nsdnsfix.htm"
+					else {
+						alert("Unable to load applet. If you are using an old version of Netscape, the prefs.js file needs to be edited.");
+					}
+				}
+			}	
+		}
+	}
+}
+
+function CheckAppletLoaded()
+{
+	if (typeof(document.WebHelp) == "undefined")
+	{
+		document.location.reload();
+		if (gbretried < gbmaxretry)
+		{
+			gbretried ++;
+			setTimeout("CheckAppletLoaded();", gbretrytime[gbretried]);
+		}
+	}
+}
+
+function reDo() 
+{
+	if (innerWidth != origWidth || innerHeight != origHeight)  
+	{
+		//reloaded applet if nessary
+		gbretried = 0;
+
+		if (gnVerMinor == 4.60) 
+		{
+			//reload the applet again.
+			document.location.reload();
+			gbretried ++;
+		}
+		setTimeout("CheckAppletLoaded();", gbretrytime[gbretried]);
+	}
+}
+
+function onSendMessage(oMsg)
+{
+	if (oMsg)
+	{	
+		var nMsgId = oMsg.nMessageId;
+		var WebHelpApplet = null;
+		if (gbNav4)
+		{
+			WebHelpApplet = document.applets["WebHelp"];
+			if (!WebHelpApplet.Command)
+				document.location="whskin_plist.htm";
+		}
+		else
+			WebHelpApplet = window.WebHelp;
+
+		if (nMsgId == WH_MSG_SHOWTOC)
+		{
+			gsCurrentPane="toc";
+			WebHelpApplet.Command("Contents",null);
+			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"toc");
+			SendMessage(onMsg);
+			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+			SendMessage(onMsg);
+		}
+		else if(nMsgId==WH_MSG_SHOWIDX)
+		{
+			gsCurrentPane="idx";
+			WebHelpApplet.Command("Index",null);
+			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"idx");
+			SendMessage(onMsg);
+			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+			SendMessage(onMsg);
+		}
+		else if(nMsgId==WH_MSG_SHOWFTS)
+		{
+			gsCurrentPane="fts";
+			WebHelpApplet.Command("Search",null);
+			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
+			SendMessage(onMsg);
+			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+			SendMessage(onMsg);
+		}
+		else if(nMsgId==WH_MSG_SHOWGLO)
+		{
+			gsCurrentPane="glo";
+			WebHelpApplet.Command("Glossary",null);
+			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"glo");
+			SendMessage(onMsg);
+			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+			SendMessage(onMsg);
+		}
+		else if(nMsgId==WH_MSG_SYNCTOC)
+		{
+			gsCurrentPane="toc";
+			var oTopicParam=oMsg.oParam;
+			if(oTopicParam&&oTopicParam.aPaths&&oTopicParam.aPaths.length>0&&oTopicParam.sPPath)
+			{
+				var sPPath=_browserURLToAppletURL(oTopicParam.sPPath);
+				var sParam="";
+				for(var i=0;i<oTopicParam.aPaths.length;i++)
+				{
+					sParam+=oTopicParam.aPaths[i]+"\r\r";
+				}
+				if(gbLoading!="unknown")
+					WebHelpApplet.Command("SyncToc",sPPath,sParam);
+			}
+		}
+		else if(nMsgId==WH_MSG_SEARCHTHIS)
+		{
+			gsCurrentPane="fts";
+			WebHelpApplet.Command("Search",oMsg.oParam);
+			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
+			SendMessage(onMsg);
+			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+			SendMessage(onMsg);
+		}
+		else if(nMsgId==WH_MSG_GETPANEINFO)
+		{
+			oMsg.oParam=gsCurrentPane;
+			return false;
+		}
+	}
+	return true;
+}
+
+function _browserURLToAppletURL(sBURL)
+{
+	var sAURL="";
+	var nPos=sBURL.indexOf('%');
+	while(nPos!=-1)
+	{
+		sAURL+=sBURL.substring(0,nPos);
+		sBURL=sBURL.substring(nPos+1);
+		var sNum="";
+		var i=0;
+		while(sBURL.charAt(i)>='0'&&sBURL.charAt(i)<='9')
+		{
+			sNum+=sBURL.charAt(i++);	
+		}
+		if(sNum!="")
+		{
+			var nNum=parseInt(sNum,16);
+			sAURL+=String.fromCharCode(nNum);
+			sBURL=sBURL.substring(i);
+		}
+		nPos=sBURL.indexOf('%');
+	}
+	sAURL+=sBURL;
+	return sAURL;
+}
+
+function getInitTocInfo()
+{
+	var oParam=new Object();
+	oParam.oTocInfo=null;
+	var oMsg=new whMessage(WH_MSG_GETTOCPATHS,this,1,oParam);
+	if(SendMessage(oMsg))
+	{
+		var oTopicParam=oMsg.oParam.oTocInfo;
+		if(oTopicParam&&oTopicParam.aPaths&&oTopicParam.aPaths.length>0&&oTopicParam.sPPath)
+		{
+			var sPPath=_browserURLToAppletURL(oTopicParam.sPPath);
+			var sParam="";
+			for(var i=0;i<oTopicParam.aPaths.length;i++)
+			{
+				sParam+=oTopicParam.aPaths[i]+"\r\r";
+			}
+			var WebHelpApplet;
+			if(gbNav4)
+				WebHelpApplet=document.applets["WebHelp"];
+			else
+				WebHelpApplet=WebHelp;
+			WebHelpApplet.Command("SyncToc",sPPath,sParam);
+		}
+	}
+}
+
+if(window.gbWhUtil&&window.gbWhMsg&&window.gbWhVer&&window.gbWhProxy)
+{
+	RegisterListener2(this, WH_MSG_SHOWTOC);
+	RegisterListener2(this, WH_MSG_SHOWIDX);
+	RegisterListener2(this, WH_MSG_SHOWFTS);
+	RegisterListener2(this, WH_MSG_SHOWGLO);
+	RegisterListener2(this, WH_MSG_SYNCTOC);
+	RegisterListener2(this, WH_MSG_SEARCHTHIS);
+	RegisterListener2(this, WH_MSG_GETPANEINFO);
+
+	window.onresize=onResize;
+	window.onunload = window_unload;
+	window.onload=window_OnLoad;
+	window.onerror = null;
+	var gbWindows = ((gAgent.indexOf("win") != -1) || (gAgent.indexOf("16bit") != -1));
+
+	if (gbNav4 && !gbNav6 && gbWindows) {
+		setTimeout("CheckLoadingPhase0()", 1000);
+	}
+	if (gbNav4)
+	{
+		origWidth = innerWidth;
+		origHeight = innerHeight;
+		onresize = reDo;
+	}
+}
+else
+	document.location.reload();
+//-->
+</script>
+</head>
+<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0" bgcolor="c0c0c0">
+<applet code=WebHelp.class name=WebHelp  archive=webhelp.jar width=100% height=100% MAYSCRIPT hspace=0 vspace=0>
+<PARAM name=ProjectFile value=whproj.xml><PARAM name=ResourceFile value=whres.xml>
+<PARAM name=HideTabs value=true>
+<PARAM name=Frame value=bsscright>
+<PARAM name=cabbase value=webhelp.cab>
+</applet>
+</body>
+</html>

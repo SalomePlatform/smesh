@@ -1,0 +1,171 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Warp</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1161>
+<meta name=layout-width content=700>
+
+
+<!--(Links)=========================================================-->
+
+ <link rel='stylesheet' href='../default_ns.css'>
+<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<!--
+if (navigator.appName !="Netscape")
+{   document.write("<link rel='stylesheet' href='../default.css'>");}
+//-->
+</script>
+<style type="text/css">
+<!--
+img_whs1 {border-style: none; border: none; float: none; width: 30px; height: 30px;}
+p.whs2 {margin-left: 40px;}
+p.whs3 {margin-left: 0px;}
+img_whs4 {border-style: none; border: none; width: 496px; height: 336px;}
+img_whs5 {border-style: none; border: none; width: 23px; height: 23px;}
+img_whs6 {border-style: none; border: none; width: 467px; height: 326px;}
+-->
+</style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs3 {margin-left:1; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="../whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("SMESH module\nQuality controls\nWarping");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("../smesh.html");
+
+		autoSync(0);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	document.location.reload();
+//-->
+</script>
+<h1>Warping</h1>
+
+<p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> <span style="font-weight: bold;"><B>Warping</B></span> indicates 
+ that a face is not planar and is applied only to 2D elements with 4 nodes. 
+ This quality control criterion is based on a projection plane created 
+ by:</p>
+
+<p class="whs2">1. bisecting the four element edges, </p>
+
+<p class="whs2">2. creating a point on the plane at the vector 
+ average of the corners, where the x-axis extends from the point to the 
+ bisector on edge 2. </p>
+
+<p class="whs3">The plane normal is in the direction of the 
+ cross product of the x-axis and the vector from the origin to the bisector 
+ of edge 3. Every corner of the quad will then be a distance “h” from the 
+ plane. The length of each half edge is measured and the shortest length 
+ is assigned “l”. The warp angle is the arcsine of the ratio of the projection 
+ height “h” to the half edge length “l”. </p>
+
+<p>&nbsp;</p>
+
+<p class="whs2"><img src="../image24.gif" width="496px" height="336px" border="0" class="img_whs4"></p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class=TODO>To apply the Warping quality criterion to your mesh:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs2">1. Display your mesh in the viewer.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">2. Choose <span style="font-weight: bold;"><B>Quality 
+ Controls &gt; Warp </B></span>or click <img src="../image39.gif" width="23px" height="23px" border="0" class="img_whs5"> button of the toolbar. 
+ Your mesh will be displayed in the viewer with its elements colored according 
+ to the applied mesh quality control criterion:</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="../image9.jpg" width="467px" height="326px" border="0" class="img_whs6"></p>
+
+<p class="whs2">&nbsp;</p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+
+</html>
