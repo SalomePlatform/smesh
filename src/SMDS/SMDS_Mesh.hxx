@@ -55,43 +55,105 @@ class SMDS_Mesh:public SMDS_MeshObject
 	virtual SMDS_MeshNode* AddNode(double x, double y, double z);
 	virtual SMDS_MeshNode* AddNodeWithID(double x, double y, double z, int ID);
 
-	virtual SMDS_MeshEdge* AddEdge(int idnode1, int idnode2);
-	virtual SMDS_MeshEdge* AddEdgeWithID(int idnode1, int idnode2, int ID);
-	virtual SMDS_MeshFace* AddFace(int idnode1, int idnode2, int idnode3);
-	virtual SMDS_MeshFace* AddFaceWithID(int idnode1, int idnode2, int idnode3,
+	virtual SMDS_MeshEdge* AddEdge(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2);
+	virtual SMDS_MeshFace* AddFace(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3);
+	virtual SMDS_MeshFace* AddFace(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4);
+	virtual SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4);
+	virtual SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5);
+	virtual SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6);
+	virtual SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6,
+		const SMDS_MeshNode * n7,
+		const SMDS_MeshNode * n8);
+
+	SMDS_MeshEdge* AddEdgeWithID(int n1, int n2, int ID);
+	SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int ID);
+	SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3, int n4,
 		int ID);
-	virtual SMDS_MeshFace* AddFace(int idnode1, int idnode2, int idnode3,
-		int idnode4);
-	virtual SMDS_MeshFace* AddFaceWithID(int idnode1, int idnode2, int idnode3,
-		int idnode4, int ID);
-	virtual SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3,
-		int idnode4);
-	virtual SMDS_MeshVolume* AddVolumeWithID(int idnode1, int idnode2,
-		int idnode3, int idnode4, int ID);
-	virtual SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3,
-		int idnode4, int idnode5);
-	virtual SMDS_MeshVolume* AddVolumeWithID(int idnode1, int idnode2, int idnode3,
-		int idnode4, int idnode5, int ID);
-	virtual SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3,
-		int idnode4, int idnode5, int idnode6);
-	virtual SMDS_MeshVolume* AddVolumeWithID(int idnode1, int idnode2,
-		int idnode3, int idnode4, int idnode5, int idnode6, int ID);
-	virtual SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3,
-		int idnode4, int idnode5, int idnode6, int idnode7, int idnode8);
-	virtual SMDS_MeshVolume* AddVolumeWithID(int idnode1, int idnode2, int idnode3,
-		int idnode4, int idnode5, int idnode6, int idnode7, int idnode8,
+	SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4,
 		int ID);
-	virtual void RemoveNode(int IDnode);
-	virtual void RemoveEdge(int idnode1, int idnode2);
-	virtual void RemoveFace(int idnode1, int idnode2, int idnode3);
-	virtual void RemoveFace(int idnode1, int idnode2, int idnode3, int idnode4);
-	virtual void RemoveElement(int IDelem, const bool removenodes = false);
-	void RemoveElement(const SMDS_MeshElement * elem, const bool removenodes =
+	SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4,
+		int n5, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4,
+		int n5, int n6, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4,
+		int n5, int n6, int n7, int n8, int ID);
+
+	SMDS_MeshEdge* AddEdgeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2, int ID);
+	SMDS_MeshFace* AddFaceWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3, int ID);
+	SMDS_MeshFace* AddFaceWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6, int ID);
+	SMDS_MeshVolume* AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6,
+		const SMDS_MeshNode * n7,
+		const SMDS_MeshNode * n8, int ID);
+
+	virtual void RemoveElement(const SMDS_MeshElement * elem, const bool removenodes =
 		false);
-    bool RemoveNode(const SMDS_MeshNode * node);	//Remove a node and elements which need this node
-	void RemoveEdge(const SMDS_MeshEdge * edge);
-	void RemoveFace(const SMDS_MeshFace * face);
-	void RemoveVolume(const SMDS_MeshVolume * volume);
+   	virtual void RemoveNode(const SMDS_MeshNode * node);
+	virtual void RemoveEdge(const SMDS_MeshEdge * edge);
+	virtual void RemoveFace(const SMDS_MeshFace * face);
+	virtual void RemoveVolume(const SMDS_MeshVolume * volume);
 
 	virtual bool RemoveFromParent();
 	virtual bool RemoveSubMesh(const SMDS_Mesh * aMesh);
@@ -114,7 +176,7 @@ class SMDS_Mesh:public SMDS_MeshObject
 	void DebugStats() const;
 	SMDS_Mesh *boundaryFaces();
 	SMDS_Mesh *boundaryEdges();
-	 ~SMDS_Mesh();
+	virtual ~SMDS_Mesh();
     bool hasConstructionEdges();
     bool hasConstructionFaces();
 	bool hasInverseElements();

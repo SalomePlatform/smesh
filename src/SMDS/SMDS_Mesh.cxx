@@ -94,11 +94,19 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
 ///@return : The created MeshEdge
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshEdge* SMDS_Mesh::AddEdge(int idnode1, int idnode2)
+SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID) 
 {
-	return AddEdgeWithID(idnode1, idnode2, myElementIDFactory->GetFreeID());
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	if((node1==NULL)||(node2==NULL)) return NULL;
+	return AddEdgeWithID(node1, node2, ID);
 }
 
+SMDS_MeshEdge* SMDS_Mesh::AddEdge(const SMDS_MeshNode * node1,
+	const SMDS_MeshNode * node2)
+{
+	return AddEdgeWithID(node1, node2, myElementIDFactory->GetFreeID());
+}
 ///////////////////////////////////////////////////////////////////////////////
 ///Create a new edge and at it to the mesh
 ///@param idnode1 ID of the first node
@@ -108,12 +116,14 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdge(int idnode1, int idnode2)
 ///if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID)
+SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2, int ID)
 {
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	if((node1==NULL)||(node2==NULL)) return NULL;
-	SMDS_MeshEdge * edge=new SMDS_MeshEdge(node1, node2);
+	SMDS_MeshNode *node1,*node2;
+	node1=const_cast<SMDS_MeshNode*>(n1);
+	node2=const_cast<SMDS_MeshNode*>(n2);
+
+	SMDS_MeshEdge * edge=new SMDS_MeshEdge(node1,node2);
 	if(myElementIDFactory->BindID(ID, edge))
 	{
 		node1->AddInverseElement(edge);
@@ -129,17 +139,19 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add a triangle defined by its nodes IDs
+/// Add a triangle defined by its nodes. An ID is automatically affected to the
+/// Created face
 ///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3)
+SMDS_MeshFace* SMDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2,
+	const SMDS_MeshNode * n3)
 {
-	return AddFaceWithID(idnode1,idnode2,idnode3,
-		myElementIDFactory->GetFreeID());
+	return AddFaceWithID(n1,n2,n3, myElementIDFactory->GetFreeID());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add a quandrangle defined by its nodes IDs
+/// Add a quadrangle defined by its nodes IDs
 ///////////////////////////////////////////////////////////////////////////////
 
 SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, int idnode2, int idnode3, int ID)
@@ -147,9 +159,24 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, int idnode2, int idnode3, i
 	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
 	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
 	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-
 	if((node1==NULL)||(node2==NULL)||(node3==NULL)) return NULL;
-    SMDS_MeshFace * face=createTriangle(node1,node2,node3);
+	return AddFaceWithID(node1, node2, node3, ID);	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadrangle defined by its nodes
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(
+	const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2,
+	const SMDS_MeshNode * n3, int ID)
+{
+   	SMDS_MeshNode *node1, *node2, *node3;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	SMDS_MeshFace * face=createTriangle(node1, node2, node3);
 
 	if(myElementIDFactory->BindID(ID, face))
 	{
@@ -165,41 +192,56 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, int idnode2, int idnode3, i
 	}
 }
 
-//=======================================================================
-//function : AddFace
-//purpose  :
-//=======================================================================
+///////////////////////////////////////////////////////////////////////////////
+/// Add a triangle defined by its nodes. An ID is automatically affected to the
+/// created face
+///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddFace(int idnode1,
-	int idnode2, int idnode3, int idnode4)
+SMDS_MeshFace* SMDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2,
+	const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4)
 {
-	int ID=myElementIDFactory->GetFreeID();
-	SMDS_MeshFace* f= AddFaceWithID(idnode1, idnode2, idnode3, idnode4, ID);
-	if(f==NULL) myElementIDFactory->ReleaseID(ID);
+	return AddFaceWithID(n1,n2,n3, myElementIDFactory->GetFreeID());
 }
 
-//=======================================================================
-//function : AddFace
-//purpose  :
-//=======================================================================
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadrangle defined by its nodes IDs
+///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1,
-	int idnode2, int idnode3, int idnode4, int ID)
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, int idnode2, int idnode3,
+	int idnode4, int ID)
 {
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	SMDS_MeshNode *node1, *node2, *node3, *node4;
+	node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)) return NULL;
+	return AddFaceWithID(node1, node2, node3, node4, ID);	
+}
 
-	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)) return NULL;
-    SMDS_MeshFace * face=createQuadrangle(node1,node2,node3,node4);
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quadrangle defined by its nodes
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2, const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4, int ID)
+{
+   	SMDS_MeshNode *node1, *node2, *node3, *node4;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	node4=const_cast<SMDS_MeshNode*>(n4);
+	SMDS_MeshFace * face=createQuadrangle(node1, node2, node3, node4);
 
 	if(myElementIDFactory->BindID(ID, face))
 	{
 		node1->AddInverseElement(face);
 		node2->AddInverseElement(face);
         node3->AddInverseElement(face);
-		node4->AddInverseElement(face);
+        node4->AddInverseElement(face);
 		return face;
 	}	
 	else
@@ -208,21 +250,6 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1,
 		return NULL;
 	}
 }
-
-//=======================================================================
-//function : AddVolume
-//purpose  : Tetrahedra
-//=======================================================================
-
-SMDS_MeshVolume * SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4)
-{
-	int ID = myElementIDFactory->GetFreeID();
-	SMDS_MeshVolume * v=
-		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, ID);
-	if(v==NULL) myElementIDFactory->ReleaseID(ID);
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///Create a new tetrahedron and add it to the mesh. 
@@ -230,16 +257,53 @@ SMDS_MeshVolume * SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
 ///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
 
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2, const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4)
+{
+	int ID = myElementIDFactory->GetFreeID();
+	SMDS_MeshVolume * v = AddVolumeWithID(n1, n2, n3, n4, ID);
+	if(v==NULL) myElementIDFactory->ReleaseID(ID);
+	return v;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Create a new tetrahedron and add it to the mesh. 
+///@param ID The ID of the new volume
+///@return The created tetrahedron or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
 SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 	int idnode3, int idnode4, int ID)
 {
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
-
+	SMDS_MeshNode *node1, *node2, *node3, *node4;
+	node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
 	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)) return NULL;
+	return AddVolumeWithID(node1, node2, node3, node4, ID);
+}
 	
+///////////////////////////////////////////////////////////////////////////////
+///Create a new tetrahedron and add it to the mesh. 
+///@param ID The ID of the new volume
+///@return The created tetrahedron or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4, int ID)
+{
+	SMDS_MeshNode *node1, *node2, *node3, *node4;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	node4=const_cast<SMDS_MeshNode*>(n4);
 	SMDS_MeshVolume* volume;
 	if(hasConstructionFaces())
 	{
@@ -247,17 +311,18 @@ SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 		SMDS_MeshFace * f2=createTriangle(node1,node2,node4);
 		SMDS_MeshFace * f3=createTriangle(node1,node3,node4);
 		SMDS_MeshFace * f4=createTriangle(node2,node3,node4);
-		SMDS_MeshVolume* volume=
-			new SMDS_VolumeOfFaces(f1,f2,f3,f4);
+		volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4);
 		myVolumes.insert(volume);
 	}
 	else if(hasConstructionEdges())
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 	else
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
@@ -276,32 +341,66 @@ SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add a pyramid to the mesh. node 1,2,3 and 4 define the base of the pyramid
+///Create a new pyramid and add it to the mesh. 
+///Nodes 1,2,3 and 4 define the base of the pyramid
+///@return The created pyramid or NULL if an edge with this ID already exists
+///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_MeshVolume * SMDS_Mesh::AddVolume(int idnode1,
-	int idnode2, int idnode3, int idnode4, int idnode5)
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2, const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4, const SMDS_MeshNode * n5)
 {
 	int ID = myElementIDFactory->GetFreeID();
-	SMDS_MeshVolume * v=
-		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, ID);
+	SMDS_MeshVolume * v = AddVolumeWithID(n1, n2, n3, n4, n5, ID);
 	if(v==NULL) myElementIDFactory->ReleaseID(ID);
+	return v;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add a pyramid to the mesh. node 1,2,3 and 4 define the base of the pyramid
+///Create a new pyramid and add it to the mesh. 
+///Nodes 1,2,3 and 4 define the base of the pyramid
+///@param ID The ID of the new volume
+///@return The created pyramid or NULL if an edge with this ID already exists
+///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
+
+SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 	int idnode3, int idnode4, int idnode5, int ID)
 {
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
-	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
-
-	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL))
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5;
+	node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)||
+		(node5=NULL))
 		return NULL;
+	return AddVolumeWithID(node1, node2, node3, node4, node5, ID);
+}
 	
+///////////////////////////////////////////////////////////////////////////////
+///Create a new pyramid and add it to the mesh.
+///Nodes 1,2,3 and 4 define the base of the pyramid
+///@param ID The ID of the new volume
+///@return The created pyramid or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5, int ID)
+{
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	node4=const_cast<SMDS_MeshNode*>(n4);
+	node5=const_cast<SMDS_MeshNode*>(n5);
 	SMDS_MeshVolume* volume;
 	if(hasConstructionFaces())
 	{
@@ -309,17 +408,18 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 		SMDS_MeshFace * f2=createTriangle(node1,node2,node5);
 		SMDS_MeshFace * f3=createTriangle(node2,node3,node5);
 		SMDS_MeshFace * f4=createTriangle(node3,node4,node5);
-		SMDS_MeshFace * f5=createTriangle(node4,node1,node4);
-		SMDS_MeshVolume* volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
+		volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4);
 		myVolumes.insert(volume);
 	}
 	else if(hasConstructionEdges())
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 	else
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
@@ -339,56 +439,90 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add a prism. Nodes 1,2,3 is a triangle and 1,2,5,4 a quadrangle.
+///Create a new prism and add it to the mesh. 
+///Nodes 1,2,3 is a triangle and 1,2,5,4 a quadrangle.
+///@return The created prism or NULL if an edge with this ID already exists
+///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_MeshVolume* SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6)
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2, const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4, const SMDS_MeshNode * n5,
+	const SMDS_MeshNode * n6)
 {
 	int ID = myElementIDFactory->GetFreeID();
-	SMDS_MeshVolume * v=
-		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
-		ID);
+	SMDS_MeshVolume * v = AddVolumeWithID(n1, n2, n3, n4, n5, n6, ID);
 	if(v==NULL) myElementIDFactory->ReleaseID(ID);
+	return v;
 }
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Prism
-//=======================================================================
+///////////////////////////////////////////////////////////////////////////////
+///Create a new prism and add it to the mesh. 
+///Nodes 1,2,3 is a triangle and 1,2,5,4 a quadrangle.
+///@param ID The ID of the new volume
+///@return The created prism or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6, int ID)
+SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
+	int idnode3, int idnode4, int idnode5, int idnode6, int ID)
 {
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
-	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
-	SMDS_MeshNode * node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
-
-	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL)||
-		(node6==NULL)) return NULL;
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5, *node6;
+	node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+	node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)||
+		(node5==NULL)||(node6=NULL))
+		return NULL;
+	return AddVolumeWithID(node1, node2, node3, node4, node5, node6, ID);
+}
 	
+///////////////////////////////////////////////////////////////////////////////
+///Create a new prism and add it to the mesh.
+///Nodes 1,2,3 is a triangle and 1,2,5,4 a quadrangle.
+///@param ID The ID of the new volume
+///@return The created prism or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6, int ID)
+{
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5, *node6;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	node4=const_cast<SMDS_MeshNode*>(n4);
+	node5=const_cast<SMDS_MeshNode*>(n5);
+	node6=const_cast<SMDS_MeshNode*>(n6);
 	SMDS_MeshVolume* volume;
 	if(hasConstructionFaces())
-
 	{
 		SMDS_MeshFace * f1=createTriangle(node1,node2,node3);
 		SMDS_MeshFace * f2=createTriangle(node4,node5,node6);
 		SMDS_MeshFace * f3=createQuadrangle(node1,node4,node5,node2);
 		SMDS_MeshFace * f4=createQuadrangle(node2,node5,node6,node3);
 		SMDS_MeshFace * f5=createQuadrangle(node3,node6,node4,node1);
-		
-		SMDS_MeshVolume* volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
+		volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
 		myVolumes.insert(volume);
 	}
 	else if(hasConstructionEdges())
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 	else
 	{
-		/** @todo */
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
@@ -408,40 +542,80 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnode
 	}
 }
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Hexahedra
-//=======================================================================
+///////////////////////////////////////////////////////////////////////////////
+///Create a new hexahedron and add it to the mesh. 
+///Nodes 1,2,3,4 and 5,6,7,8 are quadrangle and 5,1 and 7,3 are an edges.
+///@return The created hexahedron or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
 
-SMDS_MeshVolume* SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+	const SMDS_MeshNode * n2, const SMDS_MeshNode * n3,
+	const SMDS_MeshNode * n4, const SMDS_MeshNode * n5,
+	const SMDS_MeshNode * n6, const SMDS_MeshNode * n7,
+	const SMDS_MeshNode * n8)
 {
 	int ID = myElementIDFactory->GetFreeID();
-	SMDS_MeshVolume * v=
-		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
-		idnode7, idnode8, ID);
+	SMDS_MeshVolume * v = AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8, ID);
 	if(v==NULL) myElementIDFactory->ReleaseID(ID);
+	return v;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Add an hexahedron to the mesh. node 1,2,3,4 and 5,6,7,8 are quadrangle and
-/// 5,1 and 7,3 are an edges.
+///Create a new hexahedron and add it to the mesh. 
+///Nodes 1,2,3,4 and 5,6,7,8 are quadrangle and 5,1 and 7,3 are an edges.
+///@param ID The ID of the new volume
+///@return The created hexahedron or NULL if an edge with this ID already exists
+///or if input nodes are not found.
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_MeshVolume*  SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8, int ID)
-{
-	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
-	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
-	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
-	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
-	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
-	SMDS_MeshNode * node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
-	SMDS_MeshNode * node7 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode7);
-	SMDS_MeshNode * node8 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode8);
 
-	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL)||
-		(node6==NULL)||(node7==NULL)||(node8==NULL)) return NULL;
+SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
+	int idnode3, int idnode4, int idnode5, int idnode6, int idnode7,
+	int idnode8, int ID)
+{
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5, *node6, *node7, *node8;
+	node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+	node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
+	node7 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode7);
+	node8 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode8);
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)||
+		(node5==NULL)||(node6=NULL)||(node7==NULL)||(node8=NULL))
+		return NULL;
+	return AddVolumeWithID(node1, node2, node3, node4, node5, node6, node7,
+		node8, ID);
+}
 	
+///////////////////////////////////////////////////////////////////////////////
+///Create a new prism and add it to the mesh.
+///Nodes 1,2,3,4 and 5,6,7,8 are quadrangle and 5,1 and 7,3 are an edges.
+///@param ID The ID of the new volume
+///@return The created prism or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6,
+		const SMDS_MeshNode * n7,
+		const SMDS_MeshNode * n8, int ID)
+{
+	SMDS_MeshNode *node1, *node2, *node3, *node4, *node5, *node6, *node7, *node8;
+	node1=const_cast<SMDS_MeshNode*>(n1),
+	node2=const_cast<SMDS_MeshNode*>(n2),
+	node3=const_cast<SMDS_MeshNode*>(n3);
+	node4=const_cast<SMDS_MeshNode*>(n4);
+	node5=const_cast<SMDS_MeshNode*>(n5);
+	node6=const_cast<SMDS_MeshNode*>(n6);
+	node7=const_cast<SMDS_MeshNode*>(n7);
+	node8=const_cast<SMDS_MeshNode*>(n8);
 	SMDS_MeshVolume* volume;
 	if(hasConstructionFaces())
 	{
@@ -456,17 +630,18 @@ SMDS_MeshVolume*  SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnod
 	}
 	else if(hasConstructionEdges())
 	{
-		MESSAGE("Error : Not Implemented");
+		MESSAGE("Error : Not implemented");
+		return NULL;
 	}
 	else
 	{
-		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5,node6,node7,node8);
+		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5,node6,
+			node7,node8);
 		myVolumes.insert(volume);
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
 	{
-		//MESSAGE("SMDS_Mesh::AddVolumeWithID: update inverse elements");
 		node1->AddInverseElement(volume);
 		node2->AddInverseElement(volume);
         node3->AddInverseElement(volume);
@@ -547,22 +722,13 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(SMDS_MeshNode * node1,
 	}
 }
 
-//=======================================================================
-//function : RemoveNode
-//purpose  :
-//=======================================================================
-
-void SMDS_Mesh::RemoveNode(int IDnode)
-{
-	RemoveNode(FindNode(IDnode));
-}
 
 //=======================================================================
 //function : RemoveNode
 //purpose  :
 //=======================================================================
 
-bool SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
+void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 {
 	SMDS_Iterator<const SMDS_MeshElement *> * it=
 		node->GetInverseElementIterator();
@@ -576,42 +742,12 @@ bool SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 //purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveEdge(int idnode1, int idnode2)
-{
-	RemoveEdge(FindEdge(idnode1, idnode2));
-}
-
-//=======================================================================
-//function : RemoveEdge
-//purpose  :
-//=======================================================================
-
 void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 {
 	/** @todo to be fix */
 	myEdges.erase(const_cast<SMDS_MeshEdge*>(edge));
 	//removeElementDependencies(edge);
 	delete edge;
-}
-
-//=======================================================================
-//function : RemoveFace
-//purpose  :
-//=======================================================================
-
-void SMDS_Mesh::RemoveFace(int idnode1, int idnode2, int idnode3)
-{
-	RemoveFace(FindFace(idnode1, idnode2, idnode3));
-}
-
-//=======================================================================
-//function : RemoveFace
-//purpose  :
-//=======================================================================
-
-void SMDS_Mesh::RemoveFace(int idnode1, int idnode2, int idnode3, int idnode4)
-{
-	RemoveFace(FindFace(idnode1, idnode2, idnode3, idnode4));
 }
 
 //=======================================================================
@@ -654,15 +790,6 @@ void SMDS_Mesh::removeElementDependencies(SMDS_MeshElement * element)
 		node->RemoveInverseElement(element);
 		if(node->emptyInverseElements()) RemoveNode(node);
 	}
-}
-//=======================================================================
-//function : RemoveElement
-//purpose  :
-//=======================================================================
-
-void SMDS_Mesh::RemoveElement(int IDelem, const bool removenodes)
-{
-	RemoveElement(myElementIDFactory->MeshElement(IDelem), removenodes);
 }
 
 //=======================================================================
@@ -1028,7 +1155,7 @@ void SMDS_Mesh::DebugStats() const
 
 int SMDS_Mesh::NbNodes() const
 {
-	myNodes.size();
+	return myNodes.size();
 }
 
 int SMDS_Mesh::NbEdges() const
@@ -1145,7 +1272,7 @@ SMDS_Iterator<const SMDS_MeshNode *> * SMDS_Mesh::nodesIterator() const
 
 		bool more()
 		{
-			myIterator!=mySet.end();
+			return myIterator!=mySet.end();
 		}
 
 		const SMDS_MeshNode* next()
@@ -1251,7 +1378,7 @@ SMDS_Iterator<const SMDS_MeshVolume *> * SMDS_Mesh::volumesIterator() const
 
 		bool more()
 		{
-			myIterator!=mySet.end();
+			return myIterator!=mySet.end();
 		}
 
 		const SMDS_MeshVolume* next()
