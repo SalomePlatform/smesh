@@ -166,6 +166,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
 
+  if ( sm->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
+    return true; // already computed
+
   // -----------------------------------------------------------------
   // apply algos that do not require descretized boundaries, starting
   // from the most complex shapes
