@@ -881,6 +881,12 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType theElem
       aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
     else
       aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
+
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
+    aGroupImpl->Register();
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+
     aGroup = SMESH::SMESH_GroupBase::_narrow( aGroupImpl->_this() );
     _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( aGroup );
 

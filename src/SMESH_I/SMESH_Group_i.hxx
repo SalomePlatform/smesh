@@ -83,9 +83,8 @@ private:
 // ======
 
 class SMESH_Group_i:
-  public SMESH_GroupBase_i,
   public virtual POA_SMESH::SMESH_Group,
-  public virtual SALOME::GenericObj_i
+  public SMESH_GroupBase_i
 {
  public:
   SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
@@ -101,9 +100,8 @@ class SMESH_Group_i:
 // =========================
 
 class SMESH_GroupOnGeom_i:
-  public SMESH_GroupBase_i,
   public virtual POA_SMESH::SMESH_GroupOnGeom,
-  public virtual SALOME::GenericObj_i
+  public SMESH_GroupBase_i
 {
  public:
   SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );

@@ -46,17 +46,23 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA, SMESH_Mesh
   myMeshServant( theMeshServant ), 
   myLocalID( theLocalID )
 {
-  thePOA->activate_object( this );
+  // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i,
+  // servant activation is performed by SMESH_Mesh_i::createGroup()
+  // thePOA->activate_object( this );
 }
 
 SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
-: SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+     : SALOME::GenericObj_i( thePOA ),
+       SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
+  MESSAGE("SMESH_Group_i; this = "<<this );
 }
 
 SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
-: SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+     : SALOME::GenericObj_i( thePOA ),
+       SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
+  MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
 
 //=============================================================================
@@ -67,7 +73,7 @@ SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_
 
 SMESH_GroupBase_i::~SMESH_GroupBase_i()
 {
-  MESSAGE("~SMESH_GroupBase_i;" );
+  MESSAGE("~SMESH_GroupBase_i; this = "<<this );
   if ( myMeshServant )
     myMeshServant->removeGroup(myLocalID);
 }
