@@ -78,7 +78,7 @@ public:
 				    const TopoDS_Shape& aShape)
     throw (SALOME_Exception);
 
-  void QuadDelete(FaceQuadStruct* quad);
+  static void QuadDelete(FaceQuadStruct* quad);
 
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);
