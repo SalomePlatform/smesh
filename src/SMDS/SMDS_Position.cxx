@@ -55,3 +55,7 @@ int SMDS_Position::GetShapeId() const
 {
 	return myShapeId;
 }
+
+SMDS_Position::~SMDS_Position()
+{
+}
