@@ -1,5 +1,5 @@
 #==============================================================================
-#  File      : SMESH_fix_volute.py
+#  File      : SMESH_fixation2.py
 #  Created   : mer sep  4 09:58:49 CEST 2002
 #  Author    : Paul RASCLE, EDF
 #  Project   : SALOME
@@ -7,58 +7,12 @@
 #  $Header$
 #==============================================================================
 
-#
-# les numeros d'edge dans les explode sont parfois decales de 1 entre
-# le script et le gui
-# piece1 --> piece : memes numeros
-# ellipse : il faut decrementer de 1 dans le script 
-#
-
 import salome
 from salome import sg
 
 import geompy
 
-##import SMESH
-##import smeshpy
-##import SMESH_BasicHypothesis_idl
-
 import math
-
-# -----------------------------------------------------------------------------
-
-def MakeFace(lstEdges) :
-    """
-    Creates a face from 4 edges
-    """
-    lstWire = []
-    for edge in lstEdges :
-        lstWire.append(edge._get_Name())
-    wire = geompy.MakeWire(lstWire)
-    face = geompy.MakeFace(wire, 1)
-    return face
-
-def MakeShell(lstFaces) :
-    """
-    Creates a shell from 6 faces
-    """
-    lstShell = []
-    for face in lstFaces :
-        lstShell.append(face._get_Name())
-    shell = geompy.MakeSewing(lstShell, 0.00001)
-    return shell
-
-def MakeCompound(lstShells) :
-    """
-    Creates a compound from several shells
-    """
-    lstCompound = []
-    for shell in lstShells :
-        lstCompound.append(shell._get_Name())
-    compound = geompy.MakeCompound(lstCompound)
-    return compound
-
-# -----------------------------------------------------------------------------
 
 geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 myBuilder = salome.myStudy.NewBuilder()
@@ -70,6 +24,41 @@ ShapeTypeFace      = 4
 ShapeTypeWire      = 5
 ShapeTypeEdge      = 6
 ShapeTypeVertex    = 7
+
+# -----------------------------------------------------------------------------
+
+def MakeFace(lstEdges) :
+    """
+    Creates a face from 4 edges
+    """
+    lstWire = []
+    for edge in lstEdges :
+        lstWire.append(edge._get_Name())
+    wire = geom.MakeWire(lstWire)
+    face = geom.MakeFace(wire, 1)
+    return face
+
+def MakeShell(lstFaces) :
+    """
+    Creates a shell from 6 faces
+    """
+    lstShell = []
+    for face in lstFaces :
+        lstShell.append(face._get_Name())
+    shell = geom.MakeSewing(lstShell, 0.00001)
+    return shell
+
+def MakeCompound(lstShells) :
+    """
+    Creates a compound from several shells
+    """
+    lstCompound = []
+    for shell in lstShells :
+        lstCompound.append(shell._get_Name())
+    compound = geom.MakeCompound(lstCompound)
+    return compound
+
+# -----------------------------------------------------------------------------
 
 # ---- dimensions
 
@@ -111,65 +100,6 @@ vy = geom.MakeDirection(py)
 pz = geom.MakePointStruct(0., 0., 100.)
 vz = geom.MakeDirection(pz)
 
-# ---- volumes de controle
-
-volglob = geom.MakeBox( 0., 0., 0.,
-                        longueurPlq,
-                        largeurPlq,
-                        hauteurFlanc + epaisseurPlq +marge)
-idvolglob = geompy.addToStudy(volglob, "volglob")
-volhaut = geom.MakeBox(-marge,
-                       0.5*(largeurPlq - epaisseurFond), 
-                       hauteurFlanc + epaisseurPlq,
-                       longueurPlq+marge,
-                       largeurPlq+marge,
-                       hauteurFlanc + epaisseurPlq +2*marge)
-idvolhaut = geompy.addToStudy(volhaut, "volhaut")
-
-# ---- base
-
-#plaque = geom.MakeBox( 0., 0., 0., longueurPlq, largeurPlq, epaisseurPlq )
-plaque = geom.MakeBox( -marge, -marge/2, 0.,
-                       longueurPlq +2*marge, largeurPlq, epaisseurPlq )
-# ---- fond
-
-fond = geom.MakeBox( rayonConge,
-                     largeurPlq - epaisseurFond,
-                     epaisseurPlq,
-                     longueurPlq - rayonConge,
-                     largeurPlq,
-                     epaisseurPlq + hauteurFlanc +marge/2)
-
-# ---- trou du fond
-
-pAxe1 = geom.MakePointStruct( 0.5*longueurPlq,
-                              0.,
-                              epaisseurPlq + posAxeTrou)
-cylFond = geom.MakeCylinder(pAxe1, vy, rayonTrou, 1.1*largeurPlq)
-fondTroue = geom.MakeBoolean(fond, cylFond, 2)
-
-piece = geom.MakeBoolean(plaque, fondTroue, 3)
-idPiece = geompy.addToStudy(piece, "piece")
-
-# ---- cotes
-
-cote1 = geom.MakeBox(rayonConge,
-                     -marge/2,
-                     epaisseurPlq,
-                     epaisseurFlanc + rayonConge,
-                     largeurPlq - epaisseurFond,
-                     hauteurFlanc + epaisseurPlq +marge/2)
-piece = geom.MakeBoolean(piece, cote1, 3)
-                     
-cote2 = geom.MakeBox(longueurPlq -epaisseurFlanc -rayonConge,
-                     -marge/2,
-                     epaisseurPlq,
-                     longueurPlq -rayonConge,
-                     largeurPlq - epaisseurFond,
-                     hauteurFlanc + epaisseurPlq +marge/2)
-piece = geom.MakeBoolean(piece, cote2, 3)
-idPiece = geompy.addToStudy(piece, "piece1")
-
 # ---- ellipse du flanc
 
 he = hauteurFlanc -2*rayonConge
@@ -187,96 +117,21 @@ boxe = geom.MakeBox(0., 0., 0., 3*he, -2*re, 3*he)
 #idcyle = geompy.addToStudy(cyle, "cyle")
 #idboxe = geompy.addToStudy(boxe, "boxe")
 cylcoup = geom.MakeBoolean(cyle, boxe, 2)
-idcylcoup = geompy.addToStudy(cylcoup, "cylcoup")
+#idcylcoup = geompy.addToStudy(cylcoup, "cylcoup")
 aretes = []
-aretes = geompy.SubShapeAll(cylcoup, ShapeTypeEdge)
-# OCC3.1 : aretes[3], OCC4.0 aretes[5]
-shape = geom.MakeCopy(aretes[5])
+aretes = geom.SubShapeAllSorted(cylcoup, ShapeTypeEdge)
+
+##eid=0
+##for edge in aretes:
+##    edname="arete%d"%eid
+##    idedge=geompy.addToStudy(edge,edname)
+##    eid=eid+1
+    
+shape = geom.MakeCopy(aretes[0])
+#idarete = geompy.addToStudy(shape, "arete")
 aShape = geom.MakeTranslation(shape,
                               0., rayonConge +re, epaisseurPlq +2*rayonConge)
 
-# ---- segments face objet decoupe des flancs
-
-pf1 = geom.MakePointStruct(0.,
-                           -marge,
-                           hauteurFlanc + epaisseurPlq +marge)
-pf2 = geom.MakePointStruct(0.,
-                           0.5*(largeurPlq - epaisseurFond),
-                           hauteurFlanc + epaisseurPlq +marge)
-pf3 = geom.MakePointStruct(0.,
-                           0.5*(largeurPlq - epaisseurFond),
-                           hauteurFlanc + epaisseurPlq)
-pf4 = geom.MakePointStruct(0.,
-                           rayonConge,
-                           epaisseurPlq +2*rayonConge)
-pf5 = geom.MakePointStruct(0.,
-                           rayonConge,
-                           epaisseurPlq)
-pf6 = geom.MakePointStruct(0.,
-                           -marge,
-                           epaisseurPlq)
-
-vf1 = geom.MakeEdge(pf1,pf2)
-vf2 = geom.MakeEdge(pf2,pf3)
-vf4 = geom.MakeEdge(pf4,pf5)
-vf5 = geom.MakeEdge(pf5,pf6)
-vf6 = geom.MakeEdge(pf6,pf1)
-
-id1 = geompy.addToStudy(vf1,"vf1")
-id2 = geompy.addToStudy(vf2,"vf2")
-ids = geompy.addToStudy(aShape,"aShape")
-id4 = geompy.addToStudy(vf4,"vf4")
-id5 = geompy.addToStudy(vf5,"vf5")
-id6 = geompy.addToStudy(vf6,"vf6")
-
-faceDec = MakeFace([vf1,vf2,aShape,vf4,vf5,vf6])
-idf = geompy.addToStudy(faceDec,"faceDec")
-
-# forme de decoupe par extrusion
-
-pfe = geom.MakePointStruct(longueurPlq+4*marge, 0., 0.)
-decoupe = geom.MakePrism(faceDec, p0, pfe)
-decoupe = geom.MakeTranslation(decoupe, -2*marge, 0., 0.)
-idec = geompy.addToStudy(decoupe, "decoupe")
-
-# decoupe piece1 par decoupe
-
-piece2 = geom.MakeBoolean(piece, decoupe, 2)
-idpiece = geompy.addToStudy(piece2, "piece2")
-
-# conges 
-conges = []
-conges = geompy.SubShapeAllSorted(piece2, ShapeTypeEdge)
-
-
-# boucle pour trouver les bons indices
-#ind = 0
-#for ff in conges:
-#	print ind, ff._get_Index()
-#	name = "edge%d"%(ind)
-#	geompy.addToStudy(ff, name)
-#	ind = ind + 1
-
-
-index1 = conges[7]._get_Index()
-index2 = conges[11]._get_Index()
-index3 = conges[36]._get_Index()
-index4 = conges[43]._get_Index()
-
-#piece3 = geompy.MakeFillet (piece2, rayonConge, ShapeTypeEdge, [3,4,8,9])
-piece3 = geompy.MakeFillet (piece2, rayonConge, ShapeTypeEdge, [index1[0],index2[0],index3[0],index4[0]])
-
-idPiece = geompy.addToStudy(piece3, "piece3")
-
-# partie incluse dans le volume de controle (devient non valide)
-
-piece4 = geom.MakeBoolean(piece3, volglob, 1)
-idPiece = geompy.addToStudy(piece4, "piece4")
-
-# enlever volume haut
-
-piece = geom.MakeBoolean(piece4, volhaut, 2)
-idpiece = geompy.addToStudy(piece, "piece")
 
 # -----------------------------------------------------------------------------
 # ---- decoupage de la piece en volumes a 6 faces de 4 cotes
@@ -372,8 +227,10 @@ axeCyl = geom.MakeAxisStruct( 0.5*longueurPlq,
                               0.,
                               largeurPlq,
                               0.)
+pAxe1 = geom.MakePointStruct(xc, 0., zc)
+cylFond = geom.MakeCylinder(pAxe1, vy, rayonTrou, 1.1*largeurPlq)
 cylFond2 = geom.MakeRotation(geom.MakeCopy(cylFond),axeCyl,math.pi)
-idcylfond2 = geompy.addToStudy(cylFond2,"cylFond2")
+#idcylfond2 = geompy.addToStudy(cylFond2,"cylFond2")
 
 fondec =[]
 for id in (0,1,2,3):
@@ -382,10 +239,19 @@ fondec.append(geom.MakeBoolean(decf[4],cylFond,2))
 for id in (5,6):
     fondec.append(decf[id])
 
-iff=0
-for ff in fondec:
-    idfo = geompy.addToStudy(ff, "ff%d"%(iff))
-    iff = iff +1
+bcut1=geom.MakeBox(x0,y0,z0, xc,y2p,z4p)
+bcut2=geom.MakeBox(xc,y0,z0, x3,y2p,z4p)
+fondec2 = []
+for id in (0,1,2,3):
+    fondec2.append(fondec[id])
+for id in (4,5,6):
+    fondec2.append(geom.MakeBoolean(fondec[id],bcut1,1))
+    fondec2.append(geom.MakeBoolean(fondec[id],bcut2,1))
+
+##iff=0
+##for ff in fondec2:
+##   idfo = geompy.addToStudy(ff, "ff%d"%(iff))
+##   iff = iff +1
 
 # ----- autres blocs de decoupe
 
@@ -396,13 +262,13 @@ bcong4=geom.MakeBox(x2,y1,z1, x3,y2,z2)
 
 pcylx0 = geom.MakePointStruct(0., -marge, z2)
 cylcongx0 = geom.MakeCylinder(pcylx0, vy, rayonConge, largeurPlq +2*marge)
-idcylcongx0 = geompy.addToStudy(cylcongx0,"cylcongx0")
+#idcylcongx0 = geompy.addToStudy(cylcongx0,"cylcongx0")
 pcylx3 = geom.MakePointStruct(longueurPlq, -marge, z2)
 cylcongx3 = geom.MakeCylinder(pcylx3, vy, rayonConge, largeurPlq +2*marge)
-idcylcongx3 = geompy.addToStudy(cylcongx3,"cylcongx3")
+#idcylcongx3 = geompy.addToStudy(cylcongx3,"cylcongx3")
 pcyly0 = geom.MakePointStruct(-marge, 0., z2)
 cylcongy0 = geom.MakeCylinder(pcyly0, vx, rayonConge, longueurPlq +2*marge)
-idcylcongy0 = geompy.addToStudy(cylcongy0,"cylcongy0")
+#idcylcongy0 = geompy.addToStudy(cylcongy0,"cylcongy0")
 
 bcong1=geom.MakeBoolean(bcong1,cylcongx0,2)
 bcong2=geom.MakeBoolean(bcong2,cylcongx0,2)
@@ -419,7 +285,7 @@ vf1 = geom.MakeEdge(pf1,pf2)
 vf2 = geom.MakeEdge(pf2,pf3)
 vf3 = geom.MakeEdge(pf3,pf4)
 faceFlanc = MakeFace([vf1,vf2,vf3,aShape])
-idfaceFlanc = geompy.addToStudy(faceFlanc,"faceFlanc")
+#idfaceFlanc = geompy.addToStudy(faceFlanc,"faceFlanc")
 pfe = geom.MakePointStruct(epaisseurFlanc, 0., 0.)
 flanc1 = geom.MakePrism(faceFlanc, p0, pfe)
 flanc2 = geom.MakeCopy(flanc1)
@@ -430,16 +296,18 @@ flanc2 = geom.MakeTranslation(flanc2,
 
 # ---- constitution et decoupe des blocs
 boxfond2 = geom.MakeBox(x0, y1, z0, x3, y2, z4p)
-idboxfond2 = geompy.addToStudy(boxfond2,"boxfond2")
+#idboxfond2 = geompy.addToStudy(boxfond2,"boxfond2")
 
 blocs = []
-for dec in fondec:
+for dec in fondec2:
     blocs.append(geom.MakeBoolean(boxfond2, dec, 1))
 blocs.append(geom.MakeBox(x0,y1,z0, x1,y2,z1))
-blocs.append(geom.MakeBox(x1,y1,z0, x2,y2,z1))
+blocs.append(geom.MakeBox(x1,y1,z0, xc,y2,z1))
+blocs.append(geom.MakeBox(xc,y1,z0, x2,y2,z1))
 blocs.append(geom.MakeBox(x2,y1,z0, x3,y2,z1))
 blocs.append(geom.MakeBox(x0,y0,z0, x1,y1,z1))
-blocs.append(geom.MakeBox(x1,y0,z0, x2,y1,z1))
+blocs.append(geom.MakeBox(x1,y0,z0, xc,y1,z1))
+blocs.append(geom.MakeBox(xc,y0,z0, x2,y1,z1))
 blocs.append(geom.MakeBox(x2,y0,z0, x3,y1,z1))
 blocs.append(bcong2)
 blocs.append(bcong4)
