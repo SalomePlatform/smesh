@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "HTML 4.01 Transitional">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html">
+  <title>Geometry module in SALOME environnement </title>
+</head>
+
+<body>
+<h1>SMESH starting tutorial</h1>
+
+<h2>2D meshing with MEFISTO</h2>
+
+<h3>Overview</h3>
+
+<p><i>Before following this tutorial you need to create or import a geometry.
+Please refere to the GEOM module documentation to do so.</i></p>
+
+<p>Now we have to load SMESH component. To do so&nbsp;: </p>
+<ul>
+  <li>click on the SMESH icon or on 'SMESH' into the combo box of resources
+    on botton left.</li>
+</ul>
+
+<p><i>SMESH is used to mesh edges, faces and volums each one thanks to a
+specialised algorithm. To mesh an entity which degree is n, one must have all
+its lower degree entities meshed. For instance, to mesh a face requires a
+previous meshing of all its edges. In the example MEFISTO meshes faces, and
+Regular_1D meshes edges. MEFISTO doesn't check how edges are meshed. The only
+test it does is to verify that edges are meshed before starting its work.
+MEFISTO requires an hypothesis&nbsp;: maximum area of triangles. Regular_1D
+requires one hypothesis among two: number of segments per edge <u>or</u>
+length of segment.</i>&nbsp; </p>
+
+<p>The entire operation is done by :</p>
+<ol>
+  <li>init a mesh object associated to a geometrical object</li>
+  <li>choosing an <u>algorithm</u> for meshing faces, here MEFISTO is
+  choosen</li>
+  <li>choosing an <u>algorithm</u> for meshing edges, here Regular1d is
+    choosen</li>
+  <li>creating <u>hypothesis</u> of calculation. We need to inform :
+    <ul>
+      <li>the number of segments per edge</li>
+      <li>the maximum area per triangle of meshing</li>
+    </ul>
+  </li>
+  <li>setting or attaching algorithm and hypothesis to the object loaded</li>
+  <li>launching computation</li>
+  <li>displaying the result in the best mode.</li>
+</ol>
+<img alt="" src="SMESHOverview.png">
+
+<h3>Details</h3>
+
+<p>Below are explained those 6 steps precisely&nbsp;: </p>
+<ol>
+  <li><p><u>init a mesh object associated to a geometrical object :</u></p>
+    <p><img src="MeshInit.png"></p>
+    <ul>
+      <li>In the menu bar on the top, find the <u>Mesh</u> menu and click on
+        <u>Init.</u></li>
+      <li>Then in the dialog box select the topology into Geometry field of
+        ObjectBrowser or Viewer, give a name an click on Ok.</li>
+      <li>The topology is now known inside SMESH component.</li>
+    </ul>
+  </li>
+  <li><p>define algorithms for meshing&nbsp;: </p>
+    <p><img src="SelectAlgorithms.png"></p>
+    <ul>
+      <li>In the menu bar, find <u>Hypothesis</u>, <u>Algorithm</u> then
+        click on <u>Mefisto.</u></li>
+      <li>Do the same to load 'Regular1D'.</li>
+      <li>Remember, Regular1D is needed for edge meshing.</li>
+    </ul>
+  </li>
+  <li><p>define <u>hypothesis</u> of calculation&nbsp;:<br>
+    In the menu bar, find <u>Hypothesis</u> then Hypothesis and click on
+    Segments. Then in the dialog box give a name for <u>hypothesis</u> and a
+    value that is the number of segments per edge. Enter 7 segments for
+    example.<br>
+    Do the same for 'Max. Element Area' argument that is the maximum surface
+    of triangles builded during meshing. Enter 2500 here.</p>
+  </li>
+  <li><p>Attach previous arguments (hypothesis) and algorithm to the
+    topology&nbsp;:<br>
+    Select the object in the Object Browser then using pop up menu (right
+    click on object),<br>
+    'Set algorithm' and 'Set Hypothesis' into specialized dialog boxes.<br>
+    You can also find these methods in the menu 'Hypothesis'.</p>
+  </li>
+  <li><p>Selecting the mesh object before, start computation in the pop up
+    menu; click on 'Compute'.</p>
+  </li>
+  <li><p>Update the display using '<i>Update'</i> if necessary.<br>
+    Note&nbsp;: in <i>Preferencies</i>&nbsp;/ <i>Mesh</i> menu there is an
+    option to have an automatic update of the display after operations that
+    modify it such as Compute, adding nodesâ&#x20ac;¦ If this option is not
+    setted user must make an update of the display manually.<br>
+    <br>
+    You may also adjust the display '<i>Properties' / 'Display Mode</i>' has
+    you prefer&nbsp;; shading, wireframe or shrink,<br>
+    and adjust color and size attributs in a specific dialog box shown
+    below.</p>
+    <p><img src="SetColor.png"></p>
+  </li>
+</ol>
+
+<h3>Final result of meshing</h3>
+
+<p>At this final step you can observe the result of 2D meshing of faces by
+MEFISTO.</p>
+
+<p>Note&nbsp;: it is possible to change an hypothesis by mean the pop up then
+<i>Edit</i> and finally compute again.</p>
+
+<p><img src="MeshResult.png"></p>
+
+<h2>Meshing with global and local hypothesis</h2>
+
+<h3>details</h3>
+
+<p><i>We would now make a mesh as before but with a local modification of
+parameter (hypothesis) on an edge. We first have to explode the initial
+topology in GEOMETRY component. This operation will give us access to sub
+shapes edges of geom.brep.</i></p>
+<ol>
+  <li><p>import or create a geometry as before</p>
+  </li>
+  <li><p>call 'Explode' method found in 'New Entity' on the menu bar&nbsp;;
+    (remember the tip about Automatic/Store&nbsp;!) </p>
+    <p><img src="SubShapesSelection.png"></p>
+  </li>
+  <li><p>select the main object, choose 'Edge' in the combo box and click on
+    Ok.<br>
+    <u>Note</u>&nbsp;: do not click on 'select sub shape' at anytime. This
+    function is used with OCC viewer for individual sub shape selection not
+    yet available with VTK.<br>
+    <br>
+    Now the object browser contents all edges as sub shapes of the main
+    topology. Select the first edge <i>Edge_&nbsp;1</i> and display only it.
+    Use the pop up 'Display only' mode for this.<br>
+    You may also rename the edge to remember it for future meshing.<br>
+    <i>Our scope&nbsp;: apply a local hypothesis on this edge.<br>
+    </i></p>
+  </li>
+  <li><p>The job is now finished for GEOMETRY component.</p>
+  </li>
+  <li><p>Load SMESH component and use menus 'Mesh' and 'Init' to load the
+    topology into SMESH as before.<br>
+    (Already defined if you have kept the previous study.)</p>
+  </li>
+  <li><p>Define algorithms Regular_1D and Mefisto using menus 'Hypothesis'
+    and 'Algorithm'.</p>
+  </li>
+  <li><p>Define hypothesis 'Segments' = 7 and 'Max. Element Area' = 2500.
+    (Already defined ifâ&#x20ac;¦) </p>
+  </li>
+  <li><p>Define another hypothesis 'Local length' = 100 to be used only as
+    local parameter for the edge.</p>
+  </li>
+  <li><p>Now we have to attach algorithms and hypothesis to topologies, the
+    global and the sub shape edge.<br>
+    For the main topology, select it and use 'Set algorithms' and 'Set
+    Hypothesis' and attach&nbsp;:<br>
+    hypothesis 'Segments' = 7 and 'Max. Element Area' = 2500.</p>
+  </li>
+  <li><p>To set a local parameter of meshing on the edge we do :<br>
+    click on 'Mesh' menu then 'Add Sub Mesh'. On the dialog box select the
+    main object then sub object edge from Object Browser and GEOMETRY field.
+    Give it a local name; for example <i>myEdge</i> or anyone.</p>
+    <p><img src="SubMeshContruction.png"></p>
+  </li>
+  <li><p>Set the algorithm used for edge meshing. Here use Regular_&nbsp;1D.
+    </p>
+  </li>
+  <li><p>Set a local hypothesis to the edge. Use 'Local length' = 100.</p>
+  </li>
+  <li><p>'<i>Compute'</i> (and '<i>Update'</i> display if necessary see
+    before) the main&nbsp;mesh object. This will compute also the edge sub
+    shape.<br>
+    Do not forget to activate the display&nbsp;mode Wireframe,
+    Shading&nbsp;or Shrink; see in pop up menu '<i>Properties'</i>,
+    '<i>Display mode'</i>â&#x20ac;¦ </p>
+  </li>
+  <li><p>Move the point of view&nbsp;to watch the edge meshed with a local
+    hypothesis 'Local length' = 100. </p>
+  </li>
+</ol>
+
+<h3>The result of second meshing</h3>
+
+<p>As we see below, the effect produced by setting a local hypothesis setted
+on the edge <i>Edge_&nbsp;1.</i></p>
+
+<p align="left">Compare to another edge that have the same physical
+length.</p>
+
+<p><img src="MeshResult2.png"></p>
+
+<h2>Using PYTHON interpretor to import an example script</h2>
+It is easy to import an example of meshing procedure using PYTHON interpretor
+:
+<ul>
+  <li>Load SMESH component with VTK viewer.</li>
+  <li>Just type <i>'import geomMesh.py'</i> in the textual window of
+  PYTHON.</li>
+  <li>Validate with the <i>Enter</i> key.</li>
+  <li>You just have to run 'Compute' then choose a display mode to see the
+    result.</li>
+</ul>
+This imported example is very similar to the last exercice. It uses a local
+hypothesis on an edge too.
+
+<p><img src="ImportResult.png"></p>
+
+<h2>Control features</h2>
+
+<p>Test now a control function of area for mesh resulting triangles.</p>
+
+<p>Find <i>Control</i> on the menu bar then <i>Cells</i> and <i>Area</i>. The
+image below displays areas with a color depending on its value in the scalar
+bar shown on the left.<br>
+Scalar bar general parameters are setted in <i>Preferencies</i>&nbsp;/
+<i>Mesh</i> / <i>Scalar Bar</i>.</p>
+
+<p>Specific range parameters are changed with the pop up menu.</p>
+
+<p><img src="ControlFeature.png"></p>
+</body>
+</html>
