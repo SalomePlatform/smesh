@@ -1275,7 +1275,10 @@ void SMESH_ActorDef::Update(){
   if(MYDEBUG) MESSAGE("SMESH_ActorDef::Update");
 
   if(GetControlMode() != eNone) {
-    SetControlMode(GetControlMode());
+    unsigned long aTime = myTimeStamp->GetMTime();
+    unsigned long anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
+    if (anObjTime > aTime)
+      SetControlMode(GetControlMode());
   }
   if(myIsPointsLabeled){
     SetPointsLabeled(myIsPointsLabeled);
