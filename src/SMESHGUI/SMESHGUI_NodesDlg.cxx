@@ -59,7 +59,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( QWidget* parent,
   : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
 {
   
-  QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_NODE")));
+  QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_NODE")));
   if ( !name )
     setName( "SMESHGUI_NodesDlg" );
   resize( 303, 185 ); 

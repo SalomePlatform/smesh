@@ -42,8 +42,8 @@ SMESHGUI_AddEdgeDlg::SMESHGUI_AddEdgeDlg( QWidget* parent, const char* name, SAL
     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
 {
   myNodes = 2;
-  QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_LINE")));
-  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_SELECT")));
+  QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_LINE")));
+  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
   if ( !name )
     setName( "SMESHGUI_AddEdgeDlg" );

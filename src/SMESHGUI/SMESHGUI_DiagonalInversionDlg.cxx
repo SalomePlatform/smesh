@@ -40,8 +40,8 @@ SMESHGUI_DiagonalInversionDlg::SMESHGUI_DiagonalInversionDlg( QWidget* parent, c
 						  bool modal, WFlags fl )
     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
 {
-    QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_MESH_DIAGONAL")));
-    QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_SELECT")));
+    QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_MESH_DIAGONAL")));
+    QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
     if ( !name )
 	setName( "SMESHGUI_DiagonalInversionDlg" );

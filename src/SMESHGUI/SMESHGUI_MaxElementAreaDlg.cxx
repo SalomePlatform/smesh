@@ -40,7 +40,7 @@ using namespace std;
 SMESHGUI_MaxElementAreaDlg::SMESHGUI_MaxElementAreaDlg( QWidget* parent, const char* name, bool modal, WFlags fl )
     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
 {
-    QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_MAX_ELEMENT_AREA")));
+    QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_MAX_ELEMENT_AREA")));
     
     if ( !name )
       setName( "SMESHGUI_MaxElementAreaDlg" );

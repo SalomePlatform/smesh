@@ -44,11 +44,11 @@ SMESHGUI_AddVolumeDlg::SMESHGUI_AddVolumeDlg( QWidget* parent, const char* name,
   myNodes = nbNodes;
   QPixmap image0;
   if ( myNodes == 4 )
-    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_TETRAS")));
+    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_TETRAS")));
   else if ( myNodes == 8 )
-    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_HEXAS")));
+    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_HEXAS")));
 
-  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_SELECT")));
+  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
   if ( !name )
     setName( "SMESHGUI_AddVolumeDlg" );

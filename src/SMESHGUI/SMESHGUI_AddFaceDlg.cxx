@@ -44,11 +44,11 @@ SMESHGUI_AddFaceDlg::SMESHGUI_AddFaceDlg( QWidget* parent, const char* name, SAL
   myNodes = nbNodes;
   QPixmap image0;
   if ( myNodes == 3 )
-    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_TRIANGLE")));
+    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_TRIANGLE")));
   else if ( myNodes == 4 )
-    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_DLG_QUADRANGLE")));
+    image0 = QPixmap(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_QUADRANGLE")));
 
-  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESHGUI",tr("ICON_SELECT")));
+  QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
   if ( !name )
     setName( "SMESHGUI_AddFaceDlg" );
