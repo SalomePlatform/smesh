@@ -4,6 +4,10 @@
 #cvs2cl.pl --accum -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2004-03-15 18:42  Jerome Robert <jerome.robert@eads.net>
+
+	* Merge br_enable_import_mesh. Enable import mesh and save/load SMESH study.
+
 2004-02-02 16:43  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/SMDS_Mesh.cxx: Fix a bug (crash when adding an

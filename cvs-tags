@@ -37,9 +37,8 @@ merge_1_2_d: 2003-01-20 11:25
 V1_4_0b: 2004-01-30 15:42
 	Pre-release of 1.4.0. Include the merge of the branch merge_1_2_d.
 
-br_enable_import_mesh: 2004-02-16 10:12
-	New branch on head, after V1_4_0b. Do improvement on mesh file import.
-	
-br_geomclient_colocal: 2004-02-16 14:10
-	New branch on br_enable_import_mesh. Initiated by Francis Kloss.
+br_enable_import_mesh: 2004-02-16 10:00
+	Branch on head after V1_4_0b. Development branch enable import mesh and save/load SMESH study. Initiated by Jerome Robert.
 
+br_geomclient_colocal: 2004-02-23 10:00
+	Branch on br_enable_import_mesh. Development branch for colocalization. Initiated by Francis KLOSS.
