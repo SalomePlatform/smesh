@@ -325,6 +325,10 @@ module SMESH
 
     /*!
      * Export Mesh to MED Formats
+     * @params
+     * - auto_groups : boolean parameter for creating/not creating
+     *   the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+     *   the typical use is auto_groups=false.
      */
     void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
       raises (SALOME::SALOME_Exception);
