@@ -82,6 +82,9 @@ select1.png \
 SMESH_en.xml \
 SMESHCatalog.xml
 
+BIN_SCRIPT= \
+VERSION
+
 # copy header files in common directory
 ifeq ($(HAVE_SSTREAM),yes)
   include_list=include/salome/SALOMEconfig.h
