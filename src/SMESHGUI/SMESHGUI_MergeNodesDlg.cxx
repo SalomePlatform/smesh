@@ -227,6 +227,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( QWidget* parent, const char* nam
   
   RadioButton1->setChecked( TRUE );
   
+  myActor = 0;
+
   mySelection = Sel;  
   
   mySMESHGUI  = SMESHGUI::GetSMESHGUI() ;
