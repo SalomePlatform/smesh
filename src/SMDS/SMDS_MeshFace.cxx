@@ -18,49 +18,10 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : SMDS_MeshFace.cxx
-//  Author : Jean-Michel BOULCOURT
-//  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshFace.ixx"
+#include "SMDS_MeshFace.hxx"
 
-
-//=======================================================================
-//function : SMDS_MeshFace
-//purpose  : 
-//=======================================================================
-
-SMDS_MeshFace::SMDS_MeshFace(const Standard_Integer ID, const Standard_Integer nb) 
-:SMDS_MeshElement(ID,nb,SMDSAbs_Face)
+SMDSAbs_ElementType SMDS_MeshFace::GetType() const
 {
+	return SMDSAbs_Face;
 }
-
-
-//=======================================================================
-//function : NbEdges
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_MeshFace::NbEdges() const
-{
-  return myNbNodes;
-}
-
-//=======================================================================
-//function : Print
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshFace::Print(Standard_OStream& OS) const
-{
-  OS << "face <" << myID <<" > : ";
-  for (Standard_Integer i=1; i<myNbNodes; ++i)
-    OS << GetConnection(i) << ",";
-  OS << GetConnection(myNbNodes) << ") " << endl;
-}
-
-

@@ -18,181 +18,172 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : SMDS_MeshElement.cxx
-//  Author : Jean-Michel BOULCOURT
-//  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshElement.ixx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshEdge.hxx"
+#include "SMDS_MeshFace.hxx"
+#include "SMDS_MeshVolume.hxx"
+#include "utilities.h"
 
-//=======================================================================
-//function : SMDS_MeshElement
-//purpose  : 
-//=======================================================================
-
-SMDS_MeshElement::SMDS_MeshElement(const Standard_Integer ID, const Standard_Integer nb,const SMDSAbs_ElementType Type) 
-  :myID(ID),myNbNodes(nb),myType(Type)
+SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID)
 {
 }
 
-//=======================================================================
-//function : GetConnections
-//purpose  : 
-//=======================================================================
-
-Standard_Address SMDS_MeshElement::GetConnections() const
+void SMDS_MeshElement::Print(ostream & OS) const
 {
-  return (Standard_Address)&myID;
+	OS << "dump of mesh element" << endl;
 }
 
-
-//=======================================================================
-//function : GetConnection
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_MeshElement::GetConnection(const Standard_Integer rank) const
+ostream & operator <<(ostream & OS, const SMDS_MeshElement * ME)
 {
-  return myID;
+	ME->Print(OS);
+	return OS;
 }
 
-
-//=======================================================================
-//function : InverseElements
-//purpose  : 
-//=======================================================================
-
-const SMDS_ListOfMeshElement& SMDS_MeshElement::InverseElements() const
+///////////////////////////////////////////////////////////////////////////////
+/// Create an iterator which iterate on nodes owned by the element.
+/// This method call elementsIterator().
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::nodesIterator() const
 {
-  static SMDS_ListOfMeshElement empty;
-  return empty;
+	return elementsIterator(SMDSAbs_Node);
 }
 
-//=======================================================================
-//function : ClearInverseElements
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::ClearInverseElements()
+///////////////////////////////////////////////////////////////////////////////
+/// Create an iterator which iterate on edges linked with or owned by the element.
+/// This method call elementsIterator().
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::edgesIterator() const
 {
+	return elementsIterator(SMDSAbs_Edge);
 }
 
-//=======================================================================
-//function : AddInverseElement
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::AddInverseElement(const Handle(SMDS_MeshElement)& elem)
+///////////////////////////////////////////////////////////////////////////////
+/// Create an iterator which iterate on faces linked with or owned by the element.
+/// This method call elementsIterator().
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::facesIterator() const
 {
+	return elementsIterator(SMDSAbs_Face);
 }
 
-//=======================================================================
-//function : NbEdges
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_MeshElement::NbEdges() const
+///////////////////////////////////////////////////////////////////////////////
+///Return The number of nodes owned by the current element
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_MeshElement::NbNodes() const
 {
-  return 0;
+	int nbnodes=0;
+	SMDS_Iterator<const SMDS_MeshElement *> * it=nodesIterator();
+	while(it->more())
+	{
+		it->next();
+		nbnodes++;
+	}
+	delete it;
+	return nbnodes;
 }
 
-//=======================================================================
-//function : NbFaces
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_MeshElement::NbFaces() const
+///////////////////////////////////////////////////////////////////////////////
+///Return the number of edges owned by or linked with the current element
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_MeshElement::NbEdges() const
 {
-  return 0;
+	int nbedges=0;
+	SMDS_Iterator<const SMDS_MeshElement *> * it=edgesIterator();
+	while(it->more())
+	{
+		it->next();
+		nbedges++;
+	}
+	delete it;
+	return nbedges;
 }
 
-
-//=======================================================================
-//function : GetEdgeDefinedByNodes
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::GetEdgeDefinedByNodes(const Standard_Integer rank,
-					     Standard_Integer& idnode1,
-					     Standard_Integer& idnode2) const
+///////////////////////////////////////////////////////////////////////////////
+///Return the number of faces owned by or linked with the current element
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_MeshElement::NbFaces() const
 {
-  idnode1 = 0;
-  idnode2 = 0;
+	int nbfaces=0;
+	SMDS_Iterator<const SMDS_MeshElement *> * it=facesIterator();
+	while(it->more())
+	{
+		it->next();
+		nbfaces++;
+	}
+	delete it;
+	return nbfaces;
 }
 
-//=======================================================================
-//function : GetFaceDefinedByNodes
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::GetFaceDefinedByNodes(const Standard_Integer rank,
-					     const Standard_Address idnode,
-					     Standard_Integer& nb) const
+///////////////////////////////////////////////////////////////////////////////
+///Create and iterator which iterate on elements linked with the current element.
+///The iterator must be free by the caller (call delete myIterator).
+///@param type The of elements on which you want to iterate
+///@return An iterator, that you must free when you no longer need it
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshElement::
+	elementsIterator(SMDSAbs_ElementType type) const
 {
-  nb = 0;
+	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
+	{
+		const SMDS_MeshElement * myElement;
+		bool myMore;
+	  public:
+		MyIterator(const SMDS_MeshElement * element):
+			myElement(element),myMore(true)
+		{
+		}
+
+		bool more()
+		{
+			return myMore;
+		}
+
+		const SMDS_MeshElement* next()
+		{
+			myMore=false;
+			return myElement;	
+		}	
+	};
+	
+	if(type==GetType()) return new MyIterator(this);
+	else 
+	{
+		MESSAGE("Iterator not implemented");		
+		return NULL;
+	}
 }
 
-//=======================================================================
-//function : SetNormal
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::SetNormal(const Standard_Integer rank,
-				 const Standard_Real vx,
-				 const Standard_Real vy,
-				 const Standard_Real vz)
-
+///////////////////////////////////////////////////////////////////////////////
+///Return the ID of the element
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_MeshElement::GetID() const
 {
-  if (myNormals.IsNull()) {
-    myNormals = new TColgp_HArray1OfDir(1,NbNodes());
-  }
-  myNormals->SetValue(rank, gp_Dir(vx,vy,vz));
+	return myID;
 }
 
-//=======================================================================
-//function : SetNormal
-//purpose  : 
-//=======================================================================
-
-void SMDS_MeshElement::SetNormal(const Standard_Integer rank,
-				 const gp_Vec& V)
+bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)
 {
-  if (myNormals.IsNull()) {
-    myNormals = new TColgp_HArray1OfDir(1,NbNodes());
-  }
-  myNormals->SetValue(rank, gp_Dir(V));
-}
+	if(e1.GetType()!=e2.GetType()) return false;
+	switch(e1.GetType())
+	{
+	case SMDSAbs_Node:
+		return static_cast<const SMDS_MeshNode &>(e1) <
+			static_cast<const SMDS_MeshNode &>(e2);
 
-//=======================================================================
-//function : GetNormal
-//purpose  : 
-//=======================================================================
+	case SMDSAbs_Edge:
+		return static_cast<const SMDS_MeshEdge &>(e1) <
+			static_cast<const SMDS_MeshEdge &>(e2);
 
-gp_Dir SMDS_MeshElement::GetNormal(const Standard_Integer rank) 
-{
-  if (myNormals.IsNull()) {
-    myNormals = new TColgp_HArray1OfDir(1,NbNodes());
-  }
-  return myNormals->Value(rank);
-}
+	case SMDSAbs_Face:
+		return static_cast<const SMDS_MeshFace &>(e1) <
+			static_cast<const SMDS_MeshFace &>(e2);
 
-//=======================================================================
-//function : Print
-//purpose  : 
-//=======================================================================
+	case SMDSAbs_Volume:
+		return static_cast<const SMDS_MeshVolume &>(e1) <
+			static_cast<const SMDS_MeshVolume &>(e2);
 
-void SMDS_MeshElement::Print(Standard_OStream& OS) const
-{
-  OS << "dump of mesh element" << endl;
-}
-
-
-Standard_OStream& operator << (Standard_OStream& OS
-			      ,const Handle(SMDS_MeshElement)& ME) 
-{
-  ME->Print(OS);
-  return OS;
+	default : MESSAGE("Internal Error");
+	}
 }

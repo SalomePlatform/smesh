@@ -25,38 +25,21 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshEdge.ixx"
+
+#include "SMDS_MeshEdge.hxx"
+#include "SMDS_IteratorOfElements.hxx"
+#include "SMDS_MeshNode.hxx"
+#include <iostream>
 
 //=======================================================================
 //function : SMDS_MeshEdge
 //purpose  : 
 //=======================================================================
 
-SMDS_MeshEdge::SMDS_MeshEdge(const Standard_Integer ID,
-			     const Standard_Integer idnode1, 
-			     const Standard_Integer idnode2) :
-SMDS_MeshElement(ID,2,SMDSAbs_Edge)
-{
-  SetConnections(idnode1,idnode2);
-  ComputeKey();
-}
-
-//=======================================================================
-//function : SetConnections
-//purpose  : 
-//=======================================================================
-void SMDS_MeshEdge::SetConnections(const Standard_Integer idnode1, 
-				   const Standard_Integer idnode2)
-{
-  Standard_Integer idmin = (idnode1 < idnode2? idnode1 : idnode2);
-
-  myNodes[0] = idmin;
-  if (idmin == idnode1) {
-    myNodes[1] = idnode2;
-  } else {
-    myNodes[1] = idnode1;
-  }
+SMDS_MeshEdge::SMDS_MeshEdge(SMDS_MeshNode * node1, SMDS_MeshNode * node2)
+{	
+	myNodes[0]=node1;
+	myNodes[1]=node2;
 }
 
 //=======================================================================
@@ -64,11 +47,81 @@ void SMDS_MeshEdge::SetConnections(const Standard_Integer idnode1,
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshEdge::Print(Standard_OStream& OS) const
+void SMDS_MeshEdge::Print(ostream & OS) const
 {
-  OS << "edge <" << myID <<"> : (" << myNodes[0] << " , " << myNodes[1] << ") " << endl;  
+	OS << "edge <" << GetID() << "> : (" << myNodes[0] << " , " << myNodes[1] <<
+		") " << endl;
 }
 
+int SMDS_MeshEdge::NbNodes() const
+{
+	return 2;
+}
 
+int SMDS_MeshEdge::NbEdges() const
+{
+	return 1;
+}
 
+SMDSAbs_ElementType SMDS_MeshEdge::GetType() const
+{
+	return SMDSAbs_Edge;
+}
 
+SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshEdge::
+	elementsIterator(SMDSAbs_ElementType type) const
+{
+	class MyNodeIterator:public SMDS_Iterator<const SMDS_MeshElement *>
+	{
+		SMDS_MeshNode *const* myNodes;
+		int myIndex;
+	  public:
+		MyNodeIterator(SMDS_MeshNode * const* nodes):myNodes(nodes),myIndex(0)
+		{}	
+
+		bool more()
+		{
+			return myIndex<2;
+		}
+
+		const SMDS_MeshElement* next()
+		{
+			myIndex++;
+			return myNodes[myIndex-1];
+		}	
+	};
+
+	switch(type)
+	{
+	case SMDSAbs_Edge:return SMDS_MeshElement::elementsIterator(SMDSAbs_Edge); 
+	case SMDSAbs_Node:return new MyNodeIterator(myNodes);
+	default: return new SMDS_IteratorOfElements(this,type, nodesIterator());
+	}
+
+}
+
+bool operator<(const SMDS_MeshEdge & e1, const SMDS_MeshEdge & e2)
+{
+	int id11=e1.myNodes[0]->GetID();
+	int id21=e2.myNodes[0]->GetID();
+	int id12=e1.myNodes[1]->GetID();
+	int id22=e2.myNodes[1]->GetID();
+	int tmp;
+
+	if(id11>=id12) 
+	{
+		tmp=id11;
+		id11=id12;
+		id12=tmp;	
+	}
+	if(id21>=id22) 
+	{
+		tmp=id21;
+		id21=id22;
+		id22=tmp;	
+	}
+
+	if(id11<id21) return true;
+	else if(id11==id21) return (id21<id22);
+	else return false;
+}

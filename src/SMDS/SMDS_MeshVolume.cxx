@@ -25,31 +25,14 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
-#include "SMDS_MeshVolume.ixx"
-#include <Standard_ConstructionError.hxx>
-
-//=======================================================================
-//function : SMDS_MeshVolume
-//purpose  : 
-//=======================================================================
-
-SMDS_MeshVolume::SMDS_MeshVolume(const Standard_Integer ID, const Standard_Integer nb) 
-:SMDS_MeshElement(ID,nb,SMDSAbs_Volume)
-{
-}
-
+#include "SMDS_MeshVolume.hxx"
 //=======================================================================
 //function : Print
 //purpose  : 
 //=======================================================================
 
-void SMDS_MeshVolume::Print(Standard_OStream& OS) const
+SMDSAbs_ElementType SMDS_MeshVolume::GetType() const
 {
-  OS << "volume <" << myID <<"> : " ;
-  for (Standard_Integer i=1; i<myNbNodes; ++i)
-    OS << GetConnection(i) << ",";
-  OS << GetConnection(myNbNodes) << ") " << endl;
+	return SMDSAbs_Volume;
 }
-
 

@@ -18,338 +18,195 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : SMDS_Mesh.cxx
-//  Author : Jean-Michel BOULCOURT
-//  Module : SMESH
-
-using namespace std;
-#include "SMDS_Mesh.ixx"
-#include "SMDS_MapIteratorOfExtendedOrientedMap.hxx"
-#include "SMDS_ListOfMeshElement.hxx"
-#include "SMDS_ListIteratorOfListOfMeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_MeshEdge.hxx"
-#include "SMDS_MeshFace.hxx"
-#include "SMDS_MeshTriangle.hxx"
-#include "SMDS_MeshQuadrangle.hxx"
-#include "SMDS_MeshVolume.hxx"
-#include "SMDS_MeshTetrahedron.hxx"
-#include "SMDS_MeshPyramid.hxx"
-#include "SMDS_MeshPrism.hxx"
-#include "SMDS_MeshHexahedron.hxx"
-#include "SMDS_ListOfMesh.hxx"
-#include "SMDS_ListIteratorOfListOfMesh.hxx"
-
-
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_NoSuchObject.hxx>
 
 #include "utilities.h"
+#include "SMDS_Mesh.hxx"
+#include "SMDS_VolumeOfNodes.hxx"
+#include "SMDS_VolumeOfFaces.hxx"
+#include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_FaceOfEdges.hxx"
 
-
-//=======================================================================
-//function : SMDS_Mesh
-//purpose  : creation of a new mesh object
-//=======================================================================
-
-SMDS_Mesh::SMDS_Mesh(const Standard_Integer nbnodes,
-		     const Standard_Integer nbedges, 
-		     const Standard_Integer nbfaces,
-		     const Standard_Integer nbvolumes)
-  :myNodes(nbnodes),myEdges(nbedges),myFaces(nbfaces),myVolumes(nbvolumes),
-   myNodeIDFactory(new SMDS_MeshNodeIDFactory()), 
-   myElementIDFactory(new SMDS_MeshElementIDFactory()),myHasInverse(Standard_False)
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new mesh object
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Mesh::SMDS_Mesh()
+	:myNodeIDFactory(new SMDS_MeshElementIDFactory()),
+	myElementIDFactory(new SMDS_MeshElementIDFactory()),
+	myHasConstructionEdges(false), myHasConstructionFaces(false),
+	myHasInverseElements(true)
 {
 }
 
-//=======================================================================
-//function : SMDS_Mesh
-//purpose  :  
-//=======================================================================
-
-SMDS_Mesh::SMDS_Mesh(const Handle(SMDS_Mesh)& parent,
-		     const Standard_Integer nbnodes)
-  :myNodes(nbnodes),myParent(parent),myNodeIDFactory(parent->myNodeIDFactory),
-   myElementIDFactory(parent->myElementIDFactory),
-   myHasInverse(Standard_False)
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent)
+	:myParent(parent), myNodeIDFactory(parent->myNodeIDFactory),
+	myElementIDFactory(parent->myElementIDFactory),
+	myHasConstructionEdges(false), myHasConstructionFaces(false),
+	myHasInverseElements(true)
 {
 }
 
-//=======================================================================
-//function : AddSubMesh
-//purpose  : create an submesh
-//=======================================================================
+///////////////////////////////////////////////////////////////////////////////
+///Create a submesh and add it to the current mesh
+///////////////////////////////////////////////////////////////////////////////
 
-Handle(SMDS_Mesh) SMDS_Mesh::AddSubMesh()
+SMDS_Mesh *SMDS_Mesh::AddSubMesh()
 {
-  Handle(SMDS_Mesh) submesh = new SMDS_Mesh(this);
-  if (!submesh.IsNull()) {
-    myChildren.Append(submesh);
-  }
-
-  return submesh;
+	SMDS_Mesh *submesh = new SMDS_Mesh(this);
+	myChildren.insert(myChildren.end(), submesh);
+	return submesh;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///create a MeshNode and add it to the current Mesh
+///@return : The created node
+///////////////////////////////////////////////////////////////////////////////
 
-//=======================================================================
-//function : AddNode
-//purpose  : create a MeshNode and returns an ID
-//=======================================================================
-
-Standard_Integer SMDS_Mesh::AddNode(const Standard_Real x, 
-				    const Standard_Real y, 
-				    const Standard_Real z)
+SMDS_MeshNode * SMDS_Mesh::AddNode(double x, double y, double z)
 {
-  Standard_Integer ID = myNodeIDFactory->GetFreeID();
-
-  Handle(SMDS_MeshElement) node = new SMDS_MeshNode(ID,x,y,z);
-  AddNode(node);
-
-  return ID;
+	return AddNodeWithID(x,y,z,myNodeIDFactory->GetFreeID());
 }
 
-//=======================================================================
-//function : AddNode
-//purpose  : create a MeshNode. Returns False if the ID already exists
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddNodeWithID(const Standard_Real x, 
-					  const Standard_Real y, 
-					  const Standard_Real z,
-					  const Standard_Integer ID)
+///////////////////////////////////////////////////////////////////////////////
+///create a MeshNode and add it to the current Mesh
+///@param ID : The ID of the MeshNode to create
+///@return : The created node or NULL if a node with this ID already exists
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
 {
+	// find the MeshNode corresponding to ID
+	const SMDS_MeshElement *node = myNodeIDFactory->MeshElement(ID);
 
-  // find the MeshNode corresponding to ID
-  Handle(SMDS_MeshElement) node;
-  node = GetNode(ID);
-
-  if (node.IsNull()) {
-    node = new SMDS_MeshNode(ID,x,y,z);
-    AddNode(node);
-    return Standard_True;
-  } else
-    return Standard_False;
-    
-}
-
-//=======================================================================
-//function : AddNode
-//purpose  : add  an existing node in  the mesh (useful for submesh)
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddNode(const Standard_Integer ID)
-{
-  // find the MeshNode corresponding to ID
-  Handle(SMDS_MeshElement) node;
-
-  node = GetNode(ID);
-
-  if (!node.IsNull()) {
-    myNodes.Add(node);
-    return Standard_True;;
-  } else
-    return Standard_False;
-}
-
-//=======================================================================
-//function : AddNode
-//purpose  : 
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddNode(const Handle(SMDS_MeshElement)& node)
-{
-
-  if (!node.IsNull()) {
-    myNodes.Add(node);
-    if (!myParent.IsNull()) {
-      myParent->AddNode(node);
-    }
-    return Standard_True;
-  } else
-    return Standard_False;
-}
-
-
-//=======================================================================
-//function : AddEdge
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_Mesh::AddEdge(const Standard_Integer idnode1,
-					    const Standard_Integer idnode2)
-{
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddEdgeWithID(idnode1,idnode2,ID))
-    return ID;
-  else 
-    return 0;
-
-}
-
-//=======================================================================
-//function : AddEdge
-//purpose  : 
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddEdgeWithID(const Standard_Integer idnode1,
-					  const Standard_Integer idnode2,
-					  const Standard_Integer ID)
-{
-  Handle(SMDS_MeshElement) edge,elem;
-  Standard_Boolean successAdd = Standard_False;
-
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      elem = CreateEdge(ID,idnode1,idnode2);
-      edge = FindEdge(elem);
-      if (edge.IsNull()) {
-	edge = elem;
-	myEdges.Add(edge);
-      }
-      successAdd = myElementIDFactory->BindID(ID,edge);
-    }
-  }
-  
-  return successAdd;
-
-}
-
-//=======================================================================
-//function : AddFace
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_Mesh::AddFace(const Standard_Integer idnode1, 
-				    const Standard_Integer idnode2,
-				    const Standard_Integer idnode3)
-{
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddFaceWithID(idnode1,idnode2,idnode3,ID))
-    return ID;
-  else 
-    return 0;
-
-}
-
-//=======================================================================
-//function : AddFace
-//purpose  : 
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddFaceWithID(const Standard_Integer idnode1, 
-					  const Standard_Integer idnode2,
-					  const Standard_Integer idnode3,
-					  const Standard_Integer ID)
-{
-  Handle(SMDS_MeshElement) face,elem;
-  Standard_Boolean successAdd = Standard_False;
-
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	elem = CreateFace(ID,idnode1,idnode2,idnode3);
-	face = FindFace(elem);
-	if (face.IsNull()) {
-	  face = elem;
-	  myFaces.Add(face);
+	if (node == NULL)
+	{
+		SMDS_MeshNode * node=new SMDS_MeshNode(x, y, z);
+		myNodes.insert(node);
+		myNodeIDFactory->BindID(ID,node);
+		return node;
 	}
-	successAdd = myElementIDFactory->BindID(ID,face);
-      }
-    }
-  }
-
-  return successAdd;
-
+	else
+		return NULL;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///create a MeshEdge and add it to the current Mesh
+///@return : The created MeshEdge
+///////////////////////////////////////////////////////////////////////////////
 
-//=======================================================================
-//function : AddFace
-//purpose  : 
-//=======================================================================
-
-Standard_Integer SMDS_Mesh::AddFace(const Standard_Integer idnode1, 
-					    const Standard_Integer idnode2,
-					    const Standard_Integer idnode3,
-					    const Standard_Integer idnode4)
+SMDS_MeshEdge* SMDS_Mesh::AddEdge(int idnode1, int idnode2)
 {
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddFaceWithID(idnode1,idnode2,idnode3,idnode4,ID))
-    return ID;
-  else
-    return 0;
-
+	return AddEdgeWithID(idnode1, idnode2, myElementIDFactory->GetFreeID());
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///Create a new edge and at it to the mesh
+///@param idnode1 ID of the first node
+///@param idnode2 ID of the second node
+///@param ID ID of the edge to create
+///@return The created edge or NULL if an edge with this ID already exists or
+///if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
 
-//=======================================================================
-//function : AddFace
-//purpose  : 
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddFaceWithID(const Standard_Integer idnode1, 
-					  const Standard_Integer idnode2,
-					  const Standard_Integer idnode3,
-					  const Standard_Integer idnode4,
-					  const Standard_Integer ID)
+SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(int idnode1, int idnode2, int ID)
 {
-  Handle(SMDS_MeshElement) face,elem;
-  Standard_Boolean successAdd = Standard_False;
-
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	// find the MeshNode corresponding to idnode4
-	if (AddNode(idnode4)) {
-	  elem = CreateFace(ID,idnode1,idnode2,idnode3,idnode4);
-	  face = FindFace(elem);
-	  if (face.IsNull()) {
-	    face = elem;
-	    myFaces.Add(face);
-	  }
-	  successAdd = myElementIDFactory->BindID(ID,face);
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	if((node1==NULL)||(node2==NULL)) return NULL;
+	SMDS_MeshEdge * edge=new SMDS_MeshEdge(node1, node2);
+	if(myElementIDFactory->BindID(ID, edge))
+	{
+		node1->AddInverseElement(edge);
+		node2->AddInverseElement(edge);		
+		myEdges.insert(edge);
+		return edge;
+	} 
+	else
+	{
+		delete edge;
+		return NULL;
 	}
-      }
-    }
-  }
-
-  return successAdd;
-
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Add a triangle defined by its nodes IDs
+///////////////////////////////////////////////////////////////////////////////
 
-
-//=======================================================================
-//function : AddVolume
-//purpose  : Tetrahedra
-//=======================================================================
-
-Standard_Integer SMDS_Mesh::AddVolume(const Standard_Integer idnode1, 
-				      const Standard_Integer idnode2,
-				      const Standard_Integer idnode3,
-				      const Standard_Integer idnode4)
+SMDS_MeshFace* SMDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3)
 {
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddVolumeWithID(idnode1,idnode2,idnode3,idnode4,ID))
-    return ID;
-  else
-    return 0;
+	return AddFaceWithID(idnode1,idnode2,idnode3,
+		myElementIDFactory->GetFreeID());
+}
 
+///////////////////////////////////////////////////////////////////////////////
+/// Add a quandrangle defined by its nodes IDs
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1, int idnode2, int idnode3, int ID)
+{
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)) return NULL;
+    SMDS_MeshFace * face=createTriangle(node1,node2,node3);
+
+	if(myElementIDFactory->BindID(ID, face))
+	{
+		node1->AddInverseElement(face);
+		node2->AddInverseElement(face);
+        node3->AddInverseElement(face);
+		return face;
+	}	
+	else
+	{
+		RemoveFace(face);
+		return NULL;
+	}
+}
+
+//=======================================================================
+//function : AddFace
+//purpose  :
+//=======================================================================
+
+SMDS_MeshFace* SMDS_Mesh::AddFace(int idnode1,
+	int idnode2, int idnode3, int idnode4)
+{
+	int ID=myElementIDFactory->GetFreeID();
+	SMDS_MeshFace* f= AddFaceWithID(idnode1, idnode2, idnode3, idnode4, ID);
+	if(f==NULL) myElementIDFactory->ReleaseID(ID);
+}
+
+//=======================================================================
+//function : AddFace
+//purpose  :
+//=======================================================================
+
+SMDS_MeshFace* SMDS_Mesh::AddFaceWithID(int idnode1,
+	int idnode2, int idnode3, int idnode4, int ID)
+{
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)) return NULL;
+    SMDS_MeshFace * face=createQuadrangle(node1,node2,node3,node4);
+
+	if(myElementIDFactory->BindID(ID, face))
+	{
+		node1->AddInverseElement(face);
+		node2->AddInverseElement(face);
+        node3->AddInverseElement(face);
+		node4->AddInverseElement(face);
+		return face;
+	}	
+	else
+	{
+		RemoveFace(face);
+		return NULL;
+	}
 }
 
 //=======================================================================
@@ -357,99 +214,141 @@ Standard_Integer SMDS_Mesh::AddVolume(const Standard_Integer idnode1,
 //purpose  : Tetrahedra
 //=======================================================================
 
-Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1, 
-					    const Standard_Integer idnode2,
-					    const Standard_Integer idnode3,
-					    const Standard_Integer idnode4,
-					    const Standard_Integer ID)
+SMDS_MeshVolume * SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4)
 {
-  Handle(SMDS_MeshElement) volume,elem;
-  Standard_Boolean successAdd = Standard_False;
-
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	// find the MeshNode corresponding to idnode4
-	if (AddNode(idnode4)) {
-	  elem = CreateVolume(ID,idnode1,idnode2,idnode3,idnode4);
-	  volume = FindVolume(elem);
-	  if (volume.IsNull()) {
-	    volume = elem;
-	    myVolumes.Add(volume);
-	  }
-	  successAdd = myElementIDFactory->BindID(ID,volume);
-	}
-      }
-    }
-  }
-
-  return successAdd;
-
+	int ID = myElementIDFactory->GetFreeID();
+	SMDS_MeshVolume * v=
+		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, ID);
+	if(v==NULL) myElementIDFactory->ReleaseID(ID);
 }
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Pyramid
-//=======================================================================
 
-Standard_Integer SMDS_Mesh::AddVolume(const Standard_Integer idnode1, 
-				      const Standard_Integer idnode2,
-				      const Standard_Integer idnode3,
-				      const Standard_Integer idnode4,
-				      const Standard_Integer idnode5)
+///////////////////////////////////////////////////////////////////////////////
+///Create a new tetrahedron and add it to the mesh. 
+///@return The created tetrahedron or NULL if an edge with this ID already exists
+///or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
+	int idnode3, int idnode4, int ID)
 {
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddVolumeWithID(idnode1,idnode2,idnode3,idnode4,idnode5,ID))
-    return ID;
-  else
-    return 0;
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
 
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)) return NULL;
+	
+	SMDS_MeshVolume* volume;
+	if(hasConstructionFaces())
+	{
+		SMDS_MeshFace * f1=createTriangle(node1,node2,node3);
+		SMDS_MeshFace * f2=createTriangle(node1,node2,node4);
+		SMDS_MeshFace * f3=createTriangle(node1,node3,node4);
+		SMDS_MeshFace * f4=createTriangle(node2,node3,node4);
+		SMDS_MeshVolume* volume=
+			new SMDS_VolumeOfFaces(f1,f2,f3,f4);
+		myVolumes.insert(volume);
+	}
+	else if(hasConstructionEdges())
+	{
+		/** @todo */
+	}
+	else
+	{
+		/** @todo */
+	}
+
+	if(myElementIDFactory->BindID(ID, volume))
+	{
+		node1->AddInverseElement(volume);
+		node2->AddInverseElement(volume);
+        node3->AddInverseElement(volume);
+		node4->AddInverseElement(volume);
+		return volume;
+	}	
+	else
+	{
+		RemoveVolume(volume);
+		return NULL;
+	}
 }
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Pyramid
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1, 
-						    const Standard_Integer idnode2,
-						    const Standard_Integer idnode3,
-						    const Standard_Integer idnode4,
-						    const Standard_Integer idnode5,
-						    const Standard_Integer ID)
+///////////////////////////////////////////////////////////////////////////////
+/// Add a pyramid to the mesh. node 1,2,3 and 4 define the base of the pyramid
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshVolume * SMDS_Mesh::AddVolume(int idnode1,
+	int idnode2, int idnode3, int idnode4, int idnode5)
 {
-  Handle(SMDS_MeshElement) volume,elem;
-  Standard_Boolean successAdd = Standard_False;
+	int ID = myElementIDFactory->GetFreeID();
+	SMDS_MeshVolume * v=
+		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, ID);
+	if(v==NULL) myElementIDFactory->ReleaseID(ID);
+}
 
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	// find the MeshNode corresponding to idnode4
-	if (AddNode(idnode4)) {
-	  // find the MeshNode corresponding to idnode5
-	  if (AddNode(idnode5)) {
-	    elem = CreateVolume(ID,idnode1,idnode2,idnode3,idnode4,idnode5);
-	    volume = FindVolume(elem);
-	    if (volume.IsNull()) {
-	      volume = elem;
-	      myVolumes.Add(volume);
-	    }
-	    successAdd = myElementIDFactory->BindID(ID,volume);
-	  }
+///////////////////////////////////////////////////////////////////////////////
+/// Add a pyramid to the mesh. node 1,2,3 and 4 define the base of the pyramid
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
+	int idnode3, int idnode4, int idnode5, int ID)
+{
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL))
+		return NULL;
+	
+	SMDS_MeshVolume* volume;
+	if(hasConstructionFaces())
+	{
+		SMDS_MeshFace * f1=createQuadrangle(node1,node2,node3,node4);
+		SMDS_MeshFace * f2=createTriangle(node1,node2,node5);
+		SMDS_MeshFace * f3=createTriangle(node2,node3,node5);
+		SMDS_MeshFace * f4=createTriangle(node3,node4,node5);
+		SMDS_MeshFace * f5=createTriangle(node4,node1,node4);
+		SMDS_MeshVolume* volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
+		myVolumes.insert(volume);
 	}
-      }
-    }
-  }
+	else if(hasConstructionEdges())
+	{
+		/** @todo */
+	}
+	else
+	{
+		/** @todo */
+	}
 
-  return successAdd;
+	if(myElementIDFactory->BindID(ID, volume))
+	{
+		node1->AddInverseElement(volume);
+		node2->AddInverseElement(volume);
+        node3->AddInverseElement(volume);
+		node4->AddInverseElement(volume);
+		node5->AddInverseElement(volume);
+		return volume;
+	}	
+	else
+	{
+		RemoveVolume(volume);
+		return NULL;
+	}
+}
 
+///////////////////////////////////////////////////////////////////////////////
+/// Add a prism. Nodes 1,2,3 is a triangle and 1,2,5,4 a quadrangle.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6)
+{
+	int ID = myElementIDFactory->GetFreeID();
+	SMDS_MeshVolume * v=
+		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
+		ID);
+	if(v==NULL) myElementIDFactory->ReleaseID(ID);
 }
 
 //=======================================================================
@@ -457,67 +356,56 @@ Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1,
 //purpose  : Prism
 //=======================================================================
 
-Standard_Integer SMDS_Mesh::AddVolume(const Standard_Integer idnode1, 
-				      const Standard_Integer idnode2,
-				      const Standard_Integer idnode3,
-				      const Standard_Integer idnode4,
-				      const Standard_Integer idnode5,
-				      const Standard_Integer idnode6)
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6, int ID)
 {
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddVolumeWithID(idnode1,idnode2,idnode3,idnode4,
-		      idnode5,idnode6,ID))
-    return ID;
-  else
-    return 0;
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+	SMDS_MeshNode * node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
 
-}
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL)||
+		(node6==NULL)) return NULL;
+	
+	SMDS_MeshVolume* volume;
+	if(hasConstructionFaces())
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Prism
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1, 
-					    const Standard_Integer idnode2,
-					    const Standard_Integer idnode3,
-					    const Standard_Integer idnode4,
-					    const Standard_Integer idnode5,
-					    const Standard_Integer idnode6,
-					    const Standard_Integer ID)
-{
-  Handle(SMDS_MeshElement) volume,elem;
-  Standard_Boolean successAdd = Standard_False;
-
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	// find the MeshNode corresponding to idnode4
-	if (AddNode(idnode4)) {
-	  // find the MeshNode corresponding to idnode5
-	  if (AddNode(idnode5)) {
-	    // find the MeshNode corresponding to idnode6
-	    if (AddNode(idnode6)) {
-	      elem = CreateVolume(ID,idnode1,idnode2,idnode3,idnode4,idnode5,idnode6);
-	      volume = FindVolume(elem);
-	      if (volume.IsNull()) {
-		volume = elem;
-		myVolumes.Add(volume);
-	      }
-	      successAdd = myElementIDFactory->BindID(ID,volume);
-	    }
-	  }
+	{
+		SMDS_MeshFace * f1=createTriangle(node1,node2,node3);
+		SMDS_MeshFace * f2=createTriangle(node4,node5,node6);
+		SMDS_MeshFace * f3=createQuadrangle(node1,node4,node5,node2);
+		SMDS_MeshFace * f4=createQuadrangle(node2,node5,node6,node3);
+		SMDS_MeshFace * f5=createQuadrangle(node3,node6,node4,node1);
+		
+		SMDS_MeshVolume* volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5);
+		myVolumes.insert(volume);
 	}
-      }
-    }
-  }
+	else if(hasConstructionEdges())
+	{
+		/** @todo */
+	}
+	else
+	{
+		/** @todo */
+	}
 
-  return successAdd;
-
+	if(myElementIDFactory->BindID(ID, volume))
+	{
+		node1->AddInverseElement(volume);
+		node2->AddInverseElement(volume);
+        node3->AddInverseElement(volume);
+		node4->AddInverseElement(volume);
+		node5->AddInverseElement(volume);
+		node6->AddInverseElement(volume);
+		return volume;
+	}	
+	else
+	{
+		RemoveVolume(volume);
+		return NULL;
+	}
 }
 
 //=======================================================================
@@ -525,731 +413,512 @@ Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1,
 //purpose  : Hexahedra
 //=======================================================================
 
-Standard_Integer SMDS_Mesh::AddVolume(const Standard_Integer idnode1, 
-				      const Standard_Integer idnode2,
-				      const Standard_Integer idnode3,
-				      const Standard_Integer idnode4,
-				      const Standard_Integer idnode5,
-				      const Standard_Integer idnode6,
-				      const Standard_Integer idnode7,
-				      const Standard_Integer idnode8)
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
 {
-  Standard_Integer ID = myElementIDFactory->GetFreeID();
-  
-  if (AddVolumeWithID(idnode1,idnode2,idnode3,idnode4,
-		      idnode5,idnode6,idnode7,idnode8,ID))
-    return ID;
-  else
-    return 0;
-
+	int ID = myElementIDFactory->GetFreeID();
+	SMDS_MeshVolume * v=
+		AddVolumeWithID(idnode1, idnode2, idnode3, idnode4, idnode5, idnode6,
+		idnode7, idnode8, ID);
+	if(v==NULL) myElementIDFactory->ReleaseID(ID);
 }
 
-//=======================================================================
-//function : AddVolume
-//purpose  : Hexahedra
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::AddVolumeWithID(const Standard_Integer idnode1, 
-					    const Standard_Integer idnode2,
-					    const Standard_Integer idnode3,
-					    const Standard_Integer idnode4,
-					    const Standard_Integer idnode5,
-					    const Standard_Integer idnode6,
-					    const Standard_Integer idnode7,
-					    const Standard_Integer idnode8,
-					    const Standard_Integer ID)
+///////////////////////////////////////////////////////////////////////////////
+/// Add an hexahedron to the mesh. node 1,2,3,4 and 5,6,7,8 are quadrangle and
+/// 5,1 and 7,3 are an edges.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshVolume*  SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2, int idnode3,
+	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8, int ID)
 {
-  Handle(SMDS_MeshElement) volume,elem;
-  Standard_Boolean successAdd = Standard_False;
+	SMDS_MeshNode * node1 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode1);
+	SMDS_MeshNode * node2 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode2);
+	SMDS_MeshNode * node3 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode3);
+	SMDS_MeshNode * node4 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode4);
+	SMDS_MeshNode * node5 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode5);
+	SMDS_MeshNode * node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
+	SMDS_MeshNode * node7 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode7);
+	SMDS_MeshNode * node8 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode8);
 
-  // find the MeshNode corresponding to idnode1
-  if (AddNode(idnode1)) {
-    // find the MeshNode corresponding to idnode2
-    if (AddNode(idnode2)) {
-      // find the MeshNode corresponding to idnode3
-      if (AddNode(idnode3)) {
-	// find the MeshNode corresponding to idnode4
-	if (AddNode(idnode4)) {
-	  // find the MeshNode corresponding to idnode5
-	  if (AddNode(idnode5)) {
-	    // find the MeshNode corresponding to idnode6
-	    if (AddNode(idnode6)) {
-	      // find the MeshNode corresponding to idnode7
-	      if (AddNode(idnode7)) {
-		// find the MeshNode corresponding to idnode8
-		if (AddNode(idnode8)) {
-		  elem = CreateVolume(ID,idnode1,idnode2,idnode3,idnode4,idnode5,
-				      idnode6,idnode7,idnode8);
-		  volume = FindVolume(elem);
-		  if (volume.IsNull()) {
-		    volume = elem;
-		    myVolumes.Add(volume);
-		  }
-		  successAdd = myElementIDFactory->BindID(ID,volume);
-		}
-	      }
-	    }
-	  }
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||(node5==NULL)||
+		(node6==NULL)||(node7==NULL)||(node8==NULL)) return NULL;
+	
+	SMDS_MeshVolume* volume;
+	if(hasConstructionFaces())
+	{
+		SMDS_MeshFace * f1=FindFaceOrCreate(node1,node2,node3,node4);
+		SMDS_MeshFace * f2=FindFaceOrCreate(node5,node6,node7,node8);
+		SMDS_MeshFace * f3=FindFaceOrCreate(node1,node4,node8,node5);
+		SMDS_MeshFace * f4=FindFaceOrCreate(node1,node2,node6,node5);
+		SMDS_MeshFace * f5=FindFaceOrCreate(node2,node3,node7,node6);
+		SMDS_MeshFace * f6=FindFaceOrCreate(node3,node4,node8,node7);
+		volume=new SMDS_VolumeOfFaces(f1,f2,f3,f4,f5,f6);
+		myVolumes.insert(volume);
 	}
-      }
-    }
-  }
+	else if(hasConstructionEdges())
+	{
+		MESSAGE("Error : Not Implemented");
+	}
+	else
+	{
+		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5,node6,node7,node8);
+		myVolumes.insert(volume);
+	}
 
-  return successAdd;
-
-}
-
-
-//=======================================================================
-//function : GetNode
-//purpose  : returns the MeshNode corresponding to the ID
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::GetNode(const Standard_Integer idnode) const
-{
-
-  Handle(SMDS_MeshElement) node;
-
-  Handle(SMDS_MeshElement) elem = FindNode(idnode);
-  if (!elem.IsNull()) { // found one correspondance
-    node =  elem;
-  } else {
-    if (!myParent.IsNull())
-      node = myParent->GetNode(idnode);
-  }
-
-  return node;
-}
-
-//=======================================================================
-//function : FindNode
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::FindNode(const Standard_Integer ID) const
-{
-  Handle(SMDS_MeshElement) elem;
-  if (myNodes.ContainsID(ID))
-    elem = myNodes.FindID(ID);
-  return elem;
+	if(myElementIDFactory->BindID(ID, volume))
+	{
+		//MESSAGE("SMDS_Mesh::AddVolumeWithID: update inverse elements");
+		node1->AddInverseElement(volume);
+		node2->AddInverseElement(volume);
+        node3->AddInverseElement(volume);
+		node4->AddInverseElement(volume);
+		node5->AddInverseElement(volume);
+		node6->AddInverseElement(volume);
+		node7->AddInverseElement(volume);
+		node8->AddInverseElement(volume);
+		return volume;
+	}	
+	else
+	{
+		RemoveVolume(volume);
+		return NULL;
+	}
 }
 
 //=======================================================================
 //function : FindNode
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Handle(SMDS_MeshElement) SMDS_Mesh::FindNode(const Handle(SMDS_MeshElement)& node) const
+const SMDS_MeshNode * SMDS_Mesh::FindNode(int ID) const
 {
-  Handle(SMDS_MeshElement) elem;
-  if (myNodes.Contains(node))
-    elem = myNodes.Find(node);
-
-  return elem;
+	return (const SMDS_MeshNode *)myNodeIDFactory->MeshElement(ID);
 }
 
-//=======================================================================
-//function : CreateEdge
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateEdge(const Standard_Integer ID,
-					       const Standard_Integer idnode1,
-					       const Standard_Integer idnode2) const
+///////////////////////////////////////////////////////////////////////////////
+///Create a triangle and add it to the current mesh. This methode do not bind a
+///ID to the create triangle.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshFace * SMDS_Mesh::createTriangle(SMDS_MeshNode * node1,
+	SMDS_MeshNode * node2, SMDS_MeshNode * node3)
 {
-  Handle(SMDS_MeshEdge) edge = new SMDS_MeshEdge(ID,idnode1,idnode2);
-  return edge;
+	if(hasConstructionEdges())
+	{
+		SMDS_MeshEdge *edge1, *edge2, *edge3;
+		edge1=FindEdgeOrCreate(node1,node2);
+		edge2=FindEdgeOrCreate(node2,node3);
+		edge3=FindEdgeOrCreate(node3,node1);
+
+		SMDS_MeshFace * face = new SMDS_FaceOfEdges(edge1,edge2,edge3);
+		myFaces.insert(face);
+		return face;
+	}
+	else
+	{
+		SMDS_MeshFace * face = new SMDS_FaceOfNodes(node1,node2,node3);
+		myFaces.insert(face);
+		return face;
+	}
 }
 
-
-//=======================================================================
-//function : CreateFace
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateFace(const Standard_Integer ID,
-					       const Standard_Integer idnode1,
-					       const Standard_Integer idnode2,
-					       const Standard_Integer idnode3) const
+///////////////////////////////////////////////////////////////////////////////
+///Create a quadrangle and add it to the current mesh. This methode do not bind
+///a ID to the create triangle.
+///////////////////////////////////////////////////////////////////////////////
+SMDS_MeshFace * SMDS_Mesh::createQuadrangle(SMDS_MeshNode * node1,
+	SMDS_MeshNode * node2, SMDS_MeshNode * node3, SMDS_MeshNode * node4)
 {
-  Handle(SMDS_MeshFace) face = new SMDS_MeshTriangle(ID,idnode1,idnode2,idnode3);
-  return face;
-}
+	if(hasConstructionEdges())
+	{
+		SMDS_MeshEdge *edge1, *edge2, *edge3, *edge4;
+		edge1=FindEdgeOrCreate(node1,node2);
+		edge2=FindEdgeOrCreate(node2,node3);
+		edge3=FindEdgeOrCreate(node3,node4);
+		edge4=FindEdgeOrCreate(node4,node1);
 
-
-//=======================================================================
-//function : CreateFace
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateFace(const Standard_Integer ID,
-					       const Standard_Integer idnode1,
-					       const Standard_Integer idnode2,
-					       const Standard_Integer idnode3,
-					       const Standard_Integer idnode4) const
-{
-  Handle(SMDS_MeshFace) face = new SMDS_MeshQuadrangle(ID,idnode1,idnode2,idnode3,idnode4);
-  return face;
-}
-
-//=======================================================================
-//function : CreateVolume
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateVolume(const Standard_Integer ID,
-						 const Standard_Integer	idnode1,
-						 const Standard_Integer	idnode2,
-						 const Standard_Integer	idnode3,
-						 const Standard_Integer	idnode4) const
-{
-  Handle(SMDS_MeshVolume) volume = new SMDS_MeshTetrahedron(ID,idnode1,idnode2,idnode3,idnode4);
-  return volume;
-}
-
-//=======================================================================
-//function : CreateVolume
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateVolume(const Standard_Integer ID,
-						 const Standard_Integer	idnode1,
-						 const Standard_Integer	idnode2,
-						 const Standard_Integer	idnode3,
-						 const Standard_Integer	idnode4,
-						 const Standard_Integer	idnode5) const
-{
-  Handle(SMDS_MeshVolume) volume = new SMDS_MeshPyramid(ID,idnode1,idnode2,idnode3,idnode4,idnode5);
-  return volume;
-}
-
-//=======================================================================
-//function : CreateVolume
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateVolume(const Standard_Integer ID,
-						 const Standard_Integer	idnode1,
-						 const Standard_Integer	idnode2,
-						 const Standard_Integer	idnode3,
-						 const Standard_Integer	idnode4,
-						 const Standard_Integer	idnode5,
-						 const Standard_Integer	idnode6) const
-{
-  Handle(SMDS_MeshVolume) volume = new SMDS_MeshPrism(ID,idnode1,idnode2,idnode3,idnode4,idnode5,idnode6);
-  return volume;
-}
-
-//=======================================================================
-//function : CreateVolume
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::CreateVolume(const Standard_Integer ID,
-						 const Standard_Integer	idnode1,
-						 const Standard_Integer	idnode2,
-						 const Standard_Integer	idnode3,
-						 const Standard_Integer	idnode4,
-						 const Standard_Integer	idnode5,
-						 const Standard_Integer	idnode6,
-						 const Standard_Integer	idnode7,
-						 const Standard_Integer	idnode8) const
-{
-  Handle(SMDS_MeshVolume) volume = new SMDS_MeshHexahedron(ID,idnode1,idnode2,idnode3,idnode4,
-							   idnode5,idnode6,idnode7,idnode8);
-  return volume;
-}
-
-//=======================================================================
-//function : Contains
-//purpose  : 
-//=======================================================================
-
-Standard_Boolean SMDS_Mesh::Contains(const Handle(SMDS_MeshElement)& elem) const
-{
-  Standard_Boolean isinmesh = Standard_False;
-  if (myNodes.Contains(elem))
-    isinmesh = Standard_True;
-  else if (myEdges.Contains(elem))
-    isinmesh = Standard_True;
-  else if (myFaces.Contains(elem))
-    isinmesh = Standard_True;
-  else if (myVolumes.Contains(elem))
-    isinmesh = Standard_True;
-
-  return isinmesh;
-}
-
-//=======================================================================
-//function : FindEdge
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::FindEdge(const Handle(SMDS_MeshElement)& edge) const
-{
-  Handle(SMDS_MeshElement) elem;
-  if (myEdges.Contains(edge))
-    elem = myEdges.Find(edge);
-
-  return elem;
-}
-
-//=======================================================================
-//function : FindFace
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::FindFace(const Handle(SMDS_MeshElement)& face) const
-{
-  Handle(SMDS_MeshElement) elem;
-  if (myFaces.Contains(face))
-    elem = myFaces.Find(face);
-
-  return elem;
-}
-
-
-//=======================================================================
-//function : FindVolume
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshElement) SMDS_Mesh::FindVolume(const Handle(SMDS_MeshElement)& volume) const
-{
-  Handle(SMDS_MeshElement) elem;
-  if (myVolumes.Contains(volume))
-    elem = myVolumes.Find(volume);
-
-  return elem;
-}
-
-
-//=======================================================================
-//function : FreeNode
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::FreeNode(const Handle(SMDS_MeshElement)& node)
-{
-    myNodes.Remove(node);
-
-    SMDS_ListIteratorOfListOfMesh itmsh(myChildren);
-    for (;itmsh.More(); itmsh.Next()) {
-      const Handle(SMDS_Mesh)& submesh = itmsh.Value();
-      submesh->RemoveNode(node->GetID());
-    }
-}
-
-
-
-//=======================================================================
-//function : RemoveNode
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RemoveNode(const Standard_Integer IDnode)
-{
-  // find the MeshNode corresponding to IDnode
-  Handle(SMDS_MeshElement) node = FindNode(IDnode);
-  if (RemoveNode(node)) {
-    if (myParent.IsNull()) { // if no parent we can release the ID
-      myNodeIDFactory->ReleaseID(IDnode);
-    }
-  }
-  
+		SMDS_MeshFace * face = new SMDS_FaceOfEdges(edge1,edge2,edge3,edge4);
+		myFaces.insert(face);
+		return face;
+	}
+	else
+	{
+		SMDS_MeshFace * face = new SMDS_FaceOfNodes(node1,node2,node3,node4);
+		myFaces.insert(face);
+		return face;
+	}
 }
 
 //=======================================================================
 //function : RemoveNode
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Standard_Boolean SMDS_Mesh::RemoveNode(const Handle(SMDS_MeshElement)& node)
+void SMDS_Mesh::RemoveNode(int IDnode)
 {
-  Standard_Boolean successRemove = Standard_False;
+	RemoveNode(FindNode(IDnode));
+}
 
-  if (!node.IsNull()) {
-    if (myHasInverse && myNodes.Contains(node)) {
-      SMDS_MapOfMeshOrientedElement map(1);
-      BuildMapNodeAncestors(node,map);
-      RemoveAncestors(node,map);
-    }
+//=======================================================================
+//function : RemoveNode
+//purpose  :
+//=======================================================================
 
-    FreeNode(node);
-    successRemove = Standard_True;
-  }
-
-  return successRemove;
+bool SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
+{
+	SMDS_Iterator<const SMDS_MeshElement *> * it=
+		node->GetInverseElementIterator();
+	while(it->more()) RemoveElement(it->next(),true);
+	myNodeIDFactory->ReleaseID(node->GetID());
+	myNodes.erase(const_cast<SMDS_MeshNode*>(node));
 }
 
 //=======================================================================
 //function : RemoveEdge
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveEdge(const Standard_Integer idnode1, const Standard_Integer idnode2)
+void SMDS_Mesh::RemoveEdge(int idnode1, int idnode2)
 {
-  Handle(SMDS_MeshElement) edge = FindEdge(idnode1,idnode2);
-  RemoveEdge(edge);
+	RemoveEdge(FindEdge(idnode1, idnode2));
 }
 
 //=======================================================================
 //function : RemoveEdge
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveEdge(const Handle(SMDS_MeshElement)& edge)
+void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 {
-
-  if (!edge.IsNull()) {
-    myEdges.Remove(edge);
-
-    myElementIDFactory->ReleaseID(edge->GetID());
-  }
-}
-
-
-//=======================================================================
-//function : RemoveFace
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RemoveFace(const Standard_Integer idnode1, 
-			   const Standard_Integer idnode2,
-			   const Standard_Integer idnode3)
-{
-  Handle(SMDS_MeshElement) face = FindFace(idnode1,idnode2,idnode3);
-  RemoveFace(face);
+	/** @todo to be fix */
+	myEdges.erase(const_cast<SMDS_MeshEdge*>(edge));
+	//removeElementDependencies(edge);
+	delete edge;
 }
 
 //=======================================================================
 //function : RemoveFace
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveFace(const Standard_Integer idnode1, 
-			   const Standard_Integer idnode2,
-			   const Standard_Integer idnode3,
-			   const Standard_Integer idnode4)
+void SMDS_Mesh::RemoveFace(int idnode1, int idnode2, int idnode3)
 {
-  Handle(SMDS_MeshElement) face = FindFace(idnode1,idnode2,idnode3,idnode4);
-  RemoveFace(face);
+	RemoveFace(FindFace(idnode1, idnode2, idnode3));
 }
-
 
 //=======================================================================
 //function : RemoveFace
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveFace(const Handle(SMDS_MeshElement)& face)
+void SMDS_Mesh::RemoveFace(int idnode1, int idnode2, int idnode3, int idnode4)
 {
-  if (!face.IsNull()) {
-    myFaces.Remove(face);
-    myElementIDFactory->ReleaseID(face->GetID());
-  }
+	RemoveFace(FindFace(idnode1, idnode2, idnode3, idnode4));
+}
+
+//=======================================================================
+//function : RemoveFace
+//purpose  :
+//=======================================================================
+
+void SMDS_Mesh::RemoveFace(const SMDS_MeshFace * face)
+{
+	/** @todo to be fix */
+	myFaces.erase(const_cast<SMDS_MeshFace*>(face));
+	//removeElementDependencies(face);
+	delete face;
 }
 
 //=======================================================================
 //function : RemoveVolume
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveVolume(const Handle(SMDS_MeshElement)& volume)
+void SMDS_Mesh::RemoveVolume(const SMDS_MeshVolume * volume)
 {
-  if (myVolumes.Contains(volume)) {
-    myVolumes.Remove(volume);
-    myElementIDFactory->ReleaseID(volume->GetID());
-  }
+	/** @todo to be fix */
+	myVolumes.erase(const_cast<SMDS_MeshVolume*>(volume));
+	//removeElementDependencies(volume);
+	delete volume;
+}
+///////////////////////////////////////////////////////////////////////////////
+/// Remove no longer used sub element of an element. Unbind the element ID
+///////////////////////////////////////////////////////////////////////////////
+void SMDS_Mesh::removeElementDependencies(SMDS_MeshElement * element)
+{
+	/** @todo to be fix */
+	myElementIDFactory->ReleaseID(element->GetID());
+	SMDS_Iterator<const SMDS_MeshElement*> * it=element->nodesIterator();
+	while(it->more())
+	{
+		SMDS_MeshNode * node=static_cast<SMDS_MeshNode*>(
+			const_cast<SMDS_MeshElement*>(it->next()));
+		node->RemoveInverseElement(element);
+		if(node->emptyInverseElements()) RemoveNode(node);
+	}
+}
+//=======================================================================
+//function : RemoveElement
+//purpose  :
+//=======================================================================
+
+void SMDS_Mesh::RemoveElement(int IDelem, const bool removenodes)
+{
+	RemoveElement(myElementIDFactory->MeshElement(IDelem), removenodes);
 }
 
 //=======================================================================
 //function : RemoveElement
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-void SMDS_Mesh::RemoveElement(const Standard_Integer IDelem,const Standard_Boolean removenodes)
+void SMDS_Mesh::RemoveElement(const SMDS_MeshElement * elem,
+	const bool removenodes)
 {
-  Handle(SMDS_MeshElement) elem =  myElementIDFactory->MeshElement(IDelem);
-  RemoveElement(elem,removenodes);
-
-
-    
+	/** @todo to be fix */
+	switch(elem->GetType())
+	{
+    case SMDSAbs_Node:
+		RemoveNode((const SMDS_MeshNode*)elem);
+		return;
+    case SMDSAbs_Edge:
+		RemoveEdge((const SMDS_MeshEdge*)elem);
+		break;
+    case SMDSAbs_Face:
+		RemoveFace((const SMDS_MeshFace*)elem);
+		break;
+    case SMDSAbs_Volume:
+		RemoveVolume((const SMDS_MeshVolume*)elem);
+		break;
+    default :
+		MESSAGE("remove function : unknown type");
+		return;
+	}
+/*	
+	SMDS_Iterator<const SMDS_MeshNode*> * it=elem->nodesIterator();
+	while(it->more())
+	{
+		const SMDS_MeshNode * node=it->next();
+		
+	}*/
 }
 
-//=======================================================================
-//function : RemoveElement
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RemoveElement(const Handle(SMDS_MeshElement)& elem,const Standard_Boolean removenodes)
-{
-  if ( elem->IsKind(STANDARD_TYPE(SMDS_MeshEdge)) ) {
-    RemoveEdge(elem);
-  } else if ( elem->IsKind(STANDARD_TYPE(SMDS_MeshNode))) {
-    RemoveNode(elem);
-    return;
-  } else if ( elem->IsKind(STANDARD_TYPE(SMDS_MeshFace))) {
-    RemoveFace(elem);
-  } else if ( elem->IsKind(STANDARD_TYPE(SMDS_MeshVolume))) {
-    RemoveVolume(elem);
-  } else {
-    MESSAGE( "remove function : unknown type" );
-    return;
-  }
-
-  Standard_Integer nbcnx = elem->NbNodes();
-  Standard_Integer i;
-  for (i=1; i <= nbcnx; ++i) {
-    RemoveInverseElement(GetNode(i,elem),elem);
-    
-  }
-
-  if (removenodes) {
-    for (i=1; i <= nbcnx; ++i) {
-      if (GetNode(i,elem)->InverseElements().IsEmpty())
-	FreeNode(GetNode(i,elem));
-    }
-  }
-
-}
- 
 //=======================================================================
 //function : RemoveFromParent
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Standard_Boolean SMDS_Mesh::RemoveFromParent()
+bool SMDS_Mesh::RemoveFromParent()
 {
-  if (myParent.IsNull())
-    return Standard_False;
-
-  return (myParent->RemoveSubMesh(this));
-
+	if (myParent==NULL) return false;
+	else return (myParent->RemoveSubMesh(this));
 }
 
 //=======================================================================
 //function : RemoveSubMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Standard_Boolean SMDS_Mesh::RemoveSubMesh(const Handle(SMDS_Mesh)& aMesh)
+bool SMDS_Mesh::RemoveSubMesh(const SMDS_Mesh * aMesh)
 {
-  Standard_Boolean found = Standard_False;
+	bool found = false;
 
-  SMDS_ListIteratorOfListOfMesh itmsh(myChildren);
-  for (;itmsh.More() && !found; itmsh.Next()) {
-    Handle(SMDS_Mesh) submesh;
-    submesh = itmsh.Value();
-    if (submesh == aMesh) {
-      found = Standard_True;
-      myChildren.Remove(itmsh);
-    }
-  }
+	list<SMDS_Mesh *>::iterator itmsh=myChildren.begin();
+	for (; itmsh!=myChildren.end() && !found; itmsh++)
+	{
+		SMDS_Mesh * submesh = *itmsh;
+		if (submesh == aMesh)
+		{
+			found = true;
+			myChildren.erase(itmsh);
+		}
+	}
 
-  return found;
-}
-
-//=======================================================================
-//function : RemoveInverseElement
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RemoveInverseElement(const Handle(SMDS_MeshElement)& elem, 
-				     const Handle(SMDS_MeshElement)& parent) const
-{
-  if (!myHasInverse) 
-    return;
-
-  Handle(SMDS_MeshNode)& node = *((Handle(SMDS_MeshNode)*)&elem);
-  node->RemoveInverseElement(parent);
-}
- 
-//=======================================================================
-//function : RemoveAncestors
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RemoveAncestors(const Handle(SMDS_MeshElement)& elem,
-				const SMDS_MapOfMeshOrientedElement& map)
-{
-
-  if (!myHasInverse) 
-    return;
-
-  SMDS_MapIteratorOfExtendedOrientedMap itAnc(map);
-
-  for (;itAnc.More();itAnc.Next()) {
-    const Handle(SMDS_MeshElement)& ME = itAnc.Key();
-    Standard_Integer nbcnx = ME->NbNodes();
-
-    for (Standard_Integer i=1; i <= nbcnx; ++i) {
-      RemoveInverseElement(GetNode(i,ME),ME);
-    }
-  }
-
-  SMDS_MapIteratorOfExtendedOrientedMap itAnc2(map);
-
-  for (;itAnc2.More();itAnc2.Next()) {
-    const Handle(SMDS_MeshElement)& ME = itAnc2.Key();
-    RemoveElement(ME);
-  }
-}
-
-//=======================================================================
-//function : BuildMapNodeAncestors
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::BuildMapNodeAncestors(const Handle(SMDS_MeshElement)& ME, 
-				      SMDS_MapOfMeshOrientedElement& map) const
-{
-
-  if (!myHasInverse) 
-    return;
-
-  Standard_Integer nbcnx = ME->NbNodes();
-
-  for (Standard_Integer i=1; i <= nbcnx; ++i) {
-    const SMDS_ListOfMeshElement& lstInvElements = GetNode(i,ME)->InverseElements();
-
-    SMDS_ListIteratorOfListOfMeshElement it(lstInvElements);
-    for (;it.More();it.Next()) {
-      const Handle(SMDS_MeshElement)& meParent = it.Value();
-      if (Contains(meParent))
-	map.Add(meParent);
-    }
-
-  }
-
-}
-
-
-//=======================================================================
-//function : BuildMapEdgeAncestors
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::BuildMapEdgeAncestors(const Handle(SMDS_MeshElement)& ME, 
-				      SMDS_MapOfMeshOrientedElement& map) const
-{
-
-  if (!myHasInverse) 
-    return;
-
-  Standard_Integer nbcnx = ME->NbNodes();
-
-  for (Standard_Integer i=1; i <= nbcnx; ++i) {
-    const SMDS_ListOfMeshElement& lstInvElements = GetNode(i,ME)->InverseElements();
-
-    SMDS_ListIteratorOfListOfMeshElement it(lstInvElements);
-    for (;it.More();it.Next()) {
-      const Handle(SMDS_MeshElement)& meParent = it.Value();
-      if ( !meParent->IsKind(STANDARD_TYPE(SMDS_MeshEdge)) && Contains(meParent))
-	map.Add(meParent);
-    }
-
-  }
-
-}
-
-
-//=======================================================================
-//function : BuildMapFaceAncestors
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::BuildMapFaceAncestors(const Handle(SMDS_MeshElement)& ME, 
-				      SMDS_MapOfMeshOrientedElement& map) const
-{
-
-  if (!myHasInverse) 
-    return;
-
-  Standard_Integer nbcnx = ME->NbNodes();
-
-  for (Standard_Integer i=1; i <= nbcnx; ++i) {
-    const SMDS_ListOfMeshElement& lstInvElements = GetNode(i,ME)->InverseElements();
-
-    SMDS_ListIteratorOfListOfMeshElement it(lstInvElements);
-    for (;it.More();it.Next()) {
-      const Handle(SMDS_MeshElement)& meParent = it.Value();
-      if ( !meParent->IsKind(STANDARD_TYPE(SMDS_MeshEdge))
-	   && ( !meParent->IsKind(STANDARD_TYPE(SMDS_MeshFace))) && Contains(meParent) )
-	map.Add(meParent);
-    }
-
-  }
-
+	return found;
 }
 
 
 //=======================================================================
 //function : FindEdge
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Handle(SMDS_MeshElement) SMDS_Mesh::FindEdge(const Standard_Integer idnode1,
-					     const Standard_Integer idnode2 ) const
+const SMDS_MeshEdge* SMDS_Mesh::FindEdge(int idnode1, int idnode2) const
 {
-  Handle(SMDS_MeshEdge) edge = new SMDS_MeshEdge(0,idnode1,idnode2);
-  return FindEdge(edge);
+	const SMDS_MeshNode * node1=FindNode(idnode1);
+	const SMDS_MeshNode * node2=FindNode(idnode2);
+	if((node1==NULL)||(node2==NULL)) return NULL;
+	return FindEdge(node1,node2);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+//#include "Profiler.h"
+const SMDS_MeshEdge* SMDS_Mesh::FindEdge(const SMDS_MeshNode * node1,
+	const SMDS_MeshNode * node2) const
+{
+	const SMDS_MeshEdge * toReturn=NULL;
+	//PROFILER_Init();
+	//PROFILER_Set();
+	SMDS_Iterator<const SMDS_MeshElement *>*  it1=node1->edgesIterator();
+	//PROFILER_Get(0);
+	//PROFILER_Set();
+	while(it1->more())
+	{
+		const SMDS_MeshEdge * e=static_cast<const SMDS_MeshEdge *>
+			(it1->next());
+		SMDS_Iterator<const SMDS_MeshElement *>* it2=e->nodesIterator();
+		while(it2->more())
+		{
+			if(it2->next()->GetID()==node2->GetID())
+			{
+				toReturn=e;
+				break;
+			}
+		}
+		delete it2;
+	}
+	//PROFILER_Get(1);
+	delete it1;
+	return toReturn;
+}
+
+
+SMDS_MeshEdge* SMDS_Mesh::FindEdgeOrCreate(const SMDS_MeshNode * node1,
+	const SMDS_MeshNode * node2) 
+{
+	SMDS_MeshEdge * toReturn=NULL;
+	toReturn=const_cast<SMDS_MeshEdge*>(FindEdge(node1,node2));
+	if(toReturn==NULL)	
+	{
+		toReturn=new SMDS_MeshEdge(const_cast<SMDS_MeshNode*>(node1),
+			const_cast<SMDS_MeshNode*>(node2));
+		myEdges.insert(toReturn);
+	} 
+	return toReturn;
 }
 
 //=======================================================================
 //function : FindFace
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Handle(SMDS_MeshElement) SMDS_Mesh::FindFace(const Standard_Integer idnode1,
-					     const Standard_Integer idnode2,
-					     const Standard_Integer idnode3 ) const
+const SMDS_MeshFace* SMDS_Mesh::FindFace(int idnode1, int idnode2,
+	int idnode3) const
 {
-  Handle(SMDS_MeshFace) face = new SMDS_MeshTriangle(0,idnode1,idnode2,idnode3);
-  return FindFace(face);
+	const SMDS_MeshNode * node1=FindNode(idnode1);
+	const SMDS_MeshNode * node2=FindNode(idnode2);
+	const SMDS_MeshNode * node3=FindNode(idnode3);
+	const SMDS_MeshFace * face;
+	const SMDS_MeshElement * node;
+	bool node2found, node3found;
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)) return NULL;
+
+	SMDS_Iterator<const SMDS_MeshElement *>*  it1=node1->facesIterator();
+	while(it1->more())
+	{
+		face=static_cast<const SMDS_MeshFace*>(it1->next());
+		if(face->NbNodes()!=3) continue;
+		SMDS_Iterator<const SMDS_MeshElement *>* it2=face->nodesIterator();
+		node2found=false;
+		node3found=false;
+		while(it2->more())
+		{
+			node=it2->next();
+			if(node->GetID()==idnode2) node2found=true;
+			if(node->GetID()==idnode3) node3found=true;
+		}
+		delete it2;
+		if(node2found&&node3found)
+		{
+			delete it1;
+			return face;
+		}
+	}
+	delete it1;
+	return NULL;
 }
 
 //=======================================================================
 //function : FindFace
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Handle(SMDS_MeshElement) SMDS_Mesh::FindFace(const Standard_Integer idnode1,
-					     const Standard_Integer idnode2,
-					     const Standard_Integer idnode3,
-					     const Standard_Integer idnode4 ) const
+const SMDS_MeshFace* SMDS_Mesh::FindFace(int idnode1, int idnode2, int idnode3,
+	int idnode4) const
 {
-  Handle(SMDS_MeshFace) face = new SMDS_MeshQuadrangle(0,idnode1,idnode2,idnode3,idnode4);
-  return FindFace(face);
+	const SMDS_MeshNode * node1=FindNode(idnode1);
+	const SMDS_MeshNode * node2=FindNode(idnode2);
+	const SMDS_MeshNode * node3=FindNode(idnode3);
+	const SMDS_MeshNode * node4=FindNode(idnode4);
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)) return NULL;
+	return FindFace(node1, node2, node3, node4);
+}
+
+const SMDS_MeshFace* SMDS_Mesh::FindFace(
+		const SMDS_MeshNode *node1,
+		const SMDS_MeshNode *node2,
+		const SMDS_MeshNode *node3,
+		const SMDS_MeshNode *node4) const
+{
+	const SMDS_MeshFace * face;
+	const SMDS_MeshElement * node;
+	bool node2found, node3found, node4found;
+	SMDS_Iterator<const SMDS_MeshElement *>*  it1=node1->facesIterator();
+	while(it1->more())
+	{
+		face=static_cast<const SMDS_MeshFace *>(it1->next());
+		if(face->NbNodes()!=4) continue;
+		SMDS_Iterator<const SMDS_MeshElement *>* it2=face->nodesIterator();
+		node2found=false;
+		node3found=false;
+		node4found=false;
+		while(it2->more())
+		{
+			node=it2->next();
+			if(node->GetID()==node2->GetID()) node2found=true;
+			if(node->GetID()==node3->GetID()) node3found=true;
+			if(node->GetID()==node4->GetID()) node4found=true;
+		}
+		delete it2;
+		if(node2found&&node3found&&node4found)
+		{
+			delete it1;
+			return face;
+		}
+	}
+	delete it1;
+	return NULL;
+}
+
+SMDS_MeshFace* SMDS_Mesh::FindFaceOrCreate(
+		const SMDS_MeshNode *node1,
+		const SMDS_MeshNode *node2,
+		const SMDS_MeshNode *node3,
+		const SMDS_MeshNode *node4)
+{
+	SMDS_MeshFace * toReturn=NULL;
+	toReturn=const_cast<SMDS_MeshFace*>(FindFace(node1,node2,node3,node4));
+	if(toReturn==NULL)	
+	{
+		toReturn=createQuadrangle(
+			const_cast<SMDS_MeshNode *>(node1),
+			const_cast<SMDS_MeshNode *>(node2),
+			const_cast<SMDS_MeshNode *>(node3),
+			const_cast<SMDS_MeshNode *>(node4)
+		);
+	} 
+	return toReturn;
 }
 
 //=======================================================================
 //function : FindElement
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-Handle(SMDS_MeshElement) SMDS_Mesh::FindElement(const Standard_Integer IDelem) const
+const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 {
-  return myElementIDFactory->MeshElement(IDelem);
+	return myElementIDFactory->MeshElement(IDelem);
 }
-
-//=======================================================================
-//function : GetNode
-//purpose  : 
-//=======================================================================
-
-Handle(SMDS_MeshNode) SMDS_Mesh::GetNode(const Standard_Integer rank, 
-					 const Handle(SMDS_MeshElement)& ME) const
-
-{
-  const Standard_Integer idnode = ME->GetConnection(rank); // take care, no control of bounds
-
-  Handle(SMDS_MeshElement) elem = FindNode(idnode);
-  Handle(SMDS_MeshNode)& node = *((Handle(SMDS_MeshNode)*)&elem);
-  return node;
-
-}
-
 
 //=======================================================================
 //function : DumpNodes
@@ -1258,19 +927,11 @@ Handle(SMDS_MeshNode) SMDS_Mesh::GetNode(const Standard_Integer rank,
 
 void SMDS_Mesh::DumpNodes() const
 {
-  MESSAGE( "dump nodes of mesh : " );
-
-  SMDS_MapIteratorOfExtendedOrientedMap itnode(myNodes);
-
-  for (;itnode.More();itnode.Next()) {
-    const Handle(SMDS_MeshElement)& node = itnode.Key();
-    MESSAGE( node);
-    
-  }
-
+	MESSAGE("dump nodes of mesh : ");
+	SMDS_Iterator<const SMDS_MeshNode *> * itnode=nodesIterator();
+	while(itnode->more()) MESSAGE(itnode->next());
+	delete itnode;
 }
-
-
 
 //=======================================================================
 //function : DumpEdges
@@ -1279,17 +940,11 @@ void SMDS_Mesh::DumpNodes() const
 
 void SMDS_Mesh::DumpEdges() const
 {
-  MESSAGE( "dump edges of mesh : " );
-
-  SMDS_MapIteratorOfExtendedOrientedMap itedge(myEdges);
-
-  for (;itedge.More();itedge.Next()) {
-    const Handle(SMDS_MeshElement)& edge = itedge.Key();
-    MESSAGE( edge);
-  }
+	MESSAGE("dump edges of mesh : ");
+	SMDS_Iterator<const SMDS_MeshEdge *> * itedge=edgesIterator();
+	while(itedge->more()) MESSAGE(itedge->next());
+	delete itedge;
 }
-
-
 
 //=======================================================================
 //function : DumpFaces
@@ -1298,16 +953,11 @@ void SMDS_Mesh::DumpEdges() const
 
 void SMDS_Mesh::DumpFaces() const
 {
-  MESSAGE( "dump faces of mesh : " );
-
-  SMDS_MapIteratorOfExtendedOrientedMap itface(myFaces);
-
-  for (;itface.More();itface.Next()) {
-    const Handle(SMDS_MeshElement)& face = itface.Key();
-    MESSAGE( face);
-  }
+	MESSAGE("dump faces of mesh : ");
+	SMDS_Iterator<const SMDS_MeshFace *> * itface=facesIterator();
+	while(itface->more()) MESSAGE(itface->next());
+	delete itface;
 }
-
 
 //=======================================================================
 //function : DumpVolumes
@@ -1316,17 +966,11 @@ void SMDS_Mesh::DumpFaces() const
 
 void SMDS_Mesh::DumpVolumes() const
 {
-  MESSAGE( "dump volumes of mesh : " );
-
-  SMDS_MapIteratorOfExtendedOrientedMap itvol(myVolumes);
-
-  for (;itvol.More();itvol.Next()) {
-    const Handle(SMDS_MeshElement)& volume = itvol.Key();
-    MESSAGE( volume);
-  }
+	MESSAGE("dump volumes of mesh : ");
+	SMDS_Iterator<const SMDS_MeshVolume *> * itvol=volumesIterator();
+	while(itvol->more()) MESSAGE(itvol->next());
+	delete itvol;
 }
-
-
 
 //=======================================================================
 //function : DebugStats
@@ -1335,159 +979,288 @@ void SMDS_Mesh::DumpVolumes() const
 
 void SMDS_Mesh::DebugStats() const
 {
-  //VRV: T2.4 impossible to use Logger server
-  MESSAGE( "Debug stats of mesh : " );
+	MESSAGE("Debug stats of mesh : ");
 
-  MESSAGE( "===== NODES =====" );
-  myNodes.Statistics(cout);
+	MESSAGE("===== NODES ====="<<NbNodes());
+	MESSAGE("===== EDGES ====="<<NbEdges());
+	MESSAGE("===== FACES ====="<<NbFaces());
+	MESSAGE("===== VOLUMES ====="<<NbVolumes());
 
-  MESSAGE( "===== EDGES =====" );
-  myEdges.Statistics(cout);
+	MESSAGE("End Debug stats of mesh ");
 
-  MESSAGE( "===== FACES =====" );
-  myFaces.Statistics(cout);
+	//#ifdef DEB
+	
+	SMDS_Iterator<const SMDS_MeshNode *> * itnode=nodesIterator();
+	int sizeofnodes = 0;
+	int sizeoffaces = 0;
 
-  MESSAGE( "===== VOLUMES =====" );
-  myVolumes.Statistics(cout);
-  //VRV: T2.4 impossible to use Logger server
+	while(itnode->more())
+	{
+		const SMDS_MeshNode *node = itnode->next();
 
-  MESSAGE( "End Debug stats of mesh " );
+		sizeofnodes += sizeof(*node);
+		
+		SMDS_Iterator<const SMDS_MeshElement *> * it=
+			node->GetInverseElementIterator();
+		while(it->more())
+		{
+			const SMDS_MeshElement *me = it->next();
+			sizeofnodes += sizeof(me);
+		}
+		delete it;
 
-  //#ifdef DEB
-  SMDS_MapIteratorOfExtendedOrientedMap itnode(myNodes);
-  Standard_Integer sizeofnodes = 0;
-  Standard_Integer sizeoffaces = 0;
+	}
+	delete itnode;
+	SMDS_Iterator<const SMDS_MeshFace*>* itface=facesIterator();
+	
+	while(itface->more())
+	{
+		const SMDS_MeshElement *face = itface->next();		
+		sizeoffaces += sizeof(*face);
 
+	}
+	MESSAGE("total size of node elements = " << sizeofnodes);;
+	MESSAGE("total size of face elements = " << sizeoffaces);;
 
-  for (;itnode.More();itnode.Next()) {
-    const Handle(SMDS_MeshElement)& node = itnode.Key();
-    
-    Standard_Transient *p = node->This();
-    sizeofnodes += sizeof( *((SMDS_MeshNode *)p) );
-
-    SMDS_ListIteratorOfListOfMeshElement it(node->InverseElements());
-    for (;it.More();it.Next()) {
-      const Handle(SMDS_MeshElement)& me = it.Value();
-      sizeofnodes += sizeof(me);
-    }
-    
-  }
-
-  SMDS_MapIteratorOfExtendedOrientedMap itface(myFaces);
-
-  for (;itface.More();itface.Next()) {
-    const Handle(SMDS_MeshElement)& face = itface.Key();
-    
-    Standard_Transient *p = face->This();
-    sizeoffaces += sizeof( *((SMDS_MeshFace *)p) );
-    
-  }
-  MESSAGE( "total size of node elements = " << sizeofnodes );;
-  MESSAGE( "total size of face elements = " << sizeoffaces );;
-
-  //#endif
+	//#endif
 
 }
 
-//=======================================================================
-//function : RebuildAllInverseConnections
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RebuildAllInverseConnections()
+int SMDS_Mesh::NbNodes() const
 {
-  if (!myParent.IsNull())
-    myParent->RebuildAllInverseConnections();
-
-  else {
-    // Clear all inverseconnections from nodes
-    SMDS_MapIteratorOfExtendedOrientedMap itnode(myNodes);
-    
-    for (;itnode.More();itnode.Next()) {
-      const Handle(SMDS_MeshElement)& elem = itnode.Key();
-      elem->ClearInverseElements();
-    }
-    
-
-    RebuildInverseConnections();
-
-    SMDS_ListIteratorOfListOfMesh itmsh(myChildren);
-    for (;itmsh.More(); itmsh.Next()) {
-      Handle(SMDS_Mesh) submesh;
-      submesh = itmsh.Value();
-    
-      submesh->RebuildInverseConnections();
-
-    }
-  }
+	myNodes.size();
 }
 
-//=======================================================================
-//function : RebuildInverseConnections
-//purpose  : 
-//=======================================================================
-
-void SMDS_Mesh::RebuildInverseConnections()
+int SMDS_Mesh::NbEdges() const
 {
-  // rebuld inverse connections to volumes
-  SMDS_MapIteratorOfExtendedOrientedMap itvol(myVolumes);
-
-  for (;itvol.More();itvol.Next()) {
-    const Handle(SMDS_MeshElement)& vol = itvol.Key();
-
-    Standard_Integer nbcnx = vol->NbNodes();
-    for (Standard_Integer inode=1; inode<=nbcnx; ++inode) {
-      Standard_Integer idnode = vol->GetConnection(inode);
-      Handle(SMDS_MeshElement) node = FindNode(idnode);
-      if (!node.IsNull())
-	node->AddInverseElement(vol);
-    }
-    
-  }
-
-  // rebuld inverse connections to faces
-  SMDS_MapIteratorOfExtendedOrientedMap itface(myFaces);
-
-  for (;itface.More();itface.Next()) {
-    const Handle(SMDS_MeshElement)& face = itface.Key();
-
-    Standard_Integer nbcnx = face->NbNodes();
-    for (Standard_Integer inode=1; inode<=nbcnx; ++inode) {
-      Standard_Integer idnode = face->GetConnection(inode);
-      Handle(SMDS_MeshElement) node = FindNode(idnode);
-      if (!node.IsNull())
-	node->AddInverseElement(face);
-    }
-    
-  }
-
-  // rebuld inverse connections to edges
-  SMDS_MapIteratorOfExtendedOrientedMap itedge(myEdges);
-
-  for (;itedge.More();itedge.Next()) {
-    const Handle(SMDS_MeshElement)& edge = itedge.Key();
-
-    Standard_Integer nbcnx = edge->NbNodes();
-    for (Standard_Integer inode=1; inode<=nbcnx; ++inode) {
-      Standard_Integer idnode = edge->GetConnection(inode);
-      Handle(SMDS_MeshElement) node = FindNode(idnode);
-      if (!node.IsNull())
-	node->AddInverseElement(edge);
-    }
-    
-  }
-
-  myHasInverse = Standard_True;
+	return myEdges.size();
 }
 
-
-//=======================================================================
-//function : SubMeshIterator
-//purpose  : returns the ith SubMesh
-//=======================================================================
-
-void SMDS_Mesh::SubMeshIterator(SMDS_ListIteratorOfListOfMesh& itmsh) const
+int SMDS_Mesh::NbFaces() const
 {
-  itmsh.Initialize(myChildren);
+	return myFaces.size();
+}
+
+int SMDS_Mesh::NbVolumes() const
+{
+	return myVolumes.size();
+}
+
+int SMDS_Mesh::NbSubMesh() const
+{
+	return myChildren.size();
+}
+
+SMDS_Mesh::~SMDS_Mesh()
+{
+	if(myParent==NULL)
+	{
+		delete myNodeIDFactory;
+		delete myElementIDFactory;
+	}
+
+	list<SMDS_Mesh*>::iterator itc=myChildren.begin();
+	while(itc!=myChildren.end())
+	{
+		delete *itc;
+		itc++;
+	}
+	
+	SMDS_Iterator<const SMDS_MeshNode*> * itn=nodesIterator();
+	while(itn->more())
+	{
+		delete itn->next();
+	}
+	delete itn;
+
+	set<SMDS_MeshEdge*>::iterator ite=myEdges.begin();
+	while(ite!=myEdges.end())
+	{
+		delete *ite;
+		ite++;
+	}
+
+	set<SMDS_MeshFace*>::iterator itf=myFaces.begin();
+	while(itf!=myFaces.end())
+	{
+		delete *itf;
+		itf++;
+	}
+
+	set<SMDS_MeshVolume*>::iterator itv=myVolumes.begin();
+	while(itv!=myVolumes.end())
+	{
+		delete *itv;
+		itv++;
+	}
+
+}
+
+bool SMDS_Mesh::hasConstructionEdges()
+{
+	return myHasConstructionEdges;
+}
+
+bool SMDS_Mesh::hasConstructionFaces()
+{
+	return myHasConstructionFaces;
+}
+
+bool SMDS_Mesh::hasInverseElements()
+{
+	return myHasInverseElements;
+}
+
+void SMDS_Mesh::setConstructionEdges(bool b)
+{
+	myHasConstructionEdges=b;
+}
+
+void SMDS_Mesh::setConstructionFaces(bool b)
+{
+	 myHasConstructionFaces=b;
+}
+
+void SMDS_Mesh::setInverseElements(bool b)
+{
+	if(!b) MESSAGE("Error : inverseElement=false not implemented");
+	myHasInverseElements=b;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on nodes of the current mesh. Once used this iterator
+///must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshNode *> * SMDS_Mesh::nodesIterator() const
+{
+	class MyIterator:public SMDS_Iterator<const SMDS_MeshNode*>
+	{
+		const SetOfNodes& mySet;
+		SetOfNodes::iterator myIterator;
+	  public:
+		MyIterator(const SetOfNodes& s):mySet(s)
+		{
+			myIterator=mySet.begin();
+		}
+
+		bool more()
+		{
+			myIterator!=mySet.end();
+		}
+
+		const SMDS_MeshNode* next()
+		{
+			const SMDS_MeshNode* current=*myIterator;
+			myIterator++;
+			return current;	
+		}	
+	};
+	return new MyIterator(myNodes);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on volumes of the current mesh. Once used this iterator
+///must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshEdge *> * SMDS_Mesh::edgesIterator() const
+{
+	class MyIterator:public SMDS_Iterator<const SMDS_MeshEdge*>
+	{
+		const SetOfEdges& mySet;
+		const SMDS_MeshEdge * myEdge;
+		SetOfEdges::iterator myIterator;
+	  public:
+		MyIterator(const SetOfEdges& s):mySet(s)
+		{
+			myIterator=mySet.begin();
+		}
+
+		bool more()
+		{
+			while((myIterator!=mySet.end()))
+			{
+				if((*myIterator)->GetID()!=-1)
+					return true;
+				myIterator++;
+			}
+			return false;
+		}
+
+		const SMDS_MeshEdge* next()
+		{
+			const SMDS_MeshEdge* current=*myIterator;
+			myIterator++;
+			return current;	
+		}	
+	};
+	return new MyIterator(myEdges);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on faces of the current mesh. Once used this iterator
+///must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshFace *> * SMDS_Mesh::facesIterator() const
+{
+	class MyIterator:public SMDS_Iterator<const SMDS_MeshFace*>
+	{
+		const SetOfFaces& mySet;
+		set<SMDS_MeshFace*>::iterator myIterator;
+	  public:
+		MyIterator(const SetOfFaces& s):mySet(s)
+		{
+			myIterator=mySet.begin();
+		}
+
+		bool more()
+		{
+			while((myIterator!=mySet.end()))
+			{
+				if((*myIterator)->GetID()!=-1)
+					return true;
+				myIterator++;
+			}
+			return false;
+		}
+
+		const SMDS_MeshFace* next()
+		{
+			const SMDS_MeshFace* current=*myIterator;
+			myIterator++;
+			return current;	
+		}	
+	};
+	return new MyIterator(myFaces);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on volumes of the current mesh. Once used this iterator
+///must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshVolume *> * SMDS_Mesh::volumesIterator() const
+{
+	class MyIterator:public SMDS_Iterator<const SMDS_MeshVolume*>
+	{
+		const SetOfVolumes& mySet;
+		SetOfVolumes::iterator myIterator;
+	  public:
+		MyIterator(const SetOfVolumes& s):mySet(s)
+		{
+			myIterator=mySet.begin();
+		}
+
+		bool more()
+		{
+			myIterator!=mySet.end();
+		}
+
+		const SMDS_MeshVolume* next()
+		{
+			const SMDS_MeshVolume* current=*myIterator;
+			myIterator++;
+			return current;	
+		}	
+	};
+	return new MyIterator(myVolumes);
 }
 

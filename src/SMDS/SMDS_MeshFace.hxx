@@ -27,92 +27,12 @@
 #ifndef _SMDS_MeshFace_HeaderFile
 #define _SMDS_MeshFace_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_MeshFace_HeaderFile
-#include "Handle_SMDS_MeshFace.hxx"
-#endif
-
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-#ifndef _SMDS_MeshElement_HeaderFile
 #include "SMDS_MeshElement.hxx"
-#endif
-#ifndef _Standard_OStream_HeaderFile
-#include <Standard_OStream.hxx>
-#endif
 
-
-class SMDS_MeshFace : public SMDS_MeshElement {
-
-public:
-
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT virtual  void ComputeKey()  = 0;
-Standard_EXPORT inline   Standard_Integer GetKey() const;
-Standard_EXPORT virtual  Standard_Integer NbEdges() const;
-Standard_EXPORT virtual  void Print(Standard_OStream& OS) const;
-Standard_EXPORT ~SMDS_MeshFace();
-
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_MeshFace_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-Standard_EXPORT SMDS_MeshFace(const Standard_Integer ID,const Standard_Integer NbConnections);
-
-
- // Fields PROTECTED
- //
-Standard_Integer myKey;
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-
-
+class SMDS_MeshFace:public SMDS_MeshElement
+{
+  public:
+	SMDSAbs_ElementType GetType() const;
 };
-
-
-#include "SMDS_MeshFace.lxx"
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
 
 #endif

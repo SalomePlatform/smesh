@@ -27,122 +27,42 @@
 #ifndef _SMDS_MeshNode_HeaderFile
 #define _SMDS_MeshNode_HeaderFile
 
-#ifndef _Standard_HeaderFile
-#include <Standard.hxx>
-#endif
-#ifndef _Handle_SMDS_MeshNode_HeaderFile
-#include "Handle_SMDS_MeshNode.hxx"
-#endif
-
-#ifndef _gp_Pnt_HeaderFile
-#include <gp_Pnt.hxx>
-#endif
-#ifndef _SMDS_ListOfMeshElement_HeaderFile
-#include "SMDS_ListOfMeshElement.hxx"
-#endif
-#ifndef _Handle_SMDS_Position_HeaderFile
-#include "Handle_SMDS_Position.hxx"
-#endif
-#ifndef _SMDS_MeshElement_HeaderFile
 #include "SMDS_MeshElement.hxx"
-#endif
-#ifndef _Standard_Integer_HeaderFile
-#include <Standard_Integer.hxx>
-#endif
-#ifndef _Standard_Real_HeaderFile
-#include <Standard_Real.hxx>
-#endif
-#ifndef _Standard_OStream_HeaderFile
-#include <Standard_OStream.hxx>
-#endif
-#ifndef _Handle_SMDS_MeshElement_HeaderFile
-#include "Handle_SMDS_MeshElement.hxx"
-#endif
-class SMDS_Position;
-class gp_Pnt;
-class SMDS_MeshElement;
-class SMDS_ListOfMeshElement;
+#include "SMDS_Position.hxx"
 
+#include <set>
+using namespace std;
 
-class SMDS_MeshNode : public SMDS_MeshElement {
+class SMDS_MeshNode:public SMDS_MeshElement
+{
 
-public:
+  public:
+	SMDS_MeshNode(double x, double y, double z);
+	void Print(ostream & OS) const;
+	double X() const;
+	double Y() const;
+	double Z() const;
+	void AddInverseElement(const SMDS_MeshElement * ME);
+	void RemoveInverseElement(const SMDS_MeshElement * parent);
+	void ClearInverseElements();
+	bool emptyInverseElements();
+	SMDS_Iterator<const SMDS_MeshElement*> * GetInverseElementIterator() const;	
+	void SetPosition(SMDS_Position * aPos);
+	SMDS_Position *GetPosition();
+	const SMDS_Position *GetPosition() const;
+	SMDSAbs_ElementType GetType() const;
+	int NbNodes() const;
+	void setXYZ(double x, double y, double z);
+	friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
 
-    inline void* operator new(size_t,void* anAddress) 
-      {
-        return anAddress;
-      }
-    inline void* operator new(size_t size) 
-      { 
-        return Standard::Allocate(size); 
-      }
-    inline void  operator delete(void *anAddress) 
-      { 
-        if (anAddress) Standard::Free((Standard_Address&)anAddress); 
-      }
-//    inline void  operator delete(void *anAddress, size_t size) 
-//      { 
-//        if (anAddress) Standard::Free((Standard_Address&)anAddress,size); 
-//      }
- // Methods PUBLIC
- // 
-Standard_EXPORT SMDS_MeshNode(const Standard_Integer ID,const Standard_Real x,const Standard_Real y,const Standard_Real z);
-Standard_EXPORT   void Print(Standard_OStream& OS) const;
-Standard_EXPORT inline   Standard_Integer GetKey() const;
-Standard_EXPORT inline   Standard_Real X() const;
-Standard_EXPORT inline   Standard_Real Y() const;
-Standard_EXPORT inline   Standard_Real Z() const;
-Standard_EXPORT inline   gp_Pnt Pnt() const;
-Standard_EXPORT inline   void SetPnt(const gp_Pnt& P) ;
-Standard_EXPORT inline   void AddInverseElement(const Handle(SMDS_MeshElement)& ME) ;
-Standard_EXPORT   void RemoveInverseElement(const Handle(SMDS_MeshElement)& parent) ;
-Standard_EXPORT inline  const SMDS_ListOfMeshElement& InverseElements() const;
-Standard_EXPORT inline   void ClearInverseElements() ;
-Standard_EXPORT   void SetPosition(const Handle(SMDS_Position)& aPos) ;
-Standard_EXPORT   Handle_SMDS_Position GetPosition() const;
-Standard_EXPORT ~SMDS_MeshNode();
+  protected:
+	SMDS_Iterator<const SMDS_MeshElement *> *
+		elementsIterator(SMDSAbs_ElementType type) const;
 
-
-
-
- // Type management
- //
- Standard_EXPORT friend Handle_Standard_Type& SMDS_MeshNode_Type_();
- Standard_EXPORT const Handle(Standard_Type)& DynamicType() const;
- Standard_EXPORT Standard_Boolean	       IsKind(const Handle(Standard_Type)&) const;
-
-protected:
-
- // Methods PROTECTED
- // 
-
-
- // Fields PROTECTED
- //
-
-
-private: 
-
- // Methods PRIVATE
- // 
-
-
- // Fields PRIVATE
- //
-gp_Pnt myPnt;
-SMDS_ListOfMeshElement myInverseElements;
-Handle_SMDS_Position myPosition;
-
-
+  private:
+	double myX, myY, myZ;
+	SMDS_Position *myPosition;
+	set<const SMDS_MeshElement*> myInverseElements;
 };
-
-
-#include "SMDS_MeshNode.lxx"
-
-
-
-// other inline functions and methods (like "C++: function call" methods)
-//
-
 
 #endif
