@@ -106,6 +106,9 @@ class SMESH_DeviceActor: public vtkLODActor{
 
   virtual void Render(vtkRenderer *, vtkMapper *);
 
+  void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
+  bool IsImplicitFunctionUsed() const{ return myIsImplicitFunctionUsed;}
+
  protected:
   void Init(TVisualObjPtr theVisualObj, vtkImplicitBoolean* theImplicitBoolean);
   void SetUnstructuredGrid(vtkUnstructuredGrid* theGrid);
@@ -117,6 +120,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   EReperesent myRepresentation;
 
   SMESH_ExtractGeometry* myExtractGeometry;
+  bool myIsImplicitFunctionUsed;
 
   vtkMergeFilter* myMergeFilter;
   SALOME_ExtractUnstructuredGrid* myExtractUnstructuredGrid;

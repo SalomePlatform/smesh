@@ -68,6 +68,7 @@
 #include <vtkMath.h>
 #include <vtkPlane.h>
 #include <vtkImplicitBoolean.h>
+#include <vtkImplicitFunctionCollection.h>
 
 #include "utilities.h"
 
@@ -242,7 +243,7 @@ SMESH_ActorDef::SMESH_ActorDef(){
   myBaseActor->myGeomFilter->SetInside(true);
 
   myPickableActor = myBaseActor;
-
+  
   myHighlightProp = vtkProperty::New();
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
@@ -599,7 +600,8 @@ void SMESH_ActorDef::SetPointsLabeled( bool theIsPointsLabeled )
 }
 
 
-void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled){
+void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
+{
   vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
   myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
   if(myIsCellsLabeled){
@@ -818,18 +820,6 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   setName(theName);
 
   myVisualObj = theVisualObj;
-  myNodeActor->myVisualObj = myVisualObj;
-  myBaseActor->myVisualObj = myVisualObj;
-
-  myHighlitableActor->myVisualObj = myVisualObj;
-  myNodeHighlitableActor->myVisualObj = myVisualObj;
-
-  my1DActor->myVisualObj = myVisualObj;
-  my1DExtActor->myVisualObj = myVisualObj;
-
-  my2DActor->myVisualObj = myVisualObj;
-  my3DActor->myVisualObj = myVisualObj;
-
   myVisualObj->Update(theIsClear);
 
   myNodeActor->Init(myVisualObj,myImplicitBoolean);
@@ -1063,7 +1053,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       my3DActor->VisibilityOn();
     }
     
-    if(myIsPointsLabeled){
+    if(myIsPointsLabeled){ 
       myPointLabels->VisibilityOn();
       myNodeActor->VisibilityOn();
     }
@@ -1172,7 +1162,7 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
   case ePoint:
     myPickableActor = myNodeActor;
     myNodeActor->SetVisibility(true);
-
+    
     aProp = aBackProp = myNodeProp;
     aReperesent = SMESH_DeviceActor::ePoint;
     break;
@@ -1456,9 +1446,67 @@ int SMESH_ActorDef::GetObjDimension( const int theObjId )
   return myVisualObj->GetElemDimension( theObjId );
 }
 
+bool
+SMESH_ActorDef::
+IsImplicitFunctionUsed() const
+{
+  return myBaseActor->IsImplicitFunctionUsed();
+}
 
-vtkImplicitBoolean* SMESH_ActorDef::GetPlaneContainer(){
-  return myImplicitBoolean;
+void
+SMESH_ActorDef::
+SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
+{
+  myNodeActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  myBaseActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  
+  myHighlitableActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  myNodeHighlitableActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  
+  my1DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  my1DExtActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  
+  my2DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+  my3DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
+}
+
+vtkIdType 
+SMESH_ActorDef::
+AddClippingPlane(vtkPlane* thePlane)
+{
+  if(thePlane){
+    myImplicitBoolean->GetFunction()->AddItem(thePlane);
+    myCippingPlaneCont.push_back(thePlane);
+    if(!IsImplicitFunctionUsed())
+      SetImplicitFunctionUsed(true);
+  }
+  return myCippingPlaneCont.size();
+}
+
+void
+SMESH_ActorDef::
+RemoveAllClippingPlanes()
+{
+  myImplicitBoolean->GetFunction()->RemoveAllItems();
+  myImplicitBoolean->GetFunction()->Modified(); // VTK bug
+  myCippingPlaneCont.clear();
+  SetImplicitFunctionUsed(false);
+}
+
+vtkIdType
+SMESH_ActorDef::
+GetNumberOfClippingPlanes()
+{
+  return myCippingPlaneCont.size();
+}
+
+vtkPlane* 
+SMESH_ActorDef::
+GetClippingPlane(vtkIdType theID)
+{
+  if(theID >= myCippingPlaneCont.size())
+    return NULL;
+  return myCippingPlaneCont[theID].Get();
 }
 
 

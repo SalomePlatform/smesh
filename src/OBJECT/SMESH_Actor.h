@@ -104,7 +104,10 @@ class SMESH_Actor: public SALOME_Actor
   virtual void SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane) = 0;
   virtual void GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane) = 0;
 
-  virtual vtkImplicitBoolean* GetPlaneContainer() = 0; 
+  virtual void RemoveAllClippingPlanes() = 0; 
+  virtual vtkIdType GetNumberOfClippingPlanes() = 0; 
+  virtual vtkPlane* GetClippingPlane(vtkIdType theID) = 0; 
+  virtual vtkIdType AddClippingPlane(vtkPlane* thePlane) = 0; 
 
   virtual TVisualObjPtr GetObject() = 0;
 
