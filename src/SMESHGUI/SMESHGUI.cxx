@@ -2202,7 +2202,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 					Standard_Boolean res;
 					SMESH_Actor *ac =
 						smeshGUI->FindActorByEntry(IObject->getEntry(), res,
-						true);
+						false);
 					if (res)
 					{
 						smeshGUI->DisplayActor(ac, true);
@@ -4152,6 +4152,11 @@ void SMESHGUI::BuildPresentation(const Handle(SALOME_InteractiveObject) & theIO)
 				// The actor belongs to inactive view -> create a copy and display it in the active view
 				if (!rwInter->isInViewer(IObject))
 				{
+					if(ac->GetMapper()==NULL)
+					{
+						SMESH::SMESH_Mesh_var aMesh = smeshGUI->ConvertIOinMesh(theIO, res);
+						ac=smeshGUI->ReadScript(aMesh);
+					}
 					SMESH_Actor *acCopy = SMESH_Actor::New();
 					acCopy->ShallowCopy(ac);
 					ac = acCopy;
@@ -4200,7 +4205,7 @@ SMESH_Actor *SMESHGUI::ReadScript(SMESH::SMESH_Mesh_ptr aMesh)
 	if (!aMesh->_is_nil())
 	{
 		Standard_Boolean result;
-		MeshActor = FindActor(aMesh, result, true);
+		MeshActor = FindActor(aMesh, result, false);
 		if (result)
 		{
 			SMESH::log_array_var aSeq = aMesh->GetLog(true);
@@ -6052,15 +6057,15 @@ void SMESHGUI::Update(const Handle(SALOME_InteractiveObject) & IO)
 					getActiveStudyFrame()->getRightFrame()->getViewFrame())->
 					getRWInteractor();
 
+				ac = ReadScript(aMesh);
 				// The actor belongs to inactive view -> create a copy and display it in the active view
 				if (!rwInter->isInViewer(IO))
 				{
 					SMESH_Actor *acCopy = SMESH_Actor::New();
 					acCopy->ShallowCopy(ac);
-
-					smeshGUI->DisplayActor(acCopy, false);
+					ac=acCopy;
 				}
-				ac = ReadScript(aMesh);
+
 				if (ac != NULL)
 				{
 #ifdef TRACE
