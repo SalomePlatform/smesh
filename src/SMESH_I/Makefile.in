@@ -57,7 +57,7 @@ CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR
 
 #IDLCXXFLAGS+= -Wbtp
 
-LDFLAGS+=  $(OCC_LIBS) $(HDF5_LIBS) $(MED2_LIBS) -lSMESHimpl -lSalomeContainer -lSalomeNS -lSalomeDS -lRegistry -lSalomeHDFPersist -lOpUtil -lGeometryClient -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriverMED -lSalomeLifeCycleCORBA -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+LDFLAGS+=  $(OCC_LIBS) $(HDF5_LIBS) $(MED2_LIBS) -lSMESHimpl -lSalomeContainer -lSalomeNS -lSalomeDS -lRegistry -lSalomeHDFPersist -lOpUtil -lGEOMClient -lSMESHDS -lSMDS -lMEFISTO2D -lMeshDriverMED -lSalomeLifeCycleCORBA -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
 
 @CONCLUDE@
 
