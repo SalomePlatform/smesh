@@ -26,17 +26,16 @@
 #ifndef _SMDSAbs_ElementType_HeaderFile
 #define _SMDSAbs_ElementType_HeaderFile
 
-enum SMDSAbs_ElementType { 
- SMDSAbs_All,
-SMDSAbs_Node,
-SMDSAbs_Edge,
-SMDSAbs_Face,
-SMDSAbs_Volume
+///////////////////////////////////////////////////////////////////////////////
+/// Type (node, edge, face or volume) of elements
+///////////////////////////////////////////////////////////////////////////////
+enum SMDSAbs_ElementType
+{ 
+	SMDSAbs_All,
+	SMDSAbs_Node,
+	SMDSAbs_Edge,
+	SMDSAbs_Face,
+	SMDSAbs_Volume
 };
-
-
-#ifndef _Standard_PrimitiveTypes_HeaderFile
-#include <Standard_PrimitiveTypes.hxx>
-#endif
 
 #endif
