@@ -196,6 +196,7 @@ void DriverDAT_W_SMESHDS_Mesh::Add()
 		SMDS_Iterator<const SMDS_MeshElement *> * itNodes=elem->nodesIterator();
 		while(itNodes->more())
 			fprintf(myFileId, "%d ", itNodes->next()->GetID());
+		delete itNodes;
 	
 		fprintf(myFileId, "\n");
 	}
@@ -218,7 +219,8 @@ void DriverDAT_W_SMESHDS_Mesh::Add()
 		SMDS_Iterator<const SMDS_MeshElement *> * itNodes=elem->nodesIterator();
 		while(itNodes->more())
 			fprintf(myFileId, "%d ", itNodes->next()->GetID());
-		
+		delete itNodes;	
+
 		fprintf(myFileId, "\n");
 	}
 	delete itVolumes;

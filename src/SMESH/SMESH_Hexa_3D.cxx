@@ -439,6 +439,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
+		delete itf;
 
 		for (int i1 = 0; i1 < nbdown; i1++)
 			for (int j1 = 0; j1 < nbright; j1++)

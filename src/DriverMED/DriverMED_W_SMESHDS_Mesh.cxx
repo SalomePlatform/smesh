@@ -573,12 +573,12 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 				/* allocation memoire */
 				connectivite =
 					(med_int *) malloc(sizeof(med_int) * taille * nmailles[i]);
-				nomele =
+				/* nomele =
 					(char *)malloc(sizeof(char) * MED_TAILLE_PNOM *
-					nmailles[i] + 1);
+					nmailles[i] + 1);*/
+				nomele = "";
 				numele = (med_int *) malloc(sizeof(med_int) * nmailles[i]);
 				nufael = (med_int *) malloc(sizeof(med_int) * nmailles[i]);
-				nomele = "";
 				nbNodes = typmai[i] % 100;
 
 				for (j = 0; j < nmailles[i]; j++)
@@ -637,7 +637,6 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 				/* liberation memoire */
 				free(connectivite);
 				free(numele);
-				free(nomele);
 				free(nufael);
 				MESSAGE(" End " << typmai[i]);
 			}
