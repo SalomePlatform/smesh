@@ -1,0 +1,638 @@
+# This is a Qt message file in .po format.  Each msgid starts with
+# a scope.  This scope should *NOT* be translated - eg. "Foo::Bar"
+# would be translated to "Pub", not "Foo::Pub".
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
+"PO-Revision-Date: YYYY-MM-DD\n"
+"Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+
+
+#-------------------------------------------------------------------------
+# BUTTON
+#-------------------------------------------------------------------------
+
+#Apply
+msgid "SMESH_BUT_APPLY"
+msgstr "&Apply"
+
+#Close
+msgid "SMESH_BUT_CLOSE"
+msgstr "&Close"
+
+#Ok
+msgid "SMESH_BUT_OK"
+msgstr "&Ok"
+
+#Yes
+msgid "SMESH_BUT_YES"
+msgstr "&Yes"
+
+#No
+msgid "SMESH_BUT_NO"
+msgstr "&No"
+
+#Cancel
+msgid "SMESH_BUT_CANCEL"
+msgstr "&Cancel"
+
+
+#-------------------------------------------------------------------------
+# WARNING
+#-------------------------------------------------------------------------
+
+#Warning
+msgid "SMESH_WRN_WARNING"
+msgstr "Warning"
+
+#: SMESHGUI.cxx:465
+msgid "SMESH_REALLY_DELETE"
+msgstr "Do you really want to delete object(s) ?"
+
+#Hypothesis or Algorithm not exists
+msgid "SMESH_WRN_HYPOTHESIS_NOTEXIST"
+msgstr "Hypothesis or Algorithm not exists"
+
+#Hypothesis already exists
+msgid "SMESH_WRN_HYPOTHESIS_ALREADYEXIST"
+msgstr "Hypothesis already exists"
+
+#Algorithm already exists
+msgid "SMESH_WRN_ALGORITHM_ALREADYEXIST"
+msgstr "Algorithm already exists"
+
+#Missing parameters
+msgid "SMESH_WRN_MISSING_PARAMETERS"
+msgstr "Missing parameters"
+
+#Study frame with VTK Viewer must be activated
+msgid "SMESH_WRN_VIEWER_VTK"
+msgstr "Study frame with VTK Viewer must be activated"
+
+#Activate Elements Selection Mode
+msgid "SMESH_WRN_SELECTIONMODE_ELEMENTS"
+msgstr "Activate Elements Selection Mode"
+
+#Activate Nodes Selection Mode
+msgid "SMESH_WRN_SELECTIONMODE_NODES"
+msgstr "Activate Nodes Selection Mode"
+
+#Activate Link Selection Mode
+msgid "SMESH_WRN_SELECTIONMODE_DIAGONAL"
+msgstr "Activate Link Selection Mode"
+
+
+#-------------------------------------------------------------------------
+# MEN
+#-------------------------------------------------------------------------
+
+#SMESH
+msgid "SMESH_MEN_COMPONENT"
+msgstr "SMESH"
+
+#SubMeshes On Vertex
+msgid "SMESH_MEN_SubMeshesOnVertex"
+msgstr "SubMeshes On Vertex"
+
+#SubMeshes On Edge
+msgid "SMESH_MEN_SubMeshesOnEdge"
+msgstr "SubMeshes On Edge"
+
+#SubMeshes On Face
+msgid "SMESH_MEN_SubMeshesOnFace"
+msgstr "SubMeshes On Face"
+
+#SubMeshes On Solid
+msgid "SMESH_MEN_SubMeshesOnSolid"
+msgstr "SubMeshes On Solid"
+
+#SubMeshes On Compound
+msgid "SMESH_MEN_SubMeshesOnCompound"
+msgstr "SubMeshes On Compound"
+
+#Applied Algorithm
+msgid "SMESH_MEN_APPLIED_ALGORIHTMS"
+msgstr "Applied Algorithm"
+
+#Applied Hypothesis
+msgid "SMESH_MEN_APPLIED_HYPOTHESIS"
+msgstr "Applied Hypothesis"
+
+#Hypothesis Definition
+msgid "SMESH_MEN_HYPOTHESIS"
+msgstr "Hypothesis Definition"
+
+#Algorithms Definition
+msgid "SMESH_MEN_ALGORITHMS"
+msgstr "Algorithms Definition"
+
+
+#-------------------------------------------------------------------------
+# DIVERS
+#-------------------------------------------------------------------------
+
+#Arguments
+msgid "SMESH_ARGUMENTS"
+msgstr "Arguments"
+
+#Value
+msgid "SMESH_VALUE"
+msgstr "Value"
+
+#%1_objects
+msgid "SMESH_OBJECTS_SELECTED"
+msgstr "%1_objects"
+
+#Name
+msgid "SMESH_NAME"
+msgstr "Name"
+
+#Geometrical Object
+msgid "SMESH_OBJECT_GEOM"
+msgstr "Geometrical Object"
+
+#Length
+msgid "SMESH_LENGTH"
+msgstr "Length"
+
+#Coordinates
+msgid "SMESH_COORDINATES"
+msgstr "Coordinates"
+
+#X
+msgid "SMESH_X"
+msgstr "X"
+
+#Y
+msgid "SMESH_Y"
+msgstr "Y"
+
+#Z
+msgid "SMESH_Z"
+msgstr "Z"
+
+
+#-------------------------------------------------------------------------
+# DLG
+#-------------------------------------------------------------------------
+
+# -------------- Init --------------
+
+#Mesh
+msgid "SMESH_INIT"
+msgstr "Mesh"
+
+#Mesh or SubMesh
+msgid "SMESH_OBJECT_MESHorSUBMESH"
+msgstr "Mesh or SubMesh"
+
+#Mesh Construction
+msgid "SMESH_INIT_MESH"
+msgstr "Mesh Construction"
+
+#SubMesh Construction
+msgid "SMESH_ADD_SUBMESH"
+msgstr "SubMesh Construction"
+
+#Mesh
+msgid "SMESH_OBJECT_MESH"
+msgstr "Mesh"
+
+#SubMesh
+msgid "SMESH_SUBMESH"
+msgstr "SubMesh"
+
+
+# -------------- Hypothesis / Algorithm --------------
+
+#Hypothesis
+msgid "SMESH_ADD_HYPOTHESIS"
+msgstr "Hypothesis"
+
+#Hypothesis Construction
+msgid "SMESH_ADD_HYPOTHESIS_TITLE"
+msgstr "Hypothesis Assignation"
+
+#Hypothesis
+msgid "SMESH_OBJECT_HYPOTHESIS"
+msgstr "Hypothesis"
+
+#Local Length
+msgid "SMESH_LOCAL_LENGTH_HYPOTHESIS"
+msgstr "Local Length"
+
+#Hypothesis Construction
+msgid "SMESH_LOCAL_LENGTH_TITLE"
+msgstr "Hypothesis Construction"
+
+#Algorithms
+msgid "SMESH_ADD_ALGORITHM"
+msgstr "Algorithms"
+
+#Algorithms Construction
+msgid "SMESH_ADD_ALGORITHM_TITLE"
+msgstr "Algorithms Assignation"
+
+#Algorithm
+msgid "SMESH_OBJECT_ALGORITHM"
+msgstr "Algorithm"
+
+#Number of Segments
+msgid "SMESH_NB_SEGMENTS_HYPOTHESIS"
+msgstr "Number of Segments"
+
+#Hypothesis Construction
+msgid "SMESH_NB_SEGMENTS_TITLE"
+msgstr "Hypothesis Construction"
+
+#Max. Area
+msgid "SMESH_MAX_ELEMENT_AREA"
+msgstr "Max. Area"
+
+#Max. Element Area
+msgid "SMESH_MAX_ELEMENT_AREA_HYPOTHESIS"
+msgstr "Max. Element Area"
+
+#Hypothesis Construction
+msgid "SMESH_MAX_ELEMENT_AREA_TITLE"
+msgstr "Hypothesis Construction"
+
+#Max. Volume
+msgid "SMESH_MAX_ELEMENT_VOLUME"
+msgstr "Max. Volume"
+
+#Max. Element Volume
+msgid "SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS"
+msgstr "Max. Element Volume"
+
+#Hypothesis Construction
+msgid "SMESH_MAX_ELEMENT_VOLUME_TITLE"
+msgstr "Hypothesis Construction"
+
+
+# -------------- Nodes / Segments / Elements --------------
+
+#Node
+msgid "MESH_NODE"
+msgstr "Node"
+
+#Node Construction
+msgid "MESH_NODE_TITLE"
+msgstr "Node Construction"
+
+#Segments
+msgid "SMESH_SEGMENTS"
+msgstr "Segments"
+
+#Elements
+msgid "SMESH_ELEMENTS"
+msgstr "Elements"
+
+#Id Elements
+msgid "SMESH_ID_ELEMENTS"
+msgstr "Id Elements"
+
+#Remove
+msgid "SMESH_REMOVE"
+msgstr "Remove"
+
+#Remove Elements
+msgid "SMESH_REMOVE_ELEMENTS_TITLE"
+msgstr "Remove Elements"
+
+#Id Nodes
+msgid "SMESH_ID_NODES"
+msgstr "Id Nodes"
+
+#Nodes
+msgid "SMESH_NODES"
+msgstr "Nodes"
+
+#Remove Nodes
+msgid "SMESH_REMOVE_NODES_TITLE"
+msgstr "Remove Nodes"
+
+#Move
+msgid "SMESH_MOVE"
+msgstr "Move"
+
+#Move Node
+msgid "SMESH_MOVE_NODES_TITLE"
+msgstr "Move Node"
+
+#Add Triangle
+msgid "SMESH_ADD_TRIANGLE_TITLE"
+msgstr "Add Triangle"
+
+#Add Quadrangle
+msgid "SMESH_ADD_QUADRANGLE_TITLE"
+msgstr "Add Quadrangle"
+
+#Add Edge
+msgid "SMESH_ADD_EDGE_TITLE"
+msgstr "Add Edge"
+
+#Add Tetrahedron
+msgid "SMESH_ADD_TETRAS_TITLE"
+msgstr "Add Tetrahedron"
+
+#Add Hexahedron
+msgid "SMESH_ADD_HEXAS_TITLE"
+msgstr "Add Hexahedron"
+
+#Reverse
+msgid "SMESH_REVERSE"
+msgstr "Reverse"
+
+#Triangle
+msgid "SMESH_TRIANGLE"
+msgstr "Triangle"
+
+#Quadrangle
+msgid "SMESH_QUADRANGLE"
+msgstr "Quadrangle"
+
+#Edge
+msgid "SMESH_EDGE"
+msgstr "Edge"
+
+#Tetrahedron
+msgid "SMESH_TETRAS"
+msgstr "Tetrahedron"
+
+#Hexahedron
+msgid "SMESH_HEXAS"
+msgstr "Hexahedron"
+
+#Add Triangle
+msgid "SMESH_ADD_TRIANGLE"
+msgstr "Add Triangle"
+
+#Add Quadrangle
+msgid "SMESH_ADD_QUADRANGLE"
+msgstr "Add Quadrangle"
+
+#Add Edge
+msgid "SMESH_ADD_EDGE"
+msgstr "Add Edge"
+
+#Add Tetrahedron
+msgid "SMESH_ADD_TETRAS"
+msgstr "Add Tetrahedron"
+
+#Add Hexahedron
+msgid "SMESH_ADD_HEXAS"
+msgstr "Add Hexahedron"
+
+
+# -------------- Transparency --------------
+
+#Opacity
+msgid "SMESH_TRANSPARENCY_OPAQUE"
+msgstr "Opacity"
+
+#Transparency
+msgid "SMESH_TRANSPARENCY_TITLE"
+msgstr "Transparency"
+
+#Fully Transparency
+msgid "SMESH_TRANSPARENCY_TRANSPARENT"
+msgstr "Fully Transparency"
+
+
+# -------------- Preferences -----------
+
+#Arial
+msgid "SMESH_FONT_ARIAL"
+msgstr "Arial"
+
+#Bold
+msgid "SMESH_FONT_BOLD"
+msgstr "Bold"
+
+#Courier
+msgid "SMESH_FONT_COURIER"
+msgstr "Courier"
+
+#Dimensions
+msgid "SMESH_DIMENSIONS"
+msgstr "Dimensions"
+
+#Font
+msgid "SMESH_FONT"
+msgstr "Font"
+
+#Height
+msgid "SMESH_HEIGHT"
+msgstr "Height"
+
+#Horizontal
+msgid "SMESH_HORIZONTAL"
+msgstr "Horizontal"
+
+#Italic
+msgid "SMESH_FONT_ITALIC"
+msgstr "Italic"
+
+#Scalar Bar Preferences
+msgid "SMESH_PREFERENCES_SCALARBAR"
+msgstr "Scalar Bar Preferences"
+
+#Number Of Colors
+msgid "SMESH_NUMBEROFCOLORS"
+msgstr "Number Of Colors"
+
+#Number Of Labels
+msgid "SMESH_NUMBEROFLABELS"
+msgstr "Number Of Labels"
+
+#Orientation
+msgid "SMESH_ORIENTATION"
+msgstr "Orientation"
+
+#Properties
+msgid "SMESH_PROPERTIES"
+msgstr "Properties"
+
+#Shadow
+msgid "SMESH_FONT_SHADOW"
+msgstr "Shadow"
+
+#Times
+msgid "SMESH_FONT_TIMES"
+msgstr "Times"
+
+#Vertical
+msgid "SMESH_VERTICAL"
+msgstr "Vertical"
+
+#Width
+msgid "SMESH_WIDTH"
+msgstr "Width"
+
+
+# -------------- ScalarBar --------------
+
+#Max
+msgid "SMESH_MAX"
+msgstr "Max"
+
+#Min
+msgid "SMESH_MIN"
+msgstr "Min"
+
+#ScalarBar
+msgid "SMESH_SCALARBAR"
+msgstr "ScalarBar"
+
+#Update View
+msgid "SMESH_UPDATEVIEW"
+msgstr "Update View"
+
+
+# -------------- Connectivity --------------
+
+#Boundary Edges
+msgid "SMESH_BOUNDARYEDGES"
+msgstr "Boundary Edges"
+
+#Feature Edges
+msgid "SMESH_FEATUREEDGES"
+msgstr "Feature Edges"
+
+#Manifold Edges
+msgid "SMESH_MANIFOLDEDGES"
+msgstr "Manifold Edges"
+
+#Non Manifold Edges
+msgid "SMESH_NONMANIFOLDEDGES"
+msgstr "Non Manifold Edges"
+
+#Edges Connectivity
+msgid "SMESH_EDGES_CONNECTIVITY"
+msgstr "Edges Connectivity"
+
+#Edges Connectivity
+msgid "SMESH_EDGES_CONNECTIVITY_TITLE"
+msgstr "Edges Connectivity"
+
+#Mesh
+msgid "SMESH_MESH"
+msgstr "Mesh"
+
+#Feature Angle
+msgid "SMESH_FEATUREANGLE"
+msgstr "Feature Angle"
+
+# -------------- Operations --------------
+
+#Change Orientation
+msgid "SMESH_ORIENTATION_ELEMENTS_TITLE"
+msgstr "Change Orientation"
+
+#Id Diagonal
+msgid "SMESH_ID_DIAGONAL"
+msgstr "Id Edges"
+
+#Diagonal Inversion
+msgid "SMESH_DIAGONAL"
+msgstr "Diagonal Inversion"
+
+#Diagonal Inversion
+msgid "SMESH_DIAGONAL_INVERSION_TITLE"
+msgstr "Diagonal Inversion"
+
+
+# -------------- Mesh Infos --------------
+
+#Mesh Infos
+msgid "SMESH_MESHINFO_TITLE"
+msgstr "Mesh Infos"
+
+#Number Of 1D Elements
+msgid "SMESH_MESHINFO_NB1D"
+msgstr "Number Of 1D Elements"
+
+#Number Of 2D Elements
+msgid "SMESH_MESHINFO_NB2D"
+msgstr "Number Of 2D Elements"
+
+#Number Of 3D Elements
+msgid "SMESH_MESHINFO_NB3D"
+msgstr "Number Of 3D Elements"
+
+#Edges :
+msgid "SMESH_MESHINFO_EDGES"
+msgstr "Edges :"
+
+#Nodes :
+msgid "SMESH_MESHINFO_NODES"
+msgstr "Nodes :"
+
+#Triangles :
+msgid "SMESH_MESHINFO_TRIANGLES"
+msgstr "Triangles :"
+
+#Quadrangles :
+msgid "SMESH_MESHINFO_QUADRANGLES"
+msgstr "Quadrangles :"
+
+#Tetrahedrons :
+msgid "SMESH_MESHINFO_TETRAS"
+msgstr "Tetrahedrons :"
+
+#Hexahedrons :
+msgid "SMESH_MESHINFO_HEXAS"
+msgstr "Hexahedrons :"
+
+
+# -------------- Controls --------------
+
+#Length
+msgid "SMESH_CONTROL_LENGTH_EDGES"
+msgstr "Length"
+
+#Area
+msgid "SMESH_CONTROL_AREA_ELEMENTS"
+msgstr "Area"
+
+#Taper
+msgid "SMESH_CONTROL_TAPER_ELEMENTS"
+msgstr "Taper"
+
+#Aspect Ratio
+msgid "SMESH_CONTROL_ASPECTRATIO_ELEMENTS"
+msgstr "Aspect Ratio"
+
+#Minimum Angle
+msgid "SMESH_CONTROL_MINIMUMANGLE_ELEMENTS"
+msgstr "Minimum Angle"
+
+#Warp
+msgid "SMESH_CONTROL_WARP_ELEMENTS"
+msgstr "Warp"
+
+#Skew
+msgid "SMESH_CONTROL_SKEW_ELEMENTS"
+msgstr "Skew"
+
+# -------------- Edit --------------
+
+#Hypotheses Assignation
+msgid "SMESH_EDIT_HYPOTHESES"
+msgstr "Hypotheses Assignation"
+
+#Hypotheses
+msgid "SMESH_HYPOTHESES"
+msgstr "Hypotheses"
+
+#Available
+msgid "SMESH_AVAILABLE"
+msgstr "Available"
+
+#Used
+msgid "SMESH_EDIT_USED"
+msgstr "Used"
+

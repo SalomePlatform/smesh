@@ -1,0 +1,22 @@
+#==============================================================================
+#  File      : Makefile.in
+#  Created   : ven déc  7 13:32:20 CET 2001
+#  Author    : Paul RASCLE, EDF
+#  Project   : SALOME
+#  Copyright : EDF 2001
+#  $Header$
+#==============================================================================
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=..
+srcdir=@srcdir@
+VPATH=.:@srcdir@
+
+@COMMENCE@
+
+SUBDIRS = OBJECT SMDS SMESHDS Driver DriverMED DriverDAT DriverUNV MEFISTO2 \
+	SMESH SMESH_I SMESHFiltersSelection SMESHGUI \
+	SMESH_SWIG
+
+@MODULE@

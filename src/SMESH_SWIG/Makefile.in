@@ -1,0 +1,43 @@
+#  File      : Makefile.in
+#  Created   : Tue Mar 26 15:04:48 2002
+#  Author    : Nicolas REJNERI, Paul RASCLE
+#  Project   : SALOME
+#  Module    : GEOM
+#  Copyright : Open CASCADE, EDF 2002
+#  $Header$
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl
+
+
+@COMMENCE@
+
+# Libraries targets
+
+LIB = libSMESH_Swigcmodule.la
+LIB_SRC = 
+
+SWIG_DEF = libSMESH_Swig.i
+EXPORT_PYSCRIPTS = libSMESH_Swig.py \
+                   SMESH_test0.py SMESH_test1.py SMESH_test2.py SMESH_test3.py SMESH_mechanic.py SMESH_fixation.py batchmode_smesh.py
+
+LIB_CLIENT_IDL = SALOMEDS.idl \
+		 SALOME_Exception.idl \
+		 GEOM_Gen.idl \
+		 GEOM_Shape.idl \
+		 SMESH_Gen.idl \
+		 SMESH_Mesh.idl \
+		 SMESH_Hypothesis.idl \
+		 SMESH_BasicHypothesis.idl \
+		 SALOME_ModuleCatalog.idl \
+		 SALOME_Component.idl \
+		 MED.idl
+
+CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -DHAVE_CONFIG_H
+LIBS+= $(PYTHON_LIBS)
+LDFLAGS+= -lSMESHGUI
+
+@CONCLUDE@

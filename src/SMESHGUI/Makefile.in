@@ -1,0 +1,111 @@
+# -* Makefile *- 
+#
+# Author : Nicolas REJNERI
+# Date   : Sun May 05 11:45:40 2002
+# $Header$
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=../..
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/salome:${MED_ROOT_DIR}/idl/salome
+
+
+@COMMENCE@
+
+# header files 
+EXPORT_HEADERS= SMESHGUI_Swig.hxx \
+		SMESHGUI_Swig.i
+
+# .po files to transform in .qm
+PO_FILES = \
+	   SMESH_icons.po \
+	   SMESH_msg_en.po
+
+# Libraries targets
+LIB = libSMESHGUI.la
+LIB_SRC =	SMESHGUI.cxx \
+		SMESHGUI_StudyAPI.cxx \
+		SMESHGUI_SpinBox.cxx \
+		SMESHGUI_NodesDlg.cxx \
+		SMESHGUI_AddHypothesisDlg.cxx \
+		SMESHGUI_AddAlgorithmDlg.cxx \
+		SMESHGUI_InitMeshDlg.cxx \
+		SMESHGUI_AddSubMeshDlg.cxx \
+		SMESHGUI_LocalLengthDlg.cxx \
+		SMESHGUI_NbSegmentsDlg.cxx \
+		SMESHGUI_TransparencyDlg.cxx \
+		SMESHGUI_RemoveNodesDlg.cxx \
+		SMESHGUI_RemoveElementsDlg.cxx \
+		SMESHGUI_MeshInfosDlg.cxx \
+		SMESHGUI_Preferences_ColorDlg.cxx \
+		SMESHGUI_MaxElementAreaDlg.cxx \
+		SMESHGUI_Preferences_ScalarBarDlg.cxx \
+		SMESHGUI_EditScalarBarDlg.cxx \
+		SMESHGUI_aParameterDlg.cxx \
+		SMESHGUI_MaxElementVolumeDlg.cxx \
+		SMESHGUI_Swig.cxx \
+		SMESHGUI_ComputeScalarValue.cxx \
+		SMESHGUI_MoveNodesDlg.cxx \
+		SMESHGUI_OrientationElementsDlg.cxx \
+		SMESHGUI_DiagonalInversionDlg.cxx \
+		SMESHGUI_EdgesConnectivityDlg.cxx \
+		SMESHGUI_AddFaceDlg.cxx \
+		SMESHGUI_AddVolumeDlg.cxx \
+		SMESHGUI_AddEdgeDlg.cxx \
+		SMESHGUI_EditHypothesesDlg.cxx
+
+LIB_MOC = \
+		SMESHGUI.h \
+		SMESHGUI_NodesDlg.h \
+		SMESHGUI_SpinBox.h \
+		SMESHGUI_AddHypothesisDlg.h \
+		SMESHGUI_AddAlgorithmDlg.h \
+		SMESHGUI_InitMeshDlg.h \
+		SMESHGUI_AddSubMeshDlg.h \
+		SMESHGUI_LocalLengthDlg.h \
+		SMESHGUI_NbSegmentsDlg.h \
+		SMESHGUI_TransparencyDlg.h \
+		SMESHGUI_RemoveNodesDlg.h \
+		SMESHGUI_RemoveElementsDlg.h \
+		SMESHGUI_MeshInfosDlg.h \
+		SMESHGUI_Preferences_ColorDlg.h \
+		SMESHGUI_MaxElementAreaDlg.h \
+		SMESHGUI_Preferences_ScalarBarDlg.h \
+		SMESHGUI_EditScalarBarDlg.h \
+		SMESHGUI_aParameterDlg.h \
+		SMESHGUI_MaxElementVolumeDlg.h \
+		SMESHGUI_MoveNodesDlg.h \
+		SMESHGUI_OrientationElementsDlg.h \
+		SMESHGUI_DiagonalInversionDlg.h \
+		SMESHGUI_EdgesConnectivityDlg.h \
+		SMESHGUI_AddEdgeDlg.h \
+		SMESHGUI_AddVolumeDlg.h \
+		SMESHGUI_AddFaceDlg.h \
+		SMESHGUI_EditHypothesesDlg.h
+
+LIB_CLIENT_IDL = SALOME_Exception.idl \
+		 GEOM_Gen.idl \
+		 GEOM_Shape.idl \
+		 SMESH_Gen.idl \
+		 SMESH_Mesh.idl \
+		 SMESH_Hypothesis.idl \
+		 SMESH_BasicHypothesis.idl \
+		 SALOMEDS.idl \
+		 SALOMEDS_Attributes.idl \
+		 SALOME_ModuleCatalog.idl \
+		 SALOME_Component.idl \
+		 MED.idl
+
+LIB_SERVER_IDL = 
+
+# additionnal information to compil and link file
+
+CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+#$(OCC_CXXFLAGS)
+
+LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGeometryClient -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV $(OCC_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome
+
+@CONCLUDE@
