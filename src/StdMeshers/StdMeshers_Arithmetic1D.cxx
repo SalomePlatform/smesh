@@ -94,7 +94,7 @@ double StdMeshers_Arithmetic1D::GetLength(bool isStartLength) const
 
 ostream & StdMeshers_Arithmetic1D::SaveTo(ostream & save)
 {
-  save << _begLength << _endLength;
+  save << _begLength << " " << _endLength;
   return save;
 }
 

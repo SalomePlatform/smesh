@@ -98,7 +98,7 @@ double StdMeshers_StartEndLength::GetLength(bool isStartLength) const
 
 ostream & StdMeshers_StartEndLength::SaveTo(ostream & save)
 {
-  save << _begLength << _endLength;
+  save << _begLength << " " <<_endLength;
   return save;
 }
 
