@@ -21,7 +21,7 @@ doc:
 	mv -f doxyfile1 doxyfile; \
 	$(doxygen) ./doxyfile; \
 	cd ..; \
-	cp -f $(srcdir)/INPUT/sources/doxygen.css ./html/doxygen.css
+	cp -fr $(srcdir)/INPUT/sources/static/*.* ./html/
 	cp -fr $(srcdir)/INPUT/sources/ html/
 	cp -fr $(srcdir)/INPUT/HTML/  html/
 
