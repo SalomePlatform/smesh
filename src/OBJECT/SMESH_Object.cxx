@@ -32,6 +32,12 @@
 
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
+#include <vtkCell.h>
+#include <vtkIdList.h>
+#include <vtkIntArray.h>
+#include <vtkCellArray.h>
+#include <vtkUnsignedCharArray.h>
+
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridWriter.h>
 #include <vtkUnstructuredGridReader.h>
@@ -54,7 +60,7 @@ using namespace std;
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;
 #else
 static int MYDEBUG = 0;
@@ -66,7 +72,9 @@ void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName
   vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
   aWriter->SetFileName(theFileName);
   aWriter->SetInput(theGrid);
-  aWriter->Write();
+  if(theGrid->GetNumberOfCells()){
+    aWriter->Write();
+  }
   aWriter->Delete();
 }
 
@@ -405,8 +413,8 @@ void SMESH_VisualObj::buildNodePrs()
   myGrid->SetCells( 0, 0, 0 );
 
   // Create cells
-
-  /*vtkIdList *anIdList = vtkIdList::New();
+  /*
+  vtkIdList *anIdList = vtkIdList::New();
   anIdList->SetNumberOfIds( 1 );
 
   vtkCellArray *aCells = vtkCellArray::New();
@@ -436,7 +444,8 @@ void SMESH_VisualObj::buildNodePrs()
   aCellLocationsArray->Delete();
   aCellTypesArray->Delete();
   aCells->Delete();
-  anIdList->Delete(); */
+  anIdList->Delete(); 
+  */
 }
 
 //=================================================================================
@@ -547,6 +556,48 @@ void SMESH_VisualObj::buildElemPrs()
   anIdList->Delete();
 }
 
+//=================================================================================
+// function : GetEdgeNodes
+// purpose  : Retrieve ids of nodes from edge of elements ( edge is numbered from 1 )
+//=================================================================================
+bool SMESH_VisualObj::GetEdgeNodes( const int theElemId,
+                                    const int theEdgeNum,
+                                    int&      theNodeId1,
+                                    int&      theNodeId2 ) const
+{
+  const SMDS_Mesh* aMesh = GetMesh();
+  if ( aMesh == 0 )
+    return false;
+    
+  const SMDS_MeshElement* anElem = aMesh->FindElement( theElemId );
+  if ( anElem == 0 )
+    return false;
+    
+  int nbNodes = anElem->NbNodes();
+
+  if ( theEdgeNum < 1 || theEdgeNum > 4 || nbNodes != 3 && nbNodes != 4 || theEdgeNum > nbNodes )
+    return false;
+
+  int anIds[ nbNodes ];
+  SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
+  int i = 0;
+  while( anIter->more() )
+    anIds[ i++ ] = anIter->next()->GetID();
+
+  if ( nbNodes != theEdgeNum )
+  {
+    theNodeId1 = anIds[ theEdgeNum - 1 ];
+    theNodeId2 = anIds[ theEdgeNum ];
+  }
+  else
+  {
+    theNodeId1 = anIds[ nbNodes - 1 ];
+    theNodeId2 = anIds[ 0 ];
+  }
+
+  return true;
+}
+
 /*
   Class       : SMESH_MeshObj
   Description : Class for visualisation of mesh
@@ -622,16 +673,51 @@ void SMESH_MeshObj::Update( int theIsClear )
           for( ; anElemId < aNbElems; anElemId++ )
             myMesh->RemoveElement( FindElement( myMesh, anIndexes[anElemId] ) );
         break;
+
+        case SMESH::MOVE_NODE:
+          for(CORBA::Long aCoordId=0; anElemId < aNbElems; anElemId++, aCoordId+=3)
+          {
+            SMDS_MeshNode* node =
+              const_cast<SMDS_MeshNode*>( FindNode( myMesh, anIndexes[anElemId] ));
+            node->setXYZ( aCoords[aCoordId], aCoords[aCoordId+1], aCoords[aCoordId+2] );
+          }
+        break;
+
+        case SMESH::CHANGE_ELEMENT_NODES:
+          for ( CORBA::Long i = 0; anElemId < aNbElems; anElemId++ )
+          {
+            // find element
+            const SMDS_MeshElement* elem = FindElement( myMesh, anIndexes[i++] );
+            // nb nodes
+            int nbNodes = anIndexes[i++];
+            // nodes
+            ASSERT( nbNodes < 9 );
+            const SMDS_MeshNode* aNodes[ 8 ];
+            for ( int iNode = 0; iNode < nbNodes; iNode++ )
+              aNodes[ iNode ] = FindNode( myMesh, anIndexes[i++] );
+            // change
+            myMesh->ChangeElementNodes( elem, aNodes, nbNodes );
+          }
+          break;
+
+        case SMESH::RENUMBER:
+          for(CORBA::Long i=0; anElemId < aNbElems; anElemId++, i+=3)
+          {
+            myMesh->Renumber( anIndexes[i], anIndexes[i+1], anIndexes[i+2] );
+          }
+          break;
+          
+        default:;
       }
     }
   }
   catch ( SALOME::SALOME_Exception& exc )
   {
-    INFOS("Follow exception was cought:\n\t"<<exc.details.text);
+    INFOS("Following exception was cought:\n\t"<<exc.details.text);
   }
   catch( const std::exception& exc)
   {
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
+    INFOS("Following exception was cought:\n\t"<<exc.what());
   }
   catch(...)
   {
@@ -745,9 +831,9 @@ int SMESH_MeshObj::GetEntities( const SMESH::ElementType theType, TEntityList& t
 // function : UpdateFunctor
 // purpose  : Update functor in accordance with current mesh
 //=================================================================================
-void SMESH_MeshObj::UpdateFunctor( SMESH::Functor_ptr f )
+void SMESH_MeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor )
 {
-  f->SetMesh( myMeshServer );
+  theFunctor->SetMesh( GetMesh() );
 }
 
 //=================================================================================
@@ -793,13 +879,13 @@ int SMESH_SubMeshObj::GetElemDimension( const int theObjId )
 // function : UpdateFunctor
 // purpose  : Update functor in accordance with current mesh
 //=================================================================================
-void SMESH_SubMeshObj::UpdateFunctor( SMESH::Functor_ptr f )
+void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor )
 {
-  f->SetMesh( myMeshObj->GetMeshServer() );
+  theFunctor->SetMesh( myMeshObj->GetMesh() );
 }
 
 //=================================================================================
-// function : UpdateFunctor
+// function : Update
 // purpose  : Update mesh object and fill grid with new values 
 //=================================================================================
 void SMESH_SubMeshObj::Update( int theIsClear )
@@ -818,10 +904,10 @@ void SMESH_SubMeshObj::Update( int theIsClear )
 // function : SMESH_GroupObj
 // purpose  : Constructor
 //=================================================================================
-SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_Group_ptr theGroup, 
-                                SMESH_MeshObj*         theMeshObj )
+SMESH_GroupObj::SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr theGroup, 
+                                SMESH_MeshObj*             theMeshObj )
 : SMESH_SubMeshObj( theMeshObj ),
-  myGroupServer( SMESH::SMESH_Group::_duplicate(theGroup) )
+  myGroupServer( SMESH::SMESH_GroupBase::_duplicate(theGroup) )
 {
   if ( MYDEBUG ) MESSAGE("SMESH_GroupObj - theGroup->_is_nil() = "<<theGroup->_is_nil());
   myGroupServer->Register();
@@ -964,7 +1050,7 @@ int SMESH_subMeshObj::GetNbEntities( const SMESH::ElementType theType) const
   {
     case SMESH::NODE:
     {
-      return mySubMeshServer->GetNumberOfNodes();
+      return mySubMeshServer->GetNumberOfNodes( false );
     }
     break;
     case SMESH::EDGE:

@@ -28,6 +28,8 @@
 
 #include "SMDS_MeshIDFactory.hxx"
 
+using namespace std;
+
 //=======================================================================
 //function : SMDS_MeshIDFactory
 //purpose  : 

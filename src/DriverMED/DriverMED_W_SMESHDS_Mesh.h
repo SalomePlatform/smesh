@@ -27,33 +27,24 @@
 #ifndef _INCLUDE_DRIVERMED_W_SMESHDS_MESH
 #define _INCLUDE_DRIVERMED_W_SMESHDS_MESH
 
-#include "SMESHDS_Mesh.hxx"
-#include "Mesh_Writer.h"
+#include "Driver_SMESHDS_Mesh.h"
 
 #include <string>
 #include <list>
 #include <map>
 
-extern "C"
-{
-#include <med.h>
-}
-
-using namespace std;
-
-class SMESHDS_Group;
+class SMESHDS_Mesh;
+class SMESHDS_GroupBase;
 class SMESHDS_SubMesh;
 
-class DriverMED_W_SMESHDS_Mesh:public Mesh_Writer
+class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
   public:
 
   DriverMED_W_SMESHDS_Mesh();
-  ~DriverMED_W_SMESHDS_Mesh();
 
   /*! sets file name; only for usage with Add(), not Write()
    */
-  void SetFile(string);
   void AddGroupOfNodes();
   void AddGroupOfEdges();
   void AddGroupOfFaces();
@@ -61,36 +52,27 @@ class DriverMED_W_SMESHDS_Mesh:public Mesh_Writer
 
   /*! functions to prepare adding one mesh
    */
-  void SetMesh(SMDS_Mesh * aMesh);
-  void SetMeshId(int);
-  void SetMeshName(string theMeshName);
-  void AddGroup(SMESHDS_Group* theGroup);
+  void SetMeshName(const std::string& theMeshName);
+  void AddGroup(SMESHDS_GroupBase * theGroup);
   void AddAllSubMeshes();
   void AddSubMesh(SMESHDS_SubMesh* theSubMesh, int theID);
 
   /*! add one mesh
    */
-  void Add();
-
-  /*! functions to write via DriverMED_W_SMDS_Mesh (no groups)
-   */
-  void SetFileId(med_idt);
-  void Write();
+  virtual Status Perform();
 
  private:
 
-  SMDS_Mesh * myMesh;
-  string myFile;
-  med_idt myFileId;
-  int myMeshId;
-  string myMeshName;
-  list<SMESHDS_Group*> myGroups;
+  std::string myMeshName;
+  std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
-  map<int,SMESHDS_SubMesh*> mySubMeshes;
+  std::map<int,SMESHDS_SubMesh*> mySubMeshes;
   bool myDoGroupOfNodes;
   bool myDoGroupOfEdges;
   bool myDoGroupOfFaces;
   bool myDoGroupOfVolumes;
 };
+
+
 #endif
 

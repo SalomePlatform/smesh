@@ -26,10 +26,16 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_RemoveElementsDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_IdValidator.h"
+#include "SMESH_Actor.h"
+#include "SMDS_Mesh.hxx"
+
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
@@ -49,6 +55,7 @@ using namespace std;
 #include <qimage.h>
 #include <qpixmap.h>
 
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_RemoveElementsDlg()
@@ -145,6 +152,7 @@ SMESHGUI_RemoveElementsDlg::SMESHGUI_RemoveElementsDlg( QWidget* parent, const c
     SelectButtonC1A1->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
+    LineEditC1A1->setValidator( new SMESHGUI_IdValidator( this, "validator" ));
     GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
     SMESHGUI_RemoveElementsDlgLayout->addWidget( GroupC1, 1, 0 );
 
@@ -172,10 +180,13 @@ void SMESHGUI_RemoveElementsDlg::Init( SALOME_Selection* Sel )
   myConstructorId = 0 ;
   Constructor1->setChecked( TRUE );
   myEditCurrentArgument = LineEditC1A1 ;	
+
   mySelection = Sel;  
-  this->myOkElements = false ;
+  myNbOkElements = false ;
   mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+  myActor = 0;
+  myBusy = false;
 
   /* signals and slots connections */
   connect( buttonOk, SIGNAL( clicked() ),     this, SLOT( ClickOnOk() ) );
@@ -188,6 +199,8 @@ void SMESHGUI_RemoveElementsDlg::Init( SALOME_Selection* Sel )
   connect( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
   /* to close dialog if study change */
   connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
+  connect( myEditCurrentArgument, SIGNAL( textChanged( const QString& )),
+           SLOT( onTextChange( const QString& )));
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
@@ -195,7 +208,9 @@ void SMESHGUI_RemoveElementsDlg::Init( SALOME_Selection* Sel )
   this->move( x, y ) ;
   this->show() ; /* displays Dialog */
 
-  return ;
+  QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
+
+  SelectionIntoArgument();
 }
 
 
@@ -215,18 +230,33 @@ void SMESHGUI_RemoveElementsDlg::ConstructorsClicked(int constructorId)
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::ClickOnApply()
 {
-  switch(myConstructorId)
-    { 
-    case 0 :
-      { 
-	if(myOkElements) {	  
-	  mySMESHGUI->RemoveElements( myMesh, myMapIndex ) ;
-	  mySelection->ClearIObjects();
-	}
-	break ;
-      }
+  if (mySMESHGUI->ActiveStudyLocked())
+    return;
+  if ( myNbOkElements ) {
+    QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text(), false);
+    SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
+    anArrayOfIdeces->length( aListId.count() );
+    for ( int i = 0; i < aListId.count(); i++ )
+      anArrayOfIdeces[i] = aListId[ i ].toInt();
+
+    bool aResult = false;
+    try
+    {
+      SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+      aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.inout()) ;
     }
-  return ;
+    catch( ... )
+    {
+    }
+
+    if ( aResult )
+    {
+      Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+      mySelection->ClearIObjects();
+      SMESH::UpdateView();
+      mySelection->AddIObject( anIO, false );
+    }
+  }
 }
 
 //=================================================================================
@@ -247,6 +277,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
 {
+  mySelection->ClearIObjects();
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
@@ -255,39 +286,102 @@ void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
 }
 
 
+//=======================================================================
+//function : onTextChange
+//purpose  : 
+//=======================================================================
+
+void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
+{
+  if ( myBusy ) return;
+  myBusy = true;
+
+  myNbOkElements = 0;
+
+  buttonOk->setEnabled( false );
+  buttonApply->setEnabled( false );
+
+  // hilight entered elements
+  SMDS_Mesh* aMesh = 0;
+  if ( myActor )
+    aMesh = myActor->GetObject()->GetMesh();
+  if ( aMesh ) {
+
+    mySelection->ClearIObjects();
+    mySelection->AddIObject( myActor->getIO() );
+
+    QStringList aListId = QStringList::split( " ", theNewText, false);
+    for ( int i = 0; i < aListId.count(); i++ ) {
+      const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
+      if ( e ) {
+        if ( !mySelection->IsIndexSelected( myActor->getIO(), e->GetID() ))
+          mySelection->AddOrRemoveIndex (myActor->getIO(), e->GetID(), true);
+        myNbOkElements++;
+      }
+    }
+
+    if ( myNbOkElements ) {
+      buttonOk->setEnabled( true );
+      buttonApply->setEnabled( true );
+    }
+  }
+
+  myBusy = false;
+}
+
 //=================================================================================
 // function : SelectionIntoArgument()
 // purpose  : Called when selection as changed or other case
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
 {
-  myEditCurrentArgument->setText("") ;
-  myOkElements = false;
-  QString aString = "";
+  if ( myBusy ) return;
+
+  // clear
+
+  myNbOkElements = false;
+  myActor = 0;
+
+  myBusy = true;
+  myEditCurrentArgument->setText( "" );
+  myBusy = false;
+
+  if ( !GroupButtons->isEnabled() ) // inactive
+    return;
+
+  buttonOk->setEnabled( false );
+  buttonApply->setEnabled( false );
+
+  // get selected mesh
 
   int nbSel = mySelection->IObjectCount();
   if(nbSel != 1)
     return;
 
-  int nbElements = mySMESHGUI->GetNameOfSelectedElements(mySelection, aString) ;
-  if(nbElements < 1)
-    return ;
-  
-  if ( mySelection->SelectionMode() != CellSelection ) {
-    QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_ELEMENTS"), tr ("SMESH_BUT_OK") );
+  myMesh = SMESH::GetMeshByIO( mySelection->firstIObject() );
+  if ( myMesh->_is_nil() )
     return;
-  }
 
-  myEditCurrentArgument->setText(aString) ;
-  Standard_Boolean res;
-  myMesh = mySMESHGUI->ConvertIOinMesh( mySelection->firstIObject(), res );
-  if (!res)
+  myActor = SMESH::FindActorByEntry( mySelection->firstIObject()->getEntry() );
+  if ( !myActor )
+    return;
+
+  // get selected nodes
+
+  QString aString = "";
+  int nbElems = SMESH::GetNameOfSelectedElements(mySelection, aString) ;
+  if(nbElems < 1)
     return ;
+  myBusy = true;
+  myEditCurrentArgument->setText( aString );
+  myBusy = false;
 
-  mySelection->GetIndex( mySelection->firstIObject(), myMapIndex);
-  myOkElements = true ;
-  return ;
+  // OK
+
+  myNbOkElements = nbElems;
+
+  buttonOk->setEnabled( true );
+  buttonApply->setEnabled( true );
 }
 
 
@@ -336,10 +430,12 @@ void SMESHGUI_RemoveElementsDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog() ;   
+
   GroupConstructors->setEnabled(true) ;
   GroupC1->setEnabled(true) ;
   GroupButtons->setEnabled(true) ;
-  return ;
+
+  QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
 }
 
 
@@ -349,10 +445,8 @@ void SMESHGUI_RemoveElementsDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::enterEvent(QEvent* e)
 {
-  if ( GroupConstructors->isEnabled() )
-    return ;  
-  ActivateThisDialog() ;
-  return ;
+  if ( !GroupConstructors->isEnabled() )
+    ActivateThisDialog() ;
 }
 
 
@@ -367,4 +461,13 @@ void SMESHGUI_RemoveElementsDlg::closeEvent( QCloseEvent* e )
   return ;
 }
 
+//=======================================================================
+//function : hideEvent
+//purpose  : caused by ESC key
+//=======================================================================
 
+void SMESHGUI_RemoveElementsDlg::hideEvent ( QHideEvent * e )
+{
+  if ( !isMinimized() )
+    ClickOnCancel();
+}

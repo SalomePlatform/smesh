@@ -41,17 +41,19 @@ EXPORT_HEADERS= DriverDAT_R_SMDS_Mesh.h DriverDAT_R_SMESHDS_Mesh.h DriverDAT_R_S
 LIB = libMeshDriverDAT.la
 LIB_SRC = DriverDAT_R_SMDS_Mesh.cxx DriverDAT_R_SMESHDS_Mesh.cxx DriverDAT_R_SMESHDS_Document.cxx DriverDAT_W_SMDS_Mesh.cxx DriverDAT_W_SMESHDS_Mesh.cxx DriverDAT_W_SMESHDS_Document.cxx 
 
+# Executables targets
+BIN = DAT_Test
+
 LIB_CLIENT_IDL =
 
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(MED2_LIBS) -lMeshDriver
+CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+LDFLAGS  += -lMeshDriver
 
-%_moc.cxx: %.h
-	$(MOC) $< -o $@
+LDFLAGSFORBIN += -lMeshDriver -lSMDS -L${KERNEL_ROOT_DIR}/lib/salome -lOpUtil -lSALOMELocalTrace
 
 @CONCLUDE@
 

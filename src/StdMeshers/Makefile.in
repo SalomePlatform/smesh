@@ -35,9 +35,13 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 # header files  
 EXPORT_HEADERS = \
-	StdMeshers_LengthFromEdges.hxx \
 	StdMeshers_LocalLength.hxx \
+	StdMeshers_StartEndLength.hxx \
+	StdMeshers_Arithmetic1D.hxx \
 	StdMeshers_NumberOfSegments.hxx \
+	StdMeshers_Deflection1D.hxx \
+	StdMeshers_Propagation.hxx \
+	StdMeshers_LengthFromEdges.hxx \
 	StdMeshers_MaxElementArea.hxx \
 	StdMeshers_MaxElementVolume.hxx \
 	StdMeshers_NotConformAllowed.hxx \
@@ -53,11 +57,15 @@ EXPORT_PYSCRIPTS =
 LIB = libStdMeshers.la
 
 LIB_SRC = \
-	StdMeshers_LengthFromEdges.cxx \
 	StdMeshers_LocalLength.cxx \
+	StdMeshers_StartEndLength.cxx \
+	StdMeshers_Arithmetic1D.cxx \
+	StdMeshers_NumberOfSegments.cxx \
+	StdMeshers_Deflection1D.cxx \
+	StdMeshers_Propagation.cxx \
+	StdMeshers_LengthFromEdges.cxx \
 	StdMeshers_MaxElementArea.cxx \
 	StdMeshers_MaxElementVolume.cxx \
-	StdMeshers_NumberOfSegments.cxx \
 	StdMeshers_NotConformAllowed.cxx \
 	StdMeshers_Regular_1D.cxx \
 	StdMeshers_Quadrangle_2D.cxx \

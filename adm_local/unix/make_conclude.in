@@ -1,0 +1,346 @@
+#=======================================================================
+# This section of this makefile comes from the file 
+# 'adm/unix/make_conclude' which was generated with config.status
+# from file adm/unix/make_conclude.in
+#=======================================================================
+# -* Makefile *- 
+#
+# Authors : Patrick GOLDBRONN (CEA) - Marc Tajchman (CEA)
+# Date : 6/07/2001
+# $Header$
+#
+
+# ORB Specifics rules
+@CORBA@
+
+# transform idl reference in appropriate obj file
+LIB_CLIENT_SRC = $(LIB_CLIENT_IDL:%.idl=%$(IDL_CLN_CXX))
+LIB_SERVER_SRC = $(LIB_SERVER_IDL:%.idl=%$(IDL_SRV_CXX))
+LIB_MOC_SRC = $(LIB_MOC:%.h=%_moc.cxx)
+LIB_SRC+=$(LIB_MOC_SRC)
+LIB_SWIG_SRC = $(SWIG_DEF:%.i=%_wrap.cxx)
+LIB_DEP= $(LIB_SRC) $(LIB_CLIENT_SRC) $(LIB_SERVER_SRC) $(LIB_SWIG_SRC)
+ 
+LIB_CLIENT_OBJ = $(LIB_CLIENT_IDL:%.idl=%$(IDL_CLN_OBJ))
+LIB_SERVER_OBJ = $(LIB_SERVER_IDL:%.idl=%$(IDL_SRV_OBJ))
+
+ 
+# transform c file in appropriate libtool obj file (.c, .cc and .cxx)
+LIB_OBJ_C   = $(patsubst %.c,   %.lo, $(filter %.c, $(LIB_SRC))) 
+LIB_OBJ_CC  = $(patsubst %.cc,  %.lo, $(filter %.cc, $(LIB_SRC))) 
+LIB_OBJ_CXX = $(patsubst %.cxx, %.lo, $(filter %.cxx, $(LIB_SRC))) 
+LIB_SWIG_OBJ = $(LIB_SWIG_SRC:%.cxx=%.lo)
+LIB_OBJ_F    = $(patsubst %.f,   %.lo, $(filter %.f, $(LIB_SRC))) 
+
+# all libtool obj file in library
+LIB_OBJ = $(LIB_OBJ_CXX) $(LIB_OBJ_CC) $(LIB_OBJ_C) $(LIB_CLIENT_OBJ:%.o=%.lo) $(LIB_SERVER_OBJ:%.o=%.lo) $(LIB_SWIG_OBJ) $(LIB_OBJ_F)
+
+# LIB_BUILD = $(LIB:%.la=$(top_builddir)/lib/salome/%.la)
+LIB_BUILD = $(patsubst %.la, $(top_builddir)/lib/salome/%.la, $(filter %.la, $(LIB)))
+LIB_BUILD_A = $(patsubst %.a, $(top_builddir)/lib/salome/%.a, $(filter %.a, $(LIB)))
+
+ifneq ($(findstring cmodule.la,$(filter %.la, $(LIB))),)
+LIB_SWIG = $(patsubst %cmodule.la,%.so, $(filter %.la, $(LIB)))
+else
+LIB_SWIG = 
+endif
+
+lib: $(LIB_BUILD) $(LIB_CLIENT_PY)
+# we don't build static library !
+
+$(LIB_BUILD): $(top_builddir)/lib/salome/%.la: %.la
+	-$(RM) $@
+	-$(RM) $(patsubst %.la, %.so, $@)
+	-$(RM) $(patsubst %.la, %.a, $@)
+	ln -sf $(CURDIR)/$< $@ || true
+	ln -sf $(patsubst %.la, %.so, $(CURDIR)/.libs/$<) \
+	      $(patsubst %.la, %.so, $@) || true
+	ln -sf $(patsubst %.la, %.so, $(CURDIR)/.libs/$<).0 \
+	      $(patsubst %.la, %.so, $@).0 || true
+
+	if ! test -z $(LIB_SWIG) ; then \
+	   ln -sf $(patsubst %.la,%.so, $(CURDIR)/.libs/$<) $(top_builddir)/lib/salome/_$(LIB_SWIG) || true;\
+	fi;
+
+$(LIB_BUILD_A): $(top_builddir)/lib/salome/%.a: %.a
+	-$(RM) $@
+	ln -sf $(CURDIR)/$< $@ || true
+
+$(LIB): $(LIB_OBJ)
+	@$(LT) --mode=link $(CXX) -rpath $(libdir) -o $@ $(CXXFLAGS) $(LIB_OBJ) $(LDFLAGS) $(LIBS)
+
+# transform idl reference in appropriate obj file
+BIN_CLIENT_SRC = $(BIN_CLIENT_IDL:%.idl=%$(IDL_CLN_CXX))
+BIN_SERVER_SRC = $(BIN_SERVER_IDL:%.idl=%$(IDL_SRV_CXX))
+BIN_MOC_SRC = $(BIN_MOC:%.h=%_moc.cxx)
+BIN_SRC+=$(BIN_MOC_SRC)
+BIN_DEP=$(BIN:%=%.cxx) $(BIN_SRC) $(BIN_CLIENT_SRC) $(BIN_SERVER_SRC)
+
+BIN_CLIENT_OBJ = $(BIN_CLIENT_IDL:%.idl=%$(IDL_CLN_OBJ))
+BIN_SERVER_OBJ = $(BIN_SERVER_IDL:%.idl=%$(IDL_SRV_OBJ)) 
+# transform c file in appropriate libtool obj file (.c)
+BIN_OBJ_C =  $(patsubst %.c,  %.o, $(filter %.c, $(BIN_SRC)))
+# transform c++ file in appropriate libtool obj file (.cc and .cxx)
+BIN_OBJ_CC = $(patsubst %.cc,  %.o, $(filter %.cc, $(BIN_SRC)))
+BIN_OBJ_CXX = $(patsubst %.cxx,  %.o, $(filter %.cxx, $(BIN_SRC)))
+# all obj file in bin target
+BIN_OBJ = $(BIN_OBJ_CC) $(BIN_OBJ_CXX) $(BIN_OBJ_C) $(BIN_CLIENT_OBJ) $(BIN_SERVER_OBJ) 
+
+bin: $(BIN:%=$(top_builddir)/bin/salome/%) $(BIN) $(LIB) pyscripts sharedpyscripts
+
+BIN_LIB=$(LIB:lib%.la=-l%)
+
+$(BIN:%=$(top_builddir)/bin/salome/%) $(TEST_PROGS:%=$(top_builddir)/bin/salome/%): $(top_builddir)/bin/salome/%: %
+	-$(RM) $@
+	ln -sf $(CURDIR)/$< $@
+
+$(BIN) $(TEST_PROGS): %: %.lo $(BIN_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(BIN_LIB) $(LDFLAGSFORBIN) $(LIBSFORBIN)
+
+# copy python scripts in $(top_builddir)/bin/salome
+#
+DEST_PYSCRIPTS = $(EXPORT_PYSCRIPTS:%=$(top_builddir)/bin/salome/%)
+pyscripts: $(DEST_PYSCRIPTS)
+$(DEST_PYSCRIPTS): $(top_builddir)/bin/salome/%: %
+	cp -f $< $@
+
+# copy pyqt files in $(PYTHON_SHARED_SITE)
+#
+PYTHON_SHARED_SITE=$(top_builddir)/lib/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
+
+$(PYTHON_SHARED_SITE):
+	$(INSTALL) -d  $@
+
+DEST_SHAREDPYSCRIPTS = $(EXPORT_SHAREDPYSCRIPTS:%=$(PYTHON_SHARED_SITE)/%)
+sharedpyscripts: $(PYTHON_SHARED_SITE) $(DEST_SHAREDPYSCRIPTS)
+$(DEST_SHAREDPYSCRIPTS): $(PYTHON_SHARED_SITE)/%: %
+	cp -f $< $@
+
+check: test
+
+tests: test
+
+test: $(LIB) $(TEST_PROGS:%=$(top_builddir)/bin/salome/%) 
+
+
+# copy header file in $(inc_builddir)
+#
+DEST_HEADERS = $(EXPORT_HEADERS:%=$(inc_builddir)/%)
+inc: $(DEST_HEADERS)
+$(DEST_HEADERS): $(inc_builddir)/%: %
+	cp -f $< $@
+
+# build resources file (icons and messages) : .qm file from .po file
+resources: $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm)
+
+# Make installation directories if they don't exist.
+$(libdir) $(includedir) $(bindir) $(datadir) $(idldir) $(sharedpydir):
+	$(INSTALL) -d $@ && chmod 755 $@
+
+# Install the library, the public header files, and programs.
+install: $(LIB) $(BIN) $(TEST_PROGS) $(libdir) $(includedir) $(bindir) $(datadir) $(idldir) install-python install-sharedpyqt install-qm
+	@for f in X $(LIB); do						      \
+	   if test $$f != X; then					      \
+	      ($(LT_INSTALL_LIB) $$f $(libdir)/. || exit 1);		      \
+	   fi;								      \
+	done
+	@if ! test -z $(LIB_SWIG) ; then				      \
+	  (cd $(libdir); ln -sf $(patsubst %.so, %cmodule.so, $(LIB_SWIG)) _$(LIB_SWIG)  || true); \
+        fi;								      
+	@for f in X $(BIN); do						      \
+	   if test $$f != X; then					      \
+	     ($(LT_INSTALL_PROG) $$f $(bindir)/. || exit 1);		      \
+	   fi;							              \
+	done
+# Install tests programmes in bindir
+	@for f in X $(TEST_PROGS); do  					      \
+	   if test $$f != X; then					      \
+	     ($(LT_INSTALL_PROG) $$f $(bindir)/. || exit 1);		      \
+	   fi;							              \
+	done
+# Install exported includes in includedir
+	@for f in X $(EXPORT_HEADERS:%=$(srcdir)/%); do			      \
+	   if test $$f != X; then					      \
+	     (cp -p -f $$f $(includedir) || exit 1);			      \
+	   fi;							              \
+	done
+
+# Install python script in $(bindir)
+install-python: $(bindir) $(EXPORT_PYSCRIPTS:%=install-%)
+
+$(EXPORT_PYSCRIPTS:%=install-%): install-%: %
+	$(INSTALL_PROGRAM) $< $(bindir)/.
+
+#install-python: $(bindir) $(EXPORT_PYSCRIPTS)
+#	@for f in X $(EXPORT_PYSCRIPTS); do			      \
+#	   if test $$f != X; then				      \
+#	     ($(INSTALL_PROGRAM) $$f $(bindir)/. || exit 1);	      \
+#	   fi;							      \
+#	done
+
+# Install pyqt script in $(install-sharedpyqt)
+install-sharedpyqt: $(sharedpydir) $(EXPORT_SHAREDPYSCRIPTS:%=install-%) 
+
+$(EXPORT_SHAREDPYSCRIPTS:%=install-%): install-%: %
+	$(INSTALL_PROGRAM) $< $(sharedpydir)/.
+
+
+# generic rule to install .qm files :
+install-qm: resources
+	$(INSTALL) -d $(datadir)/resources
+	@for f in X $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm); do \
+	   if test $$f != X; then							 \
+	     ($(INSTALL_DATA) $$f $(datadir)/resources/. || exit 1);			 \
+	   fi; 										 \
+	done
+
+# Removes those things that `make install' (would have) installed.
+uninstall:
+	@if test "X$(LIB)" != X; then					      \
+	   for f in $(LIB); do						      \
+	      $(LT_UNINSTALL) $(libdir)/$$f;				      \
+	   done;							      \
+	fi
+	@if test "X$(BIN)" != X; then					      \
+	   for f in $(BIN); do						      \
+	      $(LT_UNINSTALL) $(bindir)/$$f;				      \
+	   done;							      \
+	fi
+	@for f in X $(TEST_PROGS); do  					      \
+	   if test $$f != X; then					      \
+	     $(LT_UNINSTALL) $(bindir)/$$f; 				      \
+	   fi;							              \
+	done
+# Uninstall exported includes in includedir
+	@for f in X $(EXPORT_HEADERS); do  				      \
+	   if test $$f != X; then					      \
+	     $(LT_UNINSTALL) $(includedir)/$$f;				      \
+	   fi;							              \
+	done
+# Uninstall python script in $(bindir)
+	@for f in X $(EXPORT_PYSCRIPTS); do  				      \
+	   if test $$f != X; then					      \
+	     $(LT_UNINSTALL) $(bindir)/$$f ;		      \
+	   fi;							              \
+	done
+
+# Uninstall pyqt script in $(sharedpydir)
+	@for f in X $(EXPORT_SHAREDPYSCRIPTS); do  				      \
+	   if test $$f != X; then					      \
+	     $(LT_UNINSTALL) $(sharedpydir)/$$f ;		      \
+	   fi;							              \
+	done
+
+# Uninstall qm files
+	@for f in X $(PO_FILES:%.po=%.qm); do 	      \
+	   if test $$f != X; then					      \
+	     $(LT_UNINSTALL) $(datadir)/resources/$$f ;			      \
+	   fi; 								      \
+	done
+
+# remove all dependencies files
+#
+cleandep:
+	-$(RM) .dep*
+
+# Removes temporary files without removing the final target files.  That is,
+# remove things like object files but not libraries or executables.
+#
+mostlyclean: cleandep
+	-$(RM) $(LIB_OBJ) $(LIB_OBJ:.lo=.o)
+	-$(RM) $(BIN_OBJ) $(BIN:%=%.o)
+	-$(RM) $(TEST_OBJ) $(TEST_OBJ:.lo=.o)
+	-$(RM) $(PROG_OBJ) $(PROG_OBJ:.lo=.o) $(MOSTLYCLEAN)
+
+# Like `mostlyclean' except it also removes the final targets: things like
+# libraries and executables.  This target doesn't remove any file that
+# is part of the SALOME distribution.
+#
+clean: mostlyclean
+	-$(RM) $(LIB) $(TEST_PROGS) $(BIN) $(CLEAN)
+	-$(RM) TAGS *~ *# core *.core 
+	-$(RM) -r .libs
+	-$(RM) $(top_builddir)/lib/salome/$(LIB)
+	-$(RM) $(patsubst %,$(top_builddir)/bin/salome/%, $(BIN))
+	-$(RM) $(patsubst %.la, %.so, $(top_builddir)/lib/salome/$(LIB))
+	-$(RM) $(patsubst %.la, %.a, $(top_builddir)/lib/salome/$(LIB))
+# remove idl generated files (sources)
+	-$(RM) $(LIB_CLIENT_SRC) $(LIB_SERVER_SRC) $(BIN_CLIENT_SRC) $(BIN_SERVER_SRC)
+# remove idl generated files (headers)
+	-$(RM)  $(LIB_CLIENT_IDL:%.idl=%$(IDL_CLN_H)) $(LIB_SERVER_IDL:%.idl=%$(IDL_SRV_H))
+	-$(RM)  $(BIN_CLIENT_IDL:%.idl=%$(IDL_CLN_H)) $(BIN_SERVER_IDL:%.idl=%$(IDL_SRV_H))
+	-$(RM) $(LIB_MOC_SRC) $(BIN_MOC_SRC)
+	-$(RM) $(LIB_SWIG_SRC)
+
+# Like `clean' except it also removes files that were created by running
+# configure.  If you've unpacked the source and built without creating
+# any other files, then `make distclean' will leave only the files that were
+# in the distribution.
+#
+distclean: clean
+	#remove qm file !
+	-$(RM) $(PO_FILES:%.po=%.qm) $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm)
+	#remove include files
+	-$(RM) $(DEST_HEADERS)
+	-$(RM) $(DISTCLEAN) *.bak *.old *.new .dep*
+	@if test -f $(srcdir)/Makefile.in; then				      \
+	   (@SETX@; $(RM) Makefile);					      \
+	fi
+
+
+#implicits rules
+.cc.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $<
+
+.cc.lo:
+	$(LT) --mode=compile $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $<
+
+.cxx.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $<
+
+.cxx.lo:
+	$(LT) --mode=compile $(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $<
+
+.c.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+
+.c.lo:
+	$(LT_COMPILE) $(CFLAGS) $(CPPFLAGS) -c $<
+
+.f.o:
+	$(FC) $(FFLAGS) -c $< -o $@
+
+.f.lo:
+	$(LT) --mode=compile $(FC) $(FFLAGS) -c $<
+
+.ui.h:
+	$(UIC) -o $@  $<
+
+.ui.cxx:
+	$(UIC) -o $@ -i $*.h $<
+
+#pattern rules
+%_moc.cxx : %.h
+	$(MOC) $< -o $@
+
+%_wrap.cxx : %.i
+	$(SWIG) $(SWIG_FLAGS) -o $@ $<
+
+$(top_builddir)/share/salome/resources/%.qm: %.po
+	if test -e ${KERNEL_ROOT_DIR}/bin/salome/msg2qm ; then \
+		${KERNEL_ROOT_DIR}/bin/salome/msg2qm $< $@ ; \
+	else \
+		$(top_builddir)/bin/salome/msg2qm $< $@ ; \
+	fi
+
+#------------------------------------------------------------------------------
+# The following section of this makefile contains dependencies between the
+# source files and the header files.  If GNU make and GCC are being used then
+# the dependencies are in the form of rules that cause the information to
+# be kept updated automatically.  Otherwise the dependencies are listed
+# explicitly and come from the `.distdep' files in the various directories.
+# These files are part of the distribution and are generated automatically on
+# GNU/GCC systems.
+#------------------------------------------------------------------------------
+
+@DEPEND@

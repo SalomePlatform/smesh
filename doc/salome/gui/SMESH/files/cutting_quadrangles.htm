@@ -1,0 +1,215 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Cutting quadrangles</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1356>
+<meta name=layout-width content=771>
+
+
+<!--(Links)=========================================================-->
+
+ <link rel='stylesheet' href='../default_ns.css'>
+<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<!--
+if (navigator.appName !="Netscape")
+{   document.write("<link rel='stylesheet' href='../default.css'>");}
+//-->
+</script>
+<style type="text/css">
+<!--
+img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
+p.whs2 {margin-left: 40px;}
+img_whs3 {border-style: none; border: none; width: 25px; height: 22px;}
+img_whs4 {border-style: none; border: none; width: 292px; height: 412px;}
+ul.whs5 {list-style: disc;}
+p.whs6 {margin-left: 40px; font-weight: normal;}
+p.whs7 {margin-left: 0px;}
+table.whs8 {x-cell-content-align: top; width: 100%; border-spacing: 0; border-spacing: 0px;}
+col.whs9 {width: 50%;}
+tr.whs10 {x-cell-content-align: top;}
+td.whs11 {width: 50%; padding-right: 10px; padding-left: 10px; border-right-style: none; border-left-style: none; border-top-style: none; border-bottom-style: none;}
+img_whs12 {border-style: none; border: none; width: 353px; height: 300px;}
+td.whs13 {width: 50%; padding-right: 10px; padding-left: 10px; border-top-style: none; border-bottom-style: none; border-right-style: none;}
+-->
+</style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs7 {margin-left:1; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="../whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("SMESH module\nModifying meshes\nCutting quadrangles");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("../smesh.htm");
+
+		autoSync(0);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	document.location.reload();
+//-->
+</script>
+<h1>Cutting quadrangles</h1>
+
+<p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> This operation allows to cut one or several quadrangle 
+ elements by addition of a supplementary edge which will connect two opposite 
+ corners. </p>
+
+<p>&nbsp;</p>
+
+<p class=TODO>To cut quadrangles:</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">1. Display a mesh or a submesh in the 3D 
+ viewer.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">2. In the <span style="font-weight: bold;"><B>Modification 
+ </B></span>menu select the <span style="font-weight: bold;"><B>Cutting of quadrangles 
+ </B></span>item or click <img src="../image82.gif" width="25px" height="22px" border="0" class="img_whs3"> button in the toolbar. The following 
+ dialog box will appear:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs2"><img src="../image50.jpg" width="292px" height="412px" border="0" class="img_whs4"></p>
+
+<p>&nbsp;</p>
+
+<ul type="disc" class="whs5">
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>The main list </B></span>shall contain the quadrangles 
+ which will be cutted. You can click on an quadrangle in the 3D viewer 
+ and it will be highlighted. After that click the <span style="font-weight: bold;"><B>Add 
+ </B></span>button and the ID of this quadrangle will be added to the list. 
+ To remove a selected element or elements from the list click the <span 
+ style="font-weight: bold;"><B>Remove </B></span>button. The <span style="font-weight: bold;"><B>Sort 
+ </B></span>button allows to sort the list of IDs. The <span style="font-weight: bold;"><B>Set 
+ filter </B></span>button allows to apply a definite filter to selection of 
+ quadrangles.</p></li>
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Apply to all </B></span>radio button allows to 
+ modify the orientation of all quadrangles of the currently displayed mesh 
+ or submesh.</p></li>
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Use diagonal 2-4 </B></span>radio button allows 
+ to specify the opposite corners which will be connected by the cutting 
+ edge.</p></li>
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Preview </B></span></p></li>
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Select from </B></span>set of fields allows to 
+ choose a submesh or an existing group whose quadrangle elements will be 
+ automatically added to the list.</p></li>
+</ul>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">3. Click the <span style="font-weight: bold;"><B>Apply 
+ </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button to confirm 
+ the operation.</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">&nbsp;</p>
+
+<!--(Table)=========================================================-->
+<table x-use-null-cells cellspacing="0" width="100%" class="whs8">
+<col class="whs9">
+<col class="whs9">
+
+<tr valign="top" class="whs10">
+<td width="50%" class="whs11">
+<p><img src="../image52.jpg" width="353px" height="300px" border="0" class="img_whs12"></td>
+<td width="50%" class="whs13">
+<p><img src="../image51.jpg" width="353px" height="300px" border="0" class="img_whs12"></td></tr>
+</table>
+
+<p class="whs7">&nbsp;</p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+
+</html>

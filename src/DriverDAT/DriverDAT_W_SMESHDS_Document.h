@@ -1,5 +1,3 @@
-//  SMESH DriverDAT : driver to read and write 'dat' files
-//
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 // 
@@ -18,34 +16,13 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : DriverDAT_W_SMESHDS_Document.h
-//  Module : SMESH
 
 #ifndef _INCLUDE_DRIVERDAT_W_SMESHDS_DOCUMENT
 #define _INCLUDE_DRIVERDAT_W_SMESHDS_DOCUMENT
 
-#include <stdio.h>
-#include <string>
+#include "Driver_Document.h"
 
-#include "SMESHDS_Document.hxx"
-#include "Document_Writer.h"
+class DriverDAT_W_SMESHDS_Document: public Driver_Document 
+{};
 
-class DriverDAT_W_SMESHDS_Document : public Document_Writer {
-  
-public :
-  DriverDAT_W_SMESHDS_Document();
-  ~DriverDAT_W_SMESHDS_Document();
- 
-  void Write();
-  //void SetFile(string);
-  //void SetDocument(Handle(SMESHDS_Document)&);
-
-private :
-  //Handle_SMESHDS_Document myDocument;
-  //string myFile; 
-
-};
 #endif

@@ -303,7 +303,7 @@ echo
 dnl generals files which could be included in every makefile
 
 AC_SUBST_FILE(COMMENCE) COMMENCE=adm_local/unix/make_commence
-AC_SUBST_FILE(CONCLUDE) CONCLUDE=salome_adm/unix/make_conclude
+AC_SUBST_FILE(CONCLUDE) CONCLUDE=adm_local/unix/make_conclude
 AC_SUBST_FILE(MODULE) MODULE=salome_adm/unix/make_module
 
 dnl les dependences

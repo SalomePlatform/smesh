@@ -47,7 +47,6 @@ using namespace std;
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
-#include CORBA_SERVER_HEADER(GEOM_Shape)
 
 static CORBA::ORB_var _orb;
 
@@ -94,12 +93,13 @@ void SMESH_Swig::Init(int studyID)
   SALOMEDS::AttributeName_var    aName;
   SALOMEDS::AttributePixMap_var  aPixmap;
 
-  SALOMEDS::SComponent_var father = myStudy->FindComponent("MESH");
+  // See return value of SMESH::SMESH_Gen::ComponentDataType()
+  SALOMEDS::SComponent_var father = myStudy->FindComponent("SMESH");
   
   if (father->_is_nil()) {
     bool aLocked = myStudy->GetProperties()->IsLocked();
     if (aLocked) myStudy->GetProperties()->SetLocked(false);
-    father = myStudyBuilder->NewComponent("MESH");
+    father = myStudyBuilder->NewComponent("SMESH");
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
     //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
@@ -394,6 +394,9 @@ const char* SMESH_Swig::AddSubMesh(const char* SO_Mesh_Entry, const char* SM_IOR
       aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
       aSelAttr->SetSelectable(false);
     }
+
+    free(Name);
+
     SALOMEDS::SObject_var SO = myStudyBuilder->NewObject (SubmeshesRoot);
     anAttr = myStudyBuilder->FindOrCreateAttribute(SO, "AttributeIOR");
     anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);

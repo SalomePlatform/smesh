@@ -29,6 +29,8 @@
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshElement.hxx"
 
+using namespace std;
+
 //=======================================================================
 //function : SMDS_MeshElementIDFactory
 //purpose  : 
@@ -82,3 +84,32 @@ void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
   myIDElements.erase(ID);
   SMDS_MeshIDFactory::ReleaseID(ID);
 }
+
+//=======================================================================
+//function : GetMaxID
+//purpose  : 
+//=======================================================================
+
+int SMDS_MeshElementIDFactory::GetMaxID() const
+{
+  map<int, SMDS_MeshElement*>::const_reverse_iterator it = myIDElements.rbegin();
+  if ( it !=  myIDElements.rend() )
+    return (*it).first;
+
+  return 0;
+}
+
+//=======================================================================
+//function : GetMinID
+//purpose  : 
+//=======================================================================
+
+int SMDS_MeshElementIDFactory::GetMinID() const
+{
+  map<int, SMDS_MeshElement*>::const_iterator it = myIDElements.begin();
+  if ( it !=  myIDElements.end() )
+    return (*it).first;
+
+  return 0;
+}
+

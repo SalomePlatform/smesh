@@ -32,7 +32,7 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 SUBDIRS = \
-	SMDS SMESHDS Driver DriverMED DriverDAT DriverUNV \
+	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL \
 	SMESH SMESH_I OBJECT SMESHFiltersSelection SMESHGUI SMESH_SWIG \
 	MEFISTO2 StdMeshers StdMeshers_I StdMeshersGUI
 

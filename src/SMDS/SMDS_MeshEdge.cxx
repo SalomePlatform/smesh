@@ -29,7 +29,8 @@
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
-#include <iostream>
+
+using namespace std;
 
 //=======================================================================
 //function : SMDS_MeshEdge
@@ -130,3 +131,17 @@ bool operator<(const SMDS_MeshEdge & e1, const SMDS_MeshEdge & e2)
 	else if(id11==id21) return (id21<id22);
 	else return false;
 }
+
+//=======================================================================
+//function : ChangeNodes
+//purpose  : 
+//=======================================================================
+
+bool SMDS_MeshEdge::ChangeNodes(const SMDS_MeshNode * node1,
+                                const SMDS_MeshNode * node2)
+{
+  myNodes[0]=node1;
+  myNodes[1]=node2;
+  return true;
+}
+

@@ -29,33 +29,15 @@
 #ifndef DIALOGBOX_MOVE_NODES_H
 #define DIALOGBOX_MOVE_NODES_H
 
+#include <qdialog.h>
 #include "SALOME_Selection.h"
 
-// QT Includes
-#include <qvariant.h>
-#include <qdialog.h>
-
-// Open CASCADE Includes
-#include <TColStd_MapOfInteger.hxx>
-
-class QVBoxLayout; 
-class QHBoxLayout; 
-class QGridLayout; 
-class QButtonGroup;
-class QGroupBox;
-class QLabel;
 class QLineEdit;
 class QPushButton;
-class QRadioButton;
-class SMESHGUI;
 class SMESHGUI_SpinBox;
-
-// IDL Headers
-#include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-
-// VTK Include
-#include <vtkActor.h>
+class SALOME_Actor;
+class QFrame;
+class SMESH_Actor;
 
 //=================================================================================
 // class    : SMESHGUI_MoveNodesDlg
@@ -63,67 +45,57 @@ class SMESHGUI_SpinBox;
 //=================================================================================
 class SMESHGUI_MoveNodesDlg : public QDialog
 { 
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    SMESHGUI_MoveNodesDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
-    ~SMESHGUI_MoveNodesDlg();
 
-private:
-
-    void Init( SALOME_Selection* Sel ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    bool                          myOkNodes ;               /* to check when arguments is defined */
-    int                           myConstructorId ;         /* Current constructor id = radio button id */
-    int                           myIdnode;
-    QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
-
-    SMESH::SMESH_Mesh_var         myMesh;
-    TColStd_MapOfInteger          myMapIndex;
-
-    vtkActor                      *mySimulationActor;
-        
-    QGroupBox* GroupCoordinates;
-    QLabel* TextLabel_X;
-    QLabel* TextLabel_Y;
-    QLabel* TextLabel_Z;
-    SMESHGUI_SpinBox* SpinBox_X;
-    SMESHGUI_SpinBox* SpinBox_Y;
-    SMESHGUI_SpinBox* SpinBox_Z;
-
-    QButtonGroup* GroupConstructors;
-    QRadioButton* Constructor1;
-    QGroupBox* GroupButtons;
-    QPushButton* buttonOk;
-    QPushButton* buttonCancel;
-    QPushButton* buttonApply;
-    QGroupBox* GroupC1;
-    QLabel* TextLabelC1A1;
-    QPushButton* SelectButtonC1A1;
-    QLineEdit* LineEditC1A1;
+                                SMESHGUI_MoveNodesDlg( QWidget*,
+                                                       SALOME_Selection*,
+                                                       const char* = 0 );
+ virtual                        ~SMESHGUI_MoveNodesDlg();
+    
+ void                           Init( SALOME_Selection* ) ;
 
 private slots:
 
-    void ConstructorsClicked(int constructorId);
-    void ClickOnOk();
-    void ClickOnCancel();
-    void ClickOnApply();
-    void SetEditCurrentArgument() ;
-    void SelectionIntoArgument() ;
-    void DeactivateActiveDialog() ;
-    void ActivateThisDialog() ;
-    void ValueChangedInSpinBox( double newValue ) ;
+  void                          onOk();
+  bool                          onApply();
+  void                          onClose();
 
-protected:
-    QGridLayout* SMESHGUI_MoveNodesDlgLayout;
-    QGridLayout* GroupConstructorsLayout;
-    QGridLayout* GroupButtonsLayout;
-    QGridLayout* GroupC1Layout;
-    QGridLayout* GroupCoordinatesLayout;
+  void                          onDeactivate();
+
+  void                          onSelectionDone();
+  void                          redisplayPreview();
+  void                          onTextChange(const QString&);
+
+private:
+
+  void                          closeEvent( QCloseEvent* e ) ;
+  void                          enterEvent ( QEvent * ) ;
+  void                          hideEvent ( QHideEvent * );
+  void                          erasePreview();
+  QFrame*                       createButtonFrame( QWidget* );
+  QFrame*                       createMainFrame  ( QWidget* );
+  bool                          isValid( const bool ) const;
+  void                          reset();
+  void                          updateButtons();
+
+private:
+
+  QPushButton*                  myOkBtn;
+  QPushButton*                  myApplyBtn;
+  QPushButton*                  myCloseBtn;
+  
+  QLineEdit*                    myId;
+  SMESHGUI_SpinBox*             myX;
+  SMESHGUI_SpinBox*             myY;
+  SMESHGUI_SpinBox*             myZ;
+
+  SALOME_Selection*             mySelection;
+  
+  SALOME_Actor*                 myPreviewActor;
+  SMESH_Actor*                  myMeshActor;
+  bool                          myBusy;
 };
 
 #endif // DIALOGBOX_MOVE_NODES_H

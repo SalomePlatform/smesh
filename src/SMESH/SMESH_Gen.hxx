@@ -43,12 +43,12 @@
 #include <TopoDS_Shape.hxx>
 
 #include <map>
-using namespace std;
+
 
 typedef struct studyContextStruct
 {
-	map < int, SMESH_Hypothesis * >mapHypothesis;
-	  map < int, SMESH_Mesh * >mapMesh;
+	std::map < int, SMESH_Hypothesis * >mapHypothesis;
+	  std::map < int, SMESH_Mesh * >mapMesh;
 	  SMESHDS_Document * myDocument;
 } StudyContextStruct;
 
@@ -89,15 +89,15 @@ class SMESH_Gen
 
   int GetANewId();
 
-  map < int, SMESH_Algo * >_mapAlgo;
-  map < int, SMESH_1D_Algo * >_map1D_Algo;
-  map < int, SMESH_2D_Algo * >_map2D_Algo;
-  map < int, SMESH_3D_Algo * >_map3D_Algo;
+  std::map < int, SMESH_Algo * >_mapAlgo;
+  std::map < int, SMESH_1D_Algo * >_map1D_Algo;
+  std::map < int, SMESH_2D_Algo * >_map2D_Algo;
+  std::map < int, SMESH_3D_Algo * >_map3D_Algo;
 
  private:
 
   int _localId;				// unique Id of created objects, within SMESH_Gen entity
-  map < int, StudyContextStruct * >_mapStudyContext;
+  std::map < int, StudyContextStruct * >_mapStudyContext;
 
   // hypotheses managing
   int _hypId;

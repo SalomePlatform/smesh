@@ -31,13 +31,19 @@
 #define _StdMeshers_MEFISTO_2D_HXX_
 
 #include "SMESH_2D_Algo.hxx"
-#include "StdMeshers_MaxElementArea.hxx"
-#include "StdMeshers_LengthFromEdges.hxx"
-#include "Rn.h"
+#include <TopoDS_Wire.hxx>
 
 class SMDS_MeshNode;
-#include <TopoDS_Face.hxx>
+class TopTools_IndexedDataMapOfShapeListOfShape;
+class TopoDS_Face;
+class TopoDS_WIre;
+class StdMeshers_MaxElementArea;
+class StdMeshers_LengthFromEdges;
+class SMDS_MeshNode;
+
+#include <list>
 #include <map>
+#include "Rn.h"
 
 class StdMeshers_MEFISTO_2D:
   public SMESH_2D_Algo
@@ -56,12 +62,14 @@ public:
   double ComputeEdgeElementLength(SMESH_Mesh& aMesh,
 				  const TopoDS_Shape& aShape);
 
-  void LoadPoints(SMESH_Mesh& aMesh,
+  bool LoadPoints(SMESH_Mesh& aMesh,
 		  const TopoDS_Face& F, 
 		  const TopoDS_Wire& W,
 		  R2* uvslf, 
 		  int& m,
-		  map<int,const SMDS_MeshNode*>& mefistoToDS);
+		  map<int,const SMDS_MeshNode*>& mefistoToDS,
+                  double scalex, double scaley,
+                  const TopTools_IndexedDataMapOfShapeListOfShape& VWMap);
 
   void ComputeScaleOnFace(SMESH_Mesh& aMesh,
 			  const TopoDS_Face& aFace,
@@ -71,7 +79,8 @@ public:
   void StoreResult (SMESH_Mesh& aMesh,
 		    Z nbst, R2* uvst, Z nbt, Z* nust, 
 		    const TopoDS_Face& F, bool faceIsForward,
-		    map<int,const SMDS_MeshNode*>& mefistoToDS);
+		    map<int,const SMDS_MeshNode*>& mefistoToDS,
+                    double scalex, double scaley);
 					  
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);
@@ -79,10 +88,13 @@ public:
   friend istream & operator >> (istream & load, StdMeshers_MEFISTO_2D & hyp);
 
 protected:
-  double _edgeLength;
-  double _maxElementArea;
-  const StdMeshers_MaxElementArea* _hypMaxElementArea;
+  double                            _edgeLength;
+  double                            _maxElementArea;
+  const StdMeshers_MaxElementArea*  _hypMaxElementArea;
   const StdMeshers_LengthFromEdges* _hypLengthFromEdges;
+
+  TopoDS_Wire myOuterWire;
+  std::list<const SMDS_MeshNode*> myNodesOnCommonV;
 };
 
 #endif

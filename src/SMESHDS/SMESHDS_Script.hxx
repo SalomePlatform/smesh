@@ -28,8 +28,9 @@
 #define _SMESHDS_Script_HeaderFile
 
 #include "SMESHDS_Command.hxx"
+
 #include <list>
-using namespace std;
+
 
 class SMESHDS_Script
 {
@@ -50,12 +51,16 @@ class SMESHDS_Script
 	void MoveNode(int NewNodeID, double x, double y, double z);
 	void RemoveNode(int NodeID);
 	void RemoveElement(int ElementID);
+	void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
+	void Renumber (const bool isNodes, const int startID, const int deltaID);
 	void Clear();
-	const list<SMESHDS_Command*> & GetCommands();
+	const std::list<SMESHDS_Command*> & GetCommands();
 	~SMESHDS_Script();
   
   private:
-	list<SMESHDS_Command*> myCommands;
+	SMESHDS_Command* getCommand(const SMESHDS_CommandType aType);
+
+	std::list<SMESHDS_Command*> myCommands;
 };
 
 #endif

@@ -36,13 +36,10 @@
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
-#include CORBA_SERVER_HEADER(GEOM_Shape)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 #include <map>
 #include <string>
-
-using namespace std;
 
 class QButtonGroup;
 class QGroupBox;

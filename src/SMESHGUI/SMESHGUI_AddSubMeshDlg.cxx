@@ -26,16 +26,23 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_AddSubMeshDlg.h"
+
 #include "SMESHGUI.h"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_HypothesesUtils.h"
+
+#include "GEOMBase.h"
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
 #include "QAD_WaitCursor.h"
 #include "QAD_Operation.h"
+
+#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SALOMEGUI_QtCatchCorbaException.hxx"
 
 #include "utilities.h"
 
@@ -46,6 +53,25 @@ using namespace std;
 #include <qpushbutton.h>
 #include <qlayout.h>
 #include <qpixmap.h>
+
+using namespace std;
+
+namespace SMESH{
+  SMESH::SMESH_subMesh_var AddSubMesh(SMESH::SMESH_Mesh_ptr theMesh, 
+				      GEOM::GEOM_Object_ptr theShapeObject, 
+				      const char* theMeshName )
+  {
+    SMESH::SMESH_subMesh_var aSubMesh;
+    try {
+      if ( !theMesh->_is_nil() && !theShapeObject->_is_nil() )
+	aSubMesh = theMesh->GetSubMesh( theShapeObject, theMeshName );
+    }
+    catch( const SALOME::SALOME_Exception& S_ex ) {
+      QtCatchCorbaException( S_ex );
+    }
+    return aSubMesh._retn();
+  }
+}
 
 //=================================================================================
 // class    : SMESHGUI_AddSubMeshDlg()
@@ -88,6 +114,7 @@ SMESHGUI_AddSubMeshDlg::SMESHGUI_AddSubMeshDlg( QWidget* parent, const char* nam
     SelectButtonC1A1->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A1, 1, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
+    LineEditC1A1->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1, 1, 2 );
 
     TextLabelC1A2 = new QLabel( tr( "SMESH_OBJECT_GEOM" ), GroupC1, "TextLabelC1A2" );
@@ -97,6 +124,7 @@ SMESHGUI_AddSubMeshDlg::SMESHGUI_AddSubMeshDlg( QWidget* parent, const char* nam
     SelectButtonC1A2->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A2, 2, 1 );
     LineEditC1A2 = new QLineEdit( GroupC1, "LineEditC1A2" );
+    LineEditC1A2->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A2, 2, 2 );
 
     TextLabelC1A1Hyp = new QLabel( tr( "SMESH_OBJECT_HYPOTHESIS" ), GroupC1, "TextLabelC1A1Hyp" );
@@ -105,6 +133,7 @@ SMESHGUI_AddSubMeshDlg::SMESHGUI_AddSubMeshDlg( QWidget* parent, const char* nam
     SelectButtonC1A1Hyp->setPixmap( image0 );
     GroupC1Layout->addWidget( SelectButtonC1A1Hyp, 3, 1 );
     LineEditC1A1Hyp = new QLineEdit( GroupC1, "LineEditC1A1Hyp" );
+    LineEditC1A1Hyp->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1Hyp, 3, 2 );
 
     TextLabelC1A1Algo = new QLabel( tr( "SMESH_OBJECT_ALGORITHM" ), GroupC1, "TextLabelC1A1Algo" );
@@ -113,6 +142,7 @@ SMESHGUI_AddSubMeshDlg::SMESHGUI_AddSubMeshDlg( QWidget* parent, const char* nam
     SelectButtonC1A1Algo->setPixmap( image0 );
     GroupC1Layout->addWidget( SelectButtonC1A1Algo, 4, 1 );
     LineEditC1A1Algo = new QLineEdit( GroupC1, "LineEditC1A1Algo" );
+    LineEditC1A1Algo->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1Algo, 4, 2 );
 
     SMESHGUI_AddSubMeshDlgLayout->addWidget( GroupC1, 1, 0 );
@@ -218,6 +248,9 @@ void SMESHGUI_AddSubMeshDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_AddSubMeshDlg::ClickOnApply()
 {
+  if (mySMESHGUI->ActiveStudyLocked())
+    return false;
+
   QString myNameSubMesh = LineEdit_NameMesh->text().stripWhiteSpace();
   if ( myNameSubMesh.isEmpty() ) {
     QAD_MessageBox::warn1( this, tr( "SMESH_WRN_WARNING" ), tr( "SMESH_WRN_EMPTY_NAME" ), tr( "SMESH_BUT_OK" ) );
@@ -227,8 +260,8 @@ bool SMESHGUI_AddSubMeshDlg::ClickOnApply()
   if ( myMesh->_is_nil() || myGeomShape->_is_nil() || ( !HypoList.count() && !AlgoList.count() ) )
     return false;
 
-  SALOMEDS::SObject_var aMeshSO = mySMESHGUI->GetStudyAPI().FindObject( myMesh );
-  GEOM::GEOM_Shape_var myMainShape = mySMESHGUI->GetStudyAPI().GetShapeOnMeshOrSubMesh( aMeshSO );
+  SALOMEDS::SObject_var aMeshSO = SMESH::FindSObject( myMesh );
+  GEOM::GEOM_Object_var myMainShape = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
   if ( myMainShape->_is_nil() )
     return false;
 
@@ -240,45 +273,40 @@ bool SMESHGUI_AddSubMeshDlg::ClickOnApply()
   op->start();
   
   // create submesh
-  SMESH::SMESH_subMesh_var aSubMesh = mySMESHGUI->AddSubMesh( myMesh, myGeomShape, myNameSubMesh ) ;
+  SMESH::SMESH_subMesh_var aSubMesh = SMESH::AddSubMesh( myMesh, myGeomShape, myNameSubMesh ) ;
+  int nbSuccess = 0;
   
   if ( !aSubMesh->_is_nil() ) {
     // assign hypotheses
-    for( int i = 0; i < HypoList.count(); i++ ) {
-      SALOMEDS::SObject_var aHypSO = mySMESHGUI->GetStudy()->FindObjectID( HypoList[i] );
+    int nbAlgo = AlgoList.count();
+    int nbHyps = HypoList.count() + nbAlgo;
+    for( int i = 0; i < nbHyps; i++ ) {
+      SALOMEDS::SObject_var aHypSO = SMESH::GetActiveStudyDocument()->FindObjectID
+        ( i < nbAlgo ? AlgoList[i] : HypoList[i-nbAlgo] );
       if ( !aHypSO->_is_nil() ) {
 	CORBA::Object_var anObject = aHypSO->GetObject();
 	if ( !CORBA::is_nil( anObject ) ) {
 	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
 	  if ( !aHyp->_is_nil() )
-	    if ( !mySMESHGUI->AddHypothesisOnSubMesh( aSubMesh, aHyp ) ) {
-	      // abort transaction
-	      op->abort();
-	      return false;
-	  }
+	    if ( SMESH::AddHypothesisOnSubMesh( aSubMesh, aHyp ) )
+              nbSuccess++;
 	}
+        else {
+          SCRUTE( CORBA::is_nil( anObject ));
+        }
       }
-    }
-    // assign algorithms
-    for( int i = 0; i < AlgoList.count(); i++ ) {
-      SALOMEDS::SObject_var aHypSO = mySMESHGUI->GetStudy()->FindObjectID( AlgoList[i] );
-      if ( !aHypSO->_is_nil() ) {
-	CORBA::Object_var anObject = aHypSO->GetObject();
-	if ( !CORBA::is_nil( anObject ) ) {
-	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	  if ( !aHyp->_is_nil() )
-	    if ( !mySMESHGUI->AddAlgorithmOnSubMesh( aSubMesh, aHyp ) ) {
-	      // abort transaction
-	      op->abort();
-	      return false;
-	  }
-	}
+      else {
+        SCRUTE( aHypSO->_is_nil() );
       }
     }
   }
+  else {
+    SCRUTE( aSubMesh->_is_nil() );
+  }
+  
   // commit transaction
   op->finish();
-  return true;
+  return ( nbSuccess > 0 );
 }
 
 
@@ -290,6 +318,11 @@ void SMESHGUI_AddSubMeshDlg::ClickOnCancel()
 {
   close();
 }
+
+//=======================================================================
+//function : IsFatherOf
+//purpose  : 
+//=======================================================================
 
 static bool IsFatherOf( SALOMEDS::SObject_ptr SO, SALOMEDS::SObject_ptr fatherSO ) {
   if ( !SO->_is_nil() && !fatherSO->_is_nil() ) {
@@ -309,10 +342,8 @@ static bool IsFatherOf( SALOMEDS::SObject_ptr SO, SALOMEDS::SObject_ptr fatherSO
 //=================================================================================
 void SMESHGUI_AddSubMeshDlg::SelectionIntoArgument()
 {
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
   QString aString = ""; 
-
-  int nbSel = mySMESHGUI->GetNameOfSelectedIObjects(mySelection, aString) ;
+  int nbSel = SMESH::GetNameOfSelectedIObjects(mySelection, aString) ;
 
   if ( myEditCurrentArgument == LineEditC1A1 ) {
     // mesh
@@ -321,37 +352,35 @@ void SMESHGUI_AddSubMeshDlg::SelectionIntoArgument()
       aString = "";
     } 
     else {
-      Standard_Boolean testResult ;
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myMesh = mySMESHGUI->ConvertIOinMesh(IO, testResult) ;
-      if( !testResult ) {
-	myMesh = SMESH::SMESH_Mesh::_nil();
+      myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO) ;
+      if( myMesh->_is_nil() ) {
 	aString = "";
       }
     }
-    myGeomShape = GEOM::GEOM_Shape::_nil();
+    myGeomShape = GEOM::GEOM_Object::_nil();
     LineEditC1A2->setText( "" );
   }
   else if ( myEditCurrentArgument == LineEditC1A2 ) {
     // geom shape
     if ( nbSel != 1 ) {
-      myGeomShape = GEOM::GEOM_Shape::_nil();
+      myGeomShape = GEOM::GEOM_Object::_nil();
       aString = "";
     } 
     else {
-      Standard_Boolean testResult ;
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myGeomShape = mySMESHGUI->ConvertIOinGEOMShape(IO, testResult) ;
-      if( !testResult ) {
-	myGeomShape = GEOM::GEOM_Shape::_nil();
-	aString = "";
+      myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO) ;
+      if( myGeomShape->_is_nil() || !GEOMBase::IsShape( myGeomShape ) )
+      {
+        myGeomShape = GEOM::GEOM_Object::_nil();
+        aString = "";
       }
       if ( !myMesh->_is_nil() ) {
-	SALOMEDS::SObject_var aMeshSO = myStudyAPI.FindObject( myMesh );
-	GEOM::GEOM_Shape_var aMainGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh( aMeshSO );
-	SALOMEDS::SObject_var aMainGeomShapeSO = myStudyAPI.FindObject( aMainGeomShape );
-	if ( aMainGeomShapeSO->_is_nil() || !IsFatherOf(  mySMESHGUI->GetStudy()->FindObjectID( IO->getEntry() ), aMainGeomShapeSO ) ) {
-	  myGeomShape = GEOM::GEOM_Shape::_nil();
+	SALOMEDS::SObject_var aMeshSO = SMESH::FindSObject( myMesh );
+	GEOM::GEOM_Object_var aMainGeomShape = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
+	SALOMEDS::SObject_var aMainGeomShapeSO = SMESH::FindSObject( aMainGeomShape );
+	if ( aMainGeomShapeSO->_is_nil() || !IsFatherOf( SMESH::GetActiveStudyDocument()->FindObjectID( IO->getEntry() ), aMainGeomShapeSO ) ) {
+	  myGeomShape = GEOM::GEOM_Object::_nil();
 	  aString = "";
 	}	  
       }
@@ -484,16 +513,11 @@ void SMESHGUI_AddSubMeshDlg::UpdateControlState()
   bool isEnabled = ( !myMesh->_is_nil() && !myGeomShape->_is_nil() && ( HypoList.count() || AlgoList.count() ) );
   bool isImportedMesh = false;
   if ( !myMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aMeshSO = mySMESHGUI->GetStudyAPI().FindObject( myMesh );
-    GEOM::GEOM_Shape_var myGeomShape = mySMESHGUI->GetStudyAPI().GetShapeOnMeshOrSubMesh( aMeshSO );
+    SALOMEDS::SObject_var aMeshSO = SMESH::FindSObject( myMesh );
+    GEOM::GEOM_Object_var myGeomShape = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
     isImportedMesh = myGeomShape->_is_nil();
   }
 
   buttonOk   ->setEnabled( isEnabled && !isImportedMesh );
   buttonApply->setEnabled( isEnabled && !isImportedMesh );
 }
-
-
-
-
-

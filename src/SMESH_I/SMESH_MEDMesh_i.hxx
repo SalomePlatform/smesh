@@ -75,6 +75,11 @@ class SMESH_MEDMesh_i:
 	~SMESH_MEDMesh_i();
 
 	// IDL Methods 
+	void setProtocol(SALOME::TypeOfCommunication typ) {}
+	void release() {}
+	SALOME::Sender_ptr getSenderForCoordinates(long int) {return SALOME::Sender::_nil();}
+	SALOME::Sender_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::Sender::_nil();}
+
 	char *getName() throw(SALOME::SALOME_Exception);
 	CORBA::Long getSpaceDimension() throw(SALOME::SALOME_Exception);
 

@@ -81,6 +81,23 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_Arithmetic1D: interface of "Arithmetic 1D" hypothesis
+   */
+  interface StdMeshers_Arithmetic1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets <start segment length> or <end segment length> parameter value
+     */
+    void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <start segment length> or <end segment length> parameter value
+     */
+    double GetLength(in boolean isStartLength);
+  };
+
+  /*!
    * StdMeshers_MaxElementArea: interface of "Max. Triangle Area" hypothesis
    */
   interface StdMeshers_MaxElementArea : SMESH::SMESH_Hypothesis
@@ -115,6 +132,42 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_StartEndLength: interface of "Start and End Length" hypothesis
+   */
+  interface StdMeshers_StartEndLength : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets <start segment length> or <end segment length> parameter value
+     */
+    void SetLength(in double length, in boolean isStartLength) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <start segment length> or <end segment length> parameter value
+     */
+    double GetLength(in boolean isStartLength);
+  };
+
+
+  /*!
+   * StdMeshers_Deflection1D: interface of "Deflection 1D" hypothesis
+   */
+  interface StdMeshers_Deflection1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets <deflection> parameter value
+     */
+    void SetDeflection(in double deflection)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <deflection> parameter value
+     */
+    double GetDeflection();
+  };
+
+
+  /*!
    * StdMeshers_MaxElementVolume: interface of "Max. Hexahedron or Tetrahedron Volume" hypothesis
    */
   interface StdMeshers_MaxElementVolume : SMESH::SMESH_Hypothesis
@@ -136,6 +189,16 @@ module StdMeshers
    * Presence of this hypothesis permits to algorithm generation of not conform mesh.
    */
   interface StdMeshers_NotConformAllowed : SMESH::SMESH_Hypothesis
+  {
+  };
+
+  /*!
+   * StdMeshers_Propagation: interface of "Propagation" hypothesis.
+   * Presence of this hypothesis on any edge propagates any other 1D
+   * hypothesis from this edge on all edges, opposite to it.
+   * It concerns only edges of quadrangle faces.
+   */
+  interface StdMeshers_Propagation : SMESH::SMESH_Hypothesis
   {
   };
 

@@ -28,6 +28,7 @@
 
 
 #include "SMESH_DeviceActor.h"
+#include "SMESH_ExtractGeometry.h"
 
 #include "SALOME_Transform.h"
 #include "SALOME_TransformFilter.h"
@@ -46,6 +47,19 @@
 #include <vtkMergeFilter.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <vtkScalarBarActor.h>
+#include <vtkLookupTable.h>
+#include <vtkDoubleArray.h>
+#include <vtkCellData.h>
+
+#include <vtkCell.h>
+#include <vtkIdList.h>
+#include <vtkIntArray.h>
+#include <vtkCellArray.h>
+#include <vtkUnsignedCharArray.h>
+
+#include <vtkImplicitBoolean.h>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -72,13 +86,14 @@ SMESH_DeviceActor::SMESH_DeviceActor(){
 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
 								 myPolygonOffsetUnits);
-  //myMapper->SetResolveCoincidentTopologyToShiftZBuffer();
-  //myMapper->SetResolveCoincidentTopologyZShift(0.02);
-  
+
   myMapper->UseLookupTableScalarRangeOn();
   myMapper->SetColorModeToMapScalars();
 
   myShrinkFilter = vtkShrinkFilter::New();
+
+  myExtractGeometry = SMESH_ExtractGeometry::New();
+  myExtractGeometry->SetStoreMapping(true);
 
   myExtractUnstructuredGrid = SALOME_ExtractUnstructuredGrid::New();
   myExtractUnstructuredGrid->SetStoreMapping(true);
@@ -114,6 +129,9 @@ SMESH_DeviceActor::~SMESH_DeviceActor(){
   myGeomFilter->UnRegisterAllOutputs();
   myGeomFilter->Delete();
 
+  myExtractGeometry->UnRegisterAllOutputs();
+  myExtractGeometry->Delete();
+
   myTransformFilter->UnRegisterAllOutputs();
   myTransformFilter->Delete();
 
@@ -130,12 +148,23 @@ void SMESH_DeviceActor::SetStoreMapping(int theStoreMapping){
 }
 
 
+void SMESH_DeviceActor::Init(TVisualObjPtr theVisualObj, 
+			     vtkImplicitBoolean* theImplicitBoolean)
+{
+  myVisualObj = theVisualObj;
+  myExtractGeometry->SetImplicitFunction(theImplicitBoolean);
+  SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+}
+
+
 void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
   if(theGrid){
     //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
     myIsShrinkable = true;
 
-    myExtractUnstructuredGrid->SetInput(theGrid);
+    myExtractGeometry->SetInput(theGrid);
+
+    myExtractUnstructuredGrid->SetInput(myExtractGeometry->GetOutput());
     myMergeFilter->SetGeometry(myExtractUnstructuredGrid->GetOutput());
 
     theGrid = static_cast<vtkUnstructuredGrid*>(myMergeFilter->GetOutput());
@@ -183,18 +212,132 @@ vtkUnstructuredGrid* SMESH_DeviceActor::GetUnstructuredGrid(){
 }
 
 
-vtkMergeFilter* SMESH_DeviceActor::GetMergeFilter(){
-  return myMergeFilter;
+void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
+				       vtkScalarBarActor* theScalarBarActor,
+				       vtkLookupTable* theLookupTable)
+{
+  bool anIsInitialized = theFunctor;
+  if(anIsInitialized){
+    vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
+    vtkUnstructuredGrid* aGrid = myExtractUnstructuredGrid->GetOutput();
+    aDataSet->ShallowCopy(aGrid);
+    
+    vtkDoubleArray *aScalars = vtkDoubleArray::New();
+    vtkIdType aNbCells = aGrid->GetNumberOfCells();
+    aScalars->SetNumberOfComponents(1);
+    aScalars->SetNumberOfTuples(aNbCells);
+    
+    myVisualObj->UpdateFunctor(theFunctor);
+
+    using namespace SMESH::Controls;
+    if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get())){
+      for(vtkIdType i = 0; i < aNbCells; i++){
+	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+	vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
+	vtkIdType anObjId = myVisualObj->GetElemObjId(anId2);
+	double aValue = aNumericalFunctor->GetValue(anObjId);
+	aScalars->SetValue(i,aValue);
+      }
+    }else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get())){
+      for(vtkIdType i = 0; i < aNbCells; i++){
+	vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
+	vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
+	vtkIdType anObjId = myVisualObj->GetElemObjId(anId2);
+	bool aValue = aPredicate->IsSatisfy(anObjId);
+	aScalars->SetValue(i,aValue);
+      }
+    }
+
+    aDataSet->GetCellData()->SetScalars(aScalars);
+    aScalars->Delete();
+	
+    theLookupTable->SetRange(aScalars->GetRange());
+    theLookupTable->Build();
+    
+    myMergeFilter->SetScalars(aDataSet);
+    aDataSet->Delete();
+  }
+  GetMapper()->SetScalarVisibility(anIsInitialized);
+  theScalarBarActor->SetVisibility(anIsInitialized);
 }
 
 
-vtkPolyData* SMESH_DeviceActor::GetPolyDataInput(){
-  return myPassFilter.back()->GetPolyDataOutput();
+void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
+					  SMESH_DeviceActor* theDeviceActor)
+{
+  myExtractUnstructuredGrid->ClearRegisteredCells();
+  myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
+  myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::ePassAll);
+  myVisualObj->UpdateFunctor(theFunctor);
+
+  using namespace SMESH::Controls;
+  if(FreeBorders* aFreeBorders = dynamic_cast<FreeBorders*>(theFunctor.get())){
+    myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::eAdding);
+    myExtractUnstructuredGrid->ClearRegisteredCells();
+    vtkUnstructuredGrid* aGrid = theDeviceActor->GetUnstructuredGrid();
+    vtkIdType aNbCells = aGrid->GetNumberOfCells();
+    for( vtkIdType i = 0; i < aNbCells; i++ ){
+      vtkIdType anObjId = theDeviceActor->GetElemObjId(i);
+      if(aFreeBorders->IsSatisfy(anObjId))
+	myExtractUnstructuredGrid->RegisterCell(i);
+    }
+    if(!myExtractUnstructuredGrid->IsCellsRegistered())
+      myExtractUnstructuredGrid->RegisterCell(-1);
+    SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+  }else if(FreeEdges* aFreeEdges = dynamic_cast<FreeEdges*>(theFunctor.get())){
+    SMESH::Controls::FreeEdges::TBorders aBorders;
+    aFreeEdges->GetBoreders(aBorders);
+    vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
+    vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
+    aDataSet->SetPoints(aGrid->GetPoints());
+
+    vtkIdType aNbCells = aBorders.size();
+    vtkIdType aCellsSize = 3*aNbCells;
+    vtkCellArray* aConnectivity = vtkCellArray::New();
+    aConnectivity->Allocate( aCellsSize, 0 );
+    
+    vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
+    aCellTypesArray->SetNumberOfComponents( 1 );
+    aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
+    
+    vtkIdList *anIdList = vtkIdList::New();
+    anIdList->SetNumberOfIds(2);
+    
+    FreeEdges::TBorders::const_iterator anIter = aBorders.begin();
+    for(vtkIdType aVtkId; anIter != aBorders.end(); anIter++){
+      const FreeEdges::Border& aBorder = *anIter;
+      int aNode[2] = {
+	myVisualObj->GetNodeVTKId(aBorder.myPntId[0]),
+	myVisualObj->GetNodeVTKId(aBorder.myPntId[1])
+      };
+      //cout<<"aNode = "<<aBorder.myPntId[0]<<"; "<<aBorder.myPntId[1]<<endl;
+      if(aNode[0] >= 0 && aNode[1] >= 0){
+	anIdList->SetId( 0, aNode[0] );
+	anIdList->SetId( 1, aNode[1] );
+	aConnectivity->InsertNextCell( anIdList );
+	aCellTypesArray->InsertNextValue( VTK_LINE );
+      }
+    }
+    
+    vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+    aCellLocationsArray->SetNumberOfComponents( 1 );
+    aCellLocationsArray->SetNumberOfTuples( aNbCells );
+    
+    aConnectivity->InitTraversal();
+    for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
+      aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
+    
+    aDataSet->SetCells( aCellTypesArray, aCellLocationsArray,aConnectivity );
+
+    SetUnstructuredGrid(aDataSet);
+    aDataSet->Delete();
+  }    
 }
 
 
 unsigned long int SMESH_DeviceActor::GetMTime(){
   unsigned long mTime = this->Superclass::GetMTime();
+  mTime = max(mTime,myExtractGeometry->GetMTime());
   mTime = max(mTime,myExtractUnstructuredGrid->GetMTime());
   mTime = max(mTime,myMergeFilter->GetMTime());
   mTime = max(mTime,myGeomFilter->GetMTime());
@@ -208,8 +351,7 @@ void SMESH_DeviceActor::SetTransform(SALOME_Transform* theTransform){
 }
 
 
-void SMESH_DeviceActor::SetShrink()
-{
+void SMESH_DeviceActor::SetShrink() {
   if ( !myIsShrinkable ) return;
   if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
   {
@@ -219,8 +361,7 @@ void SMESH_DeviceActor::SetShrink()
   }
 }
 
-void SMESH_DeviceActor::UnShrink()
-{
+void SMESH_DeviceActor::UnShrink() {
   if ( !myIsShrunk ) return;
   if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
   {    
@@ -247,6 +388,7 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
     myGeomFilter->SetInside(false);
   }
   myRepresentation = theMode;
+  GetProperty()->Modified();
   myMapper->Modified();
   Modified();
 }
@@ -269,62 +411,45 @@ int SMESH_DeviceActor::GetVisibility(){
 }
 
 
-int SMESH_DeviceActor::GetObjId(int theVtkID){
-  if (GetRepresentation() == ePoint){
-    return GetNodeObjId(theVtkID);
-  }else{
-    return GetElemObjId(theVtkID);
-  }
-}
-
-
-SMESH_DeviceActor::TVectorId SMESH_DeviceActor::GetVtkId(int theObjID){
-  if (GetRepresentation() == ePoint){
-    return GetNodeVtkId(theObjID);
-  }else{
-    return GetElemVtkId(theObjID);
-  }
-}
-
-
 int SMESH_DeviceActor::GetNodeObjId(int theVtkID){
-  vtkIdType aRetID = myVisualObj->GetNodeObjId(theVtkID);
+  vtkIdType anID = myExtractGeometry->GetNodeObjId(theVtkID);
+  vtkIdType aRetID = myVisualObj->GetNodeObjId(anID);
   if(MYDEBUG) MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
-SMESH_DeviceActor::TVectorId SMESH_DeviceActor::GetNodeVtkId(int theObjID){
-  SMESH_DeviceActor::TVectorId aVecId;
+float* SMESH_DeviceActor::GetNodeCoord(int theObjID){
+  vtkDataSet* aDataSet = myExtractGeometry->GetInput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  if(anID < 0) 
-    return aVecId;
-  aVecId.push_back(anID);
-  return aVecId;
+  float* aCoord = aDataSet->GetPoint(anID);
+  if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
+  return aCoord;
 }
 
 
 int SMESH_DeviceActor::GetElemObjId(int theVtkID){
-  vtkIdType aGridID = myGeomFilter->GetObjId(theVtkID);
-  if(aGridID < 0) 
+  vtkIdType anId = myGeomFilter->GetElemObjId(theVtkID);
+  if(anId < 0) 
     return -1;
-  vtkIdType anExtractID = myExtractUnstructuredGrid->GetOutId(aGridID);
-  if(anExtractID < 0) 
+  vtkIdType anId2 = myExtractUnstructuredGrid->GetInputId(anId);
+  if(anId2 < 0) 
     return -1;
-  vtkIdType aRetID = myVisualObj->GetElemObjId(anExtractID);
+  vtkIdType anId3 = myExtractGeometry->GetElemObjId(anId2);
+  if(anId3 < 0) 
+    return -1;
+  vtkIdType aRetID = myVisualObj->GetElemObjId(anId3);
   if(MYDEBUG) 
-    MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anExtractID = "<<anExtractID<<"; aGridID = "<<aGridID<<"; aRetID = "<<aRetID);
+    MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
-SMESH_DeviceActor::TVectorId SMESH_DeviceActor::GetElemVtkId(int theObjID){
-  TVectorId aVecId;
+vtkCell* SMESH_DeviceActor::GetElemCell(int theObjID){
+  vtkDataSet* aDataSet = myExtractGeometry->GetInput();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
-  if(aGridID < 0) 
-    return aVecId;
-  aVecId = myGeomFilter->GetVtkId(aGridID);
+  vtkCell* aCell = aDataSet->GetCell(aGridID);
   if(MYDEBUG) 
-    MESSAGE("GetElemVtkId - theObjID = "<<theObjID<<"; aGridID = "<<aGridID<<"; aGridID = "<<aGridID<<"; aVecId[0] = "<<aVecId[0]);
-  return aVecId;
+    MESSAGE("GetElemCell - theObjID = "<<theObjID<<"; aGridID = "<<aGridID);
+  return aCell;
 }
 
 
@@ -339,17 +464,26 @@ void SMESH_DeviceActor::SetShrinkFactor(float theValue){
 }
 
 
+void SMESH_DeviceActor::SetHighlited(bool theIsHighlited){
+  myIsHighlited = theIsHighlited;
+  Modified();
+}
+
 void SMESH_DeviceActor::Render(vtkRenderer *ren, vtkMapper* m){
   int aResolveCoincidentTopology = vtkMapper::GetResolveCoincidentTopology();
-  float aFactor, aUnit; 
-  vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(aFactor,aUnit);
+  float aStoredFactor, aStoredUnit; 
+  vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(aStoredFactor,aStoredUnit);
 
   vtkMapper::SetResolveCoincidentTopologyToPolygonOffset();
-  vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
-								 myPolygonOffsetUnits);
+  float aFactor = myPolygonOffsetFactor, aUnits = myPolygonOffsetUnits;
+  if(myIsHighlited){
+    static float EPS = .01;
+    aUnits *= (1.0-EPS);
+  }
+  vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(aFactor,aUnits);
   vtkLODActor::Render(ren,m);
 
-  vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(aFactor,aUnit);
+  vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(aStoredFactor,aStoredUnit);
   vtkMapper::SetResolveCoincidentTopology(aResolveCoincidentTopology);
 }
 

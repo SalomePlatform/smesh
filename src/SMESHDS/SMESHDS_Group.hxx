@@ -21,51 +21,47 @@
 //
 //
 //  File   : SMESHDS_Group.hxx
-//  Author : Michael Sazonov (OCC)
 //  Module : SMESH
 //  $Header$
 
 #ifndef _SMESHDS_Group_HeaderFile
 #define _SMESHDS_Group_HeaderFile
 
-#include <SMDS_MeshGroup.hxx>
 #include <string>
+#include "SMESHDS_GroupBase.hxx"
+#include "SMDS_MeshGroup.hxx"
 
 class SMESHDS_Mesh;
 
-class SMESHDS_Group : public SMDS_MeshGroup
+class SMESHDS_Group : public SMESHDS_GroupBase
 {
  public:
 
-  SMESHDS_Group (const SMESHDS_Mesh*       theMesh,
+  SMESHDS_Group (const int                 theID,
+                 const SMESHDS_Mesh*       theMesh,
                  const SMDSAbs_ElementType theType);
 
-  void SetStoreName (const char* theName)
-  { myStoreName = theName; }
+  virtual void SetType(SMDSAbs_ElementType theType);
 
-  const char* GetStoreName () const
-  { return myStoreName.c_str(); }
+  virtual int Extent();
 
-  bool Contains (const int theID) const;
+  virtual bool IsEmpty();
 
-  bool Add (const int theID);
-  bool Remove (const int theID);
+  virtual bool Contains (const int theID);
 
-  int GetID (const int theIndex);
-  // use it for iterations 1..Extent() as alternative to parent's
-  // InitIterator(), More(), Next()
+  virtual SMDS_ElemIteratorPtr GetElements();
+
+  bool SMESHDS_Group::Add (const int theID);
+
+  bool SMESHDS_Group::Remove (const int theID);
+
+  void Clear();
+
+  SMDS_MeshGroup& SMDSGroup() { return myGroup; }
 
  private:
-  SMESHDS_Group (const SMESHDS_Group& theOther);
-  // prohibited copy constructor
-  SMESHDS_Group& operator = (const SMESHDS_Group& theOther);
-  // prohibited assign operator
 
-  const SMDS_MeshElement* findInMesh (const int theID) const;
-
-  string myStoreName;
-  int    myCurIndex;
-  int    myCurID;
+  SMDS_MeshGroup myGroup;
 
 };
 

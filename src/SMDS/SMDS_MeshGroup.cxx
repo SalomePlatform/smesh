@@ -24,9 +24,11 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
-using namespace std;
 #include "SMDS_MeshGroup.hxx"
 #include "utilities.h"
+
+using namespace std;
+
 //=======================================================================
 //function : SMDS_MeshGroup
 //purpose  : 

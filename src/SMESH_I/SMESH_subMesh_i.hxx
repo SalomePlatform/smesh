@@ -33,7 +33,6 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 #include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(GEOM_Shape)
 #include CORBA_CLIENT_HEADER(MED)
 
 #include "SALOME_GenericObj_i.hh"
@@ -56,7 +55,7 @@ public:
   CORBA::Long GetNumberOfElements()
     throw (SALOME::SALOME_Exception);
   
-  CORBA::Long  GetNumberOfNodes()
+  CORBA::Long  GetNumberOfNodes( CORBA::Boolean all )
     throw (SALOME::SALOME_Exception);
   
   SMESH::long_array* GetElementsId()
@@ -71,10 +70,15 @@ public:
   SMESH::SMESH_Mesh_ptr GetFather()
     throw (SALOME::SALOME_Exception);
   
+  GEOM::GEOM_Object_ptr GetSubShape()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long GetId();   
 
   SALOME_MED::FAMILY_ptr GetFamily()
     throw (SALOME::SALOME_Exception);
+
+  virtual SMESH::long_array* GetIDs();
 
   SMESH_Mesh_i* _mesh_i; //NRI
 

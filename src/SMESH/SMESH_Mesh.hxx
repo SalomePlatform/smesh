@@ -34,8 +34,7 @@
 #include "SMESHDS_Command.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_subMesh.hxx"
-#include <SMDSAbs_ElementType.hxx>
-#include "Utils_SALOME_Exception.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -57,15 +56,8 @@
 #include <list>
 #include <map>
 
-#if (__GNUC__>2)
 #include <string>
-#include <istream>
-#include <ostream>
-#else 
-#include <string>
-#include <istream.h>
-#include <ostream.h>
-#endif
+#include <iostream>
 
 class SMESH_Gen;
 class SMESH_Group;
@@ -73,124 +65,127 @@ class TopTools_ListOfShape;
 
 class SMESH_Mesh
 {
-  public:
-	SMESH_Mesh();
-	SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen,
-		SMESHDS_Document * myDocument);
-
-	virtual ~SMESH_Mesh();
-
-        void ShapeToMesh(const TopoDS_Shape & aShape);
-        /*!
-         * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
-         */
-        int MEDToMesh(const char* theFileName, const char* theMeshName);
-
-	SMESH_Hypothesis::Hypothesis_Status
-                AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
-		throw(SALOME_Exception);
-
-	SMESH_Hypothesis::Hypothesis_Status
-                RemoveHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
-		throw(SALOME_Exception);
-
-	const list <const SMESHDS_Hypothesis * >&
-		GetHypothesisList(const TopoDS_Shape & aSubShape) const
-		throw(SALOME_Exception);
-
-	const list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
-
-//   const SMESHDS_ListOfAsciiString& GetLog()
-//     throw (SALOME_Exception);
-
-	void ClearLog() throw(SALOME_Exception);
-
-	int GetId();
-
-	SMESHDS_Mesh * GetMeshDS();
-
-	SMESH_Gen *GetGen();
-
-	SMESH_subMesh *GetSubMesh(const TopoDS_Shape & aSubShape)
-		throw(SALOME_Exception);
-
-	SMESH_subMesh *GetSubMeshContaining(const TopoDS_Shape & aSubShape)
-		throw(SALOME_Exception);
-
-	const list < SMESH_subMesh * >&
-		GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
-		throw(SALOME_Exception);
-
-        bool IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
-                              const TopoDS_Shape & aSubShape);
-        // Return True if anHyp is used to mesh aSubShape
-
-        bool IsNotConformAllowed() const;
-        // check if a hypothesis alowing notconform mesh is present
-
-        bool IsMainShape(const TopoDS_Shape& theShape) const;
-
-        const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape);
-        // return list of ancestors of theSubShape in the order
-        // that lower dimention shapes come first.
-        
-	void ExportDAT(const char *file) throw(SALOME_Exception);
-	void ExportMED(const char *file, const char* theMeshName = NULL, bool theAutoGroups = true) throw(SALOME_Exception);
-	void ExportUNV(const char *file) throw(SALOME_Exception);
-
-	int NbNodes() throw(SALOME_Exception);
-
-	int NbEdges() throw(SALOME_Exception);
-
-	int NbFaces() throw(SALOME_Exception);
-
-	int NbTriangles() throw(SALOME_Exception);
-
-	int NbQuadrangles() throw(SALOME_Exception);
-
-	int NbVolumes() throw(SALOME_Exception);
-
-	int NbTetras() throw(SALOME_Exception);
-
-	int NbHexas() throw(SALOME_Exception);
-
-	int NbPyramids() throw(SALOME_Exception);
-
-	int NbPrisms() throw(SALOME_Exception);
-
-	int NbSubMesh() throw(SALOME_Exception);
-
-        int NbGroup() const { return _mapGroup.size(); }
+  SMESH_Mesh();
+  SMESH_Mesh(const SMESH_Mesh&);
+public:
+  SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen,
+	     SMESHDS_Document * myDocument);
   
-        SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
-                               const char*               theName,
-                               int&                      theId);
+  virtual ~SMESH_Mesh();
   
-        SMESH_Group* GetGroup (const int theGroupID);
-
-        list<int> GetGroupIds();
+  void ShapeToMesh(const TopoDS_Shape & aShape);
   
-        void RemoveGroup (const int theGroupID);
+  int UNVToMesh(const char* theFileName);
+  /*!
+   * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
+   */
+  int MEDToMesh(const char* theFileName, const char* theMeshName);
+  
+  int STLToMesh(const char* theFileName);
 
-        ostream& Dump(ostream & save);
+  SMESH_Hypothesis::Hypothesis_Status
+  AddHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
+    throw(SALOME_Exception);
+  
+  SMESH_Hypothesis::Hypothesis_Status
+  RemoveHypothesis(const TopoDS_Shape & aSubShape, int anHypId)
+    throw(SALOME_Exception);
+  
+  const list <const SMESHDS_Hypothesis * >&
+  GetHypothesisList(const TopoDS_Shape & aSubShape) const
+    throw(SALOME_Exception);
+  
+  const list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
+  
+  void ClearLog() throw(SALOME_Exception);
+  
+  int GetId();
+  
+  SMESHDS_Mesh * GetMeshDS();
+  
+  SMESH_Gen *GetGen();
+  
+  SMESH_subMesh *GetSubMesh(const TopoDS_Shape & aSubShape)
+    throw(SALOME_Exception);
+  
+  SMESH_subMesh *GetSubMeshContaining(const TopoDS_Shape & aSubShape)
+    throw(SALOME_Exception);
+  
+  const list < SMESH_subMesh * >&
+  GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
+    throw(SALOME_Exception);
+  
+  bool IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
+			const TopoDS_Shape & aSubShape);
+  // Return True if anHyp is used to mesh aSubShape
+  
+  bool IsNotConformAllowed() const;
+  // check if a hypothesis alowing notconform mesh is present
+  
+  bool IsMainShape(const TopoDS_Shape& theShape) const;
 
-  private:
-
-	int _id;					// id given by creator (unique within the creator instance)
-	int _studyId;
-	int _idDoc;					// id given by SMESHDS_Document
-        int _groupId;                                   // id generator for group objects
-	bool _isShapeToMesh;		                // set to true when a shape is given (only once)
-	list<const SMESHDS_Hypothesis *> _subShapeHypothesisList;
-	list <SMESH_subMesh *> _subMeshesUsingHypothesisList;
-	SMESHDS_Document * _myDocument;
-	SMESHDS_Mesh * _myMeshDS;
-	TopTools_IndexedMapOfShape _subShapes;
-	map <int, SMESH_subMesh *> _mapSubMesh;
-	map <int, SMESH_Group *>   _mapGroup;
-	SMESH_Gen *_gen;
-
-        TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
+  const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape);
+  // return list of ancestors of theSubShape in the order
+  // that lower dimention shapes come first.
+  
+  void ExportDAT(const char *file) throw(SALOME_Exception);
+  void ExportMED(const char *file, const char* theMeshName = NULL, bool theAutoGroups = true) throw(SALOME_Exception);
+  void ExportUNV(const char *file) throw(SALOME_Exception);
+  void ExportSTL(const char *file, const bool isascii) throw(SALOME_Exception);
+  
+  int NbNodes() throw(SALOME_Exception);
+  
+  int NbEdges() throw(SALOME_Exception);
+  
+  int NbFaces() throw(SALOME_Exception);
+  
+  int NbTriangles() throw(SALOME_Exception);
+  
+  int NbQuadrangles() throw(SALOME_Exception);
+  
+  int NbVolumes() throw(SALOME_Exception);
+  
+  int NbTetras() throw(SALOME_Exception);
+  
+  int NbHexas() throw(SALOME_Exception);
+  
+  int NbPyramids() throw(SALOME_Exception);
+  
+  int NbPrisms() throw(SALOME_Exception);
+  
+  int NbSubMesh() throw(SALOME_Exception);
+  
+  int NbGroup() const { return _mapGroup.size(); }
+  
+  SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
+			 const char*               theName,
+			 int&                      theId,
+                         const TopoDS_Shape&       theShape=TopoDS_Shape());
+  
+  SMESH_Group* GetGroup (const int theGroupID);
+  
+  list<int> GetGroupIds();
+  
+  void RemoveGroup (const int theGroupID);
+  
+  ostream& Dump(ostream & save);
+  
+private:
+  int _id;					// id given by creator (unique within the creator instance)
+  int _studyId;
+  int _idDoc;					// id given by SMESHDS_Document
+  int _groupId;                                   // id generator for group objects
+  bool _isShapeToMesh;		                // set to true when a shape is given (only once)
+  list<const SMESHDS_Hypothesis *> _subShapeHypothesisList;
+  list <SMESH_subMesh *> _subMeshesUsingHypothesisList;
+  SMESHDS_Document * _myDocument;
+  SMESHDS_Mesh * _myMeshDS;
+  //TopTools_IndexedMapOfShape _subShapes; USE the same map of _myMeshDS
+  map <int, SMESH_subMesh *> _mapSubMesh;
+  map <int, SMESH_Group *>   _mapGroup;
+  SMESH_Gen *_gen;
+  
+  TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 };
 
 #endif

@@ -55,3 +55,22 @@ int SMDS_Position::GetShapeId() const
 {
 	return myShapeId;
 }
+
+//=======================================================================
+//function : GetDim
+//purpose  : 
+//=======================================================================
+
+int SMDS_Position::GetDim() const
+{
+//   switch ( GetTypeOfPosition() ) {
+//   case SMDS_TOP_UNSPEC:  return -1;
+//   case SMDS_TOP_VERTEX:  return 0;
+//   case SMDS_TOP_EDGE:    return 1;
+//   case SMDS_TOP_FACE:    return 2;
+//   case SMDS_TOP_3DSPACE: return 3;
+//   }
+  return GetTypeOfPosition();
+}
+
+     

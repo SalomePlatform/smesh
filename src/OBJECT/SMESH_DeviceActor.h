@@ -30,20 +30,28 @@
 #define SMESH_DEVICE_ACTOR_H
 
 #include "SALOME_GeometryFilter.h"
+#include "SMESH_Controls.hxx"
 #include "SMESH_Object.h"
 
 #include <vtkLODActor.h>
+#include <vtkSmartPointer.h>
 
+class vtkCell;
 class vtkProperty;
 class vtkMergeFilter;
 class vtkShrinkFilter;
 class vtkPolyDataMapper;
 class vtkUnstructuredGrid;
+class vtkScalarBarActor;
+class vtkLookupTable;
+class vtkImplicitBoolean;
 
 class SALOME_Transform;
 class SALOME_TransformFilter;
 class SALOME_PassThroughFilter;
 class SALOME_ExtractUnstructuredGrid;
+
+class SMESH_ExtractGeometry;
 
 
 class SMESH_DeviceActor: public vtkLODActor{
@@ -56,17 +64,11 @@ class SMESH_DeviceActor: public vtkLODActor{
   void SetStoreMapping(int theStoreMapping);
   int GetStoreMapping(){ return myStoreMapping;}
 
-  typedef SALOME_GeometryFilter::TVectorId TVectorId;
-  int GetObjId(int theVtkID);
-  TVectorId GetVtkId(int theObjID);
+  virtual int GetNodeObjId(int theVtkID);
+  virtual float* GetNodeCoord(int theObjID);
 
-  int GetNodeObjId(int theVtkID);
-  TVectorId GetNodeVtkId(int theObjID);
-
-  int GetElemObjId(int theVtkID);
-  TVectorId GetElemVtkId(int theObjID);
-
-  vtkPolyData* GetPolyDataInput(); 
+  virtual int GetElemObjId(int theVtkID);
+  virtual vtkCell* GetElemCell(int theObjID);
 
   virtual void SetTransform(SALOME_Transform* theTransform); 
   virtual unsigned long int GetMTime();
@@ -88,11 +90,20 @@ class SMESH_DeviceActor: public vtkLODActor{
 
   SALOME_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
   vtkUnstructuredGrid* GetUnstructuredGrid();
-  vtkMergeFilter* GetMergeFilter();
+
+  void SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
+		      vtkScalarBarActor* theScalarBarActor,
+		      vtkLookupTable* theLookupTable);
+  void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
+			 SMESH_DeviceActor* theDeviceActor);
+
+  bool IsHighlited() { return myIsHighlited;}
+  void SetHighlited(bool theIsHighlited);
 
   virtual void Render(vtkRenderer *, vtkMapper *);
 
  protected:
+  void Init(TVisualObjPtr theVisualObj, vtkImplicitBoolean* theImplicitBoolean);
   void SetUnstructuredGrid(vtkUnstructuredGrid* theGrid);
 
   vtkPolyDataMapper *myMapper;
@@ -100,6 +111,8 @@ class SMESH_DeviceActor: public vtkLODActor{
 
   vtkProperty *myProperty;
   EReperesent myRepresentation;
+
+  SMESH_ExtractGeometry* myExtractGeometry;
 
   vtkMergeFilter* myMergeFilter;
   SALOME_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
@@ -113,6 +126,8 @@ class SMESH_DeviceActor: public vtkLODActor{
   bool myIsShrinkable;
   bool myIsShrunk;
   
+  bool myIsHighlited;
+
   float myPolygonOffsetFactor;
   float myPolygonOffsetUnits;
 
@@ -124,8 +139,8 @@ class SMESH_DeviceActor: public vtkLODActor{
 
   SMESH_DeviceActor();
   ~SMESH_DeviceActor();
-  SMESH_DeviceActor(const SMESH_DeviceActor&) {};
-  void operator=(const SMESH_DeviceActor&) {};
+  SMESH_DeviceActor(const SMESH_DeviceActor&);
+  void operator=(const SMESH_DeviceActor&);
 
 };
 

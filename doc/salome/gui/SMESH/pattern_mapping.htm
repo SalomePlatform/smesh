@@ -1,0 +1,307 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Pattern mapping</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=3341>
+<meta name=layout-width content=740>
+
+
+<!--(Links)=========================================================-->
+
+ <link rel='stylesheet' href='default_ns.css'>
+<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<!--
+if (navigator.appName !="Netscape")
+{   document.write("<link rel='stylesheet' href='default.css'>");}
+//-->
+</script>
+<style type="text/css">
+<!--
+img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
+p.whs2 {margin-left: 40px;}
+img_whs3 {border-style: none; border: none; width: 626px; height: 471px;}
+img_whs4 {border: none; width: 22px; height: 28px;}
+table.whs5 {x-cell-content-align: top; width: 100%; border-spacing: 0;}
+col.whs6 {width: 50%;}
+td.whs7 {padding-right: 10px; padding-left: 10px; border-right-style: none; border-left-style: none; border-top-style: none; border-bottom-style: none;}
+img_whs8 {border: none; width: 232px; height: 400px;}
+td.whs9 {padding-right: 10px; padding-left: 10px; border-top-style: none; border-bottom-style: none; border-right-style: none;}
+p.whs10 {margin-left: 0px;}
+img_whs11 {border-style: none; border: none; width: 554px; height: 279px;}
+img_whs12 {border-style: none; border: none; width: 572px; height: 233px;}
+img_whs13 {border-style: none; border: none; width: 606px; height: 249px;}
+-->
+</style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs10 {margin-left:1; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("SMESH module\nModifying meshes\nPattern mapping");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("smesh.htm");
+
+		autoSync(0);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	document.location.reload();
+//-->
+</script>
+<h1>Pattern mapping</h1>
+
+<h3>About patterns</h3>
+
+<p><img src="i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> The pattern describes a mesh to generate: positions of 
+ nodes within a geometrical domain and nodal connectivity of elements. 
+ As well, a pattern specifies the so-called key-points, i.e. nodes that 
+ will be located at geometrical vertices. Pattern description is stored 
+ in &lt;pattern_name&gt;.smp file.</p>
+
+<p>&nbsp;</p>
+
+<p>The smp file contains 4 sections:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs2">1. The first line holds the number of nodes 
+ (N).</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">2. The next N lines describe nodes coordinates. 
+ Each line holds 2 coordinates of a node.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">3. A key-points line: indices of nodes to 
+ be mapped on geometrical vertices. An index n refers to a node described 
+ on an n-th line of section 2. The first node index is zero.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">4. The rest lines describe nodal connectivity 
+ of elements, one line for an element. A line holds indices of nodes forming 
+ an element. An index n refers to a node described on an n-th line of the 
+ section 2. The first node index is zero. There must be 3 or 4 indices 
+ on a line: only 2d elements are allowed.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p>The 2D pattern must contain at least one element and at least one key-point. 
+ All key-points must lay on boundaries.</p>
+
+<p>&nbsp;</p>
+
+<p>An example of a simple smp file and a preview of a pattern described 
+ in this file:</p>
+
+<p>&nbsp;</p>
+
+<p><img src="image94.gif" width="626px" height="471px" border="0" class="img_whs3"></p>
+
+<p>&nbsp;</p>
+
+<h3>Creating patterns</h3>
+
+<p>The pattern description can be created manually or automatically. Manual 
+ pattern creation implies creation of pattern file by hands. For an automatic 
+ generation the user just specifies a geometrical face having a mesh built 
+ on it. Mesh nodes lying on face vertices become key-points. Additionally, 
+ the user may choose the way of getting nodes coordinates by projecting 
+ nodes on the face instead of using &quot;positions on face&quot; generated 
+ by mesher (if there are any). Faces having a seam edge can’t be used for 
+ automatic pattern creation.</p>
+
+<p>&nbsp;</p>
+
+<p>When creating a pattern from an existing mesh, there are two possible 
+ cases:</p>
+
+<p>&nbsp;</p>
+
+<p>1. A sub-mesh on face is selected. A pattern is created from the 2d 
+ elements bound to a face by mesher. Node coordinates are either &quot;positions 
+ on face&quot; computed by mesher, or coordinates got by node projection 
+ on a geometrical surface, according to your choice.</p>
+
+<p>&nbsp;</p>
+
+<p>2. A mesh where the main shape is a face, is selected. A pattern is 
+ created from all the 2d elements in a mesh. If all mesh elements are build 
+ by mesher, the user can select the way of getting nodes coordinates, else 
+ all nodes are projected on a face surface.</p>
+
+<p>&nbsp;</p>
+
+<h3>Application of pattern mapping</h3>
+
+<p class=TODO>To apply pattern mapping to a geometrical object:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs2">1. From the <span style="font-weight: bold;"><B>Modification 
+ </B></span>menu choose the <span style="font-weight: bold;"><B>Pattern Mapping 
+ </B></span>item or click <img src="image98.gif" width="22px" height="28px" border="0" class="img_whs4"> button in the toolbar. The following 
+ dialog box shall appear:</p>
+
+<p class="whs2">&nbsp;</p>
+
+<!--(Table)=========================================================-->
+<table x-use-null-cells cellspacing="0" width="100%" class="whs5">
+<col class="whs6">
+<col class="whs6">
+
+<tr valign=top>
+<td width="50%" class="whs7">
+<p><img src="image81.jpg" width="232px" height="400px" border="0" class="img_whs8"></td>
+<td width="50%" class="whs9">
+<p><img src="image80.jpg" width="232px" height="400px" border="0" class="img_whs8"></td></tr>
+</table>
+
+<p class="whs2">&nbsp;</p>
+
+<p>To apply a pattern to a geometrical object, you should specify:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs2">- a face having the number of vertices equal 
+ to the number of key-points in the pattern; the number of key-points on 
+ internal boundaries of a pattern must also be equal to the number of vertices 
+ on internal boundaries of a face;</p>
+
+<p class="whs2">- a vertex to which the first key-point should 
+ be mapped,</p>
+
+<p class="whs2">- reverse or not the order of key-points. 
+ (The order of vertices of a face is counterclockwise looking from outside).</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3>Mapping algorithm:</h3>
+
+<p class="whs10">The mapping algorithm is as follows:</p>
+
+<p class="whs10">&nbsp;</p>
+
+<p class="whs2">1. Key-points are set in the order that they 
+ are encountered when walking along a pattern boundary so that elements 
+ are on the left. The first key-point is preserved.</p>
+
+<p class="whs2">2. Find geometrical vertices corresponding 
+ to key-points by vertices order in a face boundary; here, &quot;Reverse 
+ order of key-points&quot; flag is taken into account.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="image95.gif" width="554px" height="279px" border="0" class="img_whs11"></p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">3. Boundary nodes of a pattern are mapped 
+ onto edges of a face: a node located between certain key-points on a pattern 
+ boundary is mapped on a geometrical edge limited by corresponding geometrical 
+ vertices. Node position on an edge reflects its distance from two key-points.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="image96.gif" width="572px" height="233px" border="0" class="img_whs12"></p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">4. Coordinates of a non-boundary node in 
+ a parametric space of a face are defined as following. In a parametric 
+ space of a pattern, a node lays at the intersection of two iso-lines, 
+ each of which intersects a pattern boundary at least at two points. Knowing 
+ mapped positions of boundary nodes, we find where isoline-boundary intersection 
+ points are mapped to, and hence we can find mapped isolines direction 
+ and then, two node positions on two mapped isolines. The eventual mapped 
+ position of a node is found as an average of positions on mapped isolines.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="image97.gif" width="606px" height="249px" border="0" class="img_whs13"></p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+
+</html>

@@ -13,7 +13,10 @@ msgstr ""
 # -------------- Local Length --------------
 
 msgid "SMESH_LOCAL_LENGTH_HYPOTHESIS"
-msgstr "Local Length"
+msgstr "Average Length"
+
+msgid "SMESH_LOCAL_LENGTH_PARAM"
+msgstr "Length"
 
 msgid "SMESH_LOCAL_LENGTH_TITLE"
 msgstr "Hypothesis Construction"
@@ -23,12 +26,15 @@ msgstr "Hypothesis Construction"
 msgid "SMESH_NB_SEGMENTS_HYPOTHESIS"
 msgstr "Number of Segments"
 
+msgid "SMESH_NB_SEGMENTS_PARAM"
+msgstr "Number of Segments"
+
 msgid "SMESH_NB_SEGMENTS_TITLE"
 msgstr "Hypothesis Construction"
 
 # ----------- Max. Element Area ------------
 
-msgid "SMESH_MAX_ELEMENT_AREA"
+msgid "SMESH_MAX_ELEMENT_AREA_PARAM"
 msgstr "Max. Area"
 
 msgid "SMESH_MAX_ELEMENT_AREA_HYPOTHESIS"
@@ -39,11 +45,48 @@ msgstr "Hypothesis Construction"
 
 # ---------- Max. Element Volume -----------
 
-msgid "SMESH_MAX_ELEMENT_VOLUME"
+msgid "SMESH_MAX_ELEMENT_VOLUME_PARAM"
 msgstr "Max. Volume"
 
 msgid "SMESH_MAX_ELEMENT_VOLUME_HYPOTHESIS"
 msgstr "Max. Element Volume"
 
 msgid "SMESH_MAX_ELEMENT_VOLUME_TITLE"
+msgstr "Hypothesis Construction"
+
+
+# -------------- Start and End Length --------------
+
+msgid "SMESH_START_LENGTH_PARAM"
+msgstr "Start Length"
+
+msgid "SMESH_END_LENGTH_PARAM"
+msgstr "End Length"
+
+msgid "SMESH_START_END_LENGTH_HYPOTHESIS"
+msgstr "Start and EndLocal Length"
+
+msgid "SMESH_START_END_LENGTH_TITLE"
+msgstr "Hypothesis Construction"
+
+# -------------- Deflection 1D --------------
+
+msgid "SMESH_DEFLECTION1D_HYPOTHESIS"
+msgstr "Deflection 1D"
+
+msgid "SMESH_DEFLECTION1D_PARAM"
+msgstr "Deflection"
+
+msgid "SMESH_DEFLECTION1D_TITLE"
+msgstr "Hypothesis Construction"
+
+# -------------- Arithmetic 1D --------------
+
+msgid "SMESH_ARITHMETIC_1D_HYPOTHESIS"
+msgstr "Arithmetic 1D"
+
+msgid "SMESH_ARITHMETIC_1D_PARAM"
+msgstr "Arithmetic Reason"
+
+msgid "SMESH_ARITHMETIC_1D_TITLE"
 msgstr "Hypothesis Construction"

@@ -29,6 +29,8 @@
 #include "SMESHDS_Document.hxx"
 #include "utilities.h"
 
+using namespace std;
+
 //=======================================================================
 //function : Create
 //purpose  : 

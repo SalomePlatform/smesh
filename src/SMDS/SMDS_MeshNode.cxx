@@ -24,6 +24,8 @@
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 
+using namespace std;
+
 //=======================================================================
 //function : SMDS_MeshNode
 //purpose  : 

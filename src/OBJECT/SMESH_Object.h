@@ -30,15 +30,16 @@
 #define SMESH_OBJECT_H
 
 // IDL Headers
-#include <SALOMEconfig.h>
+#include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
-#include CORBA_SERVER_HEADER(SMESH_Filter)
 
 #include <map>
 #include <list>
 #include <boost/shared_ptr.hpp>
 #include <vtkSystemIncludes.h>
+
+#include "SMESH_Controls.hxx"
 
 class vtkUnstructuredGrid;
 class vtkPoints;
@@ -57,7 +58,6 @@ typedef boost::shared_ptr<SMESH_VisualObj> TVisualObjPtr;
   Class       : SMESH_VisualObj
   Description : Base class for all mesh objects to be visuilised
 */
-
 class SMESH_VisualObj
 {
 protected:
@@ -70,12 +70,18 @@ public:
   virtual                   ~SMESH_VisualObj();
   
   virtual void              Update( int theIsClear = true ) = 0;
-  virtual void              UpdateFunctor( SMESH::Functor_ptr theFunctor ) = 0;
+  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int               GetElemDimension( const int theObjId ) = 0;
 
   virtual int               GetNbEntities( const SMESH::ElementType) const = 0;
   virtual int               GetEntities( const SMESH::ElementType, TEntityList& ) const = 0;
   virtual bool              IsNodePrs() const = 0;
+  virtual SMDS_Mesh*        GetMesh() const = 0;
+
+  bool                      GetEdgeNodes( const int theElemId,
+                                          const int theEdgeNum,
+                                          int&      theNodeId1,
+                                          int&      theNodeId2 ) const;
 
   vtkUnstructuredGrid*      GetUnstructuredGrid() { return myGrid; }
   
@@ -91,7 +97,7 @@ protected:
   void                      buildNodePrs();
   void                      buildElemPrs();
   
-private:
+private:                                   
 
   TMapOfIds                 mySMDS2VTKNodes;
   TMapOfIds                 myVTK2SMDSNodes;
@@ -122,10 +128,10 @@ public:
 
   virtual int               GetElemDimension( const int theObjId );
 
-  virtual void              UpdateFunctor( SMESH::Functor_ptr f );
+  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   
   SMESH::SMESH_Mesh_ptr     GetMeshServer() { return myMeshServer.in(); }
-  SMDS_Mesh*                GetMesh()       { return myMesh; }
+  SMDS_Mesh*                GetMesh() const { return myMesh; }
 
 protected:
 
@@ -148,8 +154,9 @@ public:
 
   virtual void              Update( int theIsClear = true );
   
-  virtual void              UpdateFunctor( SMESH::Functor_ptr );
+  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   virtual int               GetElemDimension( const int theObjId );
+  virtual SMDS_Mesh*        GetMesh() const { return myMeshObj->GetMesh(); }
   
 protected:
 
@@ -165,7 +172,7 @@ protected:
 class SMESH_GroupObj: public SMESH_SubMeshObj
 {
 public:
-                            SMESH_GroupObj( SMESH::SMESH_Group_ptr, SMESH_MeshObj* );
+                            SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
   virtual                   ~SMESH_GroupObj();
 
   virtual int               GetNbEntities( const SMESH::ElementType) const;
@@ -174,7 +181,7 @@ public:
 
 private:
 
-  SMESH::SMESH_Group_var    myGroupServer;
+  SMESH::SMESH_GroupBase_var    myGroupServer;
 };
 
 

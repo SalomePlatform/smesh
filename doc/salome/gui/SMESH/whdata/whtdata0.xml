@@ -8,10 +8,16 @@
     <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
     <book name="Defining hypotheses" >
       <item name="About hypotheses" url="files/about_hypotheses.htm" />
-      <item name="Local Length hypothesis" url="files/local_length_hypothesis.htm" />
-      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Arithmetic 1D hypothesis" url="files/arithmetic_1d.htm" />
+      <item name="Average Length hypothesis" url="files/local_length_hypothesis.htm" />
+      <item name="Deflection 1D hypothesis" url="files/deflection_1d.htm" />
+      <item name="Length from edges hypothesis" url="files/length_from_edges.htm" />
       <item name="Max Element Area hypothesis" url="files/max._element_area_hypothesis.htm" />
       <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
+      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Non conform mesh allowed hypothesis" url="files/non_conform_mesh_allowed_hypothesis.htm" />
+      <item name="Propagation of 1D Hypothesis on opposite edges" url="files/propagation_of_1d_hypothesis_on_opposite_edges.htm" />
+      <item name="Start and End Length hypothesis" url="files/start_and_end_length_hypothesis.htm" />
     </book>
     <book name="Defining meshing algorithms" >
       <item name="About meshing algorithms" url="files/about_meshing_algorithms.htm" />
@@ -25,6 +31,7 @@
       <book name="3D meshing algorithms" >
         <item name="Hexahedron meshing algorithm" url="files/3d_meshing_algorithm.htm" />
         <item name="Tetrahedron (Netgen) meshing algorithm" url="files/tetrahedron_(netgen)_meshing_algorithm.htm" />
+        <item name="Tetrahedron (GHS3D) meshing algorithm" url="files/tetrahedron_(ghs3d)_meshing_algorithm.htm" />
       </book>
     </book>
     <item name="Constructing meshes" url="files/constructing_meshes.htm" />
@@ -33,7 +40,7 @@
   </book>
   <book name="Editing meshes" >
     <item name="Reassigning hypotheses and algorithms" url="files/reassigning_hypotheses_and_algorithms.htm" />
-    <item name="Editing hypotheses" url="files/editing_hypotheses.htm" />
+    <item name="Editing hypotheses and algorithms" url="files/editing_hypotheses.htm" />
   </book>
   <book name="Quality controls" >
     <item name="About quality controls" url="files/about_quality_controls.htm" />
@@ -45,24 +52,38 @@
     <item name="Warping" url="files/warp.htm" />
     <item name="Skew angle" url="files/skew.htm" />
   </book>
+  <book name="Grouping elements" >
+    <item name="Creating groups" url="files/creating_groups.htm" />
+    <item name="Editing groups" url="files/editing_groups.htm" />
+    <item name="Using operations on groups" url="files/using_operations_on_groups.htm" />
+    <item name="Constructing groups of specific elements" url="files/constructing_groups_of_specific_elements.htm" />
+  </book>
   <book name="Modifying meshes" >
-    <item name="About modification of meshes" url="files/about_modification_of_meshes.htm" />
     <item name="Adding nodes and elements" url="files/adding_nodes_and_elements.htm" />
     <item name="Removing nodes and elements" url="files/removing_nodes_and_elements.htm" />
-    <item name="Displacing nodes" url="files/displacing_nodes.htm" />
-    <item name="Changing orientation of elements" url="files/changing_orientation_of_elements.htm" />
+    <item name="Renumbering nodes and elements" url="files/renumbering_nodes_and_elements.htm" />
+    <book name="Transforming meshes" >
+      <item name="Translation" url="files/translation.htm" />
+      <item name="Rotation" url="files/rotation.htm" />
+      <item name="Symmetry" url="files/symmetry.htm" />
+      <item name="Sewing meshes" url="files/sewing_meshes.htm" />
+      <item name="Merging nodes" url="files/merging_nodes.htm" />
+    </book>
+    <item name="Moving nodes" url="files/displacing_nodes.htm" />
     <item name="Diagonal inversion of elements" url="files/diagonal_iversion_of_elements.htm" />
+    <item name="Uniting two triangles" url="files/uniting_two_triangles.htm" />
+    <item name="Uniting a set of triangles" url="files/uniting_a_set_of_triangles.htm" />
+    <item name="Changing orientation of elements" url="files/changing_orientation_of_elements.htm" />
+    <item name="Cutting quadrangles" url="files/cutting_quadrangles.htm" />
+    <item name="Smoothing" url="files/smoothing.htm" />
+    <item name="Extrusion" url="extrusion.htm" />
+    <item name="Revolution" url="revolution.htm" />
+    <item name="Pattern mapping" url="pattern_mapping.htm" />
   </book>
   <book name="Mesh info" >
     <item name="Viewing mesh info" url="files/viewing_mesh_info.htm" />
     <item name="Displaying nodes numbers" url="files/displaying_nodes_numbers.htm" />
     <item name="Displaying elements numbers" url="files/displaying_elements_numbers.htm" />
-  </book>
-  <book name="Setting SMESH preferences" >
-    <item name="Visualization modes" url="files/visualization_modes.htm" />
-    <item name="Visualization properties" url="files/visualization_properties.htm" />
-    <item name="View update" url="files/view_update.htm" />
-    <item name="Scalar Bar properties" url="files/scalar_bar_properties.htm" />
   </book>
 </book>
 

@@ -38,9 +38,12 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 EXPORT_HEADERS= SMESHGUI_Swig.hxx \
 		SMESHGUI_Swig.i \
 		SMESHGUI.h \
+		SMESHGUI_Utils.h \
 		SMESHGUI_Hypotheses.h \
+		SMESHGUI_HypothesesUtils.h \
 		SMESHGUI_SpinBox.h \
-		SMESHGUI_StudyAPI.h
+		SMESHGUI_aParameter.h \
+		SMESHGUI_aParameterDlg.h
 
 # .po files to transform in .qm
 PO_FILES = \
@@ -50,14 +53,15 @@ PO_FILES = \
 # Libraries targets
 LIB = libSMESHGUI.la
 LIB_SRC =	SMESHGUI.cxx \
-		SMESHGUI_StudyAPI.cxx \
+		SMESHGUI_PatternWidget.cxx \
+		SMESHGUI_CreatePatternDlg.cxx \
+		SMESHGUI_MeshPatternDlg.cxx \
 		SMESHGUI_SpinBox.cxx \
 		SMESHGUI_NodesDlg.cxx \
-		SMESHGUI_AddHypothesisDlg.cxx \
-		SMESHGUI_AddAlgorithmDlg.cxx \
 		SMESHGUI_InitMeshDlg.cxx \
 		SMESHGUI_AddSubMeshDlg.cxx \
 		SMESHGUI_TransparencyDlg.cxx \
+		SMESHGUI_ClippingDlg.cxx \
 		SMESHGUI_GroupDlg.cxx \
 		SMESHGUI_RemoveNodesDlg.cxx \
 		SMESHGUI_RemoveElementsDlg.cxx \
@@ -67,28 +71,50 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_Preferences_SelectionDlg.cxx \
 		SMESHGUI_aParameterDlg.cxx \
 		SMESHGUI_Swig.cxx \
-		SMESHGUI_ComputeScalarValue.cxx \
 		SMESHGUI_MoveNodesDlg.cxx \
-		SMESHGUI_OrientationElementsDlg.cxx \
-		SMESHGUI_DiagonalInversionDlg.cxx \
-		SMESHGUI_AddFaceDlg.cxx \
-		SMESHGUI_AddVolumeDlg.cxx \
-		SMESHGUI_AddEdgeDlg.cxx \
+		SMESHGUI_AddMeshElementDlg.cxx \
 		SMESHGUI_EditHypothesesDlg.cxx \
 		SMESHGUI_CreateHypothesesDlg.cxx \
 		SMESHGUI_XmlHandler.cxx \
 		SMESHGUI_Filter.cxx \
-		SMESHGUI_FilterDlg.cxx
+		SMESHGUI_FilterDlg.cxx \
+		SMESHGUI_FilterLibraryDlg.cxx \
+		SMESHGUI_SingleEditDlg.cxx \
+		SMESHGUI_MultiEditDlg.cxx \
+		SMESHGUI_aParameter.cxx \
+		SMESHGUI_DeleteGroupDlg.cxx \
+		SMESHGUI_GroupOpDlg.cxx \
+		SMESHGUI_SmoothingDlg.cxx \
+		SMESHGUI_RenumberingDlg.cxx \
+		SMESHGUI_ExtrusionDlg.cxx \
+		SMESHGUI_RevolutionDlg.cxx \
+		SMESHGUI_RotationDlg.cxx \
+		SMESHGUI_TranslationDlg.cxx \
+		SMESHGUI_SymmetryDlg.cxx \
+		SMESHGUI_SewingDlg.cxx \
+		SMESHGUI_MergeNodesDlg.cxx \
+		SMESHGUI_Utils.cxx \
+		SMESHGUI_SMESHGenUtils.cxx \
+		SMESHGUI_GEOMGenUtils.cxx \
+		SMESHGUI_MeshUtils.cxx \
+		SMESHGUI_GroupUtils.cxx \
+		SMESHGUI_FilterUtils.cxx \
+		SMESHGUI_PatternUtils.cxx \
+		SMESHGUI_HypothesesUtils.cxx \
+		SMESHGUI_PrecisionDlg.cxx \
+		SMESHGUI_VTKUtils.cxx 
 
 LIB_MOC = \
 		SMESHGUI.h \
+		SMESHGUI_PatternWidget.h \
+		SMESHGUI_MeshPatternDlg.h \
+		SMESHGUI_CreatePatternDlg.h \
 		SMESHGUI_NodesDlg.h \
 		SMESHGUI_SpinBox.h \
-		SMESHGUI_AddHypothesisDlg.h \
-		SMESHGUI_AddAlgorithmDlg.h \
 		SMESHGUI_InitMeshDlg.h \
 		SMESHGUI_AddSubMeshDlg.h \
 		SMESHGUI_TransparencyDlg.h \
+		SMESHGUI_ClippingDlg.h \
 		SMESHGUI_GroupDlg.h \
 		SMESHGUI_RemoveNodesDlg.h \
 		SMESHGUI_RemoveElementsDlg.h \
@@ -98,18 +124,28 @@ LIB_MOC = \
 		SMESHGUI_Preferences_SelectionDlg.h \
 		SMESHGUI_aParameterDlg.h \
 		SMESHGUI_MoveNodesDlg.h \
-		SMESHGUI_OrientationElementsDlg.h \
-		SMESHGUI_DiagonalInversionDlg.h \
-		SMESHGUI_AddEdgeDlg.h \
-		SMESHGUI_AddVolumeDlg.h \
-		SMESHGUI_AddFaceDlg.h \
+		SMESHGUI_AddMeshElementDlg.h \
 		SMESHGUI_EditHypothesesDlg.h \
 		SMESHGUI_CreateHypothesesDlg.h \
-		SMESHGUI_FilterDlg.h
-
+		SMESHGUI_FilterDlg.h \
+		SMESHGUI_FilterLibraryDlg.h \
+		SMESHGUI_SingleEditDlg.h \
+		SMESHGUI_MultiEditDlg.h \
+		SMESHGUI_DeleteGroupDlg.h \
+		SMESHGUI_GroupOpDlg.h \
+		SMESHGUI_SmoothingDlg.h \
+		SMESHGUI_RenumberingDlg.h \
+		SMESHGUI_ExtrusionDlg.h \
+		SMESHGUI_RevolutionDlg.h \
+		SMESHGUI_RotationDlg.h \
+		SMESHGUI_TranslationDlg.h \
+		SMESHGUI_SymmetryDlg.h \
+		SMESHGUI_SewingDlg.h \
+		SMESHGUI_PrecisionDlg.h \
+		SMESHGUI_MergeNodesDlg.h
+    
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 GEOM_Gen.idl \
-		 GEOM_Shape.idl \
 		 SMESH_Gen.idl \
 		 SMESH_Mesh.idl \
 		 SMESH_Hypothesis.idl \
@@ -120,18 +156,25 @@ LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SALOME_Component.idl \
 		 MED.idl \
 		 SMESH_Filter.idl \
-		 SALOME_GenericObj.idl
+		 SMESH_Pattern.idl \
+		 SALOME_GenericObj.idl \
+		 SALOME_Comm.idl
 
 LIB_SERVER_IDL = 
 
 # additionnal information to compil and link file
 
+#BIN = SMESHBin
+
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
             $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
             $(BOOST_CPPFLAGS)
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
-#$(OCC_CXXFLAGS)
 
-LDFLAGS += -lOCCViewer -lVTKViewer -lSalomeObject -lSalomeGUI -lSMESHObject -lSMDS -lSMESHDS -lSMESHFiltersSelection -lGEOMClient -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeGenericObj
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+
+
+LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -lVTKViewer -lSalomeGUI -lSalomePrs -lSalomeNS -lqsplitterP -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject -lEvent -lSALOMELocalTrace -lSalomeVTKFilter -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOMGUI -lGEOMClient -lGEOMFiltersSelection -lGEOMBase -lGEOMObject
+
+LDFLAGSFORBIN += $(LDFLAGS)
 
 @CONCLUDE@

@@ -35,24 +35,24 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= Document_Reader.h Document_Writer.h Mesh_Reader.h Mesh_Writer.h
+EXPORT_HEADERS= Driver_Document.h Driver_Mesh.h \
+		Driver_SMDS_Mesh.h Driver_SMESHDS_Mesh.h
 
 # Libraries targets
 LIB = libMeshDriver.la
-LIB_SRC = Document_Reader.cxx Document_Writer.cxx Mesh_Reader.cxx Mesh_Writer.cxx
+LIB_SRC = Driver_Document.cxx Driver_Mesh.cxx \
+	  Driver_SMDS_Mesh.cxx Driver_SMESHDS_Mesh.cxx
 
 LIB_CLIENT_IDL =
 
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -rdynamic -ldl -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += 
+CXXFLAGS += 
 
-LDFLAGS  += $(MED2_LIBS) -lSMESHDS -lSMDS
+LDFLAGS  += $(OCC_KERNEL_LIBS) -lTKTopAlgo -lSMESHDS -L${KERNEL_ROOT_DIR}/lib/salome -lOpUtil
 
-%_moc.cxx: %.h
-	$(MOC) $< -o $@
 
 @CONCLUDE@
 

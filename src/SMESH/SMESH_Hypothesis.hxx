@@ -68,7 +68,7 @@ protected:
   int _param_algo_dim;
 
 private:
-  string _libName;
+  std::string _libName;
 };
 
 #endif

@@ -26,10 +26,16 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_RemoveNodesDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_IdValidator.h"
+#include "SMESH_Actor.h"
+#include "SMDS_Mesh.hxx"
+
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_MessageBox.h"
@@ -49,6 +55,7 @@ using namespace std;
 #include <qimage.h>
 #include <qpixmap.h>
 
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_RemoveNodesDlg()
@@ -56,7 +63,9 @@ using namespace std;
 //=================================================================================
 SMESHGUI_RemoveNodesDlg::SMESHGUI_RemoveNodesDlg( QWidget* parent, const char* name, SALOME_Selection* Sel,
 						  bool modal, WFlags fl )
-    : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+     : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu |
+	       Qt::WDestructiveClose),
+       myBusy( false )
 {
     QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_REM_NODE")));
     QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
@@ -145,6 +154,7 @@ SMESHGUI_RemoveNodesDlg::SMESHGUI_RemoveNodesDlg( QWidget* parent, const char* n
     SelectButtonC1A1->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
+    LineEditC1A1->setValidator( new SMESHGUI_IdValidator( this, "validator" ));
     GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
     SMESHGUI_RemoveNodesDlgLayout->addWidget( GroupC1, 1, 0 );
 
@@ -167,14 +177,16 @@ SMESHGUI_RemoveNodesDlg::~SMESHGUI_RemoveNodesDlg()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::Init( SALOME_Selection* Sel )
 {
+  myBusy = false;    
 
   GroupC1->show();
   myConstructorId = 0 ;
   Constructor1->setChecked( TRUE );
   myEditCurrentArgument = LineEditC1A1 ;	
   mySelection = Sel;  
-  this->myOkNodes = false ;
-  mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
+  myNbOkNodes = 0 ;
+  myActor     = 0;
+  mySMESHGUI  = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
   /* signals and slots connections */
@@ -188,12 +200,17 @@ void SMESHGUI_RemoveNodesDlg::Init( SALOME_Selection* Sel )
   connect( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
   /* to close dialog if study change */
   connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
+  connect( myEditCurrentArgument, SIGNAL( textChanged( const QString& )),
+           SLOT( onTextChange( const QString& )));
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
   mySMESHGUI->DefineDlgPosition( this, x, y ) ;
   this->move( x, y ) ;
   this->show() ; /* displays Dialog */
+
+  SMESH::SetPointRepresentation(true);
+  QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
 
   SelectionIntoArgument();
   return ;
@@ -216,20 +233,37 @@ void SMESHGUI_RemoveNodesDlg::ConstructorsClicked(int constructorId)
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnApply()
 {
-  switch(myConstructorId)
-    { 
-    case 0 :
-      { 
-	if(myOkNodes) {	  
-	  mySMESHGUI->EraseSimulationActors();
-	  mySMESHGUI->RemoveNodes( myMesh, myMapIndex ) ;
-	  mySMESHGUI->ViewNodes();
-	  mySelection->ClearIObjects();
-	}
-	break ;
-      }
+  if (mySMESHGUI->ActiveStudyLocked())
+    return;
+  
+  if ( myNbOkNodes )
+  {
+    QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text(), false);
+    SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
+    anArrayOfIdeces->length( aListId.count() );
+    for ( int i = 0; i < aListId.count(); i++ )
+      anArrayOfIdeces[i] = aListId[ i ].toInt();
+
+    bool aResult = false;
+    try
+    {
+      SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+      aResult = aMeshEditor->RemoveNodes(anArrayOfIdeces.inout()) ;
     }
-  return ;
+    catch( ... )
+    {
+    }
+
+    if ( aResult )
+    {
+      Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+      mySelection->ClearIObjects();
+      SMESH::UpdateView();
+      mySelection->AddIObject( anIO, false );
+    }
+
+    SMESH::SetPointRepresentation(true);
+  }
 }
 
 //=================================================================================
@@ -251,14 +285,57 @@ void SMESHGUI_RemoveNodesDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
 {
+  mySelection->ClearIObjects();
+  SMESH::SetPointRepresentation(false);
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   mySMESHGUI->ResetState() ;
-  mySMESHGUI->EraseSimulationActors();
   reject() ;
   return ;
 }
 
+//=======================================================================
+//function : onTextChange
+//purpose  : 
+//=======================================================================
+
+void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
+{
+  if ( myBusy ) return;
+  myBusy = true;
+
+  myNbOkNodes = 0;
+
+  buttonOk->setEnabled( false );
+  buttonApply->setEnabled( false );
+
+  // hilight entered nodes
+  SMDS_Mesh* aMesh = 0;
+  if ( myActor )
+    aMesh = myActor->GetObject()->GetMesh();
+  if ( aMesh ) {
+
+    mySelection->ClearIObjects();
+    mySelection->AddIObject( myActor->getIO() );
+
+    QStringList aListId = QStringList::split( " ", theNewText, false);
+    for ( int i = 0; i < aListId.count(); i++ ) {
+      const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() );
+      if ( n ) {
+        if ( !mySelection->IsIndexSelected( myActor->getIO(), n->GetID() ))
+          mySelection->AddOrRemoveIndex (myActor->getIO(), n->GetID(), true);
+        myNbOkNodes++;
+      }
+    }
+
+    if ( myNbOkNodes ) {
+      buttonOk->setEnabled( true );
+      buttonApply->setEnabled( true );
+    }
+  }
+
+  myBusy = false;
+}
 
 //=================================================================================
 // function : SelectionIntoArgument()
@@ -266,34 +343,53 @@ void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
 {
-  myEditCurrentArgument->setText("") ;
-  myOkNodes = false;
-  QString aString = "";
+  if ( myBusy ) return;
+
+  // clear
+
+  myNbOkNodes = false;
+  myActor = 0;
+
+  myBusy = true;
+  myEditCurrentArgument->setText( "" );
+  myBusy = false;
+
+  if ( !GroupButtons->isEnabled() ) // inactive
+    return;
+
+  buttonOk->setEnabled( false );
+  buttonApply->setEnabled( false );
+
+  // get selected mesh
 
   int nbSel = mySelection->IObjectCount();
   if(nbSel != 1)
-    return ;
+    return;
 
-  int nbNodes = mySMESHGUI->GetNameOfSelectedNodes(mySelection, aString) ;
+  myMesh = SMESH::GetMeshByIO( mySelection->firstIObject() );
+  if ( myMesh->_is_nil() )
+    return;
+
+  myActor = SMESH::FindActorByEntry( mySelection->firstIObject()->getEntry() );
+  if ( !myActor )
+    return;
+
+  // get selected nodes
+
+  QString aString = "";
+  int nbNodes = SMESH::GetNameOfSelectedNodes(mySelection, aString) ;
   if(nbNodes < 1)
     return ;
-  
-  if ( mySelection->SelectionMode() != NodeSelection ){
-    QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
-    return;
-  }
+  myBusy = true;
+  myEditCurrentArgument->setText( aString );
+  myBusy = false;
 
-  myEditCurrentArgument->setText(aString) ;
-  Standard_Boolean res;
-  myMesh = mySMESHGUI->ConvertIOinMesh( mySelection->firstIObject(), res );
-  if (!res)
-    return ;
+  // OK
 
-  mySelection->GetIndex( mySelection->firstIObject(), myMapIndex);
+  myNbOkNodes = true;
 
-  myOkNodes = true ;
-  return ;
+  buttonOk->setEnabled( true );
+  buttonApply->setEnabled( true );
 }
 
 
@@ -329,7 +425,6 @@ void SMESHGUI_RemoveNodesDlg::DeactivateActiveDialog()
     GroupConstructors->setEnabled(false) ;
     GroupC1->setEnabled(false) ;
     GroupButtons->setEnabled(false) ;
-    mySMESHGUI->EraseSimulationActors() ;
     mySMESHGUI->ResetState() ;    
     mySMESHGUI->SetActiveDialogBox(0) ;
   }
@@ -350,7 +445,11 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
   GroupButtons->setEnabled(true) ;
   
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
-  return ;
+
+  SMESH::SetPointRepresentation(true);
+  QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
+
+  SelectionIntoArgument();
 }
 
 
@@ -379,3 +478,13 @@ void SMESHGUI_RemoveNodesDlg::closeEvent( QCloseEvent* e )
 }
 
 
+//=======================================================================
+//function : hideEvent
+//purpose  : caused by ESC key
+//=======================================================================
+
+void SMESHGUI_RemoveNodesDlg::hideEvent ( QHideEvent * e )
+{
+  if ( !isMinimized() )
+    ClickOnCancel();
+}

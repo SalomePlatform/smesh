@@ -25,14 +25,20 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #define  INCLUDE_MENUITEM_DEF 
 
-#include "SMESHGUI_XmlHandler.h"
-
 // QT Include
-//#include <qaccel.h>
 #include <qfileinfo.h>
+
+#include "QAD_ResourceMgr.h"
+#include "QAD_Desktop.h"
+
+#include "SMESHGUI_XmlHandler.h"
+#include "SMESHGUI_Hypotheses.h"
+
+#include "utilities.h"
+
+using namespace std;
 
 /*!
   Constructor

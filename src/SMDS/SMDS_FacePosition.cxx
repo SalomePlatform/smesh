@@ -26,7 +26,10 @@
 //  Module : SMESH
 
 #include "SMDS_FacePosition.hxx"
+
 #include "utilities.h"
+
+using namespace std;
 
 //=======================================================================
 //function : SMDS_FacePosition

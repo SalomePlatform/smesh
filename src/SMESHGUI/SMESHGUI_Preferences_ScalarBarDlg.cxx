@@ -26,9 +26,10 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
+
 #include "SMESHGUI.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -46,6 +47,7 @@ using namespace std;
 
 #include <vtkTextProperty.h>
 #include <vtkScalarBarActor.h>
+#include <vtkScalarsToColors.h>
 
 #include "QAD_SpinBoxDbl.h"
 #include "QAD_Config.h"
@@ -65,6 +67,8 @@ using namespace std;
 #define DEF_HOR_Y  0.01
 #define DEF_HOR_H  0.12
 #define DEF_HOR_W  0.60
+
+using namespace std;
 
 // Only one instance is allowed
 SMESHGUI_Preferences_ScalarBarDlg* SMESHGUI_Preferences_ScalarBarDlg::myDlg = 0;
@@ -497,7 +501,7 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
     double aMin = myMinEdit->text().toDouble();
     double aMax = myMaxEdit->text().toDouble();
     myScalarBarActor->GetLookupTable()->SetRange( aMin, aMax );
-    SMESHGUI::GetSMESHGUI()->UpdateView();
+    SMESH::RepaintCurrentView();
   }
   else {
     // Scalar Bar preferences
@@ -593,9 +597,8 @@ void SMESHGUI_Preferences_ScalarBarDlg::onSelectionChanged()
     if ( mySelection->IObjectCount() == 1 ) {
       Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject();
       if( anIO->hasEntry() ) {
-	Standard_Boolean isOk;
-	SMESH_Actor* anActor = SMESHGUI::GetSMESHGUI()->FindActorByEntry( anIO->getEntry(), isOk, true );
-	if ( isOk && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
+	SMESH_Actor* anActor = SMESH::FindActorByEntry(anIO->getEntry());
+	if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
 	  myActor = anActor;
 	  vtkScalarBarActor* myScalarBarActor = myActor->GetScalarBarActor();
 	  

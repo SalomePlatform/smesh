@@ -25,13 +25,15 @@
 //  Module : SMESH
 //  $Header$
 
+
 #include "SMESH_Group_i.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
-#include <SMESH_Group.hxx>
-#include <SMESHDS_Group.hxx>
-#include <SMDSAbs_ElementType.hxx>
-#include <utilities.h>
+#include "SMESH_Group.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
+#include "SMDSAbs_ElementType.hxx"
+#include "utilities.h"
 
 //=============================================================================
 /*!
@@ -39,7 +41,7 @@
  */
 //=============================================================================
 
-SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
 : SALOME::GenericObj_i( thePOA ),
   myMeshServant( theMeshServant ), 
   myLocalID( theLocalID )
@@ -47,6 +49,15 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theM
   thePOA->activate_object( this );
 }
 
+SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+: SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+{
+}
+
+SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
+: SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+{
+}
 
 //=============================================================================
 /*!
@@ -54,13 +65,39 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theM
  */
 //=============================================================================
 
-SMESH_Group_i::~SMESH_Group_i()
+SMESH_GroupBase_i::~SMESH_GroupBase_i()
 {
-  MESSAGE("~SMESH_Group_i;" );
+  MESSAGE("~SMESH_GroupBase_i;" );
   if ( myMeshServant )
     myMeshServant->removeGroup(myLocalID);
 }
 
+//=======================================================================
+//function : GetSmeshGroup
+//purpose  : 
+//=======================================================================
+
+::SMESH_Group* SMESH_GroupBase_i::GetSmeshGroup() const
+{
+  if ( myMeshServant ) {
+    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
+    return aMesh.GetGroup(myLocalID);
+  }
+  return 0;
+}
+
+//=======================================================================
+//function : GetGroupDS
+//purpose  : 
+//=======================================================================
+
+SMESHDS_GroupBase* SMESH_GroupBase_i::GetGroupDS() const
+{
+  ::SMESH_Group* aGroup = GetSmeshGroup();
+  if ( aGroup )
+    return aGroup->GetGroupDS();
+  return 0;
+}
 
 //=============================================================================
 /*!
@@ -68,72 +105,55 @@ SMESH_Group_i::~SMESH_Group_i()
  */
 //=============================================================================
 
-void SMESH_Group_i::SetName( const char* theName )
+void SMESH_GroupBase_i::SetName( const char* theName )
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      aGroup->SetName(theName);
+  ::SMESH_Group* aGroup = GetSmeshGroup();
+  if (aGroup) {
+    aGroup->SetName(theName);
 
-      // Update group name in a study
-      SALOMEDS::Study_var aStudy = myMeshServant->GetGen()->GetCurrentStudy();
-      if ( !aStudy->_is_nil() ) {
-	SALOMEDS::SObject_var aGroupSO = aStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string( _this() ) );
-	if ( !aGroupSO->_is_nil() ) {
-	  SALOMEDS::StudyBuilder_var aBuilder = aStudy->NewBuilder();
-	  aBuilder->SetName( aGroupSO, theName );
-	}
-      }
-      return;
-    }
+    // Update group name in a study
+    SMESH_Gen_i* aGen = myMeshServant->GetGen();
+    aGen->SetName( aGen->ObjectToSObject( aGen->GetCurrentStudy(), _this() ), theName );
+    return;
   }
   MESSAGE("can't set name of a vague group");
 }
 
-
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-char* SMESH_Group_i::GetName()
+char* SMESH_GroupBase_i::GetName()
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup)
-      return CORBA::string_dup (aGroup->GetName());
-  }
+  ::SMESH_Group* aGroup = GetSmeshGroup();
+  if (aGroup)
+    return CORBA::string_dup (aGroup->GetName());
   MESSAGE("get name of a vague group");
   return CORBA::string_dup( "NO_NAME" );
 }
 
-
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-SMESH::ElementType SMESH_Group_i::GetType()
+SMESH::ElementType SMESH_GroupBase_i::GetType()
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      SMDSAbs_ElementType aSMDSType = aGroup->GetGroupDS()->GetType();
-      SMESH::ElementType aType;
-      switch (aSMDSType) {
-      case SMDSAbs_Node:   aType = SMESH::NODE; break;
-      case SMDSAbs_Edge:   aType = SMESH::EDGE; break;
-      case SMDSAbs_Face:   aType = SMESH::FACE; break;
-      case SMDSAbs_Volume: aType = SMESH::VOLUME; break;
-      default:             aType = SMESH::ALL; break;
-      }
-      return aType;
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS) {
+    SMDSAbs_ElementType aSMDSType = aGroupDS->GetType();
+    SMESH::ElementType aType;
+    switch (aSMDSType) {
+    case SMDSAbs_Node:   aType = SMESH::NODE; break;
+    case SMDSAbs_Edge:   aType = SMESH::EDGE; break;
+    case SMDSAbs_Face:   aType = SMESH::FACE; break;
+    case SMDSAbs_Volume: aType = SMESH::VOLUME; break;
+    default:             aType = SMESH::ALL; break;
     }
+    return aType;
   }
   MESSAGE("get type of a vague group");
   return SMESH::ALL;
@@ -146,20 +166,14 @@ SMESH::ElementType SMESH_Group_i::GetType()
  */
 //=============================================================================
 
-CORBA::Long SMESH_Group_i::Size()
+CORBA::Long SMESH_GroupBase_i::Size()
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      int aSize = aGroup->GetGroupDS()->Extent();
-      return aSize;
-    }
-  }
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->Extent();
   MESSAGE("get size of a vague group");
   return 0;
 }
-
 
 //=============================================================================
 /*!
@@ -167,20 +181,14 @@ CORBA::Long SMESH_Group_i::Size()
  */
 //=============================================================================
 
-CORBA::Boolean SMESH_Group_i::IsEmpty()
+CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      bool isEmpty = aGroup->GetGroupDS()->IsEmpty();
-      return isEmpty;
-    }
-  }
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->IsEmpty();
   MESSAGE("checking IsEmpty of a vague group");
   return true;
 }
-
 
 //=============================================================================
 /*!
@@ -190,20 +198,13 @@ CORBA::Boolean SMESH_Group_i::IsEmpty()
 
 void SMESH_Group_i::Clear()
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      // a SMDS group forgets its type after clearing, so we must re-set it
-      SMDSAbs_ElementType aSMDSType = aGroup->GetGroupDS()->GetType();
-      aGroup->GetGroupDS()->Clear();
-      aGroup->GetGroupDS()->SetType(aSMDSType);
-      return;
-    }
+  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
+  if (aGroupDS) {
+    aGroupDS->Clear();
+    return;
   }
   MESSAGE("attempt to clear a vague group");
 }
-
 
 //=============================================================================
 /*!
@@ -211,20 +212,14 @@ void SMESH_Group_i::Clear()
  */
 //=============================================================================
 
-CORBA::Boolean SMESH_Group_i::Contains( CORBA::Long theID )
+CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      bool res = aGroup->GetGroupDS()->Contains(theID);
-      return res;
-    }
-  }
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->Contains(theID);
   MESSAGE("attempt to check contents of a vague group");
   return false;
 }
-
 
 //=============================================================================
 /*!
@@ -234,71 +229,55 @@ CORBA::Boolean SMESH_Group_i::Contains( CORBA::Long theID )
 
 CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      SMESHDS_Group* aGroupDS = aGroup->GetGroupDS();
-      int nbAdd = 0;
-      for (int i = 0; i < theIDs.length(); i++) {
-        int anID = (int) theIDs[i];
-        if (aGroupDS->Add(anID))
-          nbAdd++;
-      }
-      return nbAdd;
+  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
+  if (aGroupDS) {
+    int nbAdd = 0;
+    for (int i = 0; i < theIDs.length(); i++) {
+      int anID = (int) theIDs[i];
+      if (aGroupDS->Add(anID))
+        nbAdd++;
     }
+    return nbAdd;
   }
   MESSAGE("attempt to add elements to a vague group");
   return 0;
 }
 
-
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-CORBA::Long SMESH_Group_i::GetID( CORBA::Long theIndex )
+CORBA::Long SMESH_GroupBase_i::GetID( CORBA::Long theIndex )
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      int anID = aGroup->GetGroupDS()->GetID(theIndex);
-      return anID;
-    }
-  }
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->GetID(theIndex);
   MESSAGE("attempt to iterate on a vague group");
   return -1;
 }
 
-
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_Group_i::GetListOfID()
+SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
 {
   SMESH::long_array_var aRes = new SMESH::long_array();
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      SMESHDS_Group* aGroupDS = aGroup->GetGroupDS();
-      int aSize = aGroupDS->Extent();
-      aRes->length(aSize);
-      for (int i = 0; i < aSize; i++)
-        aRes[i] = aGroupDS->GetID(i+1);
-      return aRes._retn();
-    }
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS) {
+    int aSize = aGroupDS->Extent();
+    aRes->length(aSize);
+    for (int i = 0; i < aSize; i++)
+      aRes[i] = aGroupDS->GetID(i+1);
+    return aRes._retn();
   }
   MESSAGE("get list of IDs of a vague group");
   return aRes._retn();
 }
-
 
 //=============================================================================
 /*!
@@ -308,51 +287,57 @@ SMESH::long_array* SMESH_Group_i::GetListOfID()
 
 CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
 {
-  if ( myMeshServant ) {
-    ::SMESH_Mesh& aMesh = myMeshServant->GetImpl();
-    ::SMESH_Group* aGroup = aMesh.GetGroup(myLocalID);
-    if (aGroup) {
-      // a SMDS group forgets its type after clearing, so we must re-set it
-      // if the group becomes empty
-      SMDSAbs_ElementType aSMDSType = aGroup->GetGroupDS()->GetType();
-      SMESHDS_Group* aGroupDS = aGroup->GetGroupDS();
-      int nbDel = 0;
-      for (int i = 0; i < theIDs.length(); i++) {
-        int anID = (int) theIDs[i];
-        if (aGroupDS->Remove(anID))
-          nbDel++;
-      }
-      if (aGroupDS->IsEmpty())
-        aGroupDS->SetType(aSMDSType);
-      return nbDel;
+  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
+  if (aGroupDS) {
+    int nbDel = 0;
+    for (int i = 0; i < theIDs.length(); i++) {
+      int anID = (int) theIDs[i];
+      if (aGroupDS->Remove(anID))
+        nbDel++;
     }
+    return nbDel;
   }
   MESSAGE("attempt to remove elements from a vague group");
   return 0;
 }
-
 
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
-SMESH::SMESH_Mesh_ptr SMESH_Group_i::GetMesh()
+SMESH::SMESH_Mesh_ptr SMESH_GroupBase_i::GetMesh()
 {
-  MESSAGE("SMESH_Group_i::GetMesh(): mesh servant = " << myMeshServant );
   SMESH::SMESH_Mesh_var aMesh;
   if ( myMeshServant )
     aMesh = SMESH::SMESH_Mesh::_narrow( myMeshServant->_this() );
   return aMesh._retn();
 }
 
-
 //=============================================================================
 /*!
  *  
  */
 //=============================================================================
-int SMESH_Group_i::GetLocalID()
+SMESH::long_array* SMESH_GroupBase_i::GetIDs()
 {
-  return myLocalID;
+  SMESH::long_array_var aResult = GetListOfID();
+  return aResult._retn();
 }
+
+//=======================================================================
+//function : GetShape
+//purpose  : 
+//=======================================================================
+
+GEOM::GEOM_Object_ptr SMESH_GroupOnGeom_i::GetShape()
+{
+  GEOM::GEOM_Object_var aGeomObj;
+  SMESHDS_GroupOnGeom* aGroupDS = dynamic_cast<SMESHDS_GroupOnGeom*>( GetGroupDS() );
+  if ( aGroupDS ) {
+    SMESH_Gen_i* aGen = GetMeshServant()->GetGen();
+    aGeomObj = aGen->ShapeToGeomObject( aGroupDS->GetShape() );
+  }
+  return aGeomObj._retn();
+}
+

@@ -39,6 +39,22 @@ LIB_SRC =
 
 SWIG_DEF = libSMESH_Swig.i
 EXPORT_PYSCRIPTS = libSMESH_Swig.py \
+		   meshpy.py \
+		   batchmode_smesh.py \
+		   batchmode_mefisto.py \
+		   cube2pyGibi.py \
+		   cube2geometry.py \
+		   cube2partition.py \
+		   grid4pyGibi.py \
+		   grid4partition.py \
+		   grid3partition.py \
+		   grid17partition.py \
+		   hole1geometry.py \
+		   hole1partition.py \
+		   hole1pyGibi.py \
+		   hole2pyGibi.py \
+		   cyl2geometry.py \
+		   cyl2complementary.py \
                    SMESH_test0.py\
 		   SMESH_test1.py \
 		   SMESH_test2.py \
@@ -46,23 +62,23 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 	           SMESH_test4.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
+		   SMESH_mechanic_editor.py \
 		   SMESH_fixation.py \
 		   SMESH_fixation_hexa.py \
 		   SMESH_fixation_tetra.py \
-		   batchmode_smesh.py \
 		   SMESH_box_tetra.py \
 		   SMESH_box2_tetra.py \
 		   SMESH_box3_tetra.py \
 		   SMESH_flight_skin.py \
 		   SMESH_Partition1_tetra.py\
-		   batchmode_mefisto.py \
 		   SMESH_controls.py \
-		   SMESH_freebord.py
+		   SMESH_freebord.py \
+		   SMESH_blocks.py \
+		   SMESH_GroupFromGeom.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_Exception.idl \
 		 GEOM_Gen.idl \
-		 GEOM_Shape.idl \
 		 SMESH_Gen.idl \
 		 SMESH_Mesh.idl \
 		 SMESH_Hypothesis.idl \
@@ -71,11 +87,12 @@ LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_ModuleCatalog.idl \
 		 SALOME_Component.idl \
 		 SALOME_GenericObj.idl \
-		 MED.idl
+		 MED.idl \
+		 SALOME_Comm.idl
 
 EXPORT_SHAREDPYSCRIPTS=SMESH_shared_modules.py
 
-CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -DHAVE_CONFIG_H
+CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -DHAVE_CONFIG_H
 LIBS+= $(PYTHON_LIBS)
 LDFLAGS+= -lSMESHGUI -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeGenericObj
 

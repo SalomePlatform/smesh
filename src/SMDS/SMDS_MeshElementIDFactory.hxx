@@ -30,9 +30,10 @@
 #include "SMDS_MeshIDFactory.hxx"
 
 #include <map>
-using namespace std;
 
 class SMDS_MeshElement;
+
+typedef std::map<int, SMDS_MeshElement *> SMDS_IdElementMap;
 
 class SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 {
@@ -42,8 +43,11 @@ class SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 	SMDS_MeshElement * MeshElement(int ID);
 	virtual int GetFreeID();
 	virtual void ReleaseID(int ID);
+	int GetMaxID() const;
+	int GetMinID() const;
+        const SMDS_IdElementMap & GetIdElementMap() const { return myIDElements; }
   private:
-	map<int, SMDS_MeshElement *> myIDElements;
+	SMDS_IdElementMap myIDElements;
 
 };
 

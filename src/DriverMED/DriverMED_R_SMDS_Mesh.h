@@ -1,5 +1,3 @@
-//  SMESH DriverMED : driver to read and write 'med' files
-//
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 // 
@@ -18,41 +16,13 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : DriverMED_R_SMDS_Mesh.h
-//  Module : SMESH
 
 #ifndef _INCLUDE_DRIVERMED_R_SMDS_MESH
 #define _INCLUDE_DRIVERMED_R_SMDS_MESH
 
-#include "SMDS_Mesh.hxx"
-#include "Mesh_Reader.h"
+#include "Driver_SMDS_Mesh.h"
 
-extern "C"
-{
-#include <med.h>
-}
+class DriverMED_R_SMDS_Mesh: public Driver_SMDS_Mesh
+{};
 
-class DriverMED_R_SMDS_Mesh:public Mesh_Reader
-{
-
-  public:DriverMED_R_SMDS_Mesh();
-	~DriverMED_R_SMDS_Mesh();
-
-	void Add();
-	void Read();
-	void SetMesh(SMDS_Mesh * aMesh);
-	void SetFile(string);
-
-	void SetFileId(med_idt);
-	void SetMeshId(int);
-
-  private:  SMDS_Mesh * myMesh;
-	string myFile;
-	med_idt myFileId;
-	int myMeshId;
-
-};
 #endif

@@ -31,18 +31,18 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 @COMMENCE@
 
-EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h
+EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h SMESH_ActorUtils.h
 
 
 # Libraries targets
 
 LIB = libSMESHObject.la
-LIB_SRC = SMESH_Object.cxx SMESH_DeviceActor.cxx SMESH_Actor.cxx
+LIB_SRC = SMESH_Object.cxx SMESH_DeviceActor.cxx SMESH_Actor.cxx \
+	  SMESH_ExtractGeometry.cxx SMESH_ActorUtils.cxx
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SALOME_GenericObj.idl \
 		 SMESH_Mesh.idl \
-		 SMESH_Filter.idl \
 		 SMESH_Group.idl
 
 
@@ -53,6 +53,6 @@ BIN_SRC	=
 CPPFLAGS+=$(OCC_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
 	  $(BOOST_CPPFLAGS) $(QT_INCLUDES)
 LDFLAGS+=$(OCC_KERNEL_LIBS) $(VTK_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lSMDS \
-         -lSalomeGUI -lSalomeObject -lOpUtil
+         -lSalomeGUI -lSalomeObject -lSMESHControls
 
 @CONCLUDE@

@@ -26,10 +26,12 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI.h"
+
 #include <qvalidator.h>
+
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_SpinBox()

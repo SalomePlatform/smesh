@@ -45,15 +45,22 @@
 
 //Not portable see http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_4 to know more.
 #ifdef __GNUC__
-#if __GNUC__ < 3
-	#include <hash_map.h>
-        // _CS_gbo_100504 Do not forget to define the namespace alias gstd
-        namespace gstd { using ::hash_map; } // inherits globals
-#else
-	#include <ext/hash_map>
-	namespace gstd = __gnu_cxx;
+  #if __GNUC__ < 3
+    #include <hash_map.h>
+    namespace gstd { using ::hash_map; }; // inherit globals
+  #else
+    #include <ext/hash_map>
+    #if __GNUC_MINOR__ == 0
+      namespace gstd = std;               // GCC 3.0
+    #else
+      namespace gstd = ::__gnu_cxx;       // GCC 3.1 and later
+    #endif
+  #endif
+#else      // ...  there are other compilers, right?
+  namespace gstd = std;
 #endif
-#endif
+
+class SMESHDS_GroupBase;
 
 class SMESHDS_Mesh:public SMDS_Mesh{
 public:
@@ -153,6 +160,10 @@ public:
   void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
   virtual void RemoveNode(const SMDS_MeshNode *);
   void RemoveElement(const SMDS_MeshElement *);
+  bool ChangeElementNodes(const SMDS_MeshElement * elem,
+                          const SMDS_MeshNode    * nodes[],
+                          const int                nbnodes);
+  void Renumber (const bool isNodes, const int startID=1, const int deltaID=1);
 
   void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
   void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S);
@@ -178,12 +189,20 @@ public:
   int ShapeToIndex(const TopoDS_Shape & aShape);
   TopoDS_Shape IndexToShape(int ShapeIndex);
 
-  void NewSubMesh(int Index);
+  SMESHDS_SubMesh * NewSubMesh(int Index);
+  int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
   void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
   void SetNodeOnFace(SMDS_MeshNode * aNode, int Index);
   void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index);
   void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
   void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
+
+  void AddGroup (SMESHDS_GroupBase* theGroup)      { myGroups.insert(theGroup); }
+  void RemoveGroup (SMESHDS_GroupBase* theGroup)   { myGroups.erase(theGroup); }
+  int GetNbGroups() const                      { return myGroups.size(); }
+  const set<SMESHDS_GroupBase*>& GetGroups() const { return myGroups; }
+
+  bool IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const;
 
   ~SMESHDS_Mesh();
   
@@ -195,13 +214,14 @@ private:
   };
   typedef std::list<const SMESHDS_Hypothesis*> THypList;
   typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
-  ShapeToHypothesis myShapeToHypothesis;
+  ShapeToHypothesis          myShapeToHypothesis;
 
-  int myMeshID;
-  TopoDS_Shape myShape;
+  int                        myMeshID;
+  TopoDS_Shape               myShape;
   TopTools_IndexedMapOfShape myIndexToShape;
-  std::map<int,SMESHDS_SubMesh*> myShapeIndexToSubMesh;
-  SMESHDS_Script* myScript;
+  map<int,SMESHDS_SubMesh*>  myShapeIndexToSubMesh;
+  set<SMESHDS_GroupBase*>        myGroups;
+  SMESHDS_Script*            myScript;
 };
 
 

@@ -25,9 +25,10 @@
 //  Module : SMESH
 //  $Header$
 
-#include <SMESH_Group.hxx>
-#include <SMESH_Mesh.hxx>
-#include <SMESHDS_Group.hxx>
+#include "SMESH_Group.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
 
 //=============================================================================
 /*!
@@ -35,12 +36,22 @@
  */
 //=============================================================================
 
-SMESH_Group::SMESH_Group (const SMESH_Mesh*         theMesh,
+SMESH_Group::SMESH_Group (int                       theID,
+                          const SMESH_Mesh*         theMesh,
                           const SMDSAbs_ElementType theType,
-                          const char*               theName)
+                          const char*               theName,
+                          const TopoDS_Shape&       theShape)
      : myName(theName)
 {
-  myGroupDS = new SMESHDS_Group (const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(), theType);
+  if ( theShape.IsNull() )
+    myGroupDS = new SMESHDS_Group (theID,
+                                   const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
+                                   theType);
+  else
+    myGroupDS = new SMESHDS_GroupOnGeom (theID,
+                                         const_cast<SMESH_Mesh*>(theMesh)->GetMeshDS(),
+                                         theType,
+                                         theShape);
 }
 
 //=============================================================================

@@ -16,7 +16,8 @@ IDL_FILES = \
   SMESH_Hypothesis.idl \
   SMESH_BasicHypothesis.idl \
   SMESH_Filter.idl \
-  SMESH_Group.idl
+  SMESH_Group.idl \
+  SMESH_Pattern.idl
 
 PY_CLIENT_IDL = $(IDL_FILES)
 

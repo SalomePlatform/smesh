@@ -15,20 +15,36 @@
 		label-id="Average length"
 		icon-id="mesh_hypo_length.png"/>
 
-    <hypothesis type="LengthFromEdges"
-		label-id="Length From Edges (2D Hyp. for Triangulator)"
+    <hypothesis type="Arithmetic1D"
+		label-id="Arithmetic 1D"
+		icon-id="mesh_hypo_length.png"/>
+
+    <hypothesis type="StartEndLength"
+		label-id="Start and End Length"
 		icon-id="mesh_hypo_length.png"/>
 
     <hypothesis type="NumberOfSegments"
 		label-id="Nb. Segments"
 		icon-id="mesh_hypo_segment.png"/>
 
+    <hypothesis type="Deflection1D"
+		label-id="Deflection 1D"
+		icon-id="mesh_hypo_length.png"/>
+
+    <hypothesis type="Propagation"
+		label-id="Propagation of 1D Hyp. on opposite edges"
+		icon-id="mesh_hypo_length.png"/>
+
+    <hypothesis type="LengthFromEdges"
+		label-id="Length From Edges (2D Hyp. for Triangulator)"
+		icon-id="mesh_hypo_length.png"/>
+
     <hypothesis type="MaxElementArea"
-		label-id="Max. Triangle Area"
+		label-id="Max. Element Area"
 		icon-id="mesh_hypo_area.png"/>
 
     <hypothesis type="MaxElementVolume"
-		label-id="Max. Hexahedron or Tetrahedron Volume"
+		label-id="Max. Element Volume"
 		icon-id="mesh_hypo_volume.png"/>
 
     <hypothesis type="NotConformAllowed"

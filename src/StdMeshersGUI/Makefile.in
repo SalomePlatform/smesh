@@ -42,26 +42,24 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/sal
 LIB = libStdMeshersGUI.la
 LIB_SRC = \
 	StdMeshersGUI.cxx \
-	StdMeshersGUI_LocalLengthDlg.cxx \
-	StdMeshersGUI_NbSegmentsDlg.cxx \
-	StdMeshersGUI_MaxElementAreaDlg.cxx \
-	StdMeshersGUI_MaxElementVolumeDlg.cxx
+	StdMeshersGUI_CreateHypothesisDlg.cxx \
+	StdMeshersGUI_CreateStdHypothesisDlg.cxx \
+	StdMeshersGUI_Parameters.cxx
 
 LIB_MOC = \
-	StdMeshersGUI_LocalLengthDlg.h \
-	StdMeshersGUI_NbSegmentsDlg.h \
-	StdMeshersGUI_MaxElementAreaDlg.h \
-	StdMeshersGUI_MaxElementVolumeDlg.h
+	StdMeshersGUI_CreateHypothesisDlg.h \
+	StdMeshersGUI_CreateStdHypothesisDlg.h 
+
+EXPORT_HEADERS = StdMeshersGUI_CreateHypothesisDlg.h
 
 LIB_CLIENT_IDL = \
 	SALOME_Exception.idl \
-	SMESH_Gen.idl \
-	SMESH_Mesh.idl \
-	SMESH_Group.idl \
-	SMESH_Filter.idl \
 	SMESH_Hypothesis.idl \
-	SMESH_BasicHypothesis.idl \
-	MED.idl
+	SMESH_BasicHypothesis.idl
+
+## pb in dependencies search
+LIB_CLIENT_IDL += \
+	SALOME_GenericObj.idl
 
 LIB_SERVER_IDL = 
 
@@ -73,6 +71,6 @@ CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYT
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 #$(OCC_CXXFLAGS)
 
-LDFLAGS += -lSMESHGUI $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+LDFLAGS += -lSMESHGUI -lVTKViewer -lSalomeGUI -lSMESHObject -lSMESHFiltersSelection $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
 
 @CONCLUDE@

@@ -26,27 +26,39 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_NodesDlg.h"
+
 #include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_MeshUtils.h"
+
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESH_ActorUtils.h"
+
+#include "VTKViewer_ViewFrame.h"
+#include "SALOME_Actor.h"
+
 #include "SMESHGUI_SpinBox.h"
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
-#include "utilities.h"
+#include "QAD_WaitCursor.h"
 #include "QAD_MessageBox.h"
 
 #include "SMESH_Actor.h"
-#include <TColStd_MapOfInteger.hxx>
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshNode.hxx"
 
 // VTK Includes
-#include <vtkPoints.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkDataSetMapper.h>
+#include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkVertex.h>
+#include <vtkIntArray.h>
+#include <vtkCellArray.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkDataSetMapper.h>
+#include <vtkActorCollection.h>
+#include <vtkRenderer.h>
 
 // QT Includes
 #include <qbuttongroup.h>
@@ -65,6 +77,150 @@ using namespace std;
 #include <qvalidator.h>
 #include <qevent.h>
 
+#include "utilities.h"
+
+using namespace std;
+
+
+namespace SMESH{
+
+  void AddNode(SMESH::SMESH_Mesh_ptr theMesh, float x, float y, float z){
+    QAD_WaitCursor wc;
+    try{
+      SALOMEDS::SObject_var aSobj = SMESH::FindSObject(theMesh);
+      CORBA::String_var anEntry = aSobj->GetID();
+      SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
+      aMeshEditor->AddNode(x,y,z);
+      SALOMEDS::Study_var aStudy = GetActiveStudyDocument();
+      CORBA::Long anId = aStudy->StudyId();
+      if(TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,anEntry.in())){
+	aVisualObj->Update(true);
+      }
+    }catch(SALOME::SALOME_Exception& exc) {
+      INFOS("Follow exception was cought:\n\t"<<exc.details.text);
+    }catch(const std::exception& exc){
+      INFOS("Follow exception was cought:\n\t"<<exc.what());
+    }catch(...){
+      INFOS("Unknown exception was cought !!!");
+    }
+  }
+
+
+  class TNodeSimulation{
+    QAD_Study* myStudy;
+    QAD_StudyFrame* myStudyFrame;
+    VTKViewer_ViewFrame* myViewFrame;
+
+    SALOME_Actor *myPreviewActor;
+    vtkDataSetMapper* myMapper;
+    vtkPoints* myPoints;
+
+  public:
+
+    TNodeSimulation(QAD_Study* theStudy):
+      myStudy(theStudy),
+      myStudyFrame(theStudy->getActiveStudyFrame()),
+      myViewFrame(GetVtkViewFrame(theStudy->getActiveStudyFrame()))
+    {
+      vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::New();
+  
+      // Create points
+      myPoints = vtkPoints::New();
+      myPoints->SetNumberOfPoints( 1 );
+      myPoints->SetPoint(0,0.0,0.0,0.0);
+      
+      // Create cells
+      vtkIdList *anIdList = vtkIdList::New();
+      anIdList->SetNumberOfIds( 1 );
+
+      vtkCellArray *aCells = vtkCellArray::New();
+      aCells->Allocate( 2, 0 );
+
+      vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
+      aCellTypesArray->SetNumberOfComponents( 1 );
+      aCellTypesArray->Allocate( 1 );
+      
+      anIdList->SetId( 0, 0 );
+      aCells->InsertNextCell( anIdList );
+      aCellTypesArray->InsertNextValue( VTK_VERTEX );
+      
+      vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+      aCellLocationsArray->SetNumberOfComponents( 1 );
+      aCellLocationsArray->SetNumberOfTuples( 1 );
+      
+      aCells->InitTraversal();
+      vtkIdType npts;
+      aCellLocationsArray->SetValue( 0, aCells->GetTraversalLocation( npts ) );
+  
+      aGrid->SetCells( aCellTypesArray, aCellLocationsArray, aCells );
+
+      aGrid->SetPoints( myPoints );
+      aGrid->SetCells( aCellTypesArray, aCellLocationsArray,aCells );
+      aCellLocationsArray->Delete();
+      aCellTypesArray->Delete();
+      aCells->Delete();
+      anIdList->Delete(); 
+
+      // Create and display actor
+      myMapper = vtkDataSetMapper::New();
+      myMapper->SetInput( aGrid );
+      aGrid->Delete();
+
+      myPreviewActor = SALOME_Actor::New();
+      myPreviewActor->SetInfinitive(true);
+      myPreviewActor->VisibilityOff();
+      myPreviewActor->PickableOff();
+      myPreviewActor->SetMapper( myMapper );
+
+      vtkProperty* aProp = vtkProperty::New();
+      aProp->SetRepresentationToPoints();
+
+      float anRGB[3];
+      anRGB[0] = GetFloat("SMESH:SettingsNodeColorRed",0)/255.;
+      anRGB[1] = GetFloat("SMESH:SettingsNodeColorGreen",255)/255.;
+      anRGB[2] = GetFloat("SMESH:SettingsNodeColorBlue",0)/255.;
+      aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+
+      float aPointSize = GetFloat("SMESH:SettingsNodesSize",3);
+      aProp->SetPointSize(aPointSize);
+
+      myPreviewActor->SetProperty( aProp );
+      aProp->Delete();
+
+      myViewFrame->AddActor( myPreviewActor );
+
+    }
+
+
+    void SetPosition(float x, float y, float z){
+      myPoints->SetPoint(0,x,y,z);
+      myPoints->Modified();
+      SetVisibility(true);
+    }
+
+
+    void SetVisibility(bool theVisibility){
+      myPreviewActor->SetVisibility(theVisibility);
+      RepaintCurrentView();
+    }
+
+
+    ~TNodeSimulation(){
+      if(FindVtkViewFrame(myStudy,myStudyFrame)){
+	myViewFrame->RemoveActor(myPreviewActor);
+      }
+      myPreviewActor->Delete();
+
+      myMapper->RemoveAllInputs();
+      myMapper->Delete();
+
+      myPoints->Delete();
+    }
+
+  };
+
+}
+
 
 //=================================================================================
 // class    : SMESHGUI_NodesDlg()
@@ -75,9 +231,11 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( QWidget* parent,
 				      SALOME_Selection* Sel,
 				      bool modal,
 				      WFlags fl )
-  : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+  : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu |
+	     Qt::WDestructiveClose)
 {
-  
+  mySimulation = new SMESH::TNodeSimulation(SMESH::GetActiveStudy());
+
   QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_NODE")));
   if ( !name )
     setName( "SMESHGUI_NodesDlg" );
@@ -178,7 +336,9 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( QWidget* parent,
 // purpose  : Destructor
 //=======================================================================
 SMESHGUI_NodesDlg::~SMESHGUI_NodesDlg()
-{}
+{
+  delete mySimulation;
+}
 
 
 //=================================================================================
@@ -210,20 +370,24 @@ void SMESHGUI_NodesDlg::Init(SALOME_Selection* Sel)
   connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) );
   connect( buttonApply, SIGNAL( clicked() ), this, SLOT(ClickOnApply() ) );
   
-  connect( SpinBox_X, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Y, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Z, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
+  connect( SpinBox_X, SIGNAL ( valueChanged(double) ), SLOT( ValueChangedInSpinBox(double) )) ;
+  connect( SpinBox_Y, SIGNAL ( valueChanged(double) ), SLOT( ValueChangedInSpinBox(double) )) ;
+  connect( SpinBox_Z, SIGNAL ( valueChanged(double) ), SLOT( ValueChangedInSpinBox(double) )) ;
 
-  connect( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
-  connect( myMeshGUI, SIGNAL ( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
-  /* to close dialog if study change */
-  connect( myMeshGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
+  connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( SelectionIntoArgument() ));
+  connect( myMeshGUI, SIGNAL ( SignalDeactivateActiveDialog() ), SLOT( DeactivateActiveDialog() )) ;
+  /* to close dialog if study frame change */
+  connect( myMeshGUI, SIGNAL ( SignalStudyFrameChanged() ), SLOT( ClickOnCancel() ) ) ;
  
   /* Move widget on the botton right corner of main widget */
   int x, y ;
   myMeshGUI->DefineDlgPosition( this, x, y ) ;
   this->move( x, y ) ;
   this->show() ;
+
+  // set selection mode
+  SMESH::SetPointRepresentation(true);
+  QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
 
   SelectionIntoArgument();
 }
@@ -234,12 +398,13 @@ void SMESHGUI_NodesDlg::Init(SALOME_Selection* Sel)
 //=================================================================================
 void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double newValue )
 {
-  double vx = SpinBox_X->GetValue() ;
-  double vy = SpinBox_Y->GetValue() ;
-  double vz = SpinBox_Z->GetValue() ;
-  myMeshGUI->DisplaySimulationNode( myMesh, vx, vy, vz );
-  //myMeshGUI->ViewNodes();
+  if(!myMesh->_is_nil()){
+    double vx = SpinBox_X->GetValue() ;
+    double vy = SpinBox_Y->GetValue() ;
+    double vz = SpinBox_Z->GetValue() ;
 
+    mySimulation->SetPosition(vx,vy,vz);
+  }
   return ;
 }
 
@@ -249,32 +414,54 @@ void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double newValue )
 //=================================================================================
 void SMESHGUI_NodesDlg::ClickOnOk()
 {
-  this->ClickOnApply() ;
-  this->ClickOnCancel() ;
-
-  return ;
+  if ( ClickOnApply() )
+    ClickOnCancel() ;
 }
 
 //=======================================================================
 // function : ClickOnApply()
 // purpose  :
 //=======================================================================
-void SMESHGUI_NodesDlg::ClickOnApply()
+bool SMESHGUI_NodesDlg::ClickOnApply()
 {
-  if ( myMeshGUI->GetActiveStudy()->getActiveStudyFrame()->getTypeView() != VIEW_VTK ) {
-    return;
+  if (myMeshGUI->ActiveStudyLocked())
+    return false;
+
+  if ( myMesh->_is_nil() ) {
+    QAD_MessageBox::warn1(QAD_Application::getDesktop(),
+                          tr("SMESH_WRN_WARNING"),
+                          tr("MESH_IS_NOT_SELECTED"),
+                          tr("SMESH_BUT_OK"));
+    return false;
   }
-  
-  if ( Constructor1->isChecked() ) {
-    /* Recup args and call method */
-    double x = SpinBox_X->GetValue() ;
-    double y = SpinBox_Y->GetValue() ;
-    double z = SpinBox_Z->GetValue() ;
-    myMeshGUI->EraseSimulationActors() ;
-    myMeshGUI->AddNode( myMesh, x, y, z ) ; 
-    myMeshGUI->ViewNodes();
-    mySelection->ClearIObjects();
+                              
+  /* Recup args and call method */
+  double x = SpinBox_X->GetValue() ;
+  double y = SpinBox_Y->GetValue() ;
+  double z = SpinBox_Z->GetValue() ;
+  mySimulation->SetVisibility(false);
+  SMESH::AddNode(myMesh,x,y,z) ; 
+  SMESH::SetPointRepresentation(true);
+
+  // select myMesh
+  if ( mySelection->IObjectCount() != 1 ) {
+    if(VTKViewer_ViewFrame* aViewFrame = SMESH::GetCurrentVtkView()) {
+      vtkActorCollection *aCollection = aViewFrame->getRenderer()->GetActors();
+      aCollection->InitTraversal();
+      while(vtkActor *anAct = aCollection->GetNextActor()){
+        if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct))
+          if(anActor->hasIO())
+            if(SMESH_MeshObj *aMeshObj = dynamic_cast<SMESH_MeshObj*>(anActor->GetObject().get()))
+              if(myMesh->_is_equivalent( aMeshObj->GetMeshServer() ))
+              {
+                mySelection->ClearIObjects();
+                mySelection->AddIObject( anActor->getIO(), false );
+                break;
+              }
+      }
+    }
   }
+  return true;
 }
 
 
@@ -284,10 +471,12 @@ void SMESHGUI_NodesDlg::ClickOnApply()
 //=======================================================================
 void SMESHGUI_NodesDlg::ClickOnCancel()
 {
+  mySelection->ClearIObjects();
+  mySimulation->SetVisibility(false);
+  SMESH::SetPointRepresentation(false);
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
-  myMeshGUI->ResetState() ;
-  myMeshGUI->EraseSimulationActors() ;
+  myMeshGUI->ResetState();
   reject() ;
   return ;
 }
@@ -299,64 +488,34 @@ void SMESHGUI_NodesDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_NodesDlg::SelectionIntoArgument()
 {
-  int nbSel = mySelection->IObjectCount();
-  if(nbSel != 1) {
-    SpinBox_X->SetValue(0.0) ;
-    SpinBox_Y->SetValue(0.0) ;
-    SpinBox_Z->SetValue(0.0) ;
+  if ( !GroupConstructors->isEnabled() )
     return;
-  }
 
-  Standard_Boolean res;
-  myMesh = myMeshGUI->ConvertIOinMesh( mySelection->firstIObject(), res );
-  if (!res) {
-    SpinBox_X->SetValue(0.0) ;
-    SpinBox_Y->SetValue(0.0) ;
-    SpinBox_Z->SetValue(0.0) ;
-    return ;
-  }
-  
-  if ( mySelection->SelectionMode() != NodeSelection ) {
-    SpinBox_X->SetValue(0.0) ;
-    SpinBox_Y->SetValue(0.0) ;
-    SpinBox_Z->SetValue(0.0) ;
-    QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
-    return;
-  }
+  mySimulation->SetVisibility(false);
+  SMESH::SetPointRepresentation(true);
 
-  QString aString = "";
-  int nbNodes = myMeshGUI->GetNameOfSelectedNodes(mySelection, aString) ;
-  if(nbNodes != 1) {
-    SpinBox_X->SetValue(0.0) ;
-    SpinBox_Y->SetValue(0.0) ;
-    SpinBox_Z->SetValue(0.0) ;
-    return ;
-  } 
-
-  if ( nbNodes == 1 ) {
-    TColStd_MapOfInteger myMapIndex;
-    mySelection->GetIndex( mySelection->firstIObject(), myMapIndex);
-    TColStd_MapIteratorOfMapOfInteger ite( myMapIndex );
-    int idNodes[1];
-    for ( ; ite.More(); ite.Next() ) {
-      idNodes[0] = ite.Key();
+  if(mySelection->IObjectCount() == 1){
+    Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject();
+    if(anIO->hasEntry()){
+      myMesh = SMESH::GetMeshByIO(anIO);
+      if(myMesh->_is_nil()) return;
+      QString aText;
+      if(SMESH::GetNameOfSelectedNodes( mySelection, aText ) == 1){
+	if(SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh.in())){
+	  if(SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh()){
+	    if(const SMDS_MeshNode* aNode = aMesh->FindNode(aText.toInt())){
+	      SpinBox_X->SetValue( aNode->X() );
+	      SpinBox_Y->SetValue( aNode->Y() ) ;
+	      SpinBox_Z->SetValue( aNode->Z() ) ;
+	      }
+	  }
+	}
+      }
+      mySimulation->SetPosition(SpinBox_X->GetValue(),
+				SpinBox_Y->GetValue(),
+				SpinBox_Z->GetValue());
     }
-
-    Standard_Boolean result;
-    SMESH_Actor* ac = myMeshGUI->FindActor( myMesh, result, true );
-    vtkUnstructuredGrid* ugrid = vtkUnstructuredGrid::SafeDownCast( ac->GetUnstructuredGrid() );
-    float *p0 = ugrid->GetPoint(idNodes[0]);
-
-    SpinBox_X->SetValue( p0[0] ) ;
-    SpinBox_Y->SetValue( p0[1] ) ;
-    SpinBox_Z->SetValue( p0[2] ) ;
-       
-    myMeshGUI->DisplaySimulationNode( myMesh, p0[0], p0[1], p0[2] );
-    //  myMeshGUI->ViewNodes();
-  } 
-
-  return ;
+  }
 }
 
 
@@ -367,9 +526,18 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
 void SMESHGUI_NodesDlg::closeEvent(QCloseEvent* e)
 {
   this->ClickOnCancel() ; /* same than click on cancel button */
-  return ;
 }
 
+//=======================================================================
+//function : hideEvent
+//purpose  : caused by ESC key
+//=======================================================================
+
+void SMESHGUI_NodesDlg::hideEvent ( QHideEvent * e )
+{
+  if ( !isMinimized() )
+    ClickOnCancel();
+}
 
 //=================================================================================
 // function : enterEvent()
@@ -377,10 +545,8 @@ void SMESHGUI_NodesDlg::closeEvent(QCloseEvent* e)
 //=================================================================================
 void SMESHGUI_NodesDlg::enterEvent( QEvent* e)
 {
-  if ( GroupConstructors->isEnabled() )
-    return ;  
-  ActivateThisDialog() ;
-  return ;  
+  if ( !GroupConstructors->isEnabled() )
+    ActivateThisDialog() ;
 }
 
 
@@ -394,11 +560,10 @@ void SMESHGUI_NodesDlg::DeactivateActiveDialog()
     GroupConstructors->setEnabled(false) ;
     GroupCoordinates->setEnabled(false) ;
     GroupButtons->setEnabled(false) ;
-    myMeshGUI->EraseSimulationActors() ;
+    mySimulation->SetVisibility(false) ;
     myMeshGUI->ResetState() ;    
     myMeshGUI->SetActiveDialogBox(0) ;
   }
-  return ;
 }
 
 
@@ -412,5 +577,9 @@ void SMESHGUI_NodesDlg::ActivateThisDialog( )
   GroupConstructors->setEnabled(true) ;
   GroupCoordinates->setEnabled(true) ;
   GroupButtons->setEnabled(true) ;
-  return ;
+
+  SMESH::SetPointRepresentation(true);
+  QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
+
+  SelectionIntoArgument();
 }

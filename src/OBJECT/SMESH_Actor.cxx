@@ -28,6 +28,7 @@
 
 
 #include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
 #include "SALOME_ExtractUnstructuredGrid.h"
 
@@ -35,11 +36,25 @@
 #include "utilities.h"
 #include <qstringlist.h>
 
+#include <vtkTimeStamp.h>
 #include <vtkObjectFactory.h>
 #include <vtkShrinkPolyData.h>
 #include <vtkMergeFilter.h>
 
+#include <vtkMatrix4x4.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+
+#include <vtkMapper.h>
+#include <vtkRenderer.h>
+
+#include <vtkCell.h>
+#include <vtkIdList.h>
+#include <vtkIntArray.h>
+
 #include <vtkActor2D.h>
+#include <vtkProperty2D.h>
 #include <vtkPolyData.h>
 #include <vtkMaskPoints.h>
 #include <vtkCellCenters.h>
@@ -49,25 +64,21 @@
 
 #include <vtkScalarBarActor.h>
 #include <vtkLookupTable.h>
-#include <vtkDoubleArray.h>
+
+#include <vtkMath.h>
+#include <vtkPlane.h>
+#include <vtkImplicitBoolean.h>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;
 #else
 static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;
 #endif
 
-using namespace std;
-
-
-inline float GetFloat(const QString& theValue, float theDefault = 0){
-  if(theValue.isEmpty()) return theDefault;
-  QString aValue = QAD_CONFIG->getSetting(theValue);
-  if(aValue.isEmpty()) return theDefault;
-  return aValue.toFloat();
-}
+static int aLineWidthInc = 2;
+static int aPointSizeInc = 2;
 
 
 SMESH_Actor* SMESH_Actor::New(){
@@ -76,13 +87,15 @@ SMESH_Actor* SMESH_Actor::New(){
 
 
 SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj, 
-			      SMESH::FilterManager_ptr theFilterMgr,
 			      const char* theEntry, 
 			      const char* theName,
 			      int theIsClear)
 {
   SMESH_Actor* anActor = SMESH_Actor::New();
-  anActor->Init(theVisualObj,theFilterMgr,theEntry,theName,theIsClear);
+  if(!anActor->Init(theVisualObj,theEntry,theName,theIsClear)){
+    anActor->Delete();
+    anActor = NULL;
+  }
   return anActor;
 }
 
@@ -90,13 +103,17 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 SMESH_Actor::SMESH_Actor(){
   if(MYDEBUG) MESSAGE("SMESH_Actor");
 
+  myTimeStamp = vtkTimeStamp::New();
+
   myIsPointsVisible = false;
 
   myIsShrinkable = false;
   myIsShrunk = false;
 
-  float aPointSize = GetFloat("SMESH:SettingsNodesSize",3);
-  float aLineWidth = GetFloat("SMESH:SettingsWidth",1);
+  myControlsPrecision = (long)SMESH::GetFloat( "SMESH:ControlsPrecision", -1 );
+
+  float aPointSize = SMESH::GetFloat("SMESH:SettingsNodesSize",3);
+  float aLineWidth = SMESH::GetFloat("SMESH:SettingsWidth",1);
 
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   SALOME_ExtractUnstructuredGrid* aFilter = NULL;
@@ -105,15 +122,15 @@ SMESH_Actor::SMESH_Actor(){
   //-----------------------------------------
   float anRGB[3] = {1,1,1};
   mySurfaceProp = vtkProperty::New();
-  anRGB[0] = GetFloat("SMESH:SettingsFillColorRed", 0)/255.;
-  anRGB[1] = GetFloat("SMESH:SettingsFillColorGreen", 170)/255.;
-  anRGB[2] = GetFloat("SMESH:SettingsFillColorBlue", 255)/255.;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsFillColorRed", 0)/255.;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsFillColorGreen", 170)/255.;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsFillColorBlue", 255)/255.;
   mySurfaceProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
 
   myBackSurfaceProp = vtkProperty::New();
-  anRGB[0] = GetFloat("SMESH:SettingsBackFaceColorRed", 0)/255.;
-  anRGB[1] = GetFloat("SMESH:SettingsBackFaceColorGreen", 0)/255.;
-  anRGB[2] = GetFloat("SMESH:SettingsBackFaceColorBlue", 255)/255.;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsBackFaceColorRed", 0)/255.;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsBackFaceColorGreen", 0)/255.;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsBackFaceColorBlue", 255)/255.;
   myBackSurfaceProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
 
   my2DActor = SMESH_DeviceActor::New();
@@ -151,9 +168,9 @@ SMESH_Actor::SMESH_Actor(){
   myEdgeProp->SetAmbient(1.0);
   myEdgeProp->SetDiffuse(0.0);
   myEdgeProp->SetSpecular(0.0);
-  anRGB[0] = GetFloat("SMESH:SettingsOutlineColorRed", 0)/255.;
-  anRGB[1] = GetFloat("SMESH:SettingsOutlineColorGreen", 170)/255.;
-  anRGB[2] = GetFloat("SMESH:SettingsOutlineColorBlue", 255)/255.;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsOutlineColorRed", 0)/255.;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsOutlineColorGreen", 170)/255.;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsOutlineColorBlue", 255)/255.;
   myEdgeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myEdgeProp->SetLineWidth(aLineWidth);
 
@@ -161,6 +178,7 @@ SMESH_Actor::SMESH_Actor(){
   my1DActor->SetUserMatrix(aMatrix);
   my1DActor->SetStoreMapping(true);
   my1DActor->PickableOff();
+  my1DActor->SetHighlited(true);
   my1DActor->SetProperty(myEdgeProp);
   my1DActor->SetRepresentation(SMESH_DeviceActor::eSurface);
   aFilter = my1DActor->GetExtractUnstructuredGrid();
@@ -169,8 +187,7 @@ SMESH_Actor::SMESH_Actor(){
 
   my1DProp = vtkProperty::New();
   my1DProp->DeepCopy(myEdgeProp);
-  static int aCotnrolLineWidth = 3;
-  my1DProp->SetLineWidth(aCotnrolLineWidth);
+  my1DProp->SetLineWidth(aLineWidth + aLineWidthInc);
   my1DProp->SetPointSize(aPointSize);
 
   my1DExtProp = vtkProperty::New();
@@ -179,12 +196,14 @@ SMESH_Actor::SMESH_Actor(){
   anRGB[1] = 1 - anRGB[1];
   anRGB[2] = 1 - anRGB[2];
   my1DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  my1DExtProp->SetLineWidth(aCotnrolLineWidth);
+  my1DExtProp->SetLineWidth(aLineWidth + aLineWidthInc);
+  my1DExtProp->SetPointSize(aPointSize + aPointSizeInc);
 
   my1DExtActor = SMESH_DeviceActor::New();
   my1DExtActor->SetUserMatrix(aMatrix);
   my1DExtActor->SetStoreMapping(true);
   my1DExtActor->PickableOff();
+  my1DExtActor->SetHighlited(true);
   my1DExtActor->SetVisibility(false);
   my1DExtActor->SetProperty(my1DExtProp);
   my1DExtActor->SetRepresentation(SMESH_DeviceActor::eInsideframe);
@@ -196,9 +215,9 @@ SMESH_Actor::SMESH_Actor(){
   //Definition 0D divice of the actor
   //---------------------------------
   myNodeProp = vtkProperty::New();
-  anRGB[0] = GetFloat("SMESH:SettingsNodeColorRed",255)/255.;
-  anRGB[1] = GetFloat("SMESH:SettingsNodeColorGreen",0)/255.;
-  anRGB[2] = GetFloat("SMESH:SettingsNodeColorBlue",0)/255.;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsNodeColorRed",255)/255.;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsNodeColorGreen",0)/255.;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsNodeColorBlue",0)/255.;
   myNodeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myNodeProp->SetPointSize(aPointSize);
 
@@ -227,9 +246,9 @@ SMESH_Actor::SMESH_Actor(){
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
   myHighlightProp->SetSpecular(0.0);
-  anRGB[0] = GetFloat("SMESH:SettingsSelectColorRed", 255)/255.;   // 1;
-  anRGB[1] = GetFloat("SMESH:SettingsSelectColorGreen", 255)/255.; // 1;
-  anRGB[2] = GetFloat("SMESH:SettingsSelectColorBlue", 255)/255.;  // 1;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsSelectColorRed", 255)/255.;   // 1;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsSelectColorGreen", 255)/255.; // 1;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsSelectColorBlue", 255)/255.;  // 1;
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myHighlightProp->SetPointSize(aPointSize);
   myHighlightProp->SetRepresentation(1);
@@ -238,9 +257,9 @@ SMESH_Actor::SMESH_Actor(){
   myPreselectProp->SetAmbient(1.0);
   myPreselectProp->SetDiffuse(0.0);
   myPreselectProp->SetSpecular(0.0);
-  anRGB[0] = GetFloat("SMESH:SettingsPreSelectColorRed", 0)/255.;     // 0;
-  anRGB[1] = GetFloat("SMESH:SettingsPreSelectColorGreen", 255)/255.; // 1;
-  anRGB[2] = GetFloat("SMESH:SettingsPreSelectColorBlue", 255)/255.;  // 1;
+  anRGB[0] = SMESH::GetFloat("SMESH:SettingsPreSelectColorRed", 0)/255.;     // 0;
+  anRGB[1] = SMESH::GetFloat("SMESH:SettingsPreSelectColorGreen", 255)/255.; // 1;
+  anRGB[2] = SMESH::GetFloat("SMESH:SettingsPreSelectColorBlue", 255)/255.;  // 1;
   myPreselectProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myPreselectProp->SetPointSize(aPointSize);
   myPreselectProp->SetRepresentation(1);
@@ -251,15 +270,19 @@ SMESH_Actor::SMESH_Actor(){
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
 
+  myNodeHighlitableActor = SMESH_DeviceActor::New();
+  myNodeHighlitableActor->SetUserMatrix(aMatrix);
+  myNodeHighlitableActor->SetStoreMapping(false);
+  myNodeHighlitableActor->PickableOff();
+  myNodeHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
+  aFilter = myNodeHighlitableActor->GetExtractUnstructuredGrid();
+  aFilter->SetModeOfExtraction(SALOME_ExtractUnstructuredGrid::ePoints);
 
-  SetShrinkFactor(GetFloat("SMESH:SettingsShrinkCoeff", 75)/100.);
+
+  SetShrinkFactor(SMESH::GetFloat("SMESH:SettingsShrinkCoeff", 75)/100.);
 
   myName = "";
   myIO = NULL;
-  myDisplayMode = 0;
-
-  ishighlighted = false;
-  ispreselected = false;
 
   myColorMode = eNone;
   my1DColorMode = e1DNone;
@@ -461,6 +484,10 @@ SMESH_Actor::SMESH_Actor(){
   myCellsLabels->SetMapper(myClsLabeledDataMapper);
   myCellsLabels->GetProperty()->SetColor(0,1,0);
   myCellsLabels->SetVisibility(myIsCellsLabeled);
+
+  // Clipping planes
+  myImplicitBoolean = vtkImplicitBoolean::New();
+  myImplicitBoolean->SetOperationTypeToIntersection();
 }
 
 
@@ -490,7 +517,9 @@ SMESH_Actor::~SMESH_Actor(){
 
   myNodeActor->Delete();
   myBaseActor->Delete();
+
   myHighlitableActor->Delete();
+  myNodeHighlitableActor->Delete();
 
 
   //Deleting of pints numbering pipeline
@@ -526,16 +555,21 @@ SMESH_Actor::~SMESH_Actor(){
   myCellCenters->Delete();
 
   myCellsLabels->Delete();
+
+  myImplicitBoolean->Delete();
+
+  myTimeStamp->Delete();
 }
 
 
 void SMESH_Actor::SetPointsLabeled( bool theIsPointsLabeled )
 {
-  myIsPointsLabeled = theIsPointsLabeled;
+  vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
+  myIsPointsLabeled = theIsPointsLabeled && aGrid->GetNumberOfPoints();
 
   if ( myIsPointsLabeled )
   {
-    myPointsNumDataSet->ShallowCopy( GetUnstructuredGrid() );
+    myPointsNumDataSet->ShallowCopy(aGrid);
     vtkDataSet *aDataSet = myPointsNumDataSet;
     
     int aNbElem = aDataSet->GetNumberOfPoints();
@@ -558,15 +592,16 @@ void SMESH_Actor::SetPointsLabeled( bool theIsPointsLabeled )
   {
     myPointLabels->SetVisibility( false );
   }
-  
-  SetRepresentation( GetRepresentation() );
+  SetRepresentation(GetRepresentation());
+  myTimeStamp->Modified();
 }
 
 
 void SMESH_Actor::SetCellsLabeled(bool theIsCellsLabeled){
-  myIsCellsLabeled = theIsCellsLabeled;
+  vtkUnstructuredGrid* aGrid = GetUnstructuredGrid();
+  myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
   if(myIsCellsLabeled){
-    myCellsNumDataSet->ShallowCopy(GetUnstructuredGrid());
+    myCellsNumDataSet->ShallowCopy(aGrid);
     vtkDataSet *aDataSet = myCellsNumDataSet;
     int aNbElem = aDataSet->GetNumberOfCells();
     vtkIntArray *anArray = vtkIntArray::New();
@@ -581,6 +616,7 @@ void SMESH_Actor::SetCellsLabeled(bool theIsCellsLabeled){
   }else{
     myCellsLabels->SetVisibility(false);
   }
+  myTimeStamp->Modified();
 }
 
 
@@ -596,120 +632,97 @@ void SMESH_Actor::SetControlMode(eControl theMode){
   bool anIsScalarVisible = theMode > eNone;
 
   if(anIsScalarVisible){
-    SMESH::NumericalFunctor_var aFunctor;
-    SMESH::Predicate_var aPredicate;
-      
+    SMESH::Controls::FunctorPtr aFunctor;
     switch(theMode){
     case eLengthEdges:
-      aFunctor = myFilterMgr->CreateLength();
+    {
+      SMESH::Controls::Length* aControl = new SMESH::Controls::Length();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my1DActor;
       break;
+    }
     case eFreeBorders:
-      aPredicate = myFilterMgr->CreateFreeBorders();
+      aFunctor.reset(new SMESH::Controls::FreeBorders());
       myControlActor = my1DActor;
+      break;
+    case eFreeEdges:
+      aFunctor.reset(new SMESH::Controls::FreeEdges());
+      myControlActor = my2DActor;
       break;
     case eMultiConnection:
-      aFunctor = myFilterMgr->CreateMultiConnection();
+      aFunctor.reset(new SMESH::Controls::MultiConnection());
       myControlActor = my1DActor;
       break;
     case eArea:
-      aFunctor = myFilterMgr->CreateArea();
+    {
+      SMESH::Controls::Area* aControl = new SMESH::Controls::Area();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     case eTaper:
-      aFunctor = myFilterMgr->CreateTaper();
+    {
+      SMESH::Controls::Taper* aControl = new SMESH::Controls::Taper();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     case eAspectRatio:
-      aFunctor = myFilterMgr->CreateAspectRatio();
+    {
+      SMESH::Controls::AspectRatio* aControl = new SMESH::Controls::AspectRatio();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     case eMinimumAngle:
-      aFunctor = myFilterMgr->CreateMinimumAngle();
+    {
+      SMESH::Controls::MinimumAngle* aControl = new SMESH::Controls::MinimumAngle();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     case eWarping:
-      aFunctor = myFilterMgr->CreateWarping();
+    {
+      SMESH::Controls::Warping* aControl = new SMESH::Controls::Warping();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     case eSkew:
-      aFunctor = myFilterMgr->CreateSkew();
+    {
+      SMESH::Controls::Skew* aControl = new SMESH::Controls::Skew();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
       myControlActor = my2DActor;
       break;
+    }
     default:
       return;
     }
-    
+
     vtkUnstructuredGrid* aGrid = myControlActor->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     if(aNbCells){
-      if(theMode == eFreeBorders){
-	if(!aPredicate->_is_nil()){
-	  myVisualObj->UpdateFunctor(aPredicate);
-	  SALOME_ExtractUnstructuredGrid* aFilter = 
-	    my1DExtActor->GetExtractUnstructuredGrid();
-	  aFilter->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::eAdding);
-	  aFilter->ClearRegisteredCells();
-	  for( vtkIdType i = 0; i < aNbCells; i++ ){
-	    vtkIdType anObjId = myControlActor->GetElemObjId( i );
-	    CORBA::Boolean aValue = aPredicate->IsSatisfy(anObjId);
-	    if(aValue)
-	      aFilter->RegisterCell(i);
-	  }
-	  if(!aFilter->IsCellsRegistered())
-	    aFilter->RegisterCell(-1);
-	  aPredicate->Destroy();
-	}
-	myColorMode = theMode;
+      myColorMode = theMode;
+      if(theMode == eFreeBorders || theMode == eFreeEdges){
 	my1DColorMode = e1DHighlited;
+	my1DExtActor->SetExtControlMode(aFunctor,myControlActor);
       }else{
-	myColorMode = theMode;
 	if(myControlActor == my1DActor)
 	  my1DColorMode = e1DColored;
-	
-	vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
-	aDataSet->ShallowCopy(aGrid);
-	myScalarBarActor->SetVisibility(true);
-	myControlActor->GetMapper()->SetScalarVisibility(true);
-	
-	vtkDoubleArray *aScalars = vtkDoubleArray::New();
-	aScalars->SetNumberOfComponents( 1 );
-	aScalars->SetNumberOfTuples(aNbCells);
-	
-	if(!aFunctor->_is_nil()){
-	  myVisualObj->UpdateFunctor(aFunctor);
-	  for( vtkIdType i = 0; i < aNbCells; i++ ){
-	    vtkIdType anObjId = myControlActor->GetElemObjId( i );
-	    CORBA::Double aValue = aFunctor->GetValue(anObjId);
-	    aScalars->SetValue( i, aValue );
-	  }
-	  aFunctor->Destroy();
-	}else if(!aPredicate->_is_nil()){
-	  myVisualObj->UpdateFunctor(aPredicate);
-	  for( vtkIdType i = 0; i < aNbCells; i++ ){
-	    vtkIdType anObjId = myControlActor->GetElemObjId( i );
-	    CORBA::Boolean aValue = aPredicate->IsSatisfy(anObjId);
-	    aScalars->SetValue( i, aValue );
-	  }
-	  aPredicate->Destroy();
-	}
-	aDataSet->GetCellData()->SetScalars(aScalars);
-	aScalars->Delete();
-	
-	float aRange[2];
-	aScalars->GetRange(aRange);
-	myLookupTable->SetRange(aRange);
-	myLookupTable->Build();
-	
-	myControlActor->GetMergeFilter()->SetScalars(aDataSet);
-	aDataSet->Delete();
-	if(MYDEBUGWITHFILES) 
-	  WriteUnstructuredGrid(aDataSet,"/tmp/SetControlMode.vtk");
+	myControlActor->SetControlMode(aFunctor,myScalarBarActor,myLookupTable);
       }
     }
   }
   SetRepresentation(GetRepresentation());
-  
+
+  myTimeStamp->Modified();
   Modified();
 }
 
@@ -727,6 +740,7 @@ void SMESH_Actor::AddToRender(vtkRenderer* theRenderer){
   theRenderer->AddActor(my1DExtActor);
 
   theRenderer->AddActor(myHighlitableActor);
+  theRenderer->AddActor(myNodeHighlitableActor);
 
   theRenderer->AddActor2D(myScalarBarActor);
 
@@ -742,7 +756,9 @@ void SMESH_Actor::RemoveFromRender(vtkRenderer* theRenderer){
 
   theRenderer->RemoveActor(myNodeActor);
   theRenderer->RemoveActor(myBaseActor);
+
   theRenderer->RemoveActor(myHighlitableActor);
+  theRenderer->RemoveActor(myNodeHighlitableActor);
 
   theRenderer->RemoveActor(my1DActor);
   theRenderer->RemoveActor(my1DExtActor);
@@ -756,21 +772,21 @@ void SMESH_Actor::RemoveFromRender(vtkRenderer* theRenderer){
 }
 
 
-void SMESH_Actor::Init(TVisualObjPtr theVisualObj, 
-		       SMESH::FilterManager_ptr theFilterMgr,
+bool SMESH_Actor::Init(TVisualObjPtr theVisualObj, 
 		       const char* theEntry, 
 		       const char* theName,
 		       int theIsClear)
 {
-  Handle(SALOME_InteractiveObject) anIO =
-    new SALOME_InteractiveObject(strdup(theEntry),strdup("MESH"),strdup(theName));
+  Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject(theEntry,"SMESH",theName);
   setIO(anIO);
-  setName(strdup(theName));
+  setName(theName);
 
   myVisualObj = theVisualObj;
   myNodeActor->myVisualObj = myVisualObj;
   myBaseActor->myVisualObj = myVisualObj;
+
   myHighlitableActor->myVisualObj = myVisualObj;
+  myNodeHighlitableActor->myVisualObj = myVisualObj;
 
   my1DActor->myVisualObj = myVisualObj;
   my1DExtActor->myVisualObj = myVisualObj;
@@ -779,10 +795,30 @@ void SMESH_Actor::Init(TVisualObjPtr theVisualObj,
   my3DActor->myVisualObj = myVisualObj;
 
   myVisualObj->Update(theIsClear);
-  SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
-  
-  myFilterMgr = SMESH::FilterManager::_duplicate(theFilterMgr);
 
+  myNodeActor->Init(myVisualObj,myImplicitBoolean);
+  myBaseActor->Init(myVisualObj,myImplicitBoolean);
+  
+  myHighlitableActor->Init(myVisualObj,myImplicitBoolean);
+  myNodeHighlitableActor->Init(myVisualObj,myImplicitBoolean);
+  
+  my1DActor->Init(myVisualObj,myImplicitBoolean);
+  my1DExtActor->Init(myVisualObj,myImplicitBoolean);
+  
+  my2DActor->Init(myVisualObj,myImplicitBoolean);
+  my3DActor->Init(myVisualObj,myImplicitBoolean);
+  
+  my1DActor->GetMapper()->SetLookupTable(myLookupTable);
+  my2DActor->GetMapper()->SetLookupTable(myLookupTable);
+  my3DActor->GetMapper()->SetLookupTable(myLookupTable);
+    
+  float aFactor, aUnits;
+  my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
+  my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
+
+  //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
+  SetIsShrunkable(true);
+  
   QString aMode = QAD_CONFIG->getSetting("SMESH:DisplayMode");
   SetRepresentation(-1);
   if(aMode.compare("Wireframe") == 0){
@@ -798,19 +834,28 @@ void SMESH_Actor::Init(TVisualObjPtr theVisualObj,
     SetShrink();
   }
 
+  myTimeStamp->Modified();
   Modified();
+  return true;
 }
 
 
-vtkPolyData* SMESH_Actor::GetPolyDataInput(){
-  return myPickableActor->GetPolyDataInput();
+float* SMESH_Actor::GetBounds(){
+  return myNodeActor->GetBounds();
+}
+
+
+vtkDataSet* SMESH_Actor::GetInput(){
+  return GetUnstructuredGrid();
 }
 
 
 void SMESH_Actor::SetTransform(SALOME_Transform* theTransform){
   myNodeActor->SetTransform(theTransform);
   myBaseActor->SetTransform(theTransform);
+
   myHighlitableActor->SetTransform(theTransform);
+  myNodeHighlitableActor->SetTransform(theTransform);
 
   my1DActor->SetTransform(theTransform);
   my1DExtActor->SetTransform(theTransform);
@@ -819,34 +864,6 @@ void SMESH_Actor::SetTransform(SALOME_Transform* theTransform){
   my3DActor->SetTransform(theTransform);
 
   Modified();
-}
-
-
-void SMESH_Actor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
-  if(theGrid){
-    myNodeActor->SetUnstructuredGrid(theGrid);
-    myBaseActor->SetUnstructuredGrid(theGrid);
-    myHighlitableActor->SetUnstructuredGrid(theGrid);
-
-    my1DActor->SetUnstructuredGrid(theGrid);
-    my1DExtActor->SetUnstructuredGrid(theGrid);
-
-    my2DActor->SetUnstructuredGrid(theGrid);
-    my3DActor->SetUnstructuredGrid(theGrid);
-
-    my1DActor->GetMapper()->SetLookupTable(myLookupTable);
-    my2DActor->GetMapper()->SetLookupTable(myLookupTable);
-    my3DActor->GetMapper()->SetLookupTable(myLookupTable);
-    
-    float aFactor, aUnits;
-    my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
-    my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
-
-    //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
-    SetIsShrunkable(true);
-
-    Modified();
-  }
 }
 
 
@@ -873,7 +890,9 @@ vtkUnstructuredGrid* SMESH_Actor::GetUnstructuredGrid(){
 bool SMESH_Actor::IsInfinitive(){
   vtkDataSet *aDataSet = myPickableActor->GetUnstructuredGrid();
   aDataSet->Update();
-  myIsInfinite = aDataSet->GetNumberOfCells() == 0;
+  myIsInfinite = aDataSet->GetNumberOfCells() == 0 ||
+    aDataSet->GetNumberOfCells() == 1 && 
+    aDataSet->GetCell(0)->GetCellType() == VTK_VERTEX;
   return SALOME_Actor::IsInfinitive();
 }
 
@@ -930,29 +949,12 @@ void SMESH_Actor::UnShrink(){
 }
 
 
-int SMESH_Actor::GetObjId(int theVtkID){
-  if (GetRepresentation() == 0){
-    return GetNodeObjId(theVtkID);
-  }else{
-    return GetElemObjId(theVtkID);
-  }
-}
-
-SALOME_Actor::TVectorId SMESH_Actor::GetVtkId(int theObjID){
-  if (GetRepresentation() == 0){
-    return GetNodeVtkId(theObjID);
-  }else{
-    return GetElemVtkId(theObjID);
-  }
-}
-
-
 int SMESH_Actor::GetNodeObjId(int theVtkID){
   return myPickableActor->GetNodeObjId(theVtkID);
 }
 
-SALOME_Actor::TVectorId SMESH_Actor::GetNodeVtkId(int theObjID){
-  return myPickableActor->GetNodeVtkId(theObjID);
+float* SMESH_Actor::GetNodeCoord(int theObjID){
+  return myPickableActor->GetNodeCoord(theObjID);
 }
 
 
@@ -960,15 +962,21 @@ int SMESH_Actor::GetElemObjId(int theVtkID){
   return myPickableActor->GetElemObjId(theVtkID);
 }
 
-SALOME_Actor::TVectorId SMESH_Actor::GetElemVtkId(int theObjID){
-  return myPickableActor->GetElemVtkId(theObjID);
+vtkCell* SMESH_Actor::GetElemCell(int theObjID){
+  return myPickableActor->GetElemCell(theObjID);
 }
 
 
 void SMESH_Actor::SetVisibility(int theMode){
+  SetVisibility(theMode,true);
+}
+
+
+void SMESH_Actor::SetVisibility(int theMode, bool theIsUpdateRepersentation){
   SALOME_Actor::SetVisibility(theMode);
   if(GetVisibility()){
-    SetRepresentation(GetRepresentation());
+    if(theIsUpdateRepersentation)
+      SetRepresentation(GetRepresentation());
 
     if(myColorMode != eNone){
       if(my1DColorMode == e1DHighlited)
@@ -1047,6 +1055,8 @@ void SMESH_Actor::SetRepresentation(int theMode){
   switch(myRepresentation){
   case ePoint: 
     myPickableActor = myNodeActor;
+    myNodeActor->SetVisibility(true);
+
     aProp = aBackProp = myNodeProp;
     aReperesent = SMESH_DeviceActor::ePoint;
     break;
@@ -1084,58 +1094,71 @@ void SMESH_Actor::SetRepresentation(int theMode){
   my1DActor->SetProperty(aProp);
   my1DActor->SetBackfaceProperty(aBackProp);
   my1DActor->SetRepresentation(aReperesent);
+
+  my1DExtActor->SetRepresentation(aReperesent);
   
-  if ( GetPointRepresentation() || !GetUnstructuredGrid()->GetNumberOfCells() || myIsPointsLabeled )
-  {
+  if(myIsPointsVisible)
     myPickableActor = myNodeActor;
+
+  if(GetPointRepresentation())
     myNodeActor->SetVisibility(true);
-  }
 
   SetMapper(myPickableActor->GetMapper());
+
+  SetVisibility(GetVisibility(),false);
 
   Modified();
 }
 
 
-void SMESH_Actor::SetPointRepresentation(int theIsPointsVisible){
+void SMESH_Actor::SetPointRepresentation(bool theIsPointsVisible){
   myIsPointsVisible = theIsPointsVisible;
   SetRepresentation(GetRepresentation());
+}
+
+bool SMESH_Actor::GetPointRepresentation(){ 
+  return myIsPointsVisible || myIsPointsLabeled;
 }
 
 
 void SMESH_Actor::UpdateHighlight(){
   myHighlitableActor->SetVisibility(false);
-  myNodeActor->SetProperty(myNodeProp);
-  if(myPickableActor != myNodeActor)
-    myNodeActor->SetVisibility(false);
+  myHighlitableActor->SetHighlited(false);
 
-  if(ishighlighted){
+  myNodeHighlitableActor->SetVisibility(false);
+  myNodeHighlitableActor->SetHighlited(false);
+
+  if(myIsHighlighted){
     myHighlitableActor->SetProperty(myHighlightProp);
-  }else if(ispreselected){
+  }else if(myIsPreselected){
     myHighlitableActor->SetProperty(myPreselectProp);
   }
 
-  if(ishighlighted || ispreselected){
-    if(!GetUnstructuredGrid()->GetNumberOfCells()){
-      myNodeActor->SetProperty(myHighlitableActor->GetProperty());
-      myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
-      myNodeActor->SetVisibility(GetVisibility());
-    }else{
+  bool isVisible = GetVisibility();
+
+  if(myIsHighlighted || myIsPreselected){
+    if(GetUnstructuredGrid()->GetNumberOfCells()){
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-      myHighlitableActor->SetVisibility(GetVisibility());
+      myHighlitableActor->SetVisibility(isVisible);
+      myHighlitableActor->SetHighlited(isVisible);
+    }
+    if(myRepresentation == ePoint || GetPointRepresentation()){
+      myNodeHighlitableActor->SetProperty(myHighlitableActor->GetProperty());
+      myNodeHighlitableActor->SetVisibility(isVisible);
+      myNodeHighlitableActor->SetHighlited(isVisible);
     }
   }
 }
 
 
-void SMESH_Actor::highlight(Standard_Boolean highlight){
-  ishighlighted = highlight;
+void SMESH_Actor::highlight(bool theHighlight){
+  myIsHighlighted = theHighlight;
   UpdateHighlight();
 }
 
 
-void SMESH_Actor::SetPreSelected(Standard_Boolean presel){ 
-  ispreselected = presel; 
+void SMESH_Actor::SetPreSelected(bool thePreselect){ 
+  myIsPreselected = thePreselect; 
   UpdateHighlight();
 }
 
@@ -1165,7 +1188,39 @@ int SMESH_Actor::RenderTranslucentGeometry(vtkViewport *vp)
 }
 
 
-void SMESH_Actor::Render(vtkRenderer *ren){}
+void SMESH_Actor::Render(vtkRenderer *ren){
+  unsigned long mTime = myTimeStamp->GetMTime();
+  unsigned long anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
+  if(anObjTime > mTime)
+    Update();
+}
+
+
+void SMESH_Actor::Update(){
+  SetVisibility(GetVisibility());
+  unsigned long int anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
+  unsigned long int aClippingTime = myImplicitBoolean->GetMTime();
+  unsigned long int aTime = myTimeStamp->GetMTime();
+  if(MYDEBUG) MESSAGE("SMESH_Actor::Update");
+
+  if(GetControlMode() != eNone) {
+    if(anObjTime > aTime || aClippingTime > aTime){
+      SetControlMode(GetControlMode());
+      SetVisibility(GetVisibility());
+    }
+  }
+  if(myIsPointsLabeled){
+    if(anObjTime > aTime || aClippingTime > aTime)
+      SetPointsLabeled(myIsPointsLabeled);
+  }
+  if(myIsCellsLabeled){
+    if(anObjTime > aTime || aClippingTime > aTime)
+      SetCellsLabeled(myIsCellsLabeled);
+  }
+
+  myTimeStamp->Modified();
+  Modified();
+}
 
 
 void SMESH_Actor::ReleaseGraphicsResources(vtkWindow *renWin){
@@ -1262,17 +1317,21 @@ float SMESH_Actor::GetLineWidth(){
 
 void SMESH_Actor::SetLineWidth(float theVal){
   myEdgeProp->SetLineWidth(theVal);
+
+  my1DProp->SetLineWidth(theVal + aLineWidthInc);
+  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);
+
   Modified();
 }
 
 
-void SMESH_Actor::SetNodeSize(float theSize){
-  myNodeProp->SetPointSize(theSize);
-  myHighlightProp->SetPointSize(theSize);
-  myPreselectProp->SetPointSize(theSize);
+void SMESH_Actor::SetNodeSize(float theVal){
+  myNodeProp->SetPointSize(theVal);
+  myHighlightProp->SetPointSize(theVal);
+  myPreselectProp->SetPointSize(theVal);
 
-  my1DExtProp->SetPointSize(theSize);
-  my1DProp->SetPointSize(theSize);
+  my1DProp->SetPointSize(theVal + aPointSizeInc);
+  my1DExtProp->SetPointSize(theVal + aPointSizeInc);
 
   Modified();
 }
@@ -1284,4 +1343,96 @@ float SMESH_Actor::GetNodeSize(){
 int SMESH_Actor::GetObjDimension( const int theObjId )
 {
   return myVisualObj->GetElemDimension( theObjId );
+}
+
+
+vtkImplicitBoolean* SMESH_Actor::GetPlaneContainer(){
+  return myImplicitBoolean;
+}
+
+
+static void ComputeBoundsParam(vtkDataSet* theDataSet,
+			       float theDirection[3], float theMinPnt[3],
+			       float& theMaxBoundPrj, float& theMinBoundPrj)
+{
+  float aBounds[6];
+  theDataSet->GetBounds(aBounds);
+
+  //Enlarge bounds in order to avoid conflicts of precision
+  for(int i = 0; i < 6; i += 2){
+    static double EPS = 1.0E-3;
+    float aDelta = (aBounds[i+1] - aBounds[i])*EPS;
+    aBounds[i] -= aDelta;
+    aBounds[i+1] += aDelta;
+  }
+
+  float aBoundPoints[8][3] = { {aBounds[0],aBounds[2],aBounds[4]},
+			       {aBounds[1],aBounds[2],aBounds[4]},
+			       {aBounds[0],aBounds[3],aBounds[4]},
+			       {aBounds[1],aBounds[3],aBounds[4]},
+			       {aBounds[0],aBounds[2],aBounds[5]},
+			       {aBounds[1],aBounds[2],aBounds[5]}, 
+			       {aBounds[0],aBounds[3],aBounds[5]}, 
+			       {aBounds[1],aBounds[3],aBounds[5]}};
+
+  int aMaxId = 0, aMinId = aMaxId;
+  theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
+  theMinBoundPrj = theMaxBoundPrj;
+  for(int i = 1; i < 8; i++){
+    float aTmp = vtkMath::Dot(theDirection,aBoundPoints[i]);
+    if(theMaxBoundPrj < aTmp){
+      theMaxBoundPrj = aTmp;
+      aMaxId = i;
+    }
+    if(theMinBoundPrj > aTmp){
+      theMinBoundPrj = aTmp;
+      aMinId = i;
+    }
+  }
+  float *aMinPnt = aBoundPoints[aMaxId];
+  theMinPnt[0] = aMinPnt[0];
+  theMinPnt[1] = aMinPnt[1];
+  theMinPnt[2] = aMinPnt[2];
+}
+
+
+static void DistanceToPosition(vtkDataSet* theDataSet,
+			       float theDirection[3], float theDist, float thePos[3])
+{
+  float aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+  ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
+  float aLength = (aMaxBoundPrj-aMinBoundPrj)*theDist;
+  thePos[0] = aMinPnt[0]-theDirection[0]*aLength;
+  thePos[1] = aMinPnt[1]-theDirection[1]*aLength;
+  thePos[2] = aMinPnt[2]-theDirection[2]*aLength;
+}
+
+
+static void PositionToDistance(vtkDataSet* theDataSet, 
+			       float theDirection[3], float thePos[3], float& theDist)
+{
+  float aMaxBoundPrj, aMinBoundPrj, aMinPnt[3];
+  ComputeBoundsParam(theDataSet,theDirection,aMinPnt,aMaxBoundPrj,aMinBoundPrj);
+  float aPrj = vtkMath::Dot(theDirection,thePos);
+  theDist = (aPrj-aMinBoundPrj)/(aMaxBoundPrj-aMinBoundPrj);
+}
+
+
+void SMESH_Actor::SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane)
+{
+  thePlane->SetNormal(theDir);
+  float anOrigin[3];
+  ::DistanceToPosition(GetUnstructuredGrid(),theDir,theDist,anOrigin);
+  thePlane->SetOrigin(anOrigin);
+  Update();
+}
+
+
+void SMESH_Actor::GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane)
+{
+  thePlane->GetNormal(theDir);
+
+  float anOrigin[3];
+  thePlane->GetOrigin(anOrigin);
+  ::PositionToDistance(GetUnstructuredGrid(),theDir,anOrigin,theDist);
 }

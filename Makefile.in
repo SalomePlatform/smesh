@@ -86,13 +86,39 @@ mesh_wrap.png \
 mesh_tree_group.png \
 mesh_edit_group.png \
 mesh_make_group.png \
+mesh_union2tri.png \
+mesh_uniontri.png \
+mesh_cutquad.png \
+mesh_smoothing.png \
+mesh_renumbering_nodes.png \
+mesh_renumbering_elements.png \
+mesh_extrusion.png \
+mesh_revolution.png \
 ModuleMesh.png \
+mesh_unionGroups.png \
+mesh_intersectGroups.png \
+mesh_cutGroups.png \
+mesh_deleteGroups.png \
+mesh_translation_vector.png \
+mesh_translation_points.png \
+mesh_rotation.png \
+mesh_symmetry_point.png \
+mesh_symmetry_axis.png \
+mesh_symmetry_plane.png \
+mesh_sew_freeborders.png \
+mesh_sew_conform_freeborders.png \
+mesh_sew_bordertoside.png \
+mesh_sew_sideelements.png \
+mesh_merge_nodes.png \
 select1.png \
 SMESH_en.xml \
 SMESH.config \
 StdMeshers.xml \
 SMESHCatalog.xml \
-flight_solid.brep
+flight_solid.brep \
+mesh_pattern.png \
+pattern_sample_2d.png \
+pattern_sample_3D.png
 
 BIN_SCRIPT= \
 VERSION

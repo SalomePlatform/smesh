@@ -18,9 +18,9 @@
 <meta name=generator-minor-version content=1>
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
-<meta name=page-count content=0>
-<meta name=layout-height content=0>
-<meta name=layout-width content=0>
+<meta name=page-count content=1>
+<meta name=layout-height content=870>
+<meta name=layout-width content=740>
 
 
 <!--(Links)=========================================================-->
@@ -32,6 +32,15 @@ if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
 //-->
 </script>
+<style type="text/css">
+<!--
+p.whs1 {margin-left: 40px;}
+img_whs2 {border-style: none; border: none; width: 21px; height: 21px;}
+img_whs3 {border-style: none; border: none; width: 292px; height: 358px;}
+ul.whs4 {list-style: disc;}
+p.whs5 {margin-left: 40px; font-weight: normal;}
+-->
+</style>
 <script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
@@ -81,7 +90,7 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.html");
+	setRelStartPage("../smesh.htm");
 
 		autoSync(0);
 		sendSyncInfo();
@@ -94,7 +103,63 @@ else
 </script>
 <h1>Changing orientation of elements</h1>
 
-<p>Type topic text here.</p>
+<p>Orientation of an element is changed by reverting the order of nodes 
+ of the selected elements.</p>
+
+<p>&nbsp;</p>
+
+<p class=TODO>To change orientation of elements:</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">1. Display a mesh or a submesh in the 3D 
+ viewer.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">2. In the <span style="font-weight: bold;"><B>Modification 
+ </B></span>menu select the <span style="font-weight: bold;"><B>Orientation </B></span>item 
+ or click <img src="../image79.gif" width="21px" height="21px" border="0" class="img_whs2"> button in the toolbar. The following dialog box 
+ will appear:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs1"><img src="../image78.gif" width="292px" height="358px" border="0" class="img_whs3"></p>
+
+<p>&nbsp;</p>
+
+<ul type="disc" class="whs4">
+	
+	<li class=kadov-p><p class="whs5"><span 
+ style="font-weight: bold;"><B>The main list </B></span><span>shall contain the 
+ elements which will be reoriented.</span> You can click on an element 
+ in the 3D viewer and it will be highlighted. After that click the <span 
+ style="font-weight: bold;"><B>Add </B></span>button and the ID of this element 
+ will be added to the list. To remove a selected element or elements from 
+ the list click the <span style="font-weight: bold;"><B>Remove </B></span>button. 
+ The <span style="font-weight: bold;"><B>Sort </B></span>button allows to sort 
+ the list of elements IDs. The <span style="font-weight: bold;"><B>Set filter 
+ </B></span>button allows to apply a definite filter to selection of elements 
+ of your group.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><span 
+ style="font-weight: bold;"><B>Apply to all </B></span><span>radio button allows 
+ to modify the orientation of all elements of the currently displayed mesh 
+ or submesh.</span></p></li>
+	
+	<li class=kadov-p><p class="whs5"><span 
+ style="font-weight: bold;"><B>Select from </B></span>set of fields allows to 
+ choose a submesh or an existing group whose elements will be automatically 
+ added to the list.</p></li>
+</ul>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">3. Click the <span style="font-weight: bold;"><B>Apply 
+ </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button to confirm 
+ the operation.</p>
+
+<p>&nbsp;</p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

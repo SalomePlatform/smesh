@@ -24,6 +24,8 @@
 #include "SMDS_MeshNode.hxx"
 #include "utilities.h"
 
+using namespace std;
+
 //=======================================================================
 //function : NbEdges
 //purpose  : 
@@ -92,6 +94,7 @@ SMDS_ElemIteratorPtr SMDS_FaceOfNodes::
       (new SMDS_IteratorOfElements
        (this,type,SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes))));
   }
+  return SMDS_ElemIteratorPtr();
 }
 
 SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
@@ -114,6 +117,27 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
 	myNodes[1]=node2;
 	myNodes[2]=node3;
 	myNodes[3]=node4;	
+}
+bool SMDS_FaceOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
+                                   const int            nbNodes)
+{
+  if (nbNodes == 3) {
+    myNodes.resize(3);
+    myNodes[0]=nodes[0];
+    myNodes[1]=nodes[1];
+    myNodes[2]=nodes[2];
+  }
+  else if ( nbNodes == 4) {
+    myNodes.resize(4);
+    myNodes[0]=nodes[0];
+    myNodes[1]=nodes[1];
+    myNodes[2]=nodes[2];
+    myNodes[3]=nodes[3];
+  }
+  else
+    return false;
+
+  return true;
 }
 
 /*bool operator<(const SMDS_FaceOfNodes& f1, const SMDS_FaceOfNodes& f2)

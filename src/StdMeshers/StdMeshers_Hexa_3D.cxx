@@ -32,6 +32,7 @@ using namespace std;
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -49,6 +50,7 @@ using namespace std;
 #include <Geom2d_Curve.hxx>
 #include <Handle_Geom2d_Curve.hxx>
 #include <Handle_Geom_Curve.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
@@ -94,7 +96,7 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
                           const TopoDS_Shape& aShape,
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
-	MESSAGE("StdMeshers_Hexa_3D::CheckHypothesis");
+	//MESSAGE("StdMeshers_Hexa_3D::CheckHypothesis");
 
 	bool isOk = true;
         aStatus = SMESH_Hypothesis::HYP_OK;
@@ -102,6 +104,37 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
 	// nothing to check
 
 	return isOk;
+}
+
+//=======================================================================
+//function : findIJ
+//purpose  : return i,j of the node
+//=======================================================================
+
+static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int& I, int& J)
+{
+  I = J = 0;
+  const SMDS_FacePosition* fpos =
+    static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
+  if ( ! fpos ) return false;
+  gp_Pnt2d uv( fpos->GetUParameter(), fpos->GetVParameter() );
+
+  double minDist = DBL_MAX;
+  int nbhoriz  = Min(quad->nbPts[0], quad->nbPts[2]);
+  int nbvertic = Min(quad->nbPts[1], quad->nbPts[3]);
+  for (int i = 1; i < nbhoriz - 1; i++) {
+    for (int j = 1; j < nbvertic - 1; j++) {
+      int ij = j * nbhoriz + i;
+      gp_Pnt2d uv2( quad->uv_grid[ij].u, quad->uv_grid[ij].v );
+      double dist = uv.SquareDistance( uv2 );
+      if ( dist < minDist ) {
+        minDist = dist;
+        I = i;
+        J = j;
+      }
+    }
+  }
+  return true;
 }
 
 //=============================================================================
@@ -130,7 +163,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 	// 0.  - shape and face mesh verification
 	// 0.1 - shape must be a solid (or a shell) with 6 faces
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	vector < SMESH_subMesh * >meshFaces;
 	for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
@@ -142,12 +175,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 	if (meshFaces.size() != 6)
 	{
 		SCRUTE(meshFaces.size());
-		ASSERT(0);
+//		ASSERT(0);
 		return false;
 	}
 
 	// 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -158,7 +191,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		{
 			// *** delete _quads
 			SCRUTE(algoName);
-			ASSERT(0);
+//			ASSERT(0);
 			return false;
 		}
 		StdMeshers_Quadrangle_2D *quadAlgo =
@@ -173,25 +206,35 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		{
 			// *** delete _quads
 			// *** throw exception
-			ASSERT(0);
+//			ASSERT(0);
+                        return false;
 		}
+
+                // 0.2.1 - number of points on the opposite edges must be the same
+                if (_quads[i]->nbPts[0] != _quads[i]->nbPts[2] ||
+                    _quads[i]->nbPts[1] != _quads[i]->nbPts[3])
+                {
+                  MESSAGE("different number of points on the opposite edges of face " << i);
+//                  ASSERT(0);
+                  return false;
+                }
 	}
 
 	// 1.  - identify faces and vertices of the "cube"
 	// 1.1 - ancestor maps vertex->edges in the cube
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	TopTools_IndexedDataMapOfShapeListOfShape MS;
 	TopExp::MapShapesAndAncestors(aShape, TopAbs_VERTEX, TopAbs_EDGE, MS);
 
 	// 1.2 - first face is choosen as face Y=0 of the unit cube
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	const TopoDS_Shape & aFace = meshFaces[0]->GetSubShape();
 	const TopoDS_Face & F = TopoDS::Face(aFace);
 
 	// 1.3 - identify the 4 vertices of the face Y=0: V000, V100, V101, V001
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	int i = 0;
 	TopoDS_Edge E = _quads[0]->edge[i];	//edge will be Y=0,Z=0 on unit cube
@@ -237,7 +280,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 	//     - find edge X=1, Z=0 (ancestor of V100 not in face Y=0)
 	//     - find edge X=1, Z=1 (ancestor of V101 not in face Y=0) 
 	//     - find edge X=0, Z=1 (ancestor of V001 not in face Y=0)
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	TopoDS_Edge E_0Y0 = EdgeNotInFace(aMesh, aShape, F, _cube.V000, MS);
 	ASSERT(!E_0Y0.IsNull());
@@ -252,7 +295,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 	ASSERT(!E_0Y1.IsNull());
 
 	// 1.5 - identify the 4 vertices in face Y=1: V010, V110, V111, V011
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	TopExp::Vertices(E_0Y0, VFirst, VLast);
 	if (VFirst.IsSame(_cube.V000))
@@ -279,7 +322,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		_cube.V011 = VFirst;
 
 	// 1.6 - find remaining faces given 4 vertices
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	_indY0 = 0;
 	_cube.quad_Y0 = _quads[_indY0];
@@ -304,7 +347,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		_cube.V100, _cube.V101, _cube.V110, _cube.V111);
 	_cube.quad_X1 = _quads[_indX1];
 
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	// 1.7 - get convertion coefs from face 2D normalized to 3D normalized
 
@@ -330,18 +373,26 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 	// 1.8 - create a 3D structure for normalized values
 
-	MESSAGE("---");
-	int nbx = _cube.quad_Y0->nbPts[0];
-	int nby = _cube.quad_Y0->nbPts[1];
-	int nbz;
-	if (cx0.a1 != 0)
-		nbz = _cube.quad_X0->nbPts[1];
-	else
-		nbz = _cube.quad_X0->nbPts[0];
+	//MESSAGE("---");
+        int nbx = _cube.quad_Z0->nbPts[0];
+        if (cz0.a1 == 0.) nbx = _cube.quad_Z0->nbPts[1];
+ 
+        int nby = _cube.quad_X0->nbPts[0];
+        if (cx0.a1 == 0.) nby = _cube.quad_X0->nbPts[1];
+ 
+        int nbz = _cube.quad_Y0->nbPts[0];
+        if (cy0.a1 != 0.) nbz = _cube.quad_Y0->nbPts[1];
+// 	int nbx = _cube.quad_Y0->nbPts[0];
+// 	int nby = _cube.quad_Y0->nbPts[1];
+// 	int nbz;
+// 	if (cx0.a1 != 0)
+// 		nbz = _cube.quad_X0->nbPts[1];
+// 	else
+// 		nbz = _cube.quad_X0->nbPts[0];
 	//SCRUTE(nbx);
 	//SCRUTE(nby);
 	//SCRUTE(nbz);
-	int nbxyz = nbx * nby * nbz;
+	int i1, j1, nbxyz = nbx * nby * nbz;
 	Point3DStruct *np = new Point3DStruct[nbxyz];
 
 	// 1.9 - store node indexes of faces
@@ -360,12 +411,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition* fpos =
-                          static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -396,12 +442,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition* fpos =
-                          static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -432,12 +473,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition * fpos =
-                          static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -468,12 +504,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition* fpos =
-                          static_cast<const SMDS_FacePosition *>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -504,12 +535,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition * fpos =
-                          static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -540,12 +566,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 		while(itf->more())
 		{
 			const SMDS_MeshNode * node = itf->next();
-			const SMDS_FacePosition* fpos =
-                          static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
-			double ri = fpos->GetUParameter();
-			double rj = fpos->GetVParameter();
-			int i1 = int (ri);
-			int j1 = int (rj);
+                        findIJ( node, quad, i1, j1 );
 			int ij1 = j1 * nbdown + i1;
 			quad->uv_grid[ij1].node = node;
 		}
@@ -716,7 +737,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 			}
 
-	MESSAGE("End of StdMeshers_Hexa_3D::Compute()");
+	//MESSAGE("End of StdMeshers_Hexa_3D::Compute()");
 	return true;
 }
 
@@ -750,7 +771,7 @@ int StdMeshers_Hexa_3D::GetFaceIndex(SMESH_Mesh & aMesh,
 	const TopoDS_Vertex & V1,
 	const TopoDS_Vertex & V2, const TopoDS_Vertex & V3)
 {
-	MESSAGE("StdMeshers_Hexa_3D::GetFaceIndex");
+	//MESSAGE("StdMeshers_Hexa_3D::GetFaceIndex");
 	int faceIndex = -1;
 	for (int i = 1; i < 6; i++)
 	{
@@ -771,7 +792,7 @@ int StdMeshers_Hexa_3D::GetFaceIndex(SMESH_Mesh & aMesh,
 		}
 	}
 	ASSERT(faceIndex > 0);
-	SCRUTE(faceIndex);
+	//SCRUTE(faceIndex);
 	return faceIndex;
 }
 
@@ -788,13 +809,13 @@ TopoDS_Edge
 	const TopoDS_Vertex & aVertex,
 	const TopTools_IndexedDataMapOfShapeListOfShape & MS)
 {
-	MESSAGE("StdMeshers_Hexa_3D::EdgeNotInFace");
+	//MESSAGE("StdMeshers_Hexa_3D::EdgeNotInFace");
 	TopTools_IndexedDataMapOfShapeListOfShape MF;
 	TopExp::MapShapesAndAncestors(aFace, TopAbs_VERTEX, TopAbs_EDGE, MF);
 	const TopTools_ListOfShape & ancestorsInSolid = MS.FindFromKey(aVertex);
 	const TopTools_ListOfShape & ancestorsInFace = MF.FindFromKey(aVertex);
-	SCRUTE(ancestorsInSolid.Extent());
-	SCRUTE(ancestorsInFace.Extent());
+// 	SCRUTE(ancestorsInSolid.Extent());
+// 	SCRUTE(ancestorsInFace.Extent());
 	ASSERT(ancestorsInSolid.Extent() == 6);	// 6 (edges doublees)
 	ASSERT(ancestorsInFace.Extent() == 2);
 
@@ -836,7 +857,7 @@ void StdMeshers_Hexa_3D::GetConv2DCoefs(const faceQuadStruct & quad,
 	const TopoDS_Vertex & V1,
 	const TopoDS_Vertex & V2, const TopoDS_Vertex & V3, Conv2DStruct & conv)
 {
-	MESSAGE("StdMeshers_Hexa_3D::GetConv2DCoefs");
+//	MESSAGE("StdMeshers_Hexa_3D::GetConv2DCoefs");
 	const TopoDS_Face & F = TopoDS::Face(aShape);
 	TopoDS_Edge E = quad.edge[0];
 	double f, l;
@@ -936,8 +957,8 @@ void StdMeshers_Hexa_3D::GetConv2DCoefs(const faceQuadStruct & quad,
 			b2 = -1;
 			c2 = 1;				// 1-y
 		}
-	MESSAGE("X = " << c1 << "+ " << a1 << "*x + " << b1 << "*y");
-	MESSAGE("Y = " << c2 << "+ " << a2 << "*x + " << b2 << "*y");
+// 	MESSAGE("X = " << c1 << "+ " << a1 << "*x + " << b1 << "*y");
+// 	MESSAGE("Y = " << c2 << "+ " << a2 << "*x + " << b2 << "*y");
 	conv.a1 = a1;
 	conv.b1 = b1;
 	conv.c1 = c1;
@@ -955,8 +976,8 @@ void StdMeshers_Hexa_3D::GetConv2DCoefs(const faceQuadStruct & quad,
 	conv.jb = int (b2);
 	conv.jc =
 		int (c2 * a2 * a2) * (nbdown - 1) + int (c2 * b2 * b2) * (nbright - 1);
-	MESSAGE("I " << conv.ia << " " << conv.ib << " " << conv.ic);
-	MESSAGE("J " << conv.ja << " " << conv.jb << " " << conv.jc);
+// 	MESSAGE("I " << conv.ia << " " << conv.ib << " " << conv.ic);
+// 	MESSAGE("J " << conv.ja << " " << conv.jb << " " << conv.jc);
 }
 
 //=============================================================================

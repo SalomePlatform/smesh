@@ -27,62 +27,32 @@
 #ifndef _INCLUDE_DRIVERMED_R_SMESHDS_MESH
 #define _INCLUDE_DRIVERMED_R_SMESHDS_MESH
 
-#include "SMESHDS_Mesh.hxx"
-#include "Mesh_Reader.h"
+#include "Driver_SMESHDS_Mesh.h"
 #include "DriverMED_Family.h"
 
 #include <list>
-extern "C"
-{
-#include <med.h>
-}
 
-using namespace std;
-
+class SMESHDS_Mesh;
 class SMESHDS_Group;
 class SMESHDS_SubMesh;
 
-class DriverMED_R_SMESHDS_Mesh:public Mesh_Reader
+class DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
  public:
+  virtual Status Perform();
 
-  DriverMED_R_SMESHDS_Mesh();
-  ~DriverMED_R_SMESHDS_Mesh();
-
-  enum ReadStatus {
-    DRS_OK,
-    DRS_EMPTY,          // a MED file contains no mesh with the given name
-    DRS_WARN_RENUMBER,  // a MED file has overlapped ranges of element numbers,
-                        // so the numbers from the file are ignored
-    DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
-    DRS_FAIL            // general failure (exception etc.)
-  };
-
-  void Read();
-  ReadStatus ReadMySelf();
-  void Add();
-
-  list<string> GetGroupNames();
+  std::list<std::string> GetGroupNames();
   void GetGroup(SMESHDS_Group* theGroup);
   void CreateAllSubMeshes();
   void GetSubMesh(SMESHDS_SubMesh* theSubMesh, const int theId);
 
-  list<string> GetMeshNames();
-
-  void SetMesh(SMDS_Mesh * aMesh);
-  void SetFile(string);
-  void SetFileId(med_idt);
-  void SetMeshId(int);
-  void SetMeshName(string theMeshName);
+  std::list<std::string> GetMeshNames(Status& theStatus);
+  void SetMeshName(std::string theMeshName);
 
  private:
-
-  SMDS_Mesh * myMesh;
-  string myFile;
-  med_idt myFileId;
-  int myMeshId;
-  string myMeshName;
-  map<int, DriverMED_FamilyPtr> myFamilies;
+  std::string myMeshName;
+  std::map<int, DriverMED_FamilyPtr> myFamilies;
 
 };
+
 #endif

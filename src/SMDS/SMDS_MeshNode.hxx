@@ -31,14 +31,14 @@
 #include "SMDS_Position.hxx"
 
 #include <set>
-using namespace std;
+
 
 class SMDS_MeshNode:public SMDS_MeshElement
 {
 
   public:
 	SMDS_MeshNode(double x, double y, double z);
-	void Print(ostream & OS) const;
+	void Print(std::ostream & OS) const;
 	double X() const;
 	double Y() const;
 	double Z() const;
@@ -61,7 +61,7 @@ class SMDS_MeshNode:public SMDS_MeshElement
   private:
 	double myX, myY, myZ;
 	SMDS_PositionPtr myPosition;
-	set<const SMDS_MeshElement*> myInverseElements;
+	std::set<const SMDS_MeshElement*> myInverseElements;
 };
 
 #endif

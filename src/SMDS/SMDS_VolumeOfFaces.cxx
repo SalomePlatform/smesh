@@ -27,6 +27,9 @@
 
 #include "SMDS_VolumeOfFaces.hxx"
 #include "SMDS_IteratorOfElements.hxx"
+
+using namespace std;
+
 //=======================================================================
 //function : Print
 //purpose  : 

@@ -22,20 +22,11 @@ if test "x$GEOM_DIR" == "x" ; then
     # GEOM_ROOT_DIR environment variable defined
       GEOM_DIR=$GEOM_ROOT_DIR
 
-   else
-
-    # search Geom binaries in PATH variable
-      AC_PATH_PROG(TEMP, libGEOM_Swig.py)
-      if test "x$TEMP" != "x" ; then
-         GEOM_BIN_DIR=`dirname $TEMP`
-         GEOM_DIR=`dirname $GEOM_BIN_DIR`
-      fi
-      
    fi
 # 
 fi
 
-if test -f ${GEOM_DIR}/bin/salome/libGEOM_Swig.py ; then
+if test -f ${GEOM_DIR}/lib/salome/libGEOMClient.so ; then
    Geom_ok=yes
    AC_MSG_RESULT(Using Geom module distribution in ${GEOM_DIR})
 

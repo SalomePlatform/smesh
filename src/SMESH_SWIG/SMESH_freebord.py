@@ -1,34 +1,22 @@
 import salome
-from geompy import gg
 import geompy
 import SMESH
-
 import StdMeshers
 
-ShapeTypeCompSolid = 1
-ShapeTypeSolid = 2
-ShapeTypeShell = 3
-ShapeTypeFace = 4
-ShapeTypeWire = 5
-ShapeTypeEdge = 6
-ShapeTypeVertex = 7
-
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-geom.GetCurrentStudy(salome.myStudy._get_StudyId())
 smesh.SetCurrentStudy(salome.myStudy)
 
 # Create box without one plane
 
 box = geompy.MakeBox(0., 0., 0., 10., 20., 30.)
-subShapeList = geompy.SubShapeAll(box,ShapeTypeFace)
+subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 
 FaceList  = []
 for i in range( 5 ):
-  FaceList.append( subShapeList[ i ]._get_Name() )
+  FaceList.append( subShapeList[ i ] )
 
-aBox = geompy.MakeSewing( FaceList, 1. )
+aComp = geompy.MakeCompound( FaceList )
+aBox = geompy.Sew( aComp, 1. )
 idbox = geompy.addToStudy( aBox, "box" )
   
 aBox  = salome.IDToObject( idbox )

@@ -39,7 +39,6 @@
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
-#include CORBA_SERVER_HEADER(GEOM_Shape)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 #include <map>
@@ -86,11 +85,13 @@ private:
     bool StoreMesh();
     bool StoreSubMesh();
 
+    bool IsOld(QListBoxItem* hypItem);
+
 private:
     SMESHGUI*                     mySMESHGUI ;
     SALOME_Selection*             mySelection ;
              
-    GEOM::GEOM_Shape_var          myGeomShape ;
+    GEOM::GEOM_Object_var         myGeomShape ;
     QLineEdit*                    myEditCurrentArgument; 
 
     SMESH::SMESH_Mesh_var         myMesh;
@@ -100,6 +101,7 @@ private:
     Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
 
     MapIOR                        myMapOldHypos, myMapOldAlgos;
+    int                           myNbModification;
 
     bool                          myImportedMesh;
  

@@ -26,10 +26,9 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-using namespace std;
 #include "SMESHDS_Hypothesis.hxx"
 
+using namespace std;
 
 //=============================================================================
 /*!

@@ -7,48 +7,40 @@
 import os
 import salome
 import geompy
-
 import StdMeshers
 
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
 smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
+smeshgui.Init(salome.myStudyId)
 
 
 # ---------------------------- GEOM --------------------------------------
-
-ShapeTypeShell     = 3
-ShapeTypeFace      = 4
-ShapeTypeEdge      = 6
 
 # import a BRep
 #before running this script, please be sure about
 #the path the file fileName
 
-filePath=os.environ["SMESH_ROOT_DIR"]
-filePath=filePath+"/share/salome/resources/"
+filePath = os.environ["SMESH_ROOT_DIR"]
+filePath = filePath + "/share/salome/resources/"
 
 filename = "flight_solid.brep"
 filename = filePath + filename
 
-shape = geompy.ImportBREP(filename)
-idShape = geompy.addToStudy(shape,"flight")
+shape = geompy.Import(filename, "BREP")
+idShape = geompy.addToStudy(shape, "flight")
 
 print "Analysis of the geometry flight :"
-subShellList=geompy.SubShapeAll(shape,ShapeTypeShell)
-subFaceList=geompy.SubShapeAll(shape,ShapeTypeFace)
-subEdgeList=geompy.SubShapeAll(shape,ShapeTypeEdge)
+subShellList = geompy.SubShapeAll(shape, geompy.ShapeType["SHELL"])
+subFaceList  = geompy.SubShapeAll(shape, geompy.ShapeType["FACE"])
+subEdgeList  = geompy.SubShapeAll(shape, geompy.ShapeType["EDGE"])
 
-print "number of Shells in flight : ",len(subShellList)
-print "number of Faces in flight : ",len(subFaceList)
-print "number of Edges in flight : ",len(subEdgeList)
+print "number of Shells in flight : ", len(subShellList)
+print "number of Faces  in flight : ", len(subFaceList)
+print "number of Edges  in flight : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
-
-# ---- create Hypothesis
 
 print "-------------------------- create Hypothesis"
 
@@ -56,44 +48,42 @@ print "-------------------------- LocalLength"
 
 lengthOfSegments = 0.3
 
-hypLength=smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
+hypLength = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
 hypLength.SetLength(lengthOfSegments)
 
 print hypLength.GetName()
-print  hypLength.GetId()
+print hypLength.GetId()
 print hypLength.GetLength()
 
 smeshgui.SetName(salome.ObjectToID(hypLength), "LocalLength_0.3")
 
 print "-------------------------- LengthFromEdges"
 
-hypLengthFromEdge=smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
+hypLengthFromEdge = smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
 
 print hypLengthFromEdge.GetName()
 print hypLengthFromEdge.GetId()
 
 smeshgui.SetName(salome.ObjectToID(hypLengthFromEdge), "LengthFromEdge")
 
-# ---- create Algorithms
-
 print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
 
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-mefisto2D=smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
 
 smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 # ---- init a Mesh with the shell
 shape_mesh = salome.IDToObject( idShape )
 
-mesh=smesh.CreateMesh(shape_mesh)
+mesh = smesh.CreateMesh(shape_mesh)
 smeshgui.SetName(salome.ObjectToID(mesh), "MeshFlight")
 
 # ---- add hypothesis to flight
@@ -109,10 +99,10 @@ salome.sg.updateObjBrowser(1)
 
 
 print "-------------------------- compute the skin flight"
-ret=smesh.Compute(mesh,shape_mesh)
+ret = smesh.Compute(mesh,shape_mesh)
 print ret
 if ret != 0:
-    log=mesh.GetLog(0) # no erase trace
+    log = mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
     print "Information about the Mesh_mechanic_tetra:"

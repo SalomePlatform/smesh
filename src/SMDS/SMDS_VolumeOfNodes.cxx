@@ -19,9 +19,11 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
-#include "utilities.h"
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "utilities.h"
+
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Create an hexahedron. node 1,2,3,4 and 5,6,7,8 are quadrangle and
@@ -92,6 +94,18 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 	myNodes[4]=node5;
 	myNodes[5]=node6;
 }
+bool SMDS_VolumeOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
+                                     const int            nbNodes)
+{
+  if (nbNodes < 4 || nbNodes > 8 || nbNodes == 7)
+    return false;
+
+  myNodes.resize( nbNodes );
+  for ( int i = 0; i < nbNodes; i++ )
+    myNodes[ i ] = nodes [ i ];
+
+  return true;
+}
 //=======================================================================
 //function : Print
 //purpose  : 
@@ -115,6 +129,7 @@ int SMDS_VolumeOfNodes::NbFaces() const
 	case 8: return 6;
 	default: MESSAGE("invalid number of nodes");
 	}
+        return 0;
 }
 
 int SMDS_VolumeOfNodes::NbNodes() const
@@ -132,6 +147,7 @@ int SMDS_VolumeOfNodes::NbEdges() const
 	case 8: return 12;
 	default: MESSAGE("invalid number of nodes");
 	}
+        return 0;
 }
 
 class SMDS_VolumeOfNodes_MyIterator:public SMDS_ElemIterator

@@ -29,16 +29,8 @@
 #ifndef _SMESHDS_HYPOTHESIS_HXX_
 #define _SMESHDS_HYPOTHESIS_HXX_
 
-#if (__GNUC__>2)
 #include <string>
-#include <istream>
-#include <ostream>
-#else 
-#include <string>
-#include <istream.h>
-#include <ostream.h>
-#endif
-using namespace std;  
+#include <iostream>
 
 class SMESHDS_Hypothesis
 {
@@ -50,13 +42,13 @@ public:
   int GetID() const;
   int GetType() const;
 
-  virtual ostream & SaveTo(ostream & save)=0;
-  virtual istream & LoadFrom(istream & load)=0;
+  virtual std::ostream & SaveTo(std::ostream & save)=0;
+  virtual std::istream & LoadFrom(std::istream & load)=0;
 
 enum hypothesis_type {PARAM_ALGO, ALGO, ALGO_1D, ALGO_2D, ALGO_3D};
 
 protected:
-  string _name;
+  std::string _name;
   int _hypId;
   int _type;
 };

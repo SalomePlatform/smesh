@@ -22,15 +22,16 @@
 #ifndef _SMDS_FaceOfNodes_HeaderFile
 #define _SMDS_FaceOfNodes_HeaderFile
 
-#include <iostream>
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_Iterator.hxx"
 
+#include <iostream>
+
 class SMDS_FaceOfNodes:public SMDS_MeshFace
 {
   public:
-	void Print(ostream & OS) const;
+	void Print(std::ostream & OS) const;
 	SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                          const SMDS_MeshNode* node2,
                          const SMDS_MeshNode* node3);
@@ -38,7 +39,8 @@ class SMDS_FaceOfNodes:public SMDS_MeshFace
                          const SMDS_MeshNode* node2,
                          const SMDS_MeshNode* node3,
                          const SMDS_MeshNode* node4);
-		
+        bool ChangeNodes(const SMDS_MeshNode* nodes[],
+                         const int            nbNodes);
 	int NbEdges() const;
 	int NbFaces() const;
 	int NbNodes() const;
@@ -47,7 +49,7 @@ class SMDS_FaceOfNodes:public SMDS_MeshFace
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	vector<const SMDS_MeshNode*> myNodes;
+	std::vector<const SMDS_MeshNode*> myNodes;
 
 };
 

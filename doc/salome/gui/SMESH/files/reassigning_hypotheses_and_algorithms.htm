@@ -19,8 +19,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=380>
-<meta name=layout-width content=700>
+<meta name=layout-height content=1107>
+<meta name=layout-width content=740>
 
 
 <!--(Links)=========================================================-->
@@ -30,6 +30,27 @@
 <!--
 if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
+//-->
+</script>
+<style type="text/css">
+<!--
+p.whs1 {margin-left: 40px;}
+img_whs2 {border-style: none; border: none; width: 300px; height: 449px;}
+ul.whs3 {list-style: disc;}
+p.whs4 {margin-left: 40px; font-weight: bold;}
+p.whs5 {margin-left: 0px;}
+img_whs6 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
+-->
+</style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs5 {margin-left:1; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
 //-->
 </script>
 <script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
@@ -81,7 +102,7 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.html");
+	setRelStartPage("../smesh.htm");
 
 		autoSync(0);
 		sendSyncInfo();
@@ -94,7 +115,97 @@ else
 </script>
 <h1>Reassigning hypotheses and algorithms</h1>
 
+<p>After you have created a mesh or submesh with definite applied hypotheses 
+ and algorithms you can edit your mesh by <span style="font-weight: bold;"><B>assigning</B></span> 
+ new hypotheses and algorithms or <span style="font-weight: bold;"><B>unassigning 
+ </B></span>the applied hypotheses and algorithms.</p>
+
 <p>&nbsp;</p>
+
+<p class=TODO>To assign or unassign algorithms and hypotheses:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs1">1. In the <span style="font-weight: bold;"><B>Mesh 
+ </B></span><span>menu select the </span><span style="font-weight: bold;"><B>Edit 
+ Hypothesis</B></span><span>, the following dialog box will appear:</span><span 
+ style="font-weight: bold;"> <B></B></span></p>
+
+<p>&nbsp;</p>
+
+<p class="whs1"><img src="../image41.jpg" width="300px" height="449px" border="0" class="img_whs2"></p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">This dialog box contains the following fields: 
+ </p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p class="whs1"><span style="font-weight: bold;"><B>Mesh 
+ or SubMesh </B></span>field: here you should enter the name of the mesh or 
+ submesh for which you would like to assign or unassign hypotheses and 
+ algorithms. It can be also done by choosing the required mesh or submesh 
+ in the Object Browser or in the 3D viewer;</p></li>
+	
+	<li class=kadov-p><p class="whs4">Hypotheses 
+ <span style="font-weight: normal;">set of fields containing two columns: 
+ </span></p></li>
+	
+	<ul type="disc" class="whs3">
+		
+		<li class=kadov-p><p class="whs4">Available: 
+ <span style="font-weight: normal;">the hypotheses which have been created 
+ in the current study;</span></p></li>
+		
+		<li class=kadov-p><p class="whs4"><span 
+ style="margin-left: 40px; font-weight: bold;"><B>Used: </B></span><span style="margin-left: 40px; font-weight: normal;">the 
+ hypotheses which have been applied to previously selected mesh or submesh.</span><span 
+ style="margin-left: 40px; font-weight: bold;"> <B></B></span></p></li>
+	</ul>
+	
+	<li class=kadov-p><p class="whs1"><span style="font-weight: bold;"><B>Algorithms 
+ </B></span>set of fields containing two columns:</p></li>
+	
+	<ul type="disc" class="whs3">
+		
+		<li class=kadov-p><p class="whs4">Available: 
+ <span style="font-weight: normal;">the algorithms which have been created 
+ in the current study.</span></p></li>
+		
+		<li class=kadov-p><p class="whs4">Used: 
+ <span style="font-weight: normal;">the algorithms which have been applied 
+ to previously selected mesh or submesh.</span> </p></li>
+	</ul>
+</ul>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">2. Double-click on the definite algorithm 
+ or hypothesis to move it from the <span style="font-weight: bold;"><B>Available 
+ </B></span>column into the <span style="font-weight: bold;"><B>Used </B></span>column 
+ and vice versa. &nbsp;Thus 
+ you will be able to apply new hypotheses and algorithms to your mesh or 
+ unassign<span style="font-weight: bold;"> <B></B></span>the applied hypotheses 
+ and algorithms.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">3. Confirm your changes by clicking the <span 
+ style="font-weight: bold;"><B>OK </B></span>button.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs5">After modification of applied algorithms you 
+ should recompute your mesh once again.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs5"><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs6"> You can also unassign an 
+ applied algorithm or hypothesis by right-clicking on it in the Object 
+ Browser and choosing from the associated popup menu the <span style="font-weight: bold;"><B>Unassign 
+ Algorithm </B></span>or <span style="font-weight: bold;"><B>Unassign Hypothesis 
+ </B></span><span>item.</span></p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

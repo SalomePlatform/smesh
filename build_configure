@@ -128,7 +128,7 @@ echo "	./salome_adm/unix/depend \\" >> configure.in_tmp1
 echo "	./adm_local/unix/make_omniorb \\" >> configure.in_tmp1
 echo "	./salome_adm/unix/envScript \\" >> configure.in_tmp1
 echo "	./adm_local/unix/make_commence \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/make_conclude \\" >> configure.in_tmp1
+echo "	./adm_local/unix/make_conclude \\" >> configure.in_tmp1
 echo "	./salome_adm/unix/make_module \\" >> configure.in_tmp1
 
 \rm -f configure.in_tmp2 configure.in_tmp3

@@ -31,22 +31,24 @@
 #include "SALOMEDS.idl"
 
 #include "GEOM_Gen.idl"
-#include "GEOM_Shape.idl"
 
 #include "SMESH_Mesh.idl"
 #include "SMESH_Hypothesis.idl"
 
 module SMESH
 {
-  typedef sequence<GEOM::GEOM_Shape> shape_array;
+  typedef sequence<GEOM::GEOM_Object> object_array;
   typedef sequence<SMESH_Mesh> mesh_array;
 
   interface FilterManager;
+  interface SMESH_Pattern;
 
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
 
     FilterManager CreateFilterManager();
+
+    SMESH_Pattern GetPattern();
 
     /*!
       Set the current study
@@ -76,15 +78,27 @@ module SMESH
      * of TopoDS_Shapes and bind CORBA references of shape & subshapes
      * with TopoDS_Shapes
      */
-    SMESH_Mesh CreateMesh( in GEOM::GEOM_Shape theShape )
+    SMESH_Mesh CreateMesh( in GEOM::GEOM_Object theObject )
       raises ( SALOME::SALOME_Exception );
     
+    /*!
+     * Create Mesh object importing data from given UNV file
+     */
+    SMESH_Mesh CreateMeshesFromUNV( in string theFileName )
+      raises ( SALOME::SALOME_Exception );
+
     /*!
      * Create Mesh object(s) importing data from given MED file
      */
      mesh_array CreateMeshesFromMED( in string theFileName,
 				     out SMESH::DriverMED_ReadStatus theStatus )
        raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Create Mesh object importing data from given STL file
+     */
+    SMESH_Mesh CreateMeshesFromSTL( in string theFileName )
+      raises ( SALOME::SALOME_Exception );
 
     /*!
      * Create a Mesh object, without a geometry shape reference
@@ -98,7 +112,7 @@ module SMESH
      * return NOK if hypothesis are not sufficient
      */
     boolean Compute( in SMESH_Mesh       theMesh, 
-		     in GEOM::GEOM_Shape theSubShape )
+		     in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!
@@ -106,23 +120,22 @@ module SMESH
      */
 
     boolean IsReadyToCompute( in SMESH_Mesh       theMesh, 
-			      in GEOM::GEOM_Shape theSubShape )
+			      in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!
      * 
      */
-    long_array GetSubShapesId( in GEOM::GEOM_Shape theMainShape,
-			       in shape_array      theListOfSubShape )
+    long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
+			     in object_array theListOfSubObjects )
        raises ( SALOME::SALOME_Exception );
     
     /*!
      * 
      */
-    //    long_array GetSubMeshesState( in shape_array theListOfSubShape )
+    //    long_array GetSubMeshesState( in object_array theListOfSubShape )
     //  raises ( SALOME::SALOME_Exception );
     
-
   };
 
 };

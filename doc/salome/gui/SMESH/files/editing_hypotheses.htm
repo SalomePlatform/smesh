@@ -19,8 +19,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=380>
-<meta name=layout-width content=700>
+<meta name=layout-height content=587>
+<meta name=layout-width content=740>
 
 
 <!--(Links)=========================================================-->
@@ -32,6 +32,12 @@ if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
 //-->
 </script>
+<style type="text/css">
+<!--
+p.whs1 {margin-left: 40px;}
+img_whs2 {border-style: none; border: none; width: 347px; height: 145px;}
+-->
+</style>
 <script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
@@ -69,7 +75,7 @@ if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("SMESH module\nEditing meshes\nEditing hypotheses");
+	addTocInfo("SMESH module\nEditing meshes\nEditing hypotheses and algorithms");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -81,7 +87,7 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.html");
+	setRelStartPage("../smesh.htm");
 
 		autoSync(0);
 		sendSyncInfo();
@@ -92,9 +98,49 @@ else
 	document.location.reload();
 //-->
 </script>
-<h1>Editing hypotheses</h1>
+<h1>Editing hypotheses and algorithms</h1>
+
+<p>In SMESH you can <span style="font-weight: bold;"><B>rename</B></span> created 
+ and already applied hypotheses and algorithms and <span style="font-weight: bold;"><B>edit</B></span> 
+ the input data of the created and already applied hypotheses.</p>
 
 <p>&nbsp;</p>
+
+<p class=TODO>To rename a hypothesis or algorithm:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs1">1. Select the required hypothesis or algorithm 
+ in the Object Browser and right-click on it. From the associated popup 
+ menu select the <span style="font-weight: bold;"><B>Rename </B></span>item, the 
+ following dialog box will appear:</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1"><img src="../image46.jpg" width="347px" height="145px" border="0" class="img_whs2"></p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">2. In this dialog box enter a new name for 
+ your hypothesis or algorithm and click the <span style="font-weight: bold;"><B>OK 
+ </B></span>button.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class=TODO>To edit the input data of a hypothesis:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs1">1. Select the required hypothesis &nbsp;in 
+ the Object Browser and right-click on it. From the associated popup menu 
+ select the <span style="font-weight: bold;"><B>Edit </B></span>item and in the 
+ appeared dialog box (it will differ depending on the type of the edited 
+ hypothesis) enter a new input value for your hypothesis.</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">2. Click the <span style="font-weight: bold;"><B>OK 
+ </B></span>button to confirm your changes.</p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

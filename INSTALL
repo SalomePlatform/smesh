@@ -1,6 +1,5 @@
-This is SMESH V2.0.0
-
+This is the version 2.1.0 of SMESH
 Compatible with :
-	GEOM	V2_0_0
-	KERNEL	V2_0_0
-	MED	V2_0_0
+        - KERNEL 2.1.0
+	- GEOM 2.1.0
+	- MED 2.1.0

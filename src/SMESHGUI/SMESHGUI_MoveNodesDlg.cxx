@@ -27,435 +27,405 @@
 //  $Header$
 
 #include "SMESHGUI_MoveNodesDlg.h"
-#include "SMESHGUI_SpinBox.h"
-#include "SMESH_Actor.h"
-#include "SMESHGUI.h"
 
-#include "QAD_Application.h"
+#include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_IdValidator.h"
+
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+
+#include "SMESH_Actor.h"
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshNode.hxx"
+
+#include "SALOME_Selection.h"
+#include "VTKViewer_ViewFrame.h"
 #include "QAD_Desktop.h"
+#include "QAD_RightFrame.h"
 #include "QAD_MessageBox.h"
+
 #include "utilities.h"
 
-// QT Includes
-#include <qbuttongroup.h>
+#include <vtkCell.h>
+#include <vtkIdList.h>
+#include <vtkIntArray.h>
+#include <vtkCellArray.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkDataSetMapper.h>
+
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qradiobutton.h>
 #include <qlayout.h>
-#include <qvariant.h>
-#include <qtooltip.h>
-#include <qwhatsthis.h>
-#include <qimage.h>
 #include <qpixmap.h>
+#include <qmessagebox.h>
+#include <qbuttongroup.h>
 
-// Open CASCADE Include
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+// IDL Headers
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-using namespace std;
+#define MARGIN  10
+#define SPACING 5
+
 
 //=================================================================================
 // class    : SMESHGUI_MoveNodesDlg()
 // purpose  : 
 //=================================================================================
-SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg( QWidget* parent, const char* name, SALOME_Selection* Sel,
-					      bool modal, WFlags fl )
-    : QDialog( parent, name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg( QWidget*          theParent,
+                                              SALOME_Selection* theSelection,
+                                              const char*       theName )
+
+: QDialog( theParent, theName, false,
+           WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
 {
-    QPixmap image0(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_DLG_MOVE_NODE")));
-    QPixmap image1(QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr("ICON_SELECT")));
-
-    if ( !name )
-	setName( "SMESHGUI_MoveNodesDlg" );
-    resize( 303, 185 ); 
-    setCaption( tr( "SMESH_MOVE_NODES_TITLE"  ) );
-    setSizeGripEnabled( TRUE );
-    SMESHGUI_MoveNodesDlgLayout = new QGridLayout( this ); 
-    SMESHGUI_MoveNodesDlgLayout->setSpacing( 6 );
-    SMESHGUI_MoveNodesDlgLayout->setMargin( 11 );
-
-    /***************************************************************/
-    GroupConstructors = new QButtonGroup( this, "GroupConstructors" );
-    GroupConstructors->setTitle( tr( "SMESH_NODES"  ) );
-    GroupConstructors->setExclusive( TRUE );
-    GroupConstructors->setColumnLayout(0, Qt::Vertical );
-    GroupConstructors->layout()->setSpacing( 0 );
-    GroupConstructors->layout()->setMargin( 0 );
-    GroupConstructorsLayout = new QGridLayout( GroupConstructors->layout() );
-    GroupConstructorsLayout->setAlignment( Qt::AlignTop );
-    GroupConstructorsLayout->setSpacing( 6 );
-    GroupConstructorsLayout->setMargin( 11 );
-    Constructor1 = new QRadioButton( GroupConstructors, "Constructor1" );
-    Constructor1->setText( tr( ""  ) );
-    Constructor1->setPixmap( image0 );
-    Constructor1->setChecked( TRUE );
-    Constructor1->setSizePolicy( QSizePolicy( (QSizePolicy::SizeType)1, (QSizePolicy::SizeType)0, Constructor1->sizePolicy().hasHeightForWidth() ) );
-    Constructor1->setMinimumSize( QSize( 50, 0 ) );
-    GroupConstructorsLayout->addWidget( Constructor1, 0, 0 );
-    QSpacerItem* spacer = new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-    GroupConstructorsLayout->addItem( spacer, 0, 1 );
-    SMESHGUI_MoveNodesDlgLayout->addWidget( GroupConstructors, 0, 0 );
-    
-    /***************************************************************/
-    GroupButtons = new QGroupBox( this, "GroupButtons" );
-    GroupButtons->setGeometry( QRect( 10, 10, 281, 48 ) ); 
-    GroupButtons->setTitle( tr( ""  ) );
-    GroupButtons->setColumnLayout(0, Qt::Vertical );
-    GroupButtons->layout()->setSpacing( 0 );
-    GroupButtons->layout()->setMargin( 0 );
-    GroupButtonsLayout = new QGridLayout( GroupButtons->layout() );
-    GroupButtonsLayout->setAlignment( Qt::AlignTop );
-    GroupButtonsLayout->setSpacing( 6 );
-    GroupButtonsLayout->setMargin( 11 );
-    buttonCancel = new QPushButton( GroupButtons, "buttonCancel" );
-    buttonCancel->setText( tr( "SMESH_BUT_CLOSE"  ) );
-    buttonCancel->setAutoDefault( TRUE );
-    GroupButtonsLayout->addWidget( buttonCancel, 0, 3 );
-    buttonApply = new QPushButton( GroupButtons, "buttonApply" );
-    buttonApply->setText( tr( "SMESH_BUT_APPLY"  ) );
-    buttonApply->setAutoDefault( TRUE );
-    GroupButtonsLayout->addWidget( buttonApply, 0, 1 );
-    QSpacerItem* spacer_9 = new QSpacerItem( 20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum );
-    GroupButtonsLayout->addItem( spacer_9, 0, 2 );
-    buttonOk = new QPushButton( GroupButtons, "buttonOk" );
-    buttonOk->setText( tr( "SMESH_BUT_OK"  ) );
-    buttonOk->setAutoDefault( TRUE );
-    buttonOk->setDefault( TRUE );
-    GroupButtonsLayout->addWidget( buttonOk, 0, 0 );
-    SMESHGUI_MoveNodesDlgLayout->addWidget( GroupButtons, 3, 0 );
-
-    /***************************************************************/
-    GroupC1 = new QGroupBox( this, "GroupC1" );
-    GroupC1->setTitle( tr( "SMESH_MOVE"  ) );
-    GroupC1->setMinimumSize( QSize( 0, 0 ) );
-    GroupC1->setFrameShape( QGroupBox::Box );
-    GroupC1->setFrameShadow( QGroupBox::Sunken );
-    GroupC1->setColumnLayout(0, Qt::Vertical );
-    GroupC1->layout()->setSpacing( 0 );
-    GroupC1->layout()->setMargin( 0 );
-    GroupC1Layout = new QGridLayout( GroupC1->layout() );
-    GroupC1Layout->setAlignment( Qt::AlignTop );
-    GroupC1Layout->setSpacing( 6 );
-    GroupC1Layout->setMargin( 11 );
-    TextLabelC1A1 = new QLabel( GroupC1, "TextLabelC1A1" );
-    TextLabelC1A1->setText( tr( "SMESH_ID_NODES"  ) );
-    TextLabelC1A1->setMinimumSize( QSize( 50, 0 ) );
-    TextLabelC1A1->setFrameShape( QLabel::NoFrame );
-    TextLabelC1A1->setFrameShadow( QLabel::Plain );
-    GroupC1Layout->addWidget( TextLabelC1A1, 0, 0 );
-    SelectButtonC1A1 = new QPushButton( GroupC1, "SelectButtonC1A1" );
-    SelectButtonC1A1->setText( tr( ""  ) );
-    SelectButtonC1A1->setPixmap( image1 );
-    SelectButtonC1A1->setToggleButton( FALSE );
-    GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
-    LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
-    GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
-
-    SMESHGUI_MoveNodesDlgLayout->addWidget( GroupC1, 1, 0 );
-
-    /***************************************************************/
-    GroupCoordinates = new QGroupBox( this, "GroupCoordinates" );
-    GroupCoordinates->setTitle( tr( "SMESH_COORDINATES"  ) );
-    GroupCoordinates->setColumnLayout(0, Qt::Vertical );
-    GroupCoordinates->layout()->setSpacing( 0 );
-    GroupCoordinates->layout()->setMargin( 0 );
-    GroupCoordinatesLayout = new QGridLayout( GroupCoordinates->layout() );
-    GroupCoordinatesLayout->setAlignment( Qt::AlignTop );
-    GroupCoordinatesLayout->setSpacing( 6 );
-    GroupCoordinatesLayout->setMargin( 11 );
-    TextLabel_X = new QLabel( GroupCoordinates, "TextLabel_X" );
-    TextLabel_X->setText( tr( "SMESH_X"  ) );
-    GroupCoordinatesLayout->addWidget( TextLabel_X, 0, 0 );
-    TextLabel_Y = new QLabel( GroupCoordinates, "TextLabel_Y" );
-    TextLabel_Y->setText( tr( "SMESH_Y"  ) );
-    GroupCoordinatesLayout->addWidget( TextLabel_Y, 0, 2 );
+  myPreviewActor = 0;
+  myBusy = false;
+  mySelection = 0;
   
-    SpinBox_X = new SMESHGUI_SpinBox( GroupCoordinates, "SpinBox_X" ) ;
-    GroupCoordinatesLayout->addWidget( SpinBox_X, 0, 1 );
-    
-    SpinBox_Y = new SMESHGUI_SpinBox( GroupCoordinates, "SpinBox_Y" ) ;
-    GroupCoordinatesLayout->addWidget( SpinBox_Y, 0, 3 );
-    
-    SpinBox_Z = new SMESHGUI_SpinBox( GroupCoordinates, "SpinBox_Z" ) ;
-    GroupCoordinatesLayout->addWidget( SpinBox_Z, 0, 5 );
+  setCaption( tr( "CAPTION" ) );
 
+  QVBoxLayout* aDlgLay = new QVBoxLayout( this, MARGIN, SPACING );
 
-    TextLabel_Z = new QLabel( GroupCoordinates, "TextLabel_Z" );
-    TextLabel_Z->setText( tr( "SMESH_Z"  ) );
-    GroupCoordinatesLayout->addWidget( TextLabel_Z, 0, 4 );
+  QFrame* aMainFrame = createMainFrame  ( this );
+  QFrame* aBtnFrame  = createButtonFrame( this );
 
-    SMESHGUI_MoveNodesDlgLayout->addWidget( GroupCoordinates, 2, 0 );
+  aDlgLay->addWidget( aMainFrame );
+  aDlgLay->addWidget( aBtnFrame );
 
-    Init(Sel) ; /* Initialisations */
+  aDlgLay->setStretchFactor( aMainFrame, 1 );
+
+  Init( theSelection ) ;
 }
 
-//=================================================================================
-// function : ~SMESHGUI_MoveNodesDlg()
-// purpose  : Destroys the object and frees any allocated resources
-//=================================================================================
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::createButtonFrame
+// Purpose : Create frame containing buttons
+//=======================================================================
+QFrame* SMESHGUI_MoveNodesDlg::createButtonFrame( QWidget* theParent )
+{
+  QFrame* aFrame = new QFrame( theParent );
+  aFrame->setFrameStyle( QFrame::Box | QFrame::Sunken );
+
+  myOkBtn     = new QPushButton( tr( "SMESH_BUT_OK"    ), aFrame );
+  myApplyBtn  = new QPushButton( tr( "SMESH_BUT_APPLY" ), aFrame );
+  myCloseBtn  = new QPushButton( tr( "SMESH_BUT_CLOSE" ), aFrame );
+
+  QSpacerItem* aSpacer = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum );
+
+  QHBoxLayout* aLay = new QHBoxLayout( aFrame, MARGIN, SPACING );
+
+  aLay->addWidget( myOkBtn );
+  aLay->addWidget( myApplyBtn );
+  aLay->addItem( aSpacer);
+  aLay->addWidget( myCloseBtn );
+
+  connect( myOkBtn,    SIGNAL( clicked() ), SLOT( onOk() ) );
+  connect( myCloseBtn, SIGNAL( clicked() ), SLOT( onClose() ) ) ;
+  connect( myApplyBtn, SIGNAL( clicked() ), SLOT( onApply() ) );
+
+  return aFrame;
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::createMainFrame
+// Purpose : Create frame containing dialog's input fields
+//=======================================================================
+QFrame* SMESHGUI_MoveNodesDlg::createMainFrame( QWidget* theParent )
+{
+  QFrame* aFrame = new QFrame( theParent );
+
+  QPixmap iconMoveNode(
+    QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr( "ICON_DLG_MOVE_NODE" ) ) );
+  QPixmap iconSelect(
+    QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr( "ICON_SELECT" ) ) );
+
+  QButtonGroup* aPixGrp = new QButtonGroup( 1, Qt::Vertical, tr( "MESH_NODE" ), aFrame );
+  aPixGrp->setExclusive( TRUE );
+  QRadioButton* aRBut = new QRadioButton( aPixGrp );
+  aRBut->setPixmap( iconMoveNode );
+  aRBut->setChecked( TRUE );
+
+  QGroupBox* anIdGrp = new QGroupBox( 1, Qt::Vertical, tr( "SMESH_MOVE" ), aFrame );
+  new QLabel( tr( "NODE_ID" ), anIdGrp );
+  ( new QPushButton( anIdGrp ) )->setPixmap( iconSelect );
+  myId = new QLineEdit( anIdGrp );
+  myId->setValidator( new SMESHGUI_IdValidator( this, "validator", 1 ));
+
+  QGroupBox* aCoordGrp = new QGroupBox( 1, Qt::Vertical, tr( "SMESH_COORDINATES" ), aFrame );
+  new QLabel( tr( "SMESH_X" ), aCoordGrp );
+  myX = new SMESHGUI_SpinBox( aCoordGrp );
+  new QLabel( tr( "SMESH_Y" ), aCoordGrp );
+  myY = new SMESHGUI_SpinBox( aCoordGrp );
+  new QLabel( tr( "SMESH_Z" ), aCoordGrp );
+  myZ = new SMESHGUI_SpinBox( aCoordGrp );
+
+  myX->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );
+  myY->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );
+  myZ->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );  
+
+  QVBoxLayout* aLay = new QVBoxLayout( aFrame );
+  aLay->addWidget( aPixGrp );
+  aLay->addWidget( anIdGrp );
+  aLay->addWidget( aCoordGrp );
+
+  // connect signale and slots
+  connect( myX, SIGNAL ( valueChanged( double) ), this, SLOT( redisplayPreview() ) );
+  connect( myY, SIGNAL ( valueChanged( double) ), this, SLOT( redisplayPreview() ) );
+  connect( myZ, SIGNAL ( valueChanged( double) ), this, SLOT( redisplayPreview() ) );
+  connect( myId, SIGNAL( textChanged(const QString&) ), SLOT( onTextChange(const QString&) ));
+
+  return aFrame;
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::~SMESHGUI_MoveNodesDlg
+// Purpose :
+//=======================================================================
 SMESHGUI_MoveNodesDlg::~SMESHGUI_MoveNodesDlg()
 {
-    // no need to delete child widgets, Qt does it all for us
+  erasePreview();
 }
 
-
-//=================================================================================
-// function : Init()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::Init( SALOME_Selection* Sel )
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::Init
+// Purpose : Init dialog fields
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::Init( SALOME_Selection* theSelection )
 {
+  myPreviewActor = 0;
+  myMeshActor = 0;
+  myBusy = false;
+  mySelection = theSelection;
 
-  /* Get setting of step value from file configuration */
-  double step ;
-  // QString St = QAD_CONFIG->getSetting( "xxxxxxxxxxxxx" ) ;  TODO
-  // step = St.toDouble() ;                                    TODO
-  step = 25.0 ;
-  
-  GroupC1->show();
-  myConstructorId = 0 ;
-  Constructor1->setChecked( TRUE );
-  myEditCurrentArgument = LineEditC1A1 ;	
-  mySelection = Sel;  
-  this->myOkNodes = false ;
-  mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+  SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
+  aSMESHGUI->SetActiveDialogBox( ( QDialog* )this ) ;
 
-  /* min, max, step and decimals for spin boxes */
-  SpinBox_X->RangeStepAndValidator( -999.999, +999.999, step, 3 ) ;
-  SpinBox_Y->RangeStepAndValidator( -999.999, +999.999, step, 3 ) ;
-  SpinBox_Z->RangeStepAndValidator( -999.999, +999.999, step, 3 ) ;  
-  SpinBox_X->SetValue( 0.0 ) ;
-  SpinBox_Y->SetValue( 0.0 ) ;
-  SpinBox_Z->SetValue( 0.0 ) ;
+  // selection and SMESHGUI
+  connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
+  connect( aSMESHGUI, SIGNAL( SignalDeactivateActiveDialog() ), SLOT( onDeactivate() ) );
+  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( onClose() ) );
 
-  /* signals and slots connections */
-  connect( buttonOk, SIGNAL( clicked() ),     this, SLOT( ClickOnOk() ) );
-  connect( buttonCancel, SIGNAL( clicked() ), this, SLOT( ClickOnCancel() ) ) ;
-  connect( buttonApply, SIGNAL( clicked() ), this, SLOT(ClickOnApply() ) );
-  connect( GroupConstructors, SIGNAL(clicked(int) ), SLOT( ConstructorsClicked(int) ) );
+  reset();
+  setEnabled( true );
 
-  connect( SelectButtonC1A1, SIGNAL (clicked() ),   this, SLOT( SetEditCurrentArgument() ) ) ;
-  connect( mySMESHGUI, SIGNAL ( SignalDeactivateActiveDialog() ), this, SLOT( DeactivateActiveDialog() ) ) ;
-  connect( mySelection, SIGNAL( currentSelectionChanged() ), this, SLOT( SelectionIntoArgument() ) );
-  /* to close dialog if study change */
-  connect( mySMESHGUI, SIGNAL ( SignalCloseAllDialogs() ), this, SLOT( ClickOnCancel() ) ) ;
-
-  connect( SpinBox_X, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Y, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Z, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-
-  /* Move widget on the botton right corner of main widget */
   int x, y ;
-  mySMESHGUI->DefineDlgPosition( this, x, y ) ;
-  this->move( x, y ) ;
-  this->show() ; /* displays Dialog */
+  aSMESHGUI->DefineDlgPosition( this, x, y );
+  this->move( x, y );
+  this->show();
 
-  SelectionIntoArgument();
-  
-  return ;
+  // set selection mode
+  SMESH::SetPointRepresentation(true);
+  QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
+  onSelectionDone();
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::isValid
+// Purpose : Verify validity of entry information
+//=======================================================================
+bool SMESHGUI_MoveNodesDlg::isValid( const bool theMess ) const
+{
+  if ( myId->text().isEmpty() )
+  {
+    if ( theMess )
+      QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
+        tr( "SMESH_WARNING" ), tr( "NODE_ID_IS_NOT_DEFINED" ), QMessageBox::Ok );
+    return false;
+  }
+  return true;
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::reset
+// Purpose : Reset the dialog state
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::reset()
+{
+  myId->clear();
+  myX->SetValue( 0 );
+  myY->SetValue( 0 );
+  myZ->SetValue( 0 );
+  redisplayPreview();
+  updateButtons();
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::nApply
+// Purpose : SLOT called when "Apply" button pressed.
+//=======================================================================
+bool SMESHGUI_MoveNodesDlg::onApply()
+{
+  if (SMESHGUI::GetSMESHGUI()->ActiveStudyLocked())
+    return false;
+
+  if ( !isValid( true ) )
+    return false;
+
+  SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( myMeshActor->getIO() );
+  if(aMesh->_is_nil() )
+  {
+    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
+    tr( "SMESH_ERROR" ), tr( "SMESHG_NO_MESH" ), QMessageBox::Ok );
+    return false;
+  }
+
+  SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+  if ( aMeshEditor->_is_nil() )
+    return false;
+
+  int anId = myId->text().toInt();
+  bool aResult = false;
+  try
+  {
+    aResult = aMeshEditor->MoveNode( anId, myX->GetValue(), myY->GetValue(), myZ->GetValue() );
+  }
+  catch( ... )
+  {
+  }
+
+  if ( aResult )
+  {
+    Handle(SALOME_InteractiveObject) anIO = myMeshActor->getIO();
+    mySelection->ClearIObjects();
+    SMESH::UpdateView();
+    mySelection->AddIObject( anIO, false );
+    reset();
+  }
+
+  return aResult;
 }
 
 
-//=================================================================================
-// function : ConstructorsClicked()
-// purpose  : Radio button management
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ConstructorsClicked(int constructorId)
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::onOk
+// Purpose : SLOT called when "Ok" button pressed.
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::onOk()
 {
-  return ;
+  if ( onApply() )
+    onClose();
 }
 
 
-//=================================================================================
-// function : ClickOnApply()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ClickOnApply()
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::onClose
+// Purpose : SLOT called when "Close" button pressed. Close dialog
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::onClose()
 {
-  switch(myConstructorId)
-    { 
-    case 0 :
-      { 
-	if(myOkNodes) {	  
-	  mySMESHGUI->EraseSimulationActors();
-//  	  mySMESHGUI->MoveNode( myMesh, myIdnode, LineEdit_X->text().toFloat(), LineEdit_Y->text().toFloat(), LineEdit_Z->text().toFloat() ) ;
-//  	  mySelection->ClearIObjects();
-	}
-	break ;
-      }
-    }
-  return ;
-}
-
-//=================================================================================
-// function : ClickOnOk()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ClickOnOk()
-{
-  this->ClickOnApply() ;
-  this->ClickOnCancel() ;
-
-  return ;
-}
-
-	
-//=================================================================================
-// function : ClickOnCancel()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ClickOnCancel()
-{
+  mySelection->ClearIObjects();
+  SMESH::SetPointRepresentation(false);
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
-  mySMESHGUI->ResetState() ;
-  mySMESHGUI->EraseSimulationActors();
-  reject() ;
-  return ;
+  disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
+  SMESHGUI::GetSMESHGUI()->ResetState();
+  reject();
 }
 
 
-//=================================================================================
-// function : SelectionIntoArgument()
-// purpose  : Called when selection as changed or other case
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::SelectionIntoArgument()
+
+//=======================================================================
+//function : onTextChange
+//purpose  : 
+//=======================================================================
+
+void SMESHGUI_MoveNodesDlg::onTextChange(const QString& theNewText)
 {
+  if ( myBusy ) return;
 
-  disconnect( SpinBox_X, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  disconnect( SpinBox_Y, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  disconnect( SpinBox_Z, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
+  myOkBtn->setEnabled( false );
+  myApplyBtn->setEnabled( false );
+  erasePreview();
 
-  mySMESHGUI->EraseSimulationActors();
+  // select entered node
+  SMDS_Mesh* aMesh = 0;
+  if ( myMeshActor )
+    aMesh = myMeshActor->GetObject()->GetMesh();
+  if ( aMesh ) {
 
-  myEditCurrentArgument->setText("") ;
-  myOkNodes = false;
-  QString aString = "";
+    myBusy = true;
+    mySelection->ClearIObjects();
+    mySelection->AddIObject( myMeshActor->getIO() );
+    myBusy = false;
 
-  int nbSel = mySelection->IObjectCount();
-  if(nbSel != 1)
-    return ;
-
-  int nbNodes = mySMESHGUI->GetNameOfSelectedNodes(mySelection, aString) ;
-  if(nbNodes != 1) {
-    SpinBox_X->SetValue(0.0) ;
-    SpinBox_Y->SetValue(0.0) ;
-    SpinBox_Z->SetValue(0.0) ;
-    return ;
+    const SMDS_MeshElement * e = aMesh->FindElement( theNewText.toInt() );
+    if ( e )
+      mySelection->AddOrRemoveIndex (myMeshActor->getIO(), e->GetID(), true);
   }
-  
-  if ( mySelection->SelectionMode() != NodeSelection ){
-    QAD_MessageBox::warn1 ( QAD_Application::getDesktop(), tr ("SMESH_WRN_WARNING"),
-			    tr ("SMESH_WRN_SELECTIONMODE_NODES"), tr ("SMESH_BUT_OK") );
-    return;
-  }
-
-  myEditCurrentArgument->setText(aString) ;
-  Standard_Boolean res;
-  myMesh = mySMESHGUI->ConvertIOinMesh( mySelection->firstIObject(), res );
-  if (!res)
-    return ;
-
-  SMESH_Actor* ac = mySMESHGUI->FindActorByEntry( mySelection->firstIObject()->getEntry(), res, false );
-  if ( !res )
-    return ;
-
-  mySelection->GetIndex( mySelection->firstIObject(), myMapIndex);
-
-  TColStd_MapIteratorOfMapOfInteger ite( myMapIndex );
-  if ( ite.More() ) {
-    myIdnode = ite.Key();
-    mySimulationActor = mySMESHGUI->SimulationMoveNode( ac, myIdnode );
-  } else
-    return ;
-
-  MESSAGE ( " myIdnode " << myIdnode );
-
-  float *pt  = ac->GetMapper()->GetInput()->GetPoint(myIdnode);
-  MESSAGE ( " pt " << pt[0] << ";" << pt[1] << ";" << pt[2] )
-
-  SpinBox_X->SetValue( (double)pt[0] ) ;
-  SpinBox_Y->SetValue( (double)pt[1] ) ;
-  SpinBox_Z->SetValue( (double)pt[2] ) ;
-
-  connect( SpinBox_X, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Y, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-  connect( SpinBox_Z, SIGNAL ( valueChanged( double) ), this, SLOT( ValueChangedInSpinBox( double) ) ) ;
-
-  myOkNodes = true ;
-  return ;
 }
 
-
-//=================================================================================
-// function : SetEditCurrentArgument()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::SetEditCurrentArgument()
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::onSelectionDone
+// Purpose : SLOT called when selection changed
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::onSelectionDone()
 {
-  QPushButton* send = (QPushButton*)sender();
-  switch (myConstructorId)
+  if ( myBusy ) return;
+  myMeshActor = 0;
+
+  if ( mySelection->IObjectCount() == 1 ) {
+    myMeshActor = SMESH::FindActorByEntry(mySelection->firstIObject()->getEntry());
+    if ( myMeshActor )
     {
-    case 0: /* default constructor */
-      {	
-	if(send == SelectButtonC1A1) {
-	  LineEditC1A1->setFocus() ;
-	  myEditCurrentArgument = LineEditC1A1;
-	}
-	SelectionIntoArgument() ;
-	break;
+      QString aText;
+      if ( SMESH::GetNameOfSelectedNodes( mySelection, aText ) == 1 ) {
+        if(SMDS_Mesh* aMesh = myMeshActor->GetObject()->GetMesh()) {
+          if(const SMDS_MeshNode* aNode = aMesh->FindNode(aText.toInt())) {
+            myBusy = true;
+            myId->setText( aText );
+            myX->SetValue( aNode->X() );
+            myY->SetValue( aNode->Y() );
+            myZ->SetValue( aNode->Z() );
+            myBusy = false;
+            erasePreview(); // avoid overlapping of a selection and a preview
+            updateButtons();
+            return;
+          }
+        }
       }
     }
-  return ;
-}
-
-//=================================================================================
-// function : DeactivateActiveDialog()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::DeactivateActiveDialog()
-{
-  if ( GroupConstructors->isEnabled() ) {
-    GroupConstructors->setEnabled(false) ;
-    GroupC1->setEnabled(false) ;
-    GroupButtons->setEnabled(false) ;
-    mySMESHGUI->EraseSimulationActors() ;
-    mySMESHGUI->ResetState() ;    
-    mySMESHGUI->SetActiveDialogBox(0) ;
   }
-  return ;
+
+  reset();
 }
 
 
-//=================================================================================
-// function : ActivateThisDialog()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ActivateThisDialog()
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::onDeactivate
+// Purpose : SLOT called when dialog must be deativated
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::onDeactivate()
 {
-  /* Emit a signal to deactivate the active dialog */
-  mySMESHGUI->EmitSignalDeactivateDialog() ;   
-  GroupConstructors->setEnabled(true) ;
-  GroupC1->setEnabled(true) ;
-  GroupButtons->setEnabled(true) ;
+  setEnabled( false );
+  erasePreview();
+}
+
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::enterEvent
+// Purpose : Event filter
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::enterEvent( QEvent* )
+{
+  if ( !isEnabled() )
+  {
+    SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+
+    // set selection mode
+    SMESH::SetPointRepresentation(true);
+    QAD_Application::getDesktop()->SetSelectionMode( NodeSelection, true );
+
+    redisplayPreview();
   
-  mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
-  return ;
-}
-
-
-//=================================================================================
-// function : enterEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::enterEvent(QEvent* e)
-{
-  if ( GroupConstructors->isEnabled() )
-    return ;  
-  ActivateThisDialog() ;
-  return ;
+    setEnabled( true );
+  }
 }
 
 
@@ -465,21 +435,121 @@ void SMESHGUI_MoveNodesDlg::enterEvent(QEvent* e)
 //=================================================================================
 void SMESHGUI_MoveNodesDlg::closeEvent( QCloseEvent* e )
 {
-  /* same than click on cancel button */
-  this->ClickOnCancel() ;
-  return ;
+  onClose() ;                  
+  SMESH::GetCurrentVtkView()->Repaint();
 }
 
+//=======================================================================
+//function : hideEvent
+//purpose  : may be caused by ESC key
+//=======================================================================
 
-//=================================================================================
-// function : ValueChangedInSpinBox()
-// purpose  :
-//=================================================================================
-void SMESHGUI_MoveNodesDlg::ValueChangedInSpinBox( double newValue )
+void SMESHGUI_MoveNodesDlg::hideEvent ( QHideEvent * e )
 {
-  double vx = SpinBox_X->GetValue() ;
-  double vy = SpinBox_Y->GetValue() ;
-  double vz = SpinBox_Z->GetValue() ;
-  
-  mySMESHGUI->DisplaySimulationMoveNode( mySimulationActor, myIdnode, vx, vy , vz );
+  if ( !isMinimized() )
+    onClose();
 }
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::updateButtons
+// Purpose : Update buttons state
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::updateButtons()
+{
+  bool isEnabled = isValid( false );
+  myOkBtn->setEnabled( isEnabled );
+  myApplyBtn->setEnabled( isEnabled );
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::erasePreview
+// Purpose : Erase preview
+//=======================================================================
+void  SMESHGUI_MoveNodesDlg::erasePreview()
+{
+  if ( myPreviewActor == 0 )
+    return;
+
+  if ( VTKViewer_ViewFrame* vf = SMESH::GetCurrentVtkView() )
+    vf->RemoveActor(myPreviewActor);
+  myPreviewActor->Delete();
+  myPreviewActor = 0;
+  SMESH::GetCurrentVtkView()->Repaint();
+}
+
+//=======================================================================
+// name    : SMESHGUI_MoveNodesDlg::redisplayPreview
+// Purpose : Redisplay preview
+//=======================================================================
+void SMESHGUI_MoveNodesDlg::redisplayPreview()
+{
+  if ( myBusy )
+    return;
+  
+  if ( myPreviewActor != 0 )
+    erasePreview();
+  
+  if ( !isValid( false ) )
+    return;
+
+  vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::New();
+  
+  vtkPoints* aPoints = vtkPoints::New();
+  aPoints->SetNumberOfPoints( 1 );
+  aPoints->SetPoint( 0, myX->GetValue(), myY->GetValue(), myZ->GetValue() );
+
+  // Create cells
+  
+  vtkIdList *anIdList = vtkIdList::New();
+  anIdList->SetNumberOfIds( 1 );
+
+  vtkCellArray *aCells = vtkCellArray::New();
+  aCells->Allocate( 2, 0 );
+
+  vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
+  aCellTypesArray->SetNumberOfComponents( 1 );
+  aCellTypesArray->Allocate( 1 );
+
+  anIdList->SetId( 0, 0 );
+  aCells->InsertNextCell( anIdList );
+  aCellTypesArray->InsertNextValue( VTK_VERTEX );
+
+  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  aCellLocationsArray->SetNumberOfComponents( 1 );
+  aCellLocationsArray->SetNumberOfTuples( 1 );
+
+  aCells->InitTraversal();
+  vtkIdType npts;
+  aCellLocationsArray->SetValue( 0, aCells->GetTraversalLocation( npts ) );
+
+  aGrid->SetCells( aCellTypesArray, aCellLocationsArray, aCells );
+
+  aGrid->SetPoints( aPoints );
+  aGrid->SetCells( aCellTypesArray, aCellLocationsArray,aCells );
+
+  // Create and display actor
+  vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
+  aMapper->SetInput( aGrid );
+
+  myPreviewActor = SALOME_Actor::New();
+  myPreviewActor->PickableOff();
+  myPreviewActor->SetMapper( aMapper );
+
+  vtkProperty* aProp = vtkProperty::New();
+  aProp->SetRepresentationToWireframe();
+  aProp->SetColor( 250, 0, 250 );
+  aProp->SetPointSize( 5 );
+  myPreviewActor->SetProperty( aProp );
+
+  SMESH::GetCurrentVtkView()->AddActor( myPreviewActor );
+  SMESH::GetCurrentVtkView()->Repaint();
+
+  aProp->Delete();
+  aCellLocationsArray->Delete();
+  aCellTypesArray->Delete();
+  aCells->Delete();
+  anIdList->Delete(); 
+  aPoints->Delete();
+  aGrid->Delete();
+}
+  

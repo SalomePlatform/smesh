@@ -1,23 +1,23 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -33,13 +33,14 @@
 
 #include "utilities.h"
 #include "OpUtil.hxx"
+#include "Utils_ExceptHandlers.hxx"
 
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-#include "Utils_ExceptHandlers.hxx"
 
+using namespace std;
 
 //=============================================================================
 /*!
@@ -56,7 +57,7 @@ SMESH_Gen::SMESH_Gen()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -67,7 +68,7 @@ SMESH_Gen::~SMESH_Gen()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -96,7 +97,7 @@ SMESH_Gen::~SMESH_Gen()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -115,7 +116,7 @@ throw(SALOME_Exception)
 
 	StudyContextStruct *myStudyContext = GetStudyContext(studyId);
 
-	// create a new SMESH_mesh object 
+	// create a new SMESH_mesh object
 
 	SMESH_Mesh *mesh = new SMESH_Mesh(_localId++,
 		studyId,
@@ -131,7 +132,7 @@ throw(SALOME_Exception)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -139,7 +140,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
   MESSAGE("SMESH_Gen::Compute");
   //   bool isDone = false;
-  /* 
+  /*
      Algo : s'appuie ou non sur une geometrie
      Si geometrie:
      Vertex : rien à faire (range le point)
@@ -157,11 +158,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
   bool ret = true;
 
-  if ( !CheckAlgoState( aMesh, aShape ))
-  {
-    INFOS( "ABORT MESHING: some algos or hypothesis are missing");
-    return false;
-  }
+//   if ( !CheckAlgoState( aMesh, aShape ))
+//   {
+//     INFOS( "ABORT MESHING: some algos or hypothesis are missing");
+//     return false;
+//   }
 
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
 
@@ -169,7 +170,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
   // apply algos that do not require descretized boundaries, starting
   // from the most complex shapes
   // -----------------------------------------------------------------
-  
+
   // map containing all subshapes in the order: vertices, edges, faces...
   const map<int, SMESH_subMesh*>& smMap = sm->DependsOn();
   map<int, SMESH_subMesh*>::const_reverse_iterator revItSub = smMap.rbegin();
@@ -181,11 +182,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
     if ( GetShapeDim( aSubShape ) < 1 ) break;
 
     SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
-    if (algo &&
-        !algo->NeedDescretBoundary() &&
-        smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE )
-    {
-      ret = smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+    if (algo && !algo->NeedDescretBoundary()) {
+      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE) {
+        ret = smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+      } else if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) {
+        // JFA for PAL6524
+        ret = false;
+      } else {
+      }
     }
     if (!ret)
       return false;
@@ -199,11 +203,11 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
     else
       smToCompute = 0;
   }
-    
+
   // -----------------------------------------------
   // mesh the rest subshapes starting from vertices
   // -----------------------------------------------
-  
+
   smToCompute = sm->GetFirstToCompute();
   while (smToCompute)
   {
@@ -211,38 +215,42 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
     int dim = GetShapeDim(subShape);
     if (dim > 0)
     {
-      //MESSAGE ( "MESH shape id=" << smToCompute->GetId() <<
-        //       " type=" << smToCompute->GetSubShape().ShapeType());
-      bool ret1 = smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE);
-      ret = ret && ret1;
+      if ( !smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE) )
+        ret = false;
     }
     else
     {
-      ASSERT(dim == 0);
-      ASSERT(smToCompute->_vertexSet == false);
       TopoDS_Vertex V1 = TopoDS::Vertex(subShape);
       gp_Pnt P1 = BRep_Tool::Pnt(V1);
       SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-      //MESSAGE("point "<<nodeId<<" "<<P1.X()<<" "<<P1.Y()<<" "<<P1.Z());
       SMDS_MeshNode * node = meshDS->AddNode(P1.X(), P1.Y(), P1.Z());
       if ( node ) {  // san - increase robustness
         meshDS->SetNodeOnVertex(node, V1);
-        smToCompute->GetSubMeshDS();
-        smToCompute->_vertexSet = true;
         smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE);
       }
     }
     smToCompute = sm->GetFirstToCompute();
   }
 
+  if (!ret) return false;
+
+  // JFA for PAL6524: if there are failed sub-meshes, return Standard_False
+  const map < int, SMESH_subMesh * >&subMeshes = sm->DependsOn();
+  map < int, SMESH_subMesh * >::const_iterator itsub;
+  for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++) {
+    SMESH_subMesh *smi = (*itsub).second;
+    if (smi->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) return false;
+  }
+  if (sm->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) return false;
+
   MESSAGE( "VSR - SMESH_Gen::Compute() finished" );
-  return ret;
+  return true;
 }
 
 
 //=======================================================================
 //function : checkConformIgnoredAlgos
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
@@ -270,7 +278,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
 
     const SMESH_Algo* algo = dynamic_cast<const SMESH_Algo*> (aHyp);
     ASSERT ( algo );
-    
+
     if ( aLocIgnoAlgo ) // algo is hidden by a local algo of upper dim
     {
       INFOS( "Local <" << algo->GetName() << "> is hidden by local <"
@@ -285,7 +293,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
       if ( dim < aMaxGlobIgnoDim )
       {
         // algo is hidden by a global algo
-        INFOS( ( isGlobal ? "Global" : "Local" ) 
+        INFOS( ( isGlobal ? "Global" : "Local" )
               << " <" << algo->GetName() << "> is hidden by global <"
               << aGlobIgnoAlgo->GetName() << ">");
       }
@@ -319,7 +327,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
       }
     }
   }
-  
+
   return ret;
 }
 
@@ -339,7 +347,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
 {
   if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX)
     return true;
-  
+
   //MESSAGE("=====checkMissing");
 
   int ret = true;
@@ -433,11 +441,11 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
   SMESH_subMesh* sm = aMesh.GetSubMesh(aShape);
   const SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
   TopoDS_Shape mainShape = meshDS->ShapeToMesh();
-  
+
   // -----------------
   // get global algos
   // -----------------
-  
+
   const SMESH_Algo* aGlobAlgoArr[] = {0,0,0,0};
 
   const list<const SMESHDS_Hypothesis*>& listHyp = meshDS->GetHypothesis( mainShape );
@@ -450,13 +458,13 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
 
     const SMESH_Algo* algo = dynamic_cast<const SMESH_Algo*> (aHyp);
     ASSERT ( algo );
-    
+
     int dim = algo->GetDim();
     aGlobAlgoArr[ dim ] = algo;
 
     hasAlgo = true;
   }
-  
+
   // --------------------------------------------------------
   // info on algos that will be ignored because of ones that
   // don't NeedDescretBoundary() attached to super-shapes,
@@ -518,7 +526,7 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
   // ----------------------------------------------------------------
 
   //MESSAGE( "---info on missing hypothesis and find out if all needed algos are");
-  
+
   // find max dim of global algo
   int aTopAlgoDim = 0;
   for (dim = 3; dim > 0; dim--)
@@ -596,10 +604,10 @@ static int getAlgo(const list<const SMESHDS_Hypothesis*>& theHypList,
                    const int                              theAlgoShapeType)
 {
   list<const SMESHDS_Hypothesis*>::const_iterator it = theHypList.begin();
-  
+
   int nb_algo = 0;
   int algo_id = -1;
-  
+
   while (it!=theHypList.end())
   {
     const SMESH_Hypothesis *anHyp = static_cast< const SMESH_Hypothesis *>( *it );
@@ -611,7 +619,7 @@ static int getAlgo(const list<const SMESHDS_Hypothesis*>& theHypList,
       algo_id = anHyp->GetID();
       break;
     }
-    
+
     //if (nb_algo > 1) return -1;	// more than one algo
     it++;
   }
@@ -621,7 +629,7 @@ static int getAlgo(const list<const SMESHDS_Hypothesis*>& theHypList,
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -653,7 +661,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
   ASSERT(_mapAlgo.find(algo_id) != _mapAlgo.end());
 
   return _mapAlgo[algo_id];
-  
+
 // 	const SMESHDS_Hypothesis *theHyp = NULL;
 // 	SMESH_Algo *algo = NULL;
 // 	const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
@@ -673,7 +681,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 // 		const list<const SMESHDS_Hypothesis*>& listHyp =
 // 			meshDS->GetHypothesis(tryShape);
 // 		list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
-		
+
 // 		int nb_algo = 0;
 // 		int shapeDim = GetShapeDim(aShape);
 // 		int typeOfShape = aShape.ShapeType();
@@ -738,7 +746,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -758,7 +766,7 @@ StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -768,7 +776,7 @@ void SMESH_Gen::Save(int studyId, const char *aUrlOfFile)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -778,7 +786,7 @@ void SMESH_Gen::Load(int studyId, const char *aUrlOfFile)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -788,38 +796,7 @@ void SMESH_Gen::Close(int studyId)
 
 //=============================================================================
 /*!
- * 
- */
-//=============================================================================
-
-const char *SMESH_Gen::ComponentDataType()
-{
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
-const char *SMESH_Gen::IORToLocalPersistentID(const char *IORString,
-	bool & IsAFile)
-{
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
-const char *SMESH_Gen::LocalPersistentIDToIOR(const char *aLocalPersistentID)
-{
-}
-
-//=============================================================================
-/*!
- * 
+ *
  */
 //=============================================================================
 

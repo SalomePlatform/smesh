@@ -1,5 +1,3 @@
-//  SMESH DriverDAT : driver to read and write 'dat' files
-//
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 //  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 // 
@@ -18,38 +16,16 @@
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//
-//  File   : DriverDAT_R_SMDS_Mesh.h
-//  Module : SMESH
 
 #ifndef _INCLUDE_DRIVERDAT_R_SMDS_MESH
 #define _INCLUDE_DRIVERDAT_R_SMDS_MESH
 
-#include <stdio.h>
+#include "Driver_SMDS_Mesh.h"
 
-#include "SMDS_Mesh.hxx"
-#include "Mesh_Reader.h"
-
-class DriverDAT_R_SMDS_Mesh:public Mesh_Reader
+class DriverDAT_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {
-
-  public:DriverDAT_R_SMDS_Mesh();
-	~DriverDAT_R_SMDS_Mesh();
-
-	void Add();
-	void Read();
-	void SetMesh(SMDS_Mesh * aMesh);
-	void SetFile(string);
-
-	void SetFileId(FILE *);
-	void SetMeshId(int);
-
-  private:  SMDS_Mesh * myMesh;
-	string myFile;
-	FILE *myFileId;
-	int myMeshId;
-
+ public:
+  virtual Status Perform();
 };
+
 #endif

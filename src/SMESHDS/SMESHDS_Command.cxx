@@ -26,9 +26,11 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
 #include "SMESHDS_Command.hxx"
+
 #include "utilities.h"
+
+using namespace std;
 
 //=======================================================================
 //function : 
@@ -250,6 +252,44 @@ void SMESHDS_Command::RemoveElement(int ElementID)
 	}
 	myIntegers.push_back(ElementID);
 	myNumber++;
+}
+
+//=======================================================================
+//function : ChangeElementNodes
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Command::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
+{
+  if (!myType == SMESHDS_ChangeElementNodes)
+  {
+    MESSAGE("SMESHDS_Command::RemoveElement : Bad Type");
+    return;
+  }
+  myIntegers.push_back(ElementID);
+  myIntegers.push_back(nbnodes);
+  for ( int i = 0; i < nbnodes; i++ )
+    myIntegers.push_back( nodes[ i ] );
+
+  myNumber++;
+}
+
+//=======================================================================
+//function : Renumber
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Command::Renumber (const bool isNodes, const int startID, const int deltaID)
+{
+  if (!myType == SMESHDS_Renumber)
+  {
+    MESSAGE("SMESHDS_Command::Renumber : Bad Type");
+    return;
+  }
+  myIntegers.push_back(isNodes);
+  myIntegers.push_back(startID);
+  myIntegers.push_back(deltaID);
+  myNumber++;
 }
 
 //=======================================================================

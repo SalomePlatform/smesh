@@ -25,58 +25,90 @@
 //  Module : SMESH
 //  $Header$
 
+
 #ifndef SMESH_Group_i_HeaderFile
 #define SMESH_Group_i_HeaderFile
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(GEOM_Gen)
 
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Mesh_i;
+class ::SMESH_Group;
+class SMESHDS_GroupBase;
 
-class SMESH_Group_i:
-  public virtual POA_SMESH::SMESH_Group,
+// ===========
+// Group Base
+// ===========
+class SMESH_GroupBase_i:
+  public virtual POA_SMESH::SMESH_GroupBase,
   public virtual SALOME::GenericObj_i
 {
-public:
-  SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
-  virtual ~SMESH_Group_i();
+ public:
+  SMESH_GroupBase_i(PortableServer::POA_ptr thePOA,
+                    SMESH_Mesh_i* theMeshServant,
+                    const int theLocalID );
+  virtual ~SMESH_GroupBase_i();
 
   // CORBA interface implementation
-  void SetName( const char* theName );
-
+  void SetName(const char* name);
   char* GetName();
-
   SMESH::ElementType GetType();
-
   CORBA::Long Size();
-
   CORBA::Boolean IsEmpty();
-
-  void Clear();
-
-  CORBA::Boolean Contains( CORBA::Long theID );
-
-  CORBA::Long Add( const SMESH::long_array& theIDs );
-
-  CORBA::Long GetID( CORBA::Long theIndex );
-
+  CORBA::Boolean Contains(CORBA::Long elem_id);
+  CORBA::Long GetID(CORBA::Long elem_index);
   SMESH::long_array* GetListOfID();
-
-  CORBA::Long Remove( const SMESH::long_array& theIDs );
-
   SMESH::SMESH_Mesh_ptr GetMesh();
 
-  // Internal C++ interface
-  int GetLocalID();
+  // Inherited from SMESH_IDSource interface
+  virtual SMESH::long_array* GetIDs();
 
-  SMESH_Mesh_i* GetMeshServant() { return myMeshServant; }
+  // Internal C++ interface
+  int GetLocalID() const { return myLocalID; }
+  SMESH_Mesh_i* GetMeshServant() const { return myMeshServant; }
+  ::SMESH_Group* GetSmeshGroup() const;
+  SMESHDS_GroupBase* GetGroupDS() const;
 
 private:
   SMESH_Mesh_i* myMeshServant;
   int myLocalID;
 };
 
+// ======
+// Group
+// ======
+
+class SMESH_Group_i:
+  public SMESH_GroupBase_i,
+  public virtual POA_SMESH::SMESH_Group,
+  public virtual SALOME::GenericObj_i
+{
+ public:
+  SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
+
+  // CORBA interface implementation
+  void Clear();
+  CORBA::Long Add( const SMESH::long_array& theIDs );
+  CORBA::Long Remove( const SMESH::long_array& theIDs );
+};
+
+// =========================
+// Group linked to geometry
+// =========================
+
+class SMESH_GroupOnGeom_i:
+  public SMESH_GroupBase_i,
+  public virtual POA_SMESH::SMESH_GroupOnGeom,
+  public virtual SALOME::GenericObj_i
+{
+ public:
+  SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID );
+
+  // CORBA interface implementation
+  GEOM::GEOM_Object_ptr GetShape();
+};
 #endif

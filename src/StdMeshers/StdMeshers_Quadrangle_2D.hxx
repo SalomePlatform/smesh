@@ -34,6 +34,8 @@
 #include "SMESH_Mesh.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
+class SMDS_MeshNode;
+
 typedef struct uvPtStruct
 {
   double param;
@@ -42,7 +44,7 @@ typedef struct uvPtStruct
   double v;
   double x; // 2d parameter, normalized [0,1]
   double y; 
-	const SMDS_MeshNode * node;
+  const SMDS_MeshNode * node;
 } UVPtStruct;
 
 typedef struct faceQuadStruct
@@ -52,6 +54,7 @@ typedef struct faceQuadStruct
   double first[4];
   double last[4];
   bool isEdgeForward[4];
+  bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
   UVPtStruct* uv_edges[4];
   UVPtStruct* uv_grid;
 } FaceQuadStruct;
@@ -90,13 +93,12 @@ protected:
     throw (SALOME_Exception);
 
   UVPtStruct* LoadEdgePoints(SMESH_Mesh& aMesh,
-			     const TopoDS_Face& F,
-			     const TopoDS_Edge& E,
-			     double first,
-			     double last);
-// 			     bool isForward);
+			     const TopoDS_Face& F, const TopoDS_Edge& E,
+			     double first, double last);
 
-//   FaceQuadStruct _quadDesc;
+  UVPtStruct* MakeEdgePoints(SMESH_Mesh& aMesh,
+			     const TopoDS_Face& F, const TopoDS_Edge& E,
+			     double first, double last, int nb_segm);
 };
 
 #endif

@@ -27,13 +27,19 @@
 //  $Header: 
 
 #include "SMESHDS_Mesh.hxx"
+
+#include "SMESHDS_Group.hxx"
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include <TopExp_Explorer.hxx>
 #include <TopExp.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include "utilities.h"
+
+using namespace std;
+
 //=======================================================================
 //function : Create
 //purpose  : 
@@ -124,7 +130,39 @@ void SMESHDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z
 }
 
 //=======================================================================
-//function : AddEdge
+//function : ChangeElementNodes
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
+                                      const SMDS_MeshNode    * nodes[],
+                                      const int                nbnodes)
+{
+  if ( ! SMDS_Mesh::ChangeElementNodes( elem, nodes, nbnodes ))
+    return false;
+
+  ASSERT( nbnodes < 9 );
+  int i, IDs[ 8 ];
+  for ( i = 0; i < nbnodes; i++ )
+    IDs [ i ] = nodes[ i ]->GetID();
+  myScript->ChangeElementNodes( elem->GetID(), IDs, nbnodes);
+
+  return true;
+}
+
+//=======================================================================
+//function : Renumber
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int deltaID)
+{
+  SMDS_Mesh::Renumber( isNodes, startID, deltaID );
+  myScript->Renumber( isNodes, startID, deltaID );
+}
+
+//=======================================================================
+//function :AddEdgeWithID
 //purpose  : 
 //=======================================================================
 SMDS_MeshEdge* SMESHDS_Mesh::AddEdgeWithID(int n1, int n2, int ID)
@@ -405,20 +443,45 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
   return anElem;
 }
 //=======================================================================
-//function : removeFromSubMeshes
+//function : removeFromContainers
 //purpose  : 
 //=======================================================================
 
-static void removeFromSubMeshes (map<int,SMESHDS_SubMesh*> &      theSubMeshes,
-                                 list<const SMDS_MeshElement *> & theElems,
-                                 const bool                       isNode)
+static void removeFromContainers (map<int,SMESHDS_SubMesh*> &      theSubMeshes,
+                                  set<SMESHDS_GroupBase*>&             theGroups,
+                                  list<const SMDS_MeshElement *> & theElems,
+                                  const bool                       isNode)
 {
   if ( theElems.empty() )
     return;
-    
+
+  // Rm from group
+  // Element can belong to several groups
+  if ( !theGroups.empty() )
+  {
+    set<SMESHDS_GroupBase*>::iterator GrIt = theGroups.begin();
+    for ( ; GrIt != theGroups.end(); GrIt++ )
+    {
+      SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *GrIt );
+      if ( !group || group->IsEmpty() ) continue;
+
+      list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
+      for ( ; elIt != theElems.end(); elIt++ )
+      {
+        group->SMDSGroup().Remove( *elIt );
+        if ( group->IsEmpty() ) break;
+      }
+    }
+  }
+
+  // Rm from sub-meshes
+  // Element should belong to only one sub-mesh
   map<int,SMESHDS_SubMesh*>::iterator SubIt = theSubMeshes.begin();
   for ( ; SubIt != theSubMeshes.end(); SubIt++ )
   {
+    int size = isNode ? (*SubIt).second->NbNodes() : (*SubIt).second->NbElements();
+    if ( size == 0 ) continue;
+
     list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
     while ( elIt != theElems.end() )
     {
@@ -455,8 +518,8 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 
   SMDS_Mesh::RemoveElement( n, removedElems, removedNodes, true );
 
-  removeFromSubMeshes( myShapeIndexToSubMesh, removedElems, false );
-  removeFromSubMeshes( myShapeIndexToSubMesh, removedNodes, true );
+  removeFromContainers( myShapeIndexToSubMesh, myGroups, removedElems, false );
+  removeFromContainers( myShapeIndexToSubMesh, myGroups, removedNodes, true );
 }
 
 //=======================================================================
@@ -478,7 +541,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
 
   SMDS_Mesh::RemoveElement(elt, removedElems, removedNodes, false);
   
-  removeFromSubMeshes( myShapeIndexToSubMesh, removedElems, false );
+  removeFromContainers( myShapeIndexToSubMesh, myGroups, removedElems, false );
 }
 
 //=======================================================================
@@ -621,6 +684,26 @@ TopoDS_Shape SMESHDS_Mesh::ShapeToMesh() const
 	return myShape;
 }
 
+//=======================================================================
+//function : IsGroupOfSubShapes
+//purpose  : return true if at least one subshape of theShape is a subshape
+//           of myShape or theShape == myShape
+//=======================================================================
+
+bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& theShape) const
+{
+  if ( myShape.IsSame( theShape ))
+    return true;
+
+  for ( TopoDS_Iterator it( theShape ); it.More(); it.Next() ) {
+    if (myIndexToShape.Contains( it.Value() ) ||
+        IsGroupOfSubShapes( it.Value() ))
+      return true;
+  }
+  
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the sub mesh linked to the a given TopoDS_Shape or NULL if the given
 /// TopoDS_Shape is unknown
@@ -629,7 +712,7 @@ SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const TopoDS_Shape & S)
 {
   if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
-  int Index = myIndexToShape.FindIndex(S);
+  int Index = ShapeToIndex(S);
   if (myShapeIndexToSubMesh.find(Index)!=myShapeIndexToSubMesh.end())
     return myShapeIndexToSubMesh[Index];
   else
@@ -720,13 +803,53 @@ bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 //function : NewSubMesh 
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::NewSubMesh(int Index)
+SMESHDS_SubMesh * SMESHDS_Mesh::NewSubMesh(int Index)
 {
-	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-	{
-		SMESHDS_SubMesh* SM = new SMESHDS_SubMesh();
-		myShapeIndexToSubMesh[Index]=SM;
-	}
+  SMESHDS_SubMesh* SM = 0;
+  if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
+  {
+    SM = new SMESHDS_SubMesh();
+    myShapeIndexToSubMesh[Index]=SM;
+  }
+  else
+    SM = myShapeIndexToSubMesh[Index];
+  return SM;
+}
+
+//=======================================================================
+//function : AddCompoundSubmesh
+//purpose  : 
+//=======================================================================
+
+int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
+                                     TopAbs_ShapeEnum    type)
+{
+  int aMainIndex = 0;
+  if ( IsGroupOfSubShapes( S ))
+  {
+    aMainIndex = myIndexToShape.Add( S );
+    bool all = ( type == TopAbs_SHAPE );
+    if ( all ) // corresponding simple submesh may exist
+      aMainIndex = -aMainIndex;
+    //MESSAGE("AddCompoundSubmesh index = " << aMainIndex );
+    SMESHDS_SubMesh * aNewSub = NewSubMesh( aMainIndex );
+    if ( !aNewSub->IsComplexSubmesh() ) // is empty
+    {
+      int shapeType = all ? myShape.ShapeType() : type;
+      int typeLimit = all ? TopAbs_VERTEX : type;
+      for ( ; shapeType <= typeLimit; shapeType++ )
+      {
+        TopExp_Explorer exp( S, TopAbs_ShapeEnum( shapeType ));
+        for ( ; exp.More(); exp.Next() )
+        {
+          int index = myIndexToShape.FindIndex( exp.Current() );
+          if ( index )
+            aNewSub->AddSubMesh( NewSubMesh( index ));
+        }
+      }
+    }
+  }
+  return aMainIndex;
 }
 
 //=======================================================================
@@ -744,8 +867,12 @@ TopoDS_Shape SMESHDS_Mesh::IndexToShape(int ShapeIndex)
 //=======================================================================
 int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S)
 {
-	if (myShape.IsNull()) MESSAGE("myShape is NULL");
-	return myIndexToShape.FindIndex(S);
+  if (myShape.IsNull())
+    MESSAGE("myShape is NULL");
+
+  int index = myIndexToShape.FindIndex(S);
+  
+  return index;
 }
 
 //=======================================================================

@@ -28,6 +28,8 @@
 #include "DriverMED_Family.h"
 #include <sstream>	
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  Split each group from list <aGroups> on some parts (families)
@@ -37,7 +39,7 @@
 //=============================================================================
 list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
                          (const map <int, SMESHDS_SubMesh*>& theSubMeshes,
-                          const list<SMESHDS_Group*>& theGroups,
+                          const list<SMESHDS_GroupBase*>& theGroups,
                           const bool doGroupOfNodes,
                           const bool doGroupOfEdges,
                           const bool doGroupOfFaces,
@@ -60,6 +62,8 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
   map<int, SMESHDS_SubMesh*>::const_iterator aSMIter = theSubMeshes.begin();
   for (; aSMIter != theSubMeshes.end(); aSMIter++)
   {
+    if ( aSMIter->second->IsComplexSubmesh() )
+      continue; // submesh containing other submeshs
     list<DriverMED_FamilyPtr> aSMFams = SplitByType((*aSMIter).second, (*aSMIter).first);
     list<DriverMED_FamilyPtr>::iterator aSMFamsIter = aSMFams.begin();
     for (; aSMFamsIter != aSMFams.end(); aSMFamsIter++)
@@ -95,7 +99,7 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
   }
 
   // Process groups
-  list<SMESHDS_Group*>::const_iterator aGroupsIter = theGroups.begin();
+  list<SMESHDS_GroupBase*>::const_iterator aGroupsIter = theGroups.begin();
   for (; aGroupsIter != theGroups.end(); aGroupsIter++)
   {
     DriverMED_FamilyPtr aFam2 (new DriverMED_Family);
@@ -239,25 +243,25 @@ MEDA::PFamilyInfo DriverMED_Family::GetFamilyInfo
 
 //=============================================================================
 /*!
- *  Initialize the tool by SMESHDS_Group
+ *  Initialize the tool by SMESHDS_GroupBase
  */
 //=============================================================================
-void DriverMED_Family::Init (SMESHDS_Group* group)
+void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
 {
   // Elements
   myElements.clear();
-  group->InitIterator();
-  while (group->More())
+  SMDS_ElemIteratorPtr elemIt = theGroup->GetElements();
+  while (elemIt->more())
   {
-    myElements.insert(group->Next());
+    myElements.insert(elemIt->next());
   }
 
   // Type
-  myType = group->GetType();
+  myType = theGroup->GetType();
 
   // Groups list
   myGroupNames.clear();
-  myGroupNames.insert(string(group->GetStoreName()));
+  myGroupNames.insert(string(theGroup->GetStoreName()));
 }
 
 //=============================================================================

@@ -51,15 +51,17 @@ class SMESHDS_Command
 	void MoveNode(int NewNodeID, double x, double y, double z);
 	void RemoveNode(int NodeID);
 	void RemoveElement(int ElementID);
+	void ChangeElementNodes(int ElementID, int nodes[], int nbnodes);
+	void Renumber (const bool isNodes, const int startID, const int deltaID);
 	SMESHDS_CommandType GetType();
 	int GetNumber();
-	const list<int> & GetIndexes();
-	const list<double> & GetCoords();
+	const std::list<int> & GetIndexes();
+	const std::list<double> & GetCoords();
 	 ~SMESHDS_Command();
   private:
 	SMESHDS_CommandType myType;
 	int myNumber;
-	list<double> myReals;
-	list<int> myIntegers;
+	std::list<double> myReals;
+	std::list<int> myIntegers;
 };
 #endif

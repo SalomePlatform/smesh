@@ -70,7 +70,7 @@ class SMESH_subMesh
 
   const TopoDS_Shape & GetSubShape();
 
-  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
+//  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
 
   enum compute_state
   {
@@ -91,7 +91,8 @@ class SMESH_subMesh
   enum compute_event
   {
     MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
-    CLEAN, CLEANDEP, SUBMESH_COMPUTED, SUBMESH_RESTORED
+    CLEAN, CLEANDEP, SUBMESH_COMPUTED, SUBMESH_RESTORED,
+    MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
 
   SMESH_Hypothesis::Hypothesis_Status
@@ -152,13 +153,13 @@ class SMESH_subMesh
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
-  int GetNbAttached(const TopoDS_Shape&      theShape,
-                    const SMESH_Hypothesis * theHyp,
-                    const bool               theAlgos = false);
-  // return nb of hypotheses attached to theShape.
+  const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
+                                             const SMESH_Hypothesis * theHyp,
+                                             const int                theHypType = 0);
+  // return a hypothesis attached to theShape.
   // If theHyp is provided, similar but not same hypotheses
-  // are countered; else only applicable ones are countered
-  // depending on theAlgos flag
+  // is returned; else an applicable ones having theHypType
+  // is returned
   
   TopoDS_Shape _subShape;
   SMESHDS_Mesh * _meshDS;
@@ -166,12 +167,9 @@ class SMESH_subMesh
   int _Id;
   SMESH_Mesh *_father;
   map < int, SMESH_subMesh * >_mapDepend;
-  //map < int, SMESH_subMesh * >_mapDependants;
   bool _dependenceAnalysed;
-  //bool _dependantsFound;
 
   int _algoState;
-  //int _oldAlgoState;
   int _computeState;
 
 };

@@ -19,8 +19,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=380>
-<meta name=layout-width content=700>
+<meta name=layout-height content=673>
+<meta name=layout-width content=740>
 
 
 <!--(Links)=========================================================-->
@@ -36,9 +36,23 @@ if (navigator.appName !="Netscape")
 <!--
 img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
 p.whs2 {margin-left: 40px;}
-img_whs3 {border-style: none; border: none; width: 26px; height: 24px;}
+p.whs3 {margin-left: 0px;}
+p.whs4 {margin-left: 0px; font-weight: bold;}
+img_whs5 {border-style: none; border: none; width: 386px; height: 414px;}
 -->
 </style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs3 {margin-left:1; }";
+  strNSS += "p.whs4 {margin-left:1; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
 <script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
@@ -88,7 +102,7 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.html");
+	setRelStartPage("../smesh.htm");
 
 		autoSync(0);
 		sendSyncInfo();
@@ -111,9 +125,17 @@ else
 
 <p class=TODO>&nbsp;</p>
 
-<p class="whs2">From the <span style="font-weight: bold;"><B>Hypotheses 
- </B></span>menu select <span style="font-weight: bold;"><B>Tetrahedron (Netgen) 
- </B></span>or click <img src="../image52.gif" width="26px" height="24px" border="0" class="img_whs3"> button in the toolbar.</p>
+<p class="whs2"><a href="about_meshing_algorithms.htm#ApplyAlgo">In 
+ the <span style="font-weight: bold;"><B>Create Algorithms </B></span>dialog box</a> 
+ select this algorithm and click <span style="font-weight: bold;"><B>Create</B></span>.</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs4">Example:</p>
+
+<p class="whs2"><img src="../image9.gif" width="386px" height="414px" border="0" class="img_whs5"></p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

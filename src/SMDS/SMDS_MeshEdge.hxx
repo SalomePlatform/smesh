@@ -36,7 +36,9 @@ class SMDS_MeshEdge:public SMDS_MeshElement
   public:
 	SMDS_MeshEdge(const SMDS_MeshNode * node1,
                       const SMDS_MeshNode * node2);
-	void Print(ostream & OS) const;
+        bool ChangeNodes(const SMDS_MeshNode * node1,
+                         const SMDS_MeshNode * node2);
+	void Print(std::ostream & OS) const;
 
 	SMDSAbs_ElementType GetType() const;
 	int NbNodes() const;

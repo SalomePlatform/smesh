@@ -27,7 +27,6 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
@@ -108,7 +107,7 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
  */
 //=============================================================================
 
-CORBA::Long SMESH_subMesh_i::GetNumberOfNodes()
+CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -120,6 +119,18 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes()
   if ( aSubMeshDS == NULL )
     return 0;
 
+  if ( all ) { // all nodes of submesh elements
+    set<int> nodeIds;
+    SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+    while ( eIt->more() ) {
+      const SMDS_MeshElement* anElem = eIt->next();
+      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+      while ( nIt->more() )
+        nodeIds.insert( nIt->next()->GetID() );
+    }
+    return nodeIds.size();
+  }
+    
   return aSubMeshDS->NbNodes();
 }
 
@@ -172,20 +183,37 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   if ( aSubMeshDS == NULL )
     return aResult._retn();
 
-  int i = 0;
+  // No sense in returning ids of elements along with ids of nodes:
+  // when theElemType == SMESH::ALL, return node ids only if
+  // there are no elements
+  bool retNodes = (theElemType == SMESH::NODE ||
+                   (theElemType == SMESH::ALL && aSubMeshDS->NbElements() == 0));
+
+  // PAL5440, return all nodes belonging to elements of submesh
+  set<int> nodeIds;
+  if ( retNodes ) {
+    SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+    while ( eIt->more() ) {
+      const SMDS_MeshElement* anElem = eIt->next();
+      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+      while ( nIt->more() )
+        nodeIds.insert( nIt->next()->GetID() );
+    }
+  }
+  
   if ( theElemType == SMESH::ALL )
-    aResult->length( aSubMeshDS->NbElements() + aSubMeshDS->NbNodes() );
+    aResult->length( aSubMeshDS->NbElements() + nodeIds.size());
   else if ( theElemType == SMESH::NODE )
-    aResult->length( aSubMeshDS->NbNodes() );
+    aResult->length( nodeIds.size() );
   else
     aResult->length( aSubMeshDS->NbElements() );
 
-  int n = aResult->length();
+  int i = 0, n = aResult->length();
 
-  if ( theElemType == SMESH::ALL || theElemType == SMESH::NODE ) {
-    SMDS_NodeIteratorPtr anIt = aSubMeshDS->GetNodes();
-    while ( i < n && anIt->more() )
-      aResult[i++] = anIt->next()->GetID();
+  if ( retNodes && !nodeIds.empty() ) {
+    set<int>::iterator idIt = nodeIds.begin();
+    for ( ; i < n && idIt != nodeIds.end() ; i++, idIt++ )
+      aResult[i] = *idIt;
   }
 
   if ( theElemType == SMESH::ALL || theElemType != SMESH::NODE ) {
@@ -256,6 +284,29 @@ CORBA::Long SMESH_subMesh_i::GetId()
   return _localId;
 }
 
+//=======================================================================
+//function : GetSubShape
+//purpose  : 
+//=======================================================================
+
+GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
+     throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  GEOM::GEOM_Object_var aShapeObj;
+  try {
+    if ( _mesh_i->_mapSubMesh.find( _localId ) != _mesh_i->_mapSubMesh.end()) {
+      TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
+      if ( !S.IsNull() )
+        aShapeObj = _gen_i->ShapeToGeomObject( S );
+    }
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  return aShapeObj._retn();
+}
+
 //=============================================================================
 /*!
  *  
@@ -274,4 +325,17 @@ SALOME_MED::FAMILY_ptr SMESH_subMesh_i::GetFamily()
     if ( families[i]->getIdentifier() == ( _localId ) )
       return families[i];
   }
+  
+  return SALOME_MED::FAMILY::_nil();
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+SMESH::long_array* SMESH_subMesh_i::GetIDs()
+{
+  SMESH::long_array_var aResult = GetElementsId();
+  return aResult._retn();
 }

@@ -1,0 +1,160 @@
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+// File    : SMESH_Pattern.idl
+// Created : Mon Aug  2 10:48:36 2004
+// Author  : Edward AGAPOV (eap)
+//  $Header:
+
+#ifndef _SMESH_PATTERN_IDL_
+#define _SMESH_PATTERN_IDL_
+
+#include "SMESH_Mesh.idl"
+
+module SMESH
+{
+  
+  typedef sequence<SMESH::PointStruct> point_array;
+
+  /*!
+   * SMESH_Pattern: interface of mesh pattern
+   */
+  interface SMESH_Pattern {
+
+    /*!
+     * Load a pattern from the string <theFileContents>
+     */
+    boolean LoadFromFile(in string theFileContents);
+
+    /*!
+     * Create a pattern from the mesh built on <theFace>.
+     * <theProject>==true makes override nodes positions
+     * on <theFace> computed by mesher
+     */
+    boolean LoadFromFace(in SMESH_Mesh        theMesh,
+                         in GEOM::GEOM_Object theFace,
+                         in boolean           theProject);
+
+    /*!
+     * Create a pattern from the mesh built on <theBlock>
+     */
+    boolean LoadFrom3DBlock(in SMESH_Mesh        theMesh,
+                            in GEOM::GEOM_Object theBlock);
+
+    /*!
+     * Compute nodes coordinates applying
+     * the loaded pattern to <theFace>. The first key-point
+     * will be mapped into <theVertexOnKeyPoint1>, which must
+     * be in the outer wire of theFace
+     */
+    point_array  ApplyToFace(in GEOM::GEOM_Object theFace,
+                             in GEOM::GEOM_Object theVertexOnKeyPoint1,
+                             in boolean           theReverse);
+
+    /*!
+     * Compute nodes coordinates applying
+     * the loaded pattern to <theBlock>. The (0,0,0) key-point
+     * will be mapped into <theVertex000>. The (0,0,1) 
+     * key-point will be mapped into <theVertex001>.
+     */
+    point_array  ApplyTo3DBlock(in GEOM::GEOM_Object theBlock,
+                                in GEOM::GEOM_Object theVertex000,
+                                in GEOM::GEOM_Object theVertex001);
+
+    /*!
+     * Create nodes and elements in <theMesh> using nodes
+     * coordinates computed by either of Apply...() methods
+     */
+    boolean MakeMesh(in SMESH_Mesh theMesh);
+
+    /*!
+     * Return the loaded pattern in the string form to be saved in file
+     */
+    string GetString();
+
+    /*!
+     * error code of the last of one of above operations
+     */
+    enum ErrorCode {
+      ERR_OK,
+      // Load(file)
+      ERR_READ_NB_POINTS, // couldn't read nb of points
+      ERR_READ_POINT_COORDS, // invalid nb of point coordinates
+      ERR_READ_TOO_FEW_POINTS,  // too few points in a pattern
+      ERR_READ_3D_COORD,  // coordinate of 3D point out of [0,1] range
+      ERR_READ_NO_KEYPOINT, // no key-points in 2D pattern
+      ERR_READ_BAD_INDEX, // invalid point index
+      ERR_READ_ELEM_POINTS, // invalid nb of points in element
+      ERR_READ_NO_ELEMS, // no elements in a pattern
+      ERR_READ_BAD_KEY_POINT, // a key-point not on a boundary
+      // Save(file)
+      ERR_SAVE_NOT_LOADED, // pattern was not loaded
+      // Load(shape)
+      ERR_LOAD_EMPTY_SUBMESH, // no elements to load
+      // Load(face)
+      ERR_LOADF_NARROW_FACE, // too narrow face
+      ERR_LOADF_CLOSED_FACE, // closed face
+      // Load(volume)
+      ERR_LOADV_BAD_SHAPE, // volume is not a brick of 6 faces
+      ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters
+      // Apply(shape)
+      ERR_APPL_NOT_LOADED, // pattern was not loaded
+      ERR_APPL_BAD_DIMENTION, // wrong shape dimention
+      ERR_APPL_BAD_NB_VERTICES, // keypoints - vertices mismatch
+      // Apply(face)
+      ERR_APPLF_BAD_TOPOLOGY, // bad pattern topology
+      ERR_APPLF_BAD_VERTEX, // first vertex not on an outer face boundary
+      ERR_APPLF_INTERNAL_EEROR, // program error
+      // Apply(volume)
+      ERR_APPLV_BAD_SHAPE, // volume is not a brick of 6 faces
+      // MakeMesh
+      ERR_MAKEM_NOT_COMPUTED // mapping failed
+      };
+
+    /*!
+     * Return error code of the last operation
+     */
+    ErrorCode GetErrorCode();
+
+    /*!
+     * Return true if the loaded pattern is a 2D one
+     */
+    boolean Is2D();
+
+    /*!
+     * Return coordinates of pattern points
+     */
+    point_array GetPoints();
+
+    /*!
+     * Return indices of key-points within the arrays returned by
+     * GetPoints()
+     */
+    long_array GetKeyPoints();
+
+    /*!
+     * Return nodal connectivity of the elements of the pattern
+     */
+    array_of_long_array GetElementPoints();
+  };
+};
+
+#endif

@@ -37,7 +37,6 @@
 #include <string>
 #include <vector>
 #include <list>
-using namespace std;
 
 class SMESH_Gen;
 class SMESH_Mesh;
@@ -48,14 +47,14 @@ class SMESH_Algo:public SMESH_Hypothesis
 	SMESH_Algo(int hypId, int studyId, SMESH_Gen * gen);
 	  virtual ~ SMESH_Algo();
 
-	const vector < string > &GetCompatibleHypothesis();
+	const std::vector < std::string > &GetCompatibleHypothesis();
 	virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
                                      const TopoDS_Shape& aShape,
                                      SMESH_Hypothesis::Hypothesis_Status& aStatus) = 0;
 
 	virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 
-	virtual const list <const SMESHDS_Hypothesis *> &
+	virtual const std::list <const SMESHDS_Hypothesis *> &
 		GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
 	const list <const SMESHDS_Hypothesis *> &
@@ -83,9 +82,9 @@ class SMESH_Algo:public SMESH_Hypothesis
  protected:
         bool _onlyUnaryInput;
         bool _requireDescretBoundary;
-        vector<string> _compatibleHypothesis;
-        list<const SMESHDS_Hypothesis *> _appliedHypList;
-        list<const SMESHDS_Hypothesis *> _usedHypList;
+        std::vector<std::string> _compatibleHypothesis;
+        std::list<const SMESHDS_Hypothesis *> _appliedHypList;
+        std::list<const SMESHDS_Hypothesis *> _usedHypList;
 };
 
 #endif

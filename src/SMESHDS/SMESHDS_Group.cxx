@@ -21,12 +21,13 @@
 //
 //
 //  File   : SMESHDS_Group.cxx
-//  Author : Michael Sazonov, OCC
 //  Module : SMESH
 //  $Header$
 
-#include <SMESHDS_Group.hxx>
-#include <SMESHDS_Mesh.hxx>
+#include "SMESHDS_Group.hxx"
+#include "SMESHDS_Mesh.hxx"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -34,11 +35,32 @@
  */
 //=============================================================================
 
-SMESHDS_Group::SMESHDS_Group (const SMESHDS_Mesh*       theMesh,
+SMESHDS_Group::SMESHDS_Group (const int                 theID,
+                              const SMESHDS_Mesh*       theMesh,
                               const SMDSAbs_ElementType theType)
-     : SMDS_MeshGroup(theMesh,theType), myStoreName(""),
-       myCurIndex(0), myCurID(0)
+     : SMESHDS_GroupBase(theID,theMesh,theType),
+       myGroup(theMesh,theType)
 {
+}
+
+//=======================================================================
+//function : Extent
+//purpose  : 
+//=======================================================================
+
+int SMESHDS_Group::Extent()
+{
+  return myGroup.Extent();
+}
+
+//=======================================================================
+//function : IsEmpty
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_Group::IsEmpty()
+{
+  return myGroup.IsEmpty();
 }
 
 //=============================================================================
@@ -47,11 +69,11 @@ SMESHDS_Group::SMESHDS_Group (const SMESHDS_Mesh*       theMesh,
  */
 //=============================================================================
 
-bool SMESHDS_Group::Contains (const int theID) const
+bool SMESHDS_Group::Contains (const int theID)
 {
   const SMDS_MeshElement* aElem = findInMesh (theID);
   if (aElem)
-    return SMDS_MeshGroup::Contains(aElem);
+    return myGroup.Contains(aElem);
   return false;
 }
 
@@ -64,9 +86,13 @@ bool SMESHDS_Group::Contains (const int theID) const
 bool SMESHDS_Group::Add (const int theID)
 {
   const SMDS_MeshElement* aElem = findInMesh (theID);
-  if (!aElem || SMDS_MeshGroup::Contains(aElem))
+  if (!aElem || myGroup.Contains(aElem))
     return false;
-  SMDS_MeshGroup::Add (aElem);
+
+  if (myGroup.IsEmpty())
+    SetType( aElem->GetType() );
+
+  myGroup.Add (aElem);
   return true;
 }
 
@@ -79,51 +105,57 @@ bool SMESHDS_Group::Add (const int theID)
 bool SMESHDS_Group::Remove (const int theID)
 {
   const SMDS_MeshElement* aElem = findInMesh (theID);
-  if (!aElem || !SMDS_MeshGroup::Contains(aElem))
+  if (!aElem || !myGroup.Contains(aElem))
     return false;
-  SMDS_MeshGroup::Remove (aElem);
+  myGroup.Remove (aElem);
   return true;
 }
 
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
+//=======================================================================
+//function : Clear
+//purpose  : 
+//=======================================================================
 
-int SMESHDS_Group::GetID (const int theIndex)
+void SMESHDS_Group::Clear()
 {
-  if (theIndex < 1 || theIndex > Extent())
-    return -1;
-  if (myCurIndex < 1 || myCurIndex > theIndex) {
-    InitIterator();
-    myCurIndex = 0;
-    myCurID = -1;
-  }
-  while (myCurIndex < theIndex && More()) {
-    myCurIndex++;
-    myCurID = Next()->GetID();
-  }
-  return myCurID;
+  myGroup.Clear();
 }
 
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
+// =====================
+// class MyGroupIterator
+// =====================
 
-const SMDS_MeshElement* SMESHDS_Group::findInMesh (const int theID) const
+class MyGroupIterator: public SMDS_ElemIterator
 {
-  SMDSAbs_ElementType aType = GetType();
-  const SMDS_MeshElement* aElem = NULL;
-  if (aType == SMDSAbs_Node) {
-    aElem = GetMesh()->FindNode(theID);
-  }
-  else if (aType != SMDSAbs_All) {
-    aElem = GetMesh()->FindElement(theID);
-    if (aElem && aType != aElem->GetType())
-      aElem = NULL;
-  }
-  return aElem;
+  const SMDS_MeshGroup& myGroup;
+ public:
+  MyGroupIterator(const SMDS_MeshGroup& group): myGroup(group) { myGroup.InitIterator(); }
+  bool more() { return myGroup.More(); }
+  const SMDS_MeshElement* next() { return myGroup.Next(); }
+};
+   
+//=======================================================================
+//function : GetElements
+//purpose  : 
+//=======================================================================
+
+SMDS_ElemIteratorPtr SMESHDS_Group::GetElements()
+{
+  return SMDS_ElemIteratorPtr( new MyGroupIterator ( myGroup ));
 }
+
+//=======================================================================
+//function : SetType
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Group::SetType(SMDSAbs_ElementType theType)
+{
+  if ( myGroup.IsEmpty() || GetType() == SMDSAbs_All ) {
+    SMESHDS_GroupBase::SetType( theType );
+    myGroup.SetType ( theType );
+  }
+  else
+    SMESHDS_GroupBase::SetType( myGroup.GetType() );
+}
+

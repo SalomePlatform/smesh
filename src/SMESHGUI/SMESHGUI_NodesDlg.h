@@ -47,6 +47,10 @@ class QRadioButton;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
 
+namespace SMESH{
+  struct TNodeSimulation;
+}
+
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -73,10 +77,12 @@ private :
     SMESHGUI*         myMeshGUI ;
 
     SMESH::SMESH_Mesh_var myMesh;
+    SMESH::TNodeSimulation* mySimulation;
 
     void Init(SALOME_Selection* Sel) ;
     void enterEvent(QEvent* e);
     void closeEvent(QCloseEvent* e) ;
+    void hideEvent ( QHideEvent * );                 /* ESC key */
 
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;
@@ -98,7 +104,7 @@ private slots:
 
     void ClickOnOk();
     void ClickOnCancel();
-    void ClickOnApply();
+    bool ClickOnApply();
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
     void SelectionIntoArgument() ;

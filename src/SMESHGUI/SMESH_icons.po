@@ -54,6 +54,61 @@ msgstr "mesh_diagonal.png"
 msgid "ICON_DLG_CONNECTIVITY"
 msgstr "mesh_connectivity.png"
 
+#Smoothing
+msgid "ICON_DLG_SMOOTHING"
+msgstr "mesh_smoothing.png"
+
+#Renumbering nodes
+msgid "ICON_DLG_RENUMBERING_NODES"
+msgstr "mesh_renumbering_nodes.png"
+
+#Renumbering elements
+msgid "ICON_DLG_RENUMBERING_ELEMENTS"
+msgstr "mesh_renumbering_elements.png"
+
+#Rotation
+msgid "ICON_DLG_ROTATION"
+msgstr "mesh_rotation.png"
+
+#Translation by vector
+msgid "ICON_SMESH_TRANSLATION_VECTOR"
+msgstr "mesh_translation_vector.png"
+
+#Translation by two points
+msgid "ICON_SMESH_TRANSLATION_POINTS"
+msgstr "mesh_translation_points.png"
+
+#Symmetry by point
+msgid "ICON_SMESH_SYMMETRY_POINT"
+msgstr "mesh_symmetry_point.png"
+
+#Symmetry by axis
+msgid "ICON_SMESH_SYMMETRY_AXIS"
+msgstr "mesh_symmetry_axis.png"
+
+#Symmetry by plane
+msgid "ICON_SMESH_SYMMETRY_PLANE"
+msgstr "mesh_symmetry_plane.png"
+
+#Sew free borders
+msgid "ICON_SMESH_SEWING_FREEBORDERS"
+msgstr "mesh_sew_freeborders.png"
+
+#Sew conform free borders
+msgid "ICON_SMESH_SEWING_CONFORM_FREEBORDERS"
+msgstr "mesh_sew_conform_freeborders.png"
+
+#Sew border to side
+msgid "ICON_SMESH_SEWING_BORDERTOSIDE"
+msgstr "mesh_sew_bordertoside.png"
+
+#Sew side elements
+msgid "ICON_SMESH_SEWING_SIDEELEMENTS"
+msgstr "mesh_sew_sideelements.png"
+
+#Merge nodes
+msgid "ICON_SMESH_MERGE_NODES"
+msgstr "mesh_merge_nodes.png"
 
 #-----------------------------------------------------------
 # Hypothesis
@@ -81,7 +136,7 @@ msgid "ICON_DLG_NODE"
 msgstr "mesh_vertex.png"
 
 #Line
-msgid "ICON_DLG_LINE"
+msgid "ICON_DLG_EDGE"
 msgstr "mesh_line.png"
 
 #triangle
@@ -139,3 +194,44 @@ msgstr "mesh_edit_group.png"
 
 msgid "ICON_CONSTRUCT_GROUP"
 msgstr "mesh_make_group.png"
+
+#-----------------------------------------------------------
+# Mesh pattern
+#-----------------------------------------------------------
+
+msgid "ICON_PATTERN_2d"
+msgstr "mesh_algo_mefisto.png"
+
+msgid "ICON_PATTERN_3d"
+msgstr "mesh_algo_hexa.png"
+
+msgid "ICON_PATTERN_SAMPLE_2D"
+msgstr "pattern_sample_2d.png"
+
+msgid "ICON_PATTERN_SAMPLE_3D"
+msgstr "pattern_sample_3D.png"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

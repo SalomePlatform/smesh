@@ -32,11 +32,14 @@
 // QT Includes
 #include <qdialog.h>
 
+#include <list>
+#include "SMESHGUI_aParameter.h"
+
 class QLabel;
 class QPushButton;
-class QSpinBox;
 class SMESHGUI;
-class QAD_SpinBoxDbl;
+class QWidget;
+
 
 //=================================================================================
 // class    : SMESHGUI_aParameterDlg
@@ -47,38 +50,30 @@ class SMESHGUI_aParameterDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_aParameterDlg( QWidget*     parent   = 0,
-			    QString      title    = QString::null,
-			    QString      label    = QString::null,
-			    const double bottom   = -1E6,
-			    const double top      = +1E6,
-			    const int    decimals = 3,
-			    bool         modal    = TRUE );
-    SMESHGUI_aParameterDlg( QWidget*     parent   = 0,
-			    QString      title    = QString::null,
-			    QString      label    = QString::null,
-			    const int    bottom   = 0,
-			    const int    top      = 1000,
-			    bool         modal    = TRUE );
+    SMESHGUI_aParameterDlg( std::list<SMESHGUI_aParameterPtr> params,
+			    QWidget*                          parent = 0,
+			    QString                           title  = QString::null,
+			    bool                              modal  = TRUE );
 
     ~SMESHGUI_aParameterDlg();
 
-    void   setValue( const double val );
-    void   setValue( const int    val );
-    double getDblValue();
-    int    getIntValue();
+    /* Parameter function */
+    static bool Parameters( std::list<SMESHGUI_aParameterPtr> params, const char *aTitle);
 
 protected:
-    void init( bool isDouble );
+    void init();
+
+private slots:
+    void ClickOnOk();
 
 private:
     SMESHGUI*       mySMESHGUI ;
 
     QPushButton*    myButtonOk;
     QPushButton*    myButtonCancel;
-    QLabel*         myTextLabel;
-    QSpinBox*       myIntSpin;
-    QAD_SpinBoxDbl* myDblSpin;
+
+    std::list<QWidget*>               mySpinList;
+    std::list<SMESHGUI_aParameterPtr> myParamList;
 };
 
 #endif // SMESHGUI_aParameterDlg.h

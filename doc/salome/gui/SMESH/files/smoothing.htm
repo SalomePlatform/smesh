@@ -1,0 +1,217 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+<!--(Document created with RoboEditor. )============================-->
+<!--(==============================================================)-->
+
+<head>
+
+<title>Smoothing</title>
+
+<!--(Meta)==========================================================-->
+
+<meta http-equiv=content-type content="text/html; charset=windows-1252">
+<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
+<meta name=generator-major-version content=0.1>
+<meta name=generator-minor-version content=1>
+<meta name=filetype content=kadov>
+<meta name=filetype-version content=1>
+<meta name=page-count content=1>
+<meta name=layout-height content=1451>
+<meta name=layout-width content=740>
+
+
+<!--(Links)=========================================================-->
+
+ <link rel='stylesheet' href='../default_ns.css'>
+<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<!--
+if (navigator.appName !="Netscape")
+{   document.write("<link rel='stylesheet' href='../default.css'>");}
+//-->
+</script>
+<style type="text/css">
+<!--
+img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
+p.whs2 {margin-left: 40px;}
+img_whs3 {border-style: none; border: none; width: 24px; height: 25px;}
+img_whs4 {border-style: none; border: none; width: 319px; height: 369px;}
+ul.whs5 {list-style: disc;}
+p.whs6 {margin-left: 40px; font-weight: normal;}
+p.whs7 {font-weight: bold;}
+p.whs8 {margin-left: 80px;}
+img_whs9 {border-style: none; border: none; width: 527px; height: 281px;}
+-->
+</style>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="../whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
+</head>
+
+<!--(Body)==========================================================-->
+
+
+<body>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("SMESH module\nModifying meshes\nSmoothing");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("../smesh.htm");
+
+		autoSync(0);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	document.location.reload();
+//-->
+</script>
+<h1>Smoothing</h1>
+
+<p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> Smoothing is used to adjust the locations of element 
+ corners (nodes) to reduce distortions in these elements.</p>
+
+<p>&nbsp;</p>
+
+<p class=TODO>To apply smoothing to the elements of your mesh:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs2">1. Display a mesh or a submesh in the 3D 
+ viewer.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">2. In the <span style="font-weight: bold;"><B>Modification 
+ </B></span>menu select the <span style="font-weight: bold;"><B>Smoothing </B></span>item 
+ or click <img src="../image84.gif" width="24px" height="25px" border="0" class="img_whs3"> button in the toolbar. The following dialog box 
+ will appear:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs2"><img src="../image85.gif" width="319px" height="369px" border="0" class="img_whs4"></p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">This dialog box contains the following fields 
+ which should be specified:</p>
+
+<p>&nbsp;</p>
+
+<ul type="disc" class="whs5">
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Id Elements </B></span><span>field allows to specify 
+ the elements which should be smoothed by selecting them in the 3D viewer. 
+ Note: to select several elements press </span><span style="font-weight: bold;"><B>Shift 
+ </B></span><span>button.</span></p></li>
+	
+	<ul type="disc" class="whs5">
+		
+		<li class=kadov-p><p class="whs7">Smoothing is applied 
+ to the whole mesh or its part</p></li>
+		
+		<li class=kadov-p><p><span style="font-weight: bold;"><B>Fixed nodes 
+ ids</B></span>: some nodes keep their location during smoothing. If a mesh 
+ is built on a geometry shape, the nodes built on geometrical edges are 
+ always fixed. If smoothing is applied to a part of a mesh then the boundary 
+ nodes of an elements set are also fixed. Any other nodes may be additionally 
+ fixed.</p></li>
+		
+		<li class=kadov-p><p>&nbsp;</p></li>
+		
+		<li class=kadov-p><p><span style="font-weight: bold;"><B>Smoothing 
+ method</B></span>:</p></li>
+		
+		<ul type="disc" class="whs5">
+			
+			<li class=kadov-p><p><span style="font-weight: bold;"><B>Laplacian</B></span> 
+ smoothing pulls a node toward the center of surrounding nodes directly 
+ connected to that node along an element edge. Centroidal smoothing pulls 
+ a node toward the element-area-weighted centroid of the surrounding elements. 
+ Typically, the Laplacian method will produce the mesh with the least element 
+ distortion. It is also the faster method. </p></li>
+			
+			<li class=kadov-p><p><span style="font-weight: bold;"><B>Centroidal</B></span> 
+ smoothing usually produces a mesh that has more uniform element sizes. 
+ Both methods produce good results with &quot;free&quot; meshes.</p></li>
+		</ul>
+	</ul>
+</ul>
+
+<p class="whs8"><img src="../image83.gif" width="527px" height="281px" border="0" class="img_whs9"></p>
+
+<ul type="disc" class="whs5">
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Iteration limit: </B></span>both of the smoothing 
+ methods use an iterative procedure to converge toward a smoothed mesh. 
+ All nodes are smoothed according to one of the techniques shown above. 
+ Then the smoothing is reevaluated with the updated nodal locations. This 
+ process continues until the maximum number of iterations has been exceeded, 
+ or all elements has aspect ratio less or equal than the specified one.</p></li>
+	
+	<li class=kadov-p><p class="whs6"><span 
+ style="font-weight: bold;"><B>Max. aspect ratio</B></span>.</p></li>
+</ul>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">3. Click the <span style="font-weight: bold;"><B>Apply 
+ </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button to confirm 
+ the operation.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+
+</html>

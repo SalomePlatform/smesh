@@ -26,7 +26,10 @@
 //  Module : SMESH
 
 #include "SMDS_EdgePosition.hxx"
+
 #include "utilities.h"
+
+using namespace std;
 
 //=======================================================================
 //function : SMDS_EdgePosition

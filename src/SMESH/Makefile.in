@@ -25,7 +25,6 @@
 #  Author : Paul RASCLE, EDF
 #  Module : SMESH
 #  $Header$
-
 top_srcdir=@top_srcdir@
 top_builddir=../..
 srcdir=@srcdir@
@@ -44,7 +43,9 @@ EXPORT_HEADERS= \
 	SMESH_1D_Algo.hxx \
 	SMESH_2D_Algo.hxx \
 	SMESH_3D_Algo.hxx \
-	SMESH_Group.hxx
+	SMESH_Group.hxx \
+	SMESH_MeshEditor.hxx \
+	SMESH_Pattern.hxx
 
 EXPORT_PYSCRIPTS =
 
@@ -58,7 +59,9 @@ LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_1D_Algo.cxx \
 	  SMESH_2D_Algo.cxx \
 	  SMESH_3D_Algo.cxx \
-	  SMESH_Group.cxx
+	  SMESH_Group.cxx \
+	  SMESH_MeshEditor.cxx \
+	  SMESH_Pattern.cxx
 
 LIB_SERVER_IDL = 
 
@@ -68,14 +71,12 @@ LIB_CLIENT_IDL =
 BIN = 
 BIN_SRC = 
 
-# additionnal information to compil and link file
+# additionnal information to compile and link file
 CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
            $(BOOST_CPPFLAGS)
 CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 
-#IDLCXXFLAGS+= -Wbtp
-
-LDFLAGS+= $(HDF5_LIBS) $(MED2_LIBS) -lOpUtil -lSMESHDS -lSMDS -lMeshDriverDAT -lMeshDriverMED -lMeshDriverUNV -L${KERNEL_ROOT_DIR}/lib/salome
+LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSMESHDS -lMeshDriverDAT -lMeshDriverSTL -lMeshDriverMED -lMeshDriverUNV
 
 @CONCLUDE@
 

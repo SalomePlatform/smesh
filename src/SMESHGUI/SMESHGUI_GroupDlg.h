@@ -42,9 +42,11 @@
 
 class QLineEdit;
 class QButtonGroup;
+class QGroupBox;
 class QListBox;
 class QPushButton;
 class QCheckBox;
+class QWidgetStack;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
@@ -74,39 +76,53 @@ public slots:
 private slots:
 
     void onTypeChanged(int id);
+    void onGrpTypeChanged(int id);
 
     void onOK();
     void onClose();
     bool onApply();
+    void onDeactivate();
 
     void onListSelectionChanged();
     void onObjectSelectionChanged();
 
     void onSelectSubMesh(bool on);
     void onSelectGroup(bool on);
+    void onSelectGeomGroup(bool on);
     void setCurrentSelection();
 
     void setFilters();
     void onSort();
 
     void onNameChanged(const QString& text);
+    void onFilterAccepted();
 
 private:
     void initDialog(SALOME_Selection* theSel, bool create);
     void init(SMESH::SMESH_Mesh_ptr theMesh);
     void init(SMESH::SMESH_Group_ptr theGroup);
     void closeEvent(QCloseEvent* e);
+    void enterEvent ( QEvent * ) ;            
+    void hideEvent ( QHideEvent * );                        /* ESC key */
     void setSelectionMode(int theMode);
     void updateButtons();
 
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     SALOME_Selection*             mySelection ;             /* User shape selection */
     SMESH_Actor*                  myActor;                  /* Current mesh actor */
+    int                           myGrpTypeId ;             /* Current group type id : standalone or group on geometry */
     int                           myTypeId ;                /* Current type id = radio button id */
     QLineEdit*                    myCurrentLineEdit;        /* Current  LineEdit */
 
+    QPushButton*                  myMeshGroupBtn;
+    QLineEdit*                    myMeshGroupLine;
+    
     QButtonGroup*                 myTypeGroup;
     QLineEdit*                    myName;
+
+    QButtonGroup*                 myGrpTypeGroup;
+
+    QWidgetStack*                 myWGStack;
     QListBox*                     myElements;
     QPushButton*                  myFilter;
 
@@ -118,15 +134,23 @@ private:
     QPushButton*                  myGroupBtn;
     QLineEdit*                    myGroupLine;
 
+    QCheckBox*                    mySelectGeomGroup;
+    QPushButton*                  myGeomGroupBtn;
+    QLineEdit*                    myGeomGroupLine;
+
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH::SMESH_Group_var        myGroup;
     QValueList<int>               myIdList;
+    GEOM::GEOM_Object_var         myGeomGroup;
 
     int                           mySelectionMode;
+    Handle(SMESH_TypeFilter)      myMeshFilter;
     Handle(SMESH_TypeFilter)      mySubMeshFilter;
     Handle(SMESH_TypeFilter)      myGroupFilter;
 
     SMESHGUI_FilterDlg*           myFilterDlg;
+
+    bool                          myCreate;
 };
 
 #endif // DIALOGBOX_GROUP_H

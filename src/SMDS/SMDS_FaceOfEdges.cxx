@@ -23,6 +23,8 @@
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
 
+using namespace std;
+
 //=======================================================================
 //function : NbEdges
 //purpose  : 

@@ -7,20 +7,52 @@
 <td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>SMESH_subMesh  GetElementsOnShape ( in GEOM_Shape aSubShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetElementsOnShape ( aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_subMesh  GetSubMesh ( in GEOM_Object aSubObject, in string name )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetSubMesh ( aSubObject, name )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>boolean  AddHypothesis ( in GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddHypothesis ( aSubShape, anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>void RemoveSubMesh ( in SMESH_subMesh aSubMesh )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RemoveSubMesh ( aSubMesh )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>boolean  RemoveHypothesis ( in GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = RemoveHypothesis ( aSubShape, anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Group  CreateGroup ( in ElementType elem_type, in string name )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateGroup ( elem_type, name )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>ListOfHypothesis  GetHypothesisList ( in GEOM_Shape aSubShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetHypothesisList ( aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Group  CreateGroupFromGEOM ( in ElementType elem_type, in string name, in GEOM_Object theGEOMGroup )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateGroupFromGEOM ( elem_type, name, theGEOMGroup )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void RemoveGroup ( in SMESH_Group aGroup )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RemoveGroup ( aGroup )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void RemoveGroupWithContents ( in SMESH_Group aGroup )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RemoveGroupWithContents ( aGroup )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Group  UnionGroups ( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = UnionGroups ( aGroup1, aGroup2, name )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Group  IntersectGroups ( in SMESH_Group aGroup1, in SMESH_Group aGroup2, in string name )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = IntersectGroups ( aGroup1, aGroup2, name )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Group  CutGroups ( in SMESH_Group aMainGroup, in SMESH_Group aToolGroup, in string name )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CutGroups ( aMainGroup, aToolGroup, name )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>Hypothesis_Status  AddHypothesis ( in GEOM_Object aSubObject, in SMESH_Hypothesis anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = AddHypothesis ( aSubObject, anHyp )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>Hypothesis_Status  RemoveHypothesis ( in GEOM_Object aSubObject, in SMESH_Hypothesis anHyp )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = RemoveHypothesis ( aSubObject, anHyp )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>ListOfHypothesis  GetHypothesisList ( in GEOM_Object aSubObject )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetHypothesisList ( aSubObject )</b></div></td>
 </tr>
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>log_array  GetLog ( in boolean clearAfterGet )</b></div></td>
@@ -47,12 +79,16 @@
 <td bgcolor= "lightgreen"><div align="center"><b>ExportDAT ( file )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>void ExportMED ( in string file )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>ExportMED ( file )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExportMED ( in string file, in boolean auto_groups )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExportMED ( file, auto_groups )</b></div></td>
 </tr>
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>void ExportUNV ( in string file )</b></div></td>
 <td bgcolor= "lightgreen"><div align="center"><b>ExportUNV ( file )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExportSTL ( in string file, in boolean isascii )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExportSTL ( file, isascii )</b></div></td>
 </tr>
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>MESH  GetMEDMesh (  )</b></div></td>
@@ -91,8 +127,20 @@
 <td bgcolor= "lightgreen"><div align="center"><b>return_value = NbHexas (  )</b></div></td>
 </tr>
 <tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbPyramids (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbPyramids (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long  NbPrisms (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = NbPrisms (  )</b></div></td>
+</tr>
+<tr>
 <td bgcolor= "lightgreen"><div align="center"><b>long  NbSubMesh (  )</b></div></td>
 <td bgcolor= "lightgreen"><div align="center"><b>return_value = NbSubMesh (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>string  Dump (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Dump (  )</b></div></td>
 </tr>
 </table><br>
 <table width="100%" BORDER>
@@ -107,12 +155,16 @@
 <td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNumberOfElements (  )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>long  GetNumberOfNodes (  )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNumberOfNodes (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>long  GetNumberOfNodes ( in boolean all )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetNumberOfNodes ( all )</b></div></td>
 </tr>
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>long_array  GetElementsId (  )</b></div></td>
 <td bgcolor= "lightgreen"><div align="center"><b>return_value = GetElementsId (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetElementsByType ( in ElementType theType )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetElementsByType ( theType )</b></div></td>
 </tr>
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>long_array  GetNodesId (  )</b></div></td>
@@ -161,6 +213,94 @@
 <tr>
 <td bgcolor= "lightgreen"><div align="center"><b>boolean  AddVolume ( in long_array IDsOfNodes )</b></div></td>
 <td bgcolor= "lightgreen"><div align="center"><b>return_value = AddVolume ( IDsOfNodes )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  MoveNode ( in long NodeID, in double x, in double y, in double z )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = MoveNode ( NodeID, x, y, z )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  InverseDiag ( in long NodeID1, in long NodeID2 )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = InverseDiag ( NodeID1, NodeID2 )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  DeleteDiag ( in long NodeID1, in long NodeID2 )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = DeleteDiag ( NodeID1, NodeID2 )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  Reorient ( in long_array IDsOfElements )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Reorient ( IDsOfElements )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  TriToQuad ( in long_array IDsOfElements, in NumericalFunctor Criterion, in double MaxAngle )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = TriToQuad ( IDsOfElements, Criterion, MaxAngle )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  QuadToTri ( in long_array IDsOfElements, in NumericalFunctor Criterion )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = QuadToTri ( IDsOfElements, Criterion )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  SplitQuad ( in long_array IDsOfElements, in boolean Diag13 )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = SplitQuad ( IDsOfElements, Diag13 )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  Smooth ( in long_array IDsOfElements, in long_array IDsOfFixedNodes, in long MaxNbOfIterations, in double MaxAspectRatio, in Smooth_Method Method )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Smooth ( IDsOfElements, IDsOfFixedNodes, MaxNbOfIterations, MaxAspectRatio, Method )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void RenumberNodes (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RenumberNodes (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void RenumberElements (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RenumberElements (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void RotationSweep ( in long_array IDsOfElements, in AxisStruct Axix, in double AngleInRadians, in long NbOfSteps, in double Tolerance )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>RotationSweep ( IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void ExtrusionSweep ( in long_array IDsOfElements, in DirStruct StepVector, in long NbOfSteps )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>ExtrusionSweep ( IDsOfElements, StepVector, NbOfSteps )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void Mirror ( in long_array IDsOfElements, in AxisStruct Mirror, in MirrorType theMirrorType, in boolean Copy )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>Mirror ( IDsOfElements, Mirror, theMirrorType, Copy )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void Translate ( in long_array IDsOfElements, in DirStruct Vector, in boolean Copy )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>Translate ( IDsOfElements, Vector, Copy )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void Rotate ( in long_array IDsOfElements, in AxisStruct Axis, in double AngleInRadians, in boolean Copy )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>Rotate ( IDsOfElements, Axis, AngleInRadians, Copy )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void FindCoincidentNodes ( in double Tolerance, out array_of_long_array GroupsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>GroupsOfNodes = FindCoincidentNodes ( Tolerance )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void MergeNodes ( in array_of_long_array GroupsOfNodes )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>MergeNodes ( GroupsOfNodes )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>void MergeEqualElements (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>MergeEqualElements (  )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  SewFreeBorders ( in long FirstNodeID1, in long SecondNodeID1, in long LastNodeID1, in long FirstNodeID2, in long SecondNodeID2, in long LastNodeID2 )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = SewFreeBorders ( FirstNodeID1, SecondNodeID1, LastNodeID1, FirstNodeID2, SecondNodeID2, LastNodeID2 )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  SewConformFreeBorders ( in long FirstNodeID1, in long SecondNodeID1, in long LastNodeID1, in long FirstNodeID2, in long SecondNodeID2 )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = SewConformFreeBorders ( FirstNodeID1, SecondNodeID1, LastNodeID1, FirstNodeID2, SecondNodeID2 )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  SewBorderToSide ( in long FirstNodeIDOnFreeBorder, in long SecondNodeIDOnFreeBorder, in long LastNodeIDOnFreeBorder, in long FirstNodeIDOnSide, in long LastNodeIDOnSide )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = SewBorderToSide ( FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder, FirstNodeIDOnSide, LastNodeIDOnSide )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  SewSideElements ( in long_array IDsOfSide1Elements, in long_array IDsOfSide2Elements, in long NodeID1OfSide1ToMerge, in long NodeID1OfSide2ToMerge, in long NodeID2OfSide1ToMerge, in long NodeID2OfSide2ToMerge )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = SewSideElements ( IDsOfSide1Elements, IDsOfSide2Elements, NodeID1OfSide1ToMerge, NodeID1OfSide2ToMerge, NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge )</b></div></td>
 </tr>
 </table><br>
 </b></HTML>

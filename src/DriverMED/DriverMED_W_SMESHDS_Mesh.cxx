@@ -24,66 +24,39 @@
 //  File   : DriverMED_W_SMESHDS_Mesh.cxx
 //  Module : SMESH
 
+#include <sstream>
+
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMDS_Mesh.h"
 #include "DriverMED_Family.h"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "utilities.h"
 
 #include "MEDA_Wrapper.hxx"
-#include <sstream>	
-
 #include "MED_Utilities.hxx"
 
 #define _EDF_NODE_IDS_
 #define _ELEMENTS_BY_DIM_
 
-DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh()
-     :
-       myMesh (NULL),
-       myFile (""),
-       myFileId (-1),
-       myMeshId (-1),
-       myAllSubMeshes (false),
-       myDoGroupOfNodes (false),
-       myDoGroupOfEdges (false),
-       myDoGroupOfFaces (false),
-       myDoGroupOfVolumes (false)
-{
-}
+using namespace std;
 
-DriverMED_W_SMESHDS_Mesh::~DriverMED_W_SMESHDS_Mesh()
-{
-}
+DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
+  myAllSubMeshes (false),
+  myDoGroupOfNodes (false),
+  myDoGroupOfEdges (false),
+  myDoGroupOfFaces (false),
+  myDoGroupOfVolumes (false)
+{}
 
-void DriverMED_W_SMESHDS_Mesh::SetMesh(SMDS_Mesh * aMesh)
-{
-  myMesh = aMesh;
-}
-
-void DriverMED_W_SMESHDS_Mesh::SetFile(string aFile)
-{
-  myFile = aFile;
-}
-
-void DriverMED_W_SMESHDS_Mesh::SetFileId(med_idt aFileId)
-{
-  myFileId = aFileId;
-}
-
-void DriverMED_W_SMESHDS_Mesh::SetMeshId(int aMeshId)
-{
-  myMeshId = aMeshId;
-}
-
-void DriverMED_W_SMESHDS_Mesh::SetMeshName(string theMeshName)
+void DriverMED_W_SMESHDS_Mesh::SetMeshName(const std::string& theMeshName)
 {
   myMeshName = theMeshName;
 }
 
-void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_Group* theGroup)
+void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
 {
   myGroups.push_back(theGroup);
 }
@@ -117,22 +90,6 @@ void DriverMED_W_SMESHDS_Mesh::AddGroupOfVolumes()
 {
   myDoGroupOfVolumes = true;
 }
-
-void DriverMED_W_SMESHDS_Mesh::Write()
-{
-  string myClass = string("SMDS_Mesh");
-  string myExtension = string("MED");
-
-  DriverMED_W_SMDS_Mesh *myWriter = new DriverMED_W_SMDS_Mesh;
-
-  myWriter->SetMesh(myMesh);
-  //  myWriter->SetFile(myFile);
-  myWriter->SetMeshId(myMeshId);
-  myWriter->SetFileId(myFileId);
-
-  myWriter->Write();
-}
-
 
 typedef double (SMDS_MeshNode::* TGetCoord)() const;
 typedef const char* TName;
@@ -208,7 +165,7 @@ public:
     return myCurrentNode;
   }
   MED::TIntVector::value_type GetID(){
-    myCurrentNode->GetID();
+    return myCurrentNode->GetID();
   }
   MED::TFloatVector::value_type GetCoord(med_int theCoodId){
     return (myCurrentNode->*myGetCoord[theCoodId])();
@@ -223,17 +180,18 @@ public:
 typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
 
 
-void DriverMED_W_SMESHDS_Mesh::Add()
+Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 {
+  Status aResult = DRS_OK;
   if (myMesh->hasConstructionEdges() || myMesh->hasConstructionFaces()) {
     INFOS("SMDS_MESH with hasConstructionEdges() or hasConstructionFaces() do not supports!!!");
-    return;
+    return DRS_FAIL;
   }
   try{
     using namespace MEDA;
     using namespace boost;
 
-    MESSAGE("Add - myFile : "<<myFile);
+    MESSAGE("Perform - myFile : "<<myFile);
     TWrapper aMed(myFile);
 
     // Creating the MED mesh for corresponding SMDS structure
@@ -329,16 +287,12 @@ void DriverMED_W_SMESHDS_Mesh::Add()
     if (myDoGroupOfVolumes)
       myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
 
-    MESSAGE("Add - aFamilyInfo");
+    MESSAGE("Perform - aFamilyInfo");
     map<const SMDS_MeshElement *, int> anElemFamMap;
     list<DriverMED_FamilyPtr> aFamilies;
     if (myAllSubMeshes) {
-      SMESHDS_Mesh* aSMESHDSMesh = dynamic_cast<SMESHDS_Mesh*>(myMesh);
-      if (!aSMESHDSMesh) {
-        EXCEPTION(runtime_error,"Can not cast SMDS_Mesh to SMESHDS_Mesh");
-      }
       aFamilies = DriverMED_Family::MakeFamilies
-        (aSMESHDSMesh->SubMeshes(), myGroups,
+        (myMesh->SubMeshes(), myGroups,
          myDoGroupOfNodes, myDoGroupOfEdges, myDoGroupOfFaces, myDoGroupOfVolumes);
     } else {
       aFamilies = DriverMED_Family::MakeFamilies
@@ -404,7 +358,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 					       aCoordUnits,
 					       aFamilyNums,
 					       anElemNums);
-    MESSAGE("Add - aNodeInfo->GetNbElem() = "<<aNbElems);
+    MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems);
     aMed.SetNodeInfo(aNodeInfo);
 
 
@@ -544,7 +498,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aTriaConn,
 						   aTriaFamilyNums,
 						   anTriaElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_TRIA3<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_TRIA3<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
       if(med_int aNbElems = aQuadElemNums.size()){
@@ -555,7 +509,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aQuadConn,
 						   aQuadFamilyNums,
 						   aQuadElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_QUAD4<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_QUAD4<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
     }
@@ -681,7 +635,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aTetraConn,
 						   aTetraFamilyNums,
 						   anTetraElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_TETRA4<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_TETRA4<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
       if(med_int aNbElems = anPyraElemNums.size()){
@@ -692,7 +646,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aPyraConn,
 						   aPyraFamilyNums,
 						   anPyraElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_PYRA5<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_PYRA5<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
       if(med_int aNbElems = anPentaElemNums.size()){
@@ -703,7 +657,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aPentaConn,
 						   aPentaFamilyNums,
 						   anPentaElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_PENTA6<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_PENTA6<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
       if(med_int aNbElems = aHexaElemNums.size()){
@@ -714,7 +668,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 						   aHexaConn,
 						   aHexaFamilyNums,
 						   aHexaElemNums);
-	MESSAGE("Add - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_HEXA8<<"; aNbElems = "<<aNbElems);
+	MESSAGE("Perform - anEntity = "<<SMDS_MED_ENTITY<<"; aGeom = "<<MED_HEXA8<<"; aNbElems = "<<aNbElems);
 	aMed.SetCellInfo(aCellInfo);
       }
     }
@@ -727,4 +681,5 @@ void DriverMED_W_SMESHDS_Mesh::Add()
   myMeshId = -1;
   myGroups.clear();
   mySubMeshes.clear();
+  return aResult;
 }

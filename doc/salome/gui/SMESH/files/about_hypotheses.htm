@@ -19,8 +19,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=479>
-<meta name=layout-width content=700>
+<meta name=layout-height content=1305>
+<meta name=layout-width content=740>
 
 
 <!--(Links)=========================================================-->
@@ -36,9 +36,26 @@ if (navigator.appName !="Netscape")
 <!--
 img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
 ul.whs2 {list-style: disc;}
-ol.whs3 {list-style: disc;}
+p.whs3 {background-color: Transparent; color: #000000;}
+ol.whs4 {list-style: disc;}
+p.whs5 {font-style: italic; font-size: 12pt; font-family: 'Arial Black', sans-serif;}
+img_whs6 {border-style: none; border: none; width: 22px; height: 22px;}
+p.whs7 {margin-left: 40px;}
+img_whs8 {border-style: none; border: none; width: 448px; height: 367px;}
+img_whs9 {border-style: none; border: none; width: 271px; height: 124px;}
 -->
 </style>
+<script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs3 {background-color:white; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
 <script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
@@ -68,7 +85,7 @@ onerror = null;
 <!--(Body)==========================================================-->
 
 
-<body>
+<body page-style ="x-size: Letter;">
 
 <script type="text/javascript" language="javascript1.2">
 <!--
@@ -88,7 +105,7 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	if (window.setRelStartPage)
 	{
-	setRelStartPage("../smesh.html");
+	setRelStartPage("../smesh.htm");
 
 		autoSync(0);
 		sendSyncInfo();
@@ -117,29 +134,40 @@ else
 	
 	<li style="list-style: circle;"
 		type=circle
-		class=kadov-p><p>For meshing of <span style="font-weight: bold;"><B>edges</B></span>:</p></li>
+		class=kadov-p><p class="whs3">For 
+ meshing of <span style="font-weight: bold;"><B>edges</B></span>:</p></li>
 	
 	<ul type="disc" class="whs2">
 		
-		<li class=kadov-p><p><a href="local_length_hypothesis.htm">Local 
- Length</a> </p></li>
+		<li class=kadov-p><p class="whs3"><a href="arithmetic_1d.htm">Arithmetic 1D</a></p></li>
 		
-		<li class=kadov-p><p><a href="number_of_segments_hypothesis.htm">Number 
- of segments</a></p></li>
+		<li class=kadov-p><p class="whs3"><a href="local_length_hypothesis.htm">Average Length</a></p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="deflection_1d.htm">Deflection 1D</a> </p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="number_of_segments_hypothesis.htm">Number of segments</a></p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="propagation_of_1d_hypothesis_on_opposite_edges.htm">Propagation 
+ of 1D Hypothesis on opposite edges</a></p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="start_and_end_length_hypothesis.htm">Start and end length</a></p></li>
 	</ul>
 	
 	<li style="list-style: circle;"
 		type=circle
-		class=kadov-p><p>For meshing of <span style="font-weight: bold;"><B>faces</B></span>: 
- </p></li>
+		class=kadov-p><p class="whs3">For 
+ meshing of <span style="font-weight: bold;"><B>faces</B></span>: </p></li>
 </ul>
 
-<ol type="disc" class="whs3">
+<ol type="disc" class="whs4">
 	
 	<ul type="disc" class="whs2">
 		
-		<li class=kadov-p><p><a href="max._element_area_hypothesis.htm">Max 
- Element Area</a></p></li>
+		<li class=kadov-p><p class="whs3"><a href="length_from_edges.htm">Length from edges</a></p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="max._element_area_hypothesis.htm">Max Element Area</a></p></li>
+		
+		<li class=kadov-p><p class="whs3"><a href="non_conform_mesh_allowed_hypothesis.htm">Non conform mesh allowed</a></p></li>
 	</ul>
 </ol>
 
@@ -147,8 +175,8 @@ else
 	
 	<li style="list-style: circle;"
 		type=circle
-		class=kadov-p><p>For meshing of <span style="font-weight: bold;"><B>volumes</B></span>: 
- </p></li>
+		class=kadov-p><p class="whs3">For 
+ meshing of <span style="font-weight: bold;"><B>volumes</B></span>: </p></li>
 	
 	<ul type="disc" class="whs2">
 		
@@ -172,6 +200,37 @@ else
 	<li class=kadov-p><p>the algorithm, which will be selected for meshing 
  of this geometrical object (shape)</p></li>
 </ul>
+
+<p>&nbsp;</p>
+
+<p class="whs5"><a name=CreateHyp></a>To 
+ create a hypothesis </p>
+
+<p><span style="font-size: 12pt;"><font size=3 style="font-size:12pt;">In the main menu select</font></span><span style="font-style: italic;
+	font-size: 12pt;
+	font-family: 'Arial Black', sans-serif;"> <font size=3 style="font-size:12pt;"><I></I></font></span><span style="font-weight: bold;"><B>Hypotheses 
+ &gt; </B></span><img src="../image7.gif" width="22px" height="22px" border="0" class="img_whs6"> <span style="font-weight: bold;"><B>Create hypotheses</B></span></p>
+
+<p>The following menu will appear:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs7"><img src="../image21.jpg" width="448px" height="367px" border="0" class="img_whs8"></p>
+
+<p>&nbsp;</p>
+
+<p>Select one of the menu items and click <span style="font-weight: bold;"><B>Create</B></span>. 
+ A data input dialog box corresponding to the chosen type of the hypotheses 
+ will appear. The created hypotheses shall appear in the Object Browser 
+ under the <span style="font-weight: bold;"><B>Hypotheses </B></span>folder:</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="whs7"><img src="../image42.jpg" width="271px" height="124px" border="0" class="img_whs9"></p>
+
+<p>&nbsp;</p>
 
 <p>&nbsp;</p>
 

@@ -24,7 +24,6 @@
 //  File   : SMESH_MEDMesh_i.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "SMESH_MEDMesh_i.hxx"
 #include "SMESH_Mesh_i.hxx"
 
@@ -60,6 +59,8 @@ extern "C"
 {
 #include <stdio.h>
 }
+
+using namespace std;
 
 //=============================================================================
 /*!

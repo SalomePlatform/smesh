@@ -29,11 +29,6 @@
 #ifndef SMESHGUI_MESHINFOSDLG_H
 #define SMESHGUI_MESHINFOSDLG_H
 
-// IDL Headers
-#include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Gen)
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-
 // QT Includes
 #include <qdialog.h>
 

@@ -22,6 +22,7 @@
 //  Author : Sergey ANIKIN, OCC
 //  $Header$
 
+
 #ifndef _SMESH_GROUP_IDL_
 #define _SMESH_GROUP_IDL_
 
@@ -33,9 +34,9 @@
 module SMESH
 {
   /*!
-   * SMESH_Group: interface of group object
+   * SMESH_Group: base interface of group object
    */
-  interface SMESH_Group : SALOME::GenericObj
+  interface SMESH_GroupBase : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
      * Sets group name
@@ -63,19 +64,9 @@ module SMESH
     boolean IsEmpty();
 
     /*!
-     * Clears the group's contents
-     */
-    void Clear();
-
-    /*!
      * returns true if the group contains an element with ID == <elem_id> 
      */
     boolean Contains( in long elem_id );
-
-    /*!
-     * Adds elements to the group
-     */
-    long Add( in long_array elem_ids );
 
     /*!
      * Returns ID of an element at position <elem_index>
@@ -88,15 +79,40 @@ module SMESH
     long_array GetListOfID();
 
     /*!
-     * Removes elements from the group
-     */
-    long Remove( in long_array elem_ids );
-
-    /*!
      * Returns the mesh object this group belongs to
      */
     SMESH_Mesh GetMesh();
   }; 
+
+  /*!
+   * SMESH_Group: interface of group object
+   */
+  interface SMESH_Group : SMESH_GroupBase
+  {
+    /*!
+     * Clears the group's contents
+     */
+    void Clear();
+
+    /*!
+     * Adds elements to the group
+     */
+    long Add( in long_array elem_ids );
+
+    /*!
+     * Removes elements from the group
+     */
+    long Remove( in long_array elem_ids );
+
+  };
+  /*!
+   * SMESH_Group: interface of group object linked to geometry
+   */
+  interface SMESH_GroupOnGeom : SMESH_GroupBase
+  {
+    GEOM::GEOM_Object GetShape();
+  };
+
 };
 
 

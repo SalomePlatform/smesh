@@ -30,7 +30,7 @@
 /// Type (node, edge, face or volume) of elements
 ///////////////////////////////////////////////////////////////////////////////
 enum SMDSAbs_ElementType
-{ 
+{
 	SMDSAbs_All,
 	SMDSAbs_Node,
 	SMDSAbs_Edge,

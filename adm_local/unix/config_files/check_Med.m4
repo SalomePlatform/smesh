@@ -22,20 +22,11 @@ if test "x$MED_DIR" == "x" ; then
     # MED_ROOT_DIR environment variable defined
       MED_DIR=$MED_ROOT_DIR
 
-   else
-
-    # search Med binaries in PATH variable
-      AC_PATH_PROG(TEMP, libMEDMEM_Swig.py)
-      if test "x$TEMP" != "x" ; then
-         MED_BIN_DIR=`dirname $TEMP`
-         MED_DIR=`dirname $MED_BIN_DIR`
-      fi
-      
    fi
 # 
 fi
 
-if test -f ${MED_DIR}/bin/salome/libMEDMEM_Swig.py ; then
+if test -f ${MED_DIR}/idl/salome/MED.idl ; then
    Med_ok=yes
    AC_MSG_RESULT(Using Med module distribution in ${MED_DIR})
 

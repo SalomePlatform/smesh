@@ -25,15 +25,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-#include "SMESHGUI_CreateHypothesesDlg.h"
-#include "SMESHGUI.h"
-#include "SALOME_ListIteratorOfListIO.hxx"
-
-#include "QAD_Application.h"
-#include "QAD_Desktop.h"
-#include "utilities.h"
-
 // QT Includes
 #include <qbuttongroup.h>
 #include <qgroupbox.h>
@@ -41,6 +32,21 @@ using namespace std;
 #include <qlayout.h>
 #include <qlistview.h>
 #include <qheader.h>
+
+#include "QAD_Application.h"
+#include "QAD_Desktop.h"
+
+#include "SALOME_ListIteratorOfListIO.hxx"
+
+#include "SMESHGUI_CreateHypothesesDlg.h"
+#include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_Hypotheses.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI.h"
+
+#include "utilities.h"
+
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_CreateHypothesesDlg()
@@ -175,6 +181,8 @@ void SMESHGUI_CreateHypothesesDlg::ClickOnCancel()
 //=================================================================================
 void SMESHGUI_CreateHypothesesDlg::ClickOnApply()
 {
+  if (mySMESHGUI->ActiveStudyLocked())
+    return;
   QListViewItem* item = ListAlgoDefinition->selectedItem();
   if ( !item )
     return;
@@ -182,7 +190,7 @@ void SMESHGUI_CreateHypothesesDlg::ClickOnApply()
   MESSAGE("Apply " << aHypType);
   char* sHypType = (char*)aHypType.latin1();
 
-  HypothesisData* aHypData = mySMESHGUI->GetHypothesisData(sHypType);
+  HypothesisData* aHypData = SMESH::GetHypothesisData(sHypType);
   if ( !aHypData ) 
     return;
   QString aClientLibName = aHypData->ClientLibName;
@@ -192,13 +200,13 @@ void SMESHGUI_CreateHypothesesDlg::ClickOnApply()
   {
     // Call hypothesis creation server method (without GUI)
     QString aHypName = aHypData->Label;
-    mySMESHGUI->CreateHypothesis(sHypType, aHypName, myIsAlgo);
+    SMESH::CreateHypothesis(sHypType, aHypName, myIsAlgo);
   }
   else
   {
     // Get hypotheses creator client (GUI)
     SMESHGUI_GenericHypothesisCreator* aCreator =
-      mySMESHGUI->GetHypothesisCreator(sHypType);
+      SMESH::GetHypothesisCreator(sHypType);
 
     // Create hypothesis/algorithm
     aCreator->CreateHypothesis(myIsAlgo, this);
@@ -266,9 +274,9 @@ void SMESHGUI_CreateHypothesesDlg::onDoubleClicked(QListViewItem* i)
 void SMESHGUI_CreateHypothesesDlg::InitAlgoDefinition()
 {
   ListAlgoDefinition->clear();
-  QStringList HypList = mySMESHGUI->GetAvailableHypotheses(myIsAlgo);
+  QStringList HypList = SMESH::GetAvailableHypotheses(myIsAlgo);
   for ( int i = 0; i < HypList.count(); ++i ) {
-    HypothesisData* aHypData = mySMESHGUI->GetHypothesisData( HypList[i] );
+    HypothesisData* aHypData = SMESH::GetHypothesisData( HypList[i] );
     QListViewItem* parentItem = 0;
     QListViewItem* childItem = ListAlgoDefinition->firstChild();
     while ( childItem ) {

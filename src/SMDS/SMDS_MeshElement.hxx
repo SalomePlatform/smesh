@@ -36,7 +36,6 @@
 #include <vector>
 #include <iostream>
 
-using namespace std;
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
 class SMDS_MeshFace;	
@@ -65,12 +64,12 @@ class SMDS_MeshElement:public SMDS_MeshObject
 
 	///Return the type of the current element
 	virtual SMDSAbs_ElementType GetType() const = 0;
-	friend ostream & operator <<(ostream & OS, const SMDS_MeshElement *);
+	friend std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
 	friend bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
 
   protected:
 	SMDS_MeshElement(int ID=-1);
-	virtual void Print(ostream & OS) const;
+	virtual void Print(std::ostream & OS) const;
 	
   private:
 	int myID;

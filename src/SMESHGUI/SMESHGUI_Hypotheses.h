@@ -28,6 +28,7 @@
 #ifndef SMESHGUI_Hypotheses_HeaderFile
 #define SMESHGUI_Hypotheses_HeaderFile
 
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
 // QT Includes

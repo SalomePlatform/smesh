@@ -13,20 +13,16 @@ idcomp = SMESH_fixation.idcomp
 geompy = SMESH_fixation.geompy
 salome = SMESH_fixation.salome
 
-ShapeTypeShell     = 3
-ShapeTypeFace      = 4
-ShapeTypeEdge      = 6
-
 print "Analysis of the geometry to be meshed :"
-subShellList=geompy.SubShapeAll(compshell,ShapeTypeShell)
-subFaceList=geompy.SubShapeAll(compshell,ShapeTypeFace)
-subEdgeList=geompy.SubShapeAll(compshell,ShapeTypeEdge)
+subShellList = geompy.SubShapeAll(compshell, geompy.ShapeType["SHELL"])
+subFaceList  = geompy.SubShapeAll(compshell, geompy.ShapeType["FACE"])
+subEdgeList  = geompy.SubShapeAll(compshell, geompy.ShapeType["EDGE"])
 
-print "number of Shells in compshell : ",len(subShellList)
-print "number of Faces in compshell : ",len(subFaceList)
-print "number of Edges in compshell : ",len(subEdgeList)
+print "number of Shells in compshell : ", len(subShellList)
+print "number of Faces  in compshell : ", len(subFaceList)
+print "number of Edges  in compshell : ", len(subEdgeList)
 
-status=geompy.CheckShape(compshell)
+status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
@@ -35,15 +31,13 @@ smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId)
 
-### ---- create Hypothesis
-
 print "-------------------------- create Hypothesis"
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 5
 
-hypNbSeg=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
 
 print hypNbSeg.GetName()
@@ -62,7 +56,8 @@ print "-------------------------- MaxElementArea"
 ## print hypArea.GetId()
 ## print hypArea.GetMaxElementArea()
 ## smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_160")
-hypLengthFromEdges=smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
+
+hypLengthFromEdges = smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
 smeshgui.SetName(salome.ObjectToID(hypLengthFromEdges), "LengthFromEdges")
 
 
@@ -70,7 +65,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 1000
 
-hypVolume=smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
+hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
 hypVolume.SetMaxElementVolume(maxElementVolume)
 
 print hypVolume.GetName()
@@ -79,34 +74,30 @@ print hypVolume.GetMaxElementVolume()
 
 smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_1000")
 
-# ---- create Algorithms
-
 print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
 
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-mefisto2D=smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
 
 smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"
 
-netgen3D=smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
+netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
 
 smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
 
 # ---- init a Mesh with the compshell
 
-mesh=smesh.CreateMesh(compshell)
+mesh = smesh.CreateMesh(compshell)
 smeshgui.SetName(salome.ObjectToID(mesh), "MeshcompShel")
-
-# ---- add hypothesis to compshell
 
 print "-------------------------- add hypothesis to compshell"
 
@@ -122,10 +113,10 @@ mesh.AddHypothesis(compshell,hypVolume)
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute compshell"
-ret=smesh.Compute(mesh,compshell)
+ret = smesh.Compute(mesh,compshell)
 print ret
 if ret != 0:
-    log=mesh.GetLog(0) # no erase trace
+    log = mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
     print "Information about the MeshcompShel:"

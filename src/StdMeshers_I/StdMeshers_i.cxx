@@ -31,11 +31,15 @@ using namespace std;
 #include "utilities.h"
 
 #include "StdMeshers_LocalLength_i.hxx"
-#include "StdMeshers_LengthFromEdges_i.hxx"
-#include "StdMeshers_NotConformAllowed_i.hxx"
+#include "StdMeshers_StartEndLength_i.hxx"
+#include "StdMeshers_Arithmetic1D_i.hxx"
 #include "StdMeshers_NumberOfSegments_i.hxx"
+#include "StdMeshers_Deflection1D_i.hxx"
+#include "StdMeshers_Propagation_i.hxx"
+#include "StdMeshers_LengthFromEdges_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
+#include "StdMeshers_NotConformAllowed_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
@@ -65,10 +69,18 @@ extern "C"
       aCreator = new HypothesisCreator_i<StdMeshers_LengthFromEdges_i>;
     else if (strcmp(aHypName, "NotConformAllowed") == 0)
       aCreator = new HypothesisCreator_i<StdMeshers_NotConformAllowed_i>;
+    else if (strcmp(aHypName, "Propagation") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_Propagation_i>;
     else if (strcmp(aHypName, "MaxElementArea") == 0)
       aCreator = new HypothesisCreator_i<StdMeshers_MaxElementArea_i>;
     else if (strcmp(aHypName, "MaxElementVolume") == 0)
       aCreator = new HypothesisCreator_i<StdMeshers_MaxElementVolume_i>;
+    else if (strcmp(aHypName, "StartEndLength") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_StartEndLength_i>;
+    else if (strcmp(aHypName, "Deflection1D") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_Deflection1D_i>;
+    else if (strcmp(aHypName, "Arithmetic1D") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_Arithmetic1D_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)

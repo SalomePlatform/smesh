@@ -29,14 +29,12 @@
 #define _INCLUDE_DRIVERMED_FAMILY
 
 #include "SMDS_Mesh.hxx"
-#include "SMESHDS_Group.hxx"
+#include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "MEDA_Wrapper.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
-
-using namespace std;
 
 #define REST_NODES_FAMILY 1
 #define REST_EDGES_FAMILY -1
@@ -54,12 +52,12 @@ class DriverMED_Family
 
   // Methods for groups storing to MED
 
-  static list<DriverMED_FamilyPtr> MakeFamilies (const map <int, SMESHDS_SubMesh*>& theSubMeshes,
-						 const list<SMESHDS_Group*>& theGroups,
-						 const bool doGroupOfNodes,
-						 const bool doGroupOfEdges,
-						 const bool doGroupOfFaces,
-						 const bool doGroupOfVolumes);
+  static std::list<DriverMED_FamilyPtr> MakeFamilies (const std::map <int, SMESHDS_SubMesh*>& theSubMeshes,
+						      const std::list<SMESHDS_GroupBase*>& theGroups,
+						      const bool doGroupOfNodes,
+						      const bool doGroupOfEdges,
+						      const bool doGroupOfFaces,
+						      const bool doGroupOfVolumes);
   // Split each group from list <theGroups> and each sub-mesh from list <theSubMeshes>
   // on some parts (families) on the basis of the elements membership in other groups
   // from <theGroups> and other sub-meshes from <theSubMeshes>.
@@ -68,7 +66,7 @@ class DriverMED_Family
   MEDA::PFamilyInfo GetFamilyInfo (const MEDA::PMeshInfo& theMeshInfo) const;
   // Create TFamilyInfo for this family
 
-  const set<const SMDS_MeshElement *>& GetElements () const { return myElements; }
+  const std::set<const SMDS_MeshElement *>& GetElements () const { return myElements; }
   // Returns elements of this family
 
   int GetId () const { return myId; }
@@ -80,22 +78,22 @@ class DriverMED_Family
 
   void AddElement (const SMDS_MeshElement* theElement) { myElements.insert(theElement); }
 
-  void AddGroupName (string theGroupName) { myGroupNames.insert(theGroupName); }
+  void AddGroupName (std::string theGroupName) { myGroupNames.insert(theGroupName); }
 
   void SetType (const SMDSAbs_ElementType theType) { myType = theType; }
   SMDSAbs_ElementType GetType () { return myType; }
 
-  bool MemberOf (string theGroupName) const
+  bool MemberOf (std::string theGroupName) const
     { return (myGroupNames.find(theGroupName) != myGroupNames.end()); }
 
   const MED::TStringSet& GetGroupNames () const { return myGroupNames; }
 
  private:
-  void Init (SMESHDS_Group* group);
-  // Initialize the tool by SMESHDS_Group
+  void Init (SMESHDS_GroupBase* group);
+  // Initialize the tool by SMESHDS_GroupBase
 
-  static list<DriverMED_FamilyPtr> SplitByType (SMESHDS_SubMesh* theSubMesh,
-						const int        theId);
+  static std::list<DriverMED_FamilyPtr> SplitByType (SMESHDS_SubMesh* theSubMesh,
+						     const int        theId);
   // Split <theSubMesh> on some parts (families)
   // on the basis of the elements type.
 
@@ -114,7 +112,7 @@ class DriverMED_Family
  private:
   int                           myId;
   SMDSAbs_ElementType           myType;
-  set<const SMDS_MeshElement *> myElements;
+  std::set<const SMDS_MeshElement *> myElements;
   MED::TStringSet               myGroupNames;
 };
 

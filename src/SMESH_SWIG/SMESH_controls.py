@@ -97,7 +97,7 @@ print "Criterion: Aspect Ratio > 1.3 Nb = ", len( anIds )
 
 # create group
 aGroup = mesh.CreateGroup( SMESH.FACE, "Aspect Ratio > 1.3" )
-aGroup.Add( anIds )  
+aGroup.Add( anIds )
 
 
 # Criterion : MINIMUM ANGLE < 30
@@ -207,21 +207,3 @@ aGroup.Add( anIds )
 
 
 salome.sg.updateObjBrowser(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

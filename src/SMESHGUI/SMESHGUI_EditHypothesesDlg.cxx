@@ -26,15 +26,22 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_EditHypothesesDlg.h"
+
 #include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_HypothesesUtils.h"
+
 #include "SALOME_ListIteratorOfListIO.hxx"
 
 #include "QAD_Application.h"
 #include "QAD_Desktop.h"
 #include "QAD_WaitCursor.h"
 #include "QAD_Operation.h"
+
+#include "SALOMEconfig.h"
+#include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
 #include "utilities.h"
 
@@ -45,6 +52,8 @@ using namespace std;
 #include <qpushbutton.h>
 #include <qlayout.h>
 #include <qpixmap.h>
+
+using namespace std;
 
 //VRV: porting on Qt 3.0.5
 #if QT_VERSION >= 0x030005
@@ -120,6 +129,7 @@ SMESHGUI_EditHypothesesDlg::SMESHGUI_EditHypothesesDlg( QWidget* parent, const c
     SelectButtonC1A1->setPixmap( image0 );
     GroupC1Layout->addWidget( SelectButtonC1A1, 0, 1 );
     LineEditC1A1 = new QLineEdit( GroupC1, "LineEditC1A1" );
+    LineEditC1A1->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A1, 0, 2 );
 
     TextLabelC1A2 = new QLabel( tr( "SMESH_OBJECT_GEOM" ), GroupC1, "TextLabelC1A2" );
@@ -129,6 +139,7 @@ SMESHGUI_EditHypothesesDlg::SMESHGUI_EditHypothesesDlg( QWidget* parent, const c
     SelectButtonC1A2->setToggleButton( FALSE );
     GroupC1Layout->addWidget( SelectButtonC1A2, 1, 1 );
     LineEditC1A2 = new QLineEdit( GroupC1, "LineEditC1A2" );
+    LineEditC1A2->setReadOnly( true );
     GroupC1Layout->addWidget( LineEditC1A2, 1, 2 );
 
     SMESHGUI_EditHypothesesDlgLayout->addWidget( GroupC1, 0, 0 );
@@ -246,7 +257,7 @@ void SMESHGUI_EditHypothesesDlg::Init( SALOME_Selection* Sel )
   myGeomFilter = new SALOME_TypeFilter( "GEOM" );
   myMeshOrSubMeshFilter = new SMESH_TypeFilter( MESHorSUBMESH );
 
-  myGeomShape = GEOM::GEOM_Shape::_nil();
+  myGeomShape = GEOM::GEOM_Object::_nil();
   myMesh = SMESH::SMESH_Mesh::_nil();
   mySubMesh = SMESH::SMESH_subMesh::_nil();
 
@@ -300,6 +311,9 @@ void SMESHGUI_EditHypothesesDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_EditHypothesesDlg::ClickOnApply()
 {
+  if (mySMESHGUI->ActiveStudyLocked())
+    return false;
+
   bool aRes = false;
 
   QAD_WaitCursor wc;
@@ -314,12 +328,18 @@ bool SMESHGUI_EditHypothesesDlg::ClickOnApply()
   else if ( !mySubMesh->_is_nil() )
     aRes = StoreSubMesh();
 
-  if ( aRes )
+  if ( true/*aRes*/ ) // abort desynchronizes contents of a Study and a mesh on server
+  {
     // commit transaction
     op->finish();
+    InitHypAssignation();
+    InitAlgoAssignation();
+  }
   else
     // abort transaction
     op->abort();
+
+  UpdateControlState();
 
   return aRes;
 }
@@ -343,7 +363,7 @@ void SMESHGUI_EditHypothesesDlg::SelectionIntoArgument()
 {
   QString aString = ""; 
 
-  int nbSel = mySMESHGUI->GetNameOfSelectedIObjects(mySelection, aString) ;
+  int nbSel = SMESH::GetNameOfSelectedIObjects(mySelection, aString) ;
   
   if ( myEditCurrentArgument == LineEditC1A1 ) {
     if ( nbSel != 1 ) {
@@ -351,37 +371,31 @@ void SMESHGUI_EditHypothesesDlg::SelectionIntoArgument()
       mySubMesh   = SMESH::SMESH_subMesh::_nil();
       aString     = "";
     } else {
-      Standard_Boolean testResult ;
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myMesh = mySMESHGUI->ConvertIOinMesh(IO, testResult) ;
-      if( !testResult ) {
-	myMesh = SMESH::SMESH_Mesh::_nil();
-	mySubMesh = mySMESHGUI->ConvertIOinSubMesh(IO, testResult) ;
-	if( !testResult ) {
-	  mySubMesh = SMESH::SMESH_subMesh::_nil();
+      myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO) ;
+      if(myMesh->_is_nil()){
+	mySubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO) ;
+	if(mySubMesh->_is_nil()){
 	  aString = "";
 	}
       }
     }
     myEditCurrentArgument->setText( aString );
     
-    myGeomShape = GEOM::GEOM_Shape::_nil(); // InitGeom() will try to retrieve a shape from myMesh or mySubMesh
+    myGeomShape = GEOM::GEOM_Object::_nil(); // InitGeom() will try to retrieve a shape from myMesh or mySubMesh
     InitGeom();
     
     myImportedMesh = myGeomShape->_is_nil();
     
     InitHypAssignation();
     InitAlgoAssignation();
-  } 
+  }
   else if ( myEditCurrentArgument == LineEditC1A2 ) {
     if ( nbSel != 1 )
-      myGeomShape = GEOM::GEOM_Shape::_nil();
+      myGeomShape = GEOM::GEOM_Object::_nil();
     else {
-      Standard_Boolean testResult ;
       Handle(SALOME_InteractiveObject) IO = mySelection->firstIObject() ;
-      myGeomShape = mySMESHGUI->ConvertIOinGEOMShape(IO, testResult) ;
-      if( !testResult )
-	myGeomShape = GEOM::GEOM_Shape::_nil();
+      myGeomShape = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO) ;
     }
     InitGeom();
   } 
@@ -461,6 +475,21 @@ void SMESHGUI_EditHypothesesDlg::closeEvent( QCloseEvent* e )
   QDialog::closeEvent( e );
 }
 
+//=======================================================================
+//function : IsOld
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_EditHypothesesDlg::IsOld(QListBoxItem* hypItem)
+{
+  if ( hypItem->rtti() == ListBoxIOR::RTTI_IOR ) {
+    ListBoxIOR* hyp = ( ListBoxIOR* ) hypItem;
+    return (myMapOldHypos.find( hyp->GetIOR() ) != myMapOldHypos.end() ||
+            myMapOldAlgos.find( hyp->GetIOR() ) != myMapOldAlgos.end() );
+  }
+
+  return false;
+}
 
 //=================================================================================
 // function : removeItem()
@@ -473,11 +502,14 @@ void SMESHGUI_EditHypothesesDlg::removeItem(QListBoxItem* item)
   if (!item) return;
 
   if ( aSender == ListHypAssignation ) {
+    myNbModification += IsOld( item ) ? 1 : -1;
     ListHypAssignation->removeItem( ListHypAssignation->index( item ) );
   } 
   else if ( aSender == ListAlgoAssignation ) {
+    myNbModification += IsOld( item ) ? 1 : -1;
     ListAlgoAssignation->removeItem( ListAlgoAssignation->index( item ) );
   }
+
 
   UpdateControlState();
 }
@@ -509,8 +541,8 @@ void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* item)
     }
     if ( !isFound )
       ListBoxIOR* anItem = new ListBoxIOR( ListHypAssignation, 
-					   strdup( i->GetIOR() ), 
-					   strdup( i->text().latin1() ) );
+					   CORBA::string_dup( i->GetIOR() ), 
+					   CORBA::string_dup( i->text().latin1() ) );
   }
   else if ( aSender == ListAlgoDefinition ) {
     for ( int j = 0, n = ListAlgoAssignation->count(); !isFound && j < n; j++ ) {
@@ -521,9 +553,12 @@ void SMESHGUI_EditHypothesesDlg::addItem(QListBoxItem* item)
     }
     if ( !isFound )
       ListBoxIOR* anItem = new ListBoxIOR( ListAlgoAssignation, 
-					   strdup( i->GetIOR() ), 
-					   strdup( i->text().latin1() ) );
+					   CORBA::string_dup( i->GetIOR() ), 
+					   CORBA::string_dup( i->text().latin1() ) );
   }
+
+  if ( !isFound )
+    myNbModification += IsOld( item ) ? -1 : 1;
 
   UpdateControlState();
 }
@@ -537,7 +572,7 @@ void SMESHGUI_EditHypothesesDlg::InitHypDefinition()
 {
   ListHypDefinition->clear();
 
-  SALOMEDS::SComponent_var father = mySMESHGUI->GetStudy()->FindComponent("MESH");
+  SALOMEDS::SComponent_var father = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
   if ( father->_is_nil() )
     return;
 
@@ -548,7 +583,7 @@ void SMESHGUI_EditHypothesesDlg::InitHypDefinition()
 
   int Tag_HypothesisRoot = 1;
   if (father->FindSubObject (1, HypothesisRoot)) {
-    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(HypothesisRoot);
+    SALOMEDS::ChildIterator_var it = SMESH::GetActiveStudyDocument()->NewChildIterator(HypothesisRoot);
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if (Obj->FindAttribute(anAttr, "AttributeName") ) {
@@ -570,8 +605,9 @@ void SMESHGUI_EditHypothesesDlg::InitHypDefinition()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::InitHypAssignation()
 {
-  MESSAGE ( " InitHypAssignation " << myMesh->_is_nil() )
-  MESSAGE ( " InitHypAssignation " << mySubMesh->_is_nil() )
+  myNbModification = 0;
+//   MESSAGE ( " InitHypAssignation " << myMesh->_is_nil() )
+//   MESSAGE ( " InitHypAssignation " << mySubMesh->_is_nil() )
 
   myMapOldHypos.clear();
   ListHypAssignation->clear();
@@ -582,15 +618,14 @@ void SMESHGUI_EditHypothesesDlg::InitHypAssignation()
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
   SALOMEDS::AttributeIOR_var        anIOR;
-  SMESHGUI_StudyAPI                 myStudyAPI = mySMESHGUI->GetStudyAPI();
 
   if ( !myMesh->_is_nil() )
-    aMorSM = myStudyAPI.FindObject( myMesh );
+    aMorSM = SMESH::FindSObject( myMesh );
   else if ( !mySubMesh->_is_nil() )
-    aMorSM = myStudyAPI.FindObject( mySubMesh );
+    aMorSM = SMESH::FindSObject( mySubMesh );
 
   if ( !aMorSM->_is_nil() && aMorSM->FindSubObject (2, AHR)) {
-    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
+    SALOMEDS::ChildIterator_var it = SMESH::GetActiveStudyDocument()->NewChildIterator(AHR);
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if ( Obj->ReferencedObject(aRef) ) {
@@ -617,7 +652,7 @@ void SMESHGUI_EditHypothesesDlg::InitAlgoDefinition()
 {
   ListAlgoDefinition->clear();
 
-  SALOMEDS::SComponent_var father = mySMESHGUI->GetStudy()->FindComponent("MESH");
+  SALOMEDS::SComponent_var father = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
   if ( father->_is_nil() )
     return;
 
@@ -627,7 +662,7 @@ void SMESHGUI_EditHypothesesDlg::InitAlgoDefinition()
   SALOMEDS::AttributeIOR_var     anIOR;
 
   if (father->FindSubObject (2, AlgorithmsRoot)) {
-    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AlgorithmsRoot);
+    SALOMEDS::ChildIterator_var it = SMESH::GetActiveStudyDocument()->NewChildIterator(AlgorithmsRoot);
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if (Obj->FindAttribute(anAttr, "AttributeName") ) {
@@ -662,15 +697,14 @@ void SMESHGUI_EditHypothesesDlg::InitAlgoAssignation()
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
   SALOMEDS::AttributeIOR_var        anIOR;
-  SMESHGUI_StudyAPI                 myStudyAPI = mySMESHGUI->GetStudyAPI();  
 
   if ( !myMesh->_is_nil() )
-    aMorSM = myStudyAPI.FindObject( myMesh );
+    aMorSM = SMESH::FindSObject( myMesh );
   else if ( !mySubMesh->_is_nil() )
-    aMorSM = myStudyAPI.FindObject( mySubMesh );
+    aMorSM = SMESH::FindSObject( mySubMesh );
 
   if ( !aMorSM->_is_nil() && aMorSM->FindSubObject (3, AHR)) {
-    SALOMEDS::ChildIterator_var it = mySMESHGUI->GetStudy()->NewChildIterator(AHR);
+    SALOMEDS::ChildIterator_var it = SMESH::GetActiveStudyDocument()->NewChildIterator(AHR);
     for (; it->More();it->Next()) {
       SALOMEDS::SObject_var Obj = it->Value();
       if ( Obj->ReferencedObject(aRef) ) {
@@ -696,27 +730,26 @@ void SMESHGUI_EditHypothesesDlg::InitAlgoAssignation()
 void SMESHGUI_EditHypothesesDlg::InitGeom()
 {
   LineEditC1A2->setText("") ;
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
 
   if ( myGeomShape->_is_nil() && !myMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aMesh = myStudyAPI.FindObject( myMesh );
+    SALOMEDS::SObject_var aMesh = SMESH::FindSObject( myMesh );
     if ( !aMesh->_is_nil() )
-      myGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh(aMesh);
+      myGeomShape = SMESH::GetShapeOnMeshOrSubMesh(aMesh);
   }
   if ( myGeomShape->_is_nil() && !mySubMesh->_is_nil() ) {
-    SALOMEDS::SObject_var aSubMesh = myStudyAPI.FindObject( mySubMesh );
+    SALOMEDS::SObject_var aSubMesh = SMESH::FindSObject( mySubMesh );
     if ( !aSubMesh->_is_nil() )
-      myGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh(aSubMesh);
+      myGeomShape = SMESH::GetShapeOnMeshOrSubMesh(aSubMesh);
   }
   
   SALOMEDS::GenericAttribute_var    anAttr;
   SALOMEDS::AttributeName_var       aName;
   if ( !myGeomShape->_is_nil() && (!myMesh->_is_nil() || !mySubMesh->_is_nil()) ) {
-    SALOMEDS::SObject_var aSO = mySMESHGUI->GetStudy()->FindObjectIOR( myGeomShape->Name() );
+    SALOMEDS::SObject_var aSO = SMESH::GetActiveStudyDocument()->FindObjectIOR( myGeomShape->GetName() );
     if ( !aSO->_is_nil() ) {
       if (aSO->FindAttribute(anAttr, "AttributeName") ) {
-        aName = SALOMEDS::AttributeName::_narrow(anAttr);
-        LineEditC1A2->setText( QString(aName->Value()) ) ;
+	aName = SALOMEDS::AttributeName::_narrow(anAttr);
+	LineEditC1A2->setText( QString(aName->Value()) ) ;
       }
     }
   }
@@ -731,8 +764,8 @@ void SMESHGUI_EditHypothesesDlg::UpdateControlState()
   bool isEnabled = ( !myMesh   ->_is_nil() && !myGeomShape->_is_nil() &&   ListHypAssignation->count() && ListAlgoAssignation->count() ) ||
                    ( !mySubMesh->_is_nil() && !myGeomShape->_is_nil() && ( ListHypAssignation->count() || ListAlgoAssignation->count() ) );
 
-  buttonOk   ->setEnabled( isEnabled && !myImportedMesh );
-  buttonApply->setEnabled( isEnabled && !myImportedMesh );
+  buttonOk   ->setEnabled( myNbModification && isEnabled && !myImportedMesh );
+  buttonApply->setEnabled( myNbModification && isEnabled && !myImportedMesh );
 
   SelectButtonC1A2   ->setEnabled( ALLOW_CHANGE_SHAPE && !myImportedMesh );
   LineEditC1A2       ->setEnabled( ALLOW_CHANGE_SHAPE && !myImportedMesh );
@@ -748,31 +781,30 @@ void SMESHGUI_EditHypothesesDlg::UpdateControlState()
 //=================================================================================
 bool SMESHGUI_EditHypothesesDlg::StoreMesh()
 {
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
   MapIOR anOldHypos, aNewHypos;
   if ( myGeomShape->_is_nil() )
     return false;
   // 1. Check whether the geometric shape has changed
-  SALOMEDS::SObject_var aMeshSO = myStudyAPI.FindObject( myMesh );
-  GEOM::GEOM_Shape_var aIniGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh( aMeshSO );
+  SALOMEDS::SObject_var aMeshSO = SMESH::FindSObject( myMesh );
+  GEOM::GEOM_Object_var aIniGeomShape = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
   bool bShapeChanged = aIniGeomShape->_is_nil() || !aIniGeomShape->_is_equivalent( myGeomShape );
   if ( bShapeChanged ) {
     // VSR : TODO : Set new shape - not supported yet by SMESH engine
-    // 1) remove all old hypotheses and algorithms and also submeshes
-    // 2) set new shape
+    // 1. remove all old hypotheses and algorithms and also submeshes
+    // 2. set new shape
   }
+
+  int nbFail = 0;
   MapIOR::iterator it;
   // 2. remove not used hypotheses from the mesh
   for ( it = myMapOldHypos.begin(); it != myMapOldHypos.end(); ++it ) {
     string ior = it->first;
     int index = findItem( ListHypAssignation, ior );
     if ( index < 0 ) {
-      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-      if ( !CORBA::is_nil( anObject ) ) {
-	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	if ( !aHyp->_is_nil() )
-	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ) )
-	    return false;
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+      if ( !aHyp->_is_nil() ){
+	if (!SMESH::RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ))
+	  nbFail++;
       }
     }
   }
@@ -781,30 +813,10 @@ bool SMESHGUI_EditHypothesesDlg::StoreMesh()
     string ior = it->first;
     int index = findItem( ListAlgoAssignation, ior );
     if ( index < 0 ) {
-      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-      if ( !CORBA::is_nil( anObject ) ) {
-	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	if ( !aHyp->_is_nil() )
-	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ) )
-	    return false;
-      }
-    }
-  }
-  // 4. Add new hypotheses
-  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
-    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
-      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
-      if ( anItem ) {
-	string ior = anItem->GetIOR();
-	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
-	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-	  if ( !CORBA::is_nil( anObject ) ) {
-	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	    if ( !aHyp->_is_nil() )
-	      if ( !mySMESHGUI->AddHypothesisOnMesh( myMesh, aHyp ) )
-		return false;
-	  }
-	}
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+      if ( !aHyp->_is_nil() ){
+	if (!SMESH::RemoveHypothesisOrAlgorithmOnMesh( aMeshSO, aHyp ))
+	  nbFail++;
       }
     }
   }
@@ -815,18 +827,32 @@ bool SMESHGUI_EditHypothesesDlg::StoreMesh()
       if ( anItem ) {
 	string ior = anItem->GetIOR();
 	if ( myMapOldAlgos.find( ior ) == myMapOldAlgos.end() ) {
-	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-	  if ( !CORBA::is_nil( anObject ) ) {
-	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	    if ( !aHyp->_is_nil() )
-	      if ( !mySMESHGUI->AddAlgorithmOnMesh( myMesh, aHyp ) )
-		return false;
+	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+	  if ( !aHyp->_is_nil() ){
+	    if (!SMESH::AddHypothesisOnMesh( myMesh, aHyp ))
+	      nbFail++;
 	  }
 	}
       }
     }
   }
-  return true;
+  // 5. Add new hypotheses
+  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
+    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
+	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+	  if ( !aHyp->_is_nil() ){
+	    if (!SMESH::AddHypothesisOnMesh( myMesh, aHyp ))
+	      nbFail++;
+	  }
+	}
+      }
+    }
+  }
+  return ( nbFail == 0 );
 }
 
 //=================================================================================
@@ -835,31 +861,29 @@ bool SMESHGUI_EditHypothesesDlg::StoreMesh()
 //=================================================================================
 bool SMESHGUI_EditHypothesesDlg::StoreSubMesh()
 {
-  SMESHGUI_StudyAPI myStudyAPI = mySMESHGUI->GetStudyAPI();
   MapIOR anOldHypos, aNewHypos;
   if ( myGeomShape->_is_nil() )
     return false;
   // 1. Check whether the geometric shape has changed
-  SALOMEDS::SObject_var aSubMeshSO = myStudyAPI.FindObject( mySubMesh );
-  GEOM::GEOM_Shape_var aIniGeomShape = myStudyAPI.GetShapeOnMeshOrSubMesh( aSubMeshSO );
+  SALOMEDS::SObject_var aSubMeshSO = SMESH::FindSObject( mySubMesh );
+  GEOM::GEOM_Object_var aIniGeomShape = SMESH::GetShapeOnMeshOrSubMesh( aSubMeshSO );
   bool bShapeChanged = aIniGeomShape->_is_nil() || !aIniGeomShape->_is_equivalent( myGeomShape );
   if ( bShapeChanged ) {
     // VSR : TODO : Set new shape - not supported yet by engine
-    // 1) remove all old hypotheses and algorithms
-    // 2) set new shape
+    // 1. remove all old hypotheses and algorithms
+    // 2. set new shape
   }
+  int nbFail = 0;
   MapIOR::iterator it;
   // 2. remove not used hypotheses from the submesh
   for ( it = myMapOldHypos.begin(); it != myMapOldHypos.end(); ++it ) {
     string ior = it->first;
     int index = findItem( ListHypAssignation, ior );
     if ( index < 0 ) {
-      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-      if ( !CORBA::is_nil( anObject ) ) {
-	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	if ( !aHyp->_is_nil() )
-	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ) )
-	    return false;
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+      if ( !aHyp->_is_nil() ){
+	if (!SMESH::RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ))
+	  nbFail++;
       }
     }
   }
@@ -868,30 +892,10 @@ bool SMESHGUI_EditHypothesesDlg::StoreSubMesh()
     string ior = it->first;
     int index = findItem( ListAlgoAssignation, ior );
     if ( index < 0 ) {
-      CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-      if ( !CORBA::is_nil( anObject ) ) {
-	SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	if ( !aHyp->_is_nil() )
-	  if ( !mySMESHGUI->RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ) )
-	    return false;
-      }
-    }
-  }
-  // 4. Add new hypotheses
-  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
-    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
-      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
-      if ( anItem ) {
-	string ior = anItem->GetIOR();
-	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
-	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-	  if ( !CORBA::is_nil( anObject ) ) {
-	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	    if ( !aHyp->_is_nil() )
-	      if ( !mySMESHGUI->AddHypothesisOnSubMesh( mySubMesh, aHyp ) )
-		return false;
-	  }
-	}
+      SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+      if ( !aHyp->_is_nil() ){
+	if (!SMESH::RemoveHypothesisOrAlgorithmOnMesh( aSubMeshSO, aHyp ))
+	  nbFail++;
       }
     }
   }
@@ -902,16 +906,30 @@ bool SMESHGUI_EditHypothesesDlg::StoreSubMesh()
       if ( anItem ) {
 	string ior = anItem->GetIOR();
 	if ( myMapOldAlgos.find( ior ) == myMapOldAlgos.end() ) {
-	  CORBA::Object_var anObject = myStudyAPI.StringToIOR( ior.c_str() );
-	  if ( !CORBA::is_nil( anObject ) ) {
-	    SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( anObject );
-	    if ( !aHyp->_is_nil() )
-	      if ( !mySMESHGUI->AddAlgorithmOnSubMesh( mySubMesh, aHyp ) )
-		return false;
+	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+	  if ( !aHyp->_is_nil() ){
+	    if (!SMESH::AddHypothesisOnSubMesh( mySubMesh, aHyp ))
+	      nbFail++;
 	  }
 	}
       }
     }
   }
-  return true;
+  // 5. Add new hypotheses
+  for ( int i = 0; i < ListHypAssignation->count(); i++ ) {
+    if ( ListHypAssignation->item( i )->rtti() == ListBoxIOR::RTTI_IOR ) {
+      ListBoxIOR* anItem = ( ListBoxIOR* )( ListHypAssignation->item( i ) );
+      if ( anItem ) {
+	string ior = anItem->GetIOR();
+	if ( myMapOldHypos.find( ior ) == myMapOldHypos.end() ) {
+	  SMESH::SMESH_Hypothesis_var aHyp = SMESH::IORToInterface<SMESH::SMESH_Hypothesis>(ior.c_str());
+	  if ( !aHyp->_is_nil() ){
+	    if (!SMESH::AddHypothesisOnSubMesh( mySubMesh, aHyp ))
+	      nbFail++;
+	  }
+	}
+      }
+    }
+  }
+  return ( nbFail == 0 );
 }

@@ -26,8 +26,33 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
 #include "SMESHDS_Script.hxx"
+
+using namespace std;
+
+//=======================================================================
+//function : getCommand
+//purpose  : 
+//=======================================================================
+SMESHDS_Command* SMESHDS_Script::getCommand(const SMESHDS_CommandType aType)
+{
+  SMESHDS_Command* com;
+  if (myCommands.empty())
+  {
+    com = new SMESHDS_Command(aType);
+    myCommands.insert(myCommands.end(),com);
+  }
+  else
+  {
+    com = myCommands.back();
+    if (com->GetType() != aType)
+    {
+      com = new SMESHDS_Command(aType);
+      myCommands.insert(myCommands.end(),com);
+    }
+  }
+  return com;
+}
 
 //=======================================================================
 //function : 
@@ -35,22 +60,7 @@ using namespace std;
 //=======================================================================
 void SMESHDS_Script::AddNode(int NewNodeID, double x, double y, double z)
 {
-	SMESHDS_Command* com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddNode);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddNode)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddNode);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddNode(NewNodeID, x, y, z);
+  getCommand(SMESHDS_AddNode)->AddNode(NewNodeID, x, y, z);
 }
 
 //=======================================================================
@@ -59,22 +69,7 @@ void SMESHDS_Script::AddNode(int NewNodeID, double x, double y, double z)
 //=======================================================================
 void SMESHDS_Script::AddEdge(int NewEdgeID, int idnode1, int idnode2)
 {
-	SMESHDS_Command* com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddEdge);
-		myCommands.insert(myCommands.end(), com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddEdge)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddEdge);
-			myCommands.insert(myCommands.end(), com);
-		}
-	}
-	com->AddEdge(NewEdgeID, idnode1, idnode2);
+  getCommand(SMESHDS_AddEdge)->AddEdge(NewEdgeID, idnode1, idnode2);
 }
 
 //=======================================================================
@@ -82,24 +77,10 @@ void SMESHDS_Script::AddEdge(int NewEdgeID, int idnode1, int idnode2)
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddFace(int NewFaceID,
-	int idnode1, int idnode2, int idnode3)
+                             int idnode1, int idnode2, int idnode3)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddTriangle);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddTriangle)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddTriangle);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddFace(NewFaceID, idnode1, idnode2, idnode3);
+  getCommand(SMESHDS_AddTriangle)->AddFace(NewFaceID,
+                                           idnode1, idnode2, idnode3);
 }
 
 //=======================================================================
@@ -107,24 +88,12 @@ void SMESHDS_Script::AddFace(int NewFaceID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddFace(int NewFaceID,
-	int idnode1, int idnode2, int idnode3, int idnode4)
+                             int idnode1, int idnode2,
+                             int idnode3, int idnode4)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddQuadrangle);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddQuadrangle)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddQuadrangle);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddFace(NewFaceID, idnode1, idnode2, idnode3, idnode4);
+  getCommand(SMESHDS_AddQuadrangle)->AddFace(NewFaceID,
+                                             idnode1, idnode2,
+                                             idnode3, idnode4);
 }
 
 //=======================================================================
@@ -132,24 +101,12 @@ void SMESHDS_Script::AddFace(int NewFaceID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddVolume(int NewID,
-	int idnode1, int idnode2, int idnode3, int idnode4)
+                               int idnode1, int idnode2,
+                               int idnode3, int idnode4)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddTetrahedron);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddTetrahedron)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddTetrahedron);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddVolume(NewID, idnode1, idnode2, idnode3, idnode4);
+  getCommand(SMESHDS_AddTetrahedron)->AddVolume(NewID,
+                                                idnode1, idnode2,
+                                                idnode3, idnode4);
 }
 
 //=======================================================================
@@ -157,24 +114,12 @@ void SMESHDS_Script::AddVolume(int NewID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddVolume(int NewID,
-	int idnode1, int idnode2, int idnode3, int idnode4, int idnode5)
+                               int idnode1, int idnode2,
+                               int idnode3, int idnode4, int idnode5)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddPyramid);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddPyramid)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddPyramid);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddVolume(NewID, idnode1, idnode2, idnode3, idnode4, idnode5);
+  getCommand(SMESHDS_AddPyramid)->AddVolume(NewID,
+                                            idnode1, idnode2,
+                                            idnode3, idnode4, idnode5);
 }
 
 //=======================================================================
@@ -182,25 +127,12 @@ void SMESHDS_Script::AddVolume(int NewID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddVolume(int NewID,
-	int idnode1,
-	int idnode2, int idnode3, int idnode4, int idnode5, int idnode6)
+                               int idnode1, int idnode2, int idnode3,
+                               int idnode4, int idnode5, int idnode6)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddPrism);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddPrism)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddPrism);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddVolume(NewID, idnode1, idnode2, idnode3, idnode4, idnode5, idnode6);
+  getCommand(SMESHDS_AddPrism)->AddVolume(NewID,
+                                          idnode1, idnode2, idnode3,
+                                          idnode4, idnode5, idnode6);
 }
 
 //=======================================================================
@@ -208,28 +140,12 @@ void SMESHDS_Script::AddVolume(int NewID,
 //purpose  : 
 //=======================================================================
 void SMESHDS_Script::AddVolume(int NewID,
-	int idnode1,
-	int idnode2,
-	int idnode3,
-	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
+                               int idnode1, int idnode2, int idnode3, int idnode4,
+                               int idnode5, int idnode6, int idnode7, int idnode8)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_AddHexahedron);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddHexahedron)
-		{
-			com = new SMESHDS_Command(SMESHDS_AddHexahedron);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->AddVolume(NewID, idnode1, idnode2, idnode3, idnode4,
-		idnode5, idnode6, idnode7, idnode8);
+  getCommand(SMESHDS_AddHexahedron)->AddVolume(NewID,
+                                               idnode1, idnode2, idnode3, idnode4,
+                                               idnode5, idnode6, idnode7, idnode8);
 }
 
 //=======================================================================
@@ -238,22 +154,7 @@ void SMESHDS_Script::AddVolume(int NewID,
 //=======================================================================
 void SMESHDS_Script::MoveNode(int NewNodeID, double x, double y, double z)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_MoveNode);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_MoveNode)
-		{
-			com = new SMESHDS_Command(SMESHDS_MoveNode);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->MoveNode(NewNodeID, x, y, z);
+  getCommand(SMESHDS_MoveNode)->MoveNode(NewNodeID, x, y, z);
 }
 
 //=======================================================================
@@ -262,22 +163,7 @@ void SMESHDS_Script::MoveNode(int NewNodeID, double x, double y, double z)
 //=======================================================================
 void SMESHDS_Script::RemoveNode(int ID)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_RemoveNode);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_RemoveNode)
-		{
-			com = new SMESHDS_Command(SMESHDS_RemoveNode);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->RemoveNode(ID);
+  getCommand(SMESHDS_RemoveNode)->RemoveNode(ID);
 }
 
 //=======================================================================
@@ -286,22 +172,27 @@ void SMESHDS_Script::RemoveNode(int ID)
 //=======================================================================
 void SMESHDS_Script::RemoveElement(int ElementID)
 {
-	SMESHDS_Command * com;
-	if (myCommands.empty())
-	{
-		com = new SMESHDS_Command(SMESHDS_RemoveElement);
-		myCommands.insert(myCommands.end(),com);
-	}
-	else
-	{
-		com = myCommands.back();
-		if (com->GetType() != SMESHDS_RemoveElement)
-		{
-			com = new SMESHDS_Command(SMESHDS_RemoveElement);
-			myCommands.insert(myCommands.end(),com);
-		}
-	}
-	com->RemoveElement(ElementID);
+  getCommand(SMESHDS_RemoveElement)->RemoveElement(ElementID);
+}
+
+//=======================================================================
+//function : ChangeElementNodes
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Script::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
+{
+  getCommand(SMESHDS_ChangeElementNodes)->ChangeElementNodes( ElementID, nodes, nbnodes );
+}
+
+//=======================================================================
+//function : Renumber
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_Script::Renumber (const bool isNodes, const int startID, const int deltaID)
+{
+  getCommand(SMESHDS_Renumber)->Renumber( isNodes, startID, deltaID );
 }
 
 //=======================================================================

@@ -27,10 +27,10 @@
 #ifndef _SMESHDS_Document_HeaderFile
 #define _SMESHDS_Document_HeaderFile
 
-#include <map>
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_Hypothesis.hxx"
-using namespace std;
+#include <map>
+
 
 class SMESHDS_Document
 {
@@ -54,10 +54,10 @@ class SMESHDS_Document
 
   private:
 	int myUserID;
-	map<int,SMESHDS_Mesh*> myMeshes;
-	map<int,SMESHDS_Hypothesis*> myHypothesis;
-	map<int,SMESHDS_Mesh*>::iterator myMeshesIt;
-	map<int,SMESHDS_Hypothesis*>::iterator myHypothesisIt;
+	std::map<int,SMESHDS_Mesh*> myMeshes;
+	std::map<int,SMESHDS_Hypothesis*> myHypothesis;
+	std::map<int,SMESHDS_Mesh*>::iterator myMeshesIt;
+	std::map<int,SMESHDS_Hypothesis*>::iterator myHypothesisIt;
 };
 
 #endif

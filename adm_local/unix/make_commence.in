@@ -10,9 +10,12 @@ HAVE_SSTREAM=@HAVE_SSTREAM@
 
 
 LIBS=@LIBS@ 
+LIBSFORBIN=@LIBS@
 LDFLAGS=@LDFLAGS@ -L$(top_builddir)/lib/salome -Xlinker -rpath-link -Xlinker -L$(top_builddir)/lib/salome
+LDFLAGSFORBIN=@LDFLAGS@ -L$(top_builddir)/lib/salome -Xlinker -rpath-link -Xlinker -L$(top_builddir)/lib/salome
 # add libstdc++ to link c++ library with libtool !
 LDFLAGS+= -lstdc++
+LDFLAGSFORBIN+= -lstdc++
 
 CP=@CP@
 
@@ -31,7 +34,7 @@ C_DEPEND_FLAG = @C_DEPEND_FLAG@
 # C++
 
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ 
+CXXFLAGS = @CXXFLAGS@
 CXX_DEPEND_FLAG = @CXX_DEPEND_FLAG@
 
 # BOOST Library

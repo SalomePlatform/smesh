@@ -26,6 +26,8 @@
 #include "SMDS_MeshVolume.hxx"
 #include "utilities.h"
 
+using namespace std;
+
 SMDS_MeshElement::SMDS_MeshElement(int ID):myID(ID)
 {
 }
@@ -184,4 +186,5 @@ bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)
 
 	default : MESSAGE("Internal Error");
 	}
+        return false;
 }

@@ -23,10 +23,11 @@
 //  Module : SMESH
 //  Author: Alain PERRONNET
 
-using namespace std;
 #include "Rn.h"
 #include "aptrte.h"
 #include "utilities.h"
+
+using namespace std;
 
 extern "C"
 {
@@ -223,8 +224,8 @@ void  aptrte( Z nutysu, R aretmx,
     mnpxyd[ns0].x = uvslf[ns0].x;
     mnpxyd[ns0].y = uvslf[ns0].y;
     mnpxyd[ns0].z = areteideale_( mnpxyd[ns0], direction );
-//     cout << "Sommet " << ns0 << ": " << mnpxyd[ns0].x
-// 	 << " " << mnpxyd[ns0].y << " longueur arete=" << mnpxyd[ns0].z << endl;
+//     MESSAGE("Sommet " << ns0 << ": " << mnpxyd[ns0].x
+// 	 << " " << mnpxyd[ns0].y << " longueur arete=" << mnpxyd[ns0].z);
 
     //carre de la longueur de l'arete 1 de la ligne fermee n
     d = pow( uvslf[ns0+1].x - uvslf[ns0].x, 2 ) 
@@ -275,8 +276,8 @@ void  aptrte( Z nutysu, R aretmx,
       mnpxyd[ns].x = uvslf[ns].x;
       mnpxyd[ns].y = uvslf[ns].y;
       mnpxyd[ns].z = areteideale_( mnpxyd[ns], direction );
-//       cout << "Sommet " << ns << ": " << mnpxyd[ns].x
-// 	   << " " << mnpxyd[ns].y << " longueur arete=" << mnpxyd[ns].z << endl;
+//       MESSAGE("Sommet " << ns << ": " << mnpxyd[ns].x
+// 	   << " " << mnpxyd[ns].y << " longueur arete=" << mnpxyd[ns].z);
 
       //carre de la longueur de l'arete
       d = pow( uvslf[ns2-1].x - uvslf[ns1-1].x, 2) 
@@ -308,8 +309,8 @@ void  aptrte( Z nutysu, R aretmx,
   aremax = sqrt( aremax );  //longueur maximale d'une arete
 
   aretmx = Min( aretmx, aremax );  //pour homogeneiser
-  cout << "nutysu=" << nutysu << "  aretmx=" << aretmx 
-       << "  arete min=" << aremin << "  arete max=" << aremax << endl;
+  MESSAGE("nutysu=" << nutysu << "  aretmx=" << aretmx 
+       << "  arete min=" << aremin << "  arete max=" << aremax);
 
   //chainage des aretes frontalieres : la derniere arete frontaliere
   mnsoar[ mosoar * noar - mosoar + 5 ] = 0;
@@ -391,8 +392,8 @@ void  aptrte( Z nutysu, R aretmx,
 
   deltacpu_( d );
   tcpu += d;
-  cout << "Temps de l'adaptation et l'homogeneisation de l'arbre-4 des TE="
-       << d << " secondes" << endl;
+  MESSAGE("Temps de l'adaptation et l'homogeneisation de l'arbre-4 des TE="
+       << d << " secondes");
   if( ierr != 0 )
   {
     //destruction du tableau auxiliaire et de l'arbre
@@ -448,8 +449,8 @@ void  aptrte( Z nutysu, R aretmx,
   MESSAGE( "Nombre d'echanges des diagonales de 2 triangles=" << n );
   deltacpu_( d );
   tcpu += d;
-  cout << "Temps de la triangulation Delaunay par echange des diagonales="
-       << d << " secondes" << endl;
+  MESSAGE("Temps de la triangulation Delaunay par echange des diagonales="
+       << d << " secondes");
 
   //qualites de la triangulation actuelle
   qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
@@ -481,8 +482,8 @@ void  aptrte( Z nutysu, R aretmx,
   MESSAGE( "Restauration de " << n << " aretes perdues de la frontiere" );
   deltacpu_( d );
   tcpu += d;
-  cout << "Temps de la recuperation des aretes perdues de la frontiere="
-       << d << " secondes" << endl;
+  MESSAGE("Temps de la recuperation des aretes perdues de la frontiere="
+       << d << " secondes");
 
   if( ierr != 0 ) goto ERREUR;
 
@@ -648,8 +649,8 @@ void  aptrte( Z nutysu, R aretmx,
     }
   }
   nbt /= 4;  //le nombre final de triangles de la surface
-  cout << "Nombre de sommets=" << nbst
-       << "  Nombre de triangles=" << nbt << endl;
+  MESSAGE("Nombre de sommets=" << nbst
+       << "  Nombre de triangles=" << nbt);
 
   deltacpu_( d );
   tcpu += d;
@@ -762,9 +763,9 @@ void qualitetrte( R3 *mnpxyd,
       {
 	//un triangle d'aire negative de plus
 	nbtrianeg++;
-	cout << "ATTENTION: le triangle " << nt << " de sommets:"
+	MESSAGE("ATTENTION: le triangle " << nt << " de sommets:"
 	     << nosotr[0] << " " << nosotr[1] << " " << nosotr[2]
-	     << " a une aire " << d <<"<=0" << endl;
+	     << " a une aire " << d <<"<=0");
       }
 
       //aire des triangles actuels
@@ -774,10 +775,10 @@ void qualitetrte( R3 *mnpxyd,
 
   //les affichages
   quamoy /= nbtria;
-  cout << "Qualite moyenne=" << quamoy
+  MESSAGE("Qualite moyenne=" << quamoy
        << "  Qualite minimale=" << quamin
        << " des " << nbtria << " triangles de surface totale="
-       << aire << endl;
+       << aire);
 
   if( nbtrianeg>0 )
     MESSAGE( "ATTENTION: nombre de triangles d'aire negative=" << nbtrianeg );

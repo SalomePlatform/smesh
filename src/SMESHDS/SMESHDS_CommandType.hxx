@@ -27,23 +27,23 @@
 #ifndef _SMESHDS_CommandType_HeaderFile
 #define _SMESHDS_CommandType_HeaderFile
 
+//#include <Standard_PrimitiveTypes.hxx>
+
 enum SMESHDS_CommandType { 
  SMESHDS_AddNode,
-SMESHDS_AddEdge,
-SMESHDS_AddTriangle,
-SMESHDS_AddQuadrangle,
-SMESHDS_AddTetrahedron,
-SMESHDS_AddPyramid,
-SMESHDS_AddPrism,
-SMESHDS_AddHexahedron,
-SMESHDS_RemoveNode,
-SMESHDS_RemoveElement,
-SMESHDS_MoveNode
+ SMESHDS_AddEdge,
+ SMESHDS_AddTriangle,
+ SMESHDS_AddQuadrangle,
+ SMESHDS_AddTetrahedron,
+ SMESHDS_AddPyramid,
+ SMESHDS_AddPrism,
+ SMESHDS_AddHexahedron,
+ SMESHDS_RemoveNode,
+ SMESHDS_RemoveElement,
+ SMESHDS_MoveNode,
+ SMESHDS_ChangeElementNodes,
+ SMESHDS_Renumber
 };
 
-
-#ifndef _Standard_PrimitiveTypes_HeaderFile
-#include <Standard_PrimitiveTypes.hxx>
-#endif
 
 #endif

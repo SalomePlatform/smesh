@@ -42,10 +42,14 @@ LIB= libStdMeshersEngine.la
 LIB_SRC = \
 	StdMeshers_i.cxx \
         StdMeshers_LocalLength_i.cxx \
+	StdMeshers_StartEndLength_i.cxx \
+	StdMeshers_Arithmetic1D_i.cxx \
+	StdMeshers_NumberOfSegments_i.cxx \
+	StdMeshers_Deflection1D_i.cxx \
+        StdMeshers_Propagation_i.cxx \
         StdMeshers_LengthFromEdges_i.cxx \
 	StdMeshers_MaxElementArea_i.cxx \
         StdMeshers_MaxElementVolume_i.cxx \
-	StdMeshers_NumberOfSegments_i.cxx \
 	StdMeshers_NotConformAllowed_i.cxx \
         StdMeshers_Regular_1D_i.cxx \
         StdMeshers_Quadrangle_2D_i.cxx \
@@ -56,8 +60,9 @@ LIB_SERVER_IDL = SMESH_BasicHypothesis.idl
 
 LIB_CLIENT_IDL = \
 	SALOMEDS.idl SALOME_Exception.idl \
-	GEOM_Gen.idl GEOM_Shape.idl MED.idl SALOMEDS_Attributes.idl \
-	SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Group.idl
+	GEOM_Gen.idl MED.idl SALOMEDS_Attributes.idl \
+	SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Group.idl \
+	SALOME_Comm.idl
 
 # Executables targets
 BIN = 

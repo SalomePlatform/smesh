@@ -35,6 +35,22 @@ msgstr "mesh_hypo_area.png"
 msgid "ICON_DLG_MAX_ELEMENT_VOLUME"
 msgstr "mesh_hypo_volume.png"
 
+#Hypo Start End Length
+msgid "ICON_DLG_START_END_LENGTH"
+msgstr "mesh_hypo_length.png"
+
+#Hypo deflection 1D
+msgid "ICON_DLG_DEFLECTION1D"
+msgstr "mesh_hypo_length.png"
+
+#Hypo Geometric 1D
+msgid "ICON_DLG_GEOMETRIC_1D"
+msgstr "mesh_hypo_length.png"
+
+#Hypo Arithmetic 1D
+msgid "ICON_DLG_ARITHMETIC_1D"
+msgstr "mesh_hypo_length.png"
+
 
 #-----------------------------------------------------------
 # ObjectBrowser
@@ -78,4 +94,20 @@ msgstr "mesh_tree_hypo_length.png"
 
 #mesh_tree_hypo_nonconform
 msgid "ICON_SMESH_TREE_HYPO_NotConformAllowed"
+msgstr "mesh_tree_hypo_length.png"
+
+#mesh_tree_hypo_start_end_length
+msgid "ICON_SMESH_TREE_HYPO_StartEndLength"
+msgstr "mesh_tree_hypo_length.png"
+
+#mesh_tree_hypo_deflection1d
+msgid "ICON_SMESH_TREE_HYPO_Deflection1D"
+msgstr "mesh_tree_hypo_length.png"
+
+#mesh_tree_hypo_Arithmetic1d
+msgid "ICON_SMESH_TREE_HYPO_Arithmetic1D"
+msgstr "mesh_tree_hypo_length.png"
+
+#mesh_tree_hypo_propagation
+msgid "ICON_SMESH_TREE_HYPO_Propagation"
 msgstr "mesh_tree_hypo_length.png"

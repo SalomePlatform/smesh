@@ -22,15 +22,17 @@
 #ifndef _SMDS_FaceOfEdges_HeaderFile
 #define _SMDS_FaceOfEdges_HeaderFile
 
-#include <iostream>
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_Iterator.hxx"
 
+#include <iostream>
+
+
 class SMDS_FaceOfEdges:public SMDS_MeshFace
 {
   public:
-	void Print(ostream & OS) const;
+	void Print(std::ostream & OS) const;
 	SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                          const SMDS_MeshEdge* edge2,
                          const SMDS_MeshEdge* edge3);
@@ -49,7 +51,7 @@ class SMDS_FaceOfEdges:public SMDS_MeshFace
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	vector<const SMDS_MeshEdge*> myEdges;
+	std::vector<const SMDS_MeshEdge*> myEdges;
 
 };
 

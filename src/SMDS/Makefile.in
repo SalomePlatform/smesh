@@ -57,8 +57,9 @@ LIB_SRC = \
 	SMDS_VolumeOfNodes.cxx \
 	SMDS_FaceOfEdges.cxx \
 	SMDS_FaceOfNodes.cxx \
-	SMDS_Tria3OfNodes.cxx \
-	SMDS_HexahedronOfNodes.cxx
+	SMDS_VolumeTool.cxx
+#	SMDS_Tria3OfNodes.cxx \
+#	SMDS_HexahedronOfNodes.cxx
 
 #SMDSControl_BoundaryEdges.cxx \
 #SMDSControl_BoundaryFaces.cxx \
@@ -107,8 +108,9 @@ EXPORT_HEADERS= \
 	SMDS_VolumeOfNodes.hxx \
 	SMDS_FaceOfEdges.hxx \
 	SMDS_FaceOfNodes.hxx \
-	SMDS_Tria3OfNodes.hxx \
-	SMDS_HexahedronOfNodes.hxx
+	SMDS_VolumeTool.hxx
+#	SMDS_Tria3OfNodes.hxx \
+#	SMDS_HexahedronOfNodes.hxx
 
 #SMDSControl_BoundaryEdges.hxx \
 #SMDSControl_BoundaryFaces.hxx \

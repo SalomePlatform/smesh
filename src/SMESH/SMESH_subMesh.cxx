@@ -1,23 +1,23 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -43,6 +43,12 @@ using namespace std;
 #include <TopoDS_Compound.hxx>
 #include <BRep_Builder.hxx>
 
+#ifdef _DEBUG_
+#include <gp_Pnt.hxx>
+#include <BRep_Tool.hxx>
+#include <TopoDS.hxx>
+#endif
+
 //=============================================================================
 /*!
  *  default constructor:
@@ -57,7 +63,6 @@ SMESH_subMesh::SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
 	_subMeshDS = meshDS->MeshElements(_subShape);	// may be null ...
 	_father = father;
 	_Id = Id;
-	_vertexSet = false;			// only for Vertex subMesh
 	_dependenceAnalysed = false;
 
 	if (_subShape.ShapeType() == TopAbs_VERTEX)
@@ -74,7 +79,7 @@ SMESH_subMesh::SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -86,7 +91,7 @@ SMESH_subMesh::~SMESH_subMesh()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -98,7 +103,7 @@ int SMESH_subMesh::GetId() const
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -121,7 +126,7 @@ SMESHDS_SubMesh * SMESH_subMesh::GetSubMeshDS()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -135,156 +140,148 @@ SMESHDS_SubMesh* SMESH_subMesh::CreateSubMeshDS()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
 SMESH_subMesh *SMESH_subMesh::GetFirstToCompute()
 {
-	//MESSAGE("SMESH_subMesh::GetFirstToCompute");
-	const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
-	SMESH_subMesh *firstToCompute = 0;
+  //MESSAGE("SMESH_subMesh::GetFirstToCompute");
+  const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
+  SMESH_subMesh *firstToCompute = 0;
 
-	map < int, SMESH_subMesh * >::const_iterator itsub;
-	for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
-	{
-		SMESH_subMesh *sm = (*itsub).second;
-//       SCRUTE(sm->GetId());
-//       SCRUTE(sm->GetComputeState());
-		bool readyToCompute = (sm->GetComputeState() == READY_TO_COMPUTE);
-		if (readyToCompute)
-		{
-			firstToCompute = sm;
-			//SCRUTE(sm->GetId());
-			break;
-		}
-	}
-	if (firstToCompute)
-	{
-		//MESSAGE("--- submesh to compute");
-		return firstToCompute;	// a subMesh of this
-	}
-	if (_computeState == READY_TO_COMPUTE)
-	{
-		//MESSAGE("--- this to compute");
-		return this;			// this
-	}
-	//MESSAGE("--- nothing to compute");
-	return 0;					// nothing to compute
+  map < int, SMESH_subMesh * >::const_iterator itsub;
+  for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+  {
+    SMESH_subMesh *sm = (*itsub).second;
+    //       SCRUTE(sm->GetId());
+    //       SCRUTE(sm->GetComputeState());
+    bool readyToCompute = (sm->GetComputeState() == READY_TO_COMPUTE);
+    if (readyToCompute)
+    {
+      firstToCompute = sm;
+      //SCRUTE(sm->GetId());
+      break;
+    }
+  }
+  if (firstToCompute)
+  {
+    return firstToCompute;	// a subMesh of this
+  }
+  if (_computeState == READY_TO_COMPUTE)
+  {
+    return this;		// this
+  }
+  return 0;                     // nothing to compute
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
 bool SMESH_subMesh::SubMeshesComputed()
 {
-	//MESSAGE("SMESH_subMesh::SubMeshesComputed");
-	const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
+  //MESSAGE("SMESH_subMesh::SubMeshesComputed");
+  const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
 
-	bool subMeshesComputed = true;
-	map < int, SMESH_subMesh * >::const_iterator itsub;
-	for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
-	{
-		SMESH_subMesh *sm = (*itsub).second;
+  bool subMeshesComputed = true;
+  map < int, SMESH_subMesh * >::const_iterator itsub;
+  for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+  {
+    SMESH_subMesh *sm = (*itsub).second;
 
-		const TopoDS_Shape & ss = sm->GetSubShape();
-		int type = ss.ShapeType();
-//       SCRUTE(sm->GetId());
-//       SCRUTE(sm->GetComputeState());
-		bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
-		if (!computeOk)
-		{
-			subMeshesComputed = false;
+    const TopoDS_Shape & ss = sm->GetSubShape();
+    int type = ss.ShapeType();
+    bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
+    if (!computeOk)
+    {
+      subMeshesComputed = false;
 
-			switch (type)
-			  {
-			  case TopAbs_COMPOUND:
-			    {
-			      MESSAGE("The not computed sub mesh is a COMPOUND");
-			      break;
-			    }
-			  case TopAbs_COMPSOLID:
-			    {
-			      MESSAGE("The not computed sub mesh is a COMPSOLID");
-			      break;
-			    }
-			  case TopAbs_SHELL:
-			    {
-			      MESSAGE("The not computed sub mesh is a SHEL");
-			      break;
-			    }
-			  case TopAbs_WIRE:
-			    {
-			      MESSAGE("The not computed sub mesh is a WIRE");
-			      break;
-			    }
-			  case TopAbs_SOLID:
-			    {
-			      MESSAGE("The not computed sub mesh is a SOLID");
-			      break;
-			    }
-			  case TopAbs_FACE:
-			    {
-			      MESSAGE("The not computed sub mesh is a FACE");
-			      break;
-			    }
-			  case TopAbs_EDGE:
-			    {
-			      MESSAGE("The not computed sub mesh is a EDGE");
-			      break;
-			    }
-			  default:
-			    {
-			      MESSAGE("The not computed sub mesh is of unknown type");
-			      break;
-			    }
-			  }
+      switch (type)
+      {
+      case TopAbs_COMPOUND:
+        {
+          MESSAGE("The not computed sub mesh is a COMPOUND");
+          break;
+        }
+      case TopAbs_COMPSOLID:
+        {
+          MESSAGE("The not computed sub mesh is a COMPSOLID");
+          break;
+        }
+      case TopAbs_SHELL:
+        {
+          MESSAGE("The not computed sub mesh is a SHEL");
+          break;
+        }
+      case TopAbs_WIRE:
+        {
+          MESSAGE("The not computed sub mesh is a WIRE");
+          break;
+        }
+      case TopAbs_SOLID:
+        {
+          MESSAGE("The not computed sub mesh is a SOLID");
+          break;
+        }
+      case TopAbs_FACE:
+        {
+          MESSAGE("The not computed sub mesh is a FACE");
+          break;
+        }
+      case TopAbs_EDGE:
+        {
+          MESSAGE("The not computed sub mesh is a EDGE");
+          break;
+        }
+      default:
+        {
+          MESSAGE("The not computed sub mesh is of unknown type");
+          break;
+        }
+      }
 
-			SCRUTE(sm->GetId());
-			break;
-		}
-	}
-	return subMeshesComputed;
+      break;
+    }
+  }
+  return subMeshesComputed;
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
 bool SMESH_subMesh::SubMeshesReady()
 {
-	MESSAGE("SMESH_subMesh::SubMeshesReady");
-	const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
+  MESSAGE("SMESH_subMesh::SubMeshesReady");
+  const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
 
-	bool subMeshesReady = true;
-	map < int, SMESH_subMesh * >::const_iterator itsub;
-	for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
-	{
-		SMESH_subMesh *sm = (*itsub).second;
-//       SCRUTE(sm->GetId());
-//       SCRUTE(sm->GetComputeState());
-		bool computeOk = ((sm->GetComputeState() == COMPUTE_OK)
-			|| (sm->GetComputeState() == READY_TO_COMPUTE));
-		if (!computeOk)
-		{
-			subMeshesReady = false;
-			SCRUTE(sm->GetId());
-			break;
-		}
-	}
-	return subMeshesReady;
+  bool subMeshesReady = true;
+  map < int, SMESH_subMesh * >::const_iterator itsub;
+  for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+  {
+    SMESH_subMesh *sm = (*itsub).second;
+    bool computeOk = ((sm->GetComputeState() == COMPUTE_OK)
+                      || (sm->GetComputeState() == READY_TO_COMPUTE));
+    if (!computeOk)
+    {
+      subMeshesReady = false;
+      SCRUTE(sm->GetId());
+      break;
+    }
+  }
+  return subMeshesReady;
 }
 
 //=============================================================================
 /*!
- * Construct dependence on first level subMeshes. complex shapes (compsolid, 
+ * Construct dependence on first level subMeshes. complex shapes (compsolid,
  * shell, wire) are not analysed the same way as simple shapes (solid, face,
- * edge). 
+ * edge).
  * For collection shapes (compsolid, shell, wire) prepare a list of submeshes
  * with possible multiples occurences. Multiples occurences corresponds to
  * internal frontiers within shapes of the collection and must not be keeped.
@@ -294,167 +291,111 @@ bool SMESH_subMesh::SubMeshesReady()
 
 const map < int, SMESH_subMesh * >&SMESH_subMesh::DependsOn()
 {
-	if (_dependenceAnalysed)
-		return _mapDepend;
+  if (_dependenceAnalysed)
+    return _mapDepend;
 
-	//MESSAGE("SMESH_subMesh::DependsOn");
+  //MESSAGE("SMESH_subMesh::DependsOn");
 
-	int type = _subShape.ShapeType();
-	//SCRUTE(type);
-	switch (type)
-	{
-	case TopAbs_COMPOUND:
-	{
-		//MESSAGE("compound");
-		list < TopoDS_Shape > shellInSolid;
-		for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-			for (TopExp_Explorer
-				exp2(exp.Current(), TopAbs_SHELL); exp2.More(); exp2.Next())
-			{
-				shellInSolid.push_back(exp2.Current());
-			}
-		}
-		for (TopExp_Explorer exp(_subShape, TopAbs_SHELL); exp.More();
-			exp.Next())
-		{
-			list < TopoDS_Shape >::iterator it1;
-			bool isInSolid = false;
-			for (it1 = shellInSolid.begin(); it1 != shellInSolid.end(); it1++)
-			{
-				TopoDS_Shape aShape = (*it1);
-				if (aShape.IsSame(exp.Current()))
-				{
-					isInSolid = true;
-					break;
-				}
-			}
-			if (!isInSolid)
-				InsertDependence(exp.Current());	//only shell not in solid
-		}
-		for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-		for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-		break;
-	}
-	case TopAbs_COMPSOLID:
-	{
+  int type = _subShape.ShapeType();
+  //SCRUTE(type);
+  switch (type)
+  {
+  case TopAbs_COMPOUND:
+    {
+      //MESSAGE("compound");
+      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      for (TopExp_Explorer exp(_subShape, TopAbs_SHELL, TopAbs_SOLID); exp.More();
+           exp.Next())
+      {
+          InsertDependence(exp.Current());      //only shell not in solid
+      }
+      for (TopExp_Explorer exp(_subShape, TopAbs_FACE, TopAbs_SHELL); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE, TopAbs_FACE); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_COMPSOLID:
+    {
 		//MESSAGE("compsolid");
-		for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
-			exp.Next())
-		{
+      for (TopExp_Explorer exp(_subShape, TopAbs_SOLID); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_SHELL:
+    {
+      //MESSAGE("shell");
+      for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_WIRE:
+    {
+      //MESSAGE("wire");
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_SOLID:
+    {
+      //MESSAGE("solid");
+      for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_FACE:
+    {
+      //MESSAGE("face");
+      for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
+           exp.Next())
+      {
+        InsertDependence(exp.Current());
+      }
+      break;
+    }
+  case TopAbs_EDGE:
+    {
+      //MESSAGE("edge");
+      for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX); exp.More();
+           exp.Next())
+      {
 			InsertDependence(exp.Current());
-		}
-//  list<TopoDS_Shape> shapeList;
-//  for (TopExp_Explorer exp(_subShape,TopAbs_SOLID);exp.More();exp.Next())
-//    {
-//      for (TopExp_Explorer 
-//         exp2(exp.Current(),TopAbs_FACE);exp2.More();exp2.Next())
-//        {
-//      shapeList.push_back(exp2.Current()); 
-//        }
-//    }
-//  FinalizeDependence(shapeList);
-		break;
-	}
-	case TopAbs_SHELL:
-	{
-		//MESSAGE("shell");
-		for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-//  list<TopoDS_Shape> shapeList;
-//  for (TopExp_Explorer exp(_subShape,TopAbs_FACE);exp.More();exp.Next())
-//    {
-//      for (TopExp_Explorer 
-//         exp2(exp.Current(),TopAbs_EDGE);exp2.More();exp2.Next())
-//        {
-//      shapeList.push_back(exp2.Current()); 
-//        }
-//    }
-//  FinalizeDependence(shapeList);
-		break;
-	}
-	case TopAbs_WIRE:
-	{
-		//MESSAGE("wire");
-		for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-//  list<TopoDS_Shape> shapeList;
-//  for (TopExp_Explorer exp(_subShape,TopAbs_EDGE);exp.More();exp.Next())
-//    {
-//      for (TopExp_Explorer 
-//         exp2(exp.Current(),TopAbs_VERTEX);exp2.More();exp2.Next())
-//        {
-//      shapeList.push_back(exp2.Current()); 
-//        }
-//    }
-//  FinalizeDependence(shapeList);
-		break;
-	}
-	case TopAbs_SOLID:
-	{
-		//MESSAGE("solid");
-//  for (TopExp_Explorer exp(_subShape,TopAbs_SHELL);exp.More();exp.Next())
-//    {
-//      InsertDependence(exp.Current());
-//    }
-		for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-		break;
-	}
-	case TopAbs_FACE:
-	{
-		//MESSAGE("face");
-//  for (TopExp_Explorer exp(_subShape,TopAbs_WIRE);exp.More();exp.Next())
-//    {
-//      InsertDependence(exp.Current());
-//    }
-		for (TopExp_Explorer exp(_subShape, TopAbs_EDGE); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-		break;
-	}
-	case TopAbs_EDGE:
-	{
-		//MESSAGE("edge");
-		for (TopExp_Explorer exp(_subShape, TopAbs_VERTEX); exp.More();
-			exp.Next())
-		{
-			InsertDependence(exp.Current());
-		}
-		break;
-	}
-	case TopAbs_VERTEX:
-	{
-		break;
-	}
-	default:
-	{
-		break;
-	}
-	}
-	_dependenceAnalysed = true;
-	return _mapDepend;
+                      }
+      break;
+    }
+  case TopAbs_VERTEX:
+    {
+      break;
+    }
+  default:
+    {
+      break;
+    }
+  }
+  _dependenceAnalysed = true;
+  return _mapDepend;
 }
 
 //=============================================================================
@@ -465,31 +406,31 @@ const map < int, SMESH_subMesh * >&SMESH_subMesh::DependsOn()
 
 void SMESH_subMesh::InsertDependence(const TopoDS_Shape aSubShape)
 {
-	//MESSAGE("SMESH_subMesh::InsertDependence");
-	SMESH_subMesh *aSubMesh = _father->GetSubMesh(aSubShape);
-	int type = aSubShape.ShapeType();
-	int ordType = 9 - type;		// 2 = Vertex, 8 = CompSolid
-	int cle = aSubMesh->GetId();
-	cle += 10000000 * ordType;	// sort map by ordType then index
-	if (_mapDepend.find(cle) == _mapDepend.end())
-	{
-		_mapDepend[cle] = aSubMesh;
-		const map < int, SMESH_subMesh * >&subMap = aSubMesh->DependsOn();
-		map < int, SMESH_subMesh * >::const_iterator im;
-		for (im = subMap.begin(); im != subMap.end(); im++)
-		{
-			int clesub = (*im).first;
-			SMESH_subMesh *sm = (*im).second;
-			if (_mapDepend.find(clesub) == _mapDepend.end())
-				_mapDepend[clesub] = sm;
-		}
-	}
+  //MESSAGE("SMESH_subMesh::InsertDependence");
+  SMESH_subMesh *aSubMesh = _father->GetSubMesh(aSubShape);
+  int type = aSubShape.ShapeType();
+  int ordType = 9 - type;               // 2 = Vertex, 8 = CompSolid
+  int cle = aSubMesh->GetId();
+  cle += 10000000 * ordType;    // sort map by ordType then index
+  if (_mapDepend.find(cle) == _mapDepend.end())
+  {
+    _mapDepend[cle] = aSubMesh;
+    const map < int, SMESH_subMesh * >&subMap = aSubMesh->DependsOn();
+    map < int, SMESH_subMesh * >::const_iterator im;
+    for (im = subMap.begin(); im != subMap.end(); im++)
+    {
+      int clesub = (*im).first;
+      SMESH_subMesh *sm = (*im).second;
+      if (_mapDepend.find(clesub) == _mapDepend.end())
+        _mapDepend[clesub] = sm;
+    }
+  }
 
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -514,7 +455,7 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
     return true;
 //   if ( aHypDim < aShapeDim )
 //     return ( _father->IsMainShape( _subShape ));
-    
+
   return false;
 }
 
@@ -552,7 +493,7 @@ bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -563,17 +504,21 @@ SMESH_Hypothesis::Hypothesis_Status
   //SCRUTE(_algoState);
   //SCRUTE(event);
 
+  SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
+
   // **** les retour des evenement shape sont significatifs
   // (add ou remove fait ou non)
   // le retour des evenement father n'indiquent pas que add ou remove fait
   int dim = SMESH_Gen::GetShapeDim(_subShape);
 
-  SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
   if (dim < 1)
-    {
-      _algoState = HYP_OK;
-      return ret;
-    }
+  {
+    _algoState = HYP_OK;
+    if (event == ADD_HYP || event == ADD_ALGO)
+      return SMESH_Hypothesis::HYP_BAD_DIM; // do not allow to assign any hyp
+    else
+      return SMESH_Hypothesis::HYP_OK;
+  }
 
   SMESH_Gen* gen =_father->GetGen();
 //  bool ret = false;
@@ -591,7 +536,7 @@ SMESH_Hypothesis::Hypothesis_Status
         !IsConform( static_cast< SMESH_Algo* >( anHyp )))
       return SMESH_Hypothesis::HYP_NOTCONFORM;
   }
-  
+
   // ----------------------------------
   // add a hypothesis to DS if possible
   // ----------------------------------
@@ -600,7 +545,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ! CanAddHypothesis( anHyp ))
       return SMESH_Hypothesis::HYP_BAD_DIM;
 
-    if ( GetNbAttached( _subShape, anHyp ) > 0 )
+    if ( GetSimilarAttached( _subShape, anHyp ) )
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
 
     if ( !_meshDS->AddHypothesis(_subShape, anHyp))
@@ -634,7 +579,7 @@ SMESH_Hypothesis::Hypothesis_Status
     case ADD_ALGO: {
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
       ASSERT(algo);
-      if (algo->CheckHypothesis((*_father),_subShape, ret))
+      if (algo->CheckHypothesis((*_father),_subShape, aux_ret))
         SetAlgoState(HYP_OK);
       else
         SetAlgoState(MISSING_HYP);
@@ -765,7 +710,7 @@ SMESH_Hypothesis::Hypothesis_Status
     break;
 
     // ----------------------------------------------------------------------
-    
+
   case HYP_OK:
     switch (event)
     {
@@ -776,16 +721,23 @@ SMESH_Hypothesis::Hypothesis_Status
       {
         MESSAGE("two applying algo on the same shape not allowed");
         _meshDS->RemoveHypothesis(_subShape, anHyp);
-        //ret = SMESH_Hypothesis::HYP_ALREADY_EXIST;
+        if ( !SMESH_Hypothesis::IsStatusFatal( ret ))
+          // ret should be fatal: anHyp was not added
+          ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
       else if (SMESH_Hypothesis::IsStatusFatal( ret ))
+      {
         _meshDS->RemoveHypothesis(_subShape, anHyp);
+      }
       else if (!_father->IsUsedHypothesis(  anHyp, _subShape ))
       {
         _meshDS->RemoveHypothesis(_subShape, anHyp);
         ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
-      modifiedHyp = _father->IsUsedHypothesis( anHyp, _subShape ); // new Hyp?
+      else
+      {
+        modifiedHyp = true;
+      }
       break;
     }
     case ADD_ALGO: {           //already existing algo : on father ?
@@ -805,9 +757,6 @@ SMESH_Hypothesis::Hypothesis_Status
       else
         SetAlgoState(MISSING_HYP);
       modifiedHyp = true;
-      // report only severe errors
-      if ( SMESH_Hypothesis::IsStatusFatal( aux_ret ))
-        ret = aux_ret;
       break;
     }
     case REMOVE_ALGO: {         // perhaps a father algo applies ?
@@ -822,10 +771,9 @@ SMESH_Hypothesis::Hypothesis_Status
           SetAlgoState(HYP_OK);
         else
           SetAlgoState(MISSING_HYP);
-        modifiedHyp = true;
-        // report only severe errors
-        if ( SMESH_Hypothesis::IsStatusFatal( aux_ret ))
-          ret = aux_ret;
+        // check if same algo remains
+        if ( anHyp != algo && strcmp( anHyp->GetName(), algo->GetName()) )
+          modifiedHyp = true;
       }
       break;
     }
@@ -860,7 +808,9 @@ SMESH_Hypothesis::Hypothesis_Status
         SetAlgoState(HYP_OK);
       else
         SetAlgoState(MISSING_HYP);
-      modifiedHyp = true;
+      // is there the same local hyp or maybe a new father algo applied?
+      if ( !GetSimilarAttached( _subShape, anHyp ) )
+        modifiedHyp = true;
       break;
     }
     case REMOVE_FATHER_ALGO: {
@@ -875,7 +825,9 @@ SMESH_Hypothesis::Hypothesis_Status
           SetAlgoState(HYP_OK);
         else
           SetAlgoState(MISSING_HYP);
-        modifiedHyp = true;
+        // is there the same local algo or maybe a new father algo applied?
+        if ( !GetSimilarAttached( _subShape, anHyp ))
+          modifiedHyp = true;
       }
       break;
     }
@@ -884,9 +836,9 @@ SMESH_Hypothesis::Hypothesis_Status
       break;
     }
     break;
-    
+
     // ----------------------------------------------------------------------
-    
+
   default:
     ASSERT(0);
     break;
@@ -919,7 +871,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
 bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
 {
-  MESSAGE( "SMESH_subMesh::IsConform" );
+//  MESSAGE( "SMESH_subMesh::IsConform" );
 
   if ( !theAlgo ) return false;
 
@@ -929,7 +881,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
     return true;
 
   SMESH_Gen* gen =_father->GetGen();
-  
+
   // only local algo is to be checked
   if ( gen->IsGlobalAlgo( theAlgo, *_father ))
     return true;
@@ -964,7 +916,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -977,37 +929,37 @@ void SMESH_subMesh::SetAlgoState(int state)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
-SMESH_Hypothesis::Hypothesis_Status 
- SMESH_subMesh::SubMeshesAlgoStateEngine(int event,
-	SMESH_Hypothesis * anHyp)
+SMESH_Hypothesis::Hypothesis_Status
+  SMESH_subMesh::SubMeshesAlgoStateEngine(int event,
+                                          SMESH_Hypothesis * anHyp)
 {
-	//MESSAGE("SMESH_subMesh::SubMeshesAlgoStateEngine");
+  //MESSAGE("SMESH_subMesh::SubMeshesAlgoStateEngine");
   SMESH_Hypothesis::Hypothesis_Status ret = SMESH_Hypothesis::HYP_OK;
-	//EAP: a wire (dim==1) should notify edges (dim==1)
-	//EAP: int dim = SMESH_Gen::GetShapeDim(_subShape);
-	if (/*EAP:dim > 1*/ _subShape.ShapeType() < TopAbs_EDGE )
-	{
-		const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
+  //EAP: a wire (dim==1) should notify edges (dim==1)
+  //EAP: int dim = SMESH_Gen::GetShapeDim(_subShape);
+  if (/*EAP:dim > 1*/ _subShape.ShapeType() < TopAbs_EDGE )
+  {
+    const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
 
-		map < int, SMESH_subMesh * >::const_iterator itsub;
-		for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
-		{
-			SMESH_subMesh *sm = (*itsub).second;
-                        SMESH_Hypothesis::Hypothesis_Status ret2 =
-                          sm->AlgoStateEngine(event, anHyp);
-                        if ( ret2 > ret )
-                          ret = ret2;
-		}
-	}
+    map < int, SMESH_subMesh * >::const_iterator itsub;
+    for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
+    {
+      SMESH_subMesh *sm = (*itsub).second;
+      SMESH_Hypothesis::Hypothesis_Status ret2 =
+        sm->AlgoStateEngine(event, anHyp);
+      if ( ret2 > ret )
+        ret = ret2;
+    }
+  }
   return ret;
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1030,7 +982,7 @@ void SMESH_subMesh::CleanDependsOn()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1082,7 +1034,7 @@ void SMESH_subMesh::DumpAlgoState(bool isMain)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1096,16 +1048,15 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 
   if (dim < 1)
   {
-    if (_vertexSet)
+    if ( IsMeshComputed() )
       _computeState = COMPUTE_OK;
     else
       _computeState = READY_TO_COMPUTE;
-    //SCRUTE(_computeState);
     return true;
   }
   SMESH_Gen *gen = _father->GetGen();
   SMESH_Algo *algo = 0;
-  bool ret;
+  bool ret = true;
   SMESH_Hypothesis::Hypothesis_Status hyp_status;
 
   switch (_computeState)
@@ -1135,7 +1086,13 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case SUBMESH_COMPUTED:	// nothing to do
       break;
     case SUBMESH_RESTORED:
-      ComputeSubMeshStateEngine( SUBMESH_RESTORED );
+      ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+      break;
+    case MESH_ENTITY_REMOVED:
+      break;
+    case CHECK_COMPUTE_STATE:
+      if ( IsMeshComputed() )
+        _computeState = COMPUTE_OK;
       break;
     default:
       ASSERT(0);
@@ -1180,18 +1137,28 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           _computeState = FAILED_TO_COMPUTE;
           break;
         }
+        RemoveSubMeshElementsAndNodes();
         // compute
         if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
           ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
         else
           ret = algo->Compute((*_father), _subShape);
-        
+
         if (!ret)
         {
           MESSAGE("problem in algo execution: failed to compute");
           _computeState = FAILED_TO_COMPUTE;
           if (!algo->NeedDescretBoundary())
             UpdateSubMeshState( FAILED_TO_COMPUTE );
+
+#ifdef _DEBUG_
+          // Show vertices location of a failed shape
+          TopExp_Explorer exp( _subShape, TopAbs_VERTEX);
+          for ( ; exp.More(); exp.Next() ) {
+            gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( exp.Current() )));
+            cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
+          }
+#endif
           break;
         }
         else
@@ -1222,10 +1189,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case SUBMESH_RESTORED:
       // check if a mesh is already computed that may
       // happen after retrieval from a file
-      if ( IsMeshComputed() ) {
+      ComputeStateEngine( CHECK_COMPUTE_STATE );
+      ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+      break;
+    case MESH_ENTITY_REMOVED:
+      break;
+    case CHECK_COMPUTE_STATE:
+      if ( IsMeshComputed() )
         _computeState = COMPUTE_OK;
-      }
-      ComputeSubMeshStateEngine( SUBMESH_RESTORED );
       break;
     default:
       ASSERT(0);
@@ -1269,7 +1240,20 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     case SUBMESH_COMPUTED:      // nothing to do
       break;
     case SUBMESH_RESTORED:
-      ComputeSubMeshStateEngine( SUBMESH_RESTORED );
+      ComputeStateEngine( CHECK_COMPUTE_STATE );
+      ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+      break;
+    case MESH_ENTITY_REMOVED:
+      UpdateDependantsState( CHECK_COMPUTE_STATE );
+      ComputeStateEngine( CHECK_COMPUTE_STATE );
+      ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+      break;
+    case CHECK_COMPUTE_STATE:
+      if ( !IsMeshComputed() )
+        if (_algoState == HYP_OK)
+          _computeState = READY_TO_COMPUTE;
+        else
+          _computeState = NOT_READY;
       break;
     default:
       ASSERT(0);
@@ -1294,7 +1278,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
       else
         _computeState = NOT_READY;
       break;
-    case COMPUTE:                       // nothing to do
+    case COMPUTE:      // nothing to do
       break;
     case CLEAN:
       RemoveSubMeshElementsAndNodes();
@@ -1313,7 +1297,18 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         _computeState = NOT_READY;
       break;
     case SUBMESH_RESTORED:
-      ComputeSubMeshStateEngine( SUBMESH_RESTORED );
+      ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
+      break;
+    case MESH_ENTITY_REMOVED:
+      break;
+    case CHECK_COMPUTE_STATE:
+      if ( IsMeshComputed() )
+        _computeState = COMPUTE_OK;
+      else
+        if (_algoState == HYP_OK)
+          _computeState = READY_TO_COMPUTE;
+        else
+          _computeState = NOT_READY;
       break;
     default:
       ASSERT(0);
@@ -1373,7 +1368,7 @@ bool SMESH_subMesh::ApplyToCollection (SMESH_Algo*         theAlgo,
 
 //=======================================================================
 //function : UpdateSubMeshState
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::UpdateSubMeshState(const compute_state theState)
@@ -1389,7 +1384,7 @@ void SMESH_subMesh::UpdateSubMeshState(const compute_state theState)
 
 //=======================================================================
 //function : ComputeSubMeshStateEngine
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::ComputeSubMeshStateEngine(int event)
@@ -1405,7 +1400,7 @@ void SMESH_subMesh::ComputeSubMeshStateEngine(int event)
 
 //=======================================================================
 //function : UpdateDependantsState
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_subMesh::UpdateDependantsState(const compute_event theEvent)
@@ -1424,7 +1419,7 @@ void SMESH_subMesh::UpdateDependantsState(const compute_event theEvent)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1447,7 +1442,7 @@ void SMESH_subMesh::CleanDependants()
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1468,6 +1463,7 @@ static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
     while(itn->more())
     {
       const SMDS_MeshNode * node = itn->next();
+      //MESSAGE( " RM node: "<<node->GetID());
       meshDS->RemoveNode(node);
     }
   }
@@ -1475,7 +1471,7 @@ static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -1544,7 +1540,7 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlg
 {
   MESSAGE("SMESH_subMesh::GetCollection");
   ASSERT (!theAlgo->NeedDescretBoundary());
-  
+
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
   if ( mainShape.IsSame( _subShape ))
@@ -1552,7 +1548,7 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlg
 
   list<const SMESHDS_Hypothesis*> aUsedHyp =
     theAlgo->GetUsedHypothesis( *_father, _subShape ); // copy
-  
+
   // put in a compound all shapes with the same hypothesis assigned
   // and a good ComputState
 
@@ -1579,49 +1575,45 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlg
 }
 
 //=======================================================================
-//function : GetNbAttached
+//function : GetSimilarAttached
 //purpose  : return nb of hypotheses attached to theShape.
 //           If theHyp is provided, similar but not same hypotheses
-//           are countered; else only applicable ones are countered
-//           depending on theAlgos flag
+//           are countered; else only applicable ones having theHypType
+//           are countered
 //=======================================================================
 
-int SMESH_subMesh::GetNbAttached(const TopoDS_Shape&      theShape,
-                                 const SMESH_Hypothesis * theHyp,
-                                 const bool               theAlgos)
+const SMESH_Hypothesis* SMESH_subMesh::GetSimilarAttached(const TopoDS_Shape&      theShape,
+                                                          const SMESH_Hypothesis * theHyp,
+                                                          const int                theHypType)
 {
-  int nb = 0;
-
   const list<const SMESHDS_Hypothesis*>& aHypList =
     _father->GetHypothesisList( theShape );
   list<const SMESHDS_Hypothesis*>::const_iterator it = aHypList.begin();
-  while (it!=aHypList.end())
+  for ( ; it != aHypList.end(); it++ )
   {
     const SMESH_Hypothesis* hyp = static_cast< const SMESH_Hypothesis *>( *it );
-    it++;
-
     if ( theHyp )
     {
-      // count similar
+      // find similar
       if (hyp != theHyp &&
           hyp->GetType() == theHyp->GetType() &&
           hyp->GetDim()  == theHyp->GetDim())
-        nb++;
+        return hyp;
     }
     else
     {
-      bool isAlgo = ( hyp->GetType() > SMESHDS_Hypothesis::PARAM_ALGO );
-      if ( theAlgos == isAlgo && IsApplicableHypotesis( hyp ))
-        nb++;
+      if ( hyp->GetType() == theHypType && IsApplicableHypotesis( hyp ))
+        return hyp;
     }
   }
 
-  return nb;
+  return 0;
 }
 
 //=======================================================================
 //function : CheckConcurentHypothesis
-//purpose  : check if there are several applicable hypothesis on fathers
+//purpose  : check if there are several applicable hypothesis attached to
+//           ansestors
 //=======================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
@@ -1630,20 +1622,25 @@ SMESH_Hypothesis::Hypothesis_Status
   MESSAGE ("SMESH_subMesh::CheckConcurentHypothesis");
 
   // is there local hypothesis on me?
-  if ( GetNbAttached( _subShape, 0, theHypType > SMESHDS_Hypothesis::PARAM_ALGO ) > 0 )
+  if ( GetSimilarAttached( _subShape, 0, theHypType ) )
     return SMESH_Hypothesis::HYP_OK;
 
-    
+
   TopoDS_Shape aPrevWithHyp;
+  const SMESH_Hypothesis* aPrevHyp = 0;
   TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    if ( GetNbAttached( ancestor, 0, theHypType > SMESHDS_Hypothesis::PARAM_ALGO ) > 0 )
+    const SMESH_Hypothesis* hyp = GetSimilarAttached( ancestor, 0, theHypType );
+    if ( hyp )
     {
       if ( aPrevWithHyp.IsNull() || aPrevWithHyp.IsSame( ancestor ))
+      {
         aPrevWithHyp = ancestor;
-      else if ( aPrevWithHyp.ShapeType() == ancestor.ShapeType() )
+        aPrevHyp     = hyp;
+      }
+      else if ( aPrevWithHyp.ShapeType() == ancestor.ShapeType() && aPrevHyp != hyp )
         return SMESH_Hypothesis::HYP_CONCURENT;
       else
         return SMESH_Hypothesis::HYP_OK;

@@ -26,11 +26,14 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-#include "SMESHGUI_aParameterDlg.h"
-#include "SMESHGUI.h"
-#include "QAD_SpinBoxDbl.h"
 #include "QAD_Tools.h"
+#include "QAD_Desktop.h"
+#include "QAD_Application.h"
+
+#include "SMESHGUI_aParameterDlg.h"
+#include "SMESHGUI_aParameter.h"
+#include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
 
 // QT Includes
 #include <qgroupbox.h>
@@ -40,79 +43,27 @@ using namespace std;
 #include <qspinbox.h>
 #include <qvalidator.h>
 
+using namespace std;
+
 //====================================================================================== 
 // function : SMESHGUI_aParameterDlg()
-// purpose  : Constructs a SMESHGUI_aParametertDlg for double values
-//
-//  parent    : parent widget
-//  title     : is the title for the user in dialog box
-//  label     : text label for the value
-//
-//  bottom     : the minimal value to be entered
-//  top        : the maximum value to be entered
-//  decimals   : number of decimals to be entered
 //
 //  The dialog will by default be modal, unless you set 'modal' to
 //  false when constructing dialog
 // 
 //====================================================================================== 
-SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg( QWidget*     parent,
-					        QString      title,
-					        QString      label,
-					        const double bottom,
-					        const double top,
-					        const int    decimals,
-					        bool         modal ) 
+SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg
+                                        (std::list<SMESHGUI_aParameterPtr> params,
+                                         QWidget*                          parent,
+                                         QString                           title,
+                                         bool                              modal ) 
 : QDialog( parent, "MyParameterDialog", modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
-  myIntSpin( 0 ), myDblSpin( 0 )
+  myParamList( params )
 {
   /* creating widgets */
-  init( true );
+  init();
   /* title */
   setCaption( title );
-  /* caption */
-  myTextLabel->setText( label );
-  /* range */
-  myDblSpin->setRange( bottom, top );
-  ((QDoubleValidator*)(myDblSpin->validator()))->setRange( bottom, top, decimals );
-
-  /* Move widget on the botton right corner of main widget */
-  QAD_Tools::centerWidget( this, parent );
-}
-
-//====================================================================================== 
-// function : SMESHGUI_aParameterDlg()
-// purpose  : Constructs a SMESHGUI_aParametertDlg for int values
-//
-//  parent    : parent widget
-//  title     : is the title for the user in dialog box
-//  label     : text label for the value
-//
-//  bottom     : the minimal value to be entered
-//  top        : the maximum value to be entered
-//
-//  The dialog will by default be modal, unless you set 'modal' to
-//  false when constructing dialog
-// 
-//====================================================================================== 
-SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg( QWidget*     parent,
-					        QString      title,
-					        QString      label,
-					        const int    bottom,
-					        const int    top,
-					        bool         modal ) 
-: QDialog( parent, "MyParameterDialog", modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
-  myIntSpin( 0 ), myDblSpin( 0 )
-{
-  /* creating widgets */
-  init( false );
-  /* title */
-  setCaption( title );
-  /* caption */
-  myTextLabel->setText( label );
-  /* range */
-  myIntSpin->setRange( bottom, top );
-  ((QIntValidator*)(myIntSpin->validator()))->setRange( bottom, top );
 
   /* Move widget on the botton right corner of main widget */
   QAD_Tools::centerWidget( this, parent );
@@ -122,7 +73,7 @@ SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg( QWidget*     parent,
 // function : SMESHGUI_aParameterDlg::init()
 // purpose  : creates dialog's layout
 //====================================================================================== 
-void SMESHGUI_aParameterDlg::init( bool isDouble )
+void SMESHGUI_aParameterDlg::init()
 {
   setSizeGripEnabled( TRUE );
   
@@ -138,25 +89,34 @@ void SMESHGUI_aParameterDlg::init( bool isDouble )
   GroupC1Layout->setAlignment( Qt::AlignTop );
   GroupC1Layout->setSpacing( 6 );
   GroupC1Layout->setMargin( 11 );
-  /* Label */
-  /* aTitle1 : text prompt on left of edit line */
-  myTextLabel = new QLabel( GroupC1, "TextLabel" );
-  GroupC1Layout->addWidget( myTextLabel, 0, 0 );
-  /* Spin box */
-  if ( isDouble ) {
-    myIntSpin = 0;
-    myDblSpin = new QAD_SpinBoxDbl( GroupC1 );
-    myDblSpin->setPrecision( 12 );
-    myDblSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
-    myDblSpin->setMinimumSize( 150, 0 );
-    GroupC1Layout->addWidget( myDblSpin, 0, 1 );
-  }
-  else {
-    myDblSpin = 0;
-    myIntSpin = new QSpinBox( GroupC1 );
-    myIntSpin->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
-    myIntSpin->setMinimumSize( 150, 0 );
-    GroupC1Layout->addWidget( myIntSpin, 0, 1 );
+  /* Spin boxes with labels */
+  list<SMESHGUI_aParameterPtr>::iterator paramIt = myParamList.begin();
+  for ( int row = 0; paramIt != myParamList.end(); paramIt++ , row++ )
+  {
+    SMESHGUI_aParameterPtr param = (*paramIt);
+    QLabel * label = new QLabel( GroupC1, "TextLabel" );
+    GroupC1Layout->addWidget( label, row, 0 );
+    label->setText( param->Label() );
+    QWidget* aSpinWidget;
+    switch ( param->GetType() ) {
+    case SMESHGUI_aParameter::DOUBLE: {
+      SMESHGUI_SpinBox* spin = new SMESHGUI_SpinBox( GroupC1 );
+      aSpinWidget = spin;
+      spin->setPrecision( 12 );
+      break;
+    }
+    case SMESHGUI_aParameter::INT: {
+      QSpinBox* spin = new QSpinBox( GroupC1 );
+      aSpinWidget = spin;
+      break;
+    }
+    default:;
+    }
+    GroupC1Layout->addWidget( aSpinWidget, row, 1 );
+    aSpinWidget->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+    aSpinWidget->setMinimumSize( 150, 0 );
+    param->InitializeWidget( aSpinWidget );
+    mySpinList.push_back( aSpinWidget );
   }
   
   /***************************************************************/
@@ -187,7 +147,7 @@ void SMESHGUI_aParameterDlg::init( bool isDouble )
   topLayout->addWidget( GroupButtons, 1, 0);
 
   /* signals and slots connections */
-  connect( myButtonOk,     SIGNAL( clicked() ), this, SLOT( accept() ) );
+  connect( myButtonOk,     SIGNAL( clicked() ), this, SLOT( ClickOnOk() ) );
   connect( myButtonCancel, SIGNAL( clicked() ), this, SLOT( reject() ) );
 
   /* Retrieve SMESHGUI */
@@ -203,51 +163,39 @@ SMESHGUI_aParameterDlg::~SMESHGUI_aParameterDlg()
 {
 }
 
-//====================================================================================== 
-// function : SMESHGUI_aParameterDlg::setValue
-// purpose  : sets double value
-//====================================================================================== 
-void SMESHGUI_aParameterDlg::setValue( const double val )
-{
-  if ( myDblSpin )
-    myDblSpin->setValue( val );
-}
-//====================================================================================== 
-// function : SMESHGUI_aParameterDlg::setValue
-// purpose  : sets int value
-//====================================================================================== 
-void SMESHGUI_aParameterDlg::setValue( const int val )
-{
-  if ( myIntSpin )
-    myIntSpin->setValue( val );
-}
-//====================================================================================== 
-// function : SMESHGUI_aParameterDlg::getDblValue
-// purpose  : returns double value entered by user
-//====================================================================================== 
-double SMESHGUI_aParameterDlg::getDblValue()
-{
-  if ( myDblSpin )
-    return myDblSpin->value();
-  return 0.0;
-}
+//=======================================================================
+//function : ClickOnOk
+//purpose  : 
+//=======================================================================
 
-//====================================================================================== 
-// function : SMESHGUI_aParameterDlg::getIntValu
-// purpose  : returns int value entered by user
-//====================================================================================== 
-int SMESHGUI_aParameterDlg::getIntValue()
+void SMESHGUI_aParameterDlg::ClickOnOk()
 {
-  if ( myIntSpin )
-    return myIntSpin->value();
-  return 0;
+  if ( !mySMESHGUI->ActiveStudyLocked() ) {
+    list<SMESHGUI_aParameterPtr>::iterator paramIt = myParamList.begin();
+    list<QWidget*>::iterator              widgetIt = mySpinList.begin();
+    for ( ;
+         paramIt != myParamList.end() && widgetIt != mySpinList.end();
+         paramIt++ , widgetIt++ )
+      (*paramIt)->TakeValue( *widgetIt );
+
+    accept();
+  }
 }
 
 
-
-
-
-
-
-
-
+//=======================================================================
+// function : Parameters()
+// purpose  : return a list of parameters from a dialog box
+//=======================================================================
+bool SMESHGUI_aParameterDlg::Parameters( list<SMESHGUI_aParameterPtr> params, const char *aTitle)
+{
+  if ( !params.empty() ) {
+    SMESHGUI_aParameterDlg *Dialog =
+      new SMESHGUI_aParameterDlg(params,
+                                 QAD_Application::getDesktop(),
+                                 aTitle,
+                                 TRUE);
+    return (Dialog->exec() == QDialog::Accepted);
+  }
+  return false;
+}

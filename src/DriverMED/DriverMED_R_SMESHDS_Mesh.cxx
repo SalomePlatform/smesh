@@ -26,6 +26,7 @@
 
 #include "DriverMED_R_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMDS_Mesh.h"
+#include "SMESHDS_Mesh.hxx"
 #include "utilities.h"
 
 #include "DriverMED_Family.h"
@@ -39,81 +40,10 @@
 
 #define _EDF_NODE_IDS_
 
-DriverMED_R_SMESHDS_Mesh::DriverMED_R_SMESHDS_Mesh()
-     :
-       myMesh (NULL),
-       myFile (""),
-       myFileId (-1),
-       myMeshId (-1)
-{
-}
-
-DriverMED_R_SMESHDS_Mesh::~DriverMED_R_SMESHDS_Mesh()
-{
-//  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
-//  for (; aFamsIter != myFamilies.end(); aFamsIter++)
-//  {
-//    delete (*aFamsIter).second;
-//  }
-}
-
-void DriverMED_R_SMESHDS_Mesh::SetMesh(SMDS_Mesh * aMesh)
-{
-  myMesh = aMesh;
-}
-
-void DriverMED_R_SMESHDS_Mesh::SetFile(string aFile)
-{
-  myFile = aFile;
-}
-
-void DriverMED_R_SMESHDS_Mesh::SetFileId(med_idt aFileId)
-{
-  myFileId = aFileId;
-}
-
-void DriverMED_R_SMESHDS_Mesh::SetMeshId(int aMeshId)
-{
-  myMeshId = aMeshId;
-}
-
 void DriverMED_R_SMESHDS_Mesh::SetMeshName(string theMeshName)
 {
   myMeshName = theMeshName;
 }
-
-void DriverMED_R_SMESHDS_Mesh::Read()
-{
-
-  string myClass = string("SMDS_Mesh");
-  string myExtension = string("MED");
-
-  DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
-
-  myReader->SetMesh(myMesh);
-  myReader->SetMeshId(myMeshId);
-  myReader->SetFile(myFile);
-  myReader->SetFileId(-1);
-
-  myReader->Read();
-}
-
-void DriverMED_R_SMESHDS_Mesh::Add()
-{
-  string myClass = string("SMDS_Mesh");
-  string myExtension = string("MED");
-
-  DriverMED_R_SMDS_Mesh *myReader = new DriverMED_R_SMDS_Mesh;
-
-  myReader->SetMesh(myMesh);
-  myReader->SetMeshId(myMeshId);
-
-  SCRUTE(myFileId);
-  myReader->SetFileId(myFileId);
-
-  myReader->Read();
-}
-
 
 static const SMDS_MeshNode* 
 FindNode(const SMDS_Mesh* theMesh, med_int theId){
@@ -199,17 +129,17 @@ public:
 typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
 
 
-DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
+Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 {
-  ReadStatus result = DRS_FAIL;
+  Status aResult = DRS_FAIL;
   try{
     using namespace MEDA;
 
     myFamilies.clear();
-    MESSAGE("ReadMySelf - myFile : "<<myFile);
+    MESSAGE("Perform - myFile : "<<myFile);
     TWrapper aMed(myFile);
 
-    result = DRS_EMPTY;
+    aResult = DRS_EMPTY;
     if(med_int aNbMeshes = aMed.GetNbMeshes()){
       for(int iMesh = 0; iMesh < aNbMeshes; iMesh++){
 	// Reading the MED mesh
@@ -223,10 +153,11 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
         } else {
           aMeshName = myMeshName;
         }
-	MESSAGE("ReadMySelf - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
+	MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
-        result = DRS_OK;
-
+        aResult = DRS_OK;
+	med_int aMeshDim = aMeshInfo->GetDim();
+	
         // Reading MED families to the temporary structure
 	//------------------------------------------------
         med_int aNbFams = aMed.GetNbFamilies(aMeshInfo);
@@ -290,7 +221,7 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 
 	med_booleen anIsNodeNum = aNodeInfo->IsElemNum();
 	med_int aNbElems = aNodeInfo->GetNbElem();
-	MESSAGE("ReadMySelf - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
+	MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
         for(med_int iElem = 0; iElem < aNbElems; iElem++){
           double aCoords[3] = {0.0, 0.0, 0.0};
           for(med_int iDim = 0; iDim < 3; iDim++)
@@ -332,8 +263,8 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 	    PCellInfo aCellInfo = aMed.GetCellInfo(aMeshInfo,anEntity,aGeom);
 	    med_booleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : MED_FAUX;
 	    med_int aNbElems = aCellInfo->GetNbElem();
-	    MESSAGE("ReadMySelf - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
-	    MESSAGE("ReadMySelf - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
+	    MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
+	    MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
 
 	    for(int iElem = 0; iElem < aNbElems; iElem++){
 	      med_int aNbNodes = -1;
@@ -521,21 +452,21 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		}
 	      }catch(const std::exception& exc){
 		//INFOS("Follow exception was cought:\n\t"<<exc.what());
-		result = DRS_FAIL;
+		aResult = DRS_FAIL;
 	      }catch(...){
 		//INFOS("Unknown exception was cought !!!");
-		result = DRS_FAIL;
+		aResult = DRS_FAIL;
 	      }
 		
               if (!anElement) {
-                result = DRS_WARN_SKIP_ELEM;
+                aResult = DRS_WARN_SKIP_ELEM;
               }
               else {
                 if (isRenum) {
                   anIsElemNum = MED_FAUX;
                   takeNumbers = false;
-                  if (result < DRS_WARN_RENUMBER)
-                    result = DRS_WARN_RENUMBER;
+                  if (aResult < DRS_WARN_RENUMBER)
+                    aResult = DRS_WARN_RENUMBER;
                 }
                 if (myFamilies.find(aFamNum) != myFamilies.end()) {
                   // Save reference to this element from its family
@@ -551,16 +482,16 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
     }
   }catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
-    result = DRS_FAIL;
+    aResult = DRS_FAIL;
   }catch(...){
     INFOS("Unknown exception was cought !!!");
-    result = DRS_FAIL;
+    aResult = DRS_FAIL;
   }
-  MESSAGE("ReadMySelf - result status = "<<result);
-  return result;
+  MESSAGE("Perform - aResult status = "<<aResult);
+  return aResult;
 }
 
-list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames()
+list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
 {
   list<string> aMeshNames;
 
@@ -568,6 +499,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames()
     using namespace MEDA;
 
     MESSAGE("GetMeshNames - myFile : " << myFile);
+    theStatus = DRS_OK;
     TWrapper aMed (myFile);
 
     if (med_int aNbMeshes = aMed.GetNbMeshes()) {
@@ -580,8 +512,10 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames()
     }
   }catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
+    theStatus = DRS_FAIL;
   }catch(...){
     INFOS("Unknown exception was cought !!!");
+    theStatus = DRS_FAIL;
   }
 
   return aMeshNames;
@@ -627,10 +561,14 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
     {
       const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
       set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      const SMDS_MeshElement * element = 0;
       for (; anElemsIter != anElements.end(); anElemsIter++)
       {
-        theGroup->SMDS_MeshGroup::Add(*anElemsIter);
+        element = *anElemsIter;
+        theGroup->SMDSGroup().Add(element);
       }
+      if ( element )
+        theGroup->SetType( element->GetType() );
     }
   }
 }
@@ -670,10 +608,6 @@ void DriverMED_R_SMESHDS_Mesh::GetSubMesh (SMESHDS_SubMesh* theSubMesh,
 
 void DriverMED_R_SMESHDS_Mesh::CreateAllSubMeshes ()
 {
-  SMESHDS_Mesh* aSMESHDSMesh = dynamic_cast<SMESHDS_Mesh*>(myMesh);
-  if (!aSMESHDSMesh) {
-    EXCEPTION(runtime_error,"Can not cast SMDS_Mesh to SMESHDS_Mesh");
-  }
   map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
   for (; aFamsIter != myFamilies.end(); aFamsIter++)
   {
@@ -693,18 +627,28 @@ void DriverMED_R_SMESHDS_Mesh::CreateAllSubMeshes ()
         {
           for (; anElemsIter != anElements.end(); anElemsIter++)
           {
-            const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>(*anElemsIter);
-            aSMESHDSMesh->SetNodeInVolume(node, Id);
-//            aSMESHDSMesh->SetNodeOnFace(node, Id);
-//            aSMESHDSMesh->SetNodeOnEdge(node, Id);
-//            aSMESHDSMesh->SetNodeOnVertex(node, Id);
+            SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>
+              ( static_cast<const SMDS_MeshNode*>( *anElemsIter ));
+            // find out a shape type
+            TopoDS_Shape aShape = myMesh->IndexToShape( Id );
+            int aShapeType = ( aShape.IsNull() ? -1 : aShape.ShapeType() );
+            switch ( aShapeType ) {
+            case TopAbs_FACE:
+              myMesh->SetNodeOnFace(node, Id); break;
+            case TopAbs_EDGE:
+              myMesh->SetNodeOnEdge(node, Id); break;
+            case TopAbs_VERTEX:
+              myMesh->SetNodeOnVertex(node, Id); break;
+            default:
+              myMesh->SetNodeInVolume(node, Id);
+            }
           }
         }
         else
         {
           for (; anElemsIter != anElements.end(); anElemsIter++)
           {
-            aSMESHDSMesh->SetMeshElementOnShape(*anElemsIter, Id);
+            myMesh->SetMeshElementOnShape(*anElemsIter, Id);
           }
         }
       }

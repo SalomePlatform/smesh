@@ -1,23 +1,23 @@
 //  SMESH SMESH : implementaion of SMESH idl descriptions
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -35,26 +35,40 @@ using namespace std;
 
 #include "StdMeshers_LocalLength.hxx"
 #include "StdMeshers_NumberOfSegments.hxx"
+#include "StdMeshers_Arithmetic1D.hxx"
+#include "StdMeshers_StartEndLength.hxx"
+#include "StdMeshers_Deflection1D.hxx"
+#include "StdMeshers_Propagation.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_EdgePosition.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 
+#include <BRep_Tool.hxx>
+#include <BRepTools_WireExplorer.hxx>
+
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopTools_Array1OfShape.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+
 #include <GeomAdaptor_Curve.hxx>
-#include <BRep_Tool.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_UniformAbscissa.hxx>
+#include <GCPnts_UniformDeflection.hxx>
+
+#include <Standard_ErrorHandler.hxx>
+#include <Precision.hxx>
 
 #include <string>
-#include <algorithm>
+//#include <algorithm>
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -63,20 +77,18 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
 {
 	MESSAGE("StdMeshers_Regular_1D::StdMeshers_Regular_1D");
 	_name = "Regular_1D";
-	//  _shapeType = TopAbs_EDGE;
 	_shapeType = (1 << TopAbs_EDGE);
+
 	_compatibleHypothesis.push_back("LocalLength");
 	_compatibleHypothesis.push_back("NumberOfSegments");
-
-	_localLength = 0;
-	_numberOfSegments = 0;
-	_hypLocalLength = NULL;
-	_hypNumberOfSegments = NULL;
+	_compatibleHypothesis.push_back("StartEndLength");
+	_compatibleHypothesis.push_back("Deflection1D");
+	_compatibleHypothesis.push_back("Arithmetic1D");
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -86,7 +98,7 @@ StdMeshers_Regular_1D::~StdMeshers_Regular_1D()
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -95,200 +107,499 @@ bool StdMeshers_Regular_1D::CheckHypothesis
                           const TopoDS_Shape& aShape,
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
-	//MESSAGE("StdMeshers_Regular_1D::CheckHypothesis");
+  _hypType = NONE;
 
-	list <const SMESHDS_Hypothesis * >::const_iterator itl;
-	const SMESHDS_Hypothesis *theHyp;
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
+  if (hyps.size() == 0)
+  {
+    aStatus = SMESH_Hypothesis::HYP_MISSING;
+    return false;  // can't work without a hypothesis
+  }
 
-	const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
-	int nbHyp = hyps.size();
-        if (!nbHyp)
-        {
-          aStatus = SMESH_Hypothesis::HYP_MISSING;
-          return false;  // can't work with no hypothesis
-        }
+  // use only the first hypothesis
+  const SMESHDS_Hypothesis *theHyp = hyps.front();
 
-	itl = hyps.begin();
-	theHyp = (*itl); // use only the first hypothesis
+  string hypName = theHyp->GetName();
 
-	string hypName = theHyp->GetName();
-	int hypId = theHyp->GetID();
-	//SCRUTE(hypName);
+  if (hypName == "LocalLength")
+  {
+    const StdMeshers_LocalLength * hyp =
+      dynamic_cast <const StdMeshers_LocalLength * >(theHyp);
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength();
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
+    _hypType = LOCAL_LENGTH;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
 
-	bool isOk = false;
+  else if (hypName == "NumberOfSegments")
+  {
+    const StdMeshers_NumberOfSegments * hyp =
+      dynamic_cast <const StdMeshers_NumberOfSegments * >(theHyp);
+    ASSERT(hyp);
+    _value[ NB_SEGMENTS_IND  ] = hyp->GetNumberOfSegments();
+    _value[ SCALE_FACTOR_IND ] = hyp->GetScaleFactor();
+    ASSERT( _value[ NB_SEGMENTS_IND ] > 0 );
+    _hypType = NB_SEGMENTS;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
 
-	if (hypName == "LocalLength")
-	{
-		_hypLocalLength = dynamic_cast <const StdMeshers_LocalLength * >(theHyp);
-		ASSERT(_hypLocalLength);
-		_localLength = _hypLocalLength->GetLength();
-		_numberOfSegments = 0;
-		isOk = true;
-                aStatus = SMESH_Hypothesis::HYP_OK;
-	}
+  else if (hypName == "Arithmetic1D")
+  {
+    const StdMeshers_Arithmetic1D * hyp =
+      dynamic_cast <const StdMeshers_Arithmetic1D * >(theHyp);
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = hyp->GetLength( true );
+    _value[ END_LENGTH_IND ] = hyp->GetLength( false );
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
+    _hypType = ARITHMETIC_1D;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
 
-	else if (hypName == "NumberOfSegments")
-	{
-		_hypNumberOfSegments =
-			dynamic_cast <const StdMeshers_NumberOfSegments * >(theHyp);
-		ASSERT(_hypNumberOfSegments);
-		_numberOfSegments = _hypNumberOfSegments->GetNumberOfSegments();
-		_scaleFactor = _hypNumberOfSegments->GetScaleFactor();
-		_localLength = 0;
-		isOk = true;
-                aStatus = SMESH_Hypothesis::HYP_OK;
-	}
-        else
-          aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+  else if (hypName == "StartEndLength")
+  {
+    const StdMeshers_StartEndLength * hyp =
+      dynamic_cast <const StdMeshers_StartEndLength * >(theHyp);
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = hyp->GetLength( true );
+    _value[ END_LENGTH_IND ] = hyp->GetLength( false );
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 && _value[ END_LENGTH_IND ] > 0 );
+    _hypType = BEG_END_LENGTH;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
 
-	//SCRUTE(_localLength);
-	//SCRUTE(_numberOfSegments);
+  else if (hypName == "Deflection1D")
+  {
+    const StdMeshers_Deflection1D * hyp =
+      dynamic_cast <const StdMeshers_Deflection1D * >(theHyp);
+    ASSERT(hyp);
+    _value[ DEFLECTION_IND ] = hyp->GetDeflection();
+    ASSERT( _value[ DEFLECTION_IND ] > 0 );
+    _hypType = DEFLECTION;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+  else
+    aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
 
-	return isOk;
+  return ( _hypType != NONE );
 }
 
 //=============================================================================
 /*!
- *  
+ *
+ */
+//=============================================================================
+bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge,
+                                                      list<double> &     theParams) const
+{
+  theParams.clear();
+
+  double f, l;
+  Handle(Geom_Curve) Curve = BRep_Tool::Curve(theEdge, f, l);
+  GeomAdaptor_Curve C3d(Curve);
+
+  double length = EdgeLength(theEdge);
+  //SCRUTE(length);
+
+  switch( _hypType )
+  {
+  case LOCAL_LENGTH:
+  case NB_SEGMENTS: {
+
+    double eltSize = 1;
+    if ( _hypType == LOCAL_LENGTH )
+    {
+      double nbseg = ceil(length / _value[ BEG_LENGTH_IND ]); // integer sup
+      if (nbseg <= 0)
+        nbseg = 1;                        // degenerated edge
+      eltSize = length / nbseg;
+    }
+    else
+    {
+      double epsilon = 0.001;
+      if (fabs(_value[ SCALE_FACTOR_IND ] - 1.0) > epsilon)
+      {
+        double alpha =
+          pow( _value[ SCALE_FACTOR_IND ], 1.0 / (_value[ NB_SEGMENTS_IND ] - 1));
+        double factor =
+          length / (1 - pow( alpha,_value[ NB_SEGMENTS_IND ]));
+
+        int i, NbPoints = (int) _value[ NB_SEGMENTS_IND ];
+        for ( i = 2; i < NbPoints; i++ )
+        {
+          double param = factor * (1 - pow(alpha, i - 1));
+          theParams.push_back( param );
+        }
+        return true;
+      }
+      else
+      {
+        eltSize = length / _value[ NB_SEGMENTS_IND ];
+      }
+    }
+
+    GCPnts_UniformAbscissa Discret(C3d, eltSize, f, l);
+    if ( !Discret.IsDone() )
+      return false;
+
+    int NbPoints = Discret.NbPoints();
+    for ( int i = 2; i < NbPoints; i++ )
+    {
+      double param = Discret.Parameter(i);
+      theParams.push_back( param );
+    }
+    return true;
+  }
+
+  case BEG_END_LENGTH: {
+
+    // geometric progression: SUM(n) = ( a1 - an * q ) / ( 1 - q ) = length
+
+    double a1 = _value[ BEG_LENGTH_IND ];
+    double an = _value[ END_LENGTH_IND ];
+    double q  = ( length - a1 ) / ( length - an );
+
+    double U1 = Min ( f, l );
+    double Un = Max ( f, l );
+    double param = U1;
+    double eltSize = a1;
+    while ( 1 ) {
+      // computes a point on a curve <C3d> at the distance <eltSize>
+      // from the point of parameter <param>.
+      GCPnts_AbscissaPoint Discret( C3d, eltSize, param );
+      if ( !Discret.IsDone() ) break;
+      param = Discret.Parameter();
+      if ( param < Un )
+        theParams.push_back( param );
+      else
+        break;
+      eltSize *= q;
+    }
+    if ( a1 + an < length ) {
+      // compensate error
+      double Ln = GCPnts_AbscissaPoint::Length( C3d, theParams.back(), Un );
+      double dLn = an - Ln;
+      if ( dLn < 0.5 * an )
+        dLn = -dLn;
+      else {
+        theParams.pop_back();
+        Ln = GCPnts_AbscissaPoint::Length( C3d, theParams.back(), Un );
+        dLn = an - Ln;
+        if ( dLn < 0.5 * an )
+          dLn = -dLn;
+      }
+      double dUn = dLn * ( Un - U1 ) / length;
+//       SCRUTE( Ln );
+//       SCRUTE( dLn );
+//       SCRUTE( dUn );
+      list<double>::reverse_iterator itU = theParams.rbegin();
+      int i, n = theParams.size();
+      for ( i = 1 ; i < n; itU++, i++ ) {
+        (*itU) += dUn;
+        dUn /= q;
+      }
+    }
+
+    return true;
+  }
+
+  case DEFLECTION: {
+
+    GCPnts_UniformDeflection Discret(C3d, _value[ DEFLECTION_IND ], true);
+    if ( !Discret.IsDone() )
+      return false;
+
+    int NbPoints = Discret.NbPoints();
+    for ( int i = 2; i < NbPoints; i++ )
+    {
+      double param = Discret.Parameter(i);
+      theParams.push_back( param );
+    }
+    return true;
+
+  }
+
+  case ARITHMETIC_1D: {
+        // arithmetic progression: SUM(n) = ( an - a1 + q ) * ( a1 + an ) / ( 2 * q ) = length
+
+    double a1 = _value[ BEG_LENGTH_IND ];
+    double an = _value[ END_LENGTH_IND ];
+
+    double nd = (2 * length) / (an + a1) - 1;
+    int n = int(nd);
+    if(n != nd)
+      n++;
+
+    double q = ((2 * length) / (n + 1) - 2 * a1) / n;
+    double U1 = Min ( f, l );
+    double Un = Max ( f, l );
+    double param = U1;
+    double eltSize = a1;
+
+    double L=0;
+    while ( 1 ) {
+      L+=eltSize;
+      // computes a point on a curve <C3d> at the distance <eltSize>
+      // from the point of parameter <param>.
+      GCPnts_AbscissaPoint Discret( C3d, eltSize, param );
+      if ( !Discret.IsDone() ) break;
+      param = Discret.Parameter();
+      if ( fabs(param - Un) > Precision::Confusion() && param < Un) {
+        theParams.push_back( param );
+      }
+      else
+        break;
+      eltSize += q;
+    }
+
+    return true;
+  }
+
+  default:;
+  }
+
+  return false;
+}
+
+//=============================================================================
+/*!
+ *
  */
 //=============================================================================
 
 bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-	MESSAGE("StdMeshers_Regular_1D::Compute");
+  MESSAGE("StdMeshers_Regular_1D::Compute");
 
-	SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-	SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+  if ( _hypType == NONE )
+    return false;
 
-	const TopoDS_Edge & EE = TopoDS::Edge(aShape);
-	TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
+  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  aMesh.GetSubMesh(aShape);
 
-	double f, l;
-	Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);
+  const TopoDS_Edge & EE = TopoDS::Edge(aShape);
+  TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
 
-	TopoDS_Vertex VFirst, VLast;
-	TopExp::Vertices(E, VFirst, VLast);	// Vfirst corresponds to f and Vlast to l
+  double f, l;
+  Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);
 
-	double length = EdgeLength(E);
-	//SCRUTE(length);
+  TopoDS_Vertex VFirst, VLast;
+  TopExp::Vertices(E, VFirst, VLast);   // Vfirst corresponds to f and Vlast to l
 
-	double eltSize = 1;
-//   if (_localLength > 0) eltSize = _localLength;
-	if (_localLength > 0)
-	{
-		double nbseg = ceil(length / _localLength);	// integer sup
-		if (nbseg <= 0)
-			nbseg = 1;			// degenerated edge
-		eltSize = length / nbseg;
-	}
-	else
-	{
-		ASSERT(_numberOfSegments > 0);
-		eltSize = length / _numberOfSegments;
-	}
+  ASSERT(!VFirst.IsNull());
+  SMDS_NodeIteratorPtr lid= aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
+  if (!lid->more())
+  {
+    MESSAGE (" NO NODE BUILT ON VERTEX ");
+    return false;
+  }
+  const SMDS_MeshNode * idFirst = lid->next();
 
-	ASSERT(!VFirst.IsNull());
-	SMDS_NodeIteratorPtr lid= aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
-	const SMDS_MeshNode * idFirst = lid->next();
+  ASSERT(!VLast.IsNull());
+  lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
+  if (!lid->more())
+  {
+    MESSAGE (" NO NODE BUILT ON VERTEX ");
+    return false;
+  }
+  const SMDS_MeshNode * idLast = lid->next();
 
-	ASSERT(!VLast.IsNull());
-	lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
-	const SMDS_MeshNode * idLast = lid->next();
+  if (!Curve.IsNull())
+  {
+    list< double > params;
+    try {
+      if ( ! computeInternalParameters( E, params ))
+        return false;
+    }
+    catch ( Standard_Failure ) {
+      return false;
+    }
 
-	if (!Curve.IsNull())
-	{
-		GeomAdaptor_Curve C3d(Curve);
-		GCPnts_UniformAbscissa Discret(C3d, eltSize, f, l);
-		int NbPoints = Discret.NbPoints();
-		//MESSAGE("nb points on edge : "<<NbPoints);
+    // edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
+    // only internal nodes receive an edge position with param on curve
 
-		// edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
-		// only internal nodes receive an edge position with param on curve
+    const SMDS_MeshNode * idPrev = idFirst;
 
-		const SMDS_MeshNode * idPrev = idFirst;
-		for (int i = 2; i < NbPoints; i++)
-		{
-			double param = Discret.Parameter(i);
+    for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++)
+    {
+      double param = *itU;
+      gp_Pnt P = Curve->Value(param);
 
-			if (_numberOfSegments > 1)
-			{
-				double epsilon = 0.001;
-				if (fabs(_scaleFactor - 1.0) > epsilon)
-				{
-					double alpha =
-						pow(_scaleFactor, 1.0 / (_numberOfSegments - 1));
-					double d =
-						length * (1 - pow(alpha, i - 1)) / (1 - pow(alpha,
-							_numberOfSegments));
-					param = d;
-				}
-			}
+      //Add the Node in the DataStructure
+      SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
+      meshDS->SetNodeOnEdge(node, E);
 
-			gp_Pnt P = Curve->Value(param);
+      // **** edgePosition associe au point = param.
+      SMDS_EdgePosition* epos =
+        dynamic_cast<SMDS_EdgePosition *>(node->GetPosition().get());
+      epos->SetUParameter(param);
 
-			//Add the Node in the DataStructure
-			//MESSAGE("point "<<nodeId<<" "<<P.X()<<" "<<P.Y()<<" "<<P.Z()<<" - "<<i<<" "<<param);
-			SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-			meshDS->SetNodeOnEdge(node, E);
+      SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
+      meshDS->SetMeshElementOnShape(edge, E);
+      idPrev = node;
+    }
+    SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
+    meshDS->SetMeshElementOnShape(edge, E);
+  }
+  else
+  {
+    // Edge is a degenerated Edge : We put n = 5 points on the edge.
+    int NbPoints = 5;
+    BRep_Tool::Range(E, f, l);
+    double du = (l - f) / (NbPoints - 1);
+    //MESSAGE("************* Degenerated edge! *****************");
 
-			// **** edgePosition associe au point = param. 
-			SMDS_EdgePosition* epos =
-                          dynamic_cast<SMDS_EdgePosition *>(node->GetPosition().get());
-			epos->SetUParameter(param);
+    TopoDS_Vertex V1, V2;
+    TopExp::Vertices(E, V1, V2);
+    gp_Pnt P = BRep_Tool::Pnt(V1);
 
-			SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
-			meshDS->SetMeshElementOnShape(edge, E);
-			idPrev = node;
-		}
-		SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
-		meshDS->SetMeshElementOnShape(edge, E);
-	}
-	else
-	{
-//       MESSAGE ("Edge Degeneree non traitee --- arret");
-//       ASSERT(0);
-		if (BRep_Tool::Degenerated(E))
-		{
-			// Edge is a degenerated Edge : We put n = 5 points on the edge.
-			int NbPoints = 5;
-			BRep_Tool::Range(E, f, l);
-			double du = (l - f) / (NbPoints - 1);
-			MESSAGE("************* Degenerated edge! *****************");
+    const SMDS_MeshNode * idPrev = idFirst;
+    for (int i = 2; i < NbPoints; i++)
+    {
+      double param = f + (i - 1) * du;
+      SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
+      meshDS->SetNodeOnEdge(node, E);
 
-			TopoDS_Vertex V1, V2;
-			TopExp::Vertices(E, V1, V2);
-			gp_Pnt P = BRep_Tool::Pnt(V1);
+      SMDS_EdgePosition* epos =
+        dynamic_cast<SMDS_EdgePosition*>(node->GetPosition().get());
+      epos->SetUParameter(param);
 
-			const SMDS_MeshNode * idPrev = idFirst;
-			for (int i = 2; i < NbPoints; i++)
-			{
-				double param = f + (i - 1) * du;
-				SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-				meshDS->SetNodeOnEdge(node, E);
-
-//        Handle (SMDS_EdgePosition) epos
-//      = new SMDS_EdgePosition(theSubMesh->GetId(),param);
-//        node->SetPosition(epos);
-				SMDS_EdgePosition* epos =
-                                  dynamic_cast<SMDS_EdgePosition*>(node->GetPosition().get());
-				epos->SetUParameter(param);
-
-				SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
-				meshDS->SetMeshElementOnShape(edge, E);
-				idPrev = node;
-			}
-			SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast);
-			meshDS->SetMeshElementOnShape(edge, E);
-		}
-		else
-			ASSERT(0);
-	}
-	return true;
+      SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
+      meshDS->SetMeshElementOnShape(edge, E);
+      idPrev = node;
+    }
+    SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast);
+    meshDS->SetMeshElementOnShape(edge, E);
+  }
+  return true;
 }
 
 //=============================================================================
 /*!
- *  
+ *  GetUsedHypothesis
+ */
+//=============================================================================
+
+const list <const SMESHDS_Hypothesis *> & StdMeshers_Regular_1D::GetUsedHypothesis
+  (SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+{
+  _usedHypList.clear();
+  _usedHypList = GetAppliedHypothesis(aMesh, aShape); // copy
+  int nbHyp = _usedHypList.size();
+
+  // try to find being propagated hypothesis
+  string propName = StdMeshers_Propagation::GetName();
+  if (nbHyp == 0) {
+    // Get all opposite edges
+    TopTools_ListOfShape anOppositeEdges;
+    TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
+    GetOppositeEdges(mainShape, aShape, anOppositeEdges);
+    TopTools_ListIteratorOfListOfShape oppIt (anOppositeEdges);
+    for (; oppIt.More(); oppIt.Next()) {
+      const TopoDS_Shape& oppE = oppIt.Value();
+
+      // Find Propagation hypothesis on the opposite edge
+      if (IsPropagated(aMesh, oppE)) {
+
+        // Get hypothesis, used by the opposite edge
+        _usedHypList = SMESH_Algo::GetUsedHypothesis(aMesh, oppE);
+        nbHyp = _usedHypList.size();
+        if (nbHyp == 1)
+          break;
+      }
+    }
+  }
+
+  // try to find relevant 1D hypothesis on ancestors
+  if (nbHyp == 0) {
+    TopTools_ListIteratorOfListOfShape ancIt (aMesh.GetAncestors(aShape));
+    for (; ancIt.More(); ancIt.Next()) {
+      const TopoDS_Shape& ancestor = ancIt.Value();
+      _usedHypList = GetAppliedHypothesis(aMesh, ancestor); // copy
+      nbHyp = _usedHypList.size();
+      if (nbHyp == 1)
+        break;
+    }
+  }
+
+  if (nbHyp > 1)
+    _usedHypList.clear(); //only one compatible hypothesis allowed
+  return _usedHypList;
+}
+
+//=============================================================================
+/*!
+ *  Is Propagation hypothesis assigned to theShape or its ancestors
+ */
+//=============================================================================
+Standard_Boolean StdMeshers_Regular_1D::IsPropagated (SMESH_Mesh         & theMesh,
+                                                      const TopoDS_Shape & theShape)
+{
+  const SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
+
+  // try to find Propagation hypothesis on theShape
+  const list<const SMESHDS_Hypothesis*> & listHyp = meshDS->GetHypothesis(theShape);
+
+  list<const SMESHDS_Hypothesis*>::const_iterator it = listHyp.begin();
+  for (; it != listHyp.end(); it++) {
+    const SMESHDS_Hypothesis *anHyp = *it;
+    if (anHyp->GetName() == StdMeshers_Propagation::GetName())
+      return Standard_True;
+  }
+
+  // try to find Propagation hypothesis on ancestors
+  TopTools_ListIteratorOfListOfShape ancIt (theMesh.GetAncestors(theShape));
+  for (; ancIt.More(); ancIt.Next()) {
+    const TopoDS_Shape& ancestor = ancIt.Value();
+    const list<const SMESHDS_Hypothesis*> & listAncHyp = meshDS->GetHypothesis(ancestor);
+
+    list<const SMESHDS_Hypothesis*>::const_iterator itAnc = listAncHyp.begin();
+    for (; itAnc != listAncHyp.end(); itAnc++) {
+      const SMESHDS_Hypothesis *anHyp = *itAnc;
+      if (anHyp->GetName() == StdMeshers_Propagation::GetName())
+        return Standard_True;
+    }
+  }
+
+  return Standard_False;
+}
+
+//=============================================================================
+/*!
+ * GetOppositeEdges() - get all edges of theShape,
+ * laying on any quadrangle face in front of theEdge
+ */
+//=============================================================================
+void StdMeshers_Regular_1D::GetOppositeEdges (const TopoDS_Shape&   theShape,
+                                              const TopoDS_Shape&   theEdge,
+                                              TopTools_ListOfShape& theOppositeEdges) const
+{
+  TopExp_Explorer aWires (theShape, TopAbs_WIRE);
+  for (; aWires.More(); aWires.Next()) {
+    const TopoDS_Shape& aWire = aWires.Current();
+    BRepTools_WireExplorer aWE (TopoDS::Wire(aWire));
+    Standard_Integer nb = 1, found = 0;
+    TopTools_Array1OfShape anEdges (1,4);
+    for (; aWE.More(); aWE.Next(), nb++) {
+      if (nb > 4) {
+        found = 0;
+        break;
+      }
+      anEdges(nb) = aWE.Current();
+      if (anEdges(nb).IsSame(theEdge))
+        found = nb;
+    }
+    if (nb == 5 && found > 0) {
+      Standard_Integer opp = found + 2;
+      if (opp > 4) opp -= 4;
+      theOppositeEdges.Append(anEdges(opp));
+    }
+  }
+}
+
+//=============================================================================
+/*!
+ *
  */
 //=============================================================================
 
@@ -299,7 +610,7 @@ ostream & StdMeshers_Regular_1D::SaveTo(ostream & save)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -310,7 +621,7 @@ istream & StdMeshers_Regular_1D::LoadFrom(istream & load)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -321,7 +632,7 @@ ostream & operator <<(ostream & save, StdMeshers_Regular_1D & hyp)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

@@ -26,9 +26,10 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_TransparencyDlg.h"
+
 #include "SMESHGUI.h"
+#include "SMESHGUI_VTKUtils.h"
 
 // QT Includes
 #include <qlabel.h>
@@ -38,7 +39,6 @@ using namespace std;
 #include <qgroupbox.h>
 
 #include "VTKViewer_ViewFrame.h"
-#include "VTKViewer_RenderWindowInteractor.h"
 #include "QAD_RightFrame.h"
 #include "QAD_WaitCursor.h"
 #include "SALOME_ListIteratorOfListIO.hxx"
@@ -46,29 +46,7 @@ using namespace std;
 #include "SALOME_Selection.h"
 #include "SALOME_InteractiveObject.hxx"
 
-static SMESH_Actor* FindActorByEntry(const char* theEntry)
-{
-  QAD_Study* aStudy = SMESHGUI::GetSMESHGUI()->GetActiveStudy();
-  QAD_StudyFrame *aStudyFrame = aStudy->getActiveStudyFrame();
-  VTKViewer_ViewFrame* aViewFrame = dynamic_cast<VTKViewer_ViewFrame*>( aStudyFrame->getRightFrame()->getViewFrame() );
-
-  if(aViewFrame){
-    vtkRenderer *aRenderer = aViewFrame->getRenderer();
-    vtkActorCollection *aCollection = aRenderer->GetActors();
-    aCollection->InitTraversal();
-    while(vtkActor *anAct = aCollection->GetNextActor()){
-      if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	if(anActor->hasIO()){
-	  Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-	  if(anIO->hasEntry() && strcmp(anIO->getEntry(),theEntry) == 0){
-	    return anActor;
-	  }
-	}
-      }
-    }
-  }
-  return NULL;
-}
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_TransparencyDlg()
@@ -201,7 +179,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
     SALOME_ListIteratorOfListIO It( mySelection->StoredIObjects() );
     for( ;It.More(); It.Next() ) {
       Handle(SALOME_InteractiveObject) IOS = It.Value();
-      SMESH_Actor* anActor = FindActorByEntry(IOS->getEntry());
+      SMESH_Actor* anActor = SMESH::FindActorByEntry(IOS->getEntry());
       if ( anActor )
 	anActor->SetOpacity( opacity );
     }
@@ -230,7 +208,7 @@ void SMESHGUI_TransparencyDlg::onSelectionChanged()
     if ( mySelection->IObjectCount() == 1 ) {
       Handle(SALOME_InteractiveObject) FirstIOS = mySelection->firstIObject();
       if( !FirstIOS.IsNull() ) {
-	SMESH_Actor* anActor = FindActorByEntry( FirstIOS->getEntry() );
+	SMESH_Actor* anActor = SMESH::FindActorByEntry( FirstIOS->getEntry() );
 	if ( anActor )
 	  opacity = int( anActor->GetOpacity() * 100. + 0.5 );
       }
@@ -241,7 +219,7 @@ void SMESHGUI_TransparencyDlg::onSelectionChanged()
       for ( ; It.More(); It.Next() ) {
 	Handle(SALOME_InteractiveObject) IO = It.Value();
 	if( !IO.IsNull() ) {
-	  SMESH_Actor* anActor = FindActorByEntry( IO->getEntry() );
+	  SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
 	  if ( anActor ) {
 	    int op = int( anActor->GetOpacity() * 100. + 0.5 );
 	    if ( setOp < 0 )

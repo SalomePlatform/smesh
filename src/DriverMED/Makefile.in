@@ -51,16 +51,19 @@ LIB_SRC = \
 	DriverMED_W_SMESHDS_Mesh.cxx \
 	DriverMED_Family.cxx
 
+# Executables targets
+BIN = MED_Test
+
 LIB_CLIENT_IDL =
+
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(MED2_LIBS) -lMeshDriver -L${KERNEL_ROOT_DIR}/lib/salome -lMEDWrapper
+LDFLAGS  += -lMeshDriver -L${KERNEL_ROOT_DIR}/lib/salome -lMEDWrapper
 
-%_moc.cxx: %.h
-	$(MOC) $< -o $@
+LDFLAGSFORBIN += -lMeshDriver -lSMDS -lSMESHDS -L${KERNEL_ROOT_DIR}/lib/salome -lMEDWrapper -lOpUtil -lSALOMELocalTrace
 
 @CONCLUDE@
 

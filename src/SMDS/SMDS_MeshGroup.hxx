@@ -28,7 +28,7 @@
 
 #include "SMDS_Mesh.hxx"
 #include <set>
-using namespace std;
+
 
 class SMDS_MeshGroup:public SMDS_MeshObject
 {
@@ -54,23 +54,23 @@ class SMDS_MeshGroup:public SMDS_MeshObject
 	bool Contains(const SMDS_MeshElement * theElem) const;
 
         void InitIterator() const
-        { const_cast<iterator&>(myIterator) = myElements.begin(); }
+        { const_cast<TIterator&>(myIterator) = myElements.begin(); }
 
         bool More() const { return myIterator != myElements.end(); }
 
         const SMDS_MeshElement* Next() const
-        { return *(const_cast<iterator&>(myIterator))++; }
+        { return *(const_cast<TIterator&>(myIterator))++; }
 
   private:
 	SMDS_MeshGroup(SMDS_MeshGroup* theParent,
                        const SMDSAbs_ElementType theType = SMDSAbs_All);
 
-        typedef set<const SMDS_MeshElement *>::iterator iterator;
+        typedef std::set<const SMDS_MeshElement *>::iterator TIterator;
 	const SMDS_Mesh *                       myMesh;
 	SMDSAbs_ElementType                     myType;
-	set<const SMDS_MeshElement *>           myElements;
+	std::set<const SMDS_MeshElement *>      myElements;
 	SMDS_MeshGroup *                        myParent;
-	list<const SMDS_MeshGroup*>             myChildren;
-        iterator                                myIterator;
+	std::list<const SMDS_MeshGroup*>        myChildren;
+        TIterator                               myIterator;
 };
 #endif

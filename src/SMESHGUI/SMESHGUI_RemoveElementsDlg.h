@@ -35,9 +35,6 @@
 #include <qvariant.h>
 #include <qdialog.h>
 
-// Open CASCADE Includes
-#include <TColStd_MapOfInteger.hxx>
-
 class QVBoxLayout; 
 class QHBoxLayout; 
 class QGridLayout; 
@@ -48,6 +45,7 @@ class QLineEdit;
 class QPushButton;
 class QRadioButton;
 class SMESHGUI;
+class SMESH_Actor;
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -70,15 +68,17 @@ private:
     void Init( SALOME_Selection* Sel ) ;
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
+    void hideEvent ( QHideEvent * );                        /* ESC key */
 
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     SALOME_Selection*             mySelection ;             /* User shape selection */
-    bool                          myOkElements ;               /* to check when arguments is defined */
+    int                           myNbOkElements ;          /* to check when arguments is defined */
     int                           myConstructorId ;         /* Current constructor id = radio button id */
     QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
 
+    bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
-    TColStd_MapOfInteger          myMapIndex;
+    SMESH_Actor*                  myActor;
     
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;
@@ -101,6 +101,7 @@ private slots:
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
+    void onTextChange(const QString&);
 
 protected:
     QGridLayout* SMESHGUI_RemoveElementsDlgLayout;

@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESHGUI_Preferences_SelectionDlg.h"
 #include "SMESHGUI.h"
 
@@ -39,6 +38,8 @@ using namespace std;
 #include <qpushbutton.h>
 #include <qpalette.h>
 #include <qcolordialog.h>
+
+using namespace std;
 
 //=================================================================================
 // class    : SMESHGUI_LineEdit
@@ -303,5 +304,6 @@ void SMESHGUI_Preferences_SelectionDlg::SetPrecision(int type, double value)
 double SMESHGUI_Preferences_SelectionDlg::GetPrecision(int type)
 {
   if (type > 0 && type <= 2)
-  return myPrecision[type-1]->text().toDouble();
+    return myPrecision[type-1]->text().toDouble();
+  return 0;
 }

@@ -9,31 +9,25 @@ import geompy
 import StdMeshers
 import NETGENPlugin
 
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
 smeshgui = salome.ImportComponentGUI("SMESH")
 smeshgui.Init(salome.myStudyId);
 
-# -----------------------------------------------------------------------------
-ShapeTypeShell     = 3
-ShapeTypeFace      = 4
-ShapeTypeEdge      = 6
-
 # ---- define a boxe
 
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
 
-idbox = geompy.addToStudy(box,"box")
+idbox = geompy.addToStudy(box, "box")
 
 print "Analysis of the geometry box :"
-subShellList=geompy.SubShapeAll(box,ShapeTypeShell)
-subFaceList=geompy.SubShapeAll(box,ShapeTypeFace)
-subEdgeList=geompy.SubShapeAll(box,ShapeTypeEdge)
+subShellList = geompy.SubShapeAll(box, geompy.ShapeType["SHELL"])
+subFaceList  = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
+subEdgeList  = geompy.SubShapeAll(box, geompy.ShapeType["EDGE"])
 
-print "number of Shells in box : ",len(subShellList)
-print "number of Faces in box : ",len(subFaceList)
-print "number of Edges in box : ",len(subEdgeList)
+print "number of Shells in box : ", len(subShellList)
+print "number of Faces  in box : ", len(subFaceList)
+print "number of Edges  in box : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
@@ -46,7 +40,7 @@ print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 10
 
-hypNbSeg=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
+hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
 hypNbSeg.SetNumberOfSegments(numberOfSegments)
 
 print hypNbSeg.GetName()
@@ -59,7 +53,7 @@ print "-------------------------- MaxElementArea"
 
 maxElementArea = 500
 
-hypArea=smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
+hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
 hypArea.SetMaxElementArea(maxElementArea)
 
 print hypArea.GetName()
@@ -72,7 +66,7 @@ print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 500
 
-hypVolume=smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
+hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
 hypVolume.SetMaxElementVolume(maxElementVolume)
 
 print hypVolume.GetName()
@@ -87,17 +81,17 @@ print "-------------------------- create Algorithms"
 
 print "-------------------------- Regular_1D"
 
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
+regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
 smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
 
 print "-------------------------- MEFISTO_2D"
 
-mefisto2D=smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
 smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
 
 print "-------------------------- NETGEN_3D"
 
-netgen3D=smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
+netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
 smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
 
 # ---- init a Mesh with the boxe
@@ -121,10 +115,10 @@ mesh.AddHypothesis(box,hypVolume)
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute the mesh of the boxe"
-ret=smesh.Compute(mesh,box)
+ret = smesh.Compute(mesh,box)
 print ret
 if ret != 0:
-    log=mesh.GetLog(0) # no erase trace
+    log = mesh.GetLog(0) # no erase trace
     for linelog in log:
         print linelog
     print "Information about the MeshBox:"

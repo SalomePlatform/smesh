@@ -42,14 +42,19 @@ class vtkPolyData;
 class vtkMapper;
 class vtkActor2D;
 class vtkMaskPoints;
+class vtkCellCenters;
 class vtkLabeledDataMapper;
 class vtkSelectVisiblePoints;
 
 class vtkScalarBarActor;
 class vtkLookupTable;
 
+class vtkPlane;
+class vtkImplicitBoolean;
+
+class vtkTimeStamp;
+
 class SMESH_DeviceActor;
-class SALOME_ExtractUnstructuredGrid;
 
 
 class SMESH_Actor : public SALOME_Actor{
@@ -58,7 +63,6 @@ class SMESH_Actor : public SALOME_Actor{
  public:
   vtkTypeMacro(SMESH_Actor,SALOME_Actor);
   static SMESH_Actor* New(TVisualObjPtr theVisualObj, 
-			  SMESH::FilterManager_ptr theFilterMgr,
 			  const char* theEntry, 
 			  const char* theName,
 			  int theIsClear);
@@ -72,8 +76,8 @@ class SMESH_Actor : public SALOME_Actor{
   virtual void RemoveFromRender(vtkRenderer* theRenderer);
 
   virtual bool hasHighlight() { return true; }  
-  virtual void highlight(Standard_Boolean highlight);  
-  virtual void SetPreSelected(Standard_Boolean presel = Standard_False);
+  virtual void highlight(bool theHighlight);  
+  virtual void SetPreSelected(bool thePreselect = false);
 
   virtual bool IsInfinitive();  
 
@@ -104,37 +108,36 @@ class SMESH_Actor : public SALOME_Actor{
   void SetNodeSize(float size) ;
   float GetNodeSize() ;
 
-  virtual int GetObjId(int theVtkID);
-  virtual TVectorId GetVtkId(int theObjID);
-
   virtual int GetNodeObjId(int theVtkID);
-  virtual TVectorId GetNodeVtkId(int theObjID);
+  virtual float* GetNodeCoord(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
-  virtual TVectorId GetElemVtkId(int theObjID);
+  virtual vtkCell* GetElemCell(int theObjID);
 
   virtual int GetObjDimension( const int theObjId );
 
   virtual void SetVisibility(int theMode);
+  void SetVisibility(int theMode, bool theIsUpdateRepersentation);
 
   enum EReperesent { ePoint, eEdge, eSurface};
   virtual void SetRepresentation(int theMode);
-  void SetPointRepresentation(int theIsPointsVisible);
-  bool GetPointRepresentation(){ return myIsPointsVisible;}
+  void SetPointRepresentation(bool theIsPointsVisible);
+  bool GetPointRepresentation();
 
-  virtual vtkPolyData* GetPolyDataInput(); 
+  virtual float* GetBounds();
   virtual void SetTransform(SALOME_Transform* theTransform); 
 
   vtkUnstructuredGrid* GetUnstructuredGrid();
+  virtual vtkDataSet* GetInput();
   virtual vtkMapper* GetMapper();
 
-  float GetShrinkFactor();
-  void  SetShrinkFactor(float value );
+  virtual float GetShrinkFactor();
+  virtual void  SetShrinkFactor(float value );
 
-  bool IsShrunkable() { return myIsShrinkable;}
-  bool IsShrunk() { return myIsShrunk;}
-  void SetShrink(); 
-  void UnShrink(); 
+  virtual bool IsShrunkable() { return myIsShrinkable;}
+  virtual bool IsShrunk() { return myIsShrunk;}
+  virtual void SetShrink(); 
+  virtual void UnShrink(); 
 
   void SetPointsLabeled(bool theIsPointsLabeled);
   bool GetPointsLabeled(){ return myIsPointsLabeled;}
@@ -142,7 +145,7 @@ class SMESH_Actor : public SALOME_Actor{
   void SetCellsLabeled(bool theIsCellsLabeled);
   bool GetCellsLabeled(){ return myIsCellsLabeled;}
 
-  enum eControl{eNone, eLengthEdges, eFreeBorders, eMultiConnection, 
+  enum eControl{eNone, eLengthEdges, eFreeBorders, eFreeEdges, eMultiConnection, 
 		eArea, eTaper, eAspectRatio, eMinimumAngle, eWarping, eSkew};
   void SetControlMode(eControl theMode);
   eControl GetControlMode(){ return myColorMode;}
@@ -152,12 +155,20 @@ class SMESH_Actor : public SALOME_Actor{
 
   vtkScalarBarActor* GetScalarBarActor(){ return myScalarBarActor;}
 
+  void SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane);
+  void GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane);
+
+  vtkImplicitBoolean* GetPlaneContainer(); 
+
   TVisualObjPtr GetObject() { return myVisualObj;}
+
+  void SetControlsPrecision( const long p ) { myControlsPrecision = p; }
+  long GetControlsPrecision() const { return myControlsPrecision; }
 
  protected:
   TVisualObjPtr myVisualObj;
+  vtkTimeStamp* myTimeStamp;
 
-  SMESH::FilterManager_var myFilterMgr;
   vtkScalarBarActor* myScalarBarActor;
   vtkLookupTable* myLookupTable;
 
@@ -173,6 +184,7 @@ class SMESH_Actor : public SALOME_Actor{
   vtkProperty* myHighlightProp;
   vtkProperty* myPreselectProp;
   SMESH_DeviceActor* myHighlitableActor;
+  SMESH_DeviceActor* myNodeHighlitableActor;
 
   eControl myColorMode;
   SMESH_DeviceActor* my2DActor;
@@ -205,18 +217,21 @@ class SMESH_Actor : public SALOME_Actor{
   vtkLabeledDataMapper* myClsLabeledDataMapper;
   vtkSelectVisiblePoints* myClsSelectVisiblePoints;
 
+  vtkImplicitBoolean* myImplicitBoolean;
+
+  long myControlsPrecision;
+
   SMESH_Actor();
   ~SMESH_Actor();
 
-  void Init(TVisualObjPtr theVisualObj, 
-	    SMESH::FilterManager_ptr theFilterMgr,
+  bool Init(TVisualObjPtr theVisualObj, 
 	    const char* theEntry, 
 	    const char* theName,
 	    int theIsClear);
 
-  void SetUnstructuredGrid(vtkUnstructuredGrid* theGrid);
   void SetIsShrunkable(bool theShrunkable);
   void UpdateHighlight();
+  void Update();
 
  private:
   // hide the two parameter Render() method from the user and the compiler.

@@ -27,58 +27,46 @@ import geompy
 
 import StdMeshers
 
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-geom.GetCurrentStudy(salome.myStudy._get_StudyId())
 smesh.SetCurrentStudy(salome.myStudy)
-
-ShapeTypeCompSolid = 1
-ShapeTypeSolid = 2
-ShapeTypeShell = 3
-ShapeTypeFace = 4
-ShapeTypeWire = 5
-ShapeTypeEdge = 6
-ShapeTypeVertex = 7
 
 # ---- define a box
 
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box,"box")
+idbox = geompy.addToStudy(box, "box")
 
 # ---- add first face of box in study
 
-subShapeList=geompy.SubShapeAll(box,ShapeTypeFace)
-face=subShapeList[0]
-name = geompy.SubShapeName( face._get_Name(), box._get_Name() )
+subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
+face = subShapeList[0]
+name = geompy.SubShapeName(face, box)
 print name
-idface=geompy.addToStudyInFather(box,face,name)
+idface = geompy.addToStudyInFather(box, face, name)
 
 # ---- add shell from box  in study
 
-subShellList=geompy.SubShapeAll(box,ShapeTypeShell)
+subShellList = geompy.SubShapeAll(box, geompy.ShapeType["SHELL"])
 shell = subShellList[0]
-name = geompy.SubShapeName( shell._get_Name(), box._get_Name() )
+name = geompy.SubShapeName(shell, box)
 print name
-idshell=geompy.addToStudyInFather(box,shell,name)
+idshell = geompy.addToStudyInFather(box, shell, name)
 
 # ---- add first edge of face in study
 
-edgeList = geompy.SubShapeAll(face,ShapeTypeEdge)
-edge=edgeList[0];
-name = geompy.SubShapeName( edge._get_Name(), face._get_Name() )
+edgeList = geompy.SubShapeAll(face, geompy.ShapeType["EDGE"])
+edge = edgeList[0]
+name = geompy.SubShapeName(edge, face)
 print name
-idedge=geompy.addToStudyInFather(face,edge,name)
+idedge = geompy.addToStudyInFather(face, edge, name)
 
 # ---- launch SMESH
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
 
-# ---- create Hypothesis
+smeshgui = salome.ImportComponentGUI("SMESH")
+smeshgui.Init(salome.myStudyId)
 
 print "-------------------------- create Hypothesis"
-print "-------------------------- LocalLength"
 
+print "-------------------------- LocalLength"
 hypLen1 = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
 hypLen1.SetLength(100)
 print hypLen1.GetName()
@@ -120,7 +108,7 @@ smeshgui.SetName(idarea2, "MaxElementArea_500");
 
 print "-------------------------- Regular_1D"
 algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-listHyp=algoReg.GetCompatibleHypothesis()
+listHyp = algoReg.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
 print algoReg.GetName()
@@ -131,7 +119,7 @@ smeshgui.SetName(idreg, "Regular_1D");
 
 print "-------------------------- MEFISTO_2D"
 algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-listHyp=algoMef.GetCompatibleHypothesis()
+listHyp = algoMef.GetCompatibleHypothesis()
 for hyp in listHyp:
     print hyp
 print algoMef.GetName()
@@ -142,13 +130,11 @@ smeshgui.SetName(idmef, "MEFISTO_2D");
 
 # ---- Init a Mesh with the box
 
-box=salome.IDToObject(idbox)
-mesh=smesh.CreateMesh(box)
-
+box = salome.IDToObject(idbox)
+mesh = smesh.CreateMesh(box)
 idmesh = salome.ObjectToID(mesh)
 smeshgui.SetName(idmesh, "Meshbox");
 
-# ---- add hypothesis to box
 print "-------------------------- add hypothesis to box"
 mesh.AddHypothesis(box,algoReg)
 mesh.AddHypothesis(box,hypNbSeg1)
@@ -158,14 +144,14 @@ mesh.AddHypothesis(box,hypArea1)
 # ---- add hypothesis to edge
 
 print "-------------------------- add hypothesis to edge"
-edge=salome.IDToObject(idedge)
+edge = salome.IDToObject(idedge)
 submesh = mesh.GetSubMesh(edge, "SubMeshEdge")
-mesh.AddHypothesis(edge , algoReg)
+mesh.AddHypothesis(edge, algoReg)
 mesh.AddHypothesis(edge, hypLen1)
 
 print "-------------------------- add hypothesis to face"
 face = salome.IDToObject(idface)
-submesh =mesh.GetSubMesh(face, "SubMeshFace")
-mesh.AddHypothesis(face,hypArea2)
+submesh = mesh.GetSubMesh(face, "SubMeshFace")
+mesh.AddHypothesis(face, hypArea2)
 
 salome.sg.updateObjBrowser(1);

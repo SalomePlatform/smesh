@@ -23,7 +23,6 @@
 #include "SMDS_MeshElement.hxx"
 #include <set>
 
-using namespace std;
 
 class SMDS_IteratorOfElements:public SMDS_ElemIterator
 {
@@ -46,8 +45,8 @@ class SMDS_IteratorOfElements:public SMDS_ElemIterator
 	const SMDS_MeshElement * myElement;		
 	bool myReverseIteration;
 
-	set<const SMDS_MeshElement*> alreadyReturnedElements;
-	set<const SMDS_MeshElement*>::iterator itAlreadyReturned;	
+	std::set<const SMDS_MeshElement*> alreadyReturnedElements;
+	std::set<const SMDS_MeshElement*>::iterator itAlreadyReturned;	
 	bool subMore();
 	const SMDS_MeshElement * subNext();
 };

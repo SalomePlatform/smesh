@@ -41,7 +41,6 @@
 #include <iostream>
 #include <cmath>
 
-using namespace std;
 
 template<class T> inline T Abs (const T &a){return a <0 ? -a : a;}
 template<class T> inline void Echange (T& a,T& b) {T c=a;a=b;b=c;}
@@ -81,14 +80,14 @@ typedef double R;
 //============
 class R2 
 {
-  friend ostream& operator << (ostream& f, const R2 & P)
+  friend std::ostream& operator << (std::ostream& f, const R2 & P)
   { f << P.x << ' ' << P.y ; return f; }
-  friend istream& operator >> (istream& f, R2 & P)
+  friend std::istream& operator >> (std::istream& f, R2 & P)
   { f >> P.x >> P.y ; return f; }
 
-  friend ostream& operator << (ostream& f, const R2 * P)
+  friend std::ostream& operator << (std::ostream& f, const R2 * P)
   { f << P->x << ' ' << P->y ; return f; }
-  friend istream& operator >> (istream& f, R2 * P)
+  friend std::istream& operator >> (std::istream& f, R2 * P)
   { f >> P->x >> P->y ; return f; }
 
 public:
@@ -120,14 +119,14 @@ public:
 //============
 class R3
 {
-  friend ostream& operator << (ostream& f, const R3 & P)
+  friend std::ostream& operator << (std::ostream& f, const R3 & P)
   { f << P.x << ' ' << P.y << ' ' << P.z ; return f; }
-  friend istream& operator >> (istream& f, R3 & P)
+  friend std::istream& operator >> (std::istream& f, R3 & P)
   { f >> P.x >> P.y >> P.z ; return f; }
 
-  friend ostream& operator << (ostream& f, const R3 * P)
+  friend std::ostream& operator << (std::ostream& f, const R3 * P)
   { f << P->x << ' ' << P->y << ' ' << P->z ; return f; }
-  friend istream& operator >> (istream& f, R3 * P)
+  friend std::istream& operator >> (std::istream& f, R3 * P)
   { f >> P->x >> P->y >> P->z ; return f; }
 
 public:  
@@ -173,12 +172,12 @@ public:
 //============
 class R4: public R3
 {
-  friend ostream& operator <<(ostream& f, const R4 & P )
+  friend std::ostream& operator <<(std::ostream& f, const R4 & P )
   { f << P.x << ' ' << P.y << ' ' << P.z << ' ' << P.omega; return f; }
   friend istream& operator >>(istream& f,  R4 & P)
   { f >> P.x >>  P.y >>  P.z >> P.omega ; return f; }
 
-  friend ostream& operator <<(ostream& f, const R4 * P )
+  friend std::ostream& operator <<(std::ostream& f, const R4 * P )
   { f << P->x << ' ' << P->y << ' ' << P->z << ' ' << P->omega; return f; }
   friend istream& operator >>(istream& f,  R4 * P)
   { f >> P->x >>  P->y >>  P->z >> P->omega ; return f; }

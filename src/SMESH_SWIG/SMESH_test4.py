@@ -1,31 +1,18 @@
 import salome
-from geompy import gg
 import geompy
 import SMESH
-
 import StdMeshers
 
-ShapeTypeCompSolid = 1
-ShapeTypeSolid = 2
-ShapeTypeShell = 3
-ShapeTypeFace = 4
-ShapeTypeWire = 5
-ShapeTypeEdge = 6
-ShapeTypeVertex = 7
-
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-geom.GetCurrentStudy(salome.myStudy._get_StudyId())
 smesh.SetCurrentStudy(salome.myStudy)
 
 box   = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box,"box")
+idbox = geompy.addToStudy(box, "box")
 
-subShapeList = geompy.SubShapeAll(box,ShapeTypeFace)
+subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 face   = subShapeList[0]
-name   = geompy.SubShapeName( face._get_Name(), box._get_Name() )
-idface = geompy.addToStudyInFather(box,face,name)
+name   = geompy.SubShapeName(face, box)
+idface = geompy.addToStudyInFather(box, face, name)
 
 box  = salome.IDToObject(idbox)
 face = salome.IDToObject(idface)

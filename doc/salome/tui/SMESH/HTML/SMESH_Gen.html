@@ -7,24 +7,52 @@
 <td width="50%" bgcolor= "lightgreen"><font size="+2"><div align="center"><b><i>Python</i></b></div></font></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Hypothesis  CreateHypothesis ( in string anHyp, in long studyId )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateHypothesis ( anHyp, studyId )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>FilterManager  CreateFilterManager (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateFilterManager (  )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  Init ( in GEOM_Gen geomEngine, in long studyId, in GEOM_Shape aShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = Init ( geomEngine, studyId, aShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Pattern  GetPattern (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetPattern (  )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>boolean  Compute ( in SMESH_Mesh aMesh, in GEOM_Shape aSubShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = Compute ( aMesh, aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>void SetCurrentStudy ( in Study theStudy )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SetCurrentStudy ( theStudy )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>boolean  IsReadyToCompute ( in SMESH_Mesh aMesh, in GEOM_Shape aSubShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = IsReadyToCompute ( aMesh, aSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>Study  GetCurrentStudy (  )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetCurrentStudy (  )</b></div></td>
 </tr>
 <tr>
-<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetSubShapesId ( in GEOM_Gen geomEngine, in long studyId, in GEOM_Shape mainShape, in shape_array listOfSubShape )</b></div></td>
-<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetSubShapesId ( geomEngine, studyId, mainShape, listOfSubShape )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Hypothesis  CreateHypothesis ( in string theHypName, in string theLibName )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateHypothesis ( theHypName, theLibName )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  CreateMesh ( in GEOM_Object theObject )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateMesh ( theObject )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  CreateMeshesFromUNV ( in string theFileName )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateMeshesFromUNV ( theFileName )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>mesh_array  CreateMeshesFromMED ( in string theFileName, out DriverMED_ReadStatus theStatus )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>[ return_value,  theStatus ] = CreateMeshesFromMED ( theFileName )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>SMESH_Mesh  CreateMeshesFromSTL ( in string theFileName )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = CreateMeshesFromSTL ( theFileName )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  Compute ( in SMESH_Mesh theMesh, in GEOM_Object theSubObject )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = Compute ( theMesh, theSubObject )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>boolean  IsReadyToCompute ( in SMESH_Mesh theMesh, in GEOM_Object theSubObject )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = IsReadyToCompute ( theMesh, theSubObject )</b></div></td>
+</tr>
+<tr>
+<td bgcolor= "lightgreen"><div align="center"><b>long_array  GetSubShapesId ( in GEOM_Object theMainObject, in object_array theListOfSubObjects )</b></div></td>
+<td bgcolor= "lightgreen"><div align="center"><b>return_value = GetSubShapesId ( theMainObject, theListOfSubObjects )</b></div></td>
 </tr>
 </table><br>
 </b></HTML>

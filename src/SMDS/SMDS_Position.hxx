@@ -33,12 +33,14 @@
 class SMDS_Position;
 typedef boost::shared_ptr<SMDS_Position> SMDS_PositionPtr;
 
+
 class SMDS_Position
 {
 
   public:
 	const virtual double * Coords() const = 0;
-	virtual inline SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
+	virtual SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
+	virtual int GetDim() const;
 	void SetShapeId(int aShapeId);
 	int GetShapeId() const;
 	virtual ~SMDS_Position() {}
@@ -49,4 +51,6 @@ class SMDS_Position
   private:
 	int myShapeId;
 };
+
+
 #endif

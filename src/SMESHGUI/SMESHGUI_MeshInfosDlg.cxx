@@ -26,15 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-#include "SMESHGUI_MeshInfosDlg.h"
-
-#include "SMESHGUI.h"
-#include "QAD_Application.h"
-#include "QAD_Desktop.h"
-#include "QAD_WaitCursor.h"
-#include "utilities.h"
-
 // QT Includes
 #include <qgroupbox.h>
 #include <qlabel.h>
@@ -43,6 +34,23 @@ using namespace std;
 #include <qlayout.h>
 #include <qmap.h>
 #include <qpushbutton.h>
+
+#include "QAD_Application.h"
+#include "QAD_Desktop.h"
+#include "QAD_WaitCursor.h"
+
+#include "SMESHGUI_MeshInfosDlg.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI.h"
+
+// IDL Headers
+#include "SALOMEconfig.h"
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Group)
+
+#include "utilities.h"
+
+using namespace std;
 
 #define COLONIZE( str )   ( QString( str ).contains( ":" ) > 0 ? QString( str ) : QString( str ) + " :"  )
 
@@ -367,7 +375,7 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
     myStartSelection = false;
     mySelectLab->setText( "" );
     Handle(SALOME_InteractiveObject) IObject = mySelection->firstIObject();
-    SALOMEDS::SObject_var aSO = SMESHGUI::GetSMESHGUI()->GetStudy()->FindObjectID( IObject->getEntry() );
+    SALOMEDS::SObject_var aSO = SMESH::GetActiveStudyDocument()->FindObjectID( IObject->getEntry() );
     if ( !aSO->_is_nil() ) {
       CORBA::Object_var anObject = aSO->GetObject();
       if ( !CORBA::is_nil( anObject ) ) {
@@ -393,14 +401,14 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	  myWGStack->raiseWidget( mySubMeshWidget );
 	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_SUBMESH") +"]" );
 	  mySubMeshName->setText( aSO->GetName() );
-	  mySubMeshNbNodes->setNum( (int)aSubMesh->GetNumberOfNodes() );
+	  mySubMeshNbNodes->setNum( (int)aSubMesh->GetNumberOfNodes( true ) );
 	  mySubMeshNbElements->setNum( (int)aSubMesh->GetNumberOfElements() );
 	  mySubMeshNbEdges->setNum( (int)( aSubMesh->GetElementsByType( SMESH::EDGE )->length() ) );
 	  mySubMeshNbFaces->setNum( (int)( aSubMesh->GetElementsByType( SMESH::FACE )->length() ) );
 	  mySubMeshNbVolumes->setNum( (int)( aSubMesh->GetElementsByType( SMESH::VOLUME )->length() ) );
 	  return;
 	}
-	SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( anObject );
+	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( anObject );
 	if ( !aGroup->_is_nil() ) {
 	  myWGStack->raiseWidget( myGroupWidget );
 	  setCaption( tr( "SMESH_MESHINFO_TITLE" ) + " [" + tr("SMESH_GROUP") +"]" );

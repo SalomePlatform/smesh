@@ -161,7 +161,7 @@ CORBA::Long SMESH_MEDFamily_i::getAttributeIdentifier(CORBA::Long i)
   MESSAGE("Les familles SMESH n ont pas d attribut");
   THROW_SALOME_CORBA_EXCEPTION("No attributes"\
 			       ,SALOME::BAD_PARAM);
-  if (_numberOfAttribute = 0)
+  if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
@@ -208,7 +208,7 @@ CORBA::Long  SMESH_MEDFamily_i::getAttributeValue(CORBA::Long i)
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
 				 SALOME::INTERNAL_ERROR);
-  if (_numberOfAttribute = 0)
+  if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
@@ -229,7 +229,7 @@ SALOME_MED::string_array * SMESH_MEDFamily_i::getAttributesDescriptions()
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
 				 SALOME::INTERNAL_ERROR);
-  if (_numberOfAttribute = 0)
+  if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\
@@ -253,7 +253,7 @@ char *  SMESH_MEDFamily_i::getAttributeDescription( CORBA::Long i)
   if (_subMeshDS==NULL)
     THROW_SALOME_CORBA_EXCEPTION("No associated Family",\
 				 SALOME::INTERNAL_ERROR);
-  if (_numberOfAttribute = 0)
+  if (_numberOfAttribute == 0)
     {
       MESSAGE("Les familles SMESH n ont pas d attribut");
       THROW_SALOME_CORBA_EXCEPTION("No attributes"\

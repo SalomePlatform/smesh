@@ -22,54 +22,42 @@
 #  File   : SMESH_test0.py
 #  Module : SMESH
 
-import SMESH
-import smeshpy
 import salome
-from salome import sg
-import math
-#import SMESH_BasicHypothesis_idl
-
 import geompy
-
-geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
-myBuilder = salome.myStudy.NewBuilder()
+from geompy import geom
 from geompy import gg
 
-ShapeTypeCompSolid = 1
-ShapeTypeSolid = 2
-ShapeTypeShell = 3
-ShapeTypeFace = 4
-ShapeTypeWire = 5
-ShapeTypeEdge = 6
-ShapeTypeVertex = 7
+import SMESH
+
+myBuilder = salome.myStudy.NewBuilder()
 
 # ---- define a box
 
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
-idbox = geompy.addToStudy(box,"box")
+idbox = geompy.addToStudy(box, "box")
 
 # ---- add first face of box in study
 
-subShapeList=geompy.SubShapeAll(box,ShapeTypeFace)
-face=subShapeList[0]
-name = geompy.SubShapeName( face._get_Name(), box._get_Name() )
+subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
+face = subShapeList[0]
+name = geompy.SubShapeName(face, box)
 print name
-idface=geompy.addToStudyInFather(box,face,name)
+idface = geompy.addToStudyInFather(box, face, name)
 
 # ---- add shell from box  in study
 
-subShellList=geompy.SubShapeAll(box,ShapeTypeShell)
+subShellList = geompy.SubShapeAll(box, geompy.ShapeType["SHELL"])
 shell = subShellList[0]
-name = geompy.SubShapeName( shell._get_Name(), box._get_Name() )
+name = geompy.SubShapeName(shell, box)
 print name
-idshell=geompy.addToStudyInFather(box,shell,name)
+idshell = geompy.addToStudyInFather(box, shell, name)
 
 # ---- add first edge of face in study
 
-edgeList = geompy.SubShapeAll(face,ShapeTypeEdge)
-edge=edgeList[0];
-name = geompy.SubShapeName( edge._get_Name(), face._get_Name() )
+edgeList = geompy.SubShapeAll(face, geompy.ShapeType["EDGE"])
+edge = edgeList[0]
+name = geompy.SubShapeName(edge, face)
 print name
-idedge=geompy.addToStudyInFather(face,edge,name)
+idedge = geompy.addToStudyInFather(face, edge, name)
 
-sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(1)

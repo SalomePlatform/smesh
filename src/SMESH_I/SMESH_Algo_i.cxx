@@ -79,7 +79,7 @@ SMESH::ListOfHypothesisName* SMESH_Algo_i::GetCompatibleHypothesis()
   int nbHyp = hypList.size();
   listOfHypothesis->length( nbHyp );
   for ( int i = 0; i < nbHyp; i++ ) {
-    listOfHypothesis[ i ] = strdup( hypList[ i ].c_str() );
+    listOfHypothesis[ i ] = CORBA::string_dup( hypList[ i ].c_str() );
   }
   return listOfHypothesis._retn();
 }

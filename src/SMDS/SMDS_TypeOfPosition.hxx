@@ -27,13 +27,13 @@
 #ifndef _SMDS_TypeOfPosition_HeaderFile
 #define _SMDS_TypeOfPosition_HeaderFile
 
-enum SMDS_TypeOfPosition
+enum SMDS_TypeOfPosition // Value is equal to shape dimention
 {
-	SMDS_TOP_UNSPEC,
-	SMDS_TOP_3DSPACE,
-	SMDS_TOP_VERTEX,
-	SMDS_TOP_EDGE,
-	SMDS_TOP_FACE
+	SMDS_TOP_UNSPEC  = -1,
+	SMDS_TOP_VERTEX  = 0,
+	SMDS_TOP_EDGE    = 1,
+	SMDS_TOP_FACE    = 2,
+	SMDS_TOP_3DSPACE = 3
 };
 
 #endif

@@ -29,82 +29,351 @@
 #include "SALOME_GenericObj.idl"
 #include "SMESH_Mesh.idl"
 
-module SMESH{
 
-  interface Functor: SALOME::GenericObj{
-    void SetMesh(in SMESH_Mesh theMesh);
+module GEOM
+{
+  interface GEOM_Object;
+};
+
+
+module SMESH
+{
+
+  /*!
+  * Enumeration of functor types
+  */
+  enum FunctorType
+  {
+    FT_AspectRatio,
+    FT_Warping,   
+    FT_MinimumAngle,
+    FT_Taper,       
+    FT_Skew,         
+    FT_Area,          
+    FT_FreeBorders,
+    FT_FreeEdges,
+    FT_MultiConnection,
+    FT_Length,
+    FT_BelongToGeom,
+    FT_BelongToPlane,
+    FT_BelongToCylinder,
+    FT_RangeOfIds,
+    FT_LessThan,
+    FT_MoreThan,
+    FT_EqualTo,
+    FT_LogicalNOT,
+    FT_LogicalAND,
+    FT_LogicalOR,
+    FT_Undefined
   };
 
-  interface NumericalFunctor: Functor{
-    double GetValue(in long theElementId);
+  /*!
+  * Base interface for all functors ( i.e. numerical functors and predicates )
+  */
+  interface Functor: SALOME::GenericObj
+  {
+    void            SetMesh( in SMESH_Mesh theMesh );
+    FunctorType     GetFunctorType();
+    ElementType     GetElementType();
   };
 
-  interface MinimumAngle: NumericalFunctor{};
-  interface AspectRatio: NumericalFunctor{};
-  interface Warping: NumericalFunctor{};
-  interface Taper: NumericalFunctor{};
-  interface Skew: NumericalFunctor{};
-  interface Area: NumericalFunctor{};
-  interface Length: NumericalFunctor{};
-  interface MultiConnection: NumericalFunctor{};
 
-  interface Predicate: Functor{
-    boolean IsSatisfy(in long thEntityId);
+
+  /*!
+  * Numerical functors are intended for calculating value by Id of mesh entity
+  */
+  interface NumericalFunctor: Functor
+  {
+    double GetValue( in long theElementId );
+
+    /*!
+    * Set precision for calculation. It is a position after point which is
+    * used to functor value after calculation.
+    */
+    void   SetPrecision( in long thePrecision );
+    long   GetPrecision();
+  };
+  interface MinimumAngle    : NumericalFunctor{};
+  interface AspectRatio     : NumericalFunctor{};
+  interface Warping         : NumericalFunctor{};
+  interface Taper           : NumericalFunctor{};
+  interface Skew            : NumericalFunctor{};
+  interface Area            : NumericalFunctor{};
+  interface Length          : NumericalFunctor{};
+  interface MultiConnection : NumericalFunctor{};
+
+  /*!
+  * Predicates are intended for verification of criteria,
+  *            must return bool value by mesh id
+  */
+  interface Predicate: Functor
+  {
+    boolean IsSatisfy( in long thEntityId );
   };
 
+  /*!
+  * Logical functor (predicate) "Belong To Geometry".
+  * Verify whether mesh element or node belong to pointed Geom Object
+  */
+  interface BelongToGeom: Predicate
+  {
+    void SetGeom( in GEOM::GEOM_Object theGeom );
+    void SetElementType( in ElementType theType );
+
+    void   SetShapeName( in string theName );
+    string GetShapeName();    
+  };
+
+  /*!
+  * Logical functor (predicate) "Belong To Surface".
+  * Base interface for "belong to plane" and "belong to cylinder interfaces"
+  */
+  interface BelongToSurface: Predicate
+  {
+    void   SetTolerance( in double theToler );
+    double GetTolerance();
+    void   SetShapeName( in string theName, in ElementType theType );
+    string GetShapeName();
+  };
+
+
+  /*!
+  * Logical functor (predicate) "Belong To Plane".
+  * Verify whether mesh element lie in pointed Geom planar object
+  */
+  interface BelongToPlane: BelongToSurface
+  {
+    void   SetPlane( in GEOM::GEOM_Object theGeom, in ElementType theType );
+  };
+
+  /*!
+  * Logical functor (predicate) "Belong To Culinder".
+  * Verify whether mesh element lie in pointed Geom cylindrical object
+  */
+  interface BelongToCylinder: BelongToSurface
+  {
+    void   SetCylinder( in GEOM::GEOM_Object theGeom, in ElementType theType );
+  };
+
+  /*!
+  * Logical functor (predicate) "Free borders".
+  * Verify whether 1D mesh element is free ( i.e. connected to one face only )
+  */
   interface FreeBorders: Predicate{};
 
-  interface Comparator: Predicate{
-    void SetMargin(in double theValue);
-    void SetNumFunctor(in NumericalFunctor theFunct);
+  /*!
+  * Logical functor (predicate) "Free edges".
+  * Verify whether 2D mesh element has free edges( i.e. edges connected to one face only )
+  */
+  interface FreeEdges: Predicate
+
+  {
+    struct Border
+    {
+      long myElemId;
+      long myPnt1, myPnt2;
+    };
+    typedef sequence<Border> Borders;
+    Borders GetBorders();
   };
 
+
+  /*!
+  * Abstract logical functor (predicate) "RangeOfIds".
+  * Verify whether an Entity Id belongs to defined sequence of id's
+  */
+  interface RangeOfIds: Predicate
+  {
+    void            SetRange( in long_array theIds );
+    boolean         SetRangeStr( in string theRange );
+    string          GetRangeStr();
+
+    void            SetElementType( in ElementType theType );
+  };
+
+  /*!
+  * Comparator. Predicate for compare value calculated
+  *             by numerical functor with threshold value
+  */
+  interface Comparator: Predicate
+  {
+    void    SetMargin( in double theValue );
+    void    SetNumFunctor( in NumericalFunctor theFunct );
+    double  GetMargin();
+  };
   interface LessThan: Comparator{};
   interface MoreThan: Comparator{};
-  interface EqualTo: Comparator{
-    void SetTolerance(in double theTolerance );
+  interface EqualTo : Comparator
+  {
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
   };
 
+  /*!
+  * Logical predicates are intended for compose predicates using boolean operations
+  */
   interface Logical: Predicate{};
 
-  interface LogicalNOT: Logical{
+  interface LogicalNOT: Logical
+  {
     void SetPredicate(in Predicate thePredicate);
   };
 
-  interface LogicalBinary: Logical{
-    void SetPredicate1(in Predicate thePredicate);
-    void SetPredicate2(in Predicate thePredicate);
+  interface LogicalBinary: Logical
+{
+    void SetPredicate1( in Predicate thePredicate );
+    void SetPredicate2( in Predicate thePredicate );
   };
-  
+
   interface LogicalAND: LogicalBinary{};
-  interface LogicalOR: LogicalBinary{};
-  interface Filter: SALOME::GenericObj{
-    void SetPredicate( in Predicate thePredicate );
-    long_array GetElementsId( in SMESH_Mesh theMesh );
+  interface LogicalOR : LogicalBinary{};
+
+  /*!
+  *  Filter
+  */
+  interface Filter: SALOME::GenericObj
+  {
+    /*!
+    * Structure containing information about one criterion
+    *   Type          - FT_Taper, FT_Skew ...
+    *   Compare       - FT_LessThan, FT_MoreThan, FT_EqualTo
+    *   Threshold     - threshold value
+    *   UnaryOp       - unary logical operation: FT_LogicalNOT or FT_Undefined
+    *   BinaryOp      - binary logical operation FT_LogicalAND, FT_LogicalOR or
+    *                   (FT_Undefined must be for the last criterion)
+    *   ThresholdStr  - Threshold value defined as string. Used for:
+    *                   1. Diaposon of identifiers. Example: "1,2,3,5-10,12,27-29"
+    *                   2. BelongToGeom predicate for storing name of shape
+    *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
+    *                   "Belong to plane" and "Belong to cylinder" predicates
+    *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE (used by BelongToGeom predicate only)
+    *   Precision     - Precision of numerical functors
+    */
+    struct Criterion
+    {
+      long        Type;
+      long        Compare;
+      double      Threshold;
+      string      ThresholdStr;
+      long        UnaryOp;
+      long        BinaryOp;
+      double      Tolerance;
+      ElementType TypeOfElement;
+      long        Precision;
+    };
+
+    typedef sequence<Criterion> Criteria;
+
+    void          SetPredicate( in Predicate thePredicate );
+    long_array    GetElementsId( in SMESH_Mesh theMesh );
+    ElementType   GetElementType();
+    Predicate     GetPredicate();
+
+    boolean       GetCriteria( out Criteria theCriteria );
+    boolean       SetCriteria( in Criteria theCriteria );
   };
 
-  interface FilterManager: SALOME::GenericObj{
-    MinimumAngle CreateMinimumAngle();
-    AspectRatio CreateAspectRatio();
-    Warping CreateWarping();
-    Taper CreateTaper();
-    Skew CreateSkew();
-    Area CreateArea();
-    Length CreateLength();
-    MultiConnection CreateMultiConnection();
 
-    FreeBorders CreateFreeBorders();
+  /*!
+  *  Interface for working with library of filters
+  */
+  interface FilterLibrary : SALOME::GenericObj
+  {
+    /*!
+    *  Copy filter from library by name (new filter is created)
+    */
+    Filter        Copy( in string theFilterName );
 
-    LessThan CreateLessThan();
-    MoreThan CreateMoreThan();
-    EqualTo CreateEqualTo();
-    
-    LogicalNOT CreateLogicalNOT();
-    LogicalAND CreateLogicalAND();
-    LogicalOR CreateLogicalOR();
-    Filter CreateFilter();
+    /*!
+    * Methods for editing library
+    */
+    boolean       Add     ( in string theFilterName, in Filter theFilter );
+    boolean       AddEmpty( in string theFilterName, in ElementType theType ); // add empty filter
+    boolean       Delete  ( in string theFilterName );
+    boolean       Replace ( in string theFilterName, in string theNewName, in Filter theFilter );
+
+    /*!
+    *  Save library on disk
+    */
+    boolean       Save();
+    boolean       SaveAs( in string aFileName );
+
+    /*!
+    * Query methods
+    */
+    boolean       IsPresent( in string aFilterName );
+    long          NbFilters( in ElementType aType );
+    string_array  GetNames( in ElementType aType );
+    string_array  GetAllNames();
+    void          SetFileName( in string aFilterName );
+    string        GetFileName();
   };
-  
+
+
+  /*!
+  * Interface of Filter manager
+  */
+  interface FilterManager: SALOME::GenericObj
+  {
+    /*!
+    *  Create numerical functors
+    */
+    MinimumAngle      CreateMinimumAngle();
+    AspectRatio       CreateAspectRatio();
+    Warping           CreateWarping();
+    Taper             CreateTaper();
+    Skew              CreateSkew();
+    Area              CreateArea();
+    Length            CreateLength();
+    MultiConnection   CreateMultiConnection();
+
+    /*!
+    *  Create logical functors ( predicates )
+    */
+    BelongToGeom      CreateBelongToGeom();
+    BelongToPlane     CreateBelongToPlane();
+    BelongToCylinder  CreateBelongToCylinder();
+
+    FreeBorders       CreateFreeBorders();
+    FreeEdges         CreateFreeEdges();
+
+    RangeOfIds        CreateRangeOfIds();
+
+    /*!
+    *  Create comparators ( predicates )
+    */
+    LessThan          CreateLessThan();
+    MoreThan          CreateMoreThan();
+    EqualTo           CreateEqualTo();
+
+    /*!
+    *  Create boolean operations ( predicates )
+    */
+    LogicalNOT        CreateLogicalNOT();
+    LogicalAND        CreateLogicalAND();
+    LogicalOR         CreateLogicalOR();
+
+    /*!
+    *  Create filter
+    */
+    Filter            CreateFilter();
+
+    /*!
+    *  Load filter library. If libary does not exist it is created
+    */
+    FilterLibrary     LoadLibrary( in string aFileName );
+
+    /*!
+    *  Create new library
+    */
+    FilterLibrary     CreateLibrary();
+
+    /*!
+    *  Delete library
+    */
+    boolean           DeleteLibrary( in string aFileName );
+  };
 };
+
 
 #endif

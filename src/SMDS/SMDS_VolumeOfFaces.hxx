@@ -32,7 +32,7 @@
 #include "SMDS_Iterator.hxx"
 #include <vector>
 #include <iostream>
-using namespace std;
+
 
 class SMDS_VolumeOfFaces:public SMDS_MeshVolume
 {
@@ -54,13 +54,13 @@ class SMDS_VolumeOfFaces:public SMDS_MeshVolume
                            const SMDS_MeshFace * face5,
                            const SMDS_MeshFace * face6);
 
-	void Print(ostream & OS) const;
+	void Print(std::ostream & OS) const;
 	
 	int NbFaces() const;
 
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
-	vector<const SMDS_MeshFace *> myFaces;
+	std::vector<const SMDS_MeshFace *> myFaces;
 };
 #endif

@@ -25,7 +25,10 @@
 //  Module : SMESH
 //  $Header$
 
-#include "SMESHGUI.h"
+#ifndef SMESHGUI_XmlHandler_HeaderFile
+#define SMESHGUI_XmlHandler_HeaderFile
+
+#include "SMESHGUI_Hypotheses.h"
 
 #include <qxml.h>
 #include <map>
@@ -47,8 +50,8 @@ class SMESHGUI_XmlHandler : public QXmlDefaultHandler
   bool fatalError   (const QXmlParseException& exception);
 
  public:
-  map<string, HypothesisData*> myHypothesesMap;
-  map<string, HypothesisData*> myAlgorithmsMap;
+  std::map<std::string, HypothesisData*> myHypothesesMap;
+  std::map<std::string, HypothesisData*> myAlgorithmsMap;
 
  private:
   QString myErrorProt;
@@ -56,3 +59,6 @@ class SMESHGUI_XmlHandler : public QXmlDefaultHandler
   QString myServerLib;
   QString myClientLib;
 };
+
+
+#endif

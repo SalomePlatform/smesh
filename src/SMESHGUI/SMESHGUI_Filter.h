@@ -35,34 +35,110 @@
 
 class SALOME_Actor;
 
-
-DEFINE_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
+enum SMESHGUI_FilterType
+{
+  SMESHGUI_UnknownFilter      = -1,
+  SMESHGUI_NodeFilter         =  0,
+  SMESHGUI_EdgeFilter         =  1,
+  SMESHGUI_FaceFilter         =  2,
+  SMESHGUI_VolumeFilter       =  3,
+  SMESHGUI_AllElementsFilter  =  4,
+  SMESHGUI_QuadFilter         =  5,
+  SMESHGUI_TriaFilter         =  6
+};
 
 /*
   Class       : SMESHGUI_Filter
-  Description : Selection filter for VTK viewer
+  Description : Base class for SMESH selection filters for VTK viewer. 
 */
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
 
 class SMESHGUI_Filter : public VTKViewer_Filter
 {
 
 public:
-                              SMESHGUI_Filter();
-  virtual                     ~SMESHGUI_Filter();
+
+  virtual bool                IsObjValid( const int theObjId ) const = 0;
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_Filter)
+};
+
+/*
+  Class       : SMESHGUI_PredicateFilter
+  Description : Selection filter for VTK viewer. This class aggregate object
+                of SMESH_Predicate class and uses it for verification of criterion
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_PredicateFilter, SMESHGUI_Filter)
+
+class SMESHGUI_PredicateFilter : public SMESHGUI_Filter
+{
+
+public:
+                              SMESHGUI_PredicateFilter();
+  virtual                     ~SMESHGUI_PredicateFilter();
 
   virtual bool                IsValid( const int theCellId ) const;
-
-  virtual void                SetActor( SALOME_Actor* );
-  SALOME_Actor*               GetActor() const;
-
+  virtual bool                IsObjValid( const int theObjId ) const;
+  virtual int                 GetId() const;
+  virtual bool                IsNodeFilter() const;
   void                        SetPredicate( SMESH::Predicate_ptr );
+
+  void                        SetActor( SALOME_Actor* );
 
 private:
 
   SMESH::Predicate_var        myPred;
 
-public:  
-  DEFINE_STANDARD_RTTI(SMESHGUI_Filter)
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_PredicateFilter)
+};
+
+/*
+  Class       : SMESHGUI_QuadrangleFilter
+  Description : Verify whether selected cell is quadranle
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_QuadrangleFilter, SMESHGUI_Filter)
+
+class SMESHGUI_QuadrangleFilter : public SMESHGUI_Filter
+{
+
+public:
+                              SMESHGUI_QuadrangleFilter();
+  virtual                     ~SMESHGUI_QuadrangleFilter();
+
+  virtual bool                IsValid( const int theCellId ) const;
+  virtual bool                IsObjValid( const int theObjId ) const;
+  virtual int                 GetId() const;
+  virtual bool                IsNodeFilter() const;
+
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_QuadrangleFilter)
+};
+
+/*
+  Class       : SMESHGUI_TriangleFilter
+  Description : Verify whether selected cell is triangle
+*/
+
+DEFINE_STANDARD_HANDLE(SMESHGUI_TriangleFilter, SMESHGUI_Filter)
+
+class SMESHGUI_TriangleFilter : public SMESHGUI_Filter
+{
+
+public:
+                              SMESHGUI_TriangleFilter();
+  virtual                     ~SMESHGUI_TriangleFilter();
+
+  virtual bool                IsValid( const int theCellId ) const;
+  virtual bool                IsObjValid( const int theObjId ) const;
+  virtual int                 GetId() const;
+  virtual bool                IsNodeFilter() const;  
+
+public:
+  DEFINE_STANDARD_RTTI(SMESHGUI_TriangleFilter)
 };
 
 #endif

@@ -30,23 +30,34 @@
 #include "SMDS_Mesh.hxx"
 #include <set>
 
-using namespace std;
-
 class SMESHDS_SubMesh
 {
-  public:
-	void AddElement(const SMDS_MeshElement * ME);
-	bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
-	void AddNode(const SMDS_MeshNode * ME);
-	bool RemoveNode(const SMDS_MeshNode * ME); // ret true if ME was in
-	int NbElements() const;
-	SMDS_ElemIteratorPtr GetElements() const;
-	int NbNodes() const;
-	SMDS_NodeIteratorPtr GetNodes() const;
+ public:
 
-  private:
-	const SMDS_Mesh * myMesh;
-	set<const SMDS_MeshElement*> myElements;
-	set<const SMDS_MeshNode*> myNodes;
+  bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
+
+  // if !IsComplexSubmesh()
+  void AddElement(const SMDS_MeshElement * ME);
+  bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
+  void AddNode(const SMDS_MeshNode * ME);
+  bool RemoveNode(const SMDS_MeshNode * ME);       // ret true if ME was in
+
+  // if IsComplexSubmesh()
+  void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
+  bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
+  bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
+
+  // for both types
+  int NbElements() const;
+  SMDS_ElemIteratorPtr GetElements() const;
+  int NbNodes() const;
+  SMDS_NodeIteratorPtr GetNodes() const;
+  bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
+
+ private:
+  //const SMDS_Mesh * myMesh;
+  std::set<const SMDS_MeshElement*> myElements;
+  std::set<const SMDS_MeshNode*>    myNodes;
+  std::set<const SMESHDS_SubMesh*>  mySubMeshes;
 };
 #endif

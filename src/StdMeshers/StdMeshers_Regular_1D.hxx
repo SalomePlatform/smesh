@@ -32,8 +32,10 @@
 
 #include "SMESH_1D_Algo.hxx"
 
-class StdMeshers_LocalLength;
-class StdMeshers_NumberOfSegments;
+#include <TopoDS_Shape.hxx>
+#include <TopTools_ListOfShape.hxx>
+
+class TopoDS_Edge;
 
 class StdMeshers_Regular_1D:
   public SMESH_1D_Algo
@@ -49,17 +51,40 @@ public:
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape);
 
+  virtual const std::list <const SMESHDS_Hypothesis *> &
+          GetUsedHypothesis (SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);
   friend ostream & operator << (ostream & save, StdMeshers_Regular_1D & hyp);
   friend istream & operator >> (istream & load, StdMeshers_Regular_1D & hyp);
 
 protected:
-  double _localLength;
-  int _numberOfSegments;
-  double _scaleFactor;
-  const StdMeshers_LocalLength* _hypLocalLength;
-  const StdMeshers_NumberOfSegments* _hypNumberOfSegments;
+
+  Standard_Boolean IsPropagated (SMESH_Mesh         & theMesh,
+                                 const TopoDS_Shape & theShape);
+
+  void GetOppositeEdges (const TopoDS_Shape&   theShape,
+                         const TopoDS_Shape&   theEdge,
+                         TopTools_ListOfShape& theOppositeEdges) const;
+
+  bool computeInternalParameters (const TopoDS_Edge&    theEdge,
+                                  std::list< double > & theParameters ) const;
+
+  enum HypothesisType { LOCAL_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, NONE };
+
+  enum ValueIndex {
+    NB_SEGMENTS_IND  = 0,
+    SCALE_FACTOR_IND = 1,
+    BEG_LENGTH_IND   = 0,
+    END_LENGTH_IND   = 1,
+    DEFLECTION_IND   = 0
+    };
+  
+  HypothesisType _hypType;
+
+  double _value[2];
+  
 };
 
 #endif

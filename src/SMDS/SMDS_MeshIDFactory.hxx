@@ -29,7 +29,7 @@
 
 #include "SMDS_MeshObject.hxx"
 #include <stack>
-using namespace std;
+
 
 class SMDS_MeshIDFactory:public SMDS_MeshObject
 {
@@ -40,7 +40,7 @@ class SMDS_MeshIDFactory:public SMDS_MeshObject
   protected:
 	SMDS_MeshIDFactory();
 	int myMaxID;
-	stack<int> myPoolOfID;
+	std::stack<int> myPoolOfID;
 };
 
 #endif

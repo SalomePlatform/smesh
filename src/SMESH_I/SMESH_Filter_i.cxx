@@ -28,748 +28,164 @@
 
 #include "SMESH_Filter_i.hxx"
 
-#include "SMDS_Iterator.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDSAbs_ElementType.hxx"
 #include "SMESH_Gen_i.hxx"
+
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshElement.hxx"
+
 #include "SMESHDS_Mesh.hxx"
 
-#include <gp_Pnt.hxx>
-#include <gp_Vec.hxx>
-#include <gp_XYZ.hxx>
-#include <Precision.hxx>
-#include <TColgp_SequenceOfXYZ.hxx>
-#include <TColStd_ListOfInteger.hxx>
-#include <TColStd_MapOfInteger.hxx>
+#include <LDOM_Document.hxx>
+#include <LDOM_Element.hxx>
+#include <LDOM_Node.hxx>
+#include <LDOMString.hxx>
+#include <LDOMParser.hxx>
+#include <LDOM_XmlWriter.hxx>
+#include <TCollection_HAsciiString.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
+#include <TColStd_ListOfInteger.hxx>
+#include <TColStd_ListOfReal.hxx>
+#include <TColStd_MapOfInteger.hxx>
+#include <TColStd_SequenceOfHAsciiString.hxx>
+#include <TColStd_ListIteratorOfListOfReal.hxx>
+#include <Precision.hxx>
+#include <BRep_Tool.hxx>
+#include <TopoDS_Shape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Face.hxx>
+#include <Geom_Plane.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <TopExp_Explorer.hxx>
+#include <OSD_Path.hxx>
+#include <OSD_File.hxx>
 
-/*
-                            AUXILIARY METHODS 
-*/
-
-static inline double getAngle( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
-{
-  return gp_Vec( P1 - P2 ).Angle( gp_Vec( P3 - P2 ) );
-}
-
-static inline double getArea( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
-{
-  gp_Vec aVec1( P2 - P1 );
-  gp_Vec aVec2( P3 - P1 );
-  return ( aVec1 ^ aVec2 ).Magnitude() * 0.5;
-}
-
-static inline double getArea( const gp_Pnt& P1, const gp_Pnt& P2, const gp_Pnt& P3 )
-{
-  return getArea( P1.XYZ(), P2.XYZ(), P3.XYZ() );
-}
-
-static inline double getDistance( const gp_XYZ& P1, const gp_XYZ& P2 )
-{
-  double aDist = gp_Pnt( P1 ).Distance( gp_Pnt( P2 ) );
-  return aDist;
-}
-
-static int getNbMultiConnection( SMESHDS_Mesh* theMesh, const int theId )
-{
-  if ( theMesh == 0 )
-    return 0;
-
-  const SMDS_MeshElement* anEdge = theMesh->FindElement( theId );
-  if ( anEdge == 0 || anEdge->GetType() != SMDSAbs_Edge || anEdge->NbNodes() != 2 )
-    return 0;
-
-  TColStd_MapOfInteger aMap;
-
-  int aResult = 0;
-  SMDS_ElemIteratorPtr anIter = anEdge->nodesIterator();
-  if ( anIter != 0 )
-  {
-    while( anIter->more() )
-    {
-      const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-      if ( aNode == 0 )
-        return 0;
-      SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
-      while( anElemIter->more() )
-      {
-        const SMDS_MeshElement* anElem = anElemIter->next();
-        if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge )
-        {
-          int anId = anElem->GetID();
-
-          if ( anIter->more() )              // i.e. first node
-            aMap.Add( anId );
-          else if ( aMap.Contains( anId ) )
-            aResult++;
-        }
-      }
-//      delete anElemIter;
-    }
-//    delete anIter;
-  }
-
-  return aResult;
-}
-
-using namespace std;
 using namespace SMESH;
+using namespace SMESH::Controls;
 
 /*
-                                FUNCTORS
+  Class       : BelongToGeom
+  Description : Predicate for verifying whether entiy belong to
+                specified geometrical support
 */
 
-/*
-  Class       : NumericalFunctor_i
-  Description : Base class for numerical functors
-*/
+Controls::BelongToGeom::BelongToGeom()
+: myMeshDS(NULL),
+  myType(SMDSAbs_All)
+{}
 
-NumericalFunctor_i::NumericalFunctor_i()
-: SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
+void Controls::BelongToGeom::SetMesh( SMDS_Mesh* theMesh )
 {
-  myMesh = 0;
-  SMESH_Gen_i::GetPOA()->activate_object( this );
+  myMeshDS = dynamic_cast<SMESHDS_Mesh*>(theMesh);
 }
 
-void NumericalFunctor_i::SetMesh( SMESH_Mesh_ptr theMesh )
+void Controls::BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
 {
-  SMESH_Mesh_i* anImplPtr = 
-    dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
-  myMesh = anImplPtr ? anImplPtr->GetImpl().GetMeshDS() : 0;
+  myShape = theShape;
 }
 
-bool NumericalFunctor_i::getPoints( const int             theId,
-                                    TColgp_SequenceOfXYZ& theRes ) const
+static bool IsContains( SMESHDS_Mesh*           theMeshDS,
+                        const TopoDS_Shape&     theShape,
+                        const SMDS_MeshElement* theElem,
+                        TopAbs_ShapeEnum        theFindShapeEnum,
+                        TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE )
 {
-  theRes.Clear();
+  TopExp_Explorer anExp( theShape,theFindShapeEnum,theAvoidShapeEnum );
 
-  if ( myMesh == 0 )
-    return false;
-
-  // Get nodes of the face
-  const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
-  if ( anElem == 0 || anElem->GetType() != GetType() )
-    return false;
-
-  int nbNodes = anElem->NbNodes();
-
-  SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
-  if ( anIter != 0 )
+  while( anExp.More() )
   {
-    while( anIter->more() )
-    {
-      const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-      if ( aNode != 0 )
-        theRes.Append( gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
+    const TopoDS_Shape& aShape = anExp.Current();
+    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
+      if( aSubMesh->Contains( theElem ) )
+        return true;
     }
-
-//    delete anIter;
+    anExp.Next();
   }
-
-  return true;
+  return false;
 }
 
-
-/*
-  Class       : SMESH_MinimumAngleFunct
-  Description : Functor for calculation of minimum angle
-*/
-
-CORBA::Double MinimumAngle_i::GetValue( CORBA::Long theId )
+bool Controls::BelongToGeom::IsSatisfy( long theId )
 {
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P )  || P.Length() != 3 && P.Length() != 4 )
-    return 0;
+  if ( myMeshDS == 0 || myShape.IsNull() )
+    return false;
 
-  double aMin;
-
-  if ( P.Length() == 3 )
+  if( myType == SMDSAbs_Node )
   {
-    double A0 = getAngle( P( 3 ), P( 1 ), P( 2 ) );
-    double A1 = getAngle( P( 1 ), P( 2 ), P( 3 ) );
-    double A2 = getAngle( P( 2 ), P( 3 ), P( 1 ) );
-
-    aMin = Min( A0, Min( A1, A2 ) );
-  }
-  else
-  {
-    double A0 = getAngle( P( 4 ), P( 1 ), P( 2 ) );
-    double A1 = getAngle( P( 1 ), P( 2 ), P( 3 ) );
-    double A2 = getAngle( P( 2 ), P( 3 ), P( 4 ) );
-    double A3 = getAngle( P( 3 ), P( 4 ), P( 1 ) );
-    
-    aMin = Min( Min( A0, A1 ), Min( A2, A3 ) );
-  }
-  
-  return aMin * 180 / PI;
-}
-
-int MinimumAngle_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : AspectRatio_i
-  Description : Functor for calculating aspect ratio
-*/
-
-CORBA::Double AspectRatio_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P )  || P.Length() != 3 && P.Length() != 4 )
-    return 0;
-
-  int nbNodes = P.Length();
-
-  // Compute lengths of the sides
-
-  double aLen[ nbNodes ];
-  for ( int i = 0; i < nbNodes - 1; i++ )
-    aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
-  aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
-
-  // Compute aspect ratio
-
-  if ( nbNodes == 3 ) 
-  {
-    double aMaxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
-    double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
-    static double aCoef = sqrt( 3. ) / 4;
-
-    return anArea != 0 ? aCoef * aMaxLen * aMaxLen / anArea : 0;
-  }
-  else
-  {
-    double aMaxLen = Max( Max( aLen[ 0 ], aLen[ 1 ] ), Max( aLen[ 2 ], aLen[ 3 ] ) );
-    double aMinLen = Min( Min( aLen[ 0 ], aLen[ 1 ] ), Min( aLen[ 2 ], aLen[ 3 ] ) );
-    
-    return aMinLen != 0 ? aMaxLen / aMinLen : 0;
-  }
-}
-
-int AspectRatio_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : Warping_i
-  Description : Functor for calculating warping
-*/
-
-CORBA::Double Warping_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P ) || P.Length() != 4 )
-    return 0;
-
-  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4;
-
-  double A1 = ComputeA( P( 1 ), P( 2 ), P( 3 ), G );
-  double A2 = ComputeA( P( 2 ), P( 3 ), P( 4 ), G );
-  double A3 = ComputeA( P( 3 ), P( 4 ), P( 1 ), G );
-  double A4 = ComputeA( P( 4 ), P( 1 ), P( 2 ), G );
-
-  return Max( Max( A1, A2 ), Max( A3, A4 ) );
-}
-
-double Warping_i::ComputeA( const gp_XYZ& thePnt1,
-                            const gp_XYZ& thePnt2,
-                            const gp_XYZ& thePnt3,
-                            const gp_XYZ& theG ) const
-{
-  double aLen1 = gp_Pnt( thePnt1 ).Distance( gp_Pnt( thePnt2 ) );
-  double aLen2 = gp_Pnt( thePnt2 ).Distance( gp_Pnt( thePnt3 ) );
-  double L = Min( aLen1, aLen2 ) * 0.5;
-
-  gp_XYZ GI = ( thePnt2 - thePnt1 ) / 2. - theG;
-  gp_XYZ GJ = ( thePnt3 - thePnt2 ) / 2. - theG;
-  gp_XYZ N  = GI.Crossed( GJ );
-  N.Normalize();
-
-  double H = gp_Vec( thePnt2 - theG ).Dot( gp_Vec( N ) );
-  return asin( fabs( H / L ) ) * 180 / PI;
-}
-
-int Warping_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : Taper_i
-  Description : Functor for calculating taper
-*/
-
-CORBA::Double Taper_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P ) || P.Length() != 4 )
-    return 0;
-
-  // Compute taper
-  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2;
-  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2;
-  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2;
-  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2;
-
-  double JA = 0.25 * ( J1 + J2 + J3 + J4 );
-
-  double T1 = fabs( ( J1 - JA ) / JA );
-  double T2 = fabs( ( J2 - JA ) / JA );
-  double T3 = fabs( ( J3 - JA ) / JA );
-  double T4 = fabs( ( J4 - JA ) / JA );
-
-  return Max( Max( T1, T2 ), Max( T3, T4 ) );
-}
-
-int Taper_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : Skew_i
-  Description : Functor for calculating skew in degrees
-*/
-
-static inline double skewAngle( const gp_XYZ& p1, const gp_XYZ& p2, const gp_XYZ& p3 )
-{
-  gp_XYZ p12 = ( p2 + p1 ) / 2;
-  gp_XYZ p23 = ( p3 + p2 ) / 2;
-  gp_XYZ p31 = ( p3 + p1 ) / 2;
-
-  return gp_Vec( p31 - p2 ).Angle( p12 - p23 );
-}
-
-CORBA::Double Skew_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P )  || P.Length() != 3 && P.Length() != 4 )
-    return 0;
-
-  // Compute skew
-  static double PI2 = PI / 2;
-  if ( P.Length() == 3 )
-  {
-    double A0 = fabs( PI2 - skewAngle( P( 3 ), P( 1 ), P( 2 ) ) );
-    double A1 = fabs( PI2 - skewAngle( P( 1 ), P( 2 ), P( 3 ) ) );
-    double A2 = fabs( PI2 - skewAngle( P( 2 ), P( 3 ), P( 1 ) ) );
-
-    return Max( A0, Max( A1, A2 ) ) * 180 / PI;
-  }
-  else 
-  {
-    gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2;
-    gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2;
-    gp_XYZ p34 = ( P( 3 ) + P( 4 ) ) / 2;
-    gp_XYZ p41 = ( P( 4 ) + P( 1 ) ) / 2;
-    
-    double A = fabs( PI2 - gp_Vec( p34 - p12 ).Angle( p23 - p41 ) );
-
-    return A * 180 / PI;
-  }
-}
-
-int Skew_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : Area_i
-  Description : Functor for calculating area
-*/
-
-CORBA::Double Area_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  if ( !getPoints( theId, P )  || P.Length() != 3 && P.Length() != 4 )
-    return 0;
-
-  if ( P.Length() == 3 )
-    return getArea( P( 1 ), P( 2 ), P( 3 ) );
-  else
-    return getArea( P( 1 ), P( 2 ), P( 3 ) ) + getArea( P( 1 ), P( 3 ), P( 4 ) );
-}
-
-int Area_i::GetType() const
-{
-  return SMDSAbs_Face;
-}
-
-/*
-  Class       : Length_i
-  Description : Functor for calculating length off edge
-*/
-
-CORBA::Double Length_i::GetValue( CORBA::Long theId )
-{
-  TColgp_SequenceOfXYZ P;
-  return getPoints( theId, P ) && P.Length() == 2 ? getDistance( P( 1 ), P( 2 ) ) : 0;
-}
-
-int Length_i::GetType() const
-{
-  return SMDSAbs_Edge;
-}
-
-/*
-  Class       : MultiConnection_i
-  Description : Functor for calculating number of faces conneted to the edge
-*/
-
-CORBA::Double MultiConnection_i::GetValue( CORBA::Long theId )
-{
-  return getNbMultiConnection( myMesh, theId );
-}
-
-int MultiConnection_i::GetType() const
-{
-  return SMDSAbs_Edge;
-}
-
-/*
-                            PREDICATES
-*/
-
-/*
-  Class       : Predicate_i
-  Description : Base class for all predicates
-*/
-Predicate_i::Predicate_i()
-: SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
-{
-  SMESH_Gen_i::GetPOA()->activate_object( this );
-}
-
-
-/*
-  Class       : FreeBorders_i
-  Description : Predicate for free borders
-*/
-
-FreeBorders_i::FreeBorders_i()
-{
-  myMesh = 0;
-}
-
-void FreeBorders_i::SetMesh( SMESH_Mesh_ptr theMesh )
-{
-  SMESH_Mesh_i* anImplPtr =
-    dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
-  myMesh = anImplPtr ? anImplPtr->GetImpl().GetMeshDS() : 0;
-}
-
-CORBA::Boolean FreeBorders_i::IsSatisfy( CORBA::Long theId )
-{
-  return getNbMultiConnection( myMesh, theId ) == 1;
-}
-
-int FreeBorders_i::GetType() const
-{
-  return SMDSAbs_Edge;
-}
-
-/*
-  Class       : Comparator_i
-  Description : Base class for comparators
-*/
-
-Comparator_i::Comparator_i()
-{
-  myMargin  = 0;
-  myFunctor = 0;
-}
-
-Comparator_i::~Comparator_i()
-{
-  if ( myFunctor != 0 )
-    myFunctor->Destroy();
-}
-
-void Comparator_i::SetMesh( SMESH_Mesh_ptr theMesh )
-{
-  if ( myFunctor != 0 )
-    myFunctor->SetMesh( theMesh );
-}
-
-void Comparator_i::SetMargin( CORBA::Double theValue )
-{
-  myMargin = theValue;
-}
-
-void Comparator_i::SetNumFunctor( NumericalFunctor_ptr theFunct )
-{
-  if ( myFunctor != 0 )
-    myFunctor->Destroy();
-
-  myFunctor = dynamic_cast<NumericalFunctor_i*>( SMESH_Gen_i::GetServant( theFunct ).in() );
-
-  if ( myFunctor != 0 )
-    myFunctor->Register();
-}
-
-int Comparator_i::GetType() const
-{
-  return myFunctor != 0 ? myFunctor->GetType() : SMDSAbs_All;
-}
-
-/*
-  Class       : LessThan_i
-  Description : Comparator "<"
-*/
-
-CORBA::Boolean LessThan_i::IsSatisfy( CORBA::Long theId )
-{
-  return myFunctor != 0 && myFunctor->GetValue( theId ) < myMargin;
-}
-
-/*
-  Class       : MoreThan_i
-  Description : Comparator ">"
-*/
-
-CORBA::Boolean MoreThan_i::IsSatisfy( CORBA::Long theId )
-{
-  return myFunctor != 0 && myFunctor->GetValue( theId ) > myMargin;
-}
-
-/*
-  Class       : EqualTo_i
-  Description : Comparator "="
-*/
-EqualTo_i::EqualTo_i()
-{
-  myToler = Precision::Confusion();
-}
-
-CORBA::Boolean EqualTo_i::IsSatisfy( CORBA::Long theId )
-{
-  return myFunctor != 0 && fabs( myFunctor->GetValue( theId ) - myMargin ) < myToler;
-}
-
-void EqualTo_i::SetTolerance( CORBA::Double theToler )
-{
-  myToler = theToler;
-}
-
-
-/*
-  Class       : LogicalNOT_i
-  Description : Logical NOT predicate
-*/
-
-LogicalNOT_i::LogicalNOT_i()
-{
-  myPredicate = 0;
-}
-
-LogicalNOT_i::~LogicalNOT_i()
-{
-  if ( myPredicate )
-    myPredicate->Destroy();
-}
-
-CORBA::Boolean LogicalNOT_i::IsSatisfy( CORBA::Long theId )
-{
-  return myPredicate !=0 && !myPredicate->IsSatisfy( theId );
-}
-
-void LogicalNOT_i::SetMesh( SMESH_Mesh_ptr theMesh )
-{
-  if ( myPredicate != 0 )
-    myPredicate->SetMesh( theMesh );
-}
-
-void LogicalNOT_i::SetPredicate( Predicate_ptr thePred )
-{
-  if ( myPredicate != 0 )
-    myPredicate->Destroy();
-
-  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePred ).in() );
-
-  if ( myPredicate != 0 )
-    myPredicate->Register();
-}
-
-int LogicalNOT_i::GetType() const
-{
-  return myPredicate != 0 ? myPredicate->GetType() : SMDSAbs_All;
-}
-
-
-/*
-  Class       : LogicalBinary_i
-  Description : Base class for binary logical predicate
-*/
-
-LogicalBinary_i::LogicalBinary_i()
-{
-  myPredicate1 = 0;
-  myPredicate2 = 0;
-}
-LogicalBinary_i::~LogicalBinary_i()
-{
-  if ( myPredicate1 != 0 )
-    myPredicate1->Destroy();
-
-  if ( myPredicate2 != 0 )
-    myPredicate2->Destroy();
-}
-
-void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
-{
-  if ( myPredicate1 != 0 )
-    myPredicate1->SetMesh( theMesh );
-
-  if ( myPredicate2 != 0 )
-    myPredicate2->SetMesh( theMesh );
-}
-
-void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
-{
-  if ( myPredicate1 != 0 )
-    myPredicate1->Destroy();
-
-  myPredicate1 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
-
-  if ( myPredicate1 != 0 )
-    myPredicate1->Register();
-}
-
-void LogicalBinary_i::SetPredicate2( Predicate_ptr thePredicate )
-{
-  if ( myPredicate2 != 0 )
-    myPredicate2->Destroy();
-
-  myPredicate2 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
-
-  if ( myPredicate2 != 0 )
-    myPredicate2->Register();
-}
-
-int LogicalBinary_i::GetType() const
-{
-  if ( myPredicate1 == 0 || myPredicate2 == 0 )
-    return SMDSAbs_All;
-
-  int aType1 = myPredicate1->GetType();
-  int aType2 = myPredicate2->GetType();
-
-  return aType1 == aType2 ? aType1 : SMDSAbs_All;
-}
-
-/*
-  Class       : LogicalAND_i
-  Description : Logical AND
-*/
-
-CORBA::Boolean LogicalAND_i::IsSatisfy( CORBA::Long theId )
-{
-  return myPredicate1 != 0 && 
-         myPredicate2 != 0 && 
-         myPredicate1->IsSatisfy( theId ) && myPredicate2->IsSatisfy( theId );;
-}
-
-/*
-  Class       : LogicalOR_i
-  Description : Logical OR
-*/
-
-CORBA::Boolean LogicalOR_i::IsSatisfy( CORBA::Long theId )
-{
-  return myPredicate1 != 0 && 
-         myPredicate2 != 0 && 
-         myPredicate1->IsSatisfy( theId ) || myPredicate2->IsSatisfy( theId );
-}
-
-
-/*
-                              FILTER
-*/
-
-Filter_i::Filter_i()
-{
-  myPredicate = 0;
-}
-
-Filter_i::~Filter_i()
-{
-  if ( myPredicate != 0 )
-    myPredicate->Destroy();
-}
-
-void Filter_i::SetPredicate( Predicate_ptr thePredicate )
-{
-  if ( myPredicate != 0 )
-    myPredicate->Destroy();
-
-  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
-
-  if ( myPredicate != 0 )
-    myPredicate->Register();
-}
-
-void Filter_i::SetMesh( SMESH_Mesh_ptr theMesh )
-{
-  if ( myPredicate != 0 )
-    myPredicate->SetMesh( theMesh );
-}
-
-SMESH::long_array* Filter_i::GetElementsId( SMESH_Mesh_ptr theMesh )
-{
-
-  SetMesh( theMesh );
-
-  SMESH_Mesh_i* anImplPtr = 
-    dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
-
-  TColStd_ListOfInteger aList;
-
-  if ( anImplPtr != 0 )
-  {
-    SMESHDS_Mesh* aMesh = anImplPtr->GetImpl().GetMeshDS();
-
-    if ( myPredicate != 0 )
+    if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
     {
-      int aType = myPredicate->GetType();
-      
-      if ( aType == SMDSAbs_Edge )
+      const SMDS_PositionPtr& aPosition = aNode->GetPosition();
+      SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
+      switch( aTypeOfPosition )
       {
-        SMDS_EdgeIteratorPtr anIter = aMesh->edgesIterator();
-        if ( anIter != 0 )
-        {
-          while( anIter->more() )
-          {
-            const SMDS_MeshElement* anElem = anIter->next();
-            if ( myPredicate->IsSatisfy( anElem->GetID() ) )
-              aList.Append( anElem->GetID() );
-          }
-        }
-//        delete anIter;
-      }
-      else if ( aType == SMDSAbs_Face )
-      {
-        SMDS_FaceIteratorPtr anIter = aMesh->facesIterator();
-        if ( anIter != 0 )
-        {
-          while( anIter->more() )
-          {
-            const SMDS_MeshElement* anElem = anIter->next();
-            if ( myPredicate->IsSatisfy( anElem->GetID() ) )
-              aList.Append( anElem->GetID() );
-          }
-        }
-//        delete anIter;
+      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
+      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
+      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
+      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
       }
     }
   }
-  
+  else
+  {
+    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
+    {
+      if( myType == SMDSAbs_All )
+      {
+        return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+               IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+      }
+      else if( myType == anElem->GetType() )
+      {
+        switch( myType )
+        {
+        case SMDSAbs_Edge  : return IsContains( myMeshDS,myShape,anElem,TopAbs_EDGE );
+        case SMDSAbs_Face  : return IsContains( myMeshDS,myShape,anElem,TopAbs_FACE );
+        case SMDSAbs_Volume: return IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
+                                    IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID );
+        }
+      }
+    }
+  }
+    
+  return false;
+}
+
+void Controls::BelongToGeom::SetType( SMDSAbs_ElementType theType )
+{
+  myType = theType;
+}
+
+SMDSAbs_ElementType Controls::BelongToGeom::GetType() const
+{
+  return myType;
+}
+
+TopoDS_Shape Controls::BelongToGeom::GetShape()
+{
+  return myShape;
+}
+
+SMESHDS_Mesh* Controls::BelongToGeom::GetMeshDS()
+{
+  return myMeshDS;
+}
+
+
+/*
+                            AUXILIARY METHODS
+*/
+
+static inline SMDS_Mesh* MeshPtr2SMDSMesh( SMESH_Mesh_ptr theMesh )
+{
+  SMESH_Mesh_i* anImplPtr = 
+    dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
+  return anImplPtr ? anImplPtr->GetImpl().GetMeshDS() : 0;
+}
+
+static inline SMESH::long_array* toArray( const TColStd_ListOfInteger& aList )
+{
   SMESH::long_array_var anArray = new SMESH::long_array;
-  
   anArray->length( aList.Extent() );
   TColStd_ListIteratorOfListOfInteger anIter( aList );
   int i = 0;
@@ -778,6 +194,759 @@ SMESH::long_array* Filter_i::GetElementsId( SMESH_Mesh_ptr theMesh )
 
   return anArray._retn();
 }
+
+static inline SMESH::double_array* toArray( const TColStd_ListOfReal& aList )
+{
+  SMESH::double_array_var anArray = new SMESH::double_array;
+  anArray->length( aList.Extent() );
+  TColStd_ListIteratorOfListOfReal anIter( aList );
+  int i = 0;
+  for( ; anIter.More(); anIter.Next() )
+    anArray[ i++ ] = anIter.Value();
+
+  return anArray._retn();
+}
+
+static SMESH::Filter::Criterion createCriterion()
+{
+  SMESH::Filter::Criterion aCriterion;
+
+  aCriterion.Type          = FT_Undefined;
+  aCriterion.Compare       = FT_Undefined;
+  aCriterion.Threshold     = 0;
+  aCriterion.UnaryOp       = FT_Undefined;
+  aCriterion.BinaryOp      = FT_Undefined;
+  aCriterion.ThresholdStr  = "";
+  aCriterion.Tolerance     = Precision::Confusion();
+  aCriterion.TypeOfElement = SMESH::ALL;
+  aCriterion.Precision     = -1;
+
+  return aCriterion;
+}
+
+static TopoDS_Shape getShapeByName( const char* theName )
+{
+  if ( theName != 0 )
+  {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    if ( aStudy != 0 )
+    {
+      SALOMEDS::Study::ListOfSObject_var aList =
+        aStudy->FindObjectByName( theName, "GEOM" );
+      if ( aList->length() > 0 )
+      {
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
+        if ( !aGeomObj->_is_nil() )
+        {
+	  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
+          return aLocShape;
+        }
+      }
+    }
+  }
+  return TopoDS_Shape();
+}
+
+
+
+/*
+                                FUNCTORS
+*/
+
+/*
+  Class       : Functor_i
+  Description : An abstact class for all functors 
+*/
+Functor_i::Functor_i(): 
+  SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
+{
+  SMESH_Gen_i::GetPOA()->activate_object( this );
+}
+
+void Functor_i::SetMesh( SMESH_Mesh_ptr theMesh )
+{
+  myFunctorPtr->SetMesh( MeshPtr2SMDSMesh( theMesh ) );
+  INFOS("Functor_i::SetMesh~");
+}
+
+ElementType Functor_i::GetElementType()
+{
+  return ( ElementType )myFunctorPtr->GetType();
+}
+
+
+/*
+  Class       : NumericalFunctor_i
+  Description : Base class for numerical functors
+*/
+CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
+{
+  return myNumericalFunctorPtr->GetValue( theId );
+}
+
+void NumericalFunctor_i::SetPrecision( CORBA::Long thePrecision )
+{
+  myNumericalFunctorPtr->SetPrecision( thePrecision );
+}
+
+CORBA::Long NumericalFunctor_i::GetPrecision()
+{
+ return myNumericalFunctorPtr->GetPrecision();
+}
+
+Controls::NumericalFunctorPtr NumericalFunctor_i::GetNumericalFunctor()
+{
+  return myNumericalFunctorPtr;
+}
+
+
+/*
+  Class       : SMESH_MinimumAngle
+  Description : Functor for calculation of minimum angle
+*/
+MinimumAngle_i::MinimumAngle_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MinimumAngle() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MinimumAngle_i::GetFunctorType()
+{
+  return SMESH::FT_MinimumAngle;
+}
+
+
+/*
+  Class       : AspectRatio
+  Description : Functor for calculating aspect ratio
+*/
+AspectRatio_i::AspectRatio_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::AspectRatio() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType AspectRatio_i::GetFunctorType()
+{
+  return SMESH::FT_AspectRatio;
+}
+
+
+/*
+  Class       : Warping_i
+  Description : Functor for calculating warping
+*/
+Warping_i::Warping_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Warping() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Warping_i::GetFunctorType()
+{
+  return SMESH::FT_Warping;
+}
+
+
+/*
+  Class       : Taper_i
+  Description : Functor for calculating taper
+*/
+Taper_i::Taper_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Taper() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Taper_i::GetFunctorType()
+{
+  return SMESH::FT_Taper;
+}
+
+
+/*
+  Class       : Skew_i
+  Description : Functor for calculating skew in degrees
+*/
+Skew_i::Skew_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Skew() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Skew_i::GetFunctorType()
+{
+  return SMESH::FT_Skew;
+}
+
+/*
+  Class       : Area_i
+  Description : Functor for calculating area
+*/
+Area_i::Area_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Area() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Area_i::GetFunctorType()
+{
+  return SMESH::FT_Area;
+}
+
+/*
+  Class       : Length_i
+  Description : Functor for calculating length off edge
+*/
+Length_i::Length_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Length() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Length_i::GetFunctorType()
+{
+  return SMESH::FT_Length;
+}
+
+/*
+  Class       : MultiConnection_i
+  Description : Functor for calculating number of faces conneted to the edge
+*/
+MultiConnection_i::MultiConnection_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::MultiConnection() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType MultiConnection_i::GetFunctorType()
+{
+  return SMESH::FT_MultiConnection;
+}
+
+
+/*
+                            PREDICATES
+*/
+
+
+/*
+  Class       : Predicate_i
+  Description : Base class for all predicates
+*/
+CORBA::Boolean Predicate_i::IsSatisfy( CORBA::Long theId )
+{
+  return myPredicatePtr->IsSatisfy( theId );
+}
+
+Controls::PredicatePtr Predicate_i::GetPredicate()
+{
+  return myPredicatePtr;
+}
+
+
+/*
+  Class       : BelongToGeom_i
+  Description : Predicate for selection on geometrical support
+*/
+BelongToGeom_i::BelongToGeom_i()
+{
+  myBelongToGeomPtr.reset( new Controls::BelongToGeom() );
+  myFunctorPtr = myPredicatePtr = myBelongToGeomPtr;
+  myShapeName = 0;
+}
+
+BelongToGeom_i::~BelongToGeom_i()
+{
+  delete myShapeName;
+}
+
+void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
+{
+  if ( theGeom->_is_nil() )
+    return;
+  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
+  myBelongToGeomPtr->SetGeom( aLocShape );
+}
+
+void BelongToGeom_i::SetGeom( const TopoDS_Shape& theShape )
+{
+  myBelongToGeomPtr->SetGeom( theShape );
+}
+
+void BelongToGeom_i::SetElementType(ElementType theType){
+  myBelongToGeomPtr->SetType(SMDSAbs_ElementType(theType));
+}
+
+FunctorType BelongToGeom_i::GetFunctorType()
+{
+  return SMESH::FT_BelongToGeom;
+}
+
+void BelongToGeom_i::SetShapeName( const char* theName )
+{
+  delete myShapeName;
+  myShapeName = strdup( theName );
+  myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+}
+
+char* BelongToGeom_i::GetShapeName()
+{
+  return CORBA::string_dup( myShapeName );
+}
+
+/*
+  Class       : BelongToSurface_i
+  Description : Predicate for selection on geometrical support
+*/
+BelongToSurface_i::BelongToSurface_i( const Handle(Standard_Type)& theSurfaceType )
+{
+  myElementsOnSurfacePtr.reset( new Controls::ElementsOnSurface() );
+  myFunctorPtr = myPredicatePtr = myElementsOnSurfacePtr;
+  myShapeName = 0;
+  mySurfaceType = theSurfaceType;
+}
+
+BelongToSurface_i::~BelongToSurface_i()
+{
+  delete myShapeName;
+}
+
+void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
+{
+  if ( theGeom->_is_nil() )
+    return;
+  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
+
+  if ( aLocShape.ShapeType() == TopAbs_FACE )
+  {
+    Handle(Geom_Surface) aSurf = BRep_Tool::Surface( TopoDS::Face( aLocShape ) );
+    if ( !aSurf.IsNull() && aSurf->DynamicType() == mySurfaceType )
+    {
+      myElementsOnSurfacePtr->SetSurface( aLocShape, (SMDSAbs_ElementType)theType );
+      return;
+    }
+  }
+
+  myElementsOnSurfacePtr->SetSurface( TopoDS_Shape(), (SMDSAbs_ElementType)theType );
+}
+
+void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
+{
+  delete myShapeName;
+  myShapeName = strdup( theName );
+  myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
+}
+
+char* BelongToSurface_i::GetShapeName()
+{
+  return CORBA::string_dup( myShapeName );
+}
+
+void BelongToSurface_i::SetTolerance( CORBA::Double theToler )
+{
+  myElementsOnSurfacePtr->SetTolerance( theToler );
+}
+
+CORBA::Double BelongToSurface_i::GetTolerance()
+{
+  return myElementsOnSurfacePtr->GetTolerance();
+}
+
+/*
+  Class       : BelongToPlane_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+
+BelongToPlane_i::BelongToPlane_i()
+: BelongToSurface_i( STANDARD_TYPE( Geom_Plane ) )
+{
+}
+
+void BelongToPlane_i::SetPlane( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
+{
+  BelongToSurface_i::SetSurface( theGeom, theType );
+}
+
+FunctorType BelongToPlane_i::GetFunctorType()
+{
+  return FT_BelongToPlane;
+}
+
+/*
+  Class       : BelongToCylinder_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+
+BelongToCylinder_i::BelongToCylinder_i()
+: BelongToSurface_i( STANDARD_TYPE( Geom_CylindricalSurface ) )
+{
+}
+
+void BelongToCylinder_i::SetCylinder( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
+{
+  BelongToSurface_i::SetSurface( theGeom, theType );
+}
+
+FunctorType BelongToCylinder_i::GetFunctorType()
+{
+  return FT_BelongToCylinder;
+}
+
+
+
+/*
+  Class       : FreeBorders_i
+  Description : Predicate for free borders
+*/
+FreeBorders_i::FreeBorders_i()
+{
+  myPredicatePtr.reset(new Controls::FreeBorders());
+  myFunctorPtr = myPredicatePtr;
+}
+
+FunctorType FreeBorders_i::GetFunctorType()
+{
+  return SMESH::FT_FreeBorders;
+}
+
+/*
+  Class       : FreeEdges_i
+  Description : Predicate for free borders
+*/
+FreeEdges_i::FreeEdges_i()
+: myFreeEdgesPtr( new Controls::FreeEdges() )
+{
+  myFunctorPtr = myPredicatePtr = myFreeEdgesPtr;
+}
+
+SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
+{
+  INFOS("FreeEdges_i::GetBorders");
+  SMESH::Controls::FreeEdges::TBorders aBorders;
+  myFreeEdgesPtr->GetBoreders( aBorders );
+  
+  long i = 0, iEnd = aBorders.size();
+
+  SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders(iEnd);
+
+  SMESH::Controls::FreeEdges::TBorders::const_iterator anIter;
+  for ( anIter = aBorders.begin() ; anIter != aBorders.end(); anIter++, i++ )
+  {
+    const SMESH::Controls::FreeEdges::Border&  aBord = *anIter;
+    SMESH::FreeEdges::Border &aBorder = aResult[ i ];
+    
+    aBorder.myElemId = aBord.myElemId;
+    aBorder.myPnt1 = aBord.myPntId[ 0 ];
+    aBorder.myPnt2 = aBord.myPntId[ 1 ];
+  }
+
+  INFOS("FreeEdges_i::GetBorders~");
+  return aResult._retn();
+}
+
+FunctorType FreeEdges_i::GetFunctorType()
+{
+  return SMESH::FT_FreeEdges;
+}
+
+/*
+  Class       : RangeOfIds_i
+  Description : Predicate for Range of Ids.
+                Range may be specified with two ways.
+                1. Using AddToRange method
+                2. With SetRangeStr method. Parameter of this method is a string
+                   like as "1,2,3,50-60,63,67,70-"
+*/
+
+RangeOfIds_i::RangeOfIds_i()
+{
+  myRangeOfIdsPtr.reset( new Controls::RangeOfIds() );
+  myFunctorPtr = myPredicatePtr = myRangeOfIdsPtr;
+}
+
+void RangeOfIds_i::SetRange( const SMESH::long_array& theIds )
+{
+  CORBA::Long iEnd = theIds.length();
+  for ( CORBA::Long i = 0; i < iEnd; i++ )
+    myRangeOfIdsPtr->AddToRange( theIds[ i ] );
+}
+
+CORBA::Boolean RangeOfIds_i::SetRangeStr( const char* theRange )
+{
+  return myRangeOfIdsPtr->SetRangeStr(
+    TCollection_AsciiString( (Standard_CString)theRange ) );
+}
+
+char* RangeOfIds_i::GetRangeStr()
+{
+  TCollection_AsciiString aStr;
+  myRangeOfIdsPtr->GetRangeStr( aStr );
+  return CORBA::string_dup( aStr.ToCString() );
+}
+
+void RangeOfIds_i::SetElementType( ElementType theType )
+{
+  myRangeOfIdsPtr->SetType( SMDSAbs_ElementType( theType ) );
+}
+
+FunctorType RangeOfIds_i::GetFunctorType()
+{
+  return SMESH::FT_RangeOfIds;
+}
+
+/*
+  Class       : Comparator_i
+  Description : Base class for comparators
+*/
+Comparator_i::Comparator_i():
+  myNumericalFunctor( NULL )
+{}
+
+Comparator_i::~Comparator_i()
+{
+  if ( myNumericalFunctor )
+    myNumericalFunctor->Destroy();
+}
+
+void Comparator_i::SetMargin( CORBA::Double theValue )
+{
+  myComparatorPtr->SetMargin( theValue );
+}
+
+CORBA::Double Comparator_i::GetMargin()
+{
+  return myComparatorPtr->GetMargin();
+}
+
+void Comparator_i::SetNumFunctor( NumericalFunctor_ptr theFunct )
+{
+  if ( myNumericalFunctor )
+    myNumericalFunctor->Destroy();
+
+  myNumericalFunctor = dynamic_cast<NumericalFunctor_i*>( SMESH_Gen_i::GetServant( theFunct ).in() );
+
+  if ( myNumericalFunctor )
+  {
+    myComparatorPtr->SetNumFunctor( myNumericalFunctor->GetNumericalFunctor() );
+    myNumericalFunctor->Register();
+  }
+}
+
+Controls::ComparatorPtr Comparator_i::GetComparator()
+{
+  return myComparatorPtr;
+}
+
+NumericalFunctor_i* Comparator_i::GetNumFunctor_i()
+{
+  return myNumericalFunctor;
+}
+
+
+/*
+  Class       : LessThan_i
+  Description : Comparator "<"
+*/
+LessThan_i::LessThan_i()
+{
+  myComparatorPtr.reset( new Controls::LessThan() );
+  myFunctorPtr = myPredicatePtr = myComparatorPtr;
+}
+
+FunctorType LessThan_i::GetFunctorType()
+{
+  return SMESH::FT_LessThan;
+}
+
+
+/*
+  Class       : MoreThan_i
+  Description : Comparator ">"
+*/
+MoreThan_i::MoreThan_i()
+{
+  myComparatorPtr.reset( new Controls::MoreThan() );
+  myFunctorPtr = myPredicatePtr = myComparatorPtr;
+}
+
+FunctorType MoreThan_i::GetFunctorType()
+{
+  return SMESH::FT_MoreThan;
+}
+
+
+/*
+  Class       : EqualTo_i
+  Description : Comparator "="
+*/
+EqualTo_i::EqualTo_i()
+: myEqualToPtr( new Controls::EqualTo() )
+{
+  myFunctorPtr = myPredicatePtr = myComparatorPtr = myEqualToPtr;
+}
+
+void EqualTo_i::SetTolerance( CORBA::Double theToler )
+{
+  myEqualToPtr->SetTolerance( theToler );
+}
+
+CORBA::Double EqualTo_i::GetTolerance()
+{
+  return myEqualToPtr->GetTolerance();
+}
+
+FunctorType EqualTo_i::GetFunctorType()
+{
+  return SMESH::FT_EqualTo;
+}
+
+/*
+  Class       : LogicalNOT_i
+  Description : Logical NOT predicate
+*/
+LogicalNOT_i::LogicalNOT_i()
+: myPredicate( NULL ),
+  myLogicalNOTPtr( new Controls::LogicalNOT() )
+{
+  myFunctorPtr = myPredicatePtr = myLogicalNOTPtr;
+}
+
+LogicalNOT_i::~LogicalNOT_i()
+{
+  if ( myPredicate )
+    myPredicate->Destroy();
+}
+
+void LogicalNOT_i::SetPredicate( Predicate_ptr thePred )
+{
+  if ( myPredicate )
+    myPredicate->Destroy();
+
+  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePred ).in() );
+
+  if ( myPredicate ){
+    myLogicalNOTPtr->SetPredicate(myPredicate->GetPredicate());
+    myPredicate->Register();
+  }
+}
+
+FunctorType LogicalNOT_i::GetFunctorType()
+{
+  return SMESH::FT_LogicalNOT;
+}
+
+Predicate_i* LogicalNOT_i::GetPredicate_i()
+{
+  return myPredicate;
+}
+
+
+/*
+  Class       : LogicalBinary_i
+  Description : Base class for binary logical predicate
+*/
+LogicalBinary_i::LogicalBinary_i()
+: myPredicate1( NULL ),
+  myPredicate2( NULL )
+{}
+
+LogicalBinary_i::~LogicalBinary_i()
+{
+  if ( myPredicate1 )
+    myPredicate1->Destroy();
+
+  if ( myPredicate2 )
+    myPredicate2->Destroy();
+}
+
+void LogicalBinary_i::SetMesh( SMESH_Mesh_ptr theMesh )
+{
+  if ( myPredicate1 )
+    myPredicate1->SetMesh( theMesh );
+
+  if ( myPredicate2 )
+    myPredicate2->SetMesh( theMesh );
+}
+
+void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
+{
+  if ( myPredicate1 )
+    myPredicate1->Destroy();
+
+  myPredicate1 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+
+  if ( myPredicate1 ){
+    myLogicalBinaryPtr->SetPredicate1(myPredicate1->GetPredicate());
+    myPredicate1->Register();
+  }
+}
+
+void LogicalBinary_i::SetPredicate2( Predicate_ptr thePredicate )
+{
+  if ( myPredicate2 )
+    myPredicate2->Destroy();
+
+  myPredicate2 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+
+  if ( myPredicate2 ){
+    myLogicalBinaryPtr->SetPredicate2(myPredicate2->GetPredicate());
+    myPredicate2->Register();
+  }
+}
+
+Controls::LogicalBinaryPtr LogicalBinary_i::GetLogicalBinary()
+{
+  return myLogicalBinaryPtr;
+}
+
+Predicate_i* LogicalBinary_i::GetPredicate1_i()
+{
+  return myPredicate1;
+}
+Predicate_i* LogicalBinary_i::GetPredicate2_i()
+{
+  return myPredicate2;
+}
+
+
+/*
+  Class       : LogicalAND_i
+  Description : Logical AND
+*/
+LogicalAND_i::LogicalAND_i()
+{
+  myLogicalBinaryPtr.reset( new Controls::LogicalAND() );
+  myFunctorPtr = myPredicatePtr = myLogicalBinaryPtr;
+}
+
+FunctorType LogicalAND_i::GetFunctorType()
+{
+  return SMESH::FT_LogicalAND;
+}
+
+
+/*
+  Class       : LogicalOR_i
+  Description : Logical OR
+*/
+LogicalOR_i::LogicalOR_i()
+{
+  myLogicalBinaryPtr.reset( new Controls::LogicalOR() );
+  myFunctorPtr = myPredicatePtr = myLogicalBinaryPtr;
+}
+
+FunctorType LogicalOR_i::GetFunctorType()
+{
+  return SMESH::FT_LogicalOR;
+}
+
 
 /*
                             FILTER MANAGER
@@ -853,10 +1022,45 @@ MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 }
 
 
+BelongToGeom_ptr FilterManager_i::CreateBelongToGeom()
+{
+  SMESH::BelongToGeom_i* aServant = new SMESH::BelongToGeom_i();
+  SMESH::BelongToGeom_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+BelongToPlane_ptr FilterManager_i::CreateBelongToPlane()
+{
+  SMESH::BelongToPlane_i* aServant = new SMESH::BelongToPlane_i();
+  SMESH::BelongToPlane_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
+{
+  SMESH::BelongToCylinder_i* aServant = new SMESH::BelongToCylinder_i();
+  SMESH::BelongToCylinder_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
 FreeBorders_ptr FilterManager_i::CreateFreeBorders()
 {
   SMESH::FreeBorders_i* aServant = new SMESH::FreeBorders_i();
   SMESH::FreeBorders_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+FreeEdges_ptr FilterManager_i::CreateFreeEdges()
+{
+  SMESH::FreeEdges_i* aServant = new SMESH::FreeEdges_i();
+  SMESH::FreeEdges_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
+{
+  SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
+  SMESH::RangeOfIds_var anObj = aServant->_this();
   return anObj._retn();
 }
 
@@ -912,3 +1116,1111 @@ Filter_ptr FilterManager_i::CreateFilter()
   SMESH::Filter_var anObj = aServant->_this();
   return anObj._retn();
 }
+
+FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
+{
+  SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i( aFileName );
+  SMESH::FilterLibrary_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+FilterLibrary_ptr FilterManager_i::CreateLibrary()
+{
+  SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i();
+  SMESH::FilterLibrary_var anObj = aServant->_this();
+  return anObj._retn();
+}
+
+CORBA::Boolean FilterManager_i::DeleteLibrary( const char* aFileName )
+{
+  return remove( aFileName ) ? false : true;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::CreateFilterManager
+ *
+ *  Create filter manager
+ */
+//=============================================================================
+
+SMESH::FilterManager_ptr SMESH_Gen_i::CreateFilterManager()
+{
+  SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
+  SMESH::FilterManager_var anObj = aFilter->_this();
+  return anObj._retn();
+}
+
+
+/*
+                              FILTER
+*/
+
+//=======================================================================
+// name    : Filter_i::Filter_i
+// Purpose : Constructor
+//=======================================================================
+Filter_i::Filter_i()
+: myPredicate( NULL )
+{}
+
+//=======================================================================
+// name    : Filter_i::~Filter_i
+// Purpose : Destructor
+//=======================================================================
+Filter_i::~Filter_i()
+{
+  if ( myPredicate )
+    myPredicate->Destroy();
+}
+
+//=======================================================================
+// name    : Filter_i::SetPredicate
+// Purpose : Set predicate
+//=======================================================================
+void Filter_i::SetPredicate( Predicate_ptr thePredicate )
+{
+  if ( myPredicate )
+    myPredicate->Destroy();
+
+  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+
+  if ( myPredicate )
+  {
+    myFilter.SetPredicate( myPredicate->GetPredicate() );
+    myPredicate->Register();
+  }
+}
+
+//=======================================================================
+// name    : Filter_i::GetElementType
+// Purpose : Get entity type
+//=======================================================================
+SMESH::ElementType Filter_i::GetElementType()
+{
+  return myPredicate != 0 ? myPredicate->GetElementType() : SMESH::ALL;
+}
+
+//=======================================================================
+// name    : Filter_i::SetMesh
+// Purpose : Set mesh
+//=======================================================================
+void Filter_i::SetMesh( SMESH_Mesh_ptr theMesh )
+{
+  if ( myPredicate )
+    myPredicate->SetMesh( theMesh );
+}
+
+//=======================================================================
+// name    : Filter_i::GetElementsId
+// Purpose : Get ids of entities
+//=======================================================================
+SMESH::long_array* Filter_i::GetElementsId( SMESH_Mesh_ptr theMesh )
+{
+  SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh);
+  Controls::Filter::TIdSequence aSequence = myFilter.GetElementsId(aMesh);
+
+  SMESH::long_array_var anArray = new SMESH::long_array;
+  long i = 0, iEnd = aSequence.size();
+
+  anArray->length( iEnd );
+  for ( ; i < iEnd; i++ )
+    anArray[ i ] = aSequence[i];
+
+  return anArray._retn();
+}
+
+//=======================================================================
+// name    : getCriteria
+// Purpose : Retrieve criterions from predicate
+//=======================================================================
+static inline bool getCriteria( Predicate_i*                thePred,
+                                SMESH::Filter::Criteria_out theCriteria )
+{
+  int aFType = thePred->GetFunctorType();
+
+  switch ( aFType )
+  {
+  case FT_FreeBorders:
+  case FT_FreeEdges:
+    {
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type = aFType;
+      theCriteria[ i ].TypeOfElement = thePred->GetElementType();
+      return true;
+    }
+  case FT_BelongToGeom:
+    {
+      BelongToGeom_i* aPred = dynamic_cast<BelongToGeom_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_BelongToGeom;
+      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
+  case FT_BelongToPlane:
+  case FT_BelongToCylinder:
+    {
+      BelongToSurface_i* aPred = dynamic_cast<BelongToSurface_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = aFType;
+      theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+      theCriteria[ i ].Tolerance     = aPred->GetTolerance();
+
+      return true;
+    }
+  case FT_RangeOfIds:
+    {
+      RangeOfIds_i* aPred = dynamic_cast<RangeOfIds_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type          = FT_RangeOfIds;
+      theCriteria[ i ].ThresholdStr  = aPred->GetRangeStr();
+      theCriteria[ i ].TypeOfElement = aPred->GetElementType();
+
+      return true;
+    }
+  case FT_LessThan:
+  case FT_MoreThan:
+  case FT_EqualTo:
+    {
+      Comparator_i* aCompar = dynamic_cast<Comparator_i*>( thePred );
+
+      CORBA::ULong i = theCriteria->length();
+      theCriteria->length( i + 1 );
+
+      theCriteria[ i ] = createCriterion();
+
+      theCriteria[ i ].Type      = aCompar->GetNumFunctor_i()->GetFunctorType();
+      theCriteria[ i ].Compare   = aFType;
+      theCriteria[ i ].Threshold = aCompar->GetMargin();
+      theCriteria[ i ].TypeOfElement = aCompar->GetElementType();
+
+      if ( aFType == FT_EqualTo )
+      {
+        EqualTo_i* aCompar = dynamic_cast<EqualTo_i*>( thePred );
+        theCriteria[ i ].Tolerance = aCompar->GetTolerance();
+      }
+    }
+    return true;
+
+  case FT_LogicalNOT:
+    {
+      Predicate_i* aPred = ( dynamic_cast<LogicalNOT_i*>( thePred ) )->GetPredicate_i();
+      getCriteria( aPred, theCriteria );
+      theCriteria[ theCriteria->length() - 1 ].UnaryOp = FT_LogicalNOT;
+    }
+    return true;
+
+  case FT_LogicalAND:
+  case FT_LogicalOR:
+    {
+      Predicate_i* aPred1 = ( dynamic_cast<LogicalBinary_i*>( thePred ) )->GetPredicate1_i();
+      Predicate_i* aPred2 = ( dynamic_cast<LogicalBinary_i*>( thePred ) )->GetPredicate2_i();
+      if ( !getCriteria( aPred1, theCriteria ) )
+        return false;
+      theCriteria[ theCriteria->length() - 1 ].BinaryOp = aFType;
+      return getCriteria( aPred2, theCriteria );
+    }
+
+  case FT_Undefined:
+    return false;
+  default:
+    return false;
+  }
+}
+
+//=======================================================================
+// name    : Filter_i::GetCriteria
+// Purpose : Retrieve criterions from predicate
+//=======================================================================
+CORBA::Boolean Filter_i::GetCriteria( SMESH::Filter::Criteria_out theCriteria )
+{
+  theCriteria = new SMESH::Filter::Criteria;
+  return myPredicate != 0 ? getCriteria( myPredicate, theCriteria ) : true;
+}
+
+//=======================================================================
+// name    : Filter_i::SetCriteria
+// Purpose : Create new predicate and set criterions in it
+//=======================================================================
+CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria )
+{
+  if ( myPredicate != 0 )
+    myPredicate->Destroy();
+
+    SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
+    FilterManager_ptr aFilterMgr = aFilter->_this();
+
+  // CREATE two lists ( PREDICATES  and LOG OP )
+
+  // Criterion
+  std::list<SMESH::Predicate_ptr> aPredicates;
+  std::list<int>                  aBinaries;
+  for ( int i = 0, n = theCriteria.length(); i < n; i++ )
+  {
+    int         aCriterion    = theCriteria[ i ].Type;
+    int         aCompare      = theCriteria[ i ].Compare;
+    double      aThreshold    = theCriteria[ i ].Threshold;
+    int         aUnary        = theCriteria[ i ].UnaryOp;
+    int         aBinary       = theCriteria[ i ].BinaryOp;
+    double      aTolerance    = theCriteria[ i ].Tolerance;
+    const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
+    ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
+    long        aPrecision    = theCriteria[ i ].Precision;
+    
+    SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
+    SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
+
+    switch ( aCriterion )
+    {
+      // Functors
+      
+      case SMESH::FT_MultiConnection:
+        aFunctor = aFilterMgr->CreateMultiConnection();
+        break;
+      case SMESH::FT_Length:
+        aFunctor = aFilterMgr->CreateLength();
+        break;
+      case SMESH::FT_AspectRatio:
+        aFunctor = aFilterMgr->CreateAspectRatio();
+        break;
+      case SMESH::FT_Warping:
+        aFunctor = aFilterMgr->CreateWarping();
+        break;
+      case SMESH::FT_MinimumAngle:
+        aFunctor = aFilterMgr->CreateMinimumAngle();
+        break;
+      case SMESH::FT_Taper:
+        aFunctor = aFilterMgr->CreateTaper();
+        break;
+      case SMESH::FT_Skew:
+        aFunctor = aFilterMgr->CreateSkew();
+        break;
+      case SMESH::FT_Area:
+        aFunctor = aFilterMgr->CreateArea();
+        break;
+
+      // Predicates
+
+      case SMESH::FT_FreeBorders:
+        aPredicate = aFilterMgr->CreateFreeBorders();
+        break;
+      case SMESH::FT_FreeEdges:
+        aPredicate = aFilterMgr->CreateFreeEdges();
+        break;
+      case SMESH::FT_BelongToGeom:
+        {
+          SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
+          tmpPred->SetElementType( aTypeOfElem );
+          tmpPred->SetShapeName( aThresholdStr );
+          aPredicate = tmpPred;
+        }
+        break;
+      case SMESH::FT_BelongToPlane:
+      case SMESH::FT_BelongToCylinder:
+        {
+          SMESH::BelongToSurface_ptr tmpPred;
+          if ( aCriterion == SMESH::FT_BelongToPlane )
+            tmpPred = aFilterMgr->CreateBelongToPlane();
+          else
+            tmpPred = aFilterMgr->CreateBelongToCylinder();
+          tmpPred->SetShapeName( aThresholdStr, aTypeOfElem );
+          tmpPred->SetTolerance( aTolerance );
+          aPredicate = tmpPred;
+        }
+        break;
+      case SMESH::FT_RangeOfIds:
+        {
+          SMESH::RangeOfIds_ptr tmpPred = aFilterMgr->CreateRangeOfIds();
+          tmpPred->SetRangeStr( aThresholdStr );
+          tmpPred->SetElementType( aTypeOfElem );
+          aPredicate = tmpPred;
+        }
+        break;
+              
+      default:
+        continue;
+    }
+
+    // Comparator
+    if ( !aFunctor->_is_nil() && aPredicate->_is_nil() )
+    {
+      SMESH::Comparator_ptr aComparator = SMESH::Comparator::_nil();
+
+      if ( aCompare == SMESH::FT_LessThan )
+        aComparator = aFilterMgr->CreateLessThan();
+      else if ( aCompare == SMESH::FT_MoreThan )
+        aComparator = aFilterMgr->CreateMoreThan();
+      else if ( aCompare == SMESH::FT_EqualTo )
+        aComparator = aFilterMgr->CreateEqualTo();
+      else
+        continue;
+
+      aComparator->SetNumFunctor( aFunctor );
+      aComparator->SetMargin( aThreshold );
+
+      if ( aCompare == FT_EqualTo )
+      {
+        SMESH::EqualTo_var anEqualTo = SMESH::EqualTo::_narrow( aComparator );
+        anEqualTo->SetTolerance( aTolerance );
+      }
+
+      aPredicate = aComparator;
+
+      aFunctor->SetPrecision( aPrecision );
+    }
+
+    // Logical not
+    if ( aUnary == FT_LogicalNOT )
+    {
+      SMESH::LogicalNOT_ptr aNotPred = aFilterMgr->CreateLogicalNOT();
+      aNotPred->SetPredicate( aPredicate );
+      aPredicate = aNotPred;
+    }
+
+    // logical op
+    aPredicates.push_back( aPredicate );
+    aBinaries.push_back( aBinary );
+
+  } // end of for
+
+  // CREATE ONE PREDICATE FROM PREVIOUSLY CREATED MAP
+
+  // combine all "AND" operations
+
+  std::list<SMESH::Predicate_ptr> aResList;
+
+  std::list<SMESH::Predicate_ptr>::iterator aPredIter;
+  std::list<int>::iterator                  aBinaryIter;
+
+  SMESH::Predicate_ptr aPrevPredicate = SMESH::Predicate::_nil();
+  int aPrevBinary = SMESH::FT_Undefined;
+
+  for ( aPredIter = aPredicates.begin(), aBinaryIter = aBinaries.begin();
+        aPredIter != aPredicates.end() && aBinaryIter != aBinaries.end();
+        ++aPredIter, ++aBinaryIter )
+  {
+    int aCurrBinary = *aBinaryIter;
+
+    SMESH::Predicate_ptr aCurrPred = SMESH::Predicate::_nil();
+
+    if ( aPrevBinary == SMESH::FT_LogicalAND )
+    {
+
+      SMESH::LogicalBinary_ptr aBinaryPred = aFilterMgr->CreateLogicalAND();
+      aBinaryPred->SetPredicate1( aPrevPredicate );
+      aBinaryPred->SetPredicate2( *aPredIter );
+      aCurrPred = aBinaryPred;
+    }
+    else
+      aCurrPred = *aPredIter;
+
+    if ( aCurrBinary != SMESH::FT_LogicalAND )
+      aResList.push_back( aCurrPred );
+
+    aPrevPredicate = aCurrPred;
+    aPrevBinary = aCurrBinary;
+  }
+
+  // combine all "OR" operations
+
+  SMESH::Predicate_ptr aResPredicate = SMESH::Predicate::_nil();
+
+  if ( aResList.size() == 1 )
+    aResPredicate = *aResList.begin();
+  else if ( aResList.size() > 1 )
+  {
+    std::list<SMESH::Predicate_ptr>::iterator anIter = aResList.begin();
+    aResPredicate = *anIter;
+    anIter++;
+    for ( ; anIter != aResList.end(); ++anIter )
+    {
+      SMESH::LogicalBinary_ptr aBinaryPred = aFilterMgr->CreateLogicalOR();
+      aBinaryPred->SetPredicate1( aResPredicate );
+      aBinaryPred->SetPredicate2( *anIter );
+      aResPredicate = aBinaryPred;
+    }
+  }
+
+  SetPredicate( aResPredicate );
+
+  return !aResPredicate->_is_nil();
+}
+
+//=======================================================================
+// name    : Filter_i::GetPredicate_i
+// Purpose : Get implementation of predicate
+//=======================================================================
+Predicate_i* Filter_i::GetPredicate_i()
+{
+  return myPredicate;
+}
+
+//=======================================================================
+// name    : Filter_i::GetPredicate
+// Purpose : Get predicate
+//=======================================================================
+Predicate_ptr Filter_i::GetPredicate()
+{
+  if ( myPredicate == 0 )
+    return SMESH::Predicate::_nil();
+  else
+  {
+    SMESH::Predicate_var anObj = myPredicate->_this();
+    return anObj._retn();
+  }
+}
+
+/*
+                            FILTER LIBRARY
+*/
+
+#define ATTR_TYPE          "type"
+#define ATTR_COMPARE       "compare"
+#define ATTR_THRESHOLD     "threshold"
+#define ATTR_UNARY         "unary"
+#define ATTR_BINARY        "binary"
+#define ATTR_THRESHOLD_STR "threshold_str"
+#define ATTR_TOLERANCE     "tolerance"
+#define ATTR_ELEMENT_TYPE  "ElementType"
+
+//=======================================================================
+// name    : toString
+// Purpose : Convert bool to LDOMString
+//=======================================================================
+static inline LDOMString toString( const bool val )
+{
+  return val ? "logical not" : "";
+}
+
+//=======================================================================
+// name    : toBool
+// Purpose : Convert LDOMString to bool
+//=======================================================================
+static inline bool toBool( const LDOMString& theStr )
+{
+  return theStr.equals( "logical not" );
+}
+
+//=======================================================================
+// name    : toString
+// Purpose : Convert double to LDOMString
+//=======================================================================
+static inline LDOMString toString( const double val )
+{
+  char a[ 255 ];
+  sprintf( a, "%e", val );
+  return LDOMString( a );
+}
+
+//=======================================================================
+// name    : toDouble
+// Purpose : Convert LDOMString to double
+//=======================================================================
+static inline double toDouble( const LDOMString& theStr )
+{
+  return atof( theStr.GetString() );
+}
+
+//=======================================================================
+// name    : toString
+// Purpose : Convert functor type to LDOMString
+//=======================================================================
+static inline LDOMString toString( const long theType )
+{
+  switch ( theType )
+  {
+    case FT_AspectRatio     : return "Aspect ratio";
+    case FT_Warping         : return "Warping";
+    case FT_MinimumAngle    : return "Minimum angle";
+    case FT_Taper           : return "Taper";
+    case FT_Skew            : return "Skew";
+    case FT_Area            : return "Area";
+    case FT_BelongToGeom    : return "Belong to Geom";
+    case FT_BelongToPlane   : return "Belong to Plane";
+    case FT_BelongToCylinder: return "Belong to Cylinder";
+    case FT_RangeOfIds      : return "Range of IDs";
+    case FT_FreeBorders     : return "Free borders";
+    case FT_FreeEdges       : return "Free edges";
+    case FT_MultiConnection : return "Borders at multi-connections";
+    case FT_Length          : return "Length";
+    case FT_LessThan        : return "Less than";
+    case FT_MoreThan        : return "More than";
+    case FT_EqualTo         : return "Equal to";
+    case FT_LogicalNOT      : return "Not";
+    case FT_LogicalAND      : return "And";
+    case FT_LogicalOR       : return "Or";
+    case FT_Undefined       : return "";
+    default                 : return "";
+  }
+}
+
+//=======================================================================
+// name    : toFunctorType
+// Purpose : Convert LDOMString to functor type
+//=======================================================================
+static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
+{
+  if      ( theStr.equals( "Aspect ratio"                 ) ) return FT_AspectRatio;
+  else if ( theStr.equals( "Warping"                      ) ) return FT_Warping;
+  else if ( theStr.equals( "Minimum angle"                ) ) return FT_MinimumAngle;
+  else if ( theStr.equals( "Taper"                        ) ) return FT_Taper;
+  else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
+  else if ( theStr.equals( "Area"                         ) ) return FT_Area;
+  else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
+  else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
+  else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
+  else if ( theStr.equals( "Free borders"                 ) ) return FT_FreeBorders;
+  else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;
+  else if ( theStr.equals( "Borders at multi-connections" ) ) return FT_MultiConnection;
+  else if ( theStr.equals( "Length"                       ) ) return FT_Length;
+  else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
+  else if ( theStr.equals( "Less than"                    ) ) return FT_LessThan;
+  else if ( theStr.equals( "More than"                    ) ) return FT_MoreThan;
+  else if ( theStr.equals( "Equal to"                     ) ) return FT_EqualTo;
+  else if ( theStr.equals( "Not"                          ) ) return FT_LogicalNOT;
+  else if ( theStr.equals( "And"                          ) ) return FT_LogicalAND;
+  else if ( theStr.equals( "Or"                           ) ) return FT_LogicalOR;
+  else if ( theStr.equals( ""                             ) ) return FT_Undefined;
+  else  return FT_Undefined;
+}
+
+//=======================================================================
+// name    : toFunctorType
+// Purpose : Convert LDOMString to value of ElementType enumeration
+//=======================================================================
+static inline SMESH::ElementType toElementType( const LDOMString& theStr )
+{
+  if      ( theStr.equals( "NODE"   ) ) return SMESH::NODE;
+  else if ( theStr.equals( "EDGE"   ) ) return SMESH::EDGE;
+  else if ( theStr.equals( "FACE"   ) ) return SMESH::FACE;
+  else if ( theStr.equals( "VOLUME" ) ) return SMESH::VOLUME;
+  else                                  return SMESH::ALL;
+}
+
+//=======================================================================
+// name    : toString
+// Purpose : Convert ElementType to string
+//=======================================================================
+static inline LDOMString toString( const SMESH::ElementType theType )
+{
+  switch ( theType )
+  {
+    case SMESH::NODE   : return "NODE";
+    case SMESH::EDGE   : return "EDGE";
+    case SMESH::FACE   : return "FACE";
+    case SMESH::VOLUME : return "VOLUME";
+    case SMESH::ALL    : return "ALL";
+    default            : return "";
+  }
+}
+
+//=======================================================================
+// name    : findFilter
+// Purpose : Find filter in document
+//=======================================================================
+static LDOM_Element findFilter( const char* theFilterName,
+                                const LDOM_Document& theDoc,
+                                LDOM_Node* theParent = 0 )
+{
+  LDOM_Element aRootElement = theDoc.getDocumentElement();
+  if ( aRootElement.isNull() || !aRootElement.hasChildNodes() )
+    return LDOM_Element();
+
+  for ( LDOM_Node aTypeNode = aRootElement.getFirstChild();
+        !aTypeNode.isNull(); aTypeNode = aTypeNode.getNextSibling() )
+  {
+    for ( LDOM_Node aFilter = aTypeNode.getFirstChild();
+          !aFilter.isNull(); aFilter = aFilter.getNextSibling() )
+    {
+      LDOM_Element* anElem = ( LDOM_Element* )&aFilter;
+      if ( anElem->getTagName().equals( LDOMString( "filter" ) ) &&
+           anElem->getAttribute( "name" ).equals( LDOMString( theFilterName ) ) )
+      {
+        if ( theParent != 0  )
+          *theParent = aTypeNode;
+        return (LDOM_Element&)aFilter;
+      }
+    }
+  }
+  return LDOM_Element();
+}
+
+//=======================================================================
+// name    : getSectionName
+// Purpose : Get name of section of filters
+//=======================================================================
+static const char* getSectionName( const ElementType theType )
+{
+  switch ( theType )
+  {
+    case SMESH::NODE   : return "Filters for nodes";
+    case SMESH::EDGE   : return "Filters for edges";
+    case SMESH::FACE   : return "Filters for faces";
+    case SMESH::VOLUME : return "Filters for volumes";
+    case SMESH::ALL    : return "Filters for elements";
+    default            : return "";
+  }
+}
+
+//=======================================================================
+// name    : getSection
+// Purpose : Create section for filters corresponding to the entity type
+//=======================================================================
+static LDOM_Node getSection( const ElementType theType,
+                             LDOM_Document&    theDoc,
+                             const bool        toCreate = false )
+{
+  LDOM_Element aRootElement = theDoc.getDocumentElement();
+  if ( aRootElement.isNull() )
+    return LDOM_Node();
+
+  // Find section
+  bool anExist = false;
+  const char* aSectionName = getSectionName( theType );
+  if ( strcmp( aSectionName, "" ) == 0 )
+    return LDOM_Node();
+  
+  LDOM_NodeList aSections = theDoc.getElementsByTagName( "section" );
+  LDOM_Node aNode;
+  for ( int i = 0, n = aSections.getLength(); i < n; i++ )
+  {
+    aNode = aSections.item( i );
+    LDOM_Element& anItem = ( LDOM_Element& )aNode;
+    if ( anItem.getAttribute( "name" ).equals( LDOMString( aSectionName ) ) )
+    {
+      anExist = true;
+      break;
+    }
+  }
+
+  // Create new section if necessary
+  if ( !anExist )
+  {
+    if ( toCreate )
+    {
+      LDOM_Element aNewItem = theDoc.createElement( "section" );
+      aNewItem.setAttribute( "name", aSectionName );
+      aRootElement.appendChild( aNewItem );
+      return aNewItem;
+    }
+    else
+      return LDOM_Node();
+  }
+  return
+    aNode;
+}
+
+//=======================================================================
+// name    : createFilterItem
+// Purpose : Create filter item or LDOM document
+//=======================================================================
+static LDOM_Element createFilterItem( const char*       theName,
+                                      SMESH::Filter_ptr theFilter,
+                                      LDOM_Document&    theDoc )
+{
+  // create new filter in document
+  LDOM_Element aFilterItem = theDoc.createElement( "filter" );
+  aFilterItem.setAttribute( "name", theName );
+
+  // save filter criterions
+  SMESH::Filter::Criteria_var aCriteria = new SMESH::Filter::Criteria;
+
+  if ( !theFilter->GetCriteria( aCriteria ) )
+    return LDOM_Element();
+
+  for ( CORBA::ULong i = 0, n = aCriteria->length(); i < n; i++ )
+  {
+    LDOM_Element aCriterionItem = theDoc.createElement( "criterion" );
+
+    aCriterionItem.setAttribute( ATTR_TYPE         , toString( aCriteria[ i ].Type      ) );
+    aCriterionItem.setAttribute( ATTR_COMPARE      , toString( aCriteria[ i ].Compare   ) );
+    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( aCriteria[ i ].Threshold ) );
+    aCriterionItem.setAttribute( ATTR_UNARY        , toString( aCriteria[ i ].UnaryOp   ) );
+    aCriterionItem.setAttribute( ATTR_BINARY       , toString( aCriteria[ i ].BinaryOp  ) );
+    
+    aCriterionItem.setAttribute( ATTR_THRESHOLD_STR, (const char*)aCriteria[ i ].ThresholdStr );
+    aCriterionItem.setAttribute( ATTR_TOLERANCE    , toString( aCriteria[ i ].Tolerance ) );
+    aCriterionItem.setAttribute( ATTR_ELEMENT_TYPE ,
+      toString( (SMESH::ElementType)aCriteria[ i ].TypeOfElement ) );
+
+    aFilterItem.appendChild( aCriterionItem );
+  }
+
+  return aFilterItem;
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::FilterLibrary_i
+// Purpose : Constructor
+//=======================================================================
+FilterLibrary_i::FilterLibrary_i( const char* theFileName )
+{
+  myFileName = strdup( theFileName );
+  SMESH::FilterManager_i* aFilterMgr = new SMESH::FilterManager_i();
+  myFilterMgr = aFilterMgr->_this();
+
+  LDOMParser aParser;
+
+  // Try to use existing library file
+  bool anExists = false;
+  if ( !aParser.parse( myFileName ) )
+  {
+    myDoc = aParser.getDocument();
+    anExists = true;
+  }
+  // Create a new XML document if it doesn't exist
+  else
+    myDoc = LDOM_Document::createDocument( LDOMString() );
+
+  LDOM_Element aRootElement = myDoc.getDocumentElement();
+  if ( aRootElement.isNull() )
+  {
+    // If the existing document is empty --> try to create a new one
+    if ( anExists )
+      myDoc = LDOM_Document::createDocument( LDOMString() );
+  }
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::FilterLibrary_i
+// Purpose : Constructor
+//=======================================================================
+FilterLibrary_i::FilterLibrary_i()
+{
+  myFileName = 0;
+  SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
+  myFilterMgr = aFilter->_this();
+
+  myDoc = LDOM_Document::createDocument( LDOMString() );
+}
+
+FilterLibrary_i::~FilterLibrary_i()
+{
+  delete myFileName;
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::Copy
+// Purpose : Create filter and initialize it with values from library
+//=======================================================================
+Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
+{
+  Filter_ptr aRes;
+  LDOM_Node aFilter = findFilter( theFilterName, myDoc );
+
+  if ( aFilter.isNull() )
+    return aRes;
+
+  std::list<SMESH::Filter::Criterion> aCriteria;
+    
+  for ( LDOM_Node aCritNode = aFilter.getFirstChild();
+        !aCritNode.isNull() ; aCritNode = aCritNode.getNextSibling() )
+  {
+    LDOM_Element* aCrit = (LDOM_Element*)&aCritNode;
+
+    const char* aTypeStr      = aCrit->getAttribute( ATTR_TYPE          ).GetString();
+    const char* aCompareStr   = aCrit->getAttribute( ATTR_COMPARE       ).GetString();
+    const char* aUnaryStr     = aCrit->getAttribute( ATTR_UNARY         ).GetString();
+    const char* aBinaryStr    = aCrit->getAttribute( ATTR_BINARY        ).GetString();
+    const char* anElemTypeStr = aCrit->getAttribute( ATTR_ELEMENT_TYPE  ).GetString();
+    
+    SMESH::Filter::Criterion aCriterion = createCriterion();
+
+    aCriterion.Type          = toFunctorType( aTypeStr );
+    aCriterion.Compare       = toFunctorType( aCompareStr );
+    aCriterion.UnaryOp       = toFunctorType( aUnaryStr );
+    aCriterion.BinaryOp      = toFunctorType( aBinaryStr );
+    
+    aCriterion.TypeOfElement = toElementType( anElemTypeStr );
+
+    LDOMString str = aCrit->getAttribute( ATTR_THRESHOLD );
+    int val = 0;
+    aCriterion.Threshold = str.Type() == LDOMBasicString::LDOM_Integer && str.GetInteger( val )
+      ? val : atof( str.GetString() );
+
+    str = aCrit->getAttribute( ATTR_TOLERANCE );
+    aCriterion.Tolerance = str.Type() == LDOMBasicString::LDOM_Integer && str.GetInteger( val )
+      ? val : atof( str.GetString() );
+
+    str = aCrit->getAttribute( ATTR_THRESHOLD_STR );
+    if ( str.Type() == LDOMBasicString::LDOM_Integer && str.GetInteger( val ) )
+    {
+      char a[ 255 ];
+      sprintf( a, "%d", val );
+      aCriterion.ThresholdStr = strdup( a );
+    }
+    else
+      aCriterion.ThresholdStr = str.GetString();
+
+    aCriteria.push_back( aCriterion );
+  }
+
+  SMESH::Filter::Criteria_var aCriteriaVar = new SMESH::Filter::Criteria;
+  aCriteriaVar->length( aCriteria.size() );
+  
+  CORBA::ULong i = 0;
+  std::list<SMESH::Filter::Criterion>::iterator anIter = aCriteria.begin();
+  
+  for( ; anIter != aCriteria.end(); ++anIter )
+    aCriteriaVar[ i++ ] = *anIter;
+
+  aRes = myFilterMgr->CreateFilter();
+  aRes->SetCriteria( aCriteriaVar.inout() );
+
+  return aRes;
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::SetFileName
+// Purpose : Set file name for library
+//=======================================================================
+void FilterLibrary_i::SetFileName( const char* theFileName )
+{
+  delete myFileName;
+  myFileName = strdup( theFileName );
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::GetFileName
+// Purpose : Get file name of library
+//=======================================================================
+char* FilterLibrary_i::GetFileName()
+{
+  return CORBA::string_dup( myFileName );
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::Add
+// Purpose : Add new filter to library
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::Add( const char* theFilterName, Filter_ptr theFilter )
+{
+  // if filter already in library or entry filter is null do nothing
+  LDOM_Node aFilterNode = findFilter( theFilterName, myDoc );
+  if ( !aFilterNode.isNull() || theFilter->_is_nil() )
+    return false;
+
+  // get section corresponding to the filter type
+  ElementType anEntType = theFilter->GetElementType();
+
+  LDOM_Node aSection = getSection( anEntType, myDoc, true );
+  if ( aSection.isNull() )
+    return false;
+
+  // create filter item
+  LDOM_Element aFilterItem = createFilterItem( theFilterName, theFilter, myDoc );
+  if ( aFilterItem.isNull() )
+    return false;
+  else
+  {
+    aSection.appendChild( aFilterItem );
+    return true;
+  }
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::Add
+// Purpose : Add new filter to library
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::AddEmpty( const char* theFilterName, ElementType theType )
+{
+  // if filter already in library or entry filter is null do nothing
+  LDOM_Node aFilterNode = findFilter( theFilterName, myDoc );
+  if ( !aFilterNode.isNull() )
+    return false;
+
+  LDOM_Node aSection = getSection( theType, myDoc, true );
+  if ( aSection.isNull() )
+    return false;
+
+  // create filter item
+  Filter_var aFilter = myFilterMgr->CreateFilter();
+  
+  LDOM_Element aFilterItem = createFilterItem( theFilterName, aFilter, myDoc );
+  if ( aFilterItem.isNull() )
+    return false;
+  else
+  {
+    aSection.appendChild( aFilterItem );
+    return true;
+  }
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::Delete
+// Purpose : Delete filter from library
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::Delete ( const char* theFilterName )
+{
+  LDOM_Node aParentNode;
+  LDOM_Node aFilterNode = findFilter( theFilterName, myDoc, &aParentNode );
+  if ( aFilterNode.isNull() || aParentNode.isNull() )
+    return false;
+
+  aParentNode.removeChild( aFilterNode );
+  return true;
+}
+
+//=======================================================================
+// name      : FilterLibrary_i::Replace 
+// Purpose   : Replace existing filter with entry filter.
+// IMPORTANT : If filter does not exist it is not created
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
+                                         const char* theNewName,                 
+                                         Filter_ptr  theFilter )
+{
+  LDOM_Element aFilterItem = findFilter( theFilterName, myDoc );
+  if ( aFilterItem.isNull() || theFilter->_is_nil() )
+    return false;
+
+  LDOM_Element aNewItem = createFilterItem( theNewName, theFilter, myDoc );
+  if ( aNewItem.isNull() )
+    return false;
+  else                                                                                          
+  {
+    aFilterItem.ReplaceElement( aNewItem );
+    return true;
+  }
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::Save
+// Purpose : Save library on disk
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::Save()
+{
+  if ( myFileName == 0 || strlen( myFileName ) == 0 )
+    return false;
+          
+  FILE* aOutFile = fopen( myFileName, "wt" );
+  if ( !aOutFile )
+    return false;
+
+  LDOM_XmlWriter aWriter( aOutFile );
+  aWriter.SetIndentation( 2 );
+  aWriter << myDoc;
+  fclose( aOutFile );
+
+  return true;
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::SaveAs
+// Purpose : Save library on disk
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::SaveAs( const char* aFileName )
+{
+  myFileName = strdup ( aFileName );
+  return Save();
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::IsPresent
+// Purpose : Verify whether filter is in library
+//=======================================================================
+CORBA::Boolean FilterLibrary_i::IsPresent( const char* theFilterName )
+{
+  return !findFilter( theFilterName, myDoc ).isNull();
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::NbFilters
+// Purpose : Return amount of filters in library
+//=======================================================================
+CORBA::Long FilterLibrary_i::NbFilters( ElementType theType )
+{
+  string_array_var aNames = GetNames( theType );
+  return aNames->length();
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::GetNames
+// Purpose : Get names of filters from library
+//=======================================================================
+string_array* FilterLibrary_i::GetNames( ElementType theType )
+{
+  string_array_var anArray = new string_array;
+  TColStd_SequenceOfHAsciiString aSeq;
+
+  LDOM_Node aSection = getSection( theType, myDoc, false );
+
+  if ( !aSection.isNull() )
+  {
+    for ( LDOM_Node aFilter = aSection.getFirstChild();
+          !aFilter.isNull(); aFilter = aFilter.getNextSibling() )
+    {
+      LDOM_Element& anElem = ( LDOM_Element& )aFilter;
+      aSeq.Append( new TCollection_HAsciiString(
+         (Standard_CString)anElem.getAttribute( "name" ).GetString() ) );
+    }
+  }
+
+  anArray->length( aSeq.Length() );
+  for ( int i = 1, n = aSeq.Length(); i <= n; i++ )
+    anArray[ i - 1 ] = CORBA::string_dup( aSeq( i )->ToCString() );
+
+  return anArray._retn();
+}
+
+//=======================================================================
+// name    : FilterLibrary_i::GetAllNames
+// Purpose : Get names of filters from library
+//=======================================================================
+string_array* FilterLibrary_i::GetAllNames()
+{
+  string_array_var aResArray = new string_array;
+  for ( int type = SMESH::ALL; type <= SMESH::VOLUME; type++ )
+  {
+    SMESH::string_array_var aNames = GetNames( (SMESH::ElementType)type );
+
+    int aPrevLength = aResArray->length();
+    aResArray->length( aPrevLength + aNames->length() );
+    for ( int i = 0, n = aNames->length(); i < n; i++ )
+      aResArray[ aPrevLength + i ] = aNames[ i ];
+  }
+
+  return aResArray._retn();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -38,8 +38,6 @@
 #include <set>
 #include <list>
 
-class SMDSControl_BoundaryEdges;
-
 typedef SMDS_Iterator<const SMDS_MeshNode *> SMDS_NodeIterator;
 typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshNode *> > SMDS_NodeIteratorPtr;
 typedef SMDS_Iterator<const SMDS_MeshEdge *> SMDS_EdgeIterator;
@@ -58,7 +56,8 @@ public:
   SMDS_EdgeIteratorPtr edgesIterator() const;
   SMDS_FaceIteratorPtr facesIterator() const;
   SMDS_VolumeIteratorPtr volumesIterator() const;
-  
+  SMDS_ElemIteratorPtr elementsIterator() const;  
+
   SMDS_Mesh *AddSubMesh();
   
   virtual SMDS_MeshNode* AddNodeWithID(double x, double y, double z, int ID);
@@ -202,10 +201,10 @@ public:
                                      const SMDS_MeshFace * f6);
 
   virtual void RemoveElement(const SMDS_MeshElement *        elem,
-                             list<const SMDS_MeshElement *>& removedElems,
-                             list<const SMDS_MeshElement *>& removedNodes,
+                             std::list<const SMDS_MeshElement *>& removedElems,
+                             std::list<const SMDS_MeshElement *>& removedNodes,
                              const bool                      removenodes = false);
-  virtual void RemoveElement(const SMDS_MeshElement * elem, const bool removenodes = false);
+  virtual void RemoveElement(const SMDS_MeshElement * elem, bool removenodes = false);
   virtual void RemoveNode(const SMDS_MeshNode * node);
   virtual void RemoveEdge(const SMDS_MeshEdge * edge);
   virtual void RemoveFace(const SMDS_MeshFace * face);
@@ -213,13 +212,34 @@ public:
   
   virtual bool RemoveFromParent();
   virtual bool RemoveSubMesh(const SMDS_Mesh * aMesh);
-  
+
+  static bool ChangeElementNodes(const SMDS_MeshElement * elem,
+                                 const SMDS_MeshNode    * nodes[],
+                                 const int                nbnodes);
+
+  virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
+  // Renumber all nodes or elements.
+
   const SMDS_MeshNode *FindNode(int idnode) const;
   const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2) const;
   const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3) const;
   const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3, int idnode4) const;
   const SMDS_MeshElement *FindElement(int IDelem) const;
-	
+  static const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,
+                                       const SMDS_MeshNode * n2);
+  static const SMDS_MeshFace* FindFace(const SMDS_MeshNode *n1,
+                                       const SMDS_MeshNode *n2,
+                                       const SMDS_MeshNode *n3);
+  static const SMDS_MeshFace* FindFace(const SMDS_MeshNode *n1,
+                                       const SMDS_MeshNode *n2,
+                                       const SMDS_MeshNode *n3,
+                                       const SMDS_MeshNode *n4);
+  int MaxNodeID() const;
+  int MinNodeID() const;
+  int MaxElementID() const;
+  int MinElementID() const;
+
+
   int NbNodes() const;
   int NbEdges() const;
   int NbFaces() const;
@@ -248,10 +268,10 @@ public:
    */
   bool Contains (const SMDS_MeshElement* elem) const;
 
-  typedef set<SMDS_MeshNode *> SetOfNodes;
-  typedef set<SMDS_MeshEdge *> SetOfEdges;
-  typedef set<SMDS_MeshFace *> SetOfFaces;
-  typedef set<SMDS_MeshVolume *> SetOfVolumes;
+  typedef std::set<SMDS_MeshNode *> SetOfNodes;
+  typedef std::set<SMDS_MeshEdge *> SetOfEdges;
+  typedef std::set<SMDS_MeshFace *> SetOfFaces;
+  typedef std::set<SMDS_MeshVolume *> SetOfVolumes;
 
 private:
   SMDS_Mesh(SMDS_Mesh * parent);
@@ -259,41 +279,25 @@ private:
   SMDS_MeshFace * createTriangle(const SMDS_MeshNode * node1, 
 				 const SMDS_MeshNode * node2, 
 				 const SMDS_MeshNode * node3);
-
   SMDS_MeshFace * createQuadrangle(const SMDS_MeshNode * node1,
 				   const SMDS_MeshNode * node2, 
 				   const SMDS_MeshNode * node3, 
 				   const SMDS_MeshNode * node4);
-
-  bool registerElement(int ID, SMDS_MeshElement * element);
-
-  const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,
-				const SMDS_MeshNode * n2) const;
-
   SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
 				  const SMDS_MeshNode * n2);
-
-  const SMDS_MeshFace* FindFace(const SMDS_MeshNode *n1,
-                                const SMDS_MeshNode *n2,
-                                const SMDS_MeshNode *n3) const;
-
   SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
 				  const SMDS_MeshNode *n2,
 				  const SMDS_MeshNode *n3);
-
-  const SMDS_MeshFace* FindFace(const SMDS_MeshNode *n1,
-				const SMDS_MeshNode *n2,
-				const SMDS_MeshNode *n3,
-				const SMDS_MeshNode *n4) const;
-
   SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
 				  const SMDS_MeshNode *n2,
 				  const SMDS_MeshNode *n3,
 				  const SMDS_MeshNode *n4);
 
-  void addChildrenWithNodes(set<const SMDS_MeshElement*>& setOfChildren, 
+  bool registerElement(int ID, SMDS_MeshElement * element);
+
+  void addChildrenWithNodes(std::set<const SMDS_MeshElement*>& setOfChildren, 
 			    const SMDS_MeshElement * element, 
-			    set<const SMDS_MeshElement*>& nodes);
+			    std::set<const SMDS_MeshElement*>& nodes);
 
   // Fields PRIVATE
   
@@ -302,7 +306,7 @@ private:
   SetOfFaces myFaces;
   SetOfVolumes myVolumes;
   SMDS_Mesh *myParent;
-  list<SMDS_Mesh *> myChildren;
+  std::list<SMDS_Mesh *> myChildren;
   SMDS_MeshElementIDFactory *myNodeIDFactory;
   SMDS_MeshElementIDFactory *myElementIDFactory;
   
@@ -310,5 +314,6 @@ private:
   bool myHasConstructionFaces;
   bool myHasInverseElements;
 };
+
 
 #endif

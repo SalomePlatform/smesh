@@ -1,4 +1,3 @@
-using namespace std;
 //  File      : SMESH_TypeFilter.cxx
 //  Created   : Fri Dec 07 09:57:24 2001
 //  Author    : Nicolas REJNERI
@@ -17,6 +16,7 @@ using namespace std;
 #include "QAD_Desktop.h"
 #include "QAD_Study.h"
 
+using namespace std;
 
 SMESH_TypeFilter::SMESH_TypeFilter(MeshObjectType aType) 
 {
@@ -25,7 +25,7 @@ SMESH_TypeFilter::SMESH_TypeFilter(MeshObjectType aType)
 
 Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& anObj) const 
 {
-  Handle(SALOME_TypeFilter) meshFilter = new SALOME_TypeFilter( "MESH" );
+  Handle(SALOME_TypeFilter) meshFilter = new SALOME_TypeFilter( "SMESH" );
   if ( !meshFilter->IsOk(anObj) ) 
     return false;
 
@@ -39,78 +39,93 @@ Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& 
     SALOMEDS::SObject_var objFather = obj->GetFather();
     SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
     
-    if ( strlen( obj->GetID() ) <= strlen( objComponent->GetID() ) )
+    int aLevel = obj->Depth() - objComponent->Depth();
+
+    // Max level under the component is 4:
+    //
+    // 0    Mesh Component
+    // 1    |- Hypotheses
+    // 2    |  |- Regular 1D
+    //      |- Algorithms
+    //      |- Mesh 1
+    //         |- Applied Hypotheses
+    //         |- Applied Algorithms
+    //         |- Submeshes on Face
+    // 3       |  |- SubmeshFace
+    // 4       |     |- Applied algorithms ( selectable in Use Case Browser )
+    //         |- Group Of Nodes
+
+    if ( aLevel <= 0 )
       return false;
 
     switch ( myKind )
       {
       case HYPOTHESIS:
 	{
-	  if (( objFather->Tag() == 1 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  if ( aLevel == 2 && ( objFather->Tag() == 1 ))
 	    Ok = true;
 	  break;
 	}
       case ALGORITHM:
 	{
-	  if (( objFather->Tag() == 2 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  if ( aLevel == 2 && ( objFather->Tag() == 2 ))
 	    Ok = true;
 	  break;
 	}
       case MESH:
 	{
-	  if (( obj->Tag() >= 3 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) == 0 ) )
+	  if ( aLevel == 1 && ( obj->Tag() >= 3 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH:
 	{
-	  if (( objFather->Tag() >= 4 && objFather->Tag() < 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  // see SMESH_Gen_i.cxx for tag numbers
+	  if ( aLevel == 3 && ( objFather->Tag() >= 4 && objFather->Tag() <= 10 ))
 	    Ok = true;
 	  break;
 	}
       case MESHorSUBMESH:
 	{
-	  if (( obj->Tag() >= 3 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) == 0 ) )
+	  if ( aLevel == 1 && ( obj->Tag() >= 3 ))
+	    Ok = true; // mesh
+          else if ( aLevel == 3 && ( objFather->Tag() >= 4 && objFather->Tag() <= 10 ))
 	    Ok = true;
-
-	  if (( objFather->Tag() >= 4 && objFather->Tag() < 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
-	    Ok = true;
-
 	  break;
 	}
       case SUBMESH_VERTEX:  // Label "SubMeshes on vertexes"
 	{
-	  if (( obj->Tag() == 4 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
+	  if ( aLevel == 3 && ( objFather->Tag() == 4 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_EDGE:
 	{
-	  if (( obj->Tag() == 5 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
+	  if ( aLevel == 3 && ( objFather->Tag() == 5 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_FACE:
 	{
-	  if (( obj->Tag() == 6 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
+	  if ( aLevel == 3 && ( objFather->Tag() == 7 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_SOLID:
 	{
-	  if (( obj->Tag() == 7 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
+	  if ( aLevel == 3 && ( objFather->Tag() == 9 ))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_COMPOUND:
 	{
-	  if (( obj->Tag() == 8 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) && ( objFather->Tag() >= 3 ))
+	  if ( aLevel == 3 && ( objFather->Tag() == 10 ))
 	    Ok = true;
 	  break;
 	}
       case GROUP:
 	{
-	  if (( objFather->Tag() >= 9 ) && (strcmp( objFather->GetID(), objComponent->GetID() ) != 0 ) )
+	  if ( aLevel == 3 && ( objFather->Tag() > 10 ))
 	    Ok = true;
 	  break;
 	}

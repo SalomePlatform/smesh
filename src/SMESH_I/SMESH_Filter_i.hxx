@@ -30,166 +30,288 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Filter)
+
+#include <LDOM_Document.hxx>
+#include <TopoDS_Shape.hxx>
+
 #include "SALOME_GenericObj_i.hh"
+#include "SMESH_Controls.hxx"
 
 class SMESHDS_Mesh;
-class gp_Pnt;
-class gp_XYZ;
-class TColgp_SequenceOfXYZ;
 
-namespace SMESH{
+namespace SMESH
+{
+
+namespace Controls
+{
+
+/*
+  Class       : BelongToGeom
+  Description : Predicate for verifying whether entiy belong to
+                specified geometrical support
+*/
+class BelongToGeom: public virtual Predicate
+{
+public:
+                                  BelongToGeom();
+
+  virtual void                    SetMesh( SMDS_Mesh* theMesh );
+  virtual void                    SetGeom( const TopoDS_Shape& theShape );
+
+  virtual bool                    IsSatisfy( long theElementId );
+
+  virtual void                    SetType( SMDSAbs_ElementType theType );
+  virtual                         SMDSAbs_ElementType GetType() const;
+
+  TopoDS_Shape                    GetShape();
+  SMESHDS_Mesh*                   GetMeshDS();
+
+private:
+  TopoDS_Shape                    myShape;
+  SMESHDS_Mesh*                   myMeshDS;
+  SMDSAbs_ElementType             myType;
+};
+typedef boost::shared_ptr<BelongToGeom> BelongToGeomPtr;
+}
 
 /*
                                 FUNCTORS
 */
 
 /*
-  Class       : NumericalFunctor_i
-  Description : Base class for numerical functors 
-  
-    PortableServer::POA_ptr thePOA
-
+  Class       : Functor_i
+  Description : An abstact class for all functors 
 */
-
-class NumericalFunctor_i: public virtual POA_SMESH::NumericalFunctor,
-                          public virtual SALOME::GenericObj_i
+class Functor_i: public virtual POA_SMESH::Functor,
+                 public virtual SALOME::GenericObj_i
 {
 public:
-                          NumericalFunctor_i();
-  void                    SetMesh( SMESH_Mesh_ptr theMesh );
-  virtual int             GetType() const = 0;
-
+  void                            SetMesh( SMESH_Mesh_ptr theMesh );
+  Controls::FunctorPtr            GetFunctor(){ return myFunctorPtr;}
+  ElementType                     GetElementType();
+  
 protected:
-  bool                    getPoints( const int             theId, 
-                                     TColgp_SequenceOfXYZ& theRes ) const;
-protected:
-  SMESHDS_Mesh*           myMesh;
+                                  Functor_i();
+protected:                                
+  Controls::FunctorPtr            myFunctorPtr;
 };
+
+
+/*
+  Class       : NumericalFunctor_i
+  Description : Base class for numerical functors 
+*/
+class NumericalFunctor_i: public virtual POA_SMESH::NumericalFunctor,
+                          public virtual Functor_i
+{
+public:
+  CORBA::Double                   GetValue( CORBA::Long theElementId );
+  void                            SetPrecision( CORBA::Long thePrecision );
+  CORBA::Long                     GetPrecision();
+  Controls::NumericalFunctorPtr   GetNumericalFunctor();
+  
+protected:
+  Controls::NumericalFunctorPtr   myNumericalFunctorPtr;
+};
+
 
 /*
   Class       : SMESH_MinimumAngleFunct
   Description : Functor for calculation of minimum angle
 */
-
 class MinimumAngle_i: public virtual POA_SMESH::MinimumAngle,
                       public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  MinimumAngle_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : AspectRatio_i
   Description : Functor for calculating aspect ratio
 */
-
 class AspectRatio_i: public virtual POA_SMESH::AspectRatio,
                      public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue(CORBA::Long theElementId);
-  virtual int             GetType() const;
+                                  AspectRatio_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : Warping_i
   Description : Functor for calculating warping
 */
-
 class Warping_i: public virtual POA_SMESH::Warping,
                  public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue(CORBA::Long theElementId);
-  virtual int             GetType() const;
-
-private:
-  double                  ComputeA( const gp_XYZ&, const gp_XYZ&, 
-                                    const gp_XYZ&, const gp_XYZ& ) const;
+                                  Warping_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : Taper_i
   Description : Functor for calculating taper
 */
-
 class Taper_i: public virtual POA_SMESH::Taper,
                public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  Taper_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : Skew_i
   Description : Functor for calculating skew in degrees
 */
-
 class Skew_i: public virtual POA_SMESH::Skew,
               public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  Skew_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : Area_i
   Description : Functor for calculating area
 */
-
 class Area_i: public virtual POA_SMESH::Area,
               public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  Area_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : Length_i
   Description : Functor for calculating length of edge
 */
-
 class Length_i: public virtual POA_SMESH::Length,
                 public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  Length_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : MultiConnection_i
   Description : Functor for calculating number of faces conneted to the edge
 */
-
 class MultiConnection_i: public virtual POA_SMESH::MultiConnection,
-                        public virtual NumericalFunctor_i
+                         public virtual NumericalFunctor_i
 {
 public:
-  CORBA::Double           GetValue( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  MultiConnection_i();
+  FunctorType                     GetFunctorType();
 };
 
 
 /*
                             PREDICATES
 */
-
 /*
   Class       : Predicate_i
   Description : Base class for all predicates
 */
-
 class Predicate_i: public virtual POA_SMESH::Predicate,
-                   public virtual SALOME::GenericObj_i
+                   public virtual Functor_i
 {
 public:
-                          Predicate_i();
-  virtual int             GetType() const = 0;
+  CORBA::Boolean                  IsSatisfy( CORBA::Long theElementId );
+  Controls::PredicatePtr          GetPredicate();
+  
+protected:
+  Controls::PredicatePtr          myPredicatePtr;
+};
+
+
+/*
+  Class       : BelongToGeom_i
+  Description : Predicate for selection on geometrical support
+*/
+class BelongToGeom_i: public virtual POA_SMESH::BelongToGeom,
+                      public virtual Predicate_i
+{
+public:
+                                  BelongToGeom_i();
+  virtual                         ~BelongToGeom_i();
+                                  
+  void                            SetGeom( GEOM::GEOM_Object_ptr theGeom );
+  void                            SetElementType( ElementType theType );
+  FunctorType                     GetFunctorType();
+
+  void                            SetGeom( const TopoDS_Shape& theShape );
+
+  void                            SetShapeName( const char* theName );
+  char*                           GetShapeName();
+
+protected:
+  Controls::BelongToGeomPtr       myBelongToGeomPtr;
+  char*                           myShapeName;
+};
+
+/*
+  Class       : BelongToSurface_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+class BelongToSurface_i: public virtual POA_SMESH::BelongToSurface,
+                         public virtual Predicate_i
+{
+public:
+                                  BelongToSurface_i( const Handle(Standard_Type)& );
+  virtual                         ~BelongToSurface_i();
+
+  void                            SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
+
+  void                            SetShapeName( const char* theName, ElementType theType );
+  char*                           GetShapeName();
+
+  void                            SetTolerance( CORBA::Double );
+  CORBA::Double                   GetTolerance();
+
+protected:
+  Controls::ElementsOnSurfacePtr  myElementsOnSurfacePtr;
+  char*                           myShapeName;
+  Handle(Standard_Type)           mySurfaceType;
+};
+
+/*
+  Class       : BelongToPlane_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+class BelongToPlane_i: public virtual POA_SMESH::BelongToPlane,
+                       public virtual BelongToSurface_i
+{
+public:
+                                  BelongToPlane_i();
+  void                            SetPlane( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
+  FunctorType                     GetFunctorType();
+};
+
+/*
+  Class       : BelongToCylinder_i
+  Description : Verify whether mesh element lie in pointed Geom cylindrical object
+*/
+class BelongToCylinder_i: public virtual POA_SMESH::BelongToCylinder,
+                          public virtual BelongToSurface_i
+{
+public:
+                                  BelongToCylinder_i();
+  void                            SetCylinder( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
+  FunctorType                     GetFunctorType();
 };
 
 
@@ -197,54 +319,89 @@ public:
   Class       : FreeBorders_i
   Description : Predicate for free borders
 */
-
 class FreeBorders_i: public virtual POA_SMESH::FreeBorders,
                      public virtual Predicate_i
 {
 public:
-                          FreeBorders_i();
-  void                    SetMesh( SMESH_Mesh_ptr theMesh );
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
-  virtual int             GetType() const;
+                                  FreeBorders_i();
+  FunctorType                     GetFunctorType();
+};
+
+
+/*
+  Class       : FreeEdges_i
+  Description : Predicate for free edges
+*/
+class FreeEdges_i: public virtual POA_SMESH::FreeEdges,
+                   public virtual Predicate_i
+{
+public:
+                                  FreeEdges_i();
+  SMESH::FreeEdges::Borders*      GetBorders();
+  FunctorType                     GetFunctorType();
+  
+protected:
+  Controls::FreeEdgesPtr          myFreeEdgesPtr;
+};
+
+
+/*
+  Class       : RangeOfIds_i
+  Description : Predicate for Range of Ids
+*/
+class RangeOfIds_i: public virtual POA_SMESH::RangeOfIds,
+                    public virtual Predicate_i
+{
+public:
+                                  RangeOfIds_i();
+  void                            SetRange( const SMESH::long_array& theIds );
+  CORBA::Boolean                  SetRangeStr( const char* theRange );
+  char*                           GetRangeStr();
+
+  void                            SetElementType( ElementType theType );
+  FunctorType                     GetFunctorType();
 
 protected:
-  SMESHDS_Mesh*           myMesh;
+  Controls::RangeOfIdsPtr         myRangeOfIdsPtr;
 };
 
 /*
   Class       : Comparator_i
   Description : Base class for comparators
 */
-
 class Comparator_i: public virtual POA_SMESH::Comparator,
                     public virtual Predicate_i
 {
 public:
-                          Comparator_i();
-  virtual                 ~Comparator_i();
-
-  void                    SetMesh( SMESH_Mesh_ptr theMesh );
-  void                    SetMargin( CORBA::Double );
-  void                    SetNumFunctor( NumericalFunctor_ptr );
-
-  virtual int             GetType() const;
-
+  virtual                         ~Comparator_i();
+  
+  virtual void                    SetMargin( CORBA::Double );
+  virtual void                    SetNumFunctor( NumericalFunctor_ptr );
+  
+  Controls::ComparatorPtr         GetComparator();
+  NumericalFunctor_i*             GetNumFunctor_i();
+  CORBA::Double                   GetMargin();
+  
 protected:
-  CORBA::Double           myMargin;
-  NumericalFunctor_i*     myFunctor;
+                                  Comparator_i();
+protected:                                  
+  Controls::ComparatorPtr         myComparatorPtr;
+  NumericalFunctor_i*             myNumericalFunctor;
 };
+
 
 /*
   Class       : LessThan_i
   Description : Comparator "<"
 */
-
 class LessThan_i: public virtual POA_SMESH::LessThan,
                   public virtual Comparator_i
 {
 public:
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
+                                  LessThan_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : MoreThan_i
@@ -254,8 +411,10 @@ class MoreThan_i: public virtual POA_SMESH::MoreThan,
                   public virtual Comparator_i
 {
 public:
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
+                                  MoreThan_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : EqualTo_i
@@ -265,48 +424,34 @@ class EqualTo_i: public virtual POA_SMESH::EqualTo,
                  public virtual Comparator_i
 {
 public:
-                          EqualTo_i();
-
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
-
-  void                    SetTolerance( CORBA::Double );
-
-private:
-  CORBA::Double           myToler;
-};
-
-/*
-  Class       : Logical_i
-  Description : Base class for logical predicate
-*/
-
-class Logical_i: public virtual POA_SMESH::Logical,
-                 public virtual Predicate_i
+                                  EqualTo_i();
+  virtual void                    SetTolerance( CORBA::Double );
+  CORBA::Double                   GetTolerance();
+  FunctorType                     GetFunctorType();
   
-{
+protected:
+  Controls::EqualToPtr            myEqualToPtr;
 };
+
 
 /*
   Class       : LogicalNOT_i
   Description : Logical NOT predicate
 */
-
 class LogicalNOT_i: public virtual POA_SMESH::LogicalNOT,
-                    public virtual Logical_i
+                    public virtual Predicate_i
 {
 public:
-                          LogicalNOT_i();
-  virtual                 ~LogicalNOT_i();
-
-  CORBA::Boolean          IsSatisfy( CORBA::Long );
-
-  void                    SetMesh( SMESH_Mesh_ptr );
-  void                    SetPredicate( Predicate_ptr );
-
-  virtual int             GetType() const;
-
-private:
-  Predicate_i*            myPredicate;
+                                  LogicalNOT_i();
+  virtual                         ~LogicalNOT_i();
+  
+  virtual void                    SetPredicate( Predicate_ptr );
+  Predicate_i*                    GetPredicate_i();
+  FunctorType                     GetFunctorType();
+  
+protected:
+  Controls::LogicalNOTPtr         myLogicalNOTPtr;
+  Predicate_i*                    myPredicate;
 };
 
 
@@ -314,67 +459,116 @@ private:
   Class       : LogicalBinary_i
   Description : Base class for binary logical predicate
 */
-
 class LogicalBinary_i: public virtual POA_SMESH::LogicalBinary,
-		                   public virtual Logical_i
+                       public virtual Predicate_i
 {
 public:
-                          LogicalBinary_i();
-  virtual                 ~LogicalBinary_i();
-
-  void                    SetMesh( SMESH_Mesh_ptr );
-
-  void                    SetPredicate1( Predicate_ptr );
-  void                    SetPredicate2( Predicate_ptr );
-
-  virtual int             GetType() const;
-
+  virtual                         ~LogicalBinary_i();
+  virtual void                    SetMesh( SMESH_Mesh_ptr theMesh );
+  virtual void                    SetPredicate1( Predicate_ptr );
+  virtual void                    SetPredicate2( Predicate_ptr );
+  
+  Controls::LogicalBinaryPtr      GetLogicalBinary();
+  Predicate_i*                    GetPredicate1_i();
+  Predicate_i*                    GetPredicate2_i();
+  
 protected:
-  Predicate_i*            myPredicate1;
-  Predicate_i*            myPredicate2;
+                                  LogicalBinary_i();
+protected:  
+  Controls::LogicalBinaryPtr      myLogicalBinaryPtr;
+  Predicate_i*                    myPredicate1;
+  Predicate_i*                    myPredicate2;
 };
+
 
 /*
   Class       : LogicalAND_i
   Description : Logical AND
 */
-
 class LogicalAND_i: public virtual POA_SMESH::LogicalAND,
                     public virtual LogicalBinary_i
 {
 public:
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
+                                  LogicalAND_i();
+  FunctorType                     GetFunctorType();
 };
+
 
 /*
   Class       : LogicalOR_i
   Description : Logical OR
 */
-
 class LogicalOR_i: public virtual POA_SMESH::LogicalOR,
                    public virtual LogicalBinary_i
 {
 public:
-  CORBA::Boolean          IsSatisfy( CORBA::Long theElementId );
+                                  LogicalOR_i();
+  FunctorType                     GetFunctorType();
 };
 
 
 /*
                                FILTER
 */
-
 class Filter_i: public virtual POA_SMESH::Filter,
-	              public virtual SALOME::GenericObj_i
+                public virtual SALOME::GenericObj_i
 {
 public:
-                          Filter_i();
-  virtual                 ~Filter_i();
-  void                    SetPredicate(Predicate_ptr );
-  long_array*             GetElementsId(SMESH_Mesh_ptr );
-  void                    SetMesh( SMESH_Mesh_ptr );
+                                  Filter_i();
+  virtual                         ~Filter_i();
+  
+  void                            SetPredicate( Predicate_ptr );
+  void                            SetMesh( SMESH_Mesh_ptr );
 
-protected:
-  Predicate_i*            myPredicate;
+  long_array*                     GetElementsId( SMESH_Mesh_ptr );
+  ElementType                     GetElementType();
+
+  CORBA::Boolean                  GetCriteria( SMESH::Filter::Criteria_out theCriteria );
+  CORBA::Boolean                  SetCriteria( const SMESH::Filter::Criteria& theCriteria );
+  
+  Predicate_ptr                   GetPredicate();
+  Predicate_i*                    GetPredicate_i();
+
+private:
+  Controls::Filter                myFilter;
+  Predicate_i*                    myPredicate;
+};
+
+
+/*
+                            FILTER LIBRARY
+*/
+class FilterLibrary_i: public virtual POA_SMESH::FilterLibrary,
+                       public virtual SALOME::GenericObj_i
+{
+public:
+                          FilterLibrary_i( const char* theFileName );
+                          FilterLibrary_i();
+                          ~FilterLibrary_i();
+
+  Filter_ptr              Copy( const char* theFilterName );
+
+  CORBA::Boolean          Add     ( const char* theFilterName, Filter_ptr theFilter );
+  CORBA::Boolean          AddEmpty( const char* theFilterName, ElementType theType );
+  CORBA::Boolean          Delete  ( const char* theFilterName );
+  CORBA::Boolean          Replace ( const char* theFilterName, 
+                                    const char* theNewName, 
+                                    Filter_ptr  theFilter );
+
+  CORBA::Boolean          Save();
+  CORBA::Boolean          SaveAs( const char* aFileName );
+  
+  CORBA::Boolean          IsPresent( const char* aFilterName );
+  CORBA::Long             NbFilters( ElementType );
+  string_array*           GetNames( ElementType );
+  string_array*           GetAllNames();
+  void                    SetFileName( const char* theFileName );
+  char*                   GetFileName();
+
+private:
+  char*                   myFileName;
+  LDOM_Document           myDoc;
+  FilterManager_var       myFilterMgr;
 };
 
 
@@ -383,30 +577,41 @@ protected:
 */
 
 class FilterManager_i: public virtual POA_SMESH::FilterManager,
-		                   public virtual SALOME::GenericObj_i
+                       public virtual SALOME::GenericObj_i
 {
 public:
-                          FilterManager_i();
-  MinimumAngle_ptr        CreateMinimumAngle();
-  AspectRatio_ptr         CreateAspectRatio();
-  Warping_ptr             CreateWarping();
-  Taper_ptr               CreateTaper();
-  Skew_ptr                CreateSkew();
-  Area_ptr                CreateArea();
-  Length_ptr              CreateLength();
-  MultiConnection_ptr     CreateMultiConnection();
+                            FilterManager_i();
+  MinimumAngle_ptr          CreateMinimumAngle();
+  AspectRatio_ptr           CreateAspectRatio();
+  Warping_ptr               CreateWarping();
+  Taper_ptr                 CreateTaper();
+  Skew_ptr                  CreateSkew();
+  Area_ptr                  CreateArea();
+  Length_ptr                CreateLength();
+  MultiConnection_ptr       CreateMultiConnection();
   
-  FreeBorders_ptr         CreateFreeBorders();
+  BelongToGeom_ptr          CreateBelongToGeom();
+  BelongToPlane_ptr         CreateBelongToPlane();
+  BelongToCylinder_ptr      CreateBelongToCylinder();
 
-  LessThan_ptr            CreateLessThan();
-  MoreThan_ptr            CreateMoreThan();
-  EqualTo_ptr             CreateEqualTo();
+  FreeBorders_ptr           CreateFreeBorders();
+  FreeEdges_ptr             CreateFreeEdges();
+
+  RangeOfIds_ptr            CreateRangeOfIds();
+
+  LessThan_ptr              CreateLessThan();
+  MoreThan_ptr              CreateMoreThan();
+  EqualTo_ptr               CreateEqualTo();
   
-  LogicalNOT_ptr          CreateLogicalNOT();
-  LogicalAND_ptr          CreateLogicalAND();
-  LogicalOR_ptr           CreateLogicalOR();
+  LogicalNOT_ptr            CreateLogicalNOT();
+  LogicalAND_ptr            CreateLogicalAND();
+  LogicalOR_ptr             CreateLogicalOR();
 
-  Filter_ptr              CreateFilter();
+  Filter_ptr                CreateFilter();
+
+  FilterLibrary_ptr         LoadLibrary( const char* aFileName );
+  FilterLibrary_ptr         CreateLibrary();
+  CORBA::Boolean            DeleteLibrary( const char* aFileName );
 };
 
 
