@@ -129,14 +129,14 @@ echo "	./salome_adm/unix/make_module \\" >> configure.in_tmp1
 \rm -f configure.in_tmp2 configure.in_tmp3
 touch configure.in_tmp2
 find_in . configure.in_tmp2
-sed '/^.*salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
+sed '/^.salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
 sed '/configure.in/d' configure.in_tmp3 >  configure.in_tmp2
 sed 's/.in / /' configure.in_tmp2 >> configure.in_tmp1
 
 echo  "])" >> configure.in_tmp1
 
 # delete the link created for AC_OUTPUT
-#echo "" >> configure.in_tmp1
+echo "" >> configure.in_tmp1
 #echo 'rm -f ${ROOT_SRCDIR}/salome_adm' >> configure.in_tmp1
 \mv configure.in_tmp1 configure.in_new
 \rm  -f configure.in_tmp2 configure.in_tmp3
@@ -193,7 +193,7 @@ else
 	echo -n "Creating 'configure' script ...  "
 fi
 
-aclocal --acdir=${KERNEL_ROOT_DIR}/salome_adm/unix/config_files
+aclocal --acdir=adm_local/unix/config_files -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files
 if autoconf
 then
 	echo "done"
