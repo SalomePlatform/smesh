@@ -104,6 +104,12 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   void ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
 			    const SMESH::DirStruct &  StepVector,
 			    CORBA::Long               NbOfSteps);
+  void ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
+                              const SMESH::DirStruct &  StepVector,
+                              CORBA::Long               NbOfSteps);
+  void ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
+                              const SMESH::DirStruct &  StepVector,
+                              CORBA::Long               NbOfSteps);
   
   SMESH::SMESH_MeshEditor::Extrusion_Error
     ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
