@@ -27,7 +27,7 @@
 //  $Header$
 
 using namespace std;
-#include "SMESH_Swig.hxx"
+#include "SMESHGUI_Swig.hxx"
 
 #include "Utils_ORB_INIT.hxx"
 #include "Utils_SINGLETON.hxx"
