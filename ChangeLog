@@ -4,6 +4,34 @@
 #cvs2cl.pl -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2004-01-14 09:24  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/Makefile.in: NRI : bug KERNEL5014 fixed.
+
+2004-01-06 15:19  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_SWIG/SMESH_flight_skin.py: removing the call to the
+	  tetrahedron generator NETGEN, because I did not yet manage to
+	  make NETGEN running on the flight geometry.
+
+2004-01-06 15:16  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* resources/SMESH_en.xml, resources/SMESH_fr.xml,
+	  src/SMESHGUI/SMESHGUI.cxx: Mounting the hypothesis
+	  LengthFromEdges in th GUI of SMESH. This functionality was only
+	  in the C++ API, and in the CORBA API.
+
+2004-01-05 16:14  Jerome Robert <jerome.robert@eads.net>
+
+	* adm_local/unix/config_files/check_Netgen.m4: Fix a mispelled
+	  environment variable for idl python
+
+2004-01-05 14:28  tag V1_3_1
+
+2004-01-05 14:28  Jerome Robert <jerome.robert@eads.net>
+
+	* ChangeLog, cvs-tags: update
+
 2004-01-05 13:53  Jerome Robert <jerome.robert@eads.net>
 
 	* src/NETGEN/: ReadMeForNgUsers, netgen43ForSalome.patch: Add a
