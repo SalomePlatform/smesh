@@ -469,6 +469,11 @@ namespace SMESH{
     theStyle->RemoveFilter(theId);
   }
 
+  void RemoveFilters(VTKViewer_InteractorStyleSALOME* theStyle){
+    for ( int id = SMESHGUI_NodeFilter; theStyle && id < SMESHGUI_LastFilter; id++ )
+      theStyle->RemoveFilter( id );
+  }
+
   bool IsValid(SALOME_Actor* theActor, int theCellId,
 	       VTKViewer_InteractorStyleSALOME* theStyle)
   {

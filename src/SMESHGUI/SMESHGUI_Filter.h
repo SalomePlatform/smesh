@@ -44,7 +44,8 @@ enum SMESHGUI_FilterType
   SMESHGUI_VolumeFilter       =  3,
   SMESHGUI_AllElementsFilter  =  4,
   SMESHGUI_QuadFilter         =  5,
-  SMESHGUI_TriaFilter         =  6
+  SMESHGUI_TriaFilter         =  6,
+  SMESHGUI_LastFilter
 };
 
 /*
