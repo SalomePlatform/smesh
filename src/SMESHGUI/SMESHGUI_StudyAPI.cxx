@@ -13,6 +13,7 @@ using namespace std;
 #include "Utils_SINGLETON.hxx"
 
 #include "QAD_MessageBox.h"
+#include "QAD_Desktop.h"
 #include "QAD_Application.h"
 
 // QT Includes
