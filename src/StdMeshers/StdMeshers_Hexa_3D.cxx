@@ -90,6 +90,8 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId,
 StdMeshers_Hexa_3D::~StdMeshers_Hexa_3D()
 {
 	MESSAGE("StdMeshers_Hexa_3D::~StdMeshers_Hexa_3D");
+	for (int i = 0; i < 6; i++)
+		StdMeshers_Quadrangle_2D::QuadDelete(_quads[i]);
 }
 
 //=============================================================================
@@ -169,7 +171,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 	// 0.  - shape and face mesh verification
 	// 0.1 - shape must be a solid (or a shell) with 6 faces
-	MESSAGE("---");
+	//MESSAGE("---");
 
 	vector < SMESH_subMesh * >meshFaces;
 	for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
@@ -404,16 +406,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
  
         int nbz = _cube.quad_Y0->nbPts[0];
         if (cy0.a1 != 0.) nbz = _cube.quad_Y0->nbPts[1];
-// 	int nbx = _cube.quad_Y0->nbPts[0];
-// 	int nby = _cube.quad_Y0->nbPts[1];
-// 	int nbz;
-// 	if (cx0.a1 != 0)
-// 		nbz = _cube.quad_X0->nbPts[1];
-// 	else
-// 		nbz = _cube.quad_X0->nbPts[0];
-	//SCRUTE(nbx);
-	//SCRUTE(nby);
-	//SCRUTE(nbz);
+
 	int i1, j1, nbxyz = nbx * nby * nbz;
 	Point3DStruct *np = new Point3DStruct[nbxyz];
 
