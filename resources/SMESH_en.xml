@@ -45,7 +45,7 @@
        <popup-item item-id="5000" pos-id="" label-id="Wire discretisation" icon-id="mesh_algo_regular.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
        <popup-item item-id="5010" pos-id="" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
        <popup-item item-id="5011" pos-id="" label-id="Quadrangle (Mapping)" icon-id="mesh_algo_quad.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-       <popup-item item-id="5020" pos-id="" label-id="Hexaedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+       <popup-item item-id="5020" pos-id="" label-id="Hexahedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
 
 <!-- ************************** Mesh  (menubar)  ************************************ -->
@@ -196,12 +196,12 @@
    <toolbutton-item item-id="5030" label-id="Average length" icon-id="mesh_hypo_length.png" tooltip-id="Avreage length Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5031" label-id="Segments" icon-id="mesh_hypo_segment.png" tooltip-id="Nb. Segments Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5032" label-id="Max. Triangle Area" icon-id="mesh_hypo_area.png" tooltip-id="Max. Triangle Area Hypothesis" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5033" label-id="Max. Hexaedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="Max. Hexaedron Volume Hypothesis" accel-id="" toggle-id="" execute-action=""/>
+   <toolbutton-item item-id="5033" label-id="Max. Hexahedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="Max. Hexahedron Volume Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <separatorTB/>
    <toolbutton-item item-id="5000" label-id="Wire Discretisation" icon-id="mesh_algo_regular.png" tooltip-id="Wire Discratisation Algorithm" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5010" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="Triangle (Mefisto) Algorithm" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5011" label-id="Quadrangle (Mapping)" icon-id="mesh_algo_quad.png" tooltip-id="Quadrangle (Mapping) Algorithm" accel-id="" toggle-id="" execute-action=""/>
-   <toolbutton-item item-id="5020" label-id="Hexaedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="Hexaedron (i,j,k) Algorithm" accel-id="" toggle-id="" execute-action=""/>
+   <toolbutton-item item-id="5020" label-id="Hexahedron (i,j,k)" icon-id="mesh_algo_hexa.png" tooltip-id="Hexahedron (i,j,k) Algorithm" accel-id="" toggle-id="" execute-action=""/>
 </toolbar>
 
 <toolbar label-id="Controls toolbar">

@@ -2496,7 +2496,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID,	QAD_Desktop* parent)
       }
     case 5020: 
       {
-	smeshGUI->CreateAlgorithm("Hexa_3D","Hexaedral (i,j,k)");	
+	smeshGUI->CreateAlgorithm("Hexa_3D","Hexahedron (i,j,k)");	
 	break;
       }
 
