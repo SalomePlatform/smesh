@@ -36,99 +36,39 @@ VPATH=.:@srcdir@:@top_srcdir@/idl
 # Libraries targets
 
 LIB = libSMDS.la 
-LIB_SRC = SMDS_BasicMap.lxx \
-	SMDS_BasicMapIterator.lxx \
-	SMDS_EdgePosition.cxx \
-	SMDS_EdgePosition.lxx \
-	SMDS_FacePosition.cxx \
-	SMDS_FacePosition.lxx \
-	SMDS_Map.gxx \
-	SMDS_MapHasher.gxx \
-	SMDS_MapIterator.gxx \
-	SMDS_MapOfMeshElement.cxx \
-	SMDS_MapOfMeshElement.lxx \
-	SMDS_MapOfMeshOrientedElement.cxx \
-	SMDS_MapOfMeshOrientedElement.lxx \
-	SMDS_Mesh.cxx \
-	SMDS_Mesh.lxx \
-	SMDS_MeshEdge.cxx \
-	SMDS_MeshEdge.lxx \
-	SMDS_MeshEdgesIterator.cxx \
-	SMDS_MeshElement.cxx \
-	SMDS_MeshElement.lxx \
-	SMDS_MeshElementIDFactory.cxx \
-	SMDS_MeshElementIDFactory.lxx \
-	SMDS_MeshElementMapHasher.cxx \
-	SMDS_MeshElementMapHasher.lxx \
-	SMDS_MeshElementsIterator.cxx \
-	SMDS_MeshElementsIterator.lxx \
-	SMDS_MeshFace.cxx \
-	SMDS_MeshFace.lxx \
-	SMDS_MeshFacesIterator.cxx \
-	SMDS_MeshHexahedron.cxx \
-	SMDS_MeshHexahedron.lxx \
-	SMDS_MeshIDFactory.cxx \
-	SMDS_MeshIDFactory.lxx \
-	SMDS_MeshNode.cxx \
-	SMDS_MeshNode.lxx \
-	SMDS_MeshNodeIDFactory.cxx \
-	SMDS_MeshNodeIDFactory.lxx \
-	SMDS_MeshNodesIterator.cxx \
+LIB_SRC = \
 	SMDS_MeshObject.cxx \
-	SMDS_MeshOrientedElementMapHasher.cxx \
-	SMDS_MeshOrientedElementMapHasher.lxx \
-	SMDS_MeshPrism.cxx \
-	SMDS_MeshPrism.lxx \
-	SMDS_MeshPyramid.cxx \
-	SMDS_MeshPyramid.lxx \
-	SMDS_MeshQuadrangle.cxx \
-	SMDS_MeshQuadrangle.lxx \
-	SMDS_MeshTetrahedron.cxx \
-	SMDS_MeshTetrahedron.lxx \
-	SMDS_MeshTriangle.cxx \
-	SMDS_MeshTriangle.lxx \
-	SMDS_MeshVolume.cxx \
-	SMDS_MeshVolume.lxx \
-	SMDS_MeshVolumesIterator.cxx \
-	SMDS_PntHasher.cxx \
-	SMDS_PntHasher.lxx \
+	SMDS_MeshElement.cxx \
 	SMDS_Position.cxx \
-	SMDS_Position.lxx \
+	SMDS_EdgePosition.cxx \
+	SMDS_FacePosition.cxx \
 	SMDS_SpacePosition.cxx \
-	SMDS_SpacePosition.lxx \
-	SMDS_StdMapNode.gxx \
-	SMDS_StdMapNode.lxx \
 	SMDS_VertexPosition.cxx \
-	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement_0.cxx \
-	SMDS_DataMapIteratorOfDataMapOfPntInteger_0.cxx \
-	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement_0.cxx \
-	SMDS_DataMapNodeOfDataMapOfPntInteger_0.cxx \
-	SMDS_DataMapOfIntegerMeshElement_0.cxx \
-	SMDS_DataMapOfPntInteger_0.cxx \
-	SMDS_ExtendedMap_0.cxx \
-	SMDS_ExtendedOrientedMap_0.cxx \
-	SMDS_ListIteratorOfListOfMeshElement_0.cxx \
-	SMDS_ListIteratorOfListOfMesh_0.cxx \
-	SMDS_ListNodeOfListOfMeshElement_0.cxx \
-	SMDS_ListNodeOfListOfMesh_0.cxx \
-	SMDS_ListOfMeshElement_0.cxx \
-	SMDS_ListOfMesh_0.cxx \
-	SMDS_MapIteratorOfExtendedMap_0.cxx \
-	SMDS_MapIteratorOfExtendedOrientedMap_0.cxx \
-	SMDS_StdMapNodeOfExtendedMap_0.cxx \
-	SMDS_StdMapNodeOfExtendedOrientedMap_0.cxx \
-	SMDSControl.cxx \
-	SMDSControl_BoundaryFaces.cxx \
-	SMDSControl_BoundaryEdges.cxx \
-	SMDSControl_MeshBoundary.cxx \
-	SMDS_ListIteratorOfListOfMeshGroup_0.cxx \
-	SMDS_ListOfMeshGroup_0.cxx \
-	SMDS_ListNodeOfListOfMeshGroup_0.cxx \
+	SMDS_MeshNode.cxx \
+	SMDS_MeshEdge.cxx \
+	SMDS_MeshFace.cxx \
+	SMDS_MeshVolume.cxx \
+	SMDS_MeshElementIDFactory.cxx \
 	SMDS_MeshGroup.cxx \
-	SMDSEdit_Transform.cxx \
-	SMDS_HSequenceOfMesh_0.cxx \
-	SMDS_SequenceNodeOfSequenceOfMesh_0.cxx \
-	SMDS_SequenceOfMesh_0.cxx
+	SMDS_MeshIDFactory.cxx \
+	SMDS_Mesh.cxx \
+	SMDS_IteratorOfElements.cxx \
+	SMDS_VolumeOfFaces.cxx \
+	SMDS_VolumeOfNodes.cxx \
+	SMDS_FaceOfEdges.cxx \
+	SMDS_FaceOfNodes.cxx
+
+#SMDSControl_BoundaryEdges.cxx \
+#SMDSControl_BoundaryFaces.cxx \
+#SMDSControl.cxx \
+#SMDSControl_MeshBoundary.cxx \
+#SMDSEdit_Transform.cxx \
+#SMDS_MeshNodeIDFactory.cxx \
+#SMDS_MeshPrism.cxx \
+#SMDS_MeshPyramid.cxx \
+#SMDS_MeshQuadrangle.cxx \
+#SMDS_MeshTetrahedron.cxx \
+#SMDS_MeshTriangle.cxx \
 
 
 LIB_CLIENT_IDL = 
@@ -141,138 +81,47 @@ BIN_CLIENT_IDL =
 BIN_SERVER_IDL = 
 
 # header files 
-EXPORT_HEADERS= Handle_SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx \
-	Handle_SMDS_DataMapNodeOfDataMapOfPntInteger.hxx \
-	Handle_SMDS_EdgePosition.hxx \
-	Handle_SMDS_FacePosition.hxx \
-	Handle_SMDS_ListNodeOfListOfMesh.hxx \
-	Handle_SMDS_ListNodeOfListOfMeshElement.hxx \
-	Handle_SMDS_Mesh.hxx \
-	Handle_SMDS_MeshEdge.hxx \
-	Handle_SMDS_MeshElement.hxx \
-	Handle_SMDS_MeshElementIDFactory.hxx \
-	Handle_SMDS_MeshFace.hxx \
-	Handle_SMDS_MeshHexahedron.hxx \
-	Handle_SMDS_MeshIDFactory.hxx \
-	Handle_SMDS_MeshNode.hxx \
-	Handle_SMDS_MeshNodeIDFactory.hxx \
-	Handle_SMDS_MeshObject.hxx \
-	Handle_SMDS_MeshPrism.hxx \
-	Handle_SMDS_MeshPyramid.hxx \
-	Handle_SMDS_MeshQuadrangle.hxx \
-	Handle_SMDS_MeshTetrahedron.hxx \
-	Handle_SMDS_MeshTriangle.hxx \
-	Handle_SMDS_MeshVolume.hxx \
-	Handle_SMDS_Position.hxx \
-	Handle_SMDS_SpacePosition.hxx \
-	Handle_SMDS_StdMapNodeOfExtendedMap.hxx \
-	Handle_SMDS_StdMapNodeOfExtendedOrientedMap.hxx \
-	Handle_SMDS_VertexPosition.hxx \
-	SMDS_BasicMap.lxx \
-	SMDS_BasicMapIterator.lxx \
-	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement.hxx \
-	SMDS_DataMapIteratorOfDataMapOfPntInteger.hxx \
-	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx \
-	SMDS_DataMapNodeOfDataMapOfPntInteger.hxx \
-	SMDS_DataMapOfIntegerMeshElement.hxx \
-	SMDS_DataMapOfPntInteger.hxx \
-	SMDS_EdgePosition.hxx \
-	SMDS_EdgePosition.lxx \
-	SMDS_ExtendedMap.hxx \
-	SMDS_ExtendedOrientedMap.hxx \
-	SMDS_FacePosition.hxx \
-	SMDS_FacePosition.lxx \
-	SMDS_ListIteratorOfListOfMesh.hxx \
-	SMDS_ListIteratorOfListOfMeshElement.hxx \
-	SMDS_ListNodeOfListOfMesh.hxx \
-	SMDS_ListNodeOfListOfMeshElement.hxx \
-	SMDS_ListOfMesh.hxx \
-	SMDS_ListOfMeshElement.hxx \
-	SMDS_MapIteratorOfExtendedMap.hxx \
-	SMDS_MapIteratorOfExtendedOrientedMap.hxx \
-	SMDS_MapNode.lxx \
-	SMDS_MapOfMeshElement.hxx \
-	SMDS_MapOfMeshElement.lxx \
-	SMDS_MapOfMeshOrientedElement.hxx \
-	SMDS_MapOfMeshOrientedElement.lxx \
-	SMDS_Mesh.hxx \
-	SMDS_Mesh.lxx \
-	SMDS_MeshEdge.hxx \
-	SMDS_MeshEdge.lxx \
-	SMDS_MeshEdgesIterator.hxx \
-	SMDS_MeshElement.hxx \
-	SMDS_MeshElement.lxx \
-	SMDS_MeshElementIDFactory.hxx \
-	SMDS_MeshElementIDFactory.lxx \
-	SMDS_MeshElementMapHasher.hxx \
-	SMDS_MeshElementMapHasher.lxx \
-	SMDS_MeshElementsIterator.hxx \
-	SMDS_MeshElementsIterator.lxx \
-	SMDS_MeshFace.hxx \
-	SMDS_MeshFace.lxx \
-	SMDS_MeshFacesIterator.hxx \
-	SMDS_MeshHexahedron.hxx \
-	SMDS_MeshHexahedron.lxx \
-	SMDS_MeshIDFactory.hxx \
-	SMDS_MeshIDFactory.lxx \
-	SMDS_MeshNode.hxx \
-	SMDS_MeshNode.lxx \
-	SMDS_MeshNodeIDFactory.hxx \
-	SMDS_MeshNodeIDFactory.lxx \
-	SMDS_MeshNodesIterator.hxx \
-	SMDS_MeshObject.hxx \
-	SMDS_MeshOrientedElementMapHasher.hxx \
-	SMDS_MeshOrientedElementMapHasher.lxx \
-	SMDS_MeshPrism.hxx \
-	SMDS_MeshPrism.lxx \
-	SMDS_MeshPyramid.hxx \
-	SMDS_MeshPyramid.lxx \
-	SMDS_MeshQuadrangle.hxx \
-	SMDS_MeshQuadrangle.lxx \
-	SMDS_MeshTetrahedron.hxx \
-	SMDS_MeshTetrahedron.lxx \
-	SMDS_MeshTriangle.hxx \
-	SMDS_MeshTriangle.lxx \
-	SMDS_MeshVolume.hxx \
-	SMDS_MeshVolume.lxx \
-	SMDS_MeshVolumesIterator.hxx \
-	SMDS_PntHasher.hxx \
-	SMDS_PntHasher.lxx \
-	SMDS_Position.hxx \
-	SMDS_Position.lxx \
-	SMDS_SpacePosition.hxx \
-	SMDS_SpacePosition.lxx \
-	SMDS_StdMapNode.lxx \
-	SMDS_StdMapNodeOfExtendedMap.hxx \
-	SMDS_StdMapNodeOfExtendedOrientedMap.hxx \
+EXPORT_HEADERS= \
 	SMDS_TypeOfPosition.hxx \
-	SMDS_VertexPosition.hxx \
-	Handle_SMDSControl_BoundaryEdges.hxx \
-	SMDSEdit_Transform.hxx \
-	Handle_SMDSControl_BoundaryFaces.hxx \
-	SMDS_HSequenceOfMesh.hxx \
-	Handle_SMDSControl_MeshBoundary.hxx \
-	SMDS_ListIteratorOfListOfMeshGroup.hxx \
-	Handle_SMDS_HSequenceOfMesh.hxx \
-	SMDS_ListNodeOfListOfMeshGroup.hxx \
-	Handle_SMDS_ListNodeOfListOfMeshGroup.hxx \
-	SMDS_ListOfMeshGroup.hxx \
-	Handle_SMDS_MeshGroup.hxx \
 	SMDSAbs_ElementType.hxx \
-	SMDSControl.hxx \
+	SMDS_EdgePosition.hxx \
+	SMDS_FacePosition.hxx \
+	SMDS_Mesh.hxx \
+	SMDS_MeshEdge.hxx \
+	SMDS_MeshElement.hxx \
+	SMDS_MeshElementIDFactory.hxx \
+	SMDS_MeshFace.hxx \
 	SMDS_MeshGroup.hxx \
-	SMDSControl_BoundaryEdges.hxx \
-	SMDS_MeshGroup.lxx \
-	SMDSControl_BoundaryFaces.hxx \
-	SMDS_SequenceNodeOfSequenceOfMesh.hxx \
-	SMDSControl_MeshBoundary.hxx \
-	SMDS_SequenceOfMesh.hxx
+	SMDS_MeshIDFactory.hxx \
+	SMDS_MeshNode.hxx \
+	SMDS_MeshObject.hxx \
+	SMDS_MeshVolume.hxx \
+	SMDS_Position.hxx \
+	SMDS_SpacePosition.hxx \
+	SMDS_VertexPosition.hxx \
+	SMDS_Iterator.hxx \
+	SMDS_IteratorOfElements.hxx \
+	SMDS_VolumeOfFaces.hxx \
+	SMDS_VolumeOfNodes.hxx \
+	SMDS_FaceOfEdges.hxx \
+	SMDS_FaceOfNodes.hxx
 
+#SMDSControl_BoundaryEdges.hxx \
+#SMDSControl_BoundaryFaces.hxx \
+#SMDSControl.hxx \
+#SMDSControl_MeshBoundary.hxx \
+#SMDSEdit_Transform.hxx \
+#SMDS_MeshPrism.hxx \
+#SMDS_MeshPyramid.hxx \
+#SMDS_MeshQuadrangle.hxx \
+#SMDS_MeshTetrahedron.hxx \
+#SMDS_MeshTriangle.hxx \
+#SMDS_MeshNodeIDFactory.hxx
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(OCC_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome
+CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
+LDFLAGS  += -L${KERNEL_ROOT_DIR}/lib/salome
 
 
 # additional file to be cleaned
@@ -281,4 +130,3 @@ CLEAN =
 DISTCLEAN =
 
 @CONCLUDE@
-
