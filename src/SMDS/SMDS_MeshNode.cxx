@@ -97,7 +97,7 @@ SMDS_Iterator<const SMDS_MeshElement*> * SMDS_MeshNode::
 
 		bool more()
 		{
-			myIterator!=mySet.end();
+			return myIterator!=mySet.end();
 		}
 
 		const SMDS_MeshElement* next()
@@ -143,7 +143,7 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_MeshNode::
 
 		bool more()
 		{
-			myIterator!=mySet.end();
+			return myIterator!=mySet.end();
 		}
 
 		const SMDS_MeshElement* next()
