@@ -498,8 +498,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
   ASSERT( meshServant );
   meshServant->SetShape( theShapeObject );
   // publish mesh in the study
-  if ( CanPublishInStudy( mesh ) )
+  if( CanPublishInStudy( mesh ) ){
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
     PublishMesh( myCurrentStudy, mesh.in() );
+    aStudyBuilder->CommitCommand();
+  }
   return mesh._retn();
 }
 
@@ -520,8 +524,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   string aFileName; // = boost::filesystem::path(theFileName).leaf();
   // publish mesh in the study
-  if ( CanPublishInStudy( aMesh ) )
+  if ( CanPublishInStudy( aMesh ) ){
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
     PublishMesh( myCurrentStudy, aMesh.in(), aFileName.c_str() );
+    aStudyBuilder->CommitCommand();
+  }
 
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );
@@ -553,9 +561,12 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   SMESH::mesh_array_var aResult = new SMESH::mesh_array();
   theStatus = (SMESH::DriverMED_ReadStatus)aStatus;
   if(theStatus == SMESH::DRS_OK){
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
+
     aResult->length( aNames.size() );
     int i = 0;
-    
+   
     // Iterate through all meshes and create mesh objects
     for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
       // create mesh
@@ -575,6 +586,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
 
       aResult[i++] = SMESH::SMESH_Mesh::_duplicate( mesh );
     }
+    aStudyBuilder->CommitCommand();
   }
   return aResult._retn();
 }
@@ -596,8 +608,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
   string aFileName; // = boost::filesystem::path(theFileName).leaf();
   // publish mesh in the study
-  if ( CanPublishInStudy( aMesh ) )
+  if( CanPublishInStudy( aMesh ) ){
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
+    aStudyBuilder->NewCommand();  // There is a transaction
     PublishInStudy( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
+    aStudyBuilder->CommitCommand();
+  }
 
   SMESH_Mesh_i* aServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( aMesh ).in() );
   ASSERT( aServant );

@@ -75,7 +75,10 @@ using namespace std;
 vtkStandardNewMacro(SMESH_DeviceActor);
 
 
-SMESH_DeviceActor::SMESH_DeviceActor(){
+SMESH_DeviceActor::SMESH_DeviceActor()
+{
+  if(MYDEBUG) MESSAGE("SMESH_DeviceActor - "<<this);
+
   myIsShrunk = false;
   myIsShrinkable = false;
   myRepresentation = eSurface;
@@ -91,17 +94,16 @@ SMESH_DeviceActor::SMESH_DeviceActor(){
 
   myShrinkFilter = vtkShrinkFilter::New();
 
+  myStoreClippingMapping = false;
+
   myExtractGeometry = SMESH_ExtractGeometry::New();
   myExtractGeometry->SetReleaseDataFlag(true);
-  myExtractGeometry->SetStoreMapping(true);
   myIsImplicitFunctionUsed = false;
 
   myExtractUnstructuredGrid = SALOME_ExtractUnstructuredGrid::New();
-  myExtractUnstructuredGrid->SetStoreMapping(true);
-
+    
   myMergeFilter = vtkMergeFilter::New();
 
-  myStoreMapping = false;
   myGeomFilter = SALOME_GeometryFilter::New();
 
   myTransformFilter = SALOME_TransformFilter::New();
@@ -112,43 +114,54 @@ SMESH_DeviceActor::SMESH_DeviceActor(){
 
 
 SMESH_DeviceActor::~SMESH_DeviceActor(){
-  if(MYDEBUG) MESSAGE("~SMESH_DeviceActor");
+  if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
+
   myProperty->Delete();
 
-  myMapper->RemoveAllInputs();
   myMapper->Delete();
 
-  myShrinkFilter->UnRegisterAllOutputs();
   myShrinkFilter->Delete();
 
-  myExtractUnstructuredGrid->UnRegisterAllOutputs();
   myExtractUnstructuredGrid->Delete();
 
-  myMergeFilter->UnRegisterAllOutputs();
   myMergeFilter->Delete();
 
-  myGeomFilter->UnRegisterAllOutputs();
   myGeomFilter->Delete();
 
-  myExtractGeometry->UnRegisterAllOutputs();
   myExtractGeometry->Delete();
 
-  myTransformFilter->UnRegisterAllOutputs();
   myTransformFilter->Delete();
 
   for(int i = 0, iEnd = myPassFilter.size(); i < iEnd; i++){
-    myPassFilter[i]->UnRegisterAllOutputs(); 
     myPassFilter[i]->Delete();
   }
 }
 
 
-void SMESH_DeviceActor::SetStoreMapping(int theStoreMapping){
-  if (myStoreMapping == theStoreMapping)
-    return;
-  myStoreMapping = theStoreMapping;
-  myGeomFilter->SetStoreMapping( myStoreMapping );
-  Modified();
+void
+SMESH_DeviceActor::
+SetStoreGemetryMapping(bool theStoreMapping)
+{
+  myGeomFilter->SetStoreMapping(theStoreMapping);
+  SetStoreClippingMapping(theStoreMapping);
+}
+
+
+void
+SMESH_DeviceActor::
+SetStoreClippingMapping(bool theStoreMapping)
+{
+  myStoreClippingMapping = theStoreMapping;
+  myExtractGeometry->SetStoreMapping(theStoreMapping && myIsImplicitFunctionUsed);
+  SetStoreIDMapping(theStoreMapping);
+}
+
+
+void
+SMESH_DeviceActor::
+SetStoreIDMapping(bool theStoreMapping)
+{
+  myExtractUnstructuredGrid->SetStoreMapping(theStoreMapping);
 }
 
 
@@ -165,9 +178,6 @@ void
 SMESH_DeviceActor::
 SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
 {
-  if(myIsImplicitFunctionUsed == theIsImplicitFunctionUsed)
-    return;
-
   int anId = 0;
   if(theIsImplicitFunctionUsed)
     myPassFilter[ anId ]->SetInput( myExtractGeometry->GetOutput() );
@@ -175,6 +185,7 @@ SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
     myPassFilter[ anId ]->SetInput( myMergeFilter->GetOutput() );
     
   myIsImplicitFunctionUsed = theIsImplicitFunctionUsed;
+  SetStoreClippingMapping(myStoreClippingMapping);
 }
 
 
@@ -190,11 +201,10 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
     myExtractGeometry->SetInput(myMergeFilter->GetOutput());
 
     int anId = 0;
-    myPassFilter[ anId ]->SetInput( myMergeFilter->GetOutput() );
+    SetImplicitFunctionUsed(myIsImplicitFunctionUsed);
     myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
-    myGeomFilter->SetStoreMapping( myStoreMapping );
     myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 2
@@ -239,7 +249,11 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
   bool anIsInitialized = theFunctor;
   if(anIsInitialized){
     vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
+
+    SetStoreIDMapping(true);
+    myExtractUnstructuredGrid->Update();
     vtkUnstructuredGrid* aGrid = myExtractUnstructuredGrid->GetOutput();
+
     aDataSet->ShallowCopy(aGrid);
     
     vtkDoubleArray *aScalars = vtkDoubleArray::New();
@@ -280,7 +294,6 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
 }
 
 void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-					  SMESH_DeviceActor* theDeviceActor,
 					  vtkScalarBarActor* theScalarBarActor,
 					  vtkLookupTable* theLookupTable)
 {
@@ -419,8 +432,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
   theScalarBarActor->SetVisibility(anIsInitialized);
 }
 
-void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-					  SMESH_DeviceActor* theDeviceActor)
+void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor)
 {
   myExtractUnstructuredGrid->ClearRegisteredCells();
   myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
@@ -553,7 +565,9 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
 
 
 void SMESH_DeviceActor::SetVisibility(int theMode){
-  if(!myExtractUnstructuredGrid->GetInput() || GetUnstructuredGrid()->GetNumberOfCells()){
+  if(!myExtractUnstructuredGrid->GetInput() || 
+     GetUnstructuredGrid()->GetNumberOfCells())
+  {
     vtkLODActor::SetVisibility(theMode);
   }else{
     vtkLODActor::SetVisibility(false);
@@ -576,7 +590,7 @@ int SMESH_DeviceActor::GetNodeObjId(int theVtkID){
     anID = myExtractGeometry->GetNodeObjId(theVtkID);
 
   vtkIdType aRetID = myVisualObj->GetNodeObjId(anID);
-  if(MYDEBUG) MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; aRetID = "<<aRetID);
+  if(MYDEBUG) MESSAGE("GetNodeObjId - theVtkID = "<<theVtkID<<"; anID = "<<anID<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 

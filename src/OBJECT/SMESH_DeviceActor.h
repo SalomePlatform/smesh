@@ -21,7 +21,7 @@
 //
 //
 //
-//  File   : SMESH_Actor.h
+//  File   : SMESH_DeviceActor.h
 //  Author : Nicolas REJNERI
 //  Module : SMESH
 //  $Header$
@@ -61,8 +61,9 @@ class SMESH_DeviceActor: public vtkLODActor{
   vtkTypeMacro(SMESH_DeviceActor,vtkLODActor);
   static SMESH_DeviceActor* New();
 
-  void SetStoreMapping(int theStoreMapping);
-  int GetStoreMapping(){ return myStoreMapping;}
+  void SetStoreClippingMapping(bool theStoreMapping);
+  void SetStoreGemetryMapping(bool theStoreMapping);
+  void SetStoreIDMapping(bool theStoreMapping);
 
   virtual int GetNodeObjId(int theVtkID);
   virtual float* GetNodeCoord(int theObjID);
@@ -95,11 +96,9 @@ class SMESH_DeviceActor: public vtkLODActor{
 		      vtkScalarBarActor* theScalarBarActor,
 		      vtkLookupTable* theLookupTable);
   void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-			 SMESH_DeviceActor* theDeviceActor,
 			 vtkScalarBarActor* theScalarBarActor,
 			 vtkLookupTable* theLookupTable);
-  void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-			 SMESH_DeviceActor* theDeviceActor);
+  void SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor);
 
   bool IsHighlited() { return myIsHighlited;}
   void SetHighlited(bool theIsHighlited);
@@ -125,7 +124,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   vtkMergeFilter* myMergeFilter;
   SALOME_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
 
-  bool myStoreMapping;
+  bool myStoreClippingMapping;
   SALOME_GeometryFilter *myGeomFilter;
   SALOME_TransformFilter *myTransformFilter;
   std::vector<SALOME_PassThroughFilter*> myPassFilter;
@@ -153,4 +152,4 @@ class SMESH_DeviceActor: public vtkLODActor{
 };
 
 
-#endif //SMESH_ACTOR_H
+#endif //SMESH_DEVICE_ACTOR_H
