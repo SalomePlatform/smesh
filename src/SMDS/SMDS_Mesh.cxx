@@ -590,8 +590,8 @@ SMDS_MeshVolume * SMDS_Mesh::AddVolumeWithID(int idnode1, int idnode2,
 	node6 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode6);
 	node7 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode7);
 	node8 = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(idnode8);
-	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4=NULL)||
-		(node5==NULL)||(node6=NULL)||(node7==NULL)||(node8=NULL))
+	if((node1==NULL)||(node2==NULL)||(node3==NULL)||(node4==NULL)||
+		(node5==NULL)||(node6==NULL)||(node7==NULL)||(node8==NULL))
 		return NULL;
 	return AddVolumeWithID(node1, node2, node3, node4, node5, node6, node7,
 		node8, ID);
