@@ -45,6 +45,7 @@
 #include "SMDS_Iterator.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
 
 
 /*
@@ -1164,6 +1165,37 @@ void MultiConnection2D::GetValues(MValues& theValues){
 /*
                             PREDICATES
 */
+
+/*
+  Class       : BadOrientedVolume
+  Description : Predicate bad oriented volumes
+*/
+
+BadOrientedVolume::BadOrientedVolume()
+{
+  myMesh = 0;
+}
+
+void BadOrientedVolume::SetMesh( SMDS_Mesh* theMesh )
+{
+  myMesh = theMesh;
+}
+
+bool BadOrientedVolume::IsSatisfy( long theId )
+{
+  if ( myMesh == 0 )
+    return false;
+
+  SMDS_VolumeTool vTool( myMesh->FindElement( theId ));
+  return !vTool.IsForward();
+}
+
+SMDSAbs_ElementType BadOrientedVolume::GetType() const
+{
+  return SMDSAbs_Volume;
+}
+
+
 
 /*
   Class       : FreeBorders

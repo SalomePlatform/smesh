@@ -305,6 +305,22 @@ namespace SMESH{
    
 
     /*
+      Class       : BadOrientedVolume
+      Description : Predicate bad oriented volumes
+    */
+    class BadOrientedVolume: public virtual Predicate{
+    public:
+      BadOrientedVolume();
+      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual bool IsSatisfy( long theElementId );
+      virtual SMDSAbs_ElementType GetType() const;
+            
+    protected:
+      SMDS_Mesh* myMesh;
+    };
+   
+
+    /*
       Class       : FreeEdges
       Description : Predicate for free Edges
     */
