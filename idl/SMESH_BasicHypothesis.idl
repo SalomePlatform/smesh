@@ -86,9 +86,12 @@ module SMESH
   {
   };
 
+#ifdef HAVE_NETGEN
   interface SMESH_NETGEN_3D : SMESH_3D_Algo
   {
   };
+#endif
+
 };
 
 #endif

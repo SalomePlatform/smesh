@@ -27,7 +27,6 @@
 //  $Header$
 
 using namespace std;
-using namespace std;
 #include "SMESH_HypothesisFactory_i.hxx"
 #include "SMESH_Hypothesis_i.hxx"
 
@@ -45,8 +44,9 @@ using namespace std;
 #include "SMESH_MEFISTO_2D_i.hxx"
 #include "SMESH_Quadrangle_2D_i.hxx"
 #include "SMESH_Hexa_3D_i.hxx"
+#ifdef HAVE_NETGEN
 #include "SMESH_NETGEN_3D_i.hxx"
-
+#endif
 //---------------------------------------
 
 //=============================================================================
@@ -92,8 +92,9 @@ _creatorMap["Regular_1D"] = new HypothesisCreator_i<SMESH_Regular_1D_i>;
 _creatorMap["MEFISTO_2D"] = new HypothesisCreator_i<SMESH_MEFISTO_2D_i>;
 _creatorMap["Quadrangle_2D"] = new HypothesisCreator_i<SMESH_Quadrangle_2D_i>;
 _creatorMap["Hexa_3D"] = new HypothesisCreator_i<SMESH_Hexa_3D_i>;
+#ifdef HAVE_NETGEN
 _creatorMap["NETGEN_3D"] = new HypothesisCreator_i<SMESH_NETGEN_3D_i>;
-
+#endif
 //---------------------------------------
 }
 

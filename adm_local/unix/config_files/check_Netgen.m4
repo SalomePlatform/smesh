@@ -9,7 +9,7 @@ AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 
 AC_ARG_WITH(netgen,
-	    --with-netgen=DIR root directory path of NETGEN installation,
+	    [  --with-netgen=DIR root directory path of NETGEN installation],
 	    WITHNETGEN="yes",WITHNETGEN="no")
 
 NETGEN_INCLUDES=""
@@ -111,6 +111,7 @@ if test "x$Netgen_ok" = xno ; then
 else
   AC_MSG_RESULT(yes)
   NETGEN_LIBS="-lNETGEN"
+  CPPFLAGS="${CPPFLAGS} -DHAVE_NETGEN"
 fi
 fi
 AC_SUBST(NETGEN_INCLUDES)
