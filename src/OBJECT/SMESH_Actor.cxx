@@ -72,6 +72,8 @@ SMESH_Actor::SMESH_Actor()
   EdgeShrinkDevice->VisibilityOff();
   EdgeShrinkDevice->PickableOff();
 
+  DataSource = NULL;
+
   myIO = NULL;
   myName = "";
   myDisplayMode = 0;
