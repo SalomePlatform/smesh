@@ -107,7 +107,8 @@ SMESHGUI_StudyAPI::SMESHGUI_StudyAPI ( SALOMEDS::Study_ptr aStudy,
     father = myStudyBuilder->NewComponent("MESH");
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
-    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
+    //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
+    aName->SetValue( QAD_Application::getDesktop()->getComponentUserName( "SMESH" ) );
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
@@ -145,7 +146,8 @@ void SMESHGUI_StudyAPI::Update(SMESH::SMESH_Gen_ptr CompMesh)
     father = myStudyBuilder->NewComponent("MESH");
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
-    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
+    //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
+    aName->SetValue( QAD_Application::getDesktop()->getComponentUserName( "SMESH" ) );
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
