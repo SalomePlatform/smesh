@@ -134,9 +134,8 @@ bool SMESH_Quadrangle_2D::Compute(SMESH_Mesh & aMesh,
 			double v = quad->uv_grid[ij].v;
 			gp_Pnt P = S->Value(u, v);
 			SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-			int nodeId = node->GetID();
 			meshDS->SetNodeOnFace(node, F);
-			quad->uv_grid[ij].nodeId = nodeId;
+			quad->uv_grid[ij].node = node;
 //  Handle (SMDS_FacePosition) fpos
 //    = new SMDS_FacePosition(theSubMesh->GetId(),i,j); // easier than u,v
 //  node->SetPosition(fpos);
@@ -150,11 +149,11 @@ bool SMESH_Quadrangle_2D::Compute(SMESH_Mesh & aMesh,
 	for (int i = 0; i < nbdown - 1; i++)
 		for (int j = 0; j < nbright - 1; j++)	// faces
 		{
-			int a = quad->uv_grid[j * nbdown + i].nodeId;
-			int b = quad->uv_grid[j * nbdown + i + 1].nodeId;
-			int c = quad->uv_grid[(j + 1) * nbdown + i + 1].nodeId;
-			int d = quad->uv_grid[(j + 1) * nbdown + i].nodeId;
-			int faceId;
+			const SMDS_MeshNode *a, *b, *c, *d;
+			a = quad->uv_grid[j * nbdown + i].node;
+			b = quad->uv_grid[j * nbdown + i + 1].node;
+			c = quad->uv_grid[(j + 1) * nbdown + i + 1].node;
+			d = quad->uv_grid[(j + 1) * nbdown + i].node;
 			//  if (isQuadForward) faceId = meshDS->AddFace(a,b,c,d);
 			//  else faceId = meshDS->AddFace(a,d,c,b);
 			SMDS_MeshFace * face = meshDS->AddFace(a, b, c, d);
@@ -392,25 +391,25 @@ void SMESH_Quadrangle_2D::SetNormalizedGrid(SMESH_Mesh & aMesh,
 	for (int i = 0; i < nbdown; i++)
 	{
 		int ij = j * nbdown + i;
-		uv_grid[ij].nodeId = uv_e0[i].nodeId;
+		uv_grid[ij].node = uv_e0[i].node;
 	}
 	i = nbdown - 1;
 	for (int j = 0; j < nbright; j++)
 	{
 		int ij = j * nbdown + i;
-		uv_grid[ij].nodeId = uv_e1[j].nodeId;
+		uv_grid[ij].node = uv_e1[j].node;
 	}
 	j = nbright - 1;
 	for (int i = 0; i < nbdown; i++)
 	{
 		int ij = j * nbdown + i;
-		uv_grid[ij].nodeId = uv_e2[i].nodeId;
+		uv_grid[ij].node = uv_e2[i].node;
 	}
 	i = 0;
 	for (int j = 0; j < nbright; j++)
 	{
 		int ij = j * nbdown + i;
-		uv_grid[ij].nodeId = uv_e3[j].nodeId;
+		uv_grid[ij].node = uv_e3[j].node;
 	}
 
 	// normalized 2d values on grid
@@ -489,19 +488,16 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 	TopoDS_Vertex VFirst, VLast;
 	TopExp::Vertices(E, VFirst, VLast);	// corresponds to f and l
 
-	ASSERT(!VFirst.IsNull());
-	SMESH_subMesh *firstSubMesh = aMesh.GetSubMesh(VFirst);
-	const vector<int>& lidf
-		= firstSubMesh->GetSubMeshDS()->GetIDNodes();
-	int idFirst = lidf[0];
-	//SCRUTE(idFirst);
+    ASSERT(!VFirst.IsNull());
+    SMDS_Iterator<const SMDS_MeshNode *> * lid=
+        aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode * idFirst = lid->next();
+    delete lid;
 
-	ASSERT(!VLast.IsNull());
-	SMESH_subMesh *lastSubMesh = aMesh.GetSubMesh(VLast);
-	const vector<int> & lidl
-		= lastSubMesh->GetSubMeshDS()->GetIDNodes();
-	int idLast = lidl[0];
-	//SCRUTE(idLast);
+    ASSERT(!VLast.IsNull());
+    lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
+    const SMDS_MeshNode * idLast = lid->next();
+    delete lid;
 
 	// --- edge internal IDNodes (relies on good order storage, not checked)
 
@@ -512,23 +508,19 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 	double f, l;
 	Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
 
-	const vector<int> & indElt
-		= aMesh.GetSubMesh(E)->GetSubMeshDS()->GetIDNodes();
+	map<double, const SMDS_MeshNode *> params;
+	SMDS_Iterator<const SMDS_MeshNode *> * ite=
+		aMesh.GetSubMesh(E)->GetSubMeshDS()->GetNodes();
 
-	//SCRUTE(nbPoints);
-	//SCRUTE(indElt.Extent());
-	ASSERT(nbPoints == indElt.size());
-
-	map<double, int> params;
-	for (int ite=0; ite<indElt.size(); ite++)
+	while(ite->more())
 	{
-		int nodeId = indElt[ite];
-		const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+		const SMDS_MeshNode * node = ite->next();
 		const SMDS_EdgePosition* epos
 			= static_cast<const SMDS_EdgePosition*>(node->GetPosition());
 		double param = epos->GetUParameter();
-		params[param] = nodeId;
+		params[param] = node;
 	}
+	delete ite;
 
 	bool isForward = (((l - f) * (last - first)) > 0);
 	double paramin = 0;
@@ -541,18 +533,17 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 		uvslf[0].x = p.X();
 		uvslf[0].y = p.Y();
 		uvslf[0].param = f;
-		uvslf[0].nodeId = idFirst;
+		uvslf[0].node = idFirst;
 		//MESSAGE("__ f "<<f<<" "<<uvslf[0].x <<" "<<uvslf[0].y);
-		map < double, int >::iterator itp = params.begin();
+		map < double, const SMDS_MeshNode* >::iterator itp = params.begin();
 		for (int i = 1; i <= nbPoints; i++)	// nbPoints internal
 		{
 			double param = (*itp).first;
-			int nodeId = (*itp).second;
 			gp_Pnt2d p = C2d->Value(param);
 			uvslf[i].x = p.X();
 			uvslf[i].y = p.Y();
 			uvslf[i].param = param;
-			uvslf[i].nodeId = nodeId;
+			uvslf[i].node = (*itp).second;
 			//MESSAGE("__ "<<i<<" "<<param<<" "<<uvslf[i].x <<" "<<uvslf[i].y);
 			itp++;
 		}
@@ -560,7 +551,7 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 		uvslf[nbPoints + 1].x = p.X();
 		uvslf[nbPoints + 1].y = p.Y();
 		uvslf[nbPoints + 1].param = l;
-		uvslf[nbPoints + 1].nodeId = idLast;
+		uvslf[nbPoints + 1].node = idLast;
 		//MESSAGE("__ l "<<l<<" "<<uvslf[nbPoints+1].x <<" "<<uvslf[nbPoints+1].y);
 	}
 	else
@@ -571,19 +562,18 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 		uvslf[0].x = p.X();
 		uvslf[0].y = p.Y();
 		uvslf[0].param = l;
-		uvslf[0].nodeId = idLast;
+		uvslf[0].node = idLast;
 		//MESSAGE("__ l "<<l<<" "<<uvslf[0].x <<" "<<uvslf[0].y);
-		map < double, int >::reverse_iterator itp = params.rbegin();
+		map < double, const SMDS_MeshNode* >::reverse_iterator itp = params.rbegin();
 		for (int j = nbPoints; j >= 1; j--)	// nbPoints internal
 		{
 			double param = (*itp).first;
-			int nodeId = (*itp).second;
 			int i = nbPoints + 1 - j;
 			gp_Pnt2d p = C2d->Value(param);
 			uvslf[i].x = p.X();
 			uvslf[i].y = p.Y();
 			uvslf[i].param = param;
-			uvslf[i].nodeId = nodeId;
+			uvslf[i].node = (*itp).second;
 			//MESSAGE("__ "<<i<<" "<<param<<" "<<uvslf[i].x <<" "<<uvslf[i].y);
 			itp++;
 		}
@@ -591,7 +581,7 @@ UVPtStruct *SMESH_Quadrangle_2D::LoadEdgePoints(SMESH_Mesh & aMesh,
 		uvslf[nbPoints + 1].x = p.X();
 		uvslf[nbPoints + 1].y = p.Y();
 		uvslf[nbPoints + 1].param = f;
-		uvslf[nbPoints + 1].nodeId = idFirst;
+		uvslf[nbPoints + 1].node = idFirst;
 		//MESSAGE("__ f "<<f<<" "<<uvslf[nbPoints+1].x <<" "<<uvslf[nbPoints+1].y);
 	}
 

@@ -111,21 +111,22 @@ SMDS_MeshNode* SMESHDS_Mesh::AddNode(double x, double y, double z)
 //function : MoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::MoveNode(int ID, double x, double y, double z)
+void SMESHDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z)
 {
-	SMDS_MeshNode * node=const_cast<SMDS_MeshNode*>(FindNode(ID));
+	SMDS_MeshNode * node=const_cast<SMDS_MeshNode*>(n);
 	node->setXYZ(x,y,z);
-	myScript->MoveNode(ID, x, y, z);
+	myScript->MoveNode(n->GetID(), x, y, z);
 }
 
 //=======================================================================
 //function : AddEdge
 //purpose  : 
 //=======================================================================
-SMDS_MeshEdge* SMESHDS_Mesh::AddEdge(int idnode1, int idnode2)
+SMDS_MeshEdge* SMESHDS_Mesh::AddEdge(const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2)
 {
-	SMDS_MeshEdge* e = SMDS_Mesh::AddEdge(idnode1, idnode2);
-	if(e!=NULL) myScript->AddEdge(e->GetID(), idnode1, idnode2);
+	SMDS_MeshEdge* e = SMDS_Mesh::AddEdge(n1,n2);
+	if(e!=NULL) myScript->AddEdge(e->GetID(), n1->GetID(), n2->GetID());
 	return e;
 }
 
@@ -133,10 +134,13 @@ SMDS_MeshEdge* SMESHDS_Mesh::AddEdge(int idnode1, int idnode2)
 //function :AddFace
 //purpose  : 
 //=======================================================================
-SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3)
+SMDS_MeshFace* SMESHDS_Mesh::AddFace( const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3)
 {
-	SMDS_MeshFace *f = SMDS_Mesh::AddFace(idnode1, idnode2, idnode3);
-	if(f!=NULL) myScript->AddFace(f->GetID(), idnode1, idnode2, idnode3);
+	SMDS_MeshFace *f = SMDS_Mesh::AddFace(n1, n2, n3);
+	if(f!=NULL) myScript->AddFace(f->GetID(), n1->GetID(), n2->GetID(),
+		n3->GetID());
 	return f;
 }
 
@@ -144,12 +148,15 @@ SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3)
 //function :AddFace
 //purpose  : 
 //=======================================================================
-SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3,
-	int idnode4)
+SMDS_MeshFace* SMESHDS_Mesh::AddFace(const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4)
 {
-	SMDS_MeshFace *f = SMDS_Mesh::AddFace(idnode1, idnode2, idnode3, idnode4);
+	SMDS_MeshFace *f = SMDS_Mesh::AddFace(n1, n2, n3, n4);
 	if(f!=NULL)
-		myScript->AddFace(f->GetID(), idnode1, idnode2, idnode3, idnode4);
+		myScript->AddFace(f->GetID(), n1->GetID(), n2->GetID(), n3->GetID(),
+			n4->GetID());
 	return f;
 }
 
@@ -157,13 +164,16 @@ SMDS_MeshFace* SMESHDS_Mesh::AddFace(int idnode1, int idnode2, int idnode3,
 //function :AddVolume
 //purpose  : 
 //=======================================================================
-SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4)
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4)
 {
- 	SMDS_MeshVolume *f = SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3,
-		idnode4);
+ 	SMDS_MeshVolume *f = SMDS_Mesh::AddVolume(n1, n2, n3, n4);
 	if(f!=NULL)
-		myScript->AddVolume(f->GetID(), idnode1, idnode2, idnode3, idnode4);
+		myScript->AddVolume(f->GetID(), n1->GetID(), n2->GetID(), n3->GetID(),
+			n4->GetID());
 	return f;
 }
 
@@ -171,14 +181,17 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
 //function :AddVolume
 //purpose  : 
 //=======================================================================
-SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5)
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5)
 {
-	SMDS_MeshVolume *v = SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3,
-		idnode4, idnode5);
+	SMDS_MeshVolume *v = SMDS_Mesh::AddVolume(n1, n2, n3, n4, n5);
 	if(v!=NULL)
-		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
-			idnode5);
+		myScript->AddVolume(v->GetID(), n1->GetID(), n2->GetID(), n3->GetID(),
+			n4->GetID(), n5->GetID());
 	return v;
 }
 
@@ -186,15 +199,18 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
 //function :AddVolume
 //purpose  : 
 //=======================================================================
-SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6)
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6)
 {
-	SMDS_MeshVolume *v=
-		SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3, idnode4, idnode5,
-		idnode6);
+	SMDS_MeshVolume *v= SMDS_Mesh::AddVolume(n1, n2, n3, n4, n5, n6);
 	if(v!=NULL) 
-		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
-			idnode5, idnode6);
+		myScript->AddVolume(v->GetID(), n1->GetID(), n2->GetID(), n3->GetID(),
+			n4->GetID(), n5->GetID(), n6->GetID());
 	return v;
 }
 
@@ -202,15 +218,21 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
 //function :AddVolume
 //purpose  : 
 //=======================================================================
-SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
-	int idnode4, int idnode5, int idnode6, int idnode7, int idnode8)
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6,
+		const SMDS_MeshNode * n7,
+		const SMDS_MeshNode * n8)
 {
 	SMDS_MeshVolume *v=
-		SMDS_Mesh::AddVolume(idnode1, idnode2, idnode3, idnode4, idnode5,
-		idnode6, idnode7, idnode8);
+		SMDS_Mesh::AddVolume(n1, n2, n3, n4, n5, n6, n7, n8);
 	if(v!=NULL)
-		myScript->AddVolume(v->GetID(), idnode1, idnode2, idnode3, idnode4,
-			idnode5, idnode6, idnode7, idnode8);
+		myScript->AddVolume(v->GetID(), n1->GetID(), n2->GetID(), n3->GetID(),
+			n4->GetID(), n5->GetID(), n6->GetID(), n7->GetID(), n8->GetID());
 	return v;
 }
 
@@ -218,20 +240,20 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(int idnode1, int idnode2, int idnode3,
 //function : RemoveNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::RemoveNode(int ID)
+void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 {
-	SMDS_Mesh::RemoveNode(ID);
-	myScript->RemoveNode(ID);
+	SMDS_Mesh::RemoveNode(n);
+	myScript->RemoveNode(n->GetID());
 }
 
 //=======================================================================
 //function : RemoveElement
 //purpose  : 
 //========================================================================
-void SMESHDS_Mesh::RemoveElement(int ID)
+void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
 {
-	SMDS_Mesh::RemoveElement(ID);
-	myScript->RemoveElement(ID);
+	SMDS_Mesh::RemoveElement(elt);
+	myScript->RemoveElement(elt->GetID());
 }
 
 //=======================================================================
@@ -252,7 +274,7 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode * aNode,
 	//Update or build submesh
 	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
 	if (it==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -274,7 +296,7 @@ void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode * aNode,
 	//Update or build submesh
 	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
 	if (it==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -296,7 +318,7 @@ void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode * aNode,
 	//Update or build submesh
 	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
 	if (it==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -318,7 +340,7 @@ void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode * aNode,
 	//Update or build submesh
 	map<int,SMESHDS_SubMesh*>::iterator it=myShapeIndexToSubMesh.find(Index);
 	if (it==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]= new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -344,7 +366,7 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement * anElement,
 	int Index = myIndexToShape.FindIndex(S);
 
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddElement(anElement);
 }
@@ -450,7 +472,7 @@ void SMESHDS_Mesh::NewSubMesh(int Index)
 {
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
 	{
-		SMESHDS_SubMesh* SM = new SMESHDS_SubMesh(this);
+		SMESHDS_SubMesh* SM = new SMESHDS_SubMesh();
 		myShapeIndexToSubMesh[Index]=SM;
 	}
 }
@@ -486,7 +508,7 @@ void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 
 	//Update or build submesh
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -502,7 +524,7 @@ void SMESHDS_Mesh::SetNodeOnFace(SMDS_MeshNode* aNode, int Index)
 
 	//Update or build submesh
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -518,7 +540,7 @@ void SMESHDS_Mesh::SetNodeOnEdge(SMDS_MeshNode* aNode, int Index)
 
 	//Update or build submesh
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -534,7 +556,7 @@ void SMESHDS_Mesh::SetNodeOnVertex(SMDS_MeshNode* aNode, int Index)
 
 	//Update or build submesh
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddNode(aNode);
 }
@@ -547,7 +569,11 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
 	int Index)
 {
 	if (myShapeIndexToSubMesh.find(Index)==myShapeIndexToSubMesh.end())
-		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh(this);
+		myShapeIndexToSubMesh[Index]=new SMESHDS_SubMesh();
 
 	myShapeIndexToSubMesh[Index]->AddElement(anElement);
+}
+
+SMESHDS_Mesh::~SMESHDS_Mesh()
+{
 }

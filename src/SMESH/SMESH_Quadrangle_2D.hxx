@@ -41,7 +41,7 @@ typedef struct uvPtStruct
   double v;
   double x; // 2d parameter, normalized [0,1]
   double y; 
-  int nodeId;
+	const SMDS_MeshNode * node;
 } UVPtStruct;
 
 typedef struct faceQuadStruct

@@ -308,16 +308,14 @@ Engines::long_array * SMESH_MEDSupport_i::getNumber(
 
 	int i = 0;
 	myseq->length(_subMeshDS->NbNodes());
-	const set<const SMDS_MeshNode*> & myNodesMap = _subMeshDS->GetNodes();
-	set<const SMDS_MeshNode*>::const_iterator it=myNodesMap.begin();
 
-	for (; it!=myNodesMap.end(); it++)
+	SMDS_Iterator<const SMDS_MeshNode*> * it = _subMeshDS->GetNodes();
+	while(it->more())
 	{
-		myseq[i] = (*it)->GetID();
-		SCRUTE((*it)->GetID());
-		SCRUTE(myseq[i]);
+		myseq[i] = it->next()->GetID();
 		i++;
 	};
+	delete it;
 
 	SCRUTE(myseq->length());
 	MESSAGE("End of SMESH_MEDSupport_i::getNumber");

@@ -530,14 +530,11 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 					//MESSAGE ("********* Traitement de la Famille "<<-t);
 
 					SMESHDS_SubMesh * SM = mySMESHDSMesh->MeshElements(S);
-					const vector<int>& indElt = SM->GetIDElements();
-					vector<int>::const_iterator ite=indElt.begin();
-
+					SMDS_Iterator<const SMDS_MeshElement*> * ite=SM->GetElements();
 					bool plein = false;
-					for (; ite!=indElt.end(); ite++)
+					while(ite->more())
 					{
-						int eltId = *ite;
-						mapFamille[eltId] = -t;
+						mapFamille[ite->next()->GetID()] = -t;
 						plein = true;
 					}
 					if (plein)
@@ -640,6 +637,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 				/* liberation memoire */
 				free(connectivite);
 				free(numele);
+				free(nomele);
 				free(nufael);
 				MESSAGE(" End " << typmai[i]);
 			}

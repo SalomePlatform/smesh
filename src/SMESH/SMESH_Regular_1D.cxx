@@ -221,18 +221,15 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 	}
 
 	ASSERT(!VFirst.IsNull());
-	SMESH_subMesh *firstSubMesh = aMesh.GetSubMesh(VFirst);
-	const vector<int> & lidf
-		= firstSubMesh->GetSubMeshDS()->GetIDNodes();
-	int idFirst = lidf[0];
-	//SCRUTE(idFirst);
+	SMDS_Iterator<const SMDS_MeshNode *> * lid=
+		aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode * idFirst = lid->next();
+	delete lid;
 
 	ASSERT(!VLast.IsNull());
-	SMESH_subMesh *lastSubMesh = aMesh.GetSubMesh(VLast);
-	const vector<int> & lidl
-		= lastSubMesh->GetSubMeshDS()->GetIDNodes();
-	int idLast = lidl[0];
-	//SCRUTE(idLast);
+	lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
+	const SMDS_MeshNode * idLast = lid->next();
+	delete lid;
 
 	if (!Curve.IsNull())
 	{
@@ -244,7 +241,7 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 		// edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
 		// only internal nodes receive an edge position with param on curve
 
-		int idPrev = idFirst;
+		const SMDS_MeshNode * idPrev = idFirst;
 		for (int i = 2; i < NbPoints; i++)
 		{
 			double param = Discret.Parameter(i);
@@ -274,9 +271,9 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 			SMDS_EdgePosition* epos=dynamic_cast<SMDS_EdgePosition *>(node->GetPosition());
 			epos->SetUParameter(param);
 
-			SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node->GetID());
+			SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
 			meshDS->SetMeshElementOnShape(edge, E);
-			idPrev = node->GetID();
+			idPrev = node;
 		}
 		SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
 		meshDS->SetMeshElementOnShape(edge, E);
@@ -297,7 +294,7 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 			TopExp::Vertices(E, V1, V2);
 			gp_Pnt P = BRep_Tool::Pnt(V1);
 
-			int idPrev = idFirst;
+			const SMDS_MeshNode * idPrev = idFirst;
 			for (int i = 2; i < NbPoints; i++)
 			{
 				double param = f + (i - 1) * du;
@@ -311,9 +308,9 @@ bool SMESH_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 					= dynamic_cast<SMDS_EdgePosition*>(node->GetPosition());
 				epos->SetUParameter(param);
 
-				SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node->GetID());
+				SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
 				meshDS->SetMeshElementOnShape(edge, E);
-				idPrev = node->GetID();
+				idPrev = node;
 			}
 			SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast);
 			meshDS->SetMeshElementOnShape(edge, E);

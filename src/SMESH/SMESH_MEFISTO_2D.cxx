@@ -225,7 +225,7 @@ bool SMESH_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 	//SCRUTE(nudslf[nblf]);
 	int m = 0;
 
-	map < int, int >mefistoToDS;	// correspondence mefisto index--> points IDNodes
+	map<int, const SMDS_MeshNode*> mefistoToDS;	// correspondence mefisto index--> points IDNodes
 	TopoDS_Wire OW = BRepTools::OuterWire(F);
 	LoadPoints(aMesh, F, OW, uvslf, m, mefistoToDS);
 	//SCRUTE(m);
@@ -291,7 +291,8 @@ bool SMESH_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
 void SMESH_MEFISTO_2D::LoadPoints(SMESH_Mesh & aMesh,
 	const TopoDS_Face & FF,
-	const TopoDS_Wire & WW, R2 * uvslf, int &m, map < int, int >&mefistoToDS)
+	const TopoDS_Wire & WW, R2 * uvslf, int &m,
+	map<int, const SMDS_MeshNode*>&mefistoToDS)
 {
 	MESSAGE("SMESH_MEFISTO_2D::LoadPoints");
 
@@ -313,19 +314,16 @@ void SMESH_MEFISTO_2D::LoadPoints(SMESH_Mesh & aMesh,
 		TopoDS_Vertex VFirst, VLast;
 		TopExp::Vertices(E, VFirst, VLast);	// corresponds to f and l
 
-		ASSERT(!VFirst.IsNull());
-		SMESH_subMesh *firstSubMesh = aMesh.GetSubMesh(VFirst);
-		const vector<int> & lidf
-			= firstSubMesh->GetSubMeshDS()->GetIDNodes();
-		int idFirst = lidf[0];
-//       SCRUTE(idFirst);
+	    ASSERT(!VFirst.IsNull());
+		SMDS_Iterator<const SMDS_MeshNode *> * lid=
+        	aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
+		const SMDS_MeshNode* idFirst = lid->next();
+		delete lid;
 
 		ASSERT(!VLast.IsNull());
-		SMESH_subMesh *lastSubMesh = aMesh.GetSubMesh(VLast);
-		const vector<int> & lidl
-			= lastSubMesh->GetSubMeshDS()->GetIDNodes();
-		int idLast = lidl[0];
-//       SCRUTE(idLast);
+		lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
+		const SMDS_MeshNode* idLast = lid->next();
+		delete lid;
 
 		// --- edge internal IDNodes (relies on good order storage, not checked)
 
@@ -335,22 +333,21 @@ void SMESH_MEFISTO_2D::LoadPoints(SMESH_Mesh & aMesh,
 		double f, l;
 		Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
 
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(E)->GetSubMeshDS()->GetIDNodes();
+		SMDS_Iterator<const SMDS_MeshNode *> * ite=
+			aMesh.GetSubMesh(E)->GetSubMeshDS()->GetNodes();
 
-		ASSERT(nbPoints == indElt.size());
 		bool isForward = (E.Orientation() == TopAbs_FORWARD);
-		map < double, int >params;
-		for (int ite=0; ite<indElt.size(); ite++)
+		map<double, const SMDS_MeshNode*> params;
+
+		while(ite->more())
 		{
-			int nodeId = indElt[ite];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = ite->next();
 			const SMDS_EdgePosition* epos
 				= static_cast<const SMDS_EdgePosition*>(node->GetPosition());
 			double param = epos->GetUParameter();
-			params[param] = nodeId;
+			params[param] = node;
 		}
-
+		delete ite;
 		// --- load 2D values into MEFISTO structure,
 		//     add IDNodes in mefistoToDS map
 
@@ -363,7 +360,7 @@ void SMESH_MEFISTO_2D::LoadPoints(SMESH_Mesh & aMesh,
 			//MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
 			//MESSAGE("__ f "<<f<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
 			m++;
-			map < double, int >::iterator itp = params.begin();
+			map<double, const SMDS_MeshNode*>::iterator itp = params.begin();
 			for (int i = 1; i <= nbPoints; i++)	// nbPoints internal
 			{
 				double param = (*itp).first;
@@ -386,7 +383,7 @@ void SMESH_MEFISTO_2D::LoadPoints(SMESH_Mesh & aMesh,
 //    MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
 //    MESSAGE("__ l "<<l<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
 			m++;
-			map < double, int >::reverse_iterator itp = params.rbegin();
+			map<double, const SMDS_MeshNode*>::reverse_iterator itp = params.rbegin();
 			for (int i = nbPoints; i >= 1; i--)
 			{
 				double param = (*itp).first;
@@ -489,7 +486,8 @@ void SMESH_MEFISTO_2D::ComputeScaleOnFace(SMESH_Mesh & aMesh,
 
 void SMESH_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
 	Z nbst, R2 * uvst, Z nbt, Z * nust,
-	const TopoDS_Face & F, bool faceIsForward, map < int, int >&mefistoToDS)
+	const TopoDS_Face & F, bool faceIsForward,
+	map<int, const SMDS_MeshNode*>&mefistoToDS)
 {
 	double scalex;
 	double scaley;
@@ -512,7 +510,7 @@ void SMESH_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
 			meshDS->SetNodeOnFace(node, F);
 
 			//MESSAGE(nodeId<<" "<<P.X()<<" "<<P.Y()<<" "<<P.Z());
-			mefistoToDS[n + 1] = node->GetID();
+			mefistoToDS[n + 1] = node;
 			//MESSAGE(" "<<n<<" "<<mefistoToDS[n+1]);
 			SMDS_FacePosition* fpos
 				= static_cast<SMDS_FacePosition*>(node->GetPosition());
@@ -531,9 +529,10 @@ void SMESH_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
 		int inode2 = nust[m++];
 		int inode3 = nust[m++];
 
-		int nodeId1 = mefistoToDS[inode1];
-		int nodeId2 = mefistoToDS[inode2];
-		int nodeId3 = mefistoToDS[inode3];
+		const SMDS_MeshNode *n1, *n2, *n3;
+		n1 = mefistoToDS[inode1];
+		n2 = mefistoToDS[inode2];
+		n3 = mefistoToDS[inode3];
 		//MESSAGE("-- "<<inode1<<" "<<inode2<<" "<<inode3<<" ++ "<<nodeId1<<" "<<nodeId2<<" "<<nodeId3);
 
 		// triangle points must be in trigonometric order if face is Forward
@@ -543,9 +542,9 @@ void SMESH_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
 
         SMDS_MeshElement * elt;
 		if (triangleIsWellOriented)
-			elt = meshDS->AddFace(nodeId1, nodeId2, nodeId3);
+			elt = meshDS->AddFace(n1, n2, n3);
 		else
-			elt = meshDS->AddFace(nodeId1, nodeId3, nodeId2);
+			elt = meshDS->AddFace(n1, n3, n2);
 	
 		meshDS->SetMeshElementOnShape(elt, F);
 		m++;

@@ -341,18 +341,19 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indX0]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
 
 		faceQuadStruct *quad = _cube.quad_X0;
 		int i = 0;				// j = x/face , k = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for (int itf=0; itf<indElt.size(); itf++)
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
+			
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition* fpos
 				= static_cast<const SMDS_FacePosition*>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -360,8 +361,9 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
+		delete itf;
 
 		for (int i1 = 0; i1 < nbdown; i1++)
 			for (int j1 = 0; j1 < nbright; j1++)
@@ -371,25 +373,25 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int k = cx0.ja * i1 + cx0.jb * j1 + cx0.jc;	// k = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indX1]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
 		faceQuadStruct *quad = _cube.quad_X1;
 		int i = nbx - 1;		// j = x/face , k = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for (int itf=0; itf<indElt.size(); itf++)
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition* fpos
 				= static_cast<const SMDS_FacePosition*>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -397,8 +399,9 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
+		delete itf;
 
 		for (int i1 = 0; i1 < nbdown; i1++)
 			for (int j1 = 0; j1 < nbright; j1++)
@@ -408,25 +411,25 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int k = cx1.ja * i1 + cx1.jb * j1 + cx1.jc;	// k = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indY0]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
 		faceQuadStruct *quad = _cube.quad_Y0;
 		int j = 0;				// i = x/face , k = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for (int itf=0; itf<indElt.size(); itf++)
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition * fpos
 				= static_cast<const SMDS_FacePosition*>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -434,7 +437,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
 
 		for (int i1 = 0; i1 < nbdown; i1++)
@@ -445,25 +448,25 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int k = cy0.ja * i1 + cy0.jb * j1 + cy0.jc;	// k = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indY1]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
 		faceQuadStruct *quad = _cube.quad_Y1;
 		int j = nby - 1;		// i = x/face , k = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for (int itf=0; itf<indElt.size(); itf++)
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition* fpos =
 				static_cast<const SMDS_FacePosition *>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -471,7 +474,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
 
 		for (int i1 = 0; i1 < nbdown; i1++)
@@ -482,25 +485,25 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int k = cy1.ja * i1 + cy1.jb * j1 + cy1.jc;	// k = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indZ0]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
 		faceQuadStruct *quad = _cube.quad_Z0;
 		int k = 0;				// i = x/face , j = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for (int itf=0; itf<indElt.size(); itf++)
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition * fpos
 				= static_cast<const SMDS_FacePosition*>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -508,7 +511,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
 
 		for (int i1 = 0; i1 < nbdown; i1++)
@@ -519,25 +522,25 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int j = cz0.ja * i1 + cz0.jb * j1 + cz0.jc;	// j = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
 
 	{
 		const TopoDS_Face & F = TopoDS::Face(meshFaces[_indZ1]->GetSubShape());
-		const vector<int> & indElt
-			= aMesh.GetSubMesh(F)->GetSubMeshDS()->GetIDNodes();
+
+		SMDS_Iterator<const SMDS_MeshNode *> * itf=
+			aMesh.GetSubMesh(F)->GetSubMeshDS()->GetNodes();
 
 		faceQuadStruct *quad = _cube.quad_Z1;
 		int k = nbz - 1;		// i = x/face , j = y/face
 		int nbdown = quad->nbPts[0];
 		int nbright = quad->nbPts[1];
 
-		for(int itf=0; itf<indElt.size(); itf++)
+		while(itf->more())
 		{
-			int nodeId = indElt[itf];
-			const SMDS_MeshNode * node = meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itf->next();
 			const SMDS_FacePosition* fpos
 				= static_cast<const SMDS_FacePosition*>(node->GetPosition());
 			double ri = fpos->GetUParameter();
@@ -545,7 +548,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 			int i1 = int (ri);
 			int j1 = int (rj);
 			int ij1 = j1 * nbdown + i1;
-			quad->uv_grid[ij1].nodeId = nodeId;
+			quad->uv_grid[ij1].node = node;
 		}
 
 		for (int i1 = 0; i1 < nbdown; i1++)
@@ -556,7 +559,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				int j = cz1.ja * i1 + cz1.jb * j1 + cz1.jc;	// j = y/face
 				int ijk = k * nbx * nby + j * nbx + i;
 				//MESSAGE(" "<<ij1<<" "<<i<<" "<<j<<" "<<ijk);
-				np[ijk].nodeId = quad->uv_grid[ij1].nodeId;
+				np[ijk].node = quad->uv_grid[ij1].node;
 				//SCRUTE(np[ijk].nodeId);
 			}
 	}
@@ -651,7 +654,7 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 				}
 
 				SMDS_MeshNode * node = meshDS->AddNode(X[0], X[1], X[2]);
-				np[ijk].nodeId = node->GetID();
+				np[ijk].node = node;
 				//meshDS->SetNodeInVolume(node, TopoDS::Solid(aShape));
 				meshDS->SetNodeInVolume(node, aShell);
 			}
@@ -677,14 +680,14 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 //    MESSAGE(" "<<n1<<" "<<n2<<" "<<n3<<" "<<n4<<" "<<n5<<" "<<n6<<" "<<n7<<" "<<n8);
 				//MESSAGE(" "<<np[n1].nodeId<<" "<<np[n2].nodeId<<" "<<np[n3].nodeId<<" "<<np[n4].nodeId<<" "<<np[n5].nodeId<<" "<<np[n6].nodeId<<" "<<np[n7].nodeId<<" "<<np[n8].nodeId);
 
-				SMDS_MeshVolume * elt = meshDS->AddVolume(np[n1].nodeId,
-					np[n2].nodeId,
-					np[n3].nodeId,
-					np[n4].nodeId,
-					np[n5].nodeId,
-					np[n6].nodeId,
-					np[n7].nodeId,
-					np[n8].nodeId);
+				SMDS_MeshVolume * elt = meshDS->AddVolume(np[n1].node,
+					np[n2].node,
+					np[n3].node,
+					np[n4].node,
+					np[n5].node,
+					np[n6].node,
+					np[n7].node,
+					np[n8].node);
 				 ;
 				meshDS->SetMeshElementOnShape(elt, aShell);
 
@@ -728,7 +731,7 @@ void SMESH_Hexa_3D::GetPoint(Pt3 p, int i, int j, int k, int nbx, int nby,
 	int nbz, Point3DStruct * np, const SMESHDS_Mesh * meshDS)
 {
 	int ijk = k * nbx * nby + j * nbx + i;
-	const SMDS_MeshNode * node = meshDS->FindNode(np[ijk].nodeId);
+	const SMDS_MeshNode * node = np[ijk].node;
 	p[0] = node->X();
 	p[1] = node->Y();
 	p[2] = node->Z();

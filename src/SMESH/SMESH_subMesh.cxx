@@ -1321,27 +1321,23 @@ void SMESH_subMesh::RemoveSubMeshElementsAndNodes()
 	_subMeshDS = _meshDS->MeshElements(_subShape);
 	if (_subMeshDS!=NULL)
 	{
-		const vector<int> & indElt = _subMeshDS->GetIDElements();
-		vector<int>::const_iterator ite=indElt.begin();
-		for (; ite!=indElt.end(); ite++)
+		SMDS_Iterator<const SMDS_MeshElement *> * ite=_subMeshDS->GetElements();
+		while(ite->more())
 		{
-			int eltId = *ite;
-			SCRUTE(eltId);
-			const SMDS_MeshElement * elt = _meshDS->FindElement(eltId);
+			const SMDS_MeshElement * elt = ite->next();
 			_subMeshDS->RemoveElement(elt);
-			_meshDS->RemoveElement(eltId);
+			_meshDS->RemoveElement(elt);
 		}
-
-		const vector<int> & indNodes = _subMeshDS->GetIDNodes();
-		vector<int>::const_iterator itn=indNodes.begin();
-		for (; itn!=indNodes.end(); itn++)
+		delete ite;
+		
+		SMDS_Iterator<const SMDS_MeshNode *> * itn=_subMeshDS->GetNodes();
+		while(itn->more())
 		{
-			int nodeId = *itn;
-			SCRUTE(nodeId);
-			const SMDS_MeshNode * node = _meshDS->FindNode(nodeId);
+			const SMDS_MeshNode * node = itn->next();
 			_subMeshDS->RemoveNode(node);
-			_meshDS->RemoveNode(nodeId);
+			_meshDS->RemoveNode(node);
 		}
+		delete itn;
 	}
 }
 

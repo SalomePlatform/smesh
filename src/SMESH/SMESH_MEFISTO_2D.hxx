@@ -34,8 +34,8 @@
 #include "SMESH_LengthFromEdges.hxx"
 #include "Rn.h"
 
+class SMDS_MeshNode;
 #include <TopoDS_Face.hxx>
-
 #include <map>
 
 class SMESH_MEFISTO_2D:
@@ -59,7 +59,7 @@ public:
 		  const TopoDS_Wire& W,
 		  R2* uvslf, 
 		  int& m,
-		  map<int,int>& mefistoToDS);
+		  map<int,const SMDS_MeshNode*>& mefistoToDS);
 
   void ComputeScaleOnFace(SMESH_Mesh& aMesh,
 			  const TopoDS_Face& aFace,
@@ -69,7 +69,7 @@ public:
   void StoreResult (SMESH_Mesh& aMesh,
 		    Z nbst, R2* uvst, Z nbt, Z* nust, 
 		    const TopoDS_Face& F, bool faceIsForward,
-		    map<int,int>& mefistoToDS);
+		    map<int,const SMDS_MeshNode*>& mefistoToDS);
 					  
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);

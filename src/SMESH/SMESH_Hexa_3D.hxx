@@ -36,7 +36,7 @@
 
 typedef struct point3Dstruct
 {
-  int nodeId;
+	const SMDS_MeshNode * node;
 } Point3DStruct;
 
 typedef double Pt3[3];

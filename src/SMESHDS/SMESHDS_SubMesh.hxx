@@ -28,7 +28,6 @@
 #define _SMESHDS_SubMesh_HeaderFile
 
 #include "SMDS_Mesh.hxx"
-#include <vector>
 #include <set>
 
 using namespace std;
@@ -36,25 +35,18 @@ using namespace std;
 class SMESHDS_SubMesh
 {
   public:
-	SMESHDS_SubMesh(const SMDS_Mesh * M);
 	void AddElement(const SMDS_MeshElement * ME);
 	void RemoveElement(const SMDS_MeshElement * ME);
 	void AddNode(const SMDS_MeshNode * ME);
 	void RemoveNode(const SMDS_MeshNode * ME);
 	int NbElements() const;
-	const set<const SMDS_MeshElement*> & GetElements();
-	const vector<int> & GetIDElements();
+	SMDS_Iterator<const SMDS_MeshElement*> * GetElements() const;
 	int NbNodes() const;
-	const set<const SMDS_MeshNode*> & GetNodes() const;
-	const vector<int> & GetIDNodes();
-	 ~SMESHDS_SubMesh();
+	SMDS_Iterator<const SMDS_MeshNode*> * GetNodes() const;
+
   private:
 	const SMDS_Mesh * myMesh;
 	set<const SMDS_MeshElement*> myElements;
 	set<const SMDS_MeshNode*> myNodes;
-	bool myListOfEltIDIsUpdate;
-	vector<int> myListOfEltID;
-	bool myListOfNodeIDIsUpdate;
-	vector<int> myListOfNodeID;
 };
 #endif

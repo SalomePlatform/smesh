@@ -30,23 +30,12 @@ using namespace std;
 #include "SMESHDS_SubMesh.hxx"
 
 //=======================================================================
-//function : SMESHDS_SubMesh
-//purpose  : 
-//=======================================================================
-SMESHDS_SubMesh::SMESHDS_SubMesh(const SMDS_Mesh * M):myMesh(M)
-{
-	myListOfEltIDIsUpdate = false;
-	myListOfNodeIDIsUpdate = false;
-}
-
-//=======================================================================
 //function : AddElement
 //purpose  : 
 //=======================================================================
 void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 {
 	myElements.insert(ME);
-	myListOfEltIDIsUpdate = false;
 }
 
 //=======================================================================
@@ -56,7 +45,6 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
 void SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
 {
 	myElements.erase(ME);
-	myListOfEltIDIsUpdate = false;
 }
 
 //=======================================================================
@@ -66,7 +54,6 @@ void SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME)
 void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 {
 	myNodes.insert(N);
-	myListOfNodeIDIsUpdate = false;
 }
 
 //=======================================================================
@@ -76,7 +63,6 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 void SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 {
 	myNodes.erase(N);
-	myListOfNodeIDIsUpdate = false;
 }
 
 //=======================================================================
@@ -89,15 +75,6 @@ int SMESHDS_SubMesh::NbElements() const
 }
 
 //=======================================================================
-//function : GetElements
-//purpose  : 
-//=======================================================================
-const set<const SMDS_MeshElement*> & SMESHDS_SubMesh::GetElements()
-{
-	return myElements;
-}
-
-//=======================================================================
 //function : NbNodes
 //purpose  : 
 //=======================================================================
@@ -106,49 +83,42 @@ int SMESHDS_SubMesh::NbNodes() const
 	return myNodes.size();
 }
 
-//=======================================================================
-//function : GetNodes
-//purpose  : 
-//=======================================================================
-const set<const SMDS_MeshNode*> & SMESHDS_SubMesh::GetNodes() const
+template<typename T> class MySetIterator:public SMDS_Iterator<const T*>
 {
-	return myNodes;
+	const set<const T*>& mySet;
+	set<const T*>::const_iterator myIt;
+
+  public:
+	MySetIterator(const set<const T*>& s):mySet(s), myIt(s.begin())
+	{
+	}
+
+	bool more()
+	{
+		return myIt!=mySet.end();
+	}
+	const T* next()
+	{
+		const T* t=*myIt;
+		myIt++;
+		return t;			
+	}
+};
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on the elements of submesh
+///The created iterator must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshElement*> * SMESHDS_SubMesh::GetElements() const
+{
+	return new MySetIterator<SMDS_MeshElement>(myElements);
 }
 
-//=======================================================================
-//function : GetIDElements
-//purpose  : 
-//=======================================================================
-const vector<int> & SMESHDS_SubMesh::GetIDElements()
+///////////////////////////////////////////////////////////////////////////////
+///Return an iterator on the nodes of submesh
+///The created iterator must be free by the caller
+///////////////////////////////////////////////////////////////////////////////
+SMDS_Iterator<const SMDS_MeshNode*> * SMESHDS_SubMesh::GetNodes() const
 {
-	if (!myListOfEltIDIsUpdate)
-	{
-		myListOfEltID.clear();
-		set<const SMDS_MeshElement*>::iterator it=myElements.begin();
-		for (; it!=myElements.end(); it++)
-		{
-			myListOfEltID.push_back((*it)->GetID());
-		}
-		myListOfEltIDIsUpdate = true;
-	}
-	return myListOfEltID;
+	return new MySetIterator<SMDS_MeshNode>(myNodes);
 }
 
-//=======================================================================
-//function : GetIDNodes
-//purpose  : 
-//=======================================================================
-const vector<int> & SMESHDS_SubMesh::GetIDNodes()
-{
-	if (!myListOfNodeIDIsUpdate)
-	{
-		myListOfNodeID.clear();
-		set<const SMDS_MeshNode*>::iterator it=myNodes.begin();
-		for (; it!=myNodes.end(); it++)
-		{
-			myListOfNodeID.push_back((*it)->GetID());
-		}
-		myListOfNodeIDIsUpdate = true;
-	}
-	return myListOfNodeID;
-}

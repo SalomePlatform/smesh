@@ -58,19 +58,49 @@ class SMESHDS_Mesh:public SMDS_Mesh
 	bool AddHypothesis(const TopoDS_Shape & SS, const SMESHDS_Hypothesis * H);
 	bool RemoveHypothesis(const TopoDS_Shape & S, const SMESHDS_Hypothesis * H);
 	SMDS_MeshNode * AddNode(double x, double y, double z);
-	virtual void RemoveNode(int ID);
-	void MoveNode(int ID, double x, double y, double z);
-	SMDS_MeshEdge* AddEdge(int idnode1, int idnode2);
-	SMDS_MeshFace* AddFace(int idnode1, int idnode2, int idnode3);
-	SMDS_MeshFace* AddFace(int idnode1, int idnode2, int idnode3, int idnode4);
-	SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3, int idnode4);
-	SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3, int idnode4,
-		int idnode5);
-	SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3, int idnode4,
-		int idnode5, int idnode6);
-	SMDS_MeshVolume* AddVolume(int idnode1, int idnode2, int idnode3, int idnode4,
-		int idnode5, int idnode6, int idnode7, int idnode8);
-	virtual void RemoveElement(int IDelem);
+	void RemoveNode(const SMDS_MeshNode *);
+	void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
+	SMDS_MeshEdge* AddEdge(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2);
+	SMDS_MeshFace* AddFace(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3);
+	SMDS_MeshFace* AddFace(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4);
+	SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4);
+	SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5);
+	SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6);
+	SMDS_MeshVolume* AddVolume(
+		const SMDS_MeshNode * n1,
+		const SMDS_MeshNode * n2,
+		const SMDS_MeshNode * n3,
+		const SMDS_MeshNode * n4,
+		const SMDS_MeshNode * n5,
+		const SMDS_MeshNode * n6,
+		const SMDS_MeshNode * n7,
+		const SMDS_MeshNode * n8);
+	
+	void RemoveElement(const SMDS_MeshElement *);
 	void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
 	void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S);
 	void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S);

@@ -61,7 +61,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveElements(const SMESH::
 	for (int i = 0; i < IDsOfElements.length(); i++)
 	{
 		CORBA::Long index = IDsOfElements[i];
-		_myMeshDS->RemoveElement(index);
+		_myMeshDS->RemoveElement(_myMeshDS->FindElement(index));
 		MESSAGE("Element " << index << " was removed")
 	}
 	return true;
@@ -86,8 +86,8 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::
 				<<" not found");
 			continue;
 		}
-		_myMeshDS->RemoveNode(IDsOfNodes[i]);
-		MESSAGE("Node " << index << " was removed")
+		_myMeshDS->RemoveNode(node);
+		MESSAGE("Node " << IDsOfNodes[i] << " was removed")
 	}
 	return true;
 };
@@ -105,7 +105,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 	{
 		CORBA::Long index1 = IDsOfNodes[0];
 		CORBA::Long index2 = IDsOfNodes[1];
-		_myMeshDS->AddEdge(index1, index2);
+		_myMeshDS->AddEdge(_myMeshDS->FindNode(index1), _myMeshDS->FindNode(index2));
 	}
 	return true;
 }
@@ -133,20 +133,15 @@ CORBA::Boolean SMESH_MeshEditor_i::AddNode(CORBA::Double x,
 CORBA::Boolean SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 {
 	int NbNodes = IDsOfNodes.length();
+	const SMDS_MeshNode* nodes[4];
+	for(int i=0;i<NbNodes;i++) nodes[i]=_myMeshDS->FindNode(IDsOfNodes[i]);
 	if (NbNodes == 3)
 	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		_myMeshDS->AddFace(index1, index2, index3);
+		_myMeshDS->AddFace(nodes[0], nodes[1], nodes[2]);
 	}
 	else if (NbNodes == 4)
 	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		CORBA::Long index4 = IDsOfNodes[3];
-		_myMeshDS->AddFace(index1, index2, index3, index4);
+		_myMeshDS->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]);
 	}
 	return true;
 };
@@ -161,45 +156,15 @@ CORBA::Boolean SMESH_MeshEditor_i::AddVolume(const SMESH::
 	long_array & IDsOfNodes)
 {
 	int NbNodes = IDsOfNodes.length();
-	if (NbNodes == 4)
+	const SMDS_MeshNode* n[8];
+	for(int i=0;i<NbNodes;i++) n[i]=_myMeshDS->FindNode(IDsOfNodes[i]);
+
+	switch(NbNodes)
 	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		CORBA::Long index4 = IDsOfNodes[3];
-		_myMeshDS->AddVolume(index1, index2, index3, index4);
-	}
-	else if (NbNodes == 5)
-	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		CORBA::Long index4 = IDsOfNodes[3];
-		CORBA::Long index5 = IDsOfNodes[4];
-		_myMeshDS->AddVolume(index1, index2, index3, index4, index5);
-	}
-	else if (NbNodes == 6)
-	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		CORBA::Long index4 = IDsOfNodes[3];
-		CORBA::Long index5 = IDsOfNodes[4];
-		CORBA::Long index6 = IDsOfNodes[5];
-		_myMeshDS->AddVolume(index1, index2, index3, index4, index5, index6);
-	}
-	else if (NbNodes == 8)
-	{
-		CORBA::Long index1 = IDsOfNodes[0];
-		CORBA::Long index2 = IDsOfNodes[1];
-		CORBA::Long index3 = IDsOfNodes[2];
-		CORBA::Long index4 = IDsOfNodes[3];
-		CORBA::Long index5 = IDsOfNodes[4];
-		CORBA::Long index6 = IDsOfNodes[5];
-		CORBA::Long index7 = IDsOfNodes[6];
-		CORBA::Long index8 = IDsOfNodes[7];
-		_myMeshDS->AddVolume(index1, index2, index3, index4, index5, index6,
-			index7, index8);
+	case 4:_myMeshDS->AddVolume(n[0],n[1],n[2],n[3]); break;
+	case 5:_myMeshDS->AddVolume(n[0],n[1],n[2],n[3],n[4]); break;
+	case 6:_myMeshDS->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5]); break;
+	case 8:_myMeshDS->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]); break;
 	}
 	return true;
 };
