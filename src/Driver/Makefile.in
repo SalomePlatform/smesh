@@ -49,7 +49,7 @@ LIB_SERVER_IDL =
 CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -rdynamic -ldl -I${KERNEL_ROOT_DIR}/include/salome
 
-LDFLAGS  += $(OCC_LIBS) $(MED2_LIBS) -lSMESHDS -lSMDS
+LDFLAGS  += $(MED2_LIBS) -lSMESHDS -lSMDS
 
 %_moc.cxx: %.h
 	$(MOC) $< -o $@
