@@ -196,6 +196,11 @@ public:
   // Returns through <theMainEdge> the edge, from
   // which the 1D hypothesis is propagated on <theEdge>
 
+  bool IsReversedInChain (const TopoDS_Shape& theEdge,
+                          const TopoDS_Shape& theMainEdge);
+  // Returns true if theEdge should be reversed to be
+  // co-directed with theMainEdge
+
   bool RebuildPropagationChains();
   bool RemovePropagationChain (const TopoDS_Shape& theMainEdge);
   bool BuildPropagationChain (const TopoDS_Shape& theMainEdge);

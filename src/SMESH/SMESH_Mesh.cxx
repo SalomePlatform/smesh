@@ -964,6 +964,26 @@ bool SMESH_Mesh::IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
 
   return false;
 }
+//=============================================================================
+/*!
+ *  IsReversedInChain
+ */
+//=============================================================================
+
+bool SMESH_Mesh::IsReversedInChain (const TopoDS_Shape& theEdge,
+                                    const TopoDS_Shape& theMainEdge)
+{
+  if ( !theMainEdge.IsNull() && !theEdge.IsNull() &&
+      _mapPropagationChains.Contains( theMainEdge ))
+  {
+    const TopTools_IndexedMapOfShape& aChain =
+      _mapPropagationChains.FindFromKey( theMainEdge );
+    int index = aChain.FindIndex( theEdge );
+    if ( index )
+      return aChain(index).Orientation() == TopAbs_REVERSED;
+  }
+  return false;
+}
 
 //=============================================================================
 /*!
@@ -1075,7 +1095,7 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
 
   // List of edges, added to chain on the previous cycle pass
   TopTools_ListOfShape listPrevEdges;
-  listPrevEdges.Append(theMainEdge);
+  listPrevEdges.Append(theMainEdge.Oriented( TopAbs_FORWARD ));
 
 //   5____4____3____4____5____6
 //   |    |    |    |    |    |
@@ -1122,9 +1142,6 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
             if (!_mapAncestors.Contains(anEdges(nb))) {
               MESSAGE("WIRE EXPLORER HAVE GIVEN AN INVALID EDGE !!!");
               break;
-            } else {
-              int ind = _mapAncestors.FindIndex(anEdges(nb));
-              anEdges(nb) = _mapAncestors.FindKey(ind);
             }
             if (anEdges(nb).IsSame(anE)) found = nb;
           }
@@ -1145,7 +1162,12 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
                   aChain.Clear();
                   return false;
                 } else {
-                  // Add found edge to the chain
+                  // Add found edge to the chain oriented so that to
+                  // have it in aChain co-directed with theMainEdge
+                  TopAbs_Orientation ori = anE.Orientation();
+                  if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
+                    ori = TopAbs::Reverse( ori );
+                  anOppE.Orientation( ori );
                   aChain.Add(anOppE);
                   listCurEdges.Append(anOppE);
                 }
