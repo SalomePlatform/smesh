@@ -1,0 +1,177 @@
+2003-09-04 15:28  Jerome Robert <jerome.robert@eads.net>
+
+	* build_configure: It seems "make_omniorb" and "make_commence" need
+	to be before and after "envScript"
+
+2003-09-04 14:57  Jerome Robert <jerome.robert@eads.net>
+
+	* build_configure: make_commence and make_omniorb were detected
+	twice. Only one is requiered in AC_OUTPUT
+
+2003-09-04 14:03  Jerome Robert <jerome.robert@eads.net>
+
+	* src/: DriverDAT/DriverDAT_R_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_R_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.h,
+	DriverMED/DriverMED_R_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_R_SMDS_Mesh.h,
+	DriverMED/DriverMED_R_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Mesh.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Mesh.h,
+	DriverMED/DriverMED_W_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMDS_Mesh.h,
+	DriverMED/DriverMED_W_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Mesh.h,
+	DriverUNV/DriverUNV_R_SMDS_Mesh.cxx,
+	DriverUNV/DriverUNV_R_SMDS_Mesh.h,
+	DriverUNV/DriverUNV_R_SMESHDS_Document.cxx,
+	DriverUNV/DriverUNV_R_SMESHDS_Mesh.cxx,
+	DriverUNV/DriverUNV_R_SMESHDS_Mesh.h,
+	DriverUNV/DriverUNV_W_SMDS_Mesh.cxx,
+	DriverUNV/DriverUNV_W_SMDS_Mesh.h,
+	DriverUNV/DriverUNV_W_SMESHDS_Document.cxx,
+	DriverUNV/DriverUNV_W_SMESHDS_Mesh.cxx,
+	DriverUNV/DriverUNV_W_SMESHDS_Mesh.h: Update to match the changes
+	in SMDS
+
+2003-09-04 13:03  Jerome Robert <jerome.robert@eads.net>
+
+	* src/: DriverDAT/Makefile.in, DriverMED/Makefile.in,
+	DriverUNV/Makefile.in: Remove OCC_LIBS from LDFLAGS
+
+2003-09-04 12:56  Jerome Robert <jerome.robert@eads.net>
+
+	* src/Driver/: Document_Reader.cxx, Document_Reader.h,
+	Document_Writer.cxx, Document_Writer.h, Mesh_Reader.h,
+	Mesh_Writer.h: Update to mach the changes in SMDS
+
+2003-09-04 12:44  Jerome Robert <jerome.robert@eads.net>
+
+	* src/Driver/Makefile.in: Remove OCC_LIBS from LDFLAGS
+
+2003-09-04 12:41  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH_I/: SMESH_Gen_i.cxx, SMESH_MEDMesh_i.cxx,
+	SMESH_MEDMesh_i.hxx, SMESH_MEDSupport_i.cxx,
+	SMESH_MEDSupport_i.hxx, SMESH_MeshEditor_i.cxx,
+	SMESH_MeshEditor_i.hxx, SMESH_Mesh_i.cxx: Update to match the new
+	implementation of SMDS
+
+2003-09-04 12:10  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/SMESH_MaxElementArea.cxx: make GetMaxArea const
+
+2003-09-04 12:10  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/: SMESH_MEFISTO_2D.hxx, SMESH_Regular_1D.hxx: make
+	hypothesis const
+
+2003-09-04 11:55  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/SMESH_Hexa_3D.hxx: Update to match the change of SMDS
+	(new DS).
+
+2003-09-04 11:51  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH_I/sstream: Use the file include in gcc instead of this
+	one
+
+2003-09-04 11:21  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/: SMESH_Algo.cxx, SMESH_Algo.hxx, SMESH_Gen.cxx,
+	SMESH_Gen.hxx, SMESH_Hexa_3D.cxx, SMESH_MEFISTO_2D.cxx,
+	SMESH_MaxElementArea.hxx, SMESH_Mesh.cxx, SMESH_Mesh.hxx,
+	SMESH_Quadrangle_2D.cxx, SMESH_Regular_1D.cxx, SMESH_subMesh.cxx,
+	SMESH_subMesh.hxx: Update to match the change of SMDS (new DS).
+
+2003-09-04 11:13  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/: SMESH_NumberOfSegments.cxx,
+	SMESH_NumberOfSegments.hxx: make GetNumberOfSegments and
+	GetScaleFactor const
+
+2003-09-04 11:10  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESH/: SMESH_LocalLength.cxx, SMESH_LocalLength.hxx: make
+	GetLength const
+
+2003-09-04 10:09  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHFiltersSelection/Makefile.in: Change OCC_LIBS to
+	OCC_KERNEL_LIBS
+
+2003-09-04 09:55  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHGUI/Makefile.in: Change OCC_LIBS to OCC_KERNEL_LIBS
+
+2003-09-04 09:39  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHGUI/: SMESHGUI.cxx, SMESHGUI.h: Change
+	Handle(SMESHDS_Document) to SMESHDS_Document*
+
+2003-09-04 09:21  Jerome Robert <jerome.robert@eads.net>
+
+	* src/MEFISTO2/Makefile.in: Remove OCC_LIBS from LDFLAGS
+
+2003-09-04 09:14  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHDS/: Makefile.in, SMESHDS_Command.cxx,
+	SMESHDS_Command.hxx, SMESHDS_Document.cxx, SMESHDS_Document.hxx,
+	SMESHDS_Hypothesis.cxx, SMESHDS_Hypothesis.hxx, SMESHDS_Mesh.cxx,
+	SMESHDS_Mesh.hxx, SMESHDS_Script.cxx, SMESHDS_Script.hxx,
+	SMESHDS_SubMesh.cxx, SMESHDS_SubMesh.hxx: Remove Opencascade
+	dependencies. Change to STL.
+
+2003-09-03 19:31  Jerome Robert <jerome.robert@eads.net>
+
+	* src/OBJECT/Makefile.in: Change OCC_LIBS to OCC_KERNEL_LIBS
+
+2003-09-03 19:30  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: SMDS_Mesh.cxx, SMDS_Mesh.hxx, SMDS_MeshEdge.cxx,
+	SMDS_MeshEdge.hxx, SMDS_MeshElement.cxx, SMDS_MeshElement.hxx,
+	SMDS_MeshNode.cxx, SMDS_MeshNode.hxx, SMDS_MeshVolume.cxx,
+	SMDS_MeshVolume.hxx, SMDS_MeshFace.cxx, SMDS_MeshFace.hxx: New DS
+	implementation
+
+2003-09-03 19:29  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: SMDS_EdgePosition.cxx, SMDS_EdgePosition.hxx,
+	SMDS_FacePosition.cxx, SMDS_FacePosition.hxx,
+	SMDS_MeshElementIDFactory.cxx, SMDS_MeshElementIDFactory.hxx,
+	SMDS_MeshGroup.cxx, SMDS_MeshGroup.hxx, SMDS_MeshIDFactory.cxx,
+	SMDS_MeshIDFactory.hxx, SMDS_MeshObject.cxx, SMDS_MeshObject.hxx,
+	SMDS_Position.cxx, SMDS_Position.hxx, SMDS_SpacePosition.cxx,
+	SMDS_SpacePosition.hxx, SMDS_TypeOfPosition.hxx,
+	SMDS_VertexPosition.cxx, SMDS_VertexPosition.hxx: Remove
+	Opencascade dependencies
+
+2003-09-03 19:21  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/SMDSAbs_ElementType.hxx: comments
+
+2003-09-03 19:21  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: SMDS_Iterator.hxx, SMDS_IteratorOfElements.cxx,
+	SMDS_IteratorOfElements.hxx: Add iterator classes
+
+2003-09-03 19:16  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/Makefile.in: Remove wok files. Comment no longer needed
+	files
+
+2003-09-03 19:09  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: SMDS_FaceOfEdges.cxx, SMDS_FaceOfEdges.hxx,
+	SMDS_FaceOfNodes.cxx, SMDS_FaceOfNodes.hxx, SMDS_VolumeOfFaces.cxx,
+	SMDS_VolumeOfFaces.hxx, SMDS_VolumeOfNodes.cxx,
+	SMDS_VolumeOfNodes.hxx: Add needed class for the new DS
+
