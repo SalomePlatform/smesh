@@ -38,6 +38,12 @@
 
 #include <stdlib.h>
 
+#ifdef _DEBUG_
+static int MYDEBUG = 0;
+#else
+static int MYDEBUG = 0;
+#endif
+
 #define _EDF_NODE_IDS_
 
 using namespace MED;
@@ -136,7 +142,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
   Status aResult = DRS_FAIL;
   try{
     myFamilies.clear();
-    MESSAGE("Perform - myFile : "<<myFile);
+    if(MYDEBUG) MESSAGE("Perform - myFile : "<<myFile);
     PWrapper aMed = CrWrapper(myFile);
 
     aResult = DRS_EMPTY;
@@ -153,30 +159,33 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
         } else {
           aMeshName = myMeshName;
         }
-	MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
+	if(MYDEBUG) MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         aResult = DRS_OK;
 	//TInt aMeshDim = aMeshInfo->GetDim();
 	
         // Reading MED families to the temporary structure
 	//------------------------------------------------
-        TInt aNbFams = aMed->GetNbFamilies(aMeshInfo);
-        MESSAGE("Read " << aNbFams << " families");
+	TErr anErr;
+	TInt aNbFams = aMed->GetNbFamilies(aMeshInfo);
+        if(MYDEBUG) MESSAGE("Read " << aNbFams << " families");
         for (TInt iFam = 0; iFam < aNbFams; iFam++) {
-          PFamilyInfo aFamilyInfo = aMed->GetPFamilyInfo(aMeshInfo, iFam+1);
-          TInt aFamId = aFamilyInfo->GetId();
-          MESSAGE("Family " << aFamId << " :");
-
+	  PFamilyInfo aFamilyInfo = aMed->GetPFamilyInfo(aMeshInfo,iFam+1,&anErr);
+	  if(anErr >= 0){
+	    TInt aFamId = aFamilyInfo->GetId();
+	    if(MYDEBUG) MESSAGE("Family " << aFamId << " :");
+	    
             DriverMED_FamilyPtr aFamily (new DriverMED_Family);
-
+	    
             TInt aNbGrp = aFamilyInfo->GetNbGroup();
-            MESSAGE("belong to " << aNbGrp << " groups");
+            if(MYDEBUG) MESSAGE("belong to " << aNbGrp << " groups");
             for (TInt iGr = 0; iGr < aNbGrp; iGr++) {
               string aGroupName = aFamilyInfo->GetGroupName(iGr);
-              MESSAGE(aGroupName);
+              if(MYDEBUG) MESSAGE(aGroupName);
               aFamily->AddGroupName(aGroupName);
             }
             myFamilies[aFamId] = aFamily;
+	  }
         }
 
         // Reading MED nodes to the corresponding SMDS structure
@@ -221,7 +230,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 
 	EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
 	TInt aNbElems = aNodeInfo->GetNbElem();
-	MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
+	if(MYDEBUG) MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
         for(TInt iElem = 0; iElem < aNbElems; iElem++){
           double aCoords[3] = {0.0, 0.0, 0.0};
           for(TInt iDim = 0; iDim < 3; iDim++)
@@ -263,8 +272,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	    PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
 	    EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
 	    TInt aNbElems = aCellInfo->GetNbElem();
-	    MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
-	    MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
+	    if(MYDEBUG) MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
+	    if(MYDEBUG) MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
 
 	    for(int iElem = 0; iElem < aNbElems; iElem++){
 	      TInt aNbNodes = -1;
@@ -487,7 +496,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
     INFOS("Unknown exception was cought !!!");
     aResult = DRS_FAIL;
   }
-  MESSAGE("Perform - aResult status = "<<aResult);
+  if(MYDEBUG) MESSAGE("Perform - aResult status = "<<aResult);
   return aResult;
 }
 
@@ -496,7 +505,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
   list<string> aMeshNames;
 
   try {
-    MESSAGE("GetMeshNames - myFile : " << myFile);
+    if(MYDEBUG) MESSAGE("GetMeshNames - myFile : " << myFile);
     theStatus = DRS_OK;
     PWrapper aMed = CrWrapper(myFile);
 
@@ -549,7 +558,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetGroupNames()
 void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 {
   string aGroupName (theGroup->GetStoreName());
-  MESSAGE("Get Group " << aGroupName);
+  if(MYDEBUG) MESSAGE("Get Group " << aGroupName);
 
   map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
   for (; aFamsIter != myFamilies.end(); aFamsIter++)
