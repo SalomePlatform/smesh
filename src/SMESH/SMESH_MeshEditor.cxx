@@ -2085,7 +2085,7 @@ SMESH_MeshEditor::Extrusion_Error
   
   if ( theHasAngles ) {
     aItD = theAngles.begin();
-    for ( j=0; (aItD != theAngles.end()) && (j<aNbTP); ++aItD, ++j ) {
+    for ( j=1; (aItD != theAngles.end()) && (j<aNbTP); ++aItD, ++j ) {
       aAngle = *aItD;
       aAngles[j] = aAngle;
     }
