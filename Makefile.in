@@ -94,9 +94,18 @@ endif
 
 inc: idl $(include_list)
 
-include/salome/SALOMEconfig.h: salome_adm/unix/SALOMEconfig.h
+include/salome/SALOMEconfig.h: salome_adm/unix/SALOMEconfig.ref
 	-$(RM) $@
 	$(LN_S) ../../$< $@
+
+# test if SALOMEconfig.h has changed (contents)
+salome_adm/unix/SALOMEconfig.ref: salome_adm/unix/SALOMEconfig.h
+	@if ! [ -a $@ ]; then \
+	  cp -p $< $@;        \
+	fi;		      \
+	if ! cmp $< $@; then  \
+	  cp -p $< $@;        \
+	fi;		      \
 
 include/salome/sstream: salome_adm/unix/sstream
 	-$(RM) $@
