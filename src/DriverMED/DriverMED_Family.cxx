@@ -211,9 +211,18 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
 				const MED::PMeshInfo& theMeshInfo) const
 {
   string aValue;
+
   ostringstream aStr;
-  aStr << myId;
+
+  aStr << "FAM_" << myId;
+  set<string>::iterator aGrIter = myGroupNames.begin();
+  for (; aGrIter != myGroupNames.end(); aGrIter++)
+  {
+    aStr << "_" << *aGrIter;
+  }
+
   aValue = aStr.str();
+
   MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
   MED::TIntVector anAttrIds (1, myId);        // Id=0,
   MED::TIntVector anAttrVals (1, myId);       // Value=0
