@@ -1204,3 +1204,8 @@ SMESH_MEDMesh_i::getElementType(SALOME_MED::medEntityMesh entity,
 
   return (SALOME_MED::medGeometryElement) 0;
 }
+
+CORBA::Boolean SMESH_MEDMesh_i::areEquals(SALOME_MED::MESH_ptr other)
+{
+  return false;
+}

@@ -226,6 +226,8 @@ class SMESH_MEDMesh_i:
 	//
 	void calculeNbElts() throw(SALOME::SALOME_Exception);
 	void createFamilies() throw(SALOME::SALOME_Exception);
+
+        CORBA::Boolean areEquals(SALOME_MED::MESH_ptr other);
 };
 
 #endif /* _MED_MESH_I_HXX_ */
