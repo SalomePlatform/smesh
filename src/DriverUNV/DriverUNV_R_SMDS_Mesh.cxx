@@ -17,14 +17,6 @@ static int MYDEBUG = 0;
 #endif
 
 
-static const SMDS_MeshNode* 
-FindNode(const SMDS_Mesh* theMesh, int theId){
-  const SMDS_MeshNode* aNode = theMesh->FindNode(theId);
-  if(aNode) return aNode;
-  EXCEPTION(runtime_error,"SMDS_Mesh::FindNode - cannot find a SMDS_MeshNode for ID = "<<theId);
-}
-
-
 Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 {
   Status aResult = DRS_OK;
@@ -39,8 +31,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
       for(; anIter != aDataSet2411.end(); anIter++){
 	const TNodeLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
-	const SMDS_MeshNode* aNode = 
-	  myMesh->AddNodeWithID(aRec.coord[0],aRec.coord[1],aRec.coord[2],aLabel);
+	myMesh->AddNodeWithID(aRec.coord[0],aRec.coord[1],aRec.coord[2],aLabel);
       }
     }
     {
@@ -54,7 +45,6 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	SMDS_MeshElement* anElement = NULL;
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
-	int aNbNodes = aRec.node_labels.size();
 	if(IsBeam(aRec.fe_descriptor_id)){
 	  anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
 					    aRec.node_labels[1],
@@ -96,8 +86,8 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	  case 118: // Solid Quadratic Tetrahedron - TET10
 	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[1],
 						aRec.node_labels[2],
+						aRec.node_labels[1],
 						aRec.node_labels[3],
 						aLabel);
 	    break;
@@ -125,28 +115,27 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	    break;
 	    
 	  case 115: // Solid Linear Brick - HEX8
-	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[1],
-						aRec.node_labels[2],
 						aRec.node_labels[3],
+						aRec.node_labels[2],
+						aRec.node_labels[1],
 						aRec.node_labels[4],
-						aRec.node_labels[5],
-						aRec.node_labels[6],
 						aRec.node_labels[7],
+						aRec.node_labels[6],
+						aRec.node_labels[5],
 						aLabel);
 	    break;
 
 	  case 116: // Solid Quadratic Brick - HEX20
 	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[2],
-						aRec.node_labels[4],
 						aRec.node_labels[6],
+						aRec.node_labels[4],
+						aRec.node_labels[2],
 						aRec.node_labels[12],
-						aRec.node_labels[14],
-						aRec.node_labels[16],
 						aRec.node_labels[18],
+						aRec.node_labels[16],
+						aRec.node_labels[14],
 						aLabel);
 	    break;
 	  }

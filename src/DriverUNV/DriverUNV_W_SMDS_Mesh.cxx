@@ -31,6 +31,22 @@
 
 using namespace std;
 
+namespace{
+  typedef std::vector<size_t> TConnect;
+
+  int GetConnect(const SMDS_ElemIteratorPtr& theNodesIter, 
+		 TConnect& theConnect)
+  {
+    theConnect.clear();
+    for(; theNodesIter->more();){
+      const SMDS_MeshElement* anElem = theNodesIter->next();
+      theConnect.push_back(anElem->GetID());
+    }
+    return theConnect.size();
+  }
+  
+}
+
 Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 {
   Status aResult = DRS_OK;
@@ -58,13 +74,15 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
     {
       using namespace UNV2412;
       TDataSet aDataSet2412;
+      TConnect aConnect;
+
       // Storing SMDS Edges
       MESSAGE("Perform - myMesh->NbEdges() = "<<myMesh->NbEdges());
       if(myMesh->NbEdges()){
 	SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
 	for(; anIter->more();){
 	  const SMDS_MeshEdge* anElem = anIter->next();
-	  const TElementLab& aLabel = anElem->GetID();
+	  TElementLab aLabel = anElem->GetID();
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
@@ -78,12 +96,13 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
+
       MESSAGE("Perform - myMesh->NbFaces() = "<<myMesh->NbFaces());
       if(myMesh->NbFaces()){
 	SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
 	for(; anIter->more();){
 	  const SMDS_MeshFace* anElem = anIter->next();
-	  const TElementLab& aLabel = anElem->GetID();
+	  TElementLab aLabel = anElem->GetID();
 	  int aNbNodes = anElem->NbNodes();
 	  TRecord aRec;
 	  aRec.node_labels.reserve(aNbNodes);
@@ -106,36 +125,53 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
+
       MESSAGE("Perform - myMesh->NbVolumes() = "<<myMesh->NbVolumes());
       if(myMesh->NbVolumes()){
 	SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
 	for(; anIter->more();){
 	  const SMDS_MeshVolume* anElem = anIter->next();
-	  const TElementLab& aLabel = anElem->GetID();
+	  TElementLab aLabel = anElem->GetID();
+
 	  int aNbNodes = anElem->NbNodes();
-	  TRecord aRec;
-	  aRec.node_labels.reserve(aNbNodes);
+	  aConnect.resize(aNbNodes);
+
 	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
-	  for(; aNodesIter->more();){
-	    const SMDS_MeshElement* aNode = aNodesIter->next();
-	    aRec.node_labels.push_back(aNode->GetID());
-	  }
+	  GetConnect(aNodesIter,aConnect);
+
+	  int anId = -1;
+	  int* aConn = NULL;
 	  switch(aNbNodes){
-	  case 4:
-	    aRec.fe_descriptor_id = 111;
+	  case 4: {
+	    static int anIds[] = {0,2,1,3};
+	    aConn = anIds;
+	    anId = 111;
 	    break;
-	  case 6:
-	    aRec.fe_descriptor_id = 112;
-	    swap(aRec.node_labels[1],aRec.node_labels[2]);
-	    swap(aRec.node_labels[4],aRec.node_labels[5]);
+	  }
+	  case 6: {
+	    static int anIds[] = {0,2,1,3,5,4};
+	    aConn = anIds;
+	    anId = 112;
 	    break;
-	  case 8:
-	    aRec.fe_descriptor_id = 115;
+	  }
+	  case 8: {
+	    static int anIds[] = {0,3,2,1,4,7,6,5};
+	    aConn = anIds;
+	    anId = 115;
 	    break;
+	  }
 	  default:
 	    continue;
 	  }
-	  aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
+	  if(aConn){
+	    TRecord aRec;
+	    aRec.fe_descriptor_id = anId;
+	    aRec.node_labels.resize(aNbNodes);
+	    for(int aNodeId = 0; aNodeId < aNbNodes; aNodeId++){
+	      aRec.node_labels[aConn[aNodeId]] = aConnect[aNodeId];
+	    }
+	    aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
+	  }
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
