@@ -68,6 +68,16 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
 
     ID_Shell
     };
+
+
+ public: // methods about ids of the block sub-shapes
+
+  static int NbVertices()  { return  8; }
+  static int NbEdges()     { return 12; }
+  static int NbFaces()     { return  6; }
+  static int NbSubShapes() { return ID_Shell; }
+  // to avoid magic numbers when allocating memory for subshapes
+
   static inline bool IsVertexID( int theShapeID )
   { return ( theShapeID >= ID_V000 && theShapeID <= ID_V111 ); }
 
@@ -77,59 +87,17 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   static inline bool IsFaceID( int theShapeID )
   { return ( theShapeID >= ID_Fxy0 && theShapeID <= ID_F1yz ); }
 
-
-  SMESH_Block (): myNbIterations(0), mySumDist(0.) {}
-
-  bool LoadBlockShapes(const TopoDS_Shell&         theShell,
-                       const TopoDS_Vertex&        theVertex000,
-                       const TopoDS_Vertex&        theVertex001,
-//                       TopTools_IndexedMapOfShape& theShapeIDMap
-                       TopTools_IndexedMapOfOrientedShape& theShapeIDMap );
-  // add sub-shapes of theBlock to theShapeIDMap so that they get
-  // IDs acoording to enum TShapeID
-
-  bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
-                     const int                     theNode000Index,
-                     const int                     theNode001Index,
-                     vector<const SMDS_MeshNode*>& theOrderedNodes);
-  // prepare to work with theVolume and
-  // return nodes in the order of TShapeID enum
-
-  static int GetShapeIDByParams ( const gp_XYZ& theParams );
-  // define an id of the block sub-shape by point parameters
-
-  bool VertexPoint( const int theVertexID, gp_XYZ& thePoint ) const {
-    if ( !IsVertexID( theVertexID ))           return false;
-    thePoint = myPnt[ theVertexID - ID_V000 ]; return true;
+  static int ShapeIndex( int theShapeID )
+  {
+    if ( IsVertexID( theShapeID )) return theShapeID - ID_V000;
+    if ( IsEdgeID( theShapeID ))   return theShapeID - ID_Ex00;
+    if ( IsFaceID( theShapeID ))   return theShapeID - ID_Fxy0;
+    return 0;
   }
-  // return vertex coordinates
-
-  bool EdgePoint( const int theEdgeID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
-    if ( !IsEdgeID( theEdgeID ))                                 return false;
-    thePoint = myEdge[ theEdgeID - ID_Ex00 ].Point( theParams ); return true;
-  }
-  // return coordinates of a point on edge
-
-  bool FacePoint( const int theFaceID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
-    if ( !IsFaceID ( theFaceID ))                                return false;
-    thePoint = myFace[ theFaceID - ID_Fxy0 ].Point( theParams ); return true;
-  }
-  // return coordinates of a point on face
-
-  bool ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const;
-  // return coordinates of a point in shell
-
-  bool ComputeParameters (const gp_Pnt& thePoint,
-                          gp_XYZ&       theParams,
-                          const int     theShapeID = ID_Shell);
-  // compute point parameters in the block.
-  // Note: for edges, it is better to use EdgeParameters()
-
-  bool VertexParameters(const int theVertexID, gp_XYZ& theParams);
-  // return parameters of a vertex given by TShapeID
-
-  bool EdgeParameters(const int theEdgeID, const double theU, gp_XYZ& theParams);
-  // return parameters of a point given by theU on edge
+  // return index [0-...] for each type of sub-shapes,
+  // for example :
+  // ShapeIndex( ID_Ex00 ) == 0
+  // ShapeIndex( ID_Ex10 ) == 1
 
   static void GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec );
   // return edges IDs of a face in the order u0, u1, 0v, 1v
@@ -149,8 +117,81 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   // defined by the returned coef like this:
   // ki = (coef[i] == 0) ? 1 : (coef[i] < 0) ? 1 - Pi : Pi
 
-  static bool IsForwardEdge (const TopoDS_Edge &         theEdge, 
-                             //TopTools_IndexedMapOfShape& theShapeIDMap
+  static int GetShapeIDByParams ( const gp_XYZ& theParams );
+  // define an id of the block sub-shape by point parameters
+
+  static ostream& DumpShapeID (const int theBlockShapeID, ostream& stream);
+  // DEBUG: dump an id of a block sub-shape
+
+
+ public: // initialization
+
+  SMESH_Block (): myNbIterations(0), mySumDist(0.) {}
+
+  bool LoadBlockShapes(const TopoDS_Shell&         theShell,
+                       const TopoDS_Vertex&        theVertex000,
+                       const TopoDS_Vertex&        theVertex001,
+                       TopTools_IndexedMapOfOrientedShape& theShapeIDMap );
+  // add sub-shapes of theBlock to theShapeIDMap so that they get
+  // IDs acoording to enum TShapeID
+
+  bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
+                     const int                     theNode000Index,
+                     const int                     theNode001Index,
+                     vector<const SMDS_MeshNode*>& theOrderedNodes);
+  // prepare to work with theVolume and
+  // return nodes in the order of TShapeID enum
+
+
+ public: // define coordinates by parameters
+
+  bool VertexPoint( const int theVertexID, gp_XYZ& thePoint ) const {
+    if ( !IsVertexID( theVertexID ))           return false;
+    thePoint = myPnt[ theVertexID - ID_V000 ]; return true;
+  }
+  // return vertex coordinates, parameters are defined by theVertexID
+
+  bool EdgePoint( const int theEdgeID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
+    if ( !IsEdgeID( theEdgeID ))                                 return false;
+    thePoint = myEdge[ theEdgeID - ID_Ex00 ].Point( theParams ); return true;
+  }
+  // return coordinates of a point on edge
+
+  bool FacePoint( const int theFaceID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
+    if ( !IsFaceID ( theFaceID ))                                return false;
+    thePoint = myFace[ theFaceID - ID_Fxy0 ].Point( theParams ); return true;
+  }
+  // return coordinates of a point on face
+
+  bool ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const;
+  // return coordinates of a point in shell
+
+  static bool ShellPoint(const gp_XYZ&         theParams,
+                         const vector<gp_XYZ>& thePointOnShape,
+                         gp_XYZ&               thePoint );
+  // computes coordinates of a point in shell by points on sub-shapes;
+  // thePointOnShape[ subShapeID ] must be a point on a subShape;
+  // thePointOnShape.size() == ID_Shell, thePointOnShape[0] not used
+
+
+ public: // define parameters by coordinates
+
+  bool ComputeParameters (const gp_Pnt& thePoint,
+                          gp_XYZ&       theParams,
+                          const int     theShapeID = ID_Shell);
+  // compute point parameters in the block.
+  // Note: for edges, it is better to use EdgeParameters()
+
+  bool VertexParameters(const int theVertexID, gp_XYZ& theParams);
+  // return parameters of a vertex given by TShapeID
+
+  bool EdgeParameters(const int theEdgeID, const double theU, gp_XYZ& theParams);
+  // return parameters of a point given by theU on edge
+
+
+ public: // services
+
+  static bool IsForwardEdge (const TopoDS_Edge &                 theEdge,
                              TopTools_IndexedMapOfOrientedShape& theShapeIDMap) {
     int v1ID = theShapeIDMap.FindIndex( TopExp::FirstVertex( theEdge ).Oriented( TopAbs_FORWARD ));
     int v2ID = theShapeIDMap.FindIndex( TopExp::LastVertex( theEdge ).Oriented( TopAbs_FORWARD ));
@@ -160,16 +201,16 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
 
   static void Swap(double& a, double& b) { double tmp = a; a = b; b = tmp; }
 
-  // methods of math_FunctionSetWithDerivatives
+
+ public:
+  // methods of math_FunctionSetWithDerivatives used internally
+  // to define parameters by coordinates
   Standard_Integer NbVariables() const;
   Standard_Integer NbEquations() const;
   Standard_Boolean Value(const math_Vector& X,math_Vector& F) ;
   Standard_Boolean Derivatives(const math_Vector& X,math_Matrix& D) ;
   Standard_Boolean Values(const math_Vector& X,math_Vector& F,math_Matrix& D) ;
   Standard_Integer GetStateNumber ();
-
-  static ostream& DumpShapeID (const int theBlockShapeID, ostream& stream);
-  // DEBUG: dump an id of a block sub-shape
 
  private:
 
