@@ -1,5 +1,6 @@
-This is the version 1.2.2 of SMESH
+This is SMESH V1_3_0_b1
+
 Compatible with :
-	- KERNEL 1.2.1
-	- GEOM 1.2.1
-	- MED 1.2.1
+	GEOM	"2003/11/06 16:33:45 UTC"
+	KERNEL	V1_3_0_b2
+	MED		MergeV1_2c-1

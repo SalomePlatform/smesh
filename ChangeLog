@@ -1,20 +1,186 @@
-2003-09-08 17:04  Jerome Robert <jerome.robert@eads.net>
+###############################################################################
+#This is the SMESH change log. Do not modify because it is automatically
+#created with :
+#cvs2cl.pl -l "-b -rmerge_1_2_c__1_2_2" -U users.cvs2cl --header header.cvs2cl \
+# -T -b --utc
+###############################################################################
+
+2003-11-12 11:40  Jerome Robert <jerome.robert@eads.net>
+
+	* src/OBJECT/SMESH_Actor.cxx: MergeV1_2c-1
+
+2003-11-06 14:43  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI.cxx: NRI : MergeV1_2c-1.
+
+2003-11-06 14:34  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/MEFISTO2/: areteideale.f, trte.f: NRI : Add licence header.
+
+2003-11-06 11:34  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* LICENCE: NRI : add LICENCE file
+
+2003-11-03 15:50  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/Makefile.in: NRI : Relative path !!!!
+
+2003-10-29 13:57  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_SWIG/SMESH_box3_tetra.py: file SMESH_box3_tetra.py was
+	initially added on branch nadir_1_2_2.
+
+2003-10-22 15:28  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: SMDS_Mesh.cxx, SMDS_Mesh.hxx: Fix/implement
+	removeNode, removeEdge, removeFace, removeVolume and removeElement
+
+2003-10-20 16:26  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMESHGUI/SMESHGUI.cxx: When the main window was maximized
+	some dialogs were cropped at the bottom of the screen. It's now
+	fixed.
+
+2003-10-19 11:49  tag MergeV1_2c-1
+
+2003-10-19 11:49  Paul Rascle <paul.rascle@edf.fr>
+
+	* src/: OBJECT/SMESH_Actor.cxx, SMESHGUI/SMESHGUI.cxx
+	(merge_1_2_c__1_2_2): PR: Merge V1_2c - step 1
+
+2003-10-17 16:31  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/SMDS_Mesh.cxx: Fix a bug. Quadrangles were added as
+	triangles.
+
+2003-10-17 12:35  Jerome Robert <jerome.robert@eads.net>
+
+	* cvs-tags: Create branch merge_1_2_c__1_2_2
+
+2003-10-16 13:14  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_SWIG/SMESH_mechanic_tetra.py: file
+	SMESH_mechanic_tetra.py was initially added on branch nadir_1_2_2.
+
+2003-10-16 13:14  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_SWIG/SMESH_box2_tetra.py: file SMESH_box2_tetra.py was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:14  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_SWIG/SMESH_box_tetra.py: file SMESH_box_tetra.py was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:08  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_I/SMESH_Tetra_3D_i.cxx: file SMESH_Tetra_3D_i.cxx was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:08  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH_I/SMESH_Tetra_3D_i.hxx: file SMESH_Tetra_3D_i.hxx was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:07  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH/SMESH_Tetra_3D.cxx: file SMESH_Tetra_3D.cxx was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:07  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* src/SMESH/SMESH_Tetra_3D.hxx: file SMESH_Tetra_3D.hxx was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:06  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* resources/mesh_algo_tetra.png: file mesh_algo_tetra.png was
+	initially added on branch nadir_1_2_2.
+
+2003-10-16 13:06  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* resources/mesh_tree_algo_tetra.png: file mesh_tree_algo_tetra.png
+	was initially added on branch nadir_1_2_2.
+
+2003-10-16 13:03  Nadir Bouhamou <nadir.bouhamou@cea.fr>
+
+	* adm_local/unix/config_files/check_Netgen.m4: file check_Netgen.m4
+	was initially added on branch nadir_1_2_2.
+
+2003-10-06 10:50  Jerome Robert <jerome.robert@eads.net>
+
+	* cvs-tags: Update. Created a new branch for user nadir.
+
+2003-10-02 16:16  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* build_configure: NRI : RedHat 9 compatibility (M. Tajchman).
+
+2003-09-26 15:14  tag V1_2_2
+
+2003-09-26 15:14  Jerome Robert <jerome.robert@eads.net>
+
+	* INSTALL, cvs-tags: Add a tag file to track branch and tag. Update
+	INSTALL to prepare V1_2_2 tag.
+
+2003-09-26 14:21  tag V1_2_1
+
+2003-09-26 14:21  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* INSTALL: NRI : INSTALL file defined into SALOME2_PRODUCTION_CYCLE
+	document.
+
+2003-09-23 14:33  Jerome Robert <jerome.robert@eads.net>
+
+	* src/: SMDS/SMDS_FaceOfEdges.hxx, SMESHDS/SMESHDS_Mesh.hxx,
+	SMDS/SMDS_FaceOfNodes.hxx, SMDS/SMDS_MeshEdge.hxx,
+	SMDS/SMDS_MeshElement.hxx, SMDS/SMDS_Tria3OfNodes.hxx,
+	SMDS/SMDS_VolumeOfFaces.hxx: Keep compatible with gcc 2
+
+2003-09-23 11:52  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI_StudyAPI.cxx: NRI : Display Component
+	UserName and Icon.
+
+2003-09-22 12:23  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/SMDS_IteratorOfArray.hxx: Freshly added file
+
+2003-09-12 15:12  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/: Makefile.in, SMDS_HexahedronOfNodes.cxx,
+	SMDS_HexahedronOfNodes.hxx, SMDS_Mesh.cxx, SMDS_Tria3OfNodes.cxx,
+	SMDS_Tria3OfNodes.hxx: Add HexahedronOfNodes and Tria3OfNodes to
+	improve performance
+
+2003-09-12 15:11  Jerome Robert <jerome.robert@eads.net>
+
+	* src/SMDS/SMDS_VolumeOfNodes.cxx: Fix bug. Was always printing 8
+	nodes
+
+2003-09-08 15:11  Jerome Robert <jerome.robert@eads.net>
+
+	* ChangeLog: update
+
+2003-09-08 15:04  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: SMDS_Mesh.cxx, SMDS_VolumeOfNodes.cxx,
 	SMDS_VolumeOfNodes.hxx: Add support for tetra, pyramid and prism
+
+2003-09-08 13:41  Jerome Robert <jerome.robert@eads.net>
+
 	* src/SMDS/: SMDS_Mesh.cxx, SMDS_MeshElement.cxx: Add some comments
 
-2003-09-05 14:19  Jerome Robert <jerome.robert@eads.net>
+2003-09-05 12:19  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/SMDS_MeshNode.cxx: Some forgotten return statments
 
-2003-09-05 13:45  Jerome Robert <jerome.robert@eads.net>
+2003-09-05 11:45  Jerome Robert <jerome.robert@eads.net>
 
 	* src/: DriverDAT/DriverDAT_W_SMESHDS_Mesh.cxx,
 	DriverMED/DriverMED_W_SMESHDS_Mesh.cxx, SMESH/SMESH_Hexa_3D.cxx:
 	Correct some memory leaks
 
-2003-09-05 12:31  Jerome Robert <jerome.robert@eads.net>
+2003-09-05 10:31  Jerome Robert <jerome.robert@eads.net>
 
 	* src/: DriverMED/DriverMED_W_SMESHDS_Mesh.cxx,
 	SMESH/SMESH_Hexa_3D.cxx, SMESH/SMESH_Hexa_3D.hxx,
@@ -25,10 +191,13 @@
 	SMESHDS/SMESHDS_SubMesh.cxx, SMESHDS/SMESHDS_SubMesh.hxx,
 	SMESH_I/SMESH_MEDSupport_i.cxx, SMESH_I/SMESH_MeshEditor_i.cxx: Use
 	nodes and elements pointer instead on IDs
+
+2003-09-05 10:20  Jerome Robert <jerome.robert@eads.net>
+
 	* src/SMDS/: SMDS_Mesh.cxx, SMDS_Mesh.hxx: Change API to use
 	pointer on elements and no longer ID of elements
 
-2003-09-04 17:04  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 15:04  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHDS/: Handle_SMESHDS_Command.hxx,
 	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx,
@@ -94,7 +263,7 @@
 	SMESHDS_Script.jxx, SMESHDS_SubMesh.cdl, SMESHDS_SubMesh.ixx,
 	SMESHDS_SubMesh.jxx: Remove no longer needed files
 
-2003-09-04 16:50  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 14:50  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: Handle_SMDSControl_BoundaryEdges.hxx,
 	Handle_SMDSControl_BoundaryFaces.hxx,
@@ -235,21 +404,21 @@
 	SMDS_VertexPosition.cdl, SMDS_VertexPosition.ixx,
 	SMDS_VertexPosition.jxx: Remove no longer needed files
 
-2003-09-04 16:09  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 14:09  Jerome Robert <jerome.robert@eads.net>
 
 	* ChangeLog: Add a ChangeLog file
 
-2003-09-04 15:28  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 13:28  Jerome Robert <jerome.robert@eads.net>
 
 	* build_configure: It seems "make_omniorb" and "make_commence" need
 	to be before and after "envScript"
 
-2003-09-04 14:57  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 12:57  Jerome Robert <jerome.robert@eads.net>
 
 	* build_configure: make_commence and make_omniorb were detected
 	twice. Only one is requiered in AC_OUTPUT
 
-2003-09-04 14:03  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 12:03  Jerome Robert <jerome.robert@eads.net>
 
 	* src/: DriverDAT/DriverDAT_R_SMDS_Mesh.cxx,
 	DriverDAT/DriverDAT_R_SMDS_Mesh.h,
@@ -283,22 +452,22 @@
 	DriverUNV/DriverUNV_W_SMESHDS_Mesh.h: Update to match the changes
 	in SMDS
 
-2003-09-04 13:03  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 11:03  Jerome Robert <jerome.robert@eads.net>
 
 	* src/: DriverDAT/Makefile.in, DriverMED/Makefile.in,
 	DriverUNV/Makefile.in: Remove OCC_LIBS from LDFLAGS
 
-2003-09-04 12:56  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 10:56  Jerome Robert <jerome.robert@eads.net>
 
 	* src/Driver/: Document_Reader.cxx, Document_Reader.h,
 	Document_Writer.cxx, Document_Writer.h, Mesh_Reader.h,
 	Mesh_Writer.h: Update to mach the changes in SMDS
 
-2003-09-04 12:44  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 10:44  Jerome Robert <jerome.robert@eads.net>
 
 	* src/Driver/Makefile.in: Remove OCC_LIBS from LDFLAGS
 
-2003-09-04 12:41  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 10:41  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH_I/: SMESH_Gen_i.cxx, SMESH_MEDMesh_i.cxx,
 	SMESH_MEDMesh_i.hxx, SMESH_MEDSupport_i.cxx,
@@ -306,26 +475,26 @@
 	SMESH_MeshEditor_i.hxx, SMESH_Mesh_i.cxx: Update to match the new
 	implementation of SMDS
 
-2003-09-04 12:10  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 10:10  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/SMESH_MaxElementArea.cxx: make GetMaxArea const
 
-2003-09-04 12:10  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 10:10  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/: SMESH_MEFISTO_2D.hxx, SMESH_Regular_1D.hxx: make
 	hypothesis const
 
-2003-09-04 11:55  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 09:55  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/SMESH_Hexa_3D.hxx: Update to match the change of SMDS
 	(new DS).
 
-2003-09-04 11:51  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 09:51  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH_I/sstream: Use the file include in gcc instead of this
 	one
 
-2003-09-04 11:21  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 09:21  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/: SMESH_Algo.cxx, SMESH_Algo.hxx, SMESH_Gen.cxx,
 	SMESH_Gen.hxx, SMESH_Hexa_3D.cxx, SMESH_MEFISTO_2D.cxx,
@@ -333,36 +502,36 @@
 	SMESH_Quadrangle_2D.cxx, SMESH_Regular_1D.cxx, SMESH_subMesh.cxx,
 	SMESH_subMesh.hxx: Update to match the change of SMDS (new DS).
 
-2003-09-04 11:13  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 09:13  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/: SMESH_NumberOfSegments.cxx,
 	SMESH_NumberOfSegments.hxx: make GetNumberOfSegments and
 	GetScaleFactor const
 
-2003-09-04 11:10  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 09:10  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESH/: SMESH_LocalLength.cxx, SMESH_LocalLength.hxx: make
 	GetLength const
 
-2003-09-04 10:09  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 08:09  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHFiltersSelection/Makefile.in: Change OCC_LIBS to
 	OCC_KERNEL_LIBS
 
-2003-09-04 09:55  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 07:55  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHGUI/Makefile.in: Change OCC_LIBS to OCC_KERNEL_LIBS
 
-2003-09-04 09:39  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 07:39  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHGUI/: SMESHGUI.cxx, SMESHGUI.h: Change
 	Handle(SMESHDS_Document) to SMESHDS_Document*
 
-2003-09-04 09:21  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 07:21  Jerome Robert <jerome.robert@eads.net>
 
 	* src/MEFISTO2/Makefile.in: Remove OCC_LIBS from LDFLAGS
 
-2003-09-04 09:14  Jerome Robert <jerome.robert@eads.net>
+2003-09-04 07:14  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHDS/: Makefile.in, SMESHDS_Command.cxx,
 	SMESHDS_Command.hxx, SMESHDS_Document.cxx, SMESHDS_Document.hxx,
@@ -371,11 +540,11 @@
 	SMESHDS_SubMesh.cxx, SMESHDS_SubMesh.hxx: Remove Opencascade
 	dependencies. Change to STL.
 
-2003-09-03 19:31  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:31  Jerome Robert <jerome.robert@eads.net>
 
 	* src/OBJECT/Makefile.in: Change OCC_LIBS to OCC_KERNEL_LIBS
 
-2003-09-03 19:30  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:30  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: SMDS_Mesh.cxx, SMDS_Mesh.hxx, SMDS_MeshEdge.cxx,
 	SMDS_MeshEdge.hxx, SMDS_MeshElement.cxx, SMDS_MeshElement.hxx,
@@ -383,7 +552,7 @@
 	SMDS_MeshVolume.hxx, SMDS_MeshFace.cxx, SMDS_MeshFace.hxx: New DS
 	implementation
 
-2003-09-03 19:29  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:29  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: SMDS_EdgePosition.cxx, SMDS_EdgePosition.hxx,
 	SMDS_FacePosition.cxx, SMDS_FacePosition.hxx,
@@ -395,24 +564,1099 @@
 	SMDS_VertexPosition.cxx, SMDS_VertexPosition.hxx: Remove
 	Opencascade dependencies
 
-2003-09-03 19:21  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:21  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/SMDSAbs_ElementType.hxx: comments
 
-2003-09-03 19:21  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:21  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: SMDS_Iterator.hxx, SMDS_IteratorOfElements.cxx,
 	SMDS_IteratorOfElements.hxx: Add iterator classes
 
-2003-09-03 19:16  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:16  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/Makefile.in: Remove wok files. Comment no longer needed
 	files
 
-2003-09-03 19:09  Jerome Robert <jerome.robert@eads.net>
+2003-09-03 17:09  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMDS/: SMDS_FaceOfEdges.cxx, SMDS_FaceOfEdges.hxx,
 	SMDS_FaceOfNodes.cxx, SMDS_FaceOfNodes.hxx, SMDS_VolumeOfFaces.cxx,
 	SMDS_VolumeOfFaces.hxx, SMDS_VolumeOfNodes.cxx,
 	SMDS_VolumeOfNodes.hxx: Add needed class for the new DS
+
+2003-07-18 12:19  tag V_06092003
+
+2003-07-18 12:19  tag V_07092003
+
+2003-07-18 12:19  tag V_03092003
+
+2003-07-18 12:19  tag V_16092003
+
+2003-07-18 12:19  tag V_14092003
+
+2003-07-18 12:19  tag V_12092003
+
+2003-07-18 12:19  tag V_11092003
+
+2003-07-18 12:19  tag V_10092003
+
+2003-07-18 12:19  tag V_13092003
+
+2003-07-18 12:19  tag V_09092003
+
+2003-07-18 12:19  tag V_02092003
+
+2003-07-18 12:19  tag V_04092003
+
+2003-07-18 12:19  tag V_17092003
+
+2003-07-18 12:19  tag V_08092003
+
+2003-07-18 12:19  tag V_18092003
+
+2003-07-18 12:19  tag V_15092003
+
+2003-07-18 12:19  tag V_05092003
+
+2003-07-18 12:19  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI_StudyAPI.cxx: NRI : correction wrong merge.
+
+2003-07-11 07:32  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* bin/VERSION, doc/html/Makefile.in, doc/html/INPUT/doxyfile: NRI :
+	Merge from V1_2.
+
+2003-07-10 17:51  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* configure.in.base: NRI : Merge from V1_2.
+
+2003-07-10 16:31  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/: SMESHGUI_Swig.cxx, SMESHGUI_Swig.i: NRI : Merge
+	from V1_2.
+
+2003-07-10 16:06  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI_Swig.cxx: NRI : Merge from V1_2.
+
+2003-07-10 15:36  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/Driver/Makefile.in: NRI : Merge from V1_2.
+
+2003-07-10 15:14  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* adm_local/unix/make_commence.in: NRI : Merge from V1_2.
+
+2003-07-10 15:09  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* idl/: SMESH_BasicHypothesis.idl, SMESH_Gen.idl,
+	SMESH_Hypothesis.idl, SMESH_Mesh.idl: NRI : Merge from V1_2.
+
+2003-07-10 15:03  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: SMESH/Makefile.in, SMESH_I/Makefile.in: NRI : Merge from
+	V1_2.
+
+2003-07-10 14:47  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* configure.in.base: NRI : Merge from V1_2.
+
+2003-07-10 14:31  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/Driver/Makefile.in: NRI : Merge from V1_2.
+
+2003-07-10 13:41  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESH_SWIG/: Makefile.in, SMESH_fixation.py,
+	SMESH_mechanic.py, SMESH_test0.py, SMESH_test1.py, SMESH_test2.py,
+	SMESH_test3.py, batchmode_smesh.py, libSMESH_Swig.i: yfr : merge
+	1.2
+
+2003-07-10 13:35  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESH_I/: Makefile.in, SMESH_1D_Algo_i.cxx,
+	SMESH_1D_Algo_i.hxx, SMESH_2D_Algo_i.cxx, SMESH_2D_Algo_i.hxx,
+	SMESH_3D_Algo_i.cxx, SMESH_3D_Algo_i.hxx, SMESH_Algo_i.cxx,
+	SMESH_Algo_i.hxx, SMESH_Gen_i.cxx, SMESH_Gen_i.hxx,
+	SMESH_Hexa_3D_i.cxx, SMESH_Hexa_3D_i.hxx,
+	SMESH_HypothesisFactory_i.cxx, SMESH_HypothesisFactory_i.hxx,
+	SMESH_Hypothesis_i.cxx, SMESH_Hypothesis_i.hxx,
+	SMESH_LocalLength_i.cxx, SMESH_LocalLength_i.hxx,
+	SMESH_MEDFamily_i.cxx, SMESH_MEDFamily_i.hxx, SMESH_MEDMesh_i.cxx,
+	SMESH_MEDMesh_i.hxx, SMESH_MEDSupport_i.cxx,
+	SMESH_MEDSupport_i.hxx, SMESH_MEFISTO_2D_i.cxx,
+	SMESH_MEFISTO_2D_i.hxx, SMESH_MaxElementArea_i.cxx,
+	SMESH_MaxElementArea_i.hxx, SMESH_MaxElementVolume_i.cxx,
+	SMESH_MaxElementVolume_i.hxx, SMESH_MeshEditor_i.cxx,
+	SMESH_MeshEditor_i.hxx, SMESH_Mesh_i.cxx, SMESH_Mesh_i.hxx,
+	SMESH_NumberOfSegments_i.cxx, SMESH_NumberOfSegments_i.hxx,
+	SMESH_Quadrangle_2D_i.cxx, SMESH_Quadrangle_2D_i.hxx,
+	SMESH_Regular_1D_i.cxx, SMESH_Regular_1D_i.hxx,
+	SMESH_subMesh_i.cxx, SMESH_subMesh_i.hxx, SMESH_test.py,
+	SMESH_topo.cxx, SMESH_topo.hxx, smeshpy.py: yfr : merge 1.2
+
+2003-07-10 13:18  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESHGUI/: SMESHGUI.h, SMESHGUI_AddAlgorithmDlg.cxx,
+	SMESHGUI_AddAlgorithmDlg.h, SMESHGUI_AddEdgeDlg.cxx,
+	SMESHGUI_AddEdgeDlg.h, SMESHGUI_AddFaceDlg.cxx,
+	SMESHGUI_AddFaceDlg.h, SMESHGUI_AddHypothesisDlg.cxx,
+	SMESHGUI_AddHypothesisDlg.h, SMESHGUI_AddSubMeshDlg.cxx,
+	SMESHGUI_AddSubMeshDlg.h, SMESHGUI_AddVolumeDlg.cxx,
+	SMESHGUI_AddVolumeDlg.h, SMESHGUI_ComputeScalarValue.cxx,
+	SMESHGUI_ComputeScalarValue.h, SMESHGUI_DiagonalInversionDlg.cxx,
+	SMESHGUI_DiagonalInversionDlg.h, SMESHGUI_EdgesConnectivityDlg.cxx,
+	SMESHGUI_EdgesConnectivityDlg.h, SMESHGUI_EditHypothesesDlg.cxx,
+	SMESHGUI_EditHypothesesDlg.h, SMESHGUI_EditScalarBarDlg.cxx,
+	SMESHGUI_EditScalarBarDlg.h, SMESHGUI_InitMeshDlg.cxx,
+	SMESHGUI_InitMeshDlg.h, SMESHGUI_LocalLengthDlg.cxx,
+	SMESHGUI_LocalLengthDlg.h, SMESHGUI_MaxElementAreaDlg.cxx,
+	SMESHGUI_MaxElementAreaDlg.h, SMESHGUI_MaxElementVolumeDlg.cxx,
+	SMESHGUI_MaxElementVolumeDlg.h, SMESHGUI_MeshInfosDlg.cxx,
+	SMESHGUI_MeshInfosDlg.h, SMESHGUI_MoveNodesDlg.cxx,
+	SMESHGUI_MoveNodesDlg.h, SMESHGUI_NbSegmentsDlg.cxx,
+	SMESHGUI_NbSegmentsDlg.h, SMESHGUI_NodesDlg.cxx,
+	SMESHGUI_NodesDlg.h, SMESHGUI_OrientationElementsDlg.cxx,
+	SMESHGUI_OrientationElementsDlg.h,
+	SMESHGUI_Preferences_ColorDlg.cxx, SMESHGUI_Preferences_ColorDlg.h,
+	SMESHGUI_Preferences_ScalarBarDlg.cxx,
+	SMESHGUI_Preferences_ScalarBarDlg.h,
+	SMESHGUI_RemoveElementsDlg.cxx, SMESHGUI_RemoveElementsDlg.h,
+	SMESHGUI_RemoveNodesDlg.cxx, SMESHGUI_RemoveNodesDlg.h,
+	SMESHGUI_SpinBox.cxx, SMESHGUI_SpinBox.h, SMESHGUI_StudyAPI.cxx,
+	SMESHGUI_StudyAPI.h, SMESHGUI_Swig.cxx, SMESHGUI_Swig.hxx,
+	SMESHGUI_Swig.i, SMESHGUI_TransparencyDlg.cxx,
+	SMESHGUI_TransparencyDlg.h, SMESHGUI_aParameterDlg.cxx,
+	SMESHGUI_aParameterDlg.h: yfr : merge 1.2
+
+2003-07-10 12:28  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI.cxx: yfr : Merge V1.2
+
+2003-07-10 12:18  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESHGUI/Makefile.in: yfr : Merge V1.2
+
+2003-07-10 11:35  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESHFiltersSelection/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 10:13  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESH/: SMESH_1D_Algo.cxx, SMESH_1D_Algo.hxx,
+	SMESH_2D_Algo.cxx, SMESH_2D_Algo.hxx, SMESH_3D_Algo.cxx,
+	SMESH_3D_Algo.hxx, SMESH_Algo.cxx, SMESH_Algo.hxx, SMESH_Gen.cxx,
+	SMESH_Gen.hxx, SMESH_Hexa_3D.cxx, SMESH_Hexa_3D.hxx,
+	SMESH_Hypothesis.cxx, SMESH_Hypothesis.hxx,
+	SMESH_HypothesisCreator.hxx, SMESH_HypothesisFactory.cxx,
+	SMESH_HypothesisFactory.hxx, SMESH_LengthFromEdges.cxx,
+	SMESH_LengthFromEdges.hxx, SMESH_LocalLength.cxx,
+	SMESH_LocalLength.hxx, SMESH_MEFISTO_2D.cxx, SMESH_MEFISTO_2D.hxx,
+	SMESH_MaxElementArea.cxx, SMESH_MaxElementArea.hxx,
+	SMESH_MaxElementVolume.cxx, SMESH_MaxElementVolume.hxx,
+	SMESH_Mesh.cxx, SMESH_Mesh.hxx, SMESH_NumberOfSegments.cxx,
+	SMESH_NumberOfSegments.hxx, SMESH_Quadrangle_2D.cxx,
+	SMESH_Quadrangle_2D.hxx, SMESH_Regular_1D.cxx,
+	SMESH_Regular_1D.hxx, SMESH_subMesh.cxx, SMESH_subMesh.hxx: yfr :
+	Merge with v1.2
+
+2003-07-10 10:08  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESH/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 10:04  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMESHDS/: Handle_SMESHDS_Command.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx,
+	Handle_SMESHDS_Document.hxx,
+	Handle_SMESHDS_ListNodeOfListOfAsciiString.hxx,
+	Handle_SMESHDS_ListNodeOfListOfCommand.hxx,
+	Handle_SMESHDS_ListNodeOfListOfPtrHypothesis.hxx,
+	Handle_SMESHDS_Mesh.hxx, Handle_SMESHDS_Script.hxx,
+	Handle_SMESHDS_SubMesh.hxx, Makefile.in, SMESHDS.cdl,
+	SMESHDS_Command.cdl, SMESHDS_Command.cxx, SMESHDS_Command.hxx,
+	SMESHDS_Command.ixx, SMESHDS_Command.jxx, SMESHDS_CommandType.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh_0.cxx,
+	SMESHDS_DataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_DataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapOfShapeSubMesh_0.cxx, SMESHDS_Document.cdl,
+	SMESHDS_Document.cxx, SMESHDS_Document.hxx, SMESHDS_Document.ixx,
+	SMESHDS_Document.jxx, SMESHDS_Hypothesis.cxx,
+	SMESHDS_Hypothesis.hxx,
+	SMESHDS_ListIteratorOfListOfAsciiString.hxx,
+	SMESHDS_ListIteratorOfListOfAsciiString_0.cxx,
+	SMESHDS_ListIteratorOfListOfCommand.hxx,
+	SMESHDS_ListIteratorOfListOfCommand_0.cxx,
+	SMESHDS_ListIteratorOfListOfPtrHypothesis.hxx,
+	SMESHDS_ListIteratorOfListOfPtrHypothesis_0.cxx,
+	SMESHDS_ListNodeOfListOfAsciiString.hxx,
+	SMESHDS_ListNodeOfListOfAsciiString_0.cxx,
+	SMESHDS_ListNodeOfListOfCommand.hxx,
+	SMESHDS_ListNodeOfListOfCommand_0.cxx,
+	SMESHDS_ListNodeOfListOfPtrHypothesis.hxx,
+	SMESHDS_ListNodeOfListOfPtrHypothesis_0.cxx,
+	SMESHDS_ListOfAsciiString.hxx, SMESHDS_ListOfAsciiString_0.cxx,
+	SMESHDS_ListOfCommand.hxx, SMESHDS_ListOfCommand_0.cxx,
+	SMESHDS_ListOfPtrHypothesis.hxx, SMESHDS_ListOfPtrHypothesis_0.cxx,
+	SMESHDS_Mesh.cdl, SMESHDS_Mesh.cxx, SMESHDS_Mesh.hxx,
+	SMESHDS_Mesh.ixx, SMESHDS_Mesh.jxx, SMESHDS_PtrHypothesis.hxx,
+	SMESHDS_Script.cdl, SMESHDS_Script.cxx, SMESHDS_Script.hxx,
+	SMESHDS_Script.ixx, SMESHDS_Script.jxx, SMESHDS_SubMesh.cdl,
+	SMESHDS_SubMesh.cxx, SMESHDS_SubMesh.hxx, SMESHDS_SubMesh.ixx,
+	SMESHDS_SubMesh.jxx: yfr : Merge with v1.2
+
+2003-07-10 09:49  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/SMDS/: Handle_SMDSControl_BoundaryEdges.hxx,
+	Handle_SMDSControl_BoundaryFaces.hxx,
+	Handle_SMDSControl_MeshBoundary.hxx,
+	Handle_SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx,
+	Handle_SMDS_DataMapNodeOfDataMapOfPntInteger.hxx,
+	Handle_SMDS_EdgePosition.hxx, Handle_SMDS_FacePosition.hxx,
+	Handle_SMDS_HSequenceOfMesh.hxx,
+	Handle_SMDS_ListNodeOfListOfMesh.hxx,
+	Handle_SMDS_ListNodeOfListOfMeshElement.hxx,
+	Handle_SMDS_ListNodeOfListOfMeshGroup.hxx, Handle_SMDS_Mesh.hxx,
+	Handle_SMDS_MeshEdge.hxx, Handle_SMDS_MeshElement.hxx,
+	Handle_SMDS_MeshElementIDFactory.hxx, Handle_SMDS_MeshFace.hxx,
+	Handle_SMDS_MeshGroup.hxx, Handle_SMDS_MeshHexahedron.hxx,
+	Handle_SMDS_MeshIDFactory.hxx, Handle_SMDS_MeshNode.hxx,
+	Handle_SMDS_MeshNodeIDFactory.hxx, Handle_SMDS_MeshObject.hxx,
+	Handle_SMDS_MeshPrism.hxx, Handle_SMDS_MeshPyramid.hxx,
+	Handle_SMDS_MeshQuadrangle.hxx, Handle_SMDS_MeshTetrahedron.hxx,
+	Handle_SMDS_MeshTriangle.hxx, Handle_SMDS_MeshVolume.hxx,
+	Handle_SMDS_Position.hxx,
+	Handle_SMDS_SequenceNodeOfSequenceOfMesh.hxx,
+	Handle_SMDS_SpacePosition.hxx,
+	Handle_SMDS_StdMapNodeOfExtendedMap.hxx,
+	Handle_SMDS_StdMapNodeOfExtendedOrientedMap.hxx,
+	Handle_SMDS_VertexPosition.hxx, Makefile.in, SMDS.cdl, SMDSAbs.cdl,
+	SMDSAbs_ElementType.hxx, SMDSControl.cdl, SMDSControl.cxx,
+	SMDSControl.hxx, SMDSControl.ixx, SMDSControl.jxx,
+	SMDSControl_BoundaryEdges.cdl, SMDSControl_BoundaryEdges.cxx,
+	SMDSControl_BoundaryEdges.hxx, SMDSControl_BoundaryEdges.ixx,
+	SMDSControl_BoundaryEdges.jxx, SMDSControl_BoundaryFaces.cdl,
+	SMDSControl_BoundaryFaces.cxx, SMDSControl_BoundaryFaces.hxx,
+	SMDSControl_BoundaryFaces.ixx, SMDSControl_BoundaryFaces.jxx,
+	SMDSControl_MeshBoundary.cdl, SMDSControl_MeshBoundary.cxx,
+	SMDSControl_MeshBoundary.hxx, SMDSControl_MeshBoundary.ixx,
+	SMDSControl_MeshBoundary.jxx, SMDSEdit.cdl, SMDSEdit_Transform.cdl,
+	SMDSEdit_Transform.cxx, SMDSEdit_Transform.hxx,
+	SMDSEdit_Transform.ixx, SMDSEdit_Transform.jxx, SMDS_BasicMap.lxx,
+	SMDS_BasicMapIterator.lxx,
+	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapIteratorOfDataMapOfPntInteger.hxx,
+	SMDS_DataMapIteratorOfDataMapOfPntInteger_0.cxx,
+	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapNodeOfDataMapOfPntInteger.hxx,
+	SMDS_DataMapNodeOfDataMapOfPntInteger_0.cxx,
+	SMDS_DataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapOfPntInteger.hxx, SMDS_DataMapOfPntInteger_0.cxx,
+	SMDS_EdgePosition.cdl, SMDS_EdgePosition.cxx,
+	SMDS_EdgePosition.hxx, SMDS_EdgePosition.ixx,
+	SMDS_EdgePosition.jxx, SMDS_EdgePosition.lxx, SMDS_ExtendedMap.hxx,
+	SMDS_ExtendedMap_0.cxx, SMDS_ExtendedOrientedMap.hxx,
+	SMDS_ExtendedOrientedMap_0.cxx, SMDS_FacePosition.cdl,
+	SMDS_FacePosition.cxx, SMDS_FacePosition.hxx,
+	SMDS_FacePosition.ixx, SMDS_FacePosition.jxx,
+	SMDS_FacePosition.lxx, SMDS_HSequenceOfMesh.hxx,
+	SMDS_HSequenceOfMesh_0.cxx, SMDS_ListIteratorOfListOfMesh.hxx,
+	SMDS_ListIteratorOfListOfMeshElement.hxx,
+	SMDS_ListIteratorOfListOfMeshElement_0.cxx,
+	SMDS_ListIteratorOfListOfMeshGroup.hxx,
+	SMDS_ListIteratorOfListOfMeshGroup_0.cxx,
+	SMDS_ListIteratorOfListOfMesh_0.cxx, SMDS_ListNodeOfListOfMesh.hxx,
+	SMDS_ListNodeOfListOfMeshElement.hxx,
+	SMDS_ListNodeOfListOfMeshElement_0.cxx,
+	SMDS_ListNodeOfListOfMeshGroup.hxx,
+	SMDS_ListNodeOfListOfMeshGroup_0.cxx,
+	SMDS_ListNodeOfListOfMesh_0.cxx, SMDS_ListOfMesh.hxx,
+	SMDS_ListOfMeshElement.hxx, SMDS_ListOfMeshElement_0.cxx,
+	SMDS_ListOfMeshGroup.hxx, SMDS_ListOfMeshGroup_0.cxx,
+	SMDS_ListOfMesh_0.cxx, SMDS_MapIteratorOfExtendedMap.hxx,
+	SMDS_MapIteratorOfExtendedMap_0.cxx,
+	SMDS_MapIteratorOfExtendedOrientedMap.hxx,
+	SMDS_MapIteratorOfExtendedOrientedMap_0.cxx, SMDS_MapNode.lxx,
+	SMDS_MapOfMeshElement.cdl, SMDS_MapOfMeshElement.cxx,
+	SMDS_MapOfMeshElement.hxx, SMDS_MapOfMeshElement.ixx,
+	SMDS_MapOfMeshElement.jxx, SMDS_MapOfMeshElement.lxx,
+	SMDS_MapOfMeshOrientedElement.cdl,
+	SMDS_MapOfMeshOrientedElement.cxx,
+	SMDS_MapOfMeshOrientedElement.hxx,
+	SMDS_MapOfMeshOrientedElement.ixx,
+	SMDS_MapOfMeshOrientedElement.jxx,
+	SMDS_MapOfMeshOrientedElement.lxx, SMDS_Mesh.cdl, SMDS_Mesh.cxx,
+	SMDS_Mesh.hxx, SMDS_Mesh.ixx, SMDS_Mesh.jxx, SMDS_Mesh.lxx,
+	SMDS_MeshEdge.cdl, SMDS_MeshEdge.cxx, SMDS_MeshEdge.hxx,
+	SMDS_MeshEdge.ixx, SMDS_MeshEdge.jxx, SMDS_MeshEdge.lxx,
+	SMDS_MeshEdgesIterator.cdl, SMDS_MeshEdgesIterator.cxx,
+	SMDS_MeshEdgesIterator.hxx, SMDS_MeshEdgesIterator.ixx,
+	SMDS_MeshEdgesIterator.jxx, SMDS_MeshElement.cdl,
+	SMDS_MeshElement.cxx, SMDS_MeshElement.hxx, SMDS_MeshElement.ixx,
+	SMDS_MeshElement.jxx, SMDS_MeshElement.lxx,
+	SMDS_MeshElementIDFactory.cdl, SMDS_MeshElementIDFactory.cxx,
+	SMDS_MeshElementIDFactory.hxx, SMDS_MeshElementIDFactory.ixx,
+	SMDS_MeshElementIDFactory.jxx, SMDS_MeshElementIDFactory.lxx,
+	SMDS_MeshElementMapHasher.cdl, SMDS_MeshElementMapHasher.cxx,
+	SMDS_MeshElementMapHasher.hxx, SMDS_MeshElementMapHasher.ixx,
+	SMDS_MeshElementMapHasher.jxx, SMDS_MeshElementMapHasher.lxx,
+	SMDS_MeshElementsIterator.cdl, SMDS_MeshElementsIterator.cxx,
+	SMDS_MeshElementsIterator.hxx, SMDS_MeshElementsIterator.ixx,
+	SMDS_MeshElementsIterator.jxx, SMDS_MeshElementsIterator.lxx,
+	SMDS_MeshFace.cdl, SMDS_MeshFace.cxx, SMDS_MeshFace.hxx,
+	SMDS_MeshFace.ixx, SMDS_MeshFace.jxx, SMDS_MeshFace.lxx,
+	SMDS_MeshFacesIterator.cdl, SMDS_MeshFacesIterator.cxx,
+	SMDS_MeshFacesIterator.hxx, SMDS_MeshFacesIterator.ixx,
+	SMDS_MeshFacesIterator.jxx, SMDS_MeshGroup.cdl, SMDS_MeshGroup.cxx,
+	SMDS_MeshGroup.hxx, SMDS_MeshGroup.ixx, SMDS_MeshGroup.jxx,
+	SMDS_MeshGroup.lxx, SMDS_MeshHexahedron.cdl,
+	SMDS_MeshHexahedron.cxx, SMDS_MeshHexahedron.hxx,
+	SMDS_MeshHexahedron.ixx, SMDS_MeshHexahedron.jxx,
+	SMDS_MeshHexahedron.lxx, SMDS_MeshIDFactory.cdl,
+	SMDS_MeshIDFactory.cxx, SMDS_MeshIDFactory.hxx,
+	SMDS_MeshIDFactory.ixx, SMDS_MeshIDFactory.jxx,
+	SMDS_MeshIDFactory.lxx, SMDS_MeshNode.cdl, SMDS_MeshNode.cxx,
+	SMDS_MeshNode.hxx, SMDS_MeshNode.ixx, SMDS_MeshNode.jxx,
+	SMDS_MeshNode.lxx, SMDS_MeshNodeIDFactory.cdl,
+	SMDS_MeshNodeIDFactory.cxx, SMDS_MeshNodeIDFactory.hxx,
+	SMDS_MeshNodeIDFactory.ixx, SMDS_MeshNodeIDFactory.jxx,
+	SMDS_MeshNodeIDFactory.lxx, SMDS_MeshNodesIterator.cdl,
+	SMDS_MeshNodesIterator.cxx, SMDS_MeshNodesIterator.hxx,
+	SMDS_MeshNodesIterator.ixx, SMDS_MeshNodesIterator.jxx,
+	SMDS_MeshObject.cdl, SMDS_MeshObject.cxx, SMDS_MeshObject.hxx,
+	SMDS_MeshObject.ixx, SMDS_MeshObject.jxx,
+	SMDS_MeshOrientedElementMapHasher.cdl,
+	SMDS_MeshOrientedElementMapHasher.cxx,
+	SMDS_MeshOrientedElementMapHasher.hxx,
+	SMDS_MeshOrientedElementMapHasher.ixx,
+	SMDS_MeshOrientedElementMapHasher.jxx,
+	SMDS_MeshOrientedElementMapHasher.lxx, SMDS_MeshPrism.cdl,
+	SMDS_MeshPrism.cxx, SMDS_MeshPrism.hxx, SMDS_MeshPrism.ixx,
+	SMDS_MeshPrism.jxx, SMDS_MeshPrism.lxx, SMDS_MeshPyramid.cdl,
+	SMDS_MeshPyramid.cxx, SMDS_MeshPyramid.hxx, SMDS_MeshPyramid.ixx,
+	SMDS_MeshPyramid.jxx, SMDS_MeshPyramid.lxx,
+	SMDS_MeshQuadrangle.cdl, SMDS_MeshQuadrangle.cxx,
+	SMDS_MeshQuadrangle.hxx, SMDS_MeshQuadrangle.ixx,
+	SMDS_MeshQuadrangle.jxx, SMDS_MeshQuadrangle.lxx,
+	SMDS_MeshTetrahedron.cdl, SMDS_MeshTetrahedron.cxx,
+	SMDS_MeshTetrahedron.hxx, SMDS_MeshTetrahedron.ixx,
+	SMDS_MeshTetrahedron.jxx, SMDS_MeshTetrahedron.lxx,
+	SMDS_MeshTriangle.cdl, SMDS_MeshTriangle.cxx,
+	SMDS_MeshTriangle.hxx, SMDS_MeshTriangle.ixx,
+	SMDS_MeshTriangle.jxx, SMDS_MeshTriangle.lxx, SMDS_MeshVolume.cdl,
+	SMDS_MeshVolume.cxx, SMDS_MeshVolume.hxx, SMDS_MeshVolume.ixx,
+	SMDS_MeshVolume.jxx, SMDS_MeshVolume.lxx,
+	SMDS_MeshVolumesIterator.cdl, SMDS_MeshVolumesIterator.cxx,
+	SMDS_MeshVolumesIterator.hxx, SMDS_MeshVolumesIterator.ixx,
+	SMDS_MeshVolumesIterator.jxx, SMDS_PntHasher.cdl,
+	SMDS_PntHasher.cxx, SMDS_PntHasher.hxx, SMDS_PntHasher.ixx,
+	SMDS_PntHasher.jxx, SMDS_PntHasher.lxx, SMDS_Position.cdl,
+	SMDS_Position.cxx, SMDS_Position.hxx, SMDS_Position.ixx,
+	SMDS_Position.jxx, SMDS_Position.lxx,
+	SMDS_SequenceNodeOfSequenceOfMesh.hxx,
+	SMDS_SequenceNodeOfSequenceOfMesh_0.cxx, SMDS_SequenceOfMesh.hxx,
+	SMDS_SequenceOfMesh_0.cxx, SMDS_SpacePosition.cdl,
+	SMDS_SpacePosition.cxx, SMDS_SpacePosition.hxx,
+	SMDS_SpacePosition.ixx, SMDS_SpacePosition.jxx,
+	SMDS_SpacePosition.lxx, SMDS_StdMapNode.lxx,
+	SMDS_StdMapNodeOfExtendedMap.hxx,
+	SMDS_StdMapNodeOfExtendedMap_0.cxx,
+	SMDS_StdMapNodeOfExtendedOrientedMap.hxx,
+	SMDS_StdMapNodeOfExtendedOrientedMap_0.cxx,
+	SMDS_TypeOfPosition.hxx, SMDS_VertexPosition.cdl,
+	SMDS_VertexPosition.cxx, SMDS_VertexPosition.hxx,
+	SMDS_VertexPosition.ixx, SMDS_VertexPosition.jxx: yfr : Merge with
+	v1.2
+
+2003-07-10 09:42  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/OBJECT/: Makefile.in, SMESH_Actor.cxx, SMESH_Actor.h,
+	SMESH_Grid.cxx, SMESH_Grid.h: yfr : Merge with v1.2
+
+2003-07-10 09:39  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/MEFISTO2/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 09:36  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/DriverUNV/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 09:32  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/DriverDAT/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 09:14  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/Makefile.in: yfr : Merge with v1.2
+
+2003-07-10 09:06  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/MEFISTO2/: Makefile.in, Rn.h, aptrte.cxx, aptrte.h: yfr :
+	Merge with v1.2
+
+2003-07-10 09:00  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/: Driver/Document_Reader.cxx, Driver/Document_Reader.h,
+	Driver/Document_Writer.cxx, Driver/Document_Writer.h,
+	Driver/Driver_dl.cxx, Driver/Makefile.in, Driver/Mesh_Reader.cxx,
+	Driver/Mesh_Reader.h, Driver/Mesh_Writer.cxx, Driver/Mesh_Writer.h,
+	Driver/SMESHDriver.cxx, Driver/SMESHDriver.h,
+	DriverDAT/DriverDAT_R_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_R_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Document.h,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Document.h,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.h, DriverDAT/Makefile.in,
+	DriverMED/DriverMED_R_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Mesh.cxx, DriverMED/Makefile.in: yfr
+	: Merge with v1.2
+
+2003-07-10 08:09  tag V1_2
+
+2003-07-10 08:09  Yves Fricaud <yves.fricaud@opencascade.com>
+
+	* src/: DriverMED/DriverMED_R_SMESHDS_Document.h,
+	DriverMED/DriverMED_W_SMESHDS_Document.h,
+	SMESHGUI/SMESHGUI_icons.po, SMESHGUI/SMESHGUI_msg_en.po: sources
+	v1.2
+
+2003-06-29 13:17  Paul Rascle <paul.rascle@edf.fr>
+
+	* src/SMESH_SWIG/: Makefile.in, SMESH_shared_modules.py: PR: needed
+	by merge C. CAREMOLI branch CCAR_br1
+
+2003-06-12 10:37  Paul Rascle <paul.rascle@edf.fr>
+
+	* Makefile.in: PR: avoids unnecessary compilation after
+	regeneration of SALOMEconfig.h, with gcc3.2
+
+2003-06-12 10:34  Paul Rascle <paul.rascle@edf.fr>
+
+	* src/SMESH_SWIG/SMESH_fixation.py: PR: bug on subshapes not sorted
+
+2003-05-28 16:42  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* adm_local/unix/make_commence.in: NRI : Add path fro GEOM and MED
+	idls.
+
+2003-05-28 16:26  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* idl/Makefile.in, adm_local/unix/make_commence.in,
+	adm_local/unix/make_omniorb.in, build_configure, configure.in.base:
+	NRI : Update IDL Dependancies.
+
+2003-05-28 07:20  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* bin/VERSION, Makefile.in: NRI : Add MODULE version info.
+
+2003-05-28 07:16  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* configure.in.base, adm_local/unix/config_files/check_Med.m4: NRI
+	: Add Check of MED.
+
+2003-05-26 14:21  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* adm_local/unix/config_files/check_Geom.m4, configure.in.base: NRI
+	: Add GEOM check local.
+
+2003-05-26 14:00  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* build_configure: NRI : updated aclocal.
+
+2003-05-23 11:40  tag Start-v1_1a
+
+2003-05-23 11:40  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/: SMESHGUI_AddAlgorithmDlg.cxx,
+	SMESHGUI_AddEdgeDlg.cxx, SMESHGUI_AddFaceDlg.cxx,
+	SMESHGUI_AddHypothesisDlg.cxx, SMESHGUI_AddSubMeshDlg.cxx,
+	SMESHGUI_AddVolumeDlg.cxx, SMESHGUI_DiagonalInversionDlg.cxx,
+	SMESHGUI_EdgesConnectivityDlg.cxx, SMESHGUI_EditHypothesesDlg.cxx,
+	SMESHGUI_InitMeshDlg.cxx, SMESHGUI_LocalLengthDlg.cxx,
+	SMESHGUI_MaxElementAreaDlg.cxx, SMESHGUI_MaxElementVolumeDlg.cxx,
+	SMESHGUI_MoveNodesDlg.cxx, SMESHGUI_NbSegmentsDlg.cxx,
+	SMESHGUI_NodesDlg.cxx, SMESHGUI_OrientationElementsDlg.cxx,
+	SMESHGUI_RemoveElementsDlg.cxx, SMESHGUI_RemoveNodesDlg.cxx: NRI :
+	loadPixmap( "SMESH", ...) instead of "SMESHGUI".
+
+2003-05-22 09:56  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/INPUT/HTML/: SMESH_BasicHypothesis.html, SMESH_Gen.html,
+	SMESH_Hypothesis.html, SMESH_Mesh.html: NRI : Add documentation.
+
+2003-05-22 09:52  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/: Makefile.in, html/Makefile.in, html/INPUT/doxyfile,
+	html/INPUT/sources/Application-About.png,
+	html/INPUT/sources/Application-About1.jpg,
+	html/INPUT/sources/application.gif,
+	html/INPUT/sources/application.jpg,
+	html/INPUT/sources/bg_salomepro.gif,
+	html/INPUT/sources/doxygen.css, html/INPUT/sources/logocorp.gif,
+	html/INPUT/sources/myheader.html, html/INPUT/sources/occ.gif: NRI :
+	Add documentation.
+
+2003-05-22 09:51  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* configure.in.base: NRI : Add check HTML generators.
+
+2003-05-20 07:17  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: SMESH_I/SMESH_Gen_i.cxx, SMESH_I/SMESH_test.py,
+	SMESH_I/smeshpy.py, SMESH_SWIG/SMESH_fixation.py,
+	SMESH_SWIG/SMESH_mechanic.py, SMESH_SWIG/SMESH_test0.py,
+	SMESH_SWIG/SMESH_test1.py, SMESH_SWIG/SMESH_test3.py,
+	SMESHGUI/SMESHGUI.cxx: NRI : Use GEOM instead of Geometry.
+
+2003-05-20 07:16  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* resources/SMESHCatalog.xml: NRI : Add component-username tag.
+
+2003-05-20 07:15  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* Makefile.in: NRI : Add SMESHCatalog.xml
+
+2003-05-19 14:50  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/SMESHGUI_StudyAPI.cxx: NRI : Add QAD_Desktop.h.
+
+2003-05-19 14:49  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHGUI/Makefile.in: NRI : Add GEOM includes and libs.
+
+2003-05-19 14:38  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHFiltersSelection/Makefile.in: NRI : Add KERNEL includes.
+
+2003-05-19 14:34  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESH_I/Makefile.in: NRI : Change lGeometryClient by
+	lGEOMClient.
+
+2003-05-19 14:32  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESH_I/Makefile.in: NRI : Add GEOM includes and libs.
+
+2003-05-19 14:11  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: SMESH/Makefile.in, SMESHDS/Makefile.in: NRI : Add KERNEL
+	includes and libs.
+
+2003-05-19 14:09  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: DriverDAT/Makefile.in, DriverMED/Makefile.in,
+	DriverUNV/Makefile.in: NRI : Add KERNEL includes.
+
+2003-05-19 14:08  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* idl/Makefile.in: NRI : Add MED.idl
+
+2003-05-19 14:04  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: SMESHFiltersSelection/Handle_SMESH_TypeFilter.hxx,
+	SMESHFiltersSelection/Makefile.in,
+	SMESHFiltersSelection/SMESH_Type.h,
+	SMESHFiltersSelection/SMESH_TypeFilter.cxx,
+	SMESHFiltersSelection/SMESH_TypeFilter.hxx,
+	SMESHFiltersSelection/SMESH_TypeFilter.ixx,
+	SMESHFiltersSelection/SMESH_TypeFilter.jxx, MEFISTO2/Makefile.in,
+	MEFISTO2/Rn.h, MEFISTO2/aptrte.cxx, MEFISTO2/aptrte.h,
+	MEFISTO2/areteideale.f, MEFISTO2/trte.f, OBJECT/Makefile.in,
+	OBJECT/SMESH_Actor.cxx, OBJECT/SMESH_Actor.h,
+	OBJECT/SMESH_Grid.cxx, OBJECT/SMESH_Grid.h,
+	Driver/Document_Reader.cxx, Driver/Document_Reader.h,
+	Driver/Document_Writer.cxx, Driver/Document_Writer.h,
+	Driver/Driver_dl.cxx, Driver/Makefile.in, Driver/Mesh_Reader.cxx,
+	Driver/Mesh_Reader.h, Driver/Mesh_Writer.cxx, Driver/Mesh_Writer.h,
+	Driver/SMESHDriver.cxx, Driver/SMESHDriver.h: NRI : First
+	integration.
+
+2003-05-19 14:00  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: SMESHGUI/Makefile.in, SMESHGUI/SMESHGUI.cxx,
+	SMESHGUI/SMESHGUI.h, SMESHGUI/SMESHGUI_AddAlgorithmDlg.cxx,
+	SMESHGUI/SMESHGUI_AddAlgorithmDlg.h,
+	SMESHGUI/SMESHGUI_AddEdgeDlg.cxx, SMESHGUI/SMESHGUI_AddEdgeDlg.h,
+	SMESHGUI/SMESHGUI_AddFaceDlg.cxx, SMESHGUI/SMESHGUI_AddFaceDlg.h,
+	SMESHGUI/SMESHGUI_AddHypothesisDlg.cxx,
+	SMESHGUI/SMESHGUI_AddHypothesisDlg.h,
+	SMESHGUI/SMESHGUI_AddSubMeshDlg.cxx,
+	SMESHGUI/SMESHGUI_AddSubMeshDlg.h,
+	SMESHGUI/SMESHGUI_AddVolumeDlg.cxx,
+	SMESHGUI/SMESHGUI_AddVolumeDlg.h,
+	SMESHGUI/SMESHGUI_ComputeScalarValue.cxx,
+	SMESHGUI/SMESHGUI_ComputeScalarValue.h,
+	SMESHGUI/SMESHGUI_DiagonalInversionDlg.cxx,
+	SMESHGUI/SMESHGUI_DiagonalInversionDlg.h,
+	SMESHGUI/SMESHGUI_EdgesConnectivityDlg.cxx,
+	SMESHGUI/SMESHGUI_EdgesConnectivityDlg.h,
+	SMESHGUI/SMESHGUI_EditHypothesesDlg.cxx,
+	SMESHGUI/SMESHGUI_EditHypothesesDlg.h,
+	SMESHGUI/SMESHGUI_EditScalarBarDlg.cxx,
+	SMESHGUI/SMESHGUI_EditScalarBarDlg.h,
+	SMESHGUI/SMESHGUI_InitMeshDlg.cxx, SMESHGUI/SMESHGUI_InitMeshDlg.h,
+	SMESHGUI/SMESHGUI_LocalLengthDlg.cxx,
+	SMESHGUI/SMESHGUI_LocalLengthDlg.h,
+	SMESHGUI/SMESHGUI_MaxElementAreaDlg.cxx,
+	SMESHGUI/SMESHGUI_MaxElementAreaDlg.h,
+	SMESHGUI/SMESHGUI_MaxElementVolumeDlg.cxx,
+	SMESHGUI/SMESHGUI_MaxElementVolumeDlg.h,
+	SMESHGUI/SMESHGUI_MeshInfosDlg.cxx,
+	SMESHGUI/SMESHGUI_MeshInfosDlg.h,
+	SMESHGUI/SMESHGUI_MoveNodesDlg.cxx,
+	SMESHGUI/SMESHGUI_MoveNodesDlg.h,
+	SMESHGUI/SMESHGUI_NbSegmentsDlg.cxx,
+	SMESHGUI/SMESHGUI_NbSegmentsDlg.h, SMESHGUI/SMESHGUI_NodesDlg.cxx,
+	SMESHGUI/SMESHGUI_NodesDlg.h,
+	SMESHGUI/SMESHGUI_OrientationElementsDlg.cxx,
+	SMESHGUI/SMESHGUI_OrientationElementsDlg.h,
+	SMESHGUI/SMESHGUI_Preferences_ColorDlg.cxx,
+	SMESHGUI/SMESHGUI_Preferences_ColorDlg.h,
+	SMESHGUI/SMESHGUI_Preferences_ScalarBarDlg.cxx,
+	SMESHGUI/SMESHGUI_Preferences_ScalarBarDlg.h,
+	SMESHGUI/SMESHGUI_RemoveElementsDlg.cxx,
+	SMESHGUI/SMESHGUI_RemoveElementsDlg.h,
+	SMESHGUI/SMESHGUI_RemoveNodesDlg.cxx,
+	SMESHGUI/SMESHGUI_RemoveNodesDlg.h, SMESHGUI/SMESHGUI_SpinBox.cxx,
+	SMESHGUI/SMESHGUI_SpinBox.h, SMESHGUI/SMESHGUI_StudyAPI.cxx,
+	SMESHGUI/SMESHGUI_StudyAPI.h, SMESHGUI/SMESHGUI_Swig.cxx,
+	SMESHGUI/SMESHGUI_Swig.hxx, SMESHGUI/SMESHGUI_Swig.i,
+	SMESHGUI/SMESHGUI_TransparencyDlg.cxx,
+	SMESHGUI/SMESHGUI_TransparencyDlg.h,
+	SMESHGUI/SMESHGUI_aParameterDlg.cxx,
+	SMESHGUI/SMESHGUI_aParameterDlg.h, SMESHGUI/SMESH_icons.po,
+	SMESHGUI/SMESH_msg_en.po, SMESH_SWIG/Makefile.in,
+	SMESH_SWIG/SMESH_fixation.py, SMESH_SWIG/SMESH_mechanic.py,
+	SMESH_SWIG/SMESH_test0.py, SMESH_SWIG/SMESH_test1.py,
+	SMESH_SWIG/SMESH_test2.py, SMESH_SWIG/SMESH_test3.py,
+	SMESH_SWIG/batchmode_smesh.py, SMESH_SWIG/libSMESH_Swig.i,
+	Makefile.in: NRI : First integration.
+
+2003-05-19 13:54  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESH_I/: Makefile.in, SMESH_1D_Algo_i.cxx,
+	SMESH_1D_Algo_i.hxx, SMESH_2D_Algo_i.cxx, SMESH_2D_Algo_i.hxx,
+	SMESH_3D_Algo_i.cxx, SMESH_3D_Algo_i.hxx, SMESH_Algo_i.cxx,
+	SMESH_Algo_i.hxx, SMESH_Gen_i.cxx, SMESH_Gen_i.hxx,
+	SMESH_Hexa_3D_i.cxx, SMESH_Hexa_3D_i.hxx,
+	SMESH_HypothesisFactory_i.cxx, SMESH_HypothesisFactory_i.hxx,
+	SMESH_Hypothesis_i.cxx, SMESH_Hypothesis_i.hxx,
+	SMESH_LocalLength_i.cxx, SMESH_LocalLength_i.hxx,
+	SMESH_MEDFamily_i.cxx, SMESH_MEDFamily_i.hxx, SMESH_MEDMesh_i.cxx,
+	SMESH_MEDMesh_i.hxx, SMESH_MEDSupport_i.cxx,
+	SMESH_MEDSupport_i.hxx, SMESH_MEFISTO_2D_i.cxx,
+	SMESH_MEFISTO_2D_i.hxx, SMESH_MaxElementArea_i.cxx,
+	SMESH_MaxElementArea_i.hxx, SMESH_MaxElementVolume_i.cxx,
+	SMESH_MaxElementVolume_i.hxx, SMESH_MeshEditor_i.cxx,
+	SMESH_MeshEditor_i.hxx, SMESH_Mesh_i.cxx, SMESH_Mesh_i.hxx,
+	SMESH_NumberOfSegments_i.cxx, SMESH_NumberOfSegments_i.hxx,
+	SMESH_Quadrangle_2D_i.cxx, SMESH_Quadrangle_2D_i.hxx,
+	SMESH_Regular_1D_i.cxx, SMESH_Regular_1D_i.hxx,
+	SMESH_subMesh_i.cxx, SMESH_subMesh_i.hxx, SMESH_test.py,
+	SMESH_topo.cxx, SMESH_topo.hxx, smeshpy.py, sstream: NRI : First
+	integration.
+
+2003-05-19 13:48  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMDS/: Handle_SMDSControl_BoundaryEdges.hxx,
+	Handle_SMDSControl_BoundaryFaces.hxx,
+	Handle_SMDSControl_MeshBoundary.hxx,
+	Handle_SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx,
+	Handle_SMDS_DataMapNodeOfDataMapOfPntInteger.hxx,
+	Handle_SMDS_EdgePosition.hxx, Handle_SMDS_FacePosition.hxx,
+	Handle_SMDS_HSequenceOfMesh.hxx,
+	Handle_SMDS_ListNodeOfListOfMesh.hxx,
+	Handle_SMDS_ListNodeOfListOfMeshElement.hxx,
+	Handle_SMDS_ListNodeOfListOfMeshGroup.hxx, Handle_SMDS_Mesh.hxx,
+	Handle_SMDS_MeshEdge.hxx, Handle_SMDS_MeshElement.hxx,
+	Handle_SMDS_MeshElementIDFactory.hxx, Handle_SMDS_MeshFace.hxx,
+	Handle_SMDS_MeshGroup.hxx, Handle_SMDS_MeshHexahedron.hxx,
+	Handle_SMDS_MeshIDFactory.hxx, Handle_SMDS_MeshNode.hxx,
+	Handle_SMDS_MeshNodeIDFactory.hxx, Handle_SMDS_MeshObject.hxx,
+	Handle_SMDS_MeshPrism.hxx, Handle_SMDS_MeshPyramid.hxx,
+	Handle_SMDS_MeshQuadrangle.hxx, Handle_SMDS_MeshTetrahedron.hxx,
+	Handle_SMDS_MeshTriangle.hxx, Handle_SMDS_MeshVolume.hxx,
+	Handle_SMDS_Position.hxx,
+	Handle_SMDS_SequenceNodeOfSequenceOfMesh.hxx,
+	Handle_SMDS_SpacePosition.hxx,
+	Handle_SMDS_StdMapNodeOfExtendedMap.hxx,
+	Handle_SMDS_StdMapNodeOfExtendedOrientedMap.hxx,
+	Handle_SMDS_VertexPosition.hxx, Makefile.in, SMDS.cdl, SMDSAbs.cdl,
+	SMDSAbs_ElementType.hxx, SMDSControl.cdl, SMDSControl.cxx,
+	SMDSControl.hxx, SMDSControl.ixx, SMDSControl.jxx,
+	SMDSControl_BoundaryEdges.cdl, SMDSControl_BoundaryEdges.cxx,
+	SMDSControl_BoundaryEdges.hxx, SMDSControl_BoundaryEdges.ixx,
+	SMDSControl_BoundaryEdges.jxx, SMDSControl_BoundaryFaces.cdl,
+	SMDSControl_BoundaryFaces.cxx, SMDSControl_BoundaryFaces.hxx,
+	SMDSControl_BoundaryFaces.ixx, SMDSControl_BoundaryFaces.jxx,
+	SMDSControl_MeshBoundary.cdl, SMDSControl_MeshBoundary.cxx,
+	SMDSControl_MeshBoundary.hxx, SMDSControl_MeshBoundary.ixx,
+	SMDSControl_MeshBoundary.jxx, SMDSEdit.cdl, SMDSEdit_Transform.cdl,
+	SMDSEdit_Transform.cxx, SMDSEdit_Transform.hxx,
+	SMDSEdit_Transform.ixx, SMDSEdit_Transform.jxx, SMDS_BasicMap.lxx,
+	SMDS_BasicMapIterator.lxx,
+	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapIteratorOfDataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapIteratorOfDataMapOfPntInteger.hxx,
+	SMDS_DataMapIteratorOfDataMapOfPntInteger_0.cxx,
+	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapNodeOfDataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapNodeOfDataMapOfPntInteger.hxx,
+	SMDS_DataMapNodeOfDataMapOfPntInteger_0.cxx,
+	SMDS_DataMapOfIntegerMeshElement.hxx,
+	SMDS_DataMapOfIntegerMeshElement_0.cxx,
+	SMDS_DataMapOfPntInteger.hxx, SMDS_DataMapOfPntInteger_0.cxx,
+	SMDS_EdgePosition.cdl, SMDS_EdgePosition.cxx,
+	SMDS_EdgePosition.hxx, SMDS_EdgePosition.ixx,
+	SMDS_EdgePosition.jxx, SMDS_EdgePosition.lxx, SMDS_ExtendedMap.hxx,
+	SMDS_ExtendedMap_0.cxx, SMDS_ExtendedOrientedMap.hxx,
+	SMDS_ExtendedOrientedMap_0.cxx, SMDS_FacePosition.cdl,
+	SMDS_FacePosition.cxx, SMDS_FacePosition.hxx,
+	SMDS_FacePosition.ixx, SMDS_FacePosition.jxx,
+	SMDS_FacePosition.lxx, SMDS_HSequenceOfMesh.hxx,
+	SMDS_HSequenceOfMesh_0.cxx, SMDS_ListIteratorOfListOfMesh.hxx,
+	SMDS_ListIteratorOfListOfMeshElement.hxx,
+	SMDS_ListIteratorOfListOfMeshElement_0.cxx,
+	SMDS_ListIteratorOfListOfMeshGroup.hxx,
+	SMDS_ListIteratorOfListOfMeshGroup_0.cxx,
+	SMDS_ListIteratorOfListOfMesh_0.cxx, SMDS_ListNodeOfListOfMesh.hxx,
+	SMDS_ListNodeOfListOfMeshElement.hxx,
+	SMDS_ListNodeOfListOfMeshElement_0.cxx,
+	SMDS_ListNodeOfListOfMeshGroup.hxx,
+	SMDS_ListNodeOfListOfMeshGroup_0.cxx,
+	SMDS_ListNodeOfListOfMesh_0.cxx, SMDS_ListOfMesh.hxx,
+	SMDS_ListOfMeshElement.hxx, SMDS_ListOfMeshElement_0.cxx,
+	SMDS_ListOfMeshGroup.hxx, SMDS_ListOfMeshGroup_0.cxx,
+	SMDS_ListOfMesh_0.cxx, SMDS_Map.gxx, SMDS_MapHasher.gxx,
+	SMDS_MapIterator.gxx, SMDS_MapIteratorOfExtendedMap.hxx,
+	SMDS_MapIteratorOfExtendedMap_0.cxx,
+	SMDS_MapIteratorOfExtendedOrientedMap.hxx,
+	SMDS_MapIteratorOfExtendedOrientedMap_0.cxx, SMDS_MapNode.lxx,
+	SMDS_MapOfMeshElement.cdl, SMDS_MapOfMeshElement.cxx,
+	SMDS_MapOfMeshElement.hxx, SMDS_MapOfMeshElement.ixx,
+	SMDS_MapOfMeshElement.jxx, SMDS_MapOfMeshElement.lxx,
+	SMDS_MapOfMeshOrientedElement.cdl,
+	SMDS_MapOfMeshOrientedElement.cxx,
+	SMDS_MapOfMeshOrientedElement.hxx,
+	SMDS_MapOfMeshOrientedElement.ixx,
+	SMDS_MapOfMeshOrientedElement.jxx,
+	SMDS_MapOfMeshOrientedElement.lxx, SMDS_Mesh.cdl, SMDS_Mesh.cxx,
+	SMDS_Mesh.hxx, SMDS_Mesh.ixx, SMDS_Mesh.jxx, SMDS_Mesh.lxx,
+	SMDS_MeshEdge.cdl, SMDS_MeshEdge.cxx, SMDS_MeshEdge.hxx,
+	SMDS_MeshEdge.ixx, SMDS_MeshEdge.jxx, SMDS_MeshEdge.lxx,
+	SMDS_MeshEdgesIterator.cdl, SMDS_MeshEdgesIterator.cxx,
+	SMDS_MeshEdgesIterator.hxx, SMDS_MeshEdgesIterator.ixx,
+	SMDS_MeshEdgesIterator.jxx, SMDS_MeshElement.cdl,
+	SMDS_MeshElement.cxx, SMDS_MeshElement.hxx, SMDS_MeshElement.ixx,
+	SMDS_MeshElement.jxx, SMDS_MeshElement.lxx,
+	SMDS_MeshElementIDFactory.cdl, SMDS_MeshElementIDFactory.cxx,
+	SMDS_MeshElementIDFactory.hxx, SMDS_MeshElementIDFactory.ixx,
+	SMDS_MeshElementIDFactory.jxx, SMDS_MeshElementIDFactory.lxx,
+	SMDS_MeshElementMapHasher.cdl, SMDS_MeshElementMapHasher.cxx,
+	SMDS_MeshElementMapHasher.hxx, SMDS_MeshElementMapHasher.ixx,
+	SMDS_MeshElementMapHasher.jxx, SMDS_MeshElementMapHasher.lxx,
+	SMDS_MeshElementsIterator.cdl, SMDS_MeshElementsIterator.cxx,
+	SMDS_MeshElementsIterator.hxx, SMDS_MeshElementsIterator.ixx,
+	SMDS_MeshElementsIterator.jxx, SMDS_MeshElementsIterator.lxx,
+	SMDS_MeshFace.cdl, SMDS_MeshFace.cxx, SMDS_MeshFace.hxx,
+	SMDS_MeshFace.ixx, SMDS_MeshFace.jxx, SMDS_MeshFace.lxx,
+	SMDS_MeshFacesIterator.cdl, SMDS_MeshFacesIterator.cxx,
+	SMDS_MeshFacesIterator.hxx, SMDS_MeshFacesIterator.ixx,
+	SMDS_MeshFacesIterator.jxx, SMDS_MeshGroup.cdl, SMDS_MeshGroup.cxx,
+	SMDS_MeshGroup.hxx, SMDS_MeshGroup.ixx, SMDS_MeshGroup.jxx,
+	SMDS_MeshGroup.lxx, SMDS_MeshHexahedron.cdl,
+	SMDS_MeshHexahedron.cxx, SMDS_MeshHexahedron.hxx,
+	SMDS_MeshHexahedron.ixx, SMDS_MeshHexahedron.jxx,
+	SMDS_MeshHexahedron.lxx, SMDS_MeshIDFactory.cdl,
+	SMDS_MeshIDFactory.cxx, SMDS_MeshIDFactory.ixx,
+	SMDS_MeshIDFactory.jxx, SMDS_MeshIDFactory.lxx, SMDS_MeshNode.cdl,
+	SMDS_MeshNode.cxx, SMDS_MeshNode.hxx, SMDS_MeshNode.ixx,
+	SMDS_MeshNode.jxx, SMDS_MeshNode.lxx, SMDS_MeshNodeIDFactory.cdl,
+	SMDS_MeshNodeIDFactory.cxx, SMDS_MeshNodeIDFactory.hxx,
+	SMDS_MeshNodeIDFactory.ixx, SMDS_MeshNodeIDFactory.jxx,
+	SMDS_MeshNodeIDFactory.lxx, SMDS_MeshNodesIterator.cdl,
+	SMDS_MeshNodesIterator.cxx, SMDS_MeshNodesIterator.hxx,
+	SMDS_MeshNodesIterator.ixx, SMDS_MeshNodesIterator.jxx,
+	SMDS_MeshObject.cdl, SMDS_MeshObject.cxx, SMDS_MeshObject.hxx,
+	SMDS_MeshObject.ixx, SMDS_MeshObject.jxx,
+	SMDS_MeshOrientedElementMapHasher.cdl,
+	SMDS_MeshOrientedElementMapHasher.cxx,
+	SMDS_MeshOrientedElementMapHasher.hxx,
+	SMDS_MeshOrientedElementMapHasher.ixx,
+	SMDS_MeshOrientedElementMapHasher.jxx,
+	SMDS_MeshOrientedElementMapHasher.lxx, SMDS_MeshPrism.cdl,
+	SMDS_MeshPrism.cxx, SMDS_MeshPrism.hxx, SMDS_MeshPrism.ixx,
+	SMDS_MeshPrism.jxx, SMDS_MeshPrism.lxx, SMDS_MeshPyramid.cdl,
+	SMDS_MeshPyramid.cxx, SMDS_MeshPyramid.hxx, SMDS_MeshPyramid.ixx,
+	SMDS_MeshPyramid.jxx, SMDS_MeshPyramid.lxx,
+	SMDS_MeshQuadrangle.cdl, SMDS_MeshQuadrangle.cxx,
+	SMDS_MeshQuadrangle.hxx, SMDS_MeshQuadrangle.ixx,
+	SMDS_MeshQuadrangle.jxx, SMDS_MeshQuadrangle.lxx,
+	SMDS_MeshTetrahedron.cdl, SMDS_MeshTetrahedron.cxx,
+	SMDS_MeshTetrahedron.hxx, SMDS_MeshTetrahedron.ixx,
+	SMDS_MeshTetrahedron.jxx, SMDS_MeshTetrahedron.lxx,
+	SMDS_MeshTriangle.cdl, SMDS_MeshTriangle.cxx,
+	SMDS_MeshTriangle.hxx, SMDS_MeshTriangle.ixx,
+	SMDS_MeshTriangle.jxx, SMDS_MeshTriangle.lxx, SMDS_MeshVolume.cdl,
+	SMDS_MeshVolume.cxx, SMDS_MeshVolume.hxx, SMDS_MeshVolume.ixx,
+	SMDS_MeshVolume.jxx, SMDS_MeshVolume.lxx,
+	SMDS_MeshVolumesIterator.cdl, SMDS_MeshVolumesIterator.cxx,
+	SMDS_MeshVolumesIterator.hxx, SMDS_MeshVolumesIterator.ixx,
+	SMDS_MeshVolumesIterator.jxx, SMDS_PntHasher.cdl,
+	SMDS_PntHasher.cxx, SMDS_PntHasher.hxx, SMDS_PntHasher.ixx,
+	SMDS_PntHasher.jxx, SMDS_PntHasher.lxx, SMDS_Position.cdl,
+	SMDS_Position.cxx, SMDS_Position.hxx, SMDS_Position.ixx,
+	SMDS_Position.jxx, SMDS_Position.lxx,
+	SMDS_SequenceNodeOfSequenceOfMesh.hxx,
+	SMDS_SequenceNodeOfSequenceOfMesh_0.cxx, SMDS_SequenceOfMesh.hxx,
+	SMDS_SequenceOfMesh_0.cxx, SMDS_SpacePosition.cdl,
+	SMDS_SpacePosition.cxx, SMDS_SpacePosition.hxx,
+	SMDS_SpacePosition.ixx, SMDS_SpacePosition.jxx,
+	SMDS_SpacePosition.lxx, SMDS_StdMapNode.gxx, SMDS_StdMapNode.lxx,
+	SMDS_StdMapNodeOfExtendedMap.hxx,
+	SMDS_StdMapNodeOfExtendedMap_0.cxx,
+	SMDS_StdMapNodeOfExtendedOrientedMap.hxx,
+	SMDS_StdMapNodeOfExtendedOrientedMap_0.cxx,
+	SMDS_TypeOfPosition.hxx, SMDS_VertexPosition.cdl,
+	SMDS_VertexPosition.cxx, SMDS_VertexPosition.hxx,
+	SMDS_VertexPosition.ixx, SMDS_VertexPosition.jxx,
+	SMDS_MeshIDFactory.hxx: NRI : First integration.
+
+2003-05-19 13:25  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/SMESHDS/: Handle_SMESHDS_Command.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx,
+	Handle_SMESHDS_ListNodeOfListOfCommand.hxx,
+	Handle_SMESHDS_Mesh.hxx, Handle_SMESHDS_Script.hxx, Makefile.in,
+	SMESHDS_Command.cdl, SMESHDS_Command.cxx, SMESHDS_Command.ixx,
+	SMESHDS_Command.jxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh_0.cxx,
+	SMESHDS_DataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapOfIntegerPtrHypothesis_0.cxx,
+	SMESHDS_DataMapOfIntegerSubMesh.hxx,
+	SMESHDS_DataMapOfIntegerSubMesh_0.cxx,
+	SMESHDS_DataMapOfShapeSubMesh.hxx,
+	SMESHDS_DataMapOfShapeSubMesh_0.cxx, SMESHDS_Document.cdl,
+	SMESHDS_Document.hxx, SMESHDS_Document.ixx, SMESHDS_Hypothesis.hxx,
+	SMESHDS_ListIteratorOfListOfAsciiString_0.cxx,
+	SMESHDS_ListIteratorOfListOfCommand.hxx,
+	SMESHDS_ListIteratorOfListOfCommand_0.cxx,
+	SMESHDS_ListIteratorOfListOfPtrHypothesis_0.cxx,
+	SMESHDS_ListNodeOfListOfAsciiString.hxx,
+	SMESHDS_ListNodeOfListOfAsciiString_0.cxx,
+	SMESHDS_ListNodeOfListOfCommand.hxx,
+	SMESHDS_ListNodeOfListOfCommand_0.cxx,
+	SMESHDS_ListNodeOfListOfPtrHypothesis.hxx,
+	SMESHDS_ListOfCommand.hxx, SMESHDS_ListOfPtrHypothesis.hxx,
+	SMESHDS_ListOfPtrHypothesis_0.cxx, SMESHDS_Mesh.cdl,
+	SMESHDS_Mesh.hxx, SMESHDS_Script.cdl, SMESHDS_Script.cxx,
+	SMESHDS_Script.hxx, SMESHDS_Script.ixx, SMESHDS_Script.jxx,
+	SMESHDS_SubMesh.cdl, SMESHDS_SubMesh.cxx, SMESHDS_SubMesh.hxx,
+	SMESHDS_SubMesh.ixx, SMESHDS_SubMesh.jxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	Handle_SMESHDS_DataMapNodeOfDataMapOfShapeSubMesh.hxx,
+	Handle_SMESHDS_Document.hxx,
+	Handle_SMESHDS_ListNodeOfListOfAsciiString.hxx,
+	Handle_SMESHDS_ListNodeOfListOfPtrHypothesis.hxx,
+	Handle_SMESHDS_SubMesh.hxx, SMESHDS.cdl, SMESHDS_Command.hxx,
+	SMESHDS_CommandType.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerMesh.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapIteratorOfDataMapOfShapeSubMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerMesh_0.cxx,
+	SMESHDS_DataMapNodeOfDataMapOfIntegerPtrHypothesis.hxx,
+	SMESHDS_DataMapOfShapeListOfPtrHypothesis.hxx,
+	SMESHDS_DataMapOfShapeListOfPtrHypothesis_0.cxx,
+	SMESHDS_Document.cxx, SMESHDS_Document.jxx, SMESHDS_Hypothesis.cxx,
+	SMESHDS_ListIteratorOfListOfAsciiString.hxx,
+	SMESHDS_ListIteratorOfListOfPtrHypothesis.hxx,
+	SMESHDS_ListNodeOfListOfPtrHypothesis_0.cxx,
+	SMESHDS_ListOfAsciiString.hxx, SMESHDS_ListOfAsciiString_0.cxx,
+	SMESHDS_ListOfCommand_0.cxx, SMESHDS_Mesh.cxx, SMESHDS_Mesh.ixx,
+	SMESHDS_Mesh.jxx, SMESHDS_PtrHypothesis.hxx: NRI : First
+	integration.
+
+2003-05-19 13:16  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: DriverUNV/DriverUNV_R_SMDS_Mesh.cxx,
+	DriverUNV/DriverUNV_R_SMDS_Mesh.h,
+	DriverUNV/DriverUNV_R_SMESHDS_Document.cxx,
+	DriverUNV/DriverUNV_R_SMESHDS_Document.h,
+	DriverUNV/DriverUNV_R_SMESHDS_Mesh.cxx,
+	DriverUNV/DriverUNV_R_SMESHDS_Mesh.h,
+	DriverUNV/DriverUNV_W_SMDS_Mesh.cxx,
+	DriverUNV/DriverUNV_W_SMDS_Mesh.h,
+	DriverUNV/DriverUNV_W_SMESHDS_Document.cxx,
+	DriverUNV/DriverUNV_W_SMESHDS_Document.h,
+	DriverUNV/DriverUNV_W_SMESHDS_Mesh.cxx,
+	DriverUNV/DriverUNV_W_SMESHDS_Mesh.h, DriverUNV/Makefile.in,
+	SMESH/Makefile.in, SMESH/SMESH_1D_Algo.cxx,
+	SMESH/SMESH_1D_Algo.hxx, SMESH/SMESH_2D_Algo.cxx,
+	SMESH/SMESH_2D_Algo.hxx, SMESH/SMESH_3D_Algo.cxx,
+	SMESH/SMESH_3D_Algo.hxx, SMESH/SMESH_Algo.cxx,
+	SMESH/SMESH_Algo.hxx, SMESH/SMESH_Gen.cxx, SMESH/SMESH_Gen.hxx,
+	SMESH/SMESH_Hexa_3D.cxx, SMESH/SMESH_Hexa_3D.hxx,
+	SMESH/SMESH_Hypothesis.cxx, SMESH/SMESH_Hypothesis.hxx,
+	SMESH/SMESH_HypothesisCreator.hxx,
+	SMESH/SMESH_HypothesisFactory.cxx,
+	SMESH/SMESH_HypothesisFactory.hxx, SMESH/SMESH_LengthFromEdges.cxx,
+	SMESH/SMESH_LengthFromEdges.hxx, SMESH/SMESH_LocalLength.cxx,
+	SMESH/SMESH_LocalLength.hxx, SMESH/SMESH_MEFISTO_2D.cxx,
+	SMESH/SMESH_MEFISTO_2D.hxx, SMESH/SMESH_MaxElementArea.cxx,
+	SMESH/SMESH_MaxElementArea.hxx, SMESH/SMESH_MaxElementVolume.cxx,
+	SMESH/SMESH_MaxElementVolume.hxx, SMESH/SMESH_Mesh.cxx,
+	SMESH/SMESH_Mesh.hxx, SMESH/SMESH_NumberOfSegments.cxx,
+	SMESH/SMESH_NumberOfSegments.hxx, SMESH/SMESH_Quadrangle_2D.cxx,
+	SMESH/SMESH_Quadrangle_2D.hxx, SMESH/SMESH_Regular_1D.cxx,
+	SMESH/SMESH_Regular_1D.hxx, SMESH/SMESH_subMesh.cxx,
+	SMESH/SMESH_subMesh.hxx: NRI : First integration.
+
+2003-05-19 13:12  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* src/: DriverDAT/DriverDAT_R_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_R_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Document.h,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_R_SMESHDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMDS_Mesh.h,
+	DriverDAT/DriverDAT_W_SMESHDS_Document.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Document.h,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.cxx,
+	DriverDAT/DriverDAT_W_SMESHDS_Mesh.h, DriverDAT/Makefile.in,
+	DriverMED/DriverMED_R_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_R_SMESHDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMDS_Mesh.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Document.cxx,
+	DriverMED/DriverMED_W_SMESHDS_Mesh.cxx, DriverMED/Makefile.in: NRI
+	: First integration.
+
+2003-05-19 13:08  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* resources/ModuleMesh.png, resources/SMESHCatalog.xml,
+	resources/SMESH_en.xml, resources/SMESH_fr.xml,
+	resources/delete.png, resources/mesh.png,
+	resources/mesh_add_sub.png, resources/mesh_algo_hexa.png,
+	resources/mesh_algo_mefisto.png, resources/mesh_algo_quad.png,
+	resources/mesh_algo_regular.png, resources/mesh_angle.png,
+	resources/mesh_area.png, resources/mesh_aspect.png,
+	resources/mesh_compute.png, resources/mesh_connectivity.png,
+	resources/mesh_diagonal.png, resources/mesh_edit.png,
+	resources/mesh_hexa.png, resources/mesh_hexa_n.png,
+	resources/mesh_hypo_area.png, resources/mesh_hypo_length.png,
+	resources/mesh_hypo_segment.png, resources/mesh_hypo_volume.png,
+	resources/mesh_info.png, resources/mesh_init.png,
+	resources/mesh_length.png, resources/mesh_line.png,
+	resources/mesh_line_n.png, resources/mesh_move_node.png,
+	resources/mesh_orientation.png, resources/mesh_pyramid.png,
+	resources/mesh_pyramid_n.png, resources/mesh_quad.png,
+	resources/mesh_quad_n.png, resources/mesh_rem_element.png,
+	resources/mesh_rem_node.png, resources/mesh_set_algo.png,
+	resources/mesh_set_hypo.png, resources/mesh_shading.png,
+	resources/mesh_shrink.png, resources/mesh_skew.png,
+	resources/mesh_taper.png, resources/mesh_tetra.png,
+	resources/mesh_tetra_n.png, resources/mesh_tree_algo.png,
+	resources/mesh_tree_algo_hexa.png,
+	resources/mesh_tree_algo_mefisto.png,
+	resources/mesh_tree_algo_quad.png,
+	resources/mesh_tree_algo_regular.png, resources/mesh_tree_hypo.png,
+	resources/mesh_tree_hypo_area.png,
+	resources/mesh_tree_hypo_length.png,
+	resources/mesh_tree_hypo_segment.png,
+	resources/mesh_tree_hypo_volume.png, resources/mesh_tree_mesh.png,
+	resources/mesh_tree_mesh_warn.png, resources/mesh_triangle.png,
+	resources/mesh_triangle_n.png, resources/mesh_update.png,
+	resources/mesh_vertex.png, resources/mesh_vertex_n.png,
+	resources/mesh_wireframe.png, resources/mesh_wrap.png,
+	resources/select1.png, idl/Makefile.in,
+	idl/SMESH_BasicHypothesis.idl, idl/SMESH_Gen.idl,
+	idl/SMESH_Hypothesis.idl, idl/SMESH_Mesh.idl: NRI : First
+	integration.
+
+2003-05-19 13:03  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* Makefile.in, build_configure, configure.in.base: NRI : First
+	integration.
+
+2003-03-07 14:55  tag V1
+
+2003-03-07 14:55  cvsadmin
+
+	* src/DriverMED/: DriverMED_R_SMESHDS_Document.h,
+	DriverMED_W_SMESHDS_Document.h: 
+	Initialisation module SMESH_SRC de la base SMESH
+
+2003-03-07 14:55  cvsadmin
+
+	* src/DriverMED/: DriverMED_R_SMDS_Mesh.cxx,
+	DriverMED_R_SMDS_Mesh.h, DriverMED_R_SMESHDS_Document.cxx,
+	DriverMED_R_SMESHDS_Mesh.cxx, DriverMED_R_SMESHDS_Mesh.h,
+	DriverMED_W_SMDS_Mesh.cxx, DriverMED_W_SMDS_Mesh.h,
+	DriverMED_W_SMESHDS_Document.cxx, DriverMED_W_SMESHDS_Mesh.cxx,
+	DriverMED_W_SMESHDS_Mesh.h, Makefile.in: Initial revision
 
