@@ -56,16 +56,36 @@ class SMESH_MEDSupport_i:
 	SALOME_MED::MESH_ptr getMesh() throw(SALOME::SALOME_Exception);
 	CORBA::Boolean isOnAllElements() throw(SALOME::SALOME_Exception);
 	SALOME_MED::medEntityMesh getEntity() throw(SALOME::SALOME_Exception);
-	CORBA::Long getNumberOfElements(SALOME_MED::medGeometryElement geomElement)
-		throw(SALOME::SALOME_Exception);
-	Engines::long_array * getNumber(SALOME_MED::medGeometryElement geomElement)
-		throw(SALOME::SALOME_Exception);
-	Engines::long_array * getNumberIndex() throw(SALOME::SALOME_Exception);
-	CORBA::Long getNumberOfGaussPoints(SALOME_MED::
-		medGeometryElement geomElement) throw(SALOME::SALOME_Exception);
-	SALOME_MED::medGeometryElement_array *
-		getTypes() throw(SALOME::SALOME_Exception);
+        CORBA::Long
+	getNumberOfElements(SALOME_MED::medGeometryElement geomElement)
+	  throw(SALOME::SALOME_Exception);
+
+        CORBA::Long getNumberOfTypes() throw (SALOME::SALOME_Exception);
+
+	SALOME_MED::long_array *
+	getNumber(SALOME_MED::medGeometryElement geomElement)
+	  throw(SALOME::SALOME_Exception);
+
+	SALOME_MED::long_array * getNumberIndex()
+	  throw(SALOME::SALOME_Exception);
+
+        CORBA::Long
+	getNumberOfGaussPoint(SALOME_MED::medGeometryElement geomElement)
+	  throw(SALOME::SALOME_Exception);
+
+        SALOME_MED::long_array* getNumbersOfGaussPoint()
+	  throw (SALOME::SALOME_Exception);
+
+	SALOME_MED::medGeometryElement_array *getTypes()
+	  throw(SALOME::SALOME_Exception);
+
+        void getBoundaryElements() throw (SALOME::SALOME_Exception);
+
 	CORBA::Long getCorbaIndex() throw(SALOME::SALOME_Exception);
+
+        SALOME_MED::SUPPORT::supportInfos * getSupportGlobal()
+	  throw (SALOME::SALOME_Exception);
+
 	void createSeq() throw(SALOME::SALOME_Exception);
 
   public: //public field
