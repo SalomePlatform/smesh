@@ -125,7 +125,7 @@ namespace SMESH{
     }
 
 
-    typedef list<vtkIdType> TVTKIds;
+    typedef std::vector<vtkIdType> TVTKIds;
     void SetPosition(SMESH_Actor* theActor, 
 		     vtkIdType theType, 
 		     const TVTKIds& theIds)
@@ -133,11 +133,34 @@ namespace SMESH{
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
       myGrid->SetPoints(aGrid->GetPoints());
 
+      const int* aConn = NULL;
+      switch(theType){
+      case VTK_TETRA:{
+	static int anIds[] = {0,2,1,3};
+	aConn = anIds;
+	break;
+      }
+      case VTK_PYRAMID:{
+	static int anIds[] = {0,3,2,1,4};
+	aConn = anIds;
+	break;
+      }
+      case VTK_HEXAHEDRON:{
+	static int anIds[] = {0,3,2,1,4,7,6,5};
+	aConn = anIds;
+	break;
+      }}
+
       myGrid->Reset();
       vtkIdList *anIds = vtkIdList::New();
-      TVTKIds::const_iterator anIt = theIds.begin();
-      for (int i = 0; anIt != theIds.end(); anIt++,i++)
-	anIds->InsertId(i, *anIt);
+
+      if(aConn)
+	for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
+	  anIds->InsertId(i,theIds[aConn[i]]);
+      else
+	for (int i = 0, iEnd = theIds.size(); i < iEnd; i++)
+	  anIds->InsertId(i,theIds[i]);
+
       myGrid->InsertNextCell(theType,anIds);
       anIds->Delete();
 
@@ -578,7 +601,7 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
       anIds.push_back( myActor->GetObject()->GetNodeVTKId( aListId[ i ].toInt() ));
 
     if ( Reverse && Reverse->isChecked() )
-      anIds.reverse();
+      reverse(anIds.begin(),anIds.end());
 
     vtkIdType aType = 0;
     switch ( myNbNodes ) {
