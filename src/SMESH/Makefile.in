@@ -63,7 +63,8 @@ LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_Group.cxx \
 	  SMESH_MeshEditor.cxx \
 	  SMESH_Block.cxx \
-	  SMESH_Pattern.cxx
+	  SMESH_Pattern.cxx \
+          SMESH_HypoFilter.cxx
 
 LIB_SERVER_IDL = 
 
