@@ -1322,14 +1322,9 @@ void SMESHGUI_GroupDlg::onClose()
 {
   QAD_StudyFrame* aStudyFrame = mySMESHGUI->GetActiveStudy()->getActiveStudyFrame();
   if (aStudyFrame->getTypeView() == VIEW_VTK) {
+    SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
     SMESH::SetPointRepresentation(false);
     SMESH::SetPickable();
-
-    // remove filters from viewer
-    if(VTKViewer_InteractorStyleSALOME* aStyle = SMESH::GetInteractorStyle()){
-      SMESH::RemoveFilter(SMESHGUI_EdgeFilter,aStyle);
-      SMESH::RemoveFilter(SMESHGUI_FaceFilter,aStyle);
-    }
   }
   
   mySelection->ClearIObjects();
