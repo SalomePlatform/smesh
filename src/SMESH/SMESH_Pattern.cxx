@@ -561,18 +561,20 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     return setErrorCode( ERR_LOAD_EMPTY_SUBMESH );
   }
 
+  TopoDS_Face face = TopoDS::Face( theFace.Oriented( TopAbs_FORWARD ));
+
   // check that face is not closed
   TopoDS_Vertex bidon;
   list<TopoDS_Edge> eList;
-  getOrderedEdges( theFace, bidon, eList, myNbKeyPntInBoundary );
+  getOrderedEdges( face, bidon, eList, myNbKeyPntInBoundary );
   list<TopoDS_Edge>::iterator elIt = eList.begin();
   for ( ; elIt != eList.end() ; elIt++ )
-    if ( BRep_Tool::IsClosed( *elIt , theFace ))
+    if ( BRep_Tool::IsClosed( *elIt , face ))
       return setErrorCode( ERR_LOADF_CLOSED_FACE );
   
 
   Extrema_GenExtPS projector;
-  GeomAdaptor_Surface aSurface( BRep_Tool::Surface( theFace ));
+  GeomAdaptor_Surface aSurface( BRep_Tool::Surface( face ));
   if ( theProject || nbElems == 0 )
     projector.Initialize( aSurface, 20,20, 1e-5,1e-5 );
 
@@ -580,7 +582,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
   TNodePointIDMap nodePointIDMap;
 
   if ( nbElems == 0 || (theProject &&
-                        theMesh->IsMainShape( theFace ) &&
+                        theMesh->IsMainShape( face ) &&
                         !isMeshBoundToShape( theMesh )))
   {
     MESSAGE("Project the whole mesh");
@@ -621,11 +623,11 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       p->myInitXYZ.SetCoord( p->myInitUV.X(), p->myInitUV.Y(), 0 );
     }
     // find key-points: the points most close to UV of vertices
-    TopExp_Explorer vExp( theFace, TopAbs_VERTEX );
+    TopExp_Explorer vExp( face, TopAbs_VERTEX );
     set<int> foundIndices;
     for ( ; vExp.More(); vExp.Next() ) {
       const TopoDS_Vertex v = TopoDS::Vertex( vExp.Current() );
-      gp_Pnt2d uv = BRep_Tool::Parameters( v, theFace );
+      gp_Pnt2d uv = BRep_Tool::Parameters( v, face );
       double minDist = DBL_MAX;
       int index;
       vector< TPoint >::const_iterator pVecIt = myPoints.begin();
@@ -661,7 +663,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     for ( elIt = eList.begin(); elIt != eList.end(); elIt++ )
       myShapeIDMap.Add( *elIt );
     // the face
-    myShapeIDMap.Add( theFace );
+    myShapeIDMap.Add( face );
 
     myPoints.resize( nbNodes );
 
@@ -674,7 +676,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       double f, l;
       Handle(Geom2d_Curve) C2d;
       if ( !theProject )
-        C2d = BRep_Tool::CurveOnSurface( edge, theFace, f, l );
+        C2d = BRep_Tool::CurveOnSurface( edge, face, f, l );
       bool isForward = ( edge.Orientation() == TopAbs_FORWARD );
 
       // the forward key-point
@@ -790,7 +792,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
     if ( fSubMesh && fSubMesh->NbElements() )
     {
-      list< TPoint* > & fPoints = getShapePoints( theFace );
+      list< TPoint* > & fPoints = getShapePoints( face );
       SMDS_NodeIteratorPtr nIt = fSubMesh->GetNodes();
       while ( nIt->more() )
       {
