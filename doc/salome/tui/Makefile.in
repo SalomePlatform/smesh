@@ -17,7 +17,7 @@ doxygen=@DOXYGEN@
 @COMMENCE@
 
 PYTHON_SCRIPTS = \
-	meshpy.py
+	smesh.py
 
 docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
