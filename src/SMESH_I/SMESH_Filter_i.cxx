@@ -268,43 +268,31 @@ bool Controls::LyingOnGeom::Contains( SMESHDS_Mesh*           theMeshDS,
   if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
     return true;
   
-  if ( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( theShape ) )
-    {
-      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
-      while ( aNodeIt->more() )
-	{
-	  const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
-	  SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
-	  while ( anElemIt->more() )
-	    {
-	      const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
-	      if (anElement == theElem)
-		return true;
-	    }
-	}
-    }
+  TopTools_IndexedMapOfShape aSubShapes;
+  TopExp::MapShapes( theShape, aSubShapes );
   
-  TopExp_Explorer anExp( theShape,TopAbs_VERTEX,theAvoidShapeEnum );
-
-  while( anExp.More() )
-  {
-    const TopoDS_Shape& aShape = anExp.Current();
-    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
-      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
-      while ( aNodeIt->more() )
-	{
-	  const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
-	  SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
-	  while ( anElemIt->more() )
-	    {
-	      const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
-	      if (anElement == theElem)
-		return true;
-	    }
-	}
+  for (int i = 1; i <= aSubShapes.Extent(); i++)
+    {
+      const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
+      
+      if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
+	if( aSubMesh->Contains( theElem ) )
+	  return true;
+	
+	SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
+	while ( aNodeIt->more() )
+	  {
+	    const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
+	    SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
+	    while ( anElemIt->more() )
+	      {
+		const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
+		if (anElement == theElem)
+		  return true;
+	      }
+	  }
+      }
     }
-    anExp.Next();
-  }
   return false;
 }
 
