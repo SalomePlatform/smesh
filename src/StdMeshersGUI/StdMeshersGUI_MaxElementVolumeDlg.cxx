@@ -168,7 +168,15 @@ void StdMeshersGUI_MaxElementVolumeDlg::Init()
 
   char* sHypType = (char*)myHypType.latin1();
   HypothesisData* aHypData = mySMESHGUI->GetHypothesisData(sHypType);
-  LineEdit_NameHypothesis->setText( aHypData ? aHypData->Label : "" );
+  //_CS_PhB ambiguous overload  LineEdit_NameHypothesis->setText( aHypData ? aHypData->Label : "" );
+  if (aHypData!=0)
+    {
+      LineEdit_NameHypothesis->setText(aHypData->Label);
+    }
+  else
+    {
+      LineEdit_NameHypothesis->setText("");
+    }
 
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 

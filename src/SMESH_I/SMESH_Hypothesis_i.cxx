@@ -43,10 +43,26 @@ using namespace std;
 SMESH_Hypothesis_i::SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA )
      : SALOME::GenericObj_i( thePOA )
 {
-  MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i" );
+  MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i / Début" );
   myBaseImpl = 0;
-  thePOA->activate_object( this );
+  // _CS_gbo This instruction fails
+  // thePOA->activate_object( this );
+  // _CS_gbo I keep the POA reference to activate the object in the future.
+  myPOA = thePOA;
+  
+  MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i / Fin" );
 };
+
+//=============================================================================
+/*!
+ *  SMESH_Hypothesis_i::Activate()
+ *
+ *  Activation of the object
+ */
+//=============================================================================
+void SMESH_Hypothesis_i::Activate() {
+  myPOA->activate_object( this );
+}
 
 //=============================================================================
 /*!

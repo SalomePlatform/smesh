@@ -37,6 +37,8 @@
 
 #include <stdlib.h>
 
+#define _EDF_NODE_IDS_
+
 DriverMED_R_SMESHDS_Mesh::DriverMED_R_SMESHDS_Mesh()
      :
        myMesh (NULL),
@@ -121,6 +123,82 @@ FindNode(const SMDS_Mesh* theMesh, med_int theId){
 }
 
 
+enum ECoordName{eX, eY, eZ, eNone};
+typedef med_float (*TGetCoord)(MEDA::PNodeInfo&, med_int);
+
+template<ECoordName TheCoordId>
+med_float GetCoord(MEDA::PNodeInfo& thePNodeInfo, med_int theElemId){
+  return thePNodeInfo->GetNodeCoord(theElemId,TheCoordId);
+}
+
+template<>
+med_float GetCoord<eNone>(MEDA::PNodeInfo& thePNodeInfo, med_int theElemId){
+  return 0.0;
+}
+
+
+static TGetCoord aXYZGetCoord[3] = {
+  &GetCoord<eX>, 
+  &GetCoord<eY>, 
+  &GetCoord<eZ>
+};
+
+
+static TGetCoord aXYGetCoord[3] = {
+  &GetCoord<eX>, 
+  &GetCoord<eY>, 
+  &GetCoord<eNone>
+};
+
+static TGetCoord aYZGetCoord[3] = {
+  &GetCoord<eNone>,
+  &GetCoord<eX>, 
+  &GetCoord<eY>
+};
+
+static TGetCoord aXZGetCoord[3] = {
+  &GetCoord<eX>, 
+  &GetCoord<eNone>,
+  &GetCoord<eY>
+};
+
+
+static TGetCoord aXGetCoord[3] = {
+  &GetCoord<eX>, 
+  &GetCoord<eNone>,
+  &GetCoord<eNone>
+};
+
+static TGetCoord aYGetCoord[3] = {
+  &GetCoord<eNone>,
+  &GetCoord<eX>, 
+  &GetCoord<eNone>
+};
+
+static TGetCoord aZGetCoord[3] = {
+  &GetCoord<eNone>,
+  &GetCoord<eNone>,
+  &GetCoord<eX>
+};
+
+
+class TCoordHelper{
+  MEDA::PNodeInfo myPNodeInfo;
+  TGetCoord* myGetCoord;
+public:
+  TCoordHelper(const MEDA::PNodeInfo& thePNodeInfo,
+	       TGetCoord* theGetCoord):
+    myPNodeInfo(thePNodeInfo),
+    myGetCoord(theGetCoord)
+  {}
+  virtual ~TCoordHelper(){}
+  med_float GetCoord(med_int theElemId, med_int theCoodId){
+    return (*myGetCoord[theCoodId])(myPNodeInfo,theElemId);
+  }
+};
+typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
+
+
 DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 {
   ReadStatus result = DRS_FAIL;
@@ -148,8 +226,7 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 	MESSAGE("ReadMySelf - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         result = DRS_OK;
-	med_int aMeshDim = aMeshInfo->GetDim();
-	
+
         // Reading MED families to the temporary structure
 	//------------------------------------------------
         med_int aNbFams = aMed.GetNbFamilies(aMeshInfo);
@@ -159,7 +236,6 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
           med_int aFamId = aFamilyInfo->GetId();
           MESSAGE("Family " << aFamId << " :");
 
-//if (aFamId >= FIRST_VALID_FAMILY) {
             DriverMED_FamilyPtr aFamily (new DriverMED_Family);
 
             med_int aNbGrp = aFamilyInfo->GetNbGroup();
@@ -169,21 +245,56 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
               MESSAGE(aGroupName);
               aFamily->AddGroupName(aGroupName);
             }
-//        aFamily->SetId(aFamId);
             myFamilies[aFamId] = aFamily;
-//          }
         }
 
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
 	PNodeInfo aNodeInfo = aMed.GetNodeInfo(aMeshInfo);
+
+	TCoordHelperPtr aCoordHelperPtr;
+	{
+	  med_int aMeshDimension = aMeshInfo->GetDim();
+	  bool anIsDimPresent[3] = {false, false, false};
+          for(med_int iDim = 0; iDim < aMeshDimension; iDim++){
+	    string aDimName = aNodeInfo->GetCoordName(iDim);
+	    if(aDimName == "x" || aDimName == "X")
+	      anIsDimPresent[eX] = true;
+	    else if(aDimName == "y" || aDimName == "Y")
+	      anIsDimPresent[eY] = true;
+	    else if(aDimName == "z" || aDimName == "Z")
+	      anIsDimPresent[eZ] = true;
+	  }
+	  switch(aMeshDimension){
+	  case 3:
+	    aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aXYZGetCoord));
+	    break;
+	  case 2:
+	    if(anIsDimPresent[eY] && anIsDimPresent[eZ])
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aYZGetCoord));
+	    else if(anIsDimPresent[eX] && anIsDimPresent[eZ])
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aXZGetCoord));
+	    else
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aXYGetCoord));
+	    break;
+	  case 1:
+	    if(anIsDimPresent[eY])
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aYGetCoord));
+	    else if(anIsDimPresent[eZ])
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aZGetCoord));
+	    else
+	      aCoordHelperPtr.reset(new TCoordHelper(aNodeInfo,aXGetCoord));
+	    break;
+	  }
+	}
+
 	med_booleen anIsNodeNum = aNodeInfo->IsElemNum();
 	med_int aNbElems = aNodeInfo->GetNbElem();
 	MESSAGE("ReadMySelf - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
         for(med_int iElem = 0; iElem < aNbElems; iElem++){
           double aCoords[3] = {0.0, 0.0, 0.0};
-          for(med_int iDim = 0; iDim < aMeshDim; iDim++)
-            aCoords[iDim] = aNodeInfo->GetNodeCoord(iElem,iDim);
+          for(med_int iDim = 0; iDim < 3; iDim++)
+            aCoords[iDim] = aCoordHelperPtr->GetCoord(iElem,iDim);
           const SMDS_MeshNode* aNode;
           if(anIsNodeNum) {
 	    aNode = myMesh->AddNodeWithID
@@ -258,22 +369,21 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		break;
 	      }
 	      vector<med_int> aNodeIds(aNbNodes);
+#ifdef _EDF_NODE_IDS_
 	      if(anIsNodeNum) {
 		for(int i = 0; i < aNbNodes; i++){
-		  aNodeIds.at(i) = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
+		  aNodeIds[i] = aNodeInfo->GetElemNum(aCellInfo->GetConn(iElem,i)-1);
 		}
 	      }else{
 		for(int i = 0; i < aNbNodes; i++){
-		  aNodeIds.at(i) = aCellInfo->GetConn(iElem,i);
+		  aNodeIds[i] = aCellInfo->GetConn(iElem,i);
 		}
 	      }
-	      //if(anIsElemNum)
-	      //	cout<<aCellInfo->GetElemNum(iElem)<<": ";
-	      //else
-	      //	cout<<iElem<<": ";
-	      //for(int i = 0; i < aNbNodes; i++){
-	      //	cout<<aNodeIds.at(i)<<", ";
-	      //}
+#else
+	      for(int i = 0; i < aNbNodes; i++){
+		aNodeIds[i] = aCellInfo->GetConn(iElem,i);
+	      }
+#endif
 
 	      bool isRenum = false;
 	      SMDS_MeshElement* anElement = NULL;
@@ -283,12 +393,12 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		case MED_SEG2:
 		case MED_SEG3:
 		  if(anIsElemNum)
-		    anElement = myMesh->AddEdgeWithID(aNodeIds.at(0),
-						      aNodeIds.at(1),
+		    anElement = myMesh->AddEdgeWithID(aNodeIds[0],
+						      aNodeIds[1],
 						      aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds.at(0)),
-						FindNode(myMesh,aNodeIds.at(1)));
+		    anElement = myMesh->AddEdge(FindNode(myMesh,aNodeIds[0]),
+						FindNode(myMesh,aNodeIds[1]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -296,14 +406,14 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		case MED_TRIA6:
 		  aNbNodes = 3;
 		  if(anIsElemNum)
-		    anElement = myMesh->AddFaceWithID(aNodeIds.at(0),
-						      aNodeIds.at(1),
-						      aNodeIds.at(2),
+		    anElement = myMesh->AddFaceWithID(aNodeIds[0],
+						      aNodeIds[1],
+						      aNodeIds[2],
 						      aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds.at(0)),
-						FindNode(myMesh,aNodeIds.at(1)),
-						FindNode(myMesh,aNodeIds.at(2)));
+		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+						FindNode(myMesh,aNodeIds[1]),
+						FindNode(myMesh,aNodeIds[2]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -312,16 +422,16 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		  aNbNodes = 4;
 		  // There is some differnce between SMDS and MED
 		  if(anIsElemNum)
-		    anElement = myMesh->AddFaceWithID(aNodeIds.at(0),
-						      aNodeIds.at(1),
-						      aNodeIds.at(2),
-						      aNodeIds.at(3),
+		    anElement = myMesh->AddFaceWithID(aNodeIds[0],
+						      aNodeIds[1],
+						      aNodeIds[2],
+						      aNodeIds[3],
 						      aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds.at(0)),
-						FindNode(myMesh,aNodeIds.at(1)),
-						FindNode(myMesh,aNodeIds.at(2)),
-						FindNode(myMesh,aNodeIds.at(3)));
+		    anElement = myMesh->AddFace(FindNode(myMesh,aNodeIds[0]),
+						FindNode(myMesh,aNodeIds[1]),
+						FindNode(myMesh,aNodeIds[2]),
+						FindNode(myMesh,aNodeIds[3]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -329,16 +439,16 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		case MED_TETRA10:
 		  aNbNodes = 4;
 		  if(anIsElemNum)
-		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
-							aNodeIds.at(1),
-							aNodeIds.at(2),
-							aNodeIds.at(3),
+		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+							aNodeIds[1],
+							aNodeIds[2],
+							aNodeIds[3],
 							aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
-						  FindNode(myMesh,aNodeIds.at(1)),
-						  FindNode(myMesh,aNodeIds.at(2)),
-						  FindNode(myMesh,aNodeIds.at(3)));
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+						  FindNode(myMesh,aNodeIds[1]),
+						  FindNode(myMesh,aNodeIds[2]),
+						  FindNode(myMesh,aNodeIds[3]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -347,18 +457,18 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		  aNbNodes = 5;
 		  // There is some differnce between SMDS and MED
 		  if(anIsElemNum)
-		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
-							aNodeIds.at(1),
-							aNodeIds.at(2),
-							aNodeIds.at(3),
-							aNodeIds.at(4),
+		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+							aNodeIds[1],
+							aNodeIds[2],
+							aNodeIds[3],
+							aNodeIds[4],
 							aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
-						  FindNode(myMesh,aNodeIds.at(1)),
-						  FindNode(myMesh,aNodeIds.at(2)),
-						  FindNode(myMesh,aNodeIds.at(3)),
-						  FindNode(myMesh,aNodeIds.at(4)));
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+						  FindNode(myMesh,aNodeIds[1]),
+						  FindNode(myMesh,aNodeIds[2]),
+						  FindNode(myMesh,aNodeIds[3]),
+						  FindNode(myMesh,aNodeIds[4]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -366,20 +476,20 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		case MED_PENTA15:
 		  aNbNodes = 6;
 		  if(anIsElemNum)
-		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
-							aNodeIds.at(1),
-							aNodeIds.at(2),
-							aNodeIds.at(3),
-							aNodeIds.at(4),
-							aNodeIds.at(5),
+		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+							aNodeIds[1],
+							aNodeIds[2],
+							aNodeIds[3],
+							aNodeIds[4],
+							aNodeIds[5],
 							aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
-						  FindNode(myMesh,aNodeIds.at(1)),
-						  FindNode(myMesh,aNodeIds.at(2)),
-						  FindNode(myMesh,aNodeIds.at(3)),
-						  FindNode(myMesh,aNodeIds.at(4)),
-						  FindNode(myMesh,aNodeIds.at(5)));
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+						  FindNode(myMesh,aNodeIds[1]),
+						  FindNode(myMesh,aNodeIds[2]),
+						  FindNode(myMesh,aNodeIds[3]),
+						  FindNode(myMesh,aNodeIds[4]),
+						  FindNode(myMesh,aNodeIds[5]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;
@@ -387,24 +497,24 @@ DriverMED_R_SMESHDS_Mesh::ReadStatus DriverMED_R_SMESHDS_Mesh::ReadMySelf()
 		case MED_HEXA20:
 		  aNbNodes = 8;
 		  if(anIsElemNum)
-		    anElement = myMesh->AddVolumeWithID(aNodeIds.at(0),
-							aNodeIds.at(1),
-							aNodeIds.at(2),
-							aNodeIds.at(3),
-							aNodeIds.at(4),
-							aNodeIds.at(5),
-							aNodeIds.at(6),
-							aNodeIds.at(7),
+		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+							aNodeIds[1],
+							aNodeIds[2],
+							aNodeIds[3],
+							aNodeIds[4],
+							aNodeIds[5],
+							aNodeIds[6],
+							aNodeIds[7],
 							aCellInfo->GetElemNum(iElem));
 		  if (!anElement) {
-		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds.at(0)),
-						  FindNode(myMesh,aNodeIds.at(1)),
-						  FindNode(myMesh,aNodeIds.at(2)),
-						  FindNode(myMesh,aNodeIds.at(3)),
-						  FindNode(myMesh,aNodeIds.at(4)),
-						  FindNode(myMesh,aNodeIds.at(5)),
-						  FindNode(myMesh,aNodeIds.at(6)),
-						  FindNode(myMesh,aNodeIds.at(7)));
+		    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+						  FindNode(myMesh,aNodeIds[1]),
+						  FindNode(myMesh,aNodeIds[2]),
+						  FindNode(myMesh,aNodeIds[3]),
+						  FindNode(myMesh,aNodeIds[4]),
+						  FindNode(myMesh,aNodeIds[5]),
+						  FindNode(myMesh,aNodeIds[6]),
+						  FindNode(myMesh,aNodeIds[7]));
 		    isRenum = anIsElemNum;
 		  }
 		  break;

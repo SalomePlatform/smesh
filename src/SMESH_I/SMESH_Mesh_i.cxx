@@ -49,6 +49,8 @@ using namespace std;
 
 #include <string>
 #include <iostream>
+// _CS_gbo_050504 Ajout explicite du sstream pour ostringstream 
+#include <sstream>
 
 
 //**** SMESHDS en champ

@@ -141,26 +141,30 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
     theGrid = static_cast<vtkUnstructuredGrid*>(myMergeFilter->GetOutput());
 
     int anId = 0;
-    myPassFilter.at( anId )->SetInput( theGrid );
-    myPassFilter.at( anId + 1)->SetInput( myPassFilter.at( anId )->GetOutput() );
+    myPassFilter[ anId ]->SetInput( theGrid );
+    myPassFilter[ anId + 1]->SetInput( myPassFilter[ anId ]->GetOutput() );
     
     anId++; // 1
     myGeomFilter->SetStoreMapping( myStoreMapping );
-    myGeomFilter->SetInput( myPassFilter.at( anId )->GetOutput() );
+    myGeomFilter->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 2
-    myPassFilter.at( anId )->SetInput( myGeomFilter->GetOutput() ); 
-    myPassFilter.at( anId + 1 )->SetInput( myPassFilter.at( anId )->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myGeomFilter->GetOutput() ); 
+    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 3
-    myTransformFilter->SetInput( myPassFilter.at( anId )->GetPolyDataOutput() );
+    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
+    myTransformFilter->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     anId++; // 4
-    myPassFilter.at( anId )->SetInput( myTransformFilter->GetOutput() );
-    myPassFilter.at( anId + 1 )->SetInput( myPassFilter.at( anId )->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
+    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
+    myPassFilter[ anId ]->SetInput( myTransformFilter->GetOutput() );
+    myPassFilter[ anId + 1 ]->SetInput( myPassFilter[ anId ]->GetOutput() );
 
     anId++; // 5
-    myMapper->SetInput( myPassFilter.at( anId )->GetPolyDataOutput() );
+    myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
+    myMapper->SetInput( myPassFilter[ anId ]->GetPolyDataOutput() );
 
     vtkLODActor::SetMapper( myMapper );
     Modified();
@@ -207,10 +211,10 @@ void SMESH_DeviceActor::SetTransform(SALOME_Transform* theTransform){
 void SMESH_DeviceActor::SetShrink()
 {
   if ( !myIsShrinkable ) return;
-  if ( vtkDataSet* aDataSet = myPassFilter.at( 0 )->GetOutput() )
+  if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
   {
     myShrinkFilter->SetInput( aDataSet );
-    myPassFilter.at( 1 )->SetInput( myShrinkFilter->GetOutput() );
+    myPassFilter[ 1 ]->SetInput( myShrinkFilter->GetOutput() );
     myIsShrunk = true;
   }
 }
@@ -218,10 +222,10 @@ void SMESH_DeviceActor::SetShrink()
 void SMESH_DeviceActor::UnShrink()
 {
   if ( !myIsShrunk ) return;
-  if ( vtkDataSet* aDataSet = myPassFilter.at( 0 )->GetOutput() )
-  {
-    myPassFilter.at( 1 )->SetInput( aDataSet );
-    myPassFilter.at( 1 )->Modified();
+  if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
+  {    
+    myPassFilter[ 1 ]->SetInput( aDataSet );
+    myPassFilter[ 1 ]->Modified();
     myIsShrunk = false;
     Modified();
   }

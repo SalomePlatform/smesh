@@ -466,6 +466,8 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     myHypothesis_i =
       myHypCreatorMap[string(theHypName)]->Create
         (myPoa, myCurrentStudy->StudyId(), &myGen);
+    // _CS_gbo Explicit activation (no longer made in the constructor).
+    myHypothesis_i->Activate();
     myHypothesis_i->SetLibName(theLibName); // for persistency assurance
   }
   catch (SALOME_Exception& S_ex)

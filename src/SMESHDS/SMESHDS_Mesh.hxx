@@ -47,6 +47,8 @@
 #ifdef __GNUC__
 #if __GNUC__ < 3
 	#include <hash_map.h>
+        // _CS_gbo_100504 Do not forget to define the namespace alias gstd
+        namespace gstd { using ::hash_map; } // inherits globals
 #else
 	#include <ext/hash_map>
 	namespace gstd = __gnu_cxx;

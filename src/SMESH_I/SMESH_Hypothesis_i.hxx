@@ -67,12 +67,19 @@ public:
   // Get implementation
   ::SMESH_Hypothesis* GetImpl();
   
+  // _CS_gbo_ Activate the object using the POA
+  void Activate();
+
   // Persistence
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
   
 protected:
   ::SMESH_Hypothesis* myBaseImpl;    // base hypothesis implementation
+
+  // _CS_gbo_070505 To keep the reference and delayed the activation
+  // in the methode Activate().
+  PortableServer::POA_ptr myPOA;
 };
 
 // ======================================================

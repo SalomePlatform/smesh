@@ -37,6 +37,9 @@
 
 #include "MED_Utilities.hxx"
 
+#define _EDF_NODE_IDS_
+#define _ELEMENTS_BY_DIM_
+
 DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh()
      :
        myMesh (NULL),
@@ -130,6 +133,96 @@ void DriverMED_W_SMESHDS_Mesh::Write()
   myWriter->Write();
 }
 
+
+typedef double (SMDS_MeshNode::* TGetCoord)() const;
+typedef const char* TName;
+typedef const char* TUnit;
+
+static TUnit aUnit[3] = {"m","m","m"};
+
+static TGetCoord aXYZGetCoord[3] = {
+  &SMDS_MeshNode::X, 
+  &SMDS_MeshNode::Y, 
+  &SMDS_MeshNode::Z
+};
+static TName aXYZName[3] = {"x","y","z"};
+
+
+static TGetCoord aXYGetCoord[2] = {
+  &SMDS_MeshNode::X, 
+  &SMDS_MeshNode::Y
+};
+static TName aXYName[2] = {"x","y"};
+
+static TGetCoord aYZGetCoord[2] = {
+  &SMDS_MeshNode::Y, 
+  &SMDS_MeshNode::Z
+};
+static TName aYZName[2] = {"y","z"};
+
+static TGetCoord aXZGetCoord[2] = {
+  &SMDS_MeshNode::X, 
+  &SMDS_MeshNode::Z
+};
+static TName aXZName[2] = {"x","z"};
+
+
+static TGetCoord aXGetCoord[1] = {
+  &SMDS_MeshNode::X
+};
+static TName aXName[1] = {"x"};
+
+static TGetCoord aYGetCoord[1] = {
+  &SMDS_MeshNode::Y
+};
+static TName aYName[1] = {"y"};
+
+static TGetCoord aZGetCoord[1] = {
+  &SMDS_MeshNode::Z
+};
+static TName aZName[1] = {"z"};
+
+
+class TCoordHelper{
+  SMDS_NodeIteratorPtr myNodeIter;
+  const SMDS_MeshNode* myCurrentNode;
+  TGetCoord* myGetCoord;
+  TName* myName;
+  TUnit* myUnit;
+public:
+  TCoordHelper(const SMDS_NodeIteratorPtr& theNodeIter,
+	       TGetCoord* theGetCoord,
+	       TName* theName,
+	       TUnit* theUnit = aUnit):
+    myNodeIter(theNodeIter),
+    myGetCoord(theGetCoord),
+    myName(theName),
+    myUnit(theUnit)
+  {}
+  virtual ~TCoordHelper(){}
+  bool Next(){ 
+    return myNodeIter->more() && 
+      (myCurrentNode = myNodeIter->next());
+  }
+  const SMDS_MeshNode* GetNode(){
+    return myCurrentNode;
+  }
+  MED::TIntVector::value_type GetID(){
+    myCurrentNode->GetID();
+  }
+  MED::TFloatVector::value_type GetCoord(med_int theCoodId){
+    return (myCurrentNode->*myGetCoord[theCoodId])();
+  }
+  MED::TStringVector::value_type GetName(med_int theDimId){
+    return myName[theDimId];
+  }
+  MED::TStringVector::value_type GetUnit(med_int theDimId){
+    return myUnit[theDimId];
+  }
+};
+typedef boost::shared_ptr<TCoordHelper> TCoordHelperPtr;
+
+
 void DriverMED_W_SMESHDS_Mesh::Add()
 {
   if (myMesh->hasConstructionEdges() || myMesh->hasConstructionFaces()) {
@@ -153,8 +246,71 @@ void DriverMED_W_SMESHDS_Mesh::Add()
     } else {
       aMeshName = myMeshName;
     }
-    const int SMDS_MESH_DIM = 3;
-    PMeshInfo aMeshInfo = TWrapper::CrMeshInfo(SMDS_MESH_DIM,aMeshName);
+
+    // Mesh dimension definition
+    med_int aMeshDimension;
+    TCoordHelperPtr aCoordHelperPtr;
+    {  
+      bool anIsXDimension = false;
+      bool anIsYDimension = false;
+      bool anIsZDimension = false;
+      {
+	SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
+	double aBounds[6];
+	if(aNodesIter->more()){
+	  const SMDS_MeshNode* aNode = aNodesIter->next();
+	  aBounds[0] = aBounds[1] = aNode->X();
+	  aBounds[2] = aBounds[3] = aNode->Y();
+	  aBounds[4] = aBounds[5] = aNode->Z();
+	}
+	while(aNodesIter->more()){
+	  const SMDS_MeshNode* aNode = aNodesIter->next();
+	  aBounds[0] = min(aBounds[0],aNode->X());
+	  aBounds[1] = max(aBounds[1],aNode->X());
+	  
+	  aBounds[2] = min(aBounds[2],aNode->Y());
+	  aBounds[3] = max(aBounds[3],aNode->Y());
+	  
+	  aBounds[4] = min(aBounds[4],aNode->Z());
+	  aBounds[5] = max(aBounds[5],aNode->Z());
+	}
+
+	double EPS = 1.0E-7;
+	anIsXDimension = (aBounds[1] - aBounds[0]) > EPS;
+	anIsYDimension = (aBounds[3] - aBounds[2]) > EPS;
+	anIsZDimension = (aBounds[5] - aBounds[4]) > EPS;
+
+	aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
+	if(!aMeshDimension)
+	  aMeshDimension = 3;
+      }
+
+      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
+      switch(aMeshDimension){
+      case 3:
+	aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
+	break;
+      case 2:
+	if(anIsXDimension && anIsYDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYGetCoord,aXYName));
+	if(anIsYDimension && anIsZDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYZGetCoord,aYZName));
+	if(anIsXDimension && anIsZDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXZGetCoord,aXZName));
+	break;
+      case 1:
+	if(anIsXDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXGetCoord,aXName));
+	if(anIsYDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aYGetCoord,aYName));
+	if(anIsZDimension)
+	  aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aZGetCoord,aZName));
+	break;
+      }
+    }
+
+    
+    PMeshInfo aMeshInfo = TWrapper::CrMeshInfo(aMeshDimension,aMeshName);
     MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     aMed.SetMeshInfo(aMeshInfo);
 
@@ -208,35 +364,36 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 
     // Storing SMDS nodes to the MED file for the MED mesh
     //----------------------------------------------------
+#ifdef _EDF_NODE_IDS_
     typedef map<med_int,med_int> TNodeIdMap;
     TNodeIdMap aNodeIdMap;
-
+#endif
     med_int aNbElems = myMesh->NbNodes();
     MED::TIntVector anElemNums(aNbElems);
     MED::TIntVector aFamilyNums(aNbElems);
-    MED::TFloatVector aCoordinates(aNbElems*SMDS_MESH_DIM);
-    SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
-    for(med_int iNode = 0, iCoord = 0; aNodesIter->more(); iNode++, iCoord+=SMDS_MESH_DIM){
-      const SMDS_MeshNode* aNode = aNodesIter->next();
-      aCoordinates[iCoord] = aNode->X();
-      aCoordinates[iCoord+1] = aNode->Y();
-      aCoordinates[iCoord+2] = aNode->Z();
-      TNodeIdMap::key_type aNodeId = aNode->GetID();
-      anElemNums[iNode] = aNodeId;
-      aNodeIdMap[aNodeId] = iNode+1;
-      //cout<<aNode->GetID()<<": "<<aNode->X()<<", "<<aNode->Y()<<", "<<aNode->Z()<<endl;
-
+    MED::TFloatVector aCoordinates(aNbElems*aMeshDimension);
+    for(med_int iNode = 0, aStartId = 0; aCoordHelperPtr->Next(); iNode++, aStartId += aMeshDimension){
+      for(med_int iCoord = 0; iCoord < aMeshDimension; iCoord++){
+	aCoordinates[aStartId+iCoord] = aCoordHelperPtr->GetCoord(iCoord);
+      }
+      int aNodeID = aCoordHelperPtr->GetID();
+      anElemNums[iNode] = aNodeID;
+#ifdef _EDF_NODE_IDS_
+      aNodeIdMap[aNodeID] = iNode+1;
+#endif
+      const SMDS_MeshNode* aNode = aCoordHelperPtr->GetNode();
       if (anElemFamMap.find(aNode) != anElemFamMap.end())
-        aFamilyNums[iNode] = anElemFamMap[aNode];
+	aFamilyNums[iNode] = anElemFamMap[aNode];
       else
-        aFamilyNums[iNode] = myNodesDefaultFamilyId;
+	aFamilyNums[iNode] = myNodesDefaultFamilyId;
     }
 
-    MED::TStringVector aCoordNames(3);
-    aCoordNames[0] = "x";  aCoordNames[1] = "y";  aCoordNames[2] = "z";
-
-    MED::TStringVector aCoordUnits(3);
-    aCoordUnits[0] = "m";  aCoordUnits[1] = "m";  aCoordUnits[2] = "m";
+    MED::TStringVector aCoordNames(aMeshDimension);
+    MED::TStringVector aCoordUnits(aMeshDimension);
+    for(med_int iCoord = 0; iCoord < aMeshDimension; iCoord++){
+      aCoordNames[iCoord] = aCoordHelperPtr->GetName(iCoord);
+      aCoordUnits[iCoord] = aCoordHelperPtr->GetUnit(iCoord);
+    }
 
     const med_repere SMDS_COORDINATE_SYSTEM = MED_CART;
 
@@ -253,13 +410,16 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 
     // Storing others SMDS elements to the MED file for the MED mesh
     //--------------------------------------------------------------
-    const med_entite_maillage SMDS_MED_ENTITY = MED_MAILLE;
+    med_entite_maillage SMDS_MED_ENTITY = MED_MAILLE;
     const med_connectivite SMDS_MED_CONNECTIVITY = MED_NOD;
 
     // Storing SMDS Edges
     if(med_int aNbElems = myMesh->NbEdges()){
+#ifdef _ELEMENTS_BY_DIM_
+      SMDS_MED_ENTITY = MED_ARETE;
+#endif
       SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-      med_int aNbConnectivity = MED::GetNbConn(SMDS_MED_ENTITY,MED_SEG2,SMDS_MESH_DIM);
+      med_int aNbConnectivity = MED::GetNbConn(SMDS_MED_ENTITY,MED_SEG2,aMeshDimension);
       MED::TIntVector anElemNums(aNbElems);
       MED::TIntVector aFamilyNums(aNbElems);
       MED::TIntVector aConnectivity(aNbElems*aNbConnectivity);
@@ -269,7 +429,11 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
 	for(med_int iNode = 0; iNode < aNbConnectivity && aNodesIter->more(); iNode++){
 	  const SMDS_MeshElement* aNode = aNodesIter->next();
+#ifdef _EDF_NODE_IDS_
 	  aConnectivity[iConn+iNode] = aNodeIdMap[aNode->GetID()];
+#else
+	  aConnectivity[iConn+iNode] = aNode->GetID();
+#endif
 	}
 	anElemNums[iElem] = anElem->GetID();
 
@@ -292,8 +456,10 @@ void DriverMED_W_SMESHDS_Mesh::Add()
     // Storing SMDS Faces
     if(med_int aNbElems = myMesh->NbFaces()){
       SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-
-      med_int aNbTriaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_TRIA3,SMDS_MESH_DIM);
+#ifdef _ELEMENTS_BY_DIM_
+      SMDS_MED_ENTITY = MED_FACE;
+#endif
+      med_int aNbTriaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_TRIA3,aMeshDimension);
       MED::TIntVector anTriaElemNums; 
       anTriaElemNums.reserve(aNbElems);
       MED::TIntVector aTriaFamilyNums;
@@ -301,7 +467,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
       MED::TIntVector aTriaConn;
       aTriaConn.reserve(aNbElems*aNbTriaConn);
 
-      med_int aNbQuadConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_QUAD4,SMDS_MESH_DIM);
+      med_int aNbQuadConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_QUAD4,aMeshDimension);
       MED::TIntVector aQuadElemNums;
       aQuadElemNums.reserve(aNbElems);
       MED::TIntVector aQuadFamilyNums;
@@ -340,6 +506,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	med_int aSize = aConnectivity->size();
 	aConnectivity->resize(aSize+aNbConnectivity);
 	// There is some differnce between SMDS and MED in cells mapping
+#ifdef _EDF_NODE_IDS_
 	switch(aNbNodes){
 	case 4:
 	  (*aConnectivity)[aSize+0] = aNodeIdMap[aVector[0]];
@@ -350,6 +517,18 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
 	    (*aConnectivity)[aSize+iNode] = aNodeIdMap[aVector[iNode]];
 	}
+#else
+	switch(aNbNodes){
+	case 4:
+	  (*aConnectivity)[aSize+0] = aVector[0];
+	  (*aConnectivity)[aSize+1] = aVector[1];
+	  (*aConnectivity)[aSize+2] = aVector[3];  
+	  (*aConnectivity)[aSize+3] = aVector[2];  
+	default:
+	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
+	    (*aConnectivity)[aSize+iNode] = aVector[iNode];
+	}
+#endif
 	anElemNums->push_back(anElem->GetID());
 
         if (anElemFamMap.find(anElem) != anElemFamMap.end())
@@ -384,8 +563,10 @@ void DriverMED_W_SMESHDS_Mesh::Add()
     // Storing SMDS Volumes
     if(med_int aNbElems = myMesh->NbVolumes()){
       SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
-
-      med_int aNbTetraConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_TETRA4,SMDS_MESH_DIM);
+#ifdef _ELEMENTS_BY_DIM_
+      SMDS_MED_ENTITY = MED_MAILLE;
+#endif
+      med_int aNbTetraConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_TETRA4,aMeshDimension);
       MED::TIntVector anTetraElemNums; 
       anTetraElemNums.reserve(aNbElems);
       MED::TIntVector aTetraFamilyNums;
@@ -393,7 +574,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
       MED::TIntVector aTetraConn;
       aTetraConn.reserve(aNbElems*aNbTetraConn);
 
-      med_int aNbPyraConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_PYRA5,SMDS_MESH_DIM);
+      med_int aNbPyraConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_PYRA5,aMeshDimension);
       MED::TIntVector anPyraElemNums; 
       anPyraElemNums.reserve(aNbElems);
       MED::TIntVector aPyraFamilyNums;
@@ -401,7 +582,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
       MED::TIntVector aPyraConn;
       aPyraConn.reserve(aNbElems*aNbPyraConn);
 
-      med_int aNbPentaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_PENTA6,SMDS_MESH_DIM);
+      med_int aNbPentaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_PENTA6,aMeshDimension);
       MED::TIntVector anPentaElemNums; 
       anPentaElemNums.reserve(aNbElems);
       MED::TIntVector aPentaFamilyNums;
@@ -409,7 +590,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
       MED::TIntVector aPentaConn;
       aPentaConn.reserve(aNbElems*aNbPentaConn);
 
-      med_int aNbHexaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_HEXA8,SMDS_MESH_DIM);
+      med_int aNbHexaConn = MED::GetNbConn(SMDS_MED_ENTITY,MED_HEXA8,aMeshDimension);
       MED::TIntVector aHexaElemNums;
       aHexaElemNums.reserve(aNbElems);
       MED::TIntVector aHexaFamilyNums;
@@ -459,6 +640,7 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	med_int aSize = aConnectivity->size();
 	aConnectivity->resize(aSize+aNbConnectivity);
 	// There is some difference between SMDS and MED in cells mapping
+#ifdef _EDF_NODE_IDS_
 	switch(aNbNodes){
 	case 5:
 	  (*aConnectivity)[aSize+0] = aNodeIdMap[aVector[0]];
@@ -470,6 +652,19 @@ void DriverMED_W_SMESHDS_Mesh::Add()
 	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
 	    (*aConnectivity)[aSize+iNode] = aNodeIdMap[aVector[iNode]];
 	}
+#else
+	switch(aNbNodes){
+	case 5:
+	  (*aConnectivity)[aSize+0] = aVector[0];
+	  (*aConnectivity)[aSize+1] = aVector[3];
+	  (*aConnectivity)[aSize+2] = aVector[2];  
+	  (*aConnectivity)[aSize+3] = aVector[1];  
+	  (*aConnectivity)[aSize+4] = aVector[4];  
+	default:
+	  for(med_int iNode = 0; iNode < aNbNodes; iNode++) 
+	    (*aConnectivity)[aSize+iNode] = aVector[iNode];
+	}
+#endif
 	anElemNums->push_back(anElem->GetID());
 
         if (anElemFamMap.find(anElem) != anElemFamMap.end())
