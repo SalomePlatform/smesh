@@ -37,43 +37,40 @@
 #include <string>
 #include <vector>
 #include <list>
+using namespace std;
 
 class SMESH_gen;
 class SMESH_Mesh;
 
-class SMESH_Algo:
-  public SMESH_Hypothesis
+class SMESH_Algo:public SMESH_Hypothesis
 {
-public:
-  SMESH_Algo(int hypId, int studyId, SMESH_Gen* gen);
-  virtual ~SMESH_Algo();
+  public:
+	SMESH_Algo(int hypId, int studyId, SMESH_Gen * gen);
+	  virtual ~ SMESH_Algo();
 
-  const vector<string> & GetCompatibleHypothesis();
-  virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
-			       const TopoDS_Shape& aShape);
+	const vector < string > &GetCompatibleHypothesis();
+	virtual bool CheckHypothesis(SMESH_Mesh & aMesh,
+		const TopoDS_Shape & aShape);
 
-  virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape);
+	virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
-  virtual const list<SMESHDS_Hypothesis*>&
-  GetUsedHypothesis(SMESH_Mesh& aMesh,
-		    const TopoDS_Shape& aShape);
+	virtual const list <const SMESHDS_Hypothesis *> &
+		GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
-  const list<SMESHDS_Hypothesis*>&
-  GetAppliedHypothesis(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape);
+	const list <const SMESHDS_Hypothesis *> &
+		GetAppliedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
-  static double EdgeLength(const TopoDS_Edge& E);
+	static double EdgeLength(const TopoDS_Edge & E);
 
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream& operator << (ostream & save, SMESH_Algo & hyp);
-  friend istream& operator >> (istream & load, SMESH_Algo & hyp);
+	virtual ostream & SaveTo(ostream & save);
+	virtual istream & LoadFrom(istream & load);
+	friend ostream & operator <<(ostream & save, SMESH_Algo & hyp);
+	friend istream & operator >>(istream & load, SMESH_Algo & hyp);
 
-protected:
-  vector<string> _compatibleHypothesis;
-  list<SMESHDS_Hypothesis*> _appliedHypList;
-  list<SMESHDS_Hypothesis*> _usedHypList;
+  protected:
+	  vector<string> _compatibleHypothesis;
+	  list<const SMESHDS_Hypothesis *> _appliedHypList;
+	  list<const SMESHDS_Hypothesis *> _usedHypList;
 };
 
 #endif

@@ -32,25 +32,23 @@
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class SMESH_MaxElementArea:
-  public SMESH_Hypothesis
+class SMESH_MaxElementArea:public SMESH_Hypothesis
 {
-public:
-  SMESH_MaxElementArea(int hypId, int studyId, SMESH_Gen* gen);
-  virtual ~SMESH_MaxElementArea();
+  public:
+	SMESH_MaxElementArea(int hypId, int studyId, SMESH_Gen * gen);
+	  virtual ~ SMESH_MaxElementArea();
 
-  void SetMaxArea(double maxArea)
-    throw (SALOME_Exception);
+	void SetMaxArea(double maxArea) throw(SALOME_Exception);
 
-  double GetMaxArea();
+	double GetMaxArea() const;
 
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, SMESH_MaxElementArea & hyp);
-  friend istream & operator >> (istream & load, SMESH_MaxElementArea & hyp);
+	virtual ostream & SaveTo(ostream & save);
+	virtual istream & LoadFrom(istream & load);
+	friend ostream & operator <<(ostream & save, SMESH_MaxElementArea & hyp);
+	friend istream & operator >>(istream & load, SMESH_MaxElementArea & hyp);
 
-protected:
-  double _maxArea;
+  protected:
+	double _maxArea;
 };
 
 #endif

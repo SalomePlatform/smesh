@@ -32,9 +32,6 @@ using namespace std;
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include "SMESHDS_ListOfPtrHypothesis.hxx"
-#include "SMESHDS_ListIteratorOfListOfPtrHypothesis.hxx"
-
 #include <GeomAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
@@ -49,12 +46,12 @@ using namespace std;
  */
 //=============================================================================
 
-SMESH_Algo::SMESH_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+SMESH_Algo::SMESH_Algo(int hypId, int studyId,
+	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
 {
 //   _compatibleHypothesis.push_back("hypothese_bidon");
-  _type = ALGO;
-  gen->_mapAlgo[hypId] = this;
+	_type = ALGO;
+	gen->_mapAlgo[hypId] = this;
 }
 
 //=============================================================================
@@ -73,9 +70,9 @@ SMESH_Algo::~SMESH_Algo()
  */
 //=============================================================================
 
-const vector<string> &  SMESH_Algo::GetCompatibleHypothesis()
+const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
 {
-  return _compatibleHypothesis;
+	return _compatibleHypothesis;
 }
 
 //=============================================================================
@@ -86,7 +83,7 @@ const vector<string> &  SMESH_Algo::GetCompatibleHypothesis()
 
 ostream & SMESH_Algo::SaveTo(ostream & save)
 {
-  return save << this;
+	return save << this;
 }
 
 //=============================================================================
@@ -97,7 +94,7 @@ ostream & SMESH_Algo::SaveTo(ostream & save)
 
 istream & SMESH_Algo::LoadFrom(istream & load)
 {
-  return load >> (*this);
+	return load >> (*this);
 }
 
 //=============================================================================
@@ -106,9 +103,9 @@ istream & SMESH_Algo::LoadFrom(istream & load)
  */
 //=============================================================================
 
-ostream& operator << (ostream & save, SMESH_Algo & hyp)
+ostream & operator <<(ostream & save, SMESH_Algo & hyp)
 {
-  return save;
+	return save;
 }
 
 //=============================================================================
@@ -117,9 +114,9 @@ ostream& operator << (ostream & save, SMESH_Algo & hyp)
  */
 //=============================================================================
 
-istream& operator >> (istream & load, SMESH_Algo & hyp)
+istream & operator >>(istream & load, SMESH_Algo & hyp)
 {
-  return load;
+	return load;
 }
 
 //=============================================================================
@@ -128,12 +125,12 @@ istream& operator >> (istream & load, SMESH_Algo & hyp)
  */
 //=============================================================================
 
-bool SMESH_Algo::CheckHypothesis(SMESH_Mesh& aMesh,
-				 const TopoDS_Shape& aShape)
+bool SMESH_Algo::CheckHypothesis(SMESH_Mesh & aMesh,
+	const TopoDS_Shape & aShape)
 {
-  MESSAGE("SMESH_Algo::CheckHypothesis");
-  ASSERT(0); // use method from derived classes
-  return false;
+	MESSAGE("SMESH_Algo::CheckHypothesis");
+	ASSERT(0);					// use method from derived classes
+	return false;
 }
 
 //=============================================================================
@@ -142,12 +139,11 @@ bool SMESH_Algo::CheckHypothesis(SMESH_Mesh& aMesh,
  */
 //=============================================================================
 
-bool SMESH_Algo::Compute(SMESH_Mesh& aMesh,
-			 const TopoDS_Shape& aShape)
+bool SMESH_Algo::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  MESSAGE("SMESH_Algo::Compute");
-  ASSERT(0); // use method from derived classes
-  return false;
+	MESSAGE("SMESH_Algo::Compute");
+	ASSERT(0);					// use method from derived classes
+	return false;
 }
 
 //=============================================================================
@@ -160,24 +156,24 @@ bool SMESH_Algo::Compute(SMESH_Mesh& aMesh,
  */
 //=============================================================================
 
-const list<SMESHDS_Hypothesis*>&
-SMESH_Algo::GetUsedHypothesis(SMESH_Mesh& aMesh,
-			      const TopoDS_Shape& aShape)
+const list <const SMESHDS_Hypothesis *> & SMESH_Algo::GetUsedHypothesis(
+	SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  _usedHypList.clear();
-  _usedHypList = GetAppliedHypothesis(aMesh, aShape); // copy
-  int nbHyp = _usedHypList.size();
-  if (nbHyp == 0)
-    {
-      TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
-      if (!mainShape.IsSame(aShape))
+	_usedHypList.clear();
+	_usedHypList = GetAppliedHypothesis(aMesh, aShape);	// copy
+	int nbHyp = _usedHypList.size();
+	if (nbHyp == 0)
 	{
-	  _usedHypList  = GetAppliedHypothesis(aMesh, mainShape); // copy
-	  nbHyp = _usedHypList.size();
+		TopoDS_Shape mainShape = aMesh.GetMeshDS()->ShapeToMesh();
+		if (!mainShape.IsSame(aShape))
+		{
+			_usedHypList = GetAppliedHypothesis(aMesh, mainShape);	// copy
+			nbHyp = _usedHypList.size();
+		}
 	}
-    }
-  if (nbHyp > 1) _usedHypList.clear(); //only one compatible hypothesis allowed
-  return _usedHypList;
+	if (nbHyp > 1)
+		_usedHypList.clear();	//only one compatible hypothesis allowed
+	return _usedHypList;
 }
 
 //=============================================================================
@@ -188,40 +184,38 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh& aMesh,
  */
 //=============================================================================
 
-const list<SMESHDS_Hypothesis*>&
-SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh& aMesh,
-				 const TopoDS_Shape& aShape)
+const list<const SMESHDS_Hypothesis *> & SMESH_Algo::GetAppliedHypothesis(
+	SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  const Handle(SMESHDS_Mesh)& meshDS = aMesh.GetMeshDS();
-  const SMESHDS_ListOfPtrHypothesis& listHyp = meshDS->GetHypothesis(aShape);
-  SMESHDS_ListIteratorOfListOfPtrHypothesis it(listHyp);
+	const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+	const list<const SMESHDS_Hypothesis*> & listHyp = meshDS->GetHypothesis(aShape);
+	list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
 
-  int hypType;
-  string hypName;
+	int hypType;
+	string hypName;
 
-  _appliedHypList.clear();
-  while (it.More())
-    {
-      SMESHDS_Hypothesis* anHyp = it.Value();
-      hypType = anHyp->GetType();
-      //SCRUTE(hypType);
-      if (hypType == SMESHDS_Hypothesis::PARAM_ALGO)
+	_appliedHypList.clear();
+	while (it!=listHyp.end())
 	{
-	  hypName = anHyp->GetName();
-	  vector<string>::iterator ith = find(_compatibleHypothesis.begin(),
-					      _compatibleHypothesis.end(),
-					      hypName);
-	  if (ith != _compatibleHypothesis.end()) // count only relevant 
-	    {
-	      _appliedHypList.push_back(anHyp);
-	      //SCRUTE(hypName);
-	    }
+		const SMESHDS_Hypothesis *anHyp = *it;
+		hypType = anHyp->GetType();
+		//SCRUTE(hypType);
+		if (hypType == SMESHDS_Hypothesis::PARAM_ALGO)
+		{
+			hypName = anHyp->GetName();
+			vector < string >::iterator ith =
+				find(_compatibleHypothesis.begin(), _compatibleHypothesis.end(),
+				hypName);
+			if (ith != _compatibleHypothesis.end())	// count only relevant 
+			{
+				_appliedHypList.push_back(anHyp);
+				//SCRUTE(hypName);
+			}
+		}
+		it++;
 	}
-      it.Next();
-    }
-  return _appliedHypList;
+	return _appliedHypList;
 }
-
 
 //=============================================================================
 /*!
@@ -229,15 +223,15 @@ SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh& aMesh,
  */
 //=============================================================================
 
-double SMESH_Algo::EdgeLength(const TopoDS_Edge& E)
+double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
 {
-  double UMin = 0, UMax = 0;
-  TopLoc_Location L;
-  if (BRep_Tool::Degenerated(E)) return 0;
-  Handle (Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
-  GeomAdaptor_Curve AdaptCurve(C);
-  GCPnts_AbscissaPoint gabs;
-  double length = gabs.Length(AdaptCurve, UMin, UMax);
-  return length;
+	double UMin = 0, UMax = 0;
+	TopLoc_Location L;
+	if (BRep_Tool::Degenerated(E))
+		return 0;
+	Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
+	GeomAdaptor_Curve AdaptCurve(C);
+	GCPnts_AbscissaPoint gabs;
+	double length = gabs.Length(AdaptCurve, UMin, UMax);
+	return length;
 }
-

@@ -44,52 +44,53 @@
 #include <TopoDS_Shape.hxx>
 
 #include <map>
+using namespace std;
 
 typedef struct studyContextStruct
 {
-  map<int, SMESH_Hypothesis*> mapHypothesis;
-  map<int, SMESH_Mesh*> mapMesh;
-  Handle (SMESHDS_Document) myDocument;
-} StudyContextStruct ;
+	map < int, SMESH_Hypothesis * >mapHypothesis;
+	  map < int, SMESH_Mesh * >mapMesh;
+	  SMESHDS_Document * myDocument;
+} StudyContextStruct;
 
 class SMESH_Gen
 {
-public:
-  SMESH_Gen();
-  ~SMESH_Gen();
+  public:
+	SMESH_Gen();
+	~SMESH_Gen();
 
-  SMESH_Hypothesis* CreateHypothesis(const char* anHyp, int studyId)
-    throw (SALOME_Exception);
-  SMESH_Mesh* Init(int studyId, const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
-  bool Compute(::SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
-  StudyContextStruct* GetStudyContext(int studyId);
+	SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
+		throw(SALOME_Exception);
+	SMESH_Mesh *Init(int studyId, const TopoDS_Shape & aShape)
+		throw(SALOME_Exception);
+	bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+		throw(SALOME_Exception);
+	StudyContextStruct *GetStudyContext(int studyId);
 
-  static int GetShapeDim(const TopoDS_Shape& aShape);
-  SMESH_Algo* GetAlgo(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
+	static int GetShapeDim(const TopoDS_Shape & aShape);
+	SMESH_Algo *GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
-  // inherited methods from SALOMEDS::Driver
+	// inherited methods from SALOMEDS::Driver
 
-  void Save(int studyId, const char *aUrlOfFile);
-  void Load(int studyId, const char *aUrlOfFile); 
-  void Close(int studyId); 
-  const char* ComponentDataType();
+	void Save(int studyId, const char *aUrlOfFile);
+	void Load(int studyId, const char *aUrlOfFile);
+	void Close(int studyId);
+	const char *ComponentDataType();
 
-  const char* IORToLocalPersistentID(const char* IORString, bool& IsAFile);
-  const char* LocalPersistentIDToIOR(const char* aLocalPersistentID);
+	const char *IORToLocalPersistentID(const char *IORString, bool & IsAFile);
+	const char *LocalPersistentIDToIOR(const char *aLocalPersistentID);
 
-  SMESH_HypothesisFactory _hypothesisFactory;
+	SMESH_HypothesisFactory _hypothesisFactory;
 
-  map<int, SMESH_Algo*> _mapAlgo;
-  map<int, SMESH_1D_Algo*> _map1D_Algo;
-  map<int, SMESH_2D_Algo*> _map2D_Algo;
-  map<int, SMESH_3D_Algo*> _map3D_Algo;
+	  map < int, SMESH_Algo * >_mapAlgo;
+	  map < int, SMESH_1D_Algo * >_map1D_Algo;
+	  map < int, SMESH_2D_Algo * >_map2D_Algo;
+	  map < int, SMESH_3D_Algo * >_map3D_Algo;
 
-private:
-  int _localId; // unique Id of created objects, within SMESH_Gen entity
-  map<int, StudyContextStruct*> _mapStudyContext;
-  map<int, SMESH_Hypothesis*> _mapHypothesis;
+  private:
+	int _localId;				// unique Id of created objects, within SMESH_Gen entity
+	  map < int, StudyContextStruct * >_mapStudyContext;
+	  map < int, SMESH_Hypothesis * >_mapHypothesis;
 };
 
 #endif
