@@ -45,7 +45,7 @@ public:
 
   int GetNumberOfSegments() const;
 
-  void SetScaleFactor(double scaleFactor)
+  virtual void SetScaleFactor(double scaleFactor)
     throw (SALOME_Exception);
 
   double GetScaleFactor() const;

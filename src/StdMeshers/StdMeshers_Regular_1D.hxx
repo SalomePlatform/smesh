@@ -58,9 +58,9 @@ public:
 
 protected:
 
-  bool computeInternalParameters (const TopoDS_Edge&    theEdge,
-                                  std::list< double > & theParameters,
-                                  const bool            theReverse) const;
+  virtual bool computeInternalParameters (const TopoDS_Edge&    theEdge,
+                                          std::list< double > & theParameters,
+                                          const bool            theReverse) const;
 
   enum HypothesisType { LOCAL_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, NONE };
 
