@@ -53,7 +53,12 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_box2_tetra.py \
 		   SMESH_box3_tetra.py \
 		   SMESH_flight_skin.py \
-		   SMESH_Partition1_tetra.py
+		   SMESH_Partition1_tetra.py \
+		   SMESH_box_hexa.py \
+		   SMESH_demo_hexa2.py \
+		   SMESH_demo_hexa.py \
+		   SMESH_demo_tetra2.py \
+		   SMESH_demo_tetra.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_Exception.idl \
