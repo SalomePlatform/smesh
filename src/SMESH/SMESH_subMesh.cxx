@@ -32,6 +32,7 @@ using namespace std;
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Algo.hxx"
+#include "SMESH_HypoFilter.hxx"
 
 #include "utilities.h"
 #include "OpUtil.hxx"
@@ -465,34 +466,31 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 
 //=======================================================================
 //function : IsApplicableHypotesis
-//purpose  : return true if theHypothesis can be used to mesh me:
-//           its shape type is checked
+//purpose  : 
 //=======================================================================
 
-bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const
+bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
+                                          const TopAbs_ShapeEnum  theShapeType)
 {
   if ( theHypothesis->GetType() > SMESHDS_Hypothesis::PARAM_ALGO)
     // algorithm
-    return ( theHypothesis->GetShapeType() & (1<< _subShape.ShapeType()));
+    return ( theHypothesis->GetShapeType() & (1<< theShapeType));
 
   // hypothesis
-  switch ( _subShape.ShapeType() ) {
-  case TopAbs_EDGE:
-  case TopAbs_FACE:
-  case TopAbs_SHELL:
-  case TopAbs_SOLID: {
-    int aHypDim   = theHypothesis->GetDim();
-    int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
-    return ( aHypDim == aShapeDim );
-  }
+  int aShapeDim = 100;
+  switch ( theShapeType ) {
+  case TopAbs_EDGE: aShapeDim = 1; break;
+  case TopAbs_FACE: aShapeDim = 2; break;
+  case TopAbs_SHELL:aShapeDim = 3; break;
+  case TopAbs_SOLID:aShapeDim = 3; break;
 //   case TopAbs_VERTEX:
 //   case TopAbs_WIRE:
 //   case TopAbs_COMPSOLID:
 //   case TopAbs_COMPOUND:
-  default:;
+  default:  return false;
   }
 
-  return false;
+  return ( theHypothesis->GetDim() == aShapeDim );
 }
 
 //=============================================================================
@@ -508,11 +506,12 @@ SMESH_Hypothesis::Hypothesis_Status
   //SCRUTE(_algoState);
   //SCRUTE(event);
 
-  SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
-
   // **** les retour des evenement shape sont significatifs
   // (add ou remove fait ou non)
   // le retour des evenement father n'indiquent pas que add ou remove fait
+
+  SMESH_Hypothesis::Hypothesis_Status aux_ret, ret = SMESH_Hypothesis::HYP_OK;
+
   int dim = SMESH_Gen::GetShapeDim(_subShape);
 
   if (dim < 1)
@@ -561,27 +560,28 @@ SMESH_Hypothesis::Hypothesis_Status
       string hypName = anHyp->GetName();
 
       if (hypName == "Propagation") {
-        if (_subShape.ShapeType() == TopAbs_EDGE) {
-          isPropagationOk = _father->BuildPropagationChain(_subShape);
-        } else {
-          TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-          TopTools_MapOfShape aMap;
-          for (; exp.More(); exp.Next()) {
-            if (aMap.Add(exp.Current())) {
-              if (!_father->BuildPropagationChain(exp.Current())) {
-                isPropagationOk = false;
-              }
+        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
+        TopTools_MapOfShape aMap;
+        for (; exp.More(); exp.Next()) {
+          if (aMap.Add(exp.Current())) {
+            if (!_father->BuildPropagationChain(exp.Current())) {
+              isPropagationOk = false;
             }
           }
         }
-      } else if (anHyp->GetDim() == 1) { // Only 1D hypothesis can be propagated
-        if (_subShape.ShapeType() == TopAbs_EDGE) {
-          TopoDS_Shape aMainEdge;
-          if (_father->IsPropagatedHypothesis(_subShape, aMainEdge)) {
-            isPropagationOk = _father->RebuildPropagationChains();
-          } else if (_father->IsPropagationHypothesis(_subShape)) {
-            isPropagationOk = _father->BuildPropagationChain(_subShape);
-          } else {
+      }
+      else if (anHyp->GetDim() == 1) { // Only 1D hypothesis can be propagated
+        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
+        TopTools_MapOfShape aMap;
+        for (; exp.More(); exp.Next()) {
+          if (aMap.Add(exp.Current())) {
+            TopoDS_Shape aMainEdge;
+            if (_father->IsPropagatedHypothesis(exp.Current(), aMainEdge)) {
+              isPropagationOk = _father->RebuildPropagationChains();
+            } else if (_father->IsPropagationHypothesis(exp.Current())) {
+              isPropagationOk = _father->BuildPropagationChain(exp.Current());
+            } else {
+            }
           }
         }
       } else {
@@ -602,43 +602,30 @@ SMESH_Hypothesis::Hypothesis_Status
       return SMESH_Hypothesis::HYP_OK; // nothing changes
 
     // Serve Propagation of 1D hypothesis
-    if (event == REMOVE_HYP) {
+    if (event == REMOVE_HYP)
+    {
       bool isPropagationOk = true;
-      string hypName = anHyp->GetName();
-
-      if (hypName == "Propagation") {
-        if (_subShape.ShapeType() == TopAbs_EDGE) {
-          if (!_father->RemovePropagationChain(_subShape)) {
-            return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
-          }
-          // rebuild propagation chains, because removing one
-          // chain can resolve concurention, existing before
-          isPropagationOk = _father->RebuildPropagationChains();
-        } else {
-          TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-          TopTools_MapOfShape aMap;
-          for (; exp.More(); exp.Next()) {
-            if (aMap.Add(exp.Current())) {
-              if (!_father->RemovePropagationChain(exp.Current())) {
-                return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
-              }
+      SMESH_HypoFilter propagFilter( SMESH_HypoFilter::HasName( "Propagation" ));
+      if ( propagFilter.IsOk( anHyp, _subShape ))
+      {
+        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
+        TopTools_MapOfShape aMap;
+        for (; exp.More(); exp.Next()) {
+          if (aMap.Add(exp.Current()) &&
+              !_father->GetHypothesis( exp.Current(), propagFilter, true )) {
+            // no more Propagation on the current edge
+            if (!_father->RemovePropagationChain(exp.Current())) {
+              return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
             }
           }
-          // rebuild propagation chains, because removing one
-          // chain can resolve concurention, existing before
-          if (!_father->RebuildPropagationChains()) {
-            isPropagationOk = false;
-          }
         }
-      } else { // if (hypName == "Propagation")
-        if (anHyp->GetDim() == 1) // Only 1D hypothesis can be propagated
-        {
-          if (_subShape.ShapeType() == TopAbs_EDGE) {
-            isPropagationOk = _father->RebuildPropagationChains();
-            if (!isPropagationOk && ret < SMESH_Hypothesis::HYP_CONCURENT)
-              ret = SMESH_Hypothesis::HYP_CONCURENT;
-          }
-        }
+        // rebuild propagation chains, because removing one
+        // chain can resolve concurention, existing before
+        isPropagationOk = _father->RebuildPropagationChains();
+      }
+      else if (anHyp->GetDim() == 1) // Only 1D hypothesis can be propagated
+      {
+        isPropagationOk = _father->RebuildPropagationChains();
       }
 
       if (!isPropagationOk && ret < SMESH_Hypothesis::HYP_CONCURENT) {
@@ -956,7 +943,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
   SMESH_Gen* gen =_father->GetGen();
 
   // only local algo is to be checked
-  if ( gen->IsGlobalAlgo( theAlgo, *_father ))
+  if ( gen->IsGlobalHypothesis( theAlgo, *_father ))
     return true;
 
   // check algo attached to adjacent shapes
@@ -979,7 +966,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
       if (algo &&
           //algo != theAlgo &&
           !algo->NeedDescretBoundary() /*&&
-          !gen->IsGlobalAlgo( algo, *_father )*/)
+          !gen->IsGlobalHypothesis( algo, *_father )*/)
         return false; // NOT CONFORM MESH WILL BE PRODUCED
     }
   }
@@ -1659,28 +1646,16 @@ const SMESH_Hypothesis* SMESH_subMesh::GetSimilarAttached(const TopoDS_Shape&   
                                                           const SMESH_Hypothesis * theHyp,
                                                           const int                theHypType)
 {
-  const list<const SMESHDS_Hypothesis*>& aHypList =
-    _father->GetHypothesisList( theShape );
-  list<const SMESHDS_Hypothesis*>::const_iterator it = aHypList.begin();
-  for ( ; it != aHypList.end(); it++ )
-  {
-    const SMESH_Hypothesis* hyp = static_cast< const SMESH_Hypothesis *>( *it );
-    if ( theHyp )
-    {
-      // find similar
-      if (hyp != theHyp &&
-          hyp->GetType() == theHyp->GetType() &&
-          hyp->GetDim()  == theHyp->GetDim())
-        return hyp;
-    }
-    else
-    {
-      if ( hyp->GetType() == theHypType && IsApplicableHypotesis( hyp ))
-        return hyp;
-    }
+  SMESH_HypoFilter filter;
+  filter.Init( SMESH_HypoFilter::HasType( theHyp ? theHyp->GetType() : theHypType ));
+  if ( theHyp ) {
+    filter.And( SMESH_HypoFilter::HasDim( theHyp->GetDim() ));
+    filter.AndNot( SMESH_HypoFilter::Is( theHyp ));
   }
+  else
+    filter.And( SMESH_HypoFilter::IsApplicableTo( theShape ));
 
-  return 0;
+  return _father->GetHypothesis( theShape, filter, false );
 }
 
 //=======================================================================
