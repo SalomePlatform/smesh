@@ -26,9 +26,8 @@
 //  Module : SMESH
 //  $Header: 
 
-using namespace std;
 #include "SMESHDS_Document.hxx"
-#include <utilities.h>
+#include "utilities.h"
 
 //=======================================================================
 //function : Create
