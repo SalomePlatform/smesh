@@ -89,10 +89,10 @@ SMESHGUI_StudyAPI::SMESHGUI_StudyAPI ( SALOMEDS::Study_ptr aStudy,
 
   // NRI : Temporary added
   if ( myStudy->GetProperties()->IsLocked() ) {
-    QAD_MessageBox::warn1 ( (QWidget*)QAD_Application::getDesktop(),
-			    QObject::tr("WARNING"), 
-			    QObject::tr("WRN_STUDY_LOCKED"),
-			    QObject::tr("BUT_OK") );
+//    QAD_MessageBox::warn1 ( (QWidget*)QAD_Application::getDesktop(),
+//			    QObject::tr("WARNING"), 
+//			    QObject::tr("WRN_STUDY_LOCKED"),
+//			    QObject::tr("BUT_OK") );
     
     return;
   }

@@ -425,13 +425,13 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
   SALOMEDS::ListOfFileNames_var aFileSeq = new SALOMEDS::ListOfFileNames;
   aFileSeq->length(NUM_TMP_FILES);
 
-  TCollection_AsciiString aStudyName(SALOMEDS_Tool::GetNameFromPath(theComponent->GetStudy()->URL()));
+  TCollection_AsciiString aStudyName("");
 
   // Set names of temporary files
-  TCollection_AsciiString filename = aStudyName + TCollection_AsciiString("SMESH.hdf");
-  TCollection_AsciiString hypofile = aStudyName + TCollection_AsciiString("SMESH_Hypo.txt");
-  TCollection_AsciiString algofile = aStudyName + TCollection_AsciiString("SMESH_Algo.txt");
-  TCollection_AsciiString meshfile = aStudyName + TCollection_AsciiString("SMESH_Mesh.med");
+  TCollection_AsciiString filename = aStudyName + TCollection_AsciiString("_SMESH.hdf");
+  TCollection_AsciiString hypofile = aStudyName + TCollection_AsciiString("_SMESH_Hypo.txt");
+  TCollection_AsciiString algofile = aStudyName + TCollection_AsciiString("_SMESH_Algo.txt");
+  TCollection_AsciiString meshfile = aStudyName + TCollection_AsciiString("_SMESH_Mesh.med");
   aFileSeq[0] = CORBA::string_dup(filename.ToCString());
   aFileSeq[1] = CORBA::string_dup(hypofile.ToCString());
   aFileSeq[2] = CORBA::string_dup(algofile.ToCString());
@@ -848,7 +848,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
   aStreamFile = SALOMEDS_Tool::PutFilesToStream(tmpDir.ToCString(), aFileSeq.in(), isMultiFile);
 
   // Remove temporary files and directory
-  if (isMultiFile) SALOMEDS_Tool::RemoveTemporaryFiles(tmpDir.ToCString(), aFileSeq.in(), true);
+  if (!isMultiFile) SALOMEDS_Tool::RemoveTemporaryFiles(tmpDir.ToCString(), aFileSeq.in(), true);
 
   MESSAGE("End SMESH_Gen_i::Save");
 
@@ -883,11 +883,14 @@ bool SMESH_Gen_i::Load(SALOMEDS::SComponent_ptr theComponent,
                                                                            tmpDir.ToCString(),
 									   isMultiFile);
 
+  TCollection_AsciiString aStudyName("");
+  if (isMultiFile) aStudyName = (SALOMEDS_Tool::GetNameFromPath(theComponent->GetStudy()->URL()));
+
   // Set names of temporary files
-  TCollection_AsciiString filename = tmpDir + aFileSeq[0];//"SMESH.hdf";
-  TCollection_AsciiString hypofile = tmpDir + aFileSeq[1];//"SMESH_Hypo.txt";
-  TCollection_AsciiString algofile = tmpDir + aFileSeq[2];//"SMESH_Algo.txt";
-  TCollection_AsciiString meshfile = tmpDir + aFileSeq[3];//"SMESH_Mesh.med";
+  TCollection_AsciiString filename = tmpDir + aStudyName + TCollection_AsciiString("_SMESH.hdf");
+  TCollection_AsciiString hypofile = tmpDir + aStudyName + TCollection_AsciiString("_SMESH_Hypo.txt");
+  TCollection_AsciiString algofile = tmpDir + aStudyName + TCollection_AsciiString("_SMESH_Algo.txt");
+  TCollection_AsciiString meshfile = tmpDir + aStudyName + TCollection_AsciiString("_SMESH_Mesh.med");
 
   SALOMEDS::Study_var Study = theComponent->GetStudy(); 
   int studyId = Study->StudyId();

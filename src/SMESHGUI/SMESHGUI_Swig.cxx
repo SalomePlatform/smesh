@@ -91,6 +91,8 @@ void SMESH_Swig::Init(int studyID)
   SALOMEDS::SComponent_var father = myStudy->FindComponent("MESH");
   
   if (father->_is_nil()) {
+    bool aLocked = myStudy->GetProperties()->IsLocked();
+    if (aLocked) myStudy->GetProperties()->SetLocked(false);
     father = myStudyBuilder->NewComponent("MESH");
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
@@ -99,10 +101,9 @@ void SMESH_Swig::Init(int studyID)
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
+    myStudyBuilder->DefineComponentInstance(father, CompMesh );
+    if (aLocked) myStudy->GetProperties()->SetLocked(true);
   }
-  myStudyBuilder->DefineComponentInstance(father, CompMesh );
-  mySComponentMesh = SALOMEDS::SComponent::_narrow( father );
-
   // Tags definition 
   Tag_HypothesisRoot  = 1;
   Tag_AlgorithmsRoot  = 2;
