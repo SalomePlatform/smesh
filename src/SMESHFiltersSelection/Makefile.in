@@ -27,8 +27,8 @@ EXPORT_HEADERS= SMESH_Type.h \
 		Handle_SMESH_TypeFilter.hxx 
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES)
-CXXFLAGS += $(OCC_CXXFLAGS)
+CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += $(OCC_LIBS)
 
 # additional file to be cleaned
