@@ -1888,6 +1888,8 @@ void SMESHGUI_FilterDlg::onDeactivate()
 void SMESHGUI_FilterDlg::enterEvent( QEvent* )
 {
 //  mySMESHGUI->EmitSignalDeactivateDialog();
+  mySMESHGUI->SetActiveDialogBox( (QDialog*)this );
+  mySMESHGUI->ResetState();
   setEnabled( true );
 }
 

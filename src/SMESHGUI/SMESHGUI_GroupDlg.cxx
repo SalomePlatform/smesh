@@ -1342,6 +1342,7 @@ void SMESHGUI_GroupDlg::onClose()
 //=======================================================================
 void SMESHGUI_GroupDlg::onDeactivate()
 {
+  mySMESHGUI->ResetState();
   setEnabled( false );
 }
 
@@ -1356,6 +1357,8 @@ void SMESHGUI_GroupDlg::enterEvent( QEvent* )
     setEnabled( true );
     mySelectionMode = -1;
     setSelectionMode( myTypeId );
+    mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
+    mySMESHGUI->SetState(800);
   }
 }
 
