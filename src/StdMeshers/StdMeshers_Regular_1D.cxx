@@ -199,18 +199,20 @@ static void compensateError(double a1, double an,
     double dLn = an - Ln; // error of <an>
     if ( Abs( dLn ) <= Precision::Confusion() )
       return;
-    double dU = Ul - *itU; // parametric length of the last but one segment
-    double dUn = dLn * ( Un - U1 ) / length; // modificator of the last parameter
-    if ( dUn < 0.5 * dU ) { // last segment is a bit shorter than dU
+    double dU = Abs( Ul - *itU ); // parametric length of the last but one segment
+    double dUn = dLn * Abs( Un - U1 ) / length; // parametric error of <an>
+    if ( dUn < 0.5 * dU ) { // last segment is a bit shorter than it should
       dUn = -dUn; // move the last parameter to the edge beginning
     }
-    else {  // last segment is much shorter than dU -> remove the last param and
-      theParams.pop_back(); // move the rest points toward the edge end
+    else {  // last segment is much shorter than it should -> remove the last param and
+      theParams.pop_back(); nPar--; // move the rest points toward the edge end
       Ln = GCPnts_AbscissaPoint::Length( C3d, theParams.back(), Un );
-      dUn = ( an - Ln ) * ( Un - U1 ) / length;
+      dUn = ( an - Ln ) * Abs( Un - U1 ) / length;
       if ( dUn < 0.5 * dU )
         dUn = -dUn;
     }
+    if ( U1 > Un )
+      dUn = -dUn;
     double q  = dUn / ( nPar - 1 );
     for ( itU = theParams.rbegin(), i = 1; i < nPar; itU++, i++ ) {
       (*itU) += dUn;
@@ -291,21 +293,21 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
 
     // geometric progression: SUM(n) = ( a1 - an * q ) / ( 1 - q ) = length
 
-    double a1 = theReverse ? _value[ END_LENGTH_IND ] : _value[ BEG_LENGTH_IND ];
-    double an = theReverse ? _value[ BEG_LENGTH_IND ] : _value[ END_LENGTH_IND ];
+    double a1 = _value[ BEG_LENGTH_IND ];
+    double an = _value[ END_LENGTH_IND ];
     double q  = ( length - a1 ) / ( length - an );
 
-    double U1 = Min ( f, l );
-    double Un = Max ( f, l );
+    double U1 = theReverse ? l : f;
+    double Un = theReverse ? f : l;
     double param = U1;
-    double eltSize = a1;
+    double eltSize = theReverse ? -a1 : a1;
     while ( 1 ) {
       // computes a point on a curve <C3d> at the distance <eltSize>
       // from the point of parameter <param>.
       GCPnts_AbscissaPoint Discret( C3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
-      if ( param < Un )
+      if ( param > f && param < l )
         theParams.push_back( param );
       else
         break;
@@ -319,28 +321,31 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
 
     // arithmetic progression: SUM(n) = ( an - a1 + q ) * ( a1 + an ) / ( 2 * q ) = length
 
-    double a1 = theReverse ? _value[ END_LENGTH_IND ] : _value[ BEG_LENGTH_IND ];
-    double an = theReverse ? _value[ BEG_LENGTH_IND ] : _value[ END_LENGTH_IND ];
+    double a1 = _value[ BEG_LENGTH_IND ];
+    double an = _value[ END_LENGTH_IND ];
 
-    double q = ( an - a1 ) / ( 2 *length/( a1 + an ) - 1 );
-    int n = int( 1 + ( an - a1 ) / q );
+    double  q = ( an - a1 ) / ( 2 *length/( a1 + an ) - 1 );
+    int     n = int( 1 + ( an - a1 ) / q );
 
-    double U1 = Min ( f, l );
-    double Un = Max ( f, l );
+    double U1 = theReverse ? l : f;
+    double Un = theReverse ? f : l;
     double param = U1;
     double eltSize = a1;
-
-    while ( eltSize > 0. && n-- > 0) {
+    if ( theReverse ) {
+      eltSize = -eltSize;
+      q = -q;
+    }
+    while ( n-- > 0 && eltSize * ( Un - U1 ) > 0 ) {
       // computes a point on a curve <C3d> at the distance <eltSize>
       // from the point of parameter <param>.
       GCPnts_AbscissaPoint Discret( C3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
-      if ( param < Un )
+      if ( param > f && param < l )
         theParams.push_back( param );
       else
         break;
-      eltSize += q; // eltSize may become negative here
+      eltSize += q;
     }
     compensateError( a1, an, U1, Un, length, C3d, theParams );
 
