@@ -37,11 +37,11 @@ using namespace std;
  */
 //=============================================================================
 
-SMESH_LocalLength::SMESH_LocalLength(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+SMESH_LocalLength::SMESH_LocalLength(int hypId, int studyId,
+	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
 {
-  _length =1.;
-  _name = "LocalLength";
+	_length = 1.;
+	_name = "LocalLength";
 //   SCRUTE(_name);
 //   SCRUTE(&_name);
 }
@@ -62,15 +62,14 @@ SMESH_LocalLength::~SMESH_LocalLength()
  */
 //=============================================================================
 
-void SMESH_LocalLength::SetLength(double length)
-  throw (SALOME_Exception)
+void SMESH_LocalLength::SetLength(double length) throw(SALOME_Exception)
 {
-  double oldLength = _length;
-  if (length <= 0) 
-    throw SALOME_Exception(LOCALIZED("length must be positive"));
-  _length = length;
-  if (oldLength != _length)
-    NotifySubMeshesHypothesisModification();
+	double oldLength = _length;
+	if (length <= 0)
+		throw SALOME_Exception(LOCALIZED("length must be positive"));
+	_length = length;
+	if (oldLength != _length)
+		NotifySubMeshesHypothesisModification();
 }
 
 //=============================================================================
@@ -79,9 +78,9 @@ void SMESH_LocalLength::SetLength(double length)
  */
 //=============================================================================
 
-double SMESH_LocalLength::GetLength()
+double SMESH_LocalLength::GetLength() const
 {
-  return _length;
+	return _length;
 }
 
 //=============================================================================
@@ -92,7 +91,7 @@ double SMESH_LocalLength::GetLength()
 
 ostream & SMESH_LocalLength::SaveTo(ostream & save)
 {
-  return save << this;
+	return save << this;
 }
 
 //=============================================================================
@@ -103,7 +102,7 @@ ostream & SMESH_LocalLength::SaveTo(ostream & save)
 
 istream & SMESH_LocalLength::LoadFrom(istream & load)
 {
-  return load >> (*this);
+	return load >> (*this);
 }
 
 //=============================================================================
@@ -112,10 +111,10 @@ istream & SMESH_LocalLength::LoadFrom(istream & load)
  */
 //=============================================================================
 
-ostream & operator << (ostream & save, SMESH_LocalLength & hyp)
+ostream & operator <<(ostream & save, SMESH_LocalLength & hyp)
 {
-  save << hyp._length;
-  return save;
+	save << hyp._length;
+	return save;
 }
 
 //=============================================================================
@@ -124,13 +123,14 @@ ostream & operator << (ostream & save, SMESH_LocalLength & hyp)
  */
 //=============================================================================
 
-istream & operator >> (istream & load, SMESH_LocalLength & hyp)
+istream & operator >>(istream & load, SMESH_LocalLength & hyp)
 {
-  bool isOK = true;
-  double a;
-  isOK = (load >> a);
-  if (isOK) hyp._length = a;
-  else load.clear(ios::badbit | load.rdstate());
-  return load;
+	bool isOK = true;
+	double a;
+	isOK = (load >> a);
+	if (isOK)
+		hyp._length = a;
+	else
+		load.clear(ios::badbit | load.rdstate());
+	return load;
 }
-
