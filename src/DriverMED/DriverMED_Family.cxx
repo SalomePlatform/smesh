@@ -193,10 +193,10 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
     aFamilies.push_back(aFreeVolumesFam);
   }
 
-  //DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
-  //aNullFam->SetId(0);
-  //aNullFam->myType = SMDSAbs_All;
-  //aFamilies.push_back(aNullFam);
+  DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
+  aNullFam->SetId(0);
+  aNullFam->myType = SMDSAbs_All;
+  aFamilies.push_back(aNullFam);
 
   return aFamilies;
 }
