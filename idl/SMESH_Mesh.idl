@@ -545,6 +545,14 @@ module SMESH
 			      in DirStruct       StepVector,
 			      in long            NbOfSteps);
 
+    void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
+				in DirStruct      StepVector,
+				in long           NbOfSteps);
+
+    void ExtrusionSweepObject2D(in SMESH_IDSource theObject,
+				in DirStruct      StepVector,
+				in long           NbOfSteps);
+
     enum Extrusion_Error {
       EXTR_OK,
       EXTR_NO_ELEMENTS, 

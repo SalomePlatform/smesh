@@ -533,6 +533,62 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
   ExtrusionSweep(anElementsId, theStepVector, theNbOfSteps);
 }
 
+//=======================================================================
+//function : ExtrusionSweepObject1D
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
+                                                const SMESH::DirStruct &  theStepVector,
+                                                CORBA::Long               theNbOfSteps)
+{
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+
+  SMESH::long_array_var allElementsId = theObject->GetIDs();
+
+  set<const SMDS_MeshElement*> elements;
+  for (int i = 0; i < allElementsId->length(); i++)
+  {
+    CORBA::Long index = allElementsId[i];
+    const SMDS_MeshElement * elem = aMesh->FindElement(index);
+    if ( elem && elem->GetType() == SMDSAbs_Edge )
+      elements.insert( elem );
+  }
+  const SMESH::PointStruct * P = &theStepVector.PS;
+  gp_Vec stepVec( P->x, P->y, P->z );
+
+  ::SMESH_MeshEditor anEditor( _myMesh );
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+}
+
+//=======================================================================
+//function : ExtrusionSweepObject2D
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
+                                                const SMESH::DirStruct &  theStepVector,
+                                                CORBA::Long               theNbOfSteps)
+{
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+
+  SMESH::long_array_var allElementsId = theObject->GetIDs();
+
+  set<const SMDS_MeshElement*> elements;
+  for (int i = 0; i < allElementsId->length(); i++)
+  {
+    CORBA::Long index = allElementsId[i];
+    const SMDS_MeshElement * elem = aMesh->FindElement(index);
+    if ( elem && elem->GetType() == SMDSAbs_Face )
+      elements.insert( elem );
+  }
+  const SMESH::PointStruct * P = &theStepVector.PS;
+  gp_Vec stepVec( P->x, P->y, P->z );
+
+  ::SMESH_MeshEditor anEditor( _myMesh );
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+}
+
 #define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
 
 static SMESH::SMESH_MeshEditor::Extrusion_Error convExtrError( const::SMESH_MeshEditor::Extrusion_Error e )
