@@ -797,7 +797,11 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	SALOMEDS::SObject_var aGroupMainShapeSO = aStudy->FindObjectIOR( aStudy->ConvertObjectToIOR(aGroupMainShape) );
 	// The mesh SObject
 	SALOMEDS::SObject_var aMeshSO = aStudy->FindObjectIOR( aStudy->ConvertObjectToIOR(myMesh) );
-	
+        if ( aMeshSO->_is_nil() ) {
+          myGeomGroup = GEOM::GEOM_Object::_nil();
+          busy = false;
+          return;
+        }
 	SALOMEDS::SObject_var anObj, aRef;
 	bool isRefOrSubShape = false;
 	if ( aMeshSO->FindSubObject( 1, anObj ) &&  anObj->ReferencedObject( aRef )) {
