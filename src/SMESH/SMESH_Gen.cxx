@@ -28,6 +28,7 @@
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 
@@ -372,12 +373,12 @@ static bool checkMissing(SMESH_Gen*                aGen,
     // notify if an algo missing hyp is attached to aSubMesh
     algo = aGen->GetAlgo( aMesh, aSubMesh->GetSubShape() );
     ASSERT( algo );
-    bool isGlobalAlgo = aGen->IsGlobalAlgo( algo, aMesh );
-    if (!isGlobalAlgo || !globalChecked[ algo->GetDim() ])
+    bool IsGlobalHypothesis = aGen->IsGlobalHypothesis( algo, aMesh );
+    if (!IsGlobalHypothesis || !globalChecked[ algo->GetDim() ])
     {
-      INFOS( "ERROR: " << (isGlobalAlgo ? "Global " : "Local ")
+      INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
             << "<" << algo->GetName() << "> misses some hypothesis");
-      if (isGlobalAlgo)
+      if (IsGlobalHypothesis)
         globalChecked[ algo->GetDim() ] = true;
     }
     ret = false;
@@ -394,7 +395,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
   // re-start checking NO_ALGO state
   ASSERT (algo);
   bool isTopLocalAlgo =
-    ( aTopAlgoDim <= algo->GetDim() && !aGen->IsGlobalAlgo( algo, aMesh ));
+    ( aTopAlgoDim <= algo->GetDim() && !aGen->IsGlobalHypothesis( algo, aMesh ));
   if (!algo->NeedDescretBoundary() || isTopLocalAlgo)
   {
     bool checkNoAlgo2 = ( algo->NeedDescretBoundary() );
@@ -576,55 +577,14 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
 }
 
 //=======================================================================
-//function : IsGlobalAlgo
+//function : IsGlobalHypothesis
 //purpose  : check if theAlgo is attached to the main shape
 //=======================================================================
 
-bool SMESH_Gen::IsGlobalAlgo(const SMESH_Algo* theAlgo, SMESH_Mesh& aMesh)
+bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh)
 {
-  const SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
-  TopoDS_Shape mainShape = meshDS->ShapeToMesh();
-  const list<const SMESHDS_Hypothesis*>& listHyp = meshDS->GetHypothesis( mainShape );
-  list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
-  for ( ; it != listHyp.end(); it++)
-    if ( *it == theAlgo )
-      return true;
-
-  return false;
-}
-
-
-//=======================================================================
-//function : getAlgoId
-//purpose  : return algo ID or -1 if not found
-//=======================================================================
-
-static int getAlgo(const list<const SMESHDS_Hypothesis*>& theHypList,
-                   const int                              theAlgoDim,
-                   const int                              theAlgoShapeType)
-{
-  list<const SMESHDS_Hypothesis*>::const_iterator it = theHypList.begin();
-
-  int nb_algo = 0;
-  int algo_id = -1;
-
-  while (it!=theHypList.end())
-  {
-    const SMESH_Hypothesis *anHyp = static_cast< const SMESH_Hypothesis *>( *it );
-    if (anHyp->GetType() > SMESHDS_Hypothesis::PARAM_ALGO &&
-        anHyp->GetDim() == theAlgoDim &&
-        ((anHyp->GetShapeType()) & (1 << theAlgoShapeType)))
-    {
-      nb_algo++;
-      algo_id = anHyp->GetID();
-      break;
-    }
-
-    //if (nb_algo > 1) return -1;	// more than one algo
-    it++;
-  }
-
-  return algo_id;
+  SMESH_HypoFilter filter( SMESH_HypoFilter::Is( theHyp ));
+  return aMesh.GetHypothesis( aMesh.GetMeshDS()->ShapeToMesh(), filter, false );
 }
 
 //=============================================================================
@@ -637,111 +597,15 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
 //  MESSAGE("SMESH_Gen::GetAlgo");
 
-  const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  int dim = GetShapeDim( aShape );
-  int shape_type = aShape.ShapeType();
-  int algo_id = -1;
+  SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
+  filter.And( filter.IsApplicableTo( aShape ));
 
-  algo_id = getAlgo( meshDS->GetHypothesis( aShape ), dim, shape_type );
+  list <const SMESHDS_Hypothesis * > algoList;
+  aMesh.GetHypotheses( aShape, filter, algoList, true );
+  if (algoList.size() != 1 )
+    return NULL;
 
-  if (algo_id < 0)
-  {
-    // try ansestors
-    TopTools_ListIteratorOfListOfShape ancIt( aMesh.GetAncestors( aShape ));
-    for (; ancIt.More(); ancIt.Next())
-    {
-      const TopoDS_Shape& ancestor = ancIt.Value();
-      algo_id = getAlgo( meshDS->GetHypothesis( ancestor ), dim, shape_type );
-      if ( algo_id >= 0 )
-        break;
-    }
-    if (algo_id < 0) return NULL;
-  }
-
-  ASSERT(_mapAlgo.find(algo_id) != _mapAlgo.end());
-
-  return _mapAlgo[algo_id];
-
-// 	const SMESHDS_Hypothesis *theHyp = NULL;
-// 	SMESH_Algo *algo = NULL;
-// 	const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-// 	int hypType;
-// 	int hypId;
-// 	int algoDim;
-
-// 	// try shape first, then main shape
-
-// 	TopoDS_Shape mainShape = meshDS->ShapeToMesh();
-// 	const TopoDS_Shape *shapeToTry[2] = { &aShape, &mainShape };
-
-// 	for (int iShape = 0; iShape < 2; iShape++)
-// 	{
-// 		TopoDS_Shape tryShape = (*shapeToTry[iShape]);
-
-// 		const list<const SMESHDS_Hypothesis*>& listHyp =
-// 			meshDS->GetHypothesis(tryShape);
-// 		list<const SMESHDS_Hypothesis*>::const_iterator it=listHyp.begin();
-
-// 		int nb_algo = 0;
-// 		int shapeDim = GetShapeDim(aShape);
-// 		int typeOfShape = aShape.ShapeType();
-
-// 		while (it!=listHyp.end())
-// 		{
-// 			const SMESHDS_Hypothesis *anHyp = *it;
-// 			hypType = anHyp->GetType();
-// 			//SCRUTE(hypType);
-// 			if (hypType > SMESHDS_Hypothesis::PARAM_ALGO)
-// 			{
-// 				switch (hypType)
-// 				{
-// 				case SMESHDS_Hypothesis::ALGO_1D:
-// 					algoDim = 1;
-// 					break;
-// 				case SMESHDS_Hypothesis::ALGO_2D:
-// 					algoDim = 2;
-// 					break;
-// 				case SMESHDS_Hypothesis::ALGO_3D:
-// 					algoDim = 3;
-// 					break;
-// 				default:
-// 					algoDim = 0;
-// 					break;
-// 				}
-// 				//SCRUTE(algoDim);
-// 				//SCRUTE(shapeDim);
-// 				//SCRUTE(typeOfShape);
-// 				if (shapeDim == algoDim)	// count only algos of shape dim.
-// 				{				// discard algos for subshapes
-// 					hypId = anHyp->GetID();	// (of lower dim.)
-// 					ASSERT(_mapAlgo.find(hypId) != _mapAlgo.end());
-// 					SMESH_Algo *anAlgo = _mapAlgo[hypId];
-// 					//SCRUTE(anAlgo->GetShapeType());
-// 					//if (anAlgo->GetShapeType() == typeOfShape)
-// 					if ((anAlgo->GetShapeType()) & (1 << typeOfShape))
-// 					{			// only specific TopoDS_Shape
-// 						nb_algo++;
-// 						theHyp = anHyp;
-// 					}
-// 				}
-// 			}
-// 			if (nb_algo > 1) return NULL;	// more than one algo
-// 			it++;
-// 		}
-// 		if (nb_algo == 1)		// one algo found : OK
-// 			break;				// do not try a parent shape
-// 	}
-
-// 	if (!theHyp)
-// 		return NULL;			// no algo found
-
-// 	hypType = theHyp->GetType();
-// 	hypId = theHyp->GetID();
-
-// 	ASSERT(_mapAlgo.find(hypId) != _mapAlgo.end());
-// 	algo = _mapAlgo[hypId];
-// 	//MESSAGE("Algo found " << algo->GetName() << " Id " << hypId);
-// 	return algo;
+  return const_cast<SMESH_Algo*> ( static_cast<const SMESH_Algo* >( algoList.front() ));
 }
 
 //=============================================================================

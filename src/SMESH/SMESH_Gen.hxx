@@ -75,7 +75,7 @@ class SMESH_Gen
   static int GetShapeDim(const TopoDS_Shape & aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
-  static bool IsGlobalAlgo(const SMESH_Algo* theAlgo, SMESH_Mesh& aMesh);
+  static bool IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& aMesh);
 
   // inherited methods from SALOMEDS::Driver
 
