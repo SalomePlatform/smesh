@@ -3156,6 +3156,28 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 		break;
 	}
 
+	case 5034:                                     // HYPOTHESIS - LENGTH FROM EDGES
+	{
+	  SMESH::SMESH_Hypothesis_var Hyp;
+	  try
+	    {
+	      Hyp = smeshGUI->myComponentMesh->CreateHypothesis("LengthFromEdges", smeshGUI->myStudyId);
+
+	      if (!Hyp->_is_nil())
+		{
+		  SALOMEDS::SObject_var SHyp = smeshGUI->myStudyAPI.AddNewHypothesis(Hyp);
+		  smeshGUI->myStudyAPI.SetName(SHyp, "LengthFromEdges");
+		}
+	    }
+	  catch(const SALOME::SALOME_Exception & S_ex)
+	    {
+	      QtCatchCorbaException(S_ex);
+	    }
+	  smeshGUI->myActiveStudy->updateObjBrowser(true);
+
+	  break;
+	}
+
 	case 6016:					// CONTROLS 
 	case 6015:
 	case 6014:

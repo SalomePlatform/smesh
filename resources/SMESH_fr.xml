@@ -41,6 +41,7 @@
 	<popup-item item-id="5031" pos-id="" label-id="Nb. Segments" icon-id="mesh_hypo_segment.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="5032" pos-id="" label-id="Max. Triangle Area" icon-id="mesh_hypo_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="5033" pos-id="" label-id="Max. Hexahedron or Tetrahedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="5034" pos-id="" label-id="Length From Edges (2D Hyp. for Triangulator)" icon-id="mesh_hypo_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
     <separator pos-id=""/>
        <popup-item item-id="5000" pos-id="" label-id="Wire discretisation" icon-id="mesh_algo_regular.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
        <popup-item item-id="5010" pos-id="" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
@@ -198,6 +199,7 @@
    <toolbutton-item item-id="5031" label-id="Segments" icon-id="mesh_hypo_segment.png" tooltip-id="Nb. Segments Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5032" label-id="Max. Triangle Area" icon-id="mesh_hypo_area.png" tooltip-id="Max. Triangle Area Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5033" label-id="Max. Hexahedron or Tetrahedron Volume" icon-id="mesh_hypo_volume.png" tooltip-id="Max. Hexahedron or Tetrahedron Volume Hypothesis" accel-id="" toggle-id="" execute-action=""/>
+   <toolbutton-item item-id="5034" label-id="Length From Edges (2D Hyp. for Triangulator)" icon-id="mesh_hypo_length.png" tooltip-id="Length From Edges Hypothesis" accel-id="" toggle-id="" execute-action=""/>
    <separatorTB/>
    <toolbutton-item item-id="5000" label-id="Wire Discretisation" icon-id="mesh_algo_regular.png" tooltip-id="Wire Discratisation Algorithm" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="5010" label-id="Triangle (Mefisto)" icon-id="mesh_algo_mefisto.png" tooltip-id="Triangle (Mefisto) Algorithm" accel-id="" toggle-id="" execute-action=""/>
