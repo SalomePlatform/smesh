@@ -214,7 +214,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFace(const SMDS_MeshNode * n1,
 	const SMDS_MeshNode * n3,
 	const SMDS_MeshNode * n4)
 {
-	return AddFaceWithID(n1,n2,n3, myElementIDFactory->GetFreeID());
+	return AddFaceWithID(n1,n2,n3, n4, myElementIDFactory->GetFreeID());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
