@@ -37,8 +37,17 @@ merge_1_2_d: 2003-01-20 11:25
 V1_4_0b: 2004-01-30 15:42
 	Pre-release of 1.4.0. Include the merge of the branch merge_1_2_d.
 
+V1_4_0_branch: 2004-01-30 15:42
+    Maintenance branch for 1.4.0. This tag is equal to V1_4_0b.
+
 br_enable_import_mesh: 2004-02-16 10:00
 	Branch on head after V1_4_0b. Development branch enable import mesh and save/load SMESH study. Initiated by Jerome Robert.
 
 br_geomclient_colocal: 2004-02-23 10:00
 	Branch on br_enable_import_mesh. Development branch for colocalization. Initiated by Francis KLOSS.
+                                                                                                                                                                               
+V1_4_0: 2004-03-23 11:40
+    Release 1.4.0. Tag on V1_4_0_branch branch.
+
+V1_5_0: 2004-03-23 13:25
+	Release 1.5.0. Tag on head. Include mesh import/export, save/load study, tutorial, bug corrected in V1_4_0.

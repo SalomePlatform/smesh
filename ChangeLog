@@ -4,6 +4,12 @@
 #cvs2cl.pl --accum -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2004-03-23 13:25  tag V1_5_0
+
+2004-03-23 13:20  Jerome Robert <jerome.robert@eads.net>
+
+	* INSTALL, bin/VERSION: Version 1.5.0.
+
 2004-03-23 09:53  Jerome Robert <jerome.robert@eads.net>
 
 	* src/SMESHGUI/SMESHGUI.cxx: Add a MEDFILE attribut for selection
