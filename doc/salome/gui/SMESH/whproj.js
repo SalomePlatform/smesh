@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gaProj=new Array();
 
 gaProj[0]=new project("");
@@ -41,6 +42,8 @@ function addGlo(sFile)
 
 function addRemoteProject(sProjRelPath)
 {
+	if(sProjRelPath.lastIndexOf("/")!=sProjRelPath.length-1)
+		sProjRelPath+="/";
 	gaProj[gaProj.length]=new project(sProjRelPath);
 }
 

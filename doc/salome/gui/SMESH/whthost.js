@@ -1,3 +1,4 @@
+//	WebHelp 5.10.007
 var gaHSLoad=new Array();
 var gnMinIdx=0;
 var gnInsIdx=-1;
@@ -7,7 +8,7 @@ var gaProj=null;
 var gaTocs=new Array();
 var goChunk=null;
 var gbReady=false;
-var gbLoadToc=false;
+var gbToc=false;
 var gbXML=false;
 var gaRoot=new Array();
 var gnCC=-1;
@@ -42,6 +43,42 @@ var gaTocsNs61Fix=null;
 var gbWhTHost=false;
 var gBookItems=new Array();
 var gInSync=false;
+var gbLData=false;
+var gbNeedFillStub=false;
+var gbLoadToc=false;
+
+function chunkInfoQueue()
+{
+	this.aContent=new Array();
+	this.inQueue=function(cInfo)
+	{
+		this.aContent[this.aContent.length]=cInfo;
+	}
+	this.deQueue=function()
+	{
+		var cInfo=null;
+		if(this.aContent.length>0)
+		{
+			cInfo=this.aContent[0];
+			for(var i=1;i<this.aContent.length;i++)
+				this.aContent[i-1]=this.aContent[i];
+			this.aContent.length--;
+		}
+		return cInfo;
+	}
+	this.length=function()
+	{
+		return this.aContent.length;
+	}
+}
+
+var gchunkRequestQueue=new chunkInfoQueue();
+
+function chunkInfo(nIdx, bLocal)
+{
+	this.nIdx=nIdx;
+	this.bLocal=bLocal;
+}
 
 function setBackground(sBgImage)
 {
@@ -86,18 +123,18 @@ function setIcon(sType,sURL)
 		giNewURLItem=sURL;		
 }
 
-function bookItem(sTarget, sURL)
+function bookItem(sTarget,sURL)
 {
-	if (sTarget)
+	if(sTarget)
 		this.sTarget=sTarget;
 	else
 		this.sTarget="bsscright";
 	this.sURL=sURL;
 }
 
-function addBookItem(sBookId, sTarget, sURL)
+function addBookItem(sBookId,sTarget,sURL)
 {
-	gBookItems[sBookId] = new bookItem(sTarget, sURL);		
+	gBookItems[sBookId]=new bookItem(sTarget,sURL);		
 }
 
 function tocChunk(sPPath,sDPath)
@@ -117,10 +154,9 @@ function addTocChunk(sPPath,sDPath)
 
 function isHSLoad(nIdx)
 {
-	for(var i=0;i<gaHSLoad.length;i++){
+	for(var i=0;i<gaHSLoad.length;i++)
 		if(gaHSLoad[i]==nIdx)
 			return true;
-	}
 	return false;
 }
 
@@ -129,13 +165,12 @@ function setHSLoad(nIdx)
 	if(!isHSLoad(nIdx))
 	{
 		var len=gaHSLoad.length;
-		for(var i=0;i<len;i++){
+		for(var i=0;i<len;i++)
 			if(gaHSLoad[i]==-1)
 			{
 				gaHSLoad[i]=nIdx;
 				return;
 			}
-		}
 		gaHSLoad[len]=nIdx;
 	}
 }
@@ -144,44 +179,20 @@ function setHSUnLoad(nIdx)
 {
 	if(isHSLoad(nIdx))
 	{
-		for(var i=0;i<gaHSLoad.length;i++){
+		for(var i=0;i<gaHSLoad.length;i++)
 			if(gaHSLoad[i]==nIdx)
 			{
 				gaHSLoad[i]=-1;
 				return;
 			}
-		}
 	}
 }
 
-function cancelLoading(nIdx)
+function removeLoadingDiv()
 {
-	var oObj=getElement(getCBId(nIdx));
-	if(oObj)
-	{
-		oObj.innerHTML="";
-		setHSUnLoad(nIdx)
-		ExpandIt(nIdx);
-	}
-}
-
-function cancelAll()
-{
-	var eLoadingDivs=getElement(gsLoadingDivID);
-	if(eLoadingDivs)
-		cancelHSLoading(eLoadingDivs);
-}
-
-function cancelHSLoading(eLoadingDiv)
-{
-	var eParent=eLoadingDiv.parentElement;
-	if(eParent){
-		var sId=eParent.id;
-		sId=sId.substring(5);
-		var nIdx=parseInt(sId);
-		if(!isNaN(nIdx))
-			cancelLoading(nIdx)
-	}
+	var eLoadingDiv=getElement(gsLoadingDivID);
+	if(eLoadingDiv)
+		removeThis(eLoadingDiv);
 }
 
 function checkBookItem(nIdx)
@@ -212,25 +223,110 @@ function insertBookItems(nIdx,num)
 	ExpandIt(nIdx);
 }
 
-function writeBook(nIdx,bLocal)
+function isBookEmpty(nIdx)
+{
+	var num=getItemContentsNum(nIdx);
+	if (num>0)
+	{
+		var nCIdx=0;
+		do {
+			nCIdx++;
+			var i=nIdx+nCIdx;
+			var nItemType=getItemType(i);
+			if(nItemType==1){
+				if (!isBookEmpty(i))
+					return false;
+			}
+			else if(nItemType==4){
+				var	sSrc=getRefURL(i);
+				var nProj=getProject(sSrc);
+				if(nProj!=-1){
+					sSrc=gaRoot[nProj].sToc;
+					if(sSrc)
+						return false;
+				}
+			}
+			else if(nItemType==2||nItemType==16||nItemType==8)
+				return false;
+		} while(nCIdx<num);
+	}
+	return true;
+}
+
+function writeBook(nIdx)
 {
 	var sIcon=getBookImage(nIdx,true);
 	var sName=_textToHtml(getItemName(nIdx));
 	sIcon=_textToHtml_nonbsp(sIcon);
 	
-	var sHTML="<div id=\""+getPBId(nIdx)+"\" class=parent>";
-	sHTML+="<p><nobr><a id=\""+getBookId(nIdx)+"\" href=\"javascript:void(0);\" onfocus=\"markBook("+nIdx+");\" onclick=\"";
-
-	if(getItemType(nIdx)==1)
-		sHTML+="insertBookItems("+nIdx+", "+getItemContentsNum(nIdx);
+	var nType=getItemType(nIdx);
+	var bLocal=(nType==1);
+	var bLocalProject=(nType!=4);
+	
+	var sHTML="<div id=\""+getPBId(nIdx)+"\" class=";
+	if(bLocal)
+	{
+		if (!isBookEmpty(nIdx))
+		{
+			sHTML+="parent><p><nobr><a id=\""+getBookId(nIdx)+"\" href=\"javascript:void(0);\" onfocus=\"markBook("+nIdx+");\" onclick=\"";
+			sHTML+="insertBookItems("+nIdx+", "+getItemContentsNum(nIdx);
+			sHTML+=");return false;\" title=\""+sName+"\"><img alt=\"Book\" name=\""+getBId(nIdx)+"\" src=\""+sIcon+"\" border=0 align=\"absmiddle\">";
+			sHTML+="&nbsp;"+sName+"</a></nobr></p></div>";
+			var sURL=_textToHtml_nonbsp(getItemURL(nIdx));
+			if(sURL!="")
+				addBookItem(getBookId(nIdx),_textToHtml_nonbsp(getTopicTarget(nIdx)),sURL);
+			sHTML+="<div id=\""+getCBId(nIdx)+"\" class=child></div>";
+		}
+		else
+			sHTML="";
+	}
 	else
-		sHTML+="tocExpandHelpSet("+nIdx+","+bLocal;
-	sHTML+=");return false;\" title=\""+sName+"\"><img alt=\"Book\" name=\""+getBId(nIdx)+"\" src=\""+sIcon+"\" border=0 align=\"absmiddle\">";
-	var sURL=_textToHtml_nonbsp(getItemURL(nIdx));
-	if(sURL!="")
-		addBookItem(getBookId(nIdx),_textToHtml_nonbsp(getTopicTarget(nIdx)),sURL);
-	sHTML+="&nbsp;"+sName+"</a></nobr></p></div><div id=\""+getCBId(nIdx)+"\" class=child></div>";
+	{
+		sHTML+="stub></div>";
+		gbNeedFillStub=true;
+		setTimeout("fillStub("+nIdx+","+bLocalProject+");",100);
+	}
 	return sHTML;
+}
+
+function checkFillStub()
+{
+	if(!gbLData)
+	{
+		if(gchunkRequestQueue.length()>0)
+		{
+			var cInfo=gchunkRequestQueue.deQueue();
+			if(cInfo)
+			{
+				fillStub(cInfo.nIdx,cInfo.bLocal);
+				return;
+			}
+		}
+	}
+	if(gbNeedFillStub)
+	{
+		gbNeedFillStub=false;
+		setTimeout("syncInit()",1);
+	}
+}
+
+function fillStub(nIdx,bLocalProject)
+{
+	if(!gbLData)
+	{
+		gbLData=true;
+		var sObj=getElement(getPBId(nIdx));
+		if(sObj!=null)
+		{
+			tocExpandHelpSet(nIdx,bLocalProject);
+			gbNeedFillStub=false;
+			setTimeout("syncInit()",1);
+		}
+		else
+			setTimeout("fillStub("+nIdx+","+bLocalProject+");",100);
+	}
+	else
+		gchunkRequestQueue.inQueue(new chunkInfo(nIdx,bLocalProject));
 }
 
 function getBookId(nIdx){return "B_"+nIdx;}
@@ -285,7 +381,7 @@ function markItem(nIdx)
 
 function calTocPath(obj)
 {
-	var sPath=getInnerText(obj).substring(1);
+	var sPath=getInnerText2(obj);
 	var pObj=getParentNode(obj);
 	do
 	{
@@ -299,11 +395,10 @@ function calTocPath(obj)
 				var objs=getItemsByBook(sObj);
 				for(var i=0;i<objs.length;i++)
 				{
-					var sText=getInnerText(objs[i]);
-					
+					var sText=getInnerText2(objs[i]);
 					if(sText.length!=0)
 					{
-						sPath=sText.substring(1)+gsPathSplit+sPath;
+						sPath=sText+gsPathSplit+sPath;
 						break;
 					}
 				}
@@ -330,7 +425,7 @@ function writeAnItem(nIdx)
 	var sName=_textToHtml(getItemName(nIdx));
 	var sHTML="<p><nobr><a id=\""+getItemId(nIdx)+"\" onfocus=\"markItem("+nIdx+");\""
 	var sAltString="";
-	if (nItemType&2)
+	if(nItemType&2)
 		sAltString="Page";
 	else
 		sAltString="Remote Page";
@@ -349,16 +444,12 @@ function writeBookItems(nIdx,num)
 			nCIdx++;
 			var i=nIdx+nCIdx;
 			var nItemType=getItemType(i);
-			if(nItemType==1){
+			if(nItemType==1||nItemType==4||nItemType==8){
 				sHTML+=writeBook(i);	
 				nCIdx+=getItemContentsNum(i);		
 			}
 			else if(nItemType==2||nItemType==16){
 				sHTML+=writeAnItem(i);
-			}else if(nItemType==4){
-				sHTML+=writeBook(i,false);
-			}else if(nItemType==8){
-				sHTML+=writeBook(i,true);
 			}
 		}
 		while(nCIdx<num);
@@ -369,10 +460,9 @@ function writeBookItems(nIdx,num)
 function tocExpandHelpSet(nIdx,bLocal)
 {
 	checkBookItem(nIdx);
-	cancelAll();
-	if(isHSLoad(nIdx))
-		ExpandIt(nIdx);
-	else{
+	removeLoadingDiv();
+	if(!isHSLoad(nIdx))
+	{
 		setHSLoad(nIdx);
 		var sSrc="";
 		if(bLocal){
@@ -388,8 +478,11 @@ function tocExpandHelpSet(nIdx,bLocal)
 			var nProj=getProject(sSrc);
 			if(nProj!=-1)
 			{
-				goChunk=addTocChunk(gaProj[nProj].sPPath,gaProj[nProj].sDPath);
 				sSrc=gaRoot[nProj].sToc;
+				if(sSrc)
+					goChunk=addTocChunk(gaProj[nProj].sPPath,gaProj[nProj].sDPath);
+				else
+					goChunk=null;
 			}
 			else
 				goChunk=null;
@@ -397,9 +490,13 @@ function tocExpandHelpSet(nIdx,bLocal)
 		if(goChunk)
 		{
 			PrepareLoading(nIdx);
-			ExpandIt(nIdx);
-			gbLoadToc=false;
+			gbToc=false;
 			loadData2(goChunk.sPPath+goChunk.sDPath+sSrc);
+		}
+		else
+		{
+			gbLData=false;
+			checkFillStub();
 		}
 	}
 }
@@ -407,12 +504,8 @@ function tocExpandHelpSet(nIdx,bLocal)
 function getProject(sSrc)
 {
 	for(var i=0;i<gaProj.length;i++)
-	{
 		if(isSamePath(getPath(sSrc),gaProj[i].sPPath))
-		{
 			return i;
-		}
-	}
 	return -1;
 }
 
@@ -437,15 +530,15 @@ function PrepareLoading(nIdx)
 	gnInsIdx=nIdx;
 	if(!gsTP)
 	{
-		var oObj=getElement(getCBId(gnInsIdx));
+		var oObj=getElement(getPBId(gnInsIdx));
 		if(oObj)
-			oObj.innerHTML=writeLoadingDiv(nIdx);
+			oObj.insertAdjacentHTML("afterEnd",writeLoadingDiv(nIdx));
 	}
 }
 
 function writeLoadingDiv(nIdx)
 {
-	return"<div id=\""+gsLoadingDivID+"\" class=parent onclick=\"cancelLoading("+nIdx+");\" style=\"padding-left:4px;background-color:ivory;border-width:1;border-style:solid;border-color:black;width:150px;\">"+gsLoadingMsg+"</div>";
+	return"<div id=\""+gsLoadingDivID+"\" class=parent onclick=\"removeLoadingDiv();\" style=\"padding-left:4px;background-color:ivory;border-width:1;border-style:solid;border-color:black;width:150px;\">"+gsLoadingMsg+"</div>";
 }
 
 function getItemName(nIdx)
@@ -542,13 +635,14 @@ function getItemIcon(nIdx,nIconIdx)
 function TocWriteClassStyle()
 {
 	var sStyle="<STYLE TYPE='text/css'>\n";
-	if (gsBgImage)
+	if(gsBgImage)
 		sStyle+="body {border-top:"+gsBgColor+" 1px solid;}\n";
 	else
 		sStyle+="body {border-top:black 1px solid;}\n";
 	sStyle+="P {"+getFontStyle(goFont)+"margin-top:"+gsMargin+";margin-bottom:"+gsMargin+";}\n";
 	sStyle+="DIV {margin-top:"+gsMargin+";margin-bottom:"+gsMargin+";}\n";
 	sStyle+=".parent {margin-left:0pt;}\n";
+	sStyle+=".stub {margin-left:0pt;display:none}\n";
 	sStyle+=".child {display:none;margin-left:"+gsIndent+";}\n";
 	sStyle+="A:link {"+getFontStyle(goFont)+"}\n";
 	sStyle+="A:visited {"+getFontStyle(goFont)+"}\n";
@@ -586,19 +680,15 @@ function getItemsFromObj(obj)
 		{
 			var tempNobr=getChildrenByTag(tempColl[i],"NOBR");
 			if(tempNobr&&tempNobr.length>0)
-			{
 				for(var j=0;j<tempNobr.length;j++)
 					anobr[anobr.length]=tempNobr[j];
-			}
 		}
 		for(var s=0;s<anobr.length;s++)
 		{
 			var tempAnchor=getChildrenByTag(anobr[s],"A");
 			if(tempAnchor&&tempAnchor.length>0)
-			{
 				for(var u=0;u<tempAnchor.length;u++)
 					aAnchor[aAnchor.length]=tempAnchor[u];
-			}
 		}
 	}
 	return aAnchor;
@@ -609,21 +699,15 @@ function getItemsByBook(obj)
 	var aAnchor=new Array();
 	var aTAnchor=getItemsFromObj(obj);
 	for(var i=0;i<aTAnchor.length;i++)
-	{
 		aAnchor[aAnchor.length]=aTAnchor[i];
-	}
 	var tempBook=getChildrenByTag(obj,"DIV");
 	if(tempBook&&tempBook.length>0)
-	{
 		for(var j=0;j<tempBook.length;j++)
 		{
 			var aTAnchorDiv=getItemsFromObj(tempBook[j]);
 			for(var s=0;s<aTAnchorDiv.length;s++)
-			{
 				aAnchor[aAnchor.length]=aTAnchorDiv[s];
-			}
 		}
-	}	
 	return aAnchor;
 }
 
@@ -635,21 +719,19 @@ function ExpandIt(nId)
 
 function ExpandIt2(nId,bForceOpen)
 {
-	if(gbIE4||gbNav6){
-		var oC=TocExpand(nId,true,bForceOpen);
-		var nNewScroll=document.body.scrollTop;
-		if(oC.style.display=="block"){
-			var nTop=oC.offsetTop;
-			var nBottom=nTop+oC.offsetHeight;
-			if(document.body.scrollTop+document.body.clientHeight<nBottom){
-				nNewScroll=nBottom-document.body.clientHeight;
-			}
-			if(nBottom-nTop>document.body.clientHeight){
-				nNewScroll=nTop-20;
-			}
+	var oC=TocExpand(nId,true,bForceOpen);
+	var nNewScroll=document.body.scrollTop;
+	if(oC.style.display=="block"){
+		var nTop=oC.offsetTop;
+		var nBottom=nTop+oC.offsetHeight;
+		if(document.body.scrollTop+document.body.clientHeight<nBottom){
+			nNewScroll=nBottom-document.body.clientHeight;
 		}
-		document.body.scrollTop=nNewScroll;
+		if(nBottom-nTop>document.body.clientHeight){
+			nNewScroll=nTop-20;
+		}
 	}
+	document.body.scrollTop=nNewScroll;
 }
 
 function TocExpand(nId,bChangeImg,bForceOpen)
@@ -682,16 +764,18 @@ function TocExpand(nId,bChangeImg,bForceOpen)
 
 function getChunkId(n)
 {
-	var nCandidate=-1;
-	for(var i=0;i<gaTocs.length;i++){
-		if(gaTocs[i].nMI<=n){
-			nCandidate=i;
+	var nCan=-1;
+	for(var i=0;i<gaTocs.length;i++)
+		if(gaTocs[i].nMI<=n&&gaTocs[i].nMI!=-1)
+		{
+			if(nCan==-1)
+				nCan=i;
+			else
+				if(gaTocs[i].nMI>=gaTocs[nCan].nMI)
+					nCan=i;
 		}
-		else
-			break;
-	}
-	if(nCandidate!=-1&&gaTocs[nCandidate].nMI!=-1)
-		return nCandidate;
+	if(nCan!=-1)
+		return nCan;
 	else
 		return -1;
 }
@@ -735,6 +819,14 @@ function getItemImage(nIdx,bRemote)
 	return _getFullPath(gaProj[0].sPPath,sIcon);
 }
 
+function getInnerText2(obj)
+{
+	var sText=getInnerText(obj);
+	if(sText.length>0&&!gbOpera7)
+		sText=sText.substring(1);
+	return sText;
+}
+
 function expandToc(oObj,sRest,aIdList)
 {
 	var len=aIdList.length;
@@ -750,9 +842,7 @@ function expandToc(oObj,sRest,aIdList)
 		var aTagAs=getItemsByBook(oObj);
 		for(var s=0;s<aTagAs.length;s++)
 		{
-			var sText=getInnerText(aTagAs[s]);
-			if(sText.length>0)
-				sText=sText.substring(1);
+			var sText=getInnerText2(aTagAs[s]);
 			if(sText==sPart)
 			{
 				aIdList[len]=aTagAs[s];
@@ -768,8 +858,8 @@ function expandToc(oObj,sRest,aIdList)
 		var sPId=aChildren[i].id;
 		if(!isPBId(sPId))
 			continue;
-		var sText=getInnerText(aChildren[i]);
-		if(sText.substring(1)!=sPart)
+		var sText=getInnerText2(aChildren[i]);
+		if(sText!=sPart)
 			continue;
 		aIdList[len]=getIdByPBId(sPId);
 		var sCId=getCBId(aIdList[len]);
@@ -804,37 +894,37 @@ function expandToc(oObj,sRest,aIdList)
 
 function getIdByPBId(sPId)
 {
-	return parseInt(sPId.substring(5,sPId.length-6));
+	return parseInt(sPId.substring(2,sPId.length-1));
 }
 
 function getIdByCBId(sCId)
 {
-	return parseInt(sCId.substring(5,sCId.length-5));
+	return parseInt(sCId.substring(2,sCId.length-1));
 }
 
 function isPBId(sId)
 {
-	return (sId&&sId.indexOf("Book_")==0&&sId.lastIndexOf("Parent")==sId.length-6);
+	return (sId&&sId.indexOf("B_")==0&&sId.lastIndexOf("P")==sId.length-1);
 }
 
 function isCBId(sId)
 {
-	return (sId&&sId.indexOf("Book_")==0&&sId.lastIndexOf("Child")==sId.length-5);
+	return (sId&&sId.indexOf("B_")==0&&sId.lastIndexOf("C")==sId.length-1);
 }
 
 function getBId(nIdx)
 {
-	return "Book_"+nIdx;
+	return "B_"+nIdx;
 }
 
 function getPBId(nIdx)
 {
-	return getBId(nIdx)+"Parent";
+	return getBId(nIdx)+"P";
 }
 
 function getCBId(nIdx)
 {
-	return getBId(nIdx)+"Child";
+	return getBId(nIdx)+"C";
 }
 
 function getClosestTocPath(aPaths)
@@ -853,13 +943,9 @@ function getClosestTocPath(aPaths)
 		}
 	}
 	if(nThatIndex!=-1)
-	{
 		sPath=aPaths[nThatIndex];
-	}
 	else
-	{
 		sPath=aPaths[0];
-	}
 	return sPath;
 }
 
@@ -908,23 +994,22 @@ function getTocPaths(oTopicParam)
 	var aRelTocPaths=oTopicParam.aPaths;
 	var aPaths=new Array();
 	for(var i=0;i<gaProj.length;i++)
-	{
 		if(isSamePath(gaProj[i].sPPath,oTopicParam.sPPath))
 		{
 			for(var j=0;j<aRelTocPaths.length;j++)
-			{
-				aPaths[j]=gaRoot[i].sRPath+aRelTocPaths[j];
-				aPaths[j]=aPaths[j].substring(1);
-			}
+				for (var k=0;k<gaRoot[i].aRPath.length;k++)
+				{
+					var sPath=gaRoot[i].aRPath[k]+aRelTocPaths[j];
+					aPaths[aPaths.length]=sPath.substring(1);
+				}
 			break;
 		}
-	}
 	return aPaths;
 }
 
 function syncInit()
 {
-	if(gsTP)
+	if(gsTP&&!gbNeedFillStub)
 	{
 		gInSync=true;
 		var obj=document.body;
@@ -936,9 +1021,7 @@ function syncInit()
 			{
 				if(aIdList.length)
 					for(var i=0;i<aIdList.length-1;i++)
-					{
 						ExpandIt2(aIdList[i],true);
-					}
 				gsCTPath=gsTP;
 				if(!gbIE55)
 					aIdList[aIdList.length-1].focus();
@@ -964,11 +1047,12 @@ function syncInit()
 
 function loadToc()
 {
-	if(!gbReady)
+	if(!gbLoadToc)
 	{
 		var oResMsg=new whMessage(WH_MSG_GETPROJINFO,this,1,null);
 		if(SendMessage(oResMsg)&&oResMsg.oParam)
 		{
+			gbLoadToc=true;
 			var oProj=oResMsg.oParam;
 			gaProj=oProj.aProj;
 			gbXML=oProj.bXML;
@@ -980,18 +1064,14 @@ function loadToc()
 function load1B1()
 {
 	if(gnLT+1<gaProj.length)
-	{
 		for(var i=gnLT+1;i<gaProj.length;i++)
-		{
-			if(gaProj[i].sToc!=null&&gaProj[i].sToc!="")
+			if(gaProj[i].sToc)
 			{
-				gbLoadToc=true;
+				gbToc=true;
 				gnLT=i;
 				setTimeout("loadTocInfo()",1);
 				return true;
 			}
-		}
-	}
 	return false;
 }
 
@@ -1015,7 +1095,10 @@ function projReady(sRoot,aProj)
 	gaRoot[gnLT].sToc=sRoot;
 	
 	if(gnLT==0)
-		gaRoot[gnLT].sRPath=gsPathSplit;
+	{
+		gaRoot[gnLT].aRPath=new Array();
+		gaRoot[gnLT].aRPath[0]=gsPathSplit;
+	}
 
 	updatePTPath(gnLT,aProj);
 
@@ -1033,8 +1116,9 @@ function loadTData()
 {
 	if(gaProj[0].sToc!="")
 	{
+		gbLData=true;
 		goChunk=addTocChunk(gaProj[0].sPPath,gaProj[0].sDPath);
-		gbLoadToc=false;
+		gbToc=false;
 		loadData2(gaProj[0].sPPath+gaProj[0].sDPath+gaRoot[0].sToc);
 	}
 }
@@ -1042,33 +1126,56 @@ function loadTData()
 function updatePTPath(n,aProj)
 {
 	if(aProj)
-	{
 		for(var i=0;i<aProj.length;i++)
 		{
 			var sFullPath=_getFullPath(gaProj[n].sPPath,aProj[i].sPPath);
 			for(var j=0;j<gaProj.length;j++)
-			{
 				if(isSamePath(sFullPath,gaProj[j].sPPath))
 				{
 					if(gaRoot.length<=j||!gaRoot[j])
 						gaRoot[j]=new Object();
-					if(!gaRoot[j].sRPath)
-					{
-						if(gaRoot[n].sRPath)
-							gaRoot[j].sRPath=gaRoot[n].sRPath+aProj[i].sRPath;
-						else
-							gaRoot[j].sRPath=aProj[i].sRPath;
-					}
+					if(!gaRoot[j].aRPath)
+						gaRoot[j].aRPath=new Array();
+
+					if(gaRoot[n].aRPath)
+						for(var k=0;k<gaRoot[n].aRPath.length;k++)
+						{
+							var bDup=false;
+							var sTFPath=gaRoot[n].aRPath[k]+aProj[i].sRPath;
+							for(var l=0;l<gaRoot[j].aRPath.length;l++)
+								if(gaRoot[j].aRPath[l]==sTFPath)
+								{
+									bDup=true;
+									break;
+								}
+							if(!bDup)
+								gaRoot[j].aRPath[gaRoot[j].aRPath.length]=sTFPath;
+						}
+					else
+						gaRoot[j].aRPath[gaRoot[j].aRPath.length]=aProj[i].sRPath;
 					break;
 				}
-			}
 		}
+}
+
+function onLoadXMLError()
+{
+	if(gbToc)
+	{
+		var sRoot="";
+		var aRProj=new Array();
+		projReady(sRoot,aRProj);
+	}
+	else
+	{
+		var aToc=new Array();
+		putData(aToc)
 	}
 }
 
 function putDataXML(xmlDoc,sDocPath)
 {
-	if(gbLoadToc)
+	if(gbToc)
 	{
 		var tocNode=xmlDoc.getElementsByTagName("toc")[0];
 		if(tocNode)
@@ -1081,8 +1188,25 @@ function putDataXML(xmlDoc,sDocPath)
 				for(var i=0;i<rmtProject.length;i++)
 				{
 					aRProj[i]=new Object();
-					aRProj[i].sPPath=rmtProject[i].getAttribute("url");
-					aRProj[i].sRPath=rmtProject[i].getAttribute("path");
+					var sURL=rmtProject[i].getAttribute("url");
+					if(sURL)
+					{
+						if(sURL.lastIndexOf("/")!=sURL.length-1)
+							sURL+="/";						
+					}
+					aRProj[i].sPPath=sURL;
+					aRProj[i].sRPath = "";
+					var oSubPath = rmtProject[i].getElementsByTagName("subpath")[0];
+					if (oSubPath)
+					{
+						while (oSubPath)
+						{
+							aRProj[i].sRPath += oSubPath.getAttribute("name") + "\n";
+							oSubPath = oSubPath.getElementsByTagName("subpath")[0];
+						}
+					}
+					else
+						aRProj[i].sRPath=rmtProject[i].getAttribute("path");
 				}
 			}
 			projReady(sRoot,aRProj);
@@ -1123,6 +1247,7 @@ function processBook(node,aToc)
 				if(sIcons)
 					item.sIconRef=sIcons;
 				if(sURL==null) sURL="";
+
 				item.sItemURL=sURL;
 				
 				if(oChild.nodeName=="book")
@@ -1147,6 +1272,11 @@ function processBook(node,aToc)
 				}
 				else if(oChild.nodeName=="project")
 				{
+					if(sRef)
+					{
+						if(sRef.lastIndexOf("/")!=sRef.length-1)
+							sRef+="/";						
+					}
 					item.nType=4;
 					item.sRefURL=sRef;
 					item.nContents=0;
@@ -1175,6 +1305,7 @@ function putData(aTocs)
 
 function realPutData()
 {
+	removeLoadingDiv();
 	var aTocs=gaTocsNs61Fix;
 	if(!aTocs) return;
 	if(goChunk)
@@ -1185,10 +1316,10 @@ function realPutData()
 		gnMinIdx+=aTocs.length;
 		if(gnInsIdx!=-1)
 		{
-			var oObj=getElement(getCBId(gnInsIdx));
+			var oObj=getElement(getPBId(gnInsIdx));
 			if(oObj)
 			{
-				oObj.innerHTML=writeBookItems(n-1,aTocs.length);
+				oObj.insertAdjacentHTML("afterEnd",writeBookItems(n-1,aTocs.length));
 				setTimeout("syncInit()",1);
 			}
 		}
@@ -1199,11 +1330,13 @@ function realPutData()
 			var oMsg=new whMessage(WH_MSG_GETTOCPATHS,this,1,oParam);
 			if(SendMessage(oMsg))
 			{
-				if (oMsg.oParam.oTocInfo)
+				if(oMsg.oParam.oTocInfo)
 					syncWithPaths(oMsg.oParam.oTocInfo);
 			}
 		}	
 	}
+	gbLData=false;
+	checkFillStub();
 }
 
 function syncWithPaths(oTopicParam)
@@ -1354,7 +1487,7 @@ function onSendMessage(oMsg)
 	return true;
 }
 
-if (window.gbWhUtil&&window.gbWhVer&&window.gbWhMsg&&window.gbWhProxy)
+if(window.gbWhUtil&&window.gbWhVer&&window.gbWhMsg&&window.gbWhProxy)
 {
 	RegisterListener2(this,WH_MSG_PROJECTREADY);
 	RegisterListener2(this,WH_MSG_SYNCTOC);
@@ -1369,4 +1502,3 @@ if (window.gbWhUtil&&window.gbWhVer&&window.gbWhMsg&&window.gbWhProxy)
 }
 else
 	document.location.reload();
-

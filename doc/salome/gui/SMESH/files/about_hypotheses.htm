@@ -2,31 +2,11 @@
 
 <html>
 
-<!--(==============================================================)-->
-<!--(Document created with RoboEditor. )============================-->
-<!--(==============================================================)-->
-
 <head>
-
 <title>About hypotheses</title>
-
-<!--(Meta)==========================================================-->
-
-<meta http-equiv=content-type content="text/html; charset=windows-1252">
-<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
-<meta name=generator-major-version content=0.1>
-<meta name=generator-minor-version content=1>
-<meta name=filetype content=kadov>
-<meta name=filetype-version content=1>
-<meta name=page-count content=1>
-<meta name=layout-height content=1305>
-<meta name=layout-width content=740>
-
-
-<!--(Links)=========================================================-->
-
- <link rel='stylesheet' href='../default_ns.css'>
-<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="stylesheet" href="../default_ns.css"><script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
 <!--
 if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
@@ -34,18 +14,16 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
-ul.whs2 {list-style: disc;}
-p.whs3 {background-color: Transparent; color: #000000;}
-ol.whs4 {list-style: disc;}
-p.whs5 {font-style: italic; font-size: 12pt; font-family: 'Arial Black', sans-serif;}
-img_whs6 {border-style: none; border: none; width: 22px; height: 22px;}
-p.whs7 {margin-left: 40px;}
-img_whs8 {border-style: none; border: none; width: 448px; height: 367px;}
-img_whs9 {border-style: none; border: none; width: 271px; height: 124px;}
+img_whs1 { border:none; width:30px; height:30px; float:none; border-style:none; }
+ul.whs2 { list-style:disc; }
+p.whs3 { background-color:Transparent; color:#000000; }
+p.whs4 { font-style:italic; font-size:12pt; font-family:'Arial Black' , sans-serif; }
+img_whs5 { border:none; width:22px; height:22px; border-style:none; }
+p.whs6 { margin-left:40px; }
+img_whs7 { border:none; width:448px; height:367px; border-style:none; }
+img_whs8 { border:none; width:271px; height:124px; border-style:none; }
 -->
-</style>
-<script type="text/javascript" language="JavaScript">
+</style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
@@ -72,28 +50,21 @@ onerror = null;
 </script>
 <style type="text/css">
 <!--
-  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
 -->
-</style>
-<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+</style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
 </head>
-
-<!--(Body)==========================================================-->
-
-
-<body page-style ="x-size: Letter;">
-
-<script type="text/javascript" language="javascript1.2">
+<body page-style="x-size: Letter;"><script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("SMESH module\nCreating meshes\nDefining hypotheses\nAbout hypotheses");
+	addTocInfo("MESH module\nCreating meshes\nDefining hypotheses\nAbout hypotheses");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -107,13 +78,14 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 	{
 	setRelStartPage("../smesh.htm");
 
-		autoSync(0);
+		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
 }
 else
-	document.location.reload();
+	if (window.gbIE4)
+		document.location.reload();
 //-->
 </script>
 <h1>About hypotheses</h1>
@@ -125,55 +97,64 @@ else
  when applying different hypotheses with different parameters you can preset 
  the quantity of meshing elements which will compose your mesh. So, it 
  will be possible to generate a rough or a more refined mesh or submesh. 
- In <span style="font-weight: bold;"><B>SMESH </B></span>there are the following 
+ In <span style="font-weight: bold;"><B>MESH </B></span>there are the following 
  basic hypotheses:</p>
 
 <p>&nbsp;</p>
 
 <ul type="disc" class="whs2">
 	
-	<li style="list-style: circle;"
+	<li style="list-style: circle; /*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
 		type=circle
 		class=kadov-p><p class="whs3">For 
  meshing of <span style="font-weight: bold;"><B>edges</B></span>:</p></li>
 	
 	<ul type="disc" class="whs2">
 		
-		<li class=kadov-p><p class="whs3"><a href="arithmetic_1d.htm">Arithmetic 1D</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="arithmetic_1d.htm">Arithmetic 1D</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="local_length_hypothesis.htm">Average Length</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="local_length_hypothesis.htm">Average Length</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="deflection_1d.htm">Deflection 1D</a> </p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="../deflection_id_hypothesis.htm">Deflection 1D</a> </p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="number_of_segments_hypothesis.htm">Number of segments</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="number_of_segments_hypothesis.htm">Number of segments</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="propagation_of_1d_hypothesis_on_opposite_edges.htm">Propagation 
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="propagation_of_1d_hypothesis_on_opposite_edges.htm">Propagation 
  of 1D Hypothesis on opposite edges</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="start_and_end_length_hypothesis.htm">Start and end length</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="start_and_end_length_hypothesis.htm">Start and end length</a></p></li>
 	</ul>
 	
-	<li style="list-style: circle;"
+	<li style="list-style: circle; /*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
 		type=circle
 		class=kadov-p><p class="whs3">For 
  meshing of <span style="font-weight: bold;"><B>faces</B></span>: </p></li>
 </ul>
 
-<ol type="disc" class="whs4">
+<ul type="disc" class="whs2">
 	
 	<ul type="disc" class="whs2">
 		
-		<li class=kadov-p><p class="whs3"><a href="length_from_edges.htm">Length from edges</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="length_from_edges.htm">Length from edges</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="max._element_area_hypothesis.htm">Max Element Area</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="max._element_area_hypothesis.htm">Max Element Area</a></p></li>
 		
-		<li class=kadov-p><p class="whs3"><a href="non_conform_mesh_allowed_hypothesis.htm">Non conform mesh allowed</a></p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs3"><a href="non_conform_mesh_allowed_hypothesis.htm">Non conform mesh allowed</a></p></li>
 	</ul>
-</ol>
+</ul>
 
 <ul type="disc" class="whs2">
 	
-	<li style="list-style: circle;"
+	<li style="list-style: circle; /*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
 		type=circle
 		class=kadov-p><p class="whs3">For 
  meshing of <span style="font-weight: bold;"><B>volumes</B></span>: </p></li>
@@ -203,19 +184,19 @@ else
 
 <p>&nbsp;</p>
 
-<p class="whs5"><a name=CreateHyp></a>To 
+<p class="whs4"><a name=CreateHyp></a>To 
  create a hypothesis </p>
 
 <p><span style="font-size: 12pt;"><font size=3 style="font-size:12pt;">In the main menu select</font></span><span style="font-style: italic;
 	font-size: 12pt;
 	font-family: 'Arial Black', sans-serif;"> <font size=3 style="font-size:12pt;"><I></I></font></span><span style="font-weight: bold;"><B>Hypotheses 
- &gt; </B></span><img src="../image7.gif" width="22px" height="22px" border="0" class="img_whs6"> <span style="font-weight: bold;"><B>Create hypotheses</B></span></p>
+ &gt; </B></span><img src="../image7.gif" width="22px" height="22px" border="0" class="img_whs5"> <span style="font-weight: bold;"><B>Create hypotheses</B></span></p>
 
 <p>The following menu will appear:</p>
 
 <p>&nbsp;</p>
 
-<p class="whs7"><img src="../image21.jpg" width="448px" height="367px" border="0" class="img_whs8"></p>
+<p class="whs6"><img src="../image21.jpg" width="448px" height="367px" border="0" class="img_whs7"></p>
 
 <p>&nbsp;</p>
 
@@ -228,7 +209,7 @@ else
 
 <p>&nbsp;</p>
 
-<p class="whs7"><img src="../image42.jpg" width="271px" height="124px" border="0" class="img_whs9"></p>
+<p class="whs6"><img src="../image42.jpg" width="271px" height="124px" border="0" class="img_whs8"></p>
 
 <p>&nbsp;</p>
 
@@ -241,5 +222,4 @@ if (window.writeIntopicBar)
 //-->
 </script>
 </body>
-
 </html>

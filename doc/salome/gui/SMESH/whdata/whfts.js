@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gaFileMapping = new Array();
 var gaFileTopicMapping = new Array();
 

@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<tocdata>
+<book name="MESH module" >
+  <item name="Introduction to MESH" url="files/introduction_to_smesh.htm" />
+  <item name="Running MESH module" url="files/running_smesh_module.htm" />
+  <book name="Creating meshes" >
+    <item name="About meshes" url="files/about_meshes.htm" />
+    <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
+    <book name="Defining hypotheses" >
+      <item name="About hypotheses" url="files/about_hypotheses.htm" />
+      <item name="Arithmetic 1D hypothesis" url="files/arithmetic_1d.htm" />
+      <item name="Average Length hypothesis" url="files/local_length_hypothesis.htm" />
+      <item name="Deflection ID hypothesis" url="deflection_id_hypothesis.htm" />
+      <item name="Length from edges hypothesis" url="files/length_from_edges.htm" />
+      <item name="Max Element Area hypothesis" url="files/max._element_area_hypothesis.htm" />
+      <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
+      <item name="Number of segments hypothesis" url="files/number_of_segments_hypothesis.htm" />
+      <item name="Non conform mesh allowed hypothesis" url="files/non_conform_mesh_allowed_hypothesis.htm" />
+      <item name="Propagation of 1D Hypothesis on opposite edges" url="files/propagation_of_1d_hypothesis_on_opposite_edges.htm" />
+      <item name="Start and End Length hypothesis" url="files/start_and_end_length_hypothesis.htm" />
+    </book>
+    <book name="Defining meshing algorithms" >
+      <item name="About meshing algorithms" url="files/about_meshing_algorithms.htm" />
+      <book name="1D meshing algorithms" >
+        <item name="Wire discretization" url="files/1d_meshing_algorithm.htm" />
+      </book>
+      <book name="2D meshing algorithms" >
+        <item name="Triangle meshing algorithm" url="files/2d_meshing_algorithm.htm" />
+        <item name="Quadrangle meshing algorithm" url="files/2d_(quadrangle)_meshing_algorithm.htm" />
+      </book>
+      <book name="3D meshing algorithms" >
+        <item name="Hexahedron meshing algorithm" url="files/3d_meshing_algorithm.htm" />
+        <item name="Tetrahedron (Netgen) meshing algorithm" url="files/tetrahedron_(netgen)_meshing_algorithm.htm" />
+        <item name="Tetrahedron (GHS3D) meshing algorithm" url="files/tetrahedron_(ghs3d)_meshing_algorithm.htm" />
+      </book>
+    </book>
+    <item name="Constructing meshes" url="files/constructing_meshes.htm" />
+    <item name="Constructing submeshes" url="files/constructing_submeshes.htm" />
+    <item name="Computing meshes" url="files/computing_meshes.htm" />
+  </book>
+  <book name="Editing meshes" >
+    <item name="Reassigning hypotheses and algorithms" url="files/reassigning_hypotheses_and_algorithms.htm" />
+    <item name="Editing hypotheses and algorithms" url="files/editing_hypotheses.htm" />
+  </book>
+  <book name="Viewing meshes" >
+    <item name="About viewing meshes" url="about_viewing_meshes.htm" />
+    <item name="Mesh infos" url="files/viewing_mesh_info.htm" />
+    <item name="Numbering" url="files/displaying_nodes_numbers.htm" />
+    <item name="Display Mode" url="presentation.htm" />
+    <item name="Display Entity" url="display_entity.htm" />
+    <item name="Colors / Size" url="colors___size.htm" />
+    <item name="Transparency" url="transparency.htm" />
+    <item name="Clipping" url="clipping.htm" />
+  </book>
+  <book name="Quality controls" >
+    <item name="About quality controls" url="files/about_quality_controls.htm" />
+    <item name="Free borders" url="free_borders.htm" />
+    <item name="Borders at multi-connection" url="borders_at_multi-connection.htm" />
+    <item name="Length" url="length.htm" />
+    <item name="Free edges" url="free_edges.htm" />
+    <item name="Length 2D" url="files/length_of_edges.htm" />
+    <item name="Borders at multi-connection 2D" url="borders_at_multiconnection_2d.htm" />
+    <item name="Area" url="files/area_of_elements.htm" />
+    <item name="Taper" url="files/taper.htm" />
+    <item name="Aspect ratio" url="files/aspect_ratio.htm" />
+    <item name="Minimum angle" url="files/minimum_angle.htm" />
+    <item name="Warping" url="files/warp.htm" />
+    <item name="Skew" url="files/skew.htm" />
+    <item name="Aspect ratio 3D" url="aspect_ratio_3d.htm" />
+  </book>
+  <book name="Grouping elements" >
+    <item name="Creating groups" url="files/creating_groups.htm" />
+    <item name="Editing groups" url="files/editing_groups.htm" />
+    <item name="Using operations on groups" url="files/using_operations_on_groups.htm" />
+    <item name="Constructing groups of specific elements" url="files/constructing_groups_of_specific_elements.htm" />
+    <item name="Selection filter library" url="selection_filter_library.htm" />
+  </book>
+  <book name="Modifying meshes" >
+    <item name="Adding nodes and elements" url="files/adding_nodes_and_elements.htm" />
+    <item name="Removing nodes and elements" url="files/removing_nodes_and_elements.htm" />
+    <item name="Renumbering nodes and elements" url="files/renumbering_nodes_and_elements.htm" />
+    <book name="Transforming meshes" >
+      <item name="Translation" url="files/translation.htm" />
+      <item name="Rotation" url="files/rotation.htm" />
+      <item name="Symmetry" url="files/symmetry.htm" />
+      <item name="Sewing meshes" url="files/sewing_meshes.htm" />
+      <item name="Merging nodes" url="files/merging_nodes.htm" />
+    </book>
+    <item name="Moving nodes" url="files/displacing_nodes.htm" />
+    <item name="Diagonal inversion of elements" url="files/diagonal_iversion_of_elements.htm" />
+    <item name="Uniting two triangles" url="files/uniting_two_triangles.htm" />
+    <item name="Uniting a set of triangles" url="files/uniting_a_set_of_triangles.htm" />
+    <item name="Changing orientation of elements" url="files/changing_orientation_of_elements.htm" />
+    <item name="Cutting quadrangles" url="files/cutting_quadrangles.htm" />
+    <item name="Smoothing" url="files/smoothing.htm" />
+    <item name="Extrusion" url="extrusion.htm" />
+    <item name="Extrusion along a path" url="extrusion_along_a_path.htm" />
+    <item name="Revolution" url="revolution.htm" />
+    <item name="Pattern mapping" url="pattern_mapping.htm" />
+  </book>
+  <book name="Setting Mesh Preferences" >
+    <item name="About mesh preferences" url="about_mesh_preferences.htm" />
+  </book>
+</book>
+
+</tocdata>

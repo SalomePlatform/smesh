@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 // this value should be identical to the value used in whproxy.js
 window.whname = "wh_stub";
 

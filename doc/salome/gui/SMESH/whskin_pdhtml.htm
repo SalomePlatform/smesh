@@ -1,9 +1,9 @@
 <html>
 <head>
 <title> Navigation Pane </title>
-<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+
 <meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
-<meta name "description" content="WebHelp 2002">
+<meta name="description" content="WebHelp 5.50">
 </head>
 <body border=0 topmargin=0 bottommargin=0 rightmargin=0 leftmargin=0 scroll=no>
 <script language="javascript" src="whver.js"></script>
@@ -38,6 +38,13 @@ if (window.gbWhPHost)
 }
 else
 	document.location.reload();
+
+if (window.gbNav6)
+{
+	var oMsg=new whMessage(WH_MSG_RELOADNS6,this, 1,null);
+	SendMessage(oMsg);
+}
+
 
 function writeWebHelpPane()
 {

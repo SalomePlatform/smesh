@@ -1,3 +1,4 @@
+//	WebHelp 5.10.006
 var gaButtons=new Array();
 var	gaTypes=new Array();
 var gaBtnBgColor=new Array();
@@ -166,6 +167,25 @@ function writeStyle(bMiniBar)
 	sStyle+="font-size:"+gsTBFontSize+";\n";
 	sStyle+="color:"+gsTBFontColor+";}\n";
 
+	sStyle+=".clsBtnDisable {\n";
+	if(!(gbNav4&&!gbNav6))
+		if (bMiniBar)
+			sStyle+="padding:2px;\n";
+		else
+			sStyle+="padding:5px;\n";
+	sStyle+="cursor:default;\n";
+	sStyle+="font-family:"+gsTBFontFamily+";\n";
+	sStyle+="font-size:"+gsTBFontSize+";\n";
+	sStyle+="color:"+gsTBFontColor+";}\n";
+
+	sStyle+=".clsNoBDisable {\n";
+	sStyle+="padding-left:2px;padding-right:2px;\n";
+	sStyle+="cursor:default;\n";
+	sStyle+="font-family:"+gsTBFontFamily+";\n";
+	sStyle+="font-size:"+gsTBFontSize+";\n";
+	sStyle+="color:"+gsTBFontColor+";}\n";
+
+
 	sStyle+=".clsNotBtn {\n";
 	if(!(gbNav4&&!gbNav6))
 		if (bMiniBar)
@@ -266,7 +286,7 @@ function getImage(oImage,sTitle)
 			sI+=" width="+oImage.nWidth;
 		if(oImage.nHeight>0)
 			sI+=" height="+oImage.nHeight;
-		sI+=" border=no align=\"absmiddle\">";
+		sI+=" border=0 align=\"absmiddle\">";
 		return sI;
 	}
 	return "";
@@ -300,7 +320,7 @@ function updateWebSearch(bEnable)
 
 function setState(oEL,sState)
 {
-	if(gbNav6)
+	if(gbNav6||gbOpera)
 		oEL.setAttribute("state",sState);
 	else
 		oEL.state=sState;	
@@ -368,7 +388,12 @@ function disableButton(oEl,oBtn)
 {
 	setState(oEl,"disable");
 	var sPF=oEl.className.substring(0,6);
-	oEl.className=sPF+"Normal";
+	oEl.className=sPF+"Disable";
+	var oAs = getElementsByTag(oEl,"a");
+	if (oAs.length>0)
+	{
+		oAs[0].style.cursor="default";
+	}
 	var oIs=getElementsByTag(oEl,"img");
 	if(oIs.length>0&&oBtn&&oBtn.aIs&&oBtn.aIs.length>3)
 	{
@@ -386,6 +411,11 @@ function enableButton(oEl,oBtn)
 	{
 		var sPF=oEl.className.substring(0,6);
 		oEl.className=sPF+"Up";
+	}
+	var oAs = getElementsByTag(oEl,"a");
+	if (oAs.length>0)
+	{
+		oAs[0].style.cursor="hand";
 	}
 	var oIs=getElementsByTag(oEl,"img");
 	if(oIs.length>0&&oBtn&&oBtn.aIs&&oBtn.aIs.length>0)
@@ -526,9 +556,9 @@ function addSearchForm()
 
 	if(gsSearchFormTitle)
 		sPropmptString="";
-	var sButton="<table CELLSPACING=0 CELLPADDING=1><tr><td valign=\"middle\" NOWRAP class=\"clsNotBtn\"><span class=\"btnsearchform\">"+_textToHtml(gsSearchFormTitle)+"</span></td><td NOWRAP valign=\"middle\"><input class=\"inputsearchform\" type=\"text\" onfocus=\"highLightIfNeeded();\" name=\"searchString\" value=\""+sPropmptString+"\" size=\""+nWidth+"\"></td>";
+	var sButton="<table id=\"searchInput\" CELLSPACING=0 CELLPADDING=1><tr><td valign=\"middle\" NOWRAP class=\"clsNotBtn\"><span class=\"btnsearchform\">"+_textToHtml(gsSearchFormTitle)+"</span></td><td NOWRAP valign=\"middle\"><input class=\"inputsearchform\" type=\"text\" onfocus=\"highLightIfNeeded();\" name=\"searchString\" value=\""+sPropmptString+"\" size=\""+nWidth+"\"></td>";
 	if(gbNav6)
-		sButton="<form name=\"searchForm\" method=\"POST\" action=\"javascript:searchB()\">"+sButton;
+		sButton="<form id=\"searchInput\" name=\"searchForm\" method=\"POST\" action=\"javascript:searchB()\">"+sButton;
 	if("image"=="text")
 	{
 		sButton+="<td NOWRAP valign=\"middle\"><a class=\"searchbtn\" href=\"javascript:void(0);\" onclick=\"searchForm.submit(); return false;\"></a></td>";
@@ -579,7 +609,7 @@ function addBanner(sImage)
 	if(sImage)
 	{
 		var nBtn=gaButtons.length;
-		gaButtons[nBtn]="<td NOWRAP align=\"center\" valign=\"middle\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"javascript:void(0);\" onclick=\"showBanner();return false;\"><img alt=\"About WebHelp\"src=\""+sImage+"\" border=no align=\"absmiddle\"></a></td>";
+		gaButtons[nBtn]="<td NOWRAP align=\"center\" valign=\"middle\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"javascript:void(0);\" onclick=\"showBanner();return false;\"><img alt=\"About WebHelp\"src=\""+sImage+"\" border=0 align=\"absmiddle\"></a></td>";
 		gaTypes[nBtn]="banner";
 	}
 }
@@ -588,8 +618,8 @@ function showBanner()
 {
 	if (!gbPreview)
 	{
-		var nWidth=360;
-		var nHeight=240;
+		var nWidth=390;
+		var nHeight=204;
 		var	nScreenWidth=screen.width;
 		var	nScreenHeight=screen.height;
 		var nLeft=(nScreenWidth-nWidth)/2;
@@ -654,7 +684,7 @@ function addButton(sType,nStyle,sTitle,sHref,sOnClick,sOnMouseOver,sOnLoad,nWidt
 		sButton+="</a>";
 		bState=true;
 	}
-	else if(sType=="hide2"&&(!gbNav4))
+	else if(sType=="hide2"&&(!gbNav4)&&(!gbOpera))
 	{
 		var svTitle="Hide Navigation Component";
 		sButton="<a title=\""+svTitle+"\" id=\"btnhide\" class=\"btnhide\" href=\"javascript:void(0);\" onclick=\"showHidePane();return false;\">";
@@ -1255,7 +1285,7 @@ function onBtnMouseUp(e,nBtn)
 function getState(oEl)
 {
 	var sState="";
-	if(gbNav6)
+	if(gbNav6||gbOpera)
 		sState=oEl.getAttribute("state");
 	else
 		if(oEl.state)
@@ -1502,12 +1532,14 @@ function window_Unload()
 		UnRegisterListener2(this,WH_MSG_GETCURRENTAVENUE);
 		UnRegisterListener2(this,WH_MSG_ENABLEWEBSEARCH);
 		UnRegisterListener2(this,WH_MSG_INITSEARCHSTRING);
+		UnRegisterListener2(this,WH_MSG_NOSEARCHINPUT);
+		UnRegisterListener2(this,WH_MSG_NOSYNC);
 	}
 }
 
 function window_OnLoad()
 {
-	if(document.body)
+	if(!gbOpera7&&document.body)
 	{
 		if(gsBgImage&&gsBgImage.length>0)
 		{
@@ -1604,6 +1636,24 @@ function onSendMessage(oMsg)
 		{
 			oMsg.oParam=gstrSearch;
 			gstrSearch="";
+			return false;
+		}
+	}
+	else if(nMsgId==WH_MSG_NOSEARCHINPUT)
+	{
+		var oSearchInput = getElement("searchInput");
+		if (oSearchInput)
+		{
+			oSearchInput.style.visibility = "hidden";
+			return false;
+		}
+	}
+	else if(nMsgId==WH_MSG_NOSYNC)
+	{
+		var oSync = getElement("btnsynctoc");
+		if (oSync)
+		{
+			oSync.style.visibility = "hidden";
 			return false;
 		}
 	}
@@ -1978,6 +2028,9 @@ if(window.gbWhUtil&&window.gbWhMsg&&window.gbWhVer&&window.gbWhProxy)
 	RegisterListener2(this,WH_MSG_GETCURRENTAVENUE);
 	RegisterListener2(this,WH_MSG_ENABLEWEBSEARCH);
 	RegisterListener2(this,WH_MSG_INITSEARCHSTRING);
+	RegisterListener2(this,WH_MSG_NOSEARCHINPUT);
+	RegisterListener2(this,WH_MSG_NOSYNC);
+
 	window.onload=window_OnLoad;
 	window.onunload=window_Unload;
 	window.onresize=window_onResize;

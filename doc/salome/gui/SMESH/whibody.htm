@@ -1,9 +1,9 @@
 <html>
 <head>
 <title>Index content</title>
-<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+
 <meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
-<meta name "description" content="WebHelp 2002">
+<meta name="description" content="WebHelp 5.50">
 <base target="bsscright">
 <script language="javascript" src="whver.js"></script>
 <script language="javascript1.2" src="whmozemu.js"></script>
@@ -15,11 +15,7 @@
 <script language="javascript1.2" src="whihost.js"></script>
 <script language="javascript1.2">
 <!--
-var gnPageWidth = 0;
-var gnPageHeight = 0;
 var goPopup = null;
-var gITE = new Array();
-var gIndexLetterArray = new Array();
 var gbPopupMenuTimeoutExpired=false;
 var gBsClientWidth=640;
 var gBsClientHeight=480;
@@ -89,7 +85,7 @@ function PopupMenu_Invoke()
 		while (i <= argLen - 1) {
 			strMenu += '<TR><TD><NOBR>'
 			strMenu += '<DIV STYLE="padding-left:3pt; padding-right:3pt;"><A ';
-			strMenu += ' onclick="parent.PopupMenu_2HandleClick(\'' + fn_arguments[i + 1] + '\', \'' + fn_arguments[1] + '\');"';
+			strMenu += ' onclick="parent.PopupMenu_2HandleClick(\'' + excapeSingleQuotandSlash(fn_arguments[i + 1]) + '\', \'' + fn_arguments[1] + '\');"';
 			strMenu += ' onmouseover="parent.PopupMenu_Over(event);"';
 			strMenu += ' onmouseout="parent.PopupMenu_Out(event);"';
 			strMenu += '>';
@@ -108,7 +104,7 @@ function PopupMenu_Invoke()
 			strMenu += ' onmouseover="PopupMenu_Over(event);"';
 			strMenu += ' onmouseout="PopupMenu_Out(event);"';
 			strMenu += '>';
-			strMenu += '<SPAN CLASS="PopupNotOver">' + fn_arguments[i] + '</SPAN>';
+			strMenu += '<SPAN CLASS="PopupNotOver">' + excapeSingleQuotandSlash(fn_arguments[i]) + '</SPAN>';
 			strMenu += '</A></DIV></NOBR></TD></TR>';
 			i += 2;
 		}
@@ -125,7 +121,7 @@ function PopupMenu_Invoke()
 	var nEventX = 0;
 	var nEventY = 0;
 	var nWindowWidth = 0;
-	if (gbIE4)
+	if (gbIE4||gbOpera7)
 	{
 		layerPopup = document.all["PopupMenu"];
 		layerPopup.innerHTML = strMenu;
@@ -221,7 +217,7 @@ function PopupMenu_Timeout()
 
 function PopupMenu_Over(e)
 {
-	if (gbIE4)
+	if (gbIE4||gbOpera7)
 		e.srcElement.className = "PopupOver";
 	else if (gbNav6)
 		e.target.parentNode.className = "PopupOver";
@@ -229,7 +225,7 @@ function PopupMenu_Over(e)
 
 function PopupMenu_Out(e)
 {
-	if (gbIE4)
+	if (gbIE4||gbOpera7)
 		e.srcElement.className = "PopupNotOver";
 	else if (gbNav6)
 		e.target.parentNode.className = "PopupNotOver";

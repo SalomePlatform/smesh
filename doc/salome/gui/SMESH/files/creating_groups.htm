@@ -2,31 +2,11 @@
 
 <html>
 
-<!--(==============================================================)-->
-<!--(Document created with RoboEditor. )============================-->
-<!--(==============================================================)-->
-
 <head>
-
 <title>Creating groups</title>
-
-<!--(Meta)==========================================================-->
-
-<meta http-equiv=content-type content="text/html; charset=windows-1252">
-<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
-<meta name=generator-major-version content=0.1>
-<meta name=generator-minor-version content=1>
-<meta name=filetype content=kadov>
-<meta name=filetype-version content=1>
-<meta name=page-count content=1>
-<meta name=layout-height content=1562>
-<meta name=layout-width content=740>
-
-
-<!--(Links)=========================================================-->
-
- <link rel='stylesheet' href='../default_ns.css'>
-<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="stylesheet" href="../default_ns.css"><script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
 <!--
 if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
@@ -34,19 +14,18 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-p.whs1 {font-weight: bold;}
-img_whs2 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
-p.whs3 {margin-left: 40px;}
-p.whs4 {font-weight: normal;}
-p.whs5 {font-weight: bold; margin-left: 40px;}
-img_whs6 {border-style: none; border: none; width: 200px; height: 374px;}
-p.whs7 {margin-left: 40px; font-weight: normal;}
-ul.whs8 {list-style: disc;}
-p.whs9 {margin-left: 40px; font-weight: bold;}
-p.whs10 {margin-left: 80px;}
+p.whs1 { font-weight:bold; }
+img_whs2 { border:none; width:30px; height:30px; float:none; border-style:none; }
+p.whs3 { margin-left:40px; }
+p.whs4 { font-weight:normal; }
+p.whs5 { font-weight:bold; margin-left:40px; }
+img_whs6 { border:none; width:200px; height:374px; border-style:none; }
+p.whs7 { margin-left:40px; font-weight:normal; }
+ul.whs8 { list-style:disc; }
+p.whs9 { margin-left:40px; font-weight:bold; }
+p.whs10 { margin-left:80px; }
 -->
-</style>
-<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+</style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
   if (innerWidth != origWidth || innerHeight != origHeight)
@@ -62,28 +41,21 @@ onerror = null;
 </script>
 <style type="text/css">
 <!--
-  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
 -->
-</style>
-<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+</style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
 </head>
-
-<!--(Body)==========================================================-->
-
-
-<body>
-
-<script type="text/javascript" language="javascript1.2">
+<body><script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("SMESH module\nGrouping elements\nCreating groups");
+	addTocInfo("MESH module\nGrouping elements\nCreating groups");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -97,20 +69,21 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 	{
 	setRelStartPage("../smesh.htm");
 
-		autoSync(0);
+		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
 }
 else
-	document.location.reload();
+	if (window.gbIE4)
+		document.location.reload();
 //-->
 </script>
 <h1>Creating groups</h1>
 
 <p class="whs1"><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2"> <span style="font-weight: normal;">In 
- SMESH you can create groups of elements of different types and having 
- definite properties.</span></p>
+ MESH you can create groups of elements of different types and having definite 
+ properties.</span></p>
 
 <p class="whs1">&nbsp;</p>
 
@@ -186,7 +159,7 @@ else
 <p class="whs10">In this dialog box you should enter the name 
  of the geometrical object (you can enter the name manually or select your 
  geometrical object in the Objet Browser or in the 3D viewer) from which 
- the elements will be taken. And after confirmation of the operation SMESH 
+ the elements will be taken. And after confirmation of the operation MESH 
  will create a new group consisting of geometrical elements of the previously 
  defined type.</p>
 
@@ -203,8 +176,9 @@ else
  element or elements from the list click the <span style="font-weight: bold;"><B>Remove 
  </B></span>button. The <span style="font-weight: bold;"><B>Sort </B></span>button 
  allows to sort the list of elements IDs. The <span style="font-weight: bold;"><B>Set 
- filter </B></span><span>button allows to apply a definite filter to selection 
- of the elements of your group.</span></p></li>
+ filter </B></span>button allows to apply a definite filter to selection of 
+ the elements of your group. See more about filters on the <a href="../selection_filter_library.htm">Selection 
+ filter library</a> page</p></li>
 	
 	<li class=kadov-p><p class="whs7"><span 
  style="font-weight: bold;"><B>Select from </B></span>set of fields allows to 
@@ -226,5 +200,4 @@ if (window.writeIntopicBar)
 //-->
 </script>
 </body>
-
 </html>

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='windows-1252' ?>
+<glossarydata>
+ <entry name="Cell" value="Element of a mesh. Cells are determined by their connectivity. They can have 0,1,2 or 3 dimension." />
+ <entry name="Component" value="One integer or real value can correspond to each component of a field and to each entity of a mesh" />
+ <entry name="Descendant connectivity" value="It is a description of the entities of the mesh with dimension N. This description is made by an ordered list of geometrical entities (nodes, edges, or faces) with dimension N-1." />
+ <entry name="Edge" value="An edge of a volumetric or surface mesh. It is composed of 2 or 3 nodes (2 vertex nodes and optionally one middle node)." />
+ <entry name="Entity of a mesh" value="Geometrical component of the mesh: node, cell, face and edge. Faces and edges are only intermediate entities allowing to define the cells in descendant connectivity." />
+ <entry name="Equivalence" value="Equivalence represents a list of correspondance 2 by 2 of the entities of the same dimension." />
+ <entry name="Face" value="Face of a volumetrical cell (triangle, quadrangle)." />
+ <entry name="Family" value="Entities of a mesh are described by a certain number   of characteristics (boundary conditions, groups membership). Families represent classes equivalent to these characteristics (two entities of a mesh can belong to the same family if they have the same characteristics). Every family is determined by a set of attributes and a list of groups membership." />
+ <entry name="Field" value="Field consists of one or several scalar components. One definite type is associated to the given field and the values corresponding to different components are all of the same type." />
+ <entry name="Field profile" value="Fields can be defined only on one part of the mesh. Profile   of the field or profile of the component of a field indicates which entities of the mesh contain values." />
+ <entry name="Group" value="Unordered set of entities of a mesh. One entity can belong to   several groups." />
+ <entry name="Mesh" value="Mesh is described by its geometry: list of nodes and list of cells which constitute this mesh. Supplementary information is added with the help of families (initial, boundary conditions)." />
+ <entry name="Nodal connectivity" value="It is a description of an entity of the mesh by an ordered list of nodes constituting this entity." />
+ <entry name="Node" value="Node can be an isolated node of a mesh, a vertex or middle node of an edge. A node is associated to a point." />
+ <entry name="Point" value="Geometrical entity determined by its coordinates in the space." />
+ <entry name="Reference connectivity" value="For each type of entity of a mesh, reference connectivity define the topology of an entity." />
+ <entry name="Result" value="List of fields referring to one mesh." />
+ <entry name="Study" value="Study represents a chain of sequences of calculations." />
+
+</glossarydata>

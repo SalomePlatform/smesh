@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var garrSortChar=new Array();
 var gaFtsStop=new Array();
 var gaFtsStem=new Array();
@@ -349,14 +350,14 @@ gaFtsStop[85] = "who";
 gaFtsStop[86] = "with";
 gaFtsStop[87] = "you";
 
-gaFtsStem[0] = "s";
-gaFtsStem[1] = "e";
-gaFtsStem[2] = "ed";
-gaFtsStem[3] = "es";
-gaFtsStem[4] = "er";
-gaFtsStem[5] = "ly";
+gaFtsStem[0] = "ed";
+gaFtsStem[1] = "es";
+gaFtsStem[2] = "er";
+gaFtsStem[3] = "e";
+gaFtsStem[4] = "s";
+gaFtsStem[5] = "ingly";
 gaFtsStem[6] = "ing";
-gaFtsStem[7] = "ingly";
+gaFtsStem[7] = "ly";
 
 
 // as javascript 1.3 support unicode instead of ISO-Latin-1

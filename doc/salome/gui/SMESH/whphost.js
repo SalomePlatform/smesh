@@ -1,3 +1,4 @@
+//	WebHelp 5.10.005
 var gaProj=new Array();
 var gnChecked=0;
 var gsProjName="";
@@ -87,7 +88,7 @@ function whCom(sName,sComFile)
 				var strFile= _getFullPath(getPath(), this.msComFile);
 				var oDiv=getElement(this.msDivId);
 				if(oDiv){
-					if(gbIE4){
+					if(gbIE4||gbOpera7){
 						var nIFrameHeight=oDiv.style.pixelHeight;
 						var nIFrameWidth=oDiv.style.pixelWidth;
 						var sHTML="<IFRAME ID="+this.msIFrameId+" title=\"" + this.msName + "\" SRC=\""+strFile+"\" BORDER=0 FRAMEBORDER=no STYLE=\"width:";
@@ -98,8 +99,7 @@ function whCom(sName,sComFile)
 						}
 						oDiv.innerHTML=sHTML;
 					}else if(gbNav6){
-						gsHTML="<IFRAME ID="+this.msIFrameId+" title=\"" + this.msName + "\" SRC=\""+strFile+"\" BORDER=0 FRAMEBORDER=no STYLE=\"width:100%;border:0;height:";
-						gsHTML+="100%;\"></IFRAME>";
+						gsHTML="<IFRAME ID="+this.msIFrameId+" title=\"" + this.msName + "\" SRC=\""+strFile+"\" BORDER=0 FRAMEBORDER=no STYLE=\"width:100%;border:0;height:100%;\"></IFRAME>";
 						goDiv = oDiv;
 						setTimeout("delayLoad()", 100);
 					}
@@ -119,11 +119,12 @@ function whCom(sName,sComFile)
 		var sHTML="";
 		if(gbMac&&gbIE4)
 			sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;margin:0;padding:0;border:0;\">";
+		else if(gbIE5)
+			sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;\">";
+		else if(gbIE4||gbWindows)
+			sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;visibility:hidden\">";
 		else
-			if (gbIE5)
-				sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;\">";
-			else
-				sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:100%;visibility:hidden\">";
+			sHTML+="<DIV ID="+this.msDivId+" ALIGN=left STYLE=\"position:absolute;z-index:1;left:0;top:0;width:100%;height:"+parent.height+";visibility:hidden\">";
 		sHTML+="</DIV>";
 		return sHTML;
 	}
@@ -203,29 +204,68 @@ function getPath()
 goMan=new whComMan();
 function addPane(sName,sFileName)
 {
-	goMan.addCom(sName,sFileName);	
+	var oParam=new Object();
+	oParam.sName=sName;
+	var oMsg=new whMessage(WH_MSG_GETPANE, this, 1, oParam);
+	if (SendMessage(oMsg))
+	{
+		if (oMsg.oParam.bEnable)
+			goMan.addCom(sName,sFileName);
+	}
+	else
+		goMan.addCom(sName,sFileName);	
 }
 
 function setShowPane(sName, bForce)
 {
 	if ((gsFirstPane == "") || bForce)
-		gsFirstPane=sName;
+	{
+		var oMsg=new whMessage(WH_MSG_GETDEFPANE, this, 1, null);
+		if (SendMessage(oMsg))
+		{
+			if (oMsg.oParam)
+				gsFirstPane = oMsg.oParam;
+			else
+				gsFirstPane=sName;
+		}
+		else
+			gsFirstPane=sName;
+	}
 }
 
 function window_OnLoad()
 {
-	if(gsProjName!="")
+	var oMsg=new whMessage(WH_MSG_GETCMD,this,1,null);
+	var bHidePane=false;
+	if (SendMessage(oMsg))
 	{
-		goMan.init();
-		if(gsFirstPane!="")
-			goMan.show(gsFirstPane);
-		else
-			goMan.showById(0);
-		loadData2(gsProjName);
+		if(oMsg.oParam>0)
+		{
+			if(oMsg.oParam==1)
+				gsFirstPane="toc";
+			else if(oMsg.oParam==2)
+				gsFirstPane="idx";
+			else if(oMsg.oParam==3)
+				gsFirstPane="fts";
+			else if(oMsg.oParam==4)
+				gsFirstPane="glo";
+		}
+		else if(oMsg.oParam==0)
+		{
+			bHidePane=true;
+		}
 	}
-	else if (gServerEnabled)
+	goMan.init();
+	if(gsProjName!="")			
+		loadData2(gsProjName);	
+	if (bHidePane)
 	{
-		goMan.init();
+		gsFirstPane="";
+		var oMsg1=new whMessage(WH_MSG_HIDEPANE, this, 1, null)
+		SendMessage(oMsg1);
+	}
+	else
+	{
 		if(gsFirstPane!="")
 			goMan.show(gsFirstPane);
 		else
@@ -249,7 +289,7 @@ function loadData2(strFile)
 function addProject(bPreferXML,sXMLName,sHTMLName)
 {
 	var bLoadXML=bPreferXML;
-	if(!gbIE4&&!gbNav6)
+	if(!gbIE4&&!gbNav6&&!gbOpera7)
 		return;
 	if(gbIE4&&!gbIE5)
 		bLoadXML=false;
@@ -257,6 +297,8 @@ function addProject(bPreferXML,sXMLName,sHTMLName)
 		bLoadXML=true;
 	if(gbIE55||gbNav6)
 		bLoadXML=true;
+	if(gbOpera7)
+		bLoadXML=false;		
 	if(bLoadXML)
 		addProjectXML(sXMLName);
 	else
@@ -316,6 +358,8 @@ function putDataXML(xmlDoc,sdocPath)
 				var sURL=RmtProject[i].getAttribute("url");
 				if(sURL)
 				{
+					if(sURL.lastIndexOf("/")!=sURL.length-1)
+						sURL+="/";
 					aRProj[nCount]=new Object();
 					aRProj[nCount++].sPPath=_getFullPath(aRProj[0].sPPath,sURL);
 				}
@@ -326,9 +370,21 @@ function putDataXML(xmlDoc,sdocPath)
 		{
 			// on Netscape 6.0 under some situation the xml file cannot be loaded.
 			// so we use pure html instead.
-			setTimeout("redirectToList();",100);
+			if (gnChecked == 0)
+				setTimeout("redirectToList();",100);
+			else
+			{
+				gnChecked++;
+				setTimeout("checkRemoteProject();", 1);
+			}
 		}
 	}
+}
+
+function onLoadXMLError()
+{
+	gnChecked++;
+	setTimeout("checkRemoteProject();", 1);
 }
 
 function redirectToList()
@@ -346,7 +402,7 @@ function putProjectInfo(aRProj)
 		if(gnChecked!=0)
 		{
 			if(aRProj[0].sLangId!=gaProj[0].sLangId)
-				alert("The project: "+aRProj[0].sPPath+" is using a different language to the main project, which will cause the index and full text search functionality to be disabled for this remote project.");
+				alert("The merged Help system "+aRProj[0].sPPath+" is using a different language from the master Help system, which will cause the index and full-text search functionality to be disabled in the merged Help system.");
 		}
 		gaProj[gnChecked]=aRProj[0];
 		for(var i=1;i<aRProj.length;i++)
@@ -366,7 +422,7 @@ function putProjectInfo(aRProj)
 			}
 		}
 		gnChecked++;
-		checkRemoteProject();
+		setTimeout("checkRemoteProject();", 1);
 	}
 	else
 		alert("Could not load correctly, please click Refresh.");
@@ -395,9 +451,8 @@ function cancelProj(i)
 {
 	if(i==gnChecked)
 	{
-		alert("Can't load project::"+gaProj[i].sPPath);
 		gnChecked++;
-		checkRemoteProject();
+		setTimeout("checkRemoteProject();", 1);
 	}	
 }
 
@@ -508,7 +563,7 @@ if(window.gbWhUtil&&window.gbWhMsg&&window.gbWhVer&&window.gbWhProxy)
 	RegisterListener2(this,WH_MSG_SHOWGLO);
 	RegisterListener2(this,WH_MSG_GETPANEINFO);
 
-	if((gbMac&&gbIE4)||(gbSunOS&&gbIE5))
+	if((gbMac&&gbIE4)||(gbSunOS&&gbIE5)||gbOpera7)
 	{
 		window.onresize=window_resize;
 	}

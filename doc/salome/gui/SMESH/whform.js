@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gfunLookUp;
 var gbInputEnable;
 var gfunInit;

@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gWEA = new Array();
 function aWE()
 {

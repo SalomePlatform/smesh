@@ -2,31 +2,11 @@
 
 <html>
 
-<!--(==============================================================)-->
-<!--(Document created with RoboEditor. )============================-->
-<!--(==============================================================)-->
-
 <head>
-
 <title>Cutting quadrangles</title>
-
-<!--(Meta)==========================================================-->
-
-<meta http-equiv=content-type content="text/html; charset=windows-1252">
-<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
-<meta name=generator-major-version content=0.1>
-<meta name=generator-minor-version content=1>
-<meta name=filetype content=kadov>
-<meta name=filetype-version content=1>
-<meta name=page-count content=1>
-<meta name=layout-height content=1356>
-<meta name=layout-width content=771>
-
-
-<!--(Links)=========================================================-->
-
- <link rel='stylesheet' href='../default_ns.css'>
-<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="stylesheet" href="../default_ns.css"><script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
 <!--
 if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
@@ -34,27 +14,25 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-img_whs1 {border-style: none; border: none; width: 30px; height: 30px; float: none;}
-p.whs2 {margin-left: 40px;}
-img_whs3 {border-style: none; border: none; width: 25px; height: 22px;}
-img_whs4 {border-style: none; border: none; width: 292px; height: 412px;}
-ul.whs5 {list-style: disc;}
-p.whs6 {margin-left: 40px; font-weight: normal;}
-p.whs7 {margin-left: 0px;}
-table.whs8 {x-cell-content-align: top; width: 100%; border-spacing: 0; border-spacing: 0px;}
-col.whs9 {width: 50%;}
-tr.whs10 {x-cell-content-align: top;}
-td.whs11 {width: 50%; padding-right: 10px; padding-left: 10px; border-right-style: none; border-left-style: none; border-top-style: none; border-bottom-style: none;}
-img_whs12 {border-style: none; border: none; width: 353px; height: 300px;}
-td.whs13 {width: 50%; padding-right: 10px; padding-left: 10px; border-top-style: none; border-bottom-style: none; border-right-style: none;}
+img_whs1 { border-style:none; border:none; width:30px; height:30px; float:none; }
+p.whs2 { margin-left:40px; }
+img_whs3 { border:none; width:25px; height:22px; }
+img_whs4 { border:none; width:292px; height:412px; }
+ul.whs5 { list-style:disc; }
+p.whs6 { margin-left:40px; font-weight:normal; }
+p.whs7 { margin-left:0px; }
+table.whs8 { x-cell-content-align:top; width:100%; border-spacing:0; }
+col.whs9 { width:50%; }
+td.whs10 { padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+img_whs11 { border:none; width:353px; height:300px; }
+td.whs12 { padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
 -->
-</style>
-<script type="text/javascript" language="JavaScript">
+</style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs7 {margin-left:1; }";
+  strNSS += "p.whs7 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -76,28 +54,21 @@ onerror = null;
 </script>
 <style type="text/css">
 <!--
-  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
 -->
-</style>
-<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+</style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
 </head>
-
-<!--(Body)==========================================================-->
-
-
-<body>
-
-<script type="text/javascript" language="javascript1.2">
+<body><script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("SMESH module\nModifying meshes\nCutting quadrangles");
+	addTocInfo("MESH module\nModifying meshes\nCutting quadrangles");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -111,13 +82,14 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 	{
 	setRelStartPage("../smesh.htm");
 
-		autoSync(0);
+		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
 }
 else
-	document.location.reload();
+	if (window.gbIE4)
+		document.location.reload();
 //-->
 </script>
 <h1>Cutting quadrangles</h1>
@@ -190,16 +162,15 @@ else
 
 <p class="whs7">&nbsp;</p>
 
-<!--(Table)=========================================================-->
 <table x-use-null-cells cellspacing="0" width="100%" class="whs8">
 <col class="whs9">
 <col class="whs9">
 
-<tr valign="top" class="whs10">
-<td width="50%" class="whs11">
-<p><img src="../image52.jpg" width="353px" height="300px" border="0" class="img_whs12"></td>
-<td width="50%" class="whs13">
-<p><img src="../image51.jpg" width="353px" height="300px" border="0" class="img_whs12"></td></tr>
+<tr valign=top>
+<td width="50%" class="whs10">
+<p><img src="../image52.jpg" width="353px" height="300px" border="0" class="img_whs11"></td>
+<td width="50%" class="whs12">
+<p><img src="../image51.jpg" width="353px" height="300px" border="0" class="img_whs11"></td></tr>
 </table>
 
 <p class="whs7">&nbsp;</p>
@@ -211,5 +182,4 @@ if (window.writeIntopicBar)
 //-->
 </script>
 </body>
-
 </html>

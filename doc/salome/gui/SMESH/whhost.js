@@ -1,3 +1,4 @@
+//	WebHelp 5.10.002
 var gaChunks=new Array();
 var gaFakes=new Array();
 var gaDataCon=null;
@@ -34,6 +35,20 @@ var gsSKA=null;
 var gsSKB=null;
 
 var gbLoadInfo=false;
+
+function onLoadXMLError()
+{
+	if(gbLoadInfo)
+	{
+		var aChunk=new Array();
+		projReady(aChunk);
+	}
+	else
+	{
+		var aData=new Array();
+		putData(aData);
+	}
+}
 
 function putDataXML(xmlDoc,sDocPath)
 {
@@ -683,7 +698,7 @@ function writeItems(oHTML,aDataCon,aPos,aMinPos,aMaxPos,bDown,nLevel)
 					p=0;
 					aCurIdxSet[p++]=i;
 				}
-				else if(sCurrentK==aDataCon[i].aKs[aPos[i]].sName){
+				else if(compare(sCurrentK,aDataCon[i].aKs[aPos[i]].sName)==0){
 					aCurIdxSet[p++]=i;
 				}
 			}

@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gaFileMapping = new Array();
 function fileMapping(sBK, sEK, sFileName, nNum)
 {

@@ -1,19 +1,26 @@
+//	WebHelp 5.10.004
 var gsFileName="";
+var gsDivName="";
 var xmlDoc=null;
 var sdocPath=null;
 var gsInsertBeforeEndHTML="";
 var sReplaceStringsSrc=new Array();
+var gsDivName="dataDiv";
+var gnLoadDivNum=0;
 sReplaceStringsSrc[0]="&amp;";
 sReplaceStringsSrc[1]="&gt;";
 sReplaceStringsSrc[2]="&lt;";
 sReplaceStringsSrc[3]="&quot;";
-sReplaceStringsSrc[4]="&nbsp;";
+sReplaceStringsSrc[4]=String.fromCharCode(8364);
+sReplaceStringsSrc[5]="&nbsp;";
+
 var sReplaceStringsDst=new Array();
 sReplaceStringsDst[0]="&";
 sReplaceStringsDst[1]=">";
 sReplaceStringsDst[2]="<";
 sReplaceStringsDst[3]="\"";
-sReplaceStringsDst[4]=" ";
+sReplaceStringsDst[4]=String.fromCharCode(128);
+sReplaceStringsDst[5]=" ";
 var goHighLighted=null;
 
 function _getRelativePath(strParentPath,strCurrentPath)
@@ -45,7 +52,7 @@ function _getRelativePath(strParentPath,strCurrentPath)
 	return strCurrentPath;
 }
 
-function _getRelativeFileName(strParentPath, strCurrentPath)
+function _getRelativeFileName(strParentPath,strCurrentPath)
 {
 	strParentPath=_replaceSlash(strParentPath);
 	strParentPath=_getPath(strParentPath);
@@ -108,7 +115,7 @@ function _getFullPath(sPath,sRelPath)
 			{
 				sRelPath=sRelPath.substring(nPathPos+3);
 				sFullPath=sFullPath.substring(0,sFullPath.length-1);
-				var nPos2 = sFullPath.lastIndexOf("/");
+				var nPos2=sFullPath.lastIndexOf("/");
 				if(nPos2!=-1)
 					sFullPath=sFullPath.substring(0,nPos2+1);
 				else
@@ -123,7 +130,7 @@ function _getFullPath(sPath,sRelPath)
 function _isAbsPath(strPath)
 {
 	var strUpper=strPath.toUpperCase();
-	return (strUpper.indexOf(":")!=-1);
+	return (strUpper.indexOf(":")!=-1||strUpper.indexOf("\\\\")==0);
 }
 
 function _replaceSlash(strURL)
@@ -166,21 +173,29 @@ function insertItemIntoArray(oArray,i,obj)
 
 function loadData(sFileName)
 {
-	if(!getElement("dataDiv"))
+	var i=gnLoadDivNum;
+	var sName=gsDivName+gnLoadDivNum++;
+	loadData_2(sFileName,sName);
+}
+
+function loadData_2(sFileName,sDivName)
+{
+	if(!getElement(sDivName))
 	{
-		if(!insertDataDiv())
+		if(!insertDataDiv(sDivName))
 		{
 			gsFileName=sFileName;
+			gsDivName=sDivName;
 			return;
 		}
 	}
 	var sHTML="";
 	if(gbMac)
-		sHTML+="<iframe src="+sFileName+"></iframe>";
+		sHTML+="<iframe src=\""+sFileName+"\"></iframe>";
 	else
-		sHTML+="<iframe style=\"visibility:hidden;width:0;height:0\" src="+sFileName+"></iframe>";
+		sHTML+="<iframe style=\"visibility:hidden;width:0;height:0\" src=\""+sFileName+"\"></iframe>";
 	
-	var oDivCon=getElement("dataDiv");
+	var oDivCon=getElement(sDivName);
 	if(oDivCon)
 	{
 		if(gbNav6)
@@ -231,21 +246,21 @@ function checkState()
 		if(state==4)
 		{
 			var err=xmlDoc.parseError;
-			if(err.errorCode!=0)
-				alert(err.reason);
-			else
+			if(err.errorCode==0)
 				putDataXML(xmlDoc,sdocPath);
+			else
+				onLoadXMLError();
 		}
 	}
 }
 
-function insertDataDiv()
+function insertDataDiv(sName)
 {
 	var sHTML="";
 	if(gbMac)
-		sHTML+="<div id=dataDiv style=\"display:none;\"></div>";
+		sHTML+="<div id="+sName+" style=\"display:none;\"></div>";
 	else
-		sHTML+="<div id=dataDiv style=\"visibility:hidden\"></div>";
+		sHTML+="<div id="+sName+" style=\"visibility:hidden\"></div>";
 	if((gbIE5||gbNav6)&&document.body)
 		document.body.insertAdjacentHTML("beforeEnd",sHTML);
 	else
@@ -264,7 +279,7 @@ function insertWhenBodyReady()
 	{
 		document.body.insertAdjacentHTML("beforeEnd",gsInsertBeforeEndHTML);
 		gsInsertBeforeEndHTML="";
-		loadData(gsFileName);
+		loadData_2(gsFileName,gsDivName);
 	}
 	else
 	{
@@ -274,9 +289,12 @@ function insertWhenBodyReady()
 
 function window_BUnload()
 {
-	var oDivCon=getElement("dataDiv");
-	if(oDivCon)
-		oDivCon.innerHTML="";
+	for(var i=0;i<gnLoadDivNum;i++)
+	{
+		var oDivCon=getElement(gsDivName+i);
+		if(oDivCon)
+			oDivCon.innerHTML="";
+	}
 }
 
 function removeThis(obj)
@@ -410,7 +428,8 @@ function HighLightElement(obj,sHighLightColor,sNormalColor)
 	if(obj!=null)
 	{
 		resetHighLight(sNormalColor);
-		obj.style.backgroundColor=sHighLightColor;
+		if (obj.style)
+			obj.style.backgroundColor=sHighLightColor;
 		goHighLighted=obj;
 	}
 }
@@ -419,7 +438,8 @@ function resetHighLight(sNormalColor)
 {
 	if(goHighLighted!=null)
 	{
-		goHighLighted.style.backgroundColor=sNormalColor;
+		if (goHighLighted.style)
+			goHighLighted.style.backgroundColor=sNormalColor;
 		goHighLighted=null;
 	}
 }
@@ -458,6 +478,50 @@ function getFontStyle(oFont)
 		sStyle+="color:"+oFont.sColor+";";
 	}
 	return sStyle;
+}
+
+function _browserStringToText(sBStr)
+{
+	var sText="";
+	// change %xxx back to the real char.
+	var nPos=sBStr.indexOf('%');
+	while(nPos!=-1)
+	{
+		sText+=sBStr.substring(0,nPos);
+		sBStr=sBStr.substring(nPos+1);
+		var sNum="";
+		var i=0;
+		while(sBStr.charAt(i)>='0'&&sBStr.charAt(i)<='9')
+		{
+			sNum+=sBStr.charAt(i++);	
+		}
+		if(sNum!=""){
+			var nNum=parseInt(sNum,16);
+			sText+=String.fromCharCode(nNum);
+			sBStr=sBStr.substring(i);
+		}
+		nPos=sBStr.indexOf('%');
+	}
+	sText+=sBStr;
+	return sText;
+}
+
+function excapeSingleQuotandSlash(str)
+{
+	if(str==null) return null;
+	var nPos=0;
+	var sRes="";
+	var nPosNew=str.indexOf("\\",nPos);
+	while(nPosNew!=-1){
+		sRes+=str.substring(nPos,nPosNew+1)+"\\";
+		nPos=nPosNew+1;
+		nPosNew=str.indexOf("\\",nPos);
+	}
+	if(nPos<str.length)
+		sRes+=str.substring(nPos);
+	var re=new RegExp("'","g");
+	sRes=sRes.replace(re,"\\'");
+	return sRes;
 }
 
 var gbWhUtil=true;
