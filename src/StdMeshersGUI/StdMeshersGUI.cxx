@@ -136,8 +136,17 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
 	//mySMESHGUI->GetActiveStudy()->updateObjBrowser(true);
       }    
 	
-    for (int i=0; i<listSOmesh->length(); i++)
-      SMESH::ModifiedMesh(listSOmesh[i], false);
+    if ( listSOmesh->length() > 0 ) {
+      SALOMEDS::SObject_var submSO = listSOmesh[0];
+      SMESH::SMESH_Mesh_var aMesh =
+        SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(submSO);
+      SMESH::SMESH_subMesh_var aSubMesh =
+        SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(submSO);
+      if ( !aSubMesh->_is_nil() )
+        aMesh = aSubMesh->GetFather();
+      SALOMEDS::SObject_var meshSO = SMESH::FindSObject( aMesh );
+      SMESH::ModifiedMesh( meshSO, false);
+    }
   }
 }
 

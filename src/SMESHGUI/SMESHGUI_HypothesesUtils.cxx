@@ -376,7 +376,9 @@ namespace SMESH{
 	if ( !aMesh->_is_nil() && !SsubM->_is_nil() && !aShapeObject->_is_nil() ) {
 	  res = aMesh->AddHypothesis( aShapeObject, aHyp );
 	  if ( res < SMESH::HYP_UNKNOWN_FATAL )  {
-	    SMESH::ModifiedMesh( SsubM, false );
+            SALOMEDS::SObject_var meshSO = SMESH::FindSObject( aMesh );
+            if ( !meshSO->_is_nil() )
+              SMESH::ModifiedMesh( meshSO, false );
 	  }
 	  if ( res > SMESH::HYP_OK ) {
 	    wc.stop();
@@ -429,38 +431,15 @@ namespace SMESH{
 	      
 	      if (!aMesh->_is_nil()) {
 		res = aMesh->RemoveHypothesis(aShape, anHyp);
-		if ( res < SMESH::HYP_UNKNOWN_FATAL )
-		  SMESH::ModifiedMesh(MorSM, false);
+		if ( res < SMESH::HYP_UNKNOWN_FATAL ) {
+                  SALOMEDS::SObject_var meshSO = SMESH::FindSObject( aMesh );
+                  if ( !meshSO->_is_nil() )
+                    SMESH::ModifiedMesh(meshSO, false);
+                }
 		if ( res > SMESH::HYP_OK ) {
 		  wc.stop();
 		  processHypothesisStatus( res, anHyp, false );
 		  wc.start();
-		}
-	      }
-	    }
-	  }
-	  
-	  SALOMEDS::SObject_var aHypSObj = aStudy->FindObjectID(IObject->getReference());
-	  if (!aHypSObj->_is_nil()) {
-	    SALOMEDS::SObject_var MorSM = SMESH::GetMeshOrSubmesh(aHypSObj);
-	    if (!MorSM->_is_nil()) {
-	      GEOM::GEOM_Object_var aShapeObject =SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-	      if (!aShapeObject->_is_nil()){
-		SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
-		SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-		
-		if (!aSubMesh->_is_nil())
-		  aMesh = aSubMesh->GetFather();
-		
-		if (!aMesh->_is_nil()) {
-		  res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-		  if ( res < SMESH::HYP_UNKNOWN_FATAL )
-		    SMESH::ModifiedMesh(MorSM, false);
-		  if ( res > SMESH::HYP_OK ) {
-		    wc.stop();
-		    processHypothesisStatus( res, anHyp, false );
-		    wc.start();
-		  }
 		}
 	      }
 	    }
@@ -500,8 +479,11 @@ namespace SMESH{
 	  
 	  if (!aMesh->_is_nil()) {
 	    res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-	    if ( res < SMESH::HYP_UNKNOWN_FATAL )
-	      SMESH::ModifiedMesh(MorSM, false);
+	    if ( res < SMESH::HYP_UNKNOWN_FATAL ) {
+              SALOMEDS::SObject_var meshSO = SMESH::FindSObject( aMesh );
+              if ( !meshSO->_is_nil() )
+                SMESH::ModifiedMesh(meshSO, false);
+            }
 	    if ( res > SMESH::HYP_OK ) {
 	      wc.stop();
 	      processHypothesisStatus( res, anHyp, false );
