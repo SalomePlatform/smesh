@@ -13,7 +13,8 @@
 	<component>
 		<!-- Component identification -->
 		<component-name>SMESH</component-name>
-		<component-type>Mesh</component-type>
+		<component-username>Mesh</component-username>
+		<component-type>MESH</component-type>
 		<component-author>NRI</component-author>
 		<component-version> 1.0</component-version>
 		<component-comment>New Mesh component</component-comment>
