@@ -92,11 +92,12 @@ LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistr
     -L${CASROOT}/lin/lib -lTKCDF -lTKBO
 
 
-LDFLAGSFORBIN += -lSMDS -lSMESHDS -lMEDWrapper -lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
-		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry \
-		-lOpUtil -lSALOMELocalTrace -lSalomeNotification \
+LDFLAGSFORBIN += -lSMDS -lSMESHDS -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
+		-lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
+		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeResourcesManager \
+		-lOpUtil -lSALOMELocalTrace -lSALOMETraceCollector -lSalomeNotification -lCASCatch \
 		-lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
-	  	-L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls \
+	  	-L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls -lNMTTools -lNMTDS \
      -L${CASROOT}/lin/lib -lTKCDF -lTKBO
 
 @CONCLUDE@
