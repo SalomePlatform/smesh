@@ -46,6 +46,8 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Mesh.hxx"
 
+#include "QAD_Config.h"
+
 #include <TColStd_MapOfInteger.hxx>
 
 #include <qframe.h>
@@ -390,8 +392,21 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     if ( myPattern->MakeMesh( myMesh ) )
     {
       mySelection->ClearIObjects();
+      SMESHGUI* aCompGUI = SMESHGUI::GetSMESHGUI();
+      if ( !isRefine() && !QAD_CONFIG->getSetting( "SMESH:AutomaticUpdate" ).compare( "true" ) ) {
+	SALOMEDS::SObject_var aSO = SMESH::FindSObject( myMesh.in() );
+	SMESH_Actor* anActor = SMESH::FindActorByEntry( aSO->GetID() );
+	if(!anActor){
+	  anActor = SMESH::CreateActor( aSO->GetStudy(), aSO->GetID() );
+	  if(anActor){
+	    SMESH::DisplayActor( aCompGUI->GetActiveStudy()->getActiveStudyFrame(), anActor );
+	    SMESH::FitAll();
+	  }
+	}
+      }
       SMESH::UpdateView();
-      SMESHGUI::GetSMESHGUI()->GetActiveStudy()->updateObjBrowser( true );
+
+      aCompGUI->GetActiveStudy()->updateObjBrowser( true );
       return true;
     }
     else
@@ -802,7 +817,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
 
     SMESH::point_array_var pnts = myPattern->GetPoints();
     SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
-    SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints();
+    SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints(false);
 
     if ( pnts->length()       == 0 ||
          keyPoints->length()  == 0 ||
@@ -1166,7 +1181,7 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
       : myPattern->ApplyTo3DBlock( myGeomObj[ Object ], myGeomObj[ Vertex1 ], myGeomObj[ Vertex2 ] );
     }
 
-    SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints();
+    SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints(true);
 
     if ( pnts->length() == 0 || elemPoints->length() == 0 )
       return 0;
@@ -1269,6 +1284,8 @@ void SMESHGUI_MeshPatternDlg::onModeToggled( bool on )
 {
   on ? myRefineGrp->show() : myRefineGrp->hide();
   on ? myGeomGrp->hide()   : myGeomGrp->show();
+
+  displayPreview();
 }
 
 //=======================================================================
