@@ -334,6 +334,29 @@ bool SMESH_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 	//SCRUTE(nbx);
 	//SCRUTE(nby);
 	//SCRUTE(nbz);
+
+	//
+	// Adding NB To my point of vue that definition of nbx nby and nbz
+	// seems to be true (but maybe I am wrong). Of course any comments
+	// or other suggestions are welcome !!!!
+	//
+
+	nbx = _cube.quad_Z0->nbPts[0];
+	double det = cz0.a1*cz0.b2 - cz0.a2*cz0.b1;
+	if (cz0.a1 == 0.) nbx = _cube.quad_Z0->nbPts[1];
+
+	nby = _cube.quad_X0->nbPts[0];
+	det = cx0.a1*cx0.b2 - cx0.a2*cx0.b1;
+	if (cx0.a1 == 0.) nby = _cube.quad_X0->nbPts[1];
+
+	nbz = _cube.quad_Y0->nbPts[0];
+	det = cy0.a1*cy0.b2 - cy0.a2*cy0.b1;
+	if (cy0.a1 != 0.) nbz = _cube.quad_Y0->nbPts[1];
+
+	SCRUTE(nbx);
+	SCRUTE(nby);
+	SCRUTE(nbz);
+
 	int nbxyz = nbx * nby * nbz;
 	Point3DStruct *np = new Point3DStruct[nbxyz];
 
