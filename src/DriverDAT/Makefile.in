@@ -26,8 +26,8 @@ LIB_CLIENT_IDL =
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES)
-CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES)
+CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += $(OCC_LIBS) $(MED2_LIBS) -lMeshDriver
 
 %_moc.cxx: %.h
