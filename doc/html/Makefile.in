@@ -6,6 +6,7 @@
 #
 # source path
 top_srcdir=@top_srcdir@
+root_srcdir=@ROOT_SRCDIR@
 top_builddir=../..
 srcdir=@srcdir@
 VPATH=.:@srcdir@
@@ -16,7 +17,7 @@ doxygen=@DOXYGEN@
 doc:
 	cp -fr $(srcdir)/INPUT ./; \
 	cd INPUT; \
-	sed 's|../../../share/salome|../$(top_srcdir)|' doxyfile > doxyfile1; \
+	sed 's|../../../share/salome|$(root_srcdir)|' doxyfile > doxyfile1; \
 	mv -f doxyfile1 doxyfile; \
 	$(doxygen) ./doxyfile; \
 	cd ..; \
