@@ -101,8 +101,8 @@ void SMDS_VolumeOfNodes::Print(ostream & OS) const
 {
 	OS << "volume <" << GetID() << "> : ";
 	int i;
-	for (i = 0; i < 7; ++i) OS << myNodes[i] << ",";
-	OS << myNodes[7]<< ") " << endl;
+	for (i = 0; i < NbNodes(); ++i) OS << myNodes[i] << ",";
+	OS << myNodes[NbNodes()-1]<< ") " << endl;
 }
 
 int SMDS_VolumeOfNodes::NbFaces() const
