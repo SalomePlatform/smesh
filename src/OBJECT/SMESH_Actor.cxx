@@ -1038,7 +1038,6 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 	my1DExtActor->VisibilityOn();
 	break;
       case eLength2D:
-	my1DExtActor->VisibilityOn();
       case eMultiConnection2D:
 	my1DExtActor->VisibilityOn();
       default:
@@ -1049,15 +1048,21 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 
     if(myRepresentation != ePoint)
       myPickableActor->VisibilityOn();
+    else {
+      myNodeActor->VisibilityOn();
+    }
 
-    if(myEntityMode & eEdges)
+    if(myEntityMode & eEdges){
       my1DActor->VisibilityOn();
+    }
     
-    if(myEntityMode & eFaces)
+    if(myEntityMode & eFaces){
       my2DActor->VisibilityOn();
+    }
     
-    if(myEntityMode & eVolumes)
+    if(myEntityMode & eVolumes){
       my3DActor->VisibilityOn();
+    }
     
     if(myIsPointsLabeled) 
       myPointLabels->VisibilityOn();
@@ -1128,7 +1133,7 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
   vtkProperty *aProp = NULL, *aBackProp = NULL;
   SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::EReperesent(-1);
   switch(myRepresentation){
-  case ePoint: 
+  case ePoint:
     myPickableActor = myNodeActor;
     myNodeActor->SetVisibility(true);
 
@@ -1173,7 +1178,6 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
   
   if(myIsPointsVisible)
     myPickableActor = myNodeActor;
-
   if(GetPointRepresentation())
     myNodeActor->SetVisibility(true);
 
