@@ -140,13 +140,13 @@ echo
 
 CHECK_PYTHON
 
-echo
-echo ---------------------------------------------
-echo testing java
-echo ---------------------------------------------
-echo
+dnl echo
+dnl echo ---------------------------------------------
+dnl echo testing java
+dnl echo ---------------------------------------------
+dnl echo
 
-CHECK_JAVA
+dnl CHECK_JAVA
 
 echo
 echo ---------------------------------------------
@@ -172,13 +172,13 @@ echo
 
 CHECK_OMNIORB
 
-echo
-echo ---------------------------------------------
-echo testing mico
-echo ---------------------------------------------
-echo
+dnl echo
+dnl echo ---------------------------------------------
+dnl echo testing mico
+dnl echo ---------------------------------------------
+dnl echo
 
-CHECK_MICO
+dnl CHECK_MICO
 
 echo
 echo ---------------------------------------------
