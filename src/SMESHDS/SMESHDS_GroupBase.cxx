@@ -41,7 +41,7 @@ SMESHDS_GroupBase::SMESHDS_GroupBase (const int                 theID,
                                       const SMESHDS_Mesh*       theMesh,
                                       const SMDSAbs_ElementType theType):
        myID(theID), myMesh(theMesh), myType(theType), myStoreName(""),
-       myCurIndex(0), myCurID(0)
+       myCurIndex(0), myCurID(-1)
 {
 }
 
@@ -84,6 +84,18 @@ const SMDS_MeshElement* SMESHDS_GroupBase::findInMesh (const int theID) const
       aElem = NULL;
   }
   return aElem;
+}
+
+//=============================================================================
+/*!
+ *  Internal method: resets cached iterator, should be called by ancestors
+ *  when they are modified (ex: Add() or Remove() )
+ */
+//=============================================================================
+void SMESHDS_GroupBase::resetIterator()
+{
+  myCurIndex = 0;
+  myCurID = -1;
 }
 
 //=======================================================================

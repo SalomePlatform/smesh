@@ -68,6 +68,7 @@ class SMESHDS_GroupBase
 
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
+  void resetIterator();
 
  private:
   SMESHDS_GroupBase (const SMESHDS_GroupBase& theOther);

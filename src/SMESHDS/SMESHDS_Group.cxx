@@ -93,6 +93,7 @@ bool SMESHDS_Group::Add (const int theID)
     SetType( aElem->GetType() );
 
   myGroup.Add (aElem);
+  resetIterator();
   return true;
 }
 
@@ -108,6 +109,7 @@ bool SMESHDS_Group::Remove (const int theID)
   if (!aElem || !myGroup.Contains(aElem))
     return false;
   myGroup.Remove (aElem);
+  resetIterator();
   return true;
 }
 
@@ -119,6 +121,7 @@ bool SMESHDS_Group::Remove (const int theID)
 void SMESHDS_Group::Clear()
 {
   myGroup.Clear();
+  resetIterator();
 }
 
 // =====================
