@@ -37,6 +37,7 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 		SMDS_MeshNode * node7,
 		SMDS_MeshNode * node8)
 {
+	myNodes.resize(8);
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -47,6 +48,50 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 	myNodes[7]=node8;
 }
 
+SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4)
+{
+	myNodes.resize(4);
+	myNodes[0]=node1;
+	myNodes[1]=node2;
+	myNodes[2]=node3;
+	myNodes[3]=node4;
+}
+
+SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4,
+		SMDS_MeshNode * node5)
+{
+	myNodes.resize(5);
+	myNodes[0]=node1;
+	myNodes[1]=node2;
+	myNodes[2]=node3;
+	myNodes[3]=node4;
+	myNodes[4]=node5;
+}
+
+SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4,
+		SMDS_MeshNode * node5,
+		SMDS_MeshNode * node6)
+{
+	myNodes.resize(6);
+	myNodes[0]=node1;
+	myNodes[1]=node2;
+	myNodes[2]=node3;
+	myNodes[3]=node4;
+	myNodes[4]=node5;
+	myNodes[5]=node6;
+}
 //=======================================================================
 //function : Print
 //purpose  : 
@@ -62,17 +107,31 @@ void SMDS_VolumeOfNodes::Print(ostream & OS) const
 
 int SMDS_VolumeOfNodes::NbFaces() const
 {
-	return 6;
+	switch(NbNodes())
+	{
+	case 4: return 4;
+	case 5: return 5;
+	case 6: return 5;
+	case 8: return 6;
+	default: MESSAGE("invalid number of nodes");
+	}
 }
 
 int SMDS_VolumeOfNodes::NbNodes() const
 {
-	return 8;
+	return myNodes.size();
 }
 
 int SMDS_VolumeOfNodes::NbEdges() const
 {
-	return 12;
+	switch(NbNodes())
+	{
+	case 4: return 6;
+	case 5: return 8;
+	case 6: return 9;
+	case 8: return 12;
+	default: MESSAGE("invalid number of nodes");
+	}
 }
 
 SMDS_Iterator<const SMDS_MeshElement *> * SMDS_VolumeOfNodes::
@@ -80,15 +139,15 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_VolumeOfNodes::
 {
 	class MyIterator:public SMDS_Iterator<const SMDS_MeshElement*>
 	{
-		const SMDS_MeshNode * const* mySet;
+		const vector<const SMDS_MeshNode*>& mySet;
 		int index;
 	  public:
-		MyIterator(const SMDS_MeshNode * const* s):mySet(s),index(0)
+		MyIterator(const vector<const SMDS_MeshNode*>& s):mySet(s),index(0)
 		{}
 
 		bool more()
 		{
-			return index<8;
+			return index<mySet.size();
 		}
 
 		const SMDS_MeshElement* next()
@@ -97,7 +156,6 @@ SMDS_Iterator<const SMDS_MeshElement *> * SMDS_VolumeOfNodes::
 			return mySet[index-1];
 		}	
 	};
-
 	switch(type)
 	{
 	case SMDSAbs_Volume:return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);

@@ -329,8 +329,8 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
 	}
 	else
 	{
-		MESSAGE("Error : Not implemented");
-		return NULL;
+		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4);
+		myVolumes.insert(volume);
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
@@ -424,8 +424,8 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
 	}
 	else
 	{
-		MESSAGE("Error : Not implemented");
-		return NULL;
+		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5);
+		myVolumes.insert(volume);
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))
@@ -525,8 +525,8 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(
 	}
 	else
 	{
-		MESSAGE("Error : Not implemented");
-		return NULL;
+		volume=new SMDS_VolumeOfNodes(node1,node2,node3,node4,node5,node6);
+		myVolumes.insert(volume);
 	}
 
 	if(myElementIDFactory->BindID(ID, volume))

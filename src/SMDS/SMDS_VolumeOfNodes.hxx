@@ -28,11 +28,31 @@
 #define _SMDS_VolumeOfNodes_HeaderFile
 
 #include "SMDS_MeshVolume.hxx"
+#include <vector>
+using namespace std;
 
 class SMDS_VolumeOfNodes:public SMDS_MeshVolume
 {
 	
   public:
+	SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4);
+	SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4,
+		SMDS_MeshNode * node5);
+	SMDS_VolumeOfNodes(
+		SMDS_MeshNode * node1,
+		SMDS_MeshNode * node2,
+		SMDS_MeshNode * node3,
+		SMDS_MeshNode * node4,
+		SMDS_MeshNode * node5,
+		SMDS_MeshNode * node6);
 	SMDS_VolumeOfNodes(
 		SMDS_MeshNode * node1,
 		SMDS_MeshNode * node2,
@@ -51,6 +71,6 @@ class SMDS_VolumeOfNodes:public SMDS_MeshVolume
   protected:
 	SMDS_Iterator<const SMDS_MeshElement *> *
 		elementsIterator(SMDSAbs_ElementType type) const;
-	SMDS_MeshNode * myNodes[8];
+	vector<const SMDS_MeshNode *> myNodes;
 };
 #endif
