@@ -143,9 +143,9 @@ void SMESHDS_Script::AddVolume(int NewID,
 	else
 	{
 		com = myCommands.back();
-		if (com->GetType() != SMESHDS_AddQuadrangle)
+		if (com->GetType() != SMESHDS_AddTetrahedron)
 		{
-			com = new SMESHDS_Command(SMESHDS_AddQuadrangle);
+			com = new SMESHDS_Command(SMESHDS_AddTetrahedron);
 			myCommands.insert(myCommands.end(),com);
 		}
 	}
