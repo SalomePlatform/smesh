@@ -22,7 +22,6 @@ doc:
 	cd ..; \
 	cp -f $(srcdir)/INPUT/sources/doxygen.css ./html/doxygen.css
 	cp -fr $(srcdir)/INPUT/sources/ html/
-	cp -fr $(srcdir)/INPUT/exemple/ html/
 	cp -fr $(srcdir)/INPUT/HTML/  html/
 
 clean:
