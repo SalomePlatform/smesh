@@ -49,7 +49,7 @@ EXPORT_HEADERS= SMESH_Type.h \
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += $(OCC_LIBS)
+LDFLAGS  += $(OCC_KERNEL_LIBS)
 
 # additional file to be cleaned
 MOSTLYCLEAN =
