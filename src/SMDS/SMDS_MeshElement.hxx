@@ -33,7 +33,7 @@
 #include "SMDS_MeshElementIDFactory.hxx"
 
 #include <vector>
-#include <ostream>
+#include <iostream>
 
 using namespace std;
 class SMDS_MeshNode;

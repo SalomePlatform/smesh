@@ -22,7 +22,7 @@
 #ifndef _SMDS_Tria3OfNodes_HeaderFile
 #define _SMDS_Tria3OfNodes_HeaderFile
 
-#include <ostream>
+#include <iostream>
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_Iterator.hxx"

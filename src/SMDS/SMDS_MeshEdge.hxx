@@ -28,7 +28,7 @@
 #define _SMDS_MeshEdge_HeaderFile
 
 #include "SMDS_MeshElement.hxx"
-#include <ostream>
+#include <iostream>
 
 class SMDS_MeshEdge:public SMDS_MeshElement
 {

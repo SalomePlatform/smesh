@@ -22,7 +22,7 @@
 #ifndef _SMDS_FaceOfEdges_HeaderFile
 #define _SMDS_FaceOfEdges_HeaderFile
 
-#include <ostream>
+#include <iostream>
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_Iterator.hxx"

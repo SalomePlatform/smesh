@@ -42,9 +42,16 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Edge.hxx>
+
 //Not portable see http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_4 to know more.
-#include <ext/hash_map>
-using namespace __gnu_cxx;
+#ifdef __GNUC__
+#if __GNUC__ < 3
+	#include <hash_map.h>
+#else
+	#include <ext/hash_map>
+	using namespace __gnu_cxx;
+#endif
+#endif
 
 using namespace std;
 

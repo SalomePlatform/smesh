@@ -31,7 +31,7 @@
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_Iterator.hxx"
 #include <vector>
-#include <ostream>
+#include <iostream>
 using namespace std;
 
 class SMDS_VolumeOfFaces:public SMDS_MeshVolume
