@@ -1047,7 +1047,7 @@ void SMESH_subMesh::CleanDependsOn()
 	for (its = dependson.begin(); its != dependson.end(); its++)
 	{
 		SMESH_subMesh *sm = (*its).second;
-		SCRUTE((*its).first);
+		//SCRUTE((*its).first);
 		sm->ComputeStateEngine(CLEAN);
 	}
 }
