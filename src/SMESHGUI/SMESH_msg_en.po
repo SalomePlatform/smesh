@@ -991,6 +991,9 @@ msgstr "Skew"
 msgid "SMESHGUI_FilterTable::AREA"
 msgstr "Area"
 
+msgid "SMESHGUI_FilterTable::BAD_ORIENTED_VOLUME"
+msgstr "Bad oriented volume"
+
 msgid "SMESHGUI_FilterTable::LESS_THAN"
 msgstr "Less than"
 

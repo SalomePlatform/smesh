@@ -47,7 +47,9 @@
 #include "SALOME_ListIteratorOfListIO.hxx"
 #include "VTKViewer_InteractorStyleSALOME.h"
 
-#include <vtkCell.h>
+#include <vtkCell3D.h>
+#include <vtkQuad.h>
+#include <vtkTriangle.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkCellArray.h>
@@ -69,6 +71,8 @@
 #include <qlistbox.h>
 #include <qpushbutton.h>
 #include <qapplication.h>
+#include <qhbuttongroup.h>
+#include <qradiobutton.h>
 
 // IDL Headers
 #include "SALOMEconfig.h"
@@ -90,6 +94,7 @@
 SMESHGUI_MultiEditDlg::SMESHGUI_MultiEditDlg( QWidget*              theParent, 
                                               SALOME_Selection*     theSelection,
                                               const int             theMode,
+					      const bool            the3d2d,
                                               const char*           theName )
 : QDialog( theParent, theName, false, 
            WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
@@ -98,10 +103,12 @@ SMESHGUI_MultiEditDlg::SMESHGUI_MultiEditDlg( QWidget*              theParent,
   mySubmeshFilter = new SMESH_TypeFilter( SUBMESH );
   myGroupFilter = new SMESH_TypeFilter( GROUP );
 
+  myEntityType = 0;
+
   myFilterType = theMode;
   QVBoxLayout* aDlgLay = new QVBoxLayout( this, MARGIN, SPACING );
 
-  QFrame* aMainFrame = createMainFrame  ( this );
+  QFrame* aMainFrame = createMainFrame  ( this, the3d2d );
   QFrame* aBtnFrame  = createButtonFrame( this );
 
   aDlgLay->addWidget( aMainFrame );
@@ -116,7 +123,7 @@ SMESHGUI_MultiEditDlg::SMESHGUI_MultiEditDlg( QWidget*              theParent,
 // name    : SMESHGUI_MultiEditDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_MultiEditDlg::createMainFrame( QWidget* theParent )
+QFrame* SMESHGUI_MultiEditDlg::createMainFrame( QWidget* theParent, const bool the3d2d )
 {
   QGroupBox* aMainGrp = new QGroupBox( 1, Qt::Horizontal, theParent );
   aMainGrp->setFrameStyle( QFrame::NoFrame );
@@ -126,6 +133,15 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame( QWidget* theParent )
   
   // "Selected cells" group
   mySelGrp = new QGroupBox( 1, Qt::Horizontal,  aMainGrp );
+
+  myEntityTypeGrp = 0;
+  if ( the3d2d ) {
+    myEntityTypeGrp = new QHButtonGroup( tr("SMESH_ELEMENTS_TYPE"), mySelGrp );
+    (new QRadioButton( tr("SMESH_FACE"),   myEntityTypeGrp ))->setChecked( true );
+    (new QRadioButton( tr("SMESH_VOLUME"), myEntityTypeGrp ));
+    myEntityType = myEntityTypeGrp->id( myEntityTypeGrp->selected() );
+  }
+
   QFrame* aFrame = new QFrame( mySelGrp );
   
   myListBox = new QListBox( aFrame );
@@ -251,6 +267,9 @@ void SMESHGUI_MultiEditDlg::Init( SALOME_Selection* theSelection )
   connect( myGroupChk  , SIGNAL( stateChanged( int ) ), SLOT( onGroupChk()   ) );
   connect( myToAllChk  , SIGNAL( stateChanged( int ) ), SLOT( onToAllChk()   ) );
 
+  if ( myEntityTypeGrp )
+    connect( myEntityTypeGrp, SIGNAL( clicked(int) ), SLOT( on3d2dChanged(int) ) );
+
   connect( myListBox, SIGNAL( selectionChanged() ), SLOT( onListSelectionChanged() ) );
 
   onSelectionDone();
@@ -293,10 +312,14 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
           vtkCell* aCell = aGrid->GetCell( i );
           if ( aCell != 0 )
           {
-            int nbNodes = aCell->GetNumberOfPoints();
-            if ( nbNodes == 3 && myFilterType == SMESHGUI_TriaFilter  ||
-                 nbNodes == 4 && myFilterType == SMESHGUI_QuadFilter ||
-                ( nbNodes == 4 || nbNodes ==  3 ) && myFilterType == SMESHGUI_UnknownFilter )
+	    vtkTriangle* aTri = vtkTriangle::SafeDownCast(aCell);
+	    vtkQuad*     aQua = vtkQuad::SafeDownCast(aCell);
+	    vtkCell3D*   a3d  = vtkCell3D::SafeDownCast(aCell);
+
+	    if ( aTri && myFilterType == SMESHGUI_TriaFilter || 
+		 aQua && myFilterType == SMESHGUI_QuadFilter ||
+		 ( aTri || aQua ) && myFilterType == SMESHGUI_FaceFilter ||
+		 a3d && myFilterType == SMESHGUI_VolumeFilter )
             {
               int anObjId = aVisualObj->GetElemObjId( i );
               myIds.Add( anObjId );
@@ -329,6 +352,7 @@ void SMESHGUI_MultiEditDlg::onClose()
   
   SMESH::RemoveFilter(SMESHGUI_EdgeFilter);
   SMESH::RemoveFilter(SMESHGUI_FaceFilter);
+  SMESH::RemoveFilter(SMESHGUI_VolumeFilter);
   SMESH::RemoveFilter(SMESHGUI_QuadFilter);
   SMESH::RemoveFilter(SMESHGUI_TriaFilter);
   SMESH::SetPickable();
@@ -472,11 +496,11 @@ void SMESHGUI_MultiEditDlg::onFilterBtn()
 {
   if ( myFilterDlg == 0 )
   {
-    myFilterDlg = new SMESHGUI_FilterDlg( (QWidget*)parent(), SMESH::FACE );
+    myFilterDlg = new SMESHGUI_FilterDlg( (QWidget*)parent(), entityType() ? SMESH::VOLUME : SMESH::FACE );
     connect( myFilterDlg, SIGNAL( Accepted() ), SLOT( onFilterAccepted() ) );
   }
   else
-    myFilterDlg->Init( SMESH::FACE );
+    myFilterDlg->Init( entityType() ? SMESH::VOLUME : SMESH::FACE );
 
   myFilterDlg->SetSelection( mySelection );
   myFilterDlg->SetMesh( myMesh );
@@ -810,6 +834,13 @@ void SMESHGUI_MultiEditDlg::onToAllChk()
 //=======================================================================
 void SMESHGUI_MultiEditDlg::setSelectionMode()
 {
+  SMESH::RemoveFilter(SMESHGUI_EdgeFilter);
+  SMESH::RemoveFilter(SMESHGUI_FaceFilter);
+  SMESH::RemoveFilter(SMESHGUI_VolumeFilter);
+  SMESH::RemoveFilter(SMESHGUI_QuadFilter);
+  SMESH::RemoveFilter(SMESHGUI_TriaFilter);
+  SMESH::SetPickable();
+
   mySelection->ClearIObjects();
   mySelection->ClearFilters();
   
@@ -825,11 +856,16 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
   }
   else
   {
-    QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
-    if ( myFilterType == SMESHGUI_TriaFilter )
-      SMESH::SetFilter( new SMESHGUI_TriangleFilter() );
-    else if ( myFilterType == SMESHGUI_QuadFilter )
-      SMESH::SetFilter( new SMESHGUI_QuadrangleFilter() );
+    if ( myFilterType == SMESHGUI_VolumeFilter ) {
+      QAD_Application::getDesktop()->SetSelectionMode( VolumeSelection, true );
+    }
+    else {
+      QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+      if ( myFilterType == SMESHGUI_TriaFilter )
+	SMESH::SetFilter( new SMESHGUI_TriangleFilter() );
+      else if ( myFilterType == SMESHGUI_QuadFilter )
+	SMESH::SetFilter( new SMESHGUI_QuadrangleFilter() );
+    }
   }
 }
 
@@ -870,6 +906,43 @@ bool SMESHGUI_MultiEditDlg::onApply()
   return aResult;
 }
 
+//=======================================================================
+// name    : SMESHGUI_MultiEditDlg::on3d2dChanged
+// Purpose : 
+//=======================================================================
+void SMESHGUI_MultiEditDlg::on3d2dChanged(int type)
+{
+  if ( myEntityType != type ) {
+    myEntityType = type;
+    
+    myListBox->clear();
+    myIds.Clear();
+
+    emit ListContensChanged();
+    
+    updateButtons();
+
+    if ( type )
+      myFilterType = SMESHGUI_VolumeFilter;
+    else 
+      myFilterType = SMESHGUI_FaceFilter;
+    setSelectionMode();
+
+    if ( myActor )
+      mySelection->AddIObject( myActor->getIO(), true );
+  }
+}
+
+//=======================================================================
+// name    : SMESHGUI_MultiEditDlg::entityType
+// Purpose : 
+//=======================================================================
+
+int SMESHGUI_MultiEditDlg::entityType() 
+{
+  return myEntityType;
+}
+
 /*
   Class       : SMESHGUI_ChangeOrientationDlg
   Description : Modification of orientation of faces
@@ -878,7 +951,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
 SMESHGUI_ChangeOrientationDlg::SMESHGUI_ChangeOrientationDlg( QWidget*          theParent, 
                                                               SALOME_Selection* theSelection,
                                                               const char*       theName )
-: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_UnknownFilter, theName )
+: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_FaceFilter, true, theName )
 {
   setCaption( tr( "CAPTION" ) );
 }
@@ -901,7 +974,7 @@ bool SMESHGUI_ChangeOrientationDlg::process( SMESH::SMESH_MeshEditor_ptr theEdit
 SMESHGUI_UnionOfTrianglesDlg::SMESHGUI_UnionOfTrianglesDlg( QWidget*          theParent,
                                                             SALOME_Selection* theSelection,
                                                             const char*       theName )
-: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_TriaFilter, theName )
+: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_TriaFilter, false, theName )
 {
   setCaption( tr( "CAPTION" ) );
 }
@@ -924,7 +997,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::process( SMESH::SMESH_MeshEditor_ptr theEdito
 SMESHGUI_CuttingOfQuadsDlg::SMESHGUI_CuttingOfQuadsDlg( QWidget*          theParent,
                                                         SALOME_Selection* theSelection,
                                                         const char*       theName )
-: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_QuadFilter, theName )
+: SMESHGUI_MultiEditDlg( theParent, theSelection, SMESHGUI_QuadFilter, false, theName )
 {
 
   setCaption( tr( "CAPTION" ) );

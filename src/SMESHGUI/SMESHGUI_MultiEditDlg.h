@@ -46,6 +46,7 @@ class QPushButton;
 class SALOME_Selection;
 class SMESH_Actor;
 class SALOME_Actor;
+class QButtonGroup;
 
 /*
   Class       : SMESHGUI_MultiEditDlg
@@ -61,6 +62,7 @@ public:
                             SMESHGUI_MultiEditDlg( QWidget*,
                                                    SALOME_Selection*,
                                                    const int,
+						   const bool = false,
                                                    const char* = 0 );
   virtual                   ~SMESHGUI_MultiEditDlg();
 
@@ -87,6 +89,7 @@ protected slots:
   void                      onGroupChk();
   virtual void              onToAllChk();
   void                      onFilterAccepted();
+  void                      on3d2dChanged(int);
   
 protected:
 
@@ -94,13 +97,14 @@ protected:
   void                      enterEvent ( QEvent * ) ;            
   void                      hideEvent ( QHideEvent * );                        /* ESC key */
   QFrame*                   createButtonFrame( QWidget* );
-  QFrame*                   createMainFrame  ( QWidget* );
+  QFrame*                   createMainFrame  ( QWidget*, const bool );
   bool                      isValid( const bool ) const;
   SMESH::long_array_var     getIds();
   void                      updateButtons();
   void                      setSelectionMode();
   virtual bool              isIdValid( const int theID ) const;
   virtual bool              process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& ) = 0;
+  int                       entityType();
   
 protected:
 
@@ -120,6 +124,7 @@ protected:
   QPushButton*              mySortBtn;
   
   QCheckBox*                myToAllChk;
+  QButtonGroup*             myEntityTypeGrp;
   
   QCheckBox*                mySubmeshChk;
   QPushButton*              mySubmeshBtn;
@@ -135,6 +140,7 @@ protected:
   Handle(SMESH_TypeFilter)  mySubmeshFilter;
   Handle(SMESH_TypeFilter)  myGroupFilter;
   bool                      myBusy;
+  int                       myEntityType;
 };
 
 /*

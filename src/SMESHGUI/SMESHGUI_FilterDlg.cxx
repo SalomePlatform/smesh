@@ -973,7 +973,8 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                   GetCriterionType( aRow ) != FT_BelongToGeom &&
                   GetCriterionType( aRow ) != FT_LyingOnGeom &&
                   GetCriterionType( aRow ) != FT_RangeOfIds &&
-                  GetCriterionType( aRow ) != FT_FreeEdges;
+                  GetCriterionType( aRow ) != FT_FreeEdges && 
+		  GetCriterionType( aRow ) != FT_BadOrientedVolume;
   if ( !myAddWidgets.contains( anItem ) )
   {
     myAddWidgets[ anItem ] = new AdditionalWidget( myWgStack );
@@ -1045,7 +1046,8 @@ void SMESHGUI_FilterTable::onCriterionChanged( const int row, const int col, con
   int aCriterionType = GetCriterionType( row );
 
   if ( aType == SMESH::EDGE && aCriterionType == SMESH::FT_FreeBorders ||
-       aType == SMESH::FACE && aCriterionType == SMESH::FT_FreeEdges )
+       aType == SMESH::FACE && aCriterionType == SMESH::FT_FreeEdges || 
+       aType == SMESH::VOLUME && aCriterionType == SMESH::FT_BadOrientedVolume )
   {
     if ( aCompareItem->count() > 0 )
       aCompareItem->setStringList( QStringList() );
@@ -1298,6 +1300,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria( const int theType )
       aCriteria[ SMESH::FT_RangeOfIds   ] = tr( "RANGE_OF_IDS" );
       aCriteria[ SMESH::FT_BelongToGeom ] = tr( "BELONG_TO_GEOM" );
       aCriteria[ SMESH::FT_LyingOnGeom ] = tr( "LYING_ON_GEOM" );
+      aCriteria[ SMESH::FT_BadOrientedVolume ] = tr( "BAD_ORIENTED_VOLUME" );
     }
     return aCriteria;
   }
