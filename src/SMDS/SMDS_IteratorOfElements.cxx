@@ -19,11 +19,15 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "SMDS_IteratorOfElements.hxx"
 
 bool SMDS_IteratorOfElements::subMore()
 {
-	if((t2Iterator==NULL)||(!t2Iterator->more()))
+	if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
 	{
 		if(t1Iterator->more())
 		{
@@ -37,7 +41,7 @@ bool SMDS_IteratorOfElements::subMore()
 
 const SMDS_MeshElement * SMDS_IteratorOfElements::subNext()
 {
-	if((t2Iterator==NULL)||(!t2Iterator->more()))
+	if((t2Iterator.get()==NULL)||(!t2Iterator->more()))
 		if(t1Iterator->more())
 			t2Iterator=t1Iterator->next()->elementsIterator(myType);
 	return t2Iterator->next();

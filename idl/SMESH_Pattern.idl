@@ -80,6 +80,28 @@ module SMESH
                                 in GEOM::GEOM_Object theVertex001);
 
     /*!
+     * Compute nodes coordinates applying
+     * the loaded pattern to mesh faces. The first key-point
+     * will be mapped into <theNodeIndexOnKeyPoint1>-th node of each face
+     */
+    point_array  ApplyToMeshFaces(in SMESH_Mesh theMesh,
+                                  in long_array theFacesIDs,
+                                  in long       theNodeIndexOnKeyPoint1,
+                                  in boolean    theReverse);
+
+    /*!
+     * Compute nodes coordinates applying
+     * the loaded pattern to hexahedrons. The (0,0,0) key-point
+     * will be mapped into <theNode000Index>-th node of each volume.
+     * The (0,0,1) key-point will be mapped into <theNode001Index>-th
+     * node of each volume.
+     */
+    point_array  ApplyToHexahedrons(in SMESH_Mesh theMesh,
+                                    in long_array theVolumesIDs,
+                                    in long       theNode000Index,
+                                    in long       theNode001Index);
+
+    /*!
      * Create nodes and elements in <theMesh> using nodes
      * coordinates computed by either of Apply...() methods
      */

@@ -17,7 +17,7 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
-#include "SMESH_Controls.hxx"
+#include "SMESH_ControlsDef.hxx"
 
 int main(int argc, char** argv)
 {
@@ -29,7 +29,9 @@ int main(int argc, char** argv)
   new Skew();
   new Area();
   new Length();
+  //  new Length2D();
   new MultiConnection();
+  //  new MultiConnection2D();
   new FreeBorders();
   new LessThan();
   new MoreThan();

@@ -498,6 +498,10 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged(int id)
 //=================================================================================
 void SMESHGUI_GroupDlg::setSelectionMode(int theMode)
 {
+  // PAL7314
+  if (myMesh->_is_nil())
+    return;
+  
   if (mySelectionMode != theMode) {
     mySelection->ClearIObjects();
     mySelection->ClearFilters();

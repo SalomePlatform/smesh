@@ -961,11 +961,20 @@ msgstr "Free borders"
 msgid "SMESHGUI_FilterTable::MULTI_BORDERS"
 msgstr "Borders at multi-connections"
 
+#msgid "SMESHGUI_FilterTable::MULTI2D_BORDERS"
+#msgstr "Borders at multi-connections 2D"
+
 msgid "SMESHGUI_FilterTable::LENGTH"
 msgstr "Length"
 
+#msgid "SMESHGUI_FilterTable::LENGTH2D"
+#msgstr "Length2D"
+
 msgid "SMESHGUI_FilterTable::ASPECT_RATIO"
 msgstr "Aspect ratio"
+
+msgid "SMESHGUI_FilterTable::ASPECT_RATIO_3D"
+msgstr "Aspect ratio 3D"
 
 msgid "SMESHGUI_FilterTable::WARPING"
 msgstr "Warping"
@@ -1039,6 +1048,9 @@ msgstr "Belong to Plane"
 msgid "SMESHGUI_FilterTable::BELONG_TO_CYLINDER"
 msgstr "Belong to Cylinder"
 
+msgid "SMESHGUI_FilterTable::LYING_ON_GEOM"
+msgstr "Lying on Geom"
+
 # -------------- SMESHGUI_FilterDlg --------------
 msgid "SMESHGUI_FilterDlg::TLT"
 msgstr "Selection filter"
@@ -1092,11 +1104,17 @@ msgstr "This command is available in VTK viewer only\nPlease, create VTK viewer 
 msgid "LENGTH_EDGES"
 msgstr "Length"
 
+msgid "LENGTH2D_EDGES"
+msgstr "Length 2D"
+
 msgid "FREE_BORDERS"
-msgstr "Free borders"
+msgstr "Free Borders"
 
 msgid "MULTI_BORDERS"
-msgstr "Borders at multi-connections"
+msgstr "Borders at Multi-Connections"
+
+msgid "MULTI2D_BORDERS"
+msgstr "Borders at Multi-Connections 2D"
 
 msgid "AREA_ELEMENTS"
 msgstr "Area"
@@ -1106,6 +1124,9 @@ msgstr "Taper"
 
 msgid "ASPECTRATIO_ELEMENTS"
 msgstr "Aspect Ratio"
+
+msgid "ASPECTRATIO_3D_ELEMENTS"
+msgstr "Aspect Ratio 3D"
 
 msgid "MINIMUMANGLE_ELEMENTS"
 msgstr "Minimum Angle"
@@ -1414,12 +1435,46 @@ msgstr "Centroidal"
 msgid "SMESHGUI_ExtrusionDlg::EXTRUSION_ALONG_LINE"
 msgstr "Extrusion along a line"
 
-
 msgid "SMESHGUI_ExtrusionDlg::EXTRUSION_1D"
 msgstr "Extrusion of 1D elements"
 
 msgid "SMESHGUI_ExtrusionDlg::EXTRUSION_2D"
 msgstr "Extrusion of 2D elements"
+
+#----------------------------------------------------
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::EXTRUSION_ALONG_PATH"
+msgstr "Extrusion along a path"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::EXTRUSION_1D"
+msgstr "Extrusion of 1D elements"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::EXTRUSION_2D"
+msgstr "Extrusion of 2D elements"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH"
+msgstr "Path"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_MESH"
+msgstr "Mesh"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_SHAPE"
+msgstr "Shape (edge or wire)"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_START"
+msgstr "Start point"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
+msgstr "Use Angles"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_ANGLES"
+msgstr "Angles"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_BASE_POINT"
+msgstr "Use Base Point"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_BASE_POINT"
+msgstr "Base Point"
 
 #----------------------------------------------------
 
@@ -1605,6 +1660,20 @@ msgstr "It is impossible to load pattern\nThere are no elements in it"
 msgid "SMESHGUI_MeshPatternDlg::ERR_READ_BAD_KEY_POINT"
 msgstr "It is impossible to load pattern\nKey-point not on a boundary"
 
+msgid "SMESHGUI_MeshPatternDlg::REFINE"
+msgstr "Refine selected mesh elements"
+
+msgid "SMESHGUI_MeshPatternDlg::NODE_1"
+msgstr "Node 1"
+
+msgid "SMESHGUI_MeshPatternDlg::NODE_2"
+msgstr "Node 2"
+
+msgid "SMESHGUI_MeshPatternDlg::MESH_FACES"
+msgstr "Mesh faces"
+
+msgid "SMESHGUI_MeshPatternDlg::MESH_VOLUMES"
+msgstr "Mesh volumes"
 
 #----------------------------------------------------
 

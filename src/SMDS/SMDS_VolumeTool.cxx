@@ -3,6 +3,9 @@
 // Author    : Edward AGAPOV (eap)
 // Copyright : Open CASCADE
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #include "SMDS_VolumeTool.hxx"
 
@@ -10,8 +13,14 @@
 #include "SMDS_MeshNode.hxx"
 #include <map>
 #include <float.h>
+#include <math.h>
 
 using namespace std;
+
+// ======================================================
+// Node indices in faces depending on volume orientation
+// making most faces normals external
+// ======================================================
 
 /*
 //           N3
@@ -19,25 +28,53 @@ using namespace std;
 //          /|\
 //         / | \
 //        /  |  \
-//    N0 +---|---+ N2                TETRAHEDRON
+//    N0 +---|---+ N1                TETRAHEDRON
 //       \   |   /
 //        \  |  /
 //         \ | /
 //          \|/
 //           +
-//           N1
+//           N2
 */
-static int Tetra_F [4][4] = { // FORWARD == REVERSED EXTERNAL
-  { 0, 1, 2, 0 },             // Bottom face has an internal normal, other - external
+static int Tetra_F [4][4] = { // FORWARD == EXTERNAL
+  { 0, 1, 2, 0 },              // All faces have external normals
+  { 0, 3, 1, 0 },
+  { 1, 3, 2, 1 },
+  { 0, 2, 3, 0 }}; 
+static int Tetra_R [4][4] = { // REVERSED
+  { 0, 1, 2, 0 },             // All faces but a bottom have external normals
   { 0, 1, 3, 0 },
   { 1, 2, 3, 1 },
-  { 0, 3, 2, 0 }}; 
-static int Tetra_R [4][4] = { // REVERSED == FORWARD EXTERNAL
-  { 0, 2, 1, 0 },              // All faces have  external normals
+  { 0, 3, 2, 0 }};
+static int Tetra_RE [4][4] = { // REVERSED -> FORWARD (EXTERNAL)
+  { 0, 2, 1, 0 },              // All faces have external normals
   { 0, 1, 3, 0 },
   { 1, 2, 3, 1 },
-  { 0, 3, 2, 0 }}; 
+  { 0, 3, 2, 0 }};
 static int Tetra_nbN [] = { 3, 3, 3, 3 };
+
+//
+//     PYRAMID
+//
+static int Pyramid_F [5][5] = { // FORWARD == EXTERNAL
+  { 0, 1, 2, 3, 0 },            // All faces have external normals
+  { 0, 4, 1, 0, 4 },
+  { 1, 4, 2, 1, 4 },
+  { 2, 4, 3, 2, 4 },
+  { 3, 4, 0, 3, 4 }}; 
+static int Pyramid_R [5][5] = { // REVERSED
+  { 0, 1, 2, 3, 0 },            // All faces but a bottom have external normals
+  { 0, 1, 4, 0, 4 },
+  { 1, 2, 4, 1, 4 },
+  { 2, 3, 4, 2, 4 },
+  { 3, 0, 4, 3, 4 }}; 
+static int Pyramid_RE [5][5] = { // REVERSED -> FORWARD (EXTERNAL)
+  { 0, 3, 2, 1, 0 },             // All faces but a bottom have external normals
+  { 0, 1, 4, 0, 4 },
+  { 1, 2, 4, 1, 4 },
+  { 2, 3, 4, 2, 4 },
+  { 3, 0, 4, 3, 4 }}; 
+static int Pyramid_nbN [] = { 4, 3, 3, 3, 3 };
 
 /*   
 //            + N4
@@ -58,71 +95,71 @@ static int Penta_F [5][5] = { // FORWARD
   { 0, 1, 2, 0, 0 },          // Top face has an internal normal, other - external
   { 3, 4, 5, 3, 3 },          // 0 is bottom, 1 is top face
   { 0, 2, 5, 3, 0 },
-  { 1, 2, 5, 4, 1 },
-  { 1, 0, 3, 4, 1 }}; 
+  { 1, 4, 5, 2, 1 },
+  { 0, 3, 4, 1, 0 }}; 
 static int Penta_R [5][5] = { // REVERSED
-  { 0, 2, 1, 0, 0 },          // Bottom face has an internal normal, other - external
-  { 3, 5, 4, 3, 3 },          // 0 is bottom, 1 is top face
-  { 0, 2, 5, 3, 0 },
+  { 0, 1, 2, 0, 0 },          // Bottom face has an internal normal, other - external
+  { 3, 4, 5, 3, 3 },          // 0 is bottom, 1 is top face
+  { 0, 3, 5, 2, 0 },
   { 1, 2, 5, 4, 1 },
-  { 1, 0, 3, 4, 1 }}; 
-static int Penta_FE [5][5] = { // EXTERNAL
+  { 0, 1, 4, 3, 0 }}; 
+static int Penta_FE [5][5] = { // FORWARD -> EXTERNAL
   { 0, 1, 2, 0, 0 },
   { 3, 5, 4, 3, 3 },
   { 0, 2, 5, 3, 0 },
+  { 1, 4, 5, 2, 1 },
+  { 0, 3, 4, 1, 0 }}; 
+static int Penta_RE [5][5] = { // REVERSED -> EXTERNAL
+  { 0, 2, 1, 0, 0 },
+  { 3, 4, 5, 3, 3 },
+  { 0, 3, 5, 2, 0 },
   { 1, 2, 5, 4, 1 },
-  { 1, 0, 3, 4, 1 }}; 
-static int Penta_RE [5][5] = { // REVERSED EXTERNAL
-  { 0, 0, 2, 1, 0 },
-  { 3, 3, 4, 5, 3 },
-  { 0, 2, 5, 3, 0 },
-  { 1, 2, 5, 4, 1 },
-  { 1, 0, 3, 4, 1 }}; 
+  { 0, 1, 4, 3, 0 }}; 
 static int Penta_nbN [] = { 3, 3, 4, 4, 4 };
 
 /*
-//         N7+----------+N6
+//         N5+----------+N6
 //          /|         /|
 //         / |        / |
 //        /  |       /  |
-//     N4+----------+N5 |
+//     N4+----------+N7 |
 //       |   |      |   |           HEXAHEDRON
 //       |   |      |   |
 //       |   |      |   |
-//       | N3+------|---+N2
+//       | N1+------|---+N2
 //       |  /       |  /
 //       | /        | /
 //       |/         |/
-//     N0+----------+N1
+//     N0+----------+N3
 */
 static int Hexa_F [6][5] = { // FORWARD
   { 0, 1, 2, 3, 0 },         // opposite faces are neighbouring,
-  { 4, 5, 6, 7, 4 },         // even face normal is internal, odd - external
-  { 1, 0, 4, 5, 1 },         // same index nodes nodes of opposite faces are linked
+  { 4, 5, 6, 7, 4 },         // odd face(1,3,5) normal is internal, even(0,2,4) - external
+  { 1, 0, 4, 5, 1 },         // same index nodes of opposite faces are linked
   { 2, 3, 7, 6, 2 }, 
   { 0, 3, 7, 4, 0 }, 
-  { 1, 2, 6, 5, 1 }}; 
-static int Hexa_R [6][5] = { // REVERSED
-  { 0, 3, 2, 1, 0 },         // opposite faces are neighbouring,
-  { 4, 7, 6, 5, 4 },         // even face normal is external, odd - internal
-  { 1, 5, 4, 0, 1 },         // same index nodes nodes of opposite faces are linked
-  { 2, 6, 7, 3, 2 }, 
-  { 0, 4, 7, 3, 0 }, 
-  { 1, 5, 6, 2, 1 }}; 
-static int Hexa_FE [6][5] = { // EXTERNAL
-  { 0, 3, 2, 1, 0 },         // opposite faces are neighbouring,
-  { 4, 5, 6, 7, 4 },         // all face normals are external,
-  { 0, 1, 5, 4, 0 },         // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 1, 2, 6, 5, 1 }};
+// static int Hexa_R [6][5] = { // REVERSED
+//   { 0, 3, 2, 1, 0 },         // opposite faces are neighbouring,
+//   { 4, 7, 6, 5, 4 },         // odd face(1,3,5) normal is external, even(0,2,4) - internal
+//   { 1, 5, 4, 0, 1 },         // same index nodes of opposite faces are linked
+//   { 2, 6, 7, 3, 2 }, 
+//   { 0, 4, 7, 3, 0 }, 
+//   { 1, 5, 6, 2, 1 }};
+static int Hexa_FE [6][5] = { // FORWARD -> EXTERNAL
+  { 0, 1, 2, 3, 0 } ,         // opposite faces are neighbouring,
+  { 4, 7, 6, 5, 4 },          // all face normals are external,
+  { 0, 4, 5, 1, 0 },          // links in opposite faces: 0-0, 1-3, 2-2, 3-1
+  { 3, 2, 6, 7, 3 }, 
+  { 0, 3, 7, 4, 0 },
+  { 1, 5, 6, 2, 1 }};
+static int Hexa_RE [6][5] = { // REVERSED -> EXTERNAL
+  { 0, 3, 2, 1, 0 },          // opposite faces are neighbouring,
+  { 4, 5, 6, 7, 4 },          // all face normals are external,
+  { 0, 1, 5, 4, 0 },          // links in opposite faces: 0-0, 1-3, 2-2, 3-1
   { 3, 7, 6, 2, 3 }, 
-  { 1, 2, 6, 5, 1 }, 
-  { 0, 4, 7, 3, 0 }};
-static int Hexa_RE [6][5] = { // REVERSED EXTERNAL
-  { 0, 1, 2, 3, 0 },         // opposite faces are neighbouring,
-  { 4, 7, 6, 5, 4 },         // all face normals are external,
-  { 0, 1, 5, 4, 0 },         // links in opposite faces: 0-0, 1-3, 2-2, 3-1
-  { 3, 7, 6, 2, 3 }, 
-  { 1, 2, 6, 5, 1 }, 
-  { 0, 4, 7, 3, 0 }};
+  { 0, 4, 7, 3, 0 },
+  { 1, 2, 6, 5, 1 }};
 static int Hexa_nbN [] = { 4, 4, 4, 4, 4, 4 };
 
 // ========================================================
@@ -166,7 +203,6 @@ SMDS_VolumeTool::SMDS_VolumeTool ()
        myVolForward( true ),
        myNbFaces( 0 ),
        myVolumeNbNodes( 0 ),
-       myForwardFaces( false ),
        myExternalFaces( false )
 {
 }
@@ -176,8 +212,7 @@ SMDS_VolumeTool::SMDS_VolumeTool ()
 //=======================================================================
 
 SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume)
-     : myForwardFaces( false ),
-       myExternalFaces( false )
+     : myExternalFaces( false )
 {
   Set( theVolume );
 }
@@ -208,6 +243,7 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
     myVolumeNbNodes = theVolume->NbNodes();
     switch ( myVolumeNbNodes ) {
     case 4:
+    case 5:
     case 6:
     case 8:
       {
@@ -223,11 +259,13 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
       // nb nodes in each face
       if ( myVolumeNbNodes == 4 )
         myFaceNbNodes = Tetra_nbN;
+      else if ( myVolumeNbNodes == 5 )
+        myFaceNbNodes = Pyramid_nbN;
       else if ( myVolumeNbNodes == 6 )
         myFaceNbNodes = Penta_nbN;
       else
         myFaceNbNodes = Hexa_nbN;
-      break;
+
       // define volume orientation
       XYZ botNormal;
       GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
@@ -236,9 +274,8 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
       XYZ upDir (topNode->X() - botNode->X(),
                  topNode->Y() - botNode->Y(),
                  topNode->Z() - botNode->Z() );
-      bool diffDir = ( botNormal.Dot( upDir ) < 0 );
-      myVolForward = ( myVolumeNbNodes == 6 ? diffDir : !diffDir );
-
+      myVolForward = ( botNormal.Dot( upDir ) < 0 );
+      break;
     }
     default: myVolume = 0;
     }
@@ -251,10 +288,10 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
 //purpose  : Return nodes vector of an inverse volume
 //=======================================================================
 
-#define SWAP_NODES(nodes,i1,i2)                         \
-{                                                 \
+#define SWAP_NODES(nodes,i1,i2)           \
+{                                         \
   const SMDS_MeshNode* tmp = nodes[ i1 ]; \
-  nodes[ i1 ] = nodes[ i2 ];      \
+  nodes[ i1 ] = nodes[ i2 ];              \
   nodes[ i2 ] = tmp;                      \
 }
 void SMDS_VolumeTool::Inverse ()
@@ -268,6 +305,9 @@ void SMDS_VolumeTool::Inverse ()
   switch ( myVolumeNbNodes ) {
   case 4:
     SWAP_NODES( myVolumeNodes, 1, 2 );
+    break;
+  case 5:
+    SWAP_NODES( myVolumeNodes, 1, 3 );
     break;
   case 6:
     SWAP_NODES( myVolumeNodes, 1, 2 );
@@ -315,16 +355,6 @@ bool SMDS_VolumeTool::GetBaryCenter(double & X, double & Y, double & Z) const
 }
 
 //=======================================================================
-//function : SetForwardOrientation
-//purpose  : Node order will be as for forward orientation
-//=======================================================================
-
-void SMDS_VolumeTool::SetForwardOrientation ()
-{
-  myForwardFaces = true;
-}
-
-//=======================================================================
 //function : SetExternalNormal
 //purpose  : Node order will be so that faces normals are external
 //=======================================================================
@@ -332,6 +362,7 @@ void SMDS_VolumeTool::SetForwardOrientation ()
 void SMDS_VolumeTool::SetExternalNormal ()
 {
   myExternalFaces = true;
+  myCurFace = -1;
 }
 
 //=======================================================================
@@ -381,15 +412,15 @@ const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex )
 //purpose  : Return a set of face nodes.
 //=======================================================================
 
-bool SMDS_VolumeTool::GetFaceNodes (int faceIndex,
-                                    std::set<const SMDS_MeshNode*>& theFaceNodes )
+bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
+                                    set<const SMDS_MeshNode*>& theFaceNodes )
 {
   if ( !setFace( faceIndex ))
     return false;
 
   theFaceNodes.clear();
   int iNode, nbNode = myFaceNbNodes[ faceIndex ];
-  for ( int iNode = 0; iNode < nbNode; iNode++ )
+  for ( iNode = 0; iNode < nbNode; iNode++ )
     theFaceNodes.insert( myFaceNodes[ iNode ]);
   
   return true;
@@ -405,18 +436,18 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex )
   if ( myExternalFaces || !myVolume )
     return true;
 
-  bool reversed = ( !myForwardFaces && !myVolForward );
   switch ( myVolumeNbNodes ) {
   case 4:
-    // only the bottom of a forward tetrahedron can be internal
-    return ( reversed || faceIndex != 0 );
+  case 5:
+    // only the bottom of a reversed tetrahedron can be internal
+    return ( myVolForward || faceIndex != 0 );
   case 6:
     // in a forward pentahedron, the top is internal, in a reversed one - bottom
-    return ( reversed ? faceIndex != 0 : faceIndex != 1 );
+    return ( myVolForward ? faceIndex != 1 : faceIndex != 0 );
   case 8: {
-    // in a forward hexahedron, odd face normal is external, else vice versa
+    // in a forward hexahedron, even face normal is external, odd - internal
     bool odd = faceIndex % 2;
-    return ( reversed ? !odd : odd );
+    return ( myVolForward ? !odd : odd );
   }
   default:;
   }
@@ -540,6 +571,15 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   switch ( myVolumeNbNodes ) {
   case 4:
     return true;
+  case 5:
+    if ( maxInd == 4 )
+      return true;
+    switch ( maxInd - minInd ) {
+    case 1:
+    case 3: return true;
+    default:;
+    }
+    break;
   case 6:
     switch ( maxInd - minInd ) {
     case 1: return minInd != 2;
@@ -735,25 +775,25 @@ bool SMDS_VolumeTool::setFace( int faceIndex )
   switch ( myVolumeNbNodes ) {
   case 4:
     if ( myExternalFaces )
-      myFaceNodeIndices = myVolForward ? Tetra_R[ faceIndex ] : Tetra_F[ faceIndex ];
-    else if ( myForwardFaces )
-      myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_R[ faceIndex ];
+      myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_RE[ faceIndex ];
     else
-      myFaceNodeIndices = Tetra_F[ faceIndex ];
+      myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_R[ faceIndex ];
+    break;
+  case 5:
+    if ( myExternalFaces )
+      myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_RE[ faceIndex ];
+    else
+      myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_R[ faceIndex ];
     break;
   case 6:
     if ( myExternalFaces )
       myFaceNodeIndices = myVolForward ? Penta_FE[ faceIndex ] : Penta_RE[ faceIndex ];
-    else if ( myForwardFaces )
-      myFaceNodeIndices = myVolForward ? Penta_F[ faceIndex ] : Penta_R[ faceIndex ];
     else
-      myFaceNodeIndices = Penta_F[ faceIndex ];
+      myFaceNodeIndices = myVolForward ? Penta_F[ faceIndex ] : Penta_R[ faceIndex ];
     break;
   case 8:
     if ( myExternalFaces )
       myFaceNodeIndices = myVolForward ? Hexa_FE[ faceIndex ] : Hexa_RE[ faceIndex ];
-    else if ( myForwardFaces )
-      myFaceNodeIndices = myVolForward ? Hexa_F[ faceIndex ] : Hexa_R[ faceIndex ];
     else
       myFaceNodeIndices = Hexa_F[ faceIndex ];
     break;

@@ -211,27 +211,12 @@ msgstr "pattern_sample_2d.png"
 msgid "ICON_PATTERN_SAMPLE_3D"
 msgstr "pattern_sample_3D.png"
 
+#-----------------------------------------------------------
+# Add/Remove buttons
+#-----------------------------------------------------------
 
+msgid "ICON_APPEND"
+msgstr "mesh_add.png"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+msgid "ICON_REMOVE"
+msgstr "mesh_remove.png"

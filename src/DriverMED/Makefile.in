@@ -60,7 +60,7 @@ LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS += $(OCC_CXXFLAGS) $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += -lMeshDriver -L${KERNEL_ROOT_DIR}/lib/salome -lMEDWrapper
 
 LDFLAGSFORBIN += -lMeshDriver -lSMDS -lSMESHDS -L${KERNEL_ROOT_DIR}/lib/salome -lMEDWrapper -lOpUtil -lSALOMELocalTrace

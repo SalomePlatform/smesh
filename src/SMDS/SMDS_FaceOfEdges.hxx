@@ -51,7 +51,8 @@ class SMDS_FaceOfEdges:public SMDS_MeshFace
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	std::vector<const SMDS_MeshEdge*> myEdges;
+	const SMDS_MeshEdge* myEdges[4];
+        int                  myNbEdges;
 
 };
 

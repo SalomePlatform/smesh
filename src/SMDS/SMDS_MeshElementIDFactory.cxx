@@ -25,6 +25,9 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshElement.hxx"
@@ -35,7 +38,9 @@ using namespace std;
 //function : SMDS_MeshElementIDFactory
 //purpose  : 
 //=======================================================================
-SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():SMDS_MeshIDFactory()
+SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
+  SMDS_MeshIDFactory(),
+  myMin(0), myMax(0)
 {
 }
 
@@ -45,10 +50,12 @@ SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():SMDS_MeshIDFactory()
 //=======================================================================
 bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 {
-	bool bound=myIDElements.insert(
-		map<int, SMDS_MeshElement*>::value_type(ID,elem)).second;
-	if(bound) elem->myID=ID;
-	return bound;
+  if (myIDElements.IsBound(ID))
+    return false;
+  myIDElements.Bind(ID,elem);
+  elem->myID=ID;
+  updateMinMax (ID);
+  return true;
 }
 
 //=======================================================================
@@ -57,8 +64,9 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //=======================================================================
 SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 {
-    map<int, SMDS_MeshElement*>::iterator it=myIDElements.find(ID);
-    if(it==myIDElements.end()) return NULL; else return (*it).second;
+  if (!myIDElements.IsBound(ID))
+    return NULL;
+  return myIDElements.Find(ID);
 }
 
 
@@ -71,7 +79,7 @@ int SMDS_MeshElementIDFactory::GetFreeID()
   int ID;
   do {
     ID = SMDS_MeshIDFactory::GetFreeID();
-  } while (myIDElements.find(ID) != myIDElements.end());
+  } while (myIDElements.IsBound(ID));
   return ID;
 }
 
@@ -81,8 +89,12 @@ int SMDS_MeshElementIDFactory::GetFreeID()
 //=======================================================================
 void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
 {
-  myIDElements.erase(ID);
+  myIDElements.UnBind(ID);
   SMDS_MeshIDFactory::ReleaseID(ID);
+  if (ID == myMax)
+    myMax = 0;
+  if (ID == myMin)
+    myMin = 0;
 }
 
 //=======================================================================
@@ -92,11 +104,9 @@ void SMDS_MeshElementIDFactory::ReleaseID(const int ID)
 
 int SMDS_MeshElementIDFactory::GetMaxID() const
 {
-  map<int, SMDS_MeshElement*>::const_reverse_iterator it = myIDElements.rbegin();
-  if ( it !=  myIDElements.rend() )
-    return (*it).first;
-
-  return 0;
+  if (myMax == 0)
+    updateMinMax();
+  return myMax;
 }
 
 //=======================================================================
@@ -106,10 +116,54 @@ int SMDS_MeshElementIDFactory::GetMaxID() const
 
 int SMDS_MeshElementIDFactory::GetMinID() const
 {
-  map<int, SMDS_MeshElement*>::const_iterator it = myIDElements.begin();
-  if ( it !=  myIDElements.end() )
-    return (*it).first;
-
-  return 0;
+  if (myMin == 0)
+    updateMinMax();
+  return myMin;
 }
 
+//=======================================================================
+//function : updateMinMax
+//purpose  : 
+//=======================================================================
+
+void SMDS_MeshElementIDFactory::updateMinMax() const
+{
+  myMin = IntegerLast();
+  myMax = 0;
+  SMDS_IdElementMap::Iterator it(myIDElements);
+  for (; it.More(); it.Next())
+    updateMinMax (it.Key());
+  if (myMin == IntegerLast())
+    myMin = 0;
+}
+
+//=======================================================================
+//function : elementsIterator
+//purpose  : Return an iterator on elements of the factory
+//=======================================================================
+
+class SMDS_Fact_MyElemIterator:public SMDS_ElemIterator
+{
+  SMDS_IdElementMap::Iterator myIterator;
+ public:
+  SMDS_Fact_MyElemIterator(const SMDS_IdElementMap& s):myIterator(s)
+  {}
+
+  bool more()
+  {
+    return myIterator.More() != Standard_False;
+  }
+
+  const SMDS_MeshElement* next()
+  {
+    const SMDS_MeshElement* current = myIterator.Value();
+    myIterator.Next();
+    return current;
+  }
+};
+
+SMDS_ElemIteratorPtr SMDS_MeshElementIDFactory::elementsIterator() const
+{
+  return SMDS_ElemIteratorPtr
+    (new SMDS_Fact_MyElemIterator(myIDElements));
+}

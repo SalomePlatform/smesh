@@ -63,6 +63,11 @@
 #include "SALOME_InteractiveObject.hxx"
 #include "SMESH_ActorUtils.h"
 
+#include "VTKViewer_ViewFrame.h"
+#include "VTKViewer_RenderWindow.h"
+
+#include <vtkRenderer.h>
+
 using namespace std;
 
 
@@ -150,8 +155,6 @@ protected:
     myActor->PickableOff();
     myActor->SetInfinitive(true);
     myActor->SetMapper( myMapper );
-
-    static float anOpacity = 0.75;
 
     vtkProperty* aProp = vtkProperty::New();
     float anRGB[3];
@@ -375,9 +378,8 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( QWidget* parent,
 SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 {
   // no need to delete child widgets, Qt does it all for us
-  //cout<<"SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg\n";
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-  SMESH::GetCurrentVtkView()->Repaint();
+  SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
 }
 
 
@@ -406,10 +408,8 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
       aCollection->AddItem(anOrientedPlane);
       anOrientedPlane->Delete();
     }
-    
-    myActor->SetVisibility(myActor->GetVisibility());
-    
-    SMESH::GetCurrentVtkView()->Repaint();
+
+    SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
   }
 }
 
@@ -466,7 +466,7 @@ void SMESHGUI_ClippingDlg::onSelectionChanged()
     }
   }
   Sinchronize();
-  SMESH::GetCurrentVtkView()->Repaint();
+  SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
 }
 
 
@@ -484,8 +484,7 @@ void SMESHGUI_ClippingDlg::onSelectPlane(int theIndex)
   // Orientation
   SMESH::Orientation anOrientation = aPlane->GetOrientation();
   
-  // Distance and Rotations
-  float aDistance;
+  // Rotations
   double aRot[2] = {aPlane->myAngle[0], aPlane->myAngle[1]};
 
   // Set plane parameters in the dialog
@@ -550,7 +549,7 @@ void SMESHGUI_ClippingDlg::ClickOnDelete()
     ClickOnApply();
 
   Sinchronize();
-  SMESH::GetCurrentVtkView()->Repaint();
+  SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
 }
 
 
@@ -702,7 +701,6 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   
   myActor->SetPlaneParam(aNormal, getDistance(), aPlane);
 
-  float* anOrig = aPlane->GetOrigin();
   vtkDataSet* aDataSet = myActor->GetInput();
   float *aPnt = aDataSet->GetCenter();
 
@@ -746,11 +744,11 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   if(AutoApplyCheckBox->isChecked())
     ClickOnApply();
   
-  SMESH::GetCurrentVtkView()->Repaint();
+  SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
 }
 
 
 void SMESHGUI_ClippingDlg::OnPreviewToggle(bool theIsToggled){
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(theIsToggled));
-  SMESH::GetCurrentVtkView()->Repaint();
+  SMESH::RenderViewFrame(SMESH::GetCurrentVtkView());
 }

@@ -42,6 +42,7 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Edge.hxx>
+#include <map>
 
 //Not portable see http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_4 to know more.
 #ifdef __GNUC__
@@ -178,12 +179,12 @@ public:
   bool HasMeshElements(const TopoDS_Shape & S);
   SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S);
   SMESHDS_SubMesh * MeshElements(const int Index);
-  list<int> SubMeshIndices();
+  std::list<int> SubMeshIndices();
   const std::map<int,SMESHDS_SubMesh*>& SubMeshes()
   { return myShapeIndexToSubMesh; }
 
   bool HasHypothesis(const TopoDS_Shape & S);
-  const list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
+  const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
   SMESHDS_Script * GetScript();
   void ClearScript();
   int ShapeToIndex(const TopoDS_Shape & aShape);
@@ -200,7 +201,7 @@ public:
   void AddGroup (SMESHDS_GroupBase* theGroup)      { myGroups.insert(theGroup); }
   void RemoveGroup (SMESHDS_GroupBase* theGroup)   { myGroups.erase(theGroup); }
   int GetNbGroups() const                      { return myGroups.size(); }
-  const set<SMESHDS_GroupBase*>& GetGroups() const { return myGroups; }
+  const std::set<SMESHDS_GroupBase*>& GetGroups() const { return myGroups; }
 
   bool IsGroupOfSubShapes (const TopoDS_Shape& aSubShape) const;
 
@@ -219,8 +220,8 @@ private:
   int                        myMeshID;
   TopoDS_Shape               myShape;
   TopTools_IndexedMapOfShape myIndexToShape;
-  map<int,SMESHDS_SubMesh*>  myShapeIndexToSubMesh;
-  set<SMESHDS_GroupBase*>        myGroups;
+  std::map<int,SMESHDS_SubMesh*>  myShapeIndexToSubMesh;
+  std::set<SMESHDS_GroupBase*>    myGroups;
   SMESHDS_Script*            myScript;
 };
 

@@ -45,6 +45,7 @@ module SMESH
   enum FunctorType
   {
     FT_AspectRatio,
+    FT_AspectRatio3D,
     FT_Warping,   
     FT_MinimumAngle,
     FT_Taper,       
@@ -53,10 +54,13 @@ module SMESH
     FT_FreeBorders,
     FT_FreeEdges,
     FT_MultiConnection,
+    FT_MultiConnection2D,
     FT_Length,
+    FT_Length2D,
     FT_BelongToGeom,
     FT_BelongToPlane,
     FT_BelongToCylinder,
+    FT_LyingOnGeom,
     FT_RangeOfIds,
     FT_LessThan,
     FT_MoreThan,
@@ -95,12 +99,34 @@ module SMESH
   };
   interface MinimumAngle    : NumericalFunctor{};
   interface AspectRatio     : NumericalFunctor{};
+  interface AspectRatio3D   : NumericalFunctor{};
   interface Warping         : NumericalFunctor{};
   interface Taper           : NumericalFunctor{};
   interface Skew            : NumericalFunctor{};
   interface Area            : NumericalFunctor{};
   interface Length          : NumericalFunctor{};
-  interface MultiConnection : NumericalFunctor{};
+  interface Length2D        : NumericalFunctor
+  {
+    struct Value
+    {
+      double myLength;
+      long myPnt1, myPnt2;
+    };
+    typedef sequence<Value> Values;
+    Values GetValues();
+  };
+  interface MultiConnection   : NumericalFunctor{};
+  interface MultiConnection2D : NumericalFunctor
+  {
+    struct Value
+    {
+      long myNbConnects;
+      long myPnt1, myPnt2;
+    };
+    
+    typedef sequence<Value> Values;
+    Values GetValues();
+  };
 
   /*!
   * Predicates are intended for verification of criteria,
@@ -155,6 +181,19 @@ module SMESH
     void   SetCylinder( in GEOM::GEOM_Object theGeom, in ElementType theType );
   };
 
+  /*!
+  * Logical functor (predicate) "Lying On Geometry".
+  * Verify whether mesh element or node lying or partially lying on the pointed Geom Object
+  */
+  interface LyingOnGeom: Predicate
+  {
+    void SetGeom( in GEOM::GEOM_Object theGeom );
+    void SetElementType( in ElementType theType );
+
+    void   SetShapeName( in string theName );
+    string GetShapeName();    
+  };
+ 
   /*!
   * Logical functor (predicate) "Free borders".
   * Verify whether 1D mesh element is free ( i.e. connected to one face only )
@@ -320,12 +359,15 @@ module SMESH
     */
     MinimumAngle      CreateMinimumAngle();
     AspectRatio       CreateAspectRatio();
+    AspectRatio3D     CreateAspectRatio3D();
     Warping           CreateWarping();
     Taper             CreateTaper();
     Skew              CreateSkew();
     Area              CreateArea();
     Length            CreateLength();
+    Length2D          CreateLength2D();
     MultiConnection   CreateMultiConnection();
+    MultiConnection2D CreateMultiConnection2D();
 
     /*!
     *  Create logical functors ( predicates )
@@ -333,6 +375,8 @@ module SMESH
     BelongToGeom      CreateBelongToGeom();
     BelongToPlane     CreateBelongToPlane();
     BelongToCylinder  CreateBelongToCylinder();
+
+    LyingOnGeom       CreateLyingOnGeom();
 
     FreeBorders       CreateFreeBorders();
     FreeEdges         CreateFreeEdges();

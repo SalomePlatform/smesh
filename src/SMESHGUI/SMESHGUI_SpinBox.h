@@ -44,16 +44,17 @@ public :
   SMESHGUI_SpinBox( QWidget* parent, const char* name = 0 ) ;
   ~SMESHGUI_SpinBox() ;
   
-  void    RangeStepAndValidator( double         min = -1000000.0, 
-				 double         max = +1000000.0, 
-				 double         step = 100.0, 
-				 unsigned short decimals = 3 ) ;
-  void    SetValue( double v ) ;
-  double  GetValue() ;
-  QString GetString() ;
+  void       RangeStepAndValidator( double         min = -1000000.0, 
+				    double         max = +1000000.0, 
+				    double         step = 100.0, 
+				    unsigned short decimals = 3 ) ;
+  void       SetValue( double v ) ;
+  double     GetValue() ;
+  QString    GetString() ;
+  QLineEdit* editor() { return QAD_SpinBoxDbl::editor(); } 
 
 public slots:
-  void    SetStep( double newStep );
+  void       SetStep( double newStep );
 
 };
 #endif //  SMESHSPINBOX_H

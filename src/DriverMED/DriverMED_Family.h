@@ -31,7 +31,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_SubMesh.hxx"
-#include "MEDA_Wrapper.hxx"
+#include "MED_Common.hxx"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -63,7 +63,8 @@ class DriverMED_Family
   // from <theGroups> and other sub-meshes from <theSubMeshes>.
   // Resulting families have no common elements.
 
-  MEDA::PFamilyInfo GetFamilyInfo (const MEDA::PMeshInfo& theMeshInfo) const;
+  MED::PFamilyInfo GetFamilyInfo (const MED::PWrapper& theWrapper, 
+				  const MED::PMeshInfo& theMeshInfo) const;
   // Create TFamilyInfo for this family
 
   const std::set<const SMDS_MeshElement *>& GetElements () const { return myElements; }

@@ -28,7 +28,6 @@
 #define _SMDS_VolumeOfNodes_HeaderFile
 
 #include "SMDS_MeshVolume.hxx"
-#include <vector>
 
 
 class SMDS_VolumeOfNodes:public SMDS_MeshVolume
@@ -64,6 +63,7 @@ class SMDS_VolumeOfNodes:public SMDS_MeshVolume
 		const SMDS_MeshNode * node8);
         bool ChangeNodes(const SMDS_MeshNode* nodes[],
                          const int            nbNodes);
+        ~SMDS_VolumeOfNodes();
 
 	void Print(std::ostream & OS) const;
 	int NbFaces() const;
@@ -73,6 +73,7 @@ class SMDS_VolumeOfNodes:public SMDS_MeshVolume
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
-	std::vector<const SMDS_MeshNode *> myNodes;
+	const SMDS_MeshNode** myNodes;
+	int                   myNbNodes;
 };
 #endif

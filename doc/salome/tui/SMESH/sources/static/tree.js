@@ -18,5 +18,12 @@ aux1 = insFld(foldersTree, gFld("TUI Reference Guide", ""))
 
 aux1 = insFld(foldersTree, gFld("IDL/Python mapping", ""))
          insDoc(aux1, gLnk("Mapping of SMESH IDL definitions to Python language", "", "page2.html"))
+
+aux1 = insFld(foldersTree, gFld("Python Commands", "", "meshpy_doc/main.html"))
+         insDoc(aux1, gLnk("Package List", "", "meshpy_doc/namespaces.html"))
+         insDoc(aux1, gLnk("Data Structures", "", "meshpy_doc/annotated.html"))
+         insDoc(aux1, gLnk("Namespace Members", "", "meshpy_doc/namespacemembers.html"))
+         insDoc(aux1, gLnk("File List", "", "meshpy_doc/files.html"))
+
 aux1 = insFld(foldersTree, gFld("Adding meshers in SMESH", ""))
 	 insDoc(aux1, gLnk("Using Plugin mechanism in SMESH", "", "PluginMeshers.html"))

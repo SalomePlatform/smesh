@@ -19,6 +19,10 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -43,8 +47,9 @@ int SMDS_FaceOfNodes::NbFaces() const
 
 int SMDS_FaceOfNodes::NbNodes() const
 {
-	return myNodes.size();
+	return myNbNodes;
 }
+
 //=======================================================================
 //function : Print
 //purpose  : 
@@ -58,41 +63,49 @@ void SMDS_FaceOfNodes::Print(ostream & OS) const
 	OS << myNodes[i] << ") " << endl;
 }
 
+//=======================================================================
+//function : elementsIterator
+//purpose  : 
+//=======================================================================
+
 class SMDS_FaceOfNodes_MyIterator:public SMDS_ElemIterator
 {
-  const vector<const SMDS_MeshNode*>& mySet;
+  const SMDS_MeshNode* const *mySet;
+  int myLength;
   int index;
  public:
-  SMDS_FaceOfNodes_MyIterator(const vector<const SMDS_MeshNode*>& s):
-    mySet(s),index(0) {}
+  SMDS_FaceOfNodes_MyIterator(const SMDS_MeshNode* const *s, int l):
+    mySet(s),myLength(l),index(0) {}
 
   bool more()
   {
-    return index<mySet.size();
+    return index<myLength;
   }
 
   const SMDS_MeshElement* next()
   {
     index++;
     return mySet[index-1];
-  }	
+  }
 };
-SMDS_ElemIteratorPtr SMDS_FaceOfNodes::
-	elementsIterator(SMDSAbs_ElementType type) const
+
+SMDS_ElemIteratorPtr SMDS_FaceOfNodes::elementsIterator
+                         (SMDSAbs_ElementType type) const
 {
   switch(type)
   {
   case SMDSAbs_Face:
     return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
   case SMDSAbs_Node:
-    return SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes));
+    return SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes,myNbNodes));
   case SMDSAbs_Edge:
     MESSAGE("Error : edge iterator for SMDS_FaceOfNodes not implemented");
     break;
   default:
     return SMDS_ElemIteratorPtr
       (new SMDS_IteratorOfElements
-       (this,type,SMDS_ElemIteratorPtr(new SMDS_FaceOfNodes_MyIterator(myNodes))));
+       (this,type,SMDS_ElemIteratorPtr
+        (new SMDS_FaceOfNodes_MyIterator(myNodes,myNbNodes))));
   }
   return SMDS_ElemIteratorPtr();
 }
@@ -101,10 +114,11 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node2,
                                    const SMDS_MeshNode* node3)
 {
-	myNodes.resize(3);
+	myNbNodes = 3;
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
+	myNodes[3]=0;
 }
 
 SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
@@ -112,7 +126,7 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
                                    const SMDS_MeshNode* node3,
                                    const SMDS_MeshNode* node4)
 {
-	myNodes.resize(4);
+	myNbNodes = 4;
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -121,20 +135,13 @@ SMDS_FaceOfNodes::SMDS_FaceOfNodes(const SMDS_MeshNode* node1,
 bool SMDS_FaceOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
                                    const int            nbNodes)
 {
-  if (nbNodes == 3) {
-    myNodes.resize(3);
-    myNodes[0]=nodes[0];
-    myNodes[1]=nodes[1];
-    myNodes[2]=nodes[2];
-  }
-  else if ( nbNodes == 4) {
-    myNodes.resize(4);
-    myNodes[0]=nodes[0];
-    myNodes[1]=nodes[1];
-    myNodes[2]=nodes[2];
+  myNbNodes = nbNodes;
+  myNodes[0]=nodes[0];
+  myNodes[1]=nodes[1];
+  myNodes[2]=nodes[2];
+  if (nbNodes == 4)
     myNodes[3]=nodes[3];
-  }
-  else
+  else if (nbNodes != 3)
     return false;
 
   return true;

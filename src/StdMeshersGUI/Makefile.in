@@ -66,7 +66,7 @@ LIB_SERVER_IDL =
 # additionnal information to compil and link file
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
-            $(MED2_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
+            -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
             $(BOOST_CPPFLAGS)
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 #$(OCC_CXXFLAGS)

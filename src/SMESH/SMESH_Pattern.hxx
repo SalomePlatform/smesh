@@ -27,6 +27,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 #include <iostream>
 
 #include <TopoDS_Shape.hxx>
@@ -35,6 +36,10 @@
 #include <gp_XY.hxx>
 #include <gp_Pnt.hxx>
 
+class SMDS_MeshElement;
+class SMDS_MeshFace;
+class SMDS_MeshVolume;
+class SMDS_MeshNode;
 class SMESH_Mesh;
 class TopoDS_Shell;
 class TopoDS_Vertex;
@@ -56,7 +61,7 @@ class SMESH_Pattern {
   // clear fields
 
   bool Load (const char* theFileContents);
-  // Load a pattern from <theFile>
+  // Load a pattern from <theFileContents>
 
   bool Load (SMESH_Mesh*        theMesh,
              const TopoDS_Face& theFace,
@@ -88,7 +93,39 @@ class SMESH_Pattern {
   // will be mapped into <theVertex000>. The
   // (0,0,1) key-point will be mapped into <theVertex001>.
 
-  bool GetMappedPoints ( std::list<const gp_XYZ *> & thePoints );
+  bool Apply (const SMDS_MeshFace* theFace,
+              const int            theNodeIndexOnKeyPoint1,
+              const bool           theReverse);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theFace>. The first key-point
+  // will be mapped into <theNodeIndexOnKeyPoint1>-th node
+
+  bool Apply (std::set<const SMDS_MeshFace*> theFaces,
+              const int                      theNodeIndexOnKeyPoint1,
+              const bool                     theReverse);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theFaces>. The first key-point
+  // will be mapped into <theNodeIndexOnKeyPoint1>-th node
+
+  bool Apply (const SMDS_MeshVolume* theVolume,
+              const int              theNode000Index,
+              const int              theNode001Index);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theVolume>. The (0,0,0) key-point
+  // will be mapped into <theNode000Index>-th node. The
+  // (0,0,1) key-point will be mapped into <theNode000Index>-th
+  // node.
+
+  bool Apply (std::set<const SMDS_MeshVolume*> theVolumes,
+              const int                        theNode000Index,
+              const int                        theNode001Index);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theVolumes>. The (0,0,0) key-point
+  // will be mapped into <theNode000Index>-th node. The
+  // (0,0,1) key-point will be mapped into <theNode000Index>-th
+  // node.
+
+  bool GetMappedPoints ( std::list<const gp_XYZ *> & thePoints ) const;
   // Return nodes coordinates computed by Apply() method
 
   bool MakeMesh(SMESH_Mesh* theMesh);
@@ -131,6 +168,8 @@ class SMESH_Pattern {
     ERR_APPLF_INTERNAL_EEROR, // program error
     // Apply(volume)
     ERR_APPLV_BAD_SHAPE, // volume is not a brick of 6 faces
+    // Apply(mesh_face)
+    ERR_APPLF_BAD_FACE_GEOM, // bad face geometry
     // MakeMesh
     ERR_MAKEM_NOT_COMPUTED // mapping failed
   };
@@ -152,7 +191,7 @@ class SMESH_Pattern {
   // GetPoints() and GetMappedPoints()
   
   const std::list< std::list< int > >& GetElementPointIDs () const
-  { return myElemPointIDs; }
+  { return myElemXYZIDs.empty() ? myElemPointIDs : myElemXYZIDs; }
   // Return nodal connectivity of the elements of the pattern
 
   void DumpPoints() const;
@@ -230,7 +269,14 @@ class SMESH_Pattern {
   // of boundaries; after sorting, edges in the wires are put
   // in a good order, point UVs on edges are computed and points
   // are appended to theEdgesPointsList
-  
+
+  typedef std::set<const SMDS_MeshNode*> TNodeSet;
+  void mergePoints (std::map<TNodeSet,std::list<std::list<int> > >&  xyzIndGroups,
+                    std::map< int, std::list< std::list< int >* > >& reverseConnectivity);
+  // Look for coincident points between myXYZs indexed with
+  // list<int> of each element of xyzIndGroups. Coincident indices
+  // are merged in myElemXYZIDs using reverseConnectivity.
+
  private:
   // fields
 
@@ -245,12 +291,21 @@ class SMESH_Pattern {
 
   TopoDS_Shape                      myShape;
   // all functions assure that shapes are indexed so that first go
-  // ordered vertices, then ordered edge, then faces and a shell
+  // ordered vertices, then ordered edge, then faces and maybe a shell
   TopTools_IndexedMapOfOrientedShape myShapeIDMap;
   //TopTools_IndexedMapOfShape        myShapeIDMap;
   std::map< int, list< TPoint* > >  myShapeIDToPointsMap;
 
-  std::list< int >                  myNbKeyPntInBoundary; //for the 2d case
+  // for the 2d case:
+  // nb of key-points in each of pattern boundaries
+  std::list< int >                  myNbKeyPntInBoundary;
+
+  // to compute while applying to mesh elements, not to shapes
+  std::vector<gp_XYZ>               myXYZ;
+  std::list< std::list< int > >     myElemXYZIDs;
+  std::map< int, const SMDS_MeshNode*> myXYZIdToNodeMap; // map id to node of a refined element
+  std::vector<const SMDS_MeshElement*> myElements; // refined elements
+  std::vector<const SMDS_MeshNode*> myOrderedNodes;
 };
 
 

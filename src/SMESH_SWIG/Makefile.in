@@ -55,11 +55,13 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   hole2pyGibi.py \
 		   cyl2geometry.py \
 		   cyl2complementary.py \
+                   SMESH_test.py\
                    SMESH_test0.py\
 		   SMESH_test1.py \
 		   SMESH_test2.py \
 		   SMESH_test3.py \
 	           SMESH_test4.py \
+	           SMESH_test5.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
 		   SMESH_mechanic_editor.py \
@@ -80,7 +82,8 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_demo_hexa2_upd.py \
 		   SMESH_hexaedre.py \
 		   SMESH_Sphere.py \
-		   SMESH_GroupFromGeom.py
+		   SMESH_GroupFromGeom.py \
+		   SMESH_GroupLyingOnGeom.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_Exception.idl \

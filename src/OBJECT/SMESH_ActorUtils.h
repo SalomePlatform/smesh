@@ -22,10 +22,14 @@
 
 #include <qstring.h>
 
+class vtkUnstructuredGrid;
 
 namespace SMESH{
+  
   float GetFloat(const QString& theValue, float theDefault = 0);
-}
 
+  void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName);
+
+}
 
 #endif

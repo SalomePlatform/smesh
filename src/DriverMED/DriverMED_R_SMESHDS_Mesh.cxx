@@ -33,12 +33,14 @@
 
 #include "SMESHDS_Group.hxx"
 
-#include "MEDA_Wrapper.hxx"
+#include "MED_Factory.hxx"
 #include "MED_Utilities.hxx"
 
 #include <stdlib.h>
 
 #define _EDF_NODE_IDS_
+
+using namespace MED;
 
 void DriverMED_R_SMESHDS_Mesh::SetMeshName(string theMeshName)
 {
@@ -46,7 +48,7 @@ void DriverMED_R_SMESHDS_Mesh::SetMeshName(string theMeshName)
 }
 
 static const SMDS_MeshNode* 
-FindNode(const SMDS_Mesh* theMesh, med_int theId){
+FindNode(const SMDS_Mesh* theMesh, TInt theId){
   const SMDS_MeshNode* aNode = theMesh->FindNode(theId);
   if(aNode) return aNode;
   EXCEPTION(runtime_error,"SMDS_Mesh::FindNode - cannot find a SMDS_MeshNode for ID = "<<theId);
@@ -54,15 +56,15 @@ FindNode(const SMDS_Mesh* theMesh, med_int theId){
 
 
 enum ECoordName{eX, eY, eZ, eNone};
-typedef med_float (*TGetCoord)(MEDA::PNodeInfo&, med_int);
+typedef TFloat (*TGetCoord)(MED::PNodeInfo&, TInt);
 
 template<ECoordName TheCoordId>
-med_float GetCoord(MEDA::PNodeInfo& thePNodeInfo, med_int theElemId){
+TFloat GetCoord(MED::PNodeInfo& thePNodeInfo, TInt theElemId){
   return thePNodeInfo->GetNodeCoord(theElemId,TheCoordId);
 }
 
 template<>
-med_float GetCoord<eNone>(MEDA::PNodeInfo& thePNodeInfo, med_int theElemId){
+TFloat GetCoord<eNone>(MED::PNodeInfo& thePNodeInfo, TInt theElemId){
   return 0.0;
 }
 
@@ -113,16 +115,16 @@ static TGetCoord aZGetCoord[3] = {
 
 
 class TCoordHelper{
-  MEDA::PNodeInfo myPNodeInfo;
+  MED::PNodeInfo myPNodeInfo;
   TGetCoord* myGetCoord;
 public:
-  TCoordHelper(const MEDA::PNodeInfo& thePNodeInfo,
+  TCoordHelper(const MED::PNodeInfo& thePNodeInfo,
 	       TGetCoord* theGetCoord):
     myPNodeInfo(thePNodeInfo),
     myGetCoord(theGetCoord)
   {}
   virtual ~TCoordHelper(){}
-  med_float GetCoord(med_int theElemId, med_int theCoodId){
+  TFloat GetCoord(TInt theElemId, TInt theCoodId){
     return (*myGetCoord[theCoodId])(myPNodeInfo,theElemId);
   }
 };
@@ -133,18 +135,16 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 {
   Status aResult = DRS_FAIL;
   try{
-    using namespace MEDA;
-
     myFamilies.clear();
     MESSAGE("Perform - myFile : "<<myFile);
-    TWrapper aMed(myFile);
+    PWrapper aMed = CrWrapper(myFile);
 
     aResult = DRS_EMPTY;
-    if(med_int aNbMeshes = aMed.GetNbMeshes()){
+    if(TInt aNbMeshes = aMed->GetNbMeshes()){
       for(int iMesh = 0; iMesh < aNbMeshes; iMesh++){
 	// Reading the MED mesh
 	//---------------------
-	PMeshInfo aMeshInfo = aMed.GetMeshInfo(iMesh);
+	PMeshInfo aMeshInfo = aMed->GetPMeshInfo(iMesh+1);
         string aMeshName;
         if (myMeshId != -1) {
           ostringstream aMeshNameStr;
@@ -156,22 +156,22 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         aResult = DRS_OK;
-	med_int aMeshDim = aMeshInfo->GetDim();
+	//TInt aMeshDim = aMeshInfo->GetDim();
 	
         // Reading MED families to the temporary structure
 	//------------------------------------------------
-        med_int aNbFams = aMed.GetNbFamilies(aMeshInfo);
+        TInt aNbFams = aMed->GetNbFamilies(aMeshInfo);
         MESSAGE("Read " << aNbFams << " families");
-        for (med_int iFam = 0; iFam < aNbFams; iFam++) {
-          PFamilyInfo aFamilyInfo = aMed.GetFamilyInfo(aMeshInfo, iFam);
-          med_int aFamId = aFamilyInfo->GetId();
+        for (TInt iFam = 0; iFam < aNbFams; iFam++) {
+          PFamilyInfo aFamilyInfo = aMed->GetPFamilyInfo(aMeshInfo, iFam+1);
+          TInt aFamId = aFamilyInfo->GetId();
           MESSAGE("Family " << aFamId << " :");
 
             DriverMED_FamilyPtr aFamily (new DriverMED_Family);
 
-            med_int aNbGrp = aFamilyInfo->GetNbGroup();
+            TInt aNbGrp = aFamilyInfo->GetNbGroup();
             MESSAGE("belong to " << aNbGrp << " groups");
-            for (med_int iGr = 0; iGr < aNbGrp; iGr++) {
+            for (TInt iGr = 0; iGr < aNbGrp; iGr++) {
               string aGroupName = aFamilyInfo->GetGroupName(iGr);
               MESSAGE(aGroupName);
               aFamily->AddGroupName(aGroupName);
@@ -181,13 +181,13 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
-	PNodeInfo aNodeInfo = aMed.GetNodeInfo(aMeshInfo);
+	PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
 
 	TCoordHelperPtr aCoordHelperPtr;
 	{
-	  med_int aMeshDimension = aMeshInfo->GetDim();
+	  TInt aMeshDimension = aMeshInfo->GetDim();
 	  bool anIsDimPresent[3] = {false, false, false};
-          for(med_int iDim = 0; iDim < aMeshDimension; iDim++){
+          for(TInt iDim = 0; iDim < aMeshDimension; iDim++){
 	    string aDimName = aNodeInfo->GetCoordName(iDim);
 	    if(aDimName == "x" || aDimName == "X")
 	      anIsDimPresent[eX] = true;
@@ -219,12 +219,12 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	  }
 	}
 
-	med_booleen anIsNodeNum = aNodeInfo->IsElemNum();
-	med_int aNbElems = aNodeInfo->GetNbElem();
+	EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
+	TInt aNbElems = aNodeInfo->GetNbElem();
 	MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
-        for(med_int iElem = 0; iElem < aNbElems; iElem++){
+        for(TInt iElem = 0; iElem < aNbElems; iElem++){
           double aCoords[3] = {0.0, 0.0, 0.0};
-          for(med_int iDim = 0; iDim < 3; iDim++)
+          for(TInt iDim = 0; iDim < 3; iDim++)
             aCoords[iDim] = aCoordHelperPtr->GetCoord(iElem,iDim);
           const SMDS_MeshNode* aNode;
           if(anIsNodeNum) {
@@ -237,7 +237,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
           //cout<<aNode->GetID()<<": "<<aNode->X()<<", "<<aNode->Y()<<", "<<aNode->Z()<<endl;
 
           // Save reference to this node from its family
-          med_int aFamNum = aNodeInfo->GetFamNum(iElem);
+          TInt aFamNum = aNodeInfo->GetFamNum(iElem);
           if (myFamilies.find(aFamNum) != myFamilies.end())
           {
             myFamilies[aFamNum]->AddElement(aNode);
@@ -248,58 +248,58 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	// Reading pre information about all MED cells
 	//--------------------------------------------
         bool takeNumbers = true;  // initially we trust the numbers from file
-	MED::TEntityInfo aEntityInfo = aMed.GetEntityInfo(aMeshInfo);
+	MED::TEntityInfo aEntityInfo = aMed->GetEntityInfo(aMeshInfo);
 	MED::TEntityInfo::iterator anEntityIter = aEntityInfo.begin();
 	for(; anEntityIter != aEntityInfo.end(); anEntityIter++){
-	  const med_entite_maillage& anEntity = anEntityIter->first;
-	  if(anEntity == MED_NOEUD) continue;
+	  const EEntiteMaillage& anEntity = anEntityIter->first;
+	  if(anEntity == eNOEUD) continue;
 	  // Reading MED cells to the corresponding SMDS structure
 	  //------------------------------------------------------
 	  const MED::TGeom& aTGeom = anEntityIter->second;
 	  MED::TGeom::const_iterator anTGeomIter = aTGeom.begin();
 	  for(; anTGeomIter != aTGeom.end(); anTGeomIter++){
-	    const med_geometrie_element& aGeom = anTGeomIter->first;
-	    if(aGeom == MED_POINT1) continue;
-	    PCellInfo aCellInfo = aMed.GetCellInfo(aMeshInfo,anEntity,aGeom);
-	    med_booleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : MED_FAUX;
-	    med_int aNbElems = aCellInfo->GetNbElem();
+	    const EGeometrieElement& aGeom = anTGeomIter->first;
+	    if(aGeom == ePOINT1) continue;
+	    PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
+	    EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
+	    TInt aNbElems = aCellInfo->GetNbElem();
 	    MESSAGE("Perform - anEntity = "<<anEntity<<"; anIsElemNum = "<<anIsElemNum);
 	    MESSAGE("Perform - aGeom = "<<aGeom<<"; aNbElems = "<<aNbElems);
 
 	    for(int iElem = 0; iElem < aNbElems; iElem++){
-	      med_int aNbNodes = -1;
+	      TInt aNbNodes = -1;
 	      switch(aGeom){
-	      case MED_SEG2:
-	      case MED_SEG3:
+	      case eSEG2:
+	      case eSEG3:
 		aNbNodes = 2;
 		break;
-	      case MED_TRIA3:
-	      case MED_TRIA6:
+	      case eTRIA3:
+	      case eTRIA6:
 		aNbNodes = 3;
 		break;
 		break;
-	      case MED_QUAD4:
-	      case MED_QUAD8:
+	      case eQUAD4:
+	      case eQUAD8:
 		aNbNodes = 4;
                 break;
-              case MED_TETRA4:
-	      case MED_TETRA10:
+              case eTETRA4:
+	      case eTETRA10:
 		aNbNodes = 4;
 		break;
-	      case MED_PYRA5:
-	      case MED_PYRA13:
+	      case ePYRA5:
+	      case ePYRA13:
 		aNbNodes = 5;
 		break;
-	      case MED_PENTA6:
-	      case MED_PENTA15:
+	      case ePENTA6:
+	      case ePENTA15:
 		aNbNodes = 6;
 		break;
-	      case MED_HEXA8:
-	      case MED_HEXA20:
+	      case eHEXA8:
+	      case eHEXA20:
 		aNbNodes = 8;
 		break;
 	      }
-	      vector<med_int> aNodeIds(aNbNodes);
+	      vector<TInt> aNodeIds(aNbNodes);
 #ifdef _EDF_NODE_IDS_
 	      if(anIsNodeNum) {
 		for(int i = 0; i < aNbNodes; i++){
@@ -318,11 +318,11 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 
 	      bool isRenum = false;
 	      SMDS_MeshElement* anElement = NULL;
-	      med_int aFamNum = aCellInfo->GetFamNum(iElem);
+	      TInt aFamNum = aCellInfo->GetFamNum(iElem);
 	      try{
 		switch(aGeom){
-		case MED_SEG2:
-		case MED_SEG3:
+		case eSEG2:
+		case eSEG3:
 		  if(anIsElemNum)
 		    anElement = myMesh->AddEdgeWithID(aNodeIds[0],
 						      aNodeIds[1],
@@ -333,8 +333,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_TRIA3:
-		case MED_TRIA6:
+		case eTRIA3:
+		case eTRIA6:
 		  aNbNodes = 3;
 		  if(anIsElemNum)
 		    anElement = myMesh->AddFaceWithID(aNodeIds[0],
@@ -348,8 +348,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_QUAD4:
-		case MED_QUAD8:
+		case eQUAD4:
+		case eQUAD8:
 		  aNbNodes = 4;
 		  // There is some differnce between SMDS and MED
 		  if(anIsElemNum)
@@ -366,8 +366,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_TETRA4:
-		case MED_TETRA10:
+		case eTETRA4:
+		case eTETRA10:
 		  aNbNodes = 4;
 		  if(anIsElemNum)
 		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
@@ -383,8 +383,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_PYRA5:
-		case MED_PYRA13:
+		case ePYRA5:
+		case ePYRA13:
 		  aNbNodes = 5;
 		  // There is some differnce between SMDS and MED
 		  if(anIsElemNum)
@@ -403,8 +403,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_PENTA6:
-		case MED_PENTA15:
+		case ePENTA6:
+		case ePENTA15:
 		  aNbNodes = 6;
 		  if(anIsElemNum)
 		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
@@ -424,8 +424,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 		    isRenum = anIsElemNum;
 		  }
 		  break;
-		case MED_HEXA8:
-		case MED_HEXA20:
+		case eHEXA8:
+		case eHEXA20:
 		  aNbNodes = 8;
 		  if(anIsElemNum)
 		    anElement = myMesh->AddVolumeWithID(aNodeIds[0],
@@ -463,7 +463,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               }
               else {
                 if (isRenum) {
-                  anIsElemNum = MED_FAUX;
+                  anIsElemNum = eFAUX;
                   takeNumbers = false;
                   if (aResult < DRS_WARN_RENUMBER)
                     aResult = DRS_WARN_RENUMBER;
@@ -496,17 +496,15 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
   list<string> aMeshNames;
 
   try {
-    using namespace MEDA;
-
     MESSAGE("GetMeshNames - myFile : " << myFile);
     theStatus = DRS_OK;
-    TWrapper aMed (myFile);
+    PWrapper aMed = CrWrapper(myFile);
 
-    if (med_int aNbMeshes = aMed.GetNbMeshes()) {
+    if (TInt aNbMeshes = aMed->GetNbMeshes()) {
       for (int iMesh = 0; iMesh < aNbMeshes; iMesh++) {
 	// Reading the MED mesh
 	//---------------------
-	PMeshInfo aMeshInfo = aMed.GetMeshInfo(iMesh);
+	PMeshInfo aMeshInfo = aMed->GetPMeshInfo(iMesh+1);
 	aMeshNames.push_back(aMeshInfo->GetName());
       }
     }

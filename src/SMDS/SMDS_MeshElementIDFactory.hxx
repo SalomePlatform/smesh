@@ -28,26 +28,35 @@
 #define _SMDS_MeshElementIDFactory_HeaderFile
 
 #include "SMDS_MeshIDFactory.hxx"
+#include "SMDS_ElemIterator.hxx"
 
-#include <map>
+#include <NCollection_DataMap.hxx>
 
 class SMDS_MeshElement;
 
-typedef std::map<int, SMDS_MeshElement *> SMDS_IdElementMap;
+typedef NCollection_DataMap<int, SMDS_MeshElement *> SMDS_IdElementMap;
 
 class SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 {
-  public:
-	SMDS_MeshElementIDFactory();
-	bool BindID(int ID, SMDS_MeshElement * elem);
-	SMDS_MeshElement * MeshElement(int ID);
-	virtual int GetFreeID();
-	virtual void ReleaseID(int ID);
-	int GetMaxID() const;
-	int GetMinID() const;
-        const SMDS_IdElementMap & GetIdElementMap() const { return myIDElements; }
-  private:
-	SMDS_IdElementMap myIDElements;
+public:
+  SMDS_MeshElementIDFactory();
+  bool BindID(int ID, SMDS_MeshElement * elem);
+  SMDS_MeshElement * MeshElement(int ID);
+  virtual int GetFreeID();
+  virtual void ReleaseID(int ID);
+  int GetMaxID() const;
+  int GetMinID() const;
+  SMDS_ElemIteratorPtr elementsIterator() const;
+private:
+  void updateMinMax() const;
+  void updateMinMax(int id) const
+  {
+    if (id > myMax) myMax = id;
+    if (id < myMin) myMin = id;
+  }
+
+  SMDS_IdElementMap myIDElements;
+  mutable int myMin, myMax;
 
 };
 

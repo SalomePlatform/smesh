@@ -25,6 +25,9 @@
 //  Author : Jean-Michel BOULCOURT
 //  Module : SMESH
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_IteratorOfElements.hxx"

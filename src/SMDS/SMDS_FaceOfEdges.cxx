@@ -19,6 +19,10 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "SMDS_FaceOfEdges.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -32,7 +36,7 @@ using namespace std;
 
 int SMDS_FaceOfEdges::NbEdges() const
 {
-	return myEdges.size();
+	return myNbEdges;
 }
 
 int SMDS_FaceOfEdges::NbFaces() const
@@ -57,17 +61,23 @@ SMDSAbs_ElementType SMDS_FaceOfEdges::GetType() const
 	return SMDSAbs_Face;
 }
 
+//=======================================================================
+//function : elementsIterator
+//purpose  : 
+//=======================================================================
+
 class SMDS_FaceOfEdges_MyIterator:public SMDS_ElemIterator
 {
-  const vector<const SMDS_MeshEdge*>& mySet;
+  const SMDS_MeshEdge* const *mySet;
+  int myLength;
   int index;
  public:
-  SMDS_FaceOfEdges_MyIterator(const vector<const SMDS_MeshEdge*>& s):
-    mySet(s),index(0) {}
+  SMDS_FaceOfEdges_MyIterator(const SMDS_MeshEdge* const *s, int l):
+    mySet(s),myLength(l),index(0) {}
 
   bool more()
   {
-    return index<mySet.size();
+    return index<myLength;
   }
 
   const SMDS_MeshElement* next()
@@ -76,30 +86,33 @@ class SMDS_FaceOfEdges_MyIterator:public SMDS_ElemIterator
     return mySet[index-1];
   }	
 };
-SMDS_ElemIteratorPtr SMDS_FaceOfEdges::
-	elementsIterator(SMDSAbs_ElementType type) const
+
+SMDS_ElemIteratorPtr SMDS_FaceOfEdges::elementsIterator
+                         (SMDSAbs_ElementType type) const
 {
-	switch(type)
-	{
-	case SMDSAbs_Face:
-          return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
-	case SMDSAbs_Edge:
-          return SMDS_ElemIteratorPtr(new SMDS_FaceOfEdges_MyIterator(myEdges));
-	default:
-          return SMDS_ElemIteratorPtr
-            (new SMDS_IteratorOfElements
-             (this,type, SMDS_ElemIteratorPtr(new SMDS_FaceOfEdges_MyIterator(myEdges))));
-	}
+  switch(type)
+  {
+  case SMDSAbs_Face:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
+  case SMDSAbs_Edge:
+    return SMDS_ElemIteratorPtr(new SMDS_FaceOfEdges_MyIterator(myEdges,myNbEdges));
+  default:
+    return SMDS_ElemIteratorPtr
+      (new SMDS_IteratorOfElements
+       (this,type, SMDS_ElemIteratorPtr
+        (new SMDS_FaceOfEdges_MyIterator(myEdges,myNbEdges))));
+  }
 }
 
 SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge2,
                                    const SMDS_MeshEdge* edge3)
 {
-	myEdges.resize(3);
+	myNbEdges = 3;
 	myEdges[0]=edge1;
 	myEdges[1]=edge2;
 	myEdges[2]=edge3;
+	myEdges[3]=0;
 }
 
 SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
@@ -107,7 +120,7 @@ SMDS_FaceOfEdges::SMDS_FaceOfEdges(const SMDS_MeshEdge* edge1,
                                    const SMDS_MeshEdge* edge3,
                                    const SMDS_MeshEdge* edge4)
 {
-	myEdges.resize(4);
+	myNbEdges = 4;
 	myEdges[0]=edge1;
 	myEdges[1]=edge2;
 	myEdges[2]=edge3;

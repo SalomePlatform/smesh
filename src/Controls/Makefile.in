@@ -31,7 +31,7 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 @COMMENCE@
 
-EXPORT_HEADERS = SMESH_Controls.hxx
+EXPORT_HEADERS = SMESH_Controls.hxx SMESH_ControlsDef.hxx
 
 
 # Libraries targets

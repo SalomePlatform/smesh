@@ -62,7 +62,7 @@ class SMDS_VolumeTool
 
   bool IsForward() const { return myVolForward; }
   // Check volume orientation. can be changed by Inverse().
-  // See node order of forward volumes at file bottom
+  // See node order of forward volumes at the file bottom
 
   void Inverse();
   // Change nodes order as if the volume changes its orientation:
@@ -101,12 +101,8 @@ class SMDS_VolumeTool
   // info on faces
   // -------------
 
-  void SetForwardOrientation ();
-  // Node order in faces will be as for forward orientation
-
   void SetExternalNormal ();
   // Node order in faces  will be so that faces normals are external.
-  // It overrides SetForwardOrientation()
 
   int NbFaces() const { return myNbFaces; }
   // Return number of faces of the volume. In the following
@@ -135,8 +131,7 @@ class SMDS_VolumeTool
 
   bool IsFaceExternal( int faceIndex );
   // Check normal orientation of a face.
-  // SetForwardOrientation() and SetForwardOrientation() are taken
-  // into account.
+  // SetExternalNormal() is taken into account.
 
   bool IsFreeFace(  int faceIndex );
   // Check that all volumes built on the face nodes lays on one side
@@ -169,7 +164,6 @@ class SMDS_VolumeTool
   int                     myVolumeNbNodes;
   const SMDS_MeshNode*    myVolumeNodes[ 8 ];
 
-  bool                    myForwardFaces;
   bool                    myExternalFaces;
   int*                    myFaceNodeIndices;
   int*                    myFaceNbNodes;
@@ -191,13 +185,13 @@ class SMDS_VolumeTool
 //          /|\
 //         / | \
 //        /  |  \
-//    N0 +---|---+ N2                TETRAHEDRON
+//    N0 +---|---+ N1                TETRAHEDRON
 //       \   |   /
 //        \  |  /
 //         \ | /
 //          \|/
 //           +
-//           N1
+//           N2
 
 //            + N4
 //           /|\
@@ -213,18 +207,18 @@ class SMDS_VolumeTool
 //       |/       \|
 //    N0 +---------+ N2
 
-//         N7+----------+N6
+//         N5+----------+N6
 //          /|         /|
 //         / |        / |
 //        /  |       /  |
-//     N4+----------+N5 |
+//     N4+----------+N7 |
 //       |   |      |   |           HEXAHEDRON
 //       |   |      |   |
 //       |   |      |   |
-//       | N3+------|---+N2
+//       | N1+------|---+N2
 //       |  /       |  /
 //       | /        | /
 //       |/         |/
-//     N0+----------+N1
+//     N0+----------+N3
 //
 */

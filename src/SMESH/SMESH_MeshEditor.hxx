@@ -41,6 +41,7 @@ class SMDS_MeshFace;
 class SMDS_MeshNode;
 class gp_Ax1;
 class gp_Vec;
+class gp_Pnt;
 
 class SMESH_MeshEditor {
  public:
@@ -121,18 +122,28 @@ class SMESH_MeshEditor {
   // Generate new elements by extrusion of theElements 
   // by theStep by theNbSteps
 
+  int ExtrusionAlongTrack (std::set<const SMDS_MeshElement*> & theElements,
+			   SMESH_subMesh*                      theTrackPattern,
+			   const SMDS_MeshNode*                theNodeStart,
+			   const bool                          theHasAngles,
+			   std::list<double>&                  theAngles,
+			   const bool                          theHasRefPoint,
+			   const gp_Pnt&                       theRefPoint);
+  // Generate new elements by extrusion of theElements along path given by theTrackPattern,
+  // theHasAngles are the rotation angles, base point can be given by theRefPoint
 
   void Transform (std::set<const SMDS_MeshElement*> & theElements,
                   const gp_Trsf&                      theTrsf,
                   const bool                          theCopy);
   // Move or copy theElements applying theTrsf to their nodes
 
-
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
-  void FindCoincidentNodes (const double         theTolerance,
-                            TListOfListOfNodes & theGroupsOfNodes);
-  // Return list of group of nodes close to each other within theTolerance
+  void FindCoincidentNodes (std::set<const SMDS_MeshNode*> & theNodes,
+                            const double                     theTolerance,
+                            TListOfListOfNodes &             theGroupsOfNodes);
+  // Return list of group of nodes close to each other within theTolerance.
+  // Search among theNodes or in the whole mesh if theNodes is empty.
 
   void MergeNodes (TListOfListOfNodes & theNodeGroups);
   // In each group, the cdr of nodes are substituted by the first one
@@ -220,7 +231,20 @@ class SMESH_MeshEditor {
                              int               theNodeIds[] );
   // Set 8 nodes of a hexahedron in a good order.
   // Return success status
-  
+
+  static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
+                               const SMDS_MeshElement* elemInGroups,
+                               SMESHDS_Mesh *          aMesh);
+  // Add elemToAdd to the groups the elemInGroups belongs to
+
+  static const SMDS_MeshElement*
+    FindFaceInSet(const SMDS_MeshNode*                     n1,
+                  const SMDS_MeshNode*                     n2,
+                  const std::set<const SMDS_MeshElement*>& elemSet,
+                  const std::set<const SMDS_MeshElement*>& avoidSet);
+  // Return a face having linked nodes n1 and n2 and which is
+  // - not in avoidSet,
+  // - in elemSet provided that !elemSet.empty()
 
   int FindShape (const SMDS_MeshElement * theElem);
   // Return an index of the shape theElem is on

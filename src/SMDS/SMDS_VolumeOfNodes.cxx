@@ -19,6 +19,10 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "utilities.h"
@@ -39,7 +43,8 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 		const SMDS_MeshNode * node7,
 		const SMDS_MeshNode * node8)
 {
-	myNodes.resize(8);
+	myNbNodes = 8;
+	myNodes = new const SMDS_MeshNode* [myNbNodes];
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -56,7 +61,8 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 		const SMDS_MeshNode * node3,
 		const SMDS_MeshNode * node4)
 {
-	myNodes.resize(4);
+	myNbNodes = 4;
+	myNodes = new const SMDS_MeshNode* [myNbNodes];
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -70,7 +76,8 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 		const SMDS_MeshNode * node4,
 		const SMDS_MeshNode * node5)
 {
-	myNodes.resize(5);
+	myNbNodes = 5;
+	myNodes = new const SMDS_MeshNode* [myNbNodes];
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -86,7 +93,8 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 		const SMDS_MeshNode * node5,
 		const SMDS_MeshNode * node6)
 {
-	myNodes.resize(6);
+	myNbNodes = 6;
+	myNodes = new const SMDS_MeshNode* [myNbNodes];
 	myNodes[0]=node1;
 	myNodes[1]=node2;
 	myNodes[2]=node3;
@@ -94,18 +102,30 @@ SMDS_VolumeOfNodes::SMDS_VolumeOfNodes(
 	myNodes[4]=node5;
 	myNodes[5]=node6;
 }
+
 bool SMDS_VolumeOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
                                      const int            nbNodes)
 {
   if (nbNodes < 4 || nbNodes > 8 || nbNodes == 7)
     return false;
 
-  myNodes.resize( nbNodes );
+  delete [] myNodes;
+  myNbNodes = nbNodes;
+  myNodes = new const SMDS_MeshNode* [myNbNodes];
   for ( int i = 0; i < nbNodes; i++ )
     myNodes[ i ] = nodes [ i ];
 
   return true;
 }
+
+SMDS_VolumeOfNodes::~SMDS_VolumeOfNodes()
+{
+  if (myNodes != NULL) {
+    delete [] myNodes;
+    myNodes = NULL;
+  }
+}
+
 //=======================================================================
 //function : Print
 //purpose  : 
@@ -134,7 +154,7 @@ int SMDS_VolumeOfNodes::NbFaces() const
 
 int SMDS_VolumeOfNodes::NbNodes() const
 {
-	return myNodes.size();
+	return myNbNodes;
 }
 
 int SMDS_VolumeOfNodes::NbEdges() const
@@ -152,15 +172,16 @@ int SMDS_VolumeOfNodes::NbEdges() const
 
 class SMDS_VolumeOfNodes_MyIterator:public SMDS_ElemIterator
 {
-  const vector<const SMDS_MeshNode*>& mySet;
+  const SMDS_MeshNode* const* mySet;
+  int myLength;
   int index;
  public:
-  SMDS_VolumeOfNodes_MyIterator(const vector<const SMDS_MeshNode*>& s):
-    mySet(s),index(0) {}
+  SMDS_VolumeOfNodes_MyIterator(const SMDS_MeshNode* const* s, int l):
+    mySet(s),myLength(l),index(0) {}
 
   bool more()
   {
-    return index<mySet.size();
+    return index<myLength;
   }
 
   const SMDS_MeshElement* next()
@@ -178,7 +199,7 @@ SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::
   case SMDSAbs_Volume:
     return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
   case SMDSAbs_Node:
-    return SMDS_ElemIteratorPtr(new SMDS_VolumeOfNodes_MyIterator(myNodes));
+    return SMDS_ElemIteratorPtr(new SMDS_VolumeOfNodes_MyIterator(myNodes,myNbNodes));
   default:
     MESSAGE("ERROR : Iterator not implemented");
     return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);

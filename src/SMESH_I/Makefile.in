@@ -47,7 +47,7 @@ EXPORT_HEADERS= \
 	SMESH_Hypothesis_i.hxx \
 	SMESH.hxx
 
-EXPORT_PYSCRIPTS = smeshpy.py SMESH_test.py
+EXPORT_PYSCRIPTS = smeshpy.py
 
 # Libraries targets
 
@@ -82,9 +82,9 @@ BIN = SMESHEngine
 BIN_SRC = 
 
 # additionnal information to compil and link file
-CPPFLAGS+= $(OCC_INCLUDES) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) $(MED2_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
            -I${GEOM_ROOT_DIR}/include/salome
 
 LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \

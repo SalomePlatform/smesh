@@ -50,7 +50,8 @@ def ConvertMED2UNV(thePath,theFile) :
         SetSObjName(anSObj,aFileName)
         print anSObj.GetName()
 
-        aFileName = thePath + theFile + "." + str(iMesh) + ".unv"
+        aOutPath = '/tmp/'
+        aFileName = aOutPath + theFile + "." + str(iMesh) + ".unv"
         aMesh.ExportUNV(aFileName)
         aMesh = smesh.CreateMeshesFromUNV(aFileName)
         anSObj = salome.ObjectToSObject(aMesh)

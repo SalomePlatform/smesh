@@ -73,16 +73,21 @@
 
 <!-- ************************** Control  (menubar)  ************************************ -->
 <menu-item label-id="Controls" item-id="60" pos-id="5">
+	<popup-item item-id="6003" pos-id="" label-id="Free Borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6003" pos-id="" label-id="Free borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6004" pos-id="" label-id="Borders at multi-connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6004" pos-id="" label-id="Borders at Multi-Connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6018" pos-id="" label-id="Length 2D" icon-id="mesh_length_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6019" pos-id="" label-id="Borders at Multi-Connection 2D" icon-id="mesh_multi_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6011" pos-id="" label-id="Area" icon-id="mesh_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6012" pos-id="" label-id="Taper" icon-id="mesh_taper.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6013" pos-id="" label-id="Aspect Ratio" icon-id="mesh_aspect.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6014" pos-id="" label-id="Minimum angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6014" pos-id="" label-id="Minimum Angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6015" pos-id="" label-id="Warping" icon-id="mesh_wrap.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6016" pos-id="" label-id="Skew" icon-id="mesh_skew.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>  
+        <separator pos-id=""/>
+        <popup-item item-id="6017" pos-id="" label-id="Aspect Ratio 3D" icon-id="mesh_aspect_3d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
         
 <!-- ************************** Entity  (menubar)  ************************************ -->
@@ -122,6 +127,7 @@
      <popup-item item-id="411" pos-id="" label-id="Cutting of quadrangles" icon-id="mesh_cutquad.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="412" pos-id="" label-id="Smoothing" icon-id="mesh_smoothing.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="413" pos-id="" label-id="Extrusion" icon-id="mesh_extrusion.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="416" pos-id="" label-id="Extrusion along a path" icon-id="mesh_extrusionpath.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="414" pos-id="" label-id="Revolution" icon-id="mesh_revolution.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="415" pos-id="" label-id="Pattern mapping" icon-id="mesh_pattern.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
@@ -129,7 +135,7 @@
 <!-- ********************************* Settings  (menubar) ********************************* -->
 <menu-item label-id="Preferences" item-id="4" pos-id="">
    <submenu label-id="Mesh" item-id="100" pos-id="-1">
-    <submenu label-id="Display Mode" item-id="1000" pos-id="">
+   <submenu label-id="Display Mode" item-id="1000" pos-id="">
     	<popup-item item-id="10001" pos-id="" label-id="Wireframe" icon-id="mesh_wireframe.png" tooltip-id="" accel-id="" toggle-id="false" execute-action=""/>
  	<popup-item item-id="10002" pos-id="" label-id="Shading" icon-id="mesh_shading.png" tooltip-id="" accel-id="" toggle-id="true" execute-action=""/>
     	<popup-item item-id="10004" pos-id="" label-id="Nodes" icon-id="mesh_points.png" tooltip-id="" accel-id="" toggle-id="false" execute-action=""/>
@@ -145,7 +151,11 @@
     <separator pos-id=""/>
     <popup-item item-id="1006" pos-id="" label-id="Selection" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
     <separator pos-id=""/>
-    <popup-item item-id="1007" pos-id="" label-id="Quality controls" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    <submenu label-id="Quality controls" item-id="1007" pos-id="">
+    	<popup-item item-id="10070" pos-id="" label-id="Precision" icon-id="" tooltip-id="" accel-id="" toggle-id="false" execute-action=""/>
+ 	<popup-item item-id="10071" pos-id="" label-id="Display Entity" icon-id="" tooltip-id="" accel-id="" toggle-id="true" execute-action=""/>
+    </submenu>
+    <endsubmenu /> 
    </submenu>
    <endsubmenu />
    <separator pos-id="-1"/>
@@ -230,23 +240,36 @@
 	<popup-item item-id="213" pos-id="" label-id="Shrink" icon-id="mesh_shrink.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
    <endsubmenu />
+   <submenu label-id="Display Entity" item-id="1135" pos-id="">
+	<popup-item item-id="217" pos-id="" label-id="Edges" icon-id="mesh_line.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="218" pos-id="" label-id="Faces" icon-id="mesh_triangle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="219" pos-id="" label-id="Volumes" icon-id="mesh_tetra.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="220" pos-id="" label-id="All" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+   </submenu>
+   <endsubmenu />
    <popup-item item-id="1132" pos-id="" label-id="Colors / Size" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1133" pos-id="" label-id="Transparency" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1134" pos-id="" label-id="Clipping" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <separator pos-id=""/>
    <submenu label-id="Control" item-id="2000" pos-id="">
-	<popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6003" pos-id="" label-id="Free borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6004" pos-id="" label-id="Borders at multi-connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6003" pos-id="" label-id="Free Borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6004" pos-id="" label-id="Borders at Multi-Connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6018" pos-id="" label-id="Length 2D" icon-id="mesh_length_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6019" pos-id="" label-id="Borders at Multi-Connection 2D" icon-id="mesh_multi_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6011" pos-id="" label-id="Area" icon-id="mesh_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6012" pos-id="" label-id="Taper" icon-id="mesh_taper.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6013" pos-id="" label-id="Aspect Ratio" icon-id="mesh_aspect.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6014" pos-id="" label-id="Minimum angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6014" pos-id="" label-id="Minimum Angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6015" pos-id="" label-id="Warping" icon-id="mesh_wrap.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6016" pos-id="" label-id="Skew" icon-id="mesh_skew.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>  
         <separator pos-id=""/>
-        <popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6017" pos-id="" label-id="Aspect Ratio 3D" icon-id="mesh_aspect_3d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <separator pos-id=""/>
         <popup-item item-id="201" pos-id="" label-id="Scalar Bar Properties" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
@@ -272,23 +295,36 @@
 	<popup-item item-id="213" pos-id="" label-id="Shrink" icon-id="mesh_shrink.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
    <endsubmenu />
+   <submenu label-id="Display Entity" item-id="1135" pos-id="">
+	<popup-item item-id="217" pos-id="" label-id="Edges" icon-id="mesh_line.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="218" pos-id="" label-id="Faces" icon-id="mesh_triangle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="219" pos-id="" label-id="Volumes" icon-id="mesh_tetra.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="220" pos-id="" label-id="All" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+   </submenu>
+   <endsubmenu />
    <popup-item item-id="1132" pos-id="" label-id="Colors / Size" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1133" pos-id="" label-id="Transparency" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1134" pos-id="" label-id="Clipping" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <separator pos-id=""/>
    <submenu label-id="Control" item-id="2000" pos-id="">
-	<popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6003" pos-id="" label-id="Free borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6004" pos-id="" label-id="Borders at multi-connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+        <popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6003" pos-id="" label-id="Free Borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6004" pos-id="" label-id="Borders at Multi-Connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6018" pos-id="" label-id="Length 2D" icon-id="mesh_length_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6019" pos-id="" label-id="Borders at Multi-Connection 2D" icon-id="mesh_multi_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6011" pos-id="" label-id="Area" icon-id="mesh_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6012" pos-id="" label-id="Taper" icon-id="mesh_taper.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6013" pos-id="" label-id="Aspect Ratio" icon-id="mesh_aspect.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6014" pos-id="" label-id="Minimum angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6014" pos-id="" label-id="Minimum Angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6015" pos-id="" label-id="Warping" icon-id="mesh_wrap.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6016" pos-id="" label-id="Skew" icon-id="mesh_skew.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>  
         <separator pos-id=""/>
-        <popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6017" pos-id="" label-id="Aspect Ratio 3D" icon-id="mesh_aspect_3d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <separator pos-id=""/>
         <popup-item item-id="201" pos-id="" label-id="Scalar Bar Properties" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
@@ -316,23 +352,36 @@
 	<popup-item item-id="213" pos-id="" label-id="Shrink" icon-id="mesh_shrink.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
    <endsubmenu />
+   <submenu label-id="Display Entity" item-id="1135" pos-id="">
+	<popup-item item-id="217" pos-id="" label-id="Edges" icon-id="mesh_line.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="218" pos-id="" label-id="Faces" icon-id="mesh_triangle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+    	<popup-item item-id="219" pos-id="" label-id="Volumes" icon-id="mesh_tetra.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="220" pos-id="" label-id="All" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+   </submenu>
+   <endsubmenu />
    <popup-item item-id="1132" pos-id="" label-id="Colors / Size" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1133" pos-id="" label-id="Transparency" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <popup-item item-id="1134" pos-id="" label-id="Clipping" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <separator pos-id=""/>
    <submenu label-id="Control" item-id="2000" pos-id="">
-	<popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6003" pos-id="" label-id="Free borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6004" pos-id="" label-id="Borders at multi-connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6003" pos-id="" label-id="Free Borders" icon-id="mesh_free_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6001" pos-id="" label-id="Length" icon-id="mesh_length.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6004" pos-id="" label-id="Borders at Multi-Connection" icon-id="mesh_multi_edges.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <separator pos-id=""/>
+	<popup-item item-id="6002" pos-id="" label-id="Free Edges" icon-id="mesh_free_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6018" pos-id="" label-id="Length 2D" icon-id="mesh_length_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6019" pos-id="" label-id="Borders at Multi-Connection 2D" icon-id="mesh_multi_edges_2d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6011" pos-id="" label-id="Area" icon-id="mesh_area.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6012" pos-id="" label-id="Taper" icon-id="mesh_taper.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <popup-item item-id="6013" pos-id="" label-id="Aspect Ratio" icon-id="mesh_aspect.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
-	<popup-item item-id="6014" pos-id="" label-id="Minimum angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+        <popup-item item-id="6014" pos-id="" label-id="Minimum Angle" icon-id="mesh_angle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6015" pos-id="" label-id="Warping" icon-id="mesh_wrap.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	<popup-item item-id="6016" pos-id="" label-id="Skew" icon-id="mesh_skew.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>  
         <separator pos-id=""/>
-        <popup-item item-id="200" pos-id="" label-id="Reset" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	<popup-item item-id="6017" pos-id="" label-id="Aspect Ratio 3D" icon-id="mesh_aspect_3d.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
         <separator pos-id=""/>
         <popup-item item-id="201" pos-id="" label-id="Scalar Bar Properties" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    </submenu>
@@ -370,15 +419,20 @@
 
 <toolbar label-id="Controls toolbar">
 	<toolbutton-item item-id="6001" label-id="Length" icon-id="mesh_length.png" tooltip-id="Length" accel-id="" toggle-id="" execute-action=""/>
-	<toolbutton-item item-id="6002" label-id="Free Edges" icon-id="mesh_free_edges.png" tooltip-id="Free edges" accel-id="" toggle-id="" execute-action=""/>
-	<toolbutton-item item-id="6003" label-id="Free borders" icon-id="mesh_free_edges.png" tooltip-id="Free borders" accel-id="" toggle-id="" execute-action=""/>
-        <toolbutton-item item-id="6004" label-id="Borders at multi-connection" icon-id="mesh_multi_edges.png" tooltip-id="Borders at multi-connection" accel-id="" toggle-id="" execute-action=""/>
+	<toolbutton-item item-id="6003" label-id="Free Borders" icon-id="mesh_free_edges.png" tooltip-id="Free borders" accel-id="" toggle-id="" execute-action=""/>
+        <toolbutton-item item-id="6004" label-id="Borders at Multi-Connection" icon-id="mesh_multi_edges.png" tooltip-id="Borders at multi-connection" accel-id="" toggle-id="" execute-action=""/>
+        <separatorTB/>
+	<toolbutton-item item-id="6002" label-id="Free Edges" icon-id="mesh_free_edges_2d.png" tooltip-id="Free edges" accel-id="" toggle-id="" execute-action=""/>
+	<toolbutton-item item-id="6018" label-id="Length 2D" icon-id="mesh_length_2d.png" tooltip-id="Length2D" accel-id="" toggle-id="" execute-action=""/>
+        <toolbutton-item item-id="6019" label-id="Borders at Multi-Connection 2D" icon-id="mesh_multi_edges_2d.png" tooltip-id="Multiconnection 2D" accel-id="" toggle-id="" execute-action=""/>
 	<toolbutton-item item-id="6011" label-id="Area" icon-id="mesh_area.png" tooltip-id="Area" accel-id="" toggle-id="" execute-action=""/>
 	<toolbutton-item item-id="6012" label-id="Taper" icon-id="mesh_taper.png" tooltip-id="Taper" accel-id="" toggle-id="" execute-action=""/>
 	<toolbutton-item item-id="6013" label-id="Aspect Ratio" icon-id="mesh_aspect.png" tooltip-id="Aspect Ratio" accel-id="" toggle-id="" execute-action=""/>
-	<toolbutton-item item-id="6014" label-id="Minimum angle" icon-id="mesh_angle.png" tooltip-id="Minimum angle" accel-id="" toggle-id="" execute-action=""/>
+        <toolbutton-item item-id="6014" label-id="Minimum Angle" icon-id="mesh_angle.png" tooltip-id="Minimum angle" accel-id="" toggle-id="" execute-action=""/>
 	<toolbutton-item item-id="6015" label-id="Warping" icon-id="mesh_wrap.png" tooltip-id="Warping angle" accel-id="" toggle-id="" execute-action=""/>
 	<toolbutton-item item-id="6016" label-id="Skew" icon-id="mesh_skew.png" tooltip-id="Skew" accel-id="" toggle-id="" execute-action=""/>  
+        <separatorTB/>
+        <toolbutton-item item-id="6017" label-id="Aspect Ratio 3D" icon-id="mesh_aspect_3d.png" tooltip-id="Aspect Ratio 3D" accel-id="" toggle-id="" execute-action=""/>
 </toolbar>
 
 <toolbar label-id="Add/Remove toolbar">
@@ -411,6 +465,7 @@
      <toolbutton-item item-id="411" label-id="Cutting of quadrangles" icon-id="mesh_cutquad.png" tooltip-id="Cutting of quadrangles" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="412" label-id="Smoothing" icon-id="mesh_smoothing.png" tooltip-id="Smoothing" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="413" label-id="Extrusion" icon-id="mesh_extrusion.png" tooltip-id="Extrusion along a line" accel-id="" toggle-id="" execute-action=""/> 
+     <toolbutton-item item-id="416" label-id="Extrusion along a path" icon-id="mesh_extrusionpath.png" tooltip-id="Extrusion along a path" accel-id="" toggle-id="" execute-action=""/> 
      <toolbutton-item item-id="414" label-id="Revolution" icon-id="mesh_revolution.png" tooltip-id="Revolution around an axis" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="415" label-id="Pattern mapping" icon-id="mesh_pattern.png" tooltip-id="2D and 3D pattern mapping" accel-id="" toggle-id="" execute-action=""/>     
 </toolbar>

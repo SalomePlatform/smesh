@@ -235,14 +235,6 @@ CHECK_HDF5
 
 echo
 echo ---------------------------------------------
-echo testing MED2
-echo ---------------------------------------------
-echo
-
-CHECK_MED2
-
-echo
-echo ---------------------------------------------
 echo Testing OpenCascade
 echo ---------------------------------------------
 echo
@@ -288,7 +280,7 @@ echo ---------------------------------------------
 echo
 
 echo Configure
-variables="cc_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok med2_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
+variables="cc_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
 
 for var in $variables
 do

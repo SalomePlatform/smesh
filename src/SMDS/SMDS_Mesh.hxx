@@ -32,7 +32,8 @@
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
-#include "SMDS_Iterator.hxx"
+#include "SMDS_ElemIterator.hxx"
+#include <NCollection_Map.hxx>
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -268,10 +269,10 @@ public:
    */
   bool Contains (const SMDS_MeshElement* elem) const;
 
-  typedef std::set<SMDS_MeshNode *> SetOfNodes;
-  typedef std::set<SMDS_MeshEdge *> SetOfEdges;
-  typedef std::set<SMDS_MeshFace *> SetOfFaces;
-  typedef std::set<SMDS_MeshVolume *> SetOfVolumes;
+  typedef NCollection_Map<SMDS_MeshNode *> SetOfNodes;
+  typedef NCollection_Map<SMDS_MeshEdge *> SetOfEdges;
+  typedef NCollection_Map<SMDS_MeshFace *> SetOfFaces;
+  typedef NCollection_Map<SMDS_MeshVolume *> SetOfVolumes;
 
 private:
   SMDS_Mesh(SMDS_Mesh * parent);

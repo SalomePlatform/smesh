@@ -49,7 +49,8 @@ class SMDS_FaceOfNodes:public SMDS_MeshFace
 		elementsIterator(SMDSAbs_ElementType type) const;
 
   private:
-	std::vector<const SMDS_MeshNode*> myNodes;
+	const SMDS_MeshNode* myNodes[4];
+        int                  myNbNodes;
 
 };
 

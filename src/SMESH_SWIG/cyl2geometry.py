@@ -149,7 +149,8 @@ cpd = cpd + r_element
 # Compound
 # --------
 
-piece = MakeCompound(cpd)
+comp_all = MakeCompound(cpd)
+piece = BlocksOp.RemoveExtraEdges(comp_all)
 
 # Ajouter la piece dans l'etude
 # -----------------------------

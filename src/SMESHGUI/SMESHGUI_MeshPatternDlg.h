@@ -45,6 +45,8 @@ class QRadioButton;
 class QCheckBox;
 class QButtonGroup;
 class QLabel;
+class QSpinBox;
+class QGroupBox;
 class SMESHGUI_CreatePatternDlg;
 class SMESHGUI_PatternWidget;
 class vtkUnstructuredGrid;
@@ -63,7 +65,7 @@ class SMESHGUI_MeshPatternDlg : public QDialog
   enum { Type_2d, Type_3d };
 
   // selection input
-  enum { Mesh, Object, Vertex1, Vertex2 };
+  enum { Mesh, Object, Vertex1, Vertex2, Ids };
 
 public:
                                       SMESHGUI_MeshPatternDlg( QWidget*,
@@ -85,12 +87,15 @@ private slots:
   void                                onSelInputChanged();
 
   void                                onTypeChanged( int );
+  void                                onModeToggled( bool );
   void                                onOpen();
   void                                onNew();
   void                                onReverse( bool );
   void                                onPreview( bool );
   void                                onOkCreationDlg();
   void                                onCloseCreationDlg();
+  void                                onTextChanged( const QString& );
+  void                                onNodeChanged( int value );
 
 private:
 
@@ -108,6 +113,10 @@ private:
   void                                enterEvent ( QEvent * ) ;
   bool                                isValid( const bool theMess = true );
   void                                resetSelInput();
+  bool                                isRefine() const;
+
+  bool                                getIds( QValueList<int>& ) const;
+  int                                 getNode( bool = false ) const;
 
 private:
 
@@ -119,6 +128,14 @@ private:
   QRadioButton*                       mySwitch2d;
   QRadioButton*                       mySwitch3d;
 
+  QCheckBox*                          myRefine;
+
+  QFrame*                             myRefineGrp;
+  QSpinBox*                           myNode1;
+  QSpinBox*                           myNode2;
+  QLabel*                             myNode2Lbl;
+
+  QGroupBox*                          myGeomGrp;
   QMap< int, QPushButton* >           mySelBtn;
   QMap< int, QLineEdit* >             mySelEdit;
   QMap< int, QLabel* >                mySelLbl;
@@ -139,6 +156,7 @@ private:
   int                                 myNbPoints;
   int                                 myType;
   bool                                myIsCreateDlgOpen;
+  bool                                myBusy;
 
   SMESH::SMESH_Mesh_var               myMesh;
   GEOM::GEOM_Object_var               myMeshShape;

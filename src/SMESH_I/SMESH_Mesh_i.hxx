@@ -150,8 +150,11 @@ public:
   SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
     throw (SALOME::SALOME_Exception);
 
+  void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
+    throw (SALOME::SALOME_Exception);
   void ExportMED( const char* file, CORBA::Boolean auto_groups )
     throw (SALOME::SALOME_Exception);
+
   void ExportDAT( const char* file )
     throw (SALOME::SALOME_Exception);
   void ExportUNV( const char* file )
@@ -163,6 +166,9 @@ public:
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long NbNodes()
+    throw (SALOME::SALOME_Exception);
+  
+  CORBA::Long NbElements()
     throw (SALOME::SALOME_Exception);
   
   CORBA::Long NbEdges()
@@ -195,6 +201,15 @@ public:
   CORBA::Long NbSubMesh()
     throw (SALOME::SALOME_Exception);
 
+  SMESH::long_array* GetElementsId()
+    throw (SALOME::SALOME_Exception);
+
+  SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
+    throw (SALOME::SALOME_Exception);
+  
+  SMESH::long_array* GetNodesId()
+    throw (SALOME::SALOME_Exception);
+  
   char* Dump();
   
   // Internal methods not available through CORBA

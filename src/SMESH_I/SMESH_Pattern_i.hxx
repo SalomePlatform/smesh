@@ -65,6 +65,16 @@ class SMESH_Pattern_i:
                                      GEOM::GEOM_Object_ptr theVertex000,
                                      GEOM::GEOM_Object_ptr theVertex001);
 
+  SMESH::point_array* ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr    theMesh,
+                                       const SMESH::long_array& theFacesIDs,
+                                       CORBA::Long              theNodeIndexOnKeyPoint1,
+                                       CORBA::Boolean           theReverse);
+
+  SMESH::point_array* ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr    theMesh,
+                                         const SMESH::long_array& theVolumesIDs,
+                                         CORBA::Long              theNode000Index,
+                                         CORBA::Long              theNode001Index);
+
   CORBA::Boolean MakeMesh(SMESH::SMESH_Mesh_ptr theMesh);
 
   SMESH::SMESH_Pattern::ErrorCode GetErrorCode();
@@ -81,8 +91,6 @@ class SMESH_Pattern_i:
 
 
  private:
-
-  TopoDS_Shape getShape( GEOM::GEOM_Object_ptr & theGeomObject );
 
   ::SMESH_Mesh* getMesh( SMESH::SMESH_Mesh_ptr & theMesh );
 

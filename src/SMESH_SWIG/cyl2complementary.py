@@ -79,7 +79,9 @@ d_element[10] = MakeCut(d_element[10], c_cyl)
 # Compound
 # --------
 
-piece = MakeCompound(d_element)
+comp_all = MakeCompound(d_element)
+piece = BlocksOp.RemoveExtraEdges(comp_all)
+#piece = MakeCompound(d_element)
 
 # Add piece in study
 # ------------------

@@ -41,18 +41,18 @@
 #include "OpUtil.hxx"
 
 #include "TCollection_AsciiString.hxx"
-#include <TColStd_MapOfInteger.hxx>
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
-#include <TColStd_SequenceOfInteger.hxx>
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
 #include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
 
+#include <TColStd_MapOfInteger.hxx>
+#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColStd_SequenceOfInteger.hxx>
+
 #include <string>
 #include <iostream>
-// _CS_gbo_050504 Ajout explicite du sstream pour ostringstream 
 #include <sstream>
 
 #ifdef _DEBUG_
@@ -509,7 +509,7 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
-  return subMesh;
+  return subMesh._retn();
 }
 
 //=============================================================================
@@ -1049,10 +1049,13 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
  */
 //=============================================================================
 
-void SMESH_Mesh_i::ExportMED(const char *file, CORBA::Boolean auto_groups) throw(SALOME::SALOME_Exception)
+void SMESH_Mesh_i::ExportToMED( const char* file, 
+				CORBA::Boolean auto_groups, 
+				SMESH::MED_VERSION theVersion )
+  throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-
+  
   char* aMeshName = "Mesh";
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() ) {
@@ -1062,10 +1065,10 @@ void SMESH_Mesh_i::ExportMED(const char *file, CORBA::Boolean auto_groups) throw
       //SCRUTE(file);
       //SCRUTE(aMeshName);
       //SCRUTE(aMeshSO->GetID());
-
+      
       // asv : 27.10.04 : fix of 6903: check for StudyLocked before adding attributes 
       if ( !aStudy->GetProperties()->IsLocked() ) 
-      {
+	{
 	SALOMEDS::GenericAttribute_var anAttr;
 	SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
 	SALOMEDS::AttributeExternalFileDef_var aFileName;
@@ -1078,10 +1081,17 @@ void SMESH_Mesh_i::ExportMED(const char *file, CORBA::Boolean auto_groups) throw
         aFileType = SALOMEDS::AttributeFileType::_narrow(anAttr);
         ASSERT(!aFileType->_is_nil());
         aFileType->SetValue("FICHIERMED");
-      }
+	}
     }
   }
-  _impl->ExportMED( file, aMeshName, auto_groups );
+  _impl->ExportMED( file, aMeshName, auto_groups, theVersion );
+}
+
+void SMESH_Mesh_i::ExportMED( const char* file, 
+			      CORBA::Boolean auto_groups)
+  throw(SALOME::SALOME_Exception)
+{
+  ExportToMED(file,auto_groups,SMESH::MED_V2_1);
 }
 
 void SMESH_Mesh_i::ExportDAT(const char *file) throw(SALOME::SALOME_Exception)
@@ -1126,6 +1136,17 @@ CORBA::Long SMESH_Mesh_i::NbNodes()throw(SALOME::SALOME_Exception)
   return _impl->NbNodes();
 }
 
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+CORBA::Long SMESH_Mesh_i::NbElements()throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return NbEdges() + NbFaces() + NbVolumes();
+}
+  
 //=============================================================================
 /*!
  *  
@@ -1237,3 +1258,98 @@ SMESH::long_array* SMESH_Mesh_i::GetIDs()
   
   return aResult._retn();
 }
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+  
+SMESH::long_array* SMESH_Mesh_i::GetElementsId()
+     throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  MESSAGE("SMESH_Mesh_i::GetElementsId");
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  long nbElements = NbElements();
+  aResult->length( nbElements );
+  SMDS_ElemIteratorPtr anIt = aSMESHDS_Mesh->elementsIterator();
+  for ( int i = 0, n = nbElements; i < n && anIt->more(); i++ )
+    aResult[i] = anIt->next()->GetID();
+
+  return aResult._retn();
+}
+
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElementsByType( SMESH::ElementType theElemType )
+    throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  MESSAGE("SMESH_subMesh_i::GetElementsByType");
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  long nbElements = NbElements();
+
+  // No sense in returning ids of elements along with ids of nodes:
+  // when theElemType == SMESH::ALL, return node ids only if
+  // there are no elements
+  if ( theElemType == SMESH::NODE || theElemType == SMESH::ALL && nbElements == 0 )
+    return GetNodesId();
+
+  aResult->length( nbElements );
+
+  int i = 0;
+
+  SMDS_ElemIteratorPtr anIt = aSMESHDS_Mesh->elementsIterator();
+  while ( i < nbElements && anIt->more() ) {
+    const SMDS_MeshElement* anElem = anIt->next();
+    if ( theElemType == SMESH::ALL || anElem->GetType() == (SMDSAbs_ElementType)theElemType )
+      aResult[i++] = anElem->GetID();
+  }
+
+  aResult->length( i );
+
+  return aResult._retn();
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+  
+SMESH::long_array* SMESH_Mesh_i::GetNodesId()
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  MESSAGE("SMESH_subMesh_i::GetNodesId");
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  long nbNodes = NbNodes();
+  aResult->length( nbNodes );
+  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator();
+  for ( int i = 0, n = nbNodes; i < n && anIt->more(); i++ )
+    aResult[i] = anIt->next()->GetID();
+
+  return aResult._retn();
+}
+

@@ -30,7 +30,6 @@
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_Iterator.hxx"
-#include <vector>
 #include <iostream>
 
 
@@ -61,6 +60,7 @@ class SMDS_VolumeOfFaces:public SMDS_MeshVolume
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
-	std::vector<const SMDS_MeshFace *> myFaces;
+	const SMDS_MeshFace * myFaces[6];
+	int                   myNbFaces;
 };
 #endif

@@ -26,6 +26,8 @@
 //  $Header$
 
 #include "DriverMED_Family.h"
+#include "MED_Factory.hxx"
+
 #include <sstream>	
 
 using namespace std;
@@ -204,8 +206,9 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
  *  Create TFamilyInfo for this family
  */
 //=============================================================================
-MEDA::PFamilyInfo DriverMED_Family::GetFamilyInfo
-                  (const MEDA::PMeshInfo& theMeshInfo) const
+MED::PFamilyInfo 
+DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
+				const MED::PMeshInfo& theMeshInfo) const
 {
   string aValue;
   ostringstream aStr;
@@ -215,11 +218,13 @@ MEDA::PFamilyInfo DriverMED_Family::GetFamilyInfo
   MED::TIntVector anAttrIds (1, myId);        // Id=0,
   MED::TIntVector anAttrVals (1, myId);       // Value=0
 
-  MEDA::PFamilyInfo anInfo = MEDA::TWrapper::CrFamilyInfo(theMeshInfo,
-                                                          aValue,
-                                                          myId,
-                                                          myGroupNames,
-                                                          anAttrDescs,anAttrIds,anAttrVals);
+  MED::PFamilyInfo anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
+						     aValue,
+						     myId,
+						     myGroupNames,
+						     anAttrDescs,
+						     anAttrIds,
+						     anAttrVals);
 
 //  cout << endl;
 //  cout << "Groups: ";

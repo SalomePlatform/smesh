@@ -246,7 +246,6 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
   
   if ( !myMesh->_is_nil())
     {
-      bool aResult = false;
       try
 	{
 	  SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();

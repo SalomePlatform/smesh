@@ -534,6 +534,75 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
 }
 
 //=======================================================================
+//function : ExtrusionAlongPath
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOfElements,
+					    SMESH::SMESH_Mesh_ptr       thePathMesh,
+					    GEOM::GEOM_Object_ptr       thePathShape,
+					    CORBA::Long                 theNodeStart,
+					    CORBA::Boolean              theHasAngles,
+					    const SMESH::double_array & theAngles,
+					    CORBA::Boolean              theHasRefPoint,
+					    const SMESH::PointStruct &  theRefPoint)
+{
+  SMESHDS_Mesh*  aMesh = GetMeshDS();
+
+  if ( thePathMesh->_is_nil() || thePathShape->_is_nil() )
+    return;
+
+  SMESH_Mesh_i* aMeshImp = dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( thePathMesh ).in() );
+  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
+  SMESH_subMesh* aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
+
+  if ( !aSubMesh )
+    return;
+
+  SMDS_MeshNode* nodeStart = (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(theNodeStart);
+  if ( !nodeStart )
+    return;
+
+  set<const SMDS_MeshElement*> elements;
+  for (int i = 0; i < theIDsOfElements.length(); i++)
+  {
+    CORBA::Long index = theIDsOfElements[i];
+    const SMDS_MeshElement * elem = aMesh->FindElement(index);
+    if ( elem )
+      elements.insert( elem );
+  }
+
+  list<double> angles;
+  for (int i = 0; i < theAngles.length(); i++)
+  {
+    angles.push_back( theAngles[i] );
+  }
+
+  gp_Pnt refPnt( theRefPoint.x, theRefPoint.y, theRefPoint.z );
+
+  ::SMESH_MeshEditor anEditor( _myMesh );
+  int res = anEditor.ExtrusionAlongTrack( elements, aSubMesh, nodeStart, theHasAngles, angles, theHasRefPoint, refPnt );
+}
+
+//=======================================================================
+//function : ExtrusionAlongPathObject
+//purpose  : 
+//=======================================================================
+
+void SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
+						  SMESH::SMESH_Mesh_ptr       thePathMesh,
+						  GEOM::GEOM_Object_ptr       thePathShape,
+						  CORBA::Long                 theNodeStart,
+						  CORBA::Boolean              theHasAngles,
+						  const SMESH::double_array & theAngles,
+						  CORBA::Boolean              theHasRefPoint,
+						  const SMESH::PointStruct &  theRefPoint)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  ExtrusionAlongPath( anElementsId, thePathMesh, thePathShape, theNodeStart, theHasAngles, theAngles, theHasRefPoint, theRefPoint );
+}
+
+//=======================================================================
 //function : Mirror
 //purpose  : 
 //=======================================================================
@@ -681,7 +750,8 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
 {
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   ::SMESH_MeshEditor anEditor( _myMesh );
-  anEditor.FindCoincidentNodes( Tolerance, aListOfListOfNodes );
+  set<const SMDS_MeshNode*> nodes; // no input nodes
+  anEditor.FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
 
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );

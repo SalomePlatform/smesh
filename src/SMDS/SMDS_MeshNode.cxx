@@ -19,6 +19,9 @@
 // 
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
 
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SpacePosition.hxx"
@@ -44,7 +47,14 @@ SMDS_MeshNode::SMDS_MeshNode(double x, double y, double z):
 
 void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * parent)
 {
-	myInverseElements.erase(parent);
+  NCollection_List<const SMDS_MeshElement*>::Iterator it(myInverseElements);
+  while (it.More()) {
+    const SMDS_MeshElement* elem = it.Value();
+    if (elem == parent)
+      myInverseElements.Remove(it);
+    else
+      it.Next();
+  }
 }
 
 //=======================================================================
@@ -80,25 +90,22 @@ const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 
 class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 {
-  const set<const SMDS_MeshElement*>& mySet;
-  set<const SMDS_MeshElement*>::iterator myIterator;
+  NCollection_List<const SMDS_MeshElement*>::Iterator myIterator;
  public:
-  SMDS_MeshNode_MyInvIterator(const set<const SMDS_MeshElement*>& s):
-    mySet(s)
-  {
-    myIterator=mySet.begin();
-  }
+  SMDS_MeshNode_MyInvIterator(const NCollection_List<const SMDS_MeshElement*>& s):
+    myIterator(s)
+  {}
 
   bool more()
   {
-    return myIterator!=mySet.end();
+    return myIterator.More() != Standard_False;
   }
 
   const SMDS_MeshElement* next()
   {
-    const SMDS_MeshElement* current=*myIterator;
-    myIterator++;
-    return current;	
+    const SMDS_MeshElement* current=myIterator.Value();
+    myIterator.Next();
+    return current;
   }	
 };
 
@@ -112,39 +119,38 @@ SMDS_ElemIteratorPtr SMDS_MeshNode::
 // wanted type elements.
 class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
 {
-  set<const SMDS_MeshElement*> mySet;
-  set<const SMDS_MeshElement*>::iterator myIterator;
+  NCollection_List<const SMDS_MeshElement*> mySet;
+  NCollection_List<const SMDS_MeshElement*>::Iterator myIterator;
  public:
   SMDS_MeshNode_MyIterator(SMDSAbs_ElementType type,
-                           const set<const SMDS_MeshElement*>& s)
+                           const NCollection_List<const SMDS_MeshElement*>& s)
   {
     const SMDS_MeshElement * e;
     bool toInsert;
-    set<const SMDS_MeshElement*>::iterator it=s.begin();
-    while(it!=s.end())
+    NCollection_List<const SMDS_MeshElement*>::Iterator it(s);
+    for(; it.More(); it.Next())
     {
-      e=*it;
+      e=it.Value();
       switch(type)
       {
       case SMDSAbs_Edge: toInsert=true; break;
       case SMDSAbs_Face: toInsert=(e->GetType()!=SMDSAbs_Edge); break;
       case SMDSAbs_Volume: toInsert=(e->GetType()==SMDSAbs_Volume); break;
       }
-      if(toInsert) mySet.insert(e);
-      it++;
+      if(toInsert) mySet.Append(e);
     }
-    myIterator=mySet.begin();
+    myIterator.Init(mySet);
   }
 
   bool more()
   {
-    return myIterator!=mySet.end();
+    return myIterator.More() != Standard_False;
   }
 
   const SMDS_MeshElement* next()
   {
-    const SMDS_MeshElement* current=*myIterator;
-    myIterator++;
+    const SMDS_MeshElement* current=myIterator.Value();
+    myIterator.Next();
     return current;
   }
 };
@@ -199,7 +205,13 @@ SMDSAbs_ElementType SMDS_MeshNode::GetType() const
 //=======================================================================
 void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 {
-	myInverseElements.insert(ME);
+  NCollection_List<const SMDS_MeshElement*>::Iterator it(myInverseElements);
+  for (; it.More(); it.Next()) {
+    const SMDS_MeshElement* elem = it.Value();
+    if (elem == ME)
+      return;
+  }
+  myInverseElements.Append(ME);
 }
 
 //=======================================================================
@@ -208,12 +220,12 @@ void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 //=======================================================================
 void SMDS_MeshNode::ClearInverseElements()
 {
-	myInverseElements.clear();
+  myInverseElements.Clear();
 }
 
 bool SMDS_MeshNode::emptyInverseElements()
 {
-	return myInverseElements.empty();
+  return myInverseElements.IsEmpty() != Standard_False;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

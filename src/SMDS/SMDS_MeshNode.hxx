@@ -29,9 +29,7 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Position.hxx"
-
-#include <set>
-
+#include <NCollection_List.hxx>
 
 class SMDS_MeshNode:public SMDS_MeshElement
 {
@@ -61,7 +59,7 @@ class SMDS_MeshNode:public SMDS_MeshElement
   private:
 	double myX, myY, myZ;
 	SMDS_PositionPtr myPosition;
-	std::set<const SMDS_MeshElement*> myInverseElements;
+	NCollection_List<const SMDS_MeshElement*> myInverseElements;
 };
 
 #endif

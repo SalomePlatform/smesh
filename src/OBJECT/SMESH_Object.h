@@ -29,30 +29,14 @@
 #ifndef SMESH_OBJECT_H
 #define SMESH_OBJECT_H
 
-// IDL Headers
-#include "SALOMEconfig.h"
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Group)
-
-#include <map>
-#include <list>
 #include <boost/shared_ptr.hpp>
 #include <vtkSystemIncludes.h>
 
 #include "SMESH_Controls.hxx"
+#include "SMDSAbs_ElementType.hxx"
 
-class vtkUnstructuredGrid;
-class vtkPoints;
-class SALOME_ExtractUnstructuredGrid;
-
-class SMESH_Actor;
 class SMDS_Mesh;
-class SMDS_MeshNode;
-class SMDS_MeshElement;
-
-class SMESH_VisualObj;
-typedef boost::shared_ptr<SMESH_VisualObj> TVisualObjPtr;
-
+class vtkUnstructuredGrid;
 
 /*
   Class       : SMESH_VisualObj
@@ -60,155 +44,27 @@ typedef boost::shared_ptr<SMESH_VisualObj> TVisualObjPtr;
 */
 class SMESH_VisualObj
 {
-protected:
-
-  typedef std::list<const SMDS_MeshElement*>   TEntityList;
-  typedef std::map<vtkIdType,vtkIdType>  TMapOfIds;
-  
 public:
-                            SMESH_VisualObj();
-  virtual                   ~SMESH_VisualObj();
+  virtual void Update( int theIsClear = true ) = 0;
+  virtual void UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
+  virtual int GetElemDimension( const int theObjId ) = 0;
+
+  virtual int GetNbEntities( const SMDSAbs_ElementType theType) const = 0;
+  virtual SMDS_Mesh* GetMesh() const = 0;
+
+  virtual bool GetEdgeNodes( const int theElemId,
+			     const int theEdgeNum,
+			     int&      theNodeId1,
+			     int&      theNodeId2 ) const = 0;
   
-  virtual void              Update( int theIsClear = true ) = 0;
-  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
-  virtual int               GetElemDimension( const int theObjId ) = 0;
-
-  virtual int               GetNbEntities( const SMESH::ElementType) const = 0;
-  virtual int               GetEntities( const SMESH::ElementType, TEntityList& ) const = 0;
-  virtual bool              IsNodePrs() const = 0;
-  virtual SMDS_Mesh*        GetMesh() const = 0;
-
-  bool                      GetEdgeNodes( const int theElemId,
-                                          const int theEdgeNum,
-                                          int&      theNodeId1,
-                                          int&      theNodeId2 ) const;
-
-  vtkUnstructuredGrid*      GetUnstructuredGrid() { return myGrid; }
+  virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
   
-  vtkIdType                 GetNodeObjId( int theVTKID );
-  vtkIdType                 GetNodeVTKId( int theObjID );
-  vtkIdType                 GetElemObjId( int theVTKID );
-  vtkIdType                 GetElemVTKId( int theObjID );
-  
-protected:
-
-  void                      createPoints( vtkPoints* );
-  void                      buildPrs();
-  void                      buildNodePrs();
-  void                      buildElemPrs();
-  
-private:                                   
-
-  TMapOfIds                 mySMDS2VTKNodes;
-  TMapOfIds                 myVTK2SMDSNodes;
-  TMapOfIds                 mySMDS2VTKElems;
-  TMapOfIds                 myVTK2SMDSElems;
-
-  vtkUnstructuredGrid*      myGrid;
+  virtual vtkIdType GetNodeObjId( int theVTKID ) = 0;
+  virtual vtkIdType GetNodeVTKId( int theObjID ) = 0;
+  virtual vtkIdType GetElemObjId( int theVTKID ) = 0;
+  virtual vtkIdType GetElemVTKId( int theObjID ) = 0;
 };
 
-
-/*
-  Class       : SMESH_MeshObj
-  Description : Class for visualisation of mesh
-*/
-
-class SMESH_MeshObj: public SMESH_VisualObj
-{
-public:
-
-                            SMESH_MeshObj( SMESH::SMESH_Mesh_ptr );
-  virtual                   ~SMESH_MeshObj();
-  
-  virtual void              Update( int theIsClear = true );
-  
-  virtual int               GetNbEntities( const SMESH::ElementType) const;
-  virtual int               GetEntities( const SMESH::ElementType, TEntityList& ) const;
-  virtual bool              IsNodePrs() const;
-
-  virtual int               GetElemDimension( const int theObjId );
-
-  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
-  
-  SMESH::SMESH_Mesh_ptr     GetMeshServer() { return myMeshServer.in(); }
-  SMDS_Mesh*                GetMesh() const { return myMesh; }
-
-protected:
-
-  SMESH::SMESH_Mesh_var     myMeshServer;
-  SMDS_Mesh*                myMesh;
-};
-
-
-/*
-  Class       : SMESH_SubMeshObj
-  Description : Base class for visualisation of submeshes and groups
-*/
-
-class SMESH_SubMeshObj: public SMESH_VisualObj
-{
-public:
-
-                            SMESH_SubMeshObj(SMESH_MeshObj* theMeshObj);
-  virtual                   ~SMESH_SubMeshObj();
-
-  virtual void              Update( int theIsClear = true );
-  
-  virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
-  virtual int               GetElemDimension( const int theObjId );
-  virtual SMDS_Mesh*        GetMesh() const { return myMeshObj->GetMesh(); }
-  
-protected:
-
-  SMESH_MeshObj*            myMeshObj;
-};
-
-
-/*
-  Class       : SMESH_GroupObj
-  Description : Class for visualisation of groups
-*/
-
-class SMESH_GroupObj: public SMESH_SubMeshObj
-{
-public:
-                            SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
-  virtual                   ~SMESH_GroupObj();
-
-  virtual int               GetNbEntities( const SMESH::ElementType) const;
-  virtual int               GetEntities( const SMESH::ElementType, TEntityList& ) const;
-  virtual bool              IsNodePrs() const;
-
-private:
-
-  SMESH::SMESH_GroupBase_var    myGroupServer;
-};
-
-
-/*
-  Class       : SMESH_subMeshObj
-  Description : Class for visualisation of submeshes
-*/
-
-class SMESH_subMeshObj : public SMESH_SubMeshObj
-{
-public:
-
-                            SMESH_subMeshObj( SMESH::SMESH_subMesh_ptr, 
-                                              SMESH_MeshObj* );
-  virtual                   ~SMESH_subMeshObj();
-
-  virtual int               GetNbEntities( const SMESH::ElementType) const;
-  virtual int               GetEntities( const SMESH::ElementType, TEntityList& ) const;
-  virtual bool              IsNodePrs() const;    
-  
-protected:
-
-  SMESH::SMESH_subMesh_var  mySubMeshServer;
-};
-
-
-extern void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName);
-
+typedef boost::shared_ptr<SMESH_VisualObj> TVisualObjPtr;
 
 #endif

@@ -63,6 +63,9 @@ namespace SMESH{
 
   VTKViewer_ViewFrame* GetCurrentVtkView();
 
+  void RepaintViewFrame(VTKViewer_ViewFrame* theFrame);
+
+  void RenderViewFrame(VTKViewer_ViewFrame* theFrame);
 
   //----------------------------------------------------------------------------
   SMESH_Actor* FindActorByEntry(QAD_StudyFrame *theStudyFrame, 

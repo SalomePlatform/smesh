@@ -43,6 +43,8 @@
 #include "VTKViewer_ViewFrame.h"
 #include "SMESHGUI_PatternUtils.h"
 #include "SMESH_ActorUtils.h"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include <TColStd_MapOfInteger.hxx>
 
@@ -57,6 +59,8 @@
 #include <qbuttongroup.h>
 #include <qmessagebox.h>
 #include <qcstring.h>
+#include <qspinbox.h>
+#include <qvaluelist.h>
 
 #include <vtkCell.h>
 #include <vtkIdList.h>
@@ -82,7 +86,8 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( QWidget*          theParent,
                                             SALOME_Selection* theSelection,
                                             const char*       theName )
 : QDialog( theParent, theName, false,
-           WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+  myBusy( false )
 {
   setCaption( tr( "CAPTION" ) );
 
@@ -156,19 +161,45 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame( QWidget* theParent )
   myOpenBtn->setPixmap( iconOpen );
   myNewBtn = new QPushButton( tr( "NEW" ), aNameGrp );
 
-  // selection widgets
-  QGroupBox* aGrp = new QGroupBox( 3, Qt::Horizontal, aPatGrp );
-  aGrp->setFrameStyle( QFrame::NoFrame );
-  aGrp->setInsideMargin( 0 );
+  // Mode selection check box
+  myRefine = new QCheckBox( tr( "REFINE" ), aPatGrp );
+
+  // selection widgets for Apply to geom mode
+  myGeomGrp = new QGroupBox( 3, Qt::Horizontal, aPatGrp );
+  myGeomGrp->setFrameStyle( QFrame::NoFrame );
+  myGeomGrp->setInsideMargin( 0 );
 
   for ( int i = Object; i <= Vertex2; i++ )
   {
-    mySelLbl[ i ] = new QLabel( aGrp );
-    mySelBtn[ i ] = new QPushButton( aGrp );
+    mySelLbl[ i ] = new QLabel( myGeomGrp );
+    mySelBtn[ i ] = new QPushButton( myGeomGrp );
     mySelBtn[ i ]->setPixmap( iconSlct );
-    mySelEdit[ i ] = new QLineEdit( aGrp );
+    mySelEdit[ i ] = new QLineEdit( myGeomGrp );
     mySelEdit[ i ]->setReadOnly( true );
   }
+
+  // Widgets for refinement of existing mesh elements
+  myRefineGrp = new QFrame( aPatGrp );
+  myRefineGrp->setFrameStyle( QFrame::NoFrame );
+  QGridLayout* aRefGrid = new QGridLayout( myRefineGrp, 3, 3, 0, 5 );
+
+  mySelLbl[ Ids ] = new QLabel( myRefineGrp );
+  mySelBtn[ Ids ] = new QPushButton( myRefineGrp );
+  mySelBtn[ Ids ]->setPixmap( iconSlct );
+  mySelEdit[ Ids ] = new QLineEdit( myRefineGrp );
+
+  QLabel* aNodeLbl = new QLabel( tr( "NODE_1" ), myRefineGrp );
+  myNode1          = new QSpinBox( myRefineGrp );
+  myNode2Lbl       = new QLabel( tr( "NODE_2" ), myRefineGrp );
+  myNode2          = new QSpinBox( myRefineGrp );
+
+  aRefGrid->addWidget( mySelLbl [ Ids ], 0, 0 );
+  aRefGrid->addWidget( mySelBtn [ Ids ], 0, 1 );
+  aRefGrid->addWidget( mySelEdit[ Ids ], 0, 2 );
+  aRefGrid->addWidget( aNodeLbl, 1, 0 );
+  aRefGrid->addMultiCellWidget( myNode1, 1, 1, 1, 2 );
+  aRefGrid->addWidget( myNode2Lbl, 2, 0 );
+  aRefGrid->addMultiCellWidget( myNode2, 2, 2, 1, 2 );
 
   // reverse check box
   myReverseChk = new QCheckBox( tr( "REVERSE" ), aPatGrp );
@@ -176,7 +207,6 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame( QWidget* theParent )
   // Pictures 2d and 3d
   for ( int i = 0; i < 2; i++ )
   {
-    QWidget* aPreview, *aPicture;
     if ( i == 0 )
     {
       myPicture2d = new SMESHGUI_PatternWidget( aPatGrp ),
@@ -204,11 +234,15 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame( QWidget* theParent )
 
   // Connect signals and slots
 
-  connect( myTypeGrp,    SIGNAL( clicked( int )  ), SLOT( onTypeChanged( int ) ) );
-  connect( myOpenBtn,    SIGNAL( clicked()       ), SLOT( onOpen()             ) );
-  connect( myNewBtn,     SIGNAL( clicked()       ), SLOT( onNew()              ) );
-  connect( myReverseChk, SIGNAL( toggled( bool ) ), SLOT( onReverse( bool )    ) );
-  connect( myPreviewChk, SIGNAL( toggled( bool ) ), SLOT( onPreview( bool )    ) );
+  connect( myTypeGrp,      SIGNAL( clicked( int )  ),               SLOT( onTypeChanged( int ) ) );
+  connect( myOpenBtn,      SIGNAL( clicked()       ),               SLOT( onOpen()             ) );
+  connect( myNewBtn,       SIGNAL( clicked()       ),               SLOT( onNew()              ) );
+  connect( myReverseChk,   SIGNAL( toggled( bool ) ),               SLOT( onReverse( bool )    ) );
+  connect( myPreviewChk,   SIGNAL( toggled( bool ) ),               SLOT( onPreview( bool )    ) );
+  connect( myRefine,       SIGNAL( toggled( bool ) ),               SLOT( onModeToggled( bool ) ) );
+  connect( myNode1,        SIGNAL( valueChanged( int ) ),           SLOT( onNodeChanged( int ) ) );
+  connect( myNode2,        SIGNAL( valueChanged( int ) ),           SLOT( onNodeChanged( int ) ) );
+  connect( mySelEdit[Ids], SIGNAL( textChanged( const QString& ) ), SLOT( onTextChanged( const QString& ) ) );
 
   QMap< int, QPushButton* >::iterator anIter;
   for ( anIter = mySelBtn.begin(); anIter != mySelBtn.end(); ++anIter )
@@ -284,6 +318,7 @@ void SMESHGUI_MeshPatternDlg::Init( SALOME_Selection* theSelection )
 
   myTypeGrp->setButton( Type_2d );
   onTypeChanged( Type_2d );
+  onModeToggled( isRefine() );
 
   updateGeometry();
 
@@ -304,8 +339,10 @@ void SMESHGUI_MeshPatternDlg::Init( SALOME_Selection* theSelection )
 //=======================================================================
 bool SMESHGUI_MeshPatternDlg::isValid( const bool theMess )
 {
-  if ( myMesh->_is_nil() || myMeshShape->_is_nil() || myGeomObj[ Object ]->_is_nil() ||
-       myGeomObj[ Vertex1 ]->_is_nil() || myType == Type_3d && myGeomObj[ Vertex2 ]->_is_nil() )
+  QValueList<int> ids;
+  if ( ( isRefine() && ( myMesh->_is_nil() || !getIds( ids ) || getNode( false ) < 0 || myType == Type_3d && ( getNode( true ) < 0 || getNode( false ) == getNode( true ) ) ) ) 
+       || ( !isRefine() && ( myMesh->_is_nil() || myMeshShape->_is_nil() || myGeomObj[ Object ]->_is_nil() ||
+       myGeomObj[ Vertex1 ]->_is_nil() || myType == Type_3d && myGeomObj[ Vertex2 ]->_is_nil() ) ) )
   {
     if ( theMess )
       QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
@@ -327,12 +364,28 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     if ( !isValid() )
       return false;
 
+    erasePreview();
+
+    if ( isRefine() ) { // Refining existing mesh elements
+      QValueList<int> ids;
+      getIds( ids );
+      SMESH::long_array_var varIds = new SMESH::long_array();
+      varIds->length( ids.count() );
+      int i = 0;
+      for ( QValueList<int>::iterator it = ids.begin(); it != ids.end(); ++it )
+	varIds[i++] = *it;
+      myType == Type_2d
+	? myPattern->ApplyToMeshFaces  ( myMesh, varIds, getNode( false ), myReverseChk->isChecked() )
+	: myPattern->ApplyToHexahedrons( myMesh, varIds, getNode( false ), getNode( true ) );
+    }
+    else { // Applying a pattern to geometrical object
     if ( myType == Type_2d )
       myPattern->ApplyToFace(
         myGeomObj[ Object ], myGeomObj[ Vertex1 ], myReverseChk->isChecked() );
     else
       myPattern->ApplyTo3DBlock(
         myGeomObj[ Object ], myGeomObj[ Vertex1 ], myGeomObj[ Vertex2 ] );
+    }
 
     if ( myPattern->MakeMesh( myMesh ) )
     {
@@ -376,6 +429,7 @@ void SMESHGUI_MeshPatternDlg::onOk()
 void SMESHGUI_MeshPatternDlg::onClose()
 {
   mySelection->ClearFilters();
+  SMESH::SetPickable();
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
   disconnect( mySelection, 0, this, 0 );
   disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
@@ -392,13 +446,16 @@ void SMESHGUI_MeshPatternDlg::onClose()
 //=======================================================================
 void SMESHGUI_MeshPatternDlg::onSelectionDone()
 {
+  if ( myBusy )
+    return;
+  
   try
   {
-    if ( mySelection->IObjectCount() != 1 )
-      return;
-
     if ( mySelInput == Mesh )
     {
+      if ( mySelection->IObjectCount() != 1 )
+	return;
+
       // Retrieve mesh from selection
       Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject();
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>( anIO );
@@ -433,12 +490,12 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       }
 
       if ( !isFound )
-        return;
+        myMeshShape = GEOM::GEOM_Object::_nil();
 
       // Clear fields of geom objects if mesh was changed
       if ( myMesh != aMesh )
       {
-        for ( int i = Object; i <= Vertex2; i++ )
+        for ( int i = Object; i <= Ids; i++ )
         {
           myGeomObj[ i ] = GEOM::GEOM_Object::_nil();
           mySelEdit[ i ]->setText( "" );
@@ -452,8 +509,20 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
       SMESH::GetNameOfSelectedIObjects( mySelection, aName );
       mySelEdit[ Mesh ]->setText( aName );
     }
+    else if ( mySelInput == Ids ) {
+      QString anIds;
+      if ( !SMESH::GetNameOfSelectedElements( mySelection, anIds ) )
+	anIds = "";
+ 
+      myBusy = true;
+      mySelEdit[ Ids ]->setText( anIds );
+      myBusy = false;
+    }
     else
     {
+      if ( mySelection->IObjectCount() != 1 )
+	return;
+
       // Get geom object from selection
       Handle(SALOME_InteractiveObject) anIO = mySelection->firstIObject();
       GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>( anIO );
@@ -538,6 +607,7 @@ void SMESHGUI_MeshPatternDlg::enterEvent( QEvent* )
   setEnabled( true );
   activateSelection();
   connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
+  onTextChanged( mySelEdit[Ids]->text() );
 }
 
 
@@ -558,7 +628,7 @@ void SMESHGUI_MeshPatternDlg::closeEvent( QCloseEvent* e )
 void SMESHGUI_MeshPatternDlg::onSelInputChanged()
 {
   const QObject* aSender = sender();
-  for ( int i = Mesh; i <= Vertex2; i++ )
+  for ( int i = Mesh; i <= Ids; i++ )
     if ( aSender == mySelBtn[ i ] )
       mySelInput = i;
 
@@ -798,7 +868,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
     vtkProperty* aProp = vtkProperty::New();
     aProp->SetRepresentationToWireframe();
     aProp->SetColor( 250, 0, 250 );
-    if ( SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh ) )
+    if ( SMESH::FindActorByObject( myMesh ) )
       aProp->SetLineWidth( SMESH::GetFloat( "SMESH:SettingsWidth", 1 ) +1 );
     else
       aProp->SetLineWidth( 1 );
@@ -854,17 +924,23 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
 {
   if ( myMesh->_is_nil() )
   {
-    for ( int i = Object; i <= Vertex2; i++ )
+    for ( int i = Object; i <= Ids; i++ )
     {
       mySelBtn [ i ]->setEnabled( false );
       mySelEdit[ i ]->setEnabled( false );
       mySelEdit[ i ]->setText( "" );
     }
+    myNode1->setEnabled( false );
+    myNode2->setEnabled( false );
+    myNode1->setRange( 0, 0 );
+    myNode2->setRange( 0, 0 );
   }
   else
   {
     mySelBtn [ Object ]->setEnabled( true );
     mySelEdit[ Object ]->setEnabled( true );
+    mySelBtn [ Ids ]   ->setEnabled( true );
+    mySelEdit[ Ids ]   ->setEnabled( true );
     
     if ( myGeomObj[ Object ]->_is_nil() )
     {
@@ -883,6 +959,23 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
         mySelEdit[ i ]->setEnabled( true );
       }
     }
+
+    QValueList<int> ids;
+    if ( !CORBA::is_nil( myPattern ) && getIds( ids ) ) {
+      SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
+      if ( keyPoints->length() ) {
+	myNode1->setEnabled( true );
+	myNode2->setEnabled( true );
+	myNode1->setRange( 1, keyPoints->length() );
+	myNode2->setRange( 1, keyPoints->length() );
+	return;
+      }
+    }
+
+    myNode1->setEnabled( false );
+    myNode2->setEnabled( false );
+    myNode1->setRange( 0, 0 );
+    myNode2->setRange( 0, 0 );
   }
 }
 
@@ -893,7 +986,20 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
 void SMESHGUI_MeshPatternDlg::activateSelection()
 {
   mySelection->ClearFilters();
+  if ( mySelInput == Ids ) {
+    SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh );
+    if ( anActor )
+      SMESH::SetPickable(anActor);
+
+    if ( myType == Type_2d )
+      QAD_Application::getDesktop()->SetSelectionMode( FaceSelection, true );
+    else
+      QAD_Application::getDesktop()->SetSelectionMode( CellSelection, true );
+  }
+  else {
+    SMESH::SetPickable();
   QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
+  }
   
   if ( mySelInput == Object && !myMeshShape->_is_nil() )
   {
@@ -991,9 +1097,11 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged( int theType )
   mySelEdit[ Object  ]->setText( "" );
   mySelEdit[ Vertex1 ]->setText( "" );
   mySelEdit[ Vertex2 ]->setText( "" );
+  mySelEdit[ Ids ]    ->setText( "" );
 
   if ( theType == Type_2d )
   {
+    // Geom widgets
     mySelLbl [ Vertex2 ]->hide();
     mySelBtn [ Vertex2 ]->hide();
     mySelEdit[ Vertex2 ]->hide();
@@ -1002,9 +1110,14 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged( int theType )
     myPicture3d->hide();
     mySelLbl[ Object  ]->setText( tr( "FACE" ) );
     mySelLbl[ Vertex1 ]->setText( tr( "VERTEX" ) );
+    // Refine widgets
+    mySelLbl[ Ids ]->setText( tr( "MESH_FACES" ) );
+    myNode2Lbl->hide();
+    myNode2   ->hide();
   }
   else
   {
+    // Geom widgets
     mySelLbl [ Vertex2 ]->show();
     mySelBtn [ Vertex2 ]->show();
     mySelEdit[ Vertex2 ]->show();
@@ -1014,6 +1127,10 @@ void SMESHGUI_MeshPatternDlg::onTypeChanged( int theType )
     mySelLbl[ Object  ]->setText( tr( "3D_BLOCK" ) );
     mySelLbl[ Vertex1 ]->setText( tr( "VERTEX1" ) );
     mySelLbl[ Vertex2 ]->setText( tr( "VERTEX2" ) );
+    // Refine widgets
+    mySelLbl[ Ids ]->setText( tr( "MESH_VOLUMES" ) );
+    myNode2Lbl->show();
+    myNode2   ->show();
   }
 
   mySelInput = Mesh;
@@ -1031,9 +1148,23 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
   try
   {
     // Get points from pattern
-    SMESH::point_array_var pnts = myType == Type_2d
-      ? myPattern->ApplyToFace( myGeomObj[ Object ], myGeomObj[ Vertex1 ], myReverseChk->isChecked() )
+    SMESH::point_array_var pnts;
+    QValueList<int> ids;
+    if ( isRefine() && getIds( ids ) ) {
+      SMESH::long_array_var varIds = new SMESH::long_array();
+      varIds->length( ids.count() );
+      int i = 0;
+      for ( QValueList<int>::iterator it = ids.begin(); it != ids.end(); ++it )
+	varIds[i++] = *it;
+      pnts = myType == Type_2d
+	? myPattern->ApplyToMeshFaces  ( myMesh, varIds, getNode( false ), myReverseChk->isChecked() )
+	: myPattern->ApplyToHexahedrons( myMesh, varIds, getNode( false ), getNode( true ) );
+    }
+    else {
+      pnts = myType == Type_2d
+	? myPattern->ApplyToFace   ( myGeomObj[ Object ], myGeomObj[ Vertex1 ], myReverseChk->isChecked() )
       : myPattern->ApplyTo3DBlock( myGeomObj[ Object ], myGeomObj[ Vertex1 ], myGeomObj[ Vertex2 ] );
+    }
 
     SMESH::array_of_long_array_var elemPoints = myPattern->GetElementPoints();
 
@@ -1130,22 +1261,112 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
   }
 }
 
+//=======================================================================
+// name    : onModeToggled
+// Purpose : 
+//=======================================================================
+void SMESHGUI_MeshPatternDlg::onModeToggled( bool on )
+{
+  on ? myRefineGrp->show() : myRefineGrp->hide();
+  on ? myGeomGrp->hide()   : myGeomGrp->show();
+}
 
+//=======================================================================
+// name    : isRefine
+// Purpose : 
+//=======================================================================
+bool SMESHGUI_MeshPatternDlg::isRefine() const
+{
+  return myRefine->isChecked();
+}
 
+//=======================================================================
+//function : onTextChanged
+//purpose  : 
+//=======================================================================
+void SMESHGUI_MeshPatternDlg::onTextChanged(const QString& theNewText)
+{
+  if ( myBusy || !isRefine() )
+    return;
 
+  myBusy = true;
 
+  if ( mySelInput != Ids ) {
+    mySelInput = Ids;
+    activateSelection();
+  }
 
+  // hilight entered elements/nodes
+  SMDS_Mesh* aMesh = 0;
+  SMESH_Actor* anActor = SMESH::FindActorByObject( myMesh );
+  if ( anActor )
+    aMesh = anActor->GetObject()->GetMesh();
 
+  if ( aMesh ) {
+    mySelection->ClearIObjects();
+    mySelection->AddIObject( anActor->getIO() );
 
+    QStringList aListId = QStringList::split( " ", theNewText, false);
 
+    for ( int i = 0; i < aListId.count(); i++ ) {
+      const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
+      if ( e && e->GetType() == ( myType == Type_2d ? SMDSAbs_Face : SMDSAbs_Volume ) ) {
+	if ( !mySelection->IsIndexSelected( anActor->getIO(), e->GetID() ) )
+	  mySelection->AddOrRemoveIndex( anActor->getIO(), e->GetID(), true );
+      }
+    }
+  }
 
+  myBusy = false;
+}
 
+//=======================================================================
+//function : onNodeChanged
+//purpose  : 
+//=======================================================================
+void SMESHGUI_MeshPatternDlg::onNodeChanged( int value )
+{
+  if ( myType == Type_3d ) {
+    QSpinBox* first = (QSpinBox*)sender();
+    QSpinBox* second = first == myNode1 ? myNode2 : myNode1;
+    int secondVal = second->value();
+    if ( secondVal == value ) {
+      secondVal = value == second->maxValue() ? second->minValue() : value + 1;
+      bool blocked = second->signalsBlocked();
+      second->blockSignals( true );
+      second->setValue( secondVal );
+      second->blockSignals( blocked );
+    }
+  }
 
+  displayPreview();
+}
 
+//=======================================================================
+//function : getIds
+//purpose  : 
+//=======================================================================
+bool SMESHGUI_MeshPatternDlg::getIds( QValueList<int>& ids ) const
+{
+  ids.clear();
+  QStringList strIds = QStringList::split( " ", mySelEdit[Ids]->text() );
+  bool isOk;
+  int val;
+  for ( QStringList::iterator it = strIds.begin(); it != strIds.end(); ++it ) {
+    val = (*it).toInt( &isOk );
+    if ( isOk )
+      ids.append( val );
+  }
 
+  return ids.count();
+}
 
-
-
-
-
+//=======================================================================
+//function : getNode1
+//purpose  : 
+//=======================================================================
+int SMESHGUI_MeshPatternDlg::getNode( bool second ) const
+{
+  return second ? myNode2->value() - 1 : myNode1->value() - 1;
+}
 

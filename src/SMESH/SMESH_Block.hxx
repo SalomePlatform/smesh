@@ -44,6 +44,9 @@
 #include <ostream>
 #include <vector>
 
+class SMDS_MeshVolume;
+class SMDS_MeshNode;
+
 // =========================================================
 // class calculating coordinates of 3D points by normalized
 // parameters inside the block and vice versa
@@ -85,6 +88,13 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   // add sub-shapes of theBlock to theShapeIDMap so that they get
   // IDs acoording to enum TShapeID
 
+  bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
+                     const int                     theNode000Index,
+                     const int                     theNode001Index,
+                     vector<const SMDS_MeshNode*>& theOrderedNodes);
+  // prepare to work with theVolume and
+  // return nodes in the order of TShapeID enum
+
   static int GetShapeIDByParams ( const gp_XYZ& theParams );
   // define an id of the block sub-shape by point parameters
 
@@ -116,6 +126,9 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
 
   static void GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec );
   // return edges IDs of a face in the order u0, u1, 0v, 1v
+
+  static void GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec );
+  // return vertex IDs of an edge
 
   static int GetCoordIndOnEdge (const int theEdgeID)
   { return (theEdgeID < ID_E0y0) ? 1 : (theEdgeID < ID_E00z) ? 2 : 3; }
@@ -161,6 +174,8 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
     gp_Trsf            myTrsf;
     double GetU( const gp_XYZ& theParams ) const;
     gp_XYZ Point( const gp_XYZ& theParams ) const;
+    // if mesh volume
+    gp_XYZ             myNodes[2];
   };
 
   struct TFace {
@@ -178,10 +193,13 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
     gp_XYZ Point( const gp_XYZ& theParams ) const;
     int GetUInd() const { return myCoordInd[ 0 ]; }
     int GetVInd() const { return myCoordInd[ 2 ]; }
+    void GetCoefs( int i, const gp_XYZ& theParams, double& eCoef, double& vCoef ) const;
+    // if mesh volume
+    gp_XYZ               myNodes[4];
   };
 
   TopoDS_Shell myShell;
-  // geometry:
+  // geometry in the order as in TShapeID:
   // 8 vertices
   gp_XYZ myPnt[ 8 ];
   // 12 edges

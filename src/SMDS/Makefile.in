@@ -88,6 +88,7 @@ EXPORT_HEADERS= \
 	SMDS_TypeOfPosition.hxx \
 	SMDSAbs_ElementType.hxx \
 	SMDS_EdgePosition.hxx \
+	SMDS_ElemIterator.hxx \
 	SMDS_FacePosition.hxx \
 	SMDS_Mesh.hxx \
 	SMDS_MeshEdge.hxx \
@@ -125,9 +126,9 @@ EXPORT_HEADERS= \
 #SMDS_MeshNodeIDFactory.hxx
 
 # additionnal information to compil and link file
-CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += -L${KERNEL_ROOT_DIR}/lib/salome
+LDFLAGS  += -L${KERNEL_ROOT_DIR}/lib/salome $(OCC_KERNEL_LIBS)
 
 
 # additional file to be cleaned

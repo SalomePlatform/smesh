@@ -70,6 +70,10 @@
 #include <qpushbutton.h>
 #include <qapplication.h>
 
+// IDL Headers
+#include "SALOMEconfig.h"
+#include CORBA_SERVER_HEADER(SMESH_Group)
+
 #define SPACING 5
 #define MARGIN  10
 
@@ -152,11 +156,13 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame( QWidget* theParent )
   mySubmeshChk = new QCheckBox( tr( "SMESH_SUBMESH" ), aGrp );
   mySubmeshBtn = new QPushButton( aGrp );
   mySubmesh = new QLineEdit( aGrp );
+  mySubmesh->setReadOnly( true );
   mySubmeshBtn->setPixmap( aPix );
   
   myGroupChk = new QCheckBox( tr( "GROUP" ), aGrp );
   myGroupBtn = new QPushButton( aGrp );
   myGroup = new QLineEdit( aGrp );
+  myGroup->setReadOnly( true );
   myGroupBtn->setPixmap( aPix );
 
   return aMainGrp;

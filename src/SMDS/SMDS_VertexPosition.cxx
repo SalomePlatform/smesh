@@ -49,7 +49,7 @@ SMDS_VertexPosition:: SMDS_VertexPosition(const int aVertexId)
 const double *SMDS_VertexPosition::Coords() const
 {
 	const static double origin[]={0,0,0};
-	MESSAGE("SMDS_EdgePosition::Coords not implemented");
+	MESSAGE("SMDS_VertexPosition::Coords not implemented");
 	return origin;
 }
 

@@ -132,6 +132,15 @@ module SMESH
     DRS_FAIL            // general failure (exception etc.)
   }; 
 
+  /*!
+   * Enumeration for DriverMED (used by Perform() method)
+   */  
+  enum MED_VERSION // in the order of severity
+  {
+    MED_V2_1,
+    MED_V2_2
+  };
+
   typedef sequence<log_block> log_array;
 
 
@@ -315,11 +324,17 @@ module SMESH
        raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export Mesh with DAT and MED Formats
+     * Export Mesh to MED Formats
      */
-    void ExportDAT( in string file )
+    void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
       raises (SALOME::SALOME_Exception);
     void ExportMED( in string file, in boolean auto_groups )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Export Mesh to DAT, UNV and STL Formats
+     */
+    void ExportDAT( in string file )
       raises (SALOME::SALOME_Exception);
     void ExportUNV( in string file )
       raises (SALOME::SALOME_Exception);
@@ -333,6 +348,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbNodes()
+      raises (SALOME::SALOME_Exception);
+
+    long NbElements()
       raises (SALOME::SALOME_Exception);
 
     long NbEdges()
@@ -363,6 +381,15 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbSubMesh()
+      raises (SALOME::SALOME_Exception);
+
+    long_array GetElementsId()
+      raises (SALOME::SALOME_Exception);
+
+    long_array GetElementsByType( in ElementType theType )
+      raises (SALOME::SALOME_Exception);
+
+    long_array GetNodesId()
       raises (SALOME::SALOME_Exception);
 
     string Dump();
@@ -507,6 +534,24 @@ module SMESH
     void ExtrusionSweepObject(in SMESH_IDSource  theObject,
 			      in DirStruct       StepVector,
 			      in long            NbOfSteps);
+
+    void ExtrusionAlongPath(in long_array        IDsOfElements,
+			    in SMESH_Mesh        PathMesh,
+			    in GEOM::GEOM_Object PathShape,
+			    in long              NodeStart,
+			    in boolean           HasAngles,
+			    in double_array      Angles,
+			    in boolean           HasRefPoint,
+			    in PointStruct       RefPoint);
+
+    void ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
+				  in SMESH_Mesh        PathMesh,
+				  in GEOM::GEOM_Object PathShape,
+				  in long              NodeStart,
+				  in boolean           HasAngles,
+				  in double_array      Angles,
+				  in boolean           HasRefPoint,
+				  in PointStruct       RefPoint);
 
     enum MirrorType { POINT, AXIS, PLANE };
 

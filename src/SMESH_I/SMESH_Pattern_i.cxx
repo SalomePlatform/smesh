@@ -32,15 +32,20 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMDS_MeshFace.hxx"
+#include "SMDS_MeshVolume.hxx"
 
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 
 #include <sstream>
+#include <set>
 
+// =============================================================================
 //=============================================================================
 /*!
+// =============================================================================
  *  SMESH_Gen_i::GetPattern
  *
  *  Create pattern mapper
@@ -62,16 +67,6 @@ SMESH::SMESH_Pattern_ptr SMESH_Gen_i::GetPattern()
 SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
        myGen( theGen_i )
 {
-}
-
-//=======================================================================
-//function : getShape
-//purpose  : 
-//=======================================================================
-
-TopoDS_Shape SMESH_Pattern_i::getShape( GEOM::GEOM_Object_ptr & theGeomObject )
-{
-  return myGen->GetShapeReader()->GetShape( SMESH_Gen_i::GetGeomEngine(), theGeomObject );
 }
 
 //=======================================================================
@@ -115,7 +110,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
   if ( !aMesh )
     return false;
 
-  TopoDS_Face aFace = TopoDS::Face( getShape( theFace ));
+  TopoDS_Face aFace = TopoDS::Face( myGen->GeomObjectToShape( theFace ));
   if ( aFace.IsNull() )
     return false;
 
@@ -137,7 +132,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFrom3DBlock(SMESH::SMESH_Mesh_ptr theMesh,
   if ( !aMesh )
     return false;
 
-  TopoDS_Shape aShape = getShape( theBlock );
+  TopoDS_Shape aShape = myGen->GeomObjectToShape( theBlock );
   if ( aShape.IsNull())
     return false;
 
@@ -160,8 +155,8 @@ SMESH::point_array* SMESH_Pattern_i::ApplyToFace(GEOM::GEOM_Object_ptr theFace,
   SMESH::point_array_var points = new SMESH::point_array;
   list<const gp_XYZ *> xyzList;
 
-  TopoDS_Shape F = getShape( theFace );
-  TopoDS_Shape V = getShape( theVertexOnKeyPoint1 );
+  TopoDS_Shape F = myGen->GeomObjectToShape( theFace );
+  TopoDS_Shape V = myGen->GeomObjectToShape( theVertexOnKeyPoint1 );
 
   if (!F.IsNull() && F.ShapeType() == TopAbs_FACE &&
       !V.IsNull() && V.ShapeType() == TopAbs_VERTEX
@@ -192,9 +187,9 @@ SMESH::point_array* SMESH_Pattern_i::ApplyTo3DBlock(GEOM::GEOM_Object_ptr theBlo
   SMESH::point_array_var points = new SMESH::point_array;
   list<const gp_XYZ *> xyzList;
 
-  TopExp_Explorer exp( getShape( theBlock ), TopAbs_SHELL );
-  TopoDS_Shape V000 = getShape( theVertex000 );
-  TopoDS_Shape V001 = getShape( theVertex001 );
+  TopExp_Explorer exp( myGen->GeomObjectToShape( theBlock ), TopAbs_SHELL );
+  TopoDS_Shape V000 = myGen->GeomObjectToShape( theVertex000 );
+  TopoDS_Shape V001 = myGen->GeomObjectToShape( theVertex001 );
 
   if (exp.More() &&
       !V000.IsNull() && V000.ShapeType() == TopAbs_VERTEX &&
@@ -203,6 +198,86 @@ SMESH::point_array* SMESH_Pattern_i::ApplyTo3DBlock(GEOM::GEOM_Object_ptr theBlo
       myPattern.Apply(TopoDS::Shell( exp.Current() ),
                       TopoDS::Vertex( V000 ),
                       TopoDS::Vertex( V001 )) &&
+      myPattern.GetMappedPoints( xyzList ))
+  {
+    points->length( xyzList.size() );
+    list<const gp_XYZ *>::iterator xyzIt = xyzList.begin();
+    for ( int i = 0; xyzIt != xyzList.end(); xyzIt++ ) {
+      SMESH::PointStruct & p = points[ i++ ];
+      (*xyzIt)->Coord( p.x, p.y, p.z );
+    }
+  }
+
+  return points._retn();
+}
+
+//=======================================================================
+//function : ApplyToMeshFaces
+//purpose  : 
+//=======================================================================
+
+SMESH::point_array*
+  SMESH_Pattern_i::ApplyToMeshFaces(SMESH::SMESH_Mesh_ptr    theMesh,
+                                    const SMESH::long_array& theFacesIDs,
+                                    CORBA::Long              theNodeIndexOnKeyPoint1,
+                                    CORBA::Boolean           theReverse)
+{
+  SMESH::point_array_var points = new SMESH::point_array;
+
+  ::SMESH_Mesh* aMesh = getMesh( theMesh );
+  if ( !aMesh )
+    return points._retn();
+
+  list<const gp_XYZ *> xyzList;
+  set<const SMDS_MeshFace*> fset;
+  for (int i = 0; i < theFacesIDs.length(); i++)
+  {
+    CORBA::Long index = theFacesIDs[i];
+    const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
+    if ( elem && elem->GetType() == SMDSAbs_Face )
+      fset.insert( static_cast<const SMDS_MeshFace *>( elem ));
+  }
+  if (myPattern.Apply( fset, theNodeIndexOnKeyPoint1, theReverse ) &&
+      myPattern.GetMappedPoints( xyzList ))
+  {
+    points->length( xyzList.size() );
+    list<const gp_XYZ *>::iterator xyzIt = xyzList.begin();
+    for ( int i = 0; xyzIt != xyzList.end(); xyzIt++ ) {
+      SMESH::PointStruct & p = points[ i++ ];
+      (*xyzIt)->Coord( p.x, p.y, p.z );
+    }
+  }
+
+  return points._retn();
+}
+
+//=======================================================================
+//function : ApplyToHexahedrons
+//purpose  : 
+//=======================================================================
+
+SMESH::point_array*
+  SMESH_Pattern_i::ApplyToHexahedrons(SMESH::SMESH_Mesh_ptr    theMesh,
+                                      const SMESH::long_array& theVolumesIDs,
+                                      CORBA::Long              theNode000Index,
+                                      CORBA::Long              theNode001Index)
+{
+  SMESH::point_array_var points = new SMESH::point_array;
+
+  ::SMESH_Mesh* aMesh = getMesh( theMesh );
+  if ( !aMesh )
+    return points._retn();
+
+  list<const gp_XYZ *> xyzList;
+  set<const SMDS_MeshVolume*> vset;
+  for (int i = 0; i < theVolumesIDs.length(); i++)
+  {
+    CORBA::Long index = theVolumesIDs[i];
+    const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
+    if ( elem && elem->GetType() == SMDSAbs_Volume && elem->NbNodes() == 8 )
+      vset.insert( static_cast<const SMDS_MeshVolume *>( elem ));
+  }
+  if (myPattern.Apply( vset, theNode000Index, theNode001Index ) &&
       myPattern.GetMappedPoints( xyzList ))
   {
     points->length( xyzList.size() );

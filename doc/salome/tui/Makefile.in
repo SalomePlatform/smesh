@@ -16,13 +16,28 @@ doxygen=@DOXYGEN@
 
 @COMMENCE@
 
+PYTHON_SCRIPTS = \
+	meshpy.py
+
 docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
 	cd INPUT; \
 	sed 's|../../../share/salome|$(root_srcdir)|' ./doxyfile > ./doxyfile1; \
 	mv -f doxyfile1 doxyfile; \
 	$(doxygen) ./doxyfile; \
-	cd ..; \
+	mkdir py1; mkdir py2; \
+	cd ..
+	for file in $(PYTHON_SCRIPTS) dummy; do \
+	  if [ $$file != "dummy" ]; then \
+	    cp $(root_srcdir)/src/SMESH_SWIG/$$file INPUT/py1/; \
+	  fi ; \
+	done
+	cd INPUT; \
+	python $(KERNEL_ROOT_DIR)/doc/salome/tui/KERNEL/pythfilter.py ./py1 ./py2; \
+	sed 's|list_py_files_to_process|$(PYTHON_SCRIPTS)|' ./doxyfile_py > py2/doxyfile_py; \
+	cd py2; \
+	$(doxygen) ./doxyfile_py; \
+	cd ../..; \
 	cp -fr $(srcdir)/SMESH/sources/static/*.* ./SMESH/
 	cp -fr $(srcdir)/SMESH/sources/ SMESH/
 	cp -fr $(srcdir)/SMESH/HTML/ SMESH/

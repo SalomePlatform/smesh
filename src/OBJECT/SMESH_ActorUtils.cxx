@@ -23,6 +23,9 @@
 #include "QAD_Config.h"
 #include "utilities.h"
 
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridWriter.h>
+
 #ifdef _DEBUG_
 static int MYDEBUG = 1;
 #else
@@ -30,10 +33,22 @@ static int MYDEBUG = 0;
 #endif
 
 namespace SMESH{
+
   float GetFloat(const QString& theValue, float theDefault){
     if(theValue.isEmpty()) return theDefault;
     QString aValue = QAD_CONFIG->getSetting(theValue);
     if(aValue.isEmpty()) return theDefault;
     return aValue.toFloat();
   }
+
+  void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName){
+    vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+    aWriter->SetFileName(theFileName);
+    aWriter->SetInput(theGrid);
+    if(theGrid->GetNumberOfCells()){
+      aWriter->Write();
+    }
+    aWriter->Delete();
+  }
+
 }

@@ -31,7 +31,7 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 @COMMENCE@
 
-EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h SMESH_ActorUtils.h
+EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h SMESH_ObjectDef.h SMESH_ActorUtils.h
 
 
 # Libraries targets

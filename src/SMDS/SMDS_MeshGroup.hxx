@@ -65,7 +65,7 @@ class SMDS_MeshGroup:public SMDS_MeshObject
 	SMDS_MeshGroup(SMDS_MeshGroup* theParent,
                        const SMDSAbs_ElementType theType = SMDSAbs_All);
 
-        typedef std::set<const SMDS_MeshElement *>::iterator TIterator;
+        typedef std::set<const SMDS_MeshElement *>::const_iterator TIterator;
 	const SMDS_Mesh *                       myMesh;
 	SMDSAbs_ElementType                     myType;
 	std::set<const SMDS_MeshElement *>      myElements;

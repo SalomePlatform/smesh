@@ -142,11 +142,11 @@ print ret
 ret = mesh.AddHypothesis(box,hypo4)
 print ret
 
-print "-------------------------- compute"
+print "-------------------------- compute face"
 
 ret = gen.Compute(mesh,idf)
 print ret
-log = mesh.GetLog(1);
+log = mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
 for a in log:
     print "-------"
     ii = 0

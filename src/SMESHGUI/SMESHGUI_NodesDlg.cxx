@@ -46,6 +46,8 @@
 #include "QAD_MessageBox.h"
 
 #include "SMESH_Actor.h"
+#include "SMESH_ObjectDef.h"
+
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 

@@ -27,6 +27,7 @@ mesh_algo_tetra.png \
 mesh_angle.png \
 mesh_area.png \
 mesh_aspect.png \
+mesh_aspect_3d.png \
 mesh_compute.png \
 mesh_connectivity.png \
 mesh_diagonal.png \
@@ -42,8 +43,11 @@ advanced_mesh_info.png \
 standard_mesh_info.png \
 mesh_init.png \
 mesh_length.png \
+mesh_length_2d.png \
 mesh_free_edges.png \
+mesh_free_edges_2d.png \
 mesh_multi_edges.png \
+mesh_multi_edges_2d.png \
 mesh_line_n.png \
 mesh_line.png \
 mesh_move_node.png \
@@ -95,6 +99,7 @@ mesh_smoothing.png \
 mesh_renumbering_nodes.png \
 mesh_renumbering_elements.png \
 mesh_extrusion.png \
+mesh_extrusionpath.png \
 mesh_revolution.png \
 ModuleMesh.png \
 mesh_unionGroups.png \
@@ -120,7 +125,9 @@ SMESHCatalog.xml \
 flight_solid.brep \
 mesh_pattern.png \
 pattern_sample_2d.png \
-pattern_sample_3D.png
+pattern_sample_3D.png \
+mesh_add.png \
+mesh_remove.png
 
 BIN_SCRIPT= \
 VERSION

@@ -53,6 +53,7 @@
 #include "SMESHGUI_SmoothingDlg.h"
 #include "SMESHGUI_RenumberingDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
+#include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_RevolutionDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_RotationDlg.h"
@@ -140,7 +141,9 @@ namespace{
 
   void ExportMeshToFile(QAD_Desktop * parent, int theCommandID);
 
-  void SetViewMode(int theCommandID);
+  void SetDisplayMode(int theCommandID);
+
+  void SetDisplayEntity(int theCommandID);
 
   void Control( int theCommandID );
 
@@ -153,15 +156,16 @@ namespace{
 			    SMESH::SMESH_Gen_ptr theComponentMesh,
 			    int theCommandID)
   {
-    QString filter;
+    QStringList filter;
     string myExtension;
   
     if(theCommandID == 113){
-      filter = QObject::tr("MED files (*.med)");
+      filter.append(QObject::tr("MED files (*.med)"));
+      filter.append(QObject::tr("All files (*)"));
     }else if (theCommandID == 112){
-      filter = QObject::tr("IDEAS files (*.unv)");
+      filter.append(QObject::tr("IDEAS files (*.unv)"));
     }else if (theCommandID == 111){
-      filter = QObject::tr("DAT files (*.dat)");
+      filter.append(QObject::tr("DAT files (*.dat)"));
     }
     QString filename = QAD_FileDlg::getFileName(parent,
 						"",
@@ -237,9 +241,11 @@ namespace{
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
       if ( !aMesh->_is_nil() ) {
 	QString aFilter, aTitle = QObject::tr("Export mesh");
+	QMap<QString, SMESH::MED_VERSION> aFilterMap;
 	switch ( theCommandID ) {
 	case 122:
-	  aFilter = QObject::tr("MED files (*.med)");
+	  aFilterMap.insert( QObject::tr("MED 2.1 (*.med)"), SMESH::MED_V2_1 );
+	  aFilterMap.insert( QObject::tr("MED 2.2 (*.med)"), SMESH::MED_V2_2 );
 	  break;
 	case 121:
 	  aFilter = QObject::tr("DAT files (*.dat)");
@@ -261,7 +267,25 @@ namespace{
 	  return;
 	}}
 	
-	QString aFilename = QAD_FileDlg::getFileName(parent, "", aFilter, aTitle, false);
+	QString aFilename;
+	SMESH::MED_VERSION aFormat;
+	
+	if ( theCommandID != 122)
+	  aFilename = QAD_FileDlg::getFileName(parent, "", aFilter, aTitle, false);
+	else
+	  {
+	    QStringList filters;
+	    for ( QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin(); it != aFilterMap.end(); ++it )
+	      filters.push_back( it.key() );
+	    
+	    QAD_FileDlg* fd = new QAD_FileDlg( parent, false, true, true );
+	    fd->setCaption( aTitle );
+	    fd->setFilters( filters );
+	    fd->exec();
+	    aFilename = fd->selectedFile();
+	    aFormat = aFilterMap[fd->selectedFilter()];
+	    delete fd;
+	  }
 	if ( !aFilename.isEmpty() ) {
 	  // Check whether the file already exists and delete it if yes
 	  QFile aFile( aFilename );
@@ -270,7 +294,7 @@ namespace{
 	  QAD_WaitCursor wc;
 	  switch ( theCommandID ) {
 	  case 122:
-	    aMesh->ExportMED( aFilename.latin1(), true ); // currently, automatic groups are always created
+	    aMesh->ExportToMED( aFilename.latin1(), false, aFormat ); // currently, automatic groups are never created
 	    break;
 	  case 121:
 	    aMesh->ExportDAT( aFilename.latin1() );
@@ -286,20 +310,59 @@ namespace{
     }
   }  
   
-  void SetViewMode(int theCommandID){
+  inline void InverseEntityMode(unsigned int& theOutputMode,
+				unsigned int theMode)
+  {
+    bool anIsNotPresent = ~theOutputMode & theMode;
+    if(anIsNotPresent)
+      theOutputMode |= theMode;
+    else
+      theOutputMode &= ~theMode;
+  }
+
+  void SetDisplayEntity(int theCommandID){
+    SALOME_Selection *Sel = SALOME_Selection::Selection(SMESH::GetActiveStudy()->getSelection());
+    if(Sel->IObjectCount() >= 1){
+      SALOME_ListIteratorOfListIO It(Sel->StoredIObjects());
+      for(; It.More(); It.Next()){
+	Handle(SALOME_InteractiveObject) IObject = It.Value();
+	if(IObject->hasEntry()){
+	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(IObject->getEntry())){
+	    unsigned int aMode = anActor->GetEntityMode();
+	    switch(theCommandID){
+	    case 217:
+	      InverseEntityMode(aMode,SMESH_Actor::eEdges);
+	      break;
+	    case 218:
+	      InverseEntityMode(aMode,SMESH_Actor::eFaces);
+	      break;
+	    case 219:
+	      InverseEntityMode(aMode,SMESH_Actor::eVolumes);
+	      break;
+	    case 220:
+	      aMode = SMESH_Actor::eAllEntity;
+	      break;
+	    }
+	    if(aMode)
+	      anActor->SetEntityMode(aMode);
+	  }
+	}
+      }
+    }
+  }
+
+  void SetDisplayMode(int theCommandID){
     SALOME_Selection *Sel = SALOME_Selection::Selection(SMESH::GetActiveStudy()->getSelection());
     if(Sel->IObjectCount() >= 1){
       switch(theCommandID){
       case 1134:{
 	SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-	SMESHGUI_ClippingDlg *aDlg = 
-	  new SMESHGUI_ClippingDlg(QAD_Application::getDesktop(),"",false);
+	new SMESHGUI_ClippingDlg(QAD_Application::getDesktop(),"",false);
 	return;
       }
       case 1133:{
 	SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-	SMESHGUI_TransparencyDlg *aDlg = 
-	  new SMESHGUI_TransparencyDlg(QAD_Application::getDesktop(),"",false);
+	new SMESHGUI_TransparencyDlg(QAD_Application::getDesktop(),"",false);
 	return;
       }}
       SALOME_ListIteratorOfListIO It(Sel->StoredIObjects());
@@ -504,7 +567,11 @@ namespace{
 	  switch ( theCommandID ){
 	  case 6001:
 	    aTitle = QObject::tr( "LENGTH_EDGES" );
-	    aControl = SMESH_Actor::eLengthEdges;
+	    aControl = SMESH_Actor::eLength;
+	    break;
+	  case 6018:
+	    aTitle = QObject::tr( "LENGTH2D_EDGES" );
+	    aControl = SMESH_Actor::eLength2D;
 	    break;
 	  case 6002:
 	    aTitle = QObject::tr( "FREE_EDGES" );
@@ -518,6 +585,10 @@ namespace{
 	    aTitle = QObject::tr( "MULTI_BORDERS" );
 	    aControl = SMESH_Actor::eMultiConnection;
 	    break;
+	  case 6019:
+	    aTitle = QObject::tr( "MULTI2D_BORDERS" );
+	    aControl = SMESH_Actor::eMultiConnection2D;
+	    break;
 	  case 6011:
 	    aTitle = QObject::tr( "AREA_ELEMENTS" );
 	    aControl = SMESH_Actor::eArea;
@@ -529,6 +600,10 @@ namespace{
 	  case 6013:
 	    aTitle = QObject::tr( "ASPECTRATIO_ELEMENTS" );
 	    aControl = SMESH_Actor::eAspectRatio;
+	    break;
+	  case 6017:
+	    aTitle = QObject::tr( "ASPECTRATIO_3D_ELEMENTS" );
+	    aControl = SMESH_Actor::eAspectRatio3D;
 	    break;
 	  case 6014:
 	    aTitle = QObject::tr( "MINIMUMANGLE_ELEMENTS" );
@@ -1029,14 +1104,22 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
   case 1134: // Clipping
   case 1133: // Tranparency
   case 1132: // Colors / Size
-  case 215:
-  case 213:
-  case 212:
-  case 211:
-    {
-      ::SetViewMode(theCommandID);
-      break;
-    }
+
+    // Display Mode
+  case 215: // Nodes
+  case 213: // Nodes
+  case 212: // Nodes
+  case 211: // Nodes
+    ::SetDisplayMode(theCommandID);
+  break;
+
+    // Display Entity
+  case 217: // Edges
+  case 218: // Faces
+  case 219: // Volumes
+  case 220: // All Entity
+    ::SetDisplayEntity(theCommandID);
+  break;
 
   case 214:					// UPDATE
     {
@@ -1076,7 +1159,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_NodesDlg *aDlg = new SMESHGUI_NodesDlg(parent, "", Sel);
+	new SMESHGUI_NodesDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1092,7 +1175,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
     if ( myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK )
     {
       EmitSignalDeactivateDialog();
-      SMESHGUI_FilterDlg *aDlg = new SMESHGUI_FilterDlg( parent, SMESH::EDGE );
+      new SMESHGUI_FilterDlg( parent, SMESH::EDGE );
     }
     break;
   }
@@ -1108,7 +1191,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       
       if(checkLock(aStudy)) break;
       SALOME_Selection *Sel = SALOME_Selection::Selection( myActiveStudy->getSelection() );
-      SMESHGUI_MoveNodesDlg *aDlg = new SMESHGUI_MoveNodesDlg( parent, Sel );
+      new SMESHGUI_MoveNodesDlg( parent, Sel );
       break;
     }
     
@@ -1216,7 +1299,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_AddSubMeshDlg *aDlg = new SMESHGUI_AddSubMeshDlg(parent, "", Sel);
+	new SMESHGUI_AddSubMeshDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1231,7 +1314,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
-      SMESHGUI_InitMeshDlg *aDlg = new SMESHGUI_InitMeshDlg(parent, "", Sel);
+      new SMESHGUI_InitMeshDlg(parent, "", Sel);
       break;
     }
 
@@ -1240,7 +1323,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
-      SMESHGUI_EditHypothesesDlg *aDlg = new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
+      new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
       break;
     }
 
@@ -1249,7 +1332,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
-      SMESHGUI_EditHypothesesDlg *aDlg = new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
+      new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
       break;
     }
 
@@ -1258,7 +1341,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
       SALOME_Selection *Sel = SALOME_Selection::Selection(myActiveStudy->getSelection());
-      SMESHGUI_EditHypothesesDlg *aDlg = new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
+      new SMESHGUI_EditHypothesesDlg(parent, "", Sel);
       break;
     }
 
@@ -1331,7 +1414,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_SmoothingDlg *aDlg = new SMESHGUI_SmoothingDlg(parent, "", Sel);
+	new SMESHGUI_SmoothingDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1346,7 +1429,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_ExtrusionDlg *aDlg = new SMESHGUI_ExtrusionDlg(parent, "", Sel);
+	new SMESHGUI_ExtrusionDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1361,7 +1444,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RevolutionDlg *aDlg = new SMESHGUI_RevolutionDlg(parent, "", Sel);
+	new SMESHGUI_RevolutionDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1380,6 +1463,21 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
         SALOME_Selection *Sel = SALOME_Selection::Selection(
           myActiveStudy->getSelection() );
         new SMESHGUI_MeshPatternDlg( parent, Sel );
+      }
+      else {
+	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
+			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
+			      tr("SMESH_BUT_OK"));
+      }
+      break;
+    }
+  case 416: // Extrusion along a path
+    {
+      if(checkLock(aStudy)) break;
+      if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
+	EmitSignalDeactivateDialog();
+	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
+	new SMESHGUI_ExtrusionAlongPathDlg(parent, Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1544,7 +1642,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
         for ( ; It.More(); It.Next() ) {
           Sel->ClearIObjects();
           Sel->AddIObject( It.Value() );
-          SMESHGUI_MeshInfosDlg *aDlg = new SMESHGUI_MeshInfosDlg(parent, "", false);
+          new SMESHGUI_MeshInfosDlg(parent, "", false);
         }
         // restore selection
         Sel->ClearIObjects();
@@ -1552,7 +1650,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
           Sel->AddIObject( It.Value() );
       }
       else
-        SMESHGUI_MeshInfosDlg *aDlg = new SMESHGUI_MeshInfosDlg(parent, "", false);
+        new SMESHGUI_MeshInfosDlg(parent, "", false);
       break;
     }
 
@@ -1567,7 +1665,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
         for ( ; It.More(); It.Next() ) {
           Sel->ClearIObjects();
           Sel->AddIObject( It.Value() );
-          SMESHGUI_StandardMeshInfosDlg *aDlg = new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
+          new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
         }
         // restore selection
         Sel->ClearIObjects();
@@ -1575,7 +1673,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
           Sel->AddIObject( It.Value() );
       }
       else
-        SMESHGUI_StandardMeshInfosDlg *aDlg = new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
+        new SMESHGUI_StandardMeshInfosDlg(parent, "", false);
       break;
     } 
     
@@ -1605,12 +1703,23 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       break;
     }
 
-  case 1007:
+  case 10070:
     {
       ( new SMESHGUI_PrecisionDlg( parent ) )->exec();
       break;
     }
 
+  case 10071:
+    {
+      parent->menuBar()->setItemChecked(10071, !parent->menuBar()->isItemChecked(10071));
+      if (parent->menuBar()->isItemChecked(10071)) {
+	QAD_CONFIG->addSetting("SMESH:DispayEntity","true");
+      }
+      else {
+	QAD_CONFIG->addSetting("SMESH:DispayEntity","false");
+      }
+      break;
+    }
   case 1006: 
     {
       SMESHGUI_Preferences_SelectionDlg* aDlg = 
@@ -1825,8 +1934,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
           type = SMDSAbs_Volume; nbNodes = 8; break;
         default:;
         }
-	SMESHGUI_AddMeshElementDlg *aDlg =
-          new SMESHGUI_AddMeshElementDlg(parent, "", Sel, type, nbNodes);
+	new SMESHGUI_AddMeshElementDlg(parent, "", Sel, type, nbNodes);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1842,7 +1950,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RemoveNodesDlg *aDlg = new SMESHGUI_RemoveNodesDlg(parent, "", Sel);
+	new SMESHGUI_RemoveNodesDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1857,7 +1965,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RemoveElementsDlg *aDlg = new SMESHGUI_RemoveElementsDlg(parent, "", Sel);
+	new SMESHGUI_RemoveElementsDlg(parent, "", Sel);
       }
       else
 	{
@@ -1873,7 +1981,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RenumberingDlg *aDlg = new SMESHGUI_RenumberingDlg(parent, "", Sel, 0);
+	new SMESHGUI_RenumberingDlg(parent, "", Sel, 0);
       }
       else
 	{
@@ -1889,7 +1997,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RenumberingDlg *aDlg = new SMESHGUI_RenumberingDlg(parent, "", Sel, 1);
+	new SMESHGUI_RenumberingDlg(parent, "", Sel, 1);
       }
       else
 	{
@@ -1905,7 +2013,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_TranslationDlg *aDlg = new SMESHGUI_TranslationDlg(parent, "", Sel);
+	new SMESHGUI_TranslationDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1920,7 +2028,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_RotationDlg *aDlg = new SMESHGUI_RotationDlg(parent, "", Sel);
+	new SMESHGUI_RotationDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1935,7 +2043,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_SymmetryDlg *aDlg = new SMESHGUI_SymmetryDlg(parent, "", Sel);
+	new SMESHGUI_SymmetryDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1950,7 +2058,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_SewingDlg *aDlg = new SMESHGUI_SewingDlg(parent, "", Sel);
+	new SMESHGUI_SewingDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1965,7 +2073,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
       if (myActiveStudy->getActiveStudyFrame()->getTypeView() == VIEW_VTK) {
 	EmitSignalDeactivateDialog();
 	SALOME_Selection *Sel =	SALOME_Selection::Selection(myActiveStudy->getSelection());
-	SMESHGUI_MergeNodesDlg *aDlg = new SMESHGUI_MergeNodesDlg(parent, "", Sel);
+	new SMESHGUI_MergeNodesDlg(parent, "", Sel);
       }
       else {
 	QAD_MessageBox::warn1(QAD_Application::getDesktop(),
@@ -1980,16 +2088,14 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
     {
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
-      SMESHGUI_CreateHypothesesDlg *aDlg =
-        new SMESHGUI_CreateHypothesesDlg (parent, "", FALSE, false);
+      new SMESHGUI_CreateHypothesesDlg (parent, "", FALSE, false);
       break;
     }
   case 5010: // ALGO
     {
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
-      SMESHGUI_CreateHypothesesDlg *aDlg =
-        new SMESHGUI_CreateHypothesesDlg (parent, "", FALSE, true);
+      new SMESHGUI_CreateHypothesesDlg (parent, "", FALSE, true);
       break;
     }
 
@@ -2007,13 +2113,16 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
   }
   break;
 
-  case 6016:					// CONTROLS 
+  case 6017:					// CONTROLS 
+  case 6016:
   case 6015:
   case 6014:
   case 6013:
   case 6012:
   case 6011:
   case 6001:
+  case 6018:
+  case 6019:
   case 6002:
   case 6003:
   case 6004:    
@@ -2198,6 +2307,12 @@ bool SMESHGUI::SetSettings(QAD_Desktop * parent)
     myAutomaticUpdate = false;
   }
 
+  QString anIsDisplayEntity = QAD_CONFIG->getSetting("SMESH:DispayEntity");
+  if(anIsDisplayEntity.compare("true") == 0)
+    parent->menuBar()->setItemChecked(10071,true);
+  else
+    parent->menuBar()->setItemChecked(10071,false);
+
   /* Selection */
   SMESH::UpdateSelectionProp();
 
@@ -2316,29 +2431,30 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
         if ( !aGeomGroup->_is_nil()  ) // group linked on geometry
 	  popup->removeItem( 803 ); // EDIT GROUP
           
-	SMESH_Actor* ac = SMESH::FindActorByEntry(IObject->getEntry());
+	SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
 	// if object has actor
-	if ( ac && studyFrame->getTypeView() == VIEW_VTK ) {
+	if ( anActor && studyFrame->getTypeView() == VIEW_VTK ) {
 	  VTKViewer_RenderWindowInteractor* myRenderInter = SMESH::GetCurrentVtkView()->getRWInteractor();
 	  if ( myRenderInter->isVisible( IObject ) ) {
 	    popup->removeItem( QAD_Display_Popup_ID );
-	    popup->setItemChecked( 9010, ac->GetPointsLabeled() ); // Numbering / Display Nodes #
-	    popup->setItemChecked( 9011, ac->GetCellsLabeled() );  // Numbering / Display Elements #
-	    TVisualObjPtr aVisualObj = ac->GetObject();
-	    int aNbEdges = aVisualObj->GetNbEntities(SMESH::EDGE);
-	    int aNbFaces = aVisualObj->GetNbEntities(SMESH::FACE);
-	    int aNbVolumes = aVisualObj->GetNbEntities(SMESH::VOLUME);
+	    popup->setItemChecked( 9010, anActor->GetPointsLabeled() ); // Numbering / Display Nodes #
+	    popup->setItemChecked( 9011, anActor->GetCellsLabeled() );  // Numbering / Display Elements #
+	    TVisualObjPtr aVisualObj = anActor->GetObject();
+	    int aNbEdges = aVisualObj->GetNbEntities(SMDSAbs_Edge);
+	    int aNbFaces = aVisualObj->GetNbEntities(SMDSAbs_Face);
+	    int aNbVolumes = aVisualObj->GetNbEntities(SMDSAbs_Volume);
+
 	    QMenuItem* mi = popup->findItem( 1131 );
 	    if ( mi && mi->popup() ) {
-	      int  prType = ac->GetRepresentation();
+	      int  prType = anActor->GetRepresentation();
 	      // Display Mode / Wireframe
-	      if(!aNbFaces && !aNbVolumes && !aNbEdges){
+	      if(aNbVolumes == 0 && aNbFaces == 0 && aNbEdges == 0){
 		mi->popup()->removeItem( 211 );
 	      }else{
 		mi->popup()->setItemChecked( 211, prType == SMESH_Actor::eEdge );
 	      }
 	      // Display Mode / Shading
-	      if(!aNbFaces && !aNbVolumes){
+	      if(aNbFaces == 0 && aNbVolumes == 0){
 		mi->popup()->removeItem( 212 );
 	      }else{
 		mi->popup()->setItemChecked( 212, prType == SMESH_Actor::eSurface );
@@ -2346,18 +2462,62 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	      // Display Mode / Points
 	      mi->popup()->setItemChecked( 215, prType == SMESH_Actor::ePoint );  
 	      // Display Mode / Shrink
-	      bool isShrunk = ac->IsShrunk();
-	      bool isShrunkable = ac->IsShrunkable();
+	      bool isShrunk = anActor->IsShrunk();
+	      bool isShrunkable = anActor->IsShrunkable();
 	      mi->popup()->setItemChecked( 213, isShrunk );   
 	      mi->popup()->setItemEnabled( 213, prType != SMESH_Actor::ePoint && isShrunkable);
 	    }
-	    // Scalar Bar
+
+	    // Display Entity
+	    mi = popup->findItem( 1135 );
+	    int aIsSomething=0;
+	    if (aNbVolumes>0) aIsSomething++;
+	    if (aNbFaces>0) aIsSomething++;
+	    if (aNbEdges>0) aIsSomething++;
+	    if ( mi && (aIsSomething <= 1)){
+	      popup->removeItem(1135);
+	    }else if ( mi && mi->popup() ) {
+	      QPopupMenu* aPopup = mi->popup();
+	      unsigned int aMode = anActor->GetEntityMode();
+	      
+	      bool aIsVolumesMode = aMode & SMESH_Actor::eVolumes;
+	      bool aIsFacesMode   = aMode & SMESH_Actor::eFaces;
+	      bool aIsEdgesMode   = aMode & SMESH_Actor::eEdges;
+	      
+	      if(aNbVolumes == 0)
+		aPopup->removeItem( 219 );
+	      else
+		aPopup->setItemChecked( 219, aIsVolumesMode );
+
+	      if(aNbFaces == 0)
+		aPopup->removeItem( 218 );
+	      else
+		aPopup->setItemChecked( 218, aIsFacesMode );
+
+
+	      if(aNbEdges == 0)
+		aPopup->removeItem( 217 );
+	      else
+		aPopup->setItemChecked( 217, aIsEdgesMode );
+
+
+	      bool aIsRemove = (aNbVolumes == 0 || aIsVolumesMode);
+	      aIsRemove &= (aNbFaces == 0 || aIsFacesMode);
+	      aIsRemove &= (aNbEdges == 0 || aIsEdgesMode);
+
+	      if(aIsRemove)
+		aPopup->removeItem( 220 );
+	    }
+
+	    // Controls
 	    mi = popup->findItem( 2000 );
 	    if ( mi && mi->popup() ) {
-	      SMESH_Actor::eControl cMode = ac->GetControlMode();
+	      SMESH_Actor::eControl cMode = anActor->GetControlMode();
 	      switch ( cMode ) {
-	      case SMESH_Actor::eLengthEdges:
+	      case SMESH_Actor::eLength:
 		mi->popup()->setItemChecked( 6001, true ); break;
+	      case SMESH_Actor::eLength2D:
+		mi->popup()->setItemChecked( 6018, true ); break;
 	      case SMESH_Actor::eFreeEdges:
 		mi->popup()->setItemChecked( 6002, true );
 		mi->popup()->removeItem( 201 );
@@ -2368,12 +2528,16 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 		break;
 	      case SMESH_Actor::eMultiConnection:
 		mi->popup()->setItemChecked( 6004, true ); break;
+	      case SMESH_Actor::eMultiConnection2D:
+		mi->popup()->setItemChecked( 6019, true ); break;
 	      case SMESH_Actor::eArea:
 		mi->popup()->setItemChecked( 6011, true ); break;
 	      case SMESH_Actor::eTaper:
 		mi->popup()->setItemChecked( 6012, true ); break;
 	      case SMESH_Actor::eAspectRatio:
 		mi->popup()->setItemChecked( 6013, true ); break;
+	      case SMESH_Actor::eAspectRatio3D:
+		mi->popup()->setItemChecked( 6017, true ); break;
 	      case SMESH_Actor::eMinimumAngle:
 		mi->popup()->setItemChecked( 6014, true ); break;
 	      case SMESH_Actor::eWarping:
@@ -2386,13 +2550,14 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 		mi->popup()->removeItem( 201 );
 		break;
 	      }
-	      TVisualObjPtr aVisualObj = ac->GetObject();
-	      if(!aNbEdges){
+	      TVisualObjPtr aVisualObj = anActor->GetObject();
+	      if(aNbEdges == 0){
 		mi->popup()->removeItem( 6001 );
 		mi->popup()->removeItem( 6003 );
 		mi->popup()->removeItem( 6004 );
 	      }
-	      if(!aNbFaces){
+	      if(aNbFaces == 0){
+		mi->popup()->removeItem( 6018 );
 		mi->popup()->removeItem( 6002 );
 		mi->popup()->removeItem( 6011 );
 		mi->popup()->removeItem( 6012 );
@@ -2400,8 +2565,12 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 		mi->popup()->removeItem( 6014 );
 		mi->popup()->removeItem( 6015 );
 		mi->popup()->removeItem( 6016 );
+		mi->popup()->removeItem( 6019 );
 	      }
-	      if(!aNbFaces && !aNbEdges)
+	      if(aNbVolumes == 0){
+		mi->popup()->removeItem( 6017 );
+	      }
+	      if(aNbFaces == 0 && aNbEdges == 0 && aNbVolumes == 0)
 		popup->removeItem( 2000 );                         // Scalar Bar
 	    }
 	  }

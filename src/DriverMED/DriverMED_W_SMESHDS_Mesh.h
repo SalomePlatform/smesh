@@ -28,6 +28,7 @@
 #define _INCLUDE_DRIVERMED_W_SMESHDS_MESH
 
 #include "Driver_SMESHDS_Mesh.h"
+#include "MED_Factory.hxx"
 
 #include <string>
 #include <list>
@@ -42,6 +43,9 @@ class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   public:
 
   DriverMED_W_SMESHDS_Mesh();
+
+  virtual void SetFile(const std::string& theFileName);
+  void SetFile(const std::string& theFileName, MED::EVersion theId);
 
   /*! sets file name; only for usage with Add(), not Write()
    */
@@ -63,6 +67,7 @@ class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
  private:
 
+  MED::PWrapper myMed;
   std::string myMeshName;
   std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;

@@ -29,20 +29,15 @@
 	
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshObject.hxx"
-#include "SMDS_Iterator.hxx"
+#include "SMDS_ElemIterator.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
 
-#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <iostream>
 
 class SMDS_MeshNode;
 class SMDS_MeshEdge;
 class SMDS_MeshFace;	
-class SMDS_MeshElement;
-
-typedef SMDS_Iterator<const SMDS_MeshElement *> SMDS_ElemIterator;
-typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshElement *> > SMDS_ElemIteratorPtr;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Base class for elements

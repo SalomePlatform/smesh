@@ -40,6 +40,9 @@
 #include <gp_Vec.hxx>
 #include <math_FunctionSetRoot.hxx>
 
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshVolume.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "utilities.h"
 
 #include <list>
@@ -56,6 +59,8 @@ using namespace std;
 double SMESH_Block::TEdge::GetU( const gp_XYZ& theParams ) const
 {
   double u = theParams.Coord( myCoordInd );
+  if ( myC3d.IsNull() ) // if mesh block
+    return u;
   return ( 1 - u ) * myFirst + u * myLast;
 }
 
@@ -66,10 +71,44 @@ double SMESH_Block::TEdge::GetU( const gp_XYZ& theParams ) const
 
 gp_XYZ SMESH_Block::TEdge::Point( const gp_XYZ& theParams ) const
 {
-  gp_XYZ p = myC3d->Value( GetU( theParams )).XYZ();
+  double u = GetU( theParams );
+
+  if ( myC3d.IsNull() ) // if mesh block
+    return myNodes[0] * ( 1 - u ) + myNodes[1] * u;
+
+  gp_XYZ p = myC3d->Value( u ).XYZ();
   if ( myTrsf.Form() != gp_Identity )
     myTrsf.Transforms( p );
   return p;
+}
+
+//=======================================================================
+//function : SMESH_Block::TFace::GetCoefs
+//purpose  : return coefficients for addition of [0-3]-th edge and vertex
+//=======================================================================
+
+void SMESH_Block::TFace::GetCoefs(int           iE,
+                                  const gp_XYZ& theParams,
+                                  double&       Ecoef,
+                                  double&       Vcoef ) const
+{
+  double dU = theParams.Coord( GetUInd() );
+  double dV = theParams.Coord( GetVInd() );
+  switch ( iE ) {
+  case 0:
+    Ecoef = ( 1 - dV ); // u0
+    Vcoef = ( 1 - dU ) * ( 1 - dV ); break; // 00
+  case 1:
+    Ecoef = dV; // u1
+    Vcoef = dU * ( 1 - dV ); break; // 10
+  case 2:
+    Ecoef = ( 1 - dU ); // 0v
+    Vcoef = dU * dV  ; break; // 11
+  case 3:
+    Ecoef = dU  ; // 1v
+    Vcoef = ( 1 - dU ) * dV  ; break; // 01
+  default: ASSERT(0);
+  }
 }
 
 //=======================================================================
@@ -80,26 +119,10 @@ gp_XYZ SMESH_Block::TEdge::Point( const gp_XYZ& theParams ) const
 gp_XY SMESH_Block::TFace::GetUV( const gp_XYZ& theParams ) const
 {
   gp_XY uv(0.,0.);
-  double dU = theParams.Coord( GetUInd() );
-  double dV = theParams.Coord( GetVInd() );
   for ( int iE = 0; iE < 4; iE++ ) // loop on 4 edges
   {
     double Ecoef = 0, Vcoef = 0;
-    switch ( iE ) {
-    case 0:
-      Ecoef = ( 1 - dV ); // u0
-      Vcoef = ( 1 - dU ) * ( 1 - dV ); break; // 00
-    case 1:
-      Ecoef = dV; // u1
-      Vcoef = dU * ( 1 - dV ); break; // 10
-    case 2:
-      Ecoef = ( 1 - dU ); // 0v
-      Vcoef = dU * dV  ; break; // 11
-    case 3:
-      Ecoef = dU  ; // 1v
-      Vcoef = ( 1 - dU ) * dV  ; break; // 01
-    default:;
-    }
+    GetCoefs( iE, theParams, Ecoef, Vcoef );
     // edge addition
     double u = theParams.Coord( myCoordInd[ iE ] );
     u = ( 1 - u ) * myFirst[ iE ] + u * myLast[ iE ];
@@ -117,10 +140,34 @@ gp_XY SMESH_Block::TFace::GetUV( const gp_XYZ& theParams ) const
 
 gp_XYZ SMESH_Block::TFace::Point( const gp_XYZ& theParams ) const
 {
-  gp_XY uv = GetUV( theParams );
-  gp_XYZ p = myS->Value( uv.X(), uv.Y() ).XYZ();
-  if ( myTrsf.Form() != gp_Identity )
-    myTrsf.Transforms( p );
+  gp_XYZ p(0.,0.,0.);
+  if ( myS.IsNull() ) // if mesh block
+  {
+    for ( int iE = 0; iE < 4; iE++ ) // loop on 4 edges
+    {
+      double Ecoef = 0, Vcoef = 0;
+      GetCoefs( iE, theParams, Ecoef, Vcoef );
+      // edge addition
+      double u = theParams.Coord( myCoordInd[ iE ] );
+      int i1 = 0, i2 = 1;
+      switch ( iE ) {
+      case 1: i1 = 3; i2 = 2; break;
+      case 2: i1 = 1; i2 = 2; break;
+      case 3: i1 = 0; i2 = 3; break;
+      }
+      p += Ecoef * ( myNodes[ i1 ] * ( 1 - u ) + myNodes[ i2 ] * u );
+      // corner addition
+      p -= Vcoef * myNodes[ iE ];
+    }
+    
+  }
+  else // shape block
+  {
+    gp_XY uv = GetUV( theParams );
+    p = myS->Value( uv.X(), uv.Y() ).XYZ();
+    if ( myTrsf.Form() != gp_Identity )
+      myTrsf.Transforms( p );
+  }
   return p;
 }
 
@@ -274,7 +321,7 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
     return true;
   }
 
-  if ( theFxyz(1) < myValues[0] )
+  if ( theFxyz(1) < myValues[0] ) // a better guess
   {
     // 3 partial derivatives
     gp_Vec drv[ 3 ];
@@ -621,6 +668,175 @@ static int getOrderedEdges (const TopoDS_Face&   theFace,
 }
 
 //=======================================================================
+//function : LoadMeshBlock
+//purpose  : prepare to work with theVolume
+//=======================================================================
+
+#define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
+
+bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
+                                const int                     theNode000Index,
+                                const int                     theNode001Index,
+                                vector<const SMDS_MeshNode*>& theOrderedNodes)
+{
+  MESSAGE(" ::LoadMeshBlock()");
+
+  myNbIterations = 0;
+  mySumDist = 0;
+  myGridComputed = false;
+
+  SMDS_VolumeTool vTool;
+  if (!vTool.Set( theVolume ) || vTool.NbNodes() != 8 ||
+      !vTool.IsLinked( theNode000Index, theNode001Index )) {
+    MESSAGE(" Bad arguments ");
+    return false;
+  }
+  vTool.SetExternalNormal();
+  // In terms of indices used for access to nodes and faces in SMDS_VolumeTool:
+  int V000, V100, V010, V110, V001, V101, V011, V111; // 8 vertices
+  int Fxy0, Fxy1; // bottom and top faces
+  // vertices of faces
+  vector<int> vFxy0, vFxy1;
+
+  V000 = theNode000Index;
+  V001 = theNode001Index;
+
+  // get faces sharing V000 and V001
+  list<int> fV000, fV001;
+  int i, iF, iE, iN;
+  for ( iF = 0; iF < vTool.NbFaces(); ++iF ) {
+    const int* nid = vTool.GetFaceNodesIndices( iF );
+    for ( iN = 0; iN < 4; ++iN )
+      if ( nid[ iN ] == V000 ) {
+        fV000.push_back( iF );
+      } else if ( nid[ iN ] == V001 ) {
+        fV001.push_back( iF );
+      }
+  }
+
+  // find the bottom (Fxy0), the top (Fxy1) faces
+  list<int>::iterator fIt1, fIt2, Fxy0Pos;
+  for ( fIt1 = fV000.begin(); fIt1 != fV000.end(); fIt1++) {
+    fIt2 = std::find( fV001.begin(), fV001.end(), *fIt1 );
+    if ( fIt2 != fV001.end() ) { // *fIt1 is in the both lists
+      fV001.erase( fIt2 ); // erase Fx0z or F0yz from fV001
+    } else { // *fIt1 is in fV000 only
+      Fxy0Pos = fIt1; // points to Fxy0
+    }
+  }
+  Fxy0 = *Fxy0Pos;
+  Fxy1 = fV001.front();
+  const SMDS_MeshNode** nn = vTool.GetNodes();
+
+  // find bottom veritices, their order is that a face normal is external
+  vFxy0.resize(4);
+  const int* nid = vTool.GetFaceNodesIndices( Fxy0 );
+  for ( i = 0; i < 4; ++i )
+    if ( nid[ i ] == V000 )
+      break;
+  for ( iN = 0; iN < 4; ++iN, ++i ) {
+    if ( i == 4 ) i = 0;
+    vFxy0[ iN ] = nid[ i ];
+  }
+  // find top veritices, their order is that a face normal is external
+  vFxy1.resize(4);
+  nid = vTool.GetFaceNodesIndices( Fxy1 );
+  for ( i = 0; i < 4; ++i )
+    if ( nid[ i ] == V001 )
+      break;
+  for ( iN = 0; iN < 4; ++iN, ++i ) {
+    if ( i == 4 ) i = 0;
+    vFxy1[ iN ] = nid[ i ];
+  }
+  // find indices of the rest veritices 
+  V100 = vFxy0[3];
+  V010 = vFxy0[1];
+  V110 = vFxy0[2];
+  V101 = vFxy1[1];
+  V011 = vFxy1[3];
+  V111 = vFxy1[2];
+
+  // set points coordinates
+  myPnt[ ID_V000 - 1 ] = gpXYZ( nn[ V000 ] );
+  myPnt[ ID_V100 - 1 ] = gpXYZ( nn[ V100 ] );
+  myPnt[ ID_V010 - 1 ] = gpXYZ( nn[ V010 ] );
+  myPnt[ ID_V110 - 1 ] = gpXYZ( nn[ V110 ] );
+  myPnt[ ID_V001 - 1 ] = gpXYZ( nn[ V001 ] );
+  myPnt[ ID_V101 - 1 ] = gpXYZ( nn[ V101 ] );
+  myPnt[ ID_V011 - 1 ] = gpXYZ( nn[ V011 ] );
+  myPnt[ ID_V111 - 1 ] = gpXYZ( nn[ V111 ] );
+
+  // fill theOrderedNodes
+  theOrderedNodes.resize( 8 );
+  theOrderedNodes[ 0 ] = nn[ V000 ];
+  theOrderedNodes[ 1 ] = nn[ V100 ];
+  theOrderedNodes[ 2 ] = nn[ V010 ];
+  theOrderedNodes[ 3 ] = nn[ V110 ];
+  theOrderedNodes[ 4 ] = nn[ V001 ];
+  theOrderedNodes[ 5 ] = nn[ V101 ];
+  theOrderedNodes[ 6 ] = nn[ V011 ];
+  theOrderedNodes[ 7 ] = nn[ V111 ];
+  
+  // fill edges
+  myEdge[ ID_Ex00 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
+  myEdge[ ID_Ex00 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V100 - 1 ];
+
+  myEdge[ ID_Ex10 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V010 - 1 ];
+  myEdge[ ID_Ex10 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V110 - 1 ];
+
+  myEdge[ ID_Ex01 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V001 - 1 ];
+  myEdge[ ID_Ex01 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V101 - 1 ];
+
+  myEdge[ ID_Ex11 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V011 - 1 ];
+  myEdge[ ID_Ex11 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
+
+  myEdge[ ID_E0y0 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
+  myEdge[ ID_E0y0 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V010 - 1 ];
+
+  myEdge[ ID_E1y0 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V100 - 1 ];
+  myEdge[ ID_E1y0 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V110 - 1 ];
+
+  myEdge[ ID_E0y1 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V001 - 1 ];
+  myEdge[ ID_E0y1 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V011 - 1 ];
+
+  myEdge[ ID_E1y1 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V101 - 1 ];
+  myEdge[ ID_E1y1 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
+
+  myEdge[ ID_E00z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
+  myEdge[ ID_E00z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V001 - 1 ];
+
+  myEdge[ ID_E10z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V100 - 1 ];
+  myEdge[ ID_E10z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V101 - 1 ];
+
+  myEdge[ ID_E01z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V010 - 1 ];
+  myEdge[ ID_E01z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V011 - 1 ];
+
+  myEdge[ ID_E11z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V110 - 1 ];
+  myEdge[ ID_E11z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
+
+  for ( iE = ID_Ex00; iE <= ID_E11z; ++iE )
+    myEdge[ iE - ID_Ex00 ].myCoordInd = GetCoordIndOnEdge( iE );
+
+  // fill faces corners
+  for ( iF = ID_Fxy0; iF < ID_Shell; ++iF )
+  {
+    TFace& tFace = myFace[ iF - ID_Fxy0 ];
+    vector< int > edgeIdVec(4, -1);
+    GetFaceEdgesIDs( iF, edgeIdVec );
+    tFace.myNodes[ 0 ] = myEdge[ edgeIdVec [ 0 ] - ID_Ex00 ].myNodes[ 1 ];
+    tFace.myNodes[ 1 ] = myEdge[ edgeIdVec [ 0 ] - ID_Ex00 ].myNodes[ 0 ];
+    tFace.myNodes[ 2 ] = myEdge[ edgeIdVec [ 1 ] - ID_Ex00 ].myNodes[ 0 ];
+    tFace.myNodes[ 3 ] = myEdge[ edgeIdVec [ 1 ] - ID_Ex00 ].myNodes[ 1 ];
+    tFace.myCoordInd[ 0 ] = GetCoordIndOnEdge( edgeIdVec[ 0 ] );
+    tFace.myCoordInd[ 1 ] = GetCoordIndOnEdge( edgeIdVec[ 1 ] );
+    tFace.myCoordInd[ 2 ] = GetCoordIndOnEdge( edgeIdVec[ 2 ] );
+    tFace.myCoordInd[ 3 ] = GetCoordIndOnEdge( edgeIdVec[ 3 ] );
+  }
+
+  return true;
+}
+
+//=======================================================================
 //function : LoadBlockShapes
 //purpose  : add sub-shapes of theBlock to theShapeIDMap so that they get
 //           IDs acoording to enum TShapeID
@@ -629,7 +845,6 @@ static int getOrderedEdges (const TopoDS_Face&   theFace,
 bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
                                   const TopoDS_Vertex&        theVertex000,
                                   const TopoDS_Vertex&        theVertex001,
-//                             TopTools_IndexedMapOfShape& theShapeIDMap
                                   TopTools_IndexedMapOfOrientedShape& theShapeIDMap )
 {
   MESSAGE(" ::LoadBlockShapes()");
@@ -639,7 +854,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
   mySumDist = 0;
   myGridComputed = false;
 
-  // 6 vertices
+  // 8 vertices
   TopoDS_Shape V000, V100, V010, V110, V001, V101, V011, V111;
   // 12 edges
   TopoDS_Shape Ex00, Ex10, Ex01, Ex11;
@@ -976,6 +1191,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
 
 void SMESH_Block::GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec )
 {
+  edgeVec.resize( 4 );
   switch ( faceID ) {
   case ID_Fxy0:
     edgeVec[ 0 ] = ID_Ex00;
@@ -1017,3 +1233,69 @@ void SMESH_Block::GetFaceEdgesIDs (const int faceID, vector< int >& edgeVec )
     MESSAGE(" GetFaceEdgesIDs(), wrong face ID: " << faceID );
   }
 }
+
+//=======================================================================
+//function : GetEdgeVertexIDs
+//purpose  : return vertex IDs of an edge
+//=======================================================================
+
+void SMESH_Block::GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec )
+{
+  vertexVec.resize( 2 );
+  switch ( edgeID ) {
+
+  case ID_Ex00:
+    vertexVec[ 0 ] = ID_V000;
+    vertexVec[ 1 ] = ID_V100;
+    break;
+  case ID_Ex10:
+    vertexVec[ 0 ] = ID_V010;
+    vertexVec[ 1 ] = ID_V110;
+    break;
+  case ID_Ex01:
+    vertexVec[ 0 ] = ID_V001;
+    vertexVec[ 1 ] = ID_V101;
+    break;
+  case ID_Ex11:
+    vertexVec[ 0 ] = ID_V011;
+    vertexVec[ 1 ] = ID_V111;
+    break;
+
+  case ID_E0y0:
+    vertexVec[ 0 ] = ID_V000;
+    vertexVec[ 1 ] = ID_V010;
+    break;
+  case ID_E1y0:
+    vertexVec[ 0 ] = ID_V100;
+    vertexVec[ 1 ] = ID_V110;
+    break;
+  case ID_E0y1:
+    vertexVec[ 0 ] = ID_V001;
+    vertexVec[ 1 ] = ID_V011;
+    break;
+  case ID_E1y1:
+    vertexVec[ 0 ] = ID_V101;
+    vertexVec[ 1 ] = ID_V111;
+    break;
+
+  case ID_E00z:
+    vertexVec[ 0 ] = ID_V000;
+    vertexVec[ 1 ] = ID_V001;
+    break;
+  case ID_E10z:
+    vertexVec[ 0 ] = ID_V100;
+    vertexVec[ 1 ] = ID_V101;
+    break;
+  case ID_E01z:
+    vertexVec[ 0 ] = ID_V010;
+    vertexVec[ 1 ] = ID_V011;
+    break;
+  case ID_E11z:
+    vertexVec[ 0 ] = ID_V110;
+    vertexVec[ 1 ] = ID_V111;
+    break;
+  default:
+    MESSAGE(" GetEdgeVertexIDs(), wrong edge ID: " << edgeID );
+  }
+}
+
