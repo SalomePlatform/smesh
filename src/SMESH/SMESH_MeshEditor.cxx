@@ -2930,7 +2930,7 @@ static const SMDS_MeshElement* findAdjacentFace(const SMDS_MeshNode* n1,
   set<const SMDS_MeshElement*> elemSet, avoidSet;
   if ( elem )
     avoidSet.insert ( elem );
-  SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
+  return SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
 }
   
 //=======================================================================
