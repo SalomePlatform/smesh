@@ -535,23 +535,33 @@ module SMESH
 			      in DirStruct       StepVector,
 			      in long            NbOfSteps);
 
-    void ExtrusionAlongPath(in long_array        IDsOfElements,
-			    in SMESH_Mesh        PathMesh,
-			    in GEOM::GEOM_Object PathShape,
-			    in long              NodeStart,
-			    in boolean           HasAngles,
-			    in double_array      Angles,
-			    in boolean           HasRefPoint,
-			    in PointStruct       RefPoint);
+    enum Extrusion_Error {
+      EXTR_OK,
+      EXTR_NO_ELEMENTS, 
+      EXTR_PATH_NOT_EDGE,
+      EXTR_BAD_PATH_SHAPE,
+      EXTR_BAD_STARTING_NODE,
+      EXTR_BAD_ANGLES_NUMBER,
+      EXTR_CANT_GET_TANGENT
+      };
 
-    void ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
-				  in SMESH_Mesh        PathMesh,
-				  in GEOM::GEOM_Object PathShape,
-				  in long              NodeStart,
-				  in boolean           HasAngles,
-				  in double_array      Angles,
-				  in boolean           HasRefPoint,
-				  in PointStruct       RefPoint);
+    Extrusion_Error ExtrusionAlongPath(in long_array        IDsOfElements,
+				       in SMESH_Mesh        PathMesh,
+				       in GEOM::GEOM_Object PathShape,
+				       in long              NodeStart,
+				       in boolean           HasAngles,
+				       in double_array      Angles,
+				       in boolean           HasRefPoint,
+				       in PointStruct       RefPoint);
+
+    Extrusion_Error ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
+					     in SMESH_Mesh        PathMesh,
+					     in GEOM::GEOM_Object PathShape,
+					     in long              NodeStart,
+					     in boolean           HasAngles,
+					     in double_array      Angles,
+					     in boolean           HasRefPoint,
+					     in PointStruct       RefPoint);
 
     enum MirrorType { POINT, AXIS, PLANE };
 
