@@ -1,13 +1,11 @@
-#==============================================================================
-#  File      : batchmode_smesh.py
-#  Created   : Fri Nov 15 13:51:00 2002
-#  Author    : Oksana TCHEBANOVA
-#  Project   : SALOME
-#  Copyright : OPEN CASCADE 2002
+#  Copyright (C) 2003  CEA/DEN, EDF R&D
+#
+#
+#
+#  File   : batchmode_smesh.py
+#  Author : Oksana TCHEBANOVA
+#  Module : SMESH
 #  $Header$
-#==============================================================================
-
-#--------------------------------------------------------------------------
 
 from batchmode_salome import *
 import SMESH
@@ -26,11 +24,9 @@ if father is None:
         father = myStudyBuilder.NewComponent("MESH")
         A1 = myStudyBuilder.FindOrCreateAttribute(father, "AttributeName");
         FName = A1._narrow(SALOMEDS.AttributeName)
-#        FName.SetValue("Mesh")
-
+        #FName.SetValue("Mesh")	
 	Comp = modulecatalog.GetComponent( "SMESH" )
 	FName.SetValue( Comp._get_componentusername() )
-
       	A2 = myStudyBuilder.FindOrCreateAttribute(father, "AttributePixMap");
       	aPixmap = A2._narrow(SALOMEDS.AttributePixMap);
 	aPixmap.SetPixMap( "ICON_OBJBROWSER_Mesh" );
