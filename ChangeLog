@@ -4,6 +4,20 @@
 #cvs2cl.pl -l "-b" -U users.cvs2cl --header header.cvs2cl -T -b --utc
 ###############################################################################
 
+2004-01-30 13:18  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
+
+	* doc/html/INPUT/: doxyfile, sources/static/tree.js: NRI : 1.4.0
+	  version
+
+2004-01-29 17:52  Jerome Robert <jerome.robert@eads.net>
+
+	* INSTALL, bin/VERSION: Upgrade to version 1.4.0.
+
+2004-01-29 17:33  Jerome Robert <jerome.robert@eads.net>
+
+	* src/: SMESHGUI/SMESHGUI_StudyAPI.cxx, SMESHGUI/SMESHGUI_Swig.cxx,
+	  SMESH_I/SMESH_Gen_i.cxx: Merge branch merge_1_2_d
+
 2004-01-14 09:24  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
 
 	* doc/html/Makefile.in: NRI : bug KERNEL5014 fixed.
@@ -27,10 +41,6 @@
 	  environment variable for idl python
 
 2004-01-05 14:28  tag V1_3_1
-
-2004-01-05 14:28  Jerome Robert <jerome.robert@eads.net>
-
-	* ChangeLog, cvs-tags: update
 
 2004-01-05 13:53  Jerome Robert <jerome.robert@eads.net>
 
@@ -149,10 +159,6 @@
 
 	* src/MEFISTO2/trte.f: Remove "pause" primitive call.
 
-2003-11-27 11:47  Jerome Robert <jerome.robert@eads.net>
-
-	* ChangeLog, cvs-tags: update
-
 2003-11-27 11:45  Jerome Robert <jerome.robert@eads.net>
 
 	* resources/SMESH_en.xml, resources/SMESH_fr.xml,
@@ -201,10 +207,6 @@
 	  nadir_update_MED_v1_3_0 (branch to build the V1_3_0 version of
 	  the module.
 
-2003-11-17 09:22  Jerome Robert <jerome.robert@eads.net>
-
-	* cvs-tags: update
-
 2003-11-12 13:20  tag V1_3_0_b1
 
 2003-11-12 13:20  Jerome Robert <jerome.robert@eads.net>
@@ -247,10 +249,6 @@
 
 	* src/SMDS/SMDS_Mesh.cxx: Fix a bug. Quadrangles were added as
 	  triangles.
-
-2003-10-17 12:35  Jerome Robert <jerome.robert@eads.net>
-
-	* cvs-tags: Create branch merge_1_2_c__1_2_2
 
 2003-10-06 10:50  tag MergeV1_2c-1
 
@@ -303,10 +301,6 @@
 
 	* src/SMDS/SMDS_VolumeOfNodes.cxx: Fix bug. Was always printing 8
 	  nodes
-
-2003-09-08 15:11  Jerome Robert <jerome.robert@eads.net>
-
-	* ChangeLog: update
 
 2003-09-08 15:04  Jerome Robert <jerome.robert@eads.net>
 
@@ -556,10 +550,6 @@
 	  SMDS_VertexPosition.cdl, SMDS_VertexPosition.ixx,
 	  SMDS_VertexPosition.jxx: Remove no longer needed files
 
-2003-09-04 14:09  Jerome Robert <jerome.robert@eads.net>
-
-	* ChangeLog: Add a ChangeLog file
-
 2003-09-04 13:28  Jerome Robert <jerome.robert@eads.net>
 
 	* build_configure: It seems "make_omniorb" and "make_commence" need
@@ -737,40 +727,6 @@
 	  SMDS_VolumeOfFaces.cxx, SMDS_VolumeOfFaces.hxx,
 	  SMDS_VolumeOfNodes.cxx, SMDS_VolumeOfNodes.hxx: Add needed class
 	  for the new DS
-
-2003-07-18 12:19  tag V_02092003
-
-2003-07-18 12:19  tag V_03092003
-
-2003-07-18 12:19  tag V_04092003
-
-2003-07-18 12:19  tag V_05092003
-
-2003-07-18 12:19  tag V_06092003
-
-2003-07-18 12:19  tag V_07092003
-
-2003-07-18 12:19  tag V_08092003
-
-2003-07-18 12:19  tag V_09092003
-
-2003-07-18 12:19  tag V_10092003
-
-2003-07-18 12:19  tag V_11092003
-
-2003-07-18 12:19  tag V_12092003
-
-2003-07-18 12:19  tag V_13092003
-
-2003-07-18 12:19  tag V_14092003
-
-2003-07-18 12:19  tag V_15092003
-
-2003-07-18 12:19  tag V_16092003
-
-2003-07-18 12:19  tag V_17092003
-
-2003-07-18 12:19  tag V_18092003
 
 2003-07-18 12:19  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
 
