@@ -731,11 +731,7 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(SMDS_MeshNode * node1,
 
 void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 {
-	SMDS_Iterator<const SMDS_MeshElement *> * it=
-		node->GetInverseElementIterator();
-	while(it->more()) RemoveElement(it->next(),true);
-	myNodeIDFactory->ReleaseID(node->GetID());
-	myNodes.erase(const_cast<SMDS_MeshNode*>(node));
+	RemoveElement(node, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -744,10 +740,7 @@ void SMDS_Mesh::RemoveNode(const SMDS_MeshNode * node)
 
 void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 {
-	/** @todo to be fix */
-	myEdges.erase(const_cast<SMDS_MeshEdge*>(edge));
-	//removeElementDependencies(edge);
-	delete edge;
+	RemoveElement(edge,true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -756,10 +749,7 @@ void SMDS_Mesh::RemoveEdge(const SMDS_MeshEdge * edge)
 
 void SMDS_Mesh::RemoveFace(const SMDS_MeshFace * face)
 {
-	/** @todo to be fix */
-	myFaces.erase(const_cast<SMDS_MeshFace*>(face));
-	//removeElementDependencies(face);
-	delete face;
+	RemoveElement(face, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -768,64 +758,7 @@ void SMDS_Mesh::RemoveFace(const SMDS_MeshFace * face)
 
 void SMDS_Mesh::RemoveVolume(const SMDS_MeshVolume * volume)
 {
-	/** @todo to be fix */
-	myVolumes.erase(const_cast<SMDS_MeshVolume*>(volume));
-	//removeElementDependencies(volume);
-	delete volume;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Remove no longer used sub element of an element. Unbind the element ID
-///////////////////////////////////////////////////////////////////////////////
-
-void SMDS_Mesh::removeElementDependencies(SMDS_MeshElement * element)
-{
-	/** @todo to be fix */
-	myElementIDFactory->ReleaseID(element->GetID());
-	SMDS_Iterator<const SMDS_MeshElement*> * it=element->nodesIterator();
-	while(it->more())
-	{
-		SMDS_MeshNode * node=static_cast<SMDS_MeshNode*>(
-			const_cast<SMDS_MeshElement*>(it->next()));
-		node->RemoveInverseElement(element);
-		if(node->emptyInverseElements()) RemoveNode(node);
-	}
-}
-
-//=======================================================================
-//function : RemoveElement
-//purpose  :
-//=======================================================================
-
-void SMDS_Mesh::RemoveElement(const SMDS_MeshElement * elem,
-	const bool removenodes)
-{
-	/** @todo to be fix */
-	switch(elem->GetType())
-	{
-    case SMDSAbs_Node:
-		RemoveNode((const SMDS_MeshNode*)elem);
-		return;
-    case SMDSAbs_Edge:
-		RemoveEdge((const SMDS_MeshEdge*)elem);
-		break;
-    case SMDSAbs_Face:
-		RemoveFace((const SMDS_MeshFace*)elem);
-		break;
-    case SMDSAbs_Volume:
-		RemoveVolume((const SMDS_MeshVolume*)elem);
-		break;
-    default :
-		MESSAGE("remove function : unknown type");
-		return;
-	}
-/*	
-	SMDS_Iterator<const SMDS_MeshNode*> * it=elem->nodesIterator();
-	while(it->more())
-	{
-		const SMDS_MeshNode * node=it->next();
-		
-	}*/
+	RemoveElement(volume, true);
 }
 
 //=======================================================================
@@ -1440,3 +1373,201 @@ SMDS_Iterator<const SMDS_MeshVolume *> * SMDS_Mesh::volumesIterator() const
 	return new MyIterator(myVolumes);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Do intersection of sets (more than 2)
+///////////////////////////////////////////////////////////////////////////////
+set<const SMDS_MeshElement*> * intersectionOfSets(
+	set<const SMDS_MeshElement*> vs[], int numberOfSets)
+{
+	set<const SMDS_MeshElement*>* rsetA=new set<const SMDS_MeshElement*>(vs[0]);
+	set<const SMDS_MeshElement*>* rsetB;
+
+	for(int i=0; i<numberOfSets-1; i++)
+	{
+		rsetB=new set<const SMDS_MeshElement*>();
+		set_intersection(
+			rsetA->begin(), rsetA->end(),
+			vs[i+1].begin(), vs[i+1].end(),
+			inserter(*rsetB, rsetB->begin()));
+		delete rsetA;
+		rsetA=rsetB;
+	}
+	return rsetA;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return the list of finit elements owning the given element
+///////////////////////////////////////////////////////////////////////////////
+set<const SMDS_MeshElement*> * getFinitElements(const SMDS_MeshElement * element)
+{
+	int numberOfSets=element->NbNodes();
+	set<const SMDS_MeshElement*> initSet[numberOfSets];
+
+	SMDS_Iterator<const SMDS_MeshElement*> * itNodes=element->nodesIterator();
+
+	int i=0;
+	while(itNodes->more())
+	{
+		const SMDS_MeshNode * n=static_cast<const SMDS_MeshNode*>(itNodes->next());
+		SMDS_Iterator<const SMDS_MeshElement*> * itFe = n->GetInverseElementIterator();
+
+		//initSet[i]=set<const SMDS_MeshElement*>();
+		while(itFe->more()) initSet[i].insert(itFe->next());
+
+		i++;
+		delete itFe;
+	}
+	delete itNodes;
+	
+	return intersectionOfSets(initSet, numberOfSets);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return the list of nodes used only by the given elements
+///////////////////////////////////////////////////////////////////////////////
+set<const SMDS_MeshElement*> * getExclusiveNodes(
+	set<const SMDS_MeshElement*>& elements)
+{
+	set<const SMDS_MeshElement*> * toReturn=new set<const SMDS_MeshElement*>();
+	set<const SMDS_MeshElement*>::iterator itElements=elements.begin();
+
+	while(itElements!=elements.end())
+	{
+		SMDS_Iterator<const SMDS_MeshElement*> * itNodes=
+			(*itElements)->nodesIterator();
+		itElements++;
+	
+		while(itNodes->more())
+		{
+			const SMDS_MeshNode * n=static_cast<const SMDS_MeshNode*>(itNodes->next());
+			SMDS_Iterator<const SMDS_MeshElement*> * itFe = n->GetInverseElementIterator();
+			set<const SMDS_MeshElement*> s;
+			while(itFe->more()) s.insert(itFe->next());
+			delete itFe;
+			if(s==elements) toReturn->insert(n);
+		}
+		delete itNodes;
+	}
+	return toReturn;	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///Find the children of an element that are made of given nodes 
+///@param setOfChildren The set in which matching children will be inserted
+///@param element The element were to search matching children
+///@param nodes The nodes that the children must have to be selected
+///////////////////////////////////////////////////////////////////////////////
+void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren, 
+	const SMDS_MeshElement * element, set<const SMDS_MeshElement*>& nodes)
+{
+	
+	switch(element->GetType())
+	{
+	case SMDSAbs_Node:
+		MESSAGE("Internal Error: This should not append");
+		break;
+	case SMDSAbs_Edge:
+	{
+		SMDS_Iterator<const SMDS_MeshElement*> * itn=element->nodesIterator();
+		while(itn->more())
+		{
+			const SMDS_MeshElement * e=itn->next();
+			if(nodes.find(e)!=nodes.end()) setOfChildren.insert(element);
+		}
+		delete itn;
+	} break;	
+	case SMDSAbs_Face:
+	{
+		SMDS_Iterator<const SMDS_MeshElement*> * itn=element->nodesIterator();
+		while(itn->more())
+		{
+			const SMDS_MeshElement * e=itn->next();
+			if(nodes.find(e)!=nodes.end()) setOfChildren.insert(element);
+		}
+		delete itn;
+		if(hasConstructionEdges())
+		{
+			SMDS_Iterator<const SMDS_MeshElement*>* ite=element->edgesIterator();
+			while(ite->more())
+				addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+			delete ite;
+		}
+	} break;	
+	case SMDSAbs_Volume:
+	{
+		if(hasConstructionFaces())
+		{
+			SMDS_Iterator<const SMDS_MeshElement*> * ite=element->facesIterator();
+			while(ite->more())
+				addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+			delete ite;
+		}
+		else if(hasConstructionEdges())
+		{
+			SMDS_Iterator<const SMDS_MeshElement*> * ite=element->edgesIterator();
+			while(ite->more())
+				addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+			delete ite;
+		}
+	}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///@param elem The element to delete
+///@param removenodes if true remaining nodes will be removed
+///////////////////////////////////////////////////////////////////////////////
+void SMDS_Mesh::RemoveElement(const SMDS_MeshElement * elem,
+	const bool removenodes)
+{
+	set<const SMDS_MeshElement*> * s1=getFinitElements(elem);
+	
+	set<const SMDS_MeshElement*> * s2=getExclusiveNodes(*s1);
+	set<const SMDS_MeshElement*> s3;
+	set<const SMDS_MeshElement*>::iterator it=s1->begin();
+	while(it!=s1->end())
+	{
+		addChildrenWithNodes(s3, *it ,*s2);
+		s3.insert(*it);
+		it++;
+	}
+	if(elem->GetType()!=SMDSAbs_Node) s3.insert(elem);	
+	it=s3.begin();
+	while(it!=s3.end())
+	{
+		switch((*it)->GetType())
+		{
+		case SMDSAbs_Node:
+			MESSAGE("Internal Error: This should not happen");
+			break;
+		case SMDSAbs_Edge:
+			myEdges.erase(static_cast<SMDS_MeshEdge*>(
+				const_cast<SMDS_MeshElement*>(*it)));	
+			break;
+		case SMDSAbs_Face:
+			myFaces.erase(static_cast<SMDS_MeshFace*>(
+				const_cast<SMDS_MeshElement*>(*it)));
+			break;
+		case SMDSAbs_Volume:
+			myVolumes.erase(static_cast<SMDS_MeshVolume*>(
+				const_cast<SMDS_MeshElement*>(*it)));	
+			break;
+		}
+		delete (*it);
+		it++;
+	}	
+	if(removenodes)
+	{
+		it=s2->begin();
+		while(it!=s2->end())
+		{
+			myNodes.erase(static_cast<SMDS_MeshNode*>(
+				const_cast<SMDS_MeshElement*>(*it)));
+			delete *it;
+			it++;
+		}
+	}
+		
+	delete s2;
+	delete s1;
+}

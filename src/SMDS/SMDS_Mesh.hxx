@@ -190,7 +190,6 @@ class SMDS_Mesh:public SMDS_MeshObject
 		SMDS_MeshNode * node2, SMDS_MeshNode * node3);
 	SMDS_MeshFace * createQuadrangle(SMDS_MeshNode * node1,
 		SMDS_MeshNode * node2, SMDS_MeshNode * node3, SMDS_MeshNode * node4);
-	void removeElementDependencies(SMDS_MeshElement * element);
 	const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,
 		const SMDS_MeshNode * n2) const;
 	SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
@@ -209,6 +208,8 @@ class SMDS_Mesh:public SMDS_MeshObject
 		const SMDS_MeshNode *n2,
 		const SMDS_MeshNode *n3,
 		const SMDS_MeshNode *n4);
+	void addChildrenWithNodes(set<const SMDS_MeshElement*>&	setOfChildren, 
+		const SMDS_MeshElement * element, set<const SMDS_MeshElement*>& nodes);
 
 	// Fields PRIVATE
 	typedef set<SMDS_MeshNode *> SetOfNodes;
