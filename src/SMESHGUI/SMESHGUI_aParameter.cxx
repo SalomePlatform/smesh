@@ -33,8 +33,6 @@
 
 #include "QAD_SpinBoxDbl.h"
 
-#include <utilities.h>
-
 SMESHGUI_aParameter::~SMESHGUI_aParameter() {}
 
 //=================================================================================
@@ -139,7 +137,6 @@ SMESHGUI_strParameter::SMESHGUI_strParameter(const QString& theInitValue,
      :SMESHGUI_aParameter(theLabel),
       _initValue( theInitValue )
 {
-  MESSAGE("SMESHGUI_strParameter::SMESHGUI_strParameter")
 }
 SMESHGUI_aParameter::Type SMESHGUI_strParameter::GetType() const
 {
@@ -160,7 +157,6 @@ bool SMESHGUI_strParameter::GetNewText( QString & theValue ) const
 }
 void SMESHGUI_strParameter::InitializeWidget( QWidget* theQWidget) const
 {
-  MESSAGE("SMESHGUI_strParameter::InitializeWidget")
   QTextEdit * anEdit = dynamic_cast< QTextEdit *>( theQWidget );
   if ( anEdit ) {
     anEdit->setText( _initValue );
@@ -168,7 +164,6 @@ void SMESHGUI_strParameter::InitializeWidget( QWidget* theQWidget) const
 }
 void SMESHGUI_strParameter::TakeValue( QWidget* theQWidget)
 {
-  MESSAGE("SMESHGUI_strParameter::TakeValue")
   QTextEdit * anEdit = dynamic_cast< QTextEdit *>( theQWidget );
   if ( anEdit )
     _newValue = anEdit->text();
