@@ -130,6 +130,7 @@ using namespace std;
 #include "VTKViewer_ViewFrame.h"
 #include <vtkLegendBoxActor.h>
 #include <vtkFeatureEdges.h>
+#include <vtkDoubleArray.h>
 
 
 // Open CASCADE Includes
@@ -1317,8 +1318,10 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
   case 0 : {
     QApplication::setOverrideCursor( Qt::waitCursor );
     if (ac->getDisplayMode()==2) {
+      bool isColored = ac->getMapper()->GetScalarVisibility(); //SAL3899
       vtkDataSetMapper* meshMapper = (vtkDataSetMapper*) (ac->getMapper());
       meshMapper->SetInput(ac->DataSource);
+      meshMapper->SetScalarVisibility(isColored); //SAL3899
     }
     ac->setDisplayMode(0);
     ac->GetProperty()->SetRepresentationToWireframe();
@@ -1329,8 +1332,10 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
   case 1 : {
     QApplication::setOverrideCursor( Qt::waitCursor );
     if (ac->getDisplayMode()==2) {
+      bool isColored = ac->getMapper()->GetScalarVisibility(); //SAL3899
       vtkDataSetMapper* meshMapper = (vtkDataSetMapper*) (ac->getMapper());
       meshMapper->SetInput(ac->DataSource);
+      meshMapper->SetScalarVisibility(isColored); //SAL3899
     }
     ac->setDisplayMode(1);
     ac->GetProperty()->SetRepresentationToSurface();
@@ -1343,13 +1348,14 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
     //    ChangeRepresentation(ac, 1);
     QApplication::setOverrideCursor( Qt::waitCursor );
     ac->setDisplayMode(2);
+    bool isColored = ac->getMapper()->GetScalarVisibility(); //SAL3899
     vtkDataSetMapper* meshMapper = (vtkDataSetMapper*) (ac->getMapper());
-    meshMapper->SetInput(ac->DataSource);
     vtkShrinkFilter *shrink = vtkShrinkFilter::New();
-    shrink->SetInput(meshMapper->GetInput());
+    shrink->SetInput(ac->DataSource);
     shrink->SetShrinkFactor(ac->GetShrinkFactor());
     
     meshMapper->SetInput( shrink->GetOutput() );
+    meshMapper->SetScalarVisibility(isColored); //SAL3899
     ac->SetMapper( meshMapper );
     QApplication::restoreOverrideCursor();
     //    }
@@ -1419,6 +1425,7 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
 	ac->SetNodeSize(aDlg->GetIntValue(2)) ;
 	
 	if (ac->getDisplayMode()==2) {
+	  bool isColored = ac->getMapper()->GetScalarVisibility(); //SAL3899
 	  vtkDataSetMapper* meshMapper = (vtkDataSetMapper*) (ac->getMapper());
 	  meshMapper->SetInput(ac->DataSource);
 	  vtkShrinkFilter *shrink = vtkShrinkFilter::New();
@@ -1426,6 +1433,7 @@ void SMESHGUI::ChangeRepresentation( SMESH_Actor* ac, int type )
 	  shrink->SetShrinkFactor(ac->GetShrinkFactor());
 	  
 	  meshMapper->SetInput( shrink->GetOutput() );
+	  meshMapper->SetScalarVisibility(isColored); //SAL3899
 	  ac->SetMapper( meshMapper );
 	}
       }
@@ -4536,9 +4544,7 @@ void SMESHGUI::Control(int theCommandID)
   QApplication::setOverrideCursor( Qt::waitCursor );
   DisplayScalarBar( false );
 
-// mpv porting vtk 4.2.2
-//  vtkScalars *scalars = vtkScalars::New();
-  vtkIntArray *scalars = vtkIntArray::New();
+  vtkDoubleArray *scalars = vtkDoubleArray::New();
   scalars->SetNumberOfComponents(1);
 
   vtkDataSetMapper* meshMapper = 0;
@@ -4554,140 +4560,60 @@ void SMESHGUI::Control(int theCommandID)
     return;
   }
 
-  bool ValidateScalars = false;
-  if ( result ) {
+  vtkDataSet* aDataSet = MeshActor->DataSource;
+  typedef double (*TScalarFun)(vtkCell* theCell);
+  TScalarFun aScalarFun;
+  if(result){
     QString type;
-    switch (theCommandID)
-      {
-      case 6001: //Length Edges
-	{
-	  type = tr( "SMESH_CONTROL_LENGTH_EDGES");
-	  meshMapper = (vtkDataSetMapper*)MeshActor->EdgeDevice->GetMapper();
-	  vtkUnstructuredGrid* grid = (vtkUnstructuredGrid*)meshMapper->GetInput();
-	  MESSAGE ( " init minimum length " << grid->GetNumberOfCells() )
-	  for (int i=0; i<grid->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = grid->GetCell(i);
-	    float len = SMESHGUI_ComputeScalarValue::LengthEdges(cell);
-	    if (len == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-// 	      scalars->InsertScalar(i,len);
-	      scalars->InsertTuple1(i,len);
-	    }
-	  }
-	  if (ValidateScalars && (MeshActor->getDisplayMode()!=0))
-	    ChangeRepresentation( MeshActor, 1 );// limitation; in Wireframe, colored edges are not visible
-	  break;
-	}
-      case 6011: // Area Elements
-	{
-	  type = tr( "SMESH_CONTROL_AREA_ELEMENTS");
-	  for (int i=0; i< MeshActor->GetMapper()->GetInput()->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->GetMapper()->GetInput()->GetCell(i);
-	    float area = SMESHGUI_ComputeScalarValue::AreaElements(cell);
-  	    if (area == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,area);
-	      scalars->InsertTuple1(i,area);
-	    }
-	  }
-	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
-	    ChangeRepresentation( MeshActor, 1 );
-	  break;
-	}
-      case 6012: // Taper
-	{
-	  type = tr( "SMESH_CONTROL_TAPER_ELEMENTS");
-	  for (int i=0; i< MeshActor->DataSource->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->DataSource->GetCell(i);
-	    float taper = SMESHGUI_ComputeScalarValue::Taper(cell);
-	    if (taper == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,taper);
-	      scalars->InsertTuple1(i,taper);
-	    }
-	  }
-	  break;
-	}
-      case 6013: // Aspect ratio
-	{
-	  type = tr( "SMESH_CONTROL_ASPECTRATIO_ELEMENTS");
-	  for (int i=0; i<MeshActor->DataSource->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->DataSource->GetCell(i);
-	    float aspect = SMESHGUI_ComputeScalarValue::AspectRatio(cell);
-	    if (aspect == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,aspect);
-	      scalars->InsertTuple1(i,aspect);
-	    }
-	  }
-	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
-	    ChangeRepresentation( MeshActor, 1 );
-	  break;
-	}
-      case 6014: // Minimum angle
-	{
-	  type = tr( "SMESH_CONTROL_MINIMUMANGLE_ELEMENTS");
-	  for (int i=0; i<MeshActor->DataSource->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->DataSource->GetCell(i);
-	    float angle = SMESHGUI_ComputeScalarValue::MinimumAngle(cell);
-	    if (angle == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,angle);
-	      scalars->InsertTuple1(i,angle);
-	    }
-	  }
-	  if (ValidateScalars && (MeshActor->getDisplayMode()!=1))
-	    ChangeRepresentation( MeshActor, 1 );
-	  break;
-	}
-      case 6015: // Warp
-	{
-	  type = tr( "SMESH_CONTROL_WARP_ELEMENTS");
-	  for (int i=0; i<MeshActor->DataSource->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->DataSource->GetCell(i);
-	    float Warp = SMESHGUI_ComputeScalarValue::Warp(cell);
-	    if (Warp == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,Warp);
-	      scalars->InsertTuple1(i,Warp);
-	    }
-	  }
-	  break;
-	}
-      case 6016: // Skew
-	{
-	  type = tr( "SMESH_CONTROL_SKEW_ELEMENTS");
-	  for (int i=0; i<MeshActor->DataSource->GetNumberOfCells(); i++ ) {
-	    vtkCell* cell = MeshActor->DataSource->GetCell(i);
-	    float angle = SMESHGUI_ComputeScalarValue::Skew(cell);
-	    if (angle == 0) continue;
-	    else {
-	      ValidateScalars = true;
-// mpv porting vtk 4.2.2
-//	      scalars->InsertScalar(i,angle);
-	      scalars->InsertTuple1(i,angle);
-	    }
-	  }
-	  break;
-	}
-      }
-
-    if ( !ValidateScalars ) {
-      QApplication::restoreOverrideCursor();
-      return;
+    switch (theCommandID){
+    case 6001: {
+      type = tr( "SMESH_CONTROL_LENGTH_EDGES");
+      aDataSet = MeshActor->EdgeDevice->GetMapper()->GetInput();
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::LengthEdges);
+      MESSAGE ( " init minimum length " << aDataSet->GetNumberOfCells() );
+      if(MeshActor->getDisplayMode() != 0)
+	ChangeRepresentation( MeshActor, 1);// limitation; in Wireframe, colored edges are not visible
+      break;
+    } 
+    case 6011: {
+      type = tr( "SMESH_CONTROL_AREA_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::AreaElements);
+      if(MeshActor->getDisplayMode() != 1)
+	ChangeRepresentation( MeshActor, 1 );
+      break;
     }
+    case 6012: {
+      type = tr( "SMESH_CONTROL_TAPER_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::Taper);
+      break;
+    }
+    case 6013: {
+      type = tr( "SMESH_CONTROL_ASPECTRATIO_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::AspectRatio);
+      if(MeshActor->getDisplayMode() != 1)
+	ChangeRepresentation( MeshActor, 1 );
+      break;
+    }
+    case 6014: {
+      type = tr( "SMESH_CONTROL_MINIMUMANGLE_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::MinimumAngle);
+      if(MeshActor->getDisplayMode() != 1)
+	ChangeRepresentation( MeshActor, 1 );
+      break;
+    }
+    case 6015: {
+      type = tr( "SMESH_CONTROL_WARP_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::Warp);
+      break;
+    }
+    case 6016: {
+      type = tr( "SMESH_CONTROL_SKEW_ELEMENTS");
+      aScalarFun = &(SMESHGUI_ComputeScalarValue::Skew);
+      break;
+    }}
+
+    for(int i = 0, iEnd = aDataSet->GetNumberOfCells(); i < iEnd; i++)
+      scalars->InsertTuple1(i,aScalarFun(aDataSet->GetCell(i)));
 
     float range[2];
     scalars->GetRange(range);
@@ -4700,7 +4626,7 @@ void SMESHGUI::Control(int theCommandID)
 
     if (!meshMapper) meshMapper = (vtkDataSetMapper*) (MeshActor->getMapper());
     meshMapper->SetScalarModeToUseCellData();
-    meshMapper->GetInput()->GetCellData()->SetScalars(scalars);
+    MeshActor->DataSource->GetCellData()->SetScalars(scalars);
     meshMapper->SetScalarRange( range );
     meshMapper->ScalarVisibilityOn();
 
