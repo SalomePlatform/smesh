@@ -730,6 +730,8 @@ namespace{
     
     SALOME_Selection *Sel = SALOME_Selection::Selection(anActiveStudy->getSelection());
     SALOME_ListIteratorOfListIO It(Sel->StoredIObjects());
+
+    aStudyBuilder->NewCommand();  // There is a transaction
     for(; It.More(); It.Next()){
       Handle(SALOME_InteractiveObject) IObject = It.Value();
       if(IObject->hasEntry()){
@@ -737,7 +739,7 @@ namespace{
 	
 	/* Erase child graphical objects */
 	SALOMEDS::ChildIterator_var it = aStudy->NewChildIterator(SO);
-	for(; it->More(); it->Next()){
+	for(it->InitEx(true); it->More(); it->Next()){
 	  SALOMEDS::SObject_var CSO = it->Value();
 	  if(CSO->FindAttribute(anAttr, "AttributeIOR")){
 	    anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
@@ -785,6 +787,7 @@ namespace{
 	
       } /* IObject->hasEntry() */
     } /* more/next */
+    aStudyBuilder->CommitCommand();
     
     /* Clear any previous selection */
     Sel->ClearIObjects();
@@ -1274,6 +1277,7 @@ bool SMESHGUI::OnGUIEvent(int theCommandID, QAD_Desktop * parent)
 	}
 	CORBA::Long anId = aStudy->StudyId();
 	TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,IObject->getEntry());
+	cout<<"myAutomaticUpdate - "<<myAutomaticUpdate<<endl;
 	if(myAutomaticUpdate && aVisualObj){
 	  aVisualObj->Update();
 	  SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());

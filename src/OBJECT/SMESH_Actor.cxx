@@ -101,8 +101,9 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 }
 
 
-SMESH_ActorDef::SMESH_ActorDef(){
-  if(MYDEBUG) MESSAGE("SMESH_ActorDef");
+SMESH_ActorDef::SMESH_ActorDef()
+{
+  if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);
 
   myTimeStamp = vtkTimeStamp::New();
 
@@ -136,7 +137,6 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   my2DActor = SMESH_DeviceActor::New();
   my2DActor->SetUserMatrix(aMatrix);
-  my2DActor->SetStoreMapping(true);
   my2DActor->PickableOff();
   my2DActor->SetProperty(mySurfaceProp);
   my2DActor->SetBackfaceProperty(myBackSurfaceProp);
@@ -149,7 +149,6 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   my3DActor = SMESH_DeviceActor::New();
   my3DActor->SetUserMatrix(aMatrix);
-  my3DActor->SetStoreMapping(true);
   my3DActor->PickableOff();
   my3DActor->SetProperty(mySurfaceProp);
   my3DActor->SetBackfaceProperty(myBackSurfaceProp);
@@ -177,7 +176,6 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   my1DActor = SMESH_DeviceActor::New();
   my1DActor->SetUserMatrix(aMatrix);
-  my1DActor->SetStoreMapping(true);
   my1DActor->PickableOff();
   my1DActor->SetHighlited(true);
   my1DActor->SetProperty(myEdgeProp);
@@ -202,7 +200,6 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   my1DExtActor = SMESH_DeviceActor::New();
   my1DExtActor->SetUserMatrix(aMatrix);
-  my1DExtActor->SetStoreMapping(true);
   my1DExtActor->PickableOff();
   my1DExtActor->SetHighlited(true);
   my1DExtActor->SetVisibility(false);
@@ -224,7 +221,7 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   myNodeActor = SMESH_DeviceActor::New();
   myNodeActor->SetUserMatrix(aMatrix);
-  myNodeActor->SetStoreMapping(true);
+  myNodeActor->SetStoreClippingMapping(true);
   myNodeActor->PickableOff();
   myNodeActor->SetVisibility(false);
   myNodeActor->SetProperty(myNodeProp);
@@ -238,9 +235,8 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   myBaseActor = SMESH_DeviceActor::New();
   myBaseActor->SetUserMatrix(aMatrix);
-  myBaseActor->SetStoreMapping(true);
+  myBaseActor->SetStoreGemetryMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
-  myBaseActor->myGeomFilter->SetInside(true);
 
   myPickableActor = myBaseActor;
   
@@ -268,18 +264,8 @@ SMESH_ActorDef::SMESH_ActorDef(){
 
   myHighlitableActor = SMESH_DeviceActor::New();
   myHighlitableActor->SetUserMatrix(aMatrix);
-  myHighlitableActor->SetStoreMapping(false);
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-
-  myNodeHighlitableActor = SMESH_DeviceActor::New();
-  myNodeHighlitableActor->SetUserMatrix(aMatrix);
-  myNodeHighlitableActor->SetStoreMapping(false);
-  myNodeHighlitableActor->PickableOff();
-  myNodeHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
-  aFilter = myNodeHighlitableActor->GetExtractUnstructuredGrid();
-  aFilter->SetModeOfExtraction(SALOME_ExtractUnstructuredGrid::ePoints);
-
 
   SetShrinkFactor(SMESH::GetFloat("SMESH:SettingsShrinkCoeff", 75)/100.);
 
@@ -494,8 +480,9 @@ SMESH_ActorDef::SMESH_ActorDef(){
 }
 
 
-SMESH_ActorDef::~SMESH_ActorDef(){
-  if(MYDEBUG) MESSAGE("~SMESH_ActorDef");
+SMESH_ActorDef::~SMESH_ActorDef()
+{
+  if(MYDEBUG) MESSAGE("~SMESH_ActorDef - "<<this);
 
   myScalarBarActor->Delete();
   myLookupTable->Delete();
@@ -522,8 +509,6 @@ SMESH_ActorDef::~SMESH_ActorDef(){
   myBaseActor->Delete();
 
   myHighlitableActor->Delete();
-  myNodeHighlitableActor->Delete();
-
 
   //Deleting of pints numbering pipeline
   //---------------------------------------
@@ -624,8 +609,21 @@ void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
 }
 
 
-void SMESH_ActorDef::SetControlMode(eControl theMode){
+void 
+SMESH_ActorDef::
+SetControlMode(eControl theMode)
+{
+  SetControlMode(theMode,true);
+}
+
+
+void 
+SMESH_ActorDef::
+SetControlMode(eControl theMode,
+	       bool theCheckEntityMode)
+{
   myControlMode = eNone;
+  theCheckEntityMode &= QAD_CONFIG->getSetting("SMESH:DispayEntity") == "true";
 
   my1DActor->GetMapper()->SetScalarVisibility(false);
   my2DActor->GetMapper()->SetScalarVisibility(false);
@@ -734,27 +732,36 @@ void SMESH_ActorDef::SetControlMode(eControl theMode){
       switch(myControlMode){
       case eFreeEdges:
       case eFreeBorders:
-	my1DExtActor->SetExtControlMode(aFunctor,myControlActor);
+	my1DExtActor->SetExtControlMode(aFunctor);
 	break;
       case eLength2D:
       case eMultiConnection2D:
-	my1DExtActor->SetExtControlMode(aFunctor,myControlActor,myScalarBarActor,myLookupTable);
+	my1DExtActor->SetExtControlMode(aFunctor,myScalarBarActor,myLookupTable);
 	break;
       default:
 	myControlActor->SetControlMode(aFunctor,myScalarBarActor,myLookupTable);
       }
     }
 
-    if(QAD_CONFIG->getSetting("SMESH:DispayEntity") == "true"){
+    if(theCheckEntityMode){
       if(myControlActor == my1DActor)
-	myEntityMode = eEdges;
-      else if(myControlActor == my2DActor)
-	myEntityMode = eFaces;
-      else if(myControlActor == my3DActor)
-	myEntityMode = eVolumes;
+	SetEntityMode(eEdges);
+      else if(myControlActor == my2DActor){
+	switch(myControlMode){
+	case eLength2D:
+	case eFreeEdges:
+	case eMultiConnection2D:
+	  //SetEntityMode(eEdges);
+	  SetEntityMode(eFaces);
+	  break;
+	default:
+	  SetEntityMode(eFaces);
+	}
+      }else if(myControlActor == my3DActor)
+	SetEntityMode(eVolumes);
     }
 
-  }else if(QAD_CONFIG->getSetting("SMESH:DispayEntity") == "true"){
+  }else if(theCheckEntityMode){
     myEntityMode = eAllEntity;
   }
 
@@ -778,7 +785,6 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
   theRenderer->AddActor(my1DExtActor);
 
   theRenderer->AddActor(myHighlitableActor);
-  theRenderer->AddActor(myNodeHighlitableActor);
 
   theRenderer->AddActor2D(myScalarBarActor);
 
@@ -796,7 +802,6 @@ void SMESH_ActorDef::RemoveFromRender(vtkRenderer* theRenderer){
   theRenderer->RemoveActor(myBaseActor);
 
   theRenderer->RemoveActor(myHighlitableActor);
-  theRenderer->RemoveActor(myNodeHighlitableActor);
 
   theRenderer->RemoveActor(my1DActor);
   theRenderer->RemoveActor(my1DExtActor);
@@ -826,7 +831,6 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   myBaseActor->Init(myVisualObj,myImplicitBoolean);
   
   myHighlitableActor->Init(myVisualObj,myImplicitBoolean);
-  myNodeHighlitableActor->Init(myVisualObj,myImplicitBoolean);
   
   my1DActor->Init(myVisualObj,myImplicitBoolean);
   my1DExtActor->Init(myVisualObj,myImplicitBoolean);
@@ -883,7 +887,6 @@ void SMESH_ActorDef::SetTransform(SALOME_Transform* theTransform){
   myBaseActor->SetTransform(theTransform);
 
   myHighlitableActor->SetTransform(theTransform);
-  myNodeHighlitableActor->SetTransform(theTransform);
 
   my1DActor->SetTransform(theTransform);
   my1DExtActor->SetTransform(theTransform);
@@ -1067,14 +1070,22 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
 
 
 void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
-  if(!myVisualObj->GetNbEntities(SMDSAbs_Edge))
+  myEntityState = eAllEntity;
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Edge)){
+    myEntityState &= ~eEdges;
     theMode &= ~eEdges;
+  }
 
-  if(!myVisualObj->GetNbEntities(SMDSAbs_Face))
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Face)){
+    myEntityState &= ~eFaces;
     theMode &= ~eFaces;
+  }
 
-  if(!myVisualObj->GetNbEntities(SMDSAbs_Volume))
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Volume)){
+    myEntityState &= ~eVolumes;
     theMode &= ~eVolumes;
+  }
 
   if(!theMode){
     if(myVisualObj->GetNbEntities(SMDSAbs_Edge))
@@ -1086,6 +1097,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     if(myVisualObj->GetNbEntities(SMDSAbs_Volume))
       theMode |= eVolumes;
   }
+
+  myBaseActor->myGeomFilter->SetInside(myEntityMode != myEntityState);
 
   myEntityMode = theMode;
   SALOME_ExtractUnstructuredGrid* aFilter = NULL;
@@ -1229,27 +1242,27 @@ void SMESH_ActorDef::UpdateHighlight(){
   myHighlitableActor->SetVisibility(false);
   myHighlitableActor->SetHighlited(false);
 
-  myNodeHighlitableActor->SetVisibility(false);
-  myNodeHighlitableActor->SetHighlited(false);
-
   if(myIsHighlighted){
     myHighlitableActor->SetProperty(myHighlightProp);
   }else if(myIsPreselected){
     myHighlitableActor->SetProperty(myPreselectProp);
   }
 
-  bool isVisible = GetVisibility();
+  bool anIsVisible = GetVisibility();
 
   if(myIsHighlighted || myIsPreselected){
     if(GetUnstructuredGrid()->GetNumberOfCells()){
+      myHighlitableActor->SetHighlited(anIsVisible);
+      myHighlitableActor->SetVisibility(anIsVisible);
+      myHighlitableActor->GetExtractUnstructuredGrid()->
+	SetModeOfExtraction(SALOME_ExtractUnstructuredGrid::eCells);
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-      myHighlitableActor->SetVisibility(isVisible);
-      myHighlitableActor->SetHighlited(isVisible);
-    }
-    if(myRepresentation == ePoint || GetPointRepresentation()){
-      myNodeHighlitableActor->SetProperty(myHighlitableActor->GetProperty());
-      myNodeHighlitableActor->SetVisibility(isVisible);
-      myNodeHighlitableActor->SetHighlited(isVisible);
+    }else if(myRepresentation == ePoint || GetPointRepresentation()){
+      myHighlitableActor->SetHighlited(anIsVisible);
+      myHighlitableActor->SetVisibility(anIsVisible);
+      myHighlitableActor->GetExtractUnstructuredGrid()->
+	SetModeOfExtraction(SALOME_ExtractUnstructuredGrid::ePoints);
+      myHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
     }
   }
 }
@@ -1308,7 +1321,7 @@ void SMESH_ActorDef::Update(){
     unsigned long aTime = myTimeStamp->GetMTime();
     unsigned long anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
     if (anObjTime > aTime)
-      SetControlMode(GetControlMode());
+      SetControlMode(GetControlMode(),false);
   }
   if(myIsPointsLabeled){
     SetPointsLabeled(myIsPointsLabeled);
@@ -1461,7 +1474,6 @@ SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
   myBaseActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
   
   myHighlitableActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
-  myNodeHighlitableActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
   
   my1DActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);
   my1DExtActor->SetImplicitFunctionUsed(theIsImplicitFunctionUsed);

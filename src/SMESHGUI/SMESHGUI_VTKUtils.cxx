@@ -244,6 +244,17 @@ namespace SMESH{
   void RemoveActor(QAD_StudyFrame *theStudyFrame, SMESH_Actor* theActor){
     if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
       aViewFrame->RemoveActor(theActor);
+      if(theActor->hasIO()){
+	Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
+	if(anIO->hasEntry()){
+	  std::string anEntry = anIO->getEntry();
+	  QAD_Study* aStudy = theStudyFrame->getStudy();
+	  int aStudyId = aStudy->getStudyId();
+	  TVisualObjCont::key_type aKey(aStudyId,anEntry);
+	  VISUAL_OBJ_CONT.erase(aKey);
+	}
+      }
+      theActor->Delete();
       aViewFrame->Repaint();
     }
   }

@@ -287,12 +287,15 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
 //=================================================================================
 SMESH_VisualObjDef::SMESH_VisualObjDef()
 {
+  if(MYDEBUG) MESSAGE("SMESH_MeshObj - "<<this);
   myGrid = vtkUnstructuredGrid::New();
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
-  if ( MYDEBUG )
-    MESSAGE( "~SMESH_MeshObj - myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
+  if(MYDEBUG) {
+    MESSAGE("~SMESH_MeshObj - "<<this);
+    myGrid->DebugOn();
+  }
   myGrid->Delete();
 }
 

@@ -76,7 +76,8 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 			    CORBA::Long studyId )
 : SALOME::GenericObj_i( thePOA )
 {
-  INFOS("SMESH_Mesh_i");
+  INFOS("SMESH_Mesh_i; this = "<<this);
+  _impl = NULL;
   _gen_i = gen_i;
   _id = myIdGenerator++;
   _studyId = studyId;
@@ -91,7 +92,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
-  INFOS("~SMESH_Mesh_i");
+  INFOS("~SMESH_Mesh_i; this = "<<this);
   map<int, SMESH::SMESH_GroupBase_ptr>::iterator it;
   for ( it = _mapGroups.begin(); it != _mapGroups.end(); it++ ) {
     SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( it->second ).in() );

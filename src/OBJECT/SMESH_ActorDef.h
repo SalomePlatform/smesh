@@ -186,6 +186,7 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
  protected:
+  void SetControlMode(eControl theMode, bool theCheckEntityMode);
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
   bool IsImplicitFunctionUsed() const;
 
@@ -207,7 +208,6 @@ class SMESH_ActorDef : public SMESH_Actor{
   vtkProperty* myHighlightProp;
   vtkProperty* myPreselectProp;
   SMESH_DeviceActor* myHighlitableActor;
-  SMESH_DeviceActor* myNodeHighlitableActor;
 
   eControl myControlMode;
   SMESH_DeviceActor* my2DActor;
@@ -220,6 +220,7 @@ class SMESH_ActorDef : public SMESH_Actor{
   SMESH_DeviceActor* my1DExtActor;
 
   unsigned int myEntityMode;
+  unsigned int myEntityState;
   bool myIsPointsVisible;
 
   bool myIsShrinkable;
