@@ -144,7 +144,7 @@ CORBA_INCLUDES    = @CORBA_INCLUDES@
 CORBA_LIBS        = @CORBA_LIBS@
 CORBA_CXXFLAGS    = @CORBA_CXXFLAGS@
 
-IDLCXXFLAGS = @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
+IDLCXXFLAGS = -bcxx @IDLCXXFLAGS@ -I$(top_srcdir)/idl -I$(top_builddir)/idl -I$(KERNEL_ROOT_DIR)/idl/salome -I$(GEOM_ROOT_DIR)/idl/salome -I$(MED_ROOT_DIR)/idl/salome
 IDLPYFLAGS  = @IDLPYFLAGS@
 
 IDL = @IDL@
