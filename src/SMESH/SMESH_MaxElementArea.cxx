@@ -79,7 +79,7 @@ void SMESH_MaxElementArea::SetMaxArea(double maxArea)
  */
 //=============================================================================
 
-double SMESH_MaxElementArea::GetMaxArea()
+double SMESH_MaxElementArea::GetMaxArea() const
 {
   return _maxArea;
 }
