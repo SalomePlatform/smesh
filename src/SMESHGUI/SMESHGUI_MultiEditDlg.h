@@ -34,7 +34,6 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QCloseEvent;
 class SMESHGUI_FilterDlg;
 class QCheckBox;
 class QGroupBox;
@@ -47,6 +46,7 @@ class SALOME_Selection;
 class SMESH_Actor;
 class SALOME_Actor;
 class QButtonGroup;
+class QObject;
 
 /*
   Class       : SMESHGUI_MultiEditDlg
@@ -67,6 +67,8 @@ public:
   virtual                   ~SMESHGUI_MultiEditDlg();
 
   void                      Init( SALOME_Selection* ) ;
+
+  bool                      eventFilter( QObject* object, QEvent* event );
 
 signals:
   void                      ListContensChanged();
@@ -98,7 +100,7 @@ protected:
   void                      hideEvent ( QHideEvent * );                        /* ESC key */
   QFrame*                   createButtonFrame( QWidget* );
   QFrame*                   createMainFrame  ( QWidget*, const bool );
-  bool                      isValid( const bool ) const;
+  bool                      isValid( const bool );
   SMESH::long_array_var     getIds();
   void                      updateButtons();
   void                      setSelectionMode();
@@ -141,6 +143,7 @@ protected:
   Handle(SMESH_TypeFilter)  myGroupFilter;
   bool                      myBusy;
   int                       myEntityType;
+  Handle(SALOME_InteractiveObject) myIO;
 };
 
 /*

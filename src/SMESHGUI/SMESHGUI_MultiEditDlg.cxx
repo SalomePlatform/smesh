@@ -148,6 +148,7 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame( QWidget* theParent, const bool t
   myListBox->setSelectionMode( QListBox::Extended );
   myListBox->setSizePolicy( QSizePolicy( QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding) );
 //  myListBox->setColumnMode( QListBox::FitToHeight );
+  myListBox->installEventFilter( this );
   
   myFilterBtn = new QPushButton( tr( "FILTER" )   , aFrame );
   myAddBtn    = new QPushButton( tr( "ADD" )      , aFrame );
@@ -213,10 +214,11 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame( QWidget* theParent )
 // name    : SMESHGUI_MultiEditDlg::isValid
 // Purpose : Verify validity of input data
 //=======================================================================
-bool SMESHGUI_MultiEditDlg::isValid( const bool /*theMess*/ ) const
+bool SMESHGUI_MultiEditDlg::isValid( const bool /*theMess*/ )
 {
+  SMESH::long_array_var anIds = getIds();
   return (!myMesh->_is_nil() &&
-          (myListBox->count() > 0 || (myToAllChk->isChecked() && myActor)));
+          (myListBox->count() > 0 || (myToAllChk->isChecked() && myActor)) && anIds->length() > 0);
 }
 
 //=======================================================================
@@ -230,6 +232,20 @@ SMESHGUI_MultiEditDlg::~SMESHGUI_MultiEditDlg()
     myFilterDlg->reparent( 0, QPoint() );
     delete myFilterDlg;
   }
+}
+
+//=======================================================================
+// name    : SMESHGUI_MultiEditDlg::eventFilter
+// Purpose : event filter
+//=======================================================================
+bool SMESHGUI_MultiEditDlg::eventFilter( QObject* object, QEvent* event )
+{
+  if ( object == myListBox && event->type() == QEvent::KeyPress ) {
+    QKeyEvent* ke = (QKeyEvent*)event;
+    if ( ke->key() == Key_Delete )
+      onRemoveBtn();
+  }
+  return QDialog::eventFilter( object, event );
 }
 
 //=======================================================================
@@ -272,10 +288,16 @@ void SMESHGUI_MultiEditDlg::Init( SALOME_Selection* theSelection )
 
   connect( myListBox, SIGNAL( selectionChanged() ), SLOT( onListSelectionChanged() ) );
 
-  onSelectionDone();
+  int nbSel = mySelection->IObjectCount();
+  if ( nbSel == 1 )
+    myIO = mySelection->firstIObject();
 
   // set selection mode
   setSelectionMode();
+
+  // process selection
+  //onSelectionDone();
+
   updateButtons();
 }
 
@@ -431,13 +453,19 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
 
   if ( nbSel == 1 ) {
     myActor = SMESH::FindActorByEntry(mySelection->firstIObject()->getEntry());
-    if ( !myActor && !myMesh->_is_nil() )
-      myActor = SMESH::FindActorByObject( myMesh );
+    //if ( !myActor && !myMesh->_is_nil() )
+    //  myActor = SMESH::FindActorByObject( myMesh );
     VTKViewer_InteractorStyleSALOME* aStyle = SMESH::GetInteractorStyle();
     Handle(VTKViewer_Filter) aFilter = aStyle->GetFilter( myFilterType );
-    if ( !aFilter.IsNull() && myActor ) {
-      aFilter->SetActor( myActor );
-      //SMESH::SetPickable( myActor );
+    if ( myActor ) {
+      if ( !aFilter.IsNull() ) {
+	aFilter->SetActor( myActor );
+	//SMESH::SetPickable( myActor );
+	myIO = myActor->getIO();
+      }
+    }
+    else {
+      myIO.Nullify();
     }
   }
   myBusy = false;
@@ -817,11 +845,11 @@ void SMESHGUI_MultiEditDlg::onToAllChk()
 
   emit ListContensChanged();
     
-  updateButtons();
   setSelectionMode();
 
-  if ( myActor )
-    mySelection->AddIObject( myActor->getIO(), true );
+  //if ( !myIO.IsNull() )
+  //mySelection->AddIObject( myIO, true );
+  updateButtons();
 }
 
 
@@ -864,6 +892,8 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
     else
       SMESH::SetFilter( new SMESHGUI_FacesFilter() );
   }
+  if ( !myIO.IsNull() )
+    mySelection->AddIObject( myIO, true );
 }
 
 //=======================================================================
@@ -920,15 +950,15 @@ void SMESHGUI_MultiEditDlg::on3d2dChanged(int type)
 
     emit ListContensChanged();
     
-    updateButtons();
-
     if ( type )
       myFilterType = SMESHGUI_VolumeFilter;
     else 
       myFilterType = SMESHGUI_FaceFilter;
     setSelectionMode();
 
-    myActor = 0;
+    updateButtons();
+
+    //myActor = 0;
   }
 }
 
