@@ -148,7 +148,7 @@ void SMESHGUI_DeleteGroupDlg::Init( SALOME_Selection* theSelection )
   // selection and SMESHGUI
   connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
   connect( aSMESHGUI, SIGNAL( SignalDeactivateActiveDialog() ), SLOT( onDeactivate() ) );
-  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( ClickOnClose() ) );
+  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( onClose() ) );
   
   int x, y ;
   aSMESHGUI->DefineDlgPosition( this, x, y );
@@ -205,7 +205,7 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
   SMESHGUI::GetSMESHGUI()->GetActiveStudy()->updateObjBrowser( true );
    
   myBlockSelection = false;
-  return false;
+  return true;
 }
 
 //=======================================================================
