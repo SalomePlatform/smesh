@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_MEDMesh_i.hxx"
@@ -45,20 +44,7 @@ using namespace std;
 
 #include <string>
 #include <iostream>
-
-//**** SMESHDS en champ
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-SMESH_Mesh_i::SMESH_Mesh_i()
-{
-	MESSAGE("SMESH_Mesh_i: default constructor, not for use");
-	ASSERT(0);
-};
+using namespace std;
 
 //=============================================================================
 /*!
@@ -67,13 +53,13 @@ SMESH_Mesh_i::SMESH_Mesh_i()
 //=============================================================================
 
 SMESH_Mesh_i::SMESH_Mesh_i(SMESH_Gen_i * gen_i,
-	GEOM::GEOM_Gen_ptr geomEngine, CORBA::Long studyId, int localId)
+	GEOM::GEOM_Gen_ptr geomEngine, CORBA::Long studyId, ::SMESH_Mesh * impl)
 {
 	MESSAGE("SMESH_Mesh_i");
 	_gen_i = gen_i;
-	_id = localId;
 	_geom = GEOM::GEOM_Gen::_narrow(geomEngine);
-	_studyId = studyId;
+	_impl=impl;
+	_studyId=studyId;
 }
 
 //=============================================================================
@@ -512,8 +498,7 @@ void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
 
 CORBA::Long SMESH_Mesh_i::GetId()throw(SALOME::SALOME_Exception)
 {
-	MESSAGE("SMESH_Mesh_i::GetId");
-	return _id;
+	return _impl->GetId();
 }
 
 //=============================================================================
@@ -525,18 +510,6 @@ CORBA::Long SMESH_Mesh_i::GetId()throw(SALOME::SALOME_Exception)
 CORBA::Long SMESH_Mesh_i::GetStudyId()throw(SALOME::SALOME_Exception)
 {
 	return _studyId;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
-{
-	MESSAGE("SMESH_Mesh_i::SetImpl");
-	_impl = impl;
 }
 
 //=============================================================================

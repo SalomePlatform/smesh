@@ -61,7 +61,7 @@ class SMESH_Gen
 
 	SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
 		throw(SALOME_Exception);
-	SMESH_Mesh *Init(int studyId, const TopoDS_Shape & aShape)
+	SMESH_Mesh *Init(int studyId, const TopoDS_Shape & aShape, int meshID = -1)
 		throw(SALOME_Exception);
 	bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 		throw(SALOME_Exception);

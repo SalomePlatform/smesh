@@ -50,11 +50,10 @@ class SMESH_Mesh_i:
   public POA_SMESH::SMESH_Mesh
 {
 public:
-  SMESH_Mesh_i();
   SMESH_Mesh_i(SMESH_Gen_i* myGen_i,
 	       GEOM::GEOM_Gen_ptr geomEngine,
 	       CORBA::Long studyId,
-	       int localId);
+	       ::SMESH_Mesh * impl);
 
   virtual ~SMESH_Mesh_i();
 
@@ -143,10 +142,8 @@ private:
   SMESH_Gen_i* _gen_i;
   //   CORBA::ORB_ptr _orb;
 //   SMESH_topo* _topo;   // all local TopoDS_Shape of subShapes
-  int _id;          // id given by creator (unique within the creator instance)
   GEOM::GEOM_Gen_var _geom;
-  int _studyId;
-  //  int _localId; // id attributed to all objects created by Mesh_i
+  CORBA::Long _studyId;
   map<int, SMESH::SMESH_subMesh_ptr> _mapSubMeshIor;
   SMESH::SMESH_Mesh_var _myIor;
 };

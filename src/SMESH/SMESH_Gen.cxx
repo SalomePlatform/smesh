@@ -97,8 +97,8 @@ SMESH_Hypothesis *SMESH_Gen::CreateHypothesis(const char *anHyp, int studyId)
  */
 //=============================================================================
 
-SMESH_Mesh *SMESH_Gen::Init(int studyId, const TopoDS_Shape & aShape)
-throw(SALOME_Exception)
+SMESH_Mesh *SMESH_Gen::Init(int studyId, const TopoDS_Shape & aShape, int meshID)
+	throw(SALOME_Exception)
 {
 	MESSAGE("SMESH_Gen::Init");
 //   if (aShape.ShapeType() == TopAbs_COMPOUND)
@@ -113,11 +113,16 @@ throw(SALOME_Exception)
 
 	// create a new SMESH_mesh object 
 
-	SMESH_Mesh *mesh = new SMESH_Mesh(_localId++,
+	if(meshID == -1)
+		meshID=_localId++;
+	else if(_localId<=meshID)
+		_localId=meshID+1;
+
+	SMESH_Mesh *mesh = new SMESH_Mesh(meshID,
 		studyId,
 		this,
 		myStudyContext->myDocument);
-	myStudyContext->mapMesh[_localId] = mesh;
+	myStudyContext->mapMesh[meshID] = mesh;
 
 	// associate a TopoDS_Shape to the mesh
 

@@ -82,6 +82,12 @@ public:
                              GEOM::GEOM_Shape_ptr aShape)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::SMESH_Mesh_ptr Init(GEOM::GEOM_Gen_ptr geomEngine,
+                             CORBA::Long studyId,
+                             GEOM::GEOM_Shape_ptr aShape,
+							 int meshID)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Boolean Compute(SMESH::SMESH_Mesh_ptr aMesh,
                          GEOM::GEOM_Shape_ptr aShape)
     throw (SALOME::SALOME_Exception);
@@ -175,7 +181,6 @@ void loadSubMeshes(HDFgroup * hdfGroupMeshId, char * msgname,
 			
   SMESH_HypothesisFactory_i _hypothesisFactory_i;
   ::SMESH_Gen _impl;  // no namespace here
-  int _localId; // unique Id of created objects, within SMESH_Gen_i entity
 
   map<int, StudyContext_iStruct*> _mapStudyContext_i;
   map <string, string> _SMESHCorbaObj;

@@ -32,6 +32,7 @@
 #include "SMESH_Hypothesis_i.hxx"
 #include <map>
 #include <string>
+using namespace std;
 
 class GenericHypothesisCreator_i
 {

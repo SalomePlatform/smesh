@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -44,9 +43,6 @@ using namespace std;
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TCollection_AsciiString.hxx>
-
-#include <fstream>
-#include <stdio.h>
 
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
@@ -71,6 +67,9 @@ using namespace std;
 #include "GEOM_Client.hxx"
 
 #include <map>
+#include <fstream>
+#include <stdio.h>
+using namespace std;
 
 #define NUM_TMP_FILES 4
 
@@ -118,7 +117,6 @@ SMESH_Gen_i::SMESH_Gen_i(CORBA::ORB_ptr orb,
 	_id = _poa->activate_object(_thisObj);
 
 	_ShapeReader = NULL;
-	_localId = 0;				// number of created objects & local id 
 
 }
 
@@ -164,15 +162,23 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis(const char *anHyp,
 	return SMESH::SMESH_Hypothesis::_duplicate(hypothesis_i);
 }
 
-//=============================================================================
-/*!
- *  
+/**
+ * CORBA implementation of SMESH_Gen::Init. See SMESH_Gen.idl.
  */
-//=============================================================================
-
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Init(GEOM::GEOM_Gen_ptr geomEngine,
 	CORBA::Long studyId,
 	GEOM::GEOM_Shape_ptr aShape) throw(SALOME::SALOME_Exception)
+{
+	return Init(geomEngine, studyId, aShape, -1);
+}
+
+/**
+ * This is NOT a CORBA implementation. Differ from the Init CORBA method
+ * by allowing to specify the ID of the created mesh.
+ */
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Init(GEOM::GEOM_Gen_ptr geomEngine,
+	CORBA::Long studyId, GEOM::GEOM_Shape_ptr aShape, int meshID)
+	throw(SALOME::SALOME_Exception)
 {
 	MESSAGE("Init");
 	// _narrow() duplicates the reference and checks the type
@@ -204,16 +210,13 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Init(GEOM::GEOM_Gen_ptr geomEngine,
 		}
 		StudyContext_iStruct *myStudyContext = _mapStudyContext_i[studyId];
 
-		// create a new mesh object servant, store it in a map in study context
-
-		meshServant = new SMESH_Mesh_i(this, geom, studyId, _localId);
-		myStudyContext->mapMesh_i[_localId] = meshServant;
-		_localId++;
-
 		// create a new mesh object
-
 		TopoDS_Shape myLocShape = _ShapeReader->GetShape(geom, myShape);
-		meshServant->SetImpl(_impl.Init(studyId, myLocShape));
+		SMESH_Mesh * meshImpl=_impl.Init(studyId, myLocShape, meshID);
+
+		// create a new mesh object servant, store it in a map in study context
+		meshServant = new SMESH_Mesh_i(this, geom, studyId, meshImpl);
+		myStudyContext->mapMesh_i[meshServant->GetId()] = meshServant;
 	}
 	catch(SALOME_Exception & S_ex)
 	{
@@ -551,7 +554,7 @@ SALOMEDS::TMPFile * SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
 						string_to_object(anIOR->Value()));
 					SCRUTE(anIOR->Value());
 					SCRUTE(myAlgo->_is_nil());
-					fprintf(destFile, "%i\n", myAlgo->GetId());
+					fprintf(destFile, "%li\n", myAlgo->GetId());
 					fprintf(destFile, "%s\n", myAlgo->GetName());
 				}
 			}
@@ -615,7 +618,7 @@ SALOMEDS::TMPFile * SMESH_Gen_i::Save(SALOMEDS::SComponent_ptr theComponent,
 					meshfile = "No data";
 
 				//********** opening of the HDF group
-				sprintf(name_meshgroup, "Mesh %d", gotBranch->Tag());
+				sprintf(name_meshgroup, "Mesh %d", meshId);
 				SCRUTE(name_meshgroup);
 				hdf_group[gotBranch->Tag()] =
 					new HDFgroup(name_meshgroup, hdf_file);
@@ -973,8 +976,6 @@ void SMESH_Gen_i::loadHypothesis(char * name, HDFfile * hdf_file,
 {
 	char name_of_group[HDF_NAME_MAX_LEN + 1];
 	char objectId[10];
-	double length, maxElementsArea, maxElementsVolume;
-	int numberOfSegments;
 
 	HDFgroup * hdfGroup = new HDFgroup(name, hdf_file);
 	hdfGroup->OpenOnDisk();
@@ -1421,7 +1422,8 @@ GEOM::GEOM_Shape_var SMESH_Gen_i::getShape(SALOMEDS::Study_var Study, char * ref
 void SMESH_Gen_i::loadMesh(char * name, HDFfile * hdf_file,
 	char* meshfile, SALOMEDS::Study_var Study)
 {
-	MESSAGE("in mesh load");
+	MESSAGE("SMESH_Gen_i::loadMesh("<<name<<","<<meshfile<<")");
+
 	char msgname[HDF_NAME_MAX_LEN + 1];	
 	char objectId[10];
 	char name_of_group[HDF_NAME_MAX_LEN + 1];
@@ -1437,7 +1439,6 @@ void SMESH_Gen_i::loadMesh(char * name, HDFfile * hdf_file,
 	SCRUTE(nb_meshsubgroup);
 
 	//********** Loading of the file name where the data are stored
-	MESSAGE("Mesh data file");
 	strcpy(name_of_group, "Mesh data");
 	HDFdataset * dataset =
 		new HDFdataset(name_of_group, hdfGroupMeshId);
@@ -1451,7 +1452,6 @@ void SMESH_Gen_i::loadMesh(char * name, HDFfile * hdf_file,
 
 	//********** Loading of the reference on the shape
 	//********** and mesh initialization
-	MESSAGE("Ref on shape");
 	strcpy(name_of_group, "Ref on shape");
 	dataset =
 		new HDFdataset(name_of_group, hdfGroupMeshId);
@@ -1469,10 +1469,12 @@ void SMESH_Gen_i::loadMesh(char * name, HDFfile * hdf_file,
 	if (!CORBA::is_nil(aShape))
 	{
 		_found = true;
-		myNewMesh = this->Init(getGeomEngine(), Study->StudyId(), aShape);
+		myNewMesh = Init(getGeomEngine(), Study->StudyId(), aShape, myMeshId);
 		string iorString = _orb->object_to_string(myNewMesh);
 		sprintf(objectId, "%ld", myNewMesh->GetId());
-		_SMESHCorbaObj[string("Mesh_") + string(objectId)] = iorString;
+		string key=string("Mesh_")+string(objectId);
+		MESSAGE("IOR of "<<key<<" is "<< iorString)
+		_SMESHCorbaObj[key] = iorString;
 
 		
 		//********** 
@@ -1526,7 +1528,6 @@ void SMESH_Gen_i::loadMesh(char * name, HDFfile * hdf_file,
 		}
 	}
 	hdfGroupMeshId->CloseOnDisk();
-	MESSAGE("End of Meshes Load");
 }
 
 /**
@@ -1943,13 +1944,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Import(CORBA::Long studyId,
 		}
 		StudyContext_iStruct *myStudyContext = _mapStudyContext_i[studyId];
 
-		// create a new mesh object servant, store it in a map in study context
-		meshServant = new SMESH_Mesh_i(this, NULL, studyId, _localId);
-		myStudyContext->mapMesh_i[_localId] = meshServant;
-		_localId++;
-
 		// create a new mesh object
-		meshServant->SetImpl(_impl.Import(studyId, fileName, fileType));
+		SMESH_Mesh * meshImpl=_impl.Import(studyId, fileName, fileType);
+		
+		// create a new mesh object servant, store it in a map in study context
+		meshServant = new SMESH_Mesh_i(this, NULL, studyId, meshImpl);
+		myStudyContext->mapMesh_i[meshImpl->GetId()] = meshServant;
 	}
 	catch(SALOME_Exception & S_ex)
 	{
