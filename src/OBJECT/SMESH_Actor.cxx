@@ -239,6 +239,7 @@ SMESH_ActorDef::SMESH_ActorDef(){
   myBaseActor->SetUserMatrix(aMatrix);
   myBaseActor->SetStoreMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
+  myBaseActor->myGeomFilter->SetInside(true);
 
   myPickableActor = myBaseActor;
 
@@ -734,8 +735,6 @@ void SMESH_ActorDef::SetControlMode(eControl theMode){
 	my1DExtActor->SetExtControlMode(aFunctor,myControlActor);
 	break;
       case eLength2D:
-	my1DExtActor->SetExtControlMode(aFunctor,myControlActor,myScalarBarActor,myLookupTable);
-	break;
       case eMultiConnection2D:
 	my1DExtActor->SetExtControlMode(aFunctor,myControlActor,myScalarBarActor,myLookupTable);
 	break;
@@ -1087,11 +1086,46 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
   if(!myVisualObj->GetNbEntities(SMDSAbs_Volume))
     theMode &= ~eVolumes;
 
-  if(!theMode)
-    return;
+  if(!theMode){
+    if(myVisualObj->GetNbEntities(SMDSAbs_Edge))
+      theMode |= eEdges;
+
+    if(myVisualObj->GetNbEntities(SMDSAbs_Face))
+      theMode |= eFaces;
+
+    if(myVisualObj->GetNbEntities(SMDSAbs_Volume))
+      theMode |= eVolumes;
+  }
 
   myEntityMode = theMode;
+  SALOME_ExtractUnstructuredGrid* aFilter = NULL;
+  aFilter = myBaseActor->GetExtractUnstructuredGrid();
+  aFilter->ClearRegisteredCellsWithType();
+  aFilter->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::eAdding);
+  
+  if(myEntityMode & eEdges){
+    if (MYDEBUG) MESSAGE("EDGES");
+    aFilter->RegisterCellsWithType(VTK_LINE);
+  }
 
+  if(myEntityMode & eFaces){
+    if (MYDEBUG) MESSAGE("FACES");
+    aFilter->RegisterCellsWithType(VTK_TRIANGLE);
+    aFilter->RegisterCellsWithType(VTK_POLYGON);
+    aFilter->RegisterCellsWithType(VTK_QUAD);
+  }
+
+  if(myEntityMode & eVolumes){
+    if (MYDEBUG) MESSAGE("VOLUMES");
+    aFilter->RegisterCellsWithType(VTK_TETRA);
+    aFilter->RegisterCellsWithType(VTK_VOXEL);
+    aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+    aFilter->RegisterCellsWithType(VTK_WEDGE);
+    aFilter->RegisterCellsWithType(VTK_PYRAMID);
+    aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+  }
+  aFilter->Update();
+  if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
   SetVisibility(GetVisibility(),false);
 }
 
@@ -1292,6 +1326,7 @@ void SMESH_ActorDef::Update(){
   if(myIsCellsLabeled){
     SetCellsLabeled(myIsCellsLabeled);
   }
+  SetEntityMode(GetEntityMode());
   SetVisibility(GetVisibility());
   
   myTimeStamp->Modified();

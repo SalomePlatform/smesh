@@ -143,7 +143,10 @@ SMESH_DeviceActor::~SMESH_DeviceActor(){
 
 
 void SMESH_DeviceActor::SetStoreMapping(int theStoreMapping){
+  if (myStoreMapping == theStoreMapping)
+    return;
   myStoreMapping = theStoreMapping;
+  myGeomFilter->SetStoreMapping( myStoreMapping );
   Modified();
 }
 
@@ -409,11 +412,10 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
   using namespace SMESH::Controls;
   if(FreeBorders* aFreeBorders = dynamic_cast<FreeBorders*>(theFunctor.get())){
     myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::eAdding);
-    myExtractUnstructuredGrid->ClearRegisteredCells();
-    vtkUnstructuredGrid* aGrid = theDeviceActor->GetUnstructuredGrid();
+    vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     for( vtkIdType i = 0; i < aNbCells; i++ ){
-      vtkIdType anObjId = theDeviceActor->GetElemObjId(i);
+      vtkIdType anObjId = myVisualObj->GetElemObjId(i);
       if(aFreeBorders->IsSatisfy(anObjId))
 	myExtractUnstructuredGrid->RegisterCell(i);
     }
@@ -517,7 +519,7 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
     myGeomFilter->SetInside(true);
     GetProperty()->SetRepresentation(0);
     break;
-  case eInsideframe: 
+  case eInsideframe:
     myGeomFilter->SetInside(true);
     GetProperty()->SetRepresentation(1);
     break;
@@ -569,20 +571,20 @@ int SMESH_DeviceActor::GetElemObjId(int theVtkID){
   vtkIdType anId = myGeomFilter->GetElemObjId(theVtkID);
   if(anId < 0) 
     return -1;
-  vtkIdType anId2 = myExtractUnstructuredGrid->GetInputId(anId);
+  vtkIdType anId2 = myExtractGeometry->GetElemObjId(anId);
   if(anId2 < 0) 
     return -1;
-  vtkIdType anId3 = myExtractGeometry->GetElemObjId(anId2);
+  vtkIdType anId3 = myExtractUnstructuredGrid->GetInputId(anId2);
   if(anId3 < 0) 
     return -1;
   vtkIdType aRetID = myVisualObj->GetElemObjId(anId3);
   if(MYDEBUG) 
-    MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);
+     MESSAGE("GetElemObjId - theVtkID = "<<theVtkID<<"; anId2 = "<<anId2<<"; anId3 = "<<anId3<<"; aRetID = "<<aRetID);
   return aRetID;
 }
 
 vtkCell* SMESH_DeviceActor::GetElemCell(int theObjID){
-  vtkDataSet* aDataSet = myExtractGeometry->GetInput();
+  vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
   vtkCell* aCell = aDataSet->GetCell(aGridID);
   if(MYDEBUG) 
