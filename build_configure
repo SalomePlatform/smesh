@@ -1,0 +1,206 @@
+#!/bin/bash
+
+#
+# Tool for updating list of .in file for the SALOME project 
+# and regenerating configure script
+#
+# Author : Marc Tajchman - CEA
+# Date : 10/10/2002
+# $Header$
+#
+
+ORIG_DIR=`pwd`
+CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
+
+########################################################################
+# Test if the KERNEL_ROOT_DIR is set correctly
+
+if test ! -d "${KERNEL_ROOT_DIR}"; then
+    echo "failed : KERNEL_ROOT_DIR variable is not correct !"
+    exit
+fi
+
+# Test if the KERNEL_SRC is set correctly
+
+#if test ! -d "${KERNEL_SRC}"; then
+#    echo "failed : KERNEL_SRC variable is not correct !"
+#    exit
+#fi
+########################################################################
+# find_in - utility function
+#
+# usage :  
+#    find_in directory filename 
+#
+# Finds files following the *.in pattern, recursively in the
+# directory (first argument).
+# Results are appended into the file (second argument)
+#
+# Difference from the standard unix find is that files are tested
+# before directories
+# 
+
+find_in()
+{
+  local i
+  local f=$2
+
+# if the first argument is not a directory, returns
+
+  if [ ! -d "$1" ] ; then 
+     return 
+  fi
+
+# dont look in the CVS directories
+
+  case $1 in
+    */CVS) return ;;
+    *) ;;
+  esac
+
+# for each regular file contained in the directory
+# test if it's a .in file
+
+  for i in "$1"/*
+  do
+     if [ -f "$i" ] ; then
+       case $i in 
+         *.in) echo "	"$i" \\" >> $f;;
+         *) ;;
+        esac
+     fi
+  done
+
+# for each subdirectory of the first argument, proceeds recursively
+
+  for i in "$1"/*
+  do
+     if [ -d "$i" ] ; then
+        find_in "$i" "$f"
+     fi
+  done
+}
+
+
+#######################################################################
+# Generate list of .in files (Makefile.in, config.h.in, etc)
+# appending it in file configure.in
+
+cd ${CONF_DIR}
+ABS_CONF_DIR=`pwd`
+
+#
+# Common part of the configure.in file
+#
+chmod u+w configure.in.base
+if ! \cp -f configure.in.base configure.in_tmp1 
+then
+	echo
+	echo "error : can't create files in" ${CONF_DIR}
+	echo "aborting ..."
+        chmod u-w configure.in.base 
+	exit
+fi
+chmod u-w configure.in.base 
+
+# make a link allowing AC_OUTPUT to find the salome_adm/.../*.in  files
+echo "" >> configure.in_tmp1
+echo 'ln -fs ${KERNEL_ROOT_DIR}/salome_adm ${ROOT_SRCDIR}/salome_adm' >> configure.in_tmp1
+
+echo  "" >> configure.in_tmp1
+echo "AC_OUTPUT([ \\" >> configure.in_tmp1
+
+#
+# List of .in files in the adm/unix directory
+# These files MUST be on top of AC_OUTPUT list so we
+# put them "manually"
+#
+
+echo "	./salome_adm/unix/SALOMEconfig.h \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/F77config.h \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/sstream \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/depend \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/make_omniorb \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/envScript \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/make_commence \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/make_conclude \\" >> configure.in_tmp1
+echo "	./salome_adm/unix/make_module \\" >> configure.in_tmp1
+
+\rm -f configure.in_tmp2 configure.in_tmp3
+touch configure.in_tmp2
+find_in . configure.in_tmp2
+sed '/^.*salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
+sed '/configure.in/d' configure.in_tmp3 >  configure.in_tmp2
+sed 's/.in / /' configure.in_tmp2 >> configure.in_tmp1
+
+echo  "])" >> configure.in_tmp1
+
+# delete the link created for AC_OUTPUT
+#echo "" >> configure.in_tmp1
+#echo 'rm -f ${ROOT_SRCDIR}/salome_adm' >> configure.in_tmp1
+\mv configure.in_tmp1 configure.in_new
+\rm  -f configure.in_tmp2 configure.in_tmp3
+
+
+########################################################################
+# Create new (or replace old) configure.in file
+# Print a message if the file is write protected
+#
+
+echo
+if test ! -f configure.in
+then
+	echo -n "Creating new file 'configure.in' ... "
+	if \mv configure.in_new configure.in >& /dev/null
+	then
+		echo "done"
+	else
+	 	echo "error, check your file permissions"
+	fi
+else
+	echo -n "Updating 'configure.in' file ... "
+	if ! \cp configure.in configure.in_old >& /dev/null
+	then
+		echo
+		echo
+		echo "Can't backup previous configure.in"
+		echo -n "Continue (you will not be able to revert) - (Y/N) ? "
+		read R
+                case "x$R" in
+		    xn*) exit;;
+    		    xN*) exit;;
+		esac
+		echo
+		echo -n "                                 "
+	fi
+	if \cp configure.in_new configure.in >& /dev/null
+	then
+		echo "done"
+	else
+		echo
+		echo "error, can't update previous configure.in"
+	fi
+fi
+
+########################################################################
+# Use autoconf to rebuild the configure script
+#
+
+if test -f configure
+then
+	echo -n "Updating 'configure' script ...  "
+else
+	echo -n "Creating 'configure' script ...  "
+fi
+
+aclocal --acdir=${KERNEL_ROOT_DIR}/salome_adm/unix/config_files
+if autoconf
+then
+	echo "done"
+else
+	echo "failed (check file permissions and/or user quotas ...)"
+fi
+
+cd ${ORIG_DIR}
+
+echo

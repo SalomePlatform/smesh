@@ -1,3 +1,4 @@
+using namespace std;
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_W_SMDS_Mesh.h"
 
@@ -186,15 +187,65 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
   /* calcul de la dimension */
   mdim=2;
   double epsilon=0.00001;
+  double nodeRefX;
+  double nodeRefY;
+  double nodeRefZ;
+
+  bool dimX = true;
+  bool dimY = true;
+  bool dimZ = true;
+
   SMDS_MeshNodesIterator myItNodes(myMesh);
+  int inode = 0;
   for (;myItNodes.More();myItNodes.Next()) {
     const Handle(SMDS_MeshElement)& elem = myItNodes.Value();
     const Handle(SMDS_MeshNode)& node = myMesh->GetNode(1,elem);
-    if ( fabs(node->Z()) > epsilon ) {
-      mdim=3;
+    if ( inode == 0 ) {
+      nodeRefX = fabs(node->X());
+      nodeRefY = fabs(node->Y());
+      nodeRefZ = fabs(node->Z());
+    }
+    SCRUTE( inode );
+    SCRUTE( nodeRefX );
+    SCRUTE( nodeRefY );
+    SCRUTE( nodeRefZ );
+
+    if ( inode !=0 ) {
+      if ( (fabs(fabs(node->X()) - nodeRefX) > epsilon ) && dimX )
+	dimX = false;
+      if ( (fabs(fabs(node->Y()) - nodeRefY) > epsilon ) && dimY )
+	dimY = false;
+      if ( (fabs(fabs(node->Z()) - nodeRefZ) > epsilon ) && dimZ )
+	dimZ = false;
+    }
+    if ( !dimX && !dimY && !dimZ ) {
+      mdim = 3;
       break;
     }
+    inode++;
   }
+
+  if ( mdim != 3 ) {
+    if ( dimX && dimY && dimZ )
+      mdim = 0;
+    else if ( !dimX ) {
+      if ( dimY && dimZ )
+	mdim = 1;
+      else if (( dimY && !dimZ ) || ( !dimY && dimZ ) )
+	mdim = 2;
+    } else if ( !dimY ) {
+      if ( dimX && dimZ )
+	mdim = 1;
+      else if (( dimX && !dimZ ) || ( !dimX && dimZ ) )
+	mdim = 2;
+    } else if ( !dimZ ) {
+      if ( dimY && dimX )
+	mdim = 1;
+      else if (( dimY && !dimX ) || ( !dimY && dimX ) )
+	mdim = 2;
+    }
+  }
+
   MESSAGE ( " mdim " << mdim );
 
   /* creation du maillage */
@@ -339,8 +390,18 @@ void DriverMED_W_SMESHDS_Mesh::Add() {
 	coo[i*3+1]=node->Y();
 	coo[i*3+2]=node->Z();
       } else {
-	coo[i*2]=node->X();
-	coo[i*2+1]=node->Y();
+	if ( dimX ) {
+	  coo[i*2]=node->Y();
+	  coo[i*2+1]=node->Z();
+	} 
+	if ( dimY ) {
+	  coo[i*2]=node->X();
+	  coo[i*2+1]=node->Z();
+	} 
+	if ( dimZ ) {
+	  coo[i*2]=node->X();
+	  coo[i*2+1]=node->Y();
+	} 
       }
       mapNoeud[node->GetID()] = i+1;
 

@@ -1,0 +1,71 @@
+//=============================================================================
+// File      : SMESH_Hypothesis.idl
+// Created   : jeu avr 11 19:26:16 CEST 2002
+// Author    : Paul RASCLE, EDF
+// Project   : SALOME
+// Copyright : EDF 2002
+// $Header$
+//=============================================================================
+
+#ifndef _SMESH_HYPOTHESIS_IDL_
+#define _SMESH_HYPOTHESIS_IDL_
+
+#include "SALOME_Exception.idl"
+
+module SMESH
+{
+  interface SMESH_Hypothesis;
+
+  typedef sequence<SMESH_Hypothesis> ListOfHypothesis;
+  typedef sequence<string> ListOfHypothesisName;
+
+  interface SMESH_Hypothesis
+  {
+    /*!
+     * Get the Hypothesis typeName 
+     */
+    string GetName();
+
+    /*!
+     * Get the internal Id 
+     */
+    long GetId();
+ };
+
+  interface SMESH_Algo : SMESH_Hypothesis
+  {
+    /*!
+     * Get list of hypothesis that can be used with this algorithm
+     */
+    ListOfHypothesisName GetCompatibleHypothesis();
+
+  };
+
+  interface SMESH_1D_Algo : SMESH_Algo
+  {
+    /*!
+     * 
+     */
+  };
+
+  interface SMESH_2D_Algo : SMESH_Algo
+  {
+    /*!
+     * 
+     */
+  };
+
+  interface SMESH_3D_Algo : SMESH_Algo
+  {
+    /*!
+     * 
+     */
+  };
+};
+
+  // -----------------------------------------------------------------
+  // Specific Algorithms in separate idl file
+  // -----------------------------------------------------------------
+
+
+#endif

@@ -1,0 +1,262 @@
+//=============================================================================
+// File      : SMESH_Mesh.idl
+// Created   : jeu avr 11 15:31:39 CEST 2002
+// Author    : Paul RASCLE, EDF
+// Project   : SALOME
+// Copyright : EDF 2002
+// $Header$
+//=============================================================================
+
+
+#ifndef _SMESH_MESH_IDL_
+#define _SMESH_MESH_IDL_
+
+#include "SALOME_Exception.idl"
+#include "SMESH_Hypothesis.idl"
+
+#include "GEOM_Shape.idl"
+#include "MED.idl"
+
+module SMESH
+{
+  typedef sequence<double> double_array ;
+  typedef sequence<long> long_array ;
+  typedef sequence<string> string_array ;
+
+  enum log_command
+    {
+      ADD_NODE,
+      ADD_EDGE,
+      ADD_TRIANGLE,
+      ADD_QUADRANGLE,
+      ADD_TETRAHEDRON,
+      ADD_PYRAMID,
+      ADD_PRISM,
+      ADD_HEXAHEDRON,
+      REMOVE_NODE,
+      REMOVE_ELEMENT
+    };
+
+  struct log_block
+  {
+    long commandType;
+    long number;
+    double_array coords;
+    long_array indexes;
+  };
+  
+  typedef sequence<log_block> log_array;
+
+  interface SMESH_subMesh;
+  interface SMESH_MeshEditor;
+  interface SMESH_Mesh
+  {
+    /*!
+     * Associate a Shape to a Mesh created with NewEmpty
+     */
+
+//     boolean SetMesh(in GEOM::GEOM_Shape aShape)
+//        raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get the subMesh object associated to a subShape. The subMesh object
+     * gives access to nodes and elements IDs.
+     * SubMesh will be used instead of SubShape in a next idl version to 
+     * adress a specific subMesh...
+     */
+    SMESH_subMesh GetElementsOnShape(in GEOM::GEOM_Shape aSubShape)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a subMesh without reference to a subShape
+     */
+//     SMESH_subMesh NewEmpty()
+//       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Add hypothesis to the mesh, under a particular subShape
+     * (or the main shape itself)
+     * The Add method is only used to prepare the build of the mesh and store
+     * the algorithms and associated parameters.
+     * Actual job of mesh the shape is done by MESH_Gen.
+     * @params
+     * - aSubShape : subShape obtained by a shape explode in GEOM
+     *   (or main shape)
+     * - anHyp : hypothesis object 
+     * @return
+     * - OK if the hypothesis is compatible with the subShape 
+     *   (and all previous hypothesis on the subShape)
+     * - NOK if the hypothesis is not compatible with the subShape
+     *   (or one previous hypothesis on the subShape)
+     * raises exception if hypothesis has not been created
+     */
+    boolean AddHypothesis(in GEOM::GEOM_Shape aSubShape, in SMESH_Hypothesis anHyp)
+      raises (SALOME::SALOME_Exception);
+//     boolean AddHypothesis(in SMESH_subMesh aSubMesh, in SMESH_Hypothesis anHyp)
+//       raises (SALOME::SALOME_Exception);
+
+
+    /*!
+     * Remove an hypothesis previouly added with AddHypothesis.
+     */
+    boolean RemoveHypothesis(in GEOM::GEOM_Shape aSubShape,
+			     in SMESH_Hypothesis anHyp)
+      raises (SALOME::SALOME_Exception);
+//     boolean RemoveHypothesis(in SMESH_subMesh aSubMesh,
+// 			     in SMESH_Hypothesis anHyp)
+//       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get the list of hypothesis added on a subShape
+     */
+    ListOfHypothesis GetHypothesisList(in GEOM::GEOM_Shape aSubShape)
+      raises (SALOME::SALOME_Exception);
+//     ListOfHypothesis GetHypothesisList(in SMESH_subMesh aSubMesh)
+//       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get the log of nodes and elements added or removed since previous
+     * clear of the log.
+     * @params
+     * - clearAfterGet : log is emptied after Get (safe if concurrents access)
+     */
+    //    string_array GetLog(in boolean clearAfterGet)
+    //      raises (SALOME::SALOME_Exception);
+    log_array GetLog(in boolean clearAfterGet)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Clear the log of nodes and elements added or removed since previous
+     * clear. Must be used immediately after GetLog if clearAfterGet is false.
+     */
+    void ClearLog()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get the internal Id 
+     */
+    long GetId();     
+
+    /*!
+     * Get the study Id 
+     */
+    long GetStudyId();    
+    
+    SMESH_MeshEditor GetMeshEditor() 
+       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Export Mesh with DAT and MED Formats
+     */
+    void ExportDAT( in string file )
+      raises (SALOME::SALOME_Exception);
+    void ExportMED( in string file )
+      raises (SALOME::SALOME_Exception);
+    void ExportUNV( in string file )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get MED Mesh
+     */
+    SALOME_MED::MESH GetMEDMesh()
+      raises (SALOME::SALOME_Exception);
+
+    long NbNodes()
+      raises (SALOME::SALOME_Exception);
+
+    long NbEdges()
+      raises (SALOME::SALOME_Exception);
+
+    long NbFaces()
+      raises (SALOME::SALOME_Exception);
+
+    long NbTriangles()
+      raises (SALOME::SALOME_Exception);
+
+    long NbQuadrangles()
+      raises (SALOME::SALOME_Exception);
+
+    long NbVolumes()
+      raises (SALOME::SALOME_Exception);
+
+    long NbTetras()
+      raises (SALOME::SALOME_Exception);
+
+    long NbHexas()
+      raises (SALOME::SALOME_Exception);
+
+    long NbSubMesh()
+      raises (SALOME::SALOME_Exception);
+  };
+
+  interface SMESH_subMesh
+  {
+    /*!
+     * 
+     */
+    long GetNumberOfElements()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+    long GetNumberOfNodes()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+    long_array GetElementsId()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * 
+     */
+    long_array GetNodesId()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get SMESH_Mesh which stores nodes coordinates & elements definition
+     */
+    SMESH_Mesh GetFather()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get the internal Id 
+     */
+    long GetId();    
+
+    /*!
+     * Get MED subMesh
+     */
+    SALOME_MED::FAMILY GetFamily()
+      raises (SALOME::SALOME_Exception);
+  };
+  
+  /* 
+   * This interface makes modifications on the Mesh - removing elements and nodes
+   */     
+  interface SMESH_MeshEditor {
+
+
+    boolean RemoveElements(in long_array IDsOfElements)
+       raises (SALOME::SALOME_Exception);
+
+    boolean RemoveNodes(in long_array IDsOfNodes)
+      raises (SALOME::SALOME_Exception);
+
+    boolean AddNode(in double x, in double y, in double z)
+      raises (SALOME::SALOME_Exception);
+
+    boolean AddEdge(in long_array IDsOfNodes)
+      raises (SALOME::SALOME_Exception);
+
+    boolean AddFace(in long_array IDsOfNodes)
+      raises (SALOME::SALOME_Exception);
+
+    boolean AddVolume(in long_array IDsOfNodes)
+      raises (SALOME::SALOME_Exception);
+  };
+};
+
+#endif

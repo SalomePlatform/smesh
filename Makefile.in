@@ -1,0 +1,145 @@
+# -* Makefile *- 
+#
+# Author : Patrick GOLDBRONN (CEA)
+# Date : 28/06/2001
+# $Header$
+#
+
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=.
+srcdir=@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/bin:@top_srcdir@/resources:./bin:@top_srcdir@/idl
+
+
+@COMMENCE@
+
+SUBDIRS = idl src
+
+RESOURCES_FILES = \
+delete.png  \
+mesh_add_sub.png \
+mesh_algo_hexa.png \
+mesh_algo_mefisto.png \
+mesh_algo_quad.png \
+mesh_algo_regular.png \
+mesh_angle.png \
+mesh_area.png \
+mesh_aspect.png \
+mesh_compute.png \
+mesh_connectivity.png \
+mesh_diagonal.png \
+mesh_edit.png \
+mesh_hexa_n.png \
+mesh_hexa.png \
+mesh_hypo_area.png \
+mesh_hypo_length.png \
+mesh_hypo_segment.png \
+mesh_hypo_volume.png \
+mesh_info.png \
+mesh_init.png \
+mesh_length.png \
+mesh_line_n.png \
+mesh_line.png \
+mesh_move_node.png \
+mesh_orientation.png \
+mesh.png \
+mesh_pyramid_n.png \
+mesh_pyramid.png \
+mesh_quad_n.png \
+mesh_quad.png \
+mesh_rem_element.png \
+mesh_rem_node.png \
+mesh_set_algo.png \
+mesh_set_hypo.png \
+mesh_shading.png \
+mesh_shrink.png \
+mesh_skew.png \
+mesh_taper.png \
+mesh_tetra_n.png \
+mesh_tetra.png \
+mesh_tree_algo_hexa.png \
+mesh_tree_algo_mefisto.png \
+mesh_tree_algo.png \
+mesh_tree_algo_quad.png \
+mesh_tree_algo_regular.png \
+mesh_tree_hypo_area.png \
+mesh_tree_hypo_length.png \
+mesh_tree_hypo.png \
+mesh_tree_hypo_segment.png \
+mesh_tree_hypo_volume.png \
+mesh_tree_mesh.png \
+mesh_tree_mesh_warn.png \
+mesh_triangle_n.png \
+mesh_triangle.png \
+mesh_update.png \
+mesh_vertex_n.png \
+mesh_vertex.png \
+mesh_wireframe.png \
+mesh_wrap.png \
+ModuleMesh.png \
+select1.png \
+SMESH_en.xml
+
+# copy header files in common directory
+ifeq ($(HAVE_SSTREAM),yes)
+  include_list=include/salome/SALOMEconfig.h
+else
+  include_list=include/salome/SALOMEconfig.h include/salome/sstream
+endif
+
+inc: idl $(include_list)
+
+include/salome/SALOMEconfig.h: salome_adm/unix/SALOMEconfig.h
+	-$(RM) $@
+	$(LN_S) ../../$< $@
+
+include/salome/sstream: salome_adm/unix/sstream
+	-$(RM) $@
+	$(LN_S) ../../$< $@
+
+depend: depend_idl
+
+depend_idl:
+	(cd idl ; $(MAKE) $@) || exit 1
+
+# doc is already build : if you want to had documents, go manually to doc and run 'make doc'
+#doc:
+#	(cd doc && $(MAKE) $@) || exit 1
+
+install-end:
+# finish libtool install
+#	@$(LT) --mode=finish $(libdir)
+
+install-include: $(include_list)
+	$(INSTALL) -d  $(includedir)
+	@for f in X $(include_list); do				\
+	   if test $$f != X; then				\
+	     ($(INSTALL_DATA) $$f $(includedir)/. || exit 1);	\
+	   fi;							\
+	done
+
+# install script in $(bindir) :
+install-bin: $(BIN_SCRIPT)
+	$(INSTALL) -d  $(bindir)
+	if test $(BIN_SCRIPT)X != X; then 			\
+		$(INSTALL_PROGRAM) $^ $(bindir);		\
+	fi
+
+uninstall: uninstall-idl
+
+uninstall-idl:
+	$(RM) $(idldir)/*.idl
+
+distclean: distclean-other
+
+distclean-other:
+	-$(RM) salome_adm/unix/*~ salome_adm/unix/*% salome_adm/unix/*.bak salome_adm/unix/*.new salome_adm/unix/*.old
+	-$(RM) salome_adm/unix/make_* 
+	-$(RM) salome_adm/unix/depend salome_adm/unix/SALOMEconfig.h 
+	-$(RM) config.cache config.log config.status 
+
+@MODULE@
+
+install: install-bin install-include install-end
+

@@ -1,3 +1,4 @@
+using namespace std;
 #include "DriverMED_W_SMESHDS_Document.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "utilities.h"

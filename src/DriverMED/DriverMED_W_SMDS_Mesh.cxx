@@ -1,3 +1,4 @@
+using namespace std;
 #include "DriverMED_W_SMDS_Mesh.h"
 
 #include "SMDS_MeshElement.hxx"
