@@ -1,9 +1,7 @@
-import SMESH
+from meshpy import *
 
 def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
-    aMeshGen = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-    aFilterMgr = aMeshGen.CreateFilterManager()
+    aFilterMgr = smesh.CreateFilterManager()
     aFilter = aFilterMgr.CreateFilter()
    
     aLyingOnGeom = aFilterMgr.CreateLyingOnGeom()
