@@ -855,7 +855,7 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
                                      TopAbs_ShapeEnum    type)
 {
   int aMainIndex = 0;
-  if ( IsGroupOfSubShapes( S ))
+  if ( IsGroupOfSubShapes( S ) || (S.ShapeType() == TopAbs_VERTEX && myIndexToShape.Contains(S)) )
   {
     aMainIndex = myIndexToShape.Add( S );
     bool all = ( type == TopAbs_SHAPE );
