@@ -104,8 +104,8 @@ EXPORT_HEADERS= Handle_SMESHDS_DataMapNodeOfDataMapOfIntegerMesh.hxx \
 	SMESHDS_SubMesh.hxx 
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES)
-CXXFLAGS += $(OCC_CXXFLAGS)
+CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
+CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
 LDFLAGS  += $(OCC_LIBS)
 
 # additional file to be cleaned
