@@ -24,7 +24,7 @@
 //  File   : SMESH_Actor.cxx
 //  Author : Nicolas REJNERI
 //  Module : SMESH
-//  $Header$Header$
+//  $Header$Header: /home/server/cvs/SMESH/SMESH_SRC/src/OBJECT/SMESH_DeviceActor.cxx,v 1.7 2005/02/02 12:17:51 apo Exp $
 
 
 #include "SMESH_DeviceActor.h"
@@ -264,13 +264,15 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 					  vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
+  myExtractUnstructuredGrid->ClearRegisteredCells();
+  myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
+  myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::ePassAll);
+  myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
   if (anIsInitialized){
     if (Length2D* aLength2D = dynamic_cast<Length2D*>(theFunctor.get())){
       SMESH::Controls::Length2D::TValues aValues;
-
-      myVisualObj->UpdateFunctor(theFunctor);
 
       aLength2D->GetValues(aValues);
       vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
@@ -333,8 +335,6 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
     }
     else if (MultiConnection2D* aMultiConnection2D = dynamic_cast<MultiConnection2D*>(theFunctor.get())){
       SMESH::Controls::MultiConnection2D::MValues aValues;
-
-      myVisualObj->UpdateFunctor(theFunctor);
 
       aMultiConnection2D->GetValues(aValues);
       vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
