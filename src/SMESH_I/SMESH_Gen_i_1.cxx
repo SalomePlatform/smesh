@@ -146,7 +146,10 @@ long SMESH_Gen_i::GetVolumeGroupsTag()
 
 bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
-  if(MYDEBUG) MESSAGE("CanPublishInStudy");
+  if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(myCurrentStudy));
+  if(CORBA::is_nil(myCurrentStudy))
+    return false;
+  
   SMESH::SMESH_Mesh_var aMesh       = SMESH::SMESH_Mesh::_narrow(theIOR);
   if( !aMesh->_is_nil() )
     return true;
