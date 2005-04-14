@@ -638,8 +638,8 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   if ( L < Precision::Confusion())
     return 0.;
 
-  gp_XYZ GI = ( thePnt2 - thePnt1 ) / 2. - theG;
-  gp_XYZ GJ = ( thePnt3 - thePnt2 ) / 2. - theG;
+  gp_XYZ GI = ( thePnt2 + thePnt1 ) / 2. - theG;
+  gp_XYZ GJ = ( thePnt3 + thePnt2 ) / 2. - theG;
   gp_XYZ N  = GI.Crossed( GJ );
 
   if ( N.Modulus() < gp::Resolution() )
