@@ -408,21 +408,38 @@ class Mesh:
          Create a mesh group based on geometric object \a grp
          and give a \a name, if this parameter is not defined
          the name is the same as the geometric group name
-         \param grp  is a geometric group
+         \param grp  is a geometric group, a vertex, an edge, a face or a solid
          \param name is the name of the mesh group
         """
         if name == "":
             name = grp.GetName()
-        tgeo = geompy.GetType(grp)
-        if tgeo == geompy.ShapeType["VERTEX"]:
+
+        type = []
+        tgeo = str(grp.GetShapeType())
+        if tgeo == "VERTEX":
             type = SMESH.NODE
-        elif tgeo == geompy.ShapeType["EDGE"]:
+        elif tgeo == "EDGE":
             type = SMESH.EDGE
-        elif tgeo == geompy.ShapeType["FACE"]:
+        elif tgeo == "FACE":
             type = SMESH.FACE
-        elif tgeo == geompy.ShapeType["SOLID"]:
+        elif tgeo == "SOLID":
             type = SMESH.VOLUME
-        return self.mesh.CreateGroupFromGEOM(type, name, grp)
+        elif tgeo == "COMPOUND":
+            tgeo = geompy.GetType(grp)
+            if tgeo == geompy.ShapeType["VERTEX"]:
+                type = SMESH.NODE
+            elif tgeo == geompy.ShapeType["EDGE"]:
+                type = SMESH.EDGE
+            elif tgeo == geompy.ShapeType["FACE"]:
+                type = SMESH.FACE
+            elif tgeo == geompy.ShapeType["SOLID"]:
+                type = SMESH.VOLUME
+
+        if type == []:
+            print "Mesh.Group: bad first argument: expected a group, a vertex, an edge, a face or a solid"
+            return 0
+        else:
+            return self.mesh.CreateGroupFromGEOM(type, name, grp)
 
     def ExportToMED(self, f, version, opt=0):
         """
