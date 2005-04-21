@@ -6,7 +6,7 @@
 
 import ex01_cube2build
 import ex02_cube2primitive
-#import ex03_cube2partition
+import ex03_cube2partition
 import ex04_cube5tetraHexa
 import ex05_hole1build
 import ex06_hole1boolean
@@ -21,5 +21,5 @@ import ex14_cyl1holed
 import ex15_cyl2geometry
 import ex16_cyl2complementary
 import ex17_dome1
-#import ex18_dome2
+import ex18_dome2
 import ex19_sphereINcube
