@@ -46,11 +46,16 @@ smesh.SetCurrentStudy(salome.myStudy)
 # Private functions
 # -----------------
 
+NO_NAME = "NoName"
+
 def GetName(obj):
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
-    attr = sobj.FindAttribute("AttributeName")[1]
-    return attr.Value()
+    if sobj is None:
+        return NO_NAME
+    else:
+        attr = sobj.FindAttribute("AttributeName")[1]
+        return attr.Value()
 
 def SetName(obj, name):
     ior  = salome.orb.object_to_string(obj)
@@ -91,8 +96,10 @@ class Mesh_Algorithm:
             name = GetName(piece)
         else:
             self.geom = geom
-            name = geompy.SubShapeName(geom, piece)
-            geompy.addToStudyInFather(piece, geom, name)
+            name = GetName(geom)
+            if name==NO_NAME:
+                name = geompy.SubShapeName(geom, piece)
+                geompy.addToStudyInFather(piece, geom, name)
             self.subm = mesh.mesh.GetSubMesh(geom, hypo)
 
         algo = smesh.CreateHypothesis(hypo, so)
