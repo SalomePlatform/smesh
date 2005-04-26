@@ -162,6 +162,7 @@ LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SMESH_Filter.idl \
 		 SMESH_Pattern.idl \
 		 SALOME_GenericObj.idl \
+		 SALOME_ContainerManager.idl \
 		 SALOME_Comm.idl
 
 LIB_SERVER_IDL = 
