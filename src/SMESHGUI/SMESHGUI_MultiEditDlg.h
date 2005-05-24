@@ -40,7 +40,6 @@ class QGroupBox;
 class QListBox;
 class QFrame;
 class QLineEdit;
-class SMESHGUI_SpinBox;
 class QPushButton;
 class SALOME_Selection;
 class SMESH_Actor;

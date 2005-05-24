@@ -166,9 +166,9 @@ QFrame* SMESHGUI_MoveNodesDlg::createMainFrame( QWidget* theParent )
   new QLabel( tr( "SMESH_Z" ), aCoordGrp );
   myZ = new SMESHGUI_SpinBox( aCoordGrp );
 
-  myX->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );
-  myY->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );
-  myZ->RangeStepAndValidator( -999999.999, +999999.999, 25.0, 3 );  
+  myX->RangeStepAndValidator( COORD_MIN, COORD_MAX, 25.0, 3 );
+  myY->RangeStepAndValidator( COORD_MIN, COORD_MAX, 25.0, 3 );
+  myZ->RangeStepAndValidator( COORD_MIN, COORD_MAX, 25.0, 3 );  
 
   QVBoxLayout* aLay = new QVBoxLayout( aFrame );
   aLay->addWidget( aPixGrp );

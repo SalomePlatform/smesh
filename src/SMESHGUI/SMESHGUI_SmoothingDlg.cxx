@@ -215,7 +215,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( QWidget* parent, const char* name,
   QIntValidator* anIntValidator = new QIntValidator(SpinBox_IterationLimit);
   SpinBox_IterationLimit->setValidator(anIntValidator);
   SpinBox_IterationLimit->setRange( 1, 999999 );
-  SpinBox_AspectRatio->RangeStepAndValidator( 0.0, +999999.999, 0.1, 3 );
+  SpinBox_AspectRatio->RangeStepAndValidator( 0.0, COORD_MAX, 0.1, 3 );
 
   GroupArguments->show();
   myConstructorId = 0 ;

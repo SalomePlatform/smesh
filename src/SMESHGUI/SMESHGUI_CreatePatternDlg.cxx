@@ -27,19 +27,20 @@
 
 #include "SMESHGUI_CreatePatternDlg.h"
 
-#include "QAD_Desktop.h"
-#include "QAD_FileDlg.h"
-
-#include "SMESHGUI_PatternWidget.h"
-#include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI.h"
-#include "SALOME_Selection.h"
-#include "SALOME_ListIteratorOfListOfFilter.hxx"
-#include "SALOMEGUI_QtCatchCorbaException.hxx"
-#include "SMESH_NumberFilter.hxx"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_PatternUtils.h"
+#include "SMESHGUI_PatternWidget.h"
+
+#include "SMESH_NumberFilter.hxx"
+
+#include "SALOME_Selection.h"
+#include "SALOME_ListIteratorOfListOfFilter.hxx"
+#include "SALOMEGUI_QtCatchCorbaException.hxx"
+
+#include "QAD_Desktop.h"
+#include "QAD_FileDlg.h"
 
 #include <TColStd_MapOfInteger.hxx>
 

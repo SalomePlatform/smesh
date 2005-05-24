@@ -31,6 +31,9 @@
 
 #include "QAD_SpinBoxDbl.h" 
 
+#define COORD_MIN -1e+15
+#define COORD_MAX +1e+15
+
 //=================================================================================
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QAD_SpinBoxDbl class 

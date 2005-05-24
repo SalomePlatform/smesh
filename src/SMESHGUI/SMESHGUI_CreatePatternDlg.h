@@ -39,7 +39,6 @@ class SMESHGUI_PatternWidget;
 class QCloseEvent;
 class QFrame;
 class QLineEdit;
-class SMESHGUI_SpinBox;
 class QPushButton;
 class SALOME_Selection;
 class QRadioButton;

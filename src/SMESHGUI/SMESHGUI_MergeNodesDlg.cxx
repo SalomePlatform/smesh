@@ -33,6 +33,7 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_SpinBox.h"
+
 #include "SMESH_Actor.h"
 #include "SMDS_Mesh.hxx"
 
@@ -222,7 +223,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( QWidget* parent, const char* nam
   SMESHGUI_MergeNodesDlgLayout->addWidget( GroupEdit, 3, 0 );
   
   /* Initialisations */
-  SpinBoxTolerance->RangeStepAndValidator( 0.0, 999999.999, 0.1, 3 );
+  SpinBoxTolerance->RangeStepAndValidator( 0.0, COORD_MAX, 0.1, 3 );
   SpinBoxTolerance->SetValue(1e-05);
   
   RadioButton1->setChecked( TRUE );

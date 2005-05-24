@@ -34,6 +34,7 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_SpinBox.h"
+
 #include "SMESH_Actor.h"
 #include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
@@ -251,12 +252,12 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( QWidget* parent, const char* name, S
   SMESHGUI_SymmetryDlgLayout->addWidget( GroupArguments, 1, 0 );
   
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  SpinBox_Y->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  SpinBox_Z->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  SpinBox_DX->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  SpinBox_DY->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  SpinBox_DZ->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
+  SpinBox_X->RangeStepAndValidator ( COORD_MIN, COORD_MAX, 10.0, 3 );
+  SpinBox_Y->RangeStepAndValidator ( COORD_MIN, COORD_MAX, 10.0, 3 );
+  SpinBox_Z->RangeStepAndValidator ( COORD_MIN, COORD_MAX, 10.0, 3 );
+  SpinBox_DX->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
+  SpinBox_DY->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
+  SpinBox_DZ->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
 
   GroupArguments->show();
   RadioButton1->setChecked( TRUE );

@@ -287,11 +287,12 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( QWidget* parent,
 
   /***************************************************************/
   // Initialisations
-  XSpin->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  YSpin->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  ZSpin->RangeStepAndValidator( -999999.999, +999999.999, 10.0, 3 );
-  AngleSpin->RangeStepAndValidator( -999999.999, +999999.999, 5.0, 3 );
- 
+  XSpin->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
+  YSpin->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
+  ZSpin->RangeStepAndValidator( COORD_MIN, COORD_MAX, 10.0, 3 );
+  AngleSpin->RangeStepAndValidator( COORD_MIN, COORD_MAX, 5.0, 3 );
+  //?? AngleSpin->RangeStepAndValidator( -360., +360., 5.0, 3 );
+
   mySelection = Sel;  
   mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
   mySMESHGUI->SetActiveDialogBox( this ) ;

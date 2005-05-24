@@ -40,6 +40,7 @@ using namespace std;
 SMESHGUI_SpinBox::SMESHGUI_SpinBox( QWidget* parent, const char* name )
 : QAD_SpinBoxDbl( parent, name)
 {
+  setPrecision(16);
 }
 
 

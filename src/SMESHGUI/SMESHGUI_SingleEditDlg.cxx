@@ -34,12 +34,11 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 
-#include "SMESHGUI_SpinBox.h"
-
-#include "utilities.h"
-#include "SALOME_Selection.h"
 #include "SMESH_Actor.h"
 #include "SMDS_Mesh.hxx"
+
+#include "SALOME_Selection.h"
+#include "utilities.h"
 
 #include <qframe.h>
 #include <qlayout.h>
