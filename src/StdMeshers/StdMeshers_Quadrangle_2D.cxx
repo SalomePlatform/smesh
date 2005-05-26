@@ -136,16 +136,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   int nbhoriz  = Min(nbdown, nbup);
   int nbvertic = Min(nbright, nbleft);
 
-  int nbVertices = nbhoriz * nbvertic;
-  int nbQuad = (nbhoriz - 1) * (nbvertic - 1);
-  //SCRUTE(nbVertices);
-  //SCRUTE(nbQuad);
-
-  //   const TopoDS_Face& FF = TopoDS::Face(aShape);
-  //   bool faceIsForward = (FF.Orientation() == TopAbs_FORWARD);
-  //   TopoDS_Face F = TopoDS::Face(FF.Oriented(TopAbs_FORWARD));
   const TopoDS_Face& F = TopoDS::Face(aShape);
-  bool faceIsForward = (F.Orientation() == TopAbs_FORWARD);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 
   // internal mesh nodes
@@ -520,26 +511,18 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
   (SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-//  MESSAGE("StdMeshers_Quadrangle_2D::CheckAnd2Dcompute");
 
-  SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+  //SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
 
-  //   const TopoDS_Face& FF = TopoDS::Face(aShape);
-  //   bool faceIsForward = (FF.Orientation() == TopAbs_FORWARD);
-  //   TopoDS_Face F = TopoDS::Face(FF.Oriented(TopAbs_FORWARD));
   const TopoDS_Face & F = TopoDS::Face(aShape);
-  bool faceIsForward = (F.Orientation() == TopAbs_FORWARD);
 
   // verify 1 wire only, with 4 edges
 
   if (NumberOfWires(F) != 1)
   {
-    MESSAGE("only 1 wire by face (quadrangles)");
+    INFOS("only 1 wire by face (quadrangles)");
     return 0;
-    //throw SALOME_Exception(LOCALIZED("only 1 wire by face (quadrangles)"));
   }
-  //   const TopoDS_Wire WW = BRepTools::OuterWire(F);
-  //   TopoDS_Wire W = TopoDS::Wire(WW.Oriented(TopAbs_FORWARD));
   const TopoDS_Wire& W = BRepTools::OuterWire(F);
   BRepTools_WireExplorer wexp (W, F);
 
@@ -551,8 +534,6 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
   int nbEdges = 0;
   for (wexp.Init(W, F); wexp.More(); wexp.Next())
   {
-    //       const TopoDS_Edge& EE = wexp.Current();
-    //       TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
     const TopoDS_Edge& E = wexp.Current();
     int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
     if (nbEdges < 4)
@@ -565,25 +546,10 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
 
   if (nbEdges != 4)
   {
-    MESSAGE("face must have 4 edges /quadrangles");
+    INFOS("face must have 4 edges /quadrangles");
     QuadDelete(quad);
     return 0;
-    //throw SALOME_Exception(LOCALIZED("face must have 4 edges /quadrangles"));
   }
-
-//  if (quad->nbPts[0] != quad->nbPts[2]) {
-//    MESSAGE("different point number-opposed edge");
-//    QuadDelete(quad);
-//    return 0;
-//    //throw SALOME_Exception(LOCALIZED("different point number-opposed edge"));
-//  }
-//
-//  if (quad->nbPts[1] != quad->nbPts[3]) {
-//    MESSAGE("different point number-opposed edge");
-//    QuadDelete(quad);
-//    return 0;
-//    //throw SALOME_Exception(LOCALIZED("different point number-opposed edge"));
-//  }
 
   // set normalized grid on unit square in parametric domain
 
@@ -660,10 +626,11 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     quad->isEdgeForward[i] = false;
   }
 
-  double eps2d = 1.e-3; // *** utiliser plutot TopExp::CommonVertex, puis
-  // distances si piece fausse
-//  int i = 0;
-  if ((pf[1].Distance(pl[0]) < eps2d) || (pl[1].Distance(pl[0]) < eps2d))
+  double l0f1 = pl[0].SquareDistance(pf[1]);
+  double l0l1 = pl[0].SquareDistance(pl[1]);
+  double f0f1 = pf[0].SquareDistance(pf[1]);
+  double f0l1 = pf[0].SquareDistance(pl[1]);
+  if ( Min( l0f1, l0l1 ) < Min ( f0f1, f0l1 ))
   {
     quad->isEdgeForward[0] = true;
   } else {
@@ -673,10 +640,11 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     pf[0] = c2d[0]->Value(quad->first[0]);
     pl[0] = c2d[0]->Value(quad->last[0]);
   }
-
   for (int i = 1; i < 4; i++)
   {
-    quad->isEdgeForward[i] = (pf[i].Distance(pl[i - 1]) < eps2d);
+    l0l1 = pl[i - 1].SquareDistance(pl[i]);
+    l0f1 = pl[i - 1].SquareDistance(pf[i]);
+    quad->isEdgeForward[i] = ( l0f1 < l0l1 );
     if (!quad->isEdgeForward[i])
     {
       double tmp = quad->first[i];
@@ -684,19 +652,8 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
       quad->last[i] = tmp;
       pf[i] = c2d[i]->Value(quad->first[i]);
       pl[i] = c2d[i]->Value(quad->last[i]);
-      //SCRUTE(pf[i].Distance(pl[i-1]));
-      ASSERT(pf[i].Distance(pl[i - 1]) < eps2d);
     }
   }
-  //SCRUTE(pf[0].Distance(pl[3]));
-  ASSERT(pf[0].Distance(pl[3]) < eps2d);
-
-//   for (int i=0; i<4; i++)
-//     {
-//       SCRUTE(quad->isEdgeForward[i]);
-//       MESSAGE(" -first "<<i<<" "<<pf[i].X()<<" "<<pf[i].Y());
-//       MESSAGE(" -last  "<<i<<" "<<pl[i].X()<<" "<<pl[i].Y());
-//     }
 
   // 2 --- load 2d edge points (u,v) with orientation and value on unit square
 
@@ -706,7 +663,6 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     quad->uv_edges[i] = LoadEdgePoints(aMesh, F, quad->edge[i],
                                        quad->first[i], quad->last[i]);
     if (!quad->uv_edges[i]) loadOk = false;
-    //    quad->isEdgeForward[i]);
   }
 
   for (int i = 2; i < 4; i++)
@@ -714,23 +670,19 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
     quad->uv_edges[i] = LoadEdgePoints(aMesh, F, quad->edge[i],
                                        quad->last[i], quad->first[i]);
     if (!quad->uv_edges[i]) loadOk = false;
-    //    !quad->isEdgeForward[i]);
   }
 
   if (!loadOk)
   {
-//    MESSAGE("StdMeshers_Quadrangle_2D::SetNormalizedGrid - LoadEdgePoints failed");
+    INFOS("StdMeshers_Quadrangle_2D::SetNormalizedGrid - LoadEdgePoints failed");
     QuadDelete( quad );
     quad = 0;
     return;
   }
   // 3 --- 2D normalized values on unit square [0..1][0..1]
 
-//  int nbdown = quad->nbPts[0];
-//  int nbright = quad->nbPts[1];
   int nbhoriz  = Min(quad->nbPts[0], quad->nbPts[2]);
   int nbvertic = Min(quad->nbPts[1], quad->nbPts[3]);
-//  MESSAGE("nbhoriz, nbvertic = " << nbhoriz << nbvertic);
 
   quad->isEdgeOut[0] = (quad->nbPts[0] > quad->nbPts[2]);
   quad->isEdgeOut[1] = (quad->nbPts[1] > quad->nbPts[3]);
@@ -846,8 +798,6 @@ void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
 
       uv_grid[ij].u = u;
       uv_grid[ij].v = v;
-
-      //MESSAGE("-uv- "<<i<<" "<<j<<" "<<uv_grid[ij].u<<" "<<uv_grid[ij].v);
     }
   }
 }
@@ -865,7 +815,7 @@ UVPtStruct* StdMeshers_Quadrangle_2D::LoadEdgePoints (SMESH_Mesh & aMesh,
 {
   //MESSAGE("StdMeshers_Quadrangle_2D::LoadEdgePoints");
 
-  SMDS_Mesh* meshDS = aMesh.GetMeshDS();
+  //SMDS_Mesh* meshDS = aMesh.GetMeshDS();
 
   // --- IDNodes of first and last Vertex
 
@@ -982,7 +932,6 @@ UVPtStruct* StdMeshers_Quadrangle_2D::LoadEdgePoints (SMESH_Mesh & aMesh,
   for (int i = 0; i < nbPoints + 2; i++)
   {
     uvslf[i].normParam = (uvslf[i].param - paramin) / (paramax - paramin);
-    //SCRUTE(uvslf[i].normParam);
   }
 
   return uvslf;
