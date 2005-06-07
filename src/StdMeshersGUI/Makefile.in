@@ -35,7 +35,7 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/sal
 
 # .po files to transform in .qm
  PO_FILES = \
-	StdMeshers_icons.po \
+	StdMeshers_images.po \
 	StdMeshers_msg_en.po
 
 # Libraries targets
@@ -60,18 +60,20 @@ LIB_CLIENT_IDL = \
 
 ## pb in dependencies search
 LIB_CLIENT_IDL += \
-	SALOME_GenericObj.idl
+	SALOME_GenericObj.idl \
+	SALOME_Component.idl \
+	GEOM_Gen.idl
 
 LIB_SERVER_IDL = 
 
 # additionnal information to compil and link file
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
-            -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
+            -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
             $(BOOST_CPPFLAGS)
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 #$(OCC_CXXFLAGS)
 
-LDFLAGS += -lSMESHGUI -lVTKViewer -lSalomeGUI -lSMESHObject -lSMESHFiltersSelection $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+LDFLAGS += -lSMESH -lVTKViewer -lSalomeApp -lSMESHObject -lSMESHFiltersSelection $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome
 
 @CONCLUDE@

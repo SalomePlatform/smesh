@@ -20,7 +20,7 @@
 
 #include "SMESH_ActorUtils.h"
 
-#include "QAD_Config.h"
+//#include "QAD_Config.h"
 #include "utilities.h"
 
 #include <vtkUnstructuredGrid.h>
@@ -36,9 +36,10 @@ namespace SMESH{
 
   float GetFloat(const QString& theValue, float theDefault){
     if(theValue.isEmpty()) return theDefault;
-    QString aValue = QAD_CONFIG->getSetting(theValue);
-    if(aValue.isEmpty()) return theDefault;
-    return aValue.toFloat();
+    //QString aValue = QAD_CONFIG->getSetting(theValue);
+    //if(aValue.isEmpty())
+      return theDefault;
+    //return aValue.toFloat();
   }
 
   void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName){

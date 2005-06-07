@@ -26,17 +26,21 @@
 //  Module : SMESH
 
 #include "SMESHGUI_Filter.h"
+
+#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
+
+#include "SMESH_Actor.h"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDSAbs_ElementType.hxx"
 
-#include <vtkCell.h>
-
+// OCCT Includes
 #include <gp_Vec.hxx>
 #include <Precision.hxx>
-#include "SMESH_Actor.h"
-#include "SMESHGUI.h"
+
+// VTK Includes
+#include <vtkCell.h>
 
 IMPLEMENT_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
 IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_Filter, VTKViewer_Filter)
@@ -86,7 +90,7 @@ bool SMESHGUI_PredicateFilter::IsValid( const int theCellId ) const
   SMESH_Actor* anActor = dynamic_cast<SMESH_Actor*>( myActor );
   if ( !anActor || anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   SMESH::ElementType anElemType = myPred->GetElementType();
   int aMeshId = anElemType == SMESH::NODE ? anActor->GetNodeObjId( theCellId )
@@ -98,7 +102,7 @@ bool SMESHGUI_PredicateFilter::IsValid( const int theCellId ) const
                                                              : aMesh->FindElement( aMeshId );
   if ( anElem != 0 && anElem->GetType() != (SMDSAbs_ElementType)myPred->GetElementType() )
     return true;
-  
+
   return myPred->IsSatisfy( aMeshId );
 }
 
@@ -114,10 +118,10 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   SMESH::ElementType anElemType = myPred->GetElementType();
-  
+
   // if type of element != type of predicate return true because
   // this predicate is not intended for filtering sush elements
   const SMDS_MeshElement* anElem = anElemType == SMESH::NODE ? aMesh->FindNode( theObjId )
@@ -158,7 +162,10 @@ void SMESHGUI_PredicateFilter::SetActor( SALOME_Actor* theActor )
 
   if ( myActor != 0 && !myPred->_is_nil() )
   {
-    Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+    SALOME_Actor* sActor = dynamic_cast<SALOME_Actor*>( myActor );
+    Handle(SALOME_InteractiveObject) anIO;
+    if( sActor )
+      anIO = sActor->getIO();
     if ( !anIO.IsNull() )
     {
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIO);
@@ -214,10 +221,10 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
-  
+
   return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
 }
 
@@ -233,7 +240,7 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
@@ -291,7 +298,7 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
@@ -310,7 +317,7 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
@@ -367,7 +374,7 @@ bool SMESHGUI_FacesFilter::IsValid( const int theCellId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
@@ -386,7 +393,7 @@ bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
@@ -444,7 +451,7 @@ bool SMESHGUI_VolumesFilter::IsValid( const int theCellId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
@@ -463,7 +470,7 @@ bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
   SMESH_Actor* anActor = ( SMESH_Actor* )myActor;
   if ( anActor->GetObject() == 0 )
     return false;
-  
+
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
@@ -488,14 +495,3 @@ bool SMESHGUI_VolumesFilter::IsNodeFilter() const
 {
   return false;
 }
-
-
-
-
-
-
-
-
-
-
-

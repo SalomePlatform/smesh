@@ -51,6 +51,11 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean AddEdge(const SMESH::long_array & IDsOfNodes);
   CORBA::Boolean AddFace(const SMESH::long_array & IDsOfNodes);
   CORBA::Boolean AddVolume(const SMESH::long_array & IDsOfNodes);
+
+  CORBA::Boolean AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,
+                                     const SMESH::long_array & Quantities);
+  CORBA::Boolean AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
+
   CORBA::Boolean MoveNode(CORBA::Long NodeID,
                           CORBA::Double x, CORBA::Double y, CORBA::Double z);
 
@@ -82,7 +87,28 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 			      CORBA::Long                            MaxNbOfIterations,
 			      CORBA::Double                          MaxAspectRatio,
 			      SMESH::SMESH_MeshEditor::Smooth_Method Method);
-
+  CORBA::Boolean SmoothParametric(const SMESH::long_array &              IDsOfElements,
+                                  const SMESH::long_array &              IDsOfFixedNodes,
+                                  CORBA::Long                            MaxNbOfIterations,
+                                  CORBA::Double                          MaxAspectRatio,
+                                  SMESH::SMESH_MeshEditor::Smooth_Method Method);
+  CORBA::Boolean SmoothParametricObject(SMESH::SMESH_IDSource_ptr              theObject,
+                                        const SMESH::long_array &              IDsOfFixedNodes,
+                                        CORBA::Long                            MaxNbOfIterations,
+                                        CORBA::Double                          MaxAspectRatio,
+                                        SMESH::SMESH_MeshEditor::Smooth_Method Method);
+  CORBA::Boolean smooth(const SMESH::long_array &              IDsOfElements,
+                        const SMESH::long_array &              IDsOfFixedNodes,
+                        CORBA::Long                            MaxNbOfIterations,
+                        CORBA::Double                          MaxAspectRatio,
+                        SMESH::SMESH_MeshEditor::Smooth_Method Method,
+                        bool                                   IsParametric);
+  CORBA::Boolean smoothObject(SMESH::SMESH_IDSource_ptr              theObject,
+			      const SMESH::long_array &              IDsOfFixedNodes,
+			      CORBA::Long                            MaxNbOfIterations,
+			      CORBA::Double                          MaxAspectRatio,
+			      SMESH::SMESH_MeshEditor::Smooth_Method Method,
+                              bool                                   IsParametric);
 
   void RenumberNodes();
   void RenumberElements();
@@ -165,7 +191,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                    CORBA::Long LastNodeID1,
                    CORBA::Long FirstNodeID2,
                    CORBA::Long SecondNodeID2,
-                   CORBA::Long LastNodeID2);
+                   CORBA::Long LastNodeID2,
+                   CORBA::Boolean CreatePolygons,
+                   CORBA::Boolean CreatePolyedrs);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewConformFreeBorders(CORBA::Long FirstNodeID1,
                           CORBA::Long SecondNodeID1,
@@ -177,7 +205,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                     CORBA::Long SecondNodeIDOnFreeBorder,
                     CORBA::Long LastNodeIDOnFreeBorder,
                     CORBA::Long FirstNodeIDOnSide,
-                    CORBA::Long LastNodeIDOnSide);
+                    CORBA::Long LastNodeIDOnSide,
+                    CORBA::Boolean CreatePolygons,
+                    CORBA::Boolean CreatePolyedrs);
   SMESH::SMESH_MeshEditor::Sew_Error
     SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                     const SMESH::long_array& IDsOfSide2Elements,

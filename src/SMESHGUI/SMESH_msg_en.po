@@ -1600,7 +1600,7 @@ msgstr "Detect"
 msgid "SMESHGUI_MergeNodesDlg::SELECT_ALL"
 msgstr "Select all"
 
-# Edit group of nodes 
+# Edit group of nodes
 msgid "SMESHGUI_MergeNodesDlg::EDIT_GROUP_OF_NODES"
 msgstr "Edit group of nodes"
 
@@ -1770,17 +1770,861 @@ msgstr "There are objects selected which do not belong to %1 component."
 
 
 
+#-----------   Menu   bar   ----------#
+#------ MEN -----#
+msgid "MEN_DAT"
+msgstr "DAT file"
+
+msgid "MEN_UNV"
+msgstr "UNV file"
+
+msgid "MEN_MED"
+msgstr "MED file"
+
+msgid "MEN_EXPORT_DAT"
+msgstr "Export to DAT file"
+
+msgid "MEN_EXPORT_UNV"
+msgstr "Export to UNV file"
+
+msgid "MEN_EXPORT_MED"
+msgstr "Export to MED file"
+
+msgid "MEN_DELETE"
+msgstr "Delete"
+
+msgid "MEN_SEL_FILTER_LIB"
+msgstr "Selection filters library"
+
+msgid "MEN_CREATE_HYPO"
+msgstr "Create Hypotheses"
+
+msgid "MEN_CREATE_ALG"
+msgstr "Create Algorithms"
+
+msgid "MEN_COMPUTE"
+msgstr "Compute"
+
+msgid "MEN_LOCAL_HYPO"
+msgstr "Local Hypothesis"
+
+msgid "MEN_GLOBAL_HYPO"
+msgstr "Global Hypothesis"
+
+msgid "MEN_EDIT"
+msgstr "Edit"
+
+msgid "MEN_EDIT_GLOBAL_HYPO"
+msgstr "Edit Global Hypothesis"
+
+msgid "MEN_EDIT_LOCAL_HYPO"
+msgstr "Edit Local Hypothesis"
+
+msgid "MEN_EDIT_HYPO"
+msgstr "Edit Hypothesis"
+
+msgid "MEN_CREATE_GROUP"
+msgstr "Create Group"
+
+msgid "MEN_CONSTRUCT_GROUP"
+msgstr "Construct Group"
+
+msgid "MEN_EDIT_GROUP"
+msgstr "Edit Group"
+
+msgid "MEN_UN_GROUP"
+msgstr "Union Groups"
+
+msgid "MEN_INT_GROUP"
+msgstr "Intersect Groups"
+
+msgid "MEN_CUT_GROUP"
+msgstr "Cut Groups"
+
+msgid "MEN_DEL_GROUP"
+msgstr "Delete Groups"
+
+msgid "MEN_ADV_INFO"
+msgstr "Advanced Mesh Infos"
+
+msgid "MEN_STD_INFO"
+msgstr "Standard Mesh Infos"
+
+msgid "MEN_LENGTH"
+msgstr "Length"
+
+msgid "MEN_FREE_EDGE"
+msgstr "Free Edges"
+
+msgid "MEN_FREE_BORDER"
+msgstr "Free Borders"
+
+msgid "MEN_CONNECTION"
+msgstr "Borders at Multi-Connection"
+
+msgid "MEN_AREA"
+msgstr "Area"
+
+msgid "MEN_TAPER"
+msgstr "Taper"
+
+msgid "MEN_ASPECT"
+msgstr "Aspect Ratio"
+
+msgid "MEN_MIN_ANG"
+msgstr "Minimum Angle"
+
+msgid "MEN_WRAP"
+msgstr "Wraping"
+
+msgid "MEN_SKEW"
+msgstr "Skew"
+
+msgid "MEN_ASPECT_3D"
+msgstr "Aspect Ratio 3D"
+
+msgid "MEN_LENGTH_2D"
+msgstr "Length 2D"
+
+msgid "MEN_CONNECTION_2D"
+msgstr "Borders at Multi-Connection 2D"
+
+msgid "MEN_NODE"
+msgstr "Node"
+
+msgid "MEN_EDGE"
+msgstr "Edge"
+
+msgid "MEN_TRIANGLE"
+msgstr "Triangle"
+
+msgid "MEN_QUAD"
+msgstr "Quadrangle"
+
+msgid "MEN_TETRA"
+msgstr "Tetrahedron"
+
+msgid "MEN_HEXA"
+msgstr "Hexahedron"
+
+msgid "MEN_NODES"
+msgstr "Nodes"
+
+msgid "MEN_ELEMENTS"
+msgstr "Elements"
+
+msgid "MEN_TRANS"
+msgstr "Translation"
+
+msgid "MEN_ROT"
+msgstr "Rotation"
+
+msgid "MEN_SYM"
+msgstr "Symmetry"
+
+msgid "MEN_SEW"
+msgstr "Sewing"
+
+msgid "MEN_MERGE"
+msgstr "Merge nodes"
+
+msgid "MEN_MOVE"
+msgstr "Move Node"
+
+msgid "MEN_INV"
+msgstr "Diagonal Inversion"
+
+msgid "MEN_UNION2"
+msgstr "Union of two triangles"
+
+msgid "MEN_ORIENT"
+msgstr "Orientation"
+
+msgid "MEN_UNION"
+msgstr "Union of triangles"
+
+msgid "MEN_CUT"
+msgstr "Cutting of quadrangles"
+
+msgid "MEN_SMOOTH"
+msgstr "Smoothing"
+
+msgid "MEN_EXTRUSION"
+msgstr "Extrusion"
+
+msgid "MEN_REVOLUTION"
+msgstr "Revolution"
+
+msgid "MEN_MAP"
+msgstr "Pattern mapping"
+
+msgid "MEN_EXTRUSION_ALONG"
+msgstr "Extrusion along a path"
+
+msgid "MEN_WIRE"
+msgstr "Wireframe"
+
+msgid "MEN_SHADE"
+msgstr "Shading"
+
+msgid "MEN_SHRINK"
+msgstr "Shrink"
+
+msgid "MEN_AUTO_UPD"
+msgstr "Automatic update"
+
+msgid "MEN_COLORS"
+msgstr "Colors / Size"
+
+msgid "MEN_SCALAR_BAR"
+msgstr "Scalar bar"
+
+msgid "MEN_SELECTION"
+msgstr "Selection"
+
+msgid "MEN_PRECISION"
+msgstr "Precision"
+
+msgid "MEN_DISP_ENT"
+msgstr "Display entity"
+
+msgid "MEN_UPDATE"
+msgstr "Update"
+
+msgid "MEN_FILE"
+msgstr "File"
+
+msgid "MEN_TOOLS"
+msgstr "Tools"
+
+msgid "MEN_HYPO"
+msgstr "Hypotheses"
+
+msgid "MEN_MESH"
+msgstr "Mesh"
+
+msgid "MEN_CTRL"
+msgstr "Controls"
+
+msgid "MEN_MODIFY"
+msgstr "Modification"
+
+msgid "MEN_PREF"
+msgstr "Preferences"
+
+msgid "MEN_VIEW"
+msgstr "View"
+
+msgid "MEN_IMPORT"
+msgstr "Import"
+
+msgid "MEN_EXPORT"
+msgstr "Export"
+
+msgid "MEN_ADD"
+msgstr "Add"
+
+msgid "MEN_REMOVE"
+msgstr "Remove"
+
+msgid "MEN_RENUM"
+msgstr "Renumbering"
+
+msgid "MEN_NUM"
+msgstr "Numbering"
+
+msgid "MEN_TRANSF"
+msgstr "Transformation"
+
+msgid "MEN_DISPMODE"
+msgstr "Display mode"
+
+msgid "MEN_QUALITY"
+msgstr "Quality controls"
+
+msgid "MEN_RENAME"
+msgstr "Rename"
+
+msgid "MEN_NUM_NODES"
+msgstr "Display Nodes #"
+
+msgid "MEN_NUM_ELEMENTS"
+msgstr "Display Elements #"
+
+msgid "MEN_RESET"
+msgstr "Reset"
+
+msgid "MEN_SCALAR_BAR_PROP"
+msgstr "Scalar bar Properties"
+
+msgid "MEN_EDGES"
+msgstr "Edges"
+
+msgid "MEN_FACES"
+msgstr "Faces"
+
+msgid "MEN_VOLUMES"
+msgstr "Volumes"
+
+msgid "MEN_ALL"
+msgstr "All"
+
+msgid "MEN_TRANSP"
+msgstr "Transparency"
+
+msgid "MEN_CLIP"
+msgstr "Clipping"
+
+msgid "MEN_DISPLAY"
+msgstr "Display"
+
+msgid "MEN_ERASE"
+msgstr "Erase"
+
+msgid "MEN_DISPLAY_ONLY"
+msgstr "Display only"
+
+
+#------ TOP -----#
+msgid "TOP_DAT"
+msgstr "Import DAT file"
+
+msgid "TOP_UNV"
+msgstr "Import UNV file"
+
+msgid "TOP_MED"
+msgstr "Import MED file"
+
+msgid "TOP_EXPORT_DAT"
+msgstr "Export to DAT file"
+
+msgid "TOP_EXPORT_UNV"
+msgstr "Export to UNV file"
+
+msgid "TOP_EXPORT_MED"
+msgstr "Export to MED file"
+
+msgid "TOP_DELETE"
+msgstr "Delete"
+
+msgid "TOP_SEL_FILTER_LIB"
+msgstr "Selection filters library"
+
+msgid "TOP_CREATE_HYPO"
+msgstr "Create Hypotheses"
+
+msgid "TOP_CREATE_ALG"
+msgstr "Create Algorithms"
+
+msgid "TOP_COMPUTE"
+msgstr "Compute"
+
+msgid "TOP_LOCAL_HYPO"
+msgstr "Local Hypothesis"
+
+msgid "TOP_GLOBAL_HYPO"
+msgstr "Global Hypothesis"
+
+msgid "TOP_EDIT_GLOBAL_HYPO"
+msgstr "Edit Global Hypothesis"
+
+msgid "TOP_EDIT_LOCAL_HYPO"
+msgstr "Edit Local Hypothesis"
+
+msgid "TOP_EDIT_HYPO"
+msgstr "Edit Hypothesis"
+
+msgid "TOP_CREATE_GROUP"
+msgstr "Create Group"
+
+msgid "TOP_CONSTRUCT_GROUP"
+msgstr "Construct Group"
+
+msgid "TOP_EDIT_GROUP"
+msgstr "Edit Group"
+
+msgid "TOP_UN_GROUP"
+msgstr "Union Groups"
+
+msgid "TOP_INT_GROUP"
+msgstr "Intersect Groups"
+
+msgid "TOP_CUT_GROUP"
+msgstr "Cut Groups"
+
+msgid "TOP_DEL_GROUP"
+msgstr "Delete Groups"
+
+msgid "TOP_ADV_INFO"
+msgstr "Advanced Mesh Infos"
+
+msgid "TOP_STD_INDO"
+msgstr "Standard Mesh Infos"
+
+msgid "TOP_LENGTH"
+msgstr "Length"
+
+msgid "TOP_FREE_EDGE"
+msgstr "Free Edges"
+
+msgid "TOP_FREE_BORDER"
+msgstr "Free Borders"
+
+msgid "TOP_CONNECTION"
+msgstr "Borders at Multi-Connection"
+
+msgid "TOP_AREA"
+msgstr "Area"
+
+msgid "TOP_TAPER"
+msgstr "Taper"
+
+msgid "TOP_ASPECT"
+msgstr "Aspect Ratio"
+
+msgid "TOP_MIN_ANG"
+msgstr "Minimum Angle"
+
+msgid "TOP_WARP"
+msgstr "Wraping"
+
+msgid "TOP_SKEW"
+msgstr "Skew"
+
+msgid "TOP_ASPECT_3D"
+msgstr "Aspect Ratio 3D"
+
+msgid "TOP_LENGTH_2D"
+msgstr "Length 2D"
+
+msgid "TOP_CONNECTION_2D"
+msgstr "Borders at Multi-Connection 2D"
+
+msgid "TOP_NODE"
+msgstr "Node"
+
+msgid "TOP_EDGE"
+msgstr "Edge"
+
+msgid "TOP_TRIANGLE"
+msgstr "Triangle"
+
+msgid "TOP_QUAD"
+msgstr "Quadrangle"
+
+msgid "TOP_TETRA"
+msgstr "Tetrahedron"
+
+msgid "TOP_HEXA"
+msgstr "Hexahedron"
+
+msgid "TOP_NODES"
+msgstr "Nodes"
+
+msgid "TOP_ELEMENTS"
+msgstr "Elements"
+
+msgid "TOP_TRANS"
+msgstr "Translation"
+
+msgid "TOP_ROT"
+msgstr "Rotation"
+
+msgid "TOP_SYM"
+msgstr "Symmetry"
+
+msgid "TOP_SEW"
+msgstr "Sewing"
+
+msgid "TOP_MERGE"
+msgstr "Merge nodes"
+
+msgid "TOP_MOVE"
+msgstr "Move Node"
+
+msgid "TOP_INV"
+msgstr "Diagonal Inversion"
+
+msgid "TOP_UNION2"
+msgstr "Union of two triangles"
+
+msgid "TOP_ORIENT"
+msgstr "Orientation"
+
+msgid "TOP_UNION"
+msgstr "Union of triangles"
+
+msgid "TOP_CUT"
+msgstr "Cutting of quadrangles"
+
+msgid "TOP_SMOOTH"
+msgstr "Smoothing"
+
+msgid "TOP_EXTRUSION"
+msgstr "Extrusion"
+
+msgid "TOP_REVOLUTION"
+msgstr "Revolution"
+
+msgid "TOP_MAP"
+msgstr "Pattern mapping"
+
+msgid "TOP_EXTRUSION_ALONG"
+msgstr "Extrusion along a path"
+
+msgid "TOP_WIRE"
+msgstr "Wireframe"
+
+msgid "TOP_SHADE"
+msgstr "Shading"
+
+msgid "TOP_SHRINK"
+msgstr "Shrink"
+
+msgid "TOP_AUTO_UPD"
+msgstr "Automatic update"
+
+msgid "TOP_COLORS"
+msgstr "Colors / Size"
+
+msgid "TOP_SCALAR_BAR"
+msgstr "Scalar bar"
+
+msgid "TOP_SELECTION"
+msgstr "Selection"
+
+msgid "TOP_PRECISION"
+msgstr "Precision"
+
+msgid "TOP_DISP_ENT"
+msgstr "Display entity"
+
+msgid "TOP_UPDATE"
+msgstr "Update"
+
+msgid "TOP_RENAME"
+msgstr "Rename"
+
+msgid "TOP_NUM_NODES"
+msgstr "Display Nodes"
+
+msgid "TOP_NUM_ELEMENTS"
+msgstr "Display Elements"
+
+msgid "TOP_RESET"
+msgstr "Reset"
+
+msgid "TOP_SCALAR_BAR_PROP"
+msgstr "Scalar bar Properties"
+
+msgid "TOP_EDGES"
+msgstr "Edges"
+
+msgid "TOP_FACES"
+msgstr "Faces"
+
+msgid "TOP_VOLUMES"
+msgstr "Volumes"
+
+msgid "TOP_ALL"
+msgstr "All"
+
+msgid "TOP_TRANSP"
+msgstr "Transparency"
+
+msgid "TOP_CLIP"
+msgstr "Clipping"
+
+msgid "TOP_DISPLAY"
+msgstr "Display"
+
+msgid "TOP_ERASE"
+msgstr "Erase"
+
+msgid "TOP_DISPLAY_ONLY"
+msgstr "Display only"
+
+
+
+
+#------ STB -----#
+msgid "STB_DAT"
+msgstr "Import DAT file"
+
+msgid "STB_UNV"
+msgstr "Import UNV file"
+
+msgid "STB_MED"
+msgstr "Import MED file"
+
+msgid "STB_EXPORT_DAT"
+msgstr "Export to DAT file"
+
+msgid "STB_EXPORT_UNV"
+msgstr "Export to UNV file"
+
+msgid "STB_EXPORT_MED"
+msgstr "Export to MED file"
+
+msgid "STB_DELETE"
+msgstr "Delete"
+
+msgid "STB_SEL_FILTER_LIB"
+msgstr "Selection filters library"
+
+msgid "STB_CREATE_HYPO"
+msgstr "Create Hypotheses"
+
+msgid "STB_CREATE_ALG"
+msgstr "Create Algorithms"
+
+msgid "STB_COMPUTE"
+msgstr "Compute"
+
+msgid "STB_LOCAL_HYPO"
+msgstr "Local Hypothesis"
+
+msgid "STB_GLOBAL_HYPO"
+msgstr "Global Hypothesis"
+
+msgid "STB_EDIT_HYPO"
+msgstr "Edit Hypothesis"
+
+msgid "STB_CREATE_GROUP"
+msgstr "Create Group"
+
+msgid "STB_CONSTRUCT_GROUP"
+msgstr "Construct Group"
+
+msgid "STB_EDIT_GROUP"
+msgstr "Edit Group"
+
+msgid "STB_UN_GROUP"
+msgstr "Union Groups"
+
+msgid "STB_INT_GROUP"
+msgstr "Intersect Groups"
+
+msgid "STB_CUT_GROUP"
+msgstr "Cut Groups"
+
+msgid "STB_DEL_GROUP"
+msgstr "Delete Groups"
+
+msgid "STB_ADV_INFO"
+msgstr "Advanced Mesh Infos"
+
+msgid "STB_STD_INDO"
+msgstr "Standard Mesh Infos"
+
+msgid "STB_LENGTH"
+msgstr "Length"
+
+msgid "STB_FREE_EDGE"
+msgstr "Free Edges"
+
+msgid "STB_FREE_BORDER"
+msgstr "Free Borders"
+
+msgid "STB_CONNECTION"
+msgstr "Borders at Multi-Connection"
+
+msgid "STB_AREA"
+msgstr "Area"
+
+msgid "STB_TAPER"
+msgstr "Taper"
+
+msgid "STB_ASPECT"
+msgstr "Aspect Ratio"
+
+msgid "STB_MIN_ANG"
+msgstr "Minimum Angle"
+
+msgid "STB_WARP"
+msgstr "Wraping"
+
+msgid "STB_SKEW"
+msgstr "Skew"
+
+msgid "STB_ASPECT_3D"
+msgstr "Aspect Ratio 3D"
+
+msgid "STB_LENGTH_2D"
+msgstr "Length 2D"
+
+msgid "STB_CONNECTION_2D"
+msgstr "Borders at Multi-Connection 2D"
+
+msgid "STB_NODE"
+msgstr "Node"
+
+msgid "STB_EDGE"
+msgstr "Edge"
+
+msgid "STB_TRIANGLE"
+msgstr "Triangle"
+
+msgid "STB_QUAD"
+msgstr "Quadrangle"
+
+msgid "STB_TETRA"
+msgstr "Tetrahedron"
+
+msgid "STB_HEXA"
+msgstr "Hexahedron"
+
+msgid "STB_NODES"
+msgstr "Nodes"
+
+msgid "STB_ELEMENTS"
+msgstr "Elements"
+
+msgid "STB_TRANS"
+msgstr "Translation"
+
+msgid "STB_ROT"
+msgstr "Rotation"
+
+msgid "STB_SYM"
+msgstr "Symmetry"
+
+msgid "STB_SEW"
+msgstr "Sewing"
+
+msgid "STB_MERGE"
+msgstr "Merge nodes"
+
+msgid "STB_MOVE"
+msgstr "Move Node"
+
+msgid "STB_INV"
+msgstr "Diagonal Inversion"
+
+msgid "STB_UNION2"
+msgstr "Union of two triangles"
+
+msgid "STB_ORIENT"
+msgstr "Orientation"
+
+msgid "STB_UNION"
+msgstr "Union of triangles"
+
+msgid "STB_CUT"
+msgstr "Cutting of quadrangles"
+
+msgid "STB_SMOOTH"
+msgstr "Smoothing"
+
+msgid "STB_EXTRUSION"
+msgstr "Extrusion"
+
+msgid "STB_REVOLUTION"
+msgstr "Revolution"
+
+msgid "STB_MAP"
+msgstr "Pattern mapping"
+
+msgid "STB_EXTRUSION_ALONG"
+msgstr "Extrusion along a path"
+
+msgid "STB_WIRE"
+msgstr "Wireframe"
+
+msgid "STB_SHADE"
+msgstr "Shading"
+
+msgid "STB_SHRINK"
+msgstr "Shrink"
+
+msgid "STB_AUTO_UPD"
+msgstr "Automatic update"
+
+msgid "STB_COLORS"
+msgstr "Colors / Size"
+
+msgid "STB_SCALAR_BAR"
+msgstr "Scalar bar"
+
+msgid "STB_SELECTION"
+msgstr "Selection"
+
+msgid "STB_PRECISION"
+msgstr "Precision"
+
+msgid "STB_DISP_ENT"
+msgstr "Display entity"
+
+msgid "STB_UPDATE"
+msgstr "Update"
+
+msgid "STB_EDIT_GLOBAL_HYPO"
+msgstr "Edit Global Hypothesis"
+
+msgid "STB_EDIT_LOCAL_HYPO"
+msgstr "Edit Local Hypothesis"
+
+msgid "STB_RENAME"
+msgstr "Rename"
+
+msgid "STB_NUM_NODES"
+msgstr "Display Nodes"
+
+msgid "STB_NUM_ELEMENTS"
+msgstr "Display Elements"
+
+msgid "STB_RESET"
+msgstr "Reset"
+
+msgid "STB_SCALAR_BAR_PROP"
+msgstr "Scalar bar Properties"
+
+msgid "STB_EDGES"
+msgstr "Edges"
+
+msgid "STB_FACES"
+msgstr "Faces"
+
+msgid "STB_VOLUMES"
+msgstr "Volumes"
+
+msgid "STB_ALL"
+msgstr "All"
+
+msgid "STB_TRANSP"
+msgstr "Transparency"
+
+msgid "STB_CLIP"
+msgstr "Clipping"
+
+msgid "STB_DISPLAY"
+msgstr "Display"
+
+msgid "STB_ERASE"
+msgstr "Erase"
+
+msgid "STB_DISPLAY_ONLY"
+msgstr "Display only"
 
 
 
 
 
+msgid "TB_MESH"
+msgstr "Mesh Toolbar"
 
+msgid "TB_HYPO"
+msgstr "Hypotheses Toolbar"
 
+msgid "TB_CTRL"
+msgstr "Controls Toolbar"
 
+msgid "TB_ADD_REMOVE"
+msgstr "Add/Remove Toolbar"
 
+msgid "TB_MODIFY"
+msgstr "Modification Toolbar"
 
-
-
-
+msgid "TB_DISP_MODE"
+msgstr "Display Mode Toolbar"
 

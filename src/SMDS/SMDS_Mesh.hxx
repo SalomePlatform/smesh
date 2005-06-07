@@ -201,6 +201,28 @@ public:
                                      const SMDS_MeshFace * f5,
                                      const SMDS_MeshFace * f6);
 
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<int> nodes_ids,
+                                                 const int        ID);
+
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<const SMDS_MeshNode*> nodes,
+                                                 const int                         ID);
+
+  virtual SMDS_MeshFace* AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (std::vector<int> nodes_ids,
+                            std::vector<int> quantities,
+                            const int        ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (std::vector<const SMDS_MeshNode*> nodes,
+                            std::vector<int>                  quantities,
+                            const int                         ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolume
+                           (std::vector<const SMDS_MeshNode*> nodes,
+                            std::vector<int>                  quantities);
+
   virtual void RemoveElement(const SMDS_MeshElement *        elem,
                              std::list<const SMDS_MeshElement *>& removedElems,
                              std::list<const SMDS_MeshElement *>& removedNodes,
@@ -217,6 +239,9 @@ public:
   static bool ChangeElementNodes(const SMDS_MeshElement * elem,
                                  const SMDS_MeshNode    * nodes[],
                                  const int                nbnodes);
+  static bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
+                                    std::vector<const SMDS_MeshNode*> nodes,
+                                    std::vector<int>                  quantities);
 
   virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
@@ -235,6 +260,10 @@ public:
                                        const SMDS_MeshNode *n2,
                                        const SMDS_MeshNode *n3,
                                        const SMDS_MeshNode *n4);
+
+  const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
+  static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
+
   int MaxNodeID() const;
   int MinNodeID() const;
   int MaxElementID() const;

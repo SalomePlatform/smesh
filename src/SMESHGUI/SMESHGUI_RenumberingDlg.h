@@ -29,8 +29,9 @@
 #ifndef DIALOGBOX_RENUMBERING_H
 #define DIALOGBOX_RENUMBERING_H
 
-#include "SALOME_Selection.h"
-#include "SMESH_TypeFilter.hxx"
+#include "SalomeApp_SelectionMgr.h"
+//#include "SMESH_TypeFilter.hxx"
+#include "SUIT_SelectionFilter.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -59,24 +60,30 @@ class SMESHGUI_RenumberingDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_RenumberingDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, const int unit = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_RenumberingDlg (QWidget* parent = 0,
+			     const char* name = 0,
+			     SalomeApp_SelectionMgr* Sel = 0,
+			     const int unit = 0,
+			     bool modal = FALSE,
+			     WFlags fl = 0);
     ~SMESHGUI_RenumberingDlg();
 
 private:
 
-    void Init( SALOME_Selection* Sel ) ;
+    void Init( SalomeApp_SelectionMgr* Sel ) ;
     void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void enterEvent ( QEvent * ) ;                         /* mouse enter the QWidget */
+    void hideEvent ( QHideEvent * );                       /* ESC key */
     
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    int                           myConstructorId ;         /* Current constructor id = radio button id */
-    QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
+    SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    int                           myConstructorId;         /* Current constructor id = radio button id */
+    QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
 
     int myUnit;    
     SMESH::SMESH_Mesh_var         myMesh;
-    Handle(SMESH_TypeFilter)      myMeshFilter;
+    //Handle(SMESH_TypeFilter)      myMeshFilter;
+    SUIT_SelectionFilter*         myMeshFilter;
         
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;

@@ -29,8 +29,10 @@
 #ifndef DIALOGBOX_SMOOTHING_H
 #define DIALOGBOX_SMOOTHING_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
+
 #include "SMESH_LogicalFilter.hxx"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -47,6 +49,8 @@ class QSpinBox;
 class SMESHGUI_SpinBox;
 class SMESHGUI;
 class SMESH_Actor;
+class SVTK_ViewWindow;
+class SVTK_Selector;
 
 
 // IDL Headers
@@ -63,28 +67,33 @@ class SMESHGUI_SmoothingDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_SmoothingDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_SmoothingDlg( SMESHGUI*,
+			   const char* name = 0,
+			   bool modal = FALSE,
+			   WFlags fl = 0);
     ~SMESHGUI_SmoothingDlg();
 
 private:
 
-    void Init() ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void Init();
+    void closeEvent(QCloseEvent*);
+    void enterEvent (QEvent*);                             /* mouse enter the QWidget */
+    void hideEvent (QHideEvent*);                          /* ESC key */
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
+    SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
     QString                       myElementsId;
-    int                           myNbOkElements ;          /* to check when elements are defined */
-    int                           myNbOkNodes ;             /* to check when fixed nodes are defined */
-    int                           myConstructorId ;         /* Current constructor id = radio button id */
-    QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
+    int                           myNbOkElements;          /* to check when elements are defined */
+    int                           myNbOkNodes;             /* to check when fixed nodes are defined */
+    int                           myConstructorId;         /* Current constructor id = radio button id */
+    QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
 
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
+    SMESH_LogicalFilter*          myMeshOrSubMeshOrGroupFilter;
 
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;
@@ -106,6 +115,7 @@ private:
     QSpinBox* SpinBox_IterationLimit;
     QLabel* TextLabelAspectRatio;
     SMESHGUI_SpinBox* SpinBox_AspectRatio;
+    QCheckBox       * CheckBoxParametric;
     
 private slots:
 

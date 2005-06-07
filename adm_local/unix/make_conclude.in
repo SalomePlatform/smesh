@@ -327,11 +327,7 @@ distclean: clean
 	$(SWIG) $(SWIG_FLAGS) -o $@ $<
 
 $(top_builddir)/share/salome/resources/%.qm: %.po
-	if test -e ${KERNEL_ROOT_DIR}/bin/salome/msg2qm ; then \
-		${KERNEL_ROOT_DIR}/bin/salome/msg2qm $< $@ ; \
-	else \
-		$(top_builddir)/bin/salome/msg2qm $< $@ ; \
-	fi
+		$(MSG2QM) $< $@ ; \
 
 #------------------------------------------------------------------------------
 # The following section of this makefile contains dependencies between the

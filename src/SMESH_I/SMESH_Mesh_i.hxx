@@ -164,16 +164,16 @@ public:
 
   SALOME_MED::MESH_ptr GetMEDMesh()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbNodes()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbElements()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbEdges()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbFaces()
     throw (SALOME::SALOME_Exception);
 
@@ -182,7 +182,10 @@ public:
 
   CORBA::Long NbQuadrangles()
     throw (SALOME::SALOME_Exception);
-  
+
+  CORBA::Long NbPolygons()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbVolumes()
     throw (SALOME::SALOME_Exception);
 
@@ -191,13 +194,16 @@ public:
 
   CORBA::Long NbHexas()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbPyramids()
     throw (SALOME::SALOME_Exception);
-  
+
   CORBA::Long NbPrisms()
     throw (SALOME::SALOME_Exception);
-  
+
+  CORBA::Long NbPolyhedrons()
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbSubMesh()
     throw (SALOME::SALOME_Exception);
 

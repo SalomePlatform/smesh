@@ -32,14 +32,18 @@
 #include <qstringlist.h>
 
 #include "SALOME_InteractiveObject.hxx"
+#include "SALOMEDSClient_definitions.hxx"
 
 #include "SALOMEconfig.h"
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
+#include <vector>
+
 class HypothesisData;
 class SMESHGUI_GenericHypothesisCreator;
+class SALOMEDSClient_SObject;
 
 namespace SMESH{
 
@@ -61,10 +65,11 @@ namespace SMESH{
 
   bool RemoveHypothesisOrAlgorithmOnMesh(const Handle(SALOME_InteractiveObject)& IObject);
 
-  bool RemoveHypothesisOrAlgorithmOnMesh(SALOMEDS::SObject_ptr MorSM,
+  bool RemoveHypothesisOrAlgorithmOnMesh(_PTR(SObject) MorSM,
 					 SMESH::SMESH_Hypothesis_ptr anHyp);
 
-  SALOMEDS::Study::ListOfSObject* GetMeshesUsingAlgoOrHypothesis(SMESH::SMESH_Hypothesis_ptr AlgoOrHyp ) ;
+  typedef std::vector<_PTR(SObject)> SObjectList;
+  SObjectList GetMeshesUsingAlgoOrHypothesis(SMESH::SMESH_Hypothesis_ptr AlgoOrHyp ) ;
 
 }
 

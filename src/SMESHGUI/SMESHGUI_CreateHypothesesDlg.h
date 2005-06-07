@@ -57,7 +57,7 @@ class SMESHGUI_CreateHypothesesDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_CreateHypothesesDlg (QWidget* parent = 0,
+    SMESHGUI_CreateHypothesesDlg (SMESHGUI*,
 				  const char* name = 0,
 				  bool modal = FALSE,
 				  bool isAlgo = FALSE);

@@ -33,7 +33,13 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMDSAbs_ElementType.hxx"
+
+#include "SMESH_Filter_i.hxx"
+#include "SMESH_PythonDump.hxx"
+
 #include "utilities.h"
+
+using namespace SMESH;
 
 //=============================================================================
 /*!
@@ -113,6 +119,14 @@ SMESHDS_GroupBase* SMESH_GroupBase_i::GetGroupDS() const
 
 void SMESH_GroupBase_i::SetName( const char* theName )
 {
+  // Update Python script
+  TCollection_AsciiString aStr, aStrName ((char*)theName);
+  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetName(\"";
+  aStr += aStrName + "\")";
+
+  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+
+  // Perform renaming
   ::SMESH_Group* aGroup = GetSmeshGroup();
   if (aGroup) {
     aGroup->SetName(theName);
@@ -204,6 +218,13 @@ CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 
 void SMESH_Group_i::Clear()
 {
+  // Update Python script
+  TCollection_AsciiString aStr;
+  SMESH_Gen_i::AddObject(aStr, _this()) += ".Clear()";
+
+  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+
+  // Clear the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     aGroupDS->Clear();
@@ -235,6 +256,14 @@ CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
 
 CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 {
+  // Update Python script
+  TCollection_AsciiString aStr ("nbAdd = ");
+  SMESH_Gen_i::AddObject(aStr, _this()) += ".Add(";
+  SMESH_Gen_i::AddArray(aStr, theIDs) += ")";
+
+  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+
+  // Add elements to the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     int nbAdd = 0;
@@ -246,6 +275,86 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
     return nbAdd;
   }
   MESSAGE("attempt to add elements to a vague group");
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
+{
+  // Update Python script
+  TCollection_AsciiString aStr ("nbDel = ");
+  SMESH_Gen_i::AddObject(aStr, _this()) += ".Remove(";
+  SMESH_Gen_i::AddArray(aStr, theIDs) += ")";
+
+  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+
+  // Remove elements from the group
+  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
+  if (aGroupDS) {
+    int nbDel = 0;
+    for (int i = 0; i < theIDs.length(); i++) {
+      int anID = (int) theIDs[i];
+      if (aGroupDS->Remove(anID))
+        nbDel++;
+    }
+    return nbDel;
+  }
+  MESSAGE("attempt to remove elements from a vague group");
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+
+typedef bool (SMESHDS_Group::*TFunChangeGroup)(const int);
+
+CORBA::Long 
+ChangeByPredicate( SMESH::Predicate_i* thePredicate,
+		   SMESHDS_GroupBase* theGroupBase,
+		   TFunChangeGroup theFun)
+{
+  CORBA::Long aNb = 0;
+  if(SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>(theGroupBase)){
+    SMESH::Controls::Filter::TIdSequence aSequence;
+    const SMDS_Mesh* aMesh = theGroupBase->GetMesh();
+    SMESH::Filter_i::GetElementsId(thePredicate,aMesh,aSequence);
+    
+    CORBA::Long i = 0, iEnd = aSequence.size();
+    for(; i < iEnd; i++)
+      if((aGroupDS->*theFun)(aSequence[i]))
+	aNb++;
+    return aNb;
+  }
+  return aNb;
+}
+
+CORBA::Long 
+SMESH_Group_i::
+AddByPredicate( SMESH::Predicate_ptr thePredicate )
+{
+  if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
+    TPythonDump()<<_this()<<".AddByPredicate("<<aPredicate<<")";
+    return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Add);
+  }
+  return 0;
+}
+
+CORBA::Long 
+SMESH_Group_i::
+RemoveByPredicate( SMESH::Predicate_ptr thePredicate )
+{
+  if(SMESH::Predicate_i* aPredicate = SMESH::GetPredicate(thePredicate)){
+    TPythonDump()<<_this()<<".RemoveByPredicate("<<aPredicate<<")";
+    return ChangeByPredicate(aPredicate,GetGroupDS(),&SMESHDS_Group::Remove);
+  }
   return 0;
 }
 
@@ -283,28 +392,6 @@ SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
   }
   MESSAGE("get list of IDs of a vague group");
   return aRes._retn();
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
-{
-  SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
-  if (aGroupDS) {
-    int nbDel = 0;
-    for (int i = 0; i < theIDs.length(); i++) {
-      int anID = (int) theIDs[i];
-      if (aGroupDS->Remove(anID))
-        nbDel++;
-    }
-    return nbDel;
-  }
-  MESSAGE("attempt to remove elements from a vague group");
-  return 0;
 }
 
 //=============================================================================

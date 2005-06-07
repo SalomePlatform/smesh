@@ -1,23 +1,23 @@
 //  SMESH SMESHGUI : GUI for SMESH component
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -28,14 +28,21 @@
 #include "SMESHGUI_DeleteGroupDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESH_TypeFilter.hxx"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
-#include "QAD_Desktop.h"
-#include "SALOME_Selection.h"
+#include "SMESH_TypeFilter.hxx"
+
+#include "SUIT_Desktop.h"
+
+#include "SalomeApp_Study.h"
+#include "SalomeApp_SelectionMgr.h"
+
+#include "SVTK_Selection.h"
+#include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 
+// QT Includes
 #include <qframe.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -45,251 +52,256 @@
 #include <qlist.h>
 #include <qmessagebox.h>
 
+// IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 #define SPACING 5
 #define MARGIN  10
 
-/*
-  Class       : SMESHGUI_DeleteGroupDlg
-  Description : Delete groups and their contents
-*/
+/*!
+ *  Class       : SMESHGUI_DeleteGroupDlg
+ *  Description : Delete groups and their contents
+ */
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg
-// Purpose : Constructor
-//=======================================================================
-SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg( QWidget*          theParent, 
-                                                  SALOME_Selection* theSelection )
-: QDialog( theParent, "SMESHGUI_DeleteGroupDlg", false, 
-           WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+//=================================================================================
+// function : SMESHGUI_DeleteGroupDlg()
+// purpose  : Constructor
+//=================================================================================
+SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (QWidget*          theParent,
+                                                  SalomeApp_SelectionMgr* theSelection)
+     : QDialog(theParent, "SMESHGUI_DeleteGroupDlg", false,
+               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
 {
-  setCaption( tr( "CAPTION" ) );
+  setCaption(tr("CAPTION"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout( this, MARGIN, SPACING );
+  QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
 
-  QFrame* aMainFrame = createMainFrame  ( this );
-  QFrame* aBtnFrame  = createButtonFrame( this );
+  QFrame* aMainFrame = createMainFrame  (this);
+  QFrame* aBtnFrame  = createButtonFrame(this);
 
-  aDlgLay->addWidget( aMainFrame );
-  aDlgLay->addWidget( aBtnFrame );
+  aDlgLay->addWidget(aMainFrame);
+  aDlgLay->addWidget(aBtnFrame);
 
-  aDlgLay->setStretchFactor( aMainFrame, 1 );
+  aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  Init( theSelection ) ; 
+  Init(theSelection);
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::createMainFrame
-// Purpose : Create frame containing dialog's input fields
-//=======================================================================
-QFrame* SMESHGUI_DeleteGroupDlg::createMainFrame( QWidget* theParent )
+//=================================================================================
+// function : createMainFrame()
+// purpose  : Create frame containing dialog's input fields
+//=================================================================================
+QFrame* SMESHGUI_DeleteGroupDlg::createMainFrame (QWidget* theParent)
 {
-  QGroupBox* aMainGrp = new QGroupBox( 1, Qt::Horizontal, tr( "SELECTED_GROUPS" ), theParent );
-  
-  myListBox = new QListBox( aMainGrp );
-  myListBox->setMinimumHeight( 100 );
-  myListBox->setSelectionMode( QListBox::NoSelection );
-  myListBox->setRowMode( QListBox::FitToWidth );
-  
+  QGroupBox* aMainGrp =
+    new QGroupBox(1, Qt::Horizontal, tr("SELECTED_GROUPS"), theParent);
+
+  myListBox = new QListBox(aMainGrp);
+  myListBox->setMinimumHeight(100);
+  myListBox->setSelectionMode(QListBox::NoSelection);
+  myListBox->setRowMode(QListBox::FitToWidth);
+
   return aMainGrp;
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::createButtonFrame
-// Purpose : Create frame containing buttons
-//=======================================================================
-QFrame* SMESHGUI_DeleteGroupDlg::createButtonFrame( QWidget* theParent )
+//=================================================================================
+// function : createButtonFrame()
+// purpose  : Create frame containing buttons
+//=================================================================================
+QFrame* SMESHGUI_DeleteGroupDlg::createButtonFrame (QWidget* theParent)
 {
-  QFrame* aFrame = new QFrame( theParent );
-  aFrame->setFrameStyle( QFrame::Box | QFrame::Sunken );
+  QFrame* aFrame = new QFrame(theParent);
+  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton( tr( "SMESH_BUT_OK"    ), aFrame );
-  myApplyBtn  = new QPushButton( tr( "SMESH_BUT_APPLY" ), aFrame );
-  myCloseBtn  = new QPushButton( tr( "SMESH_BUT_CLOSE" ), aFrame );
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
+  myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum );
+  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-  QHBoxLayout* aLay = new QHBoxLayout( aFrame, MARGIN, SPACING );
+  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
 
-  aLay->addWidget( myOkBtn );
-  aLay->addWidget( myApplyBtn );
-  aLay->addItem( aSpacer);
-  aLay->addWidget( myCloseBtn );
-  
+  aLay->addWidget(myOkBtn);
+  aLay->addWidget(myApplyBtn);
+  aLay->addItem(aSpacer);
+  aLay->addWidget(myCloseBtn);
+
   // connect signals and slots
-  connect( myOkBtn,    SIGNAL( clicked() ), SLOT( onOk() ) );
-  connect( myCloseBtn, SIGNAL( clicked() ), SLOT( onClose() ) ) ;
-  connect( myApplyBtn, SIGNAL( clicked() ), SLOT( onApply() ) );
-  
+  connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+
   return aFrame;
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::~SMESHGUI_DeleteGroupDlg
+//=================================================================================
+// name    : ~SMESHGUI_DeleteGroupDlg()
 // Purpose : Destructor
-//=======================================================================
+//=================================================================================
 SMESHGUI_DeleteGroupDlg::~SMESHGUI_DeleteGroupDlg()
 {
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::Init
-// Purpose : Init dialog fields, connect signals and slots, show dialog
-//=======================================================================
-void SMESHGUI_DeleteGroupDlg::Init( SALOME_Selection* theSelection )
+//=================================================================================
+// function : Init()
+// purpose  : Init dialog fields, connect signals and slots, show dialog
+//=================================================================================
+void SMESHGUI_DeleteGroupDlg::Init (SalomeApp_SelectionMgr* theSelection)
 {
   myBlockSelection = false;
-  mySelection = theSelection;  
+  mySelectionMgr = theSelection;
   SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox( ( QDialog* )this ) ;
-  
+  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
+
   // selection and SMESHGUI
-  connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
-  connect( aSMESHGUI, SIGNAL( SignalDeactivateActiveDialog() ), SLOT( onDeactivate() ) );
-  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( onClose() ) );
-  
-  int x, y ;
-  aSMESHGUI->DefineDlgPosition( this, x, y );
-  this->move( x, y );
-  this->show(); 
+  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
+  connect(aSMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
+  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+
+  int x, y;
+  aSMESHGUI->DefineDlgPosition(this, x, y);
+  this->move(x, y);
+  this->show();
 
   // set selection mode
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection, true ); 
-  mySelection->AddFilter( new SMESH_TypeFilter( GROUP ) );
+#ifdef NEW_GUI
+  mySelectionMgr->setSelectionModes(ActorSelection, true);
+#else
+  mySelectionMgr->setSelectionModes(ActorSelection);
+#endif
+  mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
   onSelectionDone();
 
   return;
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::isValid
-// Purpose : Verify validity of input data
-//=======================================================================
+//=================================================================================
+// function : isValid()
+// purpose  : Verify validity of input data
+//=================================================================================
 bool SMESHGUI_DeleteGroupDlg::isValid()
 {
-  if ( myListBox->count() == 0 )
-  {
-    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_INSUFFICIENT_DATA" ), tr( "NO_SELECTED_GROUPS" ), QMessageBox::Ok ); 
+  if (myListBox->count() == 0) {
+    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                             tr("NO_SELECTED_GROUPS"), QMessageBox::Ok);
     return false;
   }
-  
-  return !SMESHGUI::GetSMESHGUI()->ActiveStudyLocked();
+
+  return !SMESHGUI::GetSMESHGUI()->isActiveStudyLocked();
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::onApply
-// Purpose : SLOT called when "Apply" button pressed. 
-//=======================================================================
+//=================================================================================
+// function : onApply()
+// purpose  : SLOT called when "Apply" button pressed.
+//=================================================================================
 bool SMESHGUI_DeleteGroupDlg::onApply()
 {
-  if ( !isValid() )
+  if (!isValid())
     return false;
 
   myBlockSelection = true;
-  
+
   QValueList<SMESH::SMESH_GroupBase_var>::iterator anIter;
-  for ( anIter = myListGrp.begin(); anIter != myListGrp.end(); ++anIter )
-  {
+  for (anIter = myListGrp.begin(); anIter != myListGrp.end(); ++anIter) {
     SMESH::SMESH_Mesh_ptr aMesh = (*anIter)->GetMesh();
-    if ( !aMesh->_is_nil() )
-      aMesh->RemoveGroupWithContents( *anIter );
+    if (!aMesh->_is_nil())
+      aMesh->RemoveGroupWithContents(*anIter);
   }
 
   myListBox->clear();
   myListGrp.clear();
-  mySelection->ClearIObjects();
+  mySelectionMgr->clearSelected();
   SMESH::UpdateView();
-  SMESHGUI::GetSMESHGUI()->GetActiveStudy()->updateObjBrowser( true );
-   
+  SMESHGUI::GetSMESHGUI()->updateObjBrowser(true);
+
   myBlockSelection = false;
   return true;
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::onOk
-// Purpose : SLOT called when "Ok" button pressed. 
-//=======================================================================
+//=================================================================================
+// function : onOk()
+// purpose  : SLOT called when "Ok" button pressed.
+//=================================================================================
 void SMESHGUI_DeleteGroupDlg::onOk()
 {
-  if ( onApply() )
+  if (onApply())
     onClose();
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::onClose
-// Purpose : SLOT called when "Close" button pressed. Close dialog
-//=======================================================================
+//=================================================================================
+// function : onClose()
+// purpose  : SLOT called when "Close" button pressed. Close dialog
+//=================================================================================
 void SMESHGUI_DeleteGroupDlg::onClose()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-  disconnect( mySelection, 0, this, 0 );
-  disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
-  SMESHGUI::GetSMESHGUI()->ResetState() ;
-  mySelection->ClearFilters();
+  mySelectionMgr->setSelectionModes(ActorSelection);
+  disconnect(mySelectionMgr, 0, this, 0);
+  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
+  SMESHGUI::GetSMESHGUI()->ResetState();
+  mySelectionMgr->clearFilters();
   reject();
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::onSelectionDone
-// Purpose : SLOT called when selection changed
-//=======================================================================
+//=================================================================================
+// function : onSelectionDone()
+// purpose  : SLOT called when selection changed
+//=================================================================================
 void SMESHGUI_DeleteGroupDlg::onSelectionDone()
 {
-  if ( myBlockSelection )
+  if (myBlockSelection)
     return;
-  
+
   myListGrp.clear();
   QStringList aNames;
-  
-  const SALOME_ListIO& aListIO = mySelection->StoredIObjects();
-  SALOME_ListIteratorOfListIO anIter( aListIO );
-  for( ; anIter.More(); anIter.Next() )
-  {
-    SMESH::SMESH_GroupBase_var aGroup = 
-      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( anIter.Value() );
-    if ( !aGroup->_is_nil() )
-    {
-      aNames.append( aGroup->GetName() );
-      myListGrp.append( aGroup );
+
+  SALOME_ListIO aListIO;
+  mySelectionMgr->selectedObjects(aListIO);
+  SALOME_ListIteratorOfListIO anIter (aListIO);
+  for (; anIter.More(); anIter.Next()) {
+    SMESH::SMESH_GroupBase_var aGroup =
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(anIter.Value());
+    if (!aGroup->_is_nil()) {
+      aNames.append(aGroup->GetName());
+      myListGrp.append(aGroup);
     }
   }
-    
+
   myListBox->clear();
-  myListBox->insertStringList( aNames );
+  myListBox->insertStringList(aNames);
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
-//=======================================================================
+//=================================================================================
+// function : onDeactivate()
+// purpose  : SLOT called when dialog must be deativated
+//=================================================================================
 void SMESHGUI_DeleteGroupDlg::onDeactivate()
 {
-  mySelection->ClearFilters();
-  setEnabled( false );
+  mySelectionMgr->clearFilters();
+  setEnabled(false);
 }
 
-//=======================================================================
-// name    : SMESHGUI_DeleteGroupDlg::enterEvent
-// Purpose : Event filter
-//=======================================================================
-void SMESHGUI_DeleteGroupDlg::enterEvent( QEvent* )
+//=================================================================================
+// function : enterEvent()
+// purpose  : Event filter
+//=================================================================================
+void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
 {
-  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog() ;   
-  setEnabled( true );
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection, true ); 
-  mySelection->AddFilter( new SMESH_TypeFilter( GROUP ) );
+  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+  setEnabled(true);
+#ifdef NEW_GUI
+  mySelectionMgr->setSelectionModes(ActorSelection, true);
+#else
+  mySelectionMgr->setSelectionModes(ActorSelection);
+#endif
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
-
 
 //=================================================================================
 // function : closeEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_DeleteGroupDlg::closeEvent( QCloseEvent* )
+void SMESHGUI_DeleteGroupDlg::closeEvent (QCloseEvent*)
 {
-  onClose() ;
+  onClose();
 }
-

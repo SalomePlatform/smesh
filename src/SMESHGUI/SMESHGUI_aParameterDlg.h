@@ -40,25 +40,24 @@ class QPushButton;
 class SMESHGUI;
 class QWidget;
 
-
 //=================================================================================
 // class    : SMESHGUI_aParameterDlg
 // purpose  :
 //=================================================================================
 class SMESHGUI_aParameterDlg : public QDialog
-{ 
+{
     Q_OBJECT
 
 public:
-    SMESHGUI_aParameterDlg( std::list<SMESHGUI_aParameterPtr> params,
+    SMESHGUI_aParameterDlg (std::list<SMESHGUI_aParameterPtr> params,
 			    QWidget*                          parent = 0,
 			    QString                           title  = QString::null,
-			    bool                              modal  = TRUE );
+			    bool                              modal  = TRUE);
 
     ~SMESHGUI_aParameterDlg();
 
     /* Parameter function */
-    static bool Parameters( std::list<SMESHGUI_aParameterPtr> params, const char *aTitle);
+    static bool Parameters (std::list<SMESHGUI_aParameterPtr> params, const char *aTitle);
 
 protected:
     void init();
@@ -67,7 +66,7 @@ private slots:
     void ClickOnOk();
 
 private:
-    SMESHGUI*       mySMESHGUI ;
+    SMESHGUI*       mySMESHGUI;
 
     QPushButton*    myButtonOk;
     QPushButton*    myButtonCancel;

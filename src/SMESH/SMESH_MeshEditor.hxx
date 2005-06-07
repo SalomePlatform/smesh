@@ -98,13 +98,16 @@ class SMESH_MeshEditor {
                std::set<const SMDS_MeshNode*> &    theFixedNodes,
                const SmoothMethod                  theSmoothMethod,
                const int                           theNbIterations,
-               double                              theTgtAspectRatio = 1.0);
+               double                              theTgtAspectRatio = 1.0,
+               const bool                          the2D = true);
   // Smooth theElements using theSmoothMethod during theNbIterations
   // or until a worst element has aspect ratio <= theTgtAspectRatio.
   // Aspect Ratio varies in range [1.0, inf].
   // If theElements is empty, the whole mesh is smoothed.
   // theFixedNodes contains additionally fixed nodes. Nodes built
   // on edges and boundary nodes are always fixed.
+  // If the2D, smoothing is performed using UV parameters of nodes
+  // on geometrical faces
 
 
   void RotationSweep (std::set<const SMDS_MeshElement*> & theElements,
@@ -154,6 +157,12 @@ class SMESH_MeshEditor {
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
+  int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
+                    vector<const SMDS_MeshNode *>&      poly_nodes,
+                    vector<int>&                        quantities) const;
+  // Split face, defined by <faceNodes>, into several faces by repeating nodes.
+  // Is used by MergeNodes()
+
   void MergeNodes (TListOfListOfNodes & theNodeGroups);
   // In each group, the cdr of nodes are substituted by the first one
   // in all elements.
@@ -189,7 +198,9 @@ class SMESH_MeshEditor {
                            const SMDS_MeshNode* theSide2FirstNode,
                            const SMDS_MeshNode* theSide2SecondNode,
                            const SMDS_MeshNode* theSide2ThirdNode = 0,
-                           bool                 theSide2IsFreeBorder = true);
+                           const bool           theSide2IsFreeBorder = true,
+                           const bool           toCreatePolygons = false,
+                           const bool           toCreatePolyedrs = false);
   // Sew the free border to the side2 by replacing nodes in
   // elements on the free border with nodes of the elements
   // of the side 2. If nb of links in the free border and
@@ -226,20 +237,27 @@ class SMESH_MeshEditor {
   void InsertNodesIntoLink(const SMDS_MeshElement*          theFace,
                            const SMDS_MeshNode*             theBetweenNode1,
                            const SMDS_MeshNode*             theBetweenNode2,
-                           std::list<const SMDS_MeshNode*>& theNodesToInsert);
-  // insert theNodesToInsert into theFace between theBetweenNode1
-  // and theBetweenNode2 and split theElement.
+                           std::list<const SMDS_MeshNode*>& theNodesToInsert,
+                           const bool                       toCreatePoly = false);
+  // insert theNodesToInsert into theFace between theBetweenNode1 and theBetweenNode2.
+  // If toCreatePoly is true, replace theFace by polygon, else split theFace.
 
-  static int SortQuadNodes (const SMDS_Mesh * theMesh,
-                            int               theNodeIds[] );
-  // Set 4 nodes of a quadrangle face in a good order.
-  // Swap 1<->2 or 2<->3 nodes and correspondingly return
-  // 1 or 2 else 0.
+  void UpdateVolumes (const SMDS_MeshNode*             theBetweenNode1,
+                      const SMDS_MeshNode*             theBetweenNode2,
+                      std::list<const SMDS_MeshNode*>& theNodesToInsert);
+  // insert theNodesToInsert into all volumes, containing link
+  // theBetweenNode1 - theBetweenNode2, between theBetweenNode1 and theBetweenNode2.
 
-  static bool SortHexaNodes (const SMDS_Mesh * theMesh,
-                             int               theNodeIds[] );
-  // Set 8 nodes of a hexahedron in a good order.
-  // Return success status
+//  static int SortQuadNodes (const SMDS_Mesh * theMesh,
+//                            int               theNodeIds[] );
+//  // Set 4 nodes of a quadrangle face in a good order.
+//  // Swap 1<->2 or 2<->3 nodes and correspondingly return
+//  // 1 or 2 else 0.
+//
+//  static bool SortHexaNodes (const SMDS_Mesh * theMesh,
+//                             int               theNodeIds[] );
+//  // Set 8 nodes of a hexahedron in a good order.
+//  // Return success status
 
   static void AddToSameGroups (const SMDS_MeshElement* elemToAdd,
                                const SMDS_MeshElement* elemInGroups,

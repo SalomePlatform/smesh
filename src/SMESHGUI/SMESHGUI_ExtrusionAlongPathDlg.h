@@ -29,9 +29,9 @@
 #ifndef DIALOGBOX_EXTRUSION_PATH_H
 #define DIALOGBOX_EXTRUSION_PATH_H
 
-#include "SALOME_Selection.h"
-#include "SMESH_LogicalFilter.hxx"
-#include "SMESH_TypeFilter.hxx"
+#include "SalomeApp_SelectionMgr.h"
+#include "SUIT_SelectionFilter.h"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -44,9 +44,13 @@ class QLineEdit;
 class QCheckBox;
 class QListBox;
 class QPushButton;
-class SMESHGUI_SpinBox;
+
 class SMESHGUI;
 class SMESH_Actor;
+class SMESHGUI_SpinBox;
+class SVTK_ViewWindow;
+class SVTK_Selector;
+
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -57,12 +61,12 @@ class SMESH_Actor;
 // purpose  :
 //=================================================================================
 class SMESHGUI_ExtrusionAlongPathDlg : public QDialog
-{ 
+{
   Q_OBJECT
 
   class SetBusy {
     public:
-      SetBusy( SMESHGUI_ExtrusionAlongPathDlg* _dlg ) { myDlg = _dlg; myDlg->myBusy = true; }
+      SetBusy (SMESHGUI_ExtrusionAlongPathDlg* _dlg) { myDlg = _dlg; myDlg->myBusy = true; }
       ~SetBusy() { myDlg->myBusy = false; }
     private:
       SMESHGUI_ExtrusionAlongPathDlg* myDlg;
@@ -70,39 +74,41 @@ class SMESHGUI_ExtrusionAlongPathDlg : public QDialog
   friend class SetBusy;
 
 public:
-  SMESHGUI_ExtrusionAlongPathDlg( QWidget* parent = 0, SALOME_Selection* Sel = 0, bool modal = FALSE );
+  SMESHGUI_ExtrusionAlongPathDlg (SMESHGUI*,
+				  bool modal = FALSE);
   ~SMESHGUI_ExtrusionAlongPathDlg();
 
-  bool eventFilter( QObject* object, QEvent* event );
-
-protected slots:
-  void reject();
+  bool eventFilter (QObject* object, QEvent* event);
 
 private:
-  void Init( bool ResetControls = true ) ;
-  void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
+  void Init (bool ResetControls = true);
+  void enterEvent (QEvent*);                           /* mouse enter the QWidget */
   int  GetConstructorId();
-  void SetEditCurrentArgument( QToolButton* button );
+  void SetEditCurrentArgument (QToolButton* button);
 
-  SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-  SALOME_Selection*             mySelection ;             /* User shape selection */
-  QWidget*                      myEditCurrentArgument;    /* Current  argument */
-  
+  SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
+  SalomeApp_SelectionMgr*       mySelectionMgr;        /* User shape selection */
+  SVTK_ViewWindow*              myViewWindow;
+  SVTK_Selector*                mySelector;
+
+  QWidget*                      myEditCurrentArgument; /* Current  argument */
+
   bool                          myBusy;
-  SMESH::SMESH_IDSource_var     myIDSource;
   SMESH::SMESH_Mesh_var         myMesh;
   SMESH_Actor*                  myMeshActor;
+  SMESH::SMESH_IDSource_var     myIDSource;
   SMESH::SMESH_Mesh_var         myPathMesh;
   GEOM::GEOM_Object_var         myPathShape;
-  Handle(SMESH_LogicalFilter)   myElementsFilter;
-  Handle(SMESH_TypeFilter)      myPathMeshFilter;
+  SUIT_SelectionFilter*         myElementsFilter;
+  SUIT_SelectionFilter*         myPathMeshFilter;
   int                           myType;
 
   // widgets
-  QButtonGroup*     ElementsTypeGrp;
+  QButtonGroup*     GroupConstructors;
   QRadioButton*     Elements1dRB;
   QRadioButton*     Elements2dRB;
-  QGroupBox*        ArgumentsGrp;
+
+  QGroupBox*        GroupArguments;
   QLabel*           ElementsLab;
   QToolButton*      SelectElementsButton;
   QLineEdit*        ElementsLineEdit;
@@ -132,20 +138,24 @@ private:
   SMESHGUI_SpinBox* YSpin;
   QLabel*           ZLab;
   SMESHGUI_SpinBox* ZSpin;
-  QGroupBox*        ButtonsGrp;
+
+  QGroupBox*        GroupButtons;
   QPushButton*      OkButton;
   QPushButton*      ApplyButton;
   QPushButton*      CloseButton;
-  
+
+protected slots:
+  void reject();
+
 private slots:
-  void TypeChanged( int type );
+  void ConstructorsClicked (int);
   void ClickOnOk();
   bool ClickOnApply();
   void SetEditCurrentArgument();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();
   void ActivateThisDialog();
-  void onTextChange(const QString&);
+  void onTextChange (const QString&);
   void onSelectMesh();
   void onAnglesCheck();
   void onBasePointCheck();

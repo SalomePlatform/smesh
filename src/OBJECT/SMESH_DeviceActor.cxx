@@ -32,10 +32,10 @@
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
 
-#include "SALOME_Transform.h"
-#include "SALOME_TransformFilter.h"
-#include "SALOME_PassThroughFilter.h"
-#include "SALOME_ExtractUnstructuredGrid.h"
+#include <VTKViewer_Transform.h>
+#include <VTKViewer_TransformFilter.h>
+#include <VTKViewer_PassThroughFilter.h>
+#include <VTKViewer_ExtractUnstructuredGrid.h>
 
 // VTK Includes
 #include <vtkObjectFactory.h>
@@ -100,16 +100,16 @@ SMESH_DeviceActor::SMESH_DeviceActor()
   myExtractGeometry->SetReleaseDataFlag(true);
   myIsImplicitFunctionUsed = false;
 
-  myExtractUnstructuredGrid = SALOME_ExtractUnstructuredGrid::New();
+  myExtractUnstructuredGrid = VTKViewer_ExtractUnstructuredGrid::New();
     
   myMergeFilter = vtkMergeFilter::New();
 
-  myGeomFilter = SALOME_GeometryFilter::New();
+  myGeomFilter = VTKViewer_GeometryFilter::New();
 
-  myTransformFilter = SALOME_TransformFilter::New();
+  myTransformFilter = VTKViewer_TransformFilter::New();
 
   for(int i = 0; i < 6; i++)
-    myPassFilter.push_back(SALOME_PassThroughFilter::New());
+    myPassFilter.push_back(VTKViewer_PassThroughFilter::New());
 }
 
 
@@ -231,7 +231,7 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
 }
 
 
-SALOME_ExtractUnstructuredGrid* SMESH_DeviceActor::GetExtractUnstructuredGrid(){
+VTKViewer_ExtractUnstructuredGrid* SMESH_DeviceActor::GetExtractUnstructuredGrid(){
   return myExtractUnstructuredGrid;
 }
 
@@ -300,7 +300,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
   bool anIsInitialized = theFunctor;
   myExtractUnstructuredGrid->ClearRegisteredCells();
   myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
-  myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::ePassAll);
+  myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
   myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
@@ -436,12 +436,12 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 {
   myExtractUnstructuredGrid->ClearRegisteredCells();
   myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
-  myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::ePassAll);
+  myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
   myVisualObj->UpdateFunctor(theFunctor);
 
   using namespace SMESH::Controls;
   if(FreeBorders* aFreeBorders = dynamic_cast<FreeBorders*>(theFunctor.get())){
-    myExtractUnstructuredGrid->SetModeOfChanging(SALOME_ExtractUnstructuredGrid::eAdding);
+    myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
     vtkUnstructuredGrid* aGrid = myVisualObj->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     for( vtkIdType i = 0; i < aNbCells; i++ ){
@@ -516,7 +516,7 @@ unsigned long int SMESH_DeviceActor::GetMTime(){
 }
 
 
-void SMESH_DeviceActor::SetTransform(SALOME_Transform* theTransform){
+void SMESH_DeviceActor::SetTransform(VTKViewer_Transform* theTransform){
   myTransformFilter->SetTransform(theTransform);
 }
 

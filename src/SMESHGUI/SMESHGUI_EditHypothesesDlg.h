@@ -29,9 +29,9 @@
 #ifndef DIALOGBOX_EDIT_HYPOTHESES_H
 #define DIALOGBOX_EDIT_HYPOTHESES_H
 
-#include "SALOME_Selection.h"
-#include "SALOME_TypeFilter.hxx"
-#include "SMESH_TypeFilter.hxx"
+//#include "SMESH_TypeFilter.hxx"
+#include "SUIT_SelectionFilter.h"
+#include "SalomeApp_SelectionMgr.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -52,26 +52,29 @@ class QListBox;
 class QListBoxItem;
 class SMESHGUI;
 
-typedef map<string, int> MapIOR;
+typedef map<std::string, int> MapIOR;
 
 //=================================================================================
 // class    : SMESHGUI_EditHypothesesDlg
 // purpose  :
 //=================================================================================
 class SMESHGUI_EditHypothesesDlg : public QDialog
-{ 
+{
     Q_OBJECT
 
 public:
-    SMESHGUI_EditHypothesesDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_EditHypothesesDlg (SMESHGUI*,
+				const char* name = 0,
+				bool modal = FALSE,
+				WFlags fl = 0);
     ~SMESHGUI_EditHypothesesDlg();
 
 protected:
-    virtual void closeEvent( QCloseEvent* e ); 
-    virtual void enterEvent ( QEvent* );
+    virtual void closeEvent (QCloseEvent*);
+    virtual void enterEvent (QEvent*);
 
 private:
-    void Init( SALOME_Selection* Sel ) ;
+    void Init();
 
     void InitHypDefinition();
     void InitAlgoDefinition();
@@ -88,23 +91,25 @@ private:
     bool IsOld(QListBoxItem* hypItem);
 
 private:
-    SMESHGUI*                     mySMESHGUI ;
-    SALOME_Selection*             mySelection ;
-             
-    GEOM::GEOM_Object_var         myGeomShape ;
+    SMESHGUI*                     mySMESHGUI;
+    SalomeApp_SelectionMgr*       mySelectionMgr;
+
+    GEOM::GEOM_Object_var         myGeomShape;
     QLineEdit*                    myEditCurrentArgument; 
 
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH::SMESH_subMesh_var      mySubMesh;
 
-    Handle(SALOME_TypeFilter)     myGeomFilter;
-    Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
+    //Handle(SALOME_TypeFilter)     myGeomFilter;
+    //Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
+    SUIT_SelectionFilter*         myGeomFilter;
+    SUIT_SelectionFilter*         myMeshOrSubMeshFilter;
 
     MapIOR                        myMapOldHypos, myMapOldAlgos;
     int                           myNbModification;
 
     bool                          myImportedMesh;
- 
+
     QGroupBox*    GroupButtons;
     QPushButton*  buttonOk;
     QPushButton*  buttonApply;
@@ -134,10 +139,10 @@ private slots:
     void ClickOnOk();
     bool ClickOnApply();
     void ClickOnCancel();
-    void SetEditCurrentArgument() ;
-    void SelectionIntoArgument() ;
-    void DeactivateActiveDialog() ;
-    void ActivateThisDialog() ;
+    void SetEditCurrentArgument();
+    void SelectionIntoArgument();
+    void DeactivateActiveDialog();
+    void ActivateThisDialog();
 
     void removeItem(QListBoxItem*);
     void addItem(QListBoxItem*);

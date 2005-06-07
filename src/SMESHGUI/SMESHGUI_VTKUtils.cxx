@@ -1,20 +1,20 @@
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 
 
@@ -27,19 +27,18 @@
 
 #include <TColStd_IndexedMapOfInteger.hxx>
 
-#include "QAD_Config.h"
-#include "QAD_Desktop.h"
-#include "QAD_Study.h"
-#include "QAD_Settings.h"
-#include "QAD_RightFrame.h"
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_Study.h>
 
-#include "SALOME_Selection.h"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SalomeApp_SelectionMgr.h"
 
-#include "VTKViewer_ViewFrame.h"
-#include "VTKViewer_RenderWindow.h"
-#include "VTKViewer_InteractorStyleSALOME.h"
-#include "VTKViewer_RenderWindowInteractor.h"
+#include "SVTK_Selector.h"
+#include "SVTK_ViewModel.h"
+#include "SVTK_ViewWindow.h"
+#include "SVTK_RenderWindow.h"
+#include "SVTK_InteractorStyle.h"
+#include "SVTK_RenderWindowInteractor.h"
 
 #include "utilities.h"
 
@@ -48,11 +47,22 @@
 #include CORBA_CLIENT_HEADER(SMESH_Mesh)
 #include CORBA_CLIENT_HEADER(SMESH_Group)
 #include CORBA_CLIENT_HEADER(SMESH_Hypothesis)
-#include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
+#include "SMESHGUI.h"
 #include "SMESH_Actor.h"
 #include "SMESH_ObjectDef.h"
 
+#include <SalomeApp_Application.h>
+#include <SalomeApp_SelectionMgr.h>
+#include <SalomeApp_Study.h>
+
+#include <SALOMEDSClient_Study.hxx>
+#include <SALOMEDSClient_SObject.hxx>
+
+#include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
+
+#include <set>
 using namespace std;
 
 namespace SMESH{
@@ -68,14 +78,15 @@ namespace SMESH{
       if(anIter != VISUAL_OBJ_CONT.end()){
 	aVisualObj = anIter->second;
       }else{
-	SALOMEDS::Study_var aStudy = QAD_Application::getDesktop()->getActiveStudy()->getStudyDocument();
-	SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theEntry);
-	if(!CORBA::is_nil(aSObj)){
-	  SALOMEDS::GenericAttribute_var anAttr;
+        SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SMESHGUI::activeStudy()->application() );
+	_PTR(Study) aStudy = SMESHGUI::activeStudy()->studyDS();
+	_PTR(SObject) aSObj = aStudy->FindObjectID(theEntry);
+	if(aSObj){
+	  _PTR(GenericAttribute) anAttr;
 	  if(aSObj->FindAttribute(anAttr,"AttributeIOR")){
-	    SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-	    CORBA::String_var aVal = anIOR->Value();
-	    CORBA::Object_var anObj = aStudy->ConvertIORToObject(aVal.in());
+	    _PTR(AttributeIOR) anIOR = anAttr;
+	    CORBA::String_var aVal = anIOR->Value().c_str();
+	    CORBA::Object_var anObj = app->orb()->string_to_object( aVal.in() );
 	    if(!CORBA::is_nil(anObj)){
 	      //Try narrow to SMESH_Mesh interafce
 	      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObj);
@@ -89,16 +100,16 @@ namespace SMESH{
 	      //Try narrow to SMESH_Group interafce
 	      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObj);
 	      if(!aGroup->_is_nil()){
-		SALOMEDS::SObject_var aFatherSObj = aSObj->GetFather();
-		if(aFatherSObj->_is_nil()) return aVisualObj;
+		_PTR(SObject) aFatherSObj = aSObj->GetFather();
+		if(!aFatherSObj) return aVisualObj;
 		aFatherSObj = aFatherSObj->GetFather();
-		if(aFatherSObj->_is_nil()) return aVisualObj;
-		CORBA::String_var anEntry = aFatherSObj->GetID();
+		if(!aFatherSObj) return aVisualObj;
+		CORBA::String_var anEntry = aFatherSObj->GetID().c_str();
 		TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
 		if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
 		  aVisualObj.reset(new SMESH_GroupObj(aGroup,aMeshObj));
 		  aVisualObj->Update();
-		  TVisualObjCont::value_type aValue(aKey,aVisualObj); 
+		  TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		  VISUAL_OBJ_CONT.insert(aValue);
 		  return aVisualObj;
 		}
@@ -106,16 +117,16 @@ namespace SMESH{
 	      //Try narrow to SMESH_subMesh interafce
 	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObj);
 	      if(!aSubMesh->_is_nil()){
-		SALOMEDS::SObject_var aFatherSObj = aSObj->GetFather();
-		if(aFatherSObj->_is_nil()) return aVisualObj;
+		_PTR(SObject) aFatherSObj = aSObj->GetFather();
+		if(!aFatherSObj) return aVisualObj;
 		aFatherSObj = aFatherSObj->GetFather();
-		if(aFatherSObj->_is_nil()) return aVisualObj;
-		CORBA::String_var anEntry = aFatherSObj->GetID();
+		if(!aFatherSObj) return aVisualObj;
+		CORBA::String_var anEntry = aFatherSObj->GetID().c_str();
 		TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
 		if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
 		  aVisualObj.reset(new SMESH_subMeshObj(aSubMesh,aMeshObj));
 		  aVisualObj->Update();
-		  TVisualObjCont::value_type aValue(aKey,aVisualObj); 
+		  TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		  VISUAL_OBJ_CONT.insert(aValue);
 		  return aVisualObj;
 		}
@@ -131,50 +142,72 @@ namespace SMESH{
   }
 
 
-  VTKViewer_ViewFrame* FindVtkViewFrame(QAD_Study* theStudy,
-					QAD_StudyFrame* theStudyFrame)
+  SVTK_ViewWindow*
+  GetViewWindow(const SalomeApp_Module* theModule)
   {
-    QList<QAD_Study>& aStudies = 
-      QAD_Application::getDesktop()->getActiveApp()->getStudies();
-    if(aStudies.containsRef(theStudy)){
-      const QList<QAD_StudyFrame>& aStudyFrames = theStudy->getStudyFrames();
-      if(aStudyFrames.containsRef(theStudyFrame)){
-	return GetVtkViewFrame(theStudyFrame);
+    if(SalomeApp_Application* anApp = theModule->getApp()){
+      if(SUIT_ViewManager* aViewManager = anApp->activeViewManager()){
+	if(aViewManager->getType() == SVTK_Viewer::Type()){
+	  if(SUIT_ViewWindow* aViewWindow = aViewManager->getActiveView()){
+	    return dynamic_cast<SVTK_ViewWindow*>(aViewWindow);
+	  }
+	}
       }
     }
     return NULL;
   }
 
-
-  VTKViewer_ViewFrame* GetVtkViewFrame(QAD_StudyFrame* theStudyFrame){
-    QAD_ViewFrame* aViewFrame = theStudyFrame->getRightFrame()->getViewFrame();
-    return dynamic_cast<VTKViewer_ViewFrame*>(aViewFrame);
-  }
-
-
-  VTKViewer_ViewFrame* GetCurrentVtkView(){
-    return GetVtkViewFrame(GetActiveStudy()->getActiveStudyFrame());
-  }
-
-
-  void RepaintViewFrame(VTKViewer_ViewFrame* theFrame)
+  SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager* theMgr,
+					   SUIT_ViewWindow* theWindow )
   {
-    theFrame->Repaint();
+    if( !theMgr )
+      return NULL;
+
+    QPtrVector<SUIT_ViewWindow> views = theMgr->getViews();
+    if( views.containsRef( theWindow ) )
+      return GetVtkViewWindow( theWindow );
+    else
+      return NULL;
   }
 
 
-  void RenderViewFrame(VTKViewer_ViewFrame* theFrame)
+  SVTK_ViewWindow* GetVtkViewWindow(SUIT_ViewWindow* theWindow){
+    return dynamic_cast<SVTK_ViewWindow*>(theWindow);
+  }
+
+
+/*  SUIT_ViewWindow* GetActiveWindow()
   {
-    theFrame->getRW()->getRenderWindow()->Render();
-    theFrame->Repaint();
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if( !app )
+      return NULL;
+    SUIT_ViewManager* mgr = app->activeViewManager();
+    if( mgr )
+      return mgr->getActiveView();
+    else
+      return NULL;
+  }*/
+
+  SVTK_ViewWindow* GetCurrentVtkView(){
+    return GetVtkViewWindow( GetActiveWindow() );
   }
 
+  void RepaintViewWindow(SVTK_ViewWindow* theWindow)
+  {
+    theWindow->Repaint();
+  }
 
-  SMESH_Actor* FindActorByEntry(QAD_StudyFrame *theStudyFrame, 
+  void RenderViewWindow(SVTK_ViewWindow* theWindow)
+  {
+    theWindow->getRenderer()->Render();
+    theWindow->Repaint();
+  }
+
+  SMESH_Actor* FindActorByEntry(SUIT_ViewWindow *theWindow,
 				const char* theEntry)
   {
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
-      vtkRenderer *aRenderer = aViewFrame->getRenderer();
+    if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWindow)){
+      vtkRenderer *aRenderer = aViewWindow->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
@@ -190,20 +223,24 @@ namespace SMESH{
     }
     return NULL;
   }
-  
-  
+
+
   SMESH_Actor* FindActorByEntry(const char* theEntry){
-    return FindActorByEntry(GetActiveStudy()->getActiveStudyFrame(),theEntry);
+    return FindActorByEntry(GetActiveWindow(),theEntry);
   }
-  
-  
+
+
   SMESH_Actor* FindActorByObject(CORBA::Object_ptr theObject){
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if( !app )
+      return NULL;
+
     if(!CORBA::is_nil(theObject)){
-      SALOMEDS::Study_var aStudy = GetActiveStudyDocument();
-      CORBA::String_var anIOR = aStudy->ConvertObjectToIOR(theObject);
-      SALOMEDS::SObject_var aSObject = aStudy->FindObjectIOR(anIOR.in());
-      if(!aSObject->_is_nil()){
-	CORBA::String_var anEntry = aSObject->GetID();
+      _PTR(Study) aStudy = GetActiveStudyDocument();
+      CORBA::String_var anIOR = app->orb()->object_to_string( theObject );
+      _PTR(SObject) aSObject = aStudy->FindObjectIOR(anIOR.in());
+      if(aSObject){
+	CORBA::String_var anEntry = aSObject->GetID().c_str();
 	return FindActorByEntry(anEntry.in());
       }
     }
@@ -211,20 +248,19 @@ namespace SMESH{
   }
 
 
-  SMESH_Actor* CreateActor(SALOMEDS::Study_ptr theStudy,
+  SMESH_Actor* CreateActor(_PTR(Study) theStudy,
 			   const char* theEntry,
 			   int theIsClear)
   {
     SMESH_Actor *anActor = NULL;
     CORBA::Long anId = theStudy->StudyId();
     if(TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry)){
-      SALOMEDS::SObject_var aSObj = theStudy->FindObjectID(theEntry);
-      if(!aSObj->_is_nil()){
-	SALOMEDS::GenericAttribute_var anAttr;
+      _PTR(SObject) aSObj = theStudy->FindObjectID(theEntry);
+      if(aSObj){
+	_PTR(GenericAttribute) anAttr;
 	if(aSObj->FindAttribute(anAttr,"AttributeName")){
-	  SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	  CORBA::String_var aVal = aName->Value();
-	  string aNameVal = aVal.in();
+	  _PTR(AttributeName) aName = anAttr;
+	  std::string aNameVal = aName->Value();
 	  anActor = SMESH_Actor::New(aVisualObj,theEntry,aNameVal.c_str(),theIsClear);
 	}
       }
@@ -233,58 +269,56 @@ namespace SMESH{
   }
 
 
-  void DisplayActor(QAD_StudyFrame *theStudyFrame, SMESH_Actor* theActor){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
-      aViewFrame->AddActor(theActor);
-      aViewFrame->Repaint();
+  void DisplayActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
+    if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
+      vtkWnd->AddActor(theActor);
+      vtkWnd->Repaint();
     }
   }
 
 
-  void RemoveActor(QAD_StudyFrame *theStudyFrame, SMESH_Actor* theActor){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
-      aViewFrame->RemoveActor(theActor);
+  void RemoveActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
+    if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
+      vtkWnd->RemoveActor(theActor);
       if(theActor->hasIO()){
 	Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
 	if(anIO->hasEntry()){
 	  std::string anEntry = anIO->getEntry();
-	  QAD_Study* aStudy = theStudyFrame->getStudy();
-	  int aStudyId = aStudy->getStudyId();
+	  SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( vtkWnd->getViewManager()->study() );
+	  int aStudyId = aStudy->id();
 	  TVisualObjCont::key_type aKey(aStudyId,anEntry);
 	  VISUAL_OBJ_CONT.erase(aKey);
 	}
       }
       theActor->Delete();
-      aViewFrame->Repaint();
+      vtkWnd->Repaint();
     }
   }
-  
+
 
   void FitAll(){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(GetActiveStudy()->getActiveStudyFrame())){
-      aViewFrame->onViewFitAll();
-      aViewFrame->Repaint();
+    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() ){
+      wnd->onFitAll();
+      wnd->Repaint();
     }
   }
-  
+
   vtkRenderer* GetCurrentRenderer(){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(GetActiveStudy()->getActiveStudyFrame()))
-      return aViewFrame->getRenderer();
+    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() )
+      return wnd->getRenderer();
     return NULL;
   }
 
   void RepaintCurrentView(){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(GetActiveStudy()->getActiveStudyFrame())){
-      aViewFrame->getRW()->getRenderWindow()->Render();
-      //aViewFrame->Repaint();
-    }
+    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() )
+      wnd->getRenderer()->Render();
+      //wnd->Repaint();
   }
-  
-  
-  void UpdateView(QAD_StudyFrame *theStudyFrame, EDisplaing theAction, const char* theEntry)
+
+  void UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
-      vtkRenderer *aRenderer = aViewFrame->getRenderer();
+    if(SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd)){
+      vtkRenderer *aRenderer = aViewWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       switch(theAction){
@@ -305,7 +339,7 @@ namespace SMESH{
 	}
       }
       default: {
-	if(SMESH_Actor *anActor = FindActorByEntry(theStudyFrame,theEntry)){
+	if(SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)){
 	  switch(theAction) {
 	    case eDisplay:
 	    case eDisplayOnly:
@@ -319,10 +353,10 @@ namespace SMESH{
 	  switch(theAction){
 	  case eDisplay:
 	  case eDisplayOnly:{
-	    QAD_Study* aStudy = theStudyFrame->getStudy();
-	    SALOMEDS::Study_var aDocument = aStudy->getStudyDocument();
+	    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( theWnd->getViewManager()->study() );
+	    _PTR(Study) aDocument = aStudy->studyDS();
 	    if((anActor = CreateActor(aDocument,theEntry,true))) {
-	      DisplayActor(theStudyFrame,anActor);
+	      DisplayActor(theWnd,anActor);
 	      FitAll();
 	    }
 	    break;
@@ -336,16 +370,19 @@ namespace SMESH{
 
 
   void UpdateView(EDisplaing theAction, const char* theEntry){
-    QAD_Study* aStudy = GetActiveStudy();
-    QAD_StudyFrame *aStudyFrame = aStudy->getActiveStudyFrame();
-    UpdateView(aStudyFrame,theAction,theEntry);
+    SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
+    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
+    SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
+    UpdateView(aWnd,theAction,theEntry);
   }
-  
+
   void UpdateView(){
-    if(VTKViewer_ViewFrame* aViewFrame = SMESH::GetCurrentVtkView()){
-      SALOME_Selection *aSel = SALOME_Selection::Selection(GetActiveStudy()->getSelection());
-      if(aSel->IObjectCount() == 0){
-	vtkRenderer* aRenderer = aViewFrame->getRenderer();
+    if(SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()){
+      SalomeApp_SelectionMgr* mgr = SMESHGUI::selectionMgr();
+      SALOME_ListIO selected; mgr->selectedObjects( selected );
+
+      if( selected.Extent() == 0){
+	vtkRenderer* aRenderer = aWnd->getRenderer();
 	vtkActorCollection *aCollection = aRenderer->GetActors();
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
@@ -355,7 +392,7 @@ namespace SMESH{
 	  }
 	}
       }else{
-	SALOME_ListIteratorOfListIO anIter(aSel->StoredIObjects());
+	SALOME_ListIteratorOfListIO anIter( selected );
 	for(; anIter.More(); anIter.Next()){
 	  Handle(SALOME_InteractiveObject) anIO = anIter.Value();
 	  Update(anIO,true);
@@ -369,7 +406,7 @@ namespace SMESH{
   void Update(const Handle(SALOME_InteractiveObject)& theIO,
 	      bool theDisplay)
   {
-    SALOMEDS::Study_var aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry());
     aVisualObj->Update();
@@ -379,115 +416,99 @@ namespace SMESH{
 
 
   void UpdateSelectionProp() {
-    QAD_Study* aStudy = GetActiveStudy();
-    QList<QAD_StudyFrame> aFrameList = aStudy->getStudyFrames();
-    
-    QString SCr, SCg, SCb;
-    SCr = QAD_CONFIG->getSetting("SMESH:SettingsSelectColorRed");
-    SCg = QAD_CONFIG->getSetting("SMESH:SettingsSelectColorGreen");
-    SCb = QAD_CONFIG->getSetting("SMESH:SettingsSelectColorBlue");
-    QColor aHiColor = Qt::white;
-    if (!SCr.isEmpty() && !SCg.isEmpty() && !SCb.isEmpty())
-      aHiColor = QColor(SCr.toInt(), SCg.toInt(), SCb.toInt());
-    
-    SCr = QAD_CONFIG->getSetting("SMESH:SettingsItemSelectColorRed");
-    SCg = QAD_CONFIG->getSetting("SMESH:SettingsItemSelectColorGreen");
-    SCb = QAD_CONFIG->getSetting("SMESH:SettingsItemSelectColorBlue");
-    QColor aSelColor = Qt::yellow;
-    if (!SCr.isEmpty() && !SCg.isEmpty() && !SCb.isEmpty())
-      aSelColor = QColor(SCr.toInt(), SCg.toInt(), SCb.toInt());
-    QString SW = QAD_CONFIG->getSetting("SMESH:SettingsItemSelectWidth");
-    if (SW.isEmpty()) SW = "5";
-    
-    SCr = QAD_CONFIG->getSetting("SMESH:SettingsPreSelectColorRed");
-    SCg = QAD_CONFIG->getSetting("SMESH:SettingsPreSelectColorGreen");
-    SCb = QAD_CONFIG->getSetting("SMESH:SettingsPreSelectColorBlue");
-    QColor aPreColor = Qt::cyan;
-    if (!SCr.isEmpty() && !SCg.isEmpty() && !SCb.isEmpty())
-      aPreColor = QColor(SCr.toInt(), SCg.toInt(), SCb.toInt());
-    QString PW = QAD_CONFIG->getSetting("SMESH:SettingsPreSelectWidth");
-    if (PW.isEmpty()) PW = "5";
-    
-    QString SP1 = QAD_CONFIG->getSetting("SMESH:SettingsNodeSelectTol");
-    if (SP1.isEmpty()) SP1 = "0.025";
-    QString SP2 = QAD_CONFIG->getSetting("SMESH:SettingsElementsSelectTol");
-    if (SP2.isEmpty()) SP2 = "0.001";
-    
-    for (QAD_StudyFrame* aStudyFrame = aFrameList.first(); aStudyFrame; aStudyFrame = aFrameList.next()) {
-      if (aStudyFrame->getTypeView() == VIEW_VTK) {
-	VTKViewer_ViewFrame* aVtkViewFrame = GetVtkViewFrame(aStudyFrame);
-	if (!aVtkViewFrame) continue;
+    SUIT_Study* aStudy = GetActiveStudy();
+    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
+    SUIT_ViewManager* vm = app->activeViewManager();
+    QPtrVector<SUIT_ViewWindow> views = vm->getViews();
+
+    SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+
+    QColor aHiColor = mgr->colorValue( "SMESH", "SettingsSelectColor", Qt::white ),
+           aSelColor = mgr->colorValue( "SMESH", "SettingsItemSelectColor", Qt::yellow ),
+	   aPreColor = mgr->colorValue( "SMESH", "SettingsPreSelectColor", Qt::cyan );
+
+    int SW = mgr->integerValue( "SMESH", "SettingsItemSelectWidth", 5 ),
+        PW = mgr->integerValue( "SMESH", "SettingsPreSelectWidth", 5 );
+
+    double SP1 = mgr->doubleValue( "SMESH", "SettingsNodeSelectTol", 0.025 ),
+           SP2 = mgr->doubleValue( "SMESH", "SettingsElementsSelectTol", 0.001 );
+
+    for ( int i=0, n=views.count(); i<n; i++ ) {
+        SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] );
+	if (!aVtkView) continue;
 	// update VTK viewer properties
-	VTKViewer_RenderWindowInteractor* anInteractor = aVtkViewFrame->getRWInteractor();
+	SVTK_RenderWindowInteractor* anInteractor = aVtkView->getRWInteractor();
 	if (anInteractor) {
 	  // mesh element selection
-	  anInteractor->SetSelectionProp(aSelColor.red()/255., aSelColor.green()/255., 
-					 aSelColor.blue()/255., SW.toInt());
-	  
+	  anInteractor->SetSelectionProp(aSelColor.red()/255., aSelColor.green()/255.,
+					 aSelColor.blue()/255., SW );
+
 	  // tolerances
-	  anInteractor->SetSelectionTolerance(SP1.toDouble(), SP2.toDouble());
-	  
+	  anInteractor->SetSelectionTolerance(SP1, SP2);
+
 	  // pre-selection
-	  VTKViewer_InteractorStyleSALOME* aStyle = anInteractor->GetInteractorStyleSALOME();
+	  SVTK_InteractorStyle* aStyle =
+	    dynamic_cast<SVTK_InteractorStyle*>( anInteractor->GetInteractorStyle() );
 	  if (aStyle) {
-	    aStyle->setPreselectionProp(aPreColor.red()/255., aPreColor.green()/255., 
-					aPreColor.blue()/255., PW.toInt());
+	    aStyle->setPreselectionProp(aPreColor.red()/255., aPreColor.green()/255.,
+					aPreColor.blue()/255., PW);
 	  }
 	}
 	// update actors
-	vtkRenderer* aRenderer = aVtkViewFrame->getRenderer();
+	vtkRenderer* aRenderer = aVtkView->getRenderer();
 	vtkActorCollection *aCollection = aRenderer->GetActors();
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	    anActor->SetHighlightColor(aHiColor.red()/255., aHiColor.green()/255., 
+	    anActor->SetHighlightColor(aHiColor.red()/255., aHiColor.green()/255.,
 				       aHiColor.blue()/255.);
-	    anActor->SetPreHighlightColor(aPreColor.red()/255., aPreColor.green()/255., 
+	    anActor->SetPreHighlightColor(aPreColor.red()/255., aPreColor.green()/255.,
 					  aPreColor.blue()/255.);
 	  }
 	}
-      }
     }
   }
 
-  
+
   //----------------------------------------------------------------------------
-  VTKViewer_InteractorStyleSALOME* GetInteractorStyle(QAD_StudyFrame *theStudyFrame){
-    if(VTKViewer_ViewFrame* aViewFrame = GetVtkViewFrame(theStudyFrame)){
-      if(VTKViewer_RenderWindowInteractor* anInteractor = aViewFrame->getRWInteractor()){
-	return anInteractor->GetInteractorStyleSALOME();
+  SVTK_InteractorStyle* GetInteractorStyle(SUIT_ViewWindow *theWindow){
+    if(SVTK_ViewWindow* aWnd = GetVtkViewWindow(theWindow)){
+      if(SVTK_RenderWindowInteractor* anInteractor = aWnd->getRWInteractor()){
+	return dynamic_cast<SVTK_InteractorStyle*>( anInteractor->GetInteractorStyle() );
       }
     }
     return NULL;
   }
 
   void SetFilter(const Handle(VTKViewer_Filter)& theFilter,
-		 VTKViewer_InteractorStyleSALOME* theStyle)
+		 SVTK_InteractorStyle* theStyle)
   {
     theStyle->SetFilter(theFilter);
   }
 
-  Handle(VTKViewer_Filter) GetFilter(int theId, VTKViewer_InteractorStyleSALOME* theStyle)
+  Handle(VTKViewer_Filter) GetFilter(int theId, SVTK_InteractorStyle* theStyle)
   {
     return theStyle->GetFilter(theId);
   }
 
-  bool IsFilterPresent(int theId, VTKViewer_InteractorStyleSALOME* theStyle)
+  bool IsFilterPresent(int theId, SVTK_InteractorStyle* theStyle)
   {
     return theStyle->IsFilterPresent(theId);
   }
 
-  void RemoveFilter(int theId, VTKViewer_InteractorStyleSALOME* theStyle){
+  void RemoveFilter(int theId, SVTK_InteractorStyle* theStyle)
+  {
     theStyle->RemoveFilter(theId);
   }
 
-  void RemoveFilters(VTKViewer_InteractorStyleSALOME* theStyle){
+  void RemoveFilters(SVTK_InteractorStyle* theStyle)
+  {
     for ( int id = SMESHGUI_NodeFilter; theStyle && id < SMESHGUI_LastFilter; id++ )
       theStyle->RemoveFilter( id );
   }
 
   bool IsValid(SALOME_Actor* theActor, int theCellId,
-	       VTKViewer_InteractorStyleSALOME* theStyle)
+	       SVTK_InteractorStyle* theStyle)
   {
     return theStyle->IsValid(theActor,theCellId);
   }
@@ -495,8 +516,8 @@ namespace SMESH{
 
   //----------------------------------------------------------------------------
   void SetPointRepresentation(bool theIsVisible){
-    if(VTKViewer_ViewFrame* aViewFrame = GetCurrentVtkView()){
-      vtkRenderer *aRenderer = aViewFrame->getRenderer();
+    if(SVTK_ViewWindow* aViewWindow = GetCurrentVtkView()){
+      vtkRenderer *aRenderer = aViewWindow->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
@@ -512,9 +533,9 @@ namespace SMESH{
 
 
   void SetPickable(SMESH_Actor* theActor){
-    if(VTKViewer_ViewFrame* aViewFrame = GetCurrentVtkView()){
+    if(SVTK_ViewWindow* aWnd = GetCurrentVtkView()){
       int anIsAllPickable = (theActor == NULL);
-      vtkRenderer *aRenderer = aViewFrame->getRenderer();
+      vtkRenderer *aRenderer = aWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor()){
@@ -531,15 +552,86 @@ namespace SMESH{
   }
 
 
-  int GetNameOfSelectedNodes(SALOME_Selection *theSel, 
+  //----------------------------------------------------------------------------
+  int GetNameOfSelectedNodes(SVTK_Selector* theSelector, 
 			     const Handle(SALOME_InteractiveObject)& theIO, 
+			     QString& theName)
+  {
+    theName = "";
+    TColStd_IndexedMapOfInteger aMapIndex;
+    theSelector->GetIndex(theIO,aMapIndex);
+
+    for(int i = 1; i <= aMapIndex.Extent(); i++)
+      theName += QString(" %1").arg(aMapIndex(i));
+
+    return aMapIndex.Extent();
+  }
+
+  int GetNameOfSelectedElements(SVTK_Selector* theSelector, 
+				const Handle(SALOME_InteractiveObject)& theIO, 
+				QString& theName)
+  {
+    theName = "";
+    TColStd_IndexedMapOfInteger aMapIndex;
+    theSelector->GetIndex(theIO,aMapIndex);
+
+    typedef std::set<int> TIdContainer;
+    TIdContainer anIdContainer;
+    for( int i = 1; i <= aMapIndex.Extent(); i++)
+      anIdContainer.insert(aMapIndex(i));
+
+    TIdContainer::const_iterator anIter = anIdContainer.begin();
+    for(; anIter != anIdContainer.end(); anIter++)
+      theName += QString(" %1").arg(*anIter);
+
+    return aMapIndex.Extent();
+  }
+
+
+  int GetEdgeNodes(SVTK_Selector* theSelector, 
+		   const TVisualObjPtr& theVisualObject,
+		   int& theId1, 
+		   int& theId2)
+  {
+    const SALOME_ListIO& selected = theSelector->StoredIObjects(); 
+
+    if ( selected.Extent() != 1 )
+      return -1;
+
+    Handle(SALOME_InteractiveObject) anIO = selected.First();
+    if ( anIO.IsNull() || !anIO->hasEntry() )
+      return -1;
+
+    TColStd_IndexedMapOfInteger aMapIndex;
+    theSelector->GetIndex( anIO, aMapIndex );
+    if ( aMapIndex.Extent() != 2 )
+      return -1;
+
+    int anObjId = -1, anEdgeNum = -1;
+    for ( int i = 1; i <= aMapIndex.Extent(); i++ ) {
+      int aVal = aMapIndex( i );
+      if ( aVal > 0 )
+	anObjId = aVal;
+      else
+	anEdgeNum = abs( aVal ) - 1;
+    }
+
+    if ( anObjId == -1 || anEdgeNum == -1 )
+      return -1;
+
+    return theVisualObject->GetEdgeNodes( anObjId, anEdgeNum, theId1, theId2 ) ? 1 : -1;
+  }
+
+  //----------------------------------------------------------------------------
+  int GetNameOfSelectedNodes(SalomeApp_SelectionMgr *theMgr,
+			     const Handle(SALOME_InteractiveObject)& theIO,
 			     QString& theName)
   {
     theName = "";
     if(theIO->hasEntry()){
       if(FindActorByEntry(theIO->getEntry())){
 	TColStd_IndexedMapOfInteger aMapIndex;
-	theSel->GetIndex(theIO,aMapIndex);
+	theMgr->GetIndexes(theIO,aMapIndex);
 	for(int i = 1; i <= aMapIndex.Extent(); i++){
 	  theName += QString(" %1").arg(aMapIndex(i));
 	}
@@ -548,28 +640,28 @@ namespace SMESH{
     }
     return -1;
   }
-  
 
-  int GetNameOfSelectedNodes(SALOME_Selection *theSel, QString& theName){
+  int GetNameOfSelectedNodes(SalomeApp_SelectionMgr *theMgr, QString& theName){
     theName = "";
-    if(theSel->IObjectCount() == 1){
-      Handle(SALOME_InteractiveObject) anIO = theSel->firstIObject();
-      return GetNameOfSelectedNodes(theSel,anIO,theName);
+    SALOME_ListIO selected; theMgr->selectedObjects( selected );
+    if(selected.Extent() == 1){
+      Handle(SALOME_InteractiveObject) anIO = selected.First();
+      return GetNameOfSelectedNodes(theMgr,anIO,theName);
     }
     return -1;
   }
   
 
-  int GetNameOfSelectedElements(SALOME_Selection *theSel, 
-				const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedElements(SalomeApp_SelectionMgr *theMgr,
+				const Handle(SALOME_InteractiveObject)& theIO,
 				QString& theName)
   {
     theName = "";
     if(theIO->hasEntry()){
       if(FindActorByEntry(theIO->getEntry())){
 	TColStd_IndexedMapOfInteger aMapIndex;
-	theSel->GetIndex(theIO,aMapIndex);
-	typedef std::set<int> TIdContainer;
+	theMgr->GetIndexes(theIO,aMapIndex);
+	typedef set<int> TIdContainer;
 	TIdContainer anIdContainer;
 	for( int i = 1; i <= aMapIndex.Extent(); i++)
 	  anIdContainer.insert(aMapIndex(i));
@@ -584,40 +676,44 @@ namespace SMESH{
   }
 
 
-  int GetNameOfSelectedElements(SALOME_Selection *theSel, QString& theName)
+  int GetNameOfSelectedElements(SalomeApp_SelectionMgr *theMgr, QString& theName)
   {
     theName = "";
-    if(theSel->IObjectCount() == 1){
-      Handle(SALOME_InteractiveObject) anIO = theSel->firstIObject();
-      return GetNameOfSelectedElements(theSel,anIO,theName);
+    SALOME_ListIO selected; theMgr->selectedObjects( selected );
+
+    if( selected.Extent() == 1){
+      Handle(SALOME_InteractiveObject) anIO = selected.First();
+      return GetNameOfSelectedElements(theMgr,anIO,theName);
     }
     return -1;
   }
 
-  
-  int GetSelected(SALOME_Selection*            theSel, 
-		  TColStd_IndexedMapOfInteger& theMap, 
+  int GetSelected(SalomeApp_SelectionMgr*      theMgr,
+		  TColStd_IndexedMapOfInteger& theMap,
 		  const bool                   theIsElement)
   {
     theMap.Clear();
+    SALOME_ListIO selected; theMgr->selectedObjects( selected );
 
-    if ( theSel->IObjectCount() == 1 )
+    if ( selected.Extent() == 1 )
     {
-      Handle(SALOME_InteractiveObject) anIO = theSel->firstIObject();
+      Handle(SALOME_InteractiveObject) anIO = selected.First();
       if ( anIO->hasEntry() ) {
-	theSel->GetIndex( anIO, theMap );
+	theMgr->GetIndexes( anIO, theMap );
       }
     }
     return theMap.Extent();
   }
 
 
-  int GetEdgeNodes( SALOME_Selection* theSel, int& theId1, int& theId2 )
+  int GetEdgeNodes( SalomeApp_SelectionMgr* theMgr, int& theId1, int& theId2 )
   {
-    if ( theSel->IObjectCount() != 1 )
+    SALOME_ListIO selected; theMgr->selectedObjects( selected );
+
+    if ( selected.Extent() != 1 )
       return -1;
 
-    Handle(SALOME_InteractiveObject) anIO = theSel->firstIObject();
+    Handle(SALOME_InteractiveObject) anIO = selected.First();
     if ( anIO.IsNull() || !anIO->hasEntry() )
       return -1;
 
@@ -626,10 +722,10 @@ namespace SMESH{
       return -1;
 
     TColStd_IndexedMapOfInteger aMapIndex;
-    theSel->GetIndex( anIO, aMapIndex );
+    theMgr->GetIndexes( anIO, aMapIndex );
     if ( aMapIndex.Extent() != 2 )
       return -1;
-    
+
     int anObjId = -1, anEdgeNum = -1;
     for ( int i = 1; i <= aMapIndex.Extent(); i++ ) {
       int aVal = aMapIndex( i );
@@ -638,18 +734,18 @@ namespace SMESH{
       else
 	anEdgeNum = abs( aVal );
     }
-    
+
     if ( anObjId == -1 || anEdgeNum == -1 )
       return -1;
-    
+
     return anActor->GetObject()->GetEdgeNodes( anObjId, anEdgeNum, theId1, theId2 ) ? 1 : -1;
   }
-  
+
   void SetControlsPrecision( const long theVal )
   {
-    if( VTKViewer_ViewFrame* aViewFrame = SMESH::GetCurrentVtkView() )
+    if( SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView() )
     {
-      vtkRenderer *aRenderer = aViewFrame->getRenderer();
+      vtkRenderer *aRenderer = aWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       
@@ -665,20 +761,3 @@ namespace SMESH{
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

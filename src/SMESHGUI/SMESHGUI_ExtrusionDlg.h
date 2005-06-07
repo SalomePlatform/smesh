@@ -29,102 +29,101 @@
 #ifndef DIALOGBOX_EXTRUSION_H
 #define DIALOGBOX_EXTRUSION_H
 
-#include "SALOME_Selection.h"
-#include "SMESH_LogicalFilter.hxx"
+#include "SalomeApp_SelectionMgr.h"
+#include "SUIT_SelectionFilter.h"
 
 // QT Includes
 #include <qdialog.h>
 
 class QGridLayout; 
 class QButtonGroup;
+class QRadioButton;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QPushButton;
-class QRadioButton;
 class QCheckBox;
 class QSpinBox;
-class SMESHGUI_SpinBox;
+class QPushButton;
+
 class SMESHGUI;
 class SMESH_Actor;
+class SMESHGUI_SpinBox;
+class SVTK_ViewWindow;
+class SVTK_Selector;
 
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
-
 
 //=================================================================================
 // class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
 class SMESHGUI_ExtrusionDlg : public QDialog
-{ 
-    Q_OBJECT
+{
+  Q_OBJECT
 
 public:
-    SMESHGUI_ExtrusionDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
-    ~SMESHGUI_ExtrusionDlg();
+  SMESHGUI_ExtrusionDlg (SMESHGUI*,
+			 bool modal = FALSE);
+  ~SMESHGUI_ExtrusionDlg();
 
 private:
+  void Init (bool ResetControls = true);
+  void enterEvent (QEvent*);                           /* mouse enter the QWidget */
+  int  GetConstructorId();
+  //void closeEvent (QCloseEvent*);
+  //void hideEvent (QHideEvent*);                        /* ESC key */
 
-    void Init( bool ResetControls = true ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
-    int GetConstructorId();
+  SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
+  SalomeApp_SelectionMgr*       mySelectionMgr;        /* User shape selection */
+  QLineEdit*                    myEditCurrentArgument; /* Current  LineEdit */
+  QString                       myElementsId;
+  int                           myNbOkElements;        /* to check when elements are defined */
+  SVTK_ViewWindow*              myViewWindow;
+  SVTK_Selector*                mySelector;
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    QString                       myElementsId;
-    int                           myNbOkElements ;          /* to check when elements are defined */
-    
-    QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
+  bool                          myBusy;
+  SMESH::SMESH_Mesh_var         myMesh;
+  SMESH_Actor*                  myActor;
+  SUIT_SelectionFilter*         myMeshOrSubMeshOrGroupFilter;
 
-    bool                          myBusy;
-    SMESH::SMESH_Mesh_var         myMesh;
-    SMESH_Actor*                  myActor;
-    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
+  // widgets
+  QButtonGroup*     GroupConstructors;
+  QRadioButton*     RadioButton1;
+  QRadioButton*     RadioButton2;
 
-    QButtonGroup* GroupConstructors;
-    QRadioButton* RadioButton1;
-    QRadioButton* RadioButton2;
-    QGroupBox* GroupButtons;
-    QPushButton* buttonOk;
-    QPushButton* buttonCancel;
-    QPushButton* buttonApply;
-    QGroupBox* GroupArguments;
-    QLabel* TextLabelElements;
-    QPushButton* SelectElementsButton;
-    QLineEdit* LineEditElements;
-    QCheckBox* CheckBoxMesh;
-    QLabel* TextLabelVector;
-    QLabel* TextLabelDx;
-    SMESHGUI_SpinBox* SpinBox_Dx;
-    QLabel* TextLabelDy;
-    SMESHGUI_SpinBox* SpinBox_Dy;
-    QLabel* TextLabelDz;
-    SMESHGUI_SpinBox* SpinBox_Dz;
-    QLabel* TextLabelNbSteps;
-    QSpinBox* SpinBox_NbSteps;
-    
-    private slots:
+  QGroupBox*        GroupArguments;
+  QLabel*           TextLabelElements;
+  QPushButton*      SelectElementsButton;
+  QLineEdit*        LineEditElements;
+  QCheckBox*        CheckBoxMesh;
+  QLabel*           TextLabelVector;
+  QLabel*           TextLabelDx;
+  SMESHGUI_SpinBox* SpinBox_Dx;
+  QLabel*           TextLabelDy;
+  SMESHGUI_SpinBox* SpinBox_Dy;
+  QLabel*           TextLabelDz;
+  SMESHGUI_SpinBox* SpinBox_Dz;
+  QLabel*           TextLabelNbSteps;
+  QSpinBox*         SpinBox_NbSteps;
 
-    void ConstructorsClicked(int constructorId);
-    void ClickOnOk();
-    void ClickOnCancel();
-    void ClickOnApply();
-    void SetEditCurrentArgument() ;
-    void SelectionIntoArgument() ;
-    void DeactivateActiveDialog() ;
-    void ActivateThisDialog() ;
-    void onTextChange(const QString&);
-    void onSelectMesh(bool toSelectMesh);
-    
-protected:
-    QGridLayout* SMESHGUI_ExtrusionDlgLayout;
-    QGridLayout* GroupConstructorsLayout;
-    QGridLayout* GroupButtonsLayout;
-    QGridLayout* GroupArgumentsLayout;
+  QGroupBox*        GroupButtons;
+  QPushButton*      buttonOk;
+  QPushButton*      buttonCancel;
+  QPushButton*      buttonApply;
+
+private slots:
+  void ConstructorsClicked (int);
+  void ClickOnOk();
+  bool ClickOnApply();
+  void ClickOnCancel();
+  void SetEditCurrentArgument();
+  void SelectionIntoArgument();
+  void DeactivateActiveDialog();
+  void ActivateThisDialog();
+  void onTextChange (const QString&);
+  void onSelectMesh (bool toSelectMesh);
 };
 
 #endif // DIALOGBOX_EXTRUSION_H

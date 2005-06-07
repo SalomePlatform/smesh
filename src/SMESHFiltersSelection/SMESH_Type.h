@@ -7,6 +7,9 @@
 //  Copyright : Open CASCADE 2002
 //  $Header$
 
+#ifndef SMESH_TYPE_HEADER
+#define SMESH_TYPE_HEADER
+
 enum MeshObjectType {
   HYPOTHESIS,
   ALGORITHM,
@@ -20,3 +23,5 @@ enum MeshObjectType {
   SUBMESH_COMPOUND,
   GROUP
 };
+
+#endif

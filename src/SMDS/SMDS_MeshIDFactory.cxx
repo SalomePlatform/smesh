@@ -44,8 +44,9 @@ int SMDS_MeshIDFactory::GetFreeID()
 	if (myPoolOfID.empty()) return ++myMaxID;
 	else
 	{
-		int ID = myPoolOfID.top();
-		myPoolOfID.pop();
+                set<int>::iterator i = myPoolOfID.begin();
+		int ID = *i;//myPoolOfID.top();
+		myPoolOfID.erase( i );//myPoolOfID.pop();
 		return ID;
 	}
 }
@@ -56,5 +57,27 @@ int SMDS_MeshIDFactory::GetFreeID()
 //=======================================================================
 void SMDS_MeshIDFactory::ReleaseID(const int ID)
 {
-  if (ID > 0 && ID < myMaxID) myPoolOfID.push(ID);
+  if ( ID > 0 )
+  {
+    if ( ID < myMaxID )
+    {
+      myPoolOfID.insert(ID);
+    }
+    else if ( ID == myMaxID )
+    {
+      --myMaxID;
+      if ( !myPoolOfID.empty() ) // assure that myMaxID is not in myPoolOfID
+      {
+        set<int>::iterator i = --myPoolOfID.end();
+        while ( i != myPoolOfID.begin() && myMaxID == *i ) {
+          --myMaxID; --i;
+        }
+        if ( myMaxID == *i )
+          --myMaxID; // begin of myPoolOfID reached
+        else
+          ++i;
+        myPoolOfID.erase( i, myPoolOfID.end() );
+      }
+    }
+  }
 }

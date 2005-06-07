@@ -79,7 +79,7 @@ static int MYDEBUG = 0;
 SMESH_Mesh::SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen, SMESHDS_Document * myDocument)
 : _groupId( 0 )
 {
-  INFOS("SMESH_Mesh::SMESH_Mesh; this = "<<this);
+  INFOS("SMESH_Mesh::SMESH_Mesh(int localId)");
 	_id = localId;
 	_studyId = studyId;
 	_gen = gen;
@@ -97,7 +97,7 @@ SMESH_Mesh::SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen, SMESHDS_Docume
 
 SMESH_Mesh::~SMESH_Mesh()
 {
-  INFOS("SMESH_Mesh::~SMESH_Mesh; this = "<<this);
+  INFOS("SMESH_Mesh::~SMESH_Mesh");
 
   // delete groups
   map < int, SMESH_Group * >::iterator itg;
@@ -660,6 +660,24 @@ throw(SALOME_Exception)
   return aSubMesh;
 }
 
+//=============================================================================
+/*!
+ * Get the SMESH_subMesh object implementation. Dont create it, return null
+ * if it does not exist.
+ */
+//=============================================================================
+
+SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const int aShapeID)
+throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  
+  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(aShapeID);
+  if (i_sm == _mapSubMesh.end())
+    return NULL;
+  return i_sm->second;
+}
+
 //=======================================================================
 //function : IsUsedHypothesis
 //purpose  : Return True if anHyp is used to mesh aSubShape
@@ -833,7 +851,12 @@ int SMESH_Mesh::NbTriangles() throw(SALOME_Exception)
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while(itFaces->more()) if(itFaces->next()->NbNodes()==3) Nb++;
+  //while(itFaces->more()) if(itFaces->next()->NbNodes()==3) Nb++;
+  const SMDS_MeshFace * curFace;
+  while (itFaces->more()) {
+    curFace = itFaces->next();
+    if (!curFace->IsPoly() && curFace->NbNodes() == 3) Nb++;
+  }
   return Nb;
 }
 
@@ -846,7 +869,25 @@ int SMESH_Mesh::NbQuadrangles() throw(SALOME_Exception)
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while(itFaces->more()) if(itFaces->next()->NbNodes()==4) Nb++;
+  //while(itFaces->more()) if(itFaces->next()->NbNodes()==4) Nb++;
+  const SMDS_MeshFace * curFace;
+  while (itFaces->more()) {
+    curFace = itFaces->next();
+    if (!curFace->IsPoly() && curFace->NbNodes() == 4) Nb++;
+  }
+  return Nb;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Return the number of polygonal faces in the mesh. This method run in O(n)
+///////////////////////////////////////////////////////////////////////////////
+int SMESH_Mesh::NbPolygons() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  int Nb = 0;
+  SMDS_FaceIteratorPtr itFaces = _myMeshDS->facesIterator();
+  while (itFaces->more())
+    if (itFaces->next()->IsPoly()) Nb++;
   return Nb;
 }
 
@@ -866,7 +907,12 @@ int SMESH_Mesh::NbTetras() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==4) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==4) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 4) Nb++;
+  }
   return Nb;
 }
 
@@ -875,7 +921,12 @@ int SMESH_Mesh::NbHexas() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==8) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==8) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 8) Nb++;
+  }
   return Nb;
 }
 
@@ -884,7 +935,12 @@ int SMESH_Mesh::NbPyramids() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==5) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==5) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 5) Nb++;
+  }
   return Nb;
 }
 
@@ -893,7 +949,22 @@ int SMESH_Mesh::NbPrisms() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
+  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
+  const SMDS_MeshVolume * curVolume;
+  while (itVolumes->more()) {
+    curVolume = itVolumes->next();
+    if (!curVolume->IsPoly() && curVolume->NbNodes() == 6) Nb++;
+  }
+  return Nb;
+}
+
+int SMESH_Mesh::NbPolyhedrons() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  int Nb = 0;
+  SMDS_VolumeIteratorPtr itVolumes = _myMeshDS->volumesIterator();
+  while (itVolumes->more())
+    if (itVolumes->next()->IsPoly()) Nb++;
   return Nb;
 }
 
@@ -992,8 +1063,8 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
   if (_mapGroup.find(theGroupID) == _mapGroup.end())
     return;
   GetMeshDS()->RemoveGroup( _mapGroup[theGroupID]->GetGroupDS() );
-  delete _mapGroup[theGroupID];
   _mapGroup.erase (theGroupID);
+  delete _mapGroup[theGroupID];
 }
 
 //=============================================================================

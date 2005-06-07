@@ -35,10 +35,10 @@ using namespace std;
 
 #include "utilities.h"
 
-#include "SALOMEGUI_QtCatchCorbaException.hxx"
-#include "QAD_MessageBox.h"
-#include "QAD_WaitCursor.h"
-#include "QAD_Desktop.h"
+#include "SUIT_MessageBox.h"
+#include "SUIT_ResourceMgr.h"
+#include "SUIT_OverrideCursor.h"
+#include "SUIT_Desktop.h"
 
 //=================================================================================
 // class    : StdMeshersGUI_CreateStdHypothesisDlg()
@@ -72,9 +72,9 @@ StdMeshersGUI_CreateStdHypothesisDlg::StdMeshersGUI_CreateStdHypothesisDlg (cons
   QString caption( tr ( QString( "SMESH_%1_TITLE" ).arg( hypTypeStr )));
   QString hypTypeName( tr ( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeStr )));
   QString hypIconName( tr ( QString( "ICON_DLG_%1" ).arg( hypTypeStr )));
-  
-  CreateDlgLayout(caption, 
-                  QAD_Desktop::getResourceManager()->loadPixmap( "SMESH", hypIconName ),
+
+  CreateDlgLayout(caption,
+                  SMESHGUI::resourceMgr()->loadPixmap( "SMESH", hypIconName ),
                   hypTypeName);
 }
 

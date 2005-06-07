@@ -30,6 +30,7 @@
 #include "SMESHGUI.h"
 
 #include <qvalidator.h>
+#include <qlineedit.h>
 
 using namespace std;
 
@@ -37,19 +38,18 @@ using namespace std;
 // class    : SMESHGUI_SpinBox()
 // purpose  : constructor of specific widget accepting floats in double precision.
 //=================================================================================
-SMESHGUI_SpinBox::SMESHGUI_SpinBox( QWidget* parent, const char* name )
-: QAD_SpinBoxDbl( parent, name)
+SMESHGUI_SpinBox::SMESHGUI_SpinBox (QWidget* parent, const char* name)
+     : QtxDblSpinBox(parent, name)
 {
 }
-
 
 //=================================================================================
 // function : SetStep()  [SLOT]
 // purpose  :
 //=================================================================================
-void SMESHGUI_SpinBox::SetStep( double newStep )
+void SMESHGUI_SpinBox::SetStep (double newStep)
 {
-  setLineStep( newStep );
+  setLineStep(newStep);
 }
 
 //=================================================================================
@@ -64,16 +64,17 @@ SMESHGUI_SpinBox::~SMESHGUI_SpinBox()
 // function : SetValue()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SpinBox::SetValue( double v )
+void SMESHGUI_SpinBox::SetValue (double v)
 {
-  setValue( v );
+  setValue(v);
+  editor()->setCursorPosition( 0 );
 }
 
 //=================================================================================
 // function : GetValue()
 // purpose  : returns a double
 //=================================================================================
-double SMESHGUI_SpinBox::GetValue( )
+double SMESHGUI_SpinBox::GetValue()
 {
   return value();
 }
@@ -82,7 +83,7 @@ double SMESHGUI_SpinBox::GetValue( )
 // function : GetString()
 // purpose  : returns a QString
 //=================================================================================
-QString SMESHGUI_SpinBox::GetString( )
+QString SMESHGUI_SpinBox::GetString()
 {
   return cleanText();
 }
@@ -91,9 +92,10 @@ QString SMESHGUI_SpinBox::GetString( )
 // function : RangeStepAndValidator()
 // purpose  :
 //=================================================================================
-void SMESHGUI_SpinBox::RangeStepAndValidator( double min, double max, double step, unsigned short decimals )
+void SMESHGUI_SpinBox::RangeStepAndValidator
+  (double min, double max, double step, unsigned short decimals)
 {
-  setRange( min, max );
-  setLineStep( step );
-  ( ( QDoubleValidator* )validator() )->setRange( min, max, decimals ) ;
+  setRange(min, max);
+  setLineStep(step);
+  ((QDoubleValidator*)validator())->setRange(min, max, decimals);
 }

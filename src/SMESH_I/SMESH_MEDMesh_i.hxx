@@ -77,8 +77,8 @@ class SMESH_MEDMesh_i:
 	// IDL Methods
 	void setProtocol(SALOME::TypeOfCommunication typ) {}
 	void release() {}
-	SALOME::Sender_ptr getSenderForCoordinates(long int) {return SALOME::Sender::_nil();}
-	SALOME::Sender_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::Sender::_nil();}
+	SALOME::SenderDouble_ptr getSenderForCoordinates(long int) {return SALOME::SenderDouble::_nil();}
+	SALOME::SenderInt_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::SenderInt::_nil();}
 	
 	char *getName() throw(SALOME::SALOME_Exception);
 	CORBA::Long getSpaceDimension() throw(SALOME::SALOME_Exception);
@@ -215,6 +215,8 @@ class SMESH_MEDMesh_i:
 
         SALOME_MED::MESH::meshInfos * getMeshGlobal()
 	  throw (SALOME::SALOME_Exception);
+
+	bool areEquals(SALOME_MED::MESH_ptr other) { return false;};
 
         SALOME_MED::MESH::coordinateInfos * getCoordGlobal()
 	  throw (SALOME::SALOME_Exception);

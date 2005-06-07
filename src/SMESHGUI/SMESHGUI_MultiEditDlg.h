@@ -28,7 +28,9 @@
 #define SMESHGUI_MultiEditDlg_H
 
 #include <qdialog.h>
-#include "SMESH_TypeFilter.hxx"
+
+#include "SUIT_SelectionFilter.h"
+
 #include <TColStd_MapOfInteger.hxx>
 
 #include <SALOMEconfig.h>
@@ -42,11 +44,17 @@ class QFrame;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class QPushButton;
-class SALOME_Selection;
-class SMESH_Actor;
-class SALOME_Actor;
 class QButtonGroup;
 class QObject;
+
+class SMESH_Actor;
+class SALOME_Actor;
+class SalomeApp_SelectionMgr;
+
+class SMESHGUI;
+class SMESH_Actor;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 
 /*
   Class       : SMESHGUI_MultiEditDlg
@@ -59,14 +67,13 @@ class SMESHGUI_MultiEditDlg : public QDialog
   Q_OBJECT
 
 public:
-                            SMESHGUI_MultiEditDlg( QWidget*,
-                                                   SALOME_Selection*,
-                                                   const int,
-						   const bool = false,
-                                                   const char* = 0 );
+                            SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
+						  const int,
+						  const bool = false,
+						  const char* = 0 );
   virtual                   ~SMESHGUI_MultiEditDlg();
 
-  void                      Init( SALOME_Selection* ) ;
+  void                      Init() ;
 
   bool                      eventFilter( QObject* object, QEvent* event );
 
@@ -113,10 +120,14 @@ protected:
   QPushButton*              myOkBtn;
   QPushButton*              myApplyBtn;
   QPushButton*              myCloseBtn;
-  SALOME_Selection*         mySelection;
-  SMESH::SMESH_Mesh_var     myMesh;
   SMESH_Actor*              myActor;
+  SMESH::SMESH_Mesh_var     myMesh;
   
+  SalomeApp_SelectionMgr*   mySelectionMgr;
+  SVTK_ViewWindow*          myViewWindow;
+  SVTK_Selector*            mySelector;
+  SMESHGUI*                 mySMESHGUI;
+
   QGroupBox*                mySelGrp;
   
   QListBox*                 myListBox;
@@ -139,8 +150,6 @@ protected:
   SMESHGUI_FilterDlg*       myFilterDlg;
   TColStd_MapOfInteger      myIds;
   int                       myFilterType;
-  Handle(SMESH_TypeFilter)  mySubmeshFilter;
-  Handle(SMESH_TypeFilter)  myGroupFilter;
   bool                      myBusy;
   int                       myEntityType;
 };
@@ -154,9 +163,8 @@ class  SMESHGUI_ChangeOrientationDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-                            SMESHGUI_ChangeOrientationDlg( QWidget*,
-                                                           SALOME_Selection*,
-                                                           const char* = 0 );
+                            SMESHGUI_ChangeOrientationDlg(SMESHGUI* theModule,
+							  const char* = 0);
   virtual                   ~SMESHGUI_ChangeOrientationDlg();
 
 protected:
@@ -173,9 +181,8 @@ class  SMESHGUI_UnionOfTrianglesDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-                            SMESHGUI_UnionOfTrianglesDlg( QWidget*,
-                                                          SALOME_Selection*,
-                                                          const char* = 0 );
+                            SMESHGUI_UnionOfTrianglesDlg(SMESHGUI* theModule,
+							 const char* = 0);
   virtual                   ~SMESHGUI_UnionOfTrianglesDlg();
 
 protected:
@@ -192,9 +199,8 @@ class  SMESHGUI_CuttingOfQuadsDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-                            SMESHGUI_CuttingOfQuadsDlg( QWidget*,
-                                                        SALOME_Selection*,
-                                                        const char* = 0 );
+                            SMESHGUI_CuttingOfQuadsDlg(SMESHGUI* theModule,
+						       const char* = 0);
   virtual                   ~SMESHGUI_CuttingOfQuadsDlg();
 
 protected:

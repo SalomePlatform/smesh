@@ -30,7 +30,7 @@
 #define SMESH_OBJECTDEF_H
 
 // IDL Headers
-#include "SALOMEconfig.h"
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
 

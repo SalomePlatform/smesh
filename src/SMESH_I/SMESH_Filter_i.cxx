@@ -29,6 +29,7 @@
 #include "SMESH_Filter_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -63,6 +64,17 @@
 using namespace SMESH;
 using namespace SMESH::Controls;
 
+
+namespace SMESH
+{
+  Predicate_i* 
+  GetPredicate( Predicate_ptr thePredicate )
+  {
+    return DownCast<Predicate_i*>(thePredicate);
+  }
+}
+
+
 /*
   Class       : BelongToGeom
   Description : Predicate for verifying whether entiy belong to
@@ -74,9 +86,9 @@ Controls::BelongToGeom::BelongToGeom()
   myType(SMDSAbs_All)
 {}
 
-void Controls::BelongToGeom::SetMesh( SMDS_Mesh* theMesh )
+void Controls::BelongToGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
-  myMeshDS = dynamic_cast<SMESHDS_Mesh*>(theMesh);
+  myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
 }
 
 void Controls::BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
@@ -84,7 +96,7 @@ void Controls::BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
   myShape = theShape;
 }
 
-static bool IsContains( SMESHDS_Mesh*           theMeshDS,
+static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
                         const TopoDS_Shape&     theShape,
                         const SMDS_MeshElement* theElem,
                         TopAbs_ShapeEnum        theFindShapeEnum,
@@ -166,7 +178,9 @@ TopoDS_Shape Controls::BelongToGeom::GetShape()
   return myShape;
 }
 
-SMESHDS_Mesh* Controls::BelongToGeom::GetMeshDS()
+const SMESHDS_Mesh* 
+Controls::BelongToGeom::
+GetMeshDS() const
 {
   return myMeshDS;
 }
@@ -182,9 +196,9 @@ Controls::LyingOnGeom::LyingOnGeom()
   myType(SMDSAbs_All)
 {}
 
-void Controls::LyingOnGeom::SetMesh( SMDS_Mesh* theMesh )
+void Controls::LyingOnGeom::SetMesh( const SMDS_Mesh* theMesh )
 {
- myMeshDS = dynamic_cast<SMESHDS_Mesh*>(theMesh);
+  myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
 }
 
 void Controls::LyingOnGeom::SetGeom( const TopoDS_Shape& theShape )
@@ -254,12 +268,14 @@ TopoDS_Shape Controls::LyingOnGeom::GetShape()
   return myShape;
 }
 
-SMESHDS_Mesh* Controls::LyingOnGeom::GetMeshDS()
+const SMESHDS_Mesh* 
+Controls::LyingOnGeom::
+GetMeshDS() const
 {
   return myMeshDS;
 }
 
-bool Controls::LyingOnGeom::Contains( SMESHDS_Mesh*           theMeshDS,
+bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
 				      const TopoDS_Shape&     theShape,
 				      const SMDS_MeshElement* theElem,
 				      TopAbs_ShapeEnum        theFindShapeEnum,
@@ -301,14 +317,17 @@ bool Controls::LyingOnGeom::Contains( SMESHDS_Mesh*           theMeshDS,
                             AUXILIARY METHODS
 */
 
-static inline SMDS_Mesh* MeshPtr2SMDSMesh( SMESH_Mesh_ptr theMesh )
+inline 
+const SMDS_Mesh* 
+MeshPtr2SMDSMesh( SMESH_Mesh_ptr theMesh )
 {
-  SMESH_Mesh_i* anImplPtr = 
-    dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
+  SMESH_Mesh_i* anImplPtr = DownCast<SMESH_Mesh_i*>(theMesh);
   return anImplPtr ? anImplPtr->GetImpl().GetMeshDS() : 0;
 }
 
-static inline SMESH::long_array* toArray( const TColStd_ListOfInteger& aList )
+inline 
+SMESH::long_array* 
+toArray( const TColStd_ListOfInteger& aList )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
   anArray->length( aList.Extent() );
@@ -320,7 +339,9 @@ static inline SMESH::long_array* toArray( const TColStd_ListOfInteger& aList )
   return anArray._retn();
 }
 
-static inline SMESH::double_array* toArray( const TColStd_ListOfReal& aList )
+inline 
+SMESH::double_array* 
+toArray( const TColStd_ListOfReal& aList )
 {
   SMESH::double_array_var anArray = new SMESH::double_array;
   anArray->length( aList.Extent() );
@@ -387,13 +408,19 @@ static TopoDS_Shape getShapeByName( const char* theName )
 Functor_i::Functor_i(): 
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  SMESH_Gen_i::GetPOA()->activate_object( this );
+  PortableServer::ObjectId_var anObjectId = 
+    SMESH_Gen_i::GetPOA()->activate_object( this );
+}
+
+Functor_i::~Functor_i()
+{
+  TPythonDump()<<this<<".Destroy()";
 }
 
 void Functor_i::SetMesh( SMESH_Mesh_ptr theMesh )
 {
   myFunctorPtr->SetMesh( MeshPtr2SMDSMesh( theMesh ) );
-  INFOS("Functor_i::SetMesh~");
+  TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
 }
 
 ElementType Functor_i::GetElementType()
@@ -414,6 +441,7 @@ CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
 void NumericalFunctor_i::SetPrecision( CORBA::Long thePrecision )
 {
   myNumericalFunctorPtr->SetPrecision( thePrecision );
+  TPythonDump()<<this<<".SetPrecision("<<thePrecision<<")";
 }
 
 CORBA::Long NumericalFunctor_i::GetPrecision()
@@ -708,6 +736,7 @@ void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myBelongToGeomPtr->SetGeom( aLocShape );
+  TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
 }
 
 void BelongToGeom_i::SetGeom( const TopoDS_Shape& theShape )
@@ -717,6 +746,7 @@ void BelongToGeom_i::SetGeom( const TopoDS_Shape& theShape )
 
 void BelongToGeom_i::SetElementType(ElementType theType){
   myBelongToGeomPtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
 }
 
 FunctorType BelongToGeom_i::GetFunctorType()
@@ -729,6 +759,7 @@ void BelongToGeom_i::SetShapeName( const char* theName )
   delete myShapeName;
   myShapeName = strdup( theName );
   myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+  TPythonDump()<<this<<".SetShapeName('"<<theName<<"')";
 }
 
 char* BelongToGeom_i::GetShapeName()
@@ -772,6 +803,7 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
   }
 
   myElementsOnSurfacePtr->SetSurface( TopoDS_Shape(), (SMDSAbs_ElementType)theType );
+  TPythonDump()<<this<<".SetSurface("<<theGeom<<",'"<<theType<<"')";
 }
 
 void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
@@ -779,6 +811,7 @@ void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
   delete myShapeName;
   myShapeName = strdup( theName );
   myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
+  TPythonDump()<<this<<".SetShapeName('"<<theName<<"',"<<theType<<")";
 }
 
 char* BelongToSurface_i::GetShapeName()
@@ -789,6 +822,7 @@ char* BelongToSurface_i::GetShapeName()
 void BelongToSurface_i::SetTolerance( CORBA::Double theToler )
 {
   myElementsOnSurfacePtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
 }
 
 CORBA::Double BelongToSurface_i::GetTolerance()
@@ -809,6 +843,7 @@ BelongToPlane_i::BelongToPlane_i()
 void BelongToPlane_i::SetPlane( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
 {
   BelongToSurface_i::SetSurface( theGeom, theType );
+  TPythonDump()<<this<<".SetPlane("<<theGeom<<","<<theType<<")";
 }
 
 FunctorType BelongToPlane_i::GetFunctorType()
@@ -829,6 +864,7 @@ BelongToCylinder_i::BelongToCylinder_i()
 void BelongToCylinder_i::SetCylinder( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
 {
   BelongToSurface_i::SetSurface( theGeom, theType );
+  TPythonDump()<<this<<".SetCylinder("<<theGeom<<","<<theType<<")";
 }
 
 FunctorType BelongToCylinder_i::GetFunctorType()
@@ -860,6 +896,7 @@ void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myLyingOnGeomPtr->SetGeom( aLocShape );
+  TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
 }
 
 void LyingOnGeom_i::SetGeom( const TopoDS_Shape& theShape )
@@ -869,6 +906,7 @@ void LyingOnGeom_i::SetGeom( const TopoDS_Shape& theShape )
 
 void LyingOnGeom_i::SetElementType(ElementType theType){
   myLyingOnGeomPtr->SetType(SMDSAbs_ElementType(theType));
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
 }
 
 FunctorType LyingOnGeom_i::GetFunctorType()
@@ -881,6 +919,7 @@ void LyingOnGeom_i::SetShapeName( const char* theName )
   delete myShapeName;
   myShapeName = strdup( theName );
   myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+  TPythonDump()<<this<<".SetShapeName('"<<theName<<"')";
 }
 
 char* LyingOnGeom_i::GetShapeName()
@@ -963,10 +1002,12 @@ void RangeOfIds_i::SetRange( const SMESH::long_array& theIds )
   CORBA::Long iEnd = theIds.length();
   for ( CORBA::Long i = 0; i < iEnd; i++ )
     myRangeOfIdsPtr->AddToRange( theIds[ i ] );
+  TPythonDump()<<this<<".SetRange("<<theIds<<")";
 }
 
 CORBA::Boolean RangeOfIds_i::SetRangeStr( const char* theRange )
 {
+  TPythonDump()<<this<<".SetRangeStr('"<<theRange<<"')";
   return myRangeOfIdsPtr->SetRangeStr(
     TCollection_AsciiString( (Standard_CString)theRange ) );
 }
@@ -981,6 +1022,7 @@ char* RangeOfIds_i::GetRangeStr()
 void RangeOfIds_i::SetElementType( ElementType theType )
 {
   myRangeOfIdsPtr->SetType( SMDSAbs_ElementType( theType ) );
+  TPythonDump()<<this<<".SetElementType("<<theType<<")";
 }
 
 FunctorType RangeOfIds_i::GetFunctorType()
@@ -1005,6 +1047,7 @@ Comparator_i::~Comparator_i()
 void Comparator_i::SetMargin( CORBA::Double theValue )
 {
   myComparatorPtr->SetMargin( theValue );
+  TPythonDump()<<this<<".SetMargin("<<theValue<<")";
 }
 
 CORBA::Double Comparator_i::GetMargin()
@@ -1017,12 +1060,13 @@ void Comparator_i::SetNumFunctor( NumericalFunctor_ptr theFunct )
   if ( myNumericalFunctor )
     myNumericalFunctor->Destroy();
 
-  myNumericalFunctor = dynamic_cast<NumericalFunctor_i*>( SMESH_Gen_i::GetServant( theFunct ).in() );
+  myNumericalFunctor = DownCast<NumericalFunctor_i*>(theFunct);
 
   if ( myNumericalFunctor )
   {
     myComparatorPtr->SetNumFunctor( myNumericalFunctor->GetNumericalFunctor() );
     myNumericalFunctor->Register();
+    TPythonDump()<<this<<".SetNumFunctor("<<myNumericalFunctor<<")";
   }
 }
 
@@ -1082,6 +1126,7 @@ EqualTo_i::EqualTo_i()
 void EqualTo_i::SetTolerance( CORBA::Double theToler )
 {
   myEqualToPtr->SetTolerance( theToler );
+  TPythonDump()<<this<<".SetTolerance("<<theToler<<")";
 }
 
 CORBA::Double EqualTo_i::GetTolerance()
@@ -1111,16 +1156,17 @@ LogicalNOT_i::~LogicalNOT_i()
     myPredicate->Destroy();
 }
 
-void LogicalNOT_i::SetPredicate( Predicate_ptr thePred )
+void LogicalNOT_i::SetPredicate( Predicate_ptr thePredicate )
 {
   if ( myPredicate )
     myPredicate->Destroy();
 
-  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePred ).in() );
+  myPredicate = SMESH::GetPredicate(thePredicate);
 
   if ( myPredicate ){
     myLogicalNOTPtr->SetPredicate(myPredicate->GetPredicate());
     myPredicate->Register();
+    TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
 }
 
@@ -1167,11 +1213,12 @@ void LogicalBinary_i::SetPredicate1( Predicate_ptr thePredicate )
   if ( myPredicate1 )
     myPredicate1->Destroy();
 
-  myPredicate1 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+  myPredicate1 = SMESH::GetPredicate(thePredicate);
 
   if ( myPredicate1 ){
     myLogicalBinaryPtr->SetPredicate1(myPredicate1->GetPredicate());
     myPredicate1->Register();
+    TPythonDump()<<this<<".SetPredicate1("<<myPredicate1<<")";
   }
 }
 
@@ -1180,11 +1227,12 @@ void LogicalBinary_i::SetPredicate2( Predicate_ptr thePredicate )
   if ( myPredicate2 )
     myPredicate2->Destroy();
 
-  myPredicate2 = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+  myPredicate2 = SMESH::GetPredicate(thePredicate);
 
   if ( myPredicate2 ){
     myLogicalBinaryPtr->SetPredicate2(myPredicate2->GetPredicate());
     myPredicate2->Register();
+    TPythonDump()<<this<<".SetPredicate2("<<myPredicate2<<")";
   }
 }
 
@@ -1242,13 +1290,22 @@ FunctorType LogicalOR_i::GetFunctorType()
 FilterManager_i::FilterManager_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  SMESH_Gen_i::GetPOA()->activate_object( this );
+  PortableServer::ObjectId_var anObjectId = 
+    SMESH_Gen_i::GetPOA()->activate_object( this );
 }
+
+
+FilterManager_i::~FilterManager_i()
+{
+  TPythonDump()<<this<<".Destroy()";
+}
+
 
 MinimumAngle_ptr FilterManager_i::CreateMinimumAngle()
 {
   SMESH::MinimumAngle_i* aServant = new SMESH::MinimumAngle_i();
   SMESH::MinimumAngle_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMinimumAngle()";
   return anObj._retn();
 }
 
@@ -1257,6 +1314,7 @@ AspectRatio_ptr FilterManager_i::CreateAspectRatio()
 {
   SMESH::AspectRatio_i* aServant = new SMESH::AspectRatio_i();
   SMESH::AspectRatio_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateAspectRatio()";
   return anObj._retn();
 }
 
@@ -1265,6 +1323,7 @@ AspectRatio3D_ptr FilterManager_i::CreateAspectRatio3D()
 {
   SMESH::AspectRatio3D_i* aServant = new SMESH::AspectRatio3D_i();
   SMESH::AspectRatio3D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateAspectRatio3D()";
   return anObj._retn();
 }
 
@@ -1273,6 +1332,7 @@ Warping_ptr FilterManager_i::CreateWarping()
 {
   SMESH::Warping_i* aServant = new SMESH::Warping_i();
   SMESH::Warping_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateWarping()";
   return anObj._retn();
 }
 
@@ -1281,6 +1341,7 @@ Taper_ptr FilterManager_i::CreateTaper()
 {
   SMESH::Taper_i* aServant = new SMESH::Taper_i();
   SMESH::Taper_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateTaper()";
   return anObj._retn();
 }
 
@@ -1289,6 +1350,7 @@ Skew_ptr FilterManager_i::CreateSkew()
 {
   SMESH::Skew_i* aServant = new SMESH::Skew_i();
   SMESH::Skew_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateSkew()";
   return anObj._retn();
 }
 
@@ -1297,6 +1359,7 @@ Area_ptr FilterManager_i::CreateArea()
 {
   SMESH::Area_i* aServant = new SMESH::Area_i();
   SMESH::Area_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateArea()";
   return anObj._retn();
 }
 
@@ -1305,6 +1368,7 @@ Length_ptr FilterManager_i::CreateLength()
 {
   SMESH::Length_i* aServant = new SMESH::Length_i();
   SMESH::Length_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLength()";
   return anObj._retn();
 }
 
@@ -1312,6 +1376,7 @@ Length2D_ptr FilterManager_i::CreateLength2D()
 {
   SMESH::Length2D_i* aServant = new SMESH::Length2D_i();
   SMESH::Length2D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLength2D()";
   return anObj._retn();
 }
 
@@ -1319,6 +1384,7 @@ MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 {
   SMESH::MultiConnection_i* aServant = new SMESH::MultiConnection_i();
   SMESH::MultiConnection_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMultiConnection()";
   return anObj._retn();
 }
 
@@ -1326,6 +1392,7 @@ MultiConnection2D_ptr FilterManager_i::CreateMultiConnection2D()
 {
   SMESH::MultiConnection2D_i* aServant = new SMESH::MultiConnection2D_i();
   SMESH::MultiConnection2D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMultiConnection2D()";
   return anObj._retn();
 }
 
@@ -1333,6 +1400,7 @@ BelongToGeom_ptr FilterManager_i::CreateBelongToGeom()
 {
   SMESH::BelongToGeom_i* aServant = new SMESH::BelongToGeom_i();
   SMESH::BelongToGeom_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToGeom()";
   return anObj._retn();
 }
 
@@ -1340,6 +1408,7 @@ BelongToPlane_ptr FilterManager_i::CreateBelongToPlane()
 {
   SMESH::BelongToPlane_i* aServant = new SMESH::BelongToPlane_i();
   SMESH::BelongToPlane_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToPlane()";
   return anObj._retn();
 }
 
@@ -1347,6 +1416,7 @@ BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
 {
   SMESH::BelongToCylinder_i* aServant = new SMESH::BelongToCylinder_i();
   SMESH::BelongToCylinder_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToCylinder()";
   return anObj._retn();
 }
 
@@ -1354,6 +1424,7 @@ LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
 {
   SMESH::LyingOnGeom_i* aServant = new SMESH::LyingOnGeom_i();
   SMESH::LyingOnGeom_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLyingOnGeom()";
   return anObj._retn();
 }
 
@@ -1361,6 +1432,7 @@ FreeBorders_ptr FilterManager_i::CreateFreeBorders()
 {
   SMESH::FreeBorders_i* aServant = new SMESH::FreeBorders_i();
   SMESH::FreeBorders_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateFreeBorders()";
   return anObj._retn();
 }
 
@@ -1368,6 +1440,7 @@ FreeEdges_ptr FilterManager_i::CreateFreeEdges()
 {
   SMESH::FreeEdges_i* aServant = new SMESH::FreeEdges_i();
   SMESH::FreeEdges_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateFreeEdges()";
   return anObj._retn();
 }
 
@@ -1375,6 +1448,7 @@ RangeOfIds_ptr FilterManager_i::CreateRangeOfIds()
 {
   SMESH::RangeOfIds_i* aServant = new SMESH::RangeOfIds_i();
   SMESH::RangeOfIds_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateRangeOfIds()";
   return anObj._retn();
 }
 
@@ -1382,6 +1456,7 @@ BadOrientedVolume_ptr FilterManager_i::CreateBadOrientedVolume()
 {
   SMESH::BadOrientedVolume_i* aServant = new SMESH::BadOrientedVolume_i();
   SMESH::BadOrientedVolume_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBadOrientedVolume()";
   return anObj._retn();
 }
 
@@ -1389,6 +1464,7 @@ LessThan_ptr FilterManager_i::CreateLessThan()
 {
   SMESH::LessThan_i* aServant = new SMESH::LessThan_i();
   SMESH::LessThan_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLessThan()";
   return anObj._retn();
 }
 
@@ -1397,6 +1473,7 @@ MoreThan_ptr FilterManager_i::CreateMoreThan()
 {
   SMESH::MoreThan_i* aServant = new SMESH::MoreThan_i();
   SMESH::MoreThan_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateMoreThan()";
   return anObj._retn();
 }
 
@@ -1404,6 +1481,7 @@ EqualTo_ptr FilterManager_i::CreateEqualTo()
 {
   SMESH::EqualTo_i* aServant = new SMESH::EqualTo_i();
   SMESH::EqualTo_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateEqualTo()";
   return anObj._retn();
 }
 
@@ -1412,6 +1490,7 @@ LogicalNOT_ptr FilterManager_i::CreateLogicalNOT()
 {
   SMESH::LogicalNOT_i* aServant = new SMESH::LogicalNOT_i();
   SMESH::LogicalNOT_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalNOT()";
   return anObj._retn();
 }
 
@@ -1420,6 +1499,7 @@ LogicalAND_ptr FilterManager_i::CreateLogicalAND()
 {
   SMESH::LogicalAND_i* aServant = new SMESH::LogicalAND_i();
   SMESH::LogicalAND_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalAND()";
   return anObj._retn();
 }
 
@@ -1428,6 +1508,7 @@ LogicalOR_ptr FilterManager_i::CreateLogicalOR()
 {
   SMESH::LogicalOR_i* aServant = new SMESH::LogicalOR_i();
   SMESH::LogicalOR_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLogicalOR()";
   return anObj._retn();
 }
 
@@ -1435,6 +1516,7 @@ Filter_ptr FilterManager_i::CreateFilter()
 {
   SMESH::Filter_i* aServant = new SMESH::Filter_i();
   SMESH::Filter_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateFilter()";
   return anObj._retn();
 }
 
@@ -1442,6 +1524,7 @@ FilterLibrary_ptr FilterManager_i::LoadLibrary( const char* aFileName )
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i( aFileName );
   SMESH::FilterLibrary_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".LoadLibrary("<<aFileName<<")";
   return anObj._retn();
 }
 
@@ -1449,11 +1532,13 @@ FilterLibrary_ptr FilterManager_i::CreateLibrary()
 {
   SMESH::FilterLibrary_i* aServant = new SMESH::FilterLibrary_i();
   SMESH::FilterLibrary_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLibrary()";
   return anObj._retn();
 }
 
 CORBA::Boolean FilterManager_i::DeleteLibrary( const char* aFileName )
 {
+  TPythonDump()<<this<<".DeleteLibrary("<<aFileName<<")";
   return remove( aFileName ) ? false : true;
 }
 
@@ -1493,6 +1578,11 @@ Filter_i::~Filter_i()
 {
   if ( myPredicate )
     myPredicate->Destroy();
+
+  if(!CORBA::is_nil(myMesh))
+    myMesh->Destroy();
+
+  TPythonDump()<<this<<".Destroy()";
 }
 
 //=======================================================================
@@ -1504,12 +1594,13 @@ void Filter_i::SetPredicate( Predicate_ptr thePredicate )
   if ( myPredicate )
     myPredicate->Destroy();
 
-  myPredicate = dynamic_cast<Predicate_i*>( SMESH_Gen_i::GetServant( thePredicate ).in() );
+  myPredicate = SMESH::GetPredicate(thePredicate);
 
   if ( myPredicate )
   {
     myFilter.SetPredicate( myPredicate->GetPredicate() );
     myPredicate->Register();
+    TPythonDump()<<this<<".SetPredicate("<<myPredicate<<")";
   }
 }
 
@@ -1526,28 +1617,63 @@ SMESH::ElementType Filter_i::GetElementType()
 // name    : Filter_i::SetMesh
 // Purpose : Set mesh
 //=======================================================================
-void Filter_i::SetMesh( SMESH_Mesh_ptr theMesh )
+void 
+Filter_i::
+SetMesh( SMESH_Mesh_ptr theMesh )
 {
-  if ( myPredicate )
-    myPredicate->SetMesh( theMesh );
+  if(!CORBA::is_nil(theMesh))
+    theMesh->Register();
+
+  if(!CORBA::is_nil(myMesh))
+    myMesh->Destroy();
+
+  myMesh = theMesh;
+  TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
+}
+
+SMESH::long_array* 
+Filter_i::
+GetIDs()
+{
+  return GetElementsId(myMesh);
 }
 
 //=======================================================================
 // name    : Filter_i::GetElementsId
 // Purpose : Get ids of entities
 //=======================================================================
-SMESH::long_array* Filter_i::GetElementsId( SMESH_Mesh_ptr theMesh )
+void
+Filter_i::
+GetElementsId( Predicate_i* thePredicate,
+	       const SMDS_Mesh* theMesh,
+	       Controls::Filter::TIdSequence& theSequence )
 {
-  SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh);
-  Controls::Filter::TIdSequence aSequence = myFilter.GetElementsId(aMesh);
+  Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
+}
 
+void
+Filter_i::
+GetElementsId( Predicate_i* thePredicate,
+	       SMESH_Mesh_ptr theMesh,
+	       Controls::Filter::TIdSequence& theSequence )
+{
+  if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+    Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
+}
+
+SMESH::long_array* 
+Filter_i::
+GetElementsId( SMESH_Mesh_ptr theMesh )
+{
   SMESH::long_array_var anArray = new SMESH::long_array;
-  long i = 0, iEnd = aSequence.size();
-
-  anArray->length( iEnd );
-  for ( ; i < iEnd; i++ )
-    anArray[ i ] = aSequence[i];
-
+  if(!CORBA::is_nil(theMesh)){
+    Controls::Filter::TIdSequence aSequence;
+    GetElementsId(myPredicate,theMesh,aSequence);
+    long i = 0, iEnd = aSequence.size();
+    anArray->length( iEnd );
+    for ( ; i < iEnd; i++ )
+      anArray[ i ] = aSequence[i];
+  }
   return anArray._retn();
 }
 
@@ -1719,12 +1845,13 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
   if ( myPredicate != 0 )
     myPredicate->Destroy();
 
-    SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
-    FilterManager_ptr aFilterMgr = aFilter->_this();
-
+  SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
+  FilterManager_ptr aFilterMgr = aFilter->_this();
+  
   // CREATE two lists ( PREDICATES  and LOG OP )
 
   // Criterion
+  TPythonDump()<<"aCriteria = []";
   std::list<SMESH::Predicate_ptr> aPredicates;
   std::list<int>                  aBinaries;
   for ( int i = 0, n = theCriteria.length(); i < n; i++ )
@@ -1738,6 +1865,10 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
+
+    TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
+      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"',"<<
+      aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
     
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
@@ -1876,6 +2007,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     aBinaries.push_back( aBinary );
 
   } // end of for
+  TPythonDump()<<this<<".SetCriteria(aCriteria)";
 
   // CREATE ONE PREDICATE FROM PREVIOUSLY CREATED MAP
 
@@ -2299,6 +2431,7 @@ FilterLibrary_i::FilterLibrary_i()
 FilterLibrary_i::~FilterLibrary_i()
 {
   delete myFileName;
+  TPythonDump()<<this<<".Destroy()";
 }
 
 //=======================================================================
@@ -2307,7 +2440,7 @@ FilterLibrary_i::~FilterLibrary_i()
 //=======================================================================
 Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
 {
-  Filter_ptr aRes;
+  Filter_ptr aRes = Filter::_nil();
   LDOM_Node aFilter = findFilter( theFilterName, myDoc );
 
   if ( aFilter.isNull() )
@@ -2368,7 +2501,9 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
 
   aRes = myFilterMgr->CreateFilter();
   aRes->SetCriteria( aCriteriaVar.inout() );
-
+  
+  TPythonDump()<<this<<".Copy('"<<theFilterName<<"')";
+  
   return aRes;
 }
 
@@ -2380,6 +2515,7 @@ void FilterLibrary_i::SetFileName( const char* theFileName )
 {
   delete myFileName;
   myFileName = strdup( theFileName );
+  TPythonDump()<<this<<".SetFileName('"<<theFileName<<"')";
 }
 
 //=======================================================================
@@ -2416,6 +2552,8 @@ CORBA::Boolean FilterLibrary_i::Add( const char* theFilterName, Filter_ptr theFi
   else
   {
     aSection.appendChild( aFilterItem );
+    if(Filter_i* aFilter = DownCast<Filter_i*>(theFilter))
+      TPythonDump()<<this<<".Add('"<<theFilterName<<"',"<<aFilter<<")";
     return true;
   }
 }
@@ -2444,6 +2582,7 @@ CORBA::Boolean FilterLibrary_i::AddEmpty( const char* theFilterName, ElementType
   else
   {
     aSection.appendChild( aFilterItem );
+    TPythonDump()<<this<<".AddEmpty('"<<theFilterName<<"',"<<theType<<")";
     return true;
   }
 }
@@ -2460,6 +2599,7 @@ CORBA::Boolean FilterLibrary_i::Delete ( const char* theFilterName )
     return false;
 
   aParentNode.removeChild( aFilterNode );
+  TPythonDump()<<this<<".Delete('"<<theFilterName<<"')";
   return true;
 }
 
@@ -2482,6 +2622,8 @@ CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
   else                                                                                          
   {
     aFilterItem.ReplaceElement( aNewItem );
+    if(Filter_i* aFilter = DownCast<Filter_i*>(theFilter))
+      TPythonDump()<<this<<".Replace('"<<theFilterName<<"',"<<theNewName<<"',"<<aFilter<<")";
     return true;
   }
 }
@@ -2504,6 +2646,7 @@ CORBA::Boolean FilterLibrary_i::Save()
   aWriter << myDoc;
   fclose( aOutFile );
 
+  TPythonDump()<<this<<".Save()";
   return true;
 }
 
@@ -2514,6 +2657,7 @@ CORBA::Boolean FilterLibrary_i::Save()
 CORBA::Boolean FilterLibrary_i::SaveAs( const char* aFileName )
 {
   myFileName = strdup ( aFileName );
+  TPythonDump()<<this<<".SaveAs('"<<aFileName<<"')";
   return Save();
 }
 

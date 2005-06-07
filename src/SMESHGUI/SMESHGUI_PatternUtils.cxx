@@ -19,14 +19,13 @@
 
 
 #include "SMESHGUI_PatternUtils.h"
-#include "SMESHGUI_SMESHGenUtils.h"
 
+#include "SMESHGUI.h"
 
-namespace SMESH{
+namespace SMESH {
 
   SMESH::SMESH_Pattern_var GetPattern()
   {
-    return GetSMESHGen()->GetPattern();
+    return SMESHGUI::GetSMESHGen()->GetPattern();
   }
-
 }

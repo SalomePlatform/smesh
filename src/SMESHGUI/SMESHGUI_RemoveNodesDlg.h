@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_REMOVE_NODES_H
 #define DIALOGBOX_REMOVE_NODES_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
 
 // QT Includes
 #include <qvariant.h>
@@ -47,8 +47,11 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+
 class SMESHGUI;
 class SMESH_Actor;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -59,25 +62,31 @@ class SMESH_Actor;
 // purpose  :
 //=================================================================================
 class SMESHGUI_RemoveNodesDlg : public QDialog
-{ 
+{
     Q_OBJECT
 
 public:
-    SMESHGUI_RemoveNodesDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_RemoveNodesDlg(SMESHGUI* theModule,
+			    const char* name = 0,
+			    bool modal = FALSE,
+			    WFlags fl = 0);
     ~SMESHGUI_RemoveNodesDlg();
 
 private:
 
-    void Init( SALOME_Selection* Sel ) ;
+    void Init() ;
     void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void enterEvent ( QEvent * ) ;                         /* mouse enter the QWidget */
+    void hideEvent ( QHideEvent * );                       /* ESC key */
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    int                           myNbOkNodes ;             /* to check when arguments is defined */
-    int                           myConstructorId ;         /* Current constructor id = radio button id */
-    QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
+    SalomeApp_SelectionMgr*       mySelectionMgr;
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+    SMESHGUI*                     mySMESHGUI;
+
+    int                           myNbOkNodes;             /* to check when arguments is defined */
+    int                           myConstructorId;         /* Current constructor id = radio button id */
+    QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
 
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;

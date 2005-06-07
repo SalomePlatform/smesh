@@ -32,6 +32,7 @@
 
 class SMDS_MeshElement;
 class SMDS_MeshNode;
+class SMDS_PolyhedralVolumeOfNodes;
 
 #include <vector>
 #include <set>
@@ -149,26 +150,52 @@ class SMDS_VolumeTool
   // Return index of a face formed by theFaceNodes.
   // Return -1 if a face not found
 
-  int GetFaceIndex( const std::set<int>& theFaceNodesIndices );
+  //int GetFaceIndex( const std::set<int>& theFaceNodesIndices );
   // Return index of a face formed by theFaceNodesIndices
   // Return -1 if a face not found
 
+  // ------------------------
+  // static methods for faces
+  // ------------------------
+
+  enum VolumeType { UNKNOWN, TETRA, PYRAM, PENTA, HEXA };
+
+  static VolumeType GetType(int nbNodes);
+  // return VolumeType by nb of nodes in a volume
+
+  static int NbFaces( VolumeType type );
+  // return nb of faces by volume type
+
+  static const int* GetFaceNodesIndices(VolumeType type,
+                                        int        faceIndex,
+                                        bool       external);
+  // Return the array of face nodes indices
+  // To comfort link iteration, the array
+  // length == NbFaceNodes( faceIndex ) + 1 and
+  // the last node index == the first one.
+
+  static int NbFaceNodes(VolumeType type,
+                         int        faceIndex );
+  // Return number of nodes in the array of face nodes
 
  private:
 
   bool setFace( int faceIndex );
 
   const SMDS_MeshElement* myVolume;
+  const SMDS_PolyhedralVolumeOfNodes* myPolyedre;
+
   bool                    myVolForward;
   int                     myNbFaces;
   int                     myVolumeNbNodes;
-  const SMDS_MeshNode*    myVolumeNodes[ 8 ];
+  const SMDS_MeshNode**   myVolumeNodes;
 
   bool                    myExternalFaces;
-  int*                    myFaceNodeIndices;
-  int*                    myFaceNbNodes;
-  const SMDS_MeshNode*    myFaceNodes[ 5 ];
+
   int                     myCurFace;
+  int                     myFaceNbNodes;
+  int*                    myFaceNodeIndices;
+  const SMDS_MeshNode**   myFaceNodes;
 
 };
 #endif

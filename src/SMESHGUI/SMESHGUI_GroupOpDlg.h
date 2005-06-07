@@ -36,7 +36,7 @@ class QCloseEvent;
 class QLabel;
 class QFrame;
 class QPushButton;
-class SALOME_Selection;
+class SalomeApp_SelectionMgr;
 class QLineEdit;
 
 /*
@@ -52,10 +52,10 @@ public:
   enum { UNION, INTERSECT, CUT };
     
 public:
-                            SMESHGUI_GroupOpDlg( QWidget*, SALOME_Selection*, const int );
+                            SMESHGUI_GroupOpDlg( QWidget*, SalomeApp_SelectionMgr*, const int );
   virtual                   ~SMESHGUI_GroupOpDlg();
 
-  void                      Init( SALOME_Selection* ) ;
+  void                      Init( SalomeApp_SelectionMgr* ) ;
   
 private:
 
@@ -91,7 +91,7 @@ private:
   QPushButton*              myBtn1;
   QPushButton*              myBtn2;
   
-  SALOME_Selection*         mySelection;
+  SalomeApp_SelectionMgr*   mySelectionMgr;
   int                       myMode;
   
   QLineEdit*                myFocusWg;
@@ -102,8 +102,3 @@ private:
 };
 
 #endif
-
-
-
-
-

@@ -35,15 +35,20 @@
 class QGroupBox;
 class QLabel;
 class QPushButton;
-class SALOME_Selection;
 class QWidgetStack;
+
+class SalomeApp_SelectionMgr;
+class SMESHGUI;
 
 class SMESHGUI_MeshInfosDlg : public QDialog
 { 
     Q_OBJECT
 
 public:
-    SMESHGUI_MeshInfosDlg( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_MeshInfosDlg( SMESHGUI* theModule, 
+			   const char* name = 0, 
+			   bool modal = FALSE, 
+			   WFlags fl = 0 );
     ~SMESHGUI_MeshInfosDlg();
 
 protected:
@@ -58,10 +63,11 @@ private slots:
     void onStartSelection();
 
 private:
-    SALOME_Selection*     mySelection; 
-    bool                  myStartSelection;
-    bool                  myIsActiveWindow;
-    
+    SMESHGUI*               mySMESHGUI;
+    SalomeApp_SelectionMgr* mySelectionMgr; 
+    bool                    myStartSelection;
+    bool                    myIsActiveWindow;
+
     QPushButton*  mySelectBtn;
     QLabel*       mySelectLab;
 
@@ -75,13 +81,15 @@ private:
     QLabel*       myMeshNbFaces;
     QLabel*       myMeshNbTriangles;
     QLabel*       myMeshNbQuadrangles;
+    QLabel*       myMeshNbPolygones;
     QGroupBox*    myMeshVolumesGroup;
     QLabel*       myMeshNbVolumes;
     QLabel*       myMeshNbTetra;
     QLabel*       myMeshNbHexa;
     QLabel*       myMeshNbPyra;
     QLabel*       myMeshNbPrism;
-    
+    QLabel*       myMeshNbPolyhedrones;
+
     QWidget*      mySubMeshWidget;
     QLabel*       mySubMeshName;
     QLabel*       mySubMeshNbNodes;

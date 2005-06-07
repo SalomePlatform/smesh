@@ -11,7 +11,7 @@
 //  This library is distributed in the hope that it will be useful, 
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of 
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
+//  Lesser General Public License for more details.
 // 
 //  You should have received a copy of the GNU Lesser General Public 
 //  License along with this library; if not, write to the Free Software 
@@ -30,71 +30,96 @@
 #define SMESHGUI_HeaderFile
 
 // SALOME Includes
-#include "SALOMEGUI.h"
-#include "SALOME_InteractiveObject.hxx"
+#include <SalomeApp_Module.h>
+#include <SALOME_InteractiveObject.hxx>
 
-class QAD_Desktop;
-class QAD_Study;
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 
 class QDialog;
+
+class SUIT_Desktop;
+class SUIT_Study;
+class SUIT_ViewWindow;
+class SUIT_ResourceMgr;
+class SUIT_ViewManager;
+
+class SalomeApp_Study;
+class SalomeApp_SelectionMgr;
 
 
 //=================================================================================
 // class    : SMESHGUI
 // purpose  :
 //=================================================================================
-class SMESHGUI : public SALOMEGUI
+class SMESHGUI : public SalomeApp_Module
 {
   Q_OBJECT;
 
-private :
-  QAD_Desktop* myDesktop;
-  QAD_Study* myActiveStudy;
-  QDialog* myActiveDialogBox;
-
-  int myState;
-  bool myAutomaticUpdate;
-
 public :
-  SMESHGUI( const QString& name = "", QObject* parent = 0 );
-  static SMESHGUI*    GetSMESHGUI() ;
+  SMESHGUI();
   ~SMESHGUI();
 
-  QAD_Desktop*        GetDesktop() ;
-  QAD_Study*          GetActiveStudy() ;
-  bool                ActiveStudyLocked();
+  static SMESH::SMESH_Gen_var     GetSMESHGen();
+  static SMESHGUI*                GetSMESHGUI();
+  static SalomeApp_SelectionMgr*  selectionMgr();
+  static SUIT_ResourceMgr*        resourceMgr();
+  static SUIT_Desktop*            desktop() ;
+  static SalomeApp_Study*         activeStudy();
+  bool                            isActiveStudyLocked();
 
-  QDialog*            GetActiveDialogBox() ;               
-  void                SetActiveDialogBox(QDialog* aDlg) ;  
+  virtual QString     engineIOR() const;
+  virtual void        initialize( CAM_Application* );
+  virtual void        windows( QMap<int, int>& ) const;
+  virtual void        viewManagers( QStringList& ) const;
 
-  void                ResetState() ;                       
+  QDialog*            GetActiveDialogBox() ;
+  void                SetActiveDialogBox(QDialog* aDlg) ;
+
+  void                ResetState() ;
   void                SetState(int aState) ;
   bool                DefineDlgPosition(QWidget* aDlg, int& x, int& y) ;
 
-  virtual bool OnGUIEvent        (int theCommandID, QAD_Desktop* parent);
-  virtual bool OnMousePress      (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
-  virtual bool OnMouseMove       (QMouseEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
-  virtual bool OnKeyPress        (QKeyEvent* pe, QAD_Desktop* parent, QAD_StudyFrame* studyFrame);
-  virtual bool ActiveStudyChanged( QAD_Desktop* parent );
-  virtual bool SetSettings       ( QAD_Desktop* parent );
-  virtual void DefinePopup       ( QString & theContext, QString & theParent, QString & theObject );
-  virtual bool CustomPopup       ( QAD_Desktop* parent, QPopupMenu* popup, const QString & theContext,
-                                   const QString & theParent, const QString & theObject );
-  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)& theIO,
-                                   QAD_ViewFrame* = 0 );
-  virtual void SupportedViewType (int* buffer, int bufferSize);
-  virtual void Deactivate        ();
+  virtual bool OnGUIEvent        ( int id );
+  virtual bool OnMousePress      ( QMouseEvent*, SUIT_ViewWindow* );
+  virtual bool OnMouseMove       ( QMouseEvent*, SUIT_ViewWindow* );
+  virtual bool OnKeyPress        ( QKeyEvent*, SUIT_ViewWindow* );
 
-  /* Non modal dialog boxes magement */
+  virtual void contextMenuPopup( const QString&, QPopupMenu*, QString& );
+
+  virtual bool SetSettings       ( SUIT_Desktop* );
+  virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
+                                   SUIT_ViewWindow* = 0 );
+
+  /* Non modal dialog boxes management */
   void EmitSignalDeactivateDialog() ;
   void EmitSignalStudyFrameChanged() ;
   void EmitSignalCloseAllDialogs() ;
+
+public slots:
+  virtual void                deactivateModule( SUIT_Study* );
+  virtual void                activateModule( SUIT_Study* );
+
+private slots:
+  void OnGUIEvent();
 
 signals:
   void SignalDeactivateActiveDialog() ;
   void SignalStudyFrameChanged() ;
   void SignalCloseAllDialogs() ;
 
+protected:
+  void createSMESHAction( const int, const QString&, const QString& = QString(""),
+                          const int = 0, const bool = false );
+  void createPopupItem( const int, const QString&, const QString&,
+                        const QString& = QString::null, const int = -1 );
+
+private :
+  static SMESH::SMESH_Gen_var      myComponentSMESH;
+  QDialog*                         myActiveDialogBox;
+  int                              myState;
+  bool                             myAutomaticUpdate;
+  QMap<int,QString>                myRules;
 };
 
 

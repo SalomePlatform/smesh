@@ -35,7 +35,7 @@
 class QLabel;
 class QPushButton;
 class QSlider;
-class SALOME_Selection;
+class SalomeApp_SelectionMgr;
 
 //=================================================================================
 // class    : SMESHGUI_TransparencyDlg
@@ -55,7 +55,7 @@ public:
 
 private :
 
-    SALOME_Selection* mySelection;
+    SalomeApp_SelectionMgr* mySelectionMgr;
 
     QPushButton*      buttonOk;
     QLabel*           TextLabelOpaque;
@@ -66,10 +66,9 @@ private :
 public slots:
       
     void ClickOnOk();
-    void ValueHasChanged() ;
+    void ValueHasChanged();
     void SetTransparency();
     void onSelectionChanged();
 };
 
 #endif // DIALOGBOX_TRANSPARENCYDLG_H
-

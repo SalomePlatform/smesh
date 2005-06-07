@@ -29,7 +29,8 @@
 #ifndef DIALOGBOX_ROTATION_H
 #define DIALOGBOX_ROTATION_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
+
 #include "SMESH_LogicalFilter.hxx"
 
 // QT Includes
@@ -47,6 +48,9 @@ class SMESHGUI_SpinBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_SpinBox;
+class SVTK_ViewWindow;
+class SVTK_Selector;
+
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -62,29 +66,33 @@ class SMESHGUI_RotationDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_RotationDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_RotationDlg( SMESHGUI*,
+			  const char* name = 0,
+			  bool modal = FALSE,
+			  WFlags fl = 0);
     ~SMESHGUI_RotationDlg();
 
 private:
-
-    void Init( bool ResetControls = true ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void Init (bool ResetControls = true);
+    void closeEvent (QCloseEvent*);
+    void enterEvent (QEvent*);                          /* mouse enter the QWidget */
+    void hideEvent (QHideEvent*);                       /* ESC key */
     bool IsAxisOk();
-    
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    int                           myNbOkElements ;          /* to check when elements are defined */
+
+    SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    int                           myNbOkElements;          /* to check when elements are defined */
     QString                       myElementsId;
-    
-    QWidget*                      myEditCurrentArgument;    /* Current  LineEdit */
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+
+    QWidget*                      myEditCurrentArgument;   /* Current  LineEdit */
     int myConstructorId;
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
-    
+    SMESH_LogicalFilter*          myMeshOrSubMeshOrGroupFilter;
+
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;
     QGroupBox* GroupButtons;
@@ -118,19 +126,19 @@ private:
     QLabel* TextLabelAngle;
     SMESHGUI_SpinBox* SpinBox_Angle;
     QCheckBox* CheckBoxCopy;
-   
-    private slots:
 
-    void ConstructorsClicked(int constructorId);
+private slots:
+
+    void ConstructorsClicked (int constructorId);
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
-    void SetEditCurrentArgument() ;
-    void SelectionIntoArgument() ;
-    void DeactivateActiveDialog() ;
-    void ActivateThisDialog() ;
-    void onTextChange(const QString&);
-    void onSelectMesh(bool toSelectMesh);
+    void SetEditCurrentArgument();
+    void SelectionIntoArgument();
+    void DeactivateActiveDialog();
+    void ActivateThisDialog();
+    void onTextChange (const QString&);
+    void onSelectMesh (bool toSelectMesh);
     void onVectorChanged();
 
 protected:

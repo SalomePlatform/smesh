@@ -50,7 +50,7 @@ public:
     return *this;
   }
   TVTKSmartPtr& operator=(T* r){ vtkSmartPointer<T>::operator=(r); return *this;}
-  T* Get() const { return GetPointer();}
+  T* Get() const { return this->GetPointer();}
 };
 
 
@@ -147,7 +147,7 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual bool GetPointRepresentation();
 
   virtual float* GetBounds();
-  virtual void SetTransform(SALOME_Transform* theTransform); 
+  virtual void SetTransform(VTKViewer_Transform* theTransform); 
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   virtual vtkDataSet* GetInput();

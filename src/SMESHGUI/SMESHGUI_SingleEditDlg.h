@@ -37,93 +37,97 @@ class QFrame;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class QPushButton;
-class SALOME_Selection;
+
+class SMESHGUI;
 class SMESH_Actor;
+class SVTK_Selector;
+class SVTK_ViewWindow;
+class SalomeApp_SelectionMgr;
 
-/*
-  Class       : SMESHGUI_SingleEditDlg
-  Description : Base class for dialogs of diagonal inversion and 
-                union of two neighboring triangles
-*/
-
+/*!
+ *  Class       : SMESHGUI_SingleEditDlg
+ *  Description : Base class for dialogs of diagonal inversion and 
+ *                union of two neighboring triangles
+ */
 class SMESHGUI_SingleEditDlg : public QDialog
 { 
   Q_OBJECT
 
 public:
-                            SMESHGUI_SingleEditDlg( QWidget*, SALOME_Selection*, const char* = 0 );
-  virtual                   ~SMESHGUI_SingleEditDlg();
+  SMESHGUI_SingleEditDlg(SMESHGUI* theModule, 
+			 const char* theName = 0);
+  virtual ~SMESHGUI_SingleEditDlg();
 
-  void                      Init( SALOME_Selection* ) ;
+  void Init();
 
 protected slots:
+  void                    onOk();
+  virtual bool            onApply();
+  void                    onClose();
 
-  void                      onOk();
-  virtual bool              onApply();
-  void                      onClose();
+  void                    onDeactivate();
 
-  void                      onDeactivate();
-
-  void                      onSelectionDone();
-  void                      onTextChange(const QString&);
+  void                    onSelectionDone();
+  void                    onTextChange (const QString&);
 
 protected:
+  void                    closeEvent (QCloseEvent*);
+  void                    enterEvent (QEvent*);
+  void                    hideEvent (QHideEvent*);                        /* ESC key */
+  QFrame*                 createButtonFrame (QWidget*);
+  QFrame*                 createMainFrame (QWidget*);
+  bool                    isValid (const bool) const;
+  bool                    getNodeIds (const QString&, int&, int&) const;
+  virtual bool            process (SMESH::SMESH_MeshEditor_ptr, const int, const int) = 0;
 
-  void                      closeEvent( QCloseEvent* e ) ;
-  void                      enterEvent ( QEvent * ) ;            
-  void                      hideEvent ( QHideEvent * );                        /* ESC key */
-  QFrame*                   createButtonFrame( QWidget* );
-  QFrame*                   createMainFrame  ( QWidget* );
-  bool                      isValid( const bool ) const;
-  bool                      getNodeIds( const QString&, int&, int& ) const;
-  virtual bool              process( SMESH::SMESH_MeshEditor_ptr, const int, const int ) = 0;
-  
 protected:
+  bool                    myBusy;
+  QPushButton*            myOkBtn;
+  QPushButton*            myApplyBtn;
+  QPushButton*            myCloseBtn;
+  QLineEdit*              myEdge;
+  SMESH_Actor*            myActor;
 
-  bool                      myBusy;
-  QPushButton*              myOkBtn;
-  QPushButton*              myApplyBtn;
-  QPushButton*              myCloseBtn;
-  QLineEdit*                myEdge;
-  SALOME_Selection*         mySelection;
-  SMESH_Actor*              myActor;
-
+  SalomeApp_SelectionMgr* mySelectionMgr;
+  SVTK_ViewWindow*        myViewWindow;
+  SVTK_Selector*          mySelector;
+  SMESHGUI*               mySMESHGUI;
 };
 
-/*
-  Class       : SMESHGUI_TrianglesInversionDlg
-  Description : Inversion of the diagonal of a pseudo-quadrangle formed by 
-                2 neighboring triangles with 1 common edge
-*/
+/*!
+ *  Class       : SMESHGUI_TrianglesInversionDlg
+ *  Description : Inversion of the diagonal of a pseudo-quadrangle formed by 
+ *                2 neighboring triangles with 1 common edge
+ */
 class SMESHGUI_TrianglesInversionDlg : public SMESHGUI_SingleEditDlg
 {
   Q_OBJECT
-  
+
 public:
-                            SMESHGUI_TrianglesInversionDlg( QWidget*, SALOME_Selection*, const char* = 0 );
-  virtual                   ~SMESHGUI_TrianglesInversionDlg();
+  SMESHGUI_TrianglesInversionDlg(SMESHGUI* theModule, 
+				 const char* theName = 0);
+  virtual ~SMESHGUI_TrianglesInversionDlg();
 
 protected:
-
-  virtual bool              process( SMESH::SMESH_MeshEditor_ptr, const int, const int );
+  virtual bool process (SMESH::SMESH_MeshEditor_ptr, const int, const int);
 };
 
-/*
-  Class       : SMESHGUI_UnionOfTwoTrianglesDlg
-  Description : Construction of a quadrangle by deletion of the 
-                common border of 2 neighboring triangles
-*/
+/*!
+ *  Class       : SMESHGUI_UnionOfTwoTrianglesDlg
+ *  Description : Construction of a quadrangle by deletion of the 
+ *                common border of 2 neighboring triangles
+ */
 class SMESHGUI_UnionOfTwoTrianglesDlg : public SMESHGUI_SingleEditDlg
 {
   Q_OBJECT
 
 public:
-                            SMESHGUI_UnionOfTwoTrianglesDlg( QWidget*, SALOME_Selection*, const char* = 0 );
-  virtual                   ~SMESHGUI_UnionOfTwoTrianglesDlg();
+  SMESHGUI_UnionOfTwoTrianglesDlg(SMESHGUI* theModule, 
+				  const char* theName = 0);
+  virtual ~SMESHGUI_UnionOfTwoTrianglesDlg();
 
 protected:
-
-  virtual bool              process( SMESH::SMESH_MeshEditor_ptr, const int, const int );
+  virtual bool process (SMESH::SMESH_MeshEditor_ptr, const int, const int);
 };
 
 #endif

@@ -32,10 +32,14 @@ using namespace std;
 #include "Utils_ORB_INIT.hxx"
 #include "Utils_SINGLETON.hxx"
 
+#include <SMESHGUI.h>
+#include <SMESHGUI_GEOMGenUtils.h>
+
 // SALOME Includes
-#include "QAD_Application.h"
-#include "QAD_Desktop.h"
-#include "QAD_ResourceMgr.h"
+#include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+
+#include "SalomeApp_Application.h"
 
 #include "utilities.h"
 
@@ -69,20 +73,22 @@ SMESH_Swig::SMESH_Swig()
 void SMESH_Swig::Init(int studyID)
 {
   MESSAGE("Init");
-  Engines::Component_var comp = QAD_Application::getDesktop()->getEngine("FactoryServer", "SMESH");
-  SMESH::SMESH_Gen_var CompMesh = SMESH::SMESH_Gen::_narrow(comp);
+  SMESH::SMESH_Gen_var CompMesh = SMESHGUI::GetSMESHGen();
+  GEOM::GEOM_Gen_var CompGeom = SMESH::GetGEOMGen();
 
-  Engines::Component_var comp1 = QAD_Application::getDesktop()->getEngine("FactoryServer", "GEOM");
-  GEOM::GEOM_Gen_var CompGeom = GEOM::GEOM_Gen::_narrow(comp1);
-
-  QAD_ResourceMgr* resMgr = QAD_Desktop::createResourceManager();
+  SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
   if ( resMgr ) {
-    QString msg;
+    resMgr->loadLanguage( QString::null, "en" );
+    /*QString msg;
     if (!resMgr->loadResources( "SMESH", msg ))
-      MESSAGE ( msg )
+      MESSAGE ( msg )*/
   }
 
-  CORBA::Object_var obj = QAD_Application::getDesktop()->getNameService()->Resolve("/myStudyManager");
+  SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+  if( !app )
+    return;
+
+  CORBA::Object_var obj = app->namingService()->Resolve("/myStudyManager");
   SALOMEDS::StudyManager_var myStudyMgr = SALOMEDS::StudyManager::_narrow(obj);
   myStudy = myStudyMgr->GetStudyByID(studyID);
 
@@ -95,7 +101,7 @@ void SMESH_Swig::Init(int studyID)
 
   // See return value of SMESH::SMESH_Gen::ComponentDataType()
   SALOMEDS::SComponent_var father = myStudy->FindComponent("SMESH");
-  
+
   if (father->_is_nil()) {
     bool aLocked = myStudy->GetProperties()->IsLocked();
     if (aLocked) myStudy->GetProperties()->SetLocked(false);
@@ -103,7 +109,7 @@ void SMESH_Swig::Init(int studyID)
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
     //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
-    aName->SetValue( QAD_Application::getDesktop()->getComponentUserName( "SMESH" ) );
+    aName->SetValue( SMESHGUI::GetSMESHGUI()->moduleName() );
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );

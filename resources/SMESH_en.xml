@@ -97,8 +97,10 @@
      <popup-item item-id="401" pos-id="" label-id="Edge" icon-id="mesh_line.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="4021" pos-id="" label-id="Triangle" icon-id="mesh_triangle.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="4022" pos-id="" label-id="Quadrangle" icon-id="mesh_quad.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="4023" pos-id="" label-id="Polygon" icon-id="mesh_polygon.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="4031" pos-id="" label-id="Tetrahedron" icon-id="mesh_tetra.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="4032" pos-id="" label-id="Hexahedron" icon-id="mesh_hexa.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="4033" pos-id="" label-id="Polyhedron" icon-id="mesh_polyhedron.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      </submenu>
      <endsubmenu />
      <submenu label-id="Remove" item-id="403" pos-id="">
@@ -440,8 +442,10 @@
      <toolbutton-item item-id="401" label-id="Edge" icon-id="mesh_line.png" tooltip-id="Add Edge" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="4021" label-id="Triangle" icon-id="mesh_triangle.png" tooltip-id="Add Triangle" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="4022" label-id="Quadrangle" icon-id="mesh_quad.png" tooltip-id="Add Quadrangle" accel-id="" toggle-id="" execute-action=""/>
+     <toolbutton-item item-id="4023" label-id="Polygon" icon-id="mesh_polygon.png" tooltip-id="Add Polygon" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="4031" label-id="Tetrahedron" icon-id="mesh_tetra.png" tooltip-id="Add Tetrahedron" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="4032" label-id="Hexahedron" icon-id="mesh_hexa.png" tooltip-id="Add Hexahedron" accel-id="" toggle-id="" execute-action=""/>
+     <toolbutton-item item-id="4033" label-id="Polyhedron" icon-id="mesh_polyhedron.png" tooltip-id="Add Polyhedron" accel-id="" toggle-id="" execute-action=""/>
    <separatorTB/>
      <toolbutton-item item-id="4041" label-id="Nodes" icon-id="mesh_rem_node.png" tooltip-id="Remove Nodes" accel-id="" toggle-id="" execute-action=""/>
      <toolbutton-item item-id="4042" label-id="Elements" icon-id="mesh_rem_element.png" tooltip-id="Remove Elements" accel-id="" toggle-id="" execute-action=""/>

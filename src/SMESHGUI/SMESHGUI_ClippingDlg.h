@@ -45,18 +45,22 @@ class QPushButton;
 class QTable;
 class QCheckBox;
 class QComboBox;
-class SALOME_Selection;
+
+class SalomeApp_SelectionMgr;
+class SVTK_Selector;
+
+class SMESHGUI;
 class SMESH_Actor;
 
 class OrientedPlane;
 
 
-namespace SMESH{
-  
+namespace SMESH {
+
   typedef vtkSmartPointer<OrientedPlane> TVTKPlane;
   typedef std::vector<TVTKPlane> TPlanes;
   enum Orientation {XY, YZ, ZX};
-  
+
 };
 
 
@@ -65,30 +69,32 @@ namespace SMESH{
 // purpose  :
 //=================================================================================
 class SMESHGUI_ClippingDlg : public QDialog
-{ 
+{
     Q_OBJECT
 
 public:
-    SMESHGUI_ClippingDlg( QWidget* parent = 0,
+    SMESHGUI_ClippingDlg (SMESHGUI* theModule,
 			  const char* name = 0,
 			  bool modal = false,
-			  WFlags fl = 0 );
+			  WFlags fl = 0);
 
-    float  getDistance()  {return  (float)SpinBoxDistance->GetValue();}
-    void   setDistance( const float theDistance) {SpinBoxDistance->SetValue(theDistance);}
-    double getRotation1() {return SpinBoxRot1->GetValue();}
-    double getRotation2() {return SpinBoxRot2->GetValue();}
-    void   setRotation( const double theRot1, const double theRot2 );
-    void Sinchronize();
-    
+    float  getDistance()  { return  (float)SpinBoxDistance->GetValue(); }
+    void   setDistance (const float theDistance) { SpinBoxDistance->SetValue(theDistance); }
+    double getRotation1() { return SpinBoxRot1->GetValue(); }
+    double getRotation2() { return SpinBoxRot2->GetValue(); }
+    void   setRotation (const double theRot1, const double theRot2);
+    void   Sinchronize();
+
     ~SMESHGUI_ClippingDlg();
 
 private:
 
-    SALOME_Selection* mySelection;
-    SMESH_Actor*      myActor;
-    SMESH::TPlanes    myPlanes;
-    
+    SalomeApp_SelectionMgr* mySelectionMgr;
+    SVTK_Selector*          mySelector;
+    SMESHGUI*               mySMESHGUI;
+    SMESH_Actor*            myActor;
+    SMESH::TPlanes          myPlanes;
+
     QComboBox*        ComboBoxPlanes;
     QPushButton*      buttonNew;
     QPushButton*      buttonDelete;
@@ -107,20 +113,19 @@ private:
     QPushButton*      buttonApply;
 
     bool myIsSelectPlane;
-    
+
 public slots:
-    
-    void onSelectPlane(int theIndex);
+
+    void onSelectPlane (int theIndex);
     void ClickOnNew();
     void ClickOnDelete();
-    void onSelectOrientation(int theItem);
+    void onSelectOrientation (int theItem);
     void SetCurrentPlaneParam();
     void onSelectionChanged();
-    void OnPreviewToggle(bool theIsToggled);
+    void OnPreviewToggle (bool theIsToggled);
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
 };
 
 #endif // DIALOGBOX_TRANSPARENCYDLG_H
-

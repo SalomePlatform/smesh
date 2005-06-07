@@ -29,6 +29,8 @@
 #include "SMDS_VolumeOfFaces.hxx"
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_FaceOfEdges.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_PolygonalFaceOfNodes.hxx"
 
 #include <algorithm>
 #include <map>
@@ -787,6 +789,126 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshFace * f1,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Add a polygon defined by its nodes IDs
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID (std::vector<int> nodes_ids,
+                                                  const int        ID)
+{
+  int nbNodes = nodes_ids.size();
+  std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+  for (int i = 0; i < nbNodes; i++) {
+    nodes[i] = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nodes_ids[i]);
+    if (!nodes[i]) return NULL;
+  }
+  return SMDS_Mesh::AddPolygonalFaceWithID(nodes, ID);	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a polygon defined by its nodes
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddPolygonalFaceWithID
+                          (std::vector<const SMDS_MeshNode*> nodes,
+                           const int                         ID)
+{
+  SMDS_MeshFace * face;
+
+  if (hasConstructionEdges())
+  {
+    MESSAGE("Error : Not implemented");
+    return NULL;
+  }
+  else
+  {
+    face = new SMDS_PolygonalFaceOfNodes(nodes);
+    myFaces.Add(face);
+  }
+
+  if (!registerElement(ID, face)) {
+    RemoveElement(face, false);
+    face = NULL;
+  }
+  return face;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Add a polygon defined by its nodes.
+/// An ID is automatically affected to the created face.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshFace* SMDS_Mesh::AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes)
+{
+  return SMDS_Mesh::AddPolygonalFaceWithID(nodes, myElementIDFactory->GetFreeID());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new polyhedral volume and add it to the mesh. 
+/// @param ID The ID of the new volume
+/// @return The created volume or NULL if an element with this ID already exists
+/// or if input nodes are not found.
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume * SMDS_Mesh::AddPolyhedralVolumeWithID
+                             (std::vector<int> nodes_ids,
+                              std::vector<int> quantities,
+                              const int        ID)
+{
+  int nbNodes = nodes_ids.size();
+  std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+  for (int i = 0; i < nbNodes; i++) {
+    nodes[i] = (SMDS_MeshNode *)myNodeIDFactory->MeshElement(nodes_ids[i]);
+    if (!nodes[i]) return NULL;
+  }
+  return SMDS_Mesh::AddPolyhedralVolumeWithID(nodes, quantities, ID);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new polyhedral volume and add it to the mesh. 
+/// @param ID The ID of the new volume
+/// @return The created  volume
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolumeWithID
+                            (std::vector<const SMDS_MeshNode*> nodes,
+                             std::vector<int>                  quantities,
+                             const int                         ID)
+{
+  SMDS_MeshVolume* volume;
+  if (hasConstructionFaces()) {
+    MESSAGE("Error : Not implemented");
+    return NULL;
+  } else if (hasConstructionEdges()) {
+    MESSAGE("Error : Not implemented");
+    return NULL;
+  } else {
+    volume = new SMDS_PolyhedralVolumeOfNodes(nodes, quantities);
+    myVolumes.Add(volume);
+  }
+
+  if (!registerElement(ID, volume)) {
+    RemoveElement(volume, false);
+    volume = NULL;
+  }
+  return volume;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Create a new polyhedral volume and add it to the mesh. 
+/// @return The created  volume
+///////////////////////////////////////////////////////////////////////////////
+
+SMDS_MeshVolume* SMDS_Mesh::AddPolyhedralVolume
+                            (std::vector<const SMDS_MeshNode*> nodes,
+                             std::vector<int>                  quantities)
+{
+  int ID = myElementIDFactory->GetFreeID();
+  SMDS_MeshVolume * v = SMDS_Mesh::AddPolyhedralVolumeWithID(nodes, quantities, ID);
+  if (v == NULL) myElementIDFactory->ReleaseID(ID);
+  return v;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// Registers element with the given ID, maintains inverse connections
 ///////////////////////////////////////////////////////////////////////////////
 bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement * element)
@@ -966,10 +1088,25 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
   }
   case SMDSAbs_Face: {
     const SMDS_FaceOfNodes* face = dynamic_cast<const SMDS_FaceOfNodes*>( elem );
-    if ( face )
+    if ( face ) {
       Ok = const_cast<SMDS_FaceOfNodes*>( face )->ChangeNodes( nodes, nbnodes );
+    } else {
+      /// ??? begin
+      const SMDS_PolygonalFaceOfNodes* face = dynamic_cast<const SMDS_PolygonalFaceOfNodes*>(elem);
+      if (face) {
+        Ok = const_cast<SMDS_PolygonalFaceOfNodes*>(face)->ChangeNodes(nodes, nbnodes);
+      }
+      /// ??? end
+    }
     break;
   }
+  //case SMDSAbs_PolygonalFace: {
+  //  const SMDS_PolygonalFaceOfNodes* face = dynamic_cast<const SMDS_PolygonalFaceOfNodes*>(elem);
+  //  if (face) {
+  //    Ok = const_cast<SMDS_PolygonalFaceOfNodes*>(face)->ChangeNodes(nodes, nbnodes);
+  //  }
+  //  break;
+  //}
   case SMDSAbs_Volume: {
     const SMDS_VolumeOfNodes* vol = dynamic_cast<const SMDS_VolumeOfNodes*>( elem );
     if ( vol )
@@ -1003,6 +1140,62 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
   }
 
   //MESSAGE ( "::ChangeNodes() Ok = " << Ok);
+
+  return Ok;
+}
+
+//=======================================================================
+//function : ChangePolyhedronNodes
+//purpose  : to change nodes of polyhedral volume
+//=======================================================================
+bool SMDS_Mesh::ChangePolyhedronNodes (const SMDS_MeshElement * elem,
+                                       std::vector<const SMDS_MeshNode*> nodes,
+                                       std::vector<int>                  quantities)
+{
+  if (elem->GetType() != SMDSAbs_Volume) {
+    MESSAGE("WRONG ELEM TYPE");
+    return false;
+  }
+
+  const SMDS_PolyhedralVolumeOfNodes* vol = dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>(elem);
+  if (!vol) {
+    return false;
+  }
+
+  // keep current nodes of elem
+  set<const SMDS_MeshElement*> oldNodes;
+  SMDS_ElemIteratorPtr itn = elem->nodesIterator();
+  while (itn->more()) {
+    oldNodes.insert(itn->next());
+  }
+
+  // change nodes
+  bool Ok = const_cast<SMDS_PolyhedralVolumeOfNodes*>(vol)->ChangeNodes(nodes, quantities);
+  if (!Ok) {
+    return false;
+  }
+
+  // update InverseElements
+
+  // AddInverseElement to new nodes
+  int nbnodes = nodes.size();
+  for (int i = 0; i < nbnodes; i++) {
+    if (oldNodes.find(nodes[i]) == oldNodes.end()) {
+      // new node
+      const_cast<SMDS_MeshNode*>(nodes[i])->AddInverseElement(elem);
+    } else {
+      // remove from oldNodes a node that remains in elem
+      oldNodes.erase(nodes[i]);
+    }
+  }
+
+  // RemoveInverseElement from the nodes removed from elem
+  set<const SMDS_MeshElement*>::iterator it;
+  for (it = oldNodes.begin(); it != oldNodes.end(); it++) {
+    SMDS_MeshNode * n = static_cast<SMDS_MeshNode *>
+      (const_cast<SMDS_MeshElement *>( *it ));
+    n->RemoveInverseElement(elem);
+  }
 
   return Ok;
 }
@@ -1190,6 +1383,55 @@ SMDS_MeshFace* SMDS_Mesh::FindFaceOrCreate(
 const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 {
 	return myElementIDFactory->MeshElement(IDelem);
+}
+
+//=======================================================================
+//function : FindFace
+//purpose  : find polygon
+//=======================================================================
+
+const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<int> nodes_ids) const
+{
+  int nbnodes = nodes_ids.size();
+  std::vector<const SMDS_MeshNode *> poly_nodes (nbnodes);
+  for (int inode = 0; inode < nbnodes; inode++) {
+    const SMDS_MeshNode * node = FindNode(nodes_ids[inode]);
+    if (node == NULL) return NULL;
+  }
+  return FindFace(poly_nodes);
+}
+
+const SMDS_MeshFace* SMDS_Mesh::FindFace (std::vector<const SMDS_MeshNode *> nodes)
+{
+  int nbNodes = nodes.size();
+  if (nbNodes < 1) return NULL;
+
+  bool isFound = true;
+  const SMDS_MeshFace * face;
+  set<const SMDS_MeshFace *> faces;
+
+  for (int inode = 0; inode < nbNodes && isFound; inode++) {
+    set<const SMDS_MeshFace *> new_faces;
+
+    SMDS_ElemIteratorPtr itF = nodes[inode]->facesIterator();
+    while (itF->more()) {
+      face = static_cast<const SMDS_MeshFace *>(itF->next());
+      if (face->NbNodes() == nbNodes) {
+        if (inode == 0 || faces.find(face) != faces.end()) {
+          new_faces.insert(face);
+        }
+      }
+    }
+    faces = new_faces;
+    if (new_faces.size() == 0) {
+      isFound = false;
+    }
+  }
+
+  if (isFound)
+    return face;
+
+  return NULL;
 }
 
 //=======================================================================
@@ -1743,7 +1985,8 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
   // get finite elements built on elem
   set<const SMDS_MeshElement*> * s1;
   if (!hasConstructionEdges() && elem->GetType() == SMDSAbs_Edge ||
-      !hasConstructionFaces() && elem->GetType() == SMDSAbs_Face)
+      !hasConstructionFaces() && elem->GetType() == SMDSAbs_Face ||
+      elem->GetType() == SMDSAbs_Volume)
   {
     s1 = new set<const SMDS_MeshElement*>();
     s1->insert(elem);
@@ -1936,4 +2179,3 @@ void SMDS_Mesh::Renumber (const bool isNodes, const int  startID, const int  del
     ID += deltaID;
   }
 }
-

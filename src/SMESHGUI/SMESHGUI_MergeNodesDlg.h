@@ -29,8 +29,9 @@
 #ifndef DIALOGBOX_MERGENODES_H
 #define DIALOGBOX_MERGENODES_H
 
-#include "SALOME_Selection.h"
-#include "SMESH_TypeFilter.hxx"
+#include "SalomeApp_SelectionMgr.h"
+//#include "SMESH_TypeFilter.hxx"
+#include "SUIT_SelectionFilter.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -49,6 +50,9 @@ class QListBox;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
+class SVTK_ViewWindow;
+class SVTK_Selector;
+
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -64,26 +68,31 @@ class SMESHGUI_MergeNodesDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_MergeNodesDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_MergeNodesDlg( SMESHGUI*,
+			    const char* name = 0,
+			    bool modal = FALSE,
+			    WFlags fl = 0);
     ~SMESHGUI_MergeNodesDlg();
 
 private:
-
-    void Init() ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
+    void Init();
+    void closeEvent( QCloseEvent* e );
+    void enterEvent ( QEvent * );                           /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
     void onEditNodesGroup();
-    
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-        
+
+    SMESHGUI*                     mySMESHGUI;               /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;           /* User shape selection */
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+
     QWidget*                      myEditCurrentArgument;
 
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
- 
+    //Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
+    SUIT_SelectionFilter*         myMeshOrSubMeshFilter;
+
     QButtonGroup*     GroupConstructors;
     QRadioButton*     RadioButton1;
     QGroupBox*        GroupButtons;

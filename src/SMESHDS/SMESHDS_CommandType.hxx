@@ -34,14 +34,17 @@ enum SMESHDS_CommandType {
  SMESHDS_AddEdge,
  SMESHDS_AddTriangle,
  SMESHDS_AddQuadrangle,
+ SMESHDS_AddPolygon,
  SMESHDS_AddTetrahedron,
  SMESHDS_AddPyramid,
  SMESHDS_AddPrism,
  SMESHDS_AddHexahedron,
+ SMESHDS_AddPolyhedron,
  SMESHDS_RemoveNode,
  SMESHDS_RemoveElement,
  SMESHDS_MoveNode,
  SMESHDS_ChangeElementNodes,
+ SMESHDS_ChangePolyhedronNodes,
  SMESHDS_Renumber
 };
 

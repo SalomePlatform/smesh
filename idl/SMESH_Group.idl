@@ -33,6 +33,8 @@
 
 module SMESH
 {
+  interface Predicate;
+
   /*!
    * SMESH_Group: base interface of group object
    */
@@ -98,11 +100,13 @@ module SMESH
      * Adds elements to the group
      */
     long Add( in long_array elem_ids );
+    long AddByPredicate( in Predicate thePredicate );
 
     /*!
      * Removes elements from the group
      */
     long Remove( in long_array elem_ids );
+    long RemoveByPredicate( in Predicate thePredicate );
 
   };
   /*!

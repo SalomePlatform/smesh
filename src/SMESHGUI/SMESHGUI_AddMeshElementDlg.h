@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_ADD_FACE_H
 #define DIALOGBOX_ADD_FACE_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
 
 #include "SMDSAbs_ElementType.hxx"
 
@@ -51,6 +51,8 @@ class QCheckBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMDS_Mesh;
+class SVTK_ViewWindow;
+class SVTK_Selector;
 
 namespace SMESH{
   struct TElementSimulation;
@@ -69,33 +71,35 @@ class SMESHGUI_AddMeshElementDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_AddMeshElementDlg( QWidget* parent = 0, const char* name = 0,
-			        SALOME_Selection* Sel = 0, 
+    SMESHGUI_AddMeshElementDlg( SMESHGUI*,
+			        const char* = 0, 
                                 SMDSAbs_ElementType ElementType = SMDSAbs_Edge,
 			        int nbNodes = 2, bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_AddMeshElementDlg();
 
 private:
-
-    void Init( SALOME_Selection* Sel ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void hideEvent ( QHideEvent * );                 /* ESC key */
-    void enterEvent ( QEvent * ) ;                   /* mouse enter the QWidget */
+    void Init ();
+    void closeEvent (QCloseEvent*);
+    void hideEvent (QHideEvent*);                 /* ESC key */
+    void enterEvent (QEvent*);                    /* mouse enter the QWidget */
     void displaySimulation();
 
-    SMESHGUI*              mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*      mySelection ;             /* User shape selection */
-    bool                   myOkNodes ;               /* to check when arguments is defined */
-    bool                   myBusy;
+    SMESHGUI*                   mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*     mySelectionMgr;          /* User shape selection */
+    int                         myNbOkNodes;               /* to check when arguments is defined */
+    bool                        myBusy;
+    SVTK_ViewWindow*            myViewWindow;
+    SVTK_Selector*              mySelector;
 
-    QLineEdit*             myEditCurrentArgument;    /* Current  LineEdit */
+    QLineEdit*                  myEditCurrentArgument;   /* Current  LineEdit */
 
-    int                             myElementType ;
-    int                             myNbNodes;
+    int                         myElementType;
+    int                         myNbNodes;
+    bool                        myIsPoly;
 
-    SMESH::SMESH_Mesh_var           myMesh;
-    SMESH_Actor*                    myActor;
-    SMESH::TElementSimulation*      mySimulation;
+    SMESH::SMESH_Mesh_var       myMesh;
+    SMESH_Actor*                myActor;
+    SMESH::TElementSimulation*  mySimulation;
     
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;

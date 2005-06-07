@@ -11,6 +11,10 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+
+#include "utilities.h"
+
 #include <map>
 #include <float.h>
 #include <math.h>
@@ -200,19 +204,36 @@ double XYZ::Magnitude() {
 
 SMDS_VolumeTool::SMDS_VolumeTool ()
      : myVolume( 0 ),
+       myPolyedre( 0 ),
        myVolForward( true ),
        myNbFaces( 0 ),
        myVolumeNbNodes( 0 ),
-       myExternalFaces( false )
+       myVolumeNodes( NULL ),
+       myExternalFaces( false ),
+       myFaceNbNodes( 0 ),
+       myCurFace( -1 ),
+       myFaceNodeIndices( NULL ),
+       myFaceNodes( NULL )
 {
 }
+
 //=======================================================================
 //function : SMDS_VolumeTool
 //purpose  : 
 //=======================================================================
 
 SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume)
-     : myExternalFaces( false )
+     : myVolume( 0 ),
+       myPolyedre( 0 ),
+       myVolForward( true ),
+       myNbFaces( 0 ),
+       myVolumeNbNodes( 0 ),
+       myVolumeNodes( NULL ),
+       myExternalFaces( false ),
+       myFaceNbNodes( 0 ),
+       myCurFace( -1 ),
+       myFaceNodeIndices( NULL ),
+       myFaceNodes( NULL )
 {
   Set( theVolume );
 }
@@ -224,6 +245,14 @@ SMDS_VolumeTool::SMDS_VolumeTool (const SMDS_MeshElement* theVolume)
 
 SMDS_VolumeTool::~SMDS_VolumeTool()
 {
+  if (myVolumeNodes != NULL) {
+    delete [] myVolumeNodes;
+    myVolumeNodes = NULL;
+  }
+  if (myFaceNodes != NULL) {
+    delete [] myFaceNodes;
+    myFaceNodes = NULL;
+  }
 }
 
 //=======================================================================
@@ -234,58 +263,75 @@ SMDS_VolumeTool::~SMDS_VolumeTool()
 bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
 {
   myVolume = 0;
+  myPolyedre = 0;
+
   myVolForward = true;
-  myCurFace = -1;
-  myVolumeNbNodes = 0;
   myNbFaces = 0;
+  myVolumeNbNodes = 0;
+  if (myVolumeNodes != NULL) {
+    delete [] myVolumeNodes;
+    myVolumeNodes = NULL;
+  }
+
+  myExternalFaces = false;
+  myFaceNbNodes = 0;
+
+  myCurFace = -1;
+  myFaceNodeIndices = NULL;
+  if (myFaceNodes != NULL) {
+    delete [] myFaceNodes;
+    myFaceNodes = NULL;
+  }
+
   if ( theVolume && theVolume->GetType() == SMDSAbs_Volume )
   {
+    myVolume = theVolume;
+
+    myNbFaces = theVolume->NbFaces();
     myVolumeNbNodes = theVolume->NbNodes();
-    switch ( myVolumeNbNodes ) {
-    case 4:
-    case 5:
-    case 6:
-    case 8:
-      {
-      myVolume = theVolume;
-      myNbFaces = theVolume->NbFaces();
 
-      // set volume nodes
-      int iNode = 0;
-      SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
-      while ( nodeIt->more() )
-        myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-
-      // nb nodes in each face
-      if ( myVolumeNbNodes == 4 )
-        myFaceNbNodes = Tetra_nbN;
-      else if ( myVolumeNbNodes == 5 )
-        myFaceNbNodes = Pyramid_nbN;
-      else if ( myVolumeNbNodes == 6 )
-        myFaceNbNodes = Penta_nbN;
-      else
-        myFaceNbNodes = Hexa_nbN;
-
-      // define volume orientation
-      XYZ botNormal;
-      GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
-      const SMDS_MeshNode* topNode = myVolumeNodes[ myVolumeNbNodes - 1 ];
-      const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
-      XYZ upDir (topNode->X() - botNode->X(),
-                 topNode->Y() - botNode->Y(),
-                 topNode->Z() - botNode->Z() );
-      myVolForward = ( botNormal.Dot( upDir ) < 0 );
-      break;
+    // set volume nodes
+    int iNode = 0;
+    myVolumeNodes = new const SMDS_MeshNode* [myVolumeNbNodes];
+    SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
+    while ( nodeIt->more() ) {
+      myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
     }
-    default: myVolume = 0;
+
+    if (myVolume->IsPoly()) {
+      myPolyedre = static_cast<const SMDS_PolyhedralVolumeOfNodes*>( myVolume );
+      if (!myPolyedre) {
+        MESSAGE("Warning: bad volumic element");
+        return false;
+      }
+    } else {
+      switch ( myVolumeNbNodes ) {
+      case 4:
+      case 5:
+      case 6:
+      case 8: {
+        // define volume orientation
+        XYZ botNormal;
+        GetFaceNormal( 0, botNormal.x, botNormal.y, botNormal.z );
+        const SMDS_MeshNode* topNode = myVolumeNodes[ myVolumeNbNodes - 1 ];
+        const SMDS_MeshNode* botNode = myVolumeNodes[ 0 ];
+        XYZ upDir (topNode->X() - botNode->X(),
+                   topNode->Y() - botNode->Y(),
+                   topNode->Z() - botNode->Z() );
+        myVolForward = ( botNormal.Dot( upDir ) < 0 );
+        break;
+      }
+      default:
+        break;
+      }
     }
   }
   return ( myVolume != 0 );
 }
 
 //=======================================================================
-//function : GetInverseNodes
-//purpose  : Return nodes vector of an inverse volume
+//function : Inverse
+//purpose  : Inverse volume
 //=======================================================================
 
 #define SWAP_NODES(nodes,i1,i2)           \
@@ -297,6 +343,11 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume)
 void SMDS_VolumeTool::Inverse ()
 {
   if ( !myVolume ) return;
+
+  if (myVolume->IsPoly()) {
+    MESSAGE("Warning: attempt to inverse polyhedral volume");
+    return;
+  }
 
   myVolForward = !myVolForward;
   myCurFace = -1;
@@ -372,9 +423,9 @@ void SMDS_VolumeTool::SetExternalNormal ()
 
 int SMDS_VolumeTool::NbFaceNodes( int faceIndex )
 {
-  if ( !setFace( faceIndex ))
-    return 0;
-  return myFaceNbNodes[ faceIndex ];
+    if ( !setFace( faceIndex ))
+      return 0;
+    return myFaceNbNodes;
 }
 
 //=======================================================================
@@ -402,6 +453,10 @@ const SMDS_MeshNode** SMDS_VolumeTool::GetFaceNodes( int faceIndex )
 
 const int* SMDS_VolumeTool::GetFaceNodesIndices( int faceIndex )
 {
+  if (myVolume->IsPoly()) {
+    MESSAGE("Warning: attempt to obtain FaceNodesIndices of polyhedral volume");
+    return NULL;
+  }
   if ( !setFace( faceIndex ))
     return 0;
   return myFaceNodeIndices;
@@ -419,10 +474,10 @@ bool SMDS_VolumeTool::GetFaceNodes (int                        faceIndex,
     return false;
 
   theFaceNodes.clear();
-  int iNode, nbNode = myFaceNbNodes[ faceIndex ];
+  int iNode, nbNode = myFaceNbNodes;
   for ( iNode = 0; iNode < nbNode; iNode++ )
     theFaceNodes.insert( myFaceNodes[ iNode ]);
-  
+
   return true;
 }
 
@@ -435,6 +490,16 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex )
 {
   if ( myExternalFaces || !myVolume )
     return true;
+
+  if (myVolume->IsPoly()) {
+    XYZ aNormal, baryCenter, p0 (myPolyedre->GetFaceNode(faceIndex + 1, 1));
+    GetFaceNormal(faceIndex, aNormal.x, aNormal.y, aNormal.z);
+    GetBaryCenter(baryCenter.x, baryCenter.y, baryCenter.z);
+    XYZ insideVec (baryCenter - p0);
+    if (insideVec.Dot(aNormal) > 0)
+      return false;
+    return true;
+  }
 
   switch ( myVolumeNbNodes ) {
   case 4:
@@ -482,7 +547,6 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   return true;
 }
 
-
 //=======================================================================
 //function : GetFaceArea
 //purpose  : Return face area
@@ -490,6 +554,11 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
 
 double SMDS_VolumeTool::GetFaceArea( int faceIndex )
 {
+  if (myVolume->IsPoly()) {
+    MESSAGE("Warning: attempt to obtain area of a face of polyhedral volume");
+    return 0;
+  }
+
   if ( !setFace( faceIndex ))
     return 0;
 
@@ -500,7 +569,7 @@ double SMDS_VolumeTool::GetFaceArea( int faceIndex )
   XYZ aVec13( p3 - p1 );
   double area = aVec12.Crossed( aVec13 ).Magnitude() * 0.5;
 
-  if ( myFaceNbNodes[ faceIndex ] == 4 ) {
+  if ( myFaceNbNodes == 4 ) {
     XYZ p4 ( myFaceNodes[3] );
     XYZ aVec14( p4 - p1 );
     area += aVec14.Crossed( aVec13 ).Magnitude() * 0.5;
@@ -516,12 +585,17 @@ double SMDS_VolumeTool::GetFaceArea( int faceIndex )
 int SMDS_VolumeTool::GetOppFaceIndex( int faceIndex ) const
 {
   int ind = -1;
+  if (myVolume->IsPoly()) {
+    MESSAGE("Warning: attempt to obtain opposite face on polyhedral volume");
+    return ind;
+  }
+
   if ( faceIndex >= 0 && faceIndex < NbFaces() ) {
     switch ( myVolumeNbNodes ) {
     case 6:
       if ( faceIndex == 0 || faceIndex == 1 )
         ind = 1 - faceIndex;
-      break;
+        break;
     case 8:
       ind = faceIndex + ( faceIndex % 2 ? -1 : 1 );
       break;
@@ -541,6 +615,33 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
 {
   if ( !myVolume )
     return false;
+
+  if (myVolume->IsPoly()) {
+    if (!myPolyedre) {
+      MESSAGE("Warning: bad volumic element");
+      return false;
+    }
+    bool isLinked = false;
+    int iface;
+    for (iface = 1; iface <= myNbFaces && !isLinked; iface++) {
+      int inode, nbFaceNodes = myPolyedre->NbFaceNodes(iface);
+
+      for (inode = 1; inode <= nbFaceNodes && !isLinked; inode++) {
+        const SMDS_MeshNode* curNode = myPolyedre->GetFaceNode(iface, inode);
+
+        if (curNode == theNode1 || curNode == theNode2) {
+          int inextnode = (inode == nbFaceNodes) ? 1 : inode + 1;
+          const SMDS_MeshNode* nextNode = myPolyedre->GetFaceNode(iface, inextnode);
+
+          if ((curNode == theNode1 && nextNode == theNode2) ||
+              (curNode == theNode2 && nextNode == theNode1)) {
+            isLinked = true;
+          }
+        }
+      }
+    }
+    return isLinked;
+  }
 
   // find nodes indices
   int i1 = -1, i2 = -1;
@@ -562,6 +663,10 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
 bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
                                 const int theNode2Index) const
 {
+  if (myVolume->IsPoly()) {
+    return IsLinked(myVolumeNodes[theNode1Index], myVolumeNodes[theNode2Index]);
+  }
+
   int minInd = theNode1Index < theNode2Index ? theNode1Index : theNode2Index;
   int maxInd = theNode1Index < theNode2Index ? theNode2Index : theNode1Index;
 
@@ -617,7 +722,6 @@ int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
   return -1;
 }
 
-
 //=======================================================================
 //function : IsFreeFace
 //purpose  : check that only one volume is build on the face nodes
@@ -626,11 +730,12 @@ int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
 bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
 {
   const int free = true;
-  if ( !setFace( faceIndex ))
+
+  if (!setFace( faceIndex ))
     return !free;
 
   const SMDS_MeshNode** nodes = GetFaceNodes( faceIndex );
-  int nbFaceNodes = NbFaceNodes( faceIndex );
+  int nbFaceNodes = myFaceNbNodes;
 
   // evaluate nb of face nodes shared by other volume
   int maxNbShared = -1;
@@ -706,7 +811,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
       // check traingle parts 1 & 3
       if ( isShared[1] && isShared[3] )
         return !free; // is not free
-      // check traingle parts 0 & 2;
+      // check triangle parts 0 & 2;
       // 0 part could not be checked in the loop; check it here
       if ( isShared[2] && prevLinkShared &&
           volume.IsLinked( nodes[ 0 ], nodes[ 1 ] ) &&
@@ -741,7 +846,7 @@ int SMDS_VolumeTool::GetFaceIndex( const set<const SMDS_MeshNode*>& theFaceNodes
 //purpose  : Return index of a face formed by theFaceNodes
 //=======================================================================
 
-int SMDS_VolumeTool::GetFaceIndex( const set<int>& theFaceNodesIndices )
+/*int SMDS_VolumeTool::GetFaceIndex( const set<int>& theFaceNodesIndices )
 {
   for ( int iFace = 0; iFace < myNbFaces; iFace++ ) {
     const int* nodes = GetFaceNodesIndices( iFace );
@@ -753,7 +858,7 @@ int SMDS_VolumeTool::GetFaceIndex( const set<int>& theFaceNodesIndices )
       return iFace;
   }
   return -1;
-}
+}*/
 
 //=======================================================================
 //function : setFace
@@ -768,44 +873,163 @@ bool SMDS_VolumeTool::setFace( int faceIndex )
   if ( myCurFace == faceIndex )
     return true;
 
+  myCurFace = -1;
+
   if ( faceIndex < 0 || faceIndex >= NbFaces() )
     return false;
 
-  // choose face node indices
-  switch ( myVolumeNbNodes ) {
-  case 4:
-    if ( myExternalFaces )
-      myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_RE[ faceIndex ];
-    else
-      myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_R[ faceIndex ];
-    break;
-  case 5:
-    if ( myExternalFaces )
-      myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_RE[ faceIndex ];
-    else
-      myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_R[ faceIndex ];
-    break;
-  case 6:
-    if ( myExternalFaces )
-      myFaceNodeIndices = myVolForward ? Penta_FE[ faceIndex ] : Penta_RE[ faceIndex ];
-    else
-      myFaceNodeIndices = myVolForward ? Penta_F[ faceIndex ] : Penta_R[ faceIndex ];
-    break;
-  case 8:
-    if ( myExternalFaces )
-      myFaceNodeIndices = myVolForward ? Hexa_FE[ faceIndex ] : Hexa_RE[ faceIndex ];
-    else
-      myFaceNodeIndices = Hexa_F[ faceIndex ];
-    break;
-  default: return false;
+  if (myFaceNodes != NULL) {
+    delete [] myFaceNodes;
+    myFaceNodes = NULL;
   }
 
-  // set face nodes
-  int iNode, nbNode = myFaceNbNodes[ faceIndex ];
-  for ( iNode = 0; iNode <= nbNode; iNode++ )
-    myFaceNodes[ iNode ] = myVolumeNodes[ myFaceNodeIndices[ iNode ]];
+  if (myVolume->IsPoly()) {
+    if (!myPolyedre) {
+      MESSAGE("Warning: bad volumic element");
+      return false;
+    }
+
+    // check orientation
+    bool isGoodOri = true;
+    if (myExternalFaces) {
+      // get natural orientation
+      XYZ aNormal, baryCenter, p0 (myPolyedre->GetFaceNode(faceIndex + 1, 1));
+      SMDS_VolumeTool vTool (myPolyedre);
+      vTool.GetFaceNormal(faceIndex, aNormal.x, aNormal.y, aNormal.z);
+      vTool.GetBaryCenter(baryCenter.x, baryCenter.y, baryCenter.z);
+      XYZ insideVec (baryCenter - p0);
+      if (insideVec.Dot(aNormal) > 0)
+        isGoodOri = false;
+    }
+
+    // set face nodes
+    int iNode;
+    myFaceNbNodes = myPolyedre->NbFaceNodes(faceIndex + 1);
+    myFaceNodes = new const SMDS_MeshNode* [myFaceNbNodes + 1];
+    if (isGoodOri) {
+      for ( iNode = 0; iNode < myFaceNbNodes; iNode++ )
+        myFaceNodes[ iNode ] = myPolyedre->GetFaceNode(faceIndex + 1, iNode + 1);
+    } else {
+      for ( iNode = 0; iNode < myFaceNbNodes; iNode++ )
+        myFaceNodes[ iNode ] = myPolyedre->GetFaceNode(faceIndex + 1, myFaceNbNodes - iNode);
+    }
+    myFaceNodes[ myFaceNbNodes ] = myFaceNodes[ 0 ]; // last = first
+
+  } else {
+    // choose face node indices
+    switch ( myVolumeNbNodes ) {
+    case 4:
+      myFaceNbNodes = Tetra_nbN[ faceIndex ];
+      if ( myExternalFaces )
+        myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_RE[ faceIndex ];
+      else
+        myFaceNodeIndices = myVolForward ? Tetra_F[ faceIndex ] : Tetra_R[ faceIndex ];
+      break;
+    case 5:
+      myFaceNbNodes = Pyramid_nbN[ faceIndex ];
+      if ( myExternalFaces )
+        myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_RE[ faceIndex ];
+      else
+        myFaceNodeIndices = myVolForward ? Pyramid_F[ faceIndex ] : Pyramid_R[ faceIndex ];
+      break;
+    case 6:
+      myFaceNbNodes = Penta_nbN[ faceIndex ];
+      if ( myExternalFaces )
+        myFaceNodeIndices = myVolForward ? Penta_FE[ faceIndex ] : Penta_RE[ faceIndex ];
+      else
+        myFaceNodeIndices = myVolForward ? Penta_F[ faceIndex ] : Penta_R[ faceIndex ];
+      break;
+    case 8:
+      myFaceNbNodes = Hexa_nbN[ faceIndex ];
+      if ( myExternalFaces )
+        myFaceNodeIndices = myVolForward ? Hexa_FE[ faceIndex ] : Hexa_RE[ faceIndex ];
+      else
+        myFaceNodeIndices = Hexa_F[ faceIndex ];
+      break;
+    default:
+      return false;
+    }
+
+    // set face nodes
+    myFaceNodes = new const SMDS_MeshNode* [myFaceNbNodes + 1];
+    for ( int iNode = 0; iNode <= myFaceNbNodes; iNode++ )
+      myFaceNodes[ iNode ] = myVolumeNodes[ myFaceNodeIndices[ iNode ]];
+  }
 
   myCurFace = faceIndex;
 
   return true;
 }
+
+//=======================================================================
+//function : GetType
+//purpose  : return VolumeType by nb of nodes in a volume
+//=======================================================================
+
+SMDS_VolumeTool::VolumeType SMDS_VolumeTool::GetType(int nbNodes)
+{
+  switch ( nbNodes ) {
+  case 4: return TETRA;
+  case 5: return PYRAM;
+  case 6: return PENTA;
+  case 8: return HEXA;
+  default:return UNKNOWN;
+  }
+}
+
+//=======================================================================
+//function : NbFaces
+//purpose  : return nb of faces by volume type
+//=======================================================================
+
+int SMDS_VolumeTool::NbFaces( VolumeType type )
+{
+  switch ( type ) {
+  case TETRA: return 4;
+  case PYRAM: return 5;
+  case PENTA: return 5;
+  case HEXA : return 6;
+  default:    return 0;
+  }
+}
+
+//=======================================================================
+//function : GetFaceNodesIndices
+//purpose  : Return the array of face nodes indices
+//           To comfort link iteration, the array
+//           length == NbFaceNodes( faceIndex ) + 1 and
+//           the last node index == the first one.
+//=======================================================================
+
+const int* SMDS_VolumeTool::GetFaceNodesIndices(VolumeType type,
+                                                int        faceIndex,
+                                                bool       external)
+{
+  switch ( type ) {
+  case TETRA: return Tetra_F[ faceIndex ];
+  case PYRAM: return Pyramid_F[ faceIndex ];
+  case PENTA: return external ? Penta_FE[ faceIndex ] : Penta_F[ faceIndex ];
+  case HEXA:  return external ? Hexa_FE[ faceIndex ] : Hexa_F[ faceIndex ];
+  default:;
+  }
+  return 0;
+}
+
+//=======================================================================
+//function : NbFaceNodes
+//purpose  : Return number of nodes in the array of face nodes
+//=======================================================================
+
+int SMDS_VolumeTool::NbFaceNodes(VolumeType type,
+                                 int        faceIndex )
+{
+  switch ( type ) {
+  case TETRA: return Tetra_nbN[ faceIndex ];
+  case PYRAM: return Pyramid_nbN[ faceIndex ];
+  case PENTA: return Penta_nbN[ faceIndex ];
+  case HEXA:  return Hexa_nbN[ faceIndex ];
+  default:;
+  }
+  return 0;
+}
+

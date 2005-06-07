@@ -1,22 +1,22 @@
 //  SMESH SMESHGUI : GUI for SMESH component
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
@@ -26,9 +26,11 @@
 //  Module : SMESH
 
 #include "SMESHGUI_PrecisionDlg.h"
-#include "QAD_Config.h"
+
 #include "SMESHGUI.h"
 #include "SMESHGUI_VTKUtils.h"
+
+#include "SUIT_ResourceMgr.h"
 
 #include <qgroupbox.h>
 #include <qpushbutton.h>
@@ -37,40 +39,39 @@
 #include <qlayout.h>
 #include <qlabel.h>
 
-#define SPACING 5                  
+#define SPACING 5
 #define MARGIN  10
 #define DEFAULT_VAL 10
 #define RANGE 128
 
-/*
-  Class       : SMESHGUI_PrecisionDlg
-  Description : Dialog to specify precision of mesh quality controls
-*/
+/*!
+ *  Class       : SMESHGUI_PrecisionDlg
+ *  Description : Dialog to specify precision of mesh quality controls
+ */
 
 //=======================================================================
 // name    : SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg( QWidget* theParent )
-: QDialog( theParent, "SMESHGUI_PrecisionDlg", true,
-           WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg (QWidget* theParent)
+     : QDialog(theParent, "SMESHGUI_PrecisionDlg", true,
+               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
 {
-  setCaption( tr( "CAPTION" ) );
+  setCaption(tr("CAPTION"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout( this, MARGIN, SPACING );
+  QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
 
-  QFrame* aMainFrame = createMainFrame  ( this );
-  QFrame* aBtnFrame  = createButtonFrame( this );
+  QFrame* aMainFrame = createMainFrame  (this);
+  QFrame* aBtnFrame  = createButtonFrame(this);
 
-  aDlgLay->addWidget( aMainFrame );
-  aDlgLay->addWidget( aBtnFrame );
+  aDlgLay->addWidget(aMainFrame);
+  aDlgLay->addWidget(aBtnFrame);
 
-  aDlgLay->setStretchFactor( aMainFrame, 1 );
+  aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  setMinimumWidth( (int)( QFontMetrics( font() ).width( tr( "CAPTION" ) ) * 1.5 ) );
+  setMinimumWidth((int)(QFontMetrics(font()).width(tr("CAPTION")) * 1.5));
 
   Init();
-
 }
 
 //=======================================================================
@@ -85,21 +86,21 @@ SMESHGUI_PrecisionDlg::~SMESHGUI_PrecisionDlg()
 // name    : SMESHGUI_PrecisionDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_PrecisionDlg::createButtonFrame( QWidget* theParent )
+QFrame* SMESHGUI_PrecisionDlg::createButtonFrame (QWidget* theParent)
 {
-  QGroupBox* aGrp = new QGroupBox( 1, Qt::Vertical, theParent );
-  aGrp->setFrameStyle( QFrame::NoFrame );
-  aGrp->setInsideMargin( 0 );
+  QGroupBox* aGrp = new QGroupBox (1, Qt::Vertical, theParent);
+  aGrp->setFrameStyle(QFrame::NoFrame);
+  aGrp->setInsideMargin(0);
 
-  myOKBtn = new QPushButton( tr( "SMESH_BUT_OK"    ), aGrp );
+  myOKBtn = new QPushButton (tr("SMESH_BUT_OK"), aGrp);
 
-  QLabel* aLbl = new QLabel( aGrp );
-  aLbl->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+  QLabel* aLbl = new QLabel (aGrp);
+  aLbl->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 
-  myCancelBtn = new QPushButton( tr( "SMESH_BUT_CANCEL" ), aGrp );
+  myCancelBtn = new QPushButton (tr("SMESH_BUT_CANCEL"), aGrp);
 
-  connect( myOKBtn, SIGNAL( clicked() ), SLOT( onOk() ) );
-  connect( myCancelBtn, SIGNAL( clicked() ), SLOT( onClose() ) );
+  connect(myOKBtn, SIGNAL(clicked()), SLOT(onOk()));
+  connect(myCancelBtn, SIGNAL(clicked()), SLOT(onClose()));
 
   return aGrp;
 }
@@ -108,14 +109,14 @@ QFrame* SMESHGUI_PrecisionDlg::createButtonFrame( QWidget* theParent )
 // name    : SMESHGUI_PrecisionDlg:: createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_PrecisionDlg::createMainFrame( QWidget* theParent )
+QFrame* SMESHGUI_PrecisionDlg::createMainFrame (QWidget* theParent)
 {
-  QGroupBox* aGrp = new QGroupBox( 2, Qt::Horizontal, theParent );
-  new QLabel( tr( "PRECISION" ), aGrp );
-  mySpinBox = new QSpinBox( 0, RANGE, 1, aGrp );
-  myNotUseChk = new QCheckBox( tr( "NOT_USE" ), aGrp );
+  QGroupBox* aGrp = new QGroupBox(2, Qt::Horizontal, theParent);
+  new QLabel (tr("PRECISION"), aGrp);
+  mySpinBox = new QSpinBox (0, RANGE, 1, aGrp);
+  myNotUseChk = new QCheckBox (tr("NOT_USE"), aGrp);
 
-  connect( myNotUseChk, SIGNAL( toggled( bool ) ), SLOT( onNotUse() ) );
+  connect(myNotUseChk, SIGNAL(toggled(bool)), SLOT(onNotUse()));
 
   return aGrp;
 }
@@ -126,25 +127,22 @@ QFrame* SMESHGUI_PrecisionDlg::createMainFrame( QWidget* theParent )
 //=======================================================================
 void SMESHGUI_PrecisionDlg::Init()
 {
-  if ( QAD_CONFIG->hasSetting( "SMESH:ControlsPrecision" ) )
-  {
-    QString aStr = QAD_CONFIG->getSetting( "SMESH:ControlsPrecision" );
-    bool isOk = false;
-    int aVal = aStr.toInt( &isOk );
-    mySpinBox->setValue( isOk ? aVal : DEFAULT_VAL );
-    myNotUseChk->setChecked( !isOk );
+  bool isOk = false;
+  int aVal = DEFAULT_VAL;
+  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  if (mgr && mgr->hasValue("SMESH", "ControlsPrecision")) {
+    QString aStr = mgr->stringValue("SMESH", "ControlsPrecision");
+    aVal = aStr.toInt(&isOk);
   }
-  else
-  {
-    mySpinBox->setValue( DEFAULT_VAL );
-    myNotUseChk->setChecked( true );
-  }
+
+  mySpinBox->setValue(isOk ? aVal : DEFAULT_VAL);
+  myNotUseChk->setChecked(!isOk);
 
   onNotUse();
 
   SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox( ( QDialog* )this ) ;
-  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( onClose() ) );
+  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
+  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 }
 
 //=======================================================================
@@ -153,20 +151,22 @@ void SMESHGUI_PrecisionDlg::Init()
 //=======================================================================
 void SMESHGUI_PrecisionDlg::onOk()
 {
-  if ( myNotUseChk->isChecked() )
-  {
-    QAD_CONFIG->removeSettings( "SMESH:ControlsPrecision" );
-    SMESH::SetControlsPrecision( -1 );
-  }
-  else
-  {
+  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  if (myNotUseChk->isChecked()) {
+    if (mgr) {
+      mgr->remove("SMESH", "ControlsPrecision");
+    }
+    SMESH::SetControlsPrecision(-1);
+  } else {
     mySpinBox->clearFocus();
     int aVal = mySpinBox->value();
-    QAD_CONFIG->addSetting( "SMESH:ControlsPrecision", QString( "%1" ).arg( aVal ) );
-    SMESH::SetControlsPrecision( aVal );
+    if (mgr) {
+      mgr->setValue("SMESH", "ControlsPrecision", QString("%1").arg(aVal));
+    }
+    SMESH::SetControlsPrecision(aVal);
   }
-  
-  disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
+
+  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
   SMESHGUI::GetSMESHGUI()->ResetState() ;
   accept();
 }
@@ -177,45 +177,24 @@ void SMESHGUI_PrecisionDlg::onOk()
 //=======================================================================
 void SMESHGUI_PrecisionDlg::onClose()
 {
-  disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
+  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
   reject();
 }
 
-//=================================================================================
-// function : SMESHGUI_PrecisionDlg::closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_PrecisionDlg::closeEvent( QCloseEvent* )
+//=======================================================================
+// name    : SMESHGUI_PrecisionDlg::closeEvent
+// Purpose :
+//=======================================================================
+void SMESHGUI_PrecisionDlg::closeEvent (QCloseEvent*)
 {
   onClose();
 }
 
 //=======================================================================
-// name    : SMESHGUI_PrecisionDlg::onClose
+// name    : SMESHGUI_PrecisionDlg::onNotUse
 // Purpose : SLOT. Called when state of "Do not use" check box changed
 //=======================================================================
 void SMESHGUI_PrecisionDlg::onNotUse()
 {
-  mySpinBox->setEnabled( !myNotUseChk->isChecked() );
+  mySpinBox->setEnabled(!myNotUseChk->isChecked());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

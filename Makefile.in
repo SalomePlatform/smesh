@@ -53,6 +53,8 @@ mesh_line.png \
 mesh_move_node.png \
 mesh_orientation.png \
 mesh.png \
+mesh_polygon.png \
+mesh_polyhedron.png \
 mesh_pyramid_n.png \
 mesh_pyramid.png \
 mesh_quad_n.png \

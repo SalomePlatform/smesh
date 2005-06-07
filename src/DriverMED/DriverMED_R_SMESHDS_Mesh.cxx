@@ -268,7 +268,175 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	  MED::TGeom::const_iterator anTGeomIter = aTGeom.begin();
 	  for(; anTGeomIter != aTGeom.end(); anTGeomIter++){
 	    const EGeometrieElement& aGeom = anTGeomIter->first;
-	    if(aGeom == ePOINT1) continue;
+
+	    if (aGeom == ePOINT1) {
+              continue;
+
+            } else if (aGeom == ePOLYGONE) {
+              PPolygoneInfo aPolygoneInfo = aMed->GetPPolygoneInfo(aMeshInfo,anEntity,aGeom);
+              EBooleen anIsElemNum = takeNumbers ? aPolygoneInfo->IsElemNum() : eFAUX;
+
+              TElemNum aConn  = aPolygoneInfo->GetConnectivite();
+              TElemNum aIndex = aPolygoneInfo->GetIndex();
+
+              TInt nbPolygons = aPolygoneInfo->GetNbElem();
+
+              for (TInt iPG = 0; iPG < nbPolygons; iPG++) {
+                // get nodes
+                TInt aCurrPG_FirstNodeIndex = aIndex[iPG] - 1;
+                int nbNodes = aPolygoneInfo->GetNbConn(iPG);
+                std::vector<int> nodes_ids (nbNodes);
+                //for (TInt inode = 0; inode < nbNodes; inode++) {
+                //  nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+                //}
+#ifdef _EDF_NODE_IDS_
+		if (anIsNodeNum) {
+		  for (TInt inode = 0; inode < nbNodes; inode++) {
+		    nodes_ids[inode] = aNodeInfo->GetElemNum(aConn[aCurrPG_FirstNodeIndex + inode] - 1);
+		  }
+		} else {
+		  for (TInt inode = 0; inode < nbNodes; inode++) {
+		    nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+		  }
+		}
+#else
+		for (TInt inode = 0; inode < nbNodes; inode++) {
+		  nodes_ids[inode] = aConn[aCurrPG_FirstNodeIndex + inode];
+		}
+#endif
+
+                bool isRenum = false;
+                SMDS_MeshElement* anElement = NULL;
+                TInt aFamNum = aPolygoneInfo->GetFamNum(iPG);
+
+                try {
+                  if (anIsElemNum) {
+                    anElement = myMesh->AddPolygonalFaceWithID
+                      (nodes_ids, aPolygoneInfo->GetElemNum(iPG));
+                  }
+                  if (!anElement) {
+                    std::vector<const SMDS_MeshNode*> nodes (nbNodes);
+                    for (int inode = 0; inode < nbNodes; inode++) {
+                      nodes[inode] = FindNode(myMesh, nodes_ids[inode]);
+                    }
+                    anElement = myMesh->AddPolygonalFace(nodes);
+                    isRenum = anIsElemNum;
+                  }
+                } catch (const std::exception& exc) {
+                  aResult = DRS_FAIL;
+                } catch (...) {
+                  aResult = DRS_FAIL;
+                }
+
+                if (!anElement) {
+                  aResult = DRS_WARN_SKIP_ELEM;
+                } else {
+                  if (isRenum) {
+                    anIsElemNum = eFAUX;
+                    takeNumbers = false;
+                    if (aResult < DRS_WARN_RENUMBER)
+                      aResult = DRS_WARN_RENUMBER;
+                  }
+                  if (myFamilies.find(aFamNum) != myFamilies.end()) {
+                    // Save reference to this element from its family
+                    myFamilies[aFamNum]->AddElement(anElement);
+                    myFamilies[aFamNum]->SetType(anElement->GetType());
+                  }
+                }
+              } // for (TInt iPG = 0; iPG < nbPolygons; iPG++)
+              continue;
+
+            } else if (aGeom == ePOLYEDRE) {
+              PPolyedreInfo aPolyedreInfo = aMed->GetPPolyedreInfo(aMeshInfo,anEntity,aGeom);
+              EBooleen anIsElemNum = takeNumbers ? aPolyedreInfo->IsElemNum() : eFAUX;
+
+              TElemNum aConn       = aPolyedreInfo->GetConnectivite();
+              TElemNum aFacesIndex = aPolyedreInfo->GetFacesIndex();
+              TElemNum aIndex      = aPolyedreInfo->GetIndex();
+
+              TInt nbPolyedres = aPolyedreInfo->GetNbElem();
+
+              for (int iPE = 0; iPE < nbPolyedres; iPE++) {
+                // get faces
+                int aCurrPE_FirstFaceIndex = aIndex[iPE] - 1;
+                int aNextPE_FirstFaceIndex = aIndex[iPE + 1] - 1;
+                int nbFaces = aNextPE_FirstFaceIndex - aCurrPE_FirstFaceIndex;
+                std::vector<int> quantities (nbFaces);
+                for (int iFa = 0; iFa < nbFaces; iFa++) {
+                  int aCurrFace_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex + iFa] - 1;
+                  int aNextFace_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex + iFa + 1] - 1;
+
+                  int nbNodes = aNextFace_FirstNodeIndex - aCurrFace_FirstNodeIndex;
+                  quantities[iFa] = nbNodes;
+                }
+
+                // get nodes
+                int aCurrPE_FirstNodeIndex = aFacesIndex[aCurrPE_FirstFaceIndex] - 1;
+                int nbPENodes = aPolyedreInfo->GetNbConn(iPE);
+                std::vector<int> nodes_ids (nbPENodes);
+                //for (int inode = 0; inode < nbPENodes; inode++) {
+                //  nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+                //}
+#ifdef _EDF_NODE_IDS_
+		if (anIsNodeNum) {
+		  for (int inode = 0; inode < nbPENodes; inode++) {
+		    nodes_ids[inode] = aNodeInfo->GetElemNum(aConn[aCurrPE_FirstNodeIndex + inode] - 1);
+		  }
+		} else {
+		  for (int inode = 0; inode < nbPENodes; inode++) {
+		    nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+		  }
+		}
+#else
+		for (int inode = 0; inode < nbPENodes; inode++) {
+		  nodes_ids[inode] = aConn[aCurrPE_FirstNodeIndex + inode];
+		}
+#endif
+
+                bool isRenum = false;
+                SMDS_MeshElement* anElement = NULL;
+                TInt aFamNum = aPolyedreInfo->GetFamNum(iPE);
+
+                try {
+                  if (anIsElemNum) {
+                    anElement = myMesh->AddPolyhedralVolumeWithID
+                      (nodes_ids, quantities, aPolyedreInfo->GetElemNum(iPE));
+                  }
+                  if (!anElement) {
+                    std::vector<const SMDS_MeshNode*> nodes (nbPENodes);
+                    for (int inode = 0; inode < nbPENodes; inode++) {
+                      nodes[inode] = FindNode(myMesh, nodes_ids[inode]);
+                    }
+                    anElement = myMesh->AddPolyhedralVolume(nodes, quantities);
+                    isRenum = anIsElemNum;
+                  }
+                } catch (const std::exception& exc) {
+                  aResult = DRS_FAIL;
+                } catch (...) {
+                  aResult = DRS_FAIL;
+                }
+
+                if (!anElement) {
+                  aResult = DRS_WARN_SKIP_ELEM;
+                } else {
+                  if (isRenum) {
+                    anIsElemNum = eFAUX;
+                    takeNumbers = false;
+                    if (aResult < DRS_WARN_RENUMBER)
+                      aResult = DRS_WARN_RENUMBER;
+                  }
+                  if (myFamilies.find(aFamNum) != myFamilies.end()) {
+                    // Save reference to this element from its family
+                    myFamilies[aFamNum]->AddElement(anElement);
+                    myFamilies[aFamNum]->SetType(anElement->GetType());
+                  }
+                }
+              } // for (int iPE = 0; iPE < nbPolyedres; iPE++)
+              continue;
+
+            } else {
+            }
+
 	    PCellInfo aCellInfo = aMed->GetPCellInfo(aMeshInfo,anEntity,aGeom);
 	    EBooleen anIsElemNum = takeNumbers ? aCellInfo->IsElemNum() : eFAUX;
 	    TInt aNbElems = aCellInfo->GetNbElem();
@@ -343,6 +511,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	      SMDS_MeshElement* anElement = NULL;
 	      TInt aFamNum = aCellInfo->GetFamNum(iElem);
 	      try{
+                //MESSAGE("Try to create element # " << iElem << " with id = "
+                //        << aCellInfo->GetElemNum(iElem));
 		switch(aGeom){
 		case eSEG2:
 		case eSEG3:
@@ -586,7 +756,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
       for (; anElemsIter != anElements.end(); anElemsIter++)
       {
         element = *anElemsIter;
-        theGroup->SMDSGroup().Add(element);
+	theGroup->SMDSGroup().Add(element);
       }
       if ( element )
         theGroup->SetType( element->GetType() );

@@ -100,9 +100,9 @@ class SMESH_Pattern {
   // the loaded pattern to <theFace>. The first key-point
   // will be mapped into <theNodeIndexOnKeyPoint1>-th node
 
-  bool Apply (std::set<const SMDS_MeshFace*> theFaces,
-              const int                      theNodeIndexOnKeyPoint1,
-              const bool                     theReverse);
+  bool Apply (std::set<const SMDS_MeshFace*>& theFaces,
+              const int                       theNodeIndexOnKeyPoint1,
+              const bool                      theReverse);
   // Compute nodes coordinates applying
   // the loaded pattern to <theFaces>. The first key-point
   // will be mapped into <theNodeIndexOnKeyPoint1>-th node
@@ -116,9 +116,9 @@ class SMESH_Pattern {
   // (0,0,1) key-point will be mapped into <theNode000Index>-th
   // node.
 
-  bool Apply (std::set<const SMDS_MeshVolume*> theVolumes,
-              const int                        theNode000Index,
-              const int                        theNode001Index);
+  bool Apply (std::set<const SMDS_MeshVolume*>& theVolumes,
+              const int                         theNode000Index,
+              const int                         theNode001Index);
   // Compute nodes coordinates applying
   // the loaded pattern to <theVolumes>. The (0,0,0) key-point
   // will be mapped into <theNode000Index>-th node. The
@@ -128,7 +128,9 @@ class SMESH_Pattern {
   bool GetMappedPoints ( std::list<const gp_XYZ *> & thePoints ) const;
   // Return nodes coordinates computed by Apply() method
 
-  bool MakeMesh(SMESH_Mesh* theMesh);
+  bool MakeMesh(SMESH_Mesh* theMesh,
+                const bool toCreatePolygons = false,
+                const bool toCreatePolyedrs = false);
   // Create nodes and elements in <theMesh> using nodes
   // coordinates computed by either of Apply...() methods
 
@@ -271,41 +273,80 @@ class SMESH_Pattern {
   // are appended to theEdgesPointsList
 
   typedef std::set<const SMDS_MeshNode*> TNodeSet;
-  void mergePoints (std::map<TNodeSet,std::list<std::list<int> > >&  xyzIndGroups,
-                    std::map< int, std::list< std::list< int >* > >& reverseConnectivity);
-  // Look for coincident points between myXYZs indexed with
-  // list<int> of each element of xyzIndGroups. Coincident indices
-  // are merged in myElemXYZIDs using reverseConnectivity.
 
+  void mergePoints (const bool uniteGroups);
+  // Merge XYZ on edges and/or faces.
+
+  void makePolyElements(const std::vector< const SMDS_MeshNode* >& theNodes,
+                        const bool                                 toCreatePolygons,
+                        const bool                                 toCreatePolyedrs);
+  // prepare intermediate data to create Polygons and Polyhedrons
+
+  void createElements(SMESH_Mesh*                                 theMesh,
+                      const std::vector<const SMDS_MeshNode* >&   theNodesVector,
+                      const std::list< std::list< int > > &       theElemNodeIDs,
+                      const std::vector<const SMDS_MeshElement*>& theElements);
+  // add elements to the mesh
+
+  bool getFacesDefinition(const SMDS_MeshNode**                      theBndNodes,
+                          const int                                  theNbBndNodes,
+                          const std::vector< const SMDS_MeshNode* >& theNodes,
+                          std::list< int >&                          theFaceDefs,
+                          std::vector<int>&                          theQuantity);
+  // fill faces definition for a volume face defined by theBndNodes
+  // return true if a face definition changes
+  
+
+  bool isReversed(const SMDS_MeshNode*    theFirstNode,
+                  const std::list< int >& theIdsList) const;
+  // check xyz ids order in theIdsList taking into account
+  // theFirstNode on a link
+                  
  private:
   // fields
 
-  bool                              myIs2D;
-  std::vector< TPoint >             myPoints;
-  std::list< int >                  myKeyPointIDs;
-  std::list< std::list< int > >     myElemPointIDs;
+  typedef std::list< int > TElemDef; // element definition is its nodes ids
 
-  ErrorCode                         myErrorCode;
-  bool                              myIsComputed;
-  bool                              myIsBoundaryPointsFound;
+  bool                                 myIs2D;
+  std::vector< TPoint >                myPoints;
+  std::list< int >                     myKeyPointIDs;
+  std::list< TElemDef >                myElemPointIDs;
 
-  TopoDS_Shape                      myShape;
+  ErrorCode                            myErrorCode;
+  bool                                 myIsComputed;
+  bool                                 myIsBoundaryPointsFound;
+
+  TopoDS_Shape                         myShape;
   // all functions assure that shapes are indexed so that first go
   // ordered vertices, then ordered edge, then faces and maybe a shell
-  TopTools_IndexedMapOfOrientedShape myShapeIDMap;
-  //TopTools_IndexedMapOfShape        myShapeIDMap;
-  std::map< int, list< TPoint* > >  myShapeIDToPointsMap;
+  TopTools_IndexedMapOfOrientedShape   myShapeIDMap;
+  std::map< int, list< TPoint* > >     myShapeIDToPointsMap;
 
   // for the 2d case:
   // nb of key-points in each of pattern boundaries
-  std::list< int >                  myNbKeyPntInBoundary;
+  std::list< int >                     myNbKeyPntInBoundary;
 
+  
   // to compute while applying to mesh elements, not to shapes
-  std::vector<gp_XYZ>               myXYZ;
-  std::list< std::list< int > >     myElemXYZIDs;
-  std::map< int, const SMDS_MeshNode*> myXYZIdToNodeMap; // map id to node of a refined element
-  std::vector<const SMDS_MeshElement*> myElements; // refined elements
-  std::vector<const SMDS_MeshNode*> myOrderedNodes;
+
+  std::vector<gp_XYZ>                  myXYZ;            // XYZ of nodes to create
+  std::list< TElemDef >                myElemXYZIDs;     // new elements definitions
+  std::map< int, const SMDS_MeshNode*> myXYZIdToNodeMap; // map XYZ id to node of a refined element
+  std::vector<const SMDS_MeshElement*> myElements;       // refined elements
+  std::vector<const SMDS_MeshNode*>    myOrderedNodes;
+
+   // elements to replace with polygon or polyhedron
+  std::vector<const SMDS_MeshElement*> myPolyElems;
+  // definitions of new poly elements
+  std::list< TElemDef >                myPolyElemXYZIDs;
+  std::list< std::vector<int> >        myPolyhedronQuantities;
+
+  // map a boundary to XYZs on it;
+  // a boundary (edge or face) is defined as a set of its nodes,
+  // XYZs on a boundary are indices of myXYZ s
+  std::map<TNodeSet,std::list<std::list<int> > >  myIdsOnBoundary;
+  // map XYZ id to element it is in
+  std::map< int, std::list< TElemDef* > >         myReverseConnectivity;
 };
 
 

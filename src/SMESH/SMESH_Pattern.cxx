@@ -58,6 +58,7 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
@@ -297,8 +298,8 @@ bool SMESH_Pattern::Load (const char* theFileContents)
 
   while ( readLine( fields, lineBeg, clearFields ))
   {
-    myElemPointIDs.push_back( list< int >() );
-    list< int >& elemPoints = myElemPointIDs.back();
+    myElemPointIDs.push_back( TElemDef() );
+    TElemDef& elemPoints = myElemPointIDs.back();
     for ( fIt = fields.begin(); fIt != fields.end(); fIt++ )
     {
       int pointIndex = getInt( *fIt );
@@ -379,11 +380,11 @@ bool SMESH_Pattern::Save (ostream& theFile)
   }
   // elements
   theFile << "!!! Indices of points of " << myElemPointIDs.size() << " elements:" << endl;
-  list<list< int > >::const_iterator epIt = myElemPointIDs.begin();
+  list<TElemDef >::const_iterator epIt = myElemPointIDs.begin();
   for ( ; epIt != myElemPointIDs.end(); epIt++ )
   {
-    const list< int > & elemPoints = *epIt;
-    list< int >::const_iterator iIt = elemPoints.begin();
+    const TElemDef & elemPoints = *epIt;
+    TElemDef::const_iterator iIt = elemPoints.begin();
     for ( ; iIt != elemPoints.end(); iIt++ )
       theFile << " " << *iIt;
     theFile << endl;
@@ -594,8 +595,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
     while ( fIt->more() )
     {
-      myElemPointIDs.push_back( list< int >() );
-      list< int >& elemPoints = myElemPointIDs.back();
+      myElemPointIDs.push_back( TElemDef() );
+      TElemDef& elemPoints = myElemPointIDs.back();
       SMDS_ElemIteratorPtr nIt = fIt->next()->nodesIterator();
       while ( nIt->more() )
       {
@@ -814,8 +815,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       SMDS_ElemIteratorPtr elemIt = fSubMesh->GetElements();
       while ( elemIt->more() ) {
         SMDS_ElemIteratorPtr nIt = elemIt->next()->nodesIterator();
-        myElemPointIDs.push_back( list< int >() );
-        list< int >& elemPoints = myElemPointIDs.back();
+        myElemPointIDs.push_back( TElemDef() );
+        TElemDef& elemPoints = myElemPointIDs.back();
         while ( nIt->more() )
           elemPoints.push_back( nodePointIDMap[ nIt->next() ]);
       }
@@ -2456,7 +2457,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
                            const int            theNodeIndexOnKeyPoint1,
                            const bool           theReverse)
 {
-  MESSAGE(" ::Apply(MeshFace) " );
+//  MESSAGE(" ::Apply(MeshFace) " );
 
   if ( !IsLoaded() ) {
     MESSAGE( "Pattern not loaded" );
@@ -2610,89 +2611,15 @@ inline static bool isDefined(const gp_XYZ& theXYZ)
 }
 
 //=======================================================================
-//function : mergePoints
-//purpose  : Look for coincident points between myXYZs indexed with
-//           list<int> of each element of xyzIndGroups. Coincident indices
-//           are merged in myElemXYZIDs.
-//=======================================================================
-
-void SMESH_Pattern::mergePoints (map<TNodeSet, list<list<int> > >&  indGroups,
-                                 map< int, list< list< int >* > > & reverseConnectivity)
-{
-  map< TNodeSet, list< list< int > > >::iterator indListIt;
-  for ( indListIt = indGroups.begin(); indListIt != indGroups.end(); indListIt++ )
-  {
-    list<list< int > > groups = indListIt->second;
-    if ( groups.size() < 2 )
-      continue;
-
-//     const TNodeSet & nodes = indListIt->first;
-//     TNodeSet::const_iterator n = nodes.begin();
-//     for ( ; n != nodes.end(); n++ )
-//       cout << *n ;
-
-    // find tolerance
-    Bnd_Box box;
-    list< int >& indices = groups.front();
-    list< int >::iterator ind, ind1, ind2;
-    for ( ind = indices.begin(); ind != indices.end(); ind++ )
-      box.Add( gp_Pnt( myXYZ[ *ind ]));
-    double x, y, z, X, Y, Z;
-    box.Get( x, y, z, X, Y, Z );
-    gp_Pnt p( x, y, z ), P( X, Y, Z );
-    double tol2 = 1.e-4 * p.SquareDistance( P );
-
-    // compare points, replace indices
-
-    list< list< int > >::iterator grpIt1, grpIt2;
-    for ( grpIt1 = groups.begin(); grpIt1 != groups.end(); grpIt1++ )
-    {
-      list< int >& indices1 = *grpIt1;
-      grpIt2 = grpIt1;
-      for ( grpIt2++; grpIt2 != groups.end(); grpIt2++ )
-      {
-        list< int >& indices2 = *grpIt2;
-        for ( ind1 = indices1.begin(); ind1 != indices1.end(); ind1++ )
-        {
-          gp_XYZ& p1 = myXYZ[ *ind1 ];
-          ind2 = indices2.begin();
-          while ( ind2 != indices2.end() )
-          {
-            gp_XYZ& p2 = myXYZ[ *ind2 ];
-            //MESSAGE("COMP: " << *ind1 << " " << *ind2 << " X: " << p2.X() << " tol2: " << tol2);
-            if ( ( p1 - p2 ).SquareModulus() <= tol2 )
-            {
-              ASSERT( reverseConnectivity.find( *ind2 ) != reverseConnectivity.end() );
-              list< list< int >* > & elemXYZIDsList = reverseConnectivity[ *ind2 ];
-              list< list< int >* >::iterator elemXYZIDs = elemXYZIDsList.begin();
-              for ( ; elemXYZIDs != elemXYZIDsList.end(); elemXYZIDs++ )
-              {
-                ind = find( (*elemXYZIDs)->begin(), (*elemXYZIDs)->end(), *ind2 );
-                //MESSAGE( " Replace " << *ind << " with " << *ind1 );
-                myXYZ[ *ind ] = undefinedXYZ();
-                *ind = *ind1;
-              }
-              ind2 = indices2.erase( ind2 );
-            }
-            else
-              ind2++;
-          }
-        }
-      }
-    }
-  }
-}
-
-//=======================================================================
 //function : Apply
 //purpose  : Compute nodes coordinates applying
 //           the loaded pattern to <theFaces>. The first key-point
 //           will be mapped into <theNodeIndexOnKeyPoint1>-th node
 //=======================================================================
 
-bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
-                           const int                      theNodeIndexOnKeyPoint1,
-                           const bool                     theReverse)
+bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*>& theFaces,
+                           const int                       theNodeIndexOnKeyPoint1,
+                           const bool                      theReverse)
 {
   MESSAGE(" ::Apply(set<MeshFace>) " );
 
@@ -2710,10 +2637,13 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
     return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
   }
 
+  myShape.Nullify();
   myXYZ.clear();
   myElemXYZIDs.clear();
   myXYZIdToNodeMap.clear();
   myElements.clear();
+  myIdsOnBoundary.clear();
+  myReverseConnectivity.clear();
 
   myXYZ.resize( myPoints.size() * theFaces.size(), undefinedXYZ() );
   myElements.reserve( theFaces.size() );
@@ -2722,11 +2652,6 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
   map< TPoint*, int > pointIndex;
   for ( int i = 0; i < myPoints.size(); i++ )
     pointIndex.insert( make_pair( & myPoints[ i ], i ));
-
-  // to merge nodes on edges of the elements being refined
-  typedef set<const SMDS_MeshNode*> TLink;
-  map< TLink, list< list< int > > > linkPointIndListMap;
-  map< int, list< list< int >* > >  reverseConnectivity;
 
   int ind1 = 0; // lowest point index for a face
 
@@ -2741,45 +2666,51 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
     myElements.push_back( *face );
 
     // store computed points belonging to elements
-    list< list< int > >::iterator ll = myElemPointIDs.begin();
+    list< TElemDef >::iterator ll = myElemPointIDs.begin();
     for ( ; ll != myElemPointIDs.end(); ++ll )
     {
-      myElemXYZIDs.push_back();
-      list< int >& xyzIds = myElemXYZIDs.back();
-      list< int >& pIds = *ll;
-      for ( list<int>::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
+      myElemXYZIDs.push_back(TElemDef());
+      TElemDef& xyzIds = myElemXYZIDs.back();
+      TElemDef& pIds = *ll;
+      for ( TElemDef::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
         int pIndex = *id + ind1;
         xyzIds.push_back( pIndex );
         myXYZ[ pIndex ] = myPoints[ *id ].myXYZ.XYZ();
-        reverseConnectivity[ pIndex ].push_back( & xyzIds );
+        myReverseConnectivity[ pIndex ].push_back( & xyzIds );
       }
     }
-    // put points on links to linkPointIndListMap
+    // put points on links to myIdsOnBoundary,
+    // they will be used to sew new elements on adjacent refined elements
     int nbNodes = (*face)->NbNodes(), eID = nbNodes + 1;
     for ( int i = 0; i < nbNodes; i++ )
     {
+      list< TPoint* > & linkPoints = getShapePoints( eID++ );
       const SMDS_MeshNode* n1 = myOrderedNodes[ i ];
       const SMDS_MeshNode* n2 = myOrderedNodes[ i + 1 == nbNodes ? 0 : i + 1 ];
-      // make a link of node pointers
-      TLink link;
-      link.insert( n1 );
-      link.insert( n2 );
-      // add the link to the map
-      list< list< int > >& groups = linkPointIndListMap[ link ];
-      groups.push_back();
-      list< int >& indList = groups.back();
-      list< TPoint* > & linkPoints = getShapePoints( eID++ );
+      // make a link and a node set
+      TNodeSet linkSet, node1Set;
+      linkSet.insert( n1 );
+      linkSet.insert( n2 );
+      node1Set.insert( n1 );
       list< TPoint* >::iterator p = linkPoints.begin();
-      // map the first link point to n1
-      myXYZIdToNodeMap[ pointIndex[ *p ] + ind1 ] = n1;
+      {
+        // map the first link point to n1
+        int nId = pointIndex[ *p ] + ind1;
+        myXYZIdToNodeMap[ nId ] = n1;
+        list< list< int > >& groups = myIdsOnBoundary[ node1Set ];
+        groups.push_back(list< int > ());
+        groups.back().push_back( nId );
+      }
+      // add the linkSet to the map
+      list< list< int > >& groups = myIdsOnBoundary[ linkSet ];
+      groups.push_back(list< int > ());
+      list< int >& indList = groups.back();
       // add points to the map excluding the end points
       for ( p++; *p != linkPoints.back(); p++ )
         indList.push_back( pointIndex[ *p ] + ind1 );
     }
     ind1 += myPoints.size();
   }
-
-  mergePoints( linkPointIndListMap, reverseConnectivity );
 
   return !myElemXYZIDs.empty();
 }
@@ -2793,9 +2724,9 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
 //           node.
 //=======================================================================
 
-bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
-                           const int                        theNode000Index,
-                           const int                        theNode001Index)
+bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> & theVolumes,
+                           const int                          theNode000Index,
+                           const int                          theNode001Index)
 {
   MESSAGE(" ::Apply(set<MeshVolumes>) " );
 
@@ -2813,10 +2744,13 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
     return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
   }
 
+  myShape.Nullify();
   myXYZ.clear();
   myElemXYZIDs.clear();
   myXYZIdToNodeMap.clear();
   myElements.clear();
+  myIdsOnBoundary.clear();
+  myReverseConnectivity.clear();
 
   myXYZ.resize( myPoints.size() * theVolumes.size(), undefinedXYZ() );
   myElements.reserve( theVolumes.size() );
@@ -2825,10 +2759,6 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
   map< TPoint*, int > pointIndex;
   for ( int i = 0; i < myPoints.size(); i++ )
     pointIndex.insert( make_pair( & myPoints[ i ], i ));
-
-  // to merge nodes on edges and faces of the elements being refined
-  map< TNodeSet, list< list< int > > > subPointIndListMap;
-  map< int, list< list< int >* > >  reverseConnectivity;
 
   int ind1 = 0; // lowest point index for an element
 
@@ -2843,27 +2773,28 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
     myElements.push_back( *vol );
 
     // store computed points belonging to elements
-    list< list< int > >::iterator ll = myElemPointIDs.begin();
+    list< TElemDef >::iterator ll = myElemPointIDs.begin();
     for ( ; ll != myElemPointIDs.end(); ++ll )
     {
-      myElemXYZIDs.push_back();
-      list< int >& xyzIds = myElemXYZIDs.back();
-      list< int >& pIds = *ll;
-      for ( list<int>::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
+      myElemXYZIDs.push_back(TElemDef());
+      TElemDef& xyzIds = myElemXYZIDs.back();
+      TElemDef& pIds = *ll;
+      for ( TElemDef::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
         int pIndex = *id + ind1;
         xyzIds.push_back( pIndex );
         myXYZ[ pIndex ] = myPoints[ *id ].myXYZ.XYZ();
-        reverseConnectivity[ pIndex ].push_back( & xyzIds );
+        myReverseConnectivity[ pIndex ].push_back( & xyzIds );
       }
     }
-    // put points on edges and faces to subPointIndListMap
+    // put points on edges and faces to myIdsOnBoundary,
+    // they will be used to sew new elements on adjacent refined elements
     for ( int Id = SMESH_Block::ID_V000; Id <= SMESH_Block::ID_F1yz; Id++ )
     {
       // make a set of sub-points
       TNodeSet subNodes;
       vector< int > subIDs;
       if ( SMESH_Block::IsVertexID( Id )) {
-        // use nodes of refined volumes for merge
+        subNodes.insert( myOrderedNodes[ Id - 1 ]);
       }
       else if ( SMESH_Block::IsEdgeID( Id )) {
         SMESH_Block::GetEdgeVertexIDs( Id, subIDs );
@@ -2880,22 +2811,19 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
         subNodes.insert( myOrderedNodes[ subIDs.front() - 1 ]);
         subNodes.insert( myOrderedNodes[ subIDs.back() - 1 ]);
       }
-      list< list< int > >& groups = subPointIndListMap[ subNodes ];
-      groups.push_back();
-      list< int >& indList = groups.back();
       // add points
       list< TPoint* > & points = getShapePoints( Id );
       list< TPoint* >::iterator p = points.begin();
-      if ( subNodes.empty() ) // vertex case
-        myXYZIdToNodeMap[ pointIndex[ *p ] + ind1 ] = myOrderedNodes[ Id - 1 ];
-      else
-        for ( ; p != points.end(); p++ )
-          indList.push_back( pointIndex[ *p ] + ind1 );
+      list< list< int > >& groups = myIdsOnBoundary[ subNodes ];
+      groups.push_back(list< int > ());
+      list< int >& indList = groups.back();
+      for ( ; p != points.end(); p++ )
+        indList.push_back( pointIndex[ *p ] + ind1 );
+      if ( subNodes.size() == 1 ) // vertex case
+        myXYZIdToNodeMap[ indList.back() ] = myOrderedNodes[ Id - 1 ];
     }
     ind1 += myPoints.size();
   }
-
-  mergePoints( subPointIndListMap, reverseConnectivity );
 
   return !myElemXYZIDs.empty();
 }
@@ -3007,8 +2935,8 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
     SMDS_ElemIteratorPtr elemIt = aSubMesh->GetElements();
     while ( elemIt->more() ) {
       SMDS_ElemIteratorPtr nIt = elemIt->next()->nodesIterator();
-      myElemPointIDs.push_back( list< int >() );
-      list< int >& elemPoints = myElemPointIDs.back();
+      myElemPointIDs.push_back( TElemDef() );
+      TElemDef& elemPoints = myElemPointIDs.back();
       while ( nIt->more() )
         elemPoints.push_back( nodePointIDMap[ nIt->next() ]);
     }
@@ -3092,7 +3020,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshVolume* theVolume,
                            const int              theNode000Index,
                            const int              theNode001Index)
 {
-  MESSAGE(" ::Apply(MeshVolume) " );
+  //MESSAGE(" ::Apply(MeshVolume) " );
 
   if (!findBoundaryPoints()) // bind ID to points
     return false;
@@ -3130,19 +3058,431 @@ bool SMESH_Pattern::Apply (const SMDS_MeshVolume* theVolume,
 }
 
 //=======================================================================
+//function : mergePoints
+//purpose  : Merge XYZ on edges and/or faces.
+//=======================================================================
+
+void SMESH_Pattern::mergePoints (const bool uniteGroups)
+{
+  map< TNodeSet, list< list< int > > >::iterator idListIt = myIdsOnBoundary.begin();
+  for ( ; idListIt != myIdsOnBoundary.end(); idListIt++ )
+  {
+    list<list< int > >& groups = idListIt->second;
+    if ( groups.size() < 2 )
+      continue;
+
+    // find tolerance
+    const TNodeSet& nodes = idListIt->first;
+    double tol2 = 1.e-10;
+    if ( nodes.size() > 1 ) {
+      Bnd_Box box;
+      TNodeSet::const_iterator n = nodes.begin();
+      for ( ; n != nodes.end(); ++n )
+        box.Add( gp_Pnt( (*n)->X(), (*n)->Y(), (*n)->Z() ));
+      double x, y, z, X, Y, Z;
+      box.Get( x, y, z, X, Y, Z );
+      gp_Pnt p( x, y, z ), P( X, Y, Z );
+      tol2 = 1.e-4 * p.SquareDistance( P );
+    }
+
+    // to unite groups on link
+    bool unite = ( uniteGroups && nodes.size() == 2 );
+    map< double, int > distIndMap;
+    const SMDS_MeshNode* node = *nodes.begin();
+    gp_Pnt P( node->X(), node->Y(), node->Z() );
+
+    // compare points, replace indices
+
+    list< int >::iterator ind1, ind2;
+    list< list< int > >::iterator grpIt1, grpIt2;
+    for ( grpIt1 = groups.begin(); grpIt1 != groups.end(); grpIt1++ )
+    {
+      list< int >& indices1 = *grpIt1;
+      grpIt2 = grpIt1;
+      for ( grpIt2++; grpIt2 != groups.end(); grpIt2++ )
+      {
+        list< int >& indices2 = *grpIt2;
+        for ( ind1 = indices1.begin(); ind1 != indices1.end(); ind1++ )
+        {
+          gp_XYZ& p1 = myXYZ[ *ind1 ];
+          ind2 = indices2.begin();
+          while ( ind2 != indices2.end() )
+          {
+            gp_XYZ& p2 = myXYZ[ *ind2 ];
+            //MESSAGE("COMP: " << *ind1 << " " << *ind2 << " X: " << p2.X() << " tol2: " << tol2);
+            if ( ( p1 - p2 ).SquareModulus() <= tol2 )
+            {
+              ASSERT( myReverseConnectivity.find( *ind2 ) != myReverseConnectivity.end() );
+              list< TElemDef* > & elemXYZIDsList = myReverseConnectivity[ *ind2 ];
+              list< TElemDef* >::iterator elemXYZIDs = elemXYZIDsList.begin();
+              for ( ; elemXYZIDs != elemXYZIDsList.end(); elemXYZIDs++ )
+              {
+                //MESSAGE( " Replace " << *ind2 << " with " << *ind1 );
+                myXYZ[ *ind2 ] = undefinedXYZ();
+                replace( (*elemXYZIDs)->begin(), (*elemXYZIDs)->end(), *ind2, *ind1 );
+              }
+              ind2 = indices2.erase( ind2 );
+            }
+            else
+              ind2++;
+          }
+        }
+      }
+      if ( unite ) { // sort indices using distIndMap
+        for ( ind1 = indices1.begin(); ind1 != indices1.end(); ind1++ )
+        {
+          ASSERT( isDefined( myXYZ[ *ind1 ] ));
+          double dist = P.SquareDistance( myXYZ[ *ind1 ]);
+          distIndMap.insert( make_pair( dist, *ind1 ));
+        }
+      }
+    }
+    if ( unite ) { // put all sorted indices into the first group
+      list< int >& g = groups.front();
+      g.clear();
+      map< double, int >::iterator dist_ind = distIndMap.begin();
+      for ( ; dist_ind != distIndMap.end(); dist_ind++ )
+        g.push_back( dist_ind->second );
+    }
+  } // loop on myIdsOnBoundary
+}
+
+//=======================================================================
+//function : makePolyElements
+//purpose  : prepare intermediate data to create Polygons and Polyhedrons
+//=======================================================================
+
+void SMESH_Pattern::
+  makePolyElements(const vector< const SMDS_MeshNode* >& theNodes,
+                   const bool                            toCreatePolygons,
+                   const bool                            toCreatePolyedrs)
+{
+  myPolyElemXYZIDs.clear();
+  myPolyElems.clear();
+  myPolyElems.reserve( myIdsOnBoundary.size() );
+
+  // make a set of refined elements
+  set< const SMDS_MeshElement* > avoidSet, elemSet;
+  avoidSet.insert( myElements.begin(), myElements.end() );
+
+  map< TNodeSet, list< list< int > > >::iterator indListIt, nn_IdList;
+
+  if ( toCreatePolygons )
+  {
+    int lastFreeId = myXYZ.size();
+
+    // loop on links of refined elements
+    indListIt = myIdsOnBoundary.begin();
+    for ( ; indListIt != myIdsOnBoundary.end(); indListIt++ )
+    {
+      const TNodeSet & linkNodes = indListIt->first;
+      if ( linkNodes.size() != 2 )
+        continue; // skip face
+      const SMDS_MeshNode* n1 = * linkNodes.begin();
+      const SMDS_MeshNode* n2 = * linkNodes.rbegin();
+
+      list<list< int > >& idGroups = indListIt->second; // ids of nodes to build
+      if ( idGroups.empty() || idGroups.front().empty() )
+        continue;
+
+      // find not refined face having n1-n2 link
+
+      while (true)
+      {
+        const SMDS_MeshElement* face =
+          SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
+        if ( face )
+        {
+          avoidSet.insert ( face );
+          myPolyElems.push_back( face );
+
+          // some links of <face> are split;
+          // make list of xyz for <face>
+          myPolyElemXYZIDs.push_back(TElemDef());
+          TElemDef & faceNodeIds = myPolyElemXYZIDs.back();
+          // loop on links of a <face>
+          SMDS_ElemIteratorPtr nIt = face->nodesIterator();
+          int i = 0, nbNodes = face->NbNodes();
+          vector<const SMDS_MeshNode*> nodes( nbNodes + 1 );
+          while ( nIt->more() )
+            nodes[ i++ ] = static_cast<const SMDS_MeshNode*>( nIt->next() );
+          nodes[ i ] = nodes[ 0 ];
+          for ( i = 0; i < nbNodes; ++i )
+          {
+            // look for point mapped on a link
+            TNodeSet faceLinkNodes;
+            faceLinkNodes.insert( nodes[ i ] );
+            faceLinkNodes.insert( nodes[ i + 1 ] );
+            if ( faceLinkNodes == linkNodes )
+              nn_IdList = indListIt;
+            else
+              nn_IdList = myIdsOnBoundary.find( faceLinkNodes );
+            // add face point ids
+            faceNodeIds.push_back( ++lastFreeId );
+            myXYZIdToNodeMap.insert( make_pair( lastFreeId, nodes[ i ]));
+            if ( nn_IdList != myIdsOnBoundary.end() )
+            {
+              // there are points mapped on a link
+              list< int >& mappedIds = nn_IdList->second.front();
+              if ( isReversed( nodes[ i ], mappedIds ))
+                faceNodeIds.insert (faceNodeIds.end(),mappedIds.rbegin(), mappedIds.rend() );
+              else
+                faceNodeIds.insert (faceNodeIds.end(),mappedIds.begin(), mappedIds.end() );
+            }
+          } // loop on links of a <face>
+        } // if ( face )
+        else
+          break;
+      } // while (true)
+
+      if ( myIs2D && idGroups.size() > 1 ) {
+
+        // sew new elements on 2 refined elements sharing n1-n2 link
+
+        list< int >& idsOnLink = idGroups.front();
+        // temporarily add ids of link nodes to idsOnLink
+        bool rev = isReversed( n1, idsOnLink );
+        for ( int i = 0; i < 2; ++i )
+        {
+          TNodeSet nodeSet;
+          nodeSet.insert( i ? n2 : n1 );
+          ASSERT( myIdsOnBoundary.find( nodeSet ) != myIdsOnBoundary.end() );
+          list<list< int > >& groups = myIdsOnBoundary[ nodeSet ];
+          int nodeId = groups.front().front();
+          bool append = i;
+          if ( rev ) append = !append;
+          if ( append )
+            idsOnLink.push_back( nodeId );
+          else
+            idsOnLink.push_front( nodeId );
+        }
+        list< int >::iterator id = idsOnLink.begin();
+        for ( ; id != idsOnLink.end(); ++id ) // loop on XYZ ids on a link
+        {
+          list< TElemDef* >& elemDefs = myReverseConnectivity[ *id ]; // elems sharing id
+          list< TElemDef* >::iterator pElemDef = elemDefs.begin();
+          for ( ; pElemDef != elemDefs.end(); pElemDef++ ) // loop on elements sharing id
+          {
+            TElemDef* pIdList = *pElemDef; // ptr on list of ids making element up
+            // look for <id> in element definition
+            TElemDef::iterator idDef = find( pIdList->begin(), pIdList->end(), *id );
+            ASSERT ( idDef != pIdList->end() );
+            // look for 2 neighbour ids of <id> in element definition
+            for ( int prev = 0; prev < 2; ++prev ) {
+              TElemDef::iterator idDef2 = idDef;
+              if ( prev )
+                idDef2 = ( idDef2 == pIdList->begin() ) ? --pIdList->end() : --idDef2;
+              else
+                idDef2 = ( ++idDef2 == pIdList->end() ) ? pIdList->begin() : idDef2;
+              // look for idDef2 on a link starting from id
+              list< int >::iterator id2 = find( id, idsOnLink.end(), *idDef2 );
+              if ( id2 != idsOnLink.end() && id != --id2 ) { // found not next to id
+                // insert ids located on link between <id> and <id2>
+                // into the element definition between idDef and idDef2
+                if ( prev )
+                  for ( ; id2 != id; --id2 )
+                    pIdList->insert( idDef, *id2 );
+                else {
+                  list< int >::iterator id1 = id;
+                  for ( ++id1, ++id2; id1 != id2; ++id1 )
+                    pIdList->insert( idDef2, *id1 );
+                }
+              }
+            }
+          }
+        }
+        // remove ids of link nodes
+        idsOnLink.pop_front();
+        idsOnLink.pop_back();
+      }
+    } // loop on myIdsOnBoundary
+  } // if ( toCreatePolygons )
+
+  if ( toCreatePolyedrs )
+  {
+    // check volumes adjacent to the refined elements
+    SMDS_VolumeTool volTool;
+    vector<const SMDS_MeshElement*>::iterator refinedElem = myElements.begin();
+    for ( ; refinedElem != myElements.end(); ++refinedElem )
+    {
+      // loop on nodes of refinedElem
+      SMDS_ElemIteratorPtr nIt = (*refinedElem)->nodesIterator();
+      while ( nIt->more() ) {
+        const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nIt->next() );
+        // loop on inverse elements of node
+        SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator();
+        while ( eIt->more() )
+        {
+          const SMDS_MeshElement* elem = eIt->next();
+          if ( !volTool.Set( elem ) || !avoidSet.insert( elem ).second )
+            continue; // skip faces or refined elements
+          // add polyhedron definition
+          myPolyhedronQuantities.push_back(vector<int> ());
+          myPolyElemXYZIDs.push_back(TElemDef());
+          vector<int>& quantity = myPolyhedronQuantities.back();
+          TElemDef &   elemDef  = myPolyElemXYZIDs.back();
+          // get definitions of new elements on volume faces
+          bool makePoly = false;
+          for ( int iF = 0; iF < volTool.NbFaces(); ++iF )
+          {
+            if ( getFacesDefinition(volTool.GetFaceNodes( iF ),
+                                    volTool.NbFaceNodes( iF ),
+                                    theNodes, elemDef, quantity))
+              makePoly = true;
+          }
+          if ( makePoly )
+            myPolyElems.push_back( elem );
+          else {
+            myPolyhedronQuantities.pop_back();
+            myPolyElemXYZIDs.pop_back();
+          }
+        }
+      }
+    }
+  }
+}
+
+//=======================================================================
+//function : getFacesDefinition
+//purpose  : return faces definition for a volume face defined by theBndNodes
+//=======================================================================
+
+bool SMESH_Pattern::
+  getFacesDefinition(const SMDS_MeshNode**                 theBndNodes,
+                     const int                             theNbBndNodes,
+                     const vector< const SMDS_MeshNode* >& theNodes,
+                     list< int >&                          theFaceDefs,
+                     vector<int>&                          theQuantity)
+{
+  bool makePoly = false;
+//   cout << "FROM FACE NODES: " <<endl;
+//   for ( int i = 0; i < theNbBndNodes; ++i )
+//     cout << theBndNodes[ i ];
+
+  set< const SMDS_MeshNode* > bndNodeSet;
+  for ( int i = 0; i < theNbBndNodes; ++i )
+    bndNodeSet.insert( theBndNodes[ i ]);
+
+  map< TNodeSet, list< list< int > > >::iterator nn_IdList;
+
+  // make a set of all nodes on a face
+  set< int > ids;
+  if ( !myIs2D ) { // for 2D, merge only edges
+    nn_IdList = myIdsOnBoundary.find( bndNodeSet );
+    if ( nn_IdList != myIdsOnBoundary.end() ) {
+      makePoly = true;
+      list< int > & faceIds = nn_IdList->second.front();
+      ids.insert( faceIds.begin(), faceIds.end() );
+    }
+  }
+  //bool hasIdsInFace = !ids.empty();
+
+  // add ids on links and bnd nodes
+  int lastFreeId = Max( myXYZIdToNodeMap.rbegin()->first, theNodes.size() );
+  TElemDef faceDef; // definition for the case if there is no new adjacent volumes
+  for ( int iN = 0; iN < theNbBndNodes; ++iN )
+  {
+    // add id of iN-th bnd node
+    TNodeSet nSet;
+    nSet.insert( theBndNodes[ iN ] );
+    nn_IdList = myIdsOnBoundary.find( nSet );
+    int bndId = ++lastFreeId;
+    if ( nn_IdList != myIdsOnBoundary.end() ) {
+      bndId = nn_IdList->second.front().front();
+      ids.insert( bndId );
+    }
+    else 
+      myXYZIdToNodeMap.insert( make_pair( bndId, theBndNodes[ iN ] ));
+    faceDef.push_back( bndId );
+    // add ids on a link
+    TNodeSet linkNodes;
+    linkNodes.insert( theBndNodes[ iN ]);
+    linkNodes.insert( theBndNodes[ iN + 1 == theNbBndNodes ? 0 : iN + 1 ]);
+    nn_IdList = myIdsOnBoundary.find( linkNodes );
+    if ( nn_IdList != myIdsOnBoundary.end() ) {
+      makePoly = true;
+      list< int > & linkIds = nn_IdList->second.front();
+      ids.insert( linkIds.begin(), linkIds.end() );
+      if ( isReversed( theBndNodes[ iN ], linkIds ))
+        faceDef.insert( faceDef.end(), linkIds.begin(), linkIds.end() );
+      else
+        faceDef.insert( faceDef.end(), linkIds.rbegin(), linkIds.rend() );
+    }
+  }
+
+  // find faces definition of new volumes
+
+  bool defsAdded = false;
+  if ( !myIs2D ) { // for 2D, merge only edges
+    SMDS_VolumeTool vol;
+    set< TElemDef* > checkedVolDefs;
+    set< int >::iterator id = ids.begin();
+    for ( ; id != ids.end(); ++id )
+    {
+      // definitions of volumes sharing id
+      list< TElemDef* >& defList = myReverseConnectivity[ *id ];
+      ASSERT( !defList.empty() );
+      // loop on volume definitions
+      list< TElemDef* >::iterator pIdList = defList.begin();
+      for ( ; pIdList != defList.end(); ++pIdList)
+      {
+        if ( !checkedVolDefs.insert( *pIdList ).second )
+          continue; // skip already checked volume definition
+        vector< int > idVec;
+        idVec.reserve( (*pIdList)->size() );
+        idVec.insert( idVec.begin(), (*pIdList)->begin(), (*pIdList)->end() );
+        // loop on face defs of a volume
+        SMDS_VolumeTool::VolumeType volType = vol.GetType( idVec.size() );
+        if ( volType == SMDS_VolumeTool::UNKNOWN )
+          continue;
+        int nbFaces = vol.NbFaces( volType );
+        for ( int iF = 0; iF < nbFaces; ++iF )
+        {
+          const int* nodeInds = vol.GetFaceNodesIndices( volType, iF, true );
+          int iN, nbN = vol.NbFaceNodes( volType, iF );
+          // check if all nodes of a faces are in <ids>
+          bool all = true;
+          for ( iN = 0; iN < nbN && all; ++iN ) {
+            int nodeId = idVec[ nodeInds[ iN ]];
+            all = ( ids.find( nodeId ) != ids.end() );
+          }
+          if ( all ) {
+            // store a face definition
+            for ( iN = 0; iN < nbN; ++iN ) {
+              theFaceDefs.push_back( idVec[ nodeInds[ iN ]]);
+            }
+            theQuantity.push_back( nbN );
+            defsAdded = true;
+          }
+        }
+      }
+    }
+  }
+  if ( !defsAdded ) {
+    theQuantity.push_back( faceDef.size() );
+    theFaceDefs.splice( theFaceDefs.end(), faceDef, faceDef.begin(), faceDef.end() );
+  }
+
+  return makePoly;
+}
+
+//=======================================================================
 //function : MakeMesh
 //purpose  : Create nodes and elements in <theMesh> using nodes
 //           coordinates computed by either of Apply...() methods
 //=======================================================================
 
-bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
+bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
+                             const bool  toCreatePolygons,
+                             const bool  toCreatePolyedrs)
 {
   MESSAGE(" ::MakeMesh() " );
   if ( !myIsComputed )
     return setErrorCode( ERR_MAKEM_NOT_COMPUTED );
 
+  mergePoints( toCreatePolygons );
+
   SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
-  SMESH_MeshEditor editor( theMesh ); 
 
   // clear elements and nodes existing on myShape
 
@@ -3165,18 +3505,16 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
 
   bool onMeshElements = ( !myElements.empty() );
 
-  // loop on sub-shapes of myShape: create nodes and build point-node map
-
-  vector< const SMDS_MeshNode* >       nodesVector;
-  map< TPoint*, const SMDS_MeshNode* > pointNodeMap;
+  vector< const SMDS_MeshNode* > nodesVector; // i-th point/xyz -> node
   if ( onMeshElements )
   {
-    nodesVector.resize( myXYZ.size() );
+    nodesVector.resize( Max( myXYZ.size(), myXYZIdToNodeMap.rbegin()->first ), 0 );
+    map< int, const SMDS_MeshNode*>::iterator i_node = myXYZIdToNodeMap.begin();
+    for ( ; i_node != myXYZIdToNodeMap.end(); i_node++ ) {
+      nodesVector[ i_node->first ] = i_node->second;
+    }
     for ( int i = 0; i < myXYZ.size(); ++i ) {
-      map< int, const SMDS_MeshNode*>::iterator idNode = myXYZIdToNodeMap.find( i );
-      if ( idNode != myXYZIdToNodeMap.end() )
-        nodesVector[ i ] = idNode->second;
-      else if ( isDefined( myXYZ[ i ] ))
+      if ( !nodesVector[ i ] && isDefined( myXYZ[ i ] ) )
         nodesVector[ i ] = aMeshDS->AddNode (myXYZ[ i ].X(),
                                              myXYZ[ i ].Y(),
                                              myXYZ[ i ].Z());
@@ -3184,6 +3522,14 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
   }
   else
   {
+    nodesVector.resize( myPoints.size(), 0 );
+
+    // to find point index
+    map< TPoint*, int > pointIndex;
+    for ( int i = 0; i < myPoints.size(); i++ )
+      pointIndex.insert( make_pair( & myPoints[ i ], i ));
+
+    // loop on sub-shapes of myShape: create nodes
     map< int, list< TPoint* > >::iterator idPointIt = myShapeIDToPointsMap.begin();
     for ( ; idPointIt != myShapeIDToPointsMap.end(); idPointIt++ )
     {
@@ -3198,12 +3544,14 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
       for ( ; pIt != points.end(); pIt++ )
       {
         TPoint* point = *pIt;
-        if ( pointNodeMap.find( point ) != pointNodeMap.end() )
+        int pIndex = pointIndex[ point ];
+        if ( nodesVector [ pIndex ] )
           continue;
         SMDS_MeshNode* node = aMeshDS->AddNode (point->myXYZ.X(),
                                                 point->myXYZ.Y(),
                                                 point->myXYZ.Z());
-        pointNodeMap.insert( make_pair( point, node ));
+        nodesVector [ pIndex ] = node;
+
         if ( subMeshDS ) {
           switch ( S.ShapeType() ) {
           case TopAbs_VERTEX: {
@@ -3232,62 +3580,126 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
       }
     }
   }
-  
+
   // create elements
 
-  // shapes and groups myElements are on
-  vector< int > shapeIDs;
-  vector< list< SMESHDS_Group* > > groups;
   if ( onMeshElements )
   {
-    shapeIDs.resize( myElements.size() );
-    groups.resize( myElements.size() );
+    // prepare data to create poly elements
+    makePolyElements( nodesVector, toCreatePolygons, toCreatePolyedrs );
+
+    // refine elements
+    createElements( theMesh, nodesVector, myElemXYZIDs, myElements );
+    // sew old and new elements
+    createElements( theMesh, nodesVector, myPolyElemXYZIDs, myPolyElems );
+  }
+  else
+  {
+    createElements( theMesh, nodesVector, myElemPointIDs, myElements );
+  }
+
+//   const map<int,SMESHDS_SubMesh*>& sm = aMeshDS->SubMeshes();
+//   map<int,SMESHDS_SubMesh*>::const_iterator i_sm = sm.begin();
+//   for ( ; i_sm != sm.end(); i_sm++ )
+//   {
+//     cout << " SM " << i_sm->first << " ";
+//     TopAbs::Print( aMeshDS->IndexToShape( i_sm->first ).ShapeType(), cout)<< " ";
+//     //SMDS_ElemIteratorPtr GetElements();
+//     SMDS_NodeIteratorPtr nit = i_sm->second->GetNodes();
+//     while ( nit->more() )
+//       cout << nit->next()->GetID() << " ";
+//     cout << endl;
+//   }
+  return setErrorCode( ERR_OK );
+}
+
+//=======================================================================
+//function : createElements
+//purpose  : add elements to the mesh
+//=======================================================================
+
+void SMESH_Pattern::createElements(SMESH_Mesh*                            theMesh,
+                                   const vector<const SMDS_MeshNode* >&   theNodesVector,
+                                   const list< TElemDef > &               theElemNodeIDs,
+                                   const vector<const SMDS_MeshElement*>& theElements)
+{
+  SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
+  SMESH_MeshEditor editor( theMesh ); 
+
+  bool onMeshElements = !theElements.empty();
+
+  // shapes and groups theElements are on
+  vector< int > shapeIDs;
+  vector< list< SMESHDS_Group* > > groups;
+  set< const SMDS_MeshNode* > shellNodes;
+  if ( onMeshElements )
+  {
+    shapeIDs.resize( theElements.size() );
+    groups.resize( theElements.size() );
     const set<SMESHDS_GroupBase*>& allGroups = aMeshDS->GetGroups();
     set<SMESHDS_GroupBase*>::const_iterator grIt;
-    for ( int i = 0; i < myElements.size(); i++ )
+    for ( int i = 0; i < theElements.size(); i++ )
     {
-      shapeIDs[ i ] = editor.FindShape( myElements[ i ] );
+      shapeIDs[ i ] = editor.FindShape( theElements[ i ] );
       for ( grIt = allGroups.begin(); grIt != allGroups.end(); grIt++ ) {
         SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *grIt );
-        if ( group && group->SMDSGroup().Contains( myElements[ i ] ))
+        if ( group && group->SMDSGroup().Contains( theElements[ i ] ))
           groups[ i ].push_back( group );
       }
     }
+    // get all nodes bound to shells because their SpacePosition is not set
+    // by SMESHDS_Mesh::SetNodeInVolume()
+    TopoDS_Shape aMainShape = aMeshDS->ShapeToMesh();
+    if ( !aMainShape.IsNull() ) {
+      TopExp_Explorer shellExp( aMainShape, TopAbs_SHELL );
+      for ( ; shellExp.More(); shellExp.Next() )
+      {
+        SMESHDS_SubMesh * sm = aMeshDS->MeshElements( shellExp.Current() );
+        if ( sm ) {
+          SMDS_NodeIteratorPtr nIt = sm->GetNodes();
+          while ( nIt->more() )
+            shellNodes.insert( nIt->next() );
+        }
+      }
+    }
   }
-  int nbElems = myElemPointIDs.size(); // nb elements in a pattern
+   // nb new elements per a refined element
+  int nbNewElemsPerOld = 1;
+  if ( onMeshElements )
+    nbNewElemsPerOld = theElemNodeIDs.size() / theElements.size();
 
-  list<list< int > >::iterator epIt, epEnd;
-  if ( onMeshElements ) {
-    epIt  = myElemXYZIDs.begin();
-    epEnd = myElemXYZIDs.end();
-  }
-  else {
-    epIt  = myElemPointIDs.begin();
-    epEnd = myElemPointIDs.end();
-  }
-  for ( int iElem = 0; epIt != epEnd; epIt++, iElem++ )
+  bool is2d = myIs2D;
+
+  list< TElemDef >::const_iterator enIt = theElemNodeIDs.begin();
+  list< vector<int> >::iterator quantity = myPolyhedronQuantities.begin();
+  for ( int iElem = 0; enIt != theElemNodeIDs.end(); enIt++, iElem++ )
   {
-    list< int > & elemPoints = *epIt;
+    const TElemDef & elemNodeInd = *enIt;
     // retrieve nodes
-    const SMDS_MeshNode* nodes[ 8 ];
-    list< int >::iterator iIt = elemPoints.begin();
+    vector< const SMDS_MeshNode* > nodes( elemNodeInd.size() );
+    TElemDef::const_iterator id = elemNodeInd.begin();
     int nbNodes;
-    for ( nbNodes = 0; iIt != elemPoints.end(); iIt++ ) {
-      if ( onMeshElements )
-        nodes[ nbNodes++ ] = nodesVector[ *iIt ];
+    for ( nbNodes = 0; id != elemNodeInd.end(); id++ ) {
+      if ( *id < theNodesVector.size() )
+        nodes[ nbNodes++ ] = theNodesVector[ *id ];
       else
-        nodes[ nbNodes++ ] = pointNodeMap[ & myPoints[ *iIt ]];
+        nodes[ nbNodes++ ] = myXYZIdToNodeMap[ *id ];
+    }
+    // dim of refined elem
+    int elemIndex = iElem / nbNewElemsPerOld; // refined element index
+    if ( onMeshElements ) {
+      is2d = ( theElements[ elemIndex ]->GetType() == SMDSAbs_Face );
     }
     // add an element
     const SMDS_MeshElement* elem = 0;
-    if ( myIs2D ) {
+    if ( is2d ) {
       switch ( nbNodes ) {
       case 3:
         elem = aMeshDS->AddFace( nodes[0], nodes[1], nodes[2] ); break;
       case 4:
         elem = aMeshDS->AddFace( nodes[0], nodes[1], nodes[2], nodes[3] ); break;
       default:
-        ASSERT( nbNodes < 8 );
+        elem = aMeshDS->AddPolygonalFace( nodes );
       }
     }
     else {
@@ -3304,13 +3716,12 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
         elem = aMeshDS->AddVolume (nodes[0], nodes[1], nodes[2], nodes[3],
                                    nodes[4], nodes[5], nodes[6], nodes[7] ); break;
       default:
-        ASSERT( nbNodes < 8 );
+        elem = aMeshDS->AddPolyhedralVolume( nodes, *quantity++ );
       }
     }
     // set element on a shape
     if ( elem && onMeshElements ) // applied to mesh elements
     {
-      int elemIndex = iElem / nbElems;
       int shapeID = shapeIDs[ elemIndex ];
       if ( shapeID > 0 ) {
         aMeshDS->SetMeshElementOnShape( elem, shapeID );
@@ -3325,11 +3736,14 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
         while ( noIt->more() ) {
           SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>
             ( static_cast<const SMDS_MeshNode*>( noIt->next() ));
-          if ( !node->GetPosition() || !node->GetPosition()->GetShapeId() ) {
+          if (!node->GetPosition()->GetShapeId() &&
+              shellNodes.find( node ) == shellNodes.end() ) {
             if ( S.ShapeType() == TopAbs_FACE )
               aMeshDS->SetNodeOnFace( node, shapeID );
-            else
+            else {
               aMeshDS->SetNodeInVolume( node, shapeID );
+              shellNodes.insert( node );
+            }
           }
         }
       }
@@ -3342,7 +3756,7 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
       aMeshDS->SetMeshElementOnShape( elem, myShape );
   }
 
-  // make that SMESH_subMesh::_computeState = COMPUTE_OK
+  // make that SMESH_subMesh::_computeState == COMPUTE_OK
   // so that operations with hypotheses will erase the mesh being built
 
   SMESH_subMesh * subMesh;
@@ -3353,22 +3767,46 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh)
   }
   if ( onMeshElements ) {
     list< int > elemIDs;
-    for ( int i = 0; i < myElements.size(); i++ )
+    for ( int i = 0; i < theElements.size(); i++ )
     {
-      int shapeID = shapeIDs[ i ];
-      if ( shapeID > 0 ) {
-        TopoDS_Shape S = aMeshDS->IndexToShape( shapeID );
-        subMesh = theMesh->GetSubMeshContaining( S );
-        if ( subMesh )
-          subMesh->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      }
-      elemIDs.push_back( myElements[ i ]->GetID() );
+      subMesh = theMesh->GetSubMeshContaining( shapeIDs[ i ] );
+      if ( subMesh )
+        subMesh->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+
+      elemIDs.push_back( theElements[ i ]->GetID() );
     }
     // remove refined elements
     editor.Remove( elemIDs, false );
   }
+}
 
-  return setErrorCode( ERR_OK );
+//=======================================================================
+//function : isReversed
+//purpose  : check xyz ids order in theIdsList taking into account
+//           theFirstNode on a link
+//=======================================================================
+
+bool SMESH_Pattern::isReversed(const SMDS_MeshNode* theFirstNode,
+                               const list< int >&   theIdsList) const
+{
+  if ( theIdsList.size() < 2 )
+    return false;
+
+  gp_Pnt Pf ( theFirstNode->X(), theFirstNode->Y(), theFirstNode->Z() );
+  gp_Pnt P[2];
+  list<int>::const_iterator id = theIdsList.begin();
+  for ( int i = 0; i < 2; ++i, ++id ) {
+    if ( *id < myXYZ.size() )
+      P[ i ] = myXYZ[ *id ];
+    else {
+      map< int, const SMDS_MeshNode*>::const_iterator i_n;
+      i_n = myXYZIdToNodeMap.find( *id );
+      ASSERT( i_n != myXYZIdToNodeMap.end() );
+      const SMDS_MeshNode* n = i_n->second;
+      P[ i ].SetCoord( n->X(), n->Y(), n->Z() );
+    }
+  }
+  return Pf.SquareDistance( P[ 1 ] ) < Pf.SquareDistance( P[ 0 ] );
 }
 
 
@@ -3539,11 +3977,11 @@ bool SMESH_Pattern::findBoundaryPoints()
 
     typedef pair< TPoint*, TPoint*> TLink;
     set< TLink > linkSet;
-    list<list< int > >::iterator epIt = myElemPointIDs.begin();
+    list<TElemDef >::iterator epIt = myElemPointIDs.begin();
     for ( ; epIt != myElemPointIDs.end(); epIt++ )
     {
-      list< int > & elemPoints = *epIt;
-      list< int >::iterator pIt = elemPoints.begin();
+      TElemDef & elemPoints = *epIt;
+      TElemDef::iterator pIt = elemPoints.begin();
       int prevP = elemPoints.back();
       for ( ; pIt != elemPoints.end(); pIt++ ) {
         TPoint* p1 = & myPoints[ prevP ];
@@ -3767,6 +4205,9 @@ bool SMESH_Pattern::setShapeToMesh(const TopoDS_Shape& theShape)
     MESSAGE( myKeyPointIDs.size() << " != " << vMap.Extent() );
     return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
   }
+
+  myElements.clear(); // not refine elements
+  myElemXYZIDs.clear();
 
   myShapeIDMap.Clear();
   myShape = theShape;

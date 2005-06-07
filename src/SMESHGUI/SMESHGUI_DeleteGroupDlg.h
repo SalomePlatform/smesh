@@ -36,61 +36,56 @@
 class QCloseEvent;
 class QFrame;
 class QPushButton;
-class SALOME_Selection;
+class SalomeApp_SelectionMgr;
 class QListBox;
 
-/*
-  Class       : SMESHGUI_DeleteGroupDlg
-  Description : Delete groups and their contents
-*/
+/*!
+ *  Class       : SMESHGUI_DeleteGroupDlg
+ *  Description : Delete groups and their contents
+ */
 
 class SMESHGUI_DeleteGroupDlg : public QDialog
-{ 
+{
   Q_OBJECT
-    
-public:
-                                     SMESHGUI_DeleteGroupDlg( QWidget*, SALOME_Selection* );
-  virtual                            ~SMESHGUI_DeleteGroupDlg();
 
-  void                               Init( SALOME_Selection* ) ;
-  
+public:
+                          SMESHGUI_DeleteGroupDlg (QWidget*,
+						   SalomeApp_SelectionMgr*);
+  virtual                 ~SMESHGUI_DeleteGroupDlg();
+
+  void                    Init (SalomeApp_SelectionMgr*);
+
 private:
 
-  void                               closeEvent( QCloseEvent* e ) ;
-  void                               enterEvent ( QEvent * ) ;            
-  
+  void                    closeEvent (QCloseEvent*);
+  void                    enterEvent (QEvent*);
+
 private slots:
 
-  void                               onOk();
-  bool                               onApply();
-  void                               onClose();
+  void                    onOk();
+  bool                    onApply();
+  void                    onClose();
 
-  void                               onDeactivate();
+  void                    onDeactivate();
 
-  void                               onSelectionDone();
+  void                    onSelectionDone();
 
 private:
 
-  QFrame*                            createButtonFrame( QWidget* );
-  QFrame*                            createMainFrame  ( QWidget* );
-  bool                               isValid();
-  
+  QFrame*                 createButtonFrame (QWidget*);
+  QFrame*                 createMainFrame   (QWidget*);
+  bool                    isValid();
+
 private:
 
-  QPushButton*                       myOkBtn;
-  QPushButton*                       myApplyBtn;
-  QPushButton*                       myCloseBtn;
-  QListBox*                          myListBox;
-  SALOME_Selection*                  mySelection;
-  
+  QPushButton*            myOkBtn;
+  QPushButton*            myApplyBtn;
+  QPushButton*            myCloseBtn;
+  QListBox*               myListBox;
+  SalomeApp_SelectionMgr* mySelectionMgr;
+
   QValueList<SMESH::SMESH_GroupBase_var> myListGrp;
   bool                                   myBlockSelection;
-  
 };
 
 #endif
-
-
-
-
-

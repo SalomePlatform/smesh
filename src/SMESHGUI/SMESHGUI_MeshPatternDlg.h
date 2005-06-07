@@ -40,7 +40,7 @@ class QFrame;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class QPushButton;
-class SALOME_Selection;
+class SalomeApp_SelectionMgr;
 class QRadioButton;
 class QCheckBox;
 class QButtonGroup;
@@ -51,6 +51,9 @@ class SMESHGUI_CreatePatternDlg;
 class SMESHGUI_PatternWidget;
 class vtkUnstructuredGrid;
 class SALOME_Actor;
+class SVTK_ViewWindow;
+class SVTK_Selector;
+class SMESHGUI;
 
 /*
   Class       : SMESHGUI_MeshPatternDlg
@@ -68,12 +71,11 @@ class SMESHGUI_MeshPatternDlg : public QDialog
   enum { Mesh, Object, Vertex1, Vertex2, Ids };
 
 public:
-                                      SMESHGUI_MeshPatternDlg( QWidget*,
-                                                               SALOME_Selection*,
+                                      SMESHGUI_MeshPatternDlg( SMESHGUI*,
                                                                const char* = 0 );
   virtual                             ~SMESHGUI_MeshPatternDlg();
 
-  void                                Init( SALOME_Selection* );
+  void                                Init();
   
 private slots:
 
@@ -145,13 +147,18 @@ private:
   QPushButton*                        myNewBtn;
 
   QCheckBox*                          myReverseChk;
+  QCheckBox*                          myCreatePolygonsChk;
+  QCheckBox*                          myCreatePolyedrsChk;
   SMESHGUI_PatternWidget*             myPicture2d;
   QFrame*                             myPicture3d;
   QLabel*                             myPreview3d;
 
   QCheckBox*                          myPreviewChk;
-    
-  SALOME_Selection*                   mySelection;
+
+  SMESHGUI*                           mySMESHGUI;
+  SVTK_ViewWindow*                    myViewWindow;
+  SVTK_Selector*                      mySelector;
+  SalomeApp_SelectionMgr*             mySelectionMgr;
   int                                 mySelInput;
   int                                 myNbPoints;
   int                                 myType;
@@ -168,20 +175,3 @@ private:
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

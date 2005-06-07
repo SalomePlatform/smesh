@@ -30,8 +30,9 @@
 // QT Include
 #include <qfileinfo.h>
 
-#include "QAD_ResourceMgr.h"
-#include "QAD_Desktop.h"
+#include "SMESHGUI.h"
+#include "SUIT_ResourceMgr.h"
+#include "SUIT_Desktop.h"
 
 #include "SMESHGUI_XmlHandler.h"
 #include "SMESHGUI_Hypotheses.h"
@@ -92,10 +93,9 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       if (aResName != "")
       {
         MESSAGE("Loading Resources " << aResName);
-        QAD_ResourceMgr* resMgr = QAD_Desktop::createResourceManager();
-        QString msg;
-        if (!resMgr->loadResources(aResName, msg))
-          MESSAGE(msg);
+        SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
+        resMgr->loadTranslator("resources",aResName+"_msg_en.qm");
+	resMgr->loadTranslator("resources",aResName+"_images.qm");
       }
     }
   }

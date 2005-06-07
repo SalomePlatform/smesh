@@ -103,9 +103,15 @@ module SMESH
 
     /*!
      * Create nodes and elements in <theMesh> using nodes
-     * coordinates computed by either of Apply...() methods
+     * coordinates computed by either of Apply...() methods.
+     * If CreatePolygons is TRUE, replace adjacent faces by polygons
+     * to keep mesh conformity.
+     * If CreatePolyedrs is TRUE, replace adjacent volumes by polyedrs
+     * to keep mesh conformity.
      */
-    boolean MakeMesh(in SMESH_Mesh theMesh);
+    boolean MakeMesh (in SMESH_Mesh theMesh,
+		      in boolean    CreatePolygons,
+		      in boolean    CreatePolyedrs);
 
     /*!
      * Return the loaded pattern in the string form to be saved in file

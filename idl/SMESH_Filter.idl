@@ -278,7 +278,7 @@ module SMESH
   /*!
   *  Filter
   */
-  interface Filter: SALOME::GenericObj
+  interface Filter: SALOME::GenericObj, SMESH_IDSource
   {
     /*!
     * Structure containing information about one criterion
@@ -312,6 +312,8 @@ module SMESH
     typedef sequence<Criterion> Criteria;
 
     void          SetPredicate( in Predicate thePredicate );
+    void          SetMesh( in SMESH_Mesh theMesh );
+
     long_array    GetElementsId( in SMESH_Mesh theMesh );
     ElementType   GetElementType();
     Predicate     GetPredicate();

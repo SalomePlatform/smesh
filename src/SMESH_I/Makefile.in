@@ -56,6 +56,7 @@ LIB= libSMESHEngine.la
 LIB_SRC = \
 	SMESH_Gen_i.cxx \
 	SMESH_Gen_i_1.cxx \
+	SMESH_DumpPython.cxx \
 	SMESH_Mesh_i.cxx \
 	SMESH_MEDMesh_i.cxx \
         SMESH_MEDFamily_i.cxx \

@@ -1,23 +1,23 @@
 //  SMESH SMESHGUI : GUI for SMESH component
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -27,13 +27,19 @@
 
 #include "SMESHGUI_GroupOpDlg.h"
 
-#include "QAD_Desktop.h"
-
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
-#include "SALOME_Selection.h"
+
 #include "SMESH_TypeFilter.hxx"
 
+#include "SUIT_ResourceMgr.h"
+#include "SUIT_Desktop.h"
+
+#include "SalomeApp_SelectionMgr.h"
+#include "SVTK_Selection.h"
+#include "SALOME_ListIO.hxx"
+
+// QT Includes
 #include <qframe.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -46,71 +52,73 @@
 #define SPACING 5
 #define MARGIN  10
 
-/*
-  Class       : SMESHGUI_GroupOpDlg
-  Description : Perform boolean operations on groups
-*/
+/*!
+ *  Class       : SMESHGUI_GroupOpDlg
+ *  Description : Perform boolean operations on groups
+ */
 
 //=======================================================================
 // name    : SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( QWidget*          theParent, 
-                                          SALOME_Selection* theSelection, 
-                                          const int         theMode )
-: QDialog( theParent, "SMESHGUI_GroupOpDlg", false, 
-           WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg (QWidget*                theParent,
+                                          SalomeApp_SelectionMgr* theSelection,
+                                          const int               theMode)
+     : QDialog(theParent, "SMESHGUI_GroupOpDlg", false,
+               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
 {
   myMode = theMode;
 
-  if ( myMode == UNION ) setCaption( tr( "UNION_OF_TWO_GROUPS" ) );
-  else if ( myMode == INTERSECT ) setCaption( tr( "INTERSECTION_OF_TWO_GROUPS" ) );
-  else setCaption( tr( "CUT_OF_TWO_GROUPS" ) );
+  if (myMode == UNION) setCaption(tr("UNION_OF_TWO_GROUPS"));
+  else if (myMode == INTERSECT) setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
+  else setCaption(tr("CUT_OF_TWO_GROUPS"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout( this, MARGIN, SPACING );
+  QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
 
-  QFrame* aMainFrame = createMainFrame  ( this );
-  QFrame* aBtnFrame  = createButtonFrame( this );
+  QFrame* aMainFrame = createMainFrame  (this);
+  QFrame* aBtnFrame  = createButtonFrame(this);
 
-  aDlgLay->addWidget( aMainFrame );
-  aDlgLay->addWidget( aBtnFrame );
+  aDlgLay->addWidget(aMainFrame);
+  aDlgLay->addWidget(aBtnFrame);
 
-  aDlgLay->setStretchFactor( aMainFrame, 1 );
+  aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  Init( theSelection ); 
+  Init(theSelection);
 }
 
 //=======================================================================
 // name    : SMESHGUI_GroupOpDlg::createMainFrame
 // Purpose : Create frame containing dialog's input fields
 //=======================================================================
-QFrame* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
+QFrame* SMESHGUI_GroupOpDlg::createMainFrame (QWidget* theParent)
 {
-  QGroupBox* aMainGrp = new QGroupBox( 1, Qt::Horizontal, theParent );
-  aMainGrp->setFrameStyle( QFrame::NoFrame );
-  aMainGrp->setInsideMargin( 0 );
-  
-  QGroupBox* aNameGrp = new QGroupBox( 1, Qt::Vertical, tr( "NAME" ), aMainGrp );
-  new QLabel( tr( "RESULT_NAME" ), aNameGrp );
-  myNameEdit = new QLineEdit( aNameGrp );
-  
-  QGroupBox* anArgGrp = new QGroupBox( 3, Qt::Horizontal, tr( "ARGUMENTS" ), aMainGrp );
-  
-  new QLabel( myMode == CUT ? tr( "MAIN_OBJECT" ) :tr( "OBJECT_1" ), anArgGrp );
-  myBtn1 = new QPushButton( anArgGrp );
-  myEdit1 = new QLineEdit( anArgGrp );
-  
-  new QLabel( myMode == CUT ? tr( "TOOL_OBJECT" ) :tr( "OBJECT_2" ), anArgGrp );
-  myBtn2 = new QPushButton( anArgGrp );
-  myEdit2 = new QLineEdit( anArgGrp );
-  
-  myEdit1->setReadOnly( true );
-  myEdit2->setReadOnly( true );
+  QGroupBox* aMainGrp = new QGroupBox(1, Qt::Horizontal, theParent);
+  aMainGrp->setFrameStyle(QFrame::NoFrame);
+  aMainGrp->setInsideMargin(0);
 
-  QPixmap aPix( QAD_Desktop::getResourceManager()->loadPixmap( "SMESH",tr( "ICON_SELECT" ) ) );
-  myBtn1->setPixmap( aPix );
-  myBtn2->setPixmap( aPix );
-  
+  QGroupBox* aNameGrp = new QGroupBox(1, Qt::Vertical, tr("NAME"), aMainGrp);
+  new QLabel(tr("RESULT_NAME"), aNameGrp);
+  myNameEdit = new QLineEdit(aNameGrp);
+
+  QGroupBox* anArgGrp = new QGroupBox(3, Qt::Horizontal, tr("ARGUMENTS"), aMainGrp);
+
+  new QLabel(myMode == CUT ? tr("MAIN_OBJECT") :tr("OBJECT_1"), anArgGrp);
+  myBtn1 = new QPushButton(anArgGrp);
+  myEdit1 = new QLineEdit(anArgGrp);
+  myEdit1->setAlignment( Qt::AlignLeft );
+
+  new QLabel(myMode == CUT ? tr("TOOL_OBJECT") :tr("OBJECT_2"), anArgGrp);
+  myBtn2 = new QPushButton(anArgGrp);
+  myEdit2 = new QLineEdit(anArgGrp);
+  myEdit2->setAlignment( Qt::AlignLeft );
+
+  myEdit1->setReadOnly(true);
+  myEdit2->setReadOnly(true);
+
+  QPixmap aPix (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  myBtn1->setPixmap(aPix);
+  myBtn2->setPixmap(aPix);
+
   return aMainGrp;
 }
 
@@ -118,28 +126,28 @@ QFrame* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
 // name    : SMESHGUI_GroupOpDlg::createButtonFrame
 // Purpose : Create frame containing buttons
 //=======================================================================
-QFrame* SMESHGUI_GroupOpDlg::createButtonFrame( QWidget* theParent )
+QFrame* SMESHGUI_GroupOpDlg::createButtonFrame (QWidget* theParent)
 {
-  QFrame* aFrame = new QFrame( theParent );
-  aFrame->setFrameStyle( QFrame::Box | QFrame::Sunken );
+  QFrame* aFrame = new QFrame(theParent);
+  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton( tr( "SMESH_BUT_OK"    ), aFrame );
-  myApplyBtn  = new QPushButton( tr( "SMESH_BUT_APPLY" ), aFrame );
-  myCloseBtn  = new QPushButton( tr( "SMESH_BUT_CLOSE" ), aFrame );
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
+  myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
 
-  QSpacerItem* aSpacer = new QSpacerItem( 0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum );
+  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-  QHBoxLayout* aLay = new QHBoxLayout( aFrame, MARGIN, SPACING );
+  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
 
-  aLay->addWidget( myOkBtn );
-  aLay->addWidget( myApplyBtn );
-  aLay->addItem( aSpacer);
-  aLay->addWidget( myCloseBtn );
-  
+  aLay->addWidget(myOkBtn);
+  aLay->addWidget(myApplyBtn);
+  aLay->addItem(aSpacer);
+  aLay->addWidget(myCloseBtn);
+
   // connect signals and slots
-  connect( myOkBtn,    SIGNAL( clicked() ), SLOT( onOk() ) );
-  connect( myCloseBtn, SIGNAL( clicked() ), SLOT( onClose() ) ) ;
-  connect( myApplyBtn, SIGNAL( clicked() ), SLOT( onApply() ) );
+  connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
+  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
+  connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
 
   return aFrame;
 }
@@ -156,32 +164,36 @@ SMESHGUI_GroupOpDlg::~SMESHGUI_GroupOpDlg()
 // name    : SMESHGUI_GroupOpDlg::Init
 // Purpose : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_GroupOpDlg::Init( SALOME_Selection* theSelection )
+void SMESHGUI_GroupOpDlg::Init (SalomeApp_SelectionMgr* theSelection)
 {
-  mySelection = theSelection;  
+  mySelectionMgr = theSelection;
   SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox( ( QDialog* )this ) ;
+  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
   myFocusWg = myEdit1;
-  
+
   myGroup1 = SMESH::SMESH_GroupBase::_nil();
   myGroup2 = SMESH::SMESH_GroupBase::_nil();
-  
+
   // selection and SMESHGUI
-  connect( mySelection, SIGNAL( currentSelectionChanged() ), SLOT( onSelectionDone() ) );
-  connect( aSMESHGUI, SIGNAL( SignalDeactivateActiveDialog() ), SLOT( onDeactivate() ) );
-  connect( aSMESHGUI, SIGNAL( SignalCloseAllDialogs() ), SLOT( ClickOnClose() ) );
-  
-  connect( myBtn1, SIGNAL( clicked() ), this, SLOT( onFocusChanged() ) );
-  connect( myBtn2, SIGNAL( clicked() ), this, SLOT( onFocusChanged() ) );
-  
-  int x, y ;
-  aSMESHGUI->DefineDlgPosition( this, x, y );
-  this->move( x, y );
-  this->show(); 
+  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
+  connect(aSMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
+  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(ClickOnClose()));
+
+  connect(myBtn1, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
+  connect(myBtn2, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
+
+  int x, y;
+  aSMESHGUI->DefineDlgPosition(this, x, y);
+  this->move(x, y);
+  this->show();
 
   // set selection mode
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection, true ); 
-  mySelection->AddFilter( new SMESH_TypeFilter( GROUP ) );
+#ifdef NEW_GUI
+  mySelectionMgr->setSelectionModes(ActorSelection, true);
+#else
+  mySelectionMgr->setSelectionModes(ActorSelection);
+#endif
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 
   return;
 }
@@ -193,85 +205,77 @@ void SMESHGUI_GroupOpDlg::Init( SALOME_Selection* theSelection )
 bool SMESHGUI_GroupOpDlg::isValid()
 {
   // Verify validity of group name
-  if ( myNameEdit->text() == "" )
-  {
-    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_INSUFFICIENT_DATA" ), tr( "EMPTY_NAME" ), QMessageBox::Ok ); 
+  if (myNameEdit->text() == "") {
+    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                             tr("EMPTY_NAME"), QMessageBox::Ok);
     return false;
   }
 
   // Verufy wheter arguments speciffiyed
-  if ( myGroup1->_is_nil() || myGroup2->_is_nil() )
-  {
-    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_INSUFFICIENT_DATA" ), tr( "INCORRECT_ARGUMENTS" ), QMessageBox::Ok ); 
+  if (myGroup1->_is_nil() || myGroup2->_is_nil()) {
+    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                             tr("INCORRECT_ARGUMENTS"), QMessageBox::Ok);
     return false;
   }
 
   // Verify whether arguments belongs to same mesh
   SMESH::SMESH_Mesh_ptr aMesh1 = myGroup1->GetMesh();
   SMESH::SMESH_Mesh_ptr aMesh2 = myGroup2->GetMesh();
-  
+
   int aMeshId1 = !aMesh1->_is_nil() ? aMesh1->GetId() : -1;
   int aMeshId2 = !aMesh2->_is_nil() ? aMesh2->GetId() : -1;
-  
-  if ( aMeshId1 != aMeshId2 || aMeshId1 == -1 )
-  {
-    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_INSUFFICIENT_DATA" ), tr( "DIFF_MESHES" ), QMessageBox::Ok ); 
+
+  if (aMeshId1 != aMeshId2 || aMeshId1 == -1) {
+    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                             tr("DIFF_MESHES"), QMessageBox::Ok);
     return false;
   }
 
   // Verify whether groups have same types of entities
-  if ( myGroup1->GetType() != myGroup2->GetType() )
-  {
-    QMessageBox::information( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_INSUFFICIENT_DATA" ), tr( "DIFF_TYPES" ), QMessageBox::Ok );
+  if (myGroup1->GetType() != myGroup2->GetType()) {
+    QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                             tr("DIFF_TYPES"), QMessageBox::Ok);
     return false;
   }
-  
-  
+
   return true;
 }
 
 //=======================================================================
 // name    : SMESHGUI_GroupOpDlg::onApply
-// Purpose : SLOT called when "Apply" button pressed. 
+// Purpose : SLOT called when "Apply" button pressed.
 //=======================================================================
 bool SMESHGUI_GroupOpDlg::onApply()
 {
-  if ( !isValid() || SMESHGUI::GetSMESHGUI()->ActiveStudyLocked() )
+  if (!isValid() || SMESHGUI::GetSMESHGUI()->isActiveStudyLocked())
     return false;
-  
+
   SMESH::SMESH_Mesh_ptr aMesh = myGroup1->GetMesh();
   QString aName = myNameEdit->text();
   SMESH::SMESH_Group_ptr aNewGrp = SMESH::SMESH_Group::_nil();
-  
-  if  ( myMode == UNION ) aNewGrp = aMesh->UnionGroups( myGroup1, myGroup2, aName.latin1() );
-  else if ( myMode == INTERSECT ) aNewGrp = aMesh->IntersectGroups( myGroup1, myGroup2, aName.latin1() );
-  else aNewGrp = aMesh->CutGroups( myGroup1, myGroup2, aName.latin1() );
 
-  if ( !aNewGrp->_is_nil() )
-  {
-    SMESHGUI::GetSMESHGUI()->GetActiveStudy()->updateObjBrowser( true );
+  if (myMode == UNION) aNewGrp = aMesh->UnionGroups(myGroup1, myGroup2, aName.latin1());
+  else if (myMode == INTERSECT) aNewGrp = aMesh->IntersectGroups(myGroup1, myGroup2, aName.latin1());
+  else aNewGrp = aMesh->CutGroups(myGroup1, myGroup2, aName.latin1());
+
+  if (!aNewGrp->_is_nil()) {
+    SMESHGUI::GetSMESHGUI()->updateObjBrowser(true);
     reset();
     return true;
-  }
-  else
-  {
-    QMessageBox::critical( SMESHGUI::GetSMESHGUI()->GetDesktop(),
-      tr( "SMESH_ERROR" ), tr( "SMESH_OPERATION_FAILED" ), "OK" ); 
+  } else {
+    QMessageBox::critical(SMESHGUI::desktop(), tr("SMESH_ERROR"),
+                          tr("SMESH_OPERATION_FAILED"), "OK");
     return false;
   }
 }
 
 //=======================================================================
 // name    : SMESHGUI_GroupOpDlg::onOk
-// Purpose : SLOT called when "Ok" button pressed. 
+// Purpose : SLOT called when "Ok" button pressed.
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onOk()
 {
-  if ( onApply() )
+  if (onApply())
     onClose();
 }
 
@@ -281,11 +285,11 @@ void SMESHGUI_GroupOpDlg::onOk()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onClose()
 {
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection );
-  disconnect( mySelection, 0, this, 0 );
-  disconnect( SMESHGUI::GetSMESHGUI(), 0, this, 0 );
+  mySelectionMgr->setSelectionModes(ActorSelection);
+  disconnect(mySelectionMgr, 0, this, 0);
+  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
   SMESHGUI::GetSMESHGUI()->ResetState();
-  mySelection->ClearFilters();
+  mySelectionMgr->clearFilters();
   reject();
 }
 
@@ -295,23 +299,26 @@ void SMESHGUI_GroupOpDlg::onClose()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onSelectionDone()
 {
-  if ( myFocusWg == myEdit1 )
+  if (myFocusWg == myEdit1)
     myGroup1 = SMESH::SMESH_GroupBase::_nil();
   else
     myGroup2 = SMESH::SMESH_GroupBase::_nil();
-  
-  myFocusWg->setText( "" );
-  
-  if ( mySelection->IObjectCount() == 1 )
-  {
-    SMESH::SMESH_GroupBase_var aGroup = 
-      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>( mySelection->firstIObject() );
-    
-    if ( !aGroup->_is_nil() )
-    {
-      myFocusWg->setText( aGroup->GetName() );
 
-      if ( myFocusWg == myEdit1 )
+  myFocusWg->setText("");
+
+  SALOME_ListIO aList;
+  mySelectionMgr->selectedObjects(aList);
+
+  if (aList.Extent() == 1) {
+    SMESH::SMESH_GroupBase_var aGroup =
+      SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(aList.First());
+
+    if (!aGroup->_is_nil())
+    {
+      myFocusWg->setText(aGroup->GetName());
+      myFocusWg->setCursorPosition( 0 );
+
+      if (myFocusWg == myEdit1)
         myGroup1 = aGroup;
       else
         myGroup2 = aGroup;
@@ -325,30 +332,33 @@ void SMESHGUI_GroupOpDlg::onSelectionDone()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onDeactivate()
 {
-  setEnabled( false );
-  mySelection->ClearFilters();
+  setEnabled(false);
+  mySelectionMgr->clearFilters();
 }
 
 //=======================================================================
 // name    : SMESHGUI_GroupOpDlg::enterEvent
 // Purpose : Event filter
 //=======================================================================
-void SMESHGUI_GroupOpDlg::enterEvent( QEvent* )
+void SMESHGUI_GroupOpDlg::enterEvent (QEvent*)
 {
-  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog() ;   
-  setEnabled( true );
-  QAD_Application::getDesktop()->SetSelectionMode( ActorSelection, true ); 
-  mySelection->AddFilter( new SMESH_TypeFilter( GROUP ) );
+  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+  setEnabled(true);
+#ifdef NEW_GUI
+  mySelectionMgr->setSelectionModes(ActorSelection, true);
+#else
+  mySelectionMgr->setSelectionModes(ActorSelection);
+#endif
+  mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-void SMESHGUI_GroupOpDlg::closeEvent( QCloseEvent* )
+//=======================================================================
+// name    : SMESHGUI_GroupOpDlg::closeEvent
+// purpose :
+//=======================================================================
+void SMESHGUI_GroupOpDlg::closeEvent (QCloseEvent*)
 {
-  onClose() ;
+  onClose();
 }
 
 //=======================================================================
@@ -368,34 +378,9 @@ void SMESHGUI_GroupOpDlg::onFocusChanged()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::reset()
 {
-  myNameEdit->setText( "" );
-  myEdit1->setText( "" );
-  myEdit2->setText( "" );
+  myNameEdit->setText("");
+  myEdit1->setText("");
+  myEdit2->setText("");
   myFocusWg = myEdit1;
   myNameEdit->setFocus();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

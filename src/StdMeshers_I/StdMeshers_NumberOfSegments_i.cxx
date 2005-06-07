@@ -29,10 +29,13 @@
 
 using namespace std;
 #include "StdMeshers_NumberOfSegments_i.hxx"
+#include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
+
+#include <TCollection_AsciiString.hxx>
 
 //=============================================================================
 /*!
@@ -87,6 +90,13 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
 				  SALOME::BAD_PARAM );
   }
+
+  // Update Python script
+  TCollection_AsciiString aStr, aStrNb ((int)theSegmentsNumber);
+  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetNumberOfSegments(";
+  aStr += aStrNb + ")";
+
+  SMESH_Gen_i::AddToCurrentPyScript(aStr);
 }
 
 //=============================================================================

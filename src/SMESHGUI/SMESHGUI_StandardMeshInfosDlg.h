@@ -29,7 +29,8 @@
 #ifndef SMESHGUI_STANDARDMESHINFOSDLG_H
 #define SMESHGUI_STANDARDMESHINFOSDLG_H
 
-#include "SMESH_TypeFilter.hxx"
+//#include "SMESH_TypeFilter.hxx"
+#include "SUIT_SelectionFilter.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -39,7 +40,7 @@ class QLabel;
 class QPushButton;
 class QLineEdit;
 class QTextBrowser;
-class SALOME_Selection;
+class SalomeApp_SelectionMgr;
 
 class SMESHGUI_StandardMeshInfosDlg : public QDialog
 { 
@@ -61,11 +62,12 @@ private slots:
     void onStartSelection();
 
 private:
-    SALOME_Selection*     mySelection; 
-    bool                  myStartSelection;
-    bool                  myIsActiveWindow;
+    SalomeApp_SelectionMgr*  mySelectionMgr; 
+    bool                     myStartSelection;
+    bool                     myIsActiveWindow;
     
-    Handle(SMESH_TypeFilter)      myMeshFilter;
+    //Handle(SMESH_TypeFilter) myMeshFilter;
+    SUIT_SelectionFilter*    myMeshFilter;
 
     QLabel*       myNameLab;
     QPushButton*  mySelectBtn;

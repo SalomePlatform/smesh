@@ -225,6 +225,57 @@ void SMESHDS_Command::AddVolume(int NewVolID,
 }
 
 //=======================================================================
+//function : AddPolygonalFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Command::AddPolygonalFace (const int        ElementID,
+                                        std::vector<int> nodes_ids)
+{
+  if (!myType == SMESHDS_AddPolygon) {
+    MESSAGE("SMESHDS_Command::AddPolygonalFace : Bad Type");
+    return;
+  }
+  myIntegers.push_back(ElementID);
+
+  int i, nbNodes = nodes_ids.size();
+  myIntegers.push_back(nbNodes);
+  for (i = 0; i < nbNodes; i++) {
+    myIntegers.push_back(nodes_ids[i]);
+  }
+
+  myNumber++;
+}
+
+//=======================================================================
+//function : AddPolyhedralVolume
+//purpose  : 
+//=======================================================================
+void SMESHDS_Command::AddPolyhedralVolume (const int        ElementID,
+                                           std::vector<int> nodes_ids,
+                                           std::vector<int> quantities)
+{
+  if (!myType == SMESHDS_AddPolyhedron) {
+    MESSAGE("SMESHDS_Command::AddPolyhedralVolume : Bad Type");
+    return;
+  }
+  myIntegers.push_back(ElementID);
+
+  int i, nbNodes = nodes_ids.size();
+  myIntegers.push_back(nbNodes);
+  for (i = 0; i < nbNodes; i++) {
+    myIntegers.push_back(nodes_ids[i]);
+  }
+
+  int nbFaces = quantities.size();
+  myIntegers.push_back(nbFaces);
+  for (i = 0; i < nbFaces; i++) {
+    myIntegers.push_back(quantities[i]);
+  }
+
+  myNumber++;
+}
+
+//=======================================================================
 //function : 
 //purpose  : 
 //=======================================================================
@@ -263,13 +314,43 @@ void SMESHDS_Command::ChangeElementNodes(int ElementID, int nodes[], int nbnodes
 {
   if (!myType == SMESHDS_ChangeElementNodes)
   {
-    MESSAGE("SMESHDS_Command::RemoveElement : Bad Type");
+    MESSAGE("SMESHDS_Command::ChangeElementNodes : Bad Type");
     return;
   }
   myIntegers.push_back(ElementID);
   myIntegers.push_back(nbnodes);
   for ( int i = 0; i < nbnodes; i++ )
     myIntegers.push_back( nodes[ i ] );
+
+  myNumber++;
+}
+
+//=======================================================================
+//function : ChangePolyhedronNodes
+//purpose  : 
+//=======================================================================
+void SMESHDS_Command::ChangePolyhedronNodes (const int ElementID,
+                                             std::vector<int> nodes_ids,
+                                             std::vector<int> quantities)
+{
+  if (myType != SMESHDS_ChangePolyhedronNodes)
+  {
+    MESSAGE("SMESHDS_Command::ChangePolyhedronNodes : Bad Type");
+    return;
+  }
+  myIntegers.push_back(ElementID);
+
+  int i, nbNodes = nodes_ids.size();
+  myIntegers.push_back(nbNodes);
+  for (i = 0; i < nbNodes; i++) {
+    myIntegers.push_back(nodes_ids[i]);
+  }
+
+  int nbFaces = quantities.size();
+  myIntegers.push_back(nbFaces);
+  for (i = 0; i < nbFaces; i++) {
+    myIntegers.push_back(quantities[i]);
+  }
 
   myNumber++;
 }

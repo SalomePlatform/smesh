@@ -29,7 +29,7 @@
 #ifndef SMESH_DEVICE_ACTOR_H
 #define SMESH_DEVICE_ACTOR_H
 
-#include "SALOME_GeometryFilter.h"
+#include <VTKViewer_GeometryFilter.h>
 #include "SMESH_Controls.hxx"
 #include "SMESH_Object.h"
 
@@ -46,10 +46,10 @@ class vtkScalarBarActor;
 class vtkLookupTable;
 class vtkImplicitBoolean;
 
-class SALOME_Transform;
-class SALOME_TransformFilter;
-class SALOME_PassThroughFilter;
-class SALOME_ExtractUnstructuredGrid;
+class VTKViewer_Transform;
+class VTKViewer_TransformFilter;
+class VTKViewer_PassThroughFilter;
+class VTKViewer_ExtractUnstructuredGrid;
 
 class SMESH_ExtractGeometry;
 
@@ -71,7 +71,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
 
-  virtual void SetTransform(SALOME_Transform* theTransform); 
+  virtual void SetTransform(VTKViewer_Transform* theTransform); 
   virtual unsigned long int GetMTime();
 
   float GetShrinkFactor();
@@ -89,7 +89,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   virtual void SetVisibility(int theMode);
   virtual int GetVisibility();
 
-  SALOME_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
+  VTKViewer_ExtractUnstructuredGrid* GetExtractUnstructuredGrid();
   vtkUnstructuredGrid* GetUnstructuredGrid();
 
   void SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
@@ -122,12 +122,12 @@ class SMESH_DeviceActor: public vtkLODActor{
   bool myIsImplicitFunctionUsed;
 
   vtkMergeFilter* myMergeFilter;
-  SALOME_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
+  VTKViewer_ExtractUnstructuredGrid* myExtractUnstructuredGrid;
 
   bool myStoreClippingMapping;
-  SALOME_GeometryFilter *myGeomFilter;
-  SALOME_TransformFilter *myTransformFilter;
-  std::vector<SALOME_PassThroughFilter*> myPassFilter;
+  VTKViewer_GeometryFilter *myGeomFilter;
+  VTKViewer_TransformFilter *myTransformFilter;
+  std::vector<VTKViewer_PassThroughFilter*> myPassFilter;
 
   vtkShrinkFilter* myShrinkFilter;
   bool myIsShrinkable;

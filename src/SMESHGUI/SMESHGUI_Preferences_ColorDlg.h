@@ -30,8 +30,8 @@
 #define SMESHGUI_PREFERENCES_COLORDLG_H
 
 // SALOME Includes
-#include "QAD_Config.h"
-#include "QAD_Settings.h"
+//#include "SUIT_Config.h"
+//#include "SUIT_Settings.h"
 
 // IDL Headers
 #include <SALOMEconfig.h>

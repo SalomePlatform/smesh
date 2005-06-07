@@ -59,6 +59,8 @@ class SMDS_MeshElement:public SMDS_MeshObject
 
 	///Return the type of the current element
 	virtual SMDSAbs_ElementType GetType() const = 0;
+	virtual bool IsPoly() const { return false; };
+
 	friend std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
 	friend bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
 

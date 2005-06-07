@@ -1,44 +1,38 @@
-//  File      : SMESH_TypeFilter.cxx
-//  Created   : Fri Dec 07 09:57:24 2001
-//  Author    : Nicolas REJNERI
-//  Project   : SALOME
-//  Module    : SMESH
-//  Copyright : Open CASCADE
-//  $Header$
+#include "SMESH_TypeFilter.hxx"
 
-#include "SMESH_TypeFilter.ixx"
+#include <SUIT_Session.h>
 
-#include "SALOME_InteractiveObject.hxx"
-#include "SALOME_TypeFilter.hxx"
+#include <SalomeApp_Study.h>
+#include <SalomeApp_DataOwner.h>
 
-#include "utilities.h"
-#include "QAD_Application.h"
-#include "QAD_Desktop.h"
-#include "QAD_Study.h"
-
-using namespace std;
-
-SMESH_TypeFilter::SMESH_TypeFilter(MeshObjectType aType) 
+SMESH_TypeFilter::SMESH_TypeFilter (MeshObjectType theType) 
 {
-  myKind = aType;
+  myType = theType;
 }
 
-Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& anObj) const 
+SMESH_TypeFilter::~SMESH_TypeFilter() 
 {
-  Handle(SALOME_TypeFilter) meshFilter = new SALOME_TypeFilter( "SMESH" );
-  if ( !meshFilter->IsOk(anObj) ) 
-    return false;
+}
 
+bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
+{
   bool Ok = false;
 
-  if ( anObj->hasEntry() ) {
-    QAD_Study* ActiveStudy = QAD_Application::getDesktop()->getActiveStudy();
-    SALOMEDS::Study_var aStudy = ActiveStudy->getStudyDocument();
-    SALOMEDS::SObject_var obj = aStudy->FindObjectID( anObj->getEntry() );
+  const SalomeApp_DataOwner* owner =
+    dynamic_cast<const SalomeApp_DataOwner*>(theDataOwner);
+  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>
+    (SUIT_Session::session()->activeApplication()->activeStudy());
 
-    SALOMEDS::SObject_var objFather = obj->GetFather();
-    SALOMEDS::SComponent_var objComponent = obj->GetFatherComponent();
-    
+  if (owner && appStudy) {
+    _PTR(Study) study = appStudy->studyDS();
+    QString entry = owner->entry();
+
+    _PTR(SObject) obj (study->FindObjectID(entry.latin1()));
+    if (!obj) return false;
+
+    _PTR(SObject) objFather = obj->GetFather();
+    _PTR(SComponent) objComponent = obj->GetFatherComponent();
+
     int aLevel = obj->Depth() - objComponent->Depth();
 
     // Max level under the component is 4:
@@ -55,10 +49,10 @@ Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& 
     // 4       |     |- Applied algorithms ( selectable in Use Case Browser )
     //         |- Group Of Nodes
 
-    if ( aLevel <= 0 )
+    if (aLevel <= 0)
       return false;
 
-    switch ( myKind )
+    switch (myType)
       {
       case HYPOTHESIS:
 	{
@@ -132,4 +126,9 @@ Standard_Boolean SMESH_TypeFilter::IsOk(const Handle(SALOME_InteractiveObject)& 
       }
   }
   return Ok;
+}
+
+MeshObjectType SMESH_TypeFilter::type() const 
+{
+  return myType;
 }

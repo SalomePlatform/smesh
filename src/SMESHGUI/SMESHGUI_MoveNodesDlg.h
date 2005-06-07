@@ -29,15 +29,21 @@
 #ifndef DIALOGBOX_MOVE_NODES_H
 #define DIALOGBOX_MOVE_NODES_H
 
+#include "SalomeApp_SelectionMgr.h"
+
 #include <qdialog.h>
-#include "SALOME_Selection.h"
 
 class QLineEdit;
 class QPushButton;
 class SMESHGUI_SpinBox;
 class SALOME_Actor;
 class QFrame;
+
+class SMESHGUI;
 class SMESH_Actor;
+class SUIT_Desktop;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 
 //=================================================================================
 // class    : SMESHGUI_MoveNodesDlg
@@ -49,12 +55,11 @@ class SMESHGUI_MoveNodesDlg : public QDialog
 
 public:
 
-                                SMESHGUI_MoveNodesDlg( QWidget*,
-                                                       SALOME_Selection*,
-                                                       const char* = 0 );
+                                SMESHGUI_MoveNodesDlg(SMESHGUI* theModule,
+						      const char* name = 0);
  virtual                        ~SMESHGUI_MoveNodesDlg();
     
- void                           Init( SALOME_Selection* ) ;
+ void                           Init();
 
 private slots:
 
@@ -91,7 +96,10 @@ private:
   SMESHGUI_SpinBox*             myY;
   SMESHGUI_SpinBox*             myZ;
 
-  SALOME_Selection*             mySelection;
+  SalomeApp_SelectionMgr*       mySelectionMgr;
+  SVTK_ViewWindow*              myViewWindow;
+  SVTK_Selector*                mySelector;
+  SMESHGUI*                     mySMESHGUI;
   
   SALOME_Actor*                 myPreviewActor;
   SMESH_Actor*                  myMeshActor;

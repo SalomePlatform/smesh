@@ -129,6 +129,9 @@ public:
   SMESH_subMesh *GetSubMeshContaining(const TopoDS_Shape & aSubShape)
     throw(SALOME_Exception);
   
+  SMESH_subMesh *GetSubMeshContaining(const int aShapeID)
+    throw(SALOME_Exception);
+  
   const list < SMESH_subMesh * >&
   GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
     throw(SALOME_Exception);
@@ -165,6 +168,8 @@ public:
   int NbTriangles() throw(SALOME_Exception);
   
   int NbQuadrangles() throw(SALOME_Exception);
+
+  int NbPolygons() throw(SALOME_Exception);
   
   int NbVolumes() throw(SALOME_Exception);
   
@@ -173,8 +178,10 @@ public:
   int NbHexas() throw(SALOME_Exception);
   
   int NbPyramids() throw(SALOME_Exception);
-  
+
   int NbPrisms() throw(SALOME_Exception);
+  
+  int NbPolyhedrons() throw(SALOME_Exception);
   
   int NbSubMesh() throw(SALOME_Exception);
   

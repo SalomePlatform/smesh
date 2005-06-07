@@ -58,14 +58,17 @@ module SMESH
       ADD_EDGE,
       ADD_TRIANGLE,
       ADD_QUADRANGLE,
+      ADD_POLYGON,
       ADD_TETRAHEDRON,
       ADD_PYRAMID,
       ADD_PRISM,
       ADD_HEXAHEDRON,
+      ADD_POLYHEDRON,
       REMOVE_NODE,
       REMOVE_ELEMENT,
       MOVE_NODE,
       CHANGE_ELEMENT_NODES,
+      CHANGE_POLYHEDRON_NODES,
       RENUMBER
     };
 
@@ -375,6 +378,9 @@ module SMESH
     long NbQuadrangles()
       raises (SALOME::SALOME_Exception);
 
+    long NbPolygons()
+      raises (SALOME::SALOME_Exception);
+
     long NbVolumes()
       raises (SALOME::SALOME_Exception);
 
@@ -388,6 +394,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbPrisms()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPolyhedrons()
       raises (SALOME::SALOME_Exception);
 
     long NbSubMesh()
@@ -461,7 +470,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
   };
   
-  /* 
+  /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
   interface NumericalFunctor;
@@ -479,6 +488,25 @@ module SMESH
     boolean AddFace(in long_array IDsOfNodes);
 
     boolean AddVolume(in long_array IDsOfNodes);
+
+    //boolean AddPolygonalFace (in long_array IdsOfNodes);
+
+    /*!
+     *  Create volume of many faces, giving nodes for each face.
+     *  \param IdsOfNodes List of node IDs for volume creation face by face.
+     *  \param Quantities List of integer values, Quantities[i]
+     *         gives quantity of nodes in face number i.
+     */
+    boolean AddPolyhedralVolume (in long_array IdsOfNodes,
+				 in long_array Quantities);
+
+    /*!
+     *  Create volume of many faces, giving IDs of existing faces.
+     *  \param IdsOfFaces List of face IDs for volume creation.
+     *  \note The created volume will refer only to nodes
+     *        of the given faces, not to the faces itself.
+     */
+    boolean AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
 
     boolean MoveNode(in long NodeID, in double x, in double y, in double z);
 
@@ -520,6 +548,18 @@ module SMESH
 			 in long            MaxNbOfIterations,
 			 in double          MaxAspectRatio,
 			 in Smooth_Method   Method);
+
+    boolean SmoothParametric(in long_array    IDsOfElements,
+                             in long_array    IDsOfFixedNodes,
+                             in long          MaxNbOfIterations,
+                             in double        MaxAspectRatio,
+                             in Smooth_Method Method);
+
+    boolean SmoothParametricObject(in SMESH_IDSource  theObject,
+                                   in long_array      IDsOfFixedNodes,
+                                   in long            MaxNbOfIterations,
+                                   in double          MaxAspectRatio,
+                                   in Smooth_Method   Method);
 
     void RenumberNodes();
 
@@ -637,7 +677,9 @@ module SMESH
                               in long LastNodeID1,
                               in long FirstNodeID2,
                               in long SecondNodeID2,
-                              in long LastNodeID2);
+                              in long LastNodeID2,
+			      in boolean CreatePolygons,
+			      in boolean CreatePolyedrs);
 
     Sew_Error SewConformFreeBorders (in long FirstNodeID1,
                                      in long SecondNodeID1,
@@ -649,7 +691,9 @@ module SMESH
                                in long SecondNodeIDOnFreeBorder,
                                in long LastNodeIDOnFreeBorder,
                                in long FirstNodeIDOnSide,
-                               in long LastNodeIDOnSide);
+                               in long LastNodeIDOnSide,
+			       in boolean CreatePolygons,
+			       in boolean CreatePolyedrs);
 
     Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
                                in long_array IDsOfSide2Elements,

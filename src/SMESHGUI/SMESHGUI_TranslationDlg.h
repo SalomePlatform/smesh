@@ -29,7 +29,8 @@
 #ifndef DIALOGBOX_TRANSLATION_H
 #define DIALOGBOX_TRANSLATION_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
+
 #include "SMESH_LogicalFilter.hxx"
 
 // QT Includes
@@ -46,6 +47,8 @@ class QCheckBox;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
+class SVTK_ViewWindow;
+class SVTK_Selector;
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -61,28 +64,33 @@ class SMESHGUI_TranslationDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_TranslationDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_TranslationDlg( SMESHGUI*,
+			     const char* name = 0,
+			     bool modal = FALSE,
+			     WFlags fl = 0);
     ~SMESHGUI_TranslationDlg();
 
 private:
-
-    void Init( bool ResetControls = true ) ;
-    void closeEvent( QCloseEvent* e ) ;
-    void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void Init (bool ResetControls = true);
+    void closeEvent (QCloseEvent*);
+    void enterEvent (QEvent*);                             /* mouse enter the QWidget */
+    void hideEvent (QHideEvent*);                          /* ESC key */
     int GetConstructorId();
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
+    SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
     QString                       myElementsId;
-    int                           myNbOkElements ;          /* to check when elements are defined */
-    
+    int                           myNbOkElements;          /* to check when elements are defined */
+
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+
     QWidget*                      myEditCurrentArgument;
-   
+
     bool                          myBusy;
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
-    Handle(SMESH_LogicalFilter)   myMeshOrSubMeshOrGroupFilter;
+    SMESH_LogicalFilter*          myMeshOrSubMeshOrGroupFilter;
     
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;

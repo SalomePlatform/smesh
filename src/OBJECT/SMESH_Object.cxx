@@ -31,7 +31,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
-#include "SALOME_ExtractUnstructuredGrid.h"
+#include <VTKViewer_ExtractUnstructuredGrid.h>
 
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
@@ -160,6 +160,30 @@ namespace{
   }
 
 
+  inline void AddPolygonsWithID(SMDS_Mesh* theMesh, 
+                                SMESH::log_array_var& theSeq,
+                                CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long anIndexId = 0, aNbElems = theSeq[theId].number;
+
+    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++) {
+      int aFaceId = anIndexes[anIndexId++];
+
+      int aNbNodes = anIndexes[anIndexId++];
+      std::vector<int> nodes_ids (aNbNodes);
+      for (int i = 0; i < aNbNodes; i++) {
+        nodes_ids[i] = anIndexes[anIndexId++];
+      }
+
+      SMDS_MeshElement* anElem = theMesh->AddPolygonalFaceWithID(nodes_ids, aFaceId);
+      if (!anElem)
+	EXCEPTION(runtime_error, "SMDS_Mesh::FindElement - cannot AddPolygonalFaceWithID for ID = "
+                  << anElemId);
+    }
+  }
+
+
   inline void AddTetrasWithID(SMDS_Mesh* theMesh, 
 			      SMESH::log_array_var& theSeq,
 			      CORBA::Long theId)
@@ -175,7 +199,7 @@ namespace{
 							  anIndexes[anIndexId+4],
 							  anIndexes[anIndexId]);
       if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
+	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
     }
   }
 
@@ -196,7 +220,7 @@ namespace{
 							  anIndexes[anIndexId+5],
 							  anIndexes[anIndexId]);
       if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
+	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
     }
   }
 
@@ -218,7 +242,7 @@ namespace{
 							  anIndexes[anIndexId+6],
 							  anIndexes[anIndexId]);
       if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
+	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
     }
   }
 
@@ -242,7 +266,69 @@ namespace{
 							  anIndexes[anIndexId+8],
 							  anIndexes[anIndexId]);
       if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
+	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
+    }
+  }
+
+
+  inline void AddPolyhedronsWithID (SMDS_Mesh* theMesh, 
+                                    SMESH::log_array_var& theSeq,
+                                    CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long anIndexId = 0, aNbElems = theSeq[theId].number;
+
+    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++) {
+      int aFaceId = anIndexes[anIndexId++];
+
+      int aNbNodes = anIndexes[anIndexId++];
+      std::vector<int> nodes_ids (aNbNodes);
+      for (int i = 0; i < aNbNodes; i++) {
+        nodes_ids[i] = anIndexes[anIndexId++];
+      }
+
+      int aNbFaces = anIndexes[anIndexId++];
+      std::vector<int> quantities (aNbFaces);
+      for (int i = 0; i < aNbFaces; i++) {
+        quantities[i] = anIndexes[anIndexId++];
+      }
+
+      SMDS_MeshElement* anElem =
+        theMesh->AddPolyhedralVolumeWithID(nodes_ids, quantities, aFaceId);
+      if (!anElem)
+	EXCEPTION(runtime_error, "SMDS_Mesh::FindElement - cannot AddPolyhedralVolumeWithID for ID = "
+                  << anElemId);
+    }
+  }
+
+
+  inline void ChangePolyhedronNodes (SMDS_Mesh* theMesh, 
+                                     SMESH::log_array_var& theSeq,
+                                     CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
+
+    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
+    {
+      // find element
+      const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
+      // nb nodes
+      int nbNodes = anIndexes[iind++];
+      // nodes
+      std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
+      for (int iNode = 0; iNode < nbNodes; iNode++) {
+        aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
+      }
+      // nb faces
+      int nbFaces = anIndexes[iind++];
+      // quantities
+      std::vector<int> quantities (nbFaces);
+      for (int iFace = 0; iFace < nbFaces; iFace++) {
+        quantities[iFace] = anIndexes[iind++];
+      }
+      // change
+      theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
     }
   }
 
@@ -258,6 +344,7 @@ namespace{
 // purpose  : Get type of VTK cell
 //=================================================================================
 static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
+				     const bool thePoly,
                                      const int theNbNodes )
 {
   switch( theType )
@@ -265,17 +352,19 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
     case SMDSAbs_Edge: 
       return theNbNodes == 2 ? VTK_LINE : VTK_EMPTY_CELL;
 
-    case SMDSAbs_Face  : 
-      if      ( theNbNodes == 3 ) return VTK_TRIANGLE;
-      else if ( theNbNodes == 4 ) return VTK_QUAD;
-      else                        return VTK_EMPTY_CELL;
+    case SMDSAbs_Face  :
+      if (thePoly && theNbNodes>2 ) return VTK_POLYGON;
+      else if ( theNbNodes == 3 )   return VTK_TRIANGLE;
+      else if ( theNbNodes == 4 )   return VTK_QUAD;
+      else return VTK_EMPTY_CELL;
       
-    case SMDSAbs_Volume: 
-      if      ( theNbNodes == 4 ) return VTK_TETRA;
-      else if ( theNbNodes == 5 ) return VTK_PYRAMID;
-      else if ( theNbNodes == 6 ) return VTK_WEDGE;
-      else if ( theNbNodes == 8 ) return VTK_HEXAHEDRON;
-      else                        return VTK_EMPTY_CELL;
+    case SMDSAbs_Volume:
+      if (thePoly && theNbNodes>3 ) return VTK_CONVEX_POINT_SET;
+      else if ( theNbNodes == 4 )   return VTK_TETRA;
+      else if ( theNbNodes == 5 )   return VTK_PYRAMID;
+      else if ( theNbNodes == 6 )   return VTK_WEDGE;
+      else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
+      else return VTK_EMPTY_CELL;
 
     default: return VTK_EMPTY_CELL;
   }
@@ -287,15 +376,12 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
 //=================================================================================
 SMESH_VisualObjDef::SMESH_VisualObjDef()
 {
-  if(MYDEBUG) MESSAGE("SMESH_MeshObj - "<<this);
   myGrid = vtkUnstructuredGrid::New();
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
-  if(MYDEBUG) {
-    MESSAGE("~SMESH_MeshObj - "<<this);
-    myGrid->DebugOn();
-  }
+  if ( MYDEBUG )
+    MESSAGE( "~SMESH_MeshObj - myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
   myGrid->Delete();
 }
 
@@ -545,35 +631,37 @@ void SMESH_VisualObjDef::buildElemPrs()
         SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
 	switch(aType){
 	case SMDSAbs_Volume:{
-	  int* aConnectivities = NULL;
+	  std::vector<int> aConnectivities;
 	  GetConnect(aNodesIter,aConnect);
 	  // Convertions connectivities from SMDS to VTK
-	  switch(aNbNodes){
-	  case 4:{
-	    static int anIds[] = {0,2,1,3};
-	    aConnectivities = anIds;
-	    break;
-	  }
-	  case 5:{
-	    static int anIds[] = {0,3,2,1,4};
-	    aConnectivities = anIds;
-	    break;
-	  }
-	  case 6:{
-	    static int anIds[] = {0,1,2,3,4,5};
-	    aConnectivities = anIds;
-	    break;
-	  }
-	  case 8:{
-	    static int anIds[] = {0,3,2,1,4,7,6,5};
-	    aConnectivities = anIds;
-	    break;
-	  }}
+	  if (anElem->IsPoly() && aNbNodes > 3) { // POLYEDRE
+	    for (int k = 0; k < aNbNodes; k++) {
+	      aConnectivities.push_back(k);
+	    }
 
-	  if(aConnectivities)
-	    for( vtkIdType aNodeId = 0; aNodeId < aNbNodes; aNodeId++ )
+	  } else if (aNbNodes == 4) {
+	    static int anIds[] = {0,2,1,3};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 5) {
+	    static int anIds[] = {0,3,2,1,4};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 6) {
+	    static int anIds[] = {0,1,2,3,4,5};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else if (aNbNodes == 8) {
+	    static int anIds[] = {0,3,2,1,4,7,6,5};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+
+	  } else {
+          }
+
+	  if (aConnectivities.size() > 0) {
+	    for (vtkIdType aNodeId = 0; aNodeId < aNbNodes; aNodeId++)
 	      SetId(anIdList,mySMDS2VTKNodes,aConnect,aNodeId,aConnectivities[aNodeId]);
-	  
+	  }
 	  break;
 	}
 	default:
@@ -584,7 +672,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 	}
 
         aConnectivity->InsertNextCell( anIdList );
-        aCellTypesArray->InsertNextValue( getCellType( aType, aNbNodes ) );
+        aCellTypesArray->InsertNextValue( getCellType( aType, anElem->IsPoly(), aNbNodes ) );
 
         iElem++;
       }
@@ -628,7 +716,7 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
     
   int nbNodes = anElem->NbNodes();
 
-  if ( theEdgeNum < 1 || theEdgeNum > 4 || nbNodes != 3 && nbNodes != 4 || theEdgeNum > nbNodes )
+  if ( theEdgeNum < 0 || theEdgeNum > 3 || nbNodes != 3 && nbNodes != 4 || theEdgeNum > nbNodes )
     return false;
 
   int anIds[ nbNodes ];
@@ -637,10 +725,10 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
   while( anIter->more() )
     anIds[ i++ ] = anIter->next()->GetID();
 
-  if ( nbNodes != theEdgeNum )
+  if ( theEdgeNum < nbNodes - 1 )
   {
-    theNodeId1 = anIds[ theEdgeNum - 1 ];
-    theNodeId2 = anIds[ theEdgeNum ];
+    theNodeId1 = anIds[ theEdgeNum ];
+    theNodeId2 = anIds[ theEdgeNum + 1 ];
   }
   else
   {
@@ -697,25 +785,27 @@ void SMESH_MeshObj::Update( int theIsClear )
     
     if( !aLength )
       return;
-      
+
     for ( CORBA::Long anId = 0; anId < aLength; anId++)
     {
       const SMESH::double_array& aCoords = aSeq[anId].coords;
       const SMESH::long_array& anIndexes = aSeq[anId].indexes;
       CORBA::Long anElemId = 0, aNbElems = aSeq[anId].number;
       CORBA::Long aCommand = aSeq[anId].commandType;
-      
+
       switch(aCommand)
       {
-        case SMESH::ADD_NODE       : AddNodesWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_EDGE       : AddEdgesWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_TRIANGLE   : AddTriasWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_QUADRANGLE : AddQuadsWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_TETRAHEDRON: AddTetrasWithID  ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_PYRAMID    : AddPiramidsWithID( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_PRISM      : AddPrismsWithID  ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_HEXAHEDRON : AddHexasWithID   ( myMesh, aSeq, anId ); break;
-        
+        case SMESH::ADD_NODE       : AddNodesWithID      ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_EDGE       : AddEdgesWithID      ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_TRIANGLE   : AddTriasWithID      ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_QUADRANGLE : AddQuadsWithID      ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_POLYGON    : AddPolygonsWithID   ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_TETRAHEDRON: AddTetrasWithID     ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_PYRAMID    : AddPiramidsWithID   ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_PRISM      : AddPrismsWithID     ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_HEXAHEDRON : AddHexasWithID      ( myMesh, aSeq, anId ); break;
+        case SMESH::ADD_POLYHEDRON : AddPolyhedronsWithID( myMesh, aSeq, anId ); break;
+
         case SMESH::REMOVE_NODE:
           for( ; anElemId < aNbElems; anElemId++ )
             myMesh->RemoveNode( FindNode( myMesh, anIndexes[anElemId] ) );
@@ -743,8 +833,8 @@ void SMESH_MeshObj::Update( int theIsClear )
             // nb nodes
             int nbNodes = anIndexes[i++];
             // nodes
-            ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ 8 ];
+            //ASSERT( nbNodes < 9 );
+            const SMDS_MeshNode* aNodes[ nbNodes ];
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( myMesh, anIndexes[i++] );
             // change
@@ -752,6 +842,9 @@ void SMESH_MeshObj::Update( int theIsClear )
           }
           break;
 
+        case SMESH::CHANGE_POLYHEDRON_NODES:
+          ChangePolyhedronNodes(myMesh, aSeq, anId);
+          break;
         case SMESH::RENUMBER:
           for(CORBA::Long i=0; anElemId < aNbElems; anElemId++, i+=3)
           {

@@ -18,40 +18,13 @@
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
 
 #include <stdio.h>
-
-#include "DriverSTL_R_SMDS_Mesh.h"
-
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDS_MeshNode.hxx"
 #include <gp_Pnt.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
-#include <OSD_FromWhere.hxx>
-#include <OSD_Protection.hxx>
-#include <OSD_SingleProtection.hxx>
-#include <NCollection_DataMap.hxx>
-#include <Standard_NoMoreObject.hxx>
-
-#include "utilities.h"
-
-static const int HEADER_SIZE           =  84;
-static const int SIZEOF_STL_FACET      =  50;
-//static const int STL_MIN_FILE_SIZE     = 284;
-static const int ASCII_LINES_PER_FACET =   7;
-
-static Standard_Real tab1[3];
-static Standard_Real tab2[3];
-
-typedef NCollection_DataMap<gp_Pnt,SMDS_MeshNode*> DriverSTL_DataMapOfPntNodePtr;
-//typedef NCollection_BaseCollection<SMDS_MeshNodePtr> DriverSTL_ColOfNodePtr;
-
 //=======================================================================
 //function : HashCode
 //purpose  : 
 //=======================================================================
 inline Standard_Integer HashCode
-  (const gp_Pnt& point, const Standard_Integer Upper)
+  (const gp_Pnt& point,  Standard_Integer Upper)
 {
   union 
     {
@@ -63,7 +36,8 @@ inline Standard_Integer HashCode
 
   return ::HashCode(U.I[0]/23+U.I[1]/19+U.I[2]/17+U.I[3]/13+U.I[4]/11+U.I[5]/7,Upper);
 }
-
+static Standard_Real tab1[3];
+static Standard_Real tab2[3];
 //=======================================================================
 //function : IsEqual
 //purpose  : 
@@ -75,7 +49,32 @@ inline Standard_Boolean IsEqual
   point2.Coord(tab2[0],tab2[1],tab2[2]);  
   return (memcmp(tab1,tab2,sizeof(tab1)) == 0);
 }
+#include "DriverSTL_R_SMDS_Mesh.h"
 
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
+
+#include <OSD_Path.hxx>
+#include <OSD_File.hxx>
+#include <OSD_FromWhere.hxx>
+#include <OSD_Protection.hxx>
+#include <OSD_SingleProtection.hxx>
+#include <Standard_NoMoreObject.hxx>
+
+#include "utilities.h"
+
+static const int HEADER_SIZE           =  84;
+static const int SIZEOF_STL_FACET      =  50;
+//static const int STL_MIN_FILE_SIZE     = 284;
+static const int ASCII_LINES_PER_FACET =   7;
+
+
+//typedef NCollection_BaseCollection<SMDS_MeshNodePtr> DriverSTL_ColOfNodePtr;
+
+
+#include <NCollection_DataMap.hxx>
+typedef NCollection_DataMap<gp_Pnt,SMDS_MeshNode*> DriverSTL_DataMapOfPntNodePtr;
 //=======================================================================
 //function : DriverSTL_R_SMDS_Mesh
 //purpose  : 

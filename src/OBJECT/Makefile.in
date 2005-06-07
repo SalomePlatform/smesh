@@ -50,9 +50,9 @@ LIB_CLIENT_IDL = SALOME_Exception.idl \
 BIN = 
 BIN_SRC	=
 
-CPPFLAGS+=$(OCC_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
+CPPFLAGS+=$(OCC_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
 	  $(BOOST_CPPFLAGS) $(QT_INCLUDES)
-LDFLAGS+=$(OCC_KERNEL_LIBS) $(VTK_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lSMDS \
-         -lSalomeGUI -lSalomeObject -lSMESHControls
+LDFLAGS+=$(OCC_KERNEL_LIBS) $(VTK_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome -lSMDS \
+         -lSalomeApp -lSalomeObject -lSMESHControls
 
 @CONCLUDE@

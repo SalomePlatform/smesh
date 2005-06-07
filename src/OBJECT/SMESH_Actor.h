@@ -29,7 +29,7 @@
 #ifndef SMESH_ACTOR_H
 #define SMESH_ACTOR_H
 
-#include "SALOME_Actor.h"
+#include <SALOME_Actor.h>
 #include "SMESH_Object.h"
 
 class vtkUnstructuredGrid;

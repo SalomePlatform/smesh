@@ -37,8 +37,8 @@
 #include "StdMeshersGUI_Parameters.h"
 #include "StdMeshersGUI_CreateStdHypothesisDlg.h"
 
-#include "QAD_Desktop.h"
-#include "QAD_ResourceMgr.h"
+#include "SUIT_Desktop.h"
+#include "SUIT_ResourceMgr.h"
 
 #include <qobject.h>
 
@@ -98,7 +98,7 @@ void StdMeshersGUI_HypothesisCreator::CreateHypothesis
   {
     if ( StdMeshersGUI_Parameters::HasParameters( myHypType ))
     // Show Dialog for hypothesis creation
-      StdMeshersGUI_CreateStdHypothesisDlg *aDlg =
+      //StdMeshersGUI_CreateStdHypothesisDlg *aDlg =
         new StdMeshersGUI_CreateStdHypothesisDlg(myHypType, parent, "");
     else
       SMESH::CreateHypothesis(myHypType, aHypName, isAlgo); // without GUI
@@ -115,9 +115,8 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
 {
   MESSAGE("StdMeshersGUI_HypothesisCreator::EditHypothesis");
 
-  SALOMEDS::Study::ListOfSObject_var listSOmesh =
-    SMESH::GetMeshesUsingAlgoOrHypothesis(theHyp);
-  
+  SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis(theHyp);
+
   list<SMESHGUI_aParameterPtr> paramList;
   StdMeshersGUI_Parameters::GetParameters( theHyp, paramList );
 
@@ -129,22 +128,22 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
     //set new Attribute Comment for hypothesis which parameters were modified
     QString aParams = "";
     StdMeshersGUI_Parameters::GetParameters( theHyp, paramList, aParams );
-    SALOMEDS::SObject_var SHyp = SMESH::FindSObject(theHyp);
-    if (!SHyp->_is_nil()) 
+    _PTR(SObject) SHyp = SMESH::FindSObject(theHyp);
+    if (SHyp)
       if (!aParams.isEmpty()) {
 	SMESH::SetValue(SHyp, aParams);
 	//mySMESHGUI->GetActiveStudy()->updateObjBrowser(true);
       }    
-	
-    if ( listSOmesh->length() > 0 ) {
-      SALOMEDS::SObject_var submSO = listSOmesh[0];
+
+    if ( listSOmesh.size() > 0 ) {
+      _PTR(SObject) submSO = listSOmesh[0];
       SMESH::SMESH_Mesh_var aMesh =
         SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(submSO);
       SMESH::SMESH_subMesh_var aSubMesh =
         SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(submSO);
       if ( !aSubMesh->_is_nil() )
         aMesh = aSubMesh->GetFather();
-      SALOMEDS::SObject_var meshSO = SMESH::FindSObject( aMesh );
+      _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
       SMESH::ModifiedMesh( meshSO, false);
     }
   }

@@ -29,9 +29,10 @@
 #ifndef DIALOGBOX_INIT_MESH_H
 #define DIALOGBOX_INIT_MESH_H
 
-#include "SALOME_Selection.h"
-#include "SALOME_TypeFilter.hxx"
-#include "SMESH_TypeFilter.hxx"
+//#include "SMESH_TypeFilter.hxx"
+
+#include "SUIT_SelectionFilter.h"
+#include "SalomeApp_SelectionMgr.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -57,7 +58,10 @@ class SMESHGUI_InitMeshDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_InitMeshDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_InitMeshDlg ( SMESHGUI*,
+			  const char* = 0,
+			  bool modal = FALSE,
+			  WFlags fl = 0 );
     ~SMESHGUI_InitMeshDlg();
 
 protected:
@@ -65,24 +69,27 @@ protected:
     void enterEvent( QEvent * ) ;
 
 private:
-    void Init( SALOME_Selection* Sel ) ;
+    void Init();
 
     void UpdateControlState();
     QString SMESHGUI_InitMeshDlg::GetDefaultMeshName();
 
 private:
-    SMESHGUI*                     mySMESHGUI ;
-    SALOME_Selection*             mySelection ;
-             
-    GEOM::GEOM_Object_var         myGeomShape ;
-    QLineEdit*                    myEditCurrentArgument; 
+    SMESHGUI*                  mySMESHGUI;
+    SalomeApp_SelectionMgr*    mySelectionMgr;
 
-    Handle(SALOME_TypeFilter)     myGeomFilter;
-    Handle(SMESH_TypeFilter)      myHypothesisFilter;
-    Handle(SMESH_TypeFilter)      myAlgorithmFilter;
+    GEOM::GEOM_Object_var      myGeomShape;
+    QLineEdit*                 myEditCurrentArgument; 
 
-    QStringList                   HypoList;
-    QStringList                   AlgoList;
+    //Handle(SALOME_TypeFilter)  myGeomFilter;
+    SUIT_SelectionFilter*      myGeomFilter;
+    //SMESH_TypeFilter*          myHypothesisFilter;
+    //SMESH_TypeFilter*          myAlgorithmFilter;
+    SUIT_SelectionFilter*      myHypothesisFilter;
+    SUIT_SelectionFilter*      myAlgorithmFilter;
+
+    QStringList                HypoList;
+    QStringList                AlgoList;
 
     QGroupBox*    GroupButtons;
     QPushButton*  buttonOk;
@@ -90,8 +97,8 @@ private:
     QPushButton*  buttonApply;
 
     QGroupBox*    GroupC1;
-    QLabel*       TextLabel_NameMesh ;
-    QLineEdit*    LineEdit_NameMesh ;
+    QLabel*       TextLabel_NameMesh;
+    QLineEdit*    LineEdit_NameMesh;
     QLabel*       TextLabelC1A1;
     QPushButton*  SelectButtonC1A1;
     QLineEdit*    LineEditC1A1;
@@ -108,10 +115,10 @@ private slots:
     void ClickOnOk();
     bool ClickOnApply();
     void ClickOnCancel();
-    void SetEditCurrentArgument() ;
-    void SelectionIntoArgument() ;
-    void DeactivateActiveDialog() ;
-    void ActivateThisDialog() ;
+    void SetEditCurrentArgument();
+    void SelectionIntoArgument();
+    void DeactivateActiveDialog();
+    void ActivateThisDialog();
 };
 
 #endif // DIALOGBOX_INIT_MESH_H

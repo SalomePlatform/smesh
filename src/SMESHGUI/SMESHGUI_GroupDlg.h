@@ -28,8 +28,9 @@
 #ifndef DIALOGBOX_GROUP_H
 #define DIALOGBOX_GROUP_H
 
-#include "SALOME_Selection.h"
-#include "SMESH_TypeFilter.hxx"
+#include "SalomeApp_SelectionMgr.h"
+//#include "SMESH_TypeFilter.hxx"
+#include "SUIT_SelectionFilter.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -50,6 +51,8 @@ class QWidgetStack;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 
 //=================================================================================
 // class    : SMESHGUI_GroupDlg
@@ -60,11 +63,14 @@ class SMESHGUI_GroupDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_GroupDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* theSel = 0, 
+    SMESHGUI_GroupDlg( SMESHGUI*,
+		       const char* name = 0, 
 		       SMESH::SMESH_Mesh_ptr theMesh = SMESH::SMESH_Mesh::_nil(), 
 		       bool modal = FALSE, WFlags fl = 0 );
-    SMESHGUI_GroupDlg( QWidget* parent, const char* name, SALOME_Selection* theSel, 
-		       SMESH::SMESH_Group_ptr theGroup, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_GroupDlg( SMESHGUI*,
+		       const char* name, 
+		       SMESH::SMESH_Group_ptr theGroup,
+		       bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_GroupDlg();
 
 public slots:
@@ -98,21 +104,23 @@ private slots:
     void onFilterAccepted();
 
 private:
-    void initDialog(SALOME_Selection* theSel, bool create);
+    void initDialog(bool create);
     void init(SMESH::SMESH_Mesh_ptr theMesh);
     void init(SMESH::SMESH_Group_ptr theGroup);
     void closeEvent(QCloseEvent* e);
-    void enterEvent ( QEvent * ) ;            
-    void hideEvent ( QHideEvent * );                        /* ESC key */
+    void enterEvent (QEvent*);
+    void hideEvent (QHideEvent*);                          /* ESC key */
     void setSelectionMode(int theMode);
     void updateButtons();
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    SMESH_Actor*                  myActor;                  /* Current mesh actor */
-    int                           myGrpTypeId ;             /* Current group type id : standalone or group on geometry */
-    int                           myTypeId ;                /* Current type id = radio button id */
-    QLineEdit*                    myCurrentLineEdit;        /* Current  LineEdit */
+    SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
+    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    SMESH_Actor*                  myActor;                 /* Current mesh actor */
+    int                           myGrpTypeId; /* Current group type id : standalone or group on geometry */
+    int                           myTypeId;                /* Current type id = radio button id */
+    QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
 
     QPushButton*                  myMeshGroupBtn;
     QLineEdit*                    myMeshGroupLine;
@@ -144,9 +152,12 @@ private:
     GEOM::GEOM_Object_var         myGeomGroup;
 
     int                           mySelectionMode;
-    Handle(SMESH_TypeFilter)      myMeshFilter;
-    Handle(SMESH_TypeFilter)      mySubMeshFilter;
-    Handle(SMESH_TypeFilter)      myGroupFilter;
+    //Handle(SMESH_TypeFilter)      myMeshFilter;
+    //Handle(SMESH_TypeFilter)      mySubMeshFilter;
+    //Handle(SMESH_TypeFilter)      myGroupFilter;
+    SUIT_SelectionFilter*         myMeshFilter;
+    SUIT_SelectionFilter*         mySubMeshFilter;
+    SUIT_SelectionFilter*         myGroupFilter;
 
     SMESHGUI_FilterDlg*           myFilterDlg;
 

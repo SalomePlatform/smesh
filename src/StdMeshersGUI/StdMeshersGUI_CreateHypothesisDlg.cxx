@@ -35,13 +35,16 @@
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_Utils.h"
 
-#include "QAD_Application.h"
-#include "QAD_Desktop.h"
+#include "SUIT_Application.h"
+#include "SUIT_Desktop.h"
+#include "SUIT_MessageBox.h"
+#include "SUIT_OverrideCursor.h"
 #include "utilities.h"
 
-#include "SALOMEGUI_QtCatchCorbaException.hxx"
-#include "QAD_MessageBox.h"
-#include "QAD_WaitCursor.h"
+#include "SalomeApp_Tools.h"
+#include "SalomeApp_Application.h"
+
+#include "OB_Browser.h"
 
 // QT Includes
 #include <qgroupbox.h>
@@ -227,7 +230,7 @@ void StdMeshersGUI_CreateHypothesisDlg::Init()
   /* Move widget on the botton right corner of main widget */
   int x, y ;
   mySMESHGUI->DefineDlgPosition( this, x, y ) ;
-  this->move( x, y ) ; 
+  this->move( x, y ) ;
   this->show() ; /* displays Dialog */
 }
 
@@ -248,17 +251,17 @@ void StdMeshersGUI_CreateHypothesisDlg::ClickOnOk()
 //=================================================================================
 bool StdMeshersGUI_CreateHypothesisDlg::ClickOnApply()
 {
-  if ( !mySMESHGUI || mySMESHGUI->ActiveStudyLocked() )
+  if ( !mySMESHGUI || mySMESHGUI->isActiveStudyLocked() )
     return false;
 
   QString myHypName = LineEdit_NameHypothesis->text().stripWhiteSpace();
   if ( myHypName.isEmpty() ) {
-    QAD_MessageBox::warn1 (this, tr( "SMESH_WRN_WARNING" ),
+    SUIT_MessageBox::warn1 (this, tr( "SMESH_WRN_WARNING" ),
                            tr( "SMESH_WRN_EMPTY_NAME" ), tr( "SMESH_BUT_OK" ) );
     return false;
   }
 
-  QAD_WaitCursor wc;
+  SUIT_OverrideCursor wc;
 
   try {
     SMESH::SMESH_Hypothesis_var Hyp = SMESH::SMESH_Hypothesis::_narrow
@@ -278,16 +281,16 @@ bool StdMeshersGUI_CreateHypothesisDlg::ClickOnApply()
     //set new Attribute Comment for hypothesis which parameters were set
     QString aParams = "";
     StdMeshersGUI_Parameters::GetParameters( Hyp.in(), myParamList, aParams );
-    SALOMEDS::SObject_var SHyp = SMESH::FindSObject(Hyp.in());
-    if (!SHyp->_is_nil()) 
+    _PTR(SObject) SHyp = SMESH::FindSObject(Hyp.in());
+    if (SHyp)
       if (!aParams.isEmpty()) {
 	SMESH::SetValue(SHyp, aParams);
-	mySMESHGUI->GetActiveStudy()->updateObjBrowser(true);
-      }    
+	mySMESHGUI->getApp()->objectBrowser()->updateTree();
+      }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
-    wc.stop();
-    QtCatchCorbaException(S_ex);
+    wc.suspend();
+    SalomeApp_Tools::QtCatchCorbaException(S_ex);
     return false;
   }
   return true;

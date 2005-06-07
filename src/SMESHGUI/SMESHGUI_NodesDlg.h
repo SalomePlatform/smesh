@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_NODES_H
 #define DIALOGBOX_NODES_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
 
 #include <qvariant.h>
 #include <qdialog.h>
@@ -64,25 +64,25 @@ class SMESHGUI_NodesDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_NodesDlg( QWidget* parent = 0, const char* name = 0,
-		       SALOME_Selection* Sel = 0,
+    SMESHGUI_NodesDlg (QWidget* parent = 0, const char* name = 0,
+		       SalomeApp_SelectionMgr* Sel = 0,
 		       bool modal = FALSE,
-		       WFlags fl = 0 );
+		       WFlags fl = 0);
 
     ~SMESHGUI_NodesDlg();
-    
-private :
 
-    SALOME_Selection* mySelection ;
-    SMESHGUI*         myMeshGUI ;
+private:
 
-    SMESH::SMESH_Mesh_var myMesh;
+    SalomeApp_SelectionMgr* mySelectionMgr;
+    SMESHGUI*               myMeshGUI;
+
+    SMESH::SMESH_Mesh_var   myMesh;
     SMESH::TNodeSimulation* mySimulation;
 
-    void Init(SALOME_Selection* Sel) ;
+    void Init (SalomeApp_SelectionMgr*);
     void enterEvent(QEvent* e);
-    void closeEvent(QCloseEvent* e) ;
-    void hideEvent ( QHideEvent * );                 /* ESC key */
+    void closeEvent(QCloseEvent*);
+    void hideEvent (QHideEvent *);                 /* ESC key */
 
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;
@@ -118,4 +118,3 @@ protected:
 };
 
 #endif // DIALOGBOX_NODES_H
-

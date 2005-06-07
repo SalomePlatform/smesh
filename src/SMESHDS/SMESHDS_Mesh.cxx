@@ -171,11 +171,55 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
   if ( ! SMDS_Mesh::ChangeElementNodes( elem, nodes, nbnodes ))
     return false;
 
-  ASSERT( nbnodes < 9 );
-  int i, IDs[ 8 ];
+  //ASSERT( nbnodes < 9 );
+  //int i, IDs[ 8 ];
+  int i, IDs[ nbnodes ];
   for ( i = 0; i < nbnodes; i++ )
     IDs [ i ] = nodes[ i ]->GetID();
   myScript->ChangeElementNodes( elem->GetID(), IDs, nbnodes);
+
+  return true;
+}
+
+//=======================================================================
+//function : ChangePolygonNodes
+//purpose  : 
+//=======================================================================
+bool SMESHDS_Mesh::ChangePolygonNodes
+                   (const SMDS_MeshElement * elem,
+                    std::vector<const SMDS_MeshNode*> nodes)
+{
+  ASSERT(nodes.size() > 3);
+
+  int nb = nodes.size();
+  const SMDS_MeshNode* nodes_array [nb];
+  for (int inode = 0; inode < nb; inode++) {
+    nodes_array[inode] = nodes[inode];
+  }
+
+  return ChangeElementNodes(elem, nodes_array, nb);
+}
+
+//=======================================================================
+//function : ChangePolyhedronNodes
+//purpose  : 
+//=======================================================================
+bool SMESHDS_Mesh::ChangePolyhedronNodes
+                   (const SMDS_MeshElement * elem,
+                    std::vector<const SMDS_MeshNode*> nodes,
+                    std::vector<int>                  quantities)
+{
+  ASSERT(nodes.size() > 3);
+
+  if (!SMDS_Mesh::ChangePolyhedronNodes(elem, nodes, quantities))
+    return false;
+
+  int i, len = nodes.size();
+  std::vector<int> nodes_ids (len);
+  for (i = 0; i < len; i++) {
+    nodes_ids[i] = nodes[i]->GetID();
+  }
+  myScript->ChangePolyhedronNodes(elem->GetID(), nodes_ids, quantities);
 
   return true;
 }
@@ -472,6 +516,100 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
 				 n8->GetID());
   return anElem;
 }
+
+//=======================================================================
+//function : AddPolygonalFace
+//purpose  : 
+//=======================================================================
+SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFaceWithID (std::vector<int> nodes_ids,
+                                                     const int        ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddPolygonalFaceWithID(nodes_ids, ID);
+  if (anElem) {
+    myScript->AddPolygonalFace(ID, nodes_ids);
+  }
+  return anElem;
+}
+
+SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFaceWithID
+                             (std::vector<const SMDS_MeshNode*> nodes,
+                              const int                         ID)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddPolygonalFaceWithID(nodes, ID);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddPolygonalFace(ID, nodes_ids);
+  }
+  return anElem;
+}
+
+SMDS_MeshFace* SMESHDS_Mesh::AddPolygonalFace
+                             (std::vector<const SMDS_MeshNode*> nodes)
+{
+  SMDS_MeshFace *anElem = SMDS_Mesh::AddPolygonalFace(nodes);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddPolygonalFace(anElem->GetID(), nodes_ids);
+  }
+  return anElem;
+}
+
+//=======================================================================
+//function : AddPolyhedralVolume
+//purpose  : 
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolumeWithID (std::vector<int> nodes_ids,
+                                                          std::vector<int> quantities,
+                                                          const int        ID)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddPolyhedralVolumeWithID(nodes_ids, quantities, ID);
+  if (anElem) {
+    myScript->AddPolyhedralVolume(ID, nodes_ids, quantities);
+  }
+  return anElem;
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolumeWithID
+                               (std::vector<const SMDS_MeshNode*> nodes,
+                                std::vector<int>                  quantities,
+                                const int                         ID)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddPolyhedralVolumeWithID(nodes, quantities, ID);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddPolyhedralVolume(ID, nodes_ids, quantities);
+  }
+  return anElem;
+}
+
+SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolume
+                               (std::vector<const SMDS_MeshNode*> nodes,
+                                std::vector<int>                  quantities)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddPolyhedralVolume(nodes, quantities);
+  if (anElem) {
+    int i, len = nodes.size();
+    std::vector<int> nodes_ids (len);
+    for (i = 0; i < len; i++) {
+      nodes_ids[i] = nodes[i]->GetID();
+    }
+    myScript->AddPolyhedralVolume(anElem->GetID(), nodes_ids, quantities);
+  }
+  return anElem;
+}
+
 //=======================================================================
 //function : removeFromContainers
 //purpose  : 
@@ -738,13 +876,14 @@ bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& theShape) const
 /// Return the sub mesh linked to the a given TopoDS_Shape or NULL if the given
 /// TopoDS_Shape is unknown
 ///////////////////////////////////////////////////////////////////////////////
-SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const TopoDS_Shape & S)
+SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const TopoDS_Shape & S) const
 {
   if (myShape.IsNull()) MESSAGE("myShape is NULL");
 
   int Index = ShapeToIndex(S);
-  if (myShapeIndexToSubMesh.find(Index)!=myShapeIndexToSubMesh.end())
-    return myShapeIndexToSubMesh[Index];
+  TShapeIndexToSubMesh::const_iterator anIter = myShapeIndexToSubMesh.find(Index);
+  if (anIter != myShapeIndexToSubMesh.end())
+    return anIter->second;
   else
     return NULL;
 }
@@ -895,7 +1034,7 @@ TopoDS_Shape SMESHDS_Mesh::IndexToShape(int ShapeIndex)
 //function : ShapeToIndex
 //purpose  : 
 //=======================================================================
-int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S)
+int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 {
   if (myShape.IsNull())
     MESSAGE("myShape is NULL");

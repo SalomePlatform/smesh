@@ -158,12 +158,39 @@ public:
 				     const SMDS_MeshNode * n7,
 				     const SMDS_MeshNode * n8);
   
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<int> nodes_ids,
+                                                 const int        ID);
+
+  virtual SMDS_MeshFace* AddPolygonalFaceWithID (std::vector<const SMDS_MeshNode*> nodes,
+                                                 const int                         ID);
+
+  virtual SMDS_MeshFace* AddPolygonalFace (std::vector<const SMDS_MeshNode*> nodes);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (std::vector<int> nodes_ids,
+                            std::vector<int> quantities,
+                            const int        ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+                           (std::vector<const SMDS_MeshNode*> nodes,
+                            std::vector<int>                  quantities,
+                            const int                         ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolume
+                           (std::vector<const SMDS_MeshNode*> nodes,
+                            std::vector<int>                  quantities);
+
   void MoveNode(const SMDS_MeshNode *, double x, double y, double z);
   virtual void RemoveNode(const SMDS_MeshNode *);
   void RemoveElement(const SMDS_MeshElement *);
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);
+  bool ChangePolygonNodes(const SMDS_MeshElement * elem,
+                          std::vector<const SMDS_MeshNode*> nodes);
+  bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
+                             std::vector<const SMDS_MeshNode*> nodes,
+                             std::vector<int>                  quantities);
   void Renumber (const bool isNodes, const int startID=1, const int deltaID=1);
 
   void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
@@ -177,7 +204,7 @@ public:
 			       const TopoDS_Shape & S);
   TopoDS_Shape ShapeToMesh() const;
   bool HasMeshElements(const TopoDS_Shape & S);
-  SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S);
+  SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const int Index);
   std::list<int> SubMeshIndices();
   const std::map<int,SMESHDS_SubMesh*>& SubMeshes()
@@ -187,7 +214,7 @@ public:
   const std::list<const SMESHDS_Hypothesis*>& GetHypothesis(const TopoDS_Shape & S) const;
   SMESHDS_Script * GetScript();
   void ClearScript();
-  int ShapeToIndex(const TopoDS_Shape & aShape);
+  int ShapeToIndex(const TopoDS_Shape & aShape) const;
   TopoDS_Shape IndexToShape(int ShapeIndex);
 
   SMESHDS_SubMesh * NewSubMesh(int Index);
@@ -219,9 +246,15 @@ private:
 
   int                        myMeshID;
   TopoDS_Shape               myShape;
+
+  typedef std::map<int,SMESHDS_SubMesh*> TShapeIndexToSubMesh;
+  TShapeIndexToSubMesh myShapeIndexToSubMesh;
+
   TopTools_IndexedMapOfShape myIndexToShape;
-  std::map<int,SMESHDS_SubMesh*>  myShapeIndexToSubMesh;
-  std::set<SMESHDS_GroupBase*>    myGroups;
+
+  typedef std::set<SMESHDS_GroupBase*> TGroups;
+  TGroups myGroups;
+
   SMESHDS_Script*            myScript;
 };
 

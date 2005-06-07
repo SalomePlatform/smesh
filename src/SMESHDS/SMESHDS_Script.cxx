@@ -149,6 +149,27 @@ void SMESHDS_Script::AddVolume(int NewID,
 }
 
 //=======================================================================
+//function : AddPolygonalFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddPolygonalFace (int NewFaceID, std::vector<int> nodes_ids)
+{
+  getCommand(SMESHDS_AddPolygon)->AddPolygonalFace(NewFaceID, nodes_ids);
+}
+
+//=======================================================================
+//function : AddPolyhedralVolume
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddPolyhedralVolume (int NewID,
+                                          std::vector<int> nodes_ids,
+                                          std::vector<int> quantities)
+{
+  getCommand(SMESHDS_AddPolyhedron)->AddPolyhedralVolume
+    (NewID, nodes_ids, quantities);
+}
+
+//=======================================================================
 //function : 
 //purpose  : 
 //=======================================================================
@@ -183,6 +204,18 @@ void SMESHDS_Script::RemoveElement(int ElementID)
 void SMESHDS_Script::ChangeElementNodes(int ElementID, int nodes[], int nbnodes)
 {
   getCommand(SMESHDS_ChangeElementNodes)->ChangeElementNodes( ElementID, nodes, nbnodes );
+}
+
+//=======================================================================
+//function : ChangePolyhedronNodes
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::ChangePolyhedronNodes (const int        ElementID,
+                                            std::vector<int> nodes_ids,
+                                            std::vector<int> quantities)
+{
+  getCommand(SMESHDS_ChangePolyhedronNodes)->ChangePolyhedronNodes
+    (ElementID, nodes_ids, quantities);
 }
 
 //=======================================================================

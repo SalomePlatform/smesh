@@ -43,15 +43,16 @@ EXPORT_HEADERS= SMESHGUI_Swig.hxx \
 		SMESHGUI_HypothesesUtils.h \
 		SMESHGUI_SpinBox.h \
 		SMESHGUI_aParameter.h \
-		SMESHGUI_aParameterDlg.h
+		SMESHGUI_aParameterDlg.h \
+		SMESHGUI_Selection.h
 
 # .po files to transform in .qm
 PO_FILES = \
-	   SMESH_icons.po \
+	   SMESH_images.po \
 	   SMESH_msg_en.po
 
 # Libraries targets
-LIB = libSMESHGUI.la
+LIB = libSMESH.la
 LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_PatternWidget.cxx \
 		SMESHGUI_CreatePatternDlg.cxx \
@@ -96,7 +97,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_SewingDlg.cxx \
 		SMESHGUI_MergeNodesDlg.cxx \
 		SMESHGUI_Utils.cxx \
-		SMESHGUI_SMESHGenUtils.cxx \
 		SMESHGUI_GEOMGenUtils.cxx \
 		SMESHGUI_MeshUtils.cxx \
 		SMESHGUI_GroupUtils.cxx \
@@ -104,7 +104,9 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_PatternUtils.cxx \
 		SMESHGUI_HypothesesUtils.cxx \
 		SMESHGUI_PrecisionDlg.cxx \
-		SMESHGUI_VTKUtils.cxx 
+		SMESHGUI_VTKUtils.cxx \
+		SMESHGUI_Selection.cxx \
+		SMESHGUI_CreatePolyhedralVolumeDlg.cxx 
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -146,7 +148,8 @@ LIB_MOC = \
 		SMESHGUI_SymmetryDlg.h \
 		SMESHGUI_SewingDlg.h \
 		SMESHGUI_PrecisionDlg.h \
-		SMESHGUI_MergeNodesDlg.h
+		SMESHGUI_MergeNodesDlg.h \
+		SMESHGUI_CreatePolyhedralVolumeDlg.h
     
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 GEOM_Gen.idl \
@@ -171,13 +174,14 @@ LIB_SERVER_IDL =
 #BIN = SMESHBin
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
-            -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
-            $(BOOST_CPPFLAGS)
+            -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
+            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
+            -I${GEOM_ROOT_DIR}/include/salome
 
 
-LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -lVTKViewer -lSalomeGUI -lSalomePrs -lSalomeNS -lqsplitterP -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject -lEvent -lSALOMELocalTrace -lSalomeVTKFilter -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOMGUI -lGEOMClient -lGEOMFiltersSelection -lGEOMBase -lGEOMObject
+LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome -lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject -lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient -lGEOMBase -lGEOMObject
 
 LDFLAGSFORBIN += $(LDFLAGS)
 

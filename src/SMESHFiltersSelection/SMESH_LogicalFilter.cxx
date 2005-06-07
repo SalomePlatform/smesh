@@ -1,49 +1,17 @@
-//  SALOME SALOMEGUI : implementation of desktop and GUI kernel
-//
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
-//
-//
-//              
 //  File   : SMESH_LogicalFilter.cxx
-//  Author : Sergey LITONIN
 //  Module : SMESH
 
 #include "SMESH_LogicalFilter.hxx"
-
-/*
-  Class       : SMESH_LogicalFilter
-  Description : Filter for combaining several filters with logical operation (OR or AND)
-*/
-
-IMPLEMENT_STANDARD_HANDLE( SMESH_LogicalFilter, SALOME_Filter )
-IMPLEMENT_STANDARD_RTTIEXT( SMESH_LogicalFilter, SALOME_Filter )
 
 //=======================================================================
 // name    : SMESH_LogicalFilter::SMESH_LogicalFilter
 // Purpose : Constructor
 //=======================================================================
-SMESH_LogicalFilter::SMESH_LogicalFilter( const SMESH_ListOfFilter& theFilters,
-                                        const int                theLogOp )
+SMESH_LogicalFilter::SMESH_LogicalFilter (const QPtrList<SUIT_SelectionFilter>& theFilters,
+                                          const int                             theLogOp)
 {
-  myFilters = theFilters;
-  myLogOp = theLogOp;
+  setFilters(theFilters); 
+  setOperation(theLogOp);
 }
 
 //=======================================================================
@@ -58,91 +26,56 @@ SMESH_LogicalFilter::~SMESH_LogicalFilter()
 // name    : SMESH_LogicalFilter::IsOk
 // Purpose : Verify validity of entry object
 //=======================================================================
-Standard_Boolean SMESH_LogicalFilter::IsOk( const Handle(SALOME_InteractiveObject)& theIO ) const
+bool SMESH_LogicalFilter::isOk (const SUIT_DataOwner* owner) const
 {
-  SMESH_ListOfFilter::Iterator anIter( myFilters );
-  for ( ; anIter.More(); anIter.Next() )
+  bool res = true;
+  QPtrListIterator<SUIT_SelectionFilter> it (myFilters);
+  SUIT_SelectionFilter* filter;
+  for (; ((filter = it.current()) != 0) && res; ++it)
   {
-    Handle(SALOME_Filter) aFilter = anIter.Value();
-    if ( !aFilter.IsNull() )
-    {
-      if ( myLogOp == LO_OR &&  anIter.Value()->IsOk( theIO ) )
-        return true;
-      if ( myLogOp == LO_AND && !anIter.Value()->IsOk( theIO ) )
-        return false;
-    }
+    if (myOperation == LO_OR && filter->isOk(owner))
+      return true;
+    if (myOperation == LO_AND && !filter->isOk(owner))
+      return false;
+    if (myOperation == LO_NOT)
+      return !filter->isOk(owner);
   }
 
-  return myLogOp == LO_OR ? false : true;
+  return (myOperation != LO_OR);
 }
 
 //=======================================================================
-// name    : SMESH_LogicalFilter::SetFilters
+// name    : SMESH_LogicalFilter::setFilters
 // Purpose : Set new list of filters. Old wilters are removed
 //=======================================================================
-void SMESH_LogicalFilter::SetFilters( const SMESH_ListOfFilter& theFilters )
+void SMESH_LogicalFilter::setFilters (const QPtrList<SUIT_SelectionFilter>& theFilters)
 {
   myFilters = theFilters;
 }
 
 //=======================================================================
-// name    : SMESH_LogicalFilter::SetLogOp
+// name    : SMESH_LogicalFilter::setOperation
 // Purpose : Set logical operation
 //=======================================================================
-void SMESH_LogicalFilter::SetLogOp( const int theLogOp )
+void SMESH_LogicalFilter::setOperation (const int theLogOp)
 {
-  myLogOp = theLogOp;
+  myOperation = theLogOp;
 }
 
 //=======================================================================
-// name    : SMESH_LogicalFilter::GetFilters
+// name    : SMESH_LogicalFilter::getFilters
 // Purpose : Get list of filters
 //=======================================================================
-const SMESH_ListOfFilter& SMESH_LogicalFilter::GetFilters() const
+const QPtrList<SUIT_SelectionFilter> SMESH_LogicalFilter::getFilters() const
 {
   return myFilters;
 }
 
 //=======================================================================
-// name    : SMESH_LogicalFilter::GetLogOp
+// name    : SMESH_LogicalFilter::getOperation
 // Purpose : Get logical operation
 //=======================================================================
-int SMESH_LogicalFilter::GetLogOp() const
+int SMESH_LogicalFilter::getOperation() const
 {
-  return myLogOp;
+  return myOperation;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

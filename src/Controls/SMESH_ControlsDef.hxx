@@ -97,14 +97,14 @@ namespace SMESH{
     {
     public:
       ~Functor(){}
-      virtual void SetMesh( SMDS_Mesh* theMesh ) = 0;
+      virtual void SetMesh( const SMDS_Mesh* theMesh ) = 0;
       virtual SMDSAbs_ElementType GetType() const = 0;
     };
 
     class NumericalFunctor: public virtual Functor{
     public:
       NumericalFunctor();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual double GetValue( long theElementId );
       virtual double GetValue(const TSequenceOfXYZ& thePoints) { return -1.0;};
       virtual SMDSAbs_ElementType GetType() const = 0;
@@ -117,7 +117,7 @@ namespace SMESH{
       static bool GetPoints(const SMDS_MeshElement* theElem, 
 			    TSequenceOfXYZ& theRes);
     protected:
-      SMDS_Mesh* myMesh;
+      const SMDS_Mesh* myMesh;
       long       myPrecision;
     };
   
@@ -295,12 +295,12 @@ namespace SMESH{
     class FreeBorders: public virtual Predicate{
     public:
       FreeBorders();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
             
     protected:
-      SMDS_Mesh* myMesh;
+      const SMDS_Mesh* myMesh;
     };
    
 
@@ -311,12 +311,12 @@ namespace SMESH{
     class BadOrientedVolume: public virtual Predicate{
     public:
       BadOrientedVolume();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
             
     protected:
-      SMDS_Mesh* myMesh;
+      const SMDS_Mesh* myMesh;
     };
    
 
@@ -327,7 +327,7 @@ namespace SMESH{
     class FreeEdges: public virtual Predicate{
     public:
       FreeEdges();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
       static bool IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId  );
@@ -342,7 +342,7 @@ namespace SMESH{
       void GetBoreders(TBorders& theBorders);
       
     protected:
-      SMDS_Mesh* myMesh;
+      const SMDS_Mesh* myMesh;
     };
     typedef boost::shared_ptr<FreeEdges> FreeEdgesPtr;
 
@@ -359,7 +359,7 @@ namespace SMESH{
     {
     public:
                                     RangeOfIds();
-      virtual void                  SetMesh( SMDS_Mesh* theMesh );
+      virtual void                  SetMesh( const SMDS_Mesh* theMesh );
       virtual bool                  IsSatisfy( long theNodeId );
       virtual SMDSAbs_ElementType   GetType() const;
       virtual void                  SetType( SMDSAbs_ElementType theType );
@@ -369,7 +369,7 @@ namespace SMESH{
       bool                          SetRangeStr( const TCollection_AsciiString& );
 
     protected:
-      SMDS_Mesh*                    myMesh;
+      const SMDS_Mesh*              myMesh;
 
       TColStd_SequenceOfInteger     myMin;
       TColStd_SequenceOfInteger     myMax;
@@ -389,7 +389,7 @@ namespace SMESH{
     public:
       Comparator();
       virtual ~Comparator();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual void SetMargin(double theValue);
       virtual void SetNumFunctor(NumericalFunctorPtr theFunct);
       virtual bool IsSatisfy( long theElementId ) = 0;
@@ -449,7 +449,7 @@ namespace SMESH{
       LogicalNOT();
       virtual ~LogicalNOT();
       virtual bool IsSatisfy( long theElementId );
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual void SetPredicate(PredicatePtr thePred);
       virtual SMDSAbs_ElementType GetType() const;
   
@@ -467,7 +467,7 @@ namespace SMESH{
     public:
       LogicalBinary();
       virtual ~LogicalBinary();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual void SetPredicate1(PredicatePtr thePred);
       virtual void SetPredicate2(PredicatePtr thePred);
       virtual SMDSAbs_ElementType GetType() const;
@@ -532,7 +532,7 @@ namespace SMESH{
       
       ManifoldPart();
       ~ManifoldPart();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       // inoke when all parameters already set
       virtual bool IsSatisfy( long theElementId );
       virtual      SMDSAbs_ElementType GetType() const;
@@ -560,7 +560,7 @@ namespace SMESH{
                               TVectorOfFacePtr& theFaces ) const;
 
     private:
-      SMDS_Mesh*            myMesh;
+      const SMDS_Mesh*      myMesh;
       TColStd_MapOfInteger  myMapIds;
       TColStd_MapOfInteger  myMapBadGeomIds;
       TVectorOfFacePtr      myAllFacePtr;
@@ -582,7 +582,7 @@ namespace SMESH{
     public:
       ElementsOnSurface();
       ~ElementsOnSurface();
-      virtual void SetMesh( SMDS_Mesh* theMesh );
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
       virtual bool IsSatisfy( long theElementId );
       virtual      SMDSAbs_ElementType GetType() const;
 
@@ -597,7 +597,7 @@ namespace SMESH{
       bool    isOnSurface( const SMDS_MeshNode* theNode ) const;
 
     private:
-      SMDS_Mesh*            myMesh;
+      const SMDS_Mesh*      myMesh;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
       Handle(Geom_Surface)  mySurf;
@@ -615,9 +615,20 @@ namespace SMESH{
       Filter();
       virtual ~Filter();
       virtual void SetPredicate(PredicatePtr thePred);
+
       typedef std::vector<long> TIdSequence;
-      virtual TIdSequence GetElementsId( SMDS_Mesh* theMesh );
-  
+
+      virtual 
+      void
+      GetElementsId( const SMDS_Mesh* theMesh,
+		     TIdSequence& theSequence );
+
+      static
+      void
+      GetElementsId( const SMDS_Mesh* theMesh, 
+		     PredicatePtr thePredicate,
+		     TIdSequence& theSequence );
+      
     protected:
       PredicatePtr myPredicate;
     };

@@ -41,8 +41,11 @@ class QPushButton;
 class QToolButton;
 class QRadioButton;
 class QSpinBox;
-class QAD_SpinBoxDbl;
-class SALOME_Selection;
+
+class QtxDblSpinBox;
+
+class SalomeApp_SelectionMgr;
+
 class SMESH_Actor;
 
 class SMESHGUI_Preferences_ScalarBarDlg : public QDialog
@@ -52,10 +55,10 @@ class SMESHGUI_Preferences_ScalarBarDlg : public QDialog
 public:
   ~SMESHGUI_Preferences_ScalarBarDlg();
   static void ScalarBarPreferences( QWidget* parent );
-  static void ScalarBarProperties ( QWidget* parent, SALOME_Selection* Sel );
+  static void ScalarBarProperties ( QWidget* parent, SalomeApp_SelectionMgr* Sel );
 
 protected:
-  SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent = 0, SALOME_Selection* Sel = 0, bool modal = FALSE );
+  SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent = 0, SalomeApp_SelectionMgr* Sel = 0, bool modal = FALSE );
   static SMESHGUI_Preferences_ScalarBarDlg* myDlg;
   void closeEvent( QCloseEvent* e );
   void setOriginAndSize( const double x, const double y, const double w, const double h );
@@ -71,10 +74,10 @@ protected slots:
   void onOrientationChanged();
 
 private:
-  SALOME_Selection*  mySelection;
-  SMESH_Actor*       myActor;
-  double             myIniX, myIniY, myIniW, myIniH;
-  int                myIniOrientation;
+  SalomeApp_SelectionMgr*  mySelectionMgr;
+  SMESH_Actor*             myActor;
+  double                   myIniX, myIniY, myIniW, myIniH;
+  int                      myIniOrientation;
 
   QGroupBox*         myRangeGrp;
   QLineEdit*         myMinEdit;
@@ -101,10 +104,10 @@ private:
   QRadioButton*      myHorizRadioBtn;
 
   QGroupBox*         myOriginDimGrp;
-  QAD_SpinBoxDbl*    myXSpin;
-  QAD_SpinBoxDbl*    myYSpin;
-  QAD_SpinBoxDbl*    myWidthSpin;
-  QAD_SpinBoxDbl*    myHeightSpin;
+  QtxDblSpinBox*     myXSpin;
+  QtxDblSpinBox*     myYSpin;
+  QtxDblSpinBox*     myWidthSpin;
+  QtxDblSpinBox*     myHeightSpin;
 
   QGroupBox*         myButtonGrp;
   QPushButton*       myOkBtn;

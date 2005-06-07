@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_REMOVE_ELEMENTS_H
 #define DIALOGBOX_REMOVE_ELEMENTS_H
 
-#include "SALOME_Selection.h"
+#include "SalomeApp_SelectionMgr.h"
 
 // QT Includes
 #include <qvariant.h>
@@ -44,8 +44,11 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+
 class SMESHGUI;
 class SMESH_Actor;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -60,20 +63,26 @@ class SMESHGUI_RemoveElementsDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_RemoveElementsDlg( QWidget* parent = 0, const char* name = 0, SALOME_Selection* Sel = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_RemoveElementsDlg(SMESHGUI* theModule,
+			       const char* name = 0,
+			       bool modal = FALSE,
+			       WFlags fl = 0);
     ~SMESHGUI_RemoveElementsDlg();
 
 private:
 
-    void Init( SALOME_Selection* Sel ) ;
+    void Init() ;
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
 
-    SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SALOME_Selection*             mySelection ;             /* User shape selection */
-    int                           myNbOkElements ;          /* to check when arguments is defined */
-    int                           myConstructorId ;         /* Current constructor id = radio button id */
+    SalomeApp_SelectionMgr*       mySelectionMgr;
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+    SMESHGUI*                     mySMESHGUI;
+
+    int                           myNbOkElements;           /* to check when arguments is defined */
+    int                           myConstructorId;          /* Current constructor id = radio button id */
     QLineEdit*                    myEditCurrentArgument;    /* Current  LineEdit */
 
     bool                          myBusy;
