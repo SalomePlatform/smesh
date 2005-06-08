@@ -29,8 +29,6 @@
 #ifndef DIALOGBOX_NODES_H
 #define DIALOGBOX_NODES_H
 
-#include "SalomeApp_SelectionMgr.h"
-
 #include <qvariant.h>
 #include <qdialog.h>
 
@@ -44,8 +42,12 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
+
 class SMESHGUI;
+class SVTK_Selector;
+class SVTK_ViewWindow;
 class SMESHGUI_SpinBox;
+class SalomeApp_SelectionMgr;
 
 namespace SMESH{
   struct TNodeSimulation;
@@ -64,22 +66,23 @@ class SMESHGUI_NodesDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_NodesDlg (QWidget* parent = 0, const char* name = 0,
-		       SalomeApp_SelectionMgr* Sel = 0,
+    SMESHGUI_NodesDlg (SMESHGUI* theModule, 
+		       const char* name = 0,
 		       bool modal = FALSE,
 		       WFlags fl = 0);
 
     ~SMESHGUI_NodesDlg();
 
 private:
-
     SalomeApp_SelectionMgr* mySelectionMgr;
-    SMESHGUI*               myMeshGUI;
+    SVTK_ViewWindow*              myViewWindow;
+    SVTK_Selector*                mySelector;
+    SMESHGUI*               mySMESHGUI;
 
     SMESH::SMESH_Mesh_var   myMesh;
     SMESH::TNodeSimulation* mySimulation;
 
-    void Init (SalomeApp_SelectionMgr*);
+    void Init ();
     void enterEvent(QEvent* e);
     void closeEvent(QCloseEvent*);
     void hideEvent (QHideEvent *);                 /* ESC key */

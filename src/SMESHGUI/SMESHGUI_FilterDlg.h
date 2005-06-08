@@ -81,9 +81,11 @@ class SMESHGUI_FilterTable : public QFrame
   typedef QMap<int, Table*> TableMap;
 
 public:  
-                            SMESHGUI_FilterTable (QWidget* parent, 
+                            SMESHGUI_FilterTable( SMESHGUI*,
+						  QWidget* parent, 
                                                   const int type);
-                            SMESHGUI_FilterTable (QWidget* parent, 
+                            SMESHGUI_FilterTable( SMESHGUI*,
+						  QWidget* parent, 
                                                   const QValueList<int>& type);
   virtual                   ~SMESHGUI_FilterTable();
 
@@ -136,7 +138,7 @@ signals:
   void                      AddToClicked();
   void                      EntityTypeChanged (const int);
   void                      NeedValidation();
-  void                      CretarionChanged (const int theRow, const int theEntityType);
+  void                      CriterionChanged (const int theRow, const int theEntityType);
   void                      CurrentChanged (int, int);
 
 private slots:
@@ -172,6 +174,7 @@ private:
   const QMap<int, QString>& getSupportedTypes() const;
 
 private:
+  SMESHGUI*                 mySMESHGUI;
 
   QGroupBox*                myTableGrp;
   QGroupBox*                mySwitchTableGrp;
@@ -187,6 +190,7 @@ private:
   QButtonGroup*             myEntityTypeGrp;
   int                       myEntityType;
   int                       myIsValid;
+  bool                      myIsLocked;
 
   SMESHGUI_FilterLibraryDlg* myLibDlg;
 

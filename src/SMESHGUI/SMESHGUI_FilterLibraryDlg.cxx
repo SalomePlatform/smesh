@@ -79,10 +79,8 @@ SMESHGUI_FilterLibraryDlg::Dialog::~Dialog()
 
 bool SMESHGUI_FilterLibraryDlg::Dialog::acceptData()
 {
-#ifdef NEW_GUI
-  if (mode() != QFileDialogP::AnyFile)
-    return SUIT_FileDlg::acceptData();
-#endif
+//  if (mode() != QFileDialogP::AnyFile)
+//    return SUIT_FileDlg::acceptData();
 
   return true;
 }
@@ -96,12 +94,14 @@ bool SMESHGUI_FilterLibraryDlg::Dialog::acceptData()
 // name    : SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (QWidget*               theParent,
+SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
+						      QWidget* parent,
                                                       const QValueList<int>& theTypes,
                                                       const int              theMode,
                                                       const char*            theName)
-     : QDialog(theParent, theName, true, WStyle_Customize |
-               WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+     : QDialog( parent, theName, true, WStyle_Customize |
+                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+     mySMESHGUI( theModule )
 {
   construct(theTypes, theMode);
 }
@@ -110,12 +110,14 @@ SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (QWidget*               the
 // name    : SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (QWidget*    theParent,
+SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
+						      QWidget* parent,
                                                       const int   theType,
                                                       const int   theMode,
                                                       const char* theName)
-     : QDialog(theParent, theName, true, WStyle_Customize |
-               WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+     : QDialog( parent, theName, true, WStyle_Customize |
+                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+     mySMESHGUI( theModule )
 {
   QValueList<int> aTypes;
   aTypes.append(theType);
@@ -192,7 +194,7 @@ QFrame* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
 
   // table
 
-  myTable = new SMESHGUI_FilterTable(aMainFrame, myTypes);
+  myTable = new SMESHGUI_FilterTable( mySMESHGUI, aMainFrame, myTypes);
   myTable->SetEditable(myMode == EDIT);
   myTable->SetLibsEnabled(false);
 
@@ -312,10 +314,8 @@ void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
   updateControlsVisibility();
   setEnabled(true);
 
-  SMESHGUI* aModeler = SMESHGUI::GetSMESHGUI();
-
-  connect(aModeler, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(aModeler, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect( mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
+  connect( mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 
   if (myMode == ADD_TO)
   {
@@ -344,7 +344,7 @@ void SMESHGUI_FilterLibraryDlg::Init (const QValueList<int>& theTypes,
   }
 
   int x, y;
-  aModeler->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
 
   this->show();
@@ -448,8 +448,8 @@ void SMESHGUI_FilterLibraryDlg::onOk()
 {
   if (onApply())
   {
-    disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
-    SMESHGUI::GetSMESHGUI()->ResetState();
+    disconnect( mySMESHGUI, 0, this, 0);
+    mySMESHGUI->ResetState();
     accept();
   }
 }
@@ -460,8 +460,8 @@ void SMESHGUI_FilterLibraryDlg::onOk()
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onClose()
 {
-  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
-  SMESHGUI::GetSMESHGUI()->ResetState();
+  disconnect( mySMESHGUI, 0, this, 0);
+  mySMESHGUI->ResetState();
   reject();
 }
 

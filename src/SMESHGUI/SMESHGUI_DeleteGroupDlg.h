@@ -36,8 +36,11 @@
 class QCloseEvent;
 class QFrame;
 class QPushButton;
-class SalomeApp_SelectionMgr;
 class QListBox;
+
+class SMESHGUI;
+class SVTK_ViewWindow;
+class SalomeApp_SelectionMgr;
 
 /*!
  *  Class       : SMESHGUI_DeleteGroupDlg
@@ -49,11 +52,10 @@ class SMESHGUI_DeleteGroupDlg : public QDialog
   Q_OBJECT
 
 public:
-                          SMESHGUI_DeleteGroupDlg (QWidget*,
-						   SalomeApp_SelectionMgr*);
+                          SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule);
   virtual                 ~SMESHGUI_DeleteGroupDlg();
 
-  void                    Init (SalomeApp_SelectionMgr*);
+  void                    Init ();
 
 private:
 
@@ -82,6 +84,9 @@ private:
   QPushButton*            myApplyBtn;
   QPushButton*            myCloseBtn;
   QListBox*               myListBox;
+
+  SMESHGUI*               mySMESHGUI;
+  SVTK_ViewWindow*        myViewWindow;
   SalomeApp_SelectionMgr* mySelectionMgr;
 
   QValueList<SMESH::SMESH_GroupBase_var> myListGrp;

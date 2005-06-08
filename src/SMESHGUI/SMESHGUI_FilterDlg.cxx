@@ -396,7 +396,7 @@ void SMESHGUI_FilterTable::Table::insertRows (int row, int count)
   if (anEditRow >= 0 && anEditCol >= 0)
     endEdit(anEditRow, anEditCol, true, false);
 
-  QTable::insertRows(row, count);
+  QTable::insertRows( row, count );
 }
 
 //=======================================================================
@@ -427,9 +427,12 @@ QString SMESHGUI_FilterTable::Table::text (int row, int col) const
 // name    : SMESHGUI_FilterTable::SMESHGUI_FilterTable
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_FilterTable::SMESHGUI_FilterTable (QWidget* parent,
+SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
+					    QWidget* parent,
                                             const int type)
-: QFrame(parent)
+: QFrame(parent),
+  myIsLocked( false ),
+  mySMESHGUI( theModule )
 {
   myEntityType = -1;
   Init(type);
@@ -439,9 +442,12 @@ SMESHGUI_FilterTable::SMESHGUI_FilterTable (QWidget* parent,
 // name    : SMESHGUI_FilterTable::SMESHGUI_FilterTable
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_FilterTable::SMESHGUI_FilterTable (QWidget* parent,
+SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
+					    QWidget* parent,
                                             const QValueList<int>& types)
-: QFrame(parent)
+: QFrame(parent),
+  myIsLocked( false ),
+  mySMESHGUI( theModule )
 {
   myEntityType = -1;
   Init(types);
@@ -842,7 +848,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     myAddWidgets[ anItem ]->SetDouble(AdditionalWidget::Tolerance, theCriterion.Tolerance);
   }
 
-  emit CretarionChanged(theRow, aType);
+  emit CriterionChanged(theRow, aType);
 
 }
 
@@ -1033,7 +1039,8 @@ void SMESHGUI_FilterTable::onClearBtn()
 //=======================================================================
 void SMESHGUI_FilterTable::onCurrentChanged (int theRow, int theCol)
 {
-  updateAdditionalWidget();
+  if( !myIsLocked )
+    updateAdditionalWidget();
   emit CurrentChanged(theRow, theCol);
 }
 
@@ -1087,7 +1094,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
   updateAdditionalWidget();
 
-  emit CretarionChanged(row, entityType);
+  emit CriterionChanged(row, entityType);
 }
 
 //=======================================================================
@@ -1125,6 +1132,7 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   int aSelectedRow = getFirstSelectedRow();
   int aCurrCol = theTable->currentColumn();
 
+  myIsLocked = true;
   if (toTheEnd || aSelectedRow == -1)
   {
     theTable->insertRows(theTable->numRows());
@@ -1135,6 +1143,7 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
     theTable->insertRows(aSelectedRow);
     aCurrRow = aSelectedRow;
   }
+  myIsLocked = false;
 
   // Criteria
   theTable->setItem(aCurrRow, 0, getCriterionItem(theTable, theType));
@@ -1490,7 +1499,7 @@ void SMESHGUI_FilterTable::onCopyFromBtn()
 {
   if (myLibDlg == 0)
     myLibDlg = new SMESHGUI_FilterLibraryDlg(
-      this, GetType(), SMESHGUI_FilterLibraryDlg::COPY_FROM);
+      mySMESHGUI, this, GetType(), SMESHGUI_FilterLibraryDlg::COPY_FROM);
   else
     myLibDlg->Init(GetType(), SMESHGUI_FilterLibraryDlg::COPY_FROM);
 
@@ -1512,7 +1521,7 @@ void SMESHGUI_FilterTable::onAddToBtn()
     return;
   if (myLibDlg == 0)
     myLibDlg = new SMESHGUI_FilterLibraryDlg(
-      this, GetType(), SMESHGUI_FilterLibraryDlg::ADD_TO);
+      mySMESHGUI, this, GetType(), SMESHGUI_FilterLibraryDlg::ADD_TO);
   else
     myLibDlg->Init(GetType(), SMESHGUI_FilterLibraryDlg::ADD_TO);
 
@@ -1612,10 +1621,10 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*   theModule,
 : QDialog( SMESH::GetDesktop( theModule ), theName, false,
            WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
+  myViewWindow = SMESH::GetViewWindow( theModule );
+  mySelector = myViewWindow->GetSelector();
   QValueList<int> aTypes;
   aTypes.append(theType);
   construct(aTypes);
@@ -1656,7 +1665,7 @@ QFrame* SMESHGUI_FilterDlg::createMainFrame (QWidget* theParent)
 
   // filter frame
 
-  myTable = new SMESHGUI_FilterTable(aMainFrame, myTypes);
+  myTable = new SMESHGUI_FilterTable( mySMESHGUI, aMainFrame, myTypes );
   myTable->SetLibsEnabled(true);
 
   QFrame* aLine = new QFrame(myTable->GetTableGrp());
@@ -1668,7 +1677,7 @@ QFrame* SMESHGUI_FilterDlg::createMainFrame (QWidget* theParent)
   // other controls
   mySourceGrp = createSourceGroup(aMainFrame);
 
-  connect(myTable, SIGNAL(CretarionChanged(const int, const int)),
+  connect(myTable, SIGNAL(CriterionChanged(const int, const int)),
                     SLOT(onCriterionChanged(const int, const int)));
 
   connect(myTable, SIGNAL(CurrentChanged(int, int)),
@@ -2494,7 +2503,7 @@ void SMESHGUI_FilterDlg::updateSelection()
     if (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
         myTable->GetCriterionType(aRow) == FT_LyingOnGeom) {
 
-      mySelectionMgr->installFilter(new SMESH_NumberFilter("GEOM",TopAbs_SHAPE,0,allTypes));
+      mySelectionMgr->installFilter(new GEOM_SelectionFilter( aStudy, true ));
 
     } else if (myTable->GetCriterionType(aRow) == FT_BelongToPlane) {
       mySelectionMgr->installFilter(new GEOM_FaceFilter( aStudy, StdSelect_Plane ) );
@@ -2506,7 +2515,7 @@ void SMESHGUI_FilterDlg::updateSelection()
 
   } else {
     if (myIsSelectionChanged) {
-      mySelectionMgr->installFilter(new SMESH_NumberFilter ("This filter deactivates selection",TopAbs_SHAPE,0,allTypes));
+      mySelectionMgr->installFilter( new GEOM_TypeFilter( aStudy, -1 ) ); // This filter deactivates selection
     }
   }
 }

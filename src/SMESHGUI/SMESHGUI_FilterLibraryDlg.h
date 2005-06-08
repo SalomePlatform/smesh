@@ -64,12 +64,14 @@ public:
     
 public:
   
-                              SMESHGUI_FilterLibraryDlg( QWidget*               parent,
+                              SMESHGUI_FilterLibraryDlg( SMESHGUI*,
+							 QWidget*,
                                                          const QValueList<int>& types,
                                                          const int              mode,
                                                          const char*            name = 0 );
                                                 
-                              SMESHGUI_FilterLibraryDlg( QWidget*               parent,
+                              SMESHGUI_FilterLibraryDlg( SMESHGUI*,
+							 QWidget*,
                                                          const int              type,
                                                          const int              mode,
                                                          const char*            name = 0 );
@@ -141,6 +143,7 @@ private:
   QPushButton*                myDeleteBtn;
   QGroupBox*                  myNameGrp;
   QLineEdit*                  myName;
+  SMESHGUI*                   mySMESHGUI;
 
   QValueList<int>             myTypes;
   int                         myMode;

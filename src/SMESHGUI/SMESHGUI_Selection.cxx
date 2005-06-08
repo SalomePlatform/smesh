@@ -24,18 +24,30 @@
 //function : SMESHGUI_Selection
 //purpose  : 
 //=======================================================================
-
-SMESHGUI_Selection::SMESHGUI_Selection( const QString&          client,
-                                        SalomeApp_SelectionMgr* mgr )
+SMESHGUI_Selection::SMESHGUI_Selection()
+: SalomeApp_Selection()
 {
-  myPopupClient = client;
-  
-  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>
-    (SUIT_Session::session()->activeApplication()->activeStudy());
+}
 
-  if( mgr && appStudy )
+//=======================================================================
+//function : ~SMESHGUI_Selection
+//purpose  : 
+//=======================================================================
+SMESHGUI_Selection::~SMESHGUI_Selection()
+{
+}
+
+//=======================================================================
+//function : init
+//purpose  : 
+//=======================================================================
+void SMESHGUI_Selection::init( const QString& client, SalomeApp_SelectionMgr* mgr )
+{
+  SalomeApp_Selection::init( client, mgr );
+
+  if( mgr && study() )
   {
-    _PTR(Study) study = appStudy->studyDS();
+    _PTR(Study) aStudy = study()->studyDS();
 
     SUIT_DataOwnerPtrList sel;
     mgr->selected( sel, client );
@@ -47,36 +59,21 @@ SMESHGUI_Selection::SMESHGUI_Selection( const QString&          client,
       SUIT_DataOwner* owner = ( SUIT_DataOwner* )( (*anIt ).get() );
       SalomeApp_DataOwner* sowner = dynamic_cast<SalomeApp_DataOwner*>( owner );
       if( sowner )
-        myTypes.append( typeName( type( sowner, study ) ) );
+        myTypes.append( typeName( type( sowner, aStudy ) ) );
       else
         myTypes.append( "Unknown" );
     }
   }
 }
 
-SMESHGUI_Selection::~SMESHGUI_Selection()
-{
-}
-
-//=======================================================================
-//function : count
-//purpose  : 
-//=======================================================================
-
-int SMESHGUI_Selection::count() const
-{
-  return myTypes.count();
-}
-
 //=======================================================================
 //function : param
 //purpose  : 
 //=======================================================================
-
 QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
 {
   QtxValue val;
-  if      ( p=="client" )        val = QtxValue( myPopupClient );
+       if ( p=="client" )        val = QtxValue( globalParam( p ) );
   else if ( p=="type" )          val = QtxValue( myTypes[ind] );
   else if ( p=="elemTypes" )     val = QtxValue( elemTypes( ind ) );
   else if ( p=="numberOfNodes" ) val = QtxValue( numberOfNodes( ind ) );
@@ -89,9 +86,9 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
   else if ( p=="hasReference" )  val = QtxValue( hasReference( ind ) );
   else if ( p=="isVisible" )     val = QtxValue( isVisible( ind ) );
 
-  printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
-  if ( val.type() == QVariant::List )
-    cout << "size: " << val.toList().count() << endl;
+//   printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
+//   if ( val.type() == QVariant::List )
+//     cout << "size: " << val.toList().count() << endl;
   return val;
 }
 

@@ -307,19 +307,6 @@ namespace{
 	    aFilename = fd->selectedFile();
 	    aFormat = aFilterMap[fd->selectedFilter()];
 	    delete fd;
-	    if( !aFilename.isEmpty()
-		&& (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0) 
-		&& aFormat==SMESH::MED_V2_1){
-	      int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
-					       QObject::tr("SMESH_WRN_WARNING"),
-					       QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
-					       QObject::tr("SMESH_BUT_YES"),
-					       QObject::tr("SMESH_BUT_NO"),
-					       0,1,0);
-	      if(aRet){
-		return;
-	      }
-	    }
 	  }
 	if ( !aFilename.isEmpty() ) {
 	  // Check whether the file already exists and delete it if yes
@@ -1235,7 +1222,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( vtkwnd ) {
 	EmitSignalDeactivateDialog();
 
-	new SMESHGUI_NodesDlg( desktop(), "", SMESHGUI::selectionMgr() );
+	new SMESHGUI_NodesDlg(this);
       }
       else {
 	SUIT_MessageBox::warn1(desktop(),
@@ -1698,7 +1685,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       EmitSignalDeactivateDialog();
 
-      new SMESHGUI_DeleteGroupDlg( desktop(), SMESHGUI::selectionMgr() );
+      new SMESHGUI_DeleteGroupDlg(this);
       break;
     }
 
@@ -2169,7 +2156,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       aTypes.append( SMESH::FACE );
       aTypes.append( SMESH::VOLUME );
     }
-    new SMESHGUI_FilterLibraryDlg( desktop(), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    new SMESHGUI_FilterLibraryDlg( this, SMESH::GetDesktop( this ), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
   }
   break;
 
@@ -2443,9 +2430,9 @@ void SMESHGUI::createPopupItem( const int id,
   if( !popupMgr()->contains( popupMgr()->actionId( action( id ) ) ) )
     popupMgr()->insert( action( id ), parentId, 0 );
 
-  QChar lc = popupMgr()->equality();
+  QChar lc = QtxPopupMgr::Selection::defEquality();
   QString rule = "(%1) and (%2) and (%3)";
-  rule = rule.arg( QString( "%1>0" ).arg( popupMgr()->selCountParam() ) );
+  rule = rule.arg( QString( "%1>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() ) );
   rule = rule.arg( QString( "%1client in {%2}" ).arg( lc ).arg( clients ) );
   rule = rule.arg( QString( "%1type in {%2}" ).arg( lc ).arg( types ) );
   rule += theRule;
@@ -2499,19 +2486,19 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
-  createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH" );
-  createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE" );
-  createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D" );
-  createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION" );
-  createSMESHAction( 6011, "AREA",            "ICON_AREA" );
-  createSMESHAction( 6012, "TAPER",           "ICON_TAPER" );
-  createSMESHAction( 6013, "ASPECT",          "ICON_ASPECT" );
-  createSMESHAction( 6014, "MIN_ANG",         "ICON_ANGLE" );
-  createSMESHAction( 6015, "WRAP",            "ICON_WRAP" );
-  createSMESHAction( 6016, "SKEW",            "ICON_SKEW" );
-  createSMESHAction( 6017, "ASPECT_3D",       "ICON_ASPECT_3D" );
-  createSMESHAction( 6018, "LENGTH_2D",       "ICON_LENGTH_2D" );
-  createSMESHAction( 6019, "CONNECTION_2D",   "ICON_CONNECTION_2D" );
+  createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH" ,       0, true );
+  createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE" ,    0, true );
+  createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D" , 0, true );
+  createSMESHAction( 6004, "CONNECTION",      "ICON_CONNECTION" ,   0, true );
+  createSMESHAction( 6011, "AREA",            "ICON_AREA" ,         0, true );
+  createSMESHAction( 6012, "TAPER",           "ICON_TAPER" ,        0, true );
+  createSMESHAction( 6013, "ASPECT",          "ICON_ASPECT" ,       0, true );
+  createSMESHAction( 6014, "MIN_ANG",         "ICON_ANGLE" ,        0, true );
+  createSMESHAction( 6015, "WRAP",            "ICON_WRAP" ,         0, true );
+  createSMESHAction( 6016, "SKEW",            "ICON_SKEW",          0, true );
+  createSMESHAction( 6017, "ASPECT_3D",       "ICON_ASPECT_3D",     0, true );
+  createSMESHAction( 6018, "LENGTH_2D",       "ICON_LENGTH_2D",     0, true );
+  createSMESHAction( 6019, "CONNECTION_2D",   "ICON_CONNECTION_2D", 0, true );
   createSMESHAction(  400, "NODE",            "ICON_DLG_NODE" );
   createSMESHAction(  401, "EDGE",            "ICON_DLG_EDGE" );
   createSMESHAction( 4021, "TRIANGLE",        "ICON_DLG_TRIANGLE" );
@@ -2550,18 +2537,19 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 10071, "DISP_ENT", "", 0, true );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
-  createSMESHAction(  211, "WIRE",           "ICON_WIRE" );
-  createSMESHAction(  212, "SHADE",          "ICON_SHADE" );
-  createSMESHAction(  213, "SHRINK",         "ICON_SHRINK" );
+  createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
+  createSMESHAction(  212, "SHADE",          "ICON_SHADE", 0, true );
+  createSMESHAction(  213, "SHRINK",         "ICON_SHRINK", 0, true );
   createSMESHAction(  214, "UPDATE",         "ICON_UPDATE" );
-  createSMESHAction(  215, "NODES",          "ICON_POINTS" );
-  createSMESHAction(  217, "EDGES",          "ICON_DLG_EDGE" );
-  createSMESHAction(  218, "FACES",          "ICON_DLG_TRIANGLE" );
-  createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS" );
+  createSMESHAction(  215, "NODES",          "ICON_POINTS", 0, true );
+  createSMESHAction(  217, "EDGES",          "ICON_DLG_EDGE", 0, true );
+  createSMESHAction(  218, "FACES",          "ICON_DLG_TRIANGLE", 0, true );
+  createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS", 0, true );
   createSMESHAction(  220, "ALL" );
+  createSMESHAction( 1100, "EDIT_HYPO" );
   createSMESHAction( 1101, "RENAME" );
-  createSMESHAction( 9010, "NUM_NODES" );
-  createSMESHAction( 9011, "NUM_ELEMENTS" );
+  createSMESHAction( 9010, "NUM_NODES", "", 0, true );
+  createSMESHAction( 9011, "NUM_ELEMENTS", "", 0, true );
   createSMESHAction( 1131, "DISPMODE" );
   createSMESHAction( 1132, "COLORS" );
   createSMESHAction( 1133, "TRANSP" );
@@ -2847,9 +2835,9 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasFaces("{'Face'} in elemTypes"),
     hasVolumes("{'Volume'} in elemTypes");
 
-  QString aSelCount = popupMgr()->selCountParam() + "= 1";
-  QString aClient = QString( popupMgr()->equality() )+ "client in {" + View + "}";
-  QString aType = QString( popupMgr()->equality() ) + "type in {" + mesh_group + "}";
+  QString aSelCount = QString( "%1 = 1" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
+  QString aClient = QString( "%1client in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( View );
+  QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
   QString aMeshInVTK = aClient + "&&" + aType + "&&" + aSelCount;
   
   //-------------------------------------------------
@@ -2951,59 +2939,59 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( 6003 ), anId, -1 ); // FREE_BORDER
   popupMgr()->setRule( action( 6003 ), aMeshInVtkHasEdges, true );
-  popupMgr()->setRule( action( 6003 ), "&& controlMode = 'eFreeEdges'", true );
+  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeEdges'", false );
 
   popupMgr()->insert( action( 6001 ), anId, -1 ); // LENGTH
   popupMgr()->setRule( action( 6001 ), aMeshInVtkHasEdges, true );
-  popupMgr()->setRule( action( 6001 ), "&& controlMode = 'eLength'", true );
+  popupMgr()->setRule( action( 6001 ), "controlMode = 'eLength'", false );
 
   popupMgr()->insert( action( 6004 ), anId, -1 ); // CONNECTION
   popupMgr()->setRule( action( 6004 ), aMeshInVtkHasEdges, true );
-  popupMgr()->setRule( action( 6004 ), "&& controlMode = 'eMultiConnection'", true );
+  popupMgr()->setRule( action( 6004 ), "controlMode = 'eMultiConnection'", false );
 
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 6002 ), anId, -1 ); // FREE_EDGE
   popupMgr()->setRule( action( 6002 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6002 ), "&& controlMode = 'eFreeBorders'", true );
+  popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeBorders'", false );
 
   popupMgr()->insert( action( 6018 ), anId, -1 ); // LENGTH_2D
   popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6018 ), "&& controlMode = 'eLength2D'", true );
+  popupMgr()->setRule( action( 6018 ), "controlMode = 'eLength2D'", false );
 
   popupMgr()->insert( action( 6019 ), anId, -1 ); // CONNECTION_2D
   popupMgr()->setRule( action( 6019 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6019 ), "&& controlMode = 'eMultiConnection2D'", true );
+  popupMgr()->setRule( action( 6019 ), "controlMode = 'eMultiConnection2D'", false );
 
   popupMgr()->insert( action( 6011 ), anId, -1 ); // AREA
   popupMgr()->setRule( action( 6011 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6011 ), "&& controlMode = 'eArea'", true );
+  popupMgr()->setRule( action( 6011 ), "controlMode = 'eArea'", false );
 
   popupMgr()->insert( action( 6012 ), anId, -1 ); // TAPER
   popupMgr()->setRule( action( 6012 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6012 ), "&& controlMode = 'eTaper'", true );
+  popupMgr()->setRule( action( 6012 ), "controlMode = 'eTaper'", false );
 
   popupMgr()->insert( action( 6013 ), anId, -1 ); // ASPECT
   popupMgr()->setRule( action( 6013 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6013 ), "&& controlMode = 'eAspectRatio'", true );
+  popupMgr()->setRule( action( 6013 ), "controlMode = 'eAspectRatio'", false );
 
   popupMgr()->insert( action( 6014 ), anId, -1 ); // MIN_ANG
   popupMgr()->setRule( action( 6014 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6014 ), "&& controlMode = 'eMinimumAngle'", true );
+  popupMgr()->setRule( action( 6014 ), "controlMode = 'eMinimumAngle'", false );
 
   popupMgr()->insert( action( 6015 ), anId, -1 ); // WRAP
   popupMgr()->setRule( action( 6015 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6015 ), "&& controlMode = 'eWarping'", true );
+  popupMgr()->setRule( action( 6015 ), "controlMode = 'eWarping'", false );
 
   popupMgr()->insert( action( 6016 ), anId, -1 ); // SKEW
   popupMgr()->setRule( action( 6016 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6016 ), "&& controlMode = 'eSkew'", true );
+  popupMgr()->setRule( action( 6016 ), "controlMode = 'eSkew'", false );
 
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 6017 ), anId, -1 ); // ASPECT_3D
   popupMgr()->setRule( action( 6017 ), aMeshInVtkHasVolumes, true );
-  popupMgr()->setRule( action( 6017 ), "&& controlMode = 'eAspectRatio3D'", true );
+  popupMgr()->setRule( action( 6017 ), "controlMode = 'eAspectRatio3D'", false );
 
   popupMgr()->insert( separator(), anId, -1 );
 
@@ -3073,7 +3061,8 @@ QString SMESHGUI::engineIOR() const
 
 void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QString& /*title*/ )
 {
-  SMESHGUI_Selection sel( client, selectionMgr() );
+  SMESHGUI_Selection sel;
+  sel.init( client, selectionMgr() );
   popupMgr()->updatePopup( menu, &sel );
 }
 

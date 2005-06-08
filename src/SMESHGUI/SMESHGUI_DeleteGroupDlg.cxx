@@ -38,9 +38,11 @@
 #include "SalomeApp_Study.h"
 #include "SalomeApp_SelectionMgr.h"
 
-#include "SVTK_Selection.h"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
+
+#include "SVTK_Selection.h"
+#include "SVTK_ViewWindow.h"
 
 // QT Includes
 #include <qframe.h>
@@ -68,10 +70,14 @@
 // function : SMESHGUI_DeleteGroupDlg()
 // purpose  : Constructor
 //=================================================================================
-SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (QWidget*          theParent,
-                                                  SalomeApp_SelectionMgr* theSelection)
-     : QDialog(theParent, "SMESHGUI_DeleteGroupDlg", false,
-               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
+  QDialog(SMESH::GetDesktop(theModule), 
+	  "SMESHGUI_DeleteGroupDlg", 
+	  false,
+	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
+  mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+  myViewWindow(SMESH::GetViewWindow(mySMESHGUI)),
+  mySMESHGUI(theModule)
 {
   setCaption(tr("CAPTION"));
 
@@ -85,7 +91,7 @@ SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (QWidget*          theParent,
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  Init(theSelection);
+  Init();
 }
 
 //=================================================================================
@@ -147,30 +153,24 @@ SMESHGUI_DeleteGroupDlg::~SMESHGUI_DeleteGroupDlg()
 // function : Init()
 // purpose  : Init dialog fields, connect signals and slots, show dialog
 //=================================================================================
-void SMESHGUI_DeleteGroupDlg::Init (SalomeApp_SelectionMgr* theSelection)
+void SMESHGUI_DeleteGroupDlg::Init ()
 {
   myBlockSelection = false;
-  mySelectionMgr = theSelection;
-  SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
+  mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
-  connect(aSMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 
   int x, y;
-  aSMESHGUI->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
   this->show();
 
   // set selection mode
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(ActorSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(ActorSelection);
-#endif
   mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
+  myViewWindow->SetSelectionMode(ActorSelection);
   onSelectionDone();
 
   return;
@@ -188,7 +188,7 @@ bool SMESHGUI_DeleteGroupDlg::isValid()
     return false;
   }
 
-  return !SMESHGUI::GetSMESHGUI()->isActiveStudyLocked();
+  return !mySMESHGUI->isActiveStudyLocked();
 }
 
 //=================================================================================
@@ -213,7 +213,7 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
   myListGrp.clear();
   mySelectionMgr->clearSelected();
   SMESH::UpdateView();
-  SMESHGUI::GetSMESHGUI()->updateObjBrowser(true);
+  mySMESHGUI->updateObjBrowser(true);
 
   myBlockSelection = false;
   return true;
@@ -235,10 +235,10 @@ void SMESHGUI_DeleteGroupDlg::onOk()
 //=================================================================================
 void SMESHGUI_DeleteGroupDlg::onClose()
 {
-  mySelectionMgr->setSelectionModes(ActorSelection);
+  myViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
-  SMESHGUI::GetSMESHGUI()->ResetState();
+  disconnect(mySMESHGUI, 0, this, 0);
+  mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
   reject();
 }
@@ -287,13 +287,9 @@ void SMESHGUI_DeleteGroupDlg::onDeactivate()
 //=================================================================================
 void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
 {
-  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+  mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(ActorSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(ActorSelection);
-#endif
+  myViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 

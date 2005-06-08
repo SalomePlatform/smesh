@@ -29,8 +29,7 @@
 #ifndef SMESHGUI_SELECTION_HeaderFile
 #define SMESHGUI_SELECTION_HeaderFile
 
-#include <QtxPopupMgr.h>
-
+#include "SalomeApp_Selection.h"
 #include "SALOMEDSClient_definitions.hxx"
 #include "SUIT_DataOwner.h"
 
@@ -39,15 +38,14 @@ class SALOMEDSClient_Study;
 class SalomeApp_DataOwner;
 class SMESH_Actor;
 
-class SMESHGUI_Selection : public QtxPopupMgr::Selection
+class SMESHGUI_Selection : public SalomeApp_Selection
 {
 public:
-  SMESHGUI_Selection( const QString&, SalomeApp_SelectionMgr* );
+  SMESHGUI_Selection();
   virtual ~SMESHGUI_Selection();
 
+  virtual void     init( const QString&, SalomeApp_SelectionMgr* );
   virtual QtxValue param( const int , const QString& paramName ) const;
-
-  virtual int count() const;
 
   // got from object, not from actor
   virtual int numberOfNodes( int ind ) const;
@@ -69,7 +67,6 @@ public:
   static QString   typeName( const int type);
 
 private:
-  QString               myPopupClient;
   QStringList           myTypes;
   SUIT_DataOwnerPtrList myDataOwners;
 };

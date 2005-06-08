@@ -46,15 +46,16 @@
 #include "SUIT_ViewWindow.h"
 #include "SUIT_ViewManager.h"
 #include "SUIT_MessageBox.h"
+#include "SUIT_Desktop.h"
 
 #include "SalomeApp_Study.h"
-#include "SalomeApp_Application.h"
+#include "SalomeApp_SelectionMgr.h"
 
+#include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"
 
 #include "SALOME_Actor.h"
 #include "SALOME_ListIO.hxx"
-#include "SVTK_Selection.h"
 
 #include "utilities.h"
 
@@ -113,23 +114,16 @@ namespace SMESH {
   }
 
   class TNodeSimulation {
-    SalomeApp_Application* myApplication;
-    SUIT_ViewWindow* myViewWindow;
-    SVTK_ViewWindow* myVTKViewWindow;
+    SVTK_ViewWindow* myViewWindow;
 
     SALOME_Actor *myPreviewActor;
     vtkDataSetMapper* myMapper;
     vtkPoints* myPoints;
 
   public:
-    TNodeSimulation (SalomeApp_Application* theApplication)
+    TNodeSimulation(SVTK_ViewWindow* theViewWindow):
+      myViewWindow(theViewWindow)
     {
-      myApplication = theApplication;
-      SUIT_ViewManager* mgr = theApplication->activeViewManager();
-      if (!mgr) return;
-      myViewWindow = mgr->getActiveView();
-      myVTKViewWindow = GetVtkViewWindow(myViewWindow);
-
       vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::New();
 
       // Create points
@@ -195,7 +189,7 @@ namespace SMESH {
       myPreviewActor->SetProperty(aProp);
       aProp->Delete();
 
-      myVTKViewWindow->AddActor(myPreviewActor);
+      myViewWindow->AddActor(myPreviewActor);
     }
 
     void SetPosition (float x, float y, float z)
@@ -213,9 +207,7 @@ namespace SMESH {
 
     ~TNodeSimulation()
     {
-      if (FindVtkViewWindow(myApplication->activeViewManager(), myViewWindow)) {
-	myVTKViewWindow->RemoveActor(myPreviewActor);
-      }
+      myViewWindow->RemoveActor(myPreviewActor);
       myPreviewActor->Delete();
 
       myMapper->RemoveAllInputs();
@@ -230,17 +222,20 @@ namespace SMESH {
 // class    : SMESHGUI_NodesDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (QWidget* parent,
+SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 				      const char* name,
-				      SalomeApp_SelectionMgr* Sel,
 				      bool modal,
-				      WFlags fl)
-  : QDialog(parent, name, modal, WStyle_Customize | WStyle_NormalBorder |
-            WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose)
+				      WFlags fl): 
+  QDialog(SMESH::GetDesktop(theModule), 
+	  name, 
+	  modal, 
+	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
+  mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+  myViewWindow(SMESH::GetViewWindow(theModule)),
+  mySMESHGUI(theModule)
 {
-  SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>
-    (SUIT_Session::session()->activeApplication());
-  mySimulation = new SMESH::TNodeSimulation (anApp);
+  mySimulation = new SMESH::TNodeSimulation(myViewWindow);
 
   QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
   if (!name)
@@ -333,7 +328,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (QWidget* parent,
   SMESHGUI_NodesDlgLayout->addWidget(GroupCoordinates, 1, 0);
 
   /* Initialisation and display */
-  Init(Sel);
+  Init();
 }
 
 //=======================================================================
@@ -349,7 +344,7 @@ SMESHGUI_NodesDlg::~SMESHGUI_NodesDlg()
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_NodesDlg::Init (SalomeApp_SelectionMgr* Sel)
+void SMESHGUI_NodesDlg::Init ()
 {
   /* Get setting of step value from file configuration */
   double step;
@@ -365,9 +360,7 @@ void SMESHGUI_NodesDlg::Init (SalomeApp_SelectionMgr* Sel)
   SpinBox_Y->SetValue(0.0);
   SpinBox_Z->SetValue(0.0);
 
-  mySelectionMgr = Sel;
-  myMeshGUI = SMESHGUI::GetSMESHGUI();
-  myMeshGUI->SetActiveDialogBox((QDialog*)this);
+  mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   /* signals and slots connections */
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(ClickOnOk()));
@@ -379,23 +372,19 @@ void SMESHGUI_NodesDlg::Init (SalomeApp_SelectionMgr* Sel)
   connect(SpinBox_Z, SIGNAL (valueChanged(double)), SLOT(ValueChangedInSpinBox(double)));
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(SelectionIntoArgument()));
-  connect(myMeshGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
+  connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   /* to close dialog if study frame change */
-  connect(myMeshGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
+  connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
 
   /* Move widget on the botton right corner of main widget */
   int x, y;
-  myMeshGUI->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
   this->show();
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(NodeSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(NodeSelection);
-#endif
+  myViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
 }
@@ -431,7 +420,7 @@ void SMESHGUI_NodesDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_NodesDlg::ClickOnApply()
 {
-  if (myMeshGUI->isActiveStudyLocked())
+  if (mySMESHGUI->isActiveStudyLocked())
     return false;
 
   if (myMesh->_is_nil()) {
@@ -460,14 +449,9 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
           if (anActor->hasIO()) {
             if (SMESH_MeshObj *aMeshObj = dynamic_cast<SMESH_MeshObj*>(anActor->GetObject().get())) {
               if (myMesh->_is_equivalent(aMeshObj->GetMeshServer())) {
-#ifdef NEW_GUI
-                mySelectionMgr->clearSelected();
-                mySelectionMgr->AddIObject(anActor->getIO(), false);
-#else
                 aList.Clear();
                 aList.Append(anActor->getIO());
                 mySelectionMgr->setSelectedObjects(aList, false);
-#endif
                 break;
               }
             }
@@ -485,18 +469,14 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_NodesDlg::ClickOnCancel()
 {
-  MESSAGE("SMESHGUI_NodesDlg::ClickOnCancel() 1");
   disconnect(mySelectionMgr, 0, this, 0);
-  mySelectionMgr->clearSelected();
-  mySelectionMgr->setSelectionModes(ActorSelection);
+  myViewWindow->SetSelectionMode(ActorSelection);
 
-  MESSAGE("SMESHGUI_NodesDlg::ClickOnCancel() 2");
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(false);
-  myMeshGUI->ResetState();
+  mySMESHGUI->ResetState();
 
   reject();
-  MESSAGE("SMESHGUI_NodesDlg::ClickOnCancel() 3");
 }
 
 //=================================================================================
@@ -511,15 +491,14 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(true);
 
-  SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList);
+  const SALOME_ListIO& aList = mySelector->StoredIObjects();
   if (aList.Extent() == 1) {
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     if (anIO->hasEntry()) {
       myMesh = SMESH::GetMeshByIO(anIO);
       if (myMesh->_is_nil()) return;
       QString aText;
-      if (SMESH::GetNameOfSelectedNodes(mySelectionMgr, aText) == 1) {
+      if (SMESH::GetNameOfSelectedNodes(mySelector,anIO,aText) == 1) {
 	if (SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh.in())) {
 	  if (SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh()) {
 	    if (const SMDS_MeshNode* aNode = aMesh->FindNode(aText.toInt())) {
@@ -577,8 +556,8 @@ void SMESHGUI_NodesDlg::DeactivateActiveDialog()
     GroupCoordinates->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySimulation->SetVisibility(false);
-    myMeshGUI->ResetState();
-    myMeshGUI->SetActiveDialogBox(0);
+    mySMESHGUI->ResetState();
+    mySMESHGUI->SetActiveDialogBox(0);
   }
 }
 
@@ -588,17 +567,13 @@ void SMESHGUI_NodesDlg::DeactivateActiveDialog()
 //=================================================================================
 void SMESHGUI_NodesDlg::ActivateThisDialog()
 {
-  myMeshGUI->EmitSignalDeactivateDialog();
+  mySMESHGUI->EmitSignalDeactivateDialog();
   GroupConstructors->setEnabled(true);
   GroupCoordinates->setEnabled(true);
   GroupButtons->setEnabled(true);
 
   SMESH::SetPointRepresentation(true);
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(NodeSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(NodeSelection);
-#endif
+  myViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
 }

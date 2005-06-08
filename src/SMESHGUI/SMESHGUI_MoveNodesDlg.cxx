@@ -270,7 +270,7 @@ void SMESHGUI_MoveNodesDlg::reset()
 //=======================================================================
 bool SMESHGUI_MoveNodesDlg::onApply()
 {
-  if (SMESHGUI::GetSMESHGUI()->isActiveStudyLocked())
+  if (mySMESHGUI->isActiveStudyLocked())
     return false;
 
   if (!isValid(true))
@@ -323,7 +323,7 @@ void SMESHGUI_MoveNodesDlg::onClose()
 {
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  mySelector->SetSelectionMode(ActorSelection);
+  myViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -417,7 +417,7 @@ void SMESHGUI_MoveNodesDlg::onDeactivate()
 void SMESHGUI_MoveNodesDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
-    SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+    mySMESHGUI->EmitSignalDeactivateDialog();
 
     // set selection mode
     SMESH::SetPointRepresentation(true);

@@ -161,7 +161,7 @@ private:
 
     SMESHGUI_FilterDlg*           myFilterDlg;
 
-    bool                          myCreate;
+    bool                          myCreate, myIsBusy;
 };
 
 #endif // DIALOGBOX_GROUP_H
