@@ -29,7 +29,6 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(MED)
-#include CORBA_SERVER_HEADER(SALOME_Comm)
 #include <string>
 #include <vector>
 #include <map>
@@ -44,8 +43,8 @@
 
 class SMESH_Mesh_i;
 
-class SMESH_MEDMesh_i: virtual public POA_SALOME_MED::MESH, 
-		       virtual public PortableServer::RefCountServantBase
+class SMESH_MEDMesh_i:
+	public POA_SALOME_MED::MESH, public PortableServer::RefCountServantBase
 {
   public: private: protected:
 	// C++ object containing values
@@ -78,8 +77,8 @@ class SMESH_MEDMesh_i: virtual public POA_SALOME_MED::MESH,
 	// IDL Methods
 	void setProtocol(SALOME::TypeOfCommunication typ) {}
 	void release() {}
-	SALOME::Sender_ptr getSenderForCoordinates(long int) {return SALOME::Sender::_nil();}
-	SALOME::Sender_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::Sender::_nil();}
+	SALOME::SenderDouble_ptr getSenderForCoordinates(long int) {return SALOME::SenderDouble::_nil();}
+	SALOME::SenderInt_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::SenderInt::_nil();}
 	
 	char *getName() throw(SALOME::SALOME_Exception);
 	CORBA::Long getSpaceDimension() throw(SALOME::SALOME_Exception);
