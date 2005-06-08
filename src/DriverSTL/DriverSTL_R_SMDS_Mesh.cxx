@@ -19,12 +19,12 @@
 
 #include <stdio.h>
 
+
 #include "DriverSTL_R_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include <gp_Pnt.hxx>
 #include <OSD_Path.hxx>
 #include <OSD_File.hxx>
 #include <OSD_FromWhere.hxx>
@@ -32,7 +32,6 @@
 #include <OSD_SingleProtection.hxx>
 #include <NCollection_DataMap.hxx>
 #include <Standard_NoMoreObject.hxx>
-
 #include "utilities.h"
 
 static const int HEADER_SIZE           =  84;

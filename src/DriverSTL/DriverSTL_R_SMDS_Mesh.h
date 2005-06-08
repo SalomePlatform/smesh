@@ -23,6 +23,7 @@
 #include "Driver_SMDS_Mesh.h"
 
 #include <Standard_TypeDef.hxx>
+#include <gp_Pnt.hxx>
 
 class DriverSTL_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {
@@ -41,5 +42,9 @@ class DriverSTL_R_SMDS_Mesh: public Driver_SMDS_Mesh
   bool myIsCreateFaces;
   bool myIsAscii;
 };
+
+// mpv: for compatibility with Mandrake 10.1 compiler
+inline Standard_Integer HashCode (const gp_Pnt& point, const Standard_Integer Upper);
+inline Standard_Boolean IsEqual (const gp_Pnt& point1, const gp_Pnt& point2);
 
 #endif
