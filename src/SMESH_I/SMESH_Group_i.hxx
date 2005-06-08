@@ -37,7 +37,7 @@
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Mesh_i;
-class ::SMESH_Group;
+class SMESH_Group;
 class SMESHDS_GroupBase;
 
 // ===========
@@ -70,7 +70,7 @@ class SMESH_GroupBase_i:
   // Internal C++ interface
   int GetLocalID() const { return myLocalID; }
   SMESH_Mesh_i* GetMeshServant() const { return myMeshServant; }
-  ::SMESH_Group* GetSmeshGroup() const;
+  SMESH_Group* GetSmeshGroup() const;
   SMESHDS_GroupBase* GetGroupDS() const;
 
 private:

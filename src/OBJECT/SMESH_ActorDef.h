@@ -50,7 +50,7 @@ public:
     return *this;
   }
   TVTKSmartPtr& operator=(T* r){ vtkSmartPointer<T>::operator=(r); return *this;}
-  T* Get() const { return GetPointer();}
+  T* Get() const { return this->GetPointer();}
 };
 
 
