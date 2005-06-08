@@ -2744,7 +2744,7 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
     list< list< int > >::iterator ll = myElemPointIDs.begin();
     for ( ; ll != myElemPointIDs.end(); ++ll )
     {
-      myElemXYZIDs.push_back();
+      myElemXYZIDs.push_back(std::list<int>()); // mpv: in 3.4.1 compiler there is no method with zero args
       list< int >& xyzIds = myElemXYZIDs.back();
       list< int >& pIds = *ll;
       for ( list<int>::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
@@ -2766,7 +2766,7 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*> theFaces,
       link.insert( n2 );
       // add the link to the map
       list< list< int > >& groups = linkPointIndListMap[ link ];
-      groups.push_back();
+      groups.push_back(list<int>()); // mpv: in 3.4.1 compiler there is no method with zero args
       list< int >& indList = groups.back();
       list< TPoint* > & linkPoints = getShapePoints( eID++ );
       list< TPoint* >::iterator p = linkPoints.begin();
@@ -2846,7 +2846,7 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
     list< list< int > >::iterator ll = myElemPointIDs.begin();
     for ( ; ll != myElemPointIDs.end(); ++ll )
     {
-      myElemXYZIDs.push_back();
+      myElemXYZIDs.push_back(std::list<int>()); // mpv: in 3.4.1 compiler there is no method with zero args
       list< int >& xyzIds = myElemXYZIDs.back();
       list< int >& pIds = *ll;
       for ( list<int>::iterator id = pIds.begin(); id != pIds.end(); id++ ) {
@@ -2881,7 +2881,7 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> theVolumes,
         subNodes.insert( myOrderedNodes[ subIDs.back() - 1 ]);
       }
       list< list< int > >& groups = subPointIndListMap[ subNodes ];
-      groups.push_back();
+      groups.push_back(list<int>()); // mpv: in 3.4.1 compiler there is no method with zero args
       list< int >& indList = groups.back();
       // add points
       list< TPoint* > & points = getShapePoints( Id );
