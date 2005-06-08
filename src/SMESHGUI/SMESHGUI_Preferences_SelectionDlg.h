@@ -38,6 +38,7 @@
 class QPushButton;
 class QSpinBox;
 class QColor;
+class SMESHGUI;
 
 class SMESHGUI_LineEdit : public QLineEdit
 {
@@ -72,7 +73,7 @@ class SMESHGUI_Preferences_SelectionDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_Preferences_SelectionDlg( QWidget* parent = 0, const char* name = 0 );
+    SMESHGUI_Preferences_SelectionDlg( SMESHGUI*, const char* name = 0 );
     ~SMESHGUI_Preferences_SelectionDlg();
 
     void   SetColor(int type, QColor color);
@@ -89,6 +90,7 @@ private slots:
     void onSelectColor();
 
 private:
+    SMESHGUI*             mySMESHGUI;
     QPushButton*          myColor[3];
     QSpinBox*             myWidth[2];
     QLineEdit*            myPrecision[2];

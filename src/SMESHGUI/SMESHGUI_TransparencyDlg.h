@@ -36,6 +36,9 @@ class QLabel;
 class QPushButton;
 class QSlider;
 class SalomeApp_SelectionMgr;
+class SVTK_Selector;
+class SVTK_ViewWindow;
+class SMESHGUI;
 
 //=================================================================================
 // class    : SMESHGUI_TransparencyDlg
@@ -46,7 +49,7 @@ class SMESHGUI_TransparencyDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_TransparencyDlg( QWidget* parent = 0,
+    SMESHGUI_TransparencyDlg( SMESHGUI*,
 			      const char* name = 0,
 			      bool modal = false,
 			      WFlags fl = 0 );
@@ -55,13 +58,15 @@ public:
 
 private :
 
-    SalomeApp_SelectionMgr* mySelectionMgr;
+  SMESHGUI*               mySMESHGUI;
+  SalomeApp_SelectionMgr* mySelectionMgr;
+  SVTK_ViewWindow*        myViewWindow;
 
-    QPushButton*      buttonOk;
-    QLabel*           TextLabelOpaque;
-    QLabel*           ValueLab;
-    QLabel*           TextLabelTransparent;
-    QSlider*          Slider1;
+  QPushButton*      buttonOk;
+  QLabel*           TextLabelOpaque;
+  QLabel*           ValueLab;
+  QLabel*           TextLabelTransparent;
+  QSlider*          Slider1;
 
 public slots:
       

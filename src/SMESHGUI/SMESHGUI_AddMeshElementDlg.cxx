@@ -268,8 +268,8 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   QString caption       = tr(QString("SMESH_ADD_%1_TITLE").arg(elemName));
   QString grBoxTitle    = tr(QString("SMESH_ADD_%1").arg(elemName));
 
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", iconName));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", iconName));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (!name)
     setName("SMESHGUI_AddMeshElementDlg");

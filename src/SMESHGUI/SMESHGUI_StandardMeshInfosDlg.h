@@ -41,13 +41,15 @@ class QPushButton;
 class QLineEdit;
 class QTextBrowser;
 class SalomeApp_SelectionMgr;
+class SMESHGUI;
+
 
 class SMESHGUI_StandardMeshInfosDlg : public QDialog
 { 
     Q_OBJECT
 
 public:
-    SMESHGUI_StandardMeshInfosDlg( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, WFlags fl = 0 );
+    SMESHGUI_StandardMeshInfosDlg( SMESHGUI*, const char* name = 0, bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_StandardMeshInfosDlg();
 
 protected:
@@ -62,6 +64,7 @@ private slots:
     void onStartSelection();
 
 private:
+    SMESHGUI*                mySMESHGUI;
     SalomeApp_SelectionMgr*  mySelectionMgr; 
     bool                     myStartSelection;
     bool                     myIsActiveWindow;

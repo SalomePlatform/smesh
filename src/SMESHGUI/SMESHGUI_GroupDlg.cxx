@@ -149,7 +149,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   myCreate = create;
   myCurrentLineEdit = 0;
 
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (create)
     setCaption(tr("SMESH_CREATE_GROUP_TITLE"));
@@ -744,7 +744,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       myElements->clear();
 
-      if (aNbSel == 0 ) {
+      if (aNbSel != 1 ) {
         myGroup = SMESH::SMESH_Group::_nil();
         myMesh = SMESH::SMESH_Mesh::_nil();
         myIsBusy = false;
@@ -805,7 +805,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       return;
 
     } else if (myCurrentLineEdit == myGeomGroupLine) {
-      if (aNbSel == 0) {
+      if (aNbSel != 1) {
         myGeomGroup = GEOM::GEOM_Object::_nil();
         myIsBusy = false;
         return;

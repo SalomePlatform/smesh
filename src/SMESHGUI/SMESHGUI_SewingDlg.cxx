@@ -79,11 +79,12 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
       myViewWindow( SMESH::GetViewWindow( theModule ) ),
       mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_FREEBORDERS")));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_CONFORM_FREEBORDERS")));
-  QPixmap image2 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_BORDERTOSIDE")));
-  QPixmap image3 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_SIDEELEMENTS")));
-  QPixmap image4 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QPixmap image0 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_FREEBORDERS")));
+  QPixmap image1 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_CONFORM_FREEBORDERS")));
+  QPixmap image2 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_BORDERTOSIDE")));
+  QPixmap image3 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_SIDEELEMENTS")));
+  QPixmap image4 (mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (!name)
     setName("SMESHGUI_SewingDlg");

@@ -137,7 +137,7 @@ QFrame* SMESHGUI_SingleEditDlg::createMainFrame (QWidget* theParent)
 {
   QGroupBox* aMainGrp = new QGroupBox(1, Qt::Vertical, tr("EDGE_BETWEEN"), theParent);
 
-  QPixmap aPix (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   new QLabel(tr("SMESH_EDGE"), aMainGrp);
   (new QPushButton(aMainGrp))->setPixmap(aPix);

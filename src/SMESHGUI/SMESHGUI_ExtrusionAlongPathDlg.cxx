@@ -101,11 +101,12 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap edgeImage   (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
-  QPixmap faceImage   (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
-  QPixmap selectImage (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
-  QPixmap addImage    (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_APPEND")));
-  QPixmap removeImage (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_REMOVE")));
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QPixmap edgeImage   ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
+  QPixmap faceImage   ( mgr->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
+  QPixmap selectImage ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap addImage    ( mgr->loadPixmap("SMESH", tr("ICON_APPEND")));
+  QPixmap removeImage ( mgr->loadPixmap("SMESH", tr("ICON_REMOVE")));
 
   myType = -1;
 

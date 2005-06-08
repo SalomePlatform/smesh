@@ -94,7 +94,7 @@ SMESHGUI_AddSubMeshDlg::SMESHGUI_AddSubMeshDlg( SMESHGUI* theModule, const char*
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-    QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+    QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
     if (!name)
       setName("SMESHGUI_AddSubMeshDlg");
     setCaption(tr("SMESH_ADD_SUBMESH"));

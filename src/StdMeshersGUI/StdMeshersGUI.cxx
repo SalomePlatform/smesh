@@ -121,7 +121,7 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
   StdMeshersGUI_Parameters::GetParameters( theHyp, paramList );
 
   bool modified = false;
-  if ( SMESHGUI_aParameterDlg::Parameters( paramList, QObject::tr("SMESH_VALUE")) )
+  if ( SMESHGUI_aParameterDlg::Parameters( SMESHGUI::GetSMESHGUI(), paramList, QObject::tr("SMESH_VALUE")) )
     modified = StdMeshersGUI_Parameters::SetParameters( theHyp, paramList );
 
   if ( modified ) {

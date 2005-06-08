@@ -29,6 +29,10 @@
 #include "SMESHGUI_Preferences_SelectionDlg.h"
 #include "SMESHGUI.h"
 
+#include "SMESHGUI_Utils.h"
+
+#include "SUIT_Desktop.h"
+
 #include <qgroupbox.h>
 #include <qlayout.h>
 #include <qlabel.h>
@@ -105,8 +109,9 @@ void SMESHGUI_DoubleValidator::fixup(QString& theText) const
 // class    : SMESHGUI_Preferences_SelectionDlg()
 // purpose  : 
 //=================================================================================
-SMESHGUI_Preferences_SelectionDlg::SMESHGUI_Preferences_SelectionDlg( QWidget* parent, const char* name )
-  : QDialog( parent, name, true, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu )
+SMESHGUI_Preferences_SelectionDlg::SMESHGUI_Preferences_SelectionDlg( SMESHGUI* theModule, const char* name )
+  : QDialog( SMESH::GetDesktop( theModule ), name, true, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+    mySMESHGUI( theModule )
 {
   if ( !name ) setName( "SMESHGUI_Preferences_SelectionDlg" );
   setCaption( tr( "SMESH_PREF_SELECTION"  ) );
@@ -203,7 +208,7 @@ SMESHGUI_Preferences_SelectionDlg::SMESHGUI_Preferences_SelectionDlg( QWidget* p
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
-  SMESHGUI::GetSMESHGUI()->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
 }
 

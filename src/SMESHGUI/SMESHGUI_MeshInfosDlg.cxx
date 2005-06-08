@@ -86,7 +86,7 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   aTopLayout->setSpacing(6);  aTopLayout->setMargin(11);
 
   // select button & label
-  QPixmap image0(SMESHGUI::resourceMgr()->loadPixmap("SMESH",tr("ICON_SELECT")));
+  QPixmap image0(SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH",tr("ICON_SELECT")));
   mySelectBtn = new QPushButton(this, "mySelectBtn");
   mySelectBtn->setPixmap(image0);
   mySelectBtn->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));

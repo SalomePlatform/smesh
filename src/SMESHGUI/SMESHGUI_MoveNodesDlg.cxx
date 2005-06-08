@@ -153,8 +153,8 @@ QFrame* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
 {
   QFrame* aFrame = new QFrame(theParent);
 
-  QPixmap iconMoveNode (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_MOVE_NODE")));
-  QPixmap iconSelect   (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap iconMoveNode (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_MOVE_NODE")));
+  QPixmap iconSelect   (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   QButtonGroup* aPixGrp = new QButtonGroup(1, Qt::Vertical, tr("MESH_NODE"), aFrame);
   aPixGrp->setExclusive(TRUE);

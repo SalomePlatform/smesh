@@ -30,6 +30,7 @@
 #include "SMESHGUI_aParameter.h"
 #include "SMESHGUI.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_Utils.h"
 
 #include "SUIT_Tools.h"
 #include "SUIT_Desktop.h"
@@ -53,13 +54,14 @@ using namespace std;
 //
 //======================================================================================
 SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg
-                                        (std::list<SMESHGUI_aParameterPtr> params,
-                                         QWidget*                          parent,
+                                       ( SMESHGUI* theModule,
+					 std::list<SMESHGUI_aParameterPtr> params,
                                          QString                           title,
                                          bool                              modal)
-: QDialog(parent, "MyParameterDialog", modal, WStyle_Customize |
-          WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
-  myParamList(params)
+: QDialog( SMESH::GetDesktop( theModule ), "MyParameterDialog", modal, WStyle_Customize |
+           WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),	   
+  myParamList(params),
+  mySMESHGUI(theModule)
 {
   /* creating widgets */
   init();
@@ -67,7 +69,7 @@ SMESHGUI_aParameterDlg::SMESHGUI_aParameterDlg
   setCaption(title);
 
   /* Move widget on the botton right corner of main widget */
-  SUIT_Tools::centerWidget(this, parent);
+  SUIT_Tools::centerWidget(this, SMESH::GetDesktop( theModule ) );
 }
 
 //======================================================================================
@@ -159,9 +161,6 @@ void SMESHGUI_aParameterDlg::init()
   /* signals and slots connections */
   connect(myButtonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(myButtonCancel, SIGNAL(clicked()), this, SLOT(reject()));
-
-  /* Retrieve SMESHGUI */
-  mySMESHGUI = SMESHGUI::GetSMESHGUI();
 }
 
 //======================================================================================
@@ -194,12 +193,13 @@ void SMESHGUI_aParameterDlg::ClickOnOk()
 // function : Parameters()
 // purpose  : return a list of parameters from a dialog box
 //=======================================================================
-bool SMESHGUI_aParameterDlg::Parameters (list<SMESHGUI_aParameterPtr> params,
+bool SMESHGUI_aParameterDlg::Parameters( SMESHGUI* theModule, 
+					 list<SMESHGUI_aParameterPtr> params,
                                          const char *aTitle)
 {
   if (!params.empty()) {
     SMESHGUI_aParameterDlg *Dialog =
-      new SMESHGUI_aParameterDlg(params, SMESHGUI::desktop(), aTitle, TRUE);
+      new SMESHGUI_aParameterDlg( theModule, params, aTitle, TRUE);
     return (Dialog->exec() == QDialog::Accepted);
   }
   return false;

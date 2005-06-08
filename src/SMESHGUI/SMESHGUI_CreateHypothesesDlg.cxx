@@ -287,7 +287,7 @@ void SMESHGUI_CreateHypothesesDlg::InitAlgoDefinition()
       parentItem = new QListViewItem(ListAlgoDefinition, aHypData->PluginName);
     parentItem->setOpen(true);
     QListViewItem* aItem = new QListViewItem(parentItem, aHypData->Label, HypList[i]);
-    QPixmap aPixMap (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr(aHypData->IconId)));
+    QPixmap aPixMap (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr(aHypData->IconId)));
     if (!aPixMap.isNull())
       aItem->setPixmap(0, aPixMap);
   }

@@ -26,7 +26,8 @@ class vtkUnstructuredGrid;
 
 namespace SMESH{
   
-  float GetFloat(const QString& theValue, float theDefault = 0);
+  float GetFloat( const QString& theValue, float theDefault = 0 );
+  float GetFloat( const QString& theName, const QString& theSection, float theDefault = 0 );
 
   void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName);
 

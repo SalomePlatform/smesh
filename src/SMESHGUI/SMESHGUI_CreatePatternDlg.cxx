@@ -113,10 +113,10 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
 //=======================================================================
 QFrame* SMESHGUI_CreatePatternDlg::createMainFrame (QWidget* theParent)
 {
-  QPixmap iconSlct     (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
-  QPixmap icon2d       (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
-  QPixmap icon3d       (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
-  QPixmap iconSample2d (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
+  QPixmap iconSlct     (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap icon2d       (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
+  QPixmap icon3d       (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
+  QPixmap iconSample2d (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
 
   QGroupBox* aMainGrp = new QGroupBox(1, Qt::Horizontal, theParent);
   aMainGrp->setFrameStyle(QFrame::NoFrame);

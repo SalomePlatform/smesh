@@ -33,7 +33,9 @@
 #include "SMESH_ControlsDef.hxx"
 #include <VTKViewer_ExtractUnstructuredGrid.h>
 
-//#include "QAD_Config.h"
+#include "SUIT_Session.h"
+#include "SUIT_ResourceMgr.h"
+
 #include <qstringlist.h>
 
 #include <vtkTimeStamp.h>
@@ -288,38 +290,38 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   vtkTextProperty* aScalarBarTitleProp = vtkTextProperty::New();
 
-/*  if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarTitleColor" ) ) {
-    QStringList aTColor = QStringList::split(  ":", QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleColor" ), false );
-    aScalarBarTitleProp->SetColor( ( aTColor.count() > 0 ? aTColor[0].toInt()/255. : 1.0 ),
-				   ( aTColor.count() > 1 ? aTColor[1].toInt()/255. : 1.0 ),
-				   ( aTColor.count() > 2 ? aTColor[2].toInt()/255. : 1.0 ) );
-  }
-  else*/
-    aScalarBarTitleProp->SetColor( 1.0, 1.0, 1.0 );
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  if( !mgr )
+    return;
+
+  QColor aTColor = mgr->colorValue( "ScalarBarTitleColor", "SMESH", QColor( 255, 255, 255 ) );
+  aScalarBarTitleProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
 
   aScalarBarTitleProp->SetFontFamilyToArial();
-  /*if( QAD_CONFIG->hasSetting( "SMESH:ScalarBarTitleFont" ) ){
-    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Arial" )
+  
+  if( mgr->hasValue( "ScalarBarTitleFont", "SMESH" ) ){
+    QString str = mgr->stringValue( "ScalarBarTitleFont", "SMESH" );
+    if ( str == "Arial" )
       aScalarBarTitleProp->SetFontFamilyToArial();
-    else if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Courier" )
+    else if ( str == "Courier" )
       aScalarBarTitleProp->SetFontFamilyToCourier();
-    else if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleFont" ) == "Times" )
+    else if ( str == "Times" )
       aScalarBarTitleProp->SetFontFamilyToTimes();
-  }*/
+  }
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleBold" ) == "true" )
+  if ( mgr->stringValue( "ScalarBarTitleBold", "SMESH" ) == "true" )
     aScalarBarTitleProp->BoldOn();
-  else*/
+  else
     aScalarBarTitleProp->BoldOff();
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleItalic" ) == "true" )
+  if ( mgr->stringValue( "ScalarBarTitleItalic", "SMESH" ) == "true" )
     aScalarBarTitleProp->ItalicOn();
-  else*/
+  else
     aScalarBarTitleProp->ItalicOff();
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarTitleShadow" ) == "true" )
+  if ( mgr->stringValue( "ScalarBarTitleShadow", "SMESH" ) == "true" )
     aScalarBarTitleProp->ShadowOn();
-  else*/
+  else
     aScalarBarTitleProp->ShadowOff();
 
   myScalarBarActor->SetTitleTextProperty( aScalarBarTitleProp );
@@ -327,75 +329,71 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   vtkTextProperty* aScalarBarLabelProp = vtkTextProperty::New();
 
-  /*if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarLabelColor" ) ) {
-    QStringList aTColor = QStringList::split(  ":", QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelColor" ), false );
-    aScalarBarLabelProp->SetColor( ( aTColor.count() > 0 ? aTColor[0].toInt()/255. : 1.0 ),
-				   ( aTColor.count() > 1 ? aTColor[1].toInt()/255. : 1.0 ),
-				   ( aTColor.count() > 2 ? aTColor[2].toInt()/255. : 1.0 ) );
-  }
-  else*/
-    aScalarBarLabelProp->SetColor( 1.0, 1.0, 1.0 );
+  aTColor = mgr->colorValue( "ScalarBarLabelColor", "SMESH", QColor( 255, 255, 255 ) );
+  aScalarBarLabelProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
 
   aScalarBarLabelProp->SetFontFamilyToArial();
-  /*if( QAD_CONFIG->hasSetting( "SMESH:ScalarBarLabelFont" ) ){
-    if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Arial" )
+  if( mgr->hasValue( "ScalarBarLabelFont", "SMESH" ) )
+  {
+    QString str = mgr->stringValue( "ScalarBarLabelFont", "SMESH" );
+    if( str == "Arial" )
       aScalarBarLabelProp->SetFontFamilyToArial();
-    else if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Courier" )
+    else if( str == "Courier" )
       aScalarBarLabelProp->SetFontFamilyToCourier();
-    else if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelFont" ) == "Times" )
+    else if( str == "Times" )
       aScalarBarLabelProp->SetFontFamilyToTimes();
-  }*/
+  }
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelBold" ) == "true" )
+  if( mgr->stringValue( "ScalarBarLabelBold", "SMESH" ) == "true" )
     aScalarBarLabelProp->BoldOn();
-  else*/
+  else
     aScalarBarLabelProp->BoldOff();
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelItalic" ) == "true" )
+  if ( mgr->stringValue( "ScalarBarLabelItalic", "SMESH" ) == "true" )
     aScalarBarLabelProp->ItalicOn();
-  else*/
+  else
     aScalarBarLabelProp->ItalicOff();
 
-  /*if ( QAD_CONFIG->getSetting( "SMESH:ScalarBarLabelShadow" ) == "true" )
+  if( mgr->stringValue( "ScalarBarLabelShadow", "SMESH" ) == "true" )
     aScalarBarLabelProp->ShadowOn();
-  else*/
+  else
     aScalarBarLabelProp->ShadowOff();
 
   myScalarBarActor->SetLabelTextProperty( aScalarBarLabelProp );
   aScalarBarLabelProp->Delete();
 
-  /*if ( QAD_CONFIG->getSetting("SMESH:ScalarBarOrientation") == "Horizontal" )
+  if( mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" )
     myScalarBarActor->SetOrientationToHorizontal();
-  else*/
+  else
     myScalarBarActor->SetOrientationToVertical();
 
-  float aXVal = 0.01; //QAD_CONFIG->getSetting("SMESH:ScalarBarOrientation") == "Horizontal" ? 0.20 : 0.01;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarXPosition" ) )
-  //  aXVal = QAD_CONFIG->getSetting( "SMESH:ScalarBarXPosition" ).toFloat();
-  float aYVal = 0.1; //QAD_CONFIG->getSetting("SMESH:ScalarBarOrientation") == "Horizontal" ? 0.01 : 0.1;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarYPosition" ) )
-  //  aYVal = QAD_CONFIG->getSetting( "SMESH:ScalarBarYPosition" ).toFloat();
+  float aXVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.20 : 0.01;
+  if( mgr->hasValue( "ScalarBarXPosition", "SMESH" ) )
+    aXVal = mgr->doubleValue( "ScalarBarXPosition", "SMESH", aXVal );
+  float aYVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.01 : 0.1;
+  if( mgr->hasValue( "ScalarBarYPosition", "SMESH" ) )
+    aYVal = mgr->doubleValue( "ScalarBarYPosition", "SMESH", aYVal );
   myScalarBarActor->SetPosition( aXVal, aYVal );
 
-  float aWVal = 0.1; //QAD_CONFIG->getSetting("SMESH:ScalarBarOrientation") == "Horizontal" ? 0.60 : 0.10;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarWidth" ) )
-  //  aWVal = QAD_CONFIG->getSetting( "SMESH:ScalarBarWidth" ).toFloat();
+  float aWVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.60 : 0.10;
+  if( mgr->hasValue( "ScalarBarWidth", "SMESH" ) )
+    aWVal = mgr->doubleValue( "ScalarBarWidth", "SMESH", aWVal );
   myScalarBarActor->SetWidth( aWVal );
 
-  float aHVal = 0.8; //QAD_CONFIG->getSetting("SMESH:ScalarBarOrientation") == "Horizontal" ? 0.12 : 0.80;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarHeight" ) )
-  //  aHVal = QAD_CONFIG->getSetting( "SMESH:ScalarBarHeight" ).toFloat();
+  float aHVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.12 : 0.80;
+  if( mgr->hasValue( "ScalarBarHeight", "SMESH" ) )
+    aHVal = mgr->doubleValue( "ScalarBarHeight", "SMESH", aHVal );
   myScalarBarActor->SetHeight( aHVal );
 
   int anIntVal = 5;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarNbOfLabels" ) )
-  //  anIntVal = QAD_CONFIG->getSetting("SMESH:ScalarBarNbOfLabels").toInt();
-  myScalarBarActor->SetNumberOfLabels(anIntVal == 0? 5: anIntVal);
+  if( mgr->hasValue( "ScalarBarNbOfLabels", "SMESH" ) )
+    anIntVal = mgr->integerValue( "ScalarBarNbOfLabels", "SMESH", anIntVal );
+  myScalarBarActor->SetNumberOfLabels( anIntVal == 0 ? 5: anIntVal );
 
   anIntVal = 64;
-  //if ( QAD_CONFIG->hasSetting( "SMESH:ScalarBarNbOfColors" ) )
-  //  anIntVal = QAD_CONFIG->getSetting("SMESH:ScalarBarNbOfColors").toInt();
-  myScalarBarActor->SetMaximumNumberOfColors(anIntVal == 0? 64: anIntVal);
+  if( mgr->hasValue( "ScalarBarNbOfColors", "SMESH" ) )
+    anIntVal = mgr->integerValue( "ScalarBarNbOfColors", "SMESH", anIntVal );
+  myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
 
 
   //Definition of points numbering pipeline
@@ -622,8 +620,12 @@ SMESH_ActorDef::
 SetControlMode(eControl theMode,
 	       bool theCheckEntityMode)
 {
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();  
+  if( !mgr )
+    return;
+
   myControlMode = eNone;
-  //theCheckEntityMode &= QAD_CONFIG->getSetting("SMESH:DispayEntity") == "true";
+  theCheckEntityMode &= mgr->stringValue( "DispayEntity", "SMESH" ) == "true";
 
   my1DActor->GetMapper()->SetScalarVisibility(false);
   my2DActor->GetMapper()->SetScalarVisibility(false);
@@ -850,10 +852,14 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
 
   //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
   SetIsShrunkable(true);
-  
-  //QString aMode = QAD_CONFIG->getSetting("SMESH:DisplayMode");
+
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  if( !mgr )
+    return false;
+
+  QString aMode = mgr->stringValue( "DisplayMode", "SMESH" );
   SetRepresentation(-1);
-  /*
+  
   if(aMode.compare("Wireframe") == 0){
     SetRepresentation(eEdge);
   }else if(aMode.compare("Shading") == 0){
@@ -861,11 +867,11 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   }else if(aMode.compare("Nodes") == 0){
     SetRepresentation(ePoint);
   }
-  */
-  /*aMode = QAD_CONFIG->getSetting("SMESH:Shrink");
+  
+  aMode = mgr->stringValue( "Shrink", "SMESH" );
   if(aMode == "yes"){
     SetShrink();
-  }*/
+  }
 
   myTimeStamp->Modified();
   Modified();

@@ -53,7 +53,7 @@ class SMESHGUI_Preferences_ColorDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_Preferences_ColorDlg( QWidget* parent = 0, const char* name = 0 );
+    SMESHGUI_Preferences_ColorDlg( SMESHGUI*, const char* name = 0 );
     ~SMESHGUI_Preferences_ColorDlg();
 
     void   SetColor(int type, QColor color);

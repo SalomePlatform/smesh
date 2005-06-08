@@ -49,15 +49,15 @@ class SMESHGUI_aParameterDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_aParameterDlg (std::list<SMESHGUI_aParameterPtr> params,
-			    QWidget*                          parent = 0,
+    SMESHGUI_aParameterDlg( SMESHGUI*,
+			    std::list<SMESHGUI_aParameterPtr> params,
 			    QString                           title  = QString::null,
 			    bool                              modal  = TRUE);
 
     ~SMESHGUI_aParameterDlg();
 
     /* Parameter function */
-    static bool Parameters (std::list<SMESHGUI_aParameterPtr> params, const char *aTitle);
+    static bool Parameters( SMESHGUI*, std::list<SMESHGUI_aParameterPtr> params, const char *aTitle);
 
 protected:
     void init();

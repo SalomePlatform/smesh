@@ -87,9 +87,10 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
-  QPixmap image2 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QPixmap image0 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
+  QPixmap image1 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
+  QPixmap image2 ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (!name)
     setName("SMESHGUI_RevolutionDlg");

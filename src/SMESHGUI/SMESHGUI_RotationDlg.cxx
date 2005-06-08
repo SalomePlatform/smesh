@@ -86,8 +86,8 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule, const char* nam
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_ROTATION")));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_ROTATION")));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (!name)
     setName("SMESHGUI_RotationDlg");

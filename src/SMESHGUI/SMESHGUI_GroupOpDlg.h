@@ -38,6 +38,9 @@ class QFrame;
 class QPushButton;
 class SalomeApp_SelectionMgr;
 class QLineEdit;
+class SMESHGUI;
+class SVTK_ViewWindow;
+class SVTK_Selector;
 
 /*
   Class       : SMESHGUI_GroupOpDlg
@@ -52,10 +55,10 @@ public:
   enum { UNION, INTERSECT, CUT };
     
 public:
-                            SMESHGUI_GroupOpDlg( QWidget*, SalomeApp_SelectionMgr*, const int );
+                            SMESHGUI_GroupOpDlg( SMESHGUI*, const int );
   virtual                   ~SMESHGUI_GroupOpDlg();
 
-  void                      Init( SalomeApp_SelectionMgr* ) ;
+  void                      Init();
   
 private:
 
@@ -91,8 +94,11 @@ private:
   QPushButton*              myBtn1;
   QPushButton*              myBtn2;
   
+  SMESHGUI*                 mySMESHGUI;
   SalomeApp_SelectionMgr*   mySelectionMgr;
   int                       myMode;
+  SVTK_ViewWindow*          myViewWindow;
+  SVTK_Selector*            mySelector;
   
   QLineEdit*                myFocusWg;
   

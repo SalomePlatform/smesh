@@ -56,6 +56,11 @@ namespace SMESH{
     return theModule->getApp()->selectionMgr();
   }
 
+  SUIT_ResourceMgr*
+  GetResourceMgr( const SalomeApp_Module* )
+  {
+    return SUIT_Session::session()->resourceMgr();
+  }
 
   _PTR(Study)
   GetCStudy(const SalomeApp_Study* theStudy)

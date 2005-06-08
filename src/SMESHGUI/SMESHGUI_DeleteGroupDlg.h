@@ -52,7 +52,7 @@ class SMESHGUI_DeleteGroupDlg : public QDialog
   Q_OBJECT
 
 public:
-                          SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule);
+                          SMESHGUI_DeleteGroupDlg( SMESHGUI* );
   virtual                 ~SMESHGUI_DeleteGroupDlg();
 
   void                    Init ();

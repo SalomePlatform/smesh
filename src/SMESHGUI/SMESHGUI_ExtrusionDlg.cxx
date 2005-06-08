@@ -92,9 +92,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
-  QPixmap image2 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
+  QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   resize(303, 185);
   setCaption(tr("EXTRUSION_ALONG_LINE"));

@@ -395,7 +395,7 @@ namespace{
       }
       case 1133:{
 	SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-	new SMESHGUI_TransparencyDlg( SMESHGUI::desktop(), "", false );
+	new SMESHGUI_TransparencyDlg( SMESHGUI::GetSMESHGUI(), "", false );
 	return;
       }}
       SALOME_ListIteratorOfListIO It( selected );
@@ -455,7 +455,7 @@ namespace{
 	      float Shrink = anActor->GetShrinkFactor();
 
 	      SMESHGUI_Preferences_ColorDlg *aDlg =
-		new SMESHGUI_Preferences_ColorDlg(SMESHGUI::desktop(),"");
+		new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
 	      aDlg->SetColor(1, c);
 	      aDlg->SetColor(2, e);
 	      aDlg->SetColor(3, n);
@@ -511,7 +511,7 @@ namespace{
 
     SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
     SMESHGUI_Preferences_ColorDlg *aDlg =
-      new SMESHGUI_Preferences_ColorDlg(SMESHGUI::desktop(), "");
+      new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
 
     QColor color = mgr->colorValue( "SMESH", "SettingsFillColor", QColor(0, 170, 255) );
     aDlg->SetColor(1, color);
@@ -793,8 +793,7 @@ namespace{
     aStudyBuilder->CommitCommand();
 
     /* Clear any previous selection */
-    SALOME_ListIO selected1;
-    aSel->setSelectedObjects( selected1 );
+    aSel->setSelectedObjects( SALOME_ListIO() );
 
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
   }
@@ -1149,12 +1148,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case 201:
     {
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-      SALOME_ListIO selected;
-      if( aSel )
-        aSel->selectedObjects( selected );
-
-      SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( desktop(), aSel );
+      SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
       break;
     }
 
@@ -1210,8 +1204,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      SALOME_ListIO selected1;
-      aSel->setSelectedObjects( selected1 );
+      aSel->setSelectedObjects( SALOME_ListIO() );
       break;
     }
 
@@ -1674,7 +1667,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       else if ( theCommandID == 811 ) aMode = SMESHGUI_GroupOpDlg::INTERSECT;
       else                            aMode = SMESHGUI_GroupOpDlg::CUT;
 
-      ( new SMESHGUI_GroupOpDlg( desktop(), SMESHGUI::selectionMgr(), aMode ) )->show();
+      ( new SMESHGUI_GroupOpDlg( this, aMode ) )->show();
       break;
     }
 
@@ -1685,7 +1678,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       EmitSignalDeactivateDialog();
 
-      new SMESHGUI_DeleteGroupDlg(this);
+      new SMESHGUI_DeleteGroupDlg( this );
       break;
     }
 
@@ -1728,13 +1721,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  IOs.Clear();
 	  IOs.Append( It.Value() );
 	  aSel->setSelectedObjects( IOs );
-          new SMESHGUI_StandardMeshInfosDlg(desktop(), "", false);
+          new SMESHGUI_StandardMeshInfosDlg( this, "", false);
         }
         // restore selection
 	aSel->setSelectedObjects( selected );
       }
       else
-        new SMESHGUI_StandardMeshInfosDlg(desktop(), "", false);
+        new SMESHGUI_StandardMeshInfosDlg( this, "", false);
       break;
     } 
     
@@ -1759,13 +1752,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 1005:
     {
-      SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( desktop() );
+      SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( this );
       break;
     }
 
   case 10070:
     {
-      ( new SMESHGUI_PrecisionDlg( desktop() ) )->exec();
+      ( new SMESHGUI_PrecisionDlg( this ) )->exec();
       break;
     }
 
@@ -1782,7 +1775,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 1006:
     {
       SMESHGUI_Preferences_SelectionDlg* aDlg = 
-	new SMESHGUI_Preferences_SelectionDlg(desktop());
+	new SMESHGUI_Preferences_SelectionDlg( this );
 
       QColor aColor = mgr->colorValue( "SMESH", "SettingsPreSelectColor", Qt::cyan );
       aDlg->SetColor(1, aColor);
@@ -1944,8 +1937,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	Handle(SALOME_InteractiveObject) IObject = It.Value();
 	SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
       }
-      SALOME_ListIO selected1;
-      aSel->setSelectedObjects( selected1 );
+      aSel->setSelectedObjects( SALOME_ListIO() );
       updateObjBrowser();
       break;
     }
@@ -2034,7 +2026,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if( vtkwnd ) {
 	EmitSignalDeactivateDialog();
-	new SMESHGUI_RenumberingDlg(desktop(), "", selectionMgr(), 0);
+	new SMESHGUI_RenumberingDlg( this, "", 0);
       }
       else
 	{
@@ -2049,7 +2041,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
 	EmitSignalDeactivateDialog();
-	new SMESHGUI_RenumberingDlg(desktop(), "", selectionMgr(), 1);
+	new SMESHGUI_RenumberingDlg( this, "", 1);
       }
       else
 	{

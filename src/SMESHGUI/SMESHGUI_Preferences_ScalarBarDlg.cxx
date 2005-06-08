@@ -30,9 +30,11 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_Utils.h"
 
 #include "SMESH_Actor.h"
 
+#include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
 
 #include "SalomeApp_SelectionMgr.h"
@@ -83,11 +85,10 @@ SMESHGUI_Preferences_ScalarBarDlg* SMESHGUI_Preferences_ScalarBarDlg::myDlg = 0;
  *  Gets the only instance of "Scalar Bar Properties" dialog box
  */
 //=================================================================================================
-void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties (QWidget* parent,
-                                                             SalomeApp_SelectionMgr* Sel)
+void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( SMESHGUI* theModule )
 {
   if (!myDlg) {
-    myDlg = new SMESHGUI_Preferences_ScalarBarDlg (parent, Sel, false);
+    myDlg = new SMESHGUI_Preferences_ScalarBarDlg( theModule, false);
     myDlg->show();
   } else {
     myDlg->show();
@@ -104,10 +105,10 @@ void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties (QWidget* parent,
  *  Opens "Scalar Bar Preferences" dialog box
  */
 //=================================================================================================
-void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences (QWidget* parent)
+void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( SMESHGUI* theModule )
 {
   SMESHGUI_Preferences_ScalarBarDlg* aDlg =
-    new SMESHGUI_Preferences_ScalarBarDlg (parent, 0, true);
+    new SMESHGUI_Preferences_ScalarBarDlg( theModule, true);
   aDlg->exec();
 }
 
@@ -118,17 +119,16 @@ void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences (QWidget* parent)
  *  Constructor
  */
 //=================================================================================================
-SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg (QWidget* parent,
-                                                                      SalomeApp_SelectionMgr* Sel,
-                                                                      bool modal)
-     : QDialog(parent, 0, modal, WStyle_Customize | WStyle_NormalBorder |
-               WStyle_Title | WStyle_SysMenu | WDestructiveClose)
+SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* theModule, bool property, bool modal )
+     : QDialog( SMESH::GetDesktop( theModule ), 0, modal, WStyle_Customize | WStyle_NormalBorder |
+                WStyle_Title | WStyle_SysMenu | WDestructiveClose ),
+       mySMESHGUI( theModule ),
+       mySelectionMgr( property ? SMESH::GetSelectionMgr( theModule ) : 0 )
 {
   setName("SMESHGUI_Preferences_ScalarBarDlg");
-  setCaption(Sel ? tr("SMESH_PROPERTIES_SCALARBAR") : tr("SMESH_PREFERENCES_SCALARBAR"));
+  setCaption( property ? tr("SMESH_PROPERTIES_SCALARBAR") : tr("SMESH_PREFERENCES_SCALARBAR"));
   setSizeGripEnabled(TRUE);
 
-  mySelectionMgr = Sel;
   myActor = 0;
 
   /******************************************************************************/
@@ -326,7 +326,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg (QWidget* p
   /***************************************************************/
   // Init
   // --> first init from preferences
-  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
 
   QColor titleColor (255, 255, 255);
   if (mgr && mgr->hasValue("SMESH", "ScalarBarTitleColor")) {
@@ -429,7 +429,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg (QWidget* p
     connect( myApplyBtn,        SIGNAL( clicked() ), this, SLOT( onApply() ) );
     connect( mySelectionMgr,    SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
   }
-  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ), this, SLOT( onCancel() ) ) ;
+  connect( mySMESHGUI,  SIGNAL( SignalCloseAllDialogs() ), this, SLOT( onCancel() ) ) ;
 }
 
 //=================================================================================================
@@ -517,7 +517,7 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
     SMESH::RepaintCurrentView();
   } else {
     // Scalar Bar preferences
-    SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+    SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
     if (!mgr) return false;
 
     QColor titleColor = myTitleColorBtn->paletteBackgroundColor();

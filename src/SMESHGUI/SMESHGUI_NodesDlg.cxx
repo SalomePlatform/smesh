@@ -237,7 +237,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 {
   mySimulation = new SMESH::TNodeSimulation(myViewWindow);
 
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
   if (!name)
     setName("SMESHGUI_NodesDlg");
   resize(303, 185);

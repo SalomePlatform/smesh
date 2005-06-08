@@ -20,7 +20,9 @@
 
 #include "SMESH_ActorUtils.h"
 
-//#include "QAD_Config.h"
+#include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+
 #include "utilities.h"
 
 #include <vtkUnstructuredGrid.h>
@@ -34,12 +36,28 @@ static int MYDEBUG = 0;
 
 namespace SMESH{
 
-  float GetFloat(const QString& theValue, float theDefault){
-    if(theValue.isEmpty()) return theDefault;
-    //QString aValue = QAD_CONFIG->getSetting(theValue);
-    //if(aValue.isEmpty())
-      return theDefault;
-    //return aValue.toFloat();
+  float GetFloat( const QString& theValue, float theDefault )
+  {
+    int pos = theValue.find( ":" );
+    float val = theDefault;
+    if( pos>=0 ) 
+    {
+      QString val = theValue.right( theValue.length()-pos-1 ),
+              sect = theValue.left( pos );
+      if( !val.isEmpty() && !sect.isEmpty() )
+	val = GetFloat( val, sect, theDefault );
+    }
+    return val;
+  }
+
+  float GetFloat( const QString& theValue, const QString& theSection, float theDefault )
+  {
+    float val = theDefault;
+    SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+    if( mgr )
+      val = (float) mgr->doubleValue( theValue, theSection, theDefault );
+
+    return val;
   }
 
   void WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, const char* theFileName){

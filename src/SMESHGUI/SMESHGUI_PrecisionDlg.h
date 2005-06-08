@@ -35,6 +35,7 @@ class QSpinBox;
 class QPushButton;
 class QCheckBox;
 class QFrame;
+class SMESHGUI;
 
 /*
   Class       : SMESHGUI_PrecisionDlg
@@ -46,7 +47,7 @@ class SMESHGUI_PrecisionDlg : public QDialog
   Q_OBJECT
 
 public:
-                            SMESHGUI_PrecisionDlg( QWidget* parent );
+                            SMESHGUI_PrecisionDlg( SMESHGUI* );
 
   virtual                   ~SMESHGUI_PrecisionDlg();
 
@@ -65,7 +66,7 @@ private:
   void                      closeEvent( QCloseEvent* );
  
 private:
-
+  SMESHGUI*                 mySMESHGUI;
   QSpinBox*                 mySpinBox;
   QPushButton*              myOKBtn;
   QPushButton*              myCancelBtn;

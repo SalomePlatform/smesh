@@ -2190,7 +2190,7 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
   aCriteria->length(n);
 
   long aPrecision = -1;
-  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
 
   if (mgr && mgr->hasValue("SMESH", "ControlsPrecision")) {
     QString aStr = mgr->stringValue("SMESH", "ControlsPrecision");

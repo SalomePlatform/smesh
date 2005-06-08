@@ -29,6 +29,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include "SMESH_TypeFilter.hxx"
 
@@ -37,6 +38,8 @@
 
 #include "SalomeApp_SelectionMgr.h"
 #include "SVTK_Selection.h"
+#include "SVTK_ViewWindow.h"
+#include "SVTK_Selector.h"
 #include "SALOME_ListIO.hxx"
 
 // QT Includes
@@ -61,11 +64,13 @@
 // name    : SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg (QWidget*                theParent,
-                                          SalomeApp_SelectionMgr* theSelection,
-                                          const int               theMode)
-     : QDialog(theParent, "SMESHGUI_GroupOpDlg", false,
-               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode )
+     : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_GroupOpDlg", false,
+                WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+     mySMESHGUI( theModule ),
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+     myViewWindow( SMESH::GetViewWindow( theModule ) ),
+     mySelector( myViewWindow->GetSelector() )
 {
   myMode = theMode;
 
@@ -83,7 +88,7 @@ SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg (QWidget*                theParent,
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  Init(theSelection);
+  Init();
 }
 
 //=======================================================================
@@ -115,7 +120,7 @@ QFrame* SMESHGUI_GroupOpDlg::createMainFrame (QWidget* theParent)
   myEdit1->setReadOnly(true);
   myEdit2->setReadOnly(true);
 
-  QPixmap aPix (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
   myBtn1->setPixmap(aPix);
   myBtn2->setPixmap(aPix);
 
@@ -164,11 +169,9 @@ SMESHGUI_GroupOpDlg::~SMESHGUI_GroupOpDlg()
 // name    : SMESHGUI_GroupOpDlg::Init
 // Purpose : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_GroupOpDlg::Init (SalomeApp_SelectionMgr* theSelection)
+void SMESHGUI_GroupOpDlg::Init()
 {
-  mySelectionMgr = theSelection;
-  SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
+  mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   myFocusWg = myEdit1;
 
   myGroup1 = SMESH::SMESH_GroupBase::_nil();
@@ -176,23 +179,19 @@ void SMESHGUI_GroupOpDlg::Init (SalomeApp_SelectionMgr* theSelection)
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
-  connect(aSMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(ClickOnClose()));
+  connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(ClickOnClose()));
 
   connect(myBtn1, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
   connect(myBtn2, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
 
   int x, y;
-  aSMESHGUI->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
   this->show();
 
   // set selection mode
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(ActorSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(ActorSelection);
-#endif
+  myViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 
   return;
@@ -247,7 +246,7 @@ bool SMESHGUI_GroupOpDlg::isValid()
 //=======================================================================
 bool SMESHGUI_GroupOpDlg::onApply()
 {
-  if (!isValid() || SMESHGUI::GetSMESHGUI()->isActiveStudyLocked())
+  if (!isValid() || mySMESHGUI->isActiveStudyLocked())
     return false;
 
   SMESH::SMESH_Mesh_ptr aMesh = myGroup1->GetMesh();
@@ -259,7 +258,7 @@ bool SMESHGUI_GroupOpDlg::onApply()
   else aNewGrp = aMesh->CutGroups(myGroup1, myGroup2, aName.latin1());
 
   if (!aNewGrp->_is_nil()) {
-    SMESHGUI::GetSMESHGUI()->updateObjBrowser(true);
+    mySMESHGUI->updateObjBrowser(true);
     reset();
     return true;
   } else {
@@ -285,10 +284,10 @@ void SMESHGUI_GroupOpDlg::onOk()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onClose()
 {
-  mySelectionMgr->setSelectionModes(ActorSelection);
+  myViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
-  SMESHGUI::GetSMESHGUI()->ResetState();
+  disconnect(mySMESHGUI, 0, this, 0);
+  mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
   reject();
 }
@@ -342,13 +341,9 @@ void SMESHGUI_GroupOpDlg::onDeactivate()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::enterEvent (QEvent*)
 {
-  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+  mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-#ifdef NEW_GUI
-  mySelectionMgr->setSelectionModes(ActorSelection, true);
-#else
-  mySelectionMgr->setSelectionModes(ActorSelection);
-#endif
+  myViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 

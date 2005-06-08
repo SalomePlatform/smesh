@@ -136,13 +136,14 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
 //=======================================================================
 QFrame* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
 {
-  QPixmap iconSlct (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
-  QPixmap icon2d   (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
-  QPixmap icon3d   (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
-  QPixmap iconOpen (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_FILE_OPEN")));
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap icon2d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
+  QPixmap icon3d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
+  QPixmap iconOpen ( mgr->loadPixmap("SMESH", tr("ICON_FILE_OPEN")));
 
-  QPixmap iconSample2d (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
-  QPixmap iconSample3d (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_3D")));
+  QPixmap iconSample2d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
+  QPixmap iconSample3d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_3D")));
 
   QGroupBox* aMainGrp = new QGroupBox (1, Qt::Horizontal, theParent);
   aMainGrp->setFrameStyle(QFrame::NoFrame);
@@ -413,7 +414,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     bool toCreatePolyedrs = myCreatePolyedrsChk->isChecked();
     if ( myPattern->MakeMesh( myMesh, toCreatePolygons, toCreatePolyedrs ) ) {
       mySelectionMgr->clearSelected();
-      SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+      SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
       bool autoUpdate = false;
       if (mgr && mgr->stringValue("SMESH", "AutomaticUpdate").compare("true") == 0)
         autoUpdate = true;

@@ -86,8 +86,8 @@ SMESHGUI_RemoveElementsDlg
     mySMESHGUI(theModule),
     myBusy(false)
 {
-    QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_DLG_REM_ELEMENT")));
-    QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+    QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_REM_ELEMENT")));
+    QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
     if (!name)
       setName("SMESHGUI_RemoveElementsDlg");

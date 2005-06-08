@@ -28,6 +28,7 @@
 
 #include "SMESHGUI_Preferences_ColorDlg.h"
 #include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
 
 #include "utilities.h"
 
@@ -44,6 +45,8 @@
 #include <qspinbox.h>
 #include <qcolor.h>
 
+#include "SUIT_Desktop.h"
+
 using namespace std;
 
 //=================================================================================
@@ -53,10 +56,10 @@ using namespace std;
 //            The dialog will by default be modeless, unless you
 //            set'modal' to TRUE to construct a modal dialog.
 //=================================================================================
-SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg (QWidget* parent,
-                                                              const char* name)
-     : QDialog(parent, name, true, WStyle_Customize |
-               WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModule, const char* name)
+     : QDialog( SMESH::GetDesktop( theModule ), name, true, WStyle_Customize |
+                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+    mySMESHGUI( theModule )
 {
     if (!name)
 	setName("SMESHGUI_Preferences_ColorDlg");
@@ -182,7 +185,6 @@ SMESHGUI_Preferences_ColorDlg::~SMESHGUI_Preferences_ColorDlg()
 //=================================================================================
 void SMESHGUI_Preferences_ColorDlg::Init()
 {
-  mySMESHGUI = SMESHGUI::GetSMESHGUI();
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   /* signals and slots connections */

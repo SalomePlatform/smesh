@@ -29,7 +29,9 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_Utils.h"
 
+#include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
 
 #include <qgroupbox.h>
@@ -53,9 +55,10 @@
 // name    : SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg
 // Purpose : Constructor
 //=======================================================================
-SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg (QWidget* theParent)
-     : QDialog(theParent, "SMESHGUI_PrecisionDlg", true,
-               WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu)
+SMESHGUI_PrecisionDlg::SMESHGUI_PrecisionDlg ( SMESHGUI* theModule )
+     : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_PrecisionDlg", true,
+                WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
+     mySMESHGUI( theModule )
 {
   setCaption(tr("CAPTION"));
 
@@ -129,7 +132,7 @@ void SMESHGUI_PrecisionDlg::Init()
 {
   bool isOk = false;
   int aVal = DEFAULT_VAL;
-  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   if (mgr && mgr->hasValue("SMESH", "ControlsPrecision")) {
     QString aStr = mgr->stringValue("SMESH", "ControlsPrecision");
     aVal = aStr.toInt(&isOk);
@@ -140,9 +143,8 @@ void SMESHGUI_PrecisionDlg::Init()
 
   onNotUse();
 
-  SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-  aSMESHGUI->SetActiveDialogBox((QDialog*)this);
-  connect(aSMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
 }
 
 //=======================================================================
@@ -151,7 +153,7 @@ void SMESHGUI_PrecisionDlg::Init()
 //=======================================================================
 void SMESHGUI_PrecisionDlg::onOk()
 {
-  SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   if (myNotUseChk->isChecked()) {
     if (mgr) {
       mgr->remove("SMESH", "ControlsPrecision");
@@ -166,8 +168,8 @@ void SMESHGUI_PrecisionDlg::onOk()
     SMESH::SetControlsPrecision(aVal);
   }
 
-  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
-  SMESHGUI::GetSMESHGUI()->ResetState() ;
+  disconnect(mySMESHGUI, 0, this, 0);
+  mySMESHGUI->ResetState() ;
   accept();
 }
 
@@ -177,7 +179,7 @@ void SMESHGUI_PrecisionDlg::onOk()
 //=======================================================================
 void SMESHGUI_PrecisionDlg::onClose()
 {
-  disconnect(SMESHGUI::GetSMESHGUI(), 0, this, 0);
+  disconnect( mySMESHGUI, 0, this, 0);
   reject();
 }
 

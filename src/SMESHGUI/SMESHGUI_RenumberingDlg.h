@@ -60,17 +60,15 @@ class SMESHGUI_RenumberingDlg : public QDialog
     Q_OBJECT
 
 public:
-    SMESHGUI_RenumberingDlg (QWidget* parent = 0,
+    SMESHGUI_RenumberingDlg( SMESHGUI*,
 			     const char* name = 0,
-			     SalomeApp_SelectionMgr* Sel = 0,
 			     const int unit = 0,
 			     bool modal = FALSE,
 			     WFlags fl = 0);
     ~SMESHGUI_RenumberingDlg();
 
 private:
-
-    void Init( SalomeApp_SelectionMgr* Sel ) ;
+    void Init();
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                         /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                       /* ESC key */

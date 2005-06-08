@@ -41,6 +41,7 @@ class QPushButton;
 class QToolButton;
 class QRadioButton;
 class QSpinBox;
+class SMESHGUI;
 
 class QtxDblSpinBox;
 
@@ -54,11 +55,11 @@ class SMESHGUI_Preferences_ScalarBarDlg : public QDialog
 
 public:
   ~SMESHGUI_Preferences_ScalarBarDlg();
-  static void ScalarBarPreferences( QWidget* parent );
-  static void ScalarBarProperties ( QWidget* parent, SalomeApp_SelectionMgr* Sel );
+  static void ScalarBarPreferences( SMESHGUI* );
+  static void ScalarBarProperties ( SMESHGUI* );
 
 protected:
-  SMESHGUI_Preferences_ScalarBarDlg( QWidget* parent = 0, SalomeApp_SelectionMgr* Sel = 0, bool modal = FALSE );
+  SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI*, bool, bool modal = FALSE );
   static SMESHGUI_Preferences_ScalarBarDlg* myDlg;
   void closeEvent( QCloseEvent* e );
   void setOriginAndSize( const double x, const double y, const double w, const double h );
@@ -74,6 +75,7 @@ protected slots:
   void onOrientationChanged();
 
 private:
+  SMESHGUI*                mySMESHGUI;
   SalomeApp_SelectionMgr*  mySelectionMgr;
   SMESH_Actor*             myActor;
   double                   myIniX, myIniY, myIniW, myIniH;

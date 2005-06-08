@@ -36,6 +36,7 @@
 #include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
 
+#include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
 
 #include "SALOME_ListIO.hxx"
@@ -59,11 +60,12 @@ using namespace std;
 // class    : SMESHGUI_RenumberingDlg()
 // purpose  :
 //=================================================================================
-SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg (QWidget* parent, const char* name,
-                                                  SalomeApp_SelectionMgr* Sel,
+SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const char* name,
 						  const int unit, bool modal, WFlags fl)
-     : QDialog(parent, name, modal, WStyle_Customize | WStyle_NormalBorder |
-               WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose)
+     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
+               WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+     mySMESHGUI( theModule ),
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   myUnit = unit;
 
@@ -170,7 +172,7 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg (QWidget* parent, const char* n
   GroupMeshLayout->addWidget(LineEditMesh, 0, 2);
   SMESHGUI_RenumberingDlgLayout->addWidget(GroupMesh, 1, 0);
 
-  Init(Sel); /* Initialisations */
+  Init(); /* Initialisations */
 }
 
 //=================================================================================
@@ -186,13 +188,11 @@ SMESHGUI_RenumberingDlg::~SMESHGUI_RenumberingDlg()
 // function : Init()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RenumberingDlg::Init (SalomeApp_SelectionMgr* Sel)
+void SMESHGUI_RenumberingDlg::Init()
 {
   GroupMesh->show();
   myConstructorId = 0;
   Constructor1->setChecked(TRUE);
-  mySelectionMgr = Sel;
-  mySMESHGUI = SMESHGUI::GetSMESHGUI();
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   myMesh = SMESH::SMESH_Mesh::_nil();

@@ -141,7 +141,7 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool t
   aMainGrp->setFrameStyle(QFrame::NoFrame);
   aMainGrp->setInsideMargin(0);
 
-  QPixmap aPix (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap aPix (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   // "Selected cells" group
   mySelGrp = new QGroupBox(1, Qt::Horizontal,  aMainGrp);

@@ -115,7 +115,7 @@ SMESHGUI_EditHypothesesDlg::SMESHGUI_EditHypothesesDlg (SMESHGUI* theModule, con
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-    QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+    QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
     if (!name)
       setName("SMESHGUI_EditHypothesesDlg");
     setCaption(tr("SMESH_EDIT_HYPOTHESES"));

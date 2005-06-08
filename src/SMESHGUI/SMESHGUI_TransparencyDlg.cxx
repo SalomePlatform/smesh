@@ -30,9 +30,10 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_VTKUtils.h"
-
+#include "SMESHGUI_Utils.h"
 #include "SMESH_Actor.h"
 
+#include "SUIT_Desktop.h"
 #include "SUIT_OverrideCursor.h"
 
 #include "SALOME_ListIO.hxx"
@@ -58,12 +59,15 @@ using namespace std;
 // purpose  :
 //
 //=================================================================================
-SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg (QWidget* parent,
+SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
 						    const char* name,
 						    bool modal,
 						    WFlags fl)
-     : QDialog(parent, name, modal, WStyle_Customize | WStyle_NormalBorder |
-               WStyle_Title | WStyle_SysMenu | WDestructiveClose)
+     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
+                WStyle_Title | WStyle_SysMenu | WDestructiveClose ),
+     mySMESHGUI( theModule ),
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+     myViewWindow( SMESH::GetViewWindow( theModule ) )
 {
   if (!name)
     setName("SMESHGUI_TransparencyDlg");
@@ -132,8 +136,6 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg (QWidget* parent,
   SMESHGUI_TransparencyDlgLayout->addWidget(GroupC1,      0, 0);
   SMESHGUI_TransparencyDlgLayout->addWidget(GroupButtons, 1, 0);
 
-  mySelectionMgr = SMESHGUI::selectionMgr();
-
   // Initial state
   this->onSelectionChanged();
 
@@ -141,12 +143,12 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg (QWidget* parent,
   connect(buttonOk, SIGNAL(clicked()),         this, SLOT(ClickOnOk()));
   connect(Slider1,  SIGNAL(valueChanged(int)), this, SLOT(SetTransparency()));
   connect(Slider1,  SIGNAL(sliderMoved(int)),  this, SLOT(ValueHasChanged()));
-  connect(SMESHGUI::GetSMESHGUI(), SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
 
   /* Move widget on the botton right corner of main widget */
   int x, y;
-  SMESHGUI::GetSMESHGUI()->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
   this->show();
 }
@@ -176,7 +178,7 @@ void SMESHGUI_TransparencyDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::SetTransparency()
 {
-  if (SVTK_ViewWindow* aVTKViewWindow = SMESH::GetCurrentVtkView()) {
+  if( myViewWindow ) {
     SUIT_OverrideCursor wc;
     float opacity = this->Slider1->value() / 100.;
 
@@ -190,7 +192,7 @@ void SMESHGUI_TransparencyDlg::SetTransparency()
       if (anActor)
 	anActor->SetOpacity(opacity);
     }
-    aVTKViewWindow->Repaint();
+    myViewWindow->Repaint();
   }
   ValueHasChanged();
 }
@@ -210,7 +212,7 @@ void SMESHGUI_TransparencyDlg::ValueHasChanged()
 //=================================================================================
 void SMESHGUI_TransparencyDlg::onSelectionChanged()
 {
-  if (SVTK_ViewWindow* aVTKViewWindow = SMESH::GetCurrentVtkView()) {
+  if( myViewWindow ) {
     int opacity = 100;
 
     SALOME_ListIO aList;

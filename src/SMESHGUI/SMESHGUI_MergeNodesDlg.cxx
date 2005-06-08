@@ -83,8 +83,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SMESH_MERGE_NODES")));
-  QPixmap image1 (SMESHGUI::resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_MERGE_NODES")));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   if (!name)
     setName("SMESHGUI_MergeNodesDlg");
@@ -247,7 +247,6 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
 
   myActor = 0;
 
-  mySMESHGUI = SMESHGUI::GetSMESHGUI();
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   myMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);

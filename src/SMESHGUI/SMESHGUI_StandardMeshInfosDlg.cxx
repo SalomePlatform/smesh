@@ -38,6 +38,7 @@
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOMEDSClient_SObject.hxx"
 
+#include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
 #include "SUIT_OverrideCursor.h"
 
@@ -71,10 +72,12 @@ using namespace std;
  *  Constructor
  */
 //=================================================================================
-SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg (QWidget* parent, const char* name,
+SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModule, const char* name,
                                                               bool modal, WFlags fl)
-     : QDialog(parent, name, modal, WStyle_Customize | WStyle_NormalBorder |
-               WStyle_Title | WStyle_SysMenu | WDestructiveClose)
+     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
+                WStyle_Title | WStyle_SysMenu | WDestructiveClose),
+     mySMESHGUI( theModule ),
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   if (!name)
       setName("SMESHGUI_StandardMeshInfosDlg");
@@ -150,20 +153,19 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg (QWidget* parent, c
 
   aDlgLayout->addWidget(myButtonsGroup, 2, 0);
 
-  mySelectionMgr = SMESHGUI::selectionMgr();
-  SMESHGUI::GetSMESHGUI()->SetActiveDialogBox(this);
+  mySMESHGUI->SetActiveDialogBox(this);
 
   // connect signals
-  connect(myOkBtn,                 SIGNAL(clicked()),                      this, SLOT(close()));
-  connect(mySelectBtn,             SIGNAL(clicked()),                      this, SLOT(onStartSelection()));
-  connect(SMESHGUI::GetSMESHGUI(), SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
-  connect(SMESHGUI::GetSMESHGUI(), SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr,          SIGNAL(currentSelectionChanged()),      this, SLOT(onSelectionChanged()));
+  connect( myOkBtn,         SIGNAL(clicked()),                      this, SLOT(close()));
+  connect( mySelectBtn,     SIGNAL(clicked()),                      this, SLOT(onStartSelection()));
+  connect( mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
+  connect( mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
+  connect( mySelectionMgr,  SIGNAL(currentSelectionChanged()),      this, SLOT(onSelectionChanged()));
 
   // resize and move dialog, then show
   this->setMinimumSize(270, 428);
   int x, y;
-  SMESHGUI::GetSMESHGUI()->DefineDlgPosition(this, x, y);
+  mySMESHGUI->DefineDlgPosition(this, x, y);
   this->move(x, y);
   this->show();
 
@@ -394,7 +396,7 @@ void SMESHGUI_StandardMeshInfosDlg::onSelectionChanged()
 void SMESHGUI_StandardMeshInfosDlg::closeEvent (QCloseEvent* e)
 {
   mySelectionMgr->clearFilters();
-  SMESHGUI::GetSMESHGUI()->ResetState();
+  mySMESHGUI->ResetState();
   QDialog::closeEvent(e);
 }
 
@@ -426,7 +428,7 @@ void SMESHGUI_StandardMeshInfosDlg::DeactivateActiveDialog()
 void SMESHGUI_StandardMeshInfosDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate any active dialog */
-  SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
+  mySMESHGUI->EmitSignalDeactivateDialog();
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
 }
 

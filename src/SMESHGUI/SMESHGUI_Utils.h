@@ -31,6 +31,7 @@ class QString;
 class SUIT_ViewWindow;
 class SUIT_Desktop;
 class SUIT_Study;
+class SUIT_ResourceMgr;
 
 class CAM_Module;
 
@@ -52,6 +53,9 @@ namespace SMESH {
   SalomeApp_Study*
   GetAppStudy(const CAM_Module* theModule);
 
+  SUIT_ResourceMgr*
+  GetResourceMgr( const SalomeApp_Module* );
+  
   _PTR(Study)
   GetCStudy(const SalomeApp_Study* theStudy);
 
