@@ -97,8 +97,8 @@ public :
   void EmitSignalCloseAllDialogs() ;
 
 public slots:
-  virtual void                deactivateModule( SUIT_Study* );
-  virtual void                activateModule( SUIT_Study* );
+  virtual bool                deactivateModule( SUIT_Study* );
+  virtual bool                activateModule( SUIT_Study* );
 
 private slots:
   void OnGUIEvent();

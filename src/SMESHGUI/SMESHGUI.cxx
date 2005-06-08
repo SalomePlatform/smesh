@@ -3009,24 +3009,25 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, -1 );
 }
 
-void SMESHGUI::activateModule( SUIT_Study* study )
+bool SMESHGUI::activateModule( SUIT_Study* study )
 {
-  SalomeApp_Module::activateModule( study );
+  bool res = SalomeApp_Module::activateModule( study );
 
   setMenuShown( true );
   setToolShown( true );
 
+  return res;
   //SetSettings( desktop() );
 }
 
-void SMESHGUI::deactivateModule( SUIT_Study* study )
+bool SMESHGUI::deactivateModule( SUIT_Study* study )
 {
   setMenuShown( false );
   setToolShown( false );
 
   EmitSignalCloseAllDialogs();
   
-  SalomeApp_Module::deactivateModule( study );
+  return SalomeApp_Module::deactivateModule( study );
 }
 
 void SMESHGUI::OnGUIEvent()
