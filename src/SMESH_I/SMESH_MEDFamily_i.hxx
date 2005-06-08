@@ -32,8 +32,8 @@
 #include<string>
 
 class SMESH_MEDFamily_i:
-  public POA_SALOME_MED::FAMILY,
-  public SMESH_MEDSupport_i
+  virtual public POA_SALOME_MED::FAMILY,
+  virtual public SMESH_MEDSupport_i
 {
 protected :
   SMESH_MEDFamily_i();
@@ -61,8 +61,8 @@ public :
   // IDL Methods
   void setProtocol(SALOME::TypeOfCommunication typ) {}
   void release() {}
-  SALOME::SenderInt_ptr getSenderForNumber(long int) {return SALOME::SenderInt::_nil();}
-  SALOME::SenderInt_ptr getSenderForNumberIndex() {return SALOME::SenderInt::_nil();}
+  SALOME::Sender_ptr getSenderForNumber(long int) {return SALOME::Sender::_nil();}
+  SALOME::Sender_ptr getSenderForNumberIndex() {return SALOME::Sender::_nil();}
   
   CORBA::Long            getIdentifier()      
     throw (SALOME::SALOME_Exception);
