@@ -354,7 +354,7 @@ namespace{
     gp_Vec aVec2( P( 3 ) - P( 1 ) );
     gp_Vec aVec3( P( 4 ) - P( 1 ) );
     gp_Vec anAreaVec( aVec1 ^ aVec2 );
-    return abs(aVec3 * anAreaVec) / 6.0;
+    return Abs(aVec3 * anAreaVec) / 6.0;
   }
 
   inline double getMaxHeight(double theLen[6])
