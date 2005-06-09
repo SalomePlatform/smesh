@@ -431,6 +431,8 @@ class Mesh:
             type = SMESH.FACE
         elif tgeo == "SOLID":
             type = SMESH.VOLUME
+        elif tgeo == "SHELL":
+            type = SMESH.VOLUME
         elif tgeo == "COMPOUND":
             tgeo = geompy.GetType(grp)
             if tgeo == geompy.ShapeType["VERTEX"]:
