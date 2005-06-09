@@ -195,7 +195,7 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
     myViewWindow( SMESH::GetViewWindow( theModule ) ),
     mySelector( myViewWindow->GetSelector() )
 {
-  QPixmap image0( SMESHGUI::resourceMgr()->loadPixmap( "SMESH",tr("ICON_SELECT")));
+  QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
   if ( !name )
     setName( "SMESHGUI_CreatePolyhedralVolumeDlg" );

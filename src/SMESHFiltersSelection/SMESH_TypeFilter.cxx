@@ -33,6 +33,9 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     _PTR(SObject) objFather = obj->GetFather();
     _PTR(SComponent) objComponent = obj->GetFatherComponent();
 
+    if( objComponent->ComponentDataType()!="SMESH" )
+      return false;
+
     int aLevel = obj->Depth() - objComponent->Depth();
 
     // Max level under the component is 4:
