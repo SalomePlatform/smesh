@@ -46,12 +46,11 @@ using namespace std;
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 
-#include <TColStd_ListIteratorOfListOfInteger.hxx>
-
 #ifdef _DEBUG_
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TopoDS.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #endif
 
 //=============================================================================
@@ -1110,6 +1109,35 @@ void SMESH_subMesh::DumpAlgoState(bool isMain)
  */
 //=============================================================================
 
+static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
+{
+  SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(subShape);
+  if (subMeshDS!=NULL)
+  {
+    SMDS_ElemIteratorPtr ite=subMeshDS->GetElements();
+    while(ite->more())
+    {
+      const SMDS_MeshElement * elt = ite->next();
+      //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
+      meshDS->RemoveElement(elt);
+    }
+
+    SMDS_NodeIteratorPtr itn=subMeshDS->GetNodes();
+    while(itn->more())
+    {
+      const SMDS_MeshNode * node = itn->next();
+      //MESSAGE( " RM node: "<<node->GetID());
+      meshDS->RemoveNode(node);
+    }
+  }
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
 bool SMESH_subMesh::ComputeStateEngine(int event)
 {
   //MESSAGE("SMESH_subMesh::ComputeStateEngine");
@@ -1209,8 +1237,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           _computeState = FAILED_TO_COMPUTE;
           break;
         }
-        RemoveSubMeshElementsAndNodes();
         // compute
+        removeSubMesh( _meshDS, _subShape );
         if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
           ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
         else
@@ -1225,9 +1253,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 
 #ifdef _DEBUG_
           // Show vertices location of a failed shape
-          TopExp_Explorer exp( _subShape, TopAbs_VERTEX);
-          for ( ; exp.More(); exp.Next() ) {
-            gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( exp.Current() )));
+          TopTools_IndexedMapOfShape vMap;
+          TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
+          for ( int iv = 1; iv <= vMap.Extent(); ++iv ) {
+            gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
             cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
           }
 #endif
@@ -1510,35 +1539,6 @@ void SMESH_subMesh::CleanDependants()
     }
   }
   ComputeStateEngine(CLEAN);
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
-{
-  SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(subShape);
-  if (subMeshDS!=NULL)
-  {
-    SMDS_ElemIteratorPtr ite=subMeshDS->GetElements();
-    while(ite->more())
-    {
-      const SMDS_MeshElement * elt = ite->next();
-      //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
-      meshDS->RemoveElement(elt);
-    }
-
-    SMDS_NodeIteratorPtr itn=subMeshDS->GetNodes();
-    while(itn->more())
-    {
-      const SMDS_MeshNode * node = itn->next();
-      //MESSAGE( " RM node: "<<node->GetID());
-      meshDS->RemoveNode(node);
-    }
-  }
 }
 
 //=============================================================================
