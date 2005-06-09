@@ -793,7 +793,8 @@ namespace{
     aStudyBuilder->CommitCommand();
 
     /* Clear any previous selection */
-    aSel->setSelectedObjects( SALOME_ListIO() );
+    SALOME_ListIO l1;
+    aSel->setSelectedObjects( l1 );
 
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
   }
@@ -1204,7 +1205,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      aSel->setSelectedObjects( SALOME_ListIO() );
+      SALOME_ListIO l1;
+      aSel->setSelectedObjects( l1 );
       break;
     }
 
@@ -1937,7 +1939,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	Handle(SALOME_InteractiveObject) IObject = It.Value();
 	SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
       }
-      aSel->setSelectedObjects( SALOME_ListIO() );
+      SALOME_ListIO l1;
+      aSel->setSelectedObjects( l1 );
       updateObjBrowser();
       break;
     }
