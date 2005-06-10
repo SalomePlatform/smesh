@@ -2498,6 +2498,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  401, "EDGE",            "ICON_DLG_EDGE" );
   createSMESHAction( 4021, "TRIANGLE",        "ICON_DLG_TRIANGLE" );
   createSMESHAction( 4022, "QUAD",            "ICON_DLG_QUADRANGLE" );
+  createSMESHAction( 4023, "POLYGON",         "ICON_DLG_POLYGON" );
   createSMESHAction( 4031, "TETRA",           "ICON_DLG_TETRAS" );
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
   createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
@@ -2641,6 +2642,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 401, addId, -1 );
   createMenu( 4021, addId, -1 );
   createMenu( 4022, addId, -1 );
+  createMenu( 4023, addId, -1 );
   createMenu( 4031, addId, -1 );
   createMenu( 4032, addId, -1 );
   createMenu( 4033, addId, -1 );
@@ -2736,6 +2738,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 401, addRemTb );
   createTool( 4021, addRemTb );
   createTool( 4022, addRemTb );
+  createTool( 4023, addRemTb );
   createTool( 4031, addRemTb );
   createTool( 4032, addRemTb );
   createTool( 4033, addRemTb );

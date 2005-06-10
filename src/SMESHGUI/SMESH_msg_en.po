@@ -1705,6 +1705,15 @@ msgstr "Polyhedron preview"
 msgid "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE"
 msgstr "Create oplyhedral volume"
 
+msgid "SMESH_ADD_POLYGON_TITLE"
+msgstr "Add polygon"
+
+msgid "SMESH_POLYGON"
+msgstr "Polygon"
+
+msgid "SMESH_ADD_POLYGON"
+msgstr "Add polygon"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_CreatePatternDlg::CAPTION"
@@ -1915,6 +1924,9 @@ msgstr "Tetrahedron"
 
 msgid "MEN_HEXA"
 msgstr "Hexahedron"
+
+msgid "MEN_POLYGON"
+msgstr "Polygon"
 
 msgid "MEN_POLYHEDRON"
 msgstr "Polyhedron"
@@ -2239,6 +2251,9 @@ msgstr "Tetrahedron"
 msgid "TOP_HEXA"
 msgstr "Hexahedron"
 
+msgid "TOP_POLYGON"
+msgstr "Polygon"
+
 msgid "TOP_POLYHEDRON"
 msgstr "Polyhedron"
 
@@ -2506,6 +2521,9 @@ msgstr "Tetrahedron"
 
 msgid "STB_HEXA"
 msgstr "Hexahedron"
+
+msgid "STB_POLYGON"
+msgstr "Polygon"
 
 msgid "STB_POLYHEDRON"
 msgstr "Polyhedron"
