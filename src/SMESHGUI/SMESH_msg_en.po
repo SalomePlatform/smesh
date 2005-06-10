@@ -790,6 +790,14 @@ msgstr "Entities"
 msgid "SMESH_MESHINFO_ALL_TYPES"
 msgstr "Heterogenous"
 
+#Polygons
+msgid "SMESH_MESHINFO_POLYGONES"
+msgstr "Polygons"
+
+#polyhedres
+msgid "SMESH_MESHINFO_POLYEDRES"
+msgstr "Polyhedres"
+
 #No valid selection :
 msgid "SMESH_BAD_SELECTION"
 msgstr "No valid selection"
@@ -1433,6 +1441,9 @@ msgstr "Laplacian"
 msgid "SMESHGUI_SmoothingDlg::CENTROIDAL"
 msgstr "Centroidal"
 
+msgid "SMESHGUI_SmoothingDlg::IS_PARAMETRIC"
+msgstr "in paramteric space"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_ExtrusionDlg::EXTRUSION_ALONG_LINE"
@@ -1892,8 +1903,8 @@ msgstr "Aspect Ratio"
 msgid "MEN_MIN_ANG"
 msgstr "Minimum Angle"
 
-msgid "MEN_WRAP"
-msgstr "Wraping"
+msgid "MEN_WARP"
+msgstr "Warping angle"
 
 msgid "MEN_SKEW"
 msgstr "Skew"
@@ -2219,7 +2230,7 @@ msgid "TOP_MIN_ANG"
 msgstr "Minimum Angle"
 
 msgid "TOP_WARP"
-msgstr "Wraping"
+msgstr "Warping angle"
 
 msgid "TOP_SKEW"
 msgstr "Skew"
@@ -2490,7 +2501,7 @@ msgid "STB_MIN_ANG"
 msgstr "Minimum Angle"
 
 msgid "STB_WARP"
-msgstr "Wraping"
+msgstr "Warping angle"
 
 msgid "STB_SKEW"
 msgstr "Skew"

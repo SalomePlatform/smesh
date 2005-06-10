@@ -2489,7 +2489,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6012, "TAPER",           "ICON_TAPER" ,        0, true );
   createSMESHAction( 6013, "ASPECT",          "ICON_ASPECT" ,       0, true );
   createSMESHAction( 6014, "MIN_ANG",         "ICON_ANGLE" ,        0, true );
-  createSMESHAction( 6015, "WRAP",            "ICON_WRAP" ,         0, true );
+  createSMESHAction( 6015, "WARP",            "ICON_WARP" ,         0, true );
   createSMESHAction( 6016, "SKEW",            "ICON_SKEW",          0, true );
   createSMESHAction( 6017, "ASPECT_3D",       "ICON_ASPECT_3D",     0, true );
   createSMESHAction( 6018, "LENGTH_2D",       "ICON_LENGTH_2D",     0, true );
@@ -2980,7 +2980,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 6014 ), aMeshInVtkHasFaces, true );
   popupMgr()->setRule( action( 6014 ), "controlMode = 'eMinimumAngle'", false );
 
-  popupMgr()->insert( action( 6015 ), anId, -1 ); // WRAP
+  popupMgr()->insert( action( 6015 ), anId, -1 ); // WARP
   popupMgr()->setRule( action( 6015 ), aMeshInVtkHasFaces, true );
   popupMgr()->setRule( action( 6015 ), "controlMode = 'eWarping'", false );
 

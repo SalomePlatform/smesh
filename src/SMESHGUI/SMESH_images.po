@@ -297,7 +297,7 @@ msgstr "mesh_aspect_3d.png"
 msgid "ICON_ANGLE"
 msgstr "mesh_angle.png"
 
-msgid "ICON_WRAP"
+msgid "ICON_WARP"
 msgstr "mesh_wrap.png"
 
 msgid "ICON_SKEW"
