@@ -1696,6 +1696,15 @@ msgstr "Mesh faces"
 msgid "SMESHGUI_MeshPatternDlg::MESH_VOLUMES"
 msgstr "Mesh volumes"
 
+msgid "SMESHGUI_CreatePolyhedralVolumeDlg::FACES_BY_NODES"
+msgstr "Faces by nodes"
+
+msgid "SMESHGUI_CreatePolyhedralVolumeDlg::SMESH_POLYEDRE_PREVIEW"
+msgstr "Polyhedron preview"
+
+msgid "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE"
+msgstr "Create oplyhedral volume"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_CreatePatternDlg::CAPTION"
@@ -1906,6 +1915,9 @@ msgstr "Tetrahedron"
 
 msgid "MEN_HEXA"
 msgstr "Hexahedron"
+
+msgid "MEN_POLYHEDRON"
+msgstr "Polyhedron"
 
 msgid "MEN_NODES"
 msgstr "Nodes"
@@ -2218,6 +2230,9 @@ msgstr "Tetrahedron"
 msgid "TOP_HEXA"
 msgstr "Hexahedron"
 
+msgid "TOP_POLYHEDRON"
+msgstr "Polyhedron"
+
 msgid "TOP_NODES"
 msgstr "Nodes"
 
@@ -2473,6 +2488,9 @@ msgstr "Tetrahedron"
 
 msgid "STB_HEXA"
 msgstr "Hexahedron"
+
+msgid "STB_POLYHEDRON"
+msgstr "Polyhedron"
 
 msgid "STB_NODES"
 msgstr "Nodes"

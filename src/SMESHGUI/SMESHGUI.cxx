@@ -2555,6 +2555,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 300, "ERASE" );
   createSMESHAction( 301, "DISPLAY" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
+  createSMESHAction( 4033, "POLYHEDRON", "ICON_DLG_POLYHEDRON" );
 
   // ----- create menu --------------
   int fileId   = createMenu( tr( "MEN_FILE" ),   -1,  1 ),
@@ -2642,6 +2643,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4022, addId, -1 );
   createMenu( 4031, addId, -1 );
   createMenu( 4032, addId, -1 );
+  createMenu( 4033, addId, -1 );
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
@@ -2736,6 +2738,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4022, addRemTb );
   createTool( 4031, addRemTb );
   createTool( 4032, addRemTb );
+  createTool( 4033, addRemTb );
   createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
