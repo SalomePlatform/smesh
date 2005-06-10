@@ -2170,7 +2170,7 @@ msgstr "Delete Groups"
 msgid "TOP_ADV_INFO"
 msgstr "Advanced Mesh Infos"
 
-msgid "TOP_STD_INDO"
+msgid "TOP_STD_INFO"
 msgstr "Standard Mesh Infos"
 
 msgid "TOP_LENGTH"
@@ -2429,7 +2429,7 @@ msgstr "Delete Groups"
 msgid "STB_ADV_INFO"
 msgstr "Advanced Mesh Infos"
 
-msgid "STB_STD_INDO"
+msgid "STB_STD_INFO"
 msgstr "Standard Mesh Infos"
 
 msgid "STB_LENGTH"
