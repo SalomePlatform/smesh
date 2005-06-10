@@ -409,7 +409,8 @@ namespace SMESH{
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry());
-    aVisualObj->Update();
+    if( aVisualObj )
+      aVisualObj->Update();
     if ( theDisplay )
       UpdateView(SMESH::eDisplay,theIO->getEntry());
   }
