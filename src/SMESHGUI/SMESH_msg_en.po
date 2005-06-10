@@ -1922,7 +1922,16 @@ msgstr "Polyhedron"
 msgid "MEN_NODES"
 msgstr "Nodes"
 
-msgid "MEN_ELEMENTS"
+msgid "MEN_REMOVE_NODES"
+msgstr "Nodes"
+
+msgid "MEN_RENUM_NODES"
+msgstr "Nodes"
+
+msgid "MEN_REMOVE_ELEMENTS"
+msgstr "Elements"
+
+msgid "MEN_RENUM_ELEMENTS"
 msgstr "Elements"
 
 msgid "MEN_TRANS"
@@ -2236,8 +2245,17 @@ msgstr "Polyhedron"
 msgid "TOP_NODES"
 msgstr "Nodes"
 
-msgid "TOP_ELEMENTS"
-msgstr "Elements"
+msgid "TOP_REMOVE_NODES"
+msgstr "Remove nodes"
+
+msgid "TOP_RENUM_NODES"
+msgstr "Renumbering nodes"
+
+msgid "TOP_REMOVE_ELEMENTS"
+msgstr "Remove elements"
+
+msgid "TOP_RENUM_ELEMENTS"
+msgstr "Renumbering elements"
 
 msgid "TOP_TRANS"
 msgstr "Translation"
@@ -2495,8 +2513,17 @@ msgstr "Polyhedron"
 msgid "STB_NODES"
 msgstr "Nodes"
 
-msgid "STB_ELEMENTS"
-msgstr "Elements"
+msgid "STB_REMOVE_NODES"
+msgstr "Remove nodes"
+
+msgid "STB_RENUM_NODES"
+msgstr "Renumbering nodes"
+
+msgid "STB_REMOVE_ELEMENTS"
+msgstr "Remove elements"
+
+msgid "STB_RENUM_ELEMENTS"
+msgstr "Renumbering elements"
 
 msgid "STB_TRANS"
 msgstr "Translation"

@@ -2500,10 +2500,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4022, "QUAD",            "ICON_DLG_QUADRANGLE" );
   createSMESHAction( 4031, "TETRA",           "ICON_DLG_TETRAS" );
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
-  createSMESHAction( 4041, "NODES",           "ICON_DLG_REM_NODE" );
-  createSMESHAction( 4042, "ELEMENTS",        "ICON_DLG_REM_ELEMENT" );
-  createSMESHAction( 4051, "NODES",           "ICON_DLG_RENUMBERING_NODES" );
-  createSMESHAction( 4052, "ELEMENTS",        "ICON_DLG_RENUMBERING_ELEMENTS" );
+  createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
+  createSMESHAction( 4042, "REMOVE_ELEMENTS", "ICON_DLG_REM_ELEMENT" );
+  createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
+  createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
   createSMESHAction( 4061, "TRANS",           "ICON_SMESH_TRANSLATION_VECTOR" );
   createSMESHAction( 4062, "ROT",             "ICON_DLG_ROTATION" );
   createSMESHAction( 4063, "SYM",             "ICON_SMESH_SYMMETRY_PLANE" );
