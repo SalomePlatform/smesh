@@ -416,13 +416,32 @@ namespace SMESH{
   }
 
 
-  void UpdateSelectionProp() {
-    SUIT_Study* aStudy = GetActiveStudy();
-    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
+  void UpdateSelectionProp( SMESHGUI* theModule ) {
+    if( !theModule )
+      return;
+
+    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( theModule->application() );
+    if( !app )
+    {
+      MESSAGE( "UpdateSelectionProp: Application is null" );
+      return;
+    }
+
     SUIT_ViewManager* vm = app->activeViewManager();
+    if( !vm )
+    {
+      MESSAGE( "UpdateSelectionProp: View manager is null" );
+      return;
+    }
+
     QPtrVector<SUIT_ViewWindow> views = vm->getViews();
 
-    SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
+    SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( theModule );
+    if( !mgr )
+    {
+      MESSAGE( "UpdateSelectionProp: Resource manager is null" );
+      return;
+    }
 
     QColor aHiColor = mgr->colorValue( "SMESH", "SettingsSelectColor", Qt::white ),
            aSelColor = mgr->colorValue( "SMESH", "SettingsItemSelectColor", Qt::yellow ),

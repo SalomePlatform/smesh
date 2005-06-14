@@ -39,6 +39,7 @@ class SVTK_ViewWindow;
 class SVTK_Selector;
 
 class SalomeApp_SelectionMgr;
+class SMESHGUI;
 
 #include <CORBA.h>
 
@@ -114,7 +115,7 @@ namespace SMESH{
 
   void SetPickable(SMESH_Actor* theActor = NULL);
 
-  void UpdateSelectionProp();
+  void UpdateSelectionProp( SMESHGUI* );
 
 
   //----------------------------------------------------------------------------

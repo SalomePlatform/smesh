@@ -102,6 +102,7 @@ public slots:
 
 private slots:
   void OnGUIEvent();
+  void onViewManagerAdded( SUIT_ViewManager* );
 
 signals:
   void SignalDeactivateActiveDialog() ;

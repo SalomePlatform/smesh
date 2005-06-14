@@ -103,6 +103,8 @@
 #include <SVTK_ViewWindow.h>
 #include <SVTK_ViewModel.h>
 
+#include <VTKViewer_ViewManager.h>
+
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -1812,7 +1814,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	mgr->setValue( "SMESH", "SettingsElementsSelectTol", aTolItems );
 
 	// update current study settings
-	SMESH::UpdateSelectionProp();
+	SMESH::UpdateSelectionProp( this );
 
 	if( vtkwnd ) {
 	  // update VTK viewer properties
@@ -2304,7 +2306,6 @@ bool SMESHGUI::OnKeyPress( QKeyEvent * pe, SUIT_ViewWindow * wnd )
 //=============================================================================
 bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
 {
-  MESSAGE("SMESHGUI::SetSettings.");
   SMESHGUI::GetSMESHGUI();
   
   SUIT_ResourceMgr* mgr = resourceMgr();
@@ -2343,6 +2344,7 @@ bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
     action( 10001 )->setOn( false );
     action( 10003 )->setOn( true );
   }
+
   action( 10003 )->setOn( Shrink );
 
   // Automatic Update
@@ -2361,10 +2363,12 @@ bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
     action( 10071 )->setOn( false );
 
   // Selection
-  SMESH::UpdateSelectionProp();
+  SMESH::UpdateSelectionProp( this );
 
   // menus disable
-  //action( 111 )->setEnabled( false );	// IMPORT DAT
+  action( 111 )->setEnabled( false );	// IMPORT DAT
+
+  //action( 112 )->setEnabled( false );
   //parent->menuBar()->setItemEnabled(112, false);	// IMPORT UNV
 
   return true;
@@ -3016,6 +3020,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( 302 ), aRule + "&&" + isNotEmpty, true );
 
   popupMgr()->insert( separator(), -1, -1 );
+
+  connect( application(), SIGNAL( viewManagerAdded( SUIT_ViewManager* ) ), 
+	   this, SLOT( onViewManagerAdded( SUIT_ViewManager* ) ) );
 }
 
 bool SMESHGUI::activateModule( SUIT_Study* study )
@@ -3024,9 +3031,9 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   setMenuShown( true );
   setToolShown( true );
+  SetSettings( desktop() );
 
   return res;
-  //SetSettings( desktop() );
 }
 
 bool SMESHGUI::deactivateModule( SUIT_Study* study )
@@ -3077,4 +3084,10 @@ void SMESHGUI::windows( QMap<int, int>& aMap ) const
 void SMESHGUI::viewManagers( QStringList& list ) const
 {
   list.append( SVTK_Viewer::Type() );
+}
+
+void SMESHGUI::onViewManagerAdded( SUIT_ViewManager* mgr )
+{
+  if( dynamic_cast<VTKViewer_ViewManager*>( mgr ) )
+    SMESH::UpdateSelectionProp( this );
 }
