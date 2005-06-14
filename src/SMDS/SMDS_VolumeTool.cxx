@@ -471,6 +471,15 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   XYZ aVec13( p3 - p1 );
   XYZ cross = aVec12.Crossed( aVec13 );
 
+  if ( myFaceNbNodes[ faceIndex ] == 4 ) {
+    XYZ p4 ( myFaceNodes[3] );
+    XYZ aVec14( p4 - p1 );
+    XYZ cross2 = aVec13.Crossed( aVec14 );
+    cross.x += cross2.x;
+    cross.y += cross2.y;
+    cross.z += cross2.z;    
+  }
+
   double size = cross.Magnitude();
   if ( size <= DBL_MIN )
     return false;
@@ -802,8 +811,9 @@ bool SMDS_VolumeTool::setFace( int faceIndex )
 
   // set face nodes
   int iNode, nbNode = myFaceNbNodes[ faceIndex ];
-  for ( iNode = 0; iNode <= nbNode; iNode++ )
+  for ( iNode = 0; iNode < nbNode; iNode++ )
     myFaceNodes[ iNode ] = myVolumeNodes[ myFaceNodeIndices[ iNode ]];
+  myFaceNodes[ iNode ] = myFaceNodes[ 0 ];
 
   myCurFace = faceIndex;
 
