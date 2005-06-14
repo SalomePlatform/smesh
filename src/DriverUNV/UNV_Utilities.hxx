@@ -13,7 +13,7 @@
 #include <sstream>	
 #include <string>
 #include <stdexcept>
-
+#include <cassert>
 
 namespace UNV{
   using namespace std;
