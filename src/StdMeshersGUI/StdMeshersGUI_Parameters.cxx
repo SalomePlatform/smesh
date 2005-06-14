@@ -26,9 +26,14 @@
 
 #include "StdMeshersGUI_Parameters.h"
 
+#include "SMESHGUI_SpinBox.h" // for the sake of COORD_MAX, COORD_MIN definition
+
 #include <qobject.h>
 
 using namespace std;
+
+#define COORD_MAX_2 (COORD_MAX*COORD_MAX)
+#define COORD_MAX_3 (COORD_MAX*COORD_MAX*COORD_MAX)
 
 //=======================================================================
 //function : HasParameters
@@ -100,7 +105,7 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
   {
     paramList.push_back( DOUBLE_PARAM (1.0,
                                        QObject::tr("SMESH_LOCAL_LENGTH_PARAM"),
-                                       1E-3, 999.999, 1.0, 6));
+                                       1E-3, COORD_MAX, 1.0, 6));
   }
   else if (hypType.compare("NumberOfSegments") == 0)
   {
@@ -112,37 +117,37 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                       QObject::tr("SMESH_START_LENGTH_PARAM"), 
-                                      1E-3, 999.999, 1, 6));
+                                      1E-3, COORD_MAX, 1, 6));
     paramList.push_back( DOUBLE_PARAM ( 10.0,
                                        QObject::tr("SMESH_END_LENGTH_PARAM"),
-                                       1E-3, 999.999, 1, 6));
+                                       1E-3, COORD_MAX, 1, 6));
   }
   else if (hypType.compare("MaxElementArea") == 0)
   {
     paramList.push_back( DOUBLE_PARAM (1.0,
                                        QObject::tr("SMESH_MAX_ELEMENT_AREA_PARAM"), 
-                                       1.E-6, 999999.999, 1.0, 6));
+                                       1.E-6, COORD_MAX_2, 1.0, 6));
   }
   else if (hypType.compare("MaxElementVolume") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                        QObject::tr("SMESH_MAX_ELEMENT_VOLUME_PARAM"), 
-                                       1.E-9, 1.E9, 1.0, 6));
+                                       1.E-9, COORD_MAX_3, 1.0, 6));
   }
   else if (hypType.compare("StartEndLength") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                       QObject::tr("SMESH_START_LENGTH_PARAM"), 
-                                      1.0E-3, 999.999, 1, 6));
+                                      1.0E-3, COORD_MAX, 1, 6));
     paramList.push_back( DOUBLE_PARAM ( 10.0,
                                        QObject::tr("SMESH_END_LENGTH_PARAM"),
-                                       1.0E-3, 999.999, 1, 6));
+                                       1.0E-3, COORD_MAX, 1, 6));
   }
   else if (hypType.compare("Deflection1D") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                        QObject::tr("SMESH_DEFLECTION1D_PARAM"), 
-                                       1.0E-3, 999.999, 1, 6));
+                                       1.0E-3, COORD_MAX, 1, 6));
   }
 }
   
