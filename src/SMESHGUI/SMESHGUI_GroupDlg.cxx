@@ -91,7 +91,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
      myViewWindow( SMESH::GetViewWindow( theModule ) ),
      mySelector( myViewWindow->GetSelector() ),
-     myIsBusy( false )
+     myIsBusy( false ),
+     myActor( 0 )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
   initDialog(true);
@@ -885,7 +886,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
     updateButtons();
 
   } else {
-    if (aNbSel == 1) {
+    if (aNbSel == 1 && myActor ) {
       QString aListStr = "";
       int aNbItems = 0;
       if (myTypeId == 0) {

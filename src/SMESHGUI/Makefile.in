@@ -181,7 +181,7 @@ CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome
             -I${GEOM_ROOT_DIR}/include/salome
 
 
-LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome -lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject -lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient -lGEOMBase -lGEOMObject
+LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome -lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject -lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient -lGEOMBase -lGEOMObject -lGEOMFiltersSelection
 
 LDFLAGSFORBIN += $(LDFLAGS)
 
