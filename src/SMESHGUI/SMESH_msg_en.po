@@ -1656,6 +1656,12 @@ msgstr "Load pattern"
 msgid "SMESHGUI_MeshPatternDlg::PATTERN_FILT"
 msgstr "Pattern files(*.smp)"
 
+msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYGONS_NEAR_BOUNDARY"
+msgstr "Create polygons near boundary"
+
+msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYEDRS_NEAR_BOUNDARY"
+msgstr "Create polyhedres near boundary"
+
 msgid "SMESHGUI_MeshPatternDlg::ERROR_OF_LOADING"
 msgstr "Loading of pattern from file failed. Probably file\nis corrupted or contains pattern of the other type"
 

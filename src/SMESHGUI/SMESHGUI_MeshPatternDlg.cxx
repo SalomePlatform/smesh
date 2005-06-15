@@ -140,7 +140,7 @@ QFrame* SMESHGUI_MeshPatternDlg::createMainFrame (QWidget* theParent)
   QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
   QPixmap icon2d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_2d")));
   QPixmap icon3d   ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_3d")));
-  QPixmap iconOpen ( mgr->loadPixmap("SMESH", tr("ICON_FILE_OPEN")));
+  QPixmap iconOpen ( mgr->loadPixmap("STD", tr("ICON_FILE_OPEN")));
 
   QPixmap iconSample2d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_2D")));
   QPixmap iconSample3d ( mgr->loadPixmap("SMESH", tr("ICON_PATTERN_SAMPLE_3D")));

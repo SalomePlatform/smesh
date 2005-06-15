@@ -226,10 +226,10 @@ msgid "ICON_APPEND"
 msgstr "mesh_add.png"
 
 msgid "ICON_REMOVE"
+msgstr "mesh_remove.png"
 
 msgid "ICON_DELETE"
 msgstr "delete.png"
-
 
 msgid "ICON_COMPUTE"
 msgstr "mesh_compute.png"
@@ -326,3 +326,6 @@ msgstr "mesh_revolution.png"
 
 msgid "ICON_MAP"
 msgstr "mesh_pattern.png"
+
+msgid "ICON_FILE_OPEN"
+msgstr "open.png"
