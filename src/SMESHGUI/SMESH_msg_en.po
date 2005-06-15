@@ -1720,7 +1720,7 @@ msgid "SMESHGUI_CreatePolyhedralVolumeDlg::SMESH_POLYEDRE_PREVIEW"
 msgstr "Polyhedron preview"
 
 msgid "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE"
-msgstr "Create oplyhedral volume"
+msgstr "Create polyhedral volume"
 
 msgid "SMESH_ADD_POLYGON_TITLE"
 msgstr "Add polygon"
