@@ -89,7 +89,7 @@ CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome 
 
 LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
 	  -L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls \
-    -L${CASROOT}/lin/lib -lTKCDF -lTKBO
+    $(OCC_KERNEL_LIBS) -lTKCDF -lTKBO
 
 
 LDFLAGSFORBIN += -lSMDS -lSMESHDS -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
@@ -98,6 +98,6 @@ LDFLAGSFORBIN += -lSMDS -lSMESHDS -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_
 		-lOpUtil -lSALOMELocalTrace -lSALOMETraceCollector -lSalomeNotification -lCASCatch \
 		-lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
 	  	-L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls -lNMTTools -lNMTDS \
-     -L${CASROOT}/lin/lib -lTKCDF -lTKBO
+     $(OCC_KERNEL_LIBS) -lTKCDF -lTKBO
 
 @CONCLUDE@
