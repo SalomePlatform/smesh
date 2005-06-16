@@ -99,8 +99,8 @@ namespace SMESH{
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
-    if (app && app->activeViewManager())
-      return app->activeViewManager()->getActiveView();
+    if (app && app->desktop() )
+      return app->desktop()->activeWindow();
     else
       return NULL;
   }

@@ -100,10 +100,15 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
 SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
 {
   if ( ind >= 0 && ind < myDataOwners.count() ) {
-    const SalomeApp_SVTKDataOwner* owner = 
-      dynamic_cast<const SalomeApp_SVTKDataOwner*> ( myDataOwners[ ind ].get() );
+    const SalomeApp_DataOwner* owner = 
+      dynamic_cast<const SalomeApp_DataOwner*> ( myDataOwners[ ind ].get() );
     if ( owner )
-      return dynamic_cast<SMESH_Actor*>( owner->GetActor() );
+      {
+	Handle( SALOME_InteractiveObject ) anObj = owner->IO();
+	QString entry = anObj->getEntry();
+	return dynamic_cast<SMESH_Actor*>( SMESH::FindActorByEntry( entry ) );
+      }
+      //return dynamic_cast<SMESH_Actor*>( owner->GetActor() );
   }
   return 0;
 }
