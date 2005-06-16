@@ -794,9 +794,9 @@ msgstr "Heterogenous"
 msgid "SMESH_MESHINFO_POLYGONES"
 msgstr "Polygons"
 
-#polyhedres
+#polyhedrons
 msgid "SMESH_MESHINFO_POLYEDRES"
-msgstr "Polyhedres"
+msgstr "Polyhedrons"
 
 #No valid selection :
 msgid "SMESH_BAD_SELECTION"
@@ -1660,7 +1660,7 @@ msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYGONS_NEAR_BOUNDARY"
 msgstr "Create polygons near boundary"
 
 msgid "SMESHGUI_MeshPatternDlg::CREATE_POLYEDRS_NEAR_BOUNDARY"
-msgstr "Create polyhedres near boundary"
+msgstr "Create polyhedrons near boundary"
 
 msgid "SMESHGUI_MeshPatternDlg::ERROR_OF_LOADING"
 msgstr "Loading of pattern from file failed. Probably file\nis corrupted or contains pattern of the other type"
