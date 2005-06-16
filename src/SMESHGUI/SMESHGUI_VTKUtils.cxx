@@ -145,16 +145,8 @@ namespace SMESH{
   SVTK_ViewWindow*
   GetViewWindow(const SalomeApp_Module* theModule)
   {
-    if(SalomeApp_Application* anApp = theModule->getApp()){
-      if(SUIT_ViewManager* aViewManager = anApp->activeViewManager()){
-	if(aViewManager->getType() == SVTK_Viewer::Type()){
-	  if(SUIT_ViewWindow* aViewWindow = aViewManager->getActiveView()){
-	    return dynamic_cast<SVTK_ViewWindow*>(aViewWindow);
-	  }
-	}
-      }
-    }
-    return NULL;
+    if(SalomeApp_Application* anApp = theModule->getApp())
+      return dynamic_cast<SVTK_ViewWindow*>(anApp->desktop()->activeWindow());
   }
 
   SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager* theMgr,

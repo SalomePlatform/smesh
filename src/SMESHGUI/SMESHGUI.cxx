@@ -1097,11 +1097,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   if( !mgr )
     return false;
 
-  SUIT_ViewManager* vm = application()->activeViewManager();
-  if( !vm )
-    return false;
-
-  SUIT_ViewWindow* view =vm->getActiveView();
+  SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
 
   QAction* act = action( theCommandID );
@@ -1179,6 +1175,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       SMESH::UpdateView();
+
+      SALOME_ListIO l;
+      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      aSel->setSelectedObjects( l );
       break;
     }
 
@@ -1532,6 +1532,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case 801:                                     // CREATE GROUP
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
+          tr( "NOT_A_VTK_VIEWER" ),tr( "SMESH_BUT_OK" ) );
+        break;
+      }
+
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
@@ -1553,6 +1560,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 802:                                     // CONSTRUCT GROUP
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
+          tr( "NOT_A_VTK_VIEWER" ),tr( "SMESH_BUT_OK" ) );
+        break;
+      }
+
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
 
@@ -2833,17 +2847,18 @@ void SMESHGUI::initialize( CAM_Application* app )
     isNotEmpty("numberOfNodes <> 0"),
 
     // has nodes, edges, etc in VISIBLE! actor
-    hasNodes("(numberOfNodes > 0 && isVisible)"),
-    hasElems("count( elemTypes ) > 0"),
-    hasDifferentElems("count( elemTypes ) > 1"),
-    hasEdges("{'Edge'} in elemTypes"),
-    hasFaces("{'Face'} in elemTypes"),
-    hasVolumes("{'Volume'} in elemTypes");
+    hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
+    hasElems("(count( elemTypes ) > 0)"),
+    hasDifferentElems("(count( elemTypes ) > 1)"),
+    hasEdges("({'Edge'} in elemTypes)"),
+    hasFaces("({'Face'} in elemTypes)"),
+    hasVolumes("({'Volume'} in elemTypes)");
 
   QString aSelCount = QString( "%1 = 1" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
-  QString aClient = QString( "%1client in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( View );
+  QString lc = QtxPopupMgr::Selection::defEquality();
+  QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer' 'ObjectBrowser'" );
   QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
-  QString aMeshInVTK = aClient + "&&" + aType + "&&" + aSelCount;
+  QString aMeshInVTK = aClient + "&&" + aType;// + "&&" + aSelCount;
   
   //-------------------------------------------------
   // Numbering
