@@ -240,6 +240,8 @@ namespace{
 				QObject::tr("SMESH_BUT_OK"));
 	  wc.resume();
 	}
+
+	SMESHGUI::GetSMESHGUI()->updateObjBrowser();
       }
       catch (const SALOME::SALOME_Exception& S_ex){
 	wc.suspend();
