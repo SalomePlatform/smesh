@@ -1352,6 +1352,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 			      tr("SMESH_WRN_VIEWER_VTK"),
 			      tr("SMESH_BUT_OK"));
       }
+      updateObjBrowser();
       break;
     }
 
@@ -1894,6 +1895,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           }
         }
       }
+      updateObjBrowser( true );
       break;
     }
 
@@ -2279,7 +2281,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   }
 
-  updateObjBrowser();
+  //updateObjBrowser();
   return true;
 }
 

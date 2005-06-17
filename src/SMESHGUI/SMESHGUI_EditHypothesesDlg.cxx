@@ -350,6 +350,7 @@ bool SMESHGUI_EditHypothesesDlg::ClickOnApply()
   }
 
   UpdateControlState();
+  mySMESHGUI->updateObjBrowser();
 
   return aRes;
 }
