@@ -2856,7 +2856,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   QString aSelCount = QString( "%1 = 1" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
   QString lc = QtxPopupMgr::Selection::defEquality();
-  QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer' 'ObjectBrowser'" );
+  QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
   QString aMeshInVTK = aClient + "&&" + aType;// + "&&" + aSelCount;
   
