@@ -3077,6 +3077,12 @@ void SMESHGUI::OnGUIEvent()
 
 SMESH::SMESH_Gen_var SMESHGUI::GetSMESHGen()
 {
+   
+  if ( CORBA::is_nil( myComponentSMESH ) )
+    {
+      SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
+      return aGUI.myComponentSMESH;
+    }  
   return myComponentSMESH;
 }
 
