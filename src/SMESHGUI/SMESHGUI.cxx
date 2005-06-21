@@ -804,46 +804,10 @@ namespace{
   }
 }
 
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-class CustomItem : public QCustomMenuItem
-{
-public:
-  CustomItem(const QString& s, const QFont& f) : myString(s), myFont(f) {}
-  ~CustomItem() {}
-
-  void paint(QPainter* p, const QColorGroup& cg, bool act, bool /*enabled*/, int x, int y, int w, int h)
-  {
-    p->save();
-    p->fillRect( x, y, w, h, act ? cg.highlight() : cg.mid() );
-    p->setPen( act ? cg.highlightedText() : cg.buttonText() );
-    p->setFont( myFont );
-    p->drawText( x, y, w, h, AlignHCenter | AlignVCenter | ShowPrefix | DontClip | SingleLine, myString );
-    p->restore();
-  }
-
-  QSize sizeHint()
-  {
-    return QFontMetrics( myFont ).size( AlignHCenter | AlignVCenter | ShowPrefix | DontClip | SingleLine, myString );
-  }
-
-  bool fullSpan() const
-  {
-    return true;
-  }
-
-private:
-  QString myString;
-  QFont   myFont;
-};
-
 extern "C" {
   Standard_EXPORT CAM_Module* createModule()
   {
-    return SMESHGUI::GetSMESHGUI();
+    return new SMESHGUI();
   }
 }
 
@@ -855,7 +819,7 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
  */
 //=============================================================================
 SMESHGUI::SMESHGUI() :
-  SalomeApp_Module( "SMESH" )
+SalomeApp_Module( "SMESH" )
 {
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
@@ -864,6 +828,7 @@ SMESHGUI::SMESHGUI() :
     myComponentSMESH = SMESH::SMESH_Gen::_narrow( comp );
   }
 
+  myAutomaticUpdate = false;
   myActiveDialogBox = 0 ;
   myState = -1 ;
 
@@ -915,24 +880,32 @@ SUIT_ResourceMgr* SMESHGUI::resourceMgr()
 //=============================================================================
 SMESHGUI* SMESHGUI::GetSMESHGUI()
 {
-  static SMESHGUI* aSMESHGUI = NULL;
-  if( !aSMESHGUI )
-    aSMESHGUI = new SMESHGUI();
+  SMESHGUI* smeshMod = 0;
+  SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
+  if ( app )
+  {
+    CAM_Module* module = app->module( "Mesh" );
+    smeshMod = dynamic_cast<SMESHGUI*>( module );
+  }
 
-  if(_PTR(Study) aStudy = SMESH::GetActiveStudyDocument())
-    GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
+  if ( smeshMod && smeshMod->application() && smeshMod->application()->activeStudy() )
+  {
+    SalomeApp_Study* study = dynamic_cast<SalomeApp_Study*>( smeshMod->application()->activeStudy() );
+    if ( study )
+    {
+      _PTR(Study) aStudy = study->studyDS();
+      if ( aStudy )
+	GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
+    }
+  }
 
-  SUIT_ResourceMgr* mgr = resourceMgr();
-  if( mgr )
-  /* Automatic Update flag */
-    aSMESHGUI->myAutomaticUpdate = ( mgr->stringValue( "SMESH", "AutomaticUpdate" ).compare( "true" ) == 0 );
-
-  return aSMESHGUI;
+  return smeshMod;
 }
 
 extern "C"
 {
-  Standard_EXPORT SMESHGUI* GetComponentGUI() {
+  Standard_EXPORT SMESHGUI* GetComponentGUI()
+  {
     return SMESHGUI::GetSMESHGUI();
   }
 }
@@ -2470,6 +2443,11 @@ void SMESHGUI::initialize( CAM_Application* app )
 {
   SalomeApp_Module::initialize( app );
 
+  SUIT_ResourceMgr* mgr = app->resourceMgr();
+  if ( mgr )
+  /* Automatic Update flag */
+    myAutomaticUpdate = mgr->booleanValue( "SMESH", "AutomaticUpdate", myAutomaticUpdate );
+
   // ----- create actions --------------
 
   createSMESHAction(  111, "DAT", "", (CTRL+Key_B) );
@@ -3077,7 +3055,6 @@ void SMESHGUI::OnGUIEvent()
 
 SMESH::SMESH_Gen_var SMESHGUI::GetSMESHGen()
 {
-   
   if ( CORBA::is_nil( myComponentSMESH ) )
     {
       SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
