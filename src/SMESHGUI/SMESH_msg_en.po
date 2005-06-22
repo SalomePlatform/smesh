@@ -372,6 +372,10 @@ msgstr "Id Nodes"
 msgid "SMESH_NODES"
 msgstr "Nodes"
 
+#Id Faces
+msgid "SMESH_ID_FACES"
+msgstr "Id Faces"
+
 #Remove Nodes
 msgid "SMESH_REMOVE_NODES_TITLE"
 msgstr "Remove Nodes"
