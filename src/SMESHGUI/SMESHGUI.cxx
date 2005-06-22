@@ -307,9 +307,26 @@ namespace{
 	    SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
 	    fd->setCaption( aTitle );
 	    fd->setFilters( filters );
-	    fd->exec();
-	    aFilename = fd->selectedFile();
-	    aFormat = aFilterMap[fd->selectedFilter()];
+	    bool is_ok = false;
+	    while(!is_ok){
+	      fd->exec();
+	      aFilename = fd->selectedFile();
+	      aFormat = aFilterMap[fd->selectedFilter()];
+	      is_ok = true;
+	      if( !aFilename.isEmpty()
+		  && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0) 
+		  && aFormat==SMESH::MED_V2_1){
+		int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
+						  QObject::tr("SMESH_WRN_WARNING"),
+						  QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
+						  QObject::tr("SMESH_BUT_YES"),
+						  QObject::tr("SMESH_BUT_NO"),
+						  0,1,0);
+		if(aRet){
+		  is_ok = false;
+		}
+	      }
+	    }
 	    delete fd;
 	  }
 	if ( !aFilename.isEmpty() ) {

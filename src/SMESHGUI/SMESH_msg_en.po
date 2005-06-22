@@ -1210,6 +1210,12 @@ msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
        "       pyramid's elements will be missed"
 
+msgid "SMESH_EXPORT_MED_V2_1"
+msgstr "During export mesh with name - \"%1\" to MED 2.1\n"
+       "polygons and polyhedrons elements will be missed\n"
+       "For correct export use MED 2.2\n"
+       "Are you sure want to export to MED 2.1 ?"
+
 msgid "INF_SELECT_OBJECT"
 msgstr "Select an object"
 
