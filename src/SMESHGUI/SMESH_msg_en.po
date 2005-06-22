@@ -1452,7 +1452,7 @@ msgid "SMESHGUI_SmoothingDlg::CENTROIDAL"
 msgstr "Centroidal"
 
 msgid "SMESHGUI_SmoothingDlg::IS_PARAMETRIC"
-msgstr "in paramteric space"
+msgstr "in parametric space"
 
 #---------------SMESHGUI_SewingDlg-----------
 msgid "SMESHGUI_SewingDlg::CREATE_POLYGONS_INSTEAD_SPLITTING"
