@@ -1,4 +1,4 @@
-OA# This is a Qt message file in .po format.  Each msgid starts with
+# This is a Qt message file in .po format.  Each msgid starts with
 # a scope.  This scope should *NOT* be translated - eg. "Foo::Bar"
 # would be translated to "Pub", not "Foo::Pub".
 msgid ""
@@ -1450,8 +1450,90 @@ msgstr "Centroidal"
 msgid "SMESHGUI_SmoothingDlg::IS_PARAMETRIC"
 msgstr "in paramteric space"
 
-#----------------------------------------------------
+#---------------SMESHGUI_SewingDlg-----------
+msgid "SMESHGUI_SewingDlg::CREATE_POLYGONS_INSTEAD_SPLITTING"
+msgstr "Create polygons instead of splitting"
 
+msgid "SMESHGUI_SewingDlg::CREATE_POLYEDRS_NEAR_BOUNDARY"
+msgstr "Replace affected volumes by polyedres"
+
+msgid "SMESHGUI_SewingDlg::MERGE_EQUAL_ELEMENTS"
+msgstr "Merge equal elements"
+
+msgid "SMESHGUI_SewingDlg::SEW_FREE_BORDERS"
+msgstr "Sew Free Borders"
+
+msgid "SMESHGUI_SewingDlg::BORDER"
+msgstr "Border"
+
+msgid "SMESHGUI_SewingDlg::BORDER_1"
+msgstr "Border 1"
+
+msgid "SMESHGUI_SewingDlg::BORDER_2"
+msgstr "Border 2"
+
+msgid "SMESHGUI_SewingDlg::SEW_CONFORM_FREE_BORDERS"
+msgstr "Sew Conform Free Borders"
+
+msgid "SMESHGUI_SewingDlg::SEW_BORDER_TO_SIDE"
+msgstr "Sew Border To Side"
+
+msgid "SMESHGUI_SewingDlg::SIDE"
+msgstr "Side"
+
+msgid "SMESHGUI_SewingDlg::SEW_SIDE_ELEMENTS"
+msgstr "Sew Side Elements"
+
+msgid "SMESHGUI_SewingDlg::SIDE_1"
+msgstr "Side 1"
+
+msgid "SMESHGUI_SewingDlg::SIDE_2"
+msgstr "Side 2"
+
+msgid "SMESHGUI_SewingDlg::NODE1_TO_MERGE"
+msgstr "Node 1 To Merge"
+
+msgid "SMESHGUI_SewingDlg::NODE2_TO_MERGE"
+msgstr "Node 2 To Merge"
+
+msgid "SMESHGUI_SewingDlg::FIRST_NODE_ID"
+msgstr "First Node ID"
+
+msgid "SMESHGUI_SewingDlg::SECOND_NODE_ID"
+msgstr "Second Node ID"
+
+msgid "SMESHGUI_SewingDlg::LAST_NODE_ID"
+msgstr "Last Node ID"
+
+msgid "SMESHGUI_SewingDlg::ERROR_1"
+msgstr "Free Border1 not found by the selected nodes"
+
+msgid "SMESHGUI_SewingDlg::ERROR_2"
+msgstr "Free Border2 not found by the selected nodes"
+
+msgid "SMESHGUI_SewingDlg::ERROR_3"
+msgstr "Free Border1 and Border2 not found by the selected nodes"
+
+msgid "SMESHGUI_SewingDlg::ERROR_4"
+msgstr "No path from the first side node to the last side node have been found"
+
+msgid "SMESHGUI_SewingDlg::ERROR_5"
+msgstr "Not allowed to splite volumes on the side!"
+
+msgid "SMESHGUI_SewingDlg::ERROR_6"
+msgstr "Different number of elements selected on the sides"
+
+msgid "SMESHGUI_SewingDlg::ERROR_7"
+msgstr "Element sets are topologically different or given nodes are inconvenient"
+
+msgid "SMESHGUI_SewingDlg::ERROR_8"
+msgstr "Nodes on the side 1 are either not linked or not laying on the element set boundary"
+
+msgid "SMESHGUI_SewingDlg::ERROR_9"
+msgstr "Nodes on the side 2 are either not linked or not laying on the element set boundary"
+
+
+#----------------------------------------------------
 msgid "SMESHGUI_ExtrusionDlg::EXTRUSION_ALONG_LINE"
 msgstr "Extrusion along a line"
 
