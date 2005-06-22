@@ -109,7 +109,19 @@ void SMESH_Swig::Init(int studyID)
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributeName");
     aName = SALOMEDS::AttributeName::_narrow(anAttr);
     //NRI    aName->SetValue(QObject::tr("SMESH_MEN_COMPONENT"));
-    aName->SetValue( SMESHGUI::GetSMESHGUI()->moduleName() );
+    SMESHGUI* gui = SMESHGUI::GetSMESHGUI(); //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
+    if(!gui) {
+      SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication()); 
+      if(app) {
+        CAM_Module* module = app->module( "Mesh" );
+	if(!module) module = app->loadModule("Mesh");
+	gui = dynamic_cast<SMESHGUI*>( module ); 
+      }
+      else {
+        MESSAGE("Can't find the application");
+      }
+    }  //SRN: BugID IPAL9186: end of a fix
+    aName->SetValue( gui->moduleName() );
     anAttr = myStudyBuilder->FindOrCreateAttribute(father, "AttributePixMap");
     aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
     aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
