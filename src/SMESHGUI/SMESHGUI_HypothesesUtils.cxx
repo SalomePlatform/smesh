@@ -142,9 +142,10 @@ namespace SMESH{
 	QString HypsXml = HypsXmlList[ i ];
 
 	// Find full path to the resource XML file
-	QString xmlFile = HypsXml + ".xml";
-	xmlFile = resMgr->path("resources", "SMESH", xmlFile);
-
+	QString xmlFile = resMgr->path("resources", "SMESH", HypsXml + ".xml");
+        if ( xmlFile.isEmpty() ) // try PLUGIN resources
+          xmlFile = resMgr->path("resources", HypsXml, HypsXml + ".xml");
+        
 	QFile file (xmlFile);
 	if (file.exists() && file.open(IO_ReadOnly)) {
 	  file.close();
