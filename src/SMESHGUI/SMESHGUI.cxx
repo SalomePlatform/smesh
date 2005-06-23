@@ -1616,6 +1616,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 803:                                     // EDIT GROUP
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
+          tr( "NOT_A_VTK_VIEWER" ),tr( "SMESH_BUT_OK" ) );
+        break;
+      }
+
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
 
@@ -1668,6 +1675,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     case 811: // Intersect groups
     case 812: // Cut groups
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
+          tr( "NOT_A_VTK_VIEWER" ),tr( "SMESH_BUT_OK" ) );
+        break;
+      }
+
       if ( checkLock( aStudy ) )
         break;
 
@@ -1684,6 +1698,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
     case 813: // Delete groups with their contents
     {
+      if ( !vtkwnd )
+      {
+        SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
+          tr( "NOT_A_VTK_VIEWER" ),tr( "SMESH_BUT_OK" ) );
+        break;
+      }
+
       if ( checkLock( aStudy ) )
         break;
 
