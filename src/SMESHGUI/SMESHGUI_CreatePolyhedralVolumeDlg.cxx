@@ -583,28 +583,20 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
   if (GetConstructorId() == 0)
   {
     if ( aMesh ) {
-      SALOME_ListIO aList; aList.Append( myActor->getIO() );
-      mySelectionMgr->setSelectedObjects( aList );
-
-      TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex( myActor->getIO(), selectedIndices);
-
+      
       QStringList aListId = QStringList::split( " ", theNewText, false);
       for ( int i = 0; i < aListId.count(); i++ ) {
 	const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() );
 	if ( n ) {
-	  if (selectedIndices.Add(n->GetID()))
-	    newIndices.Add(n->GetID());
+	  newIndices.Add(n->GetID());
 	  myNbOkElements++;
         }
       }
       
-      if (newIndices.Extent() > 0){
-	mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, true );
-	myViewWindow->highlight( myActor->getIO(), true, true );
-      }
-
+      mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+      myViewWindow->highlight( myActor->getIO(), true, true );
+      
       if ( myNbOkElements>0 && aListId.count()>=3)
 	AddButton->setEnabled(true);
       else
@@ -621,29 +613,21 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
       // check entered ids of faces and hilight them
     QStringList aListId;
     if ( aMesh ) {
-      SALOME_ListIO aList; aList.Append( myActor->getIO() );
-      mySelectionMgr->setSelectedObjects( aList );
-
-      TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex( myActor->getIO(), selectedIndices);
-
+      
       aListId = QStringList::split( " ", theNewText, false);
 
       for ( int i = 0; i < aListId.count(); i++ ) {
 	const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
 	if ( e ) {
-	  if (selectedIndices.Add(e->GetID()))
-	      newIndices.Add(e->GetID());
+	  newIndices.Add(e->GetID());
 	  myNbOkElements++;  
 	}
       }
 
-      if (newIndices.Extent() > 0){
-	mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, true );
-	myViewWindow->highlight( myActor->getIO(), true, true );
-      }
-
+      mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+      myViewWindow->highlight( myActor->getIO(), true, true );
+      
       if ( myNbOkElements ) {
 	if (aListId.count()>1){ 
 	  buttonOk->setEnabled( true );

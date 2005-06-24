@@ -524,28 +524,20 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
 
   if (aMesh) {
-    SALOME_ListIO aList; aList.Append( myActor->getIO() );
-    mySelectionMgr->setSelectedObjects( aList, false );
-
-    TColStd_IndexedMapOfInteger selectedIndices;
     TColStd_MapOfInteger newIndices;
-    mySelector->GetIndex(myActor->getIO(), selectedIndices);
-
+    
     QStringList aListId = QStringList::split(" ", theNewText, false);
     for (int i = 0; i < aListId.count(); i++) {
       if( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
       {
-	if( selectedIndices.Add( n->GetID() ) )
-	  newIndices.Add( n->GetID() );
+	newIndices.Add( n->GetID() );
 	myNbOkNodes++;
       }
     }
     
-    if( newIndices.Extent()>0 )
-    {
-      mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, true );
-      myViewWindow->highlight( myActor->getIO(), true, true );
-    }
+    mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
+    myViewWindow->highlight( myActor->getIO(), true, true );
+    
     bool aNodesOK = false;
     if (myIsPoly && myElementType == SMDSAbs_Face && aListId.count() >=3 ){
       myNbOkNodes = aListId.count();

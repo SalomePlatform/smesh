@@ -638,16 +638,8 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
     send->clear();
 
   if (aMesh) {
-    //mySelectionMgr->clearSelected();
-    //mySelectionMgr->AddIObject(myActor->getIO());
-    SALOME_ListIO aList;
-    aList.Append(myActor->getIO());
-    mySelectionMgr->setSelectedObjects(aList, false);
-
-    TColStd_IndexedMapOfInteger selectedIndices;
     TColStd_MapOfInteger newIndices;
-    mySelector->GetIndex( myActor->getIO(), selectedIndices);
-
+    
     if (GetConstructorId() != 3 || (send != LineEdit1 && send != LineEdit4)) {
       SMESH::SetPointRepresentation(true);
 
@@ -655,14 +647,10 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
 
       const SMDS_MeshNode * n = aMesh->FindNode(theNewText.toInt());
       if (n) {
-        //if (!mySelectionMgr->IsIndexSelected(myActor->getIO(), n->GetID())) {
-        if (selectedIndices.Add(n->GetID())) {
-          //mySelectionMgr->AddOrRemoveIndex (myActor->getIO(), n->GetID(), true);
-          newIndices.Add(n->GetID());
-          mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, true);
-	  myViewWindow->highlight( myActor->getIO(), true, true );
-        }
-
+	newIndices.Add(n->GetID());
+	mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
+	myViewWindow->highlight( myActor->getIO(), true, true );
+	
         if      (send == LineEdit1)
           myOk1 = true;
         else if (send == LineEdit2)
@@ -687,23 +675,17 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
 
       for (int i = 0; i < aListId.count(); i++) {
         const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-        if (e) {
-          //if (!mySelectionMgr->IsIndexSelected(myActor->getIO(), e->GetID())) {
-          if (selectedIndices.Add(e->GetID())) {
-            //mySelectionMgr->AddOrRemoveIndex (myActor->getIO(), e->GetID(), true);
-            newIndices.Add(e->GetID());
-          }
+        if (e) 
+	  newIndices.Add(e->GetID());
+	
           if (!isEvenOneExists)
             isEvenOneExists = true;
-        }
       }
+      
 
-      if (newIndices.Extent() > 0)
-      {
-        mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, true);
-	myViewWindow->highlight( myActor->getIO(), true, true );
-      }
-
+      mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
+      myViewWindow->highlight( myActor->getIO(), true, true );
+      
       if (isEvenOneExists) {
         if (send == LineEdit1)
           myOk1 = true;

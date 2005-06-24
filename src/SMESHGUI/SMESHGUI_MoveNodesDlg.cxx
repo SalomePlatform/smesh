@@ -355,8 +355,10 @@ void SMESHGUI_MoveNodesDlg::onTextChange (const QString& theNewText)
       if(const SMDS_MeshElement *anElem = aMesh->FindElement(theNewText.toInt())) {
 	TColStd_MapOfInteger aListInd;
 	aListInd.Add(anElem->GetID());
-	mySelector->AddOrRemoveIndex(anIO,aListInd, true);
+	mySelector->AddOrRemoveIndex(anIO,aListInd, false);
 	myViewWindow->highlight(anIO,true,true);
+	
+	onSelectionDone();
       }
     }
   }

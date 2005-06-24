@@ -1256,28 +1256,16 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
 
   if (aMesh) {
     QStringList aListId = QStringList::split(" ", theNewText, false);
-
-    SALOME_ListIO aList;
-    aList.Append(anActor->getIO());
-    mySelectionMgr->setSelectedObjects(aList, false);
-
-    TColStd_IndexedMapOfInteger selectedIndices;
+    
     TColStd_MapOfInteger newIndices;
-    mySelector->GetIndex(anActor->getIO(), selectedIndices);
-
+    
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-      if (e && e->GetType() == (myType == Type_2d ? SMDSAbs_Face : SMDSAbs_Volume)) {
-        if (selectedIndices.Add(e->GetID())) {
-          newIndices.Add(e->GetID());
-        }
-      }
+      if (e && e->GetType() == (myType == Type_2d ? SMDSAbs_Face : SMDSAbs_Volume))
+	newIndices.Add(e->GetID());
     }
-    if (newIndices.Extent() > 0)
-    {
-      mySelector->AddOrRemoveIndex( anActor->getIO(), newIndices, true);
-      myViewWindow->highlight( anActor->getIO(), true, true );
-    }
+    mySelector->AddOrRemoveIndex( anActor->getIO(), newIndices, false);
+    myViewWindow->highlight( anActor->getIO(), true, true );
   }
 
   myBusy = false;
