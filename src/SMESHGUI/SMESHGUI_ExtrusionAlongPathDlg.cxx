@@ -698,9 +698,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
       QStringList aListId = QStringList::split(" ", theNewText, false);
       bool bOk;
       const Handle(SALOME_InteractiveObject)& anIO = myMeshActor->getIO();
-      TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex(anIO, selectedIndices);
       for (int i = 0; i < aListId.count(); i++) {
 	long ind = aListId[ i ].toLong(&bOk);
 	if (bOk) {
@@ -709,18 +707,13 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
 	    // check also type of element
 	    bool typeMatch = Elements1dRB->isChecked() && e->GetType() == SMDSAbs_Edge ||
 	                     Elements2dRB->isChecked() && e->GetType() == SMDSAbs_Face;
-	    if (typeMatch) {
-	      if (selectedIndices.Add(e->GetID())) {
-                newIndices.Add(e->GetID());
-              }
-	    }
+	    if (typeMatch)
+	      newIndices.Add(e->GetID());
 	  }
 	}
       }
-      if (newIndices.Extent() > 0) {
-        mySelector->AddOrRemoveIndex(anIO, newIndices, true);
-	myViewWindow->highlight( anIO, true, true );
-      }
+      mySelector->AddOrRemoveIndex(anIO, newIndices, false);
+      myViewWindow->highlight( anIO, true, true );
     }
   } else if (send == StartPointLineEdit &&
              myEditCurrentArgument == StartPointLineEdit) {
@@ -742,14 +735,10 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
 	  const SMDS_MeshNode* n = aMesh->FindNode(ind);
 	  if (n) {
 	    //if (!mySelectionMgr->IsIndexSelected(aPathActor->getIO(), n->GetID())) {
-            TColStd_IndexedMapOfInteger selectedIndices;
             TColStd_MapOfInteger newIndices;
-            mySelector->GetIndex(aPathActor->getIO(), selectedIndices);
-            if (selectedIndices.Add(n->GetID())) {
-              newIndices.Add(n->GetID());
-	      mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, true );
-	      myViewWindow->highlight( aPathActor->getIO(), true, true );
-	    }
+	    newIndices.Add(n->GetID());
+	    mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, false );
+	    myViewWindow->highlight( aPathActor->getIO(), true, true );
 	  }
 	}
       }
