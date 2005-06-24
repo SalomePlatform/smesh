@@ -267,14 +267,17 @@ SMESH_Hypothesis::Hypothesis_Status
 
   SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
   SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
-  if ( subMeshDS && subMeshDS->IsComplexSubmesh() )
+  if ( subMeshDS && subMeshDS->IsComplexSubmesh() ) // group of sub-shapes and maybe of not sub-
   {
+    MESSAGE("AddHypothesis() to complex submesh");
     // return the worst but not fatal state of all group memebers
     SMESH_Hypothesis::Hypothesis_Status aBestRet, aWorstNotFatal, ret;
     aBestRet = SMESH_Hypothesis::HYP_BAD_DIM;
     aWorstNotFatal = SMESH_Hypothesis::HYP_OK;
     for ( TopoDS_Iterator itS ( aSubShape ); itS.More(); itS.Next())
     {
+      if ( !GetMeshDS()->ShapeToIndex( itS.Value() ))
+        continue; // not sub-shape
       ret = AddHypothesis( itS.Value(), anHypId );
       if ( !SMESH_Hypothesis::IsStatusFatal( ret ) && ret > aWorstNotFatal )
         aWorstNotFatal = ret;
@@ -380,6 +383,8 @@ SMESH_Hypothesis::Hypothesis_Status
     aWorstNotFatal = SMESH_Hypothesis::HYP_OK;
     for ( TopoDS_Iterator itS ( aSubShape ); itS.More(); itS.Next())
     {
+      if ( !GetMeshDS()->ShapeToIndex( itS.Value() ))
+        continue; // not sub-shape
       ret = RemoveHypothesis( itS.Value(), anHypId );
       if ( !SMESH_Hypothesis::IsStatusFatal( ret ) && ret > aWorstNotFatal )
         aWorstNotFatal = ret;
