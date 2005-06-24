@@ -603,7 +603,10 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
   list <const SMESHDS_Hypothesis * > algoList;
   aMesh.GetHypotheses( aShape, filter, algoList, true );
 
-  if (algoList.size() != 1 ) { // check if there is one algo several times
+  if ( algoList.empty() )
+    return NULL;
+
+  if (algoList.size() > 1 ) { // check if there is one algo several times
     list <const SMESHDS_Hypothesis * >::iterator algo = algoList.begin();
     for ( ; algo != algoList.end(); ++algo )
       if ( (*algo) != algoList.front() &&
