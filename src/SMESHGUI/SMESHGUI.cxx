@@ -2430,7 +2430,7 @@ void SMESHGUI::createSMESHAction( const int id, const QString& po_id, const QStr
   if ( icon_id.length() )
     pix = resMgr->loadPixmap( "SMESH", tr( icon_id ) );
   else
-    pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICO_" )+po_id ) );
+    pix = resMgr->loadPixmap( "SMESH", tr( QString( "ICO_" )+po_id ), false );
   if ( !pix.isNull() )
     icon = QIconSet( pix );
 
