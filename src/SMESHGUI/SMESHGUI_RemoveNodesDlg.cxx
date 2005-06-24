@@ -214,7 +214,11 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(SelectButtonC1A1, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
-
+  /* to close dialog if study change */
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
+  connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
+	  SLOT(onTextChange(const QString&)));
+  
   /* Move widget on the botton right corner of main widget */
   int x, y;
   mySMESHGUI->DefineDlgPosition(this, x, y);
@@ -259,9 +263,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
     }
 
     if (aResult) {
-      SALOME_ListIO aList;
-      aList.Append(myActor->getIO());
-      mySelectionMgr->setSelectedObjects(aList, false);
+      myEditCurrentArgument->clear();
       SMESH::UpdateView();
     }
 
@@ -311,28 +313,19 @@ void SMESHGUI_RemoveNodesDlg::onTextChange (const QString& theNewText)
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-      SALOME_ListIO aList;
-      aList.Append(anIO);
-      mySelectionMgr->setSelectedObjects(aList, false);
-      
-      TColStd_IndexedMapOfInteger selectedIndices;
+           
       TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex(anIO,selectedIndices);
-    
+      
       QStringList aListId = QStringList::split(" ", theNewText, false);
       for (int i = 0; i < aListId.count(); i++) {
-	if (const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[ i ].toInt())) {
-	  if (selectedIndices.Add(aNode->GetID())) {
-	    newIndices.Add(aNode->GetID());
-	  }
+	if (const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[i].toInt())) {
+	  newIndices.Add(aNode->GetID());
 	  myNbOkNodes++;
 	}
       }
 
-      if(newIndices.Extent() > 0){
-	mySelector->AddOrRemoveIndex(anIO,newIndices,true);
-	myViewWindow->highlight(anIO,true,true);
-      }
+      mySelector->AddOrRemoveIndex(anIO,newIndices,false);
+      myViewWindow->highlight(anIO,true,true);
     }
   }
 

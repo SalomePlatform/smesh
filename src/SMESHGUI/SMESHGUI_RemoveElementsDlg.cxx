@@ -261,9 +261,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
     }
 
     if (aResult) {
-      SALOME_ListIO aList;
-      aList.Append(myActor->getIO());
-      mySelectionMgr->setSelectedObjects(aList, false);
+      myEditCurrentArgument->clear();
       SMESH::UpdateView();
     }
   }
@@ -314,36 +312,27 @@ void SMESHGUI_RemoveElementsDlg::onTextChange (const QString& theNewText)
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-      SALOME_ListIO aList;
-      aList.Append(anIO);
-      mySelectionMgr->setSelectedObjects(aList, false);
       
-      TColStd_IndexedMapOfInteger selectedIndices;
       TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex(anIO,selectedIndices);
       
       QStringList aListId = QStringList::split(" ", theNewText, false);
       for (int i = 0; i < aListId.count(); i++) {
 	if(const SMDS_MeshElement *anElem = aMesh->FindElement(aListId[i].toInt())) {
-	  if (selectedIndices.Add(anElem->GetID())) {
-	    newIndices.Add(anElem->GetID());
-	  }
+	  newIndices.Add(anElem->GetID());
 	  myNbOkElements++;
 	}
       }
-    
-      if (newIndices.Extent() > 0){
-	mySelector->AddOrRemoveIndex(anIO,newIndices,true);
-	myViewWindow->highlight(anIO,true,true);
-      }
+      
+      mySelector->AddOrRemoveIndex(anIO,newIndices,false);
+      myViewWindow->highlight(anIO,true,true);
     }
   }
-
+  
   if (myNbOkElements) {
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
-
+  
   myBusy = false;
 }
 

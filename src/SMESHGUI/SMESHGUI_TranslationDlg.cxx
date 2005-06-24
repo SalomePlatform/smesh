@@ -502,38 +502,25 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     aMesh = myActor->GetObject()->GetMesh();
 
   if (aMesh) {
-    //mySelectionMgr->clearSelected();
-    //mySelectionMgr->AddIObject(myActor->getIO());
-    SALOME_ListIO aList;
-    aList.Append(myActor->getIO());
-    mySelectionMgr->setSelectedObjects(aList, false);
-
-    TColStd_IndexedMapOfInteger selectedIndices;
+    Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
+    
     TColStd_MapOfInteger newIndices;
-    mySelector->GetIndex( myActor->getIO(), selectedIndices );
 
     QStringList aListId = QStringList::split(" ", theNewText, false);
 
     if (send == LineEditElements) {
       for (int i = 0; i < aListId.count(); i++) {
 	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e) {
-	  //if (!mySelectionMgr->IsIndexSelected(myActor->getIO(), e->GetID())) {
-          if (selectedIndices.Add(e->GetID())) {
-	    //mySelectionMgr->AddOrRemoveIndex (myActor->getIO(), e->GetID(), true);
-            newIndices.Add(e->GetID());
-          }
-	  myNbOkElements++;
-	}
+	if (e)
+	  newIndices.Add(e->GetID());
+	myNbOkElements++;
       }
-
-      if (newIndices.Extent() > 0){
-	mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, true );
-	myViewWindow->highlight( myActor->getIO(), true, true );
-      }
-
-      myElementsId = theNewText;
     }
+
+    mySelector->AddOrRemoveIndex( anIO, newIndices, false );
+    myViewWindow->highlight( anIO, true, true );
+    
+    myElementsId = theNewText;
   }
 
   if (myNbOkElements) {
