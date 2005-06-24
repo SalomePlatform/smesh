@@ -151,11 +151,15 @@ class TPolySimulation{
 	anIds->InsertId(i,theIds[i]);
 
       myGrid->InsertNextCell(theType,anIds);
+      if(theIds.size()!=0){
+	myGrid->InsertNextCell(theType,anIds);
+	myGrid->Modified();
+      }
+	
       anIds->Delete();
 
-      myGrid->Modified();
-
       SetVisibility(true);
+
     }
   
     void ResetGrid(bool theReset=true){
@@ -382,7 +386,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::Init()
 //=================================================================================
 void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
 {
-  disconnect(mySelectionMgr, 0, this, 0);
+  //disconnect(mySelectionMgr, 0, this, 0);
 
   SALOME_ListIO aList;
   mySelectionMgr->setSelectedObjects( aList );
@@ -398,6 +402,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
       { 
 	if ( myActor ){
           myActor->SetPointRepresentation(true);
+	  myActor->SetEntityMode(SMESH_Actor::eVolumes);
+	  myActor->SetRepresentation(SMESH_Actor::eSurface);
 	}
         else
           SMESH::SetPointRepresentation(true);
@@ -416,7 +422,14 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
       }
     case 1 :
       {
-	SMESH::SetPointRepresentation(false);
+	if( myActor ){
+	  myActor->SetPointRepresentation(false);
+	  myActor->SetEntityMode(SMESH_Actor::eFaces);
+	  myActor->SetEntityMode(SMESH_Actor::eVolumes);
+	  myActor->SetRepresentation(SMESH_Actor::eSurface);
+	} else {
+	  SMESH::SetPointRepresentation(false);
+	}
 	myViewWindow->SetSelectionMode(FaceSelection);
 	
 	TextLabelIds->setText( tr( "SMESH_ID_FACES" ) );
@@ -429,7 +442,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
       }
     }
   
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
 }
 
 //=================================================================================
@@ -581,37 +594,25 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
       for ( int i = 0; i < aListId.count(); i++ ) {
 	const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() );
 	if ( n ) {
-	    /*if ( mySelectionMgr->IsIndexSelected( myActor->getIO(), n->GetID() ))
-	      allOk = false;
-	    else
-	      mySelectionMgr->AddOrRemoveIndex (myActor->getIO(), n->GetID(), true);*/
 	  if (selectedIndices.Add(n->GetID()))
 	    newIndices.Add(n->GetID());
 	  myNbOkElements++;
         }
       }
-
+      
       if (newIndices.Extent() > 0){
 	mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, true );
 	myViewWindow->highlight( myActor->getIO(), true, true );
       }
 
-/*	bool aNodesOK = false;
-	if (aListId.count() >= 3)
-	  aNodesOK = true;
-
-	allOk = (allOk && aNodesOK);*/
-	
       if ( myNbOkElements>0 && aListId.count()>=3)
 	AddButton->setEnabled(true);
-	else
-	  AddButton->setEnabled(false);
-
-//	if (allOk && !myOkElements)
-	displaySimulation();
-      }
+      else
+	AddButton->setEnabled(false);
+      
+      displaySimulation();
     }
-  else if (GetConstructorId() == 1)
+  } else if (GetConstructorId() == 1)
   {
     myNbOkElements = 0;
     buttonOk->setEnabled( false );
@@ -632,10 +633,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
       for ( int i = 0; i < aListId.count(); i++ ) {
 	const SMDS_MeshElement * e = aMesh->FindElement( aListId[ i ].toInt() );
 	if ( e ) {
-	  /*if ( mySelectionMgr->IsIndexSelected( myActor->getIO(), e->GetID() ))
-	    myOkElements = false;
-	  else
-	    mySelectionMgr->AddOrRemoveIndex (myActor->getIO(), e->GetID(), true);*/
 	  if (selectedIndices.Add(e->GetID()))
 	      newIndices.Add(e->GetID());
 	  myNbOkElements++;  
@@ -715,8 +712,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
     int anbNodes = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
     if (anbNodes >= 3)
       AddButton->setEnabled(true);
-    else 
-      break;
+    else if (anbNodes < 3){
+      AddButton->setEnabled(false);
+    }
     busy = true;
     myEditCurrentArgument->setText( aString );
     busy = false;
@@ -725,16 +723,19 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
   case 1:{
     // get selected faces
     int aNbFaces = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
-    if (aNbFaces<=1)
-      return;
+    if (aNbFaces<=1){
+      buttonOk->setEnabled( false );
+      buttonApply->setEnabled( false );
+    } else {
+      buttonOk->setEnabled( true );
+      buttonApply->setEnabled( true );
+    }
     busy = true;
     myEditCurrentArgument->setText( aString );
     busy = false;
     
     // OK
     myNbOkElements = 1;
-    buttonOk->setEnabled( true );
-    buttonApply->setEnabled( true );
     break;
   }
   default: return;
@@ -771,6 +772,11 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	      aType = VTK_POLYGON;
 	      mySimulation->SetPosition(myActor, aType, aVTKIds_faces,false);
 	    }
+	  }
+	  if(myFacesByNodes->count() == 0){
+	    mySimulation->SetVisibility(false);
+	  } else {
+	    mySimulation->SetVisibility(true);
 	  }
 	  if(Preview->isChecked()){
 	    mySimulation->SetPosition(myActor, aType, aVTKIds);
@@ -818,7 +824,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	    mySimulation->SetPosition(myActor, aType, aVTKIds);
 	}
       }
-    }  
+      SMESH::UpdateView();
+    }
 }
 
 //=================================================================================
@@ -937,7 +944,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onAdd()
       myNbOkElements = 1;
       myEditCurrentArgument->clear();
       AddButton->setEnabled(false);
-      RemoveButton->setEnabled(true);
       buttonOk->setEnabled( true );
       if(myFacesByNodes->count()>1) buttonApply->setEnabled( true );
     }
@@ -956,22 +962,20 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onRemove()
   for (int i = myFacesByNodes->count(); i > 0; i--) {
     if (myFacesByNodes->isSelected(i-1)) {
       myFacesByNodes->removeItem(i-1);
+      myNbOkElements = 1;
     }
   }
   if (myFacesByNodes->count() < 1){
-    myNbOkElements = 0;
     RemoveButton->setEnabled(false);
     buttonOk->setEnabled( false );
     buttonApply->setEnabled( false );
   } 
   else if (myFacesByNodes->count() == 1){
-    myNbOkElements = 0;
     buttonOk->setEnabled( false );
     buttonApply->setEnabled( false );
   }
-  displaySimulation();
   busy = false;
-  onListSelectionChanged();
+  displaySimulation();
 }
 
 //=================================================================================
@@ -982,22 +986,26 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onListSelectionChanged()
 {
   if (busy || !myActor) return;
   busy = true;
-
-  SALOME_ListIO list;
-  mySelectionMgr->setSelectedObjects( list );
+  bool isSelected=false;
+  SALOME_ListIO aList;
+  mySelectionMgr->setSelectedObjects( aList );
   TColStd_MapOfInteger aIndexes;
   QListBoxItem* anItem;
   for (anItem = myFacesByNodes->firstItem(); anItem != 0; anItem = anItem->next()) {
     if (anItem->isSelected()) {
+      isSelected = true;
       QStringList anIds = QStringList::split(" ", anItem->text());
       for (QStringList::iterator it = anIds.begin(); it != anIds.end(); ++it)
 	aIndexes.Add((*it).toInt());
     }
   }
+  if(isSelected) RemoveButton->setEnabled(true);
+  else RemoveButton->setEnabled(false);
   mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, true );
   myViewWindow->highlight( myActor->getIO(), true, true );
-  list.Append( myActor->getIO() );
-  mySelectionMgr->setSelectedObjects( list );
+  mySelectionMgr->clearFilters(); 
+  aList.Append( myActor->getIO() );
+  mySelectionMgr->setSelectedObjects( aList );
   
   busy = false;
 }
