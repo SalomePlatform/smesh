@@ -92,13 +92,15 @@
 
 #include "QtxPopupMgr.h"
 
-#include "SalomeApp_Application.h"
-#include "SalomeApp_NameDlg.h"
-#include "SalomeApp_DataOwner.h"
-#include "SalomeApp_ImportOperation.h"
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
+#include "SalomeApp_NameDlg.h"
+#include "SalomeApp_DataOwner.h"
+#include "SalomeApp_Application.h"
+#include "SalomeApp_Preferences.h"
 #include "SalomeApp_VTKSelector.h"
+
+#include "SalomeApp_ImportOperation.h"
 
 #include <SVTK_ViewWindow.h>
 #include <SVTK_ViewModel.h>
@@ -845,7 +847,6 @@ SalomeApp_Module( "SMESH" )
     myComponentSMESH = SMESH::SMESH_Gen::_narrow( comp );
   }
 
-  myAutomaticUpdate = false;
   myActiveDialogBox = 0 ;
   myState = -1 ;
 
@@ -878,6 +879,15 @@ SalomeApp_SelectionMgr* SMESHGUI::selectionMgr()
     return dynamic_cast<SalomeApp_SelectionMgr*>( anApp->selectionMgr() );
   else
     return 0;
+}
+
+bool SMESHGUI::automaticUpdate()
+{
+  SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+  if ( !resMgr )
+    return false;
+
+  return resMgr->booleanValue( "SMESH", "auto_update", false );
 }
 
 //=============================================================================
@@ -1326,8 +1336,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	}
 	CORBA::Long anId = aStudy->StudyId();
 	TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,IObject->getEntry());
-	cout<<"myAutomaticUpdate - "<<myAutomaticUpdate<<endl;
-	if(myAutomaticUpdate && aVisualObj){
+	if ( automaticUpdate() && aVisualObj){
 	  aVisualObj->Update();
 	  SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
 	  if(!anActor){
@@ -1765,14 +1774,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     
   case 1001:					// AUTOMATIC UPDATE PREFERENCES
     {
-      if (act->isOn()) {
-	mgr->setValue( "SMESH", "AutomaticUpdate", true );
-	myAutomaticUpdate = true;
-      }
-      else {
-	mgr->setValue( "SMESH", "AutomaticUpdate", false );
-	myAutomaticUpdate = false;
-      }
+//       if (act->isOn()) {
+// 	mgr->setValue( "SMESH", "AutomaticUpdate", true );
+// 	myAutomaticUpdate = true;
+//       }
+//       else {
+// 	mgr->setValue( "SMESH", "AutomaticUpdate", false );
+// 	myAutomaticUpdate = false;
+//       }
       break;
     }
 
@@ -2377,14 +2386,14 @@ bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
   action( 10003 )->setOn( Shrink );
 
   // Automatic Update
-  if ( mgr->booleanValue( "SMESH","AutomaticUpdate", false ) ) {
-    action( 1001 )->setOn( true );
-    myAutomaticUpdate = true;
-  }
-  else {
-    action( 1001 )->setOn( false );
-    myAutomaticUpdate = false;
-  }
+//   if ( mgr->booleanValue( "SMESH","AutomaticUpdate", false ) ) {
+//     action( 1001 )->setOn( true );
+//     myAutomaticUpdate = true;
+//   }
+//   else {
+//     action( 1001 )->setOn( false );
+//     myAutomaticUpdate = false;
+//   }
 
   if ( mgr->booleanValue( "SMESH","DispayEntity", false ) )
     action( 10071 )->setOn( true );
@@ -2481,10 +2490,10 @@ void SMESHGUI::initialize( CAM_Application* app )
 {
   SalomeApp_Module::initialize( app );
 
-  SUIT_ResourceMgr* mgr = app->resourceMgr();
-  if ( mgr )
+//   SUIT_ResourceMgr* mgr = app->resourceMgr();
+//   if ( mgr )
   /* Automatic Update flag */
-    myAutomaticUpdate = mgr->booleanValue( "SMESH", "AutomaticUpdate", myAutomaticUpdate );
+//     myAutomaticUpdate = mgr->booleanValue( "SMESH", "AutomaticUpdate", myAutomaticUpdate );
 
   // ----- create actions --------------
 
@@ -3128,6 +3137,77 @@ void SMESHGUI::viewManagers( QStringList& list ) const
 
 void SMESHGUI::onViewManagerAdded( SUIT_ViewManager* mgr )
 {
-  if( dynamic_cast<VTKViewer_ViewManager*>( mgr ) )
+  if ( dynamic_cast<VTKViewer_ViewManager*>( mgr ) )
     SMESH::UpdateSelectionProp( this );
+}
+
+void SMESHGUI::createPreferences()
+{
+  int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
+
+  int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
+  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "Mesh", "display_entity" );
+  addPreference( tr( "PREF_AUTO_UPDATE" ), qaGroup, SalomeApp_Preferences::Bool, "Mesh", "auto_update" );
+
+  int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
+  setPreferenceProperty( precGroup, "columns", 1 );
+
+  addPreference( tr( "PREF_PRECISION_USE" ), precGroup, SalomeApp_Preferences::Bool );
+  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, SalomeApp_Preferences::IntSpin, "SMESH", "controls_precision" );
+
+  setPreferenceProperty( prec, "min", 0 );
+  setPreferenceProperty( prec, "max", 16 );
+
+  int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
+  int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
+
+  addPreference( tr( "PREF_COLOR" ), nodeGroup, SalomeApp_Preferences::Color, "SMESH", "node_color" );
+  int nodeSz = addPreference( tr( "PREF_SIZE" ), nodeGroup, SalomeApp_Preferences::IntSpin, "SMESH", "node_size" );
+
+  setPreferenceProperty( nodeSz, "min", 1 );
+  setPreferenceProperty( nodeSz, "max", 5 );
+
+  int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
+
+  addPreference( tr( "PREF_FILL" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "fill_color" );
+  addPreference( tr( "PREF_OUTLINE" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "outline_color" );
+  addPreference( tr( "PREF_BACKFACE" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "backface_color" );
+  addPreference( "", elemGroup, SalomeApp_Preferences::Space );
+
+  int elemW = addPreference( tr( "PREF_WIDTH" ), elemGroup, SalomeApp_Preferences::IntSpin, "SMESH", "element_width" );
+  int shrink = addPreference( tr( "PREF_SHRINK_COEFF" ), elemGroup, SalomeApp_Preferences::IntSpin, "SMESH", "shrink_coeff" );
+
+  setPreferenceProperty( elemW, "min", 1 );
+  setPreferenceProperty( elemW, "max", 5 );
+
+  setPreferenceProperty( shrink, "min", 0 );
+  setPreferenceProperty( shrink, "max", 100 );
+
+  int selTab = addPreference( tr( "PREF_TAB_SELECTION" ) );
+
+  int selGroup = addPreference( tr( "PREF_GROUP_SELECTION" ), selTab );
+
+  addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_object_color" );
+  addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_element_color" );
+  int selW = addPreference( tr( "PREF_WIDTH" ), selGroup, SalomeApp_Preferences::IntSpin, "SMESH", "selection_width" );
+  
+  setPreferenceProperty( selW, "min", 1 );
+  setPreferenceProperty( selW, "max", 5 );
+  
+  int preGroup = addPreference( tr( "PREF_GROUP_PRESELECTION" ), selTab );
+
+  addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, SalomeApp_Preferences::Color, "SMESH", "highlight_color" );
+  int preW = addPreference( tr( "PREF_WIDTH" ), preGroup, SalomeApp_Preferences::IntSpin, "SMESH", "highlight_width" );
+
+  setPreferenceProperty( preW, "min", 1 );
+  setPreferenceProperty( preW, "max", 5 );
+
+  int precSelGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), selTab );
+
+  addPreference( tr( "PREF_NODES" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_node" );
+  addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_element" );
+}
+
+void SMESHGUI::preferencesChanged( const QString&, const QString& )
+{
 }

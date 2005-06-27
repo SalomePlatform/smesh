@@ -20,8 +20,9 @@
 
 #include "SMESH_ActorUtils.h"
 
-#include "SUIT_ResourceMgr.h"
+#include "SUIT_Tools.h"
 #include "SUIT_Session.h"
+#include "SUIT_ResourceMgr.h"
 
 #include "utilities.h"
 
@@ -42,10 +43,10 @@ namespace SMESH{
     float val = theDefault;
     if( pos>=0 ) 
     {
-      QString val = theValue.right( theValue.length()-pos-1 ),
+      QString name = theValue.right( theValue.length()-pos-1 ),
               sect = theValue.left( pos );
-      if( !val.isEmpty() && !sect.isEmpty() )
-	val = GetFloat( val, sect, theDefault );
+      if( !name.isEmpty() && !sect.isEmpty() )
+	val = GetFloat( name, sect, theDefault );
     }
     return val;
   }
@@ -70,4 +71,31 @@ namespace SMESH{
     aWriter->Delete();
   }
 
+  QColor GetColor( const QString& theSect, const QString& theName, const QColor& def )
+  {
+    QColor c = def;
+    SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+    if ( mgr )
+      c = mgr->colorValue( theSect, theName, def );
+    return c;
+  }
+
+  void GetColor( const QString& theSect, const QString& theName, int& r, int& g, int& b, const QColor& def )
+  {
+    QColor c = def;
+    SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+    if ( mgr )
+      c = mgr->colorValue( theSect, theName, def );
+
+    SUIT_Tools::rgbSet( SUIT_Tools::rgbSet( c ), r, g, b );
+  }
+
+  void GetColor( const QString& theSect, const QString& theName, float& r, float& g, float& b, const QColor& def )
+  {
+    int ir( 0 ), ig( 0 ), ib( 0 );
+    GetColor( theSect, theName, ir, ig, ib, def );
+    r = ir / 255.;
+    g = ig / 255.;
+    b = ib / 255.;
+  }
 }

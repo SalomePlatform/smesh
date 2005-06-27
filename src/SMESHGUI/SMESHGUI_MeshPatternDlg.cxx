@@ -415,9 +415,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     if ( myPattern->MakeMesh( myMesh, toCreatePolygons, toCreatePolyedrs ) ) {
       mySelectionMgr->clearSelected();
       SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
-      bool autoUpdate = false;
-      if (mgr && mgr->stringValue("SMESH", "AutomaticUpdate").compare("true") == 0)
-        autoUpdate = true;
+      bool autoUpdate = SMESHGUI::automaticUpdate();
       if (!isRefine() && autoUpdate) {
 	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
 	SMESH_Actor* anActor = SMESH::FindActorByEntry(aSO->GetID().c_str());
@@ -855,7 +853,7 @@ void SMESHGUI_MeshPatternDlg::displayPreview()
     aProp->SetRepresentationToWireframe();
     aProp->SetColor(250, 0, 250);
     if (SMESH::FindActorByObject(myMesh))
-      aProp->SetLineWidth(SMESH::GetFloat("SMESH:SettingsWidth", 1) +1);
+      aProp->SetLineWidth( SMESH::GetFloat( "SMESH:element_width", 1 ) + 1 );
     else
       aProp->SetLineWidth(1);
     myPreviewActor->SetProperty(aProp);

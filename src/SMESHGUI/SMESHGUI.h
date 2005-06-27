@@ -68,6 +68,8 @@ public :
   static SalomeApp_Study*         activeStudy();
   bool                            isActiveStudyLocked();
 
+  static bool                     automaticUpdate();
+
   virtual QString     engineIOR() const;
   virtual void        initialize( CAM_Application* );
   virtual void        windows( QMap<int, int>& ) const;
@@ -96,6 +98,9 @@ public :
   void EmitSignalStudyFrameChanged() ;
   void EmitSignalCloseAllDialogs() ;
 
+  virtual void                createPreferences();
+  virtual void                preferencesChanged( const QString&, const QString& );
+
 public slots:
   virtual bool                deactivateModule( SUIT_Study* );
   virtual bool                activateModule( SUIT_Study* );
@@ -119,9 +124,7 @@ private :
   static SMESH::SMESH_Gen_var      myComponentSMESH;
   QDialog*                         myActiveDialogBox;
   int                              myState;
-  bool                             myAutomaticUpdate;
   QMap<int,QString>                myRules;
 };
-
 
 #endif

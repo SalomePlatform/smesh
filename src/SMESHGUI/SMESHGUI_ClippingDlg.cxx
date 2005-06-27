@@ -157,20 +157,16 @@ protected:
     myActor->SetInfinitive(true);
     myActor->SetMapper(myMapper);
 
-    vtkProperty* aProp = vtkProperty::New();
     float anRGB[3];
-    anRGB[0] = SMESH::GetFloat("SMESH:SettingsFillColorRed", 0)/255.;
-    anRGB[1] = SMESH::GetFloat("SMESH:SettingsFillColorGreen", 170)/255.;
-    anRGB[2] = SMESH::GetFloat("SMESH:SettingsFillColorBlue", 255)/255.;
+    vtkProperty* aProp = vtkProperty::New();
+    SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
     aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
     aProp->SetOpacity(0.75);
     myActor->SetProperty(aProp);
     aProp->Delete();
 
     vtkProperty* aBackProp = vtkProperty::New();
-    anRGB[0] = SMESH::GetFloat("SMESH:SettingsBackFaceColorRed", 0)/255.;
-    anRGB[1] = SMESH::GetFloat("SMESH:SettingsBackFaceColorGreen", 0)/255.;
-    anRGB[2] = SMESH::GetFloat("SMESH:SettingsBackFaceColorBlue", 255)/255.;
+    SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
     aBackProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
     aBackProp->SetOpacity(0.75);
     myActor->SetBackfaceProperty(aBackProp);

@@ -114,10 +114,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsShrinkable = false;
   myIsShrunk = false;
 
-  myControlsPrecision = (long)SMESH::GetFloat( "SMESH:ControlsPrecision", -1 );
+  myControlsPrecision = (long)SMESH::GetFloat( "SMESH:controls_precision", -1 );
 
-  float aPointSize = SMESH::GetFloat("SMESH:SettingsNodesSize",3);
-  float aLineWidth = SMESH::GetFloat("SMESH:SettingsWidth",1);
+  float aPointSize = SMESH::GetFloat("SMESH:node_size",3);
+  float aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
 
   vtkMatrix4x4 *aMatrix = vtkMatrix4x4::New();
   VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
@@ -126,16 +126,12 @@ SMESH_ActorDef::SMESH_ActorDef()
   //-----------------------------------------
   float anRGB[3] = {1,1,1};
   mySurfaceProp = vtkProperty::New();
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsFillColorRed", 0)/255.;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsFillColorGreen", 170)/255.;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsFillColorBlue", 255)/255.;
-  mySurfaceProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  SMESH::GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  mySurfaceProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
   myBackSurfaceProp = vtkProperty::New();
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsBackFaceColorRed", 0)/255.;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsBackFaceColorGreen", 0)/255.;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsBackFaceColorBlue", 255)/255.;
-  myBackSurfaceProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+  SMESH::GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
+  myBackSurfaceProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
   my2DActor = SMESH_DeviceActor::New();
   my2DActor->SetUserMatrix(aMatrix);
@@ -170,9 +166,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myEdgeProp->SetAmbient(1.0);
   myEdgeProp->SetDiffuse(0.0);
   myEdgeProp->SetSpecular(0.0);
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsOutlineColorRed", 0)/255.;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsOutlineColorGreen", 170)/255.;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsOutlineColorBlue", 255)/255.;
+  SMESH::GetColor( "SMESH", "outline_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   myEdgeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myEdgeProp->SetLineWidth(aLineWidth);
 
@@ -215,9 +209,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   //Definition 0D divice of the actor
   //---------------------------------
   myNodeProp = vtkProperty::New();
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsNodeColorRed",255)/255.;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsNodeColorGreen",0)/255.;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsNodeColorBlue",0)/255.;
+  SMESH::GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 0, 0 ) );
   myNodeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myNodeProp->SetPointSize(aPointSize);
 
@@ -246,9 +238,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlightProp->SetAmbient(1.0);
   myHighlightProp->SetDiffuse(0.0);
   myHighlightProp->SetSpecular(0.0);
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsSelectColorRed", 255)/255.;   // 1;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsSelectColorGreen", 255)/255.; // 1;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsSelectColorBlue", 255)/255.;  // 1;
+  SMESH::GetColor( "SMESH", "selection_object_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myHighlightProp->SetPointSize(aPointSize);
   myHighlightProp->SetRepresentation(1);
@@ -257,9 +247,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myPreselectProp->SetAmbient(1.0);
   myPreselectProp->SetDiffuse(0.0);
   myPreselectProp->SetSpecular(0.0);
-  anRGB[0] = SMESH::GetFloat("SMESH:SettingsPreSelectColorRed", 0)/255.;     // 0;
-  anRGB[1] = SMESH::GetFloat("SMESH:SettingsPreSelectColorGreen", 255)/255.; // 1;
-  anRGB[2] = SMESH::GetFloat("SMESH:SettingsPreSelectColorBlue", 255)/255.;  // 1;
+  SMESH::GetColor( "SMESH", "highlight_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 255 ) );
   myPreselectProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myPreselectProp->SetPointSize(aPointSize);
   myPreselectProp->SetRepresentation(1);
@@ -269,7 +257,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
 
-  SetShrinkFactor(SMESH::GetFloat("SMESH:SettingsShrinkCoeff", 75)/100.);
+  SetShrinkFactor( SMESH::GetFloat( "SMESH", "shrink_coeff", 0.75 ) );
 
   myName = "";
   myIO = NULL;
@@ -294,13 +282,14 @@ SMESH_ActorDef::SMESH_ActorDef()
   if( !mgr )
     return;
 
-  QColor aTColor = mgr->colorValue( "ScalarBarTitleColor", "SMESH", QColor( 255, 255, 255 ) );
+  QColor aTColor = mgr->colorValue( "SMESH", "ScalarBarTitleColor", QColor( 255, 255, 255 ) );
   aScalarBarTitleProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
 
   aScalarBarTitleProp->SetFontFamilyToArial();
   
-  if( mgr->hasValue( "ScalarBarTitleFont", "SMESH" ) ){
-    QString str = mgr->stringValue( "ScalarBarTitleFont", "SMESH" );
+  if ( mgr->hasValue( "SMESH", "ScalarBarTitleFont" ) )
+  {
+    QString str = mgr->stringValue( "SMESH", "ScalarBarTitleFont" );
     if ( str == "Arial" )
       aScalarBarTitleProp->SetFontFamilyToArial();
     else if ( str == "Courier" )
@@ -309,17 +298,17 @@ SMESH_ActorDef::SMESH_ActorDef()
       aScalarBarTitleProp->SetFontFamilyToTimes();
   }
 
-  if ( mgr->stringValue( "ScalarBarTitleBold", "SMESH" ) == "true" )
+  if ( mgr->booleanValue( "SMESH", "ScalarBarTitleBold" ) )
     aScalarBarTitleProp->BoldOn();
   else
     aScalarBarTitleProp->BoldOff();
 
-  if ( mgr->stringValue( "ScalarBarTitleItalic", "SMESH" ) == "true" )
+  if ( mgr->booleanValue( "SMESH", "ScalarBarTitleItalic" ) )
     aScalarBarTitleProp->ItalicOn();
   else
     aScalarBarTitleProp->ItalicOff();
 
-  if ( mgr->stringValue( "ScalarBarTitleShadow", "SMESH" ) == "true" )
+  if ( mgr->booleanValue( "SMESH", "ScalarBarTitleShadow" ) )
     aScalarBarTitleProp->ShadowOn();
   else
     aScalarBarTitleProp->ShadowOff();
@@ -329,13 +318,13 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   vtkTextProperty* aScalarBarLabelProp = vtkTextProperty::New();
 
-  aTColor = mgr->colorValue( "ScalarBarLabelColor", "SMESH", QColor( 255, 255, 255 ) );
+  aTColor = mgr->colorValue( "SMESH", "ScalarBarLabelColor", QColor( 255, 255, 255 ) );
   aScalarBarLabelProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
 
   aScalarBarLabelProp->SetFontFamilyToArial();
-  if( mgr->hasValue( "ScalarBarLabelFont", "SMESH" ) )
+  if( mgr->hasValue( "SMESH", "ScalarBarLabelFont" ) )
   {
-    QString str = mgr->stringValue( "ScalarBarLabelFont", "SMESH" );
+    QString str = mgr->stringValue( "SMESH", "ScalarBarLabelFont" );
     if( str == "Arial" )
       aScalarBarLabelProp->SetFontFamilyToArial();
     else if( str == "Courier" )
@@ -344,17 +333,17 @@ SMESH_ActorDef::SMESH_ActorDef()
       aScalarBarLabelProp->SetFontFamilyToTimes();
   }
 
-  if( mgr->stringValue( "ScalarBarLabelBold", "SMESH" ) == "true" )
+  if ( mgr->booleanValue( "SMESH", "ScalarBarLabelBold" ) )
     aScalarBarLabelProp->BoldOn();
   else
     aScalarBarLabelProp->BoldOff();
 
-  if ( mgr->stringValue( "ScalarBarLabelItalic", "SMESH" ) == "true" )
+  if ( mgr->booleanValue( "SMESH", "ScalarBarLabelItalic" ) )
     aScalarBarLabelProp->ItalicOn();
   else
     aScalarBarLabelProp->ItalicOff();
 
-  if( mgr->stringValue( "ScalarBarLabelShadow", "SMESH" ) == "true" )
+  if( mgr->booleanValue( "SMESH", "ScalarBarLabelShadow" ) )
     aScalarBarLabelProp->ShadowOn();
   else
     aScalarBarLabelProp->ShadowOff();
@@ -362,37 +351,37 @@ SMESH_ActorDef::SMESH_ActorDef()
   myScalarBarActor->SetLabelTextProperty( aScalarBarLabelProp );
   aScalarBarLabelProp->Delete();
 
-  if( mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" )
+  if( mgr->stringValue( "SMESH", "ScalarBarOrientation" ) == "Horizontal" )
     myScalarBarActor->SetOrientationToHorizontal();
   else
     myScalarBarActor->SetOrientationToVertical();
 
-  float aXVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.20 : 0.01;
-  if( mgr->hasValue( "ScalarBarXPosition", "SMESH" ) )
-    aXVal = mgr->doubleValue( "ScalarBarXPosition", "SMESH", aXVal );
-  float aYVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.01 : 0.1;
-  if( mgr->hasValue( "ScalarBarYPosition", "SMESH" ) )
-    aYVal = mgr->doubleValue( "ScalarBarYPosition", "SMESH", aYVal );
+  float aXVal = mgr->stringValue( "SMESH", "ScalarBarOrientation" ) == "Horizontal" ? 0.20 : 0.01;
+  if( mgr->hasValue( "SMESH", "ScalarBarXPosition" ) )
+    aXVal = mgr->doubleValue( "SMESH", "ScalarBarXPosition", aXVal );
+  float aYVal = mgr->stringValue( "SMESH", "ScalarBarOrientation" ) == "Horizontal" ? 0.01 : 0.1;
+  if( mgr->hasValue( "SMESH", "ScalarBarYPosition" ) )
+    aYVal = mgr->doubleValue( "SMESH", "ScalarBarYPosition", aYVal );
   myScalarBarActor->SetPosition( aXVal, aYVal );
 
-  float aWVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.60 : 0.10;
-  if( mgr->hasValue( "ScalarBarWidth", "SMESH" ) )
-    aWVal = mgr->doubleValue( "ScalarBarWidth", "SMESH", aWVal );
+  float aWVal = mgr->stringValue( "SMESH", "ScalarBarOrientation" ) == "Horizontal" ? 0.60 : 0.10;
+  if( mgr->hasValue( "SMESH", "ScalarBarWidth" ) )
+    aWVal = mgr->doubleValue( "SMESH", "ScalarBarWidth", aWVal );
   myScalarBarActor->SetWidth( aWVal );
 
-  float aHVal = mgr->stringValue( "ScalarBarOrientation", "SMESH" ) == "Horizontal" ? 0.12 : 0.80;
-  if( mgr->hasValue( "ScalarBarHeight", "SMESH" ) )
-    aHVal = mgr->doubleValue( "ScalarBarHeight", "SMESH", aHVal );
+  float aHVal = mgr->stringValue( "SMESH", "ScalarBarOrientation" ) == "Horizontal" ? 0.12 : 0.80;
+  if( mgr->hasValue( "SMESH", "ScalarBarHeight" ) )
+    aHVal = mgr->doubleValue( "SMESH", "ScalarBarHeight", aHVal );
   myScalarBarActor->SetHeight( aHVal );
 
   int anIntVal = 5;
-  if( mgr->hasValue( "ScalarBarNbOfLabels", "SMESH" ) )
-    anIntVal = mgr->integerValue( "ScalarBarNbOfLabels", "SMESH", anIntVal );
+  if( mgr->hasValue( "SMESH", "ScalarBarNbOfLabels" ) )
+    anIntVal = mgr->integerValue( "SMESH", "ScalarBarNbOfLabels", anIntVal );
   myScalarBarActor->SetNumberOfLabels( anIntVal == 0 ? 5: anIntVal );
 
   anIntVal = 64;
-  if( mgr->hasValue( "ScalarBarNbOfColors", "SMESH" ) )
-    anIntVal = mgr->integerValue( "ScalarBarNbOfColors", "SMESH", anIntVal );
+  if( mgr->hasValue( "SMESH", "ScalarBarNbOfColors" ) )
+    anIntVal = mgr->integerValue( "SMESH", "ScalarBarNbOfColors", anIntVal );
   myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
 
 
@@ -625,7 +614,7 @@ SetControlMode(eControl theMode,
     return;
 
   myControlMode = eNone;
-  theCheckEntityMode &= mgr->stringValue( "DispayEntity", "SMESH" ) == "true";
+  theCheckEntityMode &= mgr->booleanValue( "SMESH", "display_entity", false );
 
   my1DActor->GetMapper()->SetScalarVisibility(false);
   my2DActor->GetMapper()->SetScalarVisibility(false);

@@ -435,15 +435,15 @@ namespace SMESH{
       return;
     }
 
-    QColor aHiColor = mgr->colorValue( "SMESH", "SettingsSelectColor", Qt::white ),
-           aSelColor = mgr->colorValue( "SMESH", "SettingsItemSelectColor", Qt::yellow ),
-	   aPreColor = mgr->colorValue( "SMESH", "SettingsPreSelectColor", Qt::cyan );
+    QColor aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
+           aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
+	   aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
-    int SW = mgr->integerValue( "SMESH", "SettingsItemSelectWidth", 5 ),
-        PW = mgr->integerValue( "SMESH", "SettingsPreSelectWidth", 5 );
+    int SW = mgr->integerValue( "SMESH", "selection_width", 5 ),
+        PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
 
-    double SP1 = mgr->doubleValue( "SMESH", "SettingsNodeSelectTol", 0.025 ),
-           SP2 = mgr->doubleValue( "SMESH", "SettingsElementsSelectTol", 0.001 );
+    double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
+           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 );
 
     for ( int i=0, n=views.count(); i<n; i++ ) {
         SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] );

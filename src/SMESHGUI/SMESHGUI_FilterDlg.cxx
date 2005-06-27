@@ -2192,13 +2192,8 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
   long aPrecision = -1;
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
 
-  if (mgr && mgr->hasValue("SMESH", "ControlsPrecision")) {
-    QString aStr = mgr->stringValue("SMESH", "ControlsPrecision");
-    bool isOk = false;
-    int aVal = aStr.toInt(&isOk);
-    if (isOk)
-      aPrecision = aVal;
-  }
+  if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
+    aPrecision = mgr->integerValue( "SMESH", "controls_precision", aPrecision );
 
   for (CORBA::ULong i = 0; i < n; i++) {
     SMESH::Filter::Criterion aCriterion = createCriterion();

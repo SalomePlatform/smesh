@@ -178,15 +178,13 @@ namespace SMESH {
       aProp->SetRepresentationToPoints();
 
       float anRGB[3];
-      anRGB[0] = GetFloat("SMESH:SettingsNodeColorRed",0)/255.;
-      anRGB[1] = GetFloat("SMESH:SettingsNodeColorGreen",255)/255.;
-      anRGB[2] = GetFloat("SMESH:SettingsNodeColorBlue",0)/255.;
-      aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
+      GetColor( "SMESH", "node_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 0 ) );
+      aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
-      float aPointSize = GetFloat("SMESH:SettingsNodesSize",3);
-      aProp->SetPointSize(aPointSize);
+      float aPointSize = GetFloat( "SMESH:node_size", 3 );
+      aProp->SetPointSize( aPointSize );
 
-      myPreviewActor->SetProperty(aProp);
+      myPreviewActor->SetProperty( aProp );
       aProp->Delete();
 
       myViewWindow->AddActor(myPreviewActor);

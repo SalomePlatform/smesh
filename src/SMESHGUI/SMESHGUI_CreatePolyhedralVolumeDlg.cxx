@@ -112,19 +112,15 @@ class TPolySimulation{
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper( myMapper );
 
-      vtkProperty* aProp = vtkProperty::New();
       float anRGB[3];
-      anRGB[0] = GetFloat("SMESH:SettingsFillColorRed", 0)/255.;
-      anRGB[1] = GetFloat("SMESH:SettingsFillColorGreen", 170)/255.;
-      anRGB[2] = GetFloat("SMESH:SettingsFillColorBlue", 255)/255.;
+      vtkProperty* aProp = vtkProperty::New();
+      GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
       aProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
       myPreviewActor->SetProperty( aProp );
       aProp->Delete();
 
       vtkProperty* aBackProp = vtkProperty::New();
-      anRGB[0] = GetFloat("SMESH:SettingsBackFaceColorRed", 0)/255.;
-      anRGB[1] = GetFloat("SMESH:SettingsBackFaceColorGreen", 0)/255.;
-      anRGB[2] = GetFloat("SMESH:SettingsBackFaceColorBlue", 255)/255.;
+      GetColor( "SMESH", "backface_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 0, 255 ) );
       aBackProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
       myPreviewActor->SetBackfaceProperty( aBackProp );
       aBackProp->Delete();
