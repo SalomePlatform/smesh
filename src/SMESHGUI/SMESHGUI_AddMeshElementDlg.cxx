@@ -644,6 +644,7 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
     }
 
     mySimulation->SetPosition(myActor,aType,anIds);
+    SMESH::UpdateView();
   }
 }
 

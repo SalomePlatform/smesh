@@ -303,8 +303,10 @@ namespace SMESH{
 
   void RepaintCurrentView(){
     if(SVTK_ViewWindow* wnd = GetCurrentVtkView() )
-      wnd->getRenderer()->Render();
-      //wnd->Repaint();
+      {
+	wnd->getRenderer()->Render();
+	wnd->Repaint(false);
+      }
   }
 
   void UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
