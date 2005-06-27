@@ -516,6 +516,8 @@ void SMESHGUI_MeshPatternDlg::onSelectionDone()
     } else if (mySelInput == Ids) {
       SALOME_ListIO aList;
       mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
+      if (aList.Extent() != 1)
+	return;
 
       QString anIds;
       if (!SMESH::GetNameOfSelectedElements(mySelector, aList.First(), anIds))
