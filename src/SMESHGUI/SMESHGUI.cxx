@@ -3053,7 +3053,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Display / Erase
   //-------------------------------------------------
   aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
-  QString aRule = aClient + " and " + aType + " and " + aSelCount;
+  QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
+  QString aRule = aClient + " and " + aType + " and " + aSelCount + " and " + anActiveVTK;
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
   popupMgr()->setRule( action( 301 ), aRule + "&&" + isNotEmpty + "&&" + isInvisible, true);
 
