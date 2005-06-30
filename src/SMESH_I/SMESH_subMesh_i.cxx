@@ -36,6 +36,10 @@ using namespace std;
 #include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
+#include <BRepTools.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Iterator.hxx>
+
 //=============================================================================
 /*!
  *  
@@ -80,6 +84,73 @@ SMESH_subMesh_i::~SMESH_subMesh_i()
   // ****
 }
 
+//=======================================================================
+//function : getSubMeshes
+//purpose  : for a submesh on shape to which elements are not bound directly,
+//           return submeshes containing elements
+//=======================================================================
+
+typedef list<SMESHDS_SubMesh*> TListOfSubMeshes;
+
+bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
+                  TListOfSubMeshes& theSubMeshList)
+{
+  int size = theSubMeshList.size();
+
+  SMESH_Mesh*      aMesh      = theSubMesh->GetFather();
+  SMESHDS_Mesh*    aMeshDS    = aMesh->GetMeshDS();
+  SMESHDS_SubMesh* aSubMeshDS = theSubMesh->GetSubMeshDS();
+
+  // nodes can be bound to either vertex, edge, face or solid_or_shell
+  TopoDS_Shape aShape = theSubMesh->GetSubShape();
+  switch ( aShape.ShapeType() )
+  {
+  case TopAbs_SOLID: {
+    // add submesh of solid itself
+    aSubMeshDS = aMeshDS->MeshElements( aShape );
+    if ( aSubMeshDS )
+      theSubMeshList.push_back( aSubMeshDS );
+    // and of the first shell
+    TopExp_Explorer exp( aShape, TopAbs_SHELL );
+    if ( exp.More() ) {
+      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
+      if ( aSubMeshDS )
+        theSubMeshList.push_back( aSubMeshDS );
+    }
+    break;
+  }
+  case TopAbs_WIRE:
+  case TopAbs_COMPOUND:
+  case TopAbs_COMPSOLID: {
+    // call getSubMeshes() for sub-shapes
+    list<TopoDS_Shape> shapeList;
+    shapeList.push_back( aShape );
+    list<TopoDS_Shape>::iterator sh = shapeList.begin();
+    for ( ; sh != shapeList.end(); ++sh ) {
+      for ( TopoDS_Iterator it( *sh ); it.More(); it.Next() ) {
+        ::SMESH_subMesh* aSubMesh = aMesh->GetSubMeshContaining( it.Value() );
+        if ( aSubMesh )
+          getSubMeshes( aSubMesh, theSubMeshList );
+        else
+          // no submesh for a compound inside compound
+          shapeList.push_back( it.Value() );
+      }
+    }
+    // return only unique submeshes
+    set<SMESHDS_SubMesh*> smSet;
+    TListOfSubMeshes::iterator sm = theSubMeshList.begin();
+    while ( sm != theSubMeshList.end() ) {
+      if ( !smSet.insert( *sm ).second )
+        sm = theSubMeshList.erase( sm );
+      else
+        ++sm;
+    }
+    break;
+  }
+  }
+  return size < theSubMeshList.size();
+}
+
 //=============================================================================
 /*!
  *  
@@ -100,16 +171,12 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
   int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
 
   // volumes are bound to shell
-  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  TListOfSubMeshes smList;
+  if ( nbElems == 0 && getSubMeshes( aSubMesh, smList ))
   {
-    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
-    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
-    for ( ; exp.More(); exp.Next() )
-    {
-      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
-      if ( aSubMeshDS )
-        nbElems += aSubMeshDS->NbElements();
-    }
+    TListOfSubMeshes::iterator sm = smList.begin();
+    for ( ; sm != smList.end(); ++sm )
+      nbElems += (*sm)->NbElements();
   }
   return nbElems;
 }
@@ -133,22 +200,19 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
 
   set<int> nodeIds;
 
-  // node are bound to shell instead of solid
-  if ( all && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  // nodes are bound to shell instead of solid
+  TListOfSubMeshes smList;
+  if ( all && getSubMeshes( aSubMesh, smList ))
   {
-    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
-    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
-    for ( ; exp.More(); exp.Next() )
+    TListOfSubMeshes::iterator sm = smList.begin();
+    for ( ; sm != smList.end(); ++sm )
     {
-      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
-      if ( aSubMeshDS ) {
-        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-        while ( eIt->more() ) {
-          const SMDS_MeshElement* anElem = eIt->next();
-          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
-          while ( nIt->more() )
-            nodeIds.insert( nIt->next()->GetID() );
-        }
+      SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
+      while ( eIt->more() ) {
+        const SMDS_MeshElement* anElem = eIt->next();
+        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        while ( nIt->more() )
+          nodeIds.insert( nIt->next()->GetID() );
       }
     }
     return nodeIds.size();
@@ -191,33 +255,25 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
 
   int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
-  list<SMESHDS_SubMesh*> smList;
+  TListOfSubMeshes smList;
   if ( nbElems )
     smList.push_back( aSubMeshDS );
 
   // volumes are bound to shell
-  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  if ( nbElems == 0 && getSubMeshes( aSubMesh, smList ))
   {
-    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
-    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
-    for ( ; exp.More(); exp.Next() )
-    {
-      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
-      if ( aSubMeshDS ) {
-        smList.push_back( aSubMeshDS );
-        nbElems += aSubMeshDS->NbElements();
-      }
-    }
+    TListOfSubMeshes::iterator sm = smList.begin();
+    for ( ; sm != smList.end(); ++sm )
+      nbElems += (*sm)->NbElements();
   }
 
+  aResult->length( nbElems );
   if ( nbElems )
   {
-    aResult->length( nbElems );
-    list<SMESHDS_SubMesh*>::iterator sm = smList.begin();
+    TListOfSubMeshes::iterator sm = smList.begin();
     for ( int i = 0; sm != smList.end(); sm++ )
     {
-      aSubMeshDS = *sm;
-      SMDS_ElemIteratorPtr anIt = aSubMeshDS->GetElements();
+      SMDS_ElemIteratorPtr anIt = (*sm)->GetElements();
       for ( int n = aSubMeshDS->NbElements(); i < n && anIt->more(); i++ )
         aResult[i] = anIt->next()->GetID();
     }
@@ -250,18 +306,15 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
 
   // volumes may be bound to shell instead of solid
-  list< SMESHDS_SubMesh* > smList;
-  if ( nbElems == 0 && aSubMesh->GetSubShape().ShapeType() <= TopAbs_SOLID )
+  TListOfSubMeshes smList;
+  if ( nbElems == 0 && getSubMeshes( aSubMesh, smList ))
   {
-    SMESHDS_Mesh* aMeshDS = aSubMesh->GetFather()->GetMeshDS();
-    TopExp_Explorer exp( aSubMesh->GetSubShape(), TopAbs_SHELL );
-    for ( ; exp.More(); exp.Next() )
+    TListOfSubMeshes::iterator sm = smList.begin();
+    for ( ; sm != smList.end(); ++sm )
     {
-      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
-      if ( !aSubMeshDS ) continue;
       if ( theElemType == SMESH::NODE )
       {
-        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+        SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
         while ( eIt->more() ) {
           const SMDS_MeshElement* anElem = eIt->next();
           SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
@@ -271,8 +324,7 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
       }
       else
       {
-        smList.push_back( aSubMeshDS );
-        nbElems += aSubMeshDS->NbElements();
+        nbElems += (*sm)->NbElements();
       }
     }
     aSubMeshDS = 0;
@@ -308,7 +360,7 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   }
 
   if ( theElemType != SMESH::NODE ) {
-    list<SMESHDS_SubMesh*>::iterator sm = smList.begin();
+    TListOfSubMeshes::iterator sm = smList.begin();
     for ( i = 0; sm != smList.end(); sm++ )
     {
       aSubMeshDS = *sm;
