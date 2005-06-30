@@ -29,6 +29,9 @@ msgstr "Number of Segments"
 msgid "SMESH_NB_SEGMENTS_PARAM"
 msgstr "Number of Segments"
 
+msgid "SMESH_NB_SEGMENTS_SCALE_PARAM"
+msgstr "Scale Factor"
+
 msgid "SMESH_NB_SEGMENTS_TITLE"
 msgstr "Hypothesis Construction"
 

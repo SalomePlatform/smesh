@@ -32,8 +32,13 @@
 
 using namespace std;
 
-#define COORD_MAX_2 (COORD_MAX*COORD_MAX)
-#define COORD_MAX_3 (COORD_MAX*COORD_MAX*COORD_MAX)
+#define VALUE_MAX COORD_MAX
+#define VALUE_MAX_2 (VALUE_MAX*VALUE_MAX)
+#define VALUE_MAX_3 (VALUE_MAX*VALUE_MAX*VALUE_MAX)
+
+#define VALUE_SMALL   1.0e-15
+#define VALUE_SMALL_2 (VALUE_SMALL*VALUE_SMALL)
+#define VALUE_SMALL_3 (VALUE_SMALL*VALUE_SMALL*VALUE_SMALL)
 
 //=======================================================================
 //function : HasParameters
@@ -105,49 +110,52 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
   {
     paramList.push_back( DOUBLE_PARAM (1.0,
                                        QObject::tr("SMESH_LOCAL_LENGTH_PARAM"),
-                                       1E-3, COORD_MAX, 1.0, 6));
+                                       VALUE_SMALL, VALUE_MAX, 1.0, 6));
   }
   else if (hypType.compare("NumberOfSegments") == 0)
   {
     paramList.push_back ( INT_PARAM (3,
                                      QObject::tr("SMESH_NB_SEGMENTS_PARAM"),
                                      1, 9999 ));
+    paramList.push_back ( DOUBLE_PARAM (1.0,
+                                     QObject::tr("SMESH_NB_SEGMENTS_SCALE_PARAM"),
+                                     VALUE_SMALL, VALUE_MAX, 0.1, 6 ));
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                       QObject::tr("SMESH_START_LENGTH_PARAM"), 
-                                      1E-3, COORD_MAX, 1, 6));
+                                      VALUE_SMALL, VALUE_MAX, 1, 6));
     paramList.push_back( DOUBLE_PARAM ( 10.0,
                                        QObject::tr("SMESH_END_LENGTH_PARAM"),
-                                       1E-3, COORD_MAX, 1, 6));
+                                       VALUE_SMALL, VALUE_MAX, 1, 6));
   }
   else if (hypType.compare("MaxElementArea") == 0)
   {
     paramList.push_back( DOUBLE_PARAM (1.0,
                                        QObject::tr("SMESH_MAX_ELEMENT_AREA_PARAM"), 
-                                       1.E-6, COORD_MAX_2, 1.0, 6));
+                                       VALUE_SMALL_2, VALUE_MAX_2, 1.0, 6));
   }
   else if (hypType.compare("MaxElementVolume") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                        QObject::tr("SMESH_MAX_ELEMENT_VOLUME_PARAM"), 
-                                       1.E-9, COORD_MAX_3, 1.0, 6));
+                                       VALUE_SMALL_3, VALUE_MAX_3, 1.0, 6));
   }
   else if (hypType.compare("StartEndLength") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                       QObject::tr("SMESH_START_LENGTH_PARAM"), 
-                                      1.0E-3, COORD_MAX, 1, 6));
+                                      VALUE_SMALL, VALUE_MAX, 1, 6));
     paramList.push_back( DOUBLE_PARAM ( 10.0,
                                        QObject::tr("SMESH_END_LENGTH_PARAM"),
-                                       1.0E-3, COORD_MAX, 1, 6));
+                                       VALUE_SMALL, VALUE_MAX, 1, 6));
   }
   else if (hypType.compare("Deflection1D") == 0)
   {
     paramList.push_back( DOUBLE_PARAM ( 1.0,
                                        QObject::tr("SMESH_DEFLECTION1D_PARAM"), 
-                                       1.0E-3, COORD_MAX, 1, 6));
+                                       VALUE_SMALL, VALUE_MAX, 1, 6));
   }
 }
   
@@ -180,6 +188,7 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr    the
     StdMeshers::StdMeshers_NumberOfSegments_var NOS =
       StdMeshers::StdMeshers_NumberOfSegments::_narrow(theHyp);
     SetInitValue( paramList.front(), (int) NOS->GetNumberOfSegments());
+    SetInitValue( paramList.back(), NOS->GetScaleFactor());
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
@@ -241,7 +250,7 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr       
     else {
       int aIntValue = 0;
       (*paramIt)->GetNewInt(aIntValue);
-      params += QString::number(aIntValue);;
+      params += QString::number(aIntValue);
     }
   }
 }
@@ -273,8 +282,11 @@ bool StdMeshersGUI_Parameters::SetParameters(SMESH::SMESH_Hypothesis_ptr        
     StdMeshers::StdMeshers_NumberOfSegments_var NOS =
       StdMeshers::StdMeshers_NumberOfSegments::_narrow(theHyp);
     int NbSeg = NOS->GetNumberOfSegments();
+    double Scale = NOS->GetScaleFactor() ;
     modified = paramList.front()->GetNewInt( NbSeg );
+    modified = paramList.back()->GetNewDouble( Scale ) || modified;
     NOS->SetNumberOfSegments(NbSeg);
+    NOS->SetScaleFactor( Scale );
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
