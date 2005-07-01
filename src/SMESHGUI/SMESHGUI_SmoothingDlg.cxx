@@ -89,9 +89,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule, const char* n
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_SMOOTHING")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -253,6 +251,8 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule, const char* n
   GroupArguments->show();
   myConstructorId = 0;
   Constructor1->setChecked(TRUE);
+  
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   mySMESHGUI->SetActiveDialogBox(this);
 
@@ -424,7 +424,8 @@ void SMESHGUI_SmoothingDlg::ClickOnCancel()
   mySelectionMgr->clearSelected();
   SMESH::SetPickable(); // ???
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   reject();
 }
@@ -470,7 +471,8 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
 	myNbOkElements++;
       }
       mySelector->AddOrRemoveIndex(anIO, newIndices, false);
-      myViewWindow->highlight( anIO, true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( anIO, true, true );
       myElementsId = theNewText;
 
     } else if (send == LineEditNodes) {
@@ -483,7 +485,8 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
 	myNbOkNodes++;
       }
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-      myViewWindow->highlight( myActor->getIO(), true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( myActor->getIO(), true, true );
     }
   }
 
@@ -633,12 +636,14 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
           mySelectionMgr->setSelectionModes(ActorSelection);
           mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
         } else {
-          myViewWindow->SetSelectionMode(CellSelection);
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(CellSelection);
 	}
       }	else if (send == SelectNodesButton) {
         myEditCurrentArgument = LineEditNodes;
         SMESH::SetPointRepresentation(true);
-        myViewWindow->SetSelectionMode(NodeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(NodeSelection);
       }
 
       myEditCurrentArgument->setFocus();
@@ -677,7 +682,8 @@ void SMESHGUI_SmoothingDlg::ActivateThisDialog()
   GroupButtons->setEnabled(true);
 
   mySMESHGUI->SetActiveDialogBox(this);
-  myViewWindow->SetSelectionMode(CellSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(CellSelection);
   SelectionIntoArgument();
 }
 
@@ -735,7 +741,8 @@ void SMESHGUI_SmoothingDlg::onSelectMesh (bool toSelectMesh)
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
-    myViewWindow->SetSelectionMode(CellSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(CellSelection);
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());
   }

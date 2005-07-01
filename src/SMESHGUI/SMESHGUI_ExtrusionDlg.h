@@ -80,7 +80,6 @@ private:
   QLineEdit*                    myEditCurrentArgument; /* Current  LineEdit */
   QString                       myElementsId;
   int                           myNbOkElements;        /* to check when elements are defined */
-  SVTK_ViewWindow*              myViewWindow;
   SVTK_Selector*                mySelector;
 
   bool                          myBusy;

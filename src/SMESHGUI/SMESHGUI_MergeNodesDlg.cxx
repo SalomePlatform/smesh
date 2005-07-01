@@ -79,9 +79,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_MERGE_NODES")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
@@ -247,6 +245,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
 
   myActor = 0;
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   myMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
@@ -356,7 +356,8 @@ void SMESHGUI_MergeNodesDlg::ClickOnCancel()
   mySelectionMgr->clearFilters();
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
@@ -388,7 +389,8 @@ void SMESHGUI_MergeNodesDlg::updateControls()
 {
   if (ListCoincident->childCount() < 1) {
     SMESH::SetPointRepresentation(false);
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     return;
   }
 
@@ -476,7 +478,8 @@ void SMESHGUI_MergeNodesDlg::onSelectNodesGroup()
   mySelectionMgr->setSelectedObjects(aList, false);
 
   SMESH::SetPointRepresentation(true);
-  myViewWindow->SetSelectionMode(NodeSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(NodeSelection);
 
   ListEdit->selectAll(true);
 }
@@ -590,7 +593,8 @@ void SMESHGUI_MergeNodesDlg::SetEditCurrentArgument()
   if (send == SelectMeshButton) {
     myEditCurrentArgument = (QWidget*)LineEditMesh;
     SMESH::SetPointRepresentation(false);
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshFilter);
   }
 

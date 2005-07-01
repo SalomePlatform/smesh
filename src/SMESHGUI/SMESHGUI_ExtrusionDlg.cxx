@@ -88,9 +88,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
      : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_ExtrusionDlg", modal, WStyle_Customize |
                 WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
@@ -324,14 +322,20 @@ void SMESHGUI_ExtrusionDlg::ConstructorsClicked (int constructorId)
     {
       GroupArguments->setTitle(tr("EXTRUSION_1D"));
       if (!CheckBoxMesh->isChecked())
-        myViewWindow->SetSelectionMode(EdgeSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(EdgeSelection);
+	}
       break;
     }
   case 1:
     {
       GroupArguments->setTitle(tr("EXTRUSION_2D"));
       if (!CheckBoxMesh->isChecked())
-        myViewWindow->SetSelectionMode(FaceSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(FaceSelection);
+	}
       break;
     }
   }
@@ -407,7 +411,8 @@ void SMESHGUI_ExtrusionDlg::ClickOnCancel()
   mySelectionMgr->clearSelected();
   SMESH::SetPickable(); // ???
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   reject();
 }
@@ -450,7 +455,8 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
 	myNbOkElements++;
       }
       mySelector->AddOrRemoveIndex(anIO, newIndices, false);
-      myViewWindow->highlight( anIO, true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( anIO, true, true );
       myElementsId = theNewText;
     }
   }
@@ -608,14 +614,21 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
   if (send == SelectElementsButton) {
     myEditCurrentArgument = LineEditElements;
     if (CheckBoxMesh->isChecked()) {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
       if (aConstructorId == 0)
-        myViewWindow->SetSelectionMode(EdgeSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(EdgeSelection);
+	}
       else if (aConstructorId == 1)
-        myViewWindow->SetSelectionMode(FaceSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(FaceSelection);
+	}
     }
   }
 
@@ -706,15 +719,22 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
   mySelectionMgr->clearFilters();
 
   if (toSelectMesh) {
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
     int aConstructorId = GetConstructorId();
     if (aConstructorId == 0)
-      myViewWindow->SetSelectionMode(EdgeSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(EdgeSelection);
+      }
     else if (aConstructorId == 0)
-      myViewWindow->SetSelectionMode(FaceSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(FaceSelection);
+      }
 
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());

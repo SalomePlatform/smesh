@@ -89,8 +89,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
                 WStyle_Title | WStyle_SysMenu | WDestructiveClose),
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() ),
      myIsBusy( false ),
      myActor( 0 )
 {
@@ -104,6 +102,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myGeomGroupBtn->setEnabled(false);
     myGeomGroupLine->setEnabled(false);
   }
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
@@ -121,8 +121,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
                 WStyle_Title | WStyle_SysMenu | WDestructiveClose),
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() ),
      myIsBusy( false )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
@@ -133,6 +131,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     mySelectSubMesh->setEnabled(false);
     mySelectGroup->setEnabled(false);
   }
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
@@ -543,19 +543,24 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
           myActor->SetPointRepresentation(true);
         else
           SMESH::SetPointRepresentation(true);
-	myViewWindow->SetSelectionMode(NodeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(NodeSelection);
 	break;
       case 1:
-	myViewWindow->SetSelectionMode(EdgeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(EdgeSelection);
 	break;
       case 2:
-	myViewWindow->SetSelectionMode(FaceSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(FaceSelection);
 	break;
       default:
-        myViewWindow->SetSelectionMode(VolumeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(VolumeSelection);
       }
     } else {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       if (theMode == 4)
 	mySelectionMgr->installFilter(mySubMeshFilter);
       else if (theMode == 5)
@@ -707,7 +712,8 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
     SALOME_ListIO aList;
     aList.Append(myActor->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
-    myViewWindow->highlight( myActor->getIO(), true, true );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->highlight( myActor->getIO(), true, true );
   }
   myIsBusy = false;
 }
@@ -1392,7 +1398,8 @@ void SMESHGUI_GroupDlg::onClose()
   }
 
   mySelectionMgr->clearSelected();
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
 

@@ -88,7 +88,6 @@ private:
 
   SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
   SalomeApp_SelectionMgr*       mySelectionMgr;        /* User shape selection */
-  SVTK_ViewWindow*              myViewWindow;
   SVTK_Selector*                mySelector;
 
   QWidget*                      myEditCurrentArgument; /* Current  argument */

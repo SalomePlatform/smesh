@@ -216,14 +216,13 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>
     (SUIT_Session::session()->activeApplication());
   myIsPoly = false;
   mySimulation = new SMESH::TElementSimulation (anApp);
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   // verify nb nodes and type
   myNbNodes = nbNodes;
@@ -420,7 +419,8 @@ void SMESHGUI_AddMeshElementDlg::Init()
   // set selection mode
   SMESH::SetPointRepresentation(true);
 
-  myViewWindow->SetSelectionMode( NodeSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( NodeSelection );
 
   myBusy = false;
 
@@ -491,7 +491,8 @@ void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
   mySelectionMgr->clearSelected();
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode( ActorSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( ActorSelection );
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
@@ -532,7 +533,8 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     }
     
     mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
-    myViewWindow->highlight( myActor->getIO(), true, true );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->highlight( myActor->getIO(), true, true );
     
     bool aNodesOK = false;
     if (myIsPoly && myElementType == SMDSAbs_Face && aListId.count() >=3 ){
@@ -693,7 +695,8 @@ void SMESHGUI_AddMeshElementDlg::ActivateThisDialog()
 
   SMESH::SetPointRepresentation(true);
 
-  myViewWindow->SetSelectionMode( NodeSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( NodeSelection );
   SelectionIntoArgument();
 }
 

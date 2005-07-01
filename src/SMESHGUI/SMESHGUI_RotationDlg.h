@@ -83,7 +83,6 @@ private:
     SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
     int                           myNbOkElements;          /* to check when elements are defined */
     QString                       myElementsId;
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
 
     QWidget*                      myEditCurrentArgument;   /* Current  LineEdit */

@@ -93,9 +93,7 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 	  theName, 
 	  false,
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
-  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-  myViewWindow(SMESH::GetViewWindow(theModule)),
   mySMESHGUI(theModule)
 {
   myPreviewActor = 0;
@@ -112,6 +110,8 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
   aDlgLay->addWidget(aBtnFrame);
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   Init();
 }
@@ -230,7 +230,8 @@ void SMESHGUI_MoveNodesDlg::Init()
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
-  myViewWindow->SetSelectionMode(NodeSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(NodeSelection);
 
   onSelectionDone();
 }
@@ -323,7 +324,8 @@ void SMESHGUI_MoveNodesDlg::onClose()
 {
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -356,7 +358,8 @@ void SMESHGUI_MoveNodesDlg::onTextChange (const QString& theNewText)
 	TColStd_MapOfInteger aListInd;
 	aListInd.Add(anElem->GetID());
 	mySelector->AddOrRemoveIndex(anIO,aListInd, false);
-	myViewWindow->highlight(anIO,true,true);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->highlight(anIO,true,true);
 	
 	onSelectionDone();
       }
@@ -423,7 +426,8 @@ void SMESHGUI_MoveNodesDlg::enterEvent (QEvent*)
 
     // set selection mode
     SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
 
     redisplayPreview();
 
@@ -438,7 +442,8 @@ void SMESHGUI_MoveNodesDlg::enterEvent (QEvent*)
 void SMESHGUI_MoveNodesDlg::closeEvent (QCloseEvent*)
 {
   onClose();
-  myViewWindow->Repaint();
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->Repaint();
 }
 
 //=======================================================================
@@ -471,10 +476,13 @@ void  SMESHGUI_MoveNodesDlg::erasePreview()
   if (myPreviewActor == 0)
     return;
 
-  myViewWindow->RemoveActor(myPreviewActor);
+  SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  if (aViewWindow)
+    aViewWindow->RemoveActor(myPreviewActor);
   myPreviewActor->Delete();
   myPreviewActor = 0;
-  myViewWindow->Repaint();
+  if (aViewWindow)
+    aViewWindow->Repaint();
 }
 
 //=======================================================================
@@ -548,6 +556,9 @@ void SMESHGUI_MoveNodesDlg::redisplayPreview()
   myPreviewActor->SetProperty(aProp);
   aProp->Delete();
 
-  myViewWindow->AddActor(myPreviewActor);
-  myViewWindow->Repaint();
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->AddActor(myPreviewActor);
+      aViewWindow->Repaint();
+    }
 }

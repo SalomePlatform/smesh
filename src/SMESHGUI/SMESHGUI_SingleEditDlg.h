@@ -89,7 +89,6 @@ protected:
   SMESH_Actor*            myActor;
 
   SalomeApp_SelectionMgr* mySelectionMgr;
-  SVTK_ViewWindow*        myViewWindow;
   SVTK_Selector*          mySelector;
   SMESHGUI*               mySMESHGUI;
 };

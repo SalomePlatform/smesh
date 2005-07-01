@@ -88,9 +88,7 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
      : QDialog( SMESH::GetDesktop( theModule ), theName, false,
                 WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   setCaption(tr("CAPTION"));
 
@@ -103,6 +101,9 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
   aDlgLay->addWidget(aBtnFrame);
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
+
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    mySelector = aViewWindow->GetSelector();
 
   Init(theType);
 }
@@ -386,7 +387,8 @@ void SMESHGUI_CreatePatternDlg::onSave()
                                tr("ERROR_OF_SAVING"), QMessageBox::Ok);
     } else {
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       disconnect(mySelectionMgr, 0, this, 0);
       disconnect(mySMESHGUI, 0, this, 0);
       mySMESHGUI->ResetState();
@@ -435,7 +437,8 @@ void SMESHGUI_CreatePatternDlg::onOk()
       return;
     } else {
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       disconnect(mySelectionMgr, 0, this, 0);
       disconnect(mySMESHGUI, 0, this, 0);
       mySMESHGUI->ResetState();
@@ -454,7 +457,8 @@ void SMESHGUI_CreatePatternDlg::onOk()
 //=======================================================================
 void SMESHGUI_CreatePatternDlg::onClose()
 {
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -682,7 +686,8 @@ void SMESHGUI_CreatePatternDlg::activateSelection()
 {
   mySelectionMgr->clearFilters();
   //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
 
   if (myType == Type_2d) {
     mySelectionMgr->installFilter(new SMESH_NumberFilter

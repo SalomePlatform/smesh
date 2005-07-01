@@ -97,9 +97,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
      : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_ExtrusionAlongPathDlg", modal,
                 WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap edgeImage   ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
@@ -317,6 +315,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   ZSpin->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
   AngleSpin->RangeStepAndValidator(-999999.999, +999999.999, 5.0, 3);
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox(this);
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
@@ -448,13 +448,20 @@ void SMESHGUI_ExtrusionAlongPathDlg::ConstructorsClicked (int type)
 
     SMESH::SetPointRepresentation(false);
     if (MeshCheck->isChecked()) {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myElementsFilter);
     } else {
       if (type == 0)
-        myViewWindow->SetSelectionMode(EdgeSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(EdgeSelection);
+	}
       if (type == 1)
-        myViewWindow->SetSelectionMode(FaceSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(FaceSelection);
+	}
     }
   }
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
@@ -660,7 +667,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::reject()
   mySelectionMgr->clearSelected();
   SMESH::SetPickable(); // ???
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   QDialog::reject();
 }
@@ -713,7 +721,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
 	}
       }
       mySelector->AddOrRemoveIndex(anIO, newIndices, false);
-      myViewWindow->highlight( anIO, true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( anIO, true, true );
     }
   } else if (send == StartPointLineEdit &&
              myEditCurrentArgument == StartPointLineEdit) {
@@ -738,7 +747,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
             TColStd_MapOfInteger newIndices;
 	    newIndices.Add(n->GetID());
 	    mySelector->AddOrRemoveIndex( aPathActor->getIO(), newIndices, false );
-	    myViewWindow->highlight( aPathActor->getIO(), true, true );
+	    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	      aViewWindow->highlight( aPathActor->getIO(), true, true );
 	  }
 	}
       }
@@ -940,24 +950,33 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     myEditCurrentArgument = ElementsLineEdit;
     SMESH::SetPointRepresentation(false);
     if (MeshCheck->isChecked()) {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myElementsFilter);
     } else {
       if (Elements1dRB->isChecked())
-	myViewWindow->SetSelectionMode(EdgeSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(EdgeSelection);
+	}
       else if (Elements2dRB->isChecked())
-	myViewWindow->SetSelectionMode(FaceSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(FaceSelection);
+	}
     }
   } else if (button == SelectPathMeshButton) {
     myEditCurrentArgument = PathMeshLineEdit;
     SMESH::SetPointRepresentation(false);
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myPathMeshFilter);
   }
   else if (button == SelectPathShapeButton) {
     myEditCurrentArgument = PathShapeLineEdit;
     SMESH::SetPointRepresentation(false);
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
 
     if (!myPathMesh->_is_nil()) {
       GEOM::GEOM_Object_var aMainShape = myPathMesh->GetShapeToMesh();
@@ -975,7 +994,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
       SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPathMesh);
       if (aPathActor) {
 	SMESH::SetPointRepresentation(true);
-	myViewWindow->SetSelectionMode(NodeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(NodeSelection);
 	SMESH::SetPickable(aPathActor);
       }
     }
@@ -983,7 +1003,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
   else if (button == SelectBasePointButton) {
     myEditCurrentArgument = XSpin;
     SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
 
     SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(MESHorSUBMESH);
     SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter(GROUP);

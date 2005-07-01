@@ -119,7 +119,6 @@ private:
     int                           myGrpTypeId; /* Current group type id : standalone or group on geometry */
     int                           myTypeId;                /* Current type id = radio button id */
     QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
 
     QPushButton*                  myMeshGroupBtn;

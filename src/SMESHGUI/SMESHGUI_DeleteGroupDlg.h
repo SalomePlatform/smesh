@@ -86,7 +86,6 @@ private:
   QListBox*               myListBox;
 
   SMESHGUI*               mySMESHGUI;
-  SVTK_ViewWindow*        myViewWindow;
   SalomeApp_SelectionMgr* mySelectionMgr;
 
   QValueList<SMESH::SMESH_GroupBase_var> myListGrp;

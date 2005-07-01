@@ -130,7 +130,6 @@ private:
   QCheckBox*               myProjectChk;
 
   SMESHGUI*                mySMESHGUI;
-  SVTK_ViewWindow*         myViewWindow;
   SVTK_Selector*           mySelector;
   SalomeApp_SelectionMgr*  mySelectionMgr;
   int                      myNbPoints;

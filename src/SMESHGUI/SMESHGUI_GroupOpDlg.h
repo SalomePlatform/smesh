@@ -97,7 +97,6 @@ private:
   SMESHGUI*                 mySMESHGUI;
   SalomeApp_SelectionMgr*   mySelectionMgr;
   int                       myMode;
-  SVTK_ViewWindow*          myViewWindow;
   SVTK_Selector*            mySelector;
   
   QLineEdit*                myFocusWg;

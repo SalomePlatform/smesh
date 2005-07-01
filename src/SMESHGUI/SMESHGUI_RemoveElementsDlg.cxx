@@ -82,7 +82,6 @@ SMESHGUI_RemoveElementsDlg
 	    WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-    myViewWindow(SMESH::GetViewWindow(theModule)),
     mySMESHGUI(theModule),
     myBusy(false)
 {
@@ -225,7 +224,8 @@ void SMESHGUI_RemoveElementsDlg::Init()
   this->move(x, y);
   this->show(); /* displays Dialog */
 
-  myViewWindow->SetSelectionMode(CellSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(CellSelection);
 
   SelectionIntoArgument();
 }
@@ -286,7 +286,8 @@ void SMESHGUI_RemoveElementsDlg::ClickOnOk()
 void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
 {
   mySelectionMgr->clearSelected();
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
@@ -324,7 +325,8 @@ void SMESHGUI_RemoveElementsDlg::onTextChange (const QString& theNewText)
       }
       
       mySelector->AddOrRemoveIndex(anIO,newIndices,false);
-      myViewWindow->highlight(anIO,true,true);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight(anIO,true,true);
     }
   }
   
@@ -446,7 +448,8 @@ void SMESHGUI_RemoveElementsDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this); // ??
 
-  myViewWindow->SetSelectionMode(NodeSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument(); // ??
 }

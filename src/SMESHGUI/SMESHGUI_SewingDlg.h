@@ -79,7 +79,6 @@ private:
     SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
     int                           myOk1, myOk2, myOk3, myOk4, myOk5, myOk6;    
     QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
     
     bool                          myBusy;

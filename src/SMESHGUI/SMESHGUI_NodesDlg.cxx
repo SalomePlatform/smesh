@@ -230,10 +230,9 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-  myViewWindow(SMESH::GetViewWindow(theModule)),
   mySMESHGUI(theModule)
 {
-  mySimulation = new SMESH::TNodeSimulation(myViewWindow);
+  mySimulation = new SMESH::TNodeSimulation(SMESH::GetViewWindow( mySMESHGUI ));
 
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_NODE")));
   if (!name)
@@ -382,7 +381,8 @@ void SMESHGUI_NodesDlg::Init ()
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
-  myViewWindow->SetSelectionMode(NodeSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
 }
@@ -468,7 +468,8 @@ bool SMESHGUI_NodesDlg::ClickOnApply()
 void SMESHGUI_NodesDlg::ClickOnCancel()
 {
   disconnect(mySelectionMgr, 0, this, 0);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
 
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(false);
@@ -571,7 +572,8 @@ void SMESHGUI_NodesDlg::ActivateThisDialog()
   GroupButtons->setEnabled(true);
 
   SMESH::SetPointRepresentation(true);
-  myViewWindow->SetSelectionMode(NodeSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
 }

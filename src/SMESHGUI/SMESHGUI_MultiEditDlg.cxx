@@ -111,7 +111,6 @@ SMESHGUI_MultiEditDlg
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-    myViewWindow(SMESH::GetViewWindow(theModule)),
     mySMESHGUI(theModule)
 {
   myFilterDlg = 0;
@@ -372,7 +371,8 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
 //=======================================================================
 void SMESHGUI_MultiEditDlg::onClose()
 {
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -762,7 +762,8 @@ void SMESHGUI_MultiEditDlg::onListSelectionChanged()
   }
 
   mySelector->AddOrRemoveIndex(anActor->getIO(),anIndexes,false);
-  myViewWindow->highlight(anActor->getIO(),true,true);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->highlight(anActor->getIO(),true,true);
 }
 
 //=======================================================================
@@ -833,19 +834,23 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
   mySelectionMgr->clearFilters();
 
   if (mySubmeshChk->isChecked()) {
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(new SMESH_TypeFilter(SUBMESH));
   }
   else if (myGroupChk->isChecked()) {
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
   }
 
   if (entityType()) {
-    myViewWindow->SetSelectionMode(VolumeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(VolumeSelection);
     SMESH::SetFilter(new SMESHGUI_VolumesFilter());
   } else {
-    myViewWindow->SetSelectionMode(FaceSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(FaceSelection);
     if (myFilterType == SMESHGUI_TriaFilter)
       SMESH::SetFilter(new SMESHGUI_TriangleFilter());
     else if (myFilterType == SMESHGUI_QuadFilter)

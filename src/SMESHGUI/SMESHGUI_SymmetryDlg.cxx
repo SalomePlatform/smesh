@@ -82,9 +82,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
       mySMESHGUI( theModule ),
-      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-      myViewWindow( SMESH::GetViewWindow( theModule ) ),
-      mySelector( myViewWindow->GetSelector() )
+      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_POINT")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_SYMMETRY_AXIS")));
@@ -281,6 +279,8 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   // Costruction of the logical filter
@@ -420,7 +420,10 @@ void SMESHGUI_SymmetryDlg::ConstructorsClicked (int constructorId)
   if (myEditCurrentArgument != (QWidget*)LineEditElements) {
     SMESH::SetPointRepresentation(false);
     if (!CheckBoxMesh->isChecked())
-      myViewWindow->SetSelectionMode(CellSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(CellSelection);
+      }
   }
 
   myEditCurrentArgument = (QWidget*)LineEditElements;
@@ -509,7 +512,8 @@ void SMESHGUI_SymmetryDlg::ClickOnCancel()
   mySelectionMgr->clearFilters();
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   reject();
 }
@@ -552,7 +556,8 @@ void SMESHGUI_SymmetryDlg::onTextChange (const QString& theNewText)
       }
 
       mySelector->AddOrRemoveIndex( anIO, newIndices, false );
-      myViewWindow->highlight( anIO, true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( anIO, true, true );
       
       myElementsId = theNewText;
     }
@@ -721,20 +726,24 @@ void SMESHGUI_SymmetryDlg::SetEditCurrentArgument()
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
-      myViewWindow->SetSelectionMode(CellSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(CellSelection);
     }
   } else if (send == SelectPointButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_X;
     SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
   } else if (send == SelectVectorButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_DX;
     SMESH::SetPointRepresentation(true);
 
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
   } else {
   }
 
@@ -772,7 +781,8 @@ void SMESHGUI_SymmetryDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myViewWindow->SetSelectionMode(CellSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(CellSelection);
   SelectionIntoArgument();
 }
 
@@ -826,11 +836,13 @@ void SMESHGUI_SymmetryDlg::onSelectMesh (bool toSelectMesh)
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
-    myViewWindow->SetSelectionMode(CellSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(CellSelection);
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());
   }

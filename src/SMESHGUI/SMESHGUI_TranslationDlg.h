@@ -82,7 +82,6 @@ private:
     QString                       myElementsId;
     int                           myNbOkElements;          /* to check when elements are defined */
 
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
 
     QWidget*                      myEditCurrentArgument;

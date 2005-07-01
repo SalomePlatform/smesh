@@ -124,7 +124,6 @@ protected:
   SMESH::SMESH_Mesh_var     myMesh;
   
   SalomeApp_SelectionMgr*   mySelectionMgr;
-  SVTK_ViewWindow*          myViewWindow;
   SVTK_Selector*            mySelector;
   SMESHGUI*                 mySMESHGUI;
 

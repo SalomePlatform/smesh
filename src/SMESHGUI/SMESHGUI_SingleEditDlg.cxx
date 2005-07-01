@@ -113,7 +113,6 @@ SMESHGUI_SingleEditDlg
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-    myViewWindow(SMESH::GetViewWindow(theModule)),
     mySMESHGUI(theModule)
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout(this, MARGIN, SPACING);
@@ -240,7 +239,8 @@ void SMESHGUI_SingleEditDlg::Init()
   this->show();
 
   // set selection mode
-  myViewWindow->SetSelectionMode(EdgeOfCellSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(EdgeOfCellSelection);
 
   onSelectionDone();
 }
@@ -262,7 +262,8 @@ void SMESHGUI_SingleEditDlg::onOk()
 //=======================================================================
 void SMESHGUI_SingleEditDlg::onClose()
 {
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->clearSelected();
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
@@ -442,7 +443,8 @@ void SMESHGUI_SingleEditDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
     mySMESHGUI->EmitSignalDeactivateDialog();
-    myViewWindow->SetSelectionMode(EdgeOfCellSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(EdgeOfCellSelection);
     setEnabled(true);
   }
 }

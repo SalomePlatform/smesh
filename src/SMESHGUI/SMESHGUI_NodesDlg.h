@@ -75,7 +75,6 @@ public:
 
 private:
     SalomeApp_SelectionMgr* mySelectionMgr;
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
     SMESHGUI*               mySMESHGUI;
 

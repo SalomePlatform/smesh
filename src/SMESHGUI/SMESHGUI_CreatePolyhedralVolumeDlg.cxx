@@ -191,9 +191,7 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
 					                                bool modal, WFlags fl )
   : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
     mySMESHGUI( theModule ),
-    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myViewWindow( SMESH::GetViewWindow( theModule ) ),
-    mySelector( myViewWindow->GetSelector() )
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH",tr("ICON_SELECT")));
 
@@ -310,6 +308,8 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
   Preview = new QCheckBox( GroupContent, "Preview" );
   Preview->setText( tr( "SMESH_POLYEDRE_PREVIEW"  ) );
   GroupContentLayout->addWidget( Preview , 5, 0 );
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
   
   SMESHGUI_CreatePolyhedralVolumeDlgLayout->addWidget( GroupContent, 1, 0 );
   
@@ -403,7 +403,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
 	}
         else
           SMESH::SetPointRepresentation(true);
-	myViewWindow->SetSelectionMode(NodeSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(NodeSelection);
 	
 	AddButton->setEnabled(false);
 	RemoveButton->setEnabled(false);
@@ -426,7 +427,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
 	} else {
 	  SMESH::SetPointRepresentation(false);
 	}
-	myViewWindow->SetSelectionMode(FaceSelection);
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(FaceSelection);
 	
 	TextLabelIds->setText( tr( "SMESH_ID_FACES" ) );
 	myFacesByNodesLabel->hide();
@@ -554,7 +556,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnCancel()
   mySelectionMgr->setSelectedObjects( aList );
   SMESH::SetPointRepresentation(false);
   mySimulation->SetVisibility(false);
-  myViewWindow->SetSelectionMode( ActorSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( ActorSelection );
   disconnect( mySelectionMgr, 0, this, 0 );
   mySMESHGUI->ResetState() ;
   reject() ;
@@ -591,7 +594,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
       }
       
       mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
-      myViewWindow->highlight( myActor->getIO(), true, true );
+      
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( myActor->getIO(), true, true );
       
       if ( myNbOkElements>0 && aListId.count()>=3)
 	AddButton->setEnabled(true);
@@ -622,7 +627,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
       }
 
       mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
-      myViewWindow->highlight( myActor->getIO(), true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( myActor->getIO(), true, true );
       
       if ( myNbOkElements ) {
 	if (aListId.count()>1){ 
@@ -853,7 +859,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ActivateThisDialog()
   
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
-  myViewWindow->SetSelectionMode( FaceSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( FaceSelection );
   SelectionIntoArgument();
 }
 
@@ -982,7 +989,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onListSelectionChanged()
   if(isSelected) RemoveButton->setEnabled(true);
   else RemoveButton->setEnabled(false);
   mySelector->AddOrRemoveIndex(myActor->getIO(), aIndexes, true );
-  myViewWindow->highlight( myActor->getIO(), true, true );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->highlight( myActor->getIO(), true, true );
   mySelectionMgr->clearFilters(); 
   aList.Append( myActor->getIO() );
   mySelectionMgr->setSelectedObjects( aList );

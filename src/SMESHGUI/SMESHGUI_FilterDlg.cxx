@@ -1604,10 +1604,11 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*              theModule,
 : QDialog( SMESH::GetDesktop( theModule ), theName, false,
            WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    mySelector = aViewWindow->GetSelector();
+  
   construct(theTypes);
 }
 
@@ -1623,8 +1624,8 @@ SMESHGUI_FilterDlg::SMESHGUI_FilterDlg( SMESHGUI*   theModule,
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-  myViewWindow = SMESH::GetViewWindow( theModule );
-  mySelector = myViewWindow->GetSelector();
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    mySelector = aViewWindow->GetSelector();
   QValueList<int> aTypes;
   aTypes.append(theType);
   construct(aTypes);
@@ -1885,7 +1886,8 @@ void SMESHGUI_FilterDlg::onClose()
         aResMap.Add(anIndMap(i));
 
       mySelector->AddOrRemoveIndex( anIter.Key(), aResMap, false);
-      myViewWindow->highlight( anIter.Key(), true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( anIter.Key(), true, true );
     }
     mySelectionMgr->setSelectedObjects(aList, false);
   }
@@ -2361,12 +2363,13 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QValueList<int
 
   // Set new selection mode if necessary
   Selection_Mode aSelMode = getSelMode(theType);
-  if (myViewWindow->SelectionMode()!=aSelMode) {
+  SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  if ( aViewWindow && aViewWindow->SelectionMode()!=aSelMode) {
     mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
     if (aSelMode == NodeSelection)
       SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(aSelMode);
+    aViewWindow->SetSelectionMode(aSelMode);
   }
 
   // Clear selection
@@ -2399,7 +2402,8 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QValueList<int
 
   // Set new selection
   mySelector->AddOrRemoveIndex(anIO, aMap, false);
-  myViewWindow->highlight( anIO, true, true );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->highlight( anIO, true, true );
 
   // insert previously stored filter in viewer if necessary
   if (!aFilter.IsNull())

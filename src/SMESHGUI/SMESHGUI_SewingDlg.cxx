@@ -75,9 +75,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
       mySMESHGUI( theModule ),
-      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-      myViewWindow( SMESH::GetViewWindow( theModule ) ),
-      mySelector( myViewWindow->GetSelector() )
+      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap image0 (mgr->loadPixmap("SMESH", tr("ICON_SMESH_SEWING_FREEBORDERS")));
@@ -284,6 +282,8 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
   LineEdit5->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
   LineEdit6->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   Init();
@@ -452,7 +452,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
 
       SMESH::SetPointRepresentation(false);
 
-      myViewWindow->SetSelectionMode(CellSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(CellSelection);
       break;
     }
   }
@@ -470,7 +471,8 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
 
     SMESH::SetPointRepresentation(true);
 
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
   }
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
@@ -593,7 +595,8 @@ void SMESHGUI_SewingDlg::ClickOnCancel()
 {
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
@@ -643,13 +646,15 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
     if (GetConstructorId() != 3 || (send != LineEdit1 && send != LineEdit4)) {
       SMESH::SetPointRepresentation(true);
 
-      myViewWindow->SetSelectionMode(NodeSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(NodeSelection);
 
       const SMDS_MeshNode * n = aMesh->FindNode(theNewText.toInt());
       if (n) {
 	newIndices.Add(n->GetID());
 	mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-	myViewWindow->highlight( myActor->getIO(), true, true );
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->highlight( myActor->getIO(), true, true );
 	
         if      (send == LineEdit1)
           myOk1 = true;
@@ -667,7 +672,8 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
     } else {
       SMESH::SetPointRepresentation(false);
 
-      myViewWindow->SetSelectionMode(CellSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(CellSelection);
 
       QStringList aListId = QStringList::split(" ", theNewText, false);
 
@@ -684,7 +690,8 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
       
 
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-      myViewWindow->highlight( myActor->getIO(), true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( myActor->getIO(), true, true );
       
       if (isEvenOneExists) {
         if (send == LineEdit1)
@@ -821,11 +828,13 @@ void SMESHGUI_SewingDlg::SetEditCurrentArgument()
   if (GetConstructorId() != 3 || (send != SelectButton1 && send != SelectButton4)) {
     SMESH::SetPointRepresentation(true);
 
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
 
   } else {
     SMESH::SetPointRepresentation(false);
-    myViewWindow->SetSelectionMode(CellSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(CellSelection);
   }
 
   myEditCurrentArgument->setFocus();

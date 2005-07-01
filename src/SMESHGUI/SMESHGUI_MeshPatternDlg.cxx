@@ -110,9 +110,7 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
                 WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
        myBusy(false),
        mySMESHGUI( theModule ),
-       mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-       myViewWindow( SMESH::GetViewWindow( theModule ) ),
-       mySelector( myViewWindow->GetSelector() )
+       mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   setCaption(tr("CAPTION"));
 
@@ -127,6 +125,9 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
   aDlgLay->setStretchFactor(aMainFrame, 1);
 
   myCreationDlg = 0;
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+  
   Init();
 }
 
@@ -462,7 +463,8 @@ void SMESHGUI_MeshPatternDlg::onClose()
 {
   mySelectionMgr->clearFilters();
   SMESH::SetPickable();
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -963,14 +965,21 @@ void SMESHGUI_MeshPatternDlg::activateSelection()
       SMESH::SetPickable(anActor);
 
     if (myType == Type_2d)
-      myViewWindow->SetSelectionMode(FaceSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(FaceSelection);
+      }
     else
-      myViewWindow->SetSelectionMode(CellSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(CellSelection);
+      }
   }
   else {
     SMESH::SetPickable();
     //mySelectionMgr->setSelectionModes(ActorSelection);
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
   }
 
   if (mySelInput == Object && !myMeshShape->_is_nil()) {
@@ -1265,7 +1274,8 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
 	newIndices.Add(e->GetID());
     }
     mySelector->AddOrRemoveIndex( anActor->getIO(), newIndices, false);
-    myViewWindow->highlight( anActor->getIO(), true, true );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->highlight( anActor->getIO(), true, true );
   }
 
   myBusy = false;

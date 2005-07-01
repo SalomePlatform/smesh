@@ -87,7 +87,6 @@ private:
     int                           myNbOkNodes;             /* to check when fixed nodes are defined */
     int                           myConstructorId;         /* Current constructor id = radio button id */
     QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
 
     bool                          myBusy;

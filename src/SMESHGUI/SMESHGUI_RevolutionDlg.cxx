@@ -83,9 +83,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap image0 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
@@ -298,6 +296,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   // Costruction of the logical filter
@@ -416,7 +416,10 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
   }
 
   if (!CheckBoxMesh->isChecked())
-    myViewWindow->SetSelectionMode(aSelMode);
+    {
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(aSelMode);
+    }
 
   myEditCurrentArgument = (QWidget*)LineEditElements;
   LineEditElements->setFocus();
@@ -493,7 +496,8 @@ void SMESHGUI_RevolutionDlg::ClickOnCancel()
   mySelectionMgr->clearFilters();
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   reject();
 }
@@ -536,7 +540,8 @@ void SMESHGUI_RevolutionDlg::onTextChange (const QString& theNewText)
       }
 
       mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-      myViewWindow->highlight( myActor->getIO(), true, true );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->highlight( myActor->getIO(), true, true );
       
       myElementsId = theNewText;
     }
@@ -726,23 +731,32 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
-      myViewWindow->SetSelectionMode(ActorSelection);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
       int aConstructorId = GetConstructorId();
       if (aConstructorId == 0)
-        myViewWindow->SetSelectionMode(EdgeSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(EdgeSelection);
+	}
       else if (aConstructorId == 1)
-        myViewWindow->SetSelectionMode(FaceSelection);
+	{
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(FaceSelection);
+	}
     }
   } else if (send == SelectPointButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_X;
     SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
   } else if (send == SelectVectorButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_DX;
     SMESH::SetPointRepresentation(true);
-    myViewWindow->SetSelectionMode(NodeSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
   } else {
   }
 
@@ -834,15 +848,22 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
-    myViewWindow->SetSelectionMode(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
     int aConstructorId = GetConstructorId();
     if (aConstructorId == 0)
-      myViewWindow->SetSelectionMode(EdgeSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(EdgeSelection);
+      }
     else if (aConstructorId == 0)
-      myViewWindow->SetSelectionMode(FaceSelection);
+      {
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	  aViewWindow->SetSelectionMode(FaceSelection);
+      }
 
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());

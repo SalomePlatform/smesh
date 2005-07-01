@@ -80,7 +80,6 @@ private:
     void hideEvent ( QHideEvent * );                       /* ESC key */
 
     SalomeApp_SelectionMgr*       mySelectionMgr;
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
     SMESHGUI*                     mySMESHGUI;
 

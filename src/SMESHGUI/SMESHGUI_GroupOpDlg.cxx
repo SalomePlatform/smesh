@@ -68,15 +68,15 @@ SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode
      : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_GroupOpDlg", false,
                 WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu ),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   myMode = theMode;
 
   if (myMode == UNION) setCaption(tr("UNION_OF_TWO_GROUPS"));
   else if (myMode == INTERSECT) setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
   else setCaption(tr("CUT_OF_TWO_GROUPS"));
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
 
@@ -191,7 +191,8 @@ void SMESHGUI_GroupOpDlg::Init()
   this->show();
 
   // set selection mode
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 
   return;
@@ -284,7 +285,8 @@ void SMESHGUI_GroupOpDlg::onOk()
 //=======================================================================
 void SMESHGUI_GroupOpDlg::onClose()
 {
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -343,7 +345,8 @@ void SMESHGUI_GroupOpDlg::enterEvent (QEvent*)
 {
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 

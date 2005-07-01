@@ -293,7 +293,6 @@ private:
   SMESHGUI*                 mySMESHGUI;
   SalomeApp_SelectionMgr*   mySelectionMgr;
   SVTK_Selector*            mySelector;
-  SVTK_ViewWindow*          myViewWindow;
   SMESH::SMESH_Mesh_ptr     myMesh;
   QWidget*                  mySourceWg;
 

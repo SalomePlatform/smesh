@@ -83,9 +83,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
                 WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
      mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myViewWindow( SMESH::GetViewWindow( theModule ) ),
-     mySelector( myViewWindow->GetSelector() )
+     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_POINTS")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SMESH_TRANSLATION_VECTOR")));
@@ -261,6 +259,8 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
   // Costruction of the logical filter
@@ -395,8 +395,8 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
   if (myEditCurrentArgument != (QWidget*)LineEditElements) {
     SMESH::SetPointRepresentation(false);
     if (!CheckBoxMesh->isChecked())
-
-      myViewWindow->SetSelectionMode( CellSelection );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode( CellSelection );
   }
 
   myEditCurrentArgument = (QWidget*)LineEditElements;
@@ -474,7 +474,8 @@ void SMESHGUI_TranslationDlg::ClickOnCancel()
   mySelectionMgr->clearFilters();
   mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
-  myViewWindow->SetSelectionMode( ActorSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
   reject();
 }
@@ -518,7 +519,8 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
     }
 
     mySelector->AddOrRemoveIndex( anIO, newIndices, false );
-    myViewWindow->highlight( anIO, true, true );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->highlight( anIO, true, true );
     
     myElementsId = theNewText;
   }
@@ -686,22 +688,26 @@ void SMESHGUI_TranslationDlg::SetEditCurrentArgument()
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
-      myViewWindow->SetSelectionMode( ActorSelection );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode( ActorSelection );
       mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     } else {
 
-      myViewWindow->SetSelectionMode( CellSelection );
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode( CellSelection );
     }
   } else if (send == SelectButton1) {
     myEditCurrentArgument = (QWidget*)SpinBox1_1;
     SMESH::SetPointRepresentation(true);
 
-    myViewWindow->SetSelectionMode( NodeSelection );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( NodeSelection );
   } else if (send == SelectButton2) {
     myEditCurrentArgument = (QWidget*)SpinBox2_1;
     SMESH::SetPointRepresentation(true);
 
-    myViewWindow->SetSelectionMode( NodeSelection );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( NodeSelection );
   }
 
   myEditCurrentArgument->setFocus();
@@ -738,7 +744,8 @@ void SMESHGUI_TranslationDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myViewWindow->SetSelectionMode( CellSelection );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode( CellSelection );
 
   SelectionIntoArgument();
 }
@@ -793,11 +800,13 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
-    myViewWindow->SetSelectionMode( ActorSelection );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( ActorSelection );
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
-    myViewWindow->SetSelectionMode( CellSelection );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());
   }

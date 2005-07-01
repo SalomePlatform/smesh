@@ -497,7 +497,8 @@ namespace SMESH{
   void SetFilter(const Handle(VTKViewer_Filter)& theFilter,
 		 SVTK_InteractorStyle* theStyle)
   {
-    theStyle->SetFilter(theFilter);
+    if (theStyle)
+      theStyle->SetFilter(theFilter);
   }
 
   Handle(VTKViewer_Filter) GetFilter(int theId, SVTK_InteractorStyle* theStyle)

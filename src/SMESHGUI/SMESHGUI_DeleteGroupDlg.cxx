@@ -76,7 +76,6 @@ SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
 	  false,
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-  myViewWindow(SMESH::GetViewWindow(mySMESHGUI)),
   mySMESHGUI(theModule)
 {
   setCaption(tr("CAPTION"));
@@ -170,7 +169,8 @@ void SMESHGUI_DeleteGroupDlg::Init ()
 
   // set selection mode
   mySelectionMgr->installFilter(new SMESH_TypeFilter(GROUP));
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   onSelectionDone();
 
   return;
@@ -235,7 +235,8 @@ void SMESHGUI_DeleteGroupDlg::onOk()
 //=================================================================================
 void SMESHGUI_DeleteGroupDlg::onClose()
 {
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();
@@ -289,7 +290,8 @@ void SMESHGUI_DeleteGroupDlg::enterEvent (QEvent*)
 {
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-  myViewWindow->SetSelectionMode(ActorSelection);
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (GROUP));
 }
 

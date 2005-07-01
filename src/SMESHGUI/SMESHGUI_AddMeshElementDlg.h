@@ -88,7 +88,6 @@ private:
     SalomeApp_SelectionMgr*     mySelectionMgr;          /* User shape selection */
     int                         myNbOkNodes;               /* to check when arguments is defined */
     bool                        myBusy;
-    SVTK_ViewWindow*            myViewWindow;
     SVTK_Selector*              mySelector;
 
     QLineEdit*                  myEditCurrentArgument;   /* Current  LineEdit */

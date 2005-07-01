@@ -78,7 +78,6 @@ private:
     
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     SalomeApp_SelectionMgr*       mySelectionMgr ;             /* User shape selection */
-    SVTK_ViewWindow*              myViewWindow;
     SVTK_Selector*                mySelector;
     QString                       myIDs;
     int                           myNbOkElements ;            /* to check when elements are defined */
