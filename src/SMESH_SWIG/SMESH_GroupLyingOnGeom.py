@@ -1,4 +1,4 @@
-from meshpy import *
+from smesh import *
 
 def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
     aFilterMgr = smesh.CreateFilterManager()
