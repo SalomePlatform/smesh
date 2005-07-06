@@ -63,6 +63,8 @@ public:
 
   void SetName(const char* Entry, const char* Name);
 
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+
 private:
   SALOMEDS::Study_var        myStudy;
   SALOMEDS::StudyBuilder_var myStudyBuilder;

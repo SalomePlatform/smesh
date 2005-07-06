@@ -28,6 +28,7 @@
 
 using namespace std;
 #include "SMESHGUI_Swig.hxx"
+#include "SMESHGUI_Utils.h"
 
 #include "Utils_ORB_INIT.hxx"
 #include "Utils_SINGLETON.hxx"
@@ -50,10 +51,10 @@ using namespace std;
 
 static CORBA::ORB_var _orb;
 
-static char* ObjectToString (CORBA::Object_ptr obj)
-{
-  return _orb->object_to_string(obj);
-}
+// static char* ObjectToString (CORBA::Object_ptr obj)
+// {
+//   return _orb->object_to_string(obj);
+// }
 
 static CORBA::Object_ptr StringToObject (const char* ior)
 {
@@ -451,3 +452,16 @@ void SMESH_Swig::setOrb()
   }
   ASSERT(! CORBA::is_nil(_orb));
 }
+
+//=======================================================================
+//function : SetMeshIcon
+//purpose  : 
+//=======================================================================
+
+void SMESH_Swig::SetMeshIcon(const char* Mesh_Entry, const bool isComputed)
+{
+  SALOMEDS::SObject_var mesh = myStudy->FindObjectID( Mesh_Entry );
+  if ( !mesh->_is_nil() )
+    SMESH::ModifiedMesh( mesh, isComputed );
+}
+
