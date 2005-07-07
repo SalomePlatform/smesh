@@ -55,4 +55,6 @@ class SMESH_Swig
   const char* AddSubMeshOnShape (const char* Mesh_Entry, const char* GeomShape_Entry, const char* SM_IOR, int ST);
 
   void SetName(const char* Entry, const char* Name);
+
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
 };

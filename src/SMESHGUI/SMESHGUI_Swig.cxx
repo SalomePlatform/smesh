@@ -32,12 +32,15 @@ using namespace std;
 #include "Utils_ORB_INIT.hxx"
 #include "Utils_SINGLETON.hxx"
 
-#include <SMESHGUI.h>
-#include <SMESHGUI_GEOMGenUtils.h>
+#include "SMESHGUI.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_GEOMGenUtils.h"
 
 // SALOME Includes
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Session.h"
+
+#include "SALOMEDS_SObject.hxx"
 
 #include "SalomeApp_Application.h"
 
@@ -53,11 +56,6 @@ using namespace std;
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
 static CORBA::ORB_var _orb;
-
-static char* ObjectToString (CORBA::Object_ptr obj)
-{
-  return _orb->object_to_string(obj);
-}
 
 static CORBA::Object_ptr StringToObject (const char* ior)
 {
@@ -149,7 +147,6 @@ SMESH_Swig::~SMESH_Swig()
 {
   MESSAGE("Destructeur");
 }
-
 
 const char* SMESH_Swig::AddNewMesh(const char* IOR)
 {
@@ -346,6 +343,7 @@ void SMESH_Swig::SetHypothesis(const char* Mesh_Or_SubMesh_Entry, const char* Hy
     myStudyBuilder->Addreference (SO,SO_Hypothesis);
   }
 }
+
 void SMESH_Swig::SetAlgorithms(const char* Mesh_Or_SubMesh_Entry, const char* Algorithms_Entry)
 {
   SALOMEDS::SObject_var SO_MorSM = myStudy->FindObjectID( Mesh_Or_SubMesh_Entry );
@@ -381,7 +379,6 @@ void SMESH_Swig::UnSetHypothesis(const char* Applied_Hypothesis_Entry )
   if ( !SO_Applied_Hypothesis->_is_nil() )
     myStudyBuilder->RemoveObject(SO_Applied_Hypothesis);
 }
-
 
 const char* SMESH_Swig::AddSubMesh(const char* SO_Mesh_Entry, const char* SM_IOR, int ST)
 {
@@ -456,7 +453,6 @@ void SMESH_Swig::SetName(const char* Entry, const char* Name)
   }
 }
 
-
 void SMESH_Swig::setOrb()
 {
   try {
@@ -468,4 +464,22 @@ void SMESH_Swig::setOrb()
     _orb = 0;
   }
   ASSERT(! CORBA::is_nil(_orb));
+}
+
+//================================================================================
+/*!
+ * \brief Set mesh icon according to compute status
+  * \param Mesh_Entry - entry of a mesh
+  * \param isComputed - is mesh computed or not
+ */
+//================================================================================
+
+void SMESH_Swig::SetMeshIcon(const char* Mesh_Entry, const bool isComputed)
+{
+  SALOMEDS::SObject_var mesh_var = myStudy->FindObjectID( Mesh_Entry );
+  if ( !mesh_var->_is_nil() ) {
+    _PTR(SObject) mesh = _PTR(SObject)(new SALOMEDS_SObject( mesh_var ));
+    if ( mesh )
+      SMESH::ModifiedMesh( mesh, isComputed );
+  }
 }

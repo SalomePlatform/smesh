@@ -63,6 +63,13 @@ public:
 
   void SetName(const char* Entry, const char* Name);
 
+  /*!
+   * \brief Set mesh icon according to compute status
+    * \param Mesh_Entry - entry of a mesh
+    * \param isComputed - is mesh computed or not
+   */
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+
 private:
   SALOMEDS::Study_var        myStudy;
   SALOMEDS::StudyBuilder_var myStudyBuilder;
