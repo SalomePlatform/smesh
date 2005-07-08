@@ -1547,7 +1547,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     aSize[ 0 ] = nbNodes;
                     // IDS
                     string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
-                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_INT32, aSize, 1 );
+                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_STRING, aSize, 1 );
                     aDataset->CreateOnDisk();
                     aDataset->WriteOnDisk( aNodeIDs );
                     aDataset->CloseOnDisk();
