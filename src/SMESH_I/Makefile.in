@@ -84,16 +84,17 @@ BIN_SRC =
 
 # additionnal information to compil and link file
 CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${GEOM_ROOT_DIR}/include/salome
+           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 
 LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
 	  -L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls \
     -L${CASROOT}/lin/lib -lTKCDF -lTKBO
 
 
-LDFLAGSFORBIN += -lSMDS -lSMESHDS -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
+LDFLAGSFORBIN += -lSMDS -lSMESHDS \
+		-L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
 		-lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
 		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeResourcesManager \
 		-lOpUtil -lSALOMELocalTrace -lSALOMETraceCollector -lSalomeNotification -lCASCatch \
