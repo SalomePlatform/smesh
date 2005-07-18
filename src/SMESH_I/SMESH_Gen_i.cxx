@@ -1544,7 +1544,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   // Write datasets
                   if ( nbNodes )
                   {
-                    aSize[ 0 ] = nbNodes;
+                    aSize[ 0 ] = nbNodes*sizeof(int);
                     // IDS
                     string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
                     aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_STRING, aSize, 1 );
@@ -1552,6 +1552,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                     aDataset->WriteOnDisk( aNodeIDs );
                     aDataset->CloseOnDisk();
 
+		    aSize[ 0 ] = nbNodes;
                     // U Positions
                     aDSName = ( onFace ? "Face U positions" : "Edge positions");
                     aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_FLOAT64, aSize, 1);
@@ -2271,16 +2272,17 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 }
                 else // NODE IDS
                 {
-                  int* ids = new int [ aDataset->GetSize() ];
+		  int aSize = aDataset->GetSize()/sizeof(int);
+		  int* ids = new int [aSize];
                   aDataset->ReadFromDisk( ids );
                   // on face or nodes?
                   if ( strncmp( aDSName, aEid_DSName, strlen( aEid_DSName )) == 0 ) {
                     aEids = ids;
-                    nbEids = aDataset->GetSize();
+                    nbEids = aSize;
                   }
                   else {
                     aFids = ids;
-                    nbFids = aDataset->GetSize();
+                    nbFids = aSize;
                   }
                 }
               } // loop on 5 datasets
