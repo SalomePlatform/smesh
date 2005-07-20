@@ -277,8 +277,8 @@ bool SMESHGUI_InitMeshDlg::ClickOnApply()
 	  if ( !aHyp->_is_nil() ) {
 	    if ( !SMESH::AddHypothesisOnMesh( aMesh, aHyp ) ) {
 	      // abort transaction
-	      op->abort();
-	      return false;
+// 	      op->abort();
+// 	      return false;
 	    }
 	  }
 	}
@@ -294,8 +294,8 @@ bool SMESHGUI_InitMeshDlg::ClickOnApply()
 	  if ( !aHyp->_is_nil() ) {
 	    if ( !SMESH::AddHypothesisOnMesh( aMesh, aHyp ) ) {
 	      // abort transaction
-	      op->abort();
-	      return false;
+// 	      op->abort();
+// 	      return false;
 	    }
 	  }
 	}
@@ -493,6 +493,3 @@ QString SMESHGUI_InitMeshDlg::GetDefaultMeshName()
 
   return aMeshName;
 }
-
-
-
