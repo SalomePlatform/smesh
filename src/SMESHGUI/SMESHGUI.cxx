@@ -3211,6 +3211,66 @@ void SMESHGUI::createPreferences()
 
   addPreference( tr( "PREF_NODES" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_node" );
   addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_element" );
+
+  int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
+  int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
+
+  int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, SalomeApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
+  addPreference( tr( "SMESH_TITLE" ), fontGr, SalomeApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
+  int lfont = addPreference( tr( "SMESH_LABELS" ), fontGr, SalomeApp_Preferences::Font, "SMESH", "scalar_bar_label_font" );
+  addPreference( tr( "SMESH_LABELS" ), fontGr, SalomeApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
+
+  QStringList fam;
+  fam.append( tr( "SMESH_FONT_ARIAL" ) );
+  fam.append( tr( "SMESH_FONT_COURIER" ) );
+  fam.append( tr( "SMESH_FONT_TIMES" ) );
+  int wflag = ( QtxListResourceEdit::FontItem::All & ( ~( QtxListResourceEdit::FontItem::Size | QtxListResourceEdit::FontItem::UserSize ) ) );
+
+  setPreferenceProperty( tfont, "families", fam );
+  setPreferenceProperty( tfont, "system", false );
+  setPreferenceProperty( tfont, "widget_flags", wflag );  
+  setPreferenceProperty( lfont, "families", fam );
+  setPreferenceProperty( lfont, "system", false );
+  setPreferenceProperty( lfont, "widget_flags", wflag );
+  
+  int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
+
+  int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
+  setPreferenceProperty( numcol, "min", 2 );
+  setPreferenceProperty( numcol, "max", 256 );  
+  
+  int numlab = addPreference( tr( "SMESH_NUMBEROFLABELS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_labels" );
+  setPreferenceProperty( numlab, "min", 2 );
+  setPreferenceProperty( numlab, "max", 65 );
+
+  int orientGr = addPreference( tr( "SMESH_ORIENTATION" ), sbarTab );
+  int orient = addPreference( tr( "SMESH_ORIENTATION" ), orientGr, SalomeApp_Preferences::Selector, "SMESH", "scalar_bar_orientation" );
+  QStringList orients;
+  orients.append( tr( "SMESH_VERTICAL" ) );
+  orients.append( tr( "SMESH_HORIZONTAL" ) );
+  QValueList<QVariant> indices; indices.append( 0 ); indices.append( 1 );
+  setPreferenceProperty( orient, "strings", orients );
+  setPreferenceProperty( orient, "indexes", indices );
+  
+  int posVSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_VERTICAL" ), sbarTab );
+  int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
+  int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );  
+  int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
+  int hv = addPreference( tr( "SMESH_HEIGHT" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_height" );
+  setPreferenceProperty( xv, "step", 0.1 );
+  setPreferenceProperty( yv, "step", 0.1 );
+  setPreferenceProperty( wv, "step", 0.1 );
+  setPreferenceProperty( hv, "step", 0.1 );    
+
+  int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
+  int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
+  int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
+  int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );
+  int hh = addPreference( tr( "SMESH_HEIGHT" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_height" );
+  setPreferenceProperty( xh, "step", 0.1 );
+  setPreferenceProperty( yh, "step", 0.1 );
+  setPreferenceProperty( wh, "step", 0.1 );
+  setPreferenceProperty( hh, "step", 0.1 );
 }
 
 void SMESHGUI::preferencesChanged( const QString&, const QString& )
