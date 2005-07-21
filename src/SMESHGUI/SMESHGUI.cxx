@@ -793,7 +793,7 @@ namespace{
 	if(obj){
 	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( obj ) );
 	  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( obj ) );
-
+          QString objType = CheckTypeObject(IObject);
 	  if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
 	    SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
 	    aMesh->RemoveGroup( aGroup );
@@ -801,6 +801,10 @@ namespace{
 	  else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
 	    SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
 	    aMesh->RemoveSubMesh( aSubMesh );
+	  }
+	  else if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+            SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+	    aStudyBuilder->RemoveObjectWithChildren( obj );
 	  }
 	  else {// default action: remove SObject from the study
 	    // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH

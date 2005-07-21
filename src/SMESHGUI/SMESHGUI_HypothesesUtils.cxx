@@ -422,10 +422,12 @@ namespace SMESH{
     int res = SMESH::HYP_UNKNOWN_FATAL;
     SUIT_OverrideCursor wc;
 
-    if (IObject->hasReference()) {
-      try {
-	_PTR(Study) aStudy = GetActiveStudyDocument();
-	SMESH_Hypothesis_var anHyp = IObjectToInterface<SMESH_Hypothesis>(IObject);
+    try {
+      _PTR(Study) aStudy = GetActiveStudyDocument();
+      SMESH_Hypothesis_var anHyp = IObjectToInterface<SMESH_Hypothesis>(IObject);
+      if (IObject->hasReference())
+      {
+        if(MYDEBUG) MESSAGE("HAS REFERENCE " << IObject->getEntry());
 	_PTR(SObject) aHypSObj = aStudy->FindObjectID(IObject->getReference());
 	if (aHypSObj) {
 	  _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh(aHypSObj);
@@ -457,20 +459,37 @@ namespace SMESH{
 	  }
 	}
       }
-      catch(const SALOME::SALOME_Exception& S_ex) {
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	res = SMESH::HYP_UNKNOWN_FATAL;
+      else if (IObject->hasEntry())
+      {
+        if(MYDEBUG) MESSAGE("IObject entry HAS ENTRY " << IObject->getEntry());
+        SObjectList meshList = GetMeshesUsingAlgoOrHypothesis(anHyp);
+        for ( int i = 0; i < meshList.size(); ++i ) {
+          SMESH::SMESH_Mesh_var aMesh = 
+            SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshList[ i ]);
+          GEOM::GEOM_Object_var aShape = SMESH::GetShapeOnMeshOrSubMesh( meshList[ i ]);
+          if ( ! aMesh->_is_nil() && !aShape->_is_nil() ) {
+            res = aMesh->RemoveHypothesis(aShape, anHyp);
+            if ( res < SMESH::HYP_UNKNOWN_FATAL )
+              SMESH::ModifiedMesh( meshList[ i ], false);
+            if ( res > SMESH::HYP_OK ) {
+              wc.suspend();
+              processHypothesisStatus( res, anHyp, false );
+              wc.resume();
+            }
+          }
+        }
       }
     }
-    else if (IObject->hasEntry()) {
-      if(MYDEBUG) MESSAGE("IObject entry " << IObject->getEntry());
+    catch(const SALOME::SALOME_Exception& S_ex) {
+      wc.suspend();
+      SalomeApp_Tools::QtCatchCorbaException(S_ex);
+      res = SMESH::HYP_UNKNOWN_FATAL;
     }
     return res < SMESH::HYP_UNKNOWN_FATAL;
   }
 
   bool RemoveHypothesisOrAlgorithmOnMesh (_PTR(SObject) MorSM,
-					  SMESH::SMESH_Hypothesis_ptr anHyp)
+                                          SMESH::SMESH_Hypothesis_ptr anHyp)
   {
     SALOMEDS::GenericAttribute_var anAttr;
     SALOMEDS::AttributeIOR_var anIOR;
@@ -479,9 +498,9 @@ namespace SMESH{
 
     if (MorSM) {
       try {
-	GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-	if (!aShapeObject->_is_nil()) {
-	  SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
+        GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
+        if (!aShapeObject->_is_nil()) {
+          SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
 	  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
 
 	  if (!aSubMesh->_is_nil())
