@@ -410,11 +410,12 @@ namespace SMESH{
   {
     int res = SMESH::HYP_UNKNOWN_FATAL;
     QAD_WaitCursor wc;
-    
-    if (IObject->hasReference()) {
-      try {
-	SALOMEDS::Study_var aStudy = GetActiveStudyDocument();
-	SMESH_Hypothesis_var anHyp = IObjectToInterface<SMESH_Hypothesis>(IObject);
+
+    try {
+      SALOMEDS::Study_var aStudy = GetActiveStudyDocument();
+      SMESH_Hypothesis_var anHyp = IObjectToInterface<SMESH_Hypothesis>(IObject);
+      if (IObject->hasReference())
+      {
 	SALOMEDS::SObject_var aHypSObj = aStudy->FindObjectID(IObject->getReference());
 	if (!aHypSObj->_is_nil()) {
 	  SALOMEDS::SObject_var MorSM = SMESH::GetMeshOrSubmesh(aHypSObj);
@@ -425,10 +426,10 @@ namespace SMESH{
 		SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
 	      SMESH::SMESH_subMesh_var aSubMesh =
 		SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-	      
+
 	      if (!aSubMesh->_is_nil())
 		aMesh = aSubMesh->GetFather();
-	      
+
 	      if (!aMesh->_is_nil()) {
 		res = aMesh->RemoveHypothesis(aShape, anHyp);
 		if ( res < SMESH::HYP_UNKNOWN_FATAL ) {
@@ -446,18 +447,35 @@ namespace SMESH{
 	  }
 	}
       }
-      catch( const SALOME::SALOME_Exception& S_ex ) {
-	wc.stop();
-	QtCatchCorbaException( S_ex );
-	res = SMESH::HYP_UNKNOWN_FATAL;
+      else if (IObject->hasEntry())
+      {
+        if(MYDEBUG) MESSAGE("IObject entry " << IObject->getEntry());
+        SALOMEDS::Study::ListOfSObject_var meshList = GetMeshesUsingAlgoOrHypothesis(anHyp);
+        for ( int i = 0; i < meshList->length(); ++i ) {
+          SMESH::SMESH_Mesh_var aMesh = 
+            SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshList[ i ]);
+          GEOM::GEOM_Object_var aShape = SMESH::GetShapeOnMeshOrSubMesh( meshList[ i ]);
+          if ( ! aMesh->_is_nil() && !aShape->_is_nil() ) {
+            res = aMesh->RemoveHypothesis(aShape, anHyp);
+            if ( res < SMESH::HYP_UNKNOWN_FATAL )
+              SMESH::ModifiedMesh( meshList[ i ], false);
+            if ( res > SMESH::HYP_OK ) {
+              wc.stop();
+              processHypothesisStatus( res, anHyp, false );
+              wc.start();
+            }
+          }
+        }
       }
-    } 
-    else if (IObject->hasEntry()) {
-      if(MYDEBUG) MESSAGE("IObject entry " << IObject->getEntry());
+    }
+    catch( const SALOME::SALOME_Exception& S_ex ) {
+      wc.stop();
+      QtCatchCorbaException( S_ex );
+      res = SMESH::HYP_UNKNOWN_FATAL;
     }
     return res < SMESH::HYP_UNKNOWN_FATAL;
   }
-  
+
   bool RemoveHypothesisOrAlgorithmOnMesh (SALOMEDS::SObject_ptr MorSM,
 					  SMESH::SMESH_Hypothesis_ptr anHyp)
   {
