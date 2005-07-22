@@ -3151,8 +3151,8 @@ void SMESHGUI::createPreferences()
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
-  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "Mesh", "display_entity" );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), qaGroup, SalomeApp_Preferences::Bool, "Mesh", "auto_update" );
+  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "display_entity" );
+  addPreference( tr( "PREF_AUTO_UPDATE" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "auto_update" );
 
   int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 1 );
@@ -3163,6 +3163,15 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( prec, "min", 0 );
   setPreferenceProperty( prec, "max", 16 );
 
+  int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
+  int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, SalomeApp_Preferences::Selector, "SMESH", "display_mode" );
+  QStringList modes;
+  modes.append( "Wireframe" );
+  modes.append( "Shading" );
+  modes.append( "Shrink" );
+  modes.append( "Nodes" );
+  setPreferenceProperty( dispmode, "strings", modes );
+  
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
 
