@@ -536,36 +536,36 @@ namespace{
     SMESHGUI_Preferences_ColorDlg *aDlg =
       new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
 
-    QColor color = mgr->colorValue( "SMESH", "SettingsFillColor", QColor(0, 170, 255) );
+    QColor color = mgr->colorValue( "SMESH", "fill_color", QColor(0, 170, 255) );
     aDlg->SetColor(1, color);
 
-    color = mgr->colorValue( "SMESH", "SettingsOutlineColor", QColor(0, 170, 255) );
+    color = mgr->colorValue( "SMESH", "outline_color", QColor(0, 170, 255) );
     aDlg->SetColor(2, color);
 
-    color = mgr->colorValue( "SMESH", "SettingsNodeColor", Qt::red );
+    color = mgr->colorValue( "SMESH", "node_color", Qt::red );
     aDlg->SetColor(3, color);
 
-    color = mgr->colorValue( "SMESH", "SettingsBackFaceColor", Qt::blue );
+    color = mgr->colorValue( "SMESH", "backface_color", Qt::blue );
     aDlg->SetColor(4, color);
 
-    int iVal = mgr->integerValue( "SMESH", "SettingsWidth", 1 );
+    int iVal = mgr->integerValue( "SMESH", "element_width", 1 );
     aDlg->SetIntValue(1, iVal);
 
-    iVal = mgr->integerValue( "SMESH", "SettingsNodesSize", 3 );
+    iVal = mgr->integerValue( "SMESH", "node_size", 3 );
     aDlg->SetIntValue(2, iVal);
 
-    iVal = mgr->integerValue( "SMESH", "SettingsShrinkCoeff", 75 );
+    iVal = mgr->integerValue( "SMESH", "shrink_coeff", 75 );
     aDlg->SetIntValue(3, iVal);
 
     if (aDlg->exec()) {
-      mgr->setValue( "SMESH", "SettingsFillColor", aDlg->GetColor(1) );
-      mgr->setValue( "SMESH", "SettingsOutlineColor", aDlg->GetColor(2) );
-      mgr->setValue( "SMESH", "SettingsNodeColor", aDlg->GetColor(3) );
-      mgr->setValue( "SMESH", "SettingsBackFaceColor", aDlg->GetColor(4) );
+      mgr->setValue( "SMESH", "fill_color", aDlg->GetColor(1) );
+      mgr->setValue( "SMESH", "outline_color", aDlg->GetColor(2) );
+      mgr->setValue( "SMESH", "node_color", aDlg->GetColor(3) );
+      mgr->setValue( "SMESH", "backface_color", aDlg->GetColor(4) );
 
-      mgr->setValue( "SMESH", "SettingsWidth", aDlg->GetIntValue(1) );
-      mgr->setValue( "SMESH", "SettingsNodesSize", aDlg->GetIntValue(2) );
-      mgr->setValue( "SMESH", "SettingsShrinkCoeff", aDlg->GetIntValue(3) );
+      mgr->setValue( "SMESH", "element_width", aDlg->GetIntValue(1) );
+      mgr->setValue( "SMESH", "node_size", aDlg->GetIntValue(2) );
+      mgr->setValue( "SMESH", "shrink_coeff", aDlg->GetIntValue(3) );
     }
     
     delete aDlg;
@@ -1810,10 +1810,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 10071:
     {
       if (act->isOn()) {
-	mgr->setValue( "SMESH", "DispayEntity", true );
+	mgr->setValue( "SMESH", "display_entity", true );
       }
       else {
-	mgr->setValue( "SMESH", "DispayEntity", false );
+	mgr->setValue( "SMESH", "display_entity", false );
       }
       break;
     }
@@ -1822,19 +1822,19 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESHGUI_Preferences_SelectionDlg* aDlg = 
 	new SMESHGUI_Preferences_SelectionDlg( this );
 
-      QColor aColor = mgr->colorValue( "SMESH", "SettingsPreSelectColor", Qt::cyan );
+      QColor aColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
       aDlg->SetColor(1, aColor);
 
-      aColor = mgr->colorValue( "SMESH", "SettingsItemSelectColor", Qt::yellow );
+      aColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow );
       aDlg->SetColor(2, aColor);
 
-      aColor = mgr->colorValue( "SMESH", "SettingsSelectColor", Qt::white );
+      aColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white );
       aDlg->SetColor(3, aColor);
 
-      aDlg->SetWidth(1, mgr->integerValue( "SMESH", "SettingsPreSelectWidth", 5 ) );
-      aDlg->SetWidth(2, mgr->integerValue( "SMESH", "SettingsItemSelectWidth", 5 ) );
-      aDlg->SetPrecision(1, mgr->doubleValue( "SMESH", "SettingsNodeSelectTol", 0.025 ) );
-      aDlg->SetPrecision(2, mgr->doubleValue( "SMESH", "SettingsElementsSelectTol", 0.001 ) );
+      aDlg->SetWidth(1, mgr->integerValue( "SMESH", "highlight_width", 5 ) );
+      aDlg->SetWidth(2, mgr->integerValue( "SMESH", "selection_width", 5 ) );
+      aDlg->SetPrecision(1, mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ) );
+      aDlg->SetPrecision(2, mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ) );
 
       if (aDlg->exec()) {
         QColor aPreColor = aDlg->GetColor(1),
@@ -1845,14 +1845,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	double aTolNodes = aDlg->GetPrecision(1),
 	       aTolItems = aDlg->GetPrecision(2);
 
-	mgr->setValue( "SMESH", "SettingsPreSelectColor", aPreColor );
-	mgr->setValue( "SMESH", "SettingsItemSelectColor", aSelColor );
-	mgr->setValue( "SMESH", "SettingsSelectColor", aHiColor );
+	mgr->setValue( "SMESH", "highlight_color", aPreColor );
+	mgr->setValue( "SMESH", "selection_element_color", aSelColor );
+	mgr->setValue( "SMESH", "selection_object_color", aHiColor );
 
-	mgr->setValue( "SMESH", "SettingsPreSelectWidth", aPreWidth );
-	mgr->setValue( "SMESH", "SettingsItemSelectWidth", aSelWidth );
-	mgr->setValue( "SMESH", "SettingsNodeSelectTol", aTolNodes );
-	mgr->setValue( "SMESH", "SettingsElementsSelectTol", aTolItems );
+	mgr->setValue( "SMESH", "highlight_width", aPreWidth );
+	mgr->setValue( "SMESH", "selection_width", aSelWidth );
+	mgr->setValue( "SMESH", "selection_precision_node", aTolNodes );
+	mgr->setValue( "SMESH", "selection_precision_element", aTolItems );
 
 	// update current study settings
 	SMESH::UpdateSelectionProp( this );
@@ -2278,7 +2278,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       action( 10002 )->setOn( false );
       action( 10004 )->setOn( false );
       action( 10003 )->setOn( true );
-      mgr->setValue( "SMESH", "DisplayMode", "Wireframe");
+      mgr->setValue( "SMESH", "display_mode", "Wireframe");
       break;
     }
   case 10002:
@@ -2287,12 +2287,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       action( 10001 )->setOn( false );
       action( 10004 )->setOn( false );
       action( 10003 )->setOn( true );
-      mgr->setValue( "SMESH", "DisplayMode", "Shading");
+      mgr->setValue( "SMESH", "display_mode", "Shading");
       break;
     }
   case 10003:
     {
-      mgr->setValue( "SMESH", "Shrink", act->isOn() );
+      mgr->setValue( "SMESH", "display_mode", "Shrink" );
       break;
     }
   case 10004:
@@ -2301,7 +2301,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       action( 10001 )->setOn( false );
       action( 10002 )->setOn( false );
       action( 10003 )->setOn( false );
-      mgr->setValue( "SMESH", "DisplayMode", "Nodes" );
+      mgr->setValue( "SMESH", "display_mode", "Nodes" );
       break;
     }
 
@@ -2356,14 +2356,14 @@ bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
 
   // Display mode
   QString DisplayMode = "Shading";
-  if ( mgr->hasValue("SMESH","DisplayMode") )
-    DisplayMode = mgr->stringValue("SMESH","DisplayMode");
+  if ( mgr->hasValue("SMESH","display_mode") )
+    DisplayMode = mgr->stringValue("SMESH","display_mode");
   else
-    mgr->setValue("SMESH","DisplayMode", "Shading");
+    mgr->setValue("SMESH","display_mode", "Shading");
 
   bool Shrink = false;
-  if ( mgr->hasValue("SMESH","Shrink") )
-    Shrink = mgr->stringValue("SMESH","Shrink") == "yes";
+  if ( mgr->hasValue("SMESH","display_mode") )
+    Shrink = mgr->stringValue("SMESH","display_mode") == "Shrink";
 
   if (DisplayMode == "Wireframe") {
     // wireframe
@@ -2399,7 +2399,7 @@ bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
 //     myAutomaticUpdate = false;
 //   }
 
-  if ( mgr->booleanValue( "SMESH","DispayEntity", false ) )
+  if ( mgr->booleanValue( "SMESH","display_entity", false ) )
     action( 10071 )->setOn( true );
   else
     action( 10071 )->setOn( false );

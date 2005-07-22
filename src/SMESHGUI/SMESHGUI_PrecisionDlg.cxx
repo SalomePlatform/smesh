@@ -133,8 +133,8 @@ void SMESHGUI_PrecisionDlg::Init()
   bool isOk = false;
   int aVal = DEFAULT_VAL;
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
-  if (mgr && mgr->hasValue("SMESH", "ControlsPrecision")) {
-    QString aStr = mgr->stringValue("SMESH", "ControlsPrecision");
+  if (mgr && mgr->hasValue("SMESH", "controls_precision")) {
+    QString aStr = mgr->stringValue("SMESH", "controls_precision");
     aVal = aStr.toInt(&isOk);
   }
 
@@ -156,14 +156,14 @@ void SMESHGUI_PrecisionDlg::onOk()
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   if (myNotUseChk->isChecked()) {
     if (mgr) {
-      mgr->remove("SMESH", "ControlsPrecision");
+      mgr->remove("SMESH", "controls_precision");
     }
     SMESH::SetControlsPrecision(-1);
   } else {
     mySpinBox->clearFocus();
     int aVal = mySpinBox->value();
     if (mgr) {
-      mgr->setValue("SMESH", "ControlsPrecision", QString("%1").arg(aVal));
+      mgr->setValue("SMESH", "controls_precision", QString("%1").arg(aVal));
     }
     SMESH::SetControlsPrecision(aVal);
   }
