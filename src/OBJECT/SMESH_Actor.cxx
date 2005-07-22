@@ -850,7 +850,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   if( !mgr )
     return false;
 
-  QString aMode = mgr->stringValue( "DisplayMode", "SMESH" );
+  QString aMode = mgr->stringValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
   
   if(aMode.compare("Wireframe") == 0){
@@ -861,8 +861,7 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
     SetRepresentation(ePoint);
   }
   
-  aMode = mgr->stringValue( "Shrink", "SMESH" );
-  if(aMode == "yes"){
+  if(aMode == "Shrink"){
     SetShrink();
   }
 
