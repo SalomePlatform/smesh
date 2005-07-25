@@ -185,6 +185,8 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual void SetControlsPrecision( const long p ) { myControlsPrecision = p; }
   virtual long GetControlsPrecision() const { return myControlsPrecision; }
 
+  virtual void UpdateScalarBar();
+  
  protected:
   void SetControlMode(eControl theMode, bool theCheckEntityMode);
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);

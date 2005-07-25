@@ -113,6 +113,8 @@ class SMESH_Actor: public SALOME_Actor
 
   virtual void SetControlsPrecision( const long ) = 0;
   virtual long GetControlsPrecision() const = 0;
+
+  virtual void UpdateScalarBar() = 0;
 };
 
 

@@ -99,6 +99,8 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
     anActor->Delete();
     anActor = NULL;
   }
+  if( anActor )
+    anActor->UpdateScalarBar();
   return anActor;
 }
 
@@ -276,118 +278,9 @@ SMESH_ActorDef::SMESH_ActorDef()
   myScalarBarActor->SetVisibility(false);
   myScalarBarActor->SetLookupTable(myLookupTable);
 
-  vtkTextProperty* aScalarBarTitleProp = vtkTextProperty::New();
-
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return;
-
-  QColor aTColor = mgr->colorValue( "SMESH", "scalar_bar_title_color", QColor( 255, 255, 255 ) );
-  aScalarBarTitleProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
-
-  aScalarBarTitleProp->SetFontFamilyToArial();
-  
-  if ( mgr->hasValue( "SMESH", "scalar_bar_title_font" ) )
-  {
-    QFont f = mgr->fontValue( "SMESH", "scalar_bar_title_font" );
-    if ( f.family() == "Arial" )
-      aScalarBarTitleProp->SetFontFamilyToArial();
-    else if ( f.family() == "Courier" )
-      aScalarBarTitleProp->SetFontFamilyToCourier();
-    else if ( f.family() == "Times" )
-      aScalarBarTitleProp->SetFontFamilyToTimes();
-
-    if ( f.bold() )
-      aScalarBarTitleProp->BoldOn();
-    else
-      aScalarBarTitleProp->BoldOff();
-
-    if ( f.italic() )
-      aScalarBarTitleProp->ItalicOn();
-    else
-     aScalarBarTitleProp->ItalicOff();
-
-    if ( f.underline() )
-      aScalarBarTitleProp->ShadowOn();
-    else
-      aScalarBarTitleProp->ShadowOff();
-  }
-
-  myScalarBarActor->SetTitleTextProperty( aScalarBarTitleProp );
-  aScalarBarTitleProp->Delete();
-
-  vtkTextProperty* aScalarBarLabelProp = vtkTextProperty::New();
-
-  aTColor = mgr->colorValue( "SMESH", "scalar_bar_label_color", QColor( 255, 255, 255 ) );
-  aScalarBarLabelProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
-
-  aScalarBarLabelProp->SetFontFamilyToArial();
-  if( mgr->hasValue( "SMESH", "scalar_bar_label_font" ) )
-  {
-    QFont f = mgr->stringValue( "SMESH", "scalar_bar_label_font" );
-    if( f.family() == "Arial" )
-      aScalarBarLabelProp->SetFontFamilyToArial();
-    else if( f.family() == "Courier" )
-      aScalarBarLabelProp->SetFontFamilyToCourier();
-    else if( f.family() == "Times" )
-      aScalarBarLabelProp->SetFontFamilyToTimes();
-      
-    if ( f.bold() )
-      aScalarBarLabelProp->BoldOn();
-    else
-      aScalarBarLabelProp->BoldOff();
-
-    if ( f.italic() )
-      aScalarBarLabelProp->ItalicOn();
-    else
-      aScalarBarLabelProp->ItalicOff();
-
-    if( f.underline() )
-      aScalarBarLabelProp->ShadowOn();
-    else
-      aScalarBarLabelProp->ShadowOff();
-  }
-
-  myScalarBarActor->SetLabelTextProperty( aScalarBarLabelProp );
-  aScalarBarLabelProp->Delete();
-
-  bool horiz = ( mgr->integerValue( "SMESH", "scalar_bar_orientation" ) == 1 );
-  QString name = QString( "scalar_bar_%1_" ).arg( horiz ? "horizontal" : "vertical" );
-  if( horiz )
-    myScalarBarActor->SetOrientationToHorizontal();
-  else
-    myScalarBarActor->SetOrientationToVertical();
- 
-
-  float aXVal = horiz ? 0.20 : 0.01;
-  if( mgr->hasValue( "SMESH", name + "x" ) )
-    aXVal = mgr->doubleValue( "SMESH", name + "x", aXVal );
-    
-  float aYVal = horiz ? 0.01 : 0.1;
-  if( mgr->hasValue( "SMESH", name + "y" ) )
-    aYVal = mgr->doubleValue( "SMESH", name + "y", aYVal );
-  myScalarBarActor->SetPosition( aXVal, aYVal );
-
-  float aWVal = horiz ? 0.60 : 0.10;
-  if( mgr->hasValue( "SMESH", name + "width" ) )
-    aWVal = mgr->doubleValue( "SMESH", name + "width", aWVal );
-  myScalarBarActor->SetWidth( aWVal );
-
-  float aHVal = horiz ? 0.12 : 0.80;
-  if( mgr->hasValue( "SMESH", name + "height" ) )
-    aHVal = mgr->doubleValue( "SMESH", name + "height", aHVal );
-  myScalarBarActor->SetHeight( aHVal );
-
-  int anIntVal = 5;
-  if( mgr->hasValue( "SMESH", "scalar_bar_num_labels" ) )
-    anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_labels", anIntVal );
-  myScalarBarActor->SetNumberOfLabels( anIntVal == 0 ? 5: anIntVal );
-
-  anIntVal = 64;
-  if( mgr->hasValue( "SMESH", "scalar_bar_num_colors" ) )
-    anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_colors", anIntVal );
-  myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
-
 
   //Definition of points numbering pipeline
   //---------------------------------------
@@ -1604,4 +1497,120 @@ void SMESH_ActorDef::GetPlaneParam(float theDir[3], float& theDist, vtkPlane* th
   float anOrigin[3];
   thePlane->GetOrigin(anOrigin);
   ::PositionToDistance(GetUnstructuredGrid(),theDir,anOrigin,theDist);
+}
+
+void SMESH_ActorDef::UpdateScalarBar()
+{
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  if( !mgr )
+    return;
+
+  vtkTextProperty* aScalarBarTitleProp = vtkTextProperty::New();
+
+  QColor aTColor = mgr->colorValue( "SMESH", "scalar_bar_title_color", QColor( 255, 255, 255 ) );
+  aScalarBarTitleProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
+
+  aScalarBarTitleProp->SetFontFamilyToArial();
+
+  if ( mgr->hasValue( "SMESH", "scalar_bar_title_font" ) )
+  {
+    QFont f = mgr->fontValue( "SMESH", "scalar_bar_title_font" );
+    if ( f.family() == "Arial" )
+      aScalarBarTitleProp->SetFontFamilyToArial();
+    else if ( f.family() == "Courier" )
+      aScalarBarTitleProp->SetFontFamilyToCourier();
+    else if ( f.family() == "Times" )
+      aScalarBarTitleProp->SetFontFamilyToTimes();
+
+    if ( f.bold() )
+      aScalarBarTitleProp->BoldOn();
+    else
+      aScalarBarTitleProp->BoldOff();
+
+    if ( f.italic() )
+      aScalarBarTitleProp->ItalicOn();
+    else
+     aScalarBarTitleProp->ItalicOff();
+
+    if ( f.underline() )
+      aScalarBarTitleProp->ShadowOn();
+    else
+      aScalarBarTitleProp->ShadowOff();
+  }
+
+  myScalarBarActor->SetTitleTextProperty( aScalarBarTitleProp );
+  aScalarBarTitleProp->Delete();
+
+  vtkTextProperty* aScalarBarLabelProp = vtkTextProperty::New();
+
+  aTColor = mgr->colorValue( "SMESH", "scalar_bar_label_color", QColor( 255, 255, 255 ) );
+  aScalarBarLabelProp->SetColor( aTColor.red()/255., aTColor.green()/255., aTColor.blue()/255. );
+
+  aScalarBarLabelProp->SetFontFamilyToArial();
+  if( mgr->hasValue( "SMESH", "scalar_bar_label_font" ) )
+  {
+    QFont f = mgr->stringValue( "SMESH", "scalar_bar_label_font" );
+    if( f.family() == "Arial" )
+      aScalarBarLabelProp->SetFontFamilyToArial();
+    else if( f.family() == "Courier" )
+      aScalarBarLabelProp->SetFontFamilyToCourier();
+    else if( f.family() == "Times" )
+      aScalarBarLabelProp->SetFontFamilyToTimes();
+
+    if ( f.bold() )
+      aScalarBarLabelProp->BoldOn();
+    else
+      aScalarBarLabelProp->BoldOff();
+
+    if ( f.italic() )
+      aScalarBarLabelProp->ItalicOn();
+    else
+      aScalarBarLabelProp->ItalicOff();
+
+    if( f.underline() )
+      aScalarBarLabelProp->ShadowOn();
+    else
+      aScalarBarLabelProp->ShadowOff();
+  }
+
+  myScalarBarActor->SetLabelTextProperty( aScalarBarLabelProp );
+  aScalarBarLabelProp->Delete();
+
+  bool horiz = ( mgr->integerValue( "SMESH", "scalar_bar_orientation" ) == 1 );
+  QString name = QString( "scalar_bar_%1_" ).arg( horiz ? "horizontal" : "vertical" );
+  if( horiz )
+    myScalarBarActor->SetOrientationToHorizontal();
+  else
+    myScalarBarActor->SetOrientationToVertical();
+
+
+  float aXVal = horiz ? 0.20 : 0.01;
+  if( mgr->hasValue( "SMESH", name + "x" ) )
+    aXVal = mgr->doubleValue( "SMESH", name + "x", aXVal );
+
+  float aYVal = horiz ? 0.01 : 0.1;
+  if( mgr->hasValue( "SMESH", name + "y" ) )
+    aYVal = mgr->doubleValue( "SMESH", name + "y", aYVal );
+  myScalarBarActor->SetPosition( aXVal, aYVal );
+
+  float aWVal = horiz ? 0.60 : 0.10;
+  if( mgr->hasValue( "SMESH", name + "width" ) )
+    aWVal = mgr->doubleValue( "SMESH", name + "width", aWVal );
+  myScalarBarActor->SetWidth( aWVal );
+
+  float aHVal = horiz ? 0.12 : 0.80;
+  if( mgr->hasValue( "SMESH", name + "height" ) )
+    aHVal = mgr->doubleValue( "SMESH", name + "height", aHVal );
+  myScalarBarActor->SetHeight( aHVal );
+
+  int anIntVal = 5;
+  if( mgr->hasValue( "SMESH", "scalar_bar_num_labels" ) )
+    anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_labels", anIntVal );
+  myScalarBarActor->SetNumberOfLabels( anIntVal == 0 ? 5: anIntVal );
+
+  anIntVal = 64;
+  if( mgr->hasValue( "SMESH", "scalar_bar_num_colors" ) )
+    anIntVal = mgr->integerValue( "SMESH", "scalar_bar_num_colors", anIntVal );
+  myScalarBarActor->SetMaximumNumberOfColors( anIntVal == 0 ? 64 : anIntVal );
+  
 }
