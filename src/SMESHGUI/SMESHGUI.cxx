@@ -3267,8 +3267,16 @@ void SMESHGUI::createPreferences()
   int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
   int hv = addPreference( tr( "SMESH_HEIGHT" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_height" );
   setPreferenceProperty( xv, "step", 0.1 );
+  setPreferenceProperty( xv, "min", 0.0 );
+  setPreferenceProperty( xv, "max", 1.0 );
   setPreferenceProperty( yv, "step", 0.1 );
+  setPreferenceProperty( yv, "min", 0.0 );
+  setPreferenceProperty( yv, "max", 1.0 );
   setPreferenceProperty( wv, "step", 0.1 );
+  setPreferenceProperty( wv, "min", 0.0 );
+  setPreferenceProperty( wv, "max", 1.0 );
+  setPreferenceProperty( hv, "min", 0.0 );
+  setPreferenceProperty( hv, "max", 1.0 );
   setPreferenceProperty( hv, "step", 0.1 );    
 
   int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
@@ -3276,12 +3284,48 @@ void SMESHGUI::createPreferences()
   int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
   int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );
   int hh = addPreference( tr( "SMESH_HEIGHT" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_height" );
+  setPreferenceProperty( xv, "min", 0.0 );
+  setPreferenceProperty( xv, "max", 1.0 );
+  setPreferenceProperty( xv, "step", 0.1 );
+  setPreferenceProperty( xh, "min", 0.0 );
+  setPreferenceProperty( xh, "max", 1.0 );
   setPreferenceProperty( xh, "step", 0.1 );
+  setPreferenceProperty( yh, "min", 0.0 );
+  setPreferenceProperty( yh, "max", 1.0 );
   setPreferenceProperty( yh, "step", 0.1 );
+  setPreferenceProperty( wh, "min", 0.0 );
+  setPreferenceProperty( wh, "max", 1.0 );
   setPreferenceProperty( wh, "step", 0.1 );
+  setPreferenceProperty( hh, "min", 0.0 );
+  setPreferenceProperty( hh, "max", 1.0 );
   setPreferenceProperty( hh, "step", 0.1 );
 }
 
-void SMESHGUI::preferencesChanged( const QString&, const QString& )
+void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
+  if( sect=="SMESH" )
+  {
+    if( name=="scalar_bar_num_colors" || name=="scalar_bar_num_labels" || name=="scalar_bar_orientation" ||
+        name=="scalar_bar_vertical_x" || name=="scalar_bar_vertical_y" || name=="scalar_bar_vertical_width" ||
+        name=="scalar_bar_vertical_height" || name=="scalar_bar_horizontal_x" || name=="scalar_bar_horizontal_y" ||
+        name=="scalar_bar_horizontal_width" || name=="scalar_bar_horizontal_height" )
+    {
+      SVTK_ViewWindow* wnd = SMESH::GetViewWindow( this );
+      if( !wnd )
+        return;
+
+      vtkRenderer* r = wnd->getRenderer();
+      if( !r )
+        return;
+
+      vtkActorCollection* actors = r->GetActors();
+      if( !actors )
+        return;
+
+      actors->InitTraversal();
+      while( vtkActor* a = actors->GetNextActor() )
+        if( SMESH_Actor* sa = dynamic_cast<SMESH_Actor*>( a ) )
+          sa->UpdateScalarBar();
+    }
+  }
 }
