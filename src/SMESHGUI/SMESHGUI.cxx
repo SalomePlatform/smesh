@@ -3303,29 +3303,4 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
-  if( sect=="SMESH" )
-  {
-    if( name=="scalar_bar_num_colors" || name=="scalar_bar_num_labels" || name=="scalar_bar_orientation" ||
-        name=="scalar_bar_vertical_x" || name=="scalar_bar_vertical_y" || name=="scalar_bar_vertical_width" ||
-        name=="scalar_bar_vertical_height" || name=="scalar_bar_horizontal_x" || name=="scalar_bar_horizontal_y" ||
-        name=="scalar_bar_horizontal_width" || name=="scalar_bar_horizontal_height" )
-    {
-      SVTK_ViewWindow* wnd = SMESH::GetViewWindow( this );
-      if( !wnd )
-        return;
-
-      vtkRenderer* r = wnd->getRenderer();
-      if( !r )
-        return;
-
-      vtkActorCollection* actors = r->GetActors();
-      if( !actors )
-        return;
-
-      actors->InitTraversal();
-      while( vtkActor* a = actors->GetNextActor() )
-        if( SMESH_Actor* sa = dynamic_cast<SMESH_Actor*>( a ) )
-          sa->UpdateScalarBar();
-    }
-  }
 }

@@ -329,83 +329,89 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
 
   QColor titleColor (255, 255, 255);
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarTitleColor")) {
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_title_color")) {
     QStringList aTColor =
-      QStringList::split(":", mgr->stringValue("SMESH", "ScalarBarTitleColor"), false);
+      QStringList::split(":", mgr->stringValue("SMESH", "scalar_bar_title_color"), false);
     titleColor = QColor((aTColor.count() > 0 ? aTColor[0].toInt() : 255),
                         (aTColor.count() > 1 ? aTColor[1].toInt() : 255),
                         (aTColor.count() > 2 ? aTColor[2].toInt() : 255));
   }
   myTitleColorBtn->setPaletteBackgroundColor(titleColor);
   myTitleFontCombo->setCurrentItem(0);
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarTitleFont")) {
-    if (mgr->stringValue("SMESH", "ScalarBarTitleFont") == "Arial")
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_title_font")) {
+    QFont f = mgr->fontValue( "SMESH", "scalar_bar_title_font" );
+    if( f.family()=="Arial" )
       myTitleFontCombo->setCurrentItem(0);
-    if (mgr->stringValue("SMESH", "ScalarBarTitleFont") == "Courier")
+    if( f.family()=="Courier" )
       myTitleFontCombo->setCurrentItem(1);
-    if (mgr->stringValue("SMESH", "ScalarBarTitleFont") == "Times")
+    if( f.family()=="Times")
       myTitleFontCombo->setCurrentItem(2);
+  
+    myTitleBoldCheck->setChecked  ( f.bold() );
+    myTitleItalicCheck->setChecked( f.italic() );
+    myTitleShadowCheck->setChecked( f.underline() );
   }
-  myTitleBoldCheck->setChecked  (mgr && mgr->stringValue("SMESH", "ScalarBarTitleBold")   == "true");
-  myTitleItalicCheck->setChecked(mgr && mgr->stringValue("SMESH", "ScalarBarTitleItalic") == "true");
-  myTitleShadowCheck->setChecked(mgr && mgr->stringValue("SMESH", "ScalarBarTitleShadow") == "true");
 
   QColor labelColor (255, 255, 255);
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarLabelColor")) {
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_label_color")) {
     QStringList aLColor =
-      QStringList::split(":", mgr->stringValue("SMESH", "ScalarBarLabelColor"), false);
+      QStringList::split(":", mgr->stringValue("SMESH", "scalar_bar_label_color"), false);
     labelColor = QColor((aLColor.count() > 0 ? aLColor[0].toInt() : 255),
                         (aLColor.count() > 1 ? aLColor[1].toInt() : 255),
                         (aLColor.count() > 2 ? aLColor[2].toInt() : 255));
   }
   myLabelsColorBtn->setPaletteBackgroundColor(labelColor);
   myLabelsFontCombo->setCurrentItem(0);
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarLabelFont")) {
-    if (mgr->stringValue("SMESH", "ScalarBarLabelFont") == "Arial")
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_label_font")) {
+    QFont f = mgr->fontValue( "SMESH", "scalar_bar_label_font" );
+    if (f.family() == "Arial")
       myLabelsFontCombo->setCurrentItem(0);
-    if (mgr->stringValue("SMESH", "ScalarBarLabelFont") == "Courier")
+    if (f.family() == "Courier")
       myLabelsFontCombo->setCurrentItem(1);
-    if (mgr->stringValue("SMESH", "ScalarBarLabelFont") == "Times")
+    if (f.family() == "Times")
       myLabelsFontCombo->setCurrentItem(2);
+      
+    myLabelsBoldCheck  ->setChecked( f.bold() );
+    myLabelsItalicCheck->setChecked( f.italic() );
+    myLabelsShadowCheck->setChecked( f.underline() );
   }
-  myLabelsBoldCheck  ->setChecked(mgr && mgr->stringValue("SMESH", "ScalarBarLabelBold")   == "true");
-  myLabelsItalicCheck->setChecked(mgr && mgr->stringValue("SMESH", "ScalarBarLabelItalic") == "true");
-  myLabelsShadowCheck->setChecked(mgr && mgr->stringValue("SMESH", "ScalarBarLabelShadow") == "true");
 
   int aNbColors = 64;
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarNbOfColors"))
-    aNbColors = mgr->integerValue("SMESH", "ScalarBarNbOfColors");
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_num_colors"))
+    aNbColors = mgr->integerValue("SMESH", "scalar_bar_num_colors");
   myColorsSpin->setValue(aNbColors);
 
   int aNbLabels = 5;
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarNbOfLabels"))
-    aNbLabels = mgr->integerValue("SMESH", "ScalarBarNbOfLabels");
+  if (mgr && mgr->hasValue("SMESH", "scalar_bar_num_labels"))
+    aNbLabels = mgr->integerValue("SMESH", "scalar_bar_num_labels");
   myLabelsSpin->setValue(aNbLabels);
 
-  QString aOrientation = (mgr ? mgr->stringValue("SMESH", "ScalarBarOrientation") : "");
-  if (aOrientation == "Horizontal")
+  int aOrientation = ( mgr ? mgr->integerValue( "SMESH", "scalar_bar_orientation", 1 ) : 1 );
+  bool isHoriz = ( aOrientation==1 );
+  if (aOrientation == 1)
     myHorizRadioBtn->setChecked(true);
   else
     myVertRadioBtn->setChecked(true);
   myIniOrientation = myVertRadioBtn->isChecked();
 
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarXPosition"))
-    myIniX = mgr->doubleValue("SMESH", "ScalarBarXPosition");
+  QString name = isHoriz ? "scalar_bar_horizontal_%1" : "scalar_bar_vertical_%1";
+  if (mgr && mgr->hasValue("SMESH", name.arg( "x" )))
+    myIniX = mgr->doubleValue("SMESH", name.arg( "x" ));
   else
     myIniX = myHorizRadioBtn->isChecked() ? DEF_HOR_X : DEF_VER_X;
 
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarYPosition"))
-    myIniY = mgr->doubleValue("SMESH", "ScalarBarYPosition");
+  if (mgr && mgr->hasValue("SMESH", name.arg( "y" )))
+    myIniY = mgr->doubleValue("SMESH", name.arg( "y" ));
   else
     myIniY = myHorizRadioBtn->isChecked() ? DEF_HOR_Y : DEF_VER_Y;
 
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarWidth"))
-    myIniW = mgr->doubleValue("SMESH", "ScalarBarWidth");
+  if (mgr && mgr->hasValue("SMESH", name.arg( "width" )))
+    myIniW = mgr->doubleValue("SMESH", name.arg( "width" ));
   else
     myIniW = myHorizRadioBtn->isChecked() ? DEF_HOR_W : DEF_VER_W;
 
-  if (mgr && mgr->hasValue("SMESH", "ScalarBarHeight"))
-    myIniH = mgr->doubleValue("SMESH", "ScalarBarHeight");
+  if (mgr && mgr->hasValue("SMESH", name.arg( "height" )))
+    myIniH = mgr->doubleValue("SMESH", name.arg( "height" ));
   else
     myIniH = myHorizRadioBtn->isChecked() ? DEF_HOR_H : DEF_VER_H;
 
@@ -521,43 +527,46 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
     if (!mgr) return false;
 
     QColor titleColor = myTitleColorBtn->paletteBackgroundColor();
-    mgr->setValue("SMESH", "ScalarBarTitleColor",
-                  QString().sprintf("%d:%d:%d", titleColor.red(), titleColor.green(), titleColor.blue()));
-    if (myTitleFontCombo->currentItem() == 0)
-      mgr->setValue("SMESH", "ScalarBarTitleFont", "Arial");
-    else if (myTitleFontCombo->currentItem() == 1)
-      mgr->setValue("SMESH", "ScalarBarTitleFont", "Courier");
-    else
-      mgr->setValue("SMESH", "ScalarBarTitleFont", "Times");
+    mgr->setValue("SMESH", "scalar_bar_title_color", titleColor );
 
-    mgr->setValue("SMESH", "ScalarBarTitleBold"  , myTitleBoldCheck  ->isChecked() ? "true" : "false");
-    mgr->setValue("SMESH", "ScalarBarTitleItalic", myTitleItalicCheck->isChecked() ? "true" : "false");
-    mgr->setValue("SMESH", "ScalarBarTitleShadow", myTitleShadowCheck->isChecked() ? "true" : "false");
+    QFont f;
+    if (myTitleFontCombo->currentItem() == 0)
+      f.setFamily( "Arial" );
+    else if (myTitleFontCombo->currentItem() == 1)
+      f.setFamily( "Courier" );
+    else
+      f.setFamily( "Times");
+
+    f.setBold( myTitleBoldCheck  ->isChecked() );
+    f.setItalic( myTitleItalicCheck->isChecked() );
+    f.setUnderline( myTitleShadowCheck->isChecked() );
+    mgr->setValue( "SMESH", "scalar_bar_title_font", f );
 
     QColor labelColor = myLabelsColorBtn->paletteBackgroundColor();
-    mgr->setValue("SMESH", "ScalarBarLabelColor",
-                  QString().sprintf("%d:%d:%d", labelColor.red(), labelColor.green(),labelColor. blue()));
+    mgr->setValue("SMESH", "scalar_bar_label_color", labelColor );
 
     if (myLabelsFontCombo->currentItem() == 0)
-      mgr->setValue("SMESH", "ScalarBarLabelFont", "Arial");
+      f.setFamily( "Arial" );
     else if ( myLabelsFontCombo->currentItem() == 1 )
-      mgr->setValue("SMESH", "ScalarBarLabelFont", "Courier");
+      f.setFamily( "Courier");
     else
-      mgr->setValue("SMESH", "ScalarBarLabelFont", "Times");
+      f.setFamily( "Times");
 
-    mgr->setValue("SMESH", "ScalarBarLabelBold",   myLabelsBoldCheck->isChecked()   ? "true" : "false");
-    mgr->setValue("SMESH", "ScalarBarLabelItalic", myLabelsItalicCheck->isChecked() ? "true" : "false");
-    mgr->setValue("SMESH", "ScalarBarLabelShadow", myLabelsShadowCheck->isChecked() ? "true" : "false");
+    f.setBold( myLabelsBoldCheck  ->isChecked() );
+    f.setItalic( myLabelsItalicCheck->isChecked() );
+    f.setUnderline( myLabelsShadowCheck->isChecked() );
+    mgr->setValue( "SMESH", "scalar_bar_label_font", f );
 
-    mgr->setValue("SMESH", "ScalarBarNbOfColors", myColorsSpin->value());
-    mgr->setValue("SMESH", "ScalarBarNbOfLabels", myLabelsSpin->value());
+    mgr->setValue("SMESH", "scalar_bar_num_colors", myColorsSpin->value());
+    mgr->setValue("SMESH", "scalar_bar_num_labels", myLabelsSpin->value());
 
-    mgr->setValue("SMESH", "ScalarBarOrientation", myHorizRadioBtn->isChecked() ? "Horizontal" : "Vertical");
+    mgr->setValue("SMESH", "scalar_bar_orientation", myHorizRadioBtn->isChecked() ? 1 : 0 );
 
-    mgr->setValue("SMESH", "ScalarBarXPosition", myXSpin->value());
-    mgr->setValue("SMESH", "ScalarBarYPosition", myYSpin->value());
-    mgr->setValue("SMESH", "ScalarBarWidth",     myWidthSpin->value());
-    mgr->setValue("SMESH", "ScalarBarHeight",    myHeightSpin->value());
+    QString name = myHorizRadioBtn->isChecked() ? "scalar_bar_horizontal_%1" : "scalar_bar_vertical_%1";
+    mgr->setValue("SMESH", name.arg( "x" ), myXSpin->value());
+    mgr->setValue("SMESH", name.arg( "y" ), myYSpin->value());
+    mgr->setValue("SMESH", name.arg( "width" ),     myWidthSpin->value());
+    mgr->setValue("SMESH", name.arg( "height" ),    myHeightSpin->value());
   }
   return true;
 }
