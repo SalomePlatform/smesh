@@ -88,7 +88,7 @@ SMESHGUI_Preferences_ScalarBarDlg* SMESHGUI_Preferences_ScalarBarDlg::myDlg = 0;
 void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( SMESHGUI* theModule )
 {
   if (!myDlg) {
-    myDlg = new SMESHGUI_Preferences_ScalarBarDlg( theModule, false);
+    myDlg = new SMESHGUI_Preferences_ScalarBarDlg( theModule, true);
     myDlg->show();
   } else {
     myDlg->show();
@@ -108,7 +108,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( SMESHGUI* theModule
 void SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( SMESHGUI* theModule )
 {
   SMESHGUI_Preferences_ScalarBarDlg* aDlg =
-    new SMESHGUI_Preferences_ScalarBarDlg( theModule, true);
+    new SMESHGUI_Preferences_ScalarBarDlg( theModule, false);
   aDlg->exec();
 }
 

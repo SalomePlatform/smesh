@@ -89,7 +89,6 @@ public :
 
   virtual void contextMenuPopup( const QString&, QPopupMenu*, QString& );
 
-  virtual bool SetSettings       ( SUIT_Desktop* );
   virtual void BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
                                    SUIT_ViewWindow* = 0 );
 

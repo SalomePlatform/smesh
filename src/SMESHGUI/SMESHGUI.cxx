@@ -167,8 +167,6 @@ namespace{
 
   void Control( int theCommandID );
 
-  void SetDisplaySettings();
-
 
   // Definitions
   //=============================================================
@@ -524,53 +522,6 @@ namespace{
       SMESH::RepaintCurrentView();
     }
   }
-
-
-  void SetDisplaySettings()
-  {
-    SUIT_ResourceMgr* mgr = SMESHGUI::resourceMgr();
-    if( !mgr )
-      return;
-
-    SMESHGUI::GetSMESHGUI()->EmitSignalDeactivateDialog();
-    SMESHGUI_Preferences_ColorDlg *aDlg =
-      new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
-
-    QColor color = mgr->colorValue( "SMESH", "fill_color", QColor(0, 170, 255) );
-    aDlg->SetColor(1, color);
-
-    color = mgr->colorValue( "SMESH", "outline_color", QColor(0, 170, 255) );
-    aDlg->SetColor(2, color);
-
-    color = mgr->colorValue( "SMESH", "node_color", Qt::red );
-    aDlg->SetColor(3, color);
-
-    color = mgr->colorValue( "SMESH", "backface_color", Qt::blue );
-    aDlg->SetColor(4, color);
-
-    int iVal = mgr->integerValue( "SMESH", "element_width", 1 );
-    aDlg->SetIntValue(1, iVal);
-
-    iVal = mgr->integerValue( "SMESH", "node_size", 3 );
-    aDlg->SetIntValue(2, iVal);
-
-    iVal = mgr->integerValue( "SMESH", "shrink_coeff", 75 );
-    aDlg->SetIntValue(3, iVal);
-
-    if (aDlg->exec()) {
-      mgr->setValue( "SMESH", "fill_color", aDlg->GetColor(1) );
-      mgr->setValue( "SMESH", "outline_color", aDlg->GetColor(2) );
-      mgr->setValue( "SMESH", "node_color", aDlg->GetColor(3) );
-      mgr->setValue( "SMESH", "backface_color", aDlg->GetColor(4) );
-
-      mgr->setValue( "SMESH", "element_width", aDlg->GetIntValue(1) );
-      mgr->setValue( "SMESH", "node_size", aDlg->GetIntValue(2) );
-      mgr->setValue( "SMESH", "shrink_coeff", aDlg->GetIntValue(3) );
-    }
-    
-    delete aDlg;
-  }
-
   
   void Control( int theCommandID )
   {
@@ -1776,120 +1727,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     } 
     
-  case 1001:					// AUTOMATIC UPDATE PREFERENCES
-    {
-//       if (act->isOn()) {
-// 	mgr->setValue( "SMESH", "AutomaticUpdate", true );
-// 	myAutomaticUpdate = true;
-//       }
-//       else {
-// 	mgr->setValue( "SMESH", "AutomaticUpdate", false );
-// 	myAutomaticUpdate = false;
-//       }
-      break;
-    }
-
-  case 1003:					// MESH PREFERENCES
-    {
-      ::SetDisplaySettings();
-      break;
-    }
-
-  case 1005:
-    {
-      SMESHGUI_Preferences_ScalarBarDlg::ScalarBarPreferences( this );
-      break;
-    }
-
-  case 10070:
-    {
-      ( new SMESHGUI_PrecisionDlg( this ) )->exec();
-      break;
-    }
-
-  case 10071:
-    {
-      if (act->isOn()) {
-	mgr->setValue( "SMESH", "display_entity", true );
-      }
-      else {
-	mgr->setValue( "SMESH", "display_entity", false );
-      }
-      break;
-    }
-  case 1006:
-    {
-      SMESHGUI_Preferences_SelectionDlg* aDlg = 
-	new SMESHGUI_Preferences_SelectionDlg( this );
-
-      QColor aColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
-      aDlg->SetColor(1, aColor);
-
-      aColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow );
-      aDlg->SetColor(2, aColor);
-
-      aColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white );
-      aDlg->SetColor(3, aColor);
-
-      aDlg->SetWidth(1, mgr->integerValue( "SMESH", "highlight_width", 5 ) );
-      aDlg->SetWidth(2, mgr->integerValue( "SMESH", "selection_width", 5 ) );
-      aDlg->SetPrecision(1, mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ) );
-      aDlg->SetPrecision(2, mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ) );
-
-      if (aDlg->exec()) {
-        QColor aPreColor = aDlg->GetColor(1),
-	       aSelColor = aDlg->GetColor(2),
-	       aHiColor = aDlg->GetColor(3);
-	int aPreWidth = aDlg->GetWidth(1),
-	    aSelWidth = aDlg->GetWidth(2);
-	double aTolNodes = aDlg->GetPrecision(1),
-	       aTolItems = aDlg->GetPrecision(2);
-
-	mgr->setValue( "SMESH", "highlight_color", aPreColor );
-	mgr->setValue( "SMESH", "selection_element_color", aSelColor );
-	mgr->setValue( "SMESH", "selection_object_color", aHiColor );
-
-	mgr->setValue( "SMESH", "highlight_width", aPreWidth );
-	mgr->setValue( "SMESH", "selection_width", aSelWidth );
-	mgr->setValue( "SMESH", "selection_precision_node", aTolNodes );
-	mgr->setValue( "SMESH", "selection_precision_element", aTolItems );
-
-	// update current study settings
-	SMESH::UpdateSelectionProp( this );
-
-	if( vtkwnd ) {
-	  // update VTK viewer properties
-	  SVTK_RenderWindowInteractor* anInteractor =
-	    dynamic_cast<SVTK_RenderWindowInteractor*>( vtkwnd->getRWInteractor() );
-	  if (anInteractor) {
-	    anInteractor->SetSelectionProp(aSelColor.red()/255., aSelColor.green()/255.,
-					   aSelColor.blue()/255., aSelWidth);
-	    anInteractor->SetSelectionTolerance(aTolNodes, aTolItems);
-	    SVTK_InteractorStyle* aStyle =
-	      dynamic_cast<SVTK_InteractorStyle*>( anInteractor->GetInteractorStyle() );
-
-	    if (aStyle)
-	      aStyle->setPreselectionProp(aPreColor.red()/255., aPreColor.green()/255.,
-					  aPreColor.blue()/255., aPreWidth);
-	  }
-	  // update actors
-	  vtkRenderer* aRenderer = vtkwnd->getRenderer();
-	  vtkActorCollection *aCollection = aRenderer->GetActors();
-	  aCollection->InitTraversal();
-	  while(vtkActor *anAct = aCollection->GetNextActor()){
-	    if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	      anActor->SetHighlightColor(aHiColor.red()/255., aHiColor.green()/255.,
-					 aHiColor.blue()/255.);
-	      anActor->SetPreHighlightColor(aPreColor.red()/255., aPreColor.green()/255.,
-					    aPreColor.blue()/255.);
-	    }
-	  }
-	}
-      }
-
-      break;
-    }
-
   case 1100:					// EDIT HYPOTHESIS
     {
       if(checkLock(aStudy)) break;
@@ -2271,42 +2108,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-  case 10001:				// DISPLAY MODE PREFERENCE
-    {
-      // Wireframe
-      act->setOn( true );
-      action( 10002 )->setOn( false );
-      action( 10004 )->setOn( false );
-      action( 10003 )->setOn( true );
-      mgr->setValue( "SMESH", "display_mode", "Wireframe");
-      break;
-    }
-  case 10002:
-    {
-      act->setOn( true );
-      action( 10001 )->setOn( false );
-      action( 10004 )->setOn( false );
-      action( 10003 )->setOn( true );
-      mgr->setValue( "SMESH", "display_mode", "Shading");
-      break;
-    }
-  case 10003:
-    {
-      mgr->setValue( "SMESH", "display_mode", "Shrink" );
-      break;
-    }
-  case 10004:
-    {
-      act->setOn( true );
-      action( 10001 )->setOn( false );
-      action( 10002 )->setOn( false );
-      action( 10003 )->setOn( false );
-      mgr->setValue( "SMESH", "display_mode", "Nodes" );
-      break;
-    }
-
   }
-
   //updateObjBrowser();
   return true;
 }
@@ -2338,81 +2140,6 @@ bool SMESHGUI::OnMouseMove( QMouseEvent * pe, SUIT_ViewWindow * wnd )
 //=============================================================================
 bool SMESHGUI::OnKeyPress( QKeyEvent * pe, SUIT_ViewWindow * wnd )
 {
-  return true;
-}
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-bool SMESHGUI::SetSettings(SUIT_Desktop* parent)
-{
-  SMESHGUI::GetSMESHGUI();
-  
-  SUIT_ResourceMgr* mgr = resourceMgr();
-  if( !mgr )
-    return false;
-
-  // Display mode
-  QString DisplayMode = "Shading";
-  if ( mgr->hasValue("SMESH","display_mode") )
-    DisplayMode = mgr->stringValue("SMESH","display_mode");
-  else
-    mgr->setValue("SMESH","display_mode", "Shading");
-
-  bool Shrink = false;
-  if ( mgr->hasValue("SMESH","display_mode") )
-    Shrink = mgr->stringValue("SMESH","display_mode") == "Shrink";
-
-  if (DisplayMode == "Wireframe") {
-    // wireframe
-    action( 10004 )->setOn( false );
-    action( 10002 )->setOn( false );
-    action( 10001 )->setOn( true );
-    action( 10003 )->setOn( true );
-  }
-  else if (DisplayMode == "Nodes") {
-    // poins
-    action( 10004 )->setOn( true );
-    action( 10002 )->setOn( false );
-    action( 10001 )->setOn( false );
-    action( 10003 )->setOn( false );
-  }
-  else {
-    // default is shading
-    action( 10004 )->setOn( false );
-    action( 10002 )->setOn( true );
-    action( 10001 )->setOn( false );
-    action( 10003 )->setOn( true );
-  }
-
-  action( 10003 )->setOn( Shrink );
-
-  // Automatic Update
-//   if ( mgr->booleanValue( "SMESH","AutomaticUpdate", false ) ) {
-//     action( 1001 )->setOn( true );
-//     myAutomaticUpdate = true;
-//   }
-//   else {
-//     action( 1001 )->setOn( false );
-//     myAutomaticUpdate = false;
-//   }
-
-  if ( mgr->booleanValue( "SMESH","display_entity", false ) )
-    action( 10071 )->setOn( true );
-  else
-    action( 10071 )->setOn( false );
-
-  // Selection
-  SMESH::UpdateSelectionProp( this );
-
-  // menus disable
-  action( 111 )->setEnabled( false );	// IMPORT DAT
-
-  //action( 112 )->setEnabled( false );
-  //parent->menuBar()->setItemEnabled(112, false);	// IMPORT UNV
-
   return true;
 }
 
@@ -2572,16 +2299,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  414, "REVOLUTION",      "ICON_REVOLUTION" );
   createSMESHAction(  415, "MAP",             "ICON_MAP" );
   createSMESHAction(  416, "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
-  createSMESHAction( 10001, "WIRE",           "ICON_WIRE",   0, true );
-  createSMESHAction( 10002, "SHADE",          "ICON_SHADE",  0, true );
-  createSMESHAction( 10003, "SHRINK",         "ICON_SHRINK", 0, true );
-  createSMESHAction( 10004, "NODES",          "ICON_POINTS", 0, true );
-  createSMESHAction( 1001, "AUTO_UPD", "", 0, true );
-  createSMESHAction( 1003, "COLORS" );
-  createSMESHAction( 1005, "SCALAR_BAR" );
-  createSMESHAction( 1006, "SELECTION" );
-  createSMESHAction( 10070, "PRECISION", "", 0, true );
-  createSMESHAction( 10071, "DISP_ENT", "", 0, true );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
@@ -2617,23 +2334,16 @@ void SMESHGUI::initialize( CAM_Application* app )
       meshId   = createMenu( tr( "MEN_MESH" ),   -1, 70, 10 ),
       ctrlId   = createMenu( tr( "MEN_CTRL" ),   -1, 60, 10 ),
       modifyId = createMenu( tr( "MEN_MODIFY" ), -1, 40, 10 ),
-      prefId   = createMenu( tr( "MEN_PREF" ),   -1,  4, 10 ),
       viewId   = createMenu( tr( "MEN_VIEW" ),   -1,  2 );
 
   createMenu( separator(), fileId );
 
   int importId = createMenu( tr( "MEN_IMPORT" ), fileId, 11, 10 ),
       exportId = createMenu( tr( "MEN_EXPORT" ), fileId, 12, 10 ),
-
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
       renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
-      transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
-
-      meshPrefId = createMenu( tr( "MEN_MESH" ), prefId, 100 ),
-
-      dispModeId = createMenu( tr( "MEN_DISPMODE" ), meshPrefId, 1000 ),
-      qualityId  = createMenu( tr( "MEN_QUALITY" ),  meshPrefId, 1007 );
+      transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 );
 
   createMenu( 111, importId, -1 );
   createMenu( 112, importId, -1 );
@@ -2721,25 +2431,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 416, modifyId, -1 );
   createMenu( 414, modifyId, -1 );
   createMenu( 415, modifyId, -1 );
-
-  createMenu( 10001, dispModeId, -1 );
-  createMenu( 10002, dispModeId, -1 );
-  createMenu( 10004, dispModeId, -1 );
-  createMenu( 10003, dispModeId, -1 );
-
-  createMenu( 1001, prefId, -1 );
-  createMenu( separator(), prefId, -1 );
-  createMenu( 1003, prefId, -1 );
-  createMenu( separator(), prefId, -1 );
-  createMenu( 1005, prefId, -1 );
-  createMenu( separator(), prefId, -1 );
-  createMenu( 1006, prefId, -1 );
-  createMenu( separator(), prefId, -1 );
-
-  createMenu( 10070, qualityId, -1 );
-  createMenu( 10071, qualityId, -1 );
-
-  createMenu( separator(), prefId, -1 );
 
   createMenu( 214, viewId, -1 );
 
@@ -3080,7 +2771,6 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   setMenuShown( true );
   setToolShown( true );
-  SetSettings( desktop() );
 
   return res;
 }
