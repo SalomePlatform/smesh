@@ -884,6 +884,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
   bool aResult = process(aMeshEditor, anIds.inout());
   if (aResult) {
     if (myActor) {
+      mySelectionMgr->clearSelected();
       SMESH::UpdateView();
     }
 
