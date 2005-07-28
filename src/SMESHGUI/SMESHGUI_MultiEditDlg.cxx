@@ -404,7 +404,9 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
     QLineEdit* aNameEdit = mySubmeshChk->isChecked() ? mySubmesh : myGroup;
     if (nbSel == 1) {
       Handle(SALOME_InteractiveObject) anIO = aList.First();
-      anIO.IsNull() ? aNameEdit->clear() : aNameEdit->setText(anIO->getName());
+      QString aName = "";
+      SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aName);
+      anIO.IsNull() ? aNameEdit->clear() : aNameEdit->setText(aName);
 
       if (mySubmeshChk->isChecked()) {
         SMESH::SMESH_subMesh_var aSubMesh =
