@@ -231,6 +231,8 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
 
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   mySMESHGUI->SetActiveDialogBox(this);
 
   // Costruction of the logical filter for the elements: mesh/sub-mesh/group
