@@ -2588,13 +2588,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Numbering
   //-------------------------------------------------
   anId = popupMgr()->insert( tr( "MEN_NUM" ), -1, -1 );
-
+  
   popupMgr()->insert( action( 9010 ), anId, -1 );
-  popupMgr()->setRule( action( 9010 ), aMeshInVTK + "&&" + hasNodes, true );
+  popupMgr()->setRule( action( 9010 ), aMeshInVTK + "&& isVisible &&" + hasNodes, true );//@
   popupMgr()->setRule( action( 9010 ), "{'Point'} in labeledTypes", false );
 
   popupMgr()->insert( action( 9011 ), anId, -1 );
-  popupMgr()->setRule( action( 9011 ), aMeshInVTK + "&&" + hasElems, true );
+  popupMgr()->setRule( action( 9011 ), aMeshInVTK + "&& isVisible &&" + hasElems, true );
   popupMgr()->setRule( action( 9011 ), "{'Cell'} in labeledTypes", false );
 
   popupMgr()->insert( separator(), -1, -1 );
@@ -2630,21 +2630,21 @@ void SMESHGUI::initialize( CAM_Application* app )
   anId = popupMgr()->insert( tr( "MEN_DISP_ENT" ), -1, -1 );
 
   popupMgr()->insert( action( 217 ), anId, -1 ); // EDGES
-  popupMgr()->setRule( action( 217 ), aDiffElemsInVTK + "&&" + hasEdges, true );
+  popupMgr()->setRule( action( 217 ), aDiffElemsInVTK + "&& isVisible &&" + hasEdges, true );
   popupMgr()->setRule( action( 217 ), "{'Edge'} in entityMode", false );
 
   popupMgr()->insert( action( 218 ), anId, -1 ); // FACES
-  popupMgr()->setRule( action( 218 ), aDiffElemsInVTK + "&&" + hasFaces, true );
+  popupMgr()->setRule( action( 218 ), aDiffElemsInVTK + "&& isVisible &&" + hasFaces, true );
   popupMgr()->setRule( action( 218 ), "{'Face'} in entityMode", false );
 
   popupMgr()->insert( action( 219 ), anId, -1 ); // VOLUMES
-  popupMgr()->setRule( action( 219 ), aDiffElemsInVTK + "&&" + hasVolumes, true );
+  popupMgr()->setRule( action( 219 ), aDiffElemsInVTK + "&& isVisible &&" + hasVolumes, true );
   popupMgr()->setRule( action( 219 ), "{'Volume'} in entityMode", false );
 
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( 220 ), anId, -1 ); // ALL
-  popupMgr()->setRule( action( 220 ), aDiffElemsInVTK + "&& not( elemTypes in entityMode )", true );
+  popupMgr()->setRule( action( 220 ), aDiffElemsInVTK + "&& isVisible && not( elemTypes in entityMode )", true );
 
   //-------------------------------------------------
   // Color / Size
