@@ -192,6 +192,7 @@ namespace{
     if(!filename.isEmpty()) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      theComponentMesh->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
 
       try {
 	SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
