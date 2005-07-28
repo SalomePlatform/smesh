@@ -124,6 +124,9 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      myIsBusy( false )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
+
+  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
   initDialog(false);
   if (!theGroup->_is_nil())
     init(theGroup);
@@ -131,9 +134,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     mySelectSubMesh->setEnabled(false);
     mySelectGroup->setEnabled(false);
   }
-
-  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
-
+  
   /* Move widget on the botton right corner of main widget */
   int x, y ;
   mySMESHGUI->DefineDlgPosition(this, x, y);
