@@ -524,23 +524,30 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
     TColStd_MapOfInteger newIndices;
     
     QStringList aListId = QStringList::split(" ", theNewText, false);
+    bool allOk = true;
     for (int i = 0; i < aListId.count(); i++) {
       if( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
       {
 	newIndices.Add( n->GetID() );
 	myNbOkNodes++;
       }
+      else
+	allOk = false;	
     }
     
     mySelector->AddOrRemoveIndex( myActor->getIO(), newIndices, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( myActor->getIO(), true, true );
     
-    bool aNodesOK = false;
-    if (myIsPoly && myElementType == SMDSAbs_Face && aListId.count() >=3 ){
-      myNbOkNodes = aListId.count();
-      aNodesOK = true;
-    }
+    myNbOkNodes = ( allOk && myNbNodes == aListId.count() );
+    
+    if (myIsPoly)
+      {
+	if ( !allOk || myElementType != SMDSAbs_Face || aListId.count() < 3 )
+	  myNbOkNodes = 0;
+	else
+	  myNbOkNodes = aListId.count();
+      }
   }
   
   if(myNbOkNodes) {
