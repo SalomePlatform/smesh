@@ -259,7 +259,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
 
-  SetShrinkFactor( SMESH::GetFloat( "SMESH", "shrink_coeff", 0.75 ) );
+  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
 
   myName = "";
   myIO = NULL;
