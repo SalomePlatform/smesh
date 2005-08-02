@@ -247,7 +247,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 {
   int nbNodes = P.size();
 
-  if ( nbNodes != 3 && nbNodes != 4 )
+  if ( nbNodes < 3 )
     return 0;
 
   // Compute lengths of the sides
@@ -271,10 +271,15 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   }
   else
   {
-    double aMinLen = Min( Min( aLen[ 0 ], aLen[ 1 ] ), Min( aLen[ 2 ], aLen[ 3 ] ) );
+    double aMinLen = aLen[ 0 ];
+    double aMaxLen = aLen[ 0 ];
+    
+    for(int i = 1; i < nbNodes ; i++ ){
+      aMinLen = Min( aMinLen, aLen[ i ] );
+      aMaxLen = Max( aMaxLen, aLen[ i ] );
+    }
     if ( aMinLen <= Precision::Confusion() )
       return 0.;
-    double aMaxLen = Max( Max( aLen[ 0 ], aLen[ 1 ] ), Max( aLen[ 2 ], aLen[ 3 ] ) );
     
     return aMaxLen / aMinLen;
   }
