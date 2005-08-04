@@ -2330,7 +2330,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   // ----- create menu --------------
   int fileId   = createMenu( tr( "MEN_FILE" ),   -1,  1 ),
       editId   = createMenu( tr( "MEN_EDIT" ),   -1,  3 ),
-      toolsId  = createMenu( tr( "MEN_TOOLS" ),  -1,  5, 10 ),
+      toolsId  = createMenu( tr( "MEN_TOOLS" ),  -1,  5, 50 ),
       hypoId   = createMenu( tr( "MEN_HYPO" ),   -1, 50, 10 ),
       meshId   = createMenu( tr( "MEN_MESH" ),   -1, 70, 10 ),
       ctrlId   = createMenu( tr( "MEN_CTRL" ),   -1, 60, 10 ),
