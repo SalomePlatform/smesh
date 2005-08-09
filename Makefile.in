@@ -119,6 +119,7 @@ mesh_sew_conform_freeborders.png \
 mesh_sew_bordertoside.png \
 mesh_sew_sideelements.png \
 mesh_merge_nodes.png \
+mesh_merge_elements.png \
 select1.png \
 SMESH_en.xml \
 SMESH.config \

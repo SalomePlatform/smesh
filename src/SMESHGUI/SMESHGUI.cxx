@@ -60,6 +60,7 @@
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_MergeNodesDlg.h"
+#include "SMESHGUI_EditMeshDlg.h"
 #include "SMESHGUI_MeshPatternDlg.h"
 #include "SMESHGUI_PrecisionDlg.h"
 #include "SMESHGUI_Selection.h"
@@ -1058,7 +1059,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
 
-  QAction* act = action( theCommandID );
+  //QAction* act = action( theCommandID );
 
   switch (theCommandID)	{
   case 33:					// DELETE
@@ -1145,7 +1146,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 302:					// DISPLAY ONLY
     {
       SMESH::EDisplaing anAction;
-      switch(theCommandID){
+      switch (theCommandID) {
       case 300:	anAction = SMESH::eErase; break;
       case 301:	anAction = SMESH::eDisplay; break;
       case 302:	anAction = SMESH::eDisplayOnly; break;
@@ -1153,15 +1154,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
-      if( aSel )
+      if (aSel)
         aSel->selectedObjects( selected );
 
-      if ( vtkwnd ) {
-	SALOME_ListIteratorOfListIO It(selected);
+      if (vtkwnd) {
+	SALOME_ListIteratorOfListIO It (selected);
 	for (; It.More(); It.Next()) {
 	  Handle(SALOME_InteractiveObject) IOS = It.Value();
 	  if (IOS->hasEntry()) {
-	    SMESH::UpdateView(anAction,IOS->getEntry());
+            SMESH::UpdateView(anAction, IOS->getEntry());
+            if (anAction == SMESH::eDisplayOnly)
+              anAction = SMESH::eDisplay;
 	  }
 	}
       }
@@ -2006,6 +2009,22 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+  case 4066: // MERGE EQUAL ELEMENTS
+    {
+      if (checkLock(aStudy)) break;
+      if (vtkwnd) {
+	EmitSignalDeactivateDialog();
+	new SMESHGUI_EditMeshDlg(this,
+                                 "SMESH_MERGE_ELEMENTS_TITLE",
+                                 "ICON_DLG_MERGE_ELEMENTS",
+                                 1); // MergeEqualElemets
+      } else {
+	SUIT_MessageBox::warn1(desktop(),
+			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
+			      tr("SMESH_BUT_OK"));
+      }
+      break;
+    }
     
 
   case 5000: // HYPOTHESIS
@@ -2289,6 +2308,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4063, "SYM",             "ICON_SMESH_SYMMETRY_PLANE" );
   createSMESHAction( 4064, "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
+  createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
   createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
@@ -2420,6 +2440,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4063, transfId, -1 );
   createMenu( 4064, transfId, -1 );
   createMenu( 4065, transfId, -1 );
+  createMenu( 4066, transfId, -1 );
 
   createMenu( 406, modifyId, -1 );
   createMenu( 407, modifyId, -1 );
@@ -2497,6 +2518,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4063, addRemTb );
   createTool( 4064, addRemTb );
   createTool( 4065, addRemTb );
+  createTool( 4066, addRemTb );
   createTool( separator(), addRemTb );
 
   createTool( 406, modifyTb );
@@ -2579,11 +2601,10 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasFaces("({'Face'} in elemTypes)"),
     hasVolumes("({'Volume'} in elemTypes)");
 
-  QString aSelCount = QString( "%1 = 1" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
   QString lc = QtxPopupMgr::Selection::defEquality();
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
-  QString aMeshInVTK = aClient + "&&" + aType;// + "&&" + aSelCount;
+  QString aMeshInVTK = aClient + "&&" + aType;
   
   //-------------------------------------------------
   // Numbering
@@ -2750,6 +2771,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   //-------------------------------------------------
   aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
   QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
+  QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
   QString aRule = aClient + " and " + aType + " and " + aSelCount + " and " + anActiveVTK;
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
   popupMgr()->setRule( action( 301 ), aRule + "&&" + isNotEmpty + "&&" + isInvisible, true);

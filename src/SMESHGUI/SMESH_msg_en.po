@@ -703,6 +703,10 @@ msgstr "Sewing"
 msgid "SMESH_MERGE_NODES"
 msgstr "Merge nodes"
 
+#Merge elements
+msgid "SMESH_MERGE_ELEMENTS_TITLE"
+msgstr "Merge elements"
+
 #Extrusion
 msgid "SMESH_EXTRUSION"
 msgstr "Extrusion"
@@ -1992,6 +1996,9 @@ msgstr "Sewing"
 msgid "MEN_MERGE"
 msgstr "Merge nodes"
 
+msgid "MEN_MERGE_ELEMENTS"
+msgstr "Merge elements"
+
 msgid "MEN_MOVE"
 msgstr "Move Node"
 
@@ -2318,6 +2325,9 @@ msgstr "Sewing"
 msgid "TOP_MERGE"
 msgstr "Merge nodes"
 
+msgid "TOP_MERGE_ELEMENTS"
+msgstr "Merge elements"
+
 msgid "TOP_MOVE"
 msgstr "Move Node"
 
@@ -2588,6 +2598,9 @@ msgstr "Sewing"
 
 msgid "STB_MERGE"
 msgstr "Merge nodes"
+
+msgid "STB_MERGE_ELEMENTS"
+msgstr "Merge elements"
 
 msgid "STB_MOVE"
 msgstr "Move Node"

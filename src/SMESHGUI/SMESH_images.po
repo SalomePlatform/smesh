@@ -110,6 +110,10 @@ msgstr "mesh_sew_sideelements.png"
 msgid "ICON_SMESH_MERGE_NODES"
 msgstr "mesh_merge_nodes.png"
 
+#Merge elements
+msgid "ICON_DLG_MERGE_ELEMENTS"
+msgstr "mesh_merge_elements.png"
+
 #-----------------------------------------------------------
 # Hypothesis
 #-----------------------------------------------------------
