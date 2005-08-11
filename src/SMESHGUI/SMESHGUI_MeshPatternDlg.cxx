@@ -127,7 +127,7 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
   myCreationDlg = 0;
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
-  
+
   Init();
 }
 
@@ -415,7 +415,6 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     bool toCreatePolyedrs = myCreatePolyedrsChk->isChecked();
     if ( myPattern->MakeMesh( myMesh, toCreatePolygons, toCreatePolyedrs ) ) {
       mySelectionMgr->clearSelected();
-      SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
       bool autoUpdate = SMESHGUI::automaticUpdate();
       if (!isRefine() && autoUpdate) {
 	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
@@ -429,7 +428,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
 	}
       }
       SMESH::UpdateView();
-      
+
       mySMESHGUI->updateObjBrowser(true);
       return true;
     } else {
@@ -1265,9 +1264,9 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
 
   if (aMesh) {
     QStringList aListId = QStringList::split(" ", theNewText, false);
-    
+
     TColStd_MapOfInteger newIndices;
-    
+
     for (int i = 0; i < aListId.count(); i++) {
       const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
       if (e && e->GetType() == (myType == Type_2d ? SMDSAbs_Face : SMDSAbs_Volume))

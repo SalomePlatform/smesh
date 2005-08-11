@@ -93,7 +93,7 @@ namespace SMESH{
 	      if(!aMesh->_is_nil()){
 		aVisualObj.reset(new SMESH_MeshObj(aMesh));
 		aVisualObj->Update();
-		TVisualObjCont::value_type aValue(aKey,aVisualObj); 
+		TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		VISUAL_OBJ_CONT.insert(aValue);
 		return aVisualObj;
 	      }
@@ -145,8 +145,9 @@ namespace SMESH{
   SVTK_ViewWindow*
   GetViewWindow(const SalomeApp_Module* theModule)
   {
-    if(SalomeApp_Application* anApp = theModule->getApp())
+    if (SalomeApp_Application* anApp = theModule->getApp())
       return dynamic_cast<SVTK_ViewWindow*>(anApp->desktop()->activeWindow());
+    return NULL;
   }
 
   SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager* theMgr,
@@ -568,8 +569,8 @@ namespace SMESH{
 
 
   //----------------------------------------------------------------------------
-  int GetNameOfSelectedNodes(SVTK_Selector* theSelector, 
-			     const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedNodes(SVTK_Selector* theSelector,
+			     const Handle(SALOME_InteractiveObject)& theIO,
 			     QString& theName)
   {
     theName = "";
@@ -582,8 +583,8 @@ namespace SMESH{
     return aMapIndex.Extent();
   }
 
-  int GetNameOfSelectedElements(SVTK_Selector* theSelector, 
-				const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedElements(SVTK_Selector* theSelector,
+				const Handle(SALOME_InteractiveObject)& theIO,
 				QString& theName)
   {
     theName = "";
@@ -603,12 +604,12 @@ namespace SMESH{
   }
 
 
-  int GetEdgeNodes(SVTK_Selector* theSelector, 
+  int GetEdgeNodes(SVTK_Selector* theSelector,
 		   const TVisualObjPtr& theVisualObject,
-		   int& theId1, 
+		   int& theId1,
 		   int& theId2)
   {
-    const SALOME_ListIO& selected = theSelector->StoredIObjects(); 
+    const SALOME_ListIO& selected = theSelector->StoredIObjects();
 
     if ( selected.Extent() != 1 )
       return -1;
@@ -665,7 +666,7 @@ namespace SMESH{
     }
     return -1;
   }
-  
+
 
   int GetNameOfSelectedElements(SalomeApp_SelectionMgr *theMgr,
 				const Handle(SALOME_InteractiveObject)& theIO,
@@ -763,7 +764,7 @@ namespace SMESH{
       vtkRenderer *aRenderer = aWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
-      
+
       while ( vtkActor *anAct = aCollection->GetNextActor())
       {
         if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>( anAct ) )
