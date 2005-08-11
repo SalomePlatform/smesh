@@ -74,22 +74,44 @@ class SMESH_MeshEditor {
   // Reverse theElement orientation
 
 
+  /*!
+   * \brief Fuse neighbour triangles into quadrangles.
+   * \param theElems     - The triangles to be fused.
+   * \param theCriterion - Is used to choose a neighbour to fuse with.
+   * \param theMaxAngle  - Is a max angle between element normals at which fusion
+   *                       is still performed; theMaxAngle is mesured in radians.
+   * \retval bool - Success or not.
+   */
   bool TriToQuad (std::set<const SMDS_MeshElement*> &  theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion,
                   const double                         theMaxAngle);
-  // Fuse neighbour triangles into quadrangles.
-  // theCriterion is used to choose a neighbour to fuse with.
-  // theMaxAngle is a max angle between element normals at which
-  // fusion is still performed; theMaxAngle is mesured in radians.
 
+  /*!
+   * \brief Split quadrangles into triangles.
+   * \param theElems     - The faces to be splitted.
+   * \param theCriterion - Is used to choose a diagonal for splitting.
+   * \retval bool - Success or not.
+   */
   bool QuadToTri (std::set<const SMDS_MeshElement*> &  theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
-  // Cut quadrangles into triangles.
-  // theCriterion is used to choose a diagonal to cut
 
+  /*!
+   * \brief Split quadrangles into triangles.
+   * \param theElems  - The faces to be splitted.
+   * \param the13Diag - Is used to choose a diagonal for splitting.
+   * \retval bool - Success or not.
+   */
   bool QuadToTri (std::set<const SMDS_MeshElement*> & theElems,
                   const bool                          the13Diag);
-  // Cut quadrangles into triangles
+
+  /*!
+   * \brief Find better diagonal for splitting.
+   * \param theQuad      - The face to find better splitting of.
+   * \param theCriterion - Is used to choose a diagonal for splitting.
+   * \retval int - 1 for 1-3 diagonal, 2 for 2-4, -1 - for errors.
+   */
+  int BestSplit (const SMDS_MeshElement*              theQuad,
+                 SMESH::Controls::NumericalFunctorPtr theCriterion);
 
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };

@@ -1346,11 +1346,20 @@ msgstr "Sort list"
 msgid "SMESHGUI_MultiEditDlg::TO_ALL"
 msgstr "Apply to all"
 
+msgid "SMESHGUI_MultiEditDlg::SPLIT_JOIN_CRITERION"
+msgstr "Criterion"
+
+msgid "SMESHGUI_MultiEditDlg::USE_DIAGONAL_1_3"
+msgstr "Use diagonal 1-3"
+
+msgid "SMESHGUI_MultiEditDlg::USE_DIAGONAL_2_4"
+msgstr "Use diagonal 2-4"
+
+msgid "SMESHGUI_MultiEditDlg::USE_NUMERIC_FUNC"
+msgstr "Use numeric functor"
+
 msgid "SMESHGUI_MultiEditDlg::SELECT_FROM"
 msgstr "Select from"
-
-msgid "SMESHGUI_MultiEditDlg::GROUP"
-msgstr "Group"
 
 msgid "SMESHGUI_ChangeOrientationDlg::CAPTION"
 msgstr "Modification of orientation"
@@ -1358,11 +1367,11 @@ msgstr "Modification of orientation"
 msgid "SMESHGUI_UnionOfTrianglesDlg::CAPTION"
 msgstr "Union of triangles"
 
+msgid "SMESHGUI_UnionOfTrianglesDlg::MAXIMUM_ANGLE"
+msgstr "Maximum bending angle"
+
 msgid "SMESHGUI_CuttingOfQuadsDlg::CAPTION"
 msgstr "Cutting of quadrangles"
-
-msgid "SMESHGUI_CuttingOfQuadsDlg::USE_DIAGONAL_2_4"
-msgstr "Use diagonal 2-4"
 
 msgid "SMESHGUI_CuttingOfQuadsDlg::PREVIEW"
 msgstr "Preview"

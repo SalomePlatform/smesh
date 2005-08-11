@@ -25,6 +25,7 @@
 //  $Header$
 
 #include "SMESHGUI.h"
+
 #include "SMESHGUI_InitMeshDlg.h"
 #include "SMESHGUI_AddSubMeshDlg.h"
 #include "SMESHGUI_NodesDlg.h"
@@ -39,7 +40,6 @@
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 #include "SMESHGUI_Preferences_SelectionDlg.h"
 #include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_EditHypothesesDlg.h"
@@ -66,12 +66,36 @@
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 
-#include <SVTK_InteractorStyle.h>
-#include <SVTK_RenderWindowInteractor.h>
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_GroupUtils.h"
+#include "SMESHGUI_FilterUtils.h"
+#include "SMESHGUI_PatternUtils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_HypothesesUtils.h"
 
 #include "SMESH_Actor.h"
 #include "SMESH_Object.h"
 #include "SMESH_TypeFilter.hxx"
+
+#include "SalomeApp_Tools.h"
+#include "SalomeApp_Study.h"
+#include "SalomeApp_NameDlg.h"
+#include "SalomeApp_DataOwner.h"
+#include "SalomeApp_Application.h"
+#include "SalomeApp_Preferences.h"
+#include "SalomeApp_VTKSelector.h"
+#include "SalomeApp_ImportOperation.h"
+
+#include <SVTK_ViewWindow.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_InteractorStyle.h>
+#include <SVTK_RenderWindowInteractor.h>
+
+#include <VTKViewer_ViewManager.h>
+
+#include "OB_Browser.h"
 
 #include "SUIT_Tools.h"
 #include "SUIT_MessageBox.h"
@@ -83,63 +107,28 @@
 #include "SUIT_Study.h"
 #include "SUIT_Session.h"
 
-#include "SALOME_NamingService.hxx"
-#include "SALOME_ListIteratorOfListIO.hxx"
-#include "SALOME_InteractiveObject.hxx"
-#include "SALOME_ListIO.hxx"
-#include <SALOME_LifeCycleCORBA.hxx>
-
-#include "OB_Browser.h"
-
 #include "QtxPopupMgr.h"
 
-#include "SalomeApp_Tools.h"
-#include "SalomeApp_Study.h"
-#include "SalomeApp_NameDlg.h"
-#include "SalomeApp_DataOwner.h"
-#include "SalomeApp_Application.h"
-#include "SalomeApp_Preferences.h"
-#include "SalomeApp_VTKSelector.h"
-
-#include "SalomeApp_ImportOperation.h"
-
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
-
-#include <VTKViewer_ViewManager.h>
-
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_GEOMGenUtils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_GroupUtils.h"
-#include "SMESHGUI_FilterUtils.h"
-#include "SMESHGUI_PatternUtils.h"
-#include "SMESHGUI_VTKUtils.h"
+#include "SALOME_ListIO.hxx"
+#include "SALOME_ListIteratorOfListIO.hxx"
+#include "SALOME_InteractiveObject.hxx"
+#include "SALOME_NamingService.hxx"
+#include "SALOME_LifeCycleCORBA.hxx"
 
 #include "SALOMEconfig.h"
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 
 // QT Includes
 #define	 INCLUDE_MENUITEM_DEF
-#include <qapplication.h>
-#include <qlineedit.h>
-#include <qmenudata.h>
-#include <qmenubar.h>
 #include <qpopupmenu.h>
-#include <qfont.h>
 #include <qstring.h>
-#include <qpainter.h>
-#include <qcheckbox.h>
-#include <qcolordialog.h>
-#include <qspinbox.h>
-#include <qlist.h>
 #include <qwidget.h>
-#include <qevent.h>
 #include <qaction.h>
-#include <qradiobutton.h>
 
+// BOOST Includes
 #include <boost/shared_ptr.hpp>
 
+// VTK Includes
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkActorCollection.h>

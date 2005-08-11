@@ -1,21 +1,21 @@
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -80,11 +80,11 @@ module SMESH
     long_array indexes;
   };
 
-  struct PointStruct { double x; 
-  		       double y; 
-  		       double z; } ; 
+  struct PointStruct { double x;
+  		       double y;
+  		       double z; } ;
   struct DirStruct   { PointStruct PS ; } ;          // analog to Occ Direction
-   
+
   struct AxisStruct  { double x;
   		       double y;
   		       double z;
@@ -92,7 +92,7 @@ module SMESH
   		       double vy;
   		       double vz; } ;
 
-  
+
   /*!
    * Enumeration for element type, like in SMDS
    */
@@ -104,10 +104,10 @@ module SMESH
     FACE,
     VOLUME
   };
-  
+
   /*!
-   * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods) 
-   */  
+   * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods)
+   */
   enum Hypothesis_Status // in the order of severity
   {
     HYP_OK,
@@ -120,11 +120,11 @@ module SMESH
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM       // bad dimension
-  }; 
-  
+  };
+
   /*!
    * Enumeration for DriverMED read status (used by ImportMEDFile() method)
-   */  
+   */
   enum DriverMED_ReadStatus // in the order of severity
   {
     DRS_OK,
@@ -133,11 +133,11 @@ module SMESH
                         // so the numbers from the file are ignored
     DRS_WARN_SKIP_ELEM, // some elements were skipped due to incorrect file data
     DRS_FAIL            // general failure (exception etc.)
-  }; 
+  };
 
   /*!
    * Enumeration for DriverMED (used by Perform() method)
-   */  
+   */
   enum MED_VERSION // in the order of severity
   {
     MED_V2_1,
@@ -154,7 +154,7 @@ module SMESH
      */
     long_array GetIDs();
   };
-  
+
   interface SMESH_GroupBase;
   interface SMESH_Group;
   interface SMESH_GroupOnGeom;
@@ -162,27 +162,26 @@ module SMESH
   interface SMESH_MeshEditor;
   interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
   {
-    /*!
-     * Associate a Shape to a Mesh created with NewEmpty
-     */
-
-//     boolean SetMesh(in GEOM::GEOM_Object anObject)
-//        raises (SALOME::SALOME_Exception);
+    ///*!
+    // * Associate a Shape to a Mesh created with NewEmpty
+    // */
+    //boolean SetMesh(in GEOM::GEOM_Object anObject)
+    //  raises (SALOME::SALOME_Exception);
 
     /*!
      * Get the subMesh object associated to a subShape. The subMesh object
      * gives access to nodes and elements IDs.
-     * SubMesh will be used instead of SubShape in a next idl version to 
+     * SubMesh will be used instead of SubShape in a next idl version to
      * adress a specific subMesh...
      */
     SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
       raises (SALOME::SALOME_Exception);
 
-    /*!
-     * Create a subMesh without reference to a subShape
-     */
-//     SMESH_subMesh NewEmpty()
-//       raises (SALOME::SALOME_Exception);
+    ///*!
+    // * Create a subMesh without reference to a subShape
+    // */
+    //SMESH_subMesh NewEmpty()
+    //  raises (SALOME::SALOME_Exception);
 
     /*!
      * Get geom shape to mesh. A result may be nil
@@ -217,41 +216,41 @@ module SMESH
     void RemoveGroup(in SMESH_GroupBase aGroup)
       raises (SALOME::SALOME_Exception);
 
-     /*!
+    /*!
      *  Remove group with its contents
      */
     void RemoveGroupWithContents( in SMESH_GroupBase aGroup )
-        raises (SALOME::SALOME_Exception);
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Union of two groups
-     *    New group is created. All mesh elements that are 
+     *    New group is created. All mesh elements that are
      *    present in initial groups are added to the new one
      */
     SMESH_Group UnionGroups (in SMESH_GroupBase aGroup1,
                              in SMESH_GroupBase aGroup2,
                              in string          name )
-        raises (SALOME::SALOME_Exception);
+      raises (SALOME::SALOME_Exception);
 
     /*!
      *  Intersection of two groups
-     *  New group is created. All mesh elements that are 
+     *  New group is created. All mesh elements that are
      *  present in both initial groups are added to the new one.
      */
     SMESH_Group IntersectGroups (in SMESH_GroupBase aGroup1,
                                  in SMESH_GroupBase aGroup2,
                                  in string          name )
-        raises (SALOME::SALOME_Exception);
+      raises (SALOME::SALOME_Exception);
 
-      /*!
-       *  Cut of two groups
-       *  New group is created. All mesh elements that are present in 
-       *  main group but do not present in tool group are added to the new one
-       */
-      SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
-                             in SMESH_GroupBase aToolGroup,
-                             in string          name )
-          raises (SALOME::SALOME_Exception);
+    /*!
+     *  Cut of two groups
+     *  New group is created. All mesh elements that are present in
+     *  main group but do not present in tool group are added to the new one
+     */
+    SMESH_Group CutGroups (in SMESH_GroupBase aMainGroup,
+			   in SMESH_GroupBase aToolGroup,
+			   in string          name )
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Add hypothesis to the mesh, under a particular subShape
@@ -262,9 +261,9 @@ module SMESH
      * @params
      * - aSubShape : subShape obtained by a shape explode in GEOM
      *   (or main shape)
-     * - anHyp : hypothesis object 
+     * - anHyp : hypothesis object
      * @return
-     * - OK if the hypothesis is compatible with the subShape 
+     * - OK if the hypothesis is compatible with the subShape
      *   (and all previous hypothesis on the subShape)
      * - NOK if the hypothesis is not compatible with the subShape
      *   (or one previous hypothesis on the subShape)
@@ -275,7 +274,6 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 //     boolean AddHypothesis(in SMESH_subMesh aSubMesh, in SMESH_Hypothesis anHyp)
 //       raises (SALOME::SALOME_Exception);
-
 
     /*!
      * Remove an hypothesis previouly added with AddHypothesis.
@@ -314,17 +312,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the internal Id 
+     * Get the internal Id
      */
-    long GetId();     
+    long GetId();
 
     /*!
-     * Get the study Id 
+     * Get the study Id
      */
-    long GetStudyId();    
-    
-    SMESH_MeshEditor GetMeshEditor() 
-       raises (SALOME::SALOME_Exception);
+    long GetStudyId();
+
+    /*!
+     * Obtain instance of SMESH_MeshEditor
+     */
+    SMESH_MeshEditor GetMeshEditor()
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to different MED Formats
@@ -336,6 +337,7 @@ module SMESH
      */
     void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
       raises (SALOME::SALOME_Exception);
+
     /*!
      * Export Mesh to MED_V2_1 MED format
      * Works, just the same as ExportToMED, with MED_VERSION parameter equal to MED_V2_1.
@@ -360,6 +362,9 @@ module SMESH
     SALOME_MED::MESH GetMEDMesh()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Get informations about mesh contents
+     */
     long NbNodes()
       raises (SALOME::SALOME_Exception);
 
@@ -411,37 +416,40 @@ module SMESH
     long_array GetNodesId()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Get mesh description
+     */
     string Dump();
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource
   {
     /*!
-     * 
+     *
      */
     long GetNumberOfElements()
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * 
+     *
      */
     long GetNumberOfNodes( in boolean all )
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * 
+     *
      */
     long_array GetElementsId()
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * 
+     *
      */
     long_array GetElementsByType( in ElementType theType )
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * 
+     *
      */
     long_array GetNodesId()
       raises (SALOME::SALOME_Exception);
@@ -459,9 +467,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get the internal Id 
+     * Get the internal Id
      */
-    long GetId();    
+    long GetId();
 
     /*!
      * Get MED subMesh
@@ -469,14 +477,13 @@ module SMESH
     SALOME_MED::FAMILY GetFamily()
       raises (SALOME::SALOME_Exception);
   };
-  
+
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
   interface NumericalFunctor;
-  interface SMESH_MeshEditor {
-
-
+  interface SMESH_MeshEditor
+  {
     boolean RemoveElements(in long_array IDsOfElements);
 
     boolean RemoveNodes(in long_array IDsOfNodes);
@@ -488,8 +495,6 @@ module SMESH
     boolean AddFace(in long_array IDsOfNodes);
 
     boolean AddVolume(in long_array IDsOfNodes);
-
-    //boolean AddPolygonalFace (in long_array IdsOfNodes);
 
     /*!
      *  Create volume of many faces, giving nodes for each face.
@@ -515,25 +520,73 @@ module SMESH
     boolean DeleteDiag(in long NodeID1, in long NodeID2);
 
     boolean Reorient(in long_array IDsOfElements);
-    
-    boolean ReorientObject(in SMESH_IDSource  theObject);
 
-    boolean TriToQuad(in long_array       IDsOfElements,
-                      in NumericalFunctor Criterion,
-                      in double           MaxAngle);
-    
-    boolean TriToQuadObject(in SMESH_IDSource   theObject,
-			    in NumericalFunctor Criterion,
-			    in double           MaxAngle);
-    
-    boolean QuadToTri(in long_array       IDsOfElements,
-                      in NumericalFunctor Criterion);
+    boolean ReorientObject(in SMESH_IDSource theObject);
 
-    boolean SplitQuad(in long_array IDsOfElements,
-                      in boolean    Diag13);
+    /*!
+     * \brief Fuse neighbour triangles into quadrangles.
+     * \param theElems     The triangles to be fused.
+     * \param theCriterion Is used to choose a neighbour to fuse with.
+     * \param theMaxAngle  Is a max angle between element normals at which fusion
+     *                     is still performed; theMaxAngle is mesured in radians.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean TriToQuad (in long_array       IDsOfElements,
+		       in NumericalFunctor Criterion,
+		       in double           MaxAngle);
 
-    boolean SplitQuadObject(in SMESH_IDSource   theObject,
-			    in boolean    Diag13);
+    /*!
+     * \brief Fuse neighbour triangles into quadrangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean TriToQuadObject (in SMESH_IDSource   theObject,
+			     in NumericalFunctor Criterion,
+			     in double           MaxAngle);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     * \param theElems     The faces to be splitted.
+     * \param theCriterion Is used to choose a diagonal for splitting.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean QuadToTri (in long_array       IDsOfElements,
+		       in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean QuadToTriObject (in SMESH_IDSource   theObject,
+			     in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     * \param theElems  The faces to be splitted.
+     * \param the13Diag Is used to choose a diagonal for splitting.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean SplitQuad (in long_array IDsOfElements,
+		       in boolean    Diag13);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean SplitQuadObject (in SMESH_IDSource theObject,
+			     in boolean        Diag13);
+
+    /*!
+     *  Find better splitting of the given quadrangle.
+     *  \param IDOfQuad  ID of the quadrangle to be splitted.
+     *  \param Criterion A criterion to choose a diagonal for splitting.
+     *  \return 1 if 1-3 diagonal is better, 2 if 2-4
+     *          diagonal is better, 0 if error occurs.
+     */
+    long BestSplit (in long             IDOfQuad,
+		    in NumericalFunctor Criterion);
 
     enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
 
@@ -576,7 +629,7 @@ module SMESH
 			     in double          AngleInRadians,
 			     in long            NbOfSteps,
 			     in double          Tolerance);
-                       
+
     void ExtrusionSweep(in long_array      IDsOfElements,
                         in DirStruct       StepVector,
                         in long            NbOfSteps);
@@ -595,7 +648,7 @@ module SMESH
 
     enum Extrusion_Error {
       EXTR_OK,
-      EXTR_NO_ELEMENTS, 
+      EXTR_NO_ELEMENTS,
       EXTR_PATH_NOT_EDGE,
       EXTR_BAD_PATH_SHAPE,
       EXTR_BAD_STARTING_NODE,
@@ -640,7 +693,7 @@ module SMESH
     void TranslateObject (in SMESH_IDSource  theObject,
 			  in DirStruct       Vector,
 			  in boolean         Copy);
-    
+
     void Rotate (in long_array       IDsOfElements,
                  in AxisStruct       Axis,
                  in double           AngleInRadians,
@@ -650,7 +703,7 @@ module SMESH
 		       in AxisStruct      Axis,
 		       in double          AngleInRadians,
 		       in boolean         Copy);
-    
+
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes);
 

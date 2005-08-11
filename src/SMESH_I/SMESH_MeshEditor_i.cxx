@@ -1,23 +1,23 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -49,7 +49,7 @@ using namespace std;
 
 //=======================================================================
 //function : addAxis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 static TCollection_AsciiString& addAxis(TCollection_AsciiString&  theStr,
@@ -67,7 +67,7 @@ static TCollection_AsciiString& addAxis(TCollection_AsciiString&  theStr,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -78,7 +78,7 @@ SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh* theMesh)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -104,7 +104,7 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -129,7 +129,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -153,7 +153,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -216,7 +216,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -242,7 +242,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddVolume(const SMESH::
 #ifdef _DEBUG_
   SMESH_Gen_i::AddToCurrentPyScript( "print \"AddVolume: \", isDone" );
 #endif
-  
+
   return true;
 };
 
@@ -316,7 +316,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -328,7 +328,7 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
   const SMDS_MeshNode * node = GetMeshDS()->FindNode( NodeID );
   if ( !node )
     return false;
-  
+
   GetMeshDS()->MoveNode(node, x, y, z);
 
   // Update Python script
@@ -344,7 +344,7 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -368,7 +368,7 @@ CORBA::Boolean SMESH_MeshEditor_i::InverseDiag(CORBA::Long NodeID1,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -392,7 +392,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -417,7 +417,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -440,14 +440,12 @@ CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theO
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
-CORBA::Boolean
-  SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfElements,
-                                 SMESH::NumericalFunctor_ptr Criterion,
-                                 CORBA::Double               MaxAngle)
+CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfElements,
+                                              SMESH::NumericalFunctor_ptr Criterion,
+                                              CORBA::Double               MaxAngle)
 {
   set<const SMDS_MeshElement*> faces;
   for (int i = 0; i < IDsOfElements.length(); i++)
@@ -457,7 +455,7 @@ CORBA::Boolean
     if ( elem && elem->GetType() == SMDSAbs_Face)
       faces.insert( elem );
   }
-  SMESH::NumericalFunctor_i* aNumericalFunctor = 
+  SMESH::NumericalFunctor_i* aNumericalFunctor =
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
   SMESH::Controls::NumericalFunctorPtr aCrit;
   if ( !aNumericalFunctor )
@@ -468,8 +466,8 @@ CORBA::Boolean
   // Update Python script
   TCollection_AsciiString str ("isDone = mesh_editor.TriToQuad(");
   SMESH_Gen_i::AddArray( str, IDsOfElements ) += ", None, ";
-  str += (Standard_Real) MaxAngle;
-  SMESH_Gen_i::AddToCurrentPyScript( str + ")" );
+  str += TCollection_AsciiString((Standard_Real) MaxAngle) + ")";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
 #ifdef _DEBUG_
   SMESH_Gen_i::AddToCurrentPyScript( "print \"TriToQuad: \", isDone" );
 #endif
@@ -480,14 +478,12 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
-CORBA::Boolean
-  SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
-				       SMESH::NumericalFunctor_ptr Criterion,
-				       CORBA::Double               MaxAngle)
+CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
+                                                    SMESH::NumericalFunctor_ptr Criterion,
+                                                    CORBA::Double               MaxAngle)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = TriToQuad(anElementsId, Criterion, MaxAngle);
@@ -502,8 +498,8 @@ CORBA::Boolean
   // Update Python script
   TCollection_AsciiString str ("isDone = mesh_editor.TriToQuadObject(");
   SMESH_Gen_i::AddObject( str, theObject ) += ", None, ";
-  str += (Standard_Real) MaxAngle;
-  SMESH_Gen_i::AddToCurrentPyScript( str + ")" );
+  str += TCollection_AsciiString((Standard_Real) MaxAngle) + ")";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
 #ifdef _DEBUG_
   SMESH_Gen_i::AddToCurrentPyScript( "print \"TriToQuadObject: \", isDone" );
 #endif
@@ -513,13 +509,11 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
-CORBA::Boolean
-  SMESH_MeshEditor_i::QuadToTri(const SMESH::long_array &   IDsOfElements,
-                                SMESH::NumericalFunctor_ptr Criterion)
+CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfElements,
+                                              SMESH::NumericalFunctor_ptr Criterion)
 {
   set<const SMDS_MeshElement*> faces;
   for (int i = 0; i < IDsOfElements.length(); i++)
@@ -529,7 +523,7 @@ CORBA::Boolean
     if ( elem && elem->GetType() == SMDSAbs_Face)
       faces.insert( elem );
   }
-  SMESH::NumericalFunctor_i* aNumericalFunctor = 
+  SMESH::NumericalFunctor_i* aNumericalFunctor =
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
   SMESH::Controls::NumericalFunctorPtr aCrit;
   if ( !aNumericalFunctor )
@@ -540,7 +534,7 @@ CORBA::Boolean
 
   // Update Python script
   TCollection_AsciiString str ("isDone = mesh_editor.QuadToTri(");
-  SMESH_Gen_i::AddArray( str, IDsOfElements ) += ", None ), ";
+  SMESH_Gen_i::AddArray( str, IDsOfElements ) += ", None )";
   SMESH_Gen_i::AddToCurrentPyScript( str );
 #ifdef _DEBUG_
   SMESH_Gen_i::AddToCurrentPyScript( "print \"QuadToTri: \", isDone" );
@@ -552,13 +546,40 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
+CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
+                                                    SMESH::NumericalFunctor_ptr Criterion)
+{
+  SMESH::long_array_var anElementsId = theObject->GetIDs();
+  CORBA::Boolean isDone = QuadToTri(anElementsId, Criterion);
 
-CORBA::Boolean
-  SMESH_MeshEditor_i::SplitQuad(const SMESH::long_array & IDsOfElements,
-                                CORBA::Boolean            Diag13)
+  // Clear python line(s), created by QuadToTri()
+  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
+#ifdef _DEBUG_
+  aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
+#endif
+
+  // Update Python script
+  TCollection_AsciiString str ("isDone = mesh_editor.QuadToTriObject(");
+  SMESH_Gen_i::AddObject( str, theObject ) += ", None )";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
+#ifdef _DEBUG_
+  SMESH_Gen_i::AddToCurrentPyScript( "print \"QuadToTriObject: \", isDone" );
+#endif
+
+  return isDone;
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfElements,
+                                              CORBA::Boolean            Diag13)
 {
   set<const SMDS_MeshElement*> faces;
   for (int i = 0; i < IDsOfElements.length(); i++)
@@ -572,8 +593,8 @@ CORBA::Boolean
   // Update Python script
   TCollection_AsciiString str ("isDone = mesh_editor.SplitQuad(");
   SMESH_Gen_i::AddArray( str, IDsOfElements ) += ", ";
-  str += TCollection_AsciiString( Diag13 );
-  SMESH_Gen_i::AddToCurrentPyScript( str + ")" );
+  str += TCollection_AsciiString( Diag13 ) + ")";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
 #ifdef _DEBUG_
   SMESH_Gen_i::AddToCurrentPyScript( "print \"SplitQuad: \", isDone" );
 #endif
@@ -584,13 +605,11 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
-
-CORBA::Boolean
-  SMESH_MeshEditor_i::SplitQuadObject(SMESH::SMESH_IDSource_ptr theObject,
-				      CORBA::Boolean            Diag13)
+CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr theObject,
+                                                    CORBA::Boolean            Diag13)
 {
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = SplitQuad(anElementsId, Diag13);
@@ -614,9 +633,34 @@ CORBA::Boolean
   return isDone;
 }
 
+//=============================================================================
+/*!
+ *  BestSplit
+ */
+//=============================================================================
+CORBA::Long SMESH_MeshEditor_i::BestSplit (CORBA::Long                 IDOfQuad,
+                                           SMESH::NumericalFunctor_ptr Criterion)
+{
+  const SMDS_MeshElement* quad = GetMeshDS()->FindElement(IDOfQuad);
+  if (quad && quad->GetType() == SMDSAbs_Face && quad->NbNodes() == 4)
+  {
+    SMESH::NumericalFunctor_i* aNumericalFunctor =
+      dynamic_cast<SMESH::NumericalFunctor_i*>(SMESH_Gen_i::GetServant(Criterion).in());
+    SMESH::Controls::NumericalFunctorPtr aCrit;
+    if (aNumericalFunctor)
+      aCrit = aNumericalFunctor->GetNumericalFunctor();
+    else
+      aCrit.reset(new SMESH::Controls::AspectRatio());
+
+    ::SMESH_MeshEditor anEditor (_myMesh);
+    return anEditor.BestSplit(quad, aCrit);
+  }
+  return -1;
+}
+
 //=======================================================================
 //function : Smooth
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean
@@ -632,7 +676,7 @@ CORBA::Boolean
 
 //=======================================================================
 //function : SmoothParametric
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean
@@ -648,7 +692,7 @@ CORBA::Boolean
 
 //=======================================================================
 //function : SmoothObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean
@@ -664,7 +708,7 @@ CORBA::Boolean
 
 //=======================================================================
 //function : SmoothParametricObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean
@@ -680,7 +724,7 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -743,7 +787,7 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -774,7 +818,7 @@ CORBA::Boolean
   str += (Standard_Integer) MaxNbOfIterations;
   str += ", ";
   str += (Standard_Real) MaxAspectRatio;
-  if ( Method == ::SMESH_MeshEditor::CENTROIDAL )
+  if ( Method == SMESH::SMESH_MeshEditor::CENTROIDAL_SMOOTH )
     str += ", SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH, ";
   else
     str += ", SMESH.SMESH_MeshEditor.LAPLACIAN_SMOOTH, ";
@@ -790,7 +834,7 @@ CORBA::Boolean
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -804,7 +848,7 @@ void SMESH_MeshEditor_i::RenumberNodes()
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -818,7 +862,7 @@ void SMESH_MeshEditor_i::RenumberElements()
 
 //=======================================================================
 //function : RotationSweep
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElements,
@@ -858,7 +902,7 @@ void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElement
 
 //=======================================================================
 //function : RotationSweepObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
@@ -885,7 +929,7 @@ void SMESH_MeshEditor_i::RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject
 
 //=======================================================================
 //function : ExtrusionSweep
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElements,
@@ -923,7 +967,7 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
 
 //=======================================================================
 //function : ExtrusionSweepObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
@@ -945,7 +989,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
 }
 //=======================================================================
 //function : ExtrusionSweepObject1D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
@@ -973,7 +1017,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObj
 
 //=======================================================================
 //function : ExtrusionSweepObject2D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
@@ -1017,7 +1061,7 @@ static SMESH::SMESH_MeshEditor::Extrusion_Error convExtrError( const::SMESH_Mesh
 
 //=======================================================================
 //function : ExtrusionAlongPath
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Extrusion_Error
@@ -1085,7 +1129,7 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
 
 //=======================================================================
 //function : ExtrusionAlongPathObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Extrusion_Error
@@ -1123,7 +1167,7 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
 
 //=======================================================================
 //function : Mirror
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElements,
@@ -1174,7 +1218,7 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
 
 //=======================================================================
 //function : MirrorObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObject,
@@ -1211,7 +1255,7 @@ void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObj
 
 //=======================================================================
 //function : Translate
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
@@ -1249,7 +1293,7 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
 
 //=======================================================================
 //function : TranslateObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
@@ -1272,7 +1316,7 @@ void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
 
 //=======================================================================
 //function : Rotate
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
@@ -1295,7 +1339,7 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
 
   gp_Trsf aTrsf;
   aTrsf.SetRotation( gp_Ax1( P, V ), theAngle);
-  
+
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.Transform (elements, aTrsf, theCopy);
 
@@ -1312,7 +1356,7 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
 
 //=======================================================================
 //function : RotateObject
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
@@ -1337,7 +1381,7 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
 
 //=======================================================================
 //function : FindCoincidentNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tolerance,
@@ -1364,7 +1408,7 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
 
 //=======================================================================
 //function : MergeNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
@@ -1401,7 +1445,7 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
 //=======================================================================
 //function : MergeEqualElements
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_MeshEditor_i::MergeEqualElements()
@@ -1415,7 +1459,7 @@ void SMESH_MeshEditor_i::MergeEqualElements()
 
 //=======================================================================
 //function : operator
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 #define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
@@ -1439,7 +1483,7 @@ static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Se
 
 //=======================================================================
 //function : SewFreeBorders
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Sew_Error
@@ -1496,7 +1540,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
 
 //=======================================================================
 //function : SewConformFreeBorders
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Sew_Error
@@ -1545,7 +1589,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
 
 //=======================================================================
 //function : SewBorderToSide
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Sew_Error
@@ -1599,7 +1643,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
 
 //=======================================================================
 //function : SewSideElements
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH::SMESH_MeshEditor::Sew_Error

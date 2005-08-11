@@ -26,13 +26,15 @@
 //  Module : SMESH
 
 #include "SMESHGUI_MultiEditDlg.h"
-#include "SMESHGUI_FilterDlg.h"
-#include "SMESHGUI_Filter.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_Filter.h"
+#include "SMESHGUI_FilterDlg.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_FilterUtils.h"
+#include "SMESHGUI_SpinBox.h"
 
 #include "SMESH_Actor.h"
 #include "SMESH_TypeFilter.hxx"
@@ -71,17 +73,18 @@
 #include <vtkDataSetMapper.h>
 
 // QT Includes
-#include <qcheckbox.h>
 #include <qframe.h>
-#include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qlineedit.h>
 #include <qlistbox.h>
+#include <qcheckbox.h>
+#include <qcombobox.h>
+#include <qgroupbox.h>
+#include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qapplication.h>
-#include <qhbuttongroup.h>
 #include <qradiobutton.h>
+#include <qhbuttongroup.h>
 
 // IDL Headers
 #include "SALOMEconfig.h"
@@ -105,9 +108,9 @@ SMESHGUI_MultiEditDlg
 			const int theMode,
 			const bool the3d2d,
 			const char* theName):
-  QDialog(SMESH::GetDesktop(theModule), 
-	  theName, 
-	  false, 
+  QDialog(SMESH::GetDesktop(theModule),
+	  theName,
+	  false,
 	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
@@ -158,7 +161,6 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool t
   myListBox = new QListBox(aFrame);
   myListBox->setSelectionMode(QListBox::Extended);
   myListBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-//  myListBox->setColumnMode(QListBox::FitToHeight);
   myListBox->installEventFilter(this);
 
   myFilterBtn = new QPushButton(tr("FILTER")   , aFrame);
@@ -178,6 +180,29 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool t
 
   myToAllChk = new QCheckBox(tr("TO_ALL"), mySelGrp);
 
+  // Split/Join criterion group
+  myCriterionGrp = new QGroupBox(3, Qt::Vertical, tr("SPLIT_JOIN_CRITERION"), aMainGrp);
+
+  myGroupChoice = new QButtonGroup(3, Qt::Vertical, myCriterionGrp);
+  myGroupChoice->setInsideMargin(0);
+  myGroupChoice->setFrameStyle(QFrame::NoFrame);
+  (new QRadioButton(tr("USE_DIAGONAL_1_3"), myGroupChoice))->setChecked(true);
+  (new QRadioButton(tr("USE_DIAGONAL_2_4"), myGroupChoice));
+  (new QRadioButton(tr("USE_NUMERIC_FUNC"), myGroupChoice));
+
+  myComboBoxFunctor = new QComboBox(myCriterionGrp);
+  myComboBoxFunctor->insertItem(tr("ASPECTRATIO_ELEMENTS"));
+  myComboBoxFunctor->insertItem(tr("MINIMUMANGLE_ELEMENTS"));
+  myComboBoxFunctor->insertItem(tr("SKEW_ELEMENTS"));
+  myComboBoxFunctor->insertItem(tr("AREA_ELEMENTS"));
+  //myComboBoxFunctor->insertItem(tr("LENGTH2D_EDGES")); // for existing elements only
+  //myComboBoxFunctor->insertItem(tr("MULTI2D_BORDERS")); // for existing elements only
+  myComboBoxFunctor->setCurrentItem(0);
+
+  myCriterionGrp->hide();
+  myGroupChoice->hide();
+  myComboBoxFunctor->setEnabled(false);
+
   // "Select from" group
   QGroupBox* aGrp = new QGroupBox(3, Qt::Horizontal, tr("SELECT_FROM"), aMainGrp);
 
@@ -187,7 +212,7 @@ QFrame* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool t
   mySubmesh->setReadOnly(true);
   mySubmeshBtn->setPixmap(aPix);
 
-  myGroupChk = new QCheckBox(tr("GROUP"), aGrp);
+  myGroupChk = new QCheckBox(tr("SMESH_GROUP"), aGrp);
   myGroupBtn = new QPushButton(aGrp);
   myGroup = new QLineEdit(aGrp);
   myGroup->setReadOnly(true);
@@ -256,6 +281,39 @@ bool SMESHGUI_MultiEditDlg::eventFilter (QObject* object, QEvent* event)
       onRemoveBtn();
   }
   return QDialog::eventFilter(object, event);
+}
+
+//=======================================================================
+// name    : SMESHGUI_MultiEditDlg::getNumericalFunctor
+// Purpose :
+//=======================================================================
+SMESH::NumericalFunctor_ptr SMESHGUI_MultiEditDlg::getNumericalFunctor()
+{
+  SMESH::NumericalFunctor_var aNF = SMESH::NumericalFunctor::_nil();
+
+  SMESH::FilterManager_var aFilterMgr = SMESH::GetFilterManager();
+  if (aFilterMgr->_is_nil())
+    return aNF._retn();
+
+  if (myComboBoxFunctor->currentText() == tr("ASPECTRATIO_ELEMENTS"))
+    aNF = aFilterMgr->CreateAspectRatio();
+  else if (myComboBoxFunctor->currentText() == tr("WARP_ELEMENTS"))
+    aNF = aFilterMgr->CreateWarping();
+  else if (myComboBoxFunctor->currentText() == tr("MINIMUMANGLE_ELEMENTS"))
+    aNF = aFilterMgr->CreateMinimumAngle();
+  else if (myComboBoxFunctor->currentText() == tr("TAPER_ELEMENTS"))
+    aNF = aFilterMgr->CreateTaper();
+  else if (myComboBoxFunctor->currentText() == tr("SKEW_ELEMENTS"))
+    aNF = aFilterMgr->CreateSkew();
+  else if (myComboBoxFunctor->currentText() == tr("AREA_ELEMENTS"))
+    aNF = aFilterMgr->CreateArea();
+  else if (myComboBoxFunctor->currentText() == tr("LENGTH2D_EDGES"))
+    aNF = aFilterMgr->CreateLength2D();
+  else if (myComboBoxFunctor->currentText() == tr("MULTI2D_BORDERS"))
+    aNF = aFilterMgr->CreateMultiConnection2D();
+  else ;
+
+  return aNF._retn();
 }
 
 //=======================================================================
@@ -932,14 +990,14 @@ int SMESHGUI_MultiEditDlg::entityType()
   return myEntityType;
 }
 
-/*
+/*!
  *  Class       : SMESHGUI_ChangeOrientationDlg
  *  Description : Modification of orientation of faces
  */
 
 SMESHGUI_ChangeOrientationDlg
 ::SMESHGUI_ChangeOrientationDlg(SMESHGUI* theModule,
-				const char* theName): 
+				const char* theName):
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
 {
   setCaption(tr("CAPTION"));
@@ -966,6 +1024,21 @@ SMESHGUI_UnionOfTrianglesDlg
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_TriaFilter, false, theName)
 {
   setCaption(tr("CAPTION"));
+
+  myComboBoxFunctor->setEnabled(true);
+  myComboBoxFunctor->insertItem(tr("WARP_ELEMENTS")); // for quadrangles only
+  myComboBoxFunctor->insertItem(tr("TAPER_ELEMENTS")); // for quadrangles only
+
+  // Maximum angle
+  QGroupBox* aMaxAngleGrp = new QGroupBox (2, Qt::Horizontal, myCriterionGrp);
+  aMaxAngleGrp->setInsideMargin(0);
+  aMaxAngleGrp->setFrameStyle(QFrame::NoFrame);
+  new QLabel (tr("MAXIMUM_ANGLE"), aMaxAngleGrp);
+  myMaxAngleSpin = new SMESHGUI_SpinBox (aMaxAngleGrp);
+  myMaxAngleSpin->RangeStepAndValidator(0, 180.0, 1.0, 3);
+  myMaxAngleSpin->SetValue(30.0);
+
+  myCriterionGrp->show();
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -975,12 +1048,15 @@ SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
 bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                             const SMESH::long_array&    theIds)
 {
-  return theEditor->TriToQuad(theIds, SMESH::NumericalFunctor::_nil(), 1.);
+  SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
+  double aMaxAngle = myMaxAngleSpin->GetValue() * PI / 180.0;
+  return theEditor->TriToQuad(theIds, aCriterion, aMaxAngle);
 }
+
 
 /*!
  *  Class       : SMESHGUI_CuttingOfQuadsDlg
- *  Description : Construction of quadrangles by automatic association of triangles
+ *  Description : Automatic splitting of quadrangles into triangles
  */
 
 SMESHGUI_CuttingOfQuadsDlg
@@ -991,12 +1067,16 @@ SMESHGUI_CuttingOfQuadsDlg
   setCaption(tr("CAPTION"));
   myPreviewActor = 0;
 
-  myUseDiagChk = new QCheckBox (tr("USE_DIAGONAL_2_4"), mySelGrp);
   myPreviewChk = new QCheckBox (tr("PREVIEW"), mySelGrp);
 
-  connect(myPreviewChk, SIGNAL(stateChanged(int)),    this, SLOT(onPreviewChk()));
-  connect(myUseDiagChk, SIGNAL(stateChanged(int)),    this, SLOT(onPreviewChk()));
-  connect(this,         SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
+  myCriterionGrp->show();
+  myGroupChoice->show();
+  myComboBoxFunctor->setEnabled(false);
+
+  connect(myPreviewChk     , SIGNAL(stateChanged(int))   , this, SLOT(onPreviewChk()));
+  connect(myGroupChoice    , SIGNAL(clicked(int))        , this, SLOT(onCriterionRB()));
+  connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
+  connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()
@@ -1012,7 +1092,27 @@ void SMESHGUI_CuttingOfQuadsDlg::onClose()
 bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                           const SMESH::long_array&    theIds)
 {
-  return theEditor->SplitQuad(theIds, !myUseDiagChk->isChecked());
+  switch (myGroupChoice->id(myGroupChoice->selected())) {
+  case 0: // use diagonal 1-3
+    return theEditor->SplitQuad(theIds, true);
+  case 1: // use diagonal 2-4
+    return theEditor->SplitQuad(theIds, false);
+  default: // use numeric functor
+    break;
+  }
+
+  SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
+  return theEditor->QuadToTri(theIds, aCriterion);
+}
+
+void SMESHGUI_CuttingOfQuadsDlg::onCriterionRB()
+{
+  if (myGroupChoice->id(myGroupChoice->selected()) == 2) // Use numeric functor
+    myComboBoxFunctor->setEnabled(true);
+  else
+    myComboBoxFunctor->setEnabled(false);
+
+  onPreviewChk();
 }
 
 void SMESHGUI_CuttingOfQuadsDlg::onPreviewChk()
@@ -1032,7 +1132,7 @@ void SMESHGUI_CuttingOfQuadsDlg::erasePreview()
   myPreviewActor->Delete();
   myPreviewActor = 0;
 }
-
+  
 void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
 {
   if (myActor == 0)
@@ -1050,7 +1150,16 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
   if (aMesh == 0)
     return;
 
-  bool isDiag24 = myUseDiagChk->isChecked();
+  // 0 - use diagonal 1-3, 1 - use diagonal 2-4, 2 - use numerical functor
+  int aChoice = myGroupChoice->id(myGroupChoice->selected());
+  SMESH::NumericalFunctor_var aCriterion  = SMESH::NumericalFunctor::_nil();
+  SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH::SMESH_MeshEditor::_nil();
+  if (aChoice == 2) {
+    aCriterion  = getNumericalFunctor();
+    aMeshEditor = myMesh->GetMeshEditor();
+    if (aMeshEditor->_is_nil())
+      return;
+  }
 
   //Create grid
   vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::New();
@@ -1082,8 +1191,9 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
 
     SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
     int k = 0;
-    while(anIter->more())
-      if (const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next())
+    while (anIter->more()) {
+      const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(anIter->next());
+      if (aNode)
       {
         if (!anIdToVtk.IsBound(aNode->GetID()))
         {
@@ -1093,11 +1203,33 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
 
         aNodes[ k++ ] = aNode->GetID();
       }
+    }
 
     if (k != 4)
       continue;
 
-    if (!isDiag24)
+    bool isDiag13 = true;
+    if (aChoice == 0) // use diagonal 1-3
+    {
+      isDiag13 = true;
+    }
+    else if (aChoice == 1) // use diagonal 2-4
+    {
+      isDiag13 = false;
+    }
+    else // use numerical functor
+    {
+      // compare two sets of possible triangles
+      int diag = aMeshEditor->BestSplit(anElemIds[i], aCriterion);
+      if (diag == 1) // 1-3
+        isDiag13 = true;
+      else if (diag == 2) // 2-4
+        isDiag13 = false;
+      else // error
+        continue;
+    }
+
+    if (isDiag13)
     {
       anIdList->SetId(0, anIdToVtk(aNodes[ 0 ]));
       anIdList->SetId(1, anIdToVtk(aNodes[ 1 ]));

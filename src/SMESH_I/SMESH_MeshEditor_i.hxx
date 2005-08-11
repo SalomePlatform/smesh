@@ -1,23 +1,23 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
 //
@@ -64,18 +64,23 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean Reorient(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean ReorientObject(SMESH::SMESH_IDSource_ptr theObject);
 
-  CORBA::Boolean TriToQuad(const SMESH::long_array &   IDsOfElements,
-                           SMESH::NumericalFunctor_ptr Criterion,
-                           CORBA::Double               MaxAngle);
-  CORBA::Boolean TriToQuadObject(SMESH::SMESH_IDSource_ptr theObject,
-				 SMESH::NumericalFunctor_ptr Criterion,
-				 CORBA::Double               MaxAngle);
-  CORBA::Boolean QuadToTri(const SMESH::long_array &   IDsOfElements,
-                           SMESH::NumericalFunctor_ptr Criterion);
-  CORBA::Boolean SplitQuad(const SMESH::long_array & IDsOfElements,
-                           CORBA::Boolean            Diag13);
-  CORBA::Boolean SplitQuadObject(SMESH::SMESH_IDSource_ptr theObject,
-				 CORBA::Boolean            Diag13);
+  // Split/Join faces
+  CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,
+                                  SMESH::NumericalFunctor_ptr Criterion,
+                                  CORBA::Double               MaxAngle);
+  CORBA::Boolean TriToQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
+                                  SMESH::NumericalFunctor_ptr Criterion,
+                                  CORBA::Double               MaxAngle);
+  CORBA::Boolean QuadToTri       (const SMESH::long_array &   IDsOfElements,
+                                  SMESH::NumericalFunctor_ptr Criterion);
+  CORBA::Boolean QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
+                                  SMESH::NumericalFunctor_ptr Criterion);
+  CORBA::Boolean SplitQuad       (const SMESH::long_array &   IDsOfElements,
+                                  CORBA::Boolean              Diag13);
+  CORBA::Boolean SplitQuadObject (SMESH::SMESH_IDSource_ptr   theObject,
+                                  CORBA::Boolean              Diag13);
+  CORBA::Long    BestSplit       (CORBA::Long                 IDOfQuad,
+                                  SMESH::NumericalFunctor_ptr Criterion);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
                         const SMESH::long_array &              IDsOfFixedNodes,
@@ -136,7 +141,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   void ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
                               const SMESH::DirStruct &  StepVector,
                               CORBA::Long               NbOfSteps);
-  
+
   SMESH::SMESH_MeshEditor::Extrusion_Error
     ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
                        SMESH::SMESH_Mesh_ptr       PathMesh,
@@ -146,7 +151,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                        const SMESH::double_array & Angles,
                        CORBA::Boolean              HasRefPoint,
                        const SMESH::PointStruct &  RefPoint);
-  
+
   SMESH::SMESH_MeshEditor::Extrusion_Error
     ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
                              SMESH::SMESH_Mesh_ptr       PathMesh,

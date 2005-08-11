@@ -1,20 +1,20 @@
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
 //  License as published by the Free Software Foundation; either
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 //  Lesser General Public License for more details.
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 
 #include "SMESH_ControlsDef.hxx"
@@ -49,14 +49,14 @@
 
 
 /*
-                            AUXILIARY METHODS 
+                            AUXILIARY METHODS
 */
 
 namespace{
   inline double getAngle( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
   {
     gp_Vec v1( P1 - P2 ), v2( P3 - P2 );
-    
+
     return v1.Magnitude() < gp::Resolution() ||
       v2.Magnitude() < gp::Resolution() ? 0 : v1.Angle( v2 );
   }
@@ -85,13 +85,13 @@ namespace{
   {
     if ( theMesh == 0 )
       return 0;
-    
+
     const SMDS_MeshElement* anEdge = theMesh->FindElement( theId );
     if ( anEdge == 0 || anEdge->GetType() != SMDSAbs_Edge || anEdge->NbNodes() != 2 )
       return 0;
-    
+
     TColStd_MapOfInteger aMap;
-    
+
     int aResult = 0;
     SMDS_ElemIteratorPtr anIter = anEdge->nodesIterator();
     if ( anIter != 0 ) {
@@ -104,7 +104,7 @@ namespace{
 	  const SMDS_MeshElement* anElem = anElemIter->next();
 	  if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge ) {
 	    int anId = anElem->GetID();
-	    
+
 	    if ( anIter->more() )              // i.e. first node
 	      aMap.Add( anId );
 	    else if ( aMap.Contains( anId ) )
@@ -113,7 +113,7 @@ namespace{
 	}
       }
     }
-    
+
     return aResult;
   }
 
@@ -218,18 +218,19 @@ double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
 
   aMin = getAngle(P( P.size() ), P( 1 ), P( 2 ));
   aMin = Min(aMin,getAngle(P( P.size()-1 ), P( P.size() ), P( 1 )));
-  
+
   for (int i=2; i<P.size();i++){
       double A0 = getAngle( P( i-1 ), P( i ), P( i+1 ) );
     aMin = Min(aMin,A0);
   }
 
-  return aMin * 180 / PI;
+  return aMin * 180.0 / PI;
 }
 
 double MinimumAngle::GetBadRate( double Value, int nbNodes ) const
 {
-  const double aBestAngle = PI / nbNodes;
+  //const double aBestAngle = PI / nbNodes;
+  const double aBestAngle = 180.0 - ( 360.0 / double(nbNodes) );
   return ( fabs( aBestAngle - Value ));
 }
 
@@ -259,7 +260,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   // Compute aspect ratio
 
-  if ( nbNodes == 3 ) 
+  if ( nbNodes == 3 )
   {
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
     if ( anArea <= Precision::Confusion() )
@@ -273,14 +274,14 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   {
     double aMinLen = aLen[ 0 ];
     double aMaxLen = aLen[ 0 ];
-    
+
     for(int i = 1; i < nbNodes ; i++ ){
       aMinLen = Min( aMinLen, aLen[ i ] );
       aMaxLen = Max( aMaxLen, aLen[ i ] );
     }
     if ( aMinLen <= Precision::Confusion() )
       return 0.;
-    
+
     return aMaxLen / aMinLen;
   }
 }
@@ -341,7 +342,7 @@ namespace{
     double Q = b2*f2*(a2+c2+d2+e2-b2-f2);
     double R = c2*d2*(a2+b2+e2+f2-c2-d2);
     double S = a2*b2*d2+b2*c2*e2+a2*c2*f2+d2*e2*f2;
-    
+
     return sqrt(P+Q+R-S)/12.0;
   }
 
@@ -732,7 +733,7 @@ double Skew::GetValue( const TSequenceOfXYZ& P )
 
     return Max( A0, Max( A1, A2 ) ) * 180 / PI;
   }
-  else 
+  else
   {
     gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2;
     gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2;
@@ -820,16 +821,16 @@ double Length2D::GetValue( long theElementId)
   TSequenceOfXYZ P;
 
   if (GetPoints(theElementId,P)){
-    
+
     double  aVal;// = GetValue( P );
     const SMDS_MeshElement* aElem = myMesh->FindElement( theElementId );
     SMDSAbs_ElementType aType = aElem->GetType();
-    
+
     int len = P.size();
-    
+
     switch (aType){
     case SMDSAbs_All:
-    case SMDSAbs_Node: 
+    case SMDSAbs_Node:
     case SMDSAbs_Edge:
       if (len == 2){
 	aVal = getDistance( P( 1 ), P( 2 ) );
@@ -861,7 +862,7 @@ double Length2D::GetValue( long theElementId)
 	double L6 = getDistance(P( 3 ),P( 4 ));
 	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
 	break;
-      } 
+      }
       else if (len == 5){ // piramids
 	double L1 = getDistance(P( 1 ),P( 2 ));
 	double L2 = getDistance(P( 2 ),P( 3 ));
@@ -871,7 +872,7 @@ double Length2D::GetValue( long theElementId)
 	double L6 = getDistance(P( 2 ),P( 5 ));
 	double L7 = getDistance(P( 3 ),P( 5 ));
 	double L8 = getDistance(P( 4 ),P( 5 ));
-      
+
 	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
 	aVal = Max(aVal,Max(L7,L8));
 	break;
@@ -886,7 +887,7 @@ double Length2D::GetValue( long theElementId)
 	double L7 = getDistance(P( 1 ),P( 4 ));
 	double L8 = getDistance(P( 2 ),P( 5 ));
 	double L9 = getDistance(P( 3 ),P( 6 ));
-      
+
 	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
 	aVal = Max(aVal,Max(Max(L7,L8),L9));
 	break;
@@ -904,17 +905,17 @@ double Length2D::GetValue( long theElementId)
 	double L10= getDistance(P( 2 ),P( 6 ));
 	double L11= getDistance(P( 3 ),P( 7 ));
 	double L12= getDistance(P( 4 ),P( 8 ));
-      
+
 	aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
 	aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
 	aVal = Max(aVal,Max(L11,L12));
 	break;
-	
+
       }
-      
-    default: aVal=-1; 
+
+    default: aVal=-1;
     }
-    
+
     if (aVal <0){
       return 0.;
     }
@@ -924,7 +925,7 @@ double Length2D::GetValue( long theElementId)
       double prec = pow( 10., (double)( myPrecision ) );
       aVal = floor( aVal * prec + 0.5 ) / prec;
     }
-    
+
     return aVal;
 
   }
@@ -965,7 +966,7 @@ void Length2D::GetValues(TValues& theValues){
     SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
     long aNodeId[2];
     gp_Pnt P[3];
-    
+
     double aLength;
     const SMDS_MeshElement* aNode;
     if(aNodesIter->more()){
@@ -974,24 +975,24 @@ void Length2D::GetValues(TValues& theValues){
       P[0] = P[1] = gp_Pnt(aNodes->X(),aNodes->Y(),aNodes->Z());
       aNodeId[0] = aNodeId[1] = aNode->GetID();
       aLength = 0;
-    }	
+    }
     for(; aNodesIter->more(); ){
       aNode = aNodesIter->next();
       const SMDS_MeshNode* aNodes = (SMDS_MeshNode*) aNode;
       long anId = aNode->GetID();
-      
+
       P[2] = gp_Pnt(aNodes->X(),aNodes->Y(),aNodes->Z());
 
       aLength = P[1].Distance(P[2]);
-      
+
       Value aValue(aLength,aNodeId[1],anId);
       aNodeId[1] = anId;
       P[1] = P[2];
       theValues.insert(aValue);
     }
-    
+
     aLength = P[0].Distance(P[1]);
-    
+
     Value aValue(aLength,aNodeId[0],aNodeId[1]);
     theValues.insert(aValue);
   }
@@ -1033,19 +1034,19 @@ double MultiConnection2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
   int aResult = 0;
-  
+
   if (GetPoints(theElementId,P)){
     const SMDS_MeshElement* anFaceElem = myMesh->FindElement( theElementId );
     SMDSAbs_ElementType aType = anFaceElem->GetType();
-    
+
     int len = P.size();
-    
+
     TColStd_MapOfInteger aMap;
     int aResult = 0;
-    
+
     switch (aType){
     case SMDSAbs_All:
-    case SMDSAbs_Node: 
+    case SMDSAbs_Node:
     case SMDSAbs_Edge:
     case SMDSAbs_Face:
       if (len == 3){ // triangles
@@ -1075,14 +1076,14 @@ double MultiConnection2D::GetValue( long theElementId )
 	    }
 	  }
 	}
-	
+
 	aResult = Max(Max(Nb[0],Nb[1]),Nb[2]);
       }
       break;
     case SMDSAbs_Volume:
     default: aResult=0;
     }
-    
+
   }
   return aResult;//getNbMultiConnection( myMesh, theId );
 }
@@ -1133,7 +1134,7 @@ void MultiConnection2D::GetValues(MValues& theValues){
       aNode2 = (SMDS_MeshNode*) aNodesIter->next();
       long anId = aNode2->GetID();
       aNodeId[2] = anId;
-      
+
       Value aValue(aNodeId[1],aNodeId[2]);
       MValues::iterator aItr = theValues.find(aValue);
       if (aItr != theValues.end()){
@@ -1249,7 +1250,7 @@ bool FreeEdges::IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId 
       {
         int anId = anElem->GetID();
 
-        if ( i == 0 ) 
+        if ( i == 0 )
           aMap.Add( anId );
         else if ( aMap.Contains( anId ) && anId != theFaceId )
           return false;
@@ -1288,7 +1289,7 @@ bool FreeEdges::IsSatisfy( long theId )
       return true;
 
   aNodes[ 1 ] = aNodes[ nbNodes - 1 ];
-  
+
   return IsFreeEdge( &aNodes[ 0 ], theId );
 
 }
@@ -1315,7 +1316,7 @@ bool FreeEdges::Border::operator<(const FreeEdges::Border& x) const{
 }
 
 inline void UpdateBorders(const FreeEdges::Border& theBorder,
-			  FreeEdges::TBorders& theRegistry, 
+			  FreeEdges::TBorders& theRegistry,
 			  FreeEdges::TBorders& theContainer)
 {
   if(theRegistry.find(theBorder) == theRegistry.end()){
@@ -1339,7 +1340,7 @@ void FreeEdges::GetBoreders(TBorders& theBorders)
     if(aNodesIter->more()){
       aNode = aNodesIter->next();
       aNodeId[0] = aNodeId[1] = aNode->GetID();
-    }	
+    }
     for(; aNodesIter->more(); ){
       aNode = aNodesIter->next();
       long anId = aNode->GetID();
@@ -1376,7 +1377,7 @@ RangeOfIds::RangeOfIds()
 
 //=======================================================================
 // name    : SetMesh
-// Purpose : Set mesh 
+// Purpose : Set mesh
 //=======================================================================
 void RangeOfIds::SetMesh( const SMDS_Mesh* theMesh )
 {
@@ -1422,9 +1423,9 @@ void RangeOfIds::GetRangeStr( TCollection_AsciiString& theResStr )
     TCollection_AsciiString aStr;
     if ( aMinId != IntegerFirst() )
       aStr += aMinId;
-      
+
     aStr += "-";
-      
+
     if ( aMaxId != IntegerLast() )
       aStr += aMaxId;
 
@@ -1492,7 +1493,7 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
   {
     tmpStr = aStr.Token( ",", i++ );
     int aPos = tmpStr.Search( '-' );
-    
+
     if ( aPos == -1 )
     {
       if ( tmpStr.IsIntegerValue() )
@@ -1504,14 +1505,14 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
     {
       TCollection_AsciiString aMaxStr = tmpStr.Split( aPos );
       TCollection_AsciiString aMinStr = tmpStr;
-      
+
       while ( aMinStr.Search( "-" ) != -1 ) aMinStr.RemoveAll( '-' );
       while ( aMaxStr.Search( "-" ) != -1 ) aMaxStr.RemoveAll( '-' );
 
       if ( !aMinStr.IsEmpty() && !aMinStr.IsIntegerValue() ||
            !aMaxStr.IsEmpty() && !aMaxStr.IsIntegerValue() )
         return false;
-           
+
       myMin.Append( aMinStr.IsEmpty() ? IntegerFirst() : aMinStr.IntegerValue() );
       myMax.Append( aMaxStr.IsEmpty() ? IntegerLast()  : aMaxStr.IntegerValue() );
     }
@@ -1558,7 +1559,7 @@ bool RangeOfIds::IsSatisfy( long theId )
     if ( anElem == 0 || myType != anElem->GetType() && myType != SMDSAbs_All )
       return false;
   }
-    
+
   if ( myIds.Contains( theId ) )
     return true;
 
@@ -1729,10 +1730,10 @@ SMDSAbs_ElementType LogicalBinary::GetType() const
 */
 bool LogicalAND::IsSatisfy( long theId )
 {
-  return 
-    myPredicate1 && 
-    myPredicate2 && 
-    myPredicate1->IsSatisfy( theId ) && 
+  return
+    myPredicate1 &&
+    myPredicate2 &&
+    myPredicate1->IsSatisfy( theId ) &&
     myPredicate2->IsSatisfy( theId );
 }
 
@@ -1743,10 +1744,10 @@ bool LogicalAND::IsSatisfy( long theId )
 */
 bool LogicalOR::IsSatisfy( long theId )
 {
-  return 
-    myPredicate1 && 
-    myPredicate2 && 
-    myPredicate1->IsSatisfy( theId ) || 
+  return
+    myPredicate1 &&
+    myPredicate2 &&
+    myPredicate1->IsSatisfy( theId ) ||
     myPredicate2->IsSatisfy( theId );
 }
 
@@ -1766,7 +1767,7 @@ void Filter::SetPredicate( PredicatePtr thePredicate )
   myPredicate = thePredicate;
 }
 
-template<class TElement, class TIterator, class TPredicate> 
+template<class TElement, class TIterator, class TPredicate>
 inline void FillSequence(const TIterator& theIterator,
 			 TPredicate& thePredicate,
 			 Filter::TIdSequence& theSequence)
@@ -1783,13 +1784,13 @@ inline void FillSequence(const TIterator& theIterator,
 
 void
 Filter::
-GetElementsId( const SMDS_Mesh* theMesh, 
-	       PredicatePtr thePredicate, 
+GetElementsId( const SMDS_Mesh* theMesh,
+	       PredicatePtr thePredicate,
 	       TIdSequence& theSequence )
 {
   theSequence.clear();
 
-  if ( !theMesh || !thePredicate ) 
+  if ( !theMesh || !thePredicate )
     return;
 
   thePredicate->SetMesh( theMesh );
@@ -1829,9 +1830,9 @@ Filter::GetElementsId( const SMDS_Mesh* theMesh,
 
 typedef std::set<SMDS_MeshFace*>                    TMapOfFacePtr;
 
-/*  
+/*
    Internal class Link
-*/ 
+*/
 
 ManifoldPart::Link::Link( SMDS_MeshNode* theNode1,
                           SMDS_MeshNode* theNode2 )
@@ -1868,7 +1869,7 @@ bool ManifoldPart::Link::operator<( const ManifoldPart::Link& x ) const
 
 bool ManifoldPart::IsEqual( const ManifoldPart::Link& theLink1,
                             const ManifoldPart::Link& theLink2 )
-{ 
+{
   return theLink1.IsEqual( theLink2 );
 }
 
@@ -1914,7 +1915,7 @@ bool ManifoldPart::process()
 {
   myMapIds.Clear();
   myMapBadGeomIds.Clear();
-  
+
   myAllFacePtr.clear();
   myAllFacePtrIntDMap.clear();
   if ( !myMesh )
@@ -1946,7 +1947,7 @@ bool ManifoldPart::process()
     if ( fi == aStartIndx )
       isStartTreat = true;
     // as result next time when fi will be equal to aStartIndx
-    
+
     SMDS_MeshFace* aFacePtr = myAllFacePtr[ fi ];
     if ( aMapOfTreated.Contains( aFacePtr->GetID() ) )
       continue;
@@ -1979,7 +1980,7 @@ static void getLinks( const SMDS_MeshFace* theFace,
   SMDS_MeshNode* aNode = 0;
   for ( ; aNodeItr->more() && i <= aNbNode; )
   {
-    
+
     SMDS_MeshNode* aN1 = (SMDS_MeshNode*)aNodeItr->next();
     if ( i == 1 )
       aNode = aN1;
@@ -2003,7 +2004,7 @@ static gp_XYZ getNormale( const SMDS_MeshFace* theFace )
     SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
     anArrOfXYZ.SetValue(i, gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
   }
-  
+
   gp_XYZ q1 = anArrOfXYZ.Value(2) - anArrOfXYZ.Value(1);
   gp_XYZ q2 = anArrOfXYZ.Value(3) - anArrOfXYZ.Value(1);
   n  = q1 ^ q2;
@@ -2028,7 +2029,7 @@ bool ManifoldPart::findConnected
   theResFaces.Clear();
   if ( !theAllFacePtrInt.size() )
     return false;
-  
+
   if ( getNormale( theStartFace ).SquareModulus() <= gp::Resolution() )
   {
     myMapBadGeomIds.Add( theStartFace->GetID() );
@@ -2040,7 +2041,7 @@ bool ManifoldPart::findConnected
   theResFaces.Add( theStartFace->GetID() );
   ManifoldPart::TDataMapOfLinkFacePtr aDMapLinkFace;
 
-  expandBoundary( aMapOfBoundary, aSeqOfBoundary, 
+  expandBoundary( aMapOfBoundary, aSeqOfBoundary,
                  aDMapLinkFace, theNonManifold, theStartFace );
 
   bool isDone = false;
@@ -2058,7 +2059,7 @@ bool ManifoldPart::findConnected
 
       ManifoldPart::TVectorOfFacePtr aFaces;
       // find next
-      if ( myIsOnlyManifold && 
+      if ( myIsOnlyManifold &&
            (theNonManifold.find( aLink ) != theNonManifold.end()) )
         continue;
       else
@@ -2082,7 +2083,7 @@ bool ManifoldPart::findConnected
           continue;
         }
       }
-      
+
       // compare normal with normals of neighbor element
       SMDS_MeshFace* aPrevFace = aDMapLinkFace[ aLink ];
       ManifoldPart::TVectorOfFacePtr::iterator pFace = aFaces.begin();
@@ -2101,7 +2102,7 @@ bool ManifoldPart::findConnected
           continue;
         // add new element to connected and extend the boundaries.
         theResFaces.Add( anNextFaceID );
-        expandBoundary( aMapOfBoundary, aSeqOfBoundary, 
+        expandBoundary( aMapOfBoundary, aSeqOfBoundary,
                         aDMapLinkFace, theNonManifold, aNextFace );
         isToReset = true;
       }
@@ -2214,7 +2215,7 @@ ElementsOnSurface::~ElementsOnSurface()
 }
 
 void ElementsOnSurface::SetMesh( const SMDS_Mesh* theMesh )
-{ 
+{
   if ( myMesh == theMesh )
     return;
   myMesh = theMesh;
