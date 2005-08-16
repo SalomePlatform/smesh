@@ -116,6 +116,37 @@ CORBA::Long StdMeshers_NumberOfSegments_i::GetNumberOfSegments()
 
 //=============================================================================
 /*!
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::SetDistrType" );
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetDistrType( (::StdMeshers_NumberOfSegments::DistrType) typ );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+CORBA::Long StdMeshers_NumberOfSegments_i::GetDistrType()
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::GetDistrType" );
+  ASSERT( myBaseImpl );
+  return this->GetImpl()->GetDistrType();
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_NumberOfSegments_i::SetScaleFactor
  *
  *  Set scalar factor
@@ -145,10 +176,146 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
 //=============================================================================
 
 CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
+  throw ( SALOME::SALOME_Exception )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::GetScaleFactor" );
   ASSERT( myBaseImpl );
-  return this->GetImpl()->GetScaleFactor();
+  double scale;
+  try {
+    scale = this->GetImpl()->GetScaleFactor();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+  return scale;
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& table)
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::SetTableFunction" );
+  ASSERT( myBaseImpl );
+  std::vector<double> tbl( table.length() );
+  for (int i = 0; i < table.length(); i++)
+    tbl[i] = table[i];
+  try {
+    this->GetImpl()->SetTableFunction( tbl );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::GetTableFunction" );
+  ASSERT( myBaseImpl );
+  const std::vector<double>* tbl;
+  try {
+    tbl = &this->GetImpl()->GetTableFunction();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+  SMESH::double_array_var aRes = new SMESH::double_array();
+  aRes->length(tbl->size());
+  for (int i = 0; i < tbl->size(); i++)
+    aRes[i] = (*tbl)[i];
+  return aRes._retn();
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::SetExpressionFunction" );
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetExpressionFunction( expr );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::GetExpressionFunction" );
+  ASSERT( myBaseImpl );
+  const char* expr;
+  try {
+    expr = this->GetImpl()->GetExpressionFunction();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+  return CORBA::string_dup(expr);
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+void StdMeshers_NumberOfSegments_i::SetExponentMode(CORBA::Boolean isExp)
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::SetExponentMode" );
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetExponentMode( isExp );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
+ */
+//=============================================================================
+
+CORBA::Boolean StdMeshers_NumberOfSegments_i::IsExponentMode()
+  throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::IsExponentMode" );
+  ASSERT( myBaseImpl );
+  bool isExp;
+  try {
+    isExp = this->GetImpl()->IsExponentMode();
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+  return isExp;
 }
 
 //=============================================================================

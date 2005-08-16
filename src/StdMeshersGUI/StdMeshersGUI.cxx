@@ -40,6 +40,8 @@
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
 
+#include <SalomeApp_Tools.h>
+
 #include <qobject.h>
 
 #include "utilities.h"
@@ -122,7 +124,17 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
 
   bool modified = false;
   if ( SMESHGUI_aParameterDlg::Parameters( SMESHGUI::GetSMESHGUI(), paramList, QObject::tr("SMESH_VALUE")) )
-    modified = StdMeshersGUI_Parameters::SetParameters( theHyp, paramList );
+  {
+    try
+    {
+      modified = StdMeshersGUI_Parameters::SetParameters( theHyp, paramList );
+    }
+    catch (const SALOME::SALOME_Exception& S_ex)
+    {
+      SalomeApp_Tools::QtCatchCorbaException(S_ex);
+      return;
+    }    
+  }
 
   if ( modified ) {
     //set new Attribute Comment for hypothesis which parameters were modified

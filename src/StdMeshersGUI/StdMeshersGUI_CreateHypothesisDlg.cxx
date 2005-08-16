@@ -55,6 +55,8 @@
 #include <qpixmap.h>
 #include <qspinbox.h>
 #include <qtextedit.h>
+#include <qcombobox.h>
+#include <qcheckbox.h>
 
 using namespace std;
 
@@ -86,19 +88,25 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
   setCaption( theCaption );
 
   setSizeGripEnabled( TRUE );
-  QGridLayout* StdMeshersGUI_CreateHypothesisDlgLayout = new QGridLayout( this ); 
+  QVBoxLayout* StdMeshersGUI_CreateHypothesisDlgLayout = new QVBoxLayout( this ); 
   StdMeshersGUI_CreateHypothesisDlgLayout->setSpacing( 6 );
   StdMeshersGUI_CreateHypothesisDlgLayout->setMargin( 11 );
 
   /***************************************************************/
-  iconLabel = new QLabel( this );
+  QFrame* titFrame = new QFrame( this );
+  QHBoxLayout* titLay = new QHBoxLayout( titFrame, 0, 0 );
+  
+  iconLabel = new QLabel( titFrame );
   iconLabel->setPixmap( theHypIcon );
   iconLabel->setScaledContents( false );
   iconLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
-  typeLabel = new QLabel( this );
+  typeLabel = new QLabel( titFrame );
   typeLabel->setText( theHypTypeName );
-  StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( iconLabel, 0, 0 );
-  StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( typeLabel, 0, 1 );
+  titLay->addWidget( iconLabel, 0 );
+  titLay->addWidget( typeLabel, 0 );
+  titLay->addStretch( 1 );
+  
+  StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( titFrame, 0);
     
   /***************************************************************/
   GroupC1 = new QGroupBox( this, "GroupC1" );
@@ -118,51 +126,42 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
   LineEdit_NameHypothesis = new QLineEdit( GroupC1, "LineEdit_NameHypothesis" );
   GroupC1Layout->addWidget( LineEdit_NameHypothesis, 0, 1 );
 
-  myParamList.clear();
-  GetParameters( myHypType, myParamList );
-  ASSERT( !myParamList.empty() );
+  myParamMap.clear();
+  std::list<SMESHGUI_aParameterPtr> aParamList;
+  GetParameters( myHypType, aParamList );
+  ASSERT( !aParamList.empty() );
 
   /* Spin boxes with labels */
-  list<SMESHGUI_aParameterPtr>::iterator paramIt = myParamList.begin();
-  for ( int row = 1; paramIt != myParamList.end(); paramIt++ , row++ )
+  list<SMESHGUI_aParameterPtr>::iterator paramIt = aParamList.begin();
+  for ( int row = 1; paramIt != aParamList.end(); paramIt++ , row++ )
   {
     SMESHGUI_aParameterPtr param = (*paramIt);
     QLabel * label = new QLabel( GroupC1, "TextLabel" );
     GroupC1Layout->addWidget( label, row, 0 );
     label->setText( param->Label() );
-    QWidget* aSpinWidget = 0;
-    switch ( param->GetType() ) {
-    case SMESHGUI_aParameter::DOUBLE: {
-      SMESHGUI_SpinBox* spin = new SMESHGUI_SpinBox( GroupC1 );
-      aSpinWidget = spin;
-      spin->setPrecision( 12 );
-      break;
-    }
-    case SMESHGUI_aParameter::INT: {
-      QSpinBox* spin = new QSpinBox( GroupC1 );
-      aSpinWidget = spin;
-      break;
-    }
-    case SMESHGUI_aParameter::TEXT: {
-      QTextEdit* edit = new QTextEdit( GroupC1 );
-      edit->setWordWrap( QTextEdit::NoWrap );
-      edit->setTextFormat( Qt::PlainText );
-      aSpinWidget = edit;
-      break;
-    }
-    default:;
-    }
+    QWidget* aWidget = param->CreateWidget( GroupC1 );
 
-    if ( aSpinWidget ) {
-      GroupC1Layout->addWidget( aSpinWidget, row, 1 );
-      aSpinWidget->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
-      aSpinWidget->setMinimumSize( 150, 0 );
-      param->InitializeWidget( aSpinWidget );
-      mySpinList.push_back( aSpinWidget );
+    if ( aWidget ) {
+      GroupC1Layout->addWidget( aWidget, row, 1 );
+      aWidget->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Minimum ) );
+      aWidget->setMinimumSize( 150, 0 );
+
+      QString sig = param->sigValueChanged();
+      if( !sig.isEmpty() && param->GetType()!=SMESHGUI_aParameter::TABLE )
+        connect( aWidget, sig.latin1(), this, SLOT( onValueChanged() ) );
+         
+      param->InitializeWidget( aWidget );
+
+      ParamInfo info;
+      info.editor = aWidget;
+      info.label = label;
+      info.order = row-1;
+      
+      myParamMap.insert( param, info );
     }
   }
   
-  StdMeshersGUI_CreateHypothesisDlgLayout->addMultiCellWidget(GroupC1 , 1, 1, 0, 1 );
+  StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( GroupC1, 1 );
 
   /***************************************************************/
   GroupButtons = new QGroupBox( this, "GroupButtons" );
@@ -188,7 +187,7 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
   buttonCancel->setText( tr( "SMESH_BUT_CLOSE"  ) );
   buttonCancel->setAutoDefault( TRUE );
   GroupButtonsLayout->addWidget( buttonCancel, 0, 3 );
-  StdMeshersGUI_CreateHypothesisDlgLayout->addMultiCellWidget( GroupButtons, 2, 2, 0, 1 );
+  StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( GroupButtons, 0 );
 
   /***************************************************************/
   Init() ;
@@ -211,6 +210,11 @@ StdMeshersGUI_CreateHypothesisDlg::~StdMeshersGUI_CreateHypothesisDlg()
 //=================================================================================
 void StdMeshersGUI_CreateHypothesisDlg::Init()
 {
+  ParameterMap::const_iterator anIt = myParamMap.begin(),
+                               aLast = myParamMap.end();
+  for( ; anIt!=aLast; anIt++ )
+    UpdateShown( anIt.key() );
+   
   mySMESHGUI = SMESHGUI::GetSMESHGUI() ;
 
   char* sHypType = const_cast<char*>(myHypType.latin1());
@@ -263,33 +267,49 @@ bool StdMeshersGUI_CreateHypothesisDlg::ClickOnApply()
 
   SUIT_OverrideCursor wc;
 
+  SMESH::SMESH_Hypothesis_var Hyp = SMESH::SMESH_Hypothesis::_narrow
+      ( SMESH::CreateHypothesis( myHypType, myHypName, false ) ); // isAlgorithm
+  
   try {
-    SMESH::SMESH_Hypothesis_var Hyp = SMESH::SMESH_Hypothesis::_narrow
-      ( SMESH::CreateHypothesis (myHypType,
-				 myHypName,
-				 false )); // isAlgorithm
-    
-    list<SMESHGUI_aParameterPtr>::iterator paramIt = myParamList.begin();
-    list<QWidget*>::iterator              widgetIt = mySpinList.begin();
-    for ( ;
-         paramIt != myParamList.end() && widgetIt != mySpinList.end();
-         paramIt++ , widgetIt++ )
-      (*paramIt)->TakeValue( *widgetIt );
 
-    SetParameters( Hyp, myParamList );
+    list<SMESHGUI_aParameterPtr> aParamList;
+    ParameterMap::const_iterator anIt = myParamMap.begin(),
+                                 aLast = myParamMap.end();
+    for( int i=0; i<myParamMap.count(); i++ )
+      for( anIt=myParamMap.begin(); anIt!=aLast; anIt++ )
+        if( (*anIt).order==i )
+        {
+          anIt.key()->TakeValue( anIt.data().editor );
+          aParamList.push_back( anIt.key() );
+	  break;
+        }
+
+    SetParameters( Hyp, aParamList );
 
     //set new Attribute Comment for hypothesis which parameters were set
     QString aParams = "";
-    StdMeshersGUI_Parameters::GetParameters( Hyp.in(), myParamList, aParams );
+    StdMeshersGUI_Parameters::GetParameters( Hyp.in(), aParamList, aParams );
     _PTR(SObject) SHyp = SMESH::FindSObject(Hyp.in());
     if (SHyp)
-      if (!aParams.isEmpty()) {
-	SMESH::SetValue(SHyp, aParams);
-	mySMESHGUI->getApp()->objectBrowser()->updateTree();
+      if (!aParams.isEmpty())
+      {
+        SMESH::SetValue(SHyp, aParams);
+        mySMESHGUI->getApp()->objectBrowser()->updateTree();
       }
   }
-  catch (const SALOME::SALOME_Exception& S_ex) {
+  catch (const SALOME::SALOME_Exception& S_ex)
+  {
     wc.suspend();
+
+    _PTR(SObject) SHyp = SMESH::FindSObject(Hyp.in());
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if( aStudy && !aStudy->GetProperties()->IsLocked() )
+    {
+      _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+      aBuilder->RemoveObjectWithChildren( SHyp );
+      mySMESHGUI->updateObjBrowser( true, 0 );
+    }
+    
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
     return false;
   }
@@ -354,4 +374,62 @@ void StdMeshersGUI_CreateHypothesisDlg::closeEvent( QCloseEvent* e )
 {
   mySMESHGUI->ResetState();
   QDialog::closeEvent( e );
+}
+
+//=================================================================================
+// function : onValueChanged()
+// purpose  :
+//=================================================================================
+void StdMeshersGUI_CreateHypothesisDlg::onValueChanged()
+{
+  if( sender()->inherits( "QWidget" ) )
+  {
+    QWidget* w = ( QWidget* )sender();
+
+    SMESHGUI_aParameterPtr param;
+
+    ParameterMap::const_iterator anIt = myParamMap.begin(),
+                                 aLast = myParamMap.end();
+    for( ; anIt!=aLast; anIt++ )
+      if( anIt.data().editor == w )
+      {
+        param = anIt.key();
+        param->TakeValue( w );
+        UpdateShown( param );
+        break;
+      }
+  }
+}
+
+//=================================================================================
+// function : UpdateShown()
+// purpose  :
+//=================================================================================
+void StdMeshersGUI_CreateHypothesisDlg::UpdateShown( const SMESHGUI_aParameterPtr param )
+{
+  SMESHGUI_dependParameter* depPar = dynamic_cast<SMESHGUI_enumParameter*>( param.get() );
+  if( !depPar )
+    depPar = dynamic_cast<SMESHGUI_boolParameter*>( param.get() );
+
+  if( !depPar )
+    return;
+
+  SMESHGUI_dependParameter::ShownMap& map = depPar->shownMap();
+  if( map.isEmpty() )
+    return;
+
+  int val;
+  depPar->TakeValue( myParamMap[ param ].editor );
+  depPar->GetNewInt( val );
+  
+  bool hasValue = map.contains( val );
+
+  ParameterMap::const_iterator anIt = myParamMap.begin(),
+                                aLast = myParamMap.end();
+  for( ; anIt!=aLast; anIt++ )
+  {
+    bool shown = hasValue && map[ val ].contains( (*anIt).order );
+    (*anIt).editor->setShown( shown );
+    (*anIt).label->setShown( shown );
+  }
 }

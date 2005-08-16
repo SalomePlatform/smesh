@@ -94,7 +94,8 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_GroupLyingOnGeom.py \
 		   PAL_MESH_041_mesh.py \
 		   PAL_MESH_043_2D.py \
-		   PAL_MESH_043_3D.py
+		   PAL_MESH_043_3D.py \
+		   SMESH_reg.py
 
 LIB_CLIENT_IDL = SALOMEDS.idl \
 		 SALOME_Exception.idl \

@@ -31,6 +31,7 @@
 #define _SMESH_NUMBEROFSEGMENTS_I_HXX_
 
 #include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
 #include "SMESH_Hypothesis_i.hxx"
@@ -57,11 +58,39 @@ public:
   // Get number of segments
   CORBA::Long GetNumberOfSegments();
 
+  // Set distribution type
+  void SetDistrType(CORBA::Long typ)
+    throw ( SALOME::SALOME_Exception );
+  // Get distribution type
+  CORBA::Long GetDistrType();
+
   // Set scalar factor
   void SetScaleFactor( CORBA::Double theScaleFactor )
     throw ( SALOME::SALOME_Exception );
   // Get scalar factor
-  CORBA::Double GetScaleFactor();
+  CORBA::Double GetScaleFactor()
+    throw ( SALOME::SALOME_Exception );
+
+  // Set table function for distribution DT_TabFunc
+  void SetTableFunction(const SMESH::double_array& table)
+    throw ( SALOME::SALOME_Exception );
+  // Get table function for distribution DT_TabFunc
+  SMESH::double_array* GetTableFunction()
+    throw ( SALOME::SALOME_Exception );
+
+  // Set expression function for distribution DT_ExprFunc
+  void SetExpressionFunction(const char* expr)
+    throw ( SALOME::SALOME_Exception );
+  // Get expression function for distribution DT_ExprFunc
+  char* GetExpressionFunction()
+    throw ( SALOME::SALOME_Exception );
+
+  // Set the exponent mode on/off
+  void SetExponentMode(CORBA::Boolean isExp)
+    throw ( SALOME::SALOME_Exception );
+  // Returns true if the exponent mode is set
+  CORBA::Boolean IsExponentMode()
+    throw ( SALOME::SALOME_Exception );
 
   // Get implementation
   ::StdMeshers_NumberOfSegments* GetImpl();

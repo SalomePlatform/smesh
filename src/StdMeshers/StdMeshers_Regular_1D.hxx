@@ -65,16 +65,32 @@ protected:
   enum HypothesisType { LOCAL_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, NONE };
 
   enum ValueIndex {
-    NB_SEGMENTS_IND  = 0,
-    SCALE_FACTOR_IND = 1,
+    SCALE_FACTOR_IND = 0,
     BEG_LENGTH_IND   = 0,
     END_LENGTH_IND   = 1,
     DEFLECTION_IND   = 0
     };
 
+  enum IValueIndex {
+    NB_SEGMENTS_IND  = 0,
+    DISTR_TYPE_IND   = 1,
+    EXP_MODE_IND     = 2
+  };
+
+  enum VValueIndex {
+    TAB_FUNC_IND  = 0
+  };
+
+  enum SValueIndex {
+    EXPR_FUNC_IND  = 0
+  };
+
   HypothesisType _hypType;
 
   double _value[2];
+  int    _ivalue[3];
+  std::vector<double> _vvalue[1];
+  std::string         _svalue[1];
 
   // a source of propagated hypothesis, is set by CheckHypothesis()
   // always called before Compute()

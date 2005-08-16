@@ -44,6 +44,7 @@ using namespace std;
 #include "SMDS_EdgePosition.hxx"
 #include "SMESH_subMesh.hxx"
 
+#include "Utils_SALOME_Exception.hxx"
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
@@ -56,9 +57,14 @@ using namespace std;
 #include <GCPnts_UniformDeflection.hxx>
 #include <Standard_ErrorHandler.hxx>
 #include <Precision.hxx>
+#include <Expr_GeneralExpression.hxx>
+#include <Expr_NamedUnknown.hxx>
+#include <Expr_Array1OfNamedUnknown.hxx>
+#include <TColStd_Array1OfReal.hxx>
+#include <ExprIntrp_GenExp.hxx>
 
 #include <string>
-//#include <algorithm>
+#include <math.h>
 
 //=============================================================================
 /*!
@@ -131,9 +137,29 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     const StdMeshers_NumberOfSegments * hyp =
       dynamic_cast <const StdMeshers_NumberOfSegments * >(theHyp);
     ASSERT(hyp);
-    _value[ NB_SEGMENTS_IND  ] = hyp->GetNumberOfSegments();
-    _value[ SCALE_FACTOR_IND ] = hyp->GetScaleFactor();
-    ASSERT( _value[ NB_SEGMENTS_IND ] > 0 );
+    _ivalue[ NB_SEGMENTS_IND  ] = hyp->GetNumberOfSegments();
+    ASSERT( _ivalue[ NB_SEGMENTS_IND ] > 0 );
+    _ivalue[ DISTR_TYPE_IND ] = (int) hyp->GetDistrType();
+    switch (_ivalue[ DISTR_TYPE_IND ])
+    {
+    case StdMeshers_NumberOfSegments::DT_Scale:
+      _value[ SCALE_FACTOR_IND ] = hyp->GetScaleFactor();
+      break;
+    case StdMeshers_NumberOfSegments::DT_TabFunc:
+      _vvalue[ TAB_FUNC_IND ] = hyp->GetTableFunction();
+      break;
+    case StdMeshers_NumberOfSegments::DT_ExprFunc:
+      _svalue[ EXPR_FUNC_IND ] = hyp->GetExpressionFunction();
+      break;
+    case StdMeshers_NumberOfSegments::DT_Regular:
+      break;
+    default:
+      ASSERT(0);
+      break;
+    }
+    if (_ivalue[ DISTR_TYPE_IND ] == StdMeshers_NumberOfSegments::DT_TabFunc ||
+        _ivalue[ DISTR_TYPE_IND ] == StdMeshers_NumberOfSegments::DT_ExprFunc)
+      _ivalue[ EXP_MODE_IND ] = (int) hyp->IsExponentMode();
     _hypType = NB_SEGMENTS;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
@@ -221,6 +247,265 @@ static void compensateError(double a1, double an,
   }
 }
 
+/*!
+ * \brief This class provides interface for a density function
+ */
+class Function
+{
+public:
+  Function(bool expMode) : _expMode(expMode) {}
+  double operator() (double t) const;
+  virtual bool IsReady() const = 0;
+protected:
+  virtual double compute(double t) const = 0;
+private:
+  bool _expMode;
+};
+
+/*!
+ * \brief This class provides computation of density function given by a table
+ */
+class TabFunction: public Function
+{
+public:
+  TabFunction(const vector<double>& table, bool expMode);
+  virtual bool IsReady() const;
+protected:
+  virtual double compute(double t) const;
+private:
+  const vector<double>& _table;
+};
+
+/*!
+ * \brief This class provides computation of density function given by an expression
+ */
+class ExprFunction: public Function
+{
+public:
+  ExprFunction(const char* expr, bool expMode);
+  virtual bool IsReady() const;
+protected:
+  virtual double compute(double t) const;
+private:
+  Handle(Expr_GeneralExpression) _expression;
+  Expr_Array1OfNamedUnknown _var;
+  mutable TColStd_Array1OfReal _val;
+};
+
+double Function::operator() (double t) const
+{
+  double res = compute(t);
+  if (_expMode)
+    res = pow(10, res);
+  return res;
+}
+
+TabFunction::TabFunction(const vector<double>& table, bool expMode)
+  : Function(expMode),
+    _table(table)
+{
+}
+
+bool TabFunction::IsReady() const
+{
+  return true;
+}
+
+double TabFunction::compute (double t) const
+{
+  //find place of <t> in table
+  int i;
+  for (i=0; i < _table.size()/2; i++)
+    if (_table[i*2] > t)
+      break;
+  if (i >= _table.size()/2)
+    i = _table.size()/2 - 1;
+
+  if (i == 0)
+    return _table[1];
+
+  // interpolate function value on found interval
+  // (t - x[i-1]) / (x[i] - x[i-1]) = (y - f[i-1]) / (f[i] - f[i-1])
+  // => y = f[i-1] + (f[i] - f[i-1]) * (t - x[i-1]) / (x[i] - x[i-1])
+  double x1 = _table[(i-1)*2];
+  double x2 = _table[i*2];
+  double y1 = _table[(i-1)*2+1];
+  double y2 = _table[i*2+1];
+  if (x2 - x1 < Precision::Confusion())
+    throw SALOME_Exception("TabFunction::compute : confused points");
+  return y1 + (y2 - y1) * ((t - x1) / (x2 - x1));
+}
+
+ExprFunction::ExprFunction(const char* expr, bool expMode)
+  : Function(expMode),
+    _var(1,1),
+    _val(1,1)
+{
+  Handle( ExprIntrp_GenExp ) gen = ExprIntrp_GenExp::Create();
+  gen->Process(TCollection_AsciiString((char*)expr));
+  if (gen->IsDone())
+  {
+    _expression = gen->Expression();
+    _var(1) = new Expr_NamedUnknown("t");
+  }
+}
+
+bool ExprFunction::IsReady() const
+{
+  return !_expression.IsNull();
+}
+
+double ExprFunction::compute (double t) const
+{
+  ASSERT(!_expression.IsNull());
+  _val(1) = t;
+  return _expression->Evaluate(_var, _val);
+}
+
+//================================================================================
+/*!
+ * \brief Compute next abscissa when two previous ones are given
+  * \param sm2 - before previous abscissa
+  * \param sm1 - previous abscissa
+  * \param func - function of density
+  * \param reverse - the direction of next abscissa, increase (0) or decrease (1)
+  * \retval double - the new abscissa
+ * 
+ * The abscissa s is given by the formulae
+ *
+ * ....|--------|----------------|.....
+ *    sm2      sm1               s
+ *
+ *    func(sm2) / func(sm1)  = (sm1-sm2) / (s-sm1)
+ * => (s-sm1) * func(sm2) = (sm1-sm2) * func(sm1)
+ * => s = sm1 + (sm1-sm2) * func(sm1) / func(sm2)
+ */
+//================================================================================
+
+static double nextAbscissa(double sm2, double sm1, const Function& func, int reverse)
+{
+  if (reverse)
+  {
+    sm1 = 1.0 - sm1;
+    sm2 = 1.0 - sm2;
+  }
+  return sm1 + (sm1-sm2) * func(sm1) / func(sm2);
+}
+
+//================================================================================
+/*!
+ * \brief Compute distribution of points on a curve following the law of a function
+  * \param C3d - the curve to discretize
+  * \param first - the first parameter on the curve 
+  * \param last - the last parameter on the curve 
+  * \param theReverse - flag indicating that the curve must be reversed
+  * \param nbSeg - number of output segments
+  * \param func - the function f(t)
+  * \param theParams - output points
+  * \retval bool  - true if success
+ */
+//================================================================================
+
+static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
+                               double length, bool theReverse, 
+                               int nbSeg, const Function& func,
+                               list<double>& theParams)
+{
+  if (!func.IsReady())
+    return false;
+  vector<double> xxx[2];
+  int nbPnt = 1 + nbSeg;
+  int rev, i;
+  for (rev=0; rev < 2; rev++)
+  {
+    // curv abscisses initialisation
+    vector<double> x(nbPnt, 0.);
+    // the first abscissa is 0.0
+
+    // The aim of the algorithm is to find a second abscisse x[1] such as the last
+    // one x[nbSeg] is very close to 1.0 with the epsilon precision
+
+    double x1_too_small = 0.0;
+    double x1_too_large = RealLast();
+    double x1 = 1.0/nbSeg;
+    while (1)
+    {
+      x[1] = x1;
+
+      // Check if the abscissa of the point 2 to N-1
+      // are in the segment ...
+
+      bool ok = true;
+      for (i=2; i <= nbSeg; i++)
+      {
+        x[i] = nextAbscissa(x[i-2], x[i-1], func, rev);
+        if (x[i] - 1.0 > Precision::Confusion())
+        {
+          x[nbSeg] = x[i];
+          ok = false;
+          break;
+        }
+      }
+      if (!ok)
+      {
+        // The segments are to large
+        // Decrease x1 ...
+        x1_too_large = x1;
+        x1 = (x1_too_small+x1_too_large)/2;
+        continue;
+      }
+
+      // Look at the abscissa of the point N
+      // which is to be close to 1.0
+
+      // break condition --> algo converged !!
+
+      if (1.0 - x[nbSeg] < Precision::Confusion())
+        break;
+
+      // not ok ...
+
+      x1_too_small = x1;
+
+      // Modify x1 value
+
+      if (x1_too_large > 1e100)
+        x1 = 2*x1;
+      else
+        x1 = (x1_too_small+x1_too_large)/2;
+    }
+    xxx[rev] = x;
+  }
+
+  // average
+  vector<double> x(nbPnt, 0.);
+  for (i=0; i < nbPnt; i++)
+    x[i] = (xxx[0][i] + (1.0 - xxx[1][nbPnt-i])) / 2;
+
+  // apply parameters in range [0,1] to the space of the curve
+  double prevU = first;
+  double sign = 1.;
+  if (theReverse)
+  {
+    prevU = last;
+    sign = -1.;
+  }
+  for (i = 1; i < nbSeg; i++)
+  {
+    double curvLength = length * (x[i] - x[i-1]) * sign;
+    GCPnts_AbscissaPoint Discret( C3d, curvLength, prevU );
+    if ( !Discret.IsDone() )
+      return false;
+    double U = Discret.Parameter();
+    if ( U > first && U < last )
+      theParams.push_back( U );
+    else
+      return false;
+    prevU = U;
+  }
+  return false;
+}
+
 //=============================================================================
 /*!
  *  
@@ -246,6 +531,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
     double eltSize = 1;
     if ( _hypType == LOCAL_LENGTH )
     {
+      // Local Length hypothesis
       double nbseg = ceil(length / _value[ BEG_LENGTH_IND ]); // integer sup
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
@@ -253,26 +539,47 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
     }
     else
     {
-      double epsilon = 0.001;
-      if (fabs(_value[ SCALE_FACTOR_IND ] - 1.0) > epsilon)
+      // Number Of Segments hypothesis
+      switch (_ivalue[ DISTR_TYPE_IND ])
       {
-        double scale = _value[ SCALE_FACTOR_IND ];
-        if ( theReverse )
-          scale = 1. / scale;
-        double alpha = pow( scale , 1.0 / (_value[ NB_SEGMENTS_IND ] - 1));
-        double factor = (l - f) / (1 - pow( alpha,_value[ NB_SEGMENTS_IND ]));
-
-        int i, NbPoints = 1 + (int) _value[ NB_SEGMENTS_IND ];
-        for ( i = 2; i < NbPoints; i++ )
+      case StdMeshers_NumberOfSegments::DT_Scale:
         {
-          double param = f + factor * (1 - pow(alpha, i - 1));
-          theParams.push_back( param );
+          double scale = _value[ SCALE_FACTOR_IND ];
+          if ( theReverse )
+            scale = 1. / scale;
+          double alpha = pow( scale , 1.0 / (_ivalue[ NB_SEGMENTS_IND ] - 1));
+          double factor = (l - f) / (1 - pow( alpha,_ivalue[ NB_SEGMENTS_IND ]));
+
+          int i, NbPoints = 1 + _ivalue[ NB_SEGMENTS_IND ];
+          for ( i = 2; i < NbPoints; i++ )
+          {
+            double param = f + factor * (1 - pow(alpha, i - 1));
+            theParams.push_back( param );
+          }
+          return true;
         }
-        return true;
-      }
-      else
-      {
-        eltSize = length / _value[ NB_SEGMENTS_IND ];
+        break;
+      case StdMeshers_NumberOfSegments::DT_TabFunc:
+        {
+          TabFunction func(_vvalue[ TAB_FUNC_IND ], (bool)_ivalue[ EXP_MODE_IND ]);
+          return computeParamByFunc(C3d, f, l, length, theReverse,
+                                    _ivalue[ NB_SEGMENTS_IND ], func,
+                                    theParams);
+        }
+        break;
+      case StdMeshers_NumberOfSegments::DT_ExprFunc:
+        {
+          ExprFunction func(_svalue[ EXPR_FUNC_IND ].c_str(), (bool)_ivalue[ EXP_MODE_IND ]);
+          return computeParamByFunc(C3d, f, l, length, theReverse,
+                                    _ivalue[ NB_SEGMENTS_IND ], func,
+                                    theParams);
+        }
+        break;
+      case StdMeshers_NumberOfSegments::DT_Regular:
+        eltSize = length / _ivalue[ NB_SEGMENTS_IND ];
+        break;
+      default:
+        return false;
       }
     }
 

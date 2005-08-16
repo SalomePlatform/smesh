@@ -30,13 +30,13 @@
 
 // QT Includes
 #include <qdialog.h>
+#include <qmap.h>
+#include <qpair.h>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
 #include "SMESHGUI_aParameter.h"
-
-#include <list>
 
 class QGroupBox;
 class QLabel;
@@ -67,23 +67,34 @@ protected:
 			 const QPixmap & hypIcon,
 			 const QString & hypTypeName);
 
-    virtual void GetParameters(const QString & hypType,
-                               std::list<SMESHGUI_aParameterPtr> & params) = 0;
+    virtual void GetParameters( const QString& hypType,
+                                std::list<SMESHGUI_aParameterPtr>& ) = 0;
 
-    virtual bool SetParameters(SMESH::SMESH_Hypothesis_ptr theHyp,
-			       const std::list<SMESHGUI_aParameterPtr> & params) = 0;
+    virtual bool SetParameters( SMESH::SMESH_Hypothesis_ptr theHyp,
+			                          const std::list<SMESHGUI_aParameterPtr> & params ) = 0;
 
+protected slots:
+    virtual void onValueChanged();
+    
 private:
-
+    void UpdateShown( const SMESHGUI_aParameterPtr );
     void Init() ;
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;
 
-    SMESHGUI*  mySMESHGUI ;
-    QString    myHypType ;
+    SMESHGUI*  mySMESHGUI;
+    QString    myHypType;
 
-    std::list<QWidget*>               mySpinList;
-    std::list<SMESHGUI_aParameterPtr> myParamList;
+    typedef struct 
+    {
+      QWidget* editor;
+      QLabel*  label;
+      int      order;
+      
+    } ParamInfo;
+    
+    typedef QMap< SMESHGUI_aParameterPtr, ParamInfo > ParameterMap;
+    ParameterMap      myParamMap;
 
     QLabel*           iconLabel;
     QLabel*           typeLabel;

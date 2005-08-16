@@ -29,8 +29,32 @@ msgstr "Number of Segments"
 msgid "SMESH_NB_SEGMENTS_PARAM"
 msgstr "Number of Segments"
 
+msgid "SMESH_DISTR_TYPE"
+msgstr "Type of distribution"
+
+msgid "SMESH_DISTR_REGULAR"
+msgstr "Equidistant distribution"
+
+msgid "SMESH_DISTR_SCALE"
+msgstr "Scale distribution"
+
+msgid "SMESH_DISTR_TAB"
+msgstr "Distribution with table density"
+
+msgid "SMESH_DISTR_EXPR"
+msgstr "Distribution with analitic density"
+
 msgid "SMESH_NB_SEGMENTS_SCALE_PARAM"
 msgstr "Scale Factor"
+
+msgid "SMESH_TAB_FUNC"
+msgstr "Table function"
+
+msgid "SMESH_EXPR_FUNC"
+msgstr "Density function f(t) = "
+
+msgid "SMESH_EXP_MODE"
+msgstr "Exponent mode "
 
 msgid "SMESH_NB_SEGMENTS_TITLE"
 msgstr "Hypothesis Construction"

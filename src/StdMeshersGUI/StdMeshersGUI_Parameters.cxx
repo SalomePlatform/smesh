@@ -65,7 +65,25 @@ void StdMeshersGUI_Parameters::SetInitValue(SMESHGUI_aParameterPtr param,
                                             int                    initValue)
 {
   SMESHGUI_intParameter* p = dynamic_cast<SMESHGUI_intParameter*>(param.get());
-  if ( p ) p->InitValue() = initValue;
+  if ( p )
+  {
+    p->InitValue() = initValue;
+    return;
+  }
+  
+  SMESHGUI_enumParameter* q = dynamic_cast<SMESHGUI_enumParameter*>(param.get());
+  if( q )
+  {
+    q->InitValue() = initValue;
+    return;
+  }
+
+  SMESHGUI_boolParameter* b = dynamic_cast<SMESHGUI_boolParameter*>(param.get());
+  if( b )
+  {
+    b->InitValue() = (bool)initValue;
+    return;
+  }
 }
 
 //=======================================================================
@@ -93,6 +111,21 @@ void StdMeshersGUI_Parameters::SetInitValue(SMESHGUI_aParameterPtr param,
 }
 
 //=======================================================================
+//function : SetInitValue
+//purpose  :
+//=======================================================================
+void StdMeshersGUI_Parameters::SetInitValue( SMESHGUI_aParameterPtr param,
+                                             SMESH::double_array&   initValue)
+{
+  SMESHGUI_tableParameter* p = dynamic_cast<SMESHGUI_tableParameter*>(param.get());
+  if( p )
+  {
+    p->setRowCount( initValue.length()/2 );
+    p->setData( initValue );
+  }
+}
+
+//=======================================================================
 //function : GetParameters
 //purpose  : 
 //=======================================================================
@@ -100,6 +133,9 @@ void StdMeshersGUI_Parameters::SetInitValue(SMESHGUI_aParameterPtr param,
 // SMESHGUI_doubleParameter( initValue, label, bottom, top, step, decimals )
 #define DOUBLE_PARAM(v,l,b,t,s,d) SMESHGUI_aParameterPtr(new SMESHGUI_doubleParameter(v,l,b,t,s,d))
 #define INT_PARAM(v,l,b,t) SMESHGUI_aParameterPtr(new SMESHGUI_intParameter(v,l,b,t))
+#define ENUM_PARAM(v,i,l) SMESHGUI_aParameterPtr(new SMESHGUI_enumParameter(v,i,l))
+#define STR_PARAM(i,l) SMESHGUI_aParameterPtr(new SMESHGUI_strParameter(i,l))
+#define BOOL_PARAM(i,l) SMESHGUI_aParameterPtr(new SMESHGUI_boolParameter(i,l))
 
 void StdMeshersGUI_Parameters::GetParameters (const QString&                 hypType,
                                               list<SMESHGUI_aParameterPtr> & paramList )
@@ -114,12 +150,58 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
   }
   else if (hypType.compare("NumberOfSegments") == 0)
   {
+    //0-th parameter in list
     paramList.push_back ( INT_PARAM (3,
                                      QObject::tr("SMESH_NB_SEGMENTS_PARAM"),
                                      1, 9999 ));
+    QStringList types;
+    types.append( QObject::tr( "SMESH_DISTR_REGULAR" ) );
+    types.append( QObject::tr( "SMESH_DISTR_SCALE"   ) );
+    types.append( QObject::tr( "SMESH_DISTR_TAB"     ) );
+    types.append( QObject::tr( "SMESH_DISTR_EXPR"    ) );
+    //string description of distribution types
+
+    SMESHGUI_enumParameter* type = new SMESHGUI_enumParameter( types, 0, QObject::tr( "SMESH_DISTR_TYPE" ) );
+    SMESHGUI_dependParameter::ShownMap& aMap = type->shownMap();
+    aMap[0].append( 0 ); // if DistrType=0 (regular), then number of segments and types are shown (0-th and 1-th)
+    aMap[0].append( 1 );
+    aMap[1].append( 0 ); // if DistrType=1 (scale), then number of segments, types and scale are shown
+    aMap[1].append( 1 );
+    aMap[1].append( 2 );
+    aMap[2].append( 0 ); // if DistrType=2 (table), then number of segments, types, table and exponent are shown
+    aMap[2].append( 1 );
+    aMap[2].append( 3 );
+    aMap[2].append( 5 );
+    aMap[3].append( 0 ); // if DistrType=3 (expression), then number of segments, types, expression and exponent are shown
+    aMap[3].append( 1 );
+    aMap[3].append( 4 );
+    aMap[3].append( 5 );
+    //1-th parameter in list
+    paramList.push_back ( SMESHGUI_aParameterPtr( type ) );
+
+    //2-th parameter in list
     paramList.push_back ( DOUBLE_PARAM (1.0,
                                      QObject::tr("SMESH_NB_SEGMENTS_SCALE_PARAM"),
                                      VALUE_SMALL, VALUE_MAX, 0.1, 6 ));
+    SMESHGUI_tableParameter* tab = new SMESHGUI_tableParameter( 0.0, QObject::tr( "SMESH_TAB_FUNC" ) );
+    tab->setRowCount( 5 );
+    tab->setColCount( 2 );
+    //default size of table: 5x2
+    
+    tab->setColName( 0, "t" );
+    tab->setColName( 1, "f(t)" );    
+    tab->setValidator( 0, 0.0, 1.0, 3 );
+    tab->setValidator( 1, 1E-7, 1E+300, 3 );
+    tab->setEditRows( true );
+
+    //3-th parameter in list
+    paramList.push_back ( SMESHGUI_aParameterPtr( tab ) );
+
+    //4-th parameter in list
+    paramList.push_back ( STR_PARAM ( "", QObject::tr( "SMESH_EXPR_FUNC" ) ) );
+
+    //5-th parameter in list
+    paramList.push_back ( BOOL_PARAM ( false, QObject::tr( "SMESH_EXP_MODE" ) ) );
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
@@ -187,8 +269,34 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr    the
   {
     StdMeshers::StdMeshers_NumberOfSegments_var NOS =
       StdMeshers::StdMeshers_NumberOfSegments::_narrow(theHyp);
-    SetInitValue( paramList.front(), (int) NOS->GetNumberOfSegments());
-    SetInitValue( paramList.back(), NOS->GetScaleFactor());
+      
+    list<SMESHGUI_aParameterPtr>::iterator anIt = paramList.begin();
+    SetInitValue( *anIt, (int) NOS->GetNumberOfSegments()); anIt++;
+    int DType = (int) NOS->GetDistrType();
+    SetInitValue( *anIt, DType ); anIt++;
+    
+    if( DType==1 )
+      SetInitValue( *anIt, NOS->GetScaleFactor());
+    anIt++;
+
+    if( DType==2 )
+    {
+      SMESH::double_array* tab_func = NOS->GetTableFunction();
+      SetInitValue( *anIt, *tab_func );
+      delete tab_func;
+    }
+    anIt++;
+
+    if( DType==3 )
+    {
+      char* expr_func = NOS->GetExpressionFunction();
+      SetInitValue( *anIt, expr_func );
+      delete expr_func;
+    }
+    anIt++;
+
+    if( DType==2 || DType==3 )
+      SetInitValue( *anIt, (bool)NOS->IsExponentMode());
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
@@ -237,17 +345,25 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr       
   for ( ; paramIt != paramList.end(); paramIt++) {
     if (params.compare("")) params += " ; ";
 
-    if ((*paramIt)->GetType() == SMESHGUI_aParameter::DOUBLE ) {
+    SMESHGUI_aParameter::Type t = (*paramIt)->GetType();
+    if( t==SMESHGUI_aParameter::DOUBLE )
+    {
       double aDoubleValue = 0.;
       (*paramIt)->GetNewDouble(aDoubleValue);
       params += QString::number(aDoubleValue);
     }
-    else if ((*paramIt)->GetType() == SMESHGUI_aParameter::TEXT ) {
+    else if( t==SMESHGUI_aParameter::STRING || t==SMESHGUI_aParameter::ENUM )
+    {
       QString aStrValue( "" );
       (*paramIt)->GetNewText(aStrValue);
       params += aStrValue.simplifyWhiteSpace();
     }
-    else {
+    else if( t==SMESHGUI_aParameter::TABLE )
+    {
+      params += "TABLE";
+    }
+    else
+    {
       int aIntValue = 0;
       (*paramIt)->GetNewInt(aIntValue);
       params += QString::number(aIntValue);
@@ -281,12 +397,32 @@ bool StdMeshersGUI_Parameters::SetParameters(SMESH::SMESH_Hypothesis_ptr        
   {
     StdMeshers::StdMeshers_NumberOfSegments_var NOS =
       StdMeshers::StdMeshers_NumberOfSegments::_narrow(theHyp);
-    int NbSeg = NOS->GetNumberOfSegments();
-    double Scale = NOS->GetScaleFactor() ;
-    modified = paramList.front()->GetNewInt( NbSeg );
-    modified = paramList.back()->GetNewDouble( Scale ) || modified;
-    NOS->SetNumberOfSegments(NbSeg);
-    NOS->SetScaleFactor( Scale );
+
+    list<SMESHGUI_aParameterPtr>::const_iterator anIt = paramList.begin();
+    int NbSeg, DType;
+    double Scale;
+    SMESH::double_array TabF;
+    QString exprF;
+    int expType;
+
+    modified = (*anIt)->GetNewInt( NbSeg ); anIt++;
+    modified = (*anIt)->GetNewInt( DType ) || modified; anIt++;
+    modified = (*anIt)->GetNewDouble( Scale ) || modified; anIt++;
+    SMESHGUI_aParameterPtr p = *anIt;
+    ((SMESHGUI_tableParameter*)p.get())->data( TabF ); anIt++; modified = true;
+    modified = (*anIt)->GetNewText( exprF ) || modified; anIt++;
+    modified = (*anIt)->GetNewInt( expType ) || modified;
+    
+    NOS->SetNumberOfSegments( NbSeg );
+    NOS->SetDistrType( DType );
+    if( DType==1 )
+      NOS->SetScaleFactor( Scale );
+    if( DType==2 )
+      NOS->SetTableFunction( TabF );
+    if( DType==3 )
+      NOS->SetExpressionFunction( CORBA::string_dup( exprF.latin1() ) );
+    if( DType==2 || DType==3 )
+      NOS->SetExponentMode( (bool)expType );
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {

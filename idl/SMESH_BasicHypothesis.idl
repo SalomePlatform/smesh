@@ -28,6 +28,7 @@
 
 #include "SALOME_Exception.idl"
 #include "SMESH_Hypothesis.idl"
+#include "SMESH_Mesh.idl"
 
 
 /*!
@@ -69,6 +70,17 @@ module StdMeshers
     long GetNumberOfSegments();
 
     /*!
+     * Sets <distribution type> parameter value
+     */
+    void SetDistrType(in long typ)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <distribution type> parameter value
+     */
+    long GetDistrType();
+
+    /*!
      * Sets <scale factor> parameter value
      */
     void SetScaleFactor(in double scaleFactor)
@@ -77,7 +89,44 @@ module StdMeshers
     /*!
      * Returns <scale factor> parameter value
      */
-    double GetScaleFactor();
+    double GetScaleFactor()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <table function> parameter value for distribution DT_TabFunc
+     */
+    void SetTableFunction(in SMESH::double_array table)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <table function> parameter value for distribution DT_TabFunc
+     */
+    SMESH::double_array GetTableFunction()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <expression function> parameter value for distribution DT_ExprFunc
+     */
+    void SetExpressionFunction(in string expr)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <expression function> parameter value for distribution DT_ExprFunc
+     */
+    string GetExpressionFunction()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <exponent mode> parameter value for functional distributions
+     */
+    void SetExponentMode(in boolean isExponent)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <exponent mode> parameter value for functional distributions
+     */
+    boolean IsExponentMode()
+      raises (SALOME::SALOME_Exception);
   };
 
   /*!

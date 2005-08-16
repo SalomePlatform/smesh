@@ -29,10 +29,12 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 #include "SMESHGUI_aParameter.h"
 
 #include <list>
+#include <vector>
 
 class StdMeshersGUI_Parameters
 {
@@ -57,5 +59,7 @@ class StdMeshersGUI_Parameters
                            double                 initValue);
   static void SetInitValue(SMESHGUI_aParameterPtr param,
                            const char*            initValue);
+  static void SetInitValue(SMESHGUI_aParameterPtr param,
+                           SMESH::double_array&   initValue);
 };
 #endif
