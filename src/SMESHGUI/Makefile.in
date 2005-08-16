@@ -150,6 +150,7 @@ LIB_MOC = \
 		SMESHGUI_SewingDlg.h \
 		SMESHGUI_PrecisionDlg.h \
 		SMESHGUI_MergeNodesDlg.h \
+		SMESHGUI_aParameter.h \
 		SMESHGUI_EditMeshDlg.h \
 		SMESHGUI_CreatePolyhedralVolumeDlg.h
 

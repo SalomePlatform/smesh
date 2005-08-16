@@ -42,7 +42,7 @@
 #include <qlayout.h>
 #include <qspinbox.h>
 #include <qvalidator.h>
-#include <qtextedit.h>
+#include <qlineedit.h>
 
 using namespace std;
 
@@ -80,7 +80,7 @@ void SMESHGUI_aParameterDlg::init()
 {
   setSizeGripEnabled(TRUE);
 
-  QGridLayout* topLayout = new QGridLayout(this);
+  QVBoxLayout* topLayout = new QVBoxLayout(this);
   topLayout->setMargin(11); topLayout->setSpacing(6);
 
   /***************************************************************/
@@ -100,36 +100,27 @@ void SMESHGUI_aParameterDlg::init()
     QLabel * label = new QLabel(GroupC1, "TextLabel");
     GroupC1Layout->addWidget(label, row, 0);
     label->setText(param->Label());
-    QWidget* aSpinWidget = 0;
-    switch (param->GetType()) {
-    case SMESHGUI_aParameter::DOUBLE: {
-      SMESHGUI_SpinBox* spin = new SMESHGUI_SpinBox(GroupC1);
-      aSpinWidget = spin;
-      spin->setPrecision(12);
-      break;
-    }
-    case SMESHGUI_aParameter::INT: {
-      QSpinBox* spin = new QSpinBox(GroupC1);
-      aSpinWidget = spin;
-      break;
-    }
-    case SMESHGUI_aParameter::TEXT: {
-      QTextEdit* edit = new QTextEdit(GroupC1);
-      edit->setWordWrap(QTextEdit::NoWrap);
-      edit->setTextFormat(Qt::PlainText);
-      aSpinWidget = edit;
-      break;
-    }
-    default:;
-    }
+    QWidget* aSpinWidget = param->CreateWidget( GroupC1 );
     if (aSpinWidget) {
       GroupC1Layout->addWidget(aSpinWidget, row, 1);
       aSpinWidget->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       aSpinWidget->setMinimumSize(150, 0);
+
+      QString sig = param->sigValueChanged();
+      if( !sig.isEmpty() && param->GetType()!=SMESHGUI_aParameter::TABLE )
+        connect( aSpinWidget, sig.latin1(), this, SLOT( onValueChanged() ) );
+      
       param->InitializeWidget(aSpinWidget);
       mySpinList.push_back(aSpinWidget);
+      myLabelList.push_back(label);
     }
   }
+
+  paramIt = myParamList.begin();
+  std::list<QWidget*>::const_iterator anIt = mySpinList.begin();
+  for( ; paramIt!=myParamList.end(); paramIt++, anIt++ )
+    UpdateShown( *paramIt, *anIt );
+  
 
   /***************************************************************/
   QGroupBox* GroupButtons = new QGroupBox(this, "GroupButtons");
@@ -155,8 +146,8 @@ void SMESHGUI_aParameterDlg::init()
   GroupButtonsLayout->addWidget(myButtonCancel, 0, 2);
 
   /***************************************************************/
-  topLayout->addWidget(GroupC1,      0, 0);
-  topLayout->addWidget(GroupButtons, 1, 0);
+  topLayout->addWidget(GroupC1,      1 );
+  topLayout->addWidget(GroupButtons, 0 );
 
   /* signals and slots connections */
   connect(myButtonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
@@ -203,4 +194,62 @@ bool SMESHGUI_aParameterDlg::Parameters( SMESHGUI* theModule,
     return (Dialog->exec() == QDialog::Accepted);
   }
   return false;
+}
+
+//=======================================================================
+// function : onValueChanged
+// purpose  : 
+//=======================================================================
+void SMESHGUI_aParameterDlg::onValueChanged()
+{
+  if( sender()->inherits( "QWidget" ) )
+  {
+    QWidget* w = ( QWidget* )sender();
+
+    SMESHGUI_aParameterPtr param;
+
+    std::list<QWidget*>::const_iterator anIt = mySpinList.begin(),
+                                        aLast = mySpinList.end();
+    std::list<SMESHGUI_aParameterPtr>::const_iterator aPIt = myParamList.begin();
+    for( ; anIt!=aLast; anIt++, aPIt++ )
+      if( *anIt == w )
+      {
+        (*aPIt)->TakeValue( w );
+        UpdateShown( *aPIt, w );
+        break;
+      }
+  }
+}
+
+//=======================================================================
+// function : onValueChanged
+// purpose  :
+//=======================================================================
+void SMESHGUI_aParameterDlg::UpdateShown( const SMESHGUI_aParameterPtr param, QWidget* w )
+{
+  SMESHGUI_dependParameter* depPar = dynamic_cast<SMESHGUI_enumParameter*>( param.get() );
+  if( !depPar )
+    depPar = dynamic_cast<SMESHGUI_boolParameter*>( param.get() );
+
+  if( !depPar )
+    return;
+
+  SMESHGUI_dependParameter::ShownMap& map = depPar->shownMap();
+  if( map.isEmpty() )
+    return;
+
+  int val;
+  depPar->TakeValue( w );
+  depPar->GetNewInt( val );
+  bool hasValue = map.contains( val );
+
+  std::list<QWidget*>::const_iterator anIt = mySpinList.begin(),
+                                      aLast = mySpinList.end(),
+                                      aLIt = myLabelList.begin();
+  for( int i=0; anIt!=aLast; anIt++, aLIt++, i++ )
+  {
+    bool shown = hasValue && map[ val ].contains( i );
+    (*anIt)->setShown( shown );
+    (*aLIt)->setShown( shown );
+  }
 }

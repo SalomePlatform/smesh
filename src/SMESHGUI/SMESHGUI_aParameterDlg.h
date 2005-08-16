@@ -62,8 +62,12 @@ public:
 protected:
     void init();
 
+protected slots:
+    virtual void onValueChanged();
+    
 private slots:
     void ClickOnOk();
+    void UpdateShown( const SMESHGUI_aParameterPtr, QWidget* );
 
 private:
     SMESHGUI*       mySMESHGUI;
@@ -71,7 +75,7 @@ private:
     QPushButton*    myButtonOk;
     QPushButton*    myButtonCancel;
 
-    std::list<QWidget*>               mySpinList;
+    std::list<QWidget*>               mySpinList, myLabelList;
     std::list<SMESHGUI_aParameterPtr> myParamList;
 };
 
