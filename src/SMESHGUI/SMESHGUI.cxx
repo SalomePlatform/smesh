@@ -655,7 +655,8 @@ namespace{
     return RefType;
   }
 
-  void OnEditDelete()
+
+  void SMESHGUI::OnEditDelete()
   {
     // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
     SalomeApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
@@ -702,6 +703,13 @@ namespace{
       Handle(SALOME_InteractiveObject) IObject = It.Value();
       if(IObject->hasEntry()){
 	_PTR(SObject) SO = aStudy->FindObjectID(IObject->getEntry());
+
+	// disable removal of "SMESH" component object
+	if(SO->FindAttribute(anAttr, "AttributeIOR")){
+	  anIOR = anAttr;
+	  if ( !strcmp( (char*)anIOR->Value().c_str(), engineIOR().latin1() ) )
+	    continue;
+	}
 
 	/* Erase child graphical objects */
 	_PTR(ChildIterator) it = aStudy->NewChildIterator(SO);
@@ -1053,7 +1061,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   switch (theCommandID)	{
   case 33:					// DELETE
     if(checkLock(aStudy)) break;
-    ::OnEditDelete();
+    OnEditDelete();
     break;
 
   case 113:					// IMPORT
@@ -2601,7 +2609,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   anId = popupMgr()->insert( tr( "MEN_NUM" ), -1, -1 );
   
   popupMgr()->insert( action( 9010 ), anId, -1 );
-  popupMgr()->setRule( action( 9010 ), aMeshInVTK + "&& isVisible &&" + hasNodes, true );//@
+  popupMgr()->setRule( action( 9010 ), aMeshInVTK + "&& isVisible &&" + hasNodes, true );
   popupMgr()->setRule( action( 9010 ), "{'Point'} in labeledTypes", false );
 
   popupMgr()->insert( action( 9011 ), anId, -1 );

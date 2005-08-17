@@ -119,6 +119,9 @@ protected:
   void createPopupItem( const int, const QString&, const QString&,
                         const QString& = QString::null, const int = -1 );
 
+private:
+  void OnEditDelete();
+
 private :
   static SMESH::SMESH_Gen_var      myComponentSMESH;
   QDialog*                         myActiveDialogBox;
