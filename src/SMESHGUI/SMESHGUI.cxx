@@ -2330,6 +2330,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  220, "ALL" );
   createSMESHAction( 1100, "EDIT_HYPO" );
   createSMESHAction( 1101, "RENAME" );
+  createSMESHAction( 1102, "UNASSIGN" );
   createSMESHAction( 9010, "NUM_NODES", "", 0, true );
   createSMESHAction( 9011, "NUM_ELEMENTS", "", 0, true );
   createSMESHAction( 1131, "DISPMODE" );
@@ -2565,9 +2566,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 802, OB, subMesh );                     // CONSTRUCT_GROUP
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( 1100, OB, hypo );                       // EDIT HYPOTHESIS
-  createPopupItem( 1102, OB, hyp_alg, "&& hasReference" ); // REMOVE HYPOTHESIS / ALGORITHMS
-  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg ); // RENAME
+  createPopupItem( 1100, OB, hypo, "&& $hasReference={false}" );   // EDIT HYPOTHESIS
+  createPopupItem( 1102, OB, hyp_alg ); // REMOVE HYPOTHESIS / ALGORITHMS
+  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg, "&& $hasReference={false}" ); // RENAME
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 125, OB, mesh );                        // EXPORT_MED
   createPopupItem( 126, OB, mesh );                        // EXPORT_UNV

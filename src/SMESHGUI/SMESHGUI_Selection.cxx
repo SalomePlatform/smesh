@@ -286,10 +286,12 @@ QVariant SMESHGUI_Selection::hasReference( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    Handle(SALOME_InteractiveObject) io =
-      static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() )->IO();
-    if ( !io.IsNull() )
-      return QVariant( io->hasReference(), 0 );
+    SalomeApp_DataOwner* owner = dynamic_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].operator->() );
+    if( owner )
+    {
+      _PTR(SObject) obj ( study()->studyDS()->FindObjectID( owner->entry().latin1() ) ), ref;
+      return QVariant( obj->ReferencedObject( ref ), 0 );
+    }
   }
   return QVariant( false, 0 );
 }
@@ -328,8 +330,15 @@ int SMESHGUI_Selection::type( SalomeApp_DataOwner* owner,
   if( !obj )
     return -1;
 
+  _PTR(SObject) ref;
+  if( obj->ReferencedObject( ref ) )
+    obj = ref;
+
   _PTR(SObject) objFather = obj->GetFather();
   _PTR(SComponent) objComponent = obj->GetFatherComponent();
+
+  if( objComponent->ComponentDataType()!="SMESH" )
+    return -1;
 
   int aLevel = obj->Depth() - objComponent->Depth(),
       aFTag = objFather->Tag(),

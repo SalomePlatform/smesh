@@ -2125,6 +2125,9 @@ msgstr "Quality controls"
 msgid "MEN_RENAME"
 msgstr "Rename"
 
+msgid "MEN_UNASSIGN"
+msgstr "Unassign"
+
 msgid "MEN_NUM_NODES"
 msgstr "Display Nodes #"
 
@@ -2402,6 +2405,9 @@ msgstr "Update"
 
 msgid "TOP_RENAME"
 msgstr "Rename"
+
+msgid "TOP_UNASSIGN"
+msgstr "Unassign"
 
 msgid "TOP_NUM_NODES"
 msgstr "Display Nodes"
@@ -2682,6 +2688,9 @@ msgstr "Edit Local Hypothesis"
 
 msgid "STB_RENAME"
 msgstr "Rename"
+
+msgid "STB_UNASSIGN"
+msgstr "Unassign"
 
 msgid "STB_NUM_NODES"
 msgstr "Display Nodes"

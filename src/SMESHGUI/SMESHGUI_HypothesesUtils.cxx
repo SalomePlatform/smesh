@@ -424,63 +424,27 @@ namespace SMESH{
 
     try {
       _PTR(Study) aStudy = GetActiveStudyDocument();
-      SMESH_Hypothesis_var anHyp = IObjectToInterface<SMESH_Hypothesis>(IObject);
-      if (IObject->hasReference())
+      _PTR(SObject) aHypObj = aStudy->FindObjectID( IObject->getEntry() );
+      if( aHypObj )
       {
-        if(MYDEBUG) MESSAGE("HAS REFERENCE " << IObject->getEntry());
-	_PTR(SObject) aHypSObj = aStudy->FindObjectID(IObject->getReference());
-	if (aHypSObj) {
-	  _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh(aHypSObj);
-	  if (MorSM) {
-	    GEOM::GEOM_Object_var aShape = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-	    if (!aShape->_is_nil()){
-	      SMESH::SMESH_Mesh_var aMesh =
-		SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
-	      SMESH::SMESH_subMesh_var aSubMesh =
-		SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-
-	      if (!aSubMesh->_is_nil())
-		aMesh = aSubMesh->GetFather();
-
-	      if (!aMesh->_is_nil()) {
-		res = aMesh->RemoveHypothesis(aShape, anHyp);
-		if (res < SMESH::HYP_UNKNOWN_FATAL) {
-                  _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
-                  if (meshSO)
-                    SMESH::ModifiedMesh(meshSO, false);
-                }
-		if (res > SMESH::HYP_OK) {
-		  wc.suspend();
-		  processHypothesisStatus(res, anHyp, false);
-		  wc.resume();
-		}
-	      }
-	    }
-	  }
+	_PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh( aHypObj );
+	_PTR(SObject) aRealHypo;
+	if( aHypObj->ReferencedObject( aRealHypo ) )
+	{
+	  SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aRealHypo ) );
+	  RemoveHypothesisOrAlgorithmOnMesh( MorSM, hypo );
+	}
+	else
+	{
+	  SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
+	  SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
+	  for( int i = 0; i < meshList.size(); i++ )
+	    RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
 	}
       }
-      else if (IObject->hasEntry())
-      {
-        if(MYDEBUG) MESSAGE("IObject entry HAS ENTRY " << IObject->getEntry());
-        SObjectList meshList = GetMeshesUsingAlgoOrHypothesis(anHyp);
-        for ( int i = 0; i < meshList.size(); ++i ) {
-          SMESH::SMESH_Mesh_var aMesh = 
-            SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshList[ i ]);
-          GEOM::GEOM_Object_var aShape = SMESH::GetShapeOnMeshOrSubMesh( meshList[ i ]);
-          if ( ! aMesh->_is_nil() && !aShape->_is_nil() ) {
-            res = aMesh->RemoveHypothesis(aShape, anHyp);
-            if ( res < SMESH::HYP_UNKNOWN_FATAL )
-              SMESH::ModifiedMesh( meshList[ i ], false);
-            if ( res > SMESH::HYP_OK ) {
-              wc.suspend();
-              processHypothesisStatus( res, anHyp, false );
-              wc.resume();
-            }
-          }
-        }
-      }
     }
-    catch(const SALOME::SALOME_Exception& S_ex) {
+    catch(const SALOME::SALOME_Exception& S_ex)
+    {
       wc.suspend();
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       res = SMESH::HYP_UNKNOWN_FATAL;
@@ -544,7 +508,7 @@ namespace SMESH{
 	if(MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): dependency number ="<<listSO.size());
 	for (unsigned int i = 0; i < listSO.size(); i++) {
 	  _PTR(SObject) SO = listSO[i];
-	  if (!SO) {
+	  if (SO) {
 	    _PTR(SObject) aFather = SO->GetFather();
 	    if (aFather) {
 	      _PTR(SObject) SOfatherFather = aFather->GetFather();
