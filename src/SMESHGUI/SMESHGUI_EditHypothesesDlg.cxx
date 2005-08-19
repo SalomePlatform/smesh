@@ -770,11 +770,12 @@ void SMESHGUI_EditHypothesesDlg::InitGeom()
 //=================================================================================
 void SMESHGUI_EditHypothesesDlg::UpdateControlState()
 {
-  bool isEnabled = (!myMesh->_is_nil() && !myGeomShape->_is_nil() &&
-                    ListHypAssignation->count() && ListAlgoAssignation->count())
+  // asl the check of "count" is commented because of PAL9787
+  bool isEnabled = (!myMesh->_is_nil() && !myGeomShape->_is_nil() /*&&
+                    ListHypAssignation->count() && ListAlgoAssignation->count()*/ )
     ||
-      (!mySubMesh->_is_nil() && !myGeomShape->_is_nil() &&
-       (ListHypAssignation->count() || ListAlgoAssignation->count()));
+      (!mySubMesh->_is_nil() && !myGeomShape->_is_nil() /*&&
+       (ListHypAssignation->count() || ListAlgoAssignation->count())*/);
 
   buttonOk   ->setEnabled(myNbModification && isEnabled && !myImportedMesh);
   buttonApply->setEnabled(myNbModification && isEnabled && !myImportedMesh);
