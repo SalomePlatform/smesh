@@ -1302,6 +1302,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	      SMESH::FitAll();
 	    }
 	  }
+	  SMESH::RepaintCurrentView();
 	}
       }else{
 	SUIT_MessageBox::warn1(desktop(),
