@@ -8,67 +8,82 @@
 <meshers-group name="Standard Meshers"
                resources="StdMeshers"
                server-lib="libStdMeshersEngine.so"
-	       gui-lib="libStdMeshersGUI.so">
+               gui-lib="libStdMeshersGUI.so">
   <hypotheses>
 
     <hypothesis type="LocalLength"
-		label-id="Average length"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Average length"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
 
     <hypothesis type="Arithmetic1D"
-		label-id="Arithmetic 1D"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Arithmetic 1D"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
 
     <hypothesis type="StartEndLength"
-		label-id="Start and End Length"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Start and End Length"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
 
     <hypothesis type="NumberOfSegments"
-		label-id="Nb. Segments"
-		icon-id="mesh_hypo_segment.png"/>
+                label-id="Nb. Segments"
+                icon-id="mesh_hypo_segment.png"
+                dim="1"/>
 
     <hypothesis type="Deflection1D"
-		label-id="Deflection 1D"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Deflection 1D"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
 
     <hypothesis type="Propagation"
-		label-id="Propagation of 1D Hyp. on opposite edges"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Propagation of 1D Hyp. on opposite edges"
+                icon-id="mesh_hypo_length.png"
+                dim="1"
+                auxiliary="true"/>
 
     <hypothesis type="LengthFromEdges"
-		label-id="Length From Edges (2D Hyp. for Triangulator)"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Length From Edges (2D Hyp. for Triangulator)"
+                icon-id="mesh_hypo_length.png"/>
 
     <hypothesis type="MaxElementArea"
-		label-id="Max. Element Area"
-		icon-id="mesh_hypo_area.png"/>
+                label-id="Max. Element Area"
+                icon-id="mesh_hypo_area.png"
+                dim="2"/>
+                
+    <hypothesis type="NotConformAllowed"
+                label-id="Not Conform Mesh Allowed"
+                icon-id="mesh_hypo_length.png"
+                dim="1,2,3"
+                auxiliary="true"/>                
 
     <hypothesis type="MaxElementVolume"
-		label-id="Max. Element Volume"
-		icon-id="mesh_hypo_volume.png"/>
-
-    <hypothesis type="NotConformAllowed"
-		label-id="Not Conform Mesh Allowed"
-		icon-id="mesh_hypo_length.png"/>
+                label-id="Max. Element Volume"
+                icon-id="mesh_hypo_volume.png"
+                dim="3"/>
   </hypotheses>
 
   <algorithms>
 
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
-	       icon-id="mesh_algo_regular.png"/>
+	       icon-id="mesh_algo_regular.png"
+         dim="1"/>
 
     <algorithm type="MEFISTO_2D"
 	       label-id="Triangle (Mefisto)"
-	       icon-id="mesh_algo_mefisto.png"/>
+	       icon-id="mesh_algo_mefisto.png"
+         dim="2"/>
 
     <algorithm type="Quadrangle_2D"
                label-id="Quadrangle (Mapping)"
-               icon-id="mesh_algo_quad.png"/>
+               icon-id="mesh_algo_quad.png"
+               dim="2"/>
 
     <algorithm type="Hexa_3D"
                label-id="Hexahedron (i,j,k)"
-               icon-id="mesh_algo_hexa.png"/>
+               icon-id="mesh_algo_hexa.png"
+               dim="3"/>
   </algorithms>
 </meshers-group>
 
