@@ -127,3 +127,18 @@ CORBA::Double StdMeshers_LocalLength_i::GetLength()
   MESSAGE( "StdMeshers_LocalLength_i::GetImpl" );
   return ( ::StdMeshers_LocalLength* )myBaseImpl;
 }
+
+//================================================================================
+/*!
+ * \brief Verify whether hypothesis supports given entity type 
+  * \param type - dimension (see SMESH::Dimension enumeration)
+  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ * 
+ * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
+ */
+//================================================================================  
+CORBA::Boolean StdMeshers_LocalLength_i::IsDimSupported( SMESH::Dimension type )
+{
+  return type == SMESH::DIM_1D;
+}
+

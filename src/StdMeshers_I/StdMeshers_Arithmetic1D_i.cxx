@@ -128,3 +128,17 @@ CORBA::Double StdMeshers_Arithmetic1D_i::GetLength( CORBA::Boolean theIsStart)
   return ( ::StdMeshers_Arithmetic1D* )myBaseImpl;
 }
 
+//================================================================================
+/*!
+ * \brief Verify whether hypothesis supports given entity type 
+  * \param type - dimension (see SMESH::Dimension enumeration)
+  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ * 
+ * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
+ */
+//================================================================================  
+CORBA::Boolean StdMeshers_Arithmetic1D_i::IsDimSupported( SMESH::Dimension type )
+{
+  return type == SMESH::DIM_1D;
+}
+

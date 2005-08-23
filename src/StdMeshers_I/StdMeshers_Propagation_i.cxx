@@ -74,3 +74,18 @@ StdMeshers_Propagation_i::~StdMeshers_Propagation_i()
   MESSAGE( "StdMeshers_Propagation_i::GetImpl" );
   return ( ::StdMeshers_Propagation* )myBaseImpl;
 }
+
+//================================================================================
+/*!
+ * \brief Verify whether hypothesis supports given entity type 
+  * \param type - dimension (see SMESH::Dimension enumeration)
+  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ * 
+ * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
+ */
+//================================================================================  
+CORBA::Boolean StdMeshers_Propagation_i::IsDimSupported( SMESH::Dimension type )
+{
+  return type == SMESH::DIM_1D;
+}
+

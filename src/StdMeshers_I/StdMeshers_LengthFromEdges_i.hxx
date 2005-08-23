@@ -59,6 +59,9 @@ public:
 
   // Get implementation
   ::StdMeshers_LengthFromEdges* GetImpl();
+  
+  // Verify whether hypothesis supports given entity type 
+  CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 };
 
 #endif

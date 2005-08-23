@@ -332,3 +332,17 @@ CORBA::Boolean StdMeshers_NumberOfSegments_i::IsExponentMode()
   return ( ::StdMeshers_NumberOfSegments* )myBaseImpl;
 }
 
+//================================================================================
+/*!
+ * \brief Verify whether hypothesis supports given entity type 
+  * \param type - dimension (see SMESH::Dimension enumeration)
+  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ * 
+ * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
+ */
+//================================================================================  
+CORBA::Boolean StdMeshers_NumberOfSegments_i::IsDimSupported( SMESH::Dimension type )
+{
+  return type == SMESH::DIM_1D;
+}
+

@@ -45,6 +45,9 @@ public:
                                  int studyId,
                                  ::SMESH_Gen* genImpl);
   virtual ~StdMeshers_NotConformAllowed_i();
+  
+  // Verify whether hypothesis supports given entity type 
+  CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
 protected:
   ::StdMeshers_NotConformAllowed* _impl;
