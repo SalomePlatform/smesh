@@ -2,7 +2,7 @@
 //  Copyright (C) 2003  CEA
 //
 //  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
+// //  modify it under the terms of the GNU Lesser General Public
 //  License as published by the Free Software Foundation; either
 //  version 2.1 of the License.
 //
@@ -29,6 +29,7 @@
 
 // QT Include
 #include <qfileinfo.h>
+#include <qstringlist.h>
 
 #include "SMESHGUI.h"
 #include "SUIT_ResourceMgr.h"
@@ -36,6 +37,7 @@
 
 #include "SMESHGUI_XmlHandler.h"
 #include "SMESHGUI_Hypotheses.h"
+#include "SMESHGUI_Utils.h"
 
 #include "utilities.h"
 
@@ -112,9 +114,24 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aHypAlType = atts.value("type");
       QString aLabel = atts.value("label-id");
       QString anIcon = atts.value("icon-id");
+      bool isAux = atts.value("auxiliary") == "true";
+      
+      QString aDimStr = atts.value("dim");
+      aDimStr = aDimStr.remove( ' ' );
+      QStringList aDimList = QStringList::split( ',', aDimStr );
+      QStringList::iterator anIter;
+      bool isOk;
+      QValueList<int> aDim;
+      for ( anIter = aDimList.begin(); anIter != aDimList.end(); ++anIter )
+      {
+        int aVal = (*anIter).toInt( &isOk );
+        if ( isOk )
+          aDim.append( aVal - 1 );
+      }
+      
       HypothesisData* aHypLibNames =
         new HypothesisData (myPluginName, myServerLib, myClientLib,
-                            aLabel, anIcon);
+                            aLabel, anIcon, aDim, isAux );
 
       if (qName == "algorithm")
       {
