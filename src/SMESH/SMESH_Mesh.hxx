@@ -221,6 +221,8 @@ public:
   bool RebuildPropagationChains();
   bool RemovePropagationChain (const TopoDS_Shape& theMainEdge);
   bool BuildPropagationChain (const TopoDS_Shape& theMainEdge);
+  
+  SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
   //
   

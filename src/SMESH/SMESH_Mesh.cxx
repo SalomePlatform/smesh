@@ -1418,3 +1418,12 @@ ostream& SMESH_Mesh::Dump(ostream& save)
   save << "===========================================================================" << endl;
   return save;
 }
+
+//=======================================================================
+//function : GetElementType
+//purpose  : Returns type of mesh element with certain id
+//=======================================================================
+SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem )
+{
+  return _myMeshDS->GetElementType( id, iselem );
+}

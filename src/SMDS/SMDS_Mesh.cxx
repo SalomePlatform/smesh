@@ -2179,3 +2179,25 @@ void SMDS_Mesh::Renumber (const bool isNodes, const int  startID, const int  del
     ID += deltaID;
   }
 }
+
+//=======================================================================
+//function : GetElementType
+//purpose  : Return type of element or node with id
+//=======================================================================
+
+SMDSAbs_ElementType SMDS_Mesh::GetElementType( const int id, const bool iselem ) const
+{
+  SMDS_MeshElement* elem = 0;
+  if( iselem )
+    elem = myElementIDFactory->MeshElement( id );
+  else
+    elem = myNodeIDFactory->MeshElement( id );
+
+  if( !elem )
+  {
+    //throw SALOME_Exception(LOCALIZED ("this element isn't exist"));
+    return SMDSAbs_All;
+  }
+  else
+    return elem->GetType();
+}

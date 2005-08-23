@@ -58,6 +58,8 @@ public:
   SMDS_FaceIteratorPtr facesIterator() const;
   SMDS_VolumeIteratorPtr volumesIterator() const;
   SMDS_ElemIteratorPtr elementsIterator() const;  
+  
+  SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 
   SMDS_Mesh *AddSubMesh();
   
