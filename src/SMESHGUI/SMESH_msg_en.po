@@ -1858,29 +1858,23 @@ msgstr "Delete"
 msgid "MEN_SEL_FILTER_LIB"
 msgstr "Selection filters library"
 
-msgid "MEN_CREATE_HYPO"
-msgstr "Create Hypotheses"
+msgid "MEN_CREATE_MESH"
+msgstr "Create Mesh"
 
-msgid "MEN_CREATE_ALG"
-msgstr "Create Algorithms"
+msgid "MEN_EDIT_MESHSUBMESH"
+msgstr "Edit Mesh/Sub-mesh"
 
 msgid "MEN_COMPUTE"
 msgstr "Compute"
 
-msgid "MEN_LOCAL_HYPO"
-msgstr "Local Hypothesis"
+msgid "MEN_CREATE_SUBMESH"
+msgstr "Create Sub-mesh"
 
 msgid "MEN_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
 
 msgid "MEN_EDIT"
 msgstr "Edit"
-
-msgid "MEN_EDIT_GLOBAL_HYPO"
-msgstr "Edit Global Hypothesis"
-
-msgid "MEN_EDIT_LOCAL_HYPO"
-msgstr "Edit Local Hypothesis"
 
 msgid "MEN_EDIT_HYPO"
 msgstr "Edit Hypothesis"
@@ -2193,26 +2187,20 @@ msgstr "Delete"
 msgid "TOP_SEL_FILTER_LIB"
 msgstr "Selection filters library"
 
-msgid "TOP_CREATE_HYPO"
-msgstr "Create Hypotheses"
+msgid "TOP_CREATE_MESH"
+msgstr "Create Mesh"
 
-msgid "TOP_CREATE_ALG"
-msgstr "Create Algorithms"
+msgid "TOP_EDIT_MESHSUBMESH"
+msgstr "Edit Mesh/Sub-mesh"
 
 msgid "TOP_COMPUTE"
 msgstr "Compute"
 
-msgid "TOP_LOCAL_HYPO"
-msgstr "Local Hypothesis"
+msgid "TOP_CREATE_SUBMESH"
+msgstr "Create Sub-mesh"
 
 msgid "TOP_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
-
-msgid "TOP_EDIT_GLOBAL_HYPO"
-msgstr "Edit Global Hypothesis"
-
-msgid "TOP_EDIT_LOCAL_HYPO"
-msgstr "Edit Local Hypothesis"
 
 msgid "TOP_EDIT_HYPO"
 msgstr "Edit Hypothesis"
@@ -2476,17 +2464,17 @@ msgstr "Delete"
 msgid "STB_SEL_FILTER_LIB"
 msgstr "Selection filters library"
 
-msgid "STB_CREATE_HYPO"
-msgstr "Create Hypotheses"
+msgid "STB_CREATE_MESH"
+msgstr "Create Mesh"
 
-msgid "STB_CREATE_ALG"
-msgstr "Create Algorithms"
+msgid "STB_EDIT_MESHSUBMESH"
+msgstr "Edit Mesh/Sub-mesh"
 
 msgid "STB_COMPUTE"
 msgstr "Compute"
 
-msgid "STB_LOCAL_HYPO"
-msgstr "Local Hypothesis"
+msgid "STB_CREATE_SUBMESH"
+msgstr "Create Sub-mesh"
 
 msgid "STB_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2680,12 +2668,6 @@ msgstr "Display entity"
 msgid "STB_UPDATE"
 msgstr "Update"
 
-msgid "STB_EDIT_GLOBAL_HYPO"
-msgstr "Edit Global Hypothesis"
-
-msgid "STB_EDIT_LOCAL_HYPO"
-msgstr "Edit Local Hypothesis"
-
 msgid "STB_RENAME"
 msgstr "Rename"
 
@@ -2834,3 +2816,93 @@ msgstr "Elements"
 
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshDlg::DIM_1D"
+msgstr "1D"
+
+msgid "SMESHGUI_MeshDlg::DIM_2D"
+msgstr "2D"
+
+msgid "SMESHGUI_MeshDlg::DIM_3D"
+msgstr "3D"
+
+msgid "SMESHGUI_MeshDlg::NAME"
+msgstr "Name"
+
+msgid "SMESHGUI_MeshDlg::MESH"
+msgstr "Mesh"
+
+msgid "SMESHGUI_MeshDlg::GEOMETRY"
+msgstr "Geometry"
+
+msgid "SMESHGUI_MeshDlg::CREATE_MESH"
+msgstr "Create mesh"
+
+msgid "SMESHGUI_MeshDlg::CREATE_SUBMESH"
+msgstr "Create sub-mesh"
+
+msgid "SMESHGUI_MeshDlg::EDIT_MESH_SUBMESH"
+msgstr "Edit mesh/sub-mesh"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshTab::ALGORITHM"
+msgstr "Algorithm"
+
+msgid "SMESHGUI_MeshTab::HYPOTHESIS"
+msgstr "Hypothesis"
+
+msgid "SMESHGUI_MeshTab::ADD_HYPOTHESIS"
+msgstr "Add. Hypothesis"
+
+msgid "SMESHGUI_MeshTab::NONE"
+msgstr "<None>"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshOp::NAME_OF_MESH_IS_EMPTY"
+msgstr "Name of mesh is empty\nPlease enter valid name and try again"
+
+msgid "SMESHGUI_MeshOp::NAME_OF_SUBMESH_IS_EMPTY"
+msgstr "Name of submesh is empty\nPlease enter valid name and try again"
+
+msgid "SMESHGUI_MeshOp::HYPOTHESES_AND_ALGORITHMS_ARE_NOT_DEFINED"
+msgstr "Hypotheses and algorithms are not defined"
+
+msgid "SMESHGUI_MeshOp::ALGORITHM_WITHOUT_HYPOTHESIS"
+msgstr "Algorithm is defined for %1 dimension but hypothesis is not defined"
+
+msgid "SMESHGUI_MeshOp::HYPOTHESIS_WITHOUT_ALGORITHM"
+msgstr "Hypothesis is defined for %1 dimension but algorithm is not defined"
+
+msgid "SMESHGUI_MeshOp::GEOMETRY_OBJECT_IS_NULL"
+msgstr "Geometry object is null"
+
+msgid "SMESHGUI_MeshOp::GEOMETRY_OBJECT_IS_NOT_DEFINED"
+msgstr "Geometry object is not defined\nPlease specify it and try again"
+
+msgid "SMESHGUI_MeshOp::THERE_IS_NO_OBJECT_FOR_EDITING"
+msgstr "There is no object for editing. Please\nselect mesh or sub-mesh and try again"
+
+msgid "SMESHGUI_MeshOp::MESH_IS_NULL"
+msgstr "Mesh is null"
+
+msgid "SMESHGUI_MeshOp::MESH_IS_NOT_DEFINED"
+msgstr "Mesh is not defined\nPlease specify it and try again"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

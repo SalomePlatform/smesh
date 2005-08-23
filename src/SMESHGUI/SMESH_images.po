@@ -121,6 +121,9 @@ msgstr "mesh_merge_elements.png"
 msgid "ICON_HYPO"
 msgstr "mesh_hypo_length.png"
 
+msgid "ICON_HYPO_EDIT"
+msgstr "mesh_hypo_edit.png"
+
 #Set Algo
 msgid "ICON_DLG_ADD_ALGORITHM"
 msgstr "mesh_set_algo.png"
