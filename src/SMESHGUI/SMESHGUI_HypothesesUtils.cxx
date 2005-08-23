@@ -193,7 +193,9 @@ namespace SMESH{
   }
 
 
-  QStringList GetAvailableHypotheses(const bool isAlgo)
+  QStringList GetAvailableHypotheses( const bool isAlgo, 
+                                      const int theDim,                          
+                                      const bool isAux )
   {
     QStringList aHypList;
 
@@ -201,20 +203,14 @@ namespace SMESH{
     InitAvailableHypotheses();
 
     // fill list of hypotheses/algorithms
+    THypothesisDataMap* pMap = isAlgo ? &myAlgorithmsMap : &myHypothesesMap;
     THypothesisDataMap::iterator anIter;
-    if (isAlgo) {
-      anIter = myAlgorithmsMap.begin();
-      for (; anIter != myAlgorithmsMap.end(); anIter++) {
-	aHypList.append(((*anIter).first).c_str());
-      }
+    for ( anIter = pMap->begin(); anIter != pMap->end(); anIter++ )
+    {
+      HypothesisData* aData = (*anIter).second;
+      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux )
+        aHypList.append(((*anIter).first).c_str());
     }
-    else {
-      anIter = myHypothesesMap.begin();
-      for (; anIter != myHypothesesMap.end(); anIter++) {
-	aHypList.append(((*anIter).first).c_str());
-      }
-    }
-
     return aHypList;
   }
 
@@ -254,9 +250,8 @@ namespace SMESH{
 
       // 2. Get names of plugin libraries
       HypothesisData* aHypData = GetHypothesisData(aHypType);
-      if (!aHypData) {
-	return aCreator;
-      }
+      if (!aHypData) 
+        return aCreator;
       QString aClientLibName = aHypData->ClientLibName;
       QString aServerLibName = aHypData->ServerLibName;
 

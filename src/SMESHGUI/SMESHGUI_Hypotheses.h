@@ -34,11 +34,11 @@
 // QT Includes
 #include <qstring.h>
 #include <qwidget.h>
+#include <qvaluevector.h>
 
-//=================================================================================
-// class    : SMESHGUI_GenericHypothesisCreator
-// purpose  :
-//=================================================================================
+/*!
+ * \brief Auxiliary class for creation of hypotheses
+*/
 class SMESHGUI_GenericHypothesisCreator
 {
   public:
@@ -46,30 +46,35 @@ class SMESHGUI_GenericHypothesisCreator
   virtual void EditHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp) = 0;
 };
 
-//=================================================================================
-// class    : HypothesisData
-// purpose  :
-//=================================================================================
+/*!
+ * \brief Class containing information about hypothesis
+*/
 class HypothesisData
 {
  public:
-  HypothesisData (const QString& aPluginName,
-		  const QString& aServerLibName,
-		  const QString& aClientLibName,
-		  const QString& aLabel,
-		  const QString& anIconId) :
- PluginName(aPluginName),
- ServerLibName(aServerLibName),
- ClientLibName(aClientLibName),
- Label(aLabel),
- IconId(anIconId)
+  HypothesisData( const QString& thePluginName,
+                  const QString& theServerLibName,
+                  const QString& theClientLibName,
+                  const QString& theLabel,
+                  const QString& theIconId,
+                  const QValueList<int>& theDim,
+                  const bool theIsAux ) 
+: PluginName( thePluginName ),
+  ServerLibName( theServerLibName ),
+  ClientLibName( theClientLibName ),
+  Label( theLabel ),
+  IconId( theIconId ),
+  Dim( theDim ),
+  IsAux( theIsAux )
  {};
 
- QString PluginName;
- QString ServerLibName;
- QString ClientLibName;
- QString Label;
- QString IconId;
+ QString PluginName;      //!< plugin name
+ QString ServerLibName;   //!< server library name
+ QString ClientLibName;   //!< client library name
+ QString Label;           //!< label
+ QString IconId;          //!< icon identifier
+ QValueList<int> Dim;     //!< list of supported dimensions (see SMESH::Dimension enumeration)
+ bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
 };
 
 #endif

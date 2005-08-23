@@ -20,7 +20,7 @@
 //
 //
 //
-//  File   : SMESHGUI_Hypotheses.h
+//  File   : SMESHGUI_HypothesesUtils.h
 //  Author : Julia DOROVSKIKH
 //  Module : SMESH
 //  $Header$
@@ -49,7 +49,9 @@ namespace SMESH{
 
   void InitAvailableHypotheses();
 
-  QStringList GetAvailableHypotheses(const bool isAlgo);
+  QStringList GetAvailableHypotheses( const bool isAlgo, 
+                                      const int theDim = -1, 
+                                      const bool isAux = false);
 
   HypothesisData* GetHypothesisData(const char* aHypType);
 
