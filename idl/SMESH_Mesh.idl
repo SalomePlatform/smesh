@@ -415,6 +415,12 @@ module SMESH
 
     long_array GetNodesId()
       raises (SALOME::SALOME_Exception);
+    
+    /*!
+     * Returns type of mesh element
+     */    
+    ElementType GetElementType( in long id, in boolean iselem )
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Get mesh description
@@ -446,6 +452,12 @@ module SMESH
      *
      */
     long_array GetElementsByType( in ElementType theType )
+      raises (SALOME::SALOME_Exception);
+    
+    /*!
+     * Return type of submesh element
+     */
+    ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);
 
     /*!
