@@ -47,9 +47,9 @@ using namespace std;
 StdMeshersGUI_CreateStdHypothesisDlg::StdMeshersGUI_CreateStdHypothesisDlg (const QString& hypType,
                                                                             QWidget* parent,
                                                                             const char* name,
-                                                                            bool modal,
+                                                                            bool /*modal*/,
                                                                             WFlags fl)
-     : StdMeshersGUI_CreateHypothesisDlg (hypType, parent, name, modal, fl)
+     : StdMeshersGUI_CreateHypothesisDlg (hypType, parent, name, true, fl)
 {
   QString hypTypeStr;
   if (hypType.compare("LocalLength") == 0)

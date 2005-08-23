@@ -99,9 +99,16 @@ void StdMeshersGUI_HypothesisCreator::CreateHypothesis
   else
   {
     if ( StdMeshersGUI_Parameters::HasParameters( myHypType ))
-    // Show Dialog for hypothesis creation
-      //StdMeshersGUI_CreateStdHypothesisDlg *aDlg =
-        new StdMeshersGUI_CreateStdHypothesisDlg(myHypType, parent, "");
+    {
+      // Show Dialog for hypothesis creation
+      StdMeshersGUI_CreateStdHypothesisDlg *aDlg =
+          new StdMeshersGUI_CreateStdHypothesisDlg(myHypType, parent, "");
+      /* Move widget on the botton right corner of main widget */
+//       int x, y ;
+//       mySMESHGUI->DefineDlgPosition( aDlg, x, y ) ;
+//       aDlg->move( x, y ) ;
+      aDlg->exec() ; /* displays Dialog */
+    }
     else
       SMESH::CreateHypothesis(myHypType, aHypName, isAlgo); // without GUI
   }
