@@ -318,14 +318,20 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
 
 //=======================================================================
 //function : type
+//purpose  :
+//=======================================================================
+int SMESHGUI_Selection::type( SalomeApp_DataOwner* owner, _PTR(Study) study )
+{
+  return type( owner->entry(), study );
+}
+
+//=======================================================================
+//function : type
 //purpose  : 
 //=======================================================================
 
-int SMESHGUI_Selection::type( SalomeApp_DataOwner* owner,
-                              _PTR(Study) study )
+int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
 {
-  QString entry = owner->entry();
-
   _PTR(SObject) obj (study->FindObjectID(entry.latin1()));
   if( !obj )
     return -1;
