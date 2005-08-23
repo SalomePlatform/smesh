@@ -59,3 +59,18 @@ SMESH_3D_Algo_i::~SMESH_3D_Algo_i()
 {
   MESSAGE( "SMESH_3D_Algo_i::~SMESH_3D_Algo_i" );
 }
+
+//================================================================================
+/*!
+ * \brief Verify whether algorithm supports given entity type 
+  * \param type - dimension (see SMESH::Dimension enumeration)
+  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ * 
+ * Verify whether algorithm supports given entity type (see SMESH::Dimension enumeration)
+ */
+//================================================================================  
+CORBA::Boolean SMESH_3D_Algo_i::IsDimSupported( SMESH::Dimension type )
+{
+  return type == SMESH::DIM_3D;
+}
+

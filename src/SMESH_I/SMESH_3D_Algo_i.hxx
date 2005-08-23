@@ -48,6 +48,9 @@ protected:
 public:
   // Destructor
   virtual ~SMESH_3D_Algo_i();
+  
+  // Verify whether algorithm supports given entity type 
+  CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 };
 
 #endif
