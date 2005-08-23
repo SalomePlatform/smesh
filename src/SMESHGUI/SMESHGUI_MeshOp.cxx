@@ -25,6 +25,7 @@
 
 #include <GEOM_SelectionFilter.h>
 
+#include <SalomeApp_Tools.h>
 #include <SALOMEDSClient_Study.hxx>
 #include <SALOMEDSClient_AttributeIOR.hxx>
 #include <SALOMEDSClient_AttributeName.hxx>
@@ -109,18 +110,29 @@ bool SMESHGUI_MeshOp::onApply()
   
   bool aResult = false;
   aMess = "";
-  if ( myToCreate && myIsMesh )
-    aResult = createMesh( aMess );
-  if ( myToCreate && !myIsMesh )
-    aResult = createSubMesh( aMess );
-  else if ( !myToCreate )
-    aResult = editMeshOrSubMesh( aMess );
+  try
+  {
+    if ( myToCreate && myIsMesh )
+      aResult = createMesh( aMess );
+    if ( myToCreate && !myIsMesh )
+      aResult = createSubMesh( aMess );
+    else if ( !myToCreate )
+      aResult = editMeshOrSubMesh( aMess );
+    if ( aResult )  
+      update( UF_ObjBrowser | UF_Model );
+  }
+  catch ( const SALOME::SALOME_Exception& S_ex ) 
+  {
+    SalomeApp_Tools::QtCatchCorbaException( S_ex );
+    aResult = false;
+  }
+  catch ( ... )
+  {
+    aResult = false;
+  }
 
   if ( aResult )  
   {
-    update( UF_ObjBrowser | UF_Model );
-    
-    // set default name if necessary
     if ( myToCreate )
       setDefaultName();
   }
@@ -229,20 +241,30 @@ void SMESHGUI_MeshOp::selectionDone()
   
   if ( !myToCreate )
   {
-    QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry );
-    if ( pObj != 0 )
+    try
     {
-      SMESH::SMESH_subMesh_var aVar = 
-        SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
-      myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !aVar->_is_nil() );
-      myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
-      myDlg->updateGeometry();
-      myDlg->adjustSize();
-      readMesh();
+      QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry );
+      if ( pObj != 0 )
+      {
+        SMESH::SMESH_subMesh_var aVar = 
+          SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
+        myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !aVar->_is_nil() );
+        myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
+        myDlg->updateGeometry();
+        myDlg->adjustSize();
+        readMesh();
+      }
+      else
+        myDlg->reset();
     }
-    else
-      myDlg->reset();
+    catch ( const SALOME::SALOME_Exception& S_ex ) 
+    {
+      SalomeApp_Tools::QtCatchCorbaException( S_ex );
+    }
+    catch ( ... )
+    {
+    }
   }
 }
 
@@ -783,18 +805,21 @@ void SMESHGUI_MeshOp::readMesh()
   {
     // get algorithm
     QStringList anExisting;
-    existingHyps( dim, Algo, pObj, anExisting, myObjHyps[ dim ][ Algo ] );
-    SMESH::SMESH_Hypothesis_var aVar = myObjHyps[ dim ][ Algo ].first();
-    QString aHypTypeName = aVar->GetName();
-    
     int aHypIndex = -1;
-    QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( true , dim, false );
-    for ( int i = 0, n = aHypTypeNameList.count(); i < n; i++ )
-      if ( aHypTypeName == aHypTypeNameList[ i ] )
-      {
-        aHypIndex = i;
-        break;
-      }
+    existingHyps( dim, Algo, pObj, anExisting, myObjHyps[ dim ][ Algo ] );
+    if ( myObjHyps[ dim ][ Algo ].count() > 0 )
+    {
+      SMESH::SMESH_Hypothesis_var aVar = myObjHyps[ dim ][ Algo ].first();
+      QString aHypTypeName = aVar->GetName();
+      
+      QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( true , dim, false );
+      for ( int i = 0, n = aHypTypeNameList.count(); i < n; i++ )
+        if ( aHypTypeName == aHypTypeNameList[ i ] )
+        {
+          aHypIndex = i;
+          break;
+        }
+    }
     setCurrentHyp( dim, Algo, aHypIndex );
           
     // get hypotheses
