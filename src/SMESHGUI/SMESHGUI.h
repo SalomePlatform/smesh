@@ -44,6 +44,7 @@ class SUIT_ViewWindow;
 class SUIT_ResourceMgr;
 class SUIT_ViewManager;
 
+class SalomeApp_Operation;
 class SalomeApp_Study;
 class SalomeApp_SelectionMgr;
 
@@ -99,14 +100,19 @@ public :
 
   virtual void                createPreferences();
   virtual void                preferencesChanged( const QString&, const QString& );
+  
+  virtual void                update( const int );
 
 public slots:
   virtual bool                deactivateModule( SUIT_Study* );
   virtual bool                activateModule( SUIT_Study* );
 
 private slots:
-  void OnGUIEvent();
-  void onViewManagerAdded( SUIT_ViewManager* );
+  void                        OnGUIEvent();
+  void                        onViewManagerAdded( SUIT_ViewManager* );
+  void                        onOperationCommited( SUIT_Operation* );
+  void                        onOperationAborted( SUIT_Operation* );
+
 
 signals:
   void SignalDeactivateActiveDialog() ;
@@ -118,6 +124,8 @@ protected:
                           const int = 0, const bool = false );
   void createPopupItem( const int, const QString&, const QString&,
                         const QString& = QString::null, const int = -1 );
+  
+  virtual SalomeApp_Operation*      createOperation( const int ) const;
 
 private:
   void OnEditDelete();

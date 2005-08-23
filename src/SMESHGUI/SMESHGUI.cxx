@@ -65,6 +65,7 @@
 #include "SMESHGUI_PrecisionDlg.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
+#include "SMESHGUI_MeshOp.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -86,6 +87,9 @@
 #include "SalomeApp_Application.h"
 #include "SalomeApp_Preferences.h"
 #include "SalomeApp_VTKSelector.h"
+#include "SalomeApp_Operation.h"
+#include "SalomeApp_UpdateFlags.h"
+
 #include "SalomeApp_ImportOperation.h"
 
 #include <SVTK_ViewWindow.h>
@@ -1314,53 +1318,15 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case 702:					// ADD SUB MESH
-    {
-      if(checkLock(aStudy)) break;
-      if( vtkwnd ) {
-	EmitSignalDeactivateDialog();
-	new SMESHGUI_AddSubMeshDlg( this );
-      }
-      else {
-	SUIT_MessageBox::warn1(desktop(),
-			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
-			      tr("SMESH_BUT_OK"));
-      }
-      break;
-    }
-
-  case 703:					// INIT MESH
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_InitMeshDlg( this );
-      break;
-    }
-
-  case 704:					// EDIT Hypothesis 
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_EditHypothesesDlg( this );
-      break;
-    }
-
-  case 705:					//  EDIT Global Hypothesis
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_EditHypothesesDlg( this );
-      break;
-    }
-
-  case 706:					//  EDIT Local Hypothesis
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_EditHypothesesDlg( this );
-      break;
-    }
-
+  case 702:  // Create mesh
+    startOperation( 702 );
+    break;
+  case 703:  // Create sub-mesh
+    startOperation( 703 );
+    break;
+  case 704: // Edit mesh/sub-mesh
+    startOperation( 704 );
+    break;
   case 407: // DIAGONAL INVERSION
   case 408: // Delete diagonal
     {
@@ -2024,22 +1990,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
     
-
-  case 5000: // HYPOTHESIS
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_CreateHypothesesDlg ( this, "", FALSE, false );
-      break;
-    }
-  case 5010: // ALGO
-    {
-      if(checkLock(aStudy)) break;
-      EmitSignalDeactivateDialog();
-      new SMESHGUI_CreateHypothesesDlg ( this, "", FALSE, true);
-      break;
-    }
-
   case 5105: // Library of selection filters
   {
     static QValueList<int> aTypes;
@@ -2258,14 +2208,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE" );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
-  createSMESHAction( 5000, "CREATE_HYPO",     "ICON_HYPO" );
-  createSMESHAction( 5010, "CREATE_ALG",      "ICON_PATTERN_2d" );
   createSMESHAction(  701, "COMPUTE",         "ICON_COMPUTE" );
-  createSMESHAction(  702, "LOCAL_HYPO",      "ICON_DLG_ADD_SUBMESH" );
-  createSMESHAction(  703, "GLOBAL_HYPO",     "ICON_DLG_INIT_MESH" );
-  createSMESHAction(  704, "EDIT_HYPO",       "ICON_DLG_EDIT_MESH" );
-  createSMESHAction(  705, "EDIT_GLOBAL_HYPO","ICON_DLG_EDIT_MESH" );
-  createSMESHAction(  706, "EDIT_LOCAL_HYPO", "ICON_DLG_EDIT_MESH" );
+  createSMESHAction(  702, "CREATE_MESH",     "ICON_DLG_INIT_MESH" );
+  createSMESHAction(  703, "CREATE_SUBMESH",  "ICON_DLG_ADD_SUBMESH" );
+  createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_SMESH_TREE_GROUP" );
   createSMESHAction(  802, "CONSTRUCT_GROUP", "ICON_CONSTRUCT_GROUP" );
   createSMESHAction(  803, "EDIT_GROUP",      "ICON_EDIT_GROUP" );
@@ -2350,7 +2296,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   int fileId   = createMenu( tr( "MEN_FILE" ),   -1,  1 ),
       editId   = createMenu( tr( "MEN_EDIT" ),   -1,  3 ),
       toolsId  = createMenu( tr( "MEN_TOOLS" ),  -1,  5, 50 ),
-      hypoId   = createMenu( tr( "MEN_HYPO" ),   -1, 50, 10 ),
       meshId   = createMenu( tr( "MEN_MESH" ),   -1, 70, 10 ),
       ctrlId   = createMenu( tr( "MEN_CTRL" ),   -1, 60, 10 ),
       modifyId = createMenu( tr( "MEN_MODIFY" ), -1, 40, 10 ),
@@ -2379,11 +2324,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 5105, toolsId, -1 );
 
-  createMenu( 5000, hypoId, -1 );
-  createMenu( 5010, hypoId, -1 );
-
-  createMenu( 703, meshId, -1 );
   createMenu( 702, meshId, -1 );
+  createMenu( 703, meshId, -1 );
   createMenu( 704, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 701, meshId, -1 );
@@ -2457,14 +2399,13 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // ----- create toolbars --------------
   int meshTb     = createTool( tr( "TB_MESH" ) ),
-      hypoTb     = createTool( tr( "TB_HYPO" ) ),
       ctrlTb     = createTool( tr( "TB_CTRL" ) ),
       addRemTb   = createTool( tr( "TB_ADD_REMOVE" ) ),
       modifyTb   = createTool( tr( "TB_MODIFY" ) ),
       dispModeTb = createTool( tr( "TB_DISP_MODE" ) );
 
-  createTool( 703, meshTb );
   createTool( 702, meshTb );
+  createTool( 703, meshTb );
   createTool( 704, meshTb );
   createTool( separator(), meshTb );
   createTool( 701, meshTb );
@@ -2476,9 +2417,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 900, meshTb );
   createTool( 902, meshTb );
   createTool( separator(), meshTb );
-
-  createTool( 5000, hypoTb );
-  createTool( 5010, hypoTb );
 
   createTool( 6001, ctrlTb );
   createTool( 6003, ctrlTb );
@@ -2555,8 +2493,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // popup for object browser
 
-  createPopupItem( 705, OB, mesh, "&& isComputable");      // EDIT_GLOBAL_HYPO
-  createPopupItem( 706, OB, subMesh, "&& isComputable" );  // EDIT_LOCAL_HYPO
+  createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
+  createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 701, OB, mesh, "&& isComputable" );     // COMPUTE
@@ -3016,3 +2954,90 @@ void SMESHGUI::createPreferences()
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
 }
+
+//================================================================================
+/*!
+ * \brief Update something in accordance with update flags
+  * \param theFlags - update flags
+*
+* Update viewer or/and object browser etc. in accordance with update flags ( see
+* SalomeApp_UpdateFlags enumeration ). 
+*/
+//================================================================================
+void SMESHGUI::update( const int flags )
+{
+  if ( flags & UF_Viewer | flags & UF_Forced )
+    SMESH::UpdateView();
+  else
+    SalomeApp_Module::update( flags );
+}
+
+//================================================================================
+/*!
+ * \brief Set default selection mode
+*
+* SLOT called when operation commited. Sets default selection mode
+*/
+//================================================================================
+void SMESHGUI::onOperationCommited( SUIT_Operation* )
+{
+  SVTK_ViewWindow* vtkWnd =
+    dynamic_cast<SVTK_ViewWindow*>( application()->desktop()->activeWindow() );
+  if ( vtkWnd )
+    vtkWnd->SetSelectionMode( ActorSelection );
+}
+
+//================================================================================
+/*!
+ * \brief Set default selection mode
+*
+* SLOT called when operation aborted. Sets default selection mode
+*/
+//================================================================================
+void SMESHGUI::onOperationAborted( SUIT_Operation* )
+{
+  SVTK_ViewWindow* vtkWnd =
+    dynamic_cast<SVTK_ViewWindow*>( application()->desktop()->activeWindow() );
+  if ( vtkWnd )
+    vtkWnd->SetSelectionMode( ActorSelection );
+}
+
+//================================================================================
+/*!
+ * \brief Creates operation with given identifier
+  * \param id - identifier of operation to be started
+  * \return Pointer on created operation or NULL if operation is not created
+*
+* Virtual method redefined from the base class creates operation with given id. 
+* It is called called automatically from startOperation method of base class. 
+*/
+//================================================================================
+SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
+{
+  SalomeApp_Operation* op = 0;
+  // to do : create operation here
+  switch( id )
+  {
+    case 702: // Create mesh
+      op = new SMESHGUI_MeshOp( true, true );
+    break;
+    case 703: // Create sub-mesh
+      op = new SMESHGUI_MeshOp( true, false );
+    break;
+    case 704: // Edit mesh/sub-mesh
+      op = new SMESHGUI_MeshOp( false );
+    break;
+    default:
+    break;
+  }
+  
+  return op;
+}
+
+
+
+
+
+
+
+
