@@ -31,6 +31,13 @@
 
 module SMESH
 {
+  enum Dimension
+  {
+    DIM_1D,
+    DIM_2D,
+    DIM_3D
+  };
+  
   interface SMESH_Hypothesis : SALOME::GenericObj
   {
     /*!
@@ -47,6 +54,11 @@ module SMESH
      * Get the internal Id 
      */
     long GetId();
+    
+    /*!
+     * Verify whether hypothesis supports given entity type 
+     */
+    boolean IsDimSupported( in Dimension type );
   };
 
   typedef sequence<string> ListOfHypothesisName;
