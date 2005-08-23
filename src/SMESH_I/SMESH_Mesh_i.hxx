@@ -216,6 +216,9 @@ public:
   SMESH::long_array* GetNodesId()
     throw (SALOME::SALOME_Exception);
   
+  SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+    throw (SALOME::SALOME_Exception);
+  
   char* Dump();
   
   // Internal methods not available through CORBA

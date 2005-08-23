@@ -64,6 +64,9 @@ public:
   SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
   
+  SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+    throw (SALOME::SALOME_Exception);
+  
   SMESH::long_array* GetNodesId()
     throw (SALOME::SALOME_Exception);
   

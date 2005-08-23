@@ -1593,3 +1593,14 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
   return aResult._retn();
 }
 
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const bool iselem )
+  throw (SALOME::SALOME_Exception)
+{
+  return ( SMESH::ElementType )_impl->GetElementType( id, iselem );
+}

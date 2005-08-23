@@ -474,3 +474,14 @@ SMESH::long_array* SMESH_subMesh_i::GetIDs()
   SMESH::long_array_var aResult = GetElementsId();
   return aResult._retn();
 }
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+SMESH::ElementType SMESH_subMesh_i::GetElementType( const CORBA::Long id, const bool iselem )
+  throw (SALOME::SALOME_Exception)
+{
+  return GetFather()->GetElementType( id, iselem );
+}
