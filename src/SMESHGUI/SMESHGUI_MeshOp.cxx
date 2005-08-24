@@ -945,13 +945,13 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
         // assign new hypotheses
         if ( aNewHypIndex != -1 )
         {
-          if ( myIsMesh )
-          {
-            SMESH::SMESH_Mesh_var aVar = 
+          SMESH::SMESH_Mesh_var aMeshVar = 
               SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
-            if ( !aVar->_is_nil() )
-              SMESH::AddHypothesisOnMesh( 
-                aVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
+          bool isMesh = !aMeshVar->_is_nil();
+          if ( isMesh )
+          {
+            SMESH::AddHypothesisOnMesh( 
+              aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
           }
           else
           {
