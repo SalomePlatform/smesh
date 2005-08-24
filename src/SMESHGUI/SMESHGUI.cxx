@@ -2077,6 +2077,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
   }
+
+  anApp->updateActions(); //SRN: To update a Save button in the toolbar
   //updateObjBrowser();
   return true;
 }
