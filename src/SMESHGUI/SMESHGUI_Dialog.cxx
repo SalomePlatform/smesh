@@ -43,6 +43,8 @@ SMESHGUI_Dialog::SMESHGUI_Dialog( QWidget* parent, const bool modal,
   typeName( pr + MESH ) = tr( "DLG_MESH" );
   typeName( pr + HYPOTHESIS ) = tr( "DLG_HYPO" );
   typeName( pr + ALGORITHM ) = tr( "DLG_ALGO" );
+  if ( flags & Close )
+    setButtonPosition( Right, Close );
 }
 
 //=================================================================================
