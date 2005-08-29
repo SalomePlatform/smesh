@@ -133,6 +133,9 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
   else {
     mySelectSubMesh->setEnabled(false);
     mySelectGroup->setEnabled(false);
+
+    myCurrentLineEdit = myMeshGroupLine;
+    setSelectionMode(5);
   }
   
   /* Move widget on the botton right corner of main widget */
