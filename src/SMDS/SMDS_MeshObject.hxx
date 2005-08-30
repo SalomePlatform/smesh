@@ -27,7 +27,20 @@
 #ifndef _SMDS_MeshObject_HeaderFile
 #define _SMDS_MeshObject_HeaderFile
 
-class SMDS_MeshObject
+
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
+
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
+class SMDS_WNT_EXPORT SMDS_MeshObject
 {
  public:
   virtual ~SMDS_MeshObject() {}

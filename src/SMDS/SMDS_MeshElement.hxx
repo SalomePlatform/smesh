@@ -32,6 +32,18 @@
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
 
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
+
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
 #include <vector>
 #include <iostream>
 
@@ -42,7 +54,7 @@ class SMDS_MeshFace;
 ///////////////////////////////////////////////////////////////////////////////
 /// Base class for elements
 ///////////////////////////////////////////////////////////////////////////////
-class SMDS_MeshElement:public SMDS_MeshObject
+class SMDS_WNT_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 {
 
   public:

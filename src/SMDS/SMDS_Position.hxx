@@ -30,11 +30,23 @@
 #include "SMDS_TypeOfPosition.hxx"
 #include <boost/shared_ptr.hpp>
 
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
+
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
 class SMDS_Position;
 typedef boost::shared_ptr<SMDS_Position> SMDS_PositionPtr;
 
 
-class SMDS_Position
+class SMDS_WNT_EXPORT SMDS_Position
 {
 
   public:

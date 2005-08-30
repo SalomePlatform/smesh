@@ -43,6 +43,9 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Edge.hxx>
 #include <map>
+#ifdef WNT
+#include <hash_map>
+#endif
 
 //Not portable see http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_4 to know more.
 #ifdef __GNUC__
@@ -235,13 +238,39 @@ public:
   ~SMESHDS_Mesh();
   
 private:
+#ifndef WNT
   struct HashTopoDS_Shape{
     size_t operator()(const TopoDS_Shape& S) const {
       return S.HashCode(2147483647);
     }
   };
+#else
+  typedef gstd::hash_compare< TopoDS_Shape, less<TopoDS_Shape> > HashTopoDS;
+
+  class HashTopoDS_Shape : public HashTopoDS {
+  public:
+  
+    size_t operator()(const TopoDS_Shape& S) const {
+      return S.HashCode(2147483647);
+    }
+
+	bool operator()(const TopoDS_Shape& S1,const TopoDS_Shape& S2) const {
+		return S1==S2;
+	}
+  };
+
+
+
+#endif
+
   typedef std::list<const SMESHDS_Hypothesis*> THypList;
+
+#ifndef WNT
   typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
+#else
+  typedef gstd::hash_map<TopoDS_Shape,THypList,HashTopoDS_Shape> ShapeToHypothesis;
+#endif
+
   ShapeToHypothesis          myShapeToHypothesis;
 
   int                        myMeshID;

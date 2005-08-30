@@ -173,10 +173,19 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 
   //ASSERT( nbnodes < 9 );
   //int i, IDs[ 8 ];
+#ifndef WNT
   int i, IDs[ nbnodes ];
+#else
+  int i, *IDs;
+  IDs = new int[ nbnodes];
+#endif
   for ( i = 0; i < nbnodes; i++ )
     IDs [ i ] = nodes[ i ]->GetID();
   myScript->ChangeElementNodes( elem->GetID(), IDs, nbnodes);
+
+#ifdef WNT
+  delete [] IDs;
+#endif
 
   return true;
 }
@@ -192,12 +201,21 @@ bool SMESHDS_Mesh::ChangePolygonNodes
   ASSERT(nodes.size() > 3);
 
   int nb = nodes.size();
+#ifndef WNT
   const SMDS_MeshNode* nodes_array [nb];
+#else
+  const SMDS_MeshNode** nodes_array = (const SMDS_MeshNode **)new SMDS_MeshNode*[nb];
+#endif
   for (int inode = 0; inode < nb; inode++) {
     nodes_array[inode] = nodes[inode];
   }
-
+#ifndef WNT
   return ChangeElementNodes(elem, nodes_array, nb);
+#else
+  bool aRes = ChangeElementNodes(elem, nodes_array, nb);
+  delete [] nodes_array;
+  return aRes;
+#endif
 }
 
 //=======================================================================

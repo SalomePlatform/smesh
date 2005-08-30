@@ -87,7 +87,11 @@ int SMESHDS_SubMesh::NbElements() const
     return myElements.size();
 
   int nbElems = 0;
+#ifndef WNT
   set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
+#else
+  set<const SMESHDS_SubMesh*>::const_iterator it = mySubMeshes.begin();
+#endif
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbElements();
 
@@ -105,7 +109,11 @@ int SMESHDS_SubMesh::NbNodes() const
    return myNodes.size(); 
 
   int nbElems = 0;
+#ifndef WNT
   set<const SMESHDS_SubMesh*>::iterator it = mySubMeshes.begin();
+#else
+  set<const SMESHDS_SubMesh*>::const_iterator it = mySubMeshes.begin();
+#endif
   for ( ; it != mySubMeshes.end(); it++ )
     nbElems += (*it)->NbNodes();
 

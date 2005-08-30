@@ -31,7 +31,19 @@
 #include "SMDS_Position.hxx"
 #include <NCollection_List.hxx>
 
-class SMDS_MeshNode:public SMDS_MeshElement
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
+
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
+class SMDS_WNT_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {
 
   public:

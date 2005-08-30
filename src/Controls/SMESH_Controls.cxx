@@ -253,7 +253,13 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   // Compute lengths of the sides
 
-  double aLen[ nbNodes ];
+  //double aLen[ nbNodes ];
+#ifndef WNT
+  double aLen [nbNodes];
+#else
+  double* aLen = (double *)new double[nbNodes];
+#endif
+
   for ( int i = 0; i < nbNodes - 1; i++ )
     aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
   aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
@@ -279,6 +285,9 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
       aMinLen = Min( aMinLen, aLen[ i ] );
       aMaxLen = Max( aMaxLen, aLen[ i ] );
     }
+#ifdef WNT
+  delete [] aLen;
+#endif
     if ( aMinLen <= Precision::Confusion() )
       return 0.;
 
@@ -1270,7 +1279,12 @@ bool FreeEdges::IsSatisfy( long theId )
     return false;
 
   int nbNodes = aFace->NbNodes();
-  const SMDS_MeshNode* aNodes[ nbNodes ];
+  //const SMDS_MeshNode* aNodes[ nbNodes ];
+#ifndef WNT
+  const SMDS_MeshNode* aNodes [nbNodes];
+#else
+  const SMDS_MeshNode** aNodes = (const SMDS_MeshNode **)new SMDS_MeshNode*[nbNodes];
+#endif
   int i = 0;
   SMDS_ElemIteratorPtr anIter = aFace->nodesIterator();
   if ( anIter != 0 )
@@ -1285,13 +1299,20 @@ bool FreeEdges::IsSatisfy( long theId )
   }
 
   for ( int i = 0; i < nbNodes - 1; i++ )
-    if ( IsFreeEdge( &aNodes[ i ], theId ) )
+	  if ( IsFreeEdge( &aNodes[ i ], theId ) ) {
+#ifdef WNT
+		delete [] aNodes;
+#endif
       return true;
+	  }
 
   aNodes[ 1 ] = aNodes[ nbNodes - 1 ];
-
-  return IsFreeEdge( &aNodes[ 0 ], theId );
-
+  const Standard_Boolean isFree = IsFreeEdge( &aNodes[ 0 ], theId );
+#ifdef WNT
+		delete [] aNodes;
+#endif
+//  return 
+ return isFree;
 }
 
 SMDSAbs_ElementType FreeEdges::GetType() const
@@ -2138,7 +2159,7 @@ void ManifoldPart::expandBoundary
 {
   ManifoldPart::TVectorOfLink aLinks;
   getLinks( theNextFace, aLinks );
-  int aNbLink = aLinks.size();
+  int aNbLink = (int)aLinks.size();
   for ( int i = 0; i < aNbLink; i++ )
   {
     ManifoldPart::Link aLink = aLinks[ i ];

@@ -29,8 +29,19 @@
 #include "SMDS_Mesh.hxx"
 #include <set>
 
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
 
-class SMDS_MeshGroup:public SMDS_MeshObject
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
+class SMDS_WNT_EXPORT SMDS_MeshGroup:public SMDS_MeshObject
 {
   public:
 	SMDS_MeshGroup(const SMDS_Mesh * theMesh,

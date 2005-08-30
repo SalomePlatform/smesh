@@ -37,6 +37,18 @@ class SMDS_PolyhedralVolumeOfNodes;
 #include <vector>
 #include <set>
 
+//#ifdef WNT
+//#include <SALOME_WNT.hxx>
+//#else
+//#define SALOME_WNT_EXPORT
+//#endif
+
+#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
+#define SMDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMDS_WNT_EXPORT
+#endif
+
 // =========================================================================
 //
 // Class providing topological and other information about SMDS_MeshVolume:
@@ -45,7 +57,7 @@ class SMDS_PolyhedralVolumeOfNodes;
 //
 // =========================================================================
 
-class SMDS_VolumeTool
+class SMDS_WNT_EXPORT SMDS_VolumeTool
 {
  public:
 

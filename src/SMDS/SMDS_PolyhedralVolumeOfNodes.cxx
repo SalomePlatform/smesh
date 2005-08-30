@@ -75,7 +75,11 @@ bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode 
   }
 
   int k = 0;
+#ifndef WNT
   const SMDS_MeshNode* aNodes [aNbNodes];
+#else
+  const SMDS_MeshNode** aNodes = (const SMDS_MeshNode **)new SMDS_MeshNode*[aNbNodes];
+#endif
   std::set<const SMDS_MeshNode *>::iterator anIter = aSet.begin();
   for (; anIter != aSet.end(); anIter++, k++) {
     aNodes[k] = *anIter;
@@ -90,6 +94,10 @@ bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode 
     //myNodes[i] = nodes[i];
     myNodes[i] = aNodes[i];
   }
+
+#ifdef WNT
+  delete [] aNodes;
+#endif
 
   return true;
 }
