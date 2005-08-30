@@ -116,7 +116,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsShrinkable = false;
   myIsShrunk = false;
 
-  myControlsPrecision = (long)SMESH::GetFloat( "SMESH:controls_precision", -1 );
+  myControlsPrecision = -1;
+  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
+    myControlsPrecision = (long)SMESH::GetFloat( "SMESH", "controls_precision", -1 );
 
   float aPointSize = SMESH::GetFloat("SMESH:node_size",3);
   float aLineWidth = SMESH::GetFloat("SMESH:element_width",1);
@@ -278,7 +281,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myScalarBarActor->SetVisibility(false);
   myScalarBarActor->SetLookupTable(myLookupTable);
 
-  SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
+  mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return;
 
@@ -743,18 +746,18 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   if( !mgr )
     return false;
 
-  QString aMode = mgr->stringValue( "SMESH", "display_mode" );
+  int aMode = mgr->integerValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
   
-  if(aMode.compare("Wireframe") == 0){
+  if(aMode == 0){
     SetRepresentation(eEdge);
-  }else if(aMode.compare("Shading") == 0){
+  }else if(aMode == 1){
     SetRepresentation(eSurface);
-  }else if(aMode.compare("Nodes") == 0){
+  }else if(aMode == 2){
     SetRepresentation(ePoint);
   }
   
-  if(aMode == "Shrink"){
+  if(aMode == 3){
     SetShrink();
   }
 

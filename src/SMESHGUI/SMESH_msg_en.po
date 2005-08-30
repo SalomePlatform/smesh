@@ -2742,6 +2742,9 @@ msgstr "Display Mode Toolbar"
 msgid "SMESHGUI::PREF_TAB_GENERAL"
 msgstr "General"
 
+msgid "SMESHGUI::PREF_GROUP_UPDATE"
+msgstr "Update"
+
 msgid "SMESHGUI::PREF_GROUP_QUALITY"
 msgstr "Quality controls"
 
