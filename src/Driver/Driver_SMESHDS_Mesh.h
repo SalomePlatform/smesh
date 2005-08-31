@@ -24,7 +24,13 @@
 
 class SMESHDS_Mesh;
 
-class Driver_SMESHDS_Mesh: public Driver_Mesh
+#if defined WNT && defined WIN32 && defined DRIVER_EXPORTS
+#define DRIVER_WNT_EXPORT __declspec( dllexport )
+#else
+#define DRIVER_WNT_EXPORT
+#endif
+
+class DRIVER_WNT_EXPORT Driver_SMESHDS_Mesh: public Driver_Mesh
 {
  public:
   Driver_SMESHDS_Mesh();

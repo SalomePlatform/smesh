@@ -64,9 +64,15 @@
   namespace gstd = std;
 #endif
 
+#if defined WNT && defined WIN32 && defined SMESHDS_EXPORTS
+#define SMESHDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMESHDS_WNT_EXPORT
+#endif
+
 class SMESHDS_GroupBase;
 
-class SMESHDS_Mesh:public SMDS_Mesh{
+class SMESHDS_WNT_EXPORT SMESHDS_Mesh:public SMDS_Mesh{
 public:
   SMESHDS_Mesh(int MeshID);
   void ShapeToMesh(const TopoDS_Shape & S);

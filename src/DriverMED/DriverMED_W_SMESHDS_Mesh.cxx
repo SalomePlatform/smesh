@@ -321,7 +321,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       int aFamId = (*aFamsIter)->GetId();
 
       const set<const SMDS_MeshElement *>& anElems = (*aFamsIter)->GetElements();
-      set<const SMDS_MeshElement *>::iterator anElemsIter = anElems.begin();
+	  set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
       for (; anElemsIter != anElems.end(); anElemsIter++)
       {
         anElemFamMap[*anElemsIter] = aFamId;

@@ -215,7 +215,7 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   ostringstream aStr;
 
   aStr << "FAM_" << myId;
-  set<string>::iterator aGrIter = myGroupNames.begin();
+  set<string>::const_iterator aGrIter = myGroupNames.begin();
   for (; aGrIter != myGroupNames.end(); aGrIter++)
   {
     aStr << "_" << *aGrIter;

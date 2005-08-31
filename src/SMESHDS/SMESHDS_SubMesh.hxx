@@ -30,7 +30,13 @@
 #include "SMDS_Mesh.hxx"
 #include <set>
 
-class SMESHDS_SubMesh
+#if defined WNT && defined WIN32 && defined SMESHDS_EXPORTS
+#define SMESHDS_WNT_EXPORT __declspec( dllexport )
+#else
+#define SMESHDS_WNT_EXPORT
+#endif
+
+class SMESHDS_WNT_EXPORT SMESHDS_SubMesh
 {
  public:
 

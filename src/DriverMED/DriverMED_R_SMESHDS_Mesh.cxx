@@ -722,7 +722,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetGroupNames()
   {
     DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
     const MED::TStringSet& aGroupNames = aFamily->GetGroupNames();
-    set<string>::iterator aGrNamesIter = aGroupNames.begin();
+    set<string>::const_iterator aGrNamesIter = aGroupNames.begin();
     for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
     {
       string aName = *aGrNamesIter;
@@ -751,7 +751,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
     if (aFamily->MemberOf(aGroupName))
     {
       const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
-      set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElements.begin();
       const SMDS_MeshElement * element = 0;
       for (; anElemsIter != anElements.end(); anElemsIter++)
       {
@@ -777,7 +777,7 @@ void DriverMED_R_SMESHDS_Mesh::GetSubMesh (SMESHDS_SubMesh* theSubMesh,
     if (aFamily->MemberOf(aName))
     {
       const set<const SMDS_MeshElement *>& anElements = aFamily->GetElements();
-      set<const SMDS_MeshElement *>::iterator anElemsIter = anElements.begin();
+      set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElements.begin();
       if (aFamily->GetType() == SMDSAbs_Node)
       {
         for (; anElemsIter != anElements.end(); anElemsIter++)
