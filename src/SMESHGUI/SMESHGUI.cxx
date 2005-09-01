@@ -587,6 +587,7 @@ namespace{
 	  }
 	  anActor->SetControlMode(aControl);
 	  anActor->GetScalarBarActor()->SetTitle(aTitle.latin1());
+	  SMESH::RepaintCurrentView();
 	}
       }
     }
