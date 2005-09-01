@@ -156,6 +156,7 @@ class Mesh_Segment(Mesh_Algorithm):
             hyp = self.Hypothesis("NumberOfSegments", [n])
         else:
             hyp = self.Hypothesis("NumberOfSegments", [n,s])
+            hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
