@@ -384,10 +384,10 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     } catch (...) {
     }
 
-    mySelectionMgr->clearSelected();
     SMESH::UpdateView();
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    SelectionIntoArgument();
   }
   return true;
 }

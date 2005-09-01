@@ -485,10 +485,10 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
     } catch (...) {
     }
 
-    mySelectionMgr->clearSelected();
     SMESH::UpdateView();
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    SelectionIntoArgument();
   }
 }
 

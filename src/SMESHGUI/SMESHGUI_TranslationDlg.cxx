@@ -447,10 +447,10 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
     } catch (...) {
     }
 
-    mySelectionMgr->clearSelected();
     SMESH::UpdateView();
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    SelectionIntoArgument();
   }
 }
 
@@ -624,7 +624,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
     }
 

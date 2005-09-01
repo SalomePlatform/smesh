@@ -469,10 +469,10 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     } catch (...) {
     }
 
-    mySelectionMgr->clearSelected();
     SMESH::UpdateView();
     Init(false);
     ConstructorsClicked(GetConstructorId());
+    SelectionIntoArgument();
   }
 }
 

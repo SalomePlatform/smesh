@@ -424,9 +424,9 @@ void SMESHGUI_RotationDlg::ClickOnApply()
     } catch (...) {
     }
 
-    mySelectionMgr->clearSelected();
     SMESH::UpdateView();
     Init(false);
+    SelectionIntoArgument();
   }
 }
 
