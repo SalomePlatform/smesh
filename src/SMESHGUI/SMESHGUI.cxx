@@ -1170,8 +1170,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      SALOME_ListIO l1;
-      aSel->setSelectedObjects( l1 );
+      
+      if (anAction == SMESH::eErase) {
+	SALOME_ListIO l1;
+	aSel->setSelectedObjects( l1 );
+      }
+      else
+	aSel->setSelectedObjects( selected );
       break;
     }
 
