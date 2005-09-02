@@ -324,6 +324,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   this->show(); /* displays Dialog */
 
   ConstructorsClicked(0);
+  SelectionIntoArgument();
   resize(0,0); // ??
 }
 

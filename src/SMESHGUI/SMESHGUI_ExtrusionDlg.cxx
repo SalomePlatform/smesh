@@ -271,6 +271,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   this->show(); // displays Dialog
 
   ConstructorsClicked(0);
+  SelectionIntoArgument();
 }
 
 //=================================================================================

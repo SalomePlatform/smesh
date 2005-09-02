@@ -341,6 +341,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   this->show(); /* displays Dialog */
 
   ConstructorsClicked(0);
+  SelectionIntoArgument();
   resize(0,0); // ??
 }
 

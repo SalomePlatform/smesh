@@ -300,6 +300,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   this->show(); /* displays Dialog */
 
   ConstructorsClicked(0);
+  SelectionIntoArgument();
   resize(0,0); // ??
 }
 
