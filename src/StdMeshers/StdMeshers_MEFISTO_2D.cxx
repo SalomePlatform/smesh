@@ -129,7 +129,7 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
 	theHyp = (*itl); // use only the first hypothesis
 
 	string hypName = theHyp->GetName();
-	int hypId = theHyp->GetID();
+	//int hypId = theHyp->GetID();
 	//SCRUTE(hypName);
 
 	bool isOk = false;
@@ -190,8 +190,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 		_edgeLength = ComputeEdgeElementLength(aMesh, aShape);
 
 	bool isOk = false;
-	const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-	SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
+	//const SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+	//SMESH_subMesh *theSubMesh = aMesh.GetSubMesh(aShape);
 
 	const TopoDS_Face & FF = TopoDS::Face(aShape);
 	bool faceIsForward = (FF.Orientation() == TopAbs_FORWARD);
@@ -477,7 +477,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(SMESH_Mesh &        aMesh,
 {
 //  MESSAGE("StdMeshers_MEFISTO_2D::LoadPoints");
 
-  SMDS_Mesh * meshDS = aMesh.GetMeshDS();
+  //SMDS_Mesh * meshDS = aMesh.GetMeshDS();
 
   TopoDS_Face F = TopoDS::Face(FF.Oriented(TopAbs_FORWARD));
 
@@ -521,7 +521,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(SMESH_Mesh &        aMesh,
 
     SMDS_NodeIteratorPtr ite= aMesh.GetSubMesh(E)->GetSubMeshDS()->GetNodes();
 
-    bool isForward = (E.Orientation() == TopAbs_FORWARD);
+    //bool isForward = (E.Orientation() == TopAbs_FORWARD);
     map<double, const SMDS_MeshNode*> params;
 
     while(ite->more())
@@ -713,6 +713,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
                                         double scalex, double scaley)
 {
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  int faceID = meshDS->ShapeToIndex( F );
 
   Z n, m;
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
@@ -726,20 +727,16 @@ void StdMeshers_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
       gp_Pnt P = S->Value(u, v);
 
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnFace(node, F);
+      meshDS->SetNodeOnFace(node, faceID, u, v);
 
       //MESSAGE(P.X()<<" "<<P.Y()<<" "<<P.Z());
       mefistoToDS[n + 1] = node;
       //MESSAGE("NEW: "<<n<<" "<<mefistoToDS[n+1]);
-      SMDS_FacePosition* fpos =
-        static_cast<SMDS_FacePosition*>(node->GetPosition().get());
-      fpos->SetUParameter(u);
-      fpos->SetVParameter(v);
     }
   }
 
   m = 0;
-  int mt = 0;
+  //int mt = 0;
 
   //SCRUTE(faceIsForward);
   for (n = 1; n <= nbt; n++)
@@ -765,7 +762,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(SMESH_Mesh & aMesh,
     else
       elt = meshDS->AddFace(n1, n3, n2);
 
-    meshDS->SetMeshElementOnShape(elt, F);
+    meshDS->SetMeshElementOnShape(elt, faceID);
     m++;
   }
 
@@ -806,7 +803,7 @@ double StdMeshers_MEFISTO_2D::ComputeEdgeElementLength(SMESH_Mesh & aMesh,
 	// **** a mettre dans SMESH_2D_Algo ?
 
 	const TopoDS_Face & FF = TopoDS::Face(aShape);
-	bool faceIsForward = (FF.Orientation() == TopAbs_FORWARD);
+	//bool faceIsForward = (FF.Orientation() == TopAbs_FORWARD);
 	TopoDS_Face F = TopoDS::Face(FF.Oriented(TopAbs_FORWARD));
 
 	double meanElementLength = 100;

@@ -699,6 +699,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
   const TopoDS_Edge & EE = TopoDS::Edge(aShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
+  int shapeID = meshDS->ShapeToIndex( E );
 
   double f, l;
   Handle(Geom_Curve) Curve = BRep_Tool::Curve(E, f, l);
@@ -750,19 +751,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
       //Add the Node in the DataStructure
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnEdge(node, E);
-
-      // **** edgePosition associe au point = param. 
-      SMDS_EdgePosition* epos =
-        dynamic_cast<SMDS_EdgePosition *>(node->GetPosition().get());
-      epos->SetUParameter(param);
+      meshDS->SetNodeOnEdge(node, shapeID, param);
 
       SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
-      meshDS->SetMeshElementOnShape(edge, E);
+      meshDS->SetMeshElementOnShape(edge, shapeID);
       idPrev = node;
     }
     SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
-    meshDS->SetMeshElementOnShape(edge, E);
+    meshDS->SetMeshElementOnShape(edge, shapeID);
   }
   else
   {
@@ -781,18 +777,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     {
       double param = f + (i - 1) * du;
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      meshDS->SetNodeOnEdge(node, E);
-
-      SMDS_EdgePosition* epos =
-        dynamic_cast<SMDS_EdgePosition*>(node->GetPosition().get());
-      epos->SetUParameter(param);
+      meshDS->SetNodeOnEdge(node, shapeID, param);
 
       SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
-      meshDS->SetMeshElementOnShape(edge, E);
+      meshDS->SetMeshElementOnShape(edge, shapeID);
       idPrev = node;
     }
     SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast);
-    meshDS->SetMeshElementOnShape(edge, E);
+    meshDS->SetMeshElementOnShape(edge, shapeID);
   }
   return true;
 }
