@@ -1080,11 +1080,10 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
 //=============================================================================
 const SMESH_Hypothesis* SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
 {
-  SMESH_HypoFilter filter( SMESH_HypoFilter::HasDim( 1 ));
-  filter.AndNot( SMESH_HypoFilter::IsAlgo() );
-  filter.AndNot( SMESH_HypoFilter::IsGlobal( GetMeshDS()->ShapeToMesh() ));
+  SMESH_HypoFilter hypo ( SMESH_HypoFilter::HasDim( 1 ));
+  hypo.AndNot( hypo.IsAlgo() ).AndNot( hypo.IsAssignedTo( GetMeshDS()->ShapeToMesh() ));
 
-  return GetHypothesis( theEdge, filter, true );
+  return GetHypothesis( theEdge, hypo, true );
 }
 
 //=============================================================================

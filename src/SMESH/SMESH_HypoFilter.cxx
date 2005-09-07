@@ -97,11 +97,11 @@ bool SMESH_HypoFilter::InstancePredicate::IsOk(const SMESH_Hypothesis* aHyp,
 }
 
 //=======================================================================
-//function : IsGlobalPredicate::IsOk
+//function : IsAssignedToPredicate::IsOk
 //purpose  : 
 //=======================================================================
 
-bool SMESH_HypoFilter::IsGlobalPredicate::IsOk(const SMESH_Hypothesis* aHyp,
+bool SMESH_HypoFilter::IsAssignedToPredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                const TopoDS_Shape&     aShape) const
 {
   return ( !_mainShape.IsNull() && !aShape.IsNull() && _mainShape.IsSame( aShape ));
@@ -131,9 +131,10 @@ SMESH_HypoFilter::SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNag
 //purpose  : 
 //=======================================================================
 
-void SMESH_HypoFilter::And( SMESH_HypoPredicate* aPredicate )
+SMESH_HypoFilter & SMESH_HypoFilter::And( SMESH_HypoPredicate* aPredicate )
 {
   add( AND, aPredicate );
+  return *this;
 }
 
 //=======================================================================
@@ -141,9 +142,10 @@ void SMESH_HypoFilter::And( SMESH_HypoPredicate* aPredicate )
 //purpose  : 
 //=======================================================================
 
-void SMESH_HypoFilter::AndNot( SMESH_HypoPredicate* aPredicate )
+SMESH_HypoFilter & SMESH_HypoFilter::AndNot( SMESH_HypoPredicate* aPredicate )
 {
   add( AND_NOT, aPredicate );
+  return *this;
 }
 
 //=======================================================================
@@ -151,9 +153,10 @@ void SMESH_HypoFilter::AndNot( SMESH_HypoPredicate* aPredicate )
 //purpose  : 
 //=======================================================================
 
-void SMESH_HypoFilter::Or( SMESH_HypoPredicate* aPredicate )
+SMESH_HypoFilter & SMESH_HypoFilter::Or( SMESH_HypoPredicate* aPredicate )
 {
   add( OR, aPredicate );
+  return *this;
 }
 
 //=======================================================================
@@ -161,9 +164,10 @@ void SMESH_HypoFilter::Or( SMESH_HypoPredicate* aPredicate )
 //purpose  : Return predicates
 //=======================================================================
 
-void SMESH_HypoFilter::OrNot( SMESH_HypoPredicate* aPredicate )
+SMESH_HypoFilter & SMESH_HypoFilter::OrNot( SMESH_HypoPredicate* aPredicate )
 {
   add( OR_NOT, aPredicate );
+  return *this;
 }
 
 //=======================================================================
@@ -193,7 +197,17 @@ SMESH_HypoPredicate* SMESH_HypoFilter::IsAlgo()
 
  SMESH_HypoPredicate* SMESH_HypoFilter::IsGlobal(const TopoDS_Shape& theMainShape)
 {
-  return new IsGlobalPredicate( theMainShape );
+  return new IsAssignedToPredicate( theMainShape );
+}
+
+//=======================================================================
+//function : IsAssignedTo
+//purpose  : 
+//=======================================================================
+
+ SMESH_HypoPredicate* SMESH_HypoFilter::IsAssignedTo(const TopoDS_Shape& theShape)
+{
+  return new IsAssignedToPredicate( theShape );
 }
 
 //=======================================================================
@@ -268,13 +282,14 @@ bool SMESH_HypoFilter::IsOk (const SMESH_Hypothesis* aHyp,
 //purpose  : 
 //=======================================================================
 
-void SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate )
+SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate )
 {
   list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
   for ( ; pred != myPredicates.end(); ++pred )
     delete *pred;
 
   add( notNagate ? AND : AND_NOT, aPredicate );
+  return *this;
 }
 
 

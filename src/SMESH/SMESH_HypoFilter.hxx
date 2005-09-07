@@ -35,10 +35,10 @@
 
 #include <list>
 #include <string>
+#include <TopoDS_Shape.hxx>
 
 class SMESH_HypoFilter;
 class SMESH_Hypothesis;
-class TopoDS_Shape;
 
 class SMESH_HypoPredicate {
  public:
@@ -59,15 +59,16 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
   SMESH_HypoFilter();
   SMESH_HypoFilter( SMESH_HypoPredicate* aPredicate, bool notNagate = true );
   // notNagate==false means !aPredicate->IsOk()
-  void Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate = true );
-  void And   ( SMESH_HypoPredicate* aPredicate );
-  void AndNot( SMESH_HypoPredicate* aPredicate );
-  void Or    ( SMESH_HypoPredicate* aPredicate );
-  void OrNot ( SMESH_HypoPredicate* aPredicate );
+  SMESH_HypoFilter & Init  ( SMESH_HypoPredicate* aPredicate, bool notNagate = true );
+  SMESH_HypoFilter & And   ( SMESH_HypoPredicate* aPredicate );
+  SMESH_HypoFilter & AndNot( SMESH_HypoPredicate* aPredicate );
+  SMESH_HypoFilter & Or    ( SMESH_HypoPredicate* aPredicate );
+  SMESH_HypoFilter & OrNot ( SMESH_HypoPredicate* aPredicate );
 
   // Create predicates
   static SMESH_HypoPredicate* IsAlgo();
-  static SMESH_HypoPredicate* IsApplicableTo(const TopoDS_Shape& theMainShape);
+  static SMESH_HypoPredicate* IsApplicableTo(const TopoDS_Shape& theShape);
+  static SMESH_HypoPredicate* IsAssignedTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
   static SMESH_HypoPredicate* IsGlobal(const TopoDS_Shape& theMainShape);
   static SMESH_HypoPredicate* HasName(const std::string & theName);
@@ -150,9 +151,9 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
               const TopoDS_Shape&     aShape) const;
   };
         
-  struct IsGlobalPredicate : public SMESH_HypoPredicate {
-    const TopoDS_Shape& _mainShape;
-    IsGlobalPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
+  struct IsAssignedToPredicate : public SMESH_HypoPredicate {
+    TopoDS_Shape _mainShape;
+    IsAssignedToPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };
