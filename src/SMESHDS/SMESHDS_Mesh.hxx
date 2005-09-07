@@ -38,6 +38,7 @@
 
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS_Shape.hxx>
+#include <TopoDS_Solid.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
@@ -203,8 +204,9 @@ public:
   void Renumber (const bool isNodes, const int startID=1, const int deltaID=1);
 
   void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Shell & S);
-  void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S);
-  void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S);
+  void SetNodeInVolume(SMDS_MeshNode * aNode, const TopoDS_Solid & S);
+  void SetNodeOnFace(SMDS_MeshNode * aNode, const TopoDS_Face & S, double u=0., double v=0.);
+  void SetNodeOnEdge(SMDS_MeshNode * aNode, const TopoDS_Edge & S, double u=0.);
   void SetNodeOnVertex(SMDS_MeshNode * aNode, const TopoDS_Vertex & S);
   void UnSetNodeOnShape(const SMDS_MeshNode * aNode);
   void SetMeshElementOnShape(const SMDS_MeshElement * anElt,
@@ -229,8 +231,8 @@ public:
   SMESHDS_SubMesh * NewSubMesh(int Index);
   int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
   void SetNodeInVolume(const SMDS_MeshNode * aNode, int Index);
-  void SetNodeOnFace(SMDS_MeshNode * aNode, int Index);
-  void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index);
+  void SetNodeOnFace(SMDS_MeshNode * aNode, int Index , double u=0., double v=0.);
+  void SetNodeOnEdge(SMDS_MeshNode * aNode, int Index , double u=0.);
   void SetNodeOnVertex(SMDS_MeshNode * aNode, int Index);
   void SetMeshElementOnShape(const SMDS_MeshElement * anElt, int Index);
 
@@ -268,6 +270,15 @@ private:
 
 
 #endif
+
+  void addNodeToSubmesh( const SMDS_MeshNode* aNode, int Index )
+  {
+    //Update or build submesh
+    map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
+    if ( it == myShapeIndexToSubMesh.end() )
+      it = myShapeIndexToSubMesh.insert( make_pair(Index, new SMESHDS_SubMesh() )).first;
+    it->second->AddNode( aNode ); // add aNode to submesh
+  }
 
   typedef std::list<const SMESHDS_Hypothesis*> THypList;
 
