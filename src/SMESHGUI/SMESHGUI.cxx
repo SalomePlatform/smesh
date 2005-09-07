@@ -2828,8 +2828,8 @@ void SMESHGUI::createPreferences()
   QStringList modes;
   modes.append( "Wireframe" );
   modes.append( "Shading" );
-  modes.append( "Shrink" );
   modes.append( "Nodes" );
+  modes.append( "Shrink" );
   QValueList<QVariant> indices; 
   indices.append( 0 ); 
   indices.append( 1 );
