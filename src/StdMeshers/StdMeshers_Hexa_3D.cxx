@@ -606,17 +606,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 	//       - compute the point 3D
 	//       - store the point 3D in SMESHDS, store its ID in 3D structure
 
-	TopoDS_Shell aShell;
-	TopExp_Explorer exp(aShape, TopAbs_SHELL);
-	if (exp.More())
-	{
-		aShell = TopoDS::Shell(exp.Current());
-	}
-	else
-	{
-		MESSAGE("no shell...");
-		ASSERT(0);
-	}
+        int shapeID = meshDS->ShapeToIndex( aShape );
 
 	Pt3 p000, p001, p010, p011, p100, p101, p110, p111;
 	Pt3 px00, px01, px10, px11;
@@ -690,8 +680,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
 				SMDS_MeshNode * node = meshDS->AddNode(X[0], X[1], X[2]);
 				np[ijk].node = node;
-				//meshDS->SetNodeInVolume(node, TopoDS::Solid(aShape));
-				meshDS->SetNodeInVolume(node, aShell);
+                                meshDS->SetNodeInVolume(node, shapeID);
 			}
 		}
 	}
@@ -755,9 +744,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
                                                           np[n7].node,
                                                           np[n6].node);
 
-				meshDS->SetMeshElementOnShape(elt, aShell);
-
-
+                                meshDS->SetMeshElementOnShape(elt, shapeID);
                               }
                       }
   if ( np ) delete [] np;
@@ -1062,7 +1049,7 @@ bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape)
   //printf(" ComputePentahedralMesh HERE\n");
   //
   bool bOK;
-  int iErr;
+  //int iErr;
   StdMeshers_Penta_3D anAlgo;
   //
   bOK=anAlgo.Compute(aMesh, aShape);

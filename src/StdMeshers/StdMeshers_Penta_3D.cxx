@@ -61,10 +61,6 @@ typedef map < int, int, less<int> >::iterator   \
   StdMeshers_IteratorOfDataMapOfIntegerInteger;
 
 //=======================================================================
-//
-//           StdMeshers_Penta_3D 
-//
-//=======================================================================
 //function : StdMeshers_Penta_3D
 //purpose  : 
 //=======================================================================
@@ -597,17 +593,10 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
   //
   int i, j, ij, ik, i1, i2, aSSID; 
   //
-  TopoDS_Shell aShell;
-  TopExp_Explorer aExp;
-  //
   SMESH_Mesh*   pMesh =GetMesh();
   SMESHDS_Mesh* meshDS=pMesh->GetMeshDS();
   //
-  aExp.Init(myShape, TopAbs_SHELL);
-  for (; aExp.More(); aExp.Next()){
-    aShell=TopoDS::Shell(aExp.Current());
-    break;
-  }
+  int shapeID = meshDS->ShapeToIndex( myShape );
   //
   // 1. Set Node In Volume
   ik=myISize-1;
@@ -618,7 +607,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       aSSID=aTN.ShapeSupportID();
       if (aSSID==SMESH_Block::ID_NONE) {
 	SMDS_MeshNode* aNode=(SMDS_MeshNode*)aTN.Node();
-	meshDS->SetNodeInVolume(aNode, aShell);
+	meshDS->SetNodeInVolume(aNode, shapeID);
       }
     }
   }
@@ -714,7 +703,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       default:
         continue;
       }
-      meshDS->SetMeshElementOnShape(aV, aShell);
+      meshDS->SetMeshElementOnShape(aV, shapeID);
     }
   }
 }
@@ -873,7 +862,7 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
 {
   myErrorStatus=0;
   //
-  int iErr;
+  // int iErr;
   double aX, aY, aZ;
   //
   gp_Pnt aP;
