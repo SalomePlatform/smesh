@@ -35,10 +35,10 @@
 
 #include <list>
 #include <string>
+#include <TopoDS_Shape.hxx>
 
 class SMESH_HypoFilter;
 class SMESH_Hypothesis;
-class TopoDS_Shape;
 
 class SMESH_HypoPredicate {
  public:
@@ -151,7 +151,7 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
   };
         
   struct IsGlobalPredicate : public SMESH_HypoPredicate {
-    const TopoDS_Shape& _mainShape;
+    TopoDS_Shape _mainShape;
     IsGlobalPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
