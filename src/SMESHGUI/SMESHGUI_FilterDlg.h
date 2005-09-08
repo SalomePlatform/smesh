@@ -186,6 +186,7 @@ private:
   QButtonGroup*             myEntityTypeGrp;
   int                       myEntityType;
   int                       myIsValid;
+  bool                      myIsLocked;
   
   SMESHGUI_FilterLibraryDlg* myLibDlg;
 

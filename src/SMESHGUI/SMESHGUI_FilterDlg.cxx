@@ -420,7 +420,8 @@ QString SMESHGUI_FilterTable::Table::text( int row, int col ) const
 //=======================================================================
 SMESHGUI_FilterTable::SMESHGUI_FilterTable( QWidget* parent, 
                                             const int type )
-: QFrame( parent )                                            
+: QFrame( parent ),
+  myIsLocked( false )
 {
   myEntityType = -1;
   Init( type );
@@ -432,7 +433,8 @@ SMESHGUI_FilterTable::SMESHGUI_FilterTable( QWidget* parent,
 //=======================================================================
 SMESHGUI_FilterTable::SMESHGUI_FilterTable( QWidget* parent, 
                                             const QValueList<int>& types )
-: QFrame( parent )                                            
+: QFrame( parent ),
+  myIsLocked( false )
 {
   myEntityType = -1;
   Init( types );
@@ -1029,7 +1031,8 @@ void SMESHGUI_FilterTable::onClearBtn()
 //=======================================================================
 void SMESHGUI_FilterTable::onCurrentChanged( int theRow, int theCol )
 {
-  updateAdditionalWidget();
+  if( !myIsLocked )
+    updateAdditionalWidget();
   emit CurrentChanged( theRow, theCol );
 }
 
@@ -1121,6 +1124,7 @@ void SMESHGUI_FilterTable::addRow( Table* theTable, const int theType, const boo
   int aSelectedRow = getFirstSelectedRow();
   int aCurrCol = theTable->currentColumn();
 
+  myIsLocked = true;
   if ( toTheEnd || aSelectedRow == -1 )
   {
     theTable->insertRows( theTable->numRows() );
@@ -1131,6 +1135,7 @@ void SMESHGUI_FilterTable::addRow( Table* theTable, const int theType, const boo
     theTable->insertRows( aSelectedRow );
     aCurrRow = aSelectedRow;
   }
+  myIsLocked = false;
 
   // Criteria
   theTable->setItem( aCurrRow, 0, getCriterionItem( theTable, theType ) );
