@@ -38,18 +38,21 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 
     int aLevel = obj->Depth() - objComponent->Depth();
 
-    // Max level under the component is 4:
+    // Max level under the component is 5:
     //
     // 0    Mesh Component
     // 1    |- Hypotheses
     // 2    |  |- Regular 1D
     //      |- Algorithms
     //      |- Mesh 1
+    //         |- * Main Shape
     //         |- Applied Hypotheses
     //         |- Applied Algorithms
     //         |- Submeshes on Face
     // 3       |  |- SubmeshFace
+    // 4       |     |- * Face 1
     // 4       |     |- Applied algorithms ( selectable in Use Case Browser )
+    // 5       |          |- Regular 1D
     //         |- Group Of Nodes
 
     if (aLevel <= 0)
@@ -59,13 +62,21 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
       {
       case HYPOTHESIS:
 	{
-	  if ( aLevel == 2 && ( objFather->Tag() == 1 ))
+	  if ( aLevel == 2 && ( objFather->Tag() == 1 )) // hypo definition
+	    Ok = true;
+	  else if ( aLevel == 3 && ( objFather->Tag() == 2 )) // applied global hypo
+	    Ok = true;
+	  else if ( aLevel == 5 && ( objFather->Tag() == 2 )) // applied local hypo
 	    Ok = true;
 	  break;
 	}
       case ALGORITHM:
 	{
-	  if ( aLevel == 2 && ( objFather->Tag() == 2 ))
+	  if ( aLevel == 2 && ( objFather->Tag() == 2 )) // algo definition
+	    Ok = true;
+	  else if ( aLevel == 3 && ( objFather->Tag() == 3 )) // applied global algo
+	    Ok = true;
+	  else if ( aLevel == 5 && ( objFather->Tag() == 3 )) // applied local algo
 	    Ok = true;
 	  break;
 	}
