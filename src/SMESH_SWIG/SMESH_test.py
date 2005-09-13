@@ -26,7 +26,7 @@
 
 import salome
 import geompy
-import smesh
+import smeshpy
 
 import SMESH
 import StdMeshers
@@ -59,7 +59,7 @@ ide = geompy.addToStudyInFather(face, edge, name)
 
 # ---- launch SMESH, init a Mesh with the box
 
-gen = smesh.smesh()
+gen = smeshpy.smeshpy()
 mesh = gen.CreateMesh(idb)
 
 print "-------------------------- create Hypothesis"
