@@ -848,6 +848,7 @@ void SMESHGUI_FilterLibraryDlg::enableMainButtons()
 SMESH::Filter_ptr SMESHGUI_FilterLibraryDlg::createFilter(const int theType)
 {
   int n = myTable->NumRows(theType);
+  n = 0;
 
   SMESH::Filter::Criteria_var aCriteria = new SMESH::Filter::Criteria;
   aCriteria->length(n);
@@ -861,7 +862,7 @@ SMESH::Filter_ptr SMESHGUI_FilterLibraryDlg::createFilter(const int theType)
 
   SMESH::FilterManager_var aFilterMgr = SMESH::GetFilterManager();
   SMESH::Filter_var aFilter = aFilterMgr->CreateFilter();
-  aFilter->SetCriteria(aCriteria.inout());
+  aFilter->SetCriteria(aCriteria.in());
 
   return aFilter._retn();
 }
