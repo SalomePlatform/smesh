@@ -1007,6 +1007,9 @@ bool SMESHGUI::ActiveStudyChanged(QAD_Desktop* parent)
     SMESH::UpdateSelectionProp();
   }
   MESSAGE("SMESHGUI::activeStudyChanged done.");
+
+  parent->loadComponentData("GEOM");
+
   return true;
 }
 
@@ -2328,6 +2331,9 @@ bool SMESHGUI::SetSettings(QAD_Desktop * parent)
   /* menus disable */
   parent->menuBar()->setItemEnabled(111, false);	// IMPORT DAT
   //parent->menuBar()->setItemEnabled(112, false);	// IMPORT UNV
+
+  /* Load geom data*/
+  parent->loadComponentData("GEOM");
 
   return true;
 }
