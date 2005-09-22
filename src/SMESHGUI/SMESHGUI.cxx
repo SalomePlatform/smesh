@@ -1,22 +1,22 @@
 //  SMESH SMESHGUI : GUI for SMESH component
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-// 
+//
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //  File   : SMESHGUI.cxx
@@ -26,8 +26,6 @@
 
 #include "SMESHGUI.h"
 
-#include "SMESHGUI_InitMeshDlg.h"
-#include "SMESHGUI_AddSubMeshDlg.h"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_ClippingDlg.h"
@@ -169,7 +167,7 @@ namespace{
   {
     QStringList filter;
     string myExtension;
-  
+
     if(theCommandID == 113){
       filter.append(QObject::tr("MED files (*.med)"));
       filter.append(QObject::tr("All files (*)"));
@@ -298,7 +296,7 @@ namespace{
 	    QStringList filters;
 	    for ( QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin(); it != aFilterMap.end(); ++it )
 	      filters.push_back( it.key() );
-	    
+
 	    SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
 	    fd->setCaption( aTitle );
 	    fd->setFilters( filters );
@@ -309,7 +307,7 @@ namespace{
 	      aFormat = aFilterMap[fd->selectedFilter()];
 	      is_ok = true;
 	      if( !aFilename.isEmpty()
-		  && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0) 
+		  && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0)
 		  && aFormat==SMESH::MED_V2_1){
 		int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
 						  QObject::tr("SMESH_WRN_WARNING"),
@@ -517,7 +515,7 @@ namespace{
       SMESH::RepaintCurrentView();
     }
   }
-  
+
   void Control( int theCommandID )
   {
     SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -811,7 +809,7 @@ SalomeApp_Module( "SMESH" )
 
   SMESH::GetFilterManager();
   SMESH::GetPattern();
-  
+
   /* load resources for all available meshers */
   SMESH::InitAvailableHypotheses();
 }
@@ -1170,7 +1168,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      
+
       if (anAction == SMESH::eErase) {
 	SALOME_ListIO l1;
 	aSel->setSelectedObjects( l1 );
@@ -1191,7 +1189,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else {
 	SUIT_MessageBox::warn1(desktop(),
-			      tr("SMESH_WRN_WARNING"), 
+			      tr("SMESH_WRN_WARNING"),
 			      tr("SMESH_WRN_VIEWER_VTK"),
 			      tr("SMESH_BUT_OK"));
       }
@@ -1263,7 +1261,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                     SMESH::ModifiedMesh(aMeshSObj,true);
 		  // TO Do : change icon of all submeshes
                   else
-                    SUIT_MessageBox::warn1(desktop(), 
+                    SUIT_MessageBox::warn1(desktop(),
                                           tr("SMESH_WRN_WARNING"),
                                           tr("SMESH_WRN_COMPUTE_FAILED"),
                                           tr("SMESH_BUT_OK"));
@@ -1278,7 +1276,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	      if(!refShapeObject->_is_nil()){
 		bool compute = GetSMESHGen()->IsReadyToCompute(aMesh,refShapeObject);
 		if(!compute){
-		  SUIT_MessageBox::warn1(desktop(), 
+		  SUIT_MessageBox::warn1(desktop(),
 					tr("SMESH_WRN_WARNING"),
 					tr("SMESH_WRN_MISSING_PARAMETERS"),
 					tr("SMESH_BUT_OK"));
@@ -1316,7 +1314,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	}
       }else{
 	SUIT_MessageBox::warn1(desktop(),
-			      tr("SMESH_WRN_WARNING"), 
+			      tr("SMESH_WRN_WARNING"),
 			      tr("SMESH_WRN_VIEWER_VTK"),
 			      tr("SMESH_BUT_OK"));
       }
@@ -1541,7 +1539,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 		  aGroup->Add(aVolumes.inout());
 		}
 		updateObjBrowser();
-	        
+
 	      }catch(const SALOME::SALOME_Exception & S_ex){
 		SalomeApp_Tools::QtCatchCorbaException(S_ex);
 	      }
@@ -1699,8 +1697,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       else
         new SMESHGUI_StandardMeshInfosDlg( this, "", false);
       break;
-    } 
-    
+    }
+
   case 1100:					// EDIT HYPOTHESIS
     {
       if(checkLock(aStudy)) break;
@@ -1770,7 +1768,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                 SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
               if (!aGroup->_is_nil() )
                 aGroup->SetName( newName.latin1() );
-		
+
 	      updateObjBrowser();
             }
           }
@@ -1937,7 +1935,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-  case 4063:                                   // SYMMETRY 
+  case 4063:                                   // SYMMETRY
     {
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
@@ -1995,7 +1993,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-    
+
   case 5105: // Library of selection filters
   {
     static QValueList<int> aTypes;
@@ -2050,7 +2048,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     else {
       SUIT_MessageBox::warn1(desktop(),
 			    tr( "SMESH_WRN_WARNING" ),
-			    tr( "NOT_A_VTK_VIEWER" ), 
+			    tr( "NOT_A_VTK_VIEWER" ),
 			    tr( "SMESH_BUT_OK" ) );
     }
     break;
@@ -2294,7 +2292,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 1134, "CLIP" );
   createSMESHAction( 1135, "DISP_ENT" );
   createSMESHAction( 2000, "CTRL" );
-  
+
   createSMESHAction( 300, "ERASE" );
   createSMESHAction( 301, "DISPLAY" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
@@ -2550,12 +2548,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
   QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
   QString aMeshInVTK = aClient + "&&" + aType;
-  
+
   //-------------------------------------------------
   // Numbering
   //-------------------------------------------------
   anId = popupMgr()->insert( tr( "MEN_NUM" ), -1, -1 );
-  
+
   popupMgr()->insert( action( 9010 ), anId, -1 );
   popupMgr()->setRule( action( 9010 ), aMeshInVTK + "&& isVisible &&" + hasNodes, true );
   popupMgr()->setRule( action( 9010 ), "{'Point'} in labeledTypes", false );
@@ -2729,7 +2727,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, -1 );
 
-  connect( application(), SIGNAL( viewManagerAdded( SUIT_ViewManager* ) ), 
+  connect( application(), SIGNAL( viewManagerAdded( SUIT_ViewManager* ) ),
 	   this, SLOT( onViewManagerAdded( SUIT_ViewManager* ) ) );
 }
 
@@ -2749,7 +2747,7 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   setToolShown( false );
 
   EmitSignalCloseAllDialogs();
-  
+
   return SalomeApp_Module::deactivateModule( study );
 }
 
@@ -2769,7 +2767,7 @@ SMESH::SMESH_Gen_var SMESHGUI::GetSMESHGen()
     {
       SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
       return aGUI.myComponentSMESH;
-    }  
+    }
   return myComponentSMESH;
 }
 
@@ -2814,7 +2812,7 @@ void SMESHGUI::createPreferences()
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
   addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "display_entity" );
   addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "use_precision" );
-  
+
   int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 1 );
 
@@ -2830,14 +2828,14 @@ void SMESHGUI::createPreferences()
   modes.append( "Shading" );
   modes.append( "Nodes" );
   modes.append( "Shrink" );
-  QValueList<QVariant> indices; 
-  indices.append( 0 ); 
+  QValueList<QVariant> indices;
+  indices.append( 0 );
   indices.append( 1 );
   indices.append( 2 );
   indices.append( 3 );
   setPreferenceProperty( dispmode, "strings", modes );
   setPreferenceProperty( dispmode, "indexes", indices );
-  
+
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
 
@@ -2870,10 +2868,10 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_object_color" );
   addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_element_color" );
   int selW = addPreference( tr( "PREF_WIDTH" ), selGroup, SalomeApp_Preferences::IntSpin, "SMESH", "selection_width" );
-  
+
   setPreferenceProperty( selW, "min", 1 );
   setPreferenceProperty( selW, "max", 5 );
-  
+
   int preGroup = addPreference( tr( "PREF_GROUP_PRESELECTION" ), selTab );
 
   addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, SalomeApp_Preferences::Color, "SMESH", "highlight_color" );
@@ -2903,17 +2901,17 @@ void SMESHGUI::createPreferences()
 
   setPreferenceProperty( tfont, "families", fam );
   setPreferenceProperty( tfont, "system", false );
-  setPreferenceProperty( tfont, "widget_flags", wflag );  
+  setPreferenceProperty( tfont, "widget_flags", wflag );
   setPreferenceProperty( lfont, "families", fam );
   setPreferenceProperty( lfont, "system", false );
   setPreferenceProperty( lfont, "widget_flags", wflag );
-  
+
   int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
 
   int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
   setPreferenceProperty( numcol, "min", 2 );
-  setPreferenceProperty( numcol, "max", 256 );  
-  
+  setPreferenceProperty( numcol, "max", 256 );
+
   int numlab = addPreference( tr( "SMESH_NUMBEROFLABELS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_labels" );
   setPreferenceProperty( numlab, "min", 2 );
   setPreferenceProperty( numlab, "max", 65 );
@@ -2926,10 +2924,10 @@ void SMESHGUI::createPreferences()
   indices.clear(); indices.append( 0 ); indices.append( 1 );
   setPreferenceProperty( orient, "strings", orients );
   setPreferenceProperty( orient, "indexes", indices );
-  
+
   int posVSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_VERTICAL" ), sbarTab );
   int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
-  int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );  
+  int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );
   int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
   int hv = addPreference( tr( "SMESH_HEIGHT" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_height" );
   setPreferenceProperty( xv, "step", 0.1 );
@@ -2943,7 +2941,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( wv, "max", 1.0 );
   setPreferenceProperty( hv, "min", 0.0 );
   setPreferenceProperty( hv, "max", 1.0 );
-  setPreferenceProperty( hv, "step", 0.1 );    
+  setPreferenceProperty( hv, "step", 0.1 );
 
   int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
   int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
@@ -2977,7 +2975,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
   * \param theFlags - update flags
 *
 * Update viewer or/and object browser etc. in accordance with update flags ( see
-* SalomeApp_UpdateFlags enumeration ). 
+* SalomeApp_UpdateFlags enumeration ).
 */
 //================================================================================
 void SMESHGUI::update( const int flags )
@@ -3024,8 +3022,8 @@ void SMESHGUI::onOperationAborted( SUIT_Operation* )
   * \param id - identifier of operation to be started
   * \return Pointer on created operation or NULL if operation is not created
 *
-* Virtual method redefined from the base class creates operation with given id. 
-* It is called called automatically from startOperation method of base class. 
+* Virtual method redefined from the base class creates operation with given id.
+* It is called called automatically from startOperation method of base class.
 */
 //================================================================================
 SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
@@ -3046,14 +3044,6 @@ SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
     default:
     break;
   }
-  
+
   return op;
 }
-
-
-
-
-
-
-
-

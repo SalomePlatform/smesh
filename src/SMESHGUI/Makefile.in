@@ -59,8 +59,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_MeshPatternDlg.cxx \
 		SMESHGUI_SpinBox.cxx \
 		SMESHGUI_NodesDlg.cxx \
-		SMESHGUI_InitMeshDlg.cxx \
-		SMESHGUI_AddSubMeshDlg.cxx \
 		SMESHGUI_TransparencyDlg.cxx \
 		SMESHGUI_ClippingDlg.cxx \
 		SMESHGUI_GroupDlg.cxx \
@@ -121,8 +119,6 @@ LIB_MOC = \
 		SMESHGUI_CreatePatternDlg.h \
 		SMESHGUI_NodesDlg.h \
 		SMESHGUI_SpinBox.h \
-		SMESHGUI_InitMeshDlg.h \
-		SMESHGUI_AddSubMeshDlg.h \
 		SMESHGUI_TransparencyDlg.h \
 		SMESHGUI_ClippingDlg.h \
 		SMESHGUI_GroupDlg.h \
