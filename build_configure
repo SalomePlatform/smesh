@@ -135,7 +135,7 @@ echo "	./salome_adm/unix/make_module \\" >> configure.in_tmp1
 touch configure.in_tmp2
 find_in . configure.in_tmp2
 sed -e '/^...salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
-sed -e '/^...adm_local.unix.make_omniorb/d' configure.in_tmp3 configure.in_tmp2
+sed -e '/^...adm_local.unix.make_omniorb/d' configure.in_tmp3 > configure.in_tmp2
 sed -e '/^...adm_local.unix.make_commence/d' configure.in_tmp2 > configure.in_tmp3
 sed -e '/configure.in/d' configure.in_tmp3 >  configure.in_tmp2
 sed -e 's/.in / /' configure.in_tmp2 >>  configure.in_tmp1
