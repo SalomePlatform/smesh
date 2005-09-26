@@ -63,6 +63,7 @@
 #include <Extrema_POnSurf.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <ElCLib.hxx>
+#include <TColStd_ListOfInteger.hxx>
 
 #include <map>
 
@@ -2464,6 +2465,17 @@ void SMESH_MeshEditor::ExtrusionSweep(set<const SMDS_MeshElement*> & theElems,
     }
     // make new elements
     sweepElement( aMesh, elem, newNodesItVec, newElemsMap[elem] );
+
+    // fill history
+    TColStd_ListOfInteger ListNewID;
+    list<const SMDS_MeshElement*> tmpList = newElemsMap[elem];
+    for(list<const SMDS_MeshElement*>::iterator ite = tmpList.begin();
+        ite!=tmpList.end(); ite++) {
+      ListNewID.Append((*ite)->GetID());
+    }
+    myExtrusionHistory.Bind(elem->GetID(),ListNewID);
+    // end fill history
+
   }
   makeWalls( aMesh, mapNewNodes, newElemsMap, mapElemNewNodes, theElems );
 }
