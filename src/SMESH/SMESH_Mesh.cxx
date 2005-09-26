@@ -1106,7 +1106,8 @@ bool SMESH_Mesh::IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
 {
   int nbChains = _mapPropagationChains.Extent();
   for (int i = 1; i <= nbChains; i++) {
-    const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
+    //const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
+    const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
     if (aChain.Contains(theEdge)) {
       theMainEdge = _mapPropagationChains.FindKey(i);
       return true;
@@ -1127,7 +1128,7 @@ bool SMESH_Mesh::IsReversedInChain (const TopoDS_Shape& theEdge,
   if ( !theMainEdge.IsNull() && !theEdge.IsNull() &&
       _mapPropagationChains.Contains( theMainEdge ))
   {
-    const TopTools_IndexedMapOfShape& aChain =
+    const SMESH_IndexedMapOfShape& aChain =
       _mapPropagationChains.FindFromKey( theMainEdge );
     int index = aChain.FindIndex( theEdge );
     if ( index )
@@ -1143,7 +1144,7 @@ bool SMESH_Mesh::IsReversedInChain (const TopoDS_Shape& theEdge,
 //=============================================================================
 void SMESH_Mesh::CleanMeshOnPropagationChain (const TopoDS_Shape& theMainEdge)
 {
-  const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromKey(theMainEdge);
+  const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromKey(theMainEdge);
   int i, nbEdges = aChain.Extent();
   for (i = 1; i <= nbEdges; i++) {
     TopoDS_Shape anEdge = aChain.FindKey(i);
@@ -1210,7 +1211,7 @@ bool SMESH_Mesh::RemovePropagationChain (const TopoDS_Shape& theMainEdge)
     TopoDS_Vertex anEmptyShape;
     BRep_Builder BB;
     BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
-    TopTools_IndexedMapOfShape anEmptyMap;
+    SMESH_IndexedMapOfShape anEmptyMap;
     _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
   }
 
@@ -1228,7 +1229,7 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
 
   // Add new chain, if there is no
   if (!_mapPropagationChains.Contains(theMainEdge)) {
-    TopTools_IndexedMapOfShape aNewChain;
+    SMESH_IndexedMapOfShape aNewChain;
     _mapPropagationChains.Add(theMainEdge, aNewChain);
   }
 
@@ -1240,7 +1241,7 @@ bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
   }
 
   // Edges, on which the 1D hypothesis will be propagated from <theMainEdge>
-  TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.ChangeFromKey(theMainEdge);
+  SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.ChangeFromKey(theMainEdge);
   if (aChain.Extent() > 0) {
     CleanMeshOnPropagationChain(theMainEdge);
     aChain.Clear();

@@ -37,7 +37,8 @@
 #include "SMESHDS_Command.hxx"
 #include "SMDSAbs_ElementType.hxx"
 
-#include "NMTTools_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
+//#include "NMTTools_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
+#include "SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -70,7 +71,8 @@ class TopTools_ListOfShape;
 class SMESH_subMesh;
 class SMESH_HypoFilter;
 
-typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
+//typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
+typedef SMESH_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
 class SMESH_Mesh
 {
