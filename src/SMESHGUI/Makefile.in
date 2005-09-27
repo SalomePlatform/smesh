@@ -110,7 +110,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_SelectionOp.cxx \
 		SMESHGUI_Dialog.cxx \
 		SMESHGUI_MeshDlg.cxx \
-		SMESHGUI_MeshOp.cxx
+		SMESHGUI_MeshOp.cxx \
+		SMESHGUI_Displayer.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \

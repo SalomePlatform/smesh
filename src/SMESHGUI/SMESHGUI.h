@@ -71,6 +71,7 @@ public :
 
   static bool                     automaticUpdate();
 
+  virtual SalomeApp_Displayer*    displayer();
   virtual QString     engineIOR() const;
   virtual void        initialize( CAM_Application* );
   virtual void        windows( QMap<int, int>& ) const;
@@ -135,6 +136,7 @@ private :
   QDialog*                         myActiveDialogBox;
   int                              myState;
   QMap<int,QString>                myRules;
+  SalomeApp_Displayer*             myDisplayer;
 };
 
 #endif

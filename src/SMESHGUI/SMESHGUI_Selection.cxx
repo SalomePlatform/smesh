@@ -84,12 +84,16 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
   else if ( p=="displayMode" )   val = QtxValue( displayMode( ind ) );
   else if ( p=="isComputable" )  val = QtxValue( isComputable( ind ) );
   else if ( p=="hasReference" )  val = QtxValue( hasReference( ind ) );
-  else if ( p=="isVisible" )     val = QtxValue( isVisible( ind ) );
+//  else if ( p=="isVisible" )     val = QtxValue( isVisible( ind ) );
 
   // printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
   //if ( val.type() == QVariant::List )
   //cout << "size: " << val.toList().count() << endl;
-  return val;
+
+  if( val.isValid() )
+    return val;
+  else
+    return SalomeApp_Selection::param( ind, p );
 }
 
 //=======================================================================

@@ -64,6 +64,7 @@
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 #include "SMESHGUI_MeshOp.h"
+#include "SMESHGUI_Displayer.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -806,6 +807,7 @@ SalomeApp_Module( "SMESH" )
 
   myActiveDialogBox = 0 ;
   myState = -1 ;
+  myDisplayer = 0;
 
   SMESH::GetFilterManager();
   SMESH::GetPattern();
@@ -3045,5 +3047,14 @@ SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
     break;
   }
 
+  if( !op )
+    op = SalomeApp_Module::createOperation( id );
   return op;
+}
+
+SalomeApp_Displayer* SMESHGUI::displayer()
+{
+  if( !myDisplayer )
+    myDisplayer = new SMESHGUI_Displayer( dynamic_cast<SalomeApp_Study*>( getApp()->activeStudy() ) );
+  return myDisplayer;
 }
