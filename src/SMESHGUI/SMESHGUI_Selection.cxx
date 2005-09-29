@@ -350,6 +350,9 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
   if( objComponent->ComponentDataType()!="SMESH" )
     return -1;
 
+  if( objComponent->GetIOR()==obj->GetIOR() )
+    return COMPONENT;
+
   int aLevel = obj->Depth() - objComponent->Depth(),
       aFTag = objFather->Tag(),
       anOTag = obj->Tag(),
@@ -431,6 +434,8 @@ QString SMESHGUI_Selection::typeName( const int t )
     return "Mesh compound";
   case GROUP:
     return "Group";
+  case COMPONENT:
+    return "Component";
   default:
     return "Unknown";
   }

@@ -1155,12 +1155,46 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-      SALOME_ListIO selected;
+      SALOME_ListIO sel_objects, to_process;
       if (aSel)
-        aSel->selectedObjects( selected );
+        aSel->selectedObjects( sel_objects );
+
+      SALOME_ListIteratorOfListIO anIt( sel_objects );
+      for( ; anIt.More(); anIt.Next() )
+      {
+	Handle( SALOME_InteractiveObject ) obj = anIt.Value();
+	if( obj->hasEntry() )
+	{
+	  _PTR(SObject) SO = activeStudy()->studyDS()->FindObjectID( obj->getEntry() );
+	  if( SO && QString( SO->GetID().c_str() ) == SO->GetFatherComponent()->GetID().c_str() )
+	  { //component is selected
+	    _PTR(SComponent) SC( SO->GetFatherComponent() );
+	    _PTR(ChildIterator) anIter ( activeStudy()->studyDS()->NewChildIterator( SC ) );
+	    anIter->InitEx( true );
+	    while( anIter->More() )
+	    {
+	      _PTR(SObject) valSO ( anIter->Value() );
+	      _PTR(SObject) refSO;
+	      if( !valSO->ReferencedObject( refSO ) )
+	      {
+		QString id = valSO->GetID().c_str(),
+                        comp = SC->ComponentDataType().c_str(),
+		        val = valSO->GetName().c_str();
+
+		Handle( SALOME_InteractiveObject ) new_obj = 
+		  new SALOME_InteractiveObject( id.latin1(), comp.latin1(), val.latin1() );
+		to_process.Append( new_obj );
+	      }
+	      anIter->Next();	    
+	    }
+	    continue;
+	  }
+	}
+	to_process.Append( obj );
+      }
 
       if (vtkwnd) {
-	SALOME_ListIteratorOfListIO It (selected);
+	SALOME_ListIteratorOfListIO It( to_process );
 	for (; It.More(); It.Next()) {
 	  Handle(SALOME_InteractiveObject) IOS = It.Value();
 	  if (IOS->hasEntry()) {
@@ -1176,7 +1210,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	aSel->setSelectedObjects( l1 );
       }
       else
-	aSel->setSelectedObjects( selected );
+	aSel->setSelectedObjects( to_process );
       break;
     }
 
@@ -2548,7 +2582,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   QString lc = QtxPopupMgr::Selection::defEquality();
   QString aClient = QString( "%1client in {%2}" ).arg( lc ).arg( "'VTKViewer'" );
-  QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() ).arg( mesh_group );
+  QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() );
+  aType = aType.arg( mesh_group );
   QString aMeshInVTK = aClient + "&&" + aType;
 
   //-------------------------------------------------
@@ -2717,15 +2752,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
   QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
   QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
-  QString aRule = aClient + " and " + aType + " and " + aSelCount + " and " + anActiveVTK;
+
+  QString aRule = "type='Component' or (" + aClient + " and " + aType + " and " + aSelCount +
+     " and " + anActiveVTK + " and " + isNotEmpty + " %1 )";
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
-  popupMgr()->setRule( action( 301 ), aRule + "&&" + isNotEmpty + "&&" + isInvisible, true);
+  popupMgr()->setRule( action( 301 ), aRule.arg( "and (not isVisible)" ), true);
 
   popupMgr()->insert( action( 300 ), -1, -1 ); // ERASE
-  popupMgr()->setRule( action( 300 ), aRule + "&&" + isNotEmpty + "&& isVisible", true );
+  popupMgr()->setRule( action( 300 ), aRule.arg( "and isVisible" ), true );
 
   popupMgr()->insert( action( 302 ), -1, -1 ); // DISPLAY_ONLY
-  popupMgr()->setRule( action( 302 ), aRule + "&&" + isNotEmpty, true );
+  popupMgr()->setRule( action( 302 ), aRule.arg( "" ), true );
 
   popupMgr()->insert( separator(), -1, -1 );
 
