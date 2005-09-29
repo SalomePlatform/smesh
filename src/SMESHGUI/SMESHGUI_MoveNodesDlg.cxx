@@ -328,6 +328,7 @@ void SMESHGUI_MoveNodesDlg::onClose()
     aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
+  erasePreview();
   mySMESHGUI->ResetState();
   reject();
 }
