@@ -21,7 +21,8 @@ enum MeshObjectType {
   SUBMESH_FACE,
   SUBMESH_SOLID,
   SUBMESH_COMPOUND,
-  GROUP
+  GROUP,
+  COMPONENT
 };
 
 #endif
