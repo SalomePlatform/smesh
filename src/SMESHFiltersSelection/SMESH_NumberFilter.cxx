@@ -3,7 +3,8 @@
 
 #include "SMESH_NumberFilter.hxx"
 
-#include "GEOMBase.h"
+#include "GEOM_Client.hxx"
+#include "GeometryGUI.h"
 
 #include "SUIT_Application.h"
 #include "SUIT_Session.h"
@@ -81,9 +82,9 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     return false;
 
   // Get shape from geom object and verify its parameters
-  TopoDS_Shape aShape;
-  if (!GEOMBase::GetShape(aGeomObj, aShape) ||
-      aShape.IsNull() ||
+  GEOM_Client aGeomClient;
+  TopoDS_Shape aShape = aGeomClient.GetShape(GeometryGUI::GetGeomGen(), aGeomObj);
+  if (aShape.IsNull() ||
       !myShapeTypes.Contains(aShape.ShapeType()))
     return false;
 
@@ -92,8 +93,8 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 
   // Verify whether shape of entry object is sub-shape of myMainObj
   if (!myMainObj->_is_nil()) {
-    TopoDS_Shape aMainShape;
-    if (!GEOMBase::GetShape(myMainObj, aMainShape))
+    TopoDS_Shape aMainShape = aGeomClient.GetShape(GeometryGUI::GetGeomGen(), myMainObj);
+    if (aMainShape.IsNull())
       return false;
 
     bool isFound = false;
