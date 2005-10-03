@@ -824,6 +824,7 @@ SalomeApp_Module( "SMESH" )
 SMESHGUI::~SMESHGUI()
 {
   SMESH::GetFilterManager()->Destroy();
+  SMESH::GetFilterManager() = SMESH::FilterManager::_nil();
 }
 
 //=============================================================================

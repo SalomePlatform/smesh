@@ -1041,7 +1041,7 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
                              tr("ERROR_OF_DELETING"), QMessageBox::Ok);
   } else {
     myCurrFilterName = "";
-    myCurrFilterName = -1;
+    myCurrFilter = -1;
     myListBox->removeItem(anIndex);
 
     if (anIndex >= 1)

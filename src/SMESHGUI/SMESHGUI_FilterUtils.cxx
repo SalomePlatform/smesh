@@ -22,13 +22,15 @@
 
 #include "SMESHGUI.h"
 
+#include "utilities.h"
+
 namespace SMESH
 {
-  SMESH::FilterManager_var GetFilterManager()
+  SMESH::FilterManager_var& GetFilterManager()
   {
     static SMESH::FilterManager_var aFilterManager;
-    if (CORBA::is_nil(aFilterManager)){
-      aFilterManager = SMESHGUI::GetSMESHGen()->CreateFilterManager();
+    if (CORBA::is_nil(aFilterManager)) {
+        aFilterManager = SMESHGUI::GetSMESHGen()->CreateFilterManager();
     }
     return aFilterManager;
   }

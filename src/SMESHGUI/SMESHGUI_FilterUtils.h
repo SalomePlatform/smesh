@@ -26,7 +26,7 @@
 
 namespace SMESH{
 
-  SMESH::FilterManager_var GetFilterManager();
+  SMESH::FilterManager_var& GetFilterManager();
 
 }
 
