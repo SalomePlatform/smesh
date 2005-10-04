@@ -2754,8 +2754,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
   QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
 
-  QString aRule = "type='Component' or (" + aClient + " and " + aType + " and " + aSelCount +
-     " and " + anActiveVTK + " and " + isNotEmpty + " %1 )";
+  QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " + aType + " and " + aSelCount +
+     " and " + anActiveVTK + " and " + isNotEmpty + " %1 ) )";
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
   popupMgr()->setRule( action( 301 ), aRule.arg( "and (not isVisible)" ), true);
 
