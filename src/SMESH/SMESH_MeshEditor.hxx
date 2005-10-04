@@ -35,7 +35,8 @@
 
 #include <list>
 #include <map>
-#include <TColStd_DataMapOfIntegerListOfInteger.hxx>
+//#include <TColStd_DataMapOfIntegerListOfInteger.hxx>
+#include <SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx>
 
 class SMDS_MeshElement;
 class SMDS_MeshFace;
@@ -305,14 +306,14 @@ class SMESH_MeshEditor {
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
-  const TColStd_DataMapOfIntegerListOfInteger& GetExtrusionHistory() const
+  const SMESH_DataMapOfElemPtrSequenceOfElemPtr& GetExtrusionHistory() const
     { return myExtrusionHistory; }
 
  private:
 
   SMESH_Mesh * myMesh;
 
-  TColStd_DataMapOfIntegerListOfInteger myExtrusionHistory;
+  SMESH_DataMapOfElemPtrSequenceOfElemPtr myExtrusionHistory;
 
 };
 

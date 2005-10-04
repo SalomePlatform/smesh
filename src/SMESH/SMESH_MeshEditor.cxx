@@ -2467,13 +2467,16 @@ void SMESH_MeshEditor::ExtrusionSweep(set<const SMDS_MeshElement*> & theElems,
     sweepElement( aMesh, elem, newNodesItVec, newElemsMap[elem] );
 
     // fill history
-    TColStd_ListOfInteger ListNewID;
+    //TColStd_ListOfInteger ListNewID;
+    SMESH_SequenceOfElemPtr SeqNewME;
     list<const SMDS_MeshElement*> tmpList = newElemsMap[elem];
     for(list<const SMDS_MeshElement*>::iterator ite = tmpList.begin();
         ite!=tmpList.end(); ite++) {
-      ListNewID.Append((*ite)->GetID());
+      //ListNewID.Append((*ite)->GetID());
+      SeqNewME.Append(*ite);
     }
-    myExtrusionHistory.Bind(elem->GetID(),ListNewID);
+    //myExtrusionHistory.Bind(elem->GetID(),ListNewID);
+    myExtrusionHistory.Bind(elem,SeqNewME);
     // end fill history
 
   }

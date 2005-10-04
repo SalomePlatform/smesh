@@ -47,7 +47,9 @@ EXPORT_HEADERS= \
 	SMESH_MeshEditor.hxx \
 	SMESH_Block.hxx \
 	SMESH_Pattern.hxx \
-	SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx
+	SMESH_IndexedDataMapOfShapeIndexedMapOfShape.hxx \
+	SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx \
+	SMESH_SequenceOfElemPtr.hxx
 
 EXPORT_PYSCRIPTS =
 
