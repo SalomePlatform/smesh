@@ -805,8 +805,8 @@ SalomeApp_Module( "SMESH" )
     myComponentSMESH = SMESH::SMESH_Gen::_narrow( comp );
   }
 
-  myActiveDialogBox = 0 ;
-  myState = -1 ;
+  myActiveDialogBox = 0;
+  myState = -1;
   myDisplayer = 0;
 
   SMESH::GetFilterManager();
@@ -1059,6 +1059,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   if( !mgr )
     return false;
 
+  if (CORBA::is_nil(GetSMESHGen()->GetCurrentStudy())) {
+    GetSMESHGen()->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
+  }
+
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
 
@@ -1182,11 +1186,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
                         comp = SC->ComponentDataType().c_str(),
 		        val = valSO->GetName().c_str();
 
-		Handle( SALOME_InteractiveObject ) new_obj = 
+		Handle( SALOME_InteractiveObject ) new_obj =
 		  new SALOME_InteractiveObject( id.latin1(), comp.latin1(), val.latin1() );
 		to_process.Append( new_obj );
 	      }
-	      anIter->Next();	    
+	      anIter->Next();
 	    }
 	    continue;
 	  }
@@ -2754,8 +2758,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
   QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
 
-  QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " + aType + " and " + aSelCount +
-     " and " + anActiveVTK + " and " + isNotEmpty + " %1 ) )";
+  QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " +
+    aType + " and " + aSelCount + " and " + anActiveVTK + " and " + isNotEmpty + " %1 ) )";
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
   popupMgr()->setRule( action( 301 ), aRule.arg( "and (not isVisible)" ), true);
 

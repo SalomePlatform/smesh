@@ -1,22 +1,22 @@
 //  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
 //
 //  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
 //  License as published by the Free Software Foundation; either
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 //  Lesser General Public License for more details.
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
 //  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
 //
 //
@@ -67,7 +67,7 @@ using namespace SMESH::Controls;
 
 namespace SMESH
 {
-  Predicate_i* 
+  Predicate_i*
   GetPredicate( Predicate_ptr thePredicate )
   {
     return DownCast<Predicate_i*>(thePredicate);
@@ -103,7 +103,7 @@ static bool IsContains( const SMESHDS_Mesh*     theMeshDS,
                         TopAbs_ShapeEnum        theAvoidShapeEnum = TopAbs_SHAPE )
 {
   TopExp_Explorer anExp( theShape,theFindShapeEnum,theAvoidShapeEnum );
-  
+
   while( anExp.More() )
   {
     const TopoDS_Shape& aShape = anExp.Current();
@@ -159,7 +159,7 @@ bool Controls::BelongToGeom::IsSatisfy( long theId )
       }
     }
   }
-    
+
   return false;
 }
 
@@ -178,7 +178,7 @@ TopoDS_Shape Controls::BelongToGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh* 
+const SMESHDS_Mesh*
 Controls::BelongToGeom::
 GetMeshDS() const
 {
@@ -249,7 +249,7 @@ bool Controls::LyingOnGeom::IsSatisfy( long theId )
       }
     }
   }
-    
+
   return false;
 }
 
@@ -268,7 +268,7 @@ TopoDS_Shape Controls::LyingOnGeom::GetShape()
   return myShape;
 }
 
-const SMESHDS_Mesh* 
+const SMESHDS_Mesh*
 Controls::LyingOnGeom::
 GetMeshDS() const
 {
@@ -276,39 +276,39 @@ GetMeshDS() const
 }
 
 bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
-				      const TopoDS_Shape&     theShape,
-				      const SMDS_MeshElement* theElem,
-				      TopAbs_ShapeEnum        theFindShapeEnum,
-				      TopAbs_ShapeEnum        theAvoidShapeEnum )
+                                      const TopoDS_Shape&     theShape,
+                                      const SMDS_MeshElement* theElem,
+                                      TopAbs_ShapeEnum        theFindShapeEnum,
+                                      TopAbs_ShapeEnum        theAvoidShapeEnum )
 {
   if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
     return true;
-  
+
   TopTools_IndexedMapOfShape aSubShapes;
   TopExp::MapShapes( theShape, aSubShapes );
-  
+
   for (int i = 1; i <= aSubShapes.Extent(); i++)
-    {
-      const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
-      
-      if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
-	if( aSubMesh->Contains( theElem ) )
-	  return true;
-	
-	SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
-	while ( aNodeIt->more() )
-	  {
-	    const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
-	    SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
-	    while ( anElemIt->more() )
-	      {
-		const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
-		if (anElement == theElem)
-		  return true;
-	      }
-	  }
+  {
+    const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
+
+    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
+      if( aSubMesh->Contains( theElem ) )
+        return true;
+
+      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
+      while ( aNodeIt->more() )
+      {
+        const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
+        SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
+        while ( anElemIt->more() )
+        {
+          const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
+          if (anElement == theElem)
+            return true;
+        }
       }
     }
+  }
   return false;
 }
 
@@ -317,16 +317,16 @@ bool Controls::LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
                             AUXILIARY METHODS
 */
 
-inline 
-const SMDS_Mesh* 
+inline
+const SMDS_Mesh*
 MeshPtr2SMDSMesh( SMESH_Mesh_ptr theMesh )
 {
   SMESH_Mesh_i* anImplPtr = DownCast<SMESH_Mesh_i*>(theMesh);
   return anImplPtr ? anImplPtr->GetImpl().GetMeshDS() : 0;
 }
 
-inline 
-SMESH::long_array* 
+inline
+SMESH::long_array*
 toArray( const TColStd_ListOfInteger& aList )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
@@ -339,8 +339,8 @@ toArray( const TColStd_ListOfInteger& aList )
   return anArray._retn();
 }
 
-inline 
-SMESH::double_array* 
+inline
+SMESH::double_array*
 toArray( const TColStd_ListOfReal& aList )
 {
   SMESH::double_array_var anArray = new SMESH::double_array;
@@ -376,7 +376,7 @@ static TopoDS_Shape getShapeByName( const char* theName )
   {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if ( aStudy != 0 )
+    if (!CORBA::is_nil(aStudy))
     {
       SALOMEDS::Study::ListOfSObject_var aList =
         aStudy->FindObjectByName( theName, "GEOM" );
@@ -385,7 +385,7 @@ static TopoDS_Shape getShapeByName( const char* theName )
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
         if ( !aGeomObj->_is_nil() )
         {
-	  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+          GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
@@ -403,12 +403,12 @@ static TopoDS_Shape getShapeByName( const char* theName )
 
 /*
   Class       : Functor_i
-  Description : An abstact class for all functors 
+  Description : An abstact class for all functors
 */
-Functor_i::Functor_i(): 
+Functor_i::Functor_i():
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId = 
+  PortableServer::ObjectId_var anObjectId =
     SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
@@ -600,7 +600,7 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
   INFOS("Length2D_i::GetValues");
   SMESH::Controls::Length2D::TValues aValues;
   myLength2DPtr->GetValues( aValues );
-  
+
   long i = 0, iEnd = aValues.size();
 
   SMESH::Length2D::Values_var aResult = new SMESH::Length2D::Values(iEnd);
@@ -610,11 +610,10 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
   {
     const SMESH::Controls::Length2D::Value&  aVal = *anIter;
     SMESH::Length2D::Value &aValue = aResult[ i ];
-    
+
     aValue.myLength = aVal.myLength;
     aValue.myPnt1 = aVal.myPntId[ 0 ];
     aValue.myPnt2 = aVal.myPntId[ 1 ];
-   
   }
 
   INFOS("Length2D_i::GetValuess~");
@@ -656,7 +655,7 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
   INFOS("MultiConnection2D_i::GetValues");
   SMESH::Controls::MultiConnection2D::MValues aValues;
   myMulticonnection2DPtr->GetValues( aValues );
-  
+
   long i = 0, iEnd = aValues.size();
 
   SMESH::MultiConnection2D::Values_var aResult = new SMESH::MultiConnection2D::Values(iEnd);
@@ -666,11 +665,10 @@ SMESH::MultiConnection2D::Values* MultiConnection2D_i::GetValues()
   {
     const SMESH::Controls::MultiConnection2D::Value&  aVal = (*anIter).first;
     SMESH::MultiConnection2D::Value &aValue = aResult[ i ];
-    
+
     aValue.myPnt1 = aVal.myPntId[ 0 ];
     aValue.myPnt2 = aVal.myPntId[ 1 ];
     aValue.myNbConnects = (*anIter).second;
-   
   }
 
   INFOS("Multiconnection2D_i::GetValuess~");
@@ -957,7 +955,7 @@ SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
   INFOS("FreeEdges_i::GetBorders");
   SMESH::Controls::FreeEdges::TBorders aBorders;
   myFreeEdgesPtr->GetBoreders( aBorders );
-  
+
   long i = 0, iEnd = aBorders.size();
 
   SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders(iEnd);
@@ -967,7 +965,7 @@ SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
   {
     const SMESH::Controls::FreeEdges::Border&  aBord = *anIter;
     SMESH::FreeEdges::Border &aBorder = aResult[ i ];
-    
+
     aBorder.myElemId = aBord.myElemId;
     aBorder.myPnt1 = aBord.myPntId[ 0 ];
     aBorder.myPnt2 = aBord.myPntId[ 1 ];
@@ -1290,7 +1288,7 @@ FunctorType LogicalOR_i::GetFunctorType()
 FilterManager_i::FilterManager_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId = 
+  PortableServer::ObjectId_var anObjectId =
     SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
@@ -1617,7 +1615,7 @@ SMESH::ElementType Filter_i::GetElementType()
 // name    : Filter_i::SetMesh
 // Purpose : Set mesh
 //=======================================================================
-void 
+void
 Filter_i::
 SetMesh( SMESH_Mesh_ptr theMesh )
 {
@@ -1631,7 +1629,7 @@ SetMesh( SMESH_Mesh_ptr theMesh )
   TPythonDump()<<this<<".SetMesh("<<theMesh<<")";
 }
 
-SMESH::long_array* 
+SMESH::long_array*
 Filter_i::
 GetIDs()
 {
@@ -1645,8 +1643,8 @@ GetIDs()
 void
 Filter_i::
 GetElementsId( Predicate_i* thePredicate,
-	       const SMDS_Mesh* theMesh,
-	       Controls::Filter::TIdSequence& theSequence )
+               const SMDS_Mesh* theMesh,
+               Controls::Filter::TIdSequence& theSequence )
 {
   Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
 }
@@ -1654,14 +1652,14 @@ GetElementsId( Predicate_i* thePredicate,
 void
 Filter_i::
 GetElementsId( Predicate_i* thePredicate,
-	       SMESH_Mesh_ptr theMesh,
-	       Controls::Filter::TIdSequence& theSequence )
+               SMESH_Mesh_ptr theMesh,
+               Controls::Filter::TIdSequence& theSequence )
 {
   if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
     Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
 }
 
-SMESH::long_array* 
+SMESH::long_array*
 Filter_i::
 GetElementsId( SMESH_Mesh_ptr theMesh )
 {
@@ -1847,7 +1845,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
 
   SMESH::FilterManager_i* aFilter = new SMESH::FilterManager_i();
   FilterManager_ptr aFilterMgr = aFilter->_this();
-  
+
   // CREATE two lists ( PREDICATES  and LOG OP )
 
   // Criterion
@@ -1869,20 +1867,20 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
       aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"',"<<
       aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
-    
+
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
 
     switch ( aCriterion )
     {
       // Functors
-      
+
       case SMESH::FT_MultiConnection:
         aFunctor = aFilterMgr->CreateMultiConnection();
         break;
       case SMESH::FT_MultiConnection2D:
-	aFunctor = aFilterMgr->CreateMultiConnection2D();
-	break;
+        aFunctor = aFilterMgr->CreateMultiConnection2D();
+        break;
       case SMESH::FT_Length:
         aFunctor = aFilterMgr->CreateLength();
         break;
@@ -1947,7 +1945,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           tmpPred->SetShapeName( aThresholdStr );
           aPredicate = tmpPred;
         }
-        break; 
+        break;
       case SMESH::FT_RangeOfIds:
         {
           SMESH::RangeOfIds_ptr tmpPred = aFilterMgr->CreateRangeOfIds();
@@ -1961,7 +1959,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
           aPredicate = aFilterMgr->CreateBadOrientedVolume();
         }
         break;
-              
+
       default:
         continue;
     }
@@ -2313,7 +2311,7 @@ static LDOM_Node getSection( const ElementType theType,
   const char* aSectionName = getSectionName( theType );
   if ( strcmp( aSectionName, "" ) == 0 )
     return LDOM_Node();
-  
+
   LDOM_NodeList aSections = theDoc.getElementsByTagName( "section" );
   LDOM_Node aNode;
   for ( int i = 0, n = aSections.getLength(); i < n; i++ )
@@ -2371,7 +2369,7 @@ static LDOM_Element createFilterItem( const char*       theName,
     aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( aCriteria[ i ].Threshold ) );
     aCriterionItem.setAttribute( ATTR_UNARY        , toString( aCriteria[ i ].UnaryOp   ) );
     aCriterionItem.setAttribute( ATTR_BINARY       , toString( aCriteria[ i ].BinaryOp  ) );
-    
+
     aCriterionItem.setAttribute( ATTR_THRESHOLD_STR, (const char*)aCriteria[ i ].ThresholdStr );
     aCriterionItem.setAttribute( ATTR_TOLERANCE    , toString( aCriteria[ i ].Tolerance ) );
     aCriterionItem.setAttribute( ATTR_ELEMENT_TYPE ,
@@ -2447,7 +2445,7 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
     return aRes;
 
   std::list<SMESH::Filter::Criterion> aCriteria;
-    
+
   for ( LDOM_Node aCritNode = aFilter.getFirstChild();
         !aCritNode.isNull() ; aCritNode = aCritNode.getNextSibling() )
   {
@@ -2458,14 +2456,14 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
     const char* aUnaryStr     = aCrit->getAttribute( ATTR_UNARY         ).GetString();
     const char* aBinaryStr    = aCrit->getAttribute( ATTR_BINARY        ).GetString();
     const char* anElemTypeStr = aCrit->getAttribute( ATTR_ELEMENT_TYPE  ).GetString();
-    
+
     SMESH::Filter::Criterion aCriterion = createCriterion();
 
     aCriterion.Type          = toFunctorType( aTypeStr );
     aCriterion.Compare       = toFunctorType( aCompareStr );
     aCriterion.UnaryOp       = toFunctorType( aUnaryStr );
     aCriterion.BinaryOp      = toFunctorType( aBinaryStr );
-    
+
     aCriterion.TypeOfElement = toElementType( anElemTypeStr );
 
     LDOMString str = aCrit->getAttribute( ATTR_THRESHOLD );
@@ -2492,18 +2490,18 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
 
   SMESH::Filter::Criteria_var aCriteriaVar = new SMESH::Filter::Criteria;
   aCriteriaVar->length( aCriteria.size() );
-  
+
   CORBA::ULong i = 0;
   std::list<SMESH::Filter::Criterion>::iterator anIter = aCriteria.begin();
-  
+
   for( ; anIter != aCriteria.end(); ++anIter )
     aCriteriaVar[ i++ ] = *anIter;
 
   aRes = myFilterMgr->CreateFilter();
   aRes->SetCriteria( aCriteriaVar.inout() );
-  
+
   TPythonDump()<<this<<".Copy('"<<theFilterName<<"')";
-  
+
   return aRes;
 }
 
@@ -2575,7 +2573,7 @@ CORBA::Boolean FilterLibrary_i::AddEmpty( const char* theFilterName, ElementType
 
   // create filter item
   Filter_var aFilter = myFilterMgr->CreateFilter();
-  
+
   LDOM_Element aFilterItem = createFilterItem( theFilterName, aFilter, myDoc );
   if ( aFilterItem.isNull() )
     return false;
@@ -2604,12 +2602,12 @@ CORBA::Boolean FilterLibrary_i::Delete ( const char* theFilterName )
 }
 
 //=======================================================================
-// name      : FilterLibrary_i::Replace 
+// name      : FilterLibrary_i::Replace
 // Purpose   : Replace existing filter with entry filter.
 // IMPORTANT : If filter does not exist it is not created
 //=======================================================================
 CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
-                                         const char* theNewName,                 
+                                         const char* theNewName,
                                          Filter_ptr  theFilter )
 {
   LDOM_Element aFilterItem = findFilter( theFilterName, myDoc );
@@ -2619,7 +2617,7 @@ CORBA::Boolean FilterLibrary_i::Replace( const char* theFilterName,
   LDOM_Element aNewItem = createFilterItem( theNewName, theFilter, myDoc );
   if ( aNewItem.isNull() )
     return false;
-  else                                                                                          
+  else
   {
     aFilterItem.ReplaceElement( aNewItem );
     if(Filter_i* aFilter = DownCast<Filter_i*>(theFilter))
@@ -2636,7 +2634,7 @@ CORBA::Boolean FilterLibrary_i::Save()
 {
   if ( myFileName == 0 || strlen( myFileName ) == 0 )
     return false;
-          
+
   FILE* aOutFile = fopen( myFileName, "wt" );
   if ( !aOutFile )
     return false;
