@@ -95,7 +95,7 @@ bool SMESHGUI_FilterLibraryDlg::Dialog::acceptData()
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
-						      QWidget* parent,
+                                                      QWidget* parent,
                                                       const QValueList<int>& theTypes,
                                                       const int              theMode,
                                                       const char*            theName)
@@ -111,7 +111,7 @@ SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_FilterLibraryDlg::SMESHGUI_FilterLibraryDlg (SMESHGUI* theModule,
-						      QWidget* parent,
+                                                      QWidget* parent,
                                                       const int   theType,
                                                       const int   theMode,
                                                       const char* theName)
@@ -848,7 +848,6 @@ void SMESHGUI_FilterLibraryDlg::enableMainButtons()
 SMESH::Filter_ptr SMESHGUI_FilterLibraryDlg::createFilter(const int theType)
 {
   int n = myTable->NumRows(theType);
-  n = 0;
 
   SMESH::Filter::Criteria_var aCriteria = new SMESH::Filter::Criteria;
   aCriteria->length(n);
