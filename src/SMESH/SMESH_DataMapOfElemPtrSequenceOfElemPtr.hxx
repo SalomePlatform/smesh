@@ -1,7 +1,7 @@
 // File:      SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx
 // Created:   26.09.05 17:41:10
 // Author:    Sergey KUUL
-// Copyright: Airbus Industries 2004
+// Copyright: Open CASCADE 2005
 
 
 #ifndef SMESH_DataMapOfElemPtrSequenceOfElemPtr_HeaderFile
@@ -14,7 +14,7 @@
 inline Standard_Integer HashCode(SMDS_MeshElementPtr theElem,
                                  const Standard_Integer theUpper)
 {
-  SMDS_MeshElement * anElem = (SMDS_MeshElement *) theElem;
+  void* anElem = (void*) theElem;
   return HashCode(anElem,theUpper);
 }
 
