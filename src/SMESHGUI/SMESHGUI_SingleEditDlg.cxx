@@ -350,10 +350,10 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       // find a triangle and an edge nb
       const SMDS_MeshElement* tria[2];
       allOk &= a2Nodes[0] != a2Nodes[1] && findTriangles(a2Nodes[0],a2Nodes[1],tria[0],tria[1]);
-      if(allOk){
-	myBusy = true; // block onSelectionDone()
+      myBusy = true; // block onSelectionDone()
+      if(allOk)
+      {
 	newIndices.Add(tria[0]->GetID());
-	mySelector->AddOrRemoveIndex(anIO,newIndices, true);
 
 	const SMDS_MeshNode* a3Nodes [3];
 	SMDS_ElemIteratorPtr it;
@@ -369,16 +369,15 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 	    }
 	  }
 	}
-
-	newIndices.Clear();
 	newIndices.Add(-edgeInd-1);
-	mySelector->AddOrRemoveIndex(anIO,newIndices,true);
-	myBusy = false;
 	
 	myOkBtn->setEnabled(true);
 	myApplyBtn->setEnabled(true);
       }
+      mySelector->AddOrRemoveIndex(anIO,newIndices, false);
       SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
+
+      myBusy = false;
     }
   }
 }
