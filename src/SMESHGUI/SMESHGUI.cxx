@@ -95,8 +95,7 @@
 #include <SVTK_ViewModel.h>
 #include <SVTK_InteractorStyle.h>
 #include <SVTK_RenderWindowInteractor.h>
-
-#include <VTKViewer_ViewManager.h>
+#include <SVTK_ViewManager.h>
 
 #include "OB_Browser.h"
 
@@ -2755,7 +2754,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Display / Erase
   //-------------------------------------------------
   aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
-  QString anActiveVTK = QString("activeView = '%1'").arg(VTKViewer_Viewer::Type());
+  QString anActiveVTK = QString("activeView = '%1'").arg(SVTK_Viewer::Type());
   QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
 
   QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " +
@@ -2842,7 +2841,7 @@ void SMESHGUI::viewManagers( QStringList& list ) const
 
 void SMESHGUI::onViewManagerAdded( SUIT_ViewManager* mgr )
 {
-  if ( dynamic_cast<VTKViewer_ViewManager*>( mgr ) )
+  if ( dynamic_cast<SVTK_ViewManager*>( mgr ) )
     SMESH::UpdateSelectionProp( this );
 }
 

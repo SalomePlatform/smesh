@@ -378,6 +378,7 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 	myOkBtn->setEnabled(true);
 	myApplyBtn->setEnabled(true);
       }
+      SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
     }
   }
 }
@@ -407,19 +408,22 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
   myActor = SMESH::FindActorByEntry(anIO->getEntry());
   if(myActor){
     TVisualObjPtr aVisualObj = myActor->GetObject();
-    if(SMDS_Mesh* aMesh = aVisualObj->GetMesh()){
-      if(SMESH::GetEdgeNodes(mySelector, aVisualObj, anId1, anId2) >= 1){
+    if(SMDS_Mesh* aMesh = aVisualObj->GetMesh())
+    {
+      const SMDS_MeshElement* tria[2];
+      if( SMESH::GetEdgeNodes( mySelector, aVisualObj, anId1, anId2 ) >= 1 &&
+	  findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
+      {
 	QString aText = QString("%1-%2").arg(anId1).arg(anId2);
 	myBusy = true;
 	myEdge->setText(aText);
 	myBusy = false;
 	
-	const SMDS_MeshElement* tria[2];
-	if (findTriangles(aMesh->FindNode(anId1), aMesh->FindNode(anId2), tria[0],tria[1])) {
-	  myOkBtn->setEnabled(true);
-	  myApplyBtn->setEnabled(true);
-	}
-      } else {
+	myOkBtn->setEnabled(true);
+	myApplyBtn->setEnabled(true);
+      }
+      else
+      {
 	myEdge->clear();
       }
     }

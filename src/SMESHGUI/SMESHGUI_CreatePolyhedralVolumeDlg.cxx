@@ -39,8 +39,6 @@
 #include "SMESH_TypeFilter.hxx"
 #include "SMDS_Mesh.hxx"
 
-#include "VTKViewer_ViewWindow.h"
-
 #include "SUIT_ResourceMgr.h"
 
 #include "SalomeApp_Application.h"
