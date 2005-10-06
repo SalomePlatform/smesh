@@ -37,11 +37,11 @@
 #include "SMDS_MeshNode.hxx"
 
 #include "SMESH_MEDSupport_i.hxx"
-
+#include "SALOME_GenericObj_i.hh"
 class SMESH_subMesh_i;
 
 class SMESH_MEDSupport_i:
-	public POA_SALOME_MED::SUPPORT, public PortableServer::RefCountServantBase
+	public virtual POA_SALOME_MED::SUPPORT, public virtual SALOME::GenericObj_i
 {
   public:
 

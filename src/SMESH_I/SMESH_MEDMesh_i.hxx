@@ -37,6 +37,7 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SALOME_GenericObj_i.hh"
 
 #define MED_NBR_GEOMETRIE_MAILLE 15
 #define MED_NBR_TYPE 5
@@ -44,7 +45,7 @@
 class SMESH_Mesh_i;
 
 class SMESH_MEDMesh_i:
-	public POA_SALOME_MED::MESH, public PortableServer::RefCountServantBase
+	public virtual POA_SALOME_MED::MESH, public virtual SALOME::GenericObj_i
 {
   public: private: protected:
 	// C++ object containing values
