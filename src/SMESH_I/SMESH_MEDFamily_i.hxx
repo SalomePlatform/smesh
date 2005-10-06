@@ -32,8 +32,8 @@
 #include<string>
 
 class SMESH_MEDFamily_i:
-  public POA_SALOME_MED::FAMILY,
-  public SMESH_MEDSupport_i
+  public virtual POA_SALOME_MED::FAMILY,
+  public virtual SMESH_MEDSupport_i
 {
 protected :
   SMESH_MEDFamily_i();
