@@ -3010,6 +3010,11 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
+  if( sect=="SMESH" )
+    if( name=="selection_object_color" || name=="selection_element_color" || 
+        name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
+        name=="selection_precision_node" || name=="selection_precision_element" )
+      SMESH::UpdateSelectionProp( this );
 }
 
 //================================================================================
