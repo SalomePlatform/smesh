@@ -507,6 +507,7 @@ bool SMESHGUI_SingleEditDlg::onApply()
 
   // update actor
   if (aResult) {
+    mySelector->ClearIndex();
     mySelectionMgr->setSelectedObjects(aList, false);
     SMESH::UpdateView();
   }
