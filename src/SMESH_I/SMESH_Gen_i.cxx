@@ -1739,7 +1739,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      char* hypname_str = new char[ size ];
 	      aDataset->ReadFromDisk( hypname_str );
 	      hypname = string( hypname_str );
-	      delete hypname_str;
+	      delete [] hypname_str;
 	      aDataset->CloseOnDisk();
 	    }
 	    // --> get hypothesis plugin library name
@@ -1751,7 +1751,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      aDataset->ReadFromDisk( libname_str );
 	      if(MYDEBUG) SCRUTE( libname_str );
 	      libname = string( libname_str );
-	      delete libname_str;
+	      delete [] libname_str;
 	      aDataset->CloseOnDisk();
 	    }
 	    // --> get hypothesis data
@@ -1762,7 +1762,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      char* hypdata_str = new char[ size ];
 	      aDataset->ReadFromDisk( hypdata_str );
 	      hypdata = string( hypdata_str );
-	      delete hypdata_str;
+	      delete [] hypdata_str;
 	      aDataset->CloseOnDisk();
 	    }
 	  }
@@ -1836,7 +1836,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      char* hypname_str = new char[ size ];
 	      aDataset->ReadFromDisk( hypname_str );
 	      hypname = string( hypname_str );
-	      delete hypname_str;
+	      delete [] hypname_str;
 	      aDataset->CloseOnDisk();
 	    }
 	    // --> get algorithm plugin library name
@@ -1848,7 +1848,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      aDataset->ReadFromDisk( libname_str );
 	      if(MYDEBUG) SCRUTE( libname_str );
 	      libname = string( libname_str );
-	      delete libname_str;
+	      delete [] libname_str;
 	      aDataset->CloseOnDisk();
 	    }
 	    // --> get algorithm data
@@ -1860,7 +1860,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      aDataset->ReadFromDisk( hypdata_str );
 	      if(MYDEBUG) SCRUTE( hypdata_str );
 	      hypdata = string( hypdata_str );
-	      delete hypdata_str;
+	      delete [] hypdata_str;
 	      aDataset->CloseOnDisk();
 	    }
 	  }
@@ -2272,7 +2272,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 }
                 else // NODE IDS
                 {
-		  int aSize = aDataset->GetSize()/sizeof(int);
+		  //PAL10195:int aSize = aDataset->GetSize()/sizeof(int);
+		  int aSize = aDataset->GetSize();       //PAL10195
+                  if (aDataset->GetType() == HDF_STRING) //PAL10195
+                    aSize /= sizeof(int);                //PAL10195
 		  int* ids = new int [aSize];
                   aDataset->ReadFromDisk( ids );
                   // on face or nodes?
