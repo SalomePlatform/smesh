@@ -61,6 +61,8 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
 {
  public:
 
+  enum VolumeType { UNKNOWN = -1, TETRA = 0, PYRAM, PENTA, HEXA, POLYHEDA };
+
   SMDS_VolumeTool ();
   ~SMDS_VolumeTool ();
   SMDS_VolumeTool (const SMDS_MeshElement* theVolume);
@@ -72,6 +74,8 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
   // -----------------------
   // general info
   // -----------------------
+
+  VolumeType GetVolumeType() const;
 
   bool IsForward() const { return myVolForward; }
   // Check volume orientation. can be changed by Inverse().
@@ -169,8 +173,6 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
   // ------------------------
   // static methods for faces
   // ------------------------
-
-  enum VolumeType { UNKNOWN, TETRA, PYRAM, PENTA, HEXA };
 
   static VolumeType GetType(int nbNodes);
   // return VolumeType by nb of nodes in a volume
