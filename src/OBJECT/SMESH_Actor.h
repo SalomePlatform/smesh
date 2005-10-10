@@ -95,7 +95,7 @@ class SMESH_Actor: public SALOME_Actor
 
   enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eMultiConnection, 
 		eArea, eTaper, eAspectRatio, eMinimumAngle, eWarping, eSkew,
-		eAspectRatio3D, eMultiConnection2D};
+		eAspectRatio3D, eMultiConnection2D, eVolume3D};
   virtual void SetControlMode(eControl theMode) = 0;
   virtual eControl GetControlMode() = 0;
 

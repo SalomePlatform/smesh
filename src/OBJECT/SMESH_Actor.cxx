@@ -588,6 +588,14 @@ SetControlMode(eControl theMode,
       myControlActor = my3DActor;
       break;
     }
+    case eVolume3D:
+    {
+      SMESH::Controls::Volume* aControl = new SMESH::Controls::Volume();
+      aControl->SetPrecision( myControlsPrecision );
+      aFunctor.reset( aControl );
+      myControlActor = my3DActor;
+      break;
+    }
     case eMinimumAngle:
     {
       SMESH::Controls::MinimumAngle* aControl = new SMESH::Controls::MinimumAngle();
