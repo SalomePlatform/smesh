@@ -1006,6 +1006,9 @@ msgstr "Skew"
 msgid "SMESHGUI_FilterTable::AREA"
 msgstr "Area"
 
+msgid "SMESHGUI_FilterTable::VOLUME_3D"
+msgstr "Volume"
+
 msgid "SMESHGUI_FilterTable::BAD_ORIENTED_VOLUME"
 msgstr "Bad oriented volume"
 
@@ -1135,6 +1138,9 @@ msgid "MULTI2D_BORDERS"
 msgstr "Borders at Multi-Connections 2D"
 
 msgid "AREA_ELEMENTS"
+msgstr "Area"
+
+msgid "VOLUME_3D_ELEMENTS"
 msgstr "Area"
 
 msgid "TAPER_ELEMENTS"
@@ -1921,6 +1927,9 @@ msgstr "Borders at Multi-Connection"
 msgid "MEN_AREA"
 msgstr "Area"
 
+msgid "MEN_VOLUME_3D"
+msgstr "Volume"
+
 msgid "MEN_TAPER"
 msgstr "Taper"
 
@@ -2247,6 +2256,9 @@ msgstr "Borders at Multi-Connection"
 msgid "TOP_AREA"
 msgstr "Area"
 
+msgid "TOP_VOLUME_3D"
+msgstr "Volume"
+
 msgid "TOP_TAPER"
 msgstr "Taper"
 
@@ -2523,6 +2535,9 @@ msgstr "Borders at Multi-Connection"
 
 msgid "STB_AREA"
 msgstr "Area"
+
+msgid "STB_VOLUME_3D"
+msgstr "Volume"
 
 msgid "STB_TAPER"
 msgstr "Taper"
