@@ -240,6 +240,19 @@ namespace SMESH
   
   
   /*
+    Class       : Volume3D_i
+    Description : Functor for calculating volume of 3D element
+  */
+  class Volume3D_i: public virtual POA_SMESH::Volume3D,
+                    public virtual NumericalFunctor_i
+  {
+  public:
+    Volume3D_i();
+    FunctorType                     GetFunctorType();
+  };
+  
+  
+  /*
     Class       : Length_i
     Description : Functor for calculating length of edge
   */
@@ -739,6 +752,7 @@ namespace SMESH
     Taper_ptr                 CreateTaper();
     Skew_ptr                  CreateSkew();
     Area_ptr                  CreateArea();
+    Volume3D_ptr              CreateVolume3D();
     Length_ptr                CreateLength();
     Length2D_ptr              CreateLength2D();
     MultiConnection_ptr       CreateMultiConnection();

@@ -566,6 +566,21 @@ FunctorType Area_i::GetFunctorType()
 }
 
 /*
+  Class       : Volume3D_i
+  Description : Functor for calculating volume of 3D element
+*/
+Volume3D_i::Volume3D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Volume() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Volume3D_i::GetFunctorType()
+{
+  return SMESH::FT_Volume3D;
+}
+
+/*
   Class       : Length_i
   Description : Functor for calculating length off edge
 */
@@ -1362,6 +1377,15 @@ Area_ptr FilterManager_i::CreateArea()
 }
 
 
+Volume3D_ptr FilterManager_i::CreateVolume3D()
+{
+  SMESH::Volume3D_i* aServant = new SMESH::Volume3D_i();
+  SMESH::Volume3D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateVolume3D()";
+  return anObj._retn();
+}
+
+
 Length_ptr FilterManager_i::CreateLength()
 {
   SMESH::Length_i* aServant = new SMESH::Length_i();
@@ -1908,6 +1932,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Area:
         aFunctor = aFilterMgr->CreateArea();
         break;
+      case SMESH::FT_Volume3D:
+        aFunctor = aFilterMgr->CreateVolume3D();
+        break;
 
       // Predicates
 
@@ -2159,6 +2186,7 @@ static inline LDOMString toString( const long theType )
     case FT_Taper           : return "Taper";
     case FT_Skew            : return "Skew";
     case FT_Area            : return "Area";
+    case FT_Volume3D        : return "Volume3D";
     case FT_BelongToGeom    : return "Belong to Geom";
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
@@ -2194,6 +2222,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Taper"                        ) ) return FT_Taper;
   else if ( theStr.equals( "Skew"                         ) ) return FT_Skew;
   else if ( theStr.equals( "Area"                         ) ) return FT_Area;
+  else if ( theStr.equals( "Volume3D"                     ) ) return FT_Volume3D;
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
