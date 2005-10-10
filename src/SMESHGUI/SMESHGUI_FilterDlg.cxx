@@ -1314,6 +1314,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGeom ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_LyingOnGeom ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_BadOrientedVolume ] = tr("BAD_ORIENTED_VOLUME");
+      aCriteria[ SMESH::FT_Volume3D ] = tr("VOLUME_3D");
     }
     return aCriteria;
   }

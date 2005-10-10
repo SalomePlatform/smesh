@@ -582,6 +582,10 @@ namespace{
 	    aTitle = QObject::tr( "SKEW_ELEMENTS" );
 	    aControl = SMESH_Actor::eSkew;
 	    break;
+	  case 6009:
+	    aTitle = QObject::tr( "VOLUME_3D_ELEMENTS" );
+	    aControl = SMESH_Actor::eVolume3D;
+	    break;
 	  }
 	  anActor->SetControlMode(aControl);
 	  anActor->GetScalarBarActor()->SetTitle(aTitle.latin1());
@@ -2061,6 +2065,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 6002:
   case 6003:
   case 6004:
+  case 6009:
     if ( vtkwnd ) {
 
       SalomeApp_SelectionMgr* mgr = selectionMgr();
@@ -2282,6 +2287,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 6017, "ASPECT_3D",       "ICON_ASPECT_3D",     0, true );
   createSMESHAction( 6018, "LENGTH_2D",       "ICON_LENGTH_2D",     0, true );
   createSMESHAction( 6019, "CONNECTION_2D",   "ICON_CONNECTION_2D", 0, true );
+  createSMESHAction( 6009, "VOLUME_3D",       "ICON_VOLUME_3D",     0, true );
   createSMESHAction(  400, "NODE",            "ICON_DLG_NODE" );
   createSMESHAction(  401, "EDGE",            "ICON_DLG_EDGE" );
   createSMESHAction( 4021, "TRIANGLE",        "ICON_DLG_TRIANGLE" );
@@ -2405,6 +2411,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 6016, ctrlId, -1 );
   createMenu( separator(), ctrlId, -1 );
   createMenu( 6017, ctrlId, -1 );
+  createMenu( 6009, ctrlId, -1 );
   createMenu( separator(), ctrlId, -1 );
 
   createMenu( 400, addId, -1 );
@@ -2479,6 +2486,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 6016, ctrlTb );
   createTool( separator(), ctrlTb );
   createTool( 6017, ctrlTb );
+  createTool( 6009, ctrlTb );
   createTool( separator(), ctrlTb );
 
   createTool( 400, addRemTb );
@@ -2742,6 +2750,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( 6017 ), anId, -1 ); // ASPECT_3D
   popupMgr()->setRule( action( 6017 ), aMeshInVtkHasVolumes, true );
   popupMgr()->setRule( action( 6017 ), "controlMode = 'eAspectRatio3D'", false );
+
+  popupMgr()->insert ( action( 6009 ), anId, -1 ); // VOLUME_3D
+  popupMgr()->setRule( action( 6009 ), aMeshInVtkHasVolumes, true );
+  popupMgr()->setRule( action( 6009 ), "controlMode = 'eVolume3D'", false );
 
   popupMgr()->insert( separator(), anId, -1 );
 

@@ -218,6 +218,7 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eMultiConnection:   return "eMultiConnection";
     case SMESH_Actor::eMultiConnection2D: return "eMultiConnection2D";
     case SMESH_Actor::eArea:              return "eArea";
+    case SMESH_Actor::eVolume3D:          return "eVolume3D";
     case SMESH_Actor::eTaper:             return "eTaper";
     case SMESH_Actor::eAspectRatio:       return "eAspectRatio";
     case SMESH_Actor::eAspectRatio3D:     return "eAspectRatio3D";
