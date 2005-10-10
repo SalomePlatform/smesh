@@ -51,6 +51,7 @@ module SMESH
     FT_Taper,       
     FT_Skew,         
     FT_Area,          
+    FT_Volume3D,          
     FT_FreeBorders,
     FT_FreeEdges,
     FT_MultiConnection,
@@ -105,6 +106,7 @@ module SMESH
   interface Taper           : NumericalFunctor{};
   interface Skew            : NumericalFunctor{};
   interface Area            : NumericalFunctor{};
+  interface Volume3D        : NumericalFunctor{};
   interface Length          : NumericalFunctor{};
   interface Length2D        : NumericalFunctor
   {
@@ -374,6 +376,7 @@ module SMESH
     Taper             CreateTaper();
     Skew              CreateSkew();
     Area              CreateArea();
+    Volume3D          CreateVolume3D();
     Length            CreateLength();
     Length2D          CreateLength2D();
     MultiConnection   CreateMultiConnection();
