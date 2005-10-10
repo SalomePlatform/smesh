@@ -93,6 +93,10 @@ namespace SMESH{
       const_reference operator[](size_type n) const;
     };
 
+    /*
+      Class       : Functor
+      Description : Root of all Functors
+    */
     class Functor
     {
     public:
@@ -101,6 +105,10 @@ namespace SMESH{
       virtual SMDSAbs_ElementType GetType() const = 0;
     };
 
+    /*
+      Class       : NumericalFunctor
+      Description : Root of all Functors returning numeric value
+    */
     class NumericalFunctor: public virtual Functor{
     public:
       NumericalFunctor();
@@ -119,6 +127,19 @@ namespace SMESH{
     protected:
       const SMDS_Mesh* myMesh;
       long       myPrecision;
+    };
+  
+  
+    /*
+      Class       : Volume
+      Description : Functor calculating volume of 3D mesh element
+    */
+    class Volume: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theElementId );
+      //virtual double GetValue( const TSequenceOfXYZ& thePoints );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
     };
   
   

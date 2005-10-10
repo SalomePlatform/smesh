@@ -204,6 +204,42 @@ double NumericalFunctor::GetValue( long theId )
   return 0.;
 }
 
+//=======================================================================
+//function : GetValue
+//purpose  : 
+//=======================================================================
+
+double Volume::GetValue( long theElementId )
+{
+  if ( theElementId && myMesh ) {
+    SMDS_VolumeTool aVolumeTool;
+    if ( aVolumeTool.Set( myMesh->FindElement( theElementId )))
+      return aVolumeTool.GetSize();
+  }
+  return 0;
+}
+
+//=======================================================================
+//function : GetBadRate
+//purpose  : meaningless as it is not quality control functor
+//=======================================================================
+
+double Volume::GetBadRate( double Value, int /*nbNodes*/ ) const
+{
+  return Value;
+}
+
+//=======================================================================
+//function : GetType
+//purpose  : 
+//=======================================================================
+
+SMDSAbs_ElementType Volume::GetType() const
+{
+  return SMDSAbs_Volume;
+}
+
+
 /*
   Class       : MinimumAngle
   Description : Functor for calculation of minimum angle
@@ -792,6 +828,7 @@ double Area::GetValue( const TSequenceOfXYZ& P )
 
 double Area::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
+  // meaningless as it is not quality control functor
   return Value;
 }
 
@@ -812,6 +849,7 @@ double Length::GetValue( const TSequenceOfXYZ& P )
 
 double Length::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
+  // meaningless as it is not quality control functor
   return Value;
 }
 
@@ -943,6 +981,7 @@ double Length2D::GetValue( long theElementId)
 
 double Length2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
+  // meaningless as it is not quality control functor
   return Value;
 }
 
@@ -1022,6 +1061,7 @@ double MultiConnection::GetValue( long theId )
 
 double MultiConnection::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
+  // meaningless as it is not quality control functor
   return Value;
 }
 
@@ -1099,6 +1139,7 @@ double MultiConnection2D::GetValue( long theElementId )
 
 double MultiConnection2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
+  // meaningless as it is not quality control functor
   return Value;
 }
 
