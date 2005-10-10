@@ -373,13 +373,137 @@ void SMDS_VolumeTool::Inverse ()
 }
 
 //=======================================================================
+//function : GetVolumeType
+//purpose  : 
+//=======================================================================
+
+SMDS_VolumeTool::VolumeType SMDS_VolumeTool::GetVolumeType() const
+{
+  if ( myPolyedre )
+    return POLYHEDA;
+
+  if ( myVolume ) {
+    static const VolumeType types[] = {
+      TETRA,     // myVolumeNbNodes = 4
+      PYRAM,     // myVolumeNbNodes = 5
+      PENTA,     // myVolumeNbNodes = 6
+      UNKNOWN,   // myVolumeNbNodes = 7
+      HEXA       // myVolumeNbNodes = 8
+    };
+    return types[ myVolumeNbNodes - 4 ];
+  }
+
+  return UNKNOWN;
+}
+
+//=======================================================================
+//function : getTetraVolume
+//purpose  : 
+//=======================================================================
+
+static double getTetraVolume(const SMDS_MeshNode* n1,
+                             const SMDS_MeshNode* n2,
+                             const SMDS_MeshNode* n3,
+                             const SMDS_MeshNode* n4)
+{
+  double X1 = n1->X();
+  double Y1 = n1->Y();
+  double Z1 = n1->Z();
+
+  double X2 = n2->X();
+  double Y2 = n2->Y();
+  double Z2 = n2->Z();
+
+  double X3 = n3->X();
+  double Y3 = n3->Y();
+  double Z3 = n3->Z();
+
+  double X4 = n4->X();
+  double Y4 = n4->Y();
+  double Z4 = n4->Z();
+
+  double Q1 = -(X1-X2)*(Y3*Z4-Y4*Z3);
+  double Q2 =  (X1-X3)*(Y2*Z4-Y4*Z2);
+  double R1 = -(X1-X4)*(Y2*Z3-Y3*Z2);
+  double R2 = -(X2-X3)*(Y1*Z4-Y4*Z1);
+  double S1 =  (X2-X4)*(Y1*Z3-Y3*Z1);
+  double S2 = -(X3-X4)*(Y1*Z2-Y2*Z1);
+
+  return (Q1+Q2+R1+R2+S1+S2)/6.0;
+}
+
+//=======================================================================
 //function : GetSize
 //purpose  : Return element volume
 //=======================================================================
 
 double SMDS_VolumeTool::GetSize() const
 {
-  return 0;
+  double V = 0.;
+  if ( !myVolume )
+    return 0.;
+
+  if ( myVolume->IsPoly() )
+  {
+    if ( !myPolyedre )
+      return 0.;
+
+    // split a polyhedron into tetrahedrons
+
+    SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
+    XYZ baryCenter;
+    me->GetBaryCenter(baryCenter.x, baryCenter.y, baryCenter.z);
+    SMDS_MeshNode bcNode ( baryCenter.x, baryCenter.y, baryCenter.z );
+
+    for ( int f = 0; f < NbFaces(); ++f )
+    {
+      bool externalFace = me->IsFaceExternal( f ); // it calls setFace()
+      for ( int n = 2; n < myFaceNbNodes; ++n )
+      {
+        double Vn = getTetraVolume( myFaceNodes[ 0 ],
+                                    myFaceNodes[ n-1 ],
+                                    myFaceNodes[ n ],
+                                    & bcNode );
+///         cout <<"++++   " << Vn << "   nodes " <<myFaceNodes[ 0 ]->GetID() << " " <<myFaceNodes[ n-1 ]->GetID() << " " <<myFaceNodes[ n ]->GetID() << "        < " << V << endl;
+        V += externalFace ? -Vn : Vn;
+      }
+    }
+  }
+  else 
+  {
+    const static int ind[] = {
+      0, 1, 3, 6, 11 };
+    const static int vtab[][4] = {
+      // tetrahedron
+      { 0, 1, 2, 3 },
+      // pyramid
+      { 0, 1, 3, 4 },
+      { 1, 2, 3, 4 },
+      // pentahedron
+      { 0, 1, 2, 3 },
+      { 1, 5, 3, 4 },
+      { 1, 5, 2, 3 },
+      // hexahedron
+      { 1, 4, 3, 0 },
+      { 4, 1, 6, 5 },
+      { 1, 3, 6, 2 },
+      { 4, 6, 3, 7 },
+      { 1, 4, 6, 3 }
+    };
+
+    int type = GetVolumeType();
+    int n1 = ind[type];
+    int n2 = ind[type+1];
+
+    for (int i = n1; i <  n2; i++)
+    {
+      V -= getTetraVolume( myVolumeNodes[ vtab[i][0] ],
+                           myVolumeNodes[ vtab[i][1] ],
+                           myVolumeNodes[ vtab[i][2] ],
+                           myVolumeNodes[ vtab[i][3] ]);
+    }
+  }
+  return V;
 }
 
 //=======================================================================
@@ -900,16 +1024,8 @@ bool SMDS_VolumeTool::setFace( int faceIndex )
 
     // check orientation
     bool isGoodOri = true;
-    if (myExternalFaces) {
-      // get natural orientation
-      XYZ aNormal, baryCenter, p0 (myPolyedre->GetFaceNode(faceIndex + 1, 1));
-      SMDS_VolumeTool vTool (myPolyedre);
-      vTool.GetFaceNormal(faceIndex, aNormal.x, aNormal.y, aNormal.z);
-      vTool.GetBaryCenter(baryCenter.x, baryCenter.y, baryCenter.z);
-      XYZ insideVec (baryCenter - p0);
-      if (insideVec.Dot(aNormal) > 0)
-        isGoodOri = false;
-    }
+    if (myExternalFaces)
+      isGoodOri = IsFaceExternal( faceIndex );
 
     // set face nodes
     int iNode;
