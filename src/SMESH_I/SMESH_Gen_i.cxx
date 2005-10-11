@@ -1544,15 +1544,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   // Write datasets
                   if ( nbNodes )
                   {
-                    aSize[ 0 ] = nbNodes*sizeof(int);
+                    aSize[ 0 ] = nbNodes;
                     // IDS
                     string aDSName( onFace ? "Nodes on Faces" : "Nodes on Edges");
-                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_STRING, aSize, 1 );
+                    aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_INT32, aSize, 1 );
                     aDataset->CreateOnDisk();
                     aDataset->WriteOnDisk( aNodeIDs );
                     aDataset->CloseOnDisk();
 
-		    aSize[ 0 ] = nbNodes;
                     // U Positions
                     aDSName = ( onFace ? "Face U positions" : "Edge positions");
                     aDataset = new HDFdataset( (char*)aDSName.c_str(), aGroup, HDF_FLOAT64, aSize, 1);
@@ -2219,7 +2218,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
 	  if(hasData) {
 	    // Read sub-meshes from MED
-	    if(MYDEBUG) MESSAGE("JFA - Create all sub-meshes");
+	    if(MYDEBUG) MESSAGE("Create all sub-meshes");
 	    myReader.CreateAllSubMeshes();
 
 
@@ -2272,10 +2271,12 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 }
                 else // NODE IDS
                 {
-		  //PAL10195:int aSize = aDataset->GetSize()/sizeof(int);
-		  int aSize = aDataset->GetSize();       //PAL10195
-                  if (aDataset->GetType() == HDF_STRING) //PAL10195
-                    aSize /= sizeof(int);                //PAL10195
+		  int aSize = aDataset->GetSize();
+
+                  // for reading files, created from 18.07.2005 till 10.10.2005
+                  if (aDataset->GetType() == HDF_STRING)
+                    aSize /= sizeof(int);
+
 		  int* ids = new int [aSize];
                   aDataset->ReadFromDisk( ids );
                   // on face or nodes?
@@ -2333,11 +2334,11 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
           // Recompute State (as computed sub-meshes are restored from MED)
 	  if ( !aShapeObject->_is_nil() ) {
-	    MESSAGE("JFA - Compute State Engine ...");
+	    MESSAGE("Compute State Engine ...");
 	    TopoDS_Shape myLocShape = GeomObjectToShape( aShapeObject );
 	    myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
               (SMESH_subMesh::SUBMESH_RESTORED);
-	    MESSAGE("JFA - Compute State Engine finished");
+	    MESSAGE("Compute State Engine finished");
 	  }
 
 	  // try to get groups
