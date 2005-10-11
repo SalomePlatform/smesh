@@ -210,16 +210,17 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   }
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
-  list<string> aGroupNames = myReader.GetGroupNames();
+  list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
   if(MYDEBUG) MESSAGE("MEDToMesh - Nb groups = "<<aGroupNames.size()); 
   int anId;
-  for ( list<string>::iterator it = aGroupNames.begin(); it != aGroupNames.end(); it++ ) {
-    SMESH_Group* aGroup = AddGroup( SMDSAbs_All, it->c_str(), anId );
+  list<TNameAndType>::iterator name_type = aGroupNames.begin();
+  for ( ; name_type != aGroupNames.end(); name_type++ ) {
+    SMESH_Group* aGroup = AddGroup( name_type->second, name_type->first.c_str(), anId );
     if ( aGroup ) {
-      if(MYDEBUG) MESSAGE("MEDToMesh - group added: "<<it->c_str());      
+      if(MYDEBUG) MESSAGE("MEDToMesh - group added: "<<name_type->first.c_str());      
       SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aGroup->GetGroupDS() );
       if ( aGroupDS ) {
-        aGroupDS->SetStoreName( it->c_str() );
+        aGroupDS->SetStoreName( name_type->first.c_str() );
         myReader.GetGroup( aGroupDS );
       }
     }
