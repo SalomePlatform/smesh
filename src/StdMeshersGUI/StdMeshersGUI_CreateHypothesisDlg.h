@@ -38,6 +38,8 @@
 
 #include "SMESHGUI_aParameter.h"
 
+#include <list>
+
 class QGroupBox;
 class QLabel;
 class QLineEdit;
