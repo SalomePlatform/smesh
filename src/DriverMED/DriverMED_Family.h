@@ -89,6 +89,9 @@ class DriverMED_Family
 
   const MED::TStringSet& GetGroupNames () const { return myGroupNames; }
 
+  void SetId (const int theId) { myId = theId; }
+  // Sets a family ID
+
  private:
   void Init (SMESHDS_GroupBase* group);
   // Initialize the tool by SMESHDS_GroupBase
@@ -103,9 +106,6 @@ class DriverMED_Family
   // Remove from <Elements> elements, common with <by>,
   // Remove from <by> elements, common with <Elements>,
   // Create family <common> from common elements, with combined groups list.
-
-  void SetId (const int theId) { myId = theId; }
-  // Sets a family ID
 
   bool IsEmpty () const { return myElements.empty(); }
   // Check, if this family has empty list of elements
