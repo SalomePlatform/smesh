@@ -244,7 +244,7 @@ void SMESHGUI_MeshOp::selectionDone()
     try
     {
       QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry );
+      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
       if ( pObj != 0 )
       {
         SMESH::SMESH_subMesh_var aVar =
@@ -305,7 +305,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
       theMess = tr( "GEOMETRY_OBJECT_IS_NOT_DEFINED" );
       return false;
     }
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry );
+    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
     if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
     {
       theMess = tr( "GEOMETRY_OBJECT_IS_NULL" );
@@ -321,7 +321,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
         theMess = tr( "MESH_IS_NOT_DEFINED" );
         return false;
       }
-      _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry );
+      _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
       if ( !pMesh || SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() )->_is_nil() )
       {
         theMess = tr( "MESH_IS_NULL" );
@@ -544,7 +544,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
   theMess = "";
 
   QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry );
+  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
   GEOM::GEOM_Object_var aGeomVar =
     GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
 
@@ -602,13 +602,13 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
 
   // get mesh object
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry );
+  _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
   SMESH::SMESH_Mesh_var aMeshVar =
     SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
 
   // get geom object
   QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry );
+  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
   GEOM::GEOM_Object_var aGeomVar =
     GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
 
@@ -773,7 +773,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
 void SMESHGUI_MeshOp::readMesh()
 {
   QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry );
+  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
   if ( !pObj )
     return;
 
@@ -912,7 +912,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     return false;
 
   QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry );
+  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
   if ( !pObj )
     return false;
 
