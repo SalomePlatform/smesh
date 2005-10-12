@@ -110,7 +110,7 @@ public slots:
 
 private slots:
   void                        OnGUIEvent();
-  void                        onViewManagerAdded( SUIT_ViewManager* );
+  void                        onViewManagerActivated( SUIT_ViewManager* );
   void                        onOperationCommited( SUIT_Operation* );
   void                        onOperationAborted( SUIT_Operation* );
 

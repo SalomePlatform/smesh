@@ -2782,8 +2782,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), -1, -1 );
 
-  connect( application(), SIGNAL( viewManagerAdded( SUIT_ViewManager* ) ),
-	   this, SLOT( onViewManagerAdded( SUIT_ViewManager* ) ) );
+  connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
+	   this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
 }
 
 bool SMESHGUI::activateModule( SUIT_Study* study )
@@ -2851,7 +2851,7 @@ void SMESHGUI::viewManagers( QStringList& list ) const
   list.append( SVTK_Viewer::Type() );
 }
 
-void SMESHGUI::onViewManagerAdded( SUIT_ViewManager* mgr )
+void SMESHGUI::onViewManagerActivated( SUIT_ViewManager* mgr )
 {
   if ( dynamic_cast<SVTK_ViewManager*>( mgr ) )
     SMESH::UpdateSelectionProp( this );
