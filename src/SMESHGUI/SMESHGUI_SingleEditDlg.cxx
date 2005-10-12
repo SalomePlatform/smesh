@@ -509,6 +509,7 @@ bool SMESHGUI_SingleEditDlg::onApply()
   if (aResult) {
     mySelector->ClearIndex();
     mySelectionMgr->setSelectedObjects(aList, false);
+    onSelectionDone();
     SMESH::UpdateView();
   }
 
