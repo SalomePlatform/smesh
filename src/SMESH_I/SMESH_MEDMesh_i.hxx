@@ -80,6 +80,11 @@ class SMESH_MEDMesh_i:
 	void release() {}
 	SALOME::SenderDouble_ptr getSenderForCoordinates(long int) {return SALOME::SenderDouble::_nil();}
 	SALOME::SenderInt_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::SenderInt::_nil();}
+        SALOME::SenderInt_ptr getSenderForPolygonsConnectivity(SALOME_MED::medConnectivity, SALOME_MED::medEntityMesh) {return SALOME::SenderInt::_nil();}
+        SALOME::SenderInt_ptr getSenderForPolygonsConnectivityIndex(SALOME_MED::medConnectivity, SALOME_MED::medEntityMesh) {return SALOME::SenderInt::_nil();}
+        SALOME::SenderInt_ptr getSenderForPolyhedronConnectivity(SALOME_MED::medConnectivity) {return SALOME::SenderInt::_nil();}
+        SALOME::SenderInt_ptr getSenderForPolyhedronIndex(SALOME_MED::medConnectivity) {return SALOME::SenderInt::_nil();}
+        SALOME::SenderInt_ptr getSenderForPolyhedronFacesIndex() {return SALOME::SenderInt::_nil();}
 	
 	char *getName() throw(SALOME::SALOME_Exception);
 	CORBA::Long getSpaceDimension() throw(SALOME::SALOME_Exception);

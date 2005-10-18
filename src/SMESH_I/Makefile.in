@@ -97,7 +97,7 @@ LDFLAGSFORBIN += -lSMDS -lSMESHDS \
 		-L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
 		-lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
 		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeResourcesManager \
-		-lOpUtil -lSALOMELocalTrace -lSALOMETraceCollector -lSalomeNotification -lCASCatch \
+		-lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeNotification -lCASCatch \
 		-lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
 	  	-L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls -lNMTTools -lNMTDS \
      -L${CASROOT}/lin/lib -lTKCDF -lTKBO -lTKMath
