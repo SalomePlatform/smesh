@@ -36,18 +36,29 @@ class SMESHDS_Mesh;
 class SMESHDS_Group;
 class SMESHDS_SubMesh;
 
+typedef std::pair< std::string, SMDSAbs_ElementType > TNameAndType;
+
 class DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
  public:
   virtual Status Perform();
 
-  std::list<std::string> GetGroupNames();
+  std::list< TNameAndType > GetGroupNamesAndTypes();
   void GetGroup(SMESHDS_Group* theGroup);
   void CreateAllSubMeshes();
   void GetSubMesh(SMESHDS_SubMesh* theSubMesh, const int theId);
 
   std::list<std::string> GetMeshNames(Status& theStatus);
   void SetMeshName(std::string theMeshName);
+
+ private:
+  /*!
+   * \brief Ensure aFamily has required ID
+    * \param aFamily - a family to check
+    * \param anID - an ID aFamily should have
+    * \retval bool  - true if successful
+   */
+  bool checkFamilyID(DriverMED_FamilyPtr & aFamily, int anID) const;
 
  private:
   std::string myMeshName;
