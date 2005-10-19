@@ -64,7 +64,7 @@ def ConvertMED2UNV(thePath,theFile) :
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 smesh.SetCurrentStudy(salome.myStudy)
 
-aPath = os.getenv('KERNEL_ROOT_DIR') + '/examples/'
+aPath = os.getenv('DATA_DIR') + '/MedFiles/'
 aListDir = os.listdir(aPath)
 print aListDir
 
