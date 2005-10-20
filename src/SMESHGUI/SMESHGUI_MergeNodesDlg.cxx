@@ -243,6 +243,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
 
   RadioButton1->setChecked(TRUE);
 
+  myEditCurrentArgument = (QWidget*)LineEditMesh; 
+
   myActor = 0;
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -280,6 +282,9 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   resize(0,0);
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
+
+  // Init Mesh field from selection
+  SelectionIntoArgument();
 }
 
 //=================================================================================
