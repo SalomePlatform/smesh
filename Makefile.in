@@ -126,7 +126,6 @@ SMESH_en.xml \
 SMESH.config \
 StdMeshers.xml \
 SMESHCatalog.xml \
-flight_solid.brep \
 mesh_pattern.png \
 pattern_sample_2d.png \
 pattern_sample_3D.png \
