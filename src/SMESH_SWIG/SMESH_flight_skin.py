@@ -21,8 +21,8 @@ smeshgui.Init(salome.myStudyId)
 #before running this script, please be sure about
 #the path the file fileName
 
-filePath = os.environ["SMESH_ROOT_DIR"]
-filePath = filePath + "/share/salome/resources/"
+filePath = os.environ["DATA_DIR"]
+filePath = filePath + "/Shapes/Brep/"
 
 filename = "flight_solid.brep"
 filename = filePath + filename
