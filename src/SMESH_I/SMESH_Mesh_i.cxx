@@ -40,17 +40,23 @@
 #include "Utils_SINGLETON.hxx"
 #include "OpUtil.hxx"
 
-#include "TCollection_AsciiString.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
 #include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
 
+// OCCT Includes
+#include <OSD_Path.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Directory.hxx>
+#include <OSD_Protection.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
+#include <TCollection_AsciiString.hxx>
 
+// STL Includes
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -1058,9 +1064,63 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 
 //=============================================================================
 /*!
- *  
+ *  Export
  */
 //=============================================================================
+
+static void PrepareForWriting (const char* file)
+{
+  TCollection_AsciiString aFullName ((char*)file);
+  OSD_Path aPath (aFullName);
+  OSD_File aFile (aPath);
+  if (aFile.Exists()) {
+    // existing filesystem node
+    if (aFile.KindOfFile() == OSD_FILE) {
+      if (aFile.IsWriteable()) {
+        aFile.Reset();
+        aFile.Remove();
+        if (aFile.Failed()) {
+          TCollection_AsciiString msg ("File ");
+          msg += aFullName + " cannot be replaced.";
+          THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+        }
+      } else {
+        TCollection_AsciiString msg ("File ");
+        msg += aFullName + " cannot be overwritten.";
+        THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+      }
+    } else {
+      TCollection_AsciiString msg ("Location ");
+      msg += aFullName + " is not a file.";
+      THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+    }
+  } else {
+    // nonexisting file
+    TCollection_AsciiString aDirName = aPath.TrekValue(aPath.TrekLength());
+    aPath.UpTrek();
+    aPath.SetName(aDirName);
+    aPath.SetExtension("");
+    OSD_Directory aDir (aPath);
+    TCollection_AsciiString aFullDirName;
+    aPath.SystemName(aFullDirName);
+    if (aDir.Exists()) {
+      aFile.Reset();
+      aFile.Build(OSD_WriteOnly, OSD_Protection());
+      if (aFile.Failed()) {
+        TCollection_AsciiString msg ("You cannot write to directory ");
+        msg += aFullDirName + ".";
+        THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+      } else {
+        aFile.Close();
+        aFile.Remove();
+      }
+    } else {
+      TCollection_AsciiString msg ("Directory ");
+      msg += aFullDirName + " does not exist.";
+      THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+    }
+  }
+}
 
 void SMESH_Mesh_i::ExportToMED( const char* file, 
 				CORBA::Boolean auto_groups, 
@@ -1068,7 +1128,8 @@ void SMESH_Mesh_i::ExportToMED( const char* file,
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  
+
+  PrepareForWriting(file);
   char* aMeshName = "Mesh";
   SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
   if ( !aStudy->_is_nil() ) {
@@ -1110,17 +1171,20 @@ void SMESH_Mesh_i::ExportMED( const char* file,
 void SMESH_Mesh_i::ExportDAT(const char *file) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  PrepareForWriting(file);
   _impl->ExportDAT(file);
 }
 void SMESH_Mesh_i::ExportUNV(const char *file) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  PrepareForWriting(file);
   _impl->ExportUNV(file);
 }
 
 void SMESH_Mesh_i::ExportSTL(const char *file, const bool isascii) throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  PrepareForWriting(file);
   _impl->ExportSTL(file, isascii);
 }
 
