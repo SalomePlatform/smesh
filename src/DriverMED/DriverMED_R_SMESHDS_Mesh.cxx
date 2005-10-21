@@ -232,7 +232,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 	EBooleen anIsNodeNum = aNodeInfo->IsElemNum();
 	TInt aNbElems = aNodeInfo->GetNbElem();
 	if(MYDEBUG) MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbElems<<"; anIsNodeNum = "<<anIsNodeNum);
-        DriverMED_FamilyPtr aFamily = myFamilies.begin()->second;
+        DriverMED_FamilyPtr aFamily;
         for(TInt iElem = 0; iElem < aNbElems; iElem++){
           double aCoords[3] = {0.0, 0.0, 0.0};
           for(TInt iDim = 0; iDim < 3; iDim++)
