@@ -174,6 +174,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myFontGrpLayout->setSpacing( SPACING_SIZE ); myFontGrpLayout->setMargin( MARGIN_SIZE );
 
   myTitleColorBtn = new QToolButton( myFontGrp, "myTitleColorBtn" );
+  myTitleColorBtn->setMinimumWidth( 20 );
 
   myTitleFontCombo = new QComboBox( false, myFontGrp, "myTitleFontCombo" );
   myTitleFontCombo->setMinimumWidth( MINIMUM_WIDTH );
@@ -187,6 +188,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myTitleShadowCheck = new QCheckBox( tr( "SMESH_FONT_SHADOW" ), myFontGrp, "myTitleShadowCheck" );
 
   myLabelsColorBtn = new QToolButton( myFontGrp, "myLabelsColorBtn" );
+  myLabelsColorBtn->setMinimumWidth( 20 );
 
   myLabelsFontCombo = new QComboBox( false, myFontGrp, "myLabelsFontCombo" );
   myLabelsFontCombo->setMinimumWidth( MINIMUM_WIDTH );
