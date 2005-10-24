@@ -168,9 +168,10 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg(QWidget* pa
   QGridLayout* myFontGrpLayout = new QGridLayout( myFontGrp->layout() );
   myFontGrpLayout->setAlignment( Qt::AlignTop );
   myFontGrpLayout->setSpacing( SPACING_SIZE ); myFontGrpLayout->setMargin( MARGIN_SIZE );
-    
+
   myTitleColorBtn = new QToolButton( myFontGrp, "myTitleColorBtn" );
-  
+  myTitleColorBtn->setMinimumWidth( 20 );
+
   myTitleFontCombo = new QComboBox( false, myFontGrp, "myTitleFontCombo" );
   myTitleFontCombo->setMinimumWidth( MINIMUM_WIDTH );
   myTitleFontCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
@@ -183,7 +184,8 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg(QWidget* pa
   myTitleShadowCheck = new QCheckBox( tr( "SMESH_FONT_SHADOW" ), myFontGrp, "myTitleShadowCheck" );
 
   myLabelsColorBtn = new QToolButton( myFontGrp, "myLabelsColorBtn" );
-  
+  myLabelsColorBtn->setMinimumWidth( 20 );
+
   myLabelsFontCombo = new QComboBox( false, myFontGrp, "myLabelsFontCombo" );
   myLabelsFontCombo->setMinimumWidth( MINIMUM_WIDTH );
   myLabelsFontCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
