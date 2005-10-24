@@ -227,6 +227,8 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( QWidget* parent, const char* nam
   SpinBoxTolerance->SetValue(1e-05);
   
   RadioButton1->setChecked( TRUE );
+
+  myEditCurrentArgument = (QWidget*)LineEditMesh;
   
   mySelection = Sel;  
   
@@ -264,6 +266,9 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( QWidget* parent, const char* nam
   resize(0,0);
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
+
+  // Init Mesh field from selection
+  SelectionIntoArgument();
 }
 
 //=================================================================================
