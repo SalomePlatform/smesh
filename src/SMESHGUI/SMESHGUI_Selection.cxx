@@ -49,21 +49,23 @@ void SMESHGUI_Selection::init( const QString& client, SalomeApp_SelectionMgr* mg
   {
     _PTR(Study) aStudy = study()->studyDS();
 
-    SUIT_DataOwnerPtrList sel;
-    mgr->selected( sel, client );
-    myDataOwners = sel;
-    SUIT_DataOwnerPtrList::const_iterator anIt = sel.begin(),
-                                          aLast = sel.end();
-    for( ; anIt!=aLast; anIt++ )
-    {
-      SUIT_DataOwner* owner = ( SUIT_DataOwner* )( (*anIt ).get() );
-      SalomeApp_DataOwner* sowner = dynamic_cast<SalomeApp_DataOwner*>( owner );
-      if( sowner )
-        myTypes.append( typeName( type( sowner, aStudy ) ) );
-      else
-        myTypes.append( "Unknown" );
-    }
+    for( int i=0, n=count(); i<n; i++ )
+      myTypes.append( typeName( type( entry( i ), aStudy ) ) );
   }
+}
+
+//=======================================================================
+//function : processOwner
+//purpose  : 
+//=======================================================================
+void SMESHGUI_Selection::processOwner( const SalomeApp_DataOwner* ow )
+{
+  const SalomeApp_SVTKDataOwner* owner = 
+    dynamic_cast<const SalomeApp_SVTKDataOwner*> ( ow );
+  if( owner )
+    myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
+  else
+    myActors.append( 0 );
 }
 
 //=======================================================================
@@ -103,13 +105,10 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
 
 SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
 {
-  if ( ind >= 0 && ind < myDataOwners.count() ) {
-    const SalomeApp_SVTKDataOwner* owner = 
-      dynamic_cast<const SalomeApp_SVTKDataOwner*> ( myDataOwners[ ind ].get() );
-    if ( owner )    
-      return dynamic_cast<SMESH_Actor*>( owner->GetActor() );
-  }
-  return 0;
+  if( ind >= 0 && ind < count() )
+    return ((QPtrList<SMESH_Actor>&)myActors).at( ind );
+  else
+    return 0;
 }
 
 //=======================================================================
@@ -240,8 +239,9 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    CORBA::Object_var obj =
-      SMESH::DataOwnerToObject( static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() ));
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+
     if ( ! CORBA::is_nil( obj )) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
       if ( ! mesh->_is_nil() )
@@ -266,18 +266,19 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    Handle(SALOME_InteractiveObject) io =
+/*    Handle(SALOME_InteractiveObject) io =
       static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() )->IO();
     if ( !io.IsNull() ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io) ; // m,sm,gr->m
-      if ( !mesh->_is_nil() ) {
-        _PTR(SObject) so = SMESH::FindSObject( mesh );
+      if ( !mesh->_is_nil() ) {*/
+        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ) );
+	//FindSObject( mesh );
         if ( so ) {
           GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
           return QVariant( !shape->_is_nil(), 0 );
         }
-      }
-    }
+//      }
+//    }
   }
   return QVariant( false, 0 );
 }
@@ -289,16 +290,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 
 QVariant SMESHGUI_Selection::hasReference( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
-  {
-    SalomeApp_DataOwner* owner = dynamic_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].operator->() );
-    if( owner )
-    {
-      _PTR(SObject) obj ( study()->studyDS()->FindObjectID( owner->entry().latin1() ) ), ref;
-      return QVariant( obj->ReferencedObject( ref ), 0 );
-    }
-  }
-  return QVariant( false, 0 );
+  return QVariant( isReference( ind ), 0 );
 }
 
 //=======================================================================
@@ -310,24 +302,14 @@ QVariant SMESHGUI_Selection::isVisible( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    QString entry = static_cast<SalomeApp_DataOwner*>( myDataOwners[ ind ].get() )->entry();
-    SMESH_Actor* actor = SMESH::FindActorByEntry( entry.latin1() );
+    QString ent = entry( ind );
+    SMESH_Actor* actor = SMESH::FindActorByEntry( ent.latin1() );
     if ( actor && actor->hasIO() ) {
       SVTK_RenderWindowInteractor* renderInter = SMESH::GetCurrentVtkView()->getRWInteractor();
       return QVariant( renderInter->isVisible( actor->getIO() ), 0 );
     }
   }
   return QVariant( false, 0 );
-}
-
-
-//=======================================================================
-//function : type
-//purpose  :
-//=======================================================================
-int SMESHGUI_Selection::type( SalomeApp_DataOwner* owner, _PTR(Study) study )
-{
-  return type( owner->entry(), study );
 }
 
 //=======================================================================

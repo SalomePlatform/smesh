@@ -31,7 +31,6 @@
 
 #include "SalomeApp_Selection.h"
 #include "SALOMEDSClient_definitions.hxx"
-#include "SUIT_DataOwner.h"
 
 class SalomeApp_SelectionMgr;
 class SALOMEDSClient_Study;
@@ -46,6 +45,7 @@ public:
 
   virtual void     init( const QString&, SalomeApp_SelectionMgr* );
   virtual QtxValue param( const int , const QString& paramName ) const;
+  virtual void     processOwner( const SalomeApp_DataOwner* );
 
   // got from object, not from actor
   virtual int numberOfNodes( int ind ) const;
@@ -64,12 +64,11 @@ public:
   SMESH_Actor* getActor( int ind ) const;
 
   static int       type( const QString&, _PTR(Study) );
-  static int       type( SalomeApp_DataOwner* owner, _PTR(Study) study);
   static QString   typeName( const int type);
 
 private:
-  QStringList           myTypes;
-  SUIT_DataOwnerPtrList myDataOwners;
+  QStringList            myTypes;
+  QPtrList<SMESH_Actor>  myActors;
 };
 
 #endif

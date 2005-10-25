@@ -55,7 +55,7 @@ class SMESH_NumberFilter : public SUIT_SelectionFilter
   void SetMainShape    (GEOM::GEOM_Object_ptr);
 
  private:
-  GEOM::GEOM_Object_ptr getGeom (const SUIT_DataOwner*) const;
+  GEOM::GEOM_Object_ptr getGeom (const SUIT_DataOwner*, const bool extractReference = true ) const;
 
  private:
   char*                 myKind;

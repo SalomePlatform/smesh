@@ -16,7 +16,7 @@ SMESH_TypeFilter::~SMESH_TypeFilter()
 
 bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 {
-  bool Ok = false;
+  bool Ok = false, extractReference = true;
 
   const SalomeApp_DataOwner* owner =
     dynamic_cast<const SalomeApp_DataOwner*>(theDataOwner);
@@ -27,7 +27,9 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     _PTR(Study) study = appStudy->studyDS();
     QString entry = owner->entry();
 
-    _PTR(SObject) obj (study->FindObjectID(entry.latin1()));
+    _PTR(SObject) obj (study->FindObjectID(entry.latin1())), aRefSO;
+    if( extractReference && obj && obj->ReferencedObject( aRefSO ) )
+      obj = aRefSO;
     if (!obj) return false;
 
     _PTR(SObject) objFather = obj->GetFather();

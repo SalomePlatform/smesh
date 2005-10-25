@@ -667,7 +667,7 @@ namespace{
   {
     // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
     SalomeApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
-    SALOME_ListIO selected; aSel->selectedObjects( selected );
+    SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
 
     QString aParentComponent = QString::null;
     for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
@@ -1829,7 +1829,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
-        aSel->selectedObjects( selected );
+        aSel->selectedObjects( selected, QString::null, false );
 
       SALOME_ListIteratorOfListIO It(selected);
       for (int i = 0; It.More(); It.Next(), i++) {

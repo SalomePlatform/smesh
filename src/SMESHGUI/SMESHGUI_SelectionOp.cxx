@@ -43,6 +43,8 @@
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 #include <SALOMEDS_SObject.hxx>
 
+#include <SALOME_ListIteratorOfListIO.hxx>
+
 /*
   Class       : SMESHGUI_SelectionOp
   Description : Base operation for all operations using object selection in viewer or objectbrowser
@@ -357,7 +359,7 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
                                      SalomeApp_Dialog::TypesList& types,
                                      QStringList& ids ) const
 {
-  SUIT_DataOwnerPtrList list; selectionMgr()->selected( list );
+/*  SUIT_DataOwnerPtrList list; selectionMgr()->selected( list );
   SUIT_DataOwnerPtrList::const_iterator anIt = list.begin(),
                                         aLast = list.end();
   for( ; anIt!=aLast; anIt++ )
@@ -388,6 +390,37 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
       ids.append( id );
       types.append( typeById( id, Object ) );
       names.append( owner->IO()->getName() );
+    }
+  }*/
+
+  SALOME_ListIO selObjs;
+  TColStd_IndexedMapOfInteger selIndices;
+  selectionMgr()->selectedObjects( selObjs );
+  Selection_Mode mode = selectionMode();
+  EntityType objtype = mode == NodeSelection ? MeshNode : MeshElement;
+
+  for( SALOME_ListIteratorOfListIO anIt( selObjs ); anIt.More(); anIt.Next() )
+  {
+    selIndices.Clear();
+    selectionMgr()->GetIndexes( anIt.Value(), selIndices );
+    if( selIndices.Extent()==0 )
+    {
+      QString id_str = QString( "%1%2%3" ).arg( anIt.Value()->getEntry() ).arg( idChar() ), current_id_str;
+      for( int i=1, n=selIndices.Extent(); i<=n; i++ )
+      {
+        int curid = selIndices( i );
+        current_id_str = id_str.arg( curid );
+        ids.append( current_id_str );
+        types.append( typeById( current_id_str, objtype ) );
+        names.append( QString( "%1" ).arg( curid ) );
+      }
+    }
+    else
+    {
+      QString id = anIt.Value()->getEntry();
+      ids.append( id );
+      types.append( typeById( id, Object ) );
+      names.append( anIt.Value()->getName() );
     }
   }
 }

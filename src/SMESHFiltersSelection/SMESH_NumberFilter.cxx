@@ -127,7 +127,7 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 // Purpose : Retrieve geom object from SALOME_InteractiveObject
 //=======================================================================
 GEOM::GEOM_Object_ptr SMESH_NumberFilter::getGeom
-  (const SUIT_DataOwner* theDataOwner) const
+  (const SUIT_DataOwner* theDataOwner, const bool extractReference ) const
 {
   const SalomeApp_DataOwner* owner =
     dynamic_cast<const SalomeApp_DataOwner*>(theDataOwner);
@@ -142,7 +142,10 @@ GEOM::GEOM_Object_ptr SMESH_NumberFilter::getGeom
   _PTR(Study) study = appStudy->studyDS();
   QString entry = owner->entry();
 
-  _PTR(SObject) aSO(study->FindObjectID(entry.latin1()));
+  _PTR(SObject) aSO( study->FindObjectID( entry.latin1() ) ), aRefSO;
+  if( extractReference && aSO && aSO->ReferencedObject( aRefSO ) )
+    aSO = aRefSO;
+
   if (!aSO)
     return GEOM::GEOM_Object::_nil();
 
