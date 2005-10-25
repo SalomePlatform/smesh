@@ -282,6 +282,7 @@ namespace{
 	    QAD_FileDlg* fd = new QAD_FileDlg( parent, false, true, true );
 	    fd->setCaption( aTitle );
 	    fd->setFilters( filters );
+	    fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
 	    fd->exec();
 	    aFilename = fd->selectedFile();
 	    aFormat = aFilterMap[fd->selectedFilter()];
