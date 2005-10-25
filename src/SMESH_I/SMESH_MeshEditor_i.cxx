@@ -45,6 +45,9 @@
 
 #include <sstream>
 
+typedef map<const SMDS_MeshElement*,
+            list<const SMDS_MeshElement*> > TElemOfElemListMap;
+
 using namespace std;
 
 //=======================================================================
@@ -950,7 +953,9 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
   gp_Vec stepVec( P->x, P->y, P->z );
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  //anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  TElemOfElemListMap aHystory;
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 
   // Update Python script
   TCollection_AsciiString str = "stepVector = SMESH.DirStruct( SMESH.PointStruct ( ";
@@ -987,6 +992,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
   str += TCollection_AsciiString((int)theNbOfSteps) + " )";
   SMESH_Gen_i::AddToCurrentPyScript( str );
 }
+
 //=======================================================================
 //function : ExtrusionSweepObject1D
 //purpose  :
@@ -1012,7 +1018,9 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObj
   gp_Vec stepVec( P->x, P->y, P->z );
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  //anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  TElemOfElemListMap aHystory;
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 }
 
 //=======================================================================
@@ -1040,8 +1048,55 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObj
   gp_Vec stepVec( P->x, P->y, P->z );
 
   ::SMESH_MeshEditor anEditor( _myMesh );
-  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  //anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps);
+  TElemOfElemListMap aHystory;
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 }
+
+
+//=======================================================================
+//function : AdvancedExtrusion
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
+					   const SMESH::DirStruct &  theStepVector,
+					   CORBA::Long               theNbOfSteps,
+					   CORBA::Long               theExtrFlags,
+					   CORBA::Double             theSewTolerance)
+{
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+
+  set<const SMDS_MeshElement*> elements;
+  for (int i = 0; i < theIDsOfElements.length(); i++)
+  {
+    CORBA::Long index = theIDsOfElements[i];
+    const SMDS_MeshElement * elem = aMesh->FindElement(index);
+    if ( elem )
+      elements.insert( elem );
+  }
+  const SMESH::PointStruct * P = &theStepVector.PS;
+  gp_Vec stepVec( P->x, P->y, P->z );
+
+  ::SMESH_MeshEditor anEditor( _myMesh );
+  TElemOfElemListMap aHystory;
+  anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory,
+			   theExtrFlags, theSewTolerance);
+
+  // Update Python script
+  TCollection_AsciiString str = "stepVector = SMESH.DirStruct( SMESH.PointStruct ( ";
+  str += (TCollection_AsciiString) stepVec.X() + ", ";
+  str += (TCollection_AsciiString) stepVec.Y() + ", ";
+  str += (TCollection_AsciiString) stepVec.Z() + " ))";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
+  str = ("mesh_editor.AdvancedExtrusion(");
+  SMESH_Gen_i::AddArray( str, theIDsOfElements ) += ", stepVector, ";
+  str += TCollection_AsciiString((int)theNbOfSteps) + ",";
+  str += TCollection_AsciiString((int)theExtrFlags) + ", ";
+  str += TCollection_AsciiString((double)theSewTolerance) + " )";
+  SMESH_Gen_i::AddToCurrentPyScript( str );
+}
+
 
 #define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
 

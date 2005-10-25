@@ -35,8 +35,9 @@
 
 #include <list>
 #include <map>
-//#include <TColStd_DataMapOfIntegerListOfInteger.hxx>
-#include <SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx>
+
+typedef map<const SMDS_MeshElement*,
+            list<const SMDS_MeshElement*> > TElemOfElemListMap;
 
 class SMDS_MeshElement;
 class SMDS_MeshFace;
@@ -142,9 +143,46 @@ class SMESH_MeshEditor {
   // Generate new elements by rotation of theElements around theAxis
   // by theAngle by theNbSteps
 
-  void ExtrusionSweep (std::set<const SMDS_MeshElement*> & theElements,
-                       const gp_Vec&                       theStep,
-                       const int                           theNbSteps);
+  /*!
+   * Auxilary flag for advanced extrusion.
+   * BOUNDARY: create or not boundary for result of extrusion
+   * SEW:      try to use existing nodes or create new nodes in any case
+   */
+  enum ExtrusionFlags {
+    EXTRUSION_FLAG_BOUNDARY = 0x01,
+    EXTRUSION_FLAG_SEW = 0x02
+  };
+  
+  /*!
+   * Create new node in the mesh with given coordinates
+   * (auxilary for advanced extrusion)
+   */
+  const SMDS_MeshNode* CreateNode(const double x,
+                                  const double y,
+                                  const double z,
+                                  const double tolnode);
+
+  /*!
+   * Generate new elements by extrusion of theElements 
+   * by theStep by theNbSteps
+   * param theHistory returns history of extrusion
+   * param theFlags set flags for performing extrusion (see description
+   *   of enum ExtrusionFlags for additional information)
+   * param theTolerance - uses for comparing locations of nodes if flag
+   *   EXTRUSION_FLAG_SEW is set
+   */
+  //void ExtrusionSweep (std::set<const SMDS_MeshElement*> & theElements,
+  //                     const gp_Vec&                       theStep,
+  //                     const int                           theNbSteps);
+  void ExtrusionSweep
+           (set<const SMDS_MeshElement*> & theElems,
+            const gp_Vec&                  theStep,
+            const int                      theNbSteps,
+            TElemOfElemListMap&            newElemsMap,
+            //SMESH_DataMapOfElemPtrSequenceOfElemPtr& theHistory,
+            const int                      theFlags = EXTRUSION_FLAG_BOUNDARY,
+            const double                   theTolerance = 1.e-6);
+  
   // Generate new elements by extrusion of theElements 
   // by theStep by theNbSteps
 
@@ -306,14 +344,9 @@ class SMESH_MeshEditor {
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
-  const SMESH_DataMapOfElemPtrSequenceOfElemPtr& GetExtrusionHistory() const
-    { return myExtrusionHistory; }
-
  private:
 
   SMESH_Mesh * myMesh;
-
-  SMESH_DataMapOfElemPtrSequenceOfElemPtr myExtrusionHistory;
 
 };
 

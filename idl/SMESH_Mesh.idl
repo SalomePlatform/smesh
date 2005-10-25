@@ -147,6 +147,14 @@ module SMESH
   typedef sequence<log_block> log_array;
 
 
+  /*!
+   * Auxilary flags for advanced extrusion.
+   * BOUNDARY: create or not boundary for result of extrusion
+   * SEW:      try to use existing nodes or create new nodes in any case
+   */
+  const long EXTRUSION_FLAG_BOUNDARY = 1;
+  const long EXTRUSION_FLAG_SEW = 2;
+  
   interface SMESH_IDSource
   {
     /*!
@@ -645,6 +653,19 @@ module SMESH
     void ExtrusionSweep(in long_array      IDsOfElements,
                         in DirStruct       StepVector,
                         in long            NbOfSteps);
+
+   /*!
+    * Generate new elements by extrusion of theElements 
+    * by StepVector by NbOfSteps
+    * param ExtrFlags set flags for performing extrusion
+    * param SewTolerance - uses for comparing locations of nodes if flag
+    *   EXTRUSION_FLAG_SEW is set
+    */
+    void AdvancedExtrusion(in long_array      IDsOfElements,
+                           in DirStruct       StepVector,
+                           in long            NbOfSteps,
+			   in long            ExtrFlags,
+			   in double          SewTolerance);
 
     void ExtrusionSweepObject(in SMESH_IDSource  theObject,
 			      in DirStruct       StepVector,
