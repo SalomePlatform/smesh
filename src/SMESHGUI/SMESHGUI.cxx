@@ -300,6 +300,7 @@ namespace{
 	    SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
 	    fd->setCaption( aTitle );
 	    fd->setFilters( filters );
+	    fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
 	    bool is_ok = false;
 	    while(!is_ok){
 	      fd->exec();
