@@ -584,7 +584,7 @@ namespace{
 	    aControl = SMESH_Actor::eSkew;
 	    break;
 	  case 6009:
-	    aTitle = QObject::tr( "VOLUME_3D_ELEMENTS" );
+	    aTitle = QObject::tr( "SMESH_VOLUME" );
 	    aControl = SMESH_Actor::eVolume3D;
 	    break;
 	  }
