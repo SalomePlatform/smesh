@@ -302,7 +302,7 @@ msgid "ICON_ASPECT_3D"
 msgstr "mesh_aspect_3d.png"
 
 msgid "ICON_VOLUME_3D"
-msgstr "mesh_aspect_3d.png"
+msgstr "mesh_volume_3d.png"
 
 msgid "ICON_ANGLE"
 msgstr "mesh_angle.png"
