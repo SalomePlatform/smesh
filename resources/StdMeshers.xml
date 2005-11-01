@@ -42,9 +42,15 @@
                 dim="1"
                 auxiliary="true"/>
 
+    <hypothesis type="AutomaticLength"
+                label-id="Automatic length"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
     <hypothesis type="LengthFromEdges"
                 label-id="Length From Edges (2D Hyp. for Triangulator)"
-                icon-id="mesh_hypo_length.png"/>
+                icon-id="mesh_hypo_length.png"
+                dim="2"/>
 
     <hypothesis type="MaxElementArea"
                 label-id="Max. Element Area"
@@ -105,5 +111,18 @@
                icon-id=""/>
   </algorithms>
 </meshers-group>
+
+
+<hypotheses-set-group>
+
+    <hypotheses-set name="Automatic Tetrahedralization"
+                    hypos="AutomaticLength, LengthFromEdges"
+                    algos="Regular_1D, MEFISTO_2D, NETGEN_3D"/>
+
+    <hypotheses-set name="Automatic Hexahedralization"
+                    hypos="AutomaticLength"
+                    algos="Regular_1D, Quadrangle_2D, Hexa_3D"/>
+
+</hypotheses-set-group>
 
 </meshers>
