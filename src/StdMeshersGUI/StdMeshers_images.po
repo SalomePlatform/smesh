@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "POT-Creation-Date: 2002-05-28 10:57:43 AM CEST\n"
-"PO-Revision-Date: YYYY-MM-DD\n"
+"PO-Revision-Date: 2005-11-01 12:58+0300\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -51,6 +51,10 @@ msgstr "mesh_hypo_length.png"
 msgid "ICON_DLG_ARITHMETIC_1D"
 msgstr "mesh_hypo_length.png"
 
+#Hypo AutomaticLength
+msgid "ICON_DLG_AUTOMATICLENGTH"
+msgstr "mesh_hypo_length.png"
+
 
 #-----------------------------------------------------------
 # ObjectBrowser
@@ -90,7 +94,7 @@ msgstr "mesh_tree_hypo_volume.png"
 
 #mesh_tree_hypo_length
 msgid "ICON_SMESH_TREE_HYPO_LengthFromEdges"
-msgstr "mesh_tree_hypo_length.png"
+msgstr "mesh_tree_hypo_area.png"
 
 #mesh_tree_hypo_nonconform
 msgid "ICON_SMESH_TREE_HYPO_NotConformAllowed"
@@ -106,6 +110,10 @@ msgstr "mesh_tree_hypo_length.png"
 
 #mesh_tree_hypo_Arithmetic1d
 msgid "ICON_SMESH_TREE_HYPO_Arithmetic1D"
+msgstr "mesh_tree_hypo_length.png"
+
+#mesh_tree_hypo_AutomaticLength
+msgid "ICON_SMESH_TREE_HYPO_AutomaticLength"
 msgstr "mesh_tree_hypo_length.png"
 
 #mesh_tree_hypo_propagation

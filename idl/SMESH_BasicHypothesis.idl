@@ -54,6 +54,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_AutomaticLength: interface of "Automatic length" hypothesis
+   */
+  interface StdMeshers_AutomaticLength : SMESH::SMESH_Hypothesis
+  {
+  };
+
+  /*!
    * StdMeshers_NumberOfSegments: interface of "Nb. Segments" hypothesis
    */
   interface StdMeshers_NumberOfSegments : SMESH::SMESH_Hypothesis
