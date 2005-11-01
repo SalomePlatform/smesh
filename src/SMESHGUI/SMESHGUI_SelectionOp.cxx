@@ -403,7 +403,7 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
   {
     selIndices.Clear();
     selectionMgr()->GetIndexes( anIt.Value(), selIndices );
-    if( selIndices.Extent()==0 )
+    if( selIndices.Extent() > 0 )
     {
       QString id_str = QString( "%1%2%3" ).arg( anIt.Value()->getEntry() ).arg( idChar() ), current_id_str;
       for( int i=1, n=selIndices.Extent(); i<=n; i++ )
