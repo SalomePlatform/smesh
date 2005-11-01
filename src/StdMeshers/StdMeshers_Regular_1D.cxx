@@ -38,6 +38,7 @@ using namespace std;
 #include "StdMeshers_Arithmetic1D.hxx"
 #include "StdMeshers_StartEndLength.hxx"
 #include "StdMeshers_Deflection1D.hxx"
+#include <StdMeshers_AutomaticLength.hxx>
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -84,6 +85,7 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
 	_compatibleHypothesis.push_back("StartEndLength");
 	_compatibleHypothesis.push_back("Deflection1D");
 	_compatibleHypothesis.push_back("Arithmetic1D");
+	_compatibleHypothesis.push_back("AutomaticLength");
 }
 
 //=============================================================================
@@ -196,6 +198,17 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     _value[ DEFLECTION_IND ] = hyp->GetDeflection();
     ASSERT( _value[ DEFLECTION_IND ] > 0 );
     _hypType = DEFLECTION;
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+
+  else if (hypName == "AutomaticLength")
+  {
+    StdMeshers_AutomaticLength * hyp = const_cast<StdMeshers_AutomaticLength *>
+      (dynamic_cast <const StdMeshers_AutomaticLength * >(theHyp));
+    ASSERT(hyp);
+    _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+    ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
+    _hypType = LOCAL_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
   else

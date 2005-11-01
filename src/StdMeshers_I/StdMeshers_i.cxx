@@ -31,6 +31,7 @@ using namespace std;
 #include "utilities.h"
 
 #include "StdMeshers_LocalLength_i.hxx"
+#include "StdMeshers_AutomaticLength_i.hxx"
 #include "StdMeshers_StartEndLength_i.hxx"
 #include "StdMeshers_Arithmetic1D_i.hxx"
 #include "StdMeshers_NumberOfSegments_i.hxx"
@@ -81,6 +82,8 @@ extern "C"
       aCreator = new HypothesisCreator_i<StdMeshers_Deflection1D_i>;
     else if (strcmp(aHypName, "Arithmetic1D") == 0)
       aCreator = new HypothesisCreator_i<StdMeshers_Arithmetic1D_i>;
+    else if (strcmp(aHypName, "AutomaticLength") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_AutomaticLength_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)

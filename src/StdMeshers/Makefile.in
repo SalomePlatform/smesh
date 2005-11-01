@@ -48,7 +48,8 @@ EXPORT_HEADERS = \
 	StdMeshers_Regular_1D.hxx \
 	StdMeshers_Quadrangle_2D.hxx \
 	StdMeshers_MEFISTO_2D.hxx \
-	StdMeshers_Hexa_3D.hxx
+	StdMeshers_Hexa_3D.hxx \
+	StdMeshers_AutomaticLength.hxx
 
 EXPORT_PYSCRIPTS =
 
@@ -71,7 +72,8 @@ LIB_SRC = \
 	StdMeshers_Quadrangle_2D.cxx \
 	StdMeshers_MEFISTO_2D.cxx \
 	StdMeshers_Penta_3D.cxx \
-	StdMeshers_Hexa_3D.cxx 
+	StdMeshers_Hexa_3D.cxx \
+	StdMeshers_AutomaticLength.cxx
 
 LIB_SERVER_IDL = 
 
