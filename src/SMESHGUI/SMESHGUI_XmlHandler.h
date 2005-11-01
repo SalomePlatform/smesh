@@ -53,6 +53,8 @@ class SMESHGUI_XmlHandler : public QXmlDefaultHandler
   std::map<std::string, HypothesisData*> myHypothesesMap;
   std::map<std::string, HypothesisData*> myAlgorithmsMap;
 
+  std::list<HypothesesSet*> myListOfHypothesesSets;
+
  private:
   QString myErrorProt;
   QString myPluginName;

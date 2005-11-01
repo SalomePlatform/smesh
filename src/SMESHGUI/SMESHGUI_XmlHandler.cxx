@@ -143,6 +143,25 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       }
     }
   }
+  else if (qName == "hypotheses-set-group") // group of sets of hypotheses
+  {
+  }
+  else if (qName == "hypotheses-set") // a set of hypotheses
+  {
+    if (atts.value("name") != "")
+    {
+      HypothesesSet* aHypoSet = new HypothesesSet ( atts.value("name") );
+      myListOfHypothesesSets.push_back( aHypoSet );
+
+      for ( int isHypo = 0; isHypo < 2; ++isHypo )
+      {
+        QString aHypos = isHypo ? atts.value("hypos") : atts.value("algos");
+        aHypos = aHypos.remove( ' ' );
+        QStringList* aHypoList = isHypo ? & aHypoSet->HypoList : & aHypoSet->AlgoList;
+        *aHypoList = QStringList::split( ',', aHypos );
+      }
+    }
+  }
   else
   {
     // error
