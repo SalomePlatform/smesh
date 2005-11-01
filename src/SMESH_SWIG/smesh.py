@@ -199,6 +199,12 @@ class Mesh_Segment(Mesh_Algorithm):
         """
         return self.Hypothesis("Propagation")
 
+    def AutomaticLength(self):
+        """
+         Define "AutomaticLength" hypothesis
+        """
+        return self.Hypothesis("AutomaticLength")
+
 # Public class: Mesh_Segment_Python
 # ---------------------------------
 
@@ -348,6 +354,21 @@ class Mesh:
         """
         return self.geom
 
+    def MeshDimension(self):
+        """
+        Returns mesh dimension depending on shape one
+        """
+        shells = geompy.SubShapeAllIDs( self.geom, geompy.ShapeType["SHELL"] )
+        if len( shells ) > 0 :
+            return 3
+        elif geompy.NumberOfFaces( self.geom ) > 0 :
+            return 2
+        elif geompy.NumberOfEdges( self.geom ) > 0 :
+            return 1
+        else:
+            return 0;
+        pass
+
     def Segment(self, algo=REGULAR, geom=0):
         """
          Creates a segment discretization 1D algorithm.
@@ -413,6 +434,50 @@ class Mesh:
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), b )
             salome.sg.updateObjBrowser(1)
         return b
+
+    def AutomaticTetrahedralization(self):
+        """
+        Compute tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
+        """
+        dim = self.MeshDimension()
+        # assign hypotheses
+        self.RemoveGlobalHypotheses()
+        self.Segment().AutomaticLength()
+        if dim > 1 :
+            self.Triangle().LengthFromEdges()
+            pass
+        if dim > 2 :
+            self.Tetrahedron(NETGEN)
+            pass
+        self.Compute()
+        pass
+
+    def AutomaticHexahedralization(self):
+        """
+        Compute hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
+        """
+        dim = self.MeshDimension()
+        # assign hypotheses
+        self.RemoveGlobalHypotheses()
+        self.Segment().AutomaticLength()
+        if dim > 1 :
+            self.Quadrangle()
+            pass
+        if dim > 2 :
+            self.Hexahedron()            
+            pass
+        self.Compute()
+        pass
+
+    def RemoveGlobalHypotheses(self):
+        """
+        Removes all global hypotheses
+        """
+        current_hyps = self.mesh.GetHypothesisList( self.geom )
+        for hyp in current_hyps:
+            self.mesh.RemoveHypothesis( self.geom, hyp )
+            pass
+        pass
 
     def Group(self, grp, name=""):
         """
