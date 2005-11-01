@@ -42,6 +42,7 @@
 #include <vector>
 
 class HypothesisData;
+class HypothesesSet;
 class SMESHGUI_GenericHypothesisCreator;
 class SALOMEDSClient_SObject;
 
@@ -52,6 +53,10 @@ namespace SMESH{
   QStringList GetAvailableHypotheses( const bool isAlgo, 
                                       const int theDim = -1, 
                                       const bool isAux = false);
+
+  QStringList GetHypothesesSets();
+
+  HypothesesSet* GetHypothesesSet(const QString theSetName);
 
   HypothesisData* GetHypothesisData(const char* aHypType);
 

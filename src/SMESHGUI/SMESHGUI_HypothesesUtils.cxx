@@ -66,14 +66,7 @@ namespace SMESH{
   typedef map<string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
   THypCreatorMap myHypCreatorMap;
 
-  void addMap(const THypothesisDataMap& theMap,
-	       THypothesisDataMap& toMap)
-  {
-    THypothesisDataMap::const_iterator it;
-    for (it = theMap.begin(); it != theMap.end(); it++)
-      toMap.insert(*it);
-  }
-
+  list<HypothesesSet*> myListOfHypothesesSets;
 
   void processHypothesisStatus(const int theHypStatus,
 			       SMESH::SMESH_Hypothesis_ptr theHyp,
@@ -160,8 +153,12 @@ namespace SMESH{
 	  bool ok = reader.parse(source);
 	  file.close();
 	  if (ok) {
-	    addMap(aXmlHandler->myHypothesesMap, myHypothesesMap);
-	    addMap(aXmlHandler->myAlgorithmsMap, myAlgorithmsMap);
+            myHypothesesMap.insert( aXmlHandler->myHypothesesMap.begin(),
+                                    aXmlHandler->myHypothesesMap.end() );
+            myAlgorithmsMap.insert( aXmlHandler->myAlgorithmsMap.begin(),
+                                    aXmlHandler->myAlgorithmsMap.end() );
+            myListOfHypothesesSets.splice( myListOfHypothesesSets.begin(),
+                                           aXmlHandler->myListOfHypothesesSets );
 	  }
 	  else {
 	    SUIT_MessageBox::error1(SMESHGUI::desktop(),
@@ -214,6 +211,37 @@ namespace SMESH{
     return aHypList;
   }
 
+
+  QStringList GetHypothesesSets()
+  {
+    QStringList aSetNameList;
+
+    // Init list of available hypotheses, if needed
+    InitAvailableHypotheses();
+
+    list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
+    {
+      HypothesesSet* aSet = *hypoSet;
+      if ( aSet && aSet->AlgoList.count() ) {
+        aSetNameList.append( aSet->HypoSetName );
+      }
+    }
+
+    return aSetNameList;
+  }
+
+  HypothesesSet* GetHypothesesSet(const QString theSetName)
+  {
+    list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
+    {
+      HypothesesSet* aSet = *hypoSet;
+      if ( aSet && aSet->HypoSetName == theSetName )
+        return aSet;
+    }
+    return 0;
+  }
 
   HypothesisData* GetHypothesisData (const char* aHypType)
   {
