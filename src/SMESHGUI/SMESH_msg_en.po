@@ -2864,6 +2864,9 @@ msgstr "Create sub-mesh"
 msgid "SMESHGUI_MeshDlg::EDIT_MESH_SUBMESH"
 msgstr "Edit mesh/sub-mesh"
 
+msgid "SMESHGUI_MeshDlg::HYPOTHESES_SETS"
+msgstr "Assign a set of hypotheses"
+
 #-----------------------------------------------------------
 
 msgid "SMESHGUI_MeshTab::ALGORITHM"

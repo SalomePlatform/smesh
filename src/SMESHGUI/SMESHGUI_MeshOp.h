@@ -52,6 +52,7 @@ protected slots:
   virtual bool                   onApply();
   void                           onCreateHyp( const int theHypType, const int theIndex );
   void                           onEditHyp( const int theHypType, const int theIndex );
+  void                           onHypoSet( const QString& theSetName );
 
 private:
   bool                           isValid( QString& ) const;
@@ -69,6 +70,7 @@ private:
   bool                           editMeshOrSubMesh( QString& );
   
   int                            currentHyp( const int, const int ) const;
+  bool                           isAccessibleDim( const int ) const;
   void                           setCurrentHyp( const int, const int, const int );
   void                           setDefaultName() const;
   SMESH::SMESH_Hypothesis_var    getAlgo( const int );

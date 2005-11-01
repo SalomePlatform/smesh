@@ -25,6 +25,7 @@
 #include <qcombobox.h>
 #include <qpopupmenu.h>
 #include <qcursor.h>
+#include <qpushbutton.h>
 
 /*!
  * \brief Tab for tab widget containing controls for definition of 
@@ -361,14 +362,19 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myTabWg->addTab( myTabs[ Dim1D ], tr( "DIM_1D" ) );
   myTabWg->addTab( myTabs[ Dim2D ], tr( "DIM_2D" ) );
   myTabWg->addTab( myTabs[ Dim3D ], tr( "DIM_3D" ) );
+
+  // Hypotheses Sets
+  myHypoSetPopup = new QPopupMenu();
+  QButton* aHypoSetButton = new QPushButton( mainFrame(), "aHypoSetButton");
+  aHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
   
   // Fill layout
-  
   QVBoxLayout* aLay = new QVBoxLayout( mainFrame(), 0, 5 );
   aLay->addWidget( aGrp );
   aLay->addItem( new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum) );
   aLay->addWidget( myTabWg );
-  
+  aLay->addWidget( aHypoSetButton );
+
   // Disable controls if necessary
   setObjectShown( Mesh, false );
   if ( theToCreate )
@@ -389,10 +395,16 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
     objectWg( Mesh, Btn )->hide();
     objectWg( Geom, Btn )->hide();
   }
+
+  // Connect signals and slots
+  connect( aHypoSetButton, SIGNAL( clicked() ), SLOT( onHypoSetButton() ) );
+  connect( myHypoSetPopup, SIGNAL( activated( int ) ), SLOT( onHypoSetPopup( int ) ) );
 }
 
 SMESHGUI_MeshDlg::~SMESHGUI_MeshDlg()
 {
+  if ( myHypoSetPopup )
+    delete myHypoSetPopup;
 }
 
 //================================================================================
@@ -432,16 +444,60 @@ void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 {
   myTabWg->setCurrentPage( theId );
 }
+
+//================================================================================
+/*!
+ * \brief Enable/disable tabs
+  * \param int - maximum possible dimention
+ */
+//================================================================================
+
+void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
+{
+  for ( int i = Dim1D; i <= Dim3D; ++i ) {
+    int dim = i + 1;
+    bool enable = ( dim <= maxDim );
+    if ( !enable )
+      myTabs[ i ]->reset();
+    myTabWg->setTabEnabled( myTabs[ i ], enable );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Sets list of available Sets of Hypotheses
+ */
+//================================================================================
+
+void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
+{
+  myHypoSetPopup->clear();
+  for ( int i = 0, n = theSets.count(); i < n; i++ ) {
+    myHypoSetPopup->insertItem( theSets[ i ], i );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Emits hypoSet signal
+ * 
+ * SLOT is called when a hypotheses set is selected. Emits hypoSet
+ * signal to notify operation about this event
+ */
+//================================================================================
+
+void SMESHGUI_MeshDlg::onHypoSetPopup( int theIndex )
+{
+  emit hypoSet( myHypoSetPopup->text( theIndex ));
+}
   
+//================================================================================
+/*!
+ * \brief Shows myHypoSetPopup
+ */
+//================================================================================
 
-
-
-
-
-
-
-
-
-
-
-
+void SMESHGUI_MeshDlg::onHypoSetButton()
+{
+  myHypoSetPopup->exec( QCursor::pos() );
+}

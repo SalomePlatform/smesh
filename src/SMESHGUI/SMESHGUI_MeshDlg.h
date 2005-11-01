@@ -50,11 +50,23 @@ public:
   SMESHGUI_MeshTab*            tab( const int ) const;
   void                         reset();
   void                         setCurrentTab( const int );
+  void                         setMaxHypoDim( const int );
+  void                         setHypoSets( const QStringList& );
+
+signals:
+
+  void                         hypoSet( const QString& );
+
+private slots:  
+
+  void                         onHypoSetPopup( int );
+  void                         onHypoSetButton();
 
 private:
-  
+
   QMap< int, SMESHGUI_MeshTab* > myTabs;
   QTabWidget*                    myTabWg;
+  QPopupMenu*                    myHypoSetPopup;
 };
 
 /*!
