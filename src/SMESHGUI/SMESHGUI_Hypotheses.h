@@ -35,6 +35,7 @@
 #include <qstring.h>
 #include <qwidget.h>
 #include <qvaluevector.h>
+#include <qstringlist.h>
 
 /*!
  * \brief Auxiliary class for creation of hypotheses
@@ -77,4 +78,21 @@ class HypothesisData
  bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
 };
 
+/*!
+ * \brief Class containing set of hypotheses
+ *
+ * Actually it contains list of hypo types
+ */
+class HypothesesSet
+{
+ public:
+  HypothesesSet( const QString& theSetName ) 
+    : HypoSetName( theSetName ) {};
+  HypothesesSet( const QString&     theSetName,
+                 const QStringList& theHypoList,
+                 const QStringList& theAlgoList )
+    : HypoSetName( theSetName ), HypoList(theHypoList), AlgoList(theAlgoList) {};
+  QString     HypoSetName;
+  QStringList HypoList, AlgoList;
+};
 #endif
