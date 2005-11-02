@@ -457,6 +457,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     }
 
     SALOME_ListIO aList; aList.Append( myActor->getIO() );
+    mySelector->ClearIndex();
     mySelectionMgr->setSelectedObjects( aList, false );
 
     SMESH::UpdateView();
