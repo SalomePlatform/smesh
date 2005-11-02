@@ -720,7 +720,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	  {
 	    myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
 	    if(myMesh->_is_nil())
-	      return;
+	      {
+		busy = false;
+		return;
+	      }
 	    myGroup = SMESH::SMESH_Group::_nil();
 	    
 	    myActor = SMESH::FindActorByObject(myMesh);
@@ -740,7 +743,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	  {
 	    SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(IO);
 	    if(aGroup->_is_nil())
-	      return;
+	      {
+		busy = false;
+		return;
+	      }
 	    busy = false;
 	    myCurrentLineEdit = 0;
 	    init(aGroup);
