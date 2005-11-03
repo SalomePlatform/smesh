@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_SMOOTHING_H
 #define DIALOGBOX_SMOOTHING_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
 
@@ -81,7 +81,7 @@ private:
     void hideEvent (QHideEvent*);                          /* ESC key */
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     QString                       myElementsId;
     int                           myNbOkElements;          /* to check when elements are defined */
     int                           myNbOkNodes;             /* to check when fixed nodes are defined */

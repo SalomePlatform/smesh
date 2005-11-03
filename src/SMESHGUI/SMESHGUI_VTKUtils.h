@@ -38,7 +38,7 @@ class SVTK_InteractorStyle;
 class SVTK_ViewWindow;
 class SVTK_Selector;
 
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SMESHGUI;
 
 #include <CORBA.h>
@@ -154,25 +154,25 @@ namespace SMESH{
 		   int& theId2);
 
   //----------------------------------------------------------------------------
-  int GetNameOfSelectedNodes (SalomeApp_SelectionMgr*, 
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
 			      const Handle(SALOME_InteractiveObject)& theIO, 
 			      QString& theName);
 
-  int GetNameOfSelectedNodes (SalomeApp_SelectionMgr*, 
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
 			      QString& aName);
 
-  int GetNameOfSelectedElements (SalomeApp_SelectionMgr*, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
 				 const Handle(SALOME_InteractiveObject)& theIO, 
 				 QString& theName);
 
-  int GetNameOfSelectedElements (SalomeApp_SelectionMgr*, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
 				 QString& aName);
 
-  int GetSelected (SalomeApp_SelectionMgr*, 
+  int GetSelected (LightApp_SelectionMgr*, 
 		   TColStd_IndexedMapOfInteger& theMap, 
 		   const bool theIsElement = true );
 
-  int GetEdgeNodes (SalomeApp_SelectionMgr*, int& theId1, int& theId2);
+  int GetEdgeNodes (LightApp_SelectionMgr*, int& theId1, int& theId2);
 
   void SetControlsPrecision (const long theVal);
 };

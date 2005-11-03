@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_EXTRUSION_PATH_H
 #define DIALOGBOX_EXTRUSION_PATH_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
 // QT Includes
@@ -87,7 +87,7 @@ private:
   void SetEditCurrentArgument (QToolButton* button);
 
   SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
-  SalomeApp_SelectionMgr*       mySelectionMgr;        /* User shape selection */
+  LightApp_SelectionMgr*        mySelectionMgr;        /* User shape selection */
   SVTK_Selector*                mySelector;
 
   QWidget*                      myEditCurrentArgument; /* Current  argument */

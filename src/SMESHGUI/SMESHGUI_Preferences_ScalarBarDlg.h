@@ -45,7 +45,7 @@ class SMESHGUI;
 
 class QtxDblSpinBox;
 
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 class SMESH_Actor;
 
@@ -76,7 +76,7 @@ protected slots:
 
 private:
   SMESHGUI*                mySMESHGUI;
-  SalomeApp_SelectionMgr*  mySelectionMgr;
+  LightApp_SelectionMgr*   mySelectionMgr;
   SMESH_Actor*             myActor;
   double                   myIniX, myIniY, myIniW, myIniH;
   int                      myIniOrientation;

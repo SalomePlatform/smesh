@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_RENUMBERING_H
 #define DIALOGBOX_RENUMBERING_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
 
@@ -74,7 +74,7 @@ private:
     void hideEvent ( QHideEvent * );                       /* ESC key */
     
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     int                           myConstructorId;         /* Current constructor id = radio button id */
     QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
 

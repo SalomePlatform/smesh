@@ -46,7 +46,7 @@ class QTable;
 class QCheckBox;
 class QComboBox;
 
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SVTK_Selector;
 
 class SMESHGUI;
@@ -89,7 +89,7 @@ public:
 
 private:
 
-    SalomeApp_SelectionMgr* mySelectionMgr;
+    LightApp_SelectionMgr*  mySelectionMgr;
     SVTK_Selector*          mySelector;
     SMESHGUI*               mySMESHGUI;
     SMESH_Actor*            myActor;

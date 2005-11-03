@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_ROTATION_H
 #define DIALOGBOX_ROTATION_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
 
@@ -80,7 +80,7 @@ private:
     bool IsAxisOk();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     int                           myNbOkElements;          /* to check when elements are defined */
     QString                       myElementsId;
     SVTK_Selector*                mySelector;

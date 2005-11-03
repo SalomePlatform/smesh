@@ -35,7 +35,7 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOME_ListIO.hxx"
 

@@ -43,7 +43,7 @@ class SMESHGUI_SpinBox;
 
 class SMESH_Actor;
 
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SALOME_Actor;
 class SVTK_Selector;
 class SVTK_ViewWindow;
@@ -124,7 +124,7 @@ protected:
   SMESH_Actor*              myActor;
   SMESH::SMESH_Mesh_var     myMesh;
 
-  SalomeApp_SelectionMgr*   mySelectionMgr;
+  LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
   SMESHGUI*                 mySMESHGUI;
 

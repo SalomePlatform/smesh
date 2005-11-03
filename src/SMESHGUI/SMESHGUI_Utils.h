@@ -24,7 +24,7 @@
 
 #include "SALOMEDSClient_definitions.hxx"
 #include "SALOME_InteractiveObject.hxx"
-#include "SalomeApp_DataOwner.h"
+#include "LightApp_DataOwner.h"
 
 class QString;
 
@@ -40,14 +40,14 @@ class SALOMEDSClient_SObject;
 
 class SalomeApp_Study;
 class SalomeApp_Module;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 namespace SMESH {
 
   SUIT_Desktop*
   GetDesktop(const CAM_Module* theModule);
 
-  SalomeApp_SelectionMgr*
+  LightApp_SelectionMgr*
   GetSelectionMgr(const SalomeApp_Module* theModule);
 
   SalomeApp_Study*
@@ -59,10 +59,10 @@ namespace SMESH {
   _PTR(Study)
   GetCStudy(const SalomeApp_Study* theStudy);
 
-  CORBA::Object_var DataOwnerToObject(const SalomeApp_DataOwnerPtr& theOwner);
+  CORBA::Object_var DataOwnerToObject(const LightApp_DataOwnerPtr& theOwner);
 
   template<class TInterface> typename TInterface::_var_type
-    DataOwnerToInterface(const SalomeApp_DataOwnerPtr& theDataOwner)
+    DataOwnerToInterface(const LightApp_DataOwnerPtr& theDataOwner)
     {
       CORBA::Object_var anObj = DataOwnerToObject(theDataOwner);
       if(!CORBA::is_nil(anObj))
@@ -118,7 +118,7 @@ namespace SMESH {
       return TInterface::_nil();
     }
 
-  int GetNameOfSelectedIObjects (SalomeApp_SelectionMgr*, QString& theName);
+  int GetNameOfSelectedIObjects (LightApp_SelectionMgr*, QString& theName);
 
   _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject);
 

@@ -36,7 +36,7 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SVTK_Selection.h"
 #include "SVTK_ViewWindow.h"
 #include "SVTK_Selector.h"

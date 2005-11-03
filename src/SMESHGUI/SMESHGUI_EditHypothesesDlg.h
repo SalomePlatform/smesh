@@ -31,7 +31,7 @@
 
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -92,7 +92,7 @@ private:
 
 private:
     SMESHGUI*                     mySMESHGUI;
-    SalomeApp_SelectionMgr*       mySelectionMgr;
+    LightApp_SelectionMgr*        mySelectionMgr;
 
     GEOM::GEOM_Object_var         myGeomShape;
     QLineEdit*                    myEditCurrentArgument; 

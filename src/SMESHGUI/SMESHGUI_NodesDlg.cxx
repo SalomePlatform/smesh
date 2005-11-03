@@ -49,7 +49,7 @@
 #include "SUIT_Desktop.h"
 
 #include "SalomeApp_Study.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"

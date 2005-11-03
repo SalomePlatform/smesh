@@ -40,7 +40,7 @@ class QListBox;
 
 class SMESHGUI;
 class SVTK_ViewWindow;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 /*!
  *  Class       : SMESHGUI_DeleteGroupDlg
@@ -86,7 +86,7 @@ private:
   QListBox*               myListBox;
 
   SMESHGUI*               mySMESHGUI;
-  SalomeApp_SelectionMgr* mySelectionMgr;
+  LightApp_SelectionMgr*  mySelectionMgr;
 
   QValueList<SMESH::SMESH_GroupBase_var> myListGrp;
   bool                                   myBlockSelection;

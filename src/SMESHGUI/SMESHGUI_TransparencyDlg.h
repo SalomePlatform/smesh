@@ -35,7 +35,7 @@
 class QLabel;
 class QPushButton;
 class QSlider;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SVTK_Selector;
 class SVTK_ViewWindow;
 class SMESHGUI;
@@ -59,7 +59,7 @@ public:
 private :
 
   SMESHGUI*               mySMESHGUI;
-  SalomeApp_SelectionMgr* mySelectionMgr;
+  LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_ViewWindow*        myViewWindow;
 
   QPushButton*      buttonOk;

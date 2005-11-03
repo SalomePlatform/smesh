@@ -29,7 +29,7 @@
 // Purpose : Constructor
 //=======================================================================
 SMESHGUI_Operation::SMESHGUI_Operation()
-: SalomeApp_Operation()
+: LightApp_Operation()
 {
 }
 
@@ -79,7 +79,7 @@ void SMESHGUI_Operation::startOperation()
     initDialog();
   }
 
-  SalomeApp_Operation::startOperation();
+  LightApp_Operation::startOperation();
 }
 
 //=======================================================================
@@ -88,7 +88,7 @@ void SMESHGUI_Operation::startOperation()
 //=======================================================================
 bool SMESHGUI_Operation::isReadyToStart() const
 {
-  if ( !SalomeApp_Operation::isReadyToStart() )
+  if ( !LightApp_Operation::isReadyToStart() )
     return false;
   else if ( getSMESHGUI() == 0 )
   {
@@ -108,7 +108,7 @@ bool SMESHGUI_Operation::isReadyToStart() const
 //=======================================================================
 void SMESHGUI_Operation::setDialogActive( const bool active )
 {
-  SalomeApp_Operation::setDialogActive( active );
+  LightApp_Operation::setDialogActive( active );
 
   SMESHGUI_Dialog* d = dynamic_cast<SMESHGUI_Dialog*>( dlg() );
   if( d )

@@ -36,7 +36,7 @@ class QCloseEvent;
 class QLabel;
 class QFrame;
 class QPushButton;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class QLineEdit;
 class SMESHGUI;
 class SVTK_ViewWindow;
@@ -95,7 +95,7 @@ private:
   QPushButton*              myBtn2;
   
   SMESHGUI*                 mySMESHGUI;
-  SalomeApp_SelectionMgr*   mySelectionMgr;
+  LightApp_SelectionMgr*    mySelectionMgr;
   int                       myMode;
   SVTK_Selector*            mySelector;
   

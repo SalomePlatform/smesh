@@ -44,9 +44,9 @@ class SUIT_ViewWindow;
 class SUIT_ResourceMgr;
 class SUIT_ViewManager;
 
-class SalomeApp_Operation;
+class LightApp_Operation;
 class SalomeApp_Study;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 
 //=================================================================================
@@ -63,7 +63,7 @@ public :
 
   static SMESH::SMESH_Gen_var     GetSMESHGen();
   static SMESHGUI*                GetSMESHGUI();
-  static SalomeApp_SelectionMgr*  selectionMgr();
+  static LightApp_SelectionMgr*   selectionMgr();
   static SUIT_ResourceMgr*        resourceMgr();
   static SUIT_Desktop*            desktop() ;
   static SalomeApp_Study*         activeStudy();
@@ -71,7 +71,7 @@ public :
 
   static bool                     automaticUpdate();
 
-  virtual SalomeApp_Displayer*    displayer();
+  virtual LightApp_Displayer*     displayer();
   virtual QString     engineIOR() const;
   virtual void        initialize( CAM_Application* );
   virtual void        windows( QMap<int, int>& ) const;
@@ -126,7 +126,7 @@ protected:
   void createPopupItem( const int, const QString&, const QString&,
                         const QString& = QString::null, const int = -1 );
   
-  virtual SalomeApp_Operation*      createOperation( const int ) const;
+  virtual LightApp_Operation*      createOperation( const int ) const;
 
 private:
   void OnEditDelete();
@@ -136,7 +136,7 @@ private :
   QDialog*                         myActiveDialogBox;
   int                              myState;
   QMap<int,QString>                myRules;
-  SalomeApp_Displayer*             myDisplayer;
+  LightApp_Displayer*              myDisplayer;
 };
 
 #endif

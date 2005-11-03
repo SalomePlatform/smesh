@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_EXTRUSION_H
 #define DIALOGBOX_EXTRUSION_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
 // QT Includes
@@ -76,7 +76,7 @@ private:
   //void hideEvent (QHideEvent*);                        /* ESC key */
 
   SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
-  SalomeApp_SelectionMgr*       mySelectionMgr;        /* User shape selection */
+  LightApp_SelectionMgr*        mySelectionMgr;        /* User shape selection */
   QLineEdit*                    myEditCurrentArgument; /* Current  LineEdit */
   QString                       myElementsId;
   int                           myNbOkElements;        /* to check when elements are defined */

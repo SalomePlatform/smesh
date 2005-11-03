@@ -40,7 +40,7 @@ class QLabel;
 class QPushButton;
 class QLineEdit;
 class QTextBrowser;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SMESHGUI;
 
 
@@ -65,7 +65,7 @@ private slots:
 
 private:
     SMESHGUI*                mySMESHGUI;
-    SalomeApp_SelectionMgr*  mySelectionMgr; 
+    LightApp_SelectionMgr*   mySelectionMgr; 
     bool                     myStartSelection;
     bool                     myIsActiveWindow;
     

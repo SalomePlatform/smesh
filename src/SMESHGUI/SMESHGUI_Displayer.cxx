@@ -34,7 +34,7 @@
 #include <SVTK_ViewWindow.h>
 
 SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Study* st )
-: SalomeApp_Displayer(),
+: LightApp_Displayer(),
   myStudy( st )
 {
 }
@@ -61,7 +61,7 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
       if( anActor )
       {
 	SMESH::DisplayActor( wnd, anActor );
-        prs = SalomeApp_Displayer::buildPresentation( entry.latin1(), aViewFrame );
+        prs = LightApp_Displayer::buildPresentation( entry.latin1(), aViewFrame );
       }
       if( prs )
 	UpdatePrs( prs );

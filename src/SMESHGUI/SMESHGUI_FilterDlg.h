@@ -34,7 +34,7 @@
 #include <qmap.h>
 #include <qvaluelist.h>
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SALOME_InteractiveObject.hxx"
 #include "SALOME_DataMapOfIOMapOfInteger.hxx"
 #include "SVTK_Selection.h"
@@ -56,7 +56,7 @@ class QStringList;
 class QTable;
 class QTableItem;
 class QWidgetStack;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class SMESHGUI;
 class SMESHGUI_FilterLibraryDlg;
 class SVTK_Selector;
@@ -291,7 +291,7 @@ private:
   // initial fields
   QValueList<int>           myTypes;
   SMESHGUI*                 mySMESHGUI;
-  SalomeApp_SelectionMgr*   mySelectionMgr;
+  LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
   SMESH::SMESH_Mesh_ptr     myMesh;
   QWidget*                  mySourceWg;

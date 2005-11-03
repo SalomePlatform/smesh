@@ -42,7 +42,7 @@
 #include "SUIT_Session.h"
 #include "SUIT_OverrideCursor.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SALOME_ListIO.hxx"
 
 #include "utilities.h"

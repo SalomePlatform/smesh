@@ -33,8 +33,8 @@
 #include "SALOMEDS_SObject.hxx"
 
 
-#include "SalomeApp_SelectionMgr.h"
-#include "SalomeApp_UpdateFlags.h"
+#include "LightApp_SelectionMgr.h"
+#include "LightApp_UpdateFlags.h"
 #include "SUIT_MessageBox.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_OverrideCursor.h"
@@ -80,10 +80,10 @@ SMESHGUI_MeshOp::~SMESHGUI_MeshOp()
 //================================================================================
 /*!
  * \brief Gets dialog of this operation
-  * \retval SalomeApp_Dialog* - pointer to dialog of this operation
+  * \retval LightApp_Dialog* - pointer to dialog of this operation
 */
 //================================================================================
-SalomeApp_Dialog* SMESHGUI_MeshOp::dlg() const
+LightApp_Dialog* SMESHGUI_MeshOp::dlg() const
 {
   return myDlg;
 }

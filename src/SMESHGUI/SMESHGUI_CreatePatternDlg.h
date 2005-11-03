@@ -43,7 +43,7 @@ class QFrame;
 class QLineEdit;
 class SMESHGUI_SpinBox;
 class QPushButton;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 class QRadioButton;
 class QCheckBox;
 class QButtonGroup;
@@ -131,7 +131,7 @@ private:
 
   SMESHGUI*                mySMESHGUI;
   SVTK_Selector*           mySelector;
-  SalomeApp_SelectionMgr*  mySelectionMgr;
+  LightApp_SelectionMgr*   mySelectionMgr;
   int                      myNbPoints;
   int                      myType;
 

@@ -45,7 +45,7 @@ class SMESHGUI;
 class SMESH_Actor;
 class SVTK_Selector;
 class SVTK_ViewWindow;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 namespace SMESH{
   struct TPolySimulation;
@@ -77,7 +77,7 @@ private:
     void displaySimulation();
     
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr ;             /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr ;             /* User shape selection */
     SVTK_Selector*                mySelector;
     QString                       myIDs;
     int                           myNbOkElements ;            /* to check when elements are defined */

@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_ADD_FACE_H
 #define DIALOGBOX_ADD_FACE_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SMDSAbs_ElementType.hxx"
 
@@ -85,7 +85,7 @@ private:
     void displaySimulation();
 
     SMESHGUI*                   mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*     mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*      mySelectionMgr;          /* User shape selection */
     int                         myNbOkNodes;               /* to check when arguments is defined */
     bool                        myBusy;
     SVTK_Selector*              mySelector;

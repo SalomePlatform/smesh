@@ -47,7 +47,7 @@
 #include "SUIT_Desktop.h"
 #include "SUIT_FileDlg.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
 

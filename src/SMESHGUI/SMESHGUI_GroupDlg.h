@@ -28,7 +28,7 @@
 #ifndef DIALOGBOX_GROUP_H
 #define DIALOGBOX_GROUP_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
 
@@ -114,7 +114,7 @@ private:
     void updateButtons();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     SMESH_Actor*                  myActor;                 /* Current mesh actor */
     int                           myGrpTypeId; /* Current group type id : standalone or group on geometry */
     int                           myTypeId;                /* Current type id = radio button id */

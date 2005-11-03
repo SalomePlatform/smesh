@@ -37,7 +37,7 @@
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SALOME_ListIO.hxx"
 
 #include <QtxDblSpinBox.h>

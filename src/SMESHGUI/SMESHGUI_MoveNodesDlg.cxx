@@ -39,7 +39,7 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 

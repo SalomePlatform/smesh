@@ -29,9 +29,9 @@
 #include <SMESHGUI_Selection.h>
 #include <SMESHGUI.h>
 #include <SUIT_SelectionFilter.h>
-#include <SalomeApp_SelectionMgr.h>
+#include <LightApp_SelectionMgr.h>
 #include <SalomeApp_Study.h>
-#include <SalomeApp_VTKSelector.h>
+#include <LightApp_VTKSelector.h>
 #include <SVTK_ViewWindow.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_Selector.h>
@@ -48,7 +48,7 @@
 /*
   Class       : SMESHGUI_SelectionOp
   Description : Base operation for all operations using object selection in viewer or objectbrowser
-                through common widgets created by SalomeApp_Dialog::createObject
+                through common widgets created by LightApp_Dialog::createObject
 */
 
 //=================================================================================
@@ -101,7 +101,7 @@ void SMESHGUI_SelectionOp::startOperation()
 //=================================================================================
 void SMESHGUI_SelectionOp::removeCustomFilters() const
 {
-  SalomeApp_SelectionMgr* mgr = selectionMgr();
+  LightApp_SelectionMgr* mgr = selectionMgr();
   if( !mgr )
     return;
     
@@ -156,7 +156,7 @@ void SMESHGUI_SelectionOp::selectionDone()
   }
     
   QStringList names, ids;
-  SalomeApp_Dialog::TypesList types;
+  LightApp_Dialog::TypesList types;
   selected( names, types, ids );
   dlg()->selectObject( names, types, ids );
 }
@@ -176,7 +176,7 @@ SUIT_SelectionFilter* SMESHGUI_SelectionOp::createFilter( const int ) const
 //=================================================================================
 void SMESHGUI_SelectionOp::onActivateObject( int id )
 {
-  SalomeApp_SelectionMgr* mgr = selectionMgr();
+  LightApp_SelectionMgr* mgr = selectionMgr();
   if( !mgr )
     return;
     
@@ -195,7 +195,7 @@ void SMESHGUI_SelectionOp::onActivateObject( int id )
 //=================================================================================
 void SMESHGUI_SelectionOp::onDeactivateObject( int id )
 {
-  SalomeApp_SelectionMgr* mgr = selectionMgr();
+  LightApp_SelectionMgr* mgr = selectionMgr();
   if( mgr && myFilters.contains( id ) && myFilters[ id ] )
     mgr->removeFilter( myFilters[ id ] );
 }
@@ -356,7 +356,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
 // Purpose : Get names, types and ids of selected objects
 //=======================================================================
 void SMESHGUI_SelectionOp::selected( QStringList& names,
-                                     SalomeApp_Dialog::TypesList& types,
+                                     LightApp_Dialog::TypesList& types,
                                      QStringList& ids ) const
 {
 /*  SUIT_DataOwnerPtrList list; selectionMgr()->selected( list );
@@ -364,8 +364,8 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
                                         aLast = list.end();
   for( ; anIt!=aLast; anIt++ )
   {
-    SalomeApp_DataOwner* owner = dynamic_cast<SalomeApp_DataOwner*>( (*anIt).operator->() );
-    SalomeApp_SVTKDataOwner* vtkowner = dynamic_cast<SalomeApp_SVTKDataOwner*>( (*anIt).operator->() );
+    LightApp_DataOwner* owner = dynamic_cast<LightApp_DataOwner*>( (*anIt).operator->() );
+    LightApp_SVTKDataOwner* vtkowner = dynamic_cast<LightApp_SVTKDataOwner*>( (*anIt).operator->() );
 
     if( vtkowner )
     {
@@ -491,7 +491,7 @@ void SMESHGUI_SelectionOp::onTextChanged( int, const QStringList& list )
     selector()->AddOrRemoveIndex( sel.First(), newIndices, false );
     highlight( sel.First(), true, true );
 
-    QStringList names, _ids; SalomeApp_Dialog::TypesList types;
+    QStringList names, _ids; LightApp_Dialog::TypesList types;
     selected( names, types, _ids );
     dlg()->selectObject( names, types, _ids, false );
 }

@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_SEWING_H
 #define DIALOGBOX_SEWING_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 // QT Includes
 #include <qdialog.h>
@@ -76,7 +76,7 @@ private:
     bool IsValid();
     
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     int                           myOk1, myOk2, myOk3, myOk4, myOk5, myOk6;    
     QLineEdit*                    myEditCurrentArgument;   /* Current  LineEdit */
     SVTK_Selector*                mySelector;

@@ -42,7 +42,7 @@ class SMESHGUI;
 class SMESH_Actor;
 class SVTK_Selector;
 class SVTK_ViewWindow;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 /*!
  *  Class       : SMESHGUI_SingleEditDlg
@@ -88,7 +88,7 @@ protected:
   QLineEdit*              myEdge;
   SMESH_Actor*            myActor;
 
-  SalomeApp_SelectionMgr* mySelectionMgr;
+  LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_Selector*          mySelector;
   SMESHGUI*               mySMESHGUI;
 };

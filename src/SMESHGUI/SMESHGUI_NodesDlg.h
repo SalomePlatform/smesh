@@ -47,7 +47,7 @@ class SMESHGUI;
 class SVTK_Selector;
 class SVTK_ViewWindow;
 class SMESHGUI_SpinBox;
-class SalomeApp_SelectionMgr;
+class LightApp_SelectionMgr;
 
 namespace SMESH{
   struct TNodeSimulation;
@@ -74,7 +74,7 @@ public:
     ~SMESHGUI_NodesDlg();
 
 private:
-    SalomeApp_SelectionMgr* mySelectionMgr;
+    LightApp_SelectionMgr*  mySelectionMgr;
     SVTK_Selector*                mySelector;
     SMESHGUI*               mySMESHGUI;
 

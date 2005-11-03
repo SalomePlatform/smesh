@@ -45,7 +45,7 @@
 #include "SalomeApp_Study.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_MessageBox.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "utilities.h"
 
 #include "SVTK_ViewWindow.h"

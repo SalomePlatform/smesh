@@ -40,7 +40,7 @@ public:
   SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh = true );
   virtual ~SMESHGUI_MeshOp();
   
-  virtual SalomeApp_Dialog*      dlg() const;  
+  virtual LightApp_Dialog*       dlg() const;  
 
 protected:
   virtual void                   startOperation();

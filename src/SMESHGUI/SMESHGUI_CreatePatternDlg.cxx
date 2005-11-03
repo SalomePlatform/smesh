@@ -42,8 +42,8 @@
 #include "SUIT_FileDlg.h"
 
 #include "SalomeApp_Study.h"
-#include "SalomeApp_DataOwner.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_DataOwner.h"
+#include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Tools.h"
 
 #include "SALOMEDS_SObject.hxx"
@@ -290,7 +290,7 @@ void SMESHGUI_CreatePatternDlg::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
     _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
     //Handle(SALOME_InteractiveObject) anIObj =
     //  new SALOME_InteractiveObject(aSobj->GetID().c_str(), "SMESH");
-    SUIT_DataOwnerPtr anIObj (new SalomeApp_DataOwner(aSobj->GetID().c_str()));
+    SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
 
     isValidMesh = mySelectionMgr->isOk(anIObj);
   }

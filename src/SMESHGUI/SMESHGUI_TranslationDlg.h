@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_TRANSLATION_H
 #define DIALOGBOX_TRANSLATION_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
 
@@ -78,7 +78,7 @@ private:
     int GetConstructorId();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;          /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     QString                       myElementsId;
     int                           myNbOkElements;          /* to check when elements are defined */
 

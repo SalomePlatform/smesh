@@ -28,7 +28,7 @@
 #include "SUIT_Application.h"
 #include "SUIT_Session.h"
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Application.h"
 #include "SalomeApp_Module.h"
 #include "SalomeApp_Study.h"
@@ -50,7 +50,7 @@ namespace SMESH{
     return theModule->application()->desktop();
   }
 
-  SalomeApp_SelectionMgr*
+  LightApp_SelectionMgr*
   GetSelectionMgr(const SalomeApp_Module* theModule)
   {
     return theModule->getApp()->selectionMgr();
@@ -69,7 +69,7 @@ namespace SMESH{
   }
 
   CORBA::Object_var 
-  DataOwnerToObject(const SalomeApp_DataOwnerPtr& theOwner)
+  DataOwnerToObject(const LightApp_DataOwnerPtr& theOwner)
   {
     CORBA::Object_var anObj;
     if(theOwner){
@@ -195,7 +195,7 @@ namespace SMESH{
     return app->orb()->string_to_object(theIOR);
   }
 
-  int GetNameOfSelectedIObjects(SalomeApp_SelectionMgr* theMgr, QString& theName)
+  int GetNameOfSelectedIObjects(LightApp_SelectionMgr* theMgr, QString& theName)
   {
     if (!theMgr)
       return 0;

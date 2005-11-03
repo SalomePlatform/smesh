@@ -36,7 +36,7 @@
 #include "SUIT_Desktop.h"
 
 #include "SalomeApp_Study.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"

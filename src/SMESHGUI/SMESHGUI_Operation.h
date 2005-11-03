@@ -12,7 +12,7 @@
 #ifndef SMESHGUI_Operation_H
 #define SMESHGUI_Operation_H
 
-#include <SalomeApp_Operation.h>
+#include <LightApp_Operation.h>
 #include <SALOMEDSClient.hxx>
 
 class SMESHGUI;
@@ -22,7 +22,7 @@ class SMESHGUI;
   Description : Base class for all SMESH operations
 */
 
-class SMESHGUI_Operation : public SalomeApp_Operation
+class SMESHGUI_Operation : public LightApp_Operation
 {
   Q_OBJECT
 

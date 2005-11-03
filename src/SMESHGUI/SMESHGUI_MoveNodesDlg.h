@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_MOVE_NODES_H
 #define DIALOGBOX_MOVE_NODES_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include <qdialog.h>
 
@@ -96,7 +96,7 @@ private:
   SMESHGUI_SpinBox*             myY;
   SMESHGUI_SpinBox*             myZ;
 
-  SalomeApp_SelectionMgr*       mySelectionMgr;
+  LightApp_SelectionMgr*        mySelectionMgr;
   SVTK_Selector*                mySelector;
   SMESHGUI*                     mySMESHGUI;
   

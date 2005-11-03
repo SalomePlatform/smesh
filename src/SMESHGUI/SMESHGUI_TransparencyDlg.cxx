@@ -41,7 +41,7 @@
 #include "SALOME_InteractiveObject.hxx"
 
 #include "SalomeApp_Study.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SVTK_ViewWindow.h"
 

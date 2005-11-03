@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_MERGENODES_H
 #define DIALOGBOX_MERGENODES_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
 
@@ -82,7 +82,7 @@ private:
     void onEditNodesGroup();
 
     SMESHGUI*                     mySMESHGUI;               /* Current SMESHGUI object */
-    SalomeApp_SelectionMgr*       mySelectionMgr;           /* User shape selection */
+    LightApp_SelectionMgr*        mySelectionMgr;           /* User shape selection */
     SVTK_Selector*                mySelector;
 
     QWidget*                      myEditCurrentArgument;

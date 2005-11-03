@@ -29,7 +29,7 @@
 #ifndef DIALOGBOX_REMOVE_ELEMENTS_H
 #define DIALOGBOX_REMOVE_ELEMENTS_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 // QT Includes
 #include <qvariant.h>
@@ -76,7 +76,7 @@ private:
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
 
-    SalomeApp_SelectionMgr*       mySelectionMgr;
+    LightApp_SelectionMgr*        mySelectionMgr;
     SVTK_Selector*                mySelector;
     SMESHGUI*                     mySMESHGUI;
 

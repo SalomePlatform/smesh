@@ -2,7 +2,7 @@
 #ifndef DIALOGBOX_GETMESH_H
 #define DIALOGBOX_GETMESH_H
 
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
 // QT Includes
@@ -46,7 +46,7 @@ class SMESHGUI_EditMeshDlg : public QDialog
 
  private:
   SMESHGUI*               mySMESHGUI;     /* Current SMESHGUI object */
-  SalomeApp_SelectionMgr* mySelectionMgr; /* User shape selection */
+  LightApp_SelectionMgr*  mySelectionMgr; /* User shape selection */
 
   SMESH::SMESH_Mesh_var   myMesh;
   SUIT_SelectionFilter*   myMeshFilter;

@@ -43,7 +43,7 @@
 #include "SALOME_ListIteratorOfListIO.hxx"
 
 #include "SalomeApp_Application.h"
-#include "SalomeApp_SelectionMgr.h"
+#include "LightApp_SelectionMgr.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"

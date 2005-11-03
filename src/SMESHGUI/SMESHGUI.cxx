@@ -81,13 +81,13 @@
 
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
-#include "SalomeApp_NameDlg.h"
-#include "SalomeApp_DataOwner.h"
+#include "LightApp_NameDlg.h"
+#include "LightApp_DataOwner.h"
 #include "SalomeApp_Application.h"
-#include "SalomeApp_Preferences.h"
-#include "SalomeApp_VTKSelector.h"
-#include "SalomeApp_Operation.h"
-#include "SalomeApp_UpdateFlags.h"
+#include "LightApp_Preferences.h"
+#include "LightApp_VTKSelector.h"
+#include "LightApp_Operation.h"
+#include "LightApp_UpdateFlags.h"
 
 #include "SalomeApp_ImportOperation.h"
 
@@ -247,7 +247,7 @@ namespace{
 
   void ExportMeshToFile( int theCommandID )
   {
-    SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
@@ -361,7 +361,7 @@ namespace{
   }
 
   void SetDisplayEntity(int theCommandID){
-    SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
@@ -396,7 +396,7 @@ namespace{
   }
 
   void SetDisplayMode(int theCommandID){
-    SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
@@ -519,7 +519,7 @@ namespace{
 
   void Control( int theCommandID )
   {
-    SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
@@ -607,7 +607,7 @@ namespace{
     if( !theIO.IsNull() )
     {
       entry = theIO->getEntry();
-      SalomeApp_DataOwner owner( entry );
+      LightApp_DataOwner owner( entry );
       if ( aTypeFilter.isOk( &owner )) {
         theOutTypeName = theInTypeName;
         return true;
@@ -645,7 +645,7 @@ namespace{
   QString CheckHomogeneousSelection()
   {
     //SUIT_Study* aStudy = SMESH::GetActiveStudy();
-    SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
@@ -667,7 +667,7 @@ namespace{
   void SMESHGUI::OnEditDelete()
   {
     // VSR 17/11/04: check if all objects selected belong to SMESH component --> start
-    SalomeApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+    LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
 
     QString aParentComponent = QString::null;
@@ -836,11 +836,11 @@ SMESHGUI::~SMESHGUI()
  *
  */
 //=============================================================================
-SalomeApp_SelectionMgr* SMESHGUI::selectionMgr()
+LightApp_SelectionMgr* SMESHGUI::selectionMgr()
 {
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
   if( anApp )
-    return dynamic_cast<SalomeApp_SelectionMgr*>( anApp->selectionMgr() );
+    return dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
   else
     return 0;
 }
@@ -1100,7 +1100,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 200:					// SCALAR BAR
     {
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1147,7 +1147,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESH::UpdateView();
 
       SALOME_ListIO l;
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       aSel->setSelectedObjects( l );
       break;
     }
@@ -1163,7 +1163,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       case 302:	anAction = SMESH::eDisplayOnly; break;
       }
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO sel_objects, to_process;
       if (aSel)
         aSel->selectedObjects( sel_objects );
@@ -1269,7 +1269,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
       if ( vtkwnd ) {
-	SalomeApp_SelectionMgr *Sel = selectionMgr();
+	LightApp_SelectionMgr *Sel = selectionMgr();
 	SALOME_ListIO selected; Sel->selectedObjects( selected );
 
 	int nbSel = selected.Extent();
@@ -1517,7 +1517,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       EmitSignalDeactivateDialog();
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1544,7 +1544,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1607,7 +1607,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1698,7 +1698,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 900:					// MESH INFOS
     {
       EmitSignalDeactivateDialog();
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1722,7 +1722,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 902:					// STANDARD MESH INFOS
     {
       EmitSignalDeactivateDialog();
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1748,7 +1748,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if(checkLock(aStudy)) break;
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1784,7 +1784,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( checkLock( aStudy ) )
         break;
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected );
@@ -1802,7 +1802,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           {
             aName = anAttr;
             QString newName = QString(aName->Value().c_str());
-            newName = SalomeApp_NameDlg::getName( desktop(), newName );
+            newName = LightApp_NameDlg::getName( desktop(), newName );
             if ( !newName.isEmpty() )
             {
               //old source: aStudy->renameIObject( IObject, newName );
@@ -1827,7 +1827,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       SUIT_OverrideCursor wc;
 
-      SalomeApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
       if( aSel )
         aSel->selectedObjects( selected, QString::null, false );
@@ -2069,7 +2069,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 6009:
     if ( vtkwnd ) {
 
-      SalomeApp_SelectionMgr* mgr = selectionMgr();
+      LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
       if ( selected.Extent() == 1 && selected.First()->hasEntry() ) {
@@ -2100,7 +2100,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     break;
   case 9010:
     {
-      SalomeApp_SelectionMgr* mgr = selectionMgr();
+      LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
       if (selected.Extent() == 1)	{
@@ -2114,7 +2114,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case 9011:
     {
-      SalomeApp_SelectionMgr* mgr = selectionMgr();
+      LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
       if (selected.Extent() == 1)	{
@@ -2863,22 +2863,22 @@ void SMESHGUI::createPreferences()
   int genTab = addPreference( tr( "PREF_TAB_GENERAL" ) );
 
   int updateGroup = addPreference( tr( "PREF_GROUP_UPDATE" ), genTab );
-  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, SalomeApp_Preferences::Bool, "SMESH", "auto_update" );
+  addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, LightApp_Preferences::Bool, "SMESH", "auto_update" );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
-  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "display_entity" );
-  addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, SalomeApp_Preferences::Bool, "SMESH", "use_precision" );
+  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "display_entity" );
+  addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "use_precision" );
 
   int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
   setPreferenceProperty( precGroup, "columns", 1 );
 
-  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, SalomeApp_Preferences::IntSpin, "SMESH", "controls_precision" );
+  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
 
   setPreferenceProperty( prec, "min", 0 );
   setPreferenceProperty( prec, "max", 16 );
 
   int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
-  int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, SalomeApp_Preferences::Selector, "SMESH", "display_mode" );
+  int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
   modes.append( "Wireframe" );
   modes.append( "Shading" );
@@ -2895,21 +2895,21 @@ void SMESHGUI::createPreferences()
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
 
-  addPreference( tr( "PREF_COLOR" ), nodeGroup, SalomeApp_Preferences::Color, "SMESH", "node_color" );
-  int nodeSz = addPreference( tr( "PREF_SIZE" ), nodeGroup, SalomeApp_Preferences::IntSpin, "SMESH", "node_size" );
+  addPreference( tr( "PREF_COLOR" ), nodeGroup, LightApp_Preferences::Color, "SMESH", "node_color" );
+  int nodeSz = addPreference( tr( "PREF_SIZE" ), nodeGroup, LightApp_Preferences::IntSpin, "SMESH", "node_size" );
 
   setPreferenceProperty( nodeSz, "min", 1 );
   setPreferenceProperty( nodeSz, "max", 5 );
 
   int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
 
-  addPreference( tr( "PREF_FILL" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "fill_color" );
-  addPreference( tr( "PREF_OUTLINE" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "outline_color" );
-  addPreference( tr( "PREF_BACKFACE" ), elemGroup, SalomeApp_Preferences::Color, "SMESH", "backface_color" );
-  addPreference( "", elemGroup, SalomeApp_Preferences::Space );
+  addPreference( tr( "PREF_FILL" ), elemGroup, LightApp_Preferences::Color, "SMESH", "fill_color" );
+  addPreference( tr( "PREF_OUTLINE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
+  addPreference( tr( "PREF_BACKFACE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "backface_color" );
+  addPreference( "", elemGroup, LightApp_Preferences::Space );
 
-  int elemW = addPreference( tr( "PREF_WIDTH" ), elemGroup, SalomeApp_Preferences::IntSpin, "SMESH", "element_width" );
-  int shrink = addPreference( tr( "PREF_SHRINK_COEFF" ), elemGroup, SalomeApp_Preferences::IntSpin, "SMESH", "shrink_coeff" );
+  int elemW = addPreference( tr( "PREF_WIDTH" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "element_width" );
+  int shrink = addPreference( tr( "PREF_SHRINK_COEFF" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff" );
 
   setPreferenceProperty( elemW, "min", 1 );
   setPreferenceProperty( elemW, "max", 5 );
@@ -2921,33 +2921,33 @@ void SMESHGUI::createPreferences()
 
   int selGroup = addPreference( tr( "PREF_GROUP_SELECTION" ), selTab );
 
-  addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_object_color" );
-  addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, SalomeApp_Preferences::Color, "SMESH", "selection_element_color" );
-  int selW = addPreference( tr( "PREF_WIDTH" ), selGroup, SalomeApp_Preferences::IntSpin, "SMESH", "selection_width" );
+  addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_object_color" );
+  addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_element_color" );
+  int selW = addPreference( tr( "PREF_WIDTH" ), selGroup, LightApp_Preferences::IntSpin, "SMESH", "selection_width" );
 
   setPreferenceProperty( selW, "min", 1 );
   setPreferenceProperty( selW, "max", 5 );
 
   int preGroup = addPreference( tr( "PREF_GROUP_PRESELECTION" ), selTab );
 
-  addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, SalomeApp_Preferences::Color, "SMESH", "highlight_color" );
-  int preW = addPreference( tr( "PREF_WIDTH" ), preGroup, SalomeApp_Preferences::IntSpin, "SMESH", "highlight_width" );
+  addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, LightApp_Preferences::Color, "SMESH", "highlight_color" );
+  int preW = addPreference( tr( "PREF_WIDTH" ), preGroup, LightApp_Preferences::IntSpin, "SMESH", "highlight_width" );
 
   setPreferenceProperty( preW, "min", 1 );
   setPreferenceProperty( preW, "max", 5 );
 
   int precSelGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), selTab );
 
-  addPreference( tr( "PREF_NODES" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_node" );
-  addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, SalomeApp_Preferences::Double, "SMESH", "selection_precision_element" );
+  addPreference( tr( "PREF_NODES" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_node" );
+  addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_element" );
 
   int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
 
-  int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, SalomeApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
-  addPreference( tr( "SMESH_TITLE" ), fontGr, SalomeApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
-  int lfont = addPreference( tr( "SMESH_LABELS" ), fontGr, SalomeApp_Preferences::Font, "SMESH", "scalar_bar_label_font" );
-  addPreference( tr( "SMESH_LABELS" ), fontGr, SalomeApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
+  int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
+  addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
+  int lfont = addPreference( tr( "SMESH_LABELS" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_label_font" );
+  addPreference( tr( "SMESH_LABELS" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
 
   QStringList fam;
   fam.append( tr( "SMESH_FONT_ARIAL" ) );
@@ -2964,16 +2964,16 @@ void SMESHGUI::createPreferences()
 
   int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
 
-  int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
+  int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, LightApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
   setPreferenceProperty( numcol, "min", 2 );
   setPreferenceProperty( numcol, "max", 256 );
 
-  int numlab = addPreference( tr( "SMESH_NUMBEROFLABELS" ), colorsLabelsGr, SalomeApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_labels" );
+  int numlab = addPreference( tr( "SMESH_NUMBEROFLABELS" ), colorsLabelsGr, LightApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_labels" );
   setPreferenceProperty( numlab, "min", 2 );
   setPreferenceProperty( numlab, "max", 65 );
 
   int orientGr = addPreference( tr( "SMESH_ORIENTATION" ), sbarTab );
-  int orient = addPreference( tr( "SMESH_ORIENTATION" ), orientGr, SalomeApp_Preferences::Selector, "SMESH", "scalar_bar_orientation" );
+  int orient = addPreference( tr( "SMESH_ORIENTATION" ), orientGr, LightApp_Preferences::Selector, "SMESH", "scalar_bar_orientation" );
   QStringList orients;
   orients.append( tr( "SMESH_VERTICAL" ) );
   orients.append( tr( "SMESH_HORIZONTAL" ) );
@@ -2982,10 +2982,10 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( orient, "indexes", indices );
 
   int posVSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_VERTICAL" ), sbarTab );
-  int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
-  int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );
-  int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
-  int hv = addPreference( tr( "SMESH_HEIGHT" ), posVSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_height" );
+  int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
+  int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );
+  int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
+  int hv = addPreference( tr( "SMESH_HEIGHT" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_height" );
   setPreferenceProperty( xv, "step", 0.1 );
   setPreferenceProperty( xv, "min", 0.0 );
   setPreferenceProperty( xv, "max", 1.0 );
@@ -3000,10 +3000,10 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( hv, "step", 0.1 );
 
   int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
-  int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
-  int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
-  int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );
-  int hh = addPreference( tr( "SMESH_HEIGHT" ), posHSizeGr, SalomeApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_height" );
+  int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
+  int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
+  int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );
+  int hh = addPreference( tr( "SMESH_HEIGHT" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_height" );
   setPreferenceProperty( xv, "min", 0.0 );
   setPreferenceProperty( xv, "max", 1.0 );
   setPreferenceProperty( xv, "step", 0.1 );
@@ -3036,7 +3036,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
   * \param theFlags - update flags
 *
 * Update viewer or/and object browser etc. in accordance with update flags ( see
-* SalomeApp_UpdateFlags enumeration ).
+* LightApp_UpdateFlags enumeration ).
 */
 //================================================================================
 void SMESHGUI::update( const int flags )
@@ -3087,9 +3087,9 @@ void SMESHGUI::onOperationAborted( SUIT_Operation* )
 * It is called called automatically from startOperation method of base class.
 */
 //================================================================================
-SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
+LightApp_Operation* SMESHGUI::createOperation( const int id ) const
 {
-  SalomeApp_Operation* op = 0;
+  LightApp_Operation* op = 0;
   // to do : create operation here
   switch( id )
   {
@@ -3111,7 +3111,7 @@ SalomeApp_Operation* SMESHGUI::createOperation( const int id ) const
   return op;
 }
 
-SalomeApp_Displayer* SMESHGUI::displayer()
+LightApp_Displayer* SMESHGUI::displayer()
 {
   if( !myDisplayer )
     myDisplayer = new SMESHGUI_Displayer( dynamic_cast<SalomeApp_Study*>( getApp()->activeStudy() ) );

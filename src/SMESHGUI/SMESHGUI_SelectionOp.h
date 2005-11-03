@@ -45,7 +45,7 @@ class SMESH_Actor;
 /*
   Class       : SMESHGUI_SelectionOp
   Description : Base operation for all operations using object selection in viewer or objectbrowser
-                through common widgets created by SalomeApp_Dialog::createObject
+                through common widgets created by LightApp_Dialog::createObject
 */
 class SMESHGUI_SelectionOp : public SMESHGUI_Operation
 { 
