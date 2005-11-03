@@ -3,7 +3,7 @@
 #include <SUIT_Session.h>
 
 #include <SalomeApp_Study.h>
-#include <SalomeApp_DataOwner.h>
+#include <LightApp_DataOwner.h>
 
 SMESH_TypeFilter::SMESH_TypeFilter (MeshObjectType theType) 
 {
@@ -18,8 +18,8 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 {
   bool Ok = false, extractReference = true;
 
-  const SalomeApp_DataOwner* owner =
-    dynamic_cast<const SalomeApp_DataOwner*>(theDataOwner);
+  const LightApp_DataOwner* owner =
+    dynamic_cast<const LightApp_DataOwner*>(theDataOwner);
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>
     (SUIT_Session::session()->activeApplication()->activeStudy());
 
