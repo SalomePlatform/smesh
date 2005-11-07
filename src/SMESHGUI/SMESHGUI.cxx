@@ -2564,8 +2564,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 1102, OB, hyp_alg ); // REMOVE HYPOTHESIS / ALGORITHMS
   createPopupItem( 1101, OB, mesh_group + " " + hyp_alg, "" /*"&& $hasReference={false}"*/ ); // RENAME
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( 125, OB, mesh );                        // EXPORT_MED
-  createPopupItem( 126, OB, mesh );                        // EXPORT_UNV
+
+  QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
+  createPopupItem( 125, OB, mesh, only_one_non_empty );    // EXPORT_MED
+  createPopupItem( 126, OB, mesh, only_one_non_empty );    // EXPORT_UNV
   createPopupItem( 33, OB, subMesh + " " + group );        // DELETE
   popupMgr()->insert( separator(), -1, 0 );
 
