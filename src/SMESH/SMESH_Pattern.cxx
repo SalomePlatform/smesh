@@ -3467,6 +3467,35 @@ bool SMESH_Pattern::
 }
 
 //=======================================================================
+//function : clearMesh
+//purpose  : clear mesh elements existing on myShape in theMesh
+//=======================================================================
+
+void SMESH_Pattern::clearMesh(SMESH_Mesh* theMesh) const
+{
+
+  if ( !myShape.IsNull() )
+  {
+    if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMesh/*Containing*/( myShape ))
+    {
+      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEANDEP );
+    }
+    else {
+      SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
+      if ( SMESHDS_SubMesh* aSubMeshDS = aMeshDS->MeshElements( myShape ))
+      {
+        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+        while ( eIt->more() )
+          aMeshDS->RemoveElement( eIt->next() );
+        SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
+        while ( nIt->more() )
+          aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
+      }
+    }
+  }
+}
+
+//=======================================================================
 //function : MakeMesh
 //purpose  : Create nodes and elements in <theMesh> using nodes
 //           coordinates computed by either of Apply...() methods
@@ -3485,25 +3514,11 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
   SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
 
   // clear elements and nodes existing on myShape
-
-  if ( !myShape.IsNull() )
-  {
-    SMESH_subMesh * aSubMesh = theMesh->GetSubMeshContaining( myShape );
-    SMESHDS_SubMesh * aSubMeshDS = aMeshDS->MeshElements( myShape );
-    if ( aSubMesh )
-      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
-    else if ( aSubMeshDS )
-    {
-      SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-      while ( eIt->more() )
-        aMeshDS->RemoveElement( eIt->next() );
-      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
-      while ( nIt->more() )
-        aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
-    }
-  }
+  clearMesh(theMesh);
 
   bool onMeshElements = ( !myElements.empty() );
+
+  // Create missing nodes
 
   vector< const SMDS_MeshNode* > nodesVector; // i-th point/xyz -> node
   if ( onMeshElements )
