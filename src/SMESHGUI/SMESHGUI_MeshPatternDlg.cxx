@@ -739,7 +739,10 @@ void SMESHGUI_MeshPatternDlg::onOkCreationDlg()
 {
   myPattern = SMESH::SMESH_Pattern::_duplicate(myCreationDlg->GetPattern());
   myName->setText(myCreationDlg->GetPatternName());
+
+  updateWgState();
   displayPreview();
+
   setEnabled(true);
   myIsCreateDlgOpen = false;
 }
@@ -933,7 +936,7 @@ void SMESHGUI_MeshPatternDlg::updateWgState()
     }
 
     QValueList<int> ids;
-    if (!CORBA::is_nil(myPattern) && getIds(ids)) {
+    if (!CORBA::is_nil(myPattern)/* && getIds(ids)*/) {
       SMESH::long_array_var keyPoints = myPattern->GetKeyPoints();
       if (keyPoints->length()) {
 	myNode1->setEnabled(true);
@@ -1278,6 +1281,8 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
   }
 
   myBusy = false;
+
+  displayPreview();
 }
 
 //=======================================================================
