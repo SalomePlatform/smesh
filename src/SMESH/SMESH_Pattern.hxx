@@ -301,7 +301,10 @@ class SMESH_Pattern {
                   const std::list< int >& theIdsList) const;
   // check xyz ids order in theIdsList taking into account
   // theFirstNode on a link
-                  
+
+  void clearMesh(SMESH_Mesh* theMesh) const;
+  // clear mesh elements existing on myShape in theMesh
+
  private:
   // fields
 
