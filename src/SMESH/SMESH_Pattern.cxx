@@ -46,6 +46,7 @@
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Lin2d.hxx>
 #include <gp_Pnt2d.hxx>
@@ -2839,7 +2840,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   MESSAGE(" ::Load(volume) " );
   Clear();
   myIs2D = false;
-  SMESHDS_Mesh * aMeshDS = theMesh->GetMeshDS();
+  SMESHDS_SubMesh * aSubMesh;
 
   // load shapes in myShapeIDMap
   SMESH_Block block;
@@ -2852,7 +2853,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   for ( shapeID = 1; shapeID <= myShapeIDMap.Extent(); shapeID++ )
   {
     const TopoDS_Shape& S = myShapeIDMap( shapeID );
-    SMESHDS_SubMesh * aSubMesh = aMeshDS->MeshElements( S );
+    aSubMesh = getSubmeshWithElements( theMesh, S );
     if ( aSubMesh )
       nbNodes += aSubMesh->NbNodes();
   }
@@ -2865,7 +2866,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   {
     const TopoDS_Shape& S = myShapeIDMap( shapeID );
     list< TPoint* > & shapePoints = getShapePoints( shapeID );
-    SMESHDS_SubMesh * aSubMesh = aMeshDS->MeshElements( S );
+    aSubMesh = getSubmeshWithElements( theMesh, S );
     if ( ! aSubMesh ) continue;
     SMDS_NodeIteratorPtr nIt = aSubMesh->GetNodes();
     if ( !nIt->more() ) continue;
@@ -2929,7 +2930,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
 
   // load elements
 
-  SMESHDS_SubMesh * aSubMesh = aMeshDS->MeshElements( theBlock );
+  aSubMesh = getSubmeshWithElements( theMesh, theBlock );
   if ( aSubMesh )
   {
     SMDS_ElemIteratorPtr elemIt = aSubMesh->GetElements();
@@ -2946,6 +2947,32 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
 
   return setErrorCode( ERR_OK );
 }
+
+//=======================================================================
+//function : getSubmeshWithElements
+//purpose  : return submesh containing elements bound to theBlock in theMesh
+//=======================================================================
+
+SMESHDS_SubMesh * SMESH_Pattern::getSubmeshWithElements(SMESH_Mesh*         theMesh,
+                                                        const TopoDS_Shape& theShape)
+{
+  SMESHDS_SubMesh * aSubMesh = theMesh->GetMeshDS()->MeshElements( theShape );
+  if ( aSubMesh && ( aSubMesh->GetElements()->more() || aSubMesh->GetNodes()->more() ))
+    return aSubMesh;
+
+  if ( theShape.ShapeType() == TopAbs_SHELL )
+  {
+    // look for submesh of VOLUME
+    TopTools_ListIteratorOfListOfShape it( theMesh->GetAncestors( theShape ));
+    for (; it.More(); it.Next()) {
+      aSubMesh = theMesh->GetMeshDS()->MeshElements( it.Value() );
+      if ( aSubMesh && ( aSubMesh->GetElements()->more() || aSubMesh->GetNodes()->more() ))
+        return aSubMesh;
+    }
+  }
+  return 0;
+}
+
 
 //=======================================================================
 //function : Apply

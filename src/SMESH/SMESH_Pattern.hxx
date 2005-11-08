@@ -41,6 +41,7 @@ class SMDS_MeshFace;
 class SMDS_MeshVolume;
 class SMDS_MeshNode;
 class SMESH_Mesh;
+class SMESHDS_SubMesh;
 class TopoDS_Shell;
 class TopoDS_Vertex;
 class TopoDS_Face;
@@ -304,6 +305,10 @@ class SMESH_Pattern {
 
   void clearMesh(SMESH_Mesh* theMesh) const;
   // clear mesh elements existing on myShape in theMesh
+
+  static SMESHDS_SubMesh * getSubmeshWithElements(SMESH_Mesh*         theMesh,
+                                                  const TopoDS_Shape& theShape);
+  // return submesh containing elements bound to theShape in theMesh
 
  private:
   // fields
