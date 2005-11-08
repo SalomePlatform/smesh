@@ -1268,10 +1268,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 701:					// COMPUTE MESH
     {
       if(checkLock(aStudy)) break;
-      if ( vtkwnd ) {
-	LightApp_SelectionMgr *Sel = selectionMgr();
-	SALOME_ListIO selected; Sel->selectedObjects( selected );
 
+      LightApp_SelectionMgr *Sel = selectionMgr();
+      SALOME_ListIO selected; Sel->selectedObjects( selected );
+
+      if ( vtkwnd ) {
 	int nbSel = selected.Extent();
 	if (nbSel != 1){
 	  break;
@@ -1364,6 +1365,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 			      tr("SMESH_BUT_OK"));
       }
       updateObjBrowser();
+      Sel->setSelectedObjects( selected );
       break;
     }
 
