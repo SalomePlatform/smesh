@@ -2434,6 +2434,19 @@ bool SMESHGUI::CustomPopup(QAD_Desktop* parent, QPopupMenu* popup, const QString
 	  popup->removeItem( 1102 );
       }
       else if ( theObject == "Mesh" || theObject == "SubMesh" || theObject == "Group" ) {
+	if( theObject=="Mesh" )
+	{
+	  CORBA::Object_var obj = SMESH::SObjectToObject( SO, SMESH::GetActiveStudyDocument() );
+	  if( !CORBA::is_nil( obj ) )
+	  {
+	    SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( obj );
+	    if( !aMesh->_is_nil() && aMesh->NbNodes()==0 )
+	    {
+	      popup->removeItem( 122 );
+	      popup->removeItem( 123 );
+	    }  
+	  }
+	}
 	// get actor
 	GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh( SO );
 	if ( aShapeObject->_is_nil() ) {
