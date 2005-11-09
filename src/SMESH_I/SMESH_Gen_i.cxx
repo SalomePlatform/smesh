@@ -421,7 +421,8 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
   }
 
   SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
-  aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
+  if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
+    aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
 
   // set current study for geom engine
   //if ( !CORBA::is_nil( GetGeomEngine() ) )
