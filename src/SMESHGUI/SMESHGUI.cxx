@@ -1168,6 +1168,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (aSel)
         aSel->selectedObjects( sel_objects );
 
+      if( theCommandID==302 )
+	startOperation( myEraseAll );
+
       SALOME_ListIteratorOfListIO anIt( sel_objects );
       for( ; anIt.More(); anIt.Next() )
       {
