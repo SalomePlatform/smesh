@@ -410,7 +410,8 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
 
 void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 {
-  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
+  //if(MYDEBUG)
+    MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = GetCurrentStudyID();
@@ -418,11 +419,13 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() ) {
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
+
+  SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
+  aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
+
   // set current study for geom engine
-  /*
-  if ( !CORBA::is_nil( GetGeomEngine() ) )
-    GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
-  */
+  //if ( !CORBA::is_nil( GetGeomEngine() ) )
+  //  GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
 }
 
 //=============================================================================
@@ -1657,6 +1660,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
        theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
     SetCurrentStudy( theComponent->GetStudy() );
 
+/*  if( !theComponent->_is_nil() )
+  {
+    //SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow( theComponent->GetStudy() );
+    if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
+      loadGeomData( myCurrentStudy->FindComponent( "GEOM" ) );
+  }*/
+
   StudyContext* myStudyContext = GetCurrentStudyContext();
   
   // Get temporary files location
@@ -1961,7 +1971,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	      SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
 
 	      // Make sure GEOM data are loaded first
-	      loadGeomData( shapeSO->GetFatherComponent() );
+	      //loadGeomData( shapeSO->GetFatherComponent() );
 
 	      CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
 	      if ( !CORBA::is_nil( shapeObject ) ) {
