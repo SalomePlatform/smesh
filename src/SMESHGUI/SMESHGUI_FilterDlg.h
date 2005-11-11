@@ -130,6 +130,14 @@ public:
                                           QString&       theText,
                                           const int      theEntityType = -1);
 
+  void                      SetID( const int      theRow,
+				   const QString& theText,
+				   const int      theEntityType = -1 ); 
+  
+  bool                      GetID( const int      theRow,
+				   QString&       theText,
+				   const int      theEntityType = -1 );
+
   void                      Update();
 
 signals:

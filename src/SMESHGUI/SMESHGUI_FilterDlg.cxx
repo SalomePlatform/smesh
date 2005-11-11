@@ -790,7 +790,11 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
     theCriterion.Threshold = aTable->item(theRow, 2)->text().toDouble();
   }
   else
-    theCriterion.ThresholdStr = aTable->text(theRow, 2).latin1();
+    {
+      theCriterion.ThresholdStr = aTable->text(theRow, 2).latin1();
+      if ( aCriterionType != FT_RangeOfIds )
+	theCriterion.ThresholdID = aTable->text( theRow, 5 ).latin1();
+    }
 
   QTableItem* anItem = aTable->item(theRow, 0);
   if (myAddWidgets.contains(anItem))
@@ -833,7 +837,11 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
        theCriterion.Type != FT_LyingOnGeom)
     aTable->setText(theRow, 2, QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
   else
-    aTable->setText(theRow, 2, QString(theCriterion.ThresholdStr));
+    {
+      aTable->setText(theRow, 2, QString(theCriterion.ThresholdStr));
+      if ( theCriterion.Type != FT_RangeOfIds )
+	aTable->setText( theRow, 5, QString( theCriterion.ThresholdID ) );
+    }
 
   if (theCriterion.Compare == FT_EqualTo ||
        theCriterion.Type    == FT_BelongToPlane ||
@@ -1352,7 +1360,7 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
                                                                 const int theType)
 {
   // create table
-  Table* aTable= new Table(0, 5, theParent);
+  Table* aTable= new Table(0, 6, theParent);
 
   QHeader* aHeaders = aTable->horizontalHeader();
 
@@ -1383,10 +1391,14 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
   aHeaders->setLabel(2, tr("THRESHOLD_VALUE"));
   aHeaders->setLabel(3, tr("UNARY"));
   aHeaders->setLabel(4, tr("BINARY") + "  ");
+  aHeaders->setLabel( 5, tr( "ID" ) );
 
   // set geometry of the table
   for (int i = 0; i <= 4; i++)
     aTable->adjustColumn(i);
+
+  // set the ID column invisible
+  aTable->hideColumn( 5 );
 
   aTable->updateGeometry();
   QSize aSize = aTable->sizeHint();
@@ -1588,6 +1600,37 @@ bool SMESHGUI_FilterTable::GetThreshold (const int      theRow,
   else
    return false;
 }
+
+//=======================================================================
+// name    : SMESHGUI_FilterTable::SetID
+// Purpose : Set text and internal value in cell of ID value 
+//=======================================================================
+void SMESHGUI_FilterTable::SetID( const int      theRow,
+                                         const QString& theText,
+                                         const int      theEntityType )
+{
+  Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
+  aTable->setText( theRow, 5, theText );
+}
+
+//=======================================================================
+// name    : SMESHGUI_FilterTable::GetID
+// Purpose : Get text and internal value from cell of ID value
+//=======================================================================
+bool SMESHGUI_FilterTable::GetID( const int      theRow,
+				  QString&       theText,
+				  const int      theEntityType )
+{
+  Table* aTable = myTables[ theEntityType == -1 ? GetType() : theEntityType ];
+  QTableItem* anItem = aTable->item( theRow, 5 );
+  if ( anItem != 0 )
+    {
+      theText = anItem->text();
+      return true;    
+    }
+  else
+    return false;
+} 
 
 /*
   Class       : SMESHGUI_FilterDlg
@@ -2425,6 +2468,7 @@ SMESH::Filter::Criterion SMESHGUI_FilterDlg::createCriterion()
   aCriterion.UnaryOp       = FT_Undefined;
   aCriterion.BinaryOp      = FT_Undefined;
   aCriterion.ThresholdStr  = "";
+  aCriterion.ThresholdID   = "";
   aCriterion.TypeOfElement = SMESH::ALL;
 
   return aCriterion;
@@ -2452,7 +2496,10 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   Handle(SALOME_InteractiveObject) anIO = aList.First();
   GEOM::GEOM_Object_var anObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
   if (!anObj->_is_nil())
-    myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+    {
+      myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
+      myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
+    }
 }
 
 //=======================================================================
