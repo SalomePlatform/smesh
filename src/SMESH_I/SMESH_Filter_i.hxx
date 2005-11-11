@@ -347,11 +347,14 @@ public:
   void                            SetGeom( const TopoDS_Shape& theShape );
 
   void                            SetShapeName( const char* theName );
+  void                            SetShape( const char* theID, const char* theName );
   char*                           GetShapeName();
+  char*                           GetShapeID();
 
 protected:
   Controls::BelongToGeomPtr       myBelongToGeomPtr;
   char*                           myShapeName;
+  char*                           myShapeID;
 };
 
 /*
@@ -368,7 +371,9 @@ public:
   void                            SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
 
   void                            SetShapeName( const char* theName, ElementType theType );
+  void                            SetShape( const char* theID, const char* theName, ElementType theType );
   char*                           GetShapeName();
+  char*                           GetShapeID();
 
   void                            SetTolerance( CORBA::Double );
   CORBA::Double                   GetTolerance();
@@ -376,6 +381,7 @@ public:
 protected:
   Controls::ElementsOnSurfacePtr  myElementsOnSurfacePtr;
   char*                           myShapeName;
+  char*                           myShapeID;
   Handle(Standard_Type)           mySurfaceType;
 };
 
@@ -423,11 +429,14 @@ public:
   void                            SetGeom( const TopoDS_Shape& theShape );
   
   void                            SetShapeName( const char* theName );
+  void                            SetShape( const char* theID, const char* theName );
   char*                           GetShapeName();
+  char*                           GetShapeID();
   
 protected:
   Controls::LyingOnGeomPtr        myLyingOnGeomPtr;
   char*                           myShapeName;
+  char*                           myShapeID;
 };
 
 /*

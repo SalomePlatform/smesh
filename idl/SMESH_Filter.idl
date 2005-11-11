@@ -155,7 +155,9 @@ module SMESH
     void SetElementType( in ElementType theType );
 
     void   SetShapeName( in string theName );
+    void   SetShape( in string theID, in string theName );
     string GetShapeName();    
+    string GetShapeID(); 
   };
 
   /*!
@@ -167,7 +169,9 @@ module SMESH
     void   SetTolerance( in double theToler );
     double GetTolerance();
     void   SetShapeName( in string theName, in ElementType theType );
+    void   SetShape( in string theID, in string theName, in ElementType theType );
     string GetShapeName();
+    string GetShapeID(); 
   };
 
 
@@ -199,7 +203,9 @@ module SMESH
     void SetElementType( in ElementType theType );
 
     void   SetShapeName( in string theName );
-    string GetShapeName();    
+    void   SetShape( in string theID, in string theName );
+    string GetShapeName();
+    string GetShapeID(); 
   };
  
   /*!
@@ -291,6 +297,8 @@ module SMESH
     *   ThresholdStr  - Threshold value defined as string. Used for:
     *                   1. Diaposon of identifiers. Example: "1,2,3,5-10,12,27-29"
     *                   2. BelongToGeom predicate for storing name of shape
+    *   ThresholdID   - One more threshold value defined as string. Used for:
+    *                   1. BelongToGeom predicate for storing id of shape
     *   Tolerance     - Tolerance is used for comparators (EqualTo comparision) and for
     *                   "Belong to plane" and "Belong to cylinder" predicates
     *   TypeOfElement - type of element SMESH::NODE, SMESH::FACE (used by BelongToGeom predicate only)
@@ -302,6 +310,7 @@ module SMESH
       long        Compare;
       double      Threshold;
       string      ThresholdStr;
+      string      ThresholdID;
       long        UnaryOp;
       long        BinaryOp;
       double      Tolerance;

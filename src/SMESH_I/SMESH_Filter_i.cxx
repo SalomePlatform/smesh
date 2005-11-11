@@ -342,6 +342,7 @@ static SMESH::Filter::Criterion createCriterion()
   aCriterion.UnaryOp       = FT_Undefined;
   aCriterion.BinaryOp      = FT_Undefined;
   aCriterion.ThresholdStr  = "";
+  aCriterion.ThresholdID   = "";
   aCriterion.Tolerance     = Precision::Confusion();
   aCriterion.TypeOfElement = SMESH::ALL;
   aCriterion.Precision     = -1;
@@ -374,7 +375,50 @@ static TopoDS_Shape getShapeByName( const char* theName )
   return TopoDS_Shape();
 }
 
+static TopoDS_Shape getShapeByID( const char* theID )
+{
+  if ( theID != 0 && theID!="" )
+  {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    if ( aStudy != 0 )
+    {
+      CORBA::Object_var obj = aStudy->ConvertIORToObject(theID);
+      GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( obj );
+      
+      if ( !aGeomObj->_is_nil() )
+        {
+	  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+          TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
+          return aLocShape;
+        }
+    }
+  }
+  return TopoDS_Shape();
+}
 
+static char* getShapeNameByID ( const char* theID )
+{
+  char* aName = "";
+
+  if ( theID != 0 && theID!="" )
+    {
+      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+      if ( aStudy != 0 )
+	{
+	  SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+	  SALOMEDS::GenericAttribute_var anAttr;
+	  if ( !aSObj->_is_nil() && aSObj->FindAttribute( anAttr, "AttributeName") )
+	    {
+	      SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow( anAttr );
+	      aName = aNameAttr->Value();        
+	    }
+	}
+    }
+  
+  return aName;
+}
 
 /*
                                 FUNCTORS
@@ -693,11 +737,13 @@ BelongToGeom_i::BelongToGeom_i()
   myBelongToGeomPtr.reset( new Controls::BelongToGeom() );
   myFunctorPtr = myPredicatePtr = myBelongToGeomPtr;
   myShapeName = 0;
+  myShapeID   = 0;
 }
 
 BelongToGeom_i::~BelongToGeom_i()
 {
   delete myShapeName;
+  delete myShapeID;
 }
 
 void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
@@ -731,9 +777,30 @@ void BelongToGeom_i::SetShapeName( const char* theName )
   myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
 }
 
+void BelongToGeom_i::SetShape( const char* theID, const char* theName )
+{
+  delete myShapeName;
+  myShapeName = strdup( theName );
+  delete myShapeID;
+  if ( theID )
+    myShapeID = strdup( theID );
+  else
+    myShapeID = 0;
+
+  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+    myBelongToGeomPtr->SetGeom( getShapeByID(myShapeID) );
+  else
+    myBelongToGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+}
+
 char* BelongToGeom_i::GetShapeName()
 {
   return CORBA::string_dup( myShapeName );
+}
+
+char* BelongToGeom_i::GetShapeID()
+{
+  return CORBA::string_dup( myShapeID );
 }
 
 /*
@@ -745,12 +812,14 @@ BelongToSurface_i::BelongToSurface_i( const Handle(Standard_Type)& theSurfaceTyp
   myElementsOnSurfacePtr.reset( new Controls::ElementsOnSurface() );
   myFunctorPtr = myPredicatePtr = myElementsOnSurfacePtr;
   myShapeName = 0;
+  myShapeID   = 0;
   mySurfaceType = theSurfaceType;
 }
 
 BelongToSurface_i::~BelongToSurface_i()
 {
   delete myShapeName;
+  delete myShapeID;
 }
 
 void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
@@ -781,9 +850,30 @@ void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
   myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
 }
 
+void BelongToSurface_i::SetShape( const char* theID,  const char* theName, ElementType theType )
+{
+  delete myShapeName;
+  myShapeName = strdup( theName );
+  delete myShapeID;
+  if ( theID )
+    myShapeID = strdup( theID );
+  else
+    myShapeID = 0;
+  
+  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+    myElementsOnSurfacePtr->SetSurface( getShapeByID(myShapeID), (SMDSAbs_ElementType)theType );
+  else
+    myElementsOnSurfacePtr->SetSurface( getShapeByName( myShapeName ), (SMDSAbs_ElementType)theType );
+}
+
 char* BelongToSurface_i::GetShapeName()
 {
   return CORBA::string_dup( myShapeName );
+}
+
+char* BelongToSurface_i::GetShapeID()
+{
+  return CORBA::string_dup( myShapeID );
 }
 
 void BelongToSurface_i::SetTolerance( CORBA::Double theToler )
@@ -845,11 +935,13 @@ LyingOnGeom_i::LyingOnGeom_i()
   myLyingOnGeomPtr.reset( new Controls::LyingOnGeom() );
   myFunctorPtr = myPredicatePtr = myLyingOnGeomPtr;
   myShapeName = 0;
+  myShapeID = 0;
 }
 
 LyingOnGeom_i::~LyingOnGeom_i()
 {
   delete myShapeName;
+  delete myShapeID;
 }
 
 void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
@@ -883,9 +975,30 @@ void LyingOnGeom_i::SetShapeName( const char* theName )
   myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
 }
 
+void LyingOnGeom_i::SetShape( const char* theID, const char* theName )
+{
+  delete myShapeName;
+  myShapeName = strdup( theName );
+  delete myShapeID;
+  if ( theID )
+    myShapeID = strdup( theID );
+  else
+    myShapeID = 0;
+  
+  if ( myShapeID && strcmp(myShapeName, getShapeNameByID(myShapeID)) == 0 )
+    myLyingOnGeomPtr->SetGeom( getShapeByID(myShapeID) );
+  else
+    myLyingOnGeomPtr->SetGeom( getShapeByName( myShapeName ) );
+}
+
 char* LyingOnGeom_i::GetShapeName()
 {
   return CORBA::string_dup( myShapeName );
+}
+
+char* LyingOnGeom_i::GetShapeID()
+{
+  return CORBA::string_dup( myShapeID );
 }
 
 /*
@@ -1585,6 +1698,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       theCriteria[ i ].Type          = FT_BelongToGeom;
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
 
       return true;
@@ -1601,6 +1715,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       theCriteria[ i ].Type          = aFType;
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
       theCriteria[ i ].Tolerance     = aPred->GetTolerance();
 
@@ -1617,6 +1732,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
 
       theCriteria[ i ].Type          = FT_LyingOnGeom;
       theCriteria[ i ].ThresholdStr  = aPred->GetShapeName();
+      theCriteria[ i ].ThresholdID   = aPred->GetShapeID();
       theCriteria[ i ].TypeOfElement = aPred->GetElementType();
 
       return true;
@@ -1736,6 +1852,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     int         aBinary       = theCriteria[ i ].BinaryOp;
     double      aTolerance    = theCriteria[ i ].Tolerance;
     const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
+    const char* aThresholdID  = theCriteria[ i ].ThresholdID;
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
     
@@ -1792,7 +1909,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::BelongToGeom_ptr tmpPred = aFilterMgr->CreateBelongToGeom();
           tmpPred->SetElementType( aTypeOfElem );
-          tmpPred->SetShapeName( aThresholdStr );
+	  tmpPred->SetShape( aThresholdID, aThresholdStr );
           aPredicate = tmpPred;
         }
         break;
@@ -1804,7 +1921,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
             tmpPred = aFilterMgr->CreateBelongToPlane();
           else
             tmpPred = aFilterMgr->CreateBelongToCylinder();
-          tmpPred->SetShapeName( aThresholdStr, aTypeOfElem );
+	  tmpPred->SetShape( aThresholdID, aThresholdStr, aTypeOfElem );
           tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
         }
@@ -1813,7 +1930,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         {
           SMESH::LyingOnGeom_ptr tmpPred = aFilterMgr->CreateLyingOnGeom();
           tmpPred->SetElementType( aTypeOfElem );
-          tmpPred->SetShapeName( aThresholdStr );
+	  tmpPred->SetShape( aThresholdID, aThresholdStr );
           aPredicate = tmpPred;
         }
         break; 
@@ -2236,7 +2353,6 @@ static LDOM_Element createFilterItem( const char*       theName,
 
     aCriterionItem.setAttribute( ATTR_TYPE         , toString( aCriteria[ i ].Type      ) );
     aCriterionItem.setAttribute( ATTR_COMPARE      , toString( aCriteria[ i ].Compare   ) );
-    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( aCriteria[ i ].Threshold ) );
     aCriterionItem.setAttribute( ATTR_UNARY        , toString( aCriteria[ i ].UnaryOp   ) );
     aCriterionItem.setAttribute( ATTR_BINARY       , toString( aCriteria[ i ].BinaryOp  ) );
     
@@ -2353,7 +2469,7 @@ Filter_ptr FilterLibrary_i::Copy( const char* theFilterName )
     }
     else
       aCriterion.ThresholdStr = str.GetString();
-
+    
     aCriteria.push_back( aCriterion );
   }
 
