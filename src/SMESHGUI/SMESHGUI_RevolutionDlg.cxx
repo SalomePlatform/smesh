@@ -495,7 +495,7 @@ void SMESHGUI_RevolutionDlg::ClickOnCancel()
 {
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearFilters();
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);

@@ -335,7 +335,7 @@ bool SMESHGUI_MergeNodesDlg::ClickOnApply()
   } catch(...) {
   }
 
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::UpdateView();
 
   onDetect();
@@ -359,7 +359,7 @@ void SMESHGUI_MergeNodesDlg::ClickOnOk()
 void SMESHGUI_MergeNodesDlg::ClickOnCancel()
 {
   mySelectionMgr->clearFilters();
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);

@@ -274,7 +274,7 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
 	{
 	}
 
-      mySelectionMgr->clearSelected();
+      //mySelectionMgr->clearSelected();
       SMESH::UpdateView();
     }
 }
@@ -295,7 +295,7 @@ void SMESHGUI_RenumberingDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RenumberingDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();

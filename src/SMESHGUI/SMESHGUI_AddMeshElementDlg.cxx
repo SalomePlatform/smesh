@@ -457,7 +457,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     }
 
     SALOME_ListIO aList; aList.Append( myActor->getIO() );
-    mySelector->ClearIndex();
+    //mySelector->ClearIndex();
     mySelectionMgr->setSelectedObjects( aList, false );
 
     SMESH::UpdateView();
@@ -489,7 +489,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   mySimulation->SetVisibility(false);
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))

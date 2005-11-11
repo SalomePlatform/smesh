@@ -288,7 +288,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);

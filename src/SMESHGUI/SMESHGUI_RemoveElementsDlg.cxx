@@ -285,7 +285,7 @@ void SMESHGUI_RemoveElementsDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   disconnect(mySelectionMgr, 0, this, 0);
