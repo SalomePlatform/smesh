@@ -420,7 +420,13 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
       QString id = anIt.Value()->getEntry();
       ids.append( id );
       types.append( typeById( id, Object ) );
-      names.append( anIt.Value()->getName() );
+      SalomeApp_Study* _study = dynamic_cast<SalomeApp_Study*>( study() );
+      if( _study )
+      {
+	_PTR(SObject) obj = _study->studyDS()->FindObjectID( anIt.Value()->getEntry() );
+	if( obj )
+	  names.append( obj->GetName().c_str() );
+      }
     }
   }
 }
