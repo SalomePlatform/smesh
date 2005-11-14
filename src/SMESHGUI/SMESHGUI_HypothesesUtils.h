@@ -45,6 +45,7 @@ class HypothesisData;
 class HypothesesSet;
 class SMESHGUI_GenericHypothesisCreator;
 class SALOMEDSClient_SObject;
+class algo_error_array;
 
 namespace SMESH{
 
@@ -78,6 +79,7 @@ namespace SMESH{
   typedef std::vector<_PTR(SObject)> SObjectList;
   SObjectList GetMeshesUsingAlgoOrHypothesis(SMESH::SMESH_Hypothesis_ptr AlgoOrHyp ) ;
 
+  QString GetMessageOnAlgoStateErrors(const algo_error_array& errors);
 }
 
 #endif

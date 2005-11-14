@@ -549,4 +549,33 @@ namespace SMESH{
     if (MYDEBUG) MESSAGE("SMESHGUI::GetMeshesUsingAlgoOrHypothesis(): completed");
     return listSOmesh;
   }
+
+#define CASE2MESSAGE(enum) case SMESH::enum: msg = QObject::tr( #enum ); break;
+  QString GetMessageOnAlgoStateErrors(const algo_error_array& errors)
+  {
+    QString resMsg = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
+    for ( int i = 0; i < errors.length(); ++i ) {
+      const SMESH::AlgoStateError & error = errors[ i ];
+      QString msg;
+      switch( error.name ) {
+        CASE2MESSAGE( MISSING_ALGO );
+        CASE2MESSAGE( MISSING_HYPO );
+        CASE2MESSAGE( NOT_CONFORM_MESH );
+      default: continue;
+      }
+      // apply args to message:
+      // %1 - algo name
+      if ( error.algoName.in() != 0 )
+        msg = msg.arg( error.algoName.in() );
+      // %2 - dimention
+      msg = msg.arg( error.algoDim );
+      // %3 - global/local
+      msg = msg.arg( QObject::tr( error.isGlobalAlgo ? "GLOBAL_ALGO" : "LOCAL_ALGO" ));
+
+      if ( i ) resMsg += ";\n";
+      resMsg += msg;
+    }
+    return resMsg;
+  }
+
 }
