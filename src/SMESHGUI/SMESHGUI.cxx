@@ -1284,7 +1284,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	SMESH::SMESH_Mesh_var aMesh;
 	SMESH::SMESH_subMesh_var aSubMesh;
 	Handle(SALOME_InteractiveObject) IObject = selected.First();
-	if (IObject->hasEntry()){
+	if (IObject->hasEntry()) {
 	  _PTR(SObject) aMeshSObj = aStudy->FindObjectID(IObject->getEntry());
 	  GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh( aMeshSObj );
 	  if ( aShapeObject->_is_nil() ) {
@@ -1292,69 +1292,50 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	    break;
 	  }
 	  if( aMeshSObj ) {
-	    SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(aMeshSObj);
-	    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(aMeshSObj);
-
-	    if (!aMesh->_is_nil()){
-	      GEOM::GEOM_Object_var refShapeObject = SMESH::GetShapeOnMeshOrSubMesh(aMeshSObj);
-	      if (!refShapeObject->_is_nil()) {
-		if(!GetSMESHGen()->IsReadyToCompute(aMesh,refShapeObject)){
-		  SUIT_MessageBox::warn1(desktop(),
-					tr("SMESH_WRN_WARNING"),
-					tr("SMESH_WRN_MISSING_PARAMETERS"),
-					tr("SMESH_BUT_OK"));
-		  break;
-		}
-		try{
-		  if (GetSMESHGen()->Compute(aMesh,refShapeObject))
-                    SMESH::ModifiedMesh(aMeshSObj,true);
-		  // TO Do : change icon of all submeshes
-                  else
-                    SUIT_MessageBox::warn1(desktop(),
-                                          tr("SMESH_WRN_WARNING"),
-                                          tr("SMESH_WRN_COMPUTE_FAILED"),
-                                          tr("SMESH_BUT_OK"));
-		}
-		catch(const SALOME::SALOME_Exception & S_ex){
-		  SalomeApp_Tools::QtCatchCorbaException(S_ex);
-		}
-	      }
-	    }else if(!aSubMesh->_is_nil()){
+	    aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(aMeshSObj);
+	    aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(aMeshSObj);
+            if ( !aSubMesh->_is_nil() )
 	      aMesh = aSubMesh->GetFather();
-	      GEOM::GEOM_Object_var refShapeObject = SMESH::GetShapeOnMeshOrSubMesh(aMeshSObj);
-	      if(!refShapeObject->_is_nil()){
-		bool compute = GetSMESHGen()->IsReadyToCompute(aMesh,refShapeObject);
-		if(!compute){
-		  SUIT_MessageBox::warn1(desktop(),
-					tr("SMESH_WRN_WARNING"),
-					tr("SMESH_WRN_MISSING_PARAMETERS"),
-					tr("SMESH_BUT_OK"));
-		  break;
-		}
-		try{
-		  if ( GetSMESHGen()->Compute(aMesh,refShapeObject) )
-                    SMESH::ModifiedMesh(aMeshSObj,true);
-		  // TO Do : change icon of all submeshes
-                  else
-                    SUIT_MessageBox::warn1(desktop(),
-                                          tr("SMESH_WRN_WARNING"),
-                                          tr("SMESH_WRN_COMPUTE_FAILED"),
-                                          tr("SMESH_BUT_OK"));
-		}catch(const SALOME::SALOME_Exception & S_ex){
-		  SalomeApp_Tools::QtCatchCorbaException(S_ex);
-		}
-	      }
-	    }
+
+	    if (!aMesh->_is_nil()) {
+//               if(!GetSMESHGen()->IsReadyToCompute(aMesh,aShapeObject)) {
+//                 SUIT_MessageBox::warn1(desktop(),
+//                                        tr("SMESH_WRN_WARNING"),
+//                                        tr("SMESH_WRN_MISSING_PARAMETERS"),
+//                                        tr("SMESH_BUT_OK"));
+//                 break;
+//               }
+              SMESH::algo_error_array_var errors = GetSMESHGen()->GetAlgoState(aMesh,aShapeObject);
+              if ( errors->length() > 0 ) {
+                SUIT_MessageBox::warn1(desktop(),
+                                       tr("SMESH_WRN_WARNING"),
+                                       SMESH::GetMessageOnAlgoStateErrors( errors.in() ),
+                                       tr("SMESH_BUT_OK"));
+                break;
+              }
+              try{
+                if (GetSMESHGen()->Compute(aMesh,aShapeObject))
+                  SMESH::ModifiedMesh(aMeshSObj,true);
+                else
+                  SUIT_MessageBox::warn1(desktop(),
+                                         tr("SMESH_WRN_WARNING"),
+                                         tr("SMESH_WRN_COMPUTE_FAILED"),
+                                         tr("SMESH_BUT_OK"));
+              }
+              catch(const SALOME::SALOME_Exception & S_ex){
+                SalomeApp_Tools::QtCatchCorbaException(S_ex);
+              }
+            }
 	  }
 	}
-	CORBA::Long anId = aStudy->StudyId();
-	TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,IObject->getEntry());
-	if ( automaticUpdate() && aVisualObj){
-	  aVisualObj->Update();
-	  SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
-	  if(!anActor){
-	    anActor = SMESH::CreateActor(aStudy,IObject->getEntry());
-	    if(anActor){
+        CORBA::Long anId = aStudy->StudyId();
+        TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,IObject->getEntry());
+        if ( automaticUpdate() && aVisualObj){
+          aVisualObj->Update();
+          SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
+          if(!anActor){
+            anActor = SMESH::CreateActor(aStudy,IObject->getEntry());
+            if(anActor){
 	      SMESH::DisplayActor(view,anActor); //apo
 	      SMESH::FitAll();
 	    }
