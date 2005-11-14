@@ -3102,6 +3102,6 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
 LightApp_Displayer* SMESHGUI::displayer()
 {
   if( !myDisplayer )
-    myDisplayer = new SMESHGUI_Displayer( dynamic_cast<SalomeApp_Study*>( getApp()->activeStudy() ) );
+    myDisplayer = new SMESHGUI_Displayer( getApp() );
   return myDisplayer;
 }

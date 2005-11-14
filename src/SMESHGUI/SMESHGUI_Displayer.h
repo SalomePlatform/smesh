@@ -31,18 +31,22 @@
 
 #include <LightApp_Displayer.h>
 
+class SalomeApp_Application;
 class SalomeApp_Study;
 
 class SMESHGUI_Displayer : public LightApp_Displayer
 {
 public:
-  SMESHGUI_Displayer( SalomeApp_Study* );
+  SMESHGUI_Displayer( SalomeApp_Application* );
   ~SMESHGUI_Displayer();
 
   virtual SALOME_Prs* buildPresentation( const QString&, SALOME_View* = 0 );
 
+protected:
+  SalomeApp_Study* study() const;
+
 private:
-  SalomeApp_Study*   myStudy;
+  SalomeApp_Application*   myApp;
 };
 
 #endif

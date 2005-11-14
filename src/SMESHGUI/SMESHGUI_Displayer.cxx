@@ -30,12 +30,13 @@
 #include "SMESHGUI_VTKUtils.h"
 
 #include <SalomeApp_Study.h>
+#include <SalomeApp_Application.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 
-SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Study* st )
+SMESHGUI_Displayer::SMESHGUI_Displayer( SalomeApp_Application* app )
 : LightApp_Displayer(),
-  myStudy( st )
+  myApp( app )
 {
 }
 
@@ -57,7 +58,7 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
       SUIT_ViewWindow* wnd = vtk_viewer->getViewManager()->getActiveView();
       SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.latin1() );
       if( !anActor )
-	anActor = SMESH::CreateActor( myStudy->studyDS(), entry.latin1(), true );
+	anActor = SMESH::CreateActor( study()->studyDS(), entry.latin1(), true );
       if( anActor )
       {
 	SMESH::DisplayActor( wnd, anActor );
@@ -71,4 +72,9 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
   }
 
   return prs;
+}
+
+SalomeApp_Study* SMESHGUI_Displayer::study() const
+{
+  return dynamic_cast<SalomeApp_Study*>( myApp->activeStudy() );
 }
