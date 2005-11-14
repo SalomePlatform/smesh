@@ -43,6 +43,15 @@ module SMESH
   interface FilterManager;
   interface SMESH_Pattern;
 
+  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  struct AlgoStateError {
+    AlgoStateErrorName name;
+    string             algoName;
+    long               algoDim;
+    boolean            isGlobalAlgo;
+  };
+  typedef sequence<AlgoStateError> algo_error_array;
+    
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
 
@@ -121,6 +130,14 @@ module SMESH
 
     boolean IsReadyToCompute( in SMESH_Mesh       theMesh, 
 			      in GEOM::GEOM_Object theSubObject )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Return errors of hypotheses definintion
+     * algo_error_array is empty if everything is OK
+     */
+    algo_error_array GetAlgoState( in SMESH_Mesh       theMesh, 
+                                   in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!

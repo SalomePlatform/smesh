@@ -203,6 +203,11 @@ public:
                                    GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
+  // Returns errors of hypotheses definintion
+  SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh, 
+                                         GEOM::GEOM_Object_ptr theSubObject )
+      throw ( SALOME::SALOME_Exception );
+
   // Get sub-shapes unique ID's list
   SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
                                      const SMESH::object_array& theListOfSubShape )

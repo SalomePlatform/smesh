@@ -68,6 +68,28 @@ class SMESH_Gen
   // notify on bad state of attached algos, return false
   // if Compute() would fail because of some algo bad state
 
+  
+  enum TAlgoStateErrorName { NONE=0, MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  struct TAlgoStateError
+  {
+    TAlgoStateErrorName _name;
+    const SMESH_Algo*   _algo;
+    int                 _algoDim;
+    bool                _isGlobalAlgo;
+
+    TAlgoStateError(): _algoDim(0),_algo(0),_name(NONE) {}
+    void Set(TAlgoStateErrorName name, const SMESH_Algo* algo, bool isGlobal)
+    { _name = name; _algo = algo; _algoDim = algo->GetDim(); _isGlobalAlgo = isGlobal; }
+    void Set(TAlgoStateErrorName name, const int algoDim,      bool isGlobal)
+    { _name = name; _algo = 0;    _algoDim = algoDim;        _isGlobalAlgo = isGlobal; }
+  };
+
+  bool GetAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape,
+                    std::list< SMESH_Gen::TAlgoStateError > & theErrors);
+  // notify on bad state of attached algos, return false
+  // if Compute() would fail because of some algo bad state
+  // theErrors list contains problems description
+
 
   StudyContextStruct *GetStudyContext(int studyId);
 

@@ -93,7 +93,7 @@ using namespace std;
 #define NUM_TMP_FILES 2
 
 #ifdef _DEBUG_
-static int MYDEBUG = 0;
+static int MYDEBUG = 1;
 #else
 static int MYDEBUG = 0;
 #endif
@@ -727,6 +727,100 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
     INFOS( "catch exception "<< S_ex.what() );
   }
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief Returns errors of hypotheses definintion
+  * \param theMesh - the mesh
+  * \param theSubObject - the main or sub- shape
+  * \retval SMESH::algo_error_array* - sequence of errors
+ */
+//================================================================================
+
+SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh, 
+                                                    GEOM::GEOM_Object_ptr theSubObject )
+      throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetAlgoState()" );
+
+  if ( CORBA::is_nil( theSubObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  SMESH::algo_error_array_var error_array = new SMESH::algo_error_array;
+  try {
+    SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
+    ASSERT( meshServant );
+    if ( meshServant ) {
+      TopoDS_Shape myLocShape = GeomObjectToShape( theSubObject );
+      ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
+      list< ::SMESH_Gen::TAlgoStateError > error_list;
+      list< ::SMESH_Gen::TAlgoStateError >::iterator error;
+      // call ::SMESH_Gen::GetAlgoState()
+      myGen.GetAlgoState( myLocMesh, myLocShape, error_list );
+      error_array->length( error_list.size() );
+      int i = 0;
+      for ( error = error_list.begin(); error != error_list.end(); ++error )
+      {
+        // error name
+        SMESH::AlgoStateErrorName errName;
+        switch ( error->_name ) {
+        case ::SMESH_Gen::MISSING_ALGO:     errName = SMESH::MISSING_ALGO; break;
+        case ::SMESH_Gen::MISSING_HYPO:     errName = SMESH::MISSING_HYPO; break;
+        case ::SMESH_Gen::NOT_CONFORM_MESH: errName = SMESH::NOT_CONFORM_MESH; break;
+        default:
+          THROW_SALOME_CORBA_EXCEPTION( "bad error name",SALOME::BAD_PARAM );
+        }
+        // algo name
+        CORBA::String_var algoName;
+        if ( error->_algo ) {
+          if ( !myCurrentStudy->_is_nil() ) {
+            // find algo in the study
+            SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
+              ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+            if ( !father->_is_nil() ) {
+              SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
+              for ( ; itBig->More(); itBig->Next() ) {
+                SALOMEDS::SObject_var gotBranch = itBig->Value();
+                if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
+                  SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
+                  for ( ; algoIt->More(); algoIt->Next() ) {
+                    SALOMEDS::SObject_var algoSO = algoIt->Value();
+                    CORBA::Object_var    algoIOR = SObjectToObject( algoSO );
+                    if ( !CORBA::is_nil( algoIOR )) {
+                      SMESH_Hypothesis_i* myImpl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
+                      if ( myImpl && myImpl->GetImpl() == error->_algo ) {
+                        algoName = algoSO->GetName();
+                        break;
+                      }
+                    }
+                  } // loop on algo SO's
+                  break;
+                } // if algo tag
+              } // SMESH component iterator
+            }
+          }
+          if ( algoName.in() == 0 )
+            // use algo type name
+            algoName = CORBA::string_dup( error->_algo->GetName() );
+        }
+        // fill AlgoStateError structure
+        SMESH::AlgoStateError & errStruct = error_array[ i++ ];
+        errStruct.name         = errName;
+        errStruct.algoName     = algoName;
+        errStruct.algoDim      = error->_algoDim;
+        errStruct.isGlobalAlgo = error->_isGlobalAlgo;
+      }
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+  return error_array._retn();
 }
 
 //=============================================================================

@@ -259,7 +259,8 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
                                      const SMESH_Algo*         aGlobIgnoAlgo,
                                      const SMESH_Algo*         aLocIgnoAlgo,
                                      bool &                    checkConform,
-                                     map<int, SMESH_subMesh*>& aCheckedMap)
+                                     map<int, SMESH_subMesh*>& aCheckedMap,
+                                     list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
   ASSERT( aSubMesh );
   if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX)
@@ -308,16 +309,18 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
           INFOS( "ERROR: Local <" << algo->GetName() <<
                 "> would produce not conform mesh: "
                 "<Not Conform Mesh Allowed> hypotesis is missing");
+          theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+          theErrors.back().Set( SMESH_Gen::NOT_CONFORM_MESH, algo, false );
         }
 
         // sub-algos will be hidden by a local <algo>
         const map<int, SMESH_subMesh*>& smMap = aSubMesh->DependsOn();
         map<int, SMESH_subMesh*>::const_reverse_iterator revItSub;
         bool checkConform2 = false;
-          for ( revItSub = smMap.rbegin(); revItSub != smMap.rend(); revItSub++)
+        for ( revItSub = smMap.rbegin(); revItSub != smMap.rend(); revItSub++)
         {
           checkConformIgnoredAlgos (aMesh, (*revItSub).second, aGlobIgnoAlgo,
-                                    algo, checkConform2, aCheckedMap);
+                                    algo, checkConform2, aCheckedMap, theErrors);
           int key = (*revItSub).first;
 	  SMESH_subMesh* sm = (*revItSub).second;
           if ( aCheckedMap.find( key ) == aCheckedMap.end() )
@@ -344,7 +347,8 @@ static bool checkMissing(SMESH_Gen*                aGen,
                          const int                 aTopAlgoDim,
                          bool*                     globalChecked,
                          const bool                checkNoAlgo,
-                         map<int, SMESH_subMesh*>& aCheckedMap)
+                         map<int, SMESH_subMesh*>& aCheckedMap,
+                         list< SMESH_Gen::TAlgoStateError > & theErrors)
 {
   if ( aSubMesh->GetSubShape().ShapeType() == TopAbs_VERTEX)
     return true;
@@ -365,6 +369,8 @@ static bool checkMissing(SMESH_Gen*                aGen,
       {
         INFOS( "ERROR: " << shapeDim << "D algorithm is missing" );
         ret = false;
+        theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+        theErrors.back().Set( SMESH_Gen::MISSING_ALGO, shapeDim, true );
       }
     }
     return ret;
@@ -380,6 +386,8 @@ static bool checkMissing(SMESH_Gen*                aGen,
             << "<" << algo->GetName() << "> misses some hypothesis");
       if (IsGlobalHypothesis)
         globalChecked[ algo->GetDim() ] = true;
+      theErrors.push_back( SMESH_Gen::TAlgoStateError() );
+      theErrors.back().Set( SMESH_Gen::MISSING_HYPO, algo, IsGlobalHypothesis );
     }
     ret = false;
     break;
@@ -414,7 +422,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
         //check algo on sub-meshes
         int aTopAlgoDim2 = algo->GetDim();
         if (!checkMissing (aGen, aMesh, sm, aTopAlgoDim2,
-                           globalChecked, checkNoAlgo2, aCheckedMap))
+                           globalChecked, checkNoAlgo2, aCheckedMap, theErrors))
         {
           ret = false;
           if (sm->GetAlgoState() == SMESH_subMesh::NO_ALGO )
@@ -434,13 +442,28 @@ static bool checkMissing(SMESH_Gen*                aGen,
 
 bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
 {
+  list< TAlgoStateError > errors;
+  return GetAlgoState( aMesh, aShape, errors );
+}
+
+//=======================================================================
+//function : GetAlgoState
+//purpose  : notify on bad state of attached algos, return false
+//           if Compute() would fail because of some algo bad state
+//           theErrors list contains problems description
+//=======================================================================
+
+bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
+                             const TopoDS_Shape&       theShape,
+                             list< TAlgoStateError > & theErrors)
+{
   //MESSAGE("SMESH_Gen::CheckAlgoState");
 
   bool ret = true;
   bool hasAlgo = false;
 
-  SMESH_subMesh* sm = aMesh.GetSubMesh(aShape);
-  const SMESHDS_Mesh* meshDS = aMesh.GetMeshDS();
+  SMESH_subMesh* sm = theMesh.GetSubMesh(theShape);
+  const SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
   TopoDS_Shape mainShape = meshDS->ShapeToMesh();
 
   // -----------------
@@ -489,19 +512,19 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
   const map<int, SMESH_subMesh*>& smMap = sm->DependsOn();
   map<int, SMESH_subMesh*>::const_reverse_iterator revItSub = smMap.rbegin();
   map<int, SMESH_subMesh*> aCheckedMap;
-  bool checkConform = ( !aMesh.IsNotConformAllowed() );
+  bool checkConform = ( !theMesh.IsNotConformAllowed() );
   int aKey = 1;
   SMESH_subMesh* smToCheck = sm;
 
-  // loop on aShape and its sub-shapes
+  // loop on theShape and its sub-shapes
   while ( smToCheck )
   {
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
     if ( aCheckedMap.find( aKey ) == aCheckedMap.end() )
-      if (!checkConformIgnoredAlgos (aMesh, smToCheck, aGlobIgnoAlgo,
-                                     0, checkConform, aCheckedMap))
+      if (!checkConformIgnoredAlgos (theMesh, smToCheck, aGlobIgnoAlgo,
+                                     0, checkConform, aCheckedMap, theErrors))
         ret = false;
 
     if ( smToCheck->GetAlgoState() != SMESH_subMesh::NO_ALGO )
@@ -544,15 +567,15 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
   bool checkNoAlgo = (bool) aTopAlgoDim;
   bool globalChecked[] = { false, false, false, false };
 
-  // loop on aShape and its sub-shapes
+  // loop on theShape and its sub-shapes
   while ( smToCheck )
   {
     if ( smToCheck->GetSubShape().ShapeType() == TopAbs_VERTEX)
       break;
 
     if ( aCheckedMap.find( aKey ) == aCheckedMap.end() )
-      if (!checkMissing (this, aMesh, smToCheck, aTopAlgoDim,
-                         globalChecked, checkNoAlgo, aCheckedMap))
+      if (!checkMissing (this, theMesh, smToCheck, aTopAlgoDim,
+                         globalChecked, checkNoAlgo, aCheckedMap, theErrors))
       {
         ret = false;
         if (smToCheck->GetAlgoState() == SMESH_subMesh::NO_ALGO )
@@ -570,10 +593,14 @@ bool SMESH_Gen::CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape)
       smToCheck = 0;
   }
 
-  if ( !hasAlgo )
+  if ( !hasAlgo ) {
+    ret = false;
     INFOS( "None algorithm attached" );
+    theErrors.push_back( TAlgoStateError() );
+    theErrors.back().Set( MISSING_ALGO, 1, true );
+  }
 
-  return ( ret && hasAlgo );
+  return ret;
 }
 
 //=======================================================================
