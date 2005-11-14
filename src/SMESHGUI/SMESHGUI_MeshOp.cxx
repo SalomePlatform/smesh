@@ -276,48 +276,50 @@ void SMESHGUI_MeshOp::selectionDone()
   // Enable tabs according to shape dimension
 
   int shapeDim = 3;
-  if ( myToCreate )
+  try
   {
-    try
-    {
-      QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-      _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-      if ( pGeom ) {
-        GEOM::GEOM_Object_var aGeomVar =
-          GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
-        if ( !aGeomVar->_is_nil() ) {
-          shapeDim = 0;
-          switch ( aGeomVar->GetShapeType() ) {
-          case GEOM::SOLID:
-          case GEOM::SHELL:  shapeDim = 3; break;
-          case GEOM::FACE:   shapeDim = 2; break;
-          case GEOM::WIRE:   
-          case GEOM::EDGE:   shapeDim = 1; break;
-          case GEOM::VERTEX: shapeDim = 0; break;
-          default:
-            TopoDS_Shape aShape;
-            if ( GEOMBase::GetShape(aGeomVar, aShape)) {
-              TopExp_Explorer exp( aShape, TopAbs_SHELL );
-              if ( exp.More() )
-                shapeDim = 3;
-              else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-                shapeDim = 2;
-              else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-                shapeDim = 1;
-              else
-                shapeDim = 0;
-            }
-          }
+    GEOM::GEOM_Object_var aGeomVar;
+    QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+    if ( pGeom ) {
+      aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+    }
+    else {
+      QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+      _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
+      aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+    }
+    if ( !aGeomVar->_is_nil() ) {
+      shapeDim = 0;
+      switch ( aGeomVar->GetShapeType() ) {
+      case GEOM::SOLID:
+      case GEOM::SHELL:  shapeDim = 3; break;
+      case GEOM::FACE:   shapeDim = 2; break;
+      case GEOM::WIRE:   
+      case GEOM::EDGE:   shapeDim = 1; break;
+      case GEOM::VERTEX: shapeDim = 0; break;
+      default:
+        TopoDS_Shape aShape;
+        if ( GEOMBase::GetShape(aGeomVar, aShape)) {
+          TopExp_Explorer exp( aShape, TopAbs_SHELL );
+          if ( exp.More() )
+            shapeDim = 3;
+          else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
+            shapeDim = 2;
+          else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
+            shapeDim = 1;
+          else
+            shapeDim = 0;
         }
       }
     }
-    catch ( const SALOME::SALOME_Exception& S_ex )
-    {
-      SalomeApp_Tools::QtCatchCorbaException( S_ex );
-    }
-    catch ( ... )
-    {
-    }
+  }
+  catch ( const SALOME::SALOME_Exception& S_ex )
+  {
+    SalomeApp_Tools::QtCatchCorbaException( S_ex );
+  }
+  catch ( ... )
+  {
   }
   myDlg->setMaxHypoDim( shapeDim );
 }
