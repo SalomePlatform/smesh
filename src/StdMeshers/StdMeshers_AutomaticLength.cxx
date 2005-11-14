@@ -101,14 +101,16 @@ static void computeLengths( const SMESH_Mesh*                   theMesh,
   for ( int i = 1; i <= edgeMap.Extent(); ++i )
   {
     TopoDS_Edge edge = TopoDS::Edge( edgeMap(i) );
+    //if ( BRep_Tool::Degenerated( edge )) continue;
+
     Standard_Real L = SMESH_Algo::EdgeLength( edge );
-    if ( L > Lmax )
-      Lmax = L;
-    if ( L < Lmin )
-      Lmin = L;
+    if ( L < DBL_MIN ) continue;
+
+    if ( L > Lmax ) Lmax = L;
+    if ( L < Lmin ) Lmin = L;
+
     // remember i-th edge length
-    theTShapeToLengthMap.insert( theTShapeToLengthMap.end(),
-                                 make_pair( getTShape( edge ), L ));
+    theTShapeToLengthMap.insert( make_pair( getTShape( edge ), L ));
   }
 
   // Compute S0
@@ -175,7 +177,10 @@ double StdMeshers_AutomaticLength::GetLength(const SMESH_Mesh*   theMesh,
 
   map<const TopoDS_TShape*, double>::iterator tshape_length =
     _TShapeToLength.find( getTShape( anEdge ));
-  ASSERT( tshape_length != _TShapeToLength.end() );
+
+  if ( tshape_length == _TShapeToLength.end() )
+    return 1; // it is a dgenerated edge
+
   return tshape_length->second;
 }
 
