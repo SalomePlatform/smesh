@@ -1200,6 +1200,21 @@ msgstr "Such dimention hypothesis is already assigned to the shape"
 msgid "SMESH_HYP_8"
 msgstr "Hypothesis and submesh dimensions mismatch"
 
+msgid "MISSING_ALGO"
+msgstr "%3 %2D algorithm is missing"
+
+msgid "MISSING_HYPO"
+msgstr "%3 %2D algorithm \"%1\" misses some hypothesis"
+
+msgid "NOT_CONFORM_MESH"
+msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
+
+msgid "GLOBAL_ALGO"
+msgstr "Global"
+
+msgid "LOCAL_ALGO"
+msgstr "Local"
+
 msgid "SMESH_DRS_1"
 msgstr "MED file contains no mesh with the given name"
 
