@@ -77,6 +77,7 @@ typedef map<const SMDS_MeshNode*, list<const SMDS_MeshNode*> >       TNodeOfNode
 typedef TNodeOfNodeListMap::iterator                                 TNodeOfNodeListMapItr;
 typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeListMapItr> > TElemOfVecOfNnlmiMap;
 
+
 //=======================================================================
 //function : SMESH_MeshEditor
 //purpose  :
@@ -2419,18 +2420,33 @@ void SMESH_MeshEditor::RotationSweep(set<const SMDS_MeshElement*> & theElems,
 const SMDS_MeshNode* SMESH_MeshEditor::CreateNode(const double x,
                                                   const double y,
                                                   const double z,
-                                                  const double tolnode)
+                                                  const double tolnode,
+                                                  SMESH_SequenceOfNode& aNodes)
 {
   gp_Pnt P1(x,y,z);
   SMESHDS_Mesh * aMesh = myMesh->GetMeshDS();
+
   // try to search in sequence of existing nodes
-  SMDS_NodeIteratorPtr itn = aMesh->nodesIterator();
-  while(itn->more()) {
-    const SMDS_MeshNode* aN = static_cast<const SMDS_MeshNode*> (itn->next());
-    gp_Pnt P2(aN->X(),aN->Y(),aN->Z());
-    if(P1.Distance(P2)<tolnode)
-      return aN;
-  }    
+  // if aNodes.Length()>0 we 'nave to use given sequence
+  // else - use all nodes of mesh
+  if(aNodes.Length()>0) {
+    int i;
+    for(i=1; i<=aNodes.Length(); i++) {
+      gp_Pnt P2(aNodes.Value(i)->X(),aNodes.Value(i)->Y(),aNodes.Value(i)->Z());
+      if(P1.Distance(P2)<tolnode)
+        return aNodes.Value(i);
+    }
+  }
+  else {
+    SMDS_NodeIteratorPtr itn = aMesh->nodesIterator();
+    while(itn->more()) {
+      const SMDS_MeshNode* aN = static_cast<const SMDS_MeshNode*> (itn->next());
+      gp_Pnt P2(aN->X(),aN->Y(),aN->Z());
+      if(P1.Distance(P2)<tolnode)
+        return aN;
+    }    
+  }
+
   // create new node and return it
   const SMDS_MeshNode* NewNode = aMesh->AddNode(x,y,z);
   return NewNode;
@@ -2450,14 +2466,35 @@ void SMESH_MeshEditor::ExtrusionSweep
                      const int                      theFlags,
                      const double                   theTolerance)
 {
-  gp_Trsf aTrsf;
-  aTrsf.SetTranslation( theStep );
+  ExtrusParam aParams;
+  aParams.myDir = gp_Dir(theStep);
+  aParams.myNodes.Clear();
+  aParams.mySteps = new TColStd_HSequenceOfReal;
+  int i;
+  for(i=1; i<=theNbSteps; i++)
+    aParams.mySteps->Append(theStep.Magnitude());
 
+  ExtrusionSweep(theElems,aParams,newElemsMap,theFlags,theTolerance);
+
+}
+
+
+//=======================================================================
+//function : ExtrusionSweep
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor::ExtrusionSweep
+                    (set<const SMDS_MeshElement*> & theElems,
+                     ExtrusParam&                   theParams,
+                     TElemOfElemListMap&            newElemsMap,
+                     const int                      theFlags,
+                     const double                   theTolerance)
+{
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
   TNodeOfNodeListMap mapNewNodes;
   TElemOfVecOfNnlmiMap mapElemNewNodes;
-  //TElemOfElemListMap newElemsMap;
 
   // loop on theElems
   set< const SMDS_MeshElement* >::iterator itElem;
@@ -2486,11 +2523,15 @@ void SMESH_MeshEditor::ExtrusionSweep
 
         // make new nodes
         double coord[] = { node->X(), node->Y(), node->Z() };
-        for ( int i = 0; i < theNbSteps; i++ ) {
-          aTrsf.Transforms( coord[0], coord[1], coord[2] );
+        int nbsteps = theParams.mySteps->Length();
+        for ( int i = 0; i < nbsteps; i++ ) {
+          //aTrsf.Transforms( coord[0], coord[1], coord[2] );
+          coord[0] = coord[0] + theParams.myDir.X()*theParams.mySteps->Value(i+1);
+          coord[1] = coord[1] + theParams.myDir.Y()*theParams.mySteps->Value(i+1);
+          coord[2] = coord[2] + theParams.myDir.Z()*theParams.mySteps->Value(i+1);
           if( theFlags & EXTRUSION_FLAG_SEW ) {
-            const SMDS_MeshNode * newNode = CreateNode(coord[0], coord[1],
-                                                       coord[2], theTolerance);
+            const SMDS_MeshNode * newNode = CreateNode(coord[0], coord[1], coord[2],
+                                                       theTolerance, theParams.myNodes);
             listNewNodes.push_back( newNode );
           }
           else {
@@ -2508,6 +2549,7 @@ void SMESH_MeshEditor::ExtrusionSweep
     makeWalls( aMesh, mapNewNodes, newElemsMap, mapElemNewNodes, theElems );
   }
 }
+
 
 //=======================================================================
 //class    : SMESH_MeshEditor_PathPoint

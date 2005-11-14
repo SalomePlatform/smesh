@@ -32,6 +32,9 @@
 
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Controls.hxx"
+#include "SMESH_SequenceOfNode.hxx"
+#include "gp_Dir.hxx"
+#include "TColStd_HSequenceOfReal.hxx"
 
 #include <list>
 #include <map>
@@ -154,35 +157,61 @@ class SMESH_MeshEditor {
   };
   
   /*!
+   * special structire for control of extrusion functionality
+   */
+  struct ExtrusParam {
+    gp_Dir myDir; // direction of extrusion
+    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
+    SMESH_SequenceOfNode myNodes; // nodes for using in sewing
+  };
+
+  /*!
    * Create new node in the mesh with given coordinates
    * (auxilary for advanced extrusion)
    */
   const SMDS_MeshNode* CreateNode(const double x,
                                   const double y,
                                   const double z,
-                                  const double tolnode);
+                                  const double tolnode,
+                                  SMESH_SequenceOfNode& aNodes);
 
   /*!
-   * Generate new elements by extrusion of theElements 
-   * by theStep by theNbSteps
-   * param theHistory returns history of extrusion
+   * Generate new elements by extrusion of theElements
+   * It is a method used in .idl file. All functionality
+   * is implemented in the next method (see below) which
+   * is used in the cuurent method.
+   * param theElems - list of elements for extrusion
+   * param newElemsMap returns history of extrusion
    * param theFlags set flags for performing extrusion (see description
    *   of enum ExtrusionFlags for additional information)
    * param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
    */
-  //void ExtrusionSweep (std::set<const SMDS_MeshElement*> & theElements,
-  //                     const gp_Vec&                       theStep,
-  //                     const int                           theNbSteps);
   void ExtrusionSweep
            (set<const SMDS_MeshElement*> & theElems,
             const gp_Vec&                  theStep,
             const int                      theNbSteps,
             TElemOfElemListMap&            newElemsMap,
-            //SMESH_DataMapOfElemPtrSequenceOfElemPtr& theHistory,
             const int                      theFlags = EXTRUSION_FLAG_BOUNDARY,
             const double                   theTolerance = 1.e-6);
   
+  /*!
+   * Generate new elements by extrusion of theElements
+   * param theElems - list of elements for extrusion
+   * param newElemsMap returns history of extrusion
+   * param theFlags set flags for performing extrusion (see description
+   *   of enum ExtrusionFlags for additional information)
+   * param theTolerance - uses for comparing locations of nodes if flag
+   *   EXTRUSION_FLAG_SEW is set
+   * param theParams - special structure for manage of extrusion
+   */
+  void ExtrusionSweep (set<const SMDS_MeshElement*> & theElems,
+                       ExtrusParam&                   theParams,
+                       TElemOfElemListMap&            newElemsMap,
+                       const int                      theFlags,
+                       const double                   theTolerance);
+
+
   // Generate new elements by extrusion of theElements 
   // by theStep by theNbSteps
 
