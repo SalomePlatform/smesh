@@ -426,6 +426,11 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
 {
   if (!func.IsReady())
     return false;
+
+  // ########## TMP until pb division by zero when func(0.0)==0 is fixed #########
+  if (::Abs(func(0.0)) <= ::RealSmall() ) return false;
+  // ########## TMP until pb division by zero when func(0.0)==0 is fixed #########
+
   vector<double> xxx[2];
   int nbPnt = 1 + nbSeg;
   int rev, i;
@@ -465,6 +470,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
         // Decrease x1 ...
         x1_too_large = x1;
         x1 = (x1_too_small+x1_too_large)/2;
+        if ( x1 <= ::RealSmall() )
+          return false; // break infinite loop
         continue;
       }
 
@@ -516,7 +523,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
       return false;
     prevU = U;
   }
-  return false;
+  return true;
 }
 
 //=============================================================================
