@@ -184,7 +184,6 @@ namespace{
     if(!filename.isEmpty()) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-      theComponentMesh->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
 
       try {
 	SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
@@ -1062,10 +1061,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   SUIT_ResourceMgr* mgr = resourceMgr();
   if( !mgr )
     return false;
-
-  if (CORBA::is_nil(GetSMESHGen()->GetCurrentStudy())) {
-    GetSMESHGen()->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
-  }
 
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
@@ -2807,11 +2802,16 @@ void SMESHGUI::OnGUIEvent()
 
 SMESH::SMESH_Gen_var SMESHGUI::GetSMESHGen()
 {
+  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument(); //Document OCAF de l'etude active
   if ( CORBA::is_nil( myComponentSMESH ) )
     {
       SMESHGUI aGUI; //SRN BugID: IPAL9186: Create an instance of SMESHGUI to initialize myComponentSMESH
+      if ( aStudy )
+        aGUI.myComponentSMESH->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
       return aGUI.myComponentSMESH;
     }
+  if ( aStudy )
+    myComponentSMESH->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
   return myComponentSMESH;
 }
 
