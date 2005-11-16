@@ -87,6 +87,6 @@ BIN_SRC =
 CPPFLAGS+= $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 CXXFLAGS+= $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
 
-LDFLAGS+= -lSMESHimpl -lMEFISTO2D -L${CASROOT}/Linux/lib -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
+LDFLAGS+= -lSMESHimpl -lMEFISTO2D $(OCC_LDPATH) -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome
 
 @CONCLUDE@
