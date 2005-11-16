@@ -131,8 +131,8 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
   if ( !aMesh )
     return false;
 
-  TopoDS_Face aFace = TopoDS::Face( myGen->GeomObjectToShape( theFace ));
-  if ( aFace.IsNull() )
+  TopoDS_Shape aFace = myGen->GeomObjectToShape( theFace );
+  if ( aFace.IsNull() || aFace.ShapeType() != TopAbs_FACE )
     return false;
 
   // Update Python script
@@ -143,7 +143,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
   SMESH_Gen_i::AddToCurrentPyScript( str );
   addErrorCode( "LoadFromFace" );
 
-  return myPattern.Load( aMesh, aFace, theProject );
+  return myPattern.Load( aMesh, TopoDS::Face( aFace ), theProject );
 }
 
 //=======================================================================
