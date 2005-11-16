@@ -389,7 +389,8 @@ void SMESHGUI_CreatePatternDlg::onSave()
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	aViewWindow->SetSelectionMode(ActorSelection);
-      disconnect(mySelectionMgr, 0, this, 0);
+      //disconnect(mySelectionMgr, 0, this, 0);
+      disconnect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionDone()));
       disconnect(mySMESHGUI, 0, this, 0);
       mySMESHGUI->ResetState();
       accept();
