@@ -537,7 +537,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
     return;
 
   if (mySelectionMode != theMode) {
-    mySelectionMgr->clearSelected();
+    // [PAL10408] mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
     SMESH::SetPointRepresentation(false);
     if (theMode < 4) {
