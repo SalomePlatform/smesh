@@ -264,7 +264,7 @@ void SMESHGUI_SingleEditDlg::onClose()
 {
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   disconnect(mySelectionMgr, 0, this, 0);
   disconnect(mySMESHGUI, 0, this, 0);
   mySMESHGUI->ResetState();

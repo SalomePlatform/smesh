@@ -414,7 +414,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
     bool toCreatePolygons = myCreatePolygonsChk->isChecked();
     bool toCreatePolyedrs = myCreatePolyedrsChk->isChecked();
     if ( myPattern->MakeMesh( myMesh, toCreatePolygons, toCreatePolyedrs ) ) {
-      mySelectionMgr->clearSelected();
+      //mySelectionMgr->clearSelected();
       bool autoUpdate = SMESHGUI::automaticUpdate();
       if (!isRefine() && autoUpdate) {
 	_PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());

@@ -421,7 +421,7 @@ void SMESHGUI_SmoothingDlg::ClickOnCancel()
 {
   disconnect(mySelectionMgr, 0, this, 0);
   mySelectionMgr->clearFilters();
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPickable(); // ???
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))

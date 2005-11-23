@@ -322,7 +322,7 @@ void SMESHGUI_MoveNodesDlg::onOk()
 //=======================================================================
 void SMESHGUI_MoveNodesDlg::onClose()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);

@@ -593,7 +593,7 @@ void SMESHGUI_SewingDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_SewingDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   SMESH::SetPointRepresentation(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);

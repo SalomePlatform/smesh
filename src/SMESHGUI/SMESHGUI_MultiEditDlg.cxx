@@ -438,7 +438,7 @@ void SMESHGUI_MultiEditDlg::onClose()
   SMESH::RemoveFilters();
   SMESH::SetPickable();
 
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
 
   reject();
@@ -942,7 +942,7 @@ bool SMESHGUI_MultiEditDlg::onApply()
   bool aResult = process(aMeshEditor, anIds.inout());
   if (aResult) {
     if (myActor) {
-      mySelectionMgr->clearSelected();
+      //mySelectionMgr->clearSelected();
       SMESH::UpdateView();
     }
 

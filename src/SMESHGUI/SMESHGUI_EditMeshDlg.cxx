@@ -199,7 +199,7 @@ void SMESHGUI_EditMeshDlg::ClickOnApply()
     } catch(...) {
     }
 
-    mySelectionMgr->clearSelected();
+    //mySelectionMgr->clearSelected();
     SMESH::UpdateView();
   }
 }
@@ -220,7 +220,7 @@ void SMESHGUI_EditMeshDlg::ClickOnOk()
 //=================================================================================
 void SMESHGUI_EditMeshDlg::ClickOnCancel()
 {
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
