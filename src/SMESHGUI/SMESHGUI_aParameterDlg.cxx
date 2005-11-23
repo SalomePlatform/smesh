@@ -31,6 +31,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_FunctionPreview.h"
 
 #include "SUIT_Tools.h"
 #include "SUIT_Desktop.h"
@@ -94,7 +95,8 @@ void SMESHGUI_aParameterDlg::init()
   GroupC1Layout->setMargin(11);
   /* Spin boxes with labels */
   list<SMESHGUI_aParameterPtr>::iterator paramIt = myParamList.begin();
-  for (int row = 0; paramIt != myParamList.end(); paramIt++ , row++)
+  int row;
+  for( row = 0; paramIt != myParamList.end(); paramIt++ , row++)
   {
     SMESHGUI_aParameterPtr param = (*paramIt);
     QLabel * label = new QLabel(GroupC1, "TextLabel");
@@ -107,7 +109,7 @@ void SMESHGUI_aParameterDlg::init()
       aSpinWidget->setMinimumSize(150, 0);
 
       QString sig = param->sigValueChanged();
-      if( !sig.isEmpty() && param->GetType()!=SMESHGUI_aParameter::TABLE )
+      if( !sig.isEmpty() /*&& param->GetType()!=SMESHGUI_aParameter::TABLE*/ )
         connect( aSpinWidget, sig.latin1(), this, SLOT( onValueChanged() ) );
       
       param->InitializeWidget(aSpinWidget);
@@ -116,11 +118,17 @@ void SMESHGUI_aParameterDlg::init()
     }
   }
 
+  myPreview = new SMESHGUI_FunctionPreview( GroupC1 );
+  GroupC1Layout->addWidget( myPreview, row, 1 );
+
   paramIt = myParamList.begin();
   std::list<QWidget*>::const_iterator anIt = mySpinList.begin();
   for( ; paramIt!=myParamList.end(); paramIt++, anIt++ )
+  {
+    (*paramIt)->TakeValue( *anIt );
     UpdateShown( *paramIt, *anIt );
-  
+    FunctionPreview( *paramIt, *anIt );
+  }
 
   /***************************************************************/
   QGroupBox* GroupButtons = new QGroupBox(this, "GroupButtons");
@@ -197,6 +205,38 @@ bool SMESHGUI_aParameterDlg::Parameters( SMESHGUI* theModule,
 }
 
 //=======================================================================
+// function : FunctionPreview
+// purpose  : 
+//=======================================================================
+void SMESHGUI_aParameterDlg::FunctionPreview( const SMESHGUI_aParameterPtr p, QWidget* w )
+{
+  if( !w || !w->isShown() )
+    return;
+
+  SMESHGUI_strParameter* str_param = dynamic_cast<SMESHGUI_strParameter*>( p.operator->() );
+  SMESHGUI_tableParameter* tab_param = dynamic_cast<SMESHGUI_tableParameter*>( p.operator->() );
+  SMESHGUI_boolParameter* bool_param = dynamic_cast<SMESHGUI_boolParameter*>( p.operator->() );
+  if( str_param && str_param->needPreview() )
+  {
+    QString val; str_param->GetNewText( val );
+    if( !val.isNull() )
+      myPreview->setParams( val );
+  }
+  else if( tab_param && tab_param->needPreview() )
+  {
+    SMESH::double_array d;
+    tab_param->data( d );
+    myPreview->setParams( d );
+  }
+  else if( bool_param && bool_param->needPreview() )
+  {
+    int exp=0;
+    bool_param->GetNewInt( exp );
+    myPreview->setIsExp( exp );
+  }
+}
+
+//=======================================================================
 // function : onValueChanged
 // purpose  : 
 //=======================================================================
@@ -206,7 +246,6 @@ void SMESHGUI_aParameterDlg::onValueChanged()
   {
     QWidget* w = ( QWidget* )sender();
 
-    SMESHGUI_aParameterPtr param;
 
     std::list<QWidget*>::const_iterator anIt = mySpinList.begin(),
                                         aLast = mySpinList.end();
@@ -216,6 +255,7 @@ void SMESHGUI_aParameterDlg::onValueChanged()
       {
         (*aPIt)->TakeValue( w );
         UpdateShown( *aPIt, w );
+	FunctionPreview( *aPIt, w );
         break;
       }
   }
@@ -246,10 +286,19 @@ void SMESHGUI_aParameterDlg::UpdateShown( const SMESHGUI_aParameterPtr param, QW
   std::list<QWidget*>::const_iterator anIt = mySpinList.begin(),
                                       aLast = mySpinList.end(),
                                       aLIt = myLabelList.begin();
-  for( int i=0; anIt!=aLast; anIt++, aLIt++, i++ )
+  std::list<SMESHGUI_aParameterPtr>::iterator aPIt = myParamList.begin();
+  bool preview = false;
+  for( int i=0; anIt!=aLast; anIt++, aLIt++, i++, aPIt++ )
   {
     bool shown = hasValue && map[ val ].contains( i );
     (*anIt)->setShown( shown );
     (*aLIt)->setShown( shown );
+    if( shown )
+    {
+      SMESHGUI_strParameter* str_param = dynamic_cast<SMESHGUI_strParameter*>( (*aPIt).operator->() );
+      SMESHGUI_tableParameter* tab_param = dynamic_cast<SMESHGUI_tableParameter*>( (*aPIt).operator->() );
+      preview = preview || ( str_param && str_param->needPreview() ) || ( tab_param && tab_param->needPreview() );
+    }
   }
+  myPreview->setShown( preview );
 }

@@ -40,7 +40,25 @@
 
 #include <QtxDblSpinBox.h>
 
-SMESHGUI_aParameter::~SMESHGUI_aParameter() {}
+SMESHGUI_aParameter::SMESHGUI_aParameter( const QString& label, const bool preview )
+: _needPreview( preview ),
+  _label(label)
+{
+}
+
+SMESHGUI_aParameter::~SMESHGUI_aParameter()
+{
+}
+
+bool SMESHGUI_aParameter::needPreview() const
+{
+  return _needPreview;
+}
+
+QString& SMESHGUI_aParameter::Label()
+{
+  return _label;
+}
 
 QString SMESHGUI_aParameter::sigValueChanged() const
 {
@@ -54,8 +72,9 @@ QString SMESHGUI_aParameter::sigValueChanged() const
 SMESHGUI_intParameter::SMESHGUI_intParameter (const int      theInitValue,
                                               const QString& theLabel,
                                               const int      theBottom,
-                                              const int      theTop)
-     :SMESHGUI_aParameter(theLabel),
+                                              const int      theTop,
+					      const bool     preview  )
+     :SMESHGUI_aParameter(theLabel, preview),
        _top(theTop), _bottom(theBottom), _initValue(theInitValue),
        _newValue( theInitValue )
 {
@@ -113,8 +132,9 @@ SMESHGUI_doubleParameter::SMESHGUI_doubleParameter (const double   theInitValue,
                                                     const double   theBottom,
                                                     const double   theTop,
                                                     const double   theStep,
-                                                    const int      theDecimals)
-     :SMESHGUI_aParameter(theLabel),
+                                                    const int      theDecimals,
+						    const bool     preview )
+     :SMESHGUI_aParameter(theLabel, preview),
        _top(theTop), _bottom(theBottom), _step(theStep),
        _initValue(theInitValue), _decimals(theDecimals)
 {
@@ -172,8 +192,9 @@ QString SMESHGUI_doubleParameter::sigValueChanged() const
 // purpose  :
 //=================================================================================
 SMESHGUI_strParameter::SMESHGUI_strParameter (const QString& theInitValue,
-                                              const QString& theLabel)
-     :SMESHGUI_aParameter(theLabel),
+                                              const QString& theLabel,
+					      const bool preview )
+     :SMESHGUI_aParameter(theLabel, preview),
       _initValue(theInitValue)
 {
 }
@@ -181,6 +202,7 @@ SMESHGUI_aParameter::Type SMESHGUI_strParameter::GetType() const
 {
   return SMESHGUI_aParameter::STRING;
 }
+
 bool SMESHGUI_strParameter::GetNewInt (int & theValue) const
 {
   return false;
@@ -225,8 +247,8 @@ QString SMESHGUI_strParameter::sigValueChanged() const
 // class    : SMESHGUI_dependParameter
 // purpose  :
 //=================================================================================
-SMESHGUI_dependParameter::SMESHGUI_dependParameter( const QString& label )
-: SMESHGUI_aParameter( label )
+SMESHGUI_dependParameter::SMESHGUI_dependParameter( const QString& label, const bool     preview )
+: SMESHGUI_aParameter( label, preview )
 {
 }
 
@@ -250,8 +272,9 @@ SMESHGUI_dependParameter::ShownMap& SMESHGUI_dependParameter::shownMap()
 //=================================================================================
 SMESHGUI_enumParameter::SMESHGUI_enumParameter( const QStringList& values,
                                                 const int initValue,
-                                                const QString& label )
-: SMESHGUI_dependParameter( label ),
+                                                const QString& label,
+					        const bool     preview )
+: SMESHGUI_dependParameter( label, preview ),
   myInitValue( initValue ),
   myValue( initValue ),
   myValues( values )
@@ -329,8 +352,9 @@ QString SMESHGUI_enumParameter::sigValueChanged() const
 // purpose  :
 //=================================================================================
 SMESHGUI_boolParameter::SMESHGUI_boolParameter( const bool initValue,
-                                                const QString& label )
-: SMESHGUI_dependParameter( label ),
+                                                const QString& label,
+					        const bool     preview )
+: SMESHGUI_dependParameter( label, preview ),
   myInitValue( initValue ),
   myValue( myInitValue )
 {
@@ -453,8 +477,10 @@ QWidget* SMESHGUI_doubleItem::createEditor() const
 // class    : SMESHGUI_Table
 // purpose  :
 //=================================================================================
-SMESHGUI_Table::SMESHGUI_Table( int numRows, int numCols, QWidget* parent, const char* name )
-: QTable( numRows, numCols, parent, name )
+SMESHGUI_Table::SMESHGUI_Table( const SMESHGUI_tableParameter* tab, int numRows, int numCols,
+			        QWidget* parent, const char* name )
+: QTable( numRows, numCols, parent, name ),
+  myParam( ( SMESHGUI_tableParameter* )tab )
 {
 }
 
@@ -509,18 +535,99 @@ void SMESHGUI_Table::setValidator( const double minV, const double maxV, const i
     }
 }
 
+bool SMESHGUI_Table::eventFilter( QObject* o, QEvent* e )
+{
+  if( o && e && e->type()==QEvent::KeyPress )
+  {
+    QKeyEvent* ke = ( QKeyEvent* )e;
+    if( ke->key()==Qt::Key_Tab || ke->key()==Qt::Key_Backtab || ke->key()==Qt::Key_Return )
+    {
+      keyPressEvent( ke );
+      return true;
+    }
+  }
+
+  return QTable::eventFilter( o, e );
+}
+
+void SMESHGUI_Table::keyPressEvent( QKeyEvent* e )
+{
+  if( e )
+  {
+    bool shift = ( e->state() & Qt::ShiftButton );
+    int col = currentColumn(), row = currentRow();
+    if( e->key()==Qt::Key_Tab || e->key()==Qt::Key_Backtab )
+    {
+      if( e->key()==Qt::Key_Tab )
+	col++;
+      else 
+	col--;
+      if( col<0 )
+      {
+	col = numCols()-1;
+	row--;
+	if( row<0 )
+	{
+	  col = 0;
+	  row = 0;
+	}
+      }
+      if( col>=numCols() )
+      {
+	col = 0;
+	row++;
+	if( row>=numRows() )
+	  row = numRows()-1;
+      }
+      e->accept();
+    }
+    else if( e->key()==Qt::Key_Return )
+    {
+      col = 0;
+      if( shift )
+	row--;
+      else
+	row++;
+      if( row<0 )
+	row = 0;
+      else if( row>=numRows() )
+      {
+	//add row
+	myParam->onEdit( this, SMESHGUI_TableFrame::ADD_ROW, 1 );
+      }
+      e->accept();
+    }
+    if( e->isAccepted() )
+    {
+      clearSelection();
+      setCurrentCell( row, col );
+    }
+    else
+      QTable::keyPressEvent( e );
+  }
+}
+
+QWidget* SMESHGUI_Table::createEditor( int r, int c, bool init ) const
+{
+  QWidget* w = QTable::createEditor( r, c, init );
+  if( w )
+    w->installEventFilter( this );
+  return w;
+}
+
 
 
 //=================================================================================
 // class    : SMESHGUI_TableFrame
 // purpose  :
 //=================================================================================
-SMESHGUI_TableFrame::SMESHGUI_TableFrame( QWidget* parent )
+SMESHGUI_TableFrame::SMESHGUI_TableFrame( const SMESHGUI_tableParameter* param, QWidget* parent )
 : QFrame( parent )
 {
   QVBoxLayout* main = new QVBoxLayout( this, 0, 0 );
 
-  myTable = new SMESHGUI_Table( 1, 1, this );
+  myTable = new SMESHGUI_Table( param, 1, 1, this );
+  connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SIGNAL( valueChanged( int, int ) ) );
   
   QFrame* aButFrame = new QFrame( this );
   QHBoxLayout* butLay = new QHBoxLayout( aButFrame, 5, 5 );
@@ -616,8 +723,9 @@ void SMESHGUI_TableFrame::onButtonClicked()
 // purpose  :
 //=================================================================================
 SMESHGUI_tableParameter::SMESHGUI_tableParameter( const double init,
-                                                  const QString& label )
-: SMESHGUI_aParameter( label ),
+                                                  const QString& label,
+						  const bool preview )
+: SMESHGUI_aParameter( label, preview ),
   myInitValue( init ),
   myColsInt( 1 ),
   myRowsInt( 1 ),
@@ -628,6 +736,54 @@ SMESHGUI_tableParameter::SMESHGUI_tableParameter( const double init,
 
 SMESHGUI_tableParameter::~SMESHGUI_tableParameter()
 {
+}
+
+bool operator<( const QPair<double,double>& p1, const QPair<double,double>& p2 )
+{
+  return p1.first < p2.first;
+}
+
+void SMESHGUI_tableParameter::sortData( SMESH::double_array& arr )
+{
+  QValueList< QPair<double,double> > aData;
+  if( arr.length()%2==1 )
+    arr.length( arr.length()-1 );
+
+  int aLen = arr.length();
+  for( int i=0; i<aLen/2; i++ )
+    aData.append( QPair<double,double>( arr[2*i], arr[2*i+1] ) );
+
+  qHeapSort( aData );
+
+  QValueList< QPair<double,double> >::const_iterator anIt = aData.begin(), aLast = aData.end();
+  QValueList<double> unique_values;
+  double prev; int i=0;
+  if( (*anIt).first>0.0 )
+  {
+    unique_values.append( 0.0 );
+    unique_values.append( 0.0 );
+    i++; prev = 0.0;
+  }
+  for( ; anIt!=aLast; anIt++ )
+  {
+    if( i==0 || (*anIt).first>prev )
+    {
+      unique_values.append( (*anIt).first );
+      unique_values.append( (*anIt).second );
+      i++;
+    }
+    prev = (*anIt).first;
+  }
+  if( prev<1.0 )
+  {
+    unique_values.append( 1.0 );
+    unique_values.append( 0.0 );
+  }
+
+  arr.length( unique_values.count() );
+  QValueList<double>::const_iterator anIt1 = unique_values.begin(), aLast1 = unique_values.end();
+  for( int j=0; anIt1!=aLast1; anIt1++, j++ )
+    arr[j] = *anIt1;
 }
 
 SMESHGUI_aParameter::Type SMESHGUI_tableParameter::GetType() const
@@ -652,7 +808,7 @@ bool SMESHGUI_tableParameter::GetNewText( QString& ) const
 
 QWidget* SMESHGUI_tableParameter::CreateWidget( QWidget* par ) const
 {
-  SMESHGUI_TableFrame* t = new SMESHGUI_TableFrame( par );
+  SMESHGUI_TableFrame* t = new SMESHGUI_TableFrame( this, par );
   connect( t,    SIGNAL( toEdit( SMESHGUI_TableFrame::Button, int ) ),
            this, SLOT  ( onEdit( SMESHGUI_TableFrame::Button, int ) ) );
   
@@ -705,7 +861,7 @@ void SMESHGUI_tableParameter::InitializeWidget( QWidget* w ) const
     for( int i=0, m=row; i<m; i++ )
       for( int j=0, n=col; j<n; j++ )
         if( row*j+i<myData.length() )
-          tab->item( i, j )->setText( QString( "%1" ).arg( myData[row*j+i] ) );
+          tab->item( i, j )->setText( QString( "%1" ).arg( myData[col*i+j] ) );
   }
 }
 
@@ -728,11 +884,13 @@ void SMESHGUI_tableParameter::TakeValue( QWidget* w )
 void SMESHGUI_tableParameter::data( SMESH::double_array& v ) const
 {
   v = myData;
+  sortData( v );
 }
 
 void SMESHGUI_tableParameter::setData( const SMESH::double_array& d )
 {
   myData = d;
+  sortData( myData );
 }
 
 void SMESHGUI_tableParameter::update( QWidget* w ) const
@@ -874,68 +1032,77 @@ void SMESHGUI_tableParameter::onEdit( SMESHGUI_TableFrame::Button b, int n )
   {
     SMESHGUI_TableFrame* fr = ( SMESHGUI_TableFrame* )sender();
     SMESHGUI_Table* tab = fr->table();
+    onEdit( tab, b, n );
+  }
+}
 
-    switch( b )
+void SMESHGUI_tableParameter::onEdit( SMESHGUI_Table* tab, SMESHGUI_TableFrame::Button b, int n )
+{
+  if( !tab )
+    return;
+
+  SMESHGUI_TableFrame* fr = dynamic_cast<SMESHGUI_TableFrame*>( tab->parent() );
+
+  switch( b )
+  {
+  case SMESHGUI_TableFrame::ADD_COLUMN:
     {
-      case SMESHGUI_TableFrame::ADD_COLUMN:
-      {
-        if( !myEditCols || myCols.get() )
-          return;
+      if( !myEditCols || myCols.get() )
+	return;
 
-        myColsInt++; update( fr );
-        if( n>=0 )
-          for( int i=0; i<myRowsInt; i++ )
-            for( int j=myColsInt-1; j>=n; j-- )
-              if( j==n )
-                tab->setText( i, j, QString( "%1" ).arg( myInitValue ) );
-              else
-                tab->setText( i, j, tab->text( i, j-1 ) );
-        break;
-      }
+      myColsInt++; update( fr );
+      if( n>=0 )
+	for( int i=0; i<myRowsInt; i++ )
+	  for( int j=myColsInt-1; j>=n; j-- )
+	    if( j==n )
+	      tab->setText( i, j, QString( "%1" ).arg( myInitValue ) );
+	    else
+	      tab->setText( i, j, tab->text( i, j-1 ) );
+      break;
+    }
+    
+  case SMESHGUI_TableFrame::REMOVE_COLUMN:
+    {
+      if( !myEditCols || myCols.get() || myColsInt<=1 )
+	return;
+
+      if( n>=0 )
+	for( int i=0; i<myRowsInt; i++ )
+	  for( int j=n; j<myColsInt-1; j++ )
+	    tab->setText( i, j, tab->text( i, j+1 ) );
+      myColsInt--; update( fr );
       
-      case SMESHGUI_TableFrame::REMOVE_COLUMN:
-      {
-        if( !myEditCols || myCols.get() || myColsInt<=1 )
-          return;
-
-        if( n>=0 )
-          for( int i=0; i<myRowsInt; i++ )
-            for( int j=n; j<myColsInt-1; j++ )
-              tab->setText( i, j, tab->text( i, j+1 ) );
-        myColsInt--; update( fr );
-
-        break;
-      }
+      break;
+    }
       
-      case SMESHGUI_TableFrame::ADD_ROW:
-      {
-        if( !myEditRows || myRows.get() )
-          return;
+  case SMESHGUI_TableFrame::ADD_ROW:
+    {
+      if( !myEditRows || myRows.get() )
+	return;
 
-        myRowsInt++; update( fr );
-        if( n>=0 )
-          for( int i=myRowsInt-1; i>=n; i-- )
-            for( int j=0; j<myColsInt; j++ )
-              if( i==n )
-                tab->setText( i, j, QString( "%1" ).arg( myInitValue ) );
-              else
-                tab->setText( i, j, tab->text( i-1, j ) );
-        break;        
-      }
+      myRowsInt++; update( fr );
+      if( n>=0 )
+	for( int i=myRowsInt-1; i>=n; i-- )
+	  for( int j=0; j<myColsInt; j++ )
+	    if( i==n )
+	      tab->setText( i, j, QString( "%1" ).arg( myInitValue ) );
+	    else
+	      tab->setText( i, j, tab->text( i-1, j ) );
+      break;        
+    }
       
-      case SMESHGUI_TableFrame::REMOVE_ROW:
-      {
-        if( !myEditRows || myRows.get() || myRowsInt<=1 )
-          return;
+  case SMESHGUI_TableFrame::REMOVE_ROW:
+    {
+      if( !myEditRows || myRows.get() || myRowsInt<=1 )
+	return;
 
-        if( n>=0 )
-          for( int i=n; i<myRowsInt-1; i++ )
-            for( int j=0; j<myColsInt; j++ )
-              tab->setText( i, j, tab->text( i+1, j ) );
-        myRowsInt--; update( fr );
-
-        break;
-      }
+      if( n>=0 )
+	for( int i=n; i<myRowsInt-1; i++ )
+	  for( int j=0; j<myColsInt; j++ )
+	    tab->setText( i, j, tab->text( i+1, j ) );
+      myRowsInt--; update( fr );
+      
+      break;
     }
   }
 }

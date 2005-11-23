@@ -39,6 +39,7 @@ class QLabel;
 class QPushButton;
 class SMESHGUI;
 class QWidget;
+class SMESHGUI_FunctionPreview;
 
 //=================================================================================
 // class    : SMESHGUI_aParameterDlg
@@ -70,6 +71,9 @@ private slots:
     void UpdateShown( const SMESHGUI_aParameterPtr, QWidget* );
 
 private:
+    void FunctionPreview( const SMESHGUI_aParameterPtr, QWidget* );
+
+private:
     SMESHGUI*       mySMESHGUI;
 
     QPushButton*    myButtonOk;
@@ -77,6 +81,7 @@ private:
 
     std::list<QWidget*>               mySpinList, myLabelList;
     std::list<SMESHGUI_aParameterPtr> myParamList;
+    SMESHGUI_FunctionPreview* myPreview;
 };
 
 #endif // SMESHGUI_aParameterDlg.h

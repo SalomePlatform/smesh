@@ -34,6 +34,7 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_FunctionPreview.h"
 
 #include "SUIT_Application.h"
 #include "SUIT_Desktop.h"
@@ -133,7 +134,8 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
 
   /* Spin boxes with labels */
   list<SMESHGUI_aParameterPtr>::iterator paramIt = aParamList.begin();
-  for ( int row = 1; paramIt != aParamList.end(); paramIt++ , row++ )
+  int row;
+  for ( row = 1; paramIt != aParamList.end(); paramIt++ , row++ )
   {
     SMESHGUI_aParameterPtr param = (*paramIt);
     QLabel * label = new QLabel( GroupC1, "TextLabel" );
@@ -147,7 +149,7 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
       aWidget->setMinimumSize( 150, 0 );
 
       QString sig = param->sigValueChanged();
-      if( !sig.isEmpty() && param->GetType()!=SMESHGUI_aParameter::TABLE )
+      if( !sig.isEmpty() /* && param->GetType()!=SMESHGUI_aParameter::TABLE*/ )
         connect( aWidget, sig.latin1(), this, SLOT( onValueChanged() ) );
          
       param->InitializeWidget( aWidget );
@@ -160,6 +162,8 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
       myParamMap.insert( param, info );
     }
   }
+  myPreview = new SMESHGUI_FunctionPreview( GroupC1 );
+  GroupC1Layout->addWidget( myPreview, row, 1 );
   
   StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( GroupC1, 1 );
 
@@ -284,7 +288,8 @@ bool StdMeshersGUI_CreateHypothesisDlg::ClickOnApply()
 	  break;
         }
 
-    SetParameters( Hyp, aParamList );
+    if( !SetParameters( Hyp, aParamList ) )
+      return false;
 
     //set new Attribute Comment for hypothesis which parameters were set
     QString aParams = "";
@@ -394,7 +399,29 @@ void StdMeshersGUI_CreateHypothesisDlg::onValueChanged()
       if( anIt.data().editor == w )
       {
         param = anIt.key();
-        param->TakeValue( w );
+	param->TakeValue( w );
+
+	SMESHGUI_strParameter* str_param = dynamic_cast<SMESHGUI_strParameter*>( param.operator->() );
+	SMESHGUI_tableParameter* tab_param = dynamic_cast<SMESHGUI_tableParameter*>( param.operator->() );
+	SMESHGUI_boolParameter* bool_param = dynamic_cast<SMESHGUI_boolParameter*>( param.operator->() );
+
+	if( str_param && str_param->needPreview() )
+	{
+	  QString val; str_param->GetNewText( val );
+	  myPreview->setParams( val );
+	}
+	else if( tab_param && tab_param->needPreview() )
+	{
+	  SMESH::double_array d;
+	  tab_param->data( d );
+	  myPreview->setParams( d );
+	}
+	else if( bool_param && bool_param->needPreview() )
+	{
+	  int exp=0;
+	  bool_param->GetNewInt( exp );
+	  myPreview->setIsExp( exp );
+	}
         UpdateShown( param );
         break;
       }
@@ -426,10 +453,18 @@ void StdMeshersGUI_CreateHypothesisDlg::UpdateShown( const SMESHGUI_aParameterPt
 
   ParameterMap::const_iterator anIt = myParamMap.begin(),
                                 aLast = myParamMap.end();
+  bool preview = false;
   for( ; anIt!=aLast; anIt++ )
   {
     bool shown = hasValue && map[ val ].contains( (*anIt).order );
     (*anIt).editor->setShown( shown );
     (*anIt).label->setShown( shown );
+    if( shown )
+    {
+      SMESHGUI_strParameter* str_param = dynamic_cast<SMESHGUI_strParameter*>( anIt.key().operator->() );
+      SMESHGUI_tableParameter* tab_param = dynamic_cast<SMESHGUI_tableParameter*>( anIt.key().operator->() );
+      preview = preview || ( str_param && str_param->needPreview() ) || ( tab_param && tab_param->needPreview() );
+    }
   }
+  myPreview->setShown( preview );
 }

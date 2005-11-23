@@ -126,7 +126,7 @@ public:
    * 
    * Throws SALOME_Exception if distribution type is not DT_ExprFunc
    */
-  void SetExpressionFunction(const char* expr)
+  void SetExpressionFunction( const char* expr)
     throw (SALOME_Exception);
 
   /*!

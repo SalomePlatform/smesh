@@ -47,7 +47,9 @@ typedef boost::shared_ptr<SMESHGUI_aParameter> SMESHGUI_aParameterPtr;
 class SMESHGUI_aParameter
 { 
 public:
-  SMESHGUI_aParameter(const QString& label):_label(label) {}
+  typedef bool (*VALIDATION_FUNC)( SMESHGUI_aParameter* );
+
+  SMESHGUI_aParameter(const QString& label, const bool = false );
   virtual ~SMESHGUI_aParameter();
 
   enum Type { INT, DOUBLE, STRING, ENUM, BOOL, TABLE };
@@ -59,15 +61,18 @@ public:
   virtual QWidget* CreateWidget( QWidget* ) const = 0;
   virtual void InitializeWidget( QWidget* ) const = 0;
 
+  bool needPreview() const;
+
   /*!
    *  \brief Returns string representation of signal emitted when value in corrsponding widget is changed
    */
   virtual QString sigValueChanged() const;
 
-  QString & Label() { return _label; }
+  QString & Label();
   
 private:
   QString _label;
+  bool    _needPreview;
 };
 
 /*!
@@ -79,7 +84,8 @@ public:
   SMESHGUI_intParameter(const int      initValue = 0,
 			const QString& label     = QString::null,
 			const int      bottom    = 0,
-			const int      top       = 1000);
+			const int      top       = 1000,
+			const bool = false );
   int & InitValue() { return _initValue; }
   int & Top()       { return _top; }
   int & Bottom()    { return _bottom; }
@@ -109,7 +115,8 @@ public:
 			   const double   bottom    = -1E6,
 			   const double   top       = +1E6,
 			   const double   step      = 1.0,
-			   const int      decimals  = 3);
+			   const int      decimals  = 3,
+			   const bool = false);
   double & InitValue() { return _initValue; }
   double & Top()       { return _top; }
   double & Bottom()    { return _bottom; }
@@ -138,7 +145,8 @@ class SMESHGUI_strParameter: public SMESHGUI_aParameter
 { 
 public:
   SMESHGUI_strParameter( const QString& initValue = "",
-                         const QString& label     = QString::null);
+                         const QString& label     = QString::null,
+			 const bool = false );
   QString& InitValue() { return _initValue; }
   virtual Type GetType() const;
   virtual bool GetNewInt( int & Value ) const;
@@ -171,7 +179,7 @@ public:
   typedef QMap< int, IntList >  ShownMap;
 
 public:
-  SMESHGUI_dependParameter( const QString& = QString::null );
+  SMESHGUI_dependParameter( const QString& = QString::null, const bool = false );
 
   const ShownMap&    shownMap() const;
   ShownMap&          shownMap();
@@ -192,7 +200,8 @@ public:
    */
   SMESHGUI_enumParameter( const QStringList& values,
                           const int init = 0,
-                          const QString& label = QString::null );
+                          const QString& label = QString::null,
+			  const bool = false );
   virtual ~SMESHGUI_enumParameter();
 
   /*!
@@ -224,7 +233,8 @@ class SMESHGUI_boolParameter: public SMESHGUI_dependParameter
 {
 public:
   SMESHGUI_boolParameter( const bool = false,
-                          const QString& = QString::null );
+                          const QString& = QString::null,
+			  const bool = false );
   virtual ~SMESHGUI_boolParameter();
 
   bool& InitValue() { return myInitValue; }
@@ -244,6 +254,8 @@ private:
 
 
 class QButton;
+class SMESHGUI_tableParameter;
+
 
 /*!
  *  \brief This class represents custom table. It has only double values and
@@ -254,7 +266,7 @@ class SMESHGUI_Table : public QTable
   Q_OBJECT
   
 public:
-  SMESHGUI_Table( int numRows, int numCols, QWidget* = 0, const char* = 0 );
+  SMESHGUI_Table( const SMESHGUI_tableParameter*, int numRows, int numCols, QWidget* = 0, const char* = 0 );
   virtual ~SMESHGUI_Table();
 
 /*!
@@ -278,6 +290,14 @@ public:
   void setValidator( const double, const double, const int,
                      const int rmin = -1, const int rmax = -1,
                      const int cmin = -1, const int cmax = -1 );  
+
+protected:
+  virtual void keyPressEvent( QKeyEvent* );
+  virtual bool eventFilter( QObject*, QEvent* );
+  virtual QWidget* createEditor( int, int, bool ) const;
+
+private:
+  SMESHGUI_tableParameter*   myParam;
 };
 
 
@@ -295,7 +315,7 @@ public:
   typedef enum { ADD_COLUMN, REMOVE_COLUMN, ADD_ROW, REMOVE_ROW } Button;
 
 public:
-  SMESHGUI_TableFrame( QWidget* );
+  SMESHGUI_TableFrame( const SMESHGUI_tableParameter*, QWidget* );
   ~SMESHGUI_TableFrame();
 
   SMESHGUI_Table* table() const;
@@ -324,6 +344,7 @@ signals:
  *         this object resize table ( returned by table() ) automatically
  */
   void toEdit( SMESHGUI_TableFrame::Button, int );
+  void valueChanged( int, int );
 
 private:
   QButton *myAddColumn, *myRemoveColumn, *myAddRow, *myRemoveRow;
@@ -345,7 +366,8 @@ public:
  *         and if new column or row is added then it is filled with default value
  */
   SMESHGUI_tableParameter( const double init = 0.0,
-                           const QString& label = QString::null );
+                           const QString& label = QString::null,
+			   const bool preview = false );
   virtual ~SMESHGUI_tableParameter();
 
   virtual Type GetType() const;
@@ -355,6 +377,8 @@ public:
   virtual QWidget* CreateWidget( QWidget* ) const;
   virtual void InitializeWidget( QWidget* ) const;
   virtual void TakeValue( QWidget* );
+
+  static void sortData( SMESH::double_array& );
 
 /*!
  *  \brief Updates look of widget in accordance with all parameters of this object
@@ -416,6 +440,7 @@ public:
 
 private slots:
   void onEdit( SMESHGUI_TableFrame::Button, int );
+  void onEdit( SMESHGUI_Table*, SMESHGUI_TableFrame::Button, int );
 
 private:
   void setItems( QWidget*, int = -1, int = -1, int = -1, int = -1 ) const;
@@ -437,6 +462,9 @@ private:
   ValidatorsMap            myValidators;
   bool                     myEditCols, myEditRows;
   QMap< int, QString >     myColNames;
+
+  friend class SMESHGUI_Table;
 };
 
 #endif // SMESHGUI_aParameter.h
+

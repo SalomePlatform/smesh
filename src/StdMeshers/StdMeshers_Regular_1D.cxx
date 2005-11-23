@@ -64,6 +64,12 @@ using namespace std;
 #include <TColStd_Array1OfReal.hxx>
 #include <ExprIntrp_GenExp.hxx>
 
+#include <CASCatch_CatchSignals.hxx>
+#include <CASCatch_Failure.hxx> 
+#include <CASCatch_ErrorHandler.hxx>
+#include <OSD.hxx>
+#include <math_GaussSingleIntegration.hxx>
+
 #include <string>
 #include <math.h>
 
@@ -260,247 +266,333 @@ static void compensateError(double a1, double an,
   }
 }
 
-/*!
- * \brief This class provides interface for a density function
- */
-class Function
+class Function 
 {
 public:
-  Function(bool expMode) : _expMode(expMode) {}
-  double operator() (double t) const;
-  virtual bool IsReady() const = 0;
-protected:
-  virtual double compute(double t) const = 0;
+  Function( const bool exp )
+  : myExp( exp )
+  {
+  }
+
+  virtual ~Function()
+  {
+  }
+
+  virtual bool   value( const double, double& f )
+  {
+    if( myExp )
+      f = pow( 10, f );
+    return true;
+  }
+  virtual double integral( const double, const double ) = 0;
+
 private:
-  bool _expMode;
+  bool myExp;
 };
 
-/*!
- * \brief This class provides computation of density function given by a table
- */
-class TabFunction: public Function
+class FunctionIntegral : public Function
 {
 public:
-  TabFunction(const vector<double>& table, bool expMode);
-  virtual bool IsReady() const;
-protected:
-  virtual double compute(double t) const;
+  FunctionIntegral( Function*, const double );
+  virtual ~FunctionIntegral();
+  virtual bool   value( const double, double& );
+  virtual double integral( const double, const double );
+
 private:
-  const vector<double>& _table;
+  Function* myFunc;
+  double    myStart;
 };
 
-/*!
- * \brief This class provides computation of density function given by an expression
- */
-class ExprFunction: public Function
+FunctionIntegral::FunctionIntegral( Function* f, const double st )
+: Function( false )
 {
-public:
-  ExprFunction(const char* expr, bool expMode);
-  virtual bool IsReady() const;
-protected:
-  virtual double compute(double t) const;
-private:
-  Handle(Expr_GeneralExpression) _expression;
-  Expr_Array1OfNamedUnknown _var;
-  mutable TColStd_Array1OfReal _val;
-};
-
-double Function::operator() (double t) const
-{
-  double res = compute(t);
-  if (_expMode)
-    res = pow(10, res);
-  return res;
+  myFunc = f;
+  myStart = st;
 }
 
-TabFunction::TabFunction(const vector<double>& table, bool expMode)
-  : Function(expMode),
-    _table(table)
+FunctionIntegral::~FunctionIntegral()
 {
 }
 
-bool TabFunction::IsReady() const
+bool FunctionIntegral::value( const double t, double& f )
 {
+  f = myFunc ? myFunc->integral( myStart, t ) : 0;
+  return myFunc!=0 && Function::value( t, f );
+}
+
+double FunctionIntegral::integral( const double, const double )
+{
+  return 0;
+}
+
+class FunctionTable : public Function
+{
+public:
+  FunctionTable( const std::vector<double>&, const bool );
+  virtual ~FunctionTable();
+  virtual bool   value( const double, double& );
+  virtual double integral( const double, const double );
+
+private:
+  bool    findBounds( const double, int&, int& ) const;
+
+  //integral from x[i] to x[i+1]
+  double  integral( const int i );
+
+  //integral from x[i] to x[i]+d
+  //warning: function is presented as linear on interaval from x[i] to x[i]+d,
+  //         for correct result d must be >=0 and <=x[i+1]-x[i]
+  double  integral( const int i, const double d );
+
+private:
+  std::vector<double>  myData;
+};
+
+FunctionTable::FunctionTable( const std::vector<double>& data, const bool exp )
+: Function( exp )
+{
+  myData = data;
+}
+
+FunctionTable::~FunctionTable()
+{
+}
+
+bool FunctionTable::value( const double t, double& f )
+{
+  int i1, i2;
+  if( !findBounds( t, i1, i2 ) )
+    return false;
+
+  double
+    x1 = myData[2*i1], y1 = myData[2*i1+1],
+    x2 = myData[2*i2], y2 = myData[2*i2+1];
+
+  Function::value( x1, y1 );
+  Function::value( x2, y2 );
+  
+  f = y1 + ( y2-y1 ) * ( t-x1 ) / ( x2-x1 );
   return true;
 }
 
-double TabFunction::compute (double t) const
+double FunctionTable::integral( const int i )
 {
-  //find place of <t> in table
-  int i;
-  for (i=0; i < _table.size()/2; i++)
-    if (_table[i*2] > t)
+  if( i>=0 && i<myData.size()-1 )
+    return integral( i, myData[2*(i+1)]-myData[2*i] );
+  else
+    return 0;
+}
+
+double FunctionTable::integral( const int i, const double d )
+{
+  double f, res = 0.0;
+  if( value( myData[2*i]+d, f ) )
+    res = ( myData[2*i] + f ) / 2.0 * d;
+
+  return res;
+}
+
+double FunctionTable::integral( const double a, const double b )
+{
+  int x1s, x1f, x2s, x2f;
+  findBounds( a, x1s, x1f );
+  findBounds( b, x2s, x2f );
+  double J = 0;
+  for( int i=x1s; i<x2s; i++ )
+    J+=integral( i );
+  J-=integral( x1s, a-myData[2*x1s] );
+  J+=integral( x2s, b-myData[2*x2s] );
+  return J;
+}
+
+bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) const
+{
+  int n = myData.size();
+  if( n==0 || x<myData[0] )
+  {
+    x_ind_1 = x_ind_2 = 0;
+    return false;
+  }
+
+  for( int i=0; i<n-1; i++ )
+    if( myData[2*i]<=x && x<=myData[2*(i+1)] )
+    {
+      x_ind_1 = i;
+      x_ind_2 = i+1;
+      return true;
+    }
+  x_ind_1 = n-1;
+  x_ind_2 = n-1;
+  return false;
+}
+
+
+
+class FunctionExpr : public Function, public math_Function
+{
+public:
+  FunctionExpr( const char*, const bool );
+  virtual ~FunctionExpr();
+  virtual Standard_Boolean Value( Standard_Real, Standard_Real& );
+  virtual bool   value( const double, double& );  //inherited from Function
+  virtual double integral( const double, const double );
+
+private:
+  Handle(ExprIntrp_GenExp)    myExpr;
+  Expr_Array1OfNamedUnknown   myVars;
+  TColStd_Array1OfReal        myValues;
+};
+
+FunctionExpr::FunctionExpr( const char* str, const bool exp )
+: Function( exp ),
+  myVars( 1, 1 ),
+  myValues( 1, 1 )
+{
+  myExpr = ExprIntrp_GenExp::Create();
+  myExpr->Process( ( Standard_CString )str );
+  if( !myExpr->IsDone() )
+    myExpr.Nullify();
+
+  myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
+}
+
+FunctionExpr::~FunctionExpr()
+{
+}
+
+Standard_Boolean FunctionExpr::Value( Standard_Real T, Standard_Real& F )
+{
+  double f;
+  Standard_Boolean res = value( T, f );
+  F = f;
+  return res;
+}
+
+bool FunctionExpr::value( const double t, double& f )
+{
+  if( myExpr.IsNull() )
+    return false;
+
+  CASCatch_CatchSignals aCatchSignals;
+  aCatchSignals.Activate();
+
+  myValues.ChangeValue( 1 ) = t;
+  bool ok = true;
+  CASCatch_TRY {
+    f = myExpr->Expression()->Evaluate( myVars, myValues );
+  }
+  CASCatch_CATCH(CASCatch_Failure) {
+    aCatchSignals.Deactivate();
+    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    f = 0.0;
+  }
+
+  aCatchSignals.Deactivate();
+  ok = Function::value( t, f ) && ok;
+  return ok;
+}
+
+double FunctionExpr::integral( const double a, const double b )
+{
+  double res = 0.0;
+  CASCatch_TRY
+  {
+    math_GaussSingleIntegration _int( *this, a, b, 20 );
+    if( _int.IsDone() )
+      res = _int.Value();
+  }
+  CASCatch_CATCH(CASCatch_Failure)
+  {
+    res = 0.0;
+    MESSAGE( "Exception in integral calculating" );
+  }
+  return res;
+}
+
+
+
+
+
+
+
+double dihotomySolve( Function& f, const double val, const double _start, const double _fin, const double eps, bool& ok )
+{
+  double start = _start, fin = _fin, start_val, fin_val; bool ok1, ok2;
+  ok1 = f.value( start, start_val );
+  ok2 = f.value( fin, fin_val );
+
+  if( !ok1 || !ok2 )
+  {
+    ok = false;
+    return 0.0;
+  }
+
+  bool start_pos = start_val>=val, fin_pos = fin_val>=val;
+  ok = true;
+  
+  while( fin-start>eps )
+  {
+    double mid = ( start+fin )/2.0, mid_val;
+    ok = f.value( mid, mid_val );
+    if( !ok )
+      return 0.0;
+
+//    char buf[1024];
+//    sprintf( buf, "start=%f\nfin=%f\nmid_val=%f\n", float( start ), float( fin ), float( mid_val ) );
+//    MESSAGE( buf );
+
+    bool mid_pos = mid_val>=val;
+    if( start_pos!=mid_pos )
+    {
+      fin_pos = mid_pos;
+      fin = mid;
+    }
+    else if( fin_pos!=mid_pos )
+    {
+      start_pos = mid_pos;
+      start = mid;
+    }
+    else
       break;
-  if (i >= _table.size()/2)
-    i = _table.size()/2 - 1;
-
-  if (i == 0)
-    return _table[1];
-
-  // interpolate function value on found interval
-  // (t - x[i-1]) / (x[i] - x[i-1]) = (y - f[i-1]) / (f[i] - f[i-1])
-  // => y = f[i-1] + (f[i] - f[i-1]) * (t - x[i-1]) / (x[i] - x[i-1])
-  double x1 = _table[(i-1)*2];
-  double x2 = _table[i*2];
-  double y1 = _table[(i-1)*2+1];
-  double y2 = _table[i*2+1];
-  if (x2 - x1 < Precision::Confusion())
-    throw SALOME_Exception("TabFunction::compute : confused points");
-  return y1 + (y2 - y1) * ((t - x1) / (x2 - x1));
-}
-
-ExprFunction::ExprFunction(const char* expr, bool expMode)
-  : Function(expMode),
-    _var(1,1),
-    _val(1,1)
-{
-  Handle( ExprIntrp_GenExp ) gen = ExprIntrp_GenExp::Create();
-  gen->Process(TCollection_AsciiString((char*)expr));
-  if (gen->IsDone())
-  {
-    _expression = gen->Expression();
-    _var(1) = new Expr_NamedUnknown("t");
   }
+  return (start+fin)/2.0;
 }
-
-bool ExprFunction::IsReady() const
-{
-  return !_expression.IsNull();
-}
-
-double ExprFunction::compute (double t) const
-{
-  ASSERT(!_expression.IsNull());
-  _val(1) = t;
-  return _expression->Evaluate(_var, _val);
-}
-
-//================================================================================
-/*!
- * \brief Compute next abscissa when two previous ones are given
-  * \param sm2 - before previous abscissa
-  * \param sm1 - previous abscissa
-  * \param func - function of density
-  * \param reverse - the direction of next abscissa, increase (0) or decrease (1)
-  * \retval double - the new abscissa
- * 
- * The abscissa s is given by the formulae
- *
- * ....|--------|----------------|.....
- *    sm2      sm1               s
- *
- *    func(sm2) / func(sm1)  = (sm1-sm2) / (s-sm1)
- * => (s-sm1) * func(sm2) = (sm1-sm2) * func(sm1)
- * => s = sm1 + (sm1-sm2) * func(sm1) / func(sm2)
- */
-//================================================================================
-
-static double nextAbscissa(double sm2, double sm1, const Function& func, int reverse)
-{
-  if (reverse)
-  {
-    sm1 = 1.0 - sm1;
-    sm2 = 1.0 - sm2;
-  }
-  return sm1 + (sm1-sm2) * func(sm1) / func(sm2);
-}
-
-//================================================================================
-/*!
- * \brief Compute distribution of points on a curve following the law of a function
-  * \param C3d - the curve to discretize
-  * \param first - the first parameter on the curve 
-  * \param last - the last parameter on the curve 
-  * \param theReverse - flag indicating that the curve must be reversed
-  * \param nbSeg - number of output segments
-  * \param func - the function f(t)
-  * \param theParams - output points
-  * \retval bool  - true if success
- */
-//================================================================================
 
 static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
                                double length, bool theReverse, 
-                               int nbSeg, const Function& func,
+                               int nbSeg, Function& func,
                                list<double>& theParams)
 {
-  if (!func.IsReady())
+  OSD::SetSignal( true );
+  if( nbSeg<=0 )
     return false;
 
-  // ########## TMP until pb division by zero when func(0.0)==0 is fixed #########
-  if (::Abs(func(0.0)) <= ::RealSmall() ) return false;
-  // ########## TMP until pb division by zero when func(0.0)==0 is fixed #########
+  MESSAGE( "computeParamByFunc" );
 
-  vector<double> xxx[2];
   int nbPnt = 1 + nbSeg;
-  int rev, i;
-  for (rev=0; rev < 2; rev++)
+  vector<double> x(nbPnt, 0.);
+
+  x[0] = 0.0;
+  double J = func.integral( 0.0, 1.0 ) / nbSeg;
+  bool ok;
+  for( int i=1; i<nbSeg; i++ )
   {
-    // curv abscisses initialisation
-    vector<double> x(nbPnt, 0.);
-    // the first abscissa is 0.0
-
-    // The aim of the algorithm is to find a second abscisse x[1] such as the last
-    // one x[nbSeg] is very close to 1.0 with the epsilon precision
-
-    double x1_too_small = 0.0;
-    double x1_too_large = RealLast();
-    double x1 = 1.0/nbSeg;
-    while (1)
-    {
-      x[1] = x1;
-
-      // Check if the abscissa of the point 2 to N-1
-      // are in the segment ...
-
-      bool ok = true;
-      for (i=2; i <= nbSeg; i++)
-      {
-        x[i] = nextAbscissa(x[i-2], x[i-1], func, rev);
-        if (x[i] - 1.0 > Precision::Confusion())
-        {
-          x[nbSeg] = x[i];
-          ok = false;
-          break;
-        }
-      }
-      if (!ok)
-      {
-        // The segments are to large
-        // Decrease x1 ...
-        x1_too_large = x1;
-        x1 = (x1_too_small+x1_too_large)/2;
-        if ( x1 <= ::RealSmall() )
-          return false; // break infinite loop
-        continue;
-      }
-
-      // Look at the abscissa of the point N
-      // which is to be close to 1.0
-
-      // break condition --> algo converged !!
-
-      if (1.0 - x[nbSeg] < Precision::Confusion())
-        break;
-
-      // not ok ...
-
-      x1_too_small = x1;
-
-      // Modify x1 value
-
-      if (x1_too_large > 1e100)
-        x1 = 2*x1;
-      else
-        x1 = (x1_too_small+x1_too_large)/2;
-    }
-    xxx[rev] = x;
+    FunctionIntegral f_int( &func, x[i-1] );
+    x[i] = dihotomySolve( f_int, J, x[i-1], 1.0, 1E-4, ok );
+    if( !ok )
+      return false;
   }
 
-  // average
-  vector<double> x(nbPnt, 0.);
-  for (i=0; i < nbPnt; i++)
-    x[i] = (xxx[0][i] + (1.0 - xxx[1][nbPnt-i])) / 2;
+  x[nbSeg] = 1.0;
+  MESSAGE( "Points:\n" );
+  char buf[1024];
+  for( int i=0; i<=nbSeg; i++ )
+  {
+    sprintf(  buf, "%f\n", float(x[i] ) );
+    MESSAGE( buf );
+  }
+    
+
 
   // apply parameters in range [0,1] to the space of the curve
   double prevU = first;
@@ -510,7 +602,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
     prevU = last;
     sign = -1.;
   }
-  for (i = 1; i < nbSeg; i++)
+  for( int i = 1; i < nbSeg; i++ )
   {
     double curvLength = length * (x[i] - x[i-1]) * sign;
     GCPnts_AbscissaPoint Discret( C3d, curvLength, prevU );
@@ -581,7 +673,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
         break;
       case StdMeshers_NumberOfSegments::DT_TabFunc:
         {
-          TabFunction func(_vvalue[ TAB_FUNC_IND ], (bool)_ivalue[ EXP_MODE_IND ]);
+          FunctionTable func(_vvalue[ TAB_FUNC_IND ], (bool)_ivalue[ EXP_MODE_IND ]);
           return computeParamByFunc(C3d, f, l, length, theReverse,
                                     _ivalue[ NB_SEGMENTS_IND ], func,
                                     theParams);
@@ -589,7 +681,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
         break;
       case StdMeshers_NumberOfSegments::DT_ExprFunc:
         {
-          ExprFunction func(_svalue[ EXPR_FUNC_IND ].c_str(), (bool)_ivalue[ EXP_MODE_IND ]);
+          FunctionExpr func(_svalue[ EXPR_FUNC_IND ].c_str(), (bool)_ivalue[ EXP_MODE_IND ]);
           return computeParamByFunc(C3d, f, l, length, theReverse,
                                     _ivalue[ NB_SEGMENTS_IND ], func,
                                     theParams);

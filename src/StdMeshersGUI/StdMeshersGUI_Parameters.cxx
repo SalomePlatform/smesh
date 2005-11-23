@@ -134,8 +134,8 @@ void StdMeshersGUI_Parameters::SetInitValue( SMESHGUI_aParameterPtr param,
 #define DOUBLE_PARAM(v,l,b,t,s,d) SMESHGUI_aParameterPtr(new SMESHGUI_doubleParameter(v,l,b,t,s,d))
 #define INT_PARAM(v,l,b,t) SMESHGUI_aParameterPtr(new SMESHGUI_intParameter(v,l,b,t))
 #define ENUM_PARAM(v,i,l) SMESHGUI_aParameterPtr(new SMESHGUI_enumParameter(v,i,l))
-#define STR_PARAM(i,l) SMESHGUI_aParameterPtr(new SMESHGUI_strParameter(i,l))
-#define BOOL_PARAM(i,l) SMESHGUI_aParameterPtr(new SMESHGUI_boolParameter(i,l))
+#define STR_PARAM(i,l,preview) SMESHGUI_aParameterPtr(new SMESHGUI_strParameter(i,l,preview))
+#define BOOL_PARAM(i,l,preview) SMESHGUI_aParameterPtr(new SMESHGUI_boolParameter(i,l,preview))
 
 void StdMeshersGUI_Parameters::GetParameters (const QString&                 hypType,
                                               list<SMESHGUI_aParameterPtr> & paramList )
@@ -183,7 +183,7 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
     paramList.push_back ( DOUBLE_PARAM (1.0,
                                      QObject::tr("SMESH_NB_SEGMENTS_SCALE_PARAM"),
                                      VALUE_SMALL, VALUE_MAX, 0.1, 6 ));
-    SMESHGUI_tableParameter* tab = new SMESHGUI_tableParameter( 0.0, QObject::tr( "SMESH_TAB_FUNC" ) );
+    SMESHGUI_tableParameter* tab = new SMESHGUI_tableParameter( 0.0, QObject::tr( "SMESH_TAB_FUNC" ), true );
     tab->setRowCount( 5 );
     tab->setColCount( 2 );
     //default size of table: 5x2
@@ -198,10 +198,10 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
     paramList.push_back ( SMESHGUI_aParameterPtr( tab ) );
 
     //4-th parameter in list
-    paramList.push_back ( STR_PARAM ( "", QObject::tr( "SMESH_EXPR_FUNC" ) ) );
+    paramList.push_back ( STR_PARAM ( "", QObject::tr( "SMESH_EXPR_FUNC" ), true ) );
 
     //5-th parameter in list
-    paramList.push_back ( BOOL_PARAM ( false, QObject::tr( "SMESH_EXP_MODE" ) ) );
+    paramList.push_back ( BOOL_PARAM ( false, QObject::tr( "SMESH_EXP_MODE" ), true ) );
   }
   else if (hypType.compare("Arithmetic1D") == 0)
   {
@@ -291,7 +291,7 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr    the
     {
       char* expr_func = NOS->GetExpressionFunction();
       SetInitValue( *anIt, expr_func );
-      delete expr_func;
+      //delete expr_func;
     }
     anIt++;
 

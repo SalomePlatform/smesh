@@ -46,6 +46,7 @@ class QLineEdit;
 class QPushButton;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
+class SMESHGUI_FunctionPreview;
 
 //=================================================================================
 // class    : StdMeshersGUI_CreateHypothesisDlg
@@ -108,6 +109,7 @@ private:
     QPushButton*      buttonOk;
     QPushButton*      buttonApply;
     QPushButton*      buttonCancel;
+    SMESHGUI_FunctionPreview* myPreview;
 
 private slots:
 

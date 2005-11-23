@@ -33,6 +33,13 @@ using namespace std;
 #include <TCollection_AsciiString.hxx>
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_NamedUnknown.hxx>
+#include <CASCatch_CatchSignals.hxx>
+#include <CASCatch_Failure.hxx> 
+#include <CASCatch_ErrorHandler.hxx>
+#include <OSD.hxx>
+#include <Expr_Array1OfNamedUnknown.hxx>
+#include <TColStd_Array1OfReal.hxx>
+
 
 const double PRECISION = 1e-7;
 
@@ -51,7 +58,7 @@ StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int hypId, int studyId,
     _expMode(false)
 {
   _name = "NumberOfSegments";
-  _param_algo_dim = 1; 
+  _param_algo_dim = 1;
 }
 
 //=============================================================================
@@ -179,6 +186,7 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
   double prev = -PRECISION;
   bool isSame = table.size() == _table.size();
 
+  bool pos = false;
   for (i=0; i < table.size()/2; i++) {
     double par = table[i*2];
     double val = table[i*2+1];
@@ -186,8 +194,10 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
       throw SALOME_Exception(LOCALIZED("parameter of table function is out of range [0,1]"));
     if ( fabs(par-prev)<PRECISION )
       throw SALOME_Exception(LOCALIZED("two parameters are the same"));
-    if (val < PRECISION)
+    if ( val < 0 )
       throw SALOME_Exception(LOCALIZED("value of table function is not positive"));
+    if( val>PRECISION )
+      pos = true;
     if (isSame)
     {
       double oldpar = _table[i*2];
@@ -198,7 +208,10 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
     prev = par;
   }
 
-  if (!isSame)
+  if( !pos )
+    throw SALOME_Exception(LOCALIZED("value of table function is not positive"));
+
+  if( pos && !isSame )
   {
     _table = table;
     NotifySubMeshesHypothesisModification();
@@ -223,23 +236,24 @@ const std::vector<double>& StdMeshers_NumberOfSegments::GetTableFunction() const
 /*! check if only 't' is unknown variable in expression
  */
 //================================================================================
-bool isCorrect( const Handle( Expr_GeneralExpression )& expr )
+bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 {
-  if( expr.IsNull() )
-    return true;
-    
+  Handle( Expr_NamedUnknown ) sub = Handle( Expr_NamedUnknown )::DownCast( expr );
+  if( !sub.IsNull() )
+    return sub->GetName()=="t";
+
   bool res = true;
   for( int i=1, n=expr->NbSubExpressions(); i<=n && res; i++ )
   {
-    Handle( Expr_GeneralExpression ) subexpr = expr->SubExpression( i );
-    Handle( Expr_NamedUnknown ) name = Handle( Expr_NamedUnknown )::DownCast( subexpr );
+    Handle( Expr_GeneralExpression ) sub = expr->SubExpression( i );
+    Handle( Expr_NamedUnknown ) name = Handle( Expr_NamedUnknown )::DownCast( sub );
     if( !name.IsNull() )
     {
       if( name->GetName()!="t" )
-        res = false;
+	res = false;
     }
     else
-      res = isCorrect( subexpr );
+      res = isCorrectArg( sub );
   }
   return res;
 }
@@ -249,25 +263,66 @@ bool isCorrect( const Handle( Expr_GeneralExpression )& expr )
  *  ( result in 'syntax' ) and if only 't' is unknown variable in expression ( result in 'args' )
  */
 //================================================================================
-void casProcess( const TCollection_AsciiString& str, bool& syntax, bool& args )
+bool process( const TCollection_AsciiString& str,
+	      bool& syntax, bool& args,
+	      bool& non_neg, bool& non_zero,
+ 	      bool& singulars, double& sing_point )
 {
-  // check validity of expression
-  syntax = false;
-  args = false;
-  try
+  Handle( ExprIntrp_GenExp ) myExpr = ExprIntrp_GenExp::Create();
+  myExpr->Process( str.ToCString() );
+
+  if( myExpr->IsDone() )
   {
-    Handle( ExprIntrp_GenExp ) gen = ExprIntrp_GenExp::Create();
-    gen->Process( str );
-        
-    if( gen->IsDone() ) 
+    syntax = true;
+    args = isCorrectArg( myExpr->Expression() );
+  }
+
+  bool res = syntax && args;
+  if( !res )
+    myExpr.Nullify();
+
+  non_neg = true;
+  singulars = false;
+  non_zero = false;
+
+  if( res )
+  {
+    OSD::SetSignal( true );
+    CASCatch_CatchSignals aCatchSignals;
+    aCatchSignals.Activate();
+    double res;
+    Expr_Array1OfNamedUnknown myVars( 1, 1 );
+    TColStd_Array1OfReal  myValues( 1, 1 );
+    myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
+
+    const int max = 500;
+    for( int i=0; i<=max; i++ )
     {
-      syntax = true;
-      args = isCorrect( gen->Expression() );
+      double t = double(i)/double(max);
+      myValues.ChangeValue( 1 ) = t;
+      CASCatch_TRY
+      {   
+	res = myExpr->Expression()->Evaluate( myVars, myValues );
+      }
+      CASCatch_CATCH(CASCatch_Failure)
+      {
+	aCatchSignals.Deactivate();
+	Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+	sing_point = t;
+	singulars = true;
+	break;
+      }
+      if( res<0 )
+      {
+	non_neg = false;
+	break;
+      }
+      if( res>PRECISION )
+	non_zero = true;
     }
+    aCatchSignals.Deactivate();
   }
-  catch (Standard_Failure)
-  {
-  }
+  return res && non_neg && ( !singulars );
 }
 
 //================================================================================
@@ -289,15 +344,31 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
   str.RemoveAll('\r');
   str.RemoveAll('\n');
 
-  bool syntax, args;
-  casProcess( str, syntax, args );
-  if( !syntax )
-    throw SALOME_Exception(LOCALIZED("invalid expression syntax"));
-  if( !args )
-    throw SALOME_Exception(LOCALIZED("only 't' may be used as function argument"));
+  bool syntax, args, non_neg, singulars, non_zero;
+  double sing_point;
+  bool res = true;//process( str, syntax, args, non_neg, non_zero, singulars, sing_point );
+  if( !res )
+  {
+    if( !syntax )
+      throw SALOME_Exception(LOCALIZED("invalid expression syntax"));
+    if( !args )
+      throw SALOME_Exception(LOCALIZED("only 't' may be used as function argument"));
+    if( !non_neg )
+      throw SALOME_Exception(LOCALIZED("only non-negative function can be used as density"));
+    if( singulars )
+    {
+      char buf[1024];
+      sprintf( buf, "Function has singular point in %.3f", sing_point );
+      throw SALOME_Exception( buf );
+    }
+    if( !non_zero )
+      throw SALOME_Exception(LOCALIZED("f(t)=0 cannot be used as density"));
 
-  string func(str.ToCString());
-  if (_func != func)
+    return;
+  }
+  
+  std::string func = expr;
+  if( _func != func )
   {
     _func = func;
     NotifySubMeshesHypothesisModification();
