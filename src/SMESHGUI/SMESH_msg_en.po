@@ -1204,7 +1204,7 @@ msgid "MISSING_ALGO"
 msgstr "%3 %2D algorithm is missing"
 
 msgid "MISSING_HYPO"
-msgstr "%3 %2D algorithm \"%1\" misses some hypothesis"
+msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
 
 msgid "NOT_CONFORM_MESH"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
@@ -2927,18 +2927,4 @@ msgstr "Mesh is null"
 
 msgid "SMESHGUI_MeshOp::MESH_IS_NOT_DEFINED"
 msgstr "Mesh is not defined\nPlease specify it and try again"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

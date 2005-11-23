@@ -571,6 +571,8 @@ namespace SMESH{
       msg = msg.arg( error.algoDim );
       // %3 - global/local
       msg = msg.arg( QObject::tr( error.isGlobalAlgo ? "GLOBAL_ALGO" : "LOCAL_ALGO" ));
+      // %4 - hypothesis dim == algoDim
+      msg = msg.arg( error.algoDim );
 
       if ( i ) resMsg += ";\n";
       resMsg += msg;
