@@ -2202,7 +2202,10 @@ void SMESHGUI::createPopupItem( const int id,
   QChar lc = QtxPopupMgr::Selection::defEquality();
   QString rule = "(%1) and (%2) and (%3)";
   rule = rule.arg( QString( "%1>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() ) );
-  rule = rule.arg( QString( "%1client in {%2}" ).arg( lc ).arg( clients ) );
+  if( clients.isEmpty() )
+    rule = rule.arg( QString( "true" ) );
+  else
+    rule = rule.arg( QString( "%1client in {%2}" ).arg( lc ).arg( clients ) );
   rule = rule.arg( QString( "%1type in {%2}" ).arg( lc ).arg( types ) );
   rule += theRule;
 
