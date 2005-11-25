@@ -163,6 +163,7 @@ void StdMeshersGUI_CreateHypothesisDlg::CreateDlgLayout(const QString & theCapti
     }
   }
   myPreview = new SMESHGUI_FunctionPreview( GroupC1 );
+  myPreview->hide();
   GroupC1Layout->addWidget( myPreview, row, 1 );
   
   StdMeshersGUI_CreateHypothesisDlgLayout->addWidget( GroupC1, 1 );

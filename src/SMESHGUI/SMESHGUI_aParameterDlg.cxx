@@ -119,6 +119,7 @@ void SMESHGUI_aParameterDlg::init()
   }
 
   myPreview = new SMESHGUI_FunctionPreview( GroupC1 );
+  myPreview->hide();
   GroupC1Layout->addWidget( myPreview, row, 1 );
 
   paramIt = myParamList.begin();
