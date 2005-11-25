@@ -382,6 +382,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
 {
   //disconnect(mySelectionMgr, 0, this, 0);
 
+  SALOME_ListIO io;
+  mySelectionMgr->selectedObjects( io );
   SALOME_ListIO aList;
   mySelectionMgr->setSelectedObjects( aList );
   myEditCurrentArgument->clear();
@@ -439,6 +441,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
     }
   
   //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  mySelectionMgr->setSelectedObjects( io );
 }
 
 //=================================================================================
@@ -523,8 +526,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	  }
 	}
       
-      SALOME_ListIO aList;
-      mySelectionMgr->setSelectedObjects( aList );
+      //SALOME_ListIO aList;
+      //mySelectionMgr->setSelectedObjects( aList );
       mySimulation->SetVisibility(false);
       SMESH::UpdateView();
       ConstructorsClicked( GetConstructorId() );
@@ -550,8 +553,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnOk()
 void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnCancel()
 {
   mySelectionMgr->clearFilters();
-  SALOME_ListIO aList;
-  mySelectionMgr->setSelectedObjects( aList );
+  //SALOME_ListIO aList;
+  //mySelectionMgr->setSelectedObjects( aList );
   SMESH::SetPointRepresentation(false);
   mySimulation->SetVisibility(false);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))

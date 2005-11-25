@@ -357,6 +357,8 @@ void SMESHGUI_SewingDlg::Init()
 void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
 {
   disconnect(mySelectionMgr, 0, this, 0);
+  SALOME_ListIO io;
+  mySelectionMgr->selectedObjects( io );
   mySelectionMgr->clearSelected();
   LineEdit1->setText("");
   LineEdit2->setText("");
@@ -476,6 +478,7 @@ void SMESHGUI_SewingDlg::ConstructorsClicked (int constructorId)
   }
 
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  mySelectionMgr->setSelectedObjects( io );
 }
 
 //=================================================================================
