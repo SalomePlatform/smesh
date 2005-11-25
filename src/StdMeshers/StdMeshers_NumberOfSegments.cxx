@@ -474,8 +474,18 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
   else
     load.clear(ios::badbit | load.rdstate());
 
-  // read ditribution type
-  isOK = (load >> a);
+  // read second stored value. It can be two variants here:
+  // 1. If the hypothesis is stored in old format (nb.segments and scale factor),
+  //    we wait here the scale factor, which is double.
+  // 2. If the hypothesis is stored in new format
+  //    (nb.segments, distr.type, some other params.),
+  //    we wait here the ditribution type, which is integer
+  double scale_factor;
+  isOK = (load >> scale_factor);
+  a = (int)scale_factor;
+
+  // try to interprete ditribution type,
+  // supposing that this hypothesis was written in the new format
   if (isOK)
   {
     if (a < DT_Regular || a > DT_ExprFunc)
@@ -496,24 +506,36 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
       if (isOK)
         _scaleFactor = b;
       else
+      {
         load.clear(ios::badbit | load.rdstate());
+        // this can mean, that the hypothesis is stored in old format
+        _distrType = DT_Regular;
+        _scaleFactor = scale_factor;
+      }
     }
     break;
   case DT_TabFunc:
     {
       isOK = (load >> a);
       if (isOK)
-        _table.resize(a, 0.);
-      else
-        load.clear(ios::badbit | load.rdstate());
-      int i;
-      for (i=0; i < _table.size(); i++)
       {
-        isOK = (load >> b);
-        if (isOK)
-          _table[i] = b;
-        else
-          load.clear(ios::badbit | load.rdstate());
+        _table.resize(a, 0.);
+        int i;
+        for (i=0; i < _table.size(); i++)
+        {
+          isOK = (load >> b);
+          if (isOK)
+            _table[i] = b;
+          else
+            load.clear(ios::badbit | load.rdstate());
+        }
+      }
+      else
+      {
+        load.clear(ios::badbit | load.rdstate());
+        // this can mean, that the hypothesis is stored in old format
+        _distrType = DT_Regular;
+        _scaleFactor = scale_factor;
       }
     }
     break;
@@ -524,7 +546,12 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
       if (isOK)
         _func = str;
       else
+      {
         load.clear(ios::badbit | load.rdstate());
+        // this can mean, that the hypothesis is stored in old format
+        _distrType = DT_Regular;
+        _scaleFactor = scale_factor;
+      }
     }
     break;
   case DT_Regular:
