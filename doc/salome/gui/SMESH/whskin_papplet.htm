@@ -1,10 +1,9 @@
 <html>
 <head>
 <title>Navigation Pane</title>
-<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+
 <meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
-<meta name "description" content="WebHelp 2002">
-<SCRIPT LANGUAGE="JavaScript1.2" ARCHIVE="nsdnsfix.jar" ID="ChangeProfileScriptinNavPane2"> var sd_strAgent	= navigator.userAgent.toLowerCase(); 	var sd_strVersion  = navigator.appVersion.toLowerCase();  var sd_nVerMajor	= parseInt(sd_strVersion);  var	sd_nVerMinor	= parseFloat(sd_strVersion); var	sd_bNS	    = ((sd_strAgent.indexOf("mozilla") != -1) && ((sd_strAgent.indexOf('spoofer') == -1) && (sd_strAgent.indexOf('compatible') == -1))); var 	sd_bNS4			= ((sd_bNS) && (sd_nVerMajor >= 4)); if (sd_nVerMinor == 4.60) 	{  netscape.security.PrivilegeManager.enablePrivilege("UniversalPreferencesRead");  var sd_prefValue = navigator.preference("security.lower_java_network_security_by_trusting_proxies"); if (!sd_prefValue) { alert("There are some limitations in Netscape 4.6. Please download and install the latest version of Netscape. Your current Netscape profile needs to be modified. Select 'Remember this decision' and click 'Grant' when prompted to allow the modifications. Click OK to proceed."); netscape.security.PrivilegeManager.enablePrivilege("UniversalPreferencesWrite"); navigator.preference("security.lower_java_network_security_by_trusting_proxies", true); alert("Please restart Netscape"); window.close(); } } </SCRIPT>
+<meta name="description" content="WebHelp 5.50">
 <script language="javascript" src="whver.js"></script>
 <script language="javascript1.2" src="whmsg.js"></script>
 <script language="javascript1.2" src="whproxy.js"></script>
@@ -58,24 +57,49 @@ function window_unload()
 
 function window_OnLoad()
 {
-	if (gsInitPane == "toc")
+	var bHidePane=false;
+	var oMsg=new whMessage(WH_MSG_GETCMD,this,1,null);
+	if (SendMessage(oMsg))
 	{
-		var oMsg=new whMessage(WH_MSG_SHOWTOC,this,1,null)
+		if(oMsg.oParam>0)
+		{
+			if(oMsg.oParam==1)
+				gsInitPane="toc";
+			else if(oMsg.oParam==2)
+				gsInitPane="idx";
+			else if(oMsg.oParam==3)
+				gsInitPane="fts";
+			else if(oMsg.oParam==4)
+				gsInitPane="glo";
+		}
+		else if(oMsg.oParam==0)
+		{
+			bHidePane=true;
+		}
+	}
+	if (bHidePane)
+	{
+		oMsg=new whMessage(WH_MSG_HIDEPANE,this,1,null)
+		SendMessage(oMsg);
+	}
+	else if (gsInitPane == "toc")
+	{
+		oMsg=new whMessage(WH_MSG_SHOWTOC,this,1,null)
 		SendMessage(oMsg);	
 	}
 	else if (gsInitPane=="idx")
 	{
-		var oMsg=new whMessage(WH_MSG_SHOWIDX,this,1,null)
+		oMsg=new whMessage(WH_MSG_SHOWIDX,this,1,null)
 		SendMessage(oMsg);	
 	}
 	else if (gsInitPane=="fts")
 	{
-		var oMsg=new whMessage(WH_MSG_SHOWFTS,this,1,null)
+		oMsg=new whMessage(WH_MSG_SHOWFTS,this,1,null)
 		SendMessage(oMsg);	
 	}
 	else if (gsInitPane=="glo")
 	{
-		var oMsg=new whMessage(WH_MSG_SHOWGLO,this,1,null)
+		oMsg=new whMessage(WH_MSG_SHOWGLO,this,1,null)
 		SendMessage(oMsg);	
 	}
 	
@@ -83,13 +107,14 @@ function window_OnLoad()
 
 function onResize()
 {
+	var oMsg=null;
 	if (gbIE4)
 	{
 		if(document.body)
 		{
 			if(document.body.clientWidth > 1 && document.body.clientHeight>1)
 			{
-				var oMsg = new whMessage(WH_MSG_RESIZEPANE, this, 1, null);
+				oMsg = new whMessage(WH_MSG_RESIZEPANE,this,1,null);
 				SendMessage(oMsg);
 			}
 		}
@@ -98,7 +123,7 @@ function onResize()
 	{
 		if (window.innerWidth != 0 && window.innerHeight != 0)
 		{
-			var oMsg = new whMessage(WH_MSG_RESIZEPANE, this, 1, null);
+			oMsg = new whMessage(WH_MSG_RESIZEPANE,this,1,null);
 			SendMessage(oMsg);
 		}
 	}
@@ -137,11 +162,7 @@ function CheckLoadingPhase2()
 				setTimeout("CheckLoadingPhase2()", 1000);
 			else {
 				if (gnVerMinor != 4.60) {
-					if (gnVerMinor >= 4.06)
-						document.location.href = "nsdnsfix.htm"
-					else {
-						alert("Unable to load applet. If you are using an old version of Netscape, the prefs.js file needs to be edited.");
-					}
+					alert("Unable to load applet. If you are using an old version of Netscape, the prefs.js file needs to be edited.");
 				}
 			}	
 		}
@@ -193,100 +214,76 @@ function onSendMessage(oMsg)
 		else
 			WebHelpApplet = window.WebHelp;
 
-		if (nMsgId == WH_MSG_SHOWTOC)
-		{
-			gsCurrentPane="toc";
-			WebHelpApplet.Command("Contents",null);
-			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"toc");
-			SendMessage(onMsg);
-			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
-			SendMessage(onMsg);
-		}
-		else if(nMsgId==WH_MSG_SHOWIDX)
-		{
-			gsCurrentPane="idx";
-			WebHelpApplet.Command("Index",null);
-			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"idx");
-			SendMessage(onMsg);
-			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
-			SendMessage(onMsg);
-		}
-		else if(nMsgId==WH_MSG_SHOWFTS)
-		{
-			gsCurrentPane="fts";
-			WebHelpApplet.Command("Search",null);
-			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
-			SendMessage(onMsg);
-			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
-			SendMessage(onMsg);
-		}
-		else if(nMsgId==WH_MSG_SHOWGLO)
-		{
-			gsCurrentPane="glo";
-			WebHelpApplet.Command("Glossary",null);
-			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"glo");
-			SendMessage(onMsg);
-			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
-			SendMessage(onMsg);
-		}
-		else if(nMsgId==WH_MSG_SYNCTOC)
-		{
-			gsCurrentPane="toc";
-			var oTopicParam=oMsg.oParam;
-			if(oTopicParam&&oTopicParam.aPaths&&oTopicParam.aPaths.length>0&&oTopicParam.sPPath)
-			{
-				var sPPath=_browserURLToAppletURL(oTopicParam.sPPath);
-				var sParam="";
-				for(var i=0;i<oTopicParam.aPaths.length;i++)
-				{
-					sParam+=oTopicParam.aPaths[i]+"\r\r";
-				}
-				if(gbLoading!="unknown")
-					WebHelpApplet.Command("SyncToc",sPPath,sParam);
-			}
-		}
-		else if(nMsgId==WH_MSG_SEARCHTHIS)
-		{
-			gsCurrentPane="fts";
-			WebHelpApplet.Command("Search",oMsg.oParam);
-			var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
-			SendMessage(onMsg);
-			onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
-			SendMessage(onMsg);
-		}
-		else if(nMsgId==WH_MSG_GETPANEINFO)
+		if(nMsgId==WH_MSG_GETPANEINFO)
 		{
 			oMsg.oParam=gsCurrentPane;
 			return false;
 		}
+		else if(gbLoading!="unknown" || gbNav6)
+		{
+			if (nMsgId == WH_MSG_SHOWTOC)
+			{
+				gsCurrentPane="toc";
+				WebHelpApplet.Command("Contents",null);
+				var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"toc");
+				SendMessage(onMsg);
+				onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+				SendMessage(onMsg);
+			}
+			else if(nMsgId==WH_MSG_SHOWIDX)
+			{
+				gsCurrentPane="idx";
+				WebHelpApplet.Command("Index",null);
+				var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"idx");
+				SendMessage(onMsg);
+				onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+				SendMessage(onMsg);
+			}
+			else if(nMsgId==WH_MSG_SHOWFTS)
+			{
+				gsCurrentPane="fts";
+				WebHelpApplet.Command("Search",null);
+				var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
+				SendMessage(onMsg);
+				onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+				SendMessage(onMsg);
+			}
+			else if(nMsgId==WH_MSG_SHOWGLO)
+			{
+				gsCurrentPane="glo";
+				WebHelpApplet.Command("Glossary",null);
+				var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"glo");
+				SendMessage(onMsg);
+				onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+				SendMessage(onMsg);
+			}
+			else if(nMsgId==WH_MSG_SYNCTOC)
+			{
+				gsCurrentPane="toc";
+				var oTopicParam=oMsg.oParam;
+				if(oTopicParam&&oTopicParam.aPaths&&oTopicParam.aPaths.length>0&&oTopicParam.sPPath)
+				{
+					var sPPath=_browserStringToText(oTopicParam.sPPath);
+					var sParam="";
+					for(var i=0;i<oTopicParam.aPaths.length;i++)
+					{
+						sParam+=oTopicParam.aPaths[i]+"\r\r";
+					}
+					WebHelpApplet.Command("SyncToc",sPPath,sParam);
+				}
+			}
+			else if(nMsgId==WH_MSG_SEARCHTHIS)
+			{
+				gsCurrentPane="fts";
+				WebHelpApplet.Command("Search",oMsg.oParam);
+				var onMsg=new whMessage(WH_MSG_PANEINFO,this,1,"fts");
+				SendMessage(onMsg);
+				onMsg=new whMessage(WH_MSG_SHOWPANE,this,1,null);
+				SendMessage(onMsg);
+			}
+		}
 	}
 	return true;
-}
-
-function _browserURLToAppletURL(sBURL)
-{
-	var sAURL="";
-	var nPos=sBURL.indexOf('%');
-	while(nPos!=-1)
-	{
-		sAURL+=sBURL.substring(0,nPos);
-		sBURL=sBURL.substring(nPos+1);
-		var sNum="";
-		var i=0;
-		while(sBURL.charAt(i)>='0'&&sBURL.charAt(i)<='9')
-		{
-			sNum+=sBURL.charAt(i++);	
-		}
-		if(sNum!="")
-		{
-			var nNum=parseInt(sNum,16);
-			sAURL+=String.fromCharCode(nNum);
-			sBURL=sBURL.substring(i);
-		}
-		nPos=sBURL.indexOf('%');
-	}
-	sAURL+=sBURL;
-	return sAURL;
 }
 
 function getInitTocInfo()
@@ -299,7 +296,7 @@ function getInitTocInfo()
 		var oTopicParam=oMsg.oParam.oTocInfo;
 		if(oTopicParam&&oTopicParam.aPaths&&oTopicParam.aPaths.length>0&&oTopicParam.sPPath)
 		{
-			var sPPath=_browserURLToAppletURL(oTopicParam.sPPath);
+			var sPPath=_browserStringToText(oTopicParam.sPPath);
 			var sParam="";
 			for(var i=0;i<oTopicParam.aPaths.length;i++)
 			{
@@ -343,6 +340,12 @@ if(window.gbWhUtil&&window.gbWhMsg&&window.gbWhVer&&window.gbWhProxy)
 }
 else
 	document.location.reload();
+
+if (window.gbNav6)
+{
+	var oMsg=new whMessage(WH_MSG_RELOADNS6,this, 1,null);
+	SendMessage(oMsg);
+}
 //-->
 </script>
 </head>

@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gTEA = new Array();
 function aTE()
 {
@@ -34,6 +35,11 @@ function tocEntry(fn_arguments)
 		if (fn_arguments.length > 3)
 		{
 			this.sRefURL = fn_arguments[3];
+			if (this.nType == 4)
+			{
+				if(this.sRefURL.lastIndexOf("/")!=this.sRefURL.length-1)
+					this.sRefURL+="/";
+			}
 			if (fn_arguments.length > 4)
 			{
 				this.sItemURL = fn_arguments[4];

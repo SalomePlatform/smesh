@@ -1,53 +1,53 @@
 BODY { 
       background-color:#ffffff; 
-      font-family:"Times New Roman" , serif;  }
+      font-family:"Times New Roman"  , serif;  }
 H1 { 
     font-weight:bold; 
     font-size:24.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H1 { 
              font-weight:bold; 
              font-size:24.0pt;  }
 H2 { 
     font-weight:bold; 
     font-size:18.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H2 { 
              font-weight:bold; 
              font-size:18.0pt;  }
 H3 { 
     font-weight:bold; 
     font-size:14.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H3 { 
              font-weight:bold; 
              font-size:14.0pt;  }
 H4 { 
     font-weight:bold; 
     font-size:12.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H4 { 
              font-weight:bold; 
              font-size:12.0pt;  }
 H5 { 
     font-weight:bold; 
     font-size:10.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H5 { 
              font-weight:bold; 
              font-size:10.0pt;  }
 H6 { 
     font-weight:bold; 
     font-size:8.0pt; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 LI.kadov-H6 { 
              font-weight:bold; 
              font-size:8.0pt;  }
 P { 
    font-size:12.0pt; 
-   margin-top:1; 
-   margin-bottom:1; 
-   font-family:"Times New Roman" , serif;  }
+   margin-top:1pt; 
+   margin-bottom:1pt; 
+   font-family:"Times New Roman"  , serif;  }
 LI.kadov-P { 
             font-size:12.0pt;  }
 A.expandspot { 
@@ -85,11 +85,11 @@ SPAN.glosstext {
 OL { 
     margin-top:0px; 
     margin-bottom:0px; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 UL { 
     margin-top:0px; 
     margin-bottom:0px; 
-    font-family:"Times New Roman" , serif;  }
+    font-family:"Times New Roman"  , serif;  }
 A:active {  }
 A:hover { 
          x-text-underline:Off; 
@@ -103,20 +103,16 @@ A:visited {
 P.TODO { 
         font-weight:normal; 
         font-style:italic; 
-        font-family:"Arial Black" , sans-serif;  }
+        font-family:"Arial Black"  , sans-serif;  }
 LI.kadov-P-CTODO { 
                   font-weight:normal; 
                   font-style:italic; 
-                  font-family:"Arial Black" , sans-serif;  }
+                  font-family:"Arial Black"  , sans-serif;  }
 ol ol { 
-       margin-top:1; 
-       margin-bottom:1;  }
+       margin-top:1px;  }
 ol ul { 
-       margin-top:1; 
-       margin-bottom:1;  }
+       margin-top:1px;  }
 ul ul { 
-       margin-top:1; 
-       margin-bottom:1;  }
+       margin-top:1px;  }
 ul ol { 
-       margin-top:1; 
-       margin-bottom:1;  }
+       margin-top:1px;  }

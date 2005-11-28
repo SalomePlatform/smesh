@@ -1,0 +1,1085 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Modifying Meshes</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com"><style>
+<!--
+P { margin-top:0pt; margin-bottom:0pt; }
+LI.kadov-P {  }
+-->
+</style><style type="text/css">
+<!--
+p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs2 { margin-top:0pt; margin-bottom:0pt; }
+h4.whs3 { margin-top:0pt; margin-bottom:0pt; }
+p.whs4 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs5 { margin-top:0.5pt; margin-bottom:0pt; }
+p.whs6 { font-family:'Lucida Console' , monospace; }
+p.whs7 { font-family:'Times New Roman' , serif; }
+-->
+</style><script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs1 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs2 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "h4.whs3 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs5 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+-->
+</style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("MESH module\nTUI Scripts\nModifying Meshes");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("smesh.htm");
+
+		autoSync(1);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+//-->
+</script>
+<h1>Modifying Meshes</h1>
+
+<h3><a name=bookmark>Adding Nodes and Elements</a></h3>
+
+<h4>Add Node</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h4>Add Edge</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add edge</p>
+
+<p class="whs1">LastNodeId = mesh.NbNodes()</p>
+
+<p class="whs1">if aMeshEditor.AddEdge([LastNodeId, 
+ 38]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Edge addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO edge addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h4>Add Triangle</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">LastNodeId = mesh.NbNodes()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add triangle</p>
+
+<p class="whs1">if aMeshEditor.AddFace([LastNodeId, 
+ 38, 39]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Triangle addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO triangle addition.&quot;</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h4>Add Quadrangle</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">LastNodeId = mesh.NbNodes()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add quadrangle</p>
+
+<p class="whs1">if aMeshEditor.AddNode(40, 
+ 20, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">if aMeshEditor.AddFace([mesh.NbNodes(), 
+ LastNodeId, 38, 39]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Quadrangle addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO quadrangle addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h4>Add Tetrahedron</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">LastNodeId = mesh.NbNodes()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add tetrahedron</p>
+
+<p class="whs1">if aMeshEditor.AddVolume([LastNodeId, 
+ 38, 39, 246]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Tetrahedron addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO tetrahedron addition.&quot;</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h4>Add Hexahedron</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add nodes</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">aNodeId1 = mesh.NbNodes()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">if aMeshEditor.AddNode(47, 
+ 12, 0) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">aNodeId2 = mesh.NbNodes()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">if aMeshEditor.AddNode(50, 
+ 10, 10) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">aNodeId3 = mesh.NbNodes()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">if aMeshEditor.AddNode(47, 
+ 12, 10) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node addition.&quot;</p>
+
+<p class="whs1">aNodeId4 = mesh.NbNodes()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># add hexahedron</p>
+
+<p class="whs1">if aMeshEditor.AddVolume([aNodeId2, 
+ aNodeId1, 38, 39, aNodeId4, aNodeId3, 245, 246]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Hexahedron addition is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO Hexahedron addition.&quot;</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark1>Removing Nodes and Elements</a></h3>
+
+<h4 class="whs3">Removing Nodes</h4>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">if aMeshEditor.RemoveNodes([246, 
+ 255]) == 1:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Node removing is OK!&quot;</p>
+
+<p class="whs1">else:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;KO node removing.&quot;</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h4>Removing Elements</h4>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">anEditor.RemoveElements([850, 
+ 859, 814])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h3><a name=bookmark2>Renumbering Nodes and Elements</a></h3>
+
+<p class="whs4">import SMESH</p>
+
+<p class="whs4">import SMESH_mechanic</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs4">salome = SMESH_mechanic.salome</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4">anEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs4">anEditor.RenumberNodes()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs5">&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h3><a name=bookmark3>Moving Nodes</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># move node</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">aMeshEditor.MoveNode(38, 
+ 20, 10, 0)</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark4>Diagonal Inversion</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># inverse diagonal</p>
+
+<p class="whs1">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">aMeshEditor.InverseDiag(700, 
+ 642)</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark5>Uniting two Triangles</a></h3>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs6">import SMESH_mechanic</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs6">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs6">salome = SMESH_mechanic.salome</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p># delete diagonal</p>
+
+<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.DeleteDiag(700, 
+ 642)</p>
+
+<p class="whs6">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p>&nbsp;</p>
+
+<h3><a name=bookmark6>Uniting a Set of Triangles</a></h3>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs6">import SMESH_mechanic</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs6">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs6">salome = SMESH_mechanic.salome</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p># unite a set of triangles</p>
+
+<p class="whs6">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs6">aFunctor = aFilterMgr.CreateMinimumAngle()</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.TriToQuad([1145, 
+ 1147, 1159, 1135], aFunctor, 60)</p>
+
+<p class="whs6">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs6">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs6">&nbsp;</p>
+
+<h3><a name=bookmark7>Cutting Quadrangles</a></h3>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs6">import SMESH_mechanic</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs6">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs6">salome = SMESH_mechanic.salome</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"># unite a set of triangles</p>
+
+<p class="whs6">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs6">aFunctor = aFilterMgr.CreateMinimumAngle()</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.QuadToTri([405, 
+ 406], aFunctor)</p>
+
+<p class="whs6">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+
+<p class="whs6">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs7">&nbsp;</p>
+
+<h3><a name=bookmark8>Smoothing</a></h3>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs6">import SMESH_mechanic</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs6">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs6">salome = SMESH_mechanic.salome</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"># smooth</p>
+
+<p class="whs6">FacesSmooth = [911, 
+ 931, 950, 864, 932]</p>
+
+<p class="whs6">GroupSmooth = mesh.CreateGroup(SMESH.FACE,&quot;Group 
+ of faces (smooth)&quot;)</p>
+
+<p class="whs6">GroupSmooth.Add(FacesSmooth)</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.SmoothObject(GroupSmooth, 
+ [], 20, 2, SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">&nbsp;</p>
+
+<h3><a name=bookmark9>Extrusion</a></h3>
+
+<p class="whs7">import SMESH</p>
+
+<p class="whs7">import SMESH_mechanic</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs7">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs7">salome = SMESH_mechanic.salome</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"># extrusion of the group</p>
+
+<p class="whs7">point = SMESH.PointStruct(0, 
+ 0, 5)</p>
+
+<p class="whs7">vector = SMESH.DirStruct(point)</p>
+
+<p class="whs7">FacesTriToQuad = [2381, 
+ 2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390, 2391, 2392, 2393, 
+ 2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405, 
+ 2406, 2407, 2408, 2409, 2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 
+ 2418, 2419, 2420, 2421, 2422]</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">GroupTriToQuad = mesh.CreateGroup(SMESH.FACE,&quot;Group 
+ of faces (quad)&quot;)</p>
+
+<p class="whs7">GroupTriToQuad.Add(FacesTriToQuad)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs7">aMeshEditor.ExtrusionSweepObject(GroupTriToQuad, 
+ vector, 5)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs7">&nbsp;</p>
+
+<h3><a name=bookmark10>Extrusion along a Path</a></h3>
+
+<p class="whs6">import geompy</p>
+
+<p class="whs6">import smesh</p>
+
+<p class="whs6">import salome</p>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a 2D mesh on 
+ a face</p>
+
+<p class="whs7"># create vertices</p>
+
+<p class="whs6">px &nbsp;&nbsp;= 
+ geompy.MakeVertex(100., 0. &nbsp;, 
+ 0. &nbsp;)</p>
+
+<p class="whs6">py &nbsp;&nbsp;= 
+ geompy.MakeVertex(0. &nbsp;, 
+ 100., 0. &nbsp;)</p>
+
+<p class="whs6">pz &nbsp;&nbsp;= 
+ geompy.MakeVertex(0. &nbsp;, 
+ 0. &nbsp;, 100.)</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"># create a vector from 
+ two points</p>
+
+<p class="whs6">vxy = geompy.MakeVector(px, 
+ py)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create an arc from 
+ three points</p>
+
+<p class="whs6">arc = geompy.MakeArc(py, 
+ pz, px)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a wire</p>
+
+<p class="whs6">wire = geompy.MakeWire([vxy, 
+ arc])</p>
+
+<p class="whs6">isPlanarFace = 1</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a face from 
+ the wire</p>
+
+<p class="whs6">face1 = geompy.MakeFace(wire, 
+ isPlanarFace)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># add objects in the 
+ study</p>
+
+<p class="whs6">id_face1 = geompy.addToStudy(face1,&quot;Face1&quot;)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create hexahedrical 
+ mesh</p>
+
+<p class="whs6">hexa = smesh.Mesh(face1, 
+ &quot;Face compound : hexahedrical mesh&quot;)</p>
+
+<p class="whs6">algo = hexa.Triangle()</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># define &quot;MaxElementArea&quot; 
+ hypothesis to be applied to each triangle</p>
+
+<p class="whs6">algo.MaxElementArea(30)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a quadrangle 
+ 2D algorithm for faces</p>
+
+<p class="whs6">hexa.Quadrangle()</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a local hypothesis</p>
+
+<p class="whs6">algo = hexa.Segment(wire)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># define &quot;NumberOfSegments&quot; 
+ hypothesis to cut an edge in a fixed number of segments</p>
+
+<p class="whs6">algo.NumberOfSegments(6)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># compute the mesh</p>
+
+<p class="whs6">hexa.Compute()</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create path mesh and 
+ path shape</p>
+
+<p class="whs7"># create a circle from 
+ three points</p>
+
+<p class="whs6">px1 &nbsp;&nbsp;= 
+ geompy.MakeVertex(100., 100. &nbsp;, 
+ 0. &nbsp;)</p>
+
+<p class="whs6">py1 &nbsp;&nbsp;= 
+ geompy.MakeVertex(-100. &nbsp;, 
+ -100., 0. &nbsp;)</p>
+
+<p class="whs6">pz1 &nbsp;&nbsp;= 
+ geompy.MakeVertex(0. &nbsp;, 
+ 0. &nbsp;, 50.)</p>
+
+<p class="whs6">circle = geompy.MakeCircleThreePnt(py1, 
+ pz1, px1)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># add objects in the 
+ study</p>
+
+<p class="whs6">id_circle = geompy.addToStudy(circle,&quot;Path&quot;)</p>
+
+<p class="whs6">circlemesh = smesh.Mesh(circle, 
+ &quot;Path mesh&quot;)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># create a local hypothesis</p>
+
+<p class="whs6">algo = circlemesh.Segment()</p>
+
+<p class="whs7"># define &quot;NumberOfSegments&quot; 
+ hypothesis to cut an edge in a fixed number of segments</p>
+
+<p class="whs6">algo.NumberOfSegments(10)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># compute the mesh</p>
+
+<p class="whs6">circlemesh.Compute()</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># extrusion of the mesh</p>
+
+<p class="whs6">aMeshEditor = hexa.GetMesh().GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.ExtrusionAlongPathObject(hexa.GetMesh(), 
+ circlemesh.GetMesh(), circle, 1, 0, [], 0, SMESH.PointStruct(0, 0, 0))</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs7">&nbsp;</p>
+
+<h3><a name=bookmark11>Revolution</a></h3>
+
+<p class="whs6">import SMESH</p>
+
+<p class="whs6">import SMESH_mechanic</p>
+
+<p class="whs6">import math</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs6">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs6">salome = SMESH_mechanic.salome</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7"># rotate a sweep object</p>
+
+<p class="whs6">FacesRotate = [492, 
+ 493, 502, 503]</p>
+
+<p class="whs6">GroupRotate = mesh.CreateGroup(SMESH.FACE,&quot;Group 
+ of faces (rotate)&quot;)</p>
+
+<p class="whs6">GroupRotate.Add(FacesRotate)</p>
+
+<p class="whs6">angle45 = &nbsp;45*math.pi/180</p>
+
+<p class="whs6">axisXYZ = SMESH.AxisStruct(-38.3128, 
+ -73.3658, -23.321, -13.3402, -13.3265, 6.66632)</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs6">aMeshEditor.RotationSweepObject(GroupRotate, 
+ axisXYZ, angle45, 4, 1e-5)</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+</html>

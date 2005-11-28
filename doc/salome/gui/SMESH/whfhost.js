@@ -1,3 +1,4 @@
+//	WebHelp 5.10.003
 var gsSK2=null;
 var gsSK=null;
 var gsFtsBreakChars="\t\r\n\"\\ .,!@#$%^&*()~'`:;<>?/{}[]|+-=\x85\x92\x93\x94\x95\x96\x97\x99\xA9\xAE\xB7";
@@ -35,6 +36,7 @@ var goErrFont=null;
 var goHoverFont=null;
 var gsABgColor="#cccccc";
 var gbWhFHost=false;
+var gbFirst=false;
 
 function setBackground(sBgImage)
 {
@@ -88,6 +90,26 @@ function updateCache(oCF)
 function addFtsInfo(sPPath,sDPath,sFtsFile)
 {
 	gaData[gaData.length]=new ftsInfo(sPPath,sDPath,sFtsFile);
+}
+
+function onLoadXMLError()
+{
+	if(gnLoadFts==1)
+	{
+		var aFCD=new Array();
+		var aFTCD=new Array();
+		ftsReady(aFCD,aFTCD);
+	}
+	else if(gnLoadFts==3)
+	{
+		var aTopics=new Array();
+		putFtsTData(aTopics);
+	}
+	else if(gnLoadFts==2)
+	{
+		putFtsWData(aFtsContents);
+		var aFtsContents=new Array();
+	}
 }
 
 function putDataXML(xmlDoc,sDocPath)
@@ -267,7 +289,7 @@ function loadFts()
 				var sLangId=aProj[0].sLangId;
 				for(var i=0;i<aProj.length;i++)
 				{
-					if(aProj[i].sFts!=null&&aProj[i].sFts!=""&&aProj[i].sLangId==sLangId)
+					if(aProj[i].sFts&&aProj[i].sLangId==sLangId)
 					{
 						addFtsInfo(aProj[i].sPPath,aProj[i].sDPath,aProj[i].sFts);
 					}
@@ -312,11 +334,14 @@ function loadData2(sFile)
 function findFTSKey()
 {
 	gaTI=new Array();
-	gnCurrentOp=0;
+	gnCurrentOp=1;
 	gbNot=false;
 	displayMsg(gsSearchMsg);
 	if(gsSK!="")
+	{
+		gbFirst=true;
 		findOneKey();
+	}
 }
 
 function findOneKey()
@@ -360,7 +385,6 @@ function findOneKey()
 			return;
 		}
 		findOneKey();
-		return;
 	}
 	else{
 		displayTopics();
@@ -370,6 +394,8 @@ function findOneKey()
 
 function checkAgain()
 {
+	gsCheckKey = "";
+	gnIndexNum = 0;
 	gsSK=gsSK2;
 	gsSK2=null;
 	if(gsSK!=null)
@@ -381,7 +407,7 @@ function displayTopics()
 	var sHTML="";
 	var sLine="";
 	for(var i=0;i<gaTI.length;i++){
-		sLine+="<dt><nobr><a href='"+_textToHtml(gaTI[i].sTopicURL)+"'>"+_textToHtml(gaTI[i].sTopicTitle)+"</a></nobr></dt>";
+		sLine+="<dt><nobr><a href='"+gaTI[i].sTopicURL+"'>"+_textToHtml(gaTI[i].sTopicTitle)+"</a></nobr></dt>";
 		if(i>>4<<4==i)
 		{
 			sHTML+=sLine;
@@ -472,7 +498,10 @@ function ftsFindKeyword()
 				aTI=mergeTopics(aTI,aTIPart);
 		}
 		if(mergewithPreviousResult(aTI))
+		{
+			gbFirst=false;
 			findOneKey();
+		}
 		else
 			checkAgain();
 	}
@@ -483,7 +512,7 @@ function mergewithPreviousResult(aTI)
 	if(aTI!=null&&aTI.length!=0)
 	{
 		var nNumTopics=aTI.length;
-		if(gnCurrentOp==0){
+		if(gnCurrentOp==0||gbFirst){
 			if(gbNot){
 				displayMsg(gsHelpCannotSearch);
 				return false;
@@ -836,7 +865,7 @@ function GetStem(szWord)
 	var csStem="";
 	for(var iStem=0;iStem<aStems.length;iStem++){
 
-		if(aStems[iStem].length>=szWord.length-1)	break;
+		if(aStems[iStem].length>=szWord.length-1)	continue;
 		nStemPos=szWord.lastIndexOf(aStems[iStem]);
 		if(nStemPos>0){
 			var cssub=szWord.substring(nStemPos);

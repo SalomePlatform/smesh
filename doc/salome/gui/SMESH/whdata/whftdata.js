@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gTEA = new Array();
 function aTE(sTopicTitle, sTopicURL)
 {

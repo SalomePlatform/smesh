@@ -1,3 +1,4 @@
+//	WebHelp 5.10.002
 window.whname="wh_stub";
 function getframehandle(frames,framename)
 {
@@ -9,10 +10,12 @@ function getframehandle(frames,framename)
 		{
 			if(frames[i].name==framename)
 				return frames[i];
-			if(frames[i].frames.length>0)
-				frame=getframehandle(frames[i].frames,framename);
-				if(null!=frame)
-					return frame;
+		}
+		if(frames[i].frames.length>0)
+		{
+			frame=getframehandle(frames[i].frames,framename);
+			if(null!=frame)
+				return frame;
 		}
 	}
 	return frame;

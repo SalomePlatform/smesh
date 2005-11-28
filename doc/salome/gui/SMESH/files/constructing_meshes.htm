@@ -2,31 +2,11 @@
 
 <html>
 
-<!--(==============================================================)-->
-<!--(Document created with RoboEditor. )============================-->
-<!--(==============================================================)-->
-
 <head>
-
 <title>Constructing meshes</title>
-
-<!--(Meta)==========================================================-->
-
-<meta http-equiv=content-type content="text/html; charset=windows-1252">
-<meta name=generator content="RoboHELP by eHelp Corporation - www.ehelp.com">
-<meta name=generator-major-version content=0.1>
-<meta name=generator-minor-version content=1>
-<meta name=filetype content=kadov>
-<meta name=filetype-version content=1>
-<meta name=page-count content=1>
-<meta name=layout-height content=966>
-<meta name=layout-width content=740>
-
-
-<!--(Links)=========================================================-->
-
- <link rel='stylesheet' href='../default_ns.css'>
-<script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com">
+<link rel="stylesheet" href="../default_ns.css"><script type="text/javascript" language="JavaScript" title="WebHelpSplitCss">
 <!--
 if (navigator.appName !="Netscape")
 {   document.write("<link rel='stylesheet' href='../default.css'>");}
@@ -34,21 +14,26 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-p.whs1 {margin-left: 0px;}
-ul.whs2 {list-style: disc;}
-p.whs3 {margin-left: 40px;}
-img_whs4 {border-style: none; border: none; width: 22px; height: 24px;}
-p.whs5 {margin-left: 80px;}
-img_whs6 {border-style: none; border: none; width: 304px; height: 305px;}
-img_whs7 {border-style: none; border: none; width: 268px; height: 161px;}
+p.whs1 { margin-left:0px; }
+ul.whs2 { list-style:disc; }
+p.whs3 { margin-left:40px; }
+img_whs4 { border:none; width:22px; height:24px; border-style:none; }
+p.whs5 { margin-left:80px; }
+img_whs6 { border:none; width:309px; height:266px; float:none; border-style:none; }
+img_whs7 { border:none; width:173px; height:88px; border-style:none; }
+img_whs8 { border:none; width:34px; height:29px; border-style:none; }
+img_whs9 { border:none; width:29px; height:28px; border-style:none; }
+img_whs10 { border:none; width:30px; height:29px; border-style:none; }
+img_whs11 { border:none; width:232px; height:142px; border-style:none; float:right; }
+img_whs12 { border:none; width:25px; height:24px; border-style:none; }
+img_whs13 { border:none; width:293px; height:350px; border-style:none; }
 -->
-</style>
-<script type="text/javascript" language="JavaScript">
+</style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs1 {margin-left:1; }";
+  strNSS += "p.whs1 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -70,28 +55,21 @@ onerror = null;
 </script>
 <style type="text/css">
 <!--
-  div.WebHelpPopupMenu {position:absolute; left:0px; top:0px; z-index:4; visibility:hidden;}
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
 -->
-</style>
-<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+</style><script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
 <script type="text/javascript" language="javascript" src="../whver.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
 <script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
 </head>
-
-<!--(Body)==========================================================-->
-
-
-<body>
-
-<script type="text/javascript" language="javascript1.2">
+<body><script type="text/javascript" language="javascript1.2">
 <!--
 if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("SMESH module\nCreating meshes\nConstructing meshes");
+	addTocInfo("MESH module\nCreating meshes\nConstructing meshes");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -105,13 +83,14 @@ addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 	{
 	setRelStartPage("../smesh.htm");
 
-		autoSync(0);
+		autoSync(1);
 		sendSyncInfo();
 		sendAveInfoOut();
 	}
 }
 else
-	document.location.reload();
+	if (window.gbIE4)
+		document.location.reload();
 //-->
 </script>
 <h1>Constructing meshes</h1>
@@ -125,40 +104,54 @@ else
 	<li class=kadov-p><p class="whs1">Selecting a geometrical 
  object for meshing</p></li>
 	
-	<li class=kadov-p><p class="whs1">Applying one or several 
- previously <a href="about_hypotheses.htm">hypotheses</a> and <a href="about_meshing_algorithms.htm">meshing 
- algorithms</a> which will be used at computation of this mesh.</p></li>
+	<li class=kadov-p><p class="whs1">Applying <a href="about_meshing_algorithms.htm">meshing 
+ algorithms</a> and <a href="about_hypotheses.htm">hypotheses</a> which 
+ will be used at computation of this mesh.</p></li>
 </ul>
 
 <p class="whs1">&nbsp;</p>
 
 <p class=TODO>To construct a mesh:</p>
 
-<p class=TODO>&nbsp;</p>
-
-<p class="whs3">In the <span style="font-weight: bold;"><B>Mesh 
- </B></span>menu select<span style="font-weight: bold;"><B> Global Hyp. </B></span>or 
+<p class="whs3">1. In the <span style="font-weight: bold;"><B>Mesh 
+ </B></span>menu select<span style="font-weight: bold;"><B> Create Mesh </B></span>or 
  click <img src="../image32.gif" width="22px" height="24px" border="0" class="img_whs4"> button in the toolbar. The following dialog box will 
  appear:</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs5"><img src="../image31.gif" width="304px" height="305px" border="0" class="img_whs6"></p>
+<p class="whs5"><img src="../pics/a-createmesh1.png" x-maintain-ratio="TRUE" width="309px" height="266px" border="0" class="img_whs6"></p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs3">In the Object Browser the structure of the 
- new mesh will be displayed as follows:</p>
+<p class="whs3">2. For example, you need to mesh a 3d object. 
+ </p>
+
+<p class="whs3">First, type the name for your mesh in the 
+ &quot;Name&quot; box, by default, it is &quot;Mesh_1&quot;. Then select 
+ the object you wish to mesh in the Object Browser <img src="../image119.gif" width="173px" height="88px" border="0" class="img_whs7">and click 
+ the <img src="../image120.gif" width="34px" height="29px" border="0" class="img_whs8"> &quot;Add&quot; button. </p>
+
+<p class="whs3">Now you can define 1d Algorithm and 1d Hypotheses, 
+ which will be applied to the edges of your object. (Note that any object 
+ has edges, even if their existence is not apparent, for example, a sphere 
+ has 4 edges). Click the &nbsp;<img src="../image121.gif" width="29px" height="28px" border="0" class="img_whs9"> button to add a hypothesis. Click the <img src="../image122.gif" width="30px" height="29px" border="0" class="img_whs10"> button 
+ to define values for the current hypothesis. The use of additional hypotheses 
+ is optional (i.e. you may leave &quot;None&quot; in this box). &nbsp;&nbsp;</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3"><img src="../image44.jpg" width="268px" height="161px" border="0" class="img_whs7"></p>
+<p class="whs3">Proceed in the same way with 2d and 3d Algorithms 
+ and Hypotheses, note that the choice of hypotheses depends on the algorithm. 
+ There must be one Algorithm and one or several Hypotheses for each dimension 
+ of your object, otherwise you will not get any mesh at all. Of course, 
+ if you wish to mesh a face, which is a 2d object, you don't need to define 
+ 3d Algorithm and Hypotheses. </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs3">In the <span style="font-weight: bold;"><B>Object 
+ Browser</B></span> the structure of the new mesh will be displayed as follows:<img src="../image88.jpg" width="232px" height="142px" align="right" border="0" class="img_whs11"></p>
 
 <p class="whs3">It contains:</p>
-
-<p class="whs3">&nbsp;</p>
 
 <ul type="disc" class="whs2">
 	
@@ -174,6 +167,25 @@ else
  to the construction of the mesh.</p></li>
 </ul>
 
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3">3. Now, when everything is ready, select 
+ your mesh in the <span style="font-weight: bold;"><B>Object Browser</B></span>.<span> 
+ </span><span>&nbsp;From 
+ the </span><span style="font-weight: bold;"><B>Mesh </B></span><span>menu select</span><span 
+ style="font-weight: bold;"><B> Compute </B></span><span>or click <img src="../image28.gif" width="25px" height="24px" border="0" class="img_whs12"> button of the toolbar. </span></p>
+
+<p class="whs3">If you've done everything right, you'll obtain 
+ something like this. <img src="../image129.gif" width="293px" height="350px" border="0" class="img_whs13"></p>
+
+<p class="whs3">Consider trying a sample script for construction 
+ of a mesh from our <a href="../constructing_meshes.htm">TUI Scripts</a> 
+ section.</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p>&nbsp;</p>
+
 <script type="text/javascript" language="javascript1.2">
 <!--
 if (window.writeIntopicBar)
@@ -181,5 +193,4 @@ if (window.writeIntopicBar)
 //-->
 </script>
 </body>
-
 </html>

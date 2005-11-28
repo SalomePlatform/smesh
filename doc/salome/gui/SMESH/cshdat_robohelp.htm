@@ -1,9 +1,9 @@
 <html>
 <head>
 <title>SMESH reference manual</title>
-<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+
 <meta name="generator" content="RoboHelp by eHelp Corporation   www.ehelp.com">
-<meta name "description" content="WebHelp 2002">
+<meta name="description" content="WebHelp 5.50">
 </head>
 <body>
 <script language="JavaScript">
@@ -165,9 +165,15 @@ function FindTopicByTopicNum(nTopicNum)
 	return false;
 }
 
+var oldPrefix = "HelpIdFromHTMLHelp_"
 //Find topic by topic id (alias id defined in ali file)
 function GetTopicNumberById(strTopicId)
 {
+   if (strTopicId.indexOf(oldPrefix) == 0)
+   {
+		strTopicId = strTopicId.substring(oldPrefix.length);
+   }
+
    var i = 0;
    var iEnd = gArrayCsh.length;
    for (i=0; i<iEnd; i++)

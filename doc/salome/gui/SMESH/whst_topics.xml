@@ -40,7 +40,8 @@ if (window.gbWhTopic)
 	}
 }
 else
-	document.location.reload();
+	if (window.gbIE4)
+		document.location.reload();
 //-->
 </script>"]]>	
   </add>

@@ -1,0 +1,784 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Grouping Elements</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com"><style type="text/css">
+<!--
+p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs2 { margin-top:0pt; margin-bottom:0pt; }
+-->
+</style><script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs1 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs2 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+-->
+</style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("MESH module\nTUI Scripts\nGrouping Elements");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("smesh.htm");
+
+		autoSync(1);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+//-->
+</script>
+<h1>Grouping Elements</h1>
+
+<h3><a name=bookmark>Create a Group</a></h3>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 100</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 100 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 100 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group consisting 
+ of faces with area &gt; 100</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 100&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark1>Edit a Group</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 30 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &gt; 20</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 20&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 60</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 60 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group of elements 
+ with area [20; 60] by removing elements with area &gt; 60 from &nbsp;group 
+ aGroup </p>
+
+<p class="whs1">aGroup.Remove(anIds)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">aGroupElemIDs = 
+ aGroup.GetListOfID()</p>
+
+<p class="whs1">print &quot;Criterion: 
+ 20 &lt; Area &lt; 60 = &quot;, len( aGroupElemIDs )</p>
+
+<p class="whs1">for i in range( 
+ len( aGroupElemIDs ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ aGroupElemIDs[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark2>Union of two groups</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &gt; 20</p>
+
+<p class="whs1">aGroup1 = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 20&quot; )</p>
+
+<p class="whs1">aGroup1.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA = 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateEqualTo()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &gt; 20</p>
+
+<p class="whs1">aGroup2 = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area = 20&quot; )</p>
+
+<p class="whs1">aGroup2.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area = 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create union group : 
+ area &gt;= 20</p>
+
+<p class="whs1">aGroup3 = mesh.UnionGroups(aGroup1, 
+ aGroup2, &quot;Area &gt;= 20&quot;)</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt;= 20 Nb = &quot;, len( aGroup3.GetListOfID() )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &lt; 
+ 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateLessThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &lt; 20</p>
+
+<p class="whs1">aGroup4 = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &lt; 20&quot; )</p>
+
+<p class="whs1">aGroup4.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &lt; 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;&nbsp;</p>
+
+<p class="whs2"># create union group : 
+ area &gt;= 20 and area &lt; 20</p>
+
+<p class="whs1">aGroup5 = mesh.UnionGroups(aGroup3, 
+ aGroup4, &quot;Any Area&quot;)</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Any Area Nb = &quot;, len( aGroup5.GetListOfID() )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h3><a name=bookmark3>Intersection of two groups</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &gt; 20</p>
+
+<p class="whs1">aGroup1 = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 20&quot; )</p>
+
+<p class="whs1">aGroup1.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &lt; 
+ 60</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateLessThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 60 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &lt; 60</p>
+
+<p class="whs1">aGroup2 = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &lt; 60&quot; )</p>
+
+<p class="whs1">aGroup2.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &lt; 60 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;&nbsp;</p>
+
+<p class="whs2"># create an intersection 
+ of groups : 20 &lt; area &lt; 60</p>
+
+<p class="whs1">aGroup3 = mesh.IntersectGroups(aGroup1, 
+ aGroup2, &quot;20 &lt; Area &lt; 60&quot;)</p>
+
+<p class="whs1">print &quot;Criterion: 
+ 20 &lt; Area &lt; 60 Nb = &quot;, len( aGroup3.GetListOfID() )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark4>Cut of two groups</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &gt; 20</p>
+
+<p class="whs1">aGroupMain = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 20&quot; )</p>
+
+<p class="whs1">aGroupMain.Add( 
+ anIds )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &lt; 
+ 60</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateLessThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 60 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group by adding 
+ elements with area &lt; 60</p>
+
+<p class="whs1">aGroupTool = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &lt; 60&quot; )</p>
+
+<p class="whs1">aGroupTool.Add( 
+ anIds )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &lt; 60 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;&nbsp;</p>
+
+<p class="whs2"># create an intersection 
+ of groups : area &gt;= 60</p>
+
+<p class="whs1">aGroupRes = mesh.CutGroups(aGroupMain, 
+ aGroupTool, &quot;Area &gt;= 60&quot;)</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt;= 60 Nb = &quot;, len( aGroupRes.GetListOfID() )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2">&nbsp;</p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+</html>

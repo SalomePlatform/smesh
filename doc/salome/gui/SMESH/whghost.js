@@ -1,3 +1,4 @@
+//	WebHelp 5.10.004
 var gbXML=false;
 var gaDef=new Array();
 var gsBgColor="#ffffff";
@@ -8,6 +9,8 @@ var gsMargin="2pt";
 var gsIndent="2pt";
 var gsActiveBgColor="#cccccc";
 var gbWhGHost=false;
+var gbShowDef=true;
+var gsGloId="Glo_"
 
 function setBackground(sBgImage)
 {
@@ -43,22 +46,6 @@ function setIndent(sIndent)
 	gsIndent=sIndent;
 }
 
-function writeOneItem(oHTML,bDown,aDataCon,aCurIdxSet,n,aPos,nLevel)
-{
-
-	var sHTML="";
-	var nIdxSet=aCurIdxSet[n];
-	var nIIdx=aPos[nIdxSet];
-	var sRawKName = getItemName(aDataCon,nIdxSet,nIIdx);
-	var sKName=_textToHtml(sRawKName);
-	var nIndex=insertDef(sKName,_textToHtml_nonbsp(getDef(aDataCon,nIdxSet,nIIdx)));
-	if(nLevel==1){
-		sHTML+="<p><nobr><a alt=\"" + sKName+"\" href=\"javascript:void(0);\" onclick=\"showDef("+nIndex;
-		sHTML+=");return false;\">"+sKName+"</a></nobr></p>";
-	}
-	oHTML.addHTML(sHTML,1,bDown,true,sRawKName);
-}
-
 function insertDef(sKName,sDef)
 {
 	var nLength=gaDef.length
@@ -71,6 +58,7 @@ function showDef(nDef)
 {
 	if(nDef<gaDef.length)
 	{	
+		HighLight(nDef);
 		var oParam=gaDef[nDef];
 		var oMsg=new whMessage(WH_MSG_SHOWGLODEF,this,1,oParam);
 		SendMessage(oMsg);
@@ -85,8 +73,50 @@ function nameDefPair(sName,sDef)
 
 function mergeItems(oHTML,bDown,aDataCon,aCurIdxSet,nLength,aPos,nLevel)
 {
-	for(var i=0;i<nLength;i++)
-		writeOneItem(oHTML,bDown,aDataCon,aCurIdxSet,i,aPos,nLevel);
+	var sHTML="";
+	var nIdxSet=aCurIdxSet[0];
+	var nIIdx=aPos[nIdxSet];
+	var sRawKName = getItemName(aDataCon,nIdxSet,nIIdx);
+	var sKName=_textToHtml(sRawKName);
+	var sDText=_textToHtml_nonbsp(getDef(aDataCon,nIdxSet,nIIdx));
+	var sDef=sDText;
+	for(var i=1;i<nLength;i++)
+	{
+		var nIdxSeti=aCurIdxSet[i];
+		var nIIdxi=aPos[nIdxSeti];
+		var sRawKNamei = getItemName(aDataCon,nIdxSeti,nIIdxi);
+		var sKNamei=_textToHtml(sRawKNamei);
+		var sDTexti=_textToHtml_nonbsp(getDef(aDataCon,nIdxSeti,nIIdxi));
+		if (compare(sKNamei,sKName)==0)
+		{
+			if (sDText!=sDTexti)
+				sDef+="<br>"+sDTexti;
+		}
+	}
+	var nIndex=insertDef(sKName,sDef);
+	if(nLevel==1)
+	{
+		sHTML+="<p><nobr id=\""+getGloId(nIndex)+"\">";
+		sHTML+="<a alt=\""+sKName+"\" href=\"javascript:void(0);\" onfocus=\"HighLight("+nIndex+");\" onclick=\"showDef("+nIndex+");return false;\">"+sKName+"</a></nobr></p>";
+		oHTML.addHTML(sHTML,nLength,bDown,true,sRawKName);
+		if(gbShowDef)
+		{
+			setTimeout("showDef(0);",100);
+			gbShowDef = false;
+		}
+	}
+}
+
+function HighLight(nIndex)
+{
+	var oObj=getElement(getGloId(nIndex));
+	if(oObj)
+		HighLightElement(oObj,gsActiveBgColor,"transparent");
+}
+
+function getGloId(nIndex)
+{
+	return gsGloId+nIndex;
 }
 
 function adjustPosition(bDown,aDataCon,aCurIdxSet,nLength,aPos)
@@ -146,7 +176,7 @@ function loadGlo()
 				var sLangId=aProj[0].sLangId;
 				for(var i=0;i<aProj.length;i++)
 				{
-					if(aProj[i].sGlo!=null&&aProj[i].sGlo!=""&&aProj[i].sLangId==sLangId)
+					if(aProj[i].sGlo&&aProj[i].sLangId==sLangId)
 						addProjInfo(aProj[i].sPPath,aProj[i].sDPath,aProj[i].sGlo);
 				}
 			}

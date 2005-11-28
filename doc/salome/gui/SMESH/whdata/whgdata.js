@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gIEA = new Array();
 function aGE(sName, sDef)
 {

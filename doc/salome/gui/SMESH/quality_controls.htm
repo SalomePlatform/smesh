@@ -1,0 +1,1536 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Quality Controls</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com"><style type="text/css">
+<!--
+p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs2 { margin-top:0pt; margin-bottom:0pt; }
+p.whs3 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+-->
+</style><script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs1 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs2 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs3 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+-->
+</style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("MESH module\nTUI Scripts\nQuality Controls");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("smesh.htm");
+
+		autoSync(1);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+//-->
+</script>
+<h1>Quality Controls</h1>
+
+<h3><a name=bookmark>Free Borders</a></h3>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a box without 
+ one plane</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 20., 20., 15.)</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">FaceList &nbsp;= 
+ []</p>
+
+<p class="whs1">for i in range( 
+ 5 ):</p>
+
+<p class="whs1">&nbsp;&nbsp;FaceList.append( 
+ subShapeList[ i ] )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aComp = geompy.MakeCompound( 
+ FaceList )</p>
+
+<p class="whs1">aBox = geompy.Sew( 
+ aComp, 1. )</p>
+
+<p class="whs1">idbox = geompy.addToStudy( 
+ aBox, &quot;box&quot; )</p>
+
+<p class="whs1">&nbsp;&nbsp;</p>
+
+<p class="whs1">aBox &nbsp;= 
+ salome.IDToObject( idbox )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a mesh</p>
+
+<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp1.SetNumberOfSegments(5)</p>
+
+<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp2.SetMaxElementArea(20)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(aBox)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp2)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo2)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh.Compute(mesh,aBox)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs1">smeshgui.SetName( 
+ salome.ObjectToID( mesh ), &quot;Mesh_freebord&quot; );</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># criterion : free borders</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateFreeBorders()</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Free borders Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.EDGE, &quot;Free borders&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark1>Borders at Multiconnection</a></h3>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a box without 
+ one plane</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 20., 20., 15.)</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">FaceList &nbsp;= 
+ []</p>
+
+<p class="whs1">for i in range( 
+ 5 ):</p>
+
+<p class="whs1">&nbsp;&nbsp;FaceList.append( 
+ subShapeList[ i ] )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aComp = geompy.MakeCompound( 
+ FaceList )</p>
+
+<p class="whs1">aBox = geompy.Sew( 
+ aComp, 1. )</p>
+
+<p class="whs1">idbox = geompy.addToStudy( 
+ aBox, &quot;box&quot; )</p>
+
+<p class="whs1">&nbsp;&nbsp;</p>
+
+<p class="whs1">aBox &nbsp;= 
+ salome.IDToObject( idbox )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a mesh</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp1.SetNumberOfSegments(5)</p>
+
+<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp2.SetMaxElementArea(20)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(aBox)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp2)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo2)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh.Compute(mesh,aBox)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs1">smeshgui.SetName( 
+ salome.ObjectToID( mesh ), &quot;Mesh_borders_at_multi-connections&quot; 
+ );</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : Borders at 
+ multi-connection</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateMultiConnection()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateEqualTo()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 2 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Borders at multi-connections Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.EDGE, &quot;Borders at multi-connections&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark2>Length 1D</a></h3>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a box without 
+ one plane</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 20., 20., 15.)</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">FaceList &nbsp;= 
+ []</p>
+
+<p class="whs1">for i in range( 
+ 5 ):</p>
+
+<p class="whs1">&nbsp;&nbsp;FaceList.append( 
+ subShapeList[ i ] )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aComp = geompy.MakeCompound( 
+ FaceList )</p>
+
+<p class="whs1">aBox = geompy.Sew( 
+ aComp, 1. )</p>
+
+<p class="whs1">idbox = geompy.addToStudy( 
+ aBox, &quot;box&quot; )</p>
+
+<p class="whs1">&nbsp;&nbsp;</p>
+
+<p class="whs1">aBox &nbsp;= 
+ salome.IDToObject( idbox )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a mesh</p>
+
+<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp1.SetNumberOfSegments(5)</p>
+
+<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp2.SetMaxElementArea(20)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(aBox)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp2)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo2)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh.Compute(mesh,aBox)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs1">smeshgui.SetName( 
+ salome.ObjectToID( mesh ), &quot;Mesh&quot; );</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : Length &gt; 
+ 3</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateLength()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 3 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Edges length &gt; 3 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.EDGE, &quot;Edges with legth &gt; 3&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark3>Free Edges</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 30</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 30 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">anEditor = mesh.GetMeshEditor()</p>
+
+<p class="whs1">anEditor.RemoveElements(anIds)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : FREE EDGES</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateFreeEdges()</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Free edges Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.EDGE, &quot;Free edges&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark4>Length 2D</a></h3>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a box without 
+ one plane</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 20., 20., 15.)</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">FaceList &nbsp;= 
+ []</p>
+
+<p class="whs1">for i in range( 
+ 5 ):</p>
+
+<p class="whs1">&nbsp;&nbsp;FaceList.append( 
+ subShapeList[ i ] )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aComp = geompy.MakeCompound( 
+ FaceList )</p>
+
+<p class="whs1">aBox = geompy.Sew( 
+ aComp, 1. )</p>
+
+<p class="whs1">idbox = geompy.addToStudy( 
+ aBox, &quot;box&quot; )</p>
+
+<p class="whs1">&nbsp;&nbsp;</p>
+
+<p class="whs1">aBox &nbsp;= 
+ salome.IDToObject( idbox )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a mesh</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp1.SetNumberOfSegments(5)</p>
+
+<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp2.SetMaxElementArea(20)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(aBox)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp2)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo2)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh.Compute(mesh,aBox)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs1">smeshgui.SetName( 
+ salome.ObjectToID( mesh ), &quot;Mesh&quot; );</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : Length 2D 
+ &gt; 5</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateLength2D()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 5 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Edges length 2D &gt; 5 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Edges with legth 2D &gt; 5&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ &nbsp;</p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark5>Borders at Multiconnection 2D</a></h3>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a box without 
+ one plane</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 20., 20., 15.)</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">FaceList &nbsp;= 
+ []</p>
+
+<p class="whs1">for i in range( 
+ 5 ):</p>
+
+<p class="whs1">&nbsp;&nbsp;FaceList.append( 
+ subShapeList[ i ] )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aComp = geompy.MakeCompound( 
+ FaceList )</p>
+
+<p class="whs1">aBox = geompy.Sew( 
+ aComp, 1. )</p>
+
+<p class="whs1">idbox = geompy.addToStudy( 
+ aBox, &quot;box&quot; )</p>
+
+<p class="whs1">&nbsp;&nbsp;</p>
+
+<p class="whs1">aBox &nbsp;= 
+ salome.IDToObject( idbox )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a mesh</p>
+
+<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp1.SetNumberOfSegments(5)</p>
+
+<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hyp2.SetMaxElementArea(20)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(aBox)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,hyp2)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo1)</p>
+
+<p class="whs1">mesh.AddHypothesis(aBox,algo2)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh.Compute(mesh,aBox)</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs1">smeshgui.SetName( 
+ salome.ObjectToID( mesh ), &quot;Mesh&quot; );</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : MULTI-CONNECTION 
+ 2D = 2</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateMultiConnection2D()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateEqualTo()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 2 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Borders at multi-connection 2D = 2 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Borders at multi-connection 2D = 2&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark6>Area</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : AREA &gt; 
+ 100</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 100 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Area &gt; 100 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Area &gt; 100&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark7>Taper</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : Taper &gt; 
+ 3e-20</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateTaper()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 3e-20 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Taper &gt; 3e-20 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Taper &gt; 3e-20&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark8>Aspect Ratio</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : ASPECT RATIO 
+ &gt; 1.4</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateAspectRatio()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 1.4 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Aspect Ratio &gt; 1.4 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Aspect Ratio &gt; 1.4&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h3><a name=bookmark9>Minimum Angle</a></h3>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs3"># Criterion : MINIMUM 
+ ANGLE &lt; 70</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateMinimumAngle()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateLessThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 70 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs3"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Minimum Angle &lt; 70 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs3"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Minimum Angle &lt; 70&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs1">&nbsp;</p>
+
+<h3><a name=bookmark10>Warping</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># Criterion : WARP ANGLE 
+ &gt; 1e-15</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateWarping()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 1e-15 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Warp &gt; 1e-15 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Warp &gt; 1e-15&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark12>Skew</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : Skew &gt; 
+ 18</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateSkew()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 18 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Skew &gt; 18 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Skew &gt; 18&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=bookmark11>Aspect Ratio 3D</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic_tetra</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic_tetra.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic_tetra.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic_tetra.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : ASPECT RATIO 
+ 3D &gt; 2.2</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateAspectRatio3D()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateMoreThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 2.2 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Aspect Ratio 3D &gt; 2.2 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.VOLUME, &quot;Aspect Ratio 3D &gt; 2.2&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 // const strings
 var gaProj = new Array();
 var gsRoot = "";
@@ -14,6 +15,8 @@ function aPE(sProjPath, sRootPath)
 
 function tocProjEntry(sProjPath, sRootPath) 
 {
+	if(sProjPath.lastIndexOf("/")!=sProjPath.length-1)
+		sProjPath+="/";	
 	this.sPPath = sProjPath;
 	this.sRPath = sRootPath;
 }

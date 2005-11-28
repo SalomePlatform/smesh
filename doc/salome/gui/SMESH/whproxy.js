@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 var gbInited=false;
 var gWndStubPage=null;
 function getStubPage()
@@ -61,3 +62,13 @@ function SendMessage(oMessage)
 }
 
 var gbWhProxy=true;
+
+var gbPreview=false;
+gbPreview=false; 
+if (gbPreview)
+	document.oncontextmenu=contextMenu;
+
+function contextMenu()
+{
+	return false;
+}

@@ -1,3 +1,4 @@
+//	WebHelp 5.10.001
 // const strings
 var gIEA = new Array();
 function aIE()
