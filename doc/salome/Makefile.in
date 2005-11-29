@@ -19,7 +19,7 @@ docs:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done; \
-	cp -f $(srcdir)/SMESH_index.html SMESH_index.html
+	cp -f $(srcdir)/SMESH_index_v3.1.0.html SMESH_index_v3.1.0.html
 
 clean:
 	@@SETX@; for d in $(SUBDIRS); do 	\
@@ -35,10 +35,10 @@ install:
 	$(MAKE) docs
 	(cd tui && $(MAKE) install);
 	(cd gui && $(MAKE) install);
-	cp -f SMESH_index.html $(docdir)
+	cp -f SMESH_index_v3.1.0.html $(docdir)
 
 uninstall:
 	@@SETX@; for d in $(SUBDIRS); do 	\
 	   (cd $$d && $(MAKE) $@) || exit 1; 	\
 	done; \
-	rm -fr $(docdir)/SMESH_index.html
+	rm -fr $(docdir)/SMESH_index_v3.1.0.html
