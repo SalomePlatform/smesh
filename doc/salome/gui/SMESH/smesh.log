@@ -217,6 +217,7 @@ pics\sewing1.png
 image92.gif
 image51.jpg
 image70.gif
+pics\create_group.png
 pics\edit_mesh_change_value_hyp.png
 pics\free_borders1.png
 pics\add_triangle.png
@@ -272,6 +273,7 @@ image74.gif
 image63.gif
 image22.jpg
 image41.gif
+pics\editing_groups1.png
 pics\uniting_two_triangles1.png
 image7.jpg
 pics\a-averagelength.png
@@ -286,9 +288,10 @@ image97.gif
 image78.jpg
 image64.gif
 image23.jpg
+pics\cut_groups1.png
+pics\editing_groups2.png
 pics\uniting_two_triangles2.png
 pics\a-unionoftriangles.png
-pics\a-editmesh.png
 pics\a-arithmetic1d.png
 pics\a-exportmesh.png
 pics\extrusionalongaline2.png
@@ -297,9 +300,10 @@ image79.jpg
 image21.gif
 image98.gif
 image32.gif
+pics\cut_groups2.png
+image130.gif
 pics\max_el_area.png
 pics\a-extusionalongapath2.png
-pics\a-createmesh1.png
 pics\a-viewgeneral.png
 pics\revolution1.png
 pics\addtriangle.png
@@ -311,6 +315,9 @@ image33.gif
 image22.gif
 image25.jpg
 i_blue.jpg
+pics\cut_groups3.png
+image131.gif
+pics\c-editmesh.png
 pics\add_quadrangle.png
 pics\uniting_a_set_of_triangles1.png
 pics\a-deflection1d.png
@@ -324,6 +331,7 @@ image23.gif
 image67.gif
 image34.gif
 image26.jpg
+image132.gif
 pics\edit_mesh1.png
 pics\remove_elements1.png
 pics\uniting_a_set_of_triangles2.png
@@ -336,6 +344,8 @@ image46.gif
 image35.gif
 image27.jpg
 image24.gif
+pics\intersect_groups1.png
+image133.gif
 pics\length1.png
 pics\borders_at_multi_connections1.png
 pics\add_polygone.png
@@ -347,14 +357,17 @@ image58.gif
 image36.gif
 image25.gif
 note1.gif
+pics\intersect_groups2.png
+image134.gif
 pics\b-mesh_infos.png
 pics\symmetry3.png
 pics\addedge.png
 image123.gif
 image101.gif
 image37.gif
+pics\intersect_groups3.png
+image135.gif
 pics\b-erage_length.png
-pics\b-create_group.png
 pics\a-standmeshinfo.png
 pics\a-nbsegments1.png
 pics\patternmapping1.png
@@ -365,6 +378,8 @@ image19.jpg
 image49.gif
 image27.gif
 image38.gif
+image136.gif
+pics\c-createmesh.png
 pics\a-nbsegments2.png
 pics\a-startendlength.png
 pics\patternmapping2.png
@@ -376,6 +391,8 @@ image103.gif
 pics\exemple.gif
 image39.gif
 image28.gif
+pics\union_groups1.png
+image137.gif
 pics\free_edges.png
 pics\a-nbsegments3.png
 pics\creategroup.png
@@ -385,6 +402,7 @@ image126.gif
 image104.gif
 image18.gif
 image70.jpg
+pics\union_groups2.png
 pics\length2d.png
 pics\a-advmeshinfo.png
 pics\a-nbsegments4.png
@@ -394,6 +412,7 @@ image93.jpg
 image105.gif
 image19.gif
 image71.jpg
+pics\union_groups3.png
 pics\edit_mesh_remove_hyp.png
 pics\remove_nodes1.png
 pics\merging_nodes1.png
@@ -466,6 +485,7 @@ whgdata\whlstf8.htm
 whgdata\whlstf9.htm
 whgdata\whlstf10.htm
 whgdata\whlstf11.htm
+whgdata\whlstf12.htm
 whgdata\whlstg0.htm
 smesh.htm
 smesh_csh.htm

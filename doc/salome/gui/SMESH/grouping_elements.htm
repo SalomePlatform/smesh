@@ -9,6 +9,18 @@
 <!--
 p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
 p.whs2 { margin-top:0pt; margin-bottom:0pt; }
+img_whs3 { border:none; width:430px; height:391px; float:none; border-style:none; }
+img_whs4 { border:none; float:none; width:463px; height:417px; border-style:none; }
+img_whs5 { border:none; width:541px; height:417px; float:none; border-style:none; }
+img_whs6 { border:none; width:394px; height:425px; float:none; border-style:none; }
+img_whs7 { border:none; float:none; width:368px; height:379px; border-style:none; }
+img_whs8 { border:none; float:none; width:344px; height:381px; border-style:none; }
+img_whs9 { border:none; width:314px; height:351px; float:none; border-style:none; }
+img_whs10 { border:none; float:none; width:319px; height:351px; border-style:none; }
+img_whs11 { border:none; float:none; width:304px; height:352px; border-style:none; }
+img_whs12 { border:none; width:318px; height:355px; float:none; border-style:none; }
+img_whs13 { border:none; float:none; width:318px; height:355px; border-style:none; }
+img_whs14 { border:none; float:none; width:320px; height:354px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -78,7 +90,7 @@ else
 </script>
 <h1>Grouping Elements</h1>
 
-<h3><a name=bookmark>Create a Group</a></h3>
+<h3><a name=bookmark>Create a Standalone Group</a></h3>
 
 <p class="whs1">&nbsp;</p>
 
@@ -152,6 +164,276 @@ else
 
 <p class="whs1">aGroup.Add( anIds 
  )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="pics/create_group.png" x-maintain-ratio="TRUE" width="430px" height="391px" border="0" class="img_whs3"></p>
+
+<h4><a name=bookmark5>Create a Group on Geometry</a></h4>
+
+<p class="whs1">import salome</p>
+
+<p class="whs1">import geompy</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">import StdMeshers</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
+ &quot;SMESH&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+
+<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a box</p>
+
+<p class="whs1">box = geompy.MakeBox(0., 
+ 0., 0., 100., 100., 100.)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add the box to the study</p>
+
+<p class="whs1">idbox = geompy.addToStudy(box, 
+ &quot;box&quot;)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add the first face of 
+ the box to the study</p>
+
+<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">face = subShapeList[0]</p>
+
+<p class="whs1">name = geompy.SubShapeName(face, 
+ box)</p>
+
+<p class="whs1">idface = geompy.addToStudyInFather(box, 
+ face, name)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create a hypothesis</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ create Hypothesis&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ NumberOfSegments&quot;</p>
+
+<p class="whs1">numberOfSegments 
+ = 7</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">hypNbSeg = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hypNbSeg.SetNumberOfSegments(numberOfSegments)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print hypNbSeg.GetName()</p>
+
+<p class="whs1">print hypNbSeg.GetId()</p>
+
+<p class="whs1">print hypNbSeg.GetNumberOfSegments()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypNbSeg), 
+ &quot;NumberOfSegments_10&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ MaxElementArea&quot;</p>
+
+<p class="whs1">maxElementArea = 
+ 800</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">hypArea = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hypArea.SetMaxElementArea(maxElementArea)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print hypArea.GetName()</p>
+
+<p class="whs1">print hypArea.GetId()</p>
+
+<p class="whs1">print hypArea.GetMaxElementArea()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypArea), 
+ &quot;MaxElementArea_500&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ MaxElementVolume&quot;</p>
+
+<p class="whs1">maxElementVolume 
+ = 900</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">hypVolume = smesh.CreateHypothesis(&quot;MaxElementVolume&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">hypVolume.SetMaxElementVolume(maxElementVolume)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">print hypVolume.GetName()</p>
+
+<p class="whs1">print hypVolume.GetId()</p>
+
+<p class="whs1">print hypVolume.GetMaxElementVolume()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypVolume), 
+ &quot;MaxElementVolume_500&quot;)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create algorithms</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ create Algorithms&quot;</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ Regular_1D&quot;</p>
+
+<p class="whs1">regular1D = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(regular1D), 
+ &quot;Wire Discretisation&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ Quadrangle_2D&quot;</p>
+
+<p class="whs1">quad2D = smesh.CreateHypothesis(&quot;Quadrangle_2D&quot;, 
+ &quot;libStdMeshersEngine.so&quot;)</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(quad2D), 
+ &quot;Quadrangle_2D&quot;)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># initialize a mesh with 
+ the box</p>
+
+<p class="whs1">mesh = smesh.CreateMesh(box)</p>
+
+<p class="whs1">smeshgui.SetName(salome.ObjectToID(mesh), 
+ &quot;MeshBox&quot;)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># add a hypothesis to the 
+ box</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ add hypothesis to the box&quot;</p>
+
+<p class="whs1">mesh.AddHypothesis(box,hypNbSeg)</p>
+
+<p class="whs1">mesh.AddHypothesis(box,hypArea)</p>
+
+<p class="whs1">mesh.AddHypothesis(box,hypVolume)</p>
+
+<p class="whs1">mesh.AddHypothesis(box,regular1D)</p>
+
+<p class="whs1">mesh.AddHypothesis(box,quad2D)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># compute the mesh</p>
+
+<p class="whs1">print &quot;-------------------------- 
+ compute the mesh of the box&quot;</p>
+
+<p class="whs1">ret = smesh.Compute(mesh,box)</p>
+
+<p class="whs1">print ret</p>
+
+<p class="whs1">if ret == 0:</p>
+
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;probleme when computing the mesh&quot;</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># create geometry groups 
+ on the plane:</p>
+
+<p class="whs1">aGeomGroup1 = geompy.CreateGroup(face 
+ , geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs1">geompy.AddObject(aGeomGroup1, 
+ 1)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aGeomGroup2 = geompy.CreateGroup(face 
+ , geompy.ShapeType[&quot;EDGE&quot;])</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">geompy.AddObject(aGeomGroup2, 
+ 3)</p>
+
+<p class="whs1">geompy.AddObject(aGeomGroup2, 
+ 6)</p>
+
+<p class="whs1">geompy.AddObject(aGeomGroup2, 
+ 8)</p>
+
+<p class="whs1">geompy.AddObject(aGeomGroup2, 
+ 10)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">geompy.addToStudy(aGeomGroup1, 
+ &quot;Group on Faces&quot;)</p>
+
+<p class="whs1">geompy.addToStudy(aGeomGroup2, 
+ &quot;Group on Edges&quot;)</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aSmeshGroup1 = mesh.CreateGroupFromGEOM(SMESH.FACE, 
+ &quot;SMESHGroup1&quot;, aGeomGroup1)</p>
+
+<p class="whs1">aSmeshGroup2 = mesh.CreateGroupFromGEOM(SMESH.EDGE, 
+ &quot;SMESHGroup2&quot;, aGeomGroup2)</p>
 
 <p class="whs1">&nbsp;</p>
 
@@ -290,6 +572,8 @@ else
  </p>
 
 <p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="pics/editing_groups1.png" x-maintain-ratio="TRUE" width="463px" height="417px" border="0" class="img_whs4"> &nbsp;<img src="pics/editing_groups2.png" x-maintain-ratio="TRUE" width="541px" height="417px" border="0" class="img_whs5"></p>
 
 <h3><a name=bookmark2>Union of two groups</a></h3>
 
@@ -492,6 +776,14 @@ else
 
 <p class="whs1">&nbsp;</p>
 
+<p class="whs1"><img src="pics/union_groups1.png" x-maintain-ratio="TRUE" width="394px" height="425px" border="0" class="img_whs6"></p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1"><img src="pics/union_groups2.png" x-maintain-ratio="TRUE" width="368px" height="379px" border="0" class="img_whs7"> <img src="pics/union_groups3.png" x-maintain-ratio="TRUE" width="344px" height="381px" border="0" class="img_whs8"></p>
+
+<p class="whs1">&nbsp;</p>
+
 <h3><a name=bookmark3>Intersection of two groups</a></h3>
 
 <p class="whs1">import SMESH</p>
@@ -631,6 +923,8 @@ else
  </p>
 
 <p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="pics/intersect_groups1.png" x-maintain-ratio="TRUE" width="314px" height="351px" border="0" class="img_whs9"> &nbsp;<img src="pics/intersect_groups2.png" x-maintain-ratio="TRUE" width="319px" height="351px" border="0" class="img_whs10"> &nbsp;<img src="pics/intersect_groups3.png" x-maintain-ratio="TRUE" width="304px" height="352px" border="0" class="img_whs11"></p>
 
 <h3><a name=bookmark4>Cut of two groups</a></h3>
 
@@ -772,7 +1066,7 @@ else
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs2"><img src="pics/cut_groups1.png" x-maintain-ratio="TRUE" width="318px" height="355px" border="0" class="img_whs12"> &nbsp;<img src="pics/cut_groups2.png" x-maintain-ratio="TRUE" width="318px" height="355px" border="0" class="img_whs13"> &nbsp;<img src="pics/cut_groups3.png" x-maintain-ratio="TRUE" width="320px" height="354px" border="0" class="img_whs14"></p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

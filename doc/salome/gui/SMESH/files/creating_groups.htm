@@ -16,24 +16,36 @@ if (navigator.appName !="Netscape")
 <!--
 p.whs1 { font-weight:bold; }
 img_whs2 { border:none; width:30px; height:30px; float:none; border-style:none; }
-p.whs3 { margin-left:40px; }
-p.whs4 { font-weight:normal; }
+p.whs3 { margin-left:40px; font-weight:normal; }
+ul.whs4 { list-style:disc; }
 p.whs5 { font-weight:bold; margin-left:40px; }
-img_whs6 { border:none; width:312px; height:565px; float:none; border-style:none; }
-p.whs7 { margin-left:40px; font-weight:normal; }
-ul.whs8 { list-style:disc; }
-p.whs9 { margin-left:40px; font-weight:bold; }
-p.whs10 { margin-left:80px; }
-img_whs11 { border:none; width:312px; height:312px; float:none; border-style:none; }
-p.whs12 { margin-left:0px; }
-img_whs13 { border:none; width:430px; height:391px; float:none; }
+p.whs6 { margin-left:40px; font-weight:bold; }
+p.whs7 { margin-left:40px; }
+p.whs8 { margin-left:36px; }
+table.whs9 { x-cell-content-align:top; width:100%; border-spacing:0px; }
+col.whs10 { width:33.382%; }
+col.whs11 { width:66.618%; }
+tr.whs12 { x-cell-content-align:top; }
+td.whs13 { width:33.382%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; border-left-style:none; border-top-style:none; }
+img_whs14 { border:none; width:312px; height:565px; float:none; border-style:none; }
+td.whs15 { width:66.618%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-top-style:none; border-right-style:none; }
+p.whs16 { margin-left:0px; }
+img_whs17 { border:none; width:145px; height:150px; border-style:none; float:left; }
+img_whs18 { border:none; width:149px; height:158px; border-style:none; }
+col.whs19 { width:33.48%; }
+col.whs20 { width:66.52%; }
+td.whs21 { width:33.48%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+img_whs22 { border:none; width:312px; height:312px; float:none; border-style:none; }
+td.whs23 { width:66.52%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs24 { border:none; width:135px; height:150px; border-style:none; }
+p.whs25 { margin-left:80px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs12 {margin-left:1pt; }";
+  strNSS += "p.whs16 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -95,127 +107,154 @@ else
 </script>
 <h1>Creating groups</h1>
 
-<p class="whs1"><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2"> <span style="font-weight: normal;">In 
- MESH you can create groups of elements of different types and having definite 
- properties.</span></p>
+<p class="whs1"><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2"> &nbsp;&nbsp;<span 
+ style="font-weight: normal;">In MESH you 
+ can create groups of elements of different types. To create a group of 
+ elements</span><span style="font-weight: normal; margin-left: 40px;"> 
+ in the </span><span style="margin-left: 40px;">Mesh</span><span style="font-weight: normal; margin-left: 40px;"> 
+ menu select </span><span style="margin-left: 40px;">Create Group</span><span 
+ style="font-weight: normal; margin-left: 40px;">.</span><span style="margin-left: 40px;"> 
+ </span></p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">To create any group 
+ you should define the following: &nbsp;&nbsp;</p>
 
-<p class=TODO>To create a group of elements:</p>
-
-<p class=TODO>&nbsp;</p>
-
-<p class="whs3">1. In the <span style="font-weight: bold;"><B>Mesh 
- </B></span><span>menu select </span><span style="font-weight: bold;"><B>Create 
- Group</B></span><span>. The following dialog box will appear:</span></p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs5">&nbsp;<img src="../pics/creategroup.png" x-maintain-ratio="TRUE" width="312px" height="565px" border="0" class="img_whs6"></p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">This dialog box contains 
- the following fields which should be filled:</p>
-
-<p class="whs5">&nbsp;</p>
-
-<ul type="disc" class="whs8">
+<ul type="disc" class="whs4">
 	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Mesh: </B></span>the name of the mesh whose elements 
+	<li class=kadov-p><p class="whs5">Mesh: 
+ <span style="font-weight: normal;">the name of the mesh whose elements 
  will form your group. You can enter the name manually or select your mesh 
- in the Objet Browser or in the 3D viewer.</p></li>
+ in the Objet Browser or in the 3D viewer.</span></p></li>
 	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Elements Type </B></span>set of radio buttons allows 
- to select the type of elements which will form your group:</p></li>
+	<li class=kadov-p><p class="whs3">Elements 
+ Type <span style="font-weight: normal;">set of radio buttons allows to 
+ select the type of elements which will form your group:</span></p></li>
 	
-	<ul type="disc" class="whs8">
+	<ul type="disc" class="whs4">
 		
-		<li class=kadov-p><p class="whs9">Nodes</p></li>
+		<li class=kadov-p><p class="whs6">Nodes</p></li>
 		
-		<li class=kadov-p><p class="whs9">Edges 
+		<li class=kadov-p><p class="whs6">Edges 
  </p></li>
 		
-		<li class=kadov-p><p class="whs9">Faces</p></li>
+		<li class=kadov-p><p class="whs6">Faces</p></li>
 		
-		<li class=kadov-p><p class="whs9">Volumes</p></li>
+		<li class=kadov-p><p class="whs6">Volumes</p></li>
 	</ul>
 	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Name </B></span><span>field allows to enter the 
- name of your new group.</span></p></li>
-	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Group type </B></span>set of radio buttons allows 
- to select the type of your group: </p></li>
-	
-	<ul type="disc" class="whs8">
-		
-		<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Standalone group </B></span>&nbsp;consisting 
- of mesh elements.</p></li>
-		
-		<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Group on geometry </B></span><span>consisting of 
- geometrical elements.</span> If you choose this type of group your dialog 
- box will change and it will look like as follows:</p></li>
-	</ul>
+	<li class=kadov-p><p class="whs3"><span 
+ style="font-weight: bold;"><B>Name </B></span>field allows to enter the name 
+ of your new group.</p></li>
 </ul>
 
-<p class="whs7">&nbsp;</p>
+<p class="whs3">SALOME Platform distinguishes 
+ between the two Group types: <span style="font-weight: bold;"><B>Standalone 
+ Group</B></span> and <span style="font-weight: bold;"><B>Group on Geometry</B></span>. 
+ &nbsp;</p>
 
-<p class="whs10"><img src="../pics/a-creategroup.png" x-maintain-ratio="TRUE" width="312px" height="312px" border="0" class="img_whs11"></p>
+<h3>Standalone Group </h3>
 
-<p class="whs10">&nbsp;</p>
+<p class="whs7">The box for creation of a <span style="font-weight: bold;"><B>Standalone 
+ Group</B></span> appears by default. <span style="font-weight: bold;"><B>Standalone 
+ Group</B></span> consists of mesh elements, which you can define in two possible 
+ ways.</p>
 
-<p class="whs10">In this dialog box you should enter the name 
- of the geometrical object (you can enter the name manually or select your 
- geometrical object in the Objet Browser or in the 3D viewer) from which 
- the elements will be taken. And after confirmation of the operation MESH 
- will create a new group consisting of geometrical elements of the previously 
- defined type.</p>
-
-<p class="whs7">&nbsp;</p>
-
-<ul type="disc" class="whs8">
+<ul type="disc" class="whs4">
 	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Content </B></span>field<span style="font-weight: bold;"> 
- <B></B></span>allows to manually define the mesh elements which will form your 
- group. You can click on an element in the 3D viewer and it will be highlighted. 
- After that click the <span style="font-weight: bold;"><B>Add </B></span>button 
- and the ID of this element will be added to the list. To remove a selected 
- element or elements from the list click the <span style="font-weight: bold;"><B>Remove 
- </B></span>button. The <span style="font-weight: bold;"><B>Sort </B></span>button 
- allows to sort the list of elements IDs. The <span style="font-weight: bold;"><B>Set 
- filter </B></span>button allows to apply a definite filter to selection of 
- the elements of your group. See more about filters on the <a href="../selection_filter_library.htm">Selection 
- filter library</a> page</p></li>
+	<li class=kadov-p><p class="whs8">Choosing them manually 
+ with the mouse in the 3D Viewer. You can click on an element in the 3D 
+ viewer and it will be highlighted. After that click the <span style="font-weight: bold;"><B>Add 
+ </B></span>button and the ID of this element will be added to the list. </p></li>
 	
-	<li class=kadov-p><p class="whs7"><span 
- style="font-weight: bold;"><B>Select from </B></span>set of fields allows to 
- choose a submesh or an existing group whose elements of the previously 
- defined type will be added to the list of elements which will form your 
- group.</p></li>
+	<li class=kadov-p><p class="whs7">Applying Filters. The 
+ <span style="font-weight: bold;"><B>Set filter </B></span>button allows to apply 
+ a definite filter to selection of the elements of your group. See more 
+ about filters on the <a href="../selection_filter_library.htm">Selection 
+ filter library</a> page. &nbsp;&nbsp;</p></li>
 </ul>
 
+<p class="whs7">To remove a selected element or elements 
+ from the list click the <span style="font-weight: bold;"><B>Remove </B></span>button. 
+ The <span style="font-weight: bold;"><B>Sort </B></span>button allows to sort 
+ the list of IDs of mesh elements. </p>
+
+<p class="whs7"><span style="font-weight: bold;"><B>Select from 
+ </B></span>set of fields allows to choose a submesh or an existing group whose 
+ elements of the previously defined type will be added to the list of elements 
+ which will form your group.</p>
+
 <p class="whs7">&nbsp;</p>
 
-<p class="whs7">2. Click the <span style="font-weight: bold;"><B>OK 
- </B></span>button to confirm creation of your group or <span style="font-weight: bold;"><B>Cancel 
- </B></span>to quit this dialog box.</p>
+<table x-use-null-cells cellspacing="0" width="100%" class="whs9">
+<col class="whs10">
+<col class="whs11">
+
+<tr valign="top" class="whs12">
+<td width="33.382%" class="whs13">
+<p class="whs1"><img src="../pics/creategroup.png" x-maintain-ratio="TRUE" width="312px" height="565px" border="0" class="img_whs14"></td>
+<td width="66.618%" class="whs15">
+<p class="whs16"><img src="../image130.gif" width="145px" height="150px" align="left" border="0" class="img_whs17"> &nbsp;&nbsp;</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">In this picture left the brown cells belong 
+ to a group defined manually.</p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;<img src="../image131.gif" width="149px" height="158px" border="0" class="img_whs18"> In this picture the brown cells belong to the group defined 
+ by the criterion <br>
+Taper &gt; 0. </p>
+<p class="whs16">&nbsp;</p>
+<p class="whs16">&nbsp;</td></tr>
+</table>
 
 <p class="whs7">&nbsp;</p>
 
-<p class="whs12"><span style="font-weight: bold;"><B>See Also</B></span> 
- a sample TUI Script of a <a href="../grouping_elements.htm#bookmark">Create 
- Group</a> operation. &nbsp;</p>
+<p class="whs5">&nbsp;&nbsp;&nbsp;See 
+ Also a sample TUI Script of a <a href="../grouping_elements.htm#bookmark">Create 
+ a Standalone Group</a> operation. &nbsp;</p>
 
-<p class="whs12">&nbsp;</p>
+<h3>Group on Geometry </h3>
 
-<p class="whs10"><img src="../pics/b-create_group.png" x-maintain-ratio="TRUE" width="430px" height="391px" border="0" class="img_whs13"></p>
+<p class="whs3">To create a group on 
+ geometry check <span style="font-weight: bold;"><B>Group on geometry</B></span> 
+ in the <span style="font-weight: bold;"><B>Group type</B></span> field. <span 
+ style="font-weight: bold;"><B>Group on geometry </B></span>contains the elements 
+ of a certain type belonging to the selected<span style="font-weight: bold;"> 
+ <B></B></span>geometrical object. To define a group select in the Objet Browser 
+ or in the 3D viewer a geometrical object from which the elements will 
+ be taken. After confirmation of the operation MESH will create a new group 
+ consisting of geometrical elements of the previously defined type.</p>
+
+<p class="whs3">&nbsp;</p>
+
+<table x-use-null-cells cellspacing="0" width="100%" class="whs9">
+<col class="whs19">
+<col class="whs20">
+
+<tr valign="top" class="whs12">
+<td width="33.48%" class="whs21">
+<p><img src="../pics/a-creategroup.png" x-maintain-ratio="TRUE" width="312px" height="312px" border="0" class="img_whs22"></td>
+<td width="66.52%" class="whs23">
+<p><img src="../image132.gif" width="135px" height="150px" border="0" class="img_whs24"> In this picture the cells which belong to a certain face 
+ are selected in green. </td></tr>
+</table>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs6">&nbsp;&nbsp;&nbsp;See 
+ Also a sample TUI Script of a <a href="../grouping_elements.htm#bookmark5">Create 
+ a Group on Geometry</a><a href="../grouping_elements.htm#bookmark"> </a>operation. 
+ &nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="whs16">&nbsp;</p>
+
+<p class="whs25">&nbsp;</p>
 
 <p>&nbsp;</p>
 
