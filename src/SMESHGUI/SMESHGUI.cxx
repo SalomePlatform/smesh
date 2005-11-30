@@ -1143,6 +1143,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       SALOME_ListIO l;
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      aSel->selectedObjects( l );
       aSel->setSelectedObjects( l );
       break;
     }
