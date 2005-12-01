@@ -26,7 +26,11 @@ LIB_SERVER_IDL =
 CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
 
+ifeq ($(F77),gfortran)
+LDFLAGS += -lgfortran
+else
 LDFLAGS += -lg2c
+endif
 
 @CONCLUDE@
 
