@@ -49,13 +49,16 @@
   #if __GNUC__ < 3
     #include <hash_map.h>
     namespace gstd { using ::hash_map; }; // inherit globals
-  #else
+  #elif __GNUC__ == 3
     #include <ext/hash_map>
     #if __GNUC_MINOR__ == 0
       namespace gstd = std;               // GCC 3.0
     #else
       namespace gstd = ::__gnu_cxx;       // GCC 3.1 and later
     #endif
+  #else                                   // GCC 4.0 and later
+    #include <ext/hash_map>
+    namespace gstd = ::__gnu_cxx;
   #endif
 #else      // ...  there are other compilers, right?
   namespace gstd = std;
