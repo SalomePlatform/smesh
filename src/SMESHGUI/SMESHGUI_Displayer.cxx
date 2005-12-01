@@ -78,3 +78,8 @@ SalomeApp_Study* SMESHGUI_Displayer::study() const
 {
   return dynamic_cast<SalomeApp_Study*>( myApp->activeStudy() );
 }
+
+bool SMESHGUI_Displayer::canBeDisplayed( const QString& /*entry*/, const QString& viewer_type ) const
+{
+  return viewer_type==SVTK_Viewer::Type();
+}

@@ -41,6 +41,7 @@ public:
   ~SMESHGUI_Displayer();
 
   virtual SALOME_Prs* buildPresentation( const QString&, SALOME_View* = 0 );
+  virtual bool        canBeDisplayed( const QString& /*entry*/, const QString& /*viewer_type*/ ) const;
 
 protected:
   SalomeApp_Study* study() const;
