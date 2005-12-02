@@ -48,6 +48,7 @@
     <item name="Editing groups" url="files/editing_groups.htm" />
     <item name="Using operations on groups" url="files/using_operations_on_groups.htm" />
     <item name="Constructing groups of specific elements" url="files/constructing_groups_of_specific_elements.htm" />
+    <item name="Deleting Groups" url="deleting_groups.htm" />
     <item name="Selection filter library" url="selection_filter_library.htm" />
   </book>
   <book name="Modifying meshes" >

@@ -14,9 +14,10 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-img_whs1 { border:none; border-style:none; width:624px; height:525px; float:none; }
-p.whs2 { font-weight:bold; }
+p.whs1 { font-weight:bold; }
+img_whs2 { border:none; width:624px; height:776px; float:none; border-style:none; }
 img_whs3 { border:none; width:31px; height:30px; border-style:none; }
+img_whs4 { border:none; width:624px; height:525px; float:none; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
@@ -76,17 +77,15 @@ else
 
 <p>Selection filter library is a powerful tool enabling to create filters 
  to be used on meshes. You can access to it from the Main Menu via <span 
- style="font-weight: bold;"><B>Tools / Selection filter library</B></span> </p>
+ style="font-weight: bold;"><B>Tools / Selection filter library.</B></span></p>
 
 <p>&nbsp;</p>
 
-<p><img src="pics/a-filteronedges.png" x-maintain-ratio="TRUE" width="624px" height="525px" border="0" class="img_whs1"></p>
+<p class="whs1"><img src="pics/selectionfilterlibrary.png" x-maintain-ratio="TRUE" width="624px" height="776px" border="0" class="img_whs2"></p>
 
 <p>&nbsp;</p>
 
-<p>In this dialog window</p>
-
-<p class="whs2">Library file name s<span style="font-weight: normal;">hows 
+<p class="whs1">Library file name s<span style="font-weight: normal;">hows 
  the path and the file name where your filters will be stored. By clicking 
  the</span> <img src="image103.gif" width="31px" height="30px" border="0" class="img_whs3"> <span style="font-weight: normal;">browse button 
  you can load an existing filter library.</span></p>
@@ -102,24 +101,48 @@ else
 <p>Each filter can be applicable to <span style="font-weight: bold;"><B>Nodes, 
  Edges, Faces</B></span> or <span style="font-weight: bold;"><B>Volumes</B></span>. 
  You can combine many criteria in one filter, but they all must be of the 
- same <span style="font-weight: bold;"><B>Entity type</B></span>. The <span style="font-weight: bold;"><B>Add</B></span> 
- button creates a new criterion at the end of the list of criteria. The 
- <span style="font-weight: bold;"><B>Insert</B></span> button creates a new criterion 
- after the selected criterion. The <span style="font-weight: bold;"><B>Remove</B></span> 
- button deletes the selected criterion. The <span style="font-weight: bold;"><B>Clear</B></span> 
- button deletes all criteria. &nbsp;</p>
+ same <span style="font-weight: bold;"><B>Entity type</B></span>. </p>
+
+<p>The <span style="font-weight: bold;"><B>Add</B></span> button creates a new 
+ criterion at the end of the list of criteria. The <span style="font-weight: bold;"><B>Insert</B></span> 
+ button creates a new criterion before the selected criterion. The <span 
+ style="font-weight: bold;"><B>Remove</B></span> button deletes the selected criterion. 
+ The <span style="font-weight: bold;"><B>Clear</B></span> button deletes all criteria. 
+ &nbsp;</p>
 
 <p>Each <span style="font-weight: bold;"><B>Entity type</B></span> has its specific 
  list of criteria, however all filters have common syntax. For each criterion 
  you should specify the <span style="font-weight: bold;"><B>Threshold Value</B></span> 
  and whether we search for the elements that should be <span style="font-weight: bold;"><B>More, 
- Less or Equal</B></span> to this Value. You should also specify if the criterion 
- is <span style="font-weight: bold;"><B>Unary</B></span> or <span style="font-weight: bold;"><B>Binary.</B></span> 
- &nbsp;&nbsp;</p>
+ Less or Equal</B></span> to this <span style="font-weight: bold;"><B>Value</B></span>. 
+ You should also specify if the criterion is <span style="font-weight: bold;"><B>Unary</B></span> 
+ or <span style="font-weight: bold;"><B>Binary.</B></span> &nbsp;&nbsp;</p>
 
 <p>Some criteria should have the additional parameter of <span style="font-weight: bold;"><B>Tolerance</B></span>.</p>
 
 <p>&nbsp;</p>
+
+<p>When we create a <span style="font-weight: bold;"><B>Standalone Group</B></span> 
+ using filters (for this click <span style="font-weight: bold;"><B>Set Filters</B></span> 
+ button in the <span style="font-weight: bold;"><B>Create Group</B></span> menu), 
+ the menu for setting filters looks a bit differently. Toggling <span style="font-weight: bold;"><B>Insert 
+ filter in viewer</B></span> checkbox enables to preview the group selected 
+ with your current filter in the viewer. </p>
+
+<p>In the <span style="font-weight: bold;"><B>Source</B></span> field you choose 
+ if the filter will be applied to the whole <span style="font-weight: bold;"><B>Mesh</B></span>, 
+ the<span style="font-weight: bold;"><B> Initial Selection </B></span>or the<span 
+ style="font-weight: bold;"><B> Current Group. </B></span></p>
+
+<p><span style="font-weight: bold;"><B>Copy from...</B></span> button gives you 
+ a possibility to load an existing filter from <span style="font-weight: bold;"><B>Selection 
+ filter library</B></span> and <span style="font-weight: bold;"><B>Add to...</B></span> 
+ button gives you a possibility to save your current filter in the Library. 
+ &nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><img src="pics/a-filteronedges.png" x-maintain-ratio="TRUE" width="624px" height="525px" border="0" class="img_whs4"></p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

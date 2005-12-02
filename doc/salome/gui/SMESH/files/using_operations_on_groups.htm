@@ -29,16 +29,16 @@ img_whs12 { border:none; width:134px; height:151px; border-style:none; }
 img_whs13 { border:none; width:136px; height:151px; border-style:none; }
 img_whs14 { border:none; width:133px; height:159px; border-style:none; }
 p.whs15 { margin-left:0px; }
-table.whs16 { x-cell-content-align:top; width:100%; border-spacing:0; }
-col.whs17 { width:32.796%; }
-col.whs18 { width:67.204%; }
-td.whs19 { padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
-img_whs20 { border:none; width:306px; height:253px; float:none; border-style:none; }
-td.whs21 { padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
-img_whs22 { border:none; width:141px; height:157px; }
-col.whs23 { width:33.089%; }
-col.whs24 { width:66.911%; }
-img_whs25 { border:none; width:140px; height:146px; }
+col.whs16 { width:32.796%; }
+col.whs17 { width:67.204%; }
+td.whs18 { width:32.796%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+td.whs19 { width:67.204%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs20 { border:none; width:141px; height:157px; border-style:none; }
+col.whs21 { width:33.089%; }
+col.whs22 { width:66.911%; }
+td.whs23 { width:33.089%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+td.whs24 { width:66.911%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs25 { border:none; width:140px; height:146px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -108,8 +108,8 @@ else
 <h1>Using operations on groups</h1>
 
 <p><span style="font-weight: bold;"><B><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> </B></span>In MESH you can 
- perform &nbsp;Boolean 
- operations on groups such as:</p>
+ perform some Boolean operations on groups, which belong to one and the 
+ same mesh.</p>
 
 <p>&nbsp;</p>
 
@@ -152,8 +152,13 @@ else
 <p><img src="../pics/uniongroups.png" x-maintain-ratio="TRUE" width="306px" height="253px" border="0" class="img_whs10"></td>
 <td width="67.4%" class="whs11">
 <p><img src="../image133.gif" width="134px" height="151px" border="0" class="img_whs12"> &nbsp;&nbsp;<img src="../image134.gif" width="136px" height="151px" border="0" class="img_whs13"> &nbsp;&nbsp;&nbsp;&nbsp;<img src="../image135.gif" width="133px" height="159px" border="0" class="img_whs14"></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group1 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group2 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group12</p>
+<p>&nbsp;</p>
 <p>For example, we have two groups Group1 and Group2. </p>
-<p>The result of their Union will be Group12 &nbsp;&nbsp;</td></tr>
+<p>The result of their <span style="font-weight: bold;"><B>Union</B></span> will 
+ be Group12 &nbsp;&nbsp;</td></tr>
 </table>
 
 <p class="whs4">&nbsp;&nbsp;</p>
@@ -199,17 +204,22 @@ else
 
 <p class="whs4">&nbsp;</p>
 
-<table x-use-null-cells cellspacing="0" width="100%" class="whs16">
+<table x-use-null-cells cellspacing="0" width="100%" class="whs5">
+<col class="whs16">
 <col class="whs17">
-<col class="whs18">
 
-<tr valign=top>
-<td width="32.796%" class="whs19">
-<p><img src="../pics/intersectgroups.png" x-maintain-ratio="TRUE" width="306px" height="253px" border="0" class="img_whs20"></td>
-<td width="67.204%" class="whs21">
-<p><img src="../image133.gif" width="134px" height="151px" border="0" class="img_whs12"> &nbsp;<img src="../image134.gif" width="136px" height="151px" border="0" class="img_whs13"><img src="../image136.gif" width="141px" height="157px" border="0" class="img_whs22"></p>
+<tr valign="top" class="whs8">
+<td width="32.796%" class="whs18">
+<p><img src="../pics/intersectgroups.png" x-maintain-ratio="TRUE" width="306px" height="253px" border="0" class="img_whs10"></td>
+<td width="67.204%" class="whs19">
+<p><img src="../image133.gif" width="134px" height="151px" border="0" class="img_whs12"> &nbsp;<img src="../image134.gif" width="136px" height="151px" border="0" class="img_whs13"><img src="../image136.gif" width="141px" height="157px" border="0" class="img_whs20"></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group1 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group2 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group12a</p>
+<p>&nbsp;</p>
 <p>For example, we have two groups Group1 and Group2. </p>
-<p>The result of their Union will be Group12a &nbsp;&nbsp;</td></tr>
+<p>The result of their <span style="font-weight: bold;"><B>Intersection</B></span> 
+ will be Group12a &nbsp;&nbsp;</td></tr>
 </table>
 
 <p>&nbsp;</p>
@@ -250,17 +260,22 @@ else
 
 <p class="whs4">&nbsp;</p>
 
-<table x-use-null-cells cellspacing="0" width="100%" class="whs16">
-<col class="whs23">
-<col class="whs24">
+<table x-use-null-cells cellspacing="0" width="100%" class="whs5">
+<col class="whs21">
+<col class="whs22">
 
-<tr valign=top>
-<td width="33.089%" class="whs19">
-<p><img src="../pics/cutgroups.png" x-maintain-ratio="TRUE" width="306px" height="253px" border="0" class="img_whs20"></td>
-<td width="66.911%" class="whs21">
+<tr valign="top" class="whs8">
+<td width="33.089%" class="whs23">
+<p><img src="../pics/cutgroups.png" x-maintain-ratio="TRUE" width="306px" height="253px" border="0" class="img_whs10"></td>
+<td width="66.911%" class="whs24">
 <p><img src="../image133.gif" width="134px" height="151px" border="0" class="img_whs12"> &nbsp;&nbsp;<img src="../image134.gif" width="136px" height="151px" border="0" class="img_whs13"> &nbsp;<img src="../image137.gif" width="140px" height="146px" border="0" class="img_whs25"></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group1 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group2 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Group12b</p>
+<p>&nbsp;</p>
 <p>For example, we have two groups Group1 and Group2. </p>
-<p>The result of their Union will be Group12b &nbsp;&nbsp;</td></tr>
+<p>The result of their <span style="font-weight: bold;"><B>Cut</B></span> will 
+ be Group12b &nbsp;&nbsp;</td></tr>
 </table>
 
 <p>&nbsp;</p>

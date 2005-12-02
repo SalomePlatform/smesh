@@ -138,6 +138,7 @@ borders_at_multiconnection_2d.htm
 clipping.htm
 constructing_meshes.htm
 defining_hypotheses_tui.htm
+deleting_groups.htm
 display_entity.htm
 extrusion.htm
 extrusion_along_a_path.htm
@@ -273,6 +274,7 @@ image74.gif
 image63.gif
 image22.jpg
 image41.gif
+pics\deletegroups.png
 pics\editing_groups1.png
 pics\uniting_two_triangles1.png
 image7.jpg
@@ -412,6 +414,7 @@ image93.jpg
 image105.gif
 image19.gif
 image71.jpg
+pics\selectionfilterlibrary.png
 pics\union_groups3.png
 pics\edit_mesh_remove_hyp.png
 pics\remove_nodes1.png
