@@ -640,7 +640,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   }
 
   //mySelectionMgr->clearSelected();
-  SMESH::UpdateView();
+  SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
+  //SMESH::UpdateView();
   Init(false);
   ConstructorsClicked(GetConstructorId());
   return true;
@@ -861,8 +862,12 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     // try to get shape from selection
     Handle(SALOME_InteractiveObject) IO = aList.First();
 
+    SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPathMesh);
+    if ( !aPathActor )
+      return;
+    
     QString aString;
-    int aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myMeshActor->getIO(), aString);
+    int aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, aPathActor->getIO(), aString);
     if (aNbUnits == 1)
       StartPointLineEdit->setText(aString.stripWhiteSpace());
 
