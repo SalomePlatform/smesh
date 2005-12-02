@@ -16,7 +16,7 @@
 		<component-username>Mesh</component-username>
 		<component-type>MESH</component-type>
 		<component-author>NRI</component-author>
-		<component-version>2.2.6</component-version>
+		<component-version>2.2.7</component-version>
 		<component-comment>Mesh component</component-comment>
 		<component-multistudy>1</component-multistudy>
 		<component-icone>ModuleMesh.png</component-icone>
