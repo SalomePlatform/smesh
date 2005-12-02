@@ -1247,6 +1247,9 @@ msgstr "During export mesh with name - \"%1\" to MED 2.1\n"
 msgid "INF_SELECT_OBJECT"
 msgstr "Select an object"
 
+msgid "SMESH_AUTO_GROUPS"
+msgstr "Automatically create groups"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_FilterLibraryDlg::ADD_TO_TLT"
@@ -2775,6 +2778,9 @@ msgstr "General"
 msgid "SMESHGUI::PREF_GROUP_UPDATE"
 msgstr "Update"
 
+msgid "SMESHGUI::PREF_GROUP_EXPORT"
+msgstr "Mesh export"
+
 msgid "SMESHGUI::PREF_GROUP_QUALITY"
 msgstr "Quality controls"
 
@@ -2849,6 +2855,12 @@ msgstr "Elements"
 
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
+
+msgid "SMESHGUI::PREF_GROUP_EXPORT"
+msgstr "Export"
+
+msgid "SMESHGUI::PREF_AUTO_GROUPS"
+msgstr "Automatically create groups for MED export"
 
 #-----------------------------------------------------------
 

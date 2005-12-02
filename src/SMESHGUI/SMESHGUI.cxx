@@ -81,8 +81,9 @@
 
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
-#include "LightApp_DataOwner.h"
 #include "SalomeApp_Application.h"
+#include "SalomeApp_CheckFileDlg.h"
+#include "LightApp_DataOwner.h"
 #include "LightApp_Preferences.h"
 #include "LightApp_VTKSelector.h"
 #include "LightApp_Operation.h"
@@ -287,7 +288,12 @@ namespace{
 
 	QString aFilename;
 	SMESH::MED_VERSION aFormat;
-
+	// Init the parameter with the default value
+	bool toCreateGroups = false;
+	SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+	if ( resMgr )
+	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
+	
 	if ( theCommandID != 122 && theCommandID != 125 )
 	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
 	else
@@ -296,10 +302,12 @@ namespace{
 	    for ( QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin(); it != aFilterMap.end(); ++it )
 	      filters.push_back( it.key() );
 
-	    SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+	    //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+	    SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
 	    fd->setCaption( aTitle );
 	    fd->setFilters( filters );
 	    fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+	    fd->SetChecked(toCreateGroups);
 	    bool is_ok = false;
 	    while(!is_ok){
 	      fd->exec();
@@ -320,6 +328,7 @@ namespace{
 		}
 	      }
 	    }
+	    toCreateGroups = fd->IsChecked();
 	    delete fd;
 	  }
 	if ( !aFilename.isEmpty() ) {
@@ -331,7 +340,7 @@ namespace{
 	  switch ( theCommandID ) {
 	  case 125:
 	  case 122:
-	    aMesh->ExportToMED( aFilename.latin1(), false, aFormat ); // currently, automatic groups are never created
+	    aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
 	    break;
 	  case 124:
 	  case 121:
@@ -2886,6 +2895,9 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispmode, "strings", modes );
   setPreferenceProperty( dispmode, "indexes", indices );
 
+  int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
+  addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
+  
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
 
