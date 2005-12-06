@@ -2856,9 +2856,6 @@ msgstr "Elements"
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
 
-msgid "SMESHGUI::PREF_GROUP_EXPORT"
-msgstr "Export"
-
 msgid "SMESHGUI::PREF_AUTO_GROUPS"
 msgstr "Automatically create groups for MED export"
 
