@@ -297,7 +297,7 @@ namespace SMESH{
 	  // get method, returning hypothesis creator
 	  if(MYDEBUG) MESSAGE("Find GetHypothesisCreator() method ...");
 	  typedef SMESHGUI_GenericHypothesisCreator* (*GetHypothesisCreator) \
-	    (QString aHypType, QString aServerLibName, SMESHGUI* aSMESHGUI);
+	    ( const QString& );
 	  GetHypothesisCreator procHandle =
 	    (GetHypothesisCreator)dlsym(libHandle, "GetHypothesisCreator");
 	  if (!procHandle) {
@@ -307,7 +307,7 @@ namespace SMESH{
 	  else {
 	    // get hypothesis creator
 	    if(MYDEBUG) MESSAGE("Get Hypothesis Creator for " << aHypType);
-	    aCreator = procHandle(aHypType, aServerLibName, SMESHGUI::GetSMESHGUI());
+	    aCreator = procHandle( aHypType );
 	    if (!aCreator) {
 	      if(MYDEBUG) MESSAGE("no such a hypothesis in this plugin");
 	    }

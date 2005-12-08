@@ -29,6 +29,7 @@
 
 using namespace std;
 #include "StdMeshers_NumberOfSegments.hxx"
+#include "StdMeshers_Distribution.hxx"
 #include <Standard_ErrorHandler.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <ExprIntrp_GenExp.hxx>
@@ -55,7 +56,7 @@ StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int hypId, int studyId,
     _numberOfSegments(1),
     _distrType(DT_Regular),
     _scaleFactor(1.),
-    _expMode(false)
+    _convMode(1)  //cut negative by default
 {
   _name = "NumberOfSegments";
   _param_algo_dim = 1;
@@ -69,6 +70,28 @@ StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int hypId, int studyId,
 
 StdMeshers_NumberOfSegments::~StdMeshers_NumberOfSegments()
 {
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+const std::vector<double>& StdMeshers_NumberOfSegments::BuildDistributionExpr( const char* expr, int nbSeg, int conv )
+throw ( SALOME_Exception )
+{
+  if( !buildDistribution( TCollection_AsciiString( ( Standard_CString )expr ), conv, 0.0, 1.0, nbSeg, _distr, 1E-4 ) )
+    _distr.resize( 0 );
+  return _distr;
+}
+
+const std::vector<double>& StdMeshers_NumberOfSegments::BuildDistributionTab( const std::vector<double>& tab,
+									      int nbSeg, int conv )
+throw ( SALOME_Exception )
+{
+  if( !buildDistribution( tab, conv, 0.0, 1.0, nbSeg, _distr, 1E-4 ) )
+    _distr.resize( 0 );
+  return _distr;
 }
 
 //=============================================================================
@@ -186,10 +209,31 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
   double prev = -PRECISION;
   bool isSame = table.size() == _table.size();
 
+  OSD::SetSignal( true );
+  CASCatch_CatchSignals aCatchSignals;
+  aCatchSignals.Activate();
+
   bool pos = false;
   for (i=0; i < table.size()/2; i++) {
     double par = table[i*2];
     double val = table[i*2+1];
+    if( _convMode==0 )
+    {
+      CASCatch_TRY
+      {
+	val = pow( 10.0, val );
+      }
+      CASCatch_CATCH(CASCatch_Failure)
+      {
+	aCatchSignals.Deactivate();
+	Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+	throw SALOME_Exception( LOCALIZED( "invalid value"));
+	return;
+      }
+    }
+    else if( _convMode==1 && val<0.0 )
+      val = 0.0;
+
     if ( par<0 || par > 1)
       throw SALOME_Exception(LOCALIZED("parameter of table function is out of range [0,1]"));
     if ( fabs(par-prev)<PRECISION )
@@ -207,6 +251,7 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
     }
     prev = par;
   }
+  aCatchSignals.Deactivate();
 
   if( !pos )
     throw SALOME_Exception(LOCALIZED("value of table function is not positive"));
@@ -263,21 +308,39 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
  *  ( result in 'syntax' ) and if only 't' is unknown variable in expression ( result in 'args' )
  */
 //================================================================================
-bool process( const TCollection_AsciiString& str,
+bool process( const TCollection_AsciiString& str, int convMode,
 	      bool& syntax, bool& args,
 	      bool& non_neg, bool& non_zero,
  	      bool& singulars, double& sing_point )
 {
-  Handle( ExprIntrp_GenExp ) myExpr = ExprIntrp_GenExp::Create();
-  myExpr->Process( str.ToCString() );
+  OSD::SetSignal( true );
+  CASCatch_CatchSignals aCatchSignals;
+  aCatchSignals.Activate();
 
-  if( myExpr->IsDone() )
+  bool parsed_ok = true;
+  Handle( ExprIntrp_GenExp ) myExpr;
+  CASCatch_TRY
+  {
+    myExpr = ExprIntrp_GenExp::Create();
+    myExpr->Process( str.ToCString() );
+  }
+  CASCatch_CATCH(CASCatch_Failure)
+  {
+    aCatchSignals.Deactivate();
+    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    parsed_ok = false;
+  }
+  aCatchSignals.Deactivate();
+
+  syntax = false;
+  args = false;
+  if( parsed_ok && myExpr->IsDone() )
   {
     syntax = true;
     args = isCorrectArg( myExpr->Expression() );
   }
 
-  bool res = syntax && args;
+  bool res = parsed_ok && syntax && args;
   if( !res )
     myExpr.Nullify();
 
@@ -287,42 +350,27 @@ bool process( const TCollection_AsciiString& str,
 
   if( res )
   {
-    OSD::SetSignal( true );
-    CASCatch_CatchSignals aCatchSignals;
-    aCatchSignals.Activate();
-    double res;
-    Expr_Array1OfNamedUnknown myVars( 1, 1 );
-    TColStd_Array1OfReal  myValues( 1, 1 );
-    myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
-
+    FunctionExpr f( str.ToCString(), convMode );
     const int max = 500;
     for( int i=0; i<=max; i++ )
     {
-      double t = double(i)/double(max);
-      myValues.ChangeValue( 1 ) = t;
-      CASCatch_TRY
-      {   
-	res = myExpr->Expression()->Evaluate( myVars, myValues );
-      }
-      CASCatch_CATCH(CASCatch_Failure)
+      double t = double(i)/double(max), val;
+      if( !f.value( t, val ) )
       {
-	aCatchSignals.Deactivate();
-	Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
 	sing_point = t;
 	singulars = true;
 	break;
       }
-      if( res<0 )
+      if( val<0 )
       {
 	non_neg = false;
 	break;
       }
-      if( res>PRECISION )
+      if( val>PRECISION )
 	non_zero = true;
     }
-    aCatchSignals.Deactivate();
   }
-  return res && non_neg && ( !singulars );
+  return res && non_neg && non_zero && ( !singulars );
 }
 
 //================================================================================
@@ -346,7 +394,7 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
 
   bool syntax, args, non_neg, singulars, non_zero;
   double sing_point;
-  bool res = true;//process( str, syntax, args, non_neg, non_zero, singulars, sing_point );
+  bool res = process( str, _convMode, syntax, args, non_neg, non_zero, singulars, sing_point );
   if( !res )
   {
     if( !syntax )
@@ -395,15 +443,15 @@ const char* StdMeshers_NumberOfSegments::GetExpressionFunction() const
  */
 //================================================================================
 
-void StdMeshers_NumberOfSegments::SetExponentMode(bool isExp)
+void StdMeshers_NumberOfSegments::SetConversionMode( int conv )
   throw(SALOME_Exception)
 {
   if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
     throw SALOME_Exception(LOCALIZED("not a functional distribution"));
 
-  if (isExp != _expMode)
+  if( conv != _convMode )
   {
-    _expMode = isExp;
+    _convMode = conv;
     NotifySubMeshesHypothesisModification();
   }
 }
@@ -414,12 +462,12 @@ void StdMeshers_NumberOfSegments::SetExponentMode(bool isExp)
  */
 //================================================================================
 
-bool StdMeshers_NumberOfSegments::IsExponentMode() const
+int StdMeshers_NumberOfSegments::ConversionMode() const
   throw(SALOME_Exception)
 {
   if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
     throw SALOME_Exception(LOCALIZED("not a functional distribution"));
-  return _expMode;
+  return _convMode;
 }
 
 //=============================================================================
@@ -451,7 +499,7 @@ ostream & StdMeshers_NumberOfSegments::SaveTo(ostream & save)
   }
 
   if (_distrType == DT_TabFunc || _distrType == DT_ExprFunc)
-    save << " " << (int)_expMode;
+    save << " " << _convMode;
   
   return save;
 }
@@ -563,7 +611,7 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
   {
     isOK = (load >> a);
     if (isOK)
-      _expMode = (bool) a;
+      _convMode = a;
     else
       load.clear(ios::badbit | load.rdstate());
   }

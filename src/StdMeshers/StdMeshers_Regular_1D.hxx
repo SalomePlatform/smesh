@@ -74,7 +74,7 @@ protected:
   enum IValueIndex {
     NB_SEGMENTS_IND  = 0,
     DISTR_TYPE_IND   = 1,
-    EXP_MODE_IND     = 2
+    CONV_MODE_IND     = 2
   };
 
   enum VValueIndex {

@@ -47,6 +47,10 @@ public:
   StdMeshers_NumberOfSegments(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~StdMeshers_NumberOfSegments();
 
+  // Builds point distribution according to passed function
+  const std::vector<double>& BuildDistributionExpr( const char*, int, int ) throw ( SALOME_Exception );
+  const std::vector<double>& BuildDistributionTab( const std::vector<double>&, int, int ) throw ( SALOME_Exception );
+
   /*!
    * \brief Set the number of segments
     * \param segmentsNumber - must be greater than zero
@@ -138,22 +142,23 @@ public:
     throw (SALOME_Exception);
 
   /*!
-   * \brief When exponent mode is set, the function of distribution of density
-   * is used as an exponent of 10, i,e, 10^f(t). This mode is sensible only when
-   * function distribution is used (DT_TabFunc or DT_ExprFunc)
-    * \param isExp - boolean switching on/off the mode
+   * \brief Set conversion mode. When it is 0, it means "exponent mode":
+   * the function of distribution of density is used as an exponent of 10, i,e, 10^f(t).
+   * When it is 1, it means "cut negative mode". The function of distribution is used as
+   * F(t), where F(t0)=f(t0), if f(t0)>=0, otherwise F(t0) = 0.
+   * This mode is sensible only when function distribution is used (DT_TabFunc or DT_ExprFunc)
    * 
    * Throws SALOME_Exception if distribution type is not functional
    */
-  void SetExponentMode(bool isExp)
+  void SetConversionMode( int conv )
     throw (SALOME_Exception);
 
   /*!
-   * \brief Returns true if the exponent mode is set
+   * \brief Returns conversion mode
    * 
    * Throws SALOME_Exception if distribution type is not functional
    */
-  bool IsExponentMode() const
+  int ConversionMode() const
     throw (SALOME_Exception);
 
   virtual ostream & SaveTo(ostream & save);
@@ -165,9 +170,9 @@ protected:
   int                 _numberOfSegments; //!< an edge will be split on to this number of segments
   DistrType           _distrType;        //!< the type of distribution of density function
   double              _scaleFactor;      //!< the scale parameter for DT_Scale
-  std::vector<double> _table;            //!< the table for DT_TabFunc, a sequence of pairs of numbers
+  std::vector<double> _table, _distr;    //!< the table for DT_TabFunc, a sequence of pairs of numbers
   std::string         _func;             //!< the expression of the function for DT_ExprFunc
-  bool                _expMode;          //!< flag of exponent mode
+  int                 _convMode;         //!< flag of conversion mode: 0=exponent, 1=cut negative
 };
 
 #endif

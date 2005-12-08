@@ -205,8 +205,13 @@ void SMESHGUI_CreateHypothesesDlg::ClickOnApply()
     SMESHGUI_GenericHypothesisCreator* aCreator =
       SMESH::GetHypothesisCreator(sHypType);
 
-    // Create hypothesis/algorithm
-    aCreator->CreateHypothesis(myIsAlgo, this);
+    if( aCreator )
+      // Create hypothesis/algorithm
+      aCreator->create( myIsAlgo, this );
+    else
+    {
+      // report about error
+    }
   }
 
 //  buttonApply->setEnabled(FALSE);

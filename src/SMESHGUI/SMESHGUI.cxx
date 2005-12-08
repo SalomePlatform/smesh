@@ -1757,9 +1757,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           char* sName = Hyp->GetName();
           SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(sName);
           if (aCreator)
-          {
-            aCreator->EditHypothesis(Hyp);
-          }
+            aCreator->edit( Hyp.in(), desktop() );
           else
           {
             // report error

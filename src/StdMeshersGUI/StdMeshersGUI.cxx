@@ -21,152 +21,12 @@
 //
 //
 //  File   : StdMeshersGUI.cxx
-//  Author : Julia DOROVSKIKH
+//  Author : Alexander SOLOVYOV
 //  Module : SMESH
 //  $Header$
 
-#include "SALOMEconfig.h"
-#include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
-
-#include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_HypothesesUtils.h"
-
-#include "SMESHGUI_aParameterDlg.h"
-#include "StdMeshersGUI_Parameters.h"
-#include "StdMeshersGUI_CreateStdHypothesisDlg.h"
-
-#include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
-
-#include <SalomeApp_Tools.h>
-
-#include <qobject.h>
-
-#include "utilities.h"
-
-using namespace std;
-
-//=============================================================================
-/*! class HypothesisCreator
- *
- */
-//=============================================================================
-class StdMeshersGUI_HypothesisCreator : public SMESHGUI_GenericHypothesisCreator
-{
- public:
-  StdMeshersGUI_HypothesisCreator (const QString& aHypType,
-                                   const QString& aServerLibName,
-                                   SMESHGUI* aSMESHGUI)
-    : myHypType(aHypType),
-    myServerLibName(aServerLibName),
-    mySMESHGUI(aSMESHGUI) {}
-
-  virtual void CreateHypothesis (const bool isAlgo, QWidget* parent = 0);
-  virtual void EditHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp);
-
- private:
-  QString   myHypType;
-  QString   myServerLibName;
-  SMESHGUI* mySMESHGUI;
-};
-
-//=============================================================================
-/*! HypothesisCreator::CreateHypothesis
- *
- */
-//=============================================================================
-void StdMeshersGUI_HypothesisCreator::CreateHypothesis
-                                      (bool isAlgo, QWidget* parent)
-{
-  MESSAGE("StdMeshersGUI_HypothesisCreator::CreateHypothesis");
-
-  // Get default name for hypothesis/algorithm creation
-  char* sHypType = (char*)myHypType.latin1();
-  HypothesisData* aHypData = SMESH::GetHypothesisData(sHypType);
-  QString aHypName;
-  if (aHypData)
-    aHypName = aHypData->Label;
-  else
-    aHypName = myHypType;
-
-  // Create hypothesis/algorithm
-  if (isAlgo)
-  {
-    SMESH::CreateHypothesis(myHypType, aHypName, isAlgo);
-  }
-  else
-  {
-    if ( StdMeshersGUI_Parameters::HasParameters( myHypType ))
-    {
-      // Show Dialog for hypothesis creation
-      StdMeshersGUI_CreateStdHypothesisDlg *aDlg =
-          new StdMeshersGUI_CreateStdHypothesisDlg(myHypType, parent, "");
-      /* Move widget on the botton right corner of main widget */
-//       int x, y ;
-//       mySMESHGUI->DefineDlgPosition( aDlg, x, y ) ;
-//       aDlg->move( x, y ) ;
-      aDlg->exec() ; /* displays Dialog */
-    }
-    else
-      SMESH::CreateHypothesis(myHypType, aHypName, isAlgo); // without GUI
-  }
-}
-
-//=============================================================================
-/*! HypothesisCreator::EditHypothesis
- *
- */
-//=============================================================================
-void StdMeshersGUI_HypothesisCreator::EditHypothesis
-                                      (SMESH::SMESH_Hypothesis_ptr theHyp)
-{
-  MESSAGE("StdMeshersGUI_HypothesisCreator::EditHypothesis");
-
-  SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis(theHyp);
-
-  list<SMESHGUI_aParameterPtr> paramList;
-  StdMeshersGUI_Parameters::GetParameters( theHyp, paramList );
-
-  bool modified = false;
-  if ( SMESHGUI_aParameterDlg::Parameters( SMESHGUI::GetSMESHGUI(), paramList, QObject::tr("SMESH_VALUE")) )
-  {
-    try
-    {
-      modified = StdMeshersGUI_Parameters::SetParameters( theHyp, paramList );
-    }
-    catch (const SALOME::SALOME_Exception& S_ex)
-    {
-      SalomeApp_Tools::QtCatchCorbaException(S_ex);
-      return;
-    }    
-  }
-
-  if ( modified ) {
-    //set new Attribute Comment for hypothesis which parameters were modified
-    QString aParams = "";
-    StdMeshersGUI_Parameters::GetParameters( theHyp, paramList, aParams );
-    _PTR(SObject) SHyp = SMESH::FindSObject(theHyp);
-    if (SHyp)
-      if (!aParams.isEmpty()) {
-	SMESH::SetValue(SHyp, aParams);
-	//mySMESHGUI->GetActiveStudy()->updateObjBrowser(true);
-      }    
-
-    if ( listSOmesh.size() > 0 ) {
-      _PTR(SObject) submSO = listSOmesh[0];
-      SMESH::SMESH_Mesh_var aMesh =
-        SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(submSO);
-      SMESH::SMESH_subMesh_var aSubMesh =
-        SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(submSO);
-      if ( !aSubMesh->_is_nil() )
-        aMesh = aSubMesh->GetFather();
-      _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
-      SMESH::ModifiedMesh( meshSO, false);
-    }
-  }
-}
+#include "StdMeshersGUI_StdHypothesisCreator.h"
+#include "StdMeshersGUI_NbSegmentsCreator.h"
 
 //=============================================================================
 /*! GetHypothesisCreator
@@ -175,10 +35,11 @@ void StdMeshersGUI_HypothesisCreator::EditHypothesis
 //=============================================================================
 extern "C"
 {
-  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator
-    (QString aHypType, QString aServerLibName, SMESHGUI* aSMESHGUI)
-    {
-      return new StdMeshersGUI_HypothesisCreator
-        (aHypType, aServerLibName, aSMESHGUI);
-    }
+  SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator( const QString& aHypType )
+  {
+    if( aHypType=="NumberOfSegments" )
+      return new StdMeshersGUI_NbSegmentsCreator();
+    else
+      return new StdMeshersGUI_StdHypothesisCreator( aHypType );
+  }
 }

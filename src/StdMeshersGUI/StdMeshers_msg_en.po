@@ -53,11 +53,29 @@ msgstr "Table function"
 msgid "SMESH_EXPR_FUNC"
 msgstr "Density function f(t) = "
 
-msgid "SMESH_EXP_MODE"
-msgstr "Exponent mode "
+msgid "SMESH_CONV_MODE"
+msgstr "Conversion mode "
 
 msgid "SMESH_NB_SEGMENTS_TITLE"
 msgstr "Hypothesis Construction"
+
+msgid "SMESH_EXP_MODE"
+msgstr "Exponent"
+
+msgid "SMESH_CUT_NEG_MODE"
+msgstr "Cut negative"
+
+msgid "SMESH_INSERT_ROW"
+msgstr "Insert row"
+
+msgid "SMESH_REMOVE_ROW"
+msgstr "Remove row"
+
+msgid "SMESH_FUNC_DOMAIN"
+msgstr "Warning: function must be defined on segment [0..1]"
+
+msgid "SMESH_INVALID_FUNCTION"
+msgstr "Function is invalid"
 
 # ----------- Max. Element Area ------------
 
@@ -91,7 +109,7 @@ msgid "SMESH_END_LENGTH_PARAM"
 msgstr "End Length"
 
 msgid "SMESH_START_END_LENGTH_HYPOTHESIS"
-msgstr "Start and EndLocal Length"
+msgstr "Start and End local Length"
 
 msgid "SMESH_START_END_LENGTH_TITLE"
 msgstr "Hypothesis Construction"

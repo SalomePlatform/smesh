@@ -42,24 +42,28 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:${KERNEL_ROOT_DIR}/idl/sal
 LIB = libStdMeshersGUI.la
 LIB_SRC = \
 	StdMeshersGUI.cxx \
-	StdMeshersGUI_CreateHypothesisDlg.cxx \
-	StdMeshersGUI_CreateStdHypothesisDlg.cxx \
-	StdMeshersGUI_Parameters.cxx
+	StdMeshersGUI_StdHypothesisCreator.cxx \
+	StdMeshersGUI_DistrPreview.cxx \
+	StdMeshersGUI_DistrTable.cxx \
+	StdMeshersGUI_NbSegmentsCreator.cxx
 
 LIB_MOC = \
-	StdMeshersGUI_CreateHypothesisDlg.h \
-	StdMeshersGUI_CreateStdHypothesisDlg.h 
+	StdMeshersGUI_StdHypothesisCreator.h \
+	StdMeshersGUI_DistrPreview.h \
+	StdMeshersGUI_DistrTable.h \
+	StdMeshersGUI_NbSegmentsCreator.h
 
-EXPORT_HEADERS = StdMeshersGUI_CreateHypothesisDlg.h \
-		 StdMeshersGUI_Parameters.h
+EXPORT_HEADERS =
 
 LIB_CLIENT_IDL = \
 	SALOME_Exception.idl \
 	SMESH_Hypothesis.idl \
-	SMESH_BasicHypothesis.idl
+	SMESH_BasicHypothesis.idl \
+	SMESH_Mesh.idl
 
 ## pb in dependencies search
 LIB_CLIENT_IDL += \
+	SALOMEDS.idl \
 	SALOME_GenericObj.idl \
 	SALOME_Component.idl \
 	GEOM_Gen.idl
@@ -71,10 +75,11 @@ LIB_SERVER_IDL =
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
             -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome \
             $(BOOST_CPPFLAGS) $(QWT_INCLUDES)
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
-	    
-#$(OCC_CXXFLAGS)
 
-LDFLAGS += -lSMESH -lVTKViewer -lSalomeApp -lSMESHObject -lSMESHFiltersSelection $(OCC_KERNEL_LIBS) -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome $(QWT_LIBS)
+CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+
+LDFLAGS += -lSMESH -lVTKViewer -lSalomeApp -lSMESHObject -lSMESHFiltersSelection $(OCC_KERNEL_LIBS) \
+	  -lTKBO -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome \
+	  $(QWT_LIBS)
 
 @CONCLUDE@

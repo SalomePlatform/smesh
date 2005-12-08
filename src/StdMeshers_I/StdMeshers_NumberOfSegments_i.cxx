@@ -72,6 +72,59 @@ StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
 
 //=============================================================================
 /*!
+ *  StdMeshers_NumberOfSegments_i::BuildDistribution
+ *
+ *  Builds point distribution according to passed function
+ */
+//=============================================================================
+SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, long nbSeg, long conv )
+throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
+  ASSERT( myBaseImpl );
+  try
+  {
+    SMESH::double_array_var aRes = new SMESH::double_array();
+    const std::vector<double>& res = this->GetImpl()->BuildDistributionExpr( func, nbSeg, conv );
+    aRes->length( res.size() );
+    for (int i = 0; i < res.size(); i++)
+      aRes[i] = res[i];
+    return aRes._retn();
+  }
+  catch( SALOME_Exception& S_ex )
+  {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+  }
+}
+
+SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
+									  long nbSeg, long conv )
+throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
+  ASSERT( myBaseImpl );
+
+  std::vector<double> tbl( func.length() );
+  for (int i = 0; i < func.length(); i++)
+    tbl[i] = func[i];
+
+  try
+  {
+    SMESH::double_array_var aRes = new SMESH::double_array();
+    const std::vector<double>& res = this->GetImpl()->BuildDistributionTab( tbl, nbSeg, conv );
+    aRes->length( res.size() );
+    for (int i = 0; i < res.size(); i++)
+      aRes[i] = res[i];
+    return aRes._retn();
+  }
+  catch( SALOME_Exception& S_ex )
+  {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+  }
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_NumberOfSegments_i::SetNumberOfSegments
  *
  *  Set number of segments
@@ -283,13 +336,13 @@ char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
  */
 //=============================================================================
 
-void StdMeshers_NumberOfSegments_i::SetExponentMode(CORBA::Boolean isExp)
+void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetExponentMode" );
+  MESSAGE( "StdMeshers_NumberOfSegments_i::SetConversionMode" );
   ASSERT( myBaseImpl );
   try {
-    this->GetImpl()->SetExponentMode( isExp );
+    this->GetImpl()->SetConversionMode( conv );
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -302,20 +355,20 @@ void StdMeshers_NumberOfSegments_i::SetExponentMode(CORBA::Boolean isExp)
  */
 //=============================================================================
 
-CORBA::Boolean StdMeshers_NumberOfSegments_i::IsExponentMode()
+CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::IsExponentMode" );
+  MESSAGE( "StdMeshers_NumberOfSegments_i::ConversionMode" );
   ASSERT( myBaseImpl );
-  bool isExp;
+  int conv;
   try {
-    isExp = this->GetImpl()->IsExponentMode();
+    conv = this->GetImpl()->ConversionMode();
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
 				  SALOME::BAD_PARAM );
   }
-  return isExp;
+  return conv;
 }
 
 //=============================================================================

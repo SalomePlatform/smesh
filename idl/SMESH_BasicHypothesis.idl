@@ -66,6 +66,14 @@ module StdMeshers
   interface StdMeshers_NumberOfSegments : SMESH::SMESH_Hypothesis
   {
     /*!
+     * Builds and returns point distribution according to passed density function
+     */
+    SMESH::double_array BuildDistributionExpr( in string func, in long nbSeg, in long conv )
+      raises (SALOME::SALOME_Exception);
+    SMESH::double_array BuildDistributionTab( in SMESH::double_array func, in long nbSeg, in long conv )
+      raises (SALOME::SALOME_Exception);
+  
+    /*!
      * Sets <number of segments> parameter value
      */
     void SetNumberOfSegments(in long segmentsNumber) 
@@ -124,15 +132,15 @@ module StdMeshers
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Sets <exponent mode> parameter value for functional distributions
+     * Sets <conversion mode> parameter value for functional distributions
      */
-    void SetExponentMode(in boolean isExponent)
+    void SetConversionMode(in long conv )
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Returns <exponent mode> parameter value for functional distributions
+     * Returns <conversion mode> parameter value for functional distributions
      */
-    boolean IsExponentMode()
+    long ConversionMode()
       raises (SALOME::SALOME_Exception);
   };
 
