@@ -301,13 +301,15 @@ double dihotomySolve( Function& f, const double val, const double _start, const 
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
 		        const int nbSeg, vector<double>& data, const double eps )
 {
-  return buildDistribution( FunctionExpr( f.ToCString(), conv ), start, end, nbSeg, data, eps );
+  FunctionExpr F( f.ToCString(), conv );
+  return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
 		        const int nbSeg, vector<double>& data, const double eps )
 {
-  return buildDistribution( FunctionTable( f, conv ), start, end, nbSeg, data, eps );
+  FunctionTable F( f, conv );
+  return buildDistribution( F, start, end, nbSeg, data, eps );
 }
 
 bool buildDistribution( const Function& func, const double start, const double end, const int nbSeg,
