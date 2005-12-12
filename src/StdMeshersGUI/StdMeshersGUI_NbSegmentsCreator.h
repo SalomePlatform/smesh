@@ -21,7 +21,7 @@ typedef struct
   int                 myNbSeg, myDistrType, myConv;
   double              myScale;
   SMESH::double_array myTable;
-  QString             myExpr;
+  QString             myName, myExpr;
 
 } NbSegmentsHypothesisData;
 
@@ -54,7 +54,7 @@ private:
   SMESHGUI_SpinBox*   myScale;
   StdMeshersGUI_DistrTableFrame*  myTable;
   StdMeshersGUI_DistrPreview* myPreview;
-  QLineEdit*       myExpr;
+  QLineEdit       *myName, *myExpr;
   QButtonGroup*    myConv;
   QLabel          *myLScale, *myLTable, *myLExpr, *myLConv, *myInfo;
   QGridLayout*     myGroupLayout;

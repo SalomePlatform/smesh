@@ -3,6 +3,9 @@
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
 
+#include <SMESHGUI_Utils.h>
+#include <SMESHGUI_HypothesesUtils.h>
+
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
 #include <SalomeApp_Tools.h>
@@ -77,6 +80,16 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->setColStretch( 1, 1 );
 
   int row = 0;
+  // 0)  name
+  myName = 0;
+  if( isCreation() )
+  {
+    myName = new QLineEdit( GroupC1 );
+    myGroupLayout->addWidget( new QLabel( tr( "SMESH_NAME" ), GroupC1 ), row, 0 );
+    myGroupLayout->addWidget( myName, row, 1 );
+    row++;
+  }
+
   // 1)  number of segments
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_NB_SEGMENTS_PARAM" ), GroupC1 ), row, 0 );
   myNbSeg = new QtxIntSpinBox( GroupC1 );
@@ -153,6 +166,8 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
   NbSegmentsHypothesisData data;
   readParamsFromHypo( data );
 
+  if( myName )
+    myName->setText( data.myName );
   myNbSeg->setValue( data.myNbSeg );
   myDistr->setCurrentItem( data.myDistrType );
   myScale->setValue( data.myScale );
@@ -172,6 +187,9 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
 {
   StdMeshers::StdMeshers_NumberOfSegments_var h =
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
+
+  HypothesisData* data = SMESH::GetHypothesisData( hypType() );
+  h_data.myName = isCreation() && data ? data->Label : QString();
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
   int distr = (int) h->GetDistrType();
@@ -206,6 +224,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
   bool ok = true;
   try
   {
+    SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.latin1() );
     h->SetNumberOfSegments( h_data.myNbSeg );
     int distr = h_data.myDistrType;
     h->SetDistrType( distr );
@@ -235,6 +254,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
 
 bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesisData& h_data ) const
 {
+  h_data.myName      = myName ? myName->text() : QString();
   h_data.myNbSeg     = myNbSeg->value();
   h_data.myDistrType = myDistr->currentItem();
   h_data.myConv      = myConv->id( myConv->selected() );
