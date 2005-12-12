@@ -286,6 +286,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
       double param = Discret.Parameter(i);
       theParams.push_back( param );
     }
+    compensateError( eltSize, eltSize, f, l, length, C3d, theParams ); // for PAL9899
     return true;
   }
 
