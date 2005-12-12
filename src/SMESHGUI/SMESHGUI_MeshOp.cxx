@@ -633,6 +633,9 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     {
       const QString& aHypoTypeName = (*aHypoList)[ i ];
       HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
+      if( !aHypData )
+	continue;
+
       int aDim = aHypData->Dim[0];
       // create or/and set
       int index = -1;
