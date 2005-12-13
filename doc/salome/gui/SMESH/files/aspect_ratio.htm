@@ -99,36 +99,35 @@ else
 <ul type="disc" class="whs2">
 	
 	<li class=kadov-p><p>For a <span style="font-weight: bold;"><B>triangle</B></span> 
- 2D element consisting of 3 nodes a the <span style="font-weight: bold;"><B>Aspect 
- Ratio</B></span> is calculated as the ratio of the length, h2, of the edge 
- of this triangle, to the height, h1. The ratio of h2 to h1 is then multiplied 
- by &nbsp;3<span 
- style="vertical-align: Super; font-size: 10pt;"><font size=2 style="font-size:10pt;">(1/2)</font></span> /2, so that 
- a “perfect” element in the shape of an equilateral triangle will be equal 
- to 1. This procedure is repeated for the remaining two edges of the triangle, 
- and the largest value is retained as the <span style="font-weight: bold;"><B>Aspect 
- Ratio</B></span> for the element.</p></li>
-</ul>
+ 2D element consisting of 3 nodes the <span style="font-weight: bold;"><B>Aspect 
+ Ratio</B></span> is calculated by formula:
+<p>&nbsp;</p>
+
+<p><img src="../image21.gif" width="158px" height="110px" border="0" class="img_whs3"></p>
+
+<p><img src="../image23.gif" width="120px" height="48px" border="0" class="img_whs4"></p>
+
+<p>where :</p>
 
 <p>&nbsp;</p>
 
-<p class="whs3"><img src="../image26.jpg" width="238px" height="205px" border="0" class="img_whs4"></p>
+<p><img src="../image27.gif" width="234px" height="96px" border="0" class="img_whs5"></p>
 
 <p>&nbsp;</p>
 
-<p class="whs5">&nbsp;</p>
+<p>&nbsp;</p>
+</li>
 
-<ul type="disc" class="whs2">
-	
 	<li class=kadov-p><p class="whs5">For a <span style="font-weight: bold;"><B>quadrangle</B></span> 
  2D element consisting of 4 nodes &nbsp;the 
- <span style="font-weight: bold;"><B>Aspect Ratio </B></span>is the ratio of the 
- element's longest side to its shortest side.</p></li>
+ <span style="font-weight: bold;"><B>Aspect Ratio </B></span>is the
+ quality of the worst triange which can be built taking three nodes of
+ the quadrangle. There are four triangles to consider:</p></li>
+
+<p><img src="../image138.gif" width="566px" border="0" class="img_whs6"></p>
+
 </ul>
 
-<p class="whs3"><img src="../image22.gif" width="226px" height="70px" border="0" class="img_whs6"></p>
-
-<p class="whs3">&nbsp;</p>
 
 <p class=TODO>To apply the Aspect Ratio quality criterion to your mesh:</p>
 
