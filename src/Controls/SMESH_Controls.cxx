@@ -645,6 +645,21 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     break;
   }
   }
+  if ( nbNodes > 4 ) {
+    // avaluate aspect ratio of quadranle faces
+    AspectRatio aspect2D;
+    SMDS_VolumeTool::VolumeType type = SMDS_VolumeTool::GetType( nbNodes );
+    int nbFaces = SMDS_VolumeTool::NbFaces( type );
+    TSequenceOfXYZ points(4);
+    for ( int i = 0; i < nbFaces; ++i ) { // loop on faces of a volume
+      if ( SMDS_VolumeTool::NbFaceNodes( type, i ) != 4 )
+        continue;
+      const int* pInd = SMDS_VolumeTool::GetFaceNodesIndices( type, i, true );
+      for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadranle face
+        points( p + 1 ) = P( pInd[ p ] + 1 );
+      aQuality = max( aQuality, aspect2D.GetValue( points ));
+    }
+  }
   return aQuality;
 }
 
