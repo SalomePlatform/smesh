@@ -76,7 +76,8 @@ class SMESH_MEDMesh_i:
 
 	// IDL Methods
 	void setProtocol(SALOME::TypeOfCommunication typ) {}
-	void release() {}
+	void Register() {}
+	void Destroy() {}
 	SALOME::SenderDouble_ptr getSenderForCoordinates(long int) {return SALOME::SenderDouble::_nil();}
 	SALOME::SenderInt_ptr getSenderForConnectivity(long int, long int, long int, long int) {return SALOME::SenderInt::_nil();}
 	
