@@ -1176,39 +1176,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if( theCommandID==302 )
 	startOperation( myEraseAll );
 
-      SALOME_ListIteratorOfListIO anIt( sel_objects );
-      for( ; anIt.More(); anIt.Next() )
-      {
-	Handle( SALOME_InteractiveObject ) obj = anIt.Value();
-	if( obj->hasEntry() )
-	{
-	  _PTR(SObject) SO = activeStudy()->studyDS()->FindObjectID( obj->getEntry() );
-	  if( SO && QString( SO->GetID().c_str() ) == SO->GetFatherComponent()->GetID().c_str() )
-	  { //component is selected
-	    _PTR(SComponent) SC( SO->GetFatherComponent() );
-	    _PTR(ChildIterator) anIter ( activeStudy()->studyDS()->NewChildIterator( SC ) );
-	    anIter->InitEx( true );
-	    while( anIter->More() )
-	    {
-	      _PTR(SObject) valSO ( anIter->Value() );
-	      _PTR(SObject) refSO;
-	      if( !valSO->ReferencedObject( refSO ) )
-	      {
-		QString id = valSO->GetID().c_str(),
-                        comp = SC->ComponentDataType().c_str(),
-		        val = valSO->GetName().c_str();
-
-		Handle( SALOME_InteractiveObject ) new_obj =
-		  new SALOME_InteractiveObject( id.latin1(), comp.latin1(), val.latin1() );
-		to_process.Append( new_obj );
-	      }
-	      anIter->Next();
-	    }
-	    continue;
-	  }
-	}
-	to_process.Append( obj );
-      }
+      extractContainers( sel_objects, to_process );
 
       if (vtkwnd) {
 	SALOME_ListIteratorOfListIO It( to_process );

@@ -61,6 +61,7 @@ LIB_CLIENT_IDL = \
 ## pb in dependencies search
 LIB_CLIENT_IDL += \
 	SALOME_GenericObj.idl \
+	SALOME_ContainerManager.idl \
 	SALOME_Component.idl \
 	GEOM_Gen.idl
 
