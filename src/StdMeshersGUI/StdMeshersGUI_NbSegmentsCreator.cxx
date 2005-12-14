@@ -189,7 +189,7 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
 
   HypothesisData* data = SMESH::GetHypothesisData( hypType() );
-  h_data.myName = isCreation() && data ? data->Label : QString();
+  h_data.myName = isCreation() && data ? data->Label : "";
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
   int distr = (int) h->GetDistrType();
@@ -224,7 +224,9 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
   bool ok = true;
   try
   {
-    SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.latin1() );
+    if( isCreation() )
+      SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.latin1() );
+
     h->SetNumberOfSegments( h_data.myNbSeg );
     int distr = h_data.myDistrType;
     h->SetDistrType( distr );
@@ -254,7 +256,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
 
 bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesisData& h_data ) const
 {
-  h_data.myName      = myName ? myName->text() : QString();
+  h_data.myName      = myName ? myName->text() : "";
   h_data.myNbSeg     = myNbSeg->value();
   h_data.myDistrType = myDistr->currentItem();
   h_data.myConv      = myConv->id( myConv->selected() );
