@@ -110,50 +110,58 @@ namespace{
   typedef double (SMDS_MeshNode::* TGetCoord)() const;
   typedef const char* TName;
   typedef const char* TUnit;
-  
-  TUnit aUnit[3] = {"m","m","m"};
 
+  // name length in a mesh must be equal to 16 :
+  //         1234567890123456
+  TName M = "m               ";
+  TName X = "x               ";
+  TName Y = "y               ";
+  TName Z = "z               ";
+
+  TUnit aUnit[3] = {M,M,M};
+
+  // 3 dim
   TGetCoord aXYZGetCoord[3] = {
     &SMDS_MeshNode::X, 
     &SMDS_MeshNode::Y, 
     &SMDS_MeshNode::Z
   };
-  TName aXYZName[3] = {"x","y","z"};
+  TName aXYZName[3] = {X,Y,Z};
   
-  
+  // 2 dim
   TGetCoord aXYGetCoord[2] = {
     &SMDS_MeshNode::X, 
     &SMDS_MeshNode::Y
   };
-  TName aXYName[2] = {"x","y"};
+  TName aXYName[2] = {X,Y};
 
   TGetCoord aYZGetCoord[2] = {
     &SMDS_MeshNode::Y, 
     &SMDS_MeshNode::Z
   };
-  TName aYZName[2] = {"y","z"};
+  TName aYZName[2] = {Y,Z};
 
   TGetCoord aXZGetCoord[2] = {
     &SMDS_MeshNode::X, 
     &SMDS_MeshNode::Z
   };
-  TName aXZName[2] = {"x","z"};
+  TName aXZName[2] = {X,Z};
 
-
+  // 1 dim
   TGetCoord aXGetCoord[1] = {
     &SMDS_MeshNode::X
   };
-  TName aXName[1] = {"x"};
+  TName aXName[1] = {X};
 
   TGetCoord aYGetCoord[1] = {
     &SMDS_MeshNode::Y
   };
-  TName aYName[1] = {"y"};
+  TName aYName[1] = {Y};
 
   TGetCoord aZGetCoord[1] = {
     &SMDS_MeshNode::Z
   };
-  TName aZName[1] = {"z"};
+  TName aZName[1] = {Z};
 
 
   class TCoordHelper{
