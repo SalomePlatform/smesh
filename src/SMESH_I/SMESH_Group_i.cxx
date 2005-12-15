@@ -120,11 +120,7 @@ SMESHDS_GroupBase* SMESH_GroupBase_i::GetGroupDS() const
 void SMESH_GroupBase_i::SetName( const char* theName )
 {
   // Update Python script
-  TCollection_AsciiString aStr, aStrName ((char*)theName);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetName(\"";
-  aStr += aStrName + "\")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() <<  _this() << ".SetName( '" << theName << "' )";
 
   // Perform renaming
   ::SMESH_Group* aGroup = GetSmeshGroup();
@@ -219,10 +215,7 @@ CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 void SMESH_Group_i::Clear()
 {
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".Clear()";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".Clear()";
 
   // Clear the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -257,11 +250,7 @@ CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
 CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 {
   // Update Python script
-  TCollection_AsciiString aStr ("nbAdd = ");
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".Add(";
-  SMESH_Gen_i::AddArray(aStr, theIDs) += ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << "nbAdd = " << _this() << ".Add( " << theIDs << " )";
 
   // Add elements to the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
@@ -287,11 +276,7 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
 {
   // Update Python script
-  TCollection_AsciiString aStr ("nbDel = ");
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".Remove(";
-  SMESH_Gen_i::AddArray(aStr, theIDs) += ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << "nbDel = " << _this() << ".Remove( " << theIDs << " )";
 
   // Remove elements from the group
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );

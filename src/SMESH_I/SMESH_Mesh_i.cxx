@@ -31,6 +31,7 @@
 #include "SMESH_MEDMesh_i.hxx"
 #include "SMESH_Group_i.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "Utils_ExceptHandlers.hxx"
@@ -68,6 +69,7 @@ static int MYDEBUG = 0;
 #endif
 
 using namespace std;
+using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::myIdGenerator = 0;
 
@@ -344,12 +346,8 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
-  TCollection_AsciiString aStr ("status = ");
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".AddHypothesis(";
-  SMESH_Gen_i::AddObject(aStr, aSubShapeObject) += ", ";
-  SMESH_Gen_i::AddObject(aStr, anHyp) += ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << "status = " << _this() << ".AddHypothesis( "
+                << aSubShapeObject << ", " << anHyp << " )";
 
   return ConvertHypothesisStatus(status);
 }
@@ -416,12 +414,8 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
                                       aSubShapeObject, anHyp );
 
   // Update Python script
-  TCollection_AsciiString aStr ("status = ");
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".RemoveHypothesis(";
-  SMESH_Gen_i::AddObject(aStr, aSubShapeObject) += ", ";
-  SMESH_Gen_i::AddObject(aStr, anHyp) += ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << "status = " << _this() << ".RemoveHypothesis( "
+                << aSubShapeObject << ", " << anHyp << " )";
 
   return ConvertHypothesisStatus(status);
 }
@@ -537,14 +531,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
                                subMesh, aSubShapeObject, theName );
       if ( !aSO->_is_nil()) {
         // Update Python script
-        TCollection_AsciiString aStr (aSO->GetID());
-        aStr += " = ";
-        SMESH_Gen_i::AddObject(aStr, _this()) += ".GetSubMesh(";
-        SMESH_Gen_i::AddObject(aStr, aSubShapeObject) += ", \"";
-        aStr += (char*)theName;
-        aStr += "\")";
-
-        SMESH_Gen_i::AddToCurrentPyScript(aStr);
+        TPythonDump() << aSO << " = " << _this() << ".GetSubMesh( "
+                      << aSubShapeObject << ", '" << theName << "' )";
       }
     }
   }
@@ -581,12 +569,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
       aStudy->NewBuilder()->RemoveObjectWithChildren( anSO );
 
       // Update Python script
-      TCollection_AsciiString aStr;
-      SMESH_Gen_i::AddObject(aStr, _this()) += ".RemoveSubMesh(";
-      aStr += anSO->GetID();
-      aStr += ")";
-
-      SMESH_Gen_i::AddToCurrentPyScript(aStr);
+      TPythonDump() << _this() << ".RemoveSubMesh( " << anSO << " )";
     }
   }
 
@@ -598,29 +581,18 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
  *  ElementTypeString
  */
 //=============================================================================
+#define CASE2STRING(enum) case SMESH::enum: return "SMESH."#enum;
 inline TCollection_AsciiString ElementTypeString (SMESH::ElementType theElemType)
 {
-  TCollection_AsciiString aStr;
   switch (theElemType) {
-  case SMESH::ALL:
-    aStr = "SMESH.ALL";
-    break;
-  case SMESH::NODE:
-    aStr = "SMESH.NODE";
-    break;
-  case SMESH::EDGE:
-    aStr = "SMESH.EDGE";
-    break;
-  case SMESH::FACE:
-    aStr = "SMESH.FACE";
-    break;
-  case SMESH::VOLUME:
-    aStr = "SMESH.VOLUME";
-    break;
-  default:
-    break;
+    CASE2STRING( ALL );
+    CASE2STRING( NODE );
+    CASE2STRING( EDGE );
+    CASE2STRING( FACE );
+    CASE2STRING( VOLUME );
+  default:;
   }
-  return aStr;
+  return "";
 }
 
 //=============================================================================
@@ -643,15 +615,10 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType
                            aNewGroup, GEOM::GEOM_Object::_nil(), theName);
     if ( !aSO->_is_nil()) {
       // Update Python script
-      TCollection_AsciiString aStr (aSO->GetID());
-      aStr += " = ";
-      SMESH_Gen_i::AddObject(aStr, _this()) += ".CreateGroup(";
-      aStr += ElementTypeString(theElemType) + ", \"" + (char*)theName + "\")";
-
-      SMESH_Gen_i::AddToCurrentPyScript(aStr);
+      TPythonDump() << aSO << " = " << _this() << ".CreateGroup( "
+                    << ElementTypeString(theElemType) << ", '" << theName << "' )";
     }
   }
-
   return aNewGroup._retn();
 }
 
@@ -679,13 +646,9 @@ SMESH::SMESH_GroupOnGeom_ptr SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementTy
                              aNewGroup, theGeomObj, theName);
       if ( !aSO->_is_nil()) {
         // Update Python script
-        TCollection_AsciiString aStr (aSO->GetID());
-        aStr += " = ";
-        SMESH_Gen_i::AddObject(aStr, _this()) += ".CreateGroupFromGEOM(";
-        aStr += ElementTypeString(theElemType) + ", \"" + (char*)theName + "\", ";
-        SMESH_Gen_i::AddObject(aStr, theGeomObj) += ")";
-
-        SMESH_Gen_i::AddToCurrentPyScript(aStr);
+        TPythonDump() << aSO << " = " << _this() << ".CreateGroupFromGEOM("
+                      << ElementTypeString(theElemType) << ", '" << theName << "', "
+                      << theGeomObj << " )";
       }
     }
   }
@@ -716,12 +679,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
 
     if ( !aGroupSO->_is_nil() ) {
       // Update Python script
-      TCollection_AsciiString aStr;
-      SMESH_Gen_i::AddObject(aStr, _this()) += ".RemoveGroup(";
-      aStr += aGroupSO->GetID();
-      aStr += ")";
-
-      SMESH_Gen_i::AddToCurrentPyScript(aStr);
+      TPythonDump() << _this() << ".RemoveGroup( " << aGroupSO << " )";
 
       // Remove group's SObject
       aStudy->NewBuilder()->RemoveObject( aGroupSO );
@@ -752,11 +710,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH_Mesh_i::GetMeshEditor();
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".RemoveGroupWithContents(";
-  SMESH_Gen_i::AddObject(aStr, theGroup) += ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".RemoveGroupWithContents( " << theGroup << " )";
 
   // Remove contents
   if ( aGroup->GetType() == SMESH::NODE )
@@ -821,14 +775,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::UnionGroups( SMESH::SMESH_GroupBase_ptr the
     _gen_i->RemoveLastFromPythonScript(aStudy->StudyId());
 
     // Update Python script
-    TCollection_AsciiString aStr;
-    SMESH_Gen_i::AddObject(aStr, aResGrp) += " = ";
-    SMESH_Gen_i::AddObject(aStr, _this()) += ".UnionGroups(";
-    SMESH_Gen_i::AddObject(aStr, theGroup1) += ", ";
-    SMESH_Gen_i::AddObject(aStr, theGroup2) += ", \"";
-    aStr += TCollection_AsciiString((char*)theName) + "\")";
-
-    SMESH_Gen_i::AddToCurrentPyScript(aStr);
+    TPythonDump() << aResGrp << " = " << _this() << ".UnionGroups( "
+                  << theGroup1 << ", " << theGroup2 << ", '"
+                  << theName << "' )";
 
     return aResGrp._retn();
   }
@@ -886,14 +835,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
   _gen_i->RemoveLastFromPythonScript(aStudy->StudyId());
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, aResGrp) += " = ";
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".IntersectGroups(";
-  SMESH_Gen_i::AddObject(aStr, theGroup1) += ", ";
-  SMESH_Gen_i::AddObject(aStr, theGroup2) += ", \"";
-  aStr += TCollection_AsciiString((char*)theName) + "\")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << aResGrp << " = " << _this() << ".IntersectGroups( "
+                << theGroup1 << ", " << theGroup2 << ", '" << theName << "')";
 
   return aResGrp._retn();
 }
@@ -946,14 +889,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
   _gen_i->RemoveLastFromPythonScript(aStudy->StudyId());
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, aResGrp) += " = ";
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".CutGroups(";
-  SMESH_Gen_i::AddObject(aStr, theGroup1) += ", ";
-  SMESH_Gen_i::AddObject(aStr, theGroup2) += ", \"";
-  aStr += TCollection_AsciiString((char*)theName) + "\")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << aResGrp << " = " << _this() << ".CutGroups( "
+                << theGroup1 << ", " << theGroup2 << ", '"
+                << theName << "' )";
 
   return aResGrp._retn();
 }
@@ -1213,15 +1151,13 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 {
-  // Update Python script
-  TCollection_AsciiString aStr ("mesh_editor = ");
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".GetMeshEditor()";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
-
   // Create MeshEditor
   SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
+
+  // Update Python script
+  TPythonDump() << aMeshEditor << " = " << _this() << ".GetMeshEditor()";
+
   return aMesh._retn();
 }
 
@@ -1293,23 +1229,8 @@ void SMESH_Mesh_i::ExportToMED (const char* file,
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".ExportToMED(\"";
-  aStr += TCollection_AsciiString((char*)file) + "\", ";
-  aStr += TCollection_AsciiString((int)auto_groups) + ", ";
-  switch (theVersion) {
-  case SMESH::MED_V2_1:
-    aStr += "SMESH.MED_V2_1)";
-    break;
-  case SMESH::MED_V2_2:
-    aStr += "SMESH.MED_V2_2)";
-    break;
-  default:
-    aStr += TCollection_AsciiString(theVersion) + ")";
-    break;
-  }
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".ExportToMED( '"
+                << file << "', " << auto_groups << ", " << theVersion << " )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -1357,11 +1278,7 @@ void SMESH_Mesh_i::ExportDAT (const char *file)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".ExportDAT(\"";
-  aStr += TCollection_AsciiString((char*)file) + "\")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".ExportDAT( '" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -1374,11 +1291,7 @@ void SMESH_Mesh_i::ExportUNV (const char *file)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".ExportUNV(\"";
-  aStr += TCollection_AsciiString((char*)file) + "\")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".ExportUNV( '" << file << "' )";
 
   // Perform Export
   PrepareForWriting(file);
@@ -1391,12 +1304,7 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   Unexpect aCatch(SALOME_SalomeException);
 
   // Update Python script
-  TCollection_AsciiString aStr;
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".ExportSTL(\"";
-  aStr += TCollection_AsciiString((char*)file) + "\", ";
-  aStr += TCollection_AsciiString((int)isascii) + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  TPythonDump() << _this() << ".ExportSTL( '" << file << "', " << isascii << " )";
 
   // Perform Export
   PrepareForWriting(file);

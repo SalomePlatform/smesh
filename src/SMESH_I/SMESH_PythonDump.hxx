@@ -22,8 +22,13 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <sstream>
+
+class SMESH_Gen_i;
+class SMESH_MeshEditor_i;
+class TCollection_AsciiString;
 
 namespace SMESH
 {
@@ -65,6 +70,12 @@ namespace SMESH
     operator<<(const SMESH::long_array& theArg);
 
     TPythonDump& 
+    operator<<(const SMESH::double_array& theArg);
+
+    TPythonDump& 
+    operator<<(SALOMEDS::SObject_ptr theArg);
+
+    TPythonDump& 
     operator<<(CORBA::Object_ptr theArg);
 
     TPythonDump& 
@@ -78,6 +89,27 @@ namespace SMESH
 
     TPythonDump& 
     operator<<(SMESH::Functor_i* theArg);
+
+    TPythonDump& 
+    operator<<(SMESH_Gen_i* theArg);
+
+    TPythonDump& 
+    operator<<(SMESH_MeshEditor_i* theArg);
+
+    TPythonDump& 
+    operator<<(SMESH::MED_VERSION theArg);
+
+    TPythonDump&
+    operator<<(const SMESH::AxisStruct & theAxis);
+
+    TPythonDump&
+    operator<<(const SMESH::DirStruct & theDir);
+
+    TPythonDump&
+    operator<<(const TCollection_AsciiString & theArg);
+
+    static char* SMESHGenName() { return "smeshgen"; }
+    static char* MeshEditorName() { return "mesh_editor"; }
   };
 }
 

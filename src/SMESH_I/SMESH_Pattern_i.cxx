@@ -32,6 +32,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Mesh_i.hxx"
+#include "SMESH_PythonDump.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 
@@ -42,6 +43,8 @@
 #include <sstream>
 #include <set>
 
+using SMESH::TPythonDump;
+
 //=======================================================================
 //function : dumpErrorCode
 //purpose  : 
@@ -49,11 +52,8 @@
 
 static void addErrorCode(const char* thePyCommand)
 {
-  SMESH_Gen_i::AddToCurrentPyScript("if (isDone != 1):");
-  TCollection_AsciiString str ("\tprint \"");
-  str += (char*) thePyCommand;
-  str += ":\", pattern.GetErrorCode()";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "if (isDone != 1):";
+  TPythonDump() << "\tprint '" << thePyCommand << " :', pattern.GetErrorCode()";
 }
 
 //=============================================================================
@@ -67,7 +67,7 @@ static void addErrorCode(const char* thePyCommand)
 SMESH::SMESH_Pattern_ptr SMESH_Gen_i::GetPattern()
 {
   // Update Python script
-  SMESH_Gen_i::AddToCurrentPyScript( "pattern = smesh.GetPattern()" );
+  TPythonDump() << "pattern = " << this << ".GetPattern()";
 
   SMESH_Pattern_i* i = new SMESH_Pattern_i( this );
   SMESH::SMESH_Pattern_var anObj = i->_this();
@@ -107,9 +107,7 @@ SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
 CORBA::Boolean SMESH_Pattern_i::LoadFromFile(const char* theFileContents)
 {
   // Update Python script
-  TCollection_AsciiString str( "isDone = pattern.LoadFromFile(" );
-  str += TCollection_AsciiString( (char*) theFileContents ) + ")";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "isDone = pattern.LoadFromFile(" << theFileContents << ")";
   addErrorCode( "LoadFromFile" );
 
   return myPattern.Load( theFileContents );
@@ -136,11 +134,8 @@ CORBA::Boolean SMESH_Pattern_i::LoadFromFace(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TCollection_AsciiString str( "isDone = pattern.LoadFromFace( " );
-  SMESH_Gen_i::AddObject( str, theMesh ) += ", ";
-  SMESH_Gen_i::AddObject( str, theFace ) += ", ";
-  str += TCollection_AsciiString( theProject ) + " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "isDone = pattern.LoadFromFace( " << theMesh << ", "
+                << theFace << ", " << theProject << " )";
   addErrorCode( "LoadFromFace" );
 
   return myPattern.Load( aMesh, TopoDS::Face( aFace ), theProject );
@@ -170,10 +165,7 @@ CORBA::Boolean SMESH_Pattern_i::LoadFrom3DBlock(SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TCollection_AsciiString str( "isDone = pattern.LoadFrom3DBlock( " );
-  SMESH_Gen_i::AddObject( str, theMesh ) += ", ";
-  SMESH_Gen_i::AddObject( str, theBlock ) += " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "isDone = pattern.LoadFrom3DBlock( " << theMesh << ", " << theBlock << " )";
   addErrorCode( "LoadFrom3DBlock" );
 
   return myPattern.Load( aMesh, TopoDS::Shell( exp.Current() ));
@@ -209,11 +201,8 @@ SMESH::point_array* SMESH_Pattern_i::ApplyToFace(GEOM::GEOM_Object_ptr theFace,
   }
 
   // Update Python script
-  TCollection_AsciiString str( "pattern.ApplyToFace( " );
-  SMESH_Gen_i::AddObject( str, theFace ) += ", ";
-  SMESH_Gen_i::AddObject( str, theVertexOnKeyPoint1 ) += ", ";
-  str += TCollection_AsciiString( theReverse ) + " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "pattern.ApplyToFace( " << theFace << ", "
+                << theVertexOnKeyPoint1 << ", " << theReverse << " )";
 
   return points._retn();
 }
@@ -252,11 +241,8 @@ SMESH::point_array* SMESH_Pattern_i::ApplyTo3DBlock(GEOM::GEOM_Object_ptr theBlo
   }
 
   // Update Python script
-  TCollection_AsciiString str( "pattern.ApplyTo3DBlock( " );
-  SMESH_Gen_i::AddObject( str, theBlock ) += ", ";
-  SMESH_Gen_i::AddObject( str, theVertex000 ) += ", ";
-  SMESH_Gen_i::AddObject( str, theVertex001 ) += " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "pattern.ApplyTo3DBlock( " << theBlock << ", "
+                << theVertex000 << ", " << theVertex001 << " )";
 
   return points._retn();
 }
@@ -299,12 +285,9 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TCollection_AsciiString str( "pattern.ApplyToMeshFaces( " );
-  SMESH_Gen_i::AddObject( str, theMesh ) += ", ";
-  SMESH_Gen_i::AddArray( str, theFacesIDs ) += ", ";
-  str += TCollection_AsciiString( (int)theNodeIndexOnKeyPoint1 ) + ", ";
-  str += TCollection_AsciiString( theReverse ) + " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "pattern.ApplyToMeshFaces( " << theMesh << ", "
+                << theFacesIDs << ", "
+                << theNodeIndexOnKeyPoint1 << ", " << theReverse << " )";
 
   return points._retn();
 }
@@ -347,12 +330,9 @@ SMESH::point_array*
   }
 
   // Update Python script
-  TCollection_AsciiString str( "pattern.ApplyToHexahedrons( " );
-  SMESH_Gen_i::AddObject( str, theMesh ) += ", ";
-  SMESH_Gen_i::AddArray( str, theVolumesIDs ) += ", ";
-  str += TCollection_AsciiString( (int)theNode000Index ) + ", ";
-  str += TCollection_AsciiString( (int)theNode001Index ) + " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "pattern.ApplyToHexahedrons( " << theMesh << ", "
+                << theVolumesIDs << ", "
+                << theNode000Index << ", " << theNode001Index << " )";
 
   return points._retn();
 }
@@ -371,11 +351,8 @@ CORBA::Boolean SMESH_Pattern_i::MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
     return false;
 
   // Update Python script
-  TCollection_AsciiString str( "isDone = pattern.MakeMesh( " );
-  SMESH_Gen_i::AddObject( str, theMesh ) += ", ";
-  str += TCollection_AsciiString( CreatePolygons ) + ", ";
-  str += TCollection_AsciiString( CreatePolyedrs ) + " )";
-  SMESH_Gen_i::AddToCurrentPyScript( str );
+  TPythonDump() << "isDone = pattern.MakeMesh( " << theMesh << ", "
+                << CreatePolygons << ", " << CreatePolyedrs << " )";
   addErrorCode( "MakeMesh" );
 
   return myPattern.MakeMesh( aMesh, CreatePolygons, CreatePolyedrs );

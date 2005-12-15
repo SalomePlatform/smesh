@@ -59,6 +59,7 @@
 #include "SMESH_Hypothesis_i.hxx"
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "SMESHDS_Document.hxx"
 #include "SMESHDS_Group.hxx"
@@ -89,6 +90,7 @@
 #include <boost/filesystem/path.hpp>
 
 using namespace std;
+using SMESH::TPythonDump;
 
 #define NUM_TMP_FILES 2
 
@@ -411,7 +413,7 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
 void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
 {
   //if(MYDEBUG)
-    MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
+  //MESSAGE( "SMESH_Gen_i::SetCurrentStudy" );
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = GetCurrentStudyID();
@@ -480,14 +482,8 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
     SALOMEDS::SObject_var aSO = PublishHypothesis( myCurrentStudy, hyp );
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TCollection_AsciiString aStr (aSO->GetID());
-      aStr += " = smesh.CreateHypothesis(\"";
-      aStr += Standard_CString(theHypName);
-      aStr += "\", \"";
-      aStr += Standard_CString(theLibName);
-      aStr += "\")";
-
-      AddToCurrentPyScript(aStr);
+      TPythonDump() << aSO << " = " << this << ".CreateHypothesis('"
+                    << theHypName << "', '" << theLibName << "')";
     }
   }
 
@@ -522,11 +518,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMesh( GEOM::GEOM_Object_ptr theShapeObj
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TCollection_AsciiString aStr (aSO->GetID());
-      aStr += " = smesh.CreateMesh(";
-      SMESH_Gen_i::AddObject(aStr, theShapeObject) += ")";
-      
-      AddToCurrentPyScript(aStr);
+      TPythonDump() << aSO << " = " << this << ".CreateMesh(" << theShapeObject << ")";
     }
   }
 
@@ -557,12 +549,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
       // Update Python script
-      TCollection_AsciiString aStr (aSO->GetID());
-      aStr += " = smesh.CreateMeshesFromUNV(\"";
-      aStr += Standard_CString(theFileName);
-      aStr += "\")";
-
-      AddToCurrentPyScript(aStr);
+      TPythonDump() << aSO << " = smeshgen.CreateMeshesFromUNV('" << theFileName << "')";
     }
   }
 
@@ -588,7 +575,9 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshFromMED" );
 
   // Python Dump
-  TCollection_AsciiString aStr ("([");
+  TPythonDump aPythonDump;
+  aPythonDump << "([";
+  //TCollection_AsciiString aStr ("([");
 
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
@@ -607,7 +596,8 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
     // Iterate through all meshes and create mesh objects
     for ( list<string>::iterator it = aNames.begin(); it != aNames.end(); it++ ) {
       // Python Dump
-      if (i > 0) aStr += ", ";
+      //if (i > 0) aStr += ", ";
+      if (i > 0) aPythonDump << ", ";
 
       // create mesh
       SMESH::SMESH_Mesh_var mesh = createMesh();
@@ -618,11 +608,13 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
         aSO = PublishMesh( myCurrentStudy, mesh.in(), (*it).c_str() );
       if ( !aSO->_is_nil() ) {
         // Python Dump
-        aStr += aSO->GetID();
+        aPythonDump << aSO;
+        //aStr += aSO->GetID();
       } else {
         // Python Dump
-        aStr += "mesh_";
-        aStr += TCollection_AsciiString(i);
+        aPythonDump << "mesh_" << i;
+//         aStr += "mesh_";
+//         aStr += TCollection_AsciiString(i);
       }
 
       // Read mesh data (groups are published automatically by ImportMEDFile())
@@ -639,11 +631,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
   }
 
   // Update Python script
-  aStr += "], status) = smesh.CreateMeshesFromMED(\"";
-  aStr += Standard_CString(theFileName);
-  aStr += "\")";
-
-  AddToCurrentPyScript(aStr);
+  aPythonDump << "], status) = " << this << ".CreateMeshesFromMED('" << theFileName << "')";
 
   return aResult._retn();
 }
@@ -672,13 +660,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
       ( myCurrentStudy, SALOMEDS::SObject::_nil(), aMesh.in(), aFileName.c_str() );
     aStudyBuilder->CommitCommand();
     if ( !aSO->_is_nil() ) {
-    // Update Python script
-      TCollection_AsciiString aStr (aSO->GetID());
-      aStr += " = smesh.CreateMeshesFromSTL(\"";
-      aStr += Standard_CString(theFileName);
-      aStr += "\")";
-
-      AddToCurrentPyScript(aStr);
+      // Update Python script
+      TPythonDump() << aSO << " = " << this << ".CreateMeshesFromSTL('" << theFileName << "')";
     }
   }
 
@@ -922,15 +905,9 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
                                   SALOME::BAD_PARAM );
 
   // Update Python script
-  TCollection_AsciiString aStr ("isDone = smesh.Compute(");
-  SMESH_Gen_i::AddObject(aStr, theMesh) += ", ";
-  SMESH_Gen_i::AddObject(aStr, theShapeObject) += ")";
-
-  AddToCurrentPyScript(aStr);
-
-  aStr = "if isDone == 0: print \"Mesh ";
-  SMESH_Gen_i::AddObject(aStr, theMesh) += " computation failed\"";
-  AddToCurrentPyScript(aStr);
+  TPythonDump() << "isDone = " << this << ".Compute( "
+                << theMesh << ", " << theShapeObject << ")";
+  TPythonDump() << "if not isDone: print 'Mesh " << theMesh << " : computation failed'";
 
   try {
     // get mesh servant

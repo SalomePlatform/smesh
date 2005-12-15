@@ -26,6 +26,7 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_2smeshpy.hxx"
 
 #include <TColStd_HSequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
@@ -105,7 +106,8 @@ namespace SMESH
   TPythonDump& 
   TPythonDump::
   operator<<(const char* theArg){
-    myStream<<theArg;
+    if ( theArg )
+      myStream<<theArg;
     return *this;
   }
 
@@ -115,60 +117,69 @@ namespace SMESH
   {
     myStream<<"SMESH.";
     switch(theArg){
-    case ALL: 
-      myStream<<"ALL"; 
-      break;
-    case NODE: 
-      myStream<<"NODE"; 
-      break;
-    case EDGE: 
-      myStream<<"EDGE"; 
-      break;
-    case FACE: 
-      myStream<<"FACE"; 
-      break;
-    case VOLUME: 
-      myStream<<"VOLUME"; 
-      break;
+    case ALL:   myStream<<"ALL";break;
+    case NODE:  myStream<<"NODE";break;
+    case EDGE:  myStream<<"EDGE";break;
+    case FACE:  myStream<<"FACE";break;
+    case VOLUME:myStream<<"VOLUME";break;
     }
     return *this;
   }
 
+  template<class TArray>
+  void DumpArray(const TArray& theArray, std::ostringstream & theStream)
+  {
+    theStream << "[ ";
+    for (int i = 1; i <= theArray.length(); i++) {
+      theStream << theArray[i-1];
+      if ( i < theArray.length() )
+        theStream << ", ";
+    }
+    theStream << " ]";
+  }
+
+  TPythonDump& 
+  TPythonDump::operator<<(const SMESH::long_array& theArg)
+  {
+    DumpArray( theArg, myStream );
+    return *this;
+  }
+
+  TPythonDump& 
+  TPythonDump::operator<<(const SMESH::double_array& theArg)
+  {
+    DumpArray( theArg, myStream );
+    return *this;
+  }
 
   TPythonDump& 
   TPythonDump::
-  operator<<(const SMESH::long_array& theArg)
+  operator<<(SALOMEDS::SObject_ptr aSObject)
   {
-    myStream<<"[ ";
-    CORBA::Long i = 1, iEnd = theArg.length();
-    for(; i <= iEnd; i++) {
-      myStream<<theArg[i-1];
-      if(i < iEnd)
-	myStream<< ", ";
-    }
-    myStream<<" ]";
+    if ( !aSObject->_is_nil() )
+      myStream << aSObject->GetID();
+    else
+      myStream << NotPublishedObjectName();
     return *this;
   }
-
 
   TPythonDump& 
   TPythonDump::
   operator<<(CORBA::Object_ptr theArg)
   {
-    TCollection_AsciiString aString("None");
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
     SALOMEDS::SObject_var aSObject = SMESH_Gen_i::ObjectToSObject(aStudy,theArg);
-    if(!aSObject->_is_nil()){
-      aString = aSObject->GetID();
-    }else if(!CORBA::is_nil(theArg)){
-      aString = "smeshObj_";
+    if(!aSObject->_is_nil()) {
+      myStream << aSObject->GetID();
+    } else if ( !CORBA::is_nil(theArg)) {
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
-        aString += (int) theArg;
+        myStream << "smeshObj_" << (int) theArg;
       else
-        aString = NotPublishedObjectName();
+        myStream << NotPublishedObjectName();
     }
-    myStream<<aString.ToCString();
+    else
+      myStream << "None";
     return *this;
   }
 
@@ -200,88 +211,86 @@ namespace SMESH
   TPythonDump::
   operator<<(SMESH::Functor_i* theArg)
   {
-    FunctorType aFunctorType = theArg->GetFunctorType();
-    switch(aFunctorType){
-    case FT_AspectRatio:
-      myStream<<"anAspectRatio";
-      break;
-    case FT_AspectRatio3D:
-      myStream<<"anAspectRatio3D";
-      break;
-    case FT_Warping:
-      myStream<<"aWarping";
-      break;
-    case FT_MinimumAngle:
-      myStream<<"aMinimumAngle";
-      break;
-    case FT_Taper:
-      myStream<<"aTaper";
-      break;
-    case FT_Skew:
-      myStream<<"aSkew";
-      break;
-    case FT_Area:
-      myStream<<"aArea";
-      break;
-    case FT_FreeBorders:
-      myStream<<"aFreeBorders";
-      break;
-    case FT_FreeEdges:
-      myStream<<"aFreeEdges";
-      break;
-    case FT_MultiConnection:
-      myStream<<"aMultiConnection";
-      break;
-    case FT_MultiConnection2D:
-      myStream<<"aMultiConnection2D";
-      break;
-    case FT_Length:
-      myStream<<"aLength";
-      break;
-    case FT_Length2D:
-      myStream<<"aLength";
-      break;
-    case FT_BelongToGeom:
-      myStream<<"aBelongToGeom";
-      break;
-    case FT_BelongToPlane:
-      myStream<<"aBelongToPlane";
-      break;
-    case FT_BelongToCylinder:
-      myStream<<"aBelongToCylinder";
-      break;
-    case FT_LyingOnGeom:
-      myStream<<"aLyingOnGeom";
-      break;
-    case FT_RangeOfIds:
-      myStream<<"aRangeOfIds";
-      break;
-    case FT_BadOrientedVolume:
-      myStream<<"aBadOrientedVolume";
-      break;
-    case FT_LessThan:
-      myStream<<"aLessThan";
-      break;
-    case FT_MoreThan:
-      myStream<<"aMoreThan";
-      break;
-    case FT_EqualTo:
-      myStream<<"anEqualTo";
-      break;
-    case FT_LogicalNOT:
-      myStream<<"aLogicalNOT";
-      break;
-    case FT_LogicalAND:
-      myStream<<"aLogicalAND";
-      break;
-    case FT_LogicalOR:
-      myStream<<"aLogicalOR";
-      break;
-    case FT_Undefined:
-      myStream<<"anUndefined";
-      break;
+    if ( theArg ) {
+      FunctorType aFunctorType = theArg->GetFunctorType();
+      switch(aFunctorType){
+      case FT_AspectRatio:      myStream<< "anAspectRatio";     break;
+      case FT_AspectRatio3D:    myStream<< "anAspectRatio3D";   break;
+      case FT_Warping:          myStream<< "aWarping";          break;
+      case FT_MinimumAngle:     myStream<< "aMinimumAngle";     break;
+      case FT_Taper:            myStream<< "aTaper";            break;
+      case FT_Skew:             myStream<< "aSkew";             break;
+      case FT_Area:             myStream<< "aArea";             break;
+      case FT_FreeBorders:      myStream<< "aFreeBorders";      break;
+      case FT_FreeEdges:        myStream<< "aFreeEdges";        break;
+      case FT_MultiConnection:  myStream<< "aMultiConnection";  break;
+      case FT_MultiConnection2D:myStream<< "aMultiConnection2D";break;
+      case FT_Length:           myStream<< "aLength";           break;
+      case FT_Length2D:         myStream<< "aLength";           break;
+      case FT_BelongToGeom:     myStream<< "aBelongToGeom";     break;
+      case FT_BelongToPlane:    myStream<< "aBelongToPlane";    break;
+      case FT_BelongToCylinder: myStream<< "aBelongToCylinder"; break;
+      case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
+      case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
+      case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;
+      case FT_LessThan:         myStream<< "aLessThan";         break;
+      case FT_MoreThan:         myStream<< "aMoreThan";         break;
+      case FT_EqualTo:          myStream<< "anEqualTo";         break;
+      case FT_LogicalNOT:       myStream<< "aLogicalNOT";       break;
+      case FT_LogicalAND:       myStream<< "aLogicalAND";       break;
+      case FT_LogicalOR:        myStream<< "aLogicalOR";        break;
+      case FT_Undefined:        myStream<< "anUndefined";       break;
+      }
+      myStream<<theArg;
     }
-    myStream<<theArg;
+    return *this;
+  }
+
+  TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* theArg)
+  {
+    myStream << SMESHGenName(); return *this;
+  }
+
+  TPythonDump& TPythonDump::operator<<(SMESH_MeshEditor_i* theArg)
+  {
+    myStream << MeshEditorName(); return *this;
+  }
+
+  TPythonDump& TPythonDump::operator<<(const TCollection_AsciiString & theStr)
+  {
+    myStream << theStr; return *this;
+  }
+
+
+  TPythonDump& TPythonDump::operator<<(SMESH::MED_VERSION theVersion)
+  {
+    switch (theVersion) {
+    case SMESH::MED_V2_1: myStream << "SMESH.MED_V2_1"; break;
+    case SMESH::MED_V2_2: myStream << "SMESH.MED_V2_2"; break;
+    default: myStream << theVersion;
+    }
+    return *this;
+  }
+
+  TPythonDump& TPythonDump::operator<<(const SMESH::AxisStruct & theAxis)
+  {
+    myStream << "SMESH.AxisStruct( "
+             << theAxis.x  << ", "
+             << theAxis.y  << ", "
+             << theAxis.z  << ", "
+             << theAxis.vx << ", "
+             << theAxis.vy << ", "
+             << theAxis.vz << " )";
+    return *this;
+  }
+
+  TPythonDump& TPythonDump::operator<<(const SMESH::DirStruct & theDir)
+  {
+    const SMESH::PointStruct & P = theDir.PS;
+    myStream << "SMESH.DirStruct( SMESH.PointStruct ( "
+             << P.x  << ", "
+             << P.y  << ", "
+             << P.z  << " ))";
     return *this;
   }
 }
@@ -305,7 +314,7 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   // Map study entries to object names
   Resource_DataMapOfAsciiStringAsciiString aMap;
   Resource_DataMapOfAsciiStringAsciiString aMapNames;
-  TCollection_AsciiString s ("qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_");
+  //TCollection_AsciiString s ("qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_");
 
   SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aSO);
   for (Itr->InitEx(true); Itr->More(); Itr->Next()) {
@@ -330,9 +339,6 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Object_ptr theStudy,
   TCollection_AsciiString aSavedTrace (oldValue);
 
   // Add trace of API methods calls and replace study entries by names
-  //TCollection_AsciiString aScript =
-  //  SALOMEDSImpl_Study::GetDumpStudyComment("SMESH") + "\n\n" +
-  //    DumpPython_impl(aStudy->StudyId(), aMap, aMapNames, isPublished, isValidScript, aSavedTrace);
   TCollection_AsciiString aScript =
     "### This file is generated by SALOME automatically by dump python functionality of SMESH component\n\n";
   aScript += DumpPython_impl(aStudy->StudyId(), aMap, aMapNames,
@@ -375,45 +381,6 @@ void SMESH_Gen_i::RemoveLastFromPythonScript (int theStudyID)
     int aLen = myPythonScripts[theStudyID]->Length();
     myPythonScripts[theStudyID]->Remove(aLen);
   }
-}
-
-//=======================================================================
-//function : AddToCurrentPyScript
-//purpose  : 
-//=======================================================================
-
-void SMESH_Gen_i::AddToCurrentPyScript (const TCollection_AsciiString& theString)
-{
-  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-  if (aStudy->_is_nil()) return;
-  aSMESHGen->AddToPythonScript(aStudy->StudyId(), theString);
-}
-
-
-//=======================================================================
-//function : AddObject
-//purpose  : add object to script string
-//=======================================================================
-
-TCollection_AsciiString& SMESH_Gen_i::AddObject(TCollection_AsciiString& theStr,
-                                                CORBA::Object_ptr        theObject)
-{
-  TCollection_AsciiString aString("None");
-  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  SALOMEDS::SObject_var aSObject =
-    aSMESHGen->ObjectToSObject(aSMESHGen->GetCurrentStudy(), theObject);
-  if ( !aSObject->_is_nil() ) {
-    aString = aSObject->GetID();
-  } else if ( !CORBA::is_nil( theObject )) {
-    aString = "smeshObj_";
-    if ( aSMESHGen->CanPublishInStudy( theObject )) // not published SMESH object
-      aString += (int) theObject;
-    else
-      aString = NotPublishedObjectName();
-  }
-  theStr += aString;
-  return theStr;
 }
 
 //=======================================================================
@@ -470,19 +437,20 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
   while(i < aLen) {
     int c = (int)arr[i];
     j = i+1;
-    if(c >= 48 && c <= 57) { //Is digit?
+    if ( isdigit( c )) { //Is digit?
  
       isFound = Standard_False;
-      while((j < aLen) && ((c >= 48 && c <= 57) || c == 58) ) { //Check if it is an entry
+      while((j < aLen) && ( isdigit(c) || c == ':' )) { //Check if it is an entry
 	c = (int)arr[j++];  
-	if(c == 58) isFound = Standard_True;
+	if(c == ':') isFound = Standard_True;
       }
 
       if (isFound) {
         int prev = (i < 1) ? 0 : (int)arr[i - 1];
-        // last char should be a diggit,
+        // to distinguish from a sketcher command:
+        // last char should be a digit, not ":",
         // previous char should not be '"'.
-        if (arr[j-2] != 58 && prev != 34) {
+        if (arr[j-2] != ':' && prev != '"') {
           aSeq->Append(i+1); // +1 because AsciiString starts from 1
           aSeq->Append(j-1);
         }
@@ -508,27 +476,56 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
                          bool& aValidScript,
                          const TCollection_AsciiString& theSavedTrace)
 {
+  TCollection_AsciiString helper; // to comfortably concatenate C strings
+  TCollection_AsciiString aSmeshpy( SMESH_2smeshpy::SmeshpyName() );
+  TCollection_AsciiString aSMESHGen( SMESH_2smeshpy::GenName() );
+  TCollection_AsciiString anOldGen( SMESH::TPythonDump::SMESHGenName() );
+
   TCollection_AsciiString aScript;
-  aScript = "def RebuildData(theStudy):";
-  aScript += "\n\tsmesh = salome.lcc.FindOrLoadComponent(\"FactoryServer\", \"SMESH\")";
-  aScript += "\n\taFilterManager = smesh.CreateFilterManager()";
+  aScript = "def RebuildData(theStudy):\n\t";
+  aScript += helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()\n\t";
   if ( isPublished )
-    aScript += "\n\tsmesh.SetCurrentStudy(theStudy)";
+    aScript += aSMESHGen + ".SetCurrentStudy(theStudy)";
   else
-    aScript += "\n\tsmesh.SetCurrentStudy(None)";
+    aScript += aSMESHGen + ".SetCurrentStudy(None)";
 
   // Dump trace of restored study
   if (theSavedTrace.Length() > 0) {
-    aScript += "\n";
-    aScript += theSavedTrace;
+    // For the convertion of IDL API calls -> smesh.py API, "smesh" standing for SMESH_Gen
+    // was replaces with "smeshgen" (==TPythonDump::SMESHGenName()).
+    // Change "smesh" -> "smeshgen" in the trace saved before passage to smesh.py API
+    bool isNewVersion =
+      theSavedTrace.Location( anOldGen + ".", 1, theSavedTrace.Length() );
+    if ( !isNewVersion ) {
+      TCollection_AsciiString aSavedTrace( theSavedTrace );
+      TCollection_AsciiString aSmeshCall ( "smesh." ), gen( "gen" );
+      int beg, end = aSavedTrace.Length(), from = 1;
+      while ( from < end && ( beg = aSavedTrace.Location( aSmeshCall, from, end ))) {
+        char charBefore = ( beg == 1 ) ? ' ' : aSavedTrace.Value( beg - 1 );
+        if ( isspace( charBefore ) || charBefore == '=' ) {
+          aSavedTrace.Insert( beg + aSmeshCall.Length() - 1, gen );
+          end += gen.Length();
+        }
+        from = beg + aSmeshCall.Length();
+      }
+      aScript += helper + "\n" + aSavedTrace;
+    }
+    else
+      // append a saved trace to the script
+      aScript += helper + "\n" + theSavedTrace;
   }
 
   // Dump trace of API methods calls
   TCollection_AsciiString aNewLines = GetNewPythonLines(theStudyID);
   if (aNewLines.Length() > 0) {
-    aScript += "\n";
-    aScript += aNewLines;
+    aScript += helper + "\n" + aNewLines;
   }
+
+  // Convert IDL API calls into smesh.py API.
+  // Some objects are wrapped with python classes and
+  // Resource_DataMapOfAsciiStringAsciiString holds methods returning wrapped objects
+  Resource_DataMapOfAsciiStringAsciiString anEntry2AccessorMethod;
+  aScript = SMESH_2smeshpy::ConvertScript( aScript, anEntry2AccessorMethod );
 
   // Find entries to be replaced by names
   Handle(TColStd_HSequenceOfInteger) aSeq = FindEntries(aScript);
@@ -566,14 +563,18 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         aName = theObjectNames.Find(anEntry);
         // check validity of aName
         bool isValidName = true;
-        if ( aName.IsIntegerValue() ) { // aName must not start with a digit
-          aName.Insert( 1, 'a' );
+        int p=1; // replace not allowed chars with underscore
+        while (p <= aName.Length() &&
+               (p = aName.FirstLocationNotInSet(allowedChars, p, aName.Length())))
+        {
+          if ( p == 1 || p == aName.Length() || aName.Value(p-1) == '_')
+            aName.Remove( p, 1 ); // remove double _ and from the start and the end
+          else
+            aName.SetValue(p, '_');
           isValidName = false;
         }
-        int p, p2=1; // replace not allowed chars
-        while ((p = aName.FirstLocationNotInSet(allowedChars, p2, aName.Length()))) {
-          aName.SetValue(p, '_');
-          p2=p;
+        if ( aName.IsIntegerValue() ) { // aName must not start with a digit
+          aName.Insert( 1, 'a' );
           isValidName = false;
         }
         if (theObjectNames.IsBound(aName) && anEntry != theObjectNames(aName)) {
@@ -592,7 +593,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       } else {
         // Removed Object
         do {
-          aName = aBaseName + TCollection_AsciiString(++objectCounter);
+          aName = aBaseName + (++objectCounter);
         } while (theObjectNames.IsBound(aName));
         seqRemoved.Append(aName);
         mapRemoved.Bind(anEntry, "1");
@@ -609,10 +610,12 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // set initial part of aSript
-  TCollection_AsciiString initPart = "import salome, SMESH, StdMeshers\n\n";
+  TCollection_AsciiString initPart = "import salome, SMESH\n";
+  initPart += helper + "import " + aSmeshpy + "\n\n";
   if ( importGeom )
   {
-    initPart += ("import string, os, sys, re\n"
+    initPart += ("## import GEOM dump file ## \n"
+                 "import string, os, sys, re\n"
                  "sys.path.insert( 0, os.path.dirname(__file__) )\n"
                  "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",__name__)+\" import *\")\n\n");
   }
@@ -623,7 +626,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
 
   // Remove removed objects
-  anUpdatedScript += "\n\taStudyBuilder = theStudy.NewBuilder()";
+  if ( seqRemoved.Length() > 0 ) {
+    anUpdatedScript += "\n\t## some objects were removed";
+    anUpdatedScript += "\n\taStudyBuilder = theStudy.NewBuilder()";
+  }
   for (int ir = 1; ir <= seqRemoved.Length(); ir++) {
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
@@ -631,27 +637,31 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
 
   // Set object names
-  anUpdatedScript += "\n\n\tisGUIMode = ";
-  anUpdatedScript += isPublished;
-  anUpdatedScript += "\n\tif isGUIMode:";
-  anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
-  anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
-  anUpdatedScript += "\n";
+  anUpdatedScript += "\n\t## set object names";
+  anUpdatedScript += helper + "  \n\tisGUIMode = " + isPublished;
+  anUpdatedScript += "\n\tif isGUIMode and salome.sg.hasDesktop():";
+//   anUpdatedScript += "\n\t\tsmeshgui = salome.ImportComponentGUI(\"SMESH\")";
+//   anUpdatedScript += "\n\t\tsmeshgui.Init(theStudy._get_StudyId())";
+//   anUpdatedScript += "\n";
 
   TCollection_AsciiString aGUIName;
   Resource_DataMapOfAsciiStringAsciiString mapEntries;
-  for (Standard_Integer i = 1; i <= aLen; i += 2) {
+  for (Standard_Integer i = 1; i <= aLen; i += 2)
+  {
     anEntry = aScript.SubString(aSeq->Value(i), aSeq->Value(i + 1));
     aName = geom->GetDumpName( anEntry.ToCString() );
     if (aName.IsEmpty() && // Not a GEOM object
         theNames.IsBound(anEntry) &&
         !mapEntries.IsBound(anEntry) && // Not yet processed
-        !mapRemoved.IsBound(anEntry)) { // Was not removed
+        !mapRemoved.IsBound(anEntry)) // Was not removed
+    {
       aName = theObjectNames.Find(anEntry);
       aGUIName = theNames.Find(anEntry);
       mapEntries.Bind(anEntry, aName);
-      anUpdatedScript += "\n\t\tsmeshgui.SetName(salome.ObjectToID(";
-      anUpdatedScript += aName + "), \"" + aGUIName + "\")";
+      anUpdatedScript += helper + "\n\t\t" + aSmeshpy + ".SetName(" + aName;
+      if ( anEntry2AccessorMethod.IsBound( anEntry ) )
+        anUpdatedScript += helper + "." + anEntry2AccessorMethod( anEntry );
+      anUpdatedScript += helper + ", '" + aGUIName + "')";
     }
   }
   anUpdatedScript += "\n\n\t\tsalome.sg.updateObjBrowser(0)";

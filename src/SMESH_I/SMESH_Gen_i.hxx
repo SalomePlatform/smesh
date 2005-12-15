@@ -295,8 +295,6 @@ public:
 
   void RemoveLastFromPythonScript (int theStudyID);
 
-  static void AddToCurrentPyScript (const TCollection_AsciiString& theString);
-
   void SavePython (SALOMEDS::Study_ptr theStudy);
 
   TCollection_AsciiString DumpPython_impl (int theStudyID, 
@@ -310,28 +308,6 @@ public:
 
   void CleanPythonTrace (int theStudyID);
 
-  // Dump python comfort methods
-
-  static TCollection_AsciiString& AddObject(TCollection_AsciiString& theStr,
-                                            CORBA::Object_ptr        theObject);
-  // add object to script string
-
-  template <class _array>
-    static TCollection_AsciiString& AddArray(TCollection_AsciiString& theStr,
-                                             const _array &           array)
-      // put array contents into theStr like this: "[ 1, 2, 5 ]"
-    {
-      ostringstream sout; // can convert long int, and TCollection_AsciiString cant
-      sout << "[ ";
-      for (int i = 1; i <= array.length(); i++) {
-        sout << array[i-1];
-        if ( i < array.length() )
-          sout << ", ";
-      }
-      sout << " ]";
-      theStr += (char*) sout.str().c_str();
-      return theStr;
-    }
 
   // *****************************************
   // Internal methods
