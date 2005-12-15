@@ -77,6 +77,7 @@ class Mesh_Algorithm:
     mesh = 0
     geom = 0
     subm = 0
+    algo = 0
 
     def GetSubMesh(self):
         """
@@ -84,6 +85,12 @@ class Mesh_Algorithm:
          else return the submesh associated to this algorithm
         """
         return self.subm
+
+    def GetAlgorithm(self):
+        """
+         Return the wrapped mesher
+        """
+        return self.algo
 
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         """
@@ -102,9 +109,9 @@ class Mesh_Algorithm:
                 geompy.addToStudyInFather(piece, geom, name)
             self.subm = mesh.mesh.GetSubMesh(geom, hypo)
 
-        algo = smesh.CreateHypothesis(hypo, so)
-        SetName(algo, name + "/" + hypo)
-        mesh.mesh.AddHypothesis(self.geom, algo)
+        self.algo = smesh.CreateHypothesis(hypo, so)
+        SetName(self.algo, name + "/" + hypo)
+        mesh.mesh.AddHypothesis(self.geom, self.algo)
 
     def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so"):
         """
@@ -378,12 +385,16 @@ class Mesh:
          \param algo values are smesh.REGULAR or smesh.PYTHON for discretization via python function
          \param geom If defined, subshape to be meshed
         """
+        ## if Segment(geom) is called by mistake
+        if ( isinstance( algo, geompy.GEOM._objref_GEOM_Object)):
+            algo, geom = geom, algo
+            pass
         if algo == REGULAR:
             return Mesh_Segment(self, geom)
         elif algo == PYTHON:
             return Mesh_Segment_Python(self, geom)
         else:
-            return Mesh_Segment(self, algo)
+            return Mesh_Segment(self, geom)
 
     def Triangle(self, geom=0):
         """
@@ -412,6 +423,10 @@ class Mesh:
          \param algo values are: smesh.NETGEN, smesh.GHS3D
          \param geom If defined, subshape to be meshed
         """
+        ## if Tetrahedron(geom) is called by mistake
+        if ( isinstance( algo, geompy.GEOM._objref_GEOM_Object)):
+            algo, geom = geom, algo
+            pass
         return Mesh_Tetrahedron(self, algo, geom)
 
     def Hexahedron(self, geom=0):
@@ -449,8 +464,7 @@ class Mesh:
         if dim > 2 :
             self.Tetrahedron(NETGEN)
             pass
-        self.Compute()
-        pass
+        return self.Compute()
 
     def AutomaticHexahedralization(self):
         """
@@ -466,8 +480,7 @@ class Mesh:
         if dim > 2 :
             self.Hexahedron()            
             pass
-        self.Compute()
-        pass
+        return self.Compute()
 
     def RemoveGlobalHypotheses(self):
         """
