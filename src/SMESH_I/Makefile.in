@@ -45,6 +45,7 @@ EXPORT_HEADERS= \
 	SMESH_subMesh_i.hxx \
 	SMESH_Mesh_i.hxx \
 	SMESH_Hypothesis_i.hxx \
+	SMESH_PythonDump.hxx \
 	SMESH.hxx
 
 EXPORT_PYSCRIPTS = smeshpy.py
@@ -70,7 +71,8 @@ LIB_SRC = \
         SMESH_3D_Algo_i.cxx \
 	SMESH_Filter_i.cxx \
 	SMESH_Group_i.cxx \
-	SMESH_Pattern_i.cxx
+	SMESH_Pattern_i.cxx \
+	SMESH_2smeshpy.cxx
 
 LIB_SERVER_IDL = SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Mesh.idl \
                  SALOME_Component.idl SALOME_Exception.idl \
