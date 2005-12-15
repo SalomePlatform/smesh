@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -92,11 +93,7 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
   }
 
   // Update Python script
-  TCollection_AsciiString aStr, aStrNb ((int)theSegmentsNumber);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetNumberOfSegments(";
-  aStr += aStrNb + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  SMESH::TPythonDump() << _this() << ".SetNumberOfSegments( " << theSegmentsNumber << " )";
 }
 
 //=============================================================================
@@ -126,6 +123,9 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetDistrType( (::StdMeshers_NumberOfSegments::DistrType) typ );
+
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetDistrType( " << typ << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -160,6 +160,8 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetScaleFactor( theScaleFactor );
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetScaleFactor( " << theScaleFactor << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -206,6 +208,8 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
     tbl[i] = table[i];
   try {
     this->GetImpl()->SetTableFunction( tbl );
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetTableFunction( " << table << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -250,6 +254,8 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetExpressionFunction( expr );
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetExpressionFunction( " << expr << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -290,6 +296,8 @@ void StdMeshers_NumberOfSegments_i::SetExponentMode(CORBA::Boolean isExp)
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetExponentMode( isExp );
+    // Update Python script
+    SMESH::TPythonDump() << _this() << ".SetExponentMode( " << isExp << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),

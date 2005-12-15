@@ -30,6 +30,7 @@ using namespace std;
 #include "StdMeshers_Arithmetic1D_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -92,11 +93,8 @@ void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
   }
 
   // Update Python script
-  TCollection_AsciiString aStr, aStrLen ((double)theLength), aStrFlag ((int)theIsStart);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetLength(";
-  aStr += aStrLen + ", " + aStrFlag + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  SMESH::TPythonDump() << _this() << ".SetLength( "
+                       << theLength << ", " << theIsStart << " )";
 }
 
 //=============================================================================

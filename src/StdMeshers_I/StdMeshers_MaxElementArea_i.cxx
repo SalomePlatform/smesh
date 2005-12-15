@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -92,11 +93,7 @@ void StdMeshers_MaxElementArea_i::SetMaxElementArea( CORBA::Double theArea )
   }
 
   // Update Python script
-  TCollection_AsciiString aStr, aStrArea ((double)theArea);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetMaxElementArea(";
-  aStr += aStrArea + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  SMESH::TPythonDump() << _this() << ".SetMaxElementArea( " << theArea << " )";
 }
 
 //=============================================================================

@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_LocalLength_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -92,11 +93,7 @@ void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
   }
 
   // Update Python script
-  TCollection_AsciiString aStr, aStrLen ((double)theLength);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetLength(";
-  aStr += aStrLen + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  SMESH::TPythonDump() << _this() << ".SetLength( " << theLength << " )";
 }
 
 //=============================================================================

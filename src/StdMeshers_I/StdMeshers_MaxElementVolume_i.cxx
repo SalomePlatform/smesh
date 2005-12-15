@@ -31,6 +31,7 @@ using namespace std;
 #include "StdMeshers_MaxElementVolume_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -92,11 +93,7 @@ void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume
   }
 
   // Update Python script
-  TCollection_AsciiString aStr, aStrVol ((double)theVolume);
-  SMESH_Gen_i::AddObject(aStr, _this()) += ".SetMaxElementVolume(";
-  aStr += aStrVol + ")";
-
-  SMESH_Gen_i::AddToCurrentPyScript(aStr);
+  SMESH::TPythonDump() << _this() << ".SetMaxElementVolume( " << theVolume << " )";
 }
 
 //=============================================================================
