@@ -389,8 +389,7 @@ void SMESHGUI_CreatePatternDlg::onSave()
       //SUIT_Application::getDesktop()->setSelectionModes(ActorSelection);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
 	aViewWindow->SetSelectionMode(ActorSelection);
-      //disconnect(mySelectionMgr, 0, this, 0);
-      disconnect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionDone()));
+      disconnect(mySelectionMgr, 0, this, 0);
       disconnect(mySMESHGUI, 0, this, 0);
       mySMESHGUI->ResetState();
       accept();
@@ -582,10 +581,13 @@ void SMESHGUI_CreatePatternDlg::onDeactivate()
 //=======================================================================
 void SMESHGUI_CreatePatternDlg::enterEvent (QEvent*)
 {
-  mySMESHGUI->EmitSignalDeactivateDialog();
-  setEnabled(true);
-  activateSelection();
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
+  // there is a stange problem that enterEvent() comes after onSave()
+  if ( isVisible () ) {
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+    activateSelection();
+    connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
+  }
 }
 
 //=================================================================================
