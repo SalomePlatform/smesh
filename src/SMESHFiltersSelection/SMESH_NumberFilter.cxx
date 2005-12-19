@@ -102,6 +102,8 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
 
   // Get shape from geom object and verify its parameters
   GEOM_Client aGeomClient;
+  if ( CORBA::is_nil( GeometryGUI::GetGeomGen() ) && !GeometryGUI::InitGeomGen() )
+    return false;
   TopoDS_Shape aShape = aGeomClient.GetShape(GeometryGUI::GetGeomGen(), aGeomObj);
   if (aShape.IsNull() ||
       !myShapeTypes.Contains(aShape.ShapeType()))
