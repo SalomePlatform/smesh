@@ -46,12 +46,11 @@ using namespace std;
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 
-#include <TColStd_ListIteratorOfListOfInteger.hxx>
-
 #ifdef _DEBUG_
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TopoDS.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #endif
 
 //=============================================================================
@@ -196,12 +195,19 @@ bool SMESH_subMesh::SubMeshesComputed()
   for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
   {
     SMESH_subMesh *sm = (*itsub).second;
-
-    const TopoDS_Shape & ss = sm->GetSubShape();
-    int type = ss.ShapeType();
-    bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
+    SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
+    // PAL10974.
+    // There are some tricks with compute states, e.g. Penta_3D leaves
+    // one face with READY_TO_COMPUTE state in order to be able to
+    // recompute 3D when a locale triangle hypo changes (see PAL7428).
+    // So we check if mesh is really present
+    //bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
+    bool computeOk = ( ds && ds->GetNodes()->more() );
     if (!computeOk)
     {
+      const TopoDS_Shape & ss = sm->GetSubShape();
+      int type = ss.ShapeType();
+
       subMeshesComputed = false;
 
       switch (type)
@@ -792,20 +798,17 @@ SMESH_Hypothesis::Hypothesis_Status
       ASSERT(algo);
       if (!algo->CheckHypothesis((*_father),_subShape, ret ))
       {
-        //two applying algo on the same shape not allowed
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
         if ( !SMESH_Hypothesis::IsStatusFatal( ret ))
           // ret should be fatal: anHyp was not added
           ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
       }
-      else if (SMESH_Hypothesis::IsStatusFatal( ret ))
-      {
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
-      }
       else if (!_father->IsUsedHypothesis(  anHyp, _subShape ))
-      {
-        _meshDS->RemoveHypothesis(_subShape, anHyp);
         ret = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+
+      if (SMESH_Hypothesis::IsStatusFatal( ret ))
+      {
+        MESSAGE("do not add extra hypothesis");
+        _meshDS->RemoveHypothesis(_subShape, anHyp);
       }
       else
       {
@@ -815,11 +818,19 @@ SMESH_Hypothesis::Hypothesis_Status
     }
     case ADD_ALGO: {           //already existing algo : on father ?
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
-      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-        SetAlgoState(HYP_OK);
+      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+        // check if algo changes
+        SMESH_HypoFilter f;
+        f.Init(   SMESH_HypoFilter::IsAlgo() );
+        f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
+        f.AndNot( SMESH_HypoFilter::Is( algo ));
+        const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( _subShape, f, true );
+        if (prevAlgo && 
+            string(algo->GetName()) != string(prevAlgo->GetName()) )
+          modifiedHyp = true;
+      }
       else
         SetAlgoState(MISSING_HYP);
-      modifiedHyp = true;
       break;
     }
     case REMOVE_HYP: {
@@ -840,13 +851,13 @@ SMESH_Hypothesis::Hypothesis_Status
       }
       else
       {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo remains
+          if ( anHyp != algo && strcmp( anHyp->GetName(), algo->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        // check if same algo remains
-        if ( anHyp != algo && strcmp( anHyp->GetName(), algo->GetName()) )
-          modifiedHyp = true;
       }
       break;
     }
@@ -855,7 +866,6 @@ SMESH_Hypothesis::Hypothesis_Status
       ASSERT(algo);
       if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
       {
-        SetAlgoState(HYP_OK);
         if (_father->IsUsedHypothesis( anHyp, _subShape )) // new Hyp
           modifiedHyp = true;
       }
@@ -863,27 +873,35 @@ SMESH_Hypothesis::Hypothesis_Status
         SetAlgoState(MISSING_HYP);
       break;
     }
-    case ADD_FATHER_ALGO: {    // a new algo on father
+    case ADD_FATHER_ALGO: {
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
-      if ( algo == anHyp ) {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+      if ( algo == anHyp ) { // a new algo on father
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo changes
+          SMESH_HypoFilter f;
+          f.Init(   SMESH_HypoFilter::IsAlgo() );
+          f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
+          f.AndNot( SMESH_HypoFilter::Is( algo ));
+          const SMESH_Hypothesis* prevAlgo = _father->GetHypothesis( _subShape, f, true );
+          if (prevAlgo && 
+              string(algo->GetName()) != string(prevAlgo->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        modifiedHyp = true;
       }
       break;
     }
     case REMOVE_FATHER_HYP: {
       SMESH_Algo* algo = gen->GetAlgo((*_father), _subShape);
       ASSERT(algo);
-      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-        SetAlgoState(HYP_OK);
+      if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+        // is there the same local hyp or maybe a new father algo applied?
+        if ( !GetSimilarAttached( _subShape, anHyp ) )
+          modifiedHyp = true;
+      }
       else
         SetAlgoState(MISSING_HYP);
-      // is there the same local hyp or maybe a new father algo applied?
-      if ( !GetSimilarAttached( _subShape, anHyp ) )
-        modifiedHyp = true;
       break;
     }
     case REMOVE_FATHER_ALGO: {
@@ -894,13 +912,13 @@ SMESH_Hypothesis::Hypothesis_Status
       }
       else
       {
-        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret ))
-          SetAlgoState(HYP_OK);
+        if ( algo->CheckHypothesis((*_father),_subShape, aux_ret )) {
+          // check if algo changes
+          if ( string(algo->GetName()) != string( anHyp->GetName()) )
+            modifiedHyp = true;
+        }
         else
           SetAlgoState(MISSING_HYP);
-        // is there the same local algo or maybe a new father algo applied?
-        if ( !GetSimilarAttached( _subShape, anHyp ))
-          modifiedHyp = true;
       }
       break;
     }
@@ -1035,7 +1053,6 @@ void SMESH_subMesh::CleanDependsOn()
 	for (its = dependson.begin(); its != dependson.end(); its++)
 	{
 		SMESH_subMesh *sm = (*its).second;
-		//		SCRUTE((*its).first);
 		sm->ComputeStateEngine(CLEAN);
 	}
 }
@@ -1090,6 +1107,35 @@ void SMESH_subMesh::DumpAlgoState(bool isMain)
 		MESSAGE(" ComputeState = FAILED_TO_COMPUTE");
 		break;
 	}
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
+{
+  SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(subShape);
+  if (subMeshDS!=NULL)
+  {
+    SMDS_ElemIteratorPtr ite=subMeshDS->GetElements();
+    while(ite->more())
+    {
+      const SMDS_MeshElement * elt = ite->next();
+      //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
+      meshDS->RemoveElement(elt);
+    }
+
+    SMDS_NodeIteratorPtr itn=subMeshDS->GetNodes();
+    while(itn->more())
+    {
+      const SMDS_MeshNode * node = itn->next();
+      //MESSAGE( " RM node: "<<node->GetID());
+      meshDS->RemoveNode(node);
+    }
+  }
 }
 
 //=============================================================================
@@ -1197,8 +1243,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           _computeState = FAILED_TO_COMPUTE;
           break;
         }
-        RemoveSubMeshElementsAndNodes();
         // compute
+        RemoveSubMeshElementsAndNodes();
+        //removeSubMesh( _meshDS, _subShape );
         if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
           ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
         else
@@ -1213,9 +1260,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 
 #ifdef _DEBUG_
           // Show vertices location of a failed shape
-          TopExp_Explorer exp( _subShape, TopAbs_VERTEX);
-          for ( ; exp.More(); exp.Next() ) {
-            gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( exp.Current() )));
+          TopTools_IndexedMapOfShape vMap;
+          TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
+          for ( int iv = 1; iv <= vMap.Extent(); ++iv ) {
+            gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
             cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
           }
 #endif
@@ -1485,48 +1533,19 @@ void SMESH_subMesh::UpdateDependantsState(const compute_event theEvent)
 
 void SMESH_subMesh::CleanDependants()
 {
-  //MESSAGE("SMESH_subMesh::CleanDependants: shape type " << _subShape.ShapeType() );
-
   TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
   for (; it.More(); it.Next())
   {
     const TopoDS_Shape& ancestor = it.Value();
-    //MESSAGE("ancestor shape type " << ancestor.ShapeType() );
-    SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
-    if (aSubMesh)
-      aSubMesh->ComputeStateEngine(CLEANDEP);
+    // PAL8021. do not go upper than SOLID, else ComputeStateEngine(CLEANDEP)
+    // will erase mesh on other shapes in a compound
+    if ( ancestor.ShapeType() >= TopAbs_SOLID ) {
+      SMESH_subMesh *aSubMesh = _father->GetSubMeshContaining(ancestor);
+      if (aSubMesh)
+        aSubMesh->ComputeStateEngine(CLEANDEP);
+    }
   }
   ComputeStateEngine(CLEAN);
-}
-
-
-//=============================================================================
-/*!
- *
- */
-//=============================================================================
-
-static void removeSubMesh( SMESHDS_Mesh * meshDS, const TopoDS_Shape& subShape)
-{
-  SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(subShape);
-  if (subMeshDS!=NULL)
-  {
-    SMDS_ElemIteratorPtr ite=subMeshDS->GetElements();
-    while(ite->more())
-    {
-      const SMDS_MeshElement * elt = ite->next();
-      //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
-      meshDS->RemoveElement(elt);
-    }
-
-    SMDS_NodeIteratorPtr itn=subMeshDS->GetNodes();
-    while(itn->more())
-    {
-      const SMDS_MeshNode * node = itn->next();
-      //MESSAGE( " RM node: "<<node->GetID());
-      meshDS->RemoveNode(node);
-    }
-  }
 }
 
 //=============================================================================
