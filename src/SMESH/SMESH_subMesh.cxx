@@ -1244,7 +1244,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           break;
         }
         // compute
-        RemoveSubMeshElementsAndNodes();
+        CleanDependants();
+        //RemoveSubMeshElementsAndNodes();
         //removeSubMesh( _meshDS, _subShape );
         if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
           ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
