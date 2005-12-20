@@ -40,6 +40,8 @@
 
 class SMESH_Gen;
 class SMESH_Mesh;
+class TopoDS_Face;
+class SMESHDS_Mesh;
 
 class SMESH_Algo:public SMESH_Hypothesis
 {
@@ -61,6 +63,16 @@ class SMESH_Algo:public SMESH_Hypothesis
 		GetAppliedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
 	static double EdgeLength(const TopoDS_Edge & E);
+
+  /*!
+   * \brief Find out elements orientation on a geometrical face
+   * \param theFace - The face correctly oriented in the shape being meshed
+   * \param theMeshDS - The mesh data structure
+   * \retval bool - true if the face normal and the normal of first element
+   *                in the correspoding submesh point in different directions
+   */
+  static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
+                                 SMESHDS_Mesh*       theMeshDS);
 
  public:
         // algo features
