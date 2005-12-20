@@ -195,12 +195,19 @@ bool SMESH_subMesh::SubMeshesComputed()
   for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
   {
     SMESH_subMesh *sm = (*itsub).second;
-
-    const TopoDS_Shape & ss = sm->GetSubShape();
-    int type = ss.ShapeType();
-    bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
+    SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
+    // PAL10974.
+    // There are some tricks with compute states, e.g. Penta_3D leaves
+    // one face with READY_TO_COMPUTE state in order to be able to
+    // recompute 3D when a locale triangle hypo changes (see PAL7428).
+    // So we check if mesh is really present
+    //bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
+    bool computeOk = ( ds && ds->GetNodes()->more() );
     if (!computeOk)
     {
+      const TopoDS_Shape & ss = sm->GetSubShape();
+      int type = ss.ShapeType();
+
       subMeshesComputed = false;
 
       switch (type)
