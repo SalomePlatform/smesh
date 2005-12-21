@@ -97,29 +97,13 @@ else
 <p>&nbsp;</p>
 
 <p><img src="i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2">This mesh quality criterion resembles to the Aspect ratio 
- criterion, however, it is also applied to 3D mesh elements: tetrahedrons, 
+ criterion, however, it is applied to 3D mesh elements: tetrahedrons, 
  pentahedrons, hexahedrons, etc. &nbsp;</p>
 
-<p>There are 2 simple formulas to evaluate directly the value of quality 
- Qk for simplex in 2D and 3D. The formulas are :</p>
+<p>There are simple formulas to evaluate directly the value of quality 
+ Qk for simplex in 3D. The formulas are :</p>
 
-<p>• For triangle :</p>
-
-<p>&nbsp;</p>
-
-<p><img src="image21.gif" width="158px" height="110px" border="0" class="img_whs3"></p>
-
-<p><img src="image23.gif" width="120px" height="48px" border="0" class="img_whs4"></p>
-
-<p>where :</p>
-
-<p>&nbsp;</p>
-
-<p><img src="image27.gif" width="234px" height="96px" border="0" class="img_whs5"></p>
-
-<p>&nbsp;</p>
-
-<p>&nbsp;</p>
+<br>
 
 <p>• For tetrahedron :</p>
 
@@ -136,13 +120,24 @@ else
 
 <p>&nbsp;</p>
 
-<p>For the other types of element like quadrangle, pentahedron and hexahedron 
+<p>For the other types of element like pentahedron and hexahedron 
  the formula is the following :</p>
 
 <p><img src="image30.gif" width="89px" height="32px" border="0" class="img_whs9"> </p>
 
 <p>Where Qi are the quality of all the possible simplex (of same dimension 
  as the element) that compose the element.</p>
+
+<p>For example, hexahedron is analysed via 6 tetrahedrons this way:</p>
+
+<p><img src="image139.gif" border="0" class="img_whs10"> </p>
+
+<p>&nbsp;</p>
+
+<p>For 3D elements with quadrangular faces, aspect ratio of such faces
+is also analysed and the maximal one over 3D and 2D qualities is taken.</p>
+
+<p>&nbsp;</p>
 
 <p>&nbsp;</p>
 
