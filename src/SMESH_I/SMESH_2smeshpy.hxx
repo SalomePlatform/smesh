@@ -27,6 +27,8 @@
  * 
  * The only API method here is SMESH_2smeshpy::ConvertScript(), the rest ones are
  * for internal usage
+ *
+ * See comments to _pyHypothesis class to know how to assure convertion of a new hypothesis
  */
 
 class Resource_DataMapOfAsciiStringAsciiString;
@@ -187,7 +189,20 @@ private:
 };
 
 /*!
- * \brief Root class for smesh.Mesh_Algorithm
+ * \brief Root class for hypothesis
+ *
+ * HOWTO assure convertion of a new hypothesis
+ * In NewHypothesis():
+ * 1. add a case for the name of the new hypothesis and
+ * 2. initialize _pyHypothesis fields:
+ *    . myDim - hypothesis dimention;
+ *    . myType - type name of the algorithm creating the hypothesis;
+ *    . myCreationMethod - method name of the algorithm creating the hypothesis;
+ *    . append to myArgMethods interface methods setting param values in the
+ *    order they are used when myCreationMethod is called. It is supposed that
+ *    each interface method sets only one parameter, if it is not so, you are
+ *    to derive a specific class from _pyHypothesis that would redefine Process(),
+ *    see _pyComplexParamHypo for example
  */
 class _pyHypothesis: public _pyObject
 {

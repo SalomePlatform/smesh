@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "POT-Creation-Date: 2002-05-28 10:57:43 AM CEST\n"
-"PO-Revision-Date: 2005-11-01 12:58+0300\n"
+"PO-Revision-Date: 2005-12-23 11:15+0300\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -79,6 +79,10 @@ msgstr "mesh_tree_algo_quad.png"
 #mesh_tree_hypo_area
 msgid "ICON_SMESH_TREE_HYPO_MaxElementArea"
 msgstr "mesh_tree_hypo_area.png"
+
+#mesh_tree_hypo_area
+msgid "ICON_SMESH_TREE_HYPO_QuadranglePreference"
+msgstr "mesh_tree_algo_quad.png"
 
 #mesh_tree_hypo_length
 msgid "ICON_SMESH_TREE_HYPO_LocalLength"

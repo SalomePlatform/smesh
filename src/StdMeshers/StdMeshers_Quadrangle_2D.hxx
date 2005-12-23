@@ -99,6 +99,11 @@ protected:
   UVPtStruct* MakeEdgePoints(SMESH_Mesh& aMesh,
 			     const TopoDS_Face& F, const TopoDS_Edge& E,
 			     double first, double last, int nb_segm);
+
+  // true if QuadranglePreference hypothesis is assigned that forces
+  // construction of quadrangles if the number of nodes on opposite edges
+  // is not the same in the case where the global number of nodes on edges is even
+  bool myQuadranglePreference;
 };
 
 #endif

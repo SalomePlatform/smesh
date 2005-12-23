@@ -68,6 +68,7 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId, SMES
   MESSAGE("StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D");
   _name = "Quadrangle_2D";
   _shapeType = (1 << TopAbs_FACE);
+  _compatibleHypothesis.push_back("QuadranglePreference");
 }
 
 //=============================================================================
@@ -88,14 +89,16 @@ StdMeshers_Quadrangle_2D::~StdMeshers_Quadrangle_2D()
 //=============================================================================
 
 bool StdMeshers_Quadrangle_2D::CheckHypothesis
-                         (SMESH_Mesh& aMesh,
-                          const TopoDS_Shape& aShape,
+                         (SMESH_Mesh&                          aMesh,
+                          const TopoDS_Shape&                  aShape,
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   bool isOk = true;
   aStatus = SMESH_Hypothesis::HYP_OK;
 
-  // nothing to check
+  // there is only one compatible Hypothesis so far
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
+  myQuadranglePreference = hyps.size() > 0;
 
   return isOk;
 }

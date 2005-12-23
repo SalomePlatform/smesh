@@ -281,6 +281,15 @@ class Mesh_Quadrangle(Mesh_Algorithm):
         """
         self.Create(mesh, geom, "Quadrangle_2D")
 
+    def QuadranglePreference(self):
+        """
+         Define "QuadranglePreference" hypothesis, forcing construction
+         of quadrangles if the number of nodes on opposite edges is not the same
+         in the case where the global number of nodes on edges is even
+        """
+        hyp = self.Hypothesis("QuadranglePreference")
+        return hyp
+
 # Public class: Mesh_Tetrahedron
 # ------------------------------
 

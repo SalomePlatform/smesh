@@ -259,6 +259,18 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_QuadranglePreference: interface of "QuadranglePreference" hypothesis.
+   * This hypothesis is used by StdMeshers_Quadrangle_2D algorithm.
+   * Presence of this hypothesis forces construction of quadrangles if the number
+   * of nodes on opposite edges is not the same in the case where the global number
+   * of nodes on edges is even
+   */
+  interface StdMeshers_QuadranglePreference : SMESH::SMESH_Hypothesis
+  {
+  };
+
+
+  /*!
    * StdMeshers_Regular_1D: interface of "Wire discretisation" algorithm
    */
   interface StdMeshers_Regular_1D : SMESH::SMESH_1D_Algo

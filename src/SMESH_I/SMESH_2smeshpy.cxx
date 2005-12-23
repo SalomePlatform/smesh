@@ -701,6 +701,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     algo->myDim = 2;
     algo->myCreationMethod = "Quadrangle";
   }
+  else if ( hypType == "QuadranglePreference" ) {
+    hyp->myDim = 2;
+    hyp->myCreationMethod = "QuadranglePreference";
+    hyp->myType = "MEFISTO_2D";
+  }
   // 3D ----------
   else if ( hypType == "NETGEN_3D") {
     algo->myDim = 3;
