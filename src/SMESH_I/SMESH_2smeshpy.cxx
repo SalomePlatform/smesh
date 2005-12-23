@@ -18,6 +18,15 @@ IMPLEMENT_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis);
 IMPLEMENT_STANDARD_HANDLE (_pyComplexParamHypo,_pyHypothesis);
 IMPLEMENT_STANDARD_HANDLE (_pyNumberOfSegmentsHyp,_pyHypothesis);
 
+IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
+
 using namespace std;
 using SMESH::TPythonDump;
 

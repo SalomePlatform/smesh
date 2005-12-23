@@ -116,6 +116,7 @@ public:
   static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
                                           int & theStartPos, const bool theForward,
                                           const bool dotIsWord = false);
+  DEFINE_STANDARD_RTTI (_pyCommand)
 };
 
 /*!
@@ -133,6 +134,8 @@ public:
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
   virtual void Process(const Handle(_pyCommand) & theCommand) = 0;
   virtual void Flush() = 0;
+
+  DEFINE_STANDARD_RTTI (_pyObject)
 };
 
 /*!
@@ -160,6 +163,8 @@ private:
   std::list< Handle(_pyCommand) >    myCommands;
   int                                myNbCommands;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
+
+  DEFINE_STANDARD_RTTI (_pyGen)
 };
 
 /*!
@@ -177,6 +182,8 @@ public:
 private:
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + ".GetMesh()" ); }
+
+  DEFINE_STANDARD_RTTI (_pyMesh)
 };
 
 /*!
@@ -211,6 +218,8 @@ public:
   //     void SetGeom( const _pyID& theGeomID ) { myGeom = theGeomID; }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
+
+  DEFINE_STANDARD_RTTI (_pyHypothesis)
 };
 
 /*!
@@ -221,6 +230,8 @@ class _pyComplexParamHypo: public _pyHypothesis
 public:
   _pyComplexParamHypo(const Handle(_pyCommand)& theCreationCmd): _pyHypothesis(theCreationCmd) {}
   void Process( const Handle(_pyCommand)& theCommand);
+
+  DEFINE_STANDARD_RTTI (_pyComplexParamHypo)
 };
 DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 
@@ -234,6 +245,8 @@ public:
   _pyNumberOfSegmentsHyp(const Handle(_pyCommand)& theCrCmd): _pyHypothesis(theCrCmd) {}
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
+
+  DEFINE_STANDARD_RTTI (_pyNumberOfSegmentsHyp)
 };
 DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
 
@@ -246,6 +259,8 @@ public:
   _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
+
+  DEFINE_STANDARD_RTTI (_pyAlgorithm)
 };
 
 #endif
