@@ -632,6 +632,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     {
       const QString& aHypoTypeName = (*aHypoList)[ i ];
       HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
+      if ( !aHypData ) continue;
       int aDim = aHypData->Dim[0];
       // create or/and set
       int index = -1;
@@ -657,12 +658,23 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
         }
         if ( index >= 0 ) // found
         {
+          // select an algorithm
           setCurrentHyp ( aDim, aHypType, index );
         }
         else
         {
-          // silently create a hypothesis
-          SMESH::CreateHypothesis( aHypoTypeName, aHypData->Label, isAlgo );
+          // create a hypothesis
+          QString aClientLibName = aHypData->ClientLibName;
+          if ( aClientLibName == "" ) {
+            // Call hypothesis creation server method (without GUI)
+            SMESH::CreateHypothesis( aHypoTypeName, aHypData->Label, isAlgo );
+          }
+          else {
+            // Get hypotheses creator client (GUI)
+            SMESHGUI_GenericHypothesisCreator* aCreator =
+              SMESH::GetHypothesisCreator( aHypoTypeName );
+            aCreator->CreateHypothesis( false, myDlg );
+          }
           QStringList aNewHyps;
           _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
           existingHyps( aDim, aHypType, aFather, aNewHyps, aList );
