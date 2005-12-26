@@ -58,6 +58,16 @@ module StdMeshers
    */
   interface StdMeshers_AutomaticLength : SMESH::SMESH_Hypothesis
   {
+    /*!
+     * Sets Fineness parameter value
+     */
+    void SetFineness(in double theFineness)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <Fineness> parameter value
+     */
+    double GetFineness();
   };
 
   /*!

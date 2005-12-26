@@ -206,11 +206,14 @@ class Mesh_Segment(Mesh_Algorithm):
         """
         return self.Hypothesis("Propagation")
 
-    def AutomaticLength(self):
+    def AutomaticLength(self, fineness):
         """
          Define "AutomaticLength" hypothesis
+         \param fineness for the fineness [0-1]
         """
-        return self.Hypothesis("AutomaticLength")
+        hyp = self.Hypothesis("AutomaticLength")
+        hyp.SetFineness( fineness )
+        return hyp
 
 # Public class: Mesh_Segment_Python
 # ---------------------------------

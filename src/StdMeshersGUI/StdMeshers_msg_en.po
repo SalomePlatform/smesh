@@ -117,3 +117,15 @@ msgstr "Arithmetic Reason"
 
 msgid "SMESH_ARITHMETIC_1D_TITLE"
 msgstr "Hypothesis Construction"
+
+
+# -------------- AUTOMATIC_LENGTH --------------
+
+msgid "SMESH_AUTOMATIC_LENGTH_HYPOTHESIS"
+msgstr "Automatic Length"
+
+msgid "SMESH_FINENESS_PARAM"
+msgstr "Fineness"
+
+msgid "SMESH_AUTOMATIC_LENGTH_TITLE"
+msgstr "Hypothesis Construction"

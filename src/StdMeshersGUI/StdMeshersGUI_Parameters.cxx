@@ -26,9 +26,13 @@
 
 #include "StdMeshersGUI_Parameters.h"
 
-//#include "SMESHGUI_SpinBox.h" // for the sake of COORD_MAX, COORD_MIN definition
-
 #include <qobject.h>
+#include <qhbox.h>
+#include <qslider.h>
+#include <qlabel.h>
+
+#include <math.h>
+//#include <float.h>
 
 using namespace std;
 
@@ -53,6 +57,7 @@ bool StdMeshersGUI_Parameters::HasParameters (const QString& hypType)
           (hypType.compare("MaxElementVolume") == 0) ||
           (hypType.compare("StartEndLength") == 0) ||
           (hypType.compare("Deflection1D") == 0) ||
+          (hypType.compare("AutomaticLength") == 0) ||
 	  (hypType.compare("Arithmetic1D") == 0));
 }
 
@@ -125,10 +130,11 @@ void StdMeshersGUI_Parameters::SetInitValue( SMESHGUI_aParameterPtr param,
   }
 }
 
-//=======================================================================
-//function : GetParameters
-//purpose  : 
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Macros to comfortably create SMESHGUI_aParameterPtr of different types
+ */
+//================================================================================
 
 // SMESHGUI_doubleParameter( initValue, label, bottom, top, step, decimals )
 #define DOUBLE_PARAM(v,l,b,t,s,d) SMESHGUI_aParameterPtr(new SMESHGUI_doubleParameter(v,l,b,t,s,d))
@@ -136,6 +142,14 @@ void StdMeshersGUI_Parameters::SetInitValue( SMESHGUI_aParameterPtr param,
 #define ENUM_PARAM(v,i,l) SMESHGUI_aParameterPtr(new SMESHGUI_enumParameter(v,i,l))
 #define STR_PARAM(i,l,preview) SMESHGUI_aParameterPtr(new SMESHGUI_strParameter(i,l,preview))
 #define BOOL_PARAM(i,l,preview) SMESHGUI_aParameterPtr(new SMESHGUI_boolParameter(i,l,preview))
+
+//================================================================================
+/*!
+ * \brief Fill parameter list with default values
+  * \param hypType - The name of hypothesis type
+  * \param paramList - The list to fill
+ */
+//================================================================================
 
 void StdMeshersGUI_Parameters::GetParameters (const QString&                 hypType,
                                               list<SMESHGUI_aParameterPtr> & paramList )
@@ -239,12 +253,23 @@ void StdMeshersGUI_Parameters::GetParameters (const QString&                 hyp
                                        QObject::tr("SMESH_DEFLECTION1D_PARAM"), 
                                        VALUE_SMALL, VALUE_MAX, 1, 6));
   }
+  else if (hypType.compare("AutomaticLength") == 0)
+  {
+    SMESHGUI_aParameter * param =
+      new StdMeshersGUI_doubleSliderParameter ( QObject::tr("SMESH_FINENESS_PARAM"),
+                                                "0 ", " 1",
+                                                0.0, 0.0, 1.0, 0.05);
+    paramList.push_back( SMESHGUI_aParameterPtr( param ));
+  }
 }
-  
-//=======================================================================
-//function : GetParameters
-//purpose  : 
-//=======================================================================
+
+//================================================================================
+/*!
+ * \brief  Fill parameter list with real values the hypothesis has
+  * \param theHyp - The hypothesis to retrieve parameter values from
+  * \param paramList - The list to fill
+ */
+//================================================================================
 
 void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr    theHyp,
                                               list<SMESHGUI_aParameterPtr> & paramList )
@@ -330,18 +355,29 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr    the
       StdMeshers::StdMeshers_Deflection1D::_narrow(theHyp);
     SetInitValue( paramList.back(),  hyp->GetDeflection()) ;
   }
+  else if (hypType.compare("AutomaticLength") == 0)
+  {
+    StdMeshers::StdMeshers_AutomaticLength_var hyp =
+      StdMeshers::StdMeshers_AutomaticLength::_narrow(theHyp);
+    SetInitValue( paramList.back(),  hyp->GetFineness());
+  }
 }
 
-//=======================================================================
-//function : GetParameters
-//purpose  : 
-//=======================================================================  
-void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr         hyp,
-					      list<SMESHGUI_aParameterPtr> &      paramList,
+//================================================================================
+/*!
+ * \brief Return parameter values as a string
+  * \param hyp - not used
+  * \param paramList - list of parameter values
+  * \param params - output string
+ */
+//================================================================================
+
+void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr         ,
+					      const list<SMESHGUI_aParameterPtr>& paramList,
 					      QString&                            params)
 {
   params = "";
-  list<SMESHGUI_aParameterPtr>::iterator paramIt = paramList.begin();
+  list<SMESHGUI_aParameterPtr>::const_iterator paramIt = paramList.begin();
   for ( ; paramIt != paramList.end(); paramIt++) {
     if (params.compare("")) params += " ; ";
 
@@ -375,6 +411,15 @@ void StdMeshersGUI_Parameters::GetParameters (SMESH::SMESH_Hypothesis_ptr       
 //function : SetParameters
 //purpose  : 
 //=======================================================================
+
+//================================================================================
+/*!
+ * \brief Set parameter values from the list into a hypothesis
+  * \param theHyp - The hypothesis to modify
+  * \param paramList - list of parameter values
+  * \retval bool - true if any parameter value changed
+ */
+//================================================================================
 
 bool StdMeshersGUI_Parameters::SetParameters(SMESH::SMESH_Hypothesis_ptr          theHyp,
                                              const list<SMESHGUI_aParameterPtr> & paramList )
@@ -474,6 +519,104 @@ bool StdMeshersGUI_Parameters::SetParameters(SMESH::SMESH_Hypothesis_ptr        
     modified = paramList.front()->GetNewDouble( value );
     hyp->SetDeflection( value );
   }
+  else if (hypType.compare("AutomaticLength") == 0)
+  {
+    StdMeshers::StdMeshers_AutomaticLength_var hyp =
+      StdMeshers::StdMeshers_AutomaticLength::_narrow(theHyp);
+    double value = hyp->GetFineness() ;
+    modified = paramList.front()->GetNewDouble( value );
+    hyp->SetFineness( value );
+  }
   return modified ;
 }
-  
+
+//================================================================================
+/*!
+ * \brief Widget: slider with left and right labels
+ */
+//================================================================================
+
+class StdMeshersGUI_SliderWith2Lables: public QHBox
+{
+public:
+  StdMeshersGUI_SliderWith2Lables( const QString& leftLabel,
+                                   const QString& rightLabel,
+                                   QWidget * parent =0,
+                                   const char * name=0 );
+  QSlider * getSlider() const { return _slider; }
+private:
+  QSlider * _slider;
+};
+
+StdMeshersGUI_SliderWith2Lables::StdMeshersGUI_SliderWith2Lables( const QString& leftLabel,
+                                                                  const QString& rightLabel,
+                                                                  QWidget *      parent,
+                                                                  const char *   name )
+  :QHBox(parent,name)
+{
+  if ( !leftLabel.isEmpty() )
+    (new QLabel( this ))->setText( leftLabel );
+
+  _slider = new QSlider( Horizontal, this );
+
+  if ( !rightLabel.isEmpty() )
+    (new QLabel( this ))->setText( rightLabel );
+}
+
+//================================================================================
+/*!
+ * \brief Constructor
+  * \param label - main label
+  * \param leftLabel - label to the left of slider
+  * \param rightLabel - label to the right of slider
+  * \param initValue - initial slider value
+  * \param bottom - least slider value
+  * \param top - maximal slider value
+  * \param precision - slider value precision
+ */
+//================================================================================
+
+StdMeshersGUI_doubleSliderParameter::
+StdMeshersGUI_doubleSliderParameter (const QString& label,
+                                     const QString& leftLabel,
+                                     const QString& rightLabel,
+                                     const double   initValue,
+                                     const double   bottom,
+                                     const double   top   ,
+                                     const double   precision)
+  :SMESHGUI_doubleParameter(initValue,label,bottom,top,precision),
+   _leftLabel(leftLabel), _rightLabel(rightLabel)
+{
+}
+
+QWidget* StdMeshersGUI_doubleSliderParameter::CreateWidget( QWidget* parent ) const
+{
+  return new StdMeshersGUI_SliderWith2Lables( _leftLabel, _rightLabel, parent );
+}
+
+void StdMeshersGUI_doubleSliderParameter::InitializeWidget( QWidget* aWidget) const
+{
+  StdMeshersGUI_SliderWith2Lables * paramWidget =
+    dynamic_cast<StdMeshersGUI_SliderWith2Lables*> (aWidget);
+  if ( paramWidget && paramWidget->getSlider() )
+  {
+    QSlider * slider = paramWidget->getSlider();
+    slider->setRange( 0, toInt( _top ));
+    slider->setValue( toInt( _initValue ));
+  }
+}
+
+void StdMeshersGUI_doubleSliderParameter::TakeValue( QWidget* aWidget)
+{
+  StdMeshersGUI_SliderWith2Lables * paramWidget =
+    dynamic_cast<StdMeshersGUI_SliderWith2Lables*> (aWidget);
+  if ( paramWidget && paramWidget->getSlider() )
+  {
+    int val = paramWidget->getSlider()->value();
+    _newValue = Bottom() + val * Step();
+  }
+}
+int StdMeshersGUI_doubleSliderParameter::toInt( double val ) const
+{
+  return (int) ceil(( val - _bottom ) / _step );
+}

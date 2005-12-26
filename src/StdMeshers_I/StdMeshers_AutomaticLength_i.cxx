@@ -30,6 +30,7 @@ using namespace std;
 #include "StdMeshers_AutomaticLength_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_PythonDump.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
@@ -71,47 +72,40 @@ StdMeshers_AutomaticLength_i::~StdMeshers_AutomaticLength_i()
 
 //=============================================================================
 /*!
- *  StdMeshers_AutomaticLength_i::SetLength
+ *  StdMeshers_AutomaticLength_i::SetFineness
  *
- *  Set length
+ *  Set Fineness
  */
 //=============================================================================
 
-// void StdMeshers_AutomaticLength_i::SetLength( CORBA::Double theLength )
-//      throw ( SALOME::SALOME_Exception )
-// {
-//   MESSAGE( "StdMeshers_AutomaticLength_i::SetLength" );
-//   ASSERT( myBaseImpl );
-//   try {
-//     this->GetImpl()->SetLength( theLength );
-//   }
-//   catch ( SALOME_Exception& S_ex ) {
-//     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-// 				  SALOME::BAD_PARAM );
-//   }
-
-//   // Update Python script
-//   TCollection_AsciiString aStr, aStrLen ((double)theLength);
-//   SMESH_Gen_i::AddObject(aStr, _this()) += ".SetLength(";
-//   aStr += aStrLen + ")";
-
-//   SMESH_Gen_i::AddToCurrentPyScript(aStr);
-// }
+void StdMeshers_AutomaticLength_i::SetFineness( CORBA::Double theFineness )
+     throw ( SALOME::SALOME_Exception )
+{
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetFineness( theFineness );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetFineness( " << theFineness << " )";
+}
 
 //=============================================================================
 /*!
- *  StdMeshers_AutomaticLength_i::GetLength
+ *  StdMeshers_AutomaticLength_i::GetFineness
  *
- *  Get length
+ *  Get Fineness
  */
 //=============================================================================
 
-// CORBA::Double StdMeshers_AutomaticLength_i::GetLength()
-// {
-//   MESSAGE( "StdMeshers_AutomaticLength_i::GetLength" );
-//   ASSERT( myBaseImpl );
-//   return this->GetImpl()->GetLength();
-// }
+CORBA::Double StdMeshers_AutomaticLength_i::GetFineness()
+{
+  ASSERT( myBaseImpl );
+  return this->GetImpl()->GetFineness();
+}
 
 //=============================================================================
 /*!
@@ -123,7 +117,6 @@ StdMeshers_AutomaticLength_i::~StdMeshers_AutomaticLength_i()
 
 ::StdMeshers_AutomaticLength* StdMeshers_AutomaticLength_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_AutomaticLength_i::GetImpl" );
   return ( ::StdMeshers_AutomaticLength* )myBaseImpl;
 }
 

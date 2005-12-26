@@ -667,6 +667,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->myDim = 1;
     hyp->myCreationMethod = "AutomaticLength";
     hyp->myType = "Regular_1D";
+    hyp->myArgMethods.Append( "SetFineness");
   }
   // 1D Python_1D ----------
   else if ( hypType == "Python_1D" ) {
@@ -704,7 +705,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "QuadranglePreference" ) {
     hyp->myDim = 2;
     hyp->myCreationMethod = "QuadranglePreference";
-    hyp->myType = "MEFISTO_2D";
+    hyp->myType = "Quadrangle_2D";
   }
   // 3D ----------
   else if ( hypType == "NETGEN_3D") {

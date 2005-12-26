@@ -66,6 +66,8 @@ StdMeshersGUI_CreateStdHypothesisDlg::StdMeshersGUI_CreateStdHypothesisDlg (cons
     hypTypeStr = "DEFLECTION1D";
   else if (hypType.compare("Arithmetic1D") == 0)
     hypTypeStr = "ARITHMETIC_1D";
+  else if (hypType.compare("AutomaticLength") == 0)
+    hypTypeStr = "AUTOMATIC_LENGTH";
   else
     return;
 

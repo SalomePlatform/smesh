@@ -46,9 +46,9 @@ class StdMeshersGUI_Parameters
   
   static void GetParameters (SMESH::SMESH_Hypothesis_ptr         hyp,
 			     std::list<SMESHGUI_aParameterPtr> & params );
-  static void GetParameters (SMESH::SMESH_Hypothesis_ptr         hyp,
-			     std::list<SMESHGUI_aParameterPtr> & paramList,
-			     QString&                            params);
+  static void GetParameters (SMESH::SMESH_Hypothesis_ptr               hyp,
+			     const std::list<SMESHGUI_aParameterPtr> & paramList,
+			     QString&                                  params);
   
   static bool SetParameters(SMESH::SMESH_Hypothesis_ptr               hyp,
 			    const std::list<SMESHGUI_aParameterPtr> & params );
@@ -62,4 +62,26 @@ class StdMeshersGUI_Parameters
   static void SetInitValue(SMESHGUI_aParameterPtr param,
                            SMESH::double_array&   initValue);
 };
+
+/*!
+ *  \brief This class provides double parameter with slider control
+ */
+class StdMeshersGUI_doubleSliderParameter: public SMESHGUI_doubleParameter
+{ 
+public:
+  StdMeshersGUI_doubleSliderParameter(const QString& label      = QString::null,
+                                      const QString& leftLabel  = QString::null,
+                                      const QString& rightLabel = QString::null,
+                                      const double   initValue  = 0.0,
+                                      const double   bottom     = 0,
+                                      const double   top        = 1,
+                                      const double   precision  = 0.1);
+  virtual QWidget* CreateWidget( QWidget* ) const;
+  virtual void InitializeWidget( QWidget* ) const;
+  virtual void TakeValue( QWidget* );
+  int toInt( double val ) const;
+private:
+  QString _leftLabel, _rightLabel;
+};
+
 #endif

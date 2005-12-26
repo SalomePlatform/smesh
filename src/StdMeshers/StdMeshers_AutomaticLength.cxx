@@ -54,6 +54,7 @@ StdMeshers_AutomaticLength::StdMeshers_AutomaticLength(int hypId, int studyId,
   _param_algo_dim = 1; // is used by SMESH_Regular_1D
 
   _mesh = 0;
+  _fineness = 0;
 }
 
 //=============================================================================
@@ -64,6 +65,32 @@ StdMeshers_AutomaticLength::StdMeshers_AutomaticLength(int hypId, int studyId,
 
 StdMeshers_AutomaticLength::~StdMeshers_AutomaticLength()
 {
+}
+
+//================================================================================
+/*!
+ * \brief Set Fineness
+ * \param theFineness - The Fineness value [0.0-1.0],
+ *                        0 - coarse mesh
+ *                        1 - fine mesh
+ * 
+ * Raise if theFineness is out of range
+ * The "Initial Number of Elements on the Shortest Edge" (S0)
+ * is divided by (0.5 + 4.5 x theFineness)
+ */
+//================================================================================
+
+void StdMeshers_AutomaticLength::SetFineness(double theFineness)
+  throw(SALOME_Exception)
+{
+  if ( theFineness < 0.0 || theFineness > 1.0 )
+    throw SALOME_Exception(LOCALIZED("theFineness is out of range [0.0-1.0]"));
+
+  if ( _fineness != theFineness )
+  {
+    NotifySubMeshesHypothesisModification();
+    _fineness = theFineness;
+  }
 }
 
 //================================================================================
@@ -181,7 +208,7 @@ double StdMeshers_AutomaticLength::GetLength(const SMESH_Mesh*   theMesh,
   if ( tshape_length == _TShapeToLength.end() )
     return 1; // it is a dgenerated edge
 
-  return tshape_length->second;
+  return tshape_length->second / (0.5 + 4.5 * _fineness);
 }
 
 //=============================================================================
@@ -192,6 +219,7 @@ double StdMeshers_AutomaticLength::GetLength(const SMESH_Mesh*   theMesh,
 
 ostream & StdMeshers_AutomaticLength::SaveTo(ostream & save)
 {
+  save << _fineness;
   return save;
 }
 
@@ -203,6 +231,8 @@ ostream & StdMeshers_AutomaticLength::SaveTo(ostream & save)
 
 istream & StdMeshers_AutomaticLength::LoadFrom(istream & load)
 {
+  if ( ! ( load >> _fineness ))
+    load.clear(ios::badbit | load.rdstate());
   return load;
 }
 

@@ -54,6 +54,25 @@ public:
   double GetLength(const SMESH_Mesh* aMesh, const TopoDS_Shape& anEdge)
     throw(SALOME_Exception);
 
+  /*!
+   * \brief Set Fineness
+    * \param theFineness - The Fineness value [0.0-1.0],
+    *                        0 - coarse mesh
+    *                        1 - fine mesh
+   * 
+   * Raise if theFineness is out of range
+   * The "Initial Number of Elements on the Shortest Edge" (S0)
+   * is divided by (0.5 + 4.5 x theFineness)
+   */
+  void SetFineness(double theFineness)
+    throw(SALOME_Exception);
+
+  /*!
+   * \brief Return mesh Fineness
+    * \retval double - Fineness value [0.0-1.0]
+   */
+  double GetFineness() const { return _fineness; }
+
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
   friend std::ostream & operator <<(std::ostream & save, StdMeshers_AutomaticLength & hyp);
@@ -62,6 +81,7 @@ public:
 protected:
   std::map<const TopoDS_TShape*, double> _TShapeToLength;
   const SMESH_Mesh* _mesh;
+  double _fineness;
 };
 
 #endif

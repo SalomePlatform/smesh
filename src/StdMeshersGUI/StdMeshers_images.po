@@ -15,9 +15,9 @@ msgid "ICON_SELECT"
 msgstr "select1.png"
 
 
-#-----------------------------------------------------------
-# Hypothesis
-#-----------------------------------------------------------
+#-----------------------------------------------------------------
+# Hypothesis creation, see StdMeshersGUI_CreateStdHypothesisDlg()
+#-----------------------------------------------------------------
 
 #Hypo Local Length
 msgid "ICON_DLG_LOCAL_LENGTH"
@@ -52,7 +52,7 @@ msgid "ICON_DLG_ARITHMETIC_1D"
 msgstr "mesh_hypo_length.png"
 
 #Hypo AutomaticLength
-msgid "ICON_DLG_AUTOMATICLENGTH"
+msgid "ICON_DLG_AUTOMATIC_LENGTH"
 msgstr "mesh_hypo_length.png"
 
 

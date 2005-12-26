@@ -37,9 +37,10 @@
 
 class SMESH_Gen;
 
-// ======================================================
-// Local Length hypothesis
-// ======================================================
+// =========================================================
+// 1D Hypothesis to compute segment length free of thinking
+// =========================================================
+
 class StdMeshers_AutomaticLength_i:
   public virtual POA_StdMeshers::StdMeshers_AutomaticLength,
   public virtual SMESH_Hypothesis_i
@@ -52,11 +53,12 @@ public:
   // Destructor
   virtual ~StdMeshers_AutomaticLength_i();
 
-//   // Set length
-//   void SetLength( CORBA::Double theLength )
-//     throw ( SALOME::SALOME_Exception );
-//   // Get length
-//   CORBA::Double GetLength();
+  // Set Fineness
+  void SetFineness( CORBA::Double theFineness )
+    throw ( SALOME::SALOME_Exception );
+
+  // Get Fineness
+  CORBA::Double GetFineness();
 
   // Get implementation
   ::StdMeshers_AutomaticLength* GetImpl();
