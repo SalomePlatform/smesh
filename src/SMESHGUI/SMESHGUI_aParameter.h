@@ -70,7 +70,7 @@ public:
 
   QString & Label();
   
-private:
+protected:
   QString _label;
   bool    _needPreview;
 };
@@ -99,7 +99,7 @@ public:
 
   virtual QString sigValueChanged() const;
   
-private:
+protected:
   int _top, _bottom;
   int _initValue, _newValue;
 };
@@ -132,7 +132,7 @@ public:
 
   virtual QString sigValueChanged() const;
   
-private:
+protected:
   double _top, _bottom, _step;
   double _initValue, _newValue;
   int _decimals;
@@ -158,7 +158,7 @@ public:
 
   virtual QString sigValueChanged() const;
   
-private:
+protected:
   QString _initValue, _newValue;
 };
 
@@ -220,7 +220,7 @@ public:
 
   virtual QString sigValueChanged() const;
     
-private:
+protected:
   int         myInitValue, myValue;
   QStringList myValues;
 };
@@ -248,7 +248,7 @@ public:
 
   virtual QString sigValueChanged() const;
   
-private:
+protected:
   bool myInitValue, myValue;
 };
 
