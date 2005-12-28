@@ -282,6 +282,10 @@ SMDSAbs_ElementType MinimumAngle::GetType() const
 */
 double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 {
+  // According to "Mesh quality control" by Nadir Bouhamau referring to
+  // Pascal Jean Frey and Paul-Louis George. Maillages, applications aux elements finis.
+  // Hermes Science publications, Paris 1999 ISBN 2-7462-0024-4
+
   int nbNodes = P.size();
 
   if ( nbNodes < 3 )
@@ -289,12 +293,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   // Compute lengths of the sides
 
-  //double aLen[ nbNodes ];
-#ifndef WNT
-  double aLen [nbNodes];
-#else
-  double* aLen = (double *)new double[nbNodes];
-#endif
+  vector< double > aLen (nbNodes);
 
   for ( int i = 0; i < nbNodes - 1; i++ )
     aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
@@ -304,30 +303,43 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   if ( nbNodes == 3 )
   {
+    // Q = alfa * h * p / S, where
+    //
+    // alfa = sqrt( 3 ) / 6
+    // h - length of the longest edge
+    // p - half perimeter
+    // S - triangle surface
+
+    const double alfa = sqrt( 3. ) / 6.;
+    double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
+    double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
     if ( anArea <= Precision::Confusion() )
       return 0.;
-    double aMaxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
-    static double aCoef = sqrt( 3. ) / 4;
 
-    return aCoef * aMaxLen * aMaxLen / anArea;
+    return alfa * maxLen * half_perimeter / anArea;
   }
   else
   {
-    double aMinLen = aLen[ 0 ];
-    double aMaxLen = aLen[ 0 ];
+    // return aspect ratio of the worst triange which can be built
+    // taking three nodes of the quadrangle
+    TSequenceOfXYZ triaPnts(3);
+    // triangle on nodes 1 3 2
+    triaPnts(1) = P(1);
+    triaPnts(2) = P(3);
+    triaPnts(3) = P(2);
+    double ar = GetValue( triaPnts );
+    // triangle on nodes 1 3 4
+    triaPnts(3) = P(4);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 1 2 4
+    triaPnts(2) = P(2);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 3 2 4
+    triaPnts(1) = P(3);
+    ar = Max ( ar, GetValue( triaPnts ));
 
-    for(int i = 1; i < nbNodes ; i++ ){
-      aMinLen = Min( aMinLen, aLen[ i ] );
-      aMaxLen = Max( aMaxLen, aLen[ i ] );
-    }
-#ifdef WNT
-  delete [] aLen;
-#endif
-    if ( aMinLen <= Precision::Confusion() )
-      return 0.;
-
-    return aMaxLen / aMinLen;
+    return ar;
   }
 }
 
@@ -447,7 +459,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     double aVolume = getVolume(P);
     //double aVolume = getVolume(aLen);
     double aHeight = getMaxHeight(aLen);
-    static double aCoeff = sqrt(6.0)/36.0;
+    static double aCoeff = sqrt(2.0)/12.0;
     aQuality = aCoeff*aHeight*aSumArea/aVolume;
     break;
   }
@@ -632,6 +644,21 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     }
     break;
   }
+  }
+  if ( nbNodes > 4 ) {
+    // avaluate aspect ratio of quadranle faces
+    AspectRatio aspect2D;
+    SMDS_VolumeTool::VolumeType type = SMDS_VolumeTool::GetType( nbNodes );
+    int nbFaces = SMDS_VolumeTool::NbFaces( type );
+    TSequenceOfXYZ points(4);
+    for ( int i = 0; i < nbFaces; ++i ) { // loop on faces of a volume
+      if ( SMDS_VolumeTool::NbFaceNodes( type, i ) != 4 )
+        continue;
+      const int* pInd = SMDS_VolumeTool::GetFaceNodesIndices( type, i, true );
+      for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadranle face
+        points( p + 1 ) = P( pInd[ p ] + 1 );
+      aQuality = max( aQuality, aspect2D.GetValue( points ));
+    }
   }
   return aQuality;
 }

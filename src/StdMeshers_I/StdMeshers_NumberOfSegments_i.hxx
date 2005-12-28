@@ -52,6 +52,12 @@ public:
   // Destructor
   virtual ~StdMeshers_NumberOfSegments_i();
 
+  // Builds point distribution according to passed function
+  SMESH::double_array* BuildDistributionExpr( const char*, CORBA::Long, CORBA::Long )
+    throw ( SALOME::SALOME_Exception );
+  SMESH::double_array* BuildDistributionTab( const SMESH::double_array&, CORBA::Long, CORBA::Long )
+    throw ( SALOME::SALOME_Exception );
+
   // Set number of segments
   void SetNumberOfSegments( CORBA::Long theSegmentsNumber )
     throw ( SALOME::SALOME_Exception );
@@ -86,10 +92,10 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Set the exponent mode on/off
-  void SetExponentMode(CORBA::Boolean isExp)
+  void SetConversionMode( CORBA::Long conv )
     throw ( SALOME::SALOME_Exception );
   // Returns true if the exponent mode is set
-  CORBA::Boolean IsExponentMode()
+  CORBA::Long ConversionMode()
     throw ( SALOME::SALOME_Exception );
 
   // Get implementation

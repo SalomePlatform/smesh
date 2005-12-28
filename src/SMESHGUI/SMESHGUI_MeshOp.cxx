@@ -560,7 +560,8 @@ void SMESHGUI_MeshOp::onCreateHyp( const int theHypType, const int theIndex )
     SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aHypTypeName );
 
     // Create hypothesis
-    aCreator->CreateHypothesis( false, myDlg );
+    if( aCreator )
+      aCreator->create( false, myDlg );
   }
 
   QStringList aNewHyps;
@@ -602,7 +603,7 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
   char* aTypeName = aHyp->GetName();
   SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aTypeName );
   if ( aCreator )
-    aCreator->EditHypothesis( aHyp );
+    aCreator->edit( aHyp.in(), dlg() );
 }
 
 //================================================================================
@@ -632,7 +633,9 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     {
       const QString& aHypoTypeName = (*aHypoList)[ i ];
       HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
-      if ( !aHypData ) continue;
+      if ( !aHypData )
+	continue;
+
       int aDim = aHypData->Dim[0];
       // create or/and set
       int index = -1;
@@ -673,7 +676,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
             // Get hypotheses creator client (GUI)
             SMESHGUI_GenericHypothesisCreator* aCreator =
               SMESH::GetHypothesisCreator( aHypoTypeName );
-            aCreator->CreateHypothesis( false, myDlg );
+            aCreator->create( false, myDlg );
           }
           QStringList aNewHyps;
           _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
@@ -915,7 +918,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
         SMESHGUI_GenericHypothesisCreator* aCreator =
           SMESH::GetHypothesisCreator( aHypName );
         if ( aCreator )
-          aCreator->CreateHypothesis( true, myDlg );
+          aCreator->create( true, myDlg );
       }
       QStringList tmpList;
       _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );

@@ -23,7 +23,6 @@
 #  File   : Makefile.in
 #  Author : Julia DOROVSKIKH
 #  Module : SMESH
-#  $Header$
 
 top_srcdir=@top_srcdir@
 top_builddir=../..
@@ -50,6 +49,7 @@ EXPORT_HEADERS = \
 	StdMeshers_MEFISTO_2D.hxx \
 	StdMeshers_Hexa_3D.hxx \
 	StdMeshers_AutomaticLength.hxx \
+	StdMeshers_Distribution.hxx \
 	StdMeshers_QuadranglePreference.hxx
 
 EXPORT_PYSCRIPTS =
@@ -75,6 +75,7 @@ LIB_SRC = \
 	StdMeshers_Penta_3D.cxx \
 	StdMeshers_Hexa_3D.cxx \
 	StdMeshers_AutomaticLength.cxx \
+	StdMeshers_Distribution.cxx \
 	StdMeshers_QuadranglePreference.cxx
 
 LIB_SERVER_IDL = 

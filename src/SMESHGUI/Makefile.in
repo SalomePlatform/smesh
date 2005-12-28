@@ -42,10 +42,7 @@ EXPORT_HEADERS= SMESHGUI_Swig.hxx \
 		SMESHGUI_Hypotheses.h \
 		SMESHGUI_HypothesesUtils.h \
 		SMESHGUI_SpinBox.h \
-		SMESHGUI_aParameter.h \
-		SMESHGUI_aParameterDlg.h \
-		SMESHGUI_Selection.h \
-		SMESHGUI_FunctionPreview.h
+		SMESHGUI_Selection.h 
 
 # .po files to transform in .qm
 PO_FILES = \
@@ -70,7 +67,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_Preferences_ColorDlg.cxx \
 		SMESHGUI_Preferences_ScalarBarDlg.cxx \
 		SMESHGUI_Preferences_SelectionDlg.cxx \
-		SMESHGUI_aParameterDlg.cxx \
 		SMESHGUI_Swig.cxx \
 		SMESHGUI_MoveNodesDlg.cxx \
 		SMESHGUI_AddMeshElementDlg.cxx \
@@ -82,7 +78,6 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_FilterLibraryDlg.cxx \
 		SMESHGUI_SingleEditDlg.cxx \
 		SMESHGUI_MultiEditDlg.cxx \
-		SMESHGUI_aParameter.cxx \
 		SMESHGUI_DeleteGroupDlg.cxx \
 		SMESHGUI_GroupOpDlg.cxx \
 		SMESHGUI_SmoothingDlg.cxx \
@@ -113,7 +108,7 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_MeshDlg.cxx \
 		SMESHGUI_MeshOp.cxx \
 		SMESHGUI_Displayer.cxx \
-		SMESHGUI_FunctionPreview.cxx
+		SMESHGUI_Hypotheses.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -132,7 +127,6 @@ LIB_MOC = \
 		SMESHGUI_Preferences_ColorDlg.h \
 		SMESHGUI_Preferences_ScalarBarDlg.h \
 		SMESHGUI_Preferences_SelectionDlg.h \
-		SMESHGUI_aParameterDlg.h \
 		SMESHGUI_MoveNodesDlg.h \
 		SMESHGUI_AddMeshElementDlg.h \
 		SMESHGUI_EditHypothesesDlg.h \
@@ -154,7 +148,6 @@ LIB_MOC = \
 		SMESHGUI_SewingDlg.h \
 		SMESHGUI_PrecisionDlg.h \
 		SMESHGUI_MergeNodesDlg.h \
-		SMESHGUI_aParameter.h \
 		SMESHGUI_EditMeshDlg.h \
 		SMESHGUI_CreatePolyhedralVolumeDlg.h \
 		SMESHGUI_Operation.h \
@@ -162,7 +155,7 @@ LIB_MOC = \
 		SMESHGUI_Dialog.h \
 		SMESHGUI_MeshDlg.h \
 		SMESHGUI_MeshOp.h \
-		SMESHGUI_FunctionPreview.h
+		SMESHGUI_Hypotheses.h
 
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
@@ -189,17 +182,16 @@ LIB_SERVER_IDL =
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
             -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS) $(QWT_INCLUDES)
+            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
 
 CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
             -I${GEOM_ROOT_DIR}/include/salome
-
 
 LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef \
 	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome \
 	-lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
 	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient  \
-	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection $(QWT_LIBS)
+	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection
 
 LDFLAGSFORBIN += $(LDFLAGS)
 

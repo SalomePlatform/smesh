@@ -110,7 +110,7 @@ fi
 
 # make a link allowing AC_OUTPUT to find the salome_adm/.../*.in  files
 echo "" >> configure.in_tmp1
-echo 'ln -fs ${KERNEL_ROOT_DIR}/salome_adm ${ROOT_SRCDIR}/salome_adm' >> configure.in_tmp1
+echo 'ln -fs ${KERNEL_ROOT_DIR}/salome_adm ${ROOT_SRCDIR}/.' >> configure.in_tmp1
 
 echo  "" >> configure.in_tmp1
 echo "AC_OUTPUT([ \\" >> configure.in_tmp1

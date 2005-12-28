@@ -31,20 +31,88 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
-// QT Includes
-#include <qstring.h>
-#include <qwidget.h>
-#include <qvaluevector.h>
-#include <qstringlist.h>
+#include <QtxDialog.h>
+#include <qvariant.h>
+
+class QVBoxLayout;
+class QPixmap;
 
 /*!
  * \brief Auxiliary class for creation of hypotheses
 */
-class SMESHGUI_GenericHypothesisCreator
+class SMESHGUI_GenericHypothesisCreator : public QObject
 {
-  public:
-  virtual void CreateHypothesis (const bool isAlgo, QWidget* parent) = 0;
-  virtual void EditHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp) = 0;
+  Q_OBJECT
+
+public:
+  SMESHGUI_GenericHypothesisCreator( const QString& );
+  virtual ~SMESHGUI_GenericHypothesisCreator();
+
+          void create( const bool isAlgo, QWidget* );
+          void edit( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+  virtual bool checkParams() const = 0;
+
+  QString                     hypType() const;
+  bool                        isCreation() const;
+
+protected:
+  typedef struct
+  {
+    QString   myName;
+    QVariant  myValue;
+
+  } StdParam;
+
+  typedef QValueList<StdParam>   ListOfStdParams;
+  typedef QPtrList<QWidget>      ListOfWidgets;
+
+  SMESH::SMESH_Hypothesis_var hypothesis() const;
+  const ListOfWidgets&        widgets() const;
+  ListOfWidgets&              changeWidgets();
+
+  virtual QFrame*  buildFrame    () = 0;
+          QFrame*  buildStdFrame ();
+  virtual void     retrieveParams() const = 0;
+  virtual void     storeParams   () const = 0;
+  virtual bool     stdParams     ( ListOfStdParams& ) const;
+          bool     getStdParamFromDlg( ListOfStdParams& ) const;
+  virtual void     attuneStdWidget( QWidget*, const int ) const;
+  virtual QString  caption() const;
+  virtual QPixmap  icon() const;
+  virtual QString  type() const;
+
+protected slots:
+  virtual void onValueChanged();
+
+private:
+          bool editHypothesis( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+
+private:
+  SMESH::SMESH_Hypothesis_var  myHypo;
+  QString                      myHypType;
+  ListOfWidgets                myParamWidgets;
+  bool                         myIsCreate;
+};
+
+class SMESHGUI_HypothesisDlg : public QtxDialog
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator*, QWidget* );
+  virtual ~SMESHGUI_HypothesisDlg();
+
+          void setHIcon( const QPixmap& );
+          void setCustomFrame( QFrame* );
+          void setType( const QString& );
+
+protected slots:
+  virtual void accept();
+
+private:
+  SMESHGUI_GenericHypothesisCreator*   myCreator;
+  QVBoxLayout*                         myLayout;
+  QLabel                              *myIconLabel, *myTypeLabel;
 };
 
 /*!
