@@ -380,7 +380,7 @@ SMESH_Hypothesis::Hypothesis_Status
     int hypId = myHyp->GetId();
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
-      _mapHypo[hypId] = myHyp;
+      _mapHypo[hypId] = SMESH::SMESH_Hypothesis::_duplicate( myHyp );
       // assure there is a corresponding submesh
       if ( !_impl->IsMainShape( myLocSubShape )) {
         int shapeId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
@@ -1194,29 +1194,16 @@ static void PrepareForWriting (const char* file)
       THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
     }
   } else {
-    // nonexisting file
-    TCollection_AsciiString aDirName = aPath.TrekValue(aPath.TrekLength());
-    aPath.UpTrek();
-    aPath.SetName(aDirName);
-    aPath.SetExtension("");
-    OSD_Directory aDir (aPath);
-    TCollection_AsciiString aFullDirName;
-    aPath.SystemName(aFullDirName);
-    if (aDir.Exists()) {
-      aFile.Reset();
-      aFile.Build(OSD_WriteOnly, OSD_Protection());
-      if (aFile.Failed()) {
-        TCollection_AsciiString msg ("You cannot write to directory ");
-        msg += aFullDirName + ".";
-        THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
-      } else {
-        aFile.Close();
-        aFile.Remove();
-      }
-    } else {
-      TCollection_AsciiString msg ("Directory ");
-      msg += aFullDirName + " does not exist.";
+    // nonexisting file; check if it can be created
+    aFile.Reset();
+    aFile.Build(OSD_WriteOnly, OSD_Protection());
+    if (aFile.Failed()) {
+      TCollection_AsciiString msg ("You cannot create the file ");
+      msg += aFullName + ". Check the directory existance and access rights.";
       THROW_SALOME_CORBA_EXCEPTION(msg.ToCString(), SALOME::BAD_PARAM);
+    } else {
+      aFile.Close();
+      aFile.Remove();
     }
   }
 }

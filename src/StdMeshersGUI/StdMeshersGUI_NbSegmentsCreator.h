@@ -15,6 +15,7 @@ class StdMeshersGUI_DistrPreview;
 class QLineEdit;
 class QButtonGroup;
 class QGridLayout;
+class QRadioButton;
 
 typedef struct
 {
@@ -38,7 +39,7 @@ public:
 protected:
   virtual QFrame*  buildFrame();
   virtual void     retrieveParams() const;
-  virtual void     storeParams() const;
+  virtual QString  storeParams() const;
 
 protected slots:
   virtual void     onValueChanged();
@@ -59,6 +60,7 @@ private:
   QLabel          *myLScale, *myLTable, *myLExpr, *myLConv, *myInfo;
   QGridLayout*     myGroupLayout;
   int              myTableRow, myPreviewRow;
+  QRadioButton*    myCutNeg;
 };
 
 #endif

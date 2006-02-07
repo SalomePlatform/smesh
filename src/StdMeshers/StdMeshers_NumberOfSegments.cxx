@@ -27,20 +27,27 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_NumberOfSegments.hxx"
-#include "StdMeshers_Distribution.hxx"
-#include <Standard_ErrorHandler.hxx>
-#include <TCollection_AsciiString.hxx>
-#include <ExprIntrp_GenExp.hxx>
-#include <Expr_NamedUnknown.hxx>
-#include <CASCatch_CatchSignals.hxx>
-#include <CASCatch_Failure.hxx> 
-#include <CASCatch_ErrorHandler.hxx>
-#include <OSD.hxx>
-#include <Expr_Array1OfNamedUnknown.hxx>
-#include <TColStd_Array1OfReal.hxx>
 
+#include "StdMeshers_Distribution.hxx"
+#include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Mesh.hxx"
+
+#include <CASCatch_CatchSignals.hxx>
+#include <CASCatch_ErrorHandler.hxx>
+#include <CASCatch_Failure.hxx> 
+#include <ExprIntrp_GenExp.hxx>
+#include <Expr_Array1OfNamedUnknown.hxx>
+#include <Expr_NamedUnknown.hxx>
+#include <OSD.hxx>
+#include <TColStd_Array1OfReal.hxx>
+#include <TCollection_AsciiString.hxx>
+#include <TopExp.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+
+#include <Standard_ErrorHandler.hxx>
+
+using namespace std;
 
 const double PRECISION = 1e-7;
 
@@ -639,4 +646,41 @@ ostream & operator <<(ostream & save, StdMeshers_NumberOfSegments & hyp)
 istream & operator >>(istream & load, StdMeshers_NumberOfSegments & hyp)
 {
   return hyp.LoadFrom( load );
+}
+
+//================================================================================
+/*!
+ * \brief Initialize number of segments by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMesh,
+                                                      const TopoDS_Shape& theShape)
+{
+  if ( !theMesh || theShape.IsNull() )
+    return false;
+
+  _numberOfSegments = 0;
+  _distrType = DT_Regular;
+
+  int nbEdges = 0;
+  TopTools_IndexedMapOfShape edgeMap;
+  TopExp::MapShapes( theShape, TopAbs_EDGE, edgeMap );
+  for ( int i = 1; i <= edgeMap.Extent(); ++i )
+  {
+    // get current segment length
+    SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
+    SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( edgeMap( i ));
+    if ( eSubMesh && eSubMesh->NbElements())
+      _numberOfSegments += eSubMesh->NbElements();
+
+    ++nbEdges;
+  }
+  if ( nbEdges )
+    _numberOfSegments /= nbEdges;
+
+  return nbEdges;
 }

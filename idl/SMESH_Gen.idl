@@ -81,6 +81,19 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Return a hypothesis holding parameter values corresponding to the mesh
+     * existing on the given geometry.
+     * The returned hypothesis may be the one existing in a study and used
+     * to compute the mesh, or a temporary one created just to pass parameter
+     * values
+     */
+    SMESH_Hypothesis GetHypothesisParameterValues( in string            theHypName,
+                                                   in string            theLibName,
+                                                   in SMESH_Mesh        theMesh,
+                                                   in GEOM::GEOM_Object theGeom)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Create a Mesh object, given a geometry shape.
      * Mesh is created empty (no points, no elements).
      * Shape is explored via GEOM_Client to create local copies.
@@ -120,15 +133,14 @@ module SMESH
      * First, verify list of hypothesis associated with the subShape,
      * return NOK if hypothesis are not sufficient
      */
-    boolean Compute( in SMESH_Mesh       theMesh, 
+    boolean Compute( in SMESH_Mesh        theMesh, 
 		     in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * 
+     * Return true if hypotheses are defined well
      */
-
-    boolean IsReadyToCompute( in SMESH_Mesh       theMesh, 
+    boolean IsReadyToCompute( in SMESH_Mesh        theMesh, 
 			      in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
@@ -136,7 +148,7 @@ module SMESH
      * Return errors of hypotheses definintion
      * algo_error_array is empty if everything is OK
      */
-    algo_error_array GetAlgoState( in SMESH_Mesh       theMesh, 
+    algo_error_array GetAlgoState( in SMESH_Mesh        theMesh, 
                                    in GEOM::GEOM_Object theSubObject )
       raises ( SALOME::SALOME_Exception );
 
@@ -144,15 +156,19 @@ module SMESH
      * 
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
-			     in object_array theListOfSubObjects )
+                               in object_array      theListOfSubObjects )
        raises ( SALOME::SALOME_Exception );
-    
+
     /*!
-     * 
+     * Return geometrical object the given element is built on.
+     * The returned geometrical object, if not nil, is either found in the 
+     * study or is published by this method with the given name
      */
-    //    long_array GetSubMeshesState( in object_array theListOfSubShape )
-    //  raises ( SALOME::SALOME_Exception );
-    
+    GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh  theMesh,
+                                                in long        theElementID,
+                                                in string      theGeomName)
+      raises ( SALOME::SALOME_Exception );
+
   };
 
 };

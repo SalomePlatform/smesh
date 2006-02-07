@@ -96,7 +96,7 @@ LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistr
 
 
 LDFLAGSFORBIN += -lSMDS -lSMESHDS \
-		-L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 \
+		-L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 -lmed_V2_1 \
 		-lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
 		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeResourcesManager \
 		-lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeNotification -lCASCatch \

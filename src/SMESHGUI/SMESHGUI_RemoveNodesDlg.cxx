@@ -265,6 +265,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
 
     if (aResult) {
       myEditCurrentArgument->clear();
+      mySelector->ClearIndex();
       SMESH::UpdateView();
     }
 

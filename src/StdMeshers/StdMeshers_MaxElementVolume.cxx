@@ -30,7 +30,17 @@
 using namespace std;
 
 #include "StdMeshers_MaxElementVolume.hxx"
+
+#include "SMDS_MeshElement.hxx"
+#include "SMESHDS_SubMesh.hxx"
+#include "SMESH_ControlsDef.hxx"
+#include "SMESH_Mesh.hxx"
+
 #include "utilities.h"
+
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 
 //=============================================================================
 /*!
@@ -41,10 +51,8 @@ using namespace std;
 StdMeshers_MaxElementVolume::StdMeshers_MaxElementVolume(int hypId, int studyId, SMESH_Gen* gen)
   : SMESH_Hypothesis(hypId, studyId, gen)
 {
-  _maxVolume =1.;
+  _maxVolume = 1.;
   _name = "MaxElementVolume";
-//   SCRUTE(_name);
-  SCRUTE(&_name);
   _param_algo_dim = 3;
 }
 
@@ -139,3 +147,54 @@ istream & operator >> (istream & load, StdMeshers_MaxElementVolume & hyp)
   return hyp.LoadFrom( load );
 }
 
+
+//================================================================================
+/*!
+ * \brief Initialize maximal area by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_MaxElementVolume::SetParametersByMesh(const SMESH_Mesh*   theMesh,
+                                                      const TopoDS_Shape& theShape)
+{
+  if ( !theMesh || theShape.IsNull() )
+    return false;
+
+  _maxVolume = 0;
+
+  SMESH::Controls::Volume volumeControl;
+
+  TopTools_IndexedMapOfShape volMap;
+  TopExp::MapShapes( theShape, TopAbs_SOLID, volMap );
+  if ( volMap.IsEmpty() )
+    TopExp::MapShapes( theShape, TopAbs_SHELL, volMap );
+  if ( volMap.IsEmpty() )
+    return false;
+
+  SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
+
+  for ( int iV = 1; iV <= volMap.Extent(); ++iV )
+  {
+    const TopoDS_Shape& S = volMap( iV );
+    SMESHDS_SubMesh * subMesh = aMeshDS->MeshElements( S );
+    if ( !subMesh && S.ShapeType() == TopAbs_SOLID ) {
+      TopExp_Explorer shellExp( S, TopAbs_SHELL );
+      if ( shellExp.More() )
+        subMesh = aMeshDS->MeshElements( shellExp.Current() );
+    }
+    if ( !subMesh) 
+      return false;
+    SMDS_ElemIteratorPtr vIt = subMesh->GetElements();
+    while ( vIt->more() )
+    {
+      const SMDS_MeshElement* elem = vIt->next();
+      if ( elem->GetType() == SMDSAbs_Volume ) {
+        _maxVolume = max( _maxVolume, volumeControl.GetValue( elem->GetID() ));
+      }
+    }
+  }
+  return _maxVolume > 0;
+}

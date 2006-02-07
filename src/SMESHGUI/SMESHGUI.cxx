@@ -104,7 +104,6 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_FileDlg.h"
 #include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_Study.h"
 #include "SUIT_Session.h"
@@ -1070,6 +1069,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   SUIT_ResourceMgr* mgr = resourceMgr();
   if( !mgr )
     return false;
+
+  if (CORBA::is_nil(GetSMESHGen()->GetCurrentStudy())) {
+    GetSMESHGen()->SetCurrentStudy(_CAST(Study,aStudy)->GetStudy());
+  }
 
   SUIT_ViewWindow* view = application()->desktop()->activeWindow();
   SVTK_ViewWindow* vtkwnd = dynamic_cast<SVTK_ViewWindow*>( view );
@@ -2995,11 +2998,67 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
-  if( sect=="SMESH" )
+  if( sect=="SMESH" ){
+    float sbX1,sbY1,sbW,sbH;
+    std::string aWarning;
+    SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" || 
         name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
         name=="selection_precision_node" || name=="selection_precision_element" )
       SMESH::UpdateSelectionProp( this );
+    else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
+      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
+      if(sbX1+sbW > 1.0){
+	aWarning = "Origin and Size Vertical: X+Width > 1\n";	
+	sbX1=0.01;
+	sbW=0.05;
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
+      }
+    }
+    else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
+      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
+      if(sbY1+sbH > 1.0){
+	aWarning = "Origin and Size Vertical: Y+Height > 1\n";
+	sbY1=0.01;
+	sbH=0.5;
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
+      }
+    }
+    else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
+      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      if(sbX1+sbW > 1.0){
+	aWarning = "Origin and Size Horizontal: X+Width > 1\n";
+	sbX1=0.2;
+	sbW=0.6;
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      }
+    }
+    else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
+      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      if(sbY1+sbH > 1.0){
+	aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
+	sbY1=0.01;
+	sbH=0.12;
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
+	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      }
+    }
+    
+    if(aWarning.size() != 0){
+      aWarning += "The default values are applied instead.";
+      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
+			     QObject::tr("SMESH_ERR_SCALARBAR_PARAMS"),
+			     QObject::tr(aWarning.c_str()),
+			     QObject::tr("SMESH_BUT_OK"));
+    }
+  }
 }
 
 //================================================================================
@@ -3081,6 +3140,20 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   if( !op )
     op = SalomeApp_Module::createOperation( id );
   return op;
+}
+
+//================================================================================
+/*!
+ * \brief Stops current operations and starts a given one
+  * \param id - The id of the operation to start
+ */
+//================================================================================
+
+void SMESHGUI::switchToOperation(int id)
+{
+  if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() )
+    activeStudy()->abortAllOperations();
+  startOperation( id );
 }
 
 LightApp_Displayer* SMESHGUI::displayer()

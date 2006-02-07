@@ -27,9 +27,24 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_LocalLength.hxx"
+
+#include "SMESH_Mesh.hxx"
+#include "SMESH_Algo.hxx"
+
 #include "utilities.h"
+
+#include <BRep_Tool.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <GeomAdaptor_Curve.hxx>
+#include <Geom_Curve.hxx>
+#include <TopExp.hxx>
+#include <TopLoc_Location.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -37,14 +52,12 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_LocalLength::StdMeshers_LocalLength(int hypId, int studyId,
-	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_LocalLength::StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, studyId, gen)
 {
-	_length = 1.;
-	_name = "LocalLength";
-//   SCRUTE(_name);
-//   SCRUTE(&_name);
-        _param_algo_dim = 1; // is used by SMESH_Regular_1D
+  _length = 1.;
+  _name = "LocalLength";
+  _param_algo_dim = 1; // is used by SMESH_Regular_1D
 }
 
 //=============================================================================
@@ -134,4 +147,48 @@ ostream & operator <<(ostream & save, StdMeshers_LocalLength & hyp)
 istream & operator >>(istream & load, StdMeshers_LocalLength & hyp)
 {
   return hyp.LoadFrom( load );
+}
+
+//================================================================================
+/*!
+ * \brief Initialize segment length by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_LocalLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
+                                                 const TopoDS_Shape& theShape)
+{
+  if ( !theMesh || theShape.IsNull() )
+    return false;
+
+  _length = 0.;
+
+  Standard_Real UMin, UMax;
+  TopLoc_Location L;
+
+  int nbEdges = 0;
+  TopTools_IndexedMapOfShape edgeMap;
+  TopExp::MapShapes( theShape, TopAbs_EDGE, edgeMap );
+  for ( int iE = 1; iE <= edgeMap.Extent(); ++iE )
+  {
+    const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( iE ));
+    Handle(Geom_Curve) C = BRep_Tool::Curve( edge, L, UMin, UMax );
+    GeomAdaptor_Curve AdaptCurve(C);
+
+    vector< double > params;
+    SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
+    if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
+    {
+      for ( int i = 1; i < params.size(); ++i )
+        _length += GCPnts_AbscissaPoint::Length( AdaptCurve, params[ i-1 ], params[ i ]);
+      nbEdges += params.size() - 1;
+    }
+  }
+  if ( nbEdges )
+    _length /= nbEdges;
+
+  return nbEdges;
 }

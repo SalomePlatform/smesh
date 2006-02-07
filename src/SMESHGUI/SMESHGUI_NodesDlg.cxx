@@ -69,6 +69,7 @@
 #include <vtkDataSetMapper.h>
 #include <vtkActorCollection.h>
 #include <vtkRenderer.h>
+#include <vtkProperty.h>
 
 // QT Includes
 #include <qbuttongroup.h>

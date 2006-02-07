@@ -37,8 +37,11 @@ namespace SMESH {
   {
     static GEOM::GEOM_Gen_var aGEOMGen;
 
-    if(CORBA::is_nil(aGEOMGen))
-        aGEOMGen = GeometryGUI::GetGeomGen();
+    if(CORBA::is_nil(aGEOMGen)) {
+      if ( GeometryGUI::GetGeomGen()->_is_nil() )
+        GeometryGUI::InitGeomGen();
+      aGEOMGen = GeometryGUI::GetGeomGen();
+    }
     return aGEOMGen;
   }
 

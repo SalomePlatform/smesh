@@ -78,6 +78,14 @@ public:
   friend std::ostream & operator <<(std::ostream & save, StdMeshers_AutomaticLength & hyp);
   friend std::istream & operator >>(std::istream & load, StdMeshers_AutomaticLength & hyp);
 
+  /*!
+   * \brief Initialize Fineness by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
+
 protected:
   std::map<const TopoDS_TShape*, double> _TShapeToLength;
   const SMESH_Mesh* _mesh;

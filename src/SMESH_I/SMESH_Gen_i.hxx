@@ -176,6 +176,13 @@ public:
                                                 const char* theLibName)
     throw ( SALOME::SALOME_Exception );
   
+  // Return hypothesis of given type holding parameter values of the existing mesh
+  SMESH::SMESH_Hypothesis_ptr GetHypothesisParameterValues (const char*           theHypType,
+                                                            const char*           theLibName,
+                                                            SMESH::SMESH_Mesh_ptr theMesh,
+                                                            GEOM::GEOM_Object_ptr theGeom)
+    throw ( SALOME::SALOME_Exception );
+  
   // Create empty mesh on a shape
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
@@ -213,6 +220,11 @@ public:
                                      const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
+  // Return geometrical object the given element is built on
+  GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+                                                  CORBA::Long            theElementID,
+                                                  const char*            theGeomName)
+    throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)

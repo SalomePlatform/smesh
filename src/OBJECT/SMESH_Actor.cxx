@@ -31,13 +31,14 @@
 #include "SMESH_ActorUtils.h"
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ControlsDef.hxx"
-#include <VTKViewer_ExtractUnstructuredGrid.h>
+#include "VTKViewer_ExtractUnstructuredGrid.h"
 
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
 #include <qstringlist.h>
 
+#include <vtkProperty.h>
 #include <vtkTimeStamp.h>
 #include <vtkObjectFactory.h>
 #include <vtkShrinkPolyData.h>
@@ -786,6 +787,8 @@ vtkDataSet* SMESH_ActorDef::GetInput(){
 
 
 void SMESH_ActorDef::SetTransform(VTKViewer_Transform* theTransform){
+  Superclass::SetTransform(theTransform);
+
   myNodeActor->SetTransform(theTransform);
   myBaseActor->SetTransform(theTransform);
 

@@ -32,6 +32,8 @@
 #include "SMESHDS_Hypothesis.hxx"
 
 class SMESH_Gen;
+class TopoDS_Shape;
+class SMESH_Mesh;
 
 class SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
@@ -60,6 +62,14 @@ public:
   int GetShapeType() const;
   const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
+
+  /*!
+   * \brief Initialize my parameter values by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape)=0;
 
 protected:
   SMESH_Gen* _gen;

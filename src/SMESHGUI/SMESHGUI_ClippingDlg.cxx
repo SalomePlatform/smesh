@@ -69,6 +69,7 @@
 #include <vtkPlaneSource.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
+#include <vtkProperty.h>
 
 // STL includes
 #include <algorithm>

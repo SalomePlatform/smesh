@@ -27,9 +27,11 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_LengthFromEdges.hxx"
+
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -42,8 +44,6 @@ StdMeshers_LengthFromEdges::StdMeshers_LengthFromEdges(int hypId, int studyId, S
 {
   _mode =1;
   _name = "LengthFromEdges";
-//   SCRUTE(_name);
-//   SCRUTE(&_name);
   _param_algo_dim = 2; // is used by SMESH_MEFISTO_2D
 }
 
@@ -137,3 +137,19 @@ istream & operator >> (istream & load, StdMeshers_LengthFromEdges & hyp)
   return hyp.LoadFrom( load );
 }
 
+//================================================================================
+/*!
+ * \brief Initialize my parameter values by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ *
+ * Just return false as this hypothesis does not have parameters values
+ */
+//================================================================================
+
+bool StdMeshers_LengthFromEdges::SetParametersByMesh(const SMESH_Mesh* /*theMesh*/,
+                                                     const TopoDS_Shape& /*theShape*/)
+{
+  return false;
+}

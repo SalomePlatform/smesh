@@ -25,11 +25,22 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-
 #include "StdMeshers_StartEndLength.hxx"
-#include "utilities.h"
 
+#include "SMESH_Algo.hxx"
+#include "SMESH_Mesh.hxx"
+
+#include <BRep_Tool.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <GeomAdaptor_Curve.hxx>
+#include <Geom_Curve.hxx>
+#include <TopExp.hxx>
+#include <TopLoc_Location.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -43,7 +54,7 @@ StdMeshers_StartEndLength::StdMeshers_StartEndLength(int         hypId,
      :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _begLength = 1.;
-  _endLength = 1.;
+  _endLength = 10.;
   _name = "StartEndLength";
   _param_algo_dim = 1; // is used by SMESH_Regular_1D
 }
@@ -140,4 +151,50 @@ ostream & operator <<(ostream & save, StdMeshers_StartEndLength & hyp)
 istream & operator >>(istream & load, StdMeshers_StartEndLength & hyp)
 {
   return hyp.LoadFrom( load );
+}
+
+//================================================================================
+/*!
+ * \brief Initialize start and end length by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_StartEndLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
+                                                    const TopoDS_Shape& theShape)
+{
+  if ( !theMesh || theShape.IsNull() )
+    return false;
+
+  _begLength = _endLength = 0.;
+
+  Standard_Real UMin, UMax;
+  TopLoc_Location L;
+
+  int nbEdges = 0;
+  TopTools_IndexedMapOfShape edgeMap;
+  TopExp::MapShapes( theShape, TopAbs_EDGE, edgeMap );
+  for ( int i = 1; i <= edgeMap.Extent(); ++i )
+  {
+    const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( i ));
+    Handle(Geom_Curve) C = BRep_Tool::Curve(edge, L, UMin, UMax);
+    GeomAdaptor_Curve AdaptCurve(C);
+
+    vector< double > params;
+    SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
+    if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
+    {
+      nbEdges++;
+      _begLength += GCPnts_AbscissaPoint::Length( AdaptCurve, params[0], params[1]);
+      int nb = params.size();
+      _endLength += GCPnts_AbscissaPoint::Length( AdaptCurve, params[nb-2], params[nb-1]);
+    }
+  }
+  if ( nbEdges ) {
+    _begLength /= nbEdges;
+    _endLength /= nbEdges;
+  }
+  return nbEdges;
 }

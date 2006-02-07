@@ -27,21 +27,17 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
-
-#include <OSD.hxx>
 
 #include "StdMeshers_LocalLength.hxx"
 #include "StdMeshers_NumberOfSegments.hxx"
 #include "StdMeshers_Arithmetic1D.hxx"
 #include "StdMeshers_StartEndLength.hxx"
 #include "StdMeshers_Deflection1D.hxx"
-#include <StdMeshers_AutomaticLength.hxx>
+#include "StdMeshers_AutomaticLength.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -66,9 +62,12 @@ using namespace std;
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <ExprIntrp_GenExp.hxx>
+#include <OSD.hxx>
 
 #include <string>
 #include <math.h>
+
+using namespace std;
 
 //=============================================================================
 /*!

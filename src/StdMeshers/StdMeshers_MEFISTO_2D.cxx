@@ -324,7 +324,8 @@ static bool fixOverlappedLinkUV( R2& uv0, const R2& uv1, const R2& uv2 )
       uv0.y -= delta;
     else
       uv0.y += delta;
-//    MESSAGE(" -> " << uv0.x << " " << uv0.y << " ");
+// #ifdef _DEBUG_
+//     MESSAGE(" -> " << uv0.x << " " << uv0.y << " ");
 //     MESSAGE("v1( " << v1.X() << " " << v1.Y() << " ) " <<
 //       "v2( " << v2.X() << " " << v2.Y() << " ) ");
 //    MESSAGE("SIN: " << sqrt(1 - dot * dot / (sqMod1 * sqMod2)));
@@ -336,6 +337,7 @@ static bool fixOverlappedLinkUV( R2& uv0, const R2& uv1, const R2& uv2 )
 //     dot = v1*v2;
 //     double sin = sqrt(1 - dot * dot / (sqMod1 * sqMod2));
 //     MESSAGE("NEW SIN: " << sin);
+// #endif
     return true;
   }
   return false;
@@ -475,134 +477,109 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(SMESH_Mesh &        aMesh,
                                        double              scaley,
                                        const TopTools_IndexedDataMapOfShapeListOfShape& VWMap)
 {
-//  MESSAGE("StdMeshers_MEFISTO_2D::LoadPoints");
-
-  //SMDS_Mesh * meshDS = aMesh.GetMeshDS();
+  //  MESSAGE("StdMeshers_MEFISTO_2D::LoadPoints");
 
   TopoDS_Face F = TopoDS::Face(FF.Oriented(TopAbs_FORWARD));
 
-  int mInit = m, mFirst, iEdge;
+  list< int > mOnVertex;
+
   gp_XY scale( scalex, scaley );
 
   TopoDS_Wire W = TopoDS::Wire(WW.Oriented(TopAbs_FORWARD));
   BRepTools_WireExplorer wexp(W, F);
-  for (wexp.Init(W, F), iEdge = 0; wexp.More(); wexp.Next(), iEdge++)
+  for ( wexp.Init(W, F); wexp.More(); wexp.Next() )
   {
     const TopoDS_Edge & E = wexp.Current();
+    bool isForward = (E.Orientation() == TopAbs_FORWARD);
 
     // --- IDNodes of first and last Vertex
 
-    TopoDS_Vertex VFirst, VLast;
+    TopoDS_Vertex VFirst, VLast, V;
     TopExp::Vertices(E, VFirst, VLast); // corresponds to f and l
+    V = isForward ? VFirst : VLast;
 
-    ASSERT(!VFirst.IsNull());
-    SMDS_NodeIteratorPtr lid=
-      aMesh.GetSubMesh(VFirst)->GetSubMeshDS()->GetNodes();
+    ASSERT(!V.IsNull());
+    SMDS_NodeIteratorPtr lid= aMesh.GetSubMesh(V)->GetSubMeshDS()->GetNodes();
     if ( !lid->more() ) {
       MESSAGE (" NO NODE BUILT ON VERTEX ");
       return false;
     }
     const SMDS_MeshNode* idFirst = lid->next();
 
-    ASSERT(!VLast.IsNull());
-    lid=aMesh.GetSubMesh(VLast)->GetSubMeshDS()->GetNodes();
-    if ( !lid->more() ) {
-      MESSAGE (" NO NODE BUILT ON VERTEX ");
-      return false;
-    }
-    const SMDS_MeshNode* idLast = lid->next();
-
     // --- edge internal IDNodes (relies on good order storage, not checked)
 
-    int nbPoints = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
-
-    double f, l;
-    Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
-
-    SMDS_NodeIteratorPtr ite= aMesh.GetSubMesh(E)->GetSubMeshDS()->GetNodes();
-
-    //bool isForward = (E.Orientation() == TopAbs_FORWARD);
     map<double, const SMDS_MeshNode*> params;
+    const SMDS_MeshNode * node;
 
-    while(ite->more())
+    SMDS_NodeIteratorPtr nodeIt= aMesh.GetSubMesh(E)->GetSubMeshDS()->GetNodes();
+    while ( nodeIt->more() )
     {
-      const SMDS_MeshNode * node = ite->next();
+      node = nodeIt->next();
       const SMDS_EdgePosition* epos =
         static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
-      double param = epos->GetUParameter();
-      params[param] = node;
+      params[ epos->GetUParameter() ] = node;
     }
+    int nbPoints = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
     if ( nbPoints != params.size())
     {
       MESSAGE( "BAD NODE ON EDGE POSITIONS" );
       return false;
     }
 
-    mFirst = m;
-
     // --- load 2D values into MEFISTO structure,
     //     add IDNodes in mefistoToDS map
-    if (E.Orientation() == TopAbs_FORWARD)
+
+    double f, l, uFirst, u;
+    Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(E, F, f, l);
+    uFirst = isForward ? f : l;
+
+    // vertex node
+    gp_Pnt2d p = C2d->Value( uFirst ).XY().Multiplied( scale );
+    if ( fixCommonVertexUV( p, V, W, myOuterWire, F, VWMap, aMesh ))
+      myNodesOnCommonV.push_back( idFirst );
+    mOnVertex.push_back( m );
+    uvslf[m].x = p.X();
+    uvslf[m].y = p.Y();
+    mefistoToDS[m + 1] = idFirst;
+    //MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
+    //MESSAGE("__ f "<<uFirst<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
+    m++;
+
+    // internal nodes
+    map<double, const SMDS_MeshNode*>::iterator u_n = params.begin();
+    map<double, const SMDS_MeshNode*>::reverse_iterator u_n_rev = params.rbegin();
+    for ( int i = 0; i < nbPoints; ++i )
     {
-      gp_Pnt2d p = C2d->Value(f).XY().Multiplied( scale );       // first point = Vertex Forward
-      if ( fixCommonVertexUV( p, VFirst, W, myOuterWire, F, VWMap, aMesh ))
-        myNodesOnCommonV.push_back( idFirst );
+      if ( isForward ) {
+        u    = u_n->first;
+        node = u_n->second;
+        ++u_n;
+      } else {
+        u    = u_n_rev->first;
+        node = u_n_rev->second;
+        ++u_n_rev;
+      }
+      gp_Pnt2d p = C2d->Value( u ).XY().Multiplied( scale );
       uvslf[m].x = p.X();
       uvslf[m].y = p.Y();
-      mefistoToDS[m + 1] = idFirst;
+      mefistoToDS[m + 1] = node;
       //MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
-      //MESSAGE("__ f "<<f<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
+      //MESSAGE("__ "<<i<<" "<<param<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
       m++;
-      map<double, const SMDS_MeshNode*>::iterator itp = params.begin();
-      for (int i = 1; i <= nbPoints; i++)       // nbPoints internal
-      {
-        double param = (*itp).first;
-        gp_Pnt2d p = C2d->Value(param).XY().Multiplied( scale );
-        uvslf[m].x = p.X();
-        uvslf[m].y = p.Y();
-        mefistoToDS[m + 1] = (*itp).second;
-        //MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
-        //MESSAGE("__ "<<i<<" "<<param<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
-        m++;
-        itp++;
-      }
     }
-    else
-    {
-      gp_Pnt2d p = C2d->Value(l).XY().Multiplied( scale );       // last point = Vertex Reversed
-      if ( fixCommonVertexUV( p, VLast, W, myOuterWire, F, VWMap, aMesh ))
-        myNodesOnCommonV.push_back( idLast );
-      uvslf[m].x = p.X();
-      uvslf[m].y = p.Y();
-      mefistoToDS[m + 1] = idLast;
-      //MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
-      //MESSAGE("__ l "<<l<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
-      m++;
-      map<double, const SMDS_MeshNode*>::reverse_iterator itp = params.rbegin();
-      for (int i = nbPoints; i >= 1; i--)
-      {
-        double param = (*itp).first;
-        gp_Pnt2d p = C2d->Value(param).XY().Multiplied( scale );
-        uvslf[m].x = p.X();
-        uvslf[m].y = p.Y();
-        mefistoToDS[m + 1] = (*itp).second;
-        //MESSAGE(" "<<m<<" "<<mefistoToDS[m+1]);
-        //MESSAGE("__ "<<i<<" "<<param<<" "<<uvslf[m].x <<" "<<uvslf[m].y);
-        m++;
-        itp++;
-      }
-    }
-    // prevent failure on overlapped adjacent links
-    if ( iEdge > 0 )
-      fixOverlappedLinkUV (uvslf[ mFirst - 1],
-                           uvslf[ mFirst ],
-                           uvslf[ mFirst + 1 ]);
-    
   } // for  wexp
 
-  fixOverlappedLinkUV (uvslf[ m - 1],
-                       uvslf[ mInit ],
-                       uvslf[ mInit + 1 ]);
+  // prevent failure on overlapped adjacent links,
+  // check only links ending in vertex nodes
+  int mFirst = mOnVertex.front(), mLast = m - 1;
+  list< int >::iterator mIt = mOnVertex.begin();
+  for ( ; mIt != mOnVertex.end(); ++mIt ) {
+    int i = *mIt;
+    int iB = i - 1, iA = i + 1; // indices Before and After
+    if ( iB < mFirst ) iB = mLast;
+    if ( iA > mLast )  iA = mFirst;
+    fixOverlappedLinkUV (uvslf[ iB ], uvslf[ i ], uvslf[ iA ]);
+  }
 
   return true;
 }

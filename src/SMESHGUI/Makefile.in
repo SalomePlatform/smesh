@@ -108,7 +108,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_MeshDlg.cxx \
 		SMESHGUI_MeshOp.cxx \
 		SMESHGUI_Displayer.cxx \
-		SMESHGUI_Hypotheses.cxx
+		SMESHGUI_Hypotheses.cxx \
+		SMESHGUI_ShapeByMeshDlg.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -155,7 +156,8 @@ LIB_MOC = \
 		SMESHGUI_Dialog.h \
 		SMESHGUI_MeshDlg.h \
 		SMESHGUI_MeshOp.h \
-		SMESHGUI_Hypotheses.h
+		SMESHGUI_Hypotheses.h \
+		SMESHGUI_ShapeByMeshDlg.h
 
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \

@@ -91,6 +91,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
+#include <vtkProperty.h>
 
 #define SPACING 5
 #define MARGIN  10

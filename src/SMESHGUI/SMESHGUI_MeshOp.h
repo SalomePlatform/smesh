@@ -40,9 +40,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class SMESHGUI_MeshDlg;
-class SMESH_TypeFilter;
-class SMESH_NumberFilter;
-
+class SMESHGUI_ShapeByMeshDlg;
 
 /*!
  * \brief Operation for mech creation or editing
@@ -72,6 +70,9 @@ protected slots:
   void                           onCreateHyp( const int theHypType, const int theIndex );
   void                           onEditHyp( const int theHypType, const int theIndex );
   void                           onHypoSet( const QString& theSetName );
+  void                           onGeomSelectionByMesh( bool );
+  void                           onPublishShapeByMeshDlg();
+  void                           onCloseShapeByMeshDlg();
 
 private:
   bool                           isValid( QString& ) const;
@@ -97,12 +98,18 @@ private:
   QString                        name( _PTR(SObject) ) const;
   int                            find( const SMESH::SMESH_Hypothesis_var&,
                                        const QValueList<SMESH::SMESH_Hypothesis_var>& ) const;
+  SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString& aHypType,
+                                                          const QString& aServerLib ) const;
+  bool                           isSubshapeOk() const;
+  _PTR(SObject)                  getSubmeshByGeom() const;
+  void                           selectObject( _PTR(SObject) ) const;
 
 private:
   typedef QMap< int, QValueList<SMESH::SMESH_Hypothesis_var> > IdToHypListMap;
   typedef QMap< int, IdToHypListMap > DimToHypMap;
   
   SMESHGUI_MeshDlg*              myDlg;
+  SMESHGUI_ShapeByMeshDlg*       myShapeByMeshDlg;
   bool                           myToCreate;
   bool                           myIsMesh;
   

@@ -39,10 +39,21 @@ public:
   StdMeshers_NotConformAllowed(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~StdMeshers_NotConformAllowed();
 
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_NotConformAllowed & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_NotConformAllowed & hyp);
+  virtual std::ostream & SaveTo(std::ostream & save);
+  virtual std::istream & LoadFrom(std::istream & load);
+  friend std::ostream & operator << (std::ostream & save, StdMeshers_NotConformAllowed & hyp);
+  friend std::istream & operator >> (std::istream & load, StdMeshers_NotConformAllowed & hyp);
+
+  /*!
+   * \brief Initialize my parameter values by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+    *
+    * Just return false as this hypothesis does not have parameters values
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
+
 };
 
 #endif

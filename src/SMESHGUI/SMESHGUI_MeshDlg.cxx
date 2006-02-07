@@ -371,6 +371,7 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   createObject( tr( "MESH" ), aGrp, Mesh );
   // geometry
   createObject( tr( "GEOMETRY" ), aGrp, Geom );
+  myGeomPopup = 0;
   
   // Create tab widget
   
@@ -519,4 +520,41 @@ void SMESHGUI_MeshDlg::onHypoSetPopup( int theIndex )
 void SMESHGUI_MeshDlg::onHypoSetButton()
 {
   myHypoSetPopup->exec( QCursor::pos() );
+}
+
+//================================================================================
+/*!
+ * \brief Enable showing of the popup when Geometry selection btn is clicked
+  * \param enable - true to enable
+ */
+//================================================================================
+
+enum { DIRECT_GEOM_INDEX = 0, GEOM_BY_MESH_INDEX };
+
+void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
+{
+  if ( QButton* selBtn = dynamic_cast<QButton*>( objectWg( Geom, Btn )))
+  {
+    disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+    if ( enable ) {
+      if ( ! myGeomPopup ) {
+        myGeomPopup = new QPopupMenu();
+        myGeomPopup->insertItem( tr("DIRECT_GEOM_SELECTION"), DIRECT_GEOM_INDEX );
+        myGeomPopup->insertItem( tr("GEOM_BY_MESH_ELEM_SELECTION"), GEOM_BY_MESH_INDEX );
+        connect( myGeomPopup, SIGNAL( activated( int ) ), SLOT( onGeomPopup( int ) ) );
+      }
+      connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+    }
+  }
+}
+
+void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
+{
+  if ( myGeomPopup && isBtnOn )
+    myGeomPopup->exec( QCursor::pos() );
+}
+
+void SMESHGUI_MeshDlg::onGeomPopup( int index )
+{
+  emit geomSelectionByMesh( index == GEOM_BY_MESH_INDEX );
 }

@@ -20,6 +20,7 @@
 		<component-comment>Mesh component</component-comment>
 		<component-multistudy>1</component-multistudy>
 		<component-icone>ModuleMesh.png</component-icone>
+		<component-impltype>1</component-impltype>
 
             <component-interface-list>
                 <component-interface-name>SMESH</component-interface-name>

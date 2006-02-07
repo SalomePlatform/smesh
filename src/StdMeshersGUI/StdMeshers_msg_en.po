@@ -47,6 +47,12 @@ msgstr "Distribution with analitic density"
 msgid "SMESH_NB_SEGMENTS_SCALE_PARAM"
 msgstr "Scale Factor"
 
+msgid "SMESH_DENSITY_FUNC"
+msgstr "Density function"
+
+msgid "SMESH_DISTR"
+msgstr "Distribution"
+
 msgid "SMESH_TAB_FUNC"
 msgstr "Table function"
 
@@ -64,6 +70,9 @@ msgstr "Exponent"
 
 msgid "SMESH_CUT_NEG_MODE"
 msgstr "Cut negative"
+
+msgid "SMESH_NO_CONV"
+msgstr "No conversion"
 
 msgid "SMESH_INSERT_ROW"
 msgstr "Insert row"

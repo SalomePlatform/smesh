@@ -71,21 +71,26 @@ public:
   void                         setCurrentTab( const int );
   void                         setMaxHypoDim( const int );
   void                         setHypoSets( const QStringList& );
+  void                         setGeomPopupEnabled( const bool );
 
 signals:
 
   void                         hypoSet( const QString& );
+  void                         geomSelectionByMesh( bool );
 
 private slots:  
 
   void                         onHypoSetPopup( int );
   void                         onHypoSetButton();
+  void                         onGeomPopup( int );
+  void                         onGeomSelectionButton( bool );
 
 private:
 
   QMap< int, SMESHGUI_MeshTab* > myTabs;
   QTabWidget*                    myTabWg;
   QPopupMenu*                    myHypoSetPopup;
+  QPopupMenu*                    myGeomPopup;
 };
 
 /*!

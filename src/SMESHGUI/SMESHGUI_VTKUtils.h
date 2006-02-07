@@ -34,7 +34,6 @@ class SUIT_Study;
 class SUIT_ViewWindow;
 class SUIT_ViewManager;
 
-class SVTK_InteractorStyle;
 class SVTK_ViewWindow;
 class SVTK_Selector;
 
@@ -119,25 +118,25 @@ namespace SMESH{
 
 
   //----------------------------------------------------------------------------
-  SVTK_InteractorStyle* 
-    GetInteractorStyle (SUIT_ViewWindow* = GetActiveWindow());
+  SVTK_Selector* 
+    GetSelector(SUIT_ViewWindow* = GetActiveWindow());
 
   void SetFilter (const Handle(VTKViewer_Filter)& theFilter,
-		  SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+		  SVTK_Selector* theSelector = GetSelector());
 
   Handle(VTKViewer_Filter) 
-    GetFilter (int theId, SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+    GetFilter (int theId, SVTK_Selector* theSelector = GetSelector());
 
   bool IsFilterPresent (int theId, 
-			SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+			SVTK_Selector* theSelector = GetSelector());
 
   void RemoveFilter (int theId, 
-		     SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+		     SVTK_Selector* theSelector = GetSelector());
 
-  void RemoveFilters (SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+  void RemoveFilters (SVTK_Selector* theSelector = GetSelector());
 
   bool IsValid (SALOME_Actor* theActor, int theCellId,
-		SVTK_InteractorStyle* theStyle = GetInteractorStyle());
+		SVTK_Selector* theSelector = GetSelector());
 
   //----------------------------------------------------------------------------
   int GetNameOfSelectedNodes(SVTK_Selector* theSelector, 

@@ -47,6 +47,17 @@ class StdMeshers_QuadranglePreference:public SMESH_Hypothesis
   virtual std::istream & LoadFrom(std::istream & load);
   friend std::ostream & operator <<(std::ostream & save, StdMeshers_QuadranglePreference & hyp);
   friend std::istream & operator >>(std::istream & load, StdMeshers_QuadranglePreference & hyp);
+
+  /*!
+   * \brief Initialize my parameter values by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+    *
+    * Just return false as this hypothesis does not have parameters values
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
+
 };
 
 #endif

@@ -45,10 +45,18 @@ public:
 
   double GetMaxVolume() const;
 
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_MaxElementVolume & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_MaxElementVolume & hyp);
+  virtual std::ostream & SaveTo(std::ostream & save);
+  virtual std::istream & LoadFrom(std::istream & load);
+  friend std::ostream & operator << (std::ostream & save, StdMeshers_MaxElementVolume & hyp);
+  friend std::istream & operator >> (std::istream & load, StdMeshers_MaxElementVolume & hyp);
+
+  /*!
+   * \brief Initialize maximal volume by the mesh built on the geometry
+   * \param theMesh - the built mesh
+   * \param theShape - the geometry of interest
+   * \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 
 protected:
   double _maxVolume;

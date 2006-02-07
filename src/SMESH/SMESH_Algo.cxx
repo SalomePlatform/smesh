@@ -32,6 +32,7 @@ using namespace std;
 #include "SMESH_Mesh.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMDS_EdgePosition.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -149,24 +150,24 @@ const list<const SMESHDS_Hypothesis *> & SMESH_Algo::GetAppliedHypothesis(
 
 double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
 {
-	double UMin = 0, UMax = 0;
-	TopLoc_Location L;
-	if (BRep_Tool::Degenerated(E))
-		return 0;
-	Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
-	GeomAdaptor_Curve AdaptCurve(C);
-	GCPnts_AbscissaPoint gabs;
-	double length = gabs.Length(AdaptCurve, UMin, UMax);
-	return length;
+  double UMin = 0, UMax = 0;
+  if (BRep_Tool::Degenerated(E))
+    return 0;
+  TopLoc_Location L;
+  Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
+  GeomAdaptor_Curve AdaptCurve(C);
+  GCPnts_AbscissaPoint gabs;
+  double length = gabs.Length(AdaptCurve, UMin, UMax);
+  return length;
 }
 
 //================================================================================
 /*!
  * \brief Find out elements orientation on a geometrical face
-  * \param theFace - The face correctly oriented in the shape being meshed
-  * \param theMeshDS - The mesh data structure
-  * \retval bool - true if the face normal and the normal of first element
-  *                in the correspoding submesh point in different directions
+ * \param theFace - The face correctly oriented in the shape being meshed
+ * \param theMeshDS - The mesh data structure
+ * \retval bool - true if the face normal and the normal of first element
+ *                in the correspoding submesh point in different directions
  */
 //================================================================================
 
@@ -266,4 +267,80 @@ bool SMESH_Algo::IsReversedSubMesh (const TopoDS_Face&  theFace,
     Nf.Reverse();
 
   return Ne * Nf < 0.;
+}
+
+//================================================================================
+/*!
+ * \brief Initialize my parameter values by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ *
+ * Just return false as the algorithm does not hold parameters values
+ */
+//================================================================================
+
+bool SMESH_Algo::SetParametersByMesh(const SMESH_Mesh* /*theMesh*/,
+                                     const TopoDS_Shape& /*theShape*/)
+{
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
+ * \param theMesh - The mesh containing nodes
+ * \param theEdge - The geometrical edge of interest
+ * \param theParams - The resulting vector of sorted node parameters
+ * \retval bool - false if not all parameters are OK
+ */
+//================================================================================
+
+bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
+                                    const TopoDS_Edge&  theEdge,
+                                    vector< double > &  theParams)
+{
+  theParams.clear();
+
+  if ( !theMesh || theEdge.IsNull() )
+    return false;
+
+  SMESHDS_SubMesh * eSubMesh = theMesh->MeshElements( theEdge );
+  if ( !eSubMesh || !eSubMesh->GetElements()->more() )
+    return false; // edge is not meshed
+
+  int nbEdgeNodes = 0;
+  set < double > paramSet;
+  if ( eSubMesh )
+  {
+    // loop on nodes of an edge: sort them by param on edge
+    SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
+    while ( nIt->more() )
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      const SMDS_PositionPtr& pos = node->GetPosition();
+      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+        return false;
+      const SMDS_EdgePosition* epos =
+        static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
+      paramSet.insert( epos->GetUParameter() );
+      ++nbEdgeNodes;
+    }
+  }
+  // add vertex nodes params
+  Standard_Real f, l;
+  BRep_Tool::Range(theEdge, f, l);
+  paramSet.insert( f );
+  paramSet.insert( l );
+  if ( paramSet.size() != nbEdgeNodes + 2 )
+    return false; // there are equal parameters
+
+  // fill the vector
+  theParams.resize( paramSet.size() );
+  set < double >::iterator   par    = paramSet.begin();
+  vector< double >::iterator vecPar = theParams.begin();
+  for ( ; par != paramSet.end(); ++par, ++vecPar )
+    *vecPar = *par;
+
+  return theParams.size() > 1;
 }

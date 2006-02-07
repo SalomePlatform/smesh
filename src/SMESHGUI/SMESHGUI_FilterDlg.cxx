@@ -2260,17 +2260,17 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
 //=======================================================================
 void SMESHGUI_FilterDlg::insertFilterInViewer()
 {
-  if (SVTK_InteractorStyle* aStyle = SMESH::GetInteractorStyle()) {
+  if (SVTK_Selector* aSelector = SMESH::GetSelector()) {
     SMESH::ElementType anEntType = (SMESH::ElementType)myTable->GetType();
 
     if (myFilter[ myTable->GetType() ]->_is_nil() ||
          myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ||
          !mySetInViewer->isChecked()) {
-      SMESH::RemoveFilter(getFilterId(anEntType), aStyle);
+      SMESH::RemoveFilter(getFilterId(anEntType), aSelector);
     } else {
       Handle(SMESHGUI_PredicateFilter) aFilter = new SMESHGUI_PredicateFilter();
       aFilter->SetPredicate(myFilter[ myTable->GetType() ]->GetPredicate());
-      SMESH::SetFilter(aFilter, aStyle);
+      SMESH::SetFilter(aFilter, aSelector);
     }
   }
 }

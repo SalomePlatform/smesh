@@ -50,6 +50,7 @@ public:
 
           void create( const bool isAlgo, QWidget* );
           void edit( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+          void create( SMESH::SMESH_Hypothesis_ptr, QWidget* );
   virtual bool checkParams() const = 0;
 
   QString                     hypType() const;
@@ -67,16 +68,20 @@ protected:
   typedef QPtrList<QWidget>      ListOfWidgets;
 
   SMESH::SMESH_Hypothesis_var hypothesis() const;
+  SMESH::SMESH_Hypothesis_var initParamsHypothesis() const;
   const ListOfWidgets&        widgets() const;
   ListOfWidgets&              changeWidgets();
 
   virtual QFrame*  buildFrame    () = 0;
           QFrame*  buildStdFrame ();
   virtual void     retrieveParams() const = 0;
-  virtual void     storeParams   () const = 0;
+  virtual QString  storeParams   () const = 0;
   virtual bool     stdParams     ( ListOfStdParams& ) const;
           bool     getStdParamFromDlg( ListOfStdParams& ) const;
+  static  QString  stdParamValues( const ListOfStdParams& );
   virtual void     attuneStdWidget( QWidget*, const int ) const;
+  virtual QWidget* getCustomWidget( const StdParam &, QWidget* ) const;
+  virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
   virtual QString  caption() const;
   virtual QPixmap  icon() const;
   virtual QString  type() const;
@@ -88,7 +93,7 @@ private:
           bool editHypothesis( SMESH::SMESH_Hypothesis_ptr, QWidget* );
 
 private:
-  SMESH::SMESH_Hypothesis_var  myHypo;
+  SMESH::SMESH_Hypothesis_var  myHypo, myInitParamsHypo;
   QString                      myHypType;
   ListOfWidgets                myParamWidgets;
   bool                         myIsCreate;

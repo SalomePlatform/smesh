@@ -26,9 +26,10 @@
 //  $Header$
 
 #include "StdMeshersGUI_DistrTable.h"
+#include <QtxDblValidator.h>
+
 #include <qlayout.h>
 #include <qpushbutton.h>
-#include <qvalidator.h>
 #include <qlineedit.h>
 
 //=================================================================================
@@ -40,8 +41,8 @@ StdMeshersGUI_DistrTable::StdMeshersGUI_DistrTable( const int rows, QWidget* par
 {
   horizontalHeader()->setLabel( 0, "t" );
   horizontalHeader()->setLabel( 1, "f(t)" );
-  myArgV = new QDoubleValidator( 0.0, 1.0, 3, this );
-  myFuncV = new QDoubleValidator( 0.0, 1E10, 3, this );
+  myArgV = new QtxDblValidator( 0.0, 1.0, 3, this );
+  myFuncV = new QtxDblValidator( 0.0, 1E20, 3, this );
 }
 
 StdMeshersGUI_DistrTable::~StdMeshersGUI_DistrTable()
@@ -68,6 +69,14 @@ QSize StdMeshersGUI_DistrTable::sizeHint() const
 void StdMeshersGUI_DistrTable::stopEditing( const bool accept )
 {
   endEdit( currEditRow(), currEditCol(), accept, false );
+}
+
+QWidget* StdMeshersGUI_DistrTable::beginEdit( int row, int col, bool replace )
+{
+  QWidget* w = QTable::beginEdit( row, col, replace );
+  if( w && w->inherits( "QLineEdit" ) )
+    ( ( QLineEdit* )w )->selectAll();
+  return w;
 }
 
 void StdMeshersGUI_DistrTable::edit( const int r, const int c )
@@ -265,8 +274,24 @@ void StdMeshersGUI_DistrTable::setData( const SMESH::double_array& d )
 {
   stopEditing( false );
   setNumRows( d.length()/2 );
+  QString val;
   for( int i=0; i<d.length(); i++ )
-    setText( i/2, i%2, QString( "%1" ).arg( d[i] ) );
+  {
+    QtxDblValidator* v = i%2==0 ? myArgV : myFuncV;
+    val = QString::number( d[i] );
+    v->fixup( val );
+    setText( i/2, i%2, val );
+  }
+}
+
+QtxDblValidator* StdMeshersGUI_DistrTable::argValidator() const
+{
+  return myArgV;
+}
+
+QtxDblValidator* StdMeshersGUI_DistrTable::funcValidator() const
+{
+  return myFuncV;
 }
 
 //=================================================================================
@@ -346,3 +371,4 @@ void StdMeshersGUI_DistrTableFrame::onButtonClicked()
   else if( sender()==button( REMOVE_ROW ) )
     emit toEdit( REMOVE_ROW, table()->currentRow() );
 }
+

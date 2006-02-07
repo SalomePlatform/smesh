@@ -1,3 +1,18 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2006-01-13 13:50+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 # This is a Qt message file in .po format.  Each msgid starts with
 # a scope.  This scope should *NOT* be translated - eg. "Foo::Bar"
 # would be translated to "Pub", not "Foo::Pub".
@@ -614,6 +629,10 @@ msgstr "Scalar Bar"
 msgid "SMESH_UPDATEVIEW"
 msgstr "Update View"
 
+
+#Warning incorrect values
+msgid "SMESH_ERR_SCALARBAR_PARAMS"
+msgstr "Warning! The parameters is incorrect"
 
 # -------------- Connectivity --------------
 
@@ -2893,6 +2912,26 @@ msgstr "Assign a set of hypotheses"
 
 #-----------------------------------------------------------
 
+msgid "SMESHGUI_ShapeByMeshDlg::CAPTION"
+msgstr "Find geometry by mesh element"
+
+msgid "SMESH_ELEMENT_TYPE"
+msgstr "Element Type"
+
+msgid "ELEMENT_ID"
+msgstr "Element ID"
+
+msgid "GEOMETRY_NAME"
+msgstr "Geometry name"
+
+msgid "DIRECT_GEOM_SELECTION"
+msgstr "Direct geometry selection"
+
+msgid "GEOM_BY_MESH_ELEM_SELECTION"
+msgstr "Find geometry by mesh element selection"
+
+#-----------------------------------------------------------
+
 msgid "SMESHGUI_MeshTab::ALGORITHM"
 msgstr "Algorithm"
 
@@ -2931,9 +2970,17 @@ msgstr "Geometry object is not defined\nPlease specify it and try again"
 msgid "SMESHGUI_MeshOp::THERE_IS_NO_OBJECT_FOR_EDITING"
 msgstr "There is no object for editing. Please\nselect mesh or sub-mesh and try again"
 
+msgid "SMESHGUI_MeshOp::EDIT_SUBMESH_QUESTION"
+msgstr "A submesh on the selected geometry already exists.\n Do you want to edit this submesh?"
+
 msgid "SMESHGUI_MeshOp::MESH_IS_NULL"
 msgstr "Mesh is null"
 
+msgid "SMESHGUI_MeshOp::IMPORTED_MESH"
+msgstr "Mesh is not built on geometry"
+
+msgid "SMESHGUI_MeshOp::INVALID_SUBSHAPE"
+msgstr "Geometry object is not a subshape of the shape to mesh"
+
 msgid "SMESHGUI_MeshOp::MESH_IS_NOT_DEFINED"
 msgstr "Mesh is not defined\nPlease specify it and try again"
-

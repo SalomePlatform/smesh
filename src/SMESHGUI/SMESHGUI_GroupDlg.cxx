@@ -89,6 +89,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
                 WStyle_Title | WStyle_SysMenu | WDestructiveClose),
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+     mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
      myIsBusy( false ),
      myActor( 0 )
 {
@@ -103,7 +104,6 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
     myGeomGroupLine->setEnabled(false);
   }
 
-  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   /* Move widget on the botton right corner of main widget */
   int x, y ;
@@ -121,11 +121,10 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
                 WStyle_Title | WStyle_SysMenu | WDestructiveClose),
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+     mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
      myIsBusy( false )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
-
-  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   initDialog(false);
   if (!theGroup->_is_nil())
@@ -563,14 +562,14 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 	  aViewWindow->SetSelectionMode(VolumeSelection);
       }
     } else {
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->SetSelectionMode(ActorSelection);
       if (theMode == 4)
 	mySelectionMgr->installFilter(mySubMeshFilter);
       else if (theMode == 5)
 	mySelectionMgr->installFilter(myGroupFilter);
       else if (theMode == 6)
 	mySelectionMgr->installFilter(myMeshFilter);
+      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	aViewWindow->SetSelectionMode(ActorSelection);
     }
     mySelectionMode = theMode;
   }
@@ -716,8 +715,6 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
     SALOME_ListIO aList;
     aList.Append(myActor->getIO());
     mySelectionMgr->setSelectedObjects(aList,false);
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->highlight( myActor->getIO(), true, true );
   }
   myIsBusy = false;
 }
@@ -1096,11 +1093,26 @@ void SMESHGUI_GroupDlg::onAdd()
 
   SMESH::ElementType aType = SMESH::ALL;
   switch(myTypeId) {
-  case 0: aType = SMESH::NODE; break;
-  case 1: aType = SMESH::EDGE; break;
-  case 2: aType = SMESH::FACE; break;
-  case 3: aType = SMESH::VOLUME; break;
+  case 0: 
+    aType = SMESH::NODE; 
+    mySelector->SetSelectionMode(NodeSelection);
+    break;
+  case 1: 
+    aType = SMESH::EDGE; 
+    mySelector->SetSelectionMode(EdgeSelection);
+    break;
+  case 2: 
+    aType = SMESH::FACE; 
+    mySelector->SetSelectionMode(FaceSelection);
+    break;
+  case 3: 
+    aType = SMESH::VOLUME; 
+    mySelector->SetSelectionMode(VolumeSelection);
+    break;
+  default:
+    mySelector->SetSelectionMode(ActorSelection);
   }
+
 
   if (myCurrentLineEdit == 0) {
     //if (aNbSel != 1) { myIsBusy = false; return; }

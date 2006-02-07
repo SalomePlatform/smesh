@@ -34,7 +34,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QButton;
-class QDoubleValidator;
+class QtxDblValidator;
 
 /*!
  *  \brief Values corresponding to buttons for table resize
@@ -65,17 +65,21 @@ public:
   void data( SMESH::double_array& );
   void setData( const SMESH::double_array& );
 
+  QtxDblValidator* argValidator() const;
+  QtxDblValidator* funcValidator() const;
+
 protected:
   virtual QWidget* createEditor( int, int, bool ) const;
   virtual bool     eventFilter( QObject*, QEvent* );
   virtual void     keyPressEvent( QKeyEvent* );
+  virtual QWidget* beginEdit( int row, int col, bool replace );
   virtual void     edit( const int, const int );
 
 private slots:
   void onEdit( TableButton, int );
 
 private:
-  QDoubleValidator   *myArgV, *myFuncV;
+  QtxDblValidator   *myArgV, *myFuncV;
 };
 
 
@@ -121,7 +125,6 @@ private:
   QButton                   *myInsertRow, *myRemoveRow;
   StdMeshersGUI_DistrTable  *myTable;
 };
-
 
 #endif
 

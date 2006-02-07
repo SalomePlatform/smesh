@@ -27,9 +27,19 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_MaxElementArea.hxx"
+
+#include "SMESH_ControlsDef.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMESHDS_SubMesh.hxx"
+#include "SMESH_Mesh.hxx"
+
+#include <TopExp.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -42,8 +52,6 @@ StdMeshers_MaxElementArea::StdMeshers_MaxElementArea(int hypId, int studyId, SME
 {
   _maxArea =1.;
   _name = "MaxElementArea";
-//   SCRUTE(_name);
-//   SCRUTE(&_name);
   _param_algo_dim = 2; 
 }
 
@@ -137,3 +145,44 @@ istream & operator >> (istream & load, StdMeshers_MaxElementArea & hyp)
   return hyp.LoadFrom( load );
 }
 
+//================================================================================
+/*!
+ * \brief Initialize maximal area by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ */
+//================================================================================
+
+bool StdMeshers_MaxElementArea::SetParametersByMesh(const SMESH_Mesh*   theMesh,
+                                                    const TopoDS_Shape& theShape)
+{
+  if ( !theMesh || theShape.IsNull() )
+    return false;
+
+  _maxArea = 0;
+
+  SMESH::Controls::Area areaControl;
+  SMESH::Controls::TSequenceOfXYZ nodesCoords;
+
+  SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
+
+  TopTools_IndexedMapOfShape faceMap;
+  TopExp::MapShapes( theShape, TopAbs_FACE, faceMap );
+  for ( int iF = 1; iF <= faceMap.Extent(); ++iF )
+  {
+    SMESHDS_SubMesh * subMesh = aMeshDS->MeshElements( faceMap( iF ));
+    if ( !subMesh )
+      return false;
+    SMDS_ElemIteratorPtr fIt = subMesh->GetElements();
+    while ( fIt->more() )
+    {
+      const SMDS_MeshElement* elem = fIt->next();
+      if ( elem->GetType() == SMDSAbs_Face ) {
+        areaControl.GetPoints( elem, nodesCoords );
+        _maxArea = max( _maxArea, areaControl.GetValue( nodesCoords ));
+      }
+    }
+  }
+  return _maxArea > 0;
+}

@@ -24,9 +24,11 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_Propagation.hxx"
+
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -99,4 +101,20 @@ istream & operator >> (istream & load, StdMeshers_Propagation & hyp)
 std::string StdMeshers_Propagation::GetName ()
 {
   return "Propagation";
+}
+//================================================================================
+/*!
+ * \brief Initialize my parameter values by the mesh built on the geometry
+ * \param theMesh - the built mesh
+ * \param theShape - the geometry of interest
+ * \retval bool - true if parameter values have been successfully defined
+ *
+ * Just return false as this hypothesis does not have parameters values
+ */
+//================================================================================
+
+bool StdMeshers_Propagation::SetParametersByMesh(const SMESH_Mesh* /*theMesh*/,
+                                                 const TopoDS_Shape& /*theShape*/)
+{
+  return false;
 }

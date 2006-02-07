@@ -19,8 +19,8 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
 {
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );
   myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
-  myCurve1 = insertCurve( QString() );
-  myCurve2 = insertCurve( QString() );
+  myDensity = insertCurve( QString() );
+  myDistr = insertCurve( QString() );
   myMsg = insertMarker( new QwtPlotMarker( this ) );
   setMarkerPos( myMsg, 0.5, 0.5 );
   setMarkerLabelPen( myMsg, QPen( Qt::red, 1 ) );
@@ -28,11 +28,16 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
   f.setPointSize( 14 );
   f.setBold( true );
   setMarkerFont( myMsg, f );
-  setCurvePen( myCurve1, QPen( Qt::red, 1 ) );
+  setCurvePen( myDensity, QPen( Qt::red, 1 ) );
 
   QColor dc = Qt::blue;
-  setCurvePen( myCurve2, QPen( dc, 1 ) );
-  setCurveSymbol( myCurve2, QwtSymbol( QwtSymbol::XCross, QBrush( dc ), QPen( dc ), QSize( 5, 5 ) ) );
+  setCurvePen( myDistr, QPen( dc, 1 ) );
+  setCurveSymbol( myDistr, QwtSymbol( QwtSymbol::XCross, QBrush( dc ), QPen( dc ), QSize( 5, 5 ) ) );
+  setAutoLegend( true );
+  enableLegend( true );
+  setLegendPos( Qwt::Bottom );
+  setCurveTitle( myDensity, tr( "SMESH_DENSITY_FUNC" ) );
+  setCurveTitle( myDistr, tr( "SMESH_DISTR" ) );
 }
 
 StdMeshersGUI_DistrPreview::~StdMeshersGUI_DistrPreview()
@@ -196,9 +201,9 @@ void StdMeshersGUI_DistrPreview::update()
       max_x = x[i];
   }
 
-  setAxisScale( curveXAxis( myCurve1 ), min_x, max_x );
-  setAxisScale( curveYAxis( myCurve1 ), min( 0.0, min_y ), max( 0.0, max_y ) );
-  setCurveData( myCurve1, x, y, size );
+  setAxisScale( curveXAxis( myDensity ), min_x, max_x );
+  setAxisScale( curveYAxis( myDensity ), min( 0.0, min_y ), max( 0.0, max_y ) );
+  setCurveData( myDensity, x, y, size );
   if( x )
     delete[] x;
   if( y )
@@ -213,19 +218,33 @@ void StdMeshersGUI_DistrPreview::update()
     x[i] = distr[i];
     y[i] = 0;
   }
-  setCurveData( myCurve2, x, y, size );
+  setCurveData( myDistr, x, y, size );
   delete[] x;
   delete[] y;
   x = y = 0;
-  replot();
+
+  OSD::SetSignal( true );
+  CASCatch_CatchSignals aCatchSignals;
+  aCatchSignals.Activate();
+
+  CASCatch_TRY
+  {   
+    replot();
+  }
+  CASCatch_CATCH(CASCatch_Failure)
+  {
+    aCatchSignals.Deactivate();
+    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+  }
+  aCatchSignals.Deactivate();
 }
 
 void StdMeshersGUI_DistrPreview::showError()
 {
-  setAxisScale( curveXAxis( myCurve1 ), 0.0, 1.0 );
-  setAxisScale( curveYAxis( myCurve1 ), 0.0, 1.0 );
-  setCurveData( myCurve1, 0, 0, 0 );
-  setCurveData( myCurve2, 0, 0, 0 );
+  setAxisScale( curveXAxis( myDensity ), 0.0, 1.0 );
+  setAxisScale( curveYAxis( myDensity ), 0.0, 1.0 );
+  setCurveData( myDensity, 0, 0, 0 );
+  setCurveData( myDistr, 0, 0, 0 );
   setMarkerLabel( myMsg, tr( "SMESH_INVALID_FUNCTION" ) );
   replot();
 }

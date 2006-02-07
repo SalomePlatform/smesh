@@ -41,6 +41,7 @@
 class SMESH_Gen;
 class SMESH_Mesh;
 class TopoDS_Face;
+class TopoDS_Shape;
 class SMESHDS_Mesh;
 
 class SMESH_Algo:public SMESH_Hypothesis
@@ -65,6 +66,19 @@ class SMESH_Algo:public SMESH_Hypothesis
 	static double EdgeLength(const TopoDS_Edge & E);
 
   /*!
+   * \brief Fill vector of node parameters on geometrical edge, including vertex nodes
+    * \param theMesh - The mesh containing nodes
+    * \param theEdge - The geometrical edge of interest
+    * \param theParams - The resulting vector of sorted node parameters
+    * \retval bool - false if not all parameters are OK
+   */
+  static bool GetNodeParamOnEdge(const SMESHDS_Mesh*     theMesh,
+                                 const TopoDS_Edge&      theEdge,
+                                 std::vector< double > & theParams);
+
+  //static bool GetSegmentLengths();
+
+  /*!
    * \brief Find out elements orientation on a geometrical face
    * \param theFace - The face correctly oriented in the shape being meshed
    * \param theMeshDS - The mesh data structure
@@ -73,6 +87,16 @@ class SMESH_Algo:public SMESH_Hypothesis
    */
   static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
                                  SMESHDS_Mesh*       theMeshDS);
+
+  /*!
+   * \brief Initialize my parameter values by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+    *
+    * Just return false as the algorithm does not hold parameters values
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 
  public:
         // algo features

@@ -36,9 +36,6 @@
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
-#include "SVTK_RenderWindow.h"
-#include "SVTK_InteractorStyle.h"
-#include "SVTK_RenderWindowInteractor.h"
 
 #include "utilities.h"
 
@@ -448,85 +445,83 @@ namespace SMESH{
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
            SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 );
 
-    for ( int i=0, n=views.count(); i<n; i++ ) {
-        SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] );
-	if (!aVtkView) continue;
-	// update VTK viewer properties
-	SVTK_RenderWindowInteractor* anInteractor = aVtkView->getRWInteractor();
-	if (anInteractor) {
-	  // mesh element selection
-	  anInteractor->SetSelectionProp(aSelColor.red()/255., aSelColor.green()/255.,
-					 aSelColor.blue()/255., SW );
+    for ( int i=0, n=views.count(); i<n; i++ ){
+      // update VTK viewer properties
+      if(SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] )){
+	// mesh element selection
+	aVtkView->SetSelectionProp(aSelColor.red()/255., 
+				   aSelColor.green()/255.,
+				   aSelColor.blue()/255., 
+				   SW );
+	// tolerances
+	aVtkView->SetSelectionTolerance(SP1, SP2);
 
-	  // tolerances
-	  anInteractor->SetSelectionTolerance(SP1, SP2);
-
-	  // pre-selection
-	  SVTK_InteractorStyle* aStyle =
-	    dynamic_cast<SVTK_InteractorStyle*>( anInteractor->GetInteractorStyle() );
-	  if (aStyle) {
-	    aStyle->setPreselectionProp(aPreColor.red()/255., aPreColor.green()/255.,
-					aPreColor.blue()/255., PW);
-	  }
-	}
+	// pre-selection
+	aVtkView->SetPreselectionProp(aPreColor.red()/255., 
+				      aPreColor.green()/255.,
+				      aPreColor.blue()/255., 
+				      PW);
 	// update actors
 	vtkRenderer* aRenderer = aVtkView->getRenderer();
 	vtkActorCollection *aCollection = aRenderer->GetActors();
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	    anActor->SetHighlightColor(aHiColor.red()/255., aHiColor.green()/255.,
+	    anActor->SetHighlightColor(aHiColor.red()/255., 
+				       aHiColor.green()/255.,
 				       aHiColor.blue()/255.);
-	    anActor->SetPreHighlightColor(aPreColor.red()/255., aPreColor.green()/255.,
+	    anActor->SetPreHighlightColor(aPreColor.red()/255., 
+					  aPreColor.green()/255.,
 					  aPreColor.blue()/255.);
 	  }
 	}
+      }
     }
   }
 
 
   //----------------------------------------------------------------------------
-  SVTK_InteractorStyle* GetInteractorStyle(SUIT_ViewWindow *theWindow){
-    if(SVTK_ViewWindow* aWnd = GetVtkViewWindow(theWindow)){
-      if(SVTK_RenderWindowInteractor* anInteractor = aWnd->getRWInteractor()){
-	return dynamic_cast<SVTK_InteractorStyle*>( anInteractor->GetInteractorStyle() );
-      }
-    }
+  SVTK_Selector* 
+  GetSelector(SUIT_ViewWindow *theWindow)
+  {
+    if(SVTK_ViewWindow* aWnd = GetVtkViewWindow(theWindow))
+      return aWnd->GetSelector();
+
     return NULL;
   }
 
   void SetFilter(const Handle(VTKViewer_Filter)& theFilter,
-		 SVTK_InteractorStyle* theStyle)
+		 SVTK_Selector* theSelector)
   {
-    if (theStyle)
-      theStyle->SetFilter(theFilter);
+    if (theSelector)
+      theSelector->SetFilter(theFilter);
   }
 
-  Handle(VTKViewer_Filter) GetFilter(int theId, SVTK_InteractorStyle* theStyle)
+  Handle(VTKViewer_Filter) GetFilter(int theId, SVTK_Selector* theSelector)
   {
-    return theStyle->GetFilter(theId);
+    return theSelector->GetFilter(theId);
   }
 
-  bool IsFilterPresent(int theId, SVTK_InteractorStyle* theStyle)
+  bool IsFilterPresent(int theId, SVTK_Selector* theSelector)
   {
-    return theStyle->IsFilterPresent(theId);
+    return theSelector->IsFilterPresent(theId);
   }
 
-  void RemoveFilter(int theId, SVTK_InteractorStyle* theStyle)
+  void RemoveFilter(int theId, SVTK_Selector* theSelector)
   {
-    theStyle->RemoveFilter(theId);
+    theSelector->RemoveFilter(theId);
   }
 
-  void RemoveFilters(SVTK_InteractorStyle* theStyle)
+  void RemoveFilters(SVTK_Selector* theSelector)
   {
-    for ( int id = SMESHGUI_NodeFilter; theStyle && id < SMESHGUI_LastFilter; id++ )
-      theStyle->RemoveFilter( id );
+    for ( int id = SMESHGUI_NodeFilter; theSelector && id < SMESHGUI_LastFilter; id++ )
+      theSelector->RemoveFilter( id );
   }
 
   bool IsValid(SALOME_Actor* theActor, int theCellId,
-	       SVTK_InteractorStyle* theStyle)
+	       SVTK_Selector* theSelector)
   {
-    return theStyle->IsValid(theActor,theCellId);
+    return theSelector->IsValid(theActor,theCellId);
   }
 
 

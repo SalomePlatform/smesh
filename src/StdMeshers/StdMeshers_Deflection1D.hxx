@@ -41,10 +41,18 @@ class StdMeshers_Deflection1D:public SMESH_Hypothesis
 
   double GetDeflection() const;
   
-  virtual ostream & SaveTo(ostream & save);
-  virtual istream & LoadFrom(istream & load);
-  friend ostream & operator <<(ostream & save, StdMeshers_Deflection1D & hyp);
-  friend istream & operator >>(istream & load, StdMeshers_Deflection1D & hyp);
+  virtual std::ostream & SaveTo(std::ostream & save);
+  virtual std::istream & LoadFrom(std::istream & load);
+  friend std::ostream & operator <<(std::ostream & save, StdMeshers_Deflection1D & hyp);
+  friend std::istream & operator >>(std::istream & load, StdMeshers_Deflection1D & hyp);
+
+  /*!
+   * \brief Initialize deflection value by the mesh built on the geometry
+    * \param theMesh - the built mesh
+    * \param theShape - the geometry of interest
+    * \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 
  protected:
   double _value;

@@ -62,6 +62,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
+#include <vtkProperty.h>
 
 // QT Includes
 #include <qapplication.h>
@@ -109,6 +110,7 @@ class TPolySimulation{
       myPreviewActor->PickableOff();
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper( myMapper );
+      myPreviewActor->SetRepresentation( 3 );
 
       float anRGB[3];
       vtkProperty* aProp = vtkProperty::New();
@@ -398,8 +400,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
       { 
 	if ( myActor ){
           myActor->SetPointRepresentation(true);
-	  myActor->SetEntityMode(SMESH_Actor::eVolumes);
-	  myActor->SetRepresentation(SMESH_Actor::eSurface);
 	}
         else
           SMESH::SetPointRepresentation(true);
@@ -421,9 +421,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ConstructorsClicked(int constructorId)
       {
 	if( myActor ){
 	  myActor->SetPointRepresentation(false);
-	  myActor->SetEntityMode(SMESH_Actor::eFaces);
-	  myActor->SetEntityMode(SMESH_Actor::eVolumes);
-	  myActor->SetRepresentation(SMESH_Actor::eSurface);
 	} else {
 	  SMESH::SetPointRepresentation(false);
 	}
@@ -528,8 +525,11 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
       
       //SALOME_ListIO aList;
       //mySelectionMgr->setSelectedObjects( aList );
-      mySimulation->SetVisibility(false);
       SMESH::UpdateView();
+      if( myActor ){
+	unsigned int anEntityMode = myActor->GetEntityMode();
+	myActor->SetEntityMode(SMESH_Actor::eVolumes | anEntityMode);
+      }
       ConstructorsClicked( GetConstructorId() );
       busy = false;
     }
@@ -640,7 +640,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
 	  buttonOk->setEnabled( false );
 	  buttonApply->setEnabled( false );
 	}
-	displaySimulation();
+	if(aListId.count()>1)
+	  displaySimulation();
       }
     }
   }
@@ -694,9 +695,10 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
   
   // get selected nodes/faces
   QString aString = "";
+  int anbNodes=0,aNbFaces=0;
   switch(GetConstructorId()){
   case 0:{
-    int anbNodes = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    anbNodes = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
     if (anbNodes >= 3)
       AddButton->setEnabled(true);
     else if (anbNodes < 3){
@@ -709,7 +711,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
   }
   case 1:{
     // get selected faces
-    int aNbFaces = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+    aNbFaces = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
     if (aNbFaces<=1){
       buttonOk->setEnabled( false );
       buttonApply->setEnabled( false );
@@ -727,8 +729,8 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::SelectionIntoArgument()
   }
   default: return;
   }
-  
-  displaySimulation();
+  if(anbNodes>2 || aNbFaces>1)
+    displaySimulation();
 }
 
 //=======================================================================
@@ -742,8 +744,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
       SMESH::TPolySimulation::TVTKIds aVTKIds;
       vtkIdType aType = VTK_CONVEX_POINT_SET ;
       if (GetConstructorId() == 0){
- 	if(!Preview->isChecked()) myActor->SetEntityMode(SMESH_Actor::eFaces);
- 	else myActor->SetEntityMode(SMESH_Actor::eVolumes);
 	if (!AddButton->isEnabled()){
 	  QListBoxItem* anItem;
 	  mySimulation->ResetGrid(true);
@@ -771,7 +771,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	} else {
 	  // add ids from edit line
 	  QStringList anEditIds = QStringList::split( " ", myEditCurrentArgument->text(), false);
-	  myActor->SetEntityMode(SMESH_Actor::eFaces);
 	  for ( int i = 0; i < anEditIds.count(); i++ )
 	    aVTKIds.push_back( myActor->GetObject()->GetNodeVTKId( anEditIds[ i ].toInt() ));
 	  aType = VTK_POLYGON;
@@ -781,10 +780,6 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::displaySimulation()
 	SMDS_Mesh* aMesh = 0;
 	if ( myActor ){
 	  aMesh = myActor->GetObject()->GetMesh();
-	  if (Preview->isChecked())
-	    myActor->SetEntityMode(SMESH_Actor::eVolumes);
-	  else
-	    myActor->SetEntityMode(SMESH_Actor::eFaces);
 	}
 	if ( aMesh ) {
 	  QStringList aListId = QStringList::split( " ", myEditCurrentArgument->text(), false);

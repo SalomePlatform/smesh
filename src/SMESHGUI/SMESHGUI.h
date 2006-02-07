@@ -83,6 +83,7 @@ public :
   void                ResetState() ;
   void                SetState(int aState) ;
   bool                DefineDlgPosition(QWidget* aDlg, int& x, int& y) ;
+  void                switchToOperation(int id) ;
 
   virtual bool OnGUIEvent        ( int id );
   virtual bool OnMousePress      ( QMouseEvent*, SUIT_ViewWindow* );

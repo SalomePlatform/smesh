@@ -1069,8 +1069,8 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
   if (_mapGroup.find(theGroupID) == _mapGroup.end())
     return;
   GetMeshDS()->RemoveGroup( _mapGroup[theGroupID]->GetGroupDS() );
-  _mapGroup.erase (theGroupID);
   delete _mapGroup[theGroupID];
+  _mapGroup.erase (theGroupID);
 }
 
 //=============================================================================

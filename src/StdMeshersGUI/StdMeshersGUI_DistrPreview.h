@@ -48,7 +48,7 @@ private:
   bool                      myIsTable;
   Conversion                myConv;
   SMESH::double_array       myTableFunc;
-  long                      myCurve1, myCurve2, myMsg;
+  long                      myDensity, myDistr, myMsg;
   Handle(ExprIntrp_GenExp)  myExpr;
   Expr_Array1OfNamedUnknown myVars;
   TColStd_Array1OfReal      myValues;

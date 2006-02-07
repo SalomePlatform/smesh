@@ -87,10 +87,26 @@ public:
 
 protected:
 
+  FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
+                               const TopoDS_Shape& aShape)
+    throw (SALOME_Exception);
+
   void SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
 			 FaceQuadStruct* quad)
     throw (SALOME_Exception);
+
+  /**
+   * Special function for creation only quandrangle faces
+   */
+  bool ComputeQuadPref(SMESH_Mesh& aMesh,
+                       const TopoDS_Shape& aShape,
+                       FaceQuadStruct* quad)
+    throw (SALOME_Exception);
+
+  UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
+			      const TopoDS_Face& F, const TopoDS_Edge& E,
+                              bool IsReverse);
 
   UVPtStruct* LoadEdgePoints(SMESH_Mesh& aMesh,
 			     const TopoDS_Face& F, const TopoDS_Edge& E,

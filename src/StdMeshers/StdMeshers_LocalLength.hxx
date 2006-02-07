@@ -35,21 +35,29 @@
 
 class StdMeshers_LocalLength:public SMESH_Hypothesis
 {
-  public:
-	StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen);
-	  virtual ~ StdMeshers_LocalLength();
+ public:
+  StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen);
+  virtual ~ StdMeshers_LocalLength();
 
-	void SetLength(double length) throw(SALOME_Exception);
+  void SetLength(double length) throw(SALOME_Exception);
 
-	double GetLength() const;
+  double GetLength() const;
 
-	virtual ostream & SaveTo(ostream & save);
-	virtual istream & LoadFrom(istream & load);
-	friend ostream & operator <<(ostream & save, StdMeshers_LocalLength & hyp);
-	friend istream & operator >>(istream & load, StdMeshers_LocalLength & hyp);
+  virtual std::ostream & SaveTo(std::ostream & save);
+  virtual std::istream & LoadFrom(std::istream & load);
+  friend std::ostream & operator <<(std::ostream & save, StdMeshers_LocalLength & hyp);
+  friend std::istream & operator >>(std::istream & load, StdMeshers_LocalLength & hyp);
 
-  protected:
-	double _length;
+  /*!
+   * \brief Initialize segment length by the mesh built on the geometry
+   * \param theMesh - the built mesh
+   * \param theShape - the geometry of interest
+   * \retval bool - true if parameter values have been successfully defined
+   */
+  virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
+
+ protected:
+  double _length;
 };
 
 #endif
