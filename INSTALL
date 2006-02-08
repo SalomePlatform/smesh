@@ -1,6 +1,6 @@
-This is the version 3.1.0 of SMESH
+This is the version 3.2.0a1 of SMESH
 Compatible with :
-        - KERNEL 3.1.0
-	- SALOMEGUI 3.1.0
-	- GEOM 3.1.0
-	- MED 3.1.0
+        - KERNEL 3.2.0a1
+	- SALOMEGUI 3.2.0a1
+	- GEOM 3.2.0a1
+	- MED 3.2.0a1
