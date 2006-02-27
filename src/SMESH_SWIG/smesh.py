@@ -457,7 +457,7 @@ class Mesh:
         """
          Export the mesh in a file with the MED format and choice the \a version of MED format
          \param f is the file name
-         \param version values are smesh.MED_V2_1, smesh.MED_V2_2
+         \param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
         """
         self.mesh.ExportToMED(f, opt, version)
 
