@@ -15,9 +15,9 @@ def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
     aGroup.Add(anIds)
 
 #Example
-## from SMESH_test1 import *
+from SMESH_test1 import *
 
-## smesh.Compute(mesh, box)
-## BuildGroupLyingOn(mesh, SMESH.FACE, "Group of faces lying on edge", edge )
+smesh.Compute(mesh, box)
+BuildGroupLyingOn(mesh, SMESH.FACE, "Group of faces lying on edge", edge )
 
-## salome.sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(1);
