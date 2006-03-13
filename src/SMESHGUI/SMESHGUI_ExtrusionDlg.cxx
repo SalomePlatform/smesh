@@ -264,10 +264,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
 
   /***************************************************************/
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
+  
   this->show(); // displays Dialog
 
   ConstructorsClicked(0);

@@ -160,9 +160,6 @@ void SMESHGUI_CreateHypothesesDlg::Init()
   connect(ListAlgoDefinition, SIGNAL(selectionChanged()), this, SLOT(onSelectionChanged()));
   connect(ListAlgoDefinition, SIGNAL(doubleClicked(QListViewItem*)), this, SLOT(onDoubleClicked(QListViewItem*)));
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 }
 

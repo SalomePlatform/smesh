@@ -60,6 +60,16 @@ module SMESH
     SMESH_Pattern GetPattern();
 
     /*!
+      Set the current mode
+     */
+    void SetEmbeddedMode( in boolean theMode );
+
+    /*!
+      Get the current mode
+     */
+    boolean IsEmbeddedMode();
+
+    /*!
       Set the current study
      */
     void SetCurrentStudy( in SALOMEDS::Study theStudy );

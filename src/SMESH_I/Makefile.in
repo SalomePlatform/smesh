@@ -74,34 +74,97 @@ LIB_SRC = \
 	SMESH_Pattern_i.cxx \
 	SMESH_2smeshpy.cxx
 
-LIB_SERVER_IDL = SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Mesh.idl \
-                 SALOME_Component.idl SALOME_Exception.idl \
-                 SMESH_Filter.idl SMESH_Group.idl SMESH_Pattern.idl
+LIB_SERVER_IDL = \
+	SMESH_Gen.idl \
+	SMESH_Hypothesis.idl \
+	SMESH_Mesh.idl \
+        SALOME_Component.idl \
+	SALOME_Exception.idl \
+        SMESH_Filter.idl \
+	SMESH_Group.idl \
+	SMESH_Pattern.idl
 
-LIB_CLIENT_IDL = SALOMEDS.idl GEOM_Gen.idl MED.idl SALOMEDS_Attributes.idl SALOME_GenericObj.idl SALOME_Comm.idl
+LIB_CLIENT_IDL = \
+	SALOMEDS.idl \
+	GEOM_Gen.idl \
+	MED.idl \
+	SALOMEDS_Attributes.idl \
+	SALOME_GenericObj.idl \
+	SALOME_Comm.idl
 
 # Executables targets
 BIN = SMESHEngine
 BIN_SRC = 
 
 # additionnal information to compil and link file
-CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+CPPFLAGS+= \
+	$(OCC_INCLUDES) \
+	$(HDF5_INCLUDES) \
+	$(BOOST_CPPFLAGS) \
+	-I${KERNEL_ROOT_DIR}/include/salome \
+        -I${MED_ROOT_DIR}/include/salome \
+	-I${GEOM_ROOT_DIR}/include/salome 
 
-LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
-	  -L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls \
-    $(OCC_LDPATH) -lTKCDF -lTKBO
+CXXFLAGS+= \
+	$(OCC_CXXFLAGS) \
+	$(HDF5_INCLUDES) \
+	-I${KERNEL_ROOT_DIR}/include/salome \
+        -I${MED_ROOT_DIR}/include/salome \
+	-I${GEOM_ROOT_DIR}/include/salome
 
+LDFLAGS+= \
+	-L${KERNEL_ROOT_DIR}/lib/salome \
+	-lSalomeContainer \
+	-lSalomeNS \
+	-lRegistry \
+	-lSalomeHDFPersist \
+	-lSalomeLifeCycleCORBA \
+	-lTOOLSDS \
+	-lSalomeGenericObj \
+	-L${GEOM_ROOT_DIR}/lib/salome \
+	-lGEOMClient \
+	-lSMESHimpl \
+	-lSMESHControls \
+	$(OCC_LDPATH) \
+	-lTKCDF \
+	-lTKBO
 
-LDFLAGSFORBIN += -lSMDS -lSMESHDS \
-		-L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lMEDWrapper_V2_2 -lmed_V2_1 \
-		-lMeshDriver -lMeshDriverMED -lMeshDriverUNV -lMeshDriverDAT -lMeshDriverSTL \
-		-L${KERNEL_ROOT_DIR}/lib/salome -lSalomeContainer -lSalomeNS -lRegistry -lSalomeResourcesManager \
-		-lOpUtil -lSALOMELocalTrace -lSALOMEBasics -lSalomeNotification -lCASCatch \
-		-lSalomeHDFPersist -lSalomeLifeCycleCORBA -lTOOLSDS -lSalomeGenericObj \
-	  	-L${GEOM_ROOT_DIR}/lib/salome -lGEOMClient -lSMESHimpl -lSMESHControls -lNMTTools -lNMTDS \
-     $(OCC_LDPATH) -lTKCDF -lTKBO -lTKMath
+LDFLAGSFORBIN+= \
+	-lSMDS \
+	-lSMESHDS \
+	-L${MED_ROOT_DIR}/lib/salome \
+	-lMEDWrapper \
+	-lMEDWrapperBase \
+	-lMEDWrapper_V2_1 \
+	-lMEDWrapper_V2_2 \
+	-lmed_V2_1 \
+	-lMeshDriver \
+	-lMeshDriverMED \
+	-lMeshDriverUNV \
+	-lMeshDriverDAT \
+	-lMeshDriverSTL \
+	-L${KERNEL_ROOT_DIR}/lib/salome \
+	-lSalomeContainer \
+	-lSalomeNS \
+	-lRegistry \
+	-lSalomeResourcesManager \
+	-lOpUtil \
+	-lSALOMELocalTrace \
+	-lSALOMEBasics \
+	-lSalomeNotification \
+	-lSalomeHDFPersist \
+	-lSalomeLifeCycleCORBA \
+	-lTOOLSDS \
+	-lSalomeGenericObj \
+	-L${GEOM_ROOT_DIR}/lib/salome \
+	-lGEOMClient \
+	-lSMESHimpl \
+	-lSMESHControls \
+	-lNMTTools \
+	-lNMTDS \
+	$(OCC_LDPATH) \
+	-lTKCDF \
+	-lTKBO \
+	-lTKMath
 
 @CONCLUDE@

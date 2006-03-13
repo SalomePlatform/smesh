@@ -316,6 +316,8 @@ static SMESH::Hypothesis_Status ConvertHypothesisStatus
     res = SMESH::HYP_ALREADY_EXIST; break;
   case SMESH_Hypothesis::HYP_BAD_DIM:
     res = SMESH::HYP_BAD_DIM; break;
+  case SMESH_Hypothesis::HYP_BAD_SUBSHAPE:
+    res = SMESH::HYP_BAD_SUBSHAPE; break;
   default:
     res = SMESH::HYP_UNKNOWN_FATAL;
   }
@@ -1167,6 +1169,11 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
  */
 //=============================================================================
 
+CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
+{
+  return _impl->HasDuplicatedGroupNamesMED();
+}
+
 static void PrepareForWriting (const char* file)
 {
   TCollection_AsciiString aFullName ((char*)file);
@@ -1562,4 +1569,15 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
   throw (SALOME::SALOME_Exception)
 {
   return ( SMESH::ElementType )_impl->GetElementType( id, iselem );
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::GetMeshPtr()
+{
+  return (CORBA::Long)_impl;
 }

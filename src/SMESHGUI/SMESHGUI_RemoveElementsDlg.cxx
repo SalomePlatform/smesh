@@ -219,10 +219,6 @@ void SMESHGUI_RemoveElementsDlg::Init()
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
            SLOT(onTextChange(const QString&)));
 
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show(); /* displays Dialog */
 
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))

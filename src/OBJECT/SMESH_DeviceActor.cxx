@@ -547,14 +547,22 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
   switch(theMode){
   case ePoint:
     myGeomFilter->SetInside(true);
+    myGeomFilter->SetWireframeMode(false);
     GetProperty()->SetRepresentation(0);
+    break;
+  case eWireframe:
+    myGeomFilter->SetInside(false);
+    myGeomFilter->SetWireframeMode(true);
+    GetProperty()->SetRepresentation(theMode);
     break;
   case eInsideframe:
     myGeomFilter->SetInside(true);
+    myGeomFilter->SetWireframeMode(true);
     GetProperty()->SetRepresentation(1);
     break;
-  default :
+  case eSurface:
     myGeomFilter->SetInside(false);
+    myGeomFilter->SetWireframeMode(false);
     GetProperty()->SetRepresentation(theMode);
   }
   myRepresentation = theMode;
@@ -646,6 +654,8 @@ void SMESH_DeviceActor::SetShrinkFactor(float theValue){
 
 
 void SMESH_DeviceActor::SetHighlited(bool theIsHighlited){
+  if ( myIsHighlited == theIsHighlited )
+    return;
   myIsHighlited = theIsHighlited;
   Modified();
 }

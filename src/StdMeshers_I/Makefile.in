@@ -52,7 +52,8 @@ EXPORT_HEADERS = \
 	StdMeshers_MEFISTO_2D_i.hxx \
 	StdMeshers_Hexa_3D_i.hxx \
 	StdMeshers_AutomaticLength_i.hxx \
-	StdMeshers_QuadranglePreference_i.hxx
+	StdMeshers_QuadranglePreference_i.hxx \
+	StdMeshers_QuadraticMesh_i.hxx
 
 # Libraries targets
 
@@ -75,7 +76,8 @@ LIB_SRC = \
         StdMeshers_MEFISTO_2D_i.cxx \
 	StdMeshers_Hexa_3D_i.cxx \
 	StdMeshers_AutomaticLength_i.cxx \
-	StdMeshers_QuadranglePreference_i.cxx
+	StdMeshers_QuadranglePreference_i.cxx \
+	StdMeshers_QuadraticMesh_i.cxx
 
 LIB_SERVER_IDL = SMESH_BasicHypothesis.idl
 

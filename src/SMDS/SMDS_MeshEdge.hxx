@@ -44,12 +44,22 @@ class SMDS_MeshEdge:public SMDS_MeshElement
 	int NbNodes() const;
 	int NbEdges() const;
 	friend bool operator<(const SMDS_MeshEdge& e1, const SMDS_MeshEdge& e2);
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   * 
+   * Index is wrapped if it is out of a valid range
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;
 
-  private:
-	const SMDS_MeshNode* myNodes[2];
+  protected:
+	const SMDS_MeshNode* myNodes[3];
 
 };
 #endif

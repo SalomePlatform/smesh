@@ -63,6 +63,7 @@ protected:
   static SMESHGUI_Preferences_ScalarBarDlg* myDlg;
   void closeEvent( QCloseEvent* e );
   void setOriginAndSize( const double x, const double y, const double w, const double h );
+  void initScalarBarFromResources();
 
 protected slots:
   void onOk();
@@ -80,6 +81,8 @@ private:
   SMESH_Actor*             myActor;
   double                   myIniX, myIniY, myIniW, myIniH;
   int                      myIniOrientation;
+  double DEF_VER_X,DEF_VER_Y,DEF_VER_H,DEF_VER_W;
+  double DEF_HOR_X,DEF_HOR_Y,DEF_HOR_H,DEF_HOR_W;
 
   QGroupBox*         myRangeGrp;
   QLineEdit*         myMinEdit;

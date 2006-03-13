@@ -57,6 +57,12 @@
                 icon-id="mesh_algo_quad.png"
                 dim="2"/>
 
+    <hypothesis type="QuadraticMesh"
+                label-id="Quadratic Mesh"
+                icon-id="mesh_algo_quad.png"
+                dim="1"
+                auxiliary="true"/>                
+
     <hypothesis type="MaxElementArea"
                 label-id="Max. Element Area"
                 icon-id="mesh_hypo_area.png"

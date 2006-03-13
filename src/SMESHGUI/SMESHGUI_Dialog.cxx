@@ -62,10 +62,6 @@ SMESHGUI_Dialog::~SMESHGUI_Dialog()
 void SMESHGUI_Dialog::show()
 {
   adjustSize();
-  SUIT_Desktop *PP = desktop();
-  int x = abs( PP->x() + PP->size().width() - size().width() - 10 ),
-      y = abs( PP->y() + PP->size().height() - size().height() - 10 );
-  move(x, y);
   LightApp_Dialog::show();
 }
 

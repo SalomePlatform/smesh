@@ -110,7 +110,7 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
   else if ( p=="hasReference" )  val = QtxValue( hasReference( ind ) );
 //  else if ( p=="isVisible" )     val = QtxValue( isVisible( ind ) );
 
-  // printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
+       // printf( "--> param() : [%s] = %s (%s)\n", p.latin1(), val.toString().latin1(), val.typeName() );
   //if ( val.type() == QVariant::List )
   //cout << "size: " << val.toList().count() << endl;
 
@@ -401,6 +401,8 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
     }
     if( aFTag>10 )
       res = GROUP;
+    else
+      res = SUBMESH;
 
     break;
   }

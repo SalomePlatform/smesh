@@ -284,57 +284,53 @@ else
 
 <p class="whs3"># create vertices</p>
 
-<p class="whs2">px &nbsp;&nbsp;= 
- geompy.MakeVertex(100., 0. &nbsp;, 
- 0. &nbsp;)</p>
+<p class="whs2">px &nbsp;&nbsp;=geompy.MakeVertex(100., 0. &nbsp;,0. &nbsp;)</p>
 
-<p class="whs2">py &nbsp;&nbsp;= 
- geompy.MakeVertex(0. &nbsp;, 
- 100., 0. &nbsp;)</p>
+<p class="whs2">py &nbsp;&nbsp;=geompy.MakeVertex(0. &nbsp;,100., 0. &nbsp;)</p>
 
-<p class="whs2">pz &nbsp;&nbsp;= 
- geompy.MakeVertex(0. &nbsp;, 
- 0. &nbsp;, 100.)</p>
+<p class="whs2">pz &nbsp;&nbsp;=geompy.MakeVertex(0. &nbsp;,0. &nbsp;, 100.)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create a vector from 
  two points</p>
 
-<p class="whs2">vxy = geompy.MakeVector(px, 
- py)</p>
+<p class="whs2">vxy = geompy.MakeVector(px,py)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create an arc from 
  three points</p>
 
-<p class="whs2">arc = geompy.MakeArc(py, 
- pz, px)</p>
+<p class="whs2">arc = geompy.MakeArc(py, pz, px)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create a wire</p>
 
-<p class="whs2">wire = geompy.MakeWire([vxy, 
- arc])</p>
+<p class="whs2">wire = geompy.MakeWire([vxy,arc])</p>
 
 <p class="whs2">isPlanarFace = 1</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># create a face from 
- the wire</p>
+<p class="whs3"># create a face from the wire</p>
 
-<p class="whs2">face1 = geompy.MakeFace(wire, 
- isPlanarFace)</p>
+<p class="whs2">face1 = geompy.MakeFace(wire,isPlanarFace)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># add objects in the 
- study</p>
+<p class="whs3"># get edges from the face</p>
+
+<p class="whs2">vxy, arc = geompy.SubShapeAll(face1, geompy.ShapeType["EDGE"])</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs3"># add objects in the study</p>
 
 <p class="whs2">id_face1 = geompy.addToStudy(face1,&quot;Face1&quot;)</p>
+
+<p class="whs2">id_arc = geompy.addToStudyInFather(face1,arc,&quot;Arc Edge&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -350,44 +346,34 @@ else
 
 <p class="whs3"># create hexahedral mesh</p>
 
-<p class="whs2">hexa = smesh.Mesh(face1, 
- &quot;Face compound : hexahedrical mesh&quot;)</p>
+<p class="whs2">hexa = smesh.Mesh(face1,&quot;Face compound : hexahedrical mesh&quot;)</p>
 
 <p class="whs2">algo = hexa.Triangle()</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define &quot;MaxElementArea&quot; 
- hypothesis to be applied &nbsp;to 
- each triangle</p>
+<p class="whs3"># define &quot;MaxElementArea&quot;hypothesis</p>
 
 <p class="whs2">algo.MaxElementArea(30)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># create a quadrangle 
- 2D algorithm for faces</p>
-
-<p class="whs2">hexa.Quadrangle()</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs3"># create a local hypothesis</p>
+<p class="whs3"># create a local hypothesis on the wire</p>
 
 <p class="whs2">algo = hexa.Segment(wire)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
+<p class="whs3"># define &quot;NumberOfSegments&quot;hypothesis to cut
+a straight edge in a fixed number of segments</p>
 
 <p class="whs2">algo.NumberOfSegments(6)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define &quot;Deflection1D&quot; 
- hypothesis</p>
+<p class="whs3"># define a local &quot;Deflection1D&quot;hypothesis on the arc</p>
 
+<p class="whs2">algo = hexa.Segment(arc)</p>
 <p class="whs2">algo.Deflection1D(1)</p>
 
 <p class="whs2">&nbsp;</p>

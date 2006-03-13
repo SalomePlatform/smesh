@@ -29,7 +29,6 @@
 using namespace std;
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
 
 #include "utilities.h"
 
@@ -56,3 +55,5 @@ SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
 SMESH_3D_Algo::~SMESH_3D_Algo()
 {
 }
+
+

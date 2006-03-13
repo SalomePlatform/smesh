@@ -76,6 +76,8 @@ private:
     int  GetConstructorId();
     void displaySimulation();
     
+    int checkEditLine(bool checkLast=true); /*! Checking for indices, return 1 if all ok, esle -1*/
+    
     SMESHGUI*                     mySMESHGUI ;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr ;             /* User shape selection */
     SVTK_Selector*                mySelector;

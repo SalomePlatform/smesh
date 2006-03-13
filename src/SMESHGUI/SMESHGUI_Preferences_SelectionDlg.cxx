@@ -205,11 +205,6 @@ SMESHGUI_Preferences_SelectionDlg::SMESHGUI_Preferences_SelectionDlg( SMESHGUI* 
 
   connect(aOKBtn, SIGNAL(clicked()), this, SLOT(accept()));
   connect(aCloseBtn, SIGNAL(clicked()), this, SLOT(reject()));
-
-  /* Move widget on the botton right corner of main widget */
-  int x, y ;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
 }
 
 //=================================================================================

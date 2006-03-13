@@ -27,10 +27,8 @@
 //  $Header$
 
 #include "StdMeshers_Distribution.hxx"
-#include <CASCatch_CatchSignals.hxx>
-#include <CASCatch_Failure.hxx> 
-#include <CASCatch_ErrorHandler.hxx>
-#include <OSD.hxx>
+#include "CASCatch.hxx"
+
 #include <math_GaussSingleIntegration.hxx>
 #include <utilities.h>
 
@@ -45,9 +43,6 @@ Function::~Function()
 
 bool Function::value( const double, double& f ) const
 {
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool ok = true;
   if( myConv==0 )
   {
@@ -55,10 +50,9 @@ bool Function::value( const double, double& f ) const
     {
       f = pow( 10, f );
     }
-    CASCatch_CATCH(CASCatch_Failure)
+    CASCatch_CATCH(Standard_Failure)
     {
-      aCatchSignals.Deactivate();
-      Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+      Handle(Standard_Failure) aFail = Standard_Failure::Caught();
       f = 0.0;
       ok = false;
     }
@@ -174,22 +168,17 @@ FunctionExpr::FunctionExpr( const char* str, const int conv )
   myVars( 1, 1 ),
   myValues( 1, 1 )
 {
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool ok = true;
   CASCatch_TRY
   {
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString )str );
   }
-  CASCatch_CATCH(CASCatch_Failure)
+  CASCatch_CATCH(Standard_Failure)
   {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
   }
-  aCatchSignals.Deactivate();
 
   if( !ok || !myExpr->IsDone() )
     myExpr.Nullify();
@@ -214,23 +203,17 @@ bool FunctionExpr::value( const double t, double& f ) const
   if( myExpr.IsNull() )
     return false;
 
-  OSD::SetSignal( true );
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   ( ( TColStd_Array1OfReal& )myValues ).ChangeValue( 1 ) = t;
   bool ok = true;
   CASCatch_TRY {
     f = myExpr->Expression()->Evaluate( myVars, myValues );
   }
-  CASCatch_CATCH(CASCatch_Failure) {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+  CASCatch_CATCH(Standard_Failure) {
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     f = 0.0;
     ok = false;
   }
 
-  aCatchSignals.Deactivate();
   ok = Function::value( t, f ) && ok;
   return ok;
 }
@@ -244,7 +227,7 @@ double FunctionExpr::integral( const double a, const double b ) const
     if( _int.IsDone() )
       res = _int.Value();
   }
-  CASCatch_CATCH(CASCatch_Failure)
+  CASCatch_CATCH(Standard_Failure)
   {
     res = 0.0;
     MESSAGE( "Exception in integral calculating" );

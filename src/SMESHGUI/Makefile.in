@@ -109,7 +109,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_MeshOp.cxx \
 		SMESHGUI_Displayer.cxx \
 		SMESHGUI_Hypotheses.cxx \
-		SMESHGUI_ShapeByMeshDlg.cxx
+		SMESHGUI_ShapeByMeshDlg.cxx \
+		SMESHGUI_AddQuadraticElementDlg.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -157,7 +158,8 @@ LIB_MOC = \
 		SMESHGUI_MeshDlg.h \
 		SMESHGUI_MeshOp.h \
 		SMESHGUI_Hypotheses.h \
-		SMESHGUI_ShapeByMeshDlg.h
+		SMESHGUI_ShapeByMeshDlg.h \
+		SMESHGUI_AddQuadraticElementDlg.h
 
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
@@ -191,9 +193,9 @@ CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome
 
 LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef \
 	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome \
-	-lVTKViewer -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
+	-lVTKViewer -lSalomeDSClient -lSalomeDS -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
 	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient  \
-	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection
+	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection -lSalomeSession
 
 LDFLAGSFORBIN += $(LDFLAGS)
 

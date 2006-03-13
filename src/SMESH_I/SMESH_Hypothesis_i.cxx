@@ -89,7 +89,7 @@ SMESH_Hypothesis_i::~SMESH_Hypothesis_i()
 
 char* SMESH_Hypothesis_i::GetName()
 {
-  MESSAGE( "SMESH_Hypothesis_i::GetName" );
+  //MESSAGE( "SMESH_Hypothesis_i::GetName" );
   return CORBA::string_dup( myBaseImpl->GetName() );
 };
 

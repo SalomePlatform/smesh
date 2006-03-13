@@ -186,10 +186,6 @@ void SMESHGUI_EditMeshDlg::Init()
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs())       , this, SLOT(ClickOnCancel()));
 
-  // Move widget on the bottom right corner of main widget
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show(); // displays Dialog
 
   LineEditMesh->setFocus();

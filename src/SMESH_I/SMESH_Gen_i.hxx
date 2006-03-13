@@ -167,6 +167,11 @@ public:
   // *****************************************
 
   // Set current study
+  void SetEmbeddedMode( CORBA::Boolean theMode );
+  // Get current study
+  CORBA::Boolean IsEmbeddedMode();
+
+  // Set current study
   void SetCurrentStudy( SALOMEDS::Study_ptr theStudy );
   // Get current study
   SALOMEDS::Study_ptr GetCurrentStudy();
@@ -417,6 +422,7 @@ private:
 
   GEOM_Client*              myShapeReader;      // Shape reader
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
+  CORBA::Boolean            myIsEmbeddedMode;   // Current mode
 
   // Dump Python: trace of API methods calls
   std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;

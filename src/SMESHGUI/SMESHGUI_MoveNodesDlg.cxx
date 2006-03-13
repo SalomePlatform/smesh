@@ -224,9 +224,6 @@ void SMESHGUI_MoveNodesDlg::Init()
   reset();
   setEnabled(true);
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // set selection mode

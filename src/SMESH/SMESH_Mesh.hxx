@@ -79,8 +79,11 @@ class SMESH_Mesh
   SMESH_Mesh();
   SMESH_Mesh(const SMESH_Mesh&);
 public:
-  SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen,
-	     SMESHDS_Document * myDocument);
+  SMESH_Mesh(int theLocalId, 
+	     int theStudyId, 
+	     SMESH_Gen* theGen,
+	     bool theIsEmbeddedMode,
+	     SMESHDS_Document* theDocument);
   
   virtual ~SMESH_Mesh();
   
@@ -110,10 +113,10 @@ public:
                                          const SMESH_HypoFilter& aFilter,
                                          const bool              andAncestors) const;
   
-  bool GetHypotheses(const TopoDS_Shape &                aSubShape,
-                     const SMESH_HypoFilter&             aFilter,
-                     list <const SMESHDS_Hypothesis * >& aHypList,
-                     const bool                          andAncestors) const;
+  int GetHypotheses(const TopoDS_Shape &                aSubShape,
+                    const SMESH_HypoFilter&             aFilter,
+                    list <const SMESHDS_Hypothesis * >& aHypList,
+                    const bool                          andAncestors) const;
 
   const list<SMESHDS_Command*> & GetLog() throw(SALOME_Exception);
   
@@ -134,12 +137,15 @@ public:
   SMESH_subMesh *GetSubMeshContaining(const int aShapeID)
     throw(SALOME_Exception);
   
+  void NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* theChangedHyp);
+  // Say all submeshes that theChangedHyp has been modified
+
   const list < SMESH_subMesh * >&
   GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
     throw(SALOME_Exception);
   
-  bool IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
-			const TopoDS_Shape & aSubShape);
+  bool IsUsedHypothesis(SMESHDS_Hypothesis *  anHyp,
+			const SMESH_subMesh * aSubMesh);
   // Return True if anHyp is used to mesh aSubShape
   
   bool IsNotConformAllowed() const;
@@ -150,7 +156,12 @@ public:
   const TopTools_ListOfShape& GetAncestors(const TopoDS_Shape& theSubShape) const;
   // return list of ancestors of theSubShape in the order
   // that lower dimention shapes come first.
-  
+
+  /*! Check group names for duplications.
+   *  Consider maximum group name length stored in MED file.
+   */
+  bool HasDuplicatedGroupNamesMED();
+
   void ExportMED(const char *file, 
 		 const char* theMeshName = NULL, 
 		 bool theAutoGroups = true, 

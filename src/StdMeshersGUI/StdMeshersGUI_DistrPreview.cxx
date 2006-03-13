@@ -1,11 +1,9 @@
 
 #include "StdMeshersGUI_DistrPreview.h"
+#include "CASCatch.hxx"
+
 #include <Expr_NamedUnknown.hxx>
 #include <Expr_GeneralExpression.hxx>
-#include <CASCatch_CatchSignals.hxx>
-#include <CASCatch_Failure.hxx> 
-#include <CASCatch_ErrorHandler.hxx>
-#include <OSD.hxx>
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
@@ -223,20 +221,14 @@ void StdMeshersGUI_DistrPreview::update()
   delete[] y;
   x = y = 0;
 
-  OSD::SetSignal( true );
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   CASCatch_TRY
   {   
     replot();
   }
-  CASCatch_CATCH(CASCatch_Failure)
+  CASCatch_CATCH(Standard_Failure)
   {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
   }
-  aCatchSignals.Deactivate();
 }
 
 void StdMeshersGUI_DistrPreview::showError()
@@ -273,22 +265,17 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 
 bool StdMeshersGUI_DistrPreview::init( const QString& str )
 {
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool parsed_ok = true;
   CASCatch_TRY
   {
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString ) str.latin1() );
   }
-  CASCatch_CATCH(CASCatch_Failure)
+  CASCatch_CATCH(Standard_Failure)
   {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
-  aCatchSignals.Deactivate();
 
   bool syntax = false, args = false;
   if( parsed_ok && myExpr->IsDone() )
@@ -318,23 +305,18 @@ double StdMeshersGUI_DistrPreview::funcValue( const double t, bool& ok )
 
 double StdMeshersGUI_DistrPreview::calc( bool& ok )
 {
-  OSD::SetSignal( true );
   double res = 0.0;
-
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
 
   ok = true;
   CASCatch_TRY {   
     res = myExpr->Expression()->Evaluate( myVars, myValues );
   }
-  CASCatch_CATCH(CASCatch_Failure) {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+  CASCatch_CATCH(Standard_Failure) {
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
     res = 0.0;
   }
-  aCatchSignals.Deactivate();
+
   return res;
 }
 
@@ -345,9 +327,6 @@ bool StdMeshersGUI_DistrPreview::isDone() const
 
 bool StdMeshersGUI_DistrPreview::convert( double& v ) const
 {
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool ok = true;
   switch( myConv )
   {
@@ -355,12 +334,15 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
     {
       CASCatch_TRY
       { 
+	// in StdMeshers_NumberOfSegments.cc
+	// const double PRECISION = 1e-7;
+	//
+	if(v < -7) v = -7.0;
 	v = pow( 10.0, v );
       }
-      CASCatch_CATCH(CASCatch_Failure)
+      CASCatch_CATCH(Standard_Failure)
       {
-	aCatchSignals.Deactivate();
-	Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	v = 0.0;
 	ok = false;
       }
@@ -372,6 +354,6 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
       v = 0;
     break;
   }
-  aCatchSignals.Deactivate();
+
   return ok;
 }

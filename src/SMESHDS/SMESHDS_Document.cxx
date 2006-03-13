@@ -43,13 +43,13 @@ SMESHDS_Document::SMESHDS_Document(int UserID):myUserID(UserID)
 //function : NewMesh
 //purpose  : 
 //=======================================================================
-int SMESHDS_Document::NewMesh()
+int SMESHDS_Document::NewMesh(bool theIsEmbeddedMode)
 {
-	static int NewMeshID = 0;
-	NewMeshID++;
-	SMESHDS_Mesh *aNewMesh = new SMESHDS_Mesh(NewMeshID);
-	myMeshes[NewMeshID] = aNewMesh;
-	return NewMeshID;
+  static int aNewMeshID = 0;
+  aNewMeshID++;
+  SMESHDS_Mesh *aNewMesh = new SMESHDS_Mesh(aNewMeshID,theIsEmbeddedMode);
+  myMeshes[aNewMeshID] = aNewMesh;
+  return aNewMeshID;
 }
 
 //=======================================================================

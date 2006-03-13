@@ -388,6 +388,35 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
       anActor = myActor;
     if (anActor != 0)
     {
+      // skl 07.02.2006
+      SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh();
+      if( myFilterType == SMESHGUI_TriaFilter || 
+	  myFilterType == SMESHGUI_QuadFilter ||
+	  myFilterType == SMESHGUI_FaceFilter ) {
+	SMDS_FaceIteratorPtr it = aMesh->facesIterator();
+	while(it->more()) {
+	  const SMDS_MeshFace* f = it->next();
+	  if(myFilterType == SMESHGUI_FaceFilter) {
+	    myIds.Add(f->GetID());
+	  }
+	  else if( myFilterType==SMESHGUI_TriaFilter &&
+		   ( f->NbNodes()==3 || f->NbNodes()==6 ) ) {
+	    myIds.Add(f->GetID());
+	  }
+	  else if( myFilterType==SMESHGUI_QuadFilter &&
+		   ( f->NbNodes()==4 || f->NbNodes()==8 ) ) {
+	    myIds.Add(f->GetID());
+	  }
+	}
+      }
+      else if(myFilterType == SMESHGUI_VolumeFilter) {
+	SMDS_VolumeIteratorPtr it = aMesh->volumesIterator();
+	while(it->more()) {
+	  const SMDS_MeshVolume* f = it->next();
+	  myIds.Add(f->GetID());
+	}
+      }
+      /* commented by skl 07.02.2006
       TVisualObjPtr aVisualObj = anActor->GetObject();
       vtkUnstructuredGrid* aGrid = aVisualObj->GetUnstructuredGrid();
       if (aGrid != 0) {
@@ -411,6 +440,7 @@ SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds()
           }
         }
       }
+      */
     }
   }
 

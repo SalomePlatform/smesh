@@ -64,11 +64,22 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	SMDS_MeshElement* anElement = NULL;
 	const TElementLab& aLabel = anIter->first;
 	const TRecord& aRec = anIter->second;
-	if(IsBeam(aRec.fe_descriptor_id)){
-	  anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
-					    aRec.node_labels[1],
-					    aLabel);
-	}else if(IsFace(aRec.fe_descriptor_id)){
+	if(IsBeam(aRec.fe_descriptor_id)) {
+          if(aRec.fe_descriptor_id == 11) {
+            // edge with two nodes
+            anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
+                                              aRec.node_labels[1],
+                                              aLabel);
+          }
+          else {
+            // quadratic edge (with 3 nodes)
+            anElement = myMesh->AddEdgeWithID(aRec.node_labels[0],
+                                              aRec.node_labels[1],
+                                              aRec.node_labels[2],
+                                              aLabel);
+          }
+	}
+        else if(IsFace(aRec.fe_descriptor_id)) {
 	  switch(aRec.fe_descriptor_id){
 	  case 71: // TRI3
 	  case 72:
@@ -76,18 +87,31 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	    
 	  case 41: // Plane Stress Linear Triangle - TRI3
 	  case 91: // Thin Shell Linear Triangle - TRI3
-	    
-	  case 42: // Plane Stress Quadratic Triangle - TRI6
-	  case 92: // Thin Shell Quadratic Triangle - TRI6
-	    
 	    anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
 					      aRec.node_labels[1],
 					      aRec.node_labels[2],
 					      aLabel);
 	    break;
 	    
+	  case 42: // Plane Stress Quadratic Triangle - TRI6
+	  case 92: // Thin Shell Quadratic Triangle - TRI6
+	    anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+					      aRec.node_labels[1],
+					      aRec.node_labels[2],
+					      aRec.node_labels[3],
+					      aRec.node_labels[4],
+					      aRec.node_labels[5],
+					      aLabel);
+	    break;
+	    
 	  case 44: // Plane Stress Linear Quadrilateral - QUAD4
 	  case 94: // Thin Shell   Linear Quadrilateral -  QUAD4
+	    anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
+					      aRec.node_labels[1],
+					      aRec.node_labels[2],
+					      aRec.node_labels[3],
+					      aLabel);
+	    break;
 	    
 	  case 45: // Plane Stress Quadratic Quadrilateral - QUAD8
 	  case 95: // Thin Shell   Quadratic Quadrilateral - QUAD8
@@ -95,24 +119,40 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 					      aRec.node_labels[1],
 					      aRec.node_labels[2],
 					      aRec.node_labels[3],
+					      aRec.node_labels[4],
+					      aRec.node_labels[5],
+					      aRec.node_labels[6],
+					      aRec.node_labels[7],
 					      aLabel);
 	    break;
 	  }
-	}else if(IsVolume(aRec.fe_descriptor_id)){
+	}
+        else if(IsVolume(aRec.fe_descriptor_id)){
 	  switch(aRec.fe_descriptor_id){
 	    
 	  case 111: // Solid Linear Tetrahedron - TET4
-	  case 118: // Solid Quadratic Tetrahedron - TET10
-	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
 						aRec.node_labels[2],
 						aRec.node_labels[1],
 						aRec.node_labels[3],
 						aLabel);
 	    break;
+
+	  case 118: // Solid Quadratic Tetrahedron - TET10
+	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
+						aRec.node_labels[2],
+						aRec.node_labels[1],
+						aRec.node_labels[3],
+						aRec.node_labels[6],
+						aRec.node_labels[5],
+						aRec.node_labels[4],
+						aRec.node_labels[7],
+						aRec.node_labels[9],
+						aRec.node_labels[8],
+						aLabel);
+	    break;
 	    
 	  case 112: // Solid Linear Prism - PRISM6
-	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
 						aRec.node_labels[2],
 						aRec.node_labels[1],
@@ -123,13 +163,21 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	    break;
 	    
 	  case 113: // Solid Quadratic Prism - PRISM15
-	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[4],
 						aRec.node_labels[2],
-						aRec.node_labels[9],
-						aRec.node_labels[13],
+						aRec.node_labels[1],
+						aRec.node_labels[3],
+						aRec.node_labels[5],
+						aRec.node_labels[4],
+						aRec.node_labels[8],
+						aRec.node_labels[7],
+						aRec.node_labels[6],
 						aRec.node_labels[11],
+						aRec.node_labels[10],
+						aRec.node_labels[9],
+						aRec.node_labels[12],
+						aRec.node_labels[14],
+						aRec.node_labels[13],
 						aLabel);
 	    break;
 	    
@@ -146,26 +194,57 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 	    break;
 
 	  case 116: // Solid Quadratic Brick - HEX20
-	    
 	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
-						aRec.node_labels[6],
-						aRec.node_labels[4],
+						aRec.node_labels[3],
 						aRec.node_labels[2],
-						aRec.node_labels[12],
-						aRec.node_labels[18],
-						aRec.node_labels[16],
+						aRec.node_labels[1],
+						aRec.node_labels[4],
+						aRec.node_labels[7],
+						aRec.node_labels[6],
+						aRec.node_labels[5],
+						aRec.node_labels[11],
+						aRec.node_labels[10],
+						aRec.node_labels[9],
+						aRec.node_labels[8],
+						aRec.node_labels[15],
 						aRec.node_labels[14],
+						aRec.node_labels[13],
+						aRec.node_labels[12],
+						aRec.node_labels[16],
+						aRec.node_labels[19],
+						aRec.node_labels[18],
+						aRec.node_labels[17],
 						aLabel);
 	    break;
+
+	  case 114: // pyramid of 13 nodes (quadratic) - PIRA13
+	    anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
+						aRec.node_labels[3],
+						aRec.node_labels[2],
+						aRec.node_labels[1],
+						aRec.node_labels[4],
+						aRec.node_labels[8],
+						aRec.node_labels[7],
+						aRec.node_labels[6],
+						aRec.node_labels[5],
+						aRec.node_labels[9],
+						aRec.node_labels[12],
+						aRec.node_labels[11],
+						aRec.node_labels[10],
+						aLabel);
+	    break;
+
 	  }
 	}
 	if(!anElement)
 	  MESSAGE("DriverUNV_R_SMDS_Mesh::Perform - can not add element with ID = "<<aLabel<<" and type = "<<aRec.fe_descriptor_id);
       }
     }
-  }catch(const std::exception& exc){
+  }
+  catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
-  }catch(...){
+  }
+  catch(...){
     INFOS("Unknown exception was cought !!!");
   }
   return aResult;

@@ -34,20 +34,118 @@ using namespace std;
 
 //=============================================================================
 /*!
+ *  Default constructor
+ */
+//=============================================================================
+DriverMED_Family
+::DriverMED_Family():
+  myGroupAttributVal(0)
+{}
+
+
+//=============================================================================
+const ElementsSet& 
+DriverMED_Family
+::GetElements () const 
+{ 
+  return myElements; 
+}
+
+int 
+DriverMED_Family
+::GetId () const 
+{ 
+  return myId; 
+}
+
+void 
+DriverMED_Family
+::SetId (const int theId) 
+{ 
+  myId = theId; 
+}
+
+void
+DriverMED_Family
+::AddElement(const SMDS_MeshElement* theElement)
+{
+  myElements.insert(theElement); 
+}
+
+void
+DriverMED_Family
+::AddGroupName(std::string theGroupName)
+{
+  myGroupNames.insert(theGroupName); 
+}
+
+void
+DriverMED_Family
+::SetType(const SMDSAbs_ElementType theType) 
+{ 
+  myType = theType; 
+}
+
+SMDSAbs_ElementType
+DriverMED_Family
+::GetType()
+{
+  return myType; 
+}
+
+bool
+DriverMED_Family
+::MemberOf(std::string theGroupName) const
+{ 
+  return myGroupNames.find(theGroupName) != myGroupNames.end(); 
+}
+
+const MED::TStringSet& 
+DriverMED_Family
+::GetGroupNames () const 
+{ 
+  return myGroupNames; 
+}
+
+
+int 
+DriverMED_Family
+::GetGroupAttributVal() const 
+{
+  return myGroupAttributVal;
+} 
+
+void
+DriverMED_Family
+::SetGroupAttributVal( int theValue) 
+{
+  myGroupAttributVal = theValue;
+}
+
+bool
+DriverMED_Family
+::IsEmpty () const 
+{ 
+  return myElements.empty(); 
+}
+
+//=============================================================================
+/*!
  *  Split each group from list <aGroups> on some parts (families)
  *  on the basis of the elements membership in other groups from this list.
  *  Resulting families have no common elements.
  */
 //=============================================================================
-list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
-                         (const map <int, SMESHDS_SubMesh*>& theSubMeshes,
-                          const list<SMESHDS_GroupBase*>& theGroups,
-                          const bool doGroupOfNodes,
-                          const bool doGroupOfEdges,
-                          const bool doGroupOfFaces,
-                          const bool doGroupOfVolumes)
+DriverMED_FamilyPtrList 
+DriverMED_Family
+::MakeFamilies(const SMESHDS_SubMeshPtrMap& theSubMeshes,
+	       const SMESHDS_GroupBasePtrList& theGroups,
+	       const bool doGroupOfNodes,
+	       const bool doGroupOfEdges,
+	       const bool doGroupOfFaces,
+	       const bool doGroupOfVolumes)
 {
-  list<DriverMED_FamilyPtr> aFamilies;
+  DriverMED_FamilyPtrList aFamilies;
 
   string anAllNodesGroupName = "Group_Of_All_Nodes";
   string anAllEdgesGroupName = "Group_Of_All_Edges";
@@ -61,22 +159,23 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
   int aElemFamId = FIRST_ELEM_FAMILY;
 
   // Process sub-meshes
-  map<int, SMESHDS_SubMesh*>::const_iterator aSMIter = theSubMeshes.begin();
+  SMESHDS_SubMeshPtrMap::const_iterator aSMIter = theSubMeshes.begin();
   for (; aSMIter != theSubMeshes.end(); aSMIter++)
   {
-    if ( aSMIter->second->IsComplexSubmesh() )
+    const int anId = aSMIter->first;
+    SMESHDS_SubMesh* aSubMesh = aSMIter->second;
+    if ( aSubMesh->IsComplexSubmesh() )
       continue; // submesh containing other submeshs
-    list<DriverMED_FamilyPtr> aSMFams = SplitByType((*aSMIter).second, (*aSMIter).first);
-    list<DriverMED_FamilyPtr>::iterator aSMFamsIter = aSMFams.begin();
+    DriverMED_FamilyPtrList aSMFams = SplitByType(aSubMesh,anId);
+    DriverMED_FamilyPtrList::iterator aSMFamsIter = aSMFams.begin();
     for (; aSMFamsIter != aSMFams.end(); aSMFamsIter++)
     {
       DriverMED_FamilyPtr aFam2 = (*aSMFamsIter);
-
-      list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
+      DriverMED_FamilyPtrList::iterator aFamsIter = aFamilies.begin();
       while (aFamsIter != aFamilies.end())
       {
         DriverMED_FamilyPtr aFam1 = *aFamsIter;
-        list<DriverMED_FamilyPtr>::iterator aCurrIter = aFamsIter++;
+        DriverMED_FamilyPtrList::iterator aCurrIter = aFamsIter++;
         if (aFam1->myType == aFam2->myType)
         {
           DriverMED_FamilyPtr aCommon (new DriverMED_Family);
@@ -89,7 +188,8 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
           {
             aFamilies.erase(aCurrIter);
           }
-          if (aFam2->IsEmpty()) break;
+          if (aFam2->IsEmpty()) 
+	    break;
         }
       }
       // The rest elements of family
@@ -101,30 +201,32 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
   }
 
   // Process groups
-  list<SMESHDS_GroupBase*>::const_iterator aGroupsIter = theGroups.begin();
+  SMESHDS_GroupBasePtrList::const_iterator aGroupsIter = theGroups.begin();
   for (; aGroupsIter != theGroups.end(); aGroupsIter++)
   {
     DriverMED_FamilyPtr aFam2 (new DriverMED_Family);
     aFam2->Init(*aGroupsIter);
 
-    list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
+    DriverMED_FamilyPtrList::iterator aFamsIter = aFamilies.begin();
     while (aFamsIter != aFamilies.end())
     {
       DriverMED_FamilyPtr aFam1 = *aFamsIter;
-      list<DriverMED_FamilyPtr>::iterator aCurrIter = aFamsIter++;
+      DriverMED_FamilyPtrList::iterator aCurrIter = aFamsIter++;
       if (aFam1->myType == aFam2->myType)
       {
         DriverMED_FamilyPtr aCommon (new DriverMED_Family);
         aFam1->Split(aFam2, aCommon);
         if (!aCommon->IsEmpty())
         {
+	  aCommon->SetGroupAttributVal(0);
           aFamilies.push_back(aCommon);
         }
         if (aFam1->IsEmpty())
         {
           aFamilies.erase(aCurrIter);
         }
-        if (aFam2->IsEmpty()) break;
+        if (aFam2->IsEmpty()) 
+	  break;
       }
     }
     // The rest elements of group
@@ -134,7 +236,7 @@ list<DriverMED_FamilyPtr> DriverMED_Family::MakeFamilies
     }
   }
 
-  list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
+  DriverMED_FamilyPtrList::iterator aFamsIter = aFamilies.begin();
   for (; aFamsIter != aFamilies.end(); aFamsIter++)
   {
     DriverMED_FamilyPtr aFam = *aFamsIter;
@@ -210,33 +312,33 @@ MED::PFamilyInfo
 DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
 				const MED::PMeshInfo& theMeshInfo) const
 {
-  string aValue;
-
   ostringstream aStr;
-
   aStr << "FAM_" << myId;
   set<string>::const_iterator aGrIter = myGroupNames.begin();
-  for (; aGrIter != myGroupNames.end(); aGrIter++)
-  {
+  for(; aGrIter != myGroupNames.end(); aGrIter++){
     aStr << "_" << *aGrIter;
   }
 
-  aValue = aStr.str();
-  /*
-  MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
-  MED::TIntVector anAttrIds (1, myId);        // Id=0,
-  MED::TIntVector anAttrVals (1, myId);       // Value=0
-  */
-  
-  MED::PFamilyInfo anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
-						     aValue,
-						     myId,
-						     myGroupNames);
-/* 						     
-						    anAttrDescs,
-						    anAttrIds,
-						    anAttrVals);
-*/
+  MED::PFamilyInfo anInfo;
+  string aValue = aStr.str();
+  if(myId == 0){
+    anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
+				      aValue,
+				      myId,
+				      myGroupNames);
+  }else{
+    MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
+    MED::TIntVector anAttrIds (1, myId);        // Id=0,
+    MED::TIntVector anAttrVals (1);
+    anAttrVals[0] = myGroupAttributVal != 0? myGroupAttributVal: myId;
+    anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
+				      aValue,
+				      myId,
+				      myGroupNames,
+				      anAttrDescs,
+				      anAttrIds,
+				      anAttrVals);
+  }
 
 //  cout << endl;
 //  cout << "Groups: ";
@@ -279,6 +381,14 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   // Groups list
   myGroupNames.clear();
   myGroupNames.insert(string(theGroup->GetStoreName()));
+
+  myGroupAttributVal = 0;
+  
+  if (theGroup->GetColorGroup()!=0)
+    {
+      myGroupAttributVal = theGroup->GetColorGroup();
+    }
+
 }
 
 //=============================================================================
@@ -287,10 +397,12 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
  *  on the basis of the elements type.
  */
 //=============================================================================
-list<DriverMED_FamilyPtr> DriverMED_Family::SplitByType (SMESHDS_SubMesh* theSubMesh,
-                                                         const int        theId)
+DriverMED_FamilyPtrList 
+DriverMED_Family
+::SplitByType (SMESHDS_SubMesh* theSubMesh,
+	       const int        theId)
 {
-  list<DriverMED_FamilyPtr> aFamilies;
+  DriverMED_FamilyPtrList aFamilies;
   DriverMED_FamilyPtr aNodesFamily   (new DriverMED_Family);
   DriverMED_FamilyPtr anEdgesFamily  (new DriverMED_Family);
   DriverMED_FamilyPtr aFacesFamily   (new DriverMED_Family);
@@ -361,7 +473,7 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
                               DriverMED_FamilyPtr common)
 {
   // Elements
-  set<const SMDS_MeshElement *>::iterator anIter = by->myElements.begin();
+  ElementsSet::iterator anIter = by->myElements.begin();
   while ( anIter != by->myElements.end())
   {
     if (myElements.find(*anIter) != myElements.end())
@@ -378,7 +490,7 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
   {
     // Groups list
     common->myGroupNames = myGroupNames;
-    set<string>::iterator aGrNamesIter = by->myGroupNames.begin();
+    MED::TStringSet::iterator aGrNamesIter = by->myGroupNames.begin();
     for (; aGrNamesIter != by->myGroupNames.end(); aGrNamesIter++)
     {
       common->myGroupNames.insert(*aGrNamesIter);

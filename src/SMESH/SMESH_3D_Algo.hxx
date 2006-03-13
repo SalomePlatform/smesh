@@ -37,6 +37,7 @@ class SMESH_3D_Algo:
 public:
   SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~SMESH_3D_Algo();
+
 };
 
 #endif

@@ -192,3 +192,29 @@ bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)
 	}
         return false;
 }
+
+bool SMDS_MeshElement::IsValidIndex(const int ind) const
+{
+  return ( ind>-1 && ind<NbNodes() );
+}
+
+const SMDS_MeshNode* SMDS_MeshElement::GetNode(const int ind) const
+{
+  SMDS_ElemIteratorPtr it = nodesIterator();
+  int i = 0, index = WrappedIndex( ind );
+  while ( index != i++ )
+    it->next();
+  if ( it->more() )
+    return static_cast<const SMDS_MeshNode*> (it->next());
+  return 0;
+}
+
+bool SMDS_MeshElement::IsQuadratic() const
+{
+  return false;
+}
+
+bool SMDS_MeshElement::IsMediumNode(const SMDS_MeshNode* node) const
+{
+  return false;
+}

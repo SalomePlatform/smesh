@@ -73,6 +73,9 @@ class SMESH_GroupBase_i:
   SMESH_Group* GetSmeshGroup() const;
   SMESHDS_GroupBase* GetGroupDS() const;
 
+   void SetColorNumber(CORBA::Long color);
+   CORBA::Long GetColorNumber();
+
 private:
   SMESH_Mesh_i* myMeshServant;
   int myLocalID;

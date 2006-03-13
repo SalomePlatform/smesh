@@ -269,9 +269,6 @@ void SMESHGUI_CreatePatternDlg::Init( const int theType )
   activateSelection();
   onSelectionDone();
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 }
 

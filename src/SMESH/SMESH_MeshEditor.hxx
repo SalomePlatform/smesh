@@ -364,6 +364,15 @@ class SMESH_MeshEditor {
   // - not in avoidSet,
   // - in elemSet provided that !elemSet.empty()
 
+  /*!
+   * \brief Returns true if given node is medium
+    * \param n - node to check
+    * \param typeToCheck - type of elements containing the node to ask about node status
+    * \retval bool - check result
+   */
+  static bool IsMedium(const SMDS_MeshNode*      node,
+                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
+
   int FindShape (const SMDS_MeshElement * theElem);
   // Return an index of the shape theElem is on
   // or zero if a shape not found

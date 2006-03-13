@@ -233,9 +233,6 @@ void SMESHGUI_SingleEditDlg::Init()
   myApplyBtn->setEnabled(false);
   setEnabled(true);
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // set selection mode

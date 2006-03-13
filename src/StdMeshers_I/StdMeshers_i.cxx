@@ -39,6 +39,7 @@ using namespace std;
 #include "StdMeshers_Propagation_i.hxx"
 #include "StdMeshers_LengthFromEdges_i.hxx"
 #include "StdMeshers_QuadranglePreference_i.hxx"
+#include "StdMeshers_QuadraticMesh_i.hxx"
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
 #include "StdMeshers_NotConformAllowed_i.hxx"
@@ -87,6 +88,8 @@ extern "C"
       aCreator = new HypothesisCreator_i<StdMeshers_AutomaticLength_i>;
     else if (strcmp(aHypName, "QuadranglePreference") == 0)
       aCreator = new HypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
+    else if (strcmp(aHypName, "QuadraticMesh") == 0)
+      aCreator = new HypothesisCreator_i<StdMeshers_QuadraticMesh_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)

@@ -3505,7 +3505,7 @@ void SMESH_Pattern::clearMesh(SMESH_Mesh* theMesh) const
   {
     if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMesh/*Containing*/( myShape ))
     {
-      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEANDEP );
+      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
     }
     else {
       SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();

@@ -42,9 +42,20 @@ class SMDS_FaceOfEdges:public SMDS_MeshFace
                          const SMDS_MeshEdge* edge4);
 		
 	SMDSAbs_ElementType GetType() const;
+	int NbNodes() const;
 	int NbEdges() const;
 	int NbFaces() const;
 //	friend bool operator<(const SMDS_FaceOfEdges& e1, const SMDS_FaceOfEdges& e2);
+
+
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   * 
+   * Index is wrapped if it is out of a valid range
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
   protected:
   	SMDS_ElemIteratorPtr

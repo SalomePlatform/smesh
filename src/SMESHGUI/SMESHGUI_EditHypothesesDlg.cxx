@@ -290,9 +290,6 @@ void SMESHGUI_EditHypothesesDlg::Init()
   connect(ListHypDefinition,  SIGNAL(doubleClicked(QListBoxItem*)), this, SLOT(addItem(QListBoxItem*)));
   connect(ListAlgoDefinition, SIGNAL(doubleClicked(QListBoxItem*)), this, SLOT(addItem(QListBoxItem*)));
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   LineEditC1A1->setFocus();

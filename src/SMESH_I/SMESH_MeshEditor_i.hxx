@@ -50,6 +50,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
   CORBA::Boolean AddEdge(const SMESH::long_array & IDsOfNodes);
   CORBA::Boolean AddFace(const SMESH::long_array & IDsOfNodes);
+  CORBA::Boolean AddPolygonalFace(const SMESH::long_array & IDsOfNodes);
   CORBA::Boolean AddVolume(const SMESH::long_array & IDsOfNodes);
 
   CORBA::Boolean AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,

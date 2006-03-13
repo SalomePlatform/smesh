@@ -69,7 +69,14 @@ module SMESH
       MOVE_NODE,
       CHANGE_ELEMENT_NODES,
       CHANGE_POLYHEDRON_NODES,
-      RENUMBER
+      RENUMBER,
+      ADD_QUADEDGE,
+      ADD_QUADTRIANGLE,
+      ADD_QUADQUADRANGLE,
+      ADD_QUADTETRAHEDRON,
+      ADD_QUADPYRAMID,
+      ADD_QUADPENTAHEDRON,
+      ADD_QUADHEXAHEDRON
     };
 
   struct log_block
@@ -119,7 +126,8 @@ module SMESH
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
-    HYP_BAD_DIM       // bad dimension
+    HYP_BAD_DIM,      // bad dimension
+    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
   };
 
   /*!
@@ -335,6 +343,11 @@ module SMESH
     SMESH_MeshEditor GetMeshEditor()
       raises (SALOME::SALOME_Exception);
 
+    /*! Check group names for duplications.
+     *  Consider maximum group name length stored in MED file.
+     */
+    boolean HasDuplicatedGroupNamesMED();
+
     /*!
      * Export Mesh to different MED Formats
      * @params
@@ -434,6 +447,12 @@ module SMESH
      * Get mesh description
      */
     string Dump();
+
+    /*!
+     * Get mesh pointer
+     */
+    long GetMeshPtr();
+
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource
@@ -513,6 +532,8 @@ module SMESH
     boolean AddEdge(in long_array IDsOfNodes);
 
     boolean AddFace(in long_array IDsOfNodes);
+
+    boolean AddPolygonalFace(in long_array IdsOfNodes);
 
     boolean AddVolume(in long_array IDsOfNodes);
 

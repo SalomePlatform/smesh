@@ -170,6 +170,35 @@ msgstr "mesh_hexa.png"
 #Polyhedre
 msgid "ICON_DLG_POLYHEDRON"
 msgstr "mesh_polyhedron.png"
+
+#Quadratic Edge
+msgid "ICON_DLG_QUADRATIC_EDGE"
+msgstr "mesh_quad_edge.png"
+
+#Quadratic Triangle
+msgid "ICON_DLG_QUADRATIC_TRIANGLE"
+msgstr "mesh_quad_triangle.png"
+
+#Quadratic Quadrangle
+msgid "ICON_DLG_QUADRATIC_QUADRANGLE"
+msgstr "mesh_quad_quadrangle.png"
+
+#Quadratic Tetrahedron
+msgid "ICON_DLG_QUADRATIC_TETRAHEDRON"
+msgstr "mesh_quad_tetrahedron.png"
+
+#Quadratic Pyramid
+msgid "ICON_DLG_QUADRATIC_PYRAMID"
+msgstr "mesh_quad_pyramid.png"
+
+#Quadratic Pentahedron
+msgid "ICON_DLG_QUADRATIC_PENTAHEDRON"
+msgstr "mesh_quad_pentahedron.png"
+
+#Quadratic Hexahedron
+msgid "ICON_DLG_QUADRATIC_HEXAHEDRON"
+msgstr "mesh_quad_hexahedron.png"
+
 #-----------------------------------------------------------
 # ObjectBrowser
 #-----------------------------------------------------------

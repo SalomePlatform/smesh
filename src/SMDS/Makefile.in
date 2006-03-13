@@ -59,21 +59,10 @@ LIB_SRC = \
 	SMDS_FaceOfEdges.cxx \
 	SMDS_FaceOfNodes.cxx \
 	SMDS_PolygonalFaceOfNodes.cxx \
-	SMDS_VolumeTool.cxx
-#	SMDS_Tria3OfNodes.cxx \
-#	SMDS_HexahedronOfNodes.cxx
-
-#SMDSControl_BoundaryEdges.cxx \
-#SMDSControl_BoundaryFaces.cxx \
-#SMDSControl.cxx \
-#SMDSControl_MeshBoundary.cxx \
-#SMDSEdit_Transform.cxx \
-#SMDS_MeshNodeIDFactory.cxx \
-#SMDS_MeshPrism.cxx \
-#SMDS_MeshPyramid.cxx \
-#SMDS_MeshQuadrangle.cxx \
-#SMDS_MeshTetrahedron.cxx \
-#SMDS_MeshTriangle.cxx \
+	SMDS_VolumeTool.cxx \
+	SMDS_QuadraticEdge.cxx \
+	SMDS_QuadraticFaceOfNodes.cxx \
+	SMDS_QuadraticVolumeOfNodes.cxx
 
 
 LIB_CLIENT_IDL = 
@@ -113,21 +102,11 @@ EXPORT_HEADERS= \
 	SMDS_FaceOfEdges.hxx \
 	SMDS_FaceOfNodes.hxx \
 	SMDS_PolygonalFaceOfNodes.hxx \
-	SMDS_VolumeTool.hxx
-#	SMDS_Tria3OfNodes.hxx \
-#	SMDS_HexahedronOfNodes.hxx
-
-#SMDSControl_BoundaryEdges.hxx \
-#SMDSControl_BoundaryFaces.hxx \
-#SMDSControl.hxx \
-#SMDSControl_MeshBoundary.hxx \
-#SMDSEdit_Transform.hxx \
-#SMDS_MeshPrism.hxx \
-#SMDS_MeshPyramid.hxx \
-#SMDS_MeshQuadrangle.hxx \
-#SMDS_MeshTetrahedron.hxx \
-#SMDS_MeshTriangle.hxx \
-#SMDS_MeshNodeIDFactory.hxx
+	SMDS_VolumeTool.hxx \
+	SMDS_QuadraticEdge.hxx \
+	SMDS_QuadraticFaceOfNodes.hxx \
+	SMDS_QuadraticVolumeOfNodes.hxx \
+	SMDS_SetIterator.hxx
 
 # additionnal information to compil and link file
 CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(OCC_INCLUDES) $(BOOST_CPPFLAGS)

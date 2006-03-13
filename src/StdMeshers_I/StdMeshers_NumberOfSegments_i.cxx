@@ -308,7 +308,7 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   try {
     this->GetImpl()->SetExpressionFunction( expr );
     // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetExpressionFunction( " << expr << " )";
+    SMESH::TPythonDump() << _this() << ".SetExpressionFunction( '" << expr << "' )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),

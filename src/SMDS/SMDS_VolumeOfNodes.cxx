@@ -25,6 +25,7 @@
 
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "utilities.h"
 
 using namespace std;
@@ -170,29 +171,14 @@ int SMDS_VolumeOfNodes::NbEdges() const
         return 0;
 }
 
-class SMDS_VolumeOfNodes_MyIterator:public SMDS_ElemIterator
+class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 {
-  const SMDS_MeshNode* const* mySet;
-  int myLength;
-  int index;
  public:
   SMDS_VolumeOfNodes_MyIterator(const SMDS_MeshNode* const* s, int l):
-    mySet(s),myLength(l),index(0) {}
-
-  bool more()
-  {
-    return index<myLength;
-  }
-
-  const SMDS_MeshElement* next()
-  {
-    index++;
-    return mySet[index-1];
-  }
+    SMDS_NodeArrayElemIterator( s, & s[ l ]) {}
 };
 
-SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::
-	elementsIterator(SMDSAbs_ElementType type) const
+SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::elementsIterator(SMDSAbs_ElementType type) const
 {
   switch(type)
   {
@@ -209,4 +195,16 @@ SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::
 SMDSAbs_ElementType SMDS_VolumeOfNodes::GetType() const
 {
 	return SMDSAbs_Volume;
+}
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ * 
+ * Index is wrapped if it is out of a valid range
+ */
+const SMDS_MeshNode* SMDS_VolumeOfNodes::GetNode(const int ind) const
+{
+  return myNodes[ WrappedIndex( ind )];
 }

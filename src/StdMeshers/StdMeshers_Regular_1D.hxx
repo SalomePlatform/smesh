@@ -49,7 +49,7 @@ public:
 		       const TopoDS_Shape& aShape);
 
   virtual const std::list <const SMESHDS_Hypothesis *> &
-    GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
+    GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, const bool=true);
 
   ostream & SaveTo(ostream & save);
   istream & LoadFrom(istream & load);

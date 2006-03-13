@@ -375,8 +375,8 @@ namespace SMESH{
       try {
 	res = aMesh->AddHypothesis(aShapeObject, aHyp);
 	if (res < SMESH::HYP_UNKNOWN_FATAL) {
-	  _PTR(SObject) SH = SMESH::FindSObject(aHyp);
-	  if (SM && SH) {
+	  _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
+	  if (SM && aSH) {
 	    SMESH::ModifiedMesh(SM, false);
 	  }
 	}

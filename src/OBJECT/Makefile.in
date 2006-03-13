@@ -31,28 +31,105 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl
 
 @COMMENCE@
 
-EXPORT_HEADERS = SMESH_Actor.h SMESH_Object.h SMESH_ObjectDef.h SMESH_ActorUtils.h
+EXPORT_HEADERS = \
+	SMESH_Actor.h \
+        SMESH_Object.h \
+	SMESH_ObjectDef.h \
+	SMESH_ActorUtils.h
 
 
 # Libraries targets
 
 LIB = libSMESHObject.la
-LIB_SRC = SMESH_Object.cxx SMESH_DeviceActor.cxx SMESH_Actor.cxx \
-	  SMESH_ExtractGeometry.cxx SMESH_ActorUtils.cxx
+LIB_SRC = \
+          SMESH_Object.cxx \
+          SMESH_DeviceActor.cxx \
+          SMESH_Actor.cxx \
+	  SMESH_ExtractGeometry.cxx \
+          SMESH_ActorUtils.cxx
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SALOME_GenericObj.idl \
 		 SMESH_Mesh.idl \
-		 SMESH_Group.idl
+		 SMESH_Group.idl \
+                 SALOMEDS.idl \
+		 SMESH_Gen.idl \
+                 GEOM_Gen.idl \
+		 SMESH_Hypothesis.idl
 
 
 # Executables targets
 BIN = 
 BIN_SRC	=
 
-CPPFLAGS+=$(OCC_INCLUDES) $(VTK_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-	  $(BOOST_CPPFLAGS) $(QT_INCLUDES)
-LDFLAGS+=$(OCC_KERNEL_LIBS) $(VTK_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome -lSMDS \
-         -lSalomeApp -lSalomeObject -lSMESHControls
+CPPFLAGS+= \
+        -I${KERNEL_ROOT_DIR}/include/salome \
+        -I${GUI_ROOT_DIR}/include/salome \
+	$(OCC_INCLUDES) \
+        $(VTK_INCLUDES) \
+        $(BOOST_CPPFLAGS) \
+        $(QT_INCLUDES)
+LDFLAGS+= \
+	-L${KERNEL_ROOT_DIR}/lib/salome \
+        -L${GUI_ROOT_DIR}/lib/salome \
+	$(OCC_KERNEL_LIBS) \
+        $(VTK_LIBS) \
+        -lSMDS \
+        -lSMESHClient \
+        -lSalomeApp \
+        -lSalomeObject \
+        -lSMESHControls
+
+LDFLAGSFORBIN += \
+	-L${GEOM_ROOT_DIR}/lib/salome \
+	-L${MED_ROOT_DIR}/lib/salome \
+	$(LDFLAGS) \
+	-lqtx \
+        -lsuit \
+	-lstd \
+	-lCAM \
+	-lLightApp \
+	-lObjBrowser \
+	-lSalomePrs \
+	-lSalomeDS \
+	-lTOOLSDS \
+	-lSalomeDSImpl \
+	-lSalomeDSClient \
+	-lSalomeHDFPersist \
+        -lSalomeResourcesManager \
+	-lSalomeLifeCycleCORBA \
+        -lSalomeNotification \
+        -lSalomeContainer \
+	-lSalomeCatalog \
+	-lSalomeSession \
+	-lRegistry \
+	-lNMTTools \
+	-lNMTDS \
+	-lmed_V2_1 \
+        -lMEDWrapper \
+        -lMEDWrapperBase \
+        -lMEDWrapper_V2_1 \
+        -lMEDWrapper_V2_2 \
+	-lPlot2d \
+	-lGLViewer \
+	-lOCCViewer \
+	-lVTKViewer \
+	-lSVTK \
+	-lSOCC \
+	-lSPlot2d \
+	-lSUPERVGraph \
+	-lPyInterp \
+	-lPythonConsole \
+	-lLogWindow \
+	-lLightApp \
+	-lSalomeContainer \
+	-lToolsGUI \
+        -lSalomeNS \
+	-lEvent \
+	-lSalomeGenericObj \
+        -lSALOMELocalTrace \
+	-lwith_loggerTraceCollector \
+        -lSALOMEBasics \
+        -lOpUtil
 
 @CONCLUDE@

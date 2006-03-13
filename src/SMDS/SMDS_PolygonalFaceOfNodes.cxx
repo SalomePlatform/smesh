@@ -26,7 +26,7 @@
 #include "SMDS_PolygonalFaceOfNodes.hxx"
 
 #include "SMDS_IteratorOfElements.hxx"
-//#include "SMDS_MeshNode.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "utilities.h"
 
 using namespace std;
@@ -128,28 +128,11 @@ void SMDS_PolygonalFaceOfNodes::Print(ostream & OS) const
 //function : elementsIterator
 //purpose  : 
 //=======================================================================
-class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_ElemIterator
+class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_NodeVectorElemIterator
 {
-  //const SMDS_MeshNode* const *mySet;
-  const std::vector<const SMDS_MeshNode *> mySet;
-  //int myLength;
-  int index;
  public:
-  //SMDS_PolygonalFaceOfNodes_MyIterator(const SMDS_MeshNode* const *s, int l):
-  //  mySet(s),myLength(l),index(0) {}
-  SMDS_PolygonalFaceOfNodes_MyIterator(const std::vector<const SMDS_MeshNode *> s):
-    mySet(s),index(0) {}
-
-  bool more()
-  {
-    return index < mySet.size();
-  }
-
-  const SMDS_MeshElement* next()
-  {
-    index++;
-    return mySet[index-1];
-  }
+  SMDS_PolygonalFaceOfNodes_MyIterator(const vector<const SMDS_MeshNode *>& s):
+    SMDS_NodeVectorElemIterator( s.begin(), s.end() ) {}
 };
 
 SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
@@ -172,3 +155,16 @@ SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
   }
   return SMDS_ElemIteratorPtr();
 }
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ * 
+ * Index is wrapped if it is out of a valid range
+ */
+const SMDS_MeshNode* SMDS_PolygonalFaceOfNodes::GetNode(const int ind) const
+{
+  return myNodes[ WrappedIndex( ind )];
+}
+

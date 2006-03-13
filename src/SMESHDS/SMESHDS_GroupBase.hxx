@@ -66,6 +66,12 @@ class SMESHDS_GroupBase
 
   virtual ~SMESHDS_GroupBase() {}
 
+  void SetColorGroup (int theColorGroup)
+  { myColorGroup = theColorGroup;}
+  
+  int GetColorGroup() const
+  { return myColorGroup;}
+  
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
   void resetIterator();
@@ -84,7 +90,7 @@ class SMESHDS_GroupBase
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
-
+  int                  myColorGroup;
 };
 
 #endif

@@ -25,7 +25,6 @@
 //           Moved here from SMESH_Hexa_3D.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 
 #ifndef _SMESH_HEXA_3D_HXX_
 #define _SMESH_HEXA_3D_HXX_
@@ -35,9 +34,11 @@
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
+#include "StdMeshers_Helper.hxx"
+
 typedef struct point3Dstruct
 {
-	const SMDS_MeshNode * node;
+  const SMDS_MeshNode * node;
 } Point3DStruct;
 
 typedef double Pt3[3];
@@ -57,25 +58,6 @@ typedef struct conv2dstruct
   int jb;
   int jc;
 } Conv2DStruct;
-
-typedef struct cubeStruct
-{
-  TopoDS_Vertex V000;
-  TopoDS_Vertex V001;
-  TopoDS_Vertex V010;
-  TopoDS_Vertex V011;
-  TopoDS_Vertex V100;
-  TopoDS_Vertex V101;
-  TopoDS_Vertex V110;
-  TopoDS_Vertex V111;
-  faceQuadStruct* quad_X0;
-  faceQuadStruct* quad_X1;
-  faceQuadStruct* quad_Y0;
-  faceQuadStruct* quad_Y1;
-  faceQuadStruct* quad_Z0;
-  faceQuadStruct* quad_Z1;
-  Point3DStruct* np; // normalised 3D coordinates
-} CubeStruct;
 
 class StdMeshers_Hexa_3D:
   public SMESH_3D_Algo
@@ -127,14 +109,7 @@ protected:
 		Point3DStruct *np,
 		const SMESHDS_Mesh* meshDS);
 
-  CubeStruct _cube;
-  FaceQuadStruct* _quads[6];
-  int _indX0;
-  int _indX1;
-  int _indY0;
-  int _indY1;
-  int _indZ0;
-  int _indZ1;
+  bool ClearAndReturn(FaceQuadStruct* theQuads[6], const bool res);
 };
 
 #endif

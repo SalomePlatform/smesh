@@ -1,0 +1,41 @@
+# source path
+top_srcdir=@top_srcdir@
+top_builddir=..
+srcdir=@srcdir@
+VPATH=.:$(srcdir)/adm_local
+
+
+all: resources
+
+install:
+	cp -rf @top_srcdir@/adm_local @prefix@
+
+bin:
+
+resources :
+	cp -rf @top_srcdir@/adm_local $(top_builddir)
+
+inc:
+
+lib:
+
+depend:
+
+depend_idl:
+
+install-end:
+
+install-include:
+
+install-bin:
+
+uninstall:
+
+uninstall-idl:
+
+distclean:
+
+clean:
+
+distclean-other:
+

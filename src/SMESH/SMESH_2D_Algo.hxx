@@ -30,7 +30,8 @@
 #define _SMESH_2D_ALGO_HXX_
 
 #include "SMESH_Algo.hxx"
-#include <TopoDS_Wire.hxx>
+#include "SMESH_subMesh.hxx"
+#include "TopoDS_Wire.hxx"
 
 class SMESH_2D_Algo:
   public SMESH_Algo
@@ -41,6 +42,7 @@ public:
 
   int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
+
 };
 
 #endif

@@ -53,6 +53,9 @@ class SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
+  void SetColorNumber (int theColorNumber) { myColorNumber = theColorNumber; }
+  int GetColorNumber() const { return myColorNumber; }
+
  private:
   SMESH_Group (const SMESH_Group& theOther);
   // prohibited copy constructor
@@ -61,7 +64,7 @@ class SMESH_Group
 
   SMESHDS_GroupBase * myGroupDS;
   std::string         myName;
-
+  int                 myColorNumber;
 };
 
 #endif

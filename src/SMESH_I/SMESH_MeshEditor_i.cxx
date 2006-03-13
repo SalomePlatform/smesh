@@ -128,6 +128,17 @@ CORBA::Boolean SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
     TPythonDump() << "isDone = " << this << ".AddEdge([ "
                   << index1 << ", " << index2 <<" ])";
   }
+  if (NbNodes == 3) {
+    CORBA::Long n1 = IDsOfNodes[0];
+    CORBA::Long n2 = IDsOfNodes[1];
+    CORBA::Long n12 = IDsOfNodes[2];
+    GetMeshDS()->AddEdge(GetMeshDS()->FindNode(n1),
+                         GetMeshDS()->FindNode(n2),
+                         GetMeshDS()->FindNode(n12));
+    // Update Python script
+    TPythonDump() << "isDone = " << this << ".AddEdge([ "
+                  <<n1<<", "<<n2<<", "<<n12<<" ])";
+  }
   return true;
 }
 
@@ -175,15 +186,45 @@ CORBA::Boolean SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
   {
     GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3]);
   }
-  else
+  else if (NbNodes == 6)
   {
-    GetMeshDS()->AddPolygonalFace(nodes);
+    GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                         nodes[4], nodes[5]);
+  }
+  else if (NbNodes == 8)
+  {
+    GetMeshDS()->AddFace(nodes[0], nodes[1], nodes[2], nodes[3],
+                         nodes[4], nodes[5], nodes[6], nodes[7]);
   }
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".AddFace( " << IDsOfNodes << " )";
 #ifdef _DEBUG_
   TPythonDump() << "print 'AddFace: ', isDone";
+#endif
+
+  return true;
+};
+
+//=============================================================================
+/*!
+ *  AddPolygonalFace
+ */
+//=============================================================================
+CORBA::Boolean SMESH_MeshEditor_i::AddPolygonalFace
+                                   (const SMESH::long_array & IDsOfNodes)
+{
+  int NbNodes = IDsOfNodes.length();
+  std::vector<const SMDS_MeshNode*> nodes (NbNodes);
+  for (int i = 0; i < NbNodes; i++)
+    nodes[i] = GetMeshDS()->FindNode(IDsOfNodes[i]);
+
+  GetMeshDS()->AddPolygonalFace(nodes);
+  
+  // Update Python script
+  TPythonDump() <<"isDone = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
+#ifdef _DEBUG_
+  TPythonDump() << "print 'AddPolygonalFace: ', isDone";
 #endif
 
   return true;
@@ -202,12 +243,26 @@ CORBA::Boolean SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNode
   for(int i=0;i<NbNodes;i++)
     n[i]=GetMeshDS()->FindNode(IDsOfNodes[i]);
 
+  SMDS_MeshElement* elem = 0;
   switch(NbNodes)
   {
-  case 4:GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3]); break;
-  case 5:GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4]); break;
-  case 6:GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5]); break;
-  case 8:GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]); break;
+  case 4 :elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3]); break;
+  case 5 :elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4]); break;
+  case 6 :elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5]); break;
+  case 8 :elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]); break;
+  case 10:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],
+                                        n[6],n[7],n[8],n[9]);
+    break;
+  case 13:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],
+                                        n[7],n[8],n[9],n[10],n[11],n[12]);
+    break;
+  case 15:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],n[8],
+                                        n[9],n[10],n[11],n[12],n[13],n[14]);
+    break;
+  case 20:elem = GetMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
+                                        n[8],n[9],n[10],n[11],n[12],n[13],n[14],
+                                        n[15],n[16],n[17],n[18],n[19]);
+    break;
   }
   // Update Python script
   TPythonDump() << "isDone = " << this << ".AddVolume( " << IDsOfNodes << " )";
@@ -215,7 +270,7 @@ CORBA::Boolean SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNode
   TPythonDump() << "print 'AddVolume: ', isDone";
 #endif
 
-  return true;
+  return elem;
 };
 
 //=============================================================================

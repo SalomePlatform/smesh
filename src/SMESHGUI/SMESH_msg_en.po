@@ -144,6 +144,10 @@ msgstr "Activate Link Selection Mode"
 msgid "SMESH_WRN_EMPTY_NAME" 
 msgstr "Empty name is not valid"
 
+#Smesh polyedre cretion error
+msgid "SMESH_POLYEDRE_CREATE_ERROR"
+msgstr "Polyedron creation error"
+
 #-------------------------------------------------------------------------
 # MEN
 #-------------------------------------------------------------------------
@@ -914,6 +918,14 @@ msgstr "Group on geometry"
 msgid "SMESH_GEOM_GROUP"
 msgstr "Geometry group"
 
+#Color group
+msgid "SMESH_SET_COLOR"
+msgstr "Color group"
+
+#Check color group
+msgid "SMESH_CHECK_COLOR"
+msgstr "Color number"
+
 #%1 SubMeshes
 msgid "SMESH_SUBMESH_SELECTED"
 msgstr "%1 SubMeshes"
@@ -1219,6 +1231,9 @@ msgstr "Such dimention hypothesis is already assigned to the shape"
 msgid "SMESH_HYP_8"
 msgstr "Hypothesis and submesh dimensions mismatch"
 
+msgid "SMESH_HYP_9"
+msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
+
 msgid "MISSING_ALGO"
 msgstr "%3 %2D algorithm is missing"
 
@@ -1256,6 +1271,13 @@ msgstr "      The file is empty,\n"
 msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
        "       pyramid's elements will be missed"
+
+msgid "SMESH_EXPORT_MED_DUPLICATED_GRP"
+msgstr "There are duplicated group names in mesh \"%1\".\n"
+       "You can cancel exporting and rename them,\n"
+       "otherwise some group names in the resulting MED file\n"
+       "will not match ones in the study.\n"
+       "Do you want to continue ?"
 
 msgid "SMESH_EXPORT_MED_V2_1"
 msgstr "During export mesh with name - \"%1\" to MED 2.1\n"
@@ -1789,6 +1811,9 @@ msgstr "Faces by nodes"
 msgid "SMESHGUI_CreatePolyhedralVolumeDlg::SMESH_POLYEDRE_PREVIEW"
 msgstr "Polyhedron preview"
 
+msgid "SMESHGUI_CreatePolyhedralVolumeDlg::SMESH_POLYEDRE_CREATE_ERROR"
+msgstr "Polyhedron creation error."
+
 msgid "SMESH_CREATE_POLYHEDRAL_VOLUME_TITLE"
 msgstr "Create polyhedral volume"
 
@@ -1801,6 +1826,80 @@ msgstr "Polygon"
 msgid "SMESH_ADD_POLYGON"
 msgstr "Add polygon"
 
+msgid "SMESH_ADD_QUADRATIC_EDGE_TITLE"
+msgstr "Add Quadratic Edge"
+
+msgid "SMESH_ADD_QUADRATIC_TRIANGLE_TITLE"
+msgstr "Add Quadratic Triangle"
+
+msgid "SMESH_ADD_QUADRATIC_QUADRANGLE_TITLE"
+msgstr "Add Quadratic Quadrangle"
+
+msgid "SMESH_ADD_QUADRATIC_TETRAHEDRON_TITLE"
+msgstr "Add Quadratic Tetrahedron"
+
+msgid "SMESH_ADD_QUADRATIC_PYRAMID_TITLE"
+msgstr "Add Quadratic Pyramid"
+
+msgid "SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE"
+msgstr "Add Quadratic Pentahedron"
+
+msgid "SMESH_ADD_QUADRATIC_HEXAHEDRON_TITLE"
+msgstr "Add Quadratic Hexahedron"
+
+msgid "SMESH_QUADRATIC_EDGE"
+msgstr "Quadratic Edge"
+
+msgid "SMESH_QUADRATIC_TRIANGLE"
+msgstr "Quadratic Triangle"
+
+msgid "SMESH_QUADRATIC_QUADRANGLE"
+msgstr "Quadratic Quadrangle"
+
+msgid "SMESH_QUADRATIC_TETRAHEDRON"
+msgstr "Quadratic Tetrahedron"
+
+msgid "SMESH_QUADRATIC_PYRAMID"
+msgstr "Quadratic Pyramid"
+
+msgid "SMESH_QUADRATIC_PENTAHEDRON"
+msgstr "Quadratic Pentahedron"
+
+msgid "SMESH_QUADRATIC_HEXAHEDRON"
+msgstr "Quadratic Hexahedron"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_CORNER_NODES"
+msgstr "Corner Nodes:"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_EDGE"
+msgstr "Add Quadratic Edge"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_TRIANGLE"
+msgstr "Add Quadratic Triangle"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_QUADRANGLE"
+msgstr "Add Quadratic Quadrangle"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_TETRAHEDRON"
+msgstr "Add Quadratic Tetrahedron"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_PYRAMID"
+msgstr "Add Quadratic PYRAMID"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_PENTAHEDRON"
+msgstr "Add Quadratic Pentahedron"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_HEXAHEDRON"
+msgstr "Add Quadratic Hexahedron"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_FIRST"
+msgstr "First"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_MIDDLE"
+msgstr "Middle"
+
+msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_LAST"
+msgstr "Last"
 #----------------------------------------------------
 
 msgid "SMESHGUI_CreatePatternDlg::CAPTION"
@@ -2014,6 +2113,27 @@ msgstr "Polygon"
 
 msgid "MEN_POLYHEDRON"
 msgstr "Polyhedron"
+
+msgid "MEN_QUADRATIC_EDGE"
+msgstr "Quadratic Edge"
+
+msgid "MEN_QUADRATIC_TRIANGLE"
+msgstr "Quadratic Triangle"
+
+msgid "MEN_QUADRATIC_QUADRANGLE"
+msgstr "Quadratic Quadrangle"
+
+msgid "MEN_QUADRATIC_TETRAHEDRON"
+msgstr "Quadratic Tetrahedron"
+
+msgid "MEN_QUADRATIC_PYRAMID"
+msgstr "Quadratic Pyramid"
+
+msgid "MEN_QUADRATIC_PENTAHEDRON"
+msgstr "Quadratic Pentahedron"
+
+msgid "MEN_QUADRATIC_HEXAHEDRON"
+msgstr "Quadratic Hexahedron"
 
 msgid "MEN_NODES"
 msgstr "Nodes"
@@ -2344,6 +2464,27 @@ msgstr "Polygon"
 msgid "TOP_POLYHEDRON"
 msgstr "Polyhedron"
 
+msgid "TOP_QUADRATIC_EDGE"
+msgstr "Quadratic Edge"
+
+msgid "TOP_QUADRATIC_TRIANGLE"
+msgstr "Quadratic Triangle"
+
+msgid "TOP_QUADRATIC_QUADRANGLE"
+msgstr "Quadratic Quadrangle"
+
+msgid "TOP_QUADRATIC_TETRAHEDRON"
+msgstr "Quadratic Tetrahedron"
+
+msgid "TOP_QUADRATIC_PYRAMID"
+msgstr "Quadratic Pyramid"
+
+msgid "TOP_QUADRATIC_PENTAHEDRON"
+msgstr "Quadratic Pentahedron"
+
+msgid "TOP_QUADRATIC_HEXAHEDRON"
+msgstr "Quadratic Hexahedron"
+
 msgid "TOP_NODES"
 msgstr "Nodes"
 
@@ -2623,6 +2764,27 @@ msgstr "Polygon"
 
 msgid "STB_POLYHEDRON"
 msgstr "Polyhedron"
+
+msgid "STB_QUADRATIC_EDGE"
+msgstr "Quadratic Edge"
+
+msgid "STB_QUADRATIC_TRIANGLE"
+msgstr "Quadratic Triangle"
+
+msgid "STB_QUADRATIC_QUADRANGLE"
+msgstr "Quadratic Quadrangle"
+
+msgid "STB_QUADRATIC_TETRAHEDRON"
+msgstr "Quadratic Tetrahedron"
+
+msgid "STB_QUADRATIC_PYRAMID"
+msgstr "Quadratic Pyramid"
+
+msgid "STB_QUADRATIC_PENTAHEDRON"
+msgstr "Quadratic Pentahedron"
+
+msgid "STB_QUADRATIC_HEXAHEDRON"
+msgstr "Quadratic Hexahedron"
 
 msgid "STB_NODES"
 msgstr "Nodes"

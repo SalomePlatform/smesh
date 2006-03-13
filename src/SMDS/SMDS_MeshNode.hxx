@@ -64,6 +64,15 @@ class SMDS_WNT_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 	void setXYZ(double x, double y, double z);
 	friend bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2);
 
+  /*!
+   * \brief Return node by its index
+    * \param ind - node index
+    * \retval const SMDS_MeshNode* - the node
+   * 
+   * Index is wrapped if it is out of a valid range
+   */
+  virtual const SMDS_MeshNode* GetNode(const int) const { return this; }
+
   protected:
 	SMDS_ElemIteratorPtr
 		elementsIterator(SMDSAbs_ElementType type) const;

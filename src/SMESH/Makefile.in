@@ -39,6 +39,7 @@ EXPORT_HEADERS= \
 	SMESH_Mesh.hxx \
 	SMESH_subMesh.hxx \
 	SMESH_Hypothesis.hxx \
+	SMESH_HypoFilter.hxx \
 	SMESH_Algo.hxx \
 	SMESH_1D_Algo.hxx \
 	SMESH_2D_Algo.hxx \

@@ -63,6 +63,9 @@
 
 #include "Utils_ExceptHandlers.hxx"
 
+// maximum stored group name length in MED file
+#define MAX_MED_GROUP_NAME_LENGTH 80
+
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
 #else
@@ -76,17 +79,21 @@ static int MYDEBUG = 0;
  */
 //=============================================================================
 
-SMESH_Mesh::SMESH_Mesh(int localId, int studyId, SMESH_Gen * gen, SMESHDS_Document * myDocument)
-: _groupId( 0 )
+SMESH_Mesh::SMESH_Mesh(int theLocalId, 
+		       int theStudyId, 
+		       SMESH_Gen* theGen,
+		       bool theIsEmbeddedMode,
+		       SMESHDS_Document* theDocument):
+  _groupId( 0 )
 {
   INFOS("SMESH_Mesh::SMESH_Mesh(int localId)");
-	_id = localId;
-	_studyId = studyId;
-	_gen = gen;
-	_myDocument = myDocument;
-	_idDoc = _myDocument->NewMesh();
-	_myMeshDS = _myDocument->GetMesh(_idDoc);
-	_isShapeToMesh = false;
+  _id = theLocalId;
+  _studyId = theStudyId;
+  _gen = theGen;
+  _myDocument = theDocument;
+  _idDoc = theDocument->NewMesh(theIsEmbeddedMode);
+  _myMeshDS = theDocument->GetMesh(_idDoc);
+  _isShapeToMesh = false;
 }
 
 //=============================================================================
@@ -149,7 +156,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
   // fill _mapAncestors
   _mapAncestors.Clear();
   int desType, ancType;
-  for ( desType = TopAbs_EDGE; desType > TopAbs_COMPOUND; desType-- )
+  for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
     for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
       TopExp::MapShapesAndAncestors ( aShape,
                                      (TopAbs_ShapeEnum) desType,
@@ -267,6 +274,9 @@ SMESH_Hypothesis::Hypothesis_Status
   if(MYDEBUG) MESSAGE("SMESH_Mesh::AddHypothesis");
 
   SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
+  if ( !subMesh || !subMesh->GetId())
+    return SMESH_Hypothesis::HYP_BAD_SUBSHAPE;
+
   SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
   if ( subMeshDS && subMeshDS->IsComplexSubmesh() ) // group of sub-shapes and maybe of not sub-
   {
@@ -520,45 +530,62 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
 //purpose  : 
 //=======================================================================
 
-bool SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
-                               const SMESH_HypoFilter&             aFilter,
-                               list <const SMESHDS_Hypothesis * >& aHypList,
-                               const bool                          andAncestors) const
+//================================================================================
+/*!
+ * \brief Return hypothesis assigned to the shape
+  * \param aSubShape - the shape to check
+  * \param aFilter - the hypothesis filter
+  * \param aHypList - the list of the found hypotheses
+  * \param andAncestors - flag to check hypos assigned to ancestors of the shape
+  * \retval int - number of unique hypos in aHypList
+ */
+//================================================================================
+
+int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
+                              const SMESH_HypoFilter&             aFilter,
+                              list <const SMESHDS_Hypothesis * >& aHypList,
+                              const bool                          andAncestors) const
 {
-  int nbHyp = 0;
+  set<string> hypTypes; // to exclude same type hypos from the result list
+  int nbHyps = 0;
+
+  // fill in hypTypes
+  list<const SMESHDS_Hypothesis*>::const_iterator hyp;
+  for ( hyp = aHypList.begin(); hyp != aHypList.end(); hyp++ )
+    if ( hypTypes.insert( (*hyp)->GetName() ).second )
+      nbHyps++;
+
+  // get hypos from aSubShape
   {
     const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
-    list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
-    for ( ; hyp != hypList.end(); hyp++ )
-      if ( aFilter.IsOk (static_cast<const SMESH_Hypothesis*>( *hyp ), aSubShape)) {
+    for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
+      if ( aFilter.IsOk (static_cast<const SMESH_Hypothesis*>( *hyp ), aSubShape) &&
+           hypTypes.insert( (*hyp)->GetName() ).second )
+      {
         aHypList.push_back( *hyp );
-        nbHyp++;
+        nbHyps++;
       }
   }
-  // get hypos from shape of one type only: if any hypo is found on edge, do
-  // not look up on faces
-  if ( !nbHyp && andAncestors )
+
+  // get hypos from ancestors of aSubShape
+  if ( andAncestors )
   {
     TopTools_MapOfShape map;
     TopTools_ListIteratorOfListOfShape it( GetAncestors( aSubShape ));
-    int shapeType = it.More() ? it.Value().ShapeType() : TopAbs_SHAPE;
     for (; it.More(); it.Next() )
     {
-      if ( nbHyp && shapeType != it.Value().ShapeType() )
-        break;
-      shapeType = it.Value().ShapeType();
-      if ( !map.Add( it.Value() ))
+     if ( !map.Add( it.Value() ))
         continue;
       const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
-      list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
-      for ( ; hyp != hypList.end(); hyp++ )
-        if (aFilter.IsOk( static_cast<const SMESH_Hypothesis*>( *hyp ), it.Value() )) {
-        aHypList.push_back( *hyp );
-        nbHyp++;
-      }
+      for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
+        if (aFilter.IsOk( static_cast<const SMESH_Hypothesis*>( *hyp ), it.Value() ) &&
+            hypTypes.insert( (*hyp)->GetName() ).second ) {
+          aHypList.push_back( *hyp );
+          nbHyps++;
+        }
     }
   }
-  return nbHyp;
+  return nbHyps;
 }
 
 //=============================================================================
@@ -616,28 +643,31 @@ SMESH_Gen *SMESH_Mesh::GetGen()
 //=============================================================================
 
 SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
-throw(SALOME_Exception)
+  throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   SMESH_subMesh *aSubMesh;
   int index = _myMeshDS->ShapeToIndex(aSubShape);
-  
+
   // for submeshes on GEOM Group
   if ( !index && aSubShape.ShapeType() == TopAbs_COMPOUND ) {
     TopoDS_Iterator it( aSubShape );
     if ( it.More() )
       index = _myMeshDS->AddCompoundSubmesh( aSubShape, it.Value().ShapeType() );
   }
+//   if ( !index )
+//     return NULL; // neither sub-shape nor a group
 
-  if (_mapSubMesh.find(index) != _mapSubMesh.end())
-    {
-      aSubMesh = _mapSubMesh[index];
-    }
+  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(index);
+  if ( i_sm != _mapSubMesh.end())
+  {
+    aSubMesh = i_sm->second;
+  }
   else
-    {
-      aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
-      _mapSubMesh[index] = aSubMesh;
-    }
+  {
+    aSubMesh = new SMESH_subMesh(index, this, _myMeshDS, aSubShape);
+    _mapSubMesh[index] = aSubMesh;
+  }
   return aSubMesh;
 }
 
@@ -649,20 +679,17 @@ throw(SALOME_Exception)
 //=============================================================================
 
 SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
-throw(SALOME_Exception)
+  throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  bool isFound = false;
   SMESH_subMesh *aSubMesh = NULL;
   
   int index = _myMeshDS->ShapeToIndex(aSubShape);
-  if (_mapSubMesh.find(index) != _mapSubMesh.end())
-    {
-      aSubMesh = _mapSubMesh[index];
-      isFound = true;
-    }
-  if (!isFound)
-    aSubMesh = NULL;
+
+  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(index);
+  if ( i_sm != _mapSubMesh.end())
+    aSubMesh = i_sm->second;
+
   return aSubMesh;
 }
 
@@ -690,15 +717,17 @@ throw(SALOME_Exception)
 //=======================================================================
 
 bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
-                                  const TopoDS_Shape & aSubShape)
+                                  const SMESH_subMesh* aSubMesh)
 {
   SMESH_Hypothesis* hyp = static_cast<SMESH_Hypothesis*>(anHyp);
-  // check if anHyp is applicable to aSubShape
-  SMESH_subMesh * subMesh = GetSubMeshContaining( aSubShape );
-  if ( !subMesh || !subMesh->IsApplicableHypotesis( hyp ))
+
+  // check if anHyp can be used to mesh aSubMesh
+  if ( !aSubMesh || !aSubMesh->IsApplicableHypotesis( hyp ))
     return false;
 
-  SMESH_Algo *algo = _gen->GetAlgo(*this, aSubShape);
+  const TopoDS_Shape & aSubShape = const_cast<SMESH_subMesh*>( aSubMesh )->GetSubShape();
+
+  SMESH_Algo *algo = _gen->GetAlgo(*this, aSubShape );
 
   // algorithm
   if (anHyp->GetType() > SMESHDS_Hypothesis::PARAM_ALGO)
@@ -708,16 +737,18 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
   if (algo)
   {
     // look trough hypotheses used by algo
-    const list <const SMESHDS_Hypothesis * >&usedHyps =
-      algo->GetUsedHypothesis(*this, aSubShape);
-    return ( find( usedHyps.begin(), usedHyps.end(), anHyp ) != usedHyps.end() );
+    SMESH_HypoFilter hypoKind;
+    if ( algo->InitCompatibleHypoFilter( hypoKind, !hyp->IsAuxiliary() )) {
+      list <const SMESHDS_Hypothesis * > usedHyps;
+      if ( GetHypotheses( aSubShape, hypoKind, usedHyps, true ))
+        return ( find( usedHyps.begin(), usedHyps.end(), anHyp ) != usedHyps.end() );
+    }
   }
 
   // look through all assigned hypotheses
-  SMESH_HypoFilter filter( SMESH_HypoFilter::Is( hyp ));
-  return GetHypothesis( aSubShape, filter, true );
+  //SMESH_HypoFilter filter( SMESH_HypoFilter::Is( hyp ));
+  return false; //GetHypothesis( aSubShape, filter, true );
 }
-
 
 //=============================================================================
 /*!
@@ -726,27 +757,99 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
 //=============================================================================
 
 const list < SMESH_subMesh * >&
-	SMESH_Mesh::GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
-throw(SALOME_Exception)
+SMESH_Mesh::GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
+  throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-	if(MYDEBUG) MESSAGE("SMESH_Mesh::GetSubMeshUsingHypothesis");
-	map < int, SMESH_subMesh * >::iterator itsm;
-	_subMeshesUsingHypothesisList.clear();
-	for (itsm = _mapSubMesh.begin(); itsm != _mapSubMesh.end(); itsm++)
-	{
-		SMESH_subMesh *aSubMesh = (*itsm).second;
-		if ( IsUsedHypothesis ( anHyp, aSubMesh->GetSubShape() ))
-			_subMeshesUsingHypothesisList.push_back(aSubMesh);
-	}
-	return _subMeshesUsingHypothesisList;
+  if(MYDEBUG) MESSAGE("SMESH_Mesh::GetSubMeshUsingHypothesis");
+  map < int, SMESH_subMesh * >::iterator itsm;
+  _subMeshesUsingHypothesisList.clear();
+  for (itsm = _mapSubMesh.begin(); itsm != _mapSubMesh.end(); itsm++)
+  {
+    SMESH_subMesh *aSubMesh = (*itsm).second;
+    if ( IsUsedHypothesis ( anHyp, aSubMesh ))
+      _subMeshesUsingHypothesisList.push_back(aSubMesh);
+  }
+  return _subMeshesUsingHypothesisList;
+}
+
+//=======================================================================
+//function : NotifySubMeshesHypothesisModification
+//purpose  : Say all submeshes using theChangedHyp that it has been modified
+//=======================================================================
+
+void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* theChangedHyp)
+{
+  Unexpect aCatch(SalomeException);
+
+  const SMESH_Hypothesis* hyp = static_cast<const SMESH_Hypothesis*>(theChangedHyp);
+
+  const SMESH_Algo *foundAlgo = 0;
+  SMESH_HypoFilter algoKind( SMESH_HypoFilter::IsAlgo() );
+  SMESH_HypoFilter compatibleHypoKind;
+  list <const SMESHDS_Hypothesis * > usedHyps;
+
+
+  map < int, SMESH_subMesh * >::iterator itsm;
+  for (itsm = _mapSubMesh.begin(); itsm != _mapSubMesh.end(); itsm++)
+  {
+    SMESH_subMesh *aSubMesh = (*itsm).second;
+    if ( aSubMesh->IsApplicableHypotesis( hyp ))
+    {
+      const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
+
+      if ( !foundAlgo ) // init filter for algo search
+        algoKind.And( algoKind.IsApplicableTo( aSubShape ));
+      
+      const SMESH_Algo *algo = static_cast<const SMESH_Algo*>
+        ( GetHypothesis( aSubShape, algoKind, true ));
+
+      if ( algo )
+      {
+        bool sameAlgo = ( algo == foundAlgo );
+        if ( !sameAlgo && foundAlgo )
+          sameAlgo = ( strcmp( algo->GetName(), foundAlgo->GetName() ) == 0);
+
+        if ( !sameAlgo ) { // init filter for used hypos search
+          if ( !algo->InitCompatibleHypoFilter( compatibleHypoKind, !hyp->IsAuxiliary() ))
+            continue; // algo does not use any hypothesis
+          foundAlgo = algo;
+        }
+
+        // check if hyp is used by algo
+        usedHyps.clear();
+        if ( GetHypotheses( aSubShape, compatibleHypoKind, usedHyps, true ) &&
+             find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() )
+        {
+          aSubMesh->ComputeStateEngine(SMESH_subMesh::MODIF_HYP);
+
+          if ( algo->GetDim() == 1 && IsPropagationHypothesis( aSubShape ))
+            CleanMeshOnPropagationChain( aSubShape );
+        }
+      }
+    }
+  }
 }
 
 //=============================================================================
-/*!
- *
+/*! Export* methods.
+ *  To store mesh contents on disk in different formats.
  */
 //=============================================================================
+
+bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
+{
+  set<string> aGroupNames;
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    SMESH_Group* aGroup = it->second;
+    string aGroupName = aGroup->GetName();
+    aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
+    if (!aGroupNames.insert(aGroupName).second)
+      return true;
+  }
+
+  return false;
+}
 
 void SMESH_Mesh::ExportMED(const char *file, 
 			   const char* theMeshName, 
@@ -755,6 +858,7 @@ void SMESH_Mesh::ExportMED(const char *file,
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
+
   DriverMED_W_SMESHDS_Mesh myWriter;
   myWriter.SetFile    ( file, MED::EVersion(theVersion) );
   myWriter.SetMesh    ( _myMeshDS   );
@@ -772,15 +876,28 @@ void SMESH_Mesh::ExportMED(const char *file,
     myWriter.AddGroupOfVolumes();
   }
 
+  // Pass groups to writer. Provide unique group names.
+  set<string> aGroupNames;
+  char aString [256];
+  int maxNbIter = 10000; // to guarantee cycle finish
   for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
     SMESH_Group*       aGroup   = it->second;
     SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
     if ( aGroupDS ) {
-      aGroupDS->SetStoreName( aGroup->GetName() );
+      string aGroupName0 = aGroup->GetName();
+      aGroupName0.resize(MAX_MED_GROUP_NAME_LENGTH);
+      string aGroupName = aGroupName0;
+      for (int i = 1; !aGroupNames.insert(aGroupName).second && i < maxNbIter; i++) {
+        sprintf(&aString[0], "GR_%d_%s", i, aGroupName0.c_str());
+        aGroupName = aString;
+        aGroupName.resize(MAX_MED_GROUP_NAME_LENGTH);
+      }
+      aGroupDS->SetStoreName( aGroupName.c_str() );
       myWriter.AddGroup( aGroupDS );
     }
   }
 
+  // Perform export
   myWriter.Perform();
 }
 
@@ -861,7 +978,8 @@ int SMESH_Mesh::NbTriangles() throw(SALOME_Exception)
   const SMDS_MeshFace * curFace;
   while (itFaces->more()) {
     curFace = itFaces->next();
-    if (!curFace->IsPoly() && curFace->NbNodes() == 3) Nb++;
+    if ( !curFace->IsPoly() && 
+	 ( curFace->NbNodes()==3 || curFace->NbNodes()==6 ) ) Nb++;
   }
   return Nb;
 }
@@ -879,7 +997,8 @@ int SMESH_Mesh::NbQuadrangles() throw(SALOME_Exception)
   const SMDS_MeshFace * curFace;
   while (itFaces->more()) {
     curFace = itFaces->next();
-    if (!curFace->IsPoly() && curFace->NbNodes() == 4) Nb++;
+    if ( !curFace->IsPoly() && 
+	 ( curFace->NbNodes() == 4 || curFace->NbNodes()==8 ) ) Nb++;
   }
   return Nb;
 }
@@ -917,7 +1036,8 @@ int SMESH_Mesh::NbTetras() throw(SALOME_Exception)
   const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
     curVolume = itVolumes->next();
-    if (!curVolume->IsPoly() && curVolume->NbNodes() == 4) Nb++;
+    if ( !curVolume->IsPoly() && 
+	 ( curVolume->NbNodes() == 4 || curVolume->NbNodes()==10 ) ) Nb++;
   }
   return Nb;
 }
@@ -931,7 +1051,8 @@ int SMESH_Mesh::NbHexas() throw(SALOME_Exception)
   const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
     curVolume = itVolumes->next();
-    if (!curVolume->IsPoly() && curVolume->NbNodes() == 8) Nb++;
+    if ( !curVolume->IsPoly() && 
+	 ( curVolume->NbNodes() == 8 || curVolume->NbNodes()==20 ) ) Nb++;
   }
   return Nb;
 }
@@ -945,7 +1066,8 @@ int SMESH_Mesh::NbPyramids() throw(SALOME_Exception)
   const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
     curVolume = itVolumes->next();
-    if (!curVolume->IsPoly() && curVolume->NbNodes() == 5) Nb++;
+    if ( !curVolume->IsPoly() && 
+	 ( curVolume->NbNodes() == 5 || curVolume->NbNodes()==13 ) ) Nb++;
   }
   return Nb;
 }
@@ -959,7 +1081,8 @@ int SMESH_Mesh::NbPrisms() throw(SALOME_Exception)
   const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
     curVolume = itVolumes->next();
-    if (!curVolume->IsPoly() && curVolume->NbNodes() == 6) Nb++;
+    if ( !curVolume->IsPoly() && 
+	 ( curVolume->NbNodes() == 6 || curVolume->NbNodes()==15 ) ) Nb++;
   }
   return Nb;
 }
@@ -1152,7 +1275,7 @@ void SMESH_Mesh::CleanMeshOnPropagationChain (const TopoDS_Shape& theMainEdge)
     SMESH_subMesh *subMesh = GetSubMesh(anEdge);
     SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
     if (subMeshDS && subMeshDS->NbElements() > 0) {
-      subMesh->ComputeStateEngine(SMESH_subMesh::CLEANDEP);
+      subMesh->ComputeStateEngine(SMESH_subMesh::CLEAN);
     }
   }
 }

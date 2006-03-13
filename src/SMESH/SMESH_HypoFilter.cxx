@@ -76,6 +76,17 @@ bool SMESH_HypoFilter::ApplicablePredicate::IsOk(const SMESH_Hypothesis* aHyp,
 };
 
 //=======================================================================
+//function : IsAuxiliaryPredicate::IsOk
+//purpose  : 
+//=======================================================================
+
+bool SMESH_HypoFilter::IsAuxiliaryPredicate::IsOk(const SMESH_Hypothesis* aHyp,
+                                                  const TopoDS_Shape&     /*aShape*/) const
+{
+  return aHyp->IsAuxiliary();
+};
+
+//=======================================================================
 //function : ApplicablePredicate::ApplicablePredicate
 //purpose  : 
 //=======================================================================
@@ -191,6 +202,17 @@ SMESH_HypoPredicate* SMESH_HypoFilter::IsAlgo()
 }
 
 //=======================================================================
+//function : IsAuxiliary
+//purpose  : 
+//=======================================================================
+
+SMESH_HypoPredicate* SMESH_HypoFilter::IsAuxiliary()
+{
+  return new IsAuxiliaryPredicate();
+}
+
+
+//=======================================================================
 //function : IsGlobal
 //purpose  : 
 //=======================================================================
@@ -287,6 +309,7 @@ SMESH_HypoFilter & SMESH_HypoFilter::Init  ( SMESH_HypoPredicate* aPredicate, bo
   list<SMESH_HypoPredicate*>::const_iterator pred = myPredicates.begin();
   for ( ; pred != myPredicates.end(); ++pred )
     delete *pred;
+  myPredicates.clear();
 
   add( notNagate ? AND : AND_NOT, aPredicate );
   return *this;

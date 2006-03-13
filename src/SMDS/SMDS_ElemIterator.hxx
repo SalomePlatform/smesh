@@ -33,8 +33,24 @@
 #include <boost/shared_ptr.hpp>
 
 class SMDS_MeshElement;
+class SMDS_MeshNode;
+class SMDS_MeshEdge;
+class SMDS_MeshFace;
+class SMDS_MeshVolume;
 
 typedef SMDS_Iterator<const SMDS_MeshElement *> SMDS_ElemIterator;
 typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshElement *> > SMDS_ElemIteratorPtr;
+
+typedef SMDS_Iterator<const SMDS_MeshNode *> SMDS_NodeIterator;
+typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshNode *> > SMDS_NodeIteratorPtr;
+
+typedef SMDS_Iterator<const SMDS_MeshEdge *> SMDS_EdgeIterator;
+typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshEdge *> > SMDS_EdgeIteratorPtr;
+
+typedef SMDS_Iterator<const SMDS_MeshFace *> SMDS_FaceIterator;
+typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshFace *> > SMDS_FaceIteratorPtr;
+
+typedef SMDS_Iterator<const SMDS_MeshVolume *> SMDS_VolumeIterator;
+typedef boost::shared_ptr<SMDS_Iterator<const SMDS_MeshVolume *> > SMDS_VolumeIteratorPtr;
 
 #endif

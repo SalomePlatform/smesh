@@ -46,6 +46,7 @@
 #include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <OSD.hxx>
 
 #include "Utils_CorbaException.hxx"
 
@@ -92,7 +93,6 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <map>
-#include <boost/filesystem/path.hpp>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -244,8 +244,11 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
   _thisObj = this ;
   _id = myPoa->activate_object( _thisObj );
   
+  myIsEmbeddedMode = false;
   myShapeReader = NULL;  // shape reader
   mySMESHGen = this;
+
+  OSD::SetSignal( true );
 }
 
 //=============================================================================
@@ -377,7 +380,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     // create a new mesh object servant, store it in a map in study context
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
     // create a new mesh object
-    meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID() ));
+    meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID(), myIsEmbeddedMode ));
 
     // activate the CORBA servant of Mesh
     SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( meshServant->_this() );
@@ -405,6 +408,32 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
     myShapeReader = new GEOM_Client(GetContainerRef());
   ASSERT( myShapeReader );
   return myShapeReader;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::SetEmbeddedMode
+ *
+ *  Set current mode
+ */
+//=============================================================================
+
+void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
+{
+  myIsEmbeddedMode = theMode;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::IsEmbeddedMode
+ *
+ *  Get current mode
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Gen_i::IsEmbeddedMode()
+{
+  return myIsEmbeddedMode;
 }
 
 //=============================================================================
@@ -623,7 +652,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromUNV( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromUNV" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  string aFileName;
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();
@@ -734,7 +763,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::CreateMeshesFromSTL" );
 
   SMESH::SMESH_Mesh_var aMesh = createMesh();
-  string aFileName; // = boost::filesystem::path(theFileName).leaf();
+  string aFileName;
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
     SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder();

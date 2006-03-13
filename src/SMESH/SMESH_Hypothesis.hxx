@@ -49,18 +49,19 @@ public:
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
-    HYP_BAD_DIM       // bad dimension
+    HYP_BAD_DIM,      // bad dimension
+    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }
 
   SMESH_Hypothesis(int hypId, int studyId, SMESH_Gen* gen);
   virtual ~SMESH_Hypothesis();
-  int GetDim() const;
+  virtual int GetDim() const;
   int GetStudyId() const;
-  void NotifySubMeshesHypothesisModification();
-  int GetShapeType() const;
-  const char* GetLibName() const;
+  virtual void NotifySubMeshesHypothesisModification();
+  virtual int GetShapeType() const;
+  virtual const char* GetLibName() const;
   void  SetLibName(const char* theLibName);
 
   /*!
@@ -70,6 +71,17 @@ public:
     * \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape)=0;
+
+  /*!
+   * \brief Return true if me is an auxiliary hypothesis
+    * \retval bool - auxiliary or not
+   * 
+   * An auxiliary hypothesis is optional, i.e. an algorithm
+   * can work without it and another hypothesis of the same
+   * dimention can be assigned to the shape
+   */
+  virtual bool IsAuxiliary() const
+  { return GetType() == PARAM_ALGO && _param_algo_dim <= 0; }
 
 protected:
   SMESH_Gen* _gen;

@@ -40,7 +40,7 @@ StdMeshers_Propagation::StdMeshers_Propagation (int hypId, int studyId,
      : SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = GetName();
-  _param_algo_dim = -2;
+  _param_algo_dim = -1; // 1D auxiliary
 }
 
 //=============================================================================

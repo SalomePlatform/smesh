@@ -153,6 +153,32 @@ namespace SMESH{
     if (aComment)
       aComment->SetValue(theValue);
   }
+  
+  void setFileName (_PTR(SObject) theSObject, const char* theValue)
+  {
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    if (aStudy->GetProperties()->IsLocked())
+      return;
+    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr =
+      aBuilder->FindOrCreateAttribute(theSObject, "AttributeExternalFileDef");
+    _PTR(AttributeExternalFileDef) aFileName = anAttr;
+    if (aFileName)
+      aFileName->SetValue(theValue);
+  }
+  
+  void setFileType (_PTR(SObject) theSObject, const char* theValue)
+  {
+    _PTR(Study) aStudy = GetActiveStudyDocument();
+    if (aStudy->GetProperties()->IsLocked())
+      return;
+    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr =
+      aBuilder->FindOrCreateAttribute(theSObject, "AttributeFileType");
+    _PTR(AttributeFileType) aFileType = anAttr;
+    if (aFileType)
+      aFileType->SetValue(theValue);
+  }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
                                      _PTR(Study)   theStudy)

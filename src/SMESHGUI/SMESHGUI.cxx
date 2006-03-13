@@ -26,6 +26,7 @@
 
 #include "SMESHGUI.h"
 
+#include "SMESH_Client.hxx"
 #include "SMESHGUI_NodesDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_ClippingDlg.h"
@@ -40,6 +41,7 @@
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
+#include "SMESHGUI_AddQuadraticElementDlg.h"
 #include "SMESHGUI_EditHypothesesDlg.h"
 #include "SMESHGUI_CreateHypothesesDlg.h"
 #include "SMESHGUI_FilterDlg.h"
@@ -83,13 +85,14 @@
 #include "SalomeApp_Study.h"
 #include "SalomeApp_Application.h"
 #include "SalomeApp_CheckFileDlg.h"
+#include "SalomeApp_ImportOperation.h"
+
 #include "LightApp_DataOwner.h"
 #include "LightApp_Preferences.h"
 #include "LightApp_VTKSelector.h"
 #include "LightApp_Operation.h"
 #include "LightApp_UpdateFlags.h"
-
-#include "SalomeApp_ImportOperation.h"
+#include "LightApp_NameDlg.h"
 
 #include <SVTK_ViewWindow.h>
 #include <SVTK_ViewModel.h>
@@ -125,7 +128,6 @@
 #include <qstring.h>
 #include <qwidget.h>
 #include <qaction.h>
-#include <qinputdialog.h>
 
 // BOOST Includes
 #include <boost/shared_ptr.hpp>
@@ -146,7 +148,7 @@
 using namespace std;
 
 namespace{
-  // Decalarations
+  // Declarations
   //=============================================================
   void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
 			    int theCommandID);
@@ -260,30 +262,45 @@ namespace{
 	switch ( theCommandID ) {
 	case 125:
 	case 122:
-	  aFilterMap.insert( QObject::tr("MED 2.1 (*.med)"), SMESH::MED_V2_1 );
-	  aFilterMap.insert( QObject::tr("MED 2.2 (*.med)"), SMESH::MED_V2_2 );
+          {
+	    if (aMesh->HasDuplicatedGroupNamesMED()) {
+              int aRet = SUIT_MessageBox::warn2
+                (SMESHGUI::desktop(),
+                 QObject::tr("SMESH_WRN_WARNING"),
+                 QObject::tr("SMESH_EXPORT_MED_DUPLICATED_GRP").arg(anIObject->getName()),
+                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+                 0, 1, 0);
+              if (aRet)
+                return;
+            }
+
+            aFilterMap.insert( QObject::tr("MED 2.1 (*.med)"), SMESH::MED_V2_1 );
+            aFilterMap.insert( QObject::tr("MED 2.2 (*.med)"), SMESH::MED_V2_2 );
+          }
 	  break;
 	case 124:
 	case 121:
 	  aFilter = QObject::tr("DAT files (*.dat)");
 	  break;
 	case 126:
-	case 123: {
-	  if(aMesh->NbPyramids()){
-	    int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
-					     QObject::tr("SMESH_WRN_WARNING"),
-					     QObject::tr("SMESH_EXPORT_UNV").arg(anIObject->getName()),
-					     QObject::tr("SMESH_BUT_YES"),
-					     QObject::tr("SMESH_BUT_NO"),
-					     0,1,0);
-	    if(aRet)
-	      return;
-	  }
-	  aFilter = QObject::tr("IDEAS files (*.unv)");
+	case 123:
+          {
+            if (aMesh->NbPyramids()) {
+              int aRet = SUIT_MessageBox::warn2
+                (SMESHGUI::desktop(),
+                 QObject::tr("SMESH_WRN_WARNING"),
+                 QObject::tr("SMESH_EXPORT_UNV").arg(anIObject->getName()),
+                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+                 0, 1, 0);
+              if (aRet)
+                return;
+            }
+            aFilter = QObject::tr("IDEAS files (*.unv)");
+          }
 	  break;
 	default:
 	  return;
-	}}
+	}
 
 	QString aFilename;
 	SMESH::MED_VERSION aFormat;
@@ -295,41 +312,42 @@ namespace{
 	
 	if ( theCommandID != 122 && theCommandID != 125 )
 	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
-	else
-	  {
-	    QStringList filters;
-	    for ( QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin(); it != aFilterMap.end(); ++it )
-	      filters.push_back( it.key() );
+	else {
+          QStringList filters;
+          QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
+          for ( ; it != aFilterMap.end(); ++it )
+            filters.push_back( it.key() );
 
-	    //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
-	    SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
-	    fd->setCaption( aTitle );
-	    fd->setFilters( filters );
-	    fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
-	    fd->SetChecked(toCreateGroups);
-	    bool is_ok = false;
-	    while(!is_ok){
-	      fd->exec();
-	      aFilename = fd->selectedFile();
-	      aFormat = aFilterMap[fd->selectedFilter()];
-	      is_ok = true;
-	      if( !aFilename.isEmpty()
-		  && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0)
-		  && aFormat==SMESH::MED_V2_1){
-		int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
-						  QObject::tr("SMESH_WRN_WARNING"),
-						  QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
-						  QObject::tr("SMESH_BUT_YES"),
-						  QObject::tr("SMESH_BUT_NO"),
-						  0,1,0);
-		if(aRet){
-		  is_ok = false;
-		}
-	      }
-	    }
-	    toCreateGroups = fd->IsChecked();
-	    delete fd;
-	  }
+          //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+          SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
+            ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
+          fd->setCaption( aTitle );
+          fd->setFilters( filters );
+          fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+          fd->SetChecked(toCreateGroups);
+          bool is_ok = false;
+          while (!is_ok) {
+            fd->exec();
+            aFilename = fd->selectedFile();
+            aFormat = aFilterMap[fd->selectedFilter()];
+            is_ok = true;
+            if ( !aFilename.isEmpty()
+                 && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0)
+                 && aFormat==SMESH::MED_V2_1) {
+              int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
+                                                QObject::tr("SMESH_WRN_WARNING"),
+                                                QObject::tr("SMESH_EXPORT_MED_V2_1").arg(anIObject->getName()),
+                                                QObject::tr("SMESH_BUT_YES"),
+                                                QObject::tr("SMESH_BUT_NO"),
+                                                0,1,0);
+              if (aRet) {
+                is_ok = false;
+              }
+            }
+          }
+          toCreateGroups = fd->IsChecked();
+          delete fd;
+        }
 	if ( !aFilename.isEmpty() ) {
 	  // Check whether the file already exists and delete it if yes
 	  QFile aFile( aFilename );
@@ -808,12 +826,11 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
 //=============================================================================
 SMESHGUI::SMESHGUI() :
 SalomeApp_Module( "SMESH" )
-{
+{  
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
-    SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA( getApp()->namingService() );
-    Engines::Component_var comp = ls->FindOrLoad_Component( "FactoryServer", "SMESH" );
-    myComponentSMESH = SMESH::SMESH_Gen::_narrow( comp );
+    CORBA::Boolean anIsEmbeddedMode;
+    myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
   }
 
   myActiveDialogBox = 0;
@@ -1390,9 +1407,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       else
         aDlg = new SMESHGUI_CuttingOfQuadsDlg(this);
 
-      int x, y ;
-      DefineDlgPosition( aDlg, x, y );
-      aDlg->move( x, y );
       aDlg->show();
       break;
     }
@@ -1578,8 +1592,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       int nbSelectedGroups = 0;
       for ( ; It.More(); It.Next() )
       {
-        SMESH::SMESH_Group_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_Group>(It.Value());
+        SMESH::SMESH_GroupBase_var aGroup =
+          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(It.Value());
         if (!aGroup->_is_nil()) {
 	  nbSelectedGroups++;
           SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, "", aGroup);
@@ -1588,7 +1602,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       if (nbSelectedGroups == 0)
 	{
-	  SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, "", SMESH::SMESH_Group::_nil());
+	  SMESHGUI_GroupDlg *aDlg = new SMESHGUI_GroupDlg( this, "", SMESH::SMESH_GroupBase::_nil());
 	  aDlg->show();
 	}
       break;
@@ -1762,10 +1776,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           {
             aName = anAttr;
             QString newName = QString(aName->Value().c_str());
-	    bool ok;
-	    newName = QInputDialog::getText( tr( "Rename" ), tr( "Enter new name:" ), QLineEdit::Normal,
-                                             newName, &ok, desktop() );
-            if ( ok && !newName.isEmpty() )
+            newName = LightApp_NameDlg::getName(desktop(), newName);
+            if ( !newName.isEmpty() )
             {
               //old source: aStudy->renameIObject( IObject, newName );
 	      aName->SetValue( newName.latin1() );
@@ -1852,6 +1864,46 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	SUIT_MessageBox::warn1(SMESHGUI::desktop(),
 			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
 			      tr("SMESH_BUT_OK"));
+      }
+      break;
+    }
+  case 4034:     // QUADRATIC EDGE
+  case 4035:     // QUADRATIC TRIANGLE
+  case 4036:     // QUADRATIC QUADRANGLE
+  case 4037:     // QUADRATIC TETRAHEDRON
+  case 4038:     // QUADRATIC PYRAMID
+  case 4039:     // QUADRATIC PENTAHEDRON
+  case 4040:     // QUADRATIC HEXAHEDRON
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+	EmitSignalDeactivateDialog();
+	int type;
+
+	switch (theCommandID) {
+	case 4034:                                      
+	  type = QUAD_EDGE; break;
+	case 4035:                                      
+	  type = QUAD_TRIANGLE; break;
+	case 4036:                                     
+	  type = QUAD_QUADRANGLE; break;
+	case 4037:                                     
+	  type = QUAD_TETRAHEDRON; break;
+	case 4038:                                     
+	  type = QUAD_PYRAMID; break; 
+	case 4039:                                     
+	  type = QUAD_PENTAHEDRON; break; 
+	case 4040:
+	  type = QUAD_HEXAHEDRON;
+	  break;
+	default:;
+	}
+	 new SMESHGUI_AddQuadraticElementDlg( this, type );
+      }
+      else {
+	SUIT_MessageBox::warn1(SMESHGUI::desktop(),
+			       tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
+			       tr("SMESH_BUT_OK"));
       }
       break;
     }
@@ -2309,6 +2361,13 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 301, "DISPLAY" );
   createSMESHAction( 302, "DISPLAY_ONLY" );
   createSMESHAction( 4033, "POLYHEDRON", "ICON_DLG_POLYHEDRON" );
+  createSMESHAction( 4034, "QUADRATIC_EDGE", "ICON_DLG_QUADRATIC_EDGE" );
+  createSMESHAction( 4035, "QUADRATIC_TRIANGLE", "ICON_DLG_QUADRATIC_TRIANGLE" );
+  createSMESHAction( 4036, "QUADRATIC_QUADRANGLE", "ICON_DLG_QUADRATIC_QUADRANGLE" );
+  createSMESHAction( 4037, "QUADRATIC_TETRAHEDRON", "ICON_DLG_QUADRATIC_TETRAHEDRON" );
+  createSMESHAction( 4038, "QUADRATIC_PYRAMID", "ICON_DLG_QUADRATIC_PYRAMID" );
+  createSMESHAction( 4039, "QUADRATIC_PENTAHEDRON", "ICON_DLG_QUADRATIC_PENTAHEDRON" );
+  createSMESHAction( 4040, "QUADRATIC_HEXAHEDRON", "ICON_DLG_QUADRATIC_HEXAHEDRON" );
 
   // ----- create menu --------------
   int fileId   = createMenu( tr( "MEN_FILE" ),   -1,  1 ),
@@ -2388,6 +2447,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4031, addId, -1 );
   createMenu( 4032, addId, -1 );
   createMenu( 4033, addId, -1 );
+  createMenu( separator(), addId, -1 );
+  createMenu( 4034, addId, -1 );
+  createMenu( 4035, addId, -1 );
+  createMenu( 4036, addId, -1 );
+  createMenu( 4037, addId, -1 );
+  createMenu( 4038, addId, -1 );
+  createMenu( 4039, addId, -1 );
+  createMenu( 4040, addId, -1 );
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
@@ -2464,6 +2531,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 4032, addRemTb );
   createTool( 4033, addRemTb );
   createTool( separator(), addRemTb );
+  createTool( 4034, addRemTb );
+  createTool( 4035, addRemTb );
+  createTool( 4036, addRemTb );
+  createTool( 4037, addRemTb );
+  createTool( 4038, addRemTb );
+  createTool( 4039, addRemTb );
+  createTool( 4040, addRemTb );
+  createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
   createTool( separator(), addRemTb );
@@ -2501,12 +2576,13 @@ void SMESHGUI::initialize( CAM_Application* app )
 	  group   = pat.arg( SMESHGUI_Selection::typeName( GROUP ) ),
 	  hypo    = pat.arg( SMESHGUI_Selection::typeName( HYPOTHESIS ) ),
 	  algo    = pat.arg( SMESHGUI_Selection::typeName( ALGORITHM ) ),
-	  elems   = QString( "'%1' '%2' '%3' '%4' '%5'" ).
+	  elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
                        arg( SMESHGUI_Selection::typeName( SUBMESH_VERTEX ) ).
 		       arg( SMESHGUI_Selection::typeName( SUBMESH_EDGE ) ).
 		       arg( SMESHGUI_Selection::typeName( SUBMESH_FACE ) ).
 		       arg( SMESHGUI_Selection::typeName( SUBMESH_SOLID ) ).
-		       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ),
+		       arg( SMESHGUI_Selection::typeName( SUBMESH_COMPOUND ) ).
+		       arg( SMESHGUI_Selection::typeName( SUBMESH ) ),
           subMesh = elems,
 	  mesh_group = mesh + " " + subMesh + " " + group,
 	  hyp_alg = hypo + " " + algo;
@@ -3000,6 +3076,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
   if( sect=="SMESH" ){
     float sbX1,sbY1,sbW,sbH;
+    float aTol = 1.00000009999999;
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" || 
@@ -3009,7 +3086,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
-      if(sbX1+sbW > 1.0){
+      if(sbX1+sbW > aTol){
 	aWarning = "Origin and Size Vertical: X+Width > 1\n";	
 	sbX1=0.01;
 	sbW=0.05;
@@ -3020,7 +3097,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
       sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
-      if(sbY1+sbH > 1.0){
+      if(sbY1+sbH > aTol){
 	aWarning = "Origin and Size Vertical: Y+Height > 1\n";
 	sbY1=0.01;
 	sbH=0.5;
@@ -3031,7 +3108,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
-      if(sbX1+sbW > 1.0){
+      if(sbX1+sbW > aTol){
 	aWarning = "Origin and Size Horizontal: X+Width > 1\n";
 	sbX1=0.2;
 	sbW=0.6;
@@ -3042,7 +3119,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
       sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
-      if(sbY1+sbH > 1.0){
+      if(sbY1+sbH > aTol){
 	aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
 	sbY1=0.01;
 	sbH=0.12;

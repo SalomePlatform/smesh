@@ -102,33 +102,24 @@ SMESH_Gen::~SMESH_Gen()
  */
 //=============================================================================
 
-SMESH_Mesh* SMESH_Gen::CreateMesh(int studyId)
-throw(SALOME_Exception)
+SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
+  throw(SALOME_Exception)
 {
-        Unexpect aCatch(SalomeException);
-	MESSAGE("SMESH_Gen::CreateMesh");
-//   if (aShape.ShapeType() == TopAbs_COMPOUND)
-//     {
-//       INFOS("Mesh Compound not yet implemented!");
-//       throw(SALOME_Exception(LOCALIZED("Mesh Compound not yet implemented!")));
-//     }
+  Unexpect aCatch(SalomeException);
+  MESSAGE("SMESH_Gen::CreateMesh");
 
-	// Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  StudyContextStruct *aStudyContext = GetStudyContext(theStudyId);
 
-	StudyContextStruct *myStudyContext = GetStudyContext(studyId);
+  // create a new SMESH_mesh object
+  SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
+				     theStudyId,
+				     this,
+				     theIsEmbeddedMode,
+				     aStudyContext->myDocument);
+  aStudyContext->mapMesh[_localId] = aMesh;
 
-	// create a new SMESH_mesh object
-
-	SMESH_Mesh *mesh = new SMESH_Mesh(_localId++,
-		studyId,
-		this,
-		myStudyContext->myDocument);
-	myStudyContext->mapMesh[_localId] = mesh;
-
-	// associate a TopoDS_Shape to the mesh
-
-//mesh->ShapeToMesh(aShape);
-	return mesh;
+  return aMesh;
 }
 
 //=============================================================================
@@ -633,13 +624,14 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
   if ( algoList.empty() )
     return NULL;
 
-  if (algoList.size() > 1 ) { // check if there is one algo several times
-    list <const SMESHDS_Hypothesis * >::iterator algo = algoList.begin();
-    for ( ; algo != algoList.end(); ++algo )
-      if ( (*algo) != algoList.front() &&
-           (*algo)->GetName() != algoList.front()->GetName() )
-        return NULL;
-  }
+  // Now it is checked in SMESH_Mesh::GetHypotheses()
+//   if (algoList.size() > 1 ) { // check if there is one algo several times
+//     list <const SMESHDS_Hypothesis * >::iterator algo = algoList.begin();
+//     for ( ; algo != algoList.end(); ++algo )
+//       if ( (*algo) != algoList.front() &&
+//            (*algo)->GetName() != algoList.front()->GetName() )
+//         return NULL;
+//   }
 
   return const_cast<SMESH_Algo*> ( static_cast<const SMESH_Algo* >( algoList.front() ));
 }
@@ -702,37 +694,20 @@ void SMESH_Gen::Close(int studyId)
 
 int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 {
-	int shapeDim = -1;			// Shape dimension: 0D, 1D, 2D, 3D
-	int type = aShapeType;//.ShapeType();
-	switch (type)
-	{
-	case TopAbs_COMPOUND:
-	case TopAbs_COMPSOLID:
-	case TopAbs_SOLID:
-	case TopAbs_SHELL:
-	{
-		shapeDim = 3;
-		break;
-	}
-		//    case TopAbs_SHELL:
-	case TopAbs_FACE:
-	{
-		shapeDim = 2;
-		break;
-	}
-	case TopAbs_WIRE:
-	case TopAbs_EDGE:
-	{
-		shapeDim = 1;
-		break;
-	}
-	case TopAbs_VERTEX:
-	{
-		shapeDim = 0;
-		break;
-	}
-	}
-	return shapeDim;
+  static vector<int> dim;
+  if ( dim.empty() )
+  {
+    dim.resize( TopAbs_SHAPE, -1 );
+    dim[ TopAbs_COMPOUND ]  = 3;
+    dim[ TopAbs_COMPSOLID ] = 3;
+    dim[ TopAbs_SOLID ]     = 3;
+    dim[ TopAbs_SHELL ]     = 3;
+    dim[ TopAbs_FACE  ]     = 2;
+    dim[ TopAbs_WIRE ]      = 1;
+    dim[ TopAbs_EDGE ]      = 1;
+    dim[ TopAbs_VERTEX ]    = 0;
+  }
+  return dim[ aShapeType ];
 }
 
 //=============================================================================

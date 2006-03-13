@@ -23,6 +23,7 @@
 #pragma warning(disable:4786)
 #endif
 
+#include "SMDS_SetIterator.hxx"
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -68,25 +69,11 @@ void SMDS_FaceOfNodes::Print(ostream & OS) const
 //purpose  : 
 //=======================================================================
 
-class SMDS_FaceOfNodes_MyIterator:public SMDS_ElemIterator
+class SMDS_FaceOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 {
-  const SMDS_MeshNode* const *mySet;
-  int myLength;
-  int index;
  public:
   SMDS_FaceOfNodes_MyIterator(const SMDS_MeshNode* const *s, int l):
-    mySet(s),myLength(l),index(0) {}
-
-  bool more()
-  {
-    return index<myLength;
-  }
-
-  const SMDS_MeshElement* next()
-  {
-    index++;
-    return mySet[index-1];
-  }
+    SMDS_NodeArrayElemIterator( s, & s[ l ] ) {}
 };
 
 SMDS_ElemIteratorPtr SMDS_FaceOfNodes::elementsIterator
@@ -145,6 +132,18 @@ bool SMDS_FaceOfNodes::ChangeNodes(const SMDS_MeshNode* nodes[],
     return false;
 
   return true;
+}
+
+/*!
+ * \brief Return node by its index
+ * \param ind - node index
+ * \retval const SMDS_MeshNode* - the node
+ * 
+ * Index is wrapped if it is out of a valid range
+ */
+const SMDS_MeshNode* SMDS_FaceOfNodes::GetNode(const int ind) const
+{
+  return myNodes[ WrappedIndex( ind )];
 }
 
 /*bool operator<(const SMDS_FaceOfNodes& f1, const SMDS_FaceOfNodes& f2)

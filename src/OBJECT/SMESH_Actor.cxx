@@ -150,6 +150,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_TRIANGLE);
   aFilter->RegisterCellsWithType(VTK_POLYGON);
   aFilter->RegisterCellsWithType(VTK_QUAD);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
 
   my3DActor = SMESH_DeviceActor::New();
   my3DActor->SetUserMatrix(aMatrix);
@@ -164,6 +166,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_WEDGE);
   aFilter->RegisterCellsWithType(VTK_PYRAMID);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
 
   //Definition 1D divice of the actor
@@ -185,6 +189,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter = my1DActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_LINE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
 
   my1DProp = vtkProperty::New();
   my1DProp->DeepCopy(myEdgeProp);
@@ -210,6 +215,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter = my1DExtActor->GetExtractUnstructuredGrid();
   aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
   aFilter->RegisterCellsWithType(VTK_LINE);
+  aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
 
 
   //Definition 0D divice of the actor
@@ -262,8 +268,6 @@ SMESH_ActorDef::SMESH_ActorDef()
   myHighlitableActor->SetUserMatrix(aMatrix);
   myHighlitableActor->PickableOff();
   myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
-
-  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
 
   myName = "";
   myIO = NULL;
@@ -748,12 +752,14 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
   my2DActor->GetPolygonOffsetParameters(aFactor,aUnits);
   my2DActor->SetPolygonOffsetParameters(aFactor,aUnits*0.75);
 
-  //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
-  SetIsShrunkable(true);
-
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return false;
+
+  //SetIsShrunkable(theGrid->GetNumberOfCells() > 10);
+  SetIsShrunkable(true);
+
+  SetShrinkFactor( SMESH::GetFloat( "SMESH:shrink_coeff", 0.75 ) );
 
   int aMode = mgr->integerValue( "SMESH", "display_mode" );
   SetRepresentation(-1);
@@ -835,6 +841,8 @@ bool SMESH_ActorDef::IsInfinitive(){
 
 
 void SMESH_ActorDef::SetIsShrunkable(bool theShrunkable){
+  if ( myIsShrinkable == theShrunkable )
+    return;
   myIsShrinkable = theShrunkable;
   Modified();
 }
@@ -1015,6 +1023,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
   if(myEntityMode & eEdges){
     if (MYDEBUG) MESSAGE("EDGES");
     aFilter->RegisterCellsWithType(VTK_LINE);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
   }
 
   if(myEntityMode & eFaces){
@@ -1022,6 +1031,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_TRIANGLE);
     aFilter->RegisterCellsWithType(VTK_POLYGON);
     aFilter->RegisterCellsWithType(VTK_QUAD);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
   }
 
   if(myEntityMode & eVolumes){
@@ -1031,6 +1042,8 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode){
     aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_WEDGE);
     aFilter->RegisterCellsWithType(VTK_PYRAMID);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+    aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
     aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   }
   aFilter->Update();
@@ -1135,6 +1148,8 @@ void SMESH_ActorDef::SetRepresentation(int theMode){
 
 
 void SMESH_ActorDef::SetPointRepresentation(bool theIsPointsVisible){
+  if ( myIsPointsVisible == theIsPointsVisible )
+    return;
   myIsPointsVisible = theIsPointsVisible;
   SetRepresentation(GetRepresentation());
 }
@@ -1175,12 +1190,16 @@ void SMESH_ActorDef::UpdateHighlight(){
 
 
 void SMESH_ActorDef::highlight(bool theHighlight){
+  if ( myIsHighlighted == theHighlight )
+    return;
   myIsHighlighted = theHighlight;
   UpdateHighlight();
 }
 
 
 void SMESH_ActorDef::SetPreSelected(bool thePreselect){ 
+  if ( myIsPreselected == thePreselect )
+    return;
   myIsPreselected = thePreselect; 
   UpdateHighlight();
 }

@@ -80,9 +80,13 @@ msgstr "mesh_tree_algo_quad.png"
 msgid "ICON_SMESH_TREE_HYPO_MaxElementArea"
 msgstr "mesh_tree_hypo_area.png"
 
-#mesh_tree_hypo_area
+#mesh_tree_hypo_quadranglepreference
 msgid "ICON_SMESH_TREE_HYPO_QuadranglePreference"
 msgstr "mesh_tree_algo_quad.png"
+
+#mesh_tree_hypo_quadraticmesh
+msgid "ICON_SMESH_TREE_HYPO_QuadraticMesh"
+msgstr "mesh_tree_hypo_length.png"
 
 #mesh_tree_hypo_length
 msgid "ICON_SMESH_TREE_HYPO_LocalLength"

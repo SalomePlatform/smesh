@@ -31,8 +31,10 @@
 #include "SMDS_Mesh.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
-#include <VTKViewer_ExtractUnstructuredGrid.h>
+#include "SalomeApp_Application.h"
+#include "VTKViewer_ExtractUnstructuredGrid.h"
 
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
 #include <vtkCell.h>
@@ -69,271 +71,6 @@ static int MYDEBUGWITHFILES = 0;
 #endif
 
 
-namespace{
-
-  inline const SMDS_MeshNode* FindNode(const SMDS_Mesh* theMesh, int theId){
-    if(const SMDS_MeshNode* anElem = theMesh->FindNode(theId)) return anElem;
-    EXCEPTION(runtime_error,"SMDS_Mesh::FindNode - cannot find a SMDS_MeshNode for ID = "<<theId);
-  }
-
-
-  inline const SMDS_MeshElement* FindElement(const SMDS_Mesh* theMesh, int theId){
-    if(const SMDS_MeshElement* anElem = theMesh->FindElement(theId)) return anElem;
-    EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot find a SMDS_MeshElement for ID = "<<theId);
-  }
-
-
-  inline void AddNodesWithID(SMDS_Mesh* theMesh, 
-			     SMESH::log_array_var& theSeq,
-			     CORBA::Long theId)
-  {
-    const SMESH::double_array& aCoords = theSeq[theId].coords;
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(3*aNbElems != aCoords.length())
-      EXCEPTION(runtime_error,"AddNodesWithID - 3*aNbElems != aCoords.length()");
-    for(CORBA::Long aCoordId = 0; anElemId < aNbElems; anElemId++, aCoordId+=3){
-      SMDS_MeshElement* anElem = theMesh->AddNodeWithID(aCoords[aCoordId],
-							aCoords[aCoordId+1],
-							aCoords[aCoordId+2],
-							anIndexes[anElemId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddNodeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddEdgesWithID(SMDS_Mesh* theMesh, 
-			     SMESH::log_array_var& theSeq,
-			     CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(3*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 3*aNbElems != aCoords.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=3){
-      SMDS_MeshElement* anElem = theMesh->AddEdgeWithID(anIndexes[anIndexId+1],
-							anIndexes[anIndexId+2],
-							anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddEdgeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddTriasWithID(SMDS_Mesh* theMesh, 
-			     SMESH::log_array_var& theSeq,
-			     CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(4*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 4*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=4){
-      SMDS_MeshElement* anElem = theMesh->AddFaceWithID(anIndexes[anIndexId+1],
-							anIndexes[anIndexId+2],
-							anIndexes[anIndexId+3],
-							anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddQuadsWithID(SMDS_Mesh* theMesh, 
-			     SMESH::log_array_var theSeq,
-			     CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(5*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 4*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=5){
-      SMDS_MeshElement* anElem = theMesh->AddFaceWithID(anIndexes[anIndexId+1],
-							anIndexes[anIndexId+2],
-							anIndexes[anIndexId+3],
-							anIndexes[anIndexId+4],
-							anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddFaceWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddPolygonsWithID(SMDS_Mesh* theMesh, 
-                                SMESH::log_array_var& theSeq,
-                                CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anIndexId = 0, aNbElems = theSeq[theId].number;
-
-    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++) {
-      int aFaceId = anIndexes[anIndexId++];
-
-      int aNbNodes = anIndexes[anIndexId++];
-      std::vector<int> nodes_ids (aNbNodes);
-      for (int i = 0; i < aNbNodes; i++) {
-        nodes_ids[i] = anIndexes[anIndexId++];
-      }
-
-      SMDS_MeshElement* anElem = theMesh->AddPolygonalFaceWithID(nodes_ids, aFaceId);
-      if (!anElem)
-	EXCEPTION(runtime_error, "SMDS_Mesh::FindElement - cannot AddPolygonalFaceWithID for ID = "
-                  << anElemId);
-    }
-  }
-
-
-  inline void AddTetrasWithID(SMDS_Mesh* theMesh, 
-			      SMESH::log_array_var& theSeq,
-			      CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(5*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 5*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=5){
-      SMDS_MeshElement* anElem = theMesh->AddVolumeWithID(anIndexes[anIndexId+1],
-							  anIndexes[anIndexId+2],
-							  anIndexes[anIndexId+3],
-							  anIndexes[anIndexId+4],
-							  anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddPiramidsWithID(SMDS_Mesh* theMesh, 
-				SMESH::log_array_var& theSeq,
-				CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(6*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 6*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=6){
-      SMDS_MeshElement* anElem = theMesh->AddVolumeWithID(anIndexes[anIndexId+1],
-							  anIndexes[anIndexId+2],
-							  anIndexes[anIndexId+3],
-							  anIndexes[anIndexId+4],
-							  anIndexes[anIndexId+5],
-							  anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddPrismsWithID(SMDS_Mesh* theMesh, 
-			      SMESH::log_array_var& theSeq,
-			      CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(7*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 7*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=7){
-      SMDS_MeshElement* anElem = theMesh->AddVolumeWithID(anIndexes[anIndexId+1],
-							  anIndexes[anIndexId+2],
-							  anIndexes[anIndexId+3],
-							  anIndexes[anIndexId+4],
-							  anIndexes[anIndexId+5],
-							  anIndexes[anIndexId+6],
-							  anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddHexasWithID(SMDS_Mesh* theMesh, 
-			     SMESH::log_array_var& theSeq,
-			     CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anElemId = 0, aNbElems = theSeq[theId].number;
-    if(9*aNbElems != anIndexes.length())
-      EXCEPTION(runtime_error,"AddEdgeWithID - 9*aNbElems != anIndexes.length()");
-    for(CORBA::Long anIndexId = 0; anElemId < aNbElems; anElemId++, anIndexId+=9){
-      SMDS_MeshElement* anElem = theMesh->AddVolumeWithID(anIndexes[anIndexId+1],
-							  anIndexes[anIndexId+2],
-							  anIndexes[anIndexId+3],
-							  anIndexes[anIndexId+4],
-							  anIndexes[anIndexId+5],
-							  anIndexes[anIndexId+6],
-							  anIndexes[anIndexId+7],
-							  anIndexes[anIndexId+8],
-							  anIndexes[anIndexId]);
-      if(!anElem)
-	EXCEPTION(runtime_error,"SMDS_Mesh::FindElement - cannot AddVolumeWithID for ID = "<<anElemId);
-    }
-  }
-
-
-  inline void AddPolyhedronsWithID (SMDS_Mesh* theMesh, 
-                                    SMESH::log_array_var& theSeq,
-                                    CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long anIndexId = 0, aNbElems = theSeq[theId].number;
-
-    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++) {
-      int aFaceId = anIndexes[anIndexId++];
-
-      int aNbNodes = anIndexes[anIndexId++];
-      std::vector<int> nodes_ids (aNbNodes);
-      for (int i = 0; i < aNbNodes; i++) {
-        nodes_ids[i] = anIndexes[anIndexId++];
-      }
-
-      int aNbFaces = anIndexes[anIndexId++];
-      std::vector<int> quantities (aNbFaces);
-      for (int i = 0; i < aNbFaces; i++) {
-        quantities[i] = anIndexes[anIndexId++];
-      }
-
-      SMDS_MeshElement* anElem =
-        theMesh->AddPolyhedralVolumeWithID(nodes_ids, quantities, aFaceId);
-      if (!anElem)
-	EXCEPTION(runtime_error, "SMDS_Mesh::FindElement - cannot AddPolyhedralVolumeWithID for ID = "
-                  << anElemId);
-    }
-  }
-
-
-  inline void ChangePolyhedronNodes (SMDS_Mesh* theMesh, 
-                                     SMESH::log_array_var& theSeq,
-                                     CORBA::Long theId)
-  {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
-
-    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
-    {
-      // find element
-      const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
-      // nb nodes
-      int nbNodes = anIndexes[iind++];
-      // nodes
-      std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
-      for (int iNode = 0; iNode < nbNodes; iNode++) {
-        aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
-      }
-      // nb faces
-      int nbFaces = anIndexes[iind++];
-      // quantities
-      std::vector<int> quantities (nbFaces);
-      for (int iFace = 0; iFace < nbFaces; iFace++) {
-        quantities[iFace] = anIndexes[iind++];
-      }
-      // change
-      theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
-    }
-  }
-
-
-}
 /*
   Class       : SMESH_VisualObjDef
   Description : Base class for all mesh objects to be visuilised
@@ -350,12 +87,16 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
   switch( theType )
   {
     case SMDSAbs_Edge: 
-      return theNbNodes == 2 ? VTK_LINE : VTK_EMPTY_CELL;
+      if( theNbNodes == 2 )         return VTK_LINE;
+      else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
+      else return VTK_EMPTY_CELL;
 
     case SMDSAbs_Face  :
       if (thePoly && theNbNodes>2 ) return VTK_POLYGON;
       else if ( theNbNodes == 3 )   return VTK_TRIANGLE;
       else if ( theNbNodes == 4 )   return VTK_QUAD;
+      else if ( theNbNodes == 6 )   return VTK_QUADRATIC_TRIANGLE;
+      else if ( theNbNodes == 8 )   return VTK_QUADRATIC_QUAD;
       else return VTK_EMPTY_CELL;
       
     case SMDSAbs_Volume:
@@ -364,6 +105,15 @@ static inline vtkIdType getCellType( const SMDSAbs_ElementType theType,
       else if ( theNbNodes == 5 )   return VTK_PYRAMID;
       else if ( theNbNodes == 6 )   return VTK_WEDGE;
       else if ( theNbNodes == 8 )   return VTK_HEXAHEDRON;
+      else if ( theNbNodes == 10 )  {
+        return VTK_QUADRATIC_TETRA;
+      }
+      else if ( theNbNodes == 20 )  {
+        return VTK_QUADRATIC_HEXAHEDRON;
+      }
+      else if ( theNbNodes==13 || theNbNodes==15 )  {
+        return VTK_CONVEX_POINT_SET;
+      }
       else return VTK_EMPTY_CELL;
 
     default: return VTK_EMPTY_CELL;
@@ -485,42 +235,6 @@ void SMESH_VisualObjDef::buildNodePrs()
   aPoints->Delete();
 
   myGrid->SetCells( 0, 0, 0 );
-
-  // Create cells
-  /*
-  int nbPoints = aPoints->GetNumberOfPoints();
-  vtkIdList *anIdList = vtkIdList::New();
-  anIdList->SetNumberOfIds( 1 );
-
-  vtkCellArray *aCells = vtkCellArray::New();
-  aCells->Allocate( 2 * nbPoints, 0 );
-
-  vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
-  aCellTypesArray->SetNumberOfComponents( 1 );
-  aCellTypesArray->Allocate( nbPoints );
-
-  for( vtkIdType aCellId = 0; aCellId < nbPoints; aCellId++ )
-  {
-    anIdList->SetId( 0, aCellId );
-    aCells->InsertNextCell( anIdList );
-    aCellTypesArray->InsertNextValue( VTK_VERTEX );
-  }
-
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
-  aCellLocationsArray->SetNumberOfComponents( 1 );
-  aCellLocationsArray->SetNumberOfTuples( nbPoints );
-
-  aCells->InitTraversal();
-  for( vtkIdType i = 0, *pts, npts; aCells->GetNextCell( npts, pts ); i++ )
-    aCellLocationsArray->SetValue( i, aCells->GetTraversalLocation( npts ) );
-
-  myGrid->SetCells( aCellTypesArray, aCellLocationsArray, aCells );
-
-  aCellLocationsArray->Delete();
-  aCellTypesArray->Delete();
-  aCells->Delete();
-  anIdList->Delete(); 
-  */
 }
 
 //=================================================================================
@@ -651,11 +365,34 @@ void SMESH_VisualObjDef::buildElemPrs()
 	    static int anIds[] = {0,1,2,3,4,5};
 	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
 
-	  } else if (aNbNodes == 8) {
+	  }
+          else if (aNbNodes == 8) {
 	    static int anIds[] = {0,3,2,1,4,7,6,5};
 	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
 
-	  } else {
+	  }
+          else if (aNbNodes == 10) {
+	    static int anIds[] = {0,2,1,3,6,5,4,7,9,8};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+	  }
+          else if (aNbNodes == 13) {
+	    static int anIds[] = {0,3,2,1,4,8,7,6,5,9,12,11,10};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+	  }
+          else if (aNbNodes == 15) {
+	    static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+	    //for (int k = 0; k < aNbNodes; k++) {
+            //  int nn = aConnectivities[k];
+            //  const SMDS_MeshNode* N = static_cast<const SMDS_MeshNode*> (aConnect[nn]);
+            //  cout<<"k="<<k<<"  N("<<N->X()<<","<<N->Y()<<","<<N->Z()<<")"<<endl;
+            //}
+	  }
+          else if (aNbNodes == 20) {
+	    static int anIds[] = {0,3,2,1,4,7,6,5,11,10,9,8,15,14,13,12,16,19,18,17};
+	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
+	  }
+          else {
           }
 
 	  if (aConnectivities.size() > 0) {
@@ -748,14 +485,11 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
 // function : SMESH_MeshObj
 // purpose  : Constructor
 //=================================================================================
-SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh)
+SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh):
+  myClient(SalomeApp_Application::orb(),theMesh)
 {
   if ( MYDEBUG ) 
-    MESSAGE("SMESH_MeshObj - theMesh->_is_nil() = "<<theMesh->_is_nil());
-    
-  myMeshServer = SMESH::SMESH_Mesh::_duplicate( theMesh );
-  myMeshServer->Register();
-  myMesh = new SMDS_Mesh();
+    MESSAGE("SMESH_MeshObj - this = "<<this<<"; theMesh->_is_nil() = "<<theMesh->_is_nil());
 }
 
 //=================================================================================
@@ -764,8 +498,8 @@ SMESH_MeshObj::SMESH_MeshObj(SMESH::SMESH_Mesh_ptr theMesh)
 //=================================================================================
 SMESH_MeshObj::~SMESH_MeshObj()
 {
-  myMeshServer->Destroy();
-  delete myMesh;
+  if ( MYDEBUG ) 
+    MESSAGE("SMESH_MeshObj - this = "<<this<<"\n");
 }
 
 //=================================================================================
@@ -775,110 +509,8 @@ SMESH_MeshObj::~SMESH_MeshObj()
 void SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-  
-  try
-  {
-    SMESH::log_array_var aSeq = myMeshServer->GetLog( theIsClear );
-    CORBA::Long aLength = aSeq->length();
-    
-    if( MYDEBUG ) MESSAGE( "Update: length of the script is "<<aLength );
-    
-    if( !aLength )
-      return;
-
-    for ( CORBA::Long anId = 0; anId < aLength; anId++)
-    {
-      const SMESH::double_array& aCoords = aSeq[anId].coords;
-      const SMESH::long_array& anIndexes = aSeq[anId].indexes;
-      CORBA::Long anElemId = 0, aNbElems = aSeq[anId].number;
-      CORBA::Long aCommand = aSeq[anId].commandType;
-
-      switch(aCommand)
-      {
-        case SMESH::ADD_NODE       : AddNodesWithID      ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_EDGE       : AddEdgesWithID      ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_TRIANGLE   : AddTriasWithID      ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_QUADRANGLE : AddQuadsWithID      ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_POLYGON    : AddPolygonsWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_TETRAHEDRON: AddTetrasWithID     ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_PYRAMID    : AddPiramidsWithID   ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_PRISM      : AddPrismsWithID     ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_HEXAHEDRON : AddHexasWithID      ( myMesh, aSeq, anId ); break;
-        case SMESH::ADD_POLYHEDRON : AddPolyhedronsWithID( myMesh, aSeq, anId ); break;
-
-        case SMESH::REMOVE_NODE:
-          for( ; anElemId < aNbElems; anElemId++ )
-            myMesh->RemoveNode( FindNode( myMesh, anIndexes[anElemId] ) );
-        break;
-        
-        case SMESH::REMOVE_ELEMENT:
-          for( ; anElemId < aNbElems; anElemId++ )
-            myMesh->RemoveElement( FindElement( myMesh, anIndexes[anElemId] ) );
-        break;
-
-        case SMESH::MOVE_NODE:
-          for(CORBA::Long aCoordId=0; anElemId < aNbElems; anElemId++, aCoordId+=3)
-          {
-            SMDS_MeshNode* node =
-              const_cast<SMDS_MeshNode*>( FindNode( myMesh, anIndexes[anElemId] ));
-            node->setXYZ( aCoords[aCoordId], aCoords[aCoordId+1], aCoords[aCoordId+2] );
-          }
-        break;
-
-        case SMESH::CHANGE_ELEMENT_NODES:
-          for ( CORBA::Long i = 0; anElemId < aNbElems; anElemId++ )
-          {
-            // find element
-            const SMDS_MeshElement* elem = FindElement( myMesh, anIndexes[i++] );
-            // nb nodes
-            int nbNodes = anIndexes[i++];
-            // nodes
-            //ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ nbNodes ];
-            for ( int iNode = 0; iNode < nbNodes; iNode++ )
-              aNodes[ iNode ] = FindNode( myMesh, anIndexes[i++] );
-            // change
-            myMesh->ChangeElementNodes( elem, aNodes, nbNodes );
-          }
-          break;
-
-        case SMESH::CHANGE_POLYHEDRON_NODES:
-          ChangePolyhedronNodes(myMesh, aSeq, anId);
-          break;
-        case SMESH::RENUMBER:
-          for(CORBA::Long i=0; anElemId < aNbElems; anElemId++, i+=3)
-          {
-            myMesh->Renumber( anIndexes[i], anIndexes[i+1], anIndexes[i+2] );
-          }
-          break;
-          
-        default:;
-      }
-    }
-  }
-  catch ( SALOME::SALOME_Exception& exc )
-  {
-    INFOS("Following exception was cought:\n\t"<<exc.details.text);
-  }
-  catch( const std::exception& exc)
-  {
-    INFOS("Following exception was cought:\n\t"<<exc.what());
-  }
-  catch(...)
-  {
-    INFOS("Unknown exception was cought !!!");
-  }
-  
-  if ( MYDEBUG )
-  {
-    MESSAGE("Update - myMesh->NbNodes() = "<<myMesh->NbNodes());
-    MESSAGE("Update - myMesh->NbEdges() = "<<myMesh->NbEdges());
-    MESSAGE("Update - myMesh->NbFaces() = "<<myMesh->NbFaces());
-    MESSAGE("Update - myMesh->NbVolumes() = "<<myMesh->NbVolumes());
-  }
-
-  // Fill unstructured grid
-  buildPrs();
+  if ( myClient.Update(theIsClear) )
+    buildPrs();  // Fill unstructured grid
 }
 
 //=================================================================================
@@ -887,7 +519,7 @@ void SMESH_MeshObj::Update( int theIsClear )
 //=================================================================================
 int SMESH_MeshObj::GetElemDimension( const int theObjId )
 {
-  const SMDS_MeshElement* anElem = myMesh->FindElement( theObjId );
+  const SMDS_MeshElement* anElem = myClient->FindElement( theObjId );
   if ( anElem == 0 )
     return 0;
 
@@ -911,22 +543,22 @@ int SMESH_MeshObj::GetNbEntities( const SMDSAbs_ElementType theType) const
   {
     case SMDSAbs_Node:
     {
-      return myMesh->NbNodes();
+      return myClient->NbNodes();
     }
     break;
     case SMDSAbs_Edge:
     {
-      return myMesh->NbEdges();
+      return myClient->NbEdges();
     }
     break;
     case SMDSAbs_Face:
     {
-      return myMesh->NbFaces();
+      return myClient->NbFaces();
     }
     break;
     case SMDSAbs_Volume:
     {
-      return myMesh->NbVolumes();
+      return myClient->NbVolumes();
     }
     break;
     default:
@@ -943,25 +575,25 @@ int SMESH_MeshObj::GetEntities( const SMDSAbs_ElementType theType, TEntityList& 
   {
     case SMDSAbs_Node:
     {
-      SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
+      SMDS_NodeIteratorPtr anIter = myClient->nodesIterator();
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
     case SMDSAbs_Edge:
     {
-      SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
+      SMDS_EdgeIteratorPtr anIter = myClient->edgesIterator();
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
     case SMDSAbs_Face:
     {
-      SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
+      SMDS_FaceIteratorPtr anIter = myClient->facesIterator();
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
     case SMDSAbs_Volume:
     {
-      SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
+      SMDS_VolumeIteratorPtr anIter = myClient->volumesIterator();
       while ( anIter->more() ) theObjs.push_back( anIter->next() );
     }
     break;
@@ -987,7 +619,7 @@ void SMESH_MeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor
 //=================================================================================
 bool SMESH_MeshObj::IsNodePrs() const
 {
-  return myMesh->NbEdges() == 0 &&myMesh->NbFaces() == 0 &&myMesh->NbVolumes() == 0 ;
+  return myClient->NbEdges() == 0 &&myClient->NbFaces() == 0 && myClient->NbVolumes() == 0 ;
 }
 
 
@@ -1256,15 +888,3 @@ bool SMESH_subMeshObj::IsNodePrs() const
 {
   return mySubMeshServer->GetNumberOfElements() == 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-

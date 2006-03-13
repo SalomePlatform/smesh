@@ -84,6 +84,16 @@ module SMESH
      * Returns the mesh object this group belongs to
      */
     SMESH_Mesh GetMesh();
+
+    /*!
+     * Sets group color number
+     */
+    void SetColorNumber( in long color );
+
+    /*!
+     * Returns group color number
+     */
+    long GetColorNumber();
   }; 
 
   /*!

@@ -33,19 +33,15 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include <CASCatch_CatchSignals.hxx>
-#include <CASCatch_ErrorHandler.hxx>
-#include <CASCatch_Failure.hxx> 
+#include "CASCatch.hxx"
+
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <Expr_NamedUnknown.hxx>
-#include <OSD.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
-
-#include <Standard_ErrorHandler.hxx>
 
 using namespace std;
 
@@ -174,8 +170,8 @@ void StdMeshers_NumberOfSegments::SetScaleFactor(double scaleFactor)
     throw SALOME_Exception(LOCALIZED("not a scale distribution"));
   if (scaleFactor < PRECISION)
     throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
-  if (fabs(scaleFactor - 1.0) < PRECISION)
-    throw SALOME_Exception(LOCALIZED("scale factor must not be equal to 1"));
+  //if (fabs(scaleFactor - 1.0) < PRECISION)
+  //  throw SALOME_Exception(LOCALIZED("scale factor must not be equal to 1"));
 
   if (fabs(_scaleFactor - scaleFactor) > PRECISION)
   {
@@ -216,10 +212,6 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
   double prev = -PRECISION;
   bool isSame = table.size() == _table.size();
 
-  OSD::SetSignal( true );
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool pos = false;
   for (i=0; i < table.size()/2; i++) {
     double par = table[i*2];
@@ -230,10 +222,9 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
       {
 	val = pow( 10.0, val );
       }
-      CASCatch_CATCH(CASCatch_Failure)
+      CASCatch_CATCH(Standard_Failure)
       {
-	aCatchSignals.Deactivate();
-	Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	throw SALOME_Exception( LOCALIZED( "invalid value"));
 	return;
       }
@@ -258,7 +249,6 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
     }
     prev = par;
   }
-  aCatchSignals.Deactivate();
 
   if( !pos )
     throw SALOME_Exception(LOCALIZED("value of table function is not positive"));
@@ -320,10 +310,6 @@ bool process( const TCollection_AsciiString& str, int convMode,
 	      bool& non_neg, bool& non_zero,
  	      bool& singulars, double& sing_point )
 {
-  OSD::SetSignal( true );
-  CASCatch_CatchSignals aCatchSignals;
-  aCatchSignals.Activate();
-
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
   CASCatch_TRY
@@ -331,13 +317,11 @@ bool process( const TCollection_AsciiString& str, int convMode,
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( str.ToCString() );
   }
-  CASCatch_CATCH(CASCatch_Failure)
+  CASCatch_CATCH(Standard_Failure)
   {
-    aCatchSignals.Deactivate();
-    Handle(CASCatch_Failure) aFail = CASCatch_Failure::Caught();
+    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
-  aCatchSignals.Deactivate();
 
   syntax = false;
   args = false;

@@ -81,6 +81,8 @@ namespace SMESH {
 
   void SetName  (_PTR(SObject) theSObject, const char* theName);
   void SetValue (_PTR(SObject) theSObject, const char* theValue);
+  void setFileType (_PTR(SObject) theSObject, const char* theValue);
+  void setFileName (_PTR(SObject) theSObject, const char* theValue);
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
 				     _PTR(Study) theStudy);

@@ -39,8 +39,11 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
+#include <TColStd_MapOfInteger.hxx>
 
 #include "SMESH_Block.hxx"
+
+#include "StdMeshers_Helper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
@@ -165,7 +168,7 @@ class StdMeshers_Penta_3D {
   public: // methods
     StdMeshers_Penta_3D();
     
-    //~StdMeshers_Penta_3D();
+    ~StdMeshers_Penta_3D();
     
     bool Compute(SMESH_Mesh& , const TopoDS_Shape& );
     
@@ -181,10 +184,10 @@ class StdMeshers_Penta_3D {
       return myTol3D;
     }
 
-    static bool LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
-                            const TopoDS_Face&     theFace,
-                            const TopoDS_Edge&     theBaseEdge,
-                            SMESHDS_Mesh*          theMesh);
+    bool LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
+                     const TopoDS_Face&     theFace,
+                     const TopoDS_Edge&     theBaseEdge,
+                     SMESHDS_Mesh*          theMesh);
     // Load nodes bound to theFace into column (vectors) and rows
     // of theIJNodes.
     // The value of theIJNodes map is a vector of ordered nodes so
@@ -251,6 +254,9 @@ class StdMeshers_Penta_3D {
     //
     vector<StdMeshers_IJNodeMap> myWallNodesMaps; // nodes on a face
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
+
+    bool myCreateQuadratic;
+    StdMeshers_Helper* myTool; // toll for working with quadratic elements
 };
 
 #endif

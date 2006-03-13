@@ -64,15 +64,6 @@
 #define MARGIN_SIZE   11
 #define SPACING_SIZE   6
 
-#define DEF_VER_X  0.01
-#define DEF_VER_Y  0.10
-#define DEF_VER_H  0.80
-#define DEF_VER_W  0.10
-#define DEF_HOR_X  0.20
-#define DEF_HOR_Y  0.01
-#define DEF_HOR_H  0.12
-#define DEF_HOR_W  0.60
-
 using namespace std;
 
 // Only one instance is allowed
@@ -125,6 +116,14 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
        mySMESHGUI( theModule ),
        mySelectionMgr( property ? SMESH::GetSelectionMgr( theModule ) : 0 )
 {
+  DEF_VER_X = 0.01;
+  DEF_VER_Y = 0.10;
+  DEF_VER_H = 0.80;
+  DEF_VER_W = 0.10;
+  DEF_HOR_X = 0.20;
+  DEF_HOR_Y = 0.01;
+  DEF_HOR_H = 0.12;
+  DEF_HOR_W = 0.60;
   setName("SMESHGUI_Preferences_ScalarBarDlg");
   setCaption( property ? tr("SMESH_PROPERTIES_SCALARBAR") : tr("SMESH_PREFERENCES_SCALARBAR"));
   setSizeGripEnabled(TRUE);
@@ -756,6 +755,8 @@ void SMESHGUI_Preferences_ScalarBarDlg::setOriginAndSize( const double x,
 //=================================================================================================
 void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged()
 {
+  this->initScalarBarFromResources();
+
   int aOrientation = myVertRadioBtn->isChecked();
   if ( aOrientation == myIniOrientation )
     setOriginAndSize( myIniX, myIniY, myIniW, myIniH );
@@ -764,4 +765,42 @@ void SMESHGUI_Preferences_ScalarBarDlg::onOrientationChanged()
 		      aOrientation ? DEF_VER_Y : DEF_HOR_Y,
 		      aOrientation ? DEF_VER_W : DEF_HOR_W,
 		      aOrientation ? DEF_VER_H : DEF_HOR_H );
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
+ *
+ *  Rereading vertical and horizontal default positions from resources.
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
+{
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QString name;
+  if (mgr){
+    // initialize from resoources
+    
+    // horizontal
+    name = QString("scalar_bar_horizontal_%1");
+    if (mgr->hasValue("SMESH", name.arg( "x" )))
+      DEF_HOR_X = mgr->doubleValue("SMESH", name.arg( "x" ));
+    if (mgr->hasValue("SMESH", name.arg( "y" )))
+      DEF_HOR_Y = mgr->doubleValue("SMESH", name.arg( "y" ));
+    if (mgr->hasValue("SMESH", name.arg( "width" )))
+      DEF_HOR_W = mgr->doubleValue("SMESH", name.arg( "width" ));
+    if (mgr->hasValue("SMESH", name.arg( "height" )))
+      DEF_HOR_H = mgr->doubleValue("SMESH", name.arg( "height" ));
+
+    // vertical
+    name = QString("scalar_bar_vertical_%1");
+    if (mgr->hasValue("SMESH", name.arg( "x" )))
+      DEF_VER_X = mgr->doubleValue("SMESH", name.arg( "x" ));
+    if (mgr->hasValue("SMESH", name.arg( "y" )))
+      DEF_VER_Y = mgr->doubleValue("SMESH", name.arg( "y" ));
+    if (mgr->hasValue("SMESH", name.arg( "width" )))
+      DEF_VER_W = mgr->doubleValue("SMESH", name.arg( "width" ));
+    if (mgr->hasValue("SMESH", name.arg( "height" )))
+      DEF_VER_H = mgr->doubleValue("SMESH", name.arg( "height" ));
+  }
 }

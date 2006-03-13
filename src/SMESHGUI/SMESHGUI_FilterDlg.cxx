@@ -1855,11 +1855,7 @@ void SMESHGUI_FilterDlg::Init (const QValueList<int>& theTypes)
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
-
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
-
+  
   updateMainButtons();
   updateSelection();
 

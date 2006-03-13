@@ -164,9 +164,6 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
 
   // resize and move dialog, then show
   this->setMinimumSize(270, 428);
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // init dialog with current selection

@@ -142,8 +142,8 @@ void UNV2412::Write(std::ofstream& out_stream, const TDataSet& theDataSet)
 
 bool UNV2412::IsBeam(int theFeDescriptorId){
   switch (theFeDescriptorId){
-  case 11:
-  case 21:
+  case 11: // edge with 2 nodes
+  case 21: // edge with 3 nodes (quadratic)
   case 22:
   case 24:
   case 25:
@@ -197,6 +197,8 @@ bool UNV2412::IsVolume(int theFeDescriptorId){
   case 116: // Solid Quadratic Brick - HEX20
 
   case 117: // Solid Cubic Brick
+
+  case 114: // pyramid of 13 nodes (quadratic)
     return true;
   }
   return false;

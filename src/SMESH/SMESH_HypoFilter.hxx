@@ -67,6 +67,7 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
 
   // Create predicates
   static SMESH_HypoPredicate* IsAlgo();
+  static SMESH_HypoPredicate* IsAuxiliary();
   static SMESH_HypoPredicate* IsApplicableTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* IsAssignedTo(const TopoDS_Shape& theShape);
   static SMESH_HypoPredicate* Is(const SMESH_Hypothesis* theHypo);
@@ -154,6 +155,11 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
   struct IsAssignedToPredicate : public SMESH_HypoPredicate {
     TopoDS_Shape _mainShape;
     IsAssignedToPredicate( const TopoDS_Shape& mainShape ):_mainShape(mainShape){}
+    bool IsOk(const SMESH_Hypothesis* aHyp,
+              const TopoDS_Shape&     aShape) const;
+  };
+        
+  struct IsAuxiliaryPredicate : public SMESH_HypoPredicate {
     bool IsOk(const SMESH_Hypothesis* aHyp,
               const TopoDS_Shape&     aShape) const;
   };

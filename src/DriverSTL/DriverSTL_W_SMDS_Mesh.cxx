@@ -228,7 +228,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
   }
 
   // write number of triangles
-  unsigned int NBT = nbTri;
+  //unsigned int NBT = nbTri;
   aFile.Write((Standard_Address)sval,LABEL_SIZE);
   writeInteger(nbTri,aFile);  
 

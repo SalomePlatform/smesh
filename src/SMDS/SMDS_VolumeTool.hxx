@@ -61,7 +61,8 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
 {
  public:
 
-  enum VolumeType { UNKNOWN = -1, TETRA = 0, PYRAM, PENTA, HEXA, POLYHEDA };
+  enum VolumeType { UNKNOWN = -1, TETRA = 0, PYRAM, PENTA, HEXA, QUAD_TETRA,
+                    QUAD_PYRAM, QUAD_PENTA, QUAD_HEXA, POLYHEDA };
 
   SMDS_VolumeTool ();
   ~SMDS_VolumeTool ();

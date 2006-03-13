@@ -14,7 +14,7 @@ VPATH=.:@srcdir@:@top_srcdir@/bin:@top_srcdir@/resources:./bin:@top_srcdir@/idl
 
 @COMMENCE@
 
-SUBDIRS = idl src doc
+SUBDIRS = idl src doc adm_local
 
 RESOURCES_FILES = \
 delete.png  \
@@ -131,7 +131,14 @@ mesh_pattern.png \
 pattern_sample_2d.png \
 pattern_sample_3D.png \
 mesh_add.png \
-mesh_remove.png
+mesh_remove.png \
+mesh_quad_edge.png \
+mesh_quad_triangle.png \
+mesh_quad_quadrangle.png \
+mesh_quad_tetrahedron.png \
+mesh_quad_pyramid.png \
+mesh_quad_pentahedron.png \
+mesh_quad_hexahedron.png
 
 BIN_SCRIPT= \
 VERSION

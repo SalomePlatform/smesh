@@ -1121,7 +1121,7 @@ void SMESH_MEDMesh_i::createFamilies() throw(SALOME::SALOME_Exception)
 	if (_creeFamily == false)
 	{
 		_creeFamily = true;
-		SMESH_subMesh_i *subMeshServant;
+		//SMESH_subMesh_i *subMeshServant;
 
 		map < int, SMESH_subMesh_i * >::iterator it;
 		for (it = _mesh_i->_mapSubMesh_i.begin();

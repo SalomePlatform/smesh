@@ -67,7 +67,7 @@ CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES) \
             -I${GEOM_ROOT_DIR}/include/salome ${BOOST_CPPFLAGS}
 CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
             -I${GEOM_ROOT_DIR}/include/salome -I${BOOSTDIR}
-LDFLAGS  += $(OCC_KERNEL_LIBS) -L${GUI_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeApp -lsuit
+LDFLAGS  += $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeDSClient -lSalomeDS -L${GUI_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeApp -lsuit
 
 # additional file to be cleaned
 MOSTLYCLEAN =

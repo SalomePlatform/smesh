@@ -72,13 +72,14 @@ SMESH_Hypothesis::~SMESH_Hypothesis()
 
 int SMESH_Hypothesis::GetDim() const
 {
-  int dim = -1;
+  int dim = 0;
   switch (_type)
     {
     case ALGO_1D: dim = 1; break;
     case ALGO_2D: dim = 2; break;
     case ALGO_3D: dim = 3; break;
-    case PARAM_ALGO: dim = _param_algo_dim; break;
+    case PARAM_ALGO:
+      dim = ( _param_algo_dim < 0 ) ? -_param_algo_dim : _param_algo_dim; break;
     }
   return dim;
 }
@@ -124,14 +125,15 @@ void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
        itm++)
     {
       SMESH_Mesh* mesh = (*itm).second;
-      const list<SMESH_subMesh*>& subMeshes =
-	 mesh->GetSubMeshUsingHypothesis(this);
+      mesh->NotifySubMeshesHypothesisModification( this );
+//       const list<SMESH_subMesh*>& subMeshes =
+// 	 mesh->GetSubMeshUsingHypothesis(this);
 
-      //for all subMeshes using hypothesis
+//       //for all subMeshes using hypothesis
 	
-      list<SMESH_subMesh*>::const_iterator its;
-      for (its = subMeshes.begin(); its != subMeshes.end(); its++)
-	(*its)->ComputeStateEngine(SMESH_subMesh::MODIF_HYP);
+//       list<SMESH_subMesh*>::const_iterator its;
+//       for (its = subMeshes.begin(); its != subMeshes.end(); its++)
+// 	(*its)->ComputeStateEngine(SMESH_subMesh::MODIF_HYP);
     }
 }
 

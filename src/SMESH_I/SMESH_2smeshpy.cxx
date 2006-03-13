@@ -1,3 +1,31 @@
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+//  This library is free software; you can redistribute it and/or 
+//  modify it under the terms of the GNU Lesser General Public 
+//  License as published by the Free Software Foundation; either 
+//  version 2.1 of the License. 
+// 
+//  This library is distributed in the hope that it will be useful, 
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//  Lesser General Public License for more details. 
+// 
+//  You should have received a copy of the GNU Lesser General Public 
+//  License along with this library; if not, write to the Free Software 
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
+//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+//
+//
+//
+//  File   : SMESH_2D_Algo_i.hxx
+//  Author : Paul RASCLE, EDF
+//  Module : SMESH
+//  $Header$
+
 // File      : SMESH_2smeshpy.cxx
 // Created   : Fri Nov 18 13:20:10 2005
 // Author    : Edward AGAPOV (eap)
@@ -72,10 +100,20 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
 #ifdef DUMP_CONVERSION
   cout << endl << " ######## RESULT ######## " << endl<< endl;
 #endif
+  // reorder commands after conversion
+  list< Handle(_pyCommand) >::iterator cmd;
+  bool orderChanges;
+  do {
+    orderChanges = false;
+    for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
+      if ( (*cmd)->SetDependentCmdsAfter() )
+        orderChanges = true;
+  } while ( orderChanges );
+  
   // concat commands back into a script
   TCollection_AsciiString aScript;
-  list< Handle(_pyCommand) >::iterator cmd = theGen->GetCommands().begin();
-  for ( ; cmd != theGen->GetCommands().end(); ++cmd ) {
+  for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
+  {
 #ifdef DUMP_CONVERSION
     cout << "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << endl;
 #endif
@@ -219,7 +257,7 @@ void _pyGen::Flush()
     if ( !hyp->IsNull() ) {
       (*hyp)->Flush();
       // smeshgen.CreateHypothesis() --> smesh.smesh.CreateHypothesis()
-      if ( !(*hyp)->GetCreationCmd()->IsEmpty() )
+      if ( !(*hyp)->IsWrapped() )
         (*hyp)->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
 }
@@ -286,7 +324,10 @@ void _pyGen::ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) th
   int nb1 = theCmd1->GetOrderNb();
   theCmd1->SetOrderNb( theCmd2->GetOrderNb() );
   theCmd2->SetOrderNb( nb1 );
+//   cout << "BECOME " << theCmd1->GetOrderNb() << "\t" << theCmd1->GetString() << endl
+//        << "BECOME " << theCmd2->GetOrderNb() << "\t" << theCmd2->GetString() << endl << endl;
 }
+
 //================================================================================
 /*!
  * \brief Set one command after the other
@@ -297,6 +338,7 @@ void _pyGen::ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) th
 
 void _pyGen::SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd )
 {
+//   cout << "SET\t" << theCmd->GetString() << endl << "AFTER\t" << theAfterCmd->GetString() << endl << endl;
   list< Handle(_pyCommand) >::iterator pos;
   pos = find( myCommands.begin(), myCommands.end(), theCmd );
   myCommands.erase( pos );
@@ -401,8 +443,7 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd): _pyObject(theCreation
 
 //================================================================================
 /*!
-            case brief:
-            default:
+ * \brief Convert a IDL API command of SMESH::Mesh to a method call of python Mesh
   * \param theCommand - Engine method called for this mesh
  */
 //================================================================================
@@ -501,7 +542,6 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
 void _pyMesh::Flush()
 {
   list < Handle(_pyCommand) >::iterator cmd, cmd2;
-  map< _pyID, Handle(_pyCommand) > algo2additionCmd;
 
   // try to convert algo addition like this:
   // mesh.AddHypothesis(geom, ALGO ) --> ALGO = mesh.Algo()
@@ -516,7 +556,8 @@ void _pyMesh::Flush()
     _pyID geom = addCmd->GetArg( 1 );
     if ( algo->Addition2Creation( addCmd, this->GetID() )) // OK
     {
-      algo2additionCmd[ algo->GetID() ] = addCmd;
+      // wrapped algo is created atfer mesh creation
+      GetCreationCmd()->AddDependantCmd( addCmd );
 
       if ( geom != GetGeom() ) // local algo
       {
@@ -529,8 +570,7 @@ void _pyMesh::Flush()
           if ( geom == subCmd->GetArg( 1 )) {
             subCmd->SetObject( algo->GetID() );
             subCmd->RemoveArgs();
-            if ( addCmd->GetOrderNb() > subCmd->GetOrderNb() )
-              theGen->SetCommandAfter( subCmd, addCmd );
+            addCmd->AddDependantCmd( subCmd );
           }
         }
       }
@@ -561,10 +601,7 @@ void _pyMesh::Flush()
     if ( !algo.IsNull() && hyp->Addition2Creation( addCmd, this->GetID() )) // OK
     {
       addCmd->SetObject( algo->GetID() );
-      Handle(_pyCommand) algoCmd = algo2additionCmd[ algo->GetID() ];
-      if ( !algoCmd.IsNull() && algoCmd->GetOrderNb() > addCmd->GetOrderNb() )
-        // algo was created later than hyp
-        theGen->ExchangeCommands( algoCmd, addCmd );
+      algo->GetCreationCmd()->AddDependantCmd( addCmd );
     }
     else
     {
@@ -661,6 +698,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   else if ( hypType == "Propagation" ) {
     hyp->myDim = 1;
     hyp->myCreationMethod = "Propagation";
+    hyp->myType = "Regular_1D";
+  }
+  else if ( hypType == "QuadraticMesh" ) {
+    hyp->myDim = 1;
+    hyp->myCreationMethod = "QuadraticMesh";
     hyp->myType = "Regular_1D";
   }
   else if ( hypType == "AutomaticLength" ) {
@@ -769,6 +811,9 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
       else
         theCmd->SetArg( i, "[]");
     }
+    // set a new creation command
+    GetCreationCmd()->Clear();
+    SetCreationCmd( theCmd );
 
     // clear commands setting arg values
     list < Handle(_pyCommand) >::iterator argCmd = myArgCommands.begin();
@@ -788,10 +833,7 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
   Handle(_pyCommand) afterCmd = myIsWrapped ? theCmd : GetCreationCmd();
   list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
   for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
-    if ( !(*cmd)->IsEmpty() && afterCmd->GetOrderNb() > (*cmd)->GetOrderNb() ) {
-      theGen->SetCommandAfter( *cmd, afterCmd );
-      afterCmd = *cmd;
-    }
+    afterCmd->AddDependantCmd( *cmd );
   }
   myArgCommands.clear();
   myUnknownCommands.clear();
@@ -830,8 +872,8 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 
 void _pyHypothesis::Flush()
 {
-  if ( IsWrapped() )
-    GetCreationCmd()->Clear();
+//   if ( IsWrapped() )
+//     GetCreationCmd()->Clear();
 }
 
 //================================================================================
@@ -866,7 +908,7 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
 bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd,
                                                 const _pyID&              theMesh)
 {
-  if ( IsWrappable( theMesh ) && myArgs.Length() > 1 ) {
+  if ( IsWrappable( theMesh ) && myArgs.Length() > 0 ) {
     list<Handle(_pyCommand)>::iterator cmd = myUnknownCommands.begin();
     for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
       // clear SetDistrType()
@@ -1227,4 +1269,24 @@ void _pyCommand::RemoveArgs()
   myArgs.Clear();
   if ( myBegPos.Length() >= ARG1_IND )
     myBegPos.Remove( ARG1_IND, myBegPos.Length() );
+}
+
+//================================================================================
+/*!
+ * \brief Set dependent commands after this one
+ */
+//================================================================================
+
+bool _pyCommand::SetDependentCmdsAfter() const
+{
+  bool orderChanged = false;
+  list< Handle(_pyCommand)>::const_iterator cmd = myDependentCmds.begin();
+  for ( ; cmd != myDependentCmds.end(); ++cmd ) {
+    if ( (*cmd)->GetOrderNb() < GetOrderNb() ) {
+      orderChanged = true;
+      theGen->SetCommandAfter( *cmd, this );
+      (*cmd)->SetDependentCmdsAfter();
+    }
+  }
+  return orderChanged;
 }

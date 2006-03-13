@@ -84,6 +84,7 @@ class _pyCommand: public Standard_Transient
   TCollection_AsciiString myRes, myObj, myMeth;
   TColStd_SequenceOfAsciiString myArgs;
   TColStd_SequenceOfInteger myBegPos; //!< where myRes, myObj, ... begin
+  std::list< Handle(_pyCommand) > myDependentCmds;
   enum { UNKNOWN=-1, EMPTY=0, RESULT_IND, OBJECT_IND, METHOD_IND, ARG1_IND };
   int GetBegPos( int thePartIndex );
   void SetBegPos( int thePartIndex, int thePosition );
@@ -118,6 +119,10 @@ public:
   static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
                                           int & theStartPos, const bool theForward,
                                           const bool dotIsWord = false);
+  void AddDependantCmd( Handle(_pyCommand) cmd)
+  { return myDependentCmds.push_back( cmd ); }
+  bool SetDependentCmdsAfter() const;
+
   DEFINE_STANDARD_RTTI (_pyCommand)
 };
 
@@ -128,11 +133,12 @@ typedef TCollection_AsciiString _pyID;
 
 class _pyObject: public Standard_Transient
 {
-  Handle(_pyCommand) myCreationCmd;
+  Handle(_pyCommand)              myCreationCmd;
 public:
   _pyObject(const Handle(_pyCommand)& theCreationCmd): myCreationCmd(theCreationCmd) {}
   const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
+  void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
   virtual void Process(const Handle(_pyCommand) & theCommand) = 0;
   virtual void Flush() = 0;

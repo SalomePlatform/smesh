@@ -91,7 +91,10 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    const SMDS_MeshElement* aNode = aNodesIter->next();
 	    aRec.node_labels.push_back(aNode->GetID());
 	  }
-	  aRec.fe_descriptor_id = 11;
+          if(aNbNodes==2)
+            aRec.fe_descriptor_id = 11;
+          else
+            aRec.fe_descriptor_id = 21;
 	  aDataSet2412.insert(TDataSet::value_type(aLabel,aRec));
 	}
 	MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
@@ -117,6 +120,12 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    break;
 	  case 4:
 	    aRec.fe_descriptor_id = 44;
+	    break;
+	  case 6:
+	    aRec.fe_descriptor_id = 42;
+	    break;
+	  case 8:
+	    aRec.fe_descriptor_id = 45;
 	    break;
 	  default:
 	    continue;
@@ -160,6 +169,30 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	    anId = 115;
 	    break;
 	  }
+	  case 10: {
+	    static int anIds[] = {0,2,1,3,6,5,4,7,9,8};
+	    aConn = anIds;
+	    anId = 118;
+	    break;
+	  }
+	  case 13: {
+	    static int anIds[] = {0,3,2,1,4,8,7,6,5,9,12,11,10};
+	    aConn = anIds;
+	    anId = 114;
+	    break;
+	  }
+	  case 15: {
+	    static int anIds[] = {0,2,1,3,5,4,8,7,6,11,10,9,12,14,13};
+	    aConn = anIds;
+	    anId = 113;
+	    break;
+	  }
+	  case 20: {
+	    static int anIds[] = {0,3,2,1,4,7,6,5,11,10,9,8,15,14,13,12,16,19,18,17};
+	    aConn = anIds;
+	    anId = 116;
+	    break;
+	  }
 	  default:
 	    continue;
 	  }
@@ -177,9 +210,11 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }
-  }catch(const std::exception& exc){
+  }
+  catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
-  }catch(...){
+  }
+  catch(...){
     INFOS("Unknown exception was cought !!!");
   }
   return aResult;

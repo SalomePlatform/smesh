@@ -290,10 +290,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule, const char* n
            SLOT(onSelectMesh(bool)));
 
   /***************************************************************/
-  /* Move widget on the botton right corner of main widget */
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
+  
   this->show(); // displays Dialog
 }
 

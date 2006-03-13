@@ -185,9 +185,6 @@ void SMESHGUI_GroupOpDlg::Init()
   connect(myBtn1, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
   connect(myBtn2, SIGNAL(clicked()), this, SLOT(onFocusChanged()));
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 
   // set selection mode

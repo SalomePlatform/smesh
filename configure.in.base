@@ -267,6 +267,26 @@ CHECK_HTML_GENERATORS
 
 echo
 echo ---------------------------------------------
+echo Testing GUI
+echo ---------------------------------------------
+echo
+
+CHECK_SALOME_GUI
+
+echo
+echo ---------------------------------------------
+echo Testing full GUI
+echo ---------------------------------------------
+echo
+
+CHECK_CORBA_IN_GUI
+if test "x${CORBA_IN_GUI}" != "xyes"; then
+  echo "failed : For configure SMESH module necessary full GUI !"
+  exit
+fi
+
+echo
+echo ---------------------------------------------
 echo Testing Kernel
 echo ---------------------------------------------
 echo

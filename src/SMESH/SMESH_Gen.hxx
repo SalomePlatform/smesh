@@ -60,7 +60,7 @@ class SMESH_Gen
 
 //  SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
 //    throw(SALOME_Exception);
-  SMESH_Mesh* CreateMesh(int studyId)
+  SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
     throw(SALOME_Exception);
   bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 

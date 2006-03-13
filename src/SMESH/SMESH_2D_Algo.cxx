@@ -29,7 +29,7 @@
 using namespace std;
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_Gen.hxx"
-#include "SMESH_subMesh.hxx"
+#include <TopExp.hxx>
 
 #include "utilities.h"
 
@@ -80,13 +80,14 @@ int SMESH_2D_Algo::NumberOfWires(const TopoDS_Shape& S)
 int SMESH_2D_Algo::NumberOfPoints(SMESH_Mesh& aMesh, const TopoDS_Wire& W)
 {
   int nbPoints = 0;
-  for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next())
-    {
-      const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
-      int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
-      //SCRUTE(nb);
-      nbPoints += nb +1; // internal points plus 1 vertex of 2 (last point ?)
-    }
-  //SCRUTE(nbPoints);
+  for (TopExp_Explorer exp(W,TopAbs_EDGE); exp.More(); exp.Next()) {
+    const TopoDS_Edge& E = TopoDS::Edge(exp.Current());
+    int nb = aMesh.GetSubMesh(E)->GetSubMeshDS()->NbNodes();
+    if(_quadraticMesh)
+      nb = nb/2;
+    nbPoints += nb + 1; // internal points plus 1 vertex of 2 (last point ?)
+  }
   return nbPoints;
 }
+
+

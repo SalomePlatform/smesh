@@ -36,7 +36,7 @@ class SMESHDS_Document
 {
   public:
 	SMESHDS_Document(int UserID);
-	int NewMesh();
+	int NewMesh(bool theIsEmbeddedMode);
 	void RemoveMesh(int MeshID);
 	SMESHDS_Mesh * GetMesh(int MeshID);
 	void AddHypothesis(SMESHDS_Hypothesis * H);

@@ -351,9 +351,6 @@ void SMESHGUI_MeshPatternDlg::Init()
   activateSelection();
   onSelectionDone();
 
-  int x, y;
-  mySMESHGUI->DefineDlgPosition(this, x, y);
-  this->move(x, y);
   this->show();
 }
 
@@ -431,6 +428,9 @@ bool SMESHGUI_MeshPatternDlg::onApply()
       SMESH::UpdateView();
 
       mySMESHGUI->updateObjBrowser(true);
+
+      mySelEdit[ Ids ]->setText("");
+
       return true;
     } else {
       QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
