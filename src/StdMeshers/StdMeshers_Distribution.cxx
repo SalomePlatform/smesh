@@ -122,10 +122,11 @@ double FunctionTable::integral( const int i ) const
 
 double FunctionTable::integral( const int i, const double d ) const
 {
-  double f, res = 0.0;
-  if( value( myData[2*i]+d, f ) )
-    res = ( myData[2*i+1] + f ) / 2.0 * d;
-
+  double f1,f2, res = 0.0;
+  if( value( myData[2*i]+d, f1 ) )
+    if(!value(myData[2*i], f2))
+      f2 = myData[2*i+1];
+  res = (f2+f1) * d / 2.0;
   return res;
 }
 
