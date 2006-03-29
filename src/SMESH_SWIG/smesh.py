@@ -89,6 +89,8 @@ class Mesh_Algorithm:
         """
          Private method
         """
+        if geom is None:
+            raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
         self.mesh = mesh
         piece = mesh.geom
         if geom==0:
@@ -437,6 +439,9 @@ class Mesh:
         elif tgeo == "SHELL":
             type = SMESH.VOLUME
         elif tgeo == "COMPOUND":
+            if len( geompy.GetObjectIDs( grp )) == 0:
+                print "Mesh.Group: empty geometric group", GetName( grp )
+                return 0
             tgeo = geompy.GetType(grp)
             if tgeo == geompy.ShapeType["VERTEX"]:
                 type = SMESH.NODE
