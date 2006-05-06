@@ -574,12 +574,10 @@ else
 
 <p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
 <p class="whs2"># Criterion : AREA &gt; 
  30</p>
-
-<p class="whs2">&nbsp;</p>
 
 <p class="whs1">aFunctor = aFilterMgr.CreateArea()</p>
 
@@ -589,7 +587,7 @@ else
  aFunctor )</p>
 
 <p class="whs1">aPredicate.SetMargin( 
- 30 )</p>
+ 95 )</p>
 
 <p class="whs1">&nbsp;</p>
 
@@ -609,44 +607,58 @@ else
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># Criterion : FREE EDGES</p>
+<p class="whs2"># Criterion : Free Edges</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs1">aPredicate = aFilterMgr.CreateFreeEdges()</p>
 
-<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
-
-<p class="whs1">aFilter.SetPredicate( 
- aPredicate )</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">anIds = aFilter.GetElementsId( 
+<p class="whs1">aPredicate.SetMesh( 
  mesh )</p>
 
+<p class="whs1">aBorders = aPredicate.GetBorders()</p>
+
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># print the result</p>
+<p class="whs2"># create groups</p>
+
+<p class="whs1">aGroupF = mesh.CreateGroup( 
+ SMESH.FACE, &quot;Faces with free edges&quot; )</p>
+
+<p class="whs1">aGroupN = mesh.CreateGroup( 
+ SMESH.NODE, &quot;Nodes on free edges&quot; )</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"># fill groups with elements, 
+ corresponding to the criterion</p>
+
+<p class="whs1">print &quot;&quot;</p>
 
 <p class="whs1">print &quot;Criterion: 
- Free edges Nb = &quot;, len( anIds )</p>
+ Free edges Nb = &quot;, len( aBorders )</p>
 
 <p class="whs1">for i in range( 
- len( anIds ) ):</p>
+ len( aBorders ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;aBorder 
+ = aBorders[ i ]</p>
 
 <p class="whs1">&nbsp;&nbsp;print 
- anIds[ i ]</p>
+ &quot;Face # &quot;, aBorder.myElemId, &quot; : Edge between nodes (&quot;,</p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs1">&nbsp;&nbsp;print 
+ aBorder.myPnt1, &quot;, &quot;, aBorder.myPnt2, &quot;)&quot;</p>
 
-<p class="whs2"># create a group</p>
+<p class="whs1">&nbsp;&nbsp;</p>
 
-<p class="whs1">aGroup = mesh.CreateGroup( 
- SMESH.EDGE, &quot;Free edges&quot; )</p>
+<p class="whs1">&nbsp;&nbsp;aGroupF.Add( 
+ [aBorder.myElemId] )</p>
 
-<p class="whs1">aGroup.Add( anIds 
- )</p>
+<p class="whs1">&nbsp;&nbsp;aGroupN.Add( 
+ [aBorder.myPnt1, aBorder.myPnt2] )</p>
+
+<p class="whs1">&nbsp;</p>
 
 <p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
  </p>
@@ -1517,6 +1529,87 @@ else
 
 <p class="whs1">aGroup = mesh.CreateGroup( 
  SMESH.VOLUME, &quot;Aspect Ratio 3D &gt; 2.2&quot; )</p>
+
+<p class="whs1">aGroup.Add( anIds 
+ )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3><a name=Volume>Volume</a></h3>
+
+<p class="whs1">import SMESH</p>
+
+<p class="whs1">import SMESH_mechanic_tetra</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">smesh &nbsp;= 
+ SMESH_mechanic_tetra.smesh</p>
+
+<p class="whs1">mesh &nbsp;&nbsp;= 
+ SMESH_mechanic_tetra.mesh</p>
+
+<p class="whs1">salome = SMESH_mechanic_tetra.salome</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilterMgr = smesh.CreateFilterManager()</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># Criterion : VOLUME &lt; 
+ 7</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs1">aFunctor = aFilterMgr.CreateVolume3D()</p>
+
+<p class="whs1">aPredicate = aFilterMgr.CreateLessThan()</p>
+
+<p class="whs1">aPredicate.SetNumFunctor( 
+ aFunctor )</p>
+
+<p class="whs1">aPredicate.SetMargin( 
+ 7 )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">aFilter = aFilterMgr.CreateFilter()</p>
+
+<p class="whs1">aFilter.SetPredicate( 
+ aPredicate )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">anIds = aFilter.GetElementsId( 
+ mesh )</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># print the result</p>
+
+<p class="whs1">print &quot;&quot;</p>
+
+<p class="whs1">print &quot;Criterion: 
+ Volume &lt; 7 Nb = &quot;, len( anIds )</p>
+
+<p class="whs1">for i in range( 
+ len( anIds ) ):</p>
+
+<p class="whs1">&nbsp;&nbsp;print 
+ anIds[ i ]</p>
+
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create a group</p>
+
+<p class="whs1">aGroup = mesh.CreateGroup( 
+ SMESH.VOLUME, &quot;Volume &lt; 7&quot; )</p>
 
 <p class="whs1">aGroup.Add( anIds 
  )</p>

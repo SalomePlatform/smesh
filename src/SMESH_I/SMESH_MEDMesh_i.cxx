@@ -1081,7 +1081,7 @@ void SMESH_MEDMesh_i::calculeNbElts() throw(SALOME::SALOME_Exception)
 
 			int nb_of_nodes = elem->NbNodes();
 			medElement = SALOME_MED::MED_HEXA8;
-			ASSERT(nb_of_nodes = 8);
+			ASSERT(nb_of_nodes == 8);
 
 			if (trouveHexa8 == 0)
 			{

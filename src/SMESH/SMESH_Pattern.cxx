@@ -509,32 +509,51 @@ static gp_XY project (const SMDS_MeshNode* theNode,
 }
 
 //=======================================================================
-//function : isMeshBoundToShape
-//purpose  : return true if all 2d elements are bound to shape
+//function : areNodesBound
+//purpose  : true if all nodes of faces are bound to shapes
 //=======================================================================
 
-static bool isMeshBoundToShape(SMESH_Mesh* theMesh)
+template <class TFaceIterator> bool areNodesBound( TFaceIterator & faceItr )
 {
-  // check faces binding
-  SMESHDS_Mesh * aMeshDS = theMesh->GetMeshDS();
-  SMESHDS_SubMesh * aMainSubMesh = aMeshDS->MeshElements( aMeshDS->ShapeToMesh() );
-  if ( aMeshDS->NbFaces() != aMainSubMesh->NbElements() )
-    return false;
-
-  // check face nodes binding
-  SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
-  while ( fIt->more() )
+  while ( faceItr->more() )
   {
-    SMDS_ElemIteratorPtr nIt = fIt->next()->nodesIterator();
+    SMDS_ElemIteratorPtr nIt = faceItr->next()->nodesIterator();
     while ( nIt->more() )
     {
       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nIt->next() );
       SMDS_PositionPtr pos = node->GetPosition();
-      if ( !pos || !pos->GetShapeId() )
+      if ( !pos || !pos->GetShapeId() ) {
         return false;
+      }
     }
   }
   return true;
+}
+
+//=======================================================================
+//function : isMeshBoundToShape
+//purpose  : return true if all 2d elements are bound to shape
+//           if aFaceSubmesh != NULL, then check faces bound to it
+//           else check all faces in aMeshDS
+//=======================================================================
+
+static bool isMeshBoundToShape(SMESHDS_Mesh *     aMeshDS,
+                               SMESHDS_SubMesh *  aFaceSubmesh,
+                               const bool         isMainShape)
+{
+  if ( isMainShape ) {
+    // check that all faces are bound to aFaceSubmesh
+    if ( aMeshDS->NbFaces() != aFaceSubmesh->NbElements() )
+      return false;
+  }
+
+  // check face nodes binding
+  if ( aFaceSubmesh ) {
+    SMDS_ElemIteratorPtr fIt = aFaceSubmesh->GetElements();
+    return areNodesBound( fIt );
+  }
+  SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
+  return areNodesBound( fIt );
 }
 
 //=======================================================================
@@ -573,32 +592,53 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
   for ( ; elIt != eList.end() ; elIt++ )
     if ( BRep_Tool::IsClosed( *elIt , face ))
       return setErrorCode( ERR_LOADF_CLOSED_FACE );
-  
+
+  // check that requested or needed projection is possible
+  bool isMainShape = theMesh->IsMainShape( face );
+  bool needProject = !isMeshBoundToShape( aMeshDS, fSubMesh, isMainShape );
+  bool canProject  = ( nbElems ? true : isMainShape );
+
+  if ( ( theProject || needProject ) && !canProject )
+    return setErrorCode( ERR_LOADF_CANT_PROJECT );
 
   Extrema_GenExtPS projector;
   GeomAdaptor_Surface aSurface( BRep_Tool::Surface( face ));
-  if ( theProject || nbElems == 0 )
+  if ( theProject || needProject )
     projector.Initialize( aSurface, 20,20, 1e-5,1e-5 );
 
   int iPoint = 0;
   TNodePointIDMap nodePointIDMap;
 
-  if ( nbElems == 0 || (theProject &&
-                        theMesh->IsMainShape( face ) &&
-                        !isMeshBoundToShape( theMesh )))
+  if ( needProject )
   {
-    MESSAGE("Project the whole mesh");
+    MESSAGE("Project the submesh");
     // ---------------------------------------------------------------
-    // The case where the whole mesh is projected to theFace
+    // The case where the submesh is projected to theFace
     // ---------------------------------------------------------------
 
-    // put nodes of all faces in the nodePointIDMap and fill myElemPointIDs
-    SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
-    while ( fIt->more() )
+    // get all faces
+    list< const SMDS_MeshElement* > faces;
+    if ( nbElems > 0 ) {
+      SMDS_ElemIteratorPtr fIt = fSubMesh->GetElements();
+      while ( fIt->more() ) {
+        const SMDS_MeshElement* f = fIt->next();
+        if ( f && f->GetType() == SMDSAbs_Face )
+          faces.push_back( f );
+      }
+    }
+    else {
+      SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
+      while ( fIt->more() )
+        faces.push_back( fIt->next() );
+    }
+
+    // put nodes of all faces into the nodePointIDMap and fill myElemPointIDs
+    list< const SMDS_MeshElement* >::iterator fIt = faces.begin();
+    for ( ; fIt != faces.end(); ++fIt )
     {
       myElemPointIDs.push_back( TElemDef() );
       TElemDef& elemPoints = myElemPointIDs.back();
-      SMDS_ElemIteratorPtr nIt = fIt->next()->nodesIterator();
+      SMDS_ElemIteratorPtr nIt = (*fIt)->nodesIterator();
       while ( nIt->more() )
       {
         const SMDS_MeshElement* node = nIt->next();
@@ -837,7 +877,21 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
   double dU = maxU - minU, dV = maxV - minV;
   if ( dU <= DBL_MIN || dV <= DBL_MIN ) {
     Clear();
-    return setErrorCode( ERR_LOADF_NARROW_FACE );
+    bndBox.SetVoid();
+    // define where is the problem, in the face or in the mesh
+    TopExp_Explorer vExp( face, TopAbs_VERTEX );
+    for ( ; vExp.More(); vExp.Next() ) {
+      gp_Pnt2d uv = BRep_Tool::Parameters( TopoDS::Vertex( vExp.Current() ), face );
+      bndBox.Add( uv );
+    }
+    bndBox.Get( minU, minV, maxU, maxV );
+    dU = maxU - minU, dV = maxV - minV;
+    if ( dU <= DBL_MIN || dV <= DBL_MIN )
+      // face problem
+      return setErrorCode( ERR_LOADF_NARROW_FACE );
+    else
+      // mesh is projected onto a line, e.g.
+      return setErrorCode( ERR_LOADF_CANT_PROJECT );
   }
   double ratio = dU / dV, maxratio = 3, scale;
   int iCoord = 0;
@@ -3189,8 +3243,13 @@ void SMESH_Pattern::
   myPolyElems.reserve( myIdsOnBoundary.size() );
 
   // make a set of refined elements
-  set< const SMDS_MeshElement* > avoidSet, elemSet;
-  avoidSet.insert( myElements.begin(), myElements.end() );
+  map<int,const SMDS_MeshElement* > avoidSet, elemSet;
+  std::vector<const SMDS_MeshElement*>::iterator itv =  myElements.begin();
+  for(; itv!=myElements.end(); itv++) {
+    const SMDS_MeshElement* el = (*itv);
+    avoidSet.insert( make_pair(el->GetID(),el) );
+  }
+  //avoidSet.insert( myElements.begin(), myElements.end() );
 
   map< TNodeSet, list< list< int > > >::iterator indListIt, nn_IdList;
 
@@ -3220,7 +3279,7 @@ void SMESH_Pattern::
           SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
         if ( face )
         {
-          avoidSet.insert ( face );
+          avoidSet.insert ( make_pair(face->GetID(),face) );
           myPolyElems.push_back( face );
 
           // some links of <face> are split;
@@ -3341,7 +3400,7 @@ void SMESH_Pattern::
         while ( eIt->more() )
         {
           const SMDS_MeshElement* elem = eIt->next();
-          if ( !volTool.Set( elem ) || !avoidSet.insert( elem ).second )
+          if ( !volTool.Set( elem ) || !avoidSet.insert( make_pair(elem->GetID(),elem) ).second )
             continue; // skip faces or refined elements
           // add polyhedron definition
           myPolyhedronQuantities.push_back(vector<int> ());
@@ -3494,6 +3553,40 @@ bool SMESH_Pattern::
 }
 
 //=======================================================================
+//function : clearSubMesh
+//purpose  : 
+//=======================================================================
+
+static bool clearSubMesh( SMESH_Mesh*         theMesh,
+                          const TopoDS_Shape& theShape)
+{
+  bool removed = false;
+  if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMeshContaining( theShape ))
+  {
+    if ( aSubMesh->GetSubMeshDS() ) {
+      removed =
+        aSubMesh->GetSubMeshDS()->NbElements() || aSubMesh->GetSubMeshDS()->NbNodes();
+      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
+    }
+  }
+  else {
+    SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
+    if ( SMESHDS_SubMesh* aSubMeshDS = aMeshDS->MeshElements( theShape ))
+    {
+      SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
+      removed = eIt->more();
+      while ( eIt->more() )
+        aMeshDS->RemoveElement( eIt->next() );
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
+      removed = removed || nIt->more();
+      while ( nIt->more() )
+        aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
+    }
+  }
+  return removed;
+}
+
+//=======================================================================
 //function : clearMesh
 //purpose  : clear mesh elements existing on myShape in theMesh
 //=======================================================================
@@ -3503,20 +3596,11 @@ void SMESH_Pattern::clearMesh(SMESH_Mesh* theMesh) const
 
   if ( !myShape.IsNull() )
   {
-    if ( SMESH_subMesh * aSubMesh = theMesh->GetSubMesh/*Containing*/( myShape ))
-    {
-      aSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
-    }
-    else {
-      SMESHDS_Mesh* aMeshDS = theMesh->GetMeshDS();
-      if ( SMESHDS_SubMesh* aSubMeshDS = aMeshDS->MeshElements( myShape ))
+    if ( !clearSubMesh( theMesh, myShape ) && !myIs2D ) { // myShape is SHELL but volumes may be bound to SOLID
+      TopTools_ListIteratorOfListOfShape it( theMesh->GetAncestors( myShape ));
+      for (; it.More() && it.Value().ShapeType() == TopAbs_SOLID; it.Next())
       {
-        SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-        while ( eIt->more() )
-          aMeshDS->RemoveElement( eIt->next() );
-        SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
-        while ( nIt->more() )
-          aMeshDS->RemoveNode( static_cast<const SMDS_MeshNode*>( nIt->next() ));
+        clearSubMesh( theMesh, it.Value() );
       }
     }
   }
@@ -4009,6 +4093,8 @@ bool SMESH_Pattern::findBoundaryPoints()
   if ( myIsBoundaryPointsFound ) return true;
 
   MESSAGE(" findBoundaryPoints() ");
+
+  myNbKeyPntInBoundary.clear();
 
   if ( myIs2D )
   {

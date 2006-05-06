@@ -67,11 +67,7 @@ SMESHGUI_SelectionOp::SMESHGUI_SelectionOp( const Selection_Mode mode )
 //=================================================================================
 SMESHGUI_SelectionOp::~SMESHGUI_SelectionOp()
 {
-  Filters::const_iterator anIt = myFilters.begin(),
-                          aLast = myFilters.end();
-  for( ; anIt!=aLast; anIt++ )
-    if( anIt.data() )
-      delete anIt.data();
+  removeCustomFilters();
 }
 
 //=================================================================================
@@ -80,6 +76,9 @@ SMESHGUI_SelectionOp::~SMESHGUI_SelectionOp()
 //=================================================================================
 void SMESHGUI_SelectionOp::startOperation()
 {
+  myOldSelectionMode = selectionMode();
+  setSelectionMode( myDefSelectionMode );
+
   SMESHGUI_Operation::startOperation();
   if( dlg() )
   {
@@ -90,26 +89,27 @@ void SMESHGUI_SelectionOp::startOperation()
     connect( dlg(), SIGNAL( objectDeactivated( int ) ), this, SLOT( onDeactivateObject( int ) ) );
     connect( dlg(), SIGNAL( selectionChanged( int ) ), this, SLOT( onSelectionChanged( int ) ) );
   }
-
-  myOldSelectionMode = selectionMode();
-  setSelectionMode( myDefSelectionMode );
 }
 
 //=================================================================================
 // name     : removeCustomFilters
 // purpose  :
 //=================================================================================
-void SMESHGUI_SelectionOp::removeCustomFilters() const
+void SMESHGUI_SelectionOp::removeCustomFilters()
 {
-  LightApp_SelectionMgr* mgr = selectionMgr();
-  if( !mgr )
-    return;
-    
-  Filters::const_iterator anIt = myFilters.begin(),
-                          aLast = myFilters.end();
-  for( ; anIt!=aLast; anIt++ )
-    if( anIt.data() )
-      mgr->removeFilter( anIt.data() );
+  if (myFilters.count() > 0) {
+    LightApp_SelectionMgr* mgr = selectionMgr();
+    Filters::const_iterator anIt = myFilters.begin(),
+                            aLast = myFilters.end();
+    for (; anIt != aLast; anIt++) {
+      if (anIt.data()) {
+        if (mgr) mgr->removeFilter(anIt.data());
+        delete anIt.data();
+      }
+    }
+
+    myFilters.clear();
+  }
 }
 
 //=================================================================================
@@ -118,9 +118,9 @@ void SMESHGUI_SelectionOp::removeCustomFilters() const
 //=================================================================================
 void SMESHGUI_SelectionOp::commitOperation()
 {
+  SMESHGUI_Operation::commitOperation();  
   removeCustomFilters();
   setSelectionMode( myOldSelectionMode );
-  SMESHGUI_Operation::commitOperation();  
 }
 
 //=================================================================================
@@ -129,9 +129,9 @@ void SMESHGUI_SelectionOp::commitOperation()
 //=================================================================================
 void SMESHGUI_SelectionOp::abortOperation()
 {
+  SMESHGUI_Operation::abortOperation();
   removeCustomFilters();
   setSelectionMode( myOldSelectionMode );  
-  SMESHGUI_Operation::abortOperation();
 }
 
 //=================================================================================
@@ -195,9 +195,7 @@ void SMESHGUI_SelectionOp::onActivateObject( int id )
 //=================================================================================
 void SMESHGUI_SelectionOp::onDeactivateObject( int id )
 {
-  LightApp_SelectionMgr* mgr = selectionMgr();
-  if( mgr && myFilters.contains( id ) && myFilters[ id ] )
-    mgr->removeFilter( myFilters[ id ] );
+  removeCustomFilters();
 }
 
 //=================================================================================

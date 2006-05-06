@@ -51,7 +51,6 @@ EXPORT_HEADERS = \
 	StdMeshers_AutomaticLength.hxx \
 	StdMeshers_Distribution.hxx \
 	StdMeshers_QuadranglePreference.hxx \
-	StdMeshers_Helper.hxx \
 	StdMeshers_QuadraticMesh.hxx
 
 EXPORT_PYSCRIPTS =
@@ -79,7 +78,6 @@ LIB_SRC = \
 	StdMeshers_AutomaticLength.cxx \
 	StdMeshers_Distribution.cxx \
 	StdMeshers_QuadranglePreference.cxx \
-	StdMeshers_Helper.cxx \
 	StdMeshers_QuadraticMesh.cxx
 
 LIB_SERVER_IDL = 

@@ -113,11 +113,13 @@ public:
 
 protected slots:
   virtual void accept();
+  void onHelp(); 
 
 private:
   SMESHGUI_GenericHypothesisCreator*   myCreator;
   QVBoxLayout*                         myLayout;
   QLabel                              *myIconLabel, *myTypeLabel;
+  QString                              myHelpFileName;
 };
 
 /*!
@@ -126,22 +128,31 @@ private:
 class HypothesisData
 {
  public:
-  HypothesisData( const QString& thePluginName,
+  HypothesisData( const QString& theTypeName,
+                  const QString& thePluginName,
                   const QString& theServerLibName,
                   const QString& theClientLibName,
                   const QString& theLabel,
                   const QString& theIconId,
                   const QValueList<int>& theDim,
-                  const bool theIsAux ) 
-: PluginName( thePluginName ),
-  ServerLibName( theServerLibName ),
-  ClientLibName( theClientLibName ),
-  Label( theLabel ),
-  IconId( theIconId ),
-  Dim( theDim ),
-  IsAux( theIsAux )
- {};
+                  const bool theIsAux,
+                  const QStringList& theNeededHypos,
+                  const QStringList& theOptionalHypos,
+                  const QStringList& theInputTypes,
+                  const QStringList& theOutputTypes)
+    : TypeName( theTypeName ),
+    PluginName( thePluginName ),
+    ServerLibName( theServerLibName ),
+    ClientLibName( theClientLibName ),
+    Label( theLabel ),
+    IconId( theIconId ),
+    Dim( theDim ),
+    IsAux( theIsAux ),
+    NeededHypos( theNeededHypos ), OptionalHypos( theOptionalHypos ),
+    InputTypes( theInputTypes ), OutputTypes( theOutputTypes )
+    {};
 
+ QString TypeName;        //!< hypothesis type name
  QString PluginName;      //!< plugin name
  QString ServerLibName;   //!< server library name
  QString ClientLibName;   //!< client library name
@@ -149,6 +160,12 @@ class HypothesisData
  QString IconId;          //!< icon identifier
  QValueList<int> Dim;     //!< list of supported dimensions (see SMESH::Dimension enumeration)
  bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
+
+ // for algorithm only: dependencies algo <-> algo and algo -> hypos
+ QStringList NeededHypos;  //!< list of obligatory hypotheses
+ QStringList OptionalHypos;//!< list of optional hypotheses
+ QStringList InputTypes;   //!< list of element types required as a prerequisite
+ QStringList OutputTypes;  //!< list of types of generated elements
 };
 
 /*!

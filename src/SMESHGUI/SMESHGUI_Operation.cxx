@@ -13,7 +13,9 @@
 #include <SMESHGUI_Dialog.h>
 
 #include <SalomeApp_Study.h>
+#include <LightApp_Application.h>
 
+#include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_Desktop.h>
 
@@ -31,6 +33,7 @@
 SMESHGUI_Operation::SMESHGUI_Operation()
 : LightApp_Operation()
 {
+  myHelpFileName = "";
 }
 
 //=======================================================================
@@ -62,6 +65,7 @@ void SMESHGUI_Operation::startOperation()
     disconnect( dlg(), SIGNAL( dlgApply() ), this, SLOT( onApply() ) );
     disconnect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
+    disconnect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
     
     if( dlg()->testButtonFlags( QtxDialog::OK ) )
       connect( dlg(), SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
@@ -71,6 +75,9 @@ void SMESHGUI_Operation::startOperation()
       
     if( dlg()->testButtonFlags( QtxDialog::Cancel ) )
       connect( dlg(), SIGNAL( dlgCancel() ), this, SLOT( onCancel() ) );
+
+    if( dlg()->testButtonFlags( QtxDialog::Help ) )
+      connect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
       
     //if( dlg()->testButtonFlags( QtxDialog::Close ) )
     //if dialog hasn't close, cancel, no and etc buttons, dlgClose will be emitted when dialog is closed not by OK
@@ -134,8 +141,8 @@ void SMESHGUI_Operation::onOk()
 {
   if( onApply() )
     commit();
-  else
-    abort();
+  //else
+  //  abort();
 }
 
 //=======================================================================
@@ -154,6 +161,23 @@ bool SMESHGUI_Operation::onApply()
 void SMESHGUI_Operation::onCancel()
 {
   abort();
+}
+
+//=======================================================================
+// name    : onHelp
+// Purpose :
+//=======================================================================
+void SMESHGUI_Operation::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

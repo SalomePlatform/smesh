@@ -20,14 +20,14 @@
 
 #include "SMESH_ExtractGeometry.h"
 
-#include "vtkCell.h"
-#include "vtkCellData.h"
-#include "vtkFloatArray.h"
-#include "vtkIdList.h"
-#include "vtkImplicitFunction.h"
-#include "vtkObjectFactory.h"
-#include "vtkPointData.h"
-#include "vtkUnstructuredGrid.h"
+#include <vtkCell.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkIdList.h>
+#include <vtkImplicitFunction.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 
@@ -80,8 +80,8 @@ void SMESH_ExtractGeometry::Execute()
   vtkIdList *cellPts;
   vtkCell *cell;
   int numCellPts;
-  float *x;
-  float multiplier;
+  vtkFloatingPointType *x;
+  vtkFloatingPointType multiplier;
   vtkPoints *newPts;
   vtkIdList *newCellPts;
   vtkDataSet *input = this->GetInput();
@@ -156,7 +156,7 @@ void SMESH_ExtractGeometry::Execute()
     // To extract boundary cells, we have to create supplemental information
     if ( this->ExtractBoundaryCells )
       {
-      float val;
+      vtkFloatingPointType val;
       newScalars = vtkFloatArray::New();
       newScalars->SetNumberOfValues(numPts);
 

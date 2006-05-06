@@ -126,6 +126,7 @@ namespace SMESH{
 			    TSequenceOfXYZ& theRes);
     protected:
       const SMDS_Mesh* myMesh;
+      const SMDS_MeshElement* myCurrElement;
       long       myPrecision;
     };
   

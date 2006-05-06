@@ -40,8 +40,6 @@ public:
   SMESH_Swig();
   ~SMESH_Swig();
     
-  static void setOrb();
-
   void Init(int studyID);
 
   const char* AddNewMesh(const char* IOR);
@@ -74,20 +72,6 @@ private:
   SALOMEDS::Study_var        myStudy;
   SALOMEDS::StudyBuilder_var myStudyBuilder;
   SALOMEDS::SComponent_var   mySComponentMesh;
-
-  // Tags definition 
-  long Tag_HypothesisRoot;
-  long Tag_AlgorithmsRoot;
-  
-  long Tag_RefOnShape;
-  long Tag_RefOnAppliedHypothesis;
-  long Tag_RefOnAppliedAlgorithms;
-  
-  long Tag_SubMeshOnVertex;
-  long Tag_SubMeshOnEdge;
-  long Tag_SubMeshOnFace;
-  long Tag_SubMeshOnSolid;
-  long Tag_SubMeshOnCompound;
 };
 
 

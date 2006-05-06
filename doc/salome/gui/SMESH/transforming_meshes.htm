@@ -134,7 +134,7 @@ else
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">mport math</p>
+<p class="whs3">import math</p>
 
 <p class="whs3">mesh &nbsp;&nbsp;= 
  SMESH_mechanic.mesh</p>
@@ -238,6 +238,203 @@ else
  </p>
 
 <p class="whs4">&nbsp;</p>
+
+<h4><a name=bookmark8>Merging Elements</a></h4>
+
+<p class="whs5">import geompy</p>
+
+<p class="whs5">import smesh</p>
+
+<p class="whs5">import salome</p>
+
+<p class="whs5">import SMESH</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># create a face to be meshed</p>
+
+<p class="whs5">px = geompy.MakeVertex(100., 
+ 0. &nbsp;, 0. 
+ &nbsp;)</p>
+
+<p class="whs5">py = geompy.MakeVertex(0. 
+ &nbsp;, 100., 
+ 0. &nbsp;)</p>
+
+<p class="whs5">pz = geompy.MakeVertex(0. 
+ &nbsp;, 0. &nbsp;, 
+ 100.)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">vxy = geompy.MakeVector(px, 
+ py)</p>
+
+<p class="whs5">arc = geompy.MakeArc(py, 
+ pz, px)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">wire = geompy.MakeWire([vxy, 
+ arc])</p>
+
+<p class="whs5">isPlanarFace = 1</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">face1 = geompy.MakeFace(wire, 
+ isPlanarFace)</p>
+
+<p class="whs5">id_face1 = geompy.addToStudy(face1, 
+ &quot;Face1&quot;)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># create a 2D mesh on the 
+ face</p>
+
+<p class="whs5">trias = smesh.Mesh(face1, 
+ &quot;Face : 2D mesh&quot;)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">algo = trias.Segment()</p>
+
+<p class="whs5">algo.NumberOfSegments(6)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">algo = trias.Triangle()</p>
+
+<p class="whs5">algo.LengthFromEdges()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">trias.Compute()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">tri_mesh = trias.GetMesh()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># create a path mesh</p>
+
+<p class="whs5">px1 = geompy.MakeVertex(100., 
+ 100. &nbsp;, 
+ 0. &nbsp;)</p>
+
+<p class="whs5">py1 = geompy.MakeVertex(-100. 
+ &nbsp;, -100., 
+ 0. &nbsp;)</p>
+
+<p class="whs5">pz1 = geompy.MakeVertex(0. 
+ &nbsp;, 0. &nbsp;, 
+ 50.)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">circle = geompy.MakeCircleThreePnt(py1, 
+ pz1, px1)</p>
+
+<p class="whs5">id_circle = geompy.addToStudy(circle, 
+ &quot;Path&quot;)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">circlemesh = smesh.Mesh(circle, 
+ &quot;Path mesh&quot;)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">algo = circlemesh.Segment()</p>
+
+<p class="whs5">algo.NumberOfSegments(10)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">circlemesh.Compute()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># extrusion of the mesh</p>
+
+<p class="whs5">aMeshEditor = tri_mesh.GetMeshEditor()</p>
+
+<p class="whs5">aMeshEditor.ExtrusionAlongPathObject(tri_mesh, 
+ circlemesh.GetMesh(), circle, 1, 0, [], 0, SMESH.PointStruct(0, 0, 0))</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># merge nodes</p>
+
+<p class="whs5">print &quot;Number 
+ of nodes before MergeNodes:&quot;, tri_mesh.NbNodes()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">tolerance = 0.001</p>
+
+<p class="whs5">array_of_nodes_groups 
+ = aMeshEditor.FindCoincidentNodes(tolerance)</p>
+
+<p class="whs5">aMeshEditor.MergeNodes(array_of_nodes_groups)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">print &quot;Number 
+ of nodes after MergeNodes:&quot;, tri_mesh.NbNodes()</p>
+
+<p class="whs5">print &quot;&quot;</p>
+
+<p class="whs5">print &quot;Number 
+ of elements before MergeEqualElements:&quot;</p>
+
+<p class="whs5">print &quot;Edges 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, tri_mesh.NbEdges()</p>
+
+<p class="whs5">print &quot;Triangles 
+ &nbsp;: &quot;, 
+ tri_mesh.NbTriangles()</p>
+
+<p class="whs5">print &quot;Quadrangles: 
+ &quot;, tri_mesh.NbQuadrangles()</p>
+
+<p class="whs5">print &quot;Volumes 
+ &nbsp;&nbsp;&nbsp;: 
+ &quot;, tri_mesh.NbVolumes()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs4"># merge elements</p>
+
+<p class="whs5">aMeshEditor.MergeEqualElements()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">print &quot;Number 
+ of elements after MergeEqualElements:&quot;</p>
+
+<p class="whs5">print &quot;Edges 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, tri_mesh.NbEdges()</p>
+
+<p class="whs5">print &quot;Triangles 
+ &nbsp;: &quot;, 
+ tri_mesh.NbTriangles()</p>
+
+<p class="whs5">print &quot;Quadrangles: 
+ &quot;, tri_mesh.NbQuadrangles()</p>
+
+<p class="whs5">print &quot;Volumes 
+ &nbsp;&nbsp;&nbsp;: 
+ &quot;, tri_mesh.NbVolumes()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+ </p>
 
 <h3>Sewing Meshes</h3>
 

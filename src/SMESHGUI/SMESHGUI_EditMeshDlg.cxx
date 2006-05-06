@@ -28,6 +28,9 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SALOME_ListIO.hxx"
 
@@ -103,6 +106,10 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton (GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -149,6 +156,8 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   GroupMeshLayout->addWidget(LineEditMesh, 0, 2);
   DlgLayout->addWidget(GroupMesh, 1, 0);
 
+  myHelpFileName = "merge_elements.htm";
+
   Init(); // Initialisations
 }
 
@@ -178,6 +187,7 @@ void SMESHGUI_EditMeshDlg::Init()
   connect(buttonOk    , SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply , SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   connect(SelectButton, SIGNAL(clicked()), this, SLOT(SelectionIntoArgument()));
 
@@ -240,6 +250,23 @@ void SMESHGUI_EditMeshDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_EditMeshDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

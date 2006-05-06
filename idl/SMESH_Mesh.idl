@@ -28,24 +28,15 @@
 
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
-
-module GEOM
-{
-  interface GEOM_Object;
-};
-
-
-module SALOME_MED
-{
-  interface MESH;
-  interface FAMILY;
-};
-
+#include "GEOM_Gen.idl"
+#include "MED.idl"
 
 module SMESH
 {
   interface SMESH_Hypothesis;
   typedef sequence<SMESH_Hypothesis> ListOfHypothesis;
+  interface SMESH_GroupBase;
+  typedef sequence<SMESH_GroupBase> ListOfGroups;
 
   typedef sequence<double> double_array ;
   typedef sequence<long> long_array ;
@@ -111,6 +102,15 @@ module SMESH
     FACE,
     VOLUME
   };
+  
+  /*!
+   * ElementOrder points out entities of what order are requested
+   */
+  enum ElementOrder {
+    ORDER_ANY,          /*! entities of any order */
+    ORDER_LINEAR,       /*! entities of 1st order */
+    ORDER_QUADRATIC     /*! entities of 2nd order */
+  };
 
   /*!
    * Enumeration for hypothesis status (used by AddHypothesis() and RemoveHypothesis() methods)
@@ -171,7 +171,6 @@ module SMESH
     long_array GetIDs();
   };
 
-  interface SMESH_GroupBase;
   interface SMESH_Group;
   interface SMESH_GroupOnGeom;
   interface SMESH_subMesh;
@@ -236,6 +235,12 @@ module SMESH
      *  Remove group with its contents
      */
     void RemoveGroupWithContents( in SMESH_GroupBase aGroup )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     *  Get the list of groups existing in the mesh
+     */
+    ListOfGroups GetGroups()
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -395,13 +400,25 @@ module SMESH
     long NbEdges()
       raises (SALOME::SALOME_Exception);
 
+    long NbEdgesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbFaces()
+      raises (SALOME::SALOME_Exception);
+
+    long NbFacesOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbTriangles()
       raises (SALOME::SALOME_Exception);
 
+    long NbTrianglesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbQuadrangles()
+      raises (SALOME::SALOME_Exception);
+
+    long NbQuadranglesOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbPolygons()
@@ -410,16 +427,31 @@ module SMESH
     long NbVolumes()
       raises (SALOME::SALOME_Exception);
 
+    long NbVolumesOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbTetras()
+      raises (SALOME::SALOME_Exception);
+
+    long NbTetrasOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbHexas()
       raises (SALOME::SALOME_Exception);
 
+    long NbHexasOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbPyramids()
       raises (SALOME::SALOME_Exception);
 
+    long NbPyramidsOfOrder(in ElementOrder order)
+      raises (SALOME::SALOME_Exception);
+
     long NbPrisms()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPrismsOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbPolyhedrons()
@@ -443,6 +475,15 @@ module SMESH
     ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);
 
+    long_array GetSubMeshElementsId(in long ShapeID)
+      raises (SALOME::SALOME_Exception);
+
+    long_array GetSubMeshNodesId(in long ShapeID, in boolean all )
+      raises (SALOME::SALOME_Exception);
+    
+    ElementType GetSubMeshElementType(in long ShapeID)
+      raises (SALOME::SALOME_Exception);
+
     /*!
      * Get mesh description
      */
@@ -452,6 +493,78 @@ module SMESH
      * Get mesh pointer
      */
     long GetMeshPtr();
+
+    /*!
+     * Get XYZ coordinates of node as list of double
+     * If there is not node for given ID - returns empty list
+     */
+    double_array GetNodeXYZ(in long id);
+
+    /*!
+     * For given node returns list of IDs of inverse elements
+     * If there is not node for given ID - returns empty list
+     */
+    long_array GetNodeInverseElements(in long id);
+
+    /*!
+     * If given element is node returns IDs of shape from position
+     * else - return ID of result shape after ::FindShape()
+     * from SMESH_MeshEditor
+     * If there is not element for given ID - returns -1
+     */
+    long GetShapeID(in long id);
+
+    /*!
+     * Returns number of nodes for given element
+     * If there is not element for given ID - returns -1
+     */
+    long GetElemNbNodes(in long id);
+
+    /*!
+     * Returns ID of node by given index for given element
+     * If there is not element for given ID - returns -1
+     * If there is not node for given index - returns -2
+     */
+    long GetElemNode(in long id, in long index);
+
+    /*!
+     * Returns true if given node is medium node
+     * in given quadratic element
+     */
+    boolean IsMediumNode(in long ide, in long idn);
+
+    /*!
+     * Returns true if given node is medium node
+     * in one of quadratic elements
+     */
+    boolean IsMediumNodeOfAnyElem(in long idn, in ElementType elem_type);
+
+    /*!
+     * Returns number of edges for given element
+     */
+    long ElemNbEdges(in long id);
+
+    /*!
+     * Returns number of faces for given element
+     */
+    long ElemNbFaces(in long id);
+
+    /*!
+     * Returns true if given element is polygon
+     */
+    boolean IsPoly(in long id);
+
+    /*!
+     * Returns true if given element is quadratic
+     */
+    boolean IsQuadratic(in long id);
+
+    /*!
+     * Returns XYZ coordinates of bary center for given element
+     * as list of double
+     * If there is not element for given ID - returns empty list
+     */
+    double_array BaryCenter(in long id);
 
   };
 
@@ -527,15 +640,15 @@ module SMESH
 
     boolean RemoveNodes(in long_array IDsOfNodes);
 
-    boolean AddNode(in double x, in double y, in double z);
+    long AddNode(in double x, in double y, in double z);
 
-    boolean AddEdge(in long_array IDsOfNodes);
+    long AddEdge(in long_array IDsOfNodes);
 
-    boolean AddFace(in long_array IDsOfNodes);
+    long AddFace(in long_array IDsOfNodes);
 
-    boolean AddPolygonalFace(in long_array IdsOfNodes);
+    long AddPolygonalFace(in long_array IdsOfNodes);
 
-    boolean AddVolume(in long_array IDsOfNodes);
+    long AddVolume(in long_array IDsOfNodes);
 
     /*!
      *  Create volume of many faces, giving nodes for each face.
@@ -543,7 +656,7 @@ module SMESH
      *  \param Quantities List of integer values, Quantities[i]
      *         gives quantity of nodes in face number i.
      */
-    boolean AddPolyhedralVolume (in long_array IdsOfNodes,
+    long AddPolyhedralVolume (in long_array IdsOfNodes,
 				 in long_array Quantities);
 
     /*!
@@ -552,7 +665,7 @@ module SMESH
      *  \note The created volume will refer only to nodes
      *        of the given faces, not to the faces itself.
      */
-    boolean AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
+    long AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
 
     boolean MoveNode(in long NodeID, in double x, in double y, in double z);
 
@@ -654,6 +767,10 @@ module SMESH
                                    in long            MaxNbOfIterations,
                                    in double          MaxAspectRatio,
                                    in Smooth_Method   Method);
+
+    void ConvertToQuadratic(in boolean theForce3d);
+
+    boolean ConvertFromQuadratic();
 
     void RenumberNodes();
 
@@ -808,6 +925,27 @@ module SMESH
                                in long       NodeID1OfSide2ToMerge,
                                in long       NodeID2OfSide1ToMerge,
                                in long       NodeID2OfSide2ToMerge);
+
+   /*!
+    * Set new nodes for given element.
+    * If number of nodes is not corresponded to type of
+    * element - returns false
+    */
+    boolean ChangeElemNodes(in long ide, in long_array newIDs);
+
+   /*!
+    * If during last operation of MeshEditor some nodes were
+    * created this method returns list of it's IDs, if new nodes
+    * not creared - returns empty list
+    */
+    long_array GetLastCreatedNodes();
+
+   /*!
+    * If during last operation of MeshEditor some elements were
+    * created this method returns list of it's IDs, if new elements
+    * not creared - returns empty list
+    */
+    long_array GetLastCreatedElems();
 
   };
 };

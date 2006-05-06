@@ -157,6 +157,7 @@ class SMESH_Pattern {
     // Load(face)
     ERR_LOADF_NARROW_FACE, // too narrow face
     ERR_LOADF_CLOSED_FACE, // closed face
+    ERR_LOADF_CANT_PROJECT, // impossible to project nodes
     // Load(volume)
     ERR_LOADV_BAD_SHAPE, // volume is not a brick of 6 faces
     ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters

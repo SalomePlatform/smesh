@@ -98,6 +98,7 @@ private:
     QPushButton*      buttonOk;
     QPushButton*      buttonCancel;
     QPushButton*      buttonApply;
+    QPushButton*      buttonHelp;
     QGroupBox*        GroupMesh;
     QGroupBox*        GroupCoincident;
     QGroupBox*        GroupEdit;
@@ -112,12 +113,15 @@ private:
     QListView*        ListCoincident;
     QListBox*         ListEdit;
     SMESHGUI_SpinBox* SpinBoxTolerance;
+
+    QString           myHelpFileName;
    
 private slots:
 
     void ClickOnOk();
     void ClickOnCancel();
     bool ClickOnApply();
+    void ClickOnHelp();
     void updateControls();
     void onDetect();
     void onSelectNodesGroup();

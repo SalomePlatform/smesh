@@ -48,6 +48,7 @@ class QListBox;
 class QPushButton;
 class QCheckBox;
 class QWidgetStack;
+class QtxIntSpinBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
@@ -87,6 +88,7 @@ private slots:
     void onOK();
     void onClose();
     bool onApply();
+    void onHelp();
     void onDeactivate();
 
     void onListSelectionChanged();
@@ -144,7 +146,7 @@ private:
     QLineEdit*                    myGroupLine;
 
     QCheckBox*                    mySelectColorGroup;
-    QLineEdit*                    myColorGroupLine;
+    QtxIntSpinBox*                myColorSpinBox;
 
     QCheckBox*                    mySelectGeomGroup;
     QPushButton*                  myGeomGroupBtn;
@@ -167,6 +169,8 @@ private:
     SMESHGUI_FilterDlg*           myFilterDlg;
 
     bool                          myCreate, myIsBusy;
+
+    QString                       myHelpFileName;
 };
 
 #endif // DIALOGBOX_GROUP_H

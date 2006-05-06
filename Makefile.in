@@ -1,3 +1,22 @@
+#  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+#  See http://www.salome-platform.org/
+#
 # -* Makefile *- 
 #
 # Author : Patrick GOLDBRONN (CEA)
@@ -76,11 +95,15 @@ mesh_tree_algo.png \
 mesh_tree_algo_quad.png \
 mesh_tree_algo_regular.png \
 mesh_tree_algo_tetra.png \
+mesh_tree_algo_netgen_2d3d.png \
+mesh_tree_algo_netgen_2d.png \
 mesh_tree_hypo_area.png \
 mesh_tree_hypo_length.png \
 mesh_tree_hypo.png \
 mesh_tree_hypo_segment.png \
 mesh_tree_hypo_volume.png \
+mesh_tree_hypo_netgen.png \
+mesh_tree_hypo_netgen_2d.png \
 mesh_tree_mesh.png \
 mesh_tree_importedmesh.png \
 mesh_tree_mesh_warn.png \
@@ -127,6 +150,7 @@ SMESH_en.xml \
 SMESH.config \
 StdMeshers.xml \
 SMESHCatalog.xml \
+SalomeApp.xml \
 mesh_pattern.png \
 pattern_sample_2d.png \
 pattern_sample_3D.png \
@@ -138,7 +162,8 @@ mesh_quad_quadrangle.png \
 mesh_quad_tetrahedron.png \
 mesh_quad_pyramid.png \
 mesh_quad_pentahedron.png \
-mesh_quad_hexahedron.png
+mesh_quad_hexahedron.png \
+mesh_conv_to_quad.png
 
 BIN_SCRIPT= \
 VERSION

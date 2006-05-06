@@ -89,10 +89,13 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupMesh;
     QLabel* TextLabelMesh;
     QPushButton* SelectButton;
     QLineEdit* LineEditMesh;
+    
+    QString myHelpFileName;
 
 private slots:
 
@@ -100,6 +103,7 @@ private slots:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;

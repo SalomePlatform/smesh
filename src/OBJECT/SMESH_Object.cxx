@@ -33,13 +33,13 @@
 #include "SMESH_ControlsDef.hxx"
 #include "SalomeApp_Application.h"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SALOME_Exception)
 
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -418,7 +418,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 
   // Insert cells in grid
   
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( aNbCells );
   

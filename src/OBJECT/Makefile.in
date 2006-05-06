@@ -50,6 +50,8 @@ LIB_SRC = \
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SALOME_GenericObj.idl \
+		 SALOME_Comm.idl \
+		 MED.idl \
 		 SMESH_Mesh.idl \
 		 SMESH_Group.idl \
                  SALOMEDS.idl \

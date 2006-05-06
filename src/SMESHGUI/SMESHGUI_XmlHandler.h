@@ -32,6 +32,7 @@
 
 #include <qxml.h>
 #include <map>
+#include <list>
 
 class SMESHGUI_XmlHandler : public QXmlDefaultHandler
 {

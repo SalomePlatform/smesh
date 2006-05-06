@@ -23,21 +23,40 @@ docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
 	cd INPUT; \
 	sed 's|../../../share/salome|$(root_srcdir)|' ./doxyfile > ./doxyfile1; \
-	mv -f doxyfile1 doxyfile; \
-	$(doxygen) ./doxyfile; \
-	mkdir py1; mkdir py2; \
-	cd ..
-	for file in $(PYTHON_SCRIPTS) dummy; do \
-	  if [ $$file != "dummy" ]; then \
-	    cp $(root_srcdir)/src/SMESH_SWIG/$$file INPUT/py1/; \
-	  fi ; \
-	done
-	cd INPUT; \
-	python $(KERNEL_ROOT_DIR)/doc/salome/tui/KERNEL/pythfilter.py ./py1 ./py2; \
-	sed 's|list_py_files_to_process|$(PYTHON_SCRIPTS)|' ./doxyfile_py > py2/doxyfile_py; \
-	cd py2; \
-	$(doxygen) ./doxyfile_py; \
-	cd ../..; \
+	sed 's|../../build/salome|$(top_builddir)|' ./doxyfile1 > ./doxyfile2; \
+	sed "s|version|`cut -d: -f2 $(root_srcdir)/bin/VERSION`|" ./doxyfile2 > ./doxyfile3; \
+	mv -f doxyfile3 doxyfile1; \
+	if (test "x@DOXYGEN_WITH_PYTHON@" = "xyes"); then \
+	  echo "DOXYGEN SUPPORT PYTHON - @DOXYGEN_WITH_PYTHON@"; \
+	  sed 's|python_extension_must_be_here|*.py|' ./doxyfile1 > ./doxyfile2; \
+	  mv -f doxyfile2 doxyfile1; \
+	  $(doxygen) -u ./doxyfile1; \
+	  if( test "x@DOXYGEN_WITH_STL@" = "xyes"); then \
+	    sed -e 's|BUILTIN_STL_SUPPORT    = NO|BUILTIN_STL_SUPPORT    = YES|' ./doxyfile1 > ./doxyfile2; \
+	    mv -f doxyfile2 doxyfile1; \
+	  fi; \
+	  mv -f doxyfile1 doxyfile; \
+	  $(doxygen) ./doxyfile; \
+	  cd ..; \
+	else \
+	  sed 's|python_extension_must_be_here||' ./doxyfile1 > ./doxyfile2; \
+	  mv -f doxyfile2 doxyfile1; \
+	  mv -f doxyfile1 doxyfile; \
+	  $(doxygen) ./doxyfile; \
+	  mkdir py1; mkdir py2; \
+	  cd ..; \
+	  for file in $(PYTHON_SCRIPTS) dummy; do \
+	    if [ $$file != "dummy" ]; then \
+	      cp $(root_srcdir)/src/GEOM_SWIG/$$file INPUT/py1/; \
+	    fi ; \
+	  done; \
+	  cd INPUT; \
+	  python $(KERNEL_ROOT_DIR)/doc/salome/tui/KERNEL/pythfilter.py ./py1 ./py2; \
+	  sed 's|list_py_files_to_process|$(PYTHON_SCRIPTS)|' ./doxyfile_py > py2/doxyfile_py; \
+	  cd py2; \
+	  $(doxygen) ./doxyfile_py; \
+	  cd ../..; \
+	fi; \
 	cp -fr $(srcdir)/SMESH/sources/static/*.* ./SMESH/
 	cp -fr $(srcdir)/SMESH/sources/ SMESH/
 	cp -fr $(srcdir)/SMESH/HTML/ SMESH/

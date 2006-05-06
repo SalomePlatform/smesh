@@ -61,7 +61,7 @@ public :
   // IDL Methods
   void setProtocol(SALOME::TypeOfCommunication typ) {}
   void release() {}
-  SALOME::SenderInt_ptr getSenderForNumber(long int) {return SALOME::SenderInt::_nil();}
+  SALOME::SenderInt_ptr getSenderForNumber(SALOME_MED::medGeometryElement) {return SALOME::SenderInt::_nil();}
   SALOME::SenderInt_ptr getSenderForNumberIndex() {return SALOME::SenderInt::_nil();}
   
   CORBA::Long            getIdentifier()      

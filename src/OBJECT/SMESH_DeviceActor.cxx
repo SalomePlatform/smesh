@@ -31,6 +31,7 @@
 #include "SMESH_ExtractGeometry.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_ActorUtils.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 #include <VTKViewer_Transform.h>
 #include <VTKViewer_TransformFilter.h>
@@ -55,7 +56,6 @@
 
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -75,7 +75,8 @@ using namespace std;
 vtkStandardNewMacro(SMESH_DeviceActor);
 
 
-SMESH_DeviceActor::SMESH_DeviceActor()
+SMESH_DeviceActor
+::SMESH_DeviceActor()
 {
   if(MYDEBUG) MESSAGE("SMESH_DeviceActor - "<<this);
 
@@ -113,7 +114,9 @@ SMESH_DeviceActor::SMESH_DeviceActor()
 }
 
 
-SMESH_DeviceActor::~SMESH_DeviceActor(){
+SMESH_DeviceActor
+::~SMESH_DeviceActor()
+{
   if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
 
   myProperty->Delete();
@@ -139,8 +142,8 @@ SMESH_DeviceActor::~SMESH_DeviceActor(){
 
 
 void
-SMESH_DeviceActor::
-SetStoreGemetryMapping(bool theStoreMapping)
+SMESH_DeviceActor
+::SetStoreGemetryMapping(bool theStoreMapping)
 {
   myGeomFilter->SetStoreMapping(theStoreMapping);
   SetStoreClippingMapping(theStoreMapping);
@@ -148,8 +151,8 @@ SetStoreGemetryMapping(bool theStoreMapping)
 
 
 void
-SMESH_DeviceActor::
-SetStoreClippingMapping(bool theStoreMapping)
+SMESH_DeviceActor
+::SetStoreClippingMapping(bool theStoreMapping)
 {
   myStoreClippingMapping = theStoreMapping;
   myExtractGeometry->SetStoreMapping(theStoreMapping && myIsImplicitFunctionUsed);
@@ -158,15 +161,17 @@ SetStoreClippingMapping(bool theStoreMapping)
 
 
 void
-SMESH_DeviceActor::
-SetStoreIDMapping(bool theStoreMapping)
+SMESH_DeviceActor
+::SetStoreIDMapping(bool theStoreMapping)
 {
   myExtractUnstructuredGrid->SetStoreMapping(theStoreMapping);
 }
 
 
-void SMESH_DeviceActor::Init(TVisualObjPtr theVisualObj, 
-			     vtkImplicitBoolean* theImplicitBoolean)
+void 
+SMESH_DeviceActor
+::Init(TVisualObjPtr theVisualObj, 
+       vtkImplicitBoolean* theImplicitBoolean)
 {
   myVisualObj = theVisualObj;
   myExtractGeometry->SetImplicitFunction(theImplicitBoolean);
@@ -175,8 +180,8 @@ void SMESH_DeviceActor::Init(TVisualObjPtr theVisualObj,
 
 
 void
-SMESH_DeviceActor::
-SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
+SMESH_DeviceActor
+::SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
 {
   int anId = 0;
   if(theIsImplicitFunctionUsed)
@@ -189,7 +194,10 @@ SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
 }
 
 
-void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
+void
+SMESH_DeviceActor
+::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid)
+{
   if(theGrid){
     //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
     myIsShrinkable = true;
@@ -231,20 +239,28 @@ void SMESH_DeviceActor::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid){
 }
 
 
-VTKViewer_ExtractUnstructuredGrid* SMESH_DeviceActor::GetExtractUnstructuredGrid(){
+VTKViewer_ExtractUnstructuredGrid* 
+SMESH_DeviceActor
+::GetExtractUnstructuredGrid()
+{
   return myExtractUnstructuredGrid;
 }
 
 
-vtkUnstructuredGrid* SMESH_DeviceActor::GetUnstructuredGrid(){
+vtkUnstructuredGrid* 
+SMESH_DeviceActor
+::GetUnstructuredGrid()
+{
   myExtractUnstructuredGrid->Update();
   return myExtractUnstructuredGrid->GetOutput();
 }
 
 
-void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
-				       vtkScalarBarActor* theScalarBarActor,
-				       vtkLookupTable* theLookupTable)
+void
+SMESH_DeviceActor
+::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
+		 vtkScalarBarActor* theScalarBarActor,
+		 vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   if(anIsInitialized){
@@ -284,6 +300,7 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
     aScalars->Delete();
 	
     theLookupTable->SetRange(aScalars->GetRange());
+    theLookupTable->SetNumberOfTableValues(theScalarBarActor->GetMaximumNumberOfColors());
     theLookupTable->Build();
     
     myMergeFilter->SetScalars(aDataSet);
@@ -293,9 +310,11 @@ void SMESH_DeviceActor::SetControlMode(SMESH::Controls::FunctorPtr theFunctor,
   theScalarBarActor->SetVisibility(anIsInitialized);
 }
 
-void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
-					  vtkScalarBarActor* theScalarBarActor,
-					  vtkLookupTable* theLookupTable)
+void
+SMESH_DeviceActor
+::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor,
+		    vtkScalarBarActor* theScalarBarActor,
+		    vtkLookupTable* theLookupTable)
 {
   bool anIsInitialized = theFunctor;
   myExtractUnstructuredGrid->ClearRegisteredCells();
@@ -347,7 +366,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 	}
       }
       
-      vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
       
@@ -407,7 +426,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 	}
       }
       
-      vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+      VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
       aCellLocationsArray->SetNumberOfComponents( 1 );
       aCellLocationsArray->SetNumberOfTuples( aNbCells );
       
@@ -432,7 +451,9 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
   theScalarBarActor->SetVisibility(anIsInitialized);
 }
 
-void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor)
+void
+SMESH_DeviceActor
+::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor)
 {
   myExtractUnstructuredGrid->ClearRegisteredCells();
   myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
@@ -487,7 +508,7 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
       }
     }
     
-    vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+    VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
     aCellLocationsArray->SetNumberOfComponents( 1 );
     aCellLocationsArray->SetNumberOfTuples( aNbCells );
     
@@ -505,7 +526,10 @@ void SMESH_DeviceActor::SetExtControlMode(SMESH::Controls::FunctorPtr theFunctor
 
 
 
-unsigned long int SMESH_DeviceActor::GetMTime(){
+unsigned long int 
+SMESH_DeviceActor
+::GetMTime()
+{
   unsigned long mTime = this->Superclass::GetMTime();
   mTime = max(mTime,myExtractGeometry->GetMTime());
   mTime = max(mTime,myExtractUnstructuredGrid->GetMTime());
@@ -516,12 +540,18 @@ unsigned long int SMESH_DeviceActor::GetMTime(){
 }
 
 
-void SMESH_DeviceActor::SetTransform(VTKViewer_Transform* theTransform){
+void
+SMESH_DeviceActor
+::SetTransform(VTKViewer_Transform* theTransform)
+{
   myTransformFilter->SetTransform(theTransform);
 }
 
 
-void SMESH_DeviceActor::SetShrink() {
+void
+SMESH_DeviceActor
+::SetShrink() 
+{
   if ( !myIsShrinkable ) return;
   if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
   {
@@ -531,7 +561,10 @@ void SMESH_DeviceActor::SetShrink() {
   }
 }
 
-void SMESH_DeviceActor::UnShrink() {
+void
+SMESH_DeviceActor
+::UnShrink() 
+{
   if ( !myIsShrunk ) return;
   if ( vtkDataSet* aDataSet = myPassFilter[ 0 ]->GetOutput() )
   {    
@@ -543,7 +576,10 @@ void SMESH_DeviceActor::UnShrink() {
 }
 
 
-void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
+void
+SMESH_DeviceActor
+::SetRepresentation(EReperesent theMode)
+{
   switch(theMode){
   case ePoint:
     myGeomFilter->SetInside(true);
@@ -572,7 +608,10 @@ void SMESH_DeviceActor::SetRepresentation(EReperesent theMode){
 }
 
 
-void SMESH_DeviceActor::SetVisibility(int theMode){
+void
+SMESH_DeviceActor
+::SetVisibility(int theMode)
+{
   if(!myExtractUnstructuredGrid->GetInput() || 
      GetUnstructuredGrid()->GetNumberOfCells())
   {
@@ -583,7 +622,10 @@ void SMESH_DeviceActor::SetVisibility(int theMode){
 }
 
 
-int SMESH_DeviceActor::GetVisibility(){
+int
+SMESH_DeviceActor
+::GetVisibility()
+{
   if(!GetUnstructuredGrid()->GetNumberOfCells()){
     vtkLODActor::SetVisibility(false);
   }
@@ -591,7 +633,10 @@ int SMESH_DeviceActor::GetVisibility(){
 }
 
 
-int SMESH_DeviceActor::GetNodeObjId(int theVtkID){
+int
+SMESH_DeviceActor
+::GetNodeObjId(int theVtkID)
+{
   vtkIdType anID = theVtkID;
 
   if(IsImplicitFunctionUsed())
@@ -602,16 +647,22 @@ int SMESH_DeviceActor::GetNodeObjId(int theVtkID){
   return aRetID;
 }
 
-float* SMESH_DeviceActor::GetNodeCoord(int theObjID){
+vtkFloatingPointType* 
+SMESH_DeviceActor
+::GetNodeCoord(int theObjID)
+{
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  float* aCoord = aDataSet->GetPoint(anID);
+  vtkFloatingPointType* aCoord = aDataSet->GetPoint(anID);
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }
 
 
-int SMESH_DeviceActor::GetElemObjId(int theVtkID){
+int
+SMESH_DeviceActor
+::GetElemObjId(int theVtkID)
+{
   vtkIdType anId = myGeomFilter->GetElemObjId(theVtkID);
   if(anId < 0) 
     return -1;
@@ -632,7 +683,10 @@ int SMESH_DeviceActor::GetElemObjId(int theVtkID){
   return aRetID;
 }
 
-vtkCell* SMESH_DeviceActor::GetElemCell(int theObjID){
+vtkCell* 
+SMESH_DeviceActor
+::GetElemCell(int theObjID)
+{
   vtkDataSet* aDataSet = myVisualObj->GetUnstructuredGrid();
   vtkIdType aGridID = myVisualObj->GetElemVTKId(theObjID);
   vtkCell* aCell = aDataSet->GetCell(aGridID);
@@ -642,33 +696,45 @@ vtkCell* SMESH_DeviceActor::GetElemCell(int theObjID){
 }
 
 
-float SMESH_DeviceActor::GetShrinkFactor(){
+vtkFloatingPointType 
+SMESH_DeviceActor
+::GetShrinkFactor()
+{
   return myShrinkFilter->GetShrinkFactor();
 }
 
-void SMESH_DeviceActor::SetShrinkFactor(float theValue){
+void
+SMESH_DeviceActor
+::SetShrinkFactor(vtkFloatingPointType theValue)
+{
   theValue = theValue > 0.1? theValue: 0.8;
   myShrinkFilter->SetShrinkFactor(theValue);
   Modified();
 }
 
 
-void SMESH_DeviceActor::SetHighlited(bool theIsHighlited){
+void
+SMESH_DeviceActor
+::SetHighlited(bool theIsHighlited)
+{
   if ( myIsHighlited == theIsHighlited )
     return;
   myIsHighlited = theIsHighlited;
   Modified();
 }
 
-void SMESH_DeviceActor::Render(vtkRenderer *ren, vtkMapper* m){
+void
+SMESH_DeviceActor
+::Render(vtkRenderer *ren, vtkMapper* m)
+{
   int aResolveCoincidentTopology = vtkMapper::GetResolveCoincidentTopology();
-  float aStoredFactor, aStoredUnit; 
+  vtkFloatingPointType aStoredFactor, aStoredUnit; 
   vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(aStoredFactor,aStoredUnit);
 
   vtkMapper::SetResolveCoincidentTopologyToPolygonOffset();
-  float aFactor = myPolygonOffsetFactor, aUnits = myPolygonOffsetUnits;
+  vtkFloatingPointType aFactor = myPolygonOffsetFactor, aUnits = myPolygonOffsetUnits;
   if(myIsHighlited){
-    static float EPS = .01;
+    static vtkFloatingPointType EPS = .01;
     aUnits *= (1.0-EPS);
   }
   vtkMapper::SetResolveCoincidentTopologyPolygonOffsetParameters(aFactor,aUnits);
@@ -679,7 +745,11 @@ void SMESH_DeviceActor::Render(vtkRenderer *ren, vtkMapper* m){
 }
 
 
-void SMESH_DeviceActor::SetPolygonOffsetParameters(float factor, float units){
+void
+SMESH_DeviceActor
+::SetPolygonOffsetParameters(vtkFloatingPointType factor, 
+			     vtkFloatingPointType units)
+{
   myPolygonOffsetFactor = factor;
   myPolygonOffsetUnits = units;
 }

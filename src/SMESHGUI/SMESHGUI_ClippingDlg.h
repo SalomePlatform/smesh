@@ -111,8 +111,10 @@ private:
     QPushButton*      buttonOk;
     QPushButton*      buttonCancel;
     QPushButton*      buttonApply;
+    QPushButton*      buttonHelp;
 
     bool myIsSelectPlane;
+    QString myHelpFileName;
 
 public slots:
 
@@ -126,6 +128,7 @@ public slots:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
 };
 
 #endif // DIALOGBOX_TRANSPARENCYDLG_H

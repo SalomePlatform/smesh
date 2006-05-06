@@ -25,20 +25,21 @@ p.whs8 { margin-left:36px; }
 table.whs9 { x-cell-content-align:top; width:100%; border-spacing:0px; }
 col.whs10 { width:33.382%; }
 col.whs11 { width:66.618%; }
-tr.whs12 { x-cell-content-align:top; }
+tr.whs12 { x-cell-content-align:top; height:587px; }
 td.whs13 { width:33.382%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; border-left-style:none; border-top-style:none; }
-img_whs14 { border:none; width:312px; height:565px; float:none; border-style:none; }
+img_whs14 { border:none; width:312px; height:621px; float:none; border-style:none; }
 td.whs15 { width:66.618%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-top-style:none; border-right-style:none; }
 p.whs16 { margin-left:0px; }
 img_whs17 { border:none; width:145px; height:150px; border-style:none; float:left; }
 img_whs18 { border:none; width:149px; height:158px; border-style:none; }
 col.whs19 { width:33.48%; }
 col.whs20 { width:66.52%; }
-td.whs21 { width:33.48%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
-img_whs22 { border:none; width:312px; height:312px; float:none; border-style:none; }
-td.whs23 { width:66.52%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
-img_whs24 { border:none; width:135px; height:150px; border-style:none; }
-p.whs25 { margin-left:80px; }
+tr.whs21 { x-cell-content-align:top; }
+td.whs22 { width:33.48%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+img_whs23 { border:none; width:312px; height:312px; float:none; border-style:none; }
+td.whs24 { width:66.52%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs25 { border:none; width:135px; height:150px; border-style:none; }
+p.whs26 { margin-left:80px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -155,8 +156,7 @@ else
 
 <h3>Standalone Group </h3>
 
-<p class="whs7">The box for creation of a <span style="font-weight: bold;"><B>Standalone 
- Group</B></span> appears by default. <span style="font-weight: bold;"><B>Standalone 
+<p class="whs7"><span style="font-weight: bold;"><B>Standalone 
  Group</B></span> consists of mesh elements, which you can define in two possible 
  ways.</p>
 
@@ -182,7 +182,14 @@ else
 <p class="whs7"><span style="font-weight: bold;"><B>Select from 
  </B></span>set of fields allows to choose a submesh or an existing group whose 
  elements of the previously defined type will be added to the list of elements 
- which will form your group.</p>
+ which will form your group. </p>
+
+<p class="whs7"><span style="font-weight: bold;"><B>Color Number</B></span> 
+ (integer only, ranging from 0 to 9999) - allows to assign to the group 
+ a certain index, for example, defining boundary conditions. This feature 
+ introduces a useful element of preprocessing in Mesh module. Note that 
+ <span style="font-weight: bold;"><B>Color number</B></span> attribute has nothing 
+ to do with the colors used for the display of the elements of the group.</p>
 
 <p class="whs7">&nbsp;</p>
 
@@ -192,7 +199,7 @@ else
 
 <tr valign="top" class="whs12">
 <td width="33.382%" class="whs13">
-<p class="whs1"><img src="../pics/creategroup.png" x-maintain-ratio="TRUE" width="312px" height="565px" border="0" class="img_whs14"></td>
+<p class="whs1"><img src="../pics/creategroup.png" x-maintain-ratio="TRUE" width="312px" height="621px" border="0" class="img_whs14"></td>
 <td width="66.618%" class="whs15">
 <p class="whs16"><img src="../image130.gif" width="145px" height="150px" align="left" border="0" class="img_whs17"> &nbsp;&nbsp;</p>
 <p class="whs16">&nbsp;</p>
@@ -225,8 +232,8 @@ Taper &gt; 0. </p>
  of a certain type belonging to the selected<span style="font-weight: bold;"> 
  <B></B></span>geometrical object. To define a group select in the Objet Browser 
  or in the 3D viewer a geometrical object from which the elements will 
- be taken. After confirmation of the operation MESH will create a new group 
- of mesh elements.</p>
+ be taken. After confirmation of the operation a new group of mesh elements 
+ will be created.</p>
 
 <p class="whs3">&nbsp;</p>
 
@@ -234,11 +241,11 @@ Taper &gt; 0. </p>
 <col class="whs19">
 <col class="whs20">
 
-<tr valign="top" class="whs12">
-<td width="33.48%" class="whs21">
-<p><img src="../pics/a-creategroup.png" x-maintain-ratio="TRUE" width="312px" height="312px" border="0" class="img_whs22"></td>
-<td width="66.52%" class="whs23">
-<p><img src="../image132.gif" width="135px" height="150px" border="0" class="img_whs24"> In this picture the cells which belong to a certain face 
+<tr valign="top" class="whs21">
+<td width="33.48%" class="whs22">
+<p><img src="../pics/a-creategroup.png" x-maintain-ratio="TRUE" width="312px" height="312px" border="0" class="img_whs23"></td>
+<td width="66.52%" class="whs24">
+<p><img src="../image132.gif" width="135px" height="150px" border="0" class="img_whs25"> In this picture the cells which belong to a certain face 
  are selected in green. </td></tr>
 </table>
 
@@ -255,7 +262,7 @@ Taper &gt; 0. </p>
 
 <p class="whs16">&nbsp;</p>
 
-<p class="whs25">&nbsp;</p>
+<p class="whs26">&nbsp;</p>
 
 <p>&nbsp;</p>
 

@@ -192,6 +192,10 @@ public:
   SMESH::SMESH_Mesh_ptr CreateMesh( GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
+  // Create empty mesh
+  SMESH::SMESH_Mesh_ptr CreateEmptyMesh()
+    throw ( SALOME::SALOME_Exception );
+
   //  Create mesh(es) and import data from UNV file
   SMESH::SMESH_Mesh_ptr CreateMeshesFromUNV( const char* theFileName )
     throw ( SALOME::SALOME_Exception );

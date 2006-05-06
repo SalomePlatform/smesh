@@ -42,8 +42,6 @@
 #include "SMESHGUI_MoveNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
-#include "SMESHGUI_EditHypothesesDlg.h"
-#include "SMESHGUI_CreateHypothesesDlg.h"
 #include "SMESHGUI_FilterDlg.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
@@ -62,9 +60,9 @@
 #include "SMESHGUI_MergeNodesDlg.h"
 #include "SMESHGUI_EditMeshDlg.h"
 #include "SMESHGUI_MeshPatternDlg.h"
-#include "SMESHGUI_PrecisionDlg.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
+#include "SMESHGUI_ConvToQuadOp.h"
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_Displayer.h"
 
@@ -460,28 +458,28 @@ namespace{
 	      anActor->SetRepresentation(SMESH_Actor::ePoint);
 	      break;
 	    case 1132:{
-	      float color[3];
+	      vtkFloatingPointType color[3];
 	      anActor->GetSufaceColor(color[0], color[1], color[2]);
 	      int c0 = int (color[0] * 255);
 	      int c1 = int (color[1] * 255);
 	      int c2 = int (color[2] * 255);
 	      QColor c(c0, c1, c2);
 
-	      float edgecolor[3];
+	      vtkFloatingPointType edgecolor[3];
 	      anActor->GetEdgeColor(edgecolor[0], edgecolor[1], edgecolor[2]);
 	      c0 = int (edgecolor[0] * 255);
 	      c1 = int (edgecolor[1] * 255);
 	      c2 = int (edgecolor[2] * 255);
 	      QColor e(c0, c1, c2);
 
-	      float backfacecolor[3];
+	      vtkFloatingPointType backfacecolor[3];
 	      anActor->GetBackSufaceColor(backfacecolor[0], backfacecolor[1], backfacecolor[2]);
 	      c0 = int (backfacecolor[0] * 255);
 	      c1 = int (backfacecolor[1] * 255);
 	      c2 = int (backfacecolor[2] * 255);
 	      QColor b(c0, c1, c2);
 
-	      float nodecolor[3];
+	      vtkFloatingPointType nodecolor[3];
 	      anActor->GetNodeColor(nodecolor[0], nodecolor[1], nodecolor[2]);
 	      c0 = int (nodecolor[0] * 255);
 	      c1 = int (nodecolor[1] * 255);
@@ -492,7 +490,7 @@ namespace{
 	      if(Edgewidth == 0)
 		Edgewidth = 1;
 	      int intValue = int(anActor->GetNodeSize());
-	      float Shrink = anActor->GetShrinkFactor();
+	      vtkFloatingPointType Shrink = anActor->GetShrinkFactor();
 
 	      SMESHGUI_Preferences_ColorDlg *aDlg =
 		new SMESHGUI_Preferences_ColorDlg( SMESHGUI::GetSMESHGUI(), "" );
@@ -509,26 +507,26 @@ namespace{
 		QColor nodecolor = aDlg->GetColor(3);
 		QColor backfacecolor = aDlg->GetColor(4);
 		/* actor color and backface color */
-		anActor->SetSufaceColor(float (color.red()) / 255.,
-					 float (color.green()) / 255.,
-					 float (color.blue()) / 255.);
-		anActor->SetBackSufaceColor(float (backfacecolor.red()) / 255.,
-					     float (backfacecolor.green()) / 255.,
-					     float (backfacecolor.blue()) / 255.);
+		anActor->SetSufaceColor(vtkFloatingPointType (color.red()) / 255.,
+					vtkFloatingPointType (color.green()) / 255.,
+					vtkFloatingPointType (color.blue()) / 255.);
+		anActor->SetBackSufaceColor(vtkFloatingPointType (backfacecolor.red()) / 255.,
+					    vtkFloatingPointType (backfacecolor.green()) / 255.,
+					    vtkFloatingPointType (backfacecolor.blue()) / 255.);
 
 		/* edge color */
-		anActor->SetEdgeColor(float (edgecolor.red()) / 255.,
-				       float (edgecolor.green()) / 255.,
-				       float (edgecolor.blue()) / 255.);
+		anActor->SetEdgeColor(vtkFloatingPointType (edgecolor.red()) / 255.,
+				      vtkFloatingPointType (edgecolor.green()) / 255.,
+				      vtkFloatingPointType (edgecolor.blue()) / 255.);
 
 		/* Shrink factor and size edges */
 		anActor->SetShrinkFactor(aDlg->GetIntValue(3) / 100.);
 		anActor->SetLineWidth(aDlg->GetIntValue(1));
 
 		/* Nodes color and size */
-		anActor->SetNodeColor(float (nodecolor.red()) / 255.,
-			       float (nodecolor.green()) / 255.,
-				       float (nodecolor.blue()) / 255.);
+		anActor->SetNodeColor(vtkFloatingPointType (nodecolor.red()) / 255.,
+				      vtkFloatingPointType (nodecolor.green()) / 255.,
+				      vtkFloatingPointType (nodecolor.blue()) / 255.);
 		anActor->SetNodeSize(aDlg->GetIntValue(2));
 
 		delete aDlg;
@@ -732,72 +730,81 @@ namespace{
     SALOME_ListIteratorOfListIO It(selected);
 
     aStudyBuilder->NewCommand();  // There is a transaction
-    for(; It.More(); It.Next()){
+    for(; It.More(); It.Next()){ // loop on selected IO's
       Handle(SALOME_InteractiveObject) IObject = It.Value();
-      if(IObject->hasEntry()){
-	_PTR(SObject) SO = aStudy->FindObjectID(IObject->getEntry());
+      if(IObject->hasEntry()) {
+	_PTR(SObject) aSO = aStudy->FindObjectID(IObject->getEntry());
 
 	// disable removal of "SMESH" component object
-	if(SO->FindAttribute(anAttr, "AttributeIOR")){
+	if(aSO->FindAttribute(anAttr, "AttributeIOR")){
 	  anIOR = anAttr;
 	  if ( !strcmp( (char*)anIOR->Value().c_str(), engineIOR().latin1() ) )
 	    continue;
 	}
 
-	/* Erase child graphical objects */
-	_PTR(ChildIterator) it = aStudy->NewChildIterator(SO);
-	for(it->InitEx(true); it->More(); it->Next()){
-	  _PTR(SObject) CSO = it->Value();
-	  if(CSO->FindAttribute(anAttr, "AttributeIOR")){
-	    anIOR = anAttr;
+        // put the whole hierarchy of sub-objects of the selected SO into a list and
+        // then treat them all starting from the deepest objects (at list back)
 
+        list< _PTR(SObject) > listSO;
+        listSO.push_back( aSO );
+        list< _PTR(SObject) >::iterator itSO = listSO.begin();
+        for ( ; itSO != listSO.end(); ++itSO ) {
+          _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
+          for (it->InitEx(false); it->More(); it->Next())
+            listSO.push_back( it->Value() );
+        }
+
+        // treat SO's in the list starting from the back
+
+        list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
+        for ( ; ritSO != listSO.rend(); ++ritSO ) {
+          _PTR(SObject) SO = *ritSO;
+          if ( !SO ) continue;
+          string anEntry = SO->GetID();
+
+          /** Erase graphical object **/
+	  if(SO->FindAttribute(anAttr, "AttributeIOR")){
 	    QPtrVector<SUIT_ViewWindow> aViews = vm->getViews();
 	    for(int i = 0; i < nbSf; i++){
 	      SUIT_ViewWindow *sf = aViews[i];
-	      CORBA::String_var anEntry = CSO->GetID().c_str();
-	      if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.in())){
+	      if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,anEntry.c_str())){
 		SMESH::RemoveActor(sf,anActor);
 	      }
 	    }
 	  }
-	}
 
-	/* Erase main graphical object */
-	QPtrVector<SUIT_ViewWindow> aViews = vm->getViews();
-	for(int i = 0; i < nbSf; i++){
-	  SUIT_ViewWindow *sf = aViews[i];
-	  if(SMESH_Actor* anActor = SMESH::FindActorByEntry(sf,IObject->getEntry())){
-	    SMESH::RemoveActor(sf,anActor);
-	  }
-	}
+          /** Remove an object from data structures **/
+          SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( SO ));
+          SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( SO ));
+          if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
+            SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
+            aMesh->RemoveGroup( aGroup );
+          }
+          else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
+            SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
+            aMesh->RemoveSubMesh( aSubMesh );
 
-	// Remove object(s) from data structures
-	_PTR(SObject) obj = aStudy->FindObjectID(IObject->getEntry());
-	if(obj){
-	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( obj ) );
-	  SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( SMESH::SObjectToObject( obj ) );
-          QString objType = CheckTypeObject(IObject);
-	  if ( !aGroup->_is_nil() ) {                          // DELETE GROUP
-	    SMESH::SMESH_Mesh_var aMesh = aGroup->GetMesh();
-	    aMesh->RemoveGroup( aGroup );
-	  }
-	  else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
-	    SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
-	    aMesh->RemoveSubMesh( aSubMesh );
-	  }
-	  else if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
-            SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
-	    aStudyBuilder->RemoveObjectWithChildren( obj );
-	  }
-	  else {// default action: remove SObject from the study
-	    // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
-	    //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
-	    //op->start();
-	    aStudyBuilder->RemoveObjectWithChildren( obj );
-	    //op->finish();
-	  }
-	}
-
+            _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
+            if (aMeshSO)
+              SMESH::ModifiedMesh(aMeshSO, false);
+          }
+          else {
+            IObject = new SALOME_InteractiveObject
+              ( anEntry.c_str(), engineIOR().latin1(), SO->GetName().c_str() );
+            QString objType = CheckTypeObject(IObject);
+            if ( objType == "Hypothesis" || objType == "Algorithm" ) {// DELETE HYPOTHESIS
+              SMESH::RemoveHypothesisOrAlgorithmOnMesh(IObject);
+              aStudyBuilder->RemoveObjectWithChildren( SO );
+            }
+            else {// default action: remove SObject from the study
+              // san - it's no use opening a transaction here until UNDO/REDO is provided in SMESH
+              //SUIT_Operation *op = new SALOMEGUI_ImportOperation(myActiveStudy);
+              //op->start();
+              aStudyBuilder->RemoveObjectWithChildren( SO );
+              //op->finish();
+            }
+          }
+	} /* listSO back loop */
       } /* IObject->hasEntry() */
     } /* more/next */
     aStudyBuilder->CommitCommand();
@@ -834,6 +841,7 @@ SalomeApp_Module( "SMESH" )
   }
 
   myActiveDialogBox = 0;
+  myFilterLibraryDlg = 0;
   myState = -1;
   myDisplayer = 0;
 
@@ -1480,6 +1488,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+  case 417: // Convert mesh to quadratic
+    {
+    startOperation( 417 );
+      /*      if (checkLock(aStudy)) break;
+      if (vtkwnd) {
+	EmitSignalDeactivateDialog();
+	new SMESHGUI_ConvToQuadDlg();
+      } else {
+	SUIT_MessageBox::warn1(desktop(),
+                               tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
+                               tr("SMESH_BUT_OK"));
+			       }*/
+      break;
+    }
   case 801:                                     // CREATE GROUP
     {
       if ( !vtkwnd )
@@ -2063,7 +2085,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       aTypes.append( SMESH::FACE );
       aTypes.append( SMESH::VOLUME );
     }
-    new SMESHGUI_FilterLibraryDlg( this, SMESH::GetDesktop( this ), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    if (!myFilterLibraryDlg)
+      myFilterLibraryDlg = new SMESHGUI_FilterLibraryDlg( this, SMESH::GetDesktop( this ), aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    else if (myFilterLibraryDlg->isHidden())
+      myFilterLibraryDlg->Init( aTypes, SMESHGUI_FilterLibraryDlg::EDIT );
+    myFilterLibraryDlg->raise();
   }
   break;
 
@@ -2334,6 +2360,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  414, "REVOLUTION",      "ICON_REVOLUTION" );
   createSMESHAction(  415, "MAP",             "ICON_MAP" );
   createSMESHAction(  416, "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
+  createSMESHAction(  417, "CONV_TO_QUAD",    "ICON_CONV_TO_QUAD" );
   createSMESHAction(  200, "RESET" );
   createSMESHAction(  201, "SCALAR_BAR_PROP" );
   createSMESHAction(  211, "WIRE",           "ICON_WIRE", 0, true );
@@ -2480,6 +2507,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 416, modifyId, -1 );
   createMenu( 414, modifyId, -1 );
   createMenu( 415, modifyId, -1 );
+  createMenu( 417, modifyId, -1 );
 
   createMenu( 214, viewId, -1 );
 
@@ -2564,6 +2592,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 416, modifyTb );
   createTool( 414, modifyTb );
   createTool( 415, modifyTb );
+  createTool( 417, modifyTb );
 
   createTool( 214, dispModeTb );
 
@@ -2741,7 +2770,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( 6003 ), anId, -1 ); // FREE_BORDER
   popupMgr()->setRule( action( 6003 ), aMeshInVtkHasEdges, true );
-  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeEdges'", false );
+  popupMgr()->setRule( action( 6003 ), "controlMode = 'eFreeBorders'", false );
 
   popupMgr()->insert( action( 6001 ), anId, -1 ); // LENGTH
   popupMgr()->setRule( action( 6001 ), aMeshInVtkHasEdges, true );
@@ -2755,7 +2784,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( 6002 ), anId, -1 ); // FREE_EDGE
   popupMgr()->setRule( action( 6002 ), aMeshInVtkHasFaces, true );
-  popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeBorders'", false );
+  popupMgr()->setRule( action( 6002 ), "controlMode = 'eFreeEdges'", false );
 
   popupMgr()->insert( action( 6018 ), anId, -1 ); // LENGTH_2D
   popupMgr()->setRule( action( 6018 ), aMeshInVtkHasFaces, true );
@@ -3209,6 +3238,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     break;
     case 704: // Edit mesh/sub-mesh
       op = new SMESHGUI_MeshOp( false );
+    break;
+    case 417: //convert to quadratic
+      op = new SMESHGUI_ConvToQuadOp();
     break;
     default:
     break;

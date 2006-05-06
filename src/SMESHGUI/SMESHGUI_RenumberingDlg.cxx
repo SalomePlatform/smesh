@@ -38,6 +38,9 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SALOME_ListIO.hxx"
 
@@ -92,10 +95,14 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const cha
 
   /***************************************************************/
   GroupConstructors = new QButtonGroup(this, "GroupConstructors");
-  if (unit == 0)
+  if (unit == 0) {
     GroupConstructors->setTitle(tr("SMESH_NODES" ));
-  else if (unit == 1)
+    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_nodes";
+  }
+  else if (unit == 1) {
     GroupConstructors->setTitle(tr("SMESH_ELEMENTS" ));
+    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_elements";
+  }
   GroupConstructors->setExclusive(TRUE);
   GroupConstructors->setColumnLayout(0, Qt::Vertical);
   GroupConstructors->layout()->setSpacing(0);
@@ -126,6 +133,10 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const cha
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -203,6 +214,7 @@ void SMESHGUI_RenumberingDlg::Init()
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectButton, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
@@ -296,6 +308,23 @@ void SMESHGUI_RenumberingDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RenumberingDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

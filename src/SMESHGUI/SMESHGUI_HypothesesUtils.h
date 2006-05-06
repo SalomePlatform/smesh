@@ -61,6 +61,13 @@ namespace SMESH{
 
   HypothesisData* GetHypothesisData(const char* aHypType);
 
+  bool IsAvailableHypothesis(const HypothesisData* algoData,
+                             const QString&        hypType,
+                             bool&                 isOptional);
+
+  bool IsCompatibleAlgorithm(const HypothesisData* algo1Data,
+                             const HypothesisData* algo2Data);
+
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType);
 
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const char* aHypType,

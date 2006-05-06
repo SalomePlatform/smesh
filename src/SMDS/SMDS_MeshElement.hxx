@@ -108,6 +108,13 @@ public:
     return ind;
   }
 
+  /*!
+   * \brief Check if a node belongs to the element
+    * \param node - the node to check
+    * \retval int - node index within the element, -1 if not found
+   */
+  int GetNodeIndex( const SMDS_MeshNode* node ) const;
+
 protected:
   SMDS_MeshElement(int ID=-1);
   virtual void Print(std::ostream & OS) const;

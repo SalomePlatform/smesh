@@ -124,6 +124,8 @@ DriverMED_R_SMESHDS_Mesh
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
 	PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+	if(!aNodeInfo)
+	  continue;
 
 	PCoordHelper aCoordHelper = GetCoordHelper(aNodeInfo);
 

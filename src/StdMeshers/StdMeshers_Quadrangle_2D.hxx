@@ -36,7 +36,7 @@
 
 #include "gp_XY.hxx"
 
-#include "StdMeshers_Helper.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 //class SMDS_MeshNode;
 
@@ -131,7 +131,7 @@ protected:
   // is not the same in the case where the global number of nodes on edges is even
   bool myQuadranglePreference;
 
-  StdMeshers_Helper* myTool; // toll for working with quadratic elements
+  SMESH_MesherHelper* myTool; // toll for working with quadratic elements
 };
 
 #endif

@@ -142,6 +142,9 @@ private:
   QPushButton*      OkButton;
   QPushButton*      ApplyButton;
   QPushButton*      CloseButton;
+  QPushButton*      HelpButton;
+
+  QString           myHelpFileName;
 
 protected slots:
   void reject();
@@ -150,6 +153,7 @@ private slots:
   void ConstructorsClicked (int);
   void ClickOnOk();
   bool ClickOnApply();
+  void ClickOnHelp();
   void SetEditCurrentArgument();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();

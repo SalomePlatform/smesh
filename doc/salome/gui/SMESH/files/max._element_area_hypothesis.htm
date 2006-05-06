@@ -14,19 +14,21 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-img_whs1 { border:none; width:30px; height:30px; float:none; border-style:none; }
-p.whs2 { margin-left:80px; }
-img_whs3 { border:none; width:332px; height:212px; float:none; border-style:none; }
-p.whs4 { margin-left:0px; }
-p.whs5 { margin-left:40px; }
-img_whs6 { border:none; width:455px; height:385px; float:none; }
+ul.whs1 { list-style:disc; }
+p.whs2 { background-color:Transparent; color:#000000; font-weight:bold; }
+p.whs3 { margin-left:40px; }
+img_whs4 { border:none; width:332px; height:212px; float:none; border-style:none; }
+p.whs5 { margin-left:80px; }
+p.whs6 { margin-left:0px; }
+img_whs7 { border:none; width:455px; height:385px; float:none; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs4 {margin-left:1pt; }";
+  strNSS += "p.whs2 {background-color:white; }";
+  strNSS += "p.whs6 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -62,7 +64,7 @@ if (window.gbWhTopic)
 {
 	if (window.addTocInfo)
 	{
-	addTocInfo("MESH module\nCreating meshes\nDefining hypotheses\nMax Element Area hypothesis");
+	addTocInfo("MESH module\nCreating meshes\nDefining hypotheses\n2D Meshing Hypotheses");
 addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
 
 	}
@@ -86,29 +88,74 @@ else
 		document.location.reload();
 //-->
 </script>
-<h1>Max Element Area hypothesis</h1>
+<h1>2D Meshing Hypotheses</h1>
 
-<p><span style="font-weight: bold;"><B><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"></B></span> <span style="font-weight: bold;"><B>Max 
- Element Area </B></span>hypothesis is applied for meshing of 2D faces composing 
- your geometrical object. Definition of this hypothesis consists of setting 
- the <span style="font-weight: bold;"><B>maximum area </B></span>of meshing elements 
- (depending on the chosen meshing algorithm it can be <span style="font-weight: bold;"><B>triangles</B></span> 
- or <span style="font-weight: bold;"><B>quadrangles</B></span>), which will compose 
- the mesh of these 2D faces. </p>
+<ul type="disc" class="whs1">
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="max._element_area_hypothesis.htm#max_element_area"><span 
+ style="font-weight: bold;"><B>Max Element Area</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="max._element_area_hypothesis.htm#length_from_edges"><span 
+ style="font-weight: bold;"><B>Length from Edges</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="max._element_area_hypothesis.htm#quadrangle preference" style="font-weight: bold;">Quadrangle 
+ Preference</a></p></li>
+</ul>
+
+<h3><a name=max_element_area>Max Element Area </a></h3>
+
+<p><span style="font-weight: bold;"><B>Max Element Area </B></span>hypothesis 
+ is applied for meshing of 2D faces composing your geometrical object. 
+ Definition of this hypothesis consists of setting the <span style="font-weight: bold;"><B>maximum 
+ area </B></span>of meshing elements (depending on the chosen meshing algorithm 
+ it can be <span style="font-weight: bold;"><B>triangles</B></span> or <span style="font-weight: bold;"><B>quadrangles</B></span>), 
+ which will compose the mesh of these 2D faces. </p>
 
 <p>&nbsp;</p>
 
-<p class="whs2"><img src="../pics/a-maxelarea.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs3"></p>
+<p class="whs3"><img src="../pics/a-maxelarea.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs4"></p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark4">Maximum 
  Element Area hypothesis</a> operation. &nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p class="whs5"><img src="../pics/max_el_area.png" x-maintain-ratio="TRUE" width="455px" height="385px" border="0" class="img_whs6"></p>
+<p class="whs3"><img src="../pics/max_el_area.png" x-maintain-ratio="TRUE" width="455px" height="385px" border="0" class="img_whs7"></p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3">&nbsp;</p>
+
+<h3><a name=length_from_edges>Length from Edges</a></h3>
+
+<p><span style="font-weight: bold;"><B>Length from edges</B></span> hypothesis 
+ builds 1D mesh segments having a length calculated as an average edge 
+ length for a given wire. </p>
+
+<p>&nbsp;</p>
+
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
+ a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark6">Length 
+ from Edges hypothesis</a> operation. &nbsp;</p>
+
+<p>&nbsp;</p>
+
+<h3><a name="quadrangle preference">Quadrangle Preference</a></h3>
+
+<p>This algorithm can be used only together with Quadrangle (Mapping) algorithm. 
+ It allows to build quadrangular meshes even if the number of nodes at 
+ the opposite edges of a meshed face is not equal, otherwise this mesh 
+ will contain some triangular elements.</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

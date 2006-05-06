@@ -1086,7 +1086,8 @@ SMESH::FreeEdges::Borders* FreeEdges_i::GetBorders()
 
   long i = 0, iEnd = aBorders.size();
 
-  SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders(iEnd);
+  SMESH::FreeEdges::Borders_var aResult = new SMESH::FreeEdges::Borders;
+  aResult->length(iEnd);
 
   SMESH::Controls::FreeEdges::TBorders::const_iterator anIter;
   for ( anIter = aBorders.begin() ; anIter != aBorders.end(); anIter++, i++ )
@@ -1997,16 +1998,16 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     int         aCriterion    = theCriteria[ i ].Type;
     int         aCompare      = theCriteria[ i ].Compare;
     double      aThreshold    = theCriteria[ i ].Threshold;
+    const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
+    const char* aThresholdID  = theCriteria[ i ].ThresholdID;
     int         aUnary        = theCriteria[ i ].UnaryOp;
     int         aBinary       = theCriteria[ i ].BinaryOp;
     double      aTolerance    = theCriteria[ i ].Tolerance;
-    const char* aThresholdStr = theCriteria[ i ].ThresholdStr;
-    const char* aThresholdID  = theCriteria[ i ].ThresholdID;
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
     TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
-      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"',"<<
+      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
       aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
@@ -2255,7 +2256,7 @@ Predicate_ptr Filter_i::GetPredicate()
 // name    : toString
 // Purpose : Convert bool to LDOMString
 //=======================================================================
-static inline LDOMString toString( const bool val )
+static inline LDOMString toString( CORBA::Boolean val )
 {
   return val ? "logical not" : "";
 }
@@ -2273,7 +2274,7 @@ static inline bool toBool( const LDOMString& theStr )
 // name    : toString
 // Purpose : Convert double to LDOMString
 //=======================================================================
-static inline LDOMString toString( const double val )
+static inline LDOMString toString( CORBA::Double val )
 {
   char a[ 255 ];
   sprintf( a, "%e", val );
@@ -2293,7 +2294,7 @@ static inline double toDouble( const LDOMString& theStr )
 // name    : toString
 // Purpose : Convert functor type to LDOMString
 //=======================================================================
-static inline LDOMString toString( const long theType )
+static inline LDOMString toString( CORBA::Long theType )
 {
   switch ( theType )
   {
@@ -2509,12 +2510,12 @@ static LDOM_Element createFilterItem( const char*       theName,
   for ( CORBA::ULong i = 0, n = aCriteria->length(); i < n; i++ )
   {
     LDOM_Element aCriterionItem = theDoc.createElement( "criterion" );
-
-    aCriterionItem.setAttribute( ATTR_TYPE         , toString( aCriteria[ i ].Type      ) );
-    aCriterionItem.setAttribute( ATTR_COMPARE      , toString( aCriteria[ i ].Compare   ) );
-    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString( aCriteria[ i ].Threshold ) );
-    aCriterionItem.setAttribute( ATTR_UNARY        , toString( aCriteria[ i ].UnaryOp   ) );
-    aCriterionItem.setAttribute( ATTR_BINARY       , toString( aCriteria[ i ].BinaryOp  ) );
+    
+    aCriterionItem.setAttribute( ATTR_TYPE         , toString(  aCriteria[ i ].Type) );
+    aCriterionItem.setAttribute( ATTR_COMPARE      , toString(  aCriteria[ i ].Compare ) );
+    aCriterionItem.setAttribute( ATTR_THRESHOLD    , toString(  aCriteria[ i ].Threshold ) );
+    aCriterionItem.setAttribute( ATTR_UNARY        , toString(  aCriteria[ i ].UnaryOp ) );
+    aCriterionItem.setAttribute( ATTR_BINARY       , toString(  aCriteria[ i ].BinaryOp ) );
 
     aCriterionItem.setAttribute( ATTR_THRESHOLD_STR, (const char*)aCriteria[ i ].ThresholdStr );
     aCriterionItem.setAttribute( ATTR_TOLERANCE    , toString( aCriteria[ i ].Tolerance ) );

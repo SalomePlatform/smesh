@@ -1,6 +1,6 @@
-//  MEFISTO : library to compute 2D triangulation from segmented boundaries
+//  MEFISTO2: a library to compute 2D triangulation from segmented boundaries
 //
-//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -18,10 +18,10 @@
 //
 //  See http://www.ann.jussieu.fr/~perronne or email Perronnet@ann.jussieu.fr
 //
-//
-//  File   : aptrte.cxx
+//  File   : aptrte.cxx   le C++ de l'appel du trianguleur plan
 //  Module : SMESH
-//  Author: Alain PERRONNET
+//  Author : Alain PERRONNET
+//  Date   : 16 mars 2006
 
 #include "Rn.h"
 #include "aptrte.h"
@@ -63,10 +63,11 @@ void deltacpu_( R & dtcpu )
 }
 
 
-void  aptrte( Z nutysu, R aretmx,
-	      Z nblf,   Z * nudslf, R2 * uvslf,
-	      Z nbpti,  R2 *uvpti,
-	      Z & nbst, R2 * & uvst, Z & nbt, Z * & nust,
+void  aptrte( Z   nutysu, R      aretmx,
+	      Z   nblf,   Z  *   nudslf,  R2 * uvslf,
+	      Z   nbpti,  R2 *   uvpti,
+	      Z & nbst,   R2 * & uvst,
+	      Z & nbt,    Z  * & nust,
 	      Z & ierr )
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // but : appel de la triangulation par un arbre-4 recouvrant
@@ -110,9 +111,12 @@ void  aptrte( Z nutysu, R aretmx,
 // ierr   : 0 si pas d'erreur
 //        > 0 sinon
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// auteur : Alain Perronnet  Analyse Numerique Paris UPMC   decembre 2001
+// auteur : Alain Perronnet  Laboratoire J.-L. LIONS Paris UPMC mars 2006
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 {
+  Z  nbsttria=4; //Attention: 4 sommets stockes par triangle
+                 //no st1, st2, st3, 0 (non quadrangle)
+
   R  d, tcpu=0;
   R3 direction=R3(0,0,0);  //direction pour areteideale() inactive ici!
   Z  nbarfr=nudslf[nblf];  //nombre total d'aretes des lignes fermees
@@ -121,7 +125,7 @@ void  aptrte( Z nutysu, R aretmx,
   R3 *mnpxyd=NULL;
   Z  *mnsoar=NULL, mosoar=7, mxsoar, n1soar; //le hachage des aretes
   Z  *mnartr=NULL, moartr=3, mxartr, n1artr; //le no des 3 aretes des triangles
-  Z  *mntree=NULL, motree=9, mxtree;   //L'arbre 4 de TE et nombre d'entiers par TE
+  Z  *mntree=NULL, motree=9, mxtree; //L'arbre 4 de TE et nombre d'entiers par TE
   Z  *mnqueu=NULL, mxqueu;
   Z  *mn1arcf=NULL;
   Z  *mnarcf=NULL, mxarcf;
@@ -129,7 +133,6 @@ void  aptrte( Z nutysu, R aretmx,
   Z  *mnarcf2=NULL;
   Z  *mnarcf3=NULL;
   Z  *mntrsu=NULL;
-  Z  *mndalf=NULL;
   Z  *mnslig=NULL;
   Z  *mnarst=NULL;
   Z  *mnlftr=NULL;
@@ -142,6 +145,7 @@ void  aptrte( Z nutysu, R aretmx,
   Z  i, l, n, ns, ns0, ns1, ns2, nosotr[3], nt;
   Z  mxsomm, nbsomm, nbarpi, nbarli, ndtri0, mn;
   Z  moins1=-1;
+  R  dist;
 
   aretemaxface_ = aretmx;
 
@@ -151,19 +155,14 @@ void  aptrte( Z nutysu, R aretmx,
 
   // quelques reservations de tableaux pour faire les calculs
   // ========================================================
-  // le tableau pointeur sur la premiere arete de chaque ligne fermee
-  if( mndalf!=NULL ) delete [] mndalf;
-  mndalf = new Z[1+nblf];
-  if( mndalf==NULL ) goto ERREUR;
-  mndalf[0]=0;
-
   // declaration du tableau des coordonnees des sommets de la frontiere
   // puis des sommets internes ajoutes
   // majoration empirique du nombre de sommets de la triangulation
-  i =  4*nbarfr/10;
+  i = 4*nbarfr/10;
   mxsomm = Max( 20000, 64*nbpti+i*i );
-  MESSAGE( "APTRTE: Depart de la triangulation avec " );
+  MESSAGE( "APTRTE: Debut de la triangulation plane avec " );
   MESSAGE( "nutysu=" << nutysu << "  aretmx=" << aretmx << "  mxsomm=" << mxsomm );
+  MESSAGE( nbarfr << " sommets sur la frontiere et " << nbpti << " points internes");
 
  NEWDEPART:
   //mnpxyd( 3, mxsomm ) les coordonnees UV des sommets et la taille d'arete aux sommets
@@ -251,7 +250,7 @@ void  aptrte( Z nutysu, R aretmx,
     //pas de test sur ierr car pas de saturation possible a ce niveau
 
     //le pointeur dans le hachage sur la premiere arete de la ligne fermee n
-    mndalf[n] = noar0;
+    //mndalf[n] = noar0;
 
     //la nouvelle arete est la suivante de l'arete definie juste avant
     if( noar > 0 )
@@ -539,8 +538,11 @@ void  aptrte( Z nutysu, R aretmx,
   // mise en delaunay de la triangulation
   // =====================================================
   mnarcf3 = new Z[mxarcf];
-  if( mnarcf3 == NULL ) goto ERREUR;
-
+  if( mnarcf3 == NULL )
+  {
+    cout << "aptrte: MC saturee mnarcf3=" << mnarcf3 << endl;
+    goto ERREUR;
+  }
   teamqt_( nutysu,
 	   mnarst, mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr,
@@ -548,11 +550,11 @@ void  aptrte( Z nutysu, R aretmx,
 	   mn1arcf, mnarcf, mnarcf1,
 	   comxmi, nbarpi, nbsomm, mxsomm, mnpxyd, mnslig,
 	   ierr );
+  if( mnarcf3 != NULL ) {delete [] mnarcf3; mnarcf3=NULL;}
   if( mn1arcf != NULL ) {delete [] mn1arcf; mn1arcf=NULL;}
   if( mnarcf  != NULL ) {delete [] mnarcf;  mnarcf =NULL;}
   if( mnarcf1 != NULL ) {delete [] mnarcf1; mnarcf1=NULL;}
   if( mnarcf2 != NULL ) {delete [] mnarcf2; mnarcf2=NULL;}
-  if( mnarcf3 != NULL ) {delete [] mnarcf3; mnarcf3=NULL;}
 
   deltacpu_( d );
   tcpu += d;
@@ -632,7 +634,7 @@ void  aptrte( Z nutysu, R aretmx,
   // -----------------------------------------------------
   // boucle sur les triangles occupes (internes et externes)
   if( nust != NULL ) delete [] nust;
-  nust = new Z[4*nbt];
+  nust = new Z[nbsttria*nbt];
   if( nust == NULL ) goto ERREUR;
   nbt = 0;
   for (i=1; i<=mxartr; i++)
@@ -648,13 +650,12 @@ void  aptrte( Z nutysu, R aretmx,
       nust[nbt++] = 0;
     }
   }
-  nbt /= 4;  //le nombre final de triangles de la surface
-  MESSAGE("Nombre de sommets=" << nbst
-       << "  Nombre de triangles=" << nbt);
-
+  nbt /= nbsttria;  //le nombre final de triangles de la surface
+  MESSAGE( "APTRTE: Fin de la triangulation plane avec "<<nbst<<" sommets et "
+	   << nbt << " triangles=" << nbt);
   deltacpu_( d );
   tcpu += d;
-  MESSAGE( "Temps total de la triangulation=" << tcpu << " secondes" );
+  MESSAGE( "APTRTE: Temps total de la triangulation plane=" << tcpu << " secondes" );
 
   // destruction des tableaux auxiliaires
   // ------------------------------------
@@ -664,7 +665,6 @@ void  aptrte( Z nutysu, R aretmx,
   if( mnslig != NULL ) delete [] mnslig;
   if( mnsoar != NULL ) delete [] mnsoar;
   if( mnpxyd != NULL ) delete [] mnpxyd;
-  if( mndalf != NULL ) delete [] mndalf;
   if( mntree != NULL ) delete [] mntree;
   if( mnqueu != NULL ) delete [] mnqueu;
   if( mntrsu != NULL ) delete [] mntrsu;
@@ -686,7 +686,7 @@ void  aptrte( Z nutysu, R aretmx,
   }
   else
   {
-    MESSAGE( "Triangulation non realisee " << ierr );
+    MESSAGE( "APTRTE: Triangulation NON REALISEE  avec erreur=" << ierr );
     if( ierr == 0 ) ierr=1;
     goto NETTOYAGE;
   }
@@ -777,7 +777,7 @@ void qualitetrte( R3 *mnpxyd,
   quamoy /= nbtria;
   MESSAGE("Qualite moyenne=" << quamoy
        << "  Qualite minimale=" << quamin
-       << " des " << nbtria << " triangles de surface totale="
+       << " des " << nbtria << " triangles de surface plane totale="
        << aire);
 
   if( nbtrianeg>0 )

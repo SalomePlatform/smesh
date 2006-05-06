@@ -79,7 +79,8 @@ class vtkTimeStamp;
 class SMESH_DeviceActor;
 
 
-class SMESH_ActorDef : public SMESH_Actor{
+class SMESH_ActorDef : public SMESH_Actor
+{
   friend class SMESH_VisualObj;
   friend class SMESH_Actor;
 
@@ -100,35 +101,35 @@ class SMESH_ActorDef : public SMESH_Actor{
 
   virtual bool IsInfinitive();  
 
-  virtual void SetOpacity(float theValue);
-  virtual float GetOpacity();
+  virtual void SetOpacity(vtkFloatingPointType theValue);
+  virtual vtkFloatingPointType GetOpacity();
 
-  virtual void SetSufaceColor(float r,float g,float b);
-  virtual void GetSufaceColor(float& r,float& g,float& b);
+  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
-  virtual void SetBackSufaceColor(float r,float g,float b);
-  virtual void GetBackSufaceColor(float& r,float& g,float& b);
+  virtual void SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
-  virtual void SetEdgeColor(float r,float g,float b);
-  virtual void GetEdgeColor(float& r,float& g,float& b);
+  virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
-  virtual void SetNodeColor(float r,float g,float b);
-  virtual void GetNodeColor(float& r,float& g,float& b);
+  virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
-  virtual void SetHighlightColor(float r,float g,float b);
-  virtual void GetHighlightColor(float& r,float& g,float& b);
+  virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
 
-  virtual void SetPreHighlightColor(float r,float g,float b);
-  virtual void GetPreHighlightColor(float& r,float& g,float& b);
+  virtual void SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b);
+  virtual void GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b);
  
-  virtual float GetLineWidth();
-  virtual void SetLineWidth(float theVal);
+  virtual vtkFloatingPointType GetLineWidth();
+  virtual void SetLineWidth(vtkFloatingPointType theVal);
 
-  virtual void SetNodeSize(float size) ;
-  virtual float GetNodeSize() ;
+  virtual void SetNodeSize(vtkFloatingPointType size) ;
+  virtual vtkFloatingPointType GetNodeSize() ;
 
   virtual int GetNodeObjId(int theVtkID);
-  virtual float* GetNodeCoord(int theObjID);
+  virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
@@ -146,15 +147,15 @@ class SMESH_ActorDef : public SMESH_Actor{
   virtual void SetPointRepresentation(bool theIsPointsVisible);
   virtual bool GetPointRepresentation();
 
-  virtual float* GetBounds();
+  virtual vtkFloatingPointType* GetBounds();
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid();
   virtual vtkDataSet* GetInput();
   virtual vtkMapper* GetMapper();
 
-  virtual float GetShrinkFactor();
-  virtual void SetShrinkFactor(float theValue);
+  virtual vtkFloatingPointType GetShrinkFactor();
+  virtual void SetShrinkFactor(vtkFloatingPointType theValue);
 
   virtual bool IsShrunkable() { return myIsShrinkable;}
   virtual bool IsShrunk() { return myIsShrunk;}
@@ -172,8 +173,8 @@ class SMESH_ActorDef : public SMESH_Actor{
 
   virtual vtkScalarBarActor* GetScalarBarActor(){ return myScalarBarActor;}
 
-  virtual void SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane);
-  virtual void GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane);
+  virtual void SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane);
+  virtual void GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane);
 
   virtual void RemoveAllClippingPlanes();
   virtual vtkIdType GetNumberOfClippingPlanes();

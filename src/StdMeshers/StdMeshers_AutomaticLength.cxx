@@ -300,7 +300,10 @@ bool StdMeshers_AutomaticLength::SetParametersByMesh(const SMESH_Mesh*   theMesh
     SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( edge );
     if ( !eSubMesh )
       return false;
-    double segLen = L / eSubMesh->NbElements();
+    int nbSeg = eSubMesh->NbElements();
+    if ( nbSeg < 1 )
+      continue;
+    double segLen = L / nbSeg;
 
     // get segment length from _TShapeToLength
     map<const TopoDS_TShape*, double>::iterator tshape_length =

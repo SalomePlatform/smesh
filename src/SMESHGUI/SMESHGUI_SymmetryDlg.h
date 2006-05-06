@@ -100,6 +100,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupArguments;
     QGroupBox* GroupMirror;
     QLabel* TextLabelElements;
@@ -125,6 +126,8 @@ private:
     SMESHGUI_SpinBox* SpinBox_DZ;
     
     QCheckBox* CheckBoxCopy;
+
+    QString myHelpFileName;
    
     private slots:
 
@@ -132,6 +135,7 @@ private:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;

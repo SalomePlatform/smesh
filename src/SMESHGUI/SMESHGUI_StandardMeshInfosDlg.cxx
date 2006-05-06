@@ -41,6 +41,9 @@
 #include "SUIT_Desktop.h"
 #include "SUIT_Session.h"
 #include "SUIT_OverrideCursor.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "LightApp_SelectionMgr.h"
 #include "SALOME_ListIO.hxx"
@@ -144,12 +147,15 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   myButtonsGroupLayout->setAlignment(Qt::AlignTop);
   myButtonsGroupLayout->setSpacing(6); myButtonsGroupLayout->setMargin(11);
 
-  // buttons --> OK button
+  // buttons --> OK and Help buttons
   myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup, "myOkBtn");
   myOkBtn->setAutoDefault(TRUE); myOkBtn->setDefault(TRUE);
-  myButtonsGroupLayout->addStretch();
+  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup, "myHelpBtn");
+  myHelpBtn->setAutoDefault(TRUE);
+
   myButtonsGroupLayout->addWidget(myOkBtn);
   myButtonsGroupLayout->addStretch();
+  myButtonsGroupLayout->addWidget(myHelpBtn);
 
   aDlgLayout->addWidget(myButtonsGroup, 2, 0);
 
@@ -157,6 +163,7 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
 
   // connect signals
   connect( myOkBtn,         SIGNAL(clicked()),                      this, SLOT(close()));
+  connect( myHelpBtn,       SIGNAL(clicked()),                      this, SLOT(onHelp()));
   connect( mySelectBtn,     SIGNAL(clicked()),                      this, SLOT(onStartSelection()));
   connect( mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
   connect( mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
@@ -170,6 +177,8 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   myMeshFilter = new SMESH_TypeFilter (MESH);
   mySelectionMgr->installFilter(myMeshFilter);
   onSelectionChanged();
+
+  myHelpFileName = "/files/viewing_mesh_info.htm#standard_infos";
 }
 
 //=================================================================================
@@ -440,4 +449,21 @@ void SMESHGUI_StandardMeshInfosDlg::onStartSelection()
   myMeshLine->setText(tr("Select a mesh"));
   onSelectionChanged();
   myStartSelection = true;
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_StandardMeshInfosDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }

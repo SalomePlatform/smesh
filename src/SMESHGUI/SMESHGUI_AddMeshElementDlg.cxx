@@ -39,6 +39,8 @@
 #include "SMESH_Actor.h"
 
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+#include "LightApp_Application.h"
 
 #include "SVTK_Selection.h"
 #include "SVTK_Selector.h"
@@ -119,7 +121,7 @@ namespace SMESH {
       myPreviewActor->VisibilityOff();
       myPreviewActor->SetMapper(myMapper);
 
-      float anRGB[3];
+      vtkFloatingPointType anRGB[3];
       vtkProperty* aProp = vtkProperty::New();
       GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
       aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
@@ -243,20 +245,34 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   }
 
   QString elemName;
-  if (myNbNodes == 2)
+  if (myNbNodes == 2) {
     elemName = "EDGE";
-  else if (myNbNodes == 3)
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_edges";
+  }
+  else if (myNbNodes == 3) {
     elemName = "TRIANGLE";
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_triangles";
+  }
   else if (myNbNodes == 4)
-    if (myElementType == SMDSAbs_Face)
+    if (myElementType == SMDSAbs_Face) {
       elemName = "QUADRANGLE";
-    else
+      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_quadrangles";
+    }
+    else {
       elemName = "TETRAS";
-  else if (myNbNodes == 8)
+      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_tetrahedrons";
+    }
+  else if (myNbNodes == 8) {
     elemName = "HEXAS";
-  else if (myElementType == SMDSAbs_Face){
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_hexahedrons";
+  }
+  else if (myElementType == SMDSAbs_Face) {
     elemName = "POLYGON";
     myIsPoly = true;
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polygons";
+  }
+  else if (myElementType == SMDSAbs_Volume) {
+    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons";
   }
   
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName));
@@ -326,6 +342,11 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
   GroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
+
   SMESHGUI_AddMeshElementDlgLayout->addWidget(GroupButtons, 2, 0);
 
   /***************************************************************/
@@ -400,6 +421,7 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(buttonOk, SIGNAL(clicked()),     SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),   SLOT(ClickOnHelp()));
 
   connect(SelectButtonC1A1, SIGNAL(clicked()), SLOT(SetEditCurrentArgument()));
   connect(LineEditC1A1, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
@@ -446,8 +468,14 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     switch (myElementType) {
     case SMDSAbs_Edge:
       aMeshEditor->AddEdge(anArrayOfIdeces.inout()); break;
-    case SMDSAbs_Face:
-      aMeshEditor->AddFace(anArrayOfIdeces.inout()); break;
+    case SMDSAbs_Face:{
+      if(myIsPoly)
+	aMeshEditor->AddPolygonalFace(anArrayOfIdeces.inout());
+      else
+	aMeshEditor->AddFace(anArrayOfIdeces.inout());
+      break;
+
+    }
     case SMDSAbs_Volume:
       aMeshEditor->AddVolume(anArrayOfIdeces.inout()); break;
     default:;
@@ -495,6 +523,23 @@ void SMESHGUI_AddMeshElementDlg::ClickOnCancel()
   mySMESHGUI->ResetState();
   reject();
   return;
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

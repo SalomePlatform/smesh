@@ -43,7 +43,7 @@
 
 #include "SMESH_Block.hxx"
 
-#include "StdMeshers_Helper.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
@@ -256,7 +256,7 @@ class StdMeshers_Penta_3D {
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
     bool myCreateQuadratic;
-    StdMeshers_Helper* myTool; // toll for working with quadratic elements
+    SMESH_MesherHelper* myTool; // toll for working with quadratic elements
 };
 
 #endif

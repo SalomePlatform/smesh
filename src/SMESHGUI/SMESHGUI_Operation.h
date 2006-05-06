@@ -47,10 +47,13 @@ protected:
   
   virtual bool      isValid( SUIT_Operation* ) const;
 
+  QString           myHelpFileName;
+
 protected slots:
   virtual void onOk();
   virtual bool onApply();
   virtual void onCancel();
+  void onHelp();
 };
 
 #endif

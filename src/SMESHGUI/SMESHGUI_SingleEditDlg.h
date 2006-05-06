@@ -64,6 +64,7 @@ protected slots:
   void                    onOk();
   virtual bool            onApply();
   void                    onClose();
+  void                    onHelp();
 
   void                    onDeactivate();
 
@@ -85,12 +86,15 @@ protected:
   QPushButton*            myOkBtn;
   QPushButton*            myApplyBtn;
   QPushButton*            myCloseBtn;
+  QPushButton*            myHelpBtn;
   QLineEdit*              myEdge;
   SMESH_Actor*            myActor;
 
   LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_Selector*          mySelector;
   SMESHGUI*               mySMESHGUI;
+  
+  QString                 myHelpFileName;
 };
 
 /*!

@@ -90,7 +90,7 @@ protected:
   virtual SUIT_SelectionFilter* createFilter( const int ) const;
 
   //! Remove only filters set by this operation (they are in map myFilters )
-  void removeCustomFilters() const;
+  void removeCustomFilters();
 
   //! Return what selection mode is set in VTK viewer
   Selection_Mode    selectionMode() const;

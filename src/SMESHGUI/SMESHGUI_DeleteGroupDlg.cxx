@@ -34,8 +34,11 @@
 #include "SMESH_TypeFilter.hxx"
 
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SalomeApp_Study.h"
+#include "LightApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 
 #include "SALOME_ListIO.hxx"
@@ -90,6 +93,8 @@ SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
 
+  myHelpFileName = "deleting_groups.htm";
+
   Init();
 }
 
@@ -122,6 +127,7 @@ QFrame* SMESHGUI_DeleteGroupDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn  = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -131,11 +137,13 @@ QFrame* SMESHGUI_DeleteGroupDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   // connect signals and slots
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
@@ -239,6 +247,23 @@ void SMESHGUI_DeleteGroupDlg::onClose()
   mySMESHGUI->ResetState();
   mySelectionMgr->clearFilters();
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_DeleteGroupDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

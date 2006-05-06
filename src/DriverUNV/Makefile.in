@@ -51,7 +51,7 @@ LIB_SRC = \
 	DriverUNV_W_SMESHDS_Document.cxx \
 	DriverUNV_W_SMDS_Mesh.cxx \
 	DriverUNV_W_SMESHDS_Mesh.cxx \
-	UNV_Utilities.cxx UNV2411_Structure.cxx UNV2412_Structure.cxx
+	UNV_Utilities.cxx UNV2411_Structure.cxx UNV2412_Structure.cxx UNV2417_Structure.cxx
 
 # Executables targets
 BIN = UNV_Test

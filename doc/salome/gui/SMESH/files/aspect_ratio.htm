@@ -15,21 +15,25 @@ if (navigator.appName !="Netscape")
 <style type="text/css">
 <!--
 img_whs1 { border:none; width:30px; height:30px; float:none; border-style:none; }
-ul.whs2 { list-style:disc; }
-p.whs3 { margin-left:80px; }
-img_whs4 { border:none; width:238px; height:205px; border-style:none; }
-p.whs5 { margin-left:0px; }
-img_whs6 { border:none; width:226px; height:70px; border-style:none; }
-p.whs7 { margin-left:40px; }
-img_whs8 { border:none; width:25px; height:24px; border-style:none; }
-img_whs9 { border:none; width:439px; height:313px; border-style:none; }
+p.whs2 { margin-left:40px; }
+img_whs3 { border:none; width:120px; height:56px; border-style:none; }
+ul.whs4 { list-style:disc; }
+img_whs5 { border:none; width:158px; height:110px; float:none; border-style:none; }
+img_whs6 { border:none; width:120px; height:48px; float:none; border-style:none; }
+img_whs7 { border:none; width:234px; height:96px; float:none; border-style:none; }
+p.whs8 { margin-left:0px; }
+p.whs9 { margin-left:36px; }
+img_whs10 { border:none; width:622px; height:412px; float:none; border-style:none; }
+p.whs11 { margin-left:80px; }
+img_whs12 { border:none; width:25px; height:24px; border-style:none; }
+img_whs13 { border:none; width:439px; height:313px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs5 {margin-left:1pt; }";
+  strNSS += "p.whs8 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -92,63 +96,102 @@ else
 <h1>Aspect Ratio</h1>
 
 <p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> The <span style="font-weight: bold;"><B>Aspect Ratio</B></span> 
- quality criterion for mesh elements is defined as follows:</p>
+ quality criterion for mesh elements reveals the degree of conformity of 
+ a mesh element to the regular element of its type (with all edges having 
+ the same length). &nbsp;The 
+ criterion can be defined as </p>
 
-<p>&nbsp;</p>
+<p class="whs2"><img src="../image142.gif" width="120px" height="56px" border="0" class="img_whs3">where <span style="font-weight: bold; font-style: italic;"><I><B>&#1050;</B></I></span> 
+ is the considered element of the mesh, <span style="font-weight: bold; font-style: italic;"><I><B>h</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>max</B></I></span> is the diameter of the element 
+ &#1050; (i.e. the length of the longest edge), <span style="font-weight: bold; font-style: italic;"><I><B>&#1088;</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>&#1082;</B></I></span> is the radius of the sphere 
+ inscribed in the element K, and <span style="font-weight: bold; font-style: italic;"><I><B>a</B></I></span> 
+ is a normalisation value chosen so that <span style="font-weight: bold; font-style: italic;"><I><B>Q</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>K</B></I></span> = 1 when &#1050; is an equilateral 
+ simplex. </p>
 
-<ul type="disc" class="whs2">
+<p class="whs2">&nbsp;</p>
+
+<p>The value of <span style="font-weight: bold; font-style: italic;"><I><B>Q</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>K</B></I></span> varies between 1 and +oo and the 
+ closer it is to 1, the better the element &#1050; is. </p>
+
+<ul type="disc" class="whs4">
 	
-	<li class=kadov-p><p>For a <span style="font-weight: bold;"><B>triangle</B></span> 
- 2D element consisting of 3 nodes the <span style="font-weight: bold;"><B>Aspect 
- Ratio</B></span> is calculated by formula:
-<p>&nbsp;</p>
-
-<p><img src="../image21.gif" width="158px" height="110px" border="0" class="img_whs3"></p>
-
-<p><img src="../image23.gif" width="120px" height="48px" border="0" class="img_whs4"></p>
-
-<p>where :</p>
-
-<p>&nbsp;</p>
-
-<p><img src="../image27.gif" width="234px" height="96px" border="0" class="img_whs5"></p>
-
-<p>&nbsp;</p>
-
-<p>&nbsp;</p>
-</li>
-
-	<li class=kadov-p><p class="whs5">For a <span style="font-weight: bold;"><B>quadrangle</B></span> 
- 2D element consisting of 4 nodes &nbsp;the 
- <span style="font-weight: bold;"><B>Aspect Ratio </B></span>is the
- quality of the worst triange which can be built taking three nodes of
- the quadrangle. There are four triangles to consider:</p></li>
-
-<p><img src="../image138.gif" width="566px" border="0" class="img_whs6"></p>
-
+	<li class=kadov-p><p>The <span style="font-weight: bold;"><B>Aspect Ratio</B></span> 
+ of a <span style="font-weight: bold;"><B>triangle</B></span> 2D element consisting 
+ of 3 nodes is calculated by the formula:</p></li>
 </ul>
 
+<p>&nbsp;</p>
+
+<p class="whs2"><img src="../pics/image21.gif" x-maintain-ratio="TRUE" width="158px" height="110px" border="0" class="img_whs5"></p>
+
+<p class="whs2"><img src="../pics/image23.gif" x-maintain-ratio="TRUE" width="120px" height="48px" border="0" class="img_whs6"> ,</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">where <span style="font-weight: bold; font-style: italic;"><I><B>&#1088;</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>&#1082;</B></I></span> is the half perimeter of the 
+ element K and <span style="font-weight: bold; font-style: italic;"><I><B>S</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>K</B></I></span> is its surface.</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2"><img src="../pics/image27.gif" x-maintain-ratio="TRUE" width="234px" height="96px" border="0" class="img_whs7"></p>
+
+<p class="whs8">&nbsp;</p>
+
+<ul type="disc" class="whs4">
+	
+	<li class=kadov-p><p class="whs8">The <span style="font-weight: bold;"><B>Aspect 
+ Ratio</B></span> of a <span style="font-weight: bold;"><B>quadrangle</B></span> 2D 
+ element consisting of 4 nodes is the worst (i.e. the greatest) value from 
+ all triangles which can be built taking three nodes of the quadrangle. 
+ There are four triangles to consider: </p></li>
+</ul>
+
+<p class="whs9"><img src="../pics/image138.gif" x-maintain-ratio="TRUE" width="622px" height="412px" border="0" class="img_whs10"></p>
+
+<p class="whs9">Note, that the Aspect Ratio criterion is 
+ applicable to 2D mesh elements only. For 3D elements we use the <a href="../aspect_ratio_3d.htm">Aspect 
+ Ratio 3D</a> criterion. &nbsp;&nbsp;</p>
+
+<p class="whs11">&nbsp;</p>
 
 <p class=TODO>To apply the Aspect Ratio quality criterion to your mesh:</p>
 
 <p class=TODO>&nbsp;</p>
 
-<p class="whs7">1. Display your mesh in the viewer.</p>
+<p class="whs2">1. Display your mesh in the viewer.</p>
 
-<p class="whs7">&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p class="whs7">2. Choose <span style="font-weight: bold;"><B>Controls 
- &gt; Aspect Ratio </B></span>or click <img src="../image37.gif" width="25px" height="24px" border="0" class="img_whs8"> button in the toolbar. 
+<p class="whs2">2. Choose <span style="font-weight: bold;"><B>Controls 
+ &gt; Aspect Ratio </B></span>or click <img src="../image37.gif" width="25px" height="24px" border="0" class="img_whs12"> button in the toolbar. 
  Your mesh will be displayed in the viewer with its elements colored according 
  to the applied mesh quality control criterion:</p>
 
-<p class="whs7">&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p class="whs7"><img src="../image94.jpg" width="439px" height="313px" border="0" class="img_whs9"></p>
+<p class="whs2"><img src="../image94.jpg" width="439px" height="313px" border="0" class="img_whs13"></p>
 
-<p class="whs7">&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p class="whs5"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs8"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of an <a href="../quality_controls.htm#bookmark8">Aspect 
  Ratio quality control</a> operation. &nbsp;</p>
 

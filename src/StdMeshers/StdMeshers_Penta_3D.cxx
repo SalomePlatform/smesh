@@ -108,7 +108,7 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
     return bOK;
   }
 
-  myTool = new StdMeshers_Helper(aMesh);
+  myTool = new SMESH_MesherHelper(aMesh);
   myCreateQuadratic = myTool->IsQuadraticSubMesh(aShape);
 
   //
@@ -1425,12 +1425,12 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
   // try to load the rest nodes
 
   // get all faces from theFace
-  set<const SMDS_MeshElement*> allFaces, foundFaces;
+  map<int,const SMDS_MeshElement*> allFaces, foundFaces;
   SMDS_ElemIteratorPtr eIt = smFace->GetElements();
   while ( eIt->more() ) {
     const SMDS_MeshElement* e = eIt->next();
     if ( e->GetType() == SMDSAbs_Face )
-      allFaces.insert( e );
+      allFaces.insert( make_pair(e->GetID(),e) );
   }
   // Starting from 2 neighbour nodes on theBaseEdge, look for a face
   // the nodes belong to, and between the nodes of the found face,
@@ -1477,7 +1477,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
             return false;
           }
           par_nVec_2->second[ row ] = node;
-          foundFaces.insert( face );
+          foundFaces.insert( make_pair(face->GetID(),face) );
           n2 = node;
           if ( nbFaceNodes==4 || (myCreateQuadratic && nbFaceNodes==8) ) {
             n1 = par_nVec_1->second[ row ];

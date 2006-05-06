@@ -46,6 +46,9 @@
 #include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "DriverMED_R_SMESHDS_Mesh.h"
+//#include "SMDS_ElemIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 // OCCT Includes
 #include <OSD_Path.hxx>
@@ -72,6 +75,8 @@ using namespace std;
 using SMESH::TPythonDump;
 
 int SMESH_Mesh_i::myIdGenerator = 0;
+
+
 
 //=============================================================================
 /*!
@@ -235,6 +240,18 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
   // Read mesh with name = <theMeshName> into SMESH_Mesh
   _impl->UNVToMesh( theFileName );
 
+  CreateGroupServants();
+
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
+  if ( !aStudy->_is_nil() ) {
+    // publishing of the groups in the study (sub-meshes are out of scope of UNV import)
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+    for (; it != _mapGroups.end(); it++ ) {
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
+      _gen_i->PublishGroup( aStudy, _this(), aGroup,
+                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
+    }
+  }
   return 1;
 }
 
@@ -266,24 +283,7 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
 {
   // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
   int status = _impl->MEDToMesh( theFileName, theMeshName );
-
-  // Create group servants, if any groups were imported
-  list<int> aGroupIds = _impl->GetGroupIds();
-  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
-    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
-
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
-    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
-    aGroupImpl->Register();
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
-
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
-    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
-
-    // register CORBA object for persistence
-    int nextId = _gen_i->RegisterObject( aGroup );
-    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
-  }
+  CreateGroupServants();
 
   return status;
 }
@@ -726,6 +726,47 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   // Clear python lines, created by RemoveNodes/Elements() and RemoveGroup()
   _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
   _gen_i->RemoveLastFromPythonScript(_gen_i->GetCurrentStudy()->StudyId());
+}
+
+
+//================================================================================
+/*!
+ * \brief Get the list of groups existing in the mesh
+  * \retval SMESH::ListOfGroups * - list of groups
+ */
+//================================================================================
+
+SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if (MYDEBUG) MESSAGE("GetGroups");
+
+  SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+  // Python Dump
+  TPythonDump aPythonDump;
+  aPythonDump << "[ ";
+
+  try {
+    aList->length( _mapGroups.size() );
+    int i = 0;
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
+    for ( ; it != _mapGroups.end(); it++ ) {
+      if ( CORBA::is_nil( it->second )) continue;
+      aList[i++] = SMESH::SMESH_GroupBase::_duplicate( it->second );
+      // Python Dump
+      if (i > 1) aPythonDump << ", ";
+      aPythonDump << it->second;
+    }
+    aList->length( i );
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+
+  // Update Python script
+  aPythonDump << " ] = " << _this() << ".GetGroups()";
+
+  return aList._retn();
 }
 
 //=============================================================================
@@ -1352,6 +1393,13 @@ CORBA::Long SMESH_Mesh_i::NbEdges()throw(SALOME::SALOME_Exception)
   return _impl->NbEdges();
 }
 
+CORBA::Long SMESH_Mesh_i::NbEdgesOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbEdges( (::SMESH_Mesh::ElementOrder) order);
+}
+
 //=============================================================================
 /*!
  *
@@ -1379,6 +1427,27 @@ CORBA::Long SMESH_Mesh_i::NbPolygons()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   return _impl->NbPolygons();
+}
+
+CORBA::Long SMESH_Mesh_i::NbFacesOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbFaces( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbTrianglesOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbTriangles( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbQuadranglesOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbQuadrangles( (::SMESH_Mesh::ElementOrder) order);
 }
 
 //=============================================================================
@@ -1420,6 +1489,41 @@ CORBA::Long SMESH_Mesh_i::NbPolyhedrons()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   return _impl->NbPolyhedrons();
+}
+
+CORBA::Long SMESH_Mesh_i::NbVolumesOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbVolumes( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbTetrasOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbTetras( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbHexasOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbHexas( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbPyramidsOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbPyramids( (::SMESH_Mesh::ElementOrder) order);
+}
+
+CORBA::Long SMESH_Mesh_i::NbPrismsOfOrder(SMESH::ElementOrder order)
+  throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->NbPrisms( (::SMESH_Mesh::ElementOrder) order);
 }
 
 //=============================================================================
@@ -1571,6 +1675,106 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
   return ( SMESH::ElementType )_impl->GetElementType( id, iselem );
 }
 
+
+//=============================================================================
+/*!
+ * Returns ID of elements for given submesh
+ */
+//=============================================================================
+SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
+     throw (SALOME::SALOME_Exception)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+
+  SMESH_subMesh* SM = _impl->GetSubMeshContaining(ShapeID);
+  if(!SM) return aResult._retn();
+
+  SMESHDS_SubMesh* SDSM = SM->GetSubMeshDS();
+  if(!SDSM) return aResult._retn();
+
+  aResult->length(SDSM->NbElements());
+
+  SMDS_ElemIteratorPtr eIt = SDSM->GetElements();
+  int i = 0;
+  while ( eIt->more() ) {
+    aResult[i++] = eIt->next()->GetID();
+  }
+
+  return aResult._retn();
+}
+
+
+//=============================================================================
+/*!
+ * Returns ID of nodes for given submesh
+ * If param all==true - returns all nodes, else -
+ * returns only nodes on shapes.
+ */
+//=============================================================================
+SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID, CORBA::Boolean all)
+     throw (SALOME::SALOME_Exception)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+
+  SMESH_subMesh* SM = _impl->GetSubMeshContaining(ShapeID);
+  if(!SM) return aResult._retn();
+
+  SMESHDS_SubMesh* SDSM = SM->GetSubMeshDS();
+  if(!SDSM) return aResult._retn();
+
+  map<int,const SMDS_MeshElement*> theElems;
+  if( !all || (SDSM->NbElements()==0 && SDSM->NbNodes()==1) ) {
+    SMDS_NodeIteratorPtr nIt = SDSM->GetNodes();
+    while ( nIt->more() ) {
+      const SMDS_MeshNode* elem = nIt->next();
+      theElems.insert( make_pair(elem->GetID(),elem) );
+    }
+  }
+  else { // all nodes of submesh elements
+    SMDS_ElemIteratorPtr eIt = SDSM->GetElements();
+    while ( eIt->more() ) {
+      const SMDS_MeshElement* anElem = eIt->next();
+      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+      while ( nIt->more() ) {
+        const SMDS_MeshElement* elem = nIt->next();
+        theElems.insert( make_pair(elem->GetID(),elem) );
+      }
+    }
+  }
+
+  aResult->length(theElems.size());
+  map<int, const SMDS_MeshElement * >::iterator itElem;
+  int i = 0;
+  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
+    aResult[i++] = (*itElem).first;
+
+  return aResult._retn();
+}
+  
+
+//=============================================================================
+/*!
+ * Returns type of elements for given submesh
+ */
+//=============================================================================
+SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID)
+     throw (SALOME::SALOME_Exception)
+{
+  SMESH_subMesh* SM = _impl->GetSubMeshContaining(ShapeID);
+  if(!SM) return SMESH::ALL;
+
+  SMESHDS_SubMesh* SDSM = SM->GetSubMeshDS();
+  if(!SDSM) return SMESH::ALL;
+
+  if(SDSM->NbElements()==0)
+    return (SM->GetSubShape().ShapeType() == TopAbs_VERTEX) ? SMESH::NODE : SMESH::ALL;
+
+  SMDS_ElemIteratorPtr eIt = SDSM->GetElements();
+  const SMDS_MeshElement* anElem = eIt->next();
+  return ( SMESH::ElementType ) anElem->GetType();
+}
+  
+
 //=============================================================================
 /*!
  *
@@ -1579,5 +1783,340 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
 
 CORBA::Long SMESH_Mesh_i::GetMeshPtr()
 {
-  return (CORBA::Long)_impl;
+  return CORBA::Long(size_t(_impl));
 }
+
+
+//=============================================================================
+/*!
+ * Get XYZ coordinates of node as list of double
+ * If there is not node for given ID - returns empty list
+ */
+//=============================================================================
+
+SMESH::double_array* SMESH_Mesh_i::GetNodeXYZ(const CORBA::Long id)
+{
+  SMESH::double_array_var aResult = new SMESH::double_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  // find node
+  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  if(!aNode)
+    return aResult._retn();
+
+  // add coordinates
+  aResult->length(3);
+  aResult[0] = aNode->X();
+  aResult[1] = aNode->Y();
+  aResult[2] = aNode->Z();
+  return aResult._retn();
+}
+
+
+//=============================================================================
+/*!
+ * For given node returns list of IDs of inverse elements
+ * If there is not node for given ID - returns empty list
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  // find node
+  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  if(!aNode)
+    return aResult._retn();
+
+  // find inverse elements
+  SMDS_ElemIteratorPtr eIt = aNode->GetInverseElementIterator();
+  TColStd_SequenceOfInteger IDs;
+  while(eIt->more()) {
+    const SMDS_MeshElement* elem = eIt->next();
+    IDs.Append(elem->GetID());
+  }
+  if(IDs.Length()>0) {
+    aResult->length(IDs.Length());
+    int i = 1;
+    for(; i<=IDs.Length(); i++) {
+      aResult[i-1] = IDs.Value(i);
+    }
+  }
+  return aResult._retn();
+}
+
+
+//=============================================================================
+/*!
+ * If given element is node returns IDs of shape from position
+ * else - return ID of result shape after ::FindShape()
+ * from SMESH_MeshEditor
+ * If there is not element for given ID - returns -1
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL )
+    return -1;
+
+  // try to find node
+  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  if(aNode) {
+    SMDS_PositionPtr pos = aNode->GetPosition();
+    if(!pos)
+      return -1;
+    else
+      return pos->GetShapeId();
+  }
+
+  // try to find element
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem)
+    return -1;
+
+  // need implementation???????????????????????????????????????????????
+  return -1;
+}
+
+
+//=============================================================================
+/*!
+ * Returns number of nodes for given element
+ * If there is not element for given ID - returns -1
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::GetElemNbNodes(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return -1;
+  // try to find element
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return -1;
+  return elem->NbNodes();
+}
+
+
+//=============================================================================
+/*!
+ * Returns ID of node by given index for given element
+ * If there is not element for given ID - returns -1
+ * If there is not node for given index - returns -2
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::GetElemNode(const CORBA::Long id, const CORBA::Long index)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return -1;
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return -1;
+  if( index>=elem->NbNodes() || index<0 ) return -1;
+  return elem->GetNode(index)->GetID();
+}
+
+
+//=============================================================================
+/*!
+ * Returns true if given node is medium node
+ * in given quadratic element
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Mesh_i::IsMediumNode(const CORBA::Long ide, const CORBA::Long idn)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return false;
+  // try to find node
+  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(idn);
+  if(!aNode) return false;
+  // try to find element
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(ide);
+  if(!elem) return false;
+
+  return elem->IsMediumNode(aNode);
+}
+
+
+//=============================================================================
+/*!
+ * Returns true if given node is medium node
+ * in one of quadratic elements
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Mesh_i::IsMediumNodeOfAnyElem(const CORBA::Long idn,
+                                                   SMESH::ElementType theElemType)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return false;
+
+  // try to find node
+  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(idn);
+  if(!aNode) return false;
+
+  SMESH_MesherHelper aHelper( *(_impl) );
+
+  SMDSAbs_ElementType aType;
+  if(theElemType==SMESH::EDGE) aType = SMDSAbs_Edge;
+  else if(theElemType==SMESH::FACE) aType = SMDSAbs_Face;
+  else if(theElemType==SMESH::VOLUME) aType = SMDSAbs_Volume;
+  else aType = SMDSAbs_All;
+
+  return aHelper.IsMedium(aNode,aType);
+}
+
+
+//=============================================================================
+/*!
+ * Returns number of edges for given element
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::ElemNbEdges(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return -1;
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return -1;
+  return elem->NbEdges();
+}
+
+
+//=============================================================================
+/*!
+ * Returns number of faces for given element
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::ElemNbFaces(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return -1;
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return -1;
+  return elem->NbFaces();
+}
+
+
+//=============================================================================
+/*!
+ * Returns true if given element is polygon
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Mesh_i::IsPoly(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return false;
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return false;
+  return elem->IsPoly();
+}
+
+
+//=============================================================================
+/*!
+ * Returns true if given element is quadratic
+ */
+//=============================================================================
+
+CORBA::Boolean SMESH_Mesh_i::IsQuadratic(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL ) return false;
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem) return false;
+  return elem->IsQuadratic();
+}
+
+
+//=============================================================================
+/*!
+ * Returns bary center for given element
+ */
+//=============================================================================
+
+SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
+{
+  SMESH::double_array_var aResult = new SMESH::double_array();
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL )
+    return aResult._retn();
+
+  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  if(!elem)
+    return aResult._retn();
+
+  if(elem->GetType()==SMDSAbs_Volume) {
+    // use SMDS_VolumeTool
+    SMDS_VolumeTool aTool;
+    if(aTool.Set(elem)) {
+      double x=0., y=0., z=0.;
+      if(aTool.GetBaryCenter(x,y,z)) {
+        // add coordinates
+        aResult->length(3);
+        aResult[0] = x;
+        aResult[1] = y;
+        aResult[2] = z;
+      }
+    }
+  }
+  else {
+    SMDS_ElemIteratorPtr anIt = elem->nodesIterator();
+    int nbn = 0;
+    double x=0., y=0., z=0.;
+    for(; anIt->more(); ) {
+      nbn++;
+      const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(anIt->next());
+      x += aNode->X();
+      y += aNode->Y();
+      z += aNode->Z();
+    }
+    if(nbn>0) {
+      // add coordinates
+      aResult->length(3);
+      aResult[0] = x/nbn;
+      aResult[1] = y/nbn;
+      aResult[2] = z/nbn;
+    }
+  }
+
+  return aResult._retn();
+}
+
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESH_Mesh_i::CreateGroupServants() 
+{
+  // Create group servants, if any groups were imported
+  list<int> aGroupIds = _impl->GetGroupIds();
+  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
+    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
+
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+    SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
+    aGroupImpl->Register();
+    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+
+    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
+    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
+
+    // register CORBA object for persistence
+    int nextId = _gen_i->RegisterObject( aGroup );
+    if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+  }
+}
+

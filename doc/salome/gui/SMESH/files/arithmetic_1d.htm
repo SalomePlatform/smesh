@@ -14,28 +14,36 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-img_whs1 { border:none; width:332px; height:238px; float:none; border-style:none; }
-img_whs2 { border:none; width:309px; height:316px; float:none; }
-p.whs3 { margin-left:0px; }
-img_whs4 { border:none; width:332px; height:212px; float:none; border-style:none; }
-img_whs5 { border:none; width:267px; height:339px; float:none; }
-p.whs6 { font-weight:bold; }
-img_whs7 { border:none; width:367px; height:224px; border-style:none; float:right; }
-img_whs8 { border:none; width:252px; height:243px; float:none; }
-p.whs9 { font-weight:bold; margin-left:40px; }
-img_whs10 { border:none; width:431px; height:233px; border-style:none; float:right; }
-img_whs11 { border:none; width:395px; height:387px; float:none; }
-img_whs12 { border:none; width:332px; height:264px; float:none; border-style:none; }
-img_whs13 { border:none; width:333px; height:386px; float:none; border-style:none; }
-img_whs14 { border:none; width:333px; height:285px; float:none; border-style:none; }
-img_whs15 { border:none; width:287px; height:305px; float:none; }
+ul.whs1 { list-style:disc; }
+p.whs2 { background-color:Transparent; color:#000000; font-weight:bold; }
+p.whs3 { margin-left:40px; }
+img_whs4 { border:none; width:332px; height:238px; float:none; border-style:none; }
+img_whs5 { border:none; width:309px; height:316px; float:none; border-style:none; }
+p.whs6 { margin-left:0px; }
+img_whs7 { border:none; width:332px; height:212px; float:none; border-style:none; }
+img_whs8 { border:none; width:267px; height:339px; float:none; border-style:none; }
+p.whs9 { font-weight:bold; }
+img_whs10 { border:none; width:367px; height:224px; border-style:none; float:right; }
+img_whs11 { border:none; width:252px; height:243px; float:none; border-style:none; }
+p.whs12 { font-weight:bold; margin-left:40px; }
+img_whs13 { border:none; width:431px; height:233px; border-style:none; float:right; }
+img_whs14 { border:none; width:395px; height:387px; float:none; border-style:none; }
+img_whs15 { border:none; width:332px; height:264px; float:none; border-style:none; }
+img_whs16 { border:none; width:368px; height:760px; float:none; border-style:none; }
+h3.whs17 { margin-left:40px; }
+img_whs18 { border:none; width:365px; height:605px; float:none; border-style:none; }
+img_whs19 { border:none; width:287px; height:305px; float:none; border-style:none; }
+img_whs20 { border:none; width:205px; height:175px; float:none; border-style:none; }
+img_whs21 { border:none; width:195px; height:192px; border-style:none; }
+img_whs22 { border:none; width:206px; height:195px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs3 {margin-left:1pt; }";
+  strNSS += "p.whs2 {background-color:white; }";
+  strNSS += "p.whs6 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -97,7 +105,34 @@ else
 </script>
 <h1>1D Meshing Hypotheses</h1>
 
-<h3>Arithmetic 1D hypothesis</h3>
+<ul type="disc" class="whs1">
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#arithmetic_1D"><span 
+ style="font-weight: bold;"><B>Arithmetic 1D</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#Average_length"><span 
+ style="font-weight: bold;"><B>Average Length</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#deflection_1D"><span 
+ style="font-weight: bold;"><B>Deflection 1D </B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#Number_of_elements"><span 
+ style="font-weight: bold;"><B>Number of segments</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#start_and_end_length"><span 
+ style="font-weight: bold;"><B>Start and end length</B></span></a></p></li>
+	
+	<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+		class=kadov-p><p class="whs2"><a href="arithmetic_1d.htm#automatic_length"><span 
+ style="font-weight: bold;"><B>Automatic Length</B></span></a></p></li>
+</ul>
+
+<h3><a name=arithmetic_1D>Arithmetic 1D hypothesis</a></h3>
 
 <p><span style="font-weight: bold;"><B>Arithmetic 1D</B></span> hypothesis allows 
  to split edges into segments with a length that changes in arithmetic 
@@ -106,15 +141,15 @@ else
 
 <p>&nbsp;</p>
 
-<p><img src="../pics/a-arithmetic1d.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs1"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-ithmetic1d.png" x-maintain-ratio="TRUE" width="309px" height="316px" border="0" class="img_whs2"></p>
+<p class="whs3"><img src="../pics/a-arithmetic1d.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-ithmetic1d.png" x-maintain-ratio="TRUE" width="309px" height="316px" border="0" class="img_whs5"></p>
 
 <p>&nbsp;</p>
 
-<p class="whs3"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark">Defining 
  Arithmetic 1D hypothesis</a> operation. &nbsp;</p>
 
-<h3><span style="font-weight: bold;"><B>Deflection</B></span> 1D hypothesis</h3>
+<h3><a name=deflection_1D>Deflection 1D hypothesis</a></h3>
 
 <p><span style="font-weight: bold;"><B>Deflection ID </B></span>hypothesis can 
  be applied for meshing curvilinear edges composing your geometrical object. 
@@ -128,19 +163,19 @@ else
 
 <p>&nbsp;</p>
 
-<p><img src="../pics/a-deflection1d.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-flection1d.png" x-maintain-ratio="TRUE" width="267px" height="339px" border="0" class="img_whs5"></p>
+<p class="whs3"><img src="../pics/a-deflection1d.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs7"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-flection1d.png" x-maintain-ratio="TRUE" width="267px" height="339px" border="0" class="img_whs8"></p>
 
 <p>&nbsp;</p>
 
-<p class="whs3"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark9">Defining 
  Deflection 1D hypothesis</a> operation. &nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p class="whs6"><img src="../image41.gif" x-maintain-ratio="TRUE" width="367px" height="224px" align="right" border="0" class="img_whs7"></p>
+<p class="whs9"><img src="../image41.gif" x-maintain-ratio="TRUE" width="367px" height="224px" align="right" border="0" class="img_whs10"></p>
 
-<h3>Average Length hypothesis</h3>
+<h3><a name=Average_length>Average Length hypothesis</a></h3>
 
 <p><span style="font-weight: bold;"><B>Average Length </B></span>hypothesis can 
  be applied for meshing of edges composing your geometrical object. Definition 
@@ -151,19 +186,19 @@ else
 
 <p>&nbsp;</p>
 
-<p><img src="../pics/a-averagelength.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-erage_length.png" x-maintain-ratio="TRUE" width="252px" height="243px" border="0" class="img_whs8"></p>
+<p class="whs3"><img src="../pics/a-averagelength.png" x-maintain-ratio="TRUE" width="332px" height="212px" border="0" class="img_whs7"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-erage_length.png" x-maintain-ratio="TRUE" width="252px" height="243px" border="0" class="img_whs11"></p>
 
 <p>&nbsp;</p>
 
-<p class="whs3"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark3">Defining 
  Average Length hypothesis</a> operation. &nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p class="whs9"><img src="../image46.gif" x-maintain-ratio="TRUE" width="431px" height="233px" align="right" border="0" class="img_whs10"></p>
+<p class="whs12"><img src="../image46.gif" x-maintain-ratio="TRUE" width="431px" height="233px" align="right" border="0" class="img_whs13"></p>
 
-<h3>Number of segments hypothesis </h3>
+<h3><a name=Number_of_elements>Number of segments hypothesis</a> </h3>
 
 <p><span style="font-weight: bold;"><B>Number of segments </B></span>hypothesis 
  can be applied for meshing of edges composing your geometrical object. 
@@ -176,53 +211,60 @@ else
 
 <p>&nbsp;</p>
 
-<p class="whs3">You can set the type of distribution for this 
+<p class="whs6">You can set the type of distribution for this 
  hypothesis in the <span style="font-weight: bold;"><B>Hypothesis Construction</B></span> 
  dialog bog : </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs3"><span style="font-weight: bold;"><B>Equidistant 
- Distribution</B></span> - all segments will have the same length</p>
+<p class="whs6"><span style="font-weight: bold;"><B>Equidistant 
+ Distribution</B></span> - all segments will have the same length, you define 
+ only the <span style="font-weight: bold;"><B>Number of Segments</B></span>.</p>
 
-<p><img src="../pics/a-nbsegments1.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs1"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-mberofsegments.png" x-maintain-ratio="TRUE" width="395px" height="387px" border="0" class="img_whs11"></p>
+<p class="whs6">&nbsp;</p>
+
+<p class="whs3"><img src="../pics/a-nbsegments1.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-mberofsegments.png" x-maintain-ratio="TRUE" width="395px" height="387px" border="0" class="img_whs14"></p>
 
 <p>&nbsp;</p>
 
-<p class="whs6">Scale Distribution - <span style="font-weight: normal;">each 
+<p class="whs9">Scale Distribution - <span style="font-weight: normal;">each 
  next segment differs from the previous according to the formula:</span> 
  A<span style="vertical-align: Sub;">i+1</span> = A<span style="vertical-align: Sub;">i 
- </span>* k, <span style="font-weight: normal;">where</span> k <span style="font-weight: normal;">is</span> 
- Scale Factor </p>
+ </span>* k, <span style="font-weight: normal;">where</span> k <span style="font-weight: normal;">is 
+ a</span> Scale Factor. </p>
 
-<p class="whs6"><img src="../pics/a-nbsegments2.png" x-maintain-ratio="TRUE" width="332px" height="264px" border="0" class="img_whs12">\</p>
+<p class="whs12"><img src="../pics/a-nbsegments2.png" x-maintain-ratio="TRUE" width="332px" height="264px" border="0" class="img_whs15">\</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
-<p class="whs6">Distribution with Table Density - <span style="font-weight: normal;">you 
- input a number of pairs</span> t - F(t) <span style="font-weight: normal;">and 
- the program computes the formula, which will rule the change of length 
- of segments.</span></p>
+<p class="whs9">Distribution with Table Density - <span style="font-weight: normal;">you 
+ input a number of pairs</span> t - F(t),<span style="font-weight: normal;"> 
+ where </span>t<span style="font-weight: normal;"> ranges from 0 to 1,</span> 
+ &nbsp;<span style="font-weight: normal;">and 
+ the module computes the formula, which will rule the change of length 
+ of segments and shows the curve in the plot. You can select the </span>Conversion 
+ mode<span style="font-weight: normal;"> from </span>Exponent<span style="font-weight: normal;"> 
+ and </span>Cut negative<span style="font-weight: normal;">. </span></p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
-<p class="whs6"><img src="../pics/a-nbsegments3.png" x-maintain-ratio="TRUE" width="333px" height="386px" border="0" class="img_whs13"></p>
+<p class="whs12"><img src="../pics/distributionwithtabledensity.png" x-maintain-ratio="TRUE" width="368px" height="760px" border="0" class="img_whs16"></p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
-<p class="whs6">Distribution with Analytic Density - <span 
+<p class="whs9">Distribution with Analytic Density - <span 
  style="font-weight: normal;">you input the formula, which will rule the 
- change of length of segments</span></p>
+ change of length of segments and the module shows the curve in the plot.</span></p>
 
-<h3><img src="../pics/a-nbsegments4.png" x-maintain-ratio="TRUE" width="333px" height="285px" border="0" class="img_whs14"></h3>
+<h3 class="whs17"><img src="../pics/distributionwithanalyticdensity.png" x-maintain-ratio="TRUE" width="365px" height="605px" border="0" class="img_whs18"></h3>
 
-<p class="whs3"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark9">Defining 
  Number of Segments hypothesis</a> operation. &nbsp;</p>
 
 <h3>&nbsp;</h3>
 
-<h3>Start and End Length hypothesis.</h3>
+<h3><a name=start_and_end_length>Start and End Length hypothesis.</a></h3>
 
 <p><span style="font-weight: bold;"><B>Start and End Length</B></span> hypothesis 
  allows to divide a geometrical edge into segments so that the first and 
@@ -233,14 +275,43 @@ else
 
 <p>&nbsp;</p>
 
-<p><img src="../pics/a-startendlength.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs1"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-art_end_length.png" x-maintain-ratio="TRUE" width="287px" height="305px" border="0" class="img_whs15"></p>
+<p class="whs3"><img src="../pics/a-startendlength.png" x-maintain-ratio="TRUE" width="332px" height="238px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/b-art_end_length.png" x-maintain-ratio="TRUE" width="287px" height="305px" border="0" class="img_whs19"></p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs3"><span style="font-weight: bold;"><B>See Also</B></span> 
+<p class="whs6"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark3">Defining 
  Start and End Length &nbsp;hypothesis</a> 
  operation. &nbsp;</p>
+
+<p class="whs6">&nbsp;</p>
+
+<h3><a name=automatic_length>Automatic Length</a></h3>
+
+<p>This hypothesis is automatically applied when you select <span style="font-weight: bold;"><B>Assign 
+ a set of hypotheses</B></span> option in Create Mesh menu. </p>
+
+<p>&nbsp;</p>
+
+<p class="whs3"><img src="../pics/automaticlength.png" x-maintain-ratio="TRUE" width="205px" height="175px" border="0" class="img_whs20"> </p>
+
+<p>&nbsp;</p>
+
+<p>The dialog box prompts you to define the quality of the future mesh 
+ by only one parameter, which is <span style="font-weight: bold;"><B>Fineness</B></span>, 
+ ranging from 0 (coarse mesh, low number of elements) to 1 (extremely fine 
+ mesh, great number of elements). Compare one and the same object (sphere) 
+ meshed with minimum and maximum value of this parameter. </p>
+
+<p>&nbsp;</p>
+
+<p class="whs3"><img src="../image147.gif" width="195px" height="192px" border="0" class="img_whs21"> &nbsp;&nbsp;&nbsp;<img src="../image148.gif" width="206px" height="195px" border="0" class="img_whs22"></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
 
 <p>&nbsp;</p>
 

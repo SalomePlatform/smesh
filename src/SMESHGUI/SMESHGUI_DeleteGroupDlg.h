@@ -67,6 +67,7 @@ private slots:
   void                    onOk();
   bool                    onApply();
   void                    onClose();
+  void                    onHelp();
 
   void                    onDeactivate();
 
@@ -83,6 +84,7 @@ private:
   QPushButton*            myOkBtn;
   QPushButton*            myApplyBtn;
   QPushButton*            myCloseBtn;
+  QPushButton*            myHelpBtn;
   QListBox*               myListBox;
 
   SMESHGUI*               mySMESHGUI;
@@ -90,6 +92,8 @@ private:
 
   QValueList<SMESH::SMESH_GroupBase_var> myListGrp;
   bool                                   myBlockSelection;
+
+  QString                 myHelpFileName;
 };
 
 #endif

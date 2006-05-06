@@ -34,6 +34,8 @@
 
 #include "SMESH_Mesh.hxx"
 
+class SMESH_MeshEditor;
+
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
  public:
@@ -47,15 +49,18 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
   CORBA::Boolean RemoveNodes(const SMESH::long_array & IDsOfNodes);
 
-  CORBA::Boolean AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
-  CORBA::Boolean AddEdge(const SMESH::long_array & IDsOfNodes);
-  CORBA::Boolean AddFace(const SMESH::long_array & IDsOfNodes);
-  CORBA::Boolean AddPolygonalFace(const SMESH::long_array & IDsOfNodes);
-  CORBA::Boolean AddVolume(const SMESH::long_array & IDsOfNodes);
-
-  CORBA::Boolean AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,
-                                     const SMESH::long_array & Quantities);
-  CORBA::Boolean AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
+  /*!
+   * Methods for creation new elements.
+   * Returns ID of created element or 0 if element not created
+   */
+  CORBA::Long AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z);
+  CORBA::Long AddEdge(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long AddFace(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long AddVolume(const SMESH::long_array & IDsOfNodes);
+  CORBA::Long AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,
+                                  const SMESH::long_array & Quantities);
+  CORBA::Long AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
 
   CORBA::Boolean MoveNode(CORBA::Long NodeID,
                           CORBA::Double x, CORBA::Double y, CORBA::Double z);
@@ -115,6 +120,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 			      CORBA::Double                          MaxAspectRatio,
 			      SMESH::SMESH_MeshEditor::Smooth_Method Method,
                               bool                                   IsParametric);
+
+
+  void ConvertToQuadratic(CORBA::Boolean Force3d);
+  CORBA::Boolean ConvertFromQuadratic();
 
   void RenumberNodes();
   void RenumberElements();
@@ -196,6 +205,7 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void MergeEqualElements();
 
+
   SMESH::SMESH_MeshEditor::Sew_Error
     SewFreeBorders(CORBA::Long FirstNodeID1,
                    CORBA::Long SecondNodeID1,
@@ -227,9 +237,48 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                     CORBA::Long NodeID2OfSide1ToMerge,
                     CORBA::Long NodeID2OfSide2ToMerge);
 
+  /*!
+   * Set new nodes for given element.
+   * If number of nodes is not corresponded to type of
+   * element - returns false
+   */
+  CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
+  
+  /*!
+   * If during last operation of MeshEditor some nodes were
+   * created this method returns list of it's IDs, if new nodes
+   * not creared - returns empty list
+   */
+  SMESH::long_array* GetLastCreatedNodes();
+
+  /*!
+   * If during last operation of MeshEditor some elements were
+   * created this method returns list of it's IDs, if new elements
+   * not creared - returns empty list
+   */
+  SMESH::long_array* GetLastCreatedElems();
+
+  //
+  // Internal methods
+  //
+
+  /*!
+   * \brief Update myLastCreatedNodes and myLastCreatedElems
+    * \param anEditor - it contains edition results
+   */
+  void UpdateLastResult(::SMESH_MeshEditor& anEditor);
+
+  /*!
+   * \brief Return edited mesh ID
+    * \retval int - mesh ID
+   */
+  int GetMeshId() const { return _myMesh->GetId(); }
+
  private:
   SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
   SMESH_Mesh   *_myMesh;
+  SMESH::long_array* myLastCreatedElems;
+  SMESH::long_array* myLastCreatedNodes;
 };
 
 #endif

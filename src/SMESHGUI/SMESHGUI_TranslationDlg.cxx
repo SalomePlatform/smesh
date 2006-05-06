@@ -42,6 +42,10 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_ResourceMgr.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SVTK_ViewModel.h"
 #include "SVTK_Selection.h"
@@ -132,6 +136,10 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6);
   GroupButtonsLayout->setMargin(11);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
@@ -274,12 +282,15 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
+  myHelpFileName = "/files/translation.htm";
+
   Init();
 
   /* signals and slots connections */
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),   this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectElementsButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
@@ -477,6 +488,23 @@ void SMESHGUI_TranslationDlg::ClickOnCancel()
   reject();
 }
 
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_TranslationDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
+}
+
 //=======================================================================
 // function : onTextChange()
 // purpose  :
@@ -649,7 +677,7 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
     if (myEditCurrentArgument == (QWidget*)SpinBox1_1) {
       SpinBox1_1->SetValue(x);
       SpinBox1_2->SetValue(y);
-      SpinBox2_3->SetValue(z);
+      SpinBox1_3->SetValue(z);
     } else if (myEditCurrentArgument == (QWidget*)SpinBox2_1) {
       SpinBox2_1->SetValue(x);
       SpinBox2_2->SetValue(y);

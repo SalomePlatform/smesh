@@ -92,6 +92,8 @@ public:
   virtual SMESH_Hypothesis_i* Create(PortableServer::POA_ptr thePOA,
                                      int                     theStudyId,
                                      ::SMESH_Gen*            theGenImpl) = 0;
+  // return the name of IDL module
+  virtual std::string GetModuleName() = 0;
 };
 
 //=============================================================================
@@ -106,7 +108,7 @@ template <class T> class HypothesisCreator_i: public GenericHypothesisCreator_i
 public:
   virtual SMESH_Hypothesis_i* Create (PortableServer::POA_ptr thePOA,
                                       int                     theStudyId,
-                                      ::SMESH_Gen*            theGenImpl) 
+                                      ::SMESH_Gen*            theGenImpl)
   {
     return new T (thePOA, theStudyId, theGenImpl);
   };

@@ -309,23 +309,30 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
     SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
     SALOMEDS::SObject_var aReferenceSO;
     if ( !theTag ) {
+      // check if the reference to theToObject already exists
+      // and find a free label for the reference object
       bool isReferred = false;
+      int tag = 1;
       SALOMEDS::ChildIterator_var anIter = theStudy->NewChildIterator( theSObject );
-      for ( ; !isReferred && anIter->More(); anIter->Next() ) {
-        if ( anIter->Value()->ReferencedObject( aReferenceSO ) &&
-            strcmp( aReferenceSO->GetID(), aToObjSO->GetID() ) == 0 )
-          isReferred = true;
+      for ( ; !isReferred && anIter->More(); anIter->Next(), ++tag ) {
+        if ( anIter->Value()->ReferencedObject( aReferenceSO )) {
+          if ( strcmp( aReferenceSO->GetID(), aToObjSO->GetID() ) == 0 )
+            isReferred = true;
+        }
+        else if ( !theTag ) {
+          SALOMEDS::GenericAttribute_var anAttr;
+          if ( !anIter->Value()->FindAttribute( anAttr, "AttributeIOR" ))
+            theTag = tag;
+        }
       }
-      if ( !isReferred ) {
-        aReferenceSO = aStudyBuilder->NewObject( theSObject );
-        aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
-      }
+      if ( isReferred )
+        return;
+      if ( !theTag )
+        theTag = tag;
     }
-    else {
-      if ( !theSObject->FindSubObject( theTag, aReferenceSO ))
-        aReferenceSO = aStudyBuilder->NewObjectToTag( theSObject, theTag );
-      aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
-    }
+    if ( !theSObject->FindSubObject( theTag, aReferenceSO ))
+      aReferenceSO = aStudyBuilder->NewObjectToTag( theSObject, theTag );
+    aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
   }
 }
 

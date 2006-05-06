@@ -110,6 +110,35 @@ namespace SMESH
 
     static char* SMESHGenName() { return "smeshgen"; }
     static char* MeshEditorName() { return "mesh_editor"; }
+
+    /*!
+     * \brief Return marker of long string literal beginning
+      * \param type - a name of functionality producing the string literal 
+      * \retval TCollection_AsciiString - the marker string to be written into
+      * a raw python script
+     */
+    static TCollection_AsciiString LongStringStart(const char* type);
+    /*!
+     * \brief Return marker of long string literal end
+      * \retval TCollection_AsciiString - the marker string to be written into
+      * a raw python script
+     */
+    static TCollection_AsciiString LongStringEnd();
+    /*!
+     * \brief Cut out a long string literal from a string
+      * \param theText - text possibly containing string literals
+      * \param theFrom - position in the text to search from
+      * \param theLongString - the retrieved literal
+      * \param theStringType - a name of functionality produced the literal
+      * \retval bool - true if a string literal found
+     * 
+     * The literal is removed from theText; theFrom points position right after
+     * the removed literal
+     */
+    static bool  CutoutLongString( TCollection_AsciiString & theText,
+                                   int                     & theFrom,
+                                   TCollection_AsciiString & theLongString,
+                                   TCollection_AsciiString & theStringType);
   };
 }
 

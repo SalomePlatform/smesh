@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='windows-1252' ?>
 <ftstdata>
 <topic name="About viewing meshes" url="about_viewing_meshes.htm" />
+<topic name="Adding Quadratic Nodes and Elements" url="adding_quadratic_nodes_and_elements.htm" />
 <topic name="Aspect ratio 3D" url="aspect_ratio_3d.htm" />
 <topic name="Borders at multi-connection" url="borders_at_multi-connection.htm" />
 <topic name="Borders at multiconnection 2D" url="borders_at_multiconnection_2d.htm" />
@@ -52,11 +53,13 @@
 <topic name="Uniting two triangles" url="files/uniting_two_triangles.htm" />
 <topic name="Using operations on groups" url="files/using_operations_on_groups.htm" />
 <topic name="Viewing mesh info" url="files/viewing_mesh_info.htm" />
+<topic name="VTK 3D Viewer" url="files/vtk_3d_viewer.htm" />
 <topic name="Warp" url="files/warp.htm" />
 <topic name="Free borders" url="free_borders.htm" />
 <topic name="Free_edges" url="free_edges.htm" />
 <topic name="Grouping Elements" url="grouping_elements.htm" />
 <topic name="Length" url="length.htm" />
+<topic name="Merge Elements" url="merge_elements.htm" />
 <topic name="Modifying Meshes" url="modifying_meshes.htm" />
 <topic name="Pattern mapping" url="pattern_mapping.htm" />
 <topic name="Presentation" url="presentation.htm" />
@@ -66,5 +69,6 @@
 <topic name="Transforming Meshes" url="transforming_meshes.htm" />
 <topic name="Transparency" url="transparency.htm" />
 <topic name="Viewing Meshes" url="viewing_meshes.htm" />
+<topic name="Volume" url="volume.htm" />
 
 </ftstdata>  

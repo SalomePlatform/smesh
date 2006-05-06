@@ -46,10 +46,12 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 SMESHDS_Mesh::SMESHDS_Mesh(int theMeshID, bool theIsEmbeddedMode):
+  myMeshID(theMeshID),
   myIsEmbeddedMode(theIsEmbeddedMode),
-  myMeshID(theMeshID)
+  myCurSubID(-1)
 {
   myScript = new SMESHDS_Script(theIsEmbeddedMode);
+  myCurSubMesh = 0;
 }
 
 //=======================================================================
@@ -711,7 +713,8 @@ void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n, SMESHDS_SubMesh * sub
 
   // Rm from sub-mesh
   // Node should belong to only one sub-mesh
-  subMesh->RemoveNode(n);
+  if( subMesh )
+    subMesh->RemoveNode(n);
 
   SMDS_Mesh::RemoveFreeElement(n);
 }
@@ -768,7 +771,8 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt, SMESHDS_SubMe
 
   // Rm from sub-mesh
   // Element should belong to only one sub-mesh
-  subMesh->RemoveElement(elt);
+  if( subMesh )
+    subMesh->RemoveElement(elt);
 
   SMDS_Mesh::RemoveFreeElement(elt);
 }
@@ -846,7 +850,8 @@ bool SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
 void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Shell & S)
 {
-  add( aNode, getSubmesh(S) );
+  if ( add( aNode, getSubmesh(S) ))
+    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( myCurSubID );
 }
 //=======================================================================
 //function : SetNodeOnVolume
@@ -855,7 +860,8 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
 void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Solid & S)
 {
-  add( aNode, getSubmesh(S) );
+  if ( add( aNode, getSubmesh(S) ))
+    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( myCurSubID );
 }
 
 //=======================================================================
@@ -1140,7 +1146,8 @@ int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 //=======================================================================
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 {
-  add( aNode, getSubmesh( Index ));
+  if ( add( aNode, getSubmesh( Index )))
+    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( Index );
 }
 
 //=======================================================================

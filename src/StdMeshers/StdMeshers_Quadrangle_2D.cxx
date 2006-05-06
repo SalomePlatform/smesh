@@ -133,7 +133,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   aMesh.GetSubMesh(aShape);
 
   if ( !myTool )
-    myTool = new StdMeshers_Helper(aMesh);
+    myTool = new SMESH_MesherHelper(aMesh);
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
 
   //FaceQuadStruct *quad = CheckAnd2Dcompute(aMesh, aShape);

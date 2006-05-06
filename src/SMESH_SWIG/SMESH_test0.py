@@ -25,7 +25,6 @@
 import salome
 import geompy
 from geompy import geom
-from geompy import gg
 
 import SMESH
 

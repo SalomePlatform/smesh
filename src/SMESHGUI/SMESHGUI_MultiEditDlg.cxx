@@ -43,14 +43,18 @@
 
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
+#include "LightApp_Application.h"
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 // OCCT Includes
 #include <Precision.hxx>
@@ -65,7 +69,6 @@
 #include <vtkPolygon.h>
 #include <vtkConvexPointSet.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -233,6 +236,7 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton (tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton (tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton (tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem (0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -242,6 +246,7 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   return aFrame;
 }
@@ -333,6 +338,7 @@ void SMESHGUI_MultiEditDlg::Init()
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   // selection and SMESHGUI
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
@@ -472,6 +478,23 @@ void SMESHGUI_MultiEditDlg::onClose()
   mySelectionMgr->clearFilters();
 
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================
@@ -1034,6 +1057,7 @@ SMESHGUI_ChangeOrientationDlg
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
 {
   setCaption(tr("CAPTION"));
+  myHelpFileName = "/files/changing_orientation_of_elements.htm";
 }
 
 SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
@@ -1072,6 +1096,8 @@ SMESHGUI_UnionOfTrianglesDlg
   myMaxAngleSpin->SetValue(30.0);
 
   myCriterionGrp->show();
+
+  myHelpFileName = "/files/uniting_a_set_of_triangles.htm";
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -1110,6 +1136,8 @@ SMESHGUI_CuttingOfQuadsDlg
   connect(myGroupChoice    , SIGNAL(clicked(int))        , this, SLOT(onCriterionRB()));
   connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
   connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
+
+  myHelpFileName = "/files/cutting_quadrangles.htm";
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()
@@ -1292,7 +1320,7 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
     }
   }
 
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents(1);
   aCellLocationsArray->SetNumberOfTuples(aNbCells);
 

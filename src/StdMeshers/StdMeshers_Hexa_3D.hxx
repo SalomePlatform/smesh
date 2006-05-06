@@ -34,7 +34,7 @@
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include "StdMeshers_Helper.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 typedef struct point3Dstruct
 {

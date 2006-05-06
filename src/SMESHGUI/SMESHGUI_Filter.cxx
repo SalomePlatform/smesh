@@ -225,7 +225,8 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 8 : 4 ));
 }
 
 //=======================================================================
@@ -244,7 +245,8 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 4;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 8  : 4 ));
 }
 
 //=======================================================================
@@ -302,7 +304,8 @@ bool SMESHGUI_TriangleFilter::IsValid( const int theCellId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( anActor->GetElemObjId( theCellId ) );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 6  : 3 ));
 }
 
 //=======================================================================
@@ -321,7 +324,8 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
   SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
   const SMDS_MeshElement* anElem = aMesh->FindElement( theObjId );
 
-  return anElem && anElem->GetType() == SMDSAbs_Face && anElem->NbNodes() == 3;
+  return anElem && anElem->GetType() == SMDSAbs_Face &&
+    ( anElem->NbNodes() == ( anElem->IsQuadratic() ? 6  : 3 ));
 }
 
 //=======================================================================

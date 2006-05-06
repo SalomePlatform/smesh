@@ -33,7 +33,7 @@
 #include "SMESH_2D_Algo.hxx"
 #include <TopoDS_Wire.hxx>
 
-#include "StdMeshers_Helper.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 class SMDS_MeshNode;
 class TopTools_IndexedDataMapOfShapeListOfShape;
@@ -98,7 +98,7 @@ protected:
   TopoDS_Wire myOuterWire;
   std::list<const SMDS_MeshNode*> myNodesOnCommonV;
 
-  StdMeshers_Helper* myTool; // toll for working with quadratic elements
+  SMESH_MesherHelper* myTool; // toll for working with quadratic elements
 };
 
 #endif

@@ -76,28 +76,18 @@ enum { EDGE = 0, FACE, VOLUME };
  * \brief Dialog to publish a sub-shape of the mesh main shape
  *        by selecting mesh elements
  */
-SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg( SMESHGUI*   theModule,
-                                                  const char* theName)
-     : QDialog( SMESH::GetDesktop( theModule ), theName, false,
-                WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_ShapeByMeshDlg::SMESHGUI_ShapeByMeshDlg()
+  : SMESHGUI_Dialog( 0, false, true, OK | Close )
 {
   setCaption(tr("CAPTION"));
 
-  QVBoxLayout* aDlgLay = new QVBoxLayout (this, MARGIN, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame(), MARGIN, SPACING);
 
-  QFrame* aMainFrame = createMainFrame  (this);
-  QFrame* aBtnFrame  = createButtonFrame(this);
+  QFrame* aMainFrame = createMainFrame  (mainFrame());
 
   aDlgLay->addWidget(aMainFrame);
-  aDlgLay->addWidget(aBtnFrame);
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
-
-  myViewWindow = SMESH::GetViewWindow( mySMESHGUI );
-
-  Init();
 }
 
 //=======================================================================
@@ -137,36 +127,7 @@ QFrame* SMESHGUI_ShapeByMeshDlg::createMainFrame (QWidget* theParent)
   aLayout->addWidget(aNameLabel,  2, 0);
   aLayout->addWidget(myGeomName,  2, 1);
 
-  connect(myElemTypeGroup, SIGNAL(clicked(int)), SLOT(onTypeChanged(int)));
-  connect(myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
-
   return aMainGrp;
-}
-
-//=======================================================================
-// function : createButtonFrame()
-// purpose  : Create frame containing buttons
-//=======================================================================
-QFrame* SMESHGUI_ShapeByMeshDlg::createButtonFrame (QWidget* theParent)
-{
-  QFrame* aFrame = new QFrame(theParent);
-  aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
-
-  myOkBtn    = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
-  myCloseBtn = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
-
-  QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-  QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
-
-  aLay->addWidget(myOkBtn);
-  aLay->addItem(aSpacer);
-  aLay->addWidget(myCloseBtn);
-
-  connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
-  connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
-
-  return aFrame;
 }
 
 //=======================================================================
@@ -178,33 +139,73 @@ SMESHGUI_ShapeByMeshDlg::~SMESHGUI_ShapeByMeshDlg()
   // no need to delete child widgets, Qt does it all for us
 }
 
+//================================================================================
+/*!
+ * \brief Constructor
+  * \param theToCreate - if this parameter is true then operation is used for creation,
+  * for editing otherwise
+ *
+ * Initialize operation
+*/
+//================================================================================
+SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp()
+{
+  if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
+    GeometryGUI::InitGeomGen();
+
+  myDlg = new SMESHGUI_ShapeByMeshDlg;
+
+  connect(myDlg->myElemTypeGroup, SIGNAL(clicked(int)), SLOT(onTypeChanged(int)));
+  connect(myDlg->myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
+}
+
+
 //=======================================================================
-// function : Init()
+// function : startOperation()
 // purpose  : Init dialog fields, connect signals and slots, show dialog
 //=======================================================================
-void SMESHGUI_ShapeByMeshDlg::Init()
+void SMESHGUI_ShapeByMeshOp::startOperation()
 {
-  SetMesh( SMESH::SMESH_Mesh::_nil() );
+  //SetMesh( SMESH::SMESH_Mesh::_nil() );
   myIsManualIdEnter = false;
 
-  //erasePreview();
+  SMESHGUI_SelectionOp::startOperation();
 
-  mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+  //activateSelection(); // set filters
+  onSelectionDone(); // desable/enable [ OK ]
 
-  // selection and SMESHGUI
-  connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
-  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(onClose()));
+  myDlg->show();
+}
 
-  setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
-  qApp->processEvents();
-  updateGeometry();
-  adjustSize();
-  resize(minimumSize());
+//================================================================================
+/*!
+ * \brief Destructor
+*/
+//================================================================================
+SMESHGUI_ShapeByMeshOp::~SMESHGUI_ShapeByMeshOp()
+{
+  if ( myDlg )
+    delete myDlg;
+}
 
-  activateSelection();
-  onSelectionDone();
-  
-  this->show();
+//================================================================================
+/*!
+ * \brief Gets dialog of this operation
+  * \retval LightApp_Dialog* - pointer to dialog of this operation
+*/
+//================================================================================
+LightApp_Dialog* SMESHGUI_ShapeByMeshOp::dlg() const
+{
+  return myDlg;
+}
+
+//=======================================================================
+// function : GetShape()
+// purpose  : Get published sub-shape
+//=======================================================================
+GEOM::GEOM_Object_ptr SMESHGUI_ShapeByMeshOp::GetShape()
+{
+  return myGeomObj.in();
 }
 
 //=======================================================================
@@ -212,28 +213,26 @@ void SMESHGUI_ShapeByMeshDlg::Init()
 // purpose  : Set mesh to dialog
 //=======================================================================
 
-void SMESHGUI_ShapeByMeshDlg::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
+void SMESHGUI_ShapeByMeshOp::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
 {
   myMesh    = SMESH::SMESH_Mesh::_duplicate(thePtr);
   myGeomObj = GEOM::GEOM_Object::_nil();
   myHasSolids = false;
 
-  vector< bool > hasElement (myElemTypeGroup->count(), false);
-  if (!myMesh->_is_nil() && myViewWindow )
+  vector< bool > hasElement (myDlg->myElemTypeGroup->count(), false);
+  if (!myMesh->_is_nil() )
   {
-    _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
-    SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
+//     _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
+//     SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
 
     vector< int > nbShapes( TopAbs_SHAPE, 0 );
     int shapeDim = 0; // max dim with several shapes
-    if ( mySelectionMgr->isOk(anIObj) ) // check that the mesh has a valid shape
+    //if ( /*mySelectionMgr*/ selectionMgr()->isOk(anIObj) ) // check that the mesh has a valid shape
     {
       _PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
       GEOM::GEOM_Object_var mainShape = SMESH::GetGeom(aSO);
       if ( !mainShape->_is_nil() ) 
       {
-        if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
-          GeometryGUI::InitGeomGen();
         TopoDS_Shape aShape;
         if ( GEOMBase::GetShape(mainShape, aShape))
         {
@@ -259,86 +258,54 @@ void SMESHGUI_ShapeByMeshDlg::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
       hasElement[ EDGE ]   = shapeDim > 0 && myMesh->NbEdges()  ;
       hasElement[ FACE ]   = shapeDim > 1 && myMesh->NbFaces()  ;
       hasElement[ VOLUME ] = shapeDim > 2 && myMesh->NbVolumes();
-
-      if ( hasElement[ EDGE ] && myViewWindow->GetSelector() )
-      {
-        connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
-      }
     }
     myHasSolids = nbShapes[ TopAbs_SOLID ];
   }
 
   // disable inexistant elem types
-  for ( int i = 0; i < myElemTypeGroup->count(); ++i ) {
-    if ( QButton* button = myElemTypeGroup->find( i ) )
+  for ( int i = 0; i < myDlg->myElemTypeGroup->count(); ++i ) {
+    if ( QButton* button = myDlg->myElemTypeGroup->find( i ) )
       button->setEnabled( hasElement[ i ] );
   }
-  myElementId->setEnabled( hasElement[ EDGE ] );
-  myGeomName-> setEnabled( hasElement[ EDGE ] );
+  myDlg->myElementId->setEnabled( hasElement[ EDGE ] );
+  myDlg->myGeomName-> setEnabled( hasElement[ EDGE ] );
 
   setElementID("");
 }
 
 //=======================================================================
-// function : GetShape()
-// purpose  : Get published sub-shape
+// function : commitOperation()
+// purpose  : called when "Ok" button pressed.
 //=======================================================================
-GEOM::GEOM_Object_ptr SMESHGUI_ShapeByMeshDlg::GetShape()
-{
-  return myGeomObj.in();
-}
 
-//=======================================================================
-// function : onOk()
-// purpose  : SLOT called when "Ok" button pressed.
-//=======================================================================
-void SMESHGUI_ShapeByMeshDlg::onOk()
+void SMESHGUI_ShapeByMeshOp::commitOperation()
 {
+  SMESHGUI_SelectionOp::commitOperation();
   try {
-    int elemID = myElementId->text().toInt();
+    int elemID = myDlg->myElementId->text().toInt();
     myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-      ( myMesh.in(), elemID, myGeomName->text().latin1());
-
-    accept();
-    emit PublishShape();
+      ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1());
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch (...) {
   }
-  myViewWindow->SetSelectionMode( ActorSelection );
-  disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(mySMESHGUI, 0, this, 0);
-  mySMESHGUI->ResetState();
-}
 
-//=======================================================================
-// function : onClose()
-// purpose  : SLOT called when "Close" button pressed. Close dialog
-//=======================================================================
-void SMESHGUI_ShapeByMeshDlg::onClose()
-{
-  myViewWindow->SetSelectionMode( ActorSelection );
-  disconnect(mySelectionMgr, 0, this, 0);
-  disconnect(mySMESHGUI, 0, this, 0);
-  mySMESHGUI->ResetState();
-  reject();
-  emit Close();
 }
 
 //=======================================================================
 // function : onSelectionDone()
-// purpose  : SLOT called when selection changed
+// purpose  : SLOT called when selection changed. Enable/desable [ OK ]
 //=======================================================================
-void SMESHGUI_ShapeByMeshDlg::onSelectionDone()
+void SMESHGUI_ShapeByMeshOp::onSelectionDone()
 {
-  myOkBtn->setEnabled( false );
+  myDlg->setButtonEnabled( false, QtxDialog::OK );
   setElementID("");
 
   try {
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList, SVTK_Viewer::Type());
+    selectionMgr()->selectedObjects(aList, SVTK_Viewer::Type());
     if (aList.Extent() != 1)
       return;
 
@@ -347,82 +314,42 @@ void SMESHGUI_ShapeByMeshDlg::onSelectionDone()
       return;
 
     QString aString;
-    int nbElems = SMESH::GetNameOfSelectedElements(myViewWindow->GetSelector(),
+    int nbElems = SMESH::GetNameOfSelectedElements(selector(),//myViewWindow->GetSelector(),
                                                    aList.First(), aString);
     if ( nbElems == 1 ) {
       setElementID( aString );
-      myOkBtn->setEnabled( true );
+      myDlg->setButtonEnabled( true, QtxDialog::OK );
     }
   } catch (...) {
   }
 }
 
 //=======================================================================
-// function : onDeactivate()
-// purpose  : SLOT called when dialog must be deativated
-//=======================================================================
-void SMESHGUI_ShapeByMeshDlg::onDeactivate()
-{
-  if ( isEnabled() ) {
-    //disconnect(mySelectionMgr, 0, this, 0);
-    myViewWindow->SetSelectionMode( ActorSelection );
-    setEnabled(false);
-  }
-}
-
-//=======================================================================
-// function : enterEvent()
-// purpose  : Event filter
-//=======================================================================
-void SMESHGUI_ShapeByMeshDlg::enterEvent (QEvent*)
-{
-  // there is a stange problem that enterEvent() comes after onSave()
-  if ( isVisible () && !isEnabled() ) {
-    mySMESHGUI->EmitSignalDeactivateDialog();
-    setEnabled(true);
-    activateSelection();
-    //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
-  }
-}
-
-//=================================================================================
-// function : closeEvent()
-// purpose  : Close dialog box
-//=================================================================================
-void SMESHGUI_ShapeByMeshDlg::closeEvent (QCloseEvent*)
-{
-  onClose();
-}
-
-//=======================================================================
 // function : activateSelection()
 // purpose  : Activate selection in accordance with current pattern type
 //=======================================================================
-void SMESHGUI_ShapeByMeshDlg::activateSelection()
+void SMESHGUI_ShapeByMeshOp::activateSelection()
 {
-  mySelectionMgr->clearFilters();
-  SMESH::SetPointRepresentation(false);
+  selectionMgr()->clearFilters();
+  //SMESH::SetPointRepresentation(false);
 
-  myGeomName->setText("");
+  myDlg->myGeomName->setText("");
 
-  if ( myViewWindow )
-  {
-    QString geomName;
-    Selection_Mode mode = EdgeSelection;
-    switch ( myElemTypeGroup->id( myElemTypeGroup->selected() )) {
-    case EDGE  :
-      mode = EdgeSelection;   geomName = tr("GEOM_EDGE"); break;
-    case FACE  :
-      mode = FaceSelection;   geomName = tr("GEOM_FACE"); break;
-    case VOLUME:
-      mode = VolumeSelection; geomName = tr(myHasSolids ? "GEOM_SOLID" : "GEOM_SHELL"); break;
-    default: return;
-    }
-    if ( myViewWindow->SelectionMode() != mode )
-      myViewWindow->SetSelectionMode( mode );
-
-    myGeomName->setText( GEOMBase::GetDefaultName( geomName ));
+  QString geomName;
+  Selection_Mode mode = EdgeSelection;
+  switch ( myDlg->myElemTypeGroup->id( myDlg->myElemTypeGroup->selected() )) {
+  case EDGE  :
+    mode = EdgeSelection;   geomName = tr("GEOM_EDGE"); break;
+  case FACE  :
+    mode = FaceSelection;   geomName = tr("GEOM_FACE"); break;
+  case VOLUME:
+    mode = VolumeSelection; geomName = tr(myHasSolids ? "GEOM_SOLID" : "GEOM_SHELL"); break;
+  default: return;
   }
+  if ( selectionMode() != mode )
+    setSelectionMode( mode );
+
+  myDlg->myGeomName->setText( GEOMBase::GetDefaultName( geomName ));
 }
 
 //=======================================================================
@@ -430,7 +357,7 @@ void SMESHGUI_ShapeByMeshDlg::activateSelection()
 //purpose  : SLOT. Called when element type changed.
 //=======================================================================
 
-void SMESHGUI_ShapeByMeshDlg::onTypeChanged (int theType)
+void SMESHGUI_ShapeByMeshOp::onTypeChanged (int theType)
 {
   setElementID("");
   activateSelection();
@@ -442,16 +369,16 @@ void SMESHGUI_ShapeByMeshDlg::onTypeChanged (int theType)
 //           Highlight the element whose Ids the user entered manually
 //=======================================================================
 
-void SMESHGUI_ShapeByMeshDlg::onElemIdChanged(const QString& theNewText)
+void SMESHGUI_ShapeByMeshOp::onElemIdChanged(const QString& theNewText)
 {
-  myOkBtn->setEnabled( false );
+  myDlg->setButtonEnabled( false, QtxDialog::OK );
 
-  if ( myIsManualIdEnter && !myMesh->_is_nil() && myViewWindow )
+  if ( myIsManualIdEnter && !myMesh->_is_nil() )
     if ( SMESH_Actor* actor = SMESH::FindActorByObject(myMesh) )
       if ( SMDS_Mesh* aMesh = actor->GetObject()->GetMesh() )
       {
         SMDSAbs_ElementType type = SMDSAbs_Edge;
-        switch ( myElemTypeGroup->id( myElemTypeGroup->selected() )) {
+        switch ( myDlg->myElemTypeGroup->id( myDlg->myElemTypeGroup->selected() )) {
         case EDGE  : type = SMDSAbs_Edge;   break;
         case FACE  : type = SMDSAbs_Face;   break;
         case VOLUME: type = SMDSAbs_Volume; break;
@@ -466,10 +393,10 @@ void SMESHGUI_ShapeByMeshDlg::onElemIdChanged(const QString& theNewText)
         }
 
         if ( !newIndices.IsEmpty() && newIndices.Extent() == 1 )
-          if ( SVTK_Selector* s = myViewWindow->GetSelector() ) {
+          if ( SVTK_Selector* s = selector() ) {
             s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
-            myViewWindow->highlight( actor->getIO(), true, true );
-            myOkBtn->setEnabled( true );
+            viewWindow()->highlight( actor->getIO(), true, true );
+            myDlg->setButtonEnabled( true, QtxDialog::OK );
           }
       }
 }
@@ -479,9 +406,9 @@ void SMESHGUI_ShapeByMeshDlg::onElemIdChanged(const QString& theNewText)
 //purpose  : programmatically set element id
 //=======================================================================
 
-void SMESHGUI_ShapeByMeshDlg::setElementID(const QString& theText)
+void SMESHGUI_ShapeByMeshOp::setElementID(const QString& theText)
 {
   myIsManualIdEnter = false;
-  myElementId->setText(theText);
+  myDlg->myElementId->setText(theText);
   myIsManualIdEnter = true;
 }

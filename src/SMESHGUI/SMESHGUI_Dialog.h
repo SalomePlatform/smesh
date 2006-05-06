@@ -44,7 +44,7 @@ class SMESHGUI_Dialog : public LightApp_Dialog
   Q_OBJECT
   
 public:
-  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, const int = OK | Close | Apply );
+  SMESHGUI_Dialog( QWidget* = 0, const bool = false, const bool = false, const int = OK | Close | Apply | Help );
   virtual ~SMESHGUI_Dialog();
 
   virtual void show();

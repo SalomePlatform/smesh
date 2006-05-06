@@ -72,9 +72,11 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   SMESH_mechanic.py \
 		   SMESH_mechanic_tetra.py \
 		   SMESH_mechanic_editor.py \
+		   SMESH_mechanic_netgen.py \
 		   SMESH_fixation.py \
 		   SMESH_fixation_hexa.py \
 		   SMESH_fixation_tetra.py \
+		   SMESH_fixation_netgen.py \
 		   SMESH_box_tetra.py \
 		   SMESH_box2_tetra.py \
 		   SMESH_box3_tetra.py \

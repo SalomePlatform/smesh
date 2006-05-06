@@ -129,6 +129,8 @@ signals:
   //!< Emited when "Create hypothesis" button clicked
   void                         editHyp( const int theHypType, const int theIndex );
   //!< Emited when "Edit hypothesis" button clicked
+  void                         selectAlgo( const int theIndex );
+  //!< Emited when an algorithm is selected
   
 private slots:  
 
@@ -150,7 +152,3 @@ private:
 };
 
 #endif
-
-
-
-

@@ -89,6 +89,10 @@ SMESHDS_Command* SMESHDS_Script::getCommand(const SMESHDS_CommandType aType)
 //=======================================================================
 void SMESHDS_Script::AddNode(int NewNodeID, double x, double y, double z)
 {
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
   getCommand(SMESHDS_AddNode)->AddNode(NewNodeID, x, y, z);
 }
 

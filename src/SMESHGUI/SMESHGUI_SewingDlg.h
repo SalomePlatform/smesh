@@ -94,6 +94,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupArguments;
     QGroupBox* SubGroup1;
     QGroupBox* SubGroup2;
@@ -119,12 +120,15 @@ private:
     QCheckBox* CheckBoxPolygons;
     QCheckBox* CheckBoxPolyedrs;
 
+    QString myHelpFileName;
+
 private slots:
 
     void ConstructorsClicked(int constructorId);
     void ClickOnOk();
     void ClickOnCancel();
     bool ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument(bool isSelectionChanged = true) ;
     void DeactivateActiveDialog() ;

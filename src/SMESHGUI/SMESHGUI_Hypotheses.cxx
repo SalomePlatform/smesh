@@ -1,3 +1,22 @@
+// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/
+//
 
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI.h"
@@ -8,7 +27,14 @@
 #include <SALOMEDSClient_Study.hxx>
 #include <utilities.h>
 
+#include <SMESHGUI.h>
+
 #include <QtxIntSpinBox.h>
+
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+
+#include <LightApp_Application.h>
 
 #include <qframe.h>
 #include <qlayout.h>
@@ -344,7 +370,7 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam& , QW
 
 
 SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator* creator, QWidget* parent )
-: QtxDialog( parent, "", true, true, QtxDialog::OKCancel ),
+: QtxDialog( parent, "", true, true ),
   myCreator( creator )
 {
   setMinimumSize( 300, height() );
@@ -366,6 +392,29 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
   titLay->addStretch( 1 );
 
   myLayout->addWidget( titFrame, 0 );
+
+  QString aHypType = creator->hypType();
+  if ( aHypType == "LocalLength" )
+    myHelpFileName = "/files/arithmetic_1d.htm#Average_length";
+  else if ( aHypType == "Arithmetic1D")
+    myHelpFileName = "/files/arithmetic_1d.htm#arithmetic_1D";
+  else if ( aHypType == "MaxElementArea")
+    myHelpFileName = "/files/max._element_area_hypothesis.htm";
+  else if ( aHypType == "MaxElementVolume")
+    myHelpFileName = "/files/max._element_volume_hypothsis.htm";
+  else if ( aHypType == "StartEndLength")
+    myHelpFileName = "/files/arithmetic_1d.htm#start_and_end_length";
+  else if ( aHypType == "Deflection1D")
+    myHelpFileName = "/files/arithmetic_1d.htm#deflection_1D";
+  else if ( aHypType == "AutomaticLength")
+    myHelpFileName = "/files/arithmetic_1d.htm#automatic_length";
+  else if ( aHypType == "NumberOfSegments")
+    myHelpFileName = "/files/arithmetic_1d.htm#Number_of_elements";
+  else
+    myHelpFileName = "";
+
+  connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
+
 }
 
 SMESHGUI_HypothesisDlg::~SMESHGUI_HypothesisDlg()
@@ -385,6 +434,21 @@ void SMESHGUI_HypothesisDlg::accept()
 {
   if( !myCreator || myCreator->checkParams() )
     QtxDialog::accept();
+}
+
+void SMESHGUI_HypothesisDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) {
+    SMESHGUI* aSMESHGUI = dynamic_cast<SMESHGUI*>( app->activeModule() );
+    app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  }
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 void SMESHGUI_HypothesisDlg::setHIcon( const QPixmap& p )

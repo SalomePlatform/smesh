@@ -35,12 +35,15 @@
 
 #include "SUIT_Desktop.h"
 #include "SUIT_OverrideCursor.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SALOME_ListIO.hxx"
 #include "SALOME_ListIteratorOfListIO.hxx"
 #include "SALOME_InteractiveObject.hxx"
 
 #include "SalomeApp_Study.h"
+#include "LightApp_Application.h"
 #include "LightApp_SelectionMgr.h"
 
 #include "SVTK_ViewWindow.h"
@@ -129,9 +132,15 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
   buttonOk->setText(tr("SMESH_BUT_CLOSE"));
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 0);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 1);
-  GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 2);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP"));
+  buttonHelp->setAutoDefault(TRUE);
+
+  //GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 0);
+  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 1);
+  GroupButtonsLayout->addWidget(buttonHelp, 0, 2);  
+  //GroupButtonsLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 2);
 
   SMESHGUI_TransparencyDlgLayout->addWidget(GroupC1,      0, 0);
   SMESHGUI_TransparencyDlgLayout->addWidget(GroupButtons, 1, 0);
@@ -141,10 +150,13 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
 
   // signals and slots connections : after ValueHasChanged()
   connect(buttonOk, SIGNAL(clicked()),         this, SLOT(ClickOnOk()));
+  connect(buttonHelp, SIGNAL(clicked()),       this, SLOT(ClickOnHelp()));
   connect(Slider1,  SIGNAL(valueChanged(int)), this, SLOT(SetTransparency()));
   connect(Slider1,  SIGNAL(sliderMoved(int)),  this, SLOT(ValueHasChanged()));
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
+
+  myHelpFileName = "transparency.htm";
 
   this->show();
 }
@@ -165,6 +177,23 @@ SMESHGUI_TransparencyDlg::~SMESHGUI_TransparencyDlg()
 void SMESHGUI_TransparencyDlg::ClickOnOk()
 {
   close();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_TransparencyDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

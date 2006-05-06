@@ -23,8 +23,10 @@
 #include <vtkExtractGeometry.h>
 #include <vector>
 
+#include "VTKViewer.h"
 
-class SMESH_ExtractGeometry : public vtkExtractGeometry{
+class SMESH_ExtractGeometry : public vtkExtractGeometry
+{
 public:
   vtkTypeMacro(SMESH_ExtractGeometry,vtkExtractGeometry);
 

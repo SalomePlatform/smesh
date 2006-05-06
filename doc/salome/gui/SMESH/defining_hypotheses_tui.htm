@@ -16,9 +16,8 @@ p.whs1 { font-weight:bold; }
 p.whs2 { font-family:'Lucida Console' , monospace; }
 p.whs3 { font-family:'Times New Roman' , serif; }
 p.whs4 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
-p.whs5 { margin-top:0pt; margin-bottom:0pt; }
-p.whs6 { margin-top:0pt; margin-bottom:0pt; font-family:Tahoma, sans-serif; }
-p.whs7 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs5 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs6 { margin-top:0pt; margin-bottom:0pt; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -28,7 +27,6 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
   strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs5 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs6 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "p.whs7 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -284,53 +282,67 @@ else
 
 <p class="whs3"># create vertices</p>
 
-<p class="whs2">px &nbsp;&nbsp;=geompy.MakeVertex(100., 0. &nbsp;,0. &nbsp;)</p>
+<p class="whs2">px &nbsp;&nbsp;= 
+ geompy.MakeVertex(100., 0. &nbsp;, 
+ 0. &nbsp;)</p>
 
-<p class="whs2">py &nbsp;&nbsp;=geompy.MakeVertex(0. &nbsp;,100., 0. &nbsp;)</p>
+<p class="whs2">py &nbsp;&nbsp;= 
+ geompy.MakeVertex(0. &nbsp;, 
+ 100., 0. &nbsp;)</p>
 
-<p class="whs2">pz &nbsp;&nbsp;=geompy.MakeVertex(0. &nbsp;,0. &nbsp;, 100.)</p>
+<p class="whs2">pz &nbsp;&nbsp;= 
+ geompy.MakeVertex(0. &nbsp;, 
+ 0. &nbsp;, 100.)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create a vector from 
  two points</p>
 
-<p class="whs2">vxy = geompy.MakeVector(px,py)</p>
+<p class="whs2">vxy = geompy.MakeVector(px, 
+ py)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create an arc from 
  three points</p>
 
-<p class="whs2">arc = geompy.MakeArc(py, pz, px)</p>
+<p class="whs2">arc = geompy.MakeArc(py, 
+ pz, px)</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># create a wire</p>
 
-<p class="whs2">wire = geompy.MakeWire([vxy,arc])</p>
+<p class="whs2">wire = geompy.MakeWire([vxy, 
+ arc])</p>
 
 <p class="whs2">isPlanarFace = 1</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># create a face from the wire</p>
+<p class="whs3"># create a face from 
+ the wire</p>
 
-<p class="whs2">face1 = geompy.MakeFace(wire,isPlanarFace)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs3"># get edges from the face</p>
-
-<p class="whs2">vxy, arc = geompy.SubShapeAll(face1, geompy.ShapeType["EDGE"])</p>
+<p class="whs2">face1 = geompy.MakeFace(wire, 
+ isPlanarFace)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># add objects in the study</p>
+<p class="whs3"><span style="font-family: 'Times New Roman', serif;"># 
+ get edges from the face</span></p>
+
+<p class="whs2">vxy,arc = geompy.SubShapeAll(face1,geompy.ShapeType[&quot;EDGE&quot;])</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3"># add objects in the 
+ study</p>
 
 <p class="whs2">id_face1 = geompy.addToStudy(face1,&quot;Face1&quot;)</p>
 
-<p class="whs2">id_arc = geompy.addToStudyInFather(face1,arc,&quot;Arc Edge&quot;)</p>
+<p class="whs2">id_arc = geompy.addToStudyInFather(face1,arc,&quot;Arc 
+ Edge&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -346,35 +358,42 @@ else
 
 <p class="whs3"># create hexahedral mesh</p>
 
-<p class="whs2">hexa = smesh.Mesh(face1,&quot;Face compound : hexahedrical mesh&quot;)</p>
+<p class="whs2">hexa = smesh.Mesh(face1, 
+ &quot;Face compound : hexahedrical mesh&quot;)</p>
 
 <p class="whs2">algo = hexa.Triangle()</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define &quot;MaxElementArea&quot;hypothesis</p>
+<p class="whs3"># define &quot;MaxElementArea&quot; 
+ hypothesis</p>
 
 <p class="whs2">algo.MaxElementArea(30)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># create a local hypothesis on the wire</p>
+<p class="whs3"># create a local hypothesis 
+ on the wire</p>
 
 <p class="whs2">algo = hexa.Segment(wire)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define &quot;NumberOfSegments&quot;hypothesis to cut
-a straight edge in a fixed number of segments</p>
+<p class="whs3"># define &quot;NumberOfSegments&quot; 
+ hypothesis to cut a straight edge in a fixed number of segments</p>
 
 <p class="whs2">algo.NumberOfSegments(6)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs3"># define a local &quot;Deflection1D&quot;hypothesis on the arc</p>
+<p class="whs3"># define a local &quot;Deflection1D&quot; 
+ hypothesis on the arc</p>
 
 <p class="whs2">algo = hexa.Segment(arc)</p>
+
 <p class="whs2">algo.Deflection1D(1)</p>
+
+<p class="whs2">&nbsp;</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -741,17 +760,16 @@ a straight edge in a fixed number of segments</p>
 
 <h4><a name=bookmark4>Maximum Element Area</a></h4>
 
-<p class="whs4">import smesh</p>
+<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">import 
+ smesh</span></p>
 
 <p class="whs4">import geompy</p>
 
 <p class="whs4">import salome</p>
 
-<p class="whs4">gg = salome.ImportComponentGUI(&quot;GEOM&quot;)</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># create vertices</p>
+<p class="whs5"># create a face</p>
 
 <p class="whs4">px &nbsp;&nbsp;= 
  geompy.MakeVertex(100., 0. &nbsp;, 
@@ -765,96 +783,71 @@ a straight edge in a fixed number of segments</p>
  geompy.MakeVertex(0. &nbsp;, 
  0. &nbsp;, 100.)</p>
 
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># create a vector from 
- two points</p>
+<p class="whs4">&nbsp;</p>
 
 <p class="whs4">vxy = geompy.MakeVector(px, 
  py)</p>
 
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># create an arc from three 
- points</p>
-
 <p class="whs4">arc = geompy.MakeArc(py, 
  pz, px)</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># create a wire</p>
 
 <p class="whs4">wire = geompy.MakeWire([vxy, 
  arc])</p>
 
+<p class="whs4">&nbsp;</p>
+
 <p class="whs4">isPlanarFace = 1</p>
 
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># create a face from the 
- wire</p>
-
-<p class="whs4">face1 = geompy.MakeFace(wire, 
+<p class="whs4">face = geompy.MakeFace(wire, 
  isPlanarFace)</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs5"># add objects in the study</p>
+<p class="whs5"># add the face in the 
+ study</p>
 
-<p class="whs4">id_face1 = geompy.addToStudy(face1,&quot;Face1&quot;)</p>
+<p class="whs4">id_face = geompy.addToStudy(face, 
+ &quot;Face to be meshed&quot;)</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs5"># display faces</p>
+<p class="whs5"># create a mesh</p>
 
-<p class="whs4">gg.createAndDisplayGO(id_face1)</p>
+<p class="whs4">tria_mesh = smesh.Mesh(face, 
+ &quot;Face : triangulation&quot;)</p>
 
-<p class="whs4">gg.setDisplayMode(id_face1,1)</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs4">gg.setTransparency(id_face1,0.2)</p>
+<p class="whs5"># define 1D meshing:</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs4">algo = tria_mesh.Segment()</p>
 
-<p class="whs5"># create a hexahedral mesh</p>
+<p class="whs4">algo.NumberOfSegments(20)</p>
 
-<p class="whs4">hexa = smesh.Mesh(face1, 
- &quot;Face compound : hexahedrical mesh&quot;)</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs4">algo = hexa.Triangle()</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># define &quot;MaxElementArea&quot; 
- hypothesis to be applied to each triangle</p>
-
-<p class="whs4">algo.MaxElementArea(7)</p>
+<p class="whs5"># define 2D meshing:</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs5"># create a quadrangle 2D 
- algorithm for faces</p>
+<p class="whs5"># assign triangulation 
+ algorithm</p>
 
-<p class="whs4">hexa.Quadrangle()</p>
+<p class="whs4">algo = tria_mesh.Triangle()</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs5"># create a local hypothesis</p>
+<p class="whs5"># apply &quot;Max Element 
+ Area&quot; hypothesis to each triangle</p>
 
-<p class="whs6">algo = hexa.Segment(wire)</p>
+<p class="whs4">algo.MaxElementArea(100)</p>
 
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
-
-<p class="whs4">algo.NumberOfSegments(10)</p>
-
-<p class="whs5">&nbsp;</p>
+<p class="whs4">&nbsp;</p>
 
 <p class="whs5"># compute the mesh</p>
 
-<p class="whs4">hexa.Compute() </p>
+<p class="whs4">tria_mesh.Compute() 
+ &nbsp;</p>
 
 <p class="whs4">&nbsp;</p>
 
@@ -867,6 +860,10 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">import StdMeshers</p>
 
+<p class="whs4">import NETGENPlugin</p>
+
+<p class="whs4">&nbsp;</p>
+
 <p class="whs4">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
  &quot;SMESH&quot;)</p>
 
@@ -876,14 +873,16 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># create a box</p>
+<p class="whs5"># create a box</p>
 
 <p class="whs4">box = geompy.MakeCylinderRH(30, 
- 50) #MakeBox(0., 0., 0., 100., 200., 300.)</p>
+ 50) #MakeBox(0., 0., 0., </p>
+
+<p class="whs4">100., 200., 300.)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># add the box to the 
+<p class="whs5"># add the box in the 
  study</p>
 
 <p class="whs4">idbox = geompy.addToStudy(box, 
@@ -891,83 +890,11 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># create vertices</p>
+<p class="whs5"># create a set of hypotheses</p>
 
-<p class="whs4">px &nbsp;&nbsp;= 
- geompy.MakeVertex(100., 0. &nbsp;, 
- 0. &nbsp;)</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">py &nbsp;&nbsp;= 
- geompy.MakeVertex(0. &nbsp;, 
- 100., 0. &nbsp;)</p>
-
-<p class="whs4">pz &nbsp;&nbsp;= 
- geompy.MakeVertex(0. &nbsp;, 
- 0. &nbsp;, 100.)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># create a vector from 
- two points</p>
-
-<p class="whs4">vxy = geompy.MakeVector(px, 
- py)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># create an arc from 
- three points</p>
-
-<p class="whs4">arc = geompy.MakeArc(py, 
- pz, px)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># create a wire</p>
-
-<p class="whs4">wire = geompy.MakeWire([vxy, 
- arc])</p>
-
-<p class="whs4">isPlanarFace = 1</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># create a face from 
- the wire</p>
-
-<p class="whs4">#face1</p>
-
-<p class="whs4">box = geompy.MakeFace(wire, 
- isPlanarFace)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># add objects in the 
- study</p>
-
-<p class="whs4">id_face1 = geompy.addToStudy(box,&quot;Face1&quot;)</p>
-
-<p class="whs4">#geompy.addToStudy(face1,&quot;Face1&quot;)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># display faces</p>
-
-<p class="whs4">gg.createAndDisplayGO(id_face1)</p>
-
-<p class="whs4">gg.setDisplayMode(id_face1,1)</p>
-
-<p class="whs4">gg.setTransparency(id_face1,0.2)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs7"># create a hypothesis</p>
-
-<p class="whs4">print &quot;-------------------------- 
- create Hypothesis&quot;</p>
-
-<p class="whs4">print &quot;-------------------------- 
- NumberOfSegments&quot;</p>
+<p class="whs5"># Number of Segments</p>
 
 <p class="whs4">numberOfSegments 
  = 7</p>
@@ -979,15 +906,14 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">print hypNbSeg.GetName()</p>
 
-<p class="whs4">print hypNbSeg.GetId()</p>
-
 <p class="whs4">print hypNbSeg.GetNumberOfSegments()</p>
 
 <p class="whs4">smeshgui.SetName(salome.ObjectToID(hypNbSeg), 
- &quot;NumberOfSegments_10&quot;)</p>
+ &quot;NumberOfSegments_7&quot;)</p>
 
-<p class="whs4">print &quot;-------------------------- 
- MaxElementArea&quot;</p>
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># Max Element Area</p>
 
 <p class="whs4">maxElementArea = 
  800</p>
@@ -999,15 +925,14 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">print hypArea.GetName()</p>
 
-<p class="whs4">print hypArea.GetId()</p>
-
 <p class="whs4">print hypArea.GetMaxElementArea()</p>
 
 <p class="whs4">smeshgui.SetName(salome.ObjectToID(hypArea), 
  &quot;MaxElementArea_800&quot;)</p>
 
-<p class="whs4">print &quot;-------------------------- 
- MaxElementVolume&quot;</p>
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># Max Element Volume</p>
 
 <p class="whs4">maxElementVolume 
  = 900</p>
@@ -1019,8 +944,6 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">print hypVolume.GetName()</p>
 
-<p class="whs4">print hypVolume.GetId()</p>
-
 <p class="whs4">print hypVolume.GetMaxElementVolume()</p>
 
 <p class="whs4">smeshgui.SetName(salome.ObjectToID(hypVolume), 
@@ -1028,13 +951,11 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># create algorithms</p>
+<p class="whs5"># create a set of algorithms</p>
 
-<p class="whs4">print &quot;-------------------------- 
- create Algorithms&quot;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">print &quot;-------------------------- 
- Regular_1D&quot;</p>
+<p class="whs5"># Regular_1D</p>
 
 <p class="whs4">regular1D = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
  &quot;libStdMeshersEngine.so&quot;)</p>
@@ -1042,8 +963,9 @@ a straight edge in a fixed number of segments</p>
 <p class="whs4">smeshgui.SetName(salome.ObjectToID(regular1D), 
  &quot;Wire Discretisation&quot;)</p>
 
-<p class="whs4">print &quot;-------------------------- 
- MEFISTO_2D&quot;</p>
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># MEFISTO_2D</p>
 
 <p class="whs4">mefisto2D = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
  &quot;libStdMeshersEngine.so&quot;)</p>
@@ -1051,18 +973,20 @@ a straight edge in a fixed number of segments</p>
 <p class="whs4">smeshgui.SetName(salome.ObjectToID(mefisto2D), 
  &quot;MEFISTO_2D&quot;)</p>
 
-<p class="whs4">#print &quot;-------------------------- 
- Hexa_3D (Hexahedron meshing algorithm)&quot;</p>
+<p class="whs4">&nbsp;</p>
 
-<p class="whs4">hexa3D = smesh.CreateHypothesis(&quot;Hexa_3D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
+<p class="whs5"># NETGEN_3D (Tetrahedron 
+ meshing algorithm)</p>
 
-<p class="whs4">smeshgui.SetName(salome.ObjectToID(hexa3D), 
- &quot;HEXA_3D&quot;)</p>
+<p class="whs4">tetra3D = smesh.CreateHypothesis(&quot;NETGEN_3D&quot;, 
+ &quot;libNETGENEngine.so&quot;)</p>
+
+<p class="whs4">smeshgui.SetName(salome.ObjectToID(tetra3D), 
+ &quot;NETGEN_3D&quot;)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># initialize a mesh 
+<p class="whs5"># initialize a mesh 
  with the box</p>
 
 <p class="whs4">mesh = smesh.CreateMesh(box)</p>
@@ -1072,11 +996,8 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># add a hypothesis 
- to the box</p>
-
-<p class="whs4">print &quot;-------------------------- 
- add hypothesis to the box&quot;</p>
+<p class="whs5"># add hypotheses and 
+ algorithms to the box</p>
 
 <p class="whs4">mesh.AddHypothesis(box,hypNbSeg)</p>
 
@@ -1088,43 +1009,41 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">mesh.AddHypothesis(box,mefisto2D)</p>
 
-<p class="whs4">mesh.AddHypothesis(box,hexa3D)</p>
+<p class="whs4">mesh.AddHypothesis(box,tetra3D)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs7"># compute the mesh</p>
-
-<p class="whs4">print &quot;-------------------------- 
- compute the mesh of the box&quot;</p>
+<p class="whs5"># compute the mesh</p>
 
 <p class="whs4">ret = smesh.Compute(mesh,box)</p>
-
-<p class="whs4">print ret</p>
 
 <p class="whs4">if ret == 0:</p>
 
 <p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;probleme when computing the mesh&quot;</p>
 
-<p class="whs4">salome.sg.updateObjBrowser(1)</p>
+<p class="whs4">else:</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Computation succeded&quot;</p>
+
+<p class="whs4">salome.sg.updateObjBrowser(1) 
+ </p>
 
 <p class="whs4">&nbsp;</p>
 
-<h3>Defining Additional Hypotheses</h3>
-
 <h4><a name=bookmark6>Length from Edges</a></h4>
 
-<p class="whs2">import smesh</p>
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">import 
+ salome</span></p>
 
 <p class="whs2">import geompy</p>
 
-<p class="whs2">import salome</p>
+<p class="whs2">import smesh</p>
 
-<p class="whs2">gg = salome.ImportComponentGUI(&quot;GEOM&quot;)</p>
+<p class="whs2">&nbsp;</p>
 
-<p>&nbsp;</p>
-
-<p># create sketchers</p>
+<p class="whs3"># create sketchers</p>
 
 <p class="whs2">sketcher1 = geompy.MakeSketcher(&quot;Sketcher:F 
  0 0:TT 70 0:TT 70 70:TT 0 70:WW&quot;)</p>
@@ -1134,77 +1053,66 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs2">isPlanarFace = 1</p>
 
-<p>&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p># create faces from two wires</p>
+<p class="whs3"># create a face from 
+ two wires</p>
 
 <p class="whs2">face1 = geompy.MakeFaces([sketcher1, 
  sketcher2],isPlanarFace)</p>
 
-<p>&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p># add objects in the study</p>
+<p class="whs3"># add object in the study</p>
 
 <p class="whs2">id_face1 = geompy.addToStudy(face1,&quot;Face1&quot;)</p>
 
-<p>&nbsp;</p>
+<p class="whs2">&nbsp;</p>
 
-<p># display faces</p>
+<p class="whs3"># create a mesh</p>
 
-<p class="whs2">gg.createAndDisplayGO(id_face1)</p>
-
-<p class="whs2">gg.setDisplayMode(id_face1,1)</p>
-
-<p class="whs2">gg.setTransparency(id_face1,0.2)</p>
-
-<p>&nbsp;</p>
-
-<p># create a mesh</p>
-
-<p class="whs2">hexa = smesh.Mesh(face1, 
+<p class="whs2">tria = smesh.Mesh(face1, 
  &quot;Face : triangle 2D mesh&quot;)</p>
-
-<p class="whs2">algo = hexa.Triangle()</p>
-
-<p>&nbsp;</p>
-
-<p># define &quot;MaxElementArea&quot; hypothesis to be applied to each 
- triangle</p>
-
-<p class="whs2">algo.MaxElementArea(30)</p>
-
-<p>&nbsp;</p>
-
-<p># define &quot;LengthFromEdges&quot; hypothesis to build triangles based 
- on the length of the edges taken from the wire</p>
-
-<p class="whs2">algo.LengthFromEdges()</p>
-
-<p>&nbsp;</p>
-
-<p># create local hypothesis</p>
-
-<p class="whs2">algo = hexa.Segment()</p>
-
-<p>&nbsp;</p>
-
-<p># define &quot;NumberOfSegments&quot; hypothesis to cut an edge in a 
- fixed number of segments</p>
-
-<p class="whs2">algo.NumberOfSegments(2)</p>
-
-<p>&nbsp;</p>
-
-<p># compute the mesh</p>
-
-<p class="whs2">hexa.Compute() </p>
 
 <p class="whs2">&nbsp;</p>
 
+<p class="whs3"># Define 1D meshing</p>
+
+<p class="whs2">algo = tria.Segment()</p>
+
+<p class="whs2">algo.NumberOfSegments(2)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs3"># create and assign the 
+ algorithm for 2D meshing with triangles</p>
+
+<p class="whs2">algo = tria.Triangle()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs3"># create and assign &quot;LengthFromEdges&quot; 
+ hypothesis to build triangles </p>
+
+<p class="whs3"># based on the length 
+ of the edges taken from the wire</p>
+
+<p class="whs2">algo.LengthFromEdges()</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs3"># compute the mesh</p>
+
+<p class="whs2">tria.Compute() </p>
+
+<p class="whs2">&nbsp;</p>
+
+<h3>Defining Additional Hypotheses</h3>
+
 <h4><a name=bookmark7>Propagation</a></h4>
 
-<p class="whs2">from geompy import 
- *</p>
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">from 
+ geompy import *</span></p>
 
 <p class="whs2">import smesh</p>
 
@@ -1302,21 +1210,15 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs3"># create a solid</p>
 
-<p class="whs2">Block = MakeHexa(FaceX11, 
+<p class="whs2">box = MakeHexa(FaceX11, 
  FaceX21, FaceY111, FaceY121, FaceZ11, FaceZ12)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs3"># create a compound</p>
-
-<p class="whs2">box = MakeCompound([Block])</p>
 
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># add in the study</p>
 
 <p class="whs2">box_id = addToStudy(box, 
- &quot;Box compound&quot;)</p>
+ &quot;Box&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
@@ -1324,7 +1226,12 @@ a straight edge in a fixed number of segments</p>
  mesh on the box</p>
 
 <p class="whs2">hexa = smesh.Mesh(box, 
- &quot;Box compound : hexahedrical mesh&quot;)</p>
+ &quot;Box : hexahedrical mesh&quot;)</p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs3"># create an 1D algorithm 
+ for edges</p>
 
 <p class="whs2">algo = hexa.Segment()</p>
 
@@ -1357,11 +1264,9 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"><span style="font-family: 'Times New Roman', serif;"># 
- define &quot;Arithmetic1D&quot; hypothesis to cut an edge in several segments 
- with arithmetic length</span> </p>
-
-<p class="whs2">increasing</p>
+<p class="whs3"># define &quot;Arithmetic1D&quot; 
+ hypothesis to cut an edge<span style="font-family: 'Times New Roman', serif;"> 
+ in several segments with increasing length</span></p>
 
 <p class="whs2">algo.Arithmetic1D(1, 
  4)</p>
@@ -1369,8 +1274,10 @@ a straight edge in a fixed number of segments</p>
 <p class="whs2">&nbsp;</p>
 
 <p class="whs3"># define &quot;Propagation&quot; 
- hypothesis that propagatea all other hypothesis on all edges on the opposite 
- side in case of quadrangular faces</p>
+ hypothesis that propagates all other 1D hypotheses</p>
+
+<p class="whs3"># from all edges on the 
+ opposite side of a face in case of quadrangular faces</p>
 
 <p class="whs2">algo.Propagation()</p>
 
@@ -1378,9 +1285,7 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs3"># compute the mesh</p>
 
-<p class="whs2">hexa.Compute() </p>
-
-<p class="whs2">&nbsp;</p>
+<p class="whs2">hexa.Compute() &nbsp;</p>
 
 <h3><a name=bookmark8>Defining Meshing Algorithms</a></h3>
 
@@ -1400,9 +1305,9 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">smeshgui.Init(salome.myStudyId);</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs5"># create algorithms</p>
+<p class="whs6"># create algorithms</p>
 
 <p class="whs4">print &quot;-------------------------- 
  create Algorithms&quot;</p>
@@ -1462,7 +1367,7 @@ a straight edge in a fixed number of segments</p>
 
 <p class="whs4">salome.sg.updateObjBrowser(1)</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

@@ -53,7 +53,7 @@ class SMESHGUI_FilterLibraryDlg : public QDialog
   Q_OBJECT
   
   // Buttons
-  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close };
+  enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
 
   class Dialog;
   
@@ -94,6 +94,7 @@ private slots:
   void                        onOk();
   bool                        onApply();
   void                        onClose();
+  void                        onHelp();
 
   void                        onDeactivate();
   
@@ -152,6 +153,7 @@ private:
   QString                     myCurrFilterName;
   int                         myCurrFilter;
 
+  QString                     myHelpFileName;
 };
 
 #endif

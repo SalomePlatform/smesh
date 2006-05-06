@@ -347,7 +347,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
 
   double f, l;
   Handle(Geom_Curve) Curve = BRep_Tool::Curve(theEdge, f, l);
-  GeomAdaptor_Curve C3d(Curve);
+  GeomAdaptor_Curve C3d (Curve, f, l);
 
   double length = EdgeLength(theEdge);
 
@@ -368,11 +368,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(const TopoDS_Edge& theEdge
     else
     {
       // Number Of Segments hypothesis
+      int NbSegm = _ivalue[ NB_SEGMENTS_IND ];
+      if ( NbSegm < 1 )  return false;
+      if ( NbSegm == 1 ) return true;
+
       switch (_ivalue[ DISTR_TYPE_IND ])
       {
       case StdMeshers_NumberOfSegments::DT_Scale:
         {
-          int NbSegm   = _ivalue[ NB_SEGMENTS_IND ];
           double scale = _value[ SCALE_FACTOR_IND ];
 
           if (fabs(scale - 1.0) < Precision::Confusion()) {
@@ -645,8 +648,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       if(_quadraticMesh) {
         // create medium node
         double prm = param - du/2.;
-        gp_Pnt PM = Curve->Value(prm);
-        SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
+        SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnEdge(NM, shapeID, prm);
         SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node, NM);
         meshDS->SetMeshElementOnShape(edge, shapeID);
@@ -661,8 +663,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     if(_quadraticMesh) {
       // create medium node
       double prm = l - du/2.;
-      gp_Pnt PM = Curve->Value(prm);
-      SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
+      SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
       meshDS->SetNodeOnEdge(NM, shapeID, prm);
       SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast, NM);
       meshDS->SetMeshElementOnShape(edge, shapeID);
@@ -705,7 +706,7 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;
       // get non-auxiliary assigned to _mainEdge
-      nbHyp = aMesh.GetHypotheses( _mainEdge, compatibleFilter, _usedHypList, false );
+      nbHyp = aMesh.GetHypotheses( _mainEdge, compatibleFilter, _usedHypList, true );
     }
   }
 

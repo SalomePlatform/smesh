@@ -114,6 +114,12 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
     
     /*!
+     * Create a empty mesh object
+     */
+    SMESH_Mesh CreateEmptyMesh()
+      raises ( SALOME::SALOME_Exception );
+    
+    /*!
      * Create Mesh object importing data from given UNV file
      */
     SMESH_Mesh CreateMeshesFromUNV( in string theFileName )

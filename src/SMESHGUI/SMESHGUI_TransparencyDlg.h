@@ -63,14 +63,18 @@ private :
   SVTK_ViewWindow*        myViewWindow;
 
   QPushButton*      buttonOk;
+  QPushButton*      buttonHelp;
   QLabel*           TextLabelOpaque;
   QLabel*           ValueLab;
   QLabel*           TextLabelTransparent;
   QSlider*          Slider1;
 
+  QString           myHelpFileName;
+
 public slots:
       
     void ClickOnOk();
+    void ClickOnHelp();
     void ValueHasChanged();
     void SetTransparency();
     void onSelectionChanged();

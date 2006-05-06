@@ -53,7 +53,9 @@ LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SALOME_Component.idl \
 		 SMESH_Filter.idl \
 		 SMESH_Pattern.idl \
-		 SALOME_GenericObj.idl
+		 SALOME_GenericObj.idl \
+		 SALOME_Comm.idl \
+		 MED.idl
 
 # header files 
 EXPORT_HEADERS= SMESH_Type.h \

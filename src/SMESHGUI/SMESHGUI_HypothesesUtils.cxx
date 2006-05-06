@@ -250,17 +250,50 @@ namespace SMESH{
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    if (myHypothesesMap.find(aHypType) == myHypothesesMap.end()) {
-      if (myAlgorithmsMap.find(aHypType) != myAlgorithmsMap.end()) {
-	aHypData = myAlgorithmsMap[aHypType];
-      }
+    THypothesisDataMap::iterator type_data = myHypothesesMap.find(aHypType);
+    if (type_data != myHypothesesMap.end()) {
+      aHypData = type_data->second;
     }
     else {
-      aHypData = myHypothesesMap[aHypType];
+      type_data = myAlgorithmsMap.find(aHypType);
+      if (type_data != myAlgorithmsMap.end())
+        aHypData = type_data->second;
     }
     return aHypData;
   }
 
+  bool IsAvailableHypothesis(const HypothesisData* algoData,
+                             const QString&        hypType,
+                             bool&                 isAuxiliary)
+  {
+    isAuxiliary = false;
+    if ( !algoData )
+      return false;
+    if ( algoData->NeededHypos.contains( hypType ))
+      return true;
+    if ( algoData->OptionalHypos.contains( hypType)) {
+      isAuxiliary = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool IsCompatibleAlgorithm(const HypothesisData* algo1Data,
+                             const HypothesisData* algo2Data)
+  {
+    if ( !algo1Data || !algo2Data )
+      return false;
+    const HypothesisData* algoIn = algo1Data, *algoMain = algo2Data;
+    if ( algoIn->Dim.first() > algoMain->Dim.first() ) {
+      algoIn = algo2Data; algoMain = algo1Data;
+    }
+    // look for any output type of algoIn between input types of algoMain
+    QStringList::const_iterator inElemType = algoIn->OutputTypes.begin();
+    for ( ; inElemType != algoIn->OutputTypes.end(); ++inElemType )
+      if ( algoMain->InputTypes.contains( *inElemType ))
+        return true;
+    return false;
+  }
 
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType)
   {

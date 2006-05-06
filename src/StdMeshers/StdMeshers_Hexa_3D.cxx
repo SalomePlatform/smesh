@@ -199,7 +199,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
   //MESSAGE("---");
 
   // tool for working with quadratic elements
-  StdMeshers_Helper aTool (aMesh);
+  SMESH_MesherHelper aTool (aMesh);
   _quadraticMesh = aTool.IsQuadraticSubMesh(aShape);
 
   // cube structure

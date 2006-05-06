@@ -46,10 +46,13 @@
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_FileDlg.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Study.h"
+#include "LightApp_Application.h"
 
 #include "SALOMEDS_SObject.hxx"
 
@@ -59,6 +62,7 @@
 #include "SVTK_ViewModel.h"
 #include "SVTK_Selector.h"
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
@@ -86,7 +90,6 @@
 // VTK Includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -128,6 +131,8 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
   myCreationDlg = 0;
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+
+  myHelpFileName = "pattern_mapping.htm";
 
   Init();
 }
@@ -290,6 +295,7 @@ QFrame* SMESHGUI_MeshPatternDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -299,10 +305,12 @@ QFrame* SMESHGUI_MeshPatternDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
@@ -425,6 +433,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
 	  }
 	}
       }
+      mySelectionMgr->clearSelected();
       SMESH::UpdateView();
 
       mySMESHGUI->updateObjBrowser(true);
@@ -470,6 +479,23 @@ void SMESHGUI_MeshPatternDlg::onClose()
   mySMESHGUI->ResetState();
   erasePreview();
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshPatternDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================
@@ -1200,7 +1226,7 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
       else aCellTypesArray->InsertNextValue(VTK_EMPTY_CELL);
     }
 
-    vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+    VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
     aCellLocationsArray->SetNumberOfComponents(1);
     aCellLocationsArray->SetNumberOfTuples(aNbCells);
 

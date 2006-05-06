@@ -40,8 +40,11 @@
 #include "SMDS_MeshNode.hxx"
 
 #include "LightApp_SelectionMgr.h"
+#include "LightApp_Application.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
@@ -49,6 +52,7 @@
 #include "SALOME_ListIO.hxx"
 
 #include "SVTK_ViewWindow.h"
+#include "VTKViewer_CellLocationsArray.h"
 
 #include "utilities.h"
 
@@ -58,7 +62,6 @@
 // VTK includes
 #include <vtkCell.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -114,6 +117,8 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
+  myHelpFileName = "/files/displacing_nodes.htm";
+
   Init();
 }
 
@@ -129,6 +134,7 @@ QFrame* SMESHGUI_MoveNodesDlg::createButtonFrame (QWidget* theParent)
   myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
+  myHelpBtn   = new QPushButton(tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -138,10 +144,12 @@ QFrame* SMESHGUI_MoveNodesDlg::createButtonFrame (QWidget* theParent)
   aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myHelpBtn);
 
   connect(myOkBtn,    SIGNAL(clicked()), SLOT(onOk()));
   connect(myCloseBtn, SIGNAL(clicked()), SLOT(onClose()));
   connect(myApplyBtn, SIGNAL(clicked()), SLOT(onApply()));
+  connect(myHelpBtn,  SIGNAL(clicked()), SLOT(onHelp()));
 
   return aFrame;
 }
@@ -329,6 +337,23 @@ void SMESHGUI_MoveNodesDlg::onClose()
   erasePreview();
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : onHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MoveNodesDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================
@@ -522,7 +547,7 @@ void SMESHGUI_MoveNodesDlg::redisplayPreview()
   aCellTypesArray->InsertNextValue(VTK_VERTEX);
   anIdList->Delete();
 
-  vtkIntArray* aCellLocationsArray = vtkIntArray::New();
+  VTKViewer_CellLocationsArray* aCellLocationsArray = VTKViewer_CellLocationsArray::New();
   aCellLocationsArray->SetNumberOfComponents(1);
   aCellLocationsArray->SetNumberOfTuples(1);
 

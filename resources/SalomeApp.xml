@@ -1,0 +1,47 @@
+<document>
+  <section name="SMESH">
+    <!-- Major module parameters -->
+    <parameter name="name" value="Mesh"/>
+    <parameter name="icon" value="ModuleMesh.png"/>
+    <!-- Other module preferences -->
+    <parameter name="node_color"                   value="255, 0,   0"/>
+    <parameter name="fill_color"                   value="0, 170, 255"/>
+    <parameter name="outline_color"                value="0, 170, 255"/>
+    <parameter name="backface_color"               value="0, 0,   255"/>
+    <parameter name="highlight_color"              value="0, 255, 255"/>
+    <parameter name="node_size"                    value="3" />
+    <parameter name="element_width"                value="1" />
+    <parameter name="shrink_coeff"                 value="75"/>
+    <parameter name="selection_element_color"      value="255, 255,   0"/>
+    <parameter name="selection_object_color"       value="255, 255, 255"/>
+    <parameter name="selection_precision_element"  value="0.005"/>
+    <parameter name="selection_precision_node"     value="0.005"/>
+    <parameter name="selection_width"              value="5"/>
+    <parameter name="highlight_width"              value="5"/>
+    <parameter name="controls_precision"           value="0"/>
+    <parameter name="scalar_bar_horizontal_height" value="0.05"/>
+    <parameter name="scalar_bar_horizontal_width"  value="0.5" />
+    <parameter name="scalar_bar_horizontal_x"      value="0.01"/>
+    <parameter name="scalar_bar_horizontal_y"      value="0.01"/>
+    <parameter name="scalar_bar_label_color"       value="255, 255, 255"/>
+    <parameter name="scalar_bar_label_font"        value="Arial,12"     />
+    <parameter name="scalar_bar_num_colors"        value="64"/>
+    <parameter name="scalar_bar_num_labels"        value="5" />
+    <parameter name="scalar_bar_orientation"       value="0" />
+    <parameter name="scalar_bar_title_color"       value="255, 255, 255"/>
+    <parameter name="scalar_bar_title_font"        value="Arial,12"     />
+    <parameter name="scalar_bar_vertical_height"   value="0.5"  />
+    <parameter name="scalar_bar_vertical_width"    value="0.05" />
+    <parameter name="scalar_bar_vertical_x"        value="0.01" />
+    <parameter name="scalar_bar_vertical_y"        value="0.01" />
+    <parameter name="DisplayMode"                  value="true" />
+    <parameter name="auto_update"                  value="true" />
+    <parameter name="display_mode"                 value="1"    />
+    <parameter name="auto_groups"                  value="false"/>
+  </section>
+  <section name="resources">
+    <!-- Module resources -->
+    <parameter name="SMESH"      value="${SMESH_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="StdMeshers" value="${SMESH_ROOT_DIR}/share/salome/resources"/>
+  </section>
+</document>

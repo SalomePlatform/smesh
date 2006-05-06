@@ -66,6 +66,7 @@ private slots:
   void                          onOk();
   bool                          onApply();
   void                          onClose();
+  void                          onHelp();
 
   void                          onDeactivate();
 
@@ -90,6 +91,7 @@ private:
   QPushButton*                  myOkBtn;
   QPushButton*                  myApplyBtn;
   QPushButton*                  myCloseBtn;
+  QPushButton*                  myHelpBtn;
   
   QLineEdit*                    myId;
   SMESHGUI_SpinBox*             myX;
@@ -103,6 +105,8 @@ private:
   SALOME_Actor*                 myPreviewActor;
   SMESH_Actor*                  myMeshActor;
   bool                          myBusy;
+
+  QString                       myHelpFileName;
 };
 
 #endif // DIALOGBOX_MOVE_NODES_H

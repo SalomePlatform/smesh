@@ -184,10 +184,40 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
   if(MYDEBUG){
-    MESSAGE("MEDToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
-    MESSAGE("MEDToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
-    MESSAGE("MEDToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
-    MESSAGE("MEDToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+    MESSAGE("UNVToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
+    MESSAGE("UNVToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
+    MESSAGE("UNVToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
+    MESSAGE("UNVToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+  }
+  SMDS_MeshGroup* aGroup = (SMDS_MeshGroup*) myReader.GetGroup();
+  if (aGroup != 0) {
+    TGroupNamesMap aGroupNames = myReader.GetGroupNamesMap();
+    //const TGroupIdMap& aGroupId = myReader.GetGroupIdMap();
+    aGroup->InitSubGroupsIterator();
+    while (aGroup->MoreSubGroups()) {
+      SMDS_MeshGroup* aSubGroup = (SMDS_MeshGroup*) aGroup->NextSubGroup();
+      std::string aName = aGroupNames[aSubGroup];
+      int aId;
+
+      SMESH_Group* aSMESHGroup = AddGroup( aSubGroup->GetType(), aName.c_str(), aId );
+      if ( aSMESHGroup ) {
+	if(MYDEBUG) MESSAGE("UNVToMesh - group added: "<<aName);      
+	SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aSMESHGroup->GetGroupDS() );
+	if ( aGroupDS ) {
+	  aGroupDS->SetStoreName(aName.c_str());
+	  aSubGroup->InitIterator();
+	  const SMDS_MeshElement* aElement = 0;
+	  while (aSubGroup->More()) {
+	    aElement = aSubGroup->Next();
+	    if (aElement) {
+	      aGroupDS->SMDSGroup().Add(aElement);
+	    }
+	  }
+	  if (aElement)
+	    aGroupDS->SetType(aElement->GetType());
+	}
+      }
+    }
   }
   return 1;
 }
@@ -242,7 +272,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
 
 int SMESH_Mesh::STLToMesh(const char* theFileName)
 {
-  if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
+  if(MYDEBUG) MESSAGE("STLToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
   _isShapeToMesh = true;
@@ -252,10 +282,10 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
   if(MYDEBUG){
-    MESSAGE("MEDToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
-    MESSAGE("MEDToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
-    MESSAGE("MEDToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
-    MESSAGE("MEDToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
+    MESSAGE("STLToMesh - _myMeshDS->NbNodes() = "<<_myMeshDS->NbNodes());
+    MESSAGE("STLToMesh - _myMeshDS->NbEdges() = "<<_myMeshDS->NbEdges());
+    MESSAGE("STLToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
+    MESSAGE("STLToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
   }
   return 1;
 }
@@ -918,6 +948,17 @@ void SMESH_Mesh::ExportUNV(const char *file) throw(SALOME_Exception)
   myWriter.SetFile(string(file));
   myWriter.SetMesh(_myMeshDS);
   myWriter.SetMeshId(_idDoc);
+  //  myWriter.SetGroups(_mapGroup);
+
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    SMESH_Group*       aGroup   = it->second;
+    SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
+    if ( aGroupDS ) {
+      string aGroupName = aGroup->GetName();
+      aGroupDS->SetStoreName( aGroupName.c_str() );
+      myWriter.AddGroup( aGroupDS );
+    }
+  }
   myWriter.Perform();
 }
 
@@ -948,10 +989,21 @@ int SMESH_Mesh::NbNodes() throw(SALOME_Exception)
  *  
  */
 //=============================================================================
-int SMESH_Mesh::NbEdges() throw(SALOME_Exception)
+int SMESH_Mesh::NbEdges(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->NbEdges();
+  if (order == ORDER_ANY)
+    return _myMeshDS->NbEdges();
+
+  int Nb = 0;
+  SMDS_EdgeIteratorPtr it = _myMeshDS->edgesIterator();
+  while (it->more()) {
+    const SMDS_MeshEdge* cur = it->next();
+    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
+      Nb++;
+  }
+  return Nb;
 }
 
 //=============================================================================
@@ -959,27 +1011,40 @@ int SMESH_Mesh::NbEdges() throw(SALOME_Exception)
  *  
  */
 //=============================================================================
-int SMESH_Mesh::NbFaces() throw(SALOME_Exception)
+int SMESH_Mesh::NbFaces(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->NbFaces();
+  if (order == ORDER_ANY)
+    return _myMeshDS->NbFaces();
+
+  int Nb = 0;
+  SMDS_FaceIteratorPtr it = _myMeshDS->facesIterator();
+  while (it->more()) {
+    const SMDS_MeshFace* cur = it->next();
+    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
+      Nb++;
+  }
+  return Nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the number of 3 nodes faces in the mesh. This method run in O(n)
 ///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbTriangles() throw(SALOME_Exception)
+int SMESH_Mesh::NbTriangles(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  //while(itFaces->more()) if(itFaces->next()->NbNodes()==3) Nb++;
-  const SMDS_MeshFace * curFace;
   while (itFaces->more()) {
-    curFace = itFaces->next();
+    const SMDS_MeshFace* curFace = itFaces->next();
+    int nbnod = curFace->NbNodes();
     if ( !curFace->IsPoly() && 
-	 ( curFace->NbNodes()==3 || curFace->NbNodes()==6 ) ) Nb++;
+	 ( order == ORDER_ANY && (nbnod==3 || nbnod==6) ||
+           order == ORDER_LINEAR && nbnod==3 ||
+           order == ORDER_QUADRATIC && nbnod==6 ) )
+      Nb++;
   }
   return Nb;
 }
@@ -987,18 +1052,20 @@ int SMESH_Mesh::NbTriangles() throw(SALOME_Exception)
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the number of 4 nodes faces in the mesh. This method run in O(n)
 ///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbQuadrangles() throw(SALOME_Exception)
+int SMESH_Mesh::NbQuadrangles(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   
   SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  //while(itFaces->more()) if(itFaces->next()->NbNodes()==4) Nb++;
-  const SMDS_MeshFace * curFace;
   while (itFaces->more()) {
-    curFace = itFaces->next();
+    const SMDS_MeshFace* curFace = itFaces->next();
+    int nbnod = curFace->NbNodes();
     if ( !curFace->IsPoly() && 
-	 ( curFace->NbNodes() == 4 || curFace->NbNodes()==8 ) ) Nb++;
+	 ( order == ORDER_ANY && (nbnod==4 || nbnod==8) ||
+           order == ORDER_LINEAR && nbnod==4 ||
+           order == ORDER_QUADRATIC && nbnod==8 ) )
+      Nb++;
   }
   return Nb;
 }
@@ -1021,68 +1088,87 @@ int SMESH_Mesh::NbPolygons() throw(SALOME_Exception)
  *  
  */
 //=============================================================================
-int SMESH_Mesh::NbVolumes() throw(SALOME_Exception)
+int SMESH_Mesh::NbVolumes(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->NbVolumes();
-}
+  if (order == ORDER_ANY)
+    return _myMeshDS->NbVolumes();
 
-int SMESH_Mesh::NbTetras() throw(SALOME_Exception)
-{
-  Unexpect aCatch(SalomeException);
   int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==4) Nb++;
-  const SMDS_MeshVolume * curVolume;
-  while (itVolumes->more()) {
-    curVolume = itVolumes->next();
-    if ( !curVolume->IsPoly() && 
-	 ( curVolume->NbNodes() == 4 || curVolume->NbNodes()==10 ) ) Nb++;
+  SMDS_VolumeIteratorPtr it = _myMeshDS->volumesIterator();
+  while (it->more()) {
+    const SMDS_MeshVolume* cur = it->next();
+    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
+         order == ORDER_QUADRATIC && cur->IsQuadratic() )
+      Nb++;
   }
   return Nb;
 }
 
-int SMESH_Mesh::NbHexas() throw(SALOME_Exception)
+int SMESH_Mesh::NbTetras(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==8) Nb++;
-  const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
-    curVolume = itVolumes->next();
+    const SMDS_MeshVolume* curVolume = itVolumes->next();
+    int nbnod = curVolume->NbNodes();
     if ( !curVolume->IsPoly() && 
-	 ( curVolume->NbNodes() == 8 || curVolume->NbNodes()==20 ) ) Nb++;
+	 ( order == ORDER_ANY && (nbnod==4 || nbnod==10) ||
+           order == ORDER_LINEAR && nbnod==4 ||
+           order == ORDER_QUADRATIC && nbnod==10 ) )
+      Nb++;
   }
   return Nb;
 }
 
-int SMESH_Mesh::NbPyramids() throw(SALOME_Exception)
+int SMESH_Mesh::NbHexas(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==5) Nb++;
-  const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
-    curVolume = itVolumes->next();
+    const SMDS_MeshVolume* curVolume = itVolumes->next();
+    int nbnod = curVolume->NbNodes();
     if ( !curVolume->IsPoly() && 
-	 ( curVolume->NbNodes() == 5 || curVolume->NbNodes()==13 ) ) Nb++;
+	 ( order == ORDER_ANY && (nbnod==8 || nbnod==20) ||
+           order == ORDER_LINEAR && nbnod==8 ||
+           order == ORDER_QUADRATIC && nbnod==20 ) )
+      Nb++;
   }
   return Nb;
 }
 
-int SMESH_Mesh::NbPrisms() throw(SALOME_Exception)
+int SMESH_Mesh::NbPyramids(ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   int Nb = 0;
   SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  //while(itVolumes->more()) if(itVolumes->next()->NbNodes()==6) Nb++;
-  const SMDS_MeshVolume * curVolume;
   while (itVolumes->more()) {
-    curVolume = itVolumes->next();
+    const SMDS_MeshVolume* curVolume = itVolumes->next();
+    int nbnod = curVolume->NbNodes();
     if ( !curVolume->IsPoly() && 
-	 ( curVolume->NbNodes() == 6 || curVolume->NbNodes()==15 ) ) Nb++;
+	 ( order == ORDER_ANY && (nbnod==5 || nbnod==13) ||
+           order == ORDER_LINEAR && nbnod==5 ||
+           order == ORDER_QUADRATIC && nbnod==13 ) )
+      Nb++;
+  }
+  return Nb;
+}
+
+int SMESH_Mesh::NbPrisms(ElementOrder order) throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  int Nb = 0;
+  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
+  while (itVolumes->more()) {
+    const SMDS_MeshVolume* curVolume = itVolumes->next();
+    int nbnod = curVolume->NbNodes();
+    if ( !curVolume->IsPoly() && 
+	 ( order == ORDER_ANY && (nbnod==6 || nbnod==15) ||
+           order == ORDER_LINEAR && nbnod==6 ||
+           order == ORDER_QUADRATIC && nbnod==15 ) )
+      Nb++;
   }
   return Nb;
 }

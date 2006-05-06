@@ -101,12 +101,16 @@ private:
     QPushButton* buttonApply;
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
+    QPushButton* buttonHelp;
+
+    QString      myHelpFileName;
 
 private slots:
 
     void ClickOnOk();
     void ClickOnCancel();
     bool ClickOnApply();
+    void ClickOnHelp();
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
     void SelectionIntoArgument() ;

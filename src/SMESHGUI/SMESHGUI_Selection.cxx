@@ -293,7 +293,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
     if ( !io.IsNull() ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io) ; // m,sm,gr->m
       if ( !mesh->_is_nil() ) {*/
-        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ) );
+        _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
 	//FindSObject( mesh );
         if ( so ) {
           GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );

@@ -50,29 +50,29 @@ class SMESH_Actor: public SALOME_Actor
 			  const char* theName,
 			  int theIsClear);
   
-  virtual void SetSufaceColor(float r,float g,float b) = 0;
-  virtual void GetSufaceColor(float& r,float& g,float& b) = 0;
+  virtual void SetSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
   
-  virtual void SetBackSufaceColor(float r,float g,float b) = 0;
-  virtual void GetBackSufaceColor(float& r,float& g,float& b) = 0;
+  virtual void SetBackSufaceColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetBackSufaceColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
   
-  virtual void SetEdgeColor(float r,float g,float b) = 0;
-  virtual void GetEdgeColor(float& r,float& g,float& b) = 0;
+  virtual void SetEdgeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetEdgeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
-  virtual void SetNodeColor(float r,float g,float b) = 0;
-  virtual void GetNodeColor(float& r,float& g,float& b) = 0;
+  virtual void SetNodeColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetNodeColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
-  virtual void SetHighlightColor(float r,float g,float b) = 0;
-  virtual void GetHighlightColor(float& r,float& g,float& b) = 0;
+  virtual void SetHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
 
-  virtual void SetPreHighlightColor(float r,float g,float b) = 0;
-  virtual void GetPreHighlightColor(float& r,float& g,float& b) = 0;
+  virtual void SetPreHighlightColor(vtkFloatingPointType r,vtkFloatingPointType g,vtkFloatingPointType b) = 0;
+  virtual void GetPreHighlightColor(vtkFloatingPointType& r,vtkFloatingPointType& g,vtkFloatingPointType& b) = 0;
  
-  virtual float GetLineWidth() = 0;
-  virtual void SetLineWidth(float theVal) = 0;
+  virtual vtkFloatingPointType GetLineWidth() = 0;
+  virtual void SetLineWidth(vtkFloatingPointType theVal) = 0;
 
-  virtual void SetNodeSize(float size) = 0;
-  virtual float GetNodeSize() = 0;
+  virtual void SetNodeSize(vtkFloatingPointType size) = 0;
+  virtual vtkFloatingPointType GetNodeSize() = 0;
 
   enum EReperesent { ePoint, eEdge, eSurface};
   
@@ -85,7 +85,7 @@ class SMESH_Actor: public SALOME_Actor
 
   virtual vtkUnstructuredGrid* GetUnstructuredGrid() = 0;
 
-  virtual void SetShrinkFactor(float theValue) = 0;
+  virtual void SetShrinkFactor(vtkFloatingPointType theValue) = 0;
 
   virtual void SetPointsLabeled(bool theIsPointsLabeled) = 0;
   virtual bool GetPointsLabeled() = 0;
@@ -101,8 +101,8 @@ class SMESH_Actor: public SALOME_Actor
 
   virtual vtkScalarBarActor* GetScalarBarActor() = 0;
 
-  virtual void SetPlaneParam(float theDir[3], float theDist, vtkPlane* thePlane) = 0;
-  virtual void GetPlaneParam(float theDir[3], float& theDist, vtkPlane* thePlane) = 0;
+  virtual void SetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType theDist, vtkPlane* thePlane) = 0;
+  virtual void GetPlaneParam(vtkFloatingPointType theDir[3], vtkFloatingPointType& theDist, vtkPlane* thePlane) = 0;
 
   virtual void RemoveAllClippingPlanes() = 0; 
   virtual vtkIdType GetNumberOfClippingPlanes() = 0; 

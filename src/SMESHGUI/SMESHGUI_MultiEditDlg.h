@@ -86,6 +86,7 @@ protected slots:
   void                      onOk();
   virtual bool              onApply();
   virtual void              onClose();
+  void                      onHelp();
 
   void                      onDeactivate();
   void                      onSelectionDone();
@@ -121,6 +122,7 @@ protected:
   QPushButton*              myOkBtn;
   QPushButton*              myApplyBtn;
   QPushButton*              myCloseBtn;
+  QPushButton*              myHelpBtn;
   SMESH_Actor*              myActor;
   SMESH::SMESH_Mesh_var     myMesh;
 
@@ -156,6 +158,8 @@ protected:
   int                       myFilterType;
   bool                      myBusy;
   int                       myEntityType;
+
+  QString                   myHelpFileName;
 };
 
 /*!

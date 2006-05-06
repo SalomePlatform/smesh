@@ -11,7 +11,7 @@
     <book name="Defining hypotheses" >
       <item name="About Hypotheses" url="files/about_hypotheses.htm" />
       <item name="1D Meshing Hypotheses" url="files/arithmetic_1d.htm" />
-      <item name="Max Element Area hypothesis" url="files/max._element_area_hypothesis.htm" />
+      <item name="2D Meshing Hypotheses" url="files/max._element_area_hypothesis.htm" />
       <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
       <item name="Additional Hypotheses" url="files/non_conform_mesh_allowed_hypothesis.htm" />
     </book>
@@ -19,7 +19,8 @@
     <item name="Editing Meshes" url="files/reassigning_hypotheses_and_algorithms.htm" />
   </book>
   <book name="Viewing meshes" >
-    <item name="About viewing meshes" url="about_viewing_meshes.htm" />
+    <item name="Viewing meshes" url="about_viewing_meshes.htm" />
+    <item name="VTK 3D Viewer" url="files/vtk_3d_viewer.htm" />
     <item name="Mesh infos" url="files/viewing_mesh_info.htm" />
     <item name="Numbering" url="files/displaying_nodes_numbers.htm" />
     <item name="Display Mode" url="presentation.htm" />
@@ -42,6 +43,7 @@
     <item name="Warping" url="files/warp.htm" />
     <item name="Skew" url="files/skew.htm" />
     <item name="Aspect ratio 3D" url="aspect_ratio_3d.htm" />
+    <item name="Volume" url="volume.htm" />
   </book>
   <book name="Grouping elements" >
     <item name="Creating groups" url="files/creating_groups.htm" />
@@ -53,6 +55,7 @@
   </book>
   <book name="Modifying meshes" >
     <item name="Adding nodes and elements" url="files/adding_nodes_and_elements.htm" />
+    <item name="Adding quadratic elements" url="adding_quadratic_nodes_and_elements.htm" />
     <item name="Removing nodes and elements" url="files/removing_nodes_and_elements.htm" />
     <item name="Renumbering nodes and elements" url="files/renumbering_nodes_and_elements.htm" />
     <book name="Transforming meshes" >
@@ -61,6 +64,7 @@
       <item name="Symmetry" url="files/symmetry.htm" />
       <item name="Sewing meshes" url="files/sewing_meshes.htm" />
       <item name="Merging nodes" url="files/merging_nodes.htm" />
+      <item name="Merging Elements" url="merge_elements.htm" />
     </book>
     <item name="Moving nodes" url="files/displacing_nodes.htm" />
     <item name="Diagonal inversion of elements" url="files/diagonal_iversion_of_elements.htm" />

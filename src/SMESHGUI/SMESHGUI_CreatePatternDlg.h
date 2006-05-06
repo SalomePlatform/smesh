@@ -90,6 +90,7 @@ private slots:
   void                     onOk();
   void                     onSave();
   void                     onClose();
+  void                     onHelp();
 
   void                     onDeactivate();
 
@@ -116,6 +117,7 @@ private:
   QPushButton*             myOkBtn;
   QPushButton*             mySaveBtn;
   QPushButton*             myCloseBtn;
+  QPushButton*             myHelpBtn;
 
   QButtonGroup*            myTypeGrp;
   QRadioButton*            mySwitch2d;
@@ -141,6 +143,8 @@ private:
 
   SMESH::SMESH_Pattern_var myPattern;
   bool                     myIsLoaded;
+
+  QString                  myHelpFileName;
 };
 
 #endif

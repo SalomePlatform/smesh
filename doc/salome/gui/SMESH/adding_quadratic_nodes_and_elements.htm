@@ -1,0 +1,119 @@
+<!doctype HTML public "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<head>
+<title>Adding Quadratic Nodes and Elements</title>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com"><style type="text/css">
+<!--
+p.whs1 { margin-left:40px; }
+img_whs2 { border:none; width:148px; height:168px; border-style:none; }
+img_whs3 { border:none; width:332px; height:350px; float:none; border-style:none; }
+-->
+</style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+<!--
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//-->
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute; left:0px; top:0px; z-index:4; visibility:hidden; }
+-->
+</style><script type="text/javascript" language="javascript1.2" src="whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="whtopic.js"></script>
+</head>
+<body><script type="text/javascript" language="javascript1.2">
+<!--
+if (window.gbWhTopic)
+{
+	if (window.addTocInfo)
+	{
+	addTocInfo("MESH module\nModifying meshes\nAdding quadratic elements");
+addButton("show",BTN_TEXT,"Show","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("smesh.htm");
+
+		autoSync(1);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+//-->
+</script>
+<h1>Adding Quadratic Elements</h1>
+
+<p>MESH modules allows you to work with <span style="font-weight: bold;"><B>Quadratic 
+ Elements</B></span>.</p>
+
+<p>Quadratic Edge in not a straight but a broken line and can be defined 
+ by three points: first, middle and last. All more complex <span style="font-weight: bold;"><B>Quadratic 
+ Elements</B></span> differ from ordinary ones in that they consist of Quadratic 
+ Edges.</p>
+
+<p class=TODO
+	style="font-family: 'Arial Black', sans-serif; font-style: italic;">To 
+ add a quadratic element to your mesh:</p>
+
+<p class="whs1">1. Select your mesh in the Object Browser 
+ or in the 3D viewer.</p>
+
+<p class="whs1">2. From the <span style="font-weight: bold;"><B>Modification 
+ </B></span>menu choose the <span style="font-weight: bold;"><B>Add </B></span>item 
+ and select one of the following: </p>
+
+<p class="whs1"><img src="image152.gif" width="148px" height="168px" border="0" class="img_whs2"></p>
+
+<p class="whs1">To create any <span style="font-weight: bold;"><B>Quadratic 
+ Element </B></span>specify the nodes which will form your triangle by selecting 
+ them in the 3D viewer with pressed Shift button. Their numbers will appear 
+ in the dialog box as <span style="font-weight: bold;"><B>Corner Nodes</B></span> 
+ (alternatively you can just input numbers in this field without selection).The 
+ edges formed by the corner nodes will appear in the table. To define the 
+ middle nodes for each edge double-click on the respective field and input 
+ the number of the node. All edges and the object formed by them will be 
+ displayed in the Object browser. When all edges are defined you will be 
+ able to click <span style="font-weight: bold;"><B>OK</B></span> or <span style="font-weight: bold;"><B>Apply</B></span> 
+ button to add the element to the mesh. </p>
+
+<p class="whs1">&nbsp;<img src="pics/aqt.png" x-maintain-ratio="TRUE" width="332px" height="350px" border="0" class="img_whs3"></p>
+
+<p class="whs1"><span style="font-weight: bold;"><B>Reverse</B></span> 
+ button for Quadratic Edges switches the first and the last nodes. <span 
+ style="margin-left: 40px;">For all other elements it reverses the element. 
+ </span></p>
+
+<p class="whs1">&nbsp;</p>
+
+<script type="text/javascript" language="javascript1.2">
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+//-->
+</script>
+</body>
+</html>

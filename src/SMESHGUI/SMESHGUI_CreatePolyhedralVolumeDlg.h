@@ -98,6 +98,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupContent;
     QLabel* TextLabelIds;
     QPushButton* SelectElementsButton;
@@ -106,6 +107,8 @@ private:
     QLabel* myFacesByNodesLabel;
     QPushButton* AddButton;
     QPushButton* RemoveButton;
+
+    QString myHelpFileName;
        
     public slots:
 
@@ -119,6 +122,7 @@ private:
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument() ;
     void SelectionIntoArgument() ;
     void DeactivateActiveDialog() ;

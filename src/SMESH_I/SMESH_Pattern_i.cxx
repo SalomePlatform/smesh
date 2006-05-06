@@ -106,8 +106,21 @@ SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
 
 CORBA::Boolean SMESH_Pattern_i::LoadFromFile(const char* theFileContents)
 {
+  // remove some gabage from the end
+  TCollection_AsciiString patternDescription = (char*) theFileContents;
+  int pos = patternDescription.Length();
+  while (! isdigit( patternDescription.Value( pos )))
+    pos--;
+  if ( pos != patternDescription.Length() ) {
+    patternDescription.Trunc( pos );
+  }
+
   // Update Python script
-  TPythonDump() << "isDone = pattern.LoadFromFile(" << theFileContents << ")";
+  TPythonDump() << "isDone = pattern.LoadFromFile("
+                << TPythonDump::LongStringStart("Pattern")
+                << patternDescription
+                << TPythonDump::LongStringEnd()
+                << ")";
   addErrorCode( "LoadFromFile" );
 
   return myPattern.Load( theFileContents );
@@ -470,6 +483,7 @@ SMESH::SMESH_Pattern::ErrorCode SMESH_Pattern_i::GetErrorCode()
     RETCASE( ERR_LOAD_EMPTY_SUBMESH );
     RETCASE( ERR_LOADF_NARROW_FACE );
     RETCASE( ERR_LOADF_CLOSED_FACE );
+    RETCASE( ERR_LOADF_CANT_PROJECT );
     RETCASE( ERR_LOADV_BAD_SHAPE );
     RETCASE( ERR_LOADV_COMPUTE_PARAMS );
     RETCASE( ERR_APPL_NOT_LOADED );

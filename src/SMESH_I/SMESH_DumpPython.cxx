@@ -26,6 +26,7 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_2smeshpy.hxx"
 
 #include <TColStd_HSequenceOfInteger.hxx>
@@ -174,7 +175,7 @@ namespace SMESH
       myStream << aSObject->GetID();
     } else if ( !CORBA::is_nil(theArg)) {
       if ( aSMESHGen->CanPublishInStudy( theArg )) // not published SMESH object
-        myStream << "smeshObj_" << (int) theArg;
+        myStream << "smeshObj_" << size_t(theArg);
       else
         myStream << NotPublishedObjectName();
     }
@@ -253,7 +254,7 @@ namespace SMESH
 
   TPythonDump& TPythonDump::operator<<(SMESH_MeshEditor_i* theArg)
   {
-    myStream << MeshEditorName(); return *this;
+    myStream << MeshEditorName() << "_" << ( theArg ? theArg->GetMeshId() : -1 ); return *this;
   }
 
   TPythonDump& TPythonDump::operator<<(const TCollection_AsciiString & theStr)
@@ -292,6 +293,100 @@ namespace SMESH
              << P.y  << ", "
              << P.z  << " ))";
     return *this;
+  }
+
+  TCollection_AsciiString myLongStringStart( "TPythonDump::LongStringStart" );
+  TCollection_AsciiString myLongStringEnd  ( "TPythonDump::LongStringEnd" );
+
+  //================================================================================
+  /*!
+     * \brief Return marker of long string literal beginning
+      * \param type - a name of functionality producing the string literal 
+      * \retval TCollection_AsciiString - the marker string to be written into
+      * a raw python script
+   */
+  //================================================================================
+
+  TCollection_AsciiString TPythonDump::LongStringStart(const char* type)
+  {
+    return
+      myLongStringStart +
+      (Standard_Integer) strlen(type) +
+      " " +
+      (char*) type;
+  }
+
+  //================================================================================
+  /*!
+     * \brief Return marker of long string literal end
+      * \retval TCollection_AsciiString - the marker string to be written into
+      * a raw python script
+   */
+  //================================================================================
+
+  TCollection_AsciiString TPythonDump::LongStringEnd()
+  {
+    return myLongStringEnd;
+  }
+
+  //================================================================================
+  /*!
+     * \brief Cut out a long string literal from a string
+      * \param theText - text possibly containing string literals
+      * \param theFrom - position in the text to search from
+      * \param theLongString - the retrieved literal
+      * \param theStringType - a name of functionality produced the literal
+      * \retval bool - true if a string literal found
+     * 
+     * The literal is removed from theText; theFrom points position right after
+     * the removed literal
+   */
+  //================================================================================
+
+  bool  TPythonDump::CutoutLongString( TCollection_AsciiString & theText,
+                                       int                     & theFrom,
+                                       TCollection_AsciiString & theLongString,
+                                       TCollection_AsciiString & theStringType)
+  {
+    if ( theFrom < 1 || theFrom > theText.Length() )
+      return false;
+
+    // ...script \  beg marker    \ \ type \       literal              \  end marker  \ script...
+    //  "theText myLongStringStart7 Pattern!!! SALOME Mesh Pattern file myLongStringEndtextEnd"
+    //  012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+    //  0         1         2         3         4         5         6         7         8
+
+    theFrom = theText.Location( myLongStringStart, theFrom, theText.Length() ); // = 09
+    if ( !theFrom )
+      return false;
+
+    // find where literal begins
+    int literalBeg = theFrom + myLongStringStart.Length(); // = 26
+    char* typeLenStr = theText.ToCString() + literalBeg - 1; // = "7 Pattern!!! SALO...."
+    int typeLen = atoi ( typeLenStr ); // = 7
+    while ( *typeLenStr != ' ' ) { // look for ' ' after typeLen
+      literalBeg++; // 26 -> 27
+      typeLenStr++;
+    }
+    literalBeg += typeLen + 1; // = 35
+    if ( literalBeg > theText.Length() )
+      return false;
+
+    // where literal ends (i.e. end marker begins)
+    int literalEnd = theText.Location( myLongStringEnd, literalBeg, theText.Length() ); // = 64
+    if ( !literalEnd )
+      literalEnd = theText.Length();
+
+    // literal
+    theLongString = theText.SubString( literalBeg, literalEnd - 1); // "!!! SALOME Mesh Pattern file "
+    // type
+    theStringType = theText.SubString( literalBeg - typeLen, literalBeg - 1 ); // "Pattern"
+    // cut off literal
+    literalEnd += myLongStringEnd.Length(); // = 79
+    TCollection_AsciiString textEnd = theText.SubString( literalEnd, theText.Length() ); // "textE..."
+    theText = theText.SubString( 1, theFrom - 1 ) + textEnd;
+
+    return true;
   }
 }
 
@@ -463,6 +558,39 @@ Handle(TColStd_HSequenceOfInteger) FindEntries (TCollection_AsciiString& theStri
   return aSeq;
 }
 
+namespace {
+
+  //================================================================================
+  /*!
+   * \brief Make a string be a valid python name
+    * \param aName - a string to fix
+    * \retval bool - true if aName was not modified
+   */
+  //================================================================================
+
+  bool fixPythonName(TCollection_AsciiString & aName )
+  {
+    const TCollection_AsciiString allowedChars =
+      "qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_";
+    bool isValidName = true;
+    int p=1; // replace not allowed chars with underscore
+    while (p <= aName.Length() &&
+           (p = aName.FirstLocationNotInSet(allowedChars, p, aName.Length())))
+    {
+      if ( p == 1 || p == aName.Length() || aName.Value(p-1) == '_')
+        aName.Remove( p, 1 ); // remove double _ and from the start and the end
+      else
+        aName.SetValue(p, '_');
+      isValidName = false;
+    }
+    if ( aName.IsIntegerValue() ) { // aName must not start with a digit
+      aName.Insert( 1, 'a' );
+      isValidName = false;
+    }
+    return isValidName;
+  }
+}
+
 //=============================================================================
 /*!
  *  DumpPython
@@ -489,6 +617,16 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   else
     aScript += aSMESHGen + ".SetCurrentStudy(None)";
 
+  // import python files corresponding to plugins
+  set<string> moduleNameSet;
+  map<string, GenericHypothesisCreator_i*>::iterator hyp_creator = myHypCreatorMap.begin();
+  for ( ; hyp_creator != myHypCreatorMap.end(); ++hyp_creator ) {
+    string moduleName = hyp_creator->second->GetModuleName();
+    bool newModule = moduleNameSet.insert( moduleName ).second;
+    if ( newModule )
+      aScript += helper + "\n\t" + "import " + (char*) moduleName.c_str();
+  }
+
   // Dump trace of restored study
   if (theSavedTrace.Length() > 0) {
     // For the convertion of IDL API calls -> smesh.py API, "smesh" standing for SMESH_Gen
@@ -502,8 +640,8 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       int beg, end = aSavedTrace.Length(), from = 1;
       while ( from < end && ( beg = aSavedTrace.Location( aSmeshCall, from, end ))) {
         char charBefore = ( beg == 1 ) ? ' ' : aSavedTrace.Value( beg - 1 );
-        if ( isspace( charBefore ) || charBefore == '=' ) {
-          aSavedTrace.Insert( beg + aSmeshCall.Length() - 1, gen );
+        if ( isspace( charBefore ) || charBefore == '=' ) { // "smesh." is not a part of a long word
+          aSavedTrace.Insert( beg + aSmeshCall.Length() - 1, gen );// "smesh" -> "smeshgen"
           end += gen.Length();
         }
         from = beg + aSmeshCall.Length();
@@ -539,8 +677,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   TColStd_SequenceOfAsciiString seqRemoved;
   Resource_DataMapOfAsciiStringAsciiString mapRemoved;
   Standard_Integer objectCounter = 0, aStart = 1, aScriptLength = aScript.Length();
-  TCollection_AsciiString anUpdatedScript, anEntry, aName, aBaseName("smeshObj_"),
-    allowedChars ("qwertyuioplkjhgfdsazxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM0987654321_");
+  TCollection_AsciiString anUpdatedScript, anEntry, aName, aBaseName("smeshObj_");
 
   // Collect names of GEOM objects to exclude same names for SMESH objects
   GEOM::string_array_var aGeomNames = geom->GetAllDumpNames();
@@ -562,21 +699,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         // The Object is in Study
         aName = theObjectNames.Find(anEntry);
         // check validity of aName
-        bool isValidName = true;
-        int p=1; // replace not allowed chars with underscore
-        while (p <= aName.Length() &&
-               (p = aName.FirstLocationNotInSet(allowedChars, p, aName.Length())))
-        {
-          if ( p == 1 || p == aName.Length() || aName.Value(p-1) == '_')
-            aName.Remove( p, 1 ); // remove double _ and from the start and the end
-          else
-            aName.SetValue(p, '_');
-          isValidName = false;
-        }
-        if ( aName.IsIntegerValue() ) { // aName must not start with a digit
-          aName.Insert( 1, 'a' );
-          isValidName = false;
-        }
+        bool isValidName = fixPythonName( aName );
         if (theObjectNames.IsBound(aName) && anEntry != theObjectNames(aName)) {
           // diff objects have same name - make a new name by appending a digit
           TCollection_AsciiString aName2;
@@ -633,6 +756,10 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   for (int ir = 1; ir <= seqRemoved.Length(); ir++) {
     anUpdatedScript += "\n\tSO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(";
     anUpdatedScript += seqRemoved.Value(ir);
+    // for object wrapped by class of smesh.py
+    anEntry = theObjectNames( seqRemoved.Value(ir) );
+    if ( anEntry2AccessorMethod.IsBound( anEntry ) )
+      anUpdatedScript += helper + "." + anEntry2AccessorMethod( anEntry );
     anUpdatedScript += "))\n\tif SO is not None: aStudyBuilder.RemoveObjectWithChildren(SO)";
   }
 
@@ -667,6 +794,49 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   anUpdatedScript += "\n\n\t\tsalome.sg.updateObjBrowser(0)";
 
   anUpdatedScript += "\n\n\tpass\n";
+
+  // -----------------------------------------------------------------
+  // put string literals describing patterns into separate functions
+  // -----------------------------------------------------------------
+
+  TCollection_AsciiString aLongString, aFunctionType;
+  int where = 1;
+  set< string > functionNameSet;
+  while ( SMESH::TPythonDump::CutoutLongString( anUpdatedScript, where, aLongString, aFunctionType ))
+  {
+    // make a python string literal
+    aLongString.Prepend(":\n\treturn '''\n");
+    aLongString += "\n\t'''\n\tpass\n";
+
+    TCollection_AsciiString functionName;
+
+    // check if the function returning this literal is already defined
+    int posAlready = anUpdatedScript.Location( aLongString, where, anUpdatedScript.Length() );
+    if ( posAlready ) // already defined
+    {
+      // find the function name
+      int functBeg = posAlready;
+      char* script = anUpdatedScript.ToCString() + posAlready - 1; // look at ":" after "def fuction()"
+      while ( *script != ' ' ) {
+        script--;
+        functBeg--;
+      }
+      functBeg++; // do not take ' '
+      posAlready--; // do not take ':'
+      functionName = anUpdatedScript.SubString( functBeg, posAlready );
+    }
+    else // not defined yet
+    {
+      // find a unique function name
+      fixPythonName( aFunctionType );
+      Standard_Integer nb = 0;
+      do functionName = aFunctionType + "_" + ( nb++ ) + "()";
+      while ( !functionNameSet.insert( functionName.ToCString() ).second );
+
+      anUpdatedScript += helper + "\n\ndef " + functionName + aLongString; // define function
+    }
+    anUpdatedScript.InsertBefore( where, functionName ); // call function
+  }
 
   aValidScript = true;
 

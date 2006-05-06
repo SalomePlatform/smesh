@@ -217,8 +217,11 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   int iw = 1;
   int nbpnt = 0;
 
-  myTool = new StdMeshers_Helper(aMesh);
+  myTool = new SMESH_MesherHelper(aMesh);
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
+
+  if ( _quadraticMesh && _hypLengthFromEdges )
+    aretmx *= 2.;
 
   myOuterWire = BRepTools::OuterWire(F);
   nbpnt += NumberOfPoints(aMesh, myOuterWire);
@@ -428,7 +431,7 @@ static bool fixCommonVertexUV (gp_Pnt2d &           theUV,
       while ( nIt->more() ) {
         const SMDS_MeshNode* node = nIt->next();
         // check if node is medium
-        if ( CreateQuadratic && StdMeshers_Helper::IsMedium( node, SMDSAbs_Edge ))
+        if ( CreateQuadratic && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
           static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
@@ -524,7 +527,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(SMESH_Mesh &        aMesh,
     while ( nodeIt->more() )
     {
       node = nodeIt->next();
-      if ( _quadraticMesh && StdMeshers_Helper::IsMedium( node, SMDSAbs_Edge ))
+      if ( _quadraticMesh && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
         continue;
       const SMDS_EdgePosition* epos =
         static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());

@@ -100,6 +100,7 @@ private:
     QPushButton* buttonOk;
     QPushButton* buttonCancel;
     QPushButton* buttonApply;
+    QPushButton* buttonHelp;
     QGroupBox* GroupArguments;
     QGroupBox* GroupAxis;
     QLabel* TextLabelElements;
@@ -131,12 +132,15 @@ private:
     QLabel* TextLabelTolerance;
     SMESHGUI_SpinBox* SpinBox_Tolerance;
 
+    QString myHelpFileName;
+
 private slots:
 
     void ConstructorsClicked (int constructorId);
     void ClickOnOk();
     void ClickOnCancel();
     void ClickOnApply();
+    void ClickOnHelp();
     void SetEditCurrentArgument();
     void SelectionIntoArgument();
     void DeactivateActiveDialog();

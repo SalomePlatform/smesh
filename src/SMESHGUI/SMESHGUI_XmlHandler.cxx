@@ -128,10 +128,23 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
         if ( isOk )
           aDim.append( aVal - 1 );
       }
+
+      // for algo
+      enum { HYPOS = 0, OPT_HYPOS, INPUT, OUTPUT, NB_ATTRIBUTES };
+      const char* name [NB_ATTRIBUTES] = { "hypos", "opt-hypos", "input", "output" };
+      QStringList attr [NB_ATTRIBUTES];
+      for ( int i = 0; i < NB_ATTRIBUTES; ++i ) {
+        QString aStr = atts.value( name[i] );
+        if ( !aStr.isEmpty() ) {
+          aStr.remove( ' ' );
+          attr[ i ] = QStringList::split( ',', aStr );
+        }
+      }
       
       HypothesisData* aHypLibNames =
-        new HypothesisData (myPluginName, myServerLib, myClientLib,
-                            aLabel, anIcon, aDim, isAux );
+        new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
+                            aLabel, anIcon, aDim, isAux,
+                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ]);
 
       if (qName == "algorithm")
       {

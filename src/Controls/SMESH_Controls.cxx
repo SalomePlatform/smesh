@@ -246,6 +246,7 @@ void  NumericalFunctor::SetPrecision( const long thePrecision )
 
 double NumericalFunctor::GetValue( long theId )
 {
+  myCurrElement = myMesh->FindElement( theId );
   TSequenceOfXYZ P;
   if ( GetPoints( theId, P ))
   {
@@ -484,6 +485,7 @@ namespace{
 double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 {
   double aQuality = 0.0;
+  if(myCurrElement->IsPoly()) return aQuality;
   int nbNodes = P.size();
   switch(nbNodes){
   case 4:{
@@ -1292,60 +1294,58 @@ double MultiConnection2D::GetValue( const TSequenceOfXYZ& P )
 
 double MultiConnection2D::GetValue( long theElementId )
 {
-  TSequenceOfXYZ P;
   int aResult = 0;
 
-  if (GetPoints(theElementId,P)){
-    const SMDS_MeshElement* anFaceElem = myMesh->FindElement( theElementId );
-    SMDSAbs_ElementType aType = anFaceElem->GetType();
+  const SMDS_MeshElement* aFaceElem = myMesh->FindElement(theElementId);
+  SMDSAbs_ElementType aType = aFaceElem->GetType();
 
-    int len = P.size();
+  switch (aType) {
+  case SMDSAbs_Face:
+    {
+      int i = 0, len = aFaceElem->NbNodes();
+      SMDS_ElemIteratorPtr anIter = aFaceElem->nodesIterator();
+      if (!anIter) break;
 
-    TColStd_MapOfInteger aMap;
-    int aResult = 0;
+      const SMDS_MeshNode *aNode, *aNode0;
+      TColStd_MapOfInteger aMap, aMapPrev;
 
-    switch (aType){
-    case SMDSAbs_All:
-    case SMDSAbs_Node:
-    case SMDSAbs_Edge:
-    case SMDSAbs_Face:
-      if (len == 3){ // triangles
-	int Nb[3] = {0,0,0};
+      for (i = 0; i <= len; i++) {
+        aMapPrev = aMap;
+        aMap.Clear();
 
-	int i=0;
-	SMDS_ElemIteratorPtr anIter = anFaceElem->nodesIterator();
-	if ( anIter != 0 ) {
-	  while( anIter->more() ) {
-	    const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-	    if ( aNode == 0 ){
-	      break;
-	    }
-	    SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
-	    while( anElemIter->more() ) {
-	      const SMDS_MeshElement* anElem = anElemIter->next();
-	      if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge ) {
-		int anId = anElem->GetID();
+        int aNb = 0;
+        if (anIter->more()) {
+          aNode = (SMDS_MeshNode*)anIter->next();
+        } else {
+          if (i == len)
+            aNode = aNode0;
+          else
+            break;
+        }
+        if (!aNode) break;
+        if (i == 0) aNode0 = aNode;
 
-		if ( anIter->more() )              // i.e. first node
-		  aMap.Add( anId );
-		else if ( aMap.Contains( anId ) ){
-		  Nb[i]++;
-		}
-	      }
-	      else if ( anElem != 0 && anElem->GetType() == SMDSAbs_Edge ) i++;
-	    }
-	  }
-	}
+        SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
+        while (anElemIter->more()) {
+          const SMDS_MeshElement* anElem = anElemIter->next();
+          if (anElem != 0 && anElem->GetType() == SMDSAbs_Face) {
+            int anId = anElem->GetID();
 
-	aResult = Max(Max(Nb[0],Nb[1]),Nb[2]);
+            aMap.Add(anId);
+            if (aMapPrev.Contains(anId)) {
+              aNb++;
+            }
+          }
+        }
+        aResult = Max(aResult, aNb);
       }
-      break;
-    case SMDSAbs_Volume:
-    default: aResult=0;
     }
-
+    break;
+  default:
+    aResult = 0;
   }
-  return aResult;//getNbMultiConnection( myMesh, theId );
+
+  return aResult;
 }
 
 double MultiConnection2D::GetBadRate( double Value, int /*nbNodes*/ ) const
@@ -1545,7 +1545,7 @@ bool FreeEdges::IsSatisfy( long theId )
   else {
     anIter = aFace->nodesIterator();
   }
-  if ( anIter != 0 )
+  if ( anIter == 0 )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();

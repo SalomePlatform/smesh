@@ -85,21 +85,31 @@
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
 	       icon-id="mesh_algo_regular.png"
-         dim="1"/>
+               hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               opt-hypos="Propagation,QuadraticMesh"
+               output="EDGE"
+               dim="1"/>
 
     <algorithm type="MEFISTO_2D"
 	       label-id="Triangle (Mefisto)"
 	       icon-id="mesh_algo_mefisto.png"
-         dim="2"/>
+               hypos="LengthFromEdges,MaxElementArea"
+               input="EDGE"
+               output="TRIA"
+               dim="2"/>
 
     <algorithm type="Quadrangle_2D"
                label-id="Quadrangle (Mapping)"
                icon-id="mesh_algo_quad.png"
+               opt-hypos="QuadranglePreference"
+               input="EDGE"
+               output="QUAD"
                dim="2"/>
 
     <algorithm type="Hexa_3D"
                label-id="Hexahedron (i,j,k)"
                icon-id="mesh_algo_hexa.png"
+               input="QUAD"
                dim="3"/>
   </algorithms>
 </meshers-group>

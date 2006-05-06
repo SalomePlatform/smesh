@@ -48,6 +48,8 @@ class LightApp_Operation;
 class SalomeApp_Study;
 class LightApp_SelectionMgr;
 
+class SMESHGUI_FilterLibraryDlg;
+
 
 //=================================================================================
 // class    : SMESHGUI
@@ -138,6 +140,8 @@ private :
   int                              myState;
   QMap<int,QString>                myRules;
   LightApp_Displayer*              myDisplayer;
+
+  SMESHGUI_FilterLibraryDlg*       myFilterLibraryDlg;
 };
 
 #endif

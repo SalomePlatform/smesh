@@ -1,3 +1,22 @@
+// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/
+//
 #include "SMESHGUI_AddQuadraticElementDlg.h"
 
 #include "SMESHGUI.h"
@@ -11,6 +30,8 @@
 #include "SMESH_Actor.h"
 
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+#include "LightApp_Application.h"
 
 #include "SVTK_Selection.h"
 #include "SVTK_Selector.h"
@@ -90,6 +111,21 @@ namespace SMESH {
       conn = aConn;
       break;
     }
+    case QUAD_EDGE: {
+      static int aConn[] = {1,0,2};
+      conn = aConn;
+      break;
+    }
+    case QUAD_TRIANGLE: {
+      static int aConn[] = {0,2,1,5,4,3};
+      conn = aConn;
+      break;
+    }
+    case QUAD_QUADRANGLE: {
+      static int aConn[] = {0,3,2,1,7,6,5,4};
+      conn = aConn;
+      break;
+    }
     default:;
     }
     if ( !conn ) {
@@ -113,7 +149,7 @@ namespace SMESH {
     vtkUnstructuredGrid* myGrid;
     //vtkProperty* myBackProp, *myProp;
 
-    float anRGB[3], aBackRGB[3];
+    vtkFloatingPointType myRGB[3], myBackRGB[3];
 
   public:
     TElementSimulation (SalomeApp_Application* theApplication)
@@ -136,14 +172,14 @@ namespace SMESH {
       myPreviewActor->SetMapper(myMapper);
 
       vtkProperty* myProp = vtkProperty::New();
-      GetColor( "SMESH", "fill_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-      myProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+      GetColor( "SMESH", "fill_color", myRGB[0], myRGB[1], myRGB[2], QColor( 0, 170, 255 ) );
+      myProp->SetColor( myRGB[0], myRGB[1], myRGB[2] );
       myPreviewActor->SetProperty( myProp );
       myProp->Delete();
 
       vtkProperty* myBackProp = vtkProperty::New();
-      GetColor( "SMESH", "backface_color", aBackRGB[0], aBackRGB[1], aBackRGB[2], QColor( 0, 0, 255 ) );
-      myBackProp->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
+      GetColor( "SMESH", "backface_color", myBackRGB[0], myBackRGB[1], myBackRGB[2], QColor( 0, 0, 255 ) );
+      myBackProp->SetColor( myBackRGB[0], myBackRGB[1], myBackRGB[2] );
       myPreviewActor->SetBackfaceProperty( myBackProp );
       myBackProp->Delete();
 
@@ -193,12 +229,12 @@ namespace SMESH {
       // take care of orientation
       if ( aType == VTK_CONVEX_POINT_SET ) {
         if ( theReverse && theMode == VTK_SURFACE ) {
-          //myPreviewActor->GetProperty()->SetColor( aBackRGB[0], aBackRGB[1], aBackRGB[2] );
+          //myPreviewActor->GetProperty()->SetColor( myBackRGB[0], myBackRGB[1], myBackRGB[2] );
         }
       }
       else {
-        // VTK cell connectivity opposites the MED one
-        if ( !theReverse ) {
+        // VTK cell connectivity opposites the MED one for volumic elements
+        if ( theIds.size() > 8 ? !theReverse : theReverse ) {
           ReverseConnectivity( theIds, theType );
         }
       }
@@ -223,7 +259,7 @@ namespace SMESH {
       // restore normal orientation
       if ( aType == VTK_CONVEX_POINT_SET ) {
         if ( theReverse  && theMode == VTK_SURFACE ) {
-          //myPreviewActor->GetProperty()->SetColor( anRGB[0], anRGB[1], anRGB[2] );
+          //myPreviewActor->GetProperty()->SetColor( myRGB[0], myRGB[1], myRGB[2] );
         }
       }
     }
@@ -421,6 +457,10 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
   aGroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+  buttonHelp->setAutoDefault(TRUE);
+  aGroupButtonsLayout->addWidget(buttonHelp, 0, 4);
 
   aDialogLayout->addWidget(GroupButtons, 2, 0);
 
@@ -456,30 +496,37 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case QUAD_EDGE:
     aNumRows = 1;
     myNbCorners = 2;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_edges
     break;
   case QUAD_TRIANGLE:
     aNumRows = 3;
     myNbCorners = 3;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_triangles
     break;
   case QUAD_QUADRANGLE:
     aNumRows = 4;
     myNbCorners = 4;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_quadrangles
     break;
   case QUAD_TETRAHEDRON:
     aNumRows = 6;
     myNbCorners = 4;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_tetrahedrons
     break;
   case QUAD_PYRAMID:
     aNumRows = 8;
     myNbCorners = 5;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pyramids
     break;
   case QUAD_PENTAHEDRON:
     aNumRows = 9;
     myNbCorners = 6;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pentahedrons
     break; 
   case QUAD_HEXAHEDRON:
     aNumRows = 12;
     myNbCorners = 8;
+    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_hexahedrons
     break;
   }
     
@@ -521,6 +568,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   connect(buttonOk, SIGNAL(clicked()),     SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()),  SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()),   SLOT(ClickOnHelp()));
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
@@ -634,6 +682,23 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
   mySMESHGUI->ResetState();
   reject();
   return;
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

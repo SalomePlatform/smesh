@@ -17,11 +17,23 @@ if (navigator.appName !="Netscape")
 img_whs1 { border:none; width:30px; height:30px; float:none; border-style:none; }
 ul.whs2 { list-style:disc; }
 ul.whs3 { list-style:circle; }
-p.whs4 { margin-left:40px; }
-img_whs5 { border:none; width:472px; height:355px; float:right; }
-p.whs6 { margin-left:40px; font-weight:bold; }
+p.whs4 { background-color:Transparent; color:#000000; }
+p.whs5 { margin-left:40px; }
+img_whs6 { border:none; width:472px; height:355px; border-style:none; float:right; }
+p.whs7 { margin-left:40px; font-weight:bold; }
 -->
-</style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+</style><script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs4 {background-color:white; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
   if (innerWidth != origWidth || innerHeight != origHeight)
@@ -84,100 +96,133 @@ else
 
 <ul type="disc" class="whs2">
 	
-	<li class=kadov-p><p>import and export of meshes in MED format,</p></li>
+	<li class=kadov-p><p><a href="importing_and_exporting_meshes.htm">import 
+ and export of meshes in MED format</a>,</p></li>
 	
-	<li class=kadov-p><p>meshing geometrical models previously created 
- or imported by the GEOM component. MESH module allows to apply 1D, 2D, 
- 3D meshing algorithms and a set of hypotheses:</p></li>
+	<li class=kadov-p><p><a href="constructing_meshes.htm">meshing geometrical 
+ models</a> previously created or imported by the GEOM component. MESH 
+ module allows to apply 1D, 2D, 3D meshing algorithms and a set of hypotheses:</p></li>
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Local length</p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="arithmetic_1d.htm#arithmetic_1D">Arithmetic 1D</a></p></li>
 		
-		<li class=kadov-p><p>Number of segments</p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="arithmetic_1d.htm#Average_length">Average Length</a></p></li>
 		
-		<li class=kadov-p><p>Max Element Area</p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="arithmetic_1d.htm#deflection_1D">Deflection 1D </a></p></li>
 		
-		<li class=kadov-p><p>Max Element Volume</p></li>
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="arithmetic_1d.htm#Number_of_elements">Number of segments</a></p></li>
+		
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="arithmetic_1d.htm#start_and_end_length">Start and end length</a></p></li>
+		
+		<li class=kadov-p><p><a href="arithmetic_1d.htm#automatic_length">Automatic 
+ Length</a></p></li>
+		
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="max._element_area_hypothesis.htm#max_element_area">Max Element Area</a></p></li>
+		
+		<li style="/*begin!kadov{{*/ color: #000000; /*}}end!kadov*/ "
+			class=kadov-p><p class="whs4"><a href="max._element_area_hypothesis.htm#length_from_edges">Length from 
+ Edges</a></p></li>
+		
+		<li class=kadov-p><p><a href="max._element_area_hypothesis.htm#quadrangle preference">Quadrangle 
+ Preference</a></p></li>
+		
+		<li class=kadov-p><p><a href="max._element_volume_hypothsis.htm">Max 
+ Element Volume</a></p></li>
 	</ul>
 	
 	<li class=kadov-p><p>modification of locally generated meshes by</p></li>
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Addition/deletion of nodes and elements</p></li>
+		<li class=kadov-p><p><a href="adding_nodes_and_elements.htm">Addition</a> 
+ of nodes and elements</p></li>
 		
-		<li class=kadov-p><p>Moving nodes and elements</p></li>
+		<li class=kadov-p><p><a href="removing_nodes_and_elements.htm">Removal</a> 
+ of nodes and elements</p></li>
 	</ul>
 	
-	<li class=kadov-p><p>grouping mesh elements and performing operations 
- on these groups </p></li>
+	<li class=kadov-p><p><a href="creating_groups.htm">grouping mesh elements</a> 
+ and <a href="using_operations_on_groups.htm">performing operations on 
+ these groups</a> </p></li>
 	
-	<li class=kadov-p><p>quality control of meshes basing on a set of definite 
- criteria -</p></li>
+	<li class=kadov-p><p><a href="about_quality_controls.htm">quality control</a> 
+ of meshes basing on a set of definite criteria -</p></li>
 </ul>
 
-<p class="whs4"><img src="../image7.jpg" x-maintain-ratio="TRUE" width="472px" height="355px" align="right" border="0" class="img_whs5"></p>
+<p class="whs5"><img src="../image7.jpg" x-maintain-ratio="TRUE" width="472px" height="355px" align="right" border="0" class="img_whs6"></p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs6">for edges:</p>
+<p class="whs7">for edges:</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
 <ul type="disc" class="whs2">
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Length of edges </p></li>
+		<li class=kadov-p><p><a href="../length.htm">Length of edges</a> 
+ </p></li>
 		
-		<li class=kadov-p><p>Borders at multi-connections</p></li>
+		<li class=kadov-p><p><a href="../borders_at_multi-connection.htm">Borders 
+ at multi-connection</a></p></li>
 		
-		<li class=kadov-p><p>Free borders</p></li>
+		<li class=kadov-p><p><a href="../free_borders.htm">Free borders</a></p></li>
 	</ul>
 </ul>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">for faces:</p>
+<p class="whs7">for faces:</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
 <ul type="disc" class="whs2">
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Area </p></li>
+		<li class=kadov-p><p><a href="area_of_elements.htm">Area</a> </p></li>
 		
-		<li class=kadov-p><p>Free edges</p></li>
+		<li class=kadov-p><p><a href="../free_edges.htm">Free edges</a></p></li>
 		
-		<li class=kadov-p><p>Borders at multi-connection 2D</p></li>
+		<li class=kadov-p><p><a href="../borders_at_multiconnection_2d.htm">Borders 
+ at multi-connection 2D</a></p></li>
 		
-		<li class=kadov-p><p>Length 2D</p></li>
+		<li class=kadov-p><p><a href="length_of_edges.htm">Length 2D</a></p></li>
 		
-		<li class=kadov-p><p>Minimum angle</p></li>
+		<li class=kadov-p><p><a href="minimum_angle.htm">Minimum angle</a></p></li>
 		
-		<li class=kadov-p><p>Taper</p></li>
+		<li class=kadov-p><p><a href="taper.htm">Taper</a></p></li>
 		
-		<li class=kadov-p><p>Aspect Ratio</p></li>
+		<li class=kadov-p><p><a href="aspect_ratio.htm">Aspect Ratio</a></p></li>
 		
-		<li class=kadov-p><p>Warping </p></li>
+		<li class=kadov-p><p><a href="warp.htm">Warping</a> </p></li>
 		
-		<li class=kadov-p><p>Skew</p></li>
+		<li class=kadov-p><p><a href="skew.htm">Skew</a></p></li>
 	</ul>
 </ul>
 
 <p>&nbsp;</p>
 
-<p class="whs6">for solids:</p>
+<p class="whs7">for solids:</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
 <ul type="disc" class="whs2">
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Aspect ratio 3D</p></li>
+		<li class=kadov-p><p><a href="../aspect_ratio_3d.htm">Aspect ratio 
+ 3D</a></p></li>
+		
+		<li class=kadov-p><p><a href="../volume.htm">Volume</a></p></li>
 	</ul>
 </ul>
 

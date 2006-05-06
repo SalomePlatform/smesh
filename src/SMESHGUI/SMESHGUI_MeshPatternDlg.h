@@ -82,6 +82,7 @@ private slots:
   void                                onOk();
   bool                                onApply();
   void                                onClose();
+  void                                onHelp();
 
   void                                onDeactivate();
 
@@ -125,6 +126,7 @@ private:
   QPushButton*                        myOkBtn;
   QPushButton*                        myApplyBtn;
   QPushButton*                        myCloseBtn;
+  QPushButton*                        myHelpBtn;
 
   QButtonGroup*                       myTypeGrp;
   QRadioButton*                       mySwitch2d;
@@ -171,6 +173,8 @@ private:
   SMESHGUI_CreatePatternDlg*          myCreationDlg;
   SMESH::SMESH_Pattern_var            myPattern;
   SALOME_Actor*                       myPreviewActor;
+
+  QString                             myHelpFileName;
 };
 
 #endif

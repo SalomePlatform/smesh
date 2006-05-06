@@ -261,6 +261,10 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int 
   {
     sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
   }
+  else if ( sb ) // default validator for possible ancestors
+  {
+    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+  }
 }
 
 QString StdMeshersGUI_StdHypothesisCreator::caption() const

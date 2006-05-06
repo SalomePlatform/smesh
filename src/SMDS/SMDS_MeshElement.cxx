@@ -218,3 +218,20 @@ bool SMDS_MeshElement::IsMediumNode(const SMDS_MeshNode* node) const
 {
   return false;
 }
+
+//================================================================================
+  /*!
+   * \brief Check if a node belongs to the element
+    * \param node - the node to check
+    * \retval int - node index within the element, -1 if not found
+   */
+//================================================================================
+
+int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const
+{
+  SMDS_ElemIteratorPtr nIt = nodesIterator();
+  for ( int i = 0; nIt->more(); ++i )
+    if ( nIt->next() == node )
+      return i;
+  return -1;
+}

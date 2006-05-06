@@ -80,6 +80,7 @@ class SMESHGUI_EditMeshDlg : public QDialog
   QPushButton* buttonOk;
   QPushButton* buttonCancel;
   QPushButton* buttonApply;
+  QPushButton* buttonHelp;
 
   QGroupBox* GroupMesh;
   QLabel* TextLabelMesh;
@@ -92,10 +93,13 @@ class SMESHGUI_EditMeshDlg : public QDialog
   QGridLayout* GroupButtonsLayout;
   QGridLayout* GroupMeshLayout;
 
+  QString myHelpFileName;
+
  private slots:
   void ClickOnOk();
   void ClickOnCancel();
   void ClickOnApply();
+  void ClickOnHelp();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();
   void ActivateThisDialog();

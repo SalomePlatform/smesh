@@ -55,8 +55,7 @@ protected:
   virtual QWidget* getCustomWidget( const StdParam&, QWidget* ) const;
   virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
 
-private:
-          QString hypTypeName( const QString& ) const;
+  virtual QString hypTypeName( const QString& ) const;
 };
 
 #endif

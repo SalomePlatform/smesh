@@ -186,22 +186,30 @@ bool SMESH_subMesh::SubMeshesComputed()
   //MESSAGE("SMESH_subMesh::SubMeshesComputed");
   const map < int, SMESH_subMesh * >&subMeshes = DependsOn();
 
+  int myDim = SMESH_Gen::GetShapeDim( _subShape );
+  int dimToCheck = myDim - 1;
   bool subMeshesComputed = true;
   map < int, SMESH_subMesh * >::const_iterator itsub;
   for (itsub = subMeshes.begin(); itsub != subMeshes.end(); itsub++)
   {
     SMESH_subMesh *sm = (*itsub).second;
+    const TopoDS_Shape & ss = sm->GetSubShape();
+    // MSV 07.04.2006: restrict checking to myDim-1 only. Ex., there is no sense
+    // in checking of existence of edges if the algo needs only faces. Moreover,
+    // degenerated edges may have no submesh, as after computing NETGEN_2D.
+    int dim = SMESH_Gen::GetShapeDim( ss );
+    if (dim < dimToCheck)
+      continue;
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
     // PAL10974.
     // There are some tricks with compute states, e.g. Penta_3D leaves
     // one face with READY_TO_COMPUTE state in order to be able to
     // recompute 3D when a locale triangle hypo changes (see PAL7428).
     // So we check if mesh is really present
-    //bool computeOk = (sm->GetComputeState() == COMPUTE_OK);
-    bool computeOk = ( ds && ( ds->GetNodes()->more() || ds->GetElements()->more() ));
+    bool computeOk = (sm->GetComputeState() == COMPUTE_OK ||
+                      (ds && ( ds->GetNodes()->more() || ds->GetElements()->more() )));
     if (!computeOk)
     {
-      const TopoDS_Shape & ss = sm->GetSubShape();
       int type = ss.ShapeType();
 
       subMeshesComputed = false;
@@ -634,6 +642,19 @@ SMESH_Hypothesis::Hypothesis_Status
         ret = SMESH_Hypothesis::HYP_CONCURENT;
       }
     } // Serve Propagation of 1D hypothesis
+    else // event == REMOVE_ALGO
+    {
+      SMESH_Algo* algo = dynamic_cast<SMESH_Algo*> (anHyp);
+      if (!algo->NeedDescretBoundary())
+      {
+        // clean all mesh in the tree of the current submesh;
+        // we must perform it now because later
+        // we will have no information about the type of the removed algo
+        CleanDependants();
+	ComputeStateEngine( CLEAN );
+        CleanDependsOn();
+      }
+    }
   }
 
   // ------------------
@@ -1038,9 +1059,6 @@ SMESH_Hypothesis::Hypothesis_Status
 void SMESH_subMesh::CleanDependsOn()
 {
   //MESSAGE("SMESH_subMesh::CleanDependsOn");
-  // **** parcourir les ancetres dans l'ordre de dépendance
-
-  ComputeStateEngine(CLEAN);
 
   const map < int, SMESH_subMesh * >&dependson = DependsOn();
   map < int, SMESH_subMesh * >::const_iterator its;
@@ -1169,10 +1187,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   case NOT_READY:
     switch (event)
     {
-    case MODIF_HYP:		// nothing to do
-      break;
+    case MODIF_HYP:
     case MODIF_ALGO_STATE:
-      if (_algoState == HYP_OK)
+      algo = gen->GetAlgo((*_father), _subShape);
+      if (algo && !algo->NeedDescretBoundary())
+        CleanDependsOn(); // clean sub-meshes with event CLEAN
+      if (event == MODIF_ALGO_STATE && _algoState == HYP_OK)
       {
         _computeState = READY_TO_COMPUTE;
       }
@@ -1205,11 +1225,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
   case READY_TO_COMPUTE:
     switch (event)
     {
-    case MODIF_HYP:		// nothing to do
-      break;
+    case MODIF_HYP:
     case MODIF_ALGO_STATE:
-      _computeState = NOT_READY;
       algo = gen->GetAlgo((*_father), _subShape);
+      if (algo && !algo->NeedDescretBoundary())
+        CleanDependsOn(); // clean sub-meshes with event CLEAN
+      if (event == MODIF_HYP)
+	break;            // nothing else to do when MODIF_HYP
+      _computeState = NOT_READY;
       if (algo)
       {
         ret = algo->CheckHypothesis((*_father), _subShape, hyp_status);
@@ -1240,16 +1263,18 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         // compute
         CleanDependants();
         RemoveSubMeshElementsAndNodes();
-        try {
-          if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
-            ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
-          else
-            ret = algo->Compute((*_father), _subShape);
-        }
-        catch (Standard_Failure) {
-          MESSAGE( "Exception in algo->Compute() ");
-          ret = false;
-        }
+	{
+	  try {
+	    if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
+	      ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
+	    else
+	      ret = algo->Compute((*_father), _subShape);
+	  }
+	  catch (Standard_Failure) {
+	    MESSAGE( "Exception in algo->Compute() ");
+	    ret = false;
+	  }
+	}
         if (!ret)
         {
           MESSAGE("problem in algo execution: failed to compute");
@@ -1259,6 +1284,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 
 #ifdef _DEBUG_
           // Show vertices location of a failed shape
+          cout << algo->GetName() << " failed on shape with the following vertices:" << endl;
           TopTools_IndexedMapOfShape vMap;
           TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
           for ( int iv = 1; iv <= vMap.Extent(); ++iv ) {

@@ -16,21 +16,22 @@ if (navigator.appName !="Netscape")
 <!--
 img_whs1 { border:none; width:416px; height:385px; border-style:none; }
 img_whs2 { border:none; width:30px; height:30px; float:none; border-style:none; }
-img_whs3 { border:none; width:158px; height:110px; border-style:none; }
-img_whs4 { border:none; width:120px; height:48px; border-style:none; }
-img_whs5 { border:none; width:234px; height:96px; border-style:none; }
-img_whs6 { border:none; width:258px; height:246px; border-style:none; }
-img_whs7 { border:none; width:133px; height:56px; border-style:none; }
-img_whs8 { border:none; width:425px; height:192px; border-style:none; }
-img_whs9 { border:none; width:89px; height:32px; border-style:none; }
-p.whs10 { margin-left:0px; }
+ul.whs3 { list-style:disc; }
+img_whs4 { border:none; width:258px; height:246px; border-style:none; float:left; }
+img_whs5 { border:none; width:133px; height:56px; border-style:none; }
+img_whs6 { border:none; width:425px; height:192px; border-style:none; }
+img_whs7 { border:none; width:89px; height:32px; border-style:none; }
+img_whs8 { border:none; width:569px; height:386px; float:none; border-style:none; }
+p.whs9 { margin-left:40px; }
+img_whs10 { border:none; width:24px; height:26px; border-style:none; }
+p.whs11 { margin-left:0px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs10 {margin-left:1pt; }";
+  strNSS += "p.whs11 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -96,54 +97,88 @@ else
 
 <p>&nbsp;</p>
 
-<p><img src="i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2">This mesh quality criterion resembles to the Aspect ratio 
- criterion, however, it is applied to 3D mesh elements: tetrahedrons, 
- pentahedrons, hexahedrons, etc. &nbsp;</p>
-
-<p>There are simple formulas to evaluate directly the value of quality 
- Qk for simplex in 3D. The formulas are :</p>
-
-<br>
-
-<p>• For tetrahedron :</p>
-
-<p>&nbsp;<img src="image20.gif" width="258px" height="246px" border="0" class="img_whs6"></p>
-
-<p>&nbsp;<img src="image19.gif" width="133px" height="56px" border="0" class="img_whs7"></p>
-
-<p>where :</p>
-
-<p><img src="image18.gif" width="425px" height="192px" border="0" class="img_whs8"> </p>
-
-<p>To calculate Sk , it is needed to sum the area of each of the 3 faces 
- with the formula given with the triangle.</p>
+<p><img src="i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs2"> The Aspect Ratio 3D mesh quality criterion calculates 
+ the same parameter as the <a href="files/aspect_ratio.htm">Aspect ratio</a> 
+ criterion, but it is applied to 3D mesh elements: tetrahedrons, pentahedrons, 
+ hexahedrons, etc. &nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p>For the other types of element like pentahedron and hexahedron 
- the formula is the following :</p>
-
-<p><img src="image30.gif" width="89px" height="32px" border="0" class="img_whs9"> </p>
-
-<p>Where Qi are the quality of all the possible simplex (of same dimension 
- as the element) that compose the element.</p>
-
-<p>For example, hexahedron is analysed via 6 tetrahedrons this way:</p>
-
-<p><img src="image139.gif" border="0" class="img_whs10"> </p>
-
-<p>&nbsp;</p>
-
-<p>For 3D elements with quadrangular faces, aspect ratio of such faces
-is also analysed and the maximal one over 3D and 2D qualities is taken.</p>
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p><img src="image20.gif" width="258px" height="246px" align="left" border="0" class="img_whs4">The <span style="font-weight: bold;"><B>Aspect 
+ Ratio</B></span> of a <span style="font-weight: bold;"><B>tetrahedron</B></span> 
+ 3D element is calculated by the formula:</p></li>
+</ul>
 
 <p>&nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p class="whs10"><span style="font-weight: bold;"><B>See Also</B></span> 
- a sample TUI Script of an <a href="quality_controls.htm#bookmark11">Aspect 
- Ratio quality control</a> operation. &nbsp;</p>
+<p><img src="image19.gif" width="133px" height="56px" border="0" class="img_whs5">,</p>
+
+<p>&nbsp;</p>
+
+<p>where <span style="font-weight: bold; font-style: italic;"><I><B>S</B></I></span><span 
+ style="font-weight: bold;
+		font-style: italic;
+		vertical-align: Sub;"><I><B>K</B></I></span> is the sum of surfaces of the faces 
+ of &#1050; and <span style="font-weight: bold; font-style: italic;"><I><B>V</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>K</B></I></span> is the volume of &#1050; :</p>
+
+<p>&nbsp;</p>
+
+<p><img src="image18.gif" width="425px" height="192px" border="0" class="img_whs6">T</p>
+
+<p>&nbsp;</p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p>Other element types like quadrangle, pentahedron 
+ and hexahedron use the following formula:</p></li>
+</ul>
+
+<p><img src="image30.gif" width="89px" height="32px" border="0" class="img_whs7"> , where <span style="font-weight: bold; font-style: italic;"><I><B>Q</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>i</B></I></span> represents the value of <span style="font-weight: bold; font-style: italic;"><I><B>Q</B></I></span><span 
+ style="vertical-align: Sub;
+		font-weight: bold;
+		font-style: italic;"><I><B>k</B></I></span> for all possible simplexes (of the 
+ same dimension as the element) that compose the element.</p>
+
+<p>For example, a hexahedron is split in 6 tetrahedrons, the <span style="font-weight: bold;"><B>Aspect 
+ ratio 3D</B></span> is calculated for each of them, then the greatest <span 
+ style="font-weight: bold; font-style: italic;"><I><B>Q</B></I></span><span style="vertical-align: Sub;
+	font-weight: bold;
+	font-style: italic;"><I><B>k</B></I></span> is considered to be the &nbsp;<span 
+ style="font-weight: bold;"><B>Aspect ratio 3D</B></span> 
+ criterion for the whole &nbsp;hexahedron.</p>
+
+<p><img src="pics/image139.gif" x-maintain-ratio="TRUE" width="569px" height="386px" border="0" class="img_whs8"></p>
+
+<p>&nbsp;</p>
+
+<p class=TODO>To apply the Aspect Ratio 3D quality criterion to your mesh:</p>
+
+<p class=TODO>&nbsp;</p>
+
+<p class="whs9">1. Display your mesh in the viewer.</p>
+
+<p class="whs9">&nbsp;</p>
+
+<p class="whs9">2. Choose <span style="font-weight: bold;"><B>Controls 
+ &gt; Aspect Ratio 3D </B></span>or click <img src="image144.gif" width="24px" height="26px" border="0" class="img_whs10"> button of the toolbar. 
+ Your mesh will be displayed in the viewer with its elements colored according 
+ to the applied mesh quality control criterion:</p>
+
+<p>&nbsp;</p>
+
+<p class="whs11"><span style="font-weight: bold;"><B>See Also</B></span> 
+ a sample TUI Script of an <span style="font-weight: bold;"><B><a href="quality_controls.htm#bookmark11">Aspect 
+ Ratio 3D</B></span> quality control</a> operation. &nbsp;</p>
 
 <p>&nbsp;</p>
 

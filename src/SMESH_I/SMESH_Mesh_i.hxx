@@ -99,6 +99,9 @@ public:
   void RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup )
     throw (SALOME::SALOME_Exception);
   
+  SMESH::ListOfGroups* GetGroups()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
@@ -178,13 +181,25 @@ public:
   CORBA::Long NbEdges()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbEdgesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbFaces()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbFacesOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbTriangles()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbTrianglesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbQuadrangles()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbQuadranglesOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbPolygons()
@@ -193,16 +208,31 @@ public:
   CORBA::Long NbVolumes()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbVolumesOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbTetras()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbTetrasOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbHexas()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbHexasOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbPyramids()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbPyramidsOfOrder(SMESH::ElementOrder order)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbPrisms()
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Long NbPrismsOfOrder(SMESH::ElementOrder order)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbPolyhedrons()
@@ -221,6 +251,26 @@ public:
     throw (SALOME::SALOME_Exception);
   
   SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+    throw (SALOME::SALOME_Exception);
+  
+  /*!
+   * Returns ID of elements for given submesh
+   */
+  SMESH::long_array* GetSubMeshElementsId(const CORBA::Long ShapeID)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * Returns ID of nodes for given submesh
+   * If param all==true - returns all nodes, else -
+   * returns only nodes on shapes.
+   */
+  SMESH::long_array* GetSubMeshNodesId(const CORBA::Long ShapeID, CORBA::Boolean all)
+    throw (SALOME::SALOME_Exception);
+  
+  /*!
+   * Returns type of elements for given submesh
+   */
+  SMESH::ElementType GetSubMeshElementType(const CORBA::Long ShapeID)
     throw (SALOME::SALOME_Exception);
   
   char* Dump();
@@ -256,10 +306,85 @@ public:
 
   CORBA::Long GetMeshPtr();
 
+
+  /*!
+   * Get XYZ coordinates of node as list of double
+   * If there is not node for given ID - returns empty list
+   */
+  SMESH::double_array* GetNodeXYZ(const CORBA::Long id);
+  
+  /*!
+   * For given node returns list of IDs of inverse elements
+   * If there is not node for given ID - returns empty list
+   */
+  SMESH::long_array* GetNodeInverseElements(const CORBA::Long id);
+
+  /*!
+   * If given element is node returns IDs of shape from position
+   * else - return ID of result shape after ::FindShape()
+   * from SMESH_MeshEditor
+   * If there is not element for given ID - returns -1
+   */
+  CORBA::Long GetShapeID(const CORBA::Long id);
+
+  /*!
+   * Returns number of nodes for given element
+   * If there is not element for given ID - returns -1
+   */
+  CORBA::Long GetElemNbNodes(const CORBA::Long id);
+
+  /*!
+   * Returns ID of node by given index for given element
+   * If there is not element for given ID - returns -1
+   * If there is not node for given index - returns -2
+   */
+  CORBA::Long GetElemNode(const CORBA::Long id, const CORBA::Long index);
+  
+  /*!
+   * Returns true if given node is medium node
+   * in given quadratic element
+   */
+  CORBA::Boolean IsMediumNode(const CORBA::Long ide, const CORBA::Long idn);
+  
+  /*!
+   * Returns true if given node is medium node
+   * in one of quadratic elements
+   */
+  CORBA::Boolean IsMediumNodeOfAnyElem(const CORBA::Long idn,
+                                       SMESH::ElementType theElemType);
+  
+  /*!
+   * Returns number of edges for given element
+   */
+  CORBA::Long ElemNbEdges(const CORBA::Long id);
+  
+  /*!
+   * Returns number of faces for given element
+   */
+  CORBA::Long ElemNbFaces(const CORBA::Long id);
+  
+  /*!
+   * Returns true if given element is polygon
+   */
+  CORBA::Boolean IsPoly(const CORBA::Long id);
+  
+  /*!
+   * Returns true if given element is quadratic
+   */
+  CORBA::Boolean IsQuadratic(const CORBA::Long id);
+  
+  /*!
+   * Returns bary center for given element
+   */
+  SMESH::double_array* BaryCenter(const CORBA::Long id);
+
+
   map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
+  void CreateGroupServants();
+
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here
   SMESH_Gen_i* _gen_i;

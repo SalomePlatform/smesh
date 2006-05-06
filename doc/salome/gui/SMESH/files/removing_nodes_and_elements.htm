@@ -14,31 +14,35 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-p.whs1 { margin-left:40px; }
-img_whs2 { border:none; width:27px; height:25px; border-style:none; }
-img_whs3 { border:none; width:332px; height:231px; float:none; border-style:none; }
-p.whs4 { margin-left:0px; }
-img_whs5 { border:none; width:36px; height:38px; float:none; border-style:none; }
-table.whs6 { x-cell-content-align:top; width:100%; border-spacing:0px; }
-col.whs7 { width:31.569%; }
-col.whs8 { width:68.431%; }
-tr.whs9 { x-cell-content-align:top; }
-td.whs10 { padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
-img_whs11 { border:none; border-style:none; width:245px; height:289px; float:none; }
-td.whs12 { padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
-img_whs13 { border:none; border-style:none; width:252px; height:288px; float:none; }
-table.whs14 { x-cell-content-align:top; border-spacing:0px; width:55.882%; }
-col.whs15 { width:47.72%; }
-col.whs16 { width:52.28%; }
-img_whs17 { border:none; border-style:none; width:219px; height:210px; float:none; }
-img_whs18 { border:none; border-style:none; float:none; width:240px; height:209px; }
+ul.whs1 { list-style:disc; }
+p.whs2 { margin-left:40px; font-weight:bold; }
+p.whs3 { margin-left:40px; }
+img_whs4 { border:none; width:27px; height:25px; border-style:none; }
+img_whs5 { border:none; width:332px; height:231px; float:none; border-style:none; }
+p.whs6 { margin-left:0px; }
+img_whs7 { border:none; width:36px; height:38px; float:none; border-style:none; }
+table.whs8 { x-cell-content-align:top; width:100%; border-spacing:0px; }
+col.whs9 { width:31.569%; }
+col.whs10 { width:68.431%; }
+tr.whs11 { x-cell-content-align:top; }
+td.whs12 { width:31.569%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+img_whs13 { border:none; width:245px; height:289px; float:none; border-style:none; }
+td.whs14 { width:68.431%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs15 { border:none; width:252px; height:288px; float:none; border-style:none; }
+table.whs16 { x-cell-content-align:top; width:55.882%; border-spacing:0px; }
+col.whs17 { width:47.72%; }
+col.whs18 { width:52.28%; }
+td.whs19 { width:47.72%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+img_whs20 { border:none; width:219px; height:210px; float:none; border-style:none; }
+td.whs21 { width:52.28%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+img_whs22 { border:none; float:none; width:240px; height:209px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
-  strNSS += "p.whs4 {margin-left:1pt; }";
+  strNSS += "p.whs6 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -100,110 +104,124 @@ else
 </script>
 <h1>Removing nodes and elements</h1>
 
-<p>In SMESH you can remove nodes and all types of cells of your mesh. </p>
+<p>In MESH you can remove nodes and all types of cells of your mesh. </p>
 
 <p>&nbsp;</p>
 
-<p class=TODO>To remove a node:</p>
+<ul type="disc" class="whs1">
+	
+	<li class=kadov-p><p class="whs2"><a 
+ href="#remove_a_node"
+	style="font-weight: bold;"><span style="font-weight: bold;"><B>Nodes</a> 
+ </B></span></p></li>
+	
+	<li class=kadov-p><p class="whs2"><a 
+ href="#remove_an_element"
+	style="font-weight: bold;">Elements</a></p></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p class=TODO><a name=remove_a_node>To remove a node:</a></p>
 
 <p class=TODO
 	style="margin-left: 40px;">&nbsp;</p>
 
-<p class="whs1">1. Select your mesh in the Object Browser 
+<p class="whs3">1. Select your mesh in the Object Browser 
  or in the 3D viewer.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">2. From the <span style="font-weight: bold;"><B>Modification 
+<p class="whs3">2. From the <span style="font-weight: bold;"><B>Modification 
  </B></span>menu choose <span style="font-weight: bold;"><B>Remove </B></span>and 
  from the associated submenu select the <span style="font-weight: bold;"><B>Remove 
- nodes</B></span>, or just click <img src="../image88.gif" width="27px" height="25px" border="0" class="img_whs2"> icon in the toolbar. The 
+ nodes</B></span>, or just click <img src="../image88.gif" width="27px" height="25px" border="0" class="img_whs4"> icon in the toolbar. The 
  following dialog box will appear:</p>
 
 <p>&nbsp;</p>
 
-<p class="whs1"><img src="../pics/removenodes.png" x-maintain-ratio="TRUE" width="332px" height="231px" border="0" class="img_whs3"></p>
+<p class="whs3"><img src="../pics/removenodes.png" x-maintain-ratio="TRUE" width="332px" height="231px" border="0" class="img_whs5"></p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">In this dialog box you can specify one or 
+<p class="whs3">In this dialog box you can specify one or 
  several nodes (with pressed Shift button) by choosing them in the 3D viewer.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">3. Click <span style="font-weight: bold;"><B>OK 
+<p class="whs3">3. Click <span style="font-weight: bold;"><B>OK 
  </B></span>or <span style="font-weight: bold;"><B>Apply </B></span>&nbsp;to 
  confirm deletion of the specified nodes.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs4"><img src="../note1.gif" x-maintain-ratio="TRUE" width="36px" height="38px" border="0" class="img_whs5">Be careful while removing 
+<p class="whs6"><img src="../note1.gif" x-maintain-ratio="TRUE" width="36px" height="38px" border="0" class="img_whs7">Be careful while removing 
  nodes because if you remove a definite node of your mesh all adjacent 
  elements will be also deleted.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<table x-use-null-cells cellspacing="0" width="100%" class="whs6">
-<col class="whs7">
-<col class="whs8">
+<table x-use-null-cells cellspacing="0" width="100%" class="whs8">
+<col class="whs9">
+<col class="whs10">
 
-<tr valign="top" class="whs9">
-<td width="31.569%" class="whs10">
-<p><img src="../pics/remove_nodes1.png" x-maintain-ratio="TRUE" width="245px" height="289px" border="0" class="img_whs11"></td>
-<td width="68.431%" class="whs12">
-<p><img src="../pics/remove_nodes2.png" x-maintain-ratio="TRUE" width="252px" height="288px" border="0" class="img_whs13"></td></tr>
+<tr valign="top" class="whs11">
+<td width="31.569%" class="whs12">
+<p><img src="../pics/remove_nodes1.png" x-maintain-ratio="TRUE" width="245px" height="289px" border="0" class="img_whs13"></td>
+<td width="68.431%" class="whs14">
+<p><img src="../pics/remove_nodes2.png" x-maintain-ratio="TRUE" width="252px" height="288px" border="0" class="img_whs15"></td></tr>
 </table>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
 <p>&nbsp;</p>
 
-<p class=TODO>To remove an element:</p>
+<p class=TODO><a name=remove_an_element>To remove an element:</a></p>
 
 <p class=TODO
 	style="margin-left: 40px;">&nbsp;</p>
 
-<p class="whs1">1. Select your mesh in the Object Browser 
+<p class="whs3">1. Select your mesh in the Object Browser 
  or in the 3D viewer.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">2. From the <span style="font-weight: bold;"><B>Modification 
+<p class="whs3">2. From the <span style="font-weight: bold;"><B>Modification 
  </B></span>menu choose <span style="font-weight: bold;"><B>Remove </B></span>and 
  from the associated submenu select the <span style="font-weight: bold;"><B>Remove 
- elements</B></span>, or just click <img src="../image88.gif" width="27px" height="25px" border="0" class="img_whs2"> icon in the toolbar. The 
+ elements</B></span>, or just click <img src="../image88.gif" width="27px" height="25px" border="0" class="img_whs4"> icon in the toolbar. The 
  following dialog box will appear:</p>
 
 <p>&nbsp;</p>
 
-<p class="whs1"><img src="../pics/removeelements.png" x-maintain-ratio="TRUE" width="332px" height="231px" border="0" class="img_whs3"></p>
+<p class="whs3"><img src="../pics/removeelements.png" x-maintain-ratio="TRUE" width="332px" height="231px" border="0" class="img_whs5"></p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">In this dialog box you can specify one or 
+<p class="whs3">In this dialog box you can specify one or 
  several elements of your mesh (with pressed Shift button) by choosing 
  them in the 3D viewer.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1">3. Click <span style="font-weight: bold;"><B>OK 
+<p class="whs3">3. Click <span style="font-weight: bold;"><B>OK 
  </B></span>or <span style="font-weight: bold;"><B>Apply </B></span>&nbsp;to 
  confirm deletion of the specified elements.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
-<table x-use-null-cells width="55.882%" cellspacing="0" class="whs14">
-<col class="whs15">
-<col class="whs16">
+<table x-use-null-cells cellspacing="0" width="55.882%" class="whs16">
+<col class="whs17">
+<col class="whs18">
 
-<tr valign="top" class="whs9">
-<td width="47.72%" class="whs10">
-<p><img src="../pics/remove_elements1.png" x-maintain-ratio="TRUE" width="219px" height="210px" border="0" class="img_whs17"></td>
-<td width="52.28%" class="whs12">
-<p><img src="../pics/remove_elements2.png" x-maintain-ratio="TRUE" width="240px" height="209px" border="0" class="img_whs18"></td></tr>
+<tr valign="top" class="whs11">
+<td width="47.72%" class="whs19">
+<p><img src="../pics/remove_elements1.png" x-maintain-ratio="TRUE" width="219px" height="210px" border="0" class="img_whs20"></td>
+<td width="52.28%" class="whs21">
+<p><img src="../pics/remove_elements2.png" x-maintain-ratio="TRUE" width="240px" height="209px" border="0" class="img_whs22"></td></tr>
 </table>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
 <p>&nbsp;</p>
 

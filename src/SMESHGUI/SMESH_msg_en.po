@@ -52,6 +52,10 @@ msgstr "&No"
 msgid "SMESH_BUT_CANCEL"
 msgstr "&Cancel"
 
+#Help
+msgid "SMESH_BUT_HELP"
+msgstr "&Help"
+
 #Add
 msgid "SMESH_BUT_ADD"
 msgstr "A&dd"
@@ -760,7 +764,17 @@ msgstr "Standard Mesh Infos"
 msgid "SMESH_MESHINFO_NAME"
 msgstr "Name"
 
-#Faces :
+#Order :
+msgid "SMESH_MESHINFO_ORDER0"
+msgstr "Total"
+
+msgid "SMESH_MESHINFO_ORDER1"
+msgstr "Linear"
+
+msgid "SMESH_MESHINFO_ORDER2"
+msgstr "Quadratic"
+
+#Elements :
 msgid "SMESH_MESHINFO_ELEMENTS"
 msgstr "Elements"
 
@@ -1884,7 +1898,7 @@ msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_TETRAHEDRON"
 msgstr "Add Quadratic Tetrahedron"
 
 msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_PYRAMID"
-msgstr "Add Quadratic PYRAMID"
+msgstr "Add Quadratic Pyramid"
 
 msgid "SMESHGUI_AddQuadraticElementDlg::SMESH_ADD_QUADRATIC_PENTAHEDRON"
 msgstr "Add Quadratic Pentahedron"
@@ -1949,6 +1963,9 @@ msgstr "It is impossible to create pattern from narrow face"
 
 msgid "SMESHGUI_CreatePatternDlg::ERR_LOADF_CLOSED_FACE"
 msgstr "It is impossible to create pattern from face having seam edge"
+
+msgid "SMESHGUI_CreatePatternDlg::ERR_LOADF_CANT_PROJECT"
+msgstr "Impossible to perform projection of nodes to the face"
 
 msgid "SMESHGUI_CreatePatternDlg::ERR_LOADV_BAD_SHAPE"
 msgstr "Pattern can be created from closed shell or solid with 6 faces only"
@@ -2197,6 +2214,9 @@ msgstr "Revolution"
 
 msgid "MEN_MAP"
 msgstr "Pattern mapping"
+
+msgid "MEN_CONV_TO_QUAD"
+msgstr "Convert to/from quadratic"
 
 msgid "MEN_EXTRUSION_ALONG"
 msgstr "Extrusion along a path"
@@ -2548,6 +2568,9 @@ msgstr "Revolution"
 msgid "TOP_MAP"
 msgstr "Pattern mapping"
 
+msgid "TOP_CONV_TO_QUAD"
+msgstr "Convert to/from quadratic"
+
 msgid "TOP_EXTRUSION_ALONG"
 msgstr "Extrusion along a path"
 
@@ -2849,6 +2872,9 @@ msgstr "Revolution"
 msgid "STB_MAP"
 msgstr "Pattern mapping"
 
+msgid "STB_CONV_TO_QUAD"
+msgstr "Convert to/from quadratic"
+
 msgid "STB_EXTRUSION_ALONG"
 msgstr "Extrusion along a path"
 
@@ -3146,3 +3172,27 @@ msgstr "Geometry object is not a subshape of the shape to mesh"
 
 msgid "SMESHGUI_MeshOp::MESH_IS_NOT_DEFINED"
 msgstr "Mesh is not defined\nPlease specify it and try again"
+
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_ConvToQuadDlg::CAPTION"
+msgstr "Convert to/from quadratic"
+
+msgid "SMESHGUI_ConvToQuadDlg::MESH"
+msgstr "Mesh"
+
+msgid "SMESHGUI_ConvToQuadDlg::MEDIUMNDS"
+msgstr "Medium nodes on geometry"
+
+msgid "SMESHGUI_ConvToQuadDlg::RADIOBTN_1"
+msgstr "Convert to quadratic"
+
+msgid "SMESHGUI_ConvToQuadDlg::RADIOBTN_2"
+msgstr "Convert from quadratic"
+
+msgid "SMESHGUI_ConvToQuadOp::MESH_IS_NOT_SELECTED"
+msgstr "Mesh is not selected\nPlease specify it and try again"
+
+msgid "SMESHGUI_ConvToQuadOp::REF_IS_NULL"
+msgstr "No valid mesh object selected"

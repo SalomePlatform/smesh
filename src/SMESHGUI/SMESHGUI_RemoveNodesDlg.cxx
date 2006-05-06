@@ -39,6 +39,10 @@
 
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Desktop.h"
+#include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
+
+#include "LightApp_Application.h"
 
 #include "SVTK_Selector.h"
 #include "SVTK_ViewModel.h"
@@ -130,6 +134,10 @@ SMESHGUI_RemoveNodesDlg
     GroupButtonsLayout->setAlignment(Qt::AlignTop);
     GroupButtonsLayout->setSpacing(6);
     GroupButtonsLayout->setMargin(11);
+    buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
+    buttonHelp->setText(tr("SMESH_BUT_HELP" ));
+    buttonHelp->setAutoDefault(TRUE);
+    GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
     buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
     buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
     buttonCancel->setAutoDefault(TRUE);
@@ -176,6 +184,8 @@ SMESHGUI_RemoveNodesDlg
     GroupC1Layout->addWidget(LineEditC1A1, 0, 2);
     SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupC1, 1, 0);
 
+    myHelpFileName = "/files/removing_nodes_and_elements.htm#remove_a_node";
+
     Init(); /* Initialisations */
 }
 
@@ -208,6 +218,7 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
   connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
   connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectButtonC1A1, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
@@ -292,6 +303,23 @@ void SMESHGUI_RemoveNodesDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=======================================================================

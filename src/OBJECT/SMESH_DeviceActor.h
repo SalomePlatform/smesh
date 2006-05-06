@@ -66,7 +66,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   void SetStoreIDMapping(bool theStoreMapping);
 
   virtual int GetNodeObjId(int theVtkID);
-  virtual float* GetNodeCoord(int theObjID);
+  virtual vtkFloatingPointType* GetNodeCoord(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
@@ -74,8 +74,8 @@ class SMESH_DeviceActor: public vtkLODActor{
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
   virtual unsigned long int GetMTime();
 
-  float GetShrinkFactor();
-  void  SetShrinkFactor(float value);
+  vtkFloatingPointType GetShrinkFactor();
+  void  SetShrinkFactor(vtkFloatingPointType value);
 
   bool IsShrunkable() { return myIsShrinkable;}
   bool IsShrunk() { return myIsShrunk;}
@@ -135,11 +135,17 @@ class SMESH_DeviceActor: public vtkLODActor{
   
   bool myIsHighlited;
 
-  float myPolygonOffsetFactor;
-  float myPolygonOffsetUnits;
+  vtkFloatingPointType myPolygonOffsetFactor;
+  vtkFloatingPointType myPolygonOffsetUnits;
 
-  void SetPolygonOffsetParameters(float factor, float units);
-  void GetPolygonOffsetParameters(float& factor, float& units){
+  void
+  SetPolygonOffsetParameters(vtkFloatingPointType factor, 
+			     vtkFloatingPointType units);
+
+  void
+  GetPolygonOffsetParameters(vtkFloatingPointType& factor, 
+			     vtkFloatingPointType& units)
+  {
     factor = myPolygonOffsetFactor;
     units = myPolygonOffsetUnits;
   }

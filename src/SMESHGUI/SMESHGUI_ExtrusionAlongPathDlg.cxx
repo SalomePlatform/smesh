@@ -48,6 +48,9 @@
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_Desktop.h"
 #include "SUIT_MessageBox.h"
+#include "SUIT_Session.h"
+
+#include "LightApp_Application.h"
 
 #include "SVTK_ViewModel.h"
 #include "SVTK_ViewWindow.h"
@@ -295,10 +298,14 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   CloseButton = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
   CloseButton->setAutoDefault(true);
 
+  HelpButton = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  HelpButton->setAutoDefault(true);
+
   // layouting
   GroupButtonsLayout->addWidget(OkButton,    0, 0);
   GroupButtonsLayout->addWidget(ApplyButton, 0, 1);
   GroupButtonsLayout->addWidget(CloseButton, 0, 3);
+  GroupButtonsLayout->addWidget(HelpButton, 0, 4);
   GroupButtonsLayout->addColSpacing(2, 10);
   GroupButtonsLayout->setColStretch(2, 10);
 
@@ -330,6 +337,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   myElementsFilter = new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
   myPathMeshFilter = new SMESH_TypeFilter (MESH);
 
+  myHelpFileName = "extrusion_along_a_path.htm";
+
   Init();
 
   /***************************************************************/
@@ -337,6 +346,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(OkButton,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(CloseButton,  SIGNAL(clicked()), this, SLOT(reject()));
   connect(ApplyButton,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(HelpButton,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   connect(AddAngleButton,    SIGNAL(clicked()), this, SLOT(OnAngleAdded()));
   connect(RemoveAngleButton, SIGNAL(clicked()), this, SLOT(OnAngleRemoved()));
@@ -652,6 +662,23 @@ void SMESHGUI_ExtrusionAlongPathDlg::ClickOnOk()
 {
   if (ClickOnApply())
     reject();
+}
+
+//=================================================================================
+// function : ClickOnHelp()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::ClickOnHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   QObject::tr("BUT_OK"));
+  }
 }
 
 //=================================================================================

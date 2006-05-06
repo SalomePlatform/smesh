@@ -78,8 +78,10 @@ StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
  *  Builds point distribution according to passed function
  */
 //=============================================================================
-SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, long nbSeg, long conv )
-throw ( SALOME::SALOME_Exception )
+SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const char* func, 
+									   CORBA::Long nbSeg, 
+									   CORBA::Long conv )
+  throw ( SALOME::SALOME_Exception )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );
@@ -99,8 +101,9 @@ throw ( SALOME::SALOME_Exception )
 }
 
 SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
-									  long nbSeg, long conv )
-throw ( SALOME::SALOME_Exception )
+									  CORBA::Long nbSeg, 
+									  CORBA::Long conv )
+  throw ( SALOME::SALOME_Exception )
 {
   MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );

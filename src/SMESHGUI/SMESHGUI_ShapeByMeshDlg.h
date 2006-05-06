@@ -27,7 +27,8 @@
 #ifndef SMESHGUI_ShapeByMeshDlg_H
 #define SMESHGUI_ShapeByMeshDlg_H
 
-#include <qdialog.h>
+#include "SMESHGUI_Dialog.h"
+#include "SMESHGUI_SelectionOp.h"
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -48,36 +49,88 @@ class SMESHGUI;
  *        by selecting mesh elements
  */
 
-class SMESHGUI_ShapeByMeshDlg : public QDialog
+class SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
 public:
-                           SMESHGUI_ShapeByMeshDlg( SMESHGUI*   theModule,
-                                                    const char* theName = 0);
+                           SMESHGUI_ShapeByMeshDlg();
   virtual                  ~SMESHGUI_ShapeByMeshDlg();
+
+private:
+
+//   void                     closeEvent (QCloseEvent* e);
+//   void                     enterEvent (QEvent*);
+
+private:
+
+  //QFrame*                  createButtonFrame (QWidget*);
+  QFrame*                  createMainFrame   (QWidget*);
+  //void                     displayPreview();
+  //void                     erasePreview();
+private:
+
+  QButtonGroup*            myElemTypeGroup;
+  QLineEdit*               myElementId;
+  QLineEdit*               myGeomName;
+
+//   QPushButton*             myOkBtn;
+//   QPushButton*             myCloseBtn;
+
+//   SMESHGUI*                mySMESHGUI;
+//   LightApp_SelectionMgr*   mySelectionMgr;
+//   SVTK_ViewWindow*         myViewWindow;
+
+  friend class SMESHGUI_ShapeByMeshOp;
+};
+
+class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
+{
+  Q_OBJECT
+
+public:
+  SMESHGUI_ShapeByMeshOp();
+  virtual ~SMESHGUI_ShapeByMeshOp();
+
+  virtual LightApp_Dialog*       dlg() const;  
 
   void                     Init();
   void                     SetMesh (SMESH::SMESH_Mesh_ptr);
   SMESH::SMESH_Mesh_ptr    GetMesh () { return myMesh; }
   GEOM::GEOM_Object_ptr    GetShape();
 
-signals:
+protected:
 
-  void                     PublishShape();
-  void                     Close();
+  virtual void                   commitOperation();
+  virtual void                   startOperation();
+  //virtual void                   selectionDone();
+  //virtual SUIT_SelectionFilter*  createFilter( const int ) const;
+  //virtual bool                   isValid( SUIT_Operation* ) const;
 
-private:
+  void                     activateSelection();
+  void                     setElementID(const QString&);
 
-  void                     closeEvent (QCloseEvent* e);
-  void                     enterEvent (QEvent*);
+/* signals: */
+
+/*   void                     PublishShape(); */
+/*   void                     Close(); */
+
+protected slots:
+
+  virtual bool                   onApply() { return true; }
+/*   void                           onCreateHyp( const int theHypType, const int theIndex ); */
+/*   void                           onEditHyp( const int theHypType, const int theIndex ); */
+/*   void                           onHypoSet( const QString& theSetName ); */
+/*   void                           onGeomSelectionByMesh( bool ); */
+/*   void                           onPublishShapeByMeshDlg(); */
+/*   void                           onCloseShapeByMeshDlg(); */
 
 private slots:
 
-  void                     onOk();
-  void                     onClose();
+//   void                     onOk();
+//   void                     onClose();
 
-  void                     onDeactivate();
+//   void                     onDeactivate();
 
   void                     onSelectionDone();
   void                     onTypeChanged (int);
@@ -85,26 +138,7 @@ private slots:
 
 private:
 
-  QFrame*                  createButtonFrame (QWidget*);
-  QFrame*                  createMainFrame   (QWidget*);
-  //void                     displayPreview();
-  //void                     erasePreview();
-  void                     activateSelection();
-  void                     setElementID(const QString&);
-
-private:
-
-  QButtonGroup*            myElemTypeGroup;
-  QLineEdit*               myElementId;
-  QLineEdit*               myGeomName;
-
-  QPushButton*             myOkBtn;
-  QPushButton*             myCloseBtn;
-
-  SMESHGUI*                mySMESHGUI;
-  LightApp_SelectionMgr*   mySelectionMgr;
-  SVTK_ViewWindow*         myViewWindow;
-
+  SMESHGUI_ShapeByMeshDlg* myDlg;
   SMESH::SMESH_Mesh_var    myMesh;
   GEOM::GEOM_Object_var    myGeomObj;
 
