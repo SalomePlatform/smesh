@@ -458,7 +458,7 @@ Functor_i::Functor_i():
 
 Functor_i::~Functor_i()
 {
-  TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".Destroy()";
 }
 
 void Functor_i::SetMesh( SMESH_Mesh_ptr theMesh )
@@ -1424,7 +1424,7 @@ FilterManager_i::FilterManager_i()
 
 FilterManager_i::~FilterManager_i()
 {
-  TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".Destroy()";
 }
 
 
@@ -1718,7 +1718,7 @@ Filter_i::~Filter_i()
   if(!CORBA::is_nil(myMesh))
     myMesh->Destroy();
 
-  TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".Destroy()";
 }
 
 //=======================================================================
@@ -2576,7 +2576,7 @@ FilterLibrary_i::FilterLibrary_i()
 FilterLibrary_i::~FilterLibrary_i()
 {
   delete myFileName;
-  TPythonDump()<<this<<".Destroy()";
+  //TPythonDump()<<this<<".Destroy()";
 }
 
 //=======================================================================
