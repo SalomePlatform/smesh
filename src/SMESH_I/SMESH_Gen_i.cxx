@@ -456,13 +456,16 @@ void SMESH_Gen_i::SetCurrentStudy( SALOMEDS::Study_ptr theStudy )
     myStudyContextMap[ studyId ] = new StudyContext;      
   }
 
-  SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
-  if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
-    aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
+  // myCurrentStudy may be nil
+  if ( !CORBA::is_nil( myCurrentStudy ) ) {
+    SALOMEDS::StudyBuilder_var aStudyBuilder = myCurrentStudy->NewBuilder(); 
+    if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
+      aStudyBuilder->LoadWith( myCurrentStudy->FindComponent( "GEOM" ), GetGeomEngine() );
 
   // set current study for geom engine
   //if ( !CORBA::is_nil( GetGeomEngine() ) )
   //  GetGeomEngine()->GetCurrentStudy( myCurrentStudy->StudyId() );
+  }
 }
 
 //=============================================================================
