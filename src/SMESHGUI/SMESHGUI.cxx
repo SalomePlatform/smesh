@@ -2866,6 +2866,11 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   setMenuShown( true );
   setToolShown( true );
 
+  // Reset actions accelerator keys
+  action(111)->setAccel(QKeySequence(CTRL + Key_B)); // Import DAT
+  action(112)->setAccel(QKeySequence(CTRL + Key_U)); // Import UNV
+  action(113)->setAccel(QKeySequence(CTRL + Key_M)); // Import MED
+
   return res;
 }
 
@@ -2875,6 +2880,11 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   setToolShown( false );
 
   EmitSignalCloseAllDialogs();
+
+  // Unset actions accelerator keys
+  action(111)->setAccel(QKeySequence()); // Import DAT
+  action(112)->setAccel(QKeySequence()); // Import UNV
+  action(113)->setAccel(QKeySequence()); // Import MED
 
   return SalomeApp_Module::deactivateModule( study );
 }
