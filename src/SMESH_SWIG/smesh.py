@@ -60,8 +60,9 @@ def GetName(obj):
 def SetName(obj, name):
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
-    attr = sobj.FindAttribute("AttributeName")[1]
-    attr.SetValue(name)
+    if not sobj is None:
+        attr = sobj.FindAttribute("AttributeName")[1]
+        attr.SetValue(name)
 
 # Algorithms and hypothesis
 # =========================
