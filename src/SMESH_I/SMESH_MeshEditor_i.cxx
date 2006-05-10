@@ -560,7 +560,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".TriToQuad( "
-                << IDsOfElements << ", None, " << MaxAngle << " )";
+                << IDsOfElements << ", " << aNumericalFunctor << ", " << MaxAngle << " )";
 #ifdef _DEBUG_
   TPythonDump() << "print 'TriToQuad: ', isDone";
 #endif
@@ -597,9 +597,12 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
 #endif
 
+  SMESH::NumericalFunctor_i* aNumericalFunctor =
+    SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
+
   // Update Python script
   TPythonDump() << "isDone = " << this << ".TriToQuadObject("
-                << theObject << ", None, " << MaxAngle << " )";
+                << theObject << ", " << aNumericalFunctor << ", " << MaxAngle << " )";
 #ifdef _DEBUG_
   TPythonDump() << "print 'TriToQuadObject: ', isDone";
 #endif
@@ -633,7 +636,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
 
 
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".QuadToTri( " << IDsOfElements << ", None )";
+  TPythonDump() << "isDone = " << this << ".QuadToTri( " << IDsOfElements << ", " << aNumericalFunctor << " )";
 #ifdef _DEBUG_
   TPythonDump() << "print 'QuadToTri: ', isDone";
 #endif
@@ -668,8 +671,11 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
 #endif
 
+  SMESH::NumericalFunctor_i* aNumericalFunctor =
+    SMESH::DownCast<SMESH::NumericalFunctor_i*>( Criterion );
+
   // Update Python script
-  TPythonDump() << "isDone = " << this << ".QuadToTriObject(" << theObject << ", None )";
+  TPythonDump() << "isDone = " << this << ".QuadToTriObject( " << theObject << ", " << aNumericalFunctor << " )";
 #ifdef _DEBUG_
   TPythonDump() << "print 'QuadToTriObject: ', isDone";
 #endif
