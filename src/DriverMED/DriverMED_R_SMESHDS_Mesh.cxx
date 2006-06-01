@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -83,6 +83,7 @@ DriverMED_R_SMESHDS_Mesh
 	// Reading the MED mesh
 	//---------------------
 	PMeshInfo aMeshInfo = aMed->GetPMeshInfo(iMesh+1);
+
         string aMeshName;
         if (myMeshId != -1) {
           ostringstream aMeshNameStr;
@@ -94,6 +95,7 @@ DriverMED_R_SMESHDS_Mesh
 	if(MYDEBUG) MESSAGE("Perform - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
 	if(aMeshName != aMeshInfo->GetName()) continue;
         aResult = DRS_OK;
+
 	//TInt aMeshDim = aMeshInfo->GetDim();
 	
         // Reading MED families to the temporary structure
@@ -121,9 +123,14 @@ DriverMED_R_SMESHDS_Mesh
 	  }
         }
 
+	if (aMeshInfo->GetType() == MED::eSTRUCTURE){
+	  bool aRes = buildMeshGrille(aMed,aMeshInfo);
+	  continue;
+	}
+
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
-	PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+      PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
 	if(!aNodeInfo)
 	  continue;
 
@@ -885,3 +892,86 @@ bool DriverMED_R_SMESHDS_Mesh::checkFamilyID(DriverMED_FamilyPtr & aFamily, int 
   return ( aFamily->GetId() == anID );
 }
 
+
+/*! \brief Reading the structured mesh and convert to non structured (by filling of smesh structure for non structured mesh)
+ * \param theWrapper  - PWrapper const pointer
+ * \param theMeshInfo - PMeshInfo const pointer
+ * \return TRUE, if successfully. Else FALSE
+ */
+bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
+					       const MED::PMeshInfo& theMeshInfo)
+{
+  bool res = true;
+
+  MED::PGrilleInfo aGrilleInfo = theWrapper->GetPGrilleInfo(theMeshInfo);
+  MED::TInt aNbNodes = aGrilleInfo->GetNbNodes();
+  MED::TInt aNbCells = aGrilleInfo->GetNbCells();
+  MED::TInt aMeshDim = theMeshInfo->GetDim();
+  DriverMED_FamilyPtr aFamily;
+  for(MED::TInt iNode=0;iNode < aNbNodes; iNode++){
+    double aCoords[3] = {0.0, 0.0, 0.0};
+    const SMDS_MeshNode* aNode;
+    MED::TNodeCoord aMEDNodeCoord = aGrilleInfo->GetCoord(iNode);
+    for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
+      aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
+    aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
+  }
+
+  /* not implemented FAMILY
+     
+  TInt aFamNum = aNodeInfo->GetFamNum(iElem);
+  if ( checkFamilyID ( aFamily, aFamNum ))
+    {
+      aFamily->AddElement(aNode);
+      aFamily->SetType(SMDSAbs_Node);
+    }
+    
+  */
+
+  SMDS_MeshElement* anElement = NULL;
+  MED::TIntVector aNodeIds;
+  for(MED::TInt iCell=0;iCell < aNbCells; iCell++){
+    aNodeIds = aGrilleInfo->GetConn(iCell);
+    switch(aGrilleInfo->GetGeom()){
+    case MED::eSEG2:
+      if(aNodeIds.size() != 2){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 2!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddEdgeWithID(aNodeIds[0],
+					aNodeIds[1],
+					iCell);
+      break;
+    case MED::eQUAD4:
+      if(aNodeIds.size() != 4){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 4!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddFaceWithID(aNodeIds[0],
+					aNodeIds[2],
+					aNodeIds[3],
+					aNodeIds[1],
+					iCell);
+      break;
+    case MED::eHEXA8:
+      if(aNodeIds.size() != 8){
+	res = false;
+	EXCEPTION(runtime_error,"buildMeshGrille Error. Incorrect size of ids 8!="<<aNodeIds.size());
+      }
+      anElement = myMesh->AddVolumeWithID(aNodeIds[0],
+					  aNodeIds[2],
+					  aNodeIds[3],
+					  aNodeIds[1],
+					  aNodeIds[4],
+					  aNodeIds[6],
+					  aNodeIds[7],
+					  aNodeIds[5],
+					  iCell);
+      break;
+    default:
+      break;
+    }
+  }
+
+  return res;
+}

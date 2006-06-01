@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -1130,15 +1130,175 @@ void StdMeshers_Penta_3D::MakeBlock()
 	  aFTr = aF;
 	  ++iCnt;
 	  if (iCnt>1) {
-            MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-	    myErrorStatus=5; // more than one face has triangulation
-	    return;
+	    // \begin{E.A.}
+	    // The current algorithm fails if there is more that one
+	    // face wich contains triangles ...
+	    // In that case, replace return by break to try another
+	    // method (coded in "if (iCnt != 1) { ... }")
+	    //
+            // MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
+	    // myErrorStatus=5; // more than one face has triangulation
+	    // return;
+	    break;
+	    // \end{E.A.}
 	  }
 	  break; // next face
 	}
       }
     }
   }
+  //
+  // \begin{E.A.}
+  // The current algorithm fails if "iCnt != 1", the case "iCnt == 0"
+  // was not reached 'cause it was not called from Hexa_3D ... Now it
+  // can occurs and in my opinion, it is the most common case.
+  //
+  if (iCnt != 1) {
+    // The suggested algorithm is the following :
+    //
+    // o Check that nb_of_faces == 6 and nb_of_edges == 12
+    //   then the shape is tologically equivalent to a box
+    // o In a box, there are three set of four // edges ...
+    //   In the cascade notation, it seems to be the edges
+    //   numbered : 
+    //     - 1, 3, 5, 7
+    //     - 2, 4, 6, 8
+    //     - 9, 10, 11, 12
+    // o For each one of this set, check if the four edges
+    //   have the same number of element.
+    // o If so, check if the "corresponding" // faces contains
+    //   only quads. It's the faces numbered:
+    //     - 1, 2, 3, 4
+    //     - 1, 2, 5, 6
+    //     - 3, 4, 5, 6
+    // o If so, check if the opposite edges of each // faces
+    //   have the same number of elements. It is the edges
+    //   numbered :
+    //     - 2 and 4, 6 and 8, 9 and 10, 11 and 12
+    //     - 1 and 3, 5 and 7, 9 and 11, 10 and 12
+    //     - 1 and 5, 3 and 7, 4 and 8, 2 and 6
+    // o If so, check if the two other faces have the same
+    //   number of elements. It is the faces numbered:
+    //     - 5, 6
+    //     - 3, 4
+    //     - 1, 2
+    //   This test should be improved to test if the nodes
+    //   of the two faces are really "en face".
+    // o If so, one of the two faces is a candidate to an extrusion,
+    //   It is the faces numbered :
+    //     - 5
+    //     - 3
+    //     - 1
+    // o Finally, if there is only one candidate, let do the
+    //   extrusion job for the corresponding face
+    //
+    int isOK = 0;
+    //
+    int iNbF = aM.Extent();
+    if (iNbF == 6) {
+      //
+      int nb_f1 = pMesh->GetSubMeshContaining(aM(1))->GetSubMeshDS()->NbElements();
+      int nb_f2 = pMesh->GetSubMeshContaining(aM(2))->GetSubMeshDS()->NbElements();
+      int nb_f3 = pMesh->GetSubMeshContaining(aM(3))->GetSubMeshDS()->NbElements();
+      int nb_f4 = pMesh->GetSubMeshContaining(aM(4))->GetSubMeshDS()->NbElements();
+      int nb_f5 = pMesh->GetSubMeshContaining(aM(5))->GetSubMeshDS()->NbElements();
+      int nb_f6 = pMesh->GetSubMeshContaining(aM(6))->GetSubMeshDS()->NbElements();
+      //
+      int has_only_quad_f1 = 1;
+      int has_only_quad_f2 = 1;
+      int has_only_quad_f3 = 1;
+      int has_only_quad_f4 = 1;
+      int has_only_quad_f5 = 1;
+      int has_only_quad_f6 = 1;
+      //
+      for (i=1; i<=iNbF; ++i) {
+	int ok = 1;
+	const TopoDS_Shape& aF = aM(i);
+	SMESH_subMesh *aSubMesh = pMesh->GetSubMeshContaining(aF);
+	SMESHDS_SubMesh *aSM = aSubMesh->GetSubMeshDS();
+	SMDS_ElemIteratorPtr itf = aSM->GetElements();
+	while(itf->more()) {
+	  const SMDS_MeshElement * pElement = itf->next();
+	  aElementType = pElement->GetType();
+	  if (aElementType==SMDSAbs_Face) {
+	    iNbNodes = pElement->NbNodes();
+	    if ( iNbNodes!=4 ) {
+	      ok = 0;
+	      break ;
+	    }
+	  }
+	}
+	if (i==1) has_only_quad_f1 = ok ;
+	if (i==2) has_only_quad_f2 = ok ;
+	if (i==3) has_only_quad_f3 = ok ;
+	if (i==4) has_only_quad_f4 = ok ;
+	if (i==5) has_only_quad_f5 = ok ;
+	if (i==6) has_only_quad_f6 = ok ;
+      }
+      //
+      TopTools_IndexedMapOfShape aE;
+      TopExp::MapShapes(myShape, TopAbs_EDGE, aE);
+      int iNbE = aE.Extent();
+      if (iNbE == 12) {
+	//
+	int nb_e01 = pMesh->GetSubMeshContaining(aE(1))->GetSubMeshDS()->NbElements();
+	int nb_e02 = pMesh->GetSubMeshContaining(aE(2))->GetSubMeshDS()->NbElements();
+	int nb_e03 = pMesh->GetSubMeshContaining(aE(3))->GetSubMeshDS()->NbElements();
+	int nb_e04 = pMesh->GetSubMeshContaining(aE(4))->GetSubMeshDS()->NbElements();
+	int nb_e05 = pMesh->GetSubMeshContaining(aE(5))->GetSubMeshDS()->NbElements();
+	int nb_e06 = pMesh->GetSubMeshContaining(aE(6))->GetSubMeshDS()->NbElements();
+	int nb_e07 = pMesh->GetSubMeshContaining(aE(7))->GetSubMeshDS()->NbElements();
+	int nb_e08 = pMesh->GetSubMeshContaining(aE(8))->GetSubMeshDS()->NbElements();
+	int nb_e09 = pMesh->GetSubMeshContaining(aE(9))->GetSubMeshDS()->NbElements();
+	int nb_e10 = pMesh->GetSubMeshContaining(aE(10))->GetSubMeshDS()->NbElements();
+	int nb_e11 = pMesh->GetSubMeshContaining(aE(11))->GetSubMeshDS()->NbElements();
+	int nb_e12 = pMesh->GetSubMeshContaining(aE(12))->GetSubMeshDS()->NbElements();
+	//
+	int nb_ok = 0 ;
+	//
+	if ( (nb_e01==nb_e03) && (nb_e03==nb_e05) && (nb_e05==nb_e07) ) {
+	  if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f3 && has_only_quad_f4 ) {
+	    if ( (nb_e09==nb_e10) && (nb_e08==nb_e06) && (nb_e11==nb_e12) && (nb_e04==nb_e02) ) {
+	      if (nb_f5==nb_f6) {
+		nb_ok += 1;
+		aFTr = aM(5);
+	      }
+	    }
+	  }
+	}
+	if ( (nb_e02==nb_e04) && (nb_e04==nb_e06) && (nb_e06==nb_e08) ) {
+	  if ( has_only_quad_f1 && has_only_quad_f2 && has_only_quad_f5 && has_only_quad_f6 ) {
+	    if ( (nb_e01==nb_e03) && (nb_e10==nb_e12) && (nb_e05==nb_e07) && (nb_e09==nb_e11) ) {
+	      if (nb_f3==nb_f4) {
+		nb_ok += 1;
+		aFTr = aM(3);
+	      }
+	    }
+	  }
+	}
+	if ( (nb_e09==nb_e10) && (nb_e10==nb_e11) && (nb_e11==nb_e12) ) {
+	  if ( has_only_quad_f3 && has_only_quad_f4 && has_only_quad_f5 && has_only_quad_f6 ) {
+	    if ( (nb_e01==nb_e05) && (nb_e02==nb_e06) && (nb_e03==nb_e07) && (nb_e04==nb_e08) ) {
+	      if (nb_f1==nb_f2) {
+		nb_ok += 1;
+		aFTr = aM(1);
+	      }
+	    }
+	  }
+	}
+	//
+	if ( nb_ok == 1 ) {
+	  isOK = 1;
+	}
+	//
+      }
+    }
+    if (!isOK) {
+      myErrorStatus=5; // more than one face has triangulation
+      return;
+    }
+  }
+  // \end{E.A.}
   // 
   // 1. Vetrices V00, V001;
   //

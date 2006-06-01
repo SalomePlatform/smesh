@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -70,7 +70,7 @@ LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_MeshEditor.cxx \
 	  SMESH_Block.cxx \
 	  SMESH_Pattern.cxx \
-          SMESH_HypoFilter.cxx \
+	  SMESH_HypoFilter.cxx \
 	  SMESH_MesherHelper.cxx
 
 LIB_SERVER_IDL = 
@@ -82,11 +82,11 @@ BIN =
 BIN_SRC = 
 
 # additionnal information to compile and link file
-CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${MED_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
-LDFLAGS+= -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -L${MED_ROOT_DIR}/lib/salome -L${OCC_KERNEL_LIBS} $(OCC_LDPATH)-lNMTTools -lSMESHDS -lMeshDriverDAT -lMeshDriverSTL -lMeshDriverMED -lMeshDriverUNV -lTKShHealing
+CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) $(KERNEL_CXXFLAGS) \
+           $(MED_CXXFLAGS) $(GEOM_CXX_FLAGS) $(BOOST_CPPFLAGS)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) $(KERNEL_CXXFLAGS) \
+           $(MED_CXXFLAGS) $(GEOM_CXX_FLAGS)
+LDFLAGS+= $(KERNEL_LDFLAGS) $(GEOM_LDFLAGS) $(MED_LDFLAGS) -lNMTTools -lSMESHDS -lMeshDriverDAT -lMeshDriverSTL -lMeshDriverMED -lMeshDriverUNV @CAS_LDPATH@ -lTKShHealing
 
 @CONCLUDE@
 

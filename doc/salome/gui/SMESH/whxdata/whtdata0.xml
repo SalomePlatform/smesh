@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='windows-1252' ?>
 <tocdata>
 <book name="MESH module" >
-  <item name="Introduction to MESH" url="files/introduction_to_smesh.htm" />
+  <item name="Introduction to Mesh" url="mesh.htm" />
   <item name="Running MESH module" url="files/running_smesh_module.htm" />
   <book name="Creating meshes" >
     <item name="About meshes" url="files/about_meshes.htm" />
@@ -78,6 +78,7 @@
     <item name="Revolution" url="revolution.htm" />
     <item name="Pattern mapping" url="pattern_mapping.htm" />
   </book>
+  <item name="Access to Mesh module functionality from Python (using smesh.py)" url="smeshpy_doc/namespacesmesh.html" />
   <book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />

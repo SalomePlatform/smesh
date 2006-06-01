@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -265,7 +265,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
         aQuads[i]->nbPts[1] != aQuads[i]->nbPts[3]) {
       MESSAGE("different number of points on the opposite edges of face " << i);
       //                  ASSERT(0);
-      return ClearAndReturn( aQuads, false );
+      // \begin{E.A.}
+      // Try to go into penta algorithm 'cause it has been improved.
+      // return ClearAndReturn( aQuads, false );
+      bool bIsOk = ComputePentahedralMesh(aMesh, aShape);
+      return ClearAndReturn( aQuads, bIsOk );
+      // \end{E.A.}
     }
   }
 

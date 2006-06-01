@@ -9,6 +9,9 @@ AC_CHECKING(for SMesh)
 
 SMesh_ok=no
 
+SMESH_LDFLAGS=""
+SMESH_CXXFLAGS=""
+
 AC_ARG_WITH(smesh,
 	    [  --with-smesh=DIR root directory path of SMESH installation ],
 	    SMESH_DIR="$withval",SMESH_DIR="")
@@ -43,6 +46,12 @@ if test -f ${SMESH_DIR}/bin/salome/libSMESH_Swig.py ; then
       SMESH_ROOT_DIR=${SMESH_DIR}
    fi
    AC_SUBST(SMESH_ROOT_DIR)
+
+   SMESH_LDFLAGS=-L${SMESH_DIR}/lib${LIB_LOCATION_SUFFIX}/salome
+   SMESH_CXXFLAGS=-I${SMESH_DIR}/include/salome
+
+   AC_SUBST(SMESH_LDFLAGS)
+   AC_SUBST(SMESH_CXXFLAGS)   
 
 else
    AC_MSG_WARN("Cannot find compiled SMesh module distribution")

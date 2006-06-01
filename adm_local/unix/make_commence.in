@@ -11,8 +11,8 @@ HAVE_SSTREAM=@HAVE_SSTREAM@
 
 LIBS=@LIBS@ 
 LIBSFORBIN=@LIBS@
-LDFLAGS=@LDFLAGS@ -L$(top_builddir)/lib/salome -Xlinker -rpath-link -Xlinker $(top_builddir)/lib/salome
-LDFLAGSFORBIN=@LDFLAGS@ -L$(top_builddir)/lib/salome -Xlinker -rpath-link -Xlinker $(top_builddir)/lib/salome
+LDFLAGS=@LDFLAGS@ -L$(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome -Xlinker -rpath-link -Xlinker
+LDFLAGSFORBIN=@LDFLAGS@ -L$(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome -Xlinker -rpath-link -Xlinker
 # add libstdc++ to link c++ library with libtool !
 LDFLAGS+= -lstdc++
 LDFLAGSFORBIN+= -lstdc++
@@ -54,8 +54,8 @@ PYTHONHOME = @PYTHONHOME@
 PYTHON_INCLUDES = @PYTHON_INCLUDES@
 PYTHON_LIBS = @PYTHON_LIBS@
 PYTHON_VERSION = @PYTHON_VERSION@
-PYTHON_SITE = @PYTHON_SITE@
-PYTHON_SITE_INSTALL = @PYTHON_SITE_INSTALL@
+PYTHON_SITE = $(prefix)/lib@LIB_LOCATION_SUFFIX@/python$(PYTHON_VERSION)/site-packages
+PYTHON_SITE_INSTALL = $(prefix)/lib@LIB_LOCATION_SUFFIX@/python$(PYTHON_VERSION)/site-packages/salome
 
 # QT
 
@@ -192,16 +192,33 @@ INSTALL_DATA=@INSTALL_DATA@
 # create a symbolic link (or a copie ?)
 LN_S=@LN_S@
 
+KERNEL_ROOT_DIR=@KERNEL_ROOT_DIR@
+KERNEL_SITE_DIR=@KERNEL_SITE_DIR@
+KERNEL_LDFLAGS=@KERNEL_LDFLAGS@
+KERNEL_CXXFLAGS=@KERNEL_CXXFLAGS@
+
+GUI_ROOT_DIR=@GUI_ROOT_DIR@
+GUI_LDFLAGS=@GUI_LDFLAGS@
+GUI_CXXFLAGS=@GUI_CXXFLAGS@
+
+MED_ROOT_DIR=@MED_ROOT_DIR@
+MED_LDFLAGS=@MED_LDFLAGS@
+MED_CXXFLAGS=@MED_CXXFLAGS@
+
+GEOM_ROOT_DIR=@GEOM_ROOT_DIR@
+GEOM_LDFLAGS=@GEOM_LDFLAGS@
+GEOM_CXXFLAGS=@GEOM_CXXFLAGS@
+
 ## Installation points
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-bindir=@bindir@/salome
-libdir=@libdir@/salome
+bindir=@exec_prefix@/bin/salome
+libdir=@exec_prefix@/lib@LIB_LOCATION_SUFFIX@/salome
 # warning : if user give this path in configure we could have salome/salome :-(
 includedir=@includedir@/salome
 datadir=@datadir@/salome
 idldir=$(prefix)/idl/salome
-sharedpydir=@libdir@/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
+sharedpydir=@exec_prefix@/lib@LIB_LOCATION_SUFFIX@/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
 
 docdir=${prefix}/doc/salome
 
@@ -250,17 +267,31 @@ $(top_srcdir)/configure.in: $(top_srcdir)/configure.in.base
 
 
 ACLOCAL_KERNEL = \
-ac_cxx_bool.m4                    check_corba.m4                        \
-ac_cxx_depend_flag.m4             check_hdf5.m4      enable_pthreads.m4	\
-ac_cxx_mutable.m4                 check_mico.m4      libtool.m4		\
-ac_cxx_namespaces.m4              check_omniorb.m4   pyembed.m4		\
-ac_cxx_partial_specialization.m4  python.m4                             \
-ac_cxx_typename.m4                check_pthreads.m4  check_cas.m4	\
-ac_cc_warnings.m4                 check_boost.m4     check_swig.m4                      
+    ac_cxx_bool.m4 \
+    check_corba.m4 \
+    ac_cxx_depend_flag.m4 \
+    check_hdf5.m4 \
+    enable_pthreads.m4 \
+    ac_cxx_mutable.m4 \
+    check_mico.m4 \
+    ac_cxx_namespaces.m4 \
+    check_omniorb.m4 \
+    pyembed.m4 \
+    ac_cxx_partial_specialization.m4 \
+    python.m4 \
+    ac_cxx_typename.m4 \
+    check_pthreads.m4 \
+    check_cas.m4 \
+    ac_cc_warnings.m4 \
+    check_boost.m4 \
+    check_swig.m4                      
 
 ACLOCAL_GUI = \
-check_vtk.m4	                  check_opengl.m4    check_qt.m4        \
-check_GUI.m4	                  check_corba_in_GUI.m4  
+    check_vtk.m4 \
+    check_opengl.m4 \
+    check_qt.m4 \
+    check_GUI.m4 \
+    check_corba_in_GUI.m4  
 
 ACLOCAL_MED =                 check_Med.m4
 ACLOCAL_GEOM =                check_GEOM.m4                      

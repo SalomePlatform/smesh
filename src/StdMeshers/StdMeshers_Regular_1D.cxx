@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -287,7 +287,8 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
                                int nbSeg, Function& func,
                                list<double>& theParams)
 {
-  OSD::SetSignal( true );
+  // never do this way
+  //OSD::SetSignal( true );
 
   if( nbSeg<=0 )
     return false;

@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -41,7 +41,8 @@ LIB_SRC = SMESH_TypeFilter.cxx \
           SMESH_NumberFilter.cxx \
           SMESH_LogicalFilter.cxx
 
-LIB_CLIENT_IDL = SALOME_Exception.idl \
+LIB_CLIENT_IDL = SALOME_Comm.idl \
+		 SALOME_Exception.idl \
 		 GEOM_Gen.idl \
 		 SMESH_Gen.idl \
 		 SMESH_Mesh.idl \
@@ -54,7 +55,6 @@ LIB_CLIENT_IDL = SALOME_Exception.idl \
 		 SMESH_Filter.idl \
 		 SMESH_Pattern.idl \
 		 SALOME_GenericObj.idl \
-		 SALOME_Comm.idl \
 		 MED.idl
 
 # header files 
@@ -65,11 +65,11 @@ EXPORT_HEADERS= SMESH_Type.h \
 
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) $(QT_INCLUDES) $(PYTHON_INCLUDES) $(VTK_INCLUDES) \
-            -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome ${BOOST_CPPFLAGS}
-CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome -I${BOOSTDIR}
-LDFLAGS  += $(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lSalomeDSClient -lSalomeDS -L${GUI_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeApp -lsuit
+            $(KERNEL_CXXFLAGS) $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS) ${BOOST_CPPFLAGS}
+CXXFLAGS += $(OCC_CXXFLAGS) $(KERNEL_CXXFLAGS) $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS) -I${BOOSTDIR}
+LDFLAGS  += $(OCC_KERNEL_LIBS) $(KERNEL_LDFLAGS) -lSalomeDSClient -lSalomeDS $(GUI_LDFLAGS) $(GEOM_LDFLAGS) -lSalomeApp -lsuit
 
 # additional file to be cleaned
 MOSTLYCLEAN =

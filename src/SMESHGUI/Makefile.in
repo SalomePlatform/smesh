@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -183,16 +183,16 @@ LIB_SERVER_IDL =
 #BIN = SMESHBin
 
 CPPFLAGS += $(QT_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(OCC_INCLUDES) $(PYTHON_INCLUDES) \
-            -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
+            $(KERNEL_CXXFLAGS)  $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS) $(BOOST_CPPFLAGS)
 
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome -I${GUI_ROOT_DIR}/include/salome \
-            -I${GEOM_ROOT_DIR}/include/salome
+CXXFLAGS += $(KERNEL_CXXFLAGS) $(GUI_CXXFLAGS) \
+            $(GEOM_CXXFLAGS)
 
 LDFLAGS += -lSMESHObject -lSMESHFiltersSelection -lSMDS -lSMESHControls -lDlgRef \
-	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools -L${KERNEL_ROOT_DIR}/lib/salome -L${GUI_ROOT_DIR}/lib/salome \
+	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools $(KERNEL_LDFLAGS) $(GUI_LDFLAGS) \
 	-lVTKViewer -lSalomeDSClient -lSalomeDS -lSalomeApp -lSalomePrs -lSalomeNS -lSalomeLifeCycleCORBA -lOpUtil -lSalomeObject \
-	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer -L${GEOM_ROOT_DIR}/lib/salome -lGEOM -lGEOMClient  \
+	-lEvent -lSALOMELocalTrace -lSVTK -lOCCViewer $(GEOM_LDFLAGS) -lGEOM -lGEOMClient  \
 	-lGEOMBase -lGEOMObject -lGEOMFiltersSelection -lSalomeSession
 
 LDFLAGSFORBIN += $(LDFLAGS)

@@ -31,10 +31,10 @@ function delayReload()
 	}
 }
 
-var gsToolbarOrder = "toc|fts|glo|blankblock|searchform|banner";
-var gsMinibarOrder = "blankblock|hide2|";
+var gsToolbarOrder = "";
+var gsMinibarOrder = "";
 
-var gsTopic = "files/introduction_to_smesh.htm";
+var gsTopic = "mesh.htm";
 var PANE_OPT_SEARCH = 1;
 var PANE_OPT_BROWSESEQ = 2;
 var gnOpts=-1;

@@ -31,7 +31,6 @@
 <topic name="Displaying nodes numbers" url="files/displaying_nodes_numbers.htm" />
 <topic name="Editing groups" url="files/editing_groups.htm" />
 <topic name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
-<topic name="Introduction to SMESH" url="files/introduction_to_smesh.htm" />
 <topic name="Length of edges" url="files/length_of_edges.htm" />
 <topic name="Length from edges" url="files/max._element_area_hypothesis.htm" />
 <topic name="Non conform mesh allowed hypothesis" url="files/max._element_volume_hypothsis.htm" />
@@ -60,6 +59,7 @@
 <topic name="Grouping Elements" url="grouping_elements.htm" />
 <topic name="Length" url="length.htm" />
 <topic name="Merge Elements" url="merge_elements.htm" />
+<topic name="mesh" url="mesh.htm" />
 <topic name="Modifying Meshes" url="modifying_meshes.htm" />
 <topic name="Pattern mapping" url="pattern_mapping.htm" />
 <topic name="Presentation" url="presentation.htm" />

@@ -16,7 +16,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.salome-platform.org or email : webmaster.salome@opencascade.org
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -92,13 +92,12 @@ BIN =
 BIN_SRC = 
 
 # additionnal information to compil and link file
-CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome \
-           -I${GEOM_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome -I${GEOM_ROOT_DIR}/include/salome
+CPPFLAGS+= $(OCC_INCLUDES) $(HDF5_INCLUDES) $(KERNEL_CXXFLAGS) \
+           $(GEOM_CXXFLAGS) $(BOOST_CPPFLAGS)
+CXXFLAGS+= $(OCC_CXXFLAGS) $(HDF5_INCLUDES) $(KERNEL_CXXFLAGS) $(GEOM_CXXFLAGS)
 
 #IDLCXXFLAGS+= -Wbtp
 
-#LDFLAGS+= $(HDF5_LIBS) -lStdMeshers -lSMESHEngine -lSalomeLifeCycleCORBA -L${KERNEL_ROOT_DIR}/lib/salome -L${GEOM_ROOT_DIR}/lib/salome -lSalomeGenericObj
-LDFLAGS+= $(HDF5_LIBS) -lStdMeshers -lSMESHEngine -L${KERNEL_ROOT_DIR}/lib/salome
+LDFLAGS+= $(HDF5_LIBS) -lStdMeshers -lSMESHEngine $(KERNEL_LDFLAGS)
 
 @CONCLUDE@

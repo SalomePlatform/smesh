@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -29,6 +29,7 @@ top_srcdir=@top_srcdir@
 top_builddir=../..
 srcdir=@srcdir@
 VPATH=.:@srcdir@:@top_srcdir@/idl
+KERNEL_CXXFLAGS=@KERNEL_CXXFLAGS@
 
 
 @COMMENCE@
@@ -109,9 +110,9 @@ EXPORT_HEADERS= \
 	SMDS_SetIterator.hxx
 
 # additionnal information to compil and link file
-CPPFLAGS += -I${KERNEL_ROOT_DIR}/include/salome $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
-CXXFLAGS += -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += -L${KERNEL_ROOT_DIR}/lib/salome $(OCC_KERNEL_LIBS)
+CPPFLAGS += $(KERNEL_CXXFLAGS) $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
+CXXFLAGS += $(KERNEL_CXXFLAGS)
+LDFLAGS  += $(KERNEL_LDFLAGS) $(OCC_KERNEL_LIBS)
 
 
 # additional file to be cleaned

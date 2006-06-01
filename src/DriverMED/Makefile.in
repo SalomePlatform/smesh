@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -59,11 +59,11 @@ LIB_CLIENT_IDL =
 LIB_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${MED_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS += $(OCC_CXXFLAGS) $(HDF5_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome
-LDFLAGS  += -lMeshDriver -L${MED_ROOT_DIR}/lib/salome -lMEDWrapper
+CPPFLAGS += $(OCC_INCLUDES) $(MED_CXXFLAGS) $(BOOST_CPPFLAGS)
+CXXFLAGS += $(OCC_CXXFLAGS) $(HDF5_INCLUDES) $(KERNEL_CXXFLAGS)
+LDFLAGS  += -lMeshDriver $(MED_LDFLAGS) -lMEDWrapper
 
-LDFLAGSFORBIN += -lMeshDriver -lSMDS -lSMESHDS -L${KERNEL_ROOT_DIR}/lib/salome -L${MED_ROOT_DIR}/lib/salome -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lmed_V2_1 -lMEDWrapper_V2_2 -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
+LDFLAGSFORBIN += -lMeshDriver -lSMDS -lSMESHDS $(KERNEL_LDFLAGS) $(MED_LDFLAGS) -lMEDWrapper -lMEDWrapperBase -lMEDWrapper_V2_1 -lmed_V2_1 -lMEDWrapper_V2_2 -lOpUtil -lSALOMELocalTrace -lSALOMEBasics
 
 @CONCLUDE@
 

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -519,16 +519,18 @@ CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theO
 //purpose  : auxilary function for conversion long_array to std::map<>
 //           which is used in some methods
 //=======================================================================
-static void ToMap(const SMESH::long_array & IDs,
-                  const SMESHDS_Mesh* aMesh,
-                  std::map<int,const SMDS_MeshElement*>& aMap)
+static void ToMap(const SMESH::long_array &              IDs,
+                  const SMESHDS_Mesh*                    aMesh,
+                  std::map<int,const SMDS_MeshElement*>& aMap,
+                  const SMDSAbs_ElementType              aType = SMDSAbs_All )
 { 
   for (int i=0; i<IDs.length(); i++) {
     CORBA::Long ind = IDs[i];
     std::map<int,const SMDS_MeshElement*>::iterator It = aMap.find(ind);
     if(It==aMap.end()) {
       const SMDS_MeshElement * elem = aMesh->FindElement(ind);
-      aMap.insert( make_pair(ind,elem) );
+      if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
+        aMap.insert( make_pair( elem->GetID(), elem ));
     }
   }
 }
@@ -548,7 +550,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   map<int,const SMDS_MeshElement*> faces;
-  ToMap(IDsOfElements, aMesh, faces);
+  ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
@@ -624,7 +626,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   map<int,const SMDS_MeshElement*> faces;
-  ToMap(IDsOfElements, aMesh, faces);
+  ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
     dynamic_cast<SMESH::NumericalFunctor_i*>( SMESH_Gen_i::GetServant( Criterion ).in() );
@@ -697,7 +699,7 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   map<int,const SMDS_MeshElement*> faces;
-  ToMap(IDsOfElements, aMesh, faces);
+  ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   // Update Python script
   TPythonDump() << "isDone = " << this << ".SplitQuad( "
@@ -861,7 +863,7 @@ CORBA::Boolean
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
   map<int,const SMDS_MeshElement*> elements;
-  ToMap(IDsOfElements, aMesh, elements);
+  ToMap(IDsOfElements, aMesh, elements, SMDSAbs_Face);
 
   set<const SMDS_MeshNode*> fixedNodes;
   for (int i = 0; i < IDsOfFixedNodes.length(); i++) {

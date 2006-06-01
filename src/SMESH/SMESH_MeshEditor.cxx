@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -2938,15 +2938,21 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
       static_cast<const SMDS_MeshNode*>( nList->first );
     SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator();
     int nbInitElems = 0;
-    const SMDS_MeshElement* el;
+    const SMDS_MeshElement* el = 0;
+    SMDSAbs_ElementType highType = SMDSAbs_Edge; // count most complex elements only
     while ( eIt->more() && nbInitElems < 2 ) {
       el = eIt->next();
-      //if ( elemSet.find( eIt->next() ) != elemSet.end() )
+      SMDSAbs_ElementType type = el->GetType();
+      if ( type == SMDSAbs_Volume || type < highType ) continue;
+      if ( type > highType ) {
+        nbInitElems = 0;
+        highType = type;
+      }
       if ( elemSet.find(el->GetID()) != elemSet.end() )
         nbInitElems++;
     }
     if ( nbInitElems < 2 ) {
-      bool NotCreateEdge = el->IsQuadratic() && el->IsMediumNode(node);
+      bool NotCreateEdge = el && el->IsQuadratic() && el->IsMediumNode(node);
       if(!NotCreateEdge) {
         vector<TNodeOfNodeListMapItr> newNodesItVec( 1, nList );
         list<const SMDS_MeshElement*> newEdges;
@@ -2965,16 +2971,20 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
     vector<TNodeOfNodeListMapItr>& vecNewNodes = itElemNodes->second;
 
     if ( elem->GetType() == SMDSAbs_Edge ) {
-      if(!elem->IsQuadratic()) {
-        // create a ceiling edge
-        myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
-                                           vecNewNodes[ 1 ]->second.back()));
+      // create a ceiling edge
+      if (!elem->IsQuadratic()) {
+        if ( !aMesh->FindEdge( vecNewNodes[ 0 ]->second.back(),
+                               vecNewNodes[ 1 ]->second.back()))
+          myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
+                                                   vecNewNodes[ 1 ]->second.back()));
       }
       else {
-        // create a ceiling edge
-        myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
-                                           vecNewNodes[ 1 ]->second.back(),
-                                           vecNewNodes[ 2 ]->second.back()));
+        if ( !aMesh->FindEdge( vecNewNodes[ 0 ]->second.back(),
+                               vecNewNodes[ 1 ]->second.back(),
+                               vecNewNodes[ 2 ]->second.back()))
+          myLastCreatedElems.Append(aMesh->AddEdge(vecNewNodes[ 0 ]->second.back(),
+                                                   vecNewNodes[ 1 ]->second.back(),
+                                                   vecNewNodes[ 2 ]->second.back()));
       }
     }
     if ( elem->GetType() != SMDSAbs_Face )
@@ -2990,10 +3000,10 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
     set<const SMDS_MeshNode*> aFaceLastNodes;
     int iNode, nbNodes = vecNewNodes.size();
     if(!elem->IsQuadratic()) {
-      // loop on a face nodes
+      // loop on the face nodes
       for ( iNode = 0; iNode < nbNodes; iNode++ ) {
         aFaceLastNodes.insert( vecNewNodes[ iNode ]->second.back() );
-        // look for free links of a face
+        // look for free links of the face
         int iNext = ( iNode + 1 == nbNodes ) ? 0 : iNode + 1;
         const SMDS_MeshNode* n1 = vecNewNodes[ iNode ]->first;
         const SMDS_MeshNode* n2 = vecNewNodes[ iNext ]->first;
@@ -3070,6 +3080,7 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
           continue;
 
         // create faces for all steps
+        // if such a face has been already created by sweep of edge, assure that its orientation is OK
         for ( iStep = 0; iStep < nbSteps; iStep++ )  {
           vTool.Set( *v );
           vTool.SetExternalNormal();
@@ -3077,34 +3088,51 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
           for ( ; ind != fInd.end(); ind++ ) {
             const SMDS_MeshNode** nodes = vTool.GetFaceNodes( *ind );
             int nbn = vTool.NbFaceNodes( *ind );
-            //switch ( vTool.NbFaceNodes( *ind ) ) {
             switch ( nbn ) {
-            case 3:
-              myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ] )); break;
-            case 4:
-              myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] )); break;
+            case 3: { ///// triangle
+              const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ]);
+              if ( !f )
+                myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ] ));
+              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                aMesh->ChangeElementNodes( f, nodes, nbn );
+              break;
+            }
+            case 4: { ///// quadrangle
+              const SMDS_MeshFace * f = aMesh->FindFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ]);
+              if ( !f )
+                myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] ));
+              else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                aMesh->ChangeElementNodes( f, nodes, nbn );
+              break;
+            }
             default:
-              {
-                if( (*v)->IsQuadratic() ) {
-                  if(nbn==6) {
+              if( (*v)->IsQuadratic() ) {
+                if(nbn==6) { /////// quadratic triangle
+                  const SMDS_MeshFace * f = aMesh->FindFace( nodes[0], nodes[2], nodes[4],
+                                                             nodes[1], nodes[3], nodes[5] );
+                  if ( !f )
                     myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4],
-                                                       nodes[1], nodes[3], nodes[5])); break;
-                  }
-                  else {
-                      myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
-                                     nodes[1], nodes[3], nodes[5], nodes[7]));
-                      break;
-                  }
+                                                             nodes[1], nodes[3], nodes[5]));
+                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                    aMesh->ChangeElementNodes( f, nodes, nbn );
                 }
-                else {
-                  int nbPolygonNodes = vTool.NbFaceNodes( *ind );
-                  vector<const SMDS_MeshNode*> polygon_nodes (nbPolygonNodes);
-                  for (int inode = 0; inode < nbPolygonNodes; inode++) {
-                    polygon_nodes[inode] = nodes[inode];
-                  }
+                else {       /////// quadratic quadrangle
+                  const SMDS_MeshFace * f = aMesh->FindFace( nodes[0], nodes[2], nodes[4], nodes[6],
+                                                             nodes[1], nodes[3], nodes[5], nodes[7] );
+                  if ( !f )
+                    myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
+                                                             nodes[1], nodes[3], nodes[5], nodes[7]));
+                  else if ( nodes[ 2 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                    aMesh->ChangeElementNodes( f, nodes, nbn );
+                }
+              }
+              else { //////// polygon
+                vector<const SMDS_MeshNode*> polygon_nodes ( nodes, &nodes[nbn] );
+                const SMDS_MeshFace * f = aMesh->FindFace( polygon_nodes );
+                if ( !f )
                   myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
-                }
-                break;
+                else if ( nodes[ 1 ] != f->GetNode( f->GetNodeIndex( nodes[ 0 ] ) + 1 ))
+                  aMesh->ChangeElementNodes( f, nodes, nbn );
               }
             }
           }
@@ -3136,36 +3164,29 @@ static void makeWalls (SMESHDS_Mesh*                 aMesh,
           myLastCreatedElems.Append(aMesh->AddFace( nodes[ 0 ], nodes[ 1 ], nodes[ 2 ], nodes[ 3 ] ));
         break;
       default:
-        {
-          if(itElem->second.back()->IsQuadratic()) {
-            if(nbn==6) {
-              if (!hasFreeLinks ||
-                  !aMesh->FindFace(nodes[0], nodes[2], nodes[4],
-                                   nodes[1], nodes[3], nodes[5]) ) {
-                myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4],
-                                                   nodes[1], nodes[3], nodes[5])); break;
-              }
-            }
-            else { // nbn==8
-              if (!hasFreeLinks ||
-                  !aMesh->FindFace(nodes[0], nodes[2], nodes[4], nodes[6],
-                                   nodes[1], nodes[3], nodes[5], nodes[7]) )
-                myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
-                                                   nodes[1], nodes[3], nodes[5], nodes[7]));
+        if(itElem->second.back()->IsQuadratic()) {
+          if(nbn==6) {
+            if (!hasFreeLinks ||
+                !aMesh->FindFace(nodes[0], nodes[2], nodes[4],
+                                 nodes[1], nodes[3], nodes[5]) ) {
+              myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4],
+                                                       nodes[1], nodes[3], nodes[5]));
             }
           }
-          else {
-            int nbPolygonNodes = lastVol.NbFaceNodes( iF );
-            vector<const SMDS_MeshNode*> polygon_nodes (nbPolygonNodes);
-            for (int inode = 0; inode < nbPolygonNodes; inode++) {
-              polygon_nodes[inode] = nodes[inode];
-            }
-            if (!hasFreeLinks || !aMesh->FindFace(polygon_nodes))
-              myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
+          else { // nbn==8
+            if (!hasFreeLinks ||
+                !aMesh->FindFace(nodes[0], nodes[2], nodes[4], nodes[6],
+                                 nodes[1], nodes[3], nodes[5], nodes[7]) )
+              myLastCreatedElems.Append(aMesh->AddFace(nodes[0], nodes[2], nodes[4], nodes[6],
+                                                       nodes[1], nodes[3], nodes[5], nodes[7]));
           }
         }
-        break;
-      }
+        else {
+          vector<const SMDS_MeshNode*> polygon_nodes ( nodes, &nodes[nbn] );
+          if (!hasFreeLinks || !aMesh->FindFace(polygon_nodes))
+            myLastCreatedElems.Append(aMesh->AddPolygonalFace(polygon_nodes));
+        }
+      } // switch
     }
   } // loop on swept elements
 }

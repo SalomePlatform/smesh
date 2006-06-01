@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -43,10 +43,10 @@ LIB_SRC = SMESH_Controls.cxx
 BIN = SMESHControls
 BIN_SRC	= 
 
-CPPFLAGS+=$(OCC_INCLUDES) $(BOOST_CPPFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS+=$(OCC_INCLUDES) $(BOOST_CPPFLAGS) $(KERNEL_CXXFLAGS)
 
-LDFLAGS+=$(OCC_KERNEL_LIBS) -L${KERNEL_ROOT_DIR}/lib/salome -lOpUtil -lSMDS -lTKBRep -lTKG3d
+LDFLAGS+=$(OCC_KERNEL_LIBS) $(KERNEL_LDFLAGS) -lOpUtil -lSMDS -lTKBRep -lTKG3d
 
-LDFLAGSFORBIN += -lSMDS -L${KERNEL_ROOT_DIR}/lib/salome -lOpUtil -lSALOMELocalTrace -lSALOMEBasics $(OCC_KERNEL_LIBS) -lTKBRep -lTKG3d
+LDFLAGSFORBIN += -lSMDS $(KERNEL_LDFLAGS) -lOpUtil -lSALOMELocalTrace -lSALOMEBasics $(OCC_KERNEL_LIBS) -lTKBRep -lTKG3d
 
 @CONCLUDE@

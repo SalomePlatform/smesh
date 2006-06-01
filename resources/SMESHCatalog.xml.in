@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='us-ascii' ?>
+ 
+<!-- XML component catalog -->
+<begin-catalog>
+
+<!-- Path prefix information -->
+
+<path-prefix-list>
+</path-prefix-list>
+
+<!-- Component list -->
+<component-list>
+	<component>
+		<!-- Component identification -->
+		<component-name>SMESH</component-name>
+		<component-username>Mesh</component-username>
+		<component-type>MESH</component-type>
+		<component-author>NRI</component-author>
+		<component-version>@VERSION@</component-version>
+		<component-comment>Mesh component</component-comment>
+		<component-multistudy>1</component-multistudy>
+		<component-icone>ModuleMesh.png</component-icone>
+		<component-impltype>1</component-impltype>
+
+            <component-interface-list>
+                <component-interface-name>SMESH</component-interface-name>
+                <component-interface-comment></component-interface-comment>
+                <component-service-list>
+                    <component-service>
+                        <service-name>CreateHypothesis</service-name>
+                        <service-author></service-author>
+                        <service-version></service-version>
+                        <service-comment></service-comment>
+                        <service-by-default>1</service-by-default>
+                        <inParameter-list>
+                            <inParameter>
+                                <inParameter-type>string</inParameter-type>
+                                <inParameter-name>anHyp</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>long</inParameter-type>
+                                <inParameter-name>studyId</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                        </inParameter-list>
+                        <outParameter-list>
+			    <outParameter>
+                                <outParameter-type>SMESH_Hypothesis</outParameter-type>
+                                <outParameter-name>aHyp</outParameter-name>
+                                <outParameter-comment></outParameter-comment>
+			    </outParameter>
+			</outParameter-list>
+                    </component-service>
+                    <component-service>
+                        <service-name>Init</service-name>
+                        <service-author></service-author>
+                        <service-version></service-version>
+                        <service-comment></service-comment>
+                        <service-by-default>1</service-by-default>
+                        <inParameter-list>
+                            <inParameter>
+                                <inParameter-type>GEOM_Gen</inParameter-type>
+                                <inParameter-name>geomEngine</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>long</inParameter-type>
+                                <inParameter-name>studyId</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>GEOM_Shape</inParameter-type>
+                                <inParameter-name>aShape</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                        </inParameter-list>
+                        <outParameter-list>
+			    <outParameter>
+				<outParameter-type>SMESH_Mesh</outParameter-type>
+				<outParameter-name>aMesh</outParameter-name>
+				<outParameter-comment></outParameter-comment>
+			    </outParameter>
+			</outParameter-list>
+                    </component-service>
+                    <component-service>
+                        <service-name>Compute</service-name>
+                        <service-author></service-author>
+                        <service-version></service-version>
+                        <service-comment></service-comment>
+                        <service-by-default>1</service-by-default>
+                        <inParameter-list>
+                            <inParameter>
+                                <inParameter-type>SMESH_Mesh</inParameter-type>
+                                <inParameter-name>aMesh</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>GEOM_Shape</inParameter-type>
+                                <inParameter-name>aSubShape</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                        </inParameter-list>
+                        <outParameter-list>
+                            <outParameter>
+                                <outParameter-type>boolean</outParameter-type>
+                                <outParameter-name>res</outParameter-name>
+                                <outParameter-comment>Result</outParameter-comment>
+                            </outParameter>
+			</outParameter-list>
+                    </component-service>
+                    <component-service>
+                        <service-name>IsReadyToCompute</service-name>
+                        <service-author></service-author>
+                        <service-version></service-version>
+                        <service-comment></service-comment>
+                        <service-by-default>1</service-by-default>
+                        <inParameter-list>
+                            <inParameter>
+                                <inParameter-type>SMESH_Mesh</inParameter-type>
+                                <inParameter-name>aMesh</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>GEOM_Shape</inParameter-type>
+                                <inParameter-name>aSubShape</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                        </inParameter-list>
+                        <outParameter-list>
+                                <outParameter-type>boolean</outParameter-type>
+                                <outParameter-name>res</outParameter-name>
+                                <outParameter-comment>Result</outParameter-comment>
+			</outParameter-list>
+                    </component-service>
+                </component-service-list>
+                <component-interface-name>SMESH_Mesh</component-interface-name>
+                <component-interface-comment></component-interface-comment>
+                <component-service-list>
+                    <component-service>
+                        <service-name>AddHypothesis</service-name>
+                        <service-author></service-author>
+                        <service-version></service-version>
+                        <service-comment></service-comment>
+                        <service-by-default>1</service-by-default>
+                        <inParameter-list>
+                            <inParameter>
+                                <inParameter-type>GEOM_Shape</inParameter-type>
+                                <inParameter-name>aSubShape</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                            <inParameter>
+                                <inParameter-type>SMESH_Hypothesis</inParameter-type>
+                                <inParameter-name>aHyp</inParameter-name>
+                                <inParameter-comment></inParameter-comment>
+                            </inParameter>
+                        </inParameter-list>
+                        <outParameter-list>
+                            <outParameter>
+                                <outParameter-type>boolean</outParameter-type>
+                                <outParameter-name>res</outParameter-name>
+                                <outParameter-comment>Result</outParameter-comment>
+                            </outParameter>
+			</outParameter-list>
+                    </component-service>
+                </component-service-list>
+            </component-interface-list>
+	<constraint>hostname = localhost</constraint>
+	</component>
+</component-list>
+</begin-catalog>

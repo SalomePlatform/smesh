@@ -35,9 +35,9 @@ LIB_OBJ_F    = $(patsubst %.f,   %.lo, $(filter %.f, $(LIB_SRC)))
 # all libtool obj file in library
 LIB_OBJ = $(LIB_OBJ_CXX) $(LIB_OBJ_CC) $(LIB_OBJ_C) $(LIB_CLIENT_OBJ:%.o=%.lo) $(LIB_SERVER_OBJ:%.o=%.lo) $(LIB_SWIG_OBJ) $(LIB_OBJ_F)
 
-# LIB_BUILD = $(LIB:%.la=$(top_builddir)/lib/salome/%.la)
-LIB_BUILD = $(patsubst %.la, $(top_builddir)/lib/salome/%.la, $(filter %.la, $(LIB)))
-LIB_BUILD_A = $(patsubst %.a, $(top_builddir)/lib/salome/%.a, $(filter %.a, $(LIB)))
+# LIB_BUILD = $(LIB:%.la=$(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/%.la)
+LIB_BUILD = $(patsubst %.la, $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/%.la, $(filter %.la, $(LIB)))
+LIB_BUILD_A = $(patsubst %.a, $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/%.a, $(filter %.a, $(LIB)))
 
 ifneq ($(findstring cmodule.la,$(filter %.la, $(LIB))),)
 LIB_SWIG = $(patsubst %cmodule.la,%.so, $(filter %.la, $(LIB)))
@@ -48,7 +48,7 @@ endif
 lib: $(LIB_BUILD) $(LIB_CLIENT_PY)
 # we don't build static library !
 
-$(LIB_BUILD): $(top_builddir)/lib/salome/%.la: %.la
+$(LIB_BUILD): $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/%.la: %.la
 	-$(RM) $@
 	-$(RM) $(patsubst %.la, %.so, $@)
 	-$(RM) $(patsubst %.la, %.a, $@)
@@ -59,10 +59,10 @@ $(LIB_BUILD): $(top_builddir)/lib/salome/%.la: %.la
 	      $(patsubst %.la, %.so, $@).0 || true
 
 	if ! test -z $(LIB_SWIG) ; then \
-	   ln -sf $(patsubst %.la,%.so, $(CURDIR)/.libs/$<) $(top_builddir)/lib/salome/_$(LIB_SWIG) || true;\
+	   ln -sf $(patsubst %.la,%.so, $(CURDIR)/.libs/$<) $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/_$(LIB_SWIG) || true;\
 	fi;
 
-$(LIB_BUILD_A): $(top_builddir)/lib/salome/%.a: %.a
+$(LIB_BUILD_A): $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/%.a: %.a
 	-$(RM) $@
 	ln -sf $(CURDIR)/$< $@ || true
 
@@ -106,7 +106,7 @@ $(DEST_PYSCRIPTS): $(top_builddir)/bin/salome/%: %
 
 # copy pyqt files in $(PYTHON_SHARED_SITE)
 #
-PYTHON_SHARED_SITE=$(top_builddir)/lib/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
+PYTHON_SHARED_SITE=$(top_builddir)/lib@LIB_LOCATION_SUFFIX@/python$(PYTHON_VERSION)/site-packages/salome/shared_modules
 
 $(PYTHON_SHARED_SITE):
 	$(INSTALL) -d  $@
@@ -260,10 +260,10 @@ clean: mostlyclean
 	-$(RM) $(LIB) $(TEST_PROGS) $(BIN) $(CLEAN)
 	-$(RM) TAGS *~ *# core *.core 
 	-$(RM) -r .libs
-	-$(RM) $(top_builddir)/lib/salome/$(LIB)
+	-$(RM) $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/$(LIB)
 	-$(RM) $(patsubst %,$(top_builddir)/bin/salome/%, $(BIN))
-	-$(RM) $(patsubst %.la, %.so, $(top_builddir)/lib/salome/$(LIB))
-	-$(RM) $(patsubst %.la, %.a, $(top_builddir)/lib/salome/$(LIB))
+	-$(RM) $(patsubst %.la, %.so, $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/$(LIB))
+	-$(RM) $(patsubst %.la, %.a, $(top_builddir)/lib@LIB_LOCATION_SUFFIX@/salome/$(LIB))
 # remove idl generated files (sources)
 	-$(RM) $(LIB_CLIENT_SRC) $(LIB_SERVER_SRC) $(BIN_CLIENT_SRC) $(BIN_SERVER_SRC)
 # remove idl generated files (headers)

@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -43,19 +43,19 @@ LIB = libSMESHClient.la
 LIB_SRC = SMESH_Client.cxx
 
 LIB_CLIENT_IDL = SALOME_Comm.idl \
-                 SALOME_Component.idl \
-                 SALOMEDS.idl \
-		 SALOMEDS_Attributes.idl \
-                 SALOME_Exception.idl \
-		 SALOME_GenericObj.idl \
-		 SMESH_Mesh.idl \
-		 SMESH_Gen.idl \
-		 SMESH_Group.idl \
-		 SMESH_Hypothesis.idl \
-		 SMESH_Pattern.idl \
-		 SMESH_Filter.idl \
-                 GEOM_Gen.idl \
-                 MED.idl
+	SALOME_Component.idl \
+	SALOMEDS.idl \
+	SALOMEDS_Attributes.idl \
+	SALOME_Exception.idl \
+	SALOME_GenericObj.idl \
+	SMESH_Mesh.idl \
+	SMESH_Gen.idl \
+	SMESH_Group.idl \
+	SMESH_Hypothesis.idl \
+	SMESH_Pattern.idl \
+	SMESH_Filter.idl \
+	GEOM_Gen.idl \
+	MED.idl
 
 # Executables targets
 BIN = SMESHClientBin
@@ -64,32 +64,38 @@ BIN_CLIENT_IDL =
 BIN_SERVER_IDL =
 
 # additionnal information to compil and link file
-CPPFLAGS += $(OCC_INCLUDES) -I${KERNEL_ROOT_DIR}/include/salome $(BOOST_CPPFLAGS)
-CXXFLAGS += $(OCC_CXXFLAGS) -I${KERNEL_ROOT_DIR}/include/salome
+CPPFLAGS += $(OCC_INCLUDES) $(KERNEL_CXXFLAGS) $(BOOST_CPPFLAGS)
+CXXFLAGS += $(OCC_CXXFLAGS) $(KERNEL_CXXFLAGS)
 LDFLAGS  += $(OCC_KERNEL_LIBS) \
-	    -L${KERNEL_ROOT_DIR}/lib/salome \
-	    -L${GEOM_ROOT_DIR}/lib/salome \
-	    -L${MED_ROOT_DIR}/lib/salome \
-            -lSMDS \
-            -lSMESHimpl \
-            -lSMESHDS \
-            -lSMESHControls \
-            -lNMTTools \
-            -lNMTDS \
-	    -lmed_V2_1 \
-            -lMEDWrapper \
-            -lMEDWrapperBase \
-            -lMEDWrapper_V2_1 \
-            -lMEDWrapper_V2_2 \
-            -lSalomeResourcesManager \
-            -lSalomeLifeCycleCORBA \
-            -lSalomeNotification \
-            -lSalomeContainer \
-            -lRegistry \
-            -lSalomeNS \
-            -lSALOMELocalTrace \
-            -lSALOMEBasics \
-            -lOpUtil
+	$(KERNEL_LDFLAGS) \
+	$(GEOM_LDFLAGS) \
+	$(MED_LDFLAGS) \
+	-lSMDS \
+	-lSMESHimpl \
+	-lSMESHDS \
+	-lSMESHControls \
+	-lNMTTools \
+	-lNMTDS \
+	-lmed_V2_1 \
+	-lMEDWrapper \
+	-lMEDWrapperBase \
+	-lMEDWrapper_V2_1 \
+	-lMEDWrapper_V2_2 \
+	-lSalomeResourcesManager \
+	-lSalomeLifeCycleCORBA \
+	-lSalomeNotification \
+	-lSalomeContainer \
+	-lRegistry \
+	-lSalomeNS \
+	-lSALOMELocalTrace \
+	-lSALOMEBasics \
+	-lOpUtil \
+	-lTKShHealing \
+	-lMeshDriverDAT \
+	-lMeshDriverSTL \
+	-lMeshDriverMED \
+	-lMeshDriverUNV \
+	-lMeshDriver
 
 LDFLAGSFORBIN += $(LDFLAGS)
 

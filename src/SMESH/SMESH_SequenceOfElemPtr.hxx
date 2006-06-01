@@ -15,12 +15,11 @@
 // License along with this library; if not, write to the Free Software 
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 // File:      SMESH_SequenceOfElemPtr.hxx
 // Created:   26.09.05 17:41:10
 // Author:    Sergey KUUL
-// Copyright: Airbus Industries 2004
 
 
 #ifndef SMESH_SequenceOfElemPtr_HeaderFile
@@ -28,7 +27,6 @@
 
 #include <NCollection_DefineSequence.hxx>
 
-//#include <Handle_SMDS_MeshElement.hxx>
 #include <SMDS_MeshElement.hxx>
 
 typedef const SMDS_MeshElement* SMDS_MeshElementPtr;

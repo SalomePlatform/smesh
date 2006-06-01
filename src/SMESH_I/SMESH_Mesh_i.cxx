@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-//  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -1556,17 +1556,19 @@ char* SMESH_Mesh_i::Dump()
 //=============================================================================
 SMESH::long_array* SMESH_Mesh_i::GetIDs()
 {
-  SMESH::long_array_var aResult = new SMESH::long_array();
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  int aMinId = aSMESHDS_Mesh->MinElementID();
-  int aMaxId =  aSMESHDS_Mesh->MaxElementID();
+//   SMESH::long_array_var aResult = new SMESH::long_array();
+//   SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+//   int aMinId = aSMESHDS_Mesh->MinElementID();
+//   int aMaxId =  aSMESHDS_Mesh->MaxElementID();
 
-  aResult->length(aMaxId - aMinId + 1);
+//   aResult->length(aMaxId - aMinId + 1);
 
-  for (int i = 0, id = aMinId; id <= aMaxId; id++  )
-    aResult[i++] = id;
+//   for (int i = 0, id = aMinId; id <= aMaxId; id++  )
+//     aResult[i++] = id;
 
-  return aResult._retn();
+//   return aResult._retn();
+  // PAL12398
+  return GetElementsId();
 }
 
 //=============================================================================

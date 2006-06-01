@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-#  See http://www.opencascade.org/SALOME/ or email : webmaster.salome@opencascade.org 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -65,17 +65,19 @@ BIN =
 BIN_SRC	=
 
 CPPFLAGS+= \
-        -I${KERNEL_ROOT_DIR}/include/salome \
-        -I${GUI_ROOT_DIR}/include/salome \
+        $(KERNEL_CXXFLAGS) \
+        $(GUI_CXXFLAGS) \
 	$(OCC_INCLUDES) \
         $(VTK_INCLUDES) \
         $(BOOST_CPPFLAGS) \
-        $(QT_INCLUDES)
+        $(QT_INCLUDES) \
+	$(MED_CXXFLAGS)
 LDFLAGS+= \
-	-L${KERNEL_ROOT_DIR}/lib/salome \
-        -L${GUI_ROOT_DIR}/lib/salome \
+	$(KERNEL_LDFLAGS) \
+        $(GUI_LDFLAGS) \
 	$(OCC_KERNEL_LIBS) \
         $(VTK_LIBS) \
+	$(MED_LDFLAGS) \
         -lSMDS \
         -lSMESHClient \
         -lSalomeApp \
@@ -83,8 +85,8 @@ LDFLAGS+= \
         -lSMESHControls
 
 LDFLAGSFORBIN += \
-	-L${GEOM_ROOT_DIR}/lib/salome \
-	-L${MED_ROOT_DIR}/lib/salome \
+	$(GEOM_LDFLAGS) \
+	$(MED_LDFLAGS) \
 	$(LDFLAGS) \
 	-lqtx \
         -lsuit \
