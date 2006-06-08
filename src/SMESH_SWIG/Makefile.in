@@ -62,6 +62,7 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
 		   ex17_dome1.py \
 		   ex18_dome2.py \
 		   ex19_sphereINcube.py \
+		   ex21_lamp.py \
                    SMESH_test.py\
                    SMESH_test0.py\
 		   SMESH_test1.py \
