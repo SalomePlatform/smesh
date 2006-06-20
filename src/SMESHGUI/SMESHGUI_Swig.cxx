@@ -49,6 +49,9 @@
 // Open CASCADE Includes
 #include <TopoDS.hxx>
 
+// QT Includes
+#include <qapplication.h>
+
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
@@ -376,6 +379,8 @@ SMESH_Swig::Init(int theStudyID)
       }
 
       mySComponentMesh = SALOMEDS::SComponent::_narrow(aSComponent);
+
+      qApp->processEvents(); // Workaround for bug 12662
     }
   };
 
