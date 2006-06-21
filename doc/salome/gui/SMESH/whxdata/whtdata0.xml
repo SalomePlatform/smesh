@@ -78,7 +78,7 @@
     <item name="Revolution" url="revolution.htm" />
     <item name="Pattern mapping" url="pattern_mapping.htm" />
   </book>
-  <item name="Access to Mesh module functionality from Python (using smesh.py)" url="smeshpy_doc/namespacesmesh.html" />
+  <item name="Python interface smesh.py" url="smeshpy_doc/namespacesmesh.html" />
   <book name="TUI Scripts" >
     <item name="Introduction to MESH module python interface" url="smesh_py_introduction.htm" />
     <item name="Creating Meshes" url="constructing_meshes.htm" />
