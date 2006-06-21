@@ -1172,44 +1172,51 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
 {
   theMess = "";
 
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-  GEOM::GEOM_Object_var aGeomVar =
-    GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+  //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
 
-  SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
-  if ( aSMESHGen->_is_nil() )
-    return false;
+  QStringList aList;
+  myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aList );
+  QStringList::Iterator it = aList.begin();
+  for(; it!=aList.end(); it++) {
 
-  SUIT_OverrideCursor aWaitCursor;
+    QString aGeomEntry = *it;
+    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+    GEOM::GEOM_Object_var aGeomVar =
+      GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
 
-  // create mesh
-  SMESH::SMESH_Mesh_var aMeshVar = aSMESHGen->CreateMesh( aGeomVar );
-  if ( aMeshVar->_is_nil() )
-    return false;
-  _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
-  if ( aMeshSO )
-    SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ).latin1() );
+    SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
+    if ( aSMESHGen->_is_nil() )
+      return false;
 
-  for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ )
-  {
-    if ( !isAccessibleDim( aDim )) continue;
+    SUIT_OverrideCursor aWaitCursor;
 
-    // assign hypotheses
-    for ( int aHypType = MainHyp; aHypType <= AddHyp; aHypType++ )
-    {
-      int aHypIndex = currentHyp( aDim, aHypType );
-      if ( aHypIndex >= 0 && aHypIndex < myExistingHyps[ aDim ][ aHypType ].count() )
-      {
-        SMESH::SMESH_Hypothesis_var aHypVar = myExistingHyps[ aDim ][ aHypType ][ aHypIndex ];
-        if ( !aHypVar->_is_nil() )
-          SMESH::AddHypothesisOnMesh( aMeshVar, aHypVar );
+    // create mesh
+    SMESH::SMESH_Mesh_var aMeshVar = aSMESHGen->CreateMesh( aGeomVar );
+    if ( aMeshVar->_is_nil() )
+      return false;
+    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
+    if ( aMeshSO )
+      SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ).latin1() );
+
+    for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ ) {
+      if ( !isAccessibleDim( aDim )) continue;
+        
+      // assign hypotheses
+      for ( int aHypType = MainHyp; aHypType <= AddHyp; aHypType++ ) {
+        int aHypIndex = currentHyp( aDim, aHypType );
+        if ( aHypIndex >= 0 && aHypIndex < myExistingHyps[ aDim ][ aHypType ].count() ) {
+          SMESH::SMESH_Hypothesis_var aHypVar = myExistingHyps[ aDim ][ aHypType ][ aHypIndex ];
+          if ( !aHypVar->_is_nil() )
+            SMESH::AddHypothesisOnMesh( aMeshVar, aHypVar );
+        }
       }
+      // find or create algorithm
+      SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( aDim );
+      if ( !anAlgoVar->_is_nil() )
+        SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
     }
-    // find or create algorithm
-    SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( aDim );
-    if ( !anAlgoVar->_is_nil() )
-      SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
+
   }
   return true;
 }
