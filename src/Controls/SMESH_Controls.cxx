@@ -350,36 +350,49 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   if ( nbNodes < 3 )
     return 0;
 
-  // Compute lengths of the sides
-
-  vector< double > aLen (nbNodes);
-
-  for ( int i = 0; i < nbNodes - 1; i++ )
-    aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
-  aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
-
   // Compute aspect ratio
 
-  if ( nbNodes == 3 )
-  {
+  if ( nbNodes == 3 ) {
+    // Compute lengths of the sides
+    vector< double > aLen (nbNodes);
+    for ( int i = 0; i < nbNodes - 1; i++ )
+      aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
+    aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
     // Q = alfa * h * p / S, where
     //
     // alfa = sqrt( 3 ) / 6
     // h - length of the longest edge
     // p - half perimeter
     // S - triangle surface
-
     const double alfa = sqrt( 3. ) / 6.;
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
     if ( anArea <= Precision::Confusion() )
       return 0.;
-
     return alfa * maxLen * half_perimeter / anArea;
   }
-  else
-  {
+  else if ( nbNodes == 6 ) { // quadratic triangles
+    // Compute lengths of the sides
+    vector< double > aLen (3);
+    aLen[0] = getDistance( P(1), P(3) );
+    aLen[1] = getDistance( P(3), P(5) );
+    aLen[2] = getDistance( P(5), P(1) );
+    // Q = alfa * h * p / S, where
+    //
+    // alfa = sqrt( 3 ) / 6
+    // h - length of the longest edge
+    // p - half perimeter
+    // S - triangle surface
+    const double alfa = sqrt( 3. ) / 6.;
+    double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
+    double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
+    double anArea = getArea( P(1), P(3), P(5) );
+    if ( anArea <= Precision::Confusion() )
+      return 0.;
+    return alfa * maxLen * half_perimeter / anArea;
+  }
+  else if( nbNodes == 4 ) { // quadrangle
     // return aspect ratio of the worst triange which can be built
     // taking three nodes of the quadrangle
     TSequenceOfXYZ triaPnts(3);
@@ -396,6 +409,27 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     ar = Max ( ar, GetValue( triaPnts ));
     // triangle on nodes 3 2 4
     triaPnts(1) = P(3);
+    ar = Max ( ar, GetValue( triaPnts ));
+
+    return ar;
+  }
+  else { // nbNodes==8 - quadratic quadrangle
+    // return aspect ratio of the worst triange which can be built
+    // taking three nodes of the quadrangle
+    TSequenceOfXYZ triaPnts(3);
+    // triangle on nodes 1 3 2
+    triaPnts(1) = P(1);
+    triaPnts(2) = P(5);
+    triaPnts(3) = P(3);
+    double ar = GetValue( triaPnts );
+    // triangle on nodes 1 3 4
+    triaPnts(3) = P(7);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 1 2 4
+    triaPnts(2) = P(3);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 3 2 4
+    triaPnts(1) = P(5);
     ar = Max ( ar, GetValue( triaPnts ));
 
     return ar;
