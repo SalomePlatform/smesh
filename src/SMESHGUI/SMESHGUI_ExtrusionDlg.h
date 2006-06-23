@@ -71,6 +71,7 @@ public:
 private:
   void Init (bool ResetControls = true);
   void enterEvent (QEvent*);                           /* mouse enter the QWidget */
+  void keyPressEvent(QKeyEvent*);
   int  GetConstructorId();
   //void closeEvent (QCloseEvent*);
   //void hideEvent (QHideEvent*);                        /* ESC key */

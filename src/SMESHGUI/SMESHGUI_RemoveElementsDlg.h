@@ -75,6 +75,7 @@ private:
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
+    void keyPressEvent( QKeyEvent* e );
 
     LightApp_SelectionMgr*        mySelectionMgr;
     SVTK_Selector*                mySelector;

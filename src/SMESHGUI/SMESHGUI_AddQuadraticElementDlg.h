@@ -67,6 +67,7 @@ private:
     void closeEvent (QCloseEvent*);
     void hideEvent (QHideEvent*);                 /* ESC key */
     void enterEvent (QEvent*);                    /* mouse enter the QWidget */
+    void keyPressEvent(QKeyEvent*);
     void displaySimulation();
     void UpdateTable( bool theConersValidity = true );
     bool IsValid();

@@ -56,6 +56,9 @@ public:
 
     ~SMESHGUI_TransparencyDlg();
 
+private:
+    void keyPressEvent(QKeyEvent*);
+
 private :
 
   SMESHGUI*               mySMESHGUI;

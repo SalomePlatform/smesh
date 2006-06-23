@@ -263,6 +263,7 @@ private:
 
   void                      closeEvent (QCloseEvent*);
   void                      enterEvent (QEvent*);
+  void                      keyPressEvent(QKeyEvent*);
 
   // dialog creation
   QFrame*                   createButtonFrame (QWidget*);

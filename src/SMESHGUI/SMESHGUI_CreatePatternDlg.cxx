@@ -744,3 +744,20 @@ void SMESHGUI_CreatePatternDlg::onTypeChanged (int theType)
   else
     myPicture2d->hide();
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePatternDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}

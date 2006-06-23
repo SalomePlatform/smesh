@@ -535,6 +535,23 @@ bool SMESHGUI_SingleEditDlg::onApply()
   return aResult;
 }
 
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SingleEditDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}
+
 /*!
  *  Class       : SMESHGUI_TrianglesInversionDlg
  *  Description : Inversion of the diagonal of a pseudo-quadrangle formed by

@@ -93,6 +93,8 @@ void SMESHGUI_ConvToQuadOp::startOperation()
   }
   connect( myDlg, SIGNAL( onClicked( int ) ), SLOT( ConnectRadioButtons( int ) ) );
 
+  myHelpFileName = "/files/convert_to_from_quadratic.htm";
+
   SMESHGUI_SelectionOp::startOperation();
 
   myDlg->SetMediumNdsOnGeom( false );

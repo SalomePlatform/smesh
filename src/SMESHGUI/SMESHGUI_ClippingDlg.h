@@ -85,6 +85,8 @@ public:
     void   setRotation (const double theRot1, const double theRot2);
     void   Sinchronize();
 
+    void   keyPressEvent(QKeyEvent*);
+
     ~SMESHGUI_ClippingDlg();
 
 private:

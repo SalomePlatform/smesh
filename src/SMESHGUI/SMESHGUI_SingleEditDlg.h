@@ -75,6 +75,7 @@ protected:
   void                    closeEvent (QCloseEvent*);
   void                    enterEvent (QEvent*);
   void                    hideEvent (QHideEvent*);                        /* ESC key */
+  void                    keyPressEvent(QKeyEvent*);
   QFrame*                 createButtonFrame (QWidget*);
   QFrame*                 createMainFrame (QWidget*);
   bool                    isValid (const bool) const;

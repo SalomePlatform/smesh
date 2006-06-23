@@ -849,3 +849,20 @@ int SMESHGUI_TranslationDlg::GetConstructorId()
     return GroupConstructors->id(GroupConstructors->selected());
   return -1;
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_TranslationDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
+}

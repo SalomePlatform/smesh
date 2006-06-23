@@ -1099,3 +1099,20 @@ QWidget* SMESHGUI_IdEditItem::createEditor() const
   aLineEdit->setValidator( new SMESHGUI_IdValidator(table()->viewport(), "validator", 1) );
   return aLineEdit;
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
+}

@@ -412,3 +412,20 @@ void SMESHGUI_GroupOpDlg::reset()
   myFocusWg = myEdit1;
   myNameEdit->setFocus();
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}

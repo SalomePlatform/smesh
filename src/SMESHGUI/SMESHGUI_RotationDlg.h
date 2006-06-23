@@ -77,6 +77,7 @@ private:
     void closeEvent (QCloseEvent*);
     void enterEvent (QEvent*);                          /* mouse enter the QWidget */
     void hideEvent (QHideEvent*);                       /* ESC key */
+    void keyPressEvent(QKeyEvent*);
     bool IsAxisOk();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */

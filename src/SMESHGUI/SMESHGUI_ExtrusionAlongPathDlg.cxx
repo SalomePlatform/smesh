@@ -1196,3 +1196,20 @@ bool SMESHGUI_ExtrusionAlongPathDlg::eventFilter (QObject* object, QEvent* event
   }
   return QDialog::eventFilter(object, event);
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
+}

@@ -324,7 +324,7 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
  
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
-  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons?";
+  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons";
   
   Init();
 }
@@ -1097,4 +1097,21 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onListSelectionChanged()
   mySelectionMgr->setSelectedObjects( aList );
   
   busy = false;
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CreatePolyhedralVolumeDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

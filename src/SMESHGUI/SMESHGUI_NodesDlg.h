@@ -85,6 +85,7 @@ private:
     void enterEvent(QEvent* e);
     void closeEvent(QCloseEvent*);
     void hideEvent (QHideEvent *);                 /* ESC key */
+    void keyPressEvent(QKeyEvent*);
 
     QButtonGroup* GroupConstructors;
     QRadioButton* Constructor1;

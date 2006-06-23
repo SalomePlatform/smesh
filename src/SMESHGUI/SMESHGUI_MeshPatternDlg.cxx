@@ -1361,3 +1361,20 @@ int SMESHGUI_MeshPatternDlg::getNode (bool second) const
 {
   return second ? myNode2->value() - 1 : myNode1->value() - 1;
 }
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshPatternDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}

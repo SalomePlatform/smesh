@@ -114,6 +114,7 @@ private:
   QString                             autoExtension( const QString& theFileName ) const;
   void                                closeEvent( QCloseEvent* e ) ;
   void                                enterEvent ( QEvent * ) ;
+  void                                keyPressEvent(QKeyEvent*);
   bool                                isValid( const bool theMess = true );
   void                                resetSelInput();
   bool                                isRefine() const;
