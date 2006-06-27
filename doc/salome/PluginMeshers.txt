@@ -83,10 +83,10 @@
 	 
 	 The SALOME automatically locates XML files, searching them in the following directories:
 
-         ${<PLUGINNAME>_ROOT_DIR}/share/salome/resources
+         ${<PLUGINNAME>_ROOT_DIR}/share/salome/resources/<plugin>
          ${SALOME_<PluginName>Resources}
          ${HOME}/.salome/resources
-         ${KERNEL_ROOT_DIR}/share/salome/resources
+         ${KERNEL_ROOT_DIR}/share/salome/resources/kernel
 
 	 where <PluginName> is a name of each mesher plugin package
 
@@ -148,7 +148,7 @@
         4.2.2. Define environment variable SALOME_<MyResourceKey>Resources to point to the 
                directory where resources are situated.
 
-               Example: setenv SALOME_StdMeshersResources ${SMESH_ROOT_DIR}/share/salome/resources
+               Example: setenv SALOME_StdMeshersResources ${SMESH_ROOT_DIR}/share/salome/resources/smesh
 
    4.3. Implement your Hypothesis Creator and being exported method
 

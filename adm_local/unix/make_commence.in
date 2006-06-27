@@ -1,6 +1,8 @@
 # common directories to put headerfiles
 inc_builddir=$(top_builddir)/include/salome
 
+MODULE_NAME=@MODULE_NAME@
+
 @SET_MAKE@
 SHELL=/bin/sh
 

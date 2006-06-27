@@ -41,7 +41,7 @@
   </section>
   <section name="resources">
     <!-- Module resources -->
-    <parameter name="SMESH"      value="${SMESH_ROOT_DIR}/share/salome/resources"/>
-    <parameter name="StdMeshers" value="${SMESH_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="SMESH"      value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
+    <parameter name="StdMeshers" value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
   </section>
 </document>

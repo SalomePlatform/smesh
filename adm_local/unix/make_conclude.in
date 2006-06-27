@@ -131,7 +131,7 @@ $(DEST_HEADERS): $(inc_builddir)/%: %
 	cp -f $< $@
 
 # build resources file (icons and messages) : .qm file from .po file
-resources: $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm)
+resources: $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/$(MODULE_NAME)/%.qm)
 
 # Make installation directories if they don't exist.
 $(libdir) $(includedir) $(bindir) $(datadir) $(idldir) $(sharedpydir):
@@ -187,10 +187,10 @@ $(EXPORT_SHAREDPYSCRIPTS:%=install-%): install-%: %
 
 # generic rule to install .qm files :
 install-qm: resources
-	$(INSTALL) -d $(datadir)/resources
-	@for f in X $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm); do \
+	$(INSTALL) -d $(datadir)/resources/$(MODULE_NAME)
+	@for f in X $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/$(MODULE_NAME)/%.qm); do \
 	   if test $$f != X; then							 \
-	     ($(INSTALL_DATA) $$f $(datadir)/resources/. || exit 1);			 \
+	     ($(INSTALL_DATA) $$f $(datadir)/resources/$(MODULE_NAME)/. || exit 1);			 \
 	   fi; 										 \
 	done
 
@@ -234,7 +234,7 @@ uninstall:
 # Uninstall qm files
 	@for f in X $(PO_FILES:%.po=%.qm); do 	      \
 	   if test $$f != X; then					      \
-	     $(LT_UNINSTALL) $(datadir)/resources/$$f ;			      \
+	     $(LT_UNINSTALL) $(datadir)/resources/$(MODULE_NAME)/$$f ;			      \
 	   fi; 								      \
 	done
 
@@ -279,7 +279,7 @@ clean: mostlyclean
 #
 distclean: clean
 	#remove qm file !
-	-$(RM) $(PO_FILES:%.po=%.qm) $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/%.qm)
+	-$(RM) $(PO_FILES:%.po=%.qm) $(PO_FILES:%.po=$(top_builddir)/share/salome/resources/$(MODULE_NAME)/%.qm)
 	#remove include files
 	-$(RM) $(DEST_HEADERS)
 	-$(RM) $(DISTCLEAN) *.bak *.old *.new .dep*
@@ -326,7 +326,7 @@ distclean: clean
 %_wrap.cxx : %.i
 	$(SWIG) $(SWIG_FLAGS) -o $@ $<
 
-$(top_builddir)/share/salome/resources/%.qm: %.po
+$(top_builddir)/share/salome/resources/$(MODULE_NAME)/%.qm: %.po
 		$(MSG2QM) $< $@ ; \
 
 #------------------------------------------------------------------------------
