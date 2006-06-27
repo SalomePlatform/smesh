@@ -1576,54 +1576,62 @@ const TopTools_ListOfShape& SMESH_Mesh::GetAncestors(const TopoDS_Shape& theS) c
 //=======================================================================
 ostream& SMESH_Mesh::Dump(ostream& save)
 {
-  save << "========================== Dump contents of mesh ==========================" << endl;
-  save << "1) Total number of nodes:     " << NbNodes() << endl;
-  save << "2) Total number of edges:     " << NbEdges() << endl;
-  save << "3) Total number of faces:     " << NbFaces() << endl;
-  if ( NbFaces() > 0 ) {
-    int nb3 = NbTriangles();
-    int nb4 = NbQuadrangles();
-    save << "3.1.) Number of triangles:    " << nb3 << endl;
-    save << "3.2.) Number of quadrangles:  " << nb4 << endl;
-    if ( nb3 + nb4 !=  NbFaces() ) {
-      map<int,int> myFaceMap;
-      SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-      while( itFaces->more( ) ) {
-	int nbNodes = itFaces->next()->NbNodes();
-	if ( myFaceMap.find( nbNodes ) == myFaceMap.end() )
-	  myFaceMap[ nbNodes ] = 0;
-	myFaceMap[ nbNodes ] = myFaceMap[ nbNodes ] + 1;
+  int clause = 0;
+  save << "========================== Dump contents of mesh ==========================" << endl << endl;
+  save << ++clause << ") Total number of        nodes:     " << NbNodes() << endl << endl;
+  for ( int isQuadratic = 0; isQuadratic < 2; ++isQuadratic )
+  {
+    string orderStr = isQuadratic ? "quadratic" : "linear";
+    ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
+
+    save << ++clause << ") Total number of " << orderStr << " edges:     " << NbEdges(order) << endl;
+    save << ++clause << ") Total number of " << orderStr << " faces:     " << NbFaces(order) << endl;
+    if ( NbFaces(order) > 0 ) {
+      int nb3 = NbTriangles(order);
+      int nb4 = NbQuadrangles(order);
+      save << clause << ".1.) Number of " << orderStr << " triangles:    " << nb3 << endl;
+      save << clause << ".2.) Number of " << orderStr << " quadrangles:  " << nb4 << endl;
+      if ( nb3 + nb4 !=  NbFaces(order) ) {
+        map<int,int> myFaceMap;
+        SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
+        while( itFaces->more( ) ) {
+          int nbNodes = itFaces->next()->NbNodes();
+          if ( myFaceMap.find( nbNodes ) == myFaceMap.end() )
+            myFaceMap[ nbNodes ] = 0;
+          myFaceMap[ nbNodes ] = myFaceMap[ nbNodes ] + 1;
+        }
+        save << clause << ".3.) Faces in detail: " << endl;
+        map <int,int>::iterator itF;
+        for (itF = myFaceMap.begin(); itF != myFaceMap.end(); itF++)
+          save << "--> nb nodes: " << itF->first << " - nb elemens: " << itF->second << endl;
       }
-      save << "3.3.) Faces in detail: " << endl;
-      map <int,int>::iterator itF;
-      for (itF = myFaceMap.begin(); itF != myFaceMap.end(); itF++)
-	save << "--> nb nodes: " << itF->first << " - nb elemens: " << itF->second << endl;
     }
-  }
-  save << "4) Total number of volumes:   " << NbVolumes() << endl;
-  if ( NbVolumes() > 0 ) {
-    int nb8 = NbHexas();
-    int nb4 = NbTetras();
-    int nb5 = NbPyramids();
-    int nb6 = NbPrisms();
-    save << "4.1.) Number of hexahedrons:  " << nb8 << endl;
-    save << "4.2.) Number of tetrahedrons: " << nb4 << endl;
-    save << "4.3.) Number of prisms:       " << nb6 << endl;
-    save << "4.4.) Number of pyramides:    " << nb5 << endl;
-    if ( nb8 + nb4 + nb5 + nb6 != NbVolumes() ) {
-      map<int,int> myVolumesMap;
-      SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-      while( itVolumes->more( ) ) {
-	int nbNodes = itVolumes->next()->NbNodes();
-	if ( myVolumesMap.find( nbNodes ) == myVolumesMap.end() )
-	  myVolumesMap[ nbNodes ] = 0;
-	myVolumesMap[ nbNodes ] = myVolumesMap[ nbNodes ] + 1;
+    save << ++clause << ") Total number of " << orderStr << " volumes:   " << NbVolumes(order) << endl;
+    if ( NbVolumes(order) > 0 ) {
+      int nb8 = NbHexas(order);
+      int nb4 = NbTetras(order);
+      int nb5 = NbPyramids(order);
+      int nb6 = NbPrisms(order);
+      save << clause << ".1.) Number of " << orderStr << " hexahedrons:  " << nb8 << endl;
+      save << clause << ".2.) Number of " << orderStr << " tetrahedrons: " << nb4 << endl;
+      save << clause << ".3.) Number of " << orderStr << " prisms:       " << nb6 << endl;
+      save << clause << ".4.) Number of " << orderStr << " pyramides:    " << nb5 << endl;
+      if ( nb8 + nb4 + nb5 + nb6 != NbVolumes(order) ) {
+        map<int,int> myVolumesMap;
+        SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
+        while( itVolumes->more( ) ) {
+          int nbNodes = itVolumes->next()->NbNodes();
+          if ( myVolumesMap.find( nbNodes ) == myVolumesMap.end() )
+            myVolumesMap[ nbNodes ] = 0;
+          myVolumesMap[ nbNodes ] = myVolumesMap[ nbNodes ] + 1;
+        }
+        save << clause << ".5.) Volumes in detail: " << endl;
+        map <int,int>::iterator itV;
+        for (itV = myVolumesMap.begin(); itV != myVolumesMap.end(); itV++)
+          save << "--> nb nodes: " << itV->first << " - nb elemens: " << itV->second << endl;
       }
-      save << "4.5.) Volumes in detail: " << endl;
-      map <int,int>::iterator itV;
-      for (itV = myVolumesMap.begin(); itV != myVolumesMap.end(); itV++)
-	save << "--> nb nodes: " << itV->first << " - nb elemens: " << itV->second << endl;
     }
+    save << endl;
   }
   save << "===========================================================================" << endl;
   return save;
