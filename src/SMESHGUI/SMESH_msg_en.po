@@ -1674,10 +1674,10 @@ msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_MESH"
 msgstr "Mesh"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_SHAPE"
-msgstr "Shape (edge or wire)"
+msgstr "Shape (edge)"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_START"
-msgstr "Start point"
+msgstr "Start node"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
 msgstr "Use Angles"
