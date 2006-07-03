@@ -277,12 +277,12 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   SMESHGUI_SymmetryDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Y->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Z->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DX->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DY->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DZ->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);

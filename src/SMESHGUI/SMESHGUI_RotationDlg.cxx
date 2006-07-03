@@ -279,14 +279,14 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule, const char* nam
   SMESHGUI_RotationDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Y->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Z->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DX->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DY->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DZ->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
-  SpinBox_Angle->RangeStepAndValidator(-999999.999, +999999.999, 5.0, 3);
+  SpinBox_Angle->RangeStepAndValidator(-360.0, +360.0, 5.0, 3);
 
   GroupArguments->show();
   myConstructorId = 0;

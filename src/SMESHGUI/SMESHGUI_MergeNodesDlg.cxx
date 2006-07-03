@@ -246,7 +246,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   SMESHGUI_MergeNodesDlgLayout->addWidget(GroupEdit, 3, 0);
 
   /* Initialisations */
-  SpinBoxTolerance->RangeStepAndValidator(0.0, 999999.999, 0.1, 3);
+  SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.1, 3);
   SpinBoxTolerance->SetValue(1e-05);
 
   RadioButton1->setChecked(TRUE);

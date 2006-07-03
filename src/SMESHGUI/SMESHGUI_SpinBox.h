@@ -31,6 +31,10 @@
 
 #include <QtxDblSpinBox.h>
 
+// like in GEOM_SRC/src/DlgRef/DlgRef_SpinBox.h
+#define COORD_MIN -1e+15
+#define COORD_MAX +1e+15
+
 //=================================================================================
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QtxDblSpinBox class 

@@ -227,9 +227,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox_Dx->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Dy->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Dz->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
+  SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
   QIntValidator* anIntValidator = new QIntValidator(SpinBox_NbSteps);
   SpinBox_NbSteps->setValidator(anIntValidator);
