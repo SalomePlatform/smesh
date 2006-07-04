@@ -1578,9 +1578,9 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 {
   int clause = 0;
   save << "========================== Dump contents of mesh ==========================" << endl << endl;
-  save << ++clause << ") Total number of nodes:\t"       << NbNodes() << endl;
-  save << ++clause << ") Total number of edges:\t"       << NbEdges() << endl;
-  save << ++clause << ") Total number of faces:\t"       << NbFaces() << endl;
+  save << ++clause << ") Total number of nodes:   \t"    << NbNodes() << endl;
+  save << ++clause << ") Total number of edges:   \t"    << NbEdges() << endl;
+  save << ++clause << ") Total number of faces:   \t"    << NbFaces() << endl;
   save << ++clause << ") Total number of polygons:\t"    << NbPolygons() << endl;
   save << ++clause << ") Total number of volumes:\t"     << NbVolumes() << endl;
   save << ++clause << ") Total number of polyhedrons:\t" << NbPolyhedrons() << endl << endl;
@@ -1594,7 +1594,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
     if ( NbFaces(order) > 0 ) {
       int nb3 = NbTriangles(order);
       int nb4 = NbQuadrangles(order);
-      save << clause << ".1) Number of " << orderStr << " triangles:\t" << nb3 << endl;
+      save << clause << ".1) Number of " << orderStr << " triangles:  \t" << nb3 << endl;
       save << clause << ".2) Number of " << orderStr << " quadrangles:\t" << nb4 << endl;
       if ( nb3 + nb4 !=  NbFaces(order) ) {
         map<int,int> myFaceMap;
@@ -1620,7 +1620,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       save << clause << ".1) Number of " << orderStr << " hexahedrons:\t" << nb8 << endl;
       save << clause << ".2) Number of " << orderStr << " tetrahedrons:\t" << nb4 << endl;
       save << clause << ".3) Number of " << orderStr << " prisms:      \t" << nb6 << endl;
-      save << clause << ".4) Number of " << orderStr << " pyramides:\t" << nb5 << endl;
+      save << clause << ".4) Number of " << orderStr << " pyramids:\t" << nb5 << endl;
       if ( nb8 + nb4 + nb5 + nb6 != NbVolumes(order) ) {
         map<int,int> myVolumesMap;
         SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
