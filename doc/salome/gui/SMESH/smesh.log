@@ -205,6 +205,8 @@ pics\sewing1.png
 image92.gif
 image51.jpg
 image70.gif
+pics\circle_simple_after.png
+pics\curvi_simple_after.png
 pics\image138.gif
 pics\create_group.png
 pics\edit_mesh_change_value_hyp.png
@@ -224,6 +226,7 @@ image52.jpg
 image82.gif
 image71.gif
 image30.jpg
+pics\extrusion1.png
 pics\distributionwithanalyticdensity.png
 pics\image139.gif
 pics\rotation1.png
@@ -239,6 +242,9 @@ image50.gif
 image94.gif
 image83.gif
 image31.jpg
+pics\circle_angles_after.png
+pics\circle_simple_before.png
+pics\curvi_angles_after.png
 pics\graduatedaxes1.png
 pics\image107.gif
 pics\automaticlength.png
@@ -258,6 +264,7 @@ image76.jpg
 image84.gif
 image32.jpg
 image40.gif
+pics\curvi_simple_before.png
 pics\image108.gif
 pics\aqt.png
 pics\distributionwithtabledensity.png
@@ -270,6 +277,7 @@ image74.gif
 image63.gif
 image22.jpg
 image41.gif
+pics\edge_wire_3d_before.png
 pics\image109.gif
 pics\meshimportmesh.png
 pics\deletegroups.png
@@ -288,6 +296,8 @@ image97.gif
 image78.jpg
 image64.gif
 image23.jpg
+pics\edge_wire_after.png
+pics\edge_wire_before.png
 image151.gif
 pics\cut_groups1.png
 pics\editing_groups2.png
@@ -303,7 +313,6 @@ image152.gif
 pics\cut_groups2.png
 image130.gif
 pics\max_el_area.png
-pics\a-extusionalongapath2.png
 pics\a-viewgeneral.png
 pics\revolution1.png
 pics\addtriangle.png
@@ -343,6 +352,7 @@ image46.gif
 image35.gif
 image27.jpg
 image24.gif
+pics\mesh_for_extr_along_path.png
 pics\createmesh-inv2.png
 image144.gif
 pics\intersect_groups1.png
@@ -356,6 +366,7 @@ image58.gif
 image36.gif
 image25.gif
 note1.gif
+pics\edge_wire_3d_after.png
 pics\createmesh-inv3.png
 image145.gif
 pics\intersect_groups2.png
@@ -366,6 +377,7 @@ pics\addedge.png
 image123.gif
 image101.gif
 image37.gif
+pics\straight_after.png
 pics\image96.gif
 image146.gif
 pics\intersect_groups3.png
@@ -376,7 +388,6 @@ pics\a-nbsegments1.png
 pics\patternmapping1.png
 image90.jpg
 image124.gif
-image102.gif
 image49.gif
 image38.gif
 pics\image100.gif
@@ -406,9 +417,9 @@ pics\free_edges.png
 pics\creategroup.png
 image92.jpg
 image126.gif
-image104.gif
 image18.gif
 image70.jpg
+pics\straight_before.png
 pics\createmesh-inv.png
 pics\image102.gif
 pics\image99.gif
