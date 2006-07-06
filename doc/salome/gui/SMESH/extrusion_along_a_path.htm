@@ -14,22 +14,48 @@ if (navigator.appName !="Netscape")
 </script>
 <style type="text/css">
 <!--
-table.whs1 { x-cell-content-align:top; width:100%; border-spacing:0px; }
-col.whs2 { width:50%; }
-tr.whs3 { x-cell-content-align:top; }
-td.whs4 { width:50%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
-img_whs5 { border:none; width:335px; height:323px; border-style:none; }
-td.whs6 { width:50%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
-img_whs7 { border:none; width:350px; height:323px; border-style:none; }
-p.whs8 { margin-left:40px; }
-img_whs9 { border:none; width:27px; height:24px; border-style:none; }
-img_whs10 { border:none; width:434px; height:541px; float:none; border-style:none; }
-ul.whs11 { list-style:disc; }
-p.whs12 { margin-left:84px; }
-img_whs13 { border:none; width:26px; height:25px; border-style:none; }
-img_whs14 { border:none; width:29px; height:28px; border-style:none; }
+img_whs1 { border:none; width:27px; height:24px; border-style:none; }
+img_whs2 { border:none; width:387px; height:334px; float:none; border-style:none; }
+ul.whs3 { list-style:disc; }
+table.whs4 { x-cell-content-align:top; width:100%; border-spacing:0px; }
+col.whs5 { width:50%; }
+tr.whs6 { x-cell-content-align:top; }
+td.whs7 { width:50%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-top-style:none; border-bottom-style:none; }
+p.whs8 { margin-left:0px; margin-right:53px; }
+img_whs9 { border:none; width:389px; height:334px; float:none; border-style:none; }
+td.whs10 { width:50%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
+p.whs11 { margin-left:0px; }
+p.whs12 { margin-left:40px; }
+col.whs13 { width:33.333%; }
+td.whs14 { width:33.333%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; border-left-style:none; border-top-style:none; }
+td.whs15 { width:33.333%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; border-top-style:none; }
+td.whs16 { width:33.333%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-top-style:none; border-right-style:none; }
+td.whs17 { width:33.333%; padding-right:10px; padding-left:10px; border-right-style:none; border-left-style:none; border-bottom-style:none; }
+td.whs18 { width:33.333%; padding-right:10px; padding-left:10px; border-right-style:none; border-bottom-style:none; }
+td.whs19 { width:33.333%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; }
+p.whs20 { font-weight:bold; margin-left:0px; }
+p.whs21 { font-weight:bold; }
+img_whs22 { border:none; width:441px; height:541px; float:none; border-style:none; }
+p.whs23 { margin-left:84px; }
+p.whs24 { margin-left:156px; }
+p.whs25 { margin-left:156px; font-weight:bold; }
+img_whs26 { border:none; width:26px; height:25px; border-style:none; }
+img_whs27 { border:none; width:29px; height:28px; border-style:none; }
 -->
-</style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
+</style><script type="text/javascript" language="JavaScript">
+<!--
+if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
+{
+  var strNSS = "<style type='text/css'>";
+  strNSS += "p.whs8 {margin-left:1pt; }";
+  strNSS += "p.whs11 {margin-left:1pt; }";
+  strNSS += "p.whs20 {margin-left:1pt; }";
+  strNSS +="</style>";
+  document.write(strNSS);
+}
+//-->
+</script>
+<script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
 function reDo() {
   if (innerWidth != origWidth || innerHeight != origHeight)
@@ -88,96 +114,251 @@ if (window.writeIntopicBar)
 	writeIntopicBar(4);
 //-->
 </script>
-<h1>Extrusion along a path</h1>
+<h1><img src="image101.gif" width="27px" height="24px" border="0" class="img_whs1">Extrusion along a path</h1>
 
-<p>In principle, Extrusion along a path works in the same way as Extrusion, 
+<p>In principle, <span style="font-weight: bold;"><B>Extrusion along a path</B></span> 
+ works in the same way as <span style="font-weight: bold;"><B>Extrusion</B></span>, 
  the main difference is that we define not a vector, but a path of extrusion 
- which must be a meshed edge or wire. To get an idea of how this algorithm 
- works, let's see the left image, where we have a 1D circle edge and &nbsp;a 
- 2D hexagon to be extruded along this path (in the picture they are angular 
- because we show the wireframe of the mesh). And now let's see the right 
- image, showing the result of the operation. &nbsp;</p>
+ which must be a meshed edge. To get an idea of how this algorithm works, 
+ examine several examples, starting from the most simple case of extrusion 
+ along a straight edge. In all examples the same mesh will be extruded 
+ along different paths and with different parameters. This sample 2D mesh 
+ has two quadrangle faces and seven edges. Look at the picture, where white 
+ digits are the node numbers and green are the element numbers:</p>
+
+<p><span style="margin-left: 40px;"><img src="pics/mesh_for_extr_along_path.png" x-maintain-ratio="TRUE" width="387px" height="334px" border="0" class="img_whs2"> .</span></p>
 
 <p>&nbsp;</p>
 
-<table x-use-null-cells cellspacing="0" width="100%" class="whs1">
-<col class="whs2">
-<col class="whs2">
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p><span style="font-weight: bold;"><B>Extrusion along 
+ a straight edge</B></span> (not using base point or angles)</p></li>
+</ul>
 
-<tr valign="top" class="whs3">
-<td width="50%" class="whs4">
-<p><img src="image102.gif" width="335px" height="323px" border="0" class="img_whs5"></td>
-<td width="50%" class="whs6">
-<p><img src="image104.gif" width="350px" height="323px" border="0" class="img_whs7"></td></tr>
+<table x-use-null-cells cellspacing="0" width="100%" class="whs4">
+<col class="whs5">
+<col class="whs5">
+
+<tr valign="top" class="whs6">
+<td width="50%" class="whs7">
+<p class="whs8"><img src="pics/straight_before.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="50%" class="whs10">
+<p class="whs11"><img src="pics/straight_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td></tr>
 </table>
 
-<p>&nbsp;</p>
+<p class="whs12">&nbsp;&nbsp;&nbsp;</p>
 
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+<p class="whs12">The left image shows a 1D path mesh, built 
+ on a linear edge, and the initial 2D mesh. The right image shows the result 
+ of extrusion of two edges (#1 and #2) of the initial mesh along the path. 
+ Node #1 of path mesh has been selected as <span style="font-weight: bold;"><B>Start 
+ node</B></span>.</p>
+
+<p class="whs12">&nbsp;</p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p><span style="font-weight: bold;"><B>Extrusion along 
+ a curvilinear edge</B></span> (with and without angles)</p></li>
+</ul>
+
+<table x-use-null-cells cellspacing="0" width="100%" class="whs4">
+<col class="whs13">
+<col class="whs13">
+<col class="whs13">
+
+<tr valign="top" class="whs6">
+<td width="33.333%" class="whs14">
+<p><img src="pics/curvi_simple_before.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="33.333%" class="whs15">
+<p><img src="pics/curvi_simple_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="33.333%" class="whs16">
+<p><img src="pics/curvi_angles_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td></tr>
+
+<tr valign="top" class="whs6">
+<td width="33.333%" class="whs17">
+<p>The left image shows a 1D path mesh, built on curvilinear edge, and 
+ the initial &nbsp;2D 
+ mesh.</td>
+<td width="33.333%" class="whs18">
+<p>The central image shows the result of extrusion of one edge (#2) of 
+ the initial mesh along the path. &nbsp;Node 
+ #1 of path mesh has been selected as <span style="font-weight: bold;"><B>Start 
+ node</B></span>.</td>
+<td width="33.333%" class="whs19">
+<p>The same, but using angles {45, 45, 45, 0, -45, -45, -45}</td></tr>
+</table>
+
+<p class="whs11">&nbsp;</p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p class="whs11"><span style="font-weight: bold;"><B>Extrusion 
+ along a sub-mesh.</B></span></p></li>
+</ul>
+
+<table x-use-null-cells cellspacing="0" width="100%" class="whs4">
+<col class="whs5">
+<col class="whs5">
+
+<tr valign="top" class="whs6">
+<td width="50%" class="whs7">
+<p><img src="pics/edge_wire_before.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="50%" class="whs10">
+<p><img src="pics/edge_wire_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td></tr>
+</table>
+
+<p class="whs12">&nbsp;</p>
+
+<p class="whs12">In this example the path mesh has been built 
+ on a wire (polyline with six edges). The first edge of the wire was used 
+ as <span style="font-weight: bold;"><B>Shape (edge)</B></span>, node #1 as <span 
+ style="font-weight: bold;"><B>Start node</B></span>. The angles have been defined 
+ as {10, 10, 10}. The middle edge (#4) of the initial mesh has been extruded.</p>
+
+<p class="whs12">&nbsp;</p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p class="whs20">Extrusion 
+ of 2d elements along a sub-mesh.</p></li>
+</ul>
+
+<table x-use-null-cells cellspacing="0" width="100%" class="whs4">
+<col class="whs5">
+<col class="whs5">
+
+<tr valign="top" class="whs6">
+<td width="50%" class="whs7">
+<p><img src="pics/edge_wire_3d_before.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="50%" class="whs10">
+<p><img src="pics/edge_wire_3d_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td></tr>
+</table>
+
+<p class="whs12">&nbsp;</p>
+
+<p class="whs12">This extrusion bases on the same path mesh 
+ as in the previous example but the third edge of the wire was set as <span 
+ style="font-weight: bold;"><B>Shape (edge)</B></span> and node #4 as <span style="font-weight: bold;"><B>Start 
+ node</B></span>. Please note, that the extrusion has been done in direction 
+ from node #4 to node #3, i.e. against the wire direction. In this example 
+ both faces of the initial mesh have been extruded.</p>
+
+<p class="whs12">&nbsp;</p>
+
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p class="whs21">Extrusion of 2d elements 
+ along a closed path.</p></li>
+</ul>
+
+<table x-use-null-cells cellspacing="0" width="100%" class="whs4">
+<col class="whs13">
+<col class="whs13">
+<col class="whs13">
+
+<tr valign="top" class="whs6">
+<td width="33.333%" class="whs14">
+<p><img src="pics/circle_simple_before.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="33.333%" class="whs15">
+<p><img src="pics/circle_simple_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td>
+<td width="33.333%" class="whs16">
+<p><img src="pics/circle_angles_after.png" x-maintain-ratio="TRUE" width="389px" height="334px" border="0" class="img_whs9"></td></tr>
+
+<tr valign="top" class="whs6">
+<td width="33.333%" class="whs17">
+<p>The left image shows a path mesh built on a closed edge (circle).</td>
+<td width="33.333%" class="whs18">
+<p>The central image shows the result of extrusion of both faces of the 
+ initial mesh. Note, that no sewing has been done, so, there are six coincident 
+ nodes and two coincident faces in the resulting mesh.</td>
+<td width="33.333%" class="whs19">
+<p>The same, but using angles {45, -45, 45, -45, 45, -45, 45, -45}</td></tr>
+</table>
+
+<p class="whs12">&nbsp;</p>
 
 <p>&nbsp;</p>
 
 <p class=TODO>To use Extrusion along a path:</p>
 
-<p class="whs8">1. From the <span style="font-weight: bold;"><B>Modification 
+<p class="whs12">1. From the <span style="font-weight: bold;"><B>Modification 
  </B></span>menu choose the <span style="font-weight: bold;"><B>Extrusion along 
- a path </B></span>item or click <img src="image101.gif" width="27px" height="24px" border="0" class="img_whs9"> button in the toolbar. The 
+ a path </B></span>item or click <img src="image101.gif" width="27px" height="24px" border="0" class="img_whs1"> button in the toolbar. The 
  following dialog box will appear:</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs12">&nbsp;</p>
 
 <p class=TODO
-	style="margin-left: 80px;"><img src="pics/a-extusionalongapath2.png" x-maintain-ratio="TRUE" width="434px" height="541px" border="0" class="img_whs10"></p>
+	style="margin-left: 80px;"><img src="pics/extrusion1.png" x-maintain-ratio="TRUE" width="441px" height="541px" border="0" class="img_whs22"></p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs12">&nbsp;</p>
 
-<p class="whs8">2. In the dialog box you should &nbsp;</p>
+<p class="whs12">2. In the dialog box you should &nbsp;</p>
 
-<ul type="disc" class="whs11">
+<ul type="disc" class="whs3">
 	
-	<li class=kadov-p><p class="whs12">select the type of 
+	<li class=kadov-p><p class="whs23">select the type of 
  elements which will be extruded (1D or 2D),</p></li>
 	
-	<li class=kadov-p><p class="whs12">specify the IDs of 
- the elements which will be extruded by selecting them in the 3D viewer 
- or <span style="font-weight: bold;"><B>Select the whole mesh, submesh or 
- grou</B></span>p,</p></li>
+	<li class=kadov-p><p class="whs23">specify the <span style="font-weight: bold;"><B>IDs 
+ of the elements</B></span> which will be extruded by selecting them in the 
+ 3D viewer or <span style="font-weight: bold;"><B>Select the whole mesh, submesh 
+ or group</B></span>,</p></li>
 	
-	<li class=kadov-p><p class="whs12">specify the path along 
- which the elements will be extruded, for this you should specify the <span 
- style="font-weight: bold;"><B>Mesh</B></span>, the <span style="font-weight: bold;"><B>Shape</B></span>, 
- and the <span style="font-weight: bold;"><B>Start point</B></span> for the extrusion. 
- </p></li>
+	<li class=kadov-p><p class="whs23">define the <span style="font-weight: bold;"><B>Path</B></span> 
+ along which the elements will be extruded, </p></li>
 </ul>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs24">Path definition consists of several elements 
+ </p>
 
-<p class="whs8">3. There are two optional parameters, which 
+<ul type="disc" class="whs3">
+	
+	<li class=kadov-p><p class="whs25">Mesh 
+ - <span style="font-weight: normal;">containing a 1D sub-mesh on the edge, 
+ along which proceeds the extrusion.</span></p></li>
+	
+	<li class=kadov-p><p class="whs25">Shape 
+ (edge) - <span style="font-weight: normal;">as the mesh can be complex, 
+ the edge is used to define the sub-mesh for the path.</span></p></li>
+	
+	<li class=kadov-p><p class="whs25">Start 
+ node - <span style="font-weight: normal;">&nbsp;the 
+ first or the last node on the edge. It is used to define the direction 
+ of extrusion.</span></p></li>
+</ul>
+
+<p class="whs12">&nbsp;</p>
+
+<p class="whs12">3. There are two optional parameters, which 
  can be very useful.</p>
 
-<ul type="disc" class="whs11">
+<ul type="disc" class="whs3">
 	
-	<li class=kadov-p><p class="whs12">If the path of extrusion 
+	<li class=kadov-p><p class="whs23">If the path of extrusion 
  is curvilinear, at each iteration the extruded shape is rotated to keep 
  its initial angularity to the curve. By default, the <span style="font-weight: bold;"><B>Base 
- point</B></span> around which the shape is rotated is the mass center of the 
+ Point</B></span> around which the shape is rotated is the mass center of the 
  shape, however, you can specify any point as the <span style="font-weight: bold;"><B>Base 
  Point</B></span> and the shape will be rotated with respect to this point.</p></li>
 	
-	<li class=kadov-p><p class="whs12">The shape can also 
+	<li class=kadov-p><p class="whs23">The shape can also 
  be rotated around the path to get the resulting mesh in a helical fashion. 
- At the picture above we see both &quot;oblique-angled&quot; and &quot;right-angled&quot; 
- mesh elements because <span style="font-weight: bold;"><B>Rotation Angles</B></span> 
- have not been set for all iterations. You set the values of the angles 
- at the right and add them to the list of angles at the left by pressing 
- the <img src="image105.gif" width="26px" height="25px" border="0" class="img_whs13"> button and remove the values from the list by pressing 
- the <img src="image106.gif" width="29px" height="28px" border="0" class="img_whs14"> button. </p></li>
+ You can set the values of angles at the right, add them to the list of 
+ angles at the left by pressing the <img src="image105.gif" width="26px" height="25px" border="0" class="img_whs26"> button and remove them 
+ from the list by pressing the <img src="image106.gif" width="29px" height="28px" border="0" class="img_whs27"> button. </p></li>
 </ul>
 
-<p class="whs8">4. Click the <span style="font-weight: bold;"><B>Apply 
- </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button.</p>
+<p class="whs12">4. Click the <span style="font-weight: bold;"><B>Apply 
+ </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button. Mesh edges 
+ will be extruded into faces, faces into volumes. The external surface 
+ of the resulting 3d mesh (if faces have been extruded) is covered with 
+ faces, and corners with edges. If the path is closed, the resulting mesh 
+ can contain duplicated nodes and faces, because no sewing is done.</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs12">&nbsp;</p>
 
 <p>&nbsp;<span style="font-weight: bold;"><B>See 
  Also</B></span> a sample TUI Script of an <a href="modifying_meshes.htm#bookmark10">Extrusion 

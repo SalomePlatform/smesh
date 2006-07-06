@@ -20,7 +20,11 @@ p.whs5 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Lucida Console' , mon
 p.whs6 { margin-top:0.5pt; margin-bottom:0pt; }
 p.whs7 { font-family:'Lucida Console' , monospace; }
 p.whs8 { font-family:'Times New Roman' , serif; }
-p.whs9 { margin-left:40px; font-family:'Lucida Console' , monospace; }
+p.whs9 { margin-left:36px; font-family:'Lucida Console' , monospace; }
+p.whs10 { margin-left:36px; }
+p.whs11 { margin-left:192px; font-family:'Lucida Console' , monospace; }
+p.whs12 { margin-left:48px; font-family:'Lucida Console' , monospace; }
+p.whs13 { margin-left:40px; font-family:'Lucida Console' , monospace; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -1206,191 +1210,444 @@ if (window.writeIntopicBar)
 
 <h3><a name=bookmark9>Extrusion</a></h3>
 
-<p class="whs8">import SMESH</p>
+<p class="whs7">import SMESH</p>
 
-<p class="whs8">import SMESH_mechanic</p>
+<p class="whs7">import SMESH_mechanic</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs8">smesh &nbsp;= 
+<p class="whs7">smesh &nbsp;= 
  SMESH_mechanic.smesh</p>
 
-<p class="whs8">mesh &nbsp;&nbsp;= 
+<p class="whs7">mesh &nbsp;&nbsp;= 
  SMESH_mechanic.mesh</p>
 
-<p class="whs8">salome = SMESH_mechanic.salome</p>
+<p class="whs7">salome = SMESH_mechanic.salome</p>
 
 <p class="whs7">&nbsp;</p>
 
 <p class="whs8"># extrusion of the group</p>
 
-<p class="whs8">point = SMESH.PointStruct(0, 
+<p class="whs7">point = SMESH.PointStruct(0, 
  0, 5)</p>
 
-<p class="whs8">vector = SMESH.DirStruct(point)</p>
+<p class="whs7">vector = SMESH.DirStruct(point)</p>
 
-<p class="whs8">FacesTriToQuad = [2381, 
+<p class="whs7">FacesTriToQuad = [2381, 
  2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390, 2391, 2392, 2393, 
  2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405, 
  2406, 2407, 2408, 2409, 2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 
  2418, 2419, 2420, 2421, 2422]</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs8">GroupTriToQuad = mesh.CreateGroup(SMESH.FACE,&quot;Group 
+<p class="whs7">GroupTriToQuad = mesh.CreateGroup(SMESH.FACE,&quot;Group 
  of faces (quad)&quot;)</p>
 
-<p class="whs8">GroupTriToQuad.Add(FacesTriToQuad)</p>
+<p class="whs7">GroupTriToQuad.Add(FacesTriToQuad)</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs8">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs7">aMeshEditor = mesh.GetMeshEditor()</p>
 
-<p class="whs8">aMeshEditor.ExtrusionSweepObject(GroupTriToQuad, 
+<p class="whs7">aMeshEditor.ExtrusionSweepObject(GroupTriToQuad, 
  vector, 5)</p>
 
-<p class="whs8">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs8">salome.sg.updateObjBrowser(1) 
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
  </p>
 
 <p class="whs8">&nbsp;</p>
 
 <h3><a name=bookmark10>Extrusion along a Path</a></h3>
 
-<p class="whs7">import geompy</p>
+<p class="whs7">import math</p>
 
-<p class="whs7">import smesh</p>
+<p class="whs7">&nbsp;</p>
 
 <p class="whs7">import salome</p>
+
+<p class="whs7">salome.salome_init()</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs8"># Geometry</p>
+
+<p class="whs7">import geompy</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 1. Create points</p>
+
+<p class="whs7">points = [[0, 0], 
+ [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">iv = 1</p>
+
+<p class="whs7">vertices = []</p>
+
+<p class="whs7">for point in points:</p>
+
+<p class="whs9">vert 
+ = geompy.MakeVertex(point[0], point[1], 0)</p>
+
+<p class="whs9">geompy.addToStudy(vert, 
+ &quot;Vertex_&quot; + `iv`)</p>
+
+<p class="whs9">vertices.append(vert)</p>
+
+<p class="whs9">iv 
+ += 1</p>
+
+<p class="whs9">pass</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 2. Create edges and 
+ wires</p>
+
+<p class="whs7">Edge_straight = geompy.MakeEdge(vertices[0], 
+ vertices[4])</p>
+
+<p class="whs7">Edge_bezierrr = geompy.MakeBezier(vertices)</p>
+
+<p class="whs7">Wire_polyline = geompy.MakePolyline(vertices)</p>
+
+<p class="whs7">Edge_Circle &nbsp;&nbsp;= 
+ geompy.MakeCircleThreePnt(vertices[0], vertices[1], vertices[2])</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">geompy.addToStudy(Edge_straight, 
+ &quot;Edge_straight&quot;)</p>
+
+<p class="whs7">geompy.addToStudy(Edge_bezierrr, 
+ &quot;Edge_bezierrr&quot;)</p>
+
+<p class="whs7">geompy.addToStudy(Wire_polyline, 
+ &quot;Wire_polyline&quot;)</p>
+
+<p class="whs7">geompy.addToStudy(Edge_Circle 
+ &nbsp;, &quot;Edge_Circle&quot;)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 3. Explode wire on 
+ edges, as they will be used for mesh extrusion</p>
+
+<p class="whs7">Wire_polyline_edges 
+ = geompy.SubShapeAll(Wire_polyline, geompy.ShapeType[&quot;EDGE&quot;])</p>
+
+<p class="whs7">for ii in range(len(Wire_polyline_edges)):</p>
+
+<p class="whs9">geompy.addToStudyInFather(Wire_polyline, 
+ Wire_polyline_edges[ii], &quot;Edge_&quot; + `ii + 1`)</p>
+
+<p class="whs9">pass</p>
+
+<p class="whs10">&nbsp;</p>
+
+<p class="whs8"># Mesh</p>
+
+<p class="whs7">import smesh</p>
 
 <p class="whs7">import SMESH</p>
 
 <p class="whs7">&nbsp;</p>
 
-<p class="whs8"># create a face to be 
- meshed</p>
-
-<p class="whs7">px = geompy.MakeVertex(100., 
- 0. &nbsp;, 0. 
- &nbsp;)</p>
-
-<p class="whs7">py = geompy.MakeVertex(0. 
- &nbsp;, 100., 
- 0. &nbsp;)</p>
-
-<p class="whs7">pz = geompy.MakeVertex(0. 
- &nbsp;, 0. &nbsp;, 
- 100.)</p>
+<p class="whs7">gen = smesh.smesh</p>
 
 <p class="whs7">&nbsp;</p>
 
-<p class="whs7">vxy = geompy.MakeVector(px, 
- py)</p>
+<p class="whs7">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
 
-<p class="whs7">arc = geompy.MakeArc(py, 
- pz, px)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">wire = geompy.MakeWire([vxy, 
- arc])</p>
-
-<p class="whs7">isPlanarFace = 1</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">face1 = geompy.MakeFace(wire, 
- isPlanarFace)</p>
-
-<p class="whs7">id_face1 = geompy.addToStudy(face1, 
- &quot;Face1&quot;)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs8"># create a 2D mesh on 
- the face</p>
-
-<p class="whs7">trias = smesh.Mesh(face1, 
- &quot;Face : 2D mesh&quot;)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">algo = trias.Segment()</p>
-
-<p class="whs7">algo.NumberOfSegments(6)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">algo = trias.Triangle()</p>
-
-<p class="whs7">algo.LengthFromEdges()</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">trias.Compute()</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs8"># create a path mesh</p>
-
-<p class="whs7">px1 = geompy.MakeVertex(100., 
- 100. &nbsp;, 
- 0. &nbsp;)</p>
-
-<p class="whs7">py1 = geompy.MakeVertex(-100. 
- &nbsp;, -100., 
- 0. &nbsp;)</p>
-
-<p class="whs7">pz1 = geompy.MakeVertex(0. 
- &nbsp;, 0. &nbsp;, 
- 50.)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">circle = geompy.MakeCircleThreePnt(py1, 
- pz1, px1)</p>
-
-<p class="whs7">id_circle = geompy.addToStudy(circle, 
- &quot;Path&quot;)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">circlemesh = smesh.Mesh(circle, 
- &quot;Path mesh&quot;)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">algo = circlemesh.Segment()</p>
-
-<p class="whs7">algo.NumberOfSegments(10)</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7">circlemesh.Compute()</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs8"># extrusion of the mesh</p>
-
-<p class="whs8"># The mesh &quot;trias&quot; 
- will be extruded along another mesh, which is a sub-mesh of &quot;circlemesh&quot;,</p>
-
-<p class="whs8"><span style="font-family: 'Times New Roman', serif;"># 
- corresponding to geometry &quot;circle&quot;. In this particular case 
- the path mesh will be the whole &quot;circlemesh&quot;</span></p>
+<p class="whs7">smeshgui.Init(salome.myStudyId)</p>
 
 <p class="whs8">&nbsp;</p>
 
-<p class="whs7">aMeshEditor = trias.GetMesh().GetMeshEditor()</p>
+<p class="whs8"># 1D algorithm and three 
+ 1D hypotheses</p>
 
-<p class="whs7">aMeshEditor.ExtrusionAlongPathObject(trias.GetMesh(), 
- circlemesh.GetMesh(), circle, 1, 0, [], 0, SMESH.PointStruct(0, 0, 0))</p>
+<p class="whs7">Wire_discretisation 
+ = gen.CreateHypothesis('Regular_1D', 'libStdMeshersEngine.so')</p>
 
 <p class="whs7">&nbsp;</p>
 
-<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
+<p class="whs7">Nb_Segments_3 = gen.CreateHypothesis('NumberOfSegments', 
+ 'libStdMeshersEngine.so')</p>
+
+<p class="whs7">Nb_Segments_7 = gen.CreateHypothesis('NumberOfSegments', 
+ 'libStdMeshersEngine.so')</p>
+
+<p class="whs7">Nb_Segments_8 = gen.CreateHypothesis('NumberOfSegments', 
+ 'libStdMeshersEngine.so')</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">Nb_Segments_3.SetNumberOfSegments(3)</p>
+
+<p class="whs7">Nb_Segments_7.SetNumberOfSegments(7)</p>
+
+<p class="whs7">Nb_Segments_8.SetNumberOfSegments(8)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># Mesh given shape with 
+ given 1d hypothesis</p>
+
+<p class="whs7">def Mesh1D(shape1d, 
+ hyp1d, name):</p>
+
+<p class="whs9">mesh1d_tool 
+ = smesh.Mesh(shape1d)</p>
+
+<p class="whs9">mesh1d 
+ = mesh1d_tool.GetMesh()</p>
+
+<p class="whs9">status 
+ = mesh1d.AddHypothesis(shape1d, hyp1d)</p>
+
+<p class="whs9">status 
+ = mesh1d.AddHypothesis(shape1d, Wire_discretisation)</p>
+
+<p class="whs9">isDone 
+ = mesh1d_tool.Compute()</p>
+
+<p class="whs9">if 
+ not isDone: print 'Mesh ', name, ': computation failed'</p>
+
+<p class="whs9">return 
+ mesh1d</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs8"># Create mesh with six 
+ nodes, seven edges and two quadrangle faces</p>
+
+<p class="whs7">def MakeQuadMesh2(mesh_name):</p>
+
+<p class="whs9">quad_1 
+ = gen.CreateEmptyMesh()</p>
+
+<p class="whs9">smeshgui.SetName(salome.ObjectToID(quad_1), 
+ mesh_name)</p>
+
+<p class="whs9">editor_1 
+ = quad_1.GetMeshEditor()</p>
+
+<p class="whs10">&nbsp;</p>
+
+<p class="whs10"># six nodes</p>
+
+<p class="whs9">n1 
+ = editor_1.AddNode(0, 20, 10)</p>
+
+<p class="whs9">n2 
+ = editor_1.AddNode(0, 40, 10)</p>
+
+<p class="whs9">n3 
+ = editor_1.AddNode(0, 40, 30)</p>
+
+<p class="whs9">n4 
+ = editor_1.AddNode(0, 20, 30)</p>
+
+<p class="whs9">n5 
+ = editor_1.AddNode(0, &nbsp;0, 
+ 30)</p>
+
+<p class="whs9">n6 
+ = editor_1.AddNode(0, &nbsp;0, 
+ 10)</p>
+
+<p class="whs10">&nbsp;</p>
+
+<p class="whs10"># seven edges</p>
+
+<p class="whs9">editor_1.AddEdge([n1, 
+ n2]) # 1</p>
+
+<p class="whs9">editor_1.AddEdge([n2, 
+ n3]) # 2</p>
+
+<p class="whs9">editor_1.AddEdge([n3, 
+ n4]) # 3</p>
+
+<p class="whs9">editor_1.AddEdge([n4, 
+ n1]) # 4</p>
+
+<p class="whs9">editor_1.AddEdge([n4, 
+ n5]) # 5</p>
+
+<p class="whs9">editor_1.AddEdge([n5, 
+ n6]) # 6</p>
+
+<p class="whs9">editor_1.AddEdge([n6, 
+ n1]) # 7</p>
+
+<p class="whs10">&nbsp;</p>
+
+<p class="whs10"># two quadrangle faces</p>
+
+<p class="whs9">editor_1.AddFace([n1, 
+ n2, n3, n4]) # 8</p>
+
+<p class="whs9">editor_1.AddFace([n1, 
+ n4, n5, n6]) # 9</p>
+
+<p class="whs9">return 
+ [quad_1, editor_1, [1,2,3,4,5,6,7], [8,9]]</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># Path meshes</p>
+
+<p class="whs7">Edge_straight_mesh 
+ = Mesh1D(Edge_straight, Nb_Segments_7, &quot;Edge_straight&quot;)</p>
+
+<p class="whs7">Edge_bezierrr_mesh 
+ = Mesh1D(Edge_bezierrr, Nb_Segments_7, &quot;Edge_bezierrr&quot;)</p>
+
+<p class="whs7">Wire_polyline_mesh 
+ = Mesh1D(Wire_polyline, Nb_Segments_3, &quot;Wire_polyline&quot;)</p>
+
+<p class="whs7">Edge_Circle_mesh &nbsp;&nbsp;= 
+ Mesh1D(Edge_Circle &nbsp;, 
+ Nb_Segments_8, &quot;Edge_Circle&quot;)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># Initial meshes (to 
+ be extruded)</p>
+
+<p class="whs7">[quad_1, editor_1, 
+ ee_1, ff_1] = MakeQuadMesh2(&quot;quad_1&quot;)</p>
+
+<p class="whs7">[quad_2, editor_2, 
+ ee_2, ff_2] = MakeQuadMesh2(&quot;quad_2&quot;)</p>
+
+<p class="whs7">[quad_3, editor_3, 
+ ee_3, ff_3] = MakeQuadMesh2(&quot;quad_3&quot;)</p>
+
+<p class="whs7">[quad_4, editor_4, 
+ ee_4, ff_4] = MakeQuadMesh2(&quot;quad_4&quot;)</p>
+
+<p class="whs7">[quad_5, editor_5, 
+ ee_5, ff_5] = MakeQuadMesh2(&quot;quad_5&quot;)</p>
+
+<p class="whs7">[quad_6, editor_6, 
+ ee_6, ff_6] = MakeQuadMesh2(&quot;quad_6&quot;)</p>
+
+<p class="whs7">[quad_7, editor_7, 
+ ee_7, ff_7] = MakeQuadMesh2(&quot;quad_7&quot;)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># ExtrusionAlongPath</p>
+
+<p class="whs8"># IDsOfElements, PathMesh, 
+ PathShape, NodeStart,</p>
+
+<p class="whs8"># HasAngles, Angles, 
+ HasRefPoint, RefPoint</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs7">refPoint = SMESH.PointStruct(0, 
+ 0, 0)</p>
+
+<p class="whs7">&nbsp;</p>
+
+<p class="whs7">a10 = 10.0*math.pi/180.0</p>
+
+<p class="whs7">a45 = 45.0*math.pi/180.0</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 1. Extrusion of two 
+ mesh edges along straight path</p>
+
+<p class="whs7">error = editor_1.ExtrusionAlongPath([1,2], 
+ Edge_straight_mesh, Edge_straight, 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 2. Extrusion of one 
+ mesh edge along curved path</p>
+
+<p class="whs7">error = editor_2.ExtrusionAlongPath([2], 
+ Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 3. Extrusion of one 
+ mesh edge along curved path with angles usage</p>
+
+<p class="whs7">error = editor_3.ExtrusionAlongPath([2], 
+ Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a45, a45, a45, 0, -a45, -a45, -a45], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 4. Extrusion of one 
+ mesh edge along path, which is a part of meshed wire</p>
+
+<p class="whs7">error = editor_4.ExtrusionAlongPath([4], 
+ Wire_polyline_mesh, Wire_polyline_edges[0], 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a10, a10, a10], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 5. Extrusion of two 
+ mesh faces along path, which is a part of meshed wire</p>
+
+<p class="whs7">error = editor_5.ExtrusionAlongPath(ff_5 
+ , Wire_polyline_mesh, Wire_polyline_edges[2], 4,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 6. Extrusion of two 
+ mesh faces along closed path</p>
+
+<p class="whs7">error = editor_6.ExtrusionAlongPath(ff_6 
+ , Edge_Circle_mesh, Edge_Circle, 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># 7. Extrusion of two 
+ mesh faces along closed path with angles usage</p>
+
+<p class="whs7">error = editor_7.ExtrusionAlongPath(ff_7, 
+ Edge_Circle_mesh, Edge_Circle, 1,</p>
+
+<p class="whs11">&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs7">if salome.sg.hasDesktop():</p>
+
+<p class="whs12">salome.sg.updateObjBrowser(1)</p>
+
+<p class="whs12">pass</p>
 
 <h3><a name=bookmark11>Revolution</a></h3>
 
@@ -1442,9 +1699,6 @@ if (window.writeIntopicBar)
 <p class="whs8">&nbsp;</p>
 
 <h3><a name=bookmark13>Pattern Mapping</a></h3>
-
-<p>Attention! This script was written using old approach, based on direct usage of SMESH idl interface. To be updated for version 3.2.1 to use <b>smesh</b> package.
-<br>&nbsp;
 
 <p class="whs7">import salome</p>
 
@@ -1545,7 +1799,7 @@ if (window.writeIntopicBar)
 
 <p class="whs7">if (isDone != 1):</p>
 
-<p class="whs9">print 
+<p class="whs13">print 
  'LoadFromFace :', pattern.GetErrorCode()</p>
 
 <p class="whs7">&nbsp;</p>
@@ -1561,7 +1815,7 @@ if (window.writeIntopicBar)
 
 <p class="whs7">if (isDone != 1):</p>
 
-<p class="whs9">print 
+<p class="whs13">print 
  'MakeMesh :', pattern.GetErrorCode()</p>
 
 <p class="whs7">&nbsp;</p>
