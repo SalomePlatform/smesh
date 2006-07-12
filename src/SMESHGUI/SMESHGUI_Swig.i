@@ -30,6 +30,13 @@
 #include "SMESHGUI_Swig.hxx"
 %}
 
+/* Exception handler for all functions */
+%exception {
+    Py_BEGIN_ALLOW_THREADS
+    $action
+    Py_END_ALLOW_THREADS
+}
+
 %include "typemaps.i"
 
 class SMESH_Swig
