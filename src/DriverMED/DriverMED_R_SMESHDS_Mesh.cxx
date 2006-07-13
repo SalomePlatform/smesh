@@ -915,18 +915,17 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
       aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
     aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
-  }
 
-  /* not implemented FAMILY
-     
-  TInt aFamNum = aNodeInfo->GetFamNum(iElem);
-  if ( checkFamilyID ( aFamily, aFamNum ))
-    {
-      aFamily->AddElement(aNode);
-      aFamily->SetType(SMDSAbs_Node);
+    if((aGrilleInfo->myFamNumNode).size() > 0){
+      TInt aFamNum = aGrilleInfo->GetFamNumNode(iNode);
+      if ( checkFamilyID ( aFamily, aFamNum ))
+	{
+	  aFamily->AddElement(aNode);
+	  aFamily->SetType(SMDSAbs_Node);
+	}
     }
     
-  */
+  }
 
   SMDS_MeshElement* anElement = NULL;
   MED::TIntVector aNodeIds;
@@ -970,6 +969,14 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
       break;
     default:
       break;
+    }
+    
+    if((aGrilleInfo->myFamNum).size() > 0){
+      TInt aFamNum = aGrilleInfo->GetFamNum(iCell);
+      if ( checkFamilyID ( aFamily, aFamNum )){
+	aFamily->AddElement(anElement);
+	aFamily->SetType(anElement->GetType());
+      }
     }
   }
 
