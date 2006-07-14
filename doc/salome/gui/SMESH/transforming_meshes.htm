@@ -10,8 +10,10 @@
 h3.whs1 { margin-top:0pt; margin-bottom:0pt; }
 h4.whs2 { margin-top:0pt; margin-bottom:0pt; }
 p.whs3 { font-family:'Lucida Console' , monospace; margin-top:0pt; margin-bottom:0pt; }
-p.whs4 { margin-top:0pt; margin-bottom:0pt; }
+p.whs4 { margin-top:0pt; margin-bottom:0pt; font-weight:bold; color:#ff0000; }
 p.whs5 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs6 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs7 { margin-top:0pt; margin-bottom:0pt; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -23,6 +25,8 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
   strNSS += "p.whs3 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs5 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs6 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs7 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -97,166 +101,204 @@ if (window.writeIntopicBar)
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">import SMESH</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to translate meshes. </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
 
-<p class="whs3">mesh &nbsp;&nbsp;= 
- SMESH_mechanic.mesh</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs3">salome = SMESH_mechanic.salome</p>
+<p class="whs5">import SMESH</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">import SMESH_mechanic</p>
 
-<p class="whs4"># translate a mesh</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs3">anEditor = mesh.GetMeshEditor()</p>
+<p class="whs5">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">point = SMESH.PointStruct(-150, -150, 
- 0)</p>
+<p class="whs5">anEditor = mesh.GetMeshEditor()</p>
 
-<p class="whs3">vector = SMESH.DirStruct(point) </p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs3">anEditor.TranslateObject(mesh, vector, 
- 1)</p>
+<p class="whs6"># define translation 
+ vector</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">point = SMESH.PointStruct(-150., 
+ -150., 0.)</p>
 
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
+<p class="whs5">vector = SMESH.DirStruct(point)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># translate a mesh</p>
+
+<p class="whs5">doCopy = 1</p>
+
+<p class="whs5">anEditor.TranslateObject(mesh, 
+ vector, doCopy) </p>
+
+<p class="whs7">&nbsp;</p>
 
 <h4 class="whs2"><a name=bookmark1>Rotation</a></h4>
 
 <p class="whs3">&nbsp;</p>
 
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to rotate meshes. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3">import math</p>
+
 <p class="whs3">import SMESH</p>
 
 <p class="whs3">import SMESH_mechanic</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">import math</p>
-
-<p class="whs3">mesh &nbsp;&nbsp;= 
- SMESH_mechanic.mesh</p>
-
-<p class="whs3">salome = SMESH_mechanic.salome</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># rotate a mesh </p>
+<p class="whs3">mesh = SMESH_mechanic.mesh</p>
 
 <p class="whs3">anEditor = mesh.GetMeshEditor()</p>
 
-<p class="whs3">axisXYZ = SMESH.AxisStruct(0, 0, 0, 5, 
- 5, 20)</p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs3">angle180 = &nbsp;1.5*math.pi</p>
+<p class="whs6"># define rotation axis 
+ and angle</p>
 
-<p class="whs3">anEditor.RotateObject(mesh, axisXYZ, angle180, 
- 1)</p>
+<p class="whs3">axisXYZ = SMESH.AxisStruct(0., 0., 0., 
+ 5., 5., 20.)</p>
+
+<p class="whs3">angle270 = 1.5 * math.pi</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs5">salome.sg.updateObjBrowser(1)</p>
+<p class="whs6"># rotate a mesh</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs3">anEditor.RotateObject(mesh, axisXYZ, angle270, 
+ 1) </p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
 <h4 class="whs2"><a name=bookmark2>Symmetry</a></h4>
 
 <p class="whs3">&nbsp;</p>
 
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to create symmetrical copies of meshes. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs3">&nbsp;</p>
+
+<p class="whs3">import math</p>
+
 <p class="whs3">import SMESH</p>
 
 <p class="whs3">import SMESH_mechanic</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">import math</p>
-
-<p class="whs3">mesh &nbsp;&nbsp;= 
- SMESH_mechanic.mesh</p>
-
-<p class="whs3">salome = SMESH_mechanic.salome</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a symmetrical 
- copy of the mesh mirrored through a point</p>
+<p class="whs3">mesh = SMESH_mechanic.mesh</p>
 
 <p class="whs3">anEditor = mesh.GetMeshEditor()</p>
 
-<p class="whs3">anEditor.MirrorObject(mesh, SMESH.AxisStruct(0, 
- 0, 0, 0, 0, 0), SMESH.SMESH_MeshEditor.POINT, 1) </p>
-
 <p class="whs3">&nbsp;</p>
 
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
+<p class="whs6"># create a symmetrical 
+ copy of the mesh mirrored through a point</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs3">axis = SMESH.AxisStruct(0, 0, 0, 0, 0, 
+ 0)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs3">anEditor.MirrorObject(mesh, axis, SMESH.SMESH_MeshEditor.POINT, 
+ 1) </p>
+
+<p class="whs7">&nbsp;</p>
 
 <h4 class="whs2"><a name=bookmark3>Merging 
  Nodes</a></h4>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">import SMESH</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to merge nodes. </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
 
-<p class="whs3">smesh &nbsp;= 
- SMESH_mechanic.smesh</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs3">mesh &nbsp;&nbsp;= 
- SMESH_mechanic.mesh</p>
+<p class="whs5">import SMESH_mechanic</p>
 
-<p class="whs3">salome = SMESH_mechanic.salome</p>
+<p class="whs5">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># merge nodes</p>
+<p class="whs5">aMeshEditor = mesh.GetMeshEditor()</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs3">Tolerance = 25.0</p>
+<p class="whs6"># merge nodes</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs5">Tolerance = 25.0</p>
 
-<p class="whs3">GroupsOfNodes = aMeshEditor.FindCoincidentNodes(Tolerance)</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs3">aMeshEditor.MergeNodes(GroupsOfNodes)</p>
+<p class="whs5">GroupsOfNodes = 
+ aMeshEditor.FindCoincidentNodes(Tolerance)</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;</p>
-
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">aMeshEditor.MergeNodes(GroupsOfNodes)</span> 
  </p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs7">&nbsp;</p>
 
 <h4><a name=bookmark8>Merging Elements</a></h4>
+
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to merge elements. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs5">import salome</p>
 
 <p class="whs5">import geompy</p>
 
 <p class="whs5">import smesh</p>
 
-<p class="whs5">import salome</p>
-
 <p class="whs5">import SMESH</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a face to be meshed</p>
+<p class="whs6"># create a face to 
+ be meshed</p>
 
 <p class="whs5">px = geompy.MakeVertex(100., 
  0. &nbsp;, 0. 
@@ -293,48 +335,21 @@ if (window.writeIntopicBar)
 <p class="whs5">id_face1 = geompy.addToStudy(face1, 
  &quot;Face1&quot;)</p>
 
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a 2D mesh on the 
- face</p>
-
-<p class="whs5">trias = smesh.Mesh(face1, 
- &quot;Face : 2D mesh&quot;)</p>
-
 <p class="whs5">&nbsp;</p>
 
-<p class="whs5">algo = trias.Segment()</p>
+<p class="whs6"># create a circle to 
+ be an extrusion path</p>
 
-<p class="whs5">algo.NumberOfSegments(6)</p>
+<p class="whs5">px1 = geompy.MakeVertex( 
+ 100., &nbsp;100., 
+ &nbsp;0.)</p>
 
-<p class="whs5">&nbsp;</p>
+<p class="whs5">py1 = geompy.MakeVertex(-100., 
+ -100., &nbsp;0.)</p>
 
-<p class="whs5">algo = trias.Triangle()</p>
-
-<p class="whs5">algo.LengthFromEdges()</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5">trias.Compute()</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5">tri_mesh = trias.GetMesh()</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a path mesh</p>
-
-<p class="whs5">px1 = geompy.MakeVertex(100., 
- 100. &nbsp;, 
- 0. &nbsp;)</p>
-
-<p class="whs5">py1 = geompy.MakeVertex(-100. 
- &nbsp;, -100., 
- 0. &nbsp;)</p>
-
-<p class="whs5">pz1 = geompy.MakeVertex(0. 
- &nbsp;, 0. &nbsp;, 
+<p class="whs5">pz1 = geompy.MakeVertex( 
+ &nbsp;&nbsp;0., 
+ &nbsp;&nbsp;&nbsp;0., 
  50.)</p>
 
 <p class="whs5">&nbsp;</p>
@@ -347,31 +362,55 @@ if (window.writeIntopicBar)
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs5">circlemesh = smesh.Mesh(circle, 
- &quot;Path mesh&quot;)</p>
+<p class="whs6"># create a 2D mesh 
+ on the face</p>
+
+<p class="whs5">trias = smesh.Mesh(face1, 
+ &quot;Face : 2D mesh&quot;)</p>
 
 <p class="whs5">&nbsp;</p>
+
+<p class="whs5">algo1D = trias.Segment()</p>
+
+<p class="whs5">algo1D.NumberOfSegments(6)</p>
+
+<p class="whs5">algo2D = trias.Triangle()</p>
+
+<p class="whs5">algo2D.LengthFromEdges()</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">trias.Compute()</p>
+
+<p class="whs5">tri_mesh = trias.GetMesh()</p>
+
+<p class="whs6">&nbsp;</p>
+
+<p class="whs6"># create a path mesh</p>
+
+<p class="whs5">circlemesh = smesh.Mesh(circle, 
+ &quot;Path mesh&quot;)</p>
 
 <p class="whs5">algo = circlemesh.Segment()</p>
 
 <p class="whs5">algo.NumberOfSegments(10)</p>
 
-<p class="whs5">&nbsp;</p>
-
 <p class="whs5">circlemesh.Compute()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs4"># extrusion of the mesh</p>
+<p class="whs6"># extrusion of the 
+ mesh</p>
 
 <p class="whs5">aMeshEditor = tri_mesh.GetMeshEditor()</p>
 
 <p class="whs5">aMeshEditor.ExtrusionAlongPathObject(tri_mesh, 
- circlemesh.GetMesh(), circle, 1, 0, [], 0, SMESH.PointStruct(0, 0, 0))</p>
+ circlemesh.GetMesh(), circle,</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ 0, [], 0, SMESH.PointStruct(0, 0, 0))</p>
 
-<p class="whs4"># merge nodes</p>
+<p class="whs6"># merge nodes</p>
 
 <p class="whs5">print &quot;Number 
  of nodes before MergeNodes:&quot;, tri_mesh.NbNodes()</p>
@@ -410,9 +449,9 @@ if (window.writeIntopicBar)
  &nbsp;&nbsp;&nbsp;: 
  &quot;, tri_mesh.NbVolumes()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs4"># merge elements</p>
+<p class="whs6"># merge elements</p>
 
 <p class="whs5">aMeshEditor.MergeEqualElements()</p>
 
@@ -438,332 +477,328 @@ if (window.writeIntopicBar)
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+<p class="whs5">salome.sg.updateObjBrowser(1) 
  </p>
+
+<p class="whs5">&nbsp;</p>
 
 <h3>Sewing Meshes</h3>
 
 <h4><a name=bookmark4>Sew Meshes Border to Border</a></h4>
 
-<p class="whs5">import salome</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to sew meshes border to border. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs7">&nbsp;</p>
 
 <p class="whs5">import geompy</p>
 
 <p class="whs5">import smesh</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create two faces of a 
- box</p>
+<p class="whs6"># create two faces 
+ of a box</p>
 
 <p class="whs5">box1 = geompy.MakeBox(0., 
  0., -10., 30., 20., 25.)</p>
 
-<p class="whs5">subShapeList1 = 
- geompy.SubShapeAll(box1, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList1 = geompy.SubShapeAll(box1, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs5">face1 = facesList1[2]</p>
 
 <p class="whs5">&nbsp;</p>
 
 <p class="whs5">box2 = geompy.MakeBox(0., 
  5., 0., 20., 20., 15.)</p>
 
-<p class="whs5">subShapeList2 = 
- geompy.SubShapeAll(box2, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList2 = geompy.SubShapeAll(box2, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
 
-<p class="whs5">EdgesList = geompy.SubShapeAll(subShapeList2[ 
- 1 ], geompy.ShapeType[&quot;EDGE&quot;])</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5">aComp = geompy.MakeCompound( 
- [subShapeList1[ 2 ], subShapeList2[ 1 ]] )</p>
-
-<p class="whs5">idComp = geompy.addToStudy( 
- aComp, &quot;Two faces&quot; )</p>
-
-<p class="whs5">aCompobj &nbsp;= 
- salome.IDToObject( idComp )</p>
+<p class="whs5">face2 = facesList2[1]</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a mesh on two 
- faces</p>
+<p class="whs5">edgesList = geompy.SubShapeAll(face2, 
+ geompy.ShapeType[&quot;EDGE&quot;])</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">edge1 = edgesList[2]</p>
 
-<p class="whs5">mesh = smesh.Mesh(aCompobj, 
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">aComp = geompy.MakeCompound([face1, 
+ face2])</p>
+
+<p class="whs5">geompy.addToStudy(aComp, 
+ &quot;Two faces&quot;)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># create a mesh on 
+ two faces</p>
+
+<p class="whs5">mesh = smesh.Mesh(aComp, 
  &quot;Two faces : quadrangle mesh&quot;)</p>
 
-<p class="whs5">algo = mesh.Segment()</p>
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">algo1D = mesh.Segment()</p>
+
+<p class="whs5">algo1D.NumberOfSegments(9)</p>
+
+<p class="whs5">algo2D = mesh.Quadrangle()</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
+<p class="whs5">algo_local = mesh.Segment(edge1)</p>
 
-<p class="whs5">algo.NumberOfSegments(9)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a quadrangle 2D 
- algorithm for faces</p>
-
-<p class="whs5">mesh.Quadrangle()</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a local hypothesis</p>
-
-<p class="whs5">algo = mesh.Segment(EdgesList[2])</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Arithmetic1D&quot; 
- hypothesis to cut an edge in several segments with increasing arithmetic 
- length </p>
-
-<p class="whs5">algo.Arithmetic1D(1, 
+<p class="whs5">algo_local.Arithmetic1D(1, 
  4)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo_local.Propagation()</p>
 
-<p class="whs4"># define &quot;Propagation&quot; 
- hypothesis that propagates all other hypothesis on all edges on the opposite 
- side in case of quadrangular faces</p>
-
-<p class="whs5">algo.Propagation()</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">mesh.Compute()</p>
 
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># sew free borders</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">anEditor = mesh.GetMesh().GetMeshEditor()</p>
 
-<p class="whs5">anEditor.SewBorderToSide(5, 
- 45, 6, 113, 109, 0, 0)</p>
-
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
+<p class="whs6"># sew border to side</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs6"># FirstNodeIDOnFreeBorder, 
+ SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,</p>
+
+<p class="whs6"># FirstNodeIDOnSide, 
+ LastNodeIDOnSide,</p>
+
+<p class="whs6"># CreatePolygons, CreatePolyedrs</p>
+
+<p class="whs5">anEditor.SewBorderToSide(5, 
+ 45, 6, 113, 109, 0, 0) </p>
 
 <h4><a name=bookmark5>Sew Conform Free Borders</a></h4>
 
-<p class="whs5">import salome</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to sew conform free borders. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">import geompy</p>
 
 <p class="whs5">import smesh</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create two faces of the 
- box</p>
+<p class="whs6"># create two faces 
+ of the box</p>
 
 <p class="whs5">box1 = geompy.MakeBox(0., 
  0., -10., 20., 20., 15.)</p>
 
-<p class="whs5">subShapeList1 = 
- geompy.SubShapeAll(box1, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList1 = geompy.SubShapeAll(box1, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
+
+<p class="whs5">face1 = facesList1[2]</p>
 
 <p class="whs5">&nbsp;</p>
 
 <p class="whs5">box2 = geompy.MakeBox(0., 
  5., 0., 20., 20., 15.)</p>
 
-<p class="whs5">subShapeList2 = 
- geompy.SubShapeAll(box2, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList2 = geompy.SubShapeAll(box2, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
 
-<p class="whs5">EdgesList = geompy.SubShapeAll(subShapeList2[ 
- 1 ], geompy.ShapeType[&quot;EDGE&quot;])</p>
+<p class="whs5">face2 = facesList2[1]</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs5">aComp = geompy.MakeCompound( 
- [subShapeList1[ 2 ], subShapeList2[ 1 ]] )</p>
+<p class="whs5">edgesList = geompy.SubShapeAll(face2, 
+ geompy.ShapeType[&quot;EDGE&quot;])</p>
 
-<p class="whs5">idComp = geompy.addToStudy( 
- aComp, &quot;Two faces&quot; )</p>
+<p class="whs5">edge1 = edgesList[2]</p>
 
-<p class="whs5">aCompobj &nbsp;= 
- salome.IDToObject( idComp )</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">aComp = geompy.MakeCompound([face1, 
+ face2])</p>
 
-<p class="whs4"># create a mesh on two 
- faces</p>
+<p class="whs5">geompy.addToStudy(aComp, 
+ &quot;Two faces&quot;)</p>
 
-<p class="whs5">mesh = smesh.Mesh(aCompobj, 
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># create a mesh on 
+ two faces</p>
+
+<p class="whs5">mesh = smesh.Mesh(aComp, 
  &quot;Two faces : quadrangle mesh&quot;)</p>
 
-<p class="whs5">algo = mesh.Segment()</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo1D = mesh.Segment()</p>
 
-<p class="whs4"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
+<p class="whs5">algo1D.NumberOfSegments(9)</p>
 
-<p class="whs5">algo.NumberOfSegments(9)</p>
+<p class="whs5">algo2D = mesh.Quadrangle()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a quadrangle 2D 
- algorithm for faces</p>
+<p class="whs5">algo_local = mesh.Segment(edge1)</p>
 
-<p class="whs5">mesh.Quadrangle()</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a local hypothesis</p>
-
-<p class="whs5">algo = mesh.Segment(EdgesList[2])</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Arithmetic1D&quot; 
- hypothesis to cut an edge in several segments with increasing arithmetic 
- length </p>
-
-<p class="whs5">algo.Arithmetic1D(1, 
+<p class="whs5">algo_local.Arithmetic1D(1, 
  4)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo_local.Propagation()</p>
 
-<p class="whs4"># define &quot;Propagation&quot; 
- hypothesis that propagate all other hypothesis on all edges on<span style="margin-top: 0pt; margin-bottom: 0pt;"> 
- the opposite side in case of quadrangular faces</span></p>
-
-<p class="whs5">algo.Propagation()</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">mesh.Compute()</p>
 
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># sew free borders</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">anEditor = mesh.GetMesh().GetMeshEditor()</p>
 
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># sew conform free 
+ borders</p>
+
+<p class="whs6"># FirstNodeID1, SecondNodeID1, 
+ LastNodeID1, FirstNodeID2, SecondNodeID2</p>
+
 <p class="whs5">anEditor.SewConformFreeBorders(5, 
- 45, 6, 3, 24)</p>
-
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
-
-<p class="whs4">&nbsp;</p>
+ 45, 6, 3, 24) </p>
 
 <h4><a name=bookmark6>Sew Free Borders</a></h4>
 
-<p class="whs5">import salome</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to sew free borders. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
+
+<p class="whs7">&nbsp;</p>
 
 <p class="whs5">import geompy</p>
 
 <p class="whs5">import smesh</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create two faces of the 
- box</p>
+<p class="whs6"># create two faces 
+ of the box</p>
 
 <p class="whs5">box1 = geompy.MakeBox(0., 
  0., 0., 20., 20., 15.)</p>
 
-<p class="whs5">subShapeList1 = 
- geompy.SubShapeAll(box1, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList1 = geompy.SubShapeAll(box1, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">face1 = facesList1[2]</p>
+
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">box2 = geompy.MakeBox(0., 
  5., 0., 20., 20., 15.)</p>
 
-<p class="whs5">subShapeList2 = 
- geompy.SubShapeAll(box2, geompy.ShapeType[&quot;FACE&quot;])</p>
+<p class="whs5">facesList2 = geompy.SubShapeAll(box2, 
+ geompy.ShapeType[&quot;FACE&quot;])</p>
 
-<p class="whs5">EdgesList = geompy.SubShapeAll(subShapeList2[ 
- 1 ], geompy.ShapeType[&quot;EDGE&quot;])</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs5">aComp = geompy.MakeCompound( 
- [subShapeList1[ 2 ], subShapeList2[ 1 ]] )</p>
-
-<p class="whs5">idComp = geompy.addToStudy( 
- aComp, &quot;Two faces&quot; )</p>
-
-<p class="whs5">aCompobj &nbsp;= 
- salome.IDToObject( idComp )</p>
+<p class="whs5">face2 = facesList2[1]</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a mesh on two 
- faces</p>
+<p class="whs5">edgesList = geompy.SubShapeAll(face2, 
+ geompy.ShapeType[&quot;EDGE&quot;])</p>
 
-<p class="whs5">mesh = smesh.Mesh(aCompobj, 
+<p class="whs5">edge1 = edgesList[2]</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">aComp = geompy.MakeCompound([face1, 
+ face2])</p>
+
+<p class="whs5">geompy.addToStudy(aComp, 
+ &quot;Two faces&quot;)</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># create a mesh on 
+ two faces</p>
+
+<p class="whs5">mesh = smesh.Mesh(aComp, 
  &quot;Two faces : quadrangle mesh&quot;)</p>
 
-<p class="whs5">algo = mesh.Segment()</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo1D = mesh.Segment()</p>
 
-<p class="whs4"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
+<p class="whs5">algo1D.NumberOfSegments(4)</p>
 
-<p class="whs5">algo.NumberOfSegments(4)</p>
+<p class="whs5">algo2D = mesh.Quadrangle()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># creates a quadrangle 
- 2D algorithm for faces</p>
+<p class="whs5">algo_local = mesh.Segment(edge1)</p>
 
-<p class="whs5">mesh.Quadrangle()</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a local hypothesis</p>
-
-<p class="whs5">algo = mesh.Segment(EdgesList[2])</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Arithmetic1D&quot; 
- hypothesis to cut an edge in several segments with &nbsp;increasing 
- arithmetic length</p>
-
-<p class="whs5">algo.Arithmetic1D(1, 
+<p class="whs5">algo_local.Arithmetic1D(1, 
  4)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo_local.Propagation()</p>
 
-<p class="whs4"># define &quot;Propagation&quot; 
- hypothesis that propagate all other hypothesis on all edges on<span style="margin-top: 0pt; margin-bottom: 0pt;"> 
- the opposite side in case of quadrangular faces</span></p>
-
-<p class="whs5">algo.Propagation()</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">mesh.Compute()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># sew free borders</p>
+<p class="whs6"># sew free borders</p>
+
+<p class="whs6"># FirstNodeID1, SecondNodeID1, 
+ LastNodeID1,</p>
+
+<p class="whs6"># FirstNodeID2, SecondNodeID2, 
+ LastNodeID2, CreatePolygons, CreatePolyedrs</p>
 
 <p class="whs5">anEditor = mesh.GetMesh().GetMeshEditor()</p>
 
-<p class="whs5">anEditor.SewFreeBorders(6, 
- 21, 5, 1, 12, 3, 0, 0)</p>
-
-<p class="whs5">&nbsp;</p>
-
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
-
-<p class="whs4">&nbsp;</p>
+<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">anEditor.SewFreeBorders(6, 
+ 21, 5, 1, 12, 3, 0, 0)</span> </p>
 
 <h4><a name=bookmark7>Sew Side Elements</a></h4>
 
-<p class="whs5">import salome</p>
+<p class="whs4"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
+ Attention! This script has been written using the old approach basing 
+ on direct usage of SMESH idl interface.</B></font></span></p>
+
+<p class="whs4"># For the moment smesh package doesn't provide 
+ methods to sew side elements. </p>
+
+<p class="whs4"># In the next SALOME version the scripts will 
+ be updated to use only the commands from smesh package.</p>
 
 <p class="whs5">import geompy</p>
 
@@ -771,8 +806,7 @@ if (window.writeIntopicBar)
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create two faces of the 
- box</p>
+<p class="whs6"># create two boxes</p>
 
 <p class="whs5">box1 = geompy.MakeBox(0., 
  &nbsp;0., 0., 
@@ -781,80 +815,63 @@ if (window.writeIntopicBar)
 <p class="whs5">box2 = geompy.MakeBox(0., 
  15., 0., 20., 25., 10.)</p>
 
+<p class="whs5">&nbsp;</p>
+
 <p class="whs5">EdgesList = geompy.SubShapeAll(box2, 
  geompy.ShapeType[&quot;EDGE&quot;])</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs5">aComp = geompy.MakeCompound( 
- [box1, box2] )</p>
+<p class="whs5">aComp = geompy.MakeCompound([box1, 
+ box2])</p>
 
-<p class="whs5">idComp = geompy.addToStudy( 
- aComp, &quot;Two faces&quot; )</p>
-
-<p class="whs5">aCompobj &nbsp;= 
- salome.IDToObject( idComp )</p>
+<p class="whs5">geompy.addToStudy(aComp, 
+ &quot;Two boxes&quot;)</p>
 
 <p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a mesh on two 
- faces</p>
+<p class="whs6"># create a mesh on 
+ two boxes</p>
 
-<p class="whs5">mesh = smesh.Mesh(aCompobj, 
+<p class="whs5">mesh = smesh.Mesh(aComp, 
  &quot;Two faces : quadrangle mesh&quot;)</p>
 
-<p class="whs5">algo = mesh.Segment()</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo1D = mesh.Segment()</p>
 
-<p class="whs4"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut an edge in a fixed number of segments</p>
+<p class="whs5">algo1D.NumberOfSegments(2)</p>
 
-<p class="whs5">algo.NumberOfSegments(2)</p>
+<p class="whs5">algo2D = mesh.Quadrangle()</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs4"># create a quadrangle 2D 
- algorithm for faces</p>
+<p class="whs5">algo_local = mesh.Segment(EdgesList[8])</p>
 
-<p class="whs5">mesh.Quadrangle()</p>
+<p class="whs5">algo_local.NumberOfSegments(4)</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs5">algo_local.Propagation()</p>
 
-<p class="whs4"># create a local hypothesis</p>
-
-<p class="whs5">algo = mesh.Segment(EdgesList[8])</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Arithmetic1D&quot; 
- hypothesis to cut an edge in several segments with increasing arithmetic 
- length </p>
-
-<p class="whs5">algo.NumberOfSegments(4)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Propagation&quot; 
- hypothesis that propagates all other hypothesis on all edges on <span 
- style="margin-top: 0pt; margin-bottom: 0pt;">the opposite side in case 
- of quadrangular faces</span></p>
-
-<p class="whs5">algo.Propagation()</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">mesh.Compute()</p>
 
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># sew free borders</p>
+<p class="whs5">&nbsp;</p>
 
 <p class="whs5">anEditor = mesh.GetMesh().GetMeshEditor()</p>
 
+<p class="whs5">&nbsp;</p>
+
+<p class="whs6"># sew side elements</p>
+
+<p class="whs6"># IDsOfSide1Elements, 
+ IDsOfSide2Elements,</p>
+
+<p class="whs6"># NodeID1OfSide1ToMerge, 
+ NodeID1OfSide2ToMerge, NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge</p>
+
 <p class="whs5">anEditor.SewSideElements([69, 
  70, 71, 72], [91, 92, 89, 90], 8, 38, 23, 58)</p>
-
-<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
- </p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

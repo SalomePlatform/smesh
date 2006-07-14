@@ -7,11 +7,13 @@
 <meta http-equiv="content-type" content="text/html; charset=windows-1252">
 <meta name="generator" content="RoboHelp by eHelp Corporation www.ehelp.com"><style type="text/css">
 <!--
-p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
-p.whs2 { margin-top:0pt; margin-bottom:0pt; }
-p.whs3 { font-family:'Lucida Console' , monospace; margin-top:0px; margin-bottom:0px; }
-p.whs4 { margin-top:0px; margin-bottom:0px; }
+p.whs1 { margin-top:0pt; margin-bottom:0pt; }
+p.whs2 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs3 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs4 { font-family:'Lucida Console' , monospace; margin-top:0px; margin-bottom:0px; }
 p.whs5 { margin-top:0px; margin-bottom:0px; font-family:'Times New Roman' , serif; }
+p.whs6 { margin-top:0px; margin-bottom:0px; }
+p.whs7 { margin-top:0px; margin-bottom:0px; font-family:'Lucida Console' , monospace; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -23,6 +25,8 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
   strNSS += "p.whs3 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs5 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs6 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs7 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -89,650 +93,350 @@ if (window.writeIntopicBar)
 </script>
 <h1>Creating Meshes</h1>
 
-<p>At first see <a href="smesh_py_introduction.htm">Example of 3d mesh generation</a>, using <b>smesh</b> package.
-<p>Other examples of python scripts will be also updated soon to use <b>smesh</b> package instead of direct usage of idl interface.
+<p class="whs1">First of all see <a href="smesh_py_introduction.htm">Example 
+ of 3d mesh generation</a>, which is an example of good python script style 
+ for Mesh module. </p>
+
+<p class="whs1">Other examples of python 
+ scripts will be also updated soon to use smesh package instead of direct 
+ usage of idl interface. </p>
 
 <h3><a name=bookmark>Construction of a Mesh</a></h3>
 
-<p>Attention! This script was written using old approach, based on direct usage of SMESH idl interface. To be updated for version 3.2.1 to use <b>smesh</b> package.
-<br>&nbsp;
+<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">import 
+ geompy</span></p>
 
-<p class="whs1">import salome</p>
-
-<p class="whs1">import geompy</p>
-
-<p class="whs1">import StdMeshers</p>
-
-<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
- &quot;SMESH&quot;)</p>
-
-<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
-
-<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
+<p class="whs2">import smesh</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># create a box</p>
+<p class="whs3"># create a box</p>
 
-<p class="whs1">box = geompy.MakeBox(0., 
+<p class="whs2">box = geompy.MakeBox(0., 
  0., 0., 100., 200., 300.)</p>
 
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># add box to the study</p>
-
-<p class="whs1">idbox = geompy.addToStudy(box, 
+<p class="whs2">idbox = geompy.addToStudy(box, 
  &quot;box&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># create a hypothesis</p>
+<p class="whs3"># create a mesh</p>
 
-<p class="whs1">print &quot;-------------------------- 
- create Hypothesis&quot;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- NumberOfSegments&quot;</p>
-
-<p class="whs1">numberOfSegments 
- = 7</p>
-
-<p class="whs1">hypNbSeg = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypNbSeg.SetNumberOfSegments(numberOfSegments)</p>
-
-<p class="whs1">print hypNbSeg.GetName()</p>
-
-<p class="whs1">print hypNbSeg.GetId()</p>
-
-<p class="whs1">print hypNbSeg.GetNumberOfSegments()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypNbSeg), 
- &quot;NumberOfSegments_10&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementArea&quot;</p>
-
-<p class="whs1">maxElementArea = 
- 800</p>
-
-<p class="whs1">hypArea = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypArea.SetMaxElementArea(maxElementArea)</p>
-
-<p class="whs1">print hypArea.GetName()</p>
-
-<p class="whs1">print hypArea.GetId()</p>
-
-<p class="whs1">print hypArea.GetMaxElementArea()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypArea), 
- &quot;MaxElementArea_500&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementVolume&quot;</p>
-
-<p class="whs1">maxElementVolume 
- = 900</p>
-
-<p class="whs1">hypVolume = smesh.CreateHypothesis(&quot;MaxElementVolume&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypVolume.SetMaxElementVolume(maxElementVolume)</p>
-
-<p class="whs1">print hypVolume.GetName()</p>
-
-<p class="whs1">print hypVolume.GetId()</p>
-
-<p class="whs1">print hypVolume.GetMaxElementVolume()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypVolume), 
- &quot;MaxElementVolume_500&quot;)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># create algorithms</p>
-
-<p class="whs1">print &quot;-------------------------- 
- create Algorithms&quot;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- Regular_1D&quot;</p>
-
-<p class="whs1">regular1D = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(regular1D), 
- &quot;Wire Discretisation&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MEFISTO_2D&quot;</p>
-
-<p class="whs1">mefisto2D = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(mefisto2D), 
- &quot;MEFISTO_2D&quot;)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># initialize a mesh with 
- the box</p>
-
-<p class="whs1">mesh = smesh.CreateMesh(box)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(mesh), 
+<p class="whs2">tetra = smesh.Mesh(box, 
  &quot;MeshBox&quot;)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># add the hypothesis to 
- the box</p>
+<p class="whs2">algo1D = tetra.Segment()</p>
 
-<p class="whs1">print &quot;-------------------------- 
- add hypothesis to the box&quot;</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hypNbSeg)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hypArea)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hypVolume)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,regular1D)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,mefisto2D)</p>
+<p class="whs2">algo1D.NumberOfSegments(7)</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"># compute the mesh</p>
+<p class="whs2">algo2D = tetra.Triangle()</p>
 
-<p class="whs1">print &quot;-------------------------- 
- compute the mesh of the box&quot;</p>
+<p class="whs2">algo2D.MaxElementArea(800.)</p>
 
-<p class="whs1">ret = smesh.Compute(mesh,box)</p>
+<p class="whs2">&nbsp;</p>
 
-<p class="whs1">print ret</p>
+<p class="whs2">algo3D = tetra.Tetrahedron(smesh.NETGEN)</p>
 
-<p class="whs1">if ret == 0:</p>
+<p class="whs2">algo3D.MaxElementVolume(900.)</p>
 
-<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
- &quot;probleme when computing the mesh&quot;</p>
+<p class="whs2">&nbsp;</p>
 
-<p class="whs1">salome.sg.updateObjBrowser(1)</p>
+<p class="whs3"># compute the mesh</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs2">ret = tetra.Compute()</p>
+
+<p class="whs2">if ret == 0:</p>
+
+<p class="whs2">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;problem when computing the mesh&quot;</p>
+
+<p class="whs2">else:</p>
+
+<p class="whs2">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;mesh computed&quot;</p>
+
+<p class="whs2">&nbsp;&nbsp;&nbsp;&nbsp;pass 
+ </p>
+
+<p class="whs2">&nbsp;</p>
+
+<p class="whs2">&nbsp;</p>
 
 <h3><a name=bookmark1>Construction of a Submesh</a></h3>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">from 
+<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">from 
  geompy import *</span></p>
 
-<p class="whs3">import smesh</p>
+<p class="whs4">import smesh</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># create vertices</p>
+<p class="whs5"># create a box</p>
 
-<p class="whs3">Point111 = MakeVertex( 0, &nbsp;0, 
- &nbsp;0)</p>
+<p class="whs4">box = MakeBoxDXDYDZ(10., 10., 10.)</p>
 
-<p class="whs3">Point211 = MakeVertex(10, &nbsp;0, 
- &nbsp;0)</p>
-
-<p class="whs3">Point121 = MakeVertex( 0, 10, &nbsp;0)</p>
-
-<p class="whs3">Point221 = MakeVertex(10, 10, &nbsp;0)</p>
-
-<p class="whs3">Point112 = MakeVertex( 0, &nbsp;0, 
- 10)</p>
-
-<p class="whs3">Point212 = MakeVertex(10, &nbsp;0, 
- 10)</p>
-
-<p class="whs3">Point122 = MakeVertex( 0, 10, 10)</p>
-
-<p class="whs3">Point222 = MakeVertex(10, 10, 10)</p>
+<p class="whs4">addToStudy(box, &quot;Box&quot;)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># create edges</p>
+<p class="whs5"># select one edge of 
+ the box for definition of a local hypothesis</p>
 
-<p class="whs3">EdgeX111 = MakeEdge(Point111, Point211)</p>
+<p class="whs4">p5 = MakeVertex(5., 0., 0.)</p>
 
-<p class="whs3">EdgeX121 = MakeEdge(Point121, Point221)</p>
+<p class="whs4">EdgeX = GetEdgeNearPoint(box, p5)</p>
 
-<p class="whs3">EdgeX112 = MakeEdge(Point112, Point212)</p>
-
-<p class="whs3">EdgeX122 = MakeEdge(Point122, Point222)</p>
-
-<p class="whs3">EdgeY11 = MakeEdge(Point111, Point121)</p>
-
-<p class="whs3">EdgeY21 = MakeEdge(Point211, Point221)</p>
-
-<p class="whs3">EdgeY12 = MakeEdge(Point112, Point122)</p>
-
-<p class="whs3">EdgeY22 = MakeEdge(Point212, Point222)</p>
-
-<p class="whs3">EdgeZ111 = MakeEdge(Point111, Point112)</p>
-
-<p class="whs3">EdgeZ211 = MakeEdge(Point211, Point212)</p>
-
-<p class="whs3">EdgeZ121 = MakeEdge(Point121, Point122)</p>
-
-<p class="whs3">EdgeZ221 = MakeEdge(Point221, Point222)</p>
+<p class="whs4">addToStudyInFather(box, EdgeX, &quot;Edge 
+ [0,0,0 - 10,0,0]&quot;)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># create faces</p>
+<p class="whs5"># create a hexahedral 
+ mesh on the box</p>
 
-<p class="whs3">FaceX11 = MakeQuad(EdgeY11, EdgeZ111, 
- EdgeY12, EdgeZ121)</p>
-
-<p class="whs3">FaceX21 = MakeQuad(EdgeY21, EdgeZ211, 
- EdgeY22, EdgeZ221)</p>
-
-<p class="whs3">FaceY111 = MakeQuad(EdgeX111, EdgeZ111, 
- EdgeX112, EdgeZ211)</p>
-
-<p class="whs3">FaceY121 = MakeQuad(EdgeX121, EdgeZ121, 
- EdgeX122, EdgeZ221)</p>
-
-<p class="whs3">FaceZ11 = MakeQuad(EdgeX111, EdgeY11, 
- EdgeX121, EdgeY21)</p>
-
-<p class="whs3">FaceZ12 = MakeQuad(EdgeX112, EdgeY12, 
- EdgeX122, EdgeY22)</p>
+<p class="whs4">quadra = smesh.Mesh(box, &quot;Box : quadrangle 
+ 2D mesh&quot;)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># create a solid</p>
+<p class="whs5"># create a regular 
+ 1D algorithm for the faces</p>
 
-<p class="whs3">Block = MakeHexa(FaceX11, FaceX21, FaceY111, 
- FaceY121, FaceZ11, FaceZ12)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create a compound</p>
-
-<p class="whs3">box = MakeCompound([Block])</p>
+<p class="whs4">algo1D = quadra.Segment()</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># add in the study</p>
+<p class="whs5"># define &quot;NumberOfSegments&quot; 
+ hypothesis to cut</p>
 
-<p class="whs3">box_id = addToStudy(box, &quot;Box compound&quot;)</p>
+<p class="whs5"># all the edges in 
+ a fixed number of segments</p>
 
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># create hexahedral mesh 
- on the box</p>
-
-<p class="whs3">hexa = smesh.Mesh(box, &quot;Box compound 
- : hexahedrical mesh&quot;)</p>
-
-<p class="whs3">algo = hexa.Segment()</p>
+<p class="whs4">algo1D.NumberOfSegments(4)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># define &quot;NumberOfSegments&quot; 
- hypothesis to cut the edge in a fixed number of segments</p>
-
-<p class="whs3">algo.NumberOfSegments(4)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># creates a quadrangle 
+<p class="whs5"># create a quadrangle 
  2D algorithm for the faces</p>
 
-<p class="whs3">hexa.Quadrangle()</p>
+<p class="whs4">quadra.Quadrangle()</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># construct a submesh with 
- a local hypothesis</p>
+<p class="whs5"># construct a submesh 
+ on the edge with a local hypothesis</p>
 
-<p class="whs3">algo = hexa.Segment(EdgeX111)</p>
-
-<p class="whs4">&nbsp;</p>
-
-<p class="whs4"># define &quot;Arithmetic1D&quot; 
- hypothesis to cut an edge in several segments with increasing arithmetic 
- length </p>
-
-<p class="whs3">algo.Arithmetic1D(1, 4)</p>
+<p class="whs4">algo_local = quadra.Segment(EdgeX)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># define &quot;Propagation&quot; 
- hypothesis that propagates all other hypothesis on all edges on the opposite 
- side in case of quadrangular faces</p>
+<p class="whs5"># define &quot;Arithmetic1D&quot; 
+ hypothesis to cut the edge<span style="margin-top: 0px;
+										margin-bottom: 0px;
+										font-family: 'Times New Roman', serif;"> 
+ in several segments with increasing arithmetic length</span></p>
 
-<p class="whs3">algo.Propagation()</p>
+<p class="whs4">algo_local.Arithmetic1D(1, 4)</p>
 
 <p class="whs4">&nbsp;</p>
 
-<p class="whs4"># compute the mesh</p>
+<p class="whs5"># define &quot;Propagation&quot; 
+ hypothesis that propagates all other hypotheses</p>
 
-<p class="whs3">hexa.Compute() </p>
+<p class="whs5"># on all edges of the 
+ opposite side in case of quadrangular faces</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs4">algo_local.Propagation()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># compute the mesh</p>
+
+<p class="whs4">quadra.Compute() </p>
+
+<p class="whs4">&nbsp;</p>
 
 <h3><a name=bookmark2>Editing of a mesh</a></h3>
 
-<p>Attention! This script was written using old approach, based on direct usage of SMESH idl interface. To be updated for version 3.2.1 to use <b>smesh</b> package.
-<br>&nbsp;
+<p class="whs4"><span style="font-family: 'Lucida Console', monospace;">import 
+ geompy</span></p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- salome</span></p>
-
-<p class="whs3">import geompy</p>
-
-<p class="whs3">import SMESH</p>
-
-<p class="whs3">import StdMeshers</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
- &quot;SMESH&quot;)</p>
-
-<p class="whs3">smesh.SetCurrentStudy(salome.myStudy)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">box &nbsp;&nbsp;= 
- geompy.MakeBox(0., 0., 0., 20., 20., 20.)</p>
-
-<p class="whs3">idbox = geompy.addToStudy(box, &quot;box&quot;)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">subShapeList = geompy.SubShapeAll(box, 
- geompy.ShapeType[&quot;EDGE&quot;])</p>
-
-<p class="whs3">edge &nbsp;&nbsp;= 
- subShapeList[0]</p>
-
-<p class="whs3">name &nbsp;&nbsp;= 
- geompy.SubShapeName(edge, box)</p>
-
-<p class="whs3">idedge = geompy.addToStudyInFather(box, 
- edge, name)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">box &nbsp;= 
- salome.IDToObject(idbox)</p>
-
-<p class="whs3">edge = salome.IDToObject(idedge)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">hyp1.SetNumberOfSegments(3)</p>
-
-<p class="whs3">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">hyp2.SetMaxElementArea(10)</p>
-
-<p class="whs3">hyp3 = smesh.CreateHypothesis(&quot;Arithmetic1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">hyp3.SetLength(1,1)</p>
-
-<p class="whs3">hyp3.SetLength(6,0)</p>
-
-<p class="whs3">hyp4 = smesh.CreateHypothesis(&quot;Propagation&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">mesh = smesh.CreateMesh(box)</p>
-
-<p class="whs3">mesh.AddHypothesis(box,hyp1)</p>
-
-<p class="whs3">mesh.AddHypothesis(box,hyp2)</p>
-
-<p class="whs3">mesh.AddHypothesis(box,algo1)</p>
-
-<p class="whs3">mesh.AddHypothesis(box,algo2)</p>
-
-<p class="whs3">mesh.AddHypothesis(edge,hyp3)</p>
-
-<p class="whs3">mesh.AddHypothesis(edge,hyp4)</p>
-
-<p class="whs3">mesh.AddHypothesis(edge,algo1)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">smesh.Compute(mesh,box)</p>
-
-<p class="whs3">salome.sg.updateObjBrowser(1)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs5"># remove a hypothesis</p>
-
-<p class="whs3">mesh.RemoveHypothesis(edge,hyp4)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">smesh.Compute(mesh,box)</p>
-
-<p class="whs3">salome.sg.updateObjBrowser(1)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs5"># change the value 
- of the hypothesis</p>
-
-<p class="whs3">hyp2.SetMaxElementArea(2)</p>
-
-<p class="whs3">mesh.AddHypothesis(box,hyp2)</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">smesh.Compute(mesh,box)</p>
-
-<p class="whs3">salome.sg.updateObjBrowser(1) </p>
+<p class="whs4">import smesh</p>
 
 <p class="whs4">&nbsp;</p>
+
+<p class="whs4">def PrintMeshInfo(theMesh):</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;aMesh 
+ = theMesh.GetMesh()</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Information about mesh:&quot;</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Number of nodes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, aMesh.NbNodes()</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Number of edges &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, aMesh.NbEdges()</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Number of faces &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, aMesh.NbFaces()</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;Number of volumes &nbsp;&nbsp;&nbsp;&nbsp;: 
+ &quot;, aMesh.NbVolumes()</p>
+
+<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;pass</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># create a box</p>
+
+<p class="whs4">box = geompy.MakeBox(0., 0., 0., 20., 
+ 20., 20.)</p>
+
+<p class="whs4">geompy.addToStudy(box, &quot;box&quot;)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># select one edge of 
+ the box for definition of a local hypothesis</p>
+
+<p class="whs4">subShapeList = geompy.SubShapeAll(box, 
+ geompy.ShapeType[&quot;EDGE&quot;])</p>
+
+<p class="whs4">edge = subShapeList[0]</p>
+
+<p class="whs4">name = geompy.SubShapeName(edge, box)</p>
+
+<p class="whs4">geompy.addToStudyInFather(box, edge, name)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># create a mesh</p>
+
+<p class="whs4">tria = smesh.Mesh(box, &quot;Mesh 2D&quot;)</p>
+
+<p class="whs4">algo1D = tria.Segment()</p>
+
+<p class="whs4">hyp1 = algo1D.NumberOfSegments(3)</p>
+
+<p class="whs4">algo2D = tria.Triangle()</p>
+
+<p class="whs4">hyp2 = algo2D.MaxElementArea(10.)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># create a sub-mesh</p>
+
+<p class="whs4">algo_local = tria.Segment(edge)</p>
+
+<p class="whs4">hyp3 = algo_local.Arithmetic1D(1, 6)</p>
+
+<p class="whs4">hyp4 = algo_local.Propagation()</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># compute the mesh</p>
+
+<p class="whs4">tria.Compute()</p>
+
+<p class="whs4">PrintMeshInfo(tria)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># remove a local hypothesis</p>
+
+<p class="whs4">mesh = tria.GetMesh()</p>
+
+<p class="whs4">mesh.RemoveHypothesis(edge, hyp4)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># compute the mesh</p>
+
+<p class="whs4">tria.Compute()</p>
+
+<p class="whs4">PrintMeshInfo(tria)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># change the value 
+ of the 2D hypothesis</p>
+
+<p class="whs4">hyp2.SetMaxElementArea(2.)</p>
+
+<p class="whs4">&nbsp;</p>
+
+<p class="whs5"># compute the mesh</p>
+
+<p class="whs4">tria.Compute()</p>
+
+<p class="whs4">PrintMeshInfo(tria) </p>
+
+<p class="whs6">&nbsp;</p>
 
 <h3><a name=bookmark3>Export of a Mesh</a></h3>
 
-<p>Attention! This script was written using old approach, based on direct usage of SMESH idl interface. To be updated for version 3.2.1 to use <b>smesh</b> package.
-<br>&nbsp;
+<p class="whs7">import geompy</p>
 
-<p class="whs4">&nbsp;</p>
+<p class="whs7">import smesh</p>
 
-<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">import 
- salome</span></p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs1">import geompy</p>
+<p class="whs6"># create a box</p>
 
-<p class="whs1">import StdMeshers</p>
-
-<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
- &quot;SMESH&quot;)</p>
-
-<p class="whs1">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
-
-<p class="whs1">smeshgui.Init(salome.myStudyId);</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># create a box</p>
-
-<p class="whs1">box = geompy.MakeBox(0., 
+<p class="whs7">box = geompy.MakeBox(0., 
  0., 0., 100., 200., 300.)</p>
 
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># add the box to the study</p>
-
-<p class="whs1">idbox = geompy.addToStudy(box, 
+<p class="whs7">idbox = geompy.addToStudy(box, 
  &quot;box&quot;)</p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs2"># create a hypothesis</p>
+<p class="whs6"># create a mesh</p>
 
-<p class="whs1">print &quot;-------------------------- 
- create Hypothesis&quot;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- NumberOfSegments&quot;</p>
-
-<p class="whs1">numberOfSegments 
- = 7</p>
-
-<p class="whs1">hypNbSeg = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypNbSeg.SetNumberOfSegments(numberOfSegments)</p>
-
-<p class="whs1">print hypNbSeg.GetName()</p>
-
-<p class="whs1">print hypNbSeg.GetId()</p>
-
-<p class="whs1">print hypNbSeg.GetNumberOfSegments()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypNbSeg), 
- &quot;NumberOfSegments_10&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementArea&quot;</p>
-
-<p class="whs1">maxElementArea = 
- 800</p>
-
-<p class="whs1">hypArea = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypArea.SetMaxElementArea(maxElementArea)</p>
-
-<p class="whs1">print hypArea.GetName()</p>
-
-<p class="whs1">print hypArea.GetId()</p>
-
-<p class="whs1">print hypArea.GetMaxElementArea()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypArea), 
- &quot;MaxElementArea_500&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MaxElementVolume&quot;</p>
-
-<p class="whs1">maxElementVolume 
- = 900</p>
-
-<p class="whs1">hypVolume = smesh.CreateHypothesis(&quot;MaxElementVolume&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hypVolume.SetMaxElementVolume(maxElementVolume)</p>
-
-<p class="whs1">print hypVolume.GetName()</p>
-
-<p class="whs1">print hypVolume.GetId()</p>
-
-<p class="whs1">print hypVolume.GetMaxElementVolume()</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(hypVolume), 
- &quot;MaxElementVolume_500&quot;)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># create algorithms</p>
-
-<p class="whs1">print &quot;-------------------------- 
- create Algorithms&quot;</p>
-
-<p class="whs1">print &quot;-------------------------- 
- Regular_1D&quot;</p>
-
-<p class="whs1">regular1D = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(regular1D), 
- &quot;Wire Discretisation&quot;)</p>
-
-<p class="whs1">print &quot;-------------------------- 
- MEFISTO_2D&quot;</p>
-
-<p class="whs1">mefisto2D = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(mefisto2D), 
- &quot;MEFISTO_2D&quot;)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># initialize a mesh with 
- the box</p>
-
-<p class="whs1">mesh = smesh.CreateMesh(box)</p>
-
-<p class="whs1">smeshgui.SetName(salome.ObjectToID(mesh), 
+<p class="whs7">tetra = smesh.Mesh(box, 
  &quot;MeshBox&quot;)</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs2"># add the hypothesis to 
- the box</p>
+<p class="whs7">algo1D = tetra.Segment()</p>
 
-<p class="whs1">print &quot;-------------------------- 
- add hypothesis to the box&quot;</p>
+<p class="whs7">algo1D.NumberOfSegments(7)</p>
 
-<p class="whs1">mesh.AddHypothesis(box,hypNbSeg)</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs1">mesh.AddHypothesis(box,hypArea)</p>
+<p class="whs7">algo2D = tetra.Triangle()</p>
 
-<p class="whs1">mesh.AddHypothesis(box,hypVolume)</p>
+<p class="whs7">algo2D.MaxElementArea(800.)</p>
 
-<p class="whs1">mesh.AddHypothesis(box,regular1D)</p>
+<p class="whs7">&nbsp;</p>
 
-<p class="whs1">mesh.AddHypothesis(box,mefisto2D)</p>
+<p class="whs7">algo3D = tetra.Tetrahedron(smesh.NETGEN)</p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs7">algo3D.MaxElementVolume(900.)</p>
 
-<p class="whs2"># compute the mesh</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs1">print &quot;-------------------------- 
- compute the mesh of the box&quot;</p>
+<p class="whs6"># compute the mesh</p>
 
-<p class="whs1">ret = smesh.Compute(mesh,box)</p>
+<p class="whs7">tetra.Compute()</p>
 
-<p class="whs1">print ret</p>
+<p class="whs6">&nbsp;</p>
 
-<p class="whs1">if ret == 0:</p>
+<p class="whs6"># export the mesh in a 
+ MED file</p>
 
-<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;print 
- &quot;probleme when computing the mesh&quot;</p>
-
-<p class="whs1">salome.sg.updateObjBrowser(1)</p>
-
-<p class="whs1">mesh.ExportMED(&quot;/tmp/meshMED.med&quot;,0)</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs4">&nbsp;</p>
+<p class="whs7">tetra.ExportMED(&quot;/tmp/meshMED.med&quot;, 
+ 0) </p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

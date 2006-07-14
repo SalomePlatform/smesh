@@ -85,124 +85,56 @@ if (window.writeIntopicBar)
 
 <h3>Viewing Mesh Infos</h3>
 
-<p>Attention! This script was written using old approach, based on direct usage of SMESH idl interface. To be updated for version 3.2.1 to use <b>smesh</b> package.
-<br>&nbsp;
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">import 
+ geompy</span></p>
 
-<p class="whs1">import salome</p>
-
-<p class="whs1">import geompy</p>
-
-<p class="whs1">import SMESH</p>
-
-<p class="whs1">import StdMeshers</p>
+<p class="whs1">import smesh</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">smesh = salome.lcc.FindOrLoadComponent(&quot;FactoryServer&quot;, 
- &quot;SMESH&quot;)</p>
+<p class="whs2"># create a box</p>
 
-<p class="whs1">smesh.SetCurrentStudy(salome.myStudy)</p>
+<p class="whs1">box = geompy.MakeBox(0., 0., 0., 20., 
+ 20., 20.)</p>
 
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">box &nbsp;&nbsp;= 
- geompy.MakeBox(0., 0., 0., 20., 20., 20.)</p>
-
-<p class="whs1">idbox = geompy.addToStudy(box, &quot;box&quot;)</p>
+<p class="whs1">geompy.addToStudy(box, &quot;box&quot;)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">subShapeList = geompy.SubShapeAll(box, 
- geompy.ShapeType[&quot;EDGE&quot;])</p>
+<p class="whs2"># create a mesh</p>
 
-<p class="whs1">edge &nbsp;&nbsp;= 
- subShapeList[0]</p>
-
-<p class="whs1">name &nbsp;&nbsp;= 
- geompy.SubShapeName(edge, box)</p>
-
-<p class="whs1">idedge = geompy.addToStudyInFather(box, 
- edge, name)</p>
+<p class="whs1">tetra = smesh.Mesh(box, &quot;MeshBox&quot;)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">box &nbsp;= 
- salome.IDToObject(idbox)</p>
+<p class="whs1">algo1D = tetra.Segment()</p>
 
-<p class="whs1">edge = salome.IDToObject(idedge)</p>
-
-<p class="whs1">&nbsp;</p>
-
-<p class="whs1">hyp1 = smesh.CreateHypothesis(&quot;NumberOfSegments&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hyp1.SetNumberOfSegments(3)</p>
-
-<p class="whs1">hyp2 = smesh.CreateHypothesis(&quot;MaxElementArea&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hyp2.SetMaxElementArea(10)</p>
-
-<p class="whs1">hyp3 = smesh.CreateHypothesis(&quot;Arithmetic1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">hyp3.SetLength(1,1)</p>
-
-<p class="whs1">hyp3.SetLength(6,0)</p>
-
-<p class="whs1">hyp4 = smesh.CreateHypothesis(&quot;Propagation&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
+<p class="whs1">algo1D.NumberOfSegments(3)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">algo1 = smesh.CreateHypothesis(&quot;Regular_1D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
+<p class="whs1">algo2D = tetra.Triangle()</p>
 
-<p class="whs1">algo2 = smesh.CreateHypothesis(&quot;MEFISTO_2D&quot;, 
- &quot;libStdMeshersEngine.so&quot;)</p>
-
-<p class="whs1">mesh = smesh.CreateMesh(box)</p>
+<p class="whs1">algo2D.MaxElementArea(10.)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1">mesh.AddHypothesis(box,hyp1)</p>
+<p class="whs1">algo3D = tetra.Tetrahedron(smesh.NETGEN)</p>
 
-<p class="whs1">mesh.AddHypothesis(box,hyp2)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,algo1)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,algo2)</p>
-
-<p class="whs1">mesh.AddHypothesis(edge,hyp3)</p>
-
-<p class="whs1">mesh.AddHypothesis(edge,hyp4)</p>
-
-<p class="whs1">mesh.AddHypothesis(edge,algo1)</p>
-
-<p class="whs1">smesh.Compute(mesh,box)</p>
-
-<p class="whs1">salome.sg.updateObjBrowser(1)</p>
+<p class="whs1">algo3D.MaxElementVolume(900.)</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs2"># remove one hypothesis</p>
+<p class="whs2"># compute the mesh</p>
 
-<p class="whs1">mesh.RemoveHypothesis(edge,hyp4)</p>
-
-<p class="whs1">smesh.Compute(mesh,box)</p>
-
-<p class="whs1">salome.sg.updateObjBrowser(1)</p>
+<p class="whs1">tetra.Compute()</p>
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs2"># change the value 
- of the hypothesis</p>
+<p class="whs2"># print informations 
+ about the mesh</p>
 
-<p class="whs1">hyp2.SetMaxElementArea(2)</p>
-
-<p class="whs1">mesh.AddHypothesis(box,hyp2)</p>
-
-<p class="whs1">smesh.Compute(mesh,box)</p>
+<p class="whs1">mesh = tetra.GetMesh()</p>
 
 <p class="whs1">print &quot;Information about mesh:&quot;</p>
 
@@ -215,36 +147,36 @@ if (window.writeIntopicBar)
 <p class="whs1">print &quot;Number of faces &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
  &quot;, mesh.NbFaces()</p>
 
-<p class="whs1">print &quot;Number of triangles &nbsp;&nbsp;: 
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;triangles 
+ &nbsp;&nbsp;: 
  &quot;, mesh.NbTriangles()</p>
 
-<p class="whs1">print &quot;Number of quadrangles : &quot;, 
- mesh.NbQuadrangles()</p>
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quadrangles 
+ : &quot;, mesh.NbQuadrangles()</p>
 
-<p class="whs1">print &quot;Number of polygons &nbsp;&nbsp;&nbsp;: 
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;polygons 
+ &nbsp;&nbsp;&nbsp;: 
  &quot;, mesh.NbPolygons()</p>
 
 <p class="whs1">print &quot;Number of volumes &nbsp;&nbsp;&nbsp;&nbsp;: 
  &quot;, mesh.NbVolumes()</p>
 
-<p class="whs1">print &quot;Number of tetrahedrons: &quot;, 
- mesh.NbTetras()</p>
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tetrahedrons: 
+ &quot;, mesh.NbTetras()</p>
 
-<p class="whs1">print &quot;Number of hexahedrons : &quot;, 
- mesh.NbHexas()</p>
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hexahedrons 
+ : &quot;, mesh.NbHexas()</p>
 
-<p class="whs1">print &quot;Number of prisms &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prisms 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
  &quot;, mesh.NbPrisms()</p>
 
-<p class="whs1">print &quot;Number of pyramids &nbsp;&nbsp;&nbsp;: 
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pyramids 
+ &nbsp;&nbsp;&nbsp;: 
  &quot;, mesh.NbPyramids()</p>
 
-<p class="whs1">print &quot;Number of polyhedrons : &quot;, 
- mesh.NbPolyhedrons()</p>
-
-<p class="whs1">salome.sg.updateObjBrowser(1) </p>
-
-<p class="whs1">&nbsp;</p>
+<p class="whs1">print &quot; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;polyhedrons 
+ : &quot;, mesh.NbPolyhedrons() </p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--
