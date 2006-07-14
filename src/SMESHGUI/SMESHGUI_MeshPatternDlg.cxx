@@ -383,6 +383,13 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
     return false;
   }
 
+  if ( myName->text()=="" ) {
+    if (theMess)
+      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                               tr("SMESHGUI_INVALID_PARAMETERS"), QMessageBox::Ok);
+    return false;
+  }
+
   return true;
 }
 
