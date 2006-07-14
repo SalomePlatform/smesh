@@ -1279,6 +1279,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if ( vtkwnd ) {
 	int nbSel = selected.Extent();
 	if (nbSel != 1){
+          SUIT_MessageBox::warn1(desktop(),
+                                 tr("SMESH_WRN_WARNING"),
+                                 tr("SMESH_WRN_NO_AVAILABLE_DATA"),
+                                 tr("SMESH_BUT_OK"));
 	  break;
 	}
 
@@ -1343,7 +1347,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	  SMESH::RepaintCurrentView();
 	}
-      }else{
+      }
+      else{
 	SUIT_MessageBox::warn1(desktop(),
 			      tr("SMESH_WRN_WARNING"),
 			      tr("SMESH_WRN_VIEWER_VTK"),
@@ -1583,12 +1588,19 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 		}
 		updateObjBrowser();
 
-	      }catch(const SALOME::SALOME_Exception & S_ex){
+	      }
+              catch(const SALOME::SALOME_Exception & S_ex){
 		SalomeApp_Tools::QtCatchCorbaException(S_ex);
 	      }
 	    }
 	  }
 	}
+      }
+      else if(nbSel==0) {
+        SUIT_MessageBox::warn1(desktop(),
+                               tr("SMESH_WRN_WARNING"),
+                               tr("SMESH_WRN_NO_AVAILABLE_DATA"),
+                               tr("SMESH_BUT_OK"));
       }
       break;
     }
