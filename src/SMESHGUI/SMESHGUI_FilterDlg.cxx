@@ -833,10 +833,13 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
     aTable->SetEditable(false, theRow, 4);
 
   if (theCriterion.Type != FT_RangeOfIds &&
-       theCriterion.Type != FT_BelongToGeom &&
-       theCriterion.Type != FT_BelongToPlane &&
-       theCriterion.Type != FT_BelongToCylinder &&
-       theCriterion.Type != FT_LyingOnGeom)
+      theCriterion.Type != FT_BelongToGeom &&
+      theCriterion.Type != FT_BelongToPlane &&
+      theCriterion.Type != FT_BelongToCylinder &&
+      theCriterion.Type != FT_LyingOnGeom &&
+      theCriterion.Type != FT_FreeBorders &&
+      theCriterion.Type != FT_FreeEdges &&
+      theCriterion.Type != FT_BadOrientedVolume)
     aTable->setText(theRow, 2, QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
   else
     {
