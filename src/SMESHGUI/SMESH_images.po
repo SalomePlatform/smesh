@@ -86,7 +86,7 @@ msgid "ICON_DLG_RENUMBERING_ELEMENTS"
 msgstr "mesh_renumbering_elements.png"
 
 #Rotation
-msgid "ICON_DLG_ROTATION"
+msgid "ICON_DLG_MESH_ROTATION"
 msgstr "mesh_rotation.png"
 
 #Translation by vector

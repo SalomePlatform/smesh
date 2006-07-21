@@ -2356,7 +2356,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
   createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
   createSMESHAction( 4061, "TRANS",           "ICON_SMESH_TRANSLATION_VECTOR" );
-  createSMESHAction( 4062, "ROT",             "ICON_DLG_ROTATION" );
+  createSMESHAction( 4062, "ROT",             "ICON_DLG_MESH_ROTATION" );
   createSMESHAction( 4063, "SYM",             "ICON_SMESH_SYMMETRY_PLANE" );
   createSMESHAction( 4064, "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
