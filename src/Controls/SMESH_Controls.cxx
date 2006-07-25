@@ -520,7 +520,17 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 {
   double aQuality = 0.0;
   if(myCurrElement->IsPoly()) return aQuality;
+
   int nbNodes = P.size();
+
+  if(myCurrElement->IsQuadratic()) {
+    if(nbNodes==10) nbNodes=4; // quadratic tetrahedron
+    else if(nbNodes==13) nbNodes=5; // quadratic pyramid
+    else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
+    else if(nbNodes==20) nbNodes=8; // quadratic hexahedron
+    else return aQuality;
+  }
+
   switch(nbNodes){
   case 4:{
     double aLen[6] = {
