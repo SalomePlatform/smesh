@@ -145,7 +145,7 @@ double FunctionTable::integral( const double a, const double b ) const
 
 bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) const
 {
-  int n = myData.size();
+  int n = myData.size() / 2;
   if( n==0 || x<myData[0] )
   {
     x_ind_1 = x_ind_2 = 0;
