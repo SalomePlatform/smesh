@@ -2289,9 +2289,11 @@ void SMESHGUI_FilterDlg::insertFilterInViewer()
          myFilter[ myTable->GetType() ]->GetPredicate()->_is_nil() ||
          !mySetInViewer->isChecked()) {
       SMESH::RemoveFilter(getFilterId(anEntType), aSelector);
-    } else {
+    }
+    else {
       Handle(SMESHGUI_PredicateFilter) aFilter = new SMESHGUI_PredicateFilter();
       aFilter->SetPredicate(myFilter[ myTable->GetType() ]->GetPredicate());
+      SMESH::RemoveFilter(getFilterId(anEntType), aSelector); //skl for IPAL12631
       SMESH::SetFilter(aFilter, aSelector);
     }
   }
