@@ -3039,6 +3039,12 @@ msgstr "Elements"
 msgid "SMESHGUI::PREF_COLOR"
 msgstr "Color"
 
+msgid "SMESHGUI::PREF_TITLE_COLOR"
+msgstr "Title color"
+
+msgid "SMESHGUI::PREF_LABELS_COLOR"
+msgstr "Labels color"
+
 msgid "SMESHGUI::PREF_SIZE"
 msgstr "Size"
 

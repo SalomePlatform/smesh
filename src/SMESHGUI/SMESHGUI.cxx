@@ -3047,9 +3047,9 @@ void SMESHGUI::createPreferences()
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
 
   int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
-  addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
+  addPreference( tr( "PREF_TITLE_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
   int lfont = addPreference( tr( "SMESH_LABELS" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_label_font" );
-  addPreference( tr( "SMESH_LABELS" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
+  addPreference( tr( "PREF_LABELS_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_label_color" );
 
   QStringList fam;
   fam.append( tr( "SMESH_FONT_ARIAL" ) );

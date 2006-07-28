@@ -1582,7 +1582,7 @@ void SMESH_ActorDef::UpdateScalarBar()
   aScalarBarLabelProp->SetFontFamilyToArial();
   if( mgr->hasValue( "SMESH", "scalar_bar_label_font" ) )
   {
-    QFont f = mgr->stringValue( "SMESH", "scalar_bar_label_font" );
+    QFont f = mgr->fontValue( "SMESH", "scalar_bar_label_font" );
     if( f.family() == "Arial" )
       aScalarBarLabelProp->SetFontFamilyToArial();
     else if( f.family() == "Courier" )
