@@ -454,7 +454,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         if ( edge_fam != anElemFamMap.end() )
           aFamilyNums->push_back( edge_fam->second );
         else
-          aFamilyNums->push_back( myFacesDefaultFamilyId );
+          aFamilyNums->push_back( myEdgesDefaultFamilyId );
       }
       
       if ( aNbSeg2 ) {
