@@ -103,7 +103,7 @@ public:
     * \retval int - valid node index
    */
   int WrappedIndex(const int ind) const {
-    if ( ind < 0 ) return -( ind % NbNodes());
+    if ( ind < 0 ) return NbNodes() + ind % NbNodes();
     if ( ind >= NbNodes() ) return ind % NbNodes();
     return ind;
   }
