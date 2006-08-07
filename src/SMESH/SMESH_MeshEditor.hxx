@@ -55,7 +55,17 @@ class gp_Vec;
 class gp_Pnt;
 
 class SMESH_MeshEditor {
- public:
+public:
+
+  // define a set of elements sorted by ID, to be used to assure
+  // predictability of edition
+  struct TIDCompare {
+    bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2)
+    { return e1->GetID() < e2->GetID(); }
+  };
+  typedef set< const SMDS_MeshElement*, TIDCompare > TIDSortedElemSet;
+  
+public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );
 
