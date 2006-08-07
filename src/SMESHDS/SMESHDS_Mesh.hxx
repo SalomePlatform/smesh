@@ -435,6 +435,7 @@ public:
   void ClearScript();
   int ShapeToIndex(const TopoDS_Shape & aShape) const;
   const TopoDS_Shape& IndexToShape(int ShapeIndex) const;
+  int MaxShapeIndex() const { return myIndexToShape.Extent(); }
 
   SMESHDS_SubMesh * NewSubMesh(int Index);
   int AddCompoundSubmesh(const TopoDS_Shape& S, TopAbs_ShapeEnum type = TopAbs_SHAPE);
