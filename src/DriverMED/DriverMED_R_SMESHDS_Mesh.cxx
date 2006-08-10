@@ -130,9 +130,11 @@ DriverMED_R_SMESHDS_Mesh
 
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
-      PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
-	if(!aNodeInfo)
+        PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+	if (!aNodeInfo) {
+          aResult = DRS_FAIL;
 	  continue;
+        }
 
 	PCoordHelper aCoordHelper = GetCoordHelper(aNodeInfo);
 
