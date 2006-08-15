@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -32,9 +32,25 @@
 
 /* Exception handler for all functions */
 %exception {
-    Py_BEGIN_ALLOW_THREADS
+  class PyAllowThreadsGuard {
+   public:
+    // Py_BEGIN_ALLOW_THREADS
+    PyAllowThreadsGuard() { _save = PyEval_SaveThread(); }
+    // Py_END_ALLOW_THREADS
+    ~PyAllowThreadsGuard() { PyEval_RestoreThread(_save); }
+   private:
+    PyThreadState *_save;
+  };
+
+  PyAllowThreadsGuard guard;
+
+  try {
     $action
-    Py_END_ALLOW_THREADS
+  }
+  catch(...) {
+    PyErr_SetString(PyExc_RuntimeError,"Unknown exception caught");
+    return NULL;
+  }
 }
 
 %include "typemaps.i"
