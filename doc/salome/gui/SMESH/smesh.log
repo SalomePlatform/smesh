@@ -122,6 +122,7 @@ borders_at_multi-connection.htm
 borders_at_multiconnection_2d.htm
 clipping.htm
 constructing_meshes.htm
+convert_to_from_quadratic_mesh.htm
 defining_hypotheses_tui.htm
 deleting_groups.htm
 display_entity.htm
@@ -176,11 +177,14 @@ length.htm
 merge_elements.htm
 mesh.htm
 modifying_meshes.htm
+namespacesmesh.html
+netgen_2d_and_3d_hypotheses.htm
 pattern_mapping.htm
 presentation.htm
 quality_controls.htm
 revolution.htm
 selection_filter_library.htm
+smesh.py_introduction.htm
 transforming_meshes.htm
 transparency.htm
 viewing_meshes.htm
@@ -205,6 +209,7 @@ pics\sewing1.png
 image92.gif
 image51.jpg
 image70.gif
+pics\netgen2d.png
 pics\circle_simple_after.png
 pics\curvi_simple_after.png
 pics\image138.gif
@@ -323,6 +328,7 @@ image36.jpg
 image33.gif
 image25.jpg
 i_blue.jpg
+image153.gif
 image15.jpg
 image142.gif
 pics\cut_groups3.png
@@ -338,6 +344,8 @@ image56.gif
 image37.jpg
 image67.gif
 image34.gif
+pics\convert.png
+image154.gif
 image143.gif
 image132.gif
 pics\edit_mesh1.png
@@ -352,6 +360,7 @@ image46.gif
 image35.gif
 image27.jpg
 image24.gif
+image155.gif
 pics\mesh_for_extr_along_path.png
 pics\createmesh-inv2.png
 image144.gif
@@ -366,6 +375,7 @@ image58.gif
 image36.gif
 image25.gif
 note1.gif
+image156.gif
 pics\edge_wire_3d_after.png
 pics\createmesh-inv3.png
 image145.gif
@@ -513,6 +523,7 @@ whgdata\whlstf10.htm
 whgdata\whlstf11.htm
 whgdata\whlstf12.htm
 whgdata\whlstf13.htm
+whgdata\whlstf14.htm
 whgdata\whlstg0.htm
 index.htm
 index_csh.htm

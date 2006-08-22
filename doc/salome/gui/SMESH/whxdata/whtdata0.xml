@@ -3,6 +3,7 @@
 <book name="MESH module" >
   <item name="Introduction to Mesh" url="mesh.htm" />
   <item name="Running MESH module" url="files/running_smesh_module.htm" />
+  <item name="Introduction to MESH module python interface" url="smesh.py_introduction.htm" />
   <book name="Creating meshes" >
     <item name="About meshes" url="files/about_meshes.htm" />
     <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
@@ -13,6 +14,7 @@
       <item name="1D Meshing Hypotheses" url="files/arithmetic_1d.htm" />
       <item name="2D Meshing Hypotheses" url="files/max._element_area_hypothesis.htm" />
       <item name="Max Element Volume hypothesis" url="files/max._element_volume_hypothsis.htm" />
+      <item name="Netgen 2D and 3D hypotheses" url="netgen_2d_and_3d_hypotheses.htm" />
       <item name="Additional Hypotheses" url="files/non_conform_mesh_allowed_hypothesis.htm" />
     </book>
     <item name="Constructing submeshes" url="files/constructing_submeshes.htm" />
@@ -77,13 +79,13 @@
     <item name="Extrusion along a path" url="extrusion_along_a_path.htm" />
     <item name="Revolution" url="revolution.htm" />
     <item name="Pattern mapping" url="pattern_mapping.htm" />
+    <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
-  <item name="Python interface smesh.py" url="smeshpy_doc/namespacesmesh.html" />
+  <item name="Access to Mesh module functionality from Python (using smesh.py)" url="smeshpy_doc/namespacesmesh.html" /> 
   <book name="TUI Scripts" >
-    <item name="Introduction to MESH module python interface" url="smesh_py_introduction.htm" />
     <item name="Creating Meshes" url="constructing_meshes.htm" />
-    <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
+    <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />
     <item name="Quality Controls" url="quality_controls.htm" />
     <item name="Grouping Elements" url="grouping_elements.htm" />
     <item name="Modifying Meshes" url="modifying_meshes.htm" />

@@ -7,6 +7,7 @@
 <topic name="Borders at multiconnection 2D" url="borders_at_multiconnection_2d.htm" />
 <topic name="Clipping" url="clipping.htm" />
 <topic name="Constructing Meshes" url="constructing_meshes.htm" />
+<topic name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
 <topic name="Defining hypotheses TUI" url="defining_hypotheses_tui.htm" />
 <topic name="Deleting Groups" url="deleting_groups.htm" />
 <topic name="Display Entity" url="display_entity.htm" />
@@ -61,11 +62,14 @@
 <topic name="Merge Elements" url="merge_elements.htm" />
 <topic name="mesh" url="mesh.htm" />
 <topic name="Modifying Meshes" url="modifying_meshes.htm" />
+<topic name="SALOME - SMESH - v.version: Package smesh" url="namespacesmesh.html" />
+<topic name="Netgen 2D and 3D hypotheses" url="netgen_2d_and_3d_hypotheses.htm" />
 <topic name="Pattern mapping" url="pattern_mapping.htm" />
 <topic name="Presentation" url="presentation.htm" />
 <topic name="Quality Controls" url="quality_controls.htm" />
 <topic name="Revolution" url="revolution.htm" />
 <topic name="Selection filter library" url="selection_filter_library.htm" />
+<topic name="smesh.py_introduction" url="smesh.py_introduction.htm" />
 <topic name="Transforming Meshes" url="transforming_meshes.htm" />
 <topic name="Transparency" url="transparency.htm" />
 <topic name="Viewing Meshes" url="viewing_meshes.htm" />
