@@ -81,7 +81,7 @@
     <item name="Pattern mapping" url="pattern_mapping.htm" />
     <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
-  <item name="Access to Mesh module functionality from Python (using smesh.py)" url="smeshpy_doc/namespacesmesh.html" /> 
+  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
   <book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
