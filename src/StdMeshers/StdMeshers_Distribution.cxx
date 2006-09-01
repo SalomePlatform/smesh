@@ -222,9 +222,10 @@ bool FunctionExpr::value( const double t, double& f ) const
 double FunctionExpr::integral( const double a, const double b ) const
 {
   double res = 0.0;
-  CASCatch_TRY
-  {
-    math_GaussSingleIntegration _int( ( math_Function& )*this, a, b, 20 );
+  CASCatch_TRY {
+    // skl for IPAL13079 (bug on Mandriva) - other cast
+    //math_GaussSingleIntegration _int( ( math_Function& )*this, a, b, 20 );
+    math_GaussSingleIntegration _int( *static_cast<math_Function*>( const_cast<FunctionExpr*> (this) ), a, b, 20 );
     if( _int.IsDone() )
       res = _int.Value();
   }
