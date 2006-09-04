@@ -33,8 +33,6 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include "CASCatch.hxx"
-
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <Expr_NamedUnknown.hxx>
@@ -42,6 +40,18 @@
 #include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#define NO_CAS_CATCH
+#endif
+
+#include <Standard_Failure.hxx>
+
+#ifdef NO_CAS_CATCH
+#include <Standard_ErrorHandler.hxx>
+#else
+#include "CASCatch.hxx"
+#endif
 
 using namespace std;
 
@@ -218,12 +228,18 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
     double val = table[i*2+1];
     if( _convMode==0 )
     {
-      CASCatch_TRY
-      {
+#ifdef NO_CAS_CATCH
+      try {
+        OCC_CATCH_SIGNALS;
+#else
+      CASCatch_TRY {
+#endif
 	val = pow( 10.0, val );
-      }
-      CASCatch_CATCH(Standard_Failure)
-      {
+#ifdef NO_CAS_CATCH
+      } catch(Standard_Failure) {
+#else
+      } CASCatch_CATCH(Standard_Failure) {
+#endif
 	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	throw SALOME_Exception( LOCALIZED( "invalid value"));
 	return;
@@ -312,13 +328,19 @@ bool process( const TCollection_AsciiString& str, int convMode,
 {
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
-  CASCatch_TRY
-  {
+#ifdef NO_CAS_CATCH
+  try {
+    OCC_CATCH_SIGNALS;
+#else
+  CASCatch_TRY {
+#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( str.ToCString() );
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+#ifdef NO_CAS_CATCH
+  } catch(Standard_Failure) {
+#else
+  } CASCatch_CATCH(Standard_Failure) {
+#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
