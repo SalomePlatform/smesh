@@ -1020,7 +1020,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
       // restore previously selected algo
       algoIndex = myAvailableHypData[dim][Algo].findIndex( curAlgo );
-      if ( !isSubmesh && algoIndex < 0 && soleCompatible )
+      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward )
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].findIndex( soleCompatible );
       setCurrentHyp( dim, Algo, algoIndex );
