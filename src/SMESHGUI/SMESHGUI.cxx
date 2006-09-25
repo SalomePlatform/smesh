@@ -1217,6 +1217,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
+      
+      // PAL13338 -->
+      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) ) 
+	SMESH::UpdateView();
+      // PAL13338 <--
 
       if (anAction == SMESH::eErase) {
 	SALOME_ListIO l1;
@@ -1224,6 +1229,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else
 	aSel->setSelectedObjects( to_process );
+
       break;
     }
 
