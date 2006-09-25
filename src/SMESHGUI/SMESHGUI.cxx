@@ -1219,7 +1219,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       
       // PAL13338 -->
-      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) ) 
+      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) && !automaticUpdate() ) 
 	SMESH::UpdateView();
       // PAL13338 <--
 
