@@ -145,7 +145,7 @@
 
 using namespace std;
 
-namespace{
+//namespace{
   // Declarations
   //=============================================================
   void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
@@ -815,7 +815,7 @@ namespace{
 
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
   }
-}
+//}
 
 extern "C" {
   Standard_EXPORT CAM_Module* createModule()

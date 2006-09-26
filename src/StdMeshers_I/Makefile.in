@@ -85,7 +85,7 @@ LIB_CLIENT_IDL = \
 	SALOMEDS.idl SALOME_Exception.idl \
 	GEOM_Gen.idl MED.idl SALOMEDS_Attributes.idl \
 	SMESH_Gen.idl SMESH_Hypothesis.idl SMESH_Group.idl \
-	SALOME_Comm.idl
+	SALOME_Comm.idl SALOME_Component.idl SALOME_GenericObj.idl SMESH_Mesh.idl
 
 # Executables targets
 BIN = 
