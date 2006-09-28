@@ -426,18 +426,23 @@ void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
   myIsEmbeddedMode = theMode;
 
   if ( !myIsEmbeddedMode ) {
-    bool raiseFPE;
+    //PAL10867: disable signals catching with "noexcepthandler" option
+    char* envNoCatchSignals = getenv("NOT_INTERCEPT_SIGNALS");
+    if (!envNoCatchSignals || !atoi(envNoCatchSignals))
+    {
+      bool raiseFPE;
 #ifdef _DEBUG_
-    raiseFPE = true;
-    char* envDisableFPE = getenv("DISABLE_FPE");
-    if (envDisableFPE && atoi(envDisableFPE))
-      raiseFPE = false;
+      raiseFPE = true;
+      char* envDisableFPE = getenv("DISABLE_FPE");
+      if (envDisableFPE && atoi(envDisableFPE))
+        raiseFPE = false;
 #else
-    raiseFPE = false;
+      raiseFPE = false;
 #endif
-    OSD::SetSignal( raiseFPE );
+      OSD::SetSignal( raiseFPE );
+    }
+    // else OSD::SetSignal() is called in GUI
   }
-  // else OSD::SetSignal() is called in GUI
 }
 
 //=============================================================================
