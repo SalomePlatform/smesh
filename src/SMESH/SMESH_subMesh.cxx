@@ -468,7 +468,7 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 
 //=======================================================================
 //function : IsApplicableHypotesis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
@@ -480,11 +480,20 @@ bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
 
   // hypothesis
   switch ( theShapeType ) {
-  case TopAbs_EDGE: 
-  case TopAbs_FACE: 
-  case TopAbs_SHELL:
+  case TopAbs_EDGE:
+  case TopAbs_FACE:
   case TopAbs_SOLID:
     return SMESH_Gen::GetShapeDim( theShapeType ) == theHypothesis->GetDim();
+
+  case TopAbs_SHELL:
+    // Special case for algorithms, building 2D mesh on a whole shell.
+    // Before this fix there was a problem after restoring from study,
+    // because in that case algorithm is assigned before hypothesis
+    // (on shell in problem case) and hypothesis is checked on faces
+    // (because it is 2D), where we have NO_ALGO state.
+    // Now 2D hypothesis is also applicable to shells.
+    return (theHypothesis->GetDim() == 2 || theHypothesis->GetDim() == 3);
+
 //   case TopAbs_WIRE:
 //   case TopAbs_COMPSOLID:
 //   case TopAbs_COMPOUND:
@@ -842,7 +851,7 @@ SMESH_Hypothesis::Hypothesis_Status
         f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
         f.AndNot( SMESH_HypoFilter::Is( algo ));
         const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( _subShape, f, true );
-        if (prevAlgo && 
+        if (prevAlgo &&
             string(algo->GetName()) != string(prevAlgo->GetName()) )
           modifiedHyp = true;
       }
@@ -900,7 +909,7 @@ SMESH_Hypothesis::Hypothesis_Status
           f.And(    SMESH_HypoFilter::IsApplicableTo( _subShape ));
           f.AndNot( SMESH_HypoFilter::Is( algo ));
           const SMESH_Hypothesis* prevAlgo = _father->GetHypothesis( _subShape, f, true );
-          if (prevAlgo && 
+          if (prevAlgo &&
               string(algo->GetName()) != string(prevAlgo->GetName()) )
             modifiedHyp = true;
         }
