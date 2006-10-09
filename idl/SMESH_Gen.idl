@@ -121,6 +121,7 @@ module SMESH
     
     /*!
      * Create Mesh object importing data from given UNV file
+     * (UNV supported version is I-DEAS 10)
      */
     SMESH_Mesh CreateMeshesFromUNV( in string theFileName )
       raises ( SALOME::SALOME_Exception );
