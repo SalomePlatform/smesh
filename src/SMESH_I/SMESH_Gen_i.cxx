@@ -1100,6 +1100,10 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       return myGen.Compute( myLocMesh, myLocShape);
     }
   }
+  catch ( std::bad_alloc& exc ) {
+    THROW_SALOME_CORBA_EXCEPTION( "Memory allocation problem",
+                                  SALOME::INTERNAL_ERROR );
+  }
   catch ( SALOME_Exception& S_ex ) {
     INFOS( "Compute(): catch exception "<< S_ex.what() );
   }
