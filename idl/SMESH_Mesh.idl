@@ -644,21 +644,35 @@ module SMESH
     long AddNode(in double x, in double y, in double z);
 
     /*!
-     *  Following methods are intented for creation edges, faces
-     *  and volumes both similar and quadratic (this is determed
+     *  Create edge both similar and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.
      *  Needed order of nodes in this list corresponds to description
      *  of MED. This description is located by the following link:
-     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/
-     *     medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
      */
     long AddEdge(in long_array IDsOfNodes);
 
+    /*!
+     *  Create face both similar and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
     long AddFace(in long_array IDsOfNodes);
 
     long AddPolygonalFace(in long_array IdsOfNodes);
 
+    /*!
+     *  Create volume both similar and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
     long AddVolume(in long_array IDsOfNodes);
 
     /*!
