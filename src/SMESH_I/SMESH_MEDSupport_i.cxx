@@ -327,6 +327,18 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
 
 //=============================================================================
 /*!
+ * CORBA: get Nodes from file
+ */
+//=============================================================================
+
+SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
+	SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+{
+  return getNumber(geomElement);
+}
+
+//=============================================================================
+/*!
  * CORBA: Global Nodes Index (optionnaly designed by the user)
  * CORBA:  ??????????????????????????????
  */

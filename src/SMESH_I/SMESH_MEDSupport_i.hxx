@@ -66,6 +66,13 @@ class SMESH_MEDSupport_i:
 	getNumber(SALOME_MED::medGeometryElement geomElement)
 	  throw(SALOME::SALOME_Exception);
 
+  /*!
+   * Same function as getNumber.
+   */
+	SALOME_MED::long_array *
+	getNumberFromFile(SALOME_MED::medGeometryElement geomElement)
+	  throw(SALOME::SALOME_Exception);
+
 	SALOME_MED::long_array * getNumberIndex()
 	  throw(SALOME::SALOME_Exception);
 
