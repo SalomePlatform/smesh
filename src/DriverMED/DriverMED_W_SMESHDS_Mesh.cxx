@@ -987,9 +987,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
   }
   catch(const std::exception& exc) {
     INFOS("Follow exception was cought:\n\t"<<exc.what());
+    throw;
   }
   catch(...) {
     INFOS("Unknown exception was cought !!!");
+    throw;
   }
 
   myMeshId = -1;

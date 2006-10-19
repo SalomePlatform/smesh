@@ -173,6 +173,10 @@ msgstr "No available data in selection"
 msgid "SMESH_POLYEDRE_CREATE_ERROR"
 msgstr "Polyedron creation error"
 
+#Export mesh
+msgid "SMESH_EXPORT_FAILED"
+msgstr "Mesh export failed.\nProbably, there is not enough space on disk."
+
 #-------------------------------------------------------------------------
 # MEN
 #-------------------------------------------------------------------------

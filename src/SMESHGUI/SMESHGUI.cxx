@@ -352,21 +352,32 @@ using namespace std;
 	  if ( aFile.exists() )
 	    aFile.remove();
 	  SUIT_OverrideCursor wc;
-	  switch ( theCommandID ) {
-	  case 125:
-	  case 122:
-	    aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
-	    break;
-	  case 124:
-	  case 121:
-	    aMesh->ExportDAT( aFilename.latin1() );
-	    break;
-	  case 126:
-	  case 123:
-	    aMesh->ExportUNV( aFilename.latin1() );
-	    break;
-	  default:
-	    break;
+
+	  try {
+	    switch ( theCommandID ) {
+	    case 125:
+	    case 122:
+	      aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
+	      break;
+	    case 124:
+	    case 121:
+	      aMesh->ExportDAT( aFilename.latin1() );
+	      break;
+	    case 126:
+	    case 123:
+	      aMesh->ExportUNV( aFilename.latin1() );
+	      break;
+	    default:
+	      break;
+	    }
+	  }
+	  catch (const SALOME::SALOME_Exception& S_ex){
+	    wc.suspend();
+	    SUIT_MessageBox::warn1(SMESHGUI::desktop(),
+				    QObject::tr("SMESH_WRN_WARNING"),
+				    QObject::tr("SMESH_EXPORT_FAILED"),
+				    QObject::tr("SMESH_BUT_OK"));
+	    wc.resume();
 	  }
 	}
       }
