@@ -28,16 +28,14 @@
 import salome
 import geompy
 import math
+import smesh
 
 import GEOM_Spanner
 
 isBlocksTest = 0 # False
 isMeshTest   = 1 # True
-hasGUI       = 1 # True
 
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
 
-GEOM_Spanner.MakeSpanner(salome, geompy, math, isBlocksTest, isMeshTest, smesh, hasGUI)
+GEOM_Spanner.MakeSpanner(geompy, math, isBlocksTest, isMeshTest, smesh)
 
 salome.sg.updateObjBrowser(1);

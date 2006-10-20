@@ -26,9 +26,8 @@
 #==============================================================================
 
 import salome
-from salome import sg
-
 import geompy
+import smesh
 
 import math
 
@@ -37,7 +36,6 @@ import math
 geom = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
 myBuilder = salome.myStudy.NewBuilder()
 gg = salome.ImportComponentGUI("GEOM")
-from salome import sg
 
 ShapeTypeCompSolid = 1
 ShapeTypeSolid     = 2
@@ -95,72 +93,67 @@ salome.sg.updateObjBrowser(1)
 
 print "-------------------------- mesh"
 
-import SMESH
-import StdMeshers
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
-
-# ---- create Hypothesis
-print "-------------------------- create Hypothesis"
-numberOfSegments = 4
-hypNbSegA=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSegA.SetNumberOfSegments(numberOfSegments)
-numberOfSegments = 10
-hypNbSegB=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSegB.SetNumberOfSegments(numberOfSegments)
-numberOfSegments = 15
-hypNbSegC=smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSegC.SetNumberOfSegments(numberOfSegments)
-
-# ---- create Algorithms
-print "-------------------------- create Algorithms"
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-quad2D=smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
-hexa3D=smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
-
 # ---- init a Mesh with the geom shape
 shape_mesh = blob
-myMesh=smesh.CreateMesh(shape_mesh)
+mesh=smesh.Mesh(shape_mesh, "MeshBlob")
 
 # ---- add hypothesis and algorithms to mesh
 print "-------------------------- add hypothesis to mesh"
-myMesh.AddHypothesis(shape_mesh,regular1D)
-myMesh.AddHypothesis(shape_mesh,quad2D)
-myMesh.AddHypothesis(shape_mesh,hexa3D)
+algo1 = mesh.Segment()
+algo2 = mesh.Quadrangle()
+algo3 = mesh.Hexahedron()
 
-#myMesh.AddHypothesis(shape_mesh,hypNbSeg)
+numberOfSegmentsA = 4
 
-myMesh.AddHypothesis(aretes[0],hypNbSegA)
-myMesh.AddHypothesis(aretes[2],hypNbSegA)
-myMesh.AddHypothesis(aretes[8],hypNbSegA)
-myMesh.AddHypothesis(aretes[10],hypNbSegA)
+algo = mesh.Segment(aretes[0])
+algo.NumberOfSegments(numberOfSegmentsA)
+algo = mesh.Segment(aretes[2])
+algo.NumberOfSegments(numberOfSegmentsA)
+algo = mesh.Segment(aretes[8])
+algo.NumberOfSegments(numberOfSegmentsA)
+algo = mesh.Segment(aretes[10])
+algo.NumberOfSegments(numberOfSegmentsA)
 
-myMesh.AddHypothesis(aretes[1],hypNbSegC)
-myMesh.AddHypothesis(aretes[3],hypNbSegC)
-myMesh.AddHypothesis(aretes[9],hypNbSegC)
-myMesh.AddHypothesis(aretes[11],hypNbSegC)
 
-myMesh.AddHypothesis(aretes[4],hypNbSegB)
-myMesh.AddHypothesis(aretes[5],hypNbSegB)
-myMesh.AddHypothesis(aretes[6],hypNbSegB)
-myMesh.AddHypothesis(aretes[7],hypNbSegB)
+numberOfSegmentsC = 15
+
+algo = mesh.Segment(aretes[1])
+algo.NumberOfSegments(numberOfSegmentsC)
+algo = mesh.Segment(aretes[3])
+algo.NumberOfSegments(numberOfSegmentsC)
+algo = mesh.Segment(aretes[9])
+algo.NumberOfSegments(numberOfSegmentsC)
+algo = mesh.Segment(aretes[11])
+algo.NumberOfSegments(numberOfSegmentsC)
+
+
+numberOfSegmentsB = 10
+algo = mesh.Segment(aretes[4])
+algo.NumberOfSegments(numberOfSegmentsB)
+algo = mesh.Segment(aretes[5])
+algo.NumberOfSegments(numberOfSegmentsB)
+algo = mesh.Segment(aretes[6])
+algo.NumberOfSegments(numberOfSegmentsB)
+algo = mesh.Segment(aretes[7])
+algo.NumberOfSegments(numberOfSegmentsB)
+
 
 # ---- compute mesh
 
 print "-------------------------- compute mesh"
-ret=smesh.Compute(myMesh, shape_mesh)
+ret=mesh.Compute()
 print ret
 if ret != 0:
-    #log=myMesh.GetLog(0) # no erase trace
+    #log=mesh.GetLog(0) # no erase trace
     #for linelog in log:
     #    print linelog
     print "Information about the Mesh:"
-    print "Number of nodes       : ", myMesh.NbNodes()
-    print "Number of edges       : ", myMesh.NbEdges()
-    print "Number of faces       : ", myMesh.NbFaces()
-    print "Number of quadrangles : ", myMesh.NbQuadrangles()
-    print "Number of volumes     : ", myMesh.NbVolumes()
-    print "Number of hexahedrons : ", myMesh.NbHexas()
+    print "Number of nodes       : ", mesh.NbNodes()
+    print "Number of edges       : ", mesh.NbEdges()
+    print "Number of faces       : ", mesh.NbFaces()
+    print "Number of quadrangles : ", mesh.NbQuadrangles()
+    print "Number of volumes     : ", mesh.NbVolumes()
+    print "Number of hexahedrons : ", mesh.NbHexas()
 else:
     print "problem when Computing the mesh"
 

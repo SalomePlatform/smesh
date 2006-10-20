@@ -19,11 +19,10 @@
 #
 import salome
 import geompy
-import SMESH
-import StdMeshers
+import smesh
 
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
+
+# ---- GEOM
 
 box   = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
 idbox = geompy.addToStudy(box, "box")
@@ -36,35 +35,34 @@ idface = geompy.addToStudyInFather(box, face, name)
 box  = salome.IDToObject(idbox)
 face = salome.IDToObject(idface)
 
-hyp1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hyp1.SetNumberOfSegments(10)
-hyp2 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hyp2.SetMaxElementArea(10)
-hyp3 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hyp3.SetMaxElementArea(100)
+# ---- SMESH
 
-algo1 = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-algo2 = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+mesh = smesh.Mesh(box, "Meshbox")
 
-mesh = smesh.CreateMesh(box)
-mesh.AddHypothesis(box,hyp1)
-mesh.AddHypothesis(box,hyp2)
-mesh.AddHypothesis(box,algo1)
-mesh.AddHypothesis(box,algo2)
+# Set 1D algorithm/hypotheses to mesh
+algo1 = mesh.Segment()
+algo1.NumberOfSegments(10)
 
-submesh = mesh.GetSubMesh(face, "SubMeshFace")
-mesh.AddHypothesis(face,hyp1)
-mesh.AddHypothesis(face,hyp3)
-mesh.AddHypothesis(face,algo1)
-mesh.AddHypothesis(face,algo2)
+# Set 2D algorithm/hypotheses to mesh
+algo2 = mesh.Triangle(smesh.MEFISTO)
+algo2.MaxElementArea(10)
 
-smesh.Compute(mesh,box)
+# Create submesh on face
+algo3 = mesh.Segment(face)
+algo3.NumberOfSegments(10)
+algo4 = mesh.Triangle(smesh.MEFISTO, face)
+algo4.MaxElementArea(100)
+submesh = algo4.GetSubMesh()
+smesh.SetName(submesh, "SubMeshFace")
 
-faces = submesh.GetElementsByType(SMESH.FACE)
+
+mesh.Compute()
+
+faces = submesh.GetElementsByType(smesh.FACE)
 if len(faces) > 1:
     print len(faces), len(faces)/2
-    group1 = mesh.CreateGroup(SMESH.FACE,"Group of faces")
-    group2 = mesh.CreateGroup(SMESH.FACE,"Another group of faces")
+    group1 = mesh.CreateEmptyGroup(smesh.FACE,"Group of faces")
+    group2 = mesh.CreateEmptyGroup(smesh.FACE,"Another group of faces")
     group1.Add(faces[:int(len(faces)/2)])
     group2.Add(faces[int(len(faces)/2):])
 

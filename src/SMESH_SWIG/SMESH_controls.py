@@ -24,186 +24,107 @@
 #  Module : SMESH
 
 
-import SMESH
+import smesh
 import SMESH_mechanic
 
-smesh  = SMESH_mechanic.smesh
+salome = smesh.salome
 mesh   = SMESH_mechanic.mesh
-salome = SMESH_mechanic.salome
 
 
-aFilterMgr = smesh.CreateFilterManager()
+# ---- Criterion : AREA > 100
 
-# Criterion : AREA > 100
-
-aFunctor = aFilterMgr.CreateArea()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 100 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+# create group
+aGroup = mesh.MakeGroup("Area > 100", smesh.FACE, smesh.FT_Area, smesh.FT_MoreThan, 100)
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Area > 100 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
+
+# ----  Criterion : Taper > 3e-15
+
 # create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Area > 100" )
-aGroup.Add( anIds )
-
-
-# Criterion : Taper > 3e-15
-
-aFunctor = aFilterMgr.CreateTaper()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 3e-15 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+aGroup = mesh.MakeGroup("Taper > 3e-15", smesh.FACE, smesh.FT_Taper, smesh.FT_MoreThan, 3e-15)
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Taper > 3e-15 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
+
+# ----  Criterion : ASPECT RATIO > 1.3
+
 # create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Taper > 3e-15" )
-aGroup.Add( anIds )
-
-
-# Criterion : ASPECT RATIO > 1.3
-
-aFunctor = aFilterMgr.CreateAspectRatio()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 1.3 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+aGroup = mesh.MakeGroup("Aspect Ratio > 1.3", smesh.FACE, smesh.FT_AspectRatio, smesh.FT_MoreThan, 1.3)
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Aspect Ratio > 1.3 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
+
+# ----  Criterion : MINIMUM ANGLE < 30
+
 # create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Aspect Ratio > 1.3" )
-aGroup.Add( anIds )
-
-
-# Criterion : MINIMUM ANGLE < 30
-
-aFunctor = aFilterMgr.CreateMinimumAngle()
-aPredicate = aFilterMgr.CreateLessThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 30 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+aGroup = mesh.MakeGroup("Minimum Angle < 30", smesh.FACE, smesh.FT_MinimumAngle, smesh.FT_LessThan, 30)
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Minimum Angle < 30 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
+
+# ---- Criterion : Warp > 2e-13
+
 # create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Minimum Angle < 30" )
-aGroup.Add( anIds )
-
-# Criterion : Warp > 2e-13
-
-aFunctor = aFilterMgr.CreateWarping()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 2e-13 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+aGroup = mesh.MakeGroup("Warp > 2e-13", smesh.FACE, smesh.FT_Warping, smesh.FT_MoreThan, 2e-13 )
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Warp > 2e-13 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
+
+# ---- Criterion : Skew > 18
+
 # create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Warp > 2e-13" )
-aGroup.Add( anIds )
-
-# Criterion : Skew > 18
-
-aFunctor = aFilterMgr.CreateSkew()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 18 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+aGroup = mesh.MakeGroup("Skew > 18", smesh.FACE, smesh.FT_Skew, smesh.FT_MoreThan, 18 )
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Skew > 18 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
-# create group
-aGroup = mesh.CreateGroup( SMESH.FACE, "Skew > 18" )
-aGroup.Add( anIds )
 
 # Criterion : Length > 10
 
-aFunctor = aFilterMgr.CreateLength()
-aPredicate = aFilterMgr.CreateMoreThan()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 10 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+# create group
+aGroup = mesh.MakeGroup("Length > 10", smesh.FACE, smesh.FT_Length, smesh.FT_MoreThan, 10 )
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Length > 10 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
-# create group
-aGroup = mesh.CreateGroup( SMESH.EDGE, "Length > 10" )
-aGroup.Add( anIds )
 
 # Criterion : Borders at multi-connections = 2
 
-aFunctor = aFilterMgr.CreateMultiConnection()
-aPredicate = aFilterMgr.CreateEqualTo()
-aPredicate.SetNumFunctor( aFunctor )
-aPredicate.SetMargin( 2 )
-
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
-
-anIds = aFilter.GetElementsId( mesh )
+# create group
+aGroup = mesh.MakeGroup("Borders at multi-connections = 2", smesh.EDGE, smesh.FT_MultiConnection, smesh.FT_EqualTo, 2)
 
 # print result
+anIds = aGroup.GetIDs()
 print "Criterion: Borders at multi-connections = 2 Nb = ", len( anIds )
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
-
-# create group
-aGroup = mesh.CreateGroup( SMESH.EDGE, "Borders at multi-connections = 2" )
-aGroup.Add( anIds )
 
 
 salome.sg.updateObjBrowser(1)
