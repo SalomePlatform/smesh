@@ -509,11 +509,16 @@ module SMESH
 
     /*!
      * If given element is node returns IDs of shape from position
-     * else - return ID of result shape after ::FindShape()
-     * from SMESH_MeshEditor
-     * If there is not element for given ID - returns -1
+     * If there is not node for given ID - returns -1
      */
     long GetShapeID(in long id);
+
+    /*!
+     * For given element returns ID of result shape after 
+     * ::FindShape() from SMESH_MeshEditor
+     * If there is not element for given ID - returns -1
+     */
+    long GetShapeIDForElem(in long id);
 
     /*!
      * Returns number of nodes for given element
