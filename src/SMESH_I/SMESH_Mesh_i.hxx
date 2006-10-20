@@ -321,11 +321,16 @@ public:
 
   /*!
    * If given element is node returns IDs of shape from position
-   * else - return ID of result shape after ::FindShape()
-   * from SMESH_MeshEditor
-   * If there is not element for given ID - returns -1
+   * If there is not node for given ID - returns -1
    */
   CORBA::Long GetShapeID(const CORBA::Long id);
+
+  /*!
+   * For given element returns ID of result shape after 
+   * ::FindShape() from SMESH_MeshEditor
+   * If there is not element for given ID - returns -1
+   */
+  CORBA::Long GetShapeIDForElem(const CORBA::Long id);
 
   /*!
    * Returns number of nodes for given element
