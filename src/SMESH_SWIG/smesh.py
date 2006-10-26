@@ -160,6 +160,11 @@ def CreateMeshesFromSTL( theFileName ):
 def GetSubShapesId( theMainObject, theListOfSubObjects ):
     return smesh.GetSubShapesId(theMainObject, theListOfSubObjects)
 
+## From SMESH_Gen interface. Creates pattern
+def GetPattern():
+    return smesh.GetPattern()
+
+
 
 ## Filtering. Auxiliary functions:
 #  ------------------------------
@@ -251,7 +256,61 @@ def GetCriterion(elementType,
         aCriterion.BinaryOp = EnumToLong(BinaryOp)
 
     return aCriterion
-  
+
+## Creates filter by given parameters of criterion
+#  @param elementType is the type of elements in the group
+#  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
+#  @param Compare belong to {FT_LessThan, FT_MoreThan, FT_EqualTo}
+#  @param Treshold is threshold value (range of id ids as string, shape, numeric)
+#  @param UnaryOp is FT_LogicalNOT or FT_Undefined
+#  @return SMESH_Filter
+def GetFilter(elementType,
+              CritType=FT_Undefined,
+              Compare=FT_EqualTo,
+              Treshold="",
+              UnaryOp=FT_Undefined):
+    aCriterion = GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
+    aFilterMgr = smesh.CreateFilterManager()
+    aFilter = aFilterMgr.CreateFilter()
+    aCriteria = []
+    aCriteria.append(aCriterion)
+    aFilter.SetCriteria(aCriteria)
+    return aFilter
+
+## Creates numerical functor by its type
+#  @param theCrierion is FT_...; functor type
+#  @return SMESH_NumericalFunctor
+def GetFunctor(theCriterion):
+    aFilterMgr = smesh.CreateFilterManager()
+    if theCriterion == FT_AspectRatio:
+        return aFilterMgr.CreateAspectRatio()
+    elif theCriterion == FT_AspectRatio3D:
+        return aFilterMgr.CreateAspectRatio3D()
+    elif theCriterion == FT_Warping:
+        return aFilterMgr.CreateWarping()
+    elif theCriterion == FT_MinimumAngle:
+        return aFilterMgr.CreateMinimumAngle()
+    elif theCriterion == FT_Taper:
+        return aFilterMgr.CreateTaper()
+    elif theCriterion == FT_Skew:
+        return aFilterMgr.CreateSkew()
+    elif theCriterion == FT_Area:
+        return aFilterMgr.CreateArea()
+    elif theCriterion == FT_Volume3D:
+        return aFilterMgr.CreateVolume3D()
+    elif theCriterion == FT_MultiConnection:
+        return aFilterMgr.CreateMultiConnection()
+    elif theCriterion == FT_MultiConnection2D:
+        return aFilterMgr.CreateMultiConnection2D()
+    elif theCriterion == FT_Length:
+        return aFilterMgr.CreateLength()
+    elif theCriterion == FT_Length2D:
+        return aFilterMgr.CreateLength2D()
+    else:
+        print "Error: given parameter is not numerucal functor type."
+
+
+    
     
 ## Mother class to define algorithm, recommended to don't use directly.
 #
@@ -363,7 +422,8 @@ class Mesh_Algorithm:
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
         self.TreatHypoStatus( status, hyp, name, 0 )
         return hypo
-       
+
+
 # Public class: Mesh_Segment
 # --------------------------
 
@@ -1130,27 +1190,22 @@ class Mesh:
         group = self.MakeGroupByIds(groupName, anElemType, anIds)
         return group
 
-    ## Creates filter by given parameters of criterion
-    #  @param elementType is the type of elements in the group
-    #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
-    #  @param Compare belong to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold is threshold value (range of id ids as string, shape, numeric)
-    #  @param UnaryOp is FT_LogicalNOT or FT_Undefined
-    #  @return SMESH_Filter
-    def GetFilter(self,
-                  elementType,
-                  CritType=FT_Undefined,
-                  Compare=FT_EqualTo,
-                  Treshold="",
-                  UnaryOp=FT_Undefined):
-        aCriterion = GetCriterion(elementType, CritType, Compare, Treshold, UnaryOp, FT_Undefined)
+    ## Pass mesh elements through the given filter and return ids
+    #  @param theFilter is SMESH_Filter
+    #  @return list of ids
+    def GetIdsFromFilter(self, theFilter):
+        return theFilter.GetElementsId(self.mesh)
+
+    ## Verify whether 2D mesh element has free edges( i.e. edges connected to one face only )
+    #  Returns list of special structures(borders).
+    #  @return list of SMESH.FreeEdges.Border structure: edge id and two its nodes ids.
+    def GetFreeBorders(self):
         aFilterMgr = smesh.CreateFilterManager()
-        aFilter = aFilterMgr.CreateFilter()
-        aCriteria = []
-        aCriteria.append(aCriterion)
-        aFilter.SetCriteria(aCriteria)
-        return aFilter
-        
+        aPredicate = aFilterMgr.CreateFreeEdges()
+        aPredicate.SetMesh(self.mesh)
+        aBorders = aPredicate.GetBorders()
+        return aBorders
+                
     ## Remove a group
     def RemoveGroup(self, group):
         self.mesh.RemoveGroup(group)
@@ -1396,13 +1451,18 @@ class Mesh:
     #  If there is not node for given ID - returns empty list
     def GetNodeInverseElements(self, id):
         return self.mesh.GetNodeInverseElements(id)
-    
+
     ## If given element is node returns IDs of shape from position
-    # else - return ID of result shape after Mesh.FindShape()
-    # If there is not element for given ID - returns -1
+    #  If there is not node for given ID - returns -1
     def GetShapeID(self, id):
         return self.mesh.GetShapeID(id)
 
+    ## For given element returns ID of result shape after 
+    #  FindShape() from SMESH_MeshEditor
+    #  If there is not element for given ID - returns -1
+    def GetShapeIDForElem(id):
+        return self.mesh.GetShapeIDForElem(id)
+    
     ## Returns number of nodes for given element
     #  If there is not element for given ID - returns -1
     def GetElemNbNodes(self, id):
@@ -1549,37 +1609,38 @@ class Mesh:
 
     ## Fuse neighbour triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
-    #  @param Criterion     is used to choose a neighbour to fuse with.
+    #  @param theCriterion     is FT_...; used to choose a neighbour to fuse with.
     #  @param MaxAngle      is a max angle between element normals at which fusion
     #                       is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
-    def TriToQuad(self, IDsOfElements, Criterion, MaxAngle):
+    def TriToQuad(self, IDsOfElements, theCriterion, MaxAngle):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        return self.editor.TriToQuad(IDsOfElements, Criterion, MaxAngle)
+        return self.editor.TriToQuad(IDsOfElements, GetFunctor(theCriterion), MaxAngle)
 
     ## Fuse neighbour triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
-    #  @param Criterion is used to choose a neighbour to fuse with.
+    #  @param theCriterion is FT_...; used to choose a neighbour to fuse with.
     #  @param MaxAngle  is a max angle between element normals at which fusion
     #                   is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
-    def TriToQuadObject (self, theObject, Criterion, MaxAngle):
-        return self.editor.TriToQuadObject(theObject, Criterion, MaxAngle)
+    def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
+        return self.editor.TriToQuadObject(theObject, GetFunctor(theCriterion), MaxAngle)
 
     ## Split quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted.
-    #  @param theCriterion  is used to choose a diagonal for splitting.
+    #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
     #  @param @return TRUE in case of success, FALSE otherwise.
-    def QuadToTri (self, IDsOfElements, Criterion):
+    def QuadToTri (self, IDsOfElements, theCriterion):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
-        return self.editor.QuadToTri(IDsOfElements, Criterion)
+        return self.editor.QuadToTri(IDsOfElements, GetFunctor(theCriterion))
 
     ## Split quadrangles into triangles.
     #  @param theObject object to taking list of elements from, is mesh, submesh or group
-    def QuadToTriObject (self, theObject, Criterion):
-        return self.editor.QuadToTriObject(theObject, Criterion)
+    #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
+    def QuadToTriObject (self, theObject, theCriterion):
+        return self.editor.QuadToTriObject(theObject, GetFunctor(theCriterion))
 
     ## Split quadrangles into triangles.
     #  @param theElems  The faces to be splitted
@@ -1597,11 +1658,11 @@ class Mesh:
 
     ## Find better splitting of the given quadrangle.
     #  @param IDOfQuad  ID of the quadrangle to be splitted.
-    #  @param Criterion is a criterion to choose a diagonal for splitting.
+    #  @param theCriterion is FT_...; a criterion to choose a diagonal for splitting.
     #  @return 1 if 1-3 diagonal is better, 2 if 2-4
     #          diagonal is better, 0 if error occurs.
-    def BestSplit (self, IDOfQuad, Criterion):
-        return self.editor.BestSplit(IDOfQuad, Criterion)
+    def BestSplit (self, IDOfQuad, theCriterion):
+        return self.editor.BestSplit(IDOfQuad, GetFunctor(theCriterion))
     
     ## Smooth elements
     #  @param IDsOfElements list if ids of elements to smooth
@@ -1765,7 +1826,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
-        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh, PathShape, NodeStart,
+        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape, NodeStart,
                                               HasAngles, Angles, HasRefPoint, RefPoint)
 
     ## Generate new elements by extrusion of the elements belong to object
@@ -1783,7 +1844,7 @@ class Mesh:
                                  HasAngles, Angles, HasRefPoint, RefPoint):
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
-        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh, PathShape, NodeStart,
+        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
                                                     HasAngles, Angles, HasRefPoint, RefPoint)
     
     ## Symmetrical copy of mesh elements
