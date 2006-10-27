@@ -5,9 +5,20 @@
 
 import salome
 import geompy
-import StdMeshers
+
 import SMESH
 from   SMESH import *
+
+import StdMeshers
+
+## import NETGENPlugin module if possible
+noNETGENPlugin = 0
+try:
+    import NETGENPlugin
+except ImportError:
+    noNETGENPlugin = 1
+    pass
+    
 
 ## Types of algo
 REGULAR = 1
@@ -541,6 +552,8 @@ class Mesh_Triangle(Mesh_Algorithm):
         if algoType == MEFISTO:
             self.Create(mesh, geom, "MEFISTO_2D")
         elif algoType == NETGEN:
+            if noNETGENPlugin:
+                print "Warning: NETGENPlugin module has not been imported."
             self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
         self.algoType = algoType
 
@@ -662,6 +675,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             import GHS3DPlugin
             self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
         elif algoType == FULL_NETGEN:
+            if noNETGENPlugin:
+                print "Warning: NETGENPlugin module has not been imported."
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
         self.algoType = algoType
 
@@ -751,6 +766,9 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
+        if noNETGENPlugin:
+            print "Warning: NETGENPlugin module has not been imported."
+            
         self.is3D = is3D
         if is3D:
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
