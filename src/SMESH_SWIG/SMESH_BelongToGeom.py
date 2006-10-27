@@ -42,12 +42,13 @@ def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theEl
 ## Current style
 def CheckBelongToGeomFilter(theMesh, theShape, theSubShape, theElemType):
     import geompy
+    import smesh
     if theShape != theSubShape:
         aName = str(theSubShape)
         geompy.addToStudyInFather(theShape,theSubShape,aName)
 
     theMesh.Compute()
-    aFilter = theMesh.GetFilter(theElemType, smesh.FT_BelongToGeom, theSubShape)
+    aFilter = smesh.GetFilter(theElemType, smesh.FT_BelongToGeom, theSubShape)
     return aFilter.GetElementsId(theMesh.GetMesh())
     
 
