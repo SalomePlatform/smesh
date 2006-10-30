@@ -1,3 +1,26 @@
+#  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2.1 of the License.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+#
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+#  File   : smesh.py
+#  Author : Francis KLOSS, OCC
+#  Module : SMESH
+
 """
  \namespace smesh
  \brief Module smesh
@@ -11,7 +34,7 @@ from   SMESH import *
 
 import StdMeshers
 
-## import NETGENPlugin module if possible
+# import NETGENPlugin module if possible
 noNETGENPlugin = 0
 try:
     import NETGENPlugin
@@ -19,8 +42,7 @@ except ImportError:
     noNETGENPlugin = 1
     pass
     
-
-## Types of algo
+# Types of algo
 REGULAR = 1
 PYTHON  = 2
 
@@ -29,16 +51,16 @@ NETGEN  = 4
 GHS3D   = 5
 FULL_NETGEN = 6
 
-## MirrorType enumeration
+# MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
 AXIS =  SMESH_MeshEditor.AXIS 
 PLANE = SMESH_MeshEditor.PLANE
 
-## Smooth_Method enumeration
+# Smooth_Method enumeration
 LAPLACIAN_SMOOTH = SMESH_MeshEditor.LAPLACIAN_SMOOTH
 CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
 
-## Fineness enumeration(for NETGEN)
+# Fineness enumeration(for NETGEN)
 VeryCoarse = 0
 Coarse = 1
 Moderate = 2
@@ -53,7 +75,7 @@ NO_NAME = "NoName"
 smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 smesh.SetCurrentStudy(salome.myStudy)
 
-## Global functions
+# Global functions
 
 ## Gets object name
 def GetName(obj):
@@ -74,7 +96,7 @@ def SetName(obj, name):
         attr.SetValue(name)
         
 ## Returns long value from enumeration
-#  Uses for FT_... enumeration
+#  Uses for SMESH.FunctorType enumeration
 def EnumToLong(theItem):
     return theItem._v
 
@@ -124,8 +146,8 @@ def GetAxisStruct(theObj):
         return axis
     return None
 
-## From SMESH_Gen interface:
-#  ------------------------
+# From SMESH_Gen interface:
+# ------------------------
 
 ## Set the current mode
 def SetEmbeddedMode( theMode ):
@@ -177,8 +199,8 @@ def GetPattern():
 
 
 
-## Filtering. Auxiliary functions:
-#  ------------------------------
+# Filtering. Auxiliary functions:
+# ------------------------------
 
 ## Creates an empty criterion
 #  @return SMESH.Filter.Criterion
@@ -335,10 +357,8 @@ class Mesh_Algorithm:
     subm = 0
     algo = 0
 
-    ## If the algorithm is global, return 0
-    #  \fn else return the submesh associated to this algorithm.
-    #
-    #  More details.
+    ## If the algorithm is global, return 0; \n
+    #  else return the submesh associated to this algorithm.
     def GetSubMesh(self):
         return self.subm
 
@@ -759,6 +779,8 @@ class Mesh_Hexahedron(Mesh_Algorithm):
 ## Class to define a NETGEN-based 2D or 3D algorithm
 #  that need no discrete boundary (i.e. independent)
 #
+#  This class is deprecated, only for compatibility!
+#
 #  More details.
 class Mesh_Netgen(Mesh_Algorithm):
 
@@ -840,7 +862,7 @@ class Mesh:
     
     ## Get the subMesh object associated to a subShape. The subMesh object
     #  gives access to nodes and elements IDs.
-    #  SubMesh will be used instead of SubShape in a next idl version to
+    #  \n SubMesh will be used instead of SubShape in a next idl version to
     #  adress a specific subMesh...
     def GetSubMesh(self, theSubObject, name):
         submesh = self.mesh.GetSubMesh(theSubObject, name)
@@ -896,7 +918,7 @@ class Mesh:
     ## Creates a segment discretization 1D algorithm.
     #  If the optional \a algo parameter is not sets, this algorithm is REGULAR.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param algo values are smesh.REGULAR or smesh.PYTHON for discretization via python function
     #  @param geom If defined, subshape to be meshed
     def Segment(self, algo=REGULAR, geom=0):
@@ -913,7 +935,7 @@ class Mesh:
         
     ## Creates a triangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param algo values are: smesh.MEFISTO or smesh.NETGEN
     #  @param geom If defined, subshape to be meshed
     def Triangle(self, algo=MEFISTO, geom=0):
@@ -926,7 +948,7 @@ class Mesh:
         
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
     def Quadrangle(self, geom=0):
         return Mesh_Quadrangle(self, geom)
@@ -934,7 +956,7 @@ class Mesh:
     ## Creates a tetrahedron 3D algorithm for solids.
     #  The parameter \a algo permits to choice the algorithm: NETGEN or GHS3D
     #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.FULL_NETGEN
     #  @param geom If defined, subshape to be meshed
     def Tetrahedron(self, algo=NETGEN, geom=0):
@@ -946,18 +968,12 @@ class Mesh:
         
     ## Creates a hexahedron 3D algorithm for solids.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
     def Hexahedron(self, geom=0):
         return Mesh_Hexahedron(self, geom)
 
     ## Deprecated, only for compatibility!
-    #  Creates a NETGEN-based 2D or 3D independent algorithm (i.e. needs no
-    #  discrete boundary).
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
-    #  @param is3D If 0 then algorithm is 2D, otherwise 3D
-    #  @param geom If defined, subshape to be meshed
     def Netgen(self, is3D, geom=0):
         return Mesh_Netgen(self, is3D, geom)
       
@@ -1007,7 +1023,7 @@ class Mesh:
         return ok
 
     ## Compute tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
-    #  The parameter \a fineness [0.-1.] defines mesh fineness
+    #  The parameter \a fineness [0,-1] defines mesh fineness
     def AutomaticTetrahedralization(self, fineness=0):
         dim = self.MeshDimension()
         # assign hypotheses
@@ -1022,7 +1038,7 @@ class Mesh:
         return self.Compute()
         
     ## Compute hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
-    #  The parameter \a fineness [0.-1.] defines mesh fineness
+    #  The parameter \a fineness [0,-1] defines mesh fineness
     def AutomaticHexahedralization(self, fineness=0):
         dim = self.MeshDimension()
         # assign hypotheses
@@ -1050,9 +1066,9 @@ class Mesh:
         pass
         
     ## Create a mesh group based on geometric object \a grp
-    #  and give a \a name, if this parameter is not defined
-    #  the name is the same as the geometric group name
-    #  Note: this function is obsolete. Works like GroupOnGeom(). 
+    #  and give a \a name, \n if this parameter is not defined
+    #  the name is the same as the geometric group name \n
+    #  Note: Works like GroupOnGeom(). 
     #  @param grp  is a geometric group, a vertex, an edge, a face or a solid
     #  @param name is the name of the mesh group
     #  @return SMESH_GroupOnGeom
@@ -1090,11 +1106,10 @@ class Mesh:
     #  @param ascii defined the kind of file contents
     def ExportSTL(self, f, ascii=1):
         self.mesh.ExportSTL(f, ascii)
-    
-    ###################################################################################
+   
         
-    ## Operations with groups
-    #  ----------------------
+    # Operations with groups:
+    # ----------------------
 
     ## Creates an empty mesh group
     #  @param elementType is the type of elements in the group
@@ -1104,7 +1119,7 @@ class Mesh:
         return self.mesh.CreateGroup(elementType, name)
     
     ## Creates a mesh group based on geometric object \a grp
-    #  and give a \a name, if this parameter is not defined
+    #  and give a \a name, \n if this parameter is not defined
     #  the name is the same as the geometric group name
     #  @param grp  is a geometric group, a vertex, an edge, a face or a solid
     #  @param name is the name of the mesh group
@@ -1214,7 +1229,7 @@ class Mesh:
     def GetIdsFromFilter(self, theFilter):
         return theFilter.GetElementsId(self.mesh)
 
-    ## Verify whether 2D mesh element has free edges( i.e. edges connected to one face only )
+    ## Verify whether 2D mesh element has free edges(edges connected to one face only)\n
     #  Returns list of special structures(borders).
     #  @return list of SMESH.FreeEdges.Border structure: edge id and two its nodes ids.
     def GetFreeBorders(self):
@@ -1263,8 +1278,8 @@ class Mesh:
         return self.mesh.CutGroups(mainGroup, toolGroup, name)
          
     
-    ## Get some info about mesh:
-    #  ------------------------
+    # Get some info about mesh:
+    # ------------------------
 
     ## Get the log of nodes and elements added or removed since previous
     #  clear of the log.
@@ -1304,8 +1319,8 @@ class Mesh:
         return self.mesh.GetMEDMesh()
     
     
-    ## Get informations about mesh contents:
-    #  ------------------------------------
+    # Get informations about mesh contents:
+    # ------------------------------------
 
     ## Returns number of nodes in mesh
     def NbNodes(self):
@@ -1430,8 +1445,8 @@ class Mesh:
     def GetNodesId(self):
         return self.mesh.GetNodesId()
     
-    ## Get informations about mesh elements:
-    #  ------------------------------------
+    # Get informations about mesh elements:
+    # ------------------------------------
     
     ## Returns type of mesh element
     def GetElementType(self, id, iselem):
@@ -1457,38 +1472,38 @@ class Mesh:
         return self.mesh.Dump()
 
     
-    ## Get information about nodes and elements of mesh by its ids:
-    #  -----------------------------------------------------------
+    # Get information about nodes and elements of mesh by its ids:
+    # -----------------------------------------------------------
 
     ## Get XYZ coordinates of node as list of double
-    #  If there is not node for given ID - returns empty list
+    #  \n If there is not node for given ID - returns empty list
     def GetNodeXYZ(self, id):
         return self.mesh.GetNodeXYZ(id)
 
     ## For given node returns list of IDs of inverse elements
-    #  If there is not node for given ID - returns empty list
+    #  \n If there is not node for given ID - returns empty list
     def GetNodeInverseElements(self, id):
         return self.mesh.GetNodeInverseElements(id)
 
     ## If given element is node returns IDs of shape from position
-    #  If there is not node for given ID - returns -1
+    #  \n If there is not node for given ID - returns -1
     def GetShapeID(self, id):
         return self.mesh.GetShapeID(id)
 
     ## For given element returns ID of result shape after 
     #  FindShape() from SMESH_MeshEditor
-    #  If there is not element for given ID - returns -1
+    #  \n If there is not element for given ID - returns -1
     def GetShapeIDForElem(id):
         return self.mesh.GetShapeIDForElem(id)
     
     ## Returns number of nodes for given element
-    #  If there is not element for given ID - returns -1
+    #  \n If there is not element for given ID - returns -1
     def GetElemNbNodes(self, id):
         return self.mesh.GetElemNbNodes(id)
 
     ## Returns ID of node by given index for given element
-    #  If there is not element for given ID - returns -1
-    #  If there is not node for given index - returns -2
+    #  \n If there is not element for given ID - returns -1
+    #  \n If there is not node for given index - returns -2
     def GetElemNode(self, id, index):
         return self.mesh.GetElemNode(id, index)
 
@@ -1520,13 +1535,13 @@ class Mesh:
 
     ## Returns XYZ coordinates of bary center for given element
     #  as list of double
-    #  If there is not element for given ID - returns empty list
+    #  \n If there is not element for given ID - returns empty list
     def BaryCenter(self, id):
         return self.mesh.BaryCenter(id)
     
     
-    ## Mesh edition (SMESH_MeshEditor functionality):
-    #  ---------------------------------------------
+    # Mesh edition (SMESH_MeshEditor functionality):
+    # ---------------------------------------------
 
     ## Removes elements from mesh by ids
     #  @param IDsOfElements is list of ids of elements to remove
@@ -1547,7 +1562,7 @@ class Mesh:
     #  by number of given nodes).
     #  @param IdsOfNodes List of node IDs for creation of element.
     #  Needed order of nodes in this list corresponds to description
-    #  of MED. This description is located by the following link:
+    #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
     def AddEdge(self, IDsOfNodes):
         return self.editor.AddEdge(IDsOfNodes)
@@ -1556,7 +1571,7 @@ class Mesh:
     #  by number of given nodes).
     #  @param IdsOfNodes List of node IDs for creation of element.
     #  Needed order of nodes in this list corresponds to description
-    #  of MED. This description is located by the following link:
+    #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
     def AddFace(self, IDsOfNodes):
         return self.editor.AddFace(IDsOfNodes)
@@ -1569,7 +1584,7 @@ class Mesh:
     #  by number of given nodes).
     #  @param IdsOfNodes List of node IDs for creation of element.
     #  Needed order of nodes in this list corresponds to description
-    #  of MED. This description is located by the following link:
+    #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
     def AddVolume(self, IDsOfNodes):
         return self.editor.AddVolume(IDsOfNodes)
@@ -1740,7 +1755,7 @@ class Mesh:
         self.editor.ConvertToQuadratic(theForce3d)
 
     ## Converts all mesh from quadratic to ordinary ones,
-    #  deletes old quadratic elements, replacing 
+    #  deletes old quadratic elements, \n replacing 
     #  them with ordinary mesh elements with the same id.
     def ConvertFromQuadratic(self):
         return self.editor.ConvertFromQuadratic()
@@ -1985,13 +2000,13 @@ class Mesh:
         return self.editor.ChangeElemNodes(ide, newIDs)
     
     ## If during last operation of MeshEditor some nodes were
-    #  created this method returns list of it's IDs, if new nodes
-    #  not created - returns empty list
+    #  created this method returns list of it's IDs, \n
+    #  if new nodes not created - returns empty list
     def GetLastCreatedNodes(self):
         return self.editor.GetLastCreatedNodes()
 
     ## If during last operation of MeshEditor some elements were
-    #  created this method returns list of it's IDs, if new elements
-    #  not creared - returns empty list
+    #  created this method returns list of it's IDs, \n
+    #  if new elements not creared - returns empty list
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
