@@ -432,9 +432,11 @@ if (window.writeIntopicBar)
 <h4><a name=bookmark4>Maximum Element Area</a></h4>
 
 <p class="whs4"><span style="font-family: 'Lucida Console', monospace;">import 
- smesh</span></p>
+ geompy</span></p>
 
-<p class="whs4">import salome</p>
+<p class="whs4">import smesh</p>
+
+<p class="whs4">import salome </p>
 
 <p class="whs4">&nbsp;</p>
 
@@ -855,9 +857,8 @@ if (window.writeIntopicBar)
 <p class="whs6"># create a Netgen_2D3D 
  algorithm for solids</p>
 
-<p class="whs4">is3D = 1</p>
-
-<p class="whs4">algo3D = tetraN.Netgen(is3D)</p>
+<p class="whs4">algo3D = tetraN.Tetrahedron(smesh.FULL_NETGEN) 
+ </p>
 
 <p class="whs6">&nbsp;</p>
 
