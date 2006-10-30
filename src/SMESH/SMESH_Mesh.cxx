@@ -359,21 +359,17 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // shape 
 
-  int event;
-  if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-    event = SMESH_subMesh::ADD_HYP;
-  else
-    event = SMESH_subMesh::ADD_ALGO;
+  bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
+  int event = isAlgo ? SMESH_subMesh::ADD_ALGO : SMESH_subMesh::ADD_HYP;
+
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
   // subShapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
-      !subMesh->IsApplicableHypotesis( anHyp )) // is added on father
+      anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is added on father
   {
-    if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-      event = SMESH_subMesh::ADD_FATHER_HYP;
-    else
-      event = SMESH_subMesh::ADD_FATHER_ALGO;
+    event = isAlgo ? SMESH_subMesh::ADD_FATHER_ALGO : SMESH_subMesh::ADD_FATHER_HYP;
+
     SMESH_Hypothesis::Hypothesis_Status ret2 =
       subMesh->SubMeshesAlgoStateEngine(event, anHyp);
     if (ret2 > ret)
@@ -444,14 +440,12 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   int hypType = anHyp->GetType();
   if(MYDEBUG) SCRUTE(hypType);
-  int event;
   
   // shape 
   
-  if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-    event = SMESH_subMesh::REMOVE_HYP;
-  else
-    event = SMESH_subMesh::REMOVE_ALGO;
+  bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
+  int event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
   // there may appear concurrent hyps that were covered by the removed hyp
@@ -462,12 +456,10 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // subShapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
-      !subMesh->IsApplicableHypotesis( anHyp )) // is removed from father
+      anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is removed from father
   {
-    if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-      event = SMESH_subMesh::REMOVE_FATHER_HYP;
-    else
-      event = SMESH_subMesh::REMOVE_FATHER_ALGO;
+    event = isAlgo ? SMESH_subMesh::REMOVE_FATHER_ALGO : SMESH_subMesh::REMOVE_FATHER_HYP;
+
     SMESH_Hypothesis::Hypothesis_Status ret2 =
       subMesh->SubMeshesAlgoStateEngine(event, anHyp);
     if (ret2 > ret) // more severe
