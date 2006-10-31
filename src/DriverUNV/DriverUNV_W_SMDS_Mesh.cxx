@@ -295,9 +295,11 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
   }
   catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
+    throw;
   }
   catch(...){
     INFOS("Unknown exception was cought !!!");
+    throw;
   }
   return aResult;
 }
