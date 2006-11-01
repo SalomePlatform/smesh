@@ -294,42 +294,49 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
   if ( !myToCreate || myIsMesh ) // not submesh creation
     return false;
 
+  // mesh
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
   _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-  if ( pMesh && pGeom ) {
-    SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
-    if ( !mesh->_is_nil() ) {
-      GEOM::GEOM_Object_var mainGeom, subGeom;
-      mainGeom = mesh->GetShapeToMesh();
-      subGeom  = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
-      if ( !mainGeom->_is_nil() && !subGeom->_is_nil() ) {
-        TopoDS_Shape mainShape, subShape;
-        if ( GEOMBase::GetShape( mainGeom, mainShape ) &&
-             GEOMBase::GetShape( subGeom, subShape ) )
-        {
-          int index = GEOMBase::GetIndex( subShape, mainShape, 0 );
-          if ( index > 0 ) {
-            // 1 is index of mainShape itself
-            return index > 1; // it is a subshape
-          }
-          // is it a group?
-          GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-          _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-          if ( !geomGen->_is_nil() && aStudy ) {
-            GEOM::GEOM_IGroupOperations_var op =
-              geomGen->GetIGroupOperations( aStudy->StudyId() );
-            if ( ! op->_is_nil() ) {
-              GEOM::GEOM_Object_var mainObj = op->GetMainShape( subGeom );
-              if ( !mainObj->_is_nil() )
-                return ( string( mainObj->GetEntry() ) == string( mainGeom->GetEntry() ));
-            }
-          }
-        }
-      }
+  if (!pMesh) return false;
+
+  SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
+  if (mesh->_is_nil()) return false;
+
+  // main shape of the mesh
+  GEOM::GEOM_Object_var mainGeom = mesh->GetShapeToMesh();
+  if (mainGeom->_is_nil()) return false;
+
+  // geometry
+  QStringList aGEOMs;
+  myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+
+  if (aGEOMs.count() > 0) {
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if (geomGen->_is_nil() || !aStudy) return false;
+
+    GEOM::GEOM_IGroupOperations_var op =
+        geomGen->GetIGroupOperations(aStudy->StudyId());
+    if (op->_is_nil()) return false;
+
+    // check all selected shapes
+    QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+    for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++) {
+      QString aSubGeomEntry = (*aSubShapesIter);
+      _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+      if (!pSubGeom) return false;
+
+      GEOM::GEOM_Object_var aSubGeomVar =
+        GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+      if (aSubGeomVar->_is_nil()) return false;
+
+      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar);
+      if (mainObj->_is_nil() ||
+          string(mainObj->GetEntry()) != string(mainGeom->GetEntry())) return false;
     }
+    return true;
   }
+
   return false;
 }
 
@@ -404,38 +411,57 @@ void SMESHGUI_MeshOp::selectionDone()
 
     int shapeDim = 3;
 
-    GEOM::GEOM_Object_var aGeomVar;
-    QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-    if ( pGeom ) {
-      aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
-    }
-    else {
+    QStringList aGEOMs;
+    myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+    GEOM::ListOfGO_var aSeq = new GEOM::ListOfGO;
+
+    if (aGEOMs.count() > 0) {
+      // one or more GEOM shape selected
+      aSeq->length(aGEOMs.count());
+      QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+      int iSubSh = 0;
+      for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
+        QString aSubGeomEntry = (*aSubShapesIter);
+        _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+        GEOM::GEOM_Object_var aSubGeomVar =
+          GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+        aSeq[iSubSh] = aSubGeomVar;
+      }
+    } else {
+      // get geometry by selected sub-mesh
       QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
-      aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      if (!aGeomVar->_is_nil()) {
+        aSeq->length(1);
+        aSeq[0] = aGeomVar;
+      }
     }
-    if ( !aGeomVar->_is_nil() ) {
+
+    if (aSeq->length() > 0) {
       shapeDim = 0;
-      switch ( aGeomVar->GetShapeType() ) {
-      case GEOM::SOLID:
-      case GEOM::SHELL:  shapeDim = 3; break;
-      case GEOM::FACE:   shapeDim = 2; break;
-      case GEOM::WIRE:
-      case GEOM::EDGE:   shapeDim = 1; break;
-      case GEOM::VERTEX: shapeDim = 0; break;
-      default:
-        TopoDS_Shape aShape;
-        if ( GEOMBase::GetShape(aGeomVar, aShape)) {
-          TopExp_Explorer exp( aShape, TopAbs_SHELL );
-          if ( exp.More() )
-            shapeDim = 3;
-          else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-            shapeDim = 2;
-          else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-            shapeDim = 1;
-          else
-            shapeDim = 0;
+      for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
+        GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
+        switch ( aGeomVar->GetShapeType() ) {
+        case GEOM::SOLID:
+        case GEOM::SHELL:  shapeDim = 3; break;
+        case GEOM::FACE:   shapeDim = (shapeDim < 2) ? 2 : shapeDim; break;
+        case GEOM::WIRE:
+        case GEOM::EDGE:   shapeDim = (shapeDim < 1) ? 1 : shapeDim; break;
+        case GEOM::VERTEX: break;
+        default:
+          TopoDS_Shape aShape;
+          if ( GEOMBase::GetShape(aGeomVar, aShape)) {
+            TopExp_Explorer exp( aShape, TopAbs_SHELL );
+            if ( exp.More() )
+              shapeDim = 3;
+            else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
+              shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+            else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
+              shapeDim = (shapeDim < 1) ? 1 : shapeDim;
+            else
+              ;//shapeDim = 0;
+          }
         }
       }
     }
@@ -1247,17 +1273,80 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
   _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
   SMESH::SMESH_Mesh_var aMeshVar =
     SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
+  if (aMeshVar->_is_nil())
+    return false;
+
+  // GEOM shape of the main mesh
+  GEOM::GEOM_Object_var mainGeom = aMeshVar->GetShapeToMesh();
+
+  // Name for the new sub-mesh
+  QString aName = myDlg->objectText(SMESHGUI_MeshDlg::Obj);
 
   // get geom object
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-  GEOM::GEOM_Object_var aGeomVar =
-    GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+  GEOM::GEOM_Object_var aGeomVar;
+  QStringList aGEOMs;
+  myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+  if (aGEOMs.count() == 1)
+  {
+    //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+    QString aGeomEntry = aGEOMs.first();
+    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+    aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+  }
+  else if (aGEOMs.count() > 1)
+  {
+    // create a GEOM group
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if (!geomGen->_is_nil() && aStudy) {
+      GEOM::GEOM_IGroupOperations_var op =
+        geomGen->GetIGroupOperations(aStudy->StudyId());
+      if (!op->_is_nil()) {
+        // check and add all selected GEOM objects: they must be
+        // a sub-shapes of the main GEOM and must be of one type
+        int iSubSh = 0;
+        TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
+        GEOM::ListOfGO_var aSeq = new GEOM::ListOfGO;
+        aSeq->length(aGEOMs.count());
+        QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+        for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
+          QString aSubGeomEntry = (*aSubShapesIter);
+          _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+          GEOM::GEOM_Object_var aSubGeomVar =
+            GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+          TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aSubGeomVar->GetShapeType();
+          if (iSubSh == 0) {
+            aGroupType = aSubShapeType;
+          } else {
+            if (aSubShapeType != aGroupType)
+              aGroupType = TopAbs_SHAPE;
+          }
+          aSeq[iSubSh] = aSubGeomVar;
+        }
+        // create a group
+        GEOM::GEOM_Object_var aGroupVar = op->CreateGroup(mainGeom, aGroupType);
+        op->UnionList(aGroupVar, aSeq);
+
+        if (op->IsDone()) {
+          aGeomVar = aGroupVar;
+
+          // publish the GEOM group in study
+          QString aNewGeomGroupName ("Auto_group_for_");
+          aNewGeomGroupName += aName;
+          SALOMEDS::SObject_var aNewGroupSO =
+            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar, aNewGeomGroupName, mainGeom);
+        }
+      }
+    }
+  }
+  else {
+  }
+  if (aGeomVar->_is_nil())
+    return false;
 
   SUIT_OverrideCursor aWaitCursor;
 
   // create sub-mesh
-  QString aName = myDlg->objectText( SMESHGUI_MeshDlg::Obj );
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.latin1() );
 
   for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ )
