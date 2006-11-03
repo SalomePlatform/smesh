@@ -71,7 +71,9 @@ colis_cc_multi = geompy.MultiRotate1D(colis_cc, vz, 4)
 
 # --
 
-alveole = geompy.MakePartition([colis_cc_multi, barier])
+Compound1 = geompy.MakeCompound([colis_cc_multi, barier])
+SubShape_theShape = geompy.SubShapeAll(Compound1,geompy.ShapeType["SOLID"])
+alveole = geompy.MakePartition(SubShape_theShape)
 
 print "Analysis of the geometry to mesh (right after the Partition) :"
 
