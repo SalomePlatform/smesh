@@ -49,6 +49,7 @@
 #include "GeometryGUI.h"
 
 #include "SalomeApp_Tools.h"
+#include "SalomeApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOMEDSClient_AttributeIOR.hxx"
 #include "SALOMEDSClient_AttributeName.hxx"
@@ -1856,6 +1857,7 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
 void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
 {
   if ( myShapeByMeshOp == op ) {
+    SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser(); //MZN: 24.11.2006  IPAL13980 - Object Browser update added
     myDlg->show();
     // Select a found geometry object
     GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();
