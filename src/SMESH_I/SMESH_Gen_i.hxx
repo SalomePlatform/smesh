@@ -229,10 +229,15 @@ public:
                                      const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
-  // Return geometrical object the given element is built on
+  // Return geometrical object the given element is built on. Publish it in study.
   GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
                                                   CORBA::Long            theElementID,
                                                   const char*            theGeomName)
+    throw ( SALOME::SALOME_Exception );
+
+  // Return geometrical object the given element is built on. Don't publish it in study.
+  GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+						   CORBA::Long            theElementID)
     throw ( SALOME::SALOME_Exception );
 
   // ****************************************************

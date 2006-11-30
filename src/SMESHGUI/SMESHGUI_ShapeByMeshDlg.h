@@ -74,6 +74,10 @@ private:
   QLineEdit*               myElementId;
   QLineEdit*               myGeomName;
 
+private:
+  bool                     myIsMultipleAllowed;
+  void                     setMultipleAllowed(bool isAllowed) {myIsMultipleAllowed = isAllowed;};
+
 //   QPushButton*             myOkBtn;
 //   QPushButton*             myCloseBtn;
 
@@ -89,7 +93,7 @@ class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
   Q_OBJECT
 
 public:
-  SMESHGUI_ShapeByMeshOp();
+  SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed = false);
   virtual ~SMESHGUI_ShapeByMeshOp();
 
   virtual LightApp_Dialog*       dlg() const;  
@@ -144,6 +148,7 @@ private:
 
   bool                     myIsManualIdEnter;
   bool                     myHasSolids;
+  bool                     myIsMultipleAllowed;
 };
 
 #endif

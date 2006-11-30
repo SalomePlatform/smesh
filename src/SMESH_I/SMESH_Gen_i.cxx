@@ -1130,6 +1130,41 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
+ 
+  GEOM::GEOM_Object_var geom = FindGeometryByMeshElement(theMesh, theElementID);
+  if ( !geom->_is_nil() ) {
+    GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
+    GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
+
+    // try to find the corresponding SObject
+    GeomObjectToShape( geom ); // geom client remembers the found shape
+    SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
+    if ( SObj->_is_nil() )
+      // publish a new subshape
+      SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
+    // return only published geometry
+    if ( !SObj->_is_nil() )
+      return geom._retn();
+  }
+  return GEOM::GEOM_Object::_nil();
+}
+
+
+//================================================================================
+/*!
+ * \brief Return geometrical object the given element is built on.
+ *  \param theMesh - the mesh the element is in
+ *  \param theElementID - the element ID
+ *  \retval GEOM::GEOM_Object_ptr - the found geom object
+ */
+//================================================================================
+
+GEOM::GEOM_Object_ptr
+SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+				    CORBA::Long            theElementID)
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
@@ -1154,17 +1189,8 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
           if ( !op->_is_nil() )
             geom = op->GetSubShape( mainShape, shapeID );
         }
-        if ( !geom->_is_nil() ) {
-          // try to find the corresponding SObject
-          GeomObjectToShape( geom ); // geom client remembers the found shape
-          SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
-          if ( SObj->_is_nil() )
-            // publish a new subshape
-            SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
-          // return only published geometry
-          if ( !SObj->_is_nil() )
-            return geom._retn();
-        }
+        if ( !geom->_is_nil() )
+	  return geom._retn();
       }
   }
   return GEOM::GEOM_Object::_nil();
