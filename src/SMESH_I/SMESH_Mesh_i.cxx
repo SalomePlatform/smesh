@@ -319,6 +319,8 @@ static SMESH::Hypothesis_Status ConvertHypothesisStatus
     res = SMESH::HYP_BAD_DIM; break;
   case SMESH_Hypothesis::HYP_BAD_SUBSHAPE:
     res = SMESH::HYP_BAD_SUBSHAPE; break;
+  case SMESH_Hypothesis::HYP_BAD_GEOMETRY:
+    res = SMESH::HYP_BAD_GEOMETRY; break;
   default:
     res = SMESH::HYP_UNKNOWN_FATAL;
   }
@@ -1947,6 +1949,26 @@ CORBA::Long SMESH_Mesh_i::GetElemNode(const CORBA::Long id, const CORBA::Long in
   return elem->GetNode(index)->GetID();
 }
 
+//=============================================================================
+/*!
+ * Returns IDs of nodes of given element
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElemNodes(const CORBA::Long id)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  {
+    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id) )
+    {
+      aResult->length( elem->NbNodes() );
+      for ( int i = 0; i < elem->NbNodes(); ++i )
+        aResult[ i ] = elem->GetNode( i )->GetID();
+    }
+  }
+  return aResult._retn();
+}
 
 //=============================================================================
 /*!
