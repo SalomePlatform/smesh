@@ -405,6 +405,8 @@ class Mesh_Algorithm:
             reason = "there are concurrent hypotheses on sub-shapes"
         elif status == HYP_BAD_SUBSHAPE :
             reason = "shape is neither the main one, nor its subshape, nor a valid group"
+        elif status == HYP_BAD_GEOMETRY:
+            reason = "geometry mismatches algorithm's expectation"
         else:
             return
         hypName = '"' + hypName + '"'
@@ -804,7 +806,202 @@ class Mesh_Netgen(Mesh_Algorithm):
         else:
             hyp = self.Hypothesis("NETGEN_Parameters_2D", [], "libNETGENEngine.so")
         return hyp
+
+# Public class: Mesh_Projection1D
+# ------------------------------
+
+## Class to define a projection 1D algorithm
+#
+#  More details.
+class Mesh_Projection1D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "Projection_1D")
+
+    ## Define "Source Edge" hypothesis, specifying a meshed edge to
+    #  take a mesh pattern from, and optionally association of vertices
+    #  between the source edge and a target one (where a hipothesis is assigned to)
+    #  @param edge to take nodes distribution from
+    #  @param mesh to take nodes distribution from (optional)
+    #  @param srcV is vertex of \a edge to associate with \a tgtV (optional)
+    #  @param tgtV is vertex of \a the edge where the algorithm is assigned,
+    #  to associate with \a srcV (optional)
+    def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None):
+        hyp = self.Hypothesis("ProjectionSource1D")
+        hyp.SetSourceEdge( edge )
+        if not mesh is None and isinstance(mesh, Mesh):
+            mesh = mesh.GetMesh()
+        hyp.SetSourceMesh( mesh )
+        hyp.SetVertexAssociation( srcV, tgtV )
+        return hyp
+
+
+# Public class: Mesh_Projection2D
+# ------------------------------
+
+## Class to define a projection 2D algorithm
+#
+#  More details.
+class Mesh_Projection2D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "Projection_2D")
+
+    ## Define "Source Face" hypothesis, specifying a meshed face to
+    #  take a mesh pattern from, and optionally association of vertices
+    #  between the source face and a target one (where a hipothesis is assigned to)
+    #  @param face to take mesh pattern from
+    #  @param mesh to take mesh pattern from (optional)
+    #  @param srcV1 is vertex of \a face to associate with \a tgtV1 (optional)
+    #  @param tgtV1 is vertex of \a the face where the algorithm is assigned,
+    #  to associate with \a srcV1 (optional)
+    #  @param srcV2 is vertex of \a face to associate with \a tgtV1 (optional)
+    #  @param tgtV2 is vertex of \a the face where the algorithm is assigned,
+    #  to associate with \a srcV2 (optional)
+    #
+    #  Note: association vertices must belong to one edge of a face
+    def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None, srcV2=None, tgtV2=None):
+        hyp = self.Hypothesis("ProjectionSource2D")
+        hyp.SetSourceFace( face )
+        if not mesh is None and isinstance(mesh, Mesh):
+            mesh = mesh.GetMesh()
+        hyp.SetSourceMesh( mesh )
+        hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
+        return hyp
+
+# Public class: Mesh_Projection3D
+# ------------------------------
+
+## Class to define a projection 3D algorithm
+#
+#  More details.
+class Mesh_Projection3D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "Projection_3D")
+
+    ## Define "Source Shape 3D" hypothesis, specifying a meshed solid to
+    #  take a mesh pattern from, and optionally association of vertices
+    #  between the source solid and a target one (where a hipothesis is assigned to)
+    #  @param solid to take mesh pattern from
+    #  @param mesh to take mesh pattern from (optional)
+    #  @param srcV1 is vertex of \a solid to associate with \a tgtV1 (optional)
+    #  @param tgtV1 is vertex of \a the solid where the algorithm is assigned,
+    #  to associate with \a srcV1 (optional)
+    #  @param srcV2 is vertex of \a solid to associate with \a tgtV1 (optional)
+    #  @param tgtV2 is vertex of \a the solid where the algorithm is assigned,
+    #  to associate with \a srcV2 (optional)
+    #
+    #  Note: association vertices must belong to one edge of a solid
+    def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0, srcV2=0, tgtV2=0):
+        hyp = self.Hypothesis("ProjectionSource3D")
+        hyp.SetSource3DShape( solid )
+        if not mesh is None and isinstance(mesh, Mesh):
+            mesh = mesh.GetMesh()
+        hyp.SetSourceMesh( mesh )
+        hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
+        return hyp
+
+
+# Public class: Mesh_Prism
+# ------------------------
+
+## Class to define a Prism 3D algorithm
+#
+#  More details.
+class Mesh_Prism3D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "Prism_3D")
+
+# Public class: Mesh_RadialPrism
+# -------------------------------
+
+## Class to define a Radial Prism 3D algorithm
+#
+#  More details.
+class Mesh_RadialPrism3D(Mesh_Algorithm):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "RadialPrism_3D")
+        self.distribHyp = self.Hypothesis( "LayerDistribution" )
+
+    ## Return 3D hypothesis holding the 1D one
+    def Get3DHypothesis(self):
+        return self.distribHyp
+
+    ## Private method creating 1D hypothes and storing it in the LayerDistribution
+    #  hypothes. Returns the created hypothes
+    def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
+        study = GetCurrentStudy() # prevent publishing of own 1D hypothesis
+        hyp = smesh.CreateHypothesis(hypType, so)
+        SetCurrentStudy( study ) # anable publishing
+        self.distribHyp.SetLayerDistribution( hyp )
+        return hyp
+
+    ## Define "NumberOfLayers" hypothesis, specifying a number of layers of
+    #  prisms to build between the inner and outer shells
+    def NumberOfLayers(self, n ):
+        hyp = self.Hypothesis("NumberOfLayers")
+        hyp.SetNumberOfLayers( n )
+        return hyp
+
+    ## Define "LocalLength" hypothesis, specifying segment length
+    #  to build between the inner and outer shells
+    #  @param l for the length of segments
+    def LocalLength(self, l):
+        hyp = self.OwnHypothesis("LocalLength", [l])
+        hyp.SetLength(l)
+        return hyp
         
+    ## Define "NumberOfSegments" hypothesis, specifying a number of layers of
+    #  prisms to build between the inner and outer shells
+    #  @param n for the number of segments
+    #  @param s for the scale factor (optional)
+    def NumberOfSegments(self, n, s=[]):
+        if s == []:
+            hyp = self.OwnHypothesis("NumberOfSegments", [n])
+        else:
+            hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
+            hyp.SetDistrType( 1 )
+            hyp.SetScaleFactor(s)
+        hyp.SetNumberOfSegments(n)
+        return hyp
+        
+    ## Define "Arithmetic1D" hypothesis, specifying distribution of segments
+    #  to build between the inner and outer shells as arithmetic length increasing
+    #  @param start for the length of the first segment
+    #  @param end   for the length of the last  segment
+    def Arithmetic1D(self, start, end):
+        hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
+        hyp.SetLength(start, 1)
+        hyp.SetLength(end  , 0)
+        return hyp
+        
+    ## Define "StartEndLength" hypothesis, specifying distribution of segments
+    #  to build between the inner and outer shells as geometric length increasing
+    #  @param start for the length of the first segment
+    #  @param end   for the length of the last  segment
+    def StartEndLength(self, start, end):
+        hyp = self.OwnHypothesis("StartEndLength", [start, end])
+        hyp.SetLength(start, 1)
+        hyp.SetLength(end  , 0)
+        return hyp
+        
+    ## Define "AutomaticLength" hypothesis, specifying number of segments
+    #  to build between the inner and outer shells
+    #  @param fineness for the fineness [0-1]
+    def AutomaticLength(self, fineness=0):
+        hyp = self.OwnHypothesis("AutomaticLength")
+        hyp.SetFineness( fineness )
+        return hyp
+
+
 # Public class: Mesh
 # ==================
 
@@ -976,7 +1173,42 @@ class Mesh:
     ## Deprecated, only for compatibility!
     def Netgen(self, is3D, geom=0):
         return Mesh_Netgen(self, is3D, geom)
-      
+
+    ## Creates a projection 1D algorithm for edges.
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom If defined, subshape to be meshed
+    def Projection1D(self, geom=0):
+        return Mesh_Projection1D(self, geom)
+
+    ## Creates a projection 2D algorithm for faces.
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom If defined, subshape to be meshed
+    def Projection2D(self, geom=0):
+        return Mesh_Projection2D(self, geom)
+
+    ## Creates a projection 3D algorithm for solids.
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom If defined, subshape to be meshed
+    def Projection3D(self, geom=0):
+        return Mesh_Projection3D(self, geom)
+
+    ## Creates a Prism 3D or RadialPrism 3D algorithm for solids.
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom If defined, subshape to be meshed
+    def Prism(self, geom=0):
+        shape = geom
+        if shape==0:
+            shape = self.geom
+        nbSolids = len( geompy.SubShapeAll( shape, geompy.ShapeType["SOLID"] ))
+        nbShells = len( geompy.SubShapeAll( shape, geompy.ShapeType["SHELL"] ))
+        if nbSolids == 0 or nbSolids == nbShells:
+            return Mesh_Prism3D(self, geom)
+        return Mesh_RadialPrism3D(self, geom)
+
     ## Compute the mesh and return the status of the computation
     def Compute(self, geom=0):
         if geom == 0 or not isinstance(geom, geompy.GEOM._objref_GEOM_Object):
@@ -1001,8 +1233,15 @@ class Mesh:
                 elif err.name == MISSING_HYPO:
                     name = '"' + err.algoName + '"'
                     reason = glob + dim + "D algorithm " + name + " misses " + dim + "D hypothesis"
-                else:
+                elif err.name == NOT_CONFORM_MESH:
                     reason = "Global \"Not Conform mesh allowed\" hypothesis is missing"
+                elif err.name == BAD_PARAM_VALUE:
+                    name = '"' + err.algoName + '"'
+                    reason = "Hypothesis of" + glob + dim + "D algorithm " + name +\
+                             " has a bad parameter value"
+                else:
+                    reason = "For unknown reason."+\
+                             " Revise Mesh.Compute() implementation in smesh.py!"
                     pass
                 if allReasons != "":
                     allReasons += "\n"
