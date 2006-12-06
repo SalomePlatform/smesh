@@ -564,7 +564,8 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     //double aVolume = getVolume(aLen);
     double aHeight = getMaxHeight(aLen);
     static double aCoeff = sqrt(2.0)/12.0;
-    aQuality = aCoeff*aHeight*aSumArea/aVolume;
+    if ( aVolume > DBL_MIN )
+      aQuality = aCoeff*aHeight*aSumArea/aVolume;
     break;
   }
   case 5:{
