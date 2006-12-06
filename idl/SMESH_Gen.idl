@@ -43,7 +43,7 @@ module SMESH
   interface FilterManager;
   interface SMESH_Pattern;
 
-  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH, BAD_PARAM_VALUE };
   struct AlgoStateError {
     AlgoStateErrorName name;
     string             algoName;
