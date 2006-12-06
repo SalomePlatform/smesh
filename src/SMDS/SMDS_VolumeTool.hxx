@@ -193,7 +193,10 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
                          int        faceIndex );
   // Return number of nodes in the array of face nodes
 
- private:
+  static int NbCornerNodes(VolumeType type);
+  // Useful to know nb of corner nodes of a quadratic volume
+
+private:
 
   bool setFace( int faceIndex );
 

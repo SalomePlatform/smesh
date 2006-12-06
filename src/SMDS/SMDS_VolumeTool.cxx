@@ -1518,6 +1518,31 @@ int SMDS_VolumeTool::NbFaces( VolumeType type )
   }
 }
 
+//================================================================================
+/*!
+ * \brief Useful to know nb of corner nodes of a quadratic volume
+  * \param type - volume type
+  * \retval int - nb of corner nodes
+ */
+//================================================================================
+
+int SMDS_VolumeTool::NbCornerNodes(VolumeType type)
+{
+  switch ( type ) {
+  case TETRA     :
+  case QUAD_TETRA: return 4;
+  case PYRAM     :
+  case QUAD_PYRAM: return 5;
+  case PENTA     :
+  case QUAD_PENTA: return 6;
+  case HEXA      :
+  case QUAD_HEXA : return 8;
+  default:    return 0;
+  }
+  return 0;
+}
+  // 
+
 //=======================================================================
 //function : GetFaceNodesIndices
 //purpose  : Return the array of face nodes indices
