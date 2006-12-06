@@ -339,6 +339,11 @@ public:
   CORBA::Long GetElemNbNodes(const CORBA::Long id);
 
   /*!
+   * Returns IDs of nodes of given element
+   */
+  SMESH::long_array* GetElemNodes(const CORBA::Long id);
+
+  /*!
    * Returns ID of node by given index for given element
    * If there is not element for given ID - returns -1
    * If there is not node for given index - returns -2
