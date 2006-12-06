@@ -401,7 +401,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 //================================================================================
 void SMESHGUI_MeshOp::selectionDone()
 {
-  if ( !dlg()->isShown() )
+  if ( !dlg()->isShown() || !myDlg->isEnabled() )
     return;
 
   SMESHGUI_SelectionOp::selectionDone();
@@ -904,7 +904,9 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
       // with values used to mesh a subshape
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
+      myDlg->setEnabled( false );
       aCreator->create(initParamHyp, myDlg);
+      myDlg->setEnabled( true );
     } else {
       SMESH::CreateHypothesis(theTypeName, aData->Label, false);
     }
@@ -947,8 +949,11 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
 
   char* aTypeName = aHyp->GetName();
   SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aTypeName );
-  if ( aCreator )
+  if ( aCreator ) {
+    myDlg->setEnabled( false );
     aCreator->edit( aHyp.in(), dlg() );
+    myDlg->setEnabled( true );
+  }
 }
 
 //================================================================================
@@ -1756,42 +1761,44 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     {
       int aNewHypIndex = currentHyp( dim, hypType );
       int anOldHypIndex = -1;
+
+      // remove old hypotheses
       if ( myObjHyps[ dim ][ hypType ].count() > 0 )
+      {
         anOldHypIndex = find( myObjHyps[ dim ][ hypType ].first(),
                               myExistingHyps[ dim ][ hypType ] );
-      if ( aNewHypIndex != anOldHypIndex )
-      {
-        // remove old hypotheses
-        if ( anOldHypIndex >= 0 ) {
-          SMESH::RemoveHypothesisOrAlgorithmOnMesh(
-            pObj, myExistingHyps[ dim ][ hypType ][ anOldHypIndex ] );
+        if ( aNewHypIndex != anOldHypIndex || // different hyps
+             anOldHypIndex == -1 )            // hyps of different algos
+        {
+          SMESH::RemoveHypothesisOrAlgorithmOnMesh
+            ( pObj, myObjHyps[ dim ][ hypType ].first() );
           myObjHyps[ dim ][ hypType ].clear();
         }
-
-        // assign new hypotheses
-        if ( aNewHypIndex != -1 )
-        {
-          SMESH::SMESH_Mesh_var aMeshVar =
-              SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
-          bool isMesh = !aMeshVar->_is_nil();
-          if ( isMesh )
-          {
-            SMESH::AddHypothesisOnMesh(
-              aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
-          }
-          else
-          {
-            SMESH::SMESH_subMesh_var aVar =
-              SMESH::SMESH_subMesh::_narrow( _CAST(SObject,pObj)->GetObject() );
-            if ( !aVar->_is_nil() )
-              SMESH::AddHypothesisOnSubMesh(
-                aVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
-          }
-        }
-        // reread all hypotheses of mesh if necessary
-        QStringList anExisting;
-        existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
       }
+
+      // assign new hypotheses
+      if ( aNewHypIndex != anOldHypIndex && aNewHypIndex != -1 )
+      {
+        SMESH::SMESH_Mesh_var aMeshVar =
+          SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
+        bool isMesh = !aMeshVar->_is_nil();
+        if ( isMesh )
+        {
+          SMESH::AddHypothesisOnMesh
+            (aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
+        }
+        else
+        {
+          SMESH::SMESH_subMesh_var aVar =
+            SMESH::SMESH_subMesh::_narrow( _CAST(SObject,pObj)->GetObject() );
+          if ( !aVar->_is_nil() )
+            SMESH::AddHypothesisOnSubMesh
+              ( aVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
+        }
+      }
+      // reread all hypotheses of mesh if necessary
+      QStringList anExisting;
+      existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
     }
   }
 
