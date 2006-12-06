@@ -25,12 +25,14 @@
 #ifndef SMESH_Block_HeaderFile
 #define SMESH_Block_HeaderFile
 
-#include <Geom2d_Curve.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom_Surface.hxx>
+// #include <Geom2d_Curve.hxx>
+// #include <Geom_Curve.hxx>
+// #include <Geom_Surface.hxx>
+
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
@@ -43,9 +45,13 @@
 
 #include <ostream>
 #include <vector>
+#include <list>
 
 class SMDS_MeshVolume;
 class SMDS_MeshNode;
+class Adaptor3d_Surface;
+class Adaptor2d_Curve2d;
+class Adaptor3d_Curve;
 
 // =========================================================
 // class calculating coordinates of 3D points by normalized
@@ -55,7 +61,10 @@ class SMDS_MeshNode;
 class SMESH_Block: public math_FunctionSetWithDerivatives
 {
  public:
-  enum TShapeID { // ids of the block sub-shapes
+  enum TShapeID {
+    // ----------------------------
+    // Ids of the block sub-shapes
+    // ----------------------------
     ID_NONE = 0,
 
     ID_V000 = 1, ID_V100, ID_V010, ID_V110, ID_V001, ID_V101, ID_V011, ID_V111,
@@ -68,9 +77,17 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
 
     ID_Shell
     };
+  enum { // to use TShapeID for indexing certain type subshapes
+
+    ID_FirstV = ID_V000, ID_FirstE = ID_Ex00, ID_FirstF = ID_Fxy0
+
+  };
 
 
- public: // methods about ids of the block sub-shapes
+ public:
+  // -------------------------------------------------
+  // Block topology in terms of block sub-shapes' ids
+  // -------------------------------------------------
 
   static int NbVertices()  { return  8; }
   static int NbEdges()     { return 12; }
@@ -124,7 +141,10 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   // DEBUG: dump an id of a block sub-shape
 
 
- public: // initialization
+ public:
+  // ---------------
+  // Initialization
+  // ---------------
 
   SMESH_Block (): myNbIterations(0), mySumDist(0.) {}
 
@@ -132,36 +152,75 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
                        const TopoDS_Vertex&        theVertex000,
                        const TopoDS_Vertex&        theVertex001,
                        TopTools_IndexedMapOfOrientedShape& theShapeIDMap );
+  // Initialize block geometry with theShell,
   // add sub-shapes of theBlock to theShapeIDMap so that they get
   // IDs acoording to enum TShapeID
+
+  bool LoadBlockShapes(const TopTools_IndexedMapOfOrientedShape& theShapeIDMap);
+  // Initialize block geometry with shapes from theShapeIDMap
 
   bool LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
                      const int                     theNode000Index,
                      const int                     theNode001Index,
                      vector<const SMDS_MeshNode*>& theOrderedNodes);
   // prepare to work with theVolume and
-  // return nodes in the order of TShapeID enum
+  // return nodes in theVolume corners in the order of TShapeID enum
 
+  bool LoadFace(const TopoDS_Face& theFace,
+                const int          theFaceID,
+                const TopTools_IndexedMapOfOrientedShape& theShapeIDMap);
+  // Load face geometry.
+  // It is enough to compute params or coordinates on the face.
+  // Face subshapes must be loaded into theShapeIDMap before
 
- public: // define coordinates by parameters
+  static bool Insert(const TopoDS_Shape& theShape,
+                     const int           theShapeID,
+                     TopTools_IndexedMapOfOrientedShape& theShapeIDMap);
+  // Insert theShape into theShapeIDMap with theShapeID,
+  // Not yet set shapes preceding theShapeID are filled with compounds
+  // Return true if theShape was successfully bound to theShapeID
+
+  static bool FindBlockShapes(const TopoDS_Shell&         theShell,
+                              const TopoDS_Vertex&        theVertex000,
+                              const TopoDS_Vertex&        theVertex001,
+                              TopTools_IndexedMapOfOrientedShape& theShapeIDMap );
+  // add sub-shapes of theBlock to theShapeIDMap so that they get
+  // IDs acoording to enum TShapeID
+
+public:
+  // ---------------------------------
+  // Define coordinates by parameters
+  // ---------------------------------
 
   bool VertexPoint( const int theVertexID, gp_XYZ& thePoint ) const {
     if ( !IsVertexID( theVertexID ))           return false;
-    thePoint = myPnt[ theVertexID - ID_V000 ]; return true;
+    thePoint = myPnt[ theVertexID - ID_FirstV ]; return true;
   }
   // return vertex coordinates, parameters are defined by theVertexID
 
   bool EdgePoint( const int theEdgeID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
     if ( !IsEdgeID( theEdgeID ))                                 return false;
-    thePoint = myEdge[ theEdgeID - ID_Ex00 ].Point( theParams ); return true;
+    thePoint = myEdge[ theEdgeID - ID_FirstE ].Point( theParams ); return true;
   }
   // return coordinates of a point on edge
 
+  bool EdgeU( const int theEdgeID, const gp_XYZ& theParams, double& theU ) const {
+    if ( !IsEdgeID( theEdgeID ))                              return false;
+    theU = myEdge[ theEdgeID - ID_FirstE ].GetU( theParams ); return true;
+  }
+  // return parameter on edge by in-block parameters
+
   bool FacePoint( const int theFaceID, const gp_XYZ& theParams, gp_XYZ& thePoint ) const {
     if ( !IsFaceID ( theFaceID ))                                return false;
-    thePoint = myFace[ theFaceID - ID_Fxy0 ].Point( theParams ); return true;
+    thePoint = myFace[ theFaceID - ID_FirstF ].Point( theParams ); return true;
   }
   // return coordinates of a point on face
+
+  bool FaceUV( const int theFaceID, const gp_XYZ& theParams, gp_XY& theUV ) const {
+    if ( !IsFaceID ( theFaceID ))                               return false;
+    theUV = myFace[ theFaceID - ID_FirstF ].GetUV( theParams ); return true;
+  }
+  // return UV coordinates on a face by in-block parameters
 
   bool ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const;
   // return coordinates of a point in shell
@@ -169,12 +228,16 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   static bool ShellPoint(const gp_XYZ&         theParams,
                          const vector<gp_XYZ>& thePointOnShape,
                          gp_XYZ&               thePoint );
-  // computes coordinates of a point in shell by points on sub-shapes;
+  // computes coordinates of a point in shell by points on sub-shapes
+  // and point parameters.
   // thePointOnShape[ subShapeID ] must be a point on a subShape;
   // thePointOnShape.size() == ID_Shell, thePointOnShape[0] not used
 
 
- public: // define parameters by coordinates
+ public:
+  // ---------------------------------
+  // Define parameters by coordinates
+  // ---------------------------------
 
   bool ComputeParameters (const gp_Pnt& thePoint,
                           gp_XYZ&       theParams,
@@ -189,22 +252,40 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   // return parameters of a point given by theU on edge
 
 
- public: // services
+ public:
+  // ---------------
+  // Block geomerty
+  // ---------------
 
-  static bool IsForwardEdge (const TopoDS_Edge &                 theEdge,
-                             TopTools_IndexedMapOfOrientedShape& theShapeIDMap) {
+  
+  
+ public:
+  // ---------
+  // Services
+  // ---------
+
+  static bool IsForwardEdge (const TopoDS_Edge &                       theEdge,
+                             const TopTools_IndexedMapOfOrientedShape& theShapeIDMap) {
     int v1ID = theShapeIDMap.FindIndex( TopExp::FirstVertex( theEdge ).Oriented( TopAbs_FORWARD ));
     int v2ID = theShapeIDMap.FindIndex( TopExp::LastVertex( theEdge ).Oriented( TopAbs_FORWARD ));
     return ( v1ID < v2ID );
   }
   // Return true if an in-block parameter increases along theEdge curve
 
-  static void Swap(double& a, double& b) { double tmp = a; a = b; b = tmp; }
-
+  static int GetOrderedEdges (const TopoDS_Face&        theFace,
+                              TopoDS_Vertex             theFirstVertex,
+                              std::list< TopoDS_Edge >& theEdges,
+                              std::list< int >  &       theNbVertexInWires);
+  // Return nb wires and a list of oredered edges.
+  // It is used to assign indices to subshapes.
+  // theFirstVertex may be NULL.
+  // Always try to set a seam edge first
 
  public:
-  // methods of math_FunctionSetWithDerivatives used internally
+  // -----------------------------------------------------------
+  // Methods of math_FunctionSetWithDerivatives used internally
   // to define parameters by coordinates
+  // -----------------------------------------------------------
   Standard_Integer NbVariables() const;
   Standard_Integer NbEquations() const;
   Standard_Boolean Value(const math_Vector& X,math_Vector& F) ;
@@ -212,41 +293,61 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   Standard_Boolean Values(const math_Vector& X,math_Vector& F,math_Matrix& D) ;
   Standard_Integer GetStateNumber ();
 
- private:
+ protected:
 
-  struct TEdge {
+  /*!
+   * \brief Call it after geometry initialisation
+   */
+  void init();
+
+  // Note: to compute params of a point on a face, it is enough to set
+  // TFace, TEdge's and points for that face only
+
+  class TEdge {
     int                myCoordInd;
     double             myFirst;
     double             myLast;
-    Handle(Geom_Curve) myC3d;
-    gp_Trsf            myTrsf;
-    double GetU( const gp_XYZ& theParams ) const;
-    gp_XYZ Point( const gp_XYZ& theParams ) const;
+    Adaptor3d_Curve*   myC3d;
     // if mesh volume
     gp_XYZ             myNodes[2];
+  public:
+    void Set( const int edgeID, Adaptor3d_Curve* curve, const bool isForward );
+    void Set( const int edgeID, const gp_XYZ& node1, const gp_XYZ& node2 );
+    Adaptor3d_Curve* GetCurve() const { return myC3d; }
+    double EndParam(int i) const { return i ? myLast : myFirst; }
+    int CoordInd() const { return myCoordInd; }
+    const gp_XYZ& NodeXYZ(int i) const { return i ? myNodes[1] : myNodes[0]; }
+    gp_XYZ Point( const gp_XYZ& theParams ) const; // Return coord by params
+    double GetU( const gp_XYZ& theParams ) const;  // Return U by params
+    TEdge(): myC3d(0) {}
+    ~TEdge();
   };
 
-  struct TFace {
+  class TFace {
     // 4 edges in the order u0, u1, 0v, 1v
     int                  myCoordInd[ 4 ];
     double               myFirst   [ 4 ];
     double               myLast    [ 4 ];
-    Handle(Geom2d_Curve) myC2d     [ 4 ];
+    Adaptor2d_Curve2d*   myC2d     [ 4 ];
     // 4 corner points in the order 00, 10, 11, 01
     gp_XY                myCorner  [ 4 ];
     // surface
-    Handle(Geom_Surface) myS;
-    gp_Trsf              myTrsf;
+    Adaptor3d_Surface*   myS;
+    // if mesh volume
+    gp_XYZ               myNodes[4];
+  public:
+    void Set( const int faceID, Adaptor3d_Surface* S, // must be in GetFaceEdgesIDs() order:
+              Adaptor2d_Curve2d* c2d[4], const bool isForward[4] );
+    void Set( const int faceID, const TEdge& edgeU0, const TEdge& edgeU1 );
     gp_XY  GetUV( const gp_XYZ& theParams ) const;
     gp_XYZ Point( const gp_XYZ& theParams ) const;
     int GetUInd() const { return myCoordInd[ 0 ]; }
     int GetVInd() const { return myCoordInd[ 2 ]; }
     void GetCoefs( int i, const gp_XYZ& theParams, double& eCoef, double& vCoef ) const;
-    // if mesh volume
-    gp_XYZ               myNodes[4];
+    TFace(): myS(0) { myC2d[0]=myC2d[1]=myC2d[2]=myC2d[3]=0; }
+    ~TFace();
   };
 
-  TopoDS_Shell myShell;
   // geometry in the order as in TShapeID:
   // 8 vertices
   gp_XYZ myPnt[ 8 ];
@@ -264,10 +365,10 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
 
   gp_XYZ   myPoint; // the given point
   gp_XYZ   myParam; // the best parameters guess
-  double   myValues[ 4 ]; // values computed at myParam
+  double   myValues[ 4 ]; // values computed at myParam: function value and 3 derivatives
 
   typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
-  TxyzPair my3x3x3GridNodes[ 27 ];
+  TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
   bool     myGridComputed;
 };
 
