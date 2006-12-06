@@ -53,7 +53,15 @@ EXPORT_HEADERS = \
 	StdMeshers_Hexa_3D_i.hxx \
 	StdMeshers_AutomaticLength_i.hxx \
 	StdMeshers_QuadranglePreference_i.hxx \
-	StdMeshers_QuadraticMesh_i.hxx
+	StdMeshers_QuadraticMesh_i.hxx \
+	StdMeshers_NumberOfLayers_i.hxx \
+	StdMeshers_Prism_3D_i.hxx \
+	StdMeshers_ProjectionSource1D_i.hxx \
+	StdMeshers_ProjectionSource2D_i.hxx \
+	StdMeshers_ProjectionSource3D_i.hxx \
+	StdMeshers_Projection_1D_2D_3D_i.hxx \
+	StdMeshers_ObjRefUlils.hxx \
+	StdMeshers_LayerDistribution_i.hxx
 
 # Libraries targets
 
@@ -77,7 +85,15 @@ LIB_SRC = \
 	StdMeshers_Hexa_3D_i.cxx \
 	StdMeshers_AutomaticLength_i.cxx \
 	StdMeshers_QuadranglePreference_i.cxx \
-	StdMeshers_QuadraticMesh_i.cxx
+	StdMeshers_QuadraticMesh_i.cxx \
+	StdMeshers_NumberOfLayers_i.cxx \
+	StdMeshers_Prism_3D_i.cxx \
+	StdMeshers_ProjectionSource1D_i.cxx \
+	StdMeshers_ProjectionSource2D_i.cxx \
+	StdMeshers_ProjectionSource3D_i.cxx \
+	StdMeshers_Projection_1D_2D_3D_i.cxx \
+	StdMeshers_ObjRefUlils.cxx \
+	StdMeshers_LayerDistribution_i.cxx
 
 LIB_SERVER_IDL = SMESH_BasicHypothesis.idl
 

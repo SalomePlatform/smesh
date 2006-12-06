@@ -44,13 +44,17 @@ LIB_SRC = \
 	StdMeshersGUI_StdHypothesisCreator.cxx \
 	StdMeshersGUI_DistrPreview.cxx \
 	StdMeshersGUI_DistrTable.cxx \
-	StdMeshersGUI_NbSegmentsCreator.cxx
+	StdMeshersGUI_NbSegmentsCreator.cxx \
+	StdMeshersGUI_ObjectReferenceParamWdg.cxx \
+	StdMeshersGUI_LayerDistributionParamWdg.cxx
 
 LIB_MOC = \
 	StdMeshersGUI_StdHypothesisCreator.h \
 	StdMeshersGUI_DistrPreview.h \
 	StdMeshersGUI_DistrTable.h \
-	StdMeshersGUI_NbSegmentsCreator.h
+	StdMeshersGUI_NbSegmentsCreator.h \
+	StdMeshersGUI_ObjectReferenceParamWdg.h \
+	StdMeshersGUI_LayerDistributionParamWdg.h
 
 EXPORT_HEADERS = StdMeshersGUI_StdHypothesisCreator.h
 

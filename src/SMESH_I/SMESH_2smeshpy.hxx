@@ -34,6 +34,7 @@
 #include <list>
 #include <map>
 
+// ===========================================================================================
 /*!
  * \brief Tool converting SMESH engine calls into commands defined in smesh.py
  *
@@ -49,6 +50,7 @@
  *
  * See comments to _pyHypothesis class to know how to assure convertion of a new hypothesis
  */
+// ===========================================================================================
 
 class Resource_DataMapOfAsciiStringAsciiString;
 
@@ -74,9 +76,11 @@ public:
   static char* GenName() { return "smesh.smesh"; }
 };
 
+// ===========================================================================================
 // =====================
 //    INTERNAL STUFF
 // =====================
+// ===========================================================================================
 
 class _pyCommand;
 class _pyObject;
@@ -154,9 +158,11 @@ public:
   DEFINE_STANDARD_RTTI (_pyCommand)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Root of all objects
  */
+// -------------------------------------------------------------------------------------
 
 class _pyObject: public Standard_Transient
 {
@@ -174,10 +180,12 @@ public:
   DEFINE_STANDARD_RTTI (_pyObject)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class corresponding to SMESH_Gen. It holds info on existing
  *        meshes and hypotheses
  */
+// -------------------------------------------------------------------------------------
 class _pyGen: public _pyObject
 {
 public:
@@ -205,9 +213,11 @@ private:
   DEFINE_STANDARD_RTTI (_pyGen)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Contains commands concerning mesh substructures
  */
+// -------------------------------------------------------------------------------------
 #define _pyMesh_ACCESS_METHOD "GetMesh()"
 class _pyMesh: public _pyObject
 {
@@ -229,6 +239,7 @@ private:
 };
 #undef _pyMesh_ACCESS_METHOD 
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Root class for hypothesis
  *
@@ -245,19 +256,29 @@ private:
  *    to derive a specific class from _pyHypothesis that would redefine Process(),
  *    see _pyComplexParamHypo for example
  */
+// -------------------------------------------------------------------------------------
 class _pyHypothesis: public _pyObject
 {
 protected:
   bool    myIsAlgo, /*myIsLocal, */myIsWrapped, myIsConverted;
-  int     myDim, myAdditionCmdNb;
+  int     myDim, /*myAdditionCmdNb*/;
   _pyID    myGeom, myMesh;
   TCollection_AsciiString       myCreationMethod, myType;
   TColStd_SequenceOfAsciiString myArgs;
   TColStd_SequenceOfAsciiString myArgMethods;
+  TColStd_SequenceOfInteger     myNbArgsByMethod;
   std::list<Handle(_pyCommand)>  myArgCommands;
   std::list<Handle(_pyCommand)>  myUnknownCommands;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
+  void SetDimMethodType(const int dim, const char* creationMethod, const char* type=0)
+  { myDim = dim; myCreationMethod = (char*)creationMethod; if ( type ) myType = (char*)type; }
+  void AddArgMethod(const char* method, const int nbArgs = 1)
+  { myArgMethods.Append( (char*)method ); myNbArgsByMethod.Append( nbArgs ); }
+  const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
+  const TCollection_AsciiString& GetCreationMethod() const { return myCreationMethod; }
+  const std::list<Handle(_pyCommand)>& GetArgCommands() const { return myArgCommands; }
+  void ClearAllCommands();
   virtual bool IsAlgo() const { return myIsAlgo; }
   bool IsWrapped() const { return myIsWrapped; }
   bool & IsConverted() { return myIsConverted; }
@@ -278,9 +299,11 @@ public:
   DEFINE_STANDARD_RTTI (_pyHypothesis)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class for hypotheses having several parameters modified by one method
  */
+// -------------------------------------------------------------------------------------
 class _pyComplexParamHypo: public _pyHypothesis
 {
 public:
@@ -291,10 +314,32 @@ public:
 };
 DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Class for LayerDistribution hypothesis conversion
+ */
+// -------------------------------------------------------------------------------------
+class _pyLayerDistributionHypo: public _pyHypothesis
+{
+  Handle(_pyHypothesis) my1dHyp;
+public:
+  _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd):
+    _pyHypothesis(theCreationCmd) {}
+  void Process( const Handle(_pyCommand)& theCommand);
+  void Flush();
+  bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                          const _pyID&              theMesh);
 
+  DEFINE_STANDARD_RTTI (_pyLayerDistributionHypo)
+};
+DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis);
+
+
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class representing NumberOfSegments hypothesis
  */
+// -------------------------------------------------------------------------------------
 class _pyNumberOfSegmentsHyp: public _pyHypothesis
 {
 public:
@@ -307,9 +352,11 @@ public:
 };
 DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class representing smesh.Mesh_Algorithm
  */
+// -------------------------------------------------------------------------------------
 class _pyAlgorithm: public _pyHypothesis
 {
 public:

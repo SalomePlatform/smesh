@@ -54,6 +54,7 @@ IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
 IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
 IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
 IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -706,127 +707,139 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
   Handle(_pyHypothesis) hyp, algo;
 
   // "theHypType"
-  const TCollection_AsciiString & hypTypeWithQuotes = theCreationCmd->GetArg( 1 );
-  if ( hypTypeWithQuotes.IsEmpty() )
+  const TCollection_AsciiString & hypTypeQuoted = theCreationCmd->GetArg( 1 );
+  if ( hypTypeQuoted.IsEmpty() )
     return hyp;
   // theHypType
   TCollection_AsciiString  hypType =
-    hypTypeWithQuotes.SubString( 2, hypTypeWithQuotes.Length() - 1 );
+    hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
 
   algo = new _pyAlgorithm( theCreationCmd );
   hyp  = new _pyHypothesis( theCreationCmd );
 
   // 1D Regular_1D ----------
   if ( hypType == "Regular_1D" ) {
-    algo->myDim = 1;
-    algo->myCreationMethod = "Segment";
+    algo->SetDimMethodType( 1, "Segment");
   }
   else if ( hypType == "LocalLength" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "LocalLength";
-    hyp->myType = "Regular_1D";
-    hyp->myArgMethods.Append( "SetLength" );
+    hyp->SetDimMethodType( 1, "LocalLength", "Regular_1D");
+    hyp->AddArgMethod( "SetLength" );
   }
   else if ( hypType == "NumberOfSegments" ) {
     hyp = new _pyNumberOfSegmentsHyp( theCreationCmd );
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "NumberOfSegments";
-    hyp->myType = "Regular_1D";
-    hyp->myArgMethods.Append( "SetNumberOfSegments" );
-    hyp->myArgMethods.Append( "SetScaleFactor" );
+    hyp->SetDimMethodType( 1, "NumberOfSegments", "Regular_1D");
+    hyp->AddArgMethod( "SetNumberOfSegments" );
+    hyp->AddArgMethod( "SetScaleFactor" );
   }
   else if ( hypType == "Arithmetic1D" ) {
     hyp = new _pyComplexParamHypo( theCreationCmd );
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "Arithmetic1D";
-    hyp->myType = "Regular_1D";
+    hyp->SetDimMethodType( 1, "Arithmetic1D", "Regular_1D");
   }
   else if ( hypType == "StartEndLength" ) {
     hyp = new _pyComplexParamHypo( theCreationCmd );
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "StartEndLength";
-    hyp->myType = "Regular_1D";
+    hyp->SetDimMethodType( 1, "StartEndLength", "Regular_1D");
   }
   else if ( hypType == "Deflection1D" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "Deflection1D";
-    hyp->myArgMethods.Append( "SetDeflection" );
-    hyp->myType = "Regular_1D";
+    hyp->SetDimMethodType( 1, "Deflection1D", "Regular_1D");
+    hyp->AddArgMethod( "SetDeflection" );
   }
   else if ( hypType == "Propagation" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "Propagation";
-    hyp->myType = "Regular_1D";
+    hyp->SetDimMethodType( 1, "Propagation", "Regular_1D");
   }
   else if ( hypType == "QuadraticMesh" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "QuadraticMesh";
-    hyp->myType = "Regular_1D";
+    hyp->SetDimMethodType( 1, "QuadraticMesh", "Regular_1D");
   }
   else if ( hypType == "AutomaticLength" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "AutomaticLength";
-    hyp->myType = "Regular_1D";
-    hyp->myArgMethods.Append( "SetFineness");
+    hyp->SetDimMethodType( 1, "AutomaticLength", "Regular_1D");
+    hyp->AddArgMethod( "SetFineness");
   }
   // 1D Python_1D ----------
   else if ( hypType == "Python_1D" ) {
-    algo->myDim = 1;
-    algo->myCreationMethod = "Segment";
+    algo->SetDimMethodType( 1, "Segment");
     algo->myArgs.Append( "algo=smesh.PYTHON");
   }
   else if ( hypType == "PythonSplit1D" ) {
-    hyp->myDim = 1;
-    hyp->myCreationMethod = "PythonSplit1D";
-    hyp->myType = "Python_1D";
-    hyp->myArgMethods.Append( "SetNumberOfSegments");
-    hyp->myArgMethods.Append( "SetPythonLog10RatioFunction");
+    hyp->SetDimMethodType( 1, "PythonSplit1D", "Python_1D");
+    hyp->AddArgMethod( "SetNumberOfSegments");
+    hyp->AddArgMethod( "SetPythonLog10RatioFunction");
   }
   // 2D ----------
   else if ( hypType == "MEFISTO_2D" ) {
-    algo->myDim = 2;
-    algo->myCreationMethod = "Triangle";
+    algo->SetDimMethodType( 2, "Triangle");
   }
   else if ( hypType == "MaxElementArea" ) {
-    hyp->myDim = 2;
-    hyp->myCreationMethod = "MaxElementArea";
-    hyp->myType = "MEFISTO_2D";
-    hyp->myArgMethods.Append( "SetMaxElementArea");
+    hyp->SetDimMethodType( 2, "MaxElementArea", "MEFISTO_2D");
+    hyp->AddArgMethod( "SetMaxElementArea");
   }
   else if ( hypType == "LengthFromEdges" ) {
-    hyp->myDim = 2;
-    hyp->myCreationMethod = "LengthFromEdges";
-    hyp->myType = "MEFISTO_2D";
+    hyp->SetDimMethodType( 2, "LengthFromEdges", "MEFISTO_2D");
   }
   else if ( hypType == "Quadrangle_2D" ) {
-    algo->myDim = 2;
-    algo->myCreationMethod = "Quadrangle";
+    algo->SetDimMethodType( 2, "Quadrangle" );
   }
   else if ( hypType == "QuadranglePreference" ) {
-    hyp->myDim = 2;
-    hyp->myCreationMethod = "QuadranglePreference";
-    hyp->myType = "Quadrangle_2D";
+    hyp->SetDimMethodType( 2, "QuadranglePreference", "Quadrangle_2D");
   }
   // 3D ----------
   else if ( hypType == "NETGEN_3D") {
-    algo->myDim = 3;
-    algo->myCreationMethod = "Tetrahedron";
+    algo->SetDimMethodType( 3, "Tetrahedron" );
     algo->myArgs.Append( "algo=smesh.NETGEN" );
   }
   else if ( hypType == "MaxElementVolume") {
-    hyp->myDim = 3;
-    hyp->myCreationMethod = "MaxElementVolume";
-    hyp->myType = "NETGEN_3D";
-    hyp->myArgMethods.Append( "SetMaxElementVolume" );
+    hyp->SetDimMethodType( 3, "MaxElementVolume", "NETGEN_3D");
+    hyp->AddArgMethod( "SetMaxElementVolume" );
   }
   else if ( hypType == "GHS3D_3D" ) {
-    algo->myDim = 3;
-    algo->myCreationMethod = "Tetrahedron";
+    algo->SetDimMethodType( 3, "Tetrahedron");
     algo->myArgs.Append( "algo=smesh.GHS3D" );
   }
   else if ( hypType == "Hexa_3D" ) {
-    algo->myDim = 3;
-    algo->myCreationMethod = "Hexahedron";
+    algo->SetDimMethodType( 3, "Hexahedron");
+  }
+  // Repetitive ---------
+  else if ( hypType == "Projection_1D" ) {
+    algo->SetDimMethodType( 1, "Projection1D");
+  }
+  else if ( hypType == "ProjectionSource1D" ) {
+    hyp->SetDimMethodType( 1, "SourceEdge", "Projection_1D");
+    hyp->AddArgMethod( "SetSourceEdge");
+    hyp->AddArgMethod( "SetSourceMesh");
+    hyp->AddArgMethod( "SetVertexAssociation", 2 );
+  }
+  else if ( hypType == "Projection_2D" ) {
+    algo->SetDimMethodType( 2, "Projection2D");
+  }
+  else if ( hypType == "ProjectionSource2D" ) {
+    hyp->SetDimMethodType( 2, "SourceFace", "Projection_2D");
+    hyp->AddArgMethod( "SetSourceFace");
+    hyp->AddArgMethod( "SetSourceMesh");
+    hyp->AddArgMethod( "SetVertexAssociation", 4 );
+  }
+  else if ( hypType == "Projection_3D" ) {
+    algo->SetDimMethodType( 3, "Projection3D");
+  }
+  else if ( hypType == "ProjectionSource3D" ) {
+    hyp->SetDimMethodType( 3, "SourceShape3D", "Projection_3D");
+    hyp->AddArgMethod( "SetSource3DShape");
+    hyp->AddArgMethod( "SetSourceMesh");
+    hyp->AddArgMethod( "SetVertexAssociation", 4 );
+  }
+  else if ( hypType == "Prism_3D" ) {
+    algo->SetDimMethodType( 3, "Prism");
+  }
+  else if ( hypType == "RadialPrism_3D" ) {
+    algo->SetDimMethodType( 3, "Prism");
+  }
+  else if ( hypType == "NumberOfLayers" ) {
+    hyp->SetDimMethodType( 3, "NumberOfLayers", "RadialPrism_3D");
+    hyp->AddArgMethod( "SetNumberOfLayers" );
+  }
+  else if ( hypType == "LayerDistribution" ) {
+    hyp = new _pyLayerDistributionHypo( theCreationCmd );
+    hyp->SetDimMethodType( 3, "LayerDistribution", "RadialPrism_3D");
+//     hyp->AddArgMethod( "SetSource3DShape");
+//     hyp->AddArgMethod( "SetSourceMesh");
+//     hyp->AddArgMethod( "SetVertexAssociation", 4 );
   }
 
   if ( algo->GetDim() ) {
@@ -908,14 +921,17 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 {
   ASSERT( !myIsAlgo );
   // set args
+  int nbArgs = 0;
   for ( int i = 1; i <= myArgMethods.Length(); ++i ) {
     if ( myArgMethods( i ) == theCommand->GetMethod() ) {
-      while ( myArgs.Length() < i )
+      while ( myArgs.Length() < nbArgs + myNbArgsByMethod( i ))
         myArgs.Append( "[]" );
-      myArgs( i ) = theCommand->GetArg( 1 ); // arg value
+      for ( int iArg = 1; iArg <= myNbArgsByMethod( i ); ++iArg )
+        myArgs( nbArgs + iArg ) = theCommand->GetArg( iArg ); // arg value
       myArgCommands.push_back( theCommand );
       return;
     }
+    nbArgs += myNbArgsByMethod( i );
   }
   myUnknownCommands.push_back( theCommand );
 }
@@ -937,6 +953,23 @@ void _pyHypothesis::Flush()
 
 //================================================================================
 /*!
+ * \brief clear creation, arg and unkown commands
+ */
+//================================================================================
+
+void _pyHypothesis::ClearAllCommands()
+{
+  GetCreationCmd()->Clear();
+  list<Handle(_pyCommand)>::iterator cmd = myArgCommands.begin();
+  for ( ; cmd != myArgCommands.end(); ++cmd )
+    ( *cmd )->Clear();
+  cmd = myUnknownCommands.begin();
+  for ( ; cmd != myUnknownCommands.end(); ++cmd )
+    ( *cmd )->Clear();
+}
+
+//================================================================================
+/*!
  * \brief Remember hypothesis parameter values
   * \param theCommand - The called hypothesis method
  */
@@ -953,6 +986,127 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
     myArgs.Append( "[]" );
   myArgs( i ) = theCommand->GetArg( 1 ); // arg value
   myArgCommands.push_back( theCommand );
+}
+
+//================================================================================
+/*!
+ * \brief Convert methods of 1D hypotheses to my own methods
+  * \param theCommand - The called hypothesis method
+ */
+//================================================================================
+
+void _pyLayerDistributionHypo::Process( const Handle(_pyCommand)& theCommand)
+{
+  if ( theCommand->GetMethod() != "SetLayerDistribution" )
+    return;
+
+  _pyID newName; // name for 1D hyp = "HypType" + "_Distribution"
+
+  const _pyID& hyp1dID = theCommand->GetArg( 1 );
+  Handle(_pyHypothesis) hyp1d = theGen->FindHyp( hyp1dID );
+  if ( hyp1d.IsNull() ) // apparently hypId changed at study restoration
+    hyp1d = my1dHyp;
+  else if ( !my1dHyp.IsNull() && hyp1dID != my1dHyp->GetID() ) {
+    // 1D hypo is already set, so distribution changes and the old
+    // 1D hypo is thrown away
+    my1dHyp->ClearAllCommands();
+  }
+  my1dHyp = hyp1d;
+  if ( my1dHyp.IsNull() )
+    return; // something wrong :(
+
+  // make a new name for 1D hyp = "HypType" + "_Distribution"
+  if ( my1dHyp->GetCreationCmd()->GetMethod() == "CreateHypothesis" ) {
+    // not yet converted creation cmd
+    TCollection_AsciiString hypTypeQuoted = my1dHyp->GetCreationCmd()->GetArg(1);
+    TCollection_AsciiString hypType = hypTypeQuoted.SubString( 2, hypTypeQuoted.Length() - 1 );
+    newName = hypType + "_Distribution";
+    my1dHyp->GetCreationCmd()->SetResultValue( newName );
+  }
+  else {
+    // already converted creation cmd
+    newName = my1dHyp->GetCreationCmd()->GetResultValue();
+  }
+
+  // as creation of 1D hyp was written later then it's edition,
+  // we need to find all it's edition calls and process them
+  list< Handle(_pyCommand) >& cmds = theGen->GetCommands();
+  list< Handle(_pyCommand) >::iterator cmdIt = cmds.begin();
+  for ( ; cmdIt != cmds.end(); ++cmdIt ) {
+    const _pyID& objID = (*cmdIt)->GetObject();
+    if ( objID == hyp1dID ) {
+      my1dHyp->Process( *cmdIt );
+      my1dHyp->GetCreationCmd()->AddDependantCmd( *cmdIt );
+      ( *cmdIt )->SetObject( newName );
+    }
+  }
+  if ( !myArgCommands.empty() )
+    myArgCommands.front()->Clear();
+  theCommand->SetArg( 1, newName );
+  myArgCommands.push_back( theCommand );
+  // copy hyp1d's creation method and args
+//   myCreationMethod = hyp1d->GetCreationMethod();
+//   myArgs           = hyp1d->GetArgs();
+//   // make them cleared at conversion
+//   myArgCommands = hyp1d->GetArgCommands();
+
+//   // to be cleared at convertion only
+//   myArgCommands.push_back( theCommand );
+}
+
+//================================================================================
+/*!
+ * \brief 
+  * \param theAdditionCmd - 
+  * \param theMesh - 
+  * \retval bool - 
+ */
+//================================================================================
+
+bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                                                  const _pyID&              theMesh)
+{
+  myIsWrapped = false;
+
+  if ( my1dHyp.IsNull() )
+    return false;
+
+  // set "SetLayerDistribution()" after addition cmd
+  theAdditionCmd->AddDependantCmd( myArgCommands.front() );
+
+  _pyID geom = theAdditionCmd->GetArg( 1 );
+
+  my1dHyp->SetMesh( theMesh );
+  if ( !my1dHyp->Addition2Creation( theAdditionCmd, theMesh ))
+    return false;
+
+  // clear "SetLayerDistribution()" cmd
+  myArgCommands.front()->Clear();
+
+  // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
+
+  // find RadialPrism algo created on <geom> for theMesh
+  Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMesh, this->GetType() );
+  if ( !algo.IsNull() ) {
+    GetCreationCmd()->SetObject( algo->GetID() );
+    GetCreationCmd()->SetMethod( "Get3DHypothesis" );
+    GetCreationCmd()->RemoveArgs();
+    theAdditionCmd->AddDependantCmd( GetCreationCmd() );
+    myIsWrapped = true;
+  }
+  return myIsWrapped;
+}
+
+//================================================================================
+/*!
+ * \brief 
+ */
+//================================================================================
+
+void _pyLayerDistributionHypo::Flush()
+{
+  //my1dHyp.Nullify();
+  //_pyHypothesis::Flush();
 }
 
 //================================================================================
