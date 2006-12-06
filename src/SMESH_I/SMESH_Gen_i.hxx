@@ -104,6 +104,15 @@ public:
   void mapOldToNew( const int oldId, const int newId ) {
     mapIdToId[ oldId ] = newId;
   }
+  // get old id by a new one
+  int getOldId( const int newId ) {
+    map<int, int>::iterator imap;
+    for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
+      if ( imap->second == newId )
+        return imap->first;
+    }
+    return 0;
+  }
     
 private:
   // get next free object identifier
@@ -398,6 +407,21 @@ public:
 
   // Register an object in a StudyContext; return object id
   int RegisterObject(CORBA::Object_ptr theObject);
+
+  // Return id of registered object
+  int GetObjectId(CORBA::Object_ptr theObject);
+
+  // Return an object that previously had an oldID
+  template<class TInterface> 
+  typename TInterface::_var_type GetObjectByOldId( const int oldID )
+  {
+    if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
+      string ior = myStudyContext->getIORbyOldId( oldID );
+      if ( !ior.empty() )
+        return TInterface::_narrow(GetORB()->string_to_object( ior.c_str() ));
+    }
+    return TInterface::_nil();
+  }
 
   // Get current study ID
   int GetCurrentStudyID()
