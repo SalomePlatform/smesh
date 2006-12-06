@@ -102,7 +102,7 @@ using SMESH::TPythonDump;
 #define NUM_TMP_FILES 2
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
@@ -934,6 +934,7 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
         case ::SMESH_Gen::MISSING_ALGO:     errName = SMESH::MISSING_ALGO; break;
         case ::SMESH_Gen::MISSING_HYPO:     errName = SMESH::MISSING_HYPO; break;
         case ::SMESH_Gen::NOT_CONFORM_MESH: errName = SMESH::NOT_CONFORM_MESH; break;
+        case ::SMESH_Gen::BAD_PARAM_VALUE:  errName = SMESH::BAD_PARAM_VALUE; break;
         default:
           THROW_SALOME_CORBA_EXCEPTION( "bad error name",SALOME::BAD_PARAM );
         }
@@ -1086,7 +1087,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   // Update Python script
   TPythonDump() << "isDone = " << this << ".Compute( "
                 << theMesh << ", " << theShapeObject << ")";
-  TPythonDump() << "if not isDone: print 'Mesh " << theMesh << " : computation failed'";
+  TPythonDump() << "if not isDone: print 'Mesh', " << theMesh << ", ': computation failed'";
 
   try {
     // get mesh servant
@@ -2098,15 +2099,15 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
        theComponent->GetStudy()->StudyId() != myCurrentStudy->StudyId() )
     SetCurrentStudy( theComponent->GetStudy() );
 
-/*  if( !theComponent->_is_nil() )
-  {
-    //SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow( theComponent->GetStudy() );
-    if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
+  /*  if( !theComponent->_is_nil() )
+      {
+      //SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow( theComponent->GetStudy() );
+      if( !myCurrentStudy->FindComponent( "GEOM" )->_is_nil() )
       loadGeomData( myCurrentStudy->FindComponent( "GEOM" ) );
-  }*/
+      }*/
 
   StudyContext* myStudyContext = GetCurrentStudyContext();
-  
+
   // Get temporary files location
   TCollection_AsciiString tmpDir =
     isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
@@ -2144,6 +2145,19 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetFile( meshfile.ToCString() );
+
+  // For PAL13473 ("Repetitive mesh") implementation.
+  // New dependencies between SMESH objects are established:
+  // now hypotheses can refer to meshes, shapes and other hypotheses.
+  // To keep data consistent, the following order of data restoration
+  // imposed:
+  // 1. Create hypotheses
+  // 2. Create all meshes
+  // 3. Load hypotheses' data
+  // 4. All the rest
+
+  list< pair< SMESH_Hypothesis_i*, string > >    hypDataList;
+  list< pair< SMESH_Mesh_i*,       HDFgroup* > > meshGroupList;
 
   // get total number of top-level groups
   int aNbGroups = aFile->nInternalObjects(); 
@@ -2219,9 +2233,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  // --> restore hypothesis from data
 	  if ( id > 0 && !hypname.empty()/* && !hypdata.empty()*/ ) { // VSR : persistent data can be empty
 	    if(MYDEBUG) MESSAGE("VSR - load hypothesis : id = " << id <<
-                    ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
+                                ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
             SMESH::SMESH_Hypothesis_var myHyp;
-	    
+
 	    try { // protect persistence mechanism against exceptions
 	      myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
 	    }
@@ -2231,7 +2245,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
 	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
 	    if ( myImpl ) {
-	      myImpl->LoadFrom( hypdata.c_str() );
+	      // myImpl->LoadFrom( hypdata.c_str() );
+              hypDataList.push_back( make_pair( myImpl, hypdata ));
 	      string iorString = GetORB()->object_to_string( myHyp );
 	      int newId = myStudyContext->findId( iorString );
 	      myStudyContext->mapOldToNew( id, newId );
@@ -2313,23 +2328,24 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  }
 	  // close algorithm HDF group
 	  aGroup->CloseOnDisk();
-	  
+
 	  // --> restore algorithm from data
 	  if ( id > 0 && !hypname.empty()/* && !hypdata.empty()*/ ) { // VSR : persistent data can be empty
 	    if(MYDEBUG) MESSAGE("VSR - load algo : id = " << id <<
-                    ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
+                                ", name = " << hypname.c_str() << ", persistent string = " << hypdata.c_str());
             SMESH::SMESH_Hypothesis_var myHyp;
-	    	    
+
 	    try { // protect persistence mechanism against exceptions
 	      myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
 	    }
 	    catch (...) {
 	      INFOS( "Exception during hypothesis creation" );
 	    }
-	    
+
 	    SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
 	    if ( myImpl ) {
-	      myImpl->LoadFrom( hypdata.c_str() );
+	      //myImpl->LoadFrom( hypdata.c_str() );
+              hypDataList.push_back( make_pair( myImpl, hypdata ));
 	      string iorString = GetORB()->object_to_string( myHyp );
 	      int newId = myStudyContext->findId( iorString );
 	      myStudyContext->mapOldToNew( id, newId );
@@ -2355,8 +2371,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	if ( id <= 0 )
 	  continue;
 
-	bool hasData = false;
-
 	// open mesh HDF group
 	aTopGroup = new HDFgroup( meshName, aFile ); 
 	aTopGroup->OpenOnDisk();
@@ -2370,591 +2384,619 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  SMESH_Mesh_i* myNewMeshImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( myNewMesh ).in() );
           if ( !myNewMeshImpl )
 	    continue;
+          meshGroupList.push_back( make_pair( myNewMeshImpl, aTopGroup ));
+
 	  string iorString = GetORB()->object_to_string( myNewMesh );
 	  int newId = myStudyContext->findId( iorString );
 	  myStudyContext->mapOldToNew( id, newId );
-	  
-	  ::SMESH_Mesh& myLocMesh = myNewMeshImpl->GetImpl();
-	  SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
+        }
+      }
+    }
 
-	  // try to find mesh data dataset
-	  if ( aTopGroup->ExistInternalObject( "Has data" ) ) {
-	    // load mesh "has data" flag
-	    aDataset = new HDFdataset( "Has data", aTopGroup );
-	    aDataset->OpenOnDisk();
-	    size = aDataset->GetSize();
-	    char* strHasData = new char[ size ];
-	    aDataset->ReadFromDisk( strHasData );
-	    aDataset->CloseOnDisk();
-	    if ( strcmp( strHasData, "1") == 0 ) {
-	      // read mesh data from MED file
-	      myReader.SetMesh( mySMESHDSMesh );
-	      myReader.SetMeshId( id );
-	      myReader.Perform();
-	      hasData = true;
-	    }
-	  }
+    // As all object that can be referred by hypothesis are created,
+    // we can restore hypothesis data
 
-	  // try to read and set reference to shape
-	  GEOM::GEOM_Object_var aShapeObject;
-	  if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
-	    // load mesh "Ref on shape" - it's an entry to SObject
-	    aDataset = new HDFdataset( "Ref on shape", aTopGroup );
-	    aDataset->OpenOnDisk();
-	    size = aDataset->GetSize();
-	    char* refFromFile = new char[ size ];
-	    aDataset->ReadFromDisk( refFromFile );
-	    aDataset->CloseOnDisk();
-	    if ( strlen( refFromFile ) > 0 ) {
-	      SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+    list< pair< SMESH_Hypothesis_i*, string > >::iterator hyp_data;
+    for ( hyp_data = hypDataList.begin(); hyp_data != hypDataList.end(); ++hyp_data )
+    {
+      SMESH_Hypothesis_i* hyp  = hyp_data->first;
+      string &            data = hyp_data->second;
+      hyp->LoadFrom( data.c_str() );
+    }
 
-	      // Make sure GEOM data are loaded first
-	      //loadGeomData( shapeSO->GetFatherComponent() );
+    // Restore the rest mesh data
 
-	      CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
-	      if ( !CORBA::is_nil( shapeObject ) ) {
-		aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
-		if ( !aShapeObject->_is_nil() )
-		  myNewMeshImpl->SetShape( aShapeObject );
-	      }
-	    }
-	  }
+    list< pair< SMESH_Mesh_i*, HDFgroup* > >::iterator meshi_group;
+    for ( meshi_group = meshGroupList.begin(); meshi_group != meshGroupList.end(); ++meshi_group )
+    {
+      aTopGroup                   = meshi_group->second;
+      SMESH_Mesh_i* myNewMeshImpl = meshi_group->first;
+      ::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
+      SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 
-	  // try to get applied algorithms
-	  if ( aTopGroup->ExistInternalObject( "Applied Algorithms" ) ) {
-	    aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
-	    aGroup->OpenOnDisk();
-	    // get number of applied algorithms
-	    int aNbSubObjects = aGroup->nInternalObjects(); 
-	    if(MYDEBUG) MESSAGE( "VSR - number of applied algos " << aNbSubObjects );
-	    for ( int j = 0; j < aNbSubObjects; j++ ) {
-	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-	      aGroup->InternalObjectIndentify( j, name_dataset );
-	      // check if it is an algorithm
-	      if ( string( name_dataset ).substr( 0, 4 ) == string( "Algo" ) ) {
-		aDataset = new HDFdataset( name_dataset, aGroup );
-		aDataset->OpenOnDisk();
-		size = aDataset->GetSize();
-		char* refFromFile = new char[ size ];
-		aDataset->ReadFromDisk( refFromFile );
-		aDataset->CloseOnDisk();
+      bool hasData = false;
 
-		// san - it is impossible to recover applied algorithms using their entries within Load() method
-		
-		//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-		//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-		int id = atoi( refFromFile );
-		string anIOR = myStudyContext->getIORbyOldId( id );
-		if ( !anIOR.empty() ) {
-		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-		  if ( !CORBA::is_nil( hypObject ) ) {
-		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
-		  }
-		}
-	      }
-	    }
-	    aGroup->CloseOnDisk();
-	  }
+      // get mesh old id
+      string iorString = GetORB()->object_to_string( myNewMeshImpl->_this() );
+      int newId = myStudyContext->findId( iorString );
+      int id = myStudyContext->getOldId( newId );
 
-	  // try to get applied hypotheses
-	  if ( aTopGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
-	    aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
-	    aGroup->OpenOnDisk();
-	    // get number of applied hypotheses
-	    int aNbSubObjects = aGroup->nInternalObjects(); 
-	    for ( int j = 0; j < aNbSubObjects; j++ ) {
-	      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-	      aGroup->InternalObjectIndentify( j, name_dataset );
-	      // check if it is a hypothesis
-	      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
-		aDataset = new HDFdataset( name_dataset, aGroup );
-		aDataset->OpenOnDisk();
-		size = aDataset->GetSize();
-		char* refFromFile = new char[ size ];
-		aDataset->ReadFromDisk( refFromFile );
-		aDataset->CloseOnDisk();
+      // try to find mesh data dataset
+      if ( aTopGroup->ExistInternalObject( "Has data" ) ) {
+        // load mesh "has data" flag
+        aDataset = new HDFdataset( "Has data", aTopGroup );
+        aDataset->OpenOnDisk();
+        size = aDataset->GetSize();
+        char* strHasData = new char[ size ];
+        aDataset->ReadFromDisk( strHasData );
+        aDataset->CloseOnDisk();
+        if ( strcmp( strHasData, "1") == 0 ) {
+          // read mesh data from MED file
+          myReader.SetMesh( mySMESHDSMesh );
+          myReader.SetMeshId( id );
+          myReader.Perform();
+          hasData = true;
+        }
+      }
 
-		// san - it is impossible to recover applied hypotheses using their entries within Load() method
-		
-		//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-		//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-		int id = atoi( refFromFile );
-		string anIOR = myStudyContext->getIORbyOldId( id );
-		if ( !anIOR.empty() ) {
-		  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-		  if ( !CORBA::is_nil( hypObject ) ) {
-		    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-		    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-		      myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
-		  }
-		}
-	      }
-	    }
-	    aGroup->CloseOnDisk();
-	  }
+      // try to read and set reference to shape
+      GEOM::GEOM_Object_var aShapeObject;
+      if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
+        // load mesh "Ref on shape" - it's an entry to SObject
+        aDataset = new HDFdataset( "Ref on shape", aTopGroup );
+        aDataset->OpenOnDisk();
+        size = aDataset->GetSize();
+        char* refFromFile = new char[ size ];
+        aDataset->ReadFromDisk( refFromFile );
+        aDataset->CloseOnDisk();
+        if ( strlen( refFromFile ) > 0 ) {
+          SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
 
-	  // --> try to find submeshes containers for each type of submesh
-	  for ( int j = GetSubMeshOnVertexTag(); j <= GetSubMeshOnCompoundTag(); j++ ) {
-	    char name_meshgroup[ 30 ];
-	    if ( j == GetSubMeshOnVertexTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Vertex" );
-	    else if ( j == GetSubMeshOnEdgeTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Edge" );
-	    else if ( j == GetSubMeshOnWireTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Wire" );
-	    else if ( j == GetSubMeshOnFaceTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Face" );
-	    else if ( j == GetSubMeshOnShellTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Shell" );
-	    else if ( j == GetSubMeshOnSolidTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Solid" );
-	    else if ( j == GetSubMeshOnCompoundTag() )
-	      strcpy( name_meshgroup, "SubMeshes On Compound" );
-	    
-	    // try to get submeshes container HDF group
-	    if ( aTopGroup->ExistInternalObject( name_meshgroup ) ) {
-	      // open submeshes containers HDF group
-	      aGroup = new HDFgroup( name_meshgroup, aTopGroup );
-	      aGroup->OpenOnDisk();
-	      
-	      // get number of submeshes
-	      int aNbSubMeshes = aGroup->nInternalObjects(); 
-	      for ( int k = 0; k < aNbSubMeshes; k++ ) {
-		// identify submesh
-		char name_submeshgroup[ HDF_NAME_MAX_LEN+1 ];
-		aGroup->InternalObjectIndentify( k, name_submeshgroup );
-		if ( string( name_submeshgroup ).substr( 0, 7 ) == string( "SubMesh" )  ) {
-		  // --> get submesh id
-		  int subid = atoi( string( name_submeshgroup ).substr( 7 ).c_str() );
-		  if ( subid <= 0 )
-		    continue;
-		  // open submesh HDF group
-		  aSubGroup = new HDFgroup( name_submeshgroup, aGroup );
-		  aSubGroup->OpenOnDisk();
-		  
-		  // try to read and set reference to subshape
-		  GEOM::GEOM_Object_var aSubShapeObject;
-		  SMESH::SMESH_subMesh_var aSubMesh;
+          // Make sure GEOM data are loaded first
+          //loadGeomData( shapeSO->GetFatherComponent() );
 
-		  if ( aSubGroup->ExistInternalObject( "Ref on shape" ) ) {
-		    // load submesh "Ref on shape" - it's an entry to SObject
-		    aDataset = new HDFdataset( "Ref on shape", aSubGroup );
-		    aDataset->OpenOnDisk();
-		    size = aDataset->GetSize();
-		    char* refFromFile = new char[ size ];
-		    aDataset->ReadFromDisk( refFromFile );
-		    aDataset->CloseOnDisk();
-		    if ( strlen( refFromFile ) > 0 ) {
-		      SALOMEDS::SObject_var subShapeSO = myCurrentStudy->FindObjectID( refFromFile );
-		      CORBA::Object_var subShapeObject = SObjectToObject( subShapeSO );
-		      if ( !CORBA::is_nil( subShapeObject ) ) {
-			aSubShapeObject = GEOM::GEOM_Object::_narrow( subShapeObject );
-			if ( !aSubShapeObject->_is_nil() )
-			  aSubMesh = SMESH::SMESH_subMesh::_duplicate
-                            ( myNewMeshImpl->createSubMesh( aSubShapeObject ) );
-			if ( aSubMesh->_is_nil() )
-			  continue;
-			string iorSubString = GetORB()->object_to_string( aSubMesh );
-			int newSubId = myStudyContext->findId( iorSubString );
-			myStudyContext->mapOldToNew( subid, newSubId );
-		      }
-		    }
-		  }
-		  
-		  if ( aSubMesh->_is_nil() )
-		    continue;
+          CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
+          if ( !CORBA::is_nil( shapeObject ) ) {
+            aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
+            if ( !aShapeObject->_is_nil() )
+              myNewMeshImpl->SetShape( aShapeObject );
+          }
+        }
+      }
 
-		  // VSR: Get submesh data from MED convertor
-//		  int anInternalSubmeshId = aSubMesh->GetId(); // this is not a persistent ID, it's an internal one computed from sub-shape
-//		  if (myNewMeshImpl->_mapSubMesh.find(anInternalSubmeshId) != myNewMeshImpl->_mapSubMesh.end()) {
-//		    if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): loading from MED file submesh with ID = " <<
-//                            subid << " for subshape # " << anInternalSubmeshId);
-//		    SMESHDS_SubMesh* aSubMeshDS =
-//                      myNewMeshImpl->_mapSubMesh[anInternalSubmeshId]->CreateSubMeshDS();
-//		    if ( !aSubMeshDS ) {
-//		      if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): FAILED to create a submesh for subshape # " <<
-//                              anInternalSubmeshId << " in current mesh!");
-//		    }
-//		    else
-//		      myReader.GetSubMesh( aSubMeshDS, subid );
-//		  }
-		    
-		  // try to get applied algorithms
-		  if ( aSubGroup->ExistInternalObject( "Applied Algorithms" ) ) {
-		    // open "applied algorithms" HDF group
-		    aSubSubGroup = new HDFgroup( "Applied Algorithms", aSubGroup );
-		    aSubSubGroup->OpenOnDisk();
-		    // get number of applied algorithms
-		    int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
-		    for ( int l = 0; l < aNbSubObjects; l++ ) {
-		      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-		      aSubSubGroup->InternalObjectIndentify( l, name_dataset );
-		      // check if it is an algorithm
-		      if ( string( name_dataset ).substr( 0, 4 ) == string( "Algo" ) ) {
-			aDataset = new HDFdataset( name_dataset, aSubSubGroup );
-			aDataset->OpenOnDisk();
-			size = aDataset->GetSize();
-			char* refFromFile = new char[ size ];
-			aDataset->ReadFromDisk( refFromFile );
-			aDataset->CloseOnDisk();
+      // try to get applied algorithms
+      if ( aTopGroup->ExistInternalObject( "Applied Algorithms" ) ) {
+        aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
+        aGroup->OpenOnDisk();
+        // get number of applied algorithms
+        int aNbSubObjects = aGroup->nInternalObjects(); 
+        if(MYDEBUG) MESSAGE( "VSR - number of applied algos " << aNbSubObjects );
+        for ( int j = 0; j < aNbSubObjects; j++ ) {
+          char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+          aGroup->InternalObjectIndentify( j, name_dataset );
+          // check if it is an algorithm
+          if ( string( name_dataset ).substr( 0, 4 ) == string( "Algo" ) ) {
+            aDataset = new HDFdataset( name_dataset, aGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            char* refFromFile = new char[ size ];
+            aDataset->ReadFromDisk( refFromFile );
+            aDataset->CloseOnDisk();
 
-			//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-			//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-			int id = atoi( refFromFile );
-			string anIOR = myStudyContext->getIORbyOldId( id );
-			if ( !anIOR.empty() ) {
-			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-			  if ( !CORBA::is_nil( hypObject ) ) {
-			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
-			  }
-			}
-		      }
-		    }
-		    // close "applied algorithms" HDF group
-		    aSubSubGroup->CloseOnDisk();
-		  }
-		  
-		  // try to get applied hypotheses
-		  if ( aSubGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
-		    // open "applied hypotheses" HDF group
-		    aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
-		    aSubSubGroup->OpenOnDisk();
-		    // get number of applied hypotheses
-		    int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
-		    for ( int l = 0; l < aNbSubObjects; l++ ) {
-		      char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-		      aSubSubGroup->InternalObjectIndentify( l, name_dataset );
-		      // check if it is a hypothesis
-		      if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
-			aDataset = new HDFdataset( name_dataset, aSubSubGroup );
-			aDataset->OpenOnDisk();
-			size = aDataset->GetSize();
-			char* refFromFile = new char[ size ];
-			aDataset->ReadFromDisk( refFromFile );
-			aDataset->CloseOnDisk();
-			
-			//SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
-			//CORBA::Object_var hypObject = SObjectToObject( hypSO );
-			int id = atoi( refFromFile );
-			string anIOR = myStudyContext->getIORbyOldId( id );
-			if ( !anIOR.empty() ) {
-			  CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
-			  if ( !CORBA::is_nil( hypObject ) ) {
-			    SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-			    if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
-			      myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
-			  }
-			}
-		      }
-		    }
-		    // close "applied hypotheses" HDF group
-		    aSubSubGroup->CloseOnDisk();
-		  }
+            // san - it is impossible to recover applied algorithms using their entries within Load() method
 
-		  // close submesh HDF group
-		  aSubGroup->CloseOnDisk();
-		}
-	      }
-	      // close submeshes containers HDF group
-	      aGroup->CloseOnDisk();
-	    }
-	  }
-
-	  if(hasData) {
-            
-	    // Read sub-meshes from MED
-            // -------------------------
-	    if(MYDEBUG) MESSAGE("Create all sub-meshes");
-            bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
-            if ( submeshesInFamilies )
-            {
-              // old way working before fix of PAL 12992
-              myReader.CreateAllSubMeshes();
+            //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+            //CORBA::Object_var hypObject = SObjectToObject( hypSO );
+            int id = atoi( refFromFile );
+            string anIOR = myStudyContext->getIORbyOldId( id );
+            if ( !anIOR.empty() ) {
+              CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+              if ( !CORBA::is_nil( hypObject ) ) {
+                SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+                if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                  myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
+              }
             }
-            else
-            {
-              // open a group
-              aGroup = new HDFgroup( "Submeshes", aTopGroup ); 
-              aGroup->OpenOnDisk();
+          }
+        }
+        aGroup->CloseOnDisk();
+      }
 
-              int maxID = mySMESHDSMesh->MaxShapeIndex();
-              vector< SMESHDS_SubMesh * > subMeshes( maxID + 1, (SMESHDS_SubMesh*) 0 );
-              vector< TopAbs_ShapeEnum  > smType   ( maxID + 1, TopAbs_SHAPE ); 
-              
-              PositionCreator aPositionCreator;
+      // try to get applied hypotheses
+      if ( aTopGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
+        aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
+        aGroup->OpenOnDisk();
+        // get number of applied hypotheses
+        int aNbSubObjects = aGroup->nInternalObjects(); 
+        for ( int j = 0; j < aNbSubObjects; j++ ) {
+          char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+          aGroup->InternalObjectIndentify( j, name_dataset );
+          // check if it is a hypothesis
+          if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
+            aDataset = new HDFdataset( name_dataset, aGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            char* refFromFile = new char[ size ];
+            aDataset->ReadFromDisk( refFromFile );
+            aDataset->CloseOnDisk();
 
-              SMDS_NodeIteratorPtr nIt = mySMESHDSMesh->nodesIterator();
-              SMDS_ElemIteratorPtr eIt = mySMESHDSMesh->elementsIterator();
-              for ( int isNode = 0; isNode < 2; ++isNode )
-              {
-                string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
-                if ( aGroup->ExistInternalObject( (char*) aDSName.c_str() ))
-                {
-                  aDataset = new HDFdataset( (char*) aDSName.c_str(), aGroup );
-                  aDataset->OpenOnDisk();
-                  // read submesh IDs for all elements sorted by ID
-                  int nbElems = aDataset->GetSize();
-                  int* smIDs = new int [ nbElems ];
-                  aDataset->ReadFromDisk( smIDs );
-		  aDataset->CloseOnDisk();
+            // san - it is impossible to recover applied hypotheses using their entries within Load() method
 
-                  // get elements sorted by ID
-                  ::SMESH_MeshEditor::TIDSortedElemSet elemSet;
-                  if ( isNode )
-                    while ( nIt->more() ) elemSet.insert( nIt->next() );
-                  else
-                    while ( eIt->more() ) elemSet.insert( eIt->next() );
-                  ASSERT( elemSet.size() == nbElems );
-
-                  // add elements to submeshes
-                  ::SMESH_MeshEditor::TIDSortedElemSet::iterator iE = elemSet.begin();
-                  for ( int i = 0; i < nbElems; ++i, ++iE )
-                  {
-                    int smID = smIDs[ i ];
-                    if ( smID == 0 ) continue;
-                    ASSERT( smID <= maxID );
-                    const SMDS_MeshElement* elem = *iE;
-                    // get or create submesh
-                    SMESHDS_SubMesh* & sm = subMeshes[ smID ];
-                    if ( ! sm ) {
-                      sm = mySMESHDSMesh->NewSubMesh( smID );
-                      smType[ smID ] = mySMESHDSMesh->IndexToShape( smID ).ShapeType();
-                    }
-                    // add
-                    if ( isNode ) {
-                      SMDS_PositionPtr pos = aPositionCreator.MakePosition( smType[ smID ]);
-                      pos->SetShapeId( smID );
-                      SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( static_cast<const SMDS_MeshNode*>( elem ));
-                      node->SetPosition( pos );
-                      sm->AddNode( node );
-                    } else {
-                      sm->AddElement( elem );
-                    }
-                  }
-                  delete smIDs;
-                }
+            //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+            //CORBA::Object_var hypObject = SObjectToObject( hypSO );
+            int id = atoi( refFromFile );
+            string anIOR = myStudyContext->getIORbyOldId( id );
+            if ( !anIOR.empty() ) {
+              CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+              if ( !CORBA::is_nil( hypObject ) ) {
+                SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+                if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                  myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
               }
-            } // end reading submeshes
+            }
+          }
+        }
+        aGroup->CloseOnDisk();
+      }
 
-            // Read node positions on sub-shapes (SMDS_Position)
+      // --> try to find submeshes containers for each type of submesh
+      for ( int j = GetSubMeshOnVertexTag(); j <= GetSubMeshOnCompoundTag(); j++ ) {
+        char name_meshgroup[ 30 ];
+        if ( j == GetSubMeshOnVertexTag() )
+          strcpy( name_meshgroup, "SubMeshes On Vertex" );
+        else if ( j == GetSubMeshOnEdgeTag() )
+          strcpy( name_meshgroup, "SubMeshes On Edge" );
+        else if ( j == GetSubMeshOnWireTag() )
+          strcpy( name_meshgroup, "SubMeshes On Wire" );
+        else if ( j == GetSubMeshOnFaceTag() )
+          strcpy( name_meshgroup, "SubMeshes On Face" );
+        else if ( j == GetSubMeshOnShellTag() )
+          strcpy( name_meshgroup, "SubMeshes On Shell" );
+        else if ( j == GetSubMeshOnSolidTag() )
+          strcpy( name_meshgroup, "SubMeshes On Solid" );
+        else if ( j == GetSubMeshOnCompoundTag() )
+          strcpy( name_meshgroup, "SubMeshes On Compound" );
 
-            if ( aTopGroup->ExistInternalObject( "Node Positions" ))
-            {
-              // There are 5 datasets to read:
-              // "Nodes on Edges" - ID of node on edge
-              // "Edge positions" - U parameter on node on edge
-              // "Nodes on Faces" - ID of node on face
-              // "Face U positions" - U parameter of node on face
-              // "Face V positions" - V parameter of node on face
-              char* aEid_DSName = "Nodes on Edges";
-              char* aEu_DSName  = "Edge positions";
-              char* aFu_DSName  = "Face U positions";
-              //char* aFid_DSName = "Nodes on Faces";
-              //char* aFv_DSName  = "Face V positions";
+        // try to get submeshes container HDF group
+        if ( aTopGroup->ExistInternalObject( name_meshgroup ) ) {
+          // open submeshes containers HDF group
+          aGroup = new HDFgroup( name_meshgroup, aTopGroup );
+          aGroup->OpenOnDisk();
 
-              // data to retrieve
-              int nbEids = 0, nbFids = 0;
-              int *aEids = 0, *aFids  = 0;
-              double *aEpos = 0, *aFupos = 0, *aFvpos = 0;
+          // get number of submeshes
+          int aNbSubMeshes = aGroup->nInternalObjects(); 
+          for ( int k = 0; k < aNbSubMeshes; k++ ) {
+            // identify submesh
+            char name_submeshgroup[ HDF_NAME_MAX_LEN+1 ];
+            aGroup->InternalObjectIndentify( k, name_submeshgroup );
+            if ( string( name_submeshgroup ).substr( 0, 7 ) == string( "SubMesh" )  ) {
+              // --> get submesh id
+              int subid = atoi( string( name_submeshgroup ).substr( 7 ).c_str() );
+              if ( subid <= 0 )
+                continue;
+              // open submesh HDF group
+              aSubGroup = new HDFgroup( name_submeshgroup, aGroup );
+              aSubGroup->OpenOnDisk();
 
-              // open a group
-              aGroup = new HDFgroup( "Node Positions", aTopGroup ); 
-              aGroup->OpenOnDisk();
+              // try to read and set reference to subshape
+              GEOM::GEOM_Object_var aSubShapeObject;
+              SMESH::SMESH_subMesh_var aSubMesh;
 
-              // loop on 5 data sets
-              int aNbObjects = aGroup->nInternalObjects();
-              for ( int i = 0; i < aNbObjects; i++ )
-              {
-                // identify dataset
-                char aDSName[ HDF_NAME_MAX_LEN+1 ];
-                aGroup->InternalObjectIndentify( i, aDSName );
-                // read data
-                aDataset = new HDFdataset( aDSName, aGroup );
+              if ( aSubGroup->ExistInternalObject( "Ref on shape" ) ) {
+                // load submesh "Ref on shape" - it's an entry to SObject
+                aDataset = new HDFdataset( "Ref on shape", aSubGroup );
                 aDataset->OpenOnDisk();
-                if ( aDataset->GetType() == HDF_FLOAT64 ) // Positions
-                {
-                  double* pos = new double [ aDataset->GetSize() ];
-                  aDataset->ReadFromDisk( pos );
-                  // which one?
-                  if ( strncmp( aDSName, aEu_DSName, strlen( aEu_DSName )) == 0 )
-                    aEpos = pos;
-                  else if ( strncmp( aDSName, aFu_DSName, strlen( aFu_DSName )) == 0 )
-                    aFupos = pos;
-                  else
-                    aFvpos = pos;
-                }
-                else // NODE IDS
-                {
-		  int aSize = aDataset->GetSize();
-
-                  // for reading files, created from 18.07.2005 till 10.10.2005
-                  if (aDataset->GetType() == HDF_STRING)
-                    aSize /= sizeof(int);
-
-		  int* ids = new int [aSize];
-                  aDataset->ReadFromDisk( ids );
-                  // on face or nodes?
-                  if ( strncmp( aDSName, aEid_DSName, strlen( aEid_DSName )) == 0 ) {
-                    aEids = ids;
-                    nbEids = aSize;
-                  }
-                  else {
-                    aFids = ids;
-                    nbFids = aSize;
-                  }
-                }
+                size = aDataset->GetSize();
+                char* refFromFile = new char[ size ];
+                aDataset->ReadFromDisk( refFromFile );
                 aDataset->CloseOnDisk();
-              } // loop on 5 datasets
-
-              // Set node positions on edges or faces
-              for ( int onFace = 0; onFace < 2; onFace++ )
-              {
-                int nbNodes = ( onFace ? nbFids : nbEids );
-                if ( nbNodes == 0 ) continue;
-                int* aNodeIDs = ( onFace ? aFids : aEids );
-                double* aUPos = ( onFace ? aFupos : aEpos );
-                double* aVPos = ( onFace ? aFvpos : 0 );
-                // loop on node IDs
-                for ( int iNode = 0; iNode < nbNodes; iNode++ )
-                {
-                  const SMDS_MeshNode* node = mySMESHDSMesh->FindNode( aNodeIDs[ iNode ]);
-                  ASSERT( node );
-                  SMDS_PositionPtr aPos = node->GetPosition();
-                  ASSERT( aPos )
-                  if ( onFace ) {
-                    ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );
-                    SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                      ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
-                    fPos->SetUParameter( aUPos[ iNode ]);
-                    fPos->SetVParameter( aVPos[ iNode ]);
-                  }
-                  else {
-                    ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );
-                    SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                      ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
-                    fPos->SetUParameter( aUPos[ iNode ]);
+                if ( strlen( refFromFile ) > 0 ) {
+                  SALOMEDS::SObject_var subShapeSO = myCurrentStudy->FindObjectID( refFromFile );
+                  CORBA::Object_var subShapeObject = SObjectToObject( subShapeSO );
+                  if ( !CORBA::is_nil( subShapeObject ) ) {
+                    aSubShapeObject = GEOM::GEOM_Object::_narrow( subShapeObject );
+                    if ( !aSubShapeObject->_is_nil() )
+                      aSubMesh = SMESH::SMESH_subMesh::_duplicate
+                        ( myNewMeshImpl->createSubMesh( aSubShapeObject ) );
+                    if ( aSubMesh->_is_nil() )
+                      continue;
+                    string iorSubString = GetORB()->object_to_string( aSubMesh );
+                    int newSubId = myStudyContext->findId( iorSubString );
+                    myStudyContext->mapOldToNew( subid, newSubId );
                   }
                 }
               }
-              if ( aEids ) delete [] aEids;
-              if ( aFids ) delete [] aFids;
-              if ( aEpos ) delete [] aEpos;
-              if ( aFupos ) delete [] aFupos;
-              if ( aFvpos ) delete [] aFvpos;
-              
-              aGroup->CloseOnDisk();
 
-            } // if ( aTopGroup->ExistInternalObject( "Node Positions" ) )
-	  } // if ( hasData )
+              if ( aSubMesh->_is_nil() )
+                continue;
 
-          // Recompute State (as computed sub-meshes are restored from MED)
-	  if ( !aShapeObject->_is_nil() ) {
-	    MESSAGE("Compute State Engine ...");
-	    TopoDS_Shape myLocShape = GeomObjectToShape( aShapeObject );
-	    myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
-              (SMESH_subMesh::SUBMESH_RESTORED);
-	    MESSAGE("Compute State Engine finished");
-	  }
+              // VSR: Get submesh data from MED convertor
+              //                  int anInternalSubmeshId = aSubMesh->GetId(); // this is not a persistent ID, it's an internal one computed from sub-shape
+              //                  if (myNewMeshImpl->_mapSubMesh.find(anInternalSubmeshId) != myNewMeshImpl->_mapSubMesh.end()) {
+              //                    if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): loading from MED file submesh with ID = " <<
+              //                            subid << " for subshape # " << anInternalSubmeshId);
+              //                    SMESHDS_SubMesh* aSubMeshDS =
+              //                      myNewMeshImpl->_mapSubMesh[anInternalSubmeshId]->CreateSubMeshDS();
+              //                    if ( !aSubMeshDS ) {
+              //                      if(MYDEBUG) MESSAGE("VSR - SMESH_Gen_i::Load(): FAILED to create a submesh for subshape # " <<
+              //                              anInternalSubmeshId << " in current mesh!");
+              //                    }
+              //                    else
+              //                      myReader.GetSubMesh( aSubMeshDS, subid );
+              //                  }
 
-	  // try to get groups
-	  for ( int ii = GetNodeGroupsTag(); ii <= GetVolumeGroupsTag(); ii++ ) {
-	    char name_group[ 30 ];
-	    if ( ii == GetNodeGroupsTag() )
-	      strcpy( name_group, "Groups of Nodes" );
-	    else if ( ii == GetEdgeGroupsTag() )
-	      strcpy( name_group, "Groups of Edges" );
-	    else if ( ii == GetFaceGroupsTag() )
-	      strcpy( name_group, "Groups of Faces" );
-	    else if ( ii == GetVolumeGroupsTag() )
-	      strcpy( name_group, "Groups of Volumes" );
-
-	    if ( aTopGroup->ExistInternalObject( name_group ) ) {
-	      aGroup = new HDFgroup( name_group, aTopGroup );
-	      aGroup->OpenOnDisk();
-	      // get number of groups
-	      int aNbSubObjects = aGroup->nInternalObjects(); 
-	      for ( int j = 0; j < aNbSubObjects; j++ ) {
-		char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-		aGroup->InternalObjectIndentify( j, name_dataset );
-		// check if it is an group
-		if ( string( name_dataset ).substr( 0, 5 ) == string( "Group" ) ) {
-		  // --> get group id
-		  int subid = atoi( string( name_dataset ).substr( 5 ).c_str() );
-		  if ( subid <= 0 )
-		    continue;
-		  aDataset = new HDFdataset( name_dataset, aGroup );
-		  aDataset->OpenOnDisk();
-
-		  // Retrieve actual group name
-		  size = aDataset->GetSize();
-		  char* nameFromFile = new char[ size ];
-		  aDataset->ReadFromDisk( nameFromFile );
-		  aDataset->CloseOnDisk();
-
-		  // Try to find a shape reference
-                  TopoDS_Shape aShape;
-                  char aRefName[ 30 ];
-                  sprintf( aRefName, "Ref on shape %d", subid);
-                  if ( aGroup->ExistInternalObject( aRefName ) ) {
-                    // load mesh "Ref on shape" - it's an entry to SObject
-                    aDataset = new HDFdataset( aRefName, aGroup );
+              // try to get applied algorithms
+              if ( aSubGroup->ExistInternalObject( "Applied Algorithms" ) ) {
+                // open "applied algorithms" HDF group
+                aSubSubGroup = new HDFgroup( "Applied Algorithms", aSubGroup );
+                aSubSubGroup->OpenOnDisk();
+                // get number of applied algorithms
+                int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
+                for ( int l = 0; l < aNbSubObjects; l++ ) {
+                  char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+                  aSubSubGroup->InternalObjectIndentify( l, name_dataset );
+                  // check if it is an algorithm
+                  if ( string( name_dataset ).substr( 0, 4 ) == string( "Algo" ) ) {
+                    aDataset = new HDFdataset( name_dataset, aSubSubGroup );
                     aDataset->OpenOnDisk();
                     size = aDataset->GetSize();
                     char* refFromFile = new char[ size ];
                     aDataset->ReadFromDisk( refFromFile );
                     aDataset->CloseOnDisk();
-                    if ( strlen( refFromFile ) > 0 ) {
-                      SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
-                      CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
-                      if ( !CORBA::is_nil( shapeObject ) ) {
-                        aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
-                        if ( !aShapeObject->_is_nil() )
-                          aShape = GeomObjectToShape( aShapeObject );
+
+                    //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+                    //CORBA::Object_var hypObject = SObjectToObject( hypSO );
+                    int id = atoi( refFromFile );
+                    string anIOR = myStudyContext->getIORbyOldId( id );
+                    if ( !anIOR.empty() ) {
+                      CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+                      if ( !CORBA::is_nil( hypObject ) ) {
+                        SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+                        if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                          myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
                       }
                     }
                   }
-		  // Create group servant
-                  SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
-		  SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
-                    ( myNewMeshImpl->createGroup( type, nameFromFile, aShape ) );
-		  // Obtain a SMESHDS_Group object 
-		  if ( aNewGroup->_is_nil() )
-		    continue;
+                }
+                // close "applied algorithms" HDF group
+                aSubSubGroup->CloseOnDisk();
+              }
 
-		  string iorSubString = GetORB()->object_to_string( aNewGroup );
-		  int newSubId = myStudyContext->findId( iorSubString );
-		  myStudyContext->mapOldToNew( subid, newSubId );
+              // try to get applied hypotheses
+              if ( aSubGroup->ExistInternalObject( "Applied Hypotheses" ) ) {
+                // open "applied hypotheses" HDF group
+                aSubSubGroup = new HDFgroup( "Applied Hypotheses", aSubGroup );
+                aSubSubGroup->OpenOnDisk();
+                // get number of applied hypotheses
+                int aNbSubObjects = aSubSubGroup->nInternalObjects(); 
+                for ( int l = 0; l < aNbSubObjects; l++ ) {
+                  char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+                  aSubSubGroup->InternalObjectIndentify( l, name_dataset );
+                  // check if it is a hypothesis
+                  if ( string( name_dataset ).substr( 0, 3 ) == string( "Hyp" ) ) {
+                    aDataset = new HDFdataset( name_dataset, aSubSubGroup );
+                    aDataset->OpenOnDisk();
+                    size = aDataset->GetSize();
+                    char* refFromFile = new char[ size ];
+                    aDataset->ReadFromDisk( refFromFile );
+                    aDataset->CloseOnDisk();
 
-		  SMESH_GroupBase_i* aGroupImpl =
-                    dynamic_cast<SMESH_GroupBase_i*>( GetServant( aNewGroup ).in() );
-		  if ( !aGroupImpl )
-		    continue;
+                    //SALOMEDS::SObject_var hypSO = myCurrentStudy->FindObjectID( refFromFile );
+                    //CORBA::Object_var hypObject = SObjectToObject( hypSO );
+                    int id = atoi( refFromFile );
+                    string anIOR = myStudyContext->getIORbyOldId( id );
+                    if ( !anIOR.empty() ) {
+                      CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
+                      if ( !CORBA::is_nil( hypObject ) ) {
+                        SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
+                        if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                          myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
+                      }
+                    }
+                  }
+                }
+                // close "applied hypotheses" HDF group
+                aSubSubGroup->CloseOnDisk();
+              }
 
-		  SMESH_Group* aLocalGroup  = myLocMesh.GetGroup( aGroupImpl->GetLocalID() );
-		  if ( !aLocalGroup )
-		    continue;
+              // close submesh HDF group
+              aSubGroup->CloseOnDisk();
+            }
+          }
+          // close submeshes containers HDF group
+          aGroup->CloseOnDisk();
+        }
+      }
 
-		  SMESHDS_GroupBase* aGroupBaseDS = aLocalGroup->GetGroupDS();
-		  aGroupBaseDS->SetStoreName( name_dataset );
+      if(hasData) {
 
-		  // Fill group with contents from MED file
-                  SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
-                  if ( aGrp )
-                    myReader.GetGroup( aGrp );
-		}
-	      }
-	      aGroup->CloseOnDisk();
-	    }
-	  }
-	}
-	// close mesh group
-	aTopGroup->CloseOnDisk();	
+        // Read sub-meshes from MED
+        // -------------------------
+        if(MYDEBUG) MESSAGE("Create all sub-meshes");
+        bool submeshesInFamilies = ( ! aTopGroup->ExistInternalObject( "Submeshes" ));
+        if ( submeshesInFamilies )
+        {
+          // old way working before fix of PAL 12992
+          myReader.CreateAllSubMeshes();
+        }
+        else
+        {
+          // open a group
+          aGroup = new HDFgroup( "Submeshes", aTopGroup ); 
+          aGroup->OpenOnDisk();
+
+          int maxID = mySMESHDSMesh->MaxShapeIndex();
+          vector< SMESHDS_SubMesh * > subMeshes( maxID + 1, (SMESHDS_SubMesh*) 0 );
+          vector< TopAbs_ShapeEnum  > smType   ( maxID + 1, TopAbs_SHAPE ); 
+
+          PositionCreator aPositionCreator;
+
+          SMDS_NodeIteratorPtr nIt = mySMESHDSMesh->nodesIterator();
+          SMDS_ElemIteratorPtr eIt = mySMESHDSMesh->elementsIterator();
+          for ( int isNode = 0; isNode < 2; ++isNode )
+          {
+            string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
+            if ( aGroup->ExistInternalObject( (char*) aDSName.c_str() ))
+            {
+              aDataset = new HDFdataset( (char*) aDSName.c_str(), aGroup );
+              aDataset->OpenOnDisk();
+              // read submesh IDs for all elements sorted by ID
+              int nbElems = aDataset->GetSize();
+              int* smIDs = new int [ nbElems ];
+              aDataset->ReadFromDisk( smIDs );
+              aDataset->CloseOnDisk();
+
+              // get elements sorted by ID
+              ::SMESH_MeshEditor::TIDSortedElemSet elemSet;
+              if ( isNode )
+                while ( nIt->more() ) elemSet.insert( nIt->next() );
+              else
+                while ( eIt->more() ) elemSet.insert( eIt->next() );
+              ASSERT( elemSet.size() == nbElems );
+
+              // add elements to submeshes
+              ::SMESH_MeshEditor::TIDSortedElemSet::iterator iE = elemSet.begin();
+              for ( int i = 0; i < nbElems; ++i, ++iE )
+              {
+                int smID = smIDs[ i ];
+                if ( smID == 0 ) continue;
+                ASSERT( smID <= maxID );
+                const SMDS_MeshElement* elem = *iE;
+                // get or create submesh
+                SMESHDS_SubMesh* & sm = subMeshes[ smID ];
+                if ( ! sm ) {
+                  sm = mySMESHDSMesh->NewSubMesh( smID );
+                  smType[ smID ] = mySMESHDSMesh->IndexToShape( smID ).ShapeType();
+                }
+                // add
+                if ( isNode ) {
+                  SMDS_PositionPtr pos = aPositionCreator.MakePosition( smType[ smID ]);
+                  pos->SetShapeId( smID );
+                  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( static_cast<const SMDS_MeshNode*>( elem ));
+                  node->SetPosition( pos );
+                  sm->AddNode( node );
+                } else {
+                  sm->AddElement( elem );
+                }
+              }
+              delete smIDs;
+            }
+          }
+        } // end reading submeshes
+
+        // Read node positions on sub-shapes (SMDS_Position)
+
+        if ( aTopGroup->ExistInternalObject( "Node Positions" ))
+        {
+          // There are 5 datasets to read:
+          // "Nodes on Edges" - ID of node on edge
+          // "Edge positions" - U parameter on node on edge
+          // "Nodes on Faces" - ID of node on face
+          // "Face U positions" - U parameter of node on face
+          // "Face V positions" - V parameter of node on face
+          char* aEid_DSName = "Nodes on Edges";
+          char* aEu_DSName  = "Edge positions";
+          char* aFu_DSName  = "Face U positions";
+          //char* aFid_DSName = "Nodes on Faces";
+          //char* aFv_DSName  = "Face V positions";
+
+          // data to retrieve
+          int nbEids = 0, nbFids = 0;
+          int *aEids = 0, *aFids  = 0;
+          double *aEpos = 0, *aFupos = 0, *aFvpos = 0;
+
+          // open a group
+          aGroup = new HDFgroup( "Node Positions", aTopGroup ); 
+          aGroup->OpenOnDisk();
+
+          // loop on 5 data sets
+          int aNbObjects = aGroup->nInternalObjects();
+          for ( int i = 0; i < aNbObjects; i++ )
+          {
+            // identify dataset
+            char aDSName[ HDF_NAME_MAX_LEN+1 ];
+            aGroup->InternalObjectIndentify( i, aDSName );
+            // read data
+            aDataset = new HDFdataset( aDSName, aGroup );
+            aDataset->OpenOnDisk();
+            if ( aDataset->GetType() == HDF_FLOAT64 ) // Positions
+            {
+              double* pos = new double [ aDataset->GetSize() ];
+              aDataset->ReadFromDisk( pos );
+              // which one?
+              if ( strncmp( aDSName, aEu_DSName, strlen( aEu_DSName )) == 0 )
+                aEpos = pos;
+              else if ( strncmp( aDSName, aFu_DSName, strlen( aFu_DSName )) == 0 )
+                aFupos = pos;
+              else
+                aFvpos = pos;
+            }
+            else // NODE IDS
+            {
+              int aSize = aDataset->GetSize();
+
+              // for reading files, created from 18.07.2005 till 10.10.2005
+              if (aDataset->GetType() == HDF_STRING)
+                aSize /= sizeof(int);
+
+              int* ids = new int [aSize];
+              aDataset->ReadFromDisk( ids );
+              // on face or nodes?
+              if ( strncmp( aDSName, aEid_DSName, strlen( aEid_DSName )) == 0 ) {
+                aEids = ids;
+                nbEids = aSize;
+              }
+              else {
+                aFids = ids;
+                nbFids = aSize;
+              }
+            }
+            aDataset->CloseOnDisk();
+          } // loop on 5 datasets
+
+          // Set node positions on edges or faces
+          for ( int onFace = 0; onFace < 2; onFace++ )
+          {
+            int nbNodes = ( onFace ? nbFids : nbEids );
+            if ( nbNodes == 0 ) continue;
+            int* aNodeIDs = ( onFace ? aFids : aEids );
+            double* aUPos = ( onFace ? aFupos : aEpos );
+            double* aVPos = ( onFace ? aFvpos : 0 );
+            // loop on node IDs
+            for ( int iNode = 0; iNode < nbNodes; iNode++ )
+            {
+              const SMDS_MeshNode* node = mySMESHDSMesh->FindNode( aNodeIDs[ iNode ]);
+              ASSERT( node );
+              SMDS_PositionPtr aPos = node->GetPosition();
+              ASSERT( aPos )
+                if ( onFace ) {
+                  ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_FACE );
+                  SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
+                    ( static_cast<const SMDS_FacePosition*>( aPos.get() ));
+                  fPos->SetUParameter( aUPos[ iNode ]);
+                  fPos->SetVParameter( aVPos[ iNode ]);
+                }
+                else {
+                  ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );
+                  SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
+                    ( static_cast<const SMDS_EdgePosition*>( aPos.get() ));
+                  fPos->SetUParameter( aUPos[ iNode ]);
+                }
+            }
+          }
+          if ( aEids ) delete [] aEids;
+          if ( aFids ) delete [] aFids;
+          if ( aEpos ) delete [] aEpos;
+          if ( aFupos ) delete [] aFupos;
+          if ( aFvpos ) delete [] aFvpos;
+
+          aGroup->CloseOnDisk();
+
+        } // if ( aTopGroup->ExistInternalObject( "Node Positions" ) )
+      } // if ( hasData )
+
+      // Recompute State (as computed sub-meshes are restored from MED)
+      if ( !aShapeObject->_is_nil() ) {
+        MESSAGE("Compute State Engine ...");
+        TopoDS_Shape myLocShape = GeomObjectToShape( aShapeObject );
+        myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
+          (SMESH_subMesh::SUBMESH_RESTORED);
+        MESSAGE("Compute State Engine finished");
+      }
+
+      // try to get groups
+      for ( int ii = GetNodeGroupsTag(); ii <= GetVolumeGroupsTag(); ii++ ) {
+        char name_group[ 30 ];
+        if ( ii == GetNodeGroupsTag() )
+          strcpy( name_group, "Groups of Nodes" );
+        else if ( ii == GetEdgeGroupsTag() )
+          strcpy( name_group, "Groups of Edges" );
+        else if ( ii == GetFaceGroupsTag() )
+          strcpy( name_group, "Groups of Faces" );
+        else if ( ii == GetVolumeGroupsTag() )
+          strcpy( name_group, "Groups of Volumes" );
+
+        if ( aTopGroup->ExistInternalObject( name_group ) ) {
+          aGroup = new HDFgroup( name_group, aTopGroup );
+          aGroup->OpenOnDisk();
+          // get number of groups
+          int aNbSubObjects = aGroup->nInternalObjects(); 
+          for ( int j = 0; j < aNbSubObjects; j++ ) {
+            char name_dataset[ HDF_NAME_MAX_LEN+1 ];
+            aGroup->InternalObjectIndentify( j, name_dataset );
+            // check if it is an group
+            if ( string( name_dataset ).substr( 0, 5 ) == string( "Group" ) ) {
+              // --> get group id
+              int subid = atoi( string( name_dataset ).substr( 5 ).c_str() );
+              if ( subid <= 0 )
+                continue;
+              aDataset = new HDFdataset( name_dataset, aGroup );
+              aDataset->OpenOnDisk();
+
+              // Retrieve actual group name
+              size = aDataset->GetSize();
+              char* nameFromFile = new char[ size ];
+              aDataset->ReadFromDisk( nameFromFile );
+              aDataset->CloseOnDisk();
+
+              // Try to find a shape reference
+              TopoDS_Shape aShape;
+              char aRefName[ 30 ];
+              sprintf( aRefName, "Ref on shape %d", subid);
+              if ( aGroup->ExistInternalObject( aRefName ) ) {
+                // load mesh "Ref on shape" - it's an entry to SObject
+                aDataset = new HDFdataset( aRefName, aGroup );
+                aDataset->OpenOnDisk();
+                size = aDataset->GetSize();
+                char* refFromFile = new char[ size ];
+                aDataset->ReadFromDisk( refFromFile );
+                aDataset->CloseOnDisk();
+                if ( strlen( refFromFile ) > 0 ) {
+                  SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+                  CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
+                  if ( !CORBA::is_nil( shapeObject ) ) {
+                    aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
+                    if ( !aShapeObject->_is_nil() )
+                      aShape = GeomObjectToShape( aShapeObject );
+                  }
+                }
+              }
+              // Create group servant
+              SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
+              SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
+                ( myNewMeshImpl->createGroup( type, nameFromFile, aShape ) );
+              // Obtain a SMESHDS_Group object 
+              if ( aNewGroup->_is_nil() )
+                continue;
+
+              string iorSubString = GetORB()->object_to_string( aNewGroup );
+              int newSubId = myStudyContext->findId( iorSubString );
+              myStudyContext->mapOldToNew( subid, newSubId );
+
+              SMESH_GroupBase_i* aGroupImpl =
+                dynamic_cast<SMESH_GroupBase_i*>( GetServant( aNewGroup ).in() );
+              if ( !aGroupImpl )
+                continue;
+
+              SMESH_Group* aLocalGroup  = myLocMesh.GetGroup( aGroupImpl->GetLocalID() );
+              if ( !aLocalGroup )
+                continue;
+
+              SMESHDS_GroupBase* aGroupBaseDS = aLocalGroup->GetGroupDS();
+              aGroupBaseDS->SetStoreName( name_dataset );
+
+              // Fill group with contents from MED file
+              SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );
+              if ( aGrp )
+                myReader.GetGroup( aGrp );
+            }
+          }
+          aGroup->CloseOnDisk();
+        }
       }
     }
+    // close mesh group
+    aTopGroup->CloseOnDisk();   
   }
   // close HDF file
   aFile->CloseOnDisk();
@@ -3085,7 +3127,25 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
   }
   return 0;
 }
-      
+
+//================================================================================
+/*!
+ * \brief Return id of registered object
+  * \param theObject - the Object
+  * \retval int - Object id
+ */
+//================================================================================
+
+int SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
+{
+  StudyContext* myStudyContext = GetCurrentStudyContext();
+  if ( myStudyContext && !CORBA::is_nil( theObject )) {
+    string iorString = GetORB()->object_to_string( theObject );
+    return myStudyContext->findId( iorString );
+  }
+  return 0;
+}
+
 //=============================================================================
 /*! 
  *  SMESHEngine_factory
