@@ -127,7 +127,8 @@ module SMESH
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_GEOMETRY  // geometry mismatches algorithm's expectation
   };
 
   /*!
@@ -527,6 +528,11 @@ module SMESH
     long GetElemNbNodes(in long id);
 
     /*!
+     * Returns IDs of nodes of given element
+     */
+    long_array GetElemNodes(in long id);
+
+    /*!
      * Returns ID of node by given index for given element
      * If there is not element for given ID - returns -1
      * If there is not node for given index - returns -2
@@ -649,7 +655,7 @@ module SMESH
     long AddNode(in double x, in double y, in double z);
 
     /*!
-     *  Create edge both similar and quadratic (this is determed
+     *  Create edge, either linear and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.
      *  Needed order of nodes in this list corresponds to description
@@ -659,7 +665,7 @@ module SMESH
     long AddEdge(in long_array IDsOfNodes);
 
     /*!
-     *  Create face both similar and quadratic (this is determed
+     *  Create face, either linear and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.
      *  Needed order of nodes in this list corresponds to description
@@ -671,7 +677,7 @@ module SMESH
     long AddPolygonalFace(in long_array IdsOfNodes);
 
     /*!
-     *  Create volume both similar and quadratic (this is determed
+     *  Create volume, either linear and quadratic (this is determed
      *  by number of given nodes).
      *  \param IdsOfNodes List of node IDs for creation of element.
      *  Needed order of nodes in this list corresponds to description
