@@ -1273,11 +1273,17 @@ msgstr "Hypothesis and submesh dimensions mismatch"
 msgid "SMESH_HYP_9"
 msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
 
+msgid "SMESH_HYP_10"
+msgstr "Geomerty mismatches algorithm's expectation"
+
 msgid "MISSING_ALGO"
 msgstr "%3 %2D algorithm is missing"
 
 msgid "MISSING_HYPO"
 msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
+
+msgid "BAD_PARAM_VALUE"
+msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 
 msgid "NOT_CONFORM_MESH"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
