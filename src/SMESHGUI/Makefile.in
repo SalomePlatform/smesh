@@ -42,7 +42,9 @@ EXPORT_HEADERS= SMESHGUI_Swig.hxx \
 		SMESHGUI_Hypotheses.h \
 		SMESHGUI_HypothesesUtils.h \
 		SMESHGUI_SpinBox.h \
-		SMESHGUI_Selection.h 
+		SMESHGUI_Selection.h \
+		SMESHGUI_VTKUtils.h
+
 
 # .po files to transform in .qm
 PO_FILES = \
