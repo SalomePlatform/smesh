@@ -324,7 +324,7 @@ namespace SMESH{
 	if (!libHandle) {
 	  // report any error, if occured
 	  const char* anError = dlerror();
-	  if(MYDEBUG) MESSAGE(anError);
+	  MESSAGE(anError);
 	}
 	else {
 	  // get method, returning hypothesis creator
@@ -594,6 +594,7 @@ namespace SMESH{
         CASE2MESSAGE( MISSING_ALGO );
         CASE2MESSAGE( MISSING_HYPO );
         CASE2MESSAGE( NOT_CONFORM_MESH );
+        CASE2MESSAGE( BAD_PARAM_VALUE );
       default: continue;
       }
       // apply args to message:
