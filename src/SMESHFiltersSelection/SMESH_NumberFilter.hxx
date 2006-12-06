@@ -31,6 +31,8 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
+#include <string>
+
 class SUIT_DataOwner;
 
 /*!
@@ -77,7 +79,7 @@ class SMESH_NumberFilter : public SUIT_SelectionFilter
   GEOM::GEOM_Object_ptr getGeom (const SUIT_DataOwner*, const bool extractReference = true ) const;
 
  private:
-  char*                 myKind;
+  std::string           myKind;
   TopAbs_ShapeEnum      mySubShapeType;
   int                   myNumber;
   bool                  myIsClosedOnly;
