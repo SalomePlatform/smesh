@@ -667,7 +667,7 @@ void StdMeshers_Quadrangle_2D::QuadDelete (FaceQuadStruct * quad)
 
 void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
                                                   const TopoDS_Shape& aShape,
-                                                  FaceQuadStruct* quad) throw (SALOME_Exception)
+                                                  FaceQuadStruct* & quad) throw (SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   // Algorithme décrit dans "Génération automatique de maillages"

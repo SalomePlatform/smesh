@@ -103,7 +103,7 @@ protected:
 
   void SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
-			 FaceQuadStruct* quad)
+			 FaceQuadStruct*& quad)
     throw (SALOME_Exception);
 
   /**
