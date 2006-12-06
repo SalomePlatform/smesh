@@ -66,7 +66,7 @@ class SMESH_Pattern {
 
   bool Load (SMESH_Mesh*        theMesh,
              const TopoDS_Face& theFace,
-             bool               theProject);
+             bool               theProject = false);
   // Create a pattern from the mesh built on <theFace>.
   // <theProject>==true makes override nodes positions
   // on <theFace> computed by mesher
@@ -135,8 +135,9 @@ class SMESH_Pattern {
   // Create nodes and elements in <theMesh> using nodes
   // coordinates computed by either of Apply...() methods
 
-
+  // ----------
   // Inquiries
+  // ----------
 
   enum ErrorCode {
     ERR_OK,
@@ -201,8 +202,18 @@ class SMESH_Pattern {
   void DumpPoints() const;
   // Debug
 
+  // -----------------------------
+  // Utilities for advanced usage
+  // -----------------------------
 
- private:
+  TopoDS_Shape GetSubShape( const int i ) const {
+    if ( i < 1 || i > myShapeIDMap.Extent() ) return TopoDS_Shape();
+    return myShapeIDMap( i );
+  }
+  // Return a shape from myShapeIDMap where shapes are indexed so that first go
+  // ordered vertices, then ordered edge, then faces and maybe a shell
+
+private:
   // private methods
 
   struct TPoint {
