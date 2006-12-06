@@ -69,7 +69,11 @@ class SMESH_Gen
   // if Compute() would fail because of some algo bad state
 
   
-  enum TAlgoStateErrorName { NONE=0, MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  enum TAlgoStateErrorName { NONE=0,
+                             MISSING_ALGO,
+                             MISSING_HYPO,
+                             NOT_CONFORM_MESH,
+                             BAD_PARAM_VALUE };
   struct TAlgoStateError
   {
     TAlgoStateErrorName _name;
