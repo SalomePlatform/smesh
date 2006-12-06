@@ -63,6 +63,8 @@ using namespace std;
 typedef map < int, int, less<int> >::iterator   \
   StdMeshers_IteratorOfDataMapOfIntegerInteger;
 
+enum { NB_WALL_FACES = 4 };
+
 //=======================================================================
 //function : StdMeshers_Penta_3D
 //purpose  : 
@@ -264,81 +266,17 @@ void StdMeshers_Penta_3D::MakeNodes()
       ++j;
     }
   }
-  /*
-  //DEB
-  {
-    int iShapeSupportID, iBaseNodeID;
-    //
-    //printf("\n\n*** Base Face\n");
-    i=0;
-    for (j=0; j<myJSize; ++j) {
-      ij=i*myJSize+j;
-      const StdMeshers_TNode& aTNode=myTNodes[ij];
-      iShapeSupportID=aTNode.ShapeSupportID();
-      iBaseNodeID=aTNode.BaseNodeID();
-      const gp_XYZ& aXYZ=aTNode.NormCoord();
-      printf("*** j:%d bID#%d iSS:%d { %lf %lf %lf }\n",
-	     j,  iBaseNodeID, iShapeSupportID, aXYZ.X(),  aXYZ.Y(), aXYZ.Z());
-    }
-  }
-  */
-  //DEB
-  //return; //zz
-  //
-  // 3. Finding of Z-layers
-//   vector<double> aZL(myISize);
-//   vector<double>::iterator aItZL1, aItZL2 ;
-//   //
-//   const TopoDS_Shape& aE00z=myBlock.Shape(SMESH_Block::ID_E00z);
-//   SMDS_NodeIteratorPtr aItaE00z =
-//     pMesh->GetSubMeshContaining(aE00z)->GetSubMeshDS()->GetNodes();
-//   //
-//   aZL[0]=0.;
-//   i=1;
-//   while (aItaE00z->more()) {
-//     const SMDS_MeshNode* aNode=aItaE00z->next();
-//     const SMDS_EdgePosition* epos =
-//       static_cast<const SMDS_EdgePosition*>(aNode->GetPosition().get());
-//     myBlock.ComputeParameters( epos->GetUParameter(), aE00z, aCoords );
-//     iErr=myBlock.ErrorStatus();
-//     if (iErr) {
-//       MESSAGE("StdMeshers_Penta_3D::MakeNodes()," <<
-//               "SMESHBlock: ComputeParameters operation failed");
-//       myErrorStatus=101; // SMESHBlock: ComputeParameters operation failed
-//       return;
-//     }
-//     aZL[i]=aCoords.Z();
-//     ++i;
-//   }
-//   aZL[i]=1.;
-//   //
-//   aItZL1=aZL.begin();
-//   aItZL2=aZL.end();
-//   //
-//   // Sorting the layers
-//   sort(aItZL1, aItZL2);
-  //DEB
-  /*
-  printf("** \n\n Layers begin\n");
-  for(i=0, aItZL=aItZL1; aItZL!=aItZL2; ++aItZL, ++i) {
-    printf(" #%d : %lf\n", i, *aItZL);
-  } 
-  printf("** Layers end\n");
-  */
-  //DEB
-  //
-  //
 
   // 3.1 Fill maps of wall nodes
-  SMESH_Block::TShapeID wallFaceID[4] = {
+  SMESH_Block::TShapeID wallFaceID[ NB_WALL_FACES ] = {
     SMESH_Block::ID_Fx0z, SMESH_Block::ID_Fx1z,
     SMESH_Block::ID_F0yz, SMESH_Block::ID_F1yz
     };
-  SMESH_Block::TShapeID baseEdgeID[4] = {
+  SMESH_Block::TShapeID baseEdgeID[ NB_WALL_FACES ] = {
     SMESH_Block::ID_Ex00, SMESH_Block::ID_Ex10,
     SMESH_Block::ID_E0y0, SMESH_Block::ID_E1y0
     };
-  for ( i = 0; i < 4; ++i ) {
+  for ( i = 0; i < NB_WALL_FACES ; ++i ) {
     int fIndex = SMESH_Block::ShapeIndex( wallFaceID[ i ]);
     bool ok = LoadIJNodes (myWallNodesMaps[ fIndex ],
                            TopoDS::Face( myBlock.Shape( wallFaceID[ i ] )),
@@ -352,9 +290,9 @@ void StdMeshers_Penta_3D::MakeNodes()
   }
 
   // 3.2 find node columns for vertical edges and edge IDs
-  vector<const SMDS_MeshNode*> * verticEdgeNodes[ 4 ];
-  SMESH_Block::TShapeID          verticEdgeID   [ 4 ];
-  for ( i = 0; i < 4; ++i ) { // 4 first base nodes are nodes on vertices
+  vector<const SMDS_MeshNode*> * verticEdgeNodes[ NB_WALL_FACES ];
+  SMESH_Block::TShapeID          verticEdgeID   [ NB_WALL_FACES ];
+  for ( i = 0; i < NB_WALL_FACES ; ++i ) { // 4 first base nodes are nodes on vertices
     // edge ID
     SMESH_Block::TShapeID eID, vID = aSIDs[ i ];
     ShapeSupportID(false, vID, eID);
@@ -362,7 +300,7 @@ void StdMeshers_Penta_3D::MakeNodes()
     // column nodes
     StdMeshers_TNode& aTNode = myTNodes[ i ];
     verticEdgeNodes[ i ] = 0;
-    for ( j = 0; j < 4; ++j ) { // loop on 4 wall faces
+    for ( j = 0; j < NB_WALL_FACES ; ++j ) { // loop on 4 wall faces
       int fIndex = SMESH_Block::ShapeIndex( wallFaceID[ j ]);
       StdMeshers_IJNodeMap & ijNodes= myWallNodesMaps[ fIndex ];
       if ( ijNodes.begin()->second[0] == aTNode.Node() )
@@ -416,20 +354,20 @@ void StdMeshers_Penta_3D::MakeNodes()
   N = itn->next();
   gp_XY UV111 = myTool->GetNodeUV(TopFace,N);
 
-  for (j=0; j<myJSize; ++j) {
+  for (j=0; j<myJSize; ++j) { // loop on all nodes of the base face (ID_Fxy0)
     // base node info
     const StdMeshers_TNode& aBN = myTNodes[j];
     aBNSSID = (SMESH_Block::TShapeID)aBN.ShapeSupportID();
     iBNID = aBN.BaseNodeID();
     const gp_XYZ& aBNXYZ = aBN.NormCoord();
-    bool createNode = ( aBNSSID == SMESH_Block::ID_Fxy0 );
+    bool createNode = ( aBNSSID == SMESH_Block::ID_Fxy0 ); // if base node is inside a bottom face
     //
     // set XYZ on horizontal edges and get node columns of faces:
     // 2 columns for each face, between which a base node is located
     vector<const SMDS_MeshNode*>* nColumns[8];
-    double ratio[4]; // base node position between columns [0.-1.]
+    double ratio[ NB_WALL_FACES ]; // base node position between columns [0.-1.]
     if ( createNode ) {
-      for ( k = 0; k < 4; ++k ) {
+      for ( k = 0; k < NB_WALL_FACES ; ++k ) {
         ratio[ k ] = SetHorizEdgeXYZ (aBNXYZ, wallFaceID[ k ],
                                       nColumns[k*2], nColumns[k*2+1]);
       }
@@ -441,27 +379,31 @@ void StdMeshers_Penta_3D::MakeNodes()
     myShapeXYZ[ SMESH_Block::ID_Fxy1 ].SetCoord( 0., 0., 0. );
     //
     // first create or find a top node, then the rest ones in a column
-    for (i=myISize-1; i>0; --i) {
+    for (i=myISize-1; i>0; --i) // vertical loop, from top to bottom
+    {
       bIsUpperLayer = (i==(myISize-1));
       gp_XY UV_Ex01, UV_Ex11, UV_E0y1, UV_E1y1;
-      if ( createNode ) {
+      if ( createNode ) // a base node is inside a top face
+      {
         // set XYZ on vertical edges and faces
-        for ( k = 0; k < 4; ++k ) {
+        for ( k = 0; k < NB_WALL_FACES ; ++k ) {
+          // XYZ on a vertical edge 
           const SMDS_MeshNode* n = (*verticEdgeNodes[ k ]) [ i ];
           myShapeXYZ[ verticEdgeID[ k ] ].SetCoord( n->X(), n->Y(), n->Z() );
-          //
+          // XYZ on a face (part 1 from one column)
           n = (*nColumns[k*2]) [ i ];
+          gp_XYZ xyz( n->X(), n->Y(), n->Z() );
+          myShapeXYZ[ wallFaceID[ k ]] = ( 1. - ratio[ k ]) * xyz;
           gp_XY tmp1;
-          if( i==myISize-1 ) {
+          if( bIsUpperLayer ) {
             tmp1 = myTool->GetNodeUV(TopFace,n);
             tmp1 = ( 1. - ratio[ k ]) * tmp1;
           }
-          gp_XYZ xyz( n->X(), n->Y(), n->Z() );
-          myShapeXYZ[ wallFaceID[ k ]] = ( 1. - ratio[ k ]) * xyz;
+          // XYZ on a face (part 2 from other column)
           n = (*nColumns[k*2+1]) [ i ];
           xyz.SetCoord( n->X(), n->Y(), n->Z() );
           myShapeXYZ[ wallFaceID[ k ]] += ratio[ k ] * xyz;
-          if( i==myISize-1 ) {
+          if( bIsUpperLayer ) {
             gp_XY tmp2 = myTool->GetNodeUV(TopFace,n);
             tmp1 +=  ratio[ k ] * tmp2;
             if( k==0 )
@@ -662,12 +604,15 @@ double StdMeshers_Penta_3D::SetHorizEdgeXYZ(const gp_XYZ&                  aBase
                                             vector<const SMDS_MeshNode*>*& aCol2)
 {
   // find base and top edges of the face
+  enum { BASE = 0, TOP };
   vector< int > edgeVec; // 0-base, 1-top
   SMESH_Block::GetFaceEdgesIDs( aFaceID, edgeVec );
   //
-  int coord = SMESH_Block::GetCoordIndOnEdge( edgeVec[ 0 ] );
+  int coord = SMESH_Block::GetCoordIndOnEdge( edgeVec[ BASE ] );
+  bool isForward = myBlock.IsForwadEdge( edgeVec[ BASE ] );
+
   double param = aBaseNodeParams.Coord( coord );
-  if ( !myBlock.IsForwadEdge( edgeVec[ 0 ] ))
+  if ( !isForward)
     param = 1. - param;
   //
   // look for columns around param
@@ -686,19 +631,34 @@ double StdMeshers_Penta_3D::SetHorizEdgeXYZ(const gp_XYZ&                  aBase
   aCol1 = & par_nVec_1->second;
   aCol2 = & par_nVec_2->second;
 
-  // base edge
-  const SMDS_MeshNode* n1 = aCol1->front();
-  const SMDS_MeshNode* n2 = aCol2->front();
-  gp_XYZ xyz1( n1->X(), n1->Y(), n1->Z() ), xyz2( n2->X(), n2->Y(), n2->Z() );
-  myShapeXYZ[ edgeVec[ 0 ] ] = ( 1. - r ) * xyz1 + r * xyz2;
-
   // top edge
-  n1 = aCol1->back();
-  n2 = aCol2->back();
-  xyz1.SetCoord( n1->X(), n1->Y(), n1->Z() );
-  xyz2.SetCoord( n2->X(), n2->Y(), n2->Z() );
-  myShapeXYZ[ edgeVec[ 1 ] ] = ( 1. - r ) * xyz1 + r * xyz2;
+  if (1) {
+    // this variant is better for cases with curved edges and
+    // different nodes distribution on top and base edges
+    const SMDS_MeshNode* n1 = aCol1->back();
+    const SMDS_MeshNode* n2 = aCol2->back();
+    gp_XYZ xyz1( n1->X(), n1->Y(), n1->Z() );
+    gp_XYZ xyz2( n2->X(), n2->Y(), n2->Z() );
+    myShapeXYZ[ edgeVec[ 1 ] ] = ( 1. - r ) * xyz1 + r * xyz2;
+  }
+  else {
+    // this variant is better for other cases
+//   SMESH_MesherHelper helper( *GetMesh() );
+//   const TopoDS_Edge & edge = TopoDS::Edge( myBlock.Shape( edgeVec[ TOP ]));
+//   double u1 = helper.GetNodeU( edge, n1 );
+//   double u2 = helper.GetNodeU( edge, n2 );
+//   double u = ( 1. - r ) * u1 + r * u2;
+//   gp_XYZ topNodeParams;
+//   myBlock.Block().EdgeParameters( edgeVec[ TOP ], u, topNodeParams );
+//   myBlock.Block().EdgePoint( edgeVec[ TOP ],
+//                              topNodeParams,
+//                              myShapeXYZ[ edgeVec[ TOP ]]);
+  }
 
+  // base edge
+  myBlock.Block().EdgePoint( edgeVec[ BASE ],
+                             aBaseNodeParams,
+                             myShapeXYZ[ edgeVec[ BASE ]]);
   return r;
 }
 
@@ -862,6 +822,8 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     TopoDS::Face(myBlock.Shape(SMESH_Block::ID_Fxy0));
   const TopoDS_Face& aFxy1=
     TopoDS::Face(myBlock.Shape(SMESH_Block::ID_Fxy1));
+  SMESH_MesherHelper faceHelper( *GetMesh() );
+  faceHelper.IsQuadraticSubMesh(aFxy1);
   //
   SMESH_Mesh* pMesh = GetMesh();
   SMESHDS_Mesh * meshDS = pMesh->GetMeshDS();
@@ -889,9 +851,6 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     aNbNodes = pE0->NbNodes();
     if(myCreateQuadratic)
       aNbNodes = aNbNodes/2;
-//     if (aNbNodes!=3) {
-//       continue;
-//     }
     if ( aNodes1.size() < aNbNodes )
       aNodes1.resize( aNbNodes );
     //
@@ -919,12 +878,10 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     SMDS_MeshFace * face = 0;
     switch ( aNbNodes ) {
     case 3:
-      //face = meshDS->AddFace(aNodes1[0], aNodes1[1], aNodes1[2]);
-      face = myTool->AddFace(aNodes1[0], aNodes1[1], aNodes1[2]);
+      face = faceHelper.AddFace(aNodes1[0], aNodes1[1], aNodes1[2]);
       break;
     case 4:
-      //face = meshDS->AddFace(aNodes1[0], aNodes1[1], aNodes1[2], aNodes1[3]);
-      face = myTool->AddFace(aNodes1[0], aNodes1[1], aNodes1[2], aNodes1[3]);
+      face = faceHelper.AddFace(aNodes1[0], aNodes1[1], aNodes1[2], aNodes1[3]);
       break;
     default:
       continue;
@@ -1307,7 +1264,7 @@ void StdMeshers_Penta_3D::MakeBlock()
   //
   // 1.1 Base vertex V000
   iNbE = aME.Extent();
-  if (iNbE!=4){
+  if (iNbE!= NB_WALL_FACES ){
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
     myErrorStatus=7; // too few edges are in base face aFTr 
     return;
@@ -1448,7 +1405,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
   TopExp_Explorer exp( theFace, TopAbs_EDGE );
   int nbEdges = 0;
   for ( ; exp.More(); exp.Next() ) {
-    if ( ++nbEdges > 4 ) {
+    if ( ++nbEdges > NB_WALL_FACES ) {
       return false; // more than 4 edges in theFace
     }
     TopoDS_Edge e = TopoDS::Edge( exp.Current() );
@@ -1467,7 +1424,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     else
       e2 = e;
   }
-  if ( nbEdges < 4 ) {
+  if ( nbEdges < NB_WALL_FACES ) {
     return false; // less than 4 edges in theFace
   }
 
