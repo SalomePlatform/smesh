@@ -261,7 +261,7 @@ class _pyHypothesis: public _pyObject
 {
 protected:
   bool    myIsAlgo, /*myIsLocal, */myIsWrapped, myIsConverted;
-  int     myDim, /*myAdditionCmdNb*/;
+  int     myDim/*, myAdditionCmdNb*/;
   _pyID    myGeom, myMesh;
   TCollection_AsciiString       myCreationMethod, myType;
   TColStd_SequenceOfAsciiString myArgs;
