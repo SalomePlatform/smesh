@@ -8,7 +8,12 @@
     <item name="About meshes" url="files/about_meshes.htm" />
     <item name="Importing and exporting meshes" url="files/importing_and_exporting_meshes.htm" />
     <item name="Constructing meshes" url="files/constructing_meshes.htm" />
-    <item name="Defining meshing algorithms" url="files/about_meshing_algorithms.htm" />
+    <book name="Defining Algorithms" >
+      <item name="Basic meshing algorithms" url="files/about_meshing_algorithms.htm" />
+      <item name="Projection Algorithms" url="projection_algorithms.htm" />
+      <item name="Radial Prism Algorithm" url="radial_prism.htm" />
+      <item name="Prism 3D Algorithm" url="prism_3d_algorithm.htm" />
+    </book>
     <book name="Defining hypotheses" >
       <item name="About Hypotheses" url="files/about_hypotheses.htm" />
       <item name="1D Meshing Hypotheses" url="files/arithmetic_1d.htm" />
@@ -81,7 +86,7 @@
     <item name="Pattern mapping" url="pattern_mapping.htm" />
     <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
-  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
+ <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
   <book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
