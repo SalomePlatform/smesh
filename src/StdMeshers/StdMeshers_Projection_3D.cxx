@@ -430,7 +430,7 @@ void StdMeshers_Projection_3D::SetEventListener(SMESH_subMesh* subMesh)
       srcMesh->GetSubMesh( _sourceHypo->GetSource3DShape() );
 
     if ( srcShapeSM != subMesh )
-      subMesh->SetEventListener( new SMESH_subMeshEventListener(),
+      subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
                                  SMESH_subMeshEventListenerData::MakeData( subMesh ),
                                  srcShapeSM );
   }

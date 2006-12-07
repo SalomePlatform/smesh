@@ -354,7 +354,7 @@ void StdMeshers_Projection_1D::SetEventListener(SMESH_subMesh* subMesh)
       srcMesh->GetSubMesh( _sourceHypo->GetSourceEdge() );
 
     if ( srcEdgeSM != subMesh )
-      subMesh->SetEventListener( new SMESH_subMeshEventListener(),
+      subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
                                  SMESH_subMeshEventListenerData::MakeData( subMesh ),
                                  srcEdgeSM );
   }

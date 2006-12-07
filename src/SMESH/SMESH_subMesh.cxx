@@ -1491,12 +1491,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     break;
   }
 
-  if ( _algoState != oldAlgoState )
+  if ( _algoState != oldAlgoState || event == MODIF_HYP )
   {
-    if (_algoState == HYP_OK && algo )
-      algo->SetEventListener( this );
     if ( oldAlgoState == HYP_OK )
       DeleteOwnListeners();
+    if (_algoState == HYP_OK && algo )
+      algo->SetEventListener( this );
   }
   NotifyListenersOnEvent( event, COMPUTE_EVENT );
 
@@ -1883,8 +1883,8 @@ void SMESH_subMesh::DeleteEventListener(EventListener* listener)
   map< EventListener*, EventListenerData* >::iterator l_d =
     myEventListeners.find( listener );
   if ( l_d != myEventListeners.end() ) {
-    delete l_d->first;
-    delete l_d->second;
+    if ( l_d->first->IsDeletable() ) delete l_d->first;
+    if ( l_d->second->IsDeletable() ) delete l_d->second;
     myEventListeners.erase( l_d );
   }
 }

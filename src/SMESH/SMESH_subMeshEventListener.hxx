@@ -42,7 +42,10 @@ struct SMESH_subMeshEventListenerData;
 // ------------------------------------------------------------------
 
 class SMESH_subMeshEventListener {
+  bool myIsDeletable; //!< if true, it will be deleted by SMESH_subMesh
 public:
+  SMESH_subMeshEventListener(bool isDeletable):myIsDeletable(isDeletable) {}
+  bool IsDeletable() const { return myIsDeletable; }
   /*!
    * \brief Do something on a certain event
    * \param event - algo_event or compute_event itself (of SMESH_subMesh)
@@ -69,11 +72,13 @@ public:
 
 struct SMESH_subMeshEventListenerData
 {
-  //!< to recognize data type
-  int myType;
-  //!< generally: submeshes depending on the one storing this data
-  std::list<SMESH_subMesh*> mySubMeshes;
- //!< subMesh where data
+  bool myIsDeletable; //!< if true, it will be deleted by SMESH_subMesh
+  int myType;         //!< to recognize data type
+  std::list<SMESH_subMesh*> mySubMeshes; //!< generally: submeshes depending
+                                         // on the one storing this data
+public:
+  SMESH_subMeshEventListenerData(bool isDeletable):myIsDeletable(isDeletable) {}
+  bool IsDeletable() const { return myIsDeletable; }
 
   /*!
    * \brief Create a default listener data.
@@ -82,12 +87,12 @@ struct SMESH_subMeshEventListenerData
    * \retval SMESH_subMeshEventListenerData* - a new listener data
    *
    * See SMESH_subMeshEventListener::ProcessEvent() to know how the default
-   * listener uses it
+   * listener uses it (implementation is in SMESH_subMesh.cxx)
    */
   static SMESH_subMeshEventListenerData* MakeData(SMESH_subMesh* dependentSM,
                                                   const int      type = 0)
   {
-    SMESH_subMeshEventListenerData* data = new SMESH_subMeshEventListenerData;
+    SMESH_subMeshEventListenerData* data = new SMESH_subMeshEventListenerData(true);
     data->mySubMeshes.push_back( dependentSM );
     data->myType = type;
     return data;

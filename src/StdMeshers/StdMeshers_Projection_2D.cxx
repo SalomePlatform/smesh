@@ -631,7 +631,7 @@ void StdMeshers_Projection_2D::SetEventListener(SMESH_subMesh* subMesh)
     SMESH_subMesh* srcFaceSM =
       srcMesh->GetSubMesh( _sourceHypo->GetSourceFace() );
 
-    subMesh->SetEventListener( new SMESH_subMeshEventListener(),
+    subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
                                SMESH_subMeshEventListenerData::MakeData( subMesh ),
                                srcFaceSM );
   }
