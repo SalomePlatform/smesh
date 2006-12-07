@@ -201,6 +201,8 @@ public:
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
   void SetAccessorMethod(const _pyID& theID, const char* theMethod );
+  bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
+  bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
   const char* AccessorMethod() const { return SMESH_2smeshpy::GenName(); }
 private:
   std::map< _pyID, Handle(_pyMesh) > myMeshes;

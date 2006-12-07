@@ -188,17 +188,10 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
     }
 
   // Add access to a wrapped mesh
-  for ( id_mesh = myMeshes.begin(); id_mesh != myMeshes.end(); ++id_mesh ) {
-    if ( aCommand->AddAccessorMethod( id_mesh->first, id_mesh->second->AccessorMethod() ))
-      break;
-  }
+  AddMeshAccessorMethod( aCommand );
 
   // Add access to a wrapped algorithm
-  for ( hyp = myHypos.begin(); hyp != myHypos.end(); ++hyp ) {
-    if ( (*hyp)->IsAlgo() &&
-         aCommand->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
-      break;
-  }
+  AddAlgoAccessorMethod( aCommand );
 
   // PAL12227. PythonDump was not updated at proper time; result is
   //     aCriteria.append(SMESH.Filter.Criterion(17,26,0,'L1',26,25,1e-07,SMESH.EDGE,-1))
@@ -295,6 +288,43 @@ void _pyGen::Flush()
       if ( !(*hyp)->IsWrapped() )
         (*hyp)->GetCreationCmd()->SetObject( SMESH_2smeshpy::GenName() );
     }
+}
+
+//================================================================================
+/*!
+ * \brief Add access method to mesh that is object or arg
+  * \param theCmd - command to add access method
+  * \retval bool - true if added
+ */
+//================================================================================
+
+bool _pyGen::AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const
+{
+  map< _pyID, Handle(_pyMesh) >::const_iterator id_mesh = myMeshes.begin();
+  for ( ; id_mesh != myMeshes.end(); ++id_mesh ) {
+    if ( theCmd->AddAccessorMethod( id_mesh->first, id_mesh->second->AccessorMethod() ))
+      return true;
+  }
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Add access method to algo that is object or arg
+  * \param theCmd - command to add access method
+  * \retval bool - true if added
+ */
+//================================================================================
+
+bool _pyGen::AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const
+{
+  list< Handle(_pyHypothesis) >::const_iterator hyp = myHypos.begin();
+  for ( ; hyp != myHypos.end(); ++hyp ) {
+    if ( (*hyp)->IsAlgo() &&
+         theCmd->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
+      return true;
+  }
+  return false;
 }
 
 //================================================================================
@@ -945,10 +975,26 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
 void _pyHypothesis::Flush()
 {
   if ( IsWrapped() ) {
-    // forget previous hypothesis modifications
-    myArgCommands.clear();
-    myUnknownCommands.clear();
   }
+  else {
+    list < Handle(_pyCommand) >::iterator cmd = myArgCommands.begin();
+    for ( ; cmd != myArgCommands.end(); ++cmd ) {
+      // Add access to a wrapped mesh
+      theGen->AddMeshAccessorMethod( *cmd );
+      // Add access to a wrapped algorithm
+      theGen->AddAlgoAccessorMethod( *cmd );
+    }
+    cmd = myUnknownCommands.begin();
+    for ( ; cmd != myUnknownCommands.end(); ++cmd ) {
+      // Add access to a wrapped mesh
+      theGen->AddMeshAccessorMethod( *cmd );
+      // Add access to a wrapped algorithm
+      theGen->AddAlgoAccessorMethod( *cmd );
+    }
+  }
+  // forget previous hypothesis modifications
+  myArgCommands.clear();
+  myUnknownCommands.clear();
 }
 
 //================================================================================
@@ -1150,15 +1196,27 @@ bool _pyNumberOfSegmentsHyp::Addition2Creation( const Handle(_pyCommand)& theCmd
 
 void _pyNumberOfSegmentsHyp::Flush()
 {
-  const int nbCmdLists = 2;
-  list<Handle(_pyCommand)> * cmds[nbCmdLists] = { &myArgCommands, &myUnknownCommands };
-  for ( int i = 0; i < nbCmdLists; ++i ) {
+  // find number of the last SetDistrType() command
+  list<Handle(_pyCommand)>::reverse_iterator cmd = myUnknownCommands.rbegin();
+  int distrTypeNb = 0;
+  for ( ; !distrTypeNb && cmd != myUnknownCommands.rend(); ++cmd )
+    if ( (*cmd)->GetMethod() == "SetDistrType" )
+      distrTypeNb = (*cmd)->GetOrderNb();
+
+  // clear commands before the last SetDistrType()
+  list<Handle(_pyCommand)> * cmds[2] = { &myArgCommands, &myUnknownCommands };
+  for ( int i = 0; i < 2; ++i ) {
     set<TCollection_AsciiString> uniqueMethods;
     list<Handle(_pyCommand)> & cmdList = *cmds[i];
-    list<Handle(_pyCommand)>::reverse_iterator cmd = cmdList.rbegin();
-    for ( ; cmd != cmdList.rend(); ++cmd ) {
-      bool isNewInSet = uniqueMethods.insert( (*cmd)->GetMethod() ).second;
-      if ( ! isNewInSet )
+    for ( cmd = cmdList.rbegin(); cmd != cmdList.rend(); ++cmd )
+    {
+      bool clear = ( (*cmd)->GetOrderNb() < distrTypeNb );
+      const TCollection_AsciiString& method = (*cmd)->GetMethod();
+      if ( !clear || method == "SetNumberOfSegments" ) {
+        bool isNewInSet = uniqueMethods.insert( method ).second;
+        clear = !isNewInSet;
+      }
+      if ( clear )
         (*cmd)->Clear();
     }
     cmdList.clear();
