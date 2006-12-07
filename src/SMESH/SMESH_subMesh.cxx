@@ -1913,7 +1913,8 @@ void SMESH_subMesh::DeleteOwnListeners()
  * \param hyp - hypothesis, if eventType is algo_event
  * 
  * The base implementation translates CLEAN event to the subMesh
- * stored in listener data
+ * stored in listener data. Also it sends SUBMESH_COMPUTED event in case of
+ * successful COMPUTE event.
  */
 //================================================================================
 
@@ -1923,9 +1924,19 @@ void SMESH_subMeshEventListener::ProcessEvent(const int          event,
                                               EventListenerData* data,
                                               SMESH_Hypothesis*  /*hyp*/)
 {
-  if ( event == SMESH_subMesh::CLEAN && eventType == SMESH_subMesh::COMPUTE_EVENT )
-    if ( data && !data->mySubMeshes.empty() ) {
-      ASSERT( data->mySubMeshes.front() != subMesh );
+  if ( data && !data->mySubMeshes.empty() &&
+       eventType == SMESH_subMesh::COMPUTE_EVENT)
+  {
+    ASSERT( data->mySubMeshes.front() != subMesh );
+    switch ( event ) {
+    case SMESH_subMesh::CLEAN:
       data->mySubMeshes.front()->ComputeStateEngine( event );
+      break;
+    case SMESH_subMesh::COMPUTE:
+      if ( subMesh->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
+        data->mySubMeshes.front()->ComputeStateEngine( SMESH_subMesh::SUBMESH_COMPUTED );
+      break;
+    default:;
     }
+  }
 }
