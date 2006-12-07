@@ -116,10 +116,17 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
 
   myHypTypePopup = new QPopupMenu();
 
-  QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( false, 0 );
+  // Add to pop-up hypotheses of "Regular_1D" algo
   myHypTypePopup->clear();
-  for ( int i = 0, n = aHypTypeNameList.count(); i < n; i++ ) {
-    myHypTypePopup->insertItem( aHypTypeNameList[ i ] );
+  HypothesisData* algoData = SMESH::GetHypothesisData( "Regular_1D" );
+  QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( false, 0 );
+  QStringList::const_iterator anIter = aHypTypeNameList.begin();
+  for ( int i = 0; anIter != aHypTypeNameList.end(); ++anIter, ++i )
+  {
+    HypothesisData* hypData = SMESH::GetHypothesisData( *anIter );
+    bool bidon;
+    if ( SMESH::IsAvailableHypothesis( algoData, hypData->TypeName, bidon ))
+      myHypTypePopup->insertItem( hypData->Label );
   }
 
   connect( myCreateButton, SIGNAL(clicked()), SLOT(onCreate()));
