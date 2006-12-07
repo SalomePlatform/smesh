@@ -66,7 +66,7 @@ public:
   /*!
    * Sets source <mesh> to take a mesh pattern from
    */
-  void SetSourceMesh(SMESH_Mesh* mesh) { _sourceMesh = mesh; }
+  void SetSourceMesh(SMESH_Mesh* mesh);
 
   /*!
    * Return source mesh

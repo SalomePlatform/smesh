@@ -133,6 +133,19 @@ void StdMeshers_ProjectionSource2D::SetVertexAssociation(const TopoDS_Shape& sou
 
 //=============================================================================
 /*!
+ * Sets source <mesh> to take a mesh pattern from
+ */
+//=============================================================================
+
+void StdMeshers_ProjectionSource2D::SetSourceMesh(SMESH_Mesh* mesh)
+{
+  if ( _sourceMesh != mesh )
+    NotifySubMeshesHypothesisModification();
+  _sourceMesh = mesh;
+}
+
+//=============================================================================
+/*!
  * Returns the source face
  */
 //=============================================================================
