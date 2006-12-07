@@ -35,9 +35,12 @@
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh.hxx"
 #include "SMESH_MeshEditor.hxx"
+#include "SMESH_subMesh.hxx"
+#include "SMESH_subMeshEventListener.hxx"
 
+#include <BRepTools.hxx>
+#include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
@@ -46,14 +49,12 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
-#include <BRepTools.hxx>
-#include <BRepTools_WireExplorer.hxx>
-#include <TopTools_MapOfShape.hxx>
 
 #include <stdio.h>
 #include <algorithm>
@@ -828,6 +829,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
   SMESH_Mesh* pMesh = GetMesh();
   SMESHDS_Mesh * meshDS = pMesh->GetMeshDS();
   //
+  SMESH_subMesh *aSubMesh1 = pMesh->GetSubMeshContaining(aFxy1);
   SMESH_subMesh *aSubMesh0 = pMesh->GetSubMeshContaining(aFxy0);
   SMESHDS_SubMesh *aSM0 = aSubMesh0->GetSubMeshDS();
   //
@@ -888,6 +890,16 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     }
     meshDS->SetMeshElementOnShape(face, aFxy1);
   }
+
+  // update compute state of top face submesh
+  aSubMesh1->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+
+  // assure that mesh on the top face will be cleaned when it is cleaned
+  // on the bottom face
+  SMESH_subMesh* volSM = pMesh->GetSubMesh( myTool->GetSubShape() );
+  volSM->SetEventListener( new SMESH_subMeshEventListener(true),
+                           SMESH_subMeshEventListenerData::MakeData( aSubMesh1 ),
+                           aSubMesh0 ); // translate CLEAN event of aSubMesh0 to aSubMesh1
 }
 
 //=======================================================================
