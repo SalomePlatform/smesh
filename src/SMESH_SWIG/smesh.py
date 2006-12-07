@@ -1022,6 +1022,8 @@ class Mesh:
     #  @param obj Shape to be meshed or SMESH_Mesh object
     #  @param name Study name of the mesh
     def __init__(self, obj=0, name=0):
+        if obj is None:
+            obj = 0
         if obj != 0:
             if isinstance(obj, geompy.GEOM._objref_GEOM_Object):
                 self.geom = obj
