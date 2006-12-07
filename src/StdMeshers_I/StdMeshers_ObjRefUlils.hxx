@@ -98,9 +98,14 @@ public:
   typename TInterface::_var_type LoadObjectFromStream( std::istream & stream )
   {
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
-      string str;
-      if (stream >> str)
-        return gen->GetObjectByOldId< TInterface >( atoi( str.c_str() ));
+      std::string str;
+      if (stream >> str) {
+        if ( StudyContext* myStudyContext = gen->GetCurrentStudyContext() ) {
+          string ior = myStudyContext->getIORbyOldId( atoi( str.c_str() ));
+          if ( !ior.empty() )
+             return TInterface::_narrow(gen->GetORB()->string_to_object( ior.c_str() ));
+        }
+      }
     }
     return TInterface::_nil();
   }
