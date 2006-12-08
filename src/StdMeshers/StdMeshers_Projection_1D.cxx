@@ -132,11 +132,24 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
            !TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape )  ||
            !TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
                                     _sourceHypo->GetSourceEdge() ))
+      {
         aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
+        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh )));
+        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh )));
+        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape ) ));
+        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
+                                        _sourceHypo->GetSourceEdge() )));
+      }
     }
     // check source edge
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh ))
-      aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
+    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh ) ||
+         ( srcMesh == tgtMesh && aShape == _sourceHypo->GetSourceEdge() ))
+    {
+      aStatus = HYP_BAD_PARAMETER;
+      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceEdge(), srcMesh )));
+      SCRUTE((srcMesh == tgtMesh));
+      SCRUTE(( aShape == _sourceHypo->GetSourceEdge() ));
+    }
   }
   else
   {

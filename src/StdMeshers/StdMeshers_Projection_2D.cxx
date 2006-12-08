@@ -133,10 +133,10 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
            !TAssocTool::IsSubShape( edge, srcMesh ) ||
            !TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() ))
       {
+        theStatus = HYP_BAD_PARAMETER;
         SCRUTE((edge.IsNull()));
         SCRUTE((TAssocTool::IsSubShape( edge, srcMesh )));
         SCRUTE((TAssocTool::IsSubShape( edge, _sourceHypo->GetSourceFace() )));
-        theStatus = HYP_BAD_PARAMETER;
       }
       else
       {
@@ -147,17 +147,21 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
              !TAssocTool::IsSubShape( edge, tgtMesh ) ||
              !TAssocTool::IsSubShape( edge, theShape ))
         {
+          theStatus = HYP_BAD_PARAMETER;
           SCRUTE((edge.IsNull()));
           SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
           SCRUTE((TAssocTool::IsSubShape( edge, theShape )));
-          theStatus = HYP_BAD_PARAMETER;
         }
       }
     }
     // check a source face
-    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )) {
-      MESSAGE("Bad source face"); 
+    if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh ) ||
+         ( srcMesh == tgtMesh && theShape == _sourceHypo->GetSourceFace() ))
+    {
       theStatus = HYP_BAD_PARAMETER;
+      SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceFace(), srcMesh )));
+      SCRUTE((srcMesh == tgtMesh));
+      SCRUTE(( theShape == _sourceHypo->GetSourceFace() ));
     }
   }
   else
