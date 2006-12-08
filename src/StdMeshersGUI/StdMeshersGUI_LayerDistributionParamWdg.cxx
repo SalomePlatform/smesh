@@ -119,9 +119,9 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
   // Add to pop-up hypotheses of "Regular_1D" algo
   myHypTypePopup->clear();
   HypothesisData* algoData = SMESH::GetHypothesisData( "Regular_1D" );
-  QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( false, 0 );
-  QStringList::const_iterator anIter = aHypTypeNameList.begin();
-  for ( int i = 0; anIter != aHypTypeNameList.end(); ++anIter, ++i )
+  myHypTypes = SMESH::GetAvailableHypotheses( false, 0 );
+  QStringList::const_iterator anIter = myHypTypes.begin();
+  for ( ; anIter != myHypTypes.end(); ++anIter )
   {
     HypothesisData* hypData = SMESH::GetHypothesisData( *anIter );
     bool bidon;
@@ -149,9 +149,16 @@ void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( int theIndex )
   gen->SetCurrentStudy( SALOMEDS::Study::_nil() );
 
   // create a hyp
-  QString aHypType = myHypTypePopup->text( theIndex );
-  HypothesisData* aHypData = SMESH::GetHypothesisData(aHypType.latin1());
+  HypothesisData* aHypData = 0;
+  QStringList::const_iterator anIter = myHypTypes.begin();
+  for ( ; !aHypData && anIter != myHypTypes.end(); ++anIter )
+  {
+    HypothesisData* hypData = SMESH::GetHypothesisData( *anIter );
+    if ( myHypTypePopup->text( theIndex ) == hypData->Label )
+      aHypData = hypData;
+  }
   QString aServLib = aHypData->ServerLibName;
+  QString aHypType = aHypData->TypeName;
   try {
     set( gen->CreateHypothesis(aHypType, aServLib));
   }
