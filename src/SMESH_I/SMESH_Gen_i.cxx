@@ -2389,6 +2389,32 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  string iorString = GetORB()->object_to_string( myNewMesh );
 	  int newId = myStudyContext->findId( iorString );
 	  myStudyContext->mapOldToNew( id, newId );
+
+          // try to read and set reference to shape
+          GEOM::GEOM_Object_var aShapeObject;
+          if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
+            // load mesh "Ref on shape" - it's an entry to SObject
+            aDataset = new HDFdataset( "Ref on shape", aTopGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            char* refFromFile = new char[ size ];
+            aDataset->ReadFromDisk( refFromFile );
+            aDataset->CloseOnDisk();
+            if ( strlen( refFromFile ) > 0 ) {
+              SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
+
+              // Make sure GEOM data are loaded first
+              //loadGeomData( shapeSO->GetFatherComponent() );
+
+              CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
+              if ( !CORBA::is_nil( shapeObject ) ) {
+                aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
+                if ( !aShapeObject->_is_nil() )
+                  myNewMeshImpl->SetShape( aShapeObject );
+              }
+            }
+          }
+
         }
       }
     }
@@ -2414,6 +2440,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       ::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
       SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 
+      GEOM::GEOM_Object_var aShapeObject = myNewMeshImpl->GetShapeToMesh();
       bool hasData = false;
 
       // get mesh old id
@@ -2436,31 +2463,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           myReader.SetMeshId( id );
           myReader.Perform();
           hasData = true;
-        }
-      }
-
-      // try to read and set reference to shape
-      GEOM::GEOM_Object_var aShapeObject;
-      if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
-        // load mesh "Ref on shape" - it's an entry to SObject
-        aDataset = new HDFdataset( "Ref on shape", aTopGroup );
-        aDataset->OpenOnDisk();
-        size = aDataset->GetSize();
-        char* refFromFile = new char[ size ];
-        aDataset->ReadFromDisk( refFromFile );
-        aDataset->CloseOnDisk();
-        if ( strlen( refFromFile ) > 0 ) {
-          SALOMEDS::SObject_var shapeSO = myCurrentStudy->FindObjectID( refFromFile );
-
-          // Make sure GEOM data are loaded first
-          //loadGeomData( shapeSO->GetFatherComponent() );
-
-          CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
-          if ( !CORBA::is_nil( shapeObject ) ) {
-            aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
-            if ( !aShapeObject->_is_nil() )
-              myNewMeshImpl->SetShape( aShapeObject );
-          }
         }
       }
 
