@@ -182,6 +182,39 @@ bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          a
                                           const TopoDS_Shape&                  aShape,
                                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
+  // Check shape geometry
+
+  aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
+
+  // find not quadrangle faces
+  list< TopoDS_Shape > notQuadFaces;
+  int nbEdge, nbWire, nbFace = 0;
+  TopExp_Explorer exp( aShape, TopAbs_FACE );
+  for ( ; exp.More(); exp.Next() ) {
+    ++nbFace;
+    const TopoDS_Shape& face = exp.Current();
+    nbEdge = TAssocTool::Count( face, TopAbs_EDGE, 0 );
+    nbWire = TAssocTool::Count( face, TopAbs_WIRE, 0 );
+    if (  nbEdge!= 4 || nbWire!= 1 ) {
+      if ( !notQuadFaces.empty() ) {
+        if ( TAssocTool::Count( notQuadFaces.back(), TopAbs_EDGE, 0 ) != nbEdge ||
+             TAssocTool::Count( notQuadFaces.back(), TopAbs_WIRE, 0 ) != nbWire )
+          RETURN_BAD_RESULT("Different not quad faces");
+      }
+      notQuadFaces.push_back( face );
+    }
+  }
+  if ( !notQuadFaces.empty() )
+  {
+    if ( notQuadFaces.size() != 2 )
+      RETURN_BAD_RESULT("Bad nb not quad faces: " << notQuadFaces.size());
+
+    // check total nb faces
+    nbEdge = TAssocTool::Count( notQuadFaces.back(), TopAbs_EDGE, 0 );
+    if ( nbFace != nbEdge + 2 )
+      RETURN_BAD_RESULT("Bad nb of faces: " << nbFace << " but must be " << nbEdge + 2);
+  }
+
   // no hypothesis
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
@@ -669,11 +702,14 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   myHelper = helper;
   SMESHDS_Mesh* meshDS = myHelper->GetMesh()->GetMeshDS();
 
+  SMESH_Block::init();
+  myShapeIDMap.Clear();
+  myShapeIndex2ColumnMap.clear();
+  
   int wallFaceIds[ NB_WALL_FACES ] = { // to walk around a block
     SMESH_Block::ID_Fx0z, SMESH_Block::ID_F1yz,
     SMESH_Block::ID_Fx1z, SMESH_Block::ID_F0yz
   };
-  SMESH_Block::init();
 
   // -------------------------------------------------------------
   // Look for top and bottom faces: not quadrangle ones or meshed
@@ -801,7 +837,6 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
 //       RETURN_BAD_RESULT("There must be 1 shell in the block");
 
     // Load geometry in SMESH_Block
-    myShapeIDMap.Clear();
     if ( !SMESH_Block::FindBlockShapes( shell, Vbot, Vtop, myShapeIDMap )) {
       if ( !hasNotQuad )
         RETURN_BAD_RESULT("Can not detect top and bottom");
