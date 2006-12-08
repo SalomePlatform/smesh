@@ -930,6 +930,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     def __init__(self, mesh, geom=0):
         self.Create(mesh, geom, "RadialPrism_3D")
         self.distribHyp = self.Hypothesis( "LayerDistribution" )
+        self.nbLayers = None
 
     ## Return 3D hypothesis holding the 1D one
     def Get3DHypothesis(self):
@@ -938,6 +939,9 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     ## Private method creating 1D hypothes and storing it in the LayerDistribution
     #  hypothes. Returns the created hypothes
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
+        if not self.nbLayers is None:
+            self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
+            self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
         study = GetCurrentStudy() # prevent publishing of own 1D hypothesis
         hyp = smesh.CreateHypothesis(hypType, so)
         SetCurrentStudy( study ) # anable publishing
@@ -947,9 +951,10 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     ## Define "NumberOfLayers" hypothesis, specifying a number of layers of
     #  prisms to build between the inner and outer shells
     def NumberOfLayers(self, n ):
-        hyp = self.Hypothesis("NumberOfLayers")
-        hyp.SetNumberOfLayers( n )
-        return hyp
+        self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
+        self.nbLayers = self.Hypothesis("NumberOfLayers")
+        self.nbLayers.SetNumberOfLayers( n )
+        return self.nbLayers
 
     ## Define "LocalLength" hypothesis, specifying segment length
     #  to build between the inner and outer shells
