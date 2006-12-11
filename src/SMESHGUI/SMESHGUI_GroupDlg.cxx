@@ -496,13 +496,13 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 
   if ( !myGroup->_is_nil() )
     {
-      myGrpTypeGroup->setButton(0);
-      onGrpTypeChanged(0);
-
       myActor = SMESH::FindActorByObject(myMesh);
       if ( !myActor )
 	myActor = SMESH::FindActorByObject(myGroup);
       SMESH::SetPickable(myActor);
+
+      myGrpTypeGroup->setButton(0);
+      onGrpTypeChanged(0);
       
       myCurrentLineEdit = 0;
       myElements->clear();
@@ -526,13 +526,13 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
       
       if ( !myGroupOnGeom->_is_nil() )
 	{
-	  myGrpTypeGroup->setButton(1);
-	  onGrpTypeChanged(1);
-
 	  myActor = SMESH::FindActorByObject(myMesh);
 	  if ( !myActor )
 	    myActor = SMESH::FindActorByObject(myGroup);
 	  SMESH::SetPickable(myActor);
+
+	  myGrpTypeGroup->setButton(1);
+	  onGrpTypeChanged(1);
 	  
 	  QString aShapeName("");
 	  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
