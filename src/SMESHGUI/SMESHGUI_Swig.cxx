@@ -34,10 +34,13 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_Displayer.h"
 
 // SALOME Includes
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_Session.h"
+#include "SUIT_ViewModel.h"
+#include "VTKViewer_ViewModel.h"
 
 #include "SALOME_Event.hxx"
 #include "SALOME_NamingService.hxx"
@@ -584,6 +587,27 @@ SMESH_Swig::AddSubMeshOnShape(const char* theMeshEntry,
 void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
 {
   //  SMESH_Actor* Mesh = smeshGUI->ReadScript(aM);
+  class TEvent: public SALOME_Event
+  {
+  private:
+    const char* _entry;
+  public:
+    TEvent(const char* Mesh_Entry) {
+      _entry = Mesh_Entry;
+    }
+    virtual void Execute() {
+      //SMESH::UpdateView(SMESH::eDisplay, _entry);
+      SUIT_Session* aSession = SUIT_Session::session();
+      SUIT_Application* anApplication = aSession->activeApplication();
+      SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
+      SUIT_ViewManager* vman = anApp->getViewManager(VTKViewer_Viewer::Type(),true);
+      SMESHGUI_Displayer* aDisp = new SMESHGUI_Displayer(anApp);
+      aDisp->Display(_entry,1);
+    }
+  };
+  
+  ProcessVoidEvent(new TEvent(Mesh_Entry));
+  
 }
 
 void
