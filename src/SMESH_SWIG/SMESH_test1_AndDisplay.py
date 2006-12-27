@@ -107,4 +107,5 @@ mesh.Compute()
 salome.sg.updateObjBrowser(1);
 
 sg = salome.ImportComponentGUI('SMESH')
-sg.CreateAndDisplayActor('0:1:2:3')
+if type(sg) != type(salome.salome_ComponentGUI):
+    sg.CreateAndDisplayActor('0:1:2:3')
