@@ -231,6 +231,7 @@ namespace SMESH
       case FT_BelongToGeom:     myStream<< "aBelongToGeom";     break;
       case FT_BelongToPlane:    myStream<< "aBelongToPlane";    break;
       case FT_BelongToCylinder: myStream<< "aBelongToCylinder"; break;
+      case FT_BelongToGenSurface:myStream<<"aBelongToGenSurface";break;
       case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
       case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
       case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;

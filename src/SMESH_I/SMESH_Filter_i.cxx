@@ -885,7 +885,6 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
   }
 
   myElementsOnSurfacePtr->SetSurface( TopoDS_Shape(), (SMDSAbs_ElementType)theType );
-  TPythonDump()<<this<<".SetSurface("<<theGeom<<",'"<<theType<<"')";
 }
 
 void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
@@ -933,6 +932,18 @@ CORBA::Double BelongToSurface_i::GetTolerance()
   return myElementsOnSurfacePtr->GetTolerance();
 }
 
+void BelongToSurface_i::SetUseBoundaries( CORBA::Boolean theUseBndRestrictions )
+{
+  myElementsOnSurfacePtr->SetUseBoundaries( theUseBndRestrictions );
+  TPythonDump()<<this<<".SetUseBoundaries( " << theUseBndRestrictions << " )";
+}
+
+CORBA::Boolean BelongToSurface_i::GetUseBoundaries()
+{
+  return myElementsOnSurfacePtr->GetUseBoundaries();
+}
+
+
 /*
   Class       : BelongToPlane_i
   Description : Verify whether mesh element lie in pointed Geom planar object
@@ -973,6 +984,33 @@ void BelongToCylinder_i::SetCylinder( GEOM::GEOM_Object_ptr theGeom, ElementType
 FunctorType BelongToCylinder_i::GetFunctorType()
 {
   return FT_BelongToCylinder;
+}
+
+/*
+  Class       : BelongToGenSurface_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+
+BelongToGenSurface_i::BelongToGenSurface_i()
+: BelongToSurface_i( STANDARD_TYPE( Geom_CylindricalSurface ) )
+{
+}
+
+void BelongToGenSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
+{
+  if ( theGeom->_is_nil() )
+    return;
+  TopoDS_Shape aLocShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theGeom );
+  if ( !aLocShape.IsNull() && aLocShape.ShapeType() != TopAbs_FACE )
+    aLocShape.Nullify();
+  
+  BelongToSurface_i::myElementsOnSurfacePtr->SetSurface( aLocShape, (SMDSAbs_ElementType)theType );
+  TPythonDump()<<this<<".SetGenSurface("<<theGeom<<","<<theType<<")";
+}
+
+FunctorType BelongToGenSurface_i::GetFunctorType()
+{
+  return FT_BelongToGenSurface;
 }
 
 /*
@@ -1556,6 +1594,14 @@ BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
   return anObj._retn();
 }
 
+BelongToGenSurface_ptr FilterManager_i::CreateBelongToGenSurface()
+{
+  SMESH::BelongToGenSurface_i* aServant = new SMESH::BelongToGenSurface_i();
+  SMESH::BelongToGenSurface_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToGenSurface()";
+  return anObj._retn();
+}
+
 LyingOnGeom_ptr FilterManager_i::CreateLyingOnGeom()
 {
   SMESH::LyingOnGeom_i* aServant = new SMESH::LyingOnGeom_i();
@@ -1854,6 +1900,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
     }
   case FT_BelongToPlane:
   case FT_BelongToCylinder:
+  case FT_BelongToGenSurface:
     {
       BelongToSurface_i* aPred = dynamic_cast<BelongToSurface_i*>( thePred );
 
@@ -2006,7 +2053,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
-    TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
+    TPythonDump()<<"aCriterion = SMESH.Filter.Criterion("<<
       aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
       aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
 
@@ -2072,12 +2119,17 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_BelongToPlane:
       case SMESH::FT_BelongToCylinder:
+      case SMESH::FT_BelongToGenSurface:
         {
           SMESH::BelongToSurface_ptr tmpPred;
-          if ( aCriterion == SMESH::FT_BelongToPlane )
-            tmpPred = aFilterMgr->CreateBelongToPlane();
-          else
-            tmpPred = aFilterMgr->CreateBelongToCylinder();
+          switch ( aCriterion ) {
+          case SMESH::FT_BelongToPlane:
+            tmpPred = aFilterMgr->CreateBelongToPlane(); break;
+          case SMESH::FT_BelongToCylinder:
+            tmpPred = aFilterMgr->CreateBelongToCylinder(); break;
+          default:
+            tmpPred = aFilterMgr->CreateBelongToGenSurface();
+          }
           tmpPred->SetShape( aThresholdID, aThresholdStr, aTypeOfElem );
           tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
@@ -2148,6 +2200,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     // logical op
     aPredicates.push_back( aPredicate );
     aBinaries.push_back( aBinary );
+    TPythonDump()<<"aCriteria.append(aCriterion)";
 
   } // end of for
   TPythonDump()<<this<<".SetCriteria(aCriteria)";
@@ -2308,6 +2361,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_BelongToGeom    : return "Belong to Geom";
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
+    case FT_BelongToGenSurface: return "Belong to Generic Surface";
     case FT_LyingOnGeom     : return "Lying on Geom";
     case FT_BadOrientedVolume: return "Bad Oriented Volume";
     case FT_RangeOfIds      : return "Range of IDs";
@@ -2344,6 +2398,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
+  else if ( theStr.equals( "Belong to Generic Surface"    ) ) return FT_BelongToGenSurface;
   else if ( theStr.equals( "Lying on Geom"                ) ) return FT_LyingOnGeom;
   else if ( theStr.equals( "Free borders"                 ) ) return FT_FreeBorders;
   else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;

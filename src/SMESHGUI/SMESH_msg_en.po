@@ -1,3 +1,18 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2006-12-29 11:56+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
@@ -1138,6 +1153,9 @@ msgstr "Belong to Plane"
 
 msgid "SMESHGUI_FilterTable::BELONG_TO_CYLINDER"
 msgstr "Belong to Cylinder"
+
+msgid "SMESHGUI_FilterTable::BELONG_TO_GENSURFACE"
+msgstr "Belong to Surface"
 
 msgid "SMESHGUI_FilterTable::LYING_ON_GEOM"
 msgstr "Lying on Geom"

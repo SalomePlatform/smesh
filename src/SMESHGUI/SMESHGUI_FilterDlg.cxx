@@ -676,6 +676,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
          aCriterion == FT_BelongToGeom ||
          aCriterion == FT_BelongToPlane ||
          aCriterion == FT_BelongToCylinder ||
+         aCriterion == FT_BelongToGenSurface ||
          aCriterion == FT_LyingOnGeom) {
       if (aTable->text(i, 2).isEmpty()) {
         if (theMess)
@@ -786,6 +787,7 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
        aCriterionType != FT_BelongToGeom &&
        aCriterionType != FT_BelongToPlane &&
        aCriterionType != FT_BelongToCylinder &&
+       aCriterionType != FT_BelongToGenSurface &&
        aCriterionType != FT_LyingOnGeom)
   {
     theCriterion.Compare = ((ComboItem*)aTable->item(theRow, 1))->GetValue();
@@ -836,6 +838,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
       theCriterion.Type != FT_BelongToGeom &&
       theCriterion.Type != FT_BelongToPlane &&
       theCriterion.Type != FT_BelongToCylinder &&
+      theCriterion.Type != FT_BelongToGenSurface &&
       theCriterion.Type != FT_LyingOnGeom &&
       theCriterion.Type != FT_FreeBorders &&
       theCriterion.Type != FT_FreeEdges &&
@@ -850,7 +853,8 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
 
   if (theCriterion.Compare == FT_EqualTo ||
        theCriterion.Type    == FT_BelongToPlane ||
-       theCriterion.Type    == FT_BelongToCylinder)
+       theCriterion.Type    == FT_BelongToCylinder ||
+       theCriterion.Type    == FT_BelongToGenSurface)
   {
     QTableItem* anItem = aTable->item(theRow, 0);
     if (!myAddWidgets.contains(anItem))
@@ -1081,6 +1085,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
            aCriterionType == SMESH::FT_BelongToGeom ||
            aCriterionType == SMESH::FT_BelongToPlane ||
            aCriterionType == SMESH::FT_BelongToCylinder ||
+           aCriterionType == SMESH::FT_BelongToGenSurface ||
            aCriterionType == SMESH::FT_LyingOnGeom)
   {
     QMap<int, QString> aMap;
@@ -1275,6 +1280,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGeom     ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane    ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface]= tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_LyingOnGeom      ] = tr("LYING_ON_GEOM");
     }
     return aCriteria;
@@ -1291,6 +1297,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGeom     ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane    ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface]= tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_LyingOnGeom      ] = tr("LYING_ON_GEOM");
     }
     return aCriteria;
@@ -1311,6 +1318,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGeom     ] = tr("BELONG_TO_GEOM");
       aCriteria[ SMESH::FT_BelongToPlane    ] = tr("BELONG_TO_PLANE");
       aCriteria[ SMESH::FT_BelongToCylinder ] = tr("BELONG_TO_CYLINDER");
+      aCriteria[ SMESH::FT_BelongToGenSurface]= tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_LyingOnGeom      ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_Length2D         ] = tr("LENGTH2D");
       aCriteria[ SMESH::FT_MultiConnection2D] = tr("MULTI2D_BORDERS");
@@ -2106,6 +2114,7 @@ bool SMESHGUI_FilterDlg::isValid() const
     if (aType == FT_BelongToGeom ||
         aType == FT_BelongToPlane ||
         aType == FT_BelongToCylinder ||
+        aType == FT_BelongToGenSurface ||
         aType == FT_LyingOnGeom) {
       QString aName;
       myTable->GetThreshold(i, aName);
@@ -2118,7 +2127,9 @@ bool SMESHGUI_FilterDlg::isValid() const
         return false;
       }
 
-      if (aType == FT_BelongToCylinder || aType == FT_BelongToPlane) {
+      if (aType == FT_BelongToCylinder ||
+          aType == FT_BelongToPlane    ||
+          aType == FT_BelongToGenSurface ) {
         CORBA::Object_var anObject = SMESH::SObjectToObject(aList[ 0 ]);
         //GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(aList[ 0 ]->GetObject());
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(anObject);
@@ -2514,6 +2525,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
       myTable->GetCriterionType(aRow) != FT_BelongToGeom &&
       myTable->GetCriterionType(aRow) != FT_BelongToPlane &&
       myTable->GetCriterionType(aRow) != FT_BelongToCylinder &&
+      myTable->GetCriterionType(aRow) != FT_BelongToGenSurface &&
       myTable->GetCriterionType(aRow) != FT_LyingOnGeom)
     return;
 
@@ -2569,9 +2581,11 @@ void SMESHGUI_FilterDlg::updateSelection()
       (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
        myTable->GetCriterionType(aRow) == FT_BelongToPlane ||
        myTable->GetCriterionType(aRow) == FT_BelongToCylinder ||
+       myTable->GetCriterionType(aRow) == FT_BelongToGenSurface ||
        myTable->GetCriterionType(aRow) == FT_LyingOnGeom)) {
 
     if (myTable->GetCriterionType(aRow) == FT_BelongToGeom ||
+        myTable->GetCriterionType(aRow) == FT_BelongToGenSurface ||
         myTable->GetCriterionType(aRow) == FT_LyingOnGeom) {
 
       mySelectionMgr->installFilter(new GEOM_SelectionFilter( aStudy, true ));

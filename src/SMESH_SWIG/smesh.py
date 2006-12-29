@@ -241,11 +241,17 @@ def GetCriterion(elementType,
         
     if Compare in [FT_LessThan, FT_MoreThan, FT_EqualTo]:
         aCriterion.Compare = EnumToLong(Compare)
+    elif Compare == "=" or Compare == "==":
+        aCriterion.Compare = EnumToLong(FT_EqualTo)
+    elif Compare == "<":
+        aCriterion.Compare = EnumToLong(FT_LessThan)
+    elif Compare == ">":
+        aCriterion.Compare = EnumToLong(FT_MoreThan)
     else:
         aCriterion.Compare = EnumToLong(FT_EqualTo)
         aTreshold = Compare
 
-    if CritType in [FT_BelongToGeom,     FT_BelongToPlane,
+    if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface, 
                     FT_BelongToCylinder, FT_LyingOnGeom]:
         # Check treshold
         if isinstance(aTreshold, geompy.GEOM._objref_GEOM_Object):

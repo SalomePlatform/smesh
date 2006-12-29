@@ -1276,7 +1276,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
         continue; // opposite side
     }
     // remove a volume from volNbShared map
-    volNbShared.erase( vNbIt );
+    volNbShared.erase( vNbIt-- );
   }
 
   // here volNbShared contains only volumes laying on the

@@ -25,10 +25,12 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <gp_XYZ.hxx>
-#include <Geom_Surface.hxx>
+//#include <Geom_Surface.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <TopoDS_Face.hxx>
 
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -44,7 +46,7 @@ class SMESHDS_Mesh;
 class SMESHDS_SubMesh;
 
 class gp_Pnt;
-class TopoDS_Shape;
+//class TopoDS_Shape;
 
 
 namespace SMESH{
@@ -612,18 +614,23 @@ namespace SMESH{
       double  GetTolerance() const;
       void    SetSurface( const TopoDS_Shape& theShape,
                           const SMDSAbs_ElementType theType );
+      void    SetUseBoundaries( bool theUse );
+      bool    GetUseBoundaries() const { return myUseBoundaries; }
 
     private:
       void    process();
       void    process( const SMDS_MeshElement* theElem  );
-      bool    isOnSurface( const SMDS_MeshNode* theNode ) const;
+      bool    isOnSurface( const SMDS_MeshNode* theNode );
 
     private:
       const SMDS_Mesh*      myMesh;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
-      Handle(Geom_Surface)  mySurf;
+      //Handle(Geom_Surface)  mySurf;
+      TopoDS_Face           mySurf;
       double                myToler;
+      bool                  myUseBoundaries;
+      GeomAPI_ProjectPointOnSurf myProjector;
     };
     
     typedef boost::shared_ptr<ElementsOnSurface> ElementsOnSurfacePtr;
