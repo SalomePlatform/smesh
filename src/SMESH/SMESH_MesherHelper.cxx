@@ -914,12 +914,12 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   // try to load the rest nodes
 
   // get all faces from theFace
-  map<int,const SMDS_MeshElement*> allFaces, foundFaces;
+  TIDSortedElemSet allFaces, foundFaces;
   eIt = smFace->GetElements();
   while ( eIt->more() ) {
     const SMDS_MeshElement* e = eIt->next();
     if ( e->GetType() == SMDSAbs_Face )
-      allFaces.insert( make_pair(e->GetID(),e) );
+      allFaces.insert( e );
   }
   // Starting from 2 neighbour nodes on theBaseEdge, look for a face
   // the nodes belong to, and between the nodes of the found face,
@@ -967,7 +967,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
             RETURN_BAD_RESULT( "Too many nodes in column "<< col <<": "<< row+1);
           }
           par_nVec_2->second[ row ] = node;
-          foundFaces.insert( make_pair(face->GetID(),face) );
+          foundFaces.insert( face );
           n2 = node;
           if ( nbFaceNodes==4 ) {
             n1 = par_nVec_1->second[ row ];

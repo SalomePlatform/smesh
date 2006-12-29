@@ -524,28 +524,31 @@ CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theO
   return isDone;
 }
 
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief function for conversion long_array to TIDSortedElemSet
+    * \param IDs - array of IDs
+    * \param aMesh - mesh
+    * \param aMap - collection to fill
+    * \param aType - element type
+   */
+  //================================================================================
 
-//=======================================================================
-//function : ToMap
-//purpose  : auxilary function for conversion long_array to std::map<>
-//           which is used in some methods
-//=======================================================================
-static void ToMap(const SMESH::long_array &              IDs,
-                  const SMESHDS_Mesh*                    aMesh,
-                  std::map<int,const SMDS_MeshElement*>& aMap,
-                  const SMDSAbs_ElementType              aType = SMDSAbs_All )
-{ 
-  for (int i=0; i<IDs.length(); i++) {
-    CORBA::Long ind = IDs[i];
-    std::map<int,const SMDS_MeshElement*>::iterator It = aMap.find(ind);
-    if(It==aMap.end()) {
+  void ToMap(const SMESH::long_array & IDs,
+             const SMESHDS_Mesh*       aMesh,
+             TIDSortedElemSet&         aMap,
+             const SMDSAbs_ElementType aType = SMDSAbs_All )
+  { 
+    for (int i=0; i<IDs.length(); i++) {
+      CORBA::Long ind = IDs[i];
       const SMDS_MeshElement * elem = aMesh->FindElement(ind);
       if ( elem && ( aType == SMDSAbs_All || elem->GetType() == aType ))
-        aMap.insert( make_pair( elem->GetID(), elem ));
+        aMap.insert( elem );
     }
   }
 }
-
 
 //=============================================================================
 /*!
@@ -560,7 +563,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
   myLastCreatedNodes = new SMESH::long_array();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
-  map<int,const SMDS_MeshElement*> faces;
+  TIDSortedElemSet faces;
   ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
@@ -636,7 +639,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
   myLastCreatedNodes = new SMESH::long_array();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
-  map<int,const SMDS_MeshElement*> faces;
+  TIDSortedElemSet faces;
   ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   SMESH::NumericalFunctor_i* aNumericalFunctor =
@@ -709,7 +712,7 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
   myLastCreatedNodes = new SMESH::long_array();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
-  map<int,const SMDS_MeshElement*> faces;
+  TIDSortedElemSet faces;
   ToMap(IDsOfElements, aMesh, faces, SMDSAbs_Face);
 
   // Update Python script
@@ -873,7 +876,7 @@ CORBA::Boolean
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(IDsOfElements, aMesh, elements, SMDSAbs_Face);
 
   set<const SMDS_MeshNode*> fixedNodes;
@@ -999,7 +1002,7 @@ void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElement
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   gp_Ax1 Ax1 (gp_Pnt( theAxis.x, theAxis.y, theAxis.z ),
@@ -1071,7 +1074,7 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
 #endif
     SMESHDS_Mesh* aMesh = GetMeshDS();
 
-    map<int,const SMDS_MeshElement*> elements;
+    TIDSortedElemSet elements;
     ToMap(theIDsOfElements, aMesh, elements);
 
     const SMESH::PointStruct * P = &theStepVector.PS;
@@ -1139,7 +1142,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObj
 
   SMESH::long_array_var allElementsId = theObject->GetIDs();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(allElementsId, aMesh, elements);
 
   const SMESH::PointStruct * P = &theStepVector.PS;
@@ -1174,7 +1177,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObj
 
   SMESH::long_array_var allElementsId = theObject->GetIDs();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(allElementsId, aMesh, elements);
 
   const SMESH::PointStruct * P = &theStepVector.PS;
@@ -1210,7 +1213,7 @@ void SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfEle
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   const SMESH::PointStruct * P = &theStepVector.PS;
@@ -1284,7 +1287,7 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
   if ( !nodeStart )
     return SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   list<double> angles;
@@ -1374,7 +1377,7 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   gp_Pnt P ( theAxis.x, theAxis.y, theAxis.z );
@@ -1466,7 +1469,7 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   gp_Trsf aTrsf;
@@ -1529,7 +1532,7 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  map<int,const SMDS_MeshElement*> elements;
+  TIDSortedElemSet elements;
   ToMap(theIDsOfElements, aMesh, elements);
 
   gp_Pnt P ( theAxis.x, theAxis.y, theAxis.z );
@@ -1909,7 +1912,7 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
       !aSecondNode2ToMerge)
     return SMESH::SMESH_MeshEditor::SEW_BAD_SIDE2_NODES;
 
-  map<int,const SMDS_MeshElement*> aSide1Elems, aSide2Elems;
+  TIDSortedElemSet aSide1Elems, aSide2Elems;
   ToMap(IDsOfSide1Elements, aMesh, aSide1Elems);
   ToMap(IDsOfSide2Elements, aMesh, aSide2Elems);
 

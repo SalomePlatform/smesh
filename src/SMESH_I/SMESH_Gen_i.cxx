@@ -2749,7 +2749,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               aDataset->CloseOnDisk();
 
               // get elements sorted by ID
-              ::SMESH_MeshEditor::TIDSortedElemSet elemSet;
+              TIDSortedElemSet elemSet;
               if ( isNode )
                 while ( nIt->more() ) elemSet.insert( nIt->next() );
               else
@@ -2757,7 +2757,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               ASSERT( elemSet.size() == nbElems );
 
               // add elements to submeshes
-              ::SMESH_MeshEditor::TIDSortedElemSet::iterator iE = elemSet.begin();
+              TIDSortedElemSet::iterator iE = elemSet.begin();
               for ( int i = 0; i < nbElems; ++i, ++iE )
               {
                 int smID = smIDs[ i ];

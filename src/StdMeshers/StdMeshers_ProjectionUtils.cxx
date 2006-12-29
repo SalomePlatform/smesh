@@ -976,12 +976,12 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
       const SMDS_MeshElement* faceToKeep = 0;
       const SMDS_MeshNode* vNode = is2 ? vNode2 : vNode1;
       const SMDS_MeshNode* eNode = is2 ? eNode2[0] : eNode1[0];
-      std::map<int,const SMDS_MeshElement*> inSet, notInSet;
+      TIDSortedElemSet inSet, notInSet;
 
       const SMDS_MeshElement* f1 =
         SMESH_MeshEditor::FindFaceInSet( vNode, eNode, inSet, notInSet );
       if ( !f1 ) RETURN_BAD_RESULT("The first face on seam not found");
-      SMESH_MeshEditor::Insert( f1, notInSet );
+      notInSet.insert( f1 );
 
       const SMDS_MeshElement* f2 =
         SMESH_MeshEditor::FindFaceInSet( vNode, eNode, inSet, notInSet );

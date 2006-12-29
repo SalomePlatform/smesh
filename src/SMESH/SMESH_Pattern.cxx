@@ -3257,11 +3257,11 @@ void SMESH_Pattern::
   myPolyElems.reserve( myIdsOnBoundary.size() );
 
   // make a set of refined elements
-  map<int,const SMDS_MeshElement* > avoidSet, elemSet;
+  TIDSortedElemSet avoidSet, elemSet;
   std::vector<const SMDS_MeshElement*>::iterator itv =  myElements.begin();
   for(; itv!=myElements.end(); itv++) {
     const SMDS_MeshElement* el = (*itv);
-    avoidSet.insert( make_pair(el->GetID(),el) );
+    avoidSet.insert( el );
   }
   //avoidSet.insert( myElements.begin(), myElements.end() );
 
@@ -3293,7 +3293,7 @@ void SMESH_Pattern::
           SMESH_MeshEditor::FindFaceInSet( n1, n2, elemSet, avoidSet );
         if ( face )
         {
-          avoidSet.insert ( make_pair(face->GetID(),face) );
+          avoidSet.insert ( face );
           myPolyElems.push_back( face );
 
           // some links of <face> are split;
@@ -3414,7 +3414,7 @@ void SMESH_Pattern::
         while ( eIt->more() )
         {
           const SMDS_MeshElement* elem = eIt->next();
-          if ( !volTool.Set( elem ) || !avoidSet.insert( make_pair(elem->GetID(),elem) ).second )
+          if ( !volTool.Set( elem ) || !avoidSet.insert( elem ).second )
             continue; // skip faces or refined elements
           // add polyhedron definition
           myPolyhedronQuantities.push_back(vector<int> ());
