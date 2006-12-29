@@ -30,6 +30,7 @@
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 
 #include "utilities.h"
 
@@ -304,6 +305,31 @@ public:
     SMDS_NodeVectorElemIterator( s.begin(), s.end() ) {}
 };
 
+/// ===================================================================
+/*!
+ * \brief Iterator on faces or edges of volume
+ */
+/// ===================================================================
+
+class _MySubIterator : public SMDS_ElemIterator
+{
+  vector< const SMDS_MeshElement* > myElems;
+  int myIndex;
+public:
+  _MySubIterator(const SMDS_MeshVolume* vol, SMDSAbs_ElementType type):myIndex(0) {
+    SMDS_VolumeTool vTool(vol);
+    if (type == SMDSAbs_Face)
+      vTool.GetAllExistingFaces( myElems );
+    else
+      vTool.GetAllExistingFaces( myElems );
+  }
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more() { return myIndex < myElems.size(); }
+
+  /// Return the current object and step to the next one
+  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
+};
+
 //=======================================================================
 //function : elementsIterator
 //purpose  : 
@@ -319,10 +345,10 @@ SMDS_ElemIteratorPtr SMDS_QuadraticVolumeOfNodes::elementsIterator
   case SMDSAbs_Node:
     return SMDS_ElemIteratorPtr(new SMDS_QuadraticVolumeOfNodes_MyIterator(myNodes));
   case SMDSAbs_Edge:
-    MESSAGE("Error : edge iterator for SMDS_QuadraticVolumeOfNodes not implemented");
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Edge));
     break;
   case SMDSAbs_Face:
-    MESSAGE("Error : face iterator for SMDS_QuadraticVolumeOfNodes not implemented");
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Face));
     break;
   default:
     return SMDS_ElemIteratorPtr
