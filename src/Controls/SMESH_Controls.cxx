@@ -2554,22 +2554,27 @@ SMDSAbs_ElementType ElementsOnSurface::GetType() const
 { return myType; }
 
 void ElementsOnSurface::SetTolerance( const double theToler )
-{ myToler = theToler; }
+{
+  if ( myToler != theToler )
+    myIds.Clear();
+  myToler = theToler;
+}
 
 double ElementsOnSurface::GetTolerance() const
 { return myToler; }
 
 void ElementsOnSurface::SetUseBoundaries( bool theUse )
 {
-  bool diff = ( myUseBoundaries != theUse );
-  myUseBoundaries = theUse;
-  if ( diff )
+  if ( myUseBoundaries != theUse ) {
+    myUseBoundaries = theUse;
     SetSurface( mySurf, myType );
+  }
 }
 
 void ElementsOnSurface::SetSurface( const TopoDS_Shape& theShape,
                                     const SMDSAbs_ElementType theType )
 {
+  myIds.Clear();
   myType = theType;
   mySurf.Nullify();
   if ( theShape.IsNull() || theShape.ShapeType() != TopAbs_FACE )
