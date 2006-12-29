@@ -354,6 +354,17 @@ using namespace std;
 	  SUIT_OverrideCursor wc;
 
 	  try {
+	    bool Renumber = false ;
+	    // PAL 14172  : Check of we have to renumber or not from the preferences before export
+	    if (resMgr)
+	      Renumber= resMgr->booleanValue("SMESH","renumbering");
+	    if (Renumber){
+	      SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+	      aMeshEditor->RenumberNodes();
+	      aMeshEditor->RenumberElements();
+	      if ( SMESHGUI::automaticUpdate() )
+	        SMESH::UpdateView();
+	      }
 	    switch ( theCommandID ) {
 	    case 125:
 	    case 122:
@@ -3012,6 +3023,7 @@ void SMESHGUI::createPreferences()
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
+  int renumber=addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
   
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
