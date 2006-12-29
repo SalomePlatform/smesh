@@ -117,6 +117,11 @@ bool FunctionTable::value( const double t, double& f ) const
   if( !findBounds( t, i1, i2 ) )
     return false;
 
+  if( i1==i2 ) {
+    f = myData[ 2*i1+1 ];
+    return true;
+  }
+      
   double
     x1 = myData[2*i1], y1 = myData[2*i1+1],
     x2 = myData[2*i2], y2 = myData[2*i2+1];
@@ -169,7 +174,7 @@ bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) con
   }
 
   for( int i=0; i<n-1; i++ )
-    if( myData[2*i]<=x && x<=myData[2*(i+1)] )
+    if( myData[2*i]<=x && x<myData[2*(i+1)] )
     {
       x_ind_1 = i;
       x_ind_2 = i+1;
@@ -177,7 +182,7 @@ bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) con
     }
   x_ind_1 = n-1;
   x_ind_2 = n-1;
-  return false;
+  return ( fabs( x - myData[2*x_ind_2] ) < 1.e-10 );
 }
 
 FunctionExpr::FunctionExpr( const char* str, const int conv )
