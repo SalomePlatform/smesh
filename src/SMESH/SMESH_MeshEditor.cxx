@@ -3216,7 +3216,7 @@ void SMESH_MeshEditor::RotationSweep(TIDSortedElemSet & theElems,
   TIDSortedElemSet::iterator itElem;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
     const SMDS_MeshElement* elem = *itElem;
-    if ( !elem )
+    if ( !elem || elem->GetType() == SMDSAbs_Volume )
       continue;
     vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
     newNodesItVec.reserve( elem->NbNodes() );
@@ -3393,7 +3393,7 @@ void SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet &  theElems,
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
     // check element type
     const SMDS_MeshElement* elem = *itElem;
-    if ( !elem )
+    if ( !elem  || elem->GetType() == SMDSAbs_Volume )
       continue;
 
     vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
