@@ -159,7 +159,7 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
 		if (_maxElementArea > 0)
 		{
 // 			_edgeLength = 2 * sqrt(_maxElementArea);	// triangles : minorant
-			_edgeLength = 2 * sqrt(_maxElementArea/sqrt(3.0));
+			_edgeLength = sqrt(2. * _maxElementArea/sqrt(3.0));
 			isOk = true;
 		}
 		else

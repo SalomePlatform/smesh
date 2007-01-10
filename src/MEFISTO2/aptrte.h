@@ -1,6 +1,6 @@
 //  SMESH MEFISTO2 : algorithm for meshing
 //
-//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,9 @@
 //
 //
 //  File   : aptrte.h
-//  Author: Alain PERRONNET
+//  Author : Alain PERRONNET
 //  Module : SMESH
+//  Date   : 13 novembre 2006
 
 #ifndef aptrte__h
 #define aptrte__h
@@ -41,10 +42,11 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-void qualitetrte( R3 *mnpxyd,
-		  Z & mosoar, Z & mxsoar, Z *mnsoar,
-		  Z & moartr, Z & mxartr, Z *mnartr,
-		  Z & nbtria, R & quamoy, R & quamin );
+extern "C" {
+void qualitetrte_( R3 *mnpxyd,
+		   Z & mosoar, Z & mxsoar, Z *mnsoar,
+	  	   Z & moartr, Z & mxartr, Z *mnartr,
+		   Z & nbtria, R & quamoy, R & quamin ); }
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // but :    calculer la qualite moyenne et minimale de la triangulation
 // -----    actuelle definie par les tableaux nosoar et noartr
@@ -214,7 +216,7 @@ extern "C" {void tedela_( R3 * mnpxyd, Z * mnarst,
  
 extern "C" {void terefr_( Z & nbarpi, R3 * mnpxyd,
 			  Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
-			  Z & moartr, Z & n1artr, Z * mnartr, Z * mnarst,
+			  Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z * mnarst,
 			  Z & mxarcf, Z * mnarc1, Z * mnarc2,
 			  Z * mnarc3, Z * mnarc4,
 			  Z & n, Z & ierr );}
@@ -228,12 +230,12 @@ extern "C" {void tesuex_( Z & nblf, Z * nulftr,
 			  Z & nbtria, Z * mntrsu, Z & ierr );}
 // suppression des triangles externes a la surface
 
-extern "C" {void teamqt_( Z & nutysu,
+extern "C" {void teamqt_( Z & nutysu, R & aretmx, R & airemx,
 			  Z * mnarst, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
 			  Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr,
 			  Z & mxarcf, Z * mntrcf, Z * mnstbo,
 			  Z * n1arcf, Z * mnarcf, Z * mnarc1,
-			  R3 * comxmi, Z & nbarpi, Z & nbsomm, Z & mxsomm,
+			  Z & nbarpi, Z & nbsomm, Z & mxsomm,
 			  R3 * mnpxyd, Z * mnslig,
 			  Z & ierr );}
 // amelioration de la qualite de la triangulation par

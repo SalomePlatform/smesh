@@ -21,7 +21,30 @@ c
 c  File   : trte.f    le Fortran du trianguleur plan
 c  Module : SMESH
 c  Author : Alain PERRONNET
-c  Date   : 16 mars 2006
+c  Date   : 13 novembre 2006
+
+      double precision  function diptdr( pt , p1dr , p2dr )
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++012
+c but : calculer la distance entre un point et une droite
+c ----- definie par 2 points p1dr et p2dr
+c
+c entrees :
+c ---------
+c pt        : le point de R ** 2
+c p1dr p2dr : les 2 points de R ** 2  de la droite
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++012
+c programmeur : alain perronnet analyse numrique paris  janvier 1986
+c....................................................................012
+      double precision  pt(2),p1dr(2),p2dr(2), a, b, c
+c
+c     les coefficients de la droite a x + by + c =0
+      a = p2dr(2) - p1dr(2)
+      b = p1dr(1) - p2dr(1)
+      c = - a * p1dr(1) - b * p1dr(2)
+c
+c     la distance = | a * x + b * y + c | / sqrt( a*a + b*b )
+      diptdr = abs( a * pt(1) + b * pt(2) + c ) / sqrt( a*a + b*b )
+      end
 
       subroutine qutr2d( p1, p2, p3, qualite )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -332,9 +355,12 @@ c             dont le second n'est pas le triangle nt2
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c2345x7..............................................................012
+      parameter        (lchain=6)
       common / unites / lecteu, imprim, nunite(30)
       integer           nosoar(mosoar,mxsoar), noarst(*)
       integer           nu2sar(2)
+c
+      ierr = 0
 c
 c     ajout eventuel de l'arete s1 s2 dans nosoar
       nu2sar(1) = ns1
@@ -363,6 +389,8 @@ c        le triangle 1 de l'arete => le triangle nt1
          nosoar(4,noar) = nt1
 c        le triangle 2 de l'arete => le triangle nt2
          nosoar(5,noar) = nt2
+c        le chainage est mis a -1
+         nosoar(lchain,noar) = -1
 c
 c        le sommet appartient a l'arete noar
          noarst( nu2sar(1) ) = noar
@@ -382,25 +410,32 @@ c        alors il y a une erreur
 c                arete appartenant a plus de 2 triangles => erreur
                  if( ierr .ge. 0 ) then
                     write(imprim,*) 'erreur fasoar: arete ',noar,
-     %              ' dans 2 triangles et a creer!'
+     %              ' dans 2 triangles',nosoar(4,noar),nosoar(5,noar),
+     %              ' et ajouter',nt1,nt2
+                write(imprim,*)'arete',noar,(nosoar(i,noar),i=1,mosoar)
                  endif
-                 ierr = 2
-                 return
+c
+c                ERREUR. CORRECTION POUR VOIR ...
+                 nosoar(4,noar) = NT1
+                 nosoar(5,noar) = NT2
+ccc                 ierr = 2
+ccc                 return
              endif
          endif
 c
 c        mise a jour du numero des triangles de l'arete noar
 c        le triangle 2 de l'arete => le triangle nt1
-         if( nosoar(4,noar) .lt. 0 ) then
+         if( nosoar(4,noar) .le. 0 ) then
 c            pas de triangle connu pour cette arete
              n = 4
          else
 c            deja un triangle connu. ce nouveau est le second
              if( nosoar(5,noar) .gt. 0  .and.  nt1 .gt. 0 .and.
-     %          nosoar(5,noar) .ne. nt1 ) then
+     %           nosoar(5,noar) .ne. nt1 ) then
 c               arete appartenant a plus de 2 triangles => erreur
-                write(imprim,*) 'erreur fasoar: arete ',noar,
-     %          ' dans plus de 2 triangles'
+                    write(imprim,*) 'erreur fasoar: arete ',noar,
+     %              ' dans triangles',nosoar(4,noar),nosoar(5,noar),
+     %              ' et ajouter triangle',nt1
                 ierr = 3
                 return
              endif
@@ -415,6 +450,7 @@ c           l'arete appartient a 2 triangles
      %          nosoar(5,noar) .ne. nt2 ) then
 c               arete appartenant a plus de 2 triangles => erreur
                 write(imprim,*) 'erreur fasoar: arete ',noar,
+     %         ' de st',nosoar(1,noar),'-',nosoar(2,noar),
      %         ' dans plus de 2 triangles'
                 ierr = 4
                 return
@@ -432,7 +468,7 @@ c     pas d'erreur
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :   calcul des 2 coordonnees (xc,yc) dans le carre (0,1)
 c -----   image par f:carre unite-->quadrangle appartenant a q1**2
-c         par une resolution directe due a nicolas thenault
+c         par une resolution directe due a Nicolas Thenault
 c
 c entrees:
 c --------
@@ -810,6 +846,7 @@ c     existe t il un point libre
          if( letree(i,ntrp) .eq. 0 ) then
 c           la place i est libre
             letree(i,ntrp) = -ns
+            ierr = 0
             return
          endif
  10   continue
@@ -1125,6 +1162,7 @@ c....................................................................012
       double precision  a(2),s,aretmx,rac3
 c
 c     protection du nombre de sommets avant d'ajouter ceux de tetree
+      ierr   = 0
       nbsofr = nbsomm
       do 1 i = 1, nbsomm 
          comxmi(1,1) = min( comxmi(1,1), pxyd(1,i) )
@@ -1133,8 +1171,8 @@ c     protection du nombre de sommets avant d'ajouter ceux de tetree
          comxmi(2,2) = max( comxmi(2,2), pxyd(2,i) )
  1    continue
 c
-c     creation de l'arbre tee
-c     =======================
+c     creation de l'arbre letree
+c     ==========================
 c     la premiere colonne vide de letree
       letree(0,0) = 2
 c     chainage des te vides
@@ -1218,9 +1256,8 @@ c
 
       subroutine tetaid( nutysu, dx, dy, longai, ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c but :     calculer la longueur de l'arete ideale en dx,dy
+c but :     calculer la longueur de l'arete ideale longai en dx,dy
 c -----
-c
 c entrees:
 c --------
 c nutysu : numero de traitement de areteideale() selon le type de surface
@@ -1300,8 +1337,8 @@ c aretmx : longueur maximale des aretes des triangles equilateraux
 c permtr : perimetre de la ligne enveloppe dans le plan
 c          avant mise a l'echelle a 2**20
 c
-c modifies :
-c ----------
+c modifies:
+c ---------
 c nbsomm : nombre de sommets apres identification
 c pxyd   : tableau des coordonnees 2d des points
 c          par point : x  y  distance_souhaitee
@@ -1349,6 +1386,8 @@ c                       gestion circulaire
 c
       integer           nuste(3)
       equivalence      (nuste(1),ns1),(nuste(2),ns2),(nuste(3),ns3)
+c
+      ierr = 0
 c
 c     existence ou non de la fonction 'taille_ideale' des aretes
 c     autour du point.  ici la carte est supposee isotrope
@@ -1416,7 +1455,8 @@ c        il est donc decoupe en 4 soustriangles
          if( ierr .ne. 0 ) return
          do 4 i=nbsom0+1,nbsomm
 c           mise a jour de taille_ideale des nouveaux sommets de te
-            call tetaid( nutysu, pxyd(1,i), pxyd(2,i), pxyd(3,i), ierr )
+            call tetaid( nutysu, pxyd(1,i), pxyd(2,i),
+     %                   pxyd(3,i), ierr )
             if( ierr .ne. 0 ) goto 9999
  4       continue
       endif
@@ -2041,7 +2081,7 @@ c
 c
 c        quadrangle convexe : le critere de delaunay intervient
 c        ------------------   ---------------------------------
-c        calcul du centre et rayon de la boule circonscrite a 123
+c        calcul du centre et rayon de la boule circonscrite a ns123
 c        pas d'affichage si le triangle est degenere
          ierr = -1
          call cenced( pxyd(1,ns1), pxyd(1,ns2), pxyd(1,ns3), cetria,
@@ -2059,15 +2099,6 @@ c           protection contre une boucle infinie sur le meme cercle
 c
 c           oui: ns4 est dans le cercle circonscrit a ns1 ns2 ns3
 c           => ns3 est aussi dans le cercle circonscrit de ns1 ns2 ns4
-c
-cccc           les 2 triangles d'arete na sont effaces
-ccc            do 25 j=4,5
-ccc               nt = nosoar(j,na)
-cccc              trace du triangle nt
-ccc               call mttrtr( pxyd, nt, moartr, noartr, mosoar, nosoar,
-ccc     %                      ncnoir, ncjaun )
-ccc 25         continue
-c
 c           echange de la diagonale 12 par 34 des 2 triangles
             call te2t2t( na,     mosoar, n1soar, nosoar, noarst,
      %                   moartr, noartr, na34 )
@@ -2081,9 +2112,6 @@ c
 c           les aretes internes peripheriques des 2 triangles sont enchainees
             do 60 j=4,5
                nt = nosoar(j,na34)
-cccc              trace du triangle nt
-ccc               call mttrtr( pxyd, nt, moartr, noartr, mosoar, nosoar,
-ccc     %                      ncoran, ncgric )
                do 50 i=1,3
                   n = abs( noartr(i,nt) )
                   if( n .ne. na34 ) then
@@ -2102,12 +2130,14 @@ c
 c        retour en haut de la pile des aretes a traiter
          goto 20
       endif
+c
+      return
       end
 
 
       subroutine terefr( nbarpi, pxyd,
      %                   mosoar, mxsoar, n1soar, nosoar,
-     %                   moartr, n1artr, noartr, noarst,
+     %                   moartr, mxartr, n1artr, noartr, noarst,
      %                   mxarcf, n1arcf, noarcf, larmin, notrcf,
      %                   nbarpe, ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2127,6 +2157,7 @@ c          indice dans nosoar de l'arete suivante dans le hachage
 c mxsoar : nombre maximal d'aretes stockables dans le tableau nosoar
 c          attention: mxsoar>3*mxsomm obligatoire!
 c moartr : nombre maximal d'entiers par arete du tableau noartr
+c mxartr : nombre maximal de triangles declarables dans noartr
 c mxarcf : nombre de variables des tableaux n1arcf, noarcf, larmin, notrcf
 c
 c modifies:
@@ -2166,12 +2197,14 @@ c....................................................................012
       common / unites / lecteu,imprim,intera,nunite(29)
       double precision  pxyd(3,*)
       integer           nosoar(mosoar,mxsoar),
-     %                  noartr(moartr,*),
+     %                  noartr(moartr,mxartr),
      %                  noarst(*),
      %                  n1arcf(0:mxarcf),
      %                  noarcf(3,mxarcf),
      %                  larmin(mxarcf),
      %                  notrcf(mxarcf)
+c
+      ierr = 0
 c
 c     le nombre d'aretes de la frontiere non arete de la triangulation
       nbarpe = 0
@@ -2204,7 +2237,7 @@ c
 c              traitement de cette arete perdue ns1-ns2
                call tefoar( narete, nbarpi, pxyd,
      %                      mosoar, mxsoar, n1soar, nosoar,
-     %                      moartr, n1artr, noartr, noarst,
+     %                      moartr, mxartr, n1artr, noartr, noarst,
      %                      mxarcf, n1arcf, noarcf, larmin, notrcf,
      %                      ierr )
                if( ierr .ne. 0 ) return
@@ -2267,6 +2300,7 @@ c ierr   : 0 si pas d'erreur, >0 sinon
 cc++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc        mai 1999
 c2345x7..............................................................012
+      common / unites / lecteu,imprim,intera,nunite(29)
       double precision  pxyd(3,*)
       integer           nulftr(nblftr),nslign(nbsomm),
      %                  nosoar(mosoar,mxsoar),
@@ -2359,10 +2393,6 @@ c              triangle deja traite pour une ligne anterieure?
                if(     letrsu(nt)  .ne. 0      .and.
      %             abs(letrsu(nt)) .ne. ligne ) goto 60
 c
-cccc              trace du triangle nt en couleur ligne0
-ccc               call mttrtr( pxyd,   nt, moartr, noartr, mosoar, nosoar,
-ccc     %                      ligne0, ncnoir )
-c
 c              le triangle est marque avec la valeur de ligne
                letrsu(nt) = ligne
 c
@@ -2405,11 +2435,6 @@ c                       avec le signe oppose de celui de ligne
 c
 c                       temoin de ligne a traiter ensuite dans nulftr
                         nulftr(nl) = -abs( nulftr(nl) )
-c
-cccc                       trace du triangle nt2 en jaune borde de magenta
-ccc                        call mttrtr( pxyd,nt2,
-ccc     %                               moartr,noartr,mosoar,nosoar,
-ccc     %                               ncjaun, ncmage )
 c
 c                       l'arete est traitee
                         nosoar(6,na) = -3
@@ -2601,8 +2626,8 @@ c     remise en etat pour eviter les modifications de ladefi
       end
 
 
-
-      subroutine trp1st( ns,     noarst, mosoar, nosoar, moartr, noartr,
+      subroutine trp1st( ns,     noarst, mosoar, nosoar,
+     %                   moartr, mxartr, noartr,
      %                   mxpile, lhpile, lapile )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :   recherche des triangles de noartr partageant le sommet ns
@@ -2619,23 +2644,30 @@ c          indice dans nosoar de l'arete suivante dans le hachage
 c nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
 c          chainage des aretes frontalieres, chainage du hachage des aretes
 c moartr : nombre maximal d'entiers par arete du tableau noartr
+c mxartr : nombre de triangles declares dans noartr
 c noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
 c mxpile : nombre maximal de triangles empilables
 c
 c sorties :
-c --------
+c ---------
 c lhpile : >0 nombre de triangles empiles
 c          =0       si impossible de tourner autour du point
+c                   ou zero triangle contenant le sommet ns
 c          =-lhpile si apres butee sur la frontiere il y a a nouveau
 c          butee sur la frontiere . a ce stade on ne peut dire si tous
 c          les triangles ayant ce sommet ont ete recenses
 c          ce cas arrive seulement si le sommet est sur la frontiere
+c          par un balayage de tous les triangles, lhpile donne le
+c          nombre de triangles de sommet ns
+c          remarque: si la pile est saturee recherche de tous les
+c          triangles de sommet ns par balayage de tous les triangles
 c lapile : numero dans noartr des triangles de sommet ns
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
+c auteur: alain perronnet analyse numerique paris upmc         mars 1997
+c modifs: alain perronnet Laboratoire J-L. Lions UPMC Paris octobre 2006
 c....................................................................012
       common / unites / lecteu, imprim, nunite(30)
-      integer           noartr(moartr,*),
+      integer           noartr(moartr,mxartr),
      %                  nosoar(mosoar,*),
      %                  noarst(*)
       integer           lapile(1:mxpile)
@@ -2646,26 +2678,26 @@ c
 c     la premiere arete de sommet ns
       nar = noarst( ns )
       if( nar .le. 0 ) then
-         write(imprim,*) 'trp1st: sommet',ns,' sans arete'
-         goto 9999
+ccc         write(imprim,*) 'trp1st: sommet',ns,' sans arete'
+         goto 100
       endif
 c
 c     l'arete nar est elle active?
       if( nosoar(1,nar) .le. 0 ) then
 ccc         write(imprim,*) 'trp1st: arete vide',nar,
 ccc     %                  ' st1:', nosoar(1,nar),' st2:',nosoar(2,nar)
-         goto 9999
+         goto 100
       endif
 c
 c     le premier triangle de sommet ns
       nt0 = abs( nosoar(4,nar) )
       if( nt0 .le. 0 ) then
          write(imprim,*) 'trp1st: sommet',ns,' dans aucun triangle'
-         goto 9999
+         goto 100
       endif
 c
-c     le triangle est il interne?
-      if( noartr(1,nt0) .eq. 0 ) goto 9999
+c     le triangle est il actif?
+      if( noartr(1,nt0) .eq. 0 ) goto 100
 c
 c     le numero des 3 sommets du triangle nt0 dans le sens direct
       call nusotr( nt0, mosoar, nosoar, moartr, noartr, nosotr )
@@ -2674,10 +2706,10 @@ c     reperage du sommet ns dans le triangle nt0
       do 5 nar=1,3
          if( nosotr(nar) .eq. ns ) goto 10
  5    continue
-      nta = nt0
-      goto 9995
+c     pas de sommet ns dans le triangle nt0
+      goto 100
 c
-c     ns retrouve : le triangle nt0 est empile
+c     ns retrouve : le triangle nt0 de sommet ns est empile
  10   lhpile = 1
       lapile(1) = nt0
       nta = nt0
@@ -2690,8 +2722,11 @@ c     ==========================================================
 c     le triangle nt1 oppose du triangle nt0 par l'arete noar
       if( nosoar(4,noar) .eq. nt0 ) then
          nt1 = nosoar(5,noar)
-      else
+      else if( nosoar(5,noar) .eq. nt0 ) then
          nt1 = nosoar(4,noar)
+      else
+       write(imprim,*)'trp1st: anomalie arete',noar,' sans triangle',nt0
+         goto 100
       endif
 c
 c     la boucle sur les triangles nt1 de sommet ns dans le sens indirect
@@ -2709,11 +2744,11 @@ c        reperage du sommet ns dans nt1
          do 20 nar=1,3
             if( nosotr(nar) .eq. ns ) goto 25
  20      continue
-         nta = nt1
-         goto 9995
+c        pas de sommet ns dans le triangle nt1
+         goto 100
 c
 c        nt1 est empile
- 25      if( lhpile .ge. mxpile ) goto 9990
+ 25      if( lhpile .ge. mxpile ) goto 100
          lhpile = lhpile + 1
          lapile(lhpile) = nt1
 c
@@ -2723,21 +2758,29 @@ c        sauvegarde du precedent triangle dans nta
          noar = abs( noartr(nar,nt1) )
          if( nosoar(4,noar) .eq. nt1 ) then
             nt1 = nosoar(5,noar)
-         else
+         else if( nosoar(5,noar) .eq. nt1 ) then
             nt1 = nosoar(4,noar)
+         else
+            write(imprim,*)'trp1st: Anomalie arete',noar,
+     %                     ' sans triangle',nt1
+            goto 100
          endif
-         if( nt1 .le. 0   ) goto 30
-c        le triangle suivant est a l'exterieur
+c
+c        le triangle suivant est il a l'exterieur?
+         if( nt1 .le. 0 ) goto 30
+c
+c        non: est il le premier triangle de sommet ns?
          if( nt1 .ne. nt0 ) goto 15
 c
-c        recherche terminee par arrivee sur nt0
+c        oui: recherche terminee par arrivee sur nt0
 c        les triangles forment un "cercle" de "centre" ns
+c        lhpile ressort avec le signe +
          return
 c
       endif
 c
-c     pas de triangle voisin a nt1
-c     ============================
+c     pas de triangle voisin a nt1 qui doit etre frontalier
+c     =====================================================
 c     le parcours passe par 1 des triangles exterieurs
 c     le parcours est inverse par l'arete de gauche
 c     le triangle nta est le premier triangle empile
@@ -2749,7 +2792,7 @@ c     le numero des 3 sommets du triangle nta dans le sens direct
       do 32 nar=1,3
          if( nosotr(nar) .eq. ns ) goto 33
  32   continue
-      goto 9995
+      goto 100
 c
 c     l'arete qui precede (rotation / ns dans le sens direct)
  33   if( nar .eq. 1 ) then
@@ -2762,12 +2805,17 @@ c     le triangle voisin de nta dans le sens direct
       noar = abs( noartr(nar,nta) )
       if( nosoar(4,noar) .eq. nta ) then
          nt1 = nosoar(5,noar)
-      else
+      else if( nosoar(5,noar) .eq. nta ) then
          nt1 = nosoar(4,noar)
+      else
+         write(imprim,*)'trp1st: Anomalie arete',noar,
+     %                  ' SANS triangle',nta
+         goto 100
       endif
       if( nt1 .le. 0 ) then
 c        un seul triangle contient ns
-         goto 70
+c        parcours de tous les triangles pour lever le doute
+         goto 100
       endif
 c
 c     boucle sur les triangles de sommet ns dans le sens direct
@@ -2782,11 +2830,10 @@ c     reperage du sommet ns dans nt1
       do 50 nar=1,3
          if( nosotr(nar) .eq. ns ) goto 60
  50   continue
-      nta = nt1
-      goto 9995
+      goto 100
 c
 c     nt1 est empile
- 60   if( lhpile .ge. mxpile ) goto 9990
+ 60   if( lhpile .ge. mxpile ) goto 70
       lhpile = lhpile + 1
       lapile(lhpile) = nt1
 c
@@ -2801,32 +2848,55 @@ c     l'arete de sommet ns dans nosoar
       noar = abs( noartr(nar,nt1) )
 c
 c     le triangle voisin de nta dans le sens direct
-      nta  = nt1
+      nta = nt1
       if( nosoar(4,noar) .eq. nt1 ) then
          nt1 = nosoar(5,noar)
-      else
+      else if( nosoar(5,noar) .eq. nt1 ) then
          nt1 = nosoar(4,noar)
+      else
+         write(imprim,*)'trp1st: anomalie arete',noar,
+     %                  ' SANS triangle',nt1
+         goto 100
       endif
-      nta = nt1
       if( nt1 .gt. 0 ) goto 40
 c
 c     butee sur le trou => fin des triangles de sommet ns
 c     ----------------------------------------------------
- 70   lhpile = -lhpile
-c     impossible ici de trouver les autres triangles de sommet ns
+c     impossible ici de trouver tous les triangles de sommet ns directement
 c     les triangles de sommet ns ne forment pas une boule de centre ns
+c     au moins 1, voire 2 triangles frontaliers de sommet ns
+ 70   lhpile = -lhpile
+      return
+c
+c     Balayage de tous les triangles actifs et de sommet ns
+c     methode lourde et couteuse mais a priori tres fiable
+c     -----------------------------------------------------
+ 100  lhpile = 0
+      do 120 nt1=1,mxartr
+         if( noartr(1,nt1) .ne. 0 ) then
+c           le numero des 3 sommets du triangle i
+            call nusotr( nt1, mosoar, nosoar, moartr, noartr, nosotr )
+            do 110 j=1,3
+               if( nosotr(j) .eq. ns ) then
+c                 le triangle contient le sommet ns
+                  lhpile = lhpile + 1
+                  if( lhpile .gt. mxpile ) goto 9990
+                  lapile( lhpile ) = nt1
+               endif
+ 110        continue
+         endif
+ 120  continue
+c     il n'est pas sur que ces triangles forment une boule de centre ns
+      lhpile = -lhpile
       return
 c
 c     saturation de la pile des triangles
 c     -----------------------------------
- 9990 write(imprim,*)'trp1st: saturation pile des triangles autour ',
-     %'sommet',ns
-      goto 9999
-c
-c     erreur triangle ne contenant pas le sommet ns
-c     ----------------------------------------------
- 9995 write(imprim,*) 'trp1st: triangle ',nta,' st=',
-     %   (nosotr(nar),nar=1,3),' sans le sommet' ,ns
+ 9990 write(imprim,*)'trp1st: saturation pile des triangles autour du so
+     %mmet',ns
+      write(imprim,*) 'Plus de',mxpile,' triangles de sommet',ns
+      write(imprim,19990) (ii,lapile(ii),ii=1,mxpile)
+19990 format(5(' triangle',i9))
 c
  9999 lhpile = 0
       return
@@ -2881,7 +2951,7 @@ c     le sommet nosotr(3 du triangle 123
       end
 
 
-      subroutine tesusp( nbarpi, pxyd,   noarst,
+      subroutine tesusp( quamal, nbarpi, pxyd,   noarst,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
      %                   mxarcf, n1arcf, noarcf, larmin, notrcf, liarcf,
@@ -2889,12 +2959,14 @@ c     le sommet nosotr(3 du triangle 123
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :   supprimer de la triangulation les sommets de te trop proches
 c -----   soit d'un sommet frontalier ou point interne impose
-c         soit d'une arete frontaliere
+c         soit d'une arete frontaliere si la qualite minimale des triangles
+c         est inferieure a quamal
 c
 c         attention: le chainage lchain de nosoar devient celui des cf
 c
 c entrees:
 c --------
+c quamal : qualite des triangles au dessous de laquelle supprimer des sommets
 c nbarpi : numero du dernier point interne impose par l'utilisateur
 c pxyd   : tableau des coordonnees 2d des points
 c          par point : x  y  distance_souhaitee
@@ -2939,15 +3011,11 @@ c          11 algorithme defaillant
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c....................................................................012
-c      parameter       ( quamal=0.3 ) => ok
-c      parameter       ( quamal=0.4 ) => pb pour le test ocean
-c      parameter       ( quamal=0.5 ) => pb pour le test ocean
-c
-      parameter       ( quamal=0.333, lchain=6 )
+      parameter       ( lchain=6 )
       common / unites / lecteu,imprim,intera,nunite(29)
-      double precision  pxyd(3,*), qualit
+      double precision  pxyd(3,*), quamal, qualit, quaopt, quamin
       integer           nosoar(mosoar,mxsoar),
-     %                  noartr(moartr,*),
+     %                  noartr(moartr,mxartr),
      %                  noarst(*),
      %                  n1arcf(0:mxarcf),
      %                  noarcf(3,mxarcf),
@@ -2959,8 +3027,9 @@ c
       equivalence      (nosotr(1),ns1), (nosotr(2),ns2),
      %                 (nosotr(3),ns3)
 c
-cccc     le nombre de sommets de te supprimes
-ccc      nbstsu = 0
+c     le nombre de sommets de te supprimes
+      nbstsu = 0
+      ierr   = 0
 c
 c     initialisation du chainage des aretes des cf => 0 arete de cf
       do 10 narete=1,mxsoar
@@ -2971,9 +3040,8 @@ c     boucle sur l'ensemble des sommets frontaliers ou points internes
 c     ================================================================
       do 100 ns = 1, nbarpi
 c
-cccc        le nombre de sommets supprimes pour ce sommet ns
-ccc         nbsuns = 0
-c
+c        le nombre de sommets supprimes pour ce sommet ns
+         nbsuns = 0
 c        la qualite minimale au dessous de laquelle le point proche
 c        interne est supprime
          quaopt = quamal
@@ -2988,26 +3056,25 @@ c           erreur: le point appartient a aucune arete
          endif
 c
 c        recherche des triangles de sommet ns
-c        ils doivent former un contour ferme de type etoile
-         call trp1st( ns, noarst, mosoar, nosoar, moartr, noartr,
+         call trp1st( ns, noarst, mosoar, nosoar,
+     %                moartr, mxartr, noartr,
      %                mxarcf, nbtrcf, notrcf )
          if( nbtrcf .eq. 0 ) goto 100
          if( nbtrcf .lt. 0 ) then
-c           erreur: impossible de trouver tous les triangles de sommet ns
-c           seule une partie est a priori retrouvee
+c           impossible de trouver tous les triangles de sommet ns
+c           seule une partie est a priori retrouvee ce qui est normal
+c           si ns est un sommet frontalier 
             nbtrcf = -nbtrcf
          endif
 c
 c        boucle sur les triangles de l'etoile du sommet ns
-         quamin = 2.0
+c        recherche du triangle de sommet ns ayant la plus basse qualite
+         quamin = 2.0d0
          do 20 i=1,nbtrcf
-c
 c           le numero des 3 sommets du triangle nt
             nt = notrcf(i)
-            call nusotr( nt, mosoar, nosoar, moartr, noartr,
-     %                   nosotr )
+            call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr )
 c           nosotr(1:3) est en equivalence avec ns1, ns2, ns3
-c
 c           la qualite du triangle ns1 ns2 ns3
             call qutr2d( pxyd(1,ns1), pxyd(1,ns2), pxyd(1,ns3), qualit )
             if( qualit .lt. quamin ) then
@@ -3021,18 +3088,18 @@ c        bilan sur la qualite des triangles de sommet ns
 c
 c           recherche du sommet de ntqmin le plus proche et non frontalier
 c           ==============================================================
-c           le numero des 3 sommets du triangle nt
-            call nusotr( ntqmin, mosoar, nosoar, moartr, noartr,
-     %                   nosotr )
-            nste   = 0
-            quamin = 1e28
+c           le numero des 3 sommets du triangle ntqmin
+            call nusotr(ntqmin, mosoar, nosoar, moartr, noartr, nosotr)
+            nste = 0
+            d0   = 1e28
             do 30 j=1,3
-               if( nosotr(j) .ne. ns .and. nosotr(j) .gt. nbarpi ) then
-                  d = (pxyd(1,nosotr(j))-pxyd(1,ns))**2
-     %              + (pxyd(2,nosotr(j))-pxyd(2,ns))**2
-                  if( d .lt. quamin ) then
-                     quamin = d
-                     nste   = j
+               nst = nosotr(j)
+               if( nst .ne. ns .and. nst .gt. nbarpi ) then
+                  d = (pxyd(1,nst)-pxyd(1,ns))**2
+     %              + (pxyd(2,nst)-pxyd(2,ns))**2
+                  if( d .lt. d0 ) then
+                     d0   = d
+                     nste = j
                   endif
                endif
  30         continue
@@ -3046,55 +3113,57 @@ c
 c              nste est un sommet de triangle equilateral
 c              => le sommet nste va etre supprime
 c              ==========================================
-               call te1stm( nste,   pxyd,   noarst,
+               call te1stm( nste,   nbarpi, pxyd,   noarst,
      %                      mosoar, mxsoar, n1soar, nosoar,
      %                      moartr, mxartr, n1artr, noartr,
      %                      mxarcf, n1arcf, noarcf,
      %                      larmin, notrcf, liarcf, ierr )
                if( ierr .eq. 0 ) then
-cccc                 un sommet de te supprime de plus
-ccc                  nbstsu = nbstsu + 1
-                  goto 100
-               else if( ierr .lt. 0 ) then
-c                 le sommet nste est externe donc non supprime
-c                 ou bien le sommet nste est le centre d'un cf dont toutes
-c                 les aretes simples sont frontalieres
-c                 dans les 2 cas le sommet n'est pas supprime
-                  ierr = 0
-                  goto 100
-               else
-c                 erreur motivant un arret de la triangulation
-                  return
-               endif
+c                 un sommet de te supprime de plus
+                  nbstsu = nbstsu + 1
 c
-cccc              boucle jusqu'a obtenir une qualite suffisante
-cccc              si triangulation tres irreguliere =>
-cccc              destruction de beaucoup de points internes
-cccc              les 2 variables suivantes brident ces destructions massives
-ccc               nbsuns = nbsuns + 1
-ccc               quaopt = quaopt * 0.8
-ccc               if( nbsuns .lt. 5 ) goto 15
+c                 boucle jusqu'a obtenir une qualite suffisante
+c                 si triangulation tres irreguliere =>
+c                 destruction de beaucoup de points internes
+c                 les 2 variables suivantes brident ces destructions massives
+                  nbsuns = nbsuns + 1
+                  quaopt = quaopt * 0.8
+                  if( nbsuns .lt. 5 ) goto 15
+               else
+                  if( ierr .lt. 0 ) then
+c                    le sommet nste est externe donc non supprime
+c                    ou bien le sommet nste est le centre d'un cf dont toutes
+c                    les aretes simples sont frontalieres
+c                    dans les 2 cas le sommet n'est pas supprime
+                     ierr = 0
+                     goto 100
+                  else
+c                    erreur motivant un arret de la triangulation
+                     return
+                  endif
+               endif
             endif
          endif
 c
  100  continue
 c
-c      write(imprim,*)'retrait de',nbstsu,
-c     %                ' sommets de te trop proches de la frontiere'
+      write(imprim,*)'tesusp: suppression de',nbstsu,
+     %               ' sommets de te trop proches de la frontiere'
       return
       end
 
 
-      subroutine teamqa( nutysu,
+      subroutine teamqa( nutysu, airemx,
      %                   noarst, mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
      %                   mxtrcf, notrcf, nostbo,
      %                   n1arcf, noarcf, larmin,
-     %                   comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
+     %                   nbarpi, nbsomm, mxsomm, pxyd, nslign,
      %                   ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c but:    si la taille de l'arete moyenne est >ampli*taille souhaitee
-c ----    alors ajout d'un sommet barycentre du plus grand triangle
+c but:    Boucles sur les aretes actives de la triangulation actuelle
+c ----    si la taille de l'arete moyenne est >ampli*taille souhaitee
+c         alors ajout d'un sommet barycentre du plus grand triangle
 c               de sommet ns
 c         si la taille de l'arete moyenne est <ampli/2*taille souhaitee
 c         alors suppression du sommet ns
@@ -3110,6 +3179,7 @@ c          0 pas d'emploi de la fonction areteideale() => aretmx active
 c          1 il existe une fonction areteideale()
 c            dont seules les 2 premieres composantes de uv sont actives
 c          autres options a definir...
+c airemx : aire maximale d'un triangle
 c noarst : noarst(i) numero d'une arete de sommet i
 c mosoar : nombre maximal d'entiers par arete et
 c          indice dans nosoar de l'arete suivante dans le hachage
@@ -3129,7 +3199,6 @@ c          sommet frontalier
 c          numero du point dans le lexique point si interne impose
 c          0 si le point est interne non impose par l'utilisateur
 c         -1 si le sommet est externe au domaine
-c comxmi : min et max des coordonneees des sommets du maillage
 c
 c modifies :
 c ----------
@@ -3153,13 +3222,12 @@ c....................................................................012
       parameter        (ampli=1.34d0,ampli2=ampli/2d0)
       parameter        (lchain=6)
       common / unites / lecteu, imprim, nunite(30)
-      double precision  pxyd(3,*)
-      double precision  ponder, ponde1, xbar, ybar, x, y, surtd2
-      double precision  d, dmoy
-      double precision  d2d3(3,3)
-      real              origin(3), xyz(3)
-      integer           noartr(moartr,*),
-     %                  nosoar(mosoar,*),
+      double precision  pxyd(3,*), airemx
+      double precision  ponder, ponde1, xbar, ybar, x, y, surtd2,
+     %                  xns, yns, airetm
+      double precision  d, dmoy, dmax, dmin, dns, xyzns(3), s0, s1
+      integer           noartr(moartr,mxartr),
+     %                  nosoar(mosoar,mxsoar),
      %                  noarst(*),
      %                  notrcf(mxtrcf),
      %                  nslign(*),
@@ -3167,11 +3235,16 @@ c....................................................................012
      %                  n1arcf(0:mxtrcf),
      %                  noarcf(3,mxtrcf),
      %                  larmin(mxtrcf)
-      double precision  comxmi(3,2)
       integer           nosotr(3)
 c
+c     initialisation du chainage des aretes des cf => 0 arete de cf
+      do 1 noar=1,mxsoar
+         nosoar( lchain, noar ) = -1
+ 1    continue
+      noar0 = 0
+c
 c     le nombre d'iterations pour ameliorer la qualite
-      nbitaq = 4
+      nbitaq = 5
       ier    = 0
 c
 c     initialisation du parcours
@@ -3181,20 +3254,21 @@ c     initialisation du parcours
 c
       do 5000 iter=1,nbitaq
 c
-c        le nombre de sommets supprimes
-         nbstsu = 0
-         nbbaaj = 0
+cccc        le nombre de barycentres ajoutes
+ccc         nbbaaj = 0
 c
 c        coefficient de ponderation croissant avec les iterations
-         ponder = min( 1d0, ( 50 + (50*iter)/nbitaq ) * 0.01d0 )
+         ponder = 0.1d0 + iter * 0.5d0 / nbitaq
+ccc 9 octobre 2006 ponder = min( 1d0, 0.1d0 + iter * 0.9d0 / nbitaq )
+ccc 9 mars    2006 ponder = min( 1d0, ( 50 + (50*iter)/nbitaq ) * 0.01d0 )
          ponde1 = 1d0 - ponder
 c
 c        l'ordre du parcours dans le sens croissant ou decroissant
+c        alternance du parcours
          nt   = nbs1
          nbs1 = nbs2
          nbs2 = nt
-c        alternance du parcours
-         nbs3 = -nbs3
+         nbs3 =-nbs3
 c
          do 1000 ns = nbs1, nbs2, nbs3
 c
@@ -3202,8 +3276,9 @@ c           le sommet est il interne au domaine?
             if( nslign(ns) .ne. 0 ) goto 1000
 c
 c           existe-t-il une arete de sommet ns ?
- 10         noar = noarst( ns )
+            noar = noarst( ns )
             if( noar .le. 0 ) goto 1000
+            if( nosoar(1,noar) .le. 0 ) goto 1000
 c
 c           le 1-er triangle de l'arete noar
             nt = nosoar( 4, noar )
@@ -3211,32 +3286,60 @@ c           le 1-er triangle de l'arete noar
 c
 c           recherche des triangles de sommet ns
 c           ils doivent former un contour ferme de type etoile
-            call trp1st( ns, noarst, mosoar, nosoar, moartr, noartr,
+            call trp1st( ns, noarst, mosoar, nosoar,
+     %                   moartr, mxartr, noartr,
      %                   mxtrcf, nbtrcf, notrcf )
             if( nbtrcf .le. 0 ) goto 1000
 c
-c           mise a jour de la distance souhaitee
+c           mise a jour de la distance souhaitee autour de ns
+            xns =  pxyd(1,ns)
+            yns =  pxyd(2,ns)
             if( nutysu .gt. 0 ) then
 c              la fonction taille_ideale(x,y,z) existe
-c              calcul de pxyzd(3,ns) dans le repere initial => xyz(1:3)
-               call tetaid( nutysu, pxyd(1,ns), pxyd(2,ns),
+               call tetaid( nutysu, xns, yns,
      %                      pxyd(3,ns), ier )
             endif
 c
-c           boucle sur les triangles qui forment une boule autour du sommet ns
-            nbstbo = 0
-c           chainage des aretes simples de la boule a rendre delaunay
-            noar0  = 0
-            do 40 i=1,nbtrcf
+c           boucle sur les triangles qui forment une etoile autour du sommet ns
+c           chainage des aretes simples de l'etoile formee par ces triangles
 c
-c              le numero de l'arete du triangle nt ne contenant pas le sommet ns
+c           remise a zero du lien nosoar des aretes a rendre Delaunay
+ 19         if( noar0 .gt. 0 ) then
+               noar = nosoar(lchain,noar0)
+               nosoar(lchain,noar0) = -1
+               noar0 = noar
+               goto 19
+            endif
+c              
+            noar0  = 0
+            nbstbo = 0
+            airetm = 0d0
+            do 40 i=1,nbtrcf
+c              recherche du triangle de plus grande aire
                nt = notrcf(i)
+               call nusotr( nt, mosoar, nosoar,
+     %                      moartr, noartr, nosotr )
+               d = surtd2( pxyd(1,nosotr(1)),
+     %                     pxyd(1,nosotr(2)),
+     %                     pxyd(1,nosotr(3)) )
+               if( d .gt. airetm ) then
+                  airetm = d
+                  imax   = i
+               else if( d .le. 0 ) then
+                  write(imprim,*)'teamqa: triangle notrcf(',i,')=',
+     %            notrcf(i),' st', nosotr,' AIRE=',d,'<=0'
+                  goto 1000
+               endif
+c
+c              le no de l'arete du triangle nt ne contenant pas le sommet ns
                do 20 na=1,3
 c                 le numero de l'arete na dans le tableau nosoar
                   noar = abs( noartr(na,nt) )
                   if( nosoar(1,noar) .ne. ns   .and.
      %                nosoar(2,noar) .ne. ns ) goto 25
  20            continue
+               write(imprim,*)'teamqa: ERREUR triangle',nt,
+     %                        ' SANS sommet',ns
 c
 c              construction de la liste des sommets des aretes simples
 c              de la boule des triangles de sommet ns
@@ -3246,12 +3349,12 @@ c              -------------------------------------------------------
                   do 30 j=nbstbo,1,-1
                      if( ns1 .eq. nostbo(j) ) goto 35
  30               continue
-c                 ns1 est un nouveau sommet a ajouter
+c                 ns1 est un nouveau sommet a ajouter a l'etoile
                   nbstbo = nbstbo + 1
                   nostbo(nbstbo) = ns1
  35            continue
 c
-c              noar est une arete potentielle a rendre delaunay
+c              noar est une arete potentielle a rendre Delaunay
                if( nosoar(3,noar) .eq. 0 ) then
 c                 arete non frontaliere
                   nosoar(lchain,noar) = noar0
@@ -3266,38 +3369,35 @@ c           ---------------------------------------------------------------
             xbar = 0d0
             ybar = 0d0
             dmoy = 0d0
+            dmax = 0d0
+            dmin = 1d124
+            dns  = 0d0
             do 50 i=1,nbstbo
-               x    = pxyd(1,nostbo(i))
-               y    = pxyd(2,nostbo(i))
+               nst  = nostbo(i)
+               x    = pxyd(1,nst)
+               y    = pxyd(2,nst)
                xbar = xbar + x
                ybar = ybar + y
-               dmoy = dmoy + sqrt( (x-pxyd(1,ns))**2+(y-pxyd(2,ns))**2 )
+               d    = sqrt( (x-xns)**2 + (y-yns)**2 )
+               dmoy = dmoy + d
+               dmax = max( dmax, d )
+               dmin = min( dmin, d )
+               dns  = dns + pxyd(3,nst)
  50         continue
+            xbar = xbar / nbstbo
+            ybar = ybar / nbstbo
             dmoy = dmoy / nbstbo
+            dns  = dns  / nbstbo
 c
 c           pas de modification de la topologie lors de la derniere iteration
 c           =================================================================
             if( iter .eq. nbitaq ) goto 200
 c
-c           si la taille de l'arete moyenne est >ampli*taille souhaitee
+c           si la taille de l'arete maximale est >ampli*taille souhaitee
 c           alors ajout d'un sommet barycentre du plus grand triangle
 c                 de sommet ns
-c           ===========================================================
-            if( dmoy .gt. ampli*pxyd(3,ns) ) then
-c
-               dmoy = 0d0
-               do 150 i=1,nbtrcf
-c                 recherche du plus grand triangle en surface
-                  call nusotr( notrcf(i), mosoar, nosoar,
-     %                         moartr, noartr, nosotr )
-                  d  = surtd2( pxyd(1,nosotr(1)),
-     %                         pxyd(1,nosotr(2)),
-     %                         pxyd(1,nosotr(3)) )
-                  if( d .gt. dmoy ) then
-                     dmoy = d
-                     imax = i
-                  endif
- 150           continue
+c           ============================================================
+            if( airetm .gt. airemx .or. dmax .gt. ampli*dns ) then
 c
 c              ajout du barycentre du triangle notrcf(imax)
                nt = notrcf( imax )
@@ -3314,10 +3414,8 @@ c                 abandon de l'amelioration du sommet ns
      %                             + pxyd(i,nosotr(2))
      %                             + pxyd(i,nosotr(3)) ) / 3d0
  160           continue
-c
                if( nutysu .gt. 0 ) then
 c                 la fonction taille_ideale(x,y,z) existe
-c                 calcul de pxyzd(3,nbsomm) dans le repere initial => xyz(1:3)
                   call tetaid( nutysu, pxyd(1,nbsomm), pxyd(2,nbsomm),
      %                         pxyd(3,nbsomm), ier )
                endif
@@ -3343,73 +3441,69 @@ c              protection a ne pas modifier sinon erreur!
                call tr3str( nbsomm, nt,
      %                      mosoar, mxsoar, n1soar, nosoar,
      %                      moartr, mxartr, n1artr, noartr,
-     %                      noarst,
-     %                      nosotr, ierr )
+     %                      noarst, nosotr, ierr )
                if( ierr .ne. 0 ) goto 9999
 c
-c              un barycentre ajoute de plus
-               nbbaaj = nbbaaj + 1
+cccc              un barycentre ajoute de plus
+ccc               nbbaaj = nbbaaj + 1
 c
 c              les aretes chainees de la boule sont rendues delaunay
                goto 900
 c
             endif
 c
-c           si la taille de l'arete moyenne est <ampli/2*taille souhaitee
-c           alors suppression du sommet ns
-c           =============================================================
-            if( dmoy .lt. ampli2*pxyd(3,ns) ) then
-c              remise a -1 du chainage des aretes peripheriques de la boule ns
-               noar = noar0
- 90            if( noar .gt. 0 ) then
-c                 protection du no de l'arete suivante
-                  na = nosoar(lchain,noar)
-c                 l'arete interne est remise a -1
-                  nosoar(lchain,noar) = -1
-c                 l'arete suivante
-                  noar = na
-                  goto 90
-               endif
-               call te1stm( ns,     pxyd,   noarst,
-     %                      mosoar, mxsoar, n1soar, nosoar,
-     %                      moartr, mxartr, n1artr, noartr,
-     %                      mxtrcf, n1arcf, noarcf,
-     %                      larmin, notrcf, nostbo,
-     %                      ierr )
-               if( ierr .eq. -543 ) then
-                  ierr = 0
-                  goto 1000
-               else if( ierr .lt.    0 ) then
-c                 le sommet ns est externe donc non supprime
-c                 ou bien le sommet ns est le centre d'un cf dont toutes
-c                 les aretes simples sont frontalieres
-c                 dans les 2 cas le sommet ns n'est pas supprime
-                  ierr = 0
-                  goto 200
-               else if( ierr .gt. 0 ) then
-c                 erreur irrecuperable
-                  goto 9999
-               endif
-               nbstsu = nbstsu + 1
-               goto 1000
-c
-            endif
-c
 c           les 2 coordonnees du barycentre des sommets des aretes
 c           simples de la boule du sommet ns
 c           ======================================================
- 200        xbar = xbar / nbstbo
-            ybar = ybar / nbstbo
+C DEBUT AJOUT 10 octobre 2006
+C           PONDERATION POUR EVITER LES DEGENERESCENSES AVEC PROTECTION
+C           SI UN TRIANGLE DE SOMMET NS A UNE AIRE NEGATIVE APRES BARYCENTRAGE
+C           ALORS LE SOMMET NS N'EST PAS BOUGE
+c
+c           protection des XY du point initial
+ 200        xyzns(1) = pxyd(1,ns)
+            xyzns(2) = pxyd(2,ns)
+            xyzns(3) = pxyd(3,ns)
 c
 c           ponderation pour eviter les degenerescenses
             pxyd(1,ns) = ponde1 * pxyd(1,ns) + ponder * xbar
             pxyd(2,ns) = ponde1 * pxyd(2,ns) + ponder * ybar
-c
             if( nutysu .gt. 0 ) then
 c              la fonction taille_ideale(x,y,z) existe
-c              calcul de pxyzd(3,ns) dans le repere initial => xyz(1:3)
                call tetaid( nutysu, pxyd(1,ns), pxyd(2,ns),
      %                      pxyd(3,ns), ier )
+            endif
+c
+c           calcul des surfaces avant et apres deplacement de ns
+            s0 = 0d0
+            s1 = 0d0
+            do 210 i=1,nbtrcf
+c              le numero de l'arete du triangle nt ne contenant pas le sommet ns
+               nt = notrcf(i)
+               do 204 na=1,3
+c                 le numero de l'arete na dans le tableau nosoar
+                  noar = abs( noartr(na,nt) )
+                  if( nosoar(1,noar) .ne. ns   .and.
+     %                nosoar(2,noar) .ne. ns ) then
+                     ns2 = nosoar(1,noar)
+                     ns3 = nosoar(2,noar)
+                     goto 206
+                  endif
+ 204           continue
+c              aire signee des 2 triangles
+ 206           s0 = s0 + abs(surtd2(xyzns,     pxyd(1,ns2),pxyd(1,ns3)))
+               s1 = s1 + abs(surtd2(pxyd(1,ns),pxyd(1,ns2),pxyd(1,ns3)))
+ 210        continue
+            if( abs(s0-s1) .gt. 1d-10*abs(s0) ) then
+c              retour a la position initiale
+c              car le point est passe au dela d'une arete de son etoile
+               pxyd(1,ns) = xyzns(1)
+               pxyd(2,ns) = xyzns(2)
+               pxyd(3,ns) = xyzns(3)
+c              la ponderation est reduite  10 octobre 2006
+               ponder = max( 0.1d0, ponder*0.5d0 )
+               ponde1 = 1d0 - ponder
+               goto 1000
             endif
 c
 c           les aretes chainees de la boule sont rendues delaunay
@@ -3419,9 +3513,8 @@ c           les aretes chainees de la boule sont rendues delaunay
 c
  1000    continue
 c
-ccc         write(imprim,11000) nbstsu, nbbaaj
-ccc11000 format( i6,' sommets supprimes ' ,
-ccc     %        i6,' barycentres ajoutes' )
+ccc         write(imprim,11000) iter, nbbaaj
+ccc11000 format('teamqa: iteration',i3,' =>',i6,' barycentres ajoutes')
 c
 c        mise a jour pour ne pas oublier les nouveaux sommets
          if( nbs1 .gt. nbs2 ) then
@@ -3436,729 +3529,12 @@ c
       end
 
 
-      subroutine teamsf( nutysu,
-     %                   noarst, mosoar, mxsoar, n1soar, nosoar,
-     %                   moartr, mxartr, n1artr, noartr,
-     %                   mxtrcf, notrcf, nostbo,
-     %                   n1arcf, noarcf, larmin,
-     %                   comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
-     %                   ierr )
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c but :    modification de la topologie des triangles autour des
-c -----    sommets frontaliers et mise en triangulation delaunay locale
-c
-c entrees:
-c --------
-c nutysu : numero de traitement de areteideale() selon le type de surface
-c          0 pas d'emploi de la fonction areteideale() => aretmx active
-c          1 il existe une fonction areteideale()
-c            dont seules les 2 premieres composantes de uv sont actives
-c          autres options a definir...
-c noarst : noarst(i) numero d'une arete de sommet i
-c mosoar : nombre maximal d'entiers par arete et
-c          indice dans nosoar de l'arete suivante dans le hachage
-c mxsoar : nombre maximal d'aretes frontalieres declarables
-c n1soar : numero de la premiere arete vide dans le tableau nosoar
-c nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
-c          chainage des aretes frontalieres, chainage du hachage des aretes
-c moartr : nombre maximal d'entiers par arete du tableau noartr
-c mxartr : nombre maximal de triangles declarables dans noartr
-c n1artr : numero du premier triangle vide dans le tableau noartr
-c          le chainage des triangles vides se fait sur noartr(2,.)
-c noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
-c mxtrcf : nombre maximal de triangles empilables
-c nbarpi : numero du dernier sommet frontalier ou interne impose
-c nslign : >0 => ns numero du point dans le lexique point si interne impose
-c          ou => 1 000 000 * n + ns1
-c              ou n   est le numero (1 a nblftr) de la ligne de ce point
-c                 ns1 est le numero du point dans sa ligne
-c          = 0 si le point est interne non impose par l'utilisateur
-c          =-1 si le sommet est externe au domaine
-c comxmi : min et max des coordonneees des sommets du maillage
-c
-c modifies :
-c ----------
-c nbsomm : nombre actuel de sommets de la triangulation
-c          (certains sommets internes ont ete desactives ou ajoutes)
-c pxyd   : tableau des coordonnees 2d des points
-c
-c auxiliaires:
-c ------------
-c notrcf : tableau ( mxtrcf ) auxiliaire d'entiers
-c          numero dans noartr des triangles de sommet ns
-c nostbo : tableau ( mxtrcf ) auxiliaire d'entiers
-c          numero dans pxyd des sommets des aretes simples de la boule
-c n1arcf : tableau (0:mxtrcf) auxiliaire d'entiers
-c noarcf : tableau (3,mxtrcf) auxiliaire d'entiers
-c larmin : tableau ( mxtrcf ) auxiliaire d'entiers
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc    janvier 1998
-c....................................................................012
-      parameter        (lchain=6)
-      common / unites / lecteu, imprim, nunite(30)
-      double precision  pxyd(3,*)
-      double precision  a, angle, angled, pi, deuxpi, pis3
-      double precision  d2d3(3,3)
-      real              origin(3), xyz(3)
-      integer           noartr(moartr,*),
-     %                  nosoar(mosoar,*),
-     %                  noarst(*),
-     %                  notrcf(mxtrcf),
-     %                  nslign(*),
-     %                  nostbo(*),
-     %                  n1arcf(0:mxtrcf),
-     %                  noarcf(3,mxtrcf),
-     %                  larmin(mxtrcf),
-     %                  nosotr(3)
-      double precision  comxmi(3,2)
-c
-c     le nombre d'iterations pour ameliorer la qualite
-      nbitaq = 2
-      ier    = 0
-c
-c     pi / 3
-      pi     = atan(1d0) * 4d0
-      pis3   = pi / 3d0
-      deuxpi = 2d0 * pi
-c
-c     initialisation du parcours
-      modifs = 0
-      nbs1   = nbarpi
-      nbs2   =  1
-c     => pas de traitement sur les points des lignes de la frontiere
-      nbs3   = -1
-c
-      do 5000 iter=1,nbitaq
-c
-c        le nombre de sommets supprimes
-         nbstsu = 0
-c
-c        l'ordre du parcours dans le sens croissant ou decroissant
-         nt   = nbs1
-         nbs1 = nbs2
-         nbs2 = nt
-c        alternance du parcours
-         nbs3 = -nbs3
-c
-         do 1000 ns = nbs1, nbs2, nbs3
-c
-c           le sommet est il sur une ligne de la frontiere?
-c           if( nslign(ns) .lt. 1 000 000 ) goto 1000
-c
-c           traitement d'un sommet d'une ligne de la frontiere
-c           ==================================================
-c           existe-t-il une arete de sommet ns ?
-            noar = noarst( ns )
-            if( noar .le. 0 ) goto 1000
-c
-c           le 1-er triangle de l'arete noar
-            nt = nosoar( 4, noar )
-            if( nt .le. 0 ) goto 1000
-c
-c           recherche des triangles de sommet ns
-c           ils doivent former un contour ferme de type camembert
-            call trp1st( ns, noarst, mosoar, nosoar, moartr, noartr,
-     %                   mxtrcf, nbtrcf, notrcf )
-            if( nbtrcf .ge. -1 ) goto 1000
-c
-c           boucle sur les triangles qui forment un camembert autour du sommet n
-            nbtrcf = -nbtrcf
-c
-c           angle interne au camembert autour du sommet ns
-            angle = 0d0
-            do 540 i=1,nbtrcf
-c
-c              le numero de l'arete du triangle nt ne contenant pas le sommet ns
-               nt = notrcf(i)
-               do 520 na=1,3
-c                 le numero de l'arete na dans le tableau nosoar
-                  noar = abs( noartr(na,nt) )
-                  if( nosoar(1,noar) .ne. ns   .and.
-     %                nosoar(2,noar) .ne. ns ) goto 525
- 520           continue
-c
-c              calcul de l'angle (ns-st1 arete, ns-st2 arete)
- 525           ns1 = nosoar(1,noar)
-               ns2 = nosoar(2,noar)
-               a   = angled( pxyd(1,ns), pxyd(1,ns1), pxyd(1,ns2) )
-               if( a .gt. pi ) a = deuxpi - a
-               angle = angle + a
-c
- 540        continue
-c
-c           nombre ideal de triangles autour du sommet ns
-            n = nint( angle / pis3 )
-            if( n .le. 1 ) goto 1000
-            i = 1
-            if( nbtrcf .gt. n ) then
-c
-c              ajout du barycentre du triangle "milieu"
-               nt = notrcf( (n+1)/2 )
-               call nusotr( nt, mosoar, nosoar,
-     %                      moartr, noartr, nosotr )
-               if( nbsomm .ge. mxsomm ) then
-                  write(imprim,*) 'saturation du tableau pxyd'
-c                 abandon de l'amelioration du sommet ns
-                  goto 1000
-               endif
-               nbsomm = nbsomm + 1
-               do 560 i=1,3
-                  pxyd(i,nbsomm) = ( pxyd(i,nosotr(1))
-     %                             + pxyd(i,nosotr(2))
-     %                             + pxyd(i,nosotr(3)) ) / 3d0
- 560           continue
-c
-               if( nutysu .gt. 0 ) then
-c                 la fonction taille_ideale(x,y,z) existe
-c                 calcul de pxyzd(3,nbsomm) dans le repere initial => xyz(1:3)
-                  call tetaid( nutysu, pxyd(1,nbsomm), pxyd(2,nbsomm),
-     %                         pxyd(3,nbsomm), ier )
-               endif
-c
-c              sommet interne a la triangulation
-               nslign(nbsomm) = 0
-c
-c              les 3 aretes du triangle nt sont a rendre delaunay
-               noar0 = 0
-               do 570 i=1,3
-                  noar = abs( noartr(i,nt) )
-                  if( nosoar(3,noar) .eq. 0 ) then
-c                    arete non frontaliere
-                     if( nosoar(lchain,noar) .lt. 0 ) then
-c                       arete non encore chainee
-                        nosoar(lchain,noar) = noar0
-                        noar0 = noar
-                     endif
-                  endif
- 570           continue
-c
-c              triangulation du triangle de barycentre nbsomm
-c              protection a ne pas modifier sinon erreur!
-               call tr3str( nbsomm, nt,
-     %                      mosoar, mxsoar, n1soar, nosoar,
-     %                      moartr, mxartr, n1artr, noartr,
-     %                      noarst,
-     %                      nosotr, ierr )
-               if( ierr .ne. 0 ) goto 9999
-c
-c              les aretes chainees de la boule sont rendues delaunay
-               call tedela( pxyd,   noarst,
-     %                      mosoar, mxsoar, n1soar, nosoar, noar0,
-     %                      moartr, mxartr, n1artr, noartr, modifs )
-            endif
-c
- 1000    continue
-c
- 5000 continue
-c
- 9999 return
-      end
-
-
-      subroutine teamqs( nutysu,
-     %                   noarst, mosoar, mxsoar, n1soar, nosoar,
-     %                   moartr, mxartr, n1artr, noartr,
-     %                   mxtrcf, notrcf, nostbo,
-     %                   n1arcf, noarcf, larmin,
-     %                   comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
-     %                   ierr )
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c but :    une iteration de barycentrage des points internes
-c -----    modification de la topologie pour avoir 4 ou 5 ou 6 triangles
-c          pour chaque sommet de la triangulation
-c          mise en triangulation delaunay
-c
-c entrees:
-c --------
-c nutysu : numero de traitement de areteideale() selon le type de surface
-c          0 pas d'emploi de la fonction areteideale() => aretmx active
-c          1 il existe une fonction areteideale()
-c            dont seules les 2 premieres composantes de uv sont actives
-c          autres options a definir...
-c noarst : noarst(i) numero d'une arete de sommet i
-c mosoar : nombre maximal d'entiers par arete et
-c          indice dans nosoar de l'arete suivante dans le hachage
-c mxsoar : nombre maximal d'aretes frontalieres declarables
-c n1soar : numero de la premiere arete vide dans le tableau nosoar
-c nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
-c          chainage des aretes frontalieres, chainage du hachage des aretes
-c moartr : nombre maximal d'entiers par arete du tableau noartr
-c mxartr : nombre maximal de triangles declarables dans noartr
-c n1artr : numero du premier triangle vide dans le tableau noartr
-c          le chainage des triangles vides se fait sur noartr(2,.)
-c noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
-c mxtrcf : nombre maximal de triangles empilables
-c nbarpi : numero du dernier sommet frontalier ou interne impose
-c nslign : >0 => ns numero du point dans le lexique point si interne impose
-c          ou => 1 000 000 * n + ns1
-c              ou n   est le numero (1 a nblftr) de la ligne de ce point
-c                 ns1 est le numero du point dans sa ligne
-c          = 0 si le point est interne non impose par l'utilisateur
-c          =-1 si le sommet est externe au domaine
-c comxmi : min et max des coordonneees des sommets du maillage
-c
-c modifies :
-c ----------
-c nbsomm : nombre actuel de sommets de la triangulation
-c          (certains sommets internes ont ete desactives ou ajoutes)
-c pxyd   : tableau des coordonnees 2d des points
-c
-c auxiliaires:
-c ------------
-c notrcf : tableau ( mxtrcf ) auxiliaire d'entiers
-c          numero dans noartr des triangles de sommet ns
-c nostbo : tableau ( mxtrcf ) auxiliaire d'entiers
-c          numero dans pxyd des sommets des aretes simples de la boule
-c n1arcf : tableau (0:mxtrcf) auxiliaire d'entiers
-c noarcf : tableau (3,mxtrcf) auxiliaire d'entiers
-c larmin : tableau ( mxtrcf ) auxiliaire d'entiers
-c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : Alain Perronnet  Laboratoire J.-L. LIONS Paris UPMC mars 2006
-c....................................................................012
-      parameter        (lchain=6)
-      common / unites / lecteu, imprim, nunite(30)
-      double precision  pxyd(3,*)
-      double precision  ponder, ponde1, xbar, ybar, x, y, d, dmin, dmax
-      double precision  surtd2
-      double precision  d2d3(3,3)
-      real              origin(3), xyz(3)
-      integer           noartr(moartr,*),
-     %                  nosoar(mosoar,*),
-     %                  noarst(*),
-     %                  notrcf(mxtrcf),
-     %                  nslign(*),
-     %                  nostbo(*),
-     %                  n1arcf(0:mxtrcf),
-     %                  noarcf(3,mxtrcf),
-     %                  larmin(mxtrcf)
-      integer           nosotr(3,2)
-      double precision  comxmi(3,2)
-c
-c     le nombre d'iterations pour ameliorer la qualite
-      nbitaq = 6
-      ier    = 0
-c
-c     initialisation du parcours
-      nbs1 = nbsomm
-      nbs2 = nbarpi + 1
-c     => pas de traitement sur les points des lignes de la frontiere
-      nbs3 = -1
-c
-      do 5000 iter=1,nbitaq
-c
-c        le nombre de sommets supprimes
-         nbstsu = 0
-c
-c        les compteurs de passage sur les differents cas
-         nbst4 = 0
-         nbst5 = 0
-         nbst8 = 0
-c
-c        coefficient de ponderation croissant avec les iterations
-         ponder = min( 1d0, 0.1d0 + iter * 0.9d0 / nbitaq )
-ccc 9 mars 2006 ponder = min( 1d0, ( 50 + (50*iter)/nbitaq ) * 0.01d0 )
-         ponde1 = 1d0 - ponder
-c
-c        l'ordre du parcours dans le sens croissant ou decroissant
-         nt   = nbs1
-         nbs1 = nbs2
-         nbs2 = nt
-c        alternance du parcours
-         nbs3 = -nbs3
-c
-         do 1000 ns = nbs1, nbs2, nbs3
-c
-c           le sommet est il interne au domaine?
-            if( nslign(ns) .ne. 0 ) goto 1000
-c
-c           traitement d'un sommet interne non impose par l'utilisateur
-c           ===========================================================
-c           existe-t-il une arete de sommet ns ?
- 10         noar = noarst( ns )
-            if( noar .le. 0 ) goto 1000
-c
-c           le 1-er triangle de l'arete noar
-            nt = nosoar( 4, noar )
-            if( nt .le. 0 ) goto 1000
-c
-c           recherche des triangles de sommet ns
-c           ils doivent former un contour ferme de type etoile
-            call trp1st( ns, noarst, mosoar, nosoar, moartr, noartr,
-     %                   mxtrcf, nbtrcf, notrcf )
-            if( nbtrcf .le. 2 ) goto 1000
-c
-c           boucle sur les triangles qui forment une boule autour du sommet ns
-            nbstbo = 0
-c           chainage des aretes simples de la boule a rendre delaunay
-            noar0  = 0
-            do 40 i=1,nbtrcf
-c
-c              le numero de l'arete du triangle nt ne contenant pas le sommet ns
-               nt = notrcf(i)
-               do 20 na=1,3
-c                 le numero de l'arete na dans le tableau nosoar
-                  noar = abs( noartr(na,nt) )
-                  if( nosoar(1,noar) .ne. ns   .and.
-     %                nosoar(2,noar) .ne. ns ) goto 25
- 20            continue
-c
-c              construction de la liste des sommets des aretes simples
-c              de la boule des triangles de sommet ns
-c              -------------------------------------------------------
- 25            do 35 na=1,2
-                  ns1 = nosoar(na,noar)
-                  do 30 j=nbstbo,1,-1
-                     if( ns1 .eq. nostbo(j) ) goto 35
- 30               continue
-c                 ns1 est un nouveau sommet a ajouter
-                  nbstbo = nbstbo + 1
-                  nostbo(nbstbo) = ns1
- 35            continue
-c
-c              noar est une arete potentielle a rendre delaunay
-               if( nosoar(3,noar) .eq. 0 ) then
-c                 arete non frontaliere
-                  nosoar(lchain,noar) = noar0
-                  noar0 = noar
-               endif
-c
- 40         continue
-c
-c           calcul des 2 coordonnees du barycentre de la boule du sommet ns
-c           calcul de l'arete de taille maximale et minimale issue de ns
-c           ---------------------------------------------------------------
-            xbar = 0d0
-            ybar = 0d0
-            dmin = 1d28
-            dmax = 0d0
-            do 50 i=1,nbstbo
-               x    = pxyd(1,nostbo(i))
-               y    = pxyd(2,nostbo(i))
-               xbar = xbar + x
-               ybar = ybar + y
-               d    = (x-pxyd(1,ns)) ** 2 + (y-pxyd(2,ns)) ** 2
-               if( d .gt. dmax ) then
-                  dmax = d
-                  imax = i
-               endif
-               if( d .lt. dmin ) then
-                  dmin = d
-                  imin = i
-               endif
- 50         continue
-c
-c           pas de modification de la topologie lors de la derniere iteration
-c           =================================================================
-            if( iter .ge. nbitaq ) goto 200
-c
-c           si la boule de ns contient au plus 3 triangles
-c            =>  pas de changement de topologie
-c           ==============================================
-            if( nbtrcf .le. 3 ) goto 200
-c
-c           si la boule de ns contient 4 triangles le sommet ns est detruit
-c           ===============================================================
-            if( nbtrcf .eq. 4 ) then
-c
-c              remise a -1 du chainage des aretes peripheriques de la boule ns
-               noar = noar0
- 60            if( noar .gt. 0 ) then
-c                 protection du no de l'arete suivante
-                  na = nosoar(lchain,noar)
-c                 l'arete interne est remise a -1
-                  nosoar(lchain,noar) = -1
-c                 l'arete suivante
-                  noar = na
-                  goto 60
-               endif
-               call te1stm( ns,     pxyd,   noarst,
-     %                      mosoar, mxsoar, n1soar, nosoar,
-     %                      moartr, mxartr, n1artr, noartr,
-     %                      mxtrcf, n1arcf, noarcf,
-     %                      larmin, notrcf, nostbo,
-     %                      ierr )
-               if( ierr .eq. -543 ) then
-                  ierr = 0
-                  goto 1000
-               else if( ierr .lt.    0 ) then
-c                 le sommet ns est externe donc non supprime
-c                 ou bien le sommet ns est le centre d'un cf dont toutes
-c                 les aretes simples sont frontalieres
-c                 dans les 2 cas le sommet ns n'est pas supprime
-                  ierr = 0
-                  goto 200
-               else if( ierr .eq. 0 ) then
-                  nbst4  = nbst4 + 1
-                  nbstsu = nbstsu + 1
-               else
-c                 erreur irrecuperable
-                  write(imprim,*)
-     %           'teamqs: erreur1 irrecuperable en sortie te1stm'
-                  goto 9999
-               endif
-               goto 1000
-c
-            endif
-c
-c           si la boule de ns contient 5 triangles et a un sommet voisin
-c           sommet de 5 triangles alors l'arete joignant ces 2 sommets
-c           est transformee en un seul sommet de 6 triangles
-c           ============================================================
-            if( nbtrcf .eq. 5 ) then
-c
-               do 80 i=1,5
-c                 le numero du sommet de l'arete i et different de ns
-                  ns1 = nostbo(i)
-c                 la liste des triangles de sommet ns1
-                  call trp1st( ns1, noarst,
-     %                         mosoar, nosoar, moartr, noartr,
-     %                         mxtrcf-5, nbtrc1, notrcf(6) )
-                  if( nbtrc1 .eq. 5 ) then
-c
-c                    l'arete de sommets ns-ns1 devient un point
-c                    par suppression du sommet ns
-c
-c                    remise a -1 du chainage des aretes peripheriques de la boul
-                     noar = noar0
- 70                  if( noar .gt. 0 ) then
-c                       protection du no de l'arete suivante
-                        na = nosoar(lchain,noar)
-c                       l'arete interne est remise a -1
-                        nosoar(lchain,noar) = -1
-c                       l'arete suivante
-                        noar = na
-                        goto 70
-                     endif
-c
-c                    le point ns1 devient le milieu de l'arete ns-ns1
-                     x = pxyd(1,ns1)
-                     y = pxyd(2,ns1)
-                     d = pxyd(3,ns1)
-                     do 75 j=1,3
-                        pxyd(j,ns1) = (pxyd(j,ns) + pxyd(j,ns1)) * 0.5d0
- 75                  continue
-c
-                     if( nutysu .gt. 0 ) then
-c                       la fonction taille_ideale(x,y,z) existe
-c                       calcul de pxyzd(3,ns1) dans le repere initial => xyz(1:3
-                        call tetaid( nutysu,pxyd(1,ns1),pxyd(2,ns1),
-     %                               pxyd(3,ns1), ier )
-                     endif
-c
-c                    suppression du point ns et mise en delaunay
-                     call te1stm( ns,     pxyd,   noarst,
-     %                            mosoar, mxsoar, n1soar, nosoar,
-     %                            moartr, mxartr, n1artr, noartr,
-     %                            mxtrcf, n1arcf, noarcf,
-     %                            larmin, notrcf, nostbo,
-     %                            ierr )
-                     if( ierr .lt. 0 ) then
-c                       le sommet ns est externe donc non supprime
-c                       ou bien le sommet ns est le centre d'un cf dont toutes
-c                       les aretes simples sont frontalieres ou erreur
-c                       dans les 3 cas le sommet ns n'est pas supprime
-c                       restauration du sommet ns1 a son ancienne place
-                        pxyd(1,ns1) = x
-                        pxyd(2,ns1) = y
-                        pxyd(3,ns1) = d
-                        ierr = 0
-                        goto 1000
-                     else if( ierr .eq. 0 ) then
-                        nbstsu = nbstsu + 1
-                        nbst5  = nbst5 + 1
-                        goto 1000
-                     else
-c                       erreur irrecuperable
-                        write(imprim,*)
-     %                 'teamqs: erreur2 irrecuperable en sortie te1stm'
-                        goto 9999
-                     endif
-                  endif
- 80            continue
-            endif
-c
-c           si la boule de ns contient au moins 8 triangles
-c           alors un triangle interne est ajoute + 3 triangles (1 par arete)
-c           ================================================================
-            if( nbtrcf .ge. 8 ) then
-c
-c              modification des coordonnees du sommet ns
-c              il devient le barycentre du triangle notrcf(1)
-               call nusotr( notrcf(1), mosoar, nosoar,
-     %                      moartr, noartr, nosotr )
-               do 110 i=1,3
-                  pxyd(i,ns) = ( pxyd(i,nosotr(1,1))
-     %                         + pxyd(i,nosotr(2,1))
-     %                         + pxyd(i,nosotr(3,1)) ) / 3d0
- 110           continue
-c
-               if( nutysu .gt. 0 ) then
-c                 la fonction taille_ideale(x,y,z) existe
-c                 calcul de pxyzd(3,nbsomm) dans le repere initial => xyz(1:3)
-                  call tetaid( nutysu, pxyd(1,ns), pxyd(2,ns),
-     %                         pxyd(3,ns), ier )
-               endif
-c
-c              ajout des 2 autres sommets comme barycentres des triangles
-c              notrcf(1+nbtrcf/3) et notrcf(1+2*nbtrcf/3)
-               nbt1 = ( nbtrcf + 1 ) / 3
-               do 140 n=1,2
-c
-c                 le triangle traite
-                  nt = notrcf(1 + n * nbt1 )
-c
-c                 le numero pxyd de ses 3 sommets
-                  call nusotr( nt, mosoar, nosoar,
-     %                         moartr, noartr, nosotr )
-c
-c                 ajout du nouveau barycentre
-                  if( nbsomm .ge. mxsomm ) then
-                   write(imprim,*) 'teamqs: saturation du tableau pxyd'
-c                    abandon de l'amelioration
-                     goto 9999
-                  endif
-                  nbsomm = nbsomm + 1
-                  do 120 i=1,3
-                     pxyd(i,nbsomm) = ( pxyd(i,nosotr(1,1))
-     %                                + pxyd(i,nosotr(2,1))
-     %                                + pxyd(i,nosotr(3,1)) ) / 3d0
- 120              continue
-c
-                  if( nutysu .gt. 0 ) then
-c                    la fonction taille_ideale(x,y,z) existe
-c                    calcul de pxyzd(3,nbsomm) dans le repere initial => xyz(1:3
-                     call tetaid( nutysu, pxyd(1,nbsomm),pxyd(2,nbsomm),
-     %                            pxyd(3,nbsomm), ier )
-                  endif
-c
-c                 sommet interne a la triangulation
-                  nslign(nbsomm) = 0
-c
-c                 les 3 aretes du triangle nt sont a rendre delaunay
-                  do 130 i=1,3
-                     noar = abs( noartr(i,nt) )
-                     if( nosoar(3,noar) .eq. 0 ) then
-c                       arete non frontaliere
-                        if( nosoar(lchain,noar) .lt. 0 ) then
-c                          arete non encore chainee
-                           nosoar(lchain,noar) = noar0
-                           noar0 = noar
-                        endif
-                     endif
- 130              continue
-c
-c                 triangulation du triangle de barycentre nbsomm
-c                 protection a ne pas modifier sinon erreur!
-                  call tr3str( nbsomm, nt,
-     %                         mosoar, mxsoar, n1soar, nosoar,
-     %                         moartr, mxartr, n1artr, noartr,
-     %                         noarst,
-     %                         nosotr, ierr )
-                  if( ierr .ne. 0 ) then
-                     write(imprim,*)
-     %              'teamqs: erreur irrecuperable en sortie tr3str'
-                     goto 9999
-                  endif
- 140           continue
-c
-               nbst8  = nbst8 + 1
-c
-c              les aretes chainees de la boule sont rendues delaunay
-               goto 300
-c
-            endif
-c
-c           nbtrcf est compris entre 5 et 7 => barycentrage simple
-c           ======================================================
-c           les 2 coordonnees du barycentre des sommets des aretes
-c           simples de la boule du sommet ns
- 200        xbar = xbar / nbstbo
-            ybar = ybar / nbstbo
-c
-C DEBUT AJOUT 21/MAI/2005
-C           PONDERATION POUR EVITER LES DEGENERESCENSES AVEC PROTECTION
-C           SI UN TRIANGLE DE SOMMET NS A UNE AIRE NEGATIVE APRES BARYCENTRAGE
-C           ALORS LE SOMMET NS N'EST PAS BOUGE
-c
-c           protection des XY du point initial
-            xxx = pxyd(1,ns)
-            yyy = pxyd(2,ns)
-c
-            pxyd(1,ns) = ponde1 * pxyd(1,ns) + ponder * xbar
-            pxyd(2,ns) = ponde1 * pxyd(2,ns) + ponder * ybar
-c
-ccc         write(imprim,*)'teamqs 200: ns=',ns,' ancien =',xxx,yyy
-ccc         write(imprim,*)'teamqs 200: ns=',ns,' nouveau=',pxyd(1,ns),pxyd(2,ns)
-c
-            do 240 i=1,nbtrcf
-c              le numero de l'arete du triangle nt ne contenant pas le sommet ns
-               nt = notrcf(i)
-               do 220 na=1,3
-c                 le numero de l'arete na dans le tableau nosoar
-                  noar = abs( noartr(na,nt) )
-                  if( nosoar(1,noar) .ne. ns   .and.
-     %                nosoar(2,noar) .ne. ns ) then
-                     if( noartr(na,nt) .ge. 0 ) then
-                        ns2 = nosoar(1,noar)
-                        ns3 = nosoar(2,noar)
-                     else
-                        ns3 = nosoar(1,noar)
-                        ns2 = nosoar(2,noar)
-                     endif
-                     goto 225
-                  endif
- 220           continue
-
-c              aire signee du triangle nt
- 225           d = surtd2( pxyd(1,ns), pxyd(1,ns2), pxyd(1,ns3) )
-               if( d .le. 0d0 ) then
-ccc                  write(imprim,*),'iter=',iter,
-ccc     %            ' Barycentrage au point ns=',ns,
-ccc     %            '   XB=',pxyd(1,ns),' YB=',pxyd(2,ns),
-ccc     %            ' => triangle avec AIRE<0 => Pt REMIS en X =',xxx,
-ccc     %            ' Y =',yyy
-                  pxyd(1,ns) = xxx
-                  pxyd(2,ns) = yyy
-                  goto 1000
-               endif
- 240        continue
-C
-C FIN AJOUT 21/MAI/2005
-c
-c           les aretes chainees de la boule sont rendues delaunay
- 300        call tedela( pxyd,   noarst,
-     %                   mosoar, mxsoar, n1soar, nosoar, noar0,
-     %                   moartr, mxartr, n1artr, noartr, modifs )
-c
- 1000    continue
-c
-ccc         write(imprim,11000) iter, nbitaq, nbst4, nbst5, nbst8
-ccc11000 format( 'teamqs iter=',i2,' max iter=',i2,':',
-ccc     %        i7,' sommets de 4t',
-ccc     %        i7,' sommets 5t+5t',
-ccc     %        i7,' sommets >7t' )
-c
-c        mise a jour pour ne pas oublier les nouveaux sommets
-         if( nbs1 .gt. nbs2 ) then
-            nbs1 = nbsomm
-            nbs2 = nbarpi + 1
-         else
-            nbs1 = nbarpi + 1
-            nbs2 = nbsomm
-         endif
-c
- 5000 continue
-c
- 9999 return
-      end
-
-
-      subroutine teamqt( nutysu,
+      subroutine teamqt( nutysu, aretmx, airemx,
      %                   noarst, mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
      %                   mxarcf, notrcf, nostbo,
      %                   n1arcf, noarcf, larmin,
-     %                   comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
+     %                   nbarpi, nbsomm, mxsomm, pxyd, nslign,
      %                   ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    amelioration de la qualite de la triangulation
@@ -4171,6 +3547,8 @@ c          0 pas d'emploi de la fonction areteideale() => aretmx active
 c          1 il existe une fonction areteideale()
 c            dont seules les 2 premieres composantes de uv sont actives
 c          autres options a definir...
+c aretmx : longueur maximale des aretes de la future triangulation
+c airemx : aire maximale souhaitee des triangles
 c noarst : noarst(i) numero d'une arete de sommet i
 c mosoar : nombre maximal d'entiers par arete et
 c          indice dans nosoar de l'arete suivante dans le hachage
@@ -4190,7 +3568,6 @@ c          sommet frontalier
 c          numero du point dans le lexique point si interne impose
 c          0 si le point est interne non impose par l'utilisateur
 c         -1 si le sommet est externe au domaine
-c comxmi : min et max des coordonneees des sommets du maillage
 c
 c modifies :
 c ----------
@@ -4210,8 +3587,15 @@ c larmin : tableau ( mxarcf ) auxiliaire d'entiers
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc       juin 1997
 c....................................................................012
+      double precision  quamal
+c     parameter       ( quamal=0.3d0 ) => ok
+c     parameter       ( quamal=0.4d0 ) => pb pour le test ocean
+c     parameter       ( quamal=0.5d0 ) => pb pour le test ocean
+      parameter       ( quamal=0.1d0 )
+c     quamal=0.1d0 est choisi pour ne pas trop detruire de sommets
+c
       common / unites / lecteu, imprim, nunite(30)
-      double precision  pxyd(3,*), d2d3(3,3)
+      double precision  pxyd(3,*)
       integer           noartr(moartr,*),
      %                  nosoar(mosoar,*),
      %                  noarst(*),
@@ -4221,57 +3605,53 @@ c....................................................................012
      %                  n1arcf(0:mxarcf),
      %                  noarcf(3,mxarcf),
      %                  larmin(mxarcf)
-      double precision  comxmi(3,2)
+      double precision  aretmx, airemx
+      double precision  quamoy, quamin
+c
+      ierr = 0
+c
+c     supprimer de la triangulation les triangles de qualite
+c     inferieure a quamal
+c     ======================================================
+      call tesuqm( quamal, nbarpi, pxyd,   noarst,
+     %             mosoar, mxsoar, n1soar, nosoar,
+     %             moartr, mxartr, n1artr, noartr,
+     %             mxarcf, n1arcf, noarcf,
+     %             larmin, notrcf, nostbo,
+     %             quamin )
+      call qualitetrte( pxyd,   mosoar, mxsoar, nosoar,
+     %                  moartr, mxartr, noartr,
+     %                  nbtria, quamoy, quamin )
 c
 c     suppression des sommets de triangles equilateraux trop proches
 c     d'un sommet frontalier ou d'un point interne impose par
 c     triangulation frontale de l'etoile et mise en delaunay
 c     ==============================================================
-      call tesusp( nbarpi, pxyd,   noarst,
-     %             mosoar, mxsoar, n1soar, nosoar,
-     %             moartr, mxartr, n1artr, noartr,
-     %             mxarcf, n1arcf, noarcf, larmin, notrcf, nostbo,
-     %             ierr )
-      if( ierr .ne. 0 ) goto 9999
+      if( quamin .le. quamal ) then
+         call tesusp( quamal, nbarpi, pxyd,   noarst,
+     %                mosoar, mxsoar, n1soar, nosoar,
+     %                moartr, mxartr, n1artr, noartr,
+     %                mxarcf, n1arcf, noarcf,
+     %                larmin, notrcf, nostbo,
+     %                ierr )
+         if( ierr .ne. 0 ) goto 9999
+      endif
 c
 c     ajustage des tailles moyennes des aretes avec ampli=1.34d0 entre
 c     ampli/2 x taille_souhaitee et ampli x taille_souhaitee 
 c     + barycentrage des sommets et mise en triangulation delaunay
 c     ================================================================
-      call teamqa( nutysu,
+      call teamqa( nutysu, airemx,
      %             noarst, mosoar, mxsoar, n1soar, nosoar,
      %             moartr, mxartr, n1artr, noartr,
      %             mxarcf, notrcf, nostbo,
      %             n1arcf, noarcf, larmin,
-     %             comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
+     %             nbarpi, nbsomm, mxsomm, pxyd, nslign,
      %             ierr )
+      call qualitetrte( pxyd,   mosoar, mxsoar, nosoar,
+     %                  moartr, mxartr, noartr,
+     %                  nbtria, quamoy, quamin )
       if( ierr .ne. 0 ) goto 9999
-c
-cccc     modification de la topologie autour des sommets frontaliers
-cccc     pour avoir un nombre de triangles egal a l'angle/60 degres
-cccc     et mise en triangulation delaunay locale
-cccc     ===========================================================
-ccc      call teamsf( nutysu,
-ccc     %             noarst, mosoar, mxsoar, n1soar, nosoar,
-ccc     %             moartr, mxartr, n1artr, noartr,
-ccc     %             mxarcf, notrcf, nostbo,
-ccc     %             n1arcf, noarcf, larmin,
-ccc     %             comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
-ccc     %             ierr )
-ccc      if( ierr .ne. 0 ) goto 9999
-c
-c     quelques iterations de barycentrage des points internes
-c     modification de la topologie pour avoir 4 ou 5 ou 6 triangles
-c     pour chaque sommet de la triangulation
-c     et mise en triangulation delaunay
-c     =============================================================
-      call teamqs( nutysu,
-     %             noarst, mosoar, mxsoar, n1soar, nosoar,
-     %             moartr, mxartr, n1artr, noartr,
-     %             mxarcf, notrcf, nostbo,
-     %             n1arcf, noarcf, larmin,
-     %             comxmi, nbarpi, nbsomm, mxsomm, pxyd, nslign,
-     %             ierr )
 c
  9999 return
       end
@@ -5371,7 +4751,7 @@ c        de 2 nouveaux contours fermes
       end
 
 
-      subroutine tridcf( nbcf0,  pxyd,   noarst,
+      subroutine tridcf( nbcf0,  nbstpe, nostpe, pxyd,   noarst,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, n1artr, noartr,
      %                   mxarcf, n1arcf, noarcf, larmin,
@@ -5379,10 +4759,14 @@ c        de 2 nouveaux contours fermes
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    triangulation directe de nbcf0 contours fermes (cf)
 c -----    definis par la liste circulaire de leurs aretes peripheriques
+c          avec integration de nbstpe sommets isoles a l'un des cf initiaux
 c
 c entrees:
 c --------
 c nbcf0  : nombre initial de cf a trianguler
+c nbstpe : nombre de sommets isoles a l'interieur des cf et
+c          a devenir sommets de la triangulation
+c nostpe : numero dans pxyd des nbstpe sommets isoles
 c pxyd   : tableau des coordonnees 2d des points
 c          par point : x  y  distance_souhaitee
 c mosoar : nombre maximal d'entiers par arete et
@@ -5432,11 +4816,13 @@ c          2 saturation de l'un des des tableaux nosoar, noartr, ...
 c          3 si contour ferme reduit a moins de 3 aretes
 c          4 saturation du tableau notrcf
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
+c auteur : alain perronnet  analyse numerique paris upmc    mars    1997
+c modifs : alain perronnet laboratoire jl lions upmc paris  octobre 2006
 c....................................................................012
       common / unites / lecteu, imprim, nunite(30)
       double precision  pxyd(3,*)
-      integer           noartr(moartr,*),
+      integer           nostpe(nbstpe),
+     %                  noartr(moartr,*),
      %                  nosoar(mosoar,mxsoar),
      %                  noarst(*),
      %                  n1arcf(0:mxarcf),
@@ -5444,14 +4830,136 @@ c....................................................................012
      %                  larmin(mxarcf),
      %                  notrcf(mxarcf)
 c
-ccc      integer           nosotr(3)
-ccc      double precision  d, surtd2
+      integer           nosotr(3)
+      double precision  d, diptdr, surtd2, dmin, s
 c
 c     depart avec nbcf0 cf a trianguler
       nbcf   = nbcf0
 c
 c     le nombre de triangles formes dans l'ensemble des cf
       nbtrcf = 0
+c
+c     le nombre restant de sommets isoles a integrer au cf
+      nbstp = nbstpe
+c
+ 1    if( nbstp .le. 0 ) goto 10
+c
+c     il existe au moins un sommet isole
+c     recherche d'un cf dont la premiere arete forme un triangle
+c     d'aire>0 avec un sommet isole et recherche du sommet isole
+c     le plus proche de cette arete
+c     ==========================================================
+      imin = 0
+      dmin = 1d123
+      do 6 ncf=1,nbcf
+c        le cf en haut de pile a pour arete avant la premiere arete
+         na1 = n1arcf( ncf )
+         na2 = na1
+c        recherche de l'arete qui precede la premiere arete
+ 2       if( noarcf( 2, na2 ) .ne. na1 ) then
+            na2 = noarcf( 2, na2 )
+            goto 2
+         endif
+c        l'arete na0 dans noarcf qui precede n1arcf( ncf )
+         na0 = na2
+c        la premiere arete du cf
+         na1   = noarcf( 2, na0 )
+c        son numero dans nosoar
+         noar1 = noarcf( 3, na1 )
+c        l'arete suivante
+         na2   = noarcf( 2, na1 )
+c        le no pxyd des 2 sommets de l'arete na1
+         ns1   = noarcf( 1, na1 )
+         ns2   = noarcf( 1, na2  )
+         do 3 i=1,nbstpe
+c           le sommet isole ns3
+            ns3 = nostpe( i )
+            if( ns3 .le. 0 ) goto 3
+c           aire du triangle arete na1 et sommet ns3
+            d = surtd2( pxyd(1,ns1), pxyd(1,ns2), pxyd(1,ns3) )
+            if( d .gt. 0d0 ) then
+c              distance de ce sommet ns3 a l'arete na1
+               d = diptdr( pxyd(1,ns3),  pxyd(1,ns1), pxyd(1,ns2) )
+               if( d .lt. dmin ) then
+                  dmin = d
+                  imin = i
+               endif
+            endif
+ 3       continue
+         if( imin .gt. 0 ) then
+c           le sommet imin de nostpe est a distance minimale de
+c           la premiere arete du cf de numero ncf
+c           la formation de l'arete ns2-ns3 dans le tableau nosoar
+            call fasoar( ns2, ns3, -1, -1,  0,
+     %                   mosoar, mxsoar, n1soar, nosoar, noarst,
+     %                   noar2,  ierr )
+            if( ierr .ne. 0 ) goto 9900
+c           la formation de l'arete ns3-ns1 dans le tableau nosoar
+            call fasoar( ns3, ns1, -1, -1,  0,
+     %                   mosoar, mxsoar, n1soar, nosoar, noarst,
+     %                   noar3,  ierr )
+            if( ierr .ne. 0 ) goto 9900
+c
+c           ajout dans noartr du triangle de sommets ns1 ns2 ns3
+c           et d'aretes na1, noar2, noar3 dans nosoar
+            call trcf3a( ns1,   ns2,   ns3,
+     %                   noar1, noar2, noar3,
+     %                   mosoar, nosoar,
+     %                   moartr, n1artr, noartr,
+     %                   nt )
+            s = surtd2( pxyd(1,ns1), pxyd(1,ns2), pxyd(1,ns3) )
+            if( s .le. 0 ) then
+               write(imprim,*)'tridcf: trcf3a produit tr',nt,' st',
+     %                         ns1,ns2,ns3
+               write(imprim,*)'tridcf: triangle AIRE<0'
+            endif
+            if( nt .le. 0 ) then
+               ierr = 7
+               return
+            endif
+            if( nbtrcf .ge. mxarcf ) then
+               write(imprim,*) 'saturation du tableau notrcf'
+               ierr = 8
+               return
+            endif
+            nbtrcf = nbtrcf + 1
+            notrcf( nbtrcf ) = nt
+c
+c           modification du cf. creation d'une arete dans noarcf
+            na12 = n1arcf(0)
+            if( na12 .le. 0 ) then
+               write(imprim,*) 'saturation du tableau noarcf'
+               ierr = 10
+               return
+            endif
+c           la 1-ere arete vide de noarcf est mise a jour
+            n1arcf(0) = noarcf( 2, na12 )
+c
+c           l'arete suivante de na0
+            noarcf( 1, na1 ) = ns1
+            noarcf( 2, na1 ) = na12
+            noarcf( 3, na1 ) = noar3
+c           l'arete suivante de na1
+            noarcf( 1, na12 ) = ns3
+            noarcf( 2, na12 ) = na2
+            noarcf( 3, na12 ) = noar2
+c
+c           un sommet isole traite
+            nbstp = nbstp - 1
+            nostpe( imin ) = - nostpe( imin )
+            goto 1
+         endif
+c
+ 6    continue
+c
+      if( imin .eq. 0 ) then
+         write(imprim,*) 'tridcf: il reste',nbstp,
+     %                   ' sommets isoles non triangules'
+         write(imprim,*) 'ameliorer l''algorithme'
+ccc         pause
+         ierr = 9
+         return
+      endif
 c
 c     tant qu'il existe un cf a trianguler faire
 c     la triangulation directe du cf
@@ -5486,6 +4994,14 @@ c           saturation du tableau noartr ou noarcf ou n1arcf
             ierr = 2
             return
          endif
+         call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr)
+         s = surtd2( pxyd(1,nosotr(1)),
+     %               pxyd(1,nosotr(2)),
+     %               pxyd(1,nosotr(3)) )
+         if( s .le. 0 ) then
+            write(imprim,*)'tridcf: trcf3s produit tr',nt,' st',nosotr
+            write(imprim,*)'tridcf: triangle AIRE<0'
+         endif
 c
 c        ajout du triangle cree a sa pile
          if( nbtrcf .ge. mxarcf ) then
@@ -5505,25 +5021,7 @@ c
 c        le numero du triangle ajoute dans le tableau noartr
          nt0 = notrcf( ntp0 )
 c
-cccc        aire signee du triangle nt0
-cccc        le numero des 3 sommets du triangle nt
-ccc         call nusotr( nt0, mosoar, nosoar, moartr, noartr,
-ccc     %                nosotr )
-ccc         d = surtd2( pxyd(1,nosotr(1)), pxyd(1,nosotr(2)),
-ccc     %               pxyd(1,nosotr(3)) )
-ccc         if( d .le. 0 ) then
-cccc
-cccc           un triangle d'aire negative de plus
-ccc            write(imprim,*) 'triangle ',nt0,' st:',nosotr,
-ccc     %                      ' d aire ',d,'<=0'
-ccc            pause
-ccc         endif
-c
-cccc        trace du triangle nt0
-ccc         call mttrtr( pxyd, nt0, moartr, noartr, mosoar, nosoar,
-ccc     %                ncturq, ncblan )
-c
-c        boucle sur les 3 aretes du triangle
+c        boucle sur les 3 aretes du triangle nt0
          do 20 i=1,3
 c
 c           le numero de l'arete i du triangle dans le tableau nosoar
@@ -5545,7 +5043,19 @@ c               le triangle est ajoute a l'arete
 c              l'arete appartient a 2 triangles differents de nt0
 c              anomalie. chainage des triangles des aretes defectueux
 c              a corriger
-               write(imprim,*) 'pause dans tridcf'
+               write(imprim,*) 'tridcf: erreur 1 arete dans 3 triangles'
+               write(imprim,*) 'tridcf: arete nosoar(',noar,')=',
+     %                          (nosoar(k,noar),k=1,mosoar)
+               call nusotr( nt0, mosoar, nosoar, moartr, noartr, nosotr)
+               write(imprim,*) 'tridcf: triangle nt0=',nt0,' st:',
+     %                          (nosotr(k),k=1,3)
+               call nusotr( nt1, mosoar, nosoar, moartr, noartr, nosotr)
+               write(imprim,*) 'tridcf: triangle nt1=',nt1,' st:',
+     %                          (nosotr(k),k=1,3)
+               call nusotr( nt2, mosoar, nosoar, moartr, noartr, nosotr)
+               write(imprim,*) 'tridcf: triangle nt2=',nt2,' st:',
+     %                          (nosotr(k),k=1,3)
+ccc               pause
                ierr = 5
                return
             endif
@@ -5553,10 +5063,15 @@ c
  20      continue
 c
  30   continue
+      return
+c
+c     erreur tableau nosoar sature
+ 9900 write(imprim,*) 'saturation du tableau nosoar'
+      ierr = 6
+      return
       end
 
-
-      subroutine te1stm( nsasup, pxyd,   noarst,
+      subroutine te1stm( nsasup, nbarpi, pxyd,   noarst,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
      %                   mxarcf, n1arcf, noarcf, larmin, notrcf, liarcf,
@@ -5570,6 +5085,7 @@ c
 c entrees:
 c --------
 c nsasup : numero dans le tableau pxyd du sommet a supprimer
+c nbarpi : numero du dernier sommet frontalier ou interne impose
 c pxyd   : tableau des coordonnees 2d des points
 c          par point : x  y  distance_souhaitee
 c mosoar : nombre maximal d'entiers par arete et
@@ -5616,53 +5132,56 @@ c             dans les 2 cas => retour sans modifs
 c          >0 si une erreur est survenue
 c          =11 algorithme defaillant
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc       mars 2006
+c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c....................................................................012
-      parameter       ( lchain=6, quamal=0.3)
+      parameter       ( lchain=6, mxstpe=512)
       common / unites / lecteu,imprim,intera,nunite(29)
-      double precision  pxyd(3,*)
+      double precision  pxyd(3,*), s0, s1, surtd2, s
       integer           nosoar(mosoar,mxsoar),
-     %                  noartr(moartr,*),
+     %                  noartr(moartr,mxartr),
      %                  noarst(*),
      %                  n1arcf(0:mxarcf),
      %                  noarcf(3,mxarcf),
      %                  larmin(mxarcf),
      %                  notrcf(mxarcf),
-     %                  liarcf(mxarcf)
+     %                  liarcf(mxarcf),
+     %                  nostpe(mxstpe),
+     %                  nosotr(3)
+c
+      if( nsasup .le. nbarpi ) then
+c        sommet frontalier non destructible
+         ierr = -1
+         return
+      endif
+      ierr = 0
 c
 c     nsasup est il un sommet interne, "centre" d'une boule de triangles?
 c     => le sommet nsasup peut etre supprime
 c     ===================================================================
 c     formation du cf de ''centre'' le sommet nsasup
       call trp1st( nsasup, noarst, mosoar, nosoar,
-     %             moartr, noartr,
+     %             moartr, mxartr, noartr,
      %             mxarcf, nbtrcf, notrcf )
-      if( nbtrcf .le. 0 ) then
+c
+      if( nbtrcf .le. 2 ) then
 c        erreur: impossible de trouver tous les triangles de sommet nsasup
+c        ou pas assez de triangles de sommet nsasup
 c        le sommet nsasup n'est pas supprime de la triangulation
          ierr = -1
          return
-      else if( nbtrcf .le. 2 ) then
-c        le sommet nsasup n'est pas supprime
-         ierr = -1
-         return
       endif
+c
       if( nbtrcf*3 .gt. mxarcf ) then
          write(imprim,*) 'saturation du tableau noarcf'
          ierr = 10
          return
       endif
 c
-ccc      trace des triangles de l'etoile du sommet nsasup
-ccc      call trpltr( nbtrcf, notrcf, pxyd,
-ccc     %             moartr, noartr, mosoar, nosoar,
-ccc     %             ncroug, ncblan )
-c
 c     si toutes les aretes du cf sont frontalieres, alors il est
 c     interdit de detruire le sommet "centre" du cf
 c     calcul du nombre nbarfr des aretes simples des nbtrcf triangles
       call trfrcf( nsasup, mosoar, nosoar, moartr, noartr,
-     %             nbtrcf, notrcf, nbarfr  )
+     %             nbtrcf, notrcf, nbarfr )
       if( nbarfr .ge. nbtrcf ) then
 c        toutes les aretes simples sont frontalieres
 c        le sommet nsasup ("centre" de la cavite) n'est pas supprime
@@ -5670,12 +5189,26 @@ c        le sommet nsasup ("centre" de la cavite) n'est pas supprime
          return
       endif
 c
+c     calcul des surfaces avant suppression du point
+      s0 = 0d0
+      do 10 i=1,nbtrcf
+         nt = notrcf(i)
+c        les numeros des 3 sommets du triangle nt
+         call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr )
+         s = surtd2( pxyd(1,nosotr(1)),
+     %               pxyd(1,nosotr(2)),
+     %               pxyd(1,nosotr(3)) )
+         s0 = s0 + abs( s )
+ 10   continue
+c
 c     formation du contour ferme (liste chainee des aretes simples)
 c     forme a partir des aretes des triangles de l'etoile du sommet nsasup
-      call focftr( nbtrcf, notrcf, pxyd,   noarst,
+c     les aretes doubles sont detruites
+c     les triangles du cf sont detruits
+      call focftr( nbtrcf, notrcf, nbarpi, pxyd,   noarst,
      %             mosoar, mxsoar, n1soar, nosoar,
      %             moartr, n1artr, noartr,
-     %             nbarcf, n1arcf, noarcf,
+     %             nbarcf, n1arcf, noarcf, nbstpe, nostpe,
      %             ierr )
       if( ierr .ne. 0 ) then
 c        modification de ierr pour continuer le calcul
@@ -5683,7 +5216,7 @@ c        modification de ierr pour continuer le calcul
          return
       endif
 c
-c     ici le sommet nsasup appartient a aucune arete
+c     ici le sommet nsasup n'appartient plus a aucune arete
       noarst( nsasup ) = 0
 c
 c     chainage des aretes vides dans le tableau noarcf
@@ -5707,12 +5240,35 @@ c
 c     triangulation directe du contour ferme sans le sommet nsasup
 c     ============================================================
       nbcf = 1
-      call tridcf( nbcf,   pxyd,   noarst,
+      call tridcf( nbcf,   nbstpe, nostpe, pxyd,   noarst,
      %             mosoar, mxsoar, n1soar, nosoar,
      %             moartr, n1artr, noartr,
      %             mxarcf, n1arcf, noarcf, larmin,
      %             nbtrcf, notrcf, ierr )
       if( ierr .ne. 0 ) return
+c     calcul des surfaces apres suppression du point
+      s1 = 0d0
+      do 55 i=1,nbtrcf
+         nt = notrcf(i)
+c        les numeros des 3 sommets du triangle nt
+         call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr )
+         s = surtd2( pxyd(1,nosotr(1)),
+     %               pxyd(1,nosotr(2)),
+     %               pxyd(1,nosotr(3)) )
+         if( s .le. 0 ) then
+            write(imprim,*)'te1stm: apres tridcf le triangle',nt,
+     %                     ' st',nosotr,' AIRE<0'
+         endif
+         s1 = s1 + abs( s )
+ 55   continue
+c
+      if( abs(s0-s1) .gt. 1d-10*s0 ) then
+      write(imprim,*)
+      write(imprim,*)'te1stm: difference des aires lors suppression st',
+     %   nsasup
+      write(imprim,10055) s0, s1
+10055 format('aire0=',d25.16,' aire1=',d25.16)
+      endif
 c
 c     transformation des triangles du cf en triangles delaunay
 c     ========================================================
@@ -5735,7 +5291,6 @@ c     mise en delaunay des aretes chainees
       call tedela( pxyd,   noarst,
      %             mosoar, mxsoar, n1soar, nosoar, liarcf(1),
      %             moartr, mxartr, n1artr, noartr, modifs )
-ccc      write(imprim,*) 'nombre echanges diagonales =',modifs
       return
       end
 
@@ -5743,8 +5298,7 @@ ccc      write(imprim,*) 'nombre echanges diagonales =',modifs
       subroutine tr3str( np,     nt,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
-     %                   noarst,
-     %                   nutr,   ierr )
+     %                   noarst, nutr,   ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    former les 3 sous-triangles du triangle nt a partir
 c -----    du point interne np
@@ -6064,6 +5618,7 @@ c          0 si pas d'echange des aretes diagonales
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc      avril 1997
 c....................................................................012
+      common / unites / lecteu,imprim,intera,nunite(29)
       integer     nosoar(mosoar,*),
      %            noartr(moartr,*),
      %            noarst(*)
@@ -6084,7 +5639,7 @@ c     recherche du numero de l'arete noaret dans le triangle nt1
          if( abs(noartr(n1,nt1)) .eq. noaret ) goto 15
  10   continue
 c     impossible d'arriver ici sans bogue!
-      write(imprim,*) 'pause dans te2t2t 1'
+      write(imprim,*) 'anomalie dans te2t2t 1'
 c
 c     l'arete de sommets 2 et 3
  15   if( n1 .lt. 3 ) then
@@ -6108,7 +5663,7 @@ c     recherche du numero de l'arete noaret dans le triangle nt2
          if( abs(noartr(n1,nt2)) .eq. noaret ) goto 25
  20   continue
 c     impossible d'arriver ici sans bogue!
-      write(imprim,*) 'pause dans te2t2t 2'
+      write(imprim,*) 'Anomalie dans te2t2t 2'
 c
 c     l'arete de sommets 1 et 4
  25   if( n1 .lt. 3 ) then
@@ -6148,7 +5703,7 @@ c        => pas d'echange
       endif
 c
 c     suppression de l'arete noaret
-      call sasoar( noaret, mosoar, mxsoar, n1soar, nosoar )
+      call sasoar( noaret, mosoar, mxsoar, n1soar, nosoar, noarst )
 c
 c     nt1 = triangle 143
       noartr(1,nt1) =  na14
@@ -6190,7 +5745,6 @@ c     numero d'une arete de chacun des 4 sommets
       noarst(ns3) = noar34
       noarst(ns4) = noar34
       end
-
 
 
       subroutine f0trte( letree, pxyd,
@@ -6755,7 +6309,6 @@ c          =3 si aucun des triangles ne contient l'un des points internes au te
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c....................................................................012
-      common / unites / lecteu, imprim, nunite(30)
       double precision  pxyd(3,*)
       integer           letree(0:8),
      %                  milieu(3),
@@ -7034,6 +6587,7 @@ c si erreur rencontree => ns1 = 0
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc    juillet 1995
 c2345x7..............................................................012
+      common / unites / lecteu, imprim, nunite(30)
       integer    noartr(moartr,*), nosoar(mosoar,*)
 c
 c     le numero de triangle est il correct  ?
@@ -7069,6 +6623,7 @@ c        arete dans le sens indirect => ns3 est le premier sommet de l'arete
          ns3 = nosoar(1,-na)
       endif
       end
+
       subroutine trpite( letree, pxyd,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, mxartr, n1artr, noartr,
@@ -7120,9 +6675,6 @@ c          =3 si aucun des triangles ne contient l'un des points internes au te
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c....................................................................012
-      logical           tratri
-      common / dv2dco / tratri
-c     trace ou non des triangles generes dans la triangulation
       common / unites / lecteu, imprim, nunite(30)
       double precision  pxyd(3,*)
       integer           letree(0:8),
@@ -7133,7 +6685,9 @@ c     trace ou non des triangles generes dans la triangulation
 c
       integer           nosotr(3)
 c
-c     si pas de point interne alors trace eventuel puis retour
+      ierr = 0
+c
+c     si pas de point interne alors retour
       if( letree(0) .eq. 0 ) goto 150
 c
 c     il existe au moins un point interne a trianguler
@@ -7185,33 +6739,13 @@ c
 10010 format(' erreur trpite: pas de triangle contenant le point',i7)
 c
  150  continue
-
-ccc 150  if( tratri ) then
-cccc       les traces sont demandes
-ccc        call efface
-cccc       le cadre objet global en unites utilisateur
-ccc        xx1 = min(pxyd(1,nosotr(1)),pxyd(1,nosotr(2)),pxyd(1,nosotr(3)))
-ccc        xx2 = max(pxyd(1,nosotr(1)),pxyd(1,nosotr(2)),pxyd(1,nosotr(3)))
-ccc        yy1 = min(pxyd(2,nosotr(1)),pxyd(2,nosotr(2)),pxyd(2,nosotr(3)))
-ccc        yy2 = max(pxyd(2,nosotr(1)),pxyd(2,nosotr(2)),pxyd(2,nosotr(3)))
-ccc        if( xx1 .ge. xx2 ) xx2 = xx1 + (yy2-yy1)
-ccc        if( yy1 .ge. yy2 ) yy2 = yy1 + (xx2-xx1)*0.5
-ccc        call isofenetre( xx1-(xx2-xx1), xx2+(xx2-xx1),
-ccc     %                   yy1-(yy2-yy1), yy2+(yy2-yy1) )
-ccc         do 200 i=1,nbtr
-cccc           trace du triangle nutr(i)
-ccc            call mttrtr( pxyd, nutr(i), moartr, noartr, mosoar, nosoar,
-ccc     %                   i, ncblan )
-ccc 200     continue
-ccc      endif
-
       end
 
 
-      subroutine sasoar( noar, mosoar, mxsoar, n1soar, nosoar )
+      subroutine sasoar( noar, mosoar, mxsoar, n1soar, nosoar, noarst )
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    supprimer l'arete noar du tableau nosoar
-c -----    si celle ci n'est pas une arete des lignes de la frontiere
+c -----    si celle ci n'est pas une arete des lignes de la fontiere
 c
 c          la methode employee ici est celle du hachage
 c          avec pour fonction d'adressage h = min( nu2sar(1), nu2sar(2) )
@@ -7236,11 +6770,43 @@ c          chainage des aretes frontalieres, chainage du hachage des aretes
 c          une arete i de nosoar est vide <=> nosoar(1,i)=0 et
 c          nosoar(4,arete vide)=l'arete vide qui precede
 c          nosoar(5,arete vide)=l'arete vide qui suit
+c noarst : numero d'une arete de nosoar pour chaque sommet
 c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique upmc paris       mars 1997
+c auteur : alain perronnet analyse numerique    upmc paris  mars    1997
+c modifs : alain perronnet laboratoire jl lions upmc paris  octobre 2006
 c ...................................................................012
       common / unites / lecteu, imprim, nunite(30)
-      integer           nosoar(mosoar,mxsoar)
+      integer           nosoar(mosoar,mxsoar), noarst(*), ns(2)
+c
+c     13/10/2006
+c     mise a jour de noarst pour les 2 sommets de l'arete a supprimer
+c     necessaire uniquement pour les sommets frontaliers et internes imposes
+c     le numero des 2 sommets de l'arete noar a supprimer
+      ns(1) = nosoar(1,noar)
+      ns(2) = nosoar(2,noar)
+      do 8 k=1,2
+         if( noarst(ns(k)) .eq. noar ) then
+c           il faut remettre a jour le pointeur sur une arete
+            if(nosoar(1,ns(k)).eq.ns(k) .and. nosoar(2,ns(k)).gt.0
+     %         .and. nosoar(4,ns(k)) .gt. 0 ) then
+c              arete active de sommet ns(k)
+               noarst( ns(k) ) = ns(k)
+            else
+               do 5 i=1,mxsoar
+                  if( nosoar(1,i).gt.0 .and. nosoar(4,i).gt.0 ) then
+c                    arete non vide
+                     if( nosoar(2,i).eq.ns(k) .or.
+     %                  (nosoar(1,i).eq.ns(k).and.nosoar(2,i).gt.0))then
+c                       arete active de sommet ns(k)
+                        noarst( ns(k) ) = i
+                        goto 8
+                     endif
+                  endif
+ 5             continue
+            endif
+         endif
+ 8    continue
+c     13/10/2006
 c
       if( nosoar(3,noar) .le. 0 ) then
 c
@@ -7264,6 +6830,7 @@ c           l'arete noar n'a pas ete retrouvee dans le chainage => erreur
      %      ' st2=',nosoar(2,noar),' ligne=',nosoar(3,noar),
      %      ' tr1=',nosoar(4,noar),' tr2=',nosoar(5,noar)
             write(imprim,*) 'chainages=',(nosoar(i,noar),i=6,mosoar)
+ccc            pause
 c           l'arete n'est pas detruite
             return
 c
@@ -7300,7 +6867,7 @@ c        le temoin d'arete vide
       end
 
 
-      subroutine caetoi( noar,   mosoar, mxsoar, n1soar, nosoar,
+      subroutine caetoi( noar,   mosoar, mxsoar, n1soar, nosoar, noarst,
      %                   n1aeoc, nbtrar  )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    ajouter (ou retirer) l'arete noar de nosoar de l'etoile
@@ -7333,7 +6900,7 @@ c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
 c2345x7..............................................................012
       parameter        (lchain=6)
       common / unites / lecteu, imprim, nunite(30)
-      integer           nosoar(mosoar,mxsoar)
+      integer           nosoar(mosoar,mxsoar), noarst(*)
 c
 c     si    l'arete n'appartient pas aux aretes de l'etoile naetoi
 c     alors elle est ajoutee a l'etoile dans naetoi
@@ -7366,7 +6933,7 @@ c           passage a la suivante
                return
             endif
             nbpass = nbpass + 1
-            if( nbpass .gt. 128 ) then
+            if( nbpass .gt. 512 ) then
                write(imprim,*)'Pb dans caetoi: boucle infinie evitee'
                nbtrar = 0
                return
@@ -7386,7 +6953,7 @@ c        noar n'est plus une arete simple de l'etoile
          nosoar( lchain, noar ) = -1
 c
 c        destruction du tableau nosoar de l'arete double noar
-         call sasoar( noar, mosoar, mxsoar, n1soar, nosoar )
+         call sasoar( noar, mosoar, mxsoar, n1soar, nosoar, noarst )
 c
 c        arete double
          nbtrar = 2
@@ -7394,10 +6961,10 @@ c        arete double
       end
 
 
-      subroutine focftr( nbtrcf, notrcf, pxyd,   noarst,
+      subroutine focftr( nbtrcf, notrcf, nbarpi, pxyd,   noarst,
      %                   mosoar, mxsoar, n1soar, nosoar,
      %                   moartr, n1artr, noartr,
-     %                   nbarcf, n1arcf, noarcf,
+     %                   nbarcf, n1arcf, noarcf, nbstpe, nostpe,
      %                   ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c but :    former un contour ferme (cf) avec les aretes simples des
@@ -7411,6 +6978,7 @@ c entrees:
 c --------
 c nbtrcf : nombre de  triangles du cf a former
 c notrcf : numero des triangles dans le tableau noartr
+c nbarpi : numero du dernier sommet frontalier ou interne impose
 c pxyd   : tableau des coordonnees 2d des points
 c          par point : x  y  distance_souhaitee
 c
@@ -7440,6 +7008,8 @@ c n1arcf : numero d'une arete de chaque contour
 c noarcf : numero des aretes de la ligne du contour ferme
 c attention: chainage circulaire des aretes
 c            les aretes vides pointes par n1arcf(0) ne sont pas chainees
+c nbstpe : nombre de  sommets perdus dans la suppression des triangles
+c nostpe : numero des sommets perdus dans la suppression des triangles 
 c ierr   :  0 si pas d'erreur
 c          14 si les lignes fermees se coupent => donnees a revoir
 c          15 si une seule arete simple frontaliere
@@ -7447,9 +7017,10 @@ c          16 si boucle infinie car toutes les aretes simples
 c                de la boule sont frontalieres!
 c          17 si boucle infinie dans caetoi
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
+c auteur : alain perronnet analyse numerique    upmc paris  mars    1997
+c modifs : alain perronnet laboratoire jl lions upmc paris  octobre 2006
 c....................................................................012
-      parameter        (lchain=6)
+      parameter        (lchain=6, mxstpe=512)
       common / unites / lecteu, imprim, nunite(30)
       double precision  pxyd(3,*)
       integer           notrcf(1:nbtrcf)
@@ -7457,7 +7028,9 @@ c....................................................................012
      %                  noartr(moartr,*),
      %                  n1arcf(0:*),
      %                  noarcf(3,*),
-     %                  noarst(*)
+     %                  noarst(*),
+     %                  nostpe(mxstpe),
+     %                  nosotr(3)
 c
 c     formation des aretes simples du cf autour de l'arete ns1-ns2
 c     attention: le chainage lchain du tableau nosoar devient actif
@@ -7466,18 +7039,41 @@ c     ici toutes les aretes du tableau nosoar verifient nosoar(lchain,i) = -1
 c     ce qui equivaut a dire que l'etoile des aretes simples est vide
 c     (initialisation dans le sp insoar puis remise a -1 dans la suite!)
       n1aeoc = 0
+      ierr   = 0
+c
+c     13/10/2006
+c     nombre de sommets des triangles a supprimer sans repetition
+      nbst = 0
+c     13/10/2006
 c
 c     ajout a l'etoile des aretes simples des 3 aretes des triangles a supprimer
 c     suppression des triangles de l'etoile pour les aretes simples de l'etoile
       do 10 i=1,nbtrcf
+c
 c        ajout ou retrait des 3 aretes du triangle notrcf(i) de l'etoile
          nt = notrcf( i )
+c
+c        13/10/2006  ...............................................
+         call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr )
+c
+c        ajout des numeros de sommets non encore vus dans l'etoile
+         do 3 k=1,3
+            do 2 j=1,nbst
+               if( nosotr(k) .eq. nostpe(j) ) goto 3
+ 2          continue
+c           ajout du sommet
+            nbst = nbst + 1
+            nostpe( nbst ) = nosotr(k)
+ 3       continue
+c        13/10/2006 ................................................
+c
          do 5 j=1,3
 c           l'arete de nosoar a traiter
             noar = abs( noartr(j,nt) )
-            call caetoi( noar,   mosoar, mxsoar, n1soar, nosoar,
+            call caetoi( noar,   mosoar, mxsoar, n1soar, nosoar, noarst,
      %                   n1aeoc, nbtrar  )
             if( nbtrar .le. 0 ) then
+               write(imprim,*)'focftr: erreur dans caetoi noar=',noar
                ierr = 17
                return
             endif
@@ -7486,8 +7082,15 @@ c           pour cette arete
             if( nbtrar .eq. 1 ) then
                if( nosoar(4,noar) .eq. nt ) then
                   nosoar(4,noar) = nosoar(5,noar)
+               else if( nosoar(5,noar) .eq. nt ) then
+                  nosoar(5,noar) = -1
+               else
+                  write(imprim,*)'focftr: anomalie arete',noar,
+     %                           ' sans triangle',nt
+                  write(imprim,*)'focftr: nosoar(',noar,')=',
+     %                            (nosoar(kk,noar),kk=1,mosoar)
+                  nosoar(5,noar) = -1
                endif
-               nosoar(5,noar) = -1
 c           else
 c              l'arete appartient a aucun triangle => elle est vide
 c              les positions 4 et 5 servent maintenant aux chainages des vides
@@ -7519,6 +7122,7 @@ c        la 2=>1, la 3=>2, ... , la derniere=>l'avant derniere, 1=>derniere
 c           attention: boucle infinie si toutes les aretes simples
 c           de la boule sont frontalieres!... arretee par ce test
             ierr = 16
+            write(imprim,*)'focftr: boucle dans les aretes de l etoile'
             return
          endif
          noar = n1aeoc
@@ -7532,6 +7136,7 @@ c           la sauvegarde de l'arete et l'arete suivante
          if( na0 .le. 0 ) then
 c           une seule arete simple frontaliere
             ierr = 15
+            write(imprim,*)'focftr: 1 arete seule pour l etoile'
             return
          endif
 c        le suivant de l'ancien dernier est l'ancien premier
@@ -7567,9 +7172,6 @@ c     le numero de cette arete dans le tableau nosoar
       noarcf( 3, nbarcf ) = na1
 c     mise a jour du numero d'arete du sommet ns0
       noarst(ns0) = na1
-c
-cccc     trace de l'arete
-ccc      call dvtrar( pxyd, ns0, ns1, ncvert, ncblan )
 c
 c     l'arete suivante a chainer
       n1aeoc = nosoar( lchain, na1 )
@@ -7612,9 +7214,6 @@ c           le numero de cette arete dans le tableau nosoar
 c           mise a jour du numero d'arete du sommet ns1
             noarst(ns1) = na1
 c
-cccc           trace de l'arete
-ccc            call dvtrar( pxyd, ns1, ns2, ncvert, ncblan )
-c
 c           suppression de l'arete des aretes simples de l'etoile
             if( n1aeoc .eq. na1 ) then
                 n1aeoc = nosoar( lchain, na1 )
@@ -7633,14 +7232,9 @@ c
 c     verification
       if( ns1 .ne. ns0 ) then
 c        arete non retrouvee : l'etoile ne se referme pas
-c         nblgrc(nrerr) = 3
-c         kerr(1) = 'focftr: revoyez vos donnees'
-c         kerr(2) = 'les lignes fermees doivent etre disjointes'
-c         kerr(3) = 'verifiez si elles ne se coupent pas'
-c         call lereur
-          write(imprim,*) 'focftr: revoyez vos donnees'
-          write(imprim,*)'les lignes fermees doivent etre disjointes'
-          write(imprim,*)'verifiez si elles ne se coupent pas'
+         write(imprim,*)'focftr: revoyez vos donnees du bord'
+         write(imprim,*)'les lignes fermees doivent etre disjointes'
+         write(imprim,*)'verifiez si elles ne se coupent pas'
          ierr = 14
          return
       endif
@@ -7649,17 +7243,61 @@ c     l'arete suivant la derniere arete du cf est la premiere du cf
 c     => realisation d'un chainage circulaire des aretes du cf
       noarcf( 2, nbarcf ) = 1
 c
+c     13/10/2006
+c     existe t il des sommets perdus?
+c     -------------------------------
+      if( nbst .gt. mxstpe ) then
+         write(imprim,*)'focftr: tableau nostfe(',mxstpe,') a augmenter'
+         ierr = 15
+         return
+      endif
+c     le nombre de sommets perdus
+      nbstpe = nbst - nbarcf
+      if( nbstpe .gt. 0 ) then
+c        oui: stockage dans nostpe des sommets perdus
+c        tout sommet des aretes de l'etoile est supprime
+c        de la liste des sommets
+         do 40 i=1,nbarcf
+c           le numero du sommet de l'arete du cf
+            ns1 = noarcf( 1, i )
+            do 30 j=1,nbst
+               if( ns1 .eq. nostpe(j) ) then
+c                 le sommet peripherique est supprime
+c                 de la liste des sommets perdus
+                  nostpe(j) = 0
+                  goto 40
+               endif
+ 30         continue
+ 40      continue
+c
+c        compression
+         n = 0
+         do 45 i=1,nbst
+            if( nostpe(i) .eq. 0 .or. nostpe(i) .gt. nbarpi ) then
+c              un sommet de l'etoile ou perdu mais supprimable
+c              ce qui apporte plus de qualites aux triangles a former
+               n = n + 1
+            else
+c              un sommet perdu
+               nostpe(i-n) = nostpe(i)
+            endif
+ 45      continue
+         nbstpe = nbst - n
+ccc      write(imprim,*)'focftr:',nbstpe,' sommets isoles:',(nostpe(k),k=1,nbstpe)
+      endif
+c     13/10/2006
+c
 c     destruction des triangles de l'etoile du tableau noartr
 c     -------------------------------------------------------
-      do 50 i=1,nbtrcf
+      do 60 n=1,nbtrcf
 c        le numero du triangle dans noartr
-         nt0 = notrcf( i )
+         nt0 = notrcf( n )
 c        l'arete 1 de nt0 devient nulle
          noartr( 1, nt0 ) = 0
 c        chainage de nt0 en tete du chainage des triangles vides de noartr
          noartr( 2, nt0 ) = n1artr
          n1artr = nt0
- 50   continue
+ 60   continue
       end
 
 
@@ -7753,10 +7391,9 @@ c     pas d'intersection a l'interieur des aretes
       linter = 0
       end
 
-
       subroutine tefoar( narete, nbarpi, pxyd,
      %                   mosoar, mxsoar, n1soar, nosoar,
-     %                   moartr, n1artr, noartr, noarst,
+     %                   moartr, mxartr, n1artr, noartr, noarst,
      %                   mxarcf, n1arcf, noarcf, larmin, notrcf,
      %                   ierr )
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -7778,6 +7415,7 @@ c          indice dans nosoar de l'arete suivante dans le hachage
 c mxsoar : nombre maximal d'aretes stockables dans le tableau nosoar
 c          attention: mxsoar>3*mxsomm obligatoire!
 c moartr : nombre maximal d'entiers par arete du tableau noartr
+c mxartr : nombre maximal de triangles stockables dans le tableau noartr
 c
 c modifies:
 c ---------
@@ -7814,22 +7452,22 @@ c          9 tableau nosoar de taille insuffisante car trop d'aretes
 c            a probleme
 c          10 un des tableaux n1arcf, noarcf notrcf est sature
 c             augmenter a l'appel mxarcf
-c          11 algorithme defaillant
+c         >11 algorithme defaillant
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c auteur : alain perronnet  analyse numerique paris upmc       mars 1997
+c auteur : alain perronnet analyse numerique paris upmc     mars    1997
+c modifs : alain perronnet laboratoire jl lions upmc paris  octobre 2006
 c....................................................................012
-      parameter        (mxpitr=32)
+      parameter        (mxpitr=32, mxstpe=512)
       common / unites / lecteu,imprim,intera,nunite(29)
-      logical           tratri
-      common / dv2dco / tratri
       double precision  pxyd(3,*)
-      integer           noartr(moartr,*),
+      integer           noartr(moartr,mxartr),
      %                  nosoar(mosoar,mxsoar),
      %                  noarst(*),
      %                  n1arcf(0:mxarcf),
      %                  noarcf(3,mxarcf),
      %                  larmin(mxarcf),
-     %                  notrcf(mxarcf)
+     %                  notrcf(mxarcf),
+     %                  nostpe(mxstpe)
 c
       integer           lapitr(mxpitr)
       double precision  x1,y1,x2,y2,d12,d3,d4,x,y,d,dmin
@@ -7837,43 +7475,33 @@ c
       integer           nacf(1:2), nacf1, nacf2
       equivalence      (nacf(1),nacf1), (nacf(2),nacf2)
 c
+      ierr = 0
+c
 c     traitement de cette arete perdue
       ns1 = nosoar( 1, narete )
       ns2 = nosoar( 2, narete )
 c
-      if( tratri ) then
-c        les traces sont demandes
-c         call efface
-c        le cadre objet global en unites utilisateur
-         xx1 = min( pxyd(1,ns1), pxyd(1,ns2) )
-         xx2 = max( pxyd(1,ns1), pxyd(1,ns2) )
-         yy1 = min( pxyd(2,ns1), pxyd(2,ns2) )
-         yy2 = max( pxyd(2,ns1), pxyd(2,ns2) )
-         if( xx1 .ge. xx2 ) xx2 = xx1 + (yy2-yy1)
-         if( yy1 .ge. yy2 ) yy2 = yy1 + (xx2-xx1)*0.5
-c         call isofenetre( xx1-(xx2-xx1), xx2+(xx2-xx1),
-c     %                    yy1-(yy2-yy1), yy2+(yy2-yy1) )
-      endif
-c
-cccc     trace de l'arete perdue
-ccc      call dvtrar( pxyd, ns1, ns2, ncroug, ncblan )
+ccc      write(imprim,*)
+ccc      write(imprim,*) 'tefoar reconstruction de l''arete ',ns1,' ', ns2
+ccc      write(imprim,*) 'sommet',ns1,' x=',pxyd(1,ns1),' y=',pxyd(2,ns1)
+ccc      write(imprim,*) 'sommet',ns2,' x=',pxyd(1,ns2),' y=',pxyd(2,ns2)
 c
 c     le sommet ns2 est il correct?
       na = noarst( ns2 )
       if( na .le. 0 ) then
          write(imprim,*) 'tefoar: erreur sommet ',ns2,' sans arete'
          ierr = 8
+ccc         pause
          return
       endif
       if( nosoar(4,na) .le. 0 ) then
          write(imprim,*) 'tefoar: erreur sommet ',ns2,
      %                   ' dans aucun triangle'
          ierr = 8
+ccc         pause
          return
       endif
 c
-c     recherche du triangle voisin dans le sens indirect de rotation
-      nsens = -1
 c     le premier passage: recherche dans le sens ns1->ns2
       ipas = 0
 c
@@ -7885,17 +7513,22 @@ c     ==========================================================
       y2  = pxyd(2,ns2)
       d12 = (x2-x1)**2 + (y2-y1)**2
 c
+c     recherche du triangle voisin dans le sens indirect de rotation
+      nsens = -1
+c
 c     recherche du no local du sommet ns1 dans l'un de ses triangles
-      na01 = noarst( ns1 )
+ 10   na01 = noarst( ns1 )
       if( na01 .le. 0 ) then
          write(imprim,*) 'tefoar: sommet ',ns1,' sans arete'
          ierr = 8
+ccc         pause
          return
       endif
       nt0 = nosoar(4,na01)
       if( nt0 .le. 0 ) then
          write(imprim,*) 'tefoar: sommet ',ns1,' dans aucun triangle'
          ierr = 8
+ccc         pause
          return
       endif
 c
@@ -7919,6 +7552,7 @@ c        les sens ns1->ns2 et ns2->ns1 ne donne pas de solution!
          write(imprim,*)'tefoar:anomalie sommet ',ns1,
      %   'non dans le triangle de sommets ',(nosotr(i),i=1,3)
          ierr = 11
+ccc         pause
          return
       endif
 c
@@ -7927,12 +7561,6 @@ c     le numero des aretes suivante et precedente
       na1 = nopre3( na00 )
       ns3 = nosotr( na0 )
       ns4 = nosotr( na1 )
-c
-cccc     trace du triangle nt0 et de l'arete perdue
-ccc      call mttrtr( pxyd, nt0, moartr, noartr, mosoar, nosoar,
-ccc     %             ncblan, ncjaun )
-ccc      call dvtrar( pxyd, ns1, ns2, ncroug, ncblan )
-ccc      call dvtrar( pxyd, ns3, ns4, ncbleu, nccyan )
 c
 c     point d'intersection du segment ns1-ns2 avec l'arete ns3-ns4
 c     ------------------------------------------------------------
@@ -7960,8 +7588,7 @@ c        le parcours sort du domaine
 c        il faut tourner dans l'autre sens autour de ns1
          if( nsens .lt. 0 ) then
             nsens = 1
-            nt0   = noarst( ns1 )
-            goto 20
+            goto 10
          endif
 c
 c        dans les 2 sens, pas d'intersection => impossible
@@ -7970,7 +7597,8 @@ c        essai avec l'arete inversee ns1 <-> ns2
          write(imprim,*) 'tefoar: arete ',ns1,' ',ns2,
      %  ' sans intersection avec les triangles actuels'
          write(imprim,*) 'revoyez les lignes du contour'
-         ierr = 11
+         ierr = 12
+ccc         pause
          return
       endif
 c
@@ -7987,11 +7615,10 @@ c     le triangle oppose a l'arete na0 de nt0
       else
          nt1 = nosoar(4,noar)
       endif
-c
-cccc     trace du triangle nt1 et de l'arete perdue
-ccc      call mttrtr( pxyd, nt1, moartr, noartr, mosoar, nosoar,
-ccc     %             ncjaun, ncmage )
-ccc      call dvtrar( pxyd, ns1, ns2, ncroug, ncblan )
+      if( nt1 .le. 0 ) then
+         write(imprim,*) 'erreur dans tefoar nt1=',nt1
+         read(lecteu,*) j
+      endif
 c
 c     le numero des 3 sommets du triangle nt1 dans le sens direct
       call nusotr( nt1, mosoar, nosoar, moartr, noartr, nosotr )
@@ -8006,15 +7633,9 @@ c     recherche de l'arete noar, na1 dans nt1 qui est l'arete na0 de nt0
          if( abs( noartr(na1,nt1) ) .eq. noar ) goto 35
  34   continue
 c
-c     trace du triangle nt1 et de l'arete perdue
- 35   continue
-ccc 35   call mttrtr( pxyd, nt1, moartr, noartr, mosoar, nosoar,
-ccc     %             ncjaun, ncmage )
-ccc      call dvtrar( pxyd, ns1, ns2, ncroug, ncblan )
-c
 c     recherche de l'intersection de ns1-ns2 avec les 2 autres aretes de nt1
 c     ======================================================================
-      na2 = na1
+ 35   na2 = na1
       do 50 i1 = 1,2
 c        l'arete suivante
          na2 = nosui3(na2)
@@ -8023,7 +7644,6 @@ c        les 2 sommets de l'arete na2 de nt1
          noar = abs( noartr(na2,nt1) )
          ns3  = nosoar( 1, noar )
          ns4  = nosoar( 2, noar )
-ccc         call dvtrar( pxyd, ns3, ns4, ncbleu, nccyan )
 c
 c        point d'intersection du segment ns1-ns2 avec l'arete ns3-ns4
 c        ------------------------------------------------------------
@@ -8046,9 +7666,22 @@ c           nsp est le point le plus proche de (x,y)
 c
 c           ici le sommet nsp est trop proche de l'arete perdue ns1-ns2
             if( nsp .le. nbarpi ) then
-c              point utilisateur ou frontalier non supprimable
-               ierr = 11
-               write(imprim,*) 'pause dans tefoar 1', d, d3, d4, d12
+c              point utilisateur ou frontalier donc non supprimable
+               write(imprim,*) 'tefoar: sommet nsp=',nsp,
+     %' frontalier trop proche de l''arete perdue ns1=',ns1,'-ns2=',ns2
+           write(imprim,*)'s',nsp,': x=', pxyd(1,nsp),' y=', pxyd(2,nsp)
+           write(imprim,*)'s',ns1,': x=', pxyd(1,ns1),' y=', pxyd(2,ns1)
+           write(imprim,*)'s',ns2,': x=', pxyd(1,ns2),' y=', pxyd(2,ns2)
+           write(imprim,*)'arete s',ns1,'-s',ns2,
+     %                    ' coupe arete s',ns3,'-s',ns4,' en (x,y)'
+          write(imprim,*) 's',ns3,': x=', pxyd(1,ns3),' y=', pxyd(2,ns3)
+          write(imprim,*) 's',ns4,': x=', pxyd(1,ns4),' y=', pxyd(2,ns4)
+          write(imprim,*) 'intersection en: x=', x, ' y=', y
+          write(imprim,*) 'distance ns1-ns2=', sqrt(d12)
+          write(imprim,*) 'distance (x,y) au plus proche',ns3,ns4,'=',
+     %                     sqrt(d)
+               ierr = 13
+ccc               pause
                return
             endif
 c
@@ -8057,25 +7690,19 @@ c           l'ayant comme sommet dans la pile notrcf des triangles a supprimer
 c           ------------------------------------------------------------------
 ccc            write(imprim,*) 'tefoar: le sommet ',nsp,' est supprime'
 c           construction de la liste des triangles de sommet nsp
-            call trp1st( nsp, noarst, mosoar, nosoar, moartr, noartr,
+            call trp1st( nsp,    noarst, mosoar, nosoar,
+     %                   moartr, mxartr, noartr,
      %                   mxpitr, nbt, lapitr )
             if( nbt .le. 0 ) then
 c              les triangles de sommet nsp ne forme pas une "boule"
 c              avec ce sommet nsp pour "centre"
                write(imprim,*)
-     %        'tefoar: pas d''etoile de triangles autour du sommet',nsp
-cccc              trace des triangles de l'etoile du sommet nsp
-ccc               tratri = .true.
-ccc               call trpltr( nbt,    lapitr, pxyd,
-ccc     %                      moartr, noartr, mosoar, nosoar,
-ccc     %                      ncroug, ncblan )
-ccc               tratri = .false.
-               ierr = 11
-               write(imprim,*) 'pause dans tefoar 2'
-               return
+     %        'tefoar: les triangles autour du sommet ',nsp,
+     %        ' ne forme pas une etoile'
+               nbt = -nbt
             endif
 c
-c           ajout des triangles de sommet ns1 a notrcf
+c           ajout des triangles de sommet nsp a notrcf
             nbtrc0 = nbtrcf
             do 38 j=1,nbt
                nt = lapitr(j)
@@ -8085,9 +7712,6 @@ c           ajout des triangles de sommet ns1 a notrcf
 c              triangle ajoute
                nbtrcf = nbtrcf + 1
                notrcf( nbtrcf ) = nt
-ccc               call mttrtr( pxyd, nt, moartr, noartr, mosoar, nosoar,
-ccc     %                      ncjaun, ncmage )
-ccc               call dvtrar( pxyd, ns1, ns2, ncroug, ncblan )
  38         continue
 c
 c           ce sommet supprime n'appartient plus a aucun triangle
@@ -8126,7 +7750,7 @@ c                 point d'intersection du segment ns1-ns2 avec l'arete ns3-ns4
 c                 ------------------------------------------------------------
                   call int1sd( ns1, ns2, ns3, ns4, pxyd,
      %                         linter, x , y )
-                  if( linter .gt. 0 ) then
+                   if( linter .gt. 0 ) then
 c                    les 2 aretes s'intersectent en (x,y)
                      d = (x-x2)**2+(y-y2)**2
                      if( d .lt. dmin ) then
@@ -8142,18 +7766,21 @@ c           redemarrage avec le triangle nt0 et l'arete na0
             if( nt0 .gt. 0 ) goto 30
 c
             write(imprim,*) 'tefoar: algorithme defaillant'
-            ierr = 11
+            ierr = 14
+ccc            pause
             return
          endif
  50   continue
 c
 c     pas d'intersection differente de l'initiale => sommet sur ns1-ns2
-c     rotation autour du sommet par l'arete suivant na1
+c     tentative d'inversion des sommets de l'arete ns1-ns2
+      if( ipas .eq. 0 ) goto 25
       write(imprim,*)
       write(imprim,*) 'tefoar 50: revoyez vos donnees'
       write(imprim,*) 'les lignes fermees doivent etre disjointes'
       write(imprim,*) 'verifiez si elles ne se coupent pas'
-      ierr = 13
+      ierr = 15
+ccc      pause
       return
 c
 c     cas sans probleme : intersection differente de celle initiale
@@ -8180,13 +7807,14 @@ c     =============================================================
  80   if( nbtrcf*3 .gt. mxarcf ) then
          write(imprim,*) 'saturation du tableau noarcf'
          ierr = 10
+ccc         pause
          return
       endif
 c
-      call focftr( nbtrcf, notrcf, pxyd,   noarst,
+      call focftr( nbtrcf, notrcf, nbarpi, pxyd,   noarst,
      %             mosoar, mxsoar, n1soar, nosoar,
      %             moartr, n1artr, noartr,
-     %             nbarcf, n1arcf, noarcf,
+     %             nbarcf, n1arcf, noarcf, nbstpe, nostpe,
      %             ierr )
       if( ierr .ne. 0 ) return
 c
@@ -8261,16 +7889,18 @@ c     na0 precede nacf2 => il precede n1
       noarcf( 2, na0 ) = n1
 c
 c     depart avec 2 cf
-      nbcf   = 2
+      nbcf = 2
 c
 c     triangulation directe des 2 contours fermes
 c     l'arete ns1-ns2 devient une arete de la triangulation des 2 cf
 c     ==============================================================
-      call tridcf( nbcf,   pxyd,   noarst,
+      call tridcf( nbcf,   nbstpe, nostpe, pxyd,   noarst,
      %             mosoar, mxsoar, n1soar, nosoar,
      %             moartr, n1artr, noartr,
      %             mxarcf, n1arcf, noarcf, larmin,
      %             nbtrcf, notrcf, ierr )
+c
+      return
       end
 
 
@@ -8317,6 +7947,7 @@ c2345x7..............................................................012
       integer           np(0:3),milieu(3)
 c
 c     debut par l'arete 2 du triangle ntrp
+      ierr = 0
       i1 = 2
       i2 = 3
       do 30 i=1,3
@@ -8427,4 +8058,368 @@ c                 place libre a occuper
  100        continue
          endif
  110  continue
+      end
+
+
+      subroutine tesuqm( quamal, nbarpi, pxyd,   noarst,
+     %                   mosoar, mxsoar, n1soar, nosoar,
+     %                   moartr, mxartr, n1artr, noartr,
+     %                   mxarcf, n1arcf, noarcf,
+     %                   larmin, notrcf, liarcf,
+     %                   quamin )
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c but :    supprimer de la triangulation les triangles de qualite
+c -----    inferieure a quamal
+c
+c entrees:
+c --------
+c quamal : qualite des triangles au dessous de laquelle supprimer des sommets
+c nbarpi : numero du dernier point interne impose par l'utilisateur
+c pxyd   : tableau des coordonnees 2d des points
+c          par point : x  y  distance_souhaitee
+c mosoar : nombre maximal d'entiers par arete et
+c          indice dans nosoar de l'arete suivante dans le hachage
+c mxsoar : nombre maximal d'aretes stockables dans le tableau nosoar
+c          attention: mxsoar>3*mxsomm obligatoire!
+c moartr : nombre maximal d'entiers par arete du tableau noartr
+c
+c modifies:
+c ---------
+c noarst : noarst(i) numero d'une arete de sommet i
+c n1soar : no de l'eventuelle premiere arete libre dans le tableau nosoar
+c          chainage des vides suivant en 3 et precedant en 2 de nosoar
+c nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
+c          chainage des aretes frontalieres, chainage du hachage des aretes
+c          hachage des aretes = nosoar(1)+nosoar(2)*2
+c          avec mxsoar>=3*mxsomm
+c          une arete i de nosoar est vide <=> nosoar(1,i)=0 et
+c          nosoar(2,arete vide)=l'arete vide qui precede
+c          nosoar(3,arete vide)=l'arete vide qui suit
+c n1artr : numero du premier triangle vide dans le tableau noartr
+c          le chainage des triangles vides se fait sur noartr(2,.)
+c noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
+c          arete1 = 0 si triangle vide => arete2 = triangle vide suivant
+c
+c auxiliaires :
+c -------------
+c n1arcf : tableau (0:mxarcf) auxiliaire d'entiers
+c noarcf : tableau (3,mxarcf) auxiliaire d'entiers
+c larmin : tableau (mxarcf)   auxiliaire d'entiers
+c notrcf : tableau (mxarcf)   auxiliaire d'entiers
+c liarcf : tableau (mxarcf)   auxiliaire d'entiers
+c
+c sortie :
+c --------
+c quamin : qualite minimale des triangles
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c auteur : alain perronnet Laboratoire JL Lions UPMC Paris  Octobre 2006
+c....................................................................012
+      parameter       ( lchain=6, mxtrqm=1024 )
+      common / unites / lecteu,imprim,intera,nunite(29)
+      double precision  pxyd(3,*), quamal, qualit, quamin
+      integer           nosoar(mosoar,mxsoar),
+     %                  noartr(moartr,mxartr),
+     %                  noarst(*)
+      integer           nosotr(3), notraj(3)
+      double precision  surtd2, s123, s142, s143, s234,
+     %                  s12, s34, a12
+      integer           notrqm(mxtrqm)
+      double precision  qutrqm(mxtrqm)
+      integer           n1arcf(0:mxarcf),
+     %                  noarcf(3,mxarcf),
+     %                  larmin(mxarcf),
+     %                  notrcf(mxarcf),
+     %                  liarcf(mxarcf)
+c
+      ierr = 0
+c
+c     initialisation du chainage des aretes des cf => 0 arete de cf
+      do 5 narete=1,mxsoar
+         nosoar( lchain, narete ) = -1
+ 5    continue
+c
+c     recherche des triangles de plus basse qualite
+      quamin = 2.0
+      nbtrqm = 0
+      do 10 nt=1,mxartr
+         if( noartr(1,nt) .eq. 0 ) goto 10
+c        le numero des 3 sommets du triangle nt
+         call nusotr( nt, mosoar, nosoar, moartr, noartr, nosotr )
+c        la qualite du triangle ns1 ns2 ns3
+         call qutr2d( pxyd(1,nosotr(1)), pxyd(1,nosotr(2)),
+     %                pxyd(1,nosotr(3)), qualit )
+         if( qualit .lt. quamal ) then
+            if( nbtrqm .ge. mxtrqm ) goto 10
+            nbtrqm = nbtrqm + 1
+            notrqm(nbtrqm) = nt
+            qutrqm(nbtrqm) = qualit
+         endif
+ 10   continue
+c
+c     tri croissant des qualites minimales des triangles
+      call tritas( nbtrqm, qutrqm, notrqm )
+c
+c     le plus mauvais triangle
+      ntqmin = notrqm(1)
+      quamin = qutrqm(1)
+c
+      do 100 n=1,nbtrqm
+c
+c        no du triangle de mauvaise qualite
+         ntqmin = notrqm( n )
+c
+c        le triangle a t il ete traite?
+         if( noartr(1,ntqmin) .eq. 0 ) goto 100
+c
+ccc         print *
+ccc         print *,'tesuqm: triangle',ntqmin,' qualite=',qutrqm(n)
+ccc         print *,'tesuqm: noartr(',ntqmin,')=',
+ccc     %           (noartr(j,ntqmin),j=1,moartr)
+cccc
+ccc         do 12 j=1,3
+ccc            noar = noartr(j,ntqmin)
+ccc         print*,'arete',noar,' nosoar=',(nosoar(i,abs(noar)),i=1,mosoar)
+ccc 12      continue
+c
+c        le numero des 3 sommets du triangle ntqmin
+         call nusotr( ntqmin, mosoar, nosoar, moartr, noartr, nosotr )
+c
+ccc         do 15 j=1,3
+ccc            nbt = nosotr(j)
+ccc            print *,'sommet',nbt,':  x=',pxyd(1,nbt),'  y=',pxyd(2,nbt)
+ccc 15      continue
+c
+c        recherche des triangles adjacents par les aretes de ntqmin
+         nbt = 0
+         do 20 j=1,3
+c           le no de l'arete j dans nosoar
+            noar = abs( noartr(j,ntqmin) )
+c           le triangle adjacent a l'arete j de ntqmin
+            if( nosoar(4,noar) .eq. ntqmin ) then
+               notraj(j) = nosoar(5,noar)
+            else
+               notraj(j) = nosoar(4,noar)
+            endif
+            if( notraj(j) .gt. 0 ) then
+c              1 triangle adjacent de plus
+               naop = j
+               nbt  = nbt + 1
+            else
+c              pas de triangle adjacent
+               notraj(j) = 0
+            endif
+ 20      continue
+c
+         if( nbt .eq. 1 ) then
+c
+c           ntqmin a un seul triangle oppose par l'arete naop
+c           le triangle a 2 aretes frontalieres est plat
+c           l'arete commune aux 2 triangles est rendue Delaunay
+c           ---------------------------------------------------
+            noar = abs( noartr(naop,ntqmin) )
+            if( nosoar(3,noar) .ne. 0 ) then
+c              arete frontaliere
+               goto 100
+            endif
+c
+c           l'arete appartient a deux triangles actifs
+c           le numero des 4 sommets du quadrangle des 2 triangles
+            call mt4sqa( noar, moartr, noartr, mosoar, nosoar,
+     %                   ns1, ns2, ns3, ns4 )
+            if( ns4 .eq. 0 ) goto 100
+c
+c           carre de la longueur de l'arete ns1 ns2
+           a12=(pxyd(1,ns2)-pxyd(1,ns1))**2+(pxyd(2,ns2)-pxyd(2,ns1))**2
+c
+c           comparaison de la somme des aires des 2 triangles
+c           -------------------------------------------------
+c           calcul des surfaces des triangles 123 et 142 de cette arete
+            s123=surtd2( pxyd(1,ns1), pxyd(1,ns2), pxyd(1,ns3) )
+            s142=surtd2( pxyd(1,ns1), pxyd(1,ns4), pxyd(1,ns2) )
+ccc            print *,'tesuqm: ns4=',ns4,' x=',pxyd(1,ns4),
+ccc     %                                 ' y=',pxyd(2,ns4)
+ccc            print *,'tesuqm: s123=',s123,'  s142=',s142
+            s12 = abs( s123 ) + abs( s142 )
+            if( s12 .le. 0.001*a12 ) goto 100
+c
+c           calcul des surfaces des triangles 143 et 234 de cette arete
+            s143=surtd2( pxyd(1,ns1), pxyd(1,ns4), pxyd(1,ns3) )
+            s234=surtd2( pxyd(1,ns2), pxyd(1,ns3), pxyd(1,ns4) )
+ccc            print *,'tesuqm: s143=',s143,'  s234=',s234
+            s34 = abs( s234 ) + abs( s143 )
+ccc            print *,'tesuqm: s12=',s12,'  s34=',s34
+c
+            if( abs(s34-s12) .gt. 1d-14*s34 ) goto 100
+c
+c           quadrangle convexe 
+c           echange de la diagonale 12 par 34 des 2 triangles
+c           -------------------------------------------------
+            call te2t2t( noar,   mosoar, n1soar, nosoar, noarst,
+     %                   moartr, noartr, noar34 )
+ccc            print *,'tesuqm: sortie te2t2t avec noar34=',noar34
+c
+c
+         else if( nbt .eq. 2 ) then
+c
+c           ntqmin a 2 triangles opposes par l'arete naop
+c           essai de supprimer le sommet non frontalier
+c           ---------------------------------------------
+            do 30 j=1,3
+               if( notraj(j) .eq. 0 ) goto 33
+ 30         continue
+c
+c           arete sans triangle adjacent
+ 33         noar = abs( noartr(j,ntqmin) )
+ccc            print *,'tesuqm: nosoar(',noar,')=',
+ccc     %              (nosoar(j,noar),j=1,mosoar)
+            if( noar .le. 0 ) goto 100
+c
+c           ses 2 sommets
+            ns1 = nosoar(1,noar)
+            ns2 = nosoar(2,noar)
+c
+c           ns3 l'autre sommet non frontalier
+            do 36 j=1,3
+               ns3 = nosotr(j)
+               if( ns3 .ne. ns1 .and. ns3 .ne. ns2 ) goto 40
+ 36         continue
+c
+ 40         if( ns3 .gt. nbarpi ) then
+c
+c              le sommet ns3 non frontalier va etre supprime
+ccc               print*,'tesuqm: ntqmin=',ntqmin,
+ccc     %                ' demande la suppression ns3=',ns3
+               call te1stm( ns3,    nbarpi, pxyd,   noarst,
+     %                      mosoar, mxsoar, n1soar, nosoar,
+     %                      moartr, mxartr, n1artr, noartr,
+     %                      mxarcf, n1arcf, noarcf,
+     %                      larmin, notrcf, liarcf, ierr )
+ccc               if( ierr .eq. 0 ) then
+ccc                  print *,'tesuqm: st supprime ns3=',ns3
+ccc               else
+ccc                print *,'tesuqm: ST NON SUPPRIME ns3=',ns3,' ierr=',ierr
+ccc               endif
+            endif
+c
+         endif
+c
+ 100  continue
+c
+      return
+      end
+
+
+      subroutine tritas( nb, a, noanc )
+c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c but :    tri croissant du tableau a de nb reels par la methode du tas
+c -----    methode due a williams et floyd     o(n log n )
+c          version avec un pointeur sur un tableau dont est extrait a
+c entrees:
+c --------
+c nb     : nombre de termes du tableau a
+c a      : les nb reels double precision a trier dans a
+c noanc  : numero ancien position de l'information (souvent noanc(i)=i)
+c
+c sorties:
+c --------
+c a      : les nb reels croissants dans a
+c noanc  : numero ancien position de l'information
+c          noanc(1)=no position pointeur sur a(1), ...
+c ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c auteur : perronnet alain analyse numerique upmc paris     fevrier 1991
+c ...................................................................012
+      integer           noanc(1:nb)
+      integer           pere,per,fil,fils1,fils2,fin
+      double precision  a(1:nb),aux
+c
+c     formation du tas sous forme d'un arbre binaire
+      fin = nb + 1
+c
+      do 20 pere = nb/2,1,-1
+c
+c        descendre pere jusqu'a n dans a  de facon  a respecter
+c        a(pere)>a(j) pour j fils ou petit fils de pere
+c        c-a-d pour tout j tel que pere <= e(j/2)<j<nb+1
+c                                          a(j/2) >= a(j)
+c                                                 >= a(j+1)
+c
+c        protection du pere
+         per = pere
+c
+c        le fils 1 du pere
+ 10      fils1 = 2 * per
+         if( fils1 .lt. fin ) then
+c           il existe un fils1
+            fil   = fils1
+            fils2 = fils1 + 1
+            if( fils2 .lt. fin ) then
+c              il existe 2 fils . selection du plus grand
+               if( a(fils2) .gt. a(fils1) ) fil = fils2
+            endif
+c
+c           ici fil est le plus grand des fils
+            if( a(per) .lt. a(fil) ) then
+c              permutation de per et fil
+               aux    = a(per)
+               a(per) = a(fil)
+               a(fil) = aux
+c              le pointeur est aussi permute
+               naux       = noanc(per)
+               noanc(per) = noanc(fil)
+               noanc(fil) = naux
+c              le nouveau pere est le fils permute
+               per = fil
+               goto 10
+            endif
+         endif
+ 20   continue
+c
+c     a chaque iteration la racine (plus grande valeur actuelle de a)
+c     est mise a sa place (fin actuelle du tableau) et permutee avec
+c     la valeur qui occupe cette place, puis descente de cette nouvelle
+c     racine pour respecter le fait que tout pere est plus grand que tous
+c     ses fils
+c     c-a-d pour tout j tel que pere <= e(j/2)<j<nb+1
+c                                          a(j/2) >= a(j)
+c                                                 >= a(j+1)
+      do 50 fin=nb,2,-1
+c        la permutation premier dernier
+         aux    = a(fin)
+         a(fin) = a(1)
+         a(1)   = aux
+c        le pointeur est aussi permute
+         naux       = noanc(fin)
+         noanc(fin) = noanc(1)
+         noanc(1)   = naux
+c
+c        descendre a(1) entre 1 et fin
+         per = 1
+c
+c        le fils 1 du pere
+ 30      fils1 = 2 * per
+         if( fils1 .lt. fin ) then
+c           il existe un fils1
+            fil   = fils1
+            fils2 = fils1 + 1
+            if( fils2 .lt. fin ) then
+c              il existe 2 fils . selection du plus grand
+               if( a(fils2) .gt. a(fils1) ) fil = fils2
+            endif
+c
+c           ici fil est le plus grand des fils
+            if( a(per) .lt. a(fil) ) then
+c              permutation de per et fil
+               aux    = a(per)
+               a(per) = a(fil)
+               a(fil) = aux
+c              le pointeur est aussi permute
+               naux       = noanc(per)
+               noanc(per) = noanc(fil)
+               noanc(fil) = naux
+c              le nouveau pere est le fils permute
+               per = fil
+               goto 30
+            endif
+         endif
+ 50   continue
       end

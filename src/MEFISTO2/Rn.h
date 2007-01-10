@@ -1,6 +1,6 @@
 //  MEFISTO :  library to compute 2D triangulation from segmented boundaries
 //
-//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 // 
 //  This library is free software; you can redistribute it and/or 
 //  modify it under the terms of the GNU Lesser General Public 
@@ -23,7 +23,7 @@
 //  File   : Rn.h
 //  Module : SMESH
 //  Authors: Frederic HECHT & Alain PERRONNET
-//
+//  Date   : 13 novembre 2006
 
 #ifndef Rn__h
 #define Rn__h
@@ -66,15 +66,7 @@ typedef unsigned long int N;
 
 //le type Z des nombres entiers relatifs
 //=========
-// 64-bit porting: "long" replaced with "int". 
-// On 64-bit, C++ long type is 8 byte long. MEFISTO2D C code calls several Fortran subroutines passing
-// arguments of this type, however Fortran knows nothing about changed size of arguments, 
-// therefore stack gets corrupted. With "int" used instead of "long", Fortran calls from C do no harm to the stack
-// After this modification, behavior on 32-bit platforms does not change: on all platforms supported by
-// SALOME 3, "int" and "long" have the same size of 4 bytes. 
-//========
-//typedef long int Z;
-typedef int Z;
+typedef long int Z;
 
 //le type R des nombres "reels"
 //=========
