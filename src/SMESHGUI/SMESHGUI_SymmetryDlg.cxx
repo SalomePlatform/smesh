@@ -687,7 +687,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, IO, aString);
       myElementsId = aString;
     }
 

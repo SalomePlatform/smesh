@@ -833,7 +833,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
       // try to get selected elements IDs
       QString aString;
       //int aNbUnits = SMESH::GetNameOfSelectedElements(mySelectionMgr, aString);
-      SMESH::GetNameOfSelectedElements(mySelector, myMeshActor->getIO(), aString);
+      SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       ElementsLineEdit->setText(aString);
     }
   } else if (myEditCurrentArgument == PathMeshLineEdit) {

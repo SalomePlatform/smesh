@@ -618,7 +618,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
         aNbElements = anElementsIds->length();
       }
     } else {
-      aNbElements = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+      aNbElements = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
     }
 
