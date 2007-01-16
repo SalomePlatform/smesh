@@ -219,10 +219,13 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   SelectBasePointButton->setPixmap(selectImage);
 
   XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
+  XLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   XSpin = new SMESHGUI_SpinBox(BasePointGrp);
   YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
+  YLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   YSpin = new SMESHGUI_SpinBox(BasePointGrp);
   ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
+  ZLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   ZSpin = new SMESHGUI_SpinBox(BasePointGrp);
 
   // layouting

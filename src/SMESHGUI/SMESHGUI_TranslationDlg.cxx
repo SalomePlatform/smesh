@@ -200,18 +200,21 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupArgumentsLayout->addWidget(SelectButton1, 2, 1);
 
   TextLabel1_1 = new QLabel(GroupArguments, "TextLabel1_1");
+  TextLabel1_1->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupArgumentsLayout->addWidget(TextLabel1_1, 2, 2);
 
   SpinBox1_1 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_1");
   GroupArgumentsLayout->addWidget(SpinBox1_1, 2, 3);
 
   TextLabel1_2 = new QLabel(GroupArguments, "TextLabel1_2");
+  TextLabel1_2->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupArgumentsLayout->addWidget(TextLabel1_2, 2, 4);
 
   SpinBox1_2 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_2");
   GroupArgumentsLayout->addWidget(SpinBox1_2, 2, 5);
 
   TextLabel1_3 = new QLabel(GroupArguments, "TextLabel1_3");
+  TextLabel1_3->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupArgumentsLayout->addWidget(TextLabel1_3, 2, 6);
 
   SpinBox1_3 = new SMESHGUI_SpinBox(GroupArguments, "SpinBox1_3");
@@ -228,6 +231,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupArgumentsLayout->addWidget(SelectButton2, 3, 1);
 
   TextLabel2_1 = new QLabel(GroupArguments, "TextLabel2_1");
+  TextLabel2_1->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabel2_1->setText(tr("SMESH_X" ));
   GroupArgumentsLayout->addWidget(TextLabel2_1, 3, 2);
 
@@ -235,6 +239,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupArgumentsLayout->addWidget(SpinBox2_1, 3, 3);
 
   TextLabel2_2 = new QLabel(GroupArguments, "TextLabel2_2");
+  TextLabel2_2->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabel2_2->setText(tr("SMESH_Y" ));
   GroupArgumentsLayout->addWidget(TextLabel2_2, 3, 4);
 
@@ -242,6 +247,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   GroupArgumentsLayout->addWidget(SpinBox2_2, 3, 5);
 
   TextLabel2_3 = new QLabel(GroupArguments, "TextLabel2_3");
+  TextLabel2_3->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabel2_3->setText(tr("SMESH_Z"));
   GroupArgumentsLayout->addWidget(TextLabel2_3, 3, 6);
 

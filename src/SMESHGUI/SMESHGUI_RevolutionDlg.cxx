@@ -208,6 +208,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SelectPointButton, 0, 1);
 
   TextLabelX = new QLabel(GroupAxis, "TextLabelX");
+  TextLabelX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelX->setText(tr("SMESH_X"));
   GroupAxisLayout->addWidget(TextLabelX, 0, 2);
 
@@ -215,6 +216,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_X, 0, 3);
 
   TextLabelY = new QLabel(GroupAxis, "TextLabelY");
+  TextLabelY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelY->setText(tr("SMESH_Y"));
   GroupAxisLayout->addWidget(TextLabelY, 0, 4);
 
@@ -222,6 +224,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_Y, 0, 5);
 
   TextLabelZ = new QLabel(GroupAxis, "TextLabelZ");
+  TextLabelZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelZ->setText(tr("SMESH_Z"));
   GroupAxisLayout->addWidget(TextLabelZ, 0, 6);
 
@@ -237,6 +240,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SelectVectorButton, 1, 1);
 
   TextLabelDX = new QLabel(GroupAxis, "TextLabelDX");
+  TextLabelDX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDX->setText(tr("SMESH_DX"));
   GroupAxisLayout->addWidget(TextLabelDX, 1, 2);
 
@@ -244,6 +248,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_DX, 1, 3);
 
   TextLabelDY = new QLabel(GroupAxis, "TextLabelDY");
+  TextLabelDY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDY->setText(tr("SMESH_DY"));
   GroupAxisLayout->addWidget(TextLabelDY, 1, 4);
 
@@ -251,6 +256,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_DY, 1, 5);
 
   TextLabelDZ = new QLabel(GroupAxis, "TextLabelDZ");
+  TextLabelDZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDZ->setText(tr("SMESH_DZ"));
   GroupAxisLayout->addWidget(TextLabelDZ, 1, 6);
 

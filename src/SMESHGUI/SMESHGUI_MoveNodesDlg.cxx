@@ -178,11 +178,16 @@ QFrame* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   myId->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
 
   QGroupBox* aCoordGrp = new QGroupBox(1, Qt::Vertical, tr("SMESH_COORDINATES"), aFrame);
-  new QLabel(tr("SMESH_X"), aCoordGrp);
+  QLabel* aXLabel = new QLabel(tr("SMESH_X"), aCoordGrp);
+  aXLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myX = new SMESHGUI_SpinBox(aCoordGrp);
-  new QLabel(tr("SMESH_Y"), aCoordGrp);
+
+  QLabel* aYLabel = new QLabel(tr("SMESH_Y"), aCoordGrp);
+  aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   myY = new SMESHGUI_SpinBox(aCoordGrp);
-  new QLabel(tr("SMESH_Z"), aCoordGrp);
+
+  QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
+  aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
   myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
