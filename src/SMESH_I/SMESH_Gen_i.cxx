@@ -939,7 +939,7 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
           THROW_SALOME_CORBA_EXCEPTION( "bad error name",SALOME::BAD_PARAM );
         }
         // algo name
-        CORBA::String_var algoName;
+        CORBA::String_var algoName = "";
         if ( error->_algo ) {
           if ( !myCurrentStudy->_is_nil() ) {
             // find algo in the study
@@ -969,7 +969,7 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
           }
           if ( algoName.in() == 0 )
             // use algo type name
-            algoName = CORBA::string_dup( error->_algo->GetName() );
+            algoName = error->_algo->GetName();
         }
         // fill AlgoStateError structure
         SMESH::AlgoStateError & errStruct = error_array[ i++ ];
