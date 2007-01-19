@@ -153,7 +153,7 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
  */
 //================================================================================
 
-void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
+Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
 {
   // store theCommand in the sequence
   myCommands.push_back( new _pyCommand( theCommand, ++myNbCommands ));
@@ -166,25 +166,25 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
   _pyID objID = aCommand->GetObject();
 
   if ( objID.IsEmpty() )
-    return;
+    return aCommand;
 
   // SMESH_Gen method?
   if ( objID == this->GetID() ) {
     this->Process( aCommand );
-    return;
+    return aCommand;
   }
   // SMESH_Mesh method?
   map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( objID );
   if ( id_mesh != myMeshes.end() ) {
     id_mesh->second->Process( aCommand );
-    return;
+    return aCommand;
   }
   // SMESH_Hypothesis method?
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
     if ( !(*hyp)->IsAlgo() && objID == (*hyp)->GetID() ) {
       (*hyp)->Process( aCommand );
-      return;
+      return aCommand;
     }
 
   // Add access to a wrapped mesh
@@ -211,6 +211,7 @@ void _pyGen::AddCommand( const TCollection_AsciiString& theCommand)
       aCommand->GetString() += tmpCmd.GetString();
     }
   }
+  return aCommand;
 }
 
 //================================================================================
@@ -617,6 +618,36 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   }
 }
 
+namespace {
+
+  //================================================================================
+  /*!
+   * \brief add addition result treatement command
+    * \param addCmd - hypothesis addition command
+   */
+  //================================================================================
+
+  void addErrorTreatmentCmd( Handle(_pyCommand) & addCmd,
+                             const bool           isAlgo)
+  {
+    // addCmd: status = mesh.AddHypothesis( geom, hypo )
+    // treatement command:
+    //    def TreatHypoStatus(status, hypName, geomName, isAlgo):
+    TCollection_AsciiString status = addCmd->GetResultValue();
+    if ( !status.IsEmpty() ) {
+      const _pyID& geomID = addCmd->GetArg( 1 );
+      const _pyID& hypoID = addCmd->GetArg( 2 );
+      TCollection_AsciiString cmdStr = addCmd->GetIndentation() +
+        SMESH_2smeshpy::SmeshpyName() + ".TreatHypoStatus( " + status + ", " +
+        SMESH_2smeshpy::SmeshpyName() + ".GetName(" + hypoID + "), " +
+        SMESH_2smeshpy::SmeshpyName() + ".GetName(" + geomID + "), " +
+        (char*)( isAlgo ? "True" : "False" ) + " )";
+      Handle(_pyCommand) cmd = theGen->AddCommand( cmdStr );
+      addCmd->AddDependantCmd( cmd );
+    }
+  }
+}
+
 //================================================================================
 /*!
  * \brief Convert creation and addition of all algos and hypos
@@ -666,6 +697,8 @@ void _pyMesh::Flush()
       // mesh.GetMesh().AddHypothesis(geom, ALGO ) ->
       // mesh.GetMesh().AddHypothesis(geom, ALGO.GetAlgorithm() )
       addCmd->SetArg( 2, addCmd->GetArg( 2 ) + ".GetAlgorithm()" );
+      // add addition result treatement cmd
+      addErrorTreatmentCmd( addCmd, true );
     }
   }
 
@@ -690,6 +723,8 @@ void _pyMesh::Flush()
     else
     {
       AddMeshAccess( addCmd );
+      // add addition result treatement cmd
+      addErrorTreatmentCmd( addCmd, false );
     }
   }
 
@@ -1291,6 +1326,23 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
   while ( myBegPos.Length() < thePartIndex )
     myBegPos.Append( UNKNOWN );
   myBegPos( thePartIndex ) = thePosition;
+}
+
+//================================================================================
+/*!
+ * \brief Returns whitespace symbols at the line beginning
+  * \retval TCollection_AsciiString - result
+ */
+//================================================================================
+
+TCollection_AsciiString _pyCommand::GetIndentation()
+{
+  int end = 1;
+  if ( GetBegPos( RESULT_IND ) == UNKNOWN )
+    GetWord( myString, end, true );
+  else
+    end = GetBegPos( RESULT_IND );
+  return myString.SubString( 1, end - 1 );
 }
 
 //================================================================================

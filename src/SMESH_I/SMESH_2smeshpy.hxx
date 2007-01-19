@@ -131,6 +131,7 @@ public:
   int Length() { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
+  TCollection_AsciiString GetIndentation();
   const TCollection_AsciiString & GetResultValue();
   const TCollection_AsciiString & GetObject();
   const TCollection_AsciiString & GetMethod();
@@ -191,7 +192,7 @@ class _pyGen: public _pyObject
 public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
   //~_pyGen();
-  void AddCommand( const TCollection_AsciiString& theCommand );
+  Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
   void Process( const Handle(_pyCommand)& theCommand );
   void Flush();
   Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
