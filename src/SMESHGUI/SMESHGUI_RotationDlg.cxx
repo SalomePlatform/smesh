@@ -637,7 +637,7 @@ void SMESHGUI_RotationDlg::SelectionIntoArgument()
 
     myNbOkElements = true;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
 

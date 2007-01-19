@@ -615,7 +615,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     }
   } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myActor) {
     myNbOkNodes = 0;
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
   } else {
   }
 

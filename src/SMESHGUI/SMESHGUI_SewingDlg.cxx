@@ -783,7 +783,7 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
 
   if (GetConstructorId() != 3 ||
       (myEditCurrentArgument != LineEdit1 && myEditCurrentArgument != LineEdit4)) {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
   } else {
