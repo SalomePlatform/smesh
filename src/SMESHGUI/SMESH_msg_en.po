@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2006-12-29 11:56+0300\n"
+"PO-Revision-Date: 2007-01-19 10:44+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1264,6 +1264,8 @@ msgstr "Can not unassign \"%1\":\n"
 msgid "SMESH_RM_HYP_WRN"
 msgstr "\"%1\" unassigned but:\n"
 
+# Hypothesis_Status:
+
 msgid "SMESH_HYP_1"
 msgstr "Algorithm misses a hypothesis"
 
@@ -1274,25 +1276,33 @@ msgid "SMESH_HYP_3"
 msgstr "Hypothesis has a bad parameter value"
 
 msgid "SMESH_HYP_4"
-msgstr "Unknown fatal error at hypothesis definition"
+msgstr "Algorithm is hidden by an algorithm of upper dimension generating all-dimensions elements"
 
 msgid "SMESH_HYP_5"
-msgstr "Hypothesis is not suitable in the current context"
+msgstr "Algorithm hides algorithm(s) of lower dimension by generating all-dimensions elements"
 
 msgid "SMESH_HYP_6"
-msgstr "Non-conform mesh is produced using applied hypotheses"
+msgstr "Unknown fatal error at hypothesis definition"
 
 msgid "SMESH_HYP_7"
-msgstr "Such dimention hypothesis is already assigned to the shape"
+msgstr "Hypothesis is not suitable in the current context"
 
 msgid "SMESH_HYP_8"
-msgstr "Hypothesis and submesh dimensions mismatch"
+msgstr "Non-conform mesh is produced using applied hypotheses"
 
 msgid "SMESH_HYP_9"
-msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
+msgstr "Such dimention hypothesis is already assigned to the shape"
 
 msgid "SMESH_HYP_10"
+msgstr "Hypothesis and submesh dimensions mismatch"
+
+msgid "SMESH_HYP_11"
+msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
+
+msgid "SMESH_HYP_12"
 msgstr "Geomerty mismatches algorithm's expectation"
+
+# AlgoStateErrorName
 
 msgid "MISSING_ALGO"
 msgstr "%3 %2D algorithm is missing"

@@ -44,6 +44,8 @@ public:
     HYP_MISSING,      // algo misses a hypothesis
     HYP_CONCURENT,    // several applicable hypotheses
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
+    HYP_HIDDEN_ALGO,  // an algo is hidden by an upper dim algo generating all-dim elements
+    HYP_HIDING_ALGO,  // an algo hides lower dim algos by generating all-dim elements
     HYP_UNKNOWN_FATAL,//  --- all statuses below should be considered as fatal
                       //      for Add/RemoveHypothesis operations
     HYP_INCOMPATIBLE, // hypothesis does not fit algo

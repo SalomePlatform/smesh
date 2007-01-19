@@ -349,6 +349,43 @@ def GetFunctor(theCriterion):
         print "Error: given parameter is not numerucal functor type."
 
 
+## Private method. Print error message if a hypothesis was not assigned.
+def TreatHypoStatus(status, hypName, geomName, isAlgo):
+    if isAlgo:
+        hypType = "algorithm"
+    else:
+        hypType = "hypothesis"
+        pass
+    if status == HYP_UNKNOWN_FATAL :
+        reason = "for unknown reason"
+    elif status == HYP_INCOMPATIBLE :
+        reason = "this hypothesis mismatches algorithm"
+    elif status == HYP_NOTCONFORM :
+        reason = "not conform mesh would be built"
+    elif status == HYP_ALREADY_EXIST :
+        reason = hypType + " of the same dimension already assigned to this shape"
+    elif status == HYP_BAD_DIM :
+        reason = hypType + " mismatches shape"
+    elif status == HYP_CONCURENT :
+        reason = "there are concurrent hypotheses on sub-shapes"
+    elif status == HYP_BAD_SUBSHAPE :
+        reason = "shape is neither the main one, nor its subshape, nor a valid group"
+    elif status == HYP_BAD_GEOMETRY:
+        reason = "geometry mismatches algorithm's expectation"
+    elif status == HYP_HIDDEN_ALGO:
+        reason = "it is hidden by an algorithm of upper dimension generating all-dimensions elements"
+    elif status == HYP_HIDING_ALGO:
+        reason = "it hides algorithm(s) of lower dimension by generating all-dimensions elements"
+    else:
+        return
+    hypName = '"' + hypName + '"'
+    geomName= '"' + geomName+ '"'
+    if status < HYP_UNKNOWN_FATAL:
+        print hypName, "was assigned to",    geomName,"but", reason
+    else:
+        print hypName, "was not assigned to",geomName,":", reason
+        pass
+
     
     
 ## Mother class to define algorithm, recommended to don't use directly.
@@ -391,38 +428,6 @@ class Mesh_Algorithm:
     def GetId(self):
         return self.algo.GetId()
     
-    ## Private method. Print error message if a hypothesis was not assigned.
-    def TreatHypoStatus(self, status, hypName, geomName, isAlgo):
-        if isAlgo:
-            hypType = "algorithm"
-        else:
-            hypType = "hypothesis"
-        if status == HYP_UNKNOWN_FATAL :
-            reason = "for unknown reason"
-        elif status == HYP_INCOMPATIBLE :
-            reason = "this hypothesis mismatches algorithm"
-        elif status == HYP_NOTCONFORM :
-            reason = "not conform mesh would be built"
-        elif status == HYP_ALREADY_EXIST :
-            reason = hypType + " of the same dimension already assigned to this shape"
-        elif status == HYP_BAD_DIM :
-            reason = hypType + " mismatches shape"
-        elif status == HYP_CONCURENT :
-            reason = "there are concurrent hypotheses on sub-shapes"
-        elif status == HYP_BAD_SUBSHAPE :
-            reason = "shape is neither the main one, nor its subshape, nor a valid group"
-        elif status == HYP_BAD_GEOMETRY:
-            reason = "geometry mismatches algorithm's expectation"
-        else:
-            return
-        hypName = '"' + hypName + '"'
-        geomName= '"' + geomName+ '"'
-        if status < HYP_UNKNOWN_FATAL:
-            print hypName, "was assigned to",    geomName,"but", reason
-        else:
-            print hypName, "was not assigned to",geomName,":", reason
-        pass
-        
     ## Private method.
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
@@ -443,7 +448,7 @@ class Mesh_Algorithm:
         self.algo = smesh.CreateHypothesis(hypo, so)
         SetName(self.algo, name + "/" + hypo)
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        self.TreatHypoStatus( status, hypo, name, 1 )
+        TreatHypoStatus( status, hypo, name, 1 )
         
     ## Private method
     def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so"):
@@ -459,7 +464,7 @@ class Mesh_Algorithm:
         name = GetName(self.geom)
         SetName(hypo, name + "/" + hyp + a)
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        self.TreatHypoStatus( status, hyp, name, 0 )
+        TreatHypoStatus( status, hyp, name, 0 )
         return hypo
 
 

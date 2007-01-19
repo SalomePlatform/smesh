@@ -295,36 +295,28 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
  */
 //=============================================================================
 
+#define RETURNCASE(hyp_stat) case SMESH_Hypothesis::hyp_stat: return SMESH::hyp_stat;
+
 static SMESH::Hypothesis_Status ConvertHypothesisStatus
                          (SMESH_Hypothesis::Hypothesis_Status theStatus)
 {
-  SMESH::Hypothesis_Status res;
-  switch (theStatus)
-  {
-  case SMESH_Hypothesis::HYP_OK:
-    res = SMESH::HYP_OK; break;
-  case SMESH_Hypothesis::HYP_MISSING:
-    res = SMESH::HYP_MISSING; break;
-  case SMESH_Hypothesis::HYP_CONCURENT:
-    res = SMESH::HYP_CONCURENT; break;
-  case SMESH_Hypothesis::HYP_BAD_PARAMETER:
-    res = SMESH::HYP_BAD_PARAMETER; break;
-  case SMESH_Hypothesis::HYP_INCOMPATIBLE:
-    res = SMESH::HYP_INCOMPATIBLE; break;
-  case SMESH_Hypothesis::HYP_NOTCONFORM:
-    res = SMESH::HYP_NOTCONFORM; break;
-  case SMESH_Hypothesis::HYP_ALREADY_EXIST:
-    res = SMESH::HYP_ALREADY_EXIST; break;
-  case SMESH_Hypothesis::HYP_BAD_DIM:
-    res = SMESH::HYP_BAD_DIM; break;
-  case SMESH_Hypothesis::HYP_BAD_SUBSHAPE:
-    res = SMESH::HYP_BAD_SUBSHAPE; break;
-  case SMESH_Hypothesis::HYP_BAD_GEOMETRY:
-    res = SMESH::HYP_BAD_GEOMETRY; break;
-  default:
-    res = SMESH::HYP_UNKNOWN_FATAL;
+  switch (theStatus) {
+  RETURNCASE( HYP_OK            );
+  RETURNCASE( HYP_MISSING       );
+  RETURNCASE( HYP_CONCURENT     );
+  RETURNCASE( HYP_BAD_PARAMETER );
+  RETURNCASE( HYP_HIDDEN_ALGO   );
+  RETURNCASE( HYP_HIDING_ALGO   );
+  RETURNCASE( HYP_UNKNOWN_FATAL );
+  RETURNCASE( HYP_INCOMPATIBLE  );
+  RETURNCASE( HYP_NOTCONFORM    );
+  RETURNCASE( HYP_ALREADY_EXIST );
+  RETURNCASE( HYP_BAD_DIM       );
+  RETURNCASE( HYP_BAD_SUBSHAPE  );
+  RETURNCASE( HYP_BAD_GEOMETRY  );
+  default:;
   }
-  return res;
+  return SMESH::HYP_UNKNOWN_FATAL;
 }
 
 //=============================================================================

@@ -543,7 +543,7 @@ SMESH_Hypothesis::Hypothesis_Status
   // ----------------------
   // check mesh conformity
   // ----------------------
-  if (event == ADD_ALGO)
+  if (event == ADD_ALGO || event == ADD_FATHER_ALGO)
   {
     if (IsApplicableHypotesis( anHyp ) &&
         !_father->IsNotConformAllowed() &&
@@ -566,6 +566,7 @@ SMESH_Hypothesis::Hypothesis_Status
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
 
     // Serve Propagation of 1D hypothesis
+    // NOTE: it is possible to re-implement Propagation using EventListener
     if (event == ADD_HYP) {
       bool isPropagationOk = true;
       bool isPropagationHyp = ( strcmp( "Propagation", anHyp->GetName() ) == 0 );
@@ -617,6 +618,7 @@ SMESH_Hypothesis::Hypothesis_Status
       return SMESH_Hypothesis::HYP_OK; // nothing changes
 
     // Serve Propagation of 1D hypothesis
+    // NOTE: it is possible to re-implement Propagation using EventListener
     if (event == REMOVE_HYP)
     {
       bool isPropagationOk = true;
@@ -971,6 +973,29 @@ SMESH_Hypothesis::Hypothesis_Status
     break;
   }
 
+  // detect algorithm hidding
+  //
+  if ( ret == SMESH_Hypothesis::HYP_OK &&
+       ( event == ADD_ALGO || event == ADD_FATHER_ALGO ) &&
+       algo->GetName() == anHyp->GetName() )
+  {
+    // is algo hidden?
+    SMESH_Gen* gen = _father->GetGen();
+    TopTools_ListIteratorOfListOfShape it( _father->GetAncestors( _subShape ));
+    for ( ; ( ret == SMESH_Hypothesis::HYP_OK && it.More()); it.Next() ) {
+      if ( SMESH_Algo* upperAlgo = gen->GetAlgo( *_father, it.Value() ))
+        if ( !upperAlgo->NeedDescretBoundary() )
+          ret = SMESH_Hypothesis::HYP_HIDDEN_ALGO;
+    }
+    // is algo hiding?
+    if ( ret == SMESH_Hypothesis::HYP_OK && !algo->NeedDescretBoundary() ) {
+      map<int, SMESH_subMesh*>::reverse_iterator i_sm = _mapDepend.rbegin();
+      for ( ; ( ret == SMESH_Hypothesis::HYP_OK && i_sm != _mapDepend.rend()) ; ++i_sm )
+        if ( gen->GetAlgo( *_father, i_sm->second->_subShape ))
+          ret = SMESH_Hypothesis::HYP_HIDING_ALGO;
+    }
+  }
+
   if ( _algoState != oldAlgoState )
   {
     if (_algoState == HYP_OK )
@@ -995,18 +1020,22 @@ SMESH_Hypothesis::Hypothesis_Status
 bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
 {
 //  MESSAGE( "SMESH_subMesh::IsConform" );
-
   if ( !theAlgo ) return false;
+
+  // Suppose that theAlgo is applicable to _subShape, do not check it here
+  //if ( !IsApplicableHypotesis( theAlgo )) return false;
 
   // check only algo that doesn't NeedDescretBoundary(): because mesh made
   // on a sub-shape will be ignored by theAlgo
-  if ( theAlgo->NeedDescretBoundary() )
+  if ( theAlgo->NeedDescretBoundary() ||
+       !theAlgo->OnlyUnaryInput() ) // all adjacent shapes will be meshed by this algo?
     return true;
 
   SMESH_Gen* gen =_father->GetGen();
 
   // only local algo is to be checked
-  if ( gen->IsGlobalHypothesis( theAlgo, *_father ))
+  //if ( gen->IsGlobalHypothesis( theAlgo, *_father ))
+  if ( _subShape.ShapeType() == _father->GetMeshDS()->ShapeToMesh().ShapeType() )
     return true;
 
   // check algo attached to adjacent shapes
@@ -1027,9 +1056,8 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
       // check algo attached to smAdjacent
       SMESH_Algo * algo = gen->GetAlgo((*_father), adjacent);
       if (algo &&
-          //algo != theAlgo &&
-          !algo->NeedDescretBoundary() /*&&
-          !gen->IsGlobalHypothesis( algo, *_father )*/)
+          !algo->NeedDescretBoundary() &&
+          algo->OnlyUnaryInput())
         return false; // NOT CONFORM MESH WILL BE PRODUCED
     }
   }
@@ -1758,7 +1786,7 @@ const SMESH_Hypothesis* SMESH_subMesh::GetSimilarAttached(const TopoDS_Shape&   
 //=======================================================================
 //function : CheckConcurentHypothesis
 //purpose  : check if there are several applicable hypothesis attached to
-//           ansestors
+//           ancestors
 //=======================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
