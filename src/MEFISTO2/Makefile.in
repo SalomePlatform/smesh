@@ -45,11 +45,7 @@ LIB_SERVER_IDL =
 CPPFLAGS += $(OCC_INCLUDES) $(KERNEL_CXXFLAGS)
 CXXFLAGS += $(OCC_CXXFLAGS) $(KERNEL_CXXFLAGS)
 
-ifeq ($(F77),gfortran)
-LDFLAGS += -lgfortran
-else
-LDFLAGS += -lg2c
-endif
+LDFLAGS += $(FCLIBS)
 
 @CONCLUDE@
 

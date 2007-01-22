@@ -308,10 +308,10 @@ distclean: clean
 	$(LT_COMPILE) $(CFLAGS) $(CPPFLAGS) -c $<
 
 .f.o:
-	$(FC) $(FFLAGS) -c $< -o $@
+	$(FC) $(FCFLAGS) -c $< -o $@
 
 .f.lo:
-	$(LT) --mode=compile $(FC) $(FFLAGS) -c $<
+	$(LT) --mode=compile $(FC) $(FCFLAGS) -c $<
 
 .ui.h:
 	$(UIC) -o $@  $<
