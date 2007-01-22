@@ -53,7 +53,9 @@ EXPORT_HEADERS= \
 	SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx \
 	SMESH_SequenceOfElemPtr.hxx \
 	SMESH_SequenceOfNode.hxx \
-	SMESH_MesherHelper.hxx
+        SMESH_MesherHelper.hxx \
+        SMESH_Octree.hxx \
+        SMESH_OctreeNode.hxx
 
 EXPORT_PYSCRIPTS =
 
@@ -72,7 +74,9 @@ LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_Block.cxx \
 	  SMESH_Pattern.cxx \
 	  SMESH_HypoFilter.cxx \
-	  SMESH_MesherHelper.cxx
+          SMESH_MesherHelper.cxx \
+          SMESH_Octree.cxx \
+          SMESH_OctreeNode.cxx
 
 LIB_SERVER_IDL = 
 
