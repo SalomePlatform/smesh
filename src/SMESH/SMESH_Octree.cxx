@@ -135,7 +135,7 @@ void SMESH_Octree::Compute()
 //=================================================================
 void SMESH_Octree::buildChildren()
 {
-  myChildren = new (SMESH_Octree*)[8];
+  myChildren = new SMESH_Octree*[8];
 
   gp_XYZ min = myBox->CornerMin();
   gp_XYZ max = myBox->CornerMax();
