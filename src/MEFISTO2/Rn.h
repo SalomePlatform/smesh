@@ -62,11 +62,19 @@ typedef char Nom[1+24];
 
 //le type N des nombres entiers positifs
 //=========
+#ifndef PCLINUX64
 typedef unsigned long int N;
+#else 
+typedef unsigned int N;
+#endif
 
 //le type Z des nombres entiers relatifs
 //=========
+#ifndef PCLINUX64
 typedef long int Z;
+#else
+typedef int Z;
+#endif
 
 //le type R des nombres "reels"
 //=========

@@ -783,6 +783,7 @@ void qualitetrte_( R3 *mnpxyd,
       //un triangle occupe de plus
       nbtria++;
 
+
       //le numero des 3 sommets du triangle nt
       nusotr_( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
 
