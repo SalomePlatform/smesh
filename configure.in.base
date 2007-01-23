@@ -334,6 +334,8 @@ echo
 
 CHECK_MED
 
+CHECK_PLATFORM
+
 echo
 echo ---------------------------------------------
 echo Summary
