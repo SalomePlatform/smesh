@@ -1953,6 +1953,145 @@ class Mesh:
     #          diagonal is better, 0 if error occurs.
     def BestSplit (self, IDOfQuad, theCriterion):
         return self.editor.BestSplit(IDOfQuad, GetFunctor(theCriterion))
+
+    ## Split quafrangle faces near triangular facets of volumes
+    #
+    def SplitQuadsNearTriangularFacets(self):
+        faces_array = self.GetElementsByType(SMESH.FACE)
+        for face_id in faces_array:
+            if self.GetElemNbNodes(face_id) == 4: # quadrangle
+                quad_nodes = self.mesh.GetElemNodes(face_id)
+                node1_elems = self.GetNodeInverseElements(quad_nodes[1 -1])
+                isPrismFound = False
+                for node1_elem in node1_elems:
+                    if not isPrismFound:
+                        if self.GetElementType(node1_elem, True) == SMESH.VOLUME:
+                            nb_nodes = self.GetElemNbNodes(node1_elem)
+                            if 3 < nb_nodes and nb_nodes < 7: # tetra or penta, or prism
+                                volume_elem = node1_elem
+                                volume_nodes = self.mesh.GetElemNodes(volume_elem)
+                                if volume_nodes.count(quad_nodes[2 -1]) > 0: # 1,2
+                                    if volume_nodes.count(quad_nodes[4 -1]) > 0: # 1,2,4
+                                        isVolumeFound = True
+                                        if volume_nodes.count(quad_nodes[3 -1]) == 0: # 1,2,4 & !3
+                                            self.SplitQuad([face_id], False) # diagonal 2-4
+                                    elif volume_nodes.count(quad_nodes[3 -1]) > 0: # 1,2,3 & !4
+                                        isVolumeFound = True
+                                        self.SplitQuad([face_id], True) # diagonal 1-3
+                                elif volume_nodes.count(quad_nodes[4 -1]) > 0: # 1,4 & !2
+                                    if volume_nodes.count(quad_nodes[3 -1]) > 0: # 1,4,3 & !2
+                                        isVolumeFound = True
+                                        self.SplitQuad([face_id], True) # diagonal 1-3
+
+    ## @brief Split hexahedrons into tetrahedrons.
+    #
+    #  Use pattern mapping functionality for splitting.
+    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
+    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
+    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
+    #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
+    #         key-point will be mapped into <theNode001>-th node of each volume.
+    #         The (0,0,0) key-point of used pattern corresponds to not split corner.
+    #  @param @return TRUE in case of success, FALSE otherwise.
+    def SplitHexaToTetras (self, theObject, theNode000, theNode001):
+        # Pattern:     5.---------.6
+        #              /|#*      /|
+        #             / | #*    / |
+        #            /  |  # * /  |
+        #           /   |   # /*  |
+        # (0,0,1) 4.---------.7 * |
+        #          |#*  |1   | # *|
+        #          | # *.----|---#.2
+        #          |  #/ *   |   /
+        #          |  /#  *  |  /
+        #          | /   # * | /
+        #          |/      #*|/
+        # (0,0,0) 0.---------.3
+        pattern_tetra = "!!! Nb of points: \n 8 \n\
+        !!! Points: \n\
+        0 0 0  !- 0 \n\
+        0 1 0  !- 1 \n\
+        1 1 0  !- 2 \n\
+        1 0 0  !- 3 \n\
+        0 0 1  !- 4 \n\
+        0 1 1  !- 5 \n\
+        1 1 1  !- 6 \n\
+        1 0 1  !- 7 \n\
+        !!! Indices of points of 6 tetras: \n\
+        0 3 4 1 \n\
+        7 4 3 1 \n\
+        4 7 5 1 \n\
+        6 2 5 7 \n\
+        1 5 2 7 \n\
+        2 3 1 7 \n"
+
+        pattern = GetPattern()
+        isDone  = pattern.LoadFromFile(pattern_tetra)
+        if not isDone:
+            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            return isDone
+
+        pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
+        isDone = pattern.MakeMesh(self.mesh, False, False)
+        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+
+        # split quafrangle faces near triangular facets of volumes
+        self.SplitQuadsNearTriangularFacets()
+
+        return isDone
+
+    ## @brief Split hexahedrons into prisms.
+    #
+    #  Use pattern mapping functionality for splitting.
+    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
+    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
+    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
+    #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
+    #         key-point will be mapped into <theNode001>-th node of each volume.
+    #         The edge (0,0,0)-(0,0,1) of used pattern connects two not split corners.
+    #  @param @return TRUE in case of success, FALSE otherwise.
+    def SplitHexaToPrisms (self, theObject, theNode000, theNode001):
+        # Pattern:     5.---------.6
+        #              /|#       /|
+        #             / | #     / |
+        #            /  |  #   /  |
+        #           /   |   # /   |
+        # (0,0,1) 4.---------.7   |
+        #          |    |    |    |
+        #          |   1.----|----.2
+        #          |   / *   |   /
+        #          |  /   *  |  /
+        #          | /     * | /
+        #          |/       *|/
+        # (0,0,0) 0.---------.3
+        pattern_prism = "!!! Nb of points: \n 8 \n\
+        !!! Points: \n\
+        0 0 0  !- 0 \n\
+        0 1 0  !- 1 \n\
+        1 1 0  !- 2 \n\
+        1 0 0  !- 3 \n\
+        0 0 1  !- 4 \n\
+        0 1 1  !- 5 \n\
+        1 1 1  !- 6 \n\
+        1 0 1  !- 7 \n\
+        !!! Indices of points of 2 prisms: \n\
+        0 1 3 4 5 7 \n\
+        2 3 1 6 7 5 \n"
+
+        pattern = GetPattern()
+        isDone  = pattern.LoadFromFile(pattern_prism)
+        if not isDone:
+            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            return isDone
+
+        pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
+        isDone = pattern.MakeMesh(self.mesh, False, False)
+        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+
+        # split quafrangle faces near triangular facets of volumes
+        self.SplitQuadsNearTriangularFacets()
+
+        return isDone
     
     ## Smooth elements
     #  @param IDsOfElements list if ids of elements to smooth
