@@ -181,7 +181,10 @@ namespacesmesh.html
 netgen_2d_and_3d_hypotheses.htm
 pattern_mapping.htm
 presentation.htm
+prism_3d_algorithm.htm
+projection_algorithms.htm
 quality_controls.htm
+radial_prism.htm
 revolution.htm
 selection_filter_library.htm
 smesh.py_introduction.htm
@@ -247,11 +250,11 @@ image50.gif
 image94.gif
 image83.gif
 image31.jpg
+pics\distribution_of_layers.png
 pics\circle_angles_after.png
 pics\circle_simple_before.png
 pics\curvi_angles_after.png
 pics\graduatedaxes1.png
-pics\image107.gif
 pics\automaticlength.png
 pics\image27.gif
 pics\add_polyhedron.png
@@ -301,6 +304,7 @@ image97.gif
 image78.jpg
 image64.gif
 image23.jpg
+pics\projection_3d.png
 pics\edge_wire_after.png
 pics\edge_wire_before.png
 image151.gif
@@ -313,6 +317,7 @@ pics\extrusionalongaline2.png
 image79.jpg
 image98.gif
 image32.gif
+pics\projection_2d.png
 pics\image91.gif
 image152.gif
 pics\cut_groups2.png
@@ -328,6 +333,7 @@ image36.jpg
 image33.gif
 image25.jpg
 i_blue.jpg
+pics\projection_1d.png
 image153.gif
 image15.jpg
 image142.gif
@@ -375,6 +381,7 @@ image58.gif
 image36.gif
 image25.gif
 note1.gif
+pics\set_rotation_point_dialog1.png
 image156.gif
 pics\edge_wire_3d_after.png
 pics\createmesh-inv3.png
@@ -387,6 +394,8 @@ pics\addedge.png
 image123.gif
 image101.gif
 image37.gif
+image157.gif
+pics\set_rotation_point_dialog2.png
 pics\straight_after.png
 pics\image96.gif
 image146.gif
@@ -416,6 +425,7 @@ image103.gif
 pics\exemple.gif
 image39.gif
 image28.gif
+pics\view_rotation_point.png
 pics\advanced_mesh_infos.png
 pics\image98.gif
 image148.gif
@@ -429,6 +439,7 @@ image92.jpg
 image126.gif
 image18.gif
 image70.jpg
+pics\image157.gif
 pics\straight_before.png
 pics\createmesh-inv.png
 pics\image102.gif
@@ -444,6 +455,7 @@ image93.jpg
 image105.gif
 image19.gif
 image71.jpg
+pics\number_of_layers.png
 pics\image89.gif
 pics\image78.gif
 pics\image23.gif
@@ -482,6 +494,7 @@ whgdata\whlstt6.htm
 whgdata\whlstt7.htm
 whgdata\whlstt8.htm
 whgdata\whlstt9.htm
+whgdata\whlstt10.htm
 whgdata\whlsti0.htm
 whgdata\whlstfl0.htm
 whgdata\whlstfl1.htm

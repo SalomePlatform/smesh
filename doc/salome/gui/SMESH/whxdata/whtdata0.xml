@@ -12,7 +12,7 @@
       <item name="Basic meshing algorithms" url="files/about_meshing_algorithms.htm" />
       <item name="Projection Algorithms" url="projection_algorithms.htm" />
       <item name="Radial Prism Algorithm" url="radial_prism.htm" />
-      <item name="3D extrusion Algorithm" url="prism_3d_algorithm.htm" />
+      <item name="Prism 3D Algorithm" url="prism_3d_algorithm.htm" />
     </book>
     <book name="Defining hypotheses" >
       <item name="About Hypotheses" url="files/about_hypotheses.htm" />
@@ -27,7 +27,6 @@
   </book>
   <book name="Viewing meshes" >
     <item name="Viewing meshes" url="about_viewing_meshes.htm" />
-    <item name="VTK 3D Viewer" url="files/vtk_3d_viewer.htm" />
     <item name="Mesh infos" url="files/viewing_mesh_info.htm" />
     <item name="Numbering" url="files/displaying_nodes_numbers.htm" />
     <item name="Display Mode" url="presentation.htm" />
@@ -86,8 +85,8 @@
     <item name="Pattern mapping" url="pattern_mapping.htm" />
     <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
- <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
-  <book name="TUI Scripts" >
+  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
+ <book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
     <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />
