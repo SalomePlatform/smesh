@@ -15,18 +15,28 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef SMESHGUI_VTKUtils_HeaderFile
 #define SMESHGUI_VTKUtils_HeaderFile
 
-class QString;
-class vtkRenderer;
-class TColStd_IndexedMapOfInteger;
-
 #include "SALOMEDSClient_definitions.hxx"
 #include "SALOME_InteractiveObject.hxx"
 #include "VTKViewer_Filter.h"
+
+#include "SMESH_Object.h"
+#include "SMESHGUI_Utils.h"
+
+#include <CORBA.h>
+
+#include "SALOMEconfig.h"
+#include CORBA_CLIENT_HEADER(SALOMEDS)
+
+#include <boost/shared_ptr.hpp>
+
+class QString;
+
+class TColStd_IndexedMapOfInteger;
 
 class SALOMEDSClient_Study;
 
@@ -38,43 +48,36 @@ class SVTK_ViewWindow;
 class SVTK_Selector;
 
 class LightApp_SelectionMgr;
-class SMESHGUI;
-
-#include <CORBA.h>
-
-#include "SALOMEconfig.h"
-#include CORBA_CLIENT_HEADER(SALOMEDS)
-
-#include <boost/shared_ptr.hpp>
-#include "SMESH_Object.h"
-
-class SMESH_Actor;
-class SALOME_Actor;
-class SVTK_ViewWindow;
 class SalomeApp_Module;
 
-namespace SMESH{
+class SMESHGUI;
+class SMESH_Actor;
+class SALOME_Actor;
+
+namespace SMESH {
 
   //----------------------------------------------------------------------------
   typedef pair<int,string> TKeyOfVisualObj;
-  
-  TVisualObjPtr GetVisualObj(int theStudyId, 
+
+  TVisualObjPtr GetVisualObj(int theStudyId,
 			     const char* theEntry);
 
   //----------------------------------------------------------------------------
-  SVTK_ViewWindow* GetViewWindow(const SalomeApp_Module* theModule);
+  SVTK_ViewWindow* GetViewWindow(const SalomeApp_Module* theModule = NULL,
+				 bool createIfNotFound = false);
 
-  SUIT_ViewWindow* GetActiveWindow();
+  SVTK_ViewWindow* FindVtkViewWindow(SUIT_ViewManager*, SUIT_ViewWindow*);
 
-  SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager*,
-				      SUIT_ViewWindow* );
-
-  SVTK_ViewWindow* GetVtkViewWindow( SUIT_ViewWindow* );
+  SVTK_ViewWindow* GetVtkViewWindow(SUIT_ViewWindow*);
 
   SVTK_ViewWindow* GetCurrentVtkView();
 
+  //----------------------------------------------------------------------------
+  void RepaintCurrentView();
   void RepaintViewWindow(SVTK_ViewWindow*);
   void RenderViewWindow(SVTK_ViewWindow*);
+
+  void FitAll();
 
   //----------------------------------------------------------------------------
   SMESH_Actor* FindActorByEntry (SUIT_ViewWindow*, const char* theEntry);
@@ -89,24 +92,16 @@ namespace SMESH{
 
   //----------------------------------------------------------------------------
   enum EDisplaing {eDisplayAll, eDisplay, eDisplayOnly, eErase, eEraseAll};
-  void UpdateView (SUIT_ViewWindow*, 
-		   EDisplaing theAction, 
+  void UpdateView (SUIT_ViewWindow*,
+		   EDisplaing theAction,
 		   const char* theEntry = "");
-  void UpdateView (EDisplaing theAction, 
+  void UpdateView (EDisplaing theAction,
 		   const char* theEntry = "");
 
   void UpdateView();
 
   void Update(const Handle(SALOME_InteractiveObject)& theIO,
 	      bool theDisplay);
-
-
-  //----------------------------------------------------------------------------
-  void FitAll();
-
-  void RepaintCurrentView();
-
-  vtkRenderer* GetCurrentRenderer();
 
 
   //----------------------------------------------------------------------------
@@ -118,20 +113,16 @@ namespace SMESH{
 
 
   //----------------------------------------------------------------------------
-  SVTK_Selector* 
-    GetSelector(SUIT_ViewWindow* = GetActiveWindow());
+  SVTK_Selector* GetSelector (SUIT_ViewWindow* = GetActiveWindow());
 
   void SetFilter (const Handle(VTKViewer_Filter)& theFilter,
 		  SVTK_Selector* theSelector = GetSelector());
 
-  Handle(VTKViewer_Filter) 
-    GetFilter (int theId, SVTK_Selector* theSelector = GetSelector());
+  Handle(VTKViewer_Filter) GetFilter (int theId, SVTK_Selector* theSelector = GetSelector());
 
-  bool IsFilterPresent (int theId, 
-			SVTK_Selector* theSelector = GetSelector());
+  bool IsFilterPresent (int theId, SVTK_Selector* theSelector = GetSelector());
 
-  void RemoveFilter (int theId, 
-		     SVTK_Selector* theSelector = GetSelector());
+  void RemoveFilter (int theId, SVTK_Selector* theSelector = GetSelector());
 
   void RemoveFilters (SVTK_Selector* theSelector = GetSelector());
 
@@ -139,36 +130,36 @@ namespace SMESH{
 		SVTK_Selector* theSelector = GetSelector());
 
   //----------------------------------------------------------------------------
-  int GetNameOfSelectedNodes(SVTK_Selector* theSelector, 
-			     const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedNodes(SVTK_Selector* theSelector,
+			     const Handle(SALOME_InteractiveObject)& theIO,
 			     QString& theName);
-  
-  int GetNameOfSelectedElements(SVTK_Selector* theSelector, 
-				const Handle(SALOME_InteractiveObject)& theIO, 
+
+  int GetNameOfSelectedElements(SVTK_Selector* theSelector,
+				const Handle(SALOME_InteractiveObject)& theIO,
 				QString& theName);
-  
-  int GetEdgeNodes(SVTK_Selector* theSelector, 
+
+  int GetEdgeNodes(SVTK_Selector* theSelector,
 		   const TVisualObjPtr& theVisualObj,
-		   int& theId1, 
+		   int& theId1,
 		   int& theId2);
 
   //----------------------------------------------------------------------------
-  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
-			      const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*,
+			      const Handle(SALOME_InteractiveObject)& theIO,
 			      QString& theName);
 
-  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*,
 			      QString& aName);
 
-  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
-				 const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*,
+				 const Handle(SALOME_InteractiveObject)& theIO,
 				 QString& theName);
 
-  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*,
 				 QString& aName);
 
-  int GetSelected (LightApp_SelectionMgr*, 
-		   TColStd_IndexedMapOfInteger& theMap, 
+  int GetSelected (LightApp_SelectionMgr*,
+		   TColStd_IndexedMapOfInteger& theMap,
 		   const bool theIsElement = true );
 
   int GetEdgeNodes (LightApp_SelectionMgr*, int& theId1, int& theId2);

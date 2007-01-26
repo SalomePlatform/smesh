@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //  File   : SMESHGUI.cxx
 //  Author : Nicolas REJNERI
@@ -307,7 +307,7 @@ using namespace std;
 	SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
 	if ( resMgr )
 	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
-	
+
 	if ( theCommandID != 122 && theCommandID != 125 )
 	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
 	else {
@@ -855,7 +855,7 @@ SMESH::SMESH_Gen_var SMESHGUI::myComponentSMESH = SMESH::SMESH_Gen::_nil();
 //=============================================================================
 SMESHGUI::SMESHGUI() :
 SalomeApp_Module( "SMESH" )
-{  
+{
   if ( CORBA::is_nil( myComponentSMESH ) )
   {
     CORBA::Boolean anIsEmbeddedMode;
@@ -1239,9 +1239,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
-      
+
       // PAL13338 -->
-      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) && !automaticUpdate() ) 
+      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) && !automaticUpdate() )
 	SMESH::UpdateView();
       // PAL13338 <--
 
@@ -1299,93 +1299,86 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case 701:					// COMPUTE MESH
     {
-      if(checkLock(aStudy)) break;
+      if (checkLock(aStudy)) break;
 
       LightApp_SelectionMgr *Sel = selectionMgr();
       SALOME_ListIO selected; Sel->selectedObjects( selected );
 
-      if ( vtkwnd ) {
-	int nbSel = selected.Extent();
-	if (nbSel != 1){
-          SUIT_MessageBox::warn1(desktop(),
-                                 tr("SMESH_WRN_WARNING"),
-                                 tr("SMESH_WRN_NO_AVAILABLE_DATA"),
-                                 tr("SMESH_BUT_OK"));
-	  break;
-	}
+      int nbSel = selected.Extent();
+      if (nbSel != 1) {
+        SUIT_MessageBox::warn1(desktop(),
+                               tr("SMESH_WRN_WARNING"),
+                               tr("SMESH_WRN_NO_AVAILABLE_DATA"),
+                               tr("SMESH_BUT_OK"));
+        break;
+      }
 
-	SMESH::SMESH_Mesh_var aMesh;
-	SMESH::SMESH_subMesh_var aSubMesh;
-	Handle(SALOME_InteractiveObject) IObject = selected.First();
-	if (IObject->hasEntry()) {
-	  _PTR(SObject) aMeshSObj = aStudy->FindObjectID(IObject->getEntry());
-	  GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh( aMeshSObj );
-	  if ( aShapeObject->_is_nil() ) {
-	    // imported mesh
-	    break;
-	  }
-	  if( aMeshSObj ) {
-	    aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(aMeshSObj);
-	    aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(aMeshSObj);
-            if ( !aSubMesh->_is_nil() )
-	      aMesh = aSubMesh->GetFather();
+      SMESH::SMESH_Mesh_var aMesh;
+      SMESH::SMESH_subMesh_var aSubMesh;
+      Handle(SALOME_InteractiveObject) IObject = selected.First();
+      if (IObject->hasEntry()) {
+        _PTR(SObject) aMeshSObj = aStudy->FindObjectID(IObject->getEntry());
+        GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh( aMeshSObj );
+        if ( aShapeObject->_is_nil() ) {
+          // imported mesh
+          break;
+        }
+        if ( aMeshSObj ) {
+          aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(aMeshSObj);
+          aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(aMeshSObj);
+          if ( !aSubMesh->_is_nil() )
+            aMesh = aSubMesh->GetFather();
 
-	    if (!aMesh->_is_nil()) {
-//               if(!GetSMESHGen()->IsReadyToCompute(aMesh,aShapeObject)) {
-//                 SUIT_MessageBox::warn1(desktop(),
-//                                        tr("SMESH_WRN_WARNING"),
-//                                        tr("SMESH_WRN_MISSING_PARAMETERS"),
-//                                        tr("SMESH_BUT_OK"));
-//                 break;
-//               }
-              SMESH::algo_error_array_var errors = GetSMESHGen()->GetAlgoState(aMesh,aShapeObject);
-              if ( errors->length() > 0 ) {
+          if (!aMesh->_is_nil()) {
+            SMESH::algo_error_array_var errors = GetSMESHGen()->GetAlgoState(aMesh,aShapeObject);
+            if ( errors->length() > 0 ) {
+              SUIT_MessageBox::warn1(desktop(),
+                                     tr("SMESH_WRN_WARNING"),
+                                     SMESH::GetMessageOnAlgoStateErrors( errors.in() ),
+                                     tr("SMESH_BUT_OK"));
+              break;
+            }
+
+            try {
+              if (GetSMESHGen()->Compute(aMesh, aShapeObject))
+                SMESH::ModifiedMesh(aMeshSObj, true);
+              else
                 SUIT_MessageBox::warn1(desktop(),
                                        tr("SMESH_WRN_WARNING"),
-                                       SMESH::GetMessageOnAlgoStateErrors( errors.in() ),
+                                       tr("SMESH_WRN_COMPUTE_FAILED"),
                                        tr("SMESH_BUT_OK"));
-                break;
-              }
-              try{
-                if (GetSMESHGen()->Compute(aMesh,aShapeObject))
-                  SMESH::ModifiedMesh(aMeshSObj,true);
-                else
-                  SUIT_MessageBox::warn1(desktop(),
-                                         tr("SMESH_WRN_WARNING"),
-                                         tr("SMESH_WRN_COMPUTE_FAILED"),
-                                         tr("SMESH_BUT_OK"));
-              }
-              catch(const SALOME::SALOME_Exception & S_ex){
-                SalomeApp_Tools::QtCatchCorbaException(S_ex);
+            }
+            catch(const SALOME::SALOME_Exception & S_ex){
+              SalomeApp_Tools::QtCatchCorbaException(S_ex);
+            }
+
+            updateObjBrowser();
+
+            if (automaticUpdate()) {
+              SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(this, /*create*/true);
+              if (aVTKView) {
+                CORBA::Long anId = aStudy->StudyId();
+                TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId, IObject->getEntry());
+                if (aVisualObj) {
+                  aVisualObj->Update();
+                  SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
+                  if (!anActor) {
+                    anActor = SMESH::CreateActor(aStudy, IObject->getEntry());
+                    if (anActor) {
+                      SMESH::DisplayActor(aVTKView, anActor); //apo
+                      SMESH::FitAll();
+                    }
+                  }
+                  SMESH::RepaintCurrentView();
+                  Sel->setSelectedObjects( selected );
+                }
               }
             }
-	  }
-	}
-        CORBA::Long anId = aStudy->StudyId();
-        TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,IObject->getEntry());
-        if ( automaticUpdate() && aVisualObj){
-          aVisualObj->Update();
-          SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
-          if(!anActor){
-            anActor = SMESH::CreateActor(aStudy,IObject->getEntry());
-            if(anActor){
-	      SMESH::DisplayActor(view,anActor); //apo
-	      SMESH::FitAll();
-	    }
-	  }
-	  SMESH::RepaintCurrentView();
-	}
+          }
+        }
       }
-      else{
-	SUIT_MessageBox::warn1(desktop(),
-			      tr("SMESH_WRN_WARNING"),
-			      tr("SMESH_WRN_VIEWER_VTK"),
-			      tr("SMESH_BUT_OK"));
-      }
-      updateObjBrowser();
-      Sel->setSelectedObjects( selected );
-      break;
     }
+    break;
 
   case 702:  // Create mesh
     startOperation( 702 );
@@ -1943,18 +1936,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	int type;
 
 	switch (theCommandID) {
-	case 4034:                                      
+	case 4034:
 	  type = QUAD_EDGE; break;
-	case 4035:                                      
+	case 4035:
 	  type = QUAD_TRIANGLE; break;
-	case 4036:                                     
+	case 4036:
 	  type = QUAD_QUADRANGLE; break;
-	case 4037:                                     
+	case 4037:
 	  type = QUAD_TETRAHEDRON; break;
-	case 4038:                                     
-	  type = QUAD_PYRAMID; break; 
-	case 4039:                                     
-	  type = QUAD_PENTAHEDRON; break; 
+	case 4038:
+	  type = QUAD_PYRAMID; break;
+	case 4039:
+	  type = QUAD_PENTAHEDRON; break;
 	case 4040:
 	  type = QUAD_HEXAHEDRON;
 	  break;
@@ -3024,7 +3017,7 @@ void SMESHGUI::createPreferences()
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
   int renumber=addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
-  
+
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
 
@@ -3161,7 +3154,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     float aTol = 1.00000009999999;
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
-    if( name=="selection_object_color" || name=="selection_element_color" || 
+    if( name=="selection_object_color" || name=="selection_element_color" ||
         name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
         name=="selection_precision_node" || name=="selection_precision_element" )
       SMESH::UpdateSelectionProp( this );
@@ -3169,7 +3162,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
       if(sbX1+sbW > aTol){
-	aWarning = "Origin and Size Vertical: X+Width > 1\n";	
+	aWarning = "Origin and Size Vertical: X+Width > 1\n";
 	sbX1=0.01;
 	sbW=0.05;
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
@@ -3209,7 +3202,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
       }
     }
-    
+
     if(aWarning.size() != 0){
       aWarning += "The default values are applied instead.";
       SUIT_MessageBox::warn1(SMESHGUI::desktop(),
