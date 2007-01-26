@@ -161,7 +161,7 @@
                dim="3"/>
 
     <algorithm type="Prism_3D"
-               label-id="Prism 3D"
+               label-id="3D extrusion"
                icon-id="mesh_algo_hexa.png"
                input="QUAD,TRIA"
                dim="3"/>

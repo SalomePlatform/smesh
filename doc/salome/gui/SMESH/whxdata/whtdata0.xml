@@ -12,7 +12,7 @@
       <item name="Basic meshing algorithms" url="files/about_meshing_algorithms.htm" />
       <item name="Projection Algorithms" url="projection_algorithms.htm" />
       <item name="Radial Prism Algorithm" url="radial_prism.htm" />
-      <item name="Prism 3D Algorithm" url="prism_3d_algorithm.htm" />
+      <item name="3D extrusion Algorithm" url="prism_3d_algorithm.htm" />
     </book>
     <book name="Defining hypotheses" >
       <item name="About Hypotheses" url="files/about_hypotheses.htm" />

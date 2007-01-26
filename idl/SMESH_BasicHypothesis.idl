@@ -536,7 +536,7 @@ module StdMeshers
   };
 
   /*!
-   * StdMeshers_Prism_3D: interface of "Prism 3D" algorithm
+   * StdMeshers_Prism_3D: interface of "3D extrusion" algorithm
    */
   interface StdMeshers_Prism_3D : SMESH::SMESH_3D_Algo
   {

@@ -920,7 +920,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
 # Public class: Mesh_Prism
 # ------------------------
 
-## Class to define a Prism 3D algorithm
+## Class to define a 3D extrusion algorithm
 #
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
@@ -1213,7 +1213,7 @@ class Mesh:
     def Projection3D(self, geom=0):
         return Mesh_Projection3D(self, geom)
 
-    ## Creates a Prism 3D or RadialPrism 3D algorithm for solids.
+    ## Creates a 3D extrusion (Prism 3D) or RadialPrism 3D algorithm for solids.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
@@ -1962,9 +1962,9 @@ class Mesh:
             if self.GetElemNbNodes(face_id) == 4: # quadrangle
                 quad_nodes = self.mesh.GetElemNodes(face_id)
                 node1_elems = self.GetNodeInverseElements(quad_nodes[1 -1])
-                isPrismFound = False
+                isVolumeFound = False
                 for node1_elem in node1_elems:
-                    if not isPrismFound:
+                    if not isVolumeFound:
                         if self.GetElementType(node1_elem, True) == SMESH.VOLUME:
                             nb_nodes = self.GetElemNbNodes(node1_elem)
                             if 3 < nb_nodes and nb_nodes < 7: # tetra or penta, or prism
