@@ -295,17 +295,21 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
     // Storing SMDS groups and sub-meshes
     //-----------------------------------
-    int myNodesDefaultFamilyId = 0;
-    int myEdgesDefaultFamilyId = 0;
-    int myFacesDefaultFamilyId = 0;
+    int myNodesDefaultFamilyId   = 0;
+    int myEdgesDefaultFamilyId   = 0;
+    int myFacesDefaultFamilyId   = 0;
     int myVolumesDefaultFamilyId = 0;
-    if (myDoGroupOfNodes)
+    int nbNodes   = myMesh->NbNodes();
+    int nbEdges   = myMesh->NbEdges();
+    int nbFaces   = myMesh->NbFaces();
+    int nbVolumes = myMesh->NbVolumes();
+    if (myDoGroupOfNodes && nbNodes)
       myNodesDefaultFamilyId = REST_NODES_FAMILY;
-    if (myDoGroupOfEdges)
+    if (myDoGroupOfEdges && nbEdges)
       myEdgesDefaultFamilyId = REST_EDGES_FAMILY;
-    if (myDoGroupOfFaces)
+    if (myDoGroupOfFaces && nbFaces)
       myFacesDefaultFamilyId = REST_FACES_FAMILY;
-    if (myDoGroupOfVolumes)
+    if (myDoGroupOfVolumes && nbVolumes)
       myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
 
     MESSAGE("Perform - aFamilyInfo");
@@ -314,11 +318,17 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if (myAllSubMeshes) {
       aFamilies = DriverMED_Family::MakeFamilies
         (myMesh->SubMeshes(), myGroups,
-         myDoGroupOfNodes, myDoGroupOfEdges, myDoGroupOfFaces, myDoGroupOfVolumes);
+         myDoGroupOfNodes   && nbNodes,
+         myDoGroupOfEdges   && nbEdges,
+         myDoGroupOfFaces   && nbFaces,
+         myDoGroupOfVolumes && nbVolumes);
     } else {
       aFamilies = DriverMED_Family::MakeFamilies
         (mySubMeshes, myGroups,
-         myDoGroupOfNodes, myDoGroupOfEdges, myDoGroupOfFaces, myDoGroupOfVolumes);
+         myDoGroupOfNodes   && nbNodes,
+         myDoGroupOfEdges   && nbEdges,
+         myDoGroupOfFaces   && nbFaces,
+         myDoGroupOfVolumes && nbVolumes);
     }
     list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
 
