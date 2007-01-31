@@ -150,8 +150,8 @@ public:
   static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
                                           int & theStartPos, const bool theForward,
                                           const bool dotIsWord = false);
-  void AddDependantCmd( Handle(_pyCommand) cmd)
-  { return myDependentCmds.push_back( cmd ); }
+  void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
+  { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
   bool SetDependentCmdsAfter() const;
 
   bool AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod );
@@ -263,8 +263,8 @@ private:
 class _pyHypothesis: public _pyObject
 {
 protected:
-  bool    myIsAlgo, /*myIsLocal, */myIsWrapped, myIsConverted;
-  int     myDim/*, myAdditionCmdNb*/;
+  bool    myIsAlgo, myIsWrapped; //myIsLocal, myIsConverted;
+  //int     myDim/*, myAdditionCmdNb*/;
   _pyID    myGeom, myMesh;
   TCollection_AsciiString       myCreationMethod, myType;
   TColStd_SequenceOfAsciiString myArgs;
@@ -274,8 +274,10 @@ protected:
   std::list<Handle(_pyCommand)>  myUnknownCommands;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
-  void SetDimMethodType(const int dim, const char* creationMethod, const char* type=0)
-  { myDim = dim; myCreationMethod = (char*)creationMethod; if ( type ) myType = (char*)type; }
+  void SetConvMethodAndType(const char* creationMethod, const char* type=0)
+  { myCreationMethod = (char*)creationMethod; if ( type ) myType = (char*)type; }
+//   void SetDimMethodType(const int dim, const char* creationMethod, const char* type=0)
+//   { myDim = dim; myCreationMethod = (char*)creationMethod; if ( type ) myType = (char*)type; }
   void AddArgMethod(const char* method, const int nbArgs = 1)
   { myArgMethods.Append( (char*)method ); myNbArgsByMethod.Append( nbArgs ); }
   const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
@@ -284,8 +286,8 @@ public:
   void ClearAllCommands();
   virtual bool IsAlgo() const { return myIsAlgo; }
   bool IsWrapped() const { return myIsWrapped; }
-  bool & IsConverted() { return myIsConverted; }
-  int GetDim() const { return myDim; }
+  //bool & IsConverted() { return myIsConverted; }
+  //int GetDim() const { return myDim; }
   const _pyID & GetGeom() const { return myGeom; }
   void SetMesh( const _pyID& theMeshId) { if ( myMesh.IsEmpty() ) myMesh = theMeshId; }
   const _pyID & GetMesh() const { return myMesh; }
@@ -300,6 +302,22 @@ public:
   void Flush();
 
   DEFINE_STANDARD_RTTI (_pyHypothesis)
+};
+
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Class representing smesh.Mesh_Algorithm
+ */
+// -------------------------------------------------------------------------------------
+class _pyAlgorithm: public _pyHypothesis
+{
+public:
+  _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
+  virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                                  const _pyID&              theMesh);
+  const char* AccessorMethod() const { return "GetAlgorithm()"; }
+
+  DEFINE_STANDARD_RTTI (_pyAlgorithm)
 };
 
 // -------------------------------------------------------------------------------------
@@ -337,7 +355,6 @@ public:
 };
 DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis);
 
-
 // -------------------------------------------------------------------------------------
 /*!
  * \brief Class representing NumberOfSegments hypothesis
@@ -357,18 +374,17 @@ DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
 
 // -------------------------------------------------------------------------------------
 /*!
- * \brief Class representing smesh.Mesh_Algorithm
+ * \brief Class representing SegmentLengthAroundVertex hypothesis
  */
 // -------------------------------------------------------------------------------------
-class _pyAlgorithm: public _pyHypothesis
+class _pySegmentLengthAroundVertexHyp: public _pyHypothesis
 {
 public:
-  _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
+  _pySegmentLengthAroundVertexHyp(const Handle(_pyCommand)& theCrCmd): _pyHypothesis(theCrCmd) {}
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
-  const char* AccessorMethod() const { return "GetAlgorithm()"; }
-
-  DEFINE_STANDARD_RTTI (_pyAlgorithm)
+  DEFINE_STANDARD_RTTI (_pySegmentLengthAroundVertexHyp)
 };
+DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 
 #endif
