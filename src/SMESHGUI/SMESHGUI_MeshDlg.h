@@ -33,6 +33,8 @@
 #ifndef SMESHGUI_MeshDlg_H
 #define SMESHGUI_MeshDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_Dialog.h"
 #include <qframe.h>
 #include <qstringlist.h>
@@ -51,7 +53,7 @@ class QPopupMenu;
  *
  *  This dialog is used for mech creation or editing. 
 */
-class SMESHGUI_MeshDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_MeshDlg : public SMESHGUI_Dialog
 { 
   Q_OBJECT       
       
@@ -98,7 +100,7 @@ private:
  * algorithms and hypotheses
 */ 
 
-class SMESHGUI_MeshTab : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_MeshTab : public QFrame
 {
   Q_OBJECT
       

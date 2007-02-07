@@ -29,10 +29,12 @@
 #ifndef _SMESHDS_HYPOTHESIS_HXX_
 #define _SMESHDS_HYPOTHESIS_HXX_
 
+#include "SMESH_SMESHDS.hxx"
+
 #include <string>
 #include <iostream>
 
-class SMESHDS_Hypothesis
+class SMESHDS_EXPORT SMESHDS_Hypothesis
 {
 public:
   SMESHDS_Hypothesis(int hypId);

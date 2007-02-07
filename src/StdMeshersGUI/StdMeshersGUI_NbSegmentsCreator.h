@@ -21,6 +21,8 @@
 #ifndef NB_SEGMENTS_CREATOR_HEADER
 #define NB_SEGMENTS_CREATOR_HEADER
 
+#include "SMESH_StdMeshersGUI.hxx"
+
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
 #include <SALOMEconfig.h>
@@ -45,7 +47,7 @@ typedef struct
 
 } NbSegmentsHypothesisData;
 
-class StdMeshersGUI_NbSegmentsCreator : public StdMeshersGUI_StdHypothesisCreator
+class STDMESHERSGUI_EXPORT StdMeshersGUI_NbSegmentsCreator : public StdMeshersGUI_StdHypothesisCreator
 {
   Q_OBJECT
 

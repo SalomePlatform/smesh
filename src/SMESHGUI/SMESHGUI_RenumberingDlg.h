@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_RENUMBERING_H
 #define DIALOGBOX_RENUMBERING_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
@@ -55,7 +57,7 @@ class SMESHGUI;
 // class    : SMESHGUI_RenumberingDlg
 // purpose  : If the unit == 0 nodes will be renumbered, if the unit == 1 the elements will.
 //=================================================================================
-class SMESHGUI_RenumberingDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RenumberingDlg : public QDialog
 { 
     Q_OBJECT
 

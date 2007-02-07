@@ -24,11 +24,8 @@
 
 import salome
 import geompy
+import smesh
 
-import StdMeshers
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
 
 # ---- define a box
 
@@ -59,99 +56,51 @@ name = geompy.SubShapeName(edge, face)
 print name
 idedge = geompy.addToStudyInFather(face, edge, name)
 
-# ---- launch SMESH
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-print "-------------------------- create Hypothesis"
-
-print "-------------------------- LocalLength"
-hypLen1 = smesh.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
-hypLen1.SetLength(100)
-print hypLen1.GetName()
-print hypLen1.GetId()
-print hypLen1.GetLength()
-
-idlength = salome.ObjectToID(hypLen1) 
-smeshgui.SetName(idlength, "Local_Length_100");
-
-print "-------------------------- NumberOfSegments"
-hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg1.SetNumberOfSegments(7)
-print hypNbSeg1.GetName()
-print hypNbSeg1.GetId()
-print hypNbSeg1.GetNumberOfSegments()
-
-idseg = salome.ObjectToID(hypNbSeg1) 
-smeshgui.SetName(idseg, "NumberOfSegments_7");
-
-print "-------------------------- MaxElementArea"
-hypArea1 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypArea1.SetMaxElementArea(2500)
-print hypArea1.GetName()
-print hypArea1.GetId()
-print hypArea1.GetMaxElementArea()
-
-idarea1 = salome.ObjectToID(hypArea1)
-smeshgui.SetName(idarea1, "MaxElementArea_2500");
-
-print "-------------------------- MaxElementArea"
-hypArea2 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypArea2.SetMaxElementArea(500)
-print hypArea2.GetName()
-print hypArea2.GetId()
-print hypArea2.GetMaxElementArea()
-
-idarea2 = salome.ObjectToID(hypArea2)
-smeshgui.SetName(idarea2, "MaxElementArea_500");
-
-print "-------------------------- Regular_1D"
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-listHyp = algoReg.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoReg.GetName()
-print algoReg.GetId()
-
-idreg = salome.ObjectToID(algoReg)
-smeshgui.SetName(idreg, "Regular_1D");
-
-print "-------------------------- MEFISTO_2D"
-algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-listHyp = algoMef.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoMef.GetName()
-print algoMef.GetId()
-
-idmef = salome.ObjectToID(algoMef)
-smeshgui.SetName(idmef, "MEFISTO_2D");
+# ---- SMESH
 
 # ---- Init a Mesh with the box
 
-box = salome.IDToObject(idbox)
-mesh = smesh.CreateMesh(box)
-idmesh = salome.ObjectToID(mesh)
-smeshgui.SetName(idmesh, "Meshbox");
+mesh = smesh.Mesh(box, "Meshbox")
 
 print "-------------------------- add hypothesis to box"
-mesh.AddHypothesis(box,algoReg)
-mesh.AddHypothesis(box,hypNbSeg1)
-mesh.AddHypothesis(box,algoMef)
-mesh.AddHypothesis(box,hypArea1)
+algoReg1 = mesh.Segment()
+hypNbSeg1 = algoReg1.NumberOfSegments(7)
+print hypNbSeg1.GetName()
+print hypNbSeg1.GetId()
+print hypNbSeg1.GetNumberOfSegments()
+smesh.SetName(hypNbSeg1, "NumberOfSegments_7")
+
+algoMef1 = mesh.Triangle()
+hypArea1 = algoMef1.MaxElementArea(2500)
+print hypArea1.GetName()
+print hypArea1.GetId()
+print hypArea1.GetMaxElementArea()
+smesh.SetName(hypArea1, "MaxElementArea_2500")
 
 # ---- add hypothesis to edge
-
 print "-------------------------- add hypothesis to edge"
 edge = salome.IDToObject(idedge)
-submesh = mesh.GetSubMesh(edge, "SubMeshEdge")
-mesh.AddHypothesis(edge, algoReg)
-mesh.AddHypothesis(edge, hypLen1)
 
+algoReg2 = mesh.Segment(edge)
+hypLen1 = algoReg2.LocalLength(100)
+smesh.SetName(algoReg2.GetSubMesh(), "SubMeshEdge")
+print hypLen1.GetName()
+print hypLen1.GetId()
+print hypLen1.GetLength()
+smesh.SetName(hypLen1, "Local_Length_100")
+
+# ---- add hypothesis to face
 print "-------------------------- add hypothesis to face"
 face = salome.IDToObject(idface)
-submesh = mesh.GetSubMesh(face, "SubMeshFace")
-mesh.AddHypothesis(face, hypArea2)
+
+algoMef2 = mesh.Triangle(face)
+hypArea2 = algoMef2.MaxElementArea(500)
+smesh.SetName(algoMef2.GetSubMesh(), "SubMeshFace")
+print hypArea2.GetName()
+print hypArea2.GetId()
+print hypArea2.GetMaxElementArea()
+smesh.SetName(hypArea2, "MaxElementArea_500")
+
 
 salome.sg.updateObjBrowser(1);

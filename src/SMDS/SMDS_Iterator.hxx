@@ -22,11 +22,13 @@
 #ifndef _SMDS_Iterator_HeaderFile
 #define _SMDS_Iterator_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 ///////////////////////////////////////////////////////////////////////////////
 ///Abstract class for iterators
 ///@author Jerome Robert
 ///////////////////////////////////////////////////////////////////////////////
-template<typename VALUE> class SMDS_Iterator
+template<typename VALUE> class SMDS_EXPORT SMDS_Iterator
 {
   public:
 	/// Return true if and only if there are other object in this iterator

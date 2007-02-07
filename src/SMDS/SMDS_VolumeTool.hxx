@@ -30,24 +30,14 @@
 #ifndef SMDS_VolumeTool_HeaderFile
 #define SMDS_VolumeTool_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMDS_PolyhedralVolumeOfNodes;
 
 #include <vector>
 #include <set>
-
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
 
 // =========================================================================
 //
@@ -57,7 +47,7 @@ class SMDS_PolyhedralVolumeOfNodes;
 //
 // =========================================================================
 
-class SMDS_WNT_EXPORT SMDS_VolumeTool
+class SMDS_EXPORT SMDS_VolumeTool
 {
  public:
 
@@ -193,7 +183,10 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
                          int        faceIndex );
   // Return number of nodes in the array of face nodes
 
- private:
+  static int NbCornerNodes(VolumeType type);
+  // Useful to know nb of corner nodes of a quadratic volume
+
+private:
 
   bool setFace( int faceIndex );
 

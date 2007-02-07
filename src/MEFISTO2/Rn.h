@@ -66,7 +66,15 @@ typedef unsigned long int N;
 
 //le type Z des nombres entiers relatifs
 //=========
-typedef long int Z;
+// 64-bit porting: "long" replaced with "int". 
+// On 64-bit, C++ long type is 8 byte long. MEFISTO2D C code calls several Fortran subroutines passing
+// arguments of this type, however Fortran knows nothing about changed size of arguments, 
+// therefore stack gets corrupted. With "int" used instead of "long", Fortran calls from C do no harm to the stack
+// After this modification, behavior on 32-bit platforms does not change: on all platforms supported by
+// SALOME 3, "int" and "long" have the same size of 4 bytes. 
+//========
+//typedef long int Z;
+typedef int Z;
 
 //le type R des nombres "reels"
 //=========

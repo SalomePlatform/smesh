@@ -30,10 +30,12 @@
 #ifndef _SMESH_LOCALLENGTH_HXX_
 #define _SMESH_LOCALLENGTH_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_LocalLength:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_LocalLength:public SMESH_Hypothesis
 {
  public:
   StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen);

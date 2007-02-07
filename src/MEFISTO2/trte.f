@@ -1257,7 +1257,8 @@ c        la direction pour le calcul de la longueur (inactif ici!)
          xyzd(2) = 0d0
          xyzd(3) = 0d0
 
-         longai = areteideale(xyz,xyzd)
+         longai = areteideale()
+c         (xyz,xyzd)
          if( longai .lt. 0d0 ) then
             write(imprim,10000) xyz
 10000       format('attention: longueur de areteideale(',

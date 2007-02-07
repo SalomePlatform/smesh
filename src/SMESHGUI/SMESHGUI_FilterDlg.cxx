@@ -963,7 +963,7 @@ void SMESHGUI_FilterTable::onRemoveBtn()
     if (aTable->isRowSelected(i))
     {
       aRows.resize(aRows.size() + 1);
-      aRows[ aRows.size() - 1 ] = i;
+      aRows[ (int)(aRows.size() - 1) ] = i;
       removeAdditionalWidget(aTable, i);
     }
   }
@@ -1958,9 +1958,15 @@ void SMESHGUI_FilterDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }

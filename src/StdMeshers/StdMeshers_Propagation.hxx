@@ -27,10 +27,12 @@
 #ifndef _SMESH_PROPAGATION_HXX_
 #define _SMESH_PROPAGATION_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_Propagation:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
 {
  public:
   StdMeshers_Propagation(int hypId, int studyId, SMESH_Gen * gen);

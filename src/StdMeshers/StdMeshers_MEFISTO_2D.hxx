@@ -30,6 +30,8 @@
 #ifndef _StdMeshers_MEFISTO_2D_HXX_
 #define _StdMeshers_MEFISTO_2D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_2D_Algo.hxx"
 #include <TopoDS_Wire.hxx>
 
@@ -47,7 +49,7 @@ class SMDS_MeshNode;
 #include <map>
 #include "Rn.h"
 
-class StdMeshers_MEFISTO_2D:
+class STDMESHERS_EXPORT StdMeshers_MEFISTO_2D:
   public SMESH_2D_Algo
 {
 public:

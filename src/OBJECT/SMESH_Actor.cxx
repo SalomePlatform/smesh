@@ -286,6 +286,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   myScalarBarActor->SetVisibility(false);
   myScalarBarActor->SetLookupTable(myLookupTable);
 
+  //Fix for Bug 13314:
+  //Incorrect "Min value" in Scalar Bar in Mesh:
+  myScalarBarActor->SetLabelFormat("%.4g");
+
   mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
     return;

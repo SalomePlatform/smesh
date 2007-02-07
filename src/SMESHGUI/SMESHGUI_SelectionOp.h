@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_SelectionOp_H
 #define SMESHGUI_SelectionOp_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <SMESHGUI_Operation.h>
 #include <SMESHGUI_Dialog.h>
 #include <SVTK_Selection.h>
@@ -47,7 +49,7 @@ class SMESH_Actor;
   Description : Base operation for all operations using object selection in viewer or objectbrowser
                 through common widgets created by LightApp_Dialog::createObject
 */
-class SMESHGUI_SelectionOp : public SMESHGUI_Operation
+class SMESHGUI_EXPORT SMESHGUI_SelectionOp : public SMESHGUI_Operation
 { 
   Q_OBJECT
 

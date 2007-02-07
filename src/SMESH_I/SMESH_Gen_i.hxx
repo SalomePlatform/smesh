@@ -29,6 +29,8 @@
 #ifndef _SMESH_GEN_I_HXX_
 #define _SMESH_GEN_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -58,7 +60,7 @@ class SALOME_LifeCycleCORBA;
 // ===========================================================
 // Study context - stores study-connected objects references
 // ==========================================================
-class StudyContext
+class SMESH_I_EXPORT StudyContext
 {
 public:
   // constructor
@@ -104,6 +106,15 @@ public:
   void mapOldToNew( const int oldId, const int newId ) {
     mapIdToId[ oldId ] = newId;
   }
+  // get old id by a new one
+  int getOldId( const int newId ) {
+    map<int, int>::iterator imap;
+    for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
+      if ( imap->second == newId )
+        return imap->first;
+    }
+    return 0;
+  }
     
 private:
   // get next free object identifier
@@ -122,7 +133,7 @@ private:
 // ===========================================================
 // SMESH module's engine
 // ==========================================================
-class SMESH_Gen_i:
+class SMESH_I_EXPORT SMESH_Gen_i:
   public virtual POA_SMESH::SMESH_Gen,
   public virtual Engines_Component_i 
 {
@@ -229,10 +240,15 @@ public:
                                      const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
-  // Return geometrical object the given element is built on
+  // Return geometrical object the given element is built on. Publish it in study.
   GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
                                                   CORBA::Long            theElementID,
                                                   const char*            theGeomName)
+    throw ( SALOME::SALOME_Exception );
+
+  // Return geometrical object the given element is built on. Don't publish it in study.
+  GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+						   CORBA::Long            theElementID)
     throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
@@ -393,6 +409,21 @@ public:
 
   // Register an object in a StudyContext; return object id
   int RegisterObject(CORBA::Object_ptr theObject);
+
+  // Return id of registered object
+  int GetObjectId(CORBA::Object_ptr theObject);
+
+  // Return an object that previously had an oldID
+  template<class TInterface> 
+  typename TInterface::_var_type GetObjectByOldId( const int oldID )
+  {
+    if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
+      string ior = myStudyContext->getIORbyOldId( oldID );
+      if ( !ior.empty() )
+        return TInterface::_narrow(GetORB()->string_to_object( ior.c_str() ));
+    }
+    return TInterface::_nil();
+  }
 
   // Get current study ID
   int GetCurrentStudyID()

@@ -72,6 +72,7 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
+#define cSMESH_Hyp(h) static_cast<const SMESH_Hypothesis*>(h)
 
 //=============================================================================
 /*!
@@ -359,21 +360,17 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // shape 
 
-  int event;
-  if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-    event = SMESH_subMesh::ADD_HYP;
-  else
-    event = SMESH_subMesh::ADD_ALGO;
+  bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
+  int event = isAlgo ? SMESH_subMesh::ADD_ALGO : SMESH_subMesh::ADD_HYP;
+
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
   // subShapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
-      !subMesh->IsApplicableHypotesis( anHyp )) // is added on father
+      anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is added on father
   {
-    if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-      event = SMESH_subMesh::ADD_FATHER_HYP;
-    else
-      event = SMESH_subMesh::ADD_FATHER_ALGO;
+    event = isAlgo ? SMESH_subMesh::ADD_FATHER_ALGO : SMESH_subMesh::ADD_FATHER_HYP;
+
     SMESH_Hypothesis::Hypothesis_Status ret2 =
       subMesh->SubMeshesAlgoStateEngine(event, anHyp);
     if (ret2 > ret)
@@ -444,14 +441,12 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis *anHyp = sc->mapHypothesis[anHypId];
   int hypType = anHyp->GetType();
   if(MYDEBUG) SCRUTE(hypType);
-  int event;
   
   // shape 
   
-  if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-    event = SMESH_subMesh::REMOVE_HYP;
-  else
-    event = SMESH_subMesh::REMOVE_ALGO;
+  bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
+  int event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
   // there may appear concurrent hyps that were covered by the removed hyp
@@ -462,12 +457,10 @@ SMESH_Hypothesis::Hypothesis_Status
 
   // subShapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
-      !subMesh->IsApplicableHypotesis( anHyp )) // is removed from father
+      anHyp->GetDim() <= SMESH_Gen::GetShapeDim(aSubShape)) // is removed from father
   {
-    if (anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO)
-      event = SMESH_subMesh::REMOVE_FATHER_HYP;
-    else
-      event = SMESH_subMesh::REMOVE_FATHER_ALGO;
+    event = isAlgo ? SMESH_subMesh::REMOVE_FATHER_ALGO : SMESH_subMesh::REMOVE_FATHER_HYP;
+
     SMESH_Hypothesis::Hypothesis_Status ret2 =
       subMesh->SubMeshesAlgoStateEngine(event, anHyp);
     if (ret2 > ret) // more severe
@@ -521,8 +514,13 @@ SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
 }
 
 //=======================================================================
-//function : GetHypothesis
-//purpose  : 
+/*!
+ * \brief Return the hypothesis assigned to the shape
+  * \param aSubShape - the shape to check
+  * \param aFilter - the hypothesis filter
+  * \param andAncestors - flag to check hypos assigned to ancestors of the shape
+  * \retval SMESH_Hypothesis* - the first hypo passed through aFilter
+ */
 //=======================================================================
 
 const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubShape,
@@ -533,7 +531,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
     const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
     for ( ; hyp != hypList.end(); hyp++ ) {
-      const SMESH_Hypothesis * h = static_cast<const SMESH_Hypothesis*>( *hyp );
+      const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
       if ( aFilter.IsOk( h, aSubShape))
         return h;
     }
@@ -546,7 +544,7 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
       const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
       list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
       for ( ; hyp != hypList.end(); hyp++ ) {
-        const SMESH_Hypothesis * h = static_cast<const SMESH_Hypothesis*>( *hyp );
+        const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
         if (aFilter.IsOk( h, it.Value() ))
           return h;
       }
@@ -554,11 +552,6 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const TopoDS_Shape &    aSubS
   }
   return 0;
 }
-
-//=======================================================================
-//function : GetHypotheses
-//purpose  : 
-//=======================================================================
 
 //================================================================================
 /*!
@@ -579,21 +572,30 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
   set<string> hypTypes; // to exclude same type hypos from the result list
   int nbHyps = 0;
 
+  // only one main hypothesis is allowed
+  bool mainHypFound = false;
+
   // fill in hypTypes
   list<const SMESHDS_Hypothesis*>::const_iterator hyp;
-  for ( hyp = aHypList.begin(); hyp != aHypList.end(); hyp++ )
+  for ( hyp = aHypList.begin(); hyp != aHypList.end(); hyp++ ) {
     if ( hypTypes.insert( (*hyp)->GetName() ).second )
       nbHyps++;
+    if ( !cSMESH_Hyp(*hyp)->IsAuxiliary() )
+      mainHypFound = true;
+  }
 
   // get hypos from aSubShape
   {
     const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
-      if ( aFilter.IsOk (static_cast<const SMESH_Hypothesis*>( *hyp ), aSubShape) &&
+      if ( aFilter.IsOk (cSMESH_Hyp( *hyp ), aSubShape) &&
+           ( cSMESH_Hyp(*hyp)->IsAuxiliary() || !mainHypFound ) &&
            hypTypes.insert( (*hyp)->GetName() ).second )
       {
         aHypList.push_back( *hyp );
         nbHyps++;
+        if ( !cSMESH_Hyp(*hyp)->IsAuxiliary() )
+          mainHypFound = true;
       }
   }
 
@@ -608,10 +610,14 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
         continue;
       const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(it.Value());
       for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
-        if (aFilter.IsOk( static_cast<const SMESH_Hypothesis*>( *hyp ), it.Value() ) &&
-            hypTypes.insert( (*hyp)->GetName() ).second ) {
+        if (aFilter.IsOk( cSMESH_Hyp( *hyp ), it.Value() ) &&
+            ( cSMESH_Hyp(*hyp)->IsAuxiliary() || !mainHypFound ) &&
+            hypTypes.insert( (*hyp)->GetName() ).second )
+        {
           aHypList.push_back( *hyp );
           nbHyps++;
+          if ( !cSMESH_Hyp(*hyp)->IsAuxiliary() )
+            mainHypFound = true;
         }
     }
   }
@@ -812,7 +818,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* t
 {
   Unexpect aCatch(SalomeException);
 
-  const SMESH_Hypothesis* hyp = static_cast<const SMESH_Hypothesis*>(theChangedHyp);
+  const SMESH_Hypothesis* hyp = cSMESH_Hyp(theChangedHyp);
 
   const SMESH_Algo *foundAlgo = 0;
   SMESH_HypoFilter algoKind( SMESH_HypoFilter::IsAlgo() );

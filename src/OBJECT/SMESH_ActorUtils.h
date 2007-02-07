@@ -20,6 +20,8 @@
 #ifndef SMESH_ACTORUTILS_H
 #define SMESH_ACTORUTILS_H
 
+#include "SMESH_Object.h"
+
 #include <qcolor.h>
 #include <qstring.h>
 
@@ -29,21 +31,24 @@ class vtkUnstructuredGrid;
 
 namespace SMESH
 {
-  
+SMESHOBJECT_EXPORT  
   vtkFloatingPointType 
   GetFloat( const QString& theValue, 
 	    vtkFloatingPointType theDefault = 0 );
 
+SMESHOBJECT_EXPORT
   vtkFloatingPointType 
   GetFloat( const QString& theName, 
 	    const QString& theSection, 
 	    vtkFloatingPointType theDefault = 0 );
 
+SMESHOBJECT_EXPORT
   QColor 
   GetColor( const QString& theSect, 
 	    const QString& theName, 
 	    const QColor&t = QColor() );
 
+SMESHOBJECT_EXPORT
   void
   GetColor( const QString& theSect, 
 	    const QString& theName, 
@@ -52,6 +57,7 @@ namespace SMESH
 	    int&, 
 	    const QColor&t = QColor() );
 
+SMESHOBJECT_EXPORT
   void
   GetColor( const QString& theSect, 
 	    const QString& theName, 
@@ -60,6 +66,7 @@ namespace SMESH
 	    vtkFloatingPointType&, 
 	    const QColor&t = QColor() );
 
+SMESHOBJECT_EXPORT
   void 
   WriteUnstructuredGrid(vtkUnstructuredGrid* theGrid, 
 			const char* theFileName);

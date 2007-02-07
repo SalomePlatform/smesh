@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_SingleEditDlg_H
 #define SMESHGUI_SingleEditDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 #include <SALOMEconfig.h>
@@ -49,7 +51,7 @@ class LightApp_SelectionMgr;
  *  Description : Base class for dialogs of diagonal inversion and 
  *                union of two neighboring triangles
  */
-class SMESHGUI_SingleEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SingleEditDlg : public QDialog
 { 
   Q_OBJECT
 

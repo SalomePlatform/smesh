@@ -452,8 +452,9 @@ static char* getShapeNameByID ( const char* theID )
 Functor_i::Functor_i():
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId =
-    SMESH_Gen_i::GetPOA()->activate_object( this );
+  //Base class Salome_GenericObject do it inmplicitly by overriding PortableServer::POA_ptr _default_POA() method  
+  //PortableServer::ObjectId_var anObjectId =
+  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 Functor_i::~Functor_i()
@@ -1417,8 +1418,9 @@ FunctorType LogicalOR_i::GetFunctorType()
 FilterManager_i::FilterManager_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId =
-    SMESH_Gen_i::GetPOA()->activate_object( this );
+  //Base class Salome_GenericObject do it inmplicitly by overriding PortableServer::POA_ptr _default_POA() method
+  //PortableServer::ObjectId_var anObjectId =
+  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 
@@ -1784,7 +1786,8 @@ GetElementsId( Predicate_i* thePredicate,
                const SMDS_Mesh* theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate)
+    Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 void
@@ -1793,8 +1796,9 @@ GetElementsId( Predicate_i* thePredicate,
                SMESH_Mesh_ptr theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
-    Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate) 
+    if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+      Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 SMESH::long_array*
@@ -1802,7 +1806,7 @@ Filter_i::
 GetElementsId( SMESH_Mesh_ptr theMesh )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
-  if(!CORBA::is_nil(theMesh)){
+  if(!CORBA::is_nil(theMesh) && myPredicate){
     Controls::Filter::TIdSequence aSequence;
     GetElementsId(myPredicate,theMesh,aSequence);
     long i = 0, iEnd = aSequence.size();
@@ -2073,11 +2077,12 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_BelongToPlane:
       case SMESH::FT_BelongToCylinder:
         {
-          SMESH::BelongToSurface_ptr tmpPred;
+	  SMESH::BelongToSurface_ptr tmpPred;
           if ( aCriterion == SMESH::FT_BelongToPlane )
             tmpPred = aFilterMgr->CreateBelongToPlane();
           else
             tmpPred = aFilterMgr->CreateBelongToCylinder();
+
           tmpPred->SetShape( aThresholdID, aThresholdStr, aTypeOfElem );
           tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;

@@ -27,8 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 

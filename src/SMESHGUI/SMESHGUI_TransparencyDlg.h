@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_TRANSPARENCYDLG_H
 #define DIALOGBOX_TRANSPARENCYDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -44,7 +46,7 @@ class SMESHGUI;
 // class    : SMESHGUI_TransparencyDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_TransparencyDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_TransparencyDlg : public QDialog
 { 
     Q_OBJECT
 

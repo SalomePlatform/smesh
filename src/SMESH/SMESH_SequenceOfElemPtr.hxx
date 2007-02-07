@@ -25,6 +25,8 @@
 #ifndef SMESH_SequenceOfElemPtr_HeaderFile
 #define SMESH_SequenceOfElemPtr_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <NCollection_DefineSequence.hxx>
 
 #include <SMDS_MeshElement.hxx>

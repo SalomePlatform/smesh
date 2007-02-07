@@ -24,7 +24,6 @@
 //  File   : SMESH_MEDSupport_i.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "SMESH_MEDSupport_i.hxx"
 #include "utilities.h"
 #include "Utils_CorbaException.hxx"
@@ -36,6 +35,8 @@ using namespace std;
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_subMesh_i.hxx"
+
+using namespace std;
 
 
 //=============================================================================
@@ -323,6 +324,18 @@ SALOME_MED::long_array * SMESH_MEDSupport_i::getNumber(
 	MESSAGE("End of SMESH_MEDSupport_i::getNumber");
 	return myseq._retn();
 
+}
+
+//=============================================================================
+/*!
+ * CORBA: get Nodes from file
+ */
+//=============================================================================
+
+SALOME_MED::long_array * SMESH_MEDSupport_i::getNumberFromFile(
+	SALOME_MED::medGeometryElement geomElement) throw(SALOME::SALOME_Exception)
+{
+  return getNumber(geomElement);
 }
 
 //=============================================================================

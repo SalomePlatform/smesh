@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_ADD_FACE_H
 #define DIALOGBOX_ADD_FACE_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMDSAbs_ElementType.hxx"
@@ -66,7 +68,7 @@ namespace SMESH{
 // class    : SMESHGUI_AddMeshElementDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_AddMeshElementDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_AddMeshElementDlg : public QDialog
 { 
     Q_OBJECT
 

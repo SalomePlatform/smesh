@@ -27,10 +27,12 @@
 #ifndef _INCLUDE_DRIVERSTL_W_SMDS_MESH
 #define _INCLUDE_DRIVERSTL_W_SMDS_MESH
 
+#include "SMESH_DriverSTL.hxx"
+
 #include "Driver_SMDS_Mesh.h"
 #include <Standard_TypeDef.hxx>
 
-class DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
+class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
   

@@ -176,24 +176,26 @@ GEOM::GEOM_Object_ptr SMESH_NumberFilter::getGeom
     return anObj._retn();
 
   // Get geom object corresponding to the mesh
-  _PTR(ChildIterator) anIter = study->NewChildIterator(aSO);
-  for (; anIter->More(); anIter->Next()) {
-    _PTR(SObject) aSO = anIter->Value();
-    if (!aSO)
-      continue;
-    _PTR(SObject) aRefSO;
-    _PTR(SObject) anObj;
-    if (aSO->ReferencedObject(aRefSO))
-      anObj = aRefSO;
+  if ( myKind == "SMESH" ) {
+    _PTR(ChildIterator) anIter = study->NewChildIterator(aSO);
+    for (; anIter->More(); anIter->Next()) {
+      _PTR(SObject) aSO = anIter->Value();
+      if (!aSO)
+        continue;
+      _PTR(SObject) aRefSO;
+      _PTR(SObject) anObj;
+      if (aSO->ReferencedObject(aRefSO))
+        anObj = aRefSO;
 
-    if (!anObj)
-      anObj = aSO;
+      if (!anObj)
+        anObj = aSO;
 
-    anObject = _CAST(SObject,anObj)->GetObject();
-    GEOM::GEOM_Object_var aMeshShape = GEOM::GEOM_Object::_narrow(anObject);
+      anObject = _CAST(SObject,anObj)->GetObject();
+      GEOM::GEOM_Object_var aMeshShape = GEOM::GEOM_Object::_narrow(anObject);
 
-    if (!aMeshShape->_is_nil())
-      return aMeshShape._retn();
+      if (!aMeshShape->_is_nil())
+        return aMeshShape._retn();
+    }
   }
 
   return GEOM::GEOM_Object::_nil();

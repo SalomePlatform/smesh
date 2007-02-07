@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_GroupOpDlg_H
 #define SMESHGUI_GroupOpDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 #include <SALOMEconfig.h>
@@ -47,7 +49,7 @@ class SVTK_Selector;
   Description : Perform boolean operations on groups
 */
 
-class SMESHGUI_GroupOpDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_GroupOpDlg : public QDialog
 { 
   Q_OBJECT
     

@@ -66,6 +66,7 @@ EXPORT_PYSCRIPTS = libSMESH_Swig.py \
                    SMESH_test.py\
                    SMESH_test0.py\
 		   SMESH_test1.py \
+		   SMESH_test1_AndDisplay.py \
 		   SMESH_test2.py \
 		   SMESH_test3.py \
 	           SMESH_test4.py \

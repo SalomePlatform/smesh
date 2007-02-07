@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_Algo.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -55,6 +54,8 @@ using namespace std;
 
 #include <algorithm>
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  
@@ -81,6 +82,15 @@ SMESH_Algo::SMESH_Algo(int hypId, int studyId,
 SMESH_Algo::~SMESH_Algo()
 {
 }
+
+//=============================================================================
+/*!
+ * Usually an algoritm has nothing to save
+ */
+//=============================================================================
+
+ostream & SMESH_Algo::SaveTo(ostream & save) { return save; }
+istream & SMESH_Algo::LoadFrom(istream & load) { return load; }
 
 //=============================================================================
 /*!
@@ -366,4 +376,18 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
     return true;
   }
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief Sets event listener to submeshes if necessary
+  * \param subMesh - submesh where algo is set
+ * 
+ * After being set, event listener is notified on each event of a submesh.
+ * By default non listener is set
+ */
+//================================================================================
+
+void SMESH_Algo::SetEventListener(SMESH_subMesh* /*subMesh*/)
+{
 }

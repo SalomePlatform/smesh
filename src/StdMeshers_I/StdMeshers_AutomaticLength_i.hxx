@@ -29,6 +29,8 @@
 #ifndef _SMESH_AutomaticLength_I_HXX_
 #define _SMESH_AutomaticLength_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // 1D Hypothesis to compute segment length free of thinking
 // =========================================================
 
-class StdMeshers_AutomaticLength_i:
+class STDMESHERS_I_EXPORT StdMeshers_AutomaticLength_i:
   public virtual POA_StdMeshers::StdMeshers_AutomaticLength,
   public virtual SMESH_Hypothesis_i
 {

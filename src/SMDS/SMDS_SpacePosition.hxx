@@ -27,21 +27,11 @@
 #ifndef _SMDS_SpacePosition_HeaderFile
 #define _SMDS_SpacePosition_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_Position.hxx"
 
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
-
-class SMDS_WNT_EXPORT SMDS_SpacePosition:public SMDS_Position
+class SMDS_EXPORT SMDS_SpacePosition:public SMDS_Position
 {
 
   public:

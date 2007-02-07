@@ -27,12 +27,14 @@
 #ifndef _SMESHDS_GroupOnGeom_HeaderFile
 #define _SMESHDS_GroupOnGeom_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMESHDS_GroupBase.hxx"
 #include <TopoDS_Shape.hxx>
   
 class SMESHDS_SubMesh;
 
-class SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
 {
  public:
 

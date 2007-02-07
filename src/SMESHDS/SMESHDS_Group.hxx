@@ -27,13 +27,15 @@
 #ifndef _SMESHDS_Group_HeaderFile
 #define _SMESHDS_Group_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include <string>
 #include "SMESHDS_GroupBase.hxx"
 #include "SMDS_MeshGroup.hxx"
 
 class SMESHDS_Mesh;
 
-class SMESHDS_Group : public SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_Group : public SMESHDS_GroupBase
 {
  public:
 
@@ -51,9 +53,9 @@ class SMESHDS_Group : public SMESHDS_GroupBase
 
   virtual SMDS_ElemIteratorPtr GetElements();
 
-  bool SMESHDS_Group::Add (const int theID);
+  bool Add (const int theID);
 
-  bool SMESHDS_Group::Remove (const int theID);
+  bool Remove (const int theID);
 
   void Clear();
 

@@ -28,10 +28,12 @@
 #ifndef _StdMeshers_Deflection1D_HXX_
 #define _StdMeshers_Deflection1D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_Deflection1D:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_Deflection1D:public SMESH_Hypothesis
 {
  public:
   StdMeshers_Deflection1D(int hypId, int studyId, SMESH_Gen * gen);

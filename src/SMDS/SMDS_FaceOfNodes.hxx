@@ -22,13 +22,15 @@
 #ifndef _SMDS_FaceOfNodes_HeaderFile
 #define _SMDS_FaceOfNodes_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_Iterator.hxx"
 
 #include <iostream>
 
-class SMDS_FaceOfNodes:public SMDS_MeshFace
+class SMDS_EXPORT SMDS_FaceOfNodes:public SMDS_MeshFace
 {
   public:
 	void Print(std::ostream & OS) const;

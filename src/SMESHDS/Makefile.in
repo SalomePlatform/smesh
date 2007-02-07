@@ -67,7 +67,9 @@ EXPORT_HEADERS= \
 	SMESHDS_SubMesh.hxx \
 	SMESHDS_GroupBase.hxx \
 	SMESHDS_Group.hxx \
-	SMESHDS_GroupOnGeom.hxx
+	SMESHDS_GroupOnGeom.hxx \
+	SMESH_SMESHDS.hxx \
+	SMESHDS_DataMapOfShape.hxx
 
 # additionnal information to compil and link file
 CPPFLAGS += $(OCC_INCLUDES) $(KERNEL_CXXFLAGS) $(BOOST_CPPFLAGS)

@@ -29,6 +29,8 @@
 #ifndef SMESH_Group_i_HeaderFile
 #define SMESH_Group_i_HeaderFile
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -43,7 +45,7 @@ class SMESHDS_GroupBase;
 // ===========
 // Group Base
 // ===========
-class SMESH_GroupBase_i:
+class SMESH_I_EXPORT SMESH_GroupBase_i:
   public virtual POA_SMESH::SMESH_GroupBase,
   public virtual SALOME::GenericObj_i
 {
@@ -85,7 +87,7 @@ private:
 // Group
 // ======
 
-class SMESH_Group_i:
+class SMESH_I_EXPORT SMESH_Group_i:
   public virtual POA_SMESH::SMESH_Group,
   public SMESH_GroupBase_i
 {
@@ -105,7 +107,7 @@ class SMESH_Group_i:
 // Group linked to geometry
 // =========================
 
-class SMESH_GroupOnGeom_i:
+class SMESH_I_EXPORT SMESH_GroupOnGeom_i:
   public virtual POA_SMESH::SMESH_GroupOnGeom,
   public SMESH_GroupBase_i
 {

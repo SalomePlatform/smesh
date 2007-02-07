@@ -37,7 +37,7 @@
 // ======================================================
 // Generic 3D algorithm
 // ======================================================
-class SMESH_3D_Algo_i:
+class SMESH_I_EXPORT SMESH_3D_Algo_i:
   public virtual POA_SMESH::SMESH_3D_Algo,
   public virtual SMESH_Algo_i
 {

@@ -28,7 +28,7 @@
 
 class SUIT_DataOwner;
 
-class SMESH_TypeFilter : public SUIT_SelectionFilter
+class SMESHFILTERSSELECTION_EXPORT SMESH_TypeFilter : public SUIT_SelectionFilter
 {
 public:
   SMESH_TypeFilter (MeshObjectType theType);

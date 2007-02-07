@@ -27,14 +27,11 @@
 #ifndef _SMDS_PolyhedralVolumeOfNodes_HeaderFile
 #define _SMDS_PolyhedralVolumeOfNodes_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_VolumeOfNodes.hxx"
 
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
-class SMDS_WNT_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
+class SMDS_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
 {
  public:
   SMDS_PolyhedralVolumeOfNodes (std::vector<const SMDS_MeshNode *> nodes,

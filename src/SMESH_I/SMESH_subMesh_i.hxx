@@ -29,6 +29,8 @@
 #ifndef _SMESH_SUBMESH_I_HXX_
 #define _SMESH_SUBMESH_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
@@ -40,7 +42,7 @@
 class SMESH_Gen_i;
 class SMESH_Mesh_i;
 
-class SMESH_subMesh_i:
+class SMESH_I_EXPORT SMESH_subMesh_i:
   public virtual POA_SMESH::SMESH_subMesh,
   public virtual SALOME::GenericObj_i
 {
@@ -64,7 +66,10 @@ public:
   SMESH::long_array* GetElementsByType( SMESH::ElementType theElemType )
     throw (SALOME::SALOME_Exception);
   
-  SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+  //for omniORB conflict compilation
+  /*SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+    throw (SALOME::SALOME_Exception);*/
+  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
   SMESH::long_array* GetNodesId()

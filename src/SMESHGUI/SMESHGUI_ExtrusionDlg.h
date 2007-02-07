@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_EXTRUSION_H
 #define DIALOGBOX_EXTRUSION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
@@ -59,7 +61,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_ExtrusionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public QDialog
 {
   Q_OBJECT
 

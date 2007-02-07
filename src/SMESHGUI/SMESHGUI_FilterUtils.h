@@ -20,13 +20,15 @@
 #ifndef SMESHGUI_FilterUtils_HeaderFile
 #define SMESHGUI_FilterUtils_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 
 
 namespace SMESH{
 
-  SMESH::FilterManager_var& GetFilterManager();
+  SMESHGUI_EXPORT SMESH::FilterManager_var& GetFilterManager();
 
 }
 

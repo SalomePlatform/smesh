@@ -30,6 +30,8 @@
 #ifndef SMESH_Pattern_I_HeaderFile
 #define SMESH_Pattern_I_HeaderFile
 
+#include "SMESH.hxx"
+
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Pattern)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -41,7 +43,7 @@
 class SMESH_Gen_i;
 class SMESH_Mesh;
 
-class SMESH_Pattern_i:
+class SMESH_I_EXPORT SMESH_Pattern_i:
   public virtual POA_SMESH::SMESH_Pattern
 {
  public:
@@ -75,9 +77,14 @@ class SMESH_Pattern_i:
                                          CORBA::Long              theNode000Index,
                                          CORBA::Long              theNode001Index);
 
-  CORBA::Boolean MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
+  //for omniORB conflict compilation
+  /*CORBA::Boolean MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
                            const CORBA::Boolean  CreatePolygons,
-                           const CORBA::Boolean  CreatePolyedrs);
+                           const CORBA::Boolean  CreatePolyedrs);*/
+
+  CORBA::Boolean MakeMesh (SMESH::SMESH_Mesh_ptr theMesh,
+                           CORBA::Boolean  CreatePolygons,
+                           CORBA::Boolean  CreatePolyedrs);
 
   SMESH::SMESH_Pattern::ErrorCode GetErrorCode();
 

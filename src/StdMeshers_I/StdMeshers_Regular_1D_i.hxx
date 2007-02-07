@@ -30,6 +30,8 @@
 #ifndef _SMESH_REGULAR_1D_I_HXX_
 #define _SMESH_REGULAR_1D_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -39,7 +41,7 @@
 // ======================================================
 // Wire Discretization 1d algorithm
 // ======================================================
-class StdMeshers_Regular_1D_i:
+class STDMESHERS_I_EXPORT StdMeshers_Regular_1D_i:
   public virtual POA_StdMeshers::StdMeshers_Regular_1D,
   public virtual SMESH_1D_Algo_i
 {

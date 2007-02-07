@@ -38,6 +38,7 @@ EXPORT_HEADERS= \
 	SMESH_Gen.hxx \
 	SMESH_Mesh.hxx \
 	SMESH_subMesh.hxx \
+	SMESH_subMeshEventListener.hxx \
 	SMESH_Hypothesis.hxx \
 	SMESH_HypoFilter.hxx \
 	SMESH_Algo.hxx \
@@ -52,7 +53,8 @@ EXPORT_HEADERS= \
 	SMESH_DataMapOfElemPtrSequenceOfElemPtr.hxx \
 	SMESH_SequenceOfElemPtr.hxx \
 	SMESH_SequenceOfNode.hxx \
-	SMESH_MesherHelper.hxx
+	SMESH_MesherHelper.hxx \
+	SMESH_SMESH.hxx
 
 EXPORT_PYSCRIPTS =
 

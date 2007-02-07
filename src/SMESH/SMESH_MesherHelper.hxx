@@ -20,11 +20,12 @@
 // File:      SMESH_MesherHelper.hxx
 // Created:   15.02.06 14:48:09
 // Author:    Sergey KUUL
-// Copyright: Open CASCADE 2006
 
 
 #ifndef SMESH_MesherHelper_HeaderFile
 #define SMESH_MesherHelper_HeaderFile
+
+#include "SMESH_SMESH.hxx"
 
 #include <SMESH_Mesh.hxx>
 #include <TopoDS_Shape.hxx>
@@ -48,17 +49,63 @@ typedef map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
  * is called.
  */
 
-class SMESH_MesherHelper
+typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
+typedef std::map< double, TNodeColumn > TParam2ColumnMap;
+
+class SMESH_EXPORT SMESH_MesherHelper
 {
- public:
+public:
+  // ---------- PUBLIC UTILITIES ----------
+  
+  /*!
+   * \brief Load nodes bound to face into a map of node columns
+    * \param theParam2ColumnMap - map of node columns to fill
+    * \param theFace - the face on which nodes are searched for
+    * \param theBaseEdge - the edge nodes of which are columns' bases
+    * \param theMesh - the mesh containing nodes
+    * \retval bool - false if something is wrong
+   * 
+   * The key of the map is a normalized parameter of each
+   * base node on theBaseEdge.
+   * This method works in supposition that nodes on the face
+   * forms a rectangular grid and elements can be quardrangles or triangles
+   */
+  static bool LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
+                              const TopoDS_Face& theFace,
+                              const TopoDS_Edge& theBaseEdge,
+                              SMESHDS_Mesh*      theMesh);
+  /*!
+   * \brief Return support shape of a node
+   * \param node - the node
+   * \param meshDS - mesh DS
+   * \retval TopoDS_Shape - found support shape
+   */
+  static const TopoDS_Shape& GetSubShapeByNode(const SMDS_MeshNode* node,
+                                               SMESHDS_Mesh*        meshDS)
+  { return meshDS->IndexToShape( node->GetPosition()->GetShapeId() ); }
+
+  /*!
+   * \brief Return a valid node index, fixing the given one if necessary
+    * \param ind - node index
+    * \param nbNodes - total nb of nodes
+    * \retval int - valid node index
+   */
+  static int WrapIndex(const int ind, const int nbNodes) {
+    if ( ind < 0 ) return nbNodes + ind % nbNodes;
+    if ( ind >= nbNodes ) return ind % nbNodes;
+    return ind;
+  }
+
+public:
   // ---------- PUBLIC METHODS ----------
 
   /// Empty constructor
   SMESH_MesherHelper(SMESH_Mesh& theMesh)
     { myMesh=(void *)&theMesh; myCreateQuadratic = false; myShapeID=-1;}
 
-  SMESH_Mesh* GetMesh() const
-    { return (SMESH_Mesh*)myMesh; }
+  SMESH_Mesh* GetMesh() const { return (SMESH_Mesh*)myMesh; }
+    
+  SMESHDS_Mesh* GetMeshDS() const { return GetMesh()->GetMeshDS(); }
     
   /// Copy constructor
   //Standard_EXPORT SMESH_MesherHelper (const SMESH_MesherHelper& theOther);
@@ -113,7 +160,7 @@ class SMESH_MesherHelper
    */
   gp_XY GetNodeUV(const TopoDS_Face&   F,
                   const SMDS_MeshNode* n,
-                  const SMDS_MeshNode* inFaceNode=0);
+                  const SMDS_MeshNode* inFaceNode=0) const;
 
   /*!
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
@@ -181,6 +228,18 @@ class SMESH_MesherHelper
                              const int id = 0,
 			     const bool force3d = true);
 
+
+  /**
+   * Special function for creation quadratic pyramid
+   */
+  SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
+                             const SMDS_MeshNode* n2,
+                             const SMDS_MeshNode* n3,
+                             const SMDS_MeshNode* n4,
+                             const SMDS_MeshNode* n5,
+                             const int id = 0,
+			     const bool force3d = true);
+
   /**
    * Special function for creation quadratic pentahedron
    */
@@ -219,6 +278,12 @@ class SMESH_MesherHelper
   { myCreateQuadratic = theBuildQuadratic; }
 
   /*!
+   * \brief Return myCreateQuadratic flag
+    * \retval bool - myCreateQuadratic value
+   */
+  bool GetIsQuadratic() const { return myCreateQuadratic; }
+
+  /*!
    * \brief Set shape to make elements on
     * \param subShape, subShapeID - shape or its ID (==SMESHDS_Mesh::ShapeToIndex(shape))
    */
@@ -227,10 +292,50 @@ class SMESH_MesherHelper
 
   /*!
    * \brief Return shape or its ID, on which created elements are added
-    * \retval TopoDS_Shape, int - shape or its ID
+    * \retval int - shape index in SMESHDS
+    *
+    * Shape is set by calling either IsQuadraticSubMesh() or SetSubShape() 
    */
-  int          GetSubShapeID() { return myShapeID; }
-  TopoDS_Shape GetSubShape()   { return myShape; }
+  int GetSubShapeID() const { return myShapeID; }
+  /*!
+   * \brief Return shape or its ID, on which created elements are added
+    * \retval TopoDS_Shape - shape
+    *
+    * Shape is set by calling either IsQuadraticSubMesh() or SetSubShape() 
+   */
+  TopoDS_Shape GetSubShape() const  { return myShape; }
+
+  /*!
+   * \brief Check if shape is a seam edge or it's vertex
+    * \param subShape - edge or vertex index in SMESHDS
+    * \retval bool - true if subShape is a seam shape
+    *
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   */
+  bool IsSeamShape(const int subShape) const
+  { return mySeamShapeIds.find( subShape ) != mySeamShapeIds.end(); }
+  /*!
+   * \brief Check if shape is a seam edge or it's vertex
+    * \param subShape - edge or vertex
+    * \retval bool - true if subShape is a seam shape
+    *
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   */
+  bool IsSeamShape(const TopoDS_Shape& subShape) const
+  { return IsSeamShape( GetMeshDS()->ShapeToIndex( subShape )); }
+
+  /*!
+   * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
+   *        has a seam edge
+    * \retval bool - true if it has
+   */
+  bool HasSeam() const { return !mySeamShapeIds.empty(); }
+
+  /*!
+   * \brief Return index of periodic parametric direction of a closed face
+    * \retval int - 1 for U, 2 for V direction
+   */
+  int GetPeriodicIndex() const { return myParIndex; }
 
  protected:
 

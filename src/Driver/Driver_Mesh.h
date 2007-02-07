@@ -29,13 +29,17 @@
 
 #include <string>
 
-#if defined WNT && defined WIN32 && defined DRIVER_EXPORTS
-#define DRIVER_WNT_EXPORT __declspec( dllexport )
+#ifdef WNT
+ #if defined MESHDRIVER_EXPORTS
+  #define MESHDRIVER_EXPORT __declspec( dllexport )
+ #else
+  #define MESHDRIVER_EXPORT __declspec( dllimport )
+ #endif
 #else
-#define DRIVER_WNT_EXPORT
+ #define MESHDRIVER_EXPORT
 #endif
 
-class DRIVER_WNT_EXPORT Driver_Mesh
+class MESHDRIVER_EXPORT Driver_Mesh
 {
  public:
   Driver_Mesh();

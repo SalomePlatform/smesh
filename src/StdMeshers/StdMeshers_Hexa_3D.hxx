@@ -29,6 +29,8 @@
 #ifndef _SMESH_HEXA_3D_HXX_
 #define _SMESH_HEXA_3D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 #include "StdMeshers_Quadrangle_2D.hxx"
@@ -59,7 +61,7 @@ typedef struct conv2dstruct
   int jc;
 } Conv2DStruct;
 
-class StdMeshers_Hexa_3D:
+class STDMESHERS_EXPORT StdMeshers_Hexa_3D:
   public SMESH_3D_Algo
 {
 public:

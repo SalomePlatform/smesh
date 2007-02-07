@@ -29,6 +29,8 @@
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
@@ -45,8 +47,13 @@ class SMESH_Mesh;
 class SMESH_Hypothesis;
 class SMESH_Algo;
 class SMESH_Gen;
+class SMESH_subMeshEventListener;
+class SMESH_subMeshEventListenerData;
 
-class SMESH_subMesh
+typedef SMESH_subMeshEventListener     EventListener;
+typedef SMESH_subMeshEventListenerData EventListenerData;
+
+class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
@@ -72,8 +79,6 @@ class SMESH_subMesh
 
   const TopoDS_Shape & GetSubShape() const;
 
-//  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
-
   enum compute_state
   {
     NOT_READY, READY_TO_COMPUTE,
@@ -96,6 +101,78 @@ class SMESH_subMesh
     CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
+  enum event_type
+  {
+    ALGO_EVENT, COMPUTE_EVENT
+  };
+
+  // ==================================================================
+  // Members to track non hierarchical dependencies between submeshes 
+  // ==================================================================
+
+  /*!
+   * \brief Sets an event listener and its data to a submesh
+    * \param listener - the listener to store
+    * \param data - the listener data to store
+    * \param where - the submesh to store the listener and it's data
+    * \param deleteListener - if true then the listener will be deleted as
+    *        it is removed from where submesh
+   * 
+   * It remembers the submesh where it puts the listener in order to delete
+   * them when HYP_OK algo_state is lost
+   * After being set, event listener is notified on each event of where submesh.
+   */
+  void SetEventListener(EventListener*     listener,
+                        EventListenerData* data,
+                        SMESH_subMesh*     where);
+
+  /*!
+   * \brief Return an event listener data
+    * \param listener - the listener whose data is
+    * \retval EventListenerData* - found data, maybe NULL
+   */
+  EventListenerData* GetEventListenerData(EventListener* listener) const;
+
+  /*!
+   * \brief Unregister the listener and delete it and it's data
+    * \param listener - the event listener to delete
+   */
+  void DeleteEventListener(EventListener* listener);
+
+protected:
+
+  //!< event listeners to notify
+  std::map< EventListener*, EventListenerData* >           myEventListeners;
+  //!< event listeners to delete when HYP_OK algo_state is lost
+  std::list< std::pair< SMESH_subMesh*, EventListener* > > myOwnListeners;
+
+  /*!
+   * \brief Sets an event listener and its data to a submesh
+    * \param listener - the listener to store
+    * \param data - the listener data to store
+   * 
+   * After being set, event listener is notified on each event of a submesh.
+   */
+  void SetEventListener(EventListener* listener, EventListenerData* data);
+
+  /*!
+   * \brief Notify stored event listeners on the occured event
+   * \param event - algo_event or compute_event itself
+   * \param eventType - algo_event or compute_event
+   * \param hyp - hypothesis, if eventType is algo_event
+   */
+  void NotifyListenersOnEvent( const int         event,
+                               const event_type  eventType,
+                               SMESH_Hypothesis* hyp = 0);
+
+  /*!
+   * \brief Delete event listeners depending on algo of this submesh
+   */
+  void DeleteOwnListeners();
+
+  // ==================================================================
+
+public:
 
   SMESH_Hypothesis::Hypothesis_Status
     AlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
@@ -128,7 +205,11 @@ class SMESH_subMesh
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
- protected:
+  bool IsMeshComputed() const;
+  // check if _subMeshDS contains mesh elements
+
+protected:
+  // ==================================================================
   void InsertDependence(const TopoDS_Shape aSubShape);
 
   bool SubMeshesComputed();
@@ -142,9 +223,6 @@ class SMESH_subMesh
   void CleanDependants();
   void CleanDependsOn();
   void SetAlgoState(int state);
-
-  bool IsMeshComputed() const;
-  // check if _subMeshDS contains mesh elements
 
   TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
   // return a shape containing all sub-shapes of the MainShape that can be

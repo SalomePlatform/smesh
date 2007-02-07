@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_SEWING_H
 #define DIALOGBOX_SEWING_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 // QT Includes
@@ -56,7 +58,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_SewingDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_SewingDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SewingDlg : public QDialog
 { 
     Q_OBJECT
 

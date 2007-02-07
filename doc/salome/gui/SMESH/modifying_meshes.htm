@@ -12,20 +12,19 @@ LI.kadov-P {  }
 -->
 </style><style type="text/css">
 <!--
-p.whs1 { margin-top:0pt; margin-bottom:0pt; font-weight:bold; color:#ff0000; }
-p.whs2 { margin-top:0pt; margin-bottom:0pt; }
-p.whs3 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
-p.whs4 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
-h4.whs5 { margin-top:0pt; margin-bottom:0pt; }
-p.whs6 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
-p.whs7 { margin-top:0.5pt; margin-bottom:0pt; }
-p.whs8 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
-p.whs9 { font-family:'Lucida Console' , monospace; }
-p.whs10 { font-family:'Times New Roman' , serif; }
-p.whs11 { margin-left:36px; font-family:'Lucida Console' , monospace; }
-p.whs12 { margin-left:36px; }
-p.whs13 { margin-left:192px; font-family:'Lucida Console' , monospace; }
-p.whs14 { font-family:'Lucida Console' , monospace; margin-left:0px; }
+p.whs1 { margin-top:0pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs2 { margin-top:0pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs3 { margin-top:0pt; margin-bottom:0pt; }
+h4.whs4 { margin-top:0pt; margin-bottom:0pt; }
+p.whs5 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Lucida Console' , monospace; }
+p.whs6 { margin-top:0.5pt; margin-bottom:0pt; }
+p.whs7 { margin-top:0.5pt; margin-bottom:0pt; font-family:'Times New Roman' , serif; }
+p.whs8 { font-family:'Lucida Console' , monospace; }
+p.whs9 { font-family:'Times New Roman' , serif; }
+p.whs10 { margin-left:36px; font-family:'Lucida Console' , monospace; }
+p.whs11 { margin-left:36px; }
+p.whs12 { margin-left:0px; font-family:'Times New Roman' , serif; }
+p.whs13 { font-family:'Lucida Console' , monospace; margin-left:0px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -35,12 +34,12 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
   strNSS += "p.whs1 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs2 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs3 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "p.whs4 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "h4.whs5 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "h4.whs4 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs5 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs6 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs7 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "p.whs8 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "p.whs14 {margin-left:1pt; }";
+  strNSS += "p.whs12 {margin-left:1pt; }";
+  strNSS += "p.whs13 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -109,1817 +108,1542 @@ if (window.writeIntopicBar)
 
 <h3><a name=bookmark>Adding Nodes and Elements</a></h3>
 
-<p class="whs1"># Attention! The scripts for Adding nodes 
- and Elements &nbsp;have 
- been written using the old approach basing on direct usage of SMESH idl 
- interface.</p>
-
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to add nodes and elements. </p>
-
-<p class="whs2"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- In the next SALOME version the scripts will be updated to use only the 
- commands from smesh package.</B></font></span></p>
-
 <h4>Add Node</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- SMESH</span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs2"># add node</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">new_id 
+ = mesh.AddNode(50, 10, 0)</span></p>
 
-<p class="whs4"># add node</p>
+<p class="whs1">print &quot;&quot;</p>
 
-<p class="whs3">new_id = aMeshEditor.AddNode(50, 
- 10, 0)</p>
-
-<p class="whs3">print &quot;&quot;</p>
-
-<p class="whs3">if new_id == 0: 
+<p class="whs1">if new_id == 0: 
  print &quot;KO node addition.&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
- &quot;New Node has been added with ID &quot;, new_id </p>
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;New Node has been added with ID &quot;, new_id &nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
 <h4>Add Edge</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- SMESH</span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">print &quot;&quot;</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">print &quot;&quot;</p>
+<p class="whs2"># add node</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">n1 
+ = mesh.AddNode(50, 10, 0)</span></p>
 
-<p class="whs4"># add node</p>
+<p class="whs1">if n1 == 0: print 
+ &quot;KO node addition.&quot; </p>
 
-<p class="whs3">n1 = aMeshEditor.AddNode(50, 
- 10, 0)</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">if n1 == 0: print 
- &quot;KO node addition.&quot;</p>
+<p class="whs2"># add edge</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">e1 
+ = mesh.AddEdge([n1, 38])</span></p>
 
-<p class="whs4"># add edge</p>
-
-<p class="whs3">e1 = aMeshEditor.AddEdge([n1, 
- 38])</p>
-
-<p class="whs3">if e1 == 0: print 
+<p class="whs1">if e1 == 0: print 
  &quot;KO edge addition.&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;New Edge has been added with ID &quot;, e1 </p>
-
-<p class="whs3">&nbsp;</p>
 
 <h4>Add Triangle</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- SMESH</span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">print &quot;&quot;</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">print &quot;&quot;</p>
+<p class="whs2"># add node</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># add node</p>
-
-<p class="whs3">n1 = aMeshEditor.AddNode(50, 
+<p class="whs1">n1 = mesh.AddNode(50, 
  10, 0)</p>
 
-<p class="whs3">if n1 == 0: print 
+<p class="whs1">if n1 == 0: print 
  &quot;KO node addition.&quot;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4"># add triangle</p>
+<p class="whs2"># add triangle</p>
 
-<p class="whs3">t1 = aMeshEditor.AddFace([n1, 
+<p class="whs1">t1 = mesh.AddFace([n1, 
  38, 39])</p>
 
-<p class="whs3">if t1 == 0: print 
+<p class="whs1">if t1 == 0: print 
  &quot;KO triangle addition.&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;New Triangle has been added with ID &quot;, t1 </p>
 
 <h4>Add Quadrangle</h4>
 
-<p class="whs3">import SMESH</p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
+
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
+
+<p class="whs1">print &quot;&quot;</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs3"># add node</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs3">print &quot;&quot;</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># add node</p>
-
-<p class="whs3">n1 = aMeshEditor.AddNode(50, 
+<p class="whs1">n1 = mesh.AddNode(50, 
  10, 0)</p>
 
-<p class="whs3">if n1 == 0: print 
+<p class="whs1">if n1 == 0: print 
  &quot;KO node addition.&quot;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">n2 = aMeshEditor.AddNode(40, 
+<p class="whs1">n2 = mesh.AddNode(40, 
  20, 0)</p>
 
-<p class="whs3">if n2 == 0: print 
+<p class="whs1">if n2 == 0: print 
  &quot;KO node addition.&quot;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs2"># add quadrangle</p>
+<p class="whs3"># add quadrangle</p>
 
-<p class="whs3">q1 = aMeshEditor.AddFace([n2, 
+<p class="whs1">q1 = mesh.AddFace([n2, 
  n1, 38, 39])</p>
 
-<p class="whs3">if q1 == 0: print 
+<p class="whs1">if q1 == 0: print 
  &quot;KO quadrangle addition.&quot;</p>
 
-<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">else: 
+<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">else: 
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;New Quadrangle has been added with ID &quot;, q1</span> </p>
 
 <h4>Add Tetrahedron</h4>
 
-<p class="whs3">import SMESH </p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">print &quot;&quot;</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">print &quot;&quot;</p>
+<p class="whs2"># add node</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># add node</p>
-
-<p class="whs3">n1 = aMeshEditor.AddNode(50, 
+<p class="whs1">n1 = mesh.AddNode(50, 
  10, 0)</p>
 
-<p class="whs3">if n1 == 0: print 
+<p class="whs1">if n1 == 0: print 
  &quot;KO node addition.&quot;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4"># add tetrahedron</p>
+<p class="whs2"># add tetrahedron</p>
 
-<p class="whs3">t1 = aMeshEditor.AddVolume([n1, 
+<p class="whs1">t1 = mesh.AddVolume([n1, 
  38, 39, 246])</p>
 
-<p class="whs3">if t1 == 0: print 
+<p class="whs1">if t1 == 0: print 
  &quot;KO tetrahedron addition.&quot;</p>
 
-<p class="whs2"><span style="font-family: 'Lucida Console', monospace;">else: 
+<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">else: 
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;New Tetrahedron has been added with ID &quot;, t1</span> </p>
 
 <h4>Add Hexahedron</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- SMESH</span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">import SMESH_mechanic</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">print &quot;&quot;</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">print &quot;&quot;</p>
+<p class="whs2"># add nodes</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># add nodes</p>
-
-<p class="whs3">nId1 = aMeshEditor.AddNode(50, 
+<p class="whs1">nId1 = mesh.AddNode(50, 
  10, 0)</p>
 
-<p class="whs3">nId2 = aMeshEditor.AddNode(47, 
+<p class="whs1">nId2 = mesh.AddNode(47, 
  12, 0)</p>
 
-<p class="whs3">nId3 = aMeshEditor.AddNode(50, 
+<p class="whs1">nId3 = mesh.AddNode(50, 
  10, 10)</p>
 
-<p class="whs3">nId4 = aMeshEditor.AddNode(47, 
+<p class="whs1">nId4 = mesh.AddNode(47, 
  12, 10)</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">if nId1 == 0 or 
+<p class="whs1">if nId1 == 0 or 
  nId2 == 0 or nId3 == 0 or nId4 == 0: print &quot;KO node addition.&quot;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4"># add hexahedron</p>
+<p class="whs2"># add hexahedron</p>
 
-<p class="whs3">vId = aMeshEditor.AddVolume([nId2, 
+<p class="whs1">vId = mesh.AddVolume([nId2, 
  nId1, 38, 39, nId4, nId3, 245, 246])</p>
 
-<p class="whs3">if vId == 0: print 
+<p class="whs1">if vId == 0: print 
  &quot;KO Hexahedron addition.&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;New Hexahedron has been added with ID &quot;, vId </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
 <h4>Add Polygon</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">import 
  math</span></p>
 
-<p class="whs3">import salome</p>
+<p class="whs1">import salome</p>
 
-<p class="whs3">import smesh</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">import smesh</p>
 
-<p class="whs4"># create an empty mesh 
+<p class="whs1">&nbsp;</p>
+
+<p class="whs2"># create an empty mesh 
  structure</p>
 
-<p class="whs3">gen = smesh.smesh</p>
+<p class="whs1">mesh = smesh.Mesh() 
+ </p>
 
-<p class="whs3">mesh = gen.CreateEmptyMesh()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">MeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># a method to build 
+<p class="whs2"># a method to build 
  a polygonal mesh element with &lt;nb_vert&gt; angles:</p>
 
-<p class="whs3">def MakePolygon 
+<p class="whs1">def MakePolygon 
  (a_mesh, x0, y0, z0, radius, nb_vert):</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;al 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;al 
  = 2.0 * math.pi / nb_vert</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;node_ids 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;node_ids 
  = []</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 
+<p class="whs2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 
  Create nodes for a polygon</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;for 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;for 
  ii in range(nb_vert):</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nid 
- = MeshEditor.AddNode(x0 + radius * math.cos(ii*al),</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nid 
+ = mesh.AddNode(x0 + radius * math.cos(ii*al),</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y0 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y0 
  + radius * math.sin(ii*al),</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;z0)</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;z0)</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node_ids.append(nid)</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node_ids.append(nid)</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pass</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 
+<p class="whs2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# 
  Create a polygon</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;return 
- MeshEditor.AddPolygonalFace(node_ids)</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;return 
+ mesh.AddPolygonalFace(node_ids)</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4"># Create three polygons</p>
+<p class="whs2"># Create three polygons</p>
 
-<p class="whs3">f1 = MakePolygon(mesh, 
+<p class="whs1">f1 = MakePolygon(mesh, 
  0, 0, &nbsp;0, 
  30, 13)</p>
 
-<p class="whs3">f2 = MakePolygon(mesh, 
+<p class="whs1">f2 = MakePolygon(mesh, 
  0, 0, 10, 21, &nbsp;9)</p>
 
-<p class="whs3">f3 = MakePolygon(mesh, 
+<p class="whs1">f3 = MakePolygon(mesh, 
  0, 0, 20, 13, &nbsp;6)</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">salome.sg.updateObjBrowser(1) 
+<p class="whs1">salome.sg.updateObjBrowser(1) 
  </p>
 
 <h4>Add Polyhedron</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">import 
  salome</span></p>
 
-<p class="whs3">import math</p>
+<p class="whs1">import math</p>
 
-<p class="whs3">import smesh</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># create an empty mesh 
+<p class="whs2"># create an empty mesh 
  structure</p>
 
-<p class="whs3">gen = smesh.smesh</p>
+<p class="whs1">mesh = smesh.Mesh() 
+ &nbsp;</p>
 
-<p class="whs3">mesh = gen.CreateEmptyMesh()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">MeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># Create nodes for 
+<p class="whs2"># Create nodes for 
  12-hedron with pentagonal faces</p>
 
-<p class="whs3">al = 2 * math.pi 
+<p class="whs1">al = 2 * math.pi 
  / 5.0</p>
 
-<p class="whs3">cosal = math.cos(al)</p>
+<p class="whs1">cosal = math.cos(al)</p>
 
-<p class="whs3">aa = 13</p>
+<p class="whs1">aa = 13</p>
 
-<p class="whs3">rr = aa / (2.0 * 
+<p class="whs1">rr = aa / (2.0 * 
  math.sin(al/2.0))</p>
 
-<p class="whs3">dr = 2.0 * rr * 
+<p class="whs1">dr = 2.0 * rr * 
  cosal</p>
 
-<p class="whs3">r1 = rr + dr</p>
+<p class="whs1">r1 = rr + dr</p>
 
-<p class="whs3">dh = rr * math.sqrt(2.0 
+<p class="whs1">dh = rr * math.sqrt(2.0 
  * (1.0 - cosal * (1.0 + 2.0 * cosal)))</p>
 
-<p class="whs3">hh = 2.0 * dh - 
+<p class="whs1">hh = 2.0 * dh - 
  dr * (rr*(cosal - 1) + (rr + dr)*(math.cos(al/2) - 1)) / dh</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">dd = [] <span style="font-family: 'Times New Roman', serif;"># 
+<p class="whs1">dd = [] <span style="font-family: 'Times New Roman', serif;"># 
  top</span></p>
 
-<p class="whs3">cc = [] <span style="font-family: 'Times New Roman', serif;"># 
+<p class="whs1">cc = [] <span style="font-family: 'Times New Roman', serif;"># 
  below top</span></p>
 
-<p class="whs3">bb = [] <span style="font-family: 'Times New Roman', serif;"># 
+<p class="whs1">bb = [] <span style="font-family: 'Times New Roman', serif;"># 
  above bottom</span></p>
 
-<p class="whs3">aa = [] <span style="font-family: 'Times New Roman', serif;"># 
+<p class="whs1">aa = [] <span style="font-family: 'Times New Roman', serif;"># 
  bottom</span></p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">for i in range(5):</p>
+<p class="whs1">for i in range(5):</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;cos_bot 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;cos_bot 
  = math.cos(i*al)</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;sin_bot 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;sin_bot 
  = math.sin(i*al)</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;<span 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;<span 
  style="margin-top: 0pt;
 		margin-bottom: 0pt;
 		font-family: 'Lucida Console', monospace;">cos_top 
  = math.cos(i*al + al/2.0)</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;sin_top 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;sin_top 
  = math.sin(i*al + al/2.0)</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;nd 
- = MeshEditor.AddNode(rr * cos_top, rr * sin_top, hh &nbsp;&nbsp;&nbsp;&nbsp;) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;nd 
+ = mesh.AddNode(rr * cos_top, rr * sin_top, hh &nbsp;&nbsp;&nbsp;&nbsp;) 
  <span style="font-family: 'Times New Roman', serif;"># top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;nc 
- = MeshEditor.AddNode(r1 * cos_top, r1 * sin_top, hh - dh) <span style="font-family: 'Times New Roman', serif;"># 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;nc 
+ = mesh.AddNode(r1 * cos_top, r1 * sin_top, hh - dh) <span style="font-family: 'Times New Roman', serif;"># 
  below top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;nb 
- = MeshEditor.AddNode(r1 * cos_bot, r1 * sin_bot, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dh) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;nb 
+ = mesh.AddNode(r1 * cos_bot, r1 * sin_bot, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dh) 
  <span style="font-family: 'Times New Roman', serif;"># above bottom</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;na 
- = MeshEditor.AddNode(rr * cos_bot, rr * sin_bot, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;na 
+ = mesh.AddNode(rr * cos_bot, rr * sin_bot, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0) 
  <span style="font-family: 'Times New Roman', serif;"># bottom</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;dd.append(nd) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;dd.append(nd) 
  <span style="font-family: 'Times New Roman', serif;"># top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;cc.append(nc) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;cc.append(nc) 
  <span style="font-family: 'Times New Roman', serif;"># below top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;bb.append(nb) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;bb.append(nb) 
  <span style="font-family: 'Times New Roman', serif;"># above bottom</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;aa.append(na) 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;aa.append(na) 
  <span style="font-family: 'Times New Roman', serif;"># bottom</span></p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;pass</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;pass</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs4"># Create a polyhedral 
+<p class="whs2"># Create a polyhedral 
  volume (12-hedron with pentagonal faces)</p>
 
-<p class="whs3">MeshEditor.AddPolyhedralVolume([dd[0], 
+<p class="whs1">MeshEditor.AddPolyhedralVolume([dd[0], 
  dd[1], dd[2], dd[3], dd[4], &nbsp;<span style="font-family: 'Times New Roman', serif;"># 
  top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[0], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[0], 
  cc[0], bb[1], cc[1], dd[1], &nbsp;# 
  -</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[1], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[1], 
  cc[1], bb[2], cc[2], dd[2], &nbsp;# 
  -</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[2], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[2], 
  cc[2], bb[3], cc[3], dd[3], &nbsp;<span style="font-family: 'Times New Roman', serif;"># 
  - below top</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[3], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[3], 
  cc[3], bb[4], cc[4], dd[4], &nbsp;# 
  -</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[4], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd[4], 
  cc[4], bb[0], cc[0], dd[0], &nbsp;# 
  -</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[4], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[4], 
  bb[4], cc[4], bb[0], aa[0], &nbsp;# 
  .</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[3], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[3], 
  bb[3], cc[3], bb[4], aa[4], &nbsp;# 
  .</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[2], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[2], 
  bb[2], cc[2], bb[3], aa[3], &nbsp;<span style="font-family: 'Times New Roman', serif;"># 
  . above bottom</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[1], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[1], 
  bb[1], cc[1], bb[2], aa[2], &nbsp;# 
  .</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[0], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[0], 
  bb[0], cc[0], bb[1], aa[1], &nbsp;# 
  .</p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[0], 
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;aa[0], 
  aa[1], aa[2], aa[3], aa[4]], <span style="font-family: 'Times New Roman', serif;"># 
  bottom</span></p>
 
-<p class="whs3">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[5,5,5,5,5,5,5,5,5,5,5,5])</p>
+<p class="whs1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[5,5,5,5,5,5,5,5,5,5,5,5])</p>
 
-<p class="whs3">salome.sg.updateObjBrowser(1) 
+<p class="whs1">salome.sg.updateObjBrowser(1) 
  </p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
 <h3><a name=bookmark1>Removing Nodes and Elements</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<h4 class="whs4">Removing Nodes</h4>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to remove nodes and elements. </p>
+<p class="whs3">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
-
-<h4 class="whs5">&nbsp;</h4>
-
-<h4 class="whs5">Removing Nodes</h4>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
+<p class="whs1"><span style="font-family: 'Lucida Console', monospace;">import 
  SMESH_mechanic</span></p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># remove nodes #246 
+<p class="whs2"># remove nodes #246 
  and #255</p>
 
-<p class="whs3">res = aMeshEditor.RemoveNodes([246, 
+<p class="whs1">res = mesh.RemoveNodes([246, 
  255])</p>
 
-<p class="whs3">if res == 1: print 
+<p class="whs1">if res == 1: print 
  &quot;Nodes removing is OK!&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;KO nodes removing.&quot; </p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
 <h4>Removing Elements</h4>
 
-<p class="whs3"><span style="font-family: 'Lucida Console', monospace;">import 
- SMESH_mechanic</span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs3">anEditor = mesh.GetMeshEditor()</p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
-
-<p class="whs4"># remove three elements: 
+<p class="whs2"># remove three elements: 
  #850, #859 and #814</p>
 
-<p class="whs3">res = anEditor.RemoveElements([850, 
+<p class="whs1">res = mesh.RemoveElements([850, 
  859, 814])</p>
 
-<p class="whs3">if res == 1: print 
+<p class="whs1">if res == 1: print 
  &quot;Elements removing is OK!&quot;</p>
 
-<p class="whs3">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs1">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;KO Elements removing.&quot; &nbsp;</p>
 
-<p class="whs3">&nbsp;</p>
+<p class="whs1">&nbsp;</p>
 
 <h3><a name=bookmark2>Renumbering Nodes and Elements</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs5">import SMESH_mechanic</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to renumber nodes and elements. </p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs5">mesh = SMESH_mechanic.mesh</p>
 
 <p class="whs6">&nbsp;</p>
 
-<p class="whs6">import SMESH_mechanic</p>
-
-<p class="whs6">&nbsp;</p>
-
-<p class="whs6">mesh = SMESH_mechanic.mesh</p>
-
-<p class="whs6">anEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">anEditor.RenumberNodes()</span> 
+<p class="whs6"><span style="font-family: 'Lucida Console', monospace;">mesh.RenumberNodes()</span> 
  </p>
 
 <h3><a name=bookmark3>Moving Nodes</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs1">import SMESH_mechanic</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to move nodes. </p>
+<p class="whs1">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs1">mesh = SMESH_mechanic.mesh</p>
 
 <p class="whs3">&nbsp;</p>
 
-<p class="whs3">import SMESH</p>
+<p class="whs3"># move node #38</p>
 
-<p class="whs3">import SMESH_mechanic</p>
-
-<p class="whs3">&nbsp;</p>
-
-<p class="whs3">mesh = SMESH_mechanic.mesh</p>
-
-<p class="whs3">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs2">&nbsp;</p>
-
-<p class="whs2"># move node #38</p>
-
-<p class="whs3">aMeshEditor.MoveNode(38, 
+<p class="whs1">mesh.MoveNode(38, 
  20., 10., 0.) </p>
 
-<p class="whs2">&nbsp;</p>
+<p class="whs3">&nbsp;</p>
 
 <h3><a name=bookmark4>Diagonal Inversion</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs5">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to produce a diagonal inversion. </p>
+<p class="whs5">import smesh</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs7">&nbsp;</p>
-
-<p class="whs6">import salome</p>
-
-<p class="whs6">import smesh</p>
-
-<p class="whs6">&nbsp;</p>
-
-<p class="whs8"># create an empty mesh 
+<p class="whs7"># create an empty mesh 
  structure</p>
 
-<p class="whs6">gen = smesh.smesh</p>
+<p class="whs5">mesh = smesh.Mesh() 
+ </p>
 
-<p class="whs6">mesh = gen.CreateEmptyMesh()</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs6">&nbsp;</p>
-
-<p class="whs8"># create the following 
+<p class="whs7"># create the following 
  mesh:</p>
 
-<p class="whs6"># .----.----.----.</p>
+<p class="whs5"># .----.----.----.</p>
 
-<p class="whs6"># | &nbsp;&nbsp;/| 
+<p class="whs5"># | &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/|</p>
 
-<p class="whs6"># | &nbsp;/ 
+<p class="whs5"># | &nbsp;/ 
  | &nbsp;/ | &nbsp;/ 
  |</p>
 
-<p class="whs6"># | / &nbsp;| 
+<p class="whs5"># | / &nbsp;| 
  / &nbsp;| / &nbsp;|</p>
 
-<p class="whs6"># |/ &nbsp;&nbsp;|/ 
+<p class="whs5"># |/ &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|</p>
 
-<p class="whs6"># .----.----.----.</p>
+<p class="whs5"># .----.----.----.</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">bb = [0, 0, 0, 0]</p>
+<p class="whs5">bb = [0, 0, 0, 0]</p>
 
-<p class="whs6">tt = [0, 0, 0, 0]</p>
+<p class="whs5">tt = [0, 0, 0, 0]</p>
 
-<p class="whs6">ff = [0, 0, 0, 0, 
+<p class="whs5">ff = [0, 0, 0, 0, 
  0, 0]</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">bb[0] = aMeshEditor.AddNode( 
+<p class="whs5">bb[0] = mesh.AddNode( 
  0., 0., 0.)</p>
 
-<p class="whs6">bb[1] = aMeshEditor.AddNode(10., 
+<p class="whs5">bb[1] = mesh.AddNode(10., 
  0., 0.)</p>
 
-<p class="whs6">bb[2] = aMeshEditor.AddNode(20., 
+<p class="whs5">bb[2] = mesh.AddNode(20., 
  0., 0.)</p>
 
-<p class="whs6">bb[3] = aMeshEditor.AddNode(30., 
+<p class="whs5">bb[3] = mesh.AddNode(30., 
  0., 0.)</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">tt[0] = aMeshEditor.AddNode( 
+<p class="whs5">tt[0] = mesh.AddNode( 
  0., 15., 0.)</p>
 
-<p class="whs6">tt[1] = aMeshEditor.AddNode(10., 
+<p class="whs5">tt[1] = mesh.AddNode(10., 
  15., 0.)</p>
 
-<p class="whs6">tt[2] = aMeshEditor.AddNode(20., 
+<p class="whs5">tt[2] = mesh.AddNode(20., 
  15., 0.)</p>
 
-<p class="whs6">tt[3] = aMeshEditor.AddNode(30., 
+<p class="whs5">tt[3] = mesh.AddNode(30., 
  15., 0.)</p>
 
-<p class="whs6">&nbsp;</p>
+<p class="whs5">&nbsp;</p>
 
-<p class="whs6">ff[0] = aMeshEditor.AddFace([bb[0], 
+<p class="whs5">ff[0] = mesh.AddFace([bb[0], 
  bb[1], tt[1]])</p>
 
-<p class="whs6">ff[1] = aMeshEditor.AddFace([bb[0], 
+<p class="whs5">ff[1] = mesh.AddFace([bb[0], 
  tt[1], tt[0]])</p>
 
-<p class="whs6">ff[2] = aMeshEditor.AddFace([bb[1], 
+<p class="whs5">ff[2] = mesh.AddFace([bb[1], 
  bb[2], tt[2]])</p>
 
-<p class="whs6">ff[3] = aMeshEditor.AddFace([bb[1], 
+<p class="whs5">ff[3] = mesh.AddFace([bb[1], 
  tt[2], tt[1]])</p>
 
-<p class="whs6">ff[4] = aMeshEditor.AddFace([bb[2], 
+<p class="whs5">ff[4] = mesh.AddFace([bb[2], 
  bb[3], tt[3]])</p>
 
-<p class="whs6">ff[5] = aMeshEditor.AddFace([bb[2], 
+<p class="whs5">ff[5] = mesh.AddFace([bb[2], 
  tt[3], tt[2]])</p>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs7"># inverse the diagonal 
+ bb[1] - tt[2]</p>
+
+<p class="whs5">print &quot;\nDiagonal 
+ inversion ... &quot;,</p>
+
+<p class="whs5">res = mesh.InverseDiag(bb[1], 
+ tt[2])</p>
+
+<p class="whs5">if not res: print 
+ &quot;failed!&quot;</p>
+
+<p class="whs5">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+ &quot;done.&quot;</p>
 
 <p class="whs6">&nbsp;</p>
 
-<p class="whs8"># inverse the diagonal 
- bb[1] - tt[2]</p>
-
-<p class="whs6">print &quot;\nDiagonal 
- inversion ... &quot;,</p>
-
-<p class="whs6">res = aMeshEditor.InverseDiag(bb[1], 
- tt[2])</p>
-
-<p class="whs6">if not res: print 
- &quot;failed!&quot;</p>
-
-<p class="whs6">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
- &quot;done.&quot;</p>
-
-<p class="whs7">&nbsp;</p>
-
-<p class="whs7"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+<p class="whs6"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
  </p>
 
 <h3><a name=bookmark5>Uniting two Triangles</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to unite two triangles. </p>
-
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
-
-<p>&nbsp;</p>
-
-<p class="whs9">import salome</p>
-
-<p class="whs9">import smesh</p>
+<p class="whs8">import smesh</p>
 
 <p>&nbsp;</p>
 
 <p># create an empty mesh structure</p>
 
-<p class="whs9">gen = smesh.smesh</p>
-
-<p class="whs9">mesh = gen.CreateEmptyMesh()</p>
-
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
+<p class="whs8">mesh = smesh.Mesh() 
+ </p>
 
 <p>&nbsp;</p>
 
 <p># create the following mesh:</p>
 
-<p class="whs9"># .----.----.----.</p>
+<p class="whs8"># .----.----.----.</p>
 
-<p class="whs9"># | &nbsp;&nbsp;/| 
+<p class="whs8"># | &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/|</p>
 
-<p class="whs9"># | &nbsp;/ 
+<p class="whs8"># | &nbsp;/ 
  | &nbsp;/ | &nbsp;/ 
  |</p>
 
-<p class="whs9"># | / &nbsp;| 
+<p class="whs8"># | / &nbsp;| 
  / &nbsp;| / &nbsp;|</p>
 
-<p class="whs9"># |/ &nbsp;&nbsp;|/ 
+<p class="whs8"># |/ &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|</p>
 
-<p class="whs9"># .----.----.----.</p>
+<p class="whs8"># .----.----.----.</p>
 
 <p>&nbsp;</p>
 
-<p class="whs9">bb = [0, 0, 0, 0]</p>
+<p class="whs8">bb = [0, 0, 0, 0]</p>
 
-<p class="whs9">tt = [0, 0, 0, 0]</p>
+<p class="whs8">tt = [0, 0, 0, 0]</p>
 
-<p class="whs9">ff = [0, 0, 0, 0, 
+<p class="whs8">ff = [0, 0, 0, 0, 
  0, 0]</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">bb[0] = aMeshEditor.AddNode( 
- 0., 0., 0.)</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">bb[0] 
+ = mesh.AddNode( 0., 0., 0.)</span></p>
 
-<p class="whs9">bb[1] = aMeshEditor.AddNode(10., 
+<p class="whs8">bb[1] = mesh.AddNode(10., 
  0., 0.)</p>
 
-<p class="whs9">bb[2] = aMeshEditor.AddNode(20., 
+<p class="whs8">bb[2] = mesh.AddNode(20., 
  0., 0.)</p>
 
-<p class="whs9">bb[3] = aMeshEditor.AddNode(30., 
+<p class="whs8">bb[3] = mesh.AddNode(30., 
  0., 0.)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">tt[0] = aMeshEditor.AddNode( 
+<p class="whs8">tt[0] = mesh.AddNode( 
  0., 15., 0.)</p>
 
-<p class="whs9">tt[1] = aMeshEditor.AddNode(10., 
+<p class="whs8">tt[1] = mesh.AddNode(10., 
  15., 0.)</p>
 
-<p class="whs9">tt[2] = aMeshEditor.AddNode(20., 
+<p class="whs8">tt[2] = mesh.AddNode(20., 
  15., 0.)</p>
 
-<p class="whs9">tt[3] = aMeshEditor.AddNode(30., 
+<p class="whs8">tt[3] = mesh.AddNode(30., 
  15., 0.)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">ff[0] = aMeshEditor.AddFace([bb[0], 
+<p class="whs8">ff[0] = mesh.AddFace([bb[0], 
  bb[1], tt[1]])</p>
 
-<p class="whs9">ff[1] = aMeshEditor.AddFace([bb[0], 
+<p class="whs8">ff[1] = mesh.AddFace([bb[0], 
  tt[1], tt[0]])</p>
 
-<p class="whs9">ff[2] = aMeshEditor.AddFace([bb[1], 
+<p class="whs8">ff[2] = mesh.AddFace([bb[1], 
  bb[2], tt[2]])</p>
 
-<p class="whs9">ff[3] = aMeshEditor.AddFace([bb[1], 
+<p class="whs8">ff[3] = mesh.AddFace([bb[1], 
  tt[2], tt[1]])</p>
 
-<p class="whs9">ff[4] = aMeshEditor.AddFace([bb[2], 
+<p class="whs8">ff[4] = mesh.AddFace([bb[2], 
  bb[3], tt[3]])</p>
 
-<p class="whs9">ff[5] = aMeshEditor.AddFace([bb[2], 
- tt[3], tt[2]])</p>
+<p class="whs8">ff[5] = mesh.AddFace([bb[2], 
+ tt[3], tt[2]]) </p>
 
 <p>&nbsp;</p>
 
 <p># delete the diagonal bb[1] - tt[2]</p>
 
-<p class="whs9">print &quot;\nUnite 
+<p class="whs8">print &quot;\nUnite 
  two triangles ... &quot;,</p>
 
-<p class="whs9">res = aMeshEditor.DeleteDiag(bb[1], 
+<p class="whs8">res = mesh.DeleteDiag(bb[1], 
  tt[2])</p>
 
-<p class="whs9">if not res: print 
+<p class="whs8">if not res: print 
  &quot;failed!&quot;</p>
 
-<p class="whs9">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs8">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;done.&quot;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
 <p><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
  </p>
 
 <h3><a name=bookmark6>Uniting a Set of Triangles</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to unite a set of triangles. </p>
+<p class="whs8">import smesh</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10">&nbsp;</p>
-
-<p class="whs9">import salome</p>
-
-<p class="whs9">import smesh</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># create an empty mesh 
+<p class="whs9"># create an empty mesh 
  structure</p>
 
-<p class="whs9">gen = smesh.smesh</p>
+<p class="whs8">mesh = smesh.Mesh() 
+ </p>
 
-<p class="whs9">mesh = gen.CreateEmptyMesh()</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># create the following 
+<p class="whs9"># create the following 
  mesh:</p>
 
-<p class="whs9"># .----.----.----.</p>
+<p class="whs8"># .----.----.----.</p>
 
-<p class="whs9"># | &nbsp;&nbsp;/| 
+<p class="whs8"># | &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/| 
  &nbsp;&nbsp;/|</p>
 
-<p class="whs9"># | &nbsp;/ 
+<p class="whs8"># | &nbsp;/ 
  | &nbsp;/ | &nbsp;/ 
  |</p>
 
-<p class="whs9"># | / &nbsp;| 
+<p class="whs8"># | / &nbsp;| 
  / &nbsp;| / &nbsp;|</p>
 
-<p class="whs9"># |/ &nbsp;&nbsp;|/ 
+<p class="whs8"># |/ &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|/ 
  &nbsp;&nbsp;|</p>
 
-<p class="whs9"># .----.----.----.</p>
+<p class="whs8"># .----.----.----.</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">bb = [0, 0, 0, 0]</p>
+<p class="whs8">bb = [0, 0, 0, 0]</p>
 
-<p class="whs9">tt = [0, 0, 0, 0]</p>
+<p class="whs8">tt = [0, 0, 0, 0]</p>
 
-<p class="whs9">ff = [0, 0, 0, 0, 
+<p class="whs8">ff = [0, 0, 0, 0, 
  0, 0]</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">bb[0] = aMeshEditor.AddNode( 
- 0., 0., 0.)</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">bb[0] 
+ = mesh.AddNode( 0., 0., 0.)</span></p>
 
-<p class="whs9">bb[1] = aMeshEditor.AddNode(10., 
+<p class="whs8">bb[1] = mesh.AddNode(10., 
  0., 0.)</p>
 
-<p class="whs9">bb[2] = aMeshEditor.AddNode(20., 
+<p class="whs8">bb[2] = mesh.AddNode(20., 
  0., 0.)</p>
 
-<p class="whs9">bb[3] = aMeshEditor.AddNode(30., 
+<p class="whs8">bb[3] = mesh.AddNode(30., 
  0., 0.)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">tt[0] = aMeshEditor.AddNode( 
+<p class="whs8">tt[0] = mesh.AddNode( 
  0., 15., 0.)</p>
 
-<p class="whs9">tt[1] = aMeshEditor.AddNode(10., 
+<p class="whs8">tt[1] = mesh.AddNode(10., 
  15., 0.)</p>
 
-<p class="whs9">tt[2] = aMeshEditor.AddNode(20., 
+<p class="whs8">tt[2] = mesh.AddNode(20., 
  15., 0.)</p>
 
-<p class="whs9">tt[3] = aMeshEditor.AddNode(30., 
+<p class="whs8">tt[3] = mesh.AddNode(30., 
  15., 0.)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">ff[0] = aMeshEditor.AddFace([bb[0], 
+<p class="whs8">ff[0] = mesh.AddFace([bb[0], 
  bb[1], tt[1]])</p>
 
-<p class="whs9">ff[1] = aMeshEditor.AddFace([bb[0], 
+<p class="whs8">ff[1] = mesh.AddFace([bb[0], 
  tt[1], tt[0]])</p>
 
-<p class="whs9">ff[2] = aMeshEditor.AddFace([bb[1], 
+<p class="whs8">ff[2] = mesh.AddFace([bb[1], 
  bb[2], tt[2]])</p>
 
-<p class="whs9">ff[3] = aMeshEditor.AddFace([bb[1], 
+<p class="whs8">ff[3] = mesh.AddFace([bb[1], 
  tt[2], tt[1]])</p>
 
-<p class="whs9">ff[4] = aMeshEditor.AddFace([bb[2], 
+<p class="whs8">ff[4] = mesh.AddFace([bb[2], 
  bb[3], tt[3]])</p>
 
-<p class="whs9">ff[5] = aMeshEditor.AddFace([bb[2], 
+<p class="whs8">ff[5] = mesh.AddFace([bb[2], 
  tt[3], tt[2]])</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># unite a set of triangles</p>
+<p class="whs9"># unite a set of triangles</p>
 
-<p class="whs9">aFilterMgr = smesh.smesh.CreateFilterManager()</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">print 
+ &quot;\nUnite a set of triangles ... &quot;,</span></p>
 
-<p class="whs9">aFunctor = aFilterMgr.CreateMinimumAngle()</p>
+<p class="whs8">res = mesh.TriToQuad([ff[2], 
+ ff[3], ff[4], ff[5]], smesh.FT_MinimumAngle, 60.)</p>
 
-<p class="whs9">print &quot;\nUnite 
- a set of triangles ... &quot;,</p>
-
-<p class="whs9">res = aMeshEditor.TriToQuad([ff[2], 
- ff[3], ff[4], ff[5]], aFunctor, 60.)</p>
-
-<p class="whs9">if not res: print 
+<p class="whs8">if not res: print 
  &quot;failed!&quot;</p>
 
-<p class="whs9">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs8">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;done.&quot;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">salome.sg.updateObjBrowser(1) 
- </p>
+<p class="whs8">salome.sg.updateObjBrowser(1) 
+ &nbsp;</p>
 
 <h3><a name=bookmark12>Orientation</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to change orientation. </p>
+<p class="whs8">import smesh</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">&nbsp;</p>
+<p># create an empty mesh structure</p>
 
-<p class="whs9">import salome</p>
-
-<p class="whs9">import smesh</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># SMESH module</p>
-
-<p class="whs9">gen = smesh.smesh</p>
-
-<p class="whs9">mesh = gen.CreateEmptyMesh()</p>
-
-<p class="whs9">MeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># build five quadrangles:</p>
-
-<p class="whs9">dx = 10</p>
-
-<p class="whs9">dy = 20</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">n1 &nbsp;= 
- MeshEditor.AddNode(0.0 * dx, 0, 0)</p>
-
-<p class="whs9">n2 &nbsp;= 
- MeshEditor.AddNode(1.0 * dx, 0, 0)</p>
-
-<p class="whs9">n3 &nbsp;= 
- MeshEditor.AddNode(2.0 * dx, 0, 0)</p>
-
-<p class="whs9">n4 &nbsp;= 
- MeshEditor.AddNode(3.0 * dx, 0, 0)</p>
-
-<p class="whs9">n5 &nbsp;= 
- MeshEditor.AddNode(4.0 * dx, 0, 0)</p>
-
-<p class="whs9">n6 &nbsp;= 
- MeshEditor.AddNode(5.0 * dx, 0, 0)</p>
-
-<p class="whs9">n7 &nbsp;= 
- MeshEditor.AddNode(0.0 * dx, dy, 0)</p>
-
-<p class="whs9">n8 &nbsp;= 
- MeshEditor.AddNode(1.0 * dx, dy, 0)</p>
-
-<p class="whs9">n9 &nbsp;= 
- MeshEditor.AddNode(2.0 * dx, dy, 0)</p>
-
-<p class="whs9">n10 = MeshEditor.AddNode(3.0 
- * dx, dy, 0)</p>
-
-<p class="whs9">n11 = MeshEditor.AddNode(4.0 
- * dx, dy, 0)</p>
-
-<p class="whs9">n12 = MeshEditor.AddNode(5.0 
- * dx, dy, 0)</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">f1 = MeshEditor.AddFace([n1, 
- n2, n8 , n7 ])</p>
-
-<p class="whs9">f2 = MeshEditor.AddFace([n2, 
- n3, n9 , n8 ])</p>
-
-<p class="whs9">f3 = MeshEditor.AddFace([n3, 
- n4, n10, n9 ])</p>
-
-<p class="whs9">f4 = MeshEditor.AddFace([n4, 
- n5, n11, n10])</p>
-
-<p class="whs9">f5 = MeshEditor.AddFace([n5, 
- n6, n12, n11])</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># Change the orientation 
- of the second and the fourth faces.</p>
-
-<p class="whs9">MeshEditor.Reorient([2, 
- 4])</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">salome.sg.updateObjBrowser(1) 
+<p class="whs8">mesh = smesh.Mesh() 
  </p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
+
+<p class="whs9"># build five quadrangles:</p>
+
+<p class="whs8">dx = 10</p>
+
+<p class="whs8">dy = 20</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">n1 
+ &nbsp;= mesh.AddNode(0.0 
+ * dx, 0, 0)</span></p>
+
+<p class="whs8">n2 &nbsp;= 
+ mesh.AddNode(1.0 * dx, 0, 0)</p>
+
+<p class="whs8">n3 &nbsp;= 
+ mesh.AddNode(2.0 * dx, 0, 0)</p>
+
+<p class="whs8">n4 &nbsp;= 
+ mesh.AddNode(3.0 * dx, 0, 0)</p>
+
+<p class="whs8">n5 &nbsp;= 
+ mesh.AddNode(4.0 * dx, 0, 0)</p>
+
+<p class="whs8">n6 &nbsp;= 
+ mesh.AddNode(5.0 * dx, 0, 0)</p>
+
+<p class="whs8">n7 &nbsp;= 
+ mesh.AddNode(0.0 * dx, dy, 0)</p>
+
+<p class="whs8">n8 &nbsp;= 
+ mesh.AddNode(1.0 * dx, dy, 0)</p>
+
+<p class="whs8">n9 &nbsp;= 
+ mesh.AddNode(2.0 * dx, dy, 0)</p>
+
+<p class="whs8">n10 = mesh.AddNode(3.0 
+ * dx, dy, 0)</p>
+
+<p class="whs8">n11 = mesh.AddNode(4.0 
+ * dx, dy, 0)</p>
+
+<p class="whs8">n12 = mesh.AddNode(5.0 
+ * dx, dy, 0)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8">f1 = mesh.AddFace([n1, 
+ n2, n8 , n7 ])</p>
+
+<p class="whs8">f2 = mesh.AddFace([n2, 
+ n3, n9 , n8 ])</p>
+
+<p class="whs8">f3 = mesh.AddFace([n3, 
+ n4, n10, n9 ])</p>
+
+<p class="whs8">f4 = mesh.AddFace([n4, 
+ n5, n11, n10])</p>
+
+<p class="whs8">f5 = mesh.AddFace([n5, 
+ n6, n12, n11]) </p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs9"># Change the orientation 
+ of the second and the fourth faces.</p>
+
+<p class="whs8">mesh.Reorient([2, 
+ 4])</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8">salome.sg.updateObjBrowser(1) 
+ </p>
+
+<p class="whs8">&nbsp;</p>
 
 <h3><a name=bookmark7>Cutting Quadrangles</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import SMESH_mechanic</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to cut quadrangles. </p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">smesh = SMESH_mechanic.smesh</p>
 
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">import SMESH</p>
-
-<p class="whs9">import SMESH_mechanic</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">smesh = SMESH_mechanic.smesh</p>
-
-<p class="whs9">mesh &nbsp;= 
+<p class="whs8">mesh &nbsp;= 
  SMESH_mechanic.mesh</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># cut two quadrangles: 
+<p class="whs9"># cut two quadrangles: 
  405 and 406</p>
 
-<p class="whs9">aFilterMgr = smesh.CreateFilterManager()</p>
-
-<p class="whs9">aFunctor = aFilterMgr.CreateMinimumAngle()</p>
+<p class="whs8">mesh.QuadToTri([405, 
+ 406], smesh.FT_MinimumAngle) &nbsp;</p>
 
 <p class="whs9">&nbsp;</p>
-
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">aMeshEditor.QuadToTri([405, 
- 406], aFunctor) </p>
-
-<p class="whs10">&nbsp;</p>
 
 <h3><a name=bookmark8>Smoothing</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to perform smoothing. </p>
+<p class="whs8">import geompy</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs8">import SMESH_mechanic</p>
 
-<p class="whs9">import salome</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import geompy</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">smesh 
+ = SMESH_mechanic.smesh</span></p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">mesh = SMESH_mechanic.mesh</p>
 
-<p class="whs9">import SMESH</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import SMESH_mechanic</p>
+<p class="whs9"># select the top face</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">faces 
+ = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, geompy.ShapeType[&quot;FACE&quot;])</span></p>
 
-<p class="whs9">mesh = SMESH_mechanic.mesh</p>
+<p class="whs8">face = faces[3]</p>
 
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># select the top face</p>
-
-<p class="whs9">faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, 
- geompy.ShapeType[&quot;FACE&quot;])</p>
-
-<p class="whs9">face = faces[3]</p>
-
-<p class="whs9">geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, 
+<p class="whs8">geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, 
  face, &quot;face planar with hole&quot;)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># create a group of faces 
- to be smoothed</p>
+<p class="whs8"># create a group of 
+ faces to be smoothed</p>
 
-<p class="whs9">GroupSmooth = mesh.CreateGroupFromGEOM(SMESH.FACE, 
- &quot;Group of faces (smooth)&quot;, face)</p>
+<p class="whs8">GroupSmooth = mesh.GroupOnGeom(face, 
+ &quot;Group of faces (smooth)&quot;, smesh.FACE)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># perform smoothing</p>
+<p class="whs8"># perform smoothing</p>
 
-<p class="whs10"># boolean SmoothObject(Object, 
+<p class="whs8">&nbsp;</p>
+
+<p class="whs8"># boolean SmoothObject(Object, 
  IDsOfFixedNodes, MaxNbOfIterations, MaxAspectRatio, Method)</p>
 
-<p class="whs9">res = aMeshEditor.SmoothObject(GroupSmooth, 
- [], 20, 2., SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)</p>
+<p class="whs8">res = mesh.SmoothObject(GroupSmooth, 
+ [], 20, 2., smesh.CENTROIDAL_SMOOTH)</p>
 
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">print &quot;\nSmoothing 
+<p class="whs8">print &quot;\nSmoothing 
  ... &quot;,</p>
 
-<p class="whs9">if not res: print 
+<p class="whs8">if not res: print 
  &quot;failed!&quot;</p>
 
-<p class="whs9">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
+<p class="whs8">else: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print 
  &quot;done.&quot;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">salome.sg.updateObjBrowser(1) 
+<p class="whs8">salome.sg.updateObjBrowser(1) 
  </p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
 <h3><a name=bookmark9>Extrusion</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to perform extrusion. </p>
+<p class="whs8">import geompy</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">import SMESH_mechanic</p>
 
-<p class="whs9">import salome</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import geompy</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">smesh 
+ = SMESH_mechanic.smesh</span></p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">mesh = SMESH_mechanic.mesh 
+ </p>
 
-<p class="whs9">import SMESH</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import SMESH_mechanic</p>
+<p class="whs9"># select the top face</p>
 
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">mesh = SMESH_mechanic.mesh</p>
-
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># select the top face</p>
-
-<p class="whs9">faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, 
+<p class="whs8">faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, 
  geompy.ShapeType[&quot;FACE&quot;])</p>
 
-<p class="whs9">face = faces[7]</p>
+<p class="whs8">face = faces[7]</p>
 
-<p class="whs9">geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, 
+<p class="whs8">geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, 
  face, &quot;face circular top&quot;)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># create a vector for 
- extrusion</p>
+<p class="whs8"># create a vector 
+ for extrusion</p>
 
-<p class="whs9">point = SMESH.PointStruct(0., 
+<p class="whs8">point = smesh.PointStruct(0., 
  0., 5.)</p>
 
-<p class="whs9">vector = SMESH.DirStruct(point)</p>
+<p class="whs8">vector = smesh.DirStruct(point)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># create a group to be 
- extruded</p>
+<p class="whs8"># create a group to 
+ be extruded</p>
 
-<p class="whs9">GroupTri = mesh.CreateGroupFromGEOM(SMESH.FACE, 
- &quot;Group of faces (extrusion)&quot;, face)</p>
+<p class="whs8">GroupTri = mesh.GroupOnGeom(face, 
+ &quot;Group of faces (extrusion)&quot;, smesh.FACE)</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"># perform extrusion of 
- the group</p>
+<p class="whs8"># perform extrusion 
+ of the group</p>
 
-<p class="whs9">aMeshEditor.ExtrusionSweepObject(GroupTri, 
+<p class="whs8">mesh.ExtrusionSweepObject(GroupTri, 
  vector, 5)</p>
 
-<p class="whs10">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs10"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
+<p class="whs9"><span style="font-family: 'Lucida Console', monospace;">salome.sg.updateObjBrowser(1)</span> 
  </p>
 
 <h3><a name=bookmark10>Extrusion along a Path</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import math</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to perform extrusion along a path. </p>
+<p class="whs8">import salome</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs9"># Geometry</p>
 
-<p class="whs9">import math</p>
-
-<p class="whs9">import salome</p>
+<p class="whs8">import geompy</p>
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># Geometry</p>
+<p class="whs9"># 1. Create points</p>
 
-<p class="whs9">import geompy</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 1. Create points</p>
-
-<p class="whs9">points = [[0, 0], 
+<p class="whs8">points = [[0, 0], 
  [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">iv = 1</p>
+<p class="whs8">iv = 1</p>
 
-<p class="whs9">vertices = []</p>
+<p class="whs8">vertices = []</p>
 
-<p class="whs9">for point in points:</p>
+<p class="whs8">for point in points:</p>
 
-<p class="whs11">vert 
+<p class="whs10">vert 
  = geompy.MakeVertex(point[0], point[1], 0)</p>
 
-<p class="whs11">geompy.addToStudy(vert, 
+<p class="whs10">geompy.addToStudy(vert, 
  &quot;Vertex_&quot; + `iv`)</p>
 
-<p class="whs11">vertices.append(vert)</p>
+<p class="whs10">vertices.append(vert)</p>
 
-<p class="whs11">iv 
+<p class="whs10">iv 
  += 1</p>
 
-<p class="whs11">pass</p>
+<p class="whs10">pass</p>
 
-<p class="whs10">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
-<p class="whs10"># 2. Create edges and 
+<p class="whs9"># 2. Create edges and 
  wires</p>
 
-<p class="whs9">Edge_straight = geompy.MakeEdge(vertices[0], 
+<p class="whs8">Edge_straight = geompy.MakeEdge(vertices[0], 
  vertices[4])</p>
 
-<p class="whs9">Edge_bezierrr = geompy.MakeBezier(vertices)</p>
+<p class="whs8">Edge_bezierrr = geompy.MakeBezier(vertices)</p>
 
-<p class="whs9">Wire_polyline = geompy.MakePolyline(vertices)</p>
+<p class="whs8">Wire_polyline = geompy.MakePolyline(vertices)</p>
 
-<p class="whs9">Edge_Circle &nbsp;&nbsp;= 
+<p class="whs8">Edge_Circle &nbsp;&nbsp;= 
  geompy.MakeCircleThreePnt(vertices[0], vertices[1], vertices[2])</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">geompy.addToStudy(Edge_straight, 
+<p class="whs8">geompy.addToStudy(Edge_straight, 
  &quot;Edge_straight&quot;)</p>
 
-<p class="whs9">geompy.addToStudy(Edge_bezierrr, 
+<p class="whs8">geompy.addToStudy(Edge_bezierrr, 
  &quot;Edge_bezierrr&quot;)</p>
 
-<p class="whs9">geompy.addToStudy(Wire_polyline, 
+<p class="whs8">geompy.addToStudy(Wire_polyline, 
  &quot;Wire_polyline&quot;)</p>
 
-<p class="whs9">geompy.addToStudy(Edge_Circle 
+<p class="whs8">geompy.addToStudy(Edge_Circle 
  &nbsp;, &quot;Edge_Circle&quot;)</p>
 
-<p class="whs10">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
-<p class="whs10"># 3. Explode wire on 
+<p class="whs9"># 3. Explode wire on 
  edges, as they will be used for mesh extrusion</p>
 
-<p class="whs9">Wire_polyline_edges 
+<p class="whs8">Wire_polyline_edges 
  = geompy.SubShapeAll(Wire_polyline, geompy.ShapeType[&quot;EDGE&quot;])</p>
 
-<p class="whs9">for ii in range(len(Wire_polyline_edges)):</p>
+<p class="whs8">for ii in range(len(Wire_polyline_edges)):</p>
 
-<p class="whs11">geompy.addToStudyInFather(Wire_polyline, 
+<p class="whs10">geompy.addToStudyInFather(Wire_polyline, 
  Wire_polyline_edges[ii], &quot;Edge_&quot; + `ii + 1`)</p>
 
-<p class="whs11">pass</p>
+<p class="whs10">pass</p>
 
-<p class="whs12">&nbsp;</p>
+<p class="whs11">&nbsp;</p>
 
-<p class="whs10"># Mesh</p>
+<p class="whs9"># Mesh</p>
 
-<p class="whs9">import smesh</p>
+<p class="whs8">import smesh</p>
 
-<p class="whs9">import SMESH</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs12"># Mesh 
+ the given shape with the given 1d hypothesis</p>
 
-<p class="whs9">gen = smesh.smesh</p>
+<p class="whs13">def 
+ Mesh1D(shape1d, nbSeg, name):</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs13">&nbsp;&nbsp;mesh1d_tool 
+ = smesh.Mesh(shape1d, name)</p>
 
-<p class="whs9">smeshgui = salome.ImportComponentGUI(&quot;SMESH&quot;)</p>
+<p class="whs13">&nbsp;&nbsp;algo 
+ = mesh1d_tool.Segment()</p>
 
-<p class="whs9">smeshgui.Init(salome.myStudyId)</p>
+<p class="whs13">&nbsp;&nbsp;hyp 
+ &nbsp;= algo.NumberOfSegments(nbSeg)</p>
 
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 1D algorithm and three 
- 1D hypotheses</p>
-
-<p class="whs9">Wire_discretisation 
- = gen.CreateHypothesis('Regular_1D', 'libStdMeshersEngine.so')</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">Nb_Segments_3 = gen.CreateHypothesis('NumberOfSegments', 
- 'libStdMeshersEngine.so')</p>
-
-<p class="whs9">Nb_Segments_7 = gen.CreateHypothesis('NumberOfSegments', 
- 'libStdMeshersEngine.so')</p>
-
-<p class="whs9">Nb_Segments_8 = gen.CreateHypothesis('NumberOfSegments', 
- 'libStdMeshersEngine.so')</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">Nb_Segments_3.SetNumberOfSegments(3)</p>
-
-<p class="whs9">Nb_Segments_7.SetNumberOfSegments(7)</p>
-
-<p class="whs9">Nb_Segments_8.SetNumberOfSegments(8)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># Mesh given shape with 
- given 1d hypothesis</p>
-
-<p class="whs9">def Mesh1D(shape1d, 
- hyp1d, name):</p>
-
-<p class="whs11">mesh1d_tool 
- = smesh.Mesh(shape1d)</p>
-
-<p class="whs11">mesh1d 
- = mesh1d_tool.GetMesh()</p>
-
-<p class="whs11">status 
- = mesh1d.AddHypothesis(shape1d, hyp1d)</p>
-
-<p class="whs11">status 
- = mesh1d.AddHypothesis(shape1d, Wire_discretisation)</p>
-
-<p class="whs11">isDone 
+<p class="whs13">&nbsp;&nbsp;isDone 
  = mesh1d_tool.Compute()</p>
 
-<p class="whs11">if 
+<p class="whs13">&nbsp;&nbsp;if 
  not isDone: print 'Mesh ', name, ': computation failed'</p>
 
-<p class="whs11">return 
- mesh1d</p>
+<p class="whs13">&nbsp;&nbsp;return 
+ mesh1d_tool</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs12"># Create 
+ a mesh with six nodes, seven edges and two quadrangle faces</p>
 
-<p class="whs10"># Create a mesh with 
- six nodes, seven edges and two quadrangle faces</p>
+<p class="whs13">def 
+ MakeQuadMesh2(mesh_name):</p>
 
-<p class="whs9">def MakeQuadMesh2(mesh_name):</p>
+<p class="whs13">&nbsp;&nbsp;quad_1 
+ = smesh.Mesh(name = mesh_name)</p>
 
-<p class="whs11">quad_1 
- = gen.CreateEmptyMesh()</p>
+<p class="whs13">&nbsp;&nbsp;</p>
 
-<p class="whs11">smeshgui.SetName(salome.ObjectToID(quad_1), 
- mesh_name)</p>
+<p class="whs13">&nbsp;&nbsp;<span 
+ style="font-family: 'Times New Roman', serif;"># 
+ six nodes</span></p>
 
-<p class="whs11">editor_1 
- = quad_1.GetMeshEditor()</p>
+<p class="whs13">&nbsp;&nbsp;n1 
+ = quad_1.AddNode(0, 20, 10)</p>
 
-<p class="whs12">&nbsp;</p>
+<p class="whs13">&nbsp;&nbsp;n2 
+ = quad_1.AddNode(0, 40, 10)</p>
 
-<p class="whs12"># six nodes</p>
+<p class="whs13">&nbsp;&nbsp;n3 
+ = quad_1.AddNode(0, 40, 30)</p>
 
-<p class="whs11">n1 
- = editor_1.AddNode(0, 20, 10)</p>
+<p class="whs13">&nbsp;&nbsp;n4 
+ = quad_1.AddNode(0, 20, 30)</p>
 
-<p class="whs11">n2 
- = editor_1.AddNode(0, 40, 10)</p>
-
-<p class="whs11">n3 
- = editor_1.AddNode(0, 40, 30)</p>
-
-<p class="whs11">n4 
- = editor_1.AddNode(0, 20, 30)</p>
-
-<p class="whs11">n5 
- = editor_1.AddNode(0, &nbsp;0, 
+<p class="whs13">&nbsp;&nbsp;n5 
+ = quad_1.AddNode(0, &nbsp;0, 
  30)</p>
 
-<p class="whs11">n6 
- = editor_1.AddNode(0, &nbsp;0, 
+<p class="whs13">&nbsp;&nbsp;n6 
+ = quad_1.AddNode(0, &nbsp;0, 
  10)</p>
 
-<p class="whs12">&nbsp;</p>
+<p class="whs13">&nbsp;&nbsp;</p>
 
-<p class="whs12"># seven edges</p>
+<p class="whs13">&nbsp;&nbsp;<span 
+ style="font-family: 'Times New Roman', serif;"># 
+ seven edges</span></p>
 
-<p class="whs11">editor_1.AddEdge([n1, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n1, 
  n2]) # 1</p>
 
-<p class="whs11">editor_1.AddEdge([n2, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n2, 
  n3]) # 2</p>
 
-<p class="whs11">editor_1.AddEdge([n3, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n3, 
  n4]) # 3</p>
 
-<p class="whs11">editor_1.AddEdge([n4, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n4, 
  n1]) # 4</p>
 
-<p class="whs11">editor_1.AddEdge([n4, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n4, 
  n5]) # 5</p>
 
-<p class="whs11">editor_1.AddEdge([n5, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n5, 
  n6]) # 6</p>
 
-<p class="whs11">editor_1.AddEdge([n6, 
+<p class="whs13">&nbsp;&nbsp;quad_1.AddEdge([n6, 
  n1]) # 7</p>
-
-<p class="whs12">&nbsp;</p>
-
-<p class="whs12"># two quadrangle faces</p>
-
-<p class="whs11">editor_1.AddFace([n1, 
- n2, n3, n4]) # 8</p>
-
-<p class="whs11">editor_1.AddFace([n1, 
- n4, n5, n6]) # 9</p>
-
-<p class="whs11">return 
- [quad_1, editor_1, [1,2,3,4,5,6,7], [8,9]]</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># Path meshes</p>
-
-<p class="whs9">Edge_straight_mesh 
- = Mesh1D(Edge_straight, Nb_Segments_7, &quot;Edge_straight&quot;)</p>
-
-<p class="whs9">Edge_bezierrr_mesh 
- = Mesh1D(Edge_bezierrr, Nb_Segments_7, &quot;Edge_bezierrr&quot;)</p>
-
-<p class="whs9">Wire_polyline_mesh 
- = Mesh1D(Wire_polyline, Nb_Segments_3, &quot;Wire_polyline&quot;)</p>
-
-<p class="whs9">Edge_Circle_mesh &nbsp;&nbsp;= 
- Mesh1D(Edge_Circle &nbsp;, 
- Nb_Segments_8, &quot;Edge_Circle&quot;)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># Initial meshes (to 
- be extruded)</p>
-
-<p class="whs9">[quad_1, editor_1, 
- ee_1, ff_1] = MakeQuadMesh2(&quot;quad_1&quot;)</p>
-
-<p class="whs9">[quad_2, editor_2, 
- ee_2, ff_2] = MakeQuadMesh2(&quot;quad_2&quot;)</p>
-
-<p class="whs9">[quad_3, editor_3, 
- ee_3, ff_3] = MakeQuadMesh2(&quot;quad_3&quot;)</p>
-
-<p class="whs9">[quad_4, editor_4, 
- ee_4, ff_4] = MakeQuadMesh2(&quot;quad_4&quot;)</p>
-
-<p class="whs9">[quad_5, editor_5, 
- ee_5, ff_5] = MakeQuadMesh2(&quot;quad_5&quot;)</p>
-
-<p class="whs9">[quad_6, editor_6, 
- ee_6, ff_6] = MakeQuadMesh2(&quot;quad_6&quot;)</p>
-
-<p class="whs9">[quad_7, editor_7, 
- ee_7, ff_7] = MakeQuadMesh2(&quot;quad_7&quot;)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># ExtrusionAlongPath</p>
-
-<p class="whs10"># IDsOfElements, PathMesh, 
- PathShape, NodeStart,</p>
-
-<p class="whs10"># HasAngles, Angles, 
- HasRefPoint, RefPoint</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs9">refPoint = SMESH.PointStruct(0, 
- 0, 0)</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">a10 = 10.0*math.pi/180.0</p>
-
-<p class="whs9">a45 = 45.0*math.pi/180.0</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 1. Extrusion of two 
- mesh edges along a straight path</p>
-
-<p class="whs9">error = editor_1.ExtrusionAlongPath([1,2], 
- Edge_straight_mesh, Edge_straight, 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;0, 
- [], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 2. Extrusion of one 
- mesh edge along a curved path</p>
-
-<p class="whs9">error = editor_2.ExtrusionAlongPath([2], 
- Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;0, 
- [], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 3. Extrusion of one 
- mesh edge along a curved path with usage of angles </p>
-
-<p class="whs9">error = editor_3.ExtrusionAlongPath([2], 
- Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;1, 
- [a45, a45, a45, 0, -a45, -a45, -a45], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 4. Extrusion of one 
- mesh edge along the path, which is a part of a meshed wire</p>
-
-<p class="whs9">error = editor_4.ExtrusionAlongPath([4], 
- Wire_polyline_mesh, Wire_polyline_edges[0], 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;1, 
- [a10, a10, a10], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 5. Extrusion of two 
- mesh faces along the path, which is a part of a meshed wire</p>
-
-<p class="whs9">error = editor_5.ExtrusionAlongPath(ff_5 
- , Wire_polyline_mesh, Wire_polyline_edges[2], 4,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;0, 
- [], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 6. Extrusion of two 
- mesh faces along a closed path</p>
-
-<p class="whs9">error = editor_6.ExtrusionAlongPath(ff_6 
- , Edge_Circle_mesh, Edge_Circle, 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;0, 
- [], 0, refPoint)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># 7. Extrusion of two 
- mesh faces along a closed path with usage of angles </p>
-
-<p class="whs9">error = editor_7.ExtrusionAlongPath(ff_7, 
- Edge_Circle_mesh, Edge_Circle, 1,</p>
-
-<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;1, 
- [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint</p>
 
 <p class="whs13">&nbsp;</p>
 
-<p class="whs14">salome.sg.updateObjBrowser(1)</p>
+<p class="whs13">&nbsp;&nbsp;<span 
+ style="font-family: 'Times New Roman', serif;"># 
+ two quadrangle faces</span></p>
+
+<p class="whs13">&nbsp;&nbsp;quad_1.AddFace([n1, 
+ n2, n3, n4]) # 8</p>
+
+<p class="whs13">&nbsp;&nbsp;quad_1.AddFace([n1, 
+ n4, n5, n6]) # 9</p>
+
+<p class="whs13">&nbsp;&nbsp;return 
+ [quad_1, [1,2,3,4,5,6,7], [8,9]]</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># Path 
+ meshes</p>
+
+<p class="whs13">Edge_straight_mesh 
+ = Mesh1D(Edge_straight, 7, &quot;Edge_straight&quot;)</p>
+
+<p class="whs13">Edge_bezierrr_mesh 
+ = Mesh1D(Edge_bezierrr, 7, &quot;Edge_bezierrr&quot;)</p>
+
+<p class="whs13">Wire_polyline_mesh 
+ = Mesh1D(Wire_polyline, 3, &quot;Wire_polyline&quot;)</p>
+
+<p class="whs13">Edge_Circle_mesh 
+ &nbsp;&nbsp;= 
+ Mesh1D(Edge_Circle &nbsp;, 
+ 8, &quot;Edge_Circle&quot;)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># Initial 
+ meshes (to be extruded)</p>
+
+<p class="whs13">[quad_1, 
+ ee_1, ff_1] = MakeQuadMesh2(&quot;quad_1&quot;)</p>
+
+<p class="whs13">[quad_2, 
+ ee_2, ff_2] = MakeQuadMesh2(&quot;quad_2&quot;)</p>
+
+<p class="whs13">[quad_3, 
+ ee_3, ff_3] = MakeQuadMesh2(&quot;quad_3&quot;)</p>
+
+<p class="whs13">[quad_4, 
+ ee_4, ff_4] = MakeQuadMesh2(&quot;quad_4&quot;)</p>
+
+<p class="whs13">[quad_5, 
+ ee_5, ff_5] = MakeQuadMesh2(&quot;quad_5&quot;)</p>
+
+<p class="whs13">[quad_6, 
+ ee_6, ff_6] = MakeQuadMesh2(&quot;quad_6&quot;)</p>
+
+<p class="whs13">[quad_7, 
+ ee_7, ff_7] = MakeQuadMesh2(&quot;quad_7&quot;)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># ExtrusionAlongPath</p>
+
+<p class="whs12"># IDsOfElements, 
+ PathMesh, PathShape, NodeStart,</p>
+
+<p class="whs12"># HasAngles, 
+ Angles, HasRefPoint, RefPoint</p>
+
+<p class="whs13">refPoint 
+ = smesh.PointStruct(0, 0, 0)</p>
+
+<p class="whs13">a10 
+ = 10.0*math.pi/180.0</p>
+
+<p class="whs13">a45 
+ = 45.0*math.pi/180.0</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 1. 
+ Extrusion of two mesh edges along a straight path</p>
+
+<p class="whs13">error 
+ = quad_1.ExtrusionAlongPath([1,2], Edge_straight_mesh, Edge_straight, 
+ 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 2. 
+ Extrusion of one mesh edge along a curved path</p>
+
+<p class="whs13">error 
+ = quad_2.ExtrusionAlongPath([2], Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 3. 
+ Extrusion of one mesh edge along a curved path with usage of angles</p>
+
+<p class="whs13">error 
+ = quad_3.ExtrusionAlongPath([2], Edge_bezierrr_mesh, Edge_bezierrr, 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a45, a45, a45, 0, -a45, -a45, -a45], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 4. 
+ Extrusion of one mesh edge along the path, which is a part of a meshed 
+ wire</p>
+
+<p class="whs13">error 
+ = quad_4.ExtrusionAlongPath([4], Wire_polyline_mesh, Wire_polyline_edges[0], 
+ 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a10, a10, a10], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 5. 
+ Extrusion of two mesh faces along the path, which is a part of a meshed 
+ wire</p>
+
+<p class="whs13">error 
+ = quad_5.ExtrusionAlongPath(ff_5 , Wire_polyline_mesh, Wire_polyline_edges[2], 
+ 4,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 6. 
+ Extrusion of two mesh faces along a closed path</p>
+
+<p class="whs13">error 
+ = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0, 
+ [], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs12"># 7. 
+ Extrusion of two mesh faces along a closed path with usage of angles</p>
+
+<p class="whs13">error 
+ = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,</p>
+
+<p class="whs13">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1, 
+ [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)</p>
+
+<p class="whs13">&nbsp;</p>
+
+<p class="whs13">salome.sg.updateObjBrowser(1) 
+ </p>
 
 <h3><a name=bookmark11>Revolution</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import math</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to perform revolution. </p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">import SMESH_mechanic</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import math</p>
+<p class="whs8"><span style="font-family: 'Lucida Console', monospace;">mesh 
+ &nbsp;= SMESH_mechanic.mesh</span></p>
 
-<p class="whs9">import SMESH</p>
+<p class="whs8">smesh = SMESH_mechanic.smesh</p>
 
-<p class="whs9">import SMESH_mechanic</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">&nbsp;</p>
-
-<p class="whs9">mesh = SMESH_mechanic.mesh</p>
-
-<p class="whs9">aMeshEditor = mesh.GetMeshEditor()</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># create a group of faces 
+<p class="whs9"># create a group of faces 
  to be revolved</p>
 
-<p class="whs9">FacesRotate = [492, 
+<p class="whs8">FacesRotate = [492, 
  493, 502, 503]</p>
 
-<p class="whs9">GroupRotate = mesh.CreateGroup(SMESH.FACE,&quot;Group 
+<p class="whs8">GroupRotate = mesh.CreateGroup(SMESH.FACE,&quot;Group 
  of faces (rotate)&quot;)</p>
 
-<p class="whs9">GroupRotate.Add(FacesRotate)</p>
-
-<p class="whs10">&nbsp;</p>
-
-<p class="whs10"># define revolution angle 
- and axis</p>
-
-<p class="whs9">angle45 = 45 * math.pi 
- / 180</p>
-
-<p class="whs9">axisXYZ = SMESH.AxisStruct(-38.3128, 
- -73.3658, -23.321, -13.3402, -13.3265, 6.66632)</p>
+<p class="whs8">GroupRotate.Add(FacesRotate)</p>
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># perform revolution 
+<p class="whs9"># define revolution angle 
+ and axis</p>
+
+<p class="whs8">angle45 = 45 * math.pi 
+ / 180</p>
+
+<p class="whs8">axisXYZ = SMESH.AxisStruct(-38.3128, 
+ -73.3658, -23.321, -13.3402, -13.3265, 6.66632)</p>
+
+<p class="whs8">&nbsp;</p>
+
+<p class="whs9"># perform revolution 
  of an object</p>
 
-<p class="whs9">aMeshEditor.RotationSweepObject(GroupRotate, 
+<p class="whs8">mesh.RotationSweepObject(GroupRotate, 
  axisXYZ, angle45, 4, 1e-5) </p>
 
-<p class="whs10">&nbsp;</p>
+<p class="whs9">&nbsp;</p>
 
 <h3><a name=bookmark13>Pattern Mapping</a></h3>
 
-<p class="whs1"><span style="font-weight: bold; color: #ff0000;"><font color=red ><B># 
- Attention! This script has been written using the old approach basing 
- on direct usage of SMESH idl interface.</B></font></span></p>
+<p class="whs8">import geompy</p>
 
-<p class="whs1"># For the moment smesh package doesn't provide 
- methods to perform pattern mapping. </p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs1"># In the next SALOME version the scripts will 
- be updated to use only the commands from smesh package.</p>
+<p class="whs8">import smesh</p>
 
-<p class="whs9">&nbsp;</p>
+<p class="whs8">&nbsp;</p>
 
-<p class="whs9">import geompy</p>
-
-<p class="whs9">import smesh</p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10"># define the geometry</p>
+<p class="whs8"># define the geometry</p>
 
 <p class="whs9">Box_1 = geompy.MakeBoxDXDYDZ(200., 
  200., 200.)</p>
@@ -1936,6 +1660,8 @@ if (window.writeIntopicBar)
 
 <p class="whs9">Face_2 = faces[1]</p>
 
+<p class="whs9">&nbsp;</p>
+
 <p class="whs9">geompy.addToStudyInFather(Box_1, 
  Face_1, &quot;Face_1&quot;)</p>
 
@@ -1944,7 +1670,7 @@ if (window.writeIntopicBar)
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># build a quadrangle 
+<p class="whs8"># build a quadrangle 
  mesh 3x3 on Face_1</p>
 
 <p class="whs9">Mesh_1 = smesh.Mesh(Face_1)</p>
@@ -1964,10 +1690,12 @@ if (window.writeIntopicBar)
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># build a triangle mesh 
- on Face_2</p>
+<p class="whs8"># build a triangle 
+ mesh on Face_2</p>
 
 <p class="whs9">Mesh_2 = smesh.Mesh(Face_2)</p>
+
+<p class="whs9">&nbsp;</p>
 
 <p class="whs9">algo1D = Mesh_2.Segment()</p>
 
@@ -1977,6 +1705,8 @@ if (window.writeIntopicBar)
 
 <p class="whs9">algo2D.MaxElementArea(240)</p>
 
+<p class="whs9">&nbsp;</p>
+
 <p class="whs9">isDone = Mesh_2.Compute()</p>
 
 <p class="whs9">if not isDone: print 
@@ -1984,33 +1714,33 @@ if (window.writeIntopicBar)
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># create a pattern</p>
+<p class="whs8"># create a pattern</p>
 
-<p class="whs9">pattern = smesh.smesh.GetPattern()</p>
+<p class="whs9">pattern = smesh.GetPattern()</p>
+
+<p class="whs9">&nbsp;</p>
 
 <p class="whs9">isDone = pattern.LoadFromFace(Mesh_2.GetMesh(), 
  Face_2, 0)</p>
 
-<p class="whs9">if (isDone != 1): 
- print 'LoadFromFace :', pattern.GetErrorCode()</p>
+<p class="whs9">if (isDone != 1): print 
+ 'LoadFromFace :', pattern.GetErrorCode()</p>
 
 <p class="whs9">&nbsp;</p>
 
-<p class="whs10"># apply the pattern to 
- a face of the first mesh</p>
+<p class="whs8"># apply the pattern 
+ to a face of the first mesh</p>
 
 <p class="whs9">pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), 
  [17], 0, 0)</p>
 
+<p class="whs9">&nbsp;</p>
+
 <p class="whs9">isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 
  0, 0)</p>
 
-<p class="whs9">if (isDone != 1): 
- print 'MakeMesh :', pattern.GetErrorCode() </p>
-
-<p class="whs9">&nbsp;</p>
-
-<p class="whs10">&nbsp;</p>
+<p class="whs9">if (isDone != 1): print 
+ 'MakeMesh :', pattern.GetErrorCode() &nbsp;</p>
 
 <script type="text/javascript" language="javascript1.2">
 <!--

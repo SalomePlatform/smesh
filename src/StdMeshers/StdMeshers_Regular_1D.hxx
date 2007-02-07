@@ -30,11 +30,13 @@
 #ifndef _SMESH_REGULAR_1D_HXX_
 #define _SMESH_REGULAR_1D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_1D_Algo.hxx"
 
 class TopoDS_Edge;
 
-class StdMeshers_Regular_1D:
+class STDMESHERS_EXPORT StdMeshers_Regular_1D:
   public SMESH_1D_Algo
 {
 public:

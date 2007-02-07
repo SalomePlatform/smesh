@@ -29,12 +29,14 @@
 #ifndef _SMESHGUI_SWIG_HXX_
 #define _SMESHGUI_SWIG_HXX_
 
+#include "SMESH_SMESHGUI.hxx"
+
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SALOMEDS)
 #include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
 
-class SMESH_Swig
+class SMESHGUI_EXPORT SMESH_Swig
 {
 public:
   SMESH_Swig();

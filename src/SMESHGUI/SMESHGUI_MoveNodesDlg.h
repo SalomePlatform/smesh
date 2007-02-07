@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_MOVE_NODES_H
 #define DIALOGBOX_MOVE_NODES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include <qdialog.h>
@@ -49,7 +51,7 @@ class SVTK_ViewWindow;
 // class    : SMESHGUI_MoveNodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_MoveNodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MoveNodesDlg : public QDialog
 { 
   Q_OBJECT
 

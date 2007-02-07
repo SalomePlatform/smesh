@@ -30,6 +30,8 @@
 #ifndef SMESH_MeshEditor_HeaderFile
 #define SMESH_MeshEditor_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Controls.hxx"
 #include "SMESH_SequenceOfNode.hxx"
@@ -37,24 +39,25 @@
 #include "gp_Dir.hxx"
 #include "TColStd_HSequenceOfReal.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMDS_MeshElement.hxx"
 
 #include <list>
 #include <map>
 
 typedef map<const SMDS_MeshElement*,
             list<const SMDS_MeshElement*> > TElemOfElemListMap;
+typedef map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
-typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*> RemoveQuadNodeMap;
+typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>           RemoveQuadNodeMap;
 typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>::iterator ItRemoveQuadNodeMap;
 
-class SMDS_MeshElement;
 class SMDS_MeshFace;
 class SMDS_MeshNode;
 class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
 
-class SMESH_MeshEditor {
+class SMESH_EXPORT SMESH_MeshEditor {
 public:
 
   // define a set of elements sorted by ID, to be used to assure
@@ -64,6 +67,16 @@ public:
     { return e1->GetID() < e2->GetID(); }
   };
   typedef set< const SMDS_MeshElement*, TIDCompare > TIDSortedElemSet;
+
+  /*!
+   * \brief Insert element in a map of elements sorted by ID
+    * \param elem - element to insert
+    * \param elemMap - the map to fill in
+   */
+  static void Insert(const SMDS_MeshElement*                 elem,
+                     std::map<int,const SMDS_MeshElement*> & elemMap) {
+    elemMap.insert( make_pair( elem->GetID(), elem ));
+  }
   
 public:
 
@@ -282,6 +295,13 @@ public:
                                    const SMDS_MeshNode* theNode3 = 0);
   // Return true if the three nodes are on a free border
 
+  static bool FindFreeBorder (const SMDS_MeshNode*                  theFirstNode,
+                              const SMDS_MeshNode*                  theSecondNode,
+                              const SMDS_MeshNode*                  theLastNode,
+                              std::list< const SMDS_MeshNode* > &   theNodes,
+                              std::list< const SMDS_MeshElement* >& theFaces);
+  // Return nodes and faces of a free border if found 
+
   enum Sew_Error {
     SEW_OK,
     // for SewFreeBorder()
@@ -294,7 +314,8 @@ public:
     SEW_DIFF_NB_OF_ELEMENTS,
     SEW_TOPO_DIFF_SETS_OF_ELEMENTS,
     SEW_BAD_SIDE1_NODES,
-    SEW_BAD_SIDE2_NODES
+    SEW_BAD_SIDE2_NODES,
+    SEW_INTERNAL_ERROR
     };
     
 
@@ -391,6 +412,25 @@ public:
   // Return a face having linked nodes n1 and n2 and which is
   // - not in avoidSet,
   // - in elemSet provided that !elemSet.empty()
+
+  /*!
+   * \brief Find corresponding nodes in two sets of faces 
+    * \param theSide1 - first face set
+    * \param theSide2 - second first face
+    * \param theFirstNode1 - a boundary node of set 1
+    * \param theFirstNode2 - a node of set 2 corresponding to theFirstNode1
+    * \param theSecondNode1 - a boundary node of set 1 linked with theFirstNode1
+    * \param theSecondNode2 - a node of set 2 corresponding to theSecondNode1
+    * \param nReplaceMap - output map of corresponding nodes
+    * \retval Sew_Error  - is a success or not
+   */
+  static Sew_Error FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
+                                     set<const SMDS_MeshElement*>& theSide2,
+                                     const SMDS_MeshNode*          theFirstNode1,
+                                     const SMDS_MeshNode*          theFirstNode2,
+                                     const SMDS_MeshNode*          theSecondNode1,
+                                     const SMDS_MeshNode*          theSecondNode2,
+                                     TNodeNodeMap &                nReplaceMap);
 
   /*!
    * \brief Returns true if given node is medium

@@ -27,8 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-
 #include "StdMeshers_MaxElementVolume.hxx"
 
 #include "SMDS_MeshElement.hxx"
@@ -41,6 +39,8 @@ using namespace std;
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!

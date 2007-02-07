@@ -24,10 +24,11 @@
 //  File   : SMESH_MEDFamily_i.cxx
 //  Module : SMESH
 
-using namespace std;
 #include "SMESH_MEDFamily_i.hxx"
 #include "utilities.h"
 #include "Utils_CorbaException.hxx"
+
+using namespace std;
 
 //=============================================================================
 /*!

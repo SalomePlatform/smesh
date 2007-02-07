@@ -25,8 +25,8 @@
 
 import salome
 import geompy
-import SMESH
-import StdMeshers
+import smesh
+
 
 #----------------------------------GEOM
 
@@ -51,51 +51,25 @@ id_ellipse2 = geompy.addToStudy(ellipse2, "Ellips 2")
 
 
 #---------------------------------SMESH
-# get smesh engine
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
-
-# get SMESH GUI
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-# create hypoteses
-hypNbSeg1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg1.SetNumberOfSegments(18)
-id_hypNbSeg1 = salome.ObjectToID(hypNbSeg1) 
-smeshgui.SetName(id_hypNbSeg1, "NumberOfSegments 1");
-
-hypNbSeg2 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg2.SetNumberOfSegments(34)
-id_hypNbSeg2 = salome.ObjectToID(hypNbSeg2) 
-smeshgui.SetName(id_hypNbSeg2, "NumberOfSegments 2");
-
-# create algorithmes
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-id_algoReg = salome.ObjectToID(algoReg)
-smeshgui.SetName(id_algoReg, "Regular_1D");
 
 # create the path mesh
-mesh1 = smesh.CreateMesh(ellipse1)
-id_mesh1 = salome.ObjectToID(mesh1)
-smeshgui.SetName(id_mesh1, "Path Mesh");
+mesh1 = smesh.Mesh(ellipse1, "Path Mesh")
 
-# set hypotheses and algos
-mesh1.AddHypothesis(ellipse1,algoReg)
-mesh1.AddHypothesis(ellipse1,hypNbSeg1)
+algoReg1 = mesh1.Segment()
+algoReg1.SetName("Regular_1D")
+hypNbSeg1 = algoReg1.NumberOfSegments(18)
+smesh.SetName(hypNbSeg1, "NumberOfSegments 1")
 
 # create the tool mesh
-mesh2 = smesh.CreateMesh(ellipse2)
-id_mesh2 = salome.ObjectToID(mesh2)
-smeshgui.SetName(id_mesh2, "Tool Mesh");
-
-# set hypotheses and algos
-mesh2.AddHypothesis(ellipse2,algoReg)
-mesh2.AddHypothesis(ellipse2,hypNbSeg2)
+mesh2 = smesh.Mesh(ellipse2, "Tool Mesh")
+algoReg2 = mesh2.Segment()
+algoReg2.SetName("Regular_1D")
+hypNbSeg2 = algoReg2.NumberOfSegments(34)
+smesh.SetName(hypNbSeg2, "NumberOfSegments 2")
 
 # compute meshes
-smesh.Compute(mesh1,ellipse1)
-smesh.Compute(mesh2,ellipse2)
+mesh1.Compute()
+mesh2.Compute()
 
 
 # ---- udate object browser

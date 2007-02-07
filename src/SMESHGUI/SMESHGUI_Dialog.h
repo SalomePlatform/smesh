@@ -30,6 +30,8 @@
 #ifndef SMESHGUI_DIALOG_H
 #define SMESHGUI_DIALOG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <LightApp_Dialog.h>
 
 class SUIT_Desktop;
@@ -39,7 +41,7 @@ class SUIT_ResourceMgr;
 // class    : SMESHGUI_Dialog
 // purpose  : Base dialog for all SMESHGUI dialogs
 //=================================================================================
-class SMESHGUI_Dialog : public LightApp_Dialog
+class SMESHGUI_EXPORT SMESHGUI_Dialog : public LightApp_Dialog
 {
   Q_OBJECT
   

@@ -27,12 +27,13 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_LengthFromEdges_i.hxx"
 #include "SMESH_Gen.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!

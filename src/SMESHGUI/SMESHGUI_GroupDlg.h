@@ -28,6 +28,8 @@
 #ifndef DIALOGBOX_GROUP_H
 #define DIALOGBOX_GROUP_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
@@ -45,13 +47,17 @@ class QLineEdit;
 class QButtonGroup;
 class QGroupBox;
 class QListBox;
+class QPopupMenu;
 class QPushButton;
+class QToolButton;
 class QCheckBox;
 class QWidgetStack;
 class QtxIntSpinBox;
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_FilterDlg;
+class SMESHGUI_ShapeByMeshOp;
+class SUIT_Operation;
 class SVTK_Selector;
 class SVTK_ViewWindow;
 
@@ -59,7 +65,7 @@ class SVTK_ViewWindow;
 // class    : SMESHGUI_GroupDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_GroupDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_GroupDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -107,6 +113,12 @@ private slots:
     void onNbColorsChanged(const QString& text);
     void onFilterAccepted();
 
+    void onGeomPopup( int );
+    void onGeomSelectionButton( bool );
+
+    void onPublishShapeByMeshDlg(SUIT_Operation*);
+    void onCloseShapeByMeshDlg(SUIT_Operation*);
+
 private:
     void initDialog(bool create);
     void init(SMESH::SMESH_Mesh_ptr theMesh);
@@ -117,6 +129,7 @@ private:
     void keyPressEvent(QKeyEvent*);
     void setSelectionMode(int theMode);
     void updateButtons();
+    void updateGeomPopup();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -150,14 +163,17 @@ private:
     QtxIntSpinBox*                myColorSpinBox;
 
     QCheckBox*                    mySelectGeomGroup;
-    QPushButton*                  myGeomGroupBtn;
+    QToolButton*                  myGeomGroupBtn;
     QLineEdit*                    myGeomGroupLine;
+    QPopupMenu*                   myGeomPopup;
+
+    SMESHGUI_ShapeByMeshOp*       myShapeByMeshOp;
 
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH::SMESH_Group_var        myGroup;
     SMESH::SMESH_GroupOnGeom_var  myGroupOnGeom;
     QValueList<int>               myIdList;
-    GEOM::GEOM_Object_var         myGeomGroup;
+    GEOM::ListOfGO_var            myGeomObjects;
 
     int                           mySelectionMode;
     //Handle(SMESH_TypeFilter)      myMeshFilter;
@@ -166,6 +182,7 @@ private:
     SUIT_SelectionFilter*         myMeshFilter;
     SUIT_SelectionFilter*         mySubMeshFilter;
     SUIT_SelectionFilter*         myGroupFilter;
+    SUIT_SelectionFilter*         myGeomFilter;
 
     SMESHGUI_FilterDlg*           myFilterDlg;
 

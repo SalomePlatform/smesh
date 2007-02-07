@@ -28,6 +28,8 @@
 #ifndef SMESHGUI_HypothesesUtils_HeaderFile
 #define SMESHGUI_HypothesesUtils_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qstring.h>
 #include <qstringlist.h>
 
@@ -49,43 +51,56 @@ class algo_error_array;
 
 namespace SMESH{
 
+  SMESHGUI_EXPORT
   void InitAvailableHypotheses();
 
+  SMESHGUI_EXPORT
   QStringList GetAvailableHypotheses( const bool isAlgo, 
                                       const int theDim = -1, 
                                       const bool isAux = false);
-
+  SMESHGUI_EXPORT
   QStringList GetHypothesesSets();
 
+  SMESHGUI_EXPORT
   HypothesesSet* GetHypothesesSet(const QString theSetName);
 
+  SMESHGUI_EXPORT
   HypothesisData* GetHypothesisData(const char* aHypType);
 
+  SMESHGUI_EXPORT
   bool IsAvailableHypothesis(const HypothesisData* algoData,
                              const QString&        hypType,
                              bool&                 isOptional);
 
+  SMESHGUI_EXPORT
   bool IsCompatibleAlgorithm(const HypothesisData* algo1Data,
                              const HypothesisData* algo2Data);
 
+  SMESHGUI_EXPORT
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator(const char* aHypType);
 
+  SMESHGUI_EXPORT
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis(const char* aHypType,
 					       const char* aHypName,
 					       const bool isAlgo = false);
 
+  SMESHGUI_EXPORT
   bool AddHypothesisOnMesh(SMESH::SMESH_Mesh_ptr aMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
 
+  SMESHGUI_EXPORT
   bool AddHypothesisOnSubMesh(SMESH::SMESH_subMesh_ptr aSubMesh, SMESH::SMESH_Hypothesis_ptr aHyp);
 
+  SMESHGUI_EXPORT
   bool RemoveHypothesisOrAlgorithmOnMesh(const Handle(SALOME_InteractiveObject)& IObject);
 
+  SMESHGUI_EXPORT
   bool RemoveHypothesisOrAlgorithmOnMesh(_PTR(SObject) MorSM,
 					 SMESH::SMESH_Hypothesis_ptr anHyp);
 
   typedef std::vector<_PTR(SObject)> SObjectList;
   SObjectList GetMeshesUsingAlgoOrHypothesis(SMESH::SMESH_Hypothesis_ptr AlgoOrHyp ) ;
 
+  SMESHGUI_EXPORT
   QString GetMessageOnAlgoStateErrors(const algo_error_array& errors);
 }
 

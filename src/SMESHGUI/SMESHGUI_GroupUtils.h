@@ -20,6 +20,8 @@
 #ifndef SMESHGUI_GroupUtils_HeaderFile
 #define SMESHGUI_GroupUtils_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -27,6 +29,7 @@
 
 namespace SMESH{
 
+SMESHGUI_EXPORT
   SMESH::SMESH_Group_var AddGroup(SMESH::SMESH_Mesh_ptr theMesh,
 				  SMESH::ElementType theType,
 				  const char* theGroupName);

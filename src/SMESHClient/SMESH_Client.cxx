@@ -749,11 +749,11 @@ SMESH_Client::Update(bool theIsClear)
             int nbNodes = anIndexes[i++];
             // nodes
             //ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ nbNodes ];
+            vector<const SMDS_MeshNode*> aNodes( nbNodes );
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( mySMDSMesh, anIndexes[i++] );
             // change
-            mySMDSMesh->ChangeElementNodes( elem, aNodes, nbNodes );
+            mySMDSMesh->ChangeElementNodes( elem, &aNodes[0], nbNodes );
           }
           break;
 

@@ -28,11 +28,13 @@
 #ifndef SMESHGUI_IdValidator_HeaderFile
 #define SMESHGUI_IdValidator_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qvalidator.h>
 
 // validator for manual input of Ids
 
-class SMESHGUI_IdValidator: public QValidator
+class SMESHGUI_EXPORT SMESHGUI_IdValidator: public QValidator
 {
  public:
 

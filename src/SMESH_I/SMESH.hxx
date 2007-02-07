@@ -26,8 +26,18 @@
 //  Module : SMESH
 //  $Header: 
 
-#ifndef _SMESH_SMESH_HXX_
-#define _SMESH_SMESH_HXX_
+#ifndef _SMESH_I_SMESH_HXX_
+#define _SMESH_I_SMESH_HXX_
+
+#ifdef WNT
+ #if defined SMESH_I_EXPORTS
+  #define SMESH_I_EXPORT __declspec( dllexport )
+ #else
+  #define SMESH_I_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define SMESH_I_EXPORT
+#endif
 
 // Tags definition
 enum {

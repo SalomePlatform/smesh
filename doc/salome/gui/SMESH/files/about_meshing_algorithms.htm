@@ -34,7 +34,7 @@ td.whs17 { width:50.334%; padding-right:10px; padding-left:10px; border-right-st
 img_whs18 { border:none; width:119px; height:299px; border-style:none; }
 td.whs19 { width:49.666%; padding-right:10px; padding-left:10px; border-top-style:none; border-bottom-style:none; border-right-style:none; }
 img_whs20 { border:none; width:127px; height:298px; border-style:none; }
-p.whs21 { margin-left:40px; }
+h4.whs21 { margin-left:0px; }
 p.whs22 { margin-left:0px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
@@ -42,6 +42,7 @@ p.whs22 { margin-left:0px; }
 if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
+  strNSS += "h4.whs21 {margin-left:1pt; }";
   strNSS += "p.whs22 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
@@ -78,7 +79,7 @@ if (window.gbWhTopic)
 {
 	if (window.setRelStartPage)
 	{
-	addTocInfo("MESH module\nCreating meshes\nDefining meshing algorithms");
+	addTocInfo("MESH module\nCreating meshes\nDefining Algorithms\nBasic meshing algorithms");
 addButton("show",BTN_IMG,"Show","","","","",0,0,"../whd_show0.gif","../whd_show2.gif","../whd_show1.gif");
 addButton("hide",BTN_IMG,"Hide","","","","",0,0,"../whd_hide0.gif","../whd_hide2.gif","../whd_hide1.gif");
 
@@ -107,11 +108,11 @@ if (window.writeIntopicBar)
 	writeIntopicBar(4);
 //-->
 </script>
-<h1>Defining meshing algorithms</h1>
+<h1>Basic meshing algorithms</h1>
 
 <p><img src="../i_blue.jpg" x-maintain-ratio="TRUE" width="30px" height="30px" border="0" class="img_whs1"> The MESH module contains a set of meshing algorithms, 
  which are used for meshing entities (1D, 2D, 3D) composing geometrical 
- objects. They are as follows:</p>
+ objects. </p>
 
 <p>&nbsp;</p>
 
@@ -145,11 +146,11 @@ if (window.writeIntopicBar)
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Triangle meshing algorithm - Faces are split 
- into triangular elements.</p></li>
+		<li class=kadov-p><p>Triangle meshing algorithms (Mefisto and Netgen 
+ 1D-2D ) - Faces are split into triangular elements.</p></li>
 		
-		<li class=kadov-p><p>Quadrangle meshing algorithm - Faces are split 
- into quadrangular elements.</p></li>
+		<li class=kadov-p><p>Quadrangle meshing algorithm (Mapping) - Faces 
+ are split into quadrangular elements.</p></li>
 	</ul>
 </ul>
 
@@ -182,8 +183,8 @@ if (window.writeIntopicBar)
 	
 	<ul type="circle" class="whs3">
 		
-		<li class=kadov-p><p>Hexahedron meshing algorithm - Volumes are 
- split into hexahedral (cubic) elements. </p></li>
+		<li class=kadov-p><p>Hexahedron meshing algorithm (i,j,k) - Volumes 
+ are split into hexahedral (cubic) elements. </p></li>
 		
 		<li class=kadov-p><p>Tetrahedron (Netgen) meshing algorithm - Volumes 
  are split into tetrahedral (pyramidal) elements. </p></li>
@@ -205,11 +206,26 @@ if (window.writeIntopicBar)
 
 <p>&nbsp;</p>
 
-<h4>To apply a meshing algorithm:</h4>
+<p>&nbsp;</p>
 
-<p class="whs21">Select this algorithm in the <span style="font-weight: bold;"><B><a href="constructing_meshes.htm">Create Mesh</a> </B></span>dialog box.</p>
+<p>There also is a number of more specific algorithms: </p>
 
-<p class="whs21">&nbsp;</p>
+<ul type="disc" class="whs2">
+	
+	<li class=kadov-p><p><a href="../projection_algorithms.htm">for meshing 
+ by projection of another mesh</a></p></li>
+	
+	<li class=kadov-p><p><a href="../radial_prism.htm">for meshing geometrical 
+ objects with cavities</a></p></li>
+	
+	<li class=kadov-p><p><a href="../prism_3d_algorithm.htm">for meshing 
+ prismatic shapes.</a> </p></li>
+</ul>
+
+<h4 class="whs21"><a href="constructing_meshes.htm">Constructing 
+ meshes</a> <span style="font-weight: normal;">page describes in detail 
+ how to apply meshing algorithms.</span><a href="constructing_meshes.htm" style="font-weight: bold;"> 
+ </a></h4>
 
 <p class="whs22"><span style="font-weight: bold;"><B>See Also</B></span> 
  a sample TUI Script of a <a href="../defining_hypotheses_tui.htm#bookmark8">Define 

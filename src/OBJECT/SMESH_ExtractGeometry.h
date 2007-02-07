@@ -20,13 +20,14 @@
 #ifndef SALOME_ExtractGeometry_HeaderFile
 #define SALOME_ExtractGeometry_HeaderFile
 
+#include "SMESH_Object.h"
+
 #include <vtkExtractGeometry.h>
 #include <vector>
 
 #include "VTKViewer.h"
 
-class SMESH_ExtractGeometry : public vtkExtractGeometry
-{
+class SMESHOBJECT_EXPORT SMESH_ExtractGeometry : public vtkExtractGeometry{
 public:
   vtkTypeMacro(SMESH_ExtractGeometry,vtkExtractGeometry);
 

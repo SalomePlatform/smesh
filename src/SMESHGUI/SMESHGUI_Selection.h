@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_SELECTION_HeaderFile
 #define SMESHGUI_SELECTION_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_Selection.h"
 #include "SALOMEDSClient_definitions.hxx"
 
@@ -37,7 +39,7 @@ class SALOMEDSClient_Study;
 class LightApp_DataOwner;
 class SMESH_Actor;
 
-class SMESHGUI_Selection : public LightApp_Selection
+class SMESHGUI_EXPORT SMESHGUI_Selection : public LightApp_Selection
 {
 public:
   SMESHGUI_Selection();

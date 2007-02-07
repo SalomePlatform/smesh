@@ -28,6 +28,8 @@
 #ifndef _StdMeshers_QuadranglePreference_HXX_
 #define _StdMeshers_QuadranglePreference_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
@@ -37,7 +39,7 @@
  *        GIBI can do it if the global number of nodes is even (DALL operator).
  *        See PAL10467
  */
-class StdMeshers_QuadranglePreference:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_QuadranglePreference:public SMESH_Hypothesis
 {
  public:
   StdMeshers_QuadranglePreference(int hypId, int studyId, SMESH_Gen * gen);

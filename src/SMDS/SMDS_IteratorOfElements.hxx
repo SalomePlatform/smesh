@@ -19,12 +19,14 @@
 // 
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_Iterator.hxx"
 #include "SMDS_MeshElement.hxx"
 #include <set>
 
 
-class SMDS_IteratorOfElements:public SMDS_ElemIterator
+class SMDS_EXPORT SMDS_IteratorOfElements:public SMDS_ElemIterator
 {
   public:
 /////////////////////////////////////////////////////////////////////////////

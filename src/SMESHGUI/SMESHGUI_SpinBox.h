@@ -29,6 +29,8 @@
 #ifndef  SMESH_SPINBOX_H
 #define  SMESH_SPINBOX_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <QtxDblSpinBox.h>
 
 // like in GEOM_SRC/src/DlgRef/DlgRef_SpinBox.h
@@ -39,7 +41,7 @@
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QtxDblSpinBox class 
 //=================================================================================
-class SMESHGUI_SpinBox : public QtxDblSpinBox
+class SMESHGUI_EXPORT SMESHGUI_SpinBox : public QtxDblSpinBox
 {
   Q_OBJECT
 

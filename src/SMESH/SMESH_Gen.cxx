@@ -373,12 +373,21 @@ static bool checkMissing(SMESH_Gen*                aGen,
     bool IsGlobalHypothesis = aGen->IsGlobalHypothesis( algo, aMesh );
     if (!IsGlobalHypothesis || !globalChecked[ algo->GetDim() ])
     {
-      INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
-            << "<" << algo->GetName() << "> misses some hypothesis");
+      SMESH_Gen::TAlgoStateErrorName errName = SMESH_Gen::MISSING_HYPO;
+      SMESH_Hypothesis::Hypothesis_Status status;
+      algo->CheckHypothesis( aMesh, aSubMesh->GetSubShape(), status );
+      if ( status == SMESH_Hypothesis::HYP_BAD_PARAMETER ) {
+        INFOS( "ERROR: hypothesis of " << (IsGlobalHypothesis ? "Global " : "Local ")
+               << "<" << algo->GetName() << "> has a bad parameter value");
+        errName = SMESH_Gen::BAD_PARAM_VALUE;
+      } else {
+        INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
+               << "<" << algo->GetName() << "> misses some hypothesis");
+      }
       if (IsGlobalHypothesis)
         globalChecked[ algo->GetDim() ] = true;
       theErrors.push_back( SMESH_Gen::TAlgoStateError() );
-      theErrors.back().Set( SMESH_Gen::MISSING_HYPO, algo, IsGlobalHypothesis );
+      theErrors.back().Set( errName, algo, IsGlobalHypothesis );
     }
     ret = false;
     break;
@@ -613,7 +622,6 @@ bool SMESH_Gen::IsGlobalHypothesis(const SMESH_Hypothesis* theHyp, SMESH_Mesh& a
 
 SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-//  MESSAGE("SMESH_Gen::GetAlgo");
 
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
   filter.And( filter.IsApplicableTo( aShape ));
@@ -623,15 +631,6 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
   if ( algoList.empty() )
     return NULL;
-
-  // Now it is checked in SMESH_Mesh::GetHypotheses()
-//   if (algoList.size() > 1 ) { // check if there is one algo several times
-//     list <const SMESHDS_Hypothesis * >::iterator algo = algoList.begin();
-//     for ( ; algo != algoList.end(); ++algo )
-//       if ( (*algo) != algoList.front() &&
-//            (*algo)->GetName() != algoList.front()->GetName() )
-//         return NULL;
-//   }
 
   return const_cast<SMESH_Algo*> ( static_cast<const SMESH_Algo* >( algoList.front() ));
 }

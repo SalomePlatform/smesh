@@ -62,7 +62,7 @@ bool Function::value( const double, double& f ) const
 #else
     CASCatch_TRY {
 #endif
-      f = pow( 10, f );
+      f = pow( 10., f );
 #ifdef NO_CAS_CATCH
     } catch(Standard_Failure) {
 #else
@@ -213,7 +213,7 @@ FunctionExpr::~FunctionExpr()
 {
 }
 
-Standard_Boolean FunctionExpr::Value( Standard_Real T, Standard_Real& F )
+Standard_Boolean FunctionExpr::Value( const Standard_Real T, Standard_Real& F )
 {
   double f;
   Standard_Boolean res = value( T, f );

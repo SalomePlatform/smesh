@@ -43,7 +43,7 @@ module SMESH
   interface FilterManager;
   interface SMESH_Pattern;
 
-  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH, BAD_PARAM_VALUE };
   struct AlgoStateError {
     AlgoStateErrorName name;
     string             algoName;
@@ -121,6 +121,7 @@ module SMESH
     
     /*!
      * Create Mesh object importing data from given UNV file
+     * (UNV supported version is I-DEAS 10)
      */
     SMESH_Mesh CreateMeshesFromUNV( in string theFileName )
       raises ( SALOME::SALOME_Exception );
@@ -169,7 +170,8 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * 
+     * Return indeces of faces, edges and vertices of given subshapes
+     * within theMainObject
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
                                in object_array      theListOfSubObjects )
@@ -183,6 +185,14 @@ module SMESH
     GEOM::GEOM_Object GetGeometryByMeshElement( in SMESH_Mesh  theMesh,
                                                 in long        theElementID,
                                                 in string      theGeomName)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Return geometrical object the given element is built on.
+     * The returned geometrical object not published in study by this method.
+     */
+    GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
+						 in long        theElementID)
       raises ( SALOME::SALOME_Exception );
 
   };

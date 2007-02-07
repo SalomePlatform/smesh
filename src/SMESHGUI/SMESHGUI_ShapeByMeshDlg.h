@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_ShapeByMeshDlg_H
 #define SMESHGUI_ShapeByMeshDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
 
@@ -49,7 +51,7 @@ class SMESHGUI;
  *        by selecting mesh elements
  */
 
-class SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
@@ -74,6 +76,10 @@ private:
   QLineEdit*               myElementId;
   QLineEdit*               myGeomName;
 
+private:
+  bool                     myIsMultipleAllowed;
+  void                     setMultipleAllowed(bool isAllowed) {myIsMultipleAllowed = isAllowed;};
+
 //   QPushButton*             myOkBtn;
 //   QPushButton*             myCloseBtn;
 
@@ -89,7 +95,7 @@ class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
   Q_OBJECT
 
 public:
-  SMESHGUI_ShapeByMeshOp();
+  SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed = false);
   virtual ~SMESHGUI_ShapeByMeshOp();
 
   virtual LightApp_Dialog*       dlg() const;  
@@ -144,6 +150,7 @@ private:
 
   bool                     myIsManualIdEnter;
   bool                     myHasSolids;
+  bool                     myIsMultipleAllowed;
 };
 
 #endif

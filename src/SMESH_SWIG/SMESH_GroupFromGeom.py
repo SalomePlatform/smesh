@@ -23,11 +23,10 @@
 #  Module : SMESH
 
 from SMESH_test1 import *
-import SMESH
 
 # Compute the mesh created in SMESH_test1
 
-smesh.Compute(mesh, box)
+mesh.Compute()
 
 # Create geometry groups on plane:
 aGeomGroup1 = geompy.CreateGroup(face , geompy.ShapeType["FACE"])
@@ -43,7 +42,7 @@ geompy.AddObject(aGeomGroup2, 10)
 geompy.addToStudy(aGeomGroup1, "Group on Faces")
 geompy.addToStudy(aGeomGroup2, "Group on Edges")
 
-aSmeshGroup1 = mesh.CreateGroupFromGEOM(SMESH.FACE, "SMESHGroup1", aGeomGroup1)
-aSmeshGroup2 = mesh.CreateGroupFromGEOM(SMESH.EDGE, "SMESHGroup2", aGeomGroup2)
+aSmeshGroup1 = mesh.GroupOnGeom(aGeomGroup1, "SMESHGroup1", smesh.FACE)
+aSmeshGroup2 = mesh.GroupOnGeom(aGeomGroup2, "SMESHGroup2", smesh.EDGE)
 
 salome.sg.updateObjBrowser(1);

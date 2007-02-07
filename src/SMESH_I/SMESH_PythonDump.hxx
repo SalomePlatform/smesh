@@ -20,6 +20,8 @@
 #ifndef _SMESH_PYTHONDUMP_HXX_
 #define _SMESH_PYTHONDUMP_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SALOMEDS)
@@ -37,7 +39,7 @@ namespace SMESH
   class Filter_i;
   class Functor_i;
 
-  class TPythonDump
+  class SMESH_I_EXPORT TPythonDump
   {
     std::ostringstream myStream;
     static size_t myCounter;

@@ -36,8 +36,8 @@ msgstr ""
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
-"PO-Revision-Date: 2004-10-20 17:25+0400\n"
+"POT-Creation-Date: 2002-05-28 10:57:43 AM CEST\n"
+"PO-Revision-Date: 2005-06-07 10:51+0400\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -172,6 +172,10 @@ msgstr "No available data in selection"
 #Smesh polyedre cretion error
 msgid "SMESH_POLYEDRE_CREATE_ERROR"
 msgstr "Polyedron creation error"
+
+#Export mesh
+msgid "SMESH_EXPORT_FAILED"
+msgstr "Mesh export failed.\nProbably, there is not enough space on disk."
 
 #-------------------------------------------------------------------------
 # MEN
@@ -1269,11 +1273,17 @@ msgstr "Hypothesis and submesh dimensions mismatch"
 msgid "SMESH_HYP_9"
 msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
 
+msgid "SMESH_HYP_10"
+msgstr "Geomerty mismatches algorithm's expectation"
+
 msgid "MISSING_ALGO"
 msgstr "%3 %2D algorithm is missing"
 
 msgid "MISSING_HYPO"
 msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
+
+msgid "BAD_PARAM_VALUE"
+msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 
 msgid "NOT_CONFORM_MESH"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"

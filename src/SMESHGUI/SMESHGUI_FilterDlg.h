@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_FilterDlg_H
 #define SMESHGUI_FilterDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 #include <qframe.h>
 #include <qmap.h>
@@ -70,7 +72,7 @@ class SVTK_ViewWindow;
  *                  - Buttons for editing table
  */
 
-class SMESHGUI_FilterTable : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_FilterTable : public QFrame
 {
   Q_OBJECT
 

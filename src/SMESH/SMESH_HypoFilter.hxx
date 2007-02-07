@@ -29,6 +29,8 @@
 #ifndef SMESH_HypoFilter_HeaderFile
 #define SMESH_HypoFilter_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 // ===========================
 // Filter of SMESH_Hypothesis
 // ===========================
@@ -40,7 +42,7 @@
 class SMESH_HypoFilter;
 class SMESH_Hypothesis;
 
-class SMESH_HypoPredicate {
+class SMESH_EXPORT SMESH_HypoPredicate {
  public:
   virtual bool IsOk(const SMESH_Hypothesis* aHyp,
                     const TopoDS_Shape&     aShape) const = 0;
@@ -51,7 +53,7 @@ class SMESH_HypoPredicate {
   friend class SMESH_HypoFilter;
 };
 
-class SMESH_HypoFilter: public SMESH_HypoPredicate
+class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
 {
  public:
   // Create and add predicates.

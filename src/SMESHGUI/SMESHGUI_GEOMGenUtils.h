@@ -20,6 +20,8 @@
 #ifndef SMESHGUI_GEOMGenUtils_HeaderFile
 #define SMESHGUI_GEOMGenUtils_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
@@ -29,11 +31,11 @@ class SALOMEDSClient_SObject;
 
 namespace SMESH
 {
-  GEOM::GEOM_Gen_var GetGEOMGen();
+  SMESHGUI_EXPORT GEOM::GEOM_Gen_var GetGEOMGen();
 
-  GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh (_PTR(SObject) theSObject);
+  SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh (_PTR(SObject) theSObject);
 
-  GEOM::GEOM_Object_ptr GetGeom (_PTR(SObject) theSO);
+  SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetGeom (_PTR(SObject) theSO);
 }
 
 #endif

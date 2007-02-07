@@ -49,6 +49,7 @@
 //#include "SMDS_ElemIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_MeshEditor.hxx"
 
 // OCCT Includes
 #include <OSD_Path.hxx>
@@ -94,7 +95,6 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
   _gen_i = gen_i;
   _id = myIdGenerator++;
   _studyId = studyId;
-  thePOA->activate_object( this );
 }
 
 //=============================================================================
@@ -318,6 +318,8 @@ static SMESH::Hypothesis_Status ConvertHypothesisStatus
     res = SMESH::HYP_BAD_DIM; break;
   case SMESH_Hypothesis::HYP_BAD_SUBSHAPE:
     res = SMESH::HYP_BAD_SUBSHAPE; break;
+  case SMESH_Hypothesis::HYP_BAD_GEOMETRY:
+    res = SMESH::HYP_BAD_GEOMETRY; break;
   default:
     res = SMESH::HYP_UNKNOWN_FATAL;
   }
@@ -1857,9 +1859,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
 //=============================================================================
 /*!
  * If given element is node returns IDs of shape from position
- * else - return ID of result shape after ::FindShape()
- * from SMESH_MeshEditor
- * If there is not element for given ID - returns -1
+ * If there is not node for given ID - returns -1
  */
 //=============================================================================
 
@@ -1879,12 +1879,35 @@ CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
       return pos->GetShapeId();
   }
 
+  return -1;
+}
+
+
+//=============================================================================
+/*!
+ * For given element returns ID of result shape after 
+ * ::FindShape() from SMESH_MeshEditor
+ * If there is not element for given ID - returns -1
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::GetShapeIDForElem(const CORBA::Long id)
+{
+  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  if ( aSMESHDS_Mesh == NULL )
+    return -1;
+
   // try to find element
   const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
   if(!elem)
     return -1;
 
-  // need implementation???????????????????????????????????????????????
+  //SMESH::SMESH_MeshEditor_var aMeshEditor = SMESH_Mesh_i::GetMeshEditor();
+  ::SMESH_MeshEditor aMeshEditor(_impl);
+  int index = aMeshEditor.FindShape( elem );
+  if(index>0)
+    return index;
+
   return -1;
 }
 
@@ -1925,6 +1948,26 @@ CORBA::Long SMESH_Mesh_i::GetElemNode(const CORBA::Long id, const CORBA::Long in
   return elem->GetNode(index)->GetID();
 }
 
+//=============================================================================
+/*!
+ * Returns IDs of nodes of given element
+ */
+//=============================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElemNodes(const CORBA::Long id)
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  {
+    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id) )
+    {
+      aResult->length( elem->NbNodes() );
+      for ( int i = 0; i < elem->NbNodes(); ++i )
+        aResult[ i ] = elem->GetNode( i )->GetID();
+    }
+  }
+  return aResult._retn();
+}
 
 //=============================================================================
 /*!

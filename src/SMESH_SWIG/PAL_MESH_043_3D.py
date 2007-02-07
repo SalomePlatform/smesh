@@ -25,12 +25,8 @@
 
 import salome
 import geompy
-import SMESH
-import StdMeshers
+import smesh
 
-# get smesh engine
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
 
 # create points to build two circles
 p1 = geompy.MakeVertex(0,  100,  0)
@@ -52,53 +48,39 @@ face = geompy.MakeFace(wire, 1)
 idcircle = geompy.addToStudy(circle, "Circle")
 idface   = geompy.addToStudy(face,   "Circular face")
 
-# get SMESH GUI
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
 
-# create hypoteses
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(12)
-idseg = salome.ObjectToID(hypNbSeg) 
-smeshgui.SetName(idseg, "NumberOfSegments_10");
-
-hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypArea.SetMaxElementArea(30)
-idarea = salome.ObjectToID(hypArea)
-smeshgui.SetName(idarea, "MaxElementArea_20");
-
-# create algorithmes
-algoReg = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-idreg = salome.ObjectToID(algoReg)
-smeshgui.SetName(idreg, "Regular_1D");
-
-algoMef = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-idmef = salome.ObjectToID(algoMef)
-smeshgui.SetName(idmef, "MEFISTO_2D");
 
 # init a Mesh with the circular face
-mesh1 = smesh.CreateMesh(face)
-idmesh1 = salome.ObjectToID(mesh1)
-smeshgui.SetName(idmesh1, "Mesh on circular face");
+mesh1 = smesh.Mesh(face, "Mesh on circular face")
 
-# set hypotheses and algos
-mesh1.AddHypothesis(face,algoReg)
-mesh1.AddHypothesis(face,hypNbSeg)
-mesh1.AddHypothesis(face,algoMef)
-mesh1.AddHypothesis(face,hypArea)
+# set hypotheses and algos to the first mesh
+numberOfSegments1 = 12
+algoReg1 = mesh1.Segment()
+algoReg1.SetName("Regular_1D")
+hypNbSeg1 = algoReg1.NumberOfSegments(numberOfSegments1)
+smesh.SetName(hypNbSeg1, "NumberOfSegments_" + str(numberOfSegments1))
+
+maxElementArea = 30
+
+algoMef = mesh1.Triangle()
+algoMef.SetName("MEFISTO_2D")
+hypArea = algoMef.MaxElementArea(maxElementArea)
+smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
+
 
 # init a Mesh with the second circle
-mesh2 = smesh.CreateMesh(circle)
-idmesh2 = salome.ObjectToID(mesh2)
-smeshgui.SetName(idmesh2, "Mesh on circular edge");
+mesh2 = smesh.Mesh(circle, "Mesh on circular edge")
 
-# set hypotheses and algos
-mesh2.AddHypothesis(circle,algoReg)
-mesh2.AddHypothesis(circle,hypNbSeg)
+numberOfSegments2 = 12
+algoReg2 = mesh2.Segment()
+algoReg2.SetName("Regular_1D")
+hypNbSeg2 = algoReg2.NumberOfSegments(numberOfSegments2)
+smesh.SetName(hypNbSeg2, "NumberOfSegments_" + str(numberOfSegments2))
+
 
 # compute meshes
-smesh.Compute(mesh1,face)
-smesh.Compute(mesh2,circle)
+mesh1.Compute()
+mesh2.Compute()
 
 # ---- udate object browser
 salome.sg.updateObjBrowser(1);

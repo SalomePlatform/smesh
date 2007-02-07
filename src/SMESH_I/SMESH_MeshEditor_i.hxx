@@ -29,6 +29,8 @@
 #ifndef _SMESH_MESHEDITOR_I_HXX_
 #define _SMESH_MESHEDIOTR_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
@@ -36,7 +38,7 @@
 
 class SMESH_MeshEditor;
 
-class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
+class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
  public:
   SMESH_MeshEditor_i(SMESH_Mesh * theMesh);

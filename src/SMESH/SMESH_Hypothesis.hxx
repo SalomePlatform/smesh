@@ -29,13 +29,15 @@
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Hypothesis.hxx"
 
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
 
-class SMESH_Hypothesis: public SMESHDS_Hypothesis
+class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
 public:
   enum Hypothesis_Status // in the order of severity
@@ -50,7 +52,8 @@ public:
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_GEOMETRY  // shape geometry mismatches algorithm's expectation
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }

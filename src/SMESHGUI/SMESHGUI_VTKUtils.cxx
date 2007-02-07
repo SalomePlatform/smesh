@@ -336,6 +336,7 @@ namespace SMESH{
 	    case eDisplay:
 	    case eDisplayOnly:
 	      anActor->SetVisibility(true);
+	      if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
 	      break;
 	    case eErase:
 	      anActor->SetVisibility(false);

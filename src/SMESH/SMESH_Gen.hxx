@@ -29,6 +29,8 @@
 #ifndef _SMESH_GEN_HXX_
 #define _SMESH_GEN_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "Utils_SALOME_Exception.hxx"
 
 #include "SMESH_Hypothesis.hxx"
@@ -52,7 +54,7 @@ typedef struct studyContextStruct
 	  SMESHDS_Document * myDocument;
 } StudyContextStruct;
 
-class SMESH_Gen
+class SMESH_EXPORT  SMESH_Gen
 {
  public:
   SMESH_Gen();
@@ -69,7 +71,11 @@ class SMESH_Gen
   // if Compute() would fail because of some algo bad state
 
   
-  enum TAlgoStateErrorName { NONE=0, MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
+  enum TAlgoStateErrorName { NONE=0,
+                             MISSING_ALGO,
+                             MISSING_HYPO,
+                             NOT_CONFORM_MESH,
+                             BAD_PARAM_VALUE };
   struct TAlgoStateError
   {
     TAlgoStateErrorName _name;

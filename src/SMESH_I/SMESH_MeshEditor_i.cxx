@@ -37,6 +37,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "CASCatch.hxx"
 
 #include "utilities.h"
 
@@ -1604,7 +1605,7 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
   for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
     list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
     list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = GroupsOfNodes[ i ];
+    SMESH::long_array& aGroup = (*GroupsOfNodes)[i];
     aGroup.length( aListOfNodes.size() );
     for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
       aGroup[ j ] = (*lIt)->GetID();
@@ -1955,7 +1956,7 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
 
   int nbn = newIDs.length();
   int i=0;
-  const SMDS_MeshNode* aNodes [nbn];
+  vector<const SMDS_MeshNode*> aNodes (nbn);
   int nbn1=-1;
   for(; i<nbn; i++) {
     const SMDS_MeshNode* aNode = GetMeshDS()->FindNode(newIDs[i]);
@@ -1971,7 +1972,7 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
   TPythonDump() << "print 'ChangeElemNodes: ', isDone";
 #endif
 
-  return GetMeshDS()->ChangeElementNodes( elem, aNodes, nbn1+1 );
+  return GetMeshDS()->ChangeElementNodes( elem, &aNodes[0], nbn1+1 );
 }
   
 //================================================================================

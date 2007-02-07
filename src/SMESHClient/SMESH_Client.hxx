@@ -32,10 +32,14 @@
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-#if defined WNT && defined WIN32 && defined SALOME_WNT_EXPORTS
-#define SMESHCLIENT_WNT_EXPORT __declspec( dllexport )
+#ifdef WNT
+# ifdef SMESHCLIENT_EXPORTS
+#  define SMESHCLIENT_EXPORT __declspec( dllexport )
+# else
+#  define SMESHCLIENT_EXPORT __declspec( dllimport )
+# endif
 #else
-#define SMESHCLIENT_WNT_EXPORT
+# define SMESHCLIENT_EXPORT
 #endif
 
 class SMESHDS_Mesh;
@@ -45,7 +49,7 @@ class SMDS_Mesh;
 //=====================================================================
 // SMESH_Client : class definition
 //=====================================================================
-class SMESHCLIENT_WNT_EXPORT SMESH_Client  
+class SMESHCLIENT_EXPORT SMESH_Client  
 {
 public:
   static 

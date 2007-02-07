@@ -47,7 +47,23 @@
 #include <map>
 #include <string>
 
-#include <dlfcn.h>
+#ifdef WNT
+ #include <windows.h>
+#else
+ #include <dlfcn.h>
+#endif
+
+#ifdef WNT
+ #define LibHandle HMODULE
+ #define LoadLib( name ) LoadLibrary( name )
+ #define GetProc GetProcAddress
+ #define UnLoadLib( handle ) FreeLibrary( handle );
+#else
+ #define LibHandle void*
+ #define LoadLib( name ) dlopen( name, RTLD_LAZY )
+ #define GetProc dlsym
+ #define UnLoadLib( handle ) dlclose( handle );
+#endif
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -320,11 +336,18 @@ namespace SMESH{
       try {
 	// load plugin library
 	if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
-	void* libHandle = dlopen (aClientLibName, RTLD_LAZY);
+	LibHandle libHandle = LoadLib( aClientLibName );
 	if (!libHandle) {
 	  // report any error, if occured
-	  const char* anError = dlerror();
-	  if(MYDEBUG) MESSAGE(anError);
+    if ( MYDEBUG )
+    {
+#ifdef WIN32
+      const char* anError = "Can't load client meshers plugin library";
+#else
+	    const char* anError = dlerror();	  
+#endif
+      MESSAGE(anError);
+    }
 	}
 	else {
 	  // get method, returning hypothesis creator
@@ -332,10 +355,10 @@ namespace SMESH{
 	  typedef SMESHGUI_GenericHypothesisCreator* (*GetHypothesisCreator) \
 	    ( const QString& );
 	  GetHypothesisCreator procHandle =
-	    (GetHypothesisCreator)dlsym(libHandle, "GetHypothesisCreator");
+	    (GetHypothesisCreator)GetProc(libHandle, "GetHypothesisCreator");
 	  if (!procHandle) {
 	    if(MYDEBUG) MESSAGE("bad hypothesis client plugin library");
-	    dlclose(libHandle);
+	    UnLoadLib(libHandle);
 	  }
 	  else {
 	    // get hypothesis creator
@@ -594,6 +617,7 @@ namespace SMESH{
         CASE2MESSAGE( MISSING_ALGO );
         CASE2MESSAGE( MISSING_HYPO );
         CASE2MESSAGE( NOT_CONFORM_MESH );
+        CASE2MESSAGE( BAD_PARAM_VALUE );
       default: continue;
       }
       // apply args to message:

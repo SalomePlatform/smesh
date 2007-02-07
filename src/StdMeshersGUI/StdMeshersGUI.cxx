@@ -28,6 +28,7 @@
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 #include "StdMeshersGUI_NbSegmentsCreator.h"
 
+
 //=============================================================================
 /*! GetHypothesisCreator
  *
@@ -35,6 +36,7 @@
 //=============================================================================
 extern "C"
 {
+ STDMESHERSGUI_EXPORT
   SMESHGUI_GenericHypothesisCreator* GetHypothesisCreator( const QString& aHypType )
   {
     if( aHypType=="NumberOfSegments" )

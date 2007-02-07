@@ -30,6 +30,8 @@
 #ifndef _SMESH_MAXELEMENTVOLUME_I_HXX_
 #define _SMESH_MAXELEMENTVOLUME_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -39,7 +41,7 @@
 // ======================================================
 // Maximum Element Volume hypothesis
 // ======================================================
-class StdMeshers_MaxElementVolume_i:
+class STDMESHERS_I_EXPORT StdMeshers_MaxElementVolume_i:
   public virtual POA_StdMeshers::StdMeshers_MaxElementVolume,
   public virtual SMESH_Hypothesis_i
 {

@@ -20,12 +20,14 @@
 #ifndef UNV2411_Structure_HeaderFile
 #define UNV2411_Structure_HeaderFile
 
+#include "SMESH_DriverUNV.hxx"
+
 #include <map>
 #include <fstream>	
 
 namespace UNV2411{
   
-  struct TRecord{
+  struct MESHDRIVERUNV_EXPORT TRecord{
     TRecord();
     int exp_coord_sys_num;  // export coordinate system number
     int disp_coord_sys_num;  // displacement coordinate system number
@@ -36,9 +38,11 @@ namespace UNV2411{
   typedef int TNodeLab; // type of node label
   typedef std::map<TNodeLab,TRecord> TDataSet;
 
-  void Read(std::ifstream& in_stream, TDataSet& theDataSet);
+  MESHDRIVERUNV_EXPORT void
+    Read(std::ifstream& in_stream, TDataSet& theDataSet);
 
-  void Write(std::ofstream& out_stream, const TDataSet& theDataSet);
+  MESHDRIVERUNV_EXPORT void
+    Write(std::ofstream& out_stream, const TDataSet& theDataSet);
 
 };
 

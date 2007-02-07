@@ -29,10 +29,12 @@
 #ifndef _StdMeshers_NotConformAllowed_HXX_
 #define _StdMeshers_NotConformAllowed_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_NotConformAllowed:
+class STDMESHERS_EXPORT StdMeshers_NotConformAllowed:
   public SMESH_Hypothesis
 {
 public:

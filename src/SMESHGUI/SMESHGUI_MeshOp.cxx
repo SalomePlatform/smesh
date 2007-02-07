@@ -1,18 +1,18 @@
 // Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either 
+// License as published by the Free Software Foundation; either
 // version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+//
+// This library is distributed in the hope that it will be useful
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public  
-// License along with this library; if not, write to the Free Software 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
@@ -49,6 +49,7 @@
 #include "GeometryGUI.h"
 
 #include "SalomeApp_Tools.h"
+#include "SalomeApp_Application.h"
 #include "SALOMEDSClient_Study.hxx"
 #include "SALOMEDSClient_AttributeIOR.hxx"
 #include "SALOMEDSClient_AttributeName.hxx"
@@ -81,7 +82,7 @@ enum { GLOBAL_ALGO_TAG        =3,
        SUBMESH_ON_SHELL_TAG   =8,
        SUBMESH_ON_SOLID_TAG   =9,
        SUBMESH_ON_COMPOUND_TAG=10 };
-       
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -212,7 +213,7 @@ void SMESHGUI_MeshOp::startOperation()
     connect( myDlg, SIGNAL( hypoSet( const QString& )), SLOT( onHypoSet( const QString& )));
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
 
-    if ( myToCreate ) 
+    if ( myToCreate )
       if ( myIsMesh ) myHelpFileName = "/files/constructing_meshes.htm";
       else myHelpFileName = "/files/constructing_submeshes.htm";
     else myHelpFileName = "files/reassigning_hypotheses_and_algorithms.htm";
@@ -294,42 +295,49 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
   if ( !myToCreate || myIsMesh ) // not submesh creation
     return false;
 
+  // mesh
   QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
   _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-  if ( pMesh && pGeom ) {
-    SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
-    if ( !mesh->_is_nil() ) {
-      GEOM::GEOM_Object_var mainGeom, subGeom;
-      mainGeom = mesh->GetShapeToMesh();
-      subGeom  = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
-      if ( !mainGeom->_is_nil() && !subGeom->_is_nil() ) {
-        TopoDS_Shape mainShape, subShape;
-        if ( GEOMBase::GetShape( mainGeom, mainShape ) &&
-             GEOMBase::GetShape( subGeom, subShape ) )
-        {
-          int index = GEOMBase::GetIndex( subShape, mainShape, 0 );
-          if ( index > 0 ) {
-            // 1 is index of mainShape itself
-            return index > 1; // it is a subshape
-          }
-          // is it a group?
-          GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-          _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-          if ( !geomGen->_is_nil() && aStudy ) {
-            GEOM::GEOM_IGroupOperations_var op =
-              geomGen->GetIGroupOperations( aStudy->StudyId() );
-            if ( ! op->_is_nil() ) {
-              GEOM::GEOM_Object_var mainObj = op->GetMainShape( subGeom );
-              if ( !mainObj->_is_nil() )
-                return ( string( mainObj->GetEntry() ) == string( mainGeom->GetEntry() ));
-            }
-          }
-        }
-      }
+  if (!pMesh) return false;
+
+  SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
+  if (mesh->_is_nil()) return false;
+
+  // main shape of the mesh
+  GEOM::GEOM_Object_var mainGeom = mesh->GetShapeToMesh();
+  if (mainGeom->_is_nil()) return false;
+
+  // geometry
+  QStringList aGEOMs;
+  myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+
+  if (aGEOMs.count() > 0) {
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if (geomGen->_is_nil() || !aStudy) return false;
+
+    GEOM::GEOM_IGroupOperations_var op =
+        geomGen->GetIGroupOperations(aStudy->StudyId());
+    if (op->_is_nil()) return false;
+
+    // check all selected shapes
+    QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+    for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++) {
+      QString aSubGeomEntry = (*aSubShapesIter);
+      _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+      if (!pSubGeom) return false;
+
+      GEOM::GEOM_Object_var aSubGeomVar =
+        GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+      if (aSubGeomVar->_is_nil()) return false;
+
+      GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar);
+      if (mainObj->_is_nil() ||
+          string(mainObj->GetEntry()) != string(mainGeom->GetEntry())) return false;
     }
+    return true;
   }
+
   return false;
 }
 
@@ -379,7 +387,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
           }
         }
       }
-    }     
+    }
   }
   return _PTR(SObject)();
 }
@@ -393,7 +401,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 //================================================================================
 void SMESHGUI_MeshOp::selectionDone()
 {
-  if ( !dlg()->isShown() )
+  if ( !dlg()->isShown() || !myDlg->isEnabled() )
     return;
 
   SMESHGUI_SelectionOp::selectionDone();
@@ -404,38 +412,57 @@ void SMESHGUI_MeshOp::selectionDone()
 
     int shapeDim = 3;
 
-    GEOM::GEOM_Object_var aGeomVar;
-    QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-    if ( pGeom ) {
-      aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
-    }
-    else {
+    QStringList aGEOMs;
+    myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+    GEOM::ListOfGO_var aSeq = new GEOM::ListOfGO;
+
+    if (aGEOMs.count() > 0) {
+      // one or more GEOM shape selected
+      aSeq->length(aGEOMs.count());
+      QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+      int iSubSh = 0;
+      for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
+        QString aSubGeomEntry = (*aSubShapesIter);
+        _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+        GEOM::GEOM_Object_var aSubGeomVar =
+          GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+        aSeq[iSubSh] = aSubGeomVar;
+      }
+    } else {
+      // get geometry by selected sub-mesh
       QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
       _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.latin1() );
-      aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+      if (!aGeomVar->_is_nil()) {
+        aSeq->length(1);
+        aSeq[0] = aGeomVar;
+      }
     }
-    if ( !aGeomVar->_is_nil() ) {
+
+    if (aSeq->length() > 0) {
       shapeDim = 0;
-      switch ( aGeomVar->GetShapeType() ) {
-      case GEOM::SOLID:
-      case GEOM::SHELL:  shapeDim = 3; break;
-      case GEOM::FACE:   shapeDim = 2; break;
-      case GEOM::WIRE:   
-      case GEOM::EDGE:   shapeDim = 1; break;
-      case GEOM::VERTEX: shapeDim = 0; break;
-      default:
-        TopoDS_Shape aShape;
-        if ( GEOMBase::GetShape(aGeomVar, aShape)) {
-          TopExp_Explorer exp( aShape, TopAbs_SHELL );
-          if ( exp.More() )
-            shapeDim = 3;
-          else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-            shapeDim = 2;
-          else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-            shapeDim = 1;
-          else
-            shapeDim = 0;
+      for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
+        GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
+        switch ( aGeomVar->GetShapeType() ) {
+        case GEOM::SOLID:
+        case GEOM::SHELL:  shapeDim = 3; break;
+        case GEOM::FACE:   shapeDim = (shapeDim < 2) ? 2 : shapeDim; break;
+        case GEOM::WIRE:
+        case GEOM::EDGE:   shapeDim = (shapeDim < 1) ? 1 : shapeDim; break;
+        case GEOM::VERTEX: break;
+        default:
+          TopoDS_Shape aShape;
+          if ( GEOMBase::GetShape(aGeomVar, aShape)) {
+            TopExp_Explorer exp( aShape, TopAbs_SHELL );
+            if ( exp.More() )
+              shapeDim = 3;
+            else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
+              shapeDim = (shapeDim < 2) ? 2 : shapeDim;
+            else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
+              shapeDim = (shapeDim < 1) ? 1 : shapeDim;
+            else
+              ;//shapeDim = 0;
+          }
         }
       }
     }
@@ -464,7 +491,7 @@ void SMESHGUI_MeshOp::selectionDone()
     {
       // if a submesh on the selected shape already exist, pass to submesh edition mode
       if ( _PTR(SObject) pSubmesh = getSubmeshByGeom() ) {
-        SMESH::SMESH_subMesh_var sm = 
+        SMESH::SMESH_subMesh_var sm =
           SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
         bool editSubmesh = ( !sm->_is_nil() &&
                              SUIT_MessageBox::question2( myDlg, tr( "SMESH_WARNING" ),
@@ -586,7 +613,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
       }
     }
   }
-    
+
   return true;
 }
 
@@ -756,7 +783,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
   const int nbColonsInMeshEntry = 3;
   bool isSubMesh = myToCreate ?
     !myIsMesh :
-    myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ).contains(':') > nbColonsInMeshEntry; 
+    myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ).contains(':') > nbColonsInMeshEntry;
 
   if ( isSubMesh )
   {
@@ -797,7 +824,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
 
 //================================================================================
 /*!
- * \Brief Returns tab dimention  
+ * \Brief Returns tab dimention
   * \param tab - the tab in the dlg
   * \param dlg - my dialogue
   * \retval int - dimention
@@ -852,6 +879,10 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
                                         const int theType,
                                         const QString& theTypeName)
 {
+  // During a hypothesis creation we might need to select some objects.
+  // Main dialog must not update it's own selected objects in this case.
+  dlg()->deactivateAll();
+
   HypothesisData* aData = SMESH::GetHypothesisData(theTypeName.latin1());
   if (!aData)
     return;
@@ -873,7 +904,9 @@ void SMESHGUI_MeshOp::createHypothesis (const int theDim,
       // with values used to mesh a subshape
       SMESH::SMESH_Hypothesis_var initParamHyp =
         getInitParamsHypothesis(theTypeName, aData->ServerLibName);
+      myDlg->setEnabled( false );
       aCreator->create(initParamHyp, myDlg);
+      myDlg->setEnabled( true );
     } else {
       SMESH::CreateHypothesis(theTypeName, aData->Label, false);
     }
@@ -916,13 +949,16 @@ void SMESHGUI_MeshOp::onEditHyp( const int theHypType, const int theIndex )
 
   char* aTypeName = aHyp->GetName();
   SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( aTypeName );
-  if ( aCreator )
+  if ( aCreator ) {
+    myDlg->setEnabled( false );
     aCreator->edit( aHyp.in(), dlg() );
+    myDlg->setEnabled( true );
+  }
 }
 
 //================================================================================
 /*!
- * \brief access to hypothesis data 
+ * \brief access to hypothesis data
   * \param theDim - hyp dimension
   * \param theHypType - hyp type (Algo,MainHyp or AddHyp)
   * \param theIndex - index in the list
@@ -1105,7 +1141,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
 //================================================================================
 /*!
- * \brief Creates and selects hypothesis of hypotheses set 
+ * \brief Creates and selects hypothesis of hypotheses set
  * \param theSetName - The name of hypotheses set
  */
 //================================================================================
@@ -1201,7 +1237,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
 
     for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ ) {
       if ( !isAccessibleDim( aDim )) continue;
-        
+
       // assign hypotheses
       for ( int aHypType = MainHyp; aHypType <= AddHyp; aHypType++ ) {
         int aHypIndex = currentHyp( aDim, aHypType );
@@ -1243,17 +1279,80 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
   _PTR(SObject) pMesh = studyDS()->FindObjectID( aMeshEntry.latin1() );
   SMESH::SMESH_Mesh_var aMeshVar =
     SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
+  if (aMeshVar->_is_nil())
+    return false;
+
+  // GEOM shape of the main mesh
+  GEOM::GEOM_Object_var mainGeom = aMeshVar->GetShapeToMesh();
+
+  // Name for the new sub-mesh
+  QString aName = myDlg->objectText(SMESHGUI_MeshDlg::Obj);
 
   // get geom object
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
-  GEOM::GEOM_Object_var aGeomVar =
-    GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+  GEOM::GEOM_Object_var aGeomVar;
+  QStringList aGEOMs;
+  myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
+  if (aGEOMs.count() == 1)
+  {
+    //QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+    QString aGeomEntry = aGEOMs.first();
+    _PTR(SObject) pGeom = studyDS()->FindObjectID( aGeomEntry.latin1() );
+    aGeomVar = GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
+  }
+  else if (aGEOMs.count() > 1)
+  {
+    // create a GEOM group
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    if (!geomGen->_is_nil() && aStudy) {
+      GEOM::GEOM_IGroupOperations_var op =
+        geomGen->GetIGroupOperations(aStudy->StudyId());
+      if (!op->_is_nil()) {
+        // check and add all selected GEOM objects: they must be
+        // a sub-shapes of the main GEOM and must be of one type
+        int iSubSh = 0;
+        TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
+        GEOM::ListOfGO_var aSeq = new GEOM::ListOfGO;
+        aSeq->length(aGEOMs.count());
+        QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
+        for (; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
+          QString aSubGeomEntry = (*aSubShapesIter);
+          _PTR(SObject) pSubGeom = studyDS()->FindObjectID(aSubGeomEntry.latin1());
+          GEOM::GEOM_Object_var aSubGeomVar =
+            GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
+          TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aSubGeomVar->GetShapeType();
+          if (iSubSh == 0) {
+            aGroupType = aSubShapeType;
+          } else {
+            if (aSubShapeType != aGroupType)
+              aGroupType = TopAbs_SHAPE;
+          }
+          aSeq[iSubSh] = aSubGeomVar;
+        }
+        // create a group
+        GEOM::GEOM_Object_var aGroupVar = op->CreateGroup(mainGeom, aGroupType);
+        op->UnionList(aGroupVar, aSeq);
+
+        if (op->IsDone()) {
+          aGeomVar = aGroupVar;
+
+          // publish the GEOM group in study
+          QString aNewGeomGroupName ("Auto_group_for_");
+          aNewGeomGroupName += aName;
+          SALOMEDS::SObject_var aNewGroupSO =
+            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGeomVar, aNewGeomGroupName, mainGeom);
+        }
+      }
+    }
+  }
+  else {
+  }
+  if (aGeomVar->_is_nil())
+    return false;
 
   SUIT_OverrideCursor aWaitCursor;
 
   // create sub-mesh
-  QString aName = myDlg->objectText( SMESHGUI_MeshDlg::Obj );
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.latin1() );
 
   for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ )
@@ -1662,42 +1761,44 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     {
       int aNewHypIndex = currentHyp( dim, hypType );
       int anOldHypIndex = -1;
+
+      // remove old hypotheses
       if ( myObjHyps[ dim ][ hypType ].count() > 0 )
+      {
         anOldHypIndex = find( myObjHyps[ dim ][ hypType ].first(),
                               myExistingHyps[ dim ][ hypType ] );
-      if ( aNewHypIndex != anOldHypIndex )
-      {
-        // remove old hypotheses
-        if ( anOldHypIndex >= 0 ) {
-          SMESH::RemoveHypothesisOrAlgorithmOnMesh(
-            pObj, myExistingHyps[ dim ][ hypType ][ anOldHypIndex ] );
+        if ( aNewHypIndex != anOldHypIndex || // different hyps
+             anOldHypIndex == -1 )            // hyps of different algos
+        {
+          SMESH::RemoveHypothesisOrAlgorithmOnMesh
+            ( pObj, myObjHyps[ dim ][ hypType ].first() );
           myObjHyps[ dim ][ hypType ].clear();
         }
-
-        // assign new hypotheses
-        if ( aNewHypIndex != -1 )
-        {
-          SMESH::SMESH_Mesh_var aMeshVar =
-              SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
-          bool isMesh = !aMeshVar->_is_nil();
-          if ( isMesh )
-          {
-            SMESH::AddHypothesisOnMesh(
-              aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
-          }
-          else
-          {
-            SMESH::SMESH_subMesh_var aVar =
-              SMESH::SMESH_subMesh::_narrow( _CAST(SObject,pObj)->GetObject() );
-            if ( !aVar->_is_nil() )
-              SMESH::AddHypothesisOnSubMesh(
-                aVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
-          }
-        }
-        // reread all hypotheses of mesh if necessary
-        QStringList anExisting;
-        existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
       }
+
+      // assign new hypotheses
+      if ( aNewHypIndex != anOldHypIndex && aNewHypIndex != -1 )
+      {
+        SMESH::SMESH_Mesh_var aMeshVar =
+          SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
+        bool isMesh = !aMeshVar->_is_nil();
+        if ( isMesh )
+        {
+          SMESH::AddHypothesisOnMesh
+            (aMeshVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
+        }
+        else
+        {
+          SMESH::SMESH_subMesh_var aVar =
+            SMESH::SMESH_subMesh::_narrow( _CAST(SObject,pObj)->GetObject() );
+          if ( !aVar->_is_nil() )
+            SMESH::AddHypothesisOnSubMesh
+              ( aVar, myExistingHyps[ dim ][ hypType ][ aNewHypIndex ] );
+        }
+      }
+      // reread all hypotheses of mesh if necessary
+      QStringList anExisting;
+      existingHyps( dim, hypType, pObj, anExisting, myObjHyps[ dim ][ hypType ] );
     }
   }
 
@@ -1763,6 +1864,7 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
 void SMESHGUI_MeshOp::onPublishShapeByMeshDlg(SUIT_Operation* op)
 {
   if ( myShapeByMeshOp == op ) {
+    SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser(); //MZN: 24.11.2006  IPAL13980 - Object Browser update added
     myDlg->show();
     // Select a found geometry object
     GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();

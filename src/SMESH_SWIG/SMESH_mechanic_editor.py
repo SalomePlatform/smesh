@@ -28,10 +28,7 @@
 
 import salome
 import geompy
-
-import StdMeshers
-
-import SMESH
+import smesh
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -122,130 +119,62 @@ Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
 
-# ---- launch SMESH, init a Mesh with shape 'mechanic'
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
-smesh.SetCurrentStudy(salome.myStudy)
 
-mesh = smesh.CreateMesh(shape_mesh)
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-idmesh = salome.ObjectToID(mesh)
-smeshgui.SetName( idmesh, "Mesh_mechanic" )
+mesh = smesh.Mesh(shape_mesh, "Mesh_mechanic")
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegment = 10
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
-hypNbSeg.SetNumberOfSegments( numberOfSegment )
+algo = mesh.Segment()
+hypNbSeg = algo.NumberOfSegments(numberOfSegment)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 25
 
-hypArea25 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hypArea25.SetMaxElementArea( maxElementArea )
+algo = mesh.Triangle()
+hypArea25 = algo.MaxElementArea(maxElementArea)
 print hypArea25.GetName()
 print hypArea25.GetId()
 print hypArea25.GetMaxElementArea()
+smesh.SetName(hypArea25, "MaxElementArea_" + str(maxElementArea))
 
-smeshgui.SetName(salome.ObjectToID(hypArea25), "MaxElementArea_25")
 
-print "-------------------------- MaxElementArea"
+# Create submesh on sub_face1 - sub_face4
+# ---------------------------------------
 
-maxElementArea = 35
+# Set 2D algorithm to submesh on sub_face1
+algo = mesh.Quadrangle(sub_face1)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace1")
+submesh1 = algo.GetSubMesh()
 
-hypArea35 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hypArea35.SetMaxElementArea( maxElementArea )
-print hypArea35.GetName()
-print hypArea35.GetId()
-print hypArea35.GetMaxElementArea()
+# Set 2D algorithm to submesh on sub_face2
+algo = mesh.Quadrangle(sub_face2)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace2")
+submesh2 = algo.GetSubMesh()
 
-smeshgui.SetName(salome.ObjectToID(hypArea35), "MaxElementArea_35")
+# Set 2D algorithm to submesh on sub_face3
+algo = mesh.Quadrangle(sub_face3)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace3")
+submesh3 = algo.GetSubMesh()
 
-print "-------------------------- Regular_1D"
+# Set 2D algorithm to submesh on sub_face4
+algo = mesh.Quadrangle(sub_face4)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace4")
+submesh4 = algo.GetSubMesh()
 
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
-listHyp = algoReg1D.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoReg1D.GetName()
-print algoReg1D.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D")
-
-print "-------------------------- MEFISTO_2D"
-
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
-listHyp = algoMef.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoMef.GetName()
-print algoMef.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D")
-
-print "-------------------------- SMESH_Quadrangle_2D"
-
-algoQuad = smesh.CreateHypothesis( "Quadrangle_2D", "libStdMeshersEngine.so" )
-listHyp = algoQuad.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoQuad.GetName()
-print algoQuad.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoQuad), "SMESH_Quadrangle_2D")
-
-print "-------------------------- add hypothesis to main shape"
-
-mesh.AddHypothesis( shape_mesh, hypNbSeg )   # nb segments
-mesh.AddHypothesis( shape_mesh, hypArea25 )  # max area
-
-mesh.AddHypothesis( shape_mesh, algoReg1D )  # Regular 1D/wire discretisation
-mesh.AddHypothesis( shape_mesh, algoMef )    # MEFISTO 2D
-
-print "-------------------------- add hypothesis and algorithm to sub face 1"
-
-submesh = mesh.GetSubMesh(sub_face1, "SubMeshFace1")
-
-mesh.AddHypothesis( sub_face1, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face1, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorithm to sub face 2"
-
-submesh = mesh.GetSubMesh(sub_face2, "SubMeshFace2")
-
-mesh.AddHypothesis( sub_face2, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face2, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorith to sub face 3"
-
-submesh = mesh.GetSubMesh(sub_face3, "SubMeshFace3")
-
-mesh.AddHypothesis( sub_face3, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face3, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorith to sub face 4"
-
-submesh = mesh.GetSubMesh(sub_face4, "SubMeshFace4")
-
-mesh.AddHypothesis( sub_face4, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face4, hypArea35 )  # max area
 
 print "-------------------------- compute the mesh of the mechanic piece"
 
-smesh.Compute(mesh, shape_mesh)
+mesh.Compute()
 
 print "Information about the Mesh_mechanic:"
 print "Number of nodes       : ", mesh.NbNodes()
@@ -257,52 +186,45 @@ print "Number of volumes     : ", mesh.NbVolumes()
 print "Number of tetrahedrons: ", mesh.NbTetras()
 
 
-MeshEditor = mesh.GetMeshEditor()
-
 #1 cutting of quadrangles of the 'SubMeshFace2' submesh
-submesh = mesh.GetSubMesh(sub_face2, "SubMeshFace2")
-MeshEditor.SplitQuadObject(submesh, 1)
+mesh.SplitQuadObject(submesh2, 1)
 
 #2 cutting of triangles of the group
 FacesTriToQuad = [2381, 2382, 2383, 2384, 2385, 2386, 2387, 2388, 2389, 2390, 2391, 2392, 2393, 2394, 2395, 2396, 2397, 2398, 2399, 2400, 2401, 2402, 2403, 2404, 2405, 2406, 2407, 2408, 2409, 2410, 2411, 2412, 2413, 2414, 2415, 2416, 2417, 2418, 2419, 2420, 2421, 2422]
-GroupTriToQuad = mesh.CreateGroup(SMESH.FACE,"Group of faces (quad)")
-GroupTriToQuad.Add(FacesTriToQuad)
-MeshEditor.TriToQuadObject(GroupTriToQuad, None , 1.57)
+GroupTriToQuad = mesh.MakeGroupByIds("Group of faces (quad)", smesh.FACE, FacesTriToQuad)
+mesh.TriToQuadObject(GroupTriToQuad, None , 1.57)
 
 #3 extrusion of the group
-point = SMESH.PointStruct(0, 0, 5)
-vector = SMESH.DirStruct(point) 
-MeshEditor.ExtrusionSweepObject(GroupTriToQuad, vector, 5)
+point = smesh.PointStruct(0, 0, 5)
+vector = smesh.DirStruct(point) 
+mesh.ExtrusionSweepObject(GroupTriToQuad, vector, 5)
 
 #4 mirror object
-MeshEditor.MirrorObject(mesh, SMESH.AxisStruct(0, 0, 0, 0, 0, 0), SMESH.SMESH_MeshEditor.POINT, 0) 
+mesh.Mirror([], smesh.AxisStruct(0, 0, 0, 0, 0, 0), smesh.POINT, 0) 
 
 #5 mesh translation
-point = SMESH.PointStruct(10, 10, 10)
-vector = SMESH.DirStruct(point) 
-MeshEditor.TranslateObject(mesh, vector, 0)
+point = smesh.PointStruct(10, 10, 10)
+vector = smesh.DirStruct(point) 
+mesh.Translate([], vector, 0)
 
 #6 mesh rotation
-axisXYZ = SMESH.AxisStruct(0, 0, 0, 10, 10, 10)
+axisXYZ = smesh.AxisStruct(0, 0, 0, 10, 10, 10)
 angle180 =  180*3.141/180
-MeshEditor.RotateObject(mesh, axisXYZ, angle180, 0)
+mesh.Rotate([], axisXYZ, angle180, 0)
 
 #7 group smoothing
 FacesSmooth = [864, 933, 941, 950, 1005, 1013]
-GroupSmooth = mesh.CreateGroup(SMESH.FACE,"Group of faces (smooth)")
-GroupSmooth.Add(FacesSmooth)
-MeshEditor.SmoothObject(GroupSmooth, [], 20, 2, SMESH.SMESH_MeshEditor.CENTROIDAL_SMOOTH)
+GroupSmooth = mesh.MakeGroupByIds("Group of faces (smooth)", smesh.FACE, FacesSmooth)
+mesh.SmoothObject(GroupSmooth, [], 20, 2, smesh.CENTROIDAL_SMOOTH)
 
 #8 rotation sweep object
 FacesRotate = [492, 493, 502, 503]
-GroupRotate = mesh.CreateGroup(SMESH.FACE,"Group of faces (rotate)")
-GroupRotate.Add(FacesRotate)
+GroupRotate = mesh.MakeGroupByIds("Group of faces (rotate)", smesh.FACE, FacesRotate)
 angle45 =  45*3.141/180
-axisXYZ = SMESH.AxisStruct(-38.3128, -73.3658, -133.321, -13.3402, -13.3265, 6.66632)
-MeshEditor.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
+axisXYZ = smesh.AxisStruct(-38.3128, -73.3658, -133.321, -13.3402, -13.3265, 6.66632)
+mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 
-#9 reorientation of the whole mesh
-submesh = mesh.GetSubMesh(sub_face1, "SubMeshFace1")
-MeshEditor.ReorientObject(submesh)
+#9 reorientation of the submesh1
+mesh.ReorientObject(submesh1)
 
 salome.sg.updateObjBrowser(1)

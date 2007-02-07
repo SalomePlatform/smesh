@@ -21,6 +21,8 @@
 #ifndef DIALOGBOX_GETMESH_H
 #define DIALOGBOX_GETMESH_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
@@ -46,7 +48,7 @@ class SMESHGUI;
 // class    : SMESHGUI_EditMeshDlg
 // purpose  : 
 //=================================================================================
-class SMESHGUI_EditMeshDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_EditMeshDlg : public QDialog
 {
   Q_OBJECT;
 

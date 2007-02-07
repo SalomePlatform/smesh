@@ -25,7 +25,8 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
+#include "SMESH_StdMeshers_I.hxx"
+
 #include "SMESH_Gen_i.hxx"
 
 #include "utilities.h"
@@ -44,10 +45,20 @@ using namespace std;
 #include "StdMeshers_MaxElementVolume_i.hxx"
 #include "StdMeshers_NotConformAllowed_i.hxx"
 
+#include "StdMeshers_ProjectionSource3D_i.hxx"
+#include "StdMeshers_ProjectionSource2D_i.hxx"
+#include "StdMeshers_ProjectionSource1D_i.hxx"
+#include "StdMeshers_NumberOfLayers_i.hxx"
+#include "StdMeshers_LayerDistribution_i.hxx"
+
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
 #include "StdMeshers_Quadrangle_2D_i.hxx"
 #include "StdMeshers_Hexa_3D_i.hxx"
+
+#include "StdMeshers_Projection_1D_2D_3D_i.hxx"
+#include "StdMeshers_Prism_3D_i.hxx"
+
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
@@ -63,6 +74,7 @@ template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 
 extern "C"
 {
+STDMESHERS_I_EXPORT
   GenericHypothesisCreator_i* GetHypothesisCreator (const char* aHypName)
   {
     MESSAGE("Get HypothesisCreator for " << aHypName);
@@ -96,6 +108,16 @@ extern "C"
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadranglePreference_i>;
     else if (strcmp(aHypName, "QuadraticMesh") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_QuadraticMesh_i>;
+    else if (strcmp(aHypName, "ProjectionSource3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ProjectionSource3D_i>;
+    else if (strcmp(aHypName, "ProjectionSource2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ProjectionSource2D_i>;
+    else if (strcmp(aHypName, "ProjectionSource1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_ProjectionSource1D_i>;
+    else if (strcmp(aHypName, "NumberOfLayers") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_NumberOfLayers_i>;
+    else if (strcmp(aHypName, "LayerDistribution") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_LayerDistribution_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
@@ -106,6 +128,16 @@ extern "C"
       aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i>;
     else if (strcmp(aHypName, "Hexa_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i>;
+    else if (strcmp(aHypName, "Projection_1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_1D_i>;
+    else if (strcmp(aHypName, "Projection_2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_2D_i>;
+    else if (strcmp(aHypName, "Projection_3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i>;
+    else if (strcmp(aHypName, "Prism_3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i>;
+    else if (strcmp(aHypName, "RadialPrism_3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_RadialPrism_3D_i>;
     else ;
 
     return aCreator;

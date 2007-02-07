@@ -145,7 +145,7 @@
 
 using namespace std;
 
-namespace{
+//namespace{
   // Declarations
   //=============================================================
   void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
@@ -330,7 +330,7 @@ namespace{
             aFormat = aFilterMap[fd->selectedFilter()];
             is_ok = true;
             if ( !aFilename.isEmpty()
-                 && (aMesh->NbPolygons()>0 or aMesh->NbPolyhedrons()>0)
+                 && (aMesh->NbPolygons()>0 || aMesh->NbPolyhedrons()>0)
                  && aFormat==SMESH::MED_V2_1) {
               int aRet = SUIT_MessageBox::warn2(SMESHGUI::desktop(),
                                                 QObject::tr("SMESH_WRN_WARNING"),
@@ -352,21 +352,32 @@ namespace{
 	  if ( aFile.exists() )
 	    aFile.remove();
 	  SUIT_OverrideCursor wc;
-	  switch ( theCommandID ) {
-	  case 125:
-	  case 122:
-	    aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
-	    break;
-	  case 124:
-	  case 121:
-	    aMesh->ExportDAT( aFilename.latin1() );
-	    break;
-	  case 126:
-	  case 123:
-	    aMesh->ExportUNV( aFilename.latin1() );
-	    break;
-	  default:
-	    break;
+
+	  try {
+	    switch ( theCommandID ) {
+	    case 125:
+	    case 122:
+	      aMesh->ExportToMED( aFilename.latin1(), toCreateGroups, aFormat );
+	      break;
+	    case 124:
+	    case 121:
+	      aMesh->ExportDAT( aFilename.latin1() );
+	      break;
+	    case 126:
+	    case 123:
+	      aMesh->ExportUNV( aFilename.latin1() );
+	      break;
+	    default:
+	      break;
+	    }
+	  }
+	  catch (const SALOME::SALOME_Exception& S_ex){
+	    wc.suspend();
+	    SUIT_MessageBox::warn1(SMESHGUI::desktop(),
+				    QObject::tr("SMESH_WRN_WARNING"),
+				    QObject::tr("SMESH_EXPORT_FAILED"),
+				    QObject::tr("SMESH_BUT_OK"));
+	    wc.resume();
 	  }
 	}
       }
@@ -815,10 +826,10 @@ namespace{
 
     SMESHGUI::GetSMESHGUI()->updateObjBrowser();
   }
-}
+//}
 
 extern "C" {
-  Standard_EXPORT CAM_Module* createModule()
+  SMESHGUI_EXPORT CAM_Module* createModule()
   {
     return new SMESHGUI();
   }
@@ -1217,6 +1228,11 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	  }
 	}
       }
+      
+      // PAL13338 -->
+      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) && !automaticUpdate() ) 
+	SMESH::UpdateView();
+      // PAL13338 <--
 
       if (anAction == SMESH::eErase) {
 	SALOME_ListIO l1;
@@ -1224,6 +1240,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       else
 	aSel->setSelectedObjects( to_process );
+
       break;
     }
 
@@ -2155,12 +2172,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if (selected.Extent() == 1)	{
-	Handle(SALOME_InteractiveObject) anIObject = selected.First();
-	if(anIObject->hasEntry())
+      SALOME_ListIteratorOfListIO it(selected);
+      for(; it.More(); it.Next()) {
+        Handle(SALOME_InteractiveObject) anIObject = it.Value();
+	if(anIObject->hasEntry()) {
 	  if(SMESH_Actor *anActor = SMESH::FindActorByEntry(anIObject->getEntry())){
 	    anActor->SetPointsLabeled( !anActor->GetPointsLabeled() );
 	  }
+	}
       }
       break;
     }
@@ -2930,7 +2949,7 @@ QString SMESHGUI::engineIOR() const
 {
   CORBA::ORB_var anORB = getApp()->orb();
   CORBA::String_var anIOR = anORB->object_to_string(GetSMESHGen());
-  return anIOR.in();
+  return QString( anIOR.in() );
 }
 
 void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QString& /*title*/ )
@@ -3139,8 +3158,6 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
       if(sbX1+sbW > aTol){
 	aWarning = "Origin and Size Vertical: X+Width > 1\n";	
-	sbX1=0.01;
-	sbW=0.05;
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
       }
@@ -3150,8 +3167,6 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
       if(sbY1+sbH > aTol){
 	aWarning = "Origin and Size Vertical: Y+Height > 1\n";
-	sbY1=0.01;
-	sbH=0.5;
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
       }
@@ -3161,8 +3176,8 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
       if(sbX1+sbW > aTol){
 	aWarning = "Origin and Size Horizontal: X+Width > 1\n";
-	sbX1=0.2;
-	sbW=0.6;
+	sbX1=0.01;
+	sbW=0.05;
 	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
       }
@@ -3173,7 +3188,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       if(sbY1+sbH > aTol){
 	aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
 	sbY1=0.01;
-	sbH=0.12;
+	sbH=0.05;
 	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
 	aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
       }
@@ -3293,3 +3308,4 @@ LightApp_Displayer* SMESHGUI::displayer()
     myDisplayer = new SMESHGUI_Displayer( getApp() );
   return myDisplayer;
 }
+

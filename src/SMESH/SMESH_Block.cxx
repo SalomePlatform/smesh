@@ -23,19 +23,22 @@
 
 #include "SMESH_Block.hxx"
 
+#include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_Curve2d.hxx>
+#include <BRepAdaptor_Surface.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
+#include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Extrema_ExtPC.hxx>
 #include <Extrema_POnCurv.hxx>
-#include <GeomAdaptor_Curve.hxx>
-#include <TopAbs_ShapeEnum.hxx>
+#include <Geom2d_Curve.hxx>
 #include <TopExp_Explorer.hxx>
-#include <TopLoc_Location.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Compound.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <TopoDS_Wire.hxx>
@@ -52,7 +55,46 @@
 
 using namespace std;
 
-#define SQRT_FUNC 1
+#define SQRT_FUNC 0
+
+//================================================================================
+/*!
+ * \brief Set edge data
+  * \param edgeID - block subshape ID
+  * \param curve - edge geometry
+  * \param isForward - is curve orientation coincides with edge orientation in the block
+ */
+//================================================================================
+
+void SMESH_Block::TEdge::Set( const int edgeID, Adaptor3d_Curve* curve, const bool isForward )
+{
+  myCoordInd = SMESH_Block::GetCoordIndOnEdge( edgeID );
+  if ( myC3d ) delete myC3d;
+  myC3d = curve;
+  myFirst = curve->FirstParameter();
+  myLast = curve->LastParameter();
+  if ( !isForward )
+    std::swap( myFirst, myLast );
+}
+
+//================================================================================
+/*!
+ * \brief Set coordinates of nodes at edge ends to work with mesh block
+  * \param edgeID - block subshape ID
+  * \param node1 - coordinates of node with lower ID
+  * \param node2 - coordinates of node with upper ID
+ */
+//================================================================================
+
+void SMESH_Block::TEdge::Set( const int edgeID, const gp_XYZ& node1, const gp_XYZ& node2 )
+{
+  myCoordInd = SMESH_Block::GetCoordIndOnEdge( edgeID );
+  myNodes[ 0 ] = node1;
+  myNodes[ 1 ] = node2;
+
+  if ( myC3d ) delete myC3d;
+  myC3d = 0;
+}
 
 //=======================================================================
 //function : SMESH_Block::TEdge::GetU
@@ -62,7 +104,7 @@ using namespace std;
 double SMESH_Block::TEdge::GetU( const gp_XYZ& theParams ) const
 {
   double u = theParams.Coord( myCoordInd );
-  if ( myC3d.IsNull() ) // if mesh block
+  if ( !myC3d ) // if mesh block
     return u;
   return ( 1 - u ) * myFirst + u * myLast;
 }
@@ -75,14 +117,95 @@ double SMESH_Block::TEdge::GetU( const gp_XYZ& theParams ) const
 gp_XYZ SMESH_Block::TEdge::Point( const gp_XYZ& theParams ) const
 {
   double u = GetU( theParams );
+  if ( myC3d ) return myC3d->Value( u ).XYZ();
+  // mesh block
+  return myNodes[0] * ( 1 - u ) + myNodes[1] * u;
+}
 
-  if ( myC3d.IsNull() ) // if mesh block
-    return myNodes[0] * ( 1 - u ) + myNodes[1] * u;
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
 
-  gp_XYZ p = myC3d->Value( u ).XYZ();
-  if ( myTrsf.Form() != gp_Identity )
-    myTrsf.Transforms( p );
-  return p;
+SMESH_Block::TEdge::~TEdge()
+{
+  if ( myC3d ) delete myC3d;
+}
+
+//================================================================================
+/*!
+ * \brief Set face data
+  * \param faceID - block subshape ID
+  * \param S - face surface geometry
+  * \param c2d - 4 pcurves in the order as returned by GetFaceEdgesIDs(faceID)
+  * \param isForward - orientation of pcurves comparing with block edge direction
+ */
+//================================================================================
+
+void SMESH_Block::TFace::Set( const int          faceID,
+                              Adaptor3d_Surface* S,
+                              Adaptor2d_Curve2d* c2D[4],
+                              const bool         isForward[4] )
+{
+  if ( myS ) delete myS;
+  myS = S;
+  // pcurves
+  vector< int > edgeIdVec;
+  GetFaceEdgesIDs( faceID, edgeIdVec );
+  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  {
+    myCoordInd[ iE ] = GetCoordIndOnEdge( edgeIdVec[ iE ] );
+    if ( myC2d[ iE ]) delete myC2d[ iE ];
+    myC2d[ iE ] = c2D[ iE ];
+    myFirst[ iE ] = myC2d[ iE ]->FirstParameter();
+    myLast [ iE ] = myC2d[ iE ]->LastParameter();
+    if ( !isForward[ iE ])
+      std::swap( myFirst[ iE ], myLast[ iE ] );
+  }
+  // 2d corners
+  myCorner[ 0 ] = myC2d[ 0 ]->Value( myFirst[0] ).XY();
+  myCorner[ 1 ] = myC2d[ 0 ]->Value( myLast[0] ).XY();
+  myCorner[ 2 ] = myC2d[ 1 ]->Value( myLast[1] ).XY();
+  myCorner[ 3 ] = myC2d[ 1 ]->Value( myFirst[1] ).XY();
+}
+
+//================================================================================
+/*!
+ * \brief Set face data to work with mesh block
+  * \param faceID - block subshape ID
+  * \param edgeU0 - filled data of edge u0 = GetFaceEdgesIDs(faceID)[ 0 ]
+  * \param edgeU1 - filled data of edge u1 = GetFaceEdgesIDs(faceID)[ 1 ]
+ */
+//================================================================================
+
+void SMESH_Block::TFace::Set( const int faceID, const TEdge& edgeU0, const TEdge& edgeU1 )
+{
+  vector< int > edgeIdVec;
+  GetFaceEdgesIDs( faceID, edgeIdVec );
+  myNodes[ 0 ] = edgeU0.NodeXYZ( 1 );
+  myNodes[ 1 ] = edgeU0.NodeXYZ( 0 );
+  myNodes[ 2 ] = edgeU1.NodeXYZ( 0 );
+  myNodes[ 3 ] = edgeU1.NodeXYZ( 1 );
+  myCoordInd[ 0 ] = GetCoordIndOnEdge( edgeIdVec[ 0 ] );
+  myCoordInd[ 1 ] = GetCoordIndOnEdge( edgeIdVec[ 1 ] );
+  myCoordInd[ 2 ] = GetCoordIndOnEdge( edgeIdVec[ 2 ] );
+  myCoordInd[ 3 ] = GetCoordIndOnEdge( edgeIdVec[ 3 ] );
+  if ( myS ) delete myS;
+  myS = 0;
+}
+
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
+SMESH_Block::TFace::~TFace()
+{
+  if ( myS ) delete myS;
+  for ( int i = 0 ; i < 4; ++i )
+    if ( myC2d[ i ]) delete myC2d[ i ];
 }
 
 //=======================================================================
@@ -144,7 +267,7 @@ gp_XY SMESH_Block::TFace::GetUV( const gp_XYZ& theParams ) const
 gp_XYZ SMESH_Block::TFace::Point( const gp_XYZ& theParams ) const
 {
   gp_XYZ p(0.,0.,0.);
-  if ( myS.IsNull() ) // if mesh block
+  if ( !myS ) // if mesh block
   {
     for ( int iE = 0; iE < 4; iE++ ) // loop on 4 edges
     {
@@ -168,8 +291,6 @@ gp_XYZ SMESH_Block::TFace::Point( const gp_XYZ& theParams ) const
   {
     gp_XY uv = GetUV( theParams );
     p = myS->Value( uv.X(), uv.Y() ).XYZ();
-    if ( myTrsf.Form() != gp_Identity )
-      myTrsf.Transforms( p );
   }
   return p;
 }
@@ -224,17 +345,20 @@ bool SMESH_Block::ShellPoint( const gp_XYZ& theParams, gp_XYZ& thePoint ) const
           k *= theParams.Coord( iCoef + 1 );
       }
     }
-    // point on a shape
-    gp_XYZ Ps;
-    if ( shapeID < ID_Ex00 ) // vertex
-      VertexPoint( shapeID, Ps );
-    else if ( shapeID < ID_Fxy0 ) { // edge
-      EdgePoint( shapeID, theParams, Ps );
-      k = -k;
-    } else // face
-      FacePoint( shapeID, theParams, Ps );
+    // add point on a shape
+    if ( fabs( k ) > DBL_MIN )
+    {
+      gp_XYZ Ps;
+      if ( shapeID < ID_Ex00 ) // vertex
+        VertexPoint( shapeID, Ps );
+      else if ( shapeID < ID_Fxy0 ) { // edge
+        EdgePoint( shapeID, theParams, Ps );
+        k = -k;
+      } else // face
+        FacePoint( shapeID, theParams, Ps );
 
-    thePoint += k * Ps;
+      thePoint += k * Ps;
+    }
   }
   return true;
 }
@@ -331,6 +455,8 @@ Standard_Boolean SMESH_Block::Derivatives(const math_Vector& XYZ,math_Matrix& Df
 //purpose  : 
 //=======================================================================
 
+//#define DEBUG_PARAM_COMPUTE
+
 Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
                                      math_Vector&       theFxyz,
                                      math_Matrix&       theDf) 
@@ -345,11 +471,13 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
     theDf( 1,3 ) = myValues[ 3 ];
     return true;
   }
-
+#ifdef DEBUG_PARAM_COMPUTE
+  cout << "PARAM GUESS: " << params.X() << " "<< params.Y() << " "<< params.X() << endl;
+#endif
   ShellPoint( params, P );
   //myNbIterations++; // how many time call ShellPoint()
 
-  gp_Vec dP( P - myPoint );
+  gp_Vec dP( myPoint, P );
   theFxyz(1) = SQRT_FUNC ? dP.SquareMagnitude() : dP.Magnitude();
   if ( theFxyz(1) < 1e-6 ) {
     myParam      = params;
@@ -363,36 +491,48 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
   if ( theFxyz(1) < myValues[0] ) // a better guess
   {
     // 3 partial derivatives
-    gp_Vec drv[ 3 ];
+    gp_Vec drv[ 3 ]; // where we move with a small step in each direction
     for ( int iP = 1; iP <= 3; iP++ ) {
+      if ( iP - 1 == myFaceIndex ) {
+        drv[ iP - 1 ] = gp_Vec(0,0,0);
+        continue;
+      }
       gp_XYZ Pi;
-      params.SetCoord( iP, theXYZ( iP ) + 0.001 );
+      bool onEdge = ( theXYZ( iP ) + 0.001 > 1. );
+      if ( onEdge )
+        params.SetCoord( iP, theXYZ( iP ) - 0.001 );
+      else
+        params.SetCoord( iP, theXYZ( iP ) + 0.001 );
       ShellPoint( params, Pi );
       params.SetCoord( iP, theXYZ( iP ) ); // restore params
       gp_Vec dPi ( P, Pi );
+      if ( onEdge ) dPi *= -1.;
       double mag = dPi.Magnitude();
       if ( mag > DBL_MIN )
         dPi /= mag;
       drv[ iP - 1 ] = dPi;
     }
     for ( int iP = 0; iP < 3; iP++ ) {
-      if ( iP == myFaceIndex )
-        theDf( 1, iP + 1 ) = myFaceParam;
-      else {
+      theDf( 1, iP + 1 ) = dP * drv[iP];
+        // Distance from P to plane passing through myPoint and defined
+        // by the 2 other derivative directions:
         // like IntAna_IntConicQuad::Perform (const gp_Lin& L, const gp_Pln& P)
         // where L is (P -> myPoint), P is defined by the 2 other derivative direction
-        int iPrev = ( iP ? iP - 1 : 2 );
-        int iNext = ( iP == 2 ? 0 : iP + 1 );
-        gp_Vec plnNorm = drv[ iPrev ].Crossed( drv [ iNext ] );
-        double Direc = plnNorm * drv[ iP ];
-        if ( Abs(Direc) <= DBL_MIN )
-          theDf( 1, iP + 1 ) = dP * drv[ iP ];
-        else {
-          double Dis = plnNorm * P - plnNorm * myPoint;
-          theDf( 1, iP + 1 ) = Dis/Direc;
-        }
-      }
+//         int iPrev = ( iP ? iP - 1 : 2 );
+//         int iNext = ( iP == 2 ? 0 : iP + 1 );
+//         gp_Vec plnNorm = drv[ iPrev ].Crossed( drv [ iNext ] );
+//         double Direc = plnNorm * drv[ iP ];
+//         if ( Abs(Direc) <= DBL_MIN )
+//           theDf( 1, iP + 1 ) = dP * drv[ iP ];
+//         else {
+//           double Dis = plnNorm * P - plnNorm * myPoint;
+//           theDf( 1, iP + 1 ) = Dis/Direc;
+//         }
     }
+#ifdef DEBUG_PARAM_COMPUTE
+    cout << "F = " << theFxyz(1) <<
+      " DRV: " << theDf(1,1) << " " << theDf(1,2) << " " << theDf(1,3)  << endl;
+#endif
     //myNbIterations +=3; // how many time call ShellPoint()
 
     // store better values
@@ -424,10 +564,9 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
     return true;
 
   if ( IsEdgeID( theShapeID )) {
-    TEdge& e = myEdge[ theShapeID - ID_Ex00 ];
-    GeomAdaptor_Curve curve( e.myC3d );
-    double f = Min( e.myFirst, e.myLast ), l = Max( e.myFirst, e.myLast );
-    Extrema_ExtPC anExtPC( thePoint, curve, f, l );
+    TEdge& e = myEdge[ theShapeID - ID_FirstE ];
+    Adaptor3d_Curve* curve = e.GetCurve();
+    Extrema_ExtPC anExtPC( thePoint, *curve, curve->FirstParameter(), curve->LastParameter() );
     int i, nb = anExtPC.IsDone() ? anExtPC.NbExt() : 0;
     for ( i = 1; i <= nb; i++ ) {
       if ( anExtPC.IsMin( i ))
@@ -469,7 +608,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
         double par = 0;
         if ( len2 > zero ) {
           par = v0P.Dot( v01 ) / len2;
-          if ( par < 0 || par > 1 ) {
+          if ( par < 0 || par > 1 ) { // projection falls out of line ends => needGrid
             needGrid = true;
             break;
           }
@@ -507,7 +646,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
     start( 3 ) = bestParam->Z();
   }
 
-  int myFaceIndex = -1;
+  myFaceIndex = -1;
   if ( isOnFace ) {
     // put a point on the face
     for ( int iCoord = 0; iCoord < 3; iCoord++ )
@@ -522,9 +661,14 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
   math_Vector tol  ( 1, 3, 1e-4 );
   math_FunctionSetRoot paramSearch( *this, tol );
 
+#ifdef DEBUG_PARAM_COMPUTE
+  cout << " #### POINT " <<thePoint.X()<<" "<<thePoint.Y()<<" "<<thePoint.Z()<<" ####"<< endl;
+  cout << " ** START ** " << start(1) << " " << start(2) << " " << start(3) << " " << endl;
+#endif
   int nbLoops = 0;
   while ( myValues[0] > 1e-1 && nbLoops++ < 10 ) {
-    paramSearch.Perform ( *this, start, low, up );
+    paramSearch.Perform ( *static_cast<math_FunctionSetWithDerivatives*>(this),
+                          start, low, up );
     if ( !paramSearch.IsDone() ) {
       //MESSAGE( " !paramSearch.IsDone() " );
     }
@@ -536,11 +680,18 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
     start( 3 ) = myParam.Z();
     //MESSAGE( "Distance: " << ( SQRT_FUNC ? sqrt(myValues[0]) : myValues[0] ));
   }
+#ifdef DEBUG_PARAM_COMPUTE
+  cout << "-------SOLUTION-------: " << endl
+       << myParam.X() << " " << myParam.Y() << " " << myParam.Z() << endl
+       << " ------ DIST :" << myValues[0] << endl;
+#endif
 //   MESSAGE( endl << myParam.X() << " " << myParam.Y() << " " << myParam.Z() << endl);
 //   mySumDist += myValues[0];
 //   MESSAGE( " TOTAL NB ITERATIONS: " << myNbIterations <<
 //             " DIST: " << ( SQRT_FUNC ? sqrt(mySumDist) : mySumDist ));
 
+  if ( myFaceIndex >= 0 )
+    myParam.SetCoord( myFaceIndex + 1, myFaceParam );
 
   theParams = myParam;
 
@@ -576,8 +727,8 @@ bool SMESH_Block::EdgeParameters(const int theEdgeID, const double theU, gp_XYZ&
     GetEdgeVertexIDs( theEdgeID, vertexVec );
     VertexParameters( vertexVec[0], theParams );
     TEdge& e = myEdge[ theEdgeID - ID_Ex00 ];
-    double param = ( theU - e.myFirst ) / ( e.myLast - e.myFirst );
-    theParams.SetCoord( e.myCoordInd, param );
+    double param = ( theU - e.EndParam(0) ) / ( e.EndParam(1) - e.EndParam(0) );
+    theParams.SetCoord( e.CoordInd(), param );
     return true;
   }
   return false;
@@ -685,16 +836,15 @@ int SMESH_Block::GetShapeIDByParams ( const gp_XYZ& theCoord )
   return id + 1; // shape ids start at 1
 }
 
-
 //=======================================================================
-//function : getOrderedEdges
+//function : GetOrderedEdges
 //purpose  : return nb wires and a list of oredered edges
 //=======================================================================
 
-static int getOrderedEdges (const TopoDS_Face&   theFace,
-                            const TopoDS_Vertex& theFirstVertex,
-                            list< TopoDS_Edge >& theEdges,
-                            list< int >  &       theNbVertexInWires)
+int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
+                                  TopoDS_Vertex        theFirstVertex,
+                                  list< TopoDS_Edge >& theEdges,
+                                  list< int >  &       theNbVertexInWires)
 {
   // put wires in a list, so that an outer wire comes first
   list<TopoDS_Wire> aWireList;
@@ -740,21 +890,59 @@ static int getOrderedEdges (const TopoDS_Face&   theFace,
           isFirst = ( p2.SquareDistance( pf ) < p2.SquareDistance( pl ));
           if ( isNext ? isFirst : !isFirst )
             edge.Reverse();
+          // to make a seam go first
+          if ( theFirstVertex.IsNull() )
+            theFirstVertex = TopExp::FirstVertex( edge, true );
         }
       }
       // rotate theEdges until it begins from theFirstVertex
-      if ( ! theFirstVertex.IsNull() )
-        while ( !theFirstVertex.IsSame( TopExp::FirstVertex( theEdges.front(), true )))
+      if ( ! theFirstVertex.IsNull() ) {
+        TopoDS_Vertex vv[2];
+        TopExp::Vertices( theEdges.front(), vv[0], vv[1], true );
+        // on closed face, make seam edge the first in the list
+        while ( !vv[0].IsSame( theFirstVertex ) || vv[0].IsSame( vv[1] ))
         {
           theEdges.splice(theEdges.end(), theEdges,
-                          theEdges.begin(), ++ theEdges.begin());
-          if ( iE++ > theNbVertexInWires.back() ) 
+                          theEdges.begin(), ++theEdges.begin());
+          TopExp::Vertices( theEdges.front(), vv[0], vv[1], true );
+          if ( iE++ > theNbVertexInWires.back() ) {
+#ifdef _DEBUG_
+            gp_Pnt p = BRep_Tool::Pnt( theFirstVertex );
+            cout << " : Warning : vertex "<< theFirstVertex.TShape().operator->()
+                 << " ( " << p.X() << " " << p.Y() << " " << p.Z() << " )" 
+                 << " not found in outer wire of face "<< theFace.TShape().operator->()
+                 << " with vertices: " <<  endl;
+            wExp.Init( *wlIt, theFace );
+            for ( int i = 0; wExp.More(); wExp.Next(), i++ )
+            {
+              TopoDS_Edge edge = wExp.Current();
+              edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
+              TopoDS_Vertex v = TopExp::FirstVertex( edge, true );
+              gp_Pnt p = BRep_Tool::Pnt( v );
+              cout << i << " " << v.TShape().operator->() << " "
+                   << p.X() << " " << p.Y() << " " << p.Z() << " " << endl;
+            }
+#endif
             break; // break infinite loop
+          }
         }
-    }
+      }
+    } // end outer wire
   }
 
   return aWireList.size();
+}
+//================================================================================
+/*!
+ * \brief Call it after geometry initialisation
+ */
+//================================================================================
+
+void SMESH_Block::init()
+{
+  myNbIterations = 0;
+  mySumDist = 0;
+  myGridComputed = false;
 }
 
 //=======================================================================
@@ -770,10 +958,7 @@ bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
                                 vector<const SMDS_MeshNode*>& theOrderedNodes)
 {
   MESSAGE(" ::LoadMeshBlock()");
-
-  myNbIterations = 0;
-  mySumDist = 0;
-  myGridComputed = false;
+  init();
 
   SMDS_VolumeTool vTool;
   if (!vTool.Set( theVolume ) || vTool.NbNodes() != 8 ||
@@ -868,59 +1053,21 @@ bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
   theOrderedNodes[ 7 ] = nn[ V111 ];
   
   // fill edges
-  myEdge[ ID_Ex00 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
-  myEdge[ ID_Ex00 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V100 - 1 ];
+  vector< int > vertexVec;
+  for ( iE = 0; iE < NbEdges(); ++iE ) {
+    GetEdgeVertexIDs(( iE + ID_FirstE ), vertexVec );
+    myEdge[ iE ].Set(( iE + ID_FirstE ),
+                     myPnt[ vertexVec[0] - 1 ],
+                     myPnt[ vertexVec[1] - 1 ]);
+  }
 
-  myEdge[ ID_Ex10 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V010 - 1 ];
-  myEdge[ ID_Ex10 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V110 - 1 ];
-
-  myEdge[ ID_Ex01 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V001 - 1 ];
-  myEdge[ ID_Ex01 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V101 - 1 ];
-
-  myEdge[ ID_Ex11 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V011 - 1 ];
-  myEdge[ ID_Ex11 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
-
-  myEdge[ ID_E0y0 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
-  myEdge[ ID_E0y0 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V010 - 1 ];
-
-  myEdge[ ID_E1y0 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V100 - 1 ];
-  myEdge[ ID_E1y0 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V110 - 1 ];
-
-  myEdge[ ID_E0y1 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V001 - 1 ];
-  myEdge[ ID_E0y1 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V011 - 1 ];
-
-  myEdge[ ID_E1y1 - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V101 - 1 ];
-  myEdge[ ID_E1y1 - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
-
-  myEdge[ ID_E00z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V000 - 1 ];
-  myEdge[ ID_E00z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V001 - 1 ];
-
-  myEdge[ ID_E10z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V100 - 1 ];
-  myEdge[ ID_E10z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V101 - 1 ];
-
-  myEdge[ ID_E01z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V010 - 1 ];
-  myEdge[ ID_E01z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V011 - 1 ];
-
-  myEdge[ ID_E11z - ID_Ex00 ].myNodes[ 0 ] = myPnt[ ID_V110 - 1 ];
-  myEdge[ ID_E11z - ID_Ex00 ].myNodes[ 1 ] = myPnt[ ID_V111 - 1 ];
-
-  for ( iE = ID_Ex00; iE <= ID_E11z; ++iE )
-    myEdge[ iE - ID_Ex00 ].myCoordInd = GetCoordIndOnEdge( iE );
-
-  // fill faces corners
+  // fill faces' corners
   for ( iF = ID_Fxy0; iF < ID_Shell; ++iF )
   {
-    TFace& tFace = myFace[ iF - ID_Fxy0 ];
+    TFace& tFace = myFace[ iF - ID_FirstF ];
     vector< int > edgeIdVec(4, -1);
     GetFaceEdgesIDs( iF, edgeIdVec );
-    tFace.myNodes[ 0 ] = myEdge[ edgeIdVec [ 0 ] - ID_Ex00 ].myNodes[ 1 ];
-    tFace.myNodes[ 1 ] = myEdge[ edgeIdVec [ 0 ] - ID_Ex00 ].myNodes[ 0 ];
-    tFace.myNodes[ 2 ] = myEdge[ edgeIdVec [ 1 ] - ID_Ex00 ].myNodes[ 0 ];
-    tFace.myNodes[ 3 ] = myEdge[ edgeIdVec [ 1 ] - ID_Ex00 ].myNodes[ 1 ];
-    tFace.myCoordInd[ 0 ] = GetCoordIndOnEdge( edgeIdVec[ 0 ] );
-    tFace.myCoordInd[ 1 ] = GetCoordIndOnEdge( edgeIdVec[ 1 ] );
-    tFace.myCoordInd[ 2 ] = GetCoordIndOnEdge( edgeIdVec[ 2 ] );
-    tFace.myCoordInd[ 3 ] = GetCoordIndOnEdge( edgeIdVec[ 3 ] );
+    tFace.Set( iF, myEdge[ edgeIdVec [ 0 ]], myEdge[ edgeIdVec [ 1 ]]);
   }
 
   return true;
@@ -928,7 +1075,8 @@ bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
 
 //=======================================================================
 //function : LoadBlockShapes
-//purpose  : add sub-shapes of theBlock to theShapeIDMap so that they get
+//purpose  : Initialize block geometry with theShell,
+//           add sub-shapes of theBlock to theShapeIDMap so that they get
 //           IDs acoording to enum TShapeID
 //=======================================================================
 
@@ -938,11 +1086,22 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
                                   TopTools_IndexedMapOfOrientedShape& theShapeIDMap )
 {
   MESSAGE(" ::LoadBlockShapes()");
+  return ( FindBlockShapes( theShell, theVertex000, theVertex001, theShapeIDMap ) &&
+           LoadBlockShapes( theShapeIDMap ));
+}
 
-  myShell = theShell;
-  myNbIterations = 0;
-  mySumDist = 0;
-  myGridComputed = false;
+//=======================================================================
+//function : LoadBlockShapes
+//purpose  : add sub-shapes of theBlock to theShapeIDMap so that they get
+//           IDs acoording to enum TShapeID
+//=======================================================================
+
+bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
+                                  const TopoDS_Vertex&        theVertex000,
+                                  const TopoDS_Vertex&        theVertex001,
+                                  TopTools_IndexedMapOfOrientedShape& theShapeIDMap )
+{
+  MESSAGE(" ::FindBlockShapes()");
 
   // 8 vertices
   TopoDS_Shape V000, V100, V010, V110, V001, V101, V011, V111;
@@ -958,7 +1117,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
   const int NB_FACES_BY_VERTEX = 6;
 
   TopTools_IndexedDataMapOfShapeListOfShape vfMap;
-  TopExp::MapShapesAndAncestors( myShell, TopAbs_VERTEX, TopAbs_FACE, vfMap );
+  TopExp::MapShapesAndAncestors( theShell, TopAbs_VERTEX, TopAbs_FACE, vfMap );
   if ( vfMap.Extent() != 8 ) {
     MESSAGE(" Wrong nb of vertices in the block: " << vfMap.Extent() );
     return false;
@@ -982,7 +1141,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
     }
     // find vertex 001 - the one on the most vertical edge passing through V000
     TopTools_IndexedDataMapOfShapeListOfShape veMap;
-    TopExp::MapShapesAndAncestors( myShell, TopAbs_VERTEX, TopAbs_EDGE, veMap );
+    TopExp::MapShapesAndAncestors( theShell, TopAbs_VERTEX, TopAbs_EDGE, veMap );
     gp_Vec dir001 = gp::DZ();
     gp_Pnt p000 = BRep_Tool::Pnt( TopoDS::Vertex( V000 ));
     double maxVal = -DBL_MAX;
@@ -1051,7 +1210,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
   // find bottom edges and veritices
   list< TopoDS_Edge > eList;
   list< int >         nbVertexInWires;
-  getOrderedEdges( TopoDS::Face( Fxy0 ), TopoDS::Vertex( V000 ), eList, nbVertexInWires );
+  GetOrderedEdges( TopoDS::Face( Fxy0 ), TopoDS::Vertex( V000 ), eList, nbVertexInWires );
   if ( nbVertexInWires.size() != 1 || nbVertexInWires.front() != 4 ) {
     MESSAGE(" LoadBlockShapes() error ");
     return false;
@@ -1073,7 +1232,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
 
   // find top edges and veritices
   eList.clear();
-  getOrderedEdges( TopoDS::Face( Fxy1 ), TopoDS::Vertex( V001 ), eList, nbVertexInWires );
+  GetOrderedEdges( TopoDS::Face( Fxy1 ), TopoDS::Vertex( V001 ), eList, nbVertexInWires );
   if ( nbVertexInWires.size() != 1 || nbVertexInWires.front() != 4 ) {
     MESSAGE(" LoadBlockShapes() error ");
     return false;
@@ -1097,7 +1256,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
     if ( V101.IsSame( exp.Current() ) || V100.IsSame( exp.Current() ))
       break; // V101 or V100 found
   if ( !exp.More() ) { // not found
-    TopoDS_Shape f = Fx0z; Fx0z = F0yz; F0yz = f;
+    std::swap( Fx0z, F0yz);
   }
 
   // find Fx1z and F1yz faces
@@ -1132,7 +1291,7 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
     if ( V010.IsSame( exp.Current() ) || V011.IsSame( exp.Current() ))
       break;
   if ( !exp.More() ) {
-    TopoDS_Shape f = Fx1z; Fx1z = F1yz; F1yz = f;
+    std::swap( Fx1z, F1yz);
   }
 
   // find vertical edges
@@ -1196,12 +1355,22 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
   theShapeIDMap.Add(F0yz);
   theShapeIDMap.Add(F1yz);
   
-  theShapeIDMap.Add(myShell);
+  theShapeIDMap.Add(theShell);
 
-  if ( theShapeIDMap.Extent() != 27 ) {
-    MESSAGE("LoadBlockShapes() " << theShapeIDMap.Extent() );
-    return false;
-  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Initialize block geometry with shapes from theShapeIDMap
+  * \param theShapeIDMap - map of block subshapes
+  * \retval bool - is a success
+ */
+//================================================================================
+
+bool SMESH_Block::LoadBlockShapes(const TopTools_IndexedMapOfOrientedShape& theShapeIDMap)
+{
+  init();
 
   // store shapes geometry
   for ( int shapeID = 1; shapeID < theShapeIDMap.Extent(); shapeID++ )
@@ -1211,59 +1380,24 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
     {
     case TopAbs_VERTEX: {
 
-      if ( shapeID > ID_V111 ) {
-        MESSAGE(" shapeID =" << shapeID );
-        return false;
-      }
-      myPnt[ shapeID - ID_V000 ] =
-        BRep_Tool::Pnt( TopoDS::Vertex( S )).XYZ();
+      if ( !IsVertexID( ID_V111 )) return false;
+      myPnt[ shapeID - ID_V000 ] = BRep_Tool::Pnt( TopoDS::Vertex( S )).XYZ();
       break;
     }
     case TopAbs_EDGE: {
 
+      if ( !IsEdgeID( shapeID )) return false;
       const TopoDS_Edge& edge = TopoDS::Edge( S );
-      if ( shapeID < ID_Ex00 || shapeID > ID_E11z || edge.IsNull() ) {
-        MESSAGE(" shapeID =" << shapeID );
-        return false;
-      }
-      TEdge& tEdge = myEdge[ shapeID - ID_Ex00 ];
-      tEdge.myCoordInd = GetCoordIndOnEdge( shapeID );
-      TopLoc_Location loc;
-      tEdge.myC3d = BRep_Tool::Curve( edge, loc, tEdge.myFirst, tEdge.myLast );
-      if ( !IsForwardEdge( edge, theShapeIDMap ))
-        Swap( tEdge.myFirst, tEdge.myLast );
-      tEdge.myTrsf = loc;
+      TEdge& tEdge = myEdge[ shapeID - ID_FirstE ];
+      tEdge.Set( shapeID,
+                 new BRepAdaptor_Curve( edge ),
+                 IsForwardEdge( edge, theShapeIDMap ));
       break;
     }
     case TopAbs_FACE: {
 
-      const TopoDS_Face& face = TopoDS::Face( S );
-      if ( shapeID < ID_Fxy0 || shapeID > ID_F1yz || face.IsNull() ) {
-        MESSAGE(" shapeID =" << shapeID );
+      if ( !LoadFace( TopoDS::Face( S ), shapeID, theShapeIDMap ))
         return false;
-      }
-      TFace& tFace = myFace[ shapeID - ID_Fxy0 ];
-      // pcurves
-      vector< int > edgeIdVec(4, -1);
-      GetFaceEdgesIDs( shapeID, edgeIdVec );
-      for ( int iE = 0; iE < 4; iE++ ) // loop on 4 edges
-      {
-        const TopoDS_Edge& edge = TopoDS::Edge( theShapeIDMap( edgeIdVec[ iE ]));
-        tFace.myCoordInd[ iE ] = GetCoordIndOnEdge( edgeIdVec[ iE ] );
-        tFace.myC2d[ iE ] =
-          BRep_Tool::CurveOnSurface( edge, face, tFace.myFirst[iE], tFace.myLast[iE] );
-        if ( !IsForwardEdge( edge, theShapeIDMap ))
-          Swap( tFace.myFirst[ iE ], tFace.myLast[ iE ] );
-      }
-      // 2d corners
-      tFace.myCorner[ 0 ] = tFace.myC2d[ 0 ]->Value( tFace.myFirst[0] ).XY();
-      tFace.myCorner[ 1 ] = tFace.myC2d[ 0 ]->Value( tFace.myLast[0] ).XY();
-      tFace.myCorner[ 2 ] = tFace.myC2d[ 1 ]->Value( tFace.myLast[1] ).XY();
-      tFace.myCorner[ 3 ] = tFace.myC2d[ 1 ]->Value( tFace.myFirst[1] ).XY();
-      // sufrace
-      TopLoc_Location loc;
-      tFace.myS = BRep_Tool::Surface( face, loc );
-      tFace.myTrsf = loc;
       break;
     }
     default: break;
@@ -1271,6 +1405,76 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
   } // loop on shapes in theShapeIDMap
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Load face geometry
+  * \param theFace - face
+  * \param theFaceID - face in-block ID
+  * \param theShapeIDMap - map of block subshapes
+  * \retval bool - is a success
+ * 
+ * It is enough to compute params or coordinates on the face.
+ * Face subshapes must be loaded into theShapeIDMap before
+ */
+//================================================================================
+
+bool SMESH_Block::LoadFace(const TopoDS_Face& theFace,
+                           const int          theFaceID,
+                           const TopTools_IndexedMapOfOrientedShape& theShapeIDMap)
+{
+  if ( !IsFaceID( theFaceID ) ) return false;
+  // pcurves
+  Adaptor2d_Curve2d* c2d[4];
+  bool isForward[4];
+  vector< int > edgeIdVec;
+  GetFaceEdgesIDs( theFaceID, edgeIdVec );
+  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  {
+    if ( edgeIdVec[ iE ] > theShapeIDMap.Extent() )
+      return false;
+    const TopoDS_Edge& edge = TopoDS::Edge( theShapeIDMap( edgeIdVec[ iE ]));
+    c2d[ iE ] = new BRepAdaptor_Curve2d( edge, theFace );
+    isForward[ iE ] = IsForwardEdge( edge, theShapeIDMap );
+  }
+  TFace& tFace = myFace[ theFaceID - ID_FirstF ];
+  tFace.Set( theFaceID, new BRepAdaptor_Surface( theFace ), c2d, isForward );
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief/ Insert theShape into theShapeIDMap with theShapeID
+  * \param theShape - shape to insert
+  * \param theShapeID - shape in-block ID
+  * \param theShapeIDMap - map of block subshapes
+ */
+//================================================================================
+
+bool SMESH_Block::Insert(const TopoDS_Shape& theShape,
+                         const int           theShapeID,
+                         TopTools_IndexedMapOfOrientedShape& theShapeIDMap)
+{
+  if ( !theShape.IsNull() && theShapeID > 0 )
+  {
+    if ( theShapeIDMap.Contains( theShape ))
+      return ( theShapeIDMap.FindIndex( theShape ) == theShapeID );
+
+    if ( theShapeID <= theShapeIDMap.Extent() ) {
+        theShapeIDMap.Substitute( theShapeID, theShape );
+    }
+    else {
+      while ( theShapeIDMap.Extent() < theShapeID - 1 ) {
+        TopoDS_Compound comp;
+        BRep_Builder().MakeCompound( comp );
+        theShapeIDMap.Add( comp );
+      }
+      theShapeIDMap.Add( theShape );
+    }
+    return true;
+  }
+  return false;
 }
 
 //=======================================================================
@@ -1385,6 +1589,7 @@ void SMESH_Block::GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec )
     vertexVec[ 1 ] = ID_V111;
     break;
   default:
+    vertexVec.resize(0);
     MESSAGE(" GetEdgeVertexIDs(), wrong edge ID: " << edgeID );
   }
 }

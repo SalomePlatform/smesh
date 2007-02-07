@@ -29,6 +29,8 @@
 #ifndef _SMESH_MESH_HXX_
 #define _SMESH_MESH_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 //#include "SMESH_subMesh.hxx"
 
@@ -74,7 +76,7 @@ class SMESH_HypoFilter;
 //typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 typedef SMESH_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
-class SMESH_Mesh
+class SMESH_EXPORT SMESH_Mesh
 {
   SMESH_Mesh();
   SMESH_Mesh(const SMESH_Mesh&);

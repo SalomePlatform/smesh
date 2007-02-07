@@ -20,9 +20,11 @@
 #ifndef _INCLUDE_DRIVERMED_R_SMDS_MESH
 #define _INCLUDE_DRIVERMED_R_SMDS_MESH
 
+#include "SMESH_DriverMED.hxx"
+
 #include "Driver_SMDS_Mesh.h"
 
-class DriverMED_R_SMDS_Mesh: public Driver_SMDS_Mesh
+class MESHDRIVERMED_EXPORT DriverMED_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {};
 
 #endif

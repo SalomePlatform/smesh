@@ -35,7 +35,7 @@ VPATH=.:@srcdir@
 @COMMENCE@
 
 # header files 
-EXPORT_HEADERS= DriverSTL_R_SMDS_Mesh.h DriverSTL_W_SMDS_Mesh.h
+EXPORT_HEADERS= DriverSTL_R_SMDS_Mesh.h DriverSTL_W_SMDS_Mesh.h SMESH_DriverSTL.hxx
 
 # Libraries targets
 LIB = libMeshDriverSTL.la

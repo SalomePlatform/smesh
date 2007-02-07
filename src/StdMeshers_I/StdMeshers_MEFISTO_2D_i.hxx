@@ -30,6 +30,8 @@
 #ifndef _StdMeshers_MEFISTO_2D_I_HXX_
 #define _StdMeshers_MEFISTO_2D_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // ======================================================
 // Triangle (MEFISTO) 2d algorithm
 // ======================================================
-class StdMeshers_MEFISTO_2D_i:
+class STDMESHERS_I_EXPORT StdMeshers_MEFISTO_2D_i:
   public virtual POA_StdMeshers::StdMeshers_MEFISTO_2D,
   public virtual SMESH_2D_Algo_i
 {

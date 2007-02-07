@@ -26,6 +26,8 @@
 #ifndef SMESH_SequenceOfNode_HeaderFile
 #define SMESH_SequenceOfNode_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <NCollection_DefineSequence.hxx>
 
 typedef const SMDS_MeshNode* SMDS_MeshNodePtr;

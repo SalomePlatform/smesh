@@ -41,6 +41,11 @@
 
 using namespace std;
 
+/*Standard_Boolean IsEqual( const TopoDS_Shape& S1, const TopoDS_Shape& S2 ) 
+  {
+    return S1.IsSame( S2 );
+  }*/
+
 //=======================================================================
 //function : Create
 //purpose  : 
@@ -70,7 +75,7 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
   {
     // removal of a shape to mesh, delete ...
     // - hypotheses
-    myShapeToHypothesis.clear();
+    myShapeToHypothesis.Clear();
     // - shape indices in SMDS_Position of nodes
     map<int,SMESHDS_SubMesh*>::iterator i_sub = myShapeIndexToSubMesh.begin();
     for ( ; i_sub != myShapeIndexToSubMesh.end(); i_sub++ ) {
@@ -107,7 +112,14 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
 	const SMESHDS_Hypothesis * H)
 {
-	list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis[SS];
+	//list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis[SS];
+  
+  if ( !myShapeToHypothesis.IsBound( SS ) )
+    myShapeToHypothesis.Bind( SS, list<const SMESHDS_Hypothesis *>() );
+
+  list<const SMESHDS_Hypothesis *>& alist = myShapeToHypothesis.ChangeFind( SS );
+
+    
 
 	//Check if the Hypothesis is still present
 	list<const SMESHDS_Hypothesis*>::iterator ith=alist.begin();
@@ -127,7 +139,7 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
 bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape & S,
 	const SMESHDS_Hypothesis * H)
 {
-	ShapeToHypothesis::iterator its=myShapeToHypothesis.find(S);
+	/*ShapeToHypothesis::iterator its=myShapeToHypothesis.find(S);
 	if(its!=myShapeToHypothesis.end())
 	{
 		list<const SMESHDS_Hypothesis*>::iterator ith=(*its).second.begin();
@@ -138,7 +150,19 @@ bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape & S,
 				(*its).second.erase(ith);
 				return true;
 			}
-	}
+	}*/
+  if ( myShapeToHypothesis.IsBound( S ) )
+  {
+    list<const SMESHDS_Hypothesis *>& alist = myShapeToHypothesis.ChangeFind( S );
+    list<const SMESHDS_Hypothesis*>::iterator ith = alist.begin();
+
+		for (; ith != alist.end(); ith++)
+			if (H == *ith)
+			{
+				alist.erase(ith);
+				return true;
+			}
+  }
 	return false;
 }
 
@@ -1018,8 +1042,8 @@ list<int> SMESHDS_Mesh::SubMeshIndices()
 const list<const SMESHDS_Hypothesis*>& SMESHDS_Mesh::GetHypothesis(
 	const TopoDS_Shape & S) const
 {
-	if (myShapeToHypothesis.find(S)!=myShapeToHypothesis.end())
-		return myShapeToHypothesis.find(S)->second;
+	if ( myShapeToHypothesis.IsBound(S) )
+		return myShapeToHypothesis.Find(S);
 
 	static list<const SMESHDS_Hypothesis*> empty;
 	return empty;
@@ -1060,7 +1084,7 @@ bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
 //=======================================================================
 bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 {
-	return myShapeToHypothesis.find(S)!=myShapeToHypothesis.end();
+	return myShapeToHypothesis.IsBound(S);
 }
 
 //=======================================================================

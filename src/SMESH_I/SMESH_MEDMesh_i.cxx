@@ -863,8 +863,8 @@ void SMESH_MEDMesh_i::addInStudy(SALOMEDS::Study_ptr myStudy,
 	 * ORB_INIT &init = *SINGLETON_<ORB_INIT>::Instance() ;
 	 * ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting()) ;
 	 * CORBA::ORB_var &orb = init(0,0);
-	 * string iorStr = orb->object_to_string(myIor);
-	 * //myBuilder->AddAttribute(newObj,SALOMEDS::IOR,iorStr.c_str());
+	 * CORBA::String_var iorStr = orb->object_to_string(myIor);
+	 * //myBuilder->AddAttribute(newObj,SALOMEDS::IOR,iorStr.in());
 	 * SALOMEDS::AttributeIOR_var aIOR = SALOMEDS::AttributeIOR::_narrow(
 	 * myBuilder->FindOrCreateAttribute(newObj, "AttributeIOR"));
 	 * aIOR->SetValue(iorStr.c_str());
@@ -1137,9 +1137,15 @@ void SMESH_MEDMesh_i::createFamilies() throw(SALOME::SALOME_Exception)
 			SMESH_MEDFamily_i *famservant =
 				new SMESH_MEDFamily_i(famIdent, submesh_i,
 				famName, famDes, SALOME_MED::MED_NODE);
-			SALOME_MED::FAMILY_ptr famille =
-				SALOME_MED::FAMILY::_narrow(famservant->
-				POA_SALOME_MED::FAMILY::_this());
+#ifdef WNT
+      SALOME_MED::FAMILY_ptr famille = SALOME_MED::FAMILY::_nil();
+      POA_SALOME_MED::FAMILY* servantbase = dynamic_cast<POA_SALOME_MED::FAMILY*>(famservant);
+      if ( servantbase )
+        famille = SALOME_MED::FAMILY::_narrow( servantbase->_this() );
+#else 
+  		SALOME_MED::FAMILY_ptr famille = 
+        SALOME_MED::FAMILY::_narrow( famservant->POA_SALOME_MED::FAMILY::_this() );
+#endif
 			_families.push_back(famille);
 		}
 	}

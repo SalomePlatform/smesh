@@ -43,9 +43,10 @@
 #include <qpixmap.h>
 #include <qgroupbox.h>
 
+#include <qapplication.h>
+
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& aHypType )
-: myHypType( aHypType ),
-  myIsCreate( false )
+  : myHypType( aHypType ), myIsCreate( false ), myDlg( 0 )
 {
 }
 
@@ -131,17 +132,22 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   bool res = true;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
 
+  SMESHGUI_HypothesisDlg* Dlg =
+    new SMESHGUI_HypothesisDlg( const_cast<SMESHGUI_GenericHypothesisCreator*>( this ), parent );
+  myDlg = Dlg;
   QFrame* fr = buildFrame();
   if( fr )
   {
-    SMESHGUI_HypothesisDlg* dlg = 
-      new SMESHGUI_HypothesisDlg( const_cast<SMESHGUI_GenericHypothesisCreator*>( this ), parent );
-    dlg->setCustomFrame( fr );
-    dlg->setCaption( caption() );
-    dlg->setHIcon( icon() );
-    dlg->setType( type() );
+    Dlg->setCustomFrame( fr );
+    Dlg->setCaption( caption() );
+    Dlg->setHIcon( icon() );
+    Dlg->setType( type() );
     retrieveParams();
-    res = dlg->exec()==QDialog::Accepted;
+    Dlg->show();
+    //connect(myDlg, SIGNAL( closed() ), this, SLOT( onDlgClosed() ));
+    qApp->enter_loop(); // make myDlg not modal
+//     res = myDlg->exec()==QDialog::Accepted;
+    res = myDlg->result();
     if( res ) {
       QString paramValues = storeParams();
       if ( !paramValues.isEmpty() ) {
@@ -149,14 +155,14 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
           SMESH::SetValue( SHyp, paramValues );
       }
     }
-    delete dlg;
   }
+  delete Dlg; myDlg = 0;
   changeWidgets().clear();
   myHypo = SMESH::SMESH_Hypothesis::_nil();
   myInitParamsHypo = SMESH::SMESH_Hypothesis::_nil();
   return res;
 }
-
+  
 QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
 {
   if( CORBA::is_nil( hypothesis() ) )
@@ -187,7 +193,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
     QLabel* lab = new QLabel( (*anIt).myName, GroupC1 );
     GroupC1Layout->addWidget( lab, i, 0 );
 
-    QWidget* w = getCustomWidget( *anIt, GroupC1 );
+    QWidget* w = getCustomWidget( *anIt, GroupC1, i );
     if ( !w ) 
       switch( (*anIt).myValue.type() )
       {
@@ -283,10 +289,13 @@ QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams
 {
   QString valueStr = "";
   ListOfStdParams::const_iterator param = params.begin(), aLast = params.end();
+  uint len0 = 0;
   for( int i=0; param!=aLast; param++, i++ )
   {
-    if ( i > 0 )
+    if ( valueStr.length() > len0 ) {
       valueStr += "; ";
+      len0 = valueStr.length();
+    }
     switch( (*param).myValue.type() )
     {
     case QVariant::Int:
@@ -357,7 +366,8 @@ QString SMESHGUI_GenericHypothesisCreator::type() const
   return QString();
 }
 QWidget* SMESHGUI_GenericHypothesisCreator::getCustomWidget( const StdParam & /*param*/,
-                                                             QWidget*   /*parent*/) const
+                                                             QWidget*   /*parent*/,
+                                                             const int  /*index*/) const
 {
   return 0;
 }
@@ -366,11 +376,15 @@ bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam& , QW
   return false;
 }
 
+void SMESHGUI_GenericHypothesisCreator::onReject()
+{
+}
+
 
 
 
 SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator* creator, QWidget* parent )
-: QtxDialog( parent, "", true, true ),
+: QtxDialog( parent, "", false, true ),
   myCreator( creator )
 {
   setMinimumSize( 300, height() );
@@ -414,7 +428,6 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
     myHelpFileName = "";
 
   connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-
 }
 
 SMESHGUI_HypothesisDlg::~SMESHGUI_HypothesisDlg()
@@ -432,8 +445,17 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 
 void SMESHGUI_HypothesisDlg::accept()
 {
-  if( !myCreator || myCreator->checkParams() )
-    QtxDialog::accept();
+  if ( myCreator && !myCreator->checkParams() )
+    return;
+  QtxDialog::accept();
+  qApp->exit_loop();
+}
+
+void SMESHGUI_HypothesisDlg::reject()
+{
+  if ( myCreator ) myCreator->onReject();
+  QtxDialog::reject();
+  qApp->exit_loop();
 }
 
 void SMESHGUI_HypothesisDlg::onHelp()
@@ -444,9 +466,15 @@ void SMESHGUI_HypothesisDlg::onHelp()
     app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);
   }
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }

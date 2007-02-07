@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -67,6 +66,7 @@ DEFINE_ARRAY2(StdMeshers_Array2OfNode,
               StdMeshers_BaseCollectionNodePtr, SMDS_MeshNodePtr)
 #endif
 
+using namespace std;
 
 //=============================================================================
 /*!
@@ -667,7 +667,7 @@ void StdMeshers_Quadrangle_2D::QuadDelete (FaceQuadStruct * quad)
 
 void StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
                                                   const TopoDS_Shape& aShape,
-                                                  FaceQuadStruct* quad) throw (SALOME_Exception)
+                                                  FaceQuadStruct* & quad) throw (SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   // Algorithme décrit dans "Génération automatique de maillages"

@@ -32,7 +32,12 @@ using namespace std;
 extern "C"
 {
   R aretemaxface_;
-  R areteideale_( R3 xyz, R3 direction )
+  MEFISTO2D_EXPORT   
+    R
+  #ifdef WIN32
+      __stdcall
+  #endif
+      areteideale()//( R3 xyz, R3 direction )
   {
     return aretemaxface_;
   }
@@ -187,14 +192,14 @@ void  aptrte( Z   nutysu, R      aretmx,
   mnsoar = new Z[mosoar*mxsoar];
   if( mnsoar==NULL ) goto ERREUR;
   //initialiser le tableau mnsoar pour le hachage des aretes
-  insoar_( mxsomm, mosoar, mxsoar, n1soar, mnsoar );
+  insoar( mxsomm, mosoar, mxsoar, n1soar, mnsoar );
 
   // mnarst( mxsomm ) numero mnsoar d'une arete pour chacun des sommets
   if( mnarst!=NULL ) delete [] mnarst;
   mnarst = new Z[1+mxsomm];
   if( mnarst==NULL ) goto ERREUR;
   n = 1+mxsomm;
-  azeroi_( n, mnarst );
+  azeroi( n, mnarst );
 
   // mnslig( mxsomm ) no de sommet dans sa ligne pour chaque sommet frontalier
   //               ou no du point si interne forc'e par l'utilisateur
@@ -202,7 +207,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( mnslig!=NULL ) delete [] mnslig;
   mnslig = new Z[mxsomm];
   if( mnslig==NULL ) goto ERREUR;
-  azeroi_( mxsomm, mnslig );
+  azeroi( mxsomm, mnslig );
 
   // initialisation des aretes frontalieres de la triangulation future
   // renumerotation des sommets des aretes des lignes pour la triangulation
@@ -222,7 +227,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     ns0 = nudslf[n-1];
     mnpxyd[ns0].x = uvslf[ns0].x;
     mnpxyd[ns0].y = uvslf[ns0].y;
-    mnpxyd[ns0].z = areteideale_( mnpxyd[ns0], direction );
+    mnpxyd[ns0].z = areteideale();//( mnpxyd[ns0], direction );
 //     MESSAGE("Sommet " << ns0 << ": " << mnpxyd[ns0].x
 // 	 << " " << mnpxyd[ns0].y << " longueur arete=" << mnpxyd[ns0].z);
 
@@ -244,7 +249,7 @@ void  aptrte( Z   nutysu, R      aretmx,
 
      //le numero n de la ligne du sommet et son numero ns1 dans la ligne
     mnslig[ns0-1] = 1000000 * n + ns1-nudslf[n-1];
-    fasoar_( ns1, ns2, moins1, moins1, n,
+    fasoar( ns1, ns2, moins1, moins1, n,
 	     mosoar, mxsoar, n1soar, mnsoar, mnarst,
 	     noar0,  ierr );
     //pas de test sur ierr car pas de saturation possible a ce niveau
@@ -274,7 +279,7 @@ void  aptrte( Z   nutysu, R      aretmx,
       ns = ns1 - 1;
       mnpxyd[ns].x = uvslf[ns].x;
       mnpxyd[ns].y = uvslf[ns].y;
-      mnpxyd[ns].z = areteideale_( mnpxyd[ns], direction );
+      mnpxyd[ns].z = areteideale();//( mnpxyd[ns], direction );
 //       MESSAGE("Sommet " << ns << ": " << mnpxyd[ns].x
 // 	   << " " << mnpxyd[ns].y << " longueur arete=" << mnpxyd[ns].z);
 
@@ -288,7 +293,7 @@ void  aptrte( Z   nutysu, R      aretmx,
       mnslig[ns] = 1000000 * n + ns1-nudslf[n-1];
 
       //ajout de l'arete dans la liste
-      fasoar_( ns1, ns2, moins1, moins1, n,
+      fasoar( ns1, ns2, moins1, moins1, n,
 	       mosoar, mxsoar, n1soar, mnsoar,
 	       mnarst, noar, ierr );
       //pas de test sur ierr car pas de saturation possible a ce niveau
@@ -333,7 +338,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     //les 2 coordonnees du point i de sommet nbs
     mnpxyd[ns1].x = uvpti[i].x;
     mnpxyd[ns1].y = uvpti[i].y;
-    mnpxyd[ns1].z = areteideale_( mnpxyd[ns1], direction );
+    mnpxyd[ns1].z = areteideale();//( mnpxyd[ns1], direction );
     //le numero i du point interne
     mnslig[ns1] = i+1;
     ns1++;
@@ -356,7 +361,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( mntree==NULL ) goto ERREUR;
 
   //initialisation du tableau letree et ajout dans letree des sommets 1 a nbsomm
-  teajte_( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
+  teajte( mxsomm, nbsomm, mnpxyd, comxmi, aretmx, mxtree, mntree, ierr );
   comxmi[0].z=0;
   comxmi[1].z=0;
 
@@ -384,7 +389,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   mnqueu = new Z[mxqueu];
   if( mnqueu==NULL) goto ERREUR;
 
-  tehote_( nutysu, nbarpi, mxsomm, nbsomm, mnpxyd,
+  tehote( nutysu, nbarpi, mxsomm, nbsomm, mnpxyd,
 	   comxmi, aretmx,
 	   mntree, mxqueu, mnqueu,
 	   ierr );
@@ -411,7 +416,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   // trianguler les triangles equilateraux feuilles a partir de leurs 3 sommets
   // et des points de la frontiere, des points internes imposes interieurs
   // ==========================================================================
-  tetrte_( comxmi, aretmx, nbarpi, mxsomm, mnpxyd,
+  tetrte( comxmi, aretmx, nbarpi, mxsomm, mnpxyd,
 	   mxqueu, mnqueu, mntree, mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr, mnarst,
 	   ierr );
@@ -440,8 +445,8 @@ void  aptrte( Z   nutysu, R      aretmx,
   // avec echange des 2 diagonales afin de rendre la triangulation delaunay
   // ======================================================================
   // formation du chainage 6 des aretes internes a echanger eventuellement
-  aisoar_( mosoar, mxsoar, mnsoar, na );
-  tedela_( mnpxyd, mnarst,
+  aisoar( mosoar, mxsoar, mnsoar, na );
+  tedela( mnpxyd, mnarst,
 	   mosoar, mxsoar, n1soar, mnsoar, na,
 	   moartr, mxartr, n1artr, mnartr, n );
 
@@ -472,7 +477,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   mnarcf2 = new Z[mxarcf];
   if( mnarcf2 == NULL ) goto ERREUR;
 
-  terefr_( nbarpi, mnpxyd,
+  terefr( nbarpi, mnpxyd,
 	   mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, n1artr, mnartr, mnarst,
 	   mxarcf, mn1arcf, mnarcf, mnarcf1, mnarcf2,
@@ -513,7 +518,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   for (n=0; n<nblf; n++)  //numero de la ligne fermee de 1 a nblf
     mnlftr[n] = n+1;
 
-  tesuex_( nblf,   mnlftr,
+  tesuex( nblf,   mnlftr,
 	   ndtri0, nbsomm, mnpxyd, mnslig,
 	   mosoar, mxsoar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr, mnarst,
@@ -543,7 +548,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     cout << "aptrte: MC saturee mnarcf3=" << mnarcf3 << endl;
     goto ERREUR;
   }
-  teamqt_( nutysu,
+  teamqt( nutysu,
 	   mnarst, mosoar, mxsoar, n1soar, mnsoar,
 	   moartr, mxartr, n1artr, mnartr,
 	   mxarcf, mnarcf2, mnarcf3,
@@ -575,7 +580,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     if( mnartr[nt*moartr-moartr] != 0 )
     {
       //le numero des 3 sommets du triangle nt
-      nusotr_( nt, mosoar, mnsoar, moartr, mnartr, nosotr );
+      nusotr( nt, mosoar, mnsoar, moartr, mnartr, nosotr );
       //les 3 sommets du triangle sont actifs
       mnarst[ nosotr[0] ] = 1;
       mnarst[ nosotr[1] ] = 1;
@@ -643,7 +648,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     if( mnartr[i*moartr-moartr] != 0 )
     {
       //le triangle i est interne => nosotr numero de ses 3 sommets
-      nusotr_( i, mosoar, mnsoar, moartr, mnartr,  nosotr );
+      nusotr( i, mosoar, mnsoar, moartr, mnartr,  nosotr );
       nust[nbt++] = mnarst[ nosotr[0] ];
       nust[nbt++] = mnarst[ nosotr[1] ];
       nust[nbt++] = mnarst[ nosotr[2] ];
@@ -745,10 +750,10 @@ void qualitetrte( R3 *mnpxyd,
       nbtria++;
 
       //le numero des 3 sommets du triangle nt
-      nusotr_( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
+      nusotr( nt, mosoar, mnsoar, moartr, mnartr,  nosotr );
 
       //la qualite du triangle ns1 ns2 ns3
-      qutr2d_( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1],
+      qutr2d( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1],
 	       qualite );
 
       //la qualite moyenne
@@ -758,7 +763,7 @@ void qualitetrte( R3 *mnpxyd,
       quamin = Min( quamin, qualite );
 
       //aire signee du triangle nt
-      d = surtd2_( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1] );
+      d = surtd2( mnpxyd[nosotr[0]-1], mnpxyd[nosotr[1]-1], mnpxyd[nosotr[2]-1] );
       if( d<0 )
       {
 	//un triangle d'aire negative de plus

@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_Hexa_3D.hxx"
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "SMESH_Gen.hxx"
@@ -60,6 +59,8 @@ using namespace std;
 
 //modified by NIZNHY-PKV Wed Nov 17 15:31:58 2004 f
 #include "StdMeshers_Penta_3D.hxx"
+
+using namespace std;
 
 static bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape);
 //modified by NIZNHY-PKV Wed Nov 17 15:32:00 2004 t

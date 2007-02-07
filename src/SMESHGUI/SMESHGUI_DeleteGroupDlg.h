@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_DELETEGROUPDLG_H
 #define SMESHGUI_DELETEGROUPDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 #include <qlist.h>
 
@@ -47,7 +49,7 @@ class LightApp_SelectionMgr;
  *  Description : Delete groups and their contents
  */
 
-class SMESHGUI_DeleteGroupDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_DeleteGroupDlg : public QDialog
 {
   Q_OBJECT
 

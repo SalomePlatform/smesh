@@ -27,16 +27,12 @@
 #ifndef _SMESHDS_SubMesh_HeaderFile
 #define _SMESHDS_SubMesh_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMDS_Mesh.hxx"
 #include <set>
 
-#if defined WNT && defined WIN32 && defined SMESHDS_EXPORTS
-#define SMESHDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMESHDS_WNT_EXPORT
-#endif
-
-class SMESHDS_WNT_EXPORT SMESHDS_SubMesh
+class SMESHDS_EXPORT SMESHDS_SubMesh
 {
  public:
 

@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_MEFISTO_2D.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"

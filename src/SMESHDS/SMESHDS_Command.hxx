@@ -27,11 +27,13 @@
 #ifndef _SMESHDS_Command_HeaderFile
 #define _SMESHDS_Command_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMESHDS_CommandType.hxx"
 #include <list>
 #include <vector>
 
-class SMESHDS_Command
+class SMESHDS_EXPORT SMESHDS_Command
 {
 
   public:

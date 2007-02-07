@@ -28,12 +28,14 @@
 #ifndef STDMESHERSGUI_StdHypothesisCreator_HeaderFile
 #define STDMESHERSGUI_StdHypothesisCreator_HeaderFile
 
+#include "SMESH_StdMeshersGUI.hxx"
+
 #include <SMESHGUI_Hypotheses.h>
 
 /*!
- * \brief Class for creation of simple hypotheses (only set of parameters without dependencies)
+ * \brief Class for creation of standard hypotheses
 */
-class StdMeshersGUI_StdHypothesisCreator : public SMESHGUI_GenericHypothesisCreator
+class STDMESHERSGUI_EXPORT StdMeshersGUI_StdHypothesisCreator : public SMESHGUI_GenericHypothesisCreator
 {
   Q_OBJECT
 
@@ -52,10 +54,20 @@ protected:
   virtual QString  caption() const;
   virtual QPixmap  icon() const;
   virtual QString  type() const;
-  virtual QWidget* getCustomWidget( const StdParam&, QWidget* ) const;
+  virtual QWidget* getCustomWidget( const StdParam&, QWidget*, const int ) const;
   virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
 
-  virtual QString hypTypeName( const QString& ) const;
+  virtual QString  hypTypeName( const QString& ) const;
+  virtual QWidget* getWidgetForParam( int paramIndex ) const;
+  virtual ListOfWidgets* customWidgets() const;
+  virtual void     onReject();
+
+  template<class T>
+    T* widget(int i) const {
+    return dynamic_cast< T* >( getWidgetForParam( i ));
+  }
+
+  ListOfWidgets    myCustomWidgets;
 };
 
 #endif

@@ -27,13 +27,15 @@
 #ifndef _SMDS_VolumeOfFaces_HeaderFile
 #define _SMDS_VolumeOfFaces_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_Iterator.hxx"
 #include <iostream>
 
 
-class SMDS_VolumeOfFaces:public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_VolumeOfFaces:public SMDS_MeshVolume
 {
 	
   public:

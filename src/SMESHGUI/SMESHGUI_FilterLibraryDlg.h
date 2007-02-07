@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_FilterLibraryDlg_H
 #define SMESHGUI_FilterLibraryDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 #include <SMESHGUI_FilterDlg.h>
 
@@ -48,7 +50,7 @@ class QGroupBox;
   Description : Dialog to specify filters for VTK viewer
 */
 
-class SMESHGUI_FilterLibraryDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_FilterLibraryDlg : public QDialog
 { 
   Q_OBJECT
   

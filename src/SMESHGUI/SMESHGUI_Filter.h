@@ -28,6 +28,8 @@
 #ifndef SMESHGUI_Filter_HeaderFile
 #define SMESHGUI_Filter_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "VTKViewer_Filter.h"
 
 #include <SALOMEconfig.h>

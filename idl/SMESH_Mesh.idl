@@ -127,7 +127,8 @@ module SMESH
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_GEOMETRY  // geometry mismatches algorithm's expectation
   };
 
   /*!
@@ -374,6 +375,7 @@ module SMESH
 
     /*!
      * Export Mesh to DAT, UNV and STL Formats
+     * (UNV supported version is I-DEAS 10)
      */
     void ExportDAT( in string file )
       raises (SALOME::SALOME_Exception);
@@ -508,17 +510,27 @@ module SMESH
 
     /*!
      * If given element is node returns IDs of shape from position
-     * else - return ID of result shape after ::FindShape()
-     * from SMESH_MeshEditor
-     * If there is not element for given ID - returns -1
+     * If there is not node for given ID - returns -1
      */
     long GetShapeID(in long id);
+
+    /*!
+     * For given element returns ID of result shape after 
+     * ::FindShape() from SMESH_MeshEditor
+     * If there is not element for given ID - returns -1
+     */
+    long GetShapeIDForElem(in long id);
 
     /*!
      * Returns number of nodes for given element
      * If there is not element for given ID - returns -1
      */
     long GetElemNbNodes(in long id);
+
+    /*!
+     * Returns IDs of nodes of given element
+     */
+    long_array GetElemNodes(in long id);
 
     /*!
      * Returns ID of node by given index for given element
@@ -642,12 +654,36 @@ module SMESH
 
     long AddNode(in double x, in double y, in double z);
 
+    /*!
+     *  Create edge, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
     long AddEdge(in long_array IDsOfNodes);
 
+    /*!
+     *  Create face, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
     long AddFace(in long_array IDsOfNodes);
 
     long AddPolygonalFace(in long_array IdsOfNodes);
 
+    /*!
+     *  Create volume, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
     long AddVolume(in long_array IDsOfNodes);
 
     /*!

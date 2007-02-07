@@ -26,16 +26,9 @@
 
 import salome
 import geompy
+import smesh
 
 geom  = geompy.geom
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-import StdMeshers
-import NETGENPlugin
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -111,94 +104,44 @@ print "number of Edges in mechanic : ",len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
 
-print "-------------------------- NumberOfSegments"
+shape_mesh = salome.IDToObject( Id_mechanic  )
 
-numberOfSegment = 10
-
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
-hypNbSeg.SetNumberOfSegments( numberOfSegment )
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
-
-print "-------------------------- MaxElementArea"
-
-maxElementArea = 20
-
-hypArea = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hypArea.SetMaxElementArea( maxElementArea )
-print hypArea.GetName()
-print hypArea.GetId()
-print hypArea.GetMaxElementArea()
-
-smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_20")
-
-print "-------------------------- MaxElementVolume"
-
-maxElementVolume = 20
-
-hypVolume = smesh.CreateHypothesis( "MaxElementVolume", "libStdMeshersEngine.so" )
-hypVolume.SetMaxElementVolume( maxElementVolume )
-print hypVolume.GetName()
-print hypVolume.GetId()
-print hypVolume.GetMaxElementVolume()
-
-smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_20")
-
-print "-------------------------- Regular_1D"
-
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
-listHyp =algoReg1D.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoReg1D.GetName()
-print algoReg1D.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D")
-
-print "-------------------------- MEFISTO_2D"
-
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
-listHyp = algoMef.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoMef.GetName()
-print algoMef.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D")
-
-print "-------------------------- NETGEN_3D"
-
-algoNg = smesh.CreateHypothesis( "NETGEN_3D", "libNETGENEngine.so" )
-listHyp = algoNg.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoNg.GetName()
-print algoNg.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoNg), "NETGEN_3D")
+mesh = smesh.Mesh(shape_mesh, "Mesh_mechanic_tetra")
 
 print "-------------------------- add hypothesis to main mechanic"
 
-shape_mesh = salome.IDToObject( Id_mechanic  )
+numberOfSegment = 10
 
-mesh = smesh.CreateMesh(shape_mesh)
+algo1 = mesh.Segment()
+hypNbSeg = algo1.NumberOfSegments(numberOfSegment)
+print hypNbSeg.GetName()
+print hypNbSeg.GetId()
+print hypNbSeg.GetNumberOfSegments()
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
-idmesh = salome.ObjectToID(mesh)
-smeshgui.SetName( idmesh, "Mesh_mechanic_tetra" )
 
-mesh.AddHypothesis( shape_mesh, hypNbSeg )   # nb segments
-mesh.AddHypothesis( shape_mesh, hypArea )    # max area
-mesh.AddHypothesis( shape_mesh, hypVolume )  # max volume
+maxElementArea = 20
 
-mesh.AddHypothesis( shape_mesh, algoReg1D )  # Regular 1D/wire discretisation
-mesh.AddHypothesis( shape_mesh, algoMef )    # MEFISTO 2D
-mesh.AddHypothesis( shape_mesh, algoNg )     # NETGEN 3D
+algo2 = mesh.Triangle(smesh.MEFISTO)
+hypArea = algo2.MaxElementArea(maxElementArea)
+print hypArea.GetName()
+print hypArea.GetId()
+print hypArea.GetMaxElementArea()
+smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
+
+
+maxElementVolume = 20
+
+algo3 = mesh.Tetrahedron(smesh.NETGEN)
+hypVolume = algo3.MaxElementVolume(maxElementVolume)
+print hypVolume.GetName()
+print hypVolume.GetId()
+print hypVolume.GetMaxElementVolume()
+smesh.SetName(hypVolume, "maxElementVolume_" + str(maxElementVolume))
+
 
 print "-------------------------- compute the mesh of the mechanic piece"
-smesh.Compute(mesh,shape_mesh)
+mesh.Compute()
 
 print "Information about the Mesh_mechanic_tetra:"
 print "Number of nodes       : ", mesh.NbNodes()

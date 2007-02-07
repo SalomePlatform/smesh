@@ -30,6 +30,8 @@
 #ifndef _SMESH_QuadraticMesh_I_HXX_
 #define _SMESH_QuadraticMesh_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // ======================================================
 // Local Length hypothesis
 // ======================================================
-class StdMeshers_QuadraticMesh_i:
+class STDMESHERS_I_EXPORT StdMeshers_QuadraticMesh_i:
   public virtual POA_StdMeshers::StdMeshers_QuadraticMesh,
   public virtual SMESH_Hypothesis_i
 {

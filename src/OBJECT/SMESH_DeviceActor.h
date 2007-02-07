@@ -54,7 +54,7 @@ class VTKViewer_ExtractUnstructuredGrid;
 class SMESH_ExtractGeometry;
 
 
-class SMESH_DeviceActor: public vtkLODActor{
+class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   friend class SMESH_ActorDef;
 
  public:

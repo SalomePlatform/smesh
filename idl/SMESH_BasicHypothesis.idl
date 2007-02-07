@@ -302,6 +302,212 @@ module StdMeshers
 
 
   /*!
+   * StdMeshers_NumberOfLayers: interface of "Nb. Layers" hypothesis.
+   * This hypothesis is used by "Radial prism" algorithm.
+   * It specifies number of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_NumberOfLayers : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets <number of segments> parameter value
+     */
+    void SetNumberOfLayers(in long numberOfLayers) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <number of layers> parameter value
+     */
+    long GetNumberOfLayers();
+
+  };
+
+  /*!
+   * StdMeshers_LayerDistribution: interface of "Distribution of Layers" hypothesis.
+   * This hypothesis is used by "Radial prism" algorithm.
+   * It specifies 1D hypothesis defining distribution of segments between the internal 
+   * and the external surfaces.
+   */
+  interface StdMeshers_LayerDistribution : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets  1D hypothesis specifying distribution of layers
+     */
+    void SetLayerDistribution(in SMESH::SMESH_Hypothesis distributionHyp) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns 1D hypothesis specifying distribution of layers
+     */
+    SMESH::SMESH_Hypothesis GetLayerDistribution();
+
+  };
+
+  /*!
+   * interface of "ProjectionSource1D" hypothesis.
+   * This hypothesis specifies a meshed edge to take a mesh pattern from
+   * and optionally association of vertices between the source edge and a
+   * target one (where a hipothesis is assigned to)
+   */
+  interface StdMeshers_ProjectionSource1D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets source <edge> to take a mesh pattern from
+     */
+    void SetSourceEdge(in GEOM::GEOM_Object edge)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the source edge
+     */
+    GEOM::GEOM_Object GetSourceEdge();
+
+    /*!
+     * Sets source <mesh> to take a mesh pattern from
+     */
+    void SetSourceMesh(in SMESH::SMESH_Mesh mesh);
+
+    /*!
+     * Return source mesh
+     */
+    SMESH::SMESH_Mesh GetSourceMesh();
+
+    /*!
+     * Sets vertex association between the source edge and the target one.
+     * This parameter is optional
+     */
+    void SetVertexAssociation(in GEOM::GEOM_Object sourceVertex,
+                              in GEOM::GEOM_Object targetVertex)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the vertex associated with the target vertex.
+     * Result may be nil if association not set
+     */
+    GEOM::GEOM_Object  GetSourceVertex();
+
+    /*!
+     * Returns the vertex associated with the source vertex.
+     * Result may be nil if association not set
+     */
+    GEOM::GEOM_Object  GetTargetVertex();
+  };
+
+  /*!
+   * interface of "ProjectionSource2D" hypothesis.
+   * This hypothesis specifies a meshed face to take a mesh pattern from
+   * and optionally association of vertices between the source face and a
+   * target one (where a hipothesis is assigned to)
+   */
+  interface StdMeshers_ProjectionSource2D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets a source <face> to take a mesh pattern from
+     */
+    void SetSourceFace(in GEOM::GEOM_Object face)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the source face
+     */
+    GEOM::GEOM_Object GetSourceFace();
+
+    /*!
+     * Sets source <mesh> to take a mesh pattern from
+     */
+    void SetSourceMesh(in SMESH::SMESH_Mesh mesh);
+
+    /*!
+     * Return source mesh
+     */
+    SMESH::SMESH_Mesh GetSourceMesh();
+
+    /*!
+     * Sets vertex association between the source face and the target one.
+     * This parameter is optional.
+     * Two vertices must belong to one edge of a face
+     */
+    void SetVertexAssociation(in GEOM::GEOM_Object sourceVertex1,
+                              in GEOM::GEOM_Object sourceVertex2,
+                              in GEOM::GEOM_Object targetVertex1,
+                              in GEOM::GEOM_Object targetVertex2)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the <i>-th source vertex associated with the <i>-th target vertex.
+     * Result may be nil if association not set.
+     * Valid indices are 1 and 2
+     */
+    GEOM::GEOM_Object  GetSourceVertex(in long i)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the <i>-th target vertex associated with the <i>-th source vertex.
+     * Result may be nil if association not set.
+     * Valid indices are 1 and 2
+     */
+    GEOM::GEOM_Object  GetTargetVertex(in long i)
+      raises (SALOME::SALOME_Exception);
+  };
+
+  /*!
+   * interface of "ProjectionSource3D" hypothesis.
+   * This hypothesis specifies a meshed shell or solid to take a mesh pattern from
+   * and optionally association of vertices between the source shape and a
+   * target one (where a hipothesis is assigned to)
+   */
+  interface StdMeshers_ProjectionSource3D : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets a source <shape> to take a mesh pattern from
+     */
+    void SetSource3DShape(in GEOM::GEOM_Object shape)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the source shape
+     */
+    GEOM::GEOM_Object GetSource3DShape();
+
+    /*!
+     * Sets source <mesh> to take a mesh pattern from
+     */
+    void SetSourceMesh(in SMESH::SMESH_Mesh mesh);
+
+    /*!
+     * Return source mesh
+     */
+    SMESH::SMESH_Mesh GetSourceMesh();
+
+    /*!
+     * Sets vertex association between the source shape and the target one.
+     * This parameter is optional.
+     * Two vertices must belong to one edge of a shape
+     */
+    void SetVertexAssociation(in GEOM::GEOM_Object sourceVertex1,
+                              in GEOM::GEOM_Object sourceVertex2,
+                              in GEOM::GEOM_Object targetVertex1,
+                              in GEOM::GEOM_Object targetVertex2)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the <i>-th source vertex associated with the <i>-th target vertex.
+     * Result may be nil if association not set.
+     * Valid indices are 1 and 2
+     */
+    GEOM::GEOM_Object  GetSourceVertex(in long i)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns the <i>-th target vertex associated with the <i>-th source vertex.
+     * Result may be nil if association not set.
+     * Valid indices are 1 and 2
+     */
+    GEOM::GEOM_Object  GetTargetVertex(in long i)
+      raises (SALOME::SALOME_Exception);
+  };
+
+  /*!
    * StdMeshers_Regular_1D: interface of "Wire discretisation" algorithm
    */
   interface StdMeshers_Regular_1D : SMESH::SMESH_1D_Algo
@@ -326,6 +532,41 @@ module StdMeshers
    * StdMeshers_Hexa_3D: interface of "Hexahedron (i,j,k)" algorithm
    */
   interface StdMeshers_Hexa_3D : SMESH::SMESH_3D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Prism_3D: interface of "Prism 3D" algorithm
+   */
+  interface StdMeshers_Prism_3D : SMESH::SMESH_3D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_RadialPrism_3D: interface of "Radial Prism" algorithm
+   */
+  interface StdMeshers_RadialPrism_3D : SMESH::SMESH_3D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Projection_3D: interface of "Projection 3D" algorithm
+   */
+  interface StdMeshers_Projection_3D : SMESH::SMESH_3D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Projection_2D: interface of "Projection 2D" algorithm
+   */
+  interface StdMeshers_Projection_2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_Projection_1D: interface of "Projection 1D" algorithm
+   */
+  interface StdMeshers_Projection_1D : SMESH::SMESH_1D_Algo
   {
   };
 

@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_NODES_H
 #define DIALOGBOX_NODES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qvariant.h>
 #include <qdialog.h>
 
@@ -61,7 +63,7 @@ namespace SMESH{
 // class    : SMESHGUI_NodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_NodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_NodesDlg : public QDialog
 { 
     Q_OBJECT
 

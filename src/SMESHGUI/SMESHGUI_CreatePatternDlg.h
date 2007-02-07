@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_CreatePatternDlg_H
 #define SMESHGUI_CreatePatternDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 // IDL Headers
@@ -57,7 +59,7 @@ class SMESHGUI;
  *  Description : Dialog to specify filters for VTK viewer
  */
 
-class SMESHGUI_CreatePatternDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_CreatePatternDlg : public QDialog
 {
   Q_OBJECT
 

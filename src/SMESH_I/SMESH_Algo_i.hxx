@@ -29,6 +29,8 @@
 #ifndef _SMESH_ALGO_I_HXX_
 #define _SMESH_ALGO_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
@@ -37,7 +39,7 @@
 // ======================================================
 // Generic algorithm
 // ======================================================
-class SMESH_Algo_i:
+class SMESH_I_EXPORT SMESH_Algo_i:
   public virtual POA_SMESH::SMESH_Algo,
   public virtual SMESH_Hypothesis_i
 {

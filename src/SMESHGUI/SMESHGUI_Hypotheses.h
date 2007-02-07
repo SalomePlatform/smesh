@@ -28,6 +28,8 @@
 #ifndef SMESHGUI_Hypotheses_HeaderFile
 #define SMESHGUI_Hypotheses_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
@@ -40,7 +42,7 @@ class QPixmap;
 /*!
  * \brief Auxiliary class for creation of hypotheses
 */
-class SMESHGUI_GenericHypothesisCreator : public QObject
+class SMESHGUI_EXPORT SMESHGUI_GenericHypothesisCreator : public QObject
 {
   Q_OBJECT
 
@@ -51,7 +53,9 @@ public:
           void create( const bool isAlgo, QWidget* );
           void edit( SMESH::SMESH_Hypothesis_ptr, QWidget* );
           void create( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+
   virtual bool checkParams() const = 0;
+  virtual void onReject();
 
   QString                     hypType() const;
   bool                        isCreation() const;
@@ -71,6 +75,7 @@ protected:
   SMESH::SMESH_Hypothesis_var initParamsHypothesis() const;
   const ListOfWidgets&        widgets() const;
   ListOfWidgets&              changeWidgets();
+  QtxDialog*                  dlg() const { return myDlg; }
 
   virtual QFrame*  buildFrame    () = 0;
           QFrame*  buildStdFrame ();
@@ -80,7 +85,7 @@ protected:
           bool     getStdParamFromDlg( ListOfStdParams& ) const;
   static  QString  stdParamValues( const ListOfStdParams& );
   virtual void     attuneStdWidget( QWidget*, const int ) const;
-  virtual QWidget* getCustomWidget( const StdParam &, QWidget* ) const;
+  virtual QWidget* getCustomWidget( const StdParam &, QWidget*, const int ) const;
   virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
   virtual QString  caption() const;
   virtual QPixmap  icon() const;
@@ -97,6 +102,7 @@ private:
   QString                      myHypType;
   ListOfWidgets                myParamWidgets;
   bool                         myIsCreate;
+  QtxDialog*                   myDlg;
 };
 
 class SMESHGUI_HypothesisDlg : public QtxDialog
@@ -113,6 +119,7 @@ public:
 
 protected slots:
   virtual void accept();
+  virtual void reject();
   void onHelp(); 
 
 private:

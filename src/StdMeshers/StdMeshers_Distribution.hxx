@@ -29,6 +29,8 @@
 #ifndef _STD_MESHERS_DISTRIBUTION_HXX_
 #define _STD_MESHERS_DISTRIBUTION_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include <vector>
 #include <math_Function.hxx>
 #include <ExprIntrp_GenExp.hxx>
@@ -36,7 +38,7 @@
 #include <TColStd_Array1OfReal.hxx>
 
 
-class Function 
+class STDMESHERS_EXPORT Function 
 {
 public:
   Function( const int );
@@ -48,7 +50,7 @@ private:
   int myConv;
 };
 
-class FunctionIntegral : public Function
+class STDMESHERS_EXPORT FunctionIntegral : public Function
 {
 public:
   FunctionIntegral( const Function*, const double );
@@ -61,7 +63,7 @@ private:
   double    myStart;
 };
 
-class FunctionTable : public Function
+class STDMESHERS_EXPORT FunctionTable : public Function
 {
 public:
   FunctionTable( const std::vector<double>&, const int );
@@ -84,12 +86,12 @@ private:
   std::vector<double>  myData;
 };
 
-class FunctionExpr : public Function, public math_Function
+class STDMESHERS_EXPORT FunctionExpr : public Function, public math_Function
 {
 public:
   FunctionExpr( const char*, const int );
   virtual ~FunctionExpr();
-  virtual Standard_Boolean Value( Standard_Real, Standard_Real& );
+  virtual Standard_Boolean Value( const Standard_Real, Standard_Real& );
   virtual bool   value( const double, double& ) const;
   virtual double integral( const double, const double ) const;
 
@@ -99,14 +101,17 @@ private:
   TColStd_Array1OfReal        myValues;
 };
 
+STDMESHERS_EXPORT
 bool buildDistribution( const Function& f,
 		        const double start, const double end,
 		        const int nbSeg,
 		        vector<double>& data,
 		        const double eps );
 
+STDMESHERS_EXPORT
 bool buildDistribution( const TCollection_AsciiString& f, const int conv, const double start, const double end,
 		        const int nbSeg, vector<double>& data, const double eps );
+STDMESHERS_EXPORT
 bool buildDistribution( const std::vector<double>& f, const int conv, const double start, const double end,
 		        const int nbSeg, vector<double>& data, const double eps );
 

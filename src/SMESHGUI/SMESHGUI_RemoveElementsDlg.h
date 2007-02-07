@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_REMOVE_ELEMENTS_H
 #define DIALOGBOX_REMOVE_ELEMENTS_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 // QT Includes
@@ -58,7 +60,7 @@ class SVTK_ViewWindow;
 // class    : SMESHGUI_RemoveElementsDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_RemoveElementsDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RemoveElementsDlg : public QDialog
 { 
     Q_OBJECT
 

@@ -29,6 +29,16 @@
 #ifndef SMESH_OBJECT_H
 #define SMESH_OBJECT_H
 
+#ifdef WNT
+ #if defined SMESHOBJECT_EXPORTS
+  #define SMESHOBJECT_EXPORT __declspec( dllexport )
+ #else
+  #define SMESHOBJECT_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define SMESHOBJECT_EXPORT
+#endif
+
 #include <boost/shared_ptr.hpp>
 #include <vtkSystemIncludes.h>
 
@@ -42,7 +52,7 @@ class vtkUnstructuredGrid;
   Class       : SMESH_VisualObj
   Description : Base class for all mesh objects to be visuilised
 */
-class SMESH_VisualObj
+class SMESHOBJECT_EXPORT SMESH_VisualObj
 {
 public:
   virtual void Update( int theIsClear = true ) = 0;

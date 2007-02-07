@@ -27,6 +27,8 @@
 #ifndef _SMDS_MeshElementIDFactory_HeaderFile
 #define _SMDS_MeshElementIDFactory_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshIDFactory.hxx"
 #include "SMDS_ElemIterator.hxx"
 
@@ -36,7 +38,7 @@ class SMDS_MeshElement;
 
 typedef NCollection_DataMap<int, SMDS_MeshElement *> SMDS_IdElementMap;
 
-class SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
+class SMDS_EXPORT SMDS_MeshElementIDFactory:public SMDS_MeshIDFactory
 {
 public:
   SMDS_MeshElementIDFactory();

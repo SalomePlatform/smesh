@@ -21,6 +21,8 @@
 #ifndef STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
 #define STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
 
+#include "SMESH_StdMeshersGUI.hxx"
+
 #include <qwt_plot.h>
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -29,7 +31,7 @@
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
 
-class StdMeshersGUI_DistrPreview : public QwtPlot
+class STDMESHERSGUI_EXPORT StdMeshersGUI_DistrPreview : public QwtPlot
 {
   Q_OBJECT
 

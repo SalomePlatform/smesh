@@ -30,6 +30,8 @@
 #ifndef _SMESH_NUMBEROFSEGMENTS_HXX_
 #define _SMESH_NUMBEROFSEGMENTS_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 #include <vector>
@@ -40,7 +42,7 @@
  * It provides parameters for subdivision an edge by various
  * distribution types, considering the given number of resulting segments
  */
-class StdMeshers_NumberOfSegments:
+class STDMESHERS_EXPORT StdMeshers_NumberOfSegments:
   public SMESH_Hypothesis
 {
 public:

@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_TRANSLATION_H
 #define DIALOGBOX_TRANSLATION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -59,7 +61,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_TranslationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_TranslationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_TranslationDlg : public QDialog
 { 
     Q_OBJECT
 

@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_PREFERENCES_SCALARBARDLG_H
 #define SMESHGUI_PREFERENCES_SCALARBARDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 class QButtonGroup;
@@ -49,7 +51,7 @@ class LightApp_SelectionMgr;
 
 class SMESH_Actor;
 
-class SMESHGUI_Preferences_ScalarBarDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_Preferences_ScalarBarDlg : public QDialog
 { 
   Q_OBJECT
 

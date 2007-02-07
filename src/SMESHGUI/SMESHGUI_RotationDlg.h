@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_ROTATION_H
 #define DIALOGBOX_ROTATION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -61,7 +63,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_RotationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_RotationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public QDialog
 { 
     Q_OBJECT
 

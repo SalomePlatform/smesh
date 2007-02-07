@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_MultiEditDlg_H
 #define SMESHGUI_MultiEditDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 #include "SUIT_SelectionFilter.h"
@@ -64,7 +66,7 @@ class QButtonGroup;
  *               union of two neighboring triangles
  */
 
-class SMESHGUI_MultiEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog
 {
   Q_OBJECT
 

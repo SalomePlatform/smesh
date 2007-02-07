@@ -26,12 +26,12 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-using namespace std;
 #include "StdMeshers_NotConformAllowed_i.hxx"
 #include "SMESH_Gen.hxx"
 
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!

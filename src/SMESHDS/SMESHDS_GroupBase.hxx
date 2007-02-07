@@ -27,13 +27,15 @@
 #ifndef _SMESHDS_GroupBase_HeaderFile
 #define _SMESHDS_GroupBase_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include <string>
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshElement.hxx"
   
 class SMESHDS_Mesh;
 
-class SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_GroupBase
 {
  public:
 

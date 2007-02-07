@@ -28,10 +28,14 @@
 #define aptrte__h
 
 #include <limits.h>   // limites min max int long real ...
+#ifndef WIN32
 #include <unistd.h>   // gethostname, ...
+#endif
 #include <stdio.h>
+#ifndef WIN32
 #include <iostream.h> // pour cout cin ...
 #include <iomanip.h>  // pour le format des io setw, stx, setfill, ...
+#endif
 #include <string.h>   // pour les fonctions sur les chaines de caracteres
 #include <ctype.h>
 #include <stdlib.h>
@@ -39,9 +43,21 @@
 #include <time.h>
 
 #include <sys/types.h>
+#ifndef WIN32
 #include <sys/time.h>
+#endif
 
-void qualitetrte( R3 *mnpxyd,
+#ifdef WNT
+ #if defined MEFISTO2D_EXPORTS
+  #define MEFISTO2D_EXPORT __declspec( dllexport )
+ #else
+  #define MEFISTO2D_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define MEFISTO2D_EXPORT
+#endif
+
+  void qualitetrte( R3 *mnpxyd,
 		  Z & mosoar, Z & mxsoar, Z *mnsoar,
 		  Z & moartr, Z & mxartr, Z *mnartr,
 		  Z & nbtria, R & quamoy, R & quamin );
@@ -75,7 +91,8 @@ void qualitetrte( R3 *mnpxyd,
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-void  aptrte( Z nutysu, R aretmx,
+MEFISTO2D_EXPORT
+  void  aptrte( Z nutysu, R aretmx,
 	      Z nblf,   Z *nudslf, R2 *uvslf,
 	      Z nbpti,  R2 *uvpti,
 	      Z & nbst, R2 * & uvst, Z & nbt, Z * & nust,
@@ -124,21 +141,91 @@ void  aptrte( Z nutysu, R aretmx,
 // auteur : Alain Perronnet  Analyse Numerique Paris UPMC   decembre 2001
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-extern "C" {  void tempscpu_( double & tempsec );  }
+#if WIN32 & DFORTRAN
+  #define tempscpu TEMPSCPU
+  #define deltacpu DELTACPU
+  #define insoar   INSOAR
+  #define azeroi   AZEROI
+  #define fasoar   FASOAR
+  #define teajte   TEAJTE
+  #define tehote   TEHOTE
+  #define tetrte   TETRTE
+  #define aisoar   AISOAR
+  #define tedela   TEDELA
+  #define terefr   TEREFR
+  #define tesuex   TESUEX
+  #define teamqt   TEAMQT
+  #define nusotr   NUSOTR
+  #define qutr2d   QUTR2D
+  #define surtd2   SURTD2
+  
+  #define areteideale ARETEIDEALE
+  
+#else
+  #define tempscpu tempscpu_
+  #define deltacpu deltacpu_
+  #define insoar   insoar_
+  #define azeroi   azeroi_
+  #define fasoar   fasoar_
+  #define teajte   teajte_
+  #define tehote   tehote_
+  #define tetrte   tetrte_
+  #define aisoar   aisoar_
+  #define tedela   tedela_
+  #define terefr   terefr_
+  #define tesuex   tesuex_
+  #define teamqt   teamqt_
+  #define nusotr   nusotr_
+  #define qutr2d   qutr2d_
+  #define surtd2   surtd2_
+
+  #define areteideale areteideale_
+
+#endif
+
+
+extern "C" {  void
+#ifdef WIN32
+              __stdcall
+#endif
+  tempscpu( double & tempsec );
+}
+    
 //Retourne le temps CPU utilise en secondes
 
-extern "C" { void deltacpu_( R & dtcpu ); }
+extern "C" { void
+#ifdef WIN32
+              __stdcall
+#endif
+  deltacpu( R & dtcpu );
+}
+    
 //Retourne le temps CPU utilise en secondes depuis le precedent appel
 
 //initialiser le tableau mnsoar pour le hachage des aretes
-extern "C" {void insoar_( Z & mxsomm, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  insoar( Z & mxsomm, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar );
+}
 
 //mettre a zero les nb entiers de tab
-extern "C" {void azeroi_( Z & nb, Z * tab );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  azeroi( Z & nb, Z * tab );
+}
 
-extern "C" {void fasoar_( Z & ns1, Z & ns2, Z & nt1, Z & nt2, Z & nolign,
-			  Z & mosoar,  Z & mxsoar,  Z & n1soar,  Z * mnsoar,  Z * mnarst,
-			  Z & noar, Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  fasoar( Z & ns1, Z & ns2, Z & nt1, Z & nt2, Z & nolign,
+  			  Z & mosoar,  Z & mxsoar,  Z & n1soar,  Z * mnsoar,  Z * mnarst,
+	  		  Z & noar, Z & ierr );
+}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // but :    former l'arete de sommet ns1-ns2 dans le hachage du tableau
 // -----    nosoar des aretes de la triangulation
@@ -183,73 +270,126 @@ extern "C" {void fasoar_( Z & ns1, Z & ns2, Z & nt1, Z & nt2, Z & nolign,
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 //initialisation du tableau letree et ajout dans letree des sommets 1 a nbsomm
-extern "C" {void teajte_( Z & mxsomm, Z &  nbsomm, R3 * mnpxyd,  R3 * comxmi,
-			  R & aretmx,  Z & mxtree, Z * letree,
-			  Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  teajte( Z & mxsomm, Z &  nbsomm, R3 * mnpxyd,  R3 * comxmi,
+			    R & aretmx,  Z & mxtree, Z * letree,
+			    Z & ierr );
+}
 
-
-extern "C" {void tehote_( Z & nutysu, Z & nbarpi, Z &  mxsomm, Z &  nbsomm, R3 * mnpxyd,
-			  R3 * comxmi, R & aretmx,
-			  Z * letree, Z & mxqueu, Z * mnqueu,
-			  Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  tehote( Z & nutysu, Z & nbarpi, Z &  mxsomm, Z &  nbsomm, R3 * mnpxyd,
+			    R3 * comxmi, R & aretmx,
+			    Z * letree, Z & mxqueu, Z * mnqueu,
+			    Z & ierr );
+}
 // homogeneisation de l'arbre des te a un saut de taille au plus
 // prise en compte des tailles d'aretes souhaitees autour des sommets initiaux
 
-extern "C" {void tetrte_(  R3 * comxmi, R & aretmx, Z & nbarpi, Z & mxsomm, R3 * mnpxyd,
-			   Z & mxqueu,  Z * mnqueu,  Z * mntree,
-			   Z & mosoar,  Z & mxsoar,  Z & n1soar, Z * mnsoar,
-			   Z & moartr, Z &  mxartr,  Z & n1artr,  Z * mnartr,  Z * mnarst,
-			   Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  tetrte( R3 * comxmi, R & aretmx, Z & nbarpi, Z & mxsomm, R3 * mnpxyd,
+			    Z & mxqueu,  Z * mnqueu,  Z * mntree,
+			    Z & mosoar,  Z & mxsoar,  Z & n1soar, Z * mnsoar,
+			    Z & moartr, Z &  mxartr,  Z & n1artr,  Z * mnartr,  Z * mnarst,
+			    Z & ierr );
+}
 // trianguler les triangles equilateraux feuilles a partir de leurs 3 sommets
 // et des points de la frontiere, des points internes imposes interieurs
 
-extern "C" {void aisoar_( Z & mosoar, Z & mxsoar, Z * mnsoar, Z & na );}
-  // formation du chainage 6 des aretes internes a echanger eventuellement
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  aisoar( Z & mosoar, Z & mxsoar, Z * mnsoar, Z & na );
+}
+// formation du chainage 6 des aretes internes a echanger eventuellement
 
-extern "C" {void tedela_( R3 * mnpxyd, Z * mnarst,
-			  Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar, Z & na,
-			  Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z & n );}
-  // boucle sur les aretes internes (non sur une ligne de la frontiere)
-  // avec echange des 2 diagonales afin de rendre la triangulation delaunay
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  tedela( R3 * mnpxyd, Z * mnarst,
+			    Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar, Z & na,
+			    Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z & n );
+}
+// boucle sur les aretes internes (non sur une ligne de la frontiere)
+// avec echange des 2 diagonales afin de rendre la triangulation delaunay
  
-extern "C" {void terefr_( Z & nbarpi, R3 * mnpxyd,
-			  Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
-			  Z & moartr, Z & n1artr, Z * mnartr, Z * mnarst,
-			  Z & mxarcf, Z * mnarc1, Z * mnarc2,
-			  Z * mnarc3, Z * mnarc4,
-			  Z & n, Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  terefr( Z & nbarpi, R3 * mnpxyd,
+			    Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
+			    Z & moartr, Z & n1artr, Z * mnartr, Z * mnarst,
+			    Z & mxarcf, Z * mnarc1, Z * mnarc2,
+			    Z * mnarc3, Z * mnarc4,
+			    Z & n, Z & ierr );
+}
 // detection des aretes frontalieres initiales perdues
 // triangulation frontale pour les restaurer
 
-extern "C" {void tesuex_( Z & nblf, Z * nulftr,
-			  Z & ndtri0, Z & nbsomm, R3 * mnpxyd, Z * mnslig,
-			  Z & mosoar, Z & mxsoar, Z * mnsoar,
-			  Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z * mnarst,
-			  Z & nbtria, Z * mntrsu, Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  tesuex( Z & nblf, Z * nulftr,
+			    Z & ndtri0, Z & nbsomm, R3 * mnpxyd, Z * mnslig,
+			    Z & mosoar, Z & mxsoar, Z * mnsoar,
+			    Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z * mnarst,
+			    Z & nbtria, Z * mntrsu, Z & ierr );
+}
 // suppression des triangles externes a la surface
 
-extern "C" {void teamqt_( Z & nutysu,
-			  Z * mnarst, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
-			  Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr,
-			  Z & mxarcf, Z * mntrcf, Z * mnstbo,
-			  Z * n1arcf, Z * mnarcf, Z * mnarc1,
-			  R3 * comxmi, Z & nbarpi, Z & nbsomm, Z & mxsomm,
-			  R3 * mnpxyd, Z * mnslig,
-			  Z & ierr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  teamqt( Z & nutysu,
+			    Z * mnarst, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
+			    Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr,
+			    Z & mxarcf, Z * mntrcf, Z * mnstbo,
+			    Z * n1arcf, Z * mnarcf, Z * mnarc1,
+			    R3 * comxmi, Z & nbarpi, Z & nbsomm, Z & mxsomm,
+			    R3 * mnpxyd, Z * mnslig,
+			    Z & ierr );
+}
 // amelioration de la qualite de la triangulation par
 // barycentrage des sommets internes a la triangulation
 // suppression des aretes trop longues ou trop courtes
 // modification de la topologie des groupes de triangles
 // mise en delaunay de la triangulation
  
-extern "C" {void nusotr_( Z & nt, Z & mosoar, Z * mnsoar, Z & moartr, Z * mnartr,
-			  Z * nosotr );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  nusotr( Z & nt, Z & mosoar, Z * mnsoar, Z & moartr, Z * mnartr,Z * nosotr );
+}
 //retrouver les numero des 3 sommets du triangle nt
 
-extern "C" {void qutr2d_( R3 & p1, R3 & p2, R3 & p3, R & qualite );}
+extern "C" {void
+#ifdef WIN32
+              __stdcall
+#endif
+  qutr2d( R3 & p1, R3 & p2, R3 & p3, R & qualite );
+}
 //calculer la qualite d'un triangle de R2 de sommets p1, p2, p3
 
-extern "C" { R surtd2_( R3 & p1, R3 & p2, R3 & p3 ); }
+extern "C" { R
+#ifdef WIN32
+              __stdcall
+#endif
+  surtd2( R3 & p1, R3 & p2, R3 & p3 );
+}
 //calcul de la surface d'un triangle defini par 3 points de r**2
 
 #endif

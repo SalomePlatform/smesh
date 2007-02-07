@@ -28,6 +28,8 @@
 #ifndef _SMESH_Group_HeaderFile
 #define _SMESH_Group_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <SMDSAbs_ElementType.hxx>
 #include <string>
 #include <TopoDS_Shape.hxx>
@@ -36,7 +38,7 @@
 class SMESHDS_GroupBase;
 class SMESH_Mesh;
 
-class SMESH_Group
+class SMESH_EXPORT  SMESH_Group
 {
  public:
 

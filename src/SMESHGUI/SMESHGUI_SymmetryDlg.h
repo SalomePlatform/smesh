@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_SYMMETRY_H
 #define DIALOGBOX_SYMMETRY_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -60,7 +62,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_SymmetryDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_SymmetryDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SymmetryDlg : public QDialog
 { 
     Q_OBJECT
 

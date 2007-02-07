@@ -29,9 +29,11 @@
 #ifndef _SMESH_1D_ALGO_HXX_
 #define _SMESH_1D_ALGO_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESH_Algo.hxx"
 
-class SMESH_1D_Algo:
+class SMESH_EXPORT SMESH_1D_Algo:
   public SMESH_Algo
 {
 public:

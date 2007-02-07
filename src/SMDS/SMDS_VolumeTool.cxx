@@ -1266,7 +1266,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
   if ( IsFaceExternal( faceIndex ))
     intNormal = XYZ( -intNormal.x, -intNormal.y, -intNormal.z );
   XYZ p0 ( nodes[0] ), baryCenter;
-  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
+  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end();vNbIt++ ) {
     int nbShared = (*vNbIt).second;
     if ( nbShared >= 3 ) {
       SMDS_VolumeTool volume( (*vNbIt).first );
@@ -1517,6 +1517,31 @@ int SMDS_VolumeTool::NbFaces( VolumeType type )
   default:    return 0;
   }
 }
+
+//================================================================================
+/*!
+ * \brief Useful to know nb of corner nodes of a quadratic volume
+  * \param type - volume type
+  * \retval int - nb of corner nodes
+ */
+//================================================================================
+
+int SMDS_VolumeTool::NbCornerNodes(VolumeType type)
+{
+  switch ( type ) {
+  case TETRA     :
+  case QUAD_TETRA: return 4;
+  case PYRAM     :
+  case QUAD_PYRAM: return 5;
+  case PENTA     :
+  case QUAD_PENTA: return 6;
+  case HEXA      :
+  case QUAD_HEXA : return 8;
+  default:    return 0;
+  }
+  return 0;
+}
+  // 
 
 //=======================================================================
 //function : GetFaceNodesIndices

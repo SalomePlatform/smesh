@@ -29,6 +29,8 @@
 #ifndef WIDGET_PATTERN_H
 #define WIDGET_PATTERN_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qframe.h>
 #include <qvaluevector.h>
 
@@ -45,7 +47,7 @@ class QPoint;
 // class    : SMESHGUI_PatternWidget
 // purpose  :
 //=================================================================================
-class SMESHGUI_PatternWidget : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_PatternWidget : public QFrame
 { 
     Q_OBJECT
 

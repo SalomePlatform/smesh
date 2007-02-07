@@ -29,6 +29,8 @@
 #ifndef _StdMeshers_NotConformAllowed_I_HXX_
 #define _StdMeshers_NotConformAllowed_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -36,7 +38,7 @@
 
 #include "StdMeshers_NotConformAllowed.hxx"
 
-class StdMeshers_NotConformAllowed_i:
+class STDMESHERS_I_EXPORT StdMeshers_NotConformAllowed_i:
   public POA_StdMeshers::StdMeshers_NotConformAllowed,
   public SMESH_Hypothesis_i
 {

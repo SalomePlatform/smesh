@@ -180,7 +180,10 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(SALOMEDS::Study_ptr theStudy,
 {
   SALOMEDS::SObject_var aSO;
   if ( !CORBA::is_nil( theStudy ) && !CORBA::is_nil( theObject ))
-    aSO = theStudy->FindObjectIOR( SMESH_Gen_i::GetORB()->object_to_string( theObject ) );
+  {
+    CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theObject );
+    aSO = theStudy->FindObjectIOR( objStr.in() );
+  }
   return aSO._retn();
 }
 
@@ -253,8 +256,8 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   SALOMEDS::GenericAttribute_var anAttr;
   if ( !CORBA::is_nil( theIOR )) {
     anAttr = aStudyBuilder->FindOrCreateAttribute( SO, "AttributeIOR" );
-    SALOMEDS::AttributeIOR::_narrow(anAttr)->SetValue
-      ( SMESH_Gen_i::GetORB()->object_to_string( theIOR ) );
+    CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theIOR );
+    SALOMEDS::AttributeIOR::_narrow(anAttr)->SetValue( objStr.in() );
   }
   if ( thePixMap ) {
     anAttr  = aStudyBuilder->FindOrCreateAttribute( SO, "AttributePixMap" );
