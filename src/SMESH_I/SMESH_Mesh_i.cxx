@@ -90,7 +90,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 			    CORBA::Long studyId )
 : SALOME::GenericObj_i( thePOA )
 {
-  INFOS("SMESH_Mesh_i");
+  MESSAGE("SMESH_Mesh_i");
   _impl = NULL;
   _gen_i = gen_i;
   _id = myIdGenerator++;

@@ -87,7 +87,7 @@ SMESH_Mesh::SMESH_Mesh(int theLocalId,
 		       SMESHDS_Document* theDocument):
   _groupId( 0 )
 {
-  INFOS("SMESH_Mesh::SMESH_Mesh(int localId)");
+  MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id = theLocalId;
   _studyId = theStudyId;
   _gen = theGen;

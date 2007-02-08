@@ -238,7 +238,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           const char*               interfaceName )
      : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
 {
-  INFOS( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
+  MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
 
   myOrb = CORBA::ORB::_duplicate(orb);
   myPoa = PortableServer::POA::_duplicate(poa);
