@@ -331,11 +331,19 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
         GEOM::GEOM_Object::_narrow(_CAST(SObject,pSubGeom)->GetObject());
       if (aSubGeomVar->_is_nil()) return false;
 
+      // skl for NPAL14695 - implementation of searching of mainObj
       GEOM::GEOM_Object_var mainObj = op->GetMainShape(aSubGeomVar);
-      if (mainObj->_is_nil() ||
-          string(mainObj->GetEntry()) != string(mainGeom->GetEntry())) return false;
+      //if (mainObj->_is_nil() ||
+      //    string(mainObj->GetEntry()) != string(mainGeom->GetEntry())) return false;
+      while(1) {
+	if(mainObj->_is_nil())
+	  return false;
+	if( string(mainObj->GetEntry()) == string(mainGeom->GetEntry()) )
+	  return true;
+	mainObj = op->GetMainShape(mainObj);
+      }
     }
-    return true;
+    //return true;
   }
 
   return false;
