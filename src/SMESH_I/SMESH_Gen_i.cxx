@@ -2132,6 +2132,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
 					   bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::SaveASCII" );
   SALOMEDS::TMPFile_var aStreamFile = Save( theComponent, theURL, isMultiFile );
+  return aStreamFile._retn();
 
   //after usual saving needs to encipher binary to text string
   //Any binary symbol will be represent as "|xx" () hexadecimal format number
@@ -2224,6 +2225,11 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
   // Get temporary files location
   TCollection_AsciiString tmpDir =
     isMultiFile ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
+    
+    INFOS( "THE URL++++++++++++++" )
+    INFOS( theURL );
+    INFOS( "THE TMP PATH+++++++++" );
+    INFOS( tmpDir );
 
   // Convert the stream into sequence of files to process
   SALOMEDS::ListOfFileNames_var aFileSeq = SALOMEDS_Tool::PutStreamToFiles( theStream,
@@ -3138,6 +3144,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
 			     const char*              theURL,
 			     bool                     isMultiFile ) {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::LoadASCII" );
+  return Load( theComponent, theStream, theURL, isMultiFile );
 
   //before call main ::Load method it's need for decipher text format to
   //binary ( "|xx" => x' )
