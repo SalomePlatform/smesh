@@ -122,6 +122,30 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
   return aMesh;
 }
 
+//================================================================================
+/*!
+ * \brief Compute submesh
+  * \param sm - submesh
+  * \retval bool - is a success
+  */
+//================================================================================
+
+bool SMESH_Gen::Compute(::SMESH_subMesh& sm)
+{
+  if ( sm.GetSubShape().ShapeType() == TopAbs_VERTEX )
+  {
+    SMESHDS_SubMesh* smDS = sm.GetSubMeshDS();
+    if ( !smDS || !smDS->NbNodes() ) {
+      TopoDS_Vertex V = TopoDS::Vertex(sm.GetSubShape());
+      gp_Pnt P = BRep_Tool::Pnt(V);
+      SMESHDS_Mesh * meshDS = sm.GetFather()->GetMeshDS();
+      if ( SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z()) )
+        meshDS->SetNodeOnVertex(node, V);
+    }
+  }
+  return sm.ComputeStateEngine(SMESH_subMesh::COMPUTE);
+}
+
 //=============================================================================
 /*!
  *
@@ -158,8 +182,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
 
-  if ( sm->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
-    return true; // already computed
+//   if ( sm->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
+//     return true; // already computed
 
   // -----------------------------------------------------------------
   // apply algos that do not require descretized boundaries, starting
@@ -211,27 +235,13 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
       smToCompute = sm;
     else
       smToCompute = (itSub++)->second;
+
     if (smToCompute->GetComputeState() != SMESH_subMesh::READY_TO_COMPUTE) {
       if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
         ret = false;
-      continue;
     }
-    TopoDS_Shape subShape = smToCompute->GetSubShape();
-    if ( subShape.ShapeType() != TopAbs_VERTEX )
-    {
-      if ( !smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE) )
-        ret = false;
-    }
-    else
-    {
-      TopoDS_Vertex V1 = TopoDS::Vertex(subShape);
-      gp_Pnt P1 = BRep_Tool::Pnt(V1);
-      SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-      SMDS_MeshNode * node = meshDS->AddNode(P1.X(), P1.Y(), P1.Z());
-      if ( node ) {  // san - increase robustness
-        meshDS->SetNodeOnVertex(node, V1);
-        smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE);
-      }
+    else if ( !Compute( *smToCompute )) {
+      ret = false;
     }
   }
 
@@ -496,7 +506,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   // --------------------------------------------------------
 
 
-  // find a global algo possibly hidding sub-algos
+  // find a global algo possibly hiding sub-algos
   int dim;
   const SMESH_Algo* aGlobIgnoAlgo = 0;
   for (dim = 3; dim > 0; dim--)
@@ -564,7 +574,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   aCheckedMap.clear();
   smToCheck = sm;
   revItSub = smMap.rbegin();
-  bool checkNoAlgo = (bool) aTopAlgoDim;
+  bool checkNoAlgo = theMesh.HasShapeToMesh() ? bool( aTopAlgoDim ) : false;
   bool globalChecked[] = { false, false, false, false };
 
   // loop on theShape and its sub-shapes
