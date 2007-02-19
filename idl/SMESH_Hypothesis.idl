@@ -33,6 +33,7 @@ module SMESH
 {
   enum Dimension
   {
+    DIM_0D,
     DIM_1D,
     DIM_2D,
     DIM_3D
@@ -70,6 +71,13 @@ module SMESH
      */
     ListOfHypothesisName GetCompatibleHypothesis();
 
+  };
+
+  interface SMESH_0D_Algo : SMESH_Algo
+  {
+    /*!
+     * 
+     */
   };
 
   interface SMESH_1D_Algo : SMESH_Algo
