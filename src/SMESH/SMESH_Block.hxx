@@ -303,6 +303,9 @@ public:
   // Note: to compute params of a point on a face, it is enough to set
   // TFace, TEdge's and points for that face only
 
+  // Note 2: curve adaptors need to have only Value(double), FirstParameter() and
+  // LastParameter() defined to be used by Block algoritms
+
   class TEdge {
     int                myCoordInd;
     double             myFirst;
