@@ -84,7 +84,7 @@ public:
    * dimention can be assigned to the shape
    */
   virtual bool IsAuxiliary() const
-  { return GetType() == PARAM_ALGO && _param_algo_dim <= 0; }
+  { return GetType() == PARAM_ALGO && _param_algo_dim < 0; }
 
 protected:
   SMESH_Gen* _gen;
