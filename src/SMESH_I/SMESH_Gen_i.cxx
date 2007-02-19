@@ -2781,7 +2781,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   sm->AddElement( elem );
                 }
               }
-              delete smIDs;
+              delete [] smIDs;
             }
           }
         } // end reading submeshes
