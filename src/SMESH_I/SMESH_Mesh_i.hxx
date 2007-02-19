@@ -65,6 +65,9 @@ public:
   void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Boolean HasShapeToMesh()
+    throw (SALOME::SALOME_Exception);
+
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 

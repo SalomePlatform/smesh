@@ -143,6 +143,24 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
   }
 }
 
+//================================================================================
+/*!
+ * \brief return true if mesh has a shape to build a shape on
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  try {
+    _impl->HasShapeToMesh();
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+}
+
 //=======================================================================
 //function : GetShapeToMesh
 //purpose  :
