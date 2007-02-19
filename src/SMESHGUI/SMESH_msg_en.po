@@ -1724,6 +1724,9 @@ msgstr "Start node"
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
 msgstr "Use Angles"
 
+msgid "SMESHGUI_ExtrusionAlongPathDlg::LINEAR_ANGLES"
+msgstr "Linear variation of the angles"
+
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_ANGLES"
 msgstr "Rotation Angles"
 
@@ -3135,6 +3138,9 @@ msgid "SMESHGUI::PREF_RENUMBER"
 msgstr "Automatic renumbering"
 
 #-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshDlg::DIM_0D"
+msgstr "0D"
 
 msgid "SMESHGUI_MeshDlg::DIM_1D"
 msgstr "1D"

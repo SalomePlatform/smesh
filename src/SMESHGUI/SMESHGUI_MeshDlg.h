@@ -60,7 +60,7 @@ public:
   enum Controls { Obj, Mesh, Geom };
   
   /*! Describes dimensions */
-  enum Dimensions { Dim1D = 0, Dim2D, Dim3D };      
+  enum Dimensions { Dim0D = 0, Dim1D, Dim2D, Dim3D };      
   
 public:
   SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh );

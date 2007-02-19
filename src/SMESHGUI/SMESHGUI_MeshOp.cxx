@@ -76,6 +76,7 @@ enum { GLOBAL_ALGO_TAG        =3,
        GLOBAL_HYPO_TAG        =2,
        LOCAL_ALGO_TAG         =2,
        LOCAL_HYPO_TAG         =1,
+       SUBMESH_ON_VERTEX_TAG  =4,
        SUBMESH_ON_EDGE_TAG    =5,
        SUBMESH_ON_WIRE_TAG    =6,
        SUBMESH_ON_FACE_TAG    =7,
@@ -201,7 +202,7 @@ void SMESHGUI_MeshOp::startOperation()
   if( !myDlg )
   {
     myDlg = new SMESHGUI_MeshDlg( myToCreate, myIsMesh );
-    for ( int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++ )
+    for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ )
     {
       connect( myDlg->tab( i ), SIGNAL( createHyp( const int, const int ) ),
               this, SLOT( onCreateHyp( const int, const int ) ) );
@@ -220,10 +221,9 @@ void SMESHGUI_MeshOp::startOperation()
   }
   SMESHGUI_SelectionOp::startOperation();
 
-  // iterate through dimensions and get available algoritms,
-  // set them to the dialog
+  // iterate through dimensions and get available algoritms, set them to the dialog
   _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );
-  for ( int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++ )
+  for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ )
   {
     SMESHGUI_MeshTab* aTab = myDlg->tab( i );
     QStringList hypList;
@@ -367,6 +367,7 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
     if ( !geom->_is_nil() ) {
       int tag = -1;
       switch ( geom->GetShapeType() ) {
+      case GEOM::VERTEX:   tag = SUBMESH_ON_VERTEX_TAG  ; break;
       case GEOM::EDGE:     tag = SUBMESH_ON_EDGE_TAG    ; break;
       case GEOM::WIRE:     tag = SUBMESH_ON_WIRE_TAG    ; break;
       case GEOM::FACE:     tag = SUBMESH_ON_FACE_TAG    ; break;
@@ -842,7 +843,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
 static int getTabDim (const QObject* tab, SMESHGUI_MeshDlg* dlg )
 {
   int aDim = -1;
-  for (int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++)
+  for (int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++)
     if (tab == dlg->tab(i))
       aDim = i;
   return aDim;
@@ -978,7 +979,7 @@ HypothesisData* SMESHGUI_MeshOp::hypData( const int theDim,
                                           const int theHypType,
                                           const int theIndex)
 {
-  if ( theDim     > -1 && theDim     < 3 &&
+  if ( theDim     > -1 && theDim    <= SMESH::DIM_3D &&
        theHypType > -1 && theHypType < NbHypTypes &&
        theIndex   > -1 && theIndex   < myAvailableHypData[ theDim ][ theHypType ].count() )
     return myAvailableHypData[ theDim ][ theHypType ][ theIndex ];
@@ -1004,7 +1005,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
   // find highest available dimension, all algos of this dimension are available for choice
   int aTopDim = -1;
-  for (int i = SMESH::DIM_1D; i <= SMESH::DIM_3D; i++)
+  for (int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++)
     if (isAccessibleDim( i ))
       aTopDim = i;
   if (aTopDim == -1)
@@ -1013,7 +1014,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   const bool isSubmesh = ( myToCreate ? !myIsMesh : myDlg->isObjectShown( SMESHGUI_MeshDlg::Mesh ));
 
   HypothesisData* algoData = hypData( aDim, Algo, theIndex );
-  HypothesisData* algoByDim[3];
+  HypothesisData* algoByDim[4];
   algoByDim[ aDim ] = algoData;
 
   QStringList anAvailable;
@@ -1030,7 +1031,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   {
     int dim = aDim + 1, lastDim = SMESH::DIM_3D, dir = 1;
     if ( !forward ) {
-      dim = aDim - 1; lastDim = SMESH::DIM_1D; dir = -1;
+      dim = aDim - 1; lastDim = SMESH::DIM_0D; dir = -1;
     }
     HypothesisData* prevAlgo = algoData;
     bool noCompatible = false;
@@ -1064,7 +1065,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
       // restore previously selected algo
       algoIndex = myAvailableHypData[dim][Algo].findIndex( curAlgo );
-      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward )
+      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim != SMESH::DIM_0D)
         // select the sole compatible algo
         algoIndex = myAvailableHypData[dim][Algo].findIndex( soleCompatible );
       setCurrentHyp( dim, Algo, algoIndex );
@@ -1078,7 +1079,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
   _PTR(SObject) pObj = SMESH::GetActiveStudyDocument()->FindComponent("SMESH");
 
-  for ( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+  for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
     if ( !isAccessibleDim( dim ))
       continue;
@@ -1159,7 +1160,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
   if (!aHypoSet) return;
 
   // clear all hyps
-  for (int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++) {
+  for (int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++) {
     setCurrentHyp(dim, Algo, -1);
     setCurrentHyp(dim, AddHyp, -1);
     setCurrentHyp(dim, MainHyp, -1);
@@ -1243,7 +1244,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess )
     if ( aMeshSO )
       SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ).latin1() );
 
-    for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ ) {
+    for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ ) {
       if ( !isAccessibleDim( aDim )) continue;
 
       // assign hypotheses
@@ -1363,7 +1364,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
   // create sub-mesh
   SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.latin1() );
 
-  for ( int aDim = SMESH::DIM_1D; aDim <= SMESH::DIM_3D; aDim++ )
+  for ( int aDim = SMESH::DIM_0D; aDim <= SMESH::DIM_3D; aDim++ )
   {
     if ( !isAccessibleDim( aDim )) continue;
 
@@ -1581,7 +1582,7 @@ void SMESHGUI_MeshOp::readMesh()
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh
   QStringList anExisting;
-  for ( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+  for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
     // get algorithm
     existingHyps( dim, Algo, pObj, anExisting, myObjHyps[ dim ][ Algo ] );
@@ -1606,7 +1607,7 @@ void SMESHGUI_MeshOp::readMesh()
 
   // get hypotheses
   bool hypWithoutAlgo = false;
-  for ( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+  for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
     for ( int hypType = MainHyp; hypType <= AddHyp; hypType++ )
     {
@@ -1720,7 +1721,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   SMESH::SetName( pObj, myDlg->objectText( SMESHGUI_MeshDlg::Obj ).latin1() );
 
   // Assign new hypotheses and algorithms
-  for ( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+  for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
     if ( !isAccessibleDim( dim )) continue;
 
