@@ -43,12 +43,9 @@
 #include <list>
 #include <map>
 
-typedef map<const SMDS_MeshElement*,
-            list<const SMDS_MeshElement*> > TElemOfElemListMap;
-typedef map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
-
-typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>           RemoveQuadNodeMap;
-typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>::iterator ItRemoveQuadNodeMap;
+typedef std::map<const SMDS_MeshElement*,
+                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
+typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 class SMDS_MeshFace;
 class SMDS_MeshNode;
@@ -63,7 +60,7 @@ class gp_Pnt;
  */
 // ============================================================
 
-template < class TMeshElem >
+template < class TMeshElem = SMDS_MeshElement>
 struct TIDCompare {
   bool operator () (const TMeshElem* e1, const TMeshElem* e2) const
   { return e1->GetID() < e2->GetID(); }
@@ -449,21 +446,21 @@ public:
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
-  SMESH_SequenceOfElemPtr GetLastCreatedNodes() { return myLastCreatedNodes; }
+  const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
-  SMESH_SequenceOfElemPtr GetLastCreatedElems() { return myLastCreatedElems; }
+  const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
 
 private:
 
-  void ConvertElemToQuadratic(SMESHDS_SubMesh *theSm,
-                              SMESH_MesherHelper* theHelper,
-			      const bool theForce3d);
+  void ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
+                              SMESH_MesherHelper& theHelper,
+			      const bool          theForce3d);
   //Auxiliary function for "ConvertToQuadratic" is intended to convert
   //elements contained in submesh to quadratic
 
-  void RemoveQuadElem( SMESHDS_SubMesh *theSm,
+  void RemoveQuadElem( SMESHDS_SubMesh *    theSm,
 		       SMDS_ElemIteratorPtr theItr,
-		       RemoveQuadNodeMap& theRemoveNodeMap);
+		       const int            theShapeID);
   //Auxiliary function for "ConvertFromQuadratic" is intended to convert quadratic
   //element to ordinary and for removing quadratic nodes
 
