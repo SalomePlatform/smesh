@@ -42,6 +42,7 @@ EXPORT_HEADERS= \
 	SMESH_Hypothesis.hxx \
 	SMESH_HypoFilter.hxx \
 	SMESH_Algo.hxx \
+	SMESH_0D_Algo.hxx \
 	SMESH_1D_Algo.hxx \
 	SMESH_2D_Algo.hxx \
 	SMESH_3D_Algo.hxx \
@@ -66,6 +67,7 @@ LIB= libSMESHimpl.la
 LIB_SRC = SMESH_Gen.cxx SMESH_Mesh.cxx SMESH_subMesh.cxx \
 	  SMESH_Hypothesis.cxx \
 	  SMESH_Algo.cxx \
+	  SMESH_0D_Algo.cxx \
 	  SMESH_1D_Algo.cxx \
 	  SMESH_2D_Algo.cxx \
 	  SMESH_3D_Algo.cxx \
