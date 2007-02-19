@@ -39,6 +39,7 @@ VPATH=.:@srcdir@:@top_srcdir@/idl:$(top_builddir)/idl:
 EXPORT_HEADERS= \
 	SMESH_Gen_i.hxx \
 	SMESH_Algo_i.hxx \
+	SMESH_0D_Algo_i.hxx \
 	SMESH_1D_Algo_i.hxx \
 	SMESH_2D_Algo_i.hxx \
 	SMESH_3D_Algo_i.hxx \
@@ -66,6 +67,7 @@ LIB_SRC = \
 	SMESH_MeshEditor_i.cxx \
 	SMESH_Hypothesis_i.cxx \
 	SMESH_Algo_i.cxx \
+	SMESH_0D_Algo_i.cxx \
 	SMESH_1D_Algo_i.cxx \
 	SMESH_2D_Algo_i.cxx \
 	SMESH_3D_Algo_i.cxx \
