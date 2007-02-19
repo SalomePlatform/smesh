@@ -210,12 +210,18 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
     for ( ; sm != smList.end(); ++sm )
     {
       SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
-      while ( eIt->more() ) {
-        const SMDS_MeshElement* anElem = eIt->next();
-        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+      if ( eIt->more() ) {
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* anElem = eIt->next();
+          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+          while ( nIt->more() )
+            nodeIds.insert( nIt->next()->GetID() );
+        }
+      } else {
+        SMDS_NodeIteratorPtr nIt = (*sm)->GetNodes();
         while ( nIt->more() )
           nodeIds.insert( nIt->next()->GetID() );
-      }
+      }      
     }
     return nodeIds.size();
   }
@@ -225,15 +231,21 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
 
   if ( all ) { // all nodes of submesh elements
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-    while ( eIt->more() ) {
-      const SMDS_MeshElement* anElem = eIt->next();
-      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+    if ( eIt->more() ) {
+      while ( eIt->more() ) {
+        const SMDS_MeshElement* anElem = eIt->next();
+        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        while ( nIt->more() )
+          nodeIds.insert( nIt->next()->GetID() );
+      }
+    } else {
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
       while ( nIt->more() )
         nodeIds.insert( nIt->next()->GetID() );
     }
     return nodeIds.size();
   }
-    
+
   return aSubMeshDS->NbNodes();
 }
 
@@ -242,7 +254,7 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
  *  
  */
 //=============================================================================
-  
+
 SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   throw (SALOME::SALOME_Exception)
 {
@@ -317,9 +329,15 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
       if ( theElemType == SMESH::NODE )
       {
         SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
-        while ( eIt->more() ) {
-          const SMDS_MeshElement* anElem = eIt->next();
-          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        if ( eIt->more() ) {
+          while ( eIt->more() ) {
+            const SMDS_MeshElement* anElem = eIt->next();
+            SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+            while ( nIt->more() )
+              nodeIds.insert( nIt->next()->GetID() );
+          }
+        } else {
+          SMDS_NodeIteratorPtr nIt = (*sm)->GetNodes();
           while ( nIt->more() )
             nodeIds.insert( nIt->next()->GetID() );
         }
@@ -340,9 +358,15 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   if ( theElemType == SMESH::NODE && aSubMeshDS )
   {
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-    while ( eIt->more() ) {
-      const SMDS_MeshElement* anElem = eIt->next();
-      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+    if ( eIt->more() ) {
+      while ( eIt->more() ) {
+        const SMDS_MeshElement* anElem = eIt->next();
+        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        while ( nIt->more() )
+          nodeIds.insert( nIt->next()->GetID() );
+      }
+    } else {
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
       while ( nIt->more() )
         nodeIds.insert( nIt->next()->GetID() );
     }
