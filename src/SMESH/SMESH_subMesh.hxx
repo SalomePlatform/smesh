@@ -88,14 +88,15 @@ class SMESH_subMesh
     };
   enum algo_event
   {
-    ADD_HYP, ADD_ALGO,
-    REMOVE_HYP, REMOVE_ALGO,
-    ADD_FATHER_HYP, ADD_FATHER_ALGO,
-    REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO
+    ADD_HYP          , ADD_ALGO,
+    REMOVE_HYP       , REMOVE_ALGO,
+    ADD_FATHER_HYP   , ADD_FATHER_ALGO,
+    REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO,
+    MODIF_HYP
     };
   enum compute_event
   {
-    MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
+    MODIF_ALGO_STATE, COMPUTE,
     CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
@@ -113,12 +114,10 @@ class SMESH_subMesh
     * \param listener - the listener to store
     * \param data - the listener data to store
     * \param where - the submesh to store the listener and it's data
-    * \param deleteListener - if true then the listener will be deleted as
-    *        it is removed from where submesh
    * 
-   * It remembers the submesh where it puts the listener in order to delete
+   * The method remembers the submesh \awhere it puts the listener in order to delete
    * them when HYP_OK algo_state is lost
-   * After being set, event listener is notified on each event of where submesh.
+   * After being set, event listener is notified on each event of \awhere submesh.
    */
   void SetEventListener(EventListener*     listener,
                         EventListenerData* data,
@@ -206,6 +205,12 @@ public:
   bool IsMeshComputed() const;
   // check if _subMeshDS contains mesh elements
 
+  /*!
+   * \brief Allow algo->Compute() if a subshape of lower dim is meshed but
+   *        none mesh entity is bound to it
+   */
+  void SetIsAlwaysComputed(bool isAlCo);
+
 protected:
   // ==================================================================
   void InsertDependence(const TopoDS_Shape aSubShape);
@@ -238,6 +243,7 @@ protected:
   // is returned; else an applicable ones having theHypType
   // is returned
   
+
   TopoDS_Shape _subShape;
   SMESHDS_Mesh * _meshDS;
   SMESHDS_SubMesh * _subMeshDS;
@@ -248,6 +254,11 @@ protected:
 
   int _algoState;
   int _computeState;
+
+  // allow algo->Compute() if a subshape of lower dim is meshed but
+  // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
+  // mesh several edges as a whole and leave some of them  without mesh entities
+  bool _alwaysComputed;
 
 };
 
