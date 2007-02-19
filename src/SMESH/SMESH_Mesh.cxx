@@ -49,6 +49,7 @@
 #include "DriverSTL_R_SMDS_Mesh.h"
 
 #include <BRepTools_WireExplorer.hxx>
+#include <BRepPrimAPI_MakeBox.hxx>
 #include <BRep_Builder.hxx>
 #include <gp_Pnt.hxx>
 
@@ -94,6 +95,7 @@ SMESH_Mesh::SMESH_Mesh(int theLocalId,
   _myDocument = theDocument;
   _idDoc = theDocument->NewMesh(theIsEmbeddedMode);
   _myMeshDS = theDocument->GetMesh(_idDoc);
+  _myMeshDS->ShapeToMesh( PseudoShape() );
   _isShapeToMesh = false;
 }
 
@@ -117,7 +119,7 @@ SMESH_Mesh::~SMESH_Mesh()
 
 //=============================================================================
 /*!
- * 
+ * \brief Set geometry to be meshed
  */
 //=============================================================================
 
@@ -125,7 +127,11 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::ShapeToMesh");
 
-  if ( !_myMeshDS->ShapeToMesh().IsNull() && aShape.IsNull() )
+  if ( !aShape.IsNull() && _isShapeToMesh )
+    throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
+
+  // clear current data
+  if ( !_myMeshDS->ShapeToMesh().IsNull() )
   {
     // removal of a shape to mesh, delete objects referring to sub-shapes:
     // - sub-meshes
@@ -144,28 +150,57 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
       else
         i_gr++;
     }
+    _mapAncestors.Clear();
     _mapPropagationChains.Clear();
+
+    // clear SMESHDS
+    TopoDS_Shape aNullShape;
+    _myMeshDS->ShapeToMesh( aNullShape );
   }
-  else
+
+  // set a new geometry
+  if ( !aShape.IsNull() )
   {
-    if (_isShapeToMesh)
-      throw SALOME_Exception(LOCALIZED ("a shape to mesh has already been defined"));
+    _myMeshDS->ShapeToMesh(aShape);
+    _isShapeToMesh = true;
+
+    // fill _mapAncestors
+    int desType, ancType;
+    for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
+      for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
+        TopExp::MapShapesAndAncestors ( aShape,
+                                        (TopAbs_ShapeEnum) desType,
+                                        (TopAbs_ShapeEnum) ancType,
+                                        _mapAncestors );
   }
-  _isShapeToMesh = true;
-  _myMeshDS->ShapeToMesh(aShape);
+}
 
-  // fill _mapAncestors
-  _mapAncestors.Clear();
-  int desType, ancType;
-  for ( desType = TopAbs_VERTEX; desType > TopAbs_COMPOUND; desType-- )
-    for ( ancType = desType - 1; ancType >= TopAbs_COMPOUND; ancType-- )
-      TopExp::MapShapesAndAncestors ( aShape,
-                                     (TopAbs_ShapeEnum) desType,
-                                     (TopAbs_ShapeEnum) ancType,
-                                     _mapAncestors );
+//=======================================================================
+/*!
+ * \brief Return geometry to be meshed. (It may be a PseudoShape()!)
+ */
+//=======================================================================
 
-  // NRI : 24/02/03
-  //EAP: 1/9/04 TopExp::MapShapes(aShape, _subShapes); USE the same map of _myMeshDS
+TopoDS_Shape SMESH_Mesh::GetShapeToMesh() const
+{
+  return _myMeshDS->ShapeToMesh();
+}
+
+//=======================================================================
+/*!
+ * \brief Return a solid which is returned by GetShapeToMesh() if
+ *        a real geometry to be meshed was not set
+ */
+//=======================================================================
+
+const TopoDS_Solid& SMESH_Mesh::PseudoShape()
+{
+  static TopoDS_Solid aSolid;
+  if ( aSolid.IsNull() )
+  {
+    aSolid = BRepPrimAPI_MakeBox(1,1,1);
+  }
+  return aSolid;
 }
 
 //=======================================================================
@@ -494,17 +529,6 @@ SMESH_Hypothesis::Hypothesis_Status
  */
 //=============================================================================
 
-SMESHDS_Mesh * SMESH_Mesh::GetMeshDS()
-{
-  return _myMeshDS;
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
 const list<const SMESHDS_Hypothesis*>&
 SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
   throw(SALOME_Exception)
@@ -647,29 +671,6 @@ void SMESH_Mesh::ClearLog() throw(SALOME_Exception)
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::ClearLog");
   _myMeshDS->GetScript()->Clear();
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
-int SMESH_Mesh::GetId()
-{
-  if(MYDEBUG) MESSAGE("SMESH_Mesh::GetId");
-  return _id;
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
-SMESH_Gen *SMESH_Mesh::GetGen()
-{
-  return _gen;
 }
 
 //=============================================================================
@@ -857,7 +858,8 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* t
         if ( GetHypotheses( aSubShape, compatibleHypoKind, usedHyps, true ) &&
              find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() )
         {
-          aSubMesh->ComputeStateEngine(SMESH_subMesh::MODIF_HYP);
+          aSubMesh->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
+                                    const_cast< SMESH_Hypothesis*>( hyp ));
 
           if ( algo->GetDim() == 1 && IsPropagationHypothesis( aSubShape ))
             CleanMeshOnPropagationChain( aSubShape );
