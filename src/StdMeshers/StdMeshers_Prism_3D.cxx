@@ -700,7 +700,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   mySide = new TSideFace( sideFaces, params );
 
   myHelper = helper;
-  SMESHDS_Mesh* meshDS = myHelper->GetMesh()->GetMeshDS();
+  SMESHDS_Mesh* meshDS = myHelper->GetMeshDS();
 
   SMESH_Block::init();
   myShapeIDMap.Clear();
@@ -722,7 +722,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   //
   SMESH_subMesh* mainSubMesh = myHelper->GetMesh()->GetSubMeshContaining( shape3D );
   if ( !mainSubMesh ) RETURN_BAD_RESULT("Null submesh of shape3D");
-  //
+
+  // analyse face submeshes
   const map< int, SMESH_subMesh * >& subSM = mainSubMesh->DependsOn();
   map< int, SMESH_subMesh * >::const_iterator i_subSM = subSM.begin();
   for ( ; i_subSM != subSM.end(); ++i_subSM )
@@ -734,14 +735,18 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     nbFaces++;
 
     // is quadrangle face?
-    if ( TAssocTool::Count( face, TopAbs_EDGE, 0 ) != 4 ||
-         TAssocTool::Count( face, TopAbs_WIRE, 0 ) != 1 )
+    list< TopoDS_Edge > orderedEdges;
+    list< int >         nbEdgesInWires;
+    TopoDS_Vertex       V000;
+    int nbWires = GetOrderedEdges( TopoDS::Face( face ),
+                                   V000, orderedEdges, nbEdgesInWires );
+    if ( nbWires != 1 || nbEdgesInWires.front() != 4 )
       notQuadGeomSubMesh.push_back( sm );
 
-    // count not quadrangle mesh elements
+    // look for not quadrangle mesh elements
     if ( SMESHDS_SubMesh* smDS = sm->GetSubMeshDS() ) {
-      SMDS_ElemIteratorPtr eIt = smDS->GetElements();
       bool hasNotQuad = false;
+      SMDS_ElemIteratorPtr eIt = smDS->GetElements();
       while ( eIt->more() && !hasNotQuad ) {
         const SMDS_MeshElement* elem = eIt->next();
         if ( elem->GetType() == SMDSAbs_Face ) {
@@ -756,6 +761,27 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     }
     else {
       RETURN_BAD_RESULT("not meshed face");
+    }
+    // check if a quadrangle face is meshed with a quadranglar grid
+    if ( notQuadGeomSubMesh.back() != sm &&
+         notQuadElemSubMesh.back() != sm )
+    {
+      // count nb edges on face sides
+      vector< int > nbEdges;
+      nbEdges.reserve( nbEdgesInWires.front() );
+      for ( list< TopoDS_Edge >::iterator edge = orderedEdges.begin();
+            edge != orderedEdges.end(); ++edge )
+      {
+        if ( SMESHDS_SubMesh* smDS = meshDS->MeshElements( *edge ))
+          nbEdges.push_back ( smDS->NbElements() );
+        else
+          nbEdges.push_back ( 0 );
+      }
+      int nbQuads = sm->GetSubMeshDS()->NbElements();
+      if ( nbEdges[0] *  nbEdges[1] != nbQuads ||
+           nbEdges[0] != nbEdges[2] ||
+           nbEdges[1] != nbEdges[3] )
+        notQuadElemSubMesh.push_back( sm );
     }
   }
 
@@ -821,9 +847,17 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
         const TopoDS_Shape & ancestor = ancestIt.Value();
         if ( ancestor.ShapeType() == TopAbs_EDGE && !edgeMap.FindIndex( ancestor ))
         {
-          Vtop = TopExp::LastVertex( TopoDS::Edge( ancestor ));
-          if ( Vbot.IsSame ( Vtop ))
-            Vtop = TopExp::FirstVertex( TopoDS::Edge( ancestor ));
+          TopoDS_Vertex V1, V2;
+          TopExp::Vertices( TopoDS::Edge( ancestor ), V1, V2);
+          if      ( Vbot.IsSame ( V1 )) Vtop = V2;
+          else if ( Vbot.IsSame ( V2 )) Vtop = V1;
+          // check that Vtop belongs to shape3D
+          TopExp_Explorer exp( shape3D, TopAbs_VERTEX );
+          for ( ; exp.More(); exp.Next() )
+            if ( Vtop.IsSame( exp.Current() ))
+              break;
+          if ( !exp.More() )
+            Vtop.Nullify();
         }
       }
     }
@@ -1599,7 +1633,7 @@ TopoDS_Edge StdMeshers_PrismAsBlock::TSideFace::GetEdge(const int iEdge) const
   }
   default:;
   }
-  if ( !edge.IsNull() || edge.ShapeType() == TopAbs_EDGE )
+  if ( !edge.IsNull() && edge.ShapeType() == TopAbs_EDGE )
     return TopoDS::Edge( edge );
 
   // find edge by 2 vertices
