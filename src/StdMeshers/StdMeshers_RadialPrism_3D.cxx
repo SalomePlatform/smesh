@@ -48,6 +48,7 @@
 #include <TopoDS_Solid.hxx>
 #include <TopoDS_Shell.hxx>
 #include <BRepTools.hxx>
+#include <BRepAdaptor_Curve.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <gp.hxx>
@@ -316,13 +317,14 @@ public:
     myUsedHyps.push_back( hyp->GetLayerDistribution() );
 
     TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
-
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
       RETURN_BAD_RESULT("StdMeshers_Regular_1D::CheckHypothesis() failed with status "<<aStatus);
 
+    BRepAdaptor_Curve C3D(edge);
+    double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( edge, params, false ))
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
       RETURN_BAD_RESULT("StdMeshers_Regular_1D::computeInternalParameters() failed");
 
     positions.clear();
