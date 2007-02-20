@@ -40,6 +40,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_subMesh.hxx"
+#include "SMESH_subMeshEventListener.hxx"
 #include "SMDS_EdgePosition.hxx"
 
 #include "utilities.h"
@@ -1128,7 +1129,7 @@ TopoDS_Shape StdMeshers_ProjectionUtils::OuterShape( const TopoDS_Face& face,
 
 //================================================================================
   /*!
-   * \brief Check that submeshis is computed and try to compute it if is not
+   * \brief Check that submesh is computed and try to compute it if is not
     * \param sm - submesh to compute
     * \param iterationNb - int used to stop infinite recursive call
     * \retval bool - true if computed
@@ -1221,21 +1222,87 @@ int StdMeshers_ProjectionUtils::Count(const TopoDS_Shape&    shape,
   }
 }
 
-      // bull shit
-//       Standard_Real f1,l1, f2,l2;
-//       BRep_Tool::Range( edge1, f1,l1 );
-//       BRep_Tool::Range( edge2, f2,l2 );
-//       BRepAdaptor_Curve e1( edge1 ), e2( edge2 );
-//       gp_Pnt pf1, pf2;
-//       gp_Vec dirX1, dirX2; // 1st derivatives
-//       e1.D1( f1, pf1, dirX1 );
-//       e2.D1( f2, pf2, dirX2 );
-//       gp_Pnt pm1 = e1.Value( 0.5 * ( f1 + l1 ));
-//       gp_Pnt pm2 = e2.Value( 0.5 * ( f2 + l2 ));
-//       gp_Vec dirZ1( pf1, pm1 ), dirZ2( pf2, pm2 );
-//       gp_Trsf trsf;
-//       gp_Ax3 fromSys( pf1, dirZ1, dirX1 ), toSys( pf2, dirZ2, dirX2 );
-//       trsf.SetTransformation( fromSys, toSys );
-//       dirX1.Transform( trsf );
-//       bool reverse = ( dirX1 * dirX2 < 0 );
-//       if ( reverse ) edge2.Reverse();
+namespace {
+
+  SMESH_subMeshEventListener* GetSrcSubMeshListener();
+
+  //================================================================================
+  /*!
+   * \brief Listener that resets an event listener on source submesh when 
+   * "ProjectionSource*D" hypothesis is modified
+   */
+  //================================================================================
+
+  struct HypModifWaiter: SMESH_subMeshEventListener
+  {
+    HypModifWaiter():SMESH_subMeshEventListener(0){} // won't be deleted by submesh
+
+    void ProcessEvent(const int event, const int eventType, SMESH_subMesh* subMesh,
+                      EventListenerData*, SMESH_Hypothesis*)
+    {
+      if ( event     == SMESH_subMesh::MODIF_HYP &&
+           eventType == SMESH_subMesh::ALGO_EVENT)
+      {
+        // delete current source listener
+        subMesh->DeleteEventListener( GetSrcSubMeshListener() );
+        // let algo set a new one
+        SMESH_Gen* gen = subMesh->GetFather()->GetGen();
+        if ( SMESH_Algo* algo = gen->GetAlgo( *subMesh->GetFather(),
+                                              subMesh->GetSubShape() ))
+          algo->SetEventListener( subMesh );
+      }
+    }
+  };
+  //================================================================================
+  /*!
+   * \brief return static HypModifWaiter
+   */
+  //================================================================================
+
+  SMESH_subMeshEventListener* GetHypModifWaiter() {
+    static HypModifWaiter aHypModifWaiter;
+    return &aHypModifWaiter;
+  }
+  //================================================================================
+  /*!
+   * \brief return static listener for source shape submeshes
+   */
+  //================================================================================
+
+  SMESH_subMeshEventListener* GetSrcSubMeshListener() {
+    static SMESH_subMeshEventListener srcListener(0); // won't be deleted by submesh
+    return &srcListener;
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Set event listeners to submesh with projection algo
+ * \param subMesh - submesh with projection algo
+ * \param srcShape - source shape
+ * \param srcMesh - source mesh
+ */
+//================================================================================
+
+void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
+                                                  TopoDS_Shape   srcShape,
+                                                  SMESH_Mesh*    srcMesh)
+{
+  // Set listener that resets an event listener on source submesh when
+  // "ProjectionSource*D" hypothesis is modified
+  subMesh->SetEventListener( GetHypModifWaiter(),0,subMesh);
+
+  // Set an event listener to submesh of the source shape
+  if ( !srcShape.IsNull() )
+  {
+    if ( !srcMesh )
+      srcMesh = subMesh->GetFather();
+
+    SMESH_subMesh* srcShapeSM = srcMesh->GetSubMesh( srcShape );
+
+    if ( srcShapeSM != subMesh )
+      subMesh->SetEventListener( GetSrcSubMeshListener(),
+                                 SMESH_subMeshEventListenerData::MakeData( subMesh ),
+                                 srcShapeSM );
+  }
+}

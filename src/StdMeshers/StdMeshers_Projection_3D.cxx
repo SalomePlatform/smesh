@@ -420,19 +420,8 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
 
 void StdMeshers_Projection_3D::SetEventListener(SMESH_subMesh* subMesh)
 {
-  if ( _sourceHypo && ! _sourceHypo->GetSource3DShape().IsNull() )
-  {
-    SMESH_Mesh* srcMesh = _sourceHypo->GetSourceMesh();
-    if ( !srcMesh )
-      srcMesh = subMesh->GetFather();
-
-    SMESH_subMesh* srcShapeSM =
-      srcMesh->GetSubMesh( _sourceHypo->GetSource3DShape() );
-
-    if ( srcShapeSM != subMesh )
-      subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
-                                 SMESH_subMeshEventListenerData::MakeData( subMesh ),
-                                 srcShapeSM );
-  }
+  TAssocTool::SetEventListener( subMesh,
+                                _sourceHypo->GetSource3DShape(),
+                                _sourceHypo->GetSourceMesh() );
 }
   

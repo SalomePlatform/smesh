@@ -626,17 +626,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
 void StdMeshers_Projection_2D::SetEventListener(SMESH_subMesh* subMesh)
 {
-  if ( _sourceHypo && ! _sourceHypo->GetSourceFace().IsNull() )
-  {
-    SMESH_Mesh* srcMesh = _sourceHypo->GetSourceMesh();
-    if ( !srcMesh )
-      srcMesh = subMesh->GetFather();
-
-    SMESH_subMesh* srcFaceSM =
-      srcMesh->GetSubMesh( _sourceHypo->GetSourceFace() );
-
-    subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
-                               SMESH_subMeshEventListenerData::MakeData( subMesh ),
-                               srcFaceSM );
-  }
+  TAssocTool::SetEventListener( subMesh,
+                                _sourceHypo->GetSourceFace(),
+                                _sourceHypo->GetSourceMesh() );
 }
