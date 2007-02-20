@@ -171,6 +171,7 @@ class _pyObject: public Standard_Transient
 public:
   _pyObject(const Handle(_pyCommand)& theCreationCmd): myCreationCmd(theCreationCmd) {}
   const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
+  static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
   void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
