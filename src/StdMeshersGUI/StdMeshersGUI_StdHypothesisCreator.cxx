@@ -172,36 +172,36 @@ void StdMeshersGUI_StdHypothesisCreator::retrieveParams() const
   }
 }
 
-//================================================================================
-/*!
- * \brief Widget: slider with left and right labels
- */
-//================================================================================
-
-class TDoubleSliderWith2Lables: public QHBox
-{
-public:
-  TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
-                            const double   initValue, const double   bottom,
-                            const double   top      , const double   precision,
-                            QWidget *      parent=0 , const char *   name=0 )
-    :QHBox(parent,name), _bottom(bottom), _precision(precision)
-  {
-    if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
-    _slider = new QSlider( Horizontal, this );
-    _slider->setRange( 0, toInt( top ));
-    _slider->setValue( toInt( initValue ));
-    if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
-  }
-  double value() const { return _bottom + _slider->value() * _precision; }
-  QSlider * getSlider() const { return _slider; }
-  int toInt( double val ) const { return (int) ceil(( val - _bottom ) / _precision ); }
-private:
-  double _bottom, _precision;
-  QSlider * _slider;
-};
-
 namespace {
+
+  //================================================================================
+  /*!
+   * \brief Widget: slider with left and right labels
+   */
+  //================================================================================
+
+  class TDoubleSliderWith2Lables: public QHBox
+  {
+  public:
+    TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
+                              const double   initValue, const double   bottom,
+                              const double   top      , const double   precision,
+                              QWidget *      parent=0 , const char *   name=0 )
+      :QHBox(parent,name), _bottom(bottom), _precision(precision)
+    {
+      if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
+      _slider = new QSlider( Horizontal, this );
+      _slider->setRange( 0, toInt( top ));
+      _slider->setValue( toInt( initValue ));
+      if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
+    }
+    double value() const { return _bottom + _slider->value() * _precision; }
+    QSlider * getSlider() const { return _slider; }
+    int toInt( double val ) const { return (int) ceil(( val - _bottom ) / _precision ); }
+  private:
+    double _bottom, _precision;
+    QSlider * _slider;
+  };
 
   //================================================================================
   /*!
@@ -381,6 +381,13 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 
       h->SetLength( params[0].myValue.toDouble() );
     }
+    else if( hypType()=="SegmentLengthAroundVertex" )
+    {
+      StdMeshers::StdMeshers_SegmentLengthAroundVertex_var h =
+	StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hypothesis() );
+
+      h->SetLength( params[0].myValue.toDouble() );
+    }
     else if( hypType()=="Arithmetic1D" )
     {
       StdMeshers::StdMeshers_Arithmetic1D_var h =
@@ -516,6 +523,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
+
+    item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
+    item.myValue = h->GetLength();
+    p.append( item );
+  }
+  else if( hypType()=="SegmentLengthAroundVertex" )
+  {
+    StdMeshers::StdMeshers_SegmentLengthAroundVertex_var h =
+      StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hyp );
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
     item.myValue = h->GetLength();
@@ -777,6 +793,7 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "ProjectionSource3D", "PROJECTION_SOURCE_3D" );
     types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
     types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
+    types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
   }
 
   QString res;

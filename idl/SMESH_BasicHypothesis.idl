@@ -508,9 +508,42 @@ module StdMeshers
   };
 
   /*!
+   * interface of "SegmentLengthAroundVertex" hypothesis.
+   * This hypothesis specifies length of segments adjacent to the vertex the
+   * hypothesis is assigned to
+   */
+  interface StdMeshers_SegmentLengthAroundVertex : SMESH::SMESH_Hypothesis
+  {
+    /*!
+     * Sets <length> parameter value
+     */
+    void SetLength(in double length)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns <length> parameter value
+     */
+    double GetLength();
+  };
+
+  /*!
+   * StdMeshers_SegmentAroundVertex_0D: interface of "SegmentAroundVertex" algorithm
+   */
+  interface StdMeshers_SegmentAroundVertex_0D : SMESH::SMESH_0D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Regular_1D: interface of "Wire discretisation" algorithm
    */
   interface StdMeshers_Regular_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_CompositeSegment_1D: interface of "Composite side discretisation" algorithm
+   */
+  interface StdMeshers_CompositeSegment_1D : SMESH::SMESH_1D_Algo
   {
   };
 

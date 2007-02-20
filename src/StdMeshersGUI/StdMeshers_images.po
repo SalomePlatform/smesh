@@ -41,6 +41,9 @@ msgstr "select1.png"
 msgid "ICON_DLG_LOCAL_LENGTH"
 msgstr "mesh_hypo_length.png"
 
+msgid "ICON_DLG_SEGMENT_LENGTH_AROUND_VERTEX"
+msgstr "mesh_hypo_length.png"
+
 msgid "ICON_DLG_NB_SEGMENTS"
 msgstr "mesh_hypo_segment.png"
 
@@ -86,6 +89,9 @@ msgstr "mesh_hypo_source_3d.png"
 #-----------------------------------------------------------
 
 msgid "ICON_SMESH_TREE_ALGO_Regular_1D"
+msgstr "mesh_tree_algo_regular.png"
+
+msgid "ICON_SMESH_TREE_ALGO_CompositeSegment_1D"
 msgstr "mesh_tree_algo_regular.png"
 
 msgid "ICON_SMESH_TREE_ALGO_Hexa_3D"
@@ -166,3 +172,9 @@ msgstr "mesh_tree_hypo_source_face.png"
 
 msgid "ICON_SMESH_TREE_HYPO_ProjectionSource3D"
 msgstr "mesh_tree_hypo_source_3d_shape.png"
+
+msgid "ICON_SMESH_TREE_ALGO_SegmentAroundVertex_0D"
+msgstr "mesh_tree_algo_regular.png"
+
+msgid "ICON_SMESH_TREE_HYPO_SegmentLengthAroundVertex"
+msgstr "mesh_tree_hypo_length.png"

@@ -62,7 +62,10 @@ EXPORT_HEADERS = \
 	StdMeshers_Projection_3D.hxx \
 	StdMeshers_RadialPrism_3D.hxx  \
 	StdMeshers_ProjectionUtils.hxx \
-	StdMeshers_LayerDistribution.hxx
+	StdMeshers_LayerDistribution.hxx \
+	StdMeshers_SegmentAroundVertex_0D.hxx \
+	StdMeshers_SegmentLengthAroundVertex.hxx \
+	StdMeshers_CompositeSegment_1D.hxx \
 
 EXPORT_PYSCRIPTS =
 
@@ -100,7 +103,11 @@ LIB_SRC = \
 	StdMeshers_Projection_3D.cxx \
 	StdMeshers_RadialPrism_3D.cxx \
 	StdMeshers_ProjectionUtils.cxx \
-	StdMeshers_LayerDistribution.cxx
+	StdMeshers_LayerDistribution.cxx \
+	StdMeshers_SegmentAroundVertex_0D.cxx \
+	StdMeshers_SegmentLengthAroundVertex.cxx \
+	StdMeshers_FaceSide.cxx \
+	StdMeshers_CompositeSegment_1D.cxx
 
 LIB_SERVER_IDL = 
 

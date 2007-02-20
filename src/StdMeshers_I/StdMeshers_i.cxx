@@ -43,20 +43,21 @@ using namespace std;
 #include "StdMeshers_MaxElementArea_i.hxx"
 #include "StdMeshers_MaxElementVolume_i.hxx"
 #include "StdMeshers_NotConformAllowed_i.hxx"
-
 #include "StdMeshers_ProjectionSource3D_i.hxx"
 #include "StdMeshers_ProjectionSource2D_i.hxx"
 #include "StdMeshers_ProjectionSource1D_i.hxx"
 #include "StdMeshers_NumberOfLayers_i.hxx"
 #include "StdMeshers_LayerDistribution_i.hxx"
+#include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
 
 #include "StdMeshers_Regular_1D_i.hxx"
 #include "StdMeshers_MEFISTO_2D_i.hxx"
 #include "StdMeshers_Quadrangle_2D_i.hxx"
 #include "StdMeshers_Hexa_3D_i.hxx"
-
 #include "StdMeshers_Projection_1D_2D_3D_i.hxx"
 #include "StdMeshers_Prism_3D_i.hxx"
+#include "StdMeshers_SegmentAroundVertex_0D_i.hxx"
+#include "StdMeshers_CompositeSegment_1D_i.hxx"
 
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
@@ -116,6 +117,8 @@ extern "C"
       aCreator = new StdHypothesisCreator_i<StdMeshers_NumberOfLayers_i>;
     else if (strcmp(aHypName, "LayerDistribution") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_LayerDistribution_i>;
+    else if (strcmp(aHypName, "SegmentLengthAroundVertex") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentLengthAroundVertex_i>;
 
     // Algorithms
     else if (strcmp(aHypName, "Regular_1D") == 0)
@@ -136,6 +139,10 @@ extern "C"
       aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i>;
     else if (strcmp(aHypName, "RadialPrism_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_RadialPrism_3D_i>;
+    else if (strcmp(aHypName, "SegmentAroundVertex_0D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentAroundVertex_0D_i>;
+    else if (strcmp(aHypName, "CompositeSegment_1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_CompositeSegment_1D_i>;
     else ;
 
     return aCreator;
