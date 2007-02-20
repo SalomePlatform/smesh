@@ -256,7 +256,7 @@ class StdMeshers_Penta_3D {
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
     bool myCreateQuadratic;
-    SMESH_MesherHelper* myTool; // toll for working with quadratic elements
+    SMESH_MesherHelper* myTool; // tool building quadratic elements
 };
 
 #endif
