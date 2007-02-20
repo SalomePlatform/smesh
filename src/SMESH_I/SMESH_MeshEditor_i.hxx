@@ -177,6 +177,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                              CORBA::Boolean              HasRefPoint,
                              const SMESH::PointStruct &  RefPoint);
 
+  SMESH::double_array* LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       PathMesh,
+                                             GEOM::GEOM_Object_ptr       PathShape,
+                                             const SMESH::double_array & Angles);
+
   void Mirror(const SMESH::long_array &           IDsOfElements,
               const SMESH::AxisStruct &           Axis,
               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
@@ -277,8 +281,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
  private:
   SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
   SMESH_Mesh   *_myMesh;
-  SMESH::long_array* myLastCreatedElems;
-  SMESH::long_array* myLastCreatedNodes;
+  SMESH::long_array_var myLastCreatedElems;
+  SMESH::long_array_var myLastCreatedNodes;
 };
 
 #endif

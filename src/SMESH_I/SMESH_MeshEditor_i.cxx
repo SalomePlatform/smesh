@@ -1298,18 +1298,24 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
   gp_Pnt refPnt( theRefPoint.x, theRefPoint.y, theRefPoint.z );
 
   // Update Python script
-  TPythonDump() << "refPoint = SMESH.PointStruct( "
-                << refPnt.X() << ", "
-                << refPnt.Y() << ", "
-                << refPnt.Z() << " )";
+  TPythonDump() << "rotAngles = " << theAngles;
+
+  if ( theHasRefPoint )
+    TPythonDump() << "refPoint = SMESH.PointStruct( "
+                  << refPnt.X() << ", "
+                  << refPnt.Y() << ", "
+                  << refPnt.Z() << " )";
+  else
+    TPythonDump() << "refPoint = SMESH.PointStruct( 0,0,0 )";
+
   TPythonDump() << "error = " << this << ".ExtrusionAlongPath( "
                 << theIDsOfElements << ", "
-                << thePathMesh  <<  ", "
-                << thePathShape <<  ", "
-                << theNodeStart << ", "
-                << theHasAngles << ", "
-                << theAngles << ", "
-                << theHasRefPoint << ", refPoint )";
+                << thePathMesh      << ", "
+                << thePathShape     << ", "
+                << theNodeStart     << ", "
+                << theHasAngles     << ", "
+                << "rotAngles"      << ", "
+                << theHasRefPoint   << ", refPoint )";
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   SMESH::SMESH_MeshEditor::Extrusion_Error error = 
@@ -1350,16 +1356,38 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObje
   aSMESHGen->RemoveLastFromPythonScript(aSMESHGen->GetCurrentStudyID());
 
   // Update Python script
+  TPythonDump() << "rotAngles = " << theAngles;
   TPythonDump() << "error = " << this << ".ExtrusionAlongPathObject( "
                 << theObject    << ", "
                 << thePathMesh  << ", "
                 << thePathShape << ", "
                 << theNodeStart << ", "
                 << theHasAngles << ", "
-                << theAngles << ", "
-                << theHasRefPoint << ", refPoint )";
+                << "rotAngles"     << ", "
+                << theHasRefPoint<<", refPoint )";
 
   return error;
+}
+
+//================================================================================
+/*!
+ * \brief Compute rotation angles for ExtrusionAlongPath as linear variation
+ * of given angles along path steps
+  * \param PathMesh mesh containing a 1D sub-mesh on the edge, along 
+  *                which proceeds the extrusion
+  * \param PathShape is shape(edge); as the mesh can be complex, the edge 
+  *                 is used to define the sub-mesh for the path
+ */
+//================================================================================
+
+SMESH::double_array*
+SMESH_MeshEditor_i::LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       thePathMesh,
+                                          GEOM::GEOM_Object_ptr       thePathShape,
+                                          const SMESH::double_array & theAngles)
+{
+  SMESH::double_array_var aResult = new SMESH::double_array();
+  // TO BE IMPLEMENTED
+  return aResult._retn();
 }
 
 //=======================================================================
@@ -2015,7 +2043,7 @@ void SMESH_MeshEditor_i::UpdateLastResult(::SMESH_MeshEditor& anEditor)
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
 {
-  return myLastCreatedNodes;
+  return myLastCreatedNodes.out();
 }
 
 //================================================================================
@@ -2027,7 +2055,7 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 {
-  return myLastCreatedElems;
+  return myLastCreatedElems.out();
 }
 
 
