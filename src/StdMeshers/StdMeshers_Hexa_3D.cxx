@@ -1059,7 +1059,7 @@ bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape)
   //
   bOK=anAlgo.Compute(aMesh, aShape);
   //
-  if ( !bOK )
+  if ( !bOK && anAlgo.ErrorStatus() == 5 )
   {
     static StdMeshers_Prism_3D * aPrism3D = 0;
     if ( !aPrism3D ) {
