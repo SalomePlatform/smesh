@@ -36,6 +36,8 @@
 
 #include "SMESH_MesherHelper.hxx"
 
+class TopTools_IndexedMapOfShape;
+
 typedef struct point3Dstruct
 {
   const SMDS_MeshNode * node;
@@ -74,10 +76,9 @@ public:
 		       const TopoDS_Shape& aShape)
     throw (SALOME_Exception);
 
-  ostream & SaveTo(ostream & save);
-  istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_Hexa_3D & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_Hexa_3D & hyp);
+  static TopoDS_Vertex OppositeVertex(const TopoDS_Vertex& aVertex,
+                                      const TopTools_IndexedMapOfShape& aQuads0Vertices,
+                                      FaceQuadStruct* aQuads[6]);
 
 protected:
   TopoDS_Edge
