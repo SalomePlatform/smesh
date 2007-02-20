@@ -51,8 +51,10 @@
 //================================================================================
 
 SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
-  : myMesh(&theMesh), myShapeID(-1), myCreateQuadratic(false), mySetElemOnShape(false)
-{}
+  : myMesh(&theMesh), myShapeID(-1), myCreateQuadratic(false)
+{
+  mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
+}
 
 //=======================================================================
 //function : CheckShape

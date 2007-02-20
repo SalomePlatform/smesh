@@ -130,7 +130,8 @@ public:
 
   /*!
    * \brief To set created elements on the shape set by IsQuadraticSubMesh()
-   *        or the next methods. By defaul elements are not set on the shape
+   *        or the next methods. By defaul elements are set on the shape if
+   *        a mesh has no shape to be meshed
    */
   void SetElementsOnShape(bool toSet) { mySetElemOnShape = toSet; }
 
