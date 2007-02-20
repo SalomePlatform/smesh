@@ -180,11 +180,19 @@ module SMESH
   interface SMESH_MeshEditor;
   interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
   {
-    ///*!
-    // * Associate a Shape to a Mesh created with NewEmpty
-    // */
-    //boolean SetMesh(in GEOM::GEOM_Object anObject)
-    //  raises (SALOME::SALOME_Exception);
+    /*!
+     * Return true if there is a geometry to be meshed
+     */
+    boolean HasShapeToMesh()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get geom shape to mesh. A result sould not be nil. Use HasShapeToMesh()
+     * to know if a returned shape 
+     */
+    GEOM::GEOM_Object GetShapeToMesh()
+      raises (SALOME::SALOME_Exception);
+
 
     /*!
      * Get the subMesh object associated to a subShape. The subMesh object
@@ -195,23 +203,12 @@ module SMESH
     SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
       raises (SALOME::SALOME_Exception);
 
-    ///*!
-    // * Create a subMesh without reference to a subShape
-    // */
-    //SMESH_subMesh NewEmpty()
-    //  raises (SALOME::SALOME_Exception);
-
-    /*!
-     * Get geom shape to mesh. A result may be nil
-     */
-    GEOM::GEOM_Object GetShapeToMesh()
-      raises (SALOME::SALOME_Exception);
-
     /*!
      * Remove a submesh
      */
     void RemoveSubMesh(in SMESH_subMesh aSubMesh)
       raises (SALOME::SALOME_Exception);
+
 
     /*!
      * Create a group
@@ -882,6 +879,18 @@ module SMESH
 					     in double_array      Angles,
 					     in boolean           HasRefPoint,
 					     in PointStruct       RefPoint);
+
+   /*!
+    * Compute rotation angles for ExtrusionAlongPath as linear variation
+    * of given angles along path steps
+    * param PathMesh mesh containing a 1D sub-mesh on the edge, along 
+    *                which proceeds the extrusion
+    * param PathShape is shape(edge); as the mesh can be complex, the edge 
+    *                 is used to define the sub-mesh for the path
+    */
+    double_array LinearAnglesVariation(in SMESH_Mesh        PathMesh,
+                                       in GEOM::GEOM_Object PathShape,
+                                       in double_array      Angles);
 
     enum MirrorType { POINT, AXIS, PLANE };
 
