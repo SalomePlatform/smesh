@@ -31,24 +31,19 @@
 #define _StdMeshers_MEFISTO_2D_HXX_
 
 #include "SMESH_2D_Algo.hxx"
-#include <TopoDS_Wire.hxx>
 
-#include "SMESH_MesherHelper.hxx"
-
-class SMDS_MeshNode;
-class TopTools_IndexedDataMapOfShapeListOfShape;
 class TopoDS_Face;
-class TopoDS_WIre;
 class StdMeshers_MaxElementArea;
 class StdMeshers_LengthFromEdges;
 class SMDS_MeshNode;
+class SMESH_MesherHelper;
+class StdMeshers_FaceSide;
 
+#include <vector>
 #include <list>
-#include <map>
 #include "Rn.h"
 
-class StdMeshers_MEFISTO_2D:
-  public SMESH_2D_Algo
+class StdMeshers_MEFISTO_2D: public SMESH_2D_Algo
 {
 public:
   StdMeshers_MEFISTO_2D(int hypId, int studyId, SMESH_Gen* gen);
@@ -61,41 +56,29 @@ public:
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape);
 
-  double ComputeEdgeElementLength(SMESH_Mesh& aMesh,
-				  const TopoDS_Shape& aShape);
+  typedef boost::shared_ptr< StdMeshers_FaceSide> StdMeshers_FaceSidePtr;
+  typedef std::vector< StdMeshers_FaceSidePtr > TWireVector;
 
-  bool LoadPoints(SMESH_Mesh& aMesh,
-		  const TopoDS_Face& F, 
-		  const TopoDS_Wire& W,
-		  R2* uvslf, 
-		  int& m,
-		  map<int,const SMDS_MeshNode*>& mefistoToDS,
-                  double scalex, double scaley,
-                  const TopTools_IndexedDataMapOfShapeListOfShape& VWMap);
+  bool LoadPoints(TWireVector &                       wires,
+		  R2*                                 uvslf, 
+		  std::vector< const SMDS_MeshNode*>& mefistoToDS,
+                  double scalex, double               scaley);
 
   void ComputeScaleOnFace(SMESH_Mesh& aMesh,
 			  const TopoDS_Face& aFace,
 			  double& scalex,
 			  double& scaley);
 
-  void StoreResult (SMESH_Mesh& aMesh,
-		    Z nbst, R2* uvst, Z nbt, Z* nust, 
-		    const TopoDS_Face& F, bool faceIsForward,
-		    map<int,const SMDS_MeshNode*>& mefistoToDS,
+  void StoreResult (Z nbst, R2* uvst, Z nbt, Z* nust, 
+		    std::vector< const SMDS_MeshNode*>& mefistoToDS,
                     double scalex, double scaley);
 					  
-  ostream & SaveTo(ostream & save);
-  istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_MEFISTO_2D & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_MEFISTO_2D & hyp);
-
 protected:
   double                            _edgeLength;
   double                            _maxElementArea;
   const StdMeshers_MaxElementArea*  _hypMaxElementArea;
   const StdMeshers_LengthFromEdges* _hypLengthFromEdges;
 
-  TopoDS_Wire myOuterWire;
   std::list<const SMDS_MeshNode*> myNodesOnCommonV;
 
   SMESH_MesherHelper* myTool; // toll for working with quadratic elements
