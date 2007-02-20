@@ -43,8 +43,9 @@ except ImportError:
     pass
     
 # Types of algo
-REGULAR = 1
-PYTHON  = 2
+REGULAR    = 1
+PYTHON     = 2
+COMPOSITE  = 3
 
 MEFISTO = 3
 NETGEN  = 4
@@ -537,6 +538,21 @@ class Mesh_Segment(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
+    ## Define "SegmentLengthAroundVertex" hypothesis
+    #  @param length for the segment length
+    #  @param vertex for the length localization: vertex index [0,1] | verext object
+    def LengthNearVertex(self, length, vertex):
+        import types
+        if type(vertex) is types.IntType:
+            vertex = geompy.SubShapeAllSorted(self.geom,geompy.ShapeType["VERTEX"])[vertex]
+            pass
+        store_geom = self.geom
+        self.geom = vertex
+        hyp = self.Hypothesis("SegmentLengthAroundVertex")
+        self.geom = store_geom
+        hyp.SetLength( length )
+        return hyp
+
     ## Define "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
     #  If the 2D mesher sees that all boundary edges are quadratic ones,
     #  it generates quadratic faces, else it generates linear faces using
@@ -546,6 +562,19 @@ class Mesh_Segment(Mesh_Algorithm):
     def QuadraticMesh(self):
         hyp = self.Hypothesis("QuadraticMesh")
         return hyp
+
+# Public class: Mesh_CompositeSegment
+# --------------------------
+
+## Class to define a segment 1D algorithm for discretization
+#
+#  More details.
+class Mesh_CompositeSegment(Mesh_Segment):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "CompositeSegment_1D")
+        
 
 # Public class: Mesh_Segment_Python
 # ---------------------------------
@@ -1145,6 +1174,8 @@ class Mesh:
             return Mesh_Segment(self, geom)
         elif algo == PYTHON:
             return Mesh_Segment_Python(self, geom)
+        elif algo == COMPOSITE:
+            return Mesh_CompositeSegment(self, geom)
         else:
             return Mesh_Segment(self, geom)
         
@@ -2249,12 +2280,17 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
-                           HasAngles, Angles, HasRefPoint, RefPoint):
+                           HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
-            RefPoint = GetPointStruct(RefPoint) 
+            RefPoint = GetPointStruct(RefPoint)
+            pass
+        if HasAngles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
         return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape, NodeStart,
                                               HasAngles, Angles, HasRefPoint, RefPoint)
 
@@ -2269,10 +2305,14 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
-                                 HasAngles, Angles, HasRefPoint, RefPoint):
+                                 HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
+        if HasAngles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
                                                     HasAngles, Angles, HasRefPoint, RefPoint)
     
