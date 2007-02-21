@@ -153,12 +153,14 @@ CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
   throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
+  bool res = false;
   try {
-    _impl->HasShapeToMesh();
+    res = _impl->HasShapeToMesh();
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
+  return res;
 }
 
 //=======================================================================
@@ -1198,22 +1200,34 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
   return *_impl;
 }
 
-
 //=============================================================================
 /*!
- *
+ * Return mesh editor
  */
 //=============================================================================
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 {
   // Create MeshEditor
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, false );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
 
   // Update Python script
   TPythonDump() << aMeshEditor << " = " << _this() << ".GetMeshEditor()";
 
+  return aMesh._retn();
+}
+
+//=============================================================================
+/*!
+ * Return mesh edition previewer
+ */
+//=============================================================================
+
+SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
+{
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, true );
+  SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
   return aMesh._retn();
 }
 

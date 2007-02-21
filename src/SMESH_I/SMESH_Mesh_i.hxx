@@ -128,6 +128,8 @@ public:
 
   SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
 
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
+
   void ClearLog()
     throw (SALOME::SALOME_Exception);
 

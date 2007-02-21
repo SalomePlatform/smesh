@@ -31,6 +31,7 @@
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 
 #include "SMESH_MeshEditor.hxx"
 
@@ -58,11 +59,79 @@
 
 #include <sstream>
 
-typedef map<const SMDS_MeshElement*,
-            list<const SMDS_MeshElement*> > TElemOfElemListMap;
-
 using namespace std;
 using SMESH::TPythonDump;
+
+//=============================================================================
+/*!
+ * \brief Mesh to apply modifications for preview purposes
+ */
+//=============================================================================
+
+struct TPreviewMesh: public SMESH_Mesh
+{
+  SMDSAbs_ElementType myPreviewType; // type to show
+
+  TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
+    _isShapeToMesh = _id =_studyId =_idDoc = 0;
+    _myMeshDS  = new SMESHDS_Mesh( _id, true );
+    myPreviewType = previewElements;
+  }
+  virtual ~TPreviewMesh() { delete _myMeshDS; }
+  //
+  void Copy( const SMESH::long_array & theIDsOfElements,
+             SMESH_Mesh&               theMesh,
+             TIDSortedElemSet&         theElements,
+             SMDSAbs_ElementType       theSelectType = SMDSAbs_All,
+             SMDSAbs_ElementType       theAvoidType = SMDSAbs_All)
+  {
+    SMESHDS_Mesh* aMeshDS = _myMeshDS;
+
+    // loop on theIDsOfElements
+    for ( int i=0; i<theIDsOfElements.length(); ++i )
+    {
+      const SMDS_MeshElement* anElem =
+        theMesh.GetMeshDS()->FindElement(theIDsOfElements[i]);
+      if ( !anElem ) continue;
+      SMDSAbs_ElementType type = anElem->GetType();
+      if ( type == theAvoidType ||
+           ( theSelectType != SMDSAbs_All && type != theSelectType ))
+        continue;
+
+      // copy element nodes
+      int anElemNbNodes = anElem->NbNodes();
+      vector< int > anElemNodesID( anElemNbNodes ) ;
+      SMDS_ElemIteratorPtr itElemNodes = anElem->nodesIterator();
+      for ( int i = 0; itElemNodes->more(); i++)
+      {
+        const SMDS_MeshNode* anElemNode = 
+          static_cast<const SMDS_MeshNode*>( itElemNodes->next() );
+        _myMeshDS->AddNodeWithID(anElemNode->X(), anElemNode->Y(), anElemNode->Z(), 
+                                 anElemNode->GetID());
+        anElemNodesID[i] = anElemNode->GetID();
+      }
+
+      // creates a corresponding element on copied nodes
+      const SMDS_MeshElement* anElemCopy = 0;
+      if ( anElem->IsPoly() && type == SMDSAbs_Volume )
+      {
+        const SMDS_PolyhedralVolumeOfNodes* ph =
+          dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem);
+        if ( ph )
+          anElemCopy = aMeshDS->AddPolyhedralVolumeWithID
+            (anElemNodesID, ph->GetQuanities(),anElem->GetID());
+      }
+      else {
+        anElemCopy = ::SMESH_MeshEditor(this).AddElement( anElemNodesID,
+                                                          type,
+                                                          anElem->IsPoly() );
+      }
+      if ( anElemCopy )
+        theElements.insert( anElemCopy );
+    }// loop on theElems
+  }
+
+};// struct TPreviewMesh
 
 //=============================================================================
 /*!
@@ -70,9 +139,37 @@ using SMESH::TPythonDump;
  */
 //=============================================================================
 
-SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh* theMesh)
+SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh* theMesh, bool isPreview)
 {
-	_myMesh = theMesh;
+  _myMesh = theMesh;
+  myPreviewMode = isPreview;
+}
+
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
+SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
+{
+}
+
+//================================================================================
+/*!
+ * \brief Clear members
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::initData()
+{
+  if ( myPreviewMode ) {
+    myPreviewData = new SMESH::MeshPreviewStruct();
+  }
+  else {
+    myLastCreatedElems = new SMESH::long_array();
+    myLastCreatedNodes = new SMESH::long_array();
+  }
 }
 
 //=============================================================================
@@ -84,8 +181,7 @@ SMESH_MeshEditor_i::SMESH_MeshEditor_i(SMESH_Mesh* theMesh)
 CORBA::Boolean
   SMESH_MeshEditor_i::RemoveElements(const SMESH::long_array & IDsOfElements)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   list< int > IdList;
@@ -110,8 +206,7 @@ CORBA::Boolean
 
 CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   list< int > IdList;
@@ -135,8 +230,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
 
 CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbNodes = IDsOfNodes.length();
   SMDS_MeshElement* elem = 0;
@@ -177,8 +271,7 @@ CORBA::Long SMESH_MeshEditor_i::AddEdge(const SMESH::long_array & IDsOfNodes)
 CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,
                                         CORBA::Double y, CORBA::Double z)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   const SMDS_MeshNode* N = GetMeshDS()->AddNode(x, y, z);
 
@@ -197,8 +290,7 @@ CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,
 
 CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbNodes = IDsOfNodes.length();
   if (NbNodes < 3)
@@ -243,8 +335,7 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
 CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace
                                    (const SMESH::long_array & IDsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbNodes = IDsOfNodes.length();
   std::vector<const SMDS_MeshNode*> nodes (NbNodes);
@@ -273,8 +364,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace
 
 CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbNodes = IDsOfNodes.length();
   vector< const SMDS_MeshNode*> n(NbNodes);
@@ -324,8 +414,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume
                                    (const SMESH::long_array & IDsOfNodes,
                                     const SMESH::long_array & Quantities)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbNodes = IDsOfNodes.length();
   std::vector<const SMDS_MeshNode*> n (NbNodes);
@@ -360,8 +449,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolume
 CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces
                                    (const SMESH::long_array & IdsOfFaces)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   int NbFaces = IdsOfFaces.length();
   std::vector<const SMDS_MeshNode*> poly_nodes;
@@ -403,8 +491,7 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
                                             CORBA::Double y,
                                             CORBA::Double z)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   const SMDS_MeshNode * node = GetMeshDS()->FindNode( NodeID );
   if ( !node )
@@ -428,8 +515,7 @@ CORBA::Boolean SMESH_MeshEditor_i::MoveNode(CORBA::Long   NodeID,
 CORBA::Boolean SMESH_MeshEditor_i::InverseDiag(CORBA::Long NodeID1,
                                                CORBA::Long NodeID2)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   const SMDS_MeshNode * n1 = GetMeshDS()->FindNode( NodeID1 );
   const SMDS_MeshNode * n2 = GetMeshDS()->FindNode( NodeID2 );
@@ -453,8 +539,7 @@ CORBA::Boolean SMESH_MeshEditor_i::InverseDiag(CORBA::Long NodeID1,
 CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
                                               CORBA::Long NodeID2)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   const SMDS_MeshNode * n1 = GetMeshDS()->FindNode( NodeID1 );
   const SMDS_MeshNode * n2 = GetMeshDS()->FindNode( NodeID2 );
@@ -469,7 +554,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
 
   bool stat = aMeshEditor.DeleteDiag ( n1, n2 );
 
-  UpdateLastResult(aMeshEditor);
+  StoreResult(aMeshEditor);
 
   return stat;
 }
@@ -482,8 +567,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DeleteDiag(CORBA::Long NodeID1,
 
 CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfElements)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   for (int i = 0; i < IDsOfElements.length(); i++)
@@ -508,8 +592,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
 
 CORBA::Boolean SMESH_MeshEditor_i::ReorientObject(SMESH::SMESH_IDSource_ptr theObject)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = Reorient(anElementsId);
@@ -559,8 +642,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
                                               SMESH::NumericalFunctor_ptr Criterion,
                                               CORBA::Double               MaxAngle)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   TIDSortedElemSet faces;
@@ -585,7 +667,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuad (const SMESH::long_array &   IDsOfE
 
   bool stat = anEditor.TriToQuad( faces, aCrit, MaxAngle );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return stat;
 }
@@ -600,8 +682,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
                                                     SMESH::NumericalFunctor_ptr Criterion,
                                                     CORBA::Double               MaxAngle)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = TriToQuad(anElementsId, Criterion, MaxAngle);
@@ -635,8 +716,7 @@ CORBA::Boolean SMESH_MeshEditor_i::TriToQuadObject (SMESH::SMESH_IDSource_ptr   
 CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfElements,
                                               SMESH::NumericalFunctor_ptr Criterion)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   TIDSortedElemSet faces;
@@ -660,7 +740,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
   ::SMESH_MeshEditor anEditor( _myMesh );
   CORBA::Boolean stat = anEditor.QuadToTri( faces, aCrit );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return stat;
 }
@@ -674,8 +754,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTri (const SMESH::long_array &   IDsOfE
 CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   theObject,
                                                     SMESH::NumericalFunctor_ptr Criterion)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = QuadToTri(anElementsId, Criterion);
@@ -708,8 +787,7 @@ CORBA::Boolean SMESH_MeshEditor_i::QuadToTriObject (SMESH::SMESH_IDSource_ptr   
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfElements,
                                               CORBA::Boolean            Diag13)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
   TIDSortedElemSet faces;
@@ -725,7 +803,7 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
   ::SMESH_MeshEditor anEditor( _myMesh );
   CORBA::Boolean stat = anEditor.QuadToTri( faces, Diag13 );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return stat;
 }
@@ -739,8 +817,7 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuad (const SMESH::long_array & IDsOfEle
 CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr theObject,
                                                     CORBA::Boolean            Diag13)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = SplitQuad(anElementsId, Diag13);
@@ -871,8 +948,7 @@ CORBA::Boolean
                              SMESH::SMESH_MeshEditor::Smooth_Method Method,
                              bool                                   IsParametric)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -894,7 +970,7 @@ CORBA::Boolean
   anEditor.Smooth(elements, fixedNodes, method,
                   MaxNbOfIterations, MaxAspectRatio, IsParametric );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   // Update Python script
   TPythonDump() << "isDone = " << this << "."
@@ -926,8 +1002,7 @@ SMESH_MeshEditor_i::smoothObject(SMESH::SMESH_IDSource_ptr              theObjec
                                  SMESH::SMESH_MeshEditor::Smooth_Method Method,
                                  bool                                   IsParametric)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   CORBA::Boolean isDone = smooth (anElementsId, IDsOfFixedNodes, MaxNbOfIterations,
@@ -997,31 +1072,44 @@ void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElement
                                        CORBA::Long               theNbOfSteps,
                                        CORBA::Double             theTolerance)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
-
-  SMESHDS_Mesh* aMesh = GetMeshDS();
+  initData();
 
   TIDSortedElemSet elements;
-  ToMap(theIDsOfElements, aMesh, elements);
+  TPreviewMesh     tmpMesh( SMDSAbs_Face );
+  SMESH_Mesh*      mesh = 0;
+  bool             makeWalls=true;
+  if ( myPreviewMode )
+  {
+    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
+    tmpMesh.Copy( theIDsOfElements, *_myMesh, elements, select, avoid );
+    mesh = &tmpMesh;
+    //makeWalls = false;
+  }
+  else
+  {
+    ToMap(theIDsOfElements, GetMeshDS(), elements);
+    mesh = _myMesh;
+  }
 
-  gp_Ax1 Ax1 (gp_Pnt( theAxis.x, theAxis.y, theAxis.z ),
+  gp_Ax1 Ax1 (gp_Pnt( theAxis.x,  theAxis.y,  theAxis.z ),
               gp_Vec( theAxis.vx, theAxis.vy, theAxis.vz ));
 
-  ::SMESH_MeshEditor anEditor( _myMesh );
+  ::SMESH_MeshEditor anEditor( mesh );
   anEditor.RotationSweep (elements, Ax1, theAngleInRadians,
-                          theNbOfSteps, theTolerance);
+                          theNbOfSteps, theTolerance, makeWalls);
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
-  // Update Python script
-  TPythonDump() << "axis = " << theAxis;
-  TPythonDump() << this << ".RotationSweep( "
-                << theIDsOfElements
-                << ", axis, "
-                << theAngleInRadians << ", "
-                << theNbOfSteps << ", "
-                << theTolerance << " )";
+  if ( !myPreviewMode ) {
+    // Update Python script
+    TPythonDump() << "axis = " << theAxis;
+    TPythonDump() << this << ".RotationSweep( "
+                  << theIDsOfElements
+                  << ", axis, "
+                  << theAngleInRadians << ", "
+                  << theNbOfSteps << ", "
+                  << theTolerance << " )";
+  }
 }
 
 //=======================================================================
@@ -1035,8 +1123,7 @@ void SMESH_MeshEditor_i::RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject
 					     CORBA::Long               theNbOfSteps,
 					     CORBA::Double             theTolerance)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   RotationSweep(anElementsId, theAxis, theAngleInRadians, theNbOfSteps, theTolerance);
@@ -1063,8 +1150,7 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
                                         const SMESH::DirStruct &  theStepVector,
                                         CORBA::Long               theNbOfSteps)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
 #ifdef NO_CAS_CATCH
   try {   
@@ -1084,7 +1170,7 @@ void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElemen
     ::SMESH_MeshEditor anEditor( _myMesh );
     anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 
-    UpdateLastResult(anEditor);
+    StoreResult(anEditor);
 
     // Update Python script
     TPythonDump() << "stepVector = " << theStepVector;
@@ -1111,8 +1197,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObjec
 					      const SMESH::DirStruct &  theStepVector,
 					      CORBA::Long               theNbOfSteps)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   ExtrusionSweep(anElementsId, theStepVector, theNbOfSteps);
@@ -1135,8 +1220,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObj
                                                 const SMESH::DirStruct &  theStepVector,
                                                 CORBA::Long               theNbOfSteps)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1153,7 +1237,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObj
   TElemOfElemListMap aHystory;
   anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   // Update Python script
   TPythonDump() << "stepVector = " << theStepVector;
@@ -1170,8 +1254,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObj
                                                 const SMESH::DirStruct &  theStepVector,
                                                 CORBA::Long               theNbOfSteps)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1188,7 +1271,7 @@ void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObj
   TElemOfElemListMap aHystory;
   anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory);
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   // Update Python script
   TPythonDump() << "stepVector = " << theStepVector;
@@ -1208,8 +1291,7 @@ void SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfEle
 					   CORBA::Long               theExtrFlags,
 					   CORBA::Double             theSewTolerance)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1224,7 +1306,7 @@ void SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfEle
   anEditor.ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory,
 			   theExtrFlags, theSewTolerance);
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   // Update Python script
   TPythonDump() << "stepVector = " << theStepVector;
@@ -1268,8 +1350,7 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
 					 CORBA::Boolean              theHasRefPoint,
 					 const SMESH::PointStruct &  theRefPoint)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh*  aMesh = GetMeshDS();
 
@@ -1323,7 +1404,7 @@ SMESH::SMESH_MeshEditor::Extrusion_Error
                                                 theHasAngles, angles,
                                                 theHasRefPoint, refPnt ) );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return error;
 }
@@ -1343,8 +1424,7 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObje
                                              CORBA::Boolean              theHasRefPoint,
                                              const SMESH::PointStruct &  theRefPoint)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   SMESH::SMESH_MeshEditor::Extrusion_Error error = ExtrusionAlongPath
@@ -1386,7 +1466,6 @@ SMESH_MeshEditor_i::LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       thePathMes
                                           const SMESH::double_array & theAngles)
 {
   SMESH::double_array_var aResult = new SMESH::double_array();
-  // TO BE IMPLEMENTED
   return aResult._retn();
 }
 
@@ -1400,8 +1479,7 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
                                 SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                                 CORBA::Boolean                      theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1438,7 +1516,7 @@ void SMESH_MeshEditor_i::Mirror(const SMESH::long_array &           theIDsOfElem
   anEditor.Transform (elements, aTrsf, theCopy);
 
   if(theCopy) {
-    UpdateLastResult(anEditor);
+    StoreResult(anEditor);
   }
 }
 
@@ -1453,8 +1531,7 @@ void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObj
 				      SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
 				      CORBA::Boolean                      theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   Mirror(anElementsId, theAxis, theMirrorType, theCopy);
@@ -1492,8 +1569,7 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
                                    const SMESH::DirStruct &  theVector,
                                    CORBA::Boolean            theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1508,7 +1584,7 @@ void SMESH_MeshEditor_i::Translate(const SMESH::long_array & theIDsOfElements,
   anEditor.Transform (elements, aTrsf, theCopy);
 
   if(theCopy) {
-    UpdateLastResult(anEditor);
+    StoreResult(anEditor);
   }
 
   // Update Python script
@@ -1528,8 +1604,7 @@ void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
 					 const SMESH::DirStruct &  theVector,
 					 CORBA::Boolean            theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   Translate(anElementsId, theVector, theCopy);
@@ -1555,8 +1630,7 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
                                 CORBA::Double             theAngle,
                                 CORBA::Boolean            theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1573,7 +1647,7 @@ void SMESH_MeshEditor_i::Rotate(const SMESH::long_array & theIDsOfElements,
   anEditor.Transform (elements, aTrsf, theCopy);
 
   if(theCopy) {
-    UpdateLastResult(anEditor);
+    StoreResult(anEditor);
   }
 
   // Update Python script
@@ -1595,8 +1669,7 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
 				      CORBA::Double             theAngle,
 				      CORBA::Boolean            theCopy)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   Rotate(anElementsId, theAxis, theAngle, theCopy);
@@ -1621,8 +1694,7 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
 void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tolerance,
                                               SMESH::array_of_long_array_out GroupsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   ::SMESH_MeshEditor anEditor( _myMesh );
@@ -1652,8 +1724,7 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
 
 void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1692,8 +1763,7 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
 void SMESH_MeshEditor_i::MergeEqualElements()
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.MergeEqualElements();
@@ -1741,8 +1811,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                      CORBA::Boolean CreatePolygons,
                                      CORBA::Boolean CreatePolyedrs)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1785,7 +1854,7 @@ SMESH::SMESH_MeshEditor::Sew_Error
                                        CreatePolygons,
                                        CreatePolyedrs) );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return error;
 }
@@ -1803,8 +1872,7 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
                                           CORBA::Long FirstNodeID2,
                                           CORBA::Long SecondNodeID2)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1842,7 +1910,7 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
                                        true,
                                        false, false) );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return error;
 }
@@ -1862,8 +1930,7 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                                     CORBA::Boolean CreatePolygons,
                                     CORBA::Boolean CreatePolyedrs)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1904,7 +1971,7 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                                        CreatePolygons,
                                        CreatePolyedrs) );
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return error;
 }
@@ -1923,8 +1990,7 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                                     CORBA::Long NodeID2OfSide1ToMerge,
                                     CORBA::Long NodeID2OfSide2ToMerge)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
@@ -1961,7 +2027,7 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                                          aSecondNode1ToMerge,
                                          aSecondNode2ToMerge));
 
-  UpdateLastResult(anEditor);
+  StoreResult(anEditor);
 
   return error;
 }
@@ -1978,8 +2044,7 @@ SMESH_MeshEditor_i::SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
 CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
                                                    const SMESH::long_array& newIDs)
 {
-  myLastCreatedElems = new SMESH::long_array();
-  myLastCreatedNodes = new SMESH::long_array();
+  initData();
 
   const SMDS_MeshElement* elem = GetMeshDS()->FindElement(ide);
   if(!elem) return false;
@@ -2007,31 +2072,113 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
   
 //================================================================================
 /*!
- * \brief Update myLastCreatedNodes and myLastCreatedElems
+ * \brief Update myLastCreated* or myPreviewData
   * \param anEditor - it contains last modification results
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::UpdateLastResult(::SMESH_MeshEditor& anEditor)
+void SMESH_MeshEditor_i::StoreResult(::SMESH_MeshEditor& anEditor)
 {
-  // add new elements into myLastCreatedNodes
-  SMESH_SequenceOfElemPtr aSeq = anEditor.GetLastCreatedNodes();
-  SMESH::long_array_var aResult = new SMESH::long_array;
-  aResult->length(aSeq.Length());
-  int i=0;
-  for(; i<aSeq.Length(); i++) {
-    aResult[i] = aSeq.Value(i+1)->GetID();
+  if ( myPreviewMode ) { // --- MeshPreviewStruct filling --- 
+
+    list<int> aNodesConnectivity;
+    typedef map<int, int> TNodesMap;
+    TNodesMap nodesMap;
+
+    TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( anEditor.GetMesh() );
+    SMDSAbs_ElementType previewType = aPreviewMesh->myPreviewType;
+
+    SMESHDS_Mesh* aMeshDS = anEditor.GetMeshDS();
+    int nbEdges = aMeshDS->NbEdges();
+    int nbFaces = aMeshDS->NbFaces();
+    int nbVolum = aMeshDS->NbVolumes();
+    switch ( previewType ) {
+    case SMDSAbs_Edge  : nbFaces = nbVolum = 0; break;
+    case SMDSAbs_Face  : nbEdges = nbVolum = 0; break;
+    case SMDSAbs_Volume: nbEdges = nbFaces = 0; break;
+    default:;
+    }
+    myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
+    myPreviewData->elementTypes.length(nbEdges + nbFaces + nbVolum);
+    int i = 0, j = 0;
+    SMDS_ElemIteratorPtr itMeshElems = aMeshDS->elementsIterator();
+
+    while ( itMeshElems->more() ) {
+      const SMDS_MeshElement* aMeshElem = itMeshElems->next();
+      if ( previewType != SMDSAbs_All && aMeshElem->GetType() != previewType )
+        continue;
+
+      SMDS_ElemIteratorPtr itElemNodes = aMeshElem->nodesIterator();
+      while ( itElemNodes->more() ) {
+        const SMDS_MeshNode* aMeshNode = 
+          static_cast<const SMDS_MeshNode*>( itElemNodes->next() );
+        int aNodeID = aMeshNode->GetID();
+        TNodesMap::iterator anIter = nodesMap.find(aNodeID);
+        if ( anIter == nodesMap.end() ) {
+          // filling the nodes coordinates
+          myPreviewData->nodesXYZ[j].x = aMeshNode->X();
+          myPreviewData->nodesXYZ[j].y = aMeshNode->Y();
+          myPreviewData->nodesXYZ[j].z = aMeshNode->Z();
+          anIter = nodesMap.insert( make_pair(aNodeID, j) ).first;
+          j++;
+        }
+        aNodesConnectivity.push_back(anIter->second);
+      }
+
+      // filling the elements types
+      SMDSAbs_ElementType aType;
+      bool isPoly;
+      /*if (aMeshElem->GetType() == SMDSAbs_Volume) {
+        aType = SMDSAbs_Node;
+        isPoly = false;
+      }
+      else*/ {
+        aType = aMeshElem->GetType();
+        isPoly = aMeshElem->IsPoly();
+      }
+
+      myPreviewData->elementTypes[i].SMDS_ElementType = (SMESH::ElementType) aType;
+      myPreviewData->elementTypes[i].isPoly = isPoly;
+      myPreviewData->elementTypes[i].nbNodesInElement = aMeshElem->NbNodes();
+      i++;
+
+    }
+    myPreviewData->nodesXYZ.length( j );
+
+    // filling the elements connectivities
+    list<int>::iterator aConnIter = aNodesConnectivity.begin();
+    myPreviewData->elementConnectivities.length(aNodesConnectivity.size());
+    for( int i = 0; aConnIter != aNodesConnectivity.end(); aConnIter++, i++ )
+      myPreviewData->elementConnectivities[i] = *aConnIter;
+    
+    return;
   }
-  myLastCreatedNodes = aResult._retn();
-  // add new elements into myLastCreatedElems
-  aSeq = anEditor.GetLastCreatedElems();
-  aResult = new SMESH::long_array;
-  aResult->length(aSeq.Length());
-  i=0;
-  for(; i<aSeq.Length(); i++) {
-    aResult[i] = aSeq.Value(i+1)->GetID();
+
+  {
+    // add new nodes into myLastCreatedNodes
+    const SMESH_SequenceOfElemPtr& aSeq = anEditor.GetLastCreatedNodes();
+    myLastCreatedNodes->length(aSeq.Length());
+    for(int i=0; i<aSeq.Length(); i++)
+      myLastCreatedNodes[i] = aSeq.Value(i+1)->GetID();
   }
-  myLastCreatedElems = aResult._retn();
+  {
+    // add new elements into myLastCreatedElems
+    const SMESH_SequenceOfElemPtr& aSeq = anEditor.GetLastCreatedElems();
+    myLastCreatedElems->length(aSeq.Length());
+    for(int i=0; i<aSeq.Length(); i++)
+      myLastCreatedElems[i] = aSeq.Value(i+1)->GetID();
+  }
+}
+
+//================================================================================
+/*!
+ * Return data of mesh edition preview
+ */
+//================================================================================
+
+SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
+{
+  return myPreviewData._retn();
 }
 
 //================================================================================
@@ -2043,7 +2190,7 @@ void SMESH_MeshEditor_i::UpdateLastResult(::SMESH_MeshEditor& anEditor)
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
 {
-  return myLastCreatedNodes.out();
+  return myLastCreatedNodes._retn();
 }
 
 //================================================================================
@@ -2055,9 +2202,8 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
 
 SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 {
-  return myLastCreatedElems.out();
+  return myLastCreatedElems._retn();
 }
-
 
 //=======================================================================
 //function : ConvertToQuadratic
@@ -2069,8 +2215,7 @@ void SMESH_MeshEditor_i::ConvertToQuadratic(CORBA::Boolean theForce3d)
   ::SMESH_MeshEditor anEditor( _myMesh );
   anEditor.ConvertToQuadratic(theForce3d);
  // Update Python script
-  TPythonDump() << this << ".ConvertToQuadratic( "
-                << theForce3d << " )";
+  TPythonDump() << this << ".ConvertToQuadratic( " << theForce3d << " )";
 }
 
 //=======================================================================

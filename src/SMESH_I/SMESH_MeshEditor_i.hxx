@@ -39,11 +39,9 @@ class SMESH_MeshEditor;
 class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
  public:
-  SMESH_MeshEditor_i(SMESH_Mesh * theMesh);
+  SMESH_MeshEditor_i(SMESH_Mesh * theMesh, bool isPreview);
 
-  virtual ~ SMESH_MeshEditor_i()
-  {
-  };
+  virtual ~ SMESH_MeshEditor_i();
 
   // --- CORBA
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
@@ -249,6 +247,11 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
   
   /*!
+   * Return data of mesh edition preview
+   */
+  SMESH::MeshPreviewStruct* GetPreviewData();
+
+  /*!
    * If during last operation of MeshEditor some nodes were
    * created this method returns list of it's IDs, if new nodes
    * not creared - returns empty list
@@ -267,10 +270,10 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   //
 
   /*!
-   * \brief Update myLastCreatedNodes and myLastCreatedElems
+   * \brief Update myLastCreated* or myPreviewData
     * \param anEditor - it contains edition results
    */
-  void UpdateLastResult(::SMESH_MeshEditor& anEditor);
+  void StoreResult(::SMESH_MeshEditor& anEditor);
 
   /*!
    * \brief Return edited mesh ID
@@ -279,10 +282,16 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   int GetMeshId() const { return _myMesh->GetId(); }
 
  private:
+
   SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
-  SMESH_Mesh   *_myMesh;
+  void initData();
+
+  SMESH_Mesh *          _myMesh;
   SMESH::long_array_var myLastCreatedElems;
   SMESH::long_array_var myLastCreatedNodes;
+
+  SMESH::MeshPreviewStruct_var myPreviewData;
+  bool                         myPreviewMode;
 };
 
 #endif
