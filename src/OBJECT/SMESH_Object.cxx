@@ -29,6 +29,7 @@
 #include "SMESH_ActorUtils.h"
 
 #include "SMDS_Mesh.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
 #include "SalomeApp_Application.h"
@@ -346,14 +347,19 @@ void SMESH_VisualObjDef::buildElemPrs()
 	switch(aType){
 	case SMDSAbs_Volume:{
 	  std::vector<int> aConnectivities;
-	  GetConnect(aNodesIter,aConnect);
 	  // Convertions connectivities from SMDS to VTK
 	  if (anElem->IsPoly() && aNbNodes > 3) { // POLYEDRE
-	    for (int k = 0; k < aNbNodes; k++) {
-	      aConnectivities.push_back(k);
-	    }
 
-	  } else if (aNbNodes == 4) {
+            if ( const SMDS_PolyhedralVolumeOfNodes* ph =
+                 dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem))
+            {
+              aNbNodes = GetConnect(ph->uniqueNodesIterator(),aConnect);
+              anIdList->SetNumberOfIds( aNbNodes );
+            }
+	    for (int k = 0; k < aNbNodes; k++)
+	      aConnectivities.push_back(k);
+
+          } else if (aNbNodes == 4) {
 	    static int anIds[] = {0,2,1,3};
 	    for (int k = 0; k < aNbNodes; k++) aConnectivities.push_back(anIds[k]);
 
@@ -394,6 +400,9 @@ void SMESH_VisualObjDef::buildElemPrs()
 	  }
           else {
           }
+
+          if ( aConnect.empty() )
+            GetConnect(aNodesIter,aConnect);
 
 	  if (aConnectivities.size() > 0) {
 	    for (vtkIdType aNodeId = 0; aNodeId < aNbNodes; aNodeId++)
