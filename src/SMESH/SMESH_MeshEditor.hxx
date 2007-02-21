@@ -79,6 +79,21 @@ public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );
 
+  /*!
+   * \brief Add element
+   */
+  SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
+                               const SMDSAbs_ElementType                 type,
+                               const bool                                isPoly,
+                               const int                                 ID = 0);
+  /*!
+   * \brief Add element
+   */
+  SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
+                               const SMDSAbs_ElementType type,
+                               const bool                isPoly,
+                               const int                 ID = 0);
+
   bool Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
   // Modify a compute state of sub-meshes which become empty
@@ -167,7 +182,8 @@ public:
                       const gp_Ax1&      theAxis,
                       const double       theAngle,
                       const int          theNbSteps,
-                      const double       theToler);
+                      const double       theToler,
+                      const bool         theMakeWalls=true);
   // Generate new elements by rotation of theElements around theAxis
   // by theAngle by theNbSteps
 
