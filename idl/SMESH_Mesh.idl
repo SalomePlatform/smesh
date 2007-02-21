@@ -38,9 +38,9 @@ module SMESH
   interface SMESH_GroupBase;
   typedef sequence<SMESH_GroupBase> ListOfGroups;
 
-  typedef sequence<double> double_array ;
-  typedef sequence<long> long_array ;
-  typedef sequence<string> string_array ;
+  typedef sequence<double    > double_array ;
+  typedef sequence<long      > long_array ;
+  typedef sequence<string    > string_array ;
   typedef sequence<long_array> array_of_long_array ;
 
   enum log_command
@@ -81,6 +81,9 @@ module SMESH
   struct PointStruct { double x;
   		       double y;
   		       double z; } ;
+
+  typedef sequence<PointStruct> nodes_array;
+
   struct DirStruct   { PointStruct PS ; } ;          // analog to Occ Direction
 
   struct AxisStruct  { double x;
@@ -103,6 +106,22 @@ module SMESH
     VOLUME
   };
   
+  /*!
+   * Structure used in mesh edit preview data
+   */
+  struct ElementSubType { ElementType SMDS_ElementType;
+                          boolean     isPoly;
+                          long        nbNodesInElement; };
+
+  typedef sequence<ElementSubType> types_array;
+
+  /*!
+   * Structure containing mesh edit preview data
+   */
+  struct MeshPreviewStruct { nodes_array nodesXYZ;
+                             long_array  elementConnectivities;
+                             types_array elementTypes; };
+
   /*!
    * ElementOrder points out entities of what order are requested
    */
@@ -346,6 +365,13 @@ module SMESH
      * Obtain instance of SMESH_MeshEditor
      */
     SMESH_MeshEditor GetMeshEditor()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Return SMESH_MeshEditor that would not modify the mesh but
+     * fill MeshPreviewStruct
+     */
+    SMESH_MeshEditor GetMeshEditPreviewer()
       raises (SALOME::SALOME_Exception);
 
     /*! Check group names for duplications.
@@ -692,7 +718,7 @@ module SMESH
      *         gives quantity of nodes in face number i.
      */
     long AddPolyhedralVolume (in long_array IdsOfNodes,
-				 in long_array Quantities);
+                              in long_array Quantities);
 
     /*!
      *  Create volume of many faces, giving IDs of existing faces.
@@ -979,6 +1005,12 @@ module SMESH
     * element - returns false
     */
     boolean ChangeElemNodes(in long ide, in long_array newIDs);
+
+   /*!
+    * Return data of mesh edition preview which is computed provided 
+    * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
+    */
+    MeshPreviewStruct GetPreviewData();
 
    /*!
     * If during last operation of MeshEditor some nodes were
