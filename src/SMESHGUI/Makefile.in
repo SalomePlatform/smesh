@@ -111,7 +111,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_ShapeByMeshDlg.cxx \
 		SMESHGUI_AddQuadraticElementDlg.cxx \
 		SMESHGUI_ConvToQuadDlg.cxx \
-		SMESHGUI_ConvToQuadOp.cxx
+		SMESHGUI_ConvToQuadOp.cxx \
+		SMESHGUI_MeshEditPreview.cxx
 
 LIB_MOC = \
 		SMESHGUI.h \
