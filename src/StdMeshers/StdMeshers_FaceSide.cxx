@@ -95,11 +95,13 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
   SMESHDS_Mesh* meshDS = theMesh->GetMeshDS();
   vector<double> len( nbEdges );
 
+  int nbDegen = 0;
   list<TopoDS_Edge>::iterator edge = theEdges.begin();
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
     int i = theIsForward ? index : nbEdges - index - 1;
     len[i] = SMESH_Algo::EdgeLength( *edge );
+    if ( len[i] < DBL_MIN ) nbDegen++;
     myLength += len[i];
     myEdge[i] = *edge;
     if ( !theIsForward ) myEdge[i].Reverse();
@@ -130,49 +132,21 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
     myMissingVertexNodes = true;
 
   if ( nbEdges > 1 && myLength > DBL_MIN ) {
+    const double degenNormLen = 1.e-5;
+    double totLength = myLength;
+    if ( nbDegen )
+      totLength += myLength * degenNormLen * nbDegen;
+    double prevNormPar = 0;
     for ( int i = 0; i < nbEdges; ++i ) {
-      myNormPar[ i ] = len[i]/myLength;
-      if ( i > 0 )
-        myNormPar[ i ] += myNormPar[ i-1 ];
+      if ( len[ i ] < DBL_MIN )
+        len[ i ] = myLength * degenNormLen;
+      myNormPar[ i ] = prevNormPar + len[i]/totLength;
+      prevNormPar = myNormPar[ i ];
     }
   }
   myNormPar[nbEdges-1] = 1.;
   //dump();
 }
-//================================================================================
-/*!
- * \brief First curve parameter
-  * \retval double - parameter value
- */
-//================================================================================
-
-// double StdMeshers_FaceSide::First() const
-// {
-//   return 0;
-// }
-// //================================================================================
-// /*!
-//  * \brief Last curve parameter
-//   * \retval double - parameter value
-//  */
-// //================================================================================
-
-// double StdMeshers_FaceSide::Last() const
-// {
-//   return 1;
-// }
-
-// //================================================================================
-// /*!
-//  * \brief 
-//   * \retval bool - 
-//  */
-// //================================================================================
-
-// bool StdMeshers_FaceSide::IsForward() const
-// {
-//   return myIsForward;
-// }
 
 //================================================================================
 /*!
@@ -193,6 +167,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
     // sort nodes of all edges putting them into a map
 
     map< double, const SMDS_MeshNode*> u2node;
+    //int nbOnDegen = 0;
     for ( int i = 0; i < myEdge.size(); ++i )
     {
       // put 1st vertex node
@@ -243,7 +218,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       }
     }
     if ( u2node.size() != myNbPonits ) {
-      MESSAGE("Wrong node parameters on edges");
+      MESSAGE("Wrong node parameters on edges, u2node.size():"
+              <<u2node.size()<<" !=  myNbPonits:"<<myNbPonits);
       return myPoints;
     }
 
@@ -275,8 +251,15 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
 #endif
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
-      double r = ( uvPt.normParam - prevNormPar )/ paramSize;
-      uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
+      const SMDS_EdgePosition* epos =
+        dynamic_cast<const SMDS_EdgePosition*>(uvPt.node->GetPosition().get());
+      if ( epos ) {
+        uvPt.param = epos->GetUParameter();
+      }
+      else {
+        double r = ( uvPt.normParam - prevNormPar )/ paramSize;
+        uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
+      }
       if ( !myC2d[ EdgeIndex ].IsNull() ) {
         gp_Pnt2d p = myC2d[ EdgeIndex ]->Value( uvPt.param );
         uvPt.u = p.X();

@@ -577,14 +577,16 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   }
   FaceQuadStruct* quad = new FaceQuadStruct;
   quad->uv_grid = 0;
+  for ( int i = 0; i < NB_SIDES; ++i )
+    quad->side[i] = 0;
 
   int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
-  if ( nbEdgesInWire.front() == 4 ) {
+  if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for ( ; edgeIt != edges.end(); ++edgeIt, nbSides++ )
       quad->side[nbSides] = new StdMeshers_FaceSide(F,*edgeIt,&aMesh,nbSides<TOP_SIDE);
   }
-  else {
+  else if ( nbEdgesInWire.front() > 4 ) { // more than 4 edges - try to unite
     list< TopoDS_Edge > sideEdges;
     while ( edgeIt != edges.end()) {
       sideEdges.clear();
@@ -601,7 +603,7 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
     }
   }
   if (nbSides != 4) {
-    INFOS("face must have 4 edges /quadrangles");
+    INFOS("face must have 4 edges / quadrangle");
     delete quad;
     quad = 0;
   }

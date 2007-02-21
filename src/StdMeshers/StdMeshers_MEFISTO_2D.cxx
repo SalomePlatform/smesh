@@ -263,24 +263,26 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   // correspondence mefisto index --> Nodes
   vector< const SMDS_MeshNode*> mefistoToDS(nbpnt, (const SMDS_MeshNode*)0);
 
-  // fill input points UV
-  LoadPoints(wires, uvslf, mefistoToDS, scalex, scaley);
-
-  // Compute
-  aptrte(nutysu, aretmx,
-         nblf, nudslf, uvslf, nbpti, uvpti, nbst, uvst, nbt, nust, ierr);
-
   bool isOk = false;
-  if (ierr == 0)
+
+  // fill input points UV
+  if ( LoadPoints(wires, uvslf, mefistoToDS, scalex, scaley) )
   {
-    MESSAGE("... End Triangulation Generated Triangle Number " << nbt);
-    MESSAGE("                                    Node Number " << nbst);
-    StoreResult(nbst, uvst, nbt, nust, mefistoToDS, scalex, scaley);
-    isOk = true;
-  }
-  else
-  {
-    MESSAGE("Error in Triangulation");
+    // Compute
+    aptrte(nutysu, aretmx,
+           nblf, nudslf, uvslf, nbpti, uvpti, nbst, uvst, nbt, nust, ierr);
+
+    if (ierr == 0)
+    {
+      MESSAGE("... End Triangulation Generated Triangle Number " << nbt);
+      MESSAGE("                                    Node Number " << nbst);
+      StoreResult(nbst, uvst, nbt, nust, mefistoToDS, scalex, scaley);
+      isOk = true;
+    }
+    else
+    {
+      MESSAGE("Error in Triangulation");
+    }
   }
   if (nudslf != NULL) delete[]nudslf;
   if (uvslf != NULL)  delete[]uvslf;
@@ -507,6 +509,10 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
   for ( int iW = 0; iW < wires.size(); ++iW )
   {
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct(isXConst,constValue);
+    if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
+      MESSAGE("Wrong nb UVPtStruct: "<<uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
+      return false;
+    }
 
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();
     for ( ++uvPt; uvPt != uvPtVec.end(); ++uvPt )
