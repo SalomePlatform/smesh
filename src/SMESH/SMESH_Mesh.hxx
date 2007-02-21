@@ -72,18 +72,15 @@ class SMESH_subMesh;
 class SMESH_HypoFilter;
 class TopoDS_Solid;
 
-//typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 typedef SMESH_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
 class SMESH_Mesh
 {
-  SMESH_Mesh();
-  SMESH_Mesh(const SMESH_Mesh&);
 public:
-  SMESH_Mesh(int theLocalId, 
-	     int theStudyId, 
-	     SMESH_Gen* theGen,
-	     bool theIsEmbeddedMode,
+  SMESH_Mesh(int               theLocalId, 
+	     int               theStudyId, 
+	     SMESH_Gen*        theGen,
+	     bool              theIsEmbeddedMode,
 	     SMESHDS_Document* theDocument);
   
   virtual ~SMESH_Mesh();
@@ -273,7 +270,7 @@ private:
   void CleanMeshOnPropagationChain(const TopoDS_Shape& theMainEdge);
   //
   
-private:
+protected:
   int                        _id;           // id given by creator (unique within the creator instance)
   int                        _studyId;
   int                        _idDoc;        // id given by SMESHDS_Document
@@ -289,6 +286,10 @@ private:
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
   IndexedMapOfChain _mapPropagationChains; // Propagation hypothesis management
+
+protected:
+  SMESH_Mesh() {};
+  SMESH_Mesh(const SMESH_Mesh&) {};
 };
 
 #endif
