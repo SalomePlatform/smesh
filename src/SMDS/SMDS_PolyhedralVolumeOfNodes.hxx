@@ -45,10 +45,10 @@ class SMDS_WNT_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
   virtual SMDSAbs_ElementType GetType() const;	
   virtual bool IsPoly() const { return true; };
 
-  bool ChangeNodes (std::vector<const SMDS_MeshNode *> nodes,
-                    std::vector<int>                   quantities);
+  bool ChangeNodes (const std::vector<const SMDS_MeshNode *> & nodes,
+                    const std::vector<int> &                   quantities);
 
-  //virtual int NbNodes() const;
+  virtual int NbNodes() const;
   virtual int NbEdges() const;
   virtual int NbFaces() const;
 
@@ -59,10 +59,22 @@ class SMDS_WNT_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
   // 1 <= face_ind <= NbFaces()
   // 1 <= node_ind <= NbFaceNodes()
 
+  const std::vector<int> & GetQuanities() const { return myQuantities; }
+
   virtual void Print (std::ostream & OS) const;
 
- protected:
-  //virtual SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;
+  /*!
+   * \brief Return node by its index
+   */
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
+  /*!
+   * \brief Return iterator on unique nodes
+   */
+  SMDS_ElemIteratorPtr uniqueNodesIterator() const;
+
+protected:
+  SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
 
  private:
   // usage disabled
