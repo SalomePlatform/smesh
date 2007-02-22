@@ -565,6 +565,7 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   Unexpect aCatch(SalomeException);
 
   const TopoDS_Face & F = TopoDS::Face(aShape);
+  const bool ignoreMediumNodes = _quadraticMesh;
 
   // verify 1 wire only, with 4 edges
   TopoDS_Vertex V;
@@ -584,9 +585,10 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
   if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for ( ; edgeIt != edges.end(); ++edgeIt, nbSides++ )
-      quad->side[nbSides] = new StdMeshers_FaceSide(F,*edgeIt,&aMesh,nbSides<TOP_SIDE);
+      quad->side[nbSides] = new StdMeshers_FaceSide(F, *edgeIt, &aMesh,
+                                                    nbSides<TOP_SIDE, ignoreMediumNodes);
   }
-  else if ( nbEdgesInWire.front() > 4 ) { // more than 4 edges - try to unite
+  else if ( nbEdgesInWire.front() > 4 ) { // more than 4 edges - try to unite some
     list< TopoDS_Edge > sideEdges;
     while ( edgeIt != edges.end()) {
       sideEdges.clear();
@@ -598,7 +600,8 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
         if ( sameSide )
           sideEdges.push_back( *edgeIt++ );
       }
-      quad->side[nbSides] = new StdMeshers_FaceSide(F,sideEdges,&aMesh,nbSides<TOP_SIDE);
+      quad->side[nbSides] = new StdMeshers_FaceSide(F, sideEdges, &aMesh,
+                                                    nbSides<TOP_SIDE, ignoreMediumNodes);
       ++nbSides;
     }
   }

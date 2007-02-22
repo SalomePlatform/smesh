@@ -78,14 +78,16 @@ public:
   StdMeshers_FaceSide(const TopoDS_Face& theFace,
                       const TopoDS_Edge& theEdge,
                       SMESH_Mesh*        theMesh,
-                      const bool         theIsForward);
+                      const bool         theIsForward,
+                      const bool         theIgnoreMediumNodes);
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
   StdMeshers_FaceSide(const TopoDS_Face& theFace,
                       list<TopoDS_Edge>& theEdges,
                       SMESH_Mesh*        theMesh,
-                      const bool         theIsForward);
+                      const bool         theIsForward,
+                      const bool         theIgnoreMediumNodes);
   /*!
    * \brief Change orientation of side geometry
    */
@@ -180,13 +182,12 @@ protected:
   vector<uvPtStruct>           myPoints, myFalsePoints;
   vector<TopoDS_Edge>          myEdge;
   vector<Handle(Geom2d_Curve)> myC2d;
-  vector<double>               myFirst;
-  vector<double>               myLast;
+  vector<double>               myFirst, myLast;
   vector<double>               myNormPar;
   double                       myLength;
   int                          myNbPonits, myNbSegments;
   SMESH_Mesh*                  myMesh;
-  bool                         myMissingVertexNodes;
+  bool                         myMissingVertexNodes, myIgnoreMediumNodes;
 };
 
 

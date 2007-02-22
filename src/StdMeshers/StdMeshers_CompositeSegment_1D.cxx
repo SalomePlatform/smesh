@@ -292,7 +292,7 @@ StdMeshers_CompositeSegment_1D::GetFaceSide(SMESH_Mesh&        aMesh,
       eNext = nextC1Edge( eNext, aMesh, forward );
     }
   }
-  return new StdMeshers_FaceSide( aFace, edges, &aMesh, true );
+  return new StdMeshers_FaceSide( aFace, edges, &aMesh, true, false );
 }
 
 //=============================================================================

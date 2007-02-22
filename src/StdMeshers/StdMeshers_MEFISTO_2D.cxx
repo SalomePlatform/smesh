@@ -178,6 +178,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   MESSAGE("StdMeshers_MEFISTO_2D::Compute");
 
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
+  const bool ignoreMediumNodes = _quadraticMesh;
 
   // get all edges of a face
   TopoDS_Vertex V1;
@@ -208,7 +209,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
         return false;
       }
     }
-    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( F, wireEdges, &aMesh, true );
+    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( F, wireEdges, &aMesh,
+                                                         true, ignoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     if (_hypLengthFromEdges && wire->NbSegments() )
       _edgeLength += wire->Length() / wire->NbSegments();

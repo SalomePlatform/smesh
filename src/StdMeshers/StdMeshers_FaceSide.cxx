@@ -61,10 +61,11 @@
 StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
                                          const TopoDS_Edge& theEdge,
                                          SMESH_Mesh*        theMesh,
-                                         const bool         theIsForward)
+                                         const bool         theIsForward,
+                                         const bool         theIgnoreMediumNodes)
 {
   list<TopoDS_Edge> edges(1,theEdge);
-  *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward );
+  *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward, theIgnoreMediumNodes );
 }
 
 //================================================================================
@@ -78,7 +79,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
                                          list<TopoDS_Edge>& theEdges,
                                          SMESH_Mesh*        theMesh,
-                                         const bool         theIsForward)
+                                         const bool         theIsForward,
+                                         const bool         theIgnoreMediumNodes)
 {
   int nbEdges = theEdges.size();
   myEdge.resize( nbEdges );
@@ -90,6 +92,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
   myNbPonits = myNbSegments = 0;
   myMesh = theMesh;
   myMissingVertexNodes = false;
+  myIgnoreMediumNodes = theIgnoreMediumNodes;
   if ( nbEdges == 0 ) return;
 
   SMESHDS_Mesh* meshDS = theMesh->GetMeshDS();
@@ -115,9 +118,11 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face& theFace,
 
     if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( *edge )) {
       int nbN = sm->NbNodes();
-      SMDS_ElemIteratorPtr elemIt = sm->GetElements();
-      if ( elemIt->more() && elemIt->next()->IsQuadratic() )
-        nbN -= sm->NbElements();
+      if ( theIgnoreMediumNodes ) {
+        SMDS_ElemIteratorPtr elemIt = sm->GetElements();
+        if ( elemIt->more() && elemIt->next()->IsQuadratic() )
+          nbN -= sm->NbElements();
+      }
       myNbPonits += nbN;
       myNbSegments += sm->NbElements();
     }
@@ -199,7 +204,7 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       double paramSize = myLast[i] - myFirst[i], r = myNormPar[i] - prevNormPar;
       while ( nItr->more() ) {
         const SMDS_MeshNode* node = nItr->next();
-        if ( SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
+        if ( myIgnoreMediumNodes && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Edge ))
           continue;
         const SMDS_EdgePosition* epos =
           static_cast<const SMDS_EdgePosition*>(node->GetPosition().get());
