@@ -69,6 +69,17 @@ typedef std::set< const SMDS_MeshElement*, TIDCompare< SMDS_MeshElement> > TIDSo
 
 // ============================================================
 /*!
+ * \brief Searcher for the node closest to point
+ */
+// ============================================================
+
+struct SMESH_NodeSearcher
+{
+  virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
+};
+
+// ============================================================
+/*!
  * \brief Editor of a mesh
  */
 // ============================================================
@@ -288,6 +299,11 @@ public:
                             TListOfListOfNodes &             theGroupsOfNodes);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
+
+  /*!
+   * \brief Return SMESH_NodeSearcher
+   */
+  SMESH_NodeSearcher* GetNodeSearcher();
 
   int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
                     vector<const SMDS_MeshNode *>&      poly_nodes,

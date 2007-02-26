@@ -86,6 +86,10 @@ typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeListMapItr> > TElemOfVecO
 
 typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
 
+struct TNodeXYZ : public gp_XYZ {
+  TNodeXYZ( const SMDS_MeshNode* n ):gp_XYZ( n->X(), n->Y(), n->Z() ) {}
+};
+
 //=======================================================================
 //function : SMESH_MeshEditor
 //purpose  :
@@ -134,10 +138,10 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
         else      e = mesh->AddFace      (node[0], node[1], node[2], node[3],
                                           node[4], node[5] );
       else if (nbnode == 8)
-        if ( ID ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[2],
-                                          node[3], node[4], node[5], node[2], ID);
-        else      e = mesh->AddFace      (node[0], node[1], node[2], node[2],
-                                          node[3], node[4], node[5], node[2] );
+        if ( ID ) e = mesh->AddFaceWithID(node[0], node[1], node[2], node[3],
+                                          node[4], node[5], node[6], node[7], ID);
+        else      e = mesh->AddFace      (node[0], node[1], node[2], node[3],
+                                          node[4], node[5], node[6], node[7] );
     } else {
       if ( ID ) e = mesh->AddPolygonalFaceWithID(node, ID);
       else      e = mesh->AddPolygonalFace      (node    );
@@ -4299,6 +4303,57 @@ void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes
     nodes=theNodes;
   SMESH_OctreeNode::FindCoincidentNodes ( nodes, &theGroupsOfNodes, theTolerance);
 
+}
+
+//=======================================================================
+/*!
+ * \brief Implementation of search for the node closest to point
+ */
+//=======================================================================
+
+struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
+{
+  SMESH_NodeSearcherImpl( const SMESHDS_Mesh* theMesh )
+  {
+    set<const SMDS_MeshNode*> nodes;
+    if ( theMesh ) {
+      SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator();
+      while ( nIt->more() )
+        nodes.insert( nodes.end(), nIt->next() );
+    }
+    myOctreeNode = new SMESH_OctreeNode(nodes) ;
+  }
+  const SMDS_MeshNode* FindClosestTo( const gp_Pnt& thePnt )
+  {
+    SMDS_MeshNode tgtNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
+    list<const SMDS_MeshNode*> nodes;
+    myOctreeNode->NodesAround( &tgtNode, &nodes, 1e-7);
+    const SMDS_MeshNode* closestNode = 0;
+    double minSqDist = DBL_MAX;
+    list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
+    for ( ; nIt != nodes.end(); ++nIt ) {
+      double sqDist = thePnt.SquareDistance( TNodeXYZ( *nIt ) );
+      if ( minSqDist > sqDist ) {
+        closestNode = *nIt;
+        minSqDist = sqDist;
+      }
+    }
+    return closestNode;
+  }
+  ~SMESH_NodeSearcherImpl() { delete myOctreeNode; }
+private:
+  SMESH_OctreeNode* myOctreeNode;
+};
+
+//=======================================================================
+/*!
+ * \brief Return SMESH_NodeSearcher
+ */
+//=======================================================================
+
+SMESH_NodeSearcher* SMESH_MeshEditor::GetNodeSearcher() 
+{
+  return new SMESH_NodeSearcherImpl( GetMeshDS() );
 }
 
 //=======================================================================
