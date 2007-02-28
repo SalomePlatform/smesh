@@ -951,7 +951,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   const SMDS_MeshNode* node;
   while ( nIt->more() ) {
     node = nIt->next();
-    if(IsMedium(node))
+    if(IsMedium(node, SMDSAbs_Edge))
       continue;
     const SMDS_EdgePosition* pos =
       dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
