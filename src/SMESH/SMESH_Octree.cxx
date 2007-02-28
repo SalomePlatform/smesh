@@ -71,8 +71,9 @@ SMESH_Octree::~SMESH_Octree ()
 //===========================================================================
 void SMESH_Octree::setBox(const Bnd_B3d* box)
 {
-  delete myBox;
-  myBox=new Bnd_B3d(*box);
+//   delete myBox;
+//   myBox=new Bnd_B3d(*box);
+  *myBox = *box;
 }
 
 //===========================================================================
@@ -81,11 +82,12 @@ void SMESH_Octree::setBox(const Bnd_B3d* box)
  * \param box          - Set box to the 3d Bounding Box of the Octree
  */
 //===========================================================================
-void SMESH_Octree::getBox(Bnd_B3d* box)
+void SMESH_Octree::getBox(Bnd_B3d& box)
 {
-  if(box != NULL)
-    delete box;
-  box = new Bnd_B3d (*myBox);
+//   if(box != NULL)
+//     delete box;
+//   box = new Bnd_B3d (*myBox);
+  box = *myBox;
 }
 
 //===========================================================================
