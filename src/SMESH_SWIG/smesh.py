@@ -1894,11 +1894,28 @@ class Mesh:
     
     ## Move node with given id
     #  @param NodeID id of the node
-    #  @param x displacing along the X axis
-    #  @param y displacing along the Y axis
-    #  @param z displacing along the Z axis
+    #  @param x new X coordinate
+    #  @param y new Y coordinate
+    #  @param z new Z coordinate
     def MoveNode(self, NodeID, x, y, z):
         return self.editor.MoveNode(NodeID, x, y, z)
+
+    ## Find a node closest to a point
+    #  @param x X coordinate of a point
+    #  @param y Y coordinate of a point
+    #  @param z Z coordinate of a point
+    #  @return id of a node
+    def FindNodeClosestTo(self, x, y, z):
+        preview = self.mesh.GetMeshEditPreviewer()
+        return preview.MoveClosestNodeToPoint(x, y, z, -1)
+
+    ## Find a node closest to a point and move it to a point location
+    #  @param x X coordinate of a point
+    #  @param y Y coordinate of a point
+    #  @param z Z coordinate of a point
+    #  @return id of a moved node
+    def MeshToPassTroughAPoint(self, x, y, z):
+        return self.editor.MoveClosestNodeToPoint(x, y, z, -1)
 
     ## Replace two neighbour triangles sharing Node1-Node2 link
     #  with ones built on the same 4 nodes but having other common link.
@@ -2288,9 +2305,6 @@ class Mesh:
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint)
             pass
-        if HasAngles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
         return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape, NodeStart,
                                               HasAngles, Angles, HasRefPoint, RefPoint)
 
@@ -2311,7 +2325,7 @@ class Mesh:
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
-                                                    HasAngles, Angles, HasRefPoint, RefPoint)
+                                                    HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation)
     
     ## Symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
