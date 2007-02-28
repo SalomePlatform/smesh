@@ -363,7 +363,7 @@ bool SMESH_MeshEditor::IsMedium(const SMDS_MeshNode*      node,
 {
   bool isMedium = false;
   SMDS_ElemIteratorPtr it = node->GetInverseElementIterator(typeToCheck);
-  while (it->more()) {
+  while (it->more() && !isMedium ) {
     const SMDS_MeshElement* elem = it->next();
     isMedium = elem->IsMediumNode(node);
   }
