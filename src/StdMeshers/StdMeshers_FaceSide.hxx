@@ -93,11 +93,11 @@ public:
    */
   void Reverse();
   /*!
-   * \brief Return nb nodes on edges including ones on vertices
+   * \brief Return nb nodes on edges and vertices (+1 to be == GetUVPtStruct().size() )
    */
   int NbPoints() const { return myNbPonits; }
   /*!
-   * \brief Return nb nodes on edges including ones on vertices
+   * \brief Return nb edges
    */
   int NbSegments() const { return myNbSegments; }
   /*!

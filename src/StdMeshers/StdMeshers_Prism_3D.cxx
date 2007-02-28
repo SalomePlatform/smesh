@@ -488,7 +488,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
                                              shape2ShapeMap) )
     RETURN_BAD_RESULT("FindSubShapeAssociation failed");
 
-  // Find matching nodes of in and out faces
+  // Find matching nodes of top and bottom faces
   TNodeNodeMap n2nMap;
   if ( ! TAssocTool::FindMatchingNodesOnFaces( botFace, myBlock.Mesh(),
                                                topFace, myBlock.Mesh(),
