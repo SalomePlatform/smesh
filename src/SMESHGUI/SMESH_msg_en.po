@@ -1511,7 +1511,7 @@ msgstr "Maximum bending angle"
 msgid "SMESHGUI_CuttingOfQuadsDlg::CAPTION"
 msgstr "Cutting of quadrangles"
 
-msgid "SMESHGUI_CuttingOfQuadsDlg::PREVIEW"
+msgid "PREVIEW"
 msgstr "Preview"
 
 #----------------------------------------------------
@@ -1519,11 +1519,37 @@ msgstr "Preview"
 msgid "SMESHGUI_MoveNodesDlg::CAPTION"
 msgstr "Move node"
 
-msgid "SMESHGUI_MoveNodesDlg::NODE_ID"
+msgid "NODE_ID"
 msgstr "Node ID"
 
 msgid "SMESHGUI_MoveNodesDlg::NODE_ID_IS_NOT_DEFINED"
 msgstr "Node ID is not defined"
+
+#----------------------------------------------------
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CAPTION"
+msgstr "Mesh to pass through a point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MESH_PASS_THROUGH_POINT"
+msgstr "Make a node at point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::METHOD"
+msgstr "Method"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MOVE_EXISTING_METHOD"
+msgstr "Move a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CREATE_NEW_METHOD"
+msgstr "Create a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE"
+msgstr "Node to move"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE_ID"
+msgstr "ID"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::AUTO_SEARCH"
+msgstr "Automatic search"
 
 #----------------------------------------------------
 
@@ -1764,6 +1790,15 @@ msgstr "Revolution of 1D elements"
 
 msgid "SMESHGUI_RevolutionDlg::REVOLUTION_2D"
 msgstr "Revolution of 2D elements"
+
+msgid "SMESHGUI_RevolutionDlg::ANGLE_BY_STEP"
+msgstr "Use Angle by Step"
+
+msgid "SMESHGUI_RevolutionDlg::TOTAL_ANGLE"
+msgstr "Use Total Angle"
+
+msgid "SMESHGUI_RevolutionDlg::PREVIEW"
+msgstr "Preview"
 
 #----------------------------------------------------
 
@@ -2250,6 +2285,9 @@ msgstr "Merge elements"
 msgid "MEN_MOVE"
 msgstr "Move Node"
 
+msgid "MEN_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "MEN_INV"
 msgstr "Diagonal Inversion"
 
@@ -2603,6 +2641,9 @@ msgstr "Merge elements"
 msgid "TOP_MOVE"
 msgstr "Move Node"
 
+msgid "TOP_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "TOP_INV"
 msgstr "Diagonal Inversion"
 
@@ -2906,6 +2947,9 @@ msgstr "Merge elements"
 
 msgid "STB_MOVE"
 msgstr "Move Node"
+
+msgid "STB_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
 
 msgid "STB_INV"
 msgstr "Diagonal Inversion"
