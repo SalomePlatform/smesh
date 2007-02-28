@@ -80,6 +80,7 @@ LIB_SERVER_IDL = \
 	SMESH_Gen.idl \
 	SMESH_Hypothesis.idl \
 	SMESH_Mesh.idl \
+	SMESH_MeshEditor.idl \
 	SALOME_Component.idl \
 	SALOME_Exception.idl \
 	SMESH_Filter.idl \
