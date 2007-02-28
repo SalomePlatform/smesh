@@ -32,6 +32,7 @@ VPATH=.:${KERNEL_ROOT_DIR}/idl/salome:${GEOM_ROOT_DIR}/idl/salome:${MED_ROOT_DIR
 IDL_FILES = \
   SMESH_Gen.idl \
   SMESH_Mesh.idl \
+  SMESH_MeshEditor.idl \
   SMESH_Hypothesis.idl \
   SMESH_BasicHypothesis.idl \
   SMESH_Filter.idl \

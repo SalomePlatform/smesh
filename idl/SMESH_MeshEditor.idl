@@ -1,0 +1,415 @@
+//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+//
+//  This library is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU Lesser General Public
+//  License as published by the Free Software Foundation; either
+//  version 2.1 of the License.
+//
+//  This library is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//  Lesser General Public License for more details.
+//
+//  You should have received a copy of the GNU Lesser General Public
+//  License along with this library; if not, write to the Free Software
+//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+//
+//
+//  File   : SMESH_MeshEditor.idl
+//  $Header$
+
+#ifndef _SMESH_MESHEDITOR_IDL_
+#define _SMESH_MESHEDITOR_IDL_
+
+#include "SMESH_Mesh.idl"
+
+module SMESH
+{
+  /*!
+   * Structure used in mesh edit preview data
+   */
+  struct ElementSubType { ElementType SMDS_ElementType;
+                          boolean     isPoly;
+                          long        nbNodesInElement; };
+
+  typedef sequence<ElementSubType> types_array;
+
+  /*!
+   * Structure containing mesh edit preview data
+   */
+  struct MeshPreviewStruct { nodes_array nodesXYZ;
+                             long_array  elementConnectivities;
+                             types_array elementTypes; };
+
+  /*!
+   * This interface makes modifications on the Mesh - removing elements and nodes etc.
+   */
+  interface NumericalFunctor;
+  interface SMESH_MeshEditor
+  {
+    boolean RemoveElements(in long_array IDsOfElements);
+
+    boolean RemoveNodes(in long_array IDsOfNodes);
+
+    long AddNode(in double x, in double y, in double z);
+
+    /*!
+     *  Create edge, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
+    long AddEdge(in long_array IDsOfNodes);
+
+    /*!
+     *  Create face, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
+    long AddFace(in long_array IDsOfNodes);
+
+    long AddPolygonalFace(in long_array IdsOfNodes);
+
+    /*!
+     *  Create volume, either linear and quadratic (this is determed
+     *  by number of given nodes).
+     *  \param IdsOfNodes List of node IDs for creation of element.
+     *  Needed order of nodes in this list corresponds to description
+     *  of MED. This description is located by the following link:
+     *   http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
+     */
+    long AddVolume(in long_array IDsOfNodes);
+
+    /*!
+     *  Create volume of many faces, giving nodes for each face.
+     *  \param IdsOfNodes List of node IDs for volume creation face by face.
+     *  \param Quantities List of integer values, Quantities[i]
+     *         gives quantity of nodes in face number i.
+     */
+    long AddPolyhedralVolume (in long_array IdsOfNodes,
+                              in long_array Quantities);
+
+    /*!
+     *  Create volume of many faces, giving IDs of existing faces.
+     *  \param IdsOfFaces List of face IDs for volume creation.
+     *  \note The created volume will refer only to nodes
+     *        of the given faces, not to the faces itself.
+     */
+    long AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
+
+    boolean MoveNode(in long NodeID, in double x, in double y, in double z);
+
+    boolean InverseDiag(in long NodeID1, in long NodeID2);
+
+    boolean DeleteDiag(in long NodeID1, in long NodeID2);
+
+    boolean Reorient(in long_array IDsOfElements);
+
+    boolean ReorientObject(in SMESH_IDSource theObject);
+
+    /*!
+     * \brief Fuse neighbour triangles into quadrangles.
+     * \param theElems     The triangles to be fused.
+     * \param theCriterion Is used to choose a neighbour to fuse with.
+     * \param theMaxAngle  Is a max angle between element normals at which fusion
+     *                     is still performed; theMaxAngle is mesured in radians.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean TriToQuad (in long_array       IDsOfElements,
+		       in NumericalFunctor Criterion,
+		       in double           MaxAngle);
+
+    /*!
+     * \brief Fuse neighbour triangles into quadrangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean TriToQuadObject (in SMESH_IDSource   theObject,
+			     in NumericalFunctor Criterion,
+			     in double           MaxAngle);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     * \param theElems     The faces to be splitted.
+     * \param theCriterion Is used to choose a diagonal for splitting.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean QuadToTri (in long_array       IDsOfElements,
+		       in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean QuadToTriObject (in SMESH_IDSource   theObject,
+			     in NumericalFunctor Criterion);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     * \param theElems  The faces to be splitted.
+     * \param the13Diag Is used to choose a diagonal for splitting.
+     * \return TRUE in case of success, FALSE otherwise.
+     */
+    boolean SplitQuad (in long_array IDsOfElements,
+		       in boolean    Diag13);
+
+    /*!
+     * \brief Split quadrangles into triangles.
+     *
+     * Behaves like the above method, taking list of elements from \a theObject
+     */
+    boolean SplitQuadObject (in SMESH_IDSource theObject,
+			     in boolean        Diag13);
+
+    /*!
+     *  Find better splitting of the given quadrangle.
+     *  \param IDOfQuad  ID of the quadrangle to be splitted.
+     *  \param Criterion A criterion to choose a diagonal for splitting.
+     *  \return 1 if 1-3 diagonal is better, 2 if 2-4
+     *          diagonal is better, 0 if error occurs.
+     */
+    long BestSplit (in long             IDOfQuad,
+		    in NumericalFunctor Criterion);
+
+    enum Smooth_Method { LAPLACIAN_SMOOTH, CENTROIDAL_SMOOTH };
+
+    boolean Smooth(in long_array    IDsOfElements,
+                   in long_array    IDsOfFixedNodes,
+                   in long          MaxNbOfIterations,
+                   in double        MaxAspectRatio,
+                   in Smooth_Method Method);
+
+    boolean SmoothObject(in SMESH_IDSource  theObject,
+			 in long_array      IDsOfFixedNodes,
+			 in long            MaxNbOfIterations,
+			 in double          MaxAspectRatio,
+			 in Smooth_Method   Method);
+
+    boolean SmoothParametric(in long_array    IDsOfElements,
+                             in long_array    IDsOfFixedNodes,
+                             in long          MaxNbOfIterations,
+                             in double        MaxAspectRatio,
+                             in Smooth_Method Method);
+
+    boolean SmoothParametricObject(in SMESH_IDSource  theObject,
+                                   in long_array      IDsOfFixedNodes,
+                                   in long            MaxNbOfIterations,
+                                   in double          MaxAspectRatio,
+                                   in Smooth_Method   Method);
+
+    void ConvertToQuadratic(in boolean theForce3d);
+
+    boolean ConvertFromQuadratic();
+
+    void RenumberNodes();
+
+    void RenumberElements();
+
+    void RotationSweep(in long_array       IDsOfElements,
+                       in AxisStruct       Axix,
+                       in double           AngleInRadians,
+                       in long             NbOfSteps,
+                       in double           Tolerance);
+
+    void RotationSweepObject(in SMESH_IDSource  theObject,
+			     in AxisStruct      Axix,
+			     in double          AngleInRadians,
+			     in long            NbOfSteps,
+			     in double          Tolerance);
+
+    void ExtrusionSweep(in long_array      IDsOfElements,
+                        in DirStruct       StepVector,
+                        in long            NbOfSteps);
+
+   /*!
+    * Generate new elements by extrusion of theElements 
+    * by StepVector by NbOfSteps
+    * param ExtrFlags set flags for performing extrusion
+    * param SewTolerance - uses for comparing locations of nodes if flag
+    *   EXTRUSION_FLAG_SEW is set
+    */
+    void AdvancedExtrusion(in long_array      IDsOfElements,
+                           in DirStruct       StepVector,
+                           in long            NbOfSteps,
+			   in long            ExtrFlags,
+			   in double          SewTolerance);
+
+    void ExtrusionSweepObject(in SMESH_IDSource  theObject,
+			      in DirStruct       StepVector,
+			      in long            NbOfSteps);
+
+    void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
+				in DirStruct      StepVector,
+				in long           NbOfSteps);
+
+    void ExtrusionSweepObject2D(in SMESH_IDSource theObject,
+				in DirStruct      StepVector,
+				in long           NbOfSteps);
+
+    enum Extrusion_Error {
+      EXTR_OK,
+      EXTR_NO_ELEMENTS,
+      EXTR_PATH_NOT_EDGE,
+      EXTR_BAD_PATH_SHAPE,
+      EXTR_BAD_STARTING_NODE,
+      EXTR_BAD_ANGLES_NUMBER,
+      EXTR_CANT_GET_TANGENT
+      };
+
+    Extrusion_Error ExtrusionAlongPath(in long_array        IDsOfElements,
+				       in SMESH_Mesh        PathMesh,
+				       in GEOM::GEOM_Object PathShape,
+				       in long              NodeStart,
+				       in boolean           HasAngles,
+				       in double_array      Angles,
+				       in boolean           HasRefPoint,
+				       in PointStruct       RefPoint);
+
+    Extrusion_Error ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
+					     in SMESH_Mesh        PathMesh,
+					     in GEOM::GEOM_Object PathShape,
+					     in long              NodeStart,
+					     in boolean           HasAngles,
+					     in double_array      Angles,
+					     in boolean           HasRefPoint,
+					     in PointStruct       RefPoint);
+
+   /*!
+    * Compute rotation angles for ExtrusionAlongPath as linear variation
+    * of given angles along path steps
+    * param PathMesh mesh containing a 1D sub-mesh on the edge, along 
+    *                which proceeds the extrusion
+    * param PathShape is shape(edge); as the mesh can be complex, the edge 
+    *                 is used to define the sub-mesh for the path
+    */
+    double_array LinearAnglesVariation(in SMESH_Mesh        PathMesh,
+                                       in GEOM::GEOM_Object PathShape,
+                                       in double_array      Angles);
+
+    enum MirrorType { POINT, AXIS, PLANE };
+
+    void Mirror (in long_array       IDsOfElements,
+                 in AxisStruct       Mirror,
+                 in MirrorType       theMirrorType,
+                 in boolean          Copy);
+
+    void MirrorObject (in SMESH_IDSource  theObject,
+		       in AxisStruct      Mirror,
+		       in MirrorType      theMirrorType,
+		       in boolean         Copy);
+
+    void Translate (in long_array      IDsOfElements,
+                    in DirStruct       Vector,
+                    in boolean         Copy);
+
+    void TranslateObject (in SMESH_IDSource  theObject,
+			  in DirStruct       Vector,
+			  in boolean         Copy);
+
+    void Rotate (in long_array       IDsOfElements,
+                 in AxisStruct       Axis,
+                 in double           AngleInRadians,
+                 in boolean          Copy);
+
+    void RotateObject (in SMESH_IDSource  theObject,
+		       in AxisStruct      Axis,
+		       in double          AngleInRadians,
+		       in boolean         Copy);
+
+    void FindCoincidentNodes (in  double              Tolerance,
+                              out array_of_long_array GroupsOfNodes);
+
+    void MergeNodes (in array_of_long_array GroupsOfNodes);
+
+    void MergeEqualElements();
+    /*!
+     * If the given ID is a valid node ID (nodeID > 0), just move this node, else
+     * move the node closest to the point to point's location and return ID of the node
+     */
+    long MoveClosestNodeToPoint(in double x, in double y, in double z, in long nodeID);
+
+    enum Sew_Error {
+      SEW_OK,
+      SEW_BORDER1_NOT_FOUND,
+      SEW_BORDER2_NOT_FOUND,
+      SEW_BOTH_BORDERS_NOT_FOUND,
+      SEW_BAD_SIDE_NODES,
+      SEW_VOLUMES_TO_SPLIT,
+      // for SewSideElements() only:
+      SEW_DIFF_NB_OF_ELEMENTS,
+      SEW_TOPO_DIFF_SETS_OF_ELEMENTS,
+      SEW_BAD_SIDE1_NODES,
+      SEW_BAD_SIDE2_NODES
+      };
+
+    Sew_Error SewFreeBorders (in long FirstNodeID1,
+                              in long SecondNodeID1,
+                              in long LastNodeID1,
+                              in long FirstNodeID2,
+                              in long SecondNodeID2,
+                              in long LastNodeID2,
+			      in boolean CreatePolygons,
+			      in boolean CreatePolyedrs);
+
+    Sew_Error SewConformFreeBorders (in long FirstNodeID1,
+                                     in long SecondNodeID1,
+                                     in long LastNodeID1,
+                                     in long FirstNodeID2,
+                                     in long SecondNodeID2);
+
+    Sew_Error SewBorderToSide (in long FirstNodeIDOnFreeBorder,
+                               in long SecondNodeIDOnFreeBorder,
+                               in long LastNodeIDOnFreeBorder,
+                               in long FirstNodeIDOnSide,
+                               in long LastNodeIDOnSide,
+			       in boolean CreatePolygons,
+			       in boolean CreatePolyedrs);
+
+    Sew_Error SewSideElements (in long_array IDsOfSide1Elements,
+                               in long_array IDsOfSide2Elements,
+                               in long       NodeID1OfSide1ToMerge,
+                               in long       NodeID1OfSide2ToMerge,
+                               in long       NodeID2OfSide1ToMerge,
+                               in long       NodeID2OfSide2ToMerge);
+
+   /*!
+    * Set new nodes for given element.
+    * If number of nodes is not corresponded to type of
+    * element - returns false
+    */
+    boolean ChangeElemNodes(in long ide, in long_array newIDs);
+
+   /*!
+    * Return data of mesh edition preview which is computed provided 
+    * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
+    */
+    MeshPreviewStruct GetPreviewData();
+
+   /*!
+    * If during last operation of MeshEditor some nodes were
+    * created this method returns list of it's IDs, if new nodes
+    * not creared - returns empty list
+    */
+    long_array GetLastCreatedNodes();
+
+   /*!
+    * If during last operation of MeshEditor some elements were
+    * created this method returns list of it's IDs, if new elements
+    * not creared - returns empty list
+    */
+    long_array GetLastCreatedElems();
+
+  };
+};
+
+#endif

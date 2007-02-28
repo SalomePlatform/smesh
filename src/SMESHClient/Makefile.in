@@ -49,6 +49,7 @@ LIB_CLIENT_IDL = SALOME_Comm.idl \
 	SALOME_Exception.idl \
 	SALOME_GenericObj.idl \
 	SMESH_Mesh.idl \
+	SMESH_MeshEditor.idl \
 	SMESH_Gen.idl \
 	SMESH_Group.idl \
 	SMESH_Hypothesis.idl \
