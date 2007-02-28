@@ -30,7 +30,7 @@
 #define _SMESH_MESHEDIOTR_I_HXX_
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "SMESH_Mesh.hxx"
 
@@ -206,6 +206,11 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                             SMESH::array_of_long_array_out GroupsOfNodes);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void MergeEqualElements();
+  CORBA::Long MoveClosestNodeToPoint(CORBA::Double x,
+                                     CORBA::Double y,
+                                     CORBA::Double z,
+                                     CORBA::Long   nodeID);
+
 
 
   SMESH::SMESH_MeshEditor::Sew_Error
@@ -279,14 +284,15 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
    * \brief Return edited mesh ID
     * \retval int - mesh ID
    */
-  int GetMeshId() const { return _myMesh->GetId(); }
+  int GetMeshId() const { return myMesh->GetId(); }
 
  private:
 
-  SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
+  SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
   void initData();
 
-  SMESH_Mesh *          _myMesh;
+  SMESH_Mesh *          myMesh;
+
   SMESH::long_array_var myLastCreatedElems;
   SMESH::long_array_var myLastCreatedNodes;
 
