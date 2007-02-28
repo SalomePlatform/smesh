@@ -263,7 +263,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
       }
       else {
         double r = ( uvPt.normParam - prevNormPar )/ paramSize;
-        uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
+//         uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
+        uvPt.param = ( r > 0.5 ? myLast[EdgeIndex] : myFirst[EdgeIndex] );
       }
       if ( !myC2d[ EdgeIndex ].IsNull() ) {
         gp_Pnt2d p = myC2d[ EdgeIndex ]->Value( uvPt.param );
