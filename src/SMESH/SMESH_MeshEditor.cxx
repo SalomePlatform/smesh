@@ -72,6 +72,8 @@
 #include <map>
 #include <set>
 
+#define cast2Node(elem) static_cast<const SMDS_MeshNode*>( elem )
+
 using namespace std;
 using namespace SMESH::Controls;
 
@@ -2018,6 +2020,55 @@ bool SMESH_MeshEditor::SortHexaNodes (const SMDS_Mesh * theMesh,
   return true;
 }*/
 
+//================================================================================
+/*!
+ * \brief Return nodes linked to the given one
+  * \param theNode - the node
+  * \param linkedNodes - the found nodes
+  * \param type - the type of elements to check
+  *
+  * Medium nodes are ignored
+ */
+//================================================================================
+
+void SMESH_MeshEditor::GetLinkedNodes( const SMDS_MeshNode* theNode,
+                                       TIDSortedElemSet &   linkedNodes,
+                                       SMDSAbs_ElementType  type )
+{
+  SMDS_ElemIteratorPtr elemIt = theNode->GetInverseElementIterator(type);
+  while ( elemIt->more() )
+  {
+    const SMDS_MeshElement* elem = elemIt->next();
+    SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
+    if ( elem->GetType() == SMDSAbs_Volume )
+    {
+      SMDS_VolumeTool vol( elem );
+      while ( nodeIt->more() ) {
+        const SMDS_MeshNode* n = cast2Node( nodeIt->next() );
+        if ( theNode != n && vol.IsLinked( theNode, n ))
+          linkedNodes.insert( n );
+      }
+    }
+    else
+    {
+      for ( int i = 0; nodeIt->more(); ++i ) {
+        const SMDS_MeshNode* n = cast2Node( nodeIt->next() );
+        if ( n == theNode ) {
+          int iBefore = i - 1;
+          int iAfter  = i + 1;
+          if ( elem->IsQuadratic() ) {
+            int nb = elem->NbNodes() / 2;
+            iAfter  = SMESH_MesherHelper::WrapIndex( iAfter, nb );
+            iBefore = SMESH_MesherHelper::WrapIndex( iBefore, nb );
+          }
+          linkedNodes.insert( elem->GetNode( iAfter ));
+          linkedNodes.insert( elem->GetNode( iBefore ));
+        }
+      }
+    }
+  }
+}
+
 //=======================================================================
 //function : laplacianSmooth
 //purpose  : pulls theNode toward the center of surrounding nodes directly
@@ -2030,37 +2081,15 @@ void laplacianSmooth(const SMDS_MeshNode*                 theNode,
 {
   // find surrounding nodes
 
-  set< const SMDS_MeshNode* > nodeSet;
-  SMDS_ElemIteratorPtr elemIt = theNode->GetInverseElementIterator(SMDSAbs_Face);
-  while ( elemIt->more() )
-  {
-    const SMDS_MeshElement* elem = elemIt->next();
-
-    for ( int i = 0; i < elem->NbNodes(); ++i ) {
-      if ( elem->GetNode( i ) == theNode ) {
-        // add linked nodes
-        int iBefore = i - 1;
-        int iAfter = i + 1;
-        if ( elem->IsQuadratic() ) {
-          int nbCorners = elem->NbNodes() / 2;
-          if ( iAfter >= nbCorners )
-            iAfter = 0; // elem->GetNode() wraps index
-          if ( iBefore == -1 )
-            iBefore = nbCorners - 1;
-        }
-        nodeSet.insert( elem->GetNode( iAfter ));
-        nodeSet.insert( elem->GetNode( iBefore ));
-        break;
-      }
-    }
-  }
+  TIDSortedElemSet nodeSet;
+  SMESH_MeshEditor::GetLinkedNodes( theNode, nodeSet, SMDSAbs_Face );
 
   // compute new coodrs
 
   double coord[] = { 0., 0., 0. };
-  set< const SMDS_MeshNode* >::iterator nodeSetIt = nodeSet.begin();
+  TIDSortedElemSet::iterator nodeSetIt = nodeSet.begin();
   for ( ; nodeSetIt != nodeSet.end(); nodeSetIt++ ) {
-    const SMDS_MeshNode* node = (*nodeSetIt);
+    const SMDS_MeshNode* node = cast2Node(*nodeSetIt);
     if ( theSurface.IsNull() ) { // smooth in 3D
       coord[0] += node->X();
       coord[1] += node->Y();
@@ -4313,6 +4342,9 @@ void SMESH_MeshEditor::FindCoincidentNodes (set<const SMDS_MeshNode*> & theNodes
 
 struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 {
+  /*!
+   * \brief Constructor
+   */
   SMESH_NodeSearcherImpl( const SMESHDS_Mesh* theMesh )
   {
     set<const SMDS_MeshNode*> nodes;
@@ -4323,13 +4355,62 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     }
     myOctreeNode = new SMESH_OctreeNode(nodes) ;
   }
+  /*!
+   * \brief Do it's job
+   */
   const SMDS_MeshNode* FindClosestTo( const gp_Pnt& thePnt )
   {
     SMDS_MeshNode tgtNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
     list<const SMDS_MeshNode*> nodes;
-    myOctreeNode->NodesAround( &tgtNode, &nodes, 1e-7);
-    const SMDS_MeshNode* closestNode = 0;
+    const double precision = 1e-6;
+    myOctreeNode->NodesAround( &tgtNode, &nodes, precision );
+
     double minSqDist = DBL_MAX;
+    Bnd_B3d box;
+    if ( nodes.empty() )  // get all nodes of OctreeNode's closest to thePnt
+    {
+      // sort leafs by their distance from thePnt
+      typedef map< double, SMESH_OctreeNode* > TDistTreeMap;
+      TDistTreeMap treeMap;
+      list< SMESH_OctreeNode* > treeList;
+      list< SMESH_OctreeNode* >::iterator trIt;
+      treeList.push_back( myOctreeNode );
+      for ( trIt = treeList.begin(); trIt != treeList.end(); ++trIt)
+      {
+        SMESH_OctreeNode* tree = *trIt;
+        if ( !tree->isLeaf() ) { // put children to the queue
+          SMESH_OctreeNodeIteratorPtr cIt = tree->GetChildrenIterator();
+          while ( cIt->more() )
+            treeList.push_back( cIt->next() );
+        }
+        else if ( tree->NbNodes() ) { // put tree to treeMap
+          tree->getBox( box );
+          double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
+          pair<TDistTreeMap::iterator,bool> it_in = treeMap.insert( make_pair( sqDist, tree ));
+          if ( !it_in.second ) // not unique distance to box center
+            treeMap.insert( it_in.first, make_pair( sqDist - 1e-13*treeMap.size(), tree ));
+        }
+      }
+      // find distance after which there is no sense to check tree's
+      double sqLimit = DBL_MAX;
+      TDistTreeMap::iterator sqDist_tree = treeMap.begin();
+      if ( treeMap.size() > 5 ) {
+        SMESH_OctreeNode* closestTree = sqDist_tree->second;
+        closestTree->getBox( box );
+        double limit = sqrt( sqDist_tree->first ) + sqrt ( box.SquareExtent() );
+        sqLimit = limit * limit;
+      }
+      // get all nodes from trees
+      for ( ; sqDist_tree != treeMap.end(); ++sqDist_tree) {
+        if ( sqDist_tree->first > sqLimit )
+          break;
+        SMESH_OctreeNode* tree = sqDist_tree->second;
+        tree->NodesAround( tree->GetNodeIterator()->next(), &nodes );
+      }
+    }
+    // find closest among nodes
+    minSqDist = DBL_MAX;
+    const SMDS_MeshNode* closestNode = 0;
     list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
     for ( ; nIt != nodes.end(); ++nIt ) {
       double sqDist = thePnt.SquareDistance( TNodeXYZ( *nIt ) );
@@ -4340,6 +4421,9 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     }
     return closestNode;
   }
+  /*!
+   * \brief Destructor
+   */
   ~SMESH_NodeSearcherImpl() { delete myOctreeNode; }
 private:
   SMESH_OctreeNode* myOctreeNode;
