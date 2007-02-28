@@ -475,6 +475,8 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
     const StdMeshers_SegmentLengthAroundVertex* hyp = getVertexHyp (theMesh, V );
     if ( hyp ) {
       double vertexLength = hyp->GetLength();
+      if ( vertexLength > theLength / 2.0 )
+        continue;
       if ( isEnd1 ) {
         theParameters.reverse();
         std::swap( f, l );
