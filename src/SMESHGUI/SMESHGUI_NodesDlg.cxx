@@ -89,6 +89,8 @@
 #include <qvalidator.h>
 #include <qevent.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
 
 

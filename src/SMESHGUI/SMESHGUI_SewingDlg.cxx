@@ -68,7 +68,10 @@
 #include <qlayout.h>
 #include <qpixmap.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
+
 
 //=================================================================================
 // class    : SMESHGUI_SewingDlg()

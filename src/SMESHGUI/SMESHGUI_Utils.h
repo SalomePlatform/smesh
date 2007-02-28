@@ -126,7 +126,7 @@ namespace SMESH {
 
   void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight);
 
-//  void UpdateObjBrowser (bool);
+  void ShowHelpFile (QString theHelpFileName);
 }
 
 #endif

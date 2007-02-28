@@ -73,6 +73,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 

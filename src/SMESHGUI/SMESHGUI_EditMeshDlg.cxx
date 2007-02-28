@@ -36,6 +36,8 @@
 
 #include "utilities.h"
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 // QT Includes
 #include <qapplication.h>
 #include <qbuttongroup.h>

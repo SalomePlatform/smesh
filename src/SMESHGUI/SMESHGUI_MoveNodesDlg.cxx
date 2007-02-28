@@ -82,6 +82,7 @@
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #define MARGIN  10
 #define SPACING 5

@@ -146,10 +146,6 @@ SMESHGUI_ShapeByMeshDlg::~SMESHGUI_ShapeByMeshDlg()
 //================================================================================
 /*!
  * \brief Constructor
-  * \param theToCreate - if this parameter is true then operation is used for creation,
-  * for editing otherwise
- *
- * Initialize operation
 */
 //================================================================================
 SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):

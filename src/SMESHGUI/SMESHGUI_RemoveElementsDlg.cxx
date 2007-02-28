@@ -71,6 +71,8 @@
 
 using namespace std;
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 //=================================================================================
 // class    : SMESHGUI_RemoveElementsDlg()
 // purpose  :

@@ -54,6 +54,8 @@
 
 #include "utilities.h"
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
 

@@ -59,35 +59,22 @@ public:
 
 private:
 
-//   void                     closeEvent (QCloseEvent* e);
-//   void                     enterEvent (QEvent*);
-
-private:
-
-  //QFrame*                  createButtonFrame (QWidget*);
   QFrame*                  createMainFrame   (QWidget*);
-  //void                     displayPreview();
-  //void                     erasePreview();
-private:
 
   QButtonGroup*            myElemTypeGroup;
   QLineEdit*               myElementId;
   QLineEdit*               myGeomName;
 
-private:
   bool                     myIsMultipleAllowed;
   void                     setMultipleAllowed(bool isAllowed) {myIsMultipleAllowed = isAllowed;};
-
-//   QPushButton*             myOkBtn;
-//   QPushButton*             myCloseBtn;
-
-//   SMESHGUI*                mySMESHGUI;
-//   LightApp_SelectionMgr*   mySelectionMgr;
-//   SVTK_ViewWindow*         myViewWindow;
 
   friend class SMESHGUI_ShapeByMeshOp;
 };
 
+/*!
+ * \brief Operation to publish a sub-shape of the mesh main shape
+ *        by selecting mesh elements
+ */
 class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
 {
   Q_OBJECT
@@ -107,34 +94,15 @@ protected:
 
   virtual void                   commitOperation();
   virtual void                   startOperation();
-  //virtual void                   selectionDone();
-  //virtual SUIT_SelectionFilter*  createFilter( const int ) const;
-  //virtual bool                   isValid( SUIT_Operation* ) const;
 
   void                     activateSelection();
   void                     setElementID(const QString&);
 
-/* signals: */
-
-/*   void                     PublishShape(); */
-/*   void                     Close(); */
-
 protected slots:
 
   virtual bool                   onApply() { return true; }
-/*   void                           onCreateHyp( const int theHypType, const int theIndex ); */
-/*   void                           onEditHyp( const int theHypType, const int theIndex ); */
-/*   void                           onHypoSet( const QString& theSetName ); */
-/*   void                           onGeomSelectionByMesh( bool ); */
-/*   void                           onPublishShapeByMeshDlg(); */
-/*   void                           onCloseShapeByMeshDlg(); */
 
 private slots:
-
-//   void                     onOk();
-//   void                     onClose();
-
-//   void                     onDeactivate();
 
   void                     onSelectionDone();
   void                     onTypeChanged (int);

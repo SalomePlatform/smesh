@@ -123,6 +123,7 @@ private:
   QLabel*           StartPointLab;
   QToolButton*      SelectStartPointButton;
   QLineEdit*        StartPointLineEdit;
+  QCheckBox*        LinearAnglesCheck;
   QCheckBox*        AnglesCheck;
   QGroupBox*        AnglesGrp;
   QListBox*         AnglesList;
