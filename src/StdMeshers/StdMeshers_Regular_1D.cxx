@@ -718,7 +718,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
 
 bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  MESSAGE("StdMeshers_Regular_1D::Compute");
+  //MESSAGE("StdMeshers_Regular_1D::Compute");
 
   if ( _hypType == NONE )
     return false;
