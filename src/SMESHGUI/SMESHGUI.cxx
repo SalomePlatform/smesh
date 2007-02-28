@@ -65,6 +65,7 @@
 #include "SMESHGUI_ConvToQuadOp.h"
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_Displayer.h"
+#include "SMESHGUI_MakeNodeAtPointDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -119,6 +120,7 @@
 
 #include "SALOMEconfig.h"
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 // QT Includes
 #define	 INCLUDE_MENUITEM_DEF
@@ -2108,6 +2110,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 4067: // MAKE MESH PASS THROUGH POINT
+    startOperation( 4067 );
+    break;
+
   case 5105: // Library of selection filters
   {
     static QValueList<int> aTypes;
@@ -2384,6 +2390,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4064, "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( 4065, "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( 4066, "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
+  createSMESHAction( 4067, "MESH_THROU_POINT","ICON_DLG_MESH_THROU_POINT" );
   createSMESHAction(  406, "MOVE",            "ICON_DLG_MOVE_NODE" );
   createSMESHAction(  407, "INV",             "ICON_DLG_MESH_DIAGONAL" );
   createSMESHAction(  408, "UNION2",          "ICON_UNION2TRI" );
@@ -2532,6 +2539,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 4066, transfId, -1 );
 
   createMenu( 406, modifyId, -1 );
+  createMenu( 4067,modifyId, -1 );
   createMenu( 407, modifyId, -1 );
   createMenu( 408, modifyId, -1 );
   createMenu( 409, modifyId, -1 );
@@ -2617,6 +2625,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
 
   createTool( 406, modifyTb );
+  createTool( 4067,modifyTb );
   createTool( 407, modifyTb );
   createTool( 408, modifyTb );
   createTool( 409, modifyTb );
@@ -3288,6 +3297,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case 417: //convert to quadratic
       op = new SMESHGUI_ConvToQuadOp();
     break;
+    case 4067: // make mesh pass through point
+      op = new SMESHGUI_MakeNodeAtPointOp();
+      break;
     default:
     break;
   }
