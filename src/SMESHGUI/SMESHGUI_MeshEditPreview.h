@@ -53,6 +53,10 @@ public:
 
   void SetVisibility (bool theVisibility);
 
+  void SetColor(double R, double G, double B);
+
+  SALOME_Actor* GetActor() { return myPreviewActor; }
+
 };
 
 #endif

@@ -49,7 +49,7 @@
 
 // IDL Headers
 #include "SALOMEconfig.h"
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace SMESH;
 
@@ -68,17 +68,14 @@ SMESHGUI_MeshEditPreview::SMESHGUI_MeshEditPreview(SVTK_ViewWindow* theViewWindo
   vtkDataSetMapper* aMapper = vtkDataSetMapper::New();
   aMapper->SetInput( myGrid );
 
-  vtkProperty* aProp = vtkProperty::New();
-  vtkFloatingPointType anRGB[3];
-  GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
-  aProp->SetColor( anRGB[0], anRGB[1], anRGB[2] );
-
   myPreviewActor = SALOME_Actor::New();
   myPreviewActor->SetInfinitive(true);
   myPreviewActor->VisibilityOn();
   myPreviewActor->PickableOff();
-  myPreviewActor->SetProperty( aProp );
-  aProp->Delete();
+
+  vtkFloatingPointType anRGB[3];
+  GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
   myPreviewActor->SetMapper( aMapper );
   aMapper->Delete();
@@ -114,6 +111,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
 {
   switch( theType ) 
   {
+  case SMDSAbs_Node:              return VTK_VERTEX;
   case SMDSAbs_Edge: 
     if( theNbNodes == 2 )         return VTK_LINE;
     else if ( theNbNodes == 3 )   return VTK_QUADRATIC_EDGE;
@@ -233,4 +231,15 @@ void SMESHGUI_MeshEditPreview::SetVisibility (bool theVisibility)
 {
   myPreviewActor->SetVisibility(theVisibility);
   RepaintCurrentView();
+}
+
+//================================================================================
+/*!
+ * \brief Set preview color
+ */
+//================================================================================
+
+void SMESHGUI_MeshEditPreview::SetColor(double R, double G, double B)
+{
+  myPreviewActor->SetColor( R, G, B );
 }
