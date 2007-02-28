@@ -178,6 +178,11 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   MESSAGE("StdMeshers_MEFISTO_2D::Compute");
 
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
+
+  // helper builds quadratic mesh if necessary
+  myTool = new SMESH_MesherHelper(aMesh);
+  auto_ptr<SMESH_MesherHelper> helperDeleter( myTool );
+  _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
   const bool ignoreMediumNodes = _quadraticMesh;
 
   // get all edges of a face
@@ -222,11 +227,6 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   if (_hypLengthFromEdges && _edgeLength < DBL_MIN )
     _edgeLength = 100;
 
-  // helper builds a quadratic mesh if necessary
-  myTool = new SMESH_MesherHelper(aMesh);
-  auto_ptr<SMESH_MesherHelper> helperDeleter( myTool );
-  _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
-
   Z nblf;                 //nombre de lignes fermees (enveloppe en tete)
   Z *nudslf = NULL;       //numero du dernier sommet de chaque ligne fermee
   R2 *uvslf = NULL;       
@@ -253,7 +253,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   // count nb of input points
   for ( int iW = 0; iW < nbWires; ++iW )
   {
-    nbpnt += wires[iW]->NbSegments();
+    nbpnt += wires[iW]->NbPoints() - 1;
     nudslf[iw++] = nbpnt;
   }
 
@@ -497,7 +497,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
     TopExp::MapShapesAndAncestors( F, TopAbs_VERTEX, TopAbs_WIRE, VWMap );
     int nbVertices = 0;
     for ( int iW = 0; iW < wires.size(); ++iW )
-      nbVertices += wires[ iW ]->NbSegments();
+      nbVertices += wires[ iW ]->NbEdges();
     if ( nbVertices == VWMap.Extent() )
       VWMap.Clear(); // wires have no common vertices
   }
@@ -513,6 +513,10 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct(isXConst,constValue);
     if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
       MESSAGE("Wrong nb UVPtStruct: "<<uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
+      return false;
+    }
+    if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
+      MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
       return false;
     }
 
