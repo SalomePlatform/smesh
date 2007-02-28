@@ -2310,9 +2310,6 @@ class Mesh:
                                  HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
-        if HasAngles and LinearVariation:
-            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
-            pass
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
                                                     HasAngles, Angles, HasRefPoint, RefPoint)
     
