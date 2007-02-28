@@ -72,6 +72,10 @@ class SMDS_WNT_EXPORT SMDS_PolyhedralVolumeOfNodes:public SMDS_VolumeOfNodes
    * \brief Return iterator on unique nodes
    */
   SMDS_ElemIteratorPtr uniqueNodesIterator() const;
+  /*!
+   * \brief Return nb of unique nodes
+   */
+  int NbUniqueNodes() const { return myNbNodes; }
 
 protected:
   SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
