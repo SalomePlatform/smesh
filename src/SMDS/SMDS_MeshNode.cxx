@@ -240,6 +240,24 @@ bool SMDS_MeshNode::emptyInverseElements()
   return myInverseElements.IsEmpty() != Standard_False;
 }
 
+//================================================================================
+/*!
+ * \brief Count inverse elements of given type
+ */
+//================================================================================
+
+int SMDS_MeshNode::NbInverseNodes(SMDSAbs_ElementType type) const
+{
+  if ( type == SMDSAbs_All )
+    return myInverseElements.Extent();
+  int nb = 0;
+  NCollection_List<const SMDS_MeshElement*>::Iterator it( myInverseElements );
+  for ( ; it.More(); it.Next() )
+    if ( it.Value()->GetType() == type )
+      nb++;
+  return nb;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// To be used with STL set
 ///////////////////////////////////////////////////////////////////////////////
