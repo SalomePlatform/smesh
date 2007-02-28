@@ -100,6 +100,7 @@ SMESH_subMesh::~SMESH_subMesh()
 {
   MESSAGE("SMESH_subMesh::~SMESH_subMesh");
   // ****
+  DeleteOwnListeners();
 }
 
 //=============================================================================
