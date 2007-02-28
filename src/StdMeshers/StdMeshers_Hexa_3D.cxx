@@ -47,15 +47,15 @@
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TColStd_ListIteratorOfListOfInteger.hxx>
+//#include <TColStd_ListIteratorOfListOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 
 #include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom2d_Curve.hxx>
-#include <Handle_Geom2d_Curve.hxx>
-#include <Handle_Geom_Curve.hxx>
+// #include <Geom_Curve.hxx>
+// #include <Geom2d_Curve.hxx>
+// #include <Handle_Geom2d_Curve.hxx>
+// #include <Handle_Geom_Curve.hxx>
 #include <gp_Pnt2d.hxx>
 
 #include "utilities.h"
@@ -115,18 +115,19 @@ bool StdMeshers_Hexa_3D::ClearAndReturn(FaceQuadStruct* theQuads[6], const bool 
 //=============================================================================
 
 bool StdMeshers_Hexa_3D::CheckHypothesis
-                         (SMESH_Mesh& aMesh,
-                          const TopoDS_Shape& aShape,
+                         (SMESH_Mesh&                          aMesh,
+                          const TopoDS_Shape&                  aShape,
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
-	//MESSAGE("StdMeshers_Hexa_3D::CheckHypothesis");
+  // check nb of faces in the shape
+  aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
+  int nbFaces = 0;
+  for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
+    if ( ++nbFaces > 6 )
+      return false;
 
-	bool isOk = true;
-        aStatus = SMESH_Hypothesis::HYP_OK;
-
-	// nothing to check
-
-	return isOk;
+  aStatus = SMESH_Hypothesis::HYP_OK;
+  return true;
 }
 
 //=======================================================================
