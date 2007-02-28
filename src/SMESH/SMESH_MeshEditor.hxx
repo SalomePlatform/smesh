@@ -431,7 +431,14 @@ public:
 
   static void RemoveElemFromGroups (const SMDS_MeshElement* removeelem,
                                     SMESHDS_Mesh *          aMesh);
-  // remove elemToAdd from the groups 
+  // remove elemToAdd from the groups
+
+  /*!
+   * \brief Return nodes linked to the given one in elements of the type
+   */
+  static void GetLinkedNodes( const SMDS_MeshNode* node,
+                              TIDSortedElemSet &   linkedNodes,
+                              SMDSAbs_ElementType  type = SMDSAbs_All );
 
   static const SMDS_MeshElement*
     FindFaceInSet(const SMDS_MeshNode*    n1,
