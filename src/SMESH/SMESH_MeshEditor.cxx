@@ -4295,8 +4295,8 @@ void SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
       continue; // not all nodes transformed
 
     if ( theCopy ) {
-      if ( SMDS_MeshElement* elem = AddElement( nodes, elem->GetType(), elem->IsPoly() ))
-        myLastCreatedElems.Append( elem );
+      if ( SMDS_MeshElement* copy = AddElement( nodes, elem->GetType(), elem->IsPoly() ))
+        myLastCreatedElems.Append( copy );
     }
     else
     {
