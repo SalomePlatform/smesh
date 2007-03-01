@@ -177,6 +177,7 @@ mesh_tree_hypo_source_edge.png \
 mesh_tree_hypo_source_3d_shape.png \
 mesh_tree_hypo_projection_3d.png \
 mesh_tree_hypo_projection_2d.png \
+mesh_node_to_point.png
 
 BIN_SCRIPT= \
 VERSION
