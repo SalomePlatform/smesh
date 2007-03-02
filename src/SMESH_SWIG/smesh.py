@@ -2397,6 +2397,13 @@ class Mesh:
     def FindCoincidentNodes (self, Tolerance):
         return self.editor.FindCoincidentNodes(Tolerance)
 
+    ## Find group of nodes close to each other within Tolerance.
+    #  @param Tolerance tolerance value
+    #  @param SubMeshOrGroup SubMesh or Group
+    #  @param list of group of nodes
+    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance):
+        return self.editor.FindCoincidentNodesOnPart(SubMeshOrGroup, Tolerance)
+
     ## Merge nodes
     #  @param list of group of nodes
     def MergeNodes (self, GroupsOfNodes):

@@ -329,6 +329,10 @@ module SMESH
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes);
 
+    void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
+				    in  double              Tolerance,
+				    out array_of_long_array GroupsOfNodes);
+
     void MergeNodes (in array_of_long_array GroupsOfNodes);
 
     void MergeEqualElements();

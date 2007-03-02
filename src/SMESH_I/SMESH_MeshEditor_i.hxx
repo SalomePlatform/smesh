@@ -204,6 +204,9 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
+  void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                                 CORBA::Double                  Tolerance,
+                                 SMESH::array_of_long_array_out GroupsOfNodes);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void MergeEqualElements();
   CORBA::Long MoveClosestNodeToPoint(CORBA::Double x,

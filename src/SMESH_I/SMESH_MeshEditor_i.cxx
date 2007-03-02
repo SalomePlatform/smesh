@@ -1777,6 +1777,64 @@ void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tol
 }
 
 //=======================================================================
+//function : FindCoincidentNodesOnPart
+//purpose  :
+//=======================================================================
+void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                                                   CORBA::Double                  Tolerance,
+                                                   SMESH::array_of_long_array_out GroupsOfNodes)
+{
+  initData();
+  SMESH::long_array_var aElementsId = theObject->GetIDs();
+
+  SMESHDS_Mesh* aMesh = GetMeshDS();
+  set<const SMDS_MeshNode*> nodes;
+
+  if ( !CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(theObject)) &&
+      SMESH::SMESH_GroupBase::_narrow(theObject)->GetType() == SMESH::NODE) {
+    for(int i = 0; i < aElementsId->length(); i++) {
+      CORBA::Long ind = aElementsId[i];
+      const SMDS_MeshNode * elem = aMesh->FindNode(ind);
+      if(elem)
+        nodes.insert(elem);
+    }
+  }
+  else {
+    for(int i = 0; i < aElementsId->length(); i++) {
+      CORBA::Long ind = aElementsId[i];
+      const SMDS_MeshElement * elem = aMesh->FindElement(ind);
+      if(elem) {
+        SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
+        while ( nIt->more() )
+          nodes.insert( nodes.end(),static_cast<const SMDS_MeshNode*>(nIt->next()));
+      }
+    }
+  }
+    
+  
+  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
+  ::SMESH_MeshEditor anEditor( myMesh );
+  if(!nodes.empty())
+    anEditor.FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
+  
+  GroupsOfNodes = new SMESH::array_of_long_array;
+  GroupsOfNodes->length( aListOfListOfNodes.size() );
+  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
+  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
+    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
+    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
+    SMESH::long_array& aGroup = GroupsOfNodes[ i ];
+    aGroup.length( aListOfNodes.size() );
+    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
+      aGroup[ j ] = (*lIt)->GetID();
+  }
+  // Update Python script
+  TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPart( "
+                <<theObject<<", "
+                << Tolerance << " )";
+}
+
+//=======================================================================
 //function : MergeNodes
 //purpose  :
 //=======================================================================
