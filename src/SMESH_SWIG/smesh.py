@@ -350,7 +350,7 @@ def GetFunctor(theCriterion):
         print "Error: given parameter is not numerucal functor type."
 
 
-## Private method. Print error message if a hypothesis was not assigned.
+## Print error message if a hypothesis was not assigned.
 def TreatHypoStatus(status, hypName, geomName, isAlgo):
     if isAlgo:
         hypType = "algorithm"
@@ -1339,6 +1339,21 @@ class Mesh:
             self.Hexahedron()            
             pass
         return self.Compute()
+
+    ## Assign hypothesis
+    #  @param hyp is a hypothesis to assign
+    #  @param geom is subhape of mesh geometry
+    def AddHypothesis(self, hyp, geom=0 ):
+        if isinstance( hyp, Mesh_Algorithm ):
+            hyp = hyp.GetAlgorithm()
+            pass
+        if not geom:
+            geom = self.geom
+            pass
+        status = self.mesh.AddHypothesis(geom, hyp)
+        isAlgo = ( hyp._narrow( SMESH.SMESH_Algo ) is not None )
+        TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
+        return status
     
     ## Get the list of hypothesis added on a geom
     #  @param geom is subhape of mesh geometry
@@ -1914,7 +1929,7 @@ class Mesh:
     #  @param y Y coordinate of a point
     #  @param z Z coordinate of a point
     #  @return id of a moved node
-    def MeshToPassTroughAPoint(self, x, y, z):
+    def MeshToPassThroughAPoint(self, x, y, z):
         return self.editor.MoveClosestNodeToPoint(x, y, z, -1)
 
     ## Replace two neighbour triangles sharing Node1-Node2 link
