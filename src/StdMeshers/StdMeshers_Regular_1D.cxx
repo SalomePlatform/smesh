@@ -348,7 +348,7 @@ static void compensateError(double a1, double an,
       double sign = reverse ? -1 : 1;
       double prevU = theParams.back();
       itU = theParams.rbegin();
-      for ( ++itU, i = 1; i < nPar; ++itU, i++ ) {
+      for ( ++itU, i = 2; i < nPar; ++itU, i++ ) {
         double newU = *itU + dUn;
         if ( newU*sign < prevU*sign ) {
           prevU = *itU = newU;
