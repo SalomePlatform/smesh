@@ -12,6 +12,7 @@
       <item name="Basic meshing algorithms" url="files/about_meshing_algorithms.htm" />
       <item name="Projection Algorithms" url="projection_algorithms.htm" />
       <item name="Radial Prism Algorithm" url="radial_prism.htm" />
+      <item name="Segments around Vertex Algorithm" url="segments_around_vertex_algorithm.htm" />
       <item name="Prism 3D Algorithm" url="prism_3d_algorithm.htm" />
     </book>
     <book name="Defining hypotheses" >
@@ -73,6 +74,7 @@
       <item name="Merging Elements" url="merge_elements.htm" />
     </book>
     <item name="Moving nodes" url="files/displacing_nodes.htm" />
+    <item name="Mesh through point" url="mesh_through_point.htm" />
     <item name="Diagonal inversion of elements" url="files/diagonal_iversion_of_elements.htm" />
     <item name="Uniting two triangles" url="files/uniting_two_triangles.htm" />
     <item name="Uniting a set of triangles" url="files/uniting_a_set_of_triangles.htm" />
@@ -85,8 +87,8 @@
     <item name="Pattern mapping" url="pattern_mapping.htm" />
     <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
-  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" /> 
- <book name="TUI Scripts" >
+  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" />
+<book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
     <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />
