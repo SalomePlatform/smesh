@@ -137,8 +137,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   aMesh.GetSubMesh(aShape);
 
-  myTool = new SMESH_MesherHelper(aMesh);
-  std::auto_ptr<SMESH_MesherHelper> helperDeleter( myTool );// to delete helper at exit from Compute()
+  SMESH_MesherHelper helper(aMesh);
+  myTool = &helper;
 
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
 
@@ -578,35 +578,54 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   }
   FaceQuadStruct* quad = new FaceQuadStruct;
   quad->uv_grid = 0;
-  for ( int i = 0; i < NB_SIDES; ++i )
-    quad->side[i] = 0;
+  quad->side.reserve(nbEdgesInWire.front());
 
   int nbSides = 0;
   list< TopoDS_Edge >::iterator edgeIt = edges.begin();
   if ( nbEdgesInWire.front() == 4 ) { // exactly 4 edges
     for ( ; edgeIt != edges.end(); ++edgeIt, nbSides++ )
-      quad->side[nbSides] = new StdMeshers_FaceSide(F, *edgeIt, &aMesh,
-                                                    nbSides<TOP_SIDE, ignoreMediumNodes);
+      quad->side.push_back( new StdMeshers_FaceSide(F, *edgeIt, &aMesh,
+                                                    nbSides<TOP_SIDE, ignoreMediumNodes));
   }
   else if ( nbEdgesInWire.front() > 4 ) { // more than 4 edges - try to unite some
     list< TopoDS_Edge > sideEdges;
-    while ( edgeIt != edges.end()) {
+    while ( !edges.empty()) {
       sideEdges.clear();
-      sideEdges.push_back( *edgeIt++ );
+      sideEdges.splice( sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
       bool sameSide = true;
-      while ( edgeIt != edges.end() && sameSide ) {
-        GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.back(), *edgeIt );
+      while ( !edges.empty() && sameSide ) {
+        GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.back(), edges.front() );
         sameSide = ( cont >= GeomAbs_C1 );
         if ( sameSide )
-          sideEdges.push_back( *edgeIt++ );
+          sideEdges.splice( sideEdges.end(), edges, edges.begin());
       }
-      quad->side[nbSides] = new StdMeshers_FaceSide(F, sideEdges, &aMesh,
-                                                    nbSides<TOP_SIDE, ignoreMediumNodes);
+      if ( nbSides == 0 ) { // go backward from the first edge
+        sameSide = true;
+        while ( !edges.empty() && sameSide ) {
+          GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.front(), edges.back() );
+          sameSide = ( cont >= GeomAbs_C1 );
+          if ( sameSide )
+            sideEdges.splice( sideEdges.begin(), edges, --edges.end());
+        }
+      }
+      quad->side.push_back( new StdMeshers_FaceSide(F, sideEdges, &aMesh,
+                                                    nbSides<TOP_SIDE, ignoreMediumNodes));
       ++nbSides;
     }
   }
   if (nbSides != 4) {
+#ifdef _DEBUG_
+    cout << endl << "StdMeshers_Quadrangle_2D. Edge IDs of " << nbSides << " sides:";
+    for ( int i = 0; i < nbSides; ++i ) {
+      cout << " ( ";
+      for ( int e = 0; e < quad->side[i]->NbEdges(); ++e )
+        cout << myTool->GetMeshDS()->ShapeToIndex( quad->side[i]->Edge( e )) << " ";
+      cout << ")";
+    }
+    cout << endl;
+#else
     INFOS("face must have 4 edges / quadrangle");
+#endif
     delete quad;
     quad = 0;
   }
@@ -647,7 +666,7 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
 
 faceQuadStruct::~faceQuadStruct()
 {
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < side.size(); i++) {
     if (side[i])     delete side[i];
     //if (uv_edges[i]) delete [] uv_edges[i];
   }

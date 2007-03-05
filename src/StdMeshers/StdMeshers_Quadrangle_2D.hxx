@@ -47,7 +47,7 @@ typedef struct faceQuadStruct
 {
   //int nbPts[4];
   //TopoDS_Edge edge[4];
-  StdMeshers_FaceSide* side[4];
+  vector< StdMeshers_FaceSide*> side;
   //double first[4];
   //double last[4];
   //bool isEdgeForward[4];
