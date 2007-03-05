@@ -790,6 +790,10 @@ msgstr "Create a copy"
 msgid "SMESH_ROTATION"
 msgstr "Rotation"
 
+#Build compound
+msgid "SMESH_BUILD_COMPOUND_TITLE"
+msgstr "Create a Compound"
+
 # -------------- Mesh Infos --------------
 
 #Mesh Infos
@@ -2132,6 +2136,9 @@ msgstr "Compute"
 msgid "MEN_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
 
+msgid "MEN_BUILD_COMPOUND"
+msgstr "Build Compound"
+
 msgid "MEN_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
 
@@ -2491,6 +2498,9 @@ msgstr "Compute"
 msgid "TOP_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
 
+msgid "TOP_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
+
 msgid "TOP_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
 
@@ -2797,6 +2807,9 @@ msgstr "Compute"
 
 msgid "STB_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "STB_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
 
 msgid "STB_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -3221,6 +3234,31 @@ msgstr "Edit mesh/sub-mesh"
 
 msgid "SMESHGUI_MeshDlg::HYPOTHESES_SETS"
 msgstr "Assign a set of hypotheses"
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND"
+msgstr "Compound"
+
+msgid "SMESHGUI_BuildCompoundDlg::RESULT_NAME"
+msgstr "Result name"
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND_MESH"
+msgstr "Compound_Mesh"
+
+msgid "SMESHGUI_BuildCompoundDlg::MESHES"
+msgstr "Meshes"
+
+msgid "SMESHGUI_BuildCompoundDlg::PROCESSING_IDENTICAL_GROUPS"
+msgstr "Processing identical groups"
+
+msgid "SMESHGUI_BuildCompoundDlg::UNITE"
+msgstr "Unite"
+
+msgid "SMESHGUI_BuildCompoundDlg::RENAME"
+msgstr "Rename"
+
+msgid "SMESHGUI_BuildCompoundDlg::MERGE_NODES_AND_ELEMENTS"
+msgstr "Merge coincident nodes and elements"
 
 #-----------------------------------------------------------
 

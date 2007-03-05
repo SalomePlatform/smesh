@@ -137,6 +137,10 @@ msgstr "mesh_merge_nodes.png"
 msgid "ICON_DLG_MERGE_ELEMENTS"
 msgstr "mesh_merge_elements.png"
 
+#Build compound
+msgid "ICON_DLG_BUILD_COMPOUND"
+msgstr "mesh_build_compound.png"
+
 #-----------------------------------------------------------
 # Hypothesis
 #-----------------------------------------------------------

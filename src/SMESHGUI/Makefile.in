@@ -91,6 +91,7 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_SewingDlg.cxx \
 		SMESHGUI_MergeNodesDlg.cxx \
 		SMESHGUI_EditMeshDlg.cxx \
+		SMESHGUI_BuildCompoundDlg.cxx \
 		SMESHGUI_Utils.cxx \
 		SMESHGUI_GEOMGenUtils.cxx \
 		SMESHGUI_MeshUtils.cxx \
@@ -151,6 +152,7 @@ LIB_MOC = \
 		SMESHGUI_SewingDlg.h \
 		SMESHGUI_MergeNodesDlg.h \
 		SMESHGUI_EditMeshDlg.h \
+		SMESHGUI_BuildCompoundDlg.h \
 		SMESHGUI_CreatePolyhedralVolumeDlg.h \
 		SMESHGUI_Operation.h \
 		SMESHGUI_SelectionOp.h \

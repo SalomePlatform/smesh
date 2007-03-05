@@ -66,6 +66,7 @@
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_Displayer.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
+#include "SMESHGUI_BuildCompoundDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -1391,6 +1392,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 704: // Edit mesh/sub-mesh
     startOperation( 704 );
     break;
+  case 710: // Build compound mesh
+    {
+      if (checkLock(aStudy)) break;
+      EmitSignalDeactivateDialog();
+      new SMESHGUI_BuildCompoundDlg( this,
+				     tr("SMESH_BUILD_COMPOUND_TITLE"),
+				     tr("ICON_DLG_BUILD_COMPOUND"),
+				     1 );
+    }
+    break;
   case 407: // DIAGONAL INVERSION
   case 408: // Delete diagonal
     {
@@ -2348,6 +2359,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  702, "CREATE_MESH",     "ICON_DLG_INIT_MESH" );
   createSMESHAction(  703, "CREATE_SUBMESH",  "ICON_DLG_ADD_SUBMESH" );
   createSMESHAction(  704, "EDIT_MESHSUBMESH","ICON_DLG_EDIT_MESH" );
+  createSMESHAction(  710, "BUILD_COMPOUND",  "ICON_UNION" );
   createSMESHAction(  801, "CREATE_GROUP",    "ICON_SMESH_TREE_GROUP" );
   createSMESHAction(  802, "CONSTRUCT_GROUP", "ICON_CONSTRUCT_GROUP" );
   createSMESHAction(  803, "EDIT_GROUP",      "ICON_EDIT_GROUP" );
@@ -2476,6 +2488,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 701, meshId, -1 );
   createMenu( separator(), meshId, -1 );
+  createMenu( 710, meshId, -1 );
+  createMenu( separator(), meshId, -1 );
   createMenu( 801, meshId, -1 );
   createMenu( 802, meshId, -1 );
   createMenu( 803, meshId, -1 );
@@ -2566,6 +2580,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 704, meshTb );
   createTool( separator(), meshTb );
   createTool( 701, meshTb );
+  createTool( separator(), meshTb );
+  createTool( 710, meshTb );
   createTool( separator(), meshTb );
   createTool( 801, meshTb );
   createTool( 802, meshTb );
