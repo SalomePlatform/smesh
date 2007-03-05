@@ -1551,6 +1551,12 @@ msgstr "ID"
 msgid "SMESHGUI_MakeNodeAtPointDlg::AUTO_SEARCH"
 msgstr "Automatic search"
 
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_ID"
+msgstr "Node ID is invalid"
+
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_MESH"
+msgstr "Mesh to modify not selected"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_DeleteGroupDlg::CAPTION"

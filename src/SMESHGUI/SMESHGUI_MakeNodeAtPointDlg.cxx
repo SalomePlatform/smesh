@@ -55,6 +55,7 @@
 #include "SalomeApp_Tools.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
+#include "SUIT_MessageBox.h"
 
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
@@ -141,9 +142,9 @@ QFrame* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
   // Method selection
 
@@ -320,6 +321,7 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 //     myMeshActor->SetRepresentation( myMeshOldDisplayMode );
     myMeshActor->SetPointRepresentation(false);
     SMESH::RepaintCurrentView();
+    myMeshActor = 0;
   }
   SMESHGUI_SelectionOp::stopOperation();
 }
@@ -332,9 +334,20 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 
 bool SMESHGUI_MakeNodeAtPointOp::onApply()
 {
-  if ( !isValid() ) return false; // node id is invalid
+  if ( !myMeshActor ) {
+    SUIT_MessageBox::warn1( dlg(), tr( "SMESH_WRN_WARNING" ),
+                            tr("INVALID_MESH"), tr( "SMESH_BUT_OK" ) );
+    dlg()->show();
+    return false;
+  }
 
-  if ( !myMeshActor ) return true;
+  if ( !isValid() ) { // node id is invalid
+    SUIT_MessageBox::warn1( dlg(), tr( "SMESH_WRN_WARNING" ),
+                            tr("INVALID_ID"), tr( "SMESH_BUT_OK" ) );
+    dlg()->show();
+    return false;
+  }
+
 
   try {
     SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(myMeshActor->getIO());
@@ -383,7 +396,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
 
 //================================================================================
 /*!
- * \brief Check data validity
+ * \brief Check selected node id validity
  */
 //================================================================================
 
