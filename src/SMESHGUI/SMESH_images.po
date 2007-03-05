@@ -297,6 +297,9 @@ msgstr "delete.png"
 msgid "ICON_COMPUTE"
 msgstr "mesh_compute.png"
 
+msgid "ICON_BUILD_COMPOUND"
+msgstr "mesh_build_compound.png"
+
 msgid "ICON_UNION"
 msgstr "mesh_unionGroups.png"
 
