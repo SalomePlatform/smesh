@@ -152,8 +152,10 @@ namespace {
 
   struct TNodeSearcherDeleter : public SMESH_subMeshEventListener
   {
-    TNodeSearcherDeleter(): SMESH_subMeshEventListener( false ) // won't be deleted by submesh
-    {}
+    SMESH_Mesh* myMesh;
+    //!< Constructor
+    TNodeSearcherDeleter(): SMESH_subMeshEventListener( false ), // won't be deleted by submesh
+    myMesh(0) {}
     //!< Delete myNodeSearcher
     static void Delete()
     {
@@ -166,23 +168,32 @@ namespace {
     {
       if ( eventType == SMESH_subMesh::COMPUTE_EVENT ) {
         Delete();
-        // delete self from all submeshes
-        if ( SMESH_subMesh* myMainSubMesh = sm->GetFather()->GetSubMeshContaining(1) ) {
-          const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
-          TDependsOnMap::const_iterator sm;
-          for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
-            sm->second->DeleteEventListener( this );
-        }
+        Unset( sm->GetFather() );
       }
     }
-    //!< set self on all submeshes
+    //!< set self on all submeshes and delete myNodeSearcher if other mesh is set
     void Set(SMESH_Mesh* mesh)
     {
+      if ( myMesh && myMesh != mesh ) {
+        Delete();
+        Unset( myMesh );
+      }
+      myMesh = mesh;
       if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
         const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
         TDependsOnMap::const_iterator sm;
         for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
           sm->second->SetEventListener( this, 0, sm->second );
+      }
+    }
+    //!<  delete self from all submeshes
+    void Unset(SMESH_Mesh* mesh)
+    {
+      if ( SMESH_subMesh* myMainSubMesh = mesh->GetSubMeshContaining(1) ) {
+        const TDependsOnMap & subMeshes = myMainSubMesh->DependsOn();
+        TDependsOnMap::const_iterator sm;
+        for (sm = subMeshes.begin(); sm != subMeshes.end(); sm++)
+          sm->second->DeleteEventListener( this );
       }
     }
   };
@@ -1903,7 +1914,7 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
 {
   // We keep myNodeSearcher until any mesh modification:
   // 1) initData() deletes myNodeSearcher at any edition,
-  // 2) TNodeSearcherDeleter - at any mesh compute event
+  // 2) TNodeSearcherDeleter - at any mesh compute event and mesh change
 
   initData();
 
@@ -1911,11 +1922,11 @@ CORBA::Long SMESH_MeshEditor_i::MoveClosestNodeToPoint(CORBA::Double x,
   const SMDS_MeshNode* node = GetMeshDS()->FindNode( nodeID );
   if ( !node )
   {
+    static TNodeSearcherDeleter deleter;
+    deleter.Set( myMesh );
     if ( !myNodeSearcher ) {
       ::SMESH_MeshEditor anEditor( myMesh );
       myNodeSearcher = anEditor.GetNodeSearcher();
-      static TNodeSearcherDeleter deleter;
-      deleter.Set( myMesh );
     }
     gp_Pnt p( x,y,z );
     node = myNodeSearcher->FindClosestTo( p );
