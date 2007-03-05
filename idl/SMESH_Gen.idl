@@ -195,6 +195,19 @@ module SMESH
 						 in long        theElementID)
       raises ( SALOME::SALOME_Exception );
 
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     */
+    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
+			   in boolean    theUniteIdenticalGroups, 
+			   in boolean    theMergeNodesAndElements, 
+			   in double     theMergeTolerance)
+      raises ( SALOME::SALOME_Exception );
+
   };
 
 };
