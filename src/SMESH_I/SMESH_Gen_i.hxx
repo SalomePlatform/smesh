@@ -249,6 +249,14 @@ public:
 						   CORBA::Long            theElementID)
     throw ( SALOME::SALOME_Exception );
 
+  // Concatenate the given meshes into one mesh
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
+				    CORBA::Boolean           theUniteIdenticalGroups, 
+				    CORBA::Boolean           theMergeNodesAndElements, 
+				    CORBA::Double            theMergeTolerance)
+    throw ( SALOME::SALOME_Exception );
+
+
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)
   // ****************************************************

@@ -76,6 +76,7 @@
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_SpacePosition.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -1150,6 +1151,187 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
   return GEOM::GEOM_Object::_nil();
 }
 
+//================================================================================
+/*!
+ *  SMESH_Gen_i::Concatenate
+ *
+ *  Concatenate the given meshes into one mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshesArray, 
+					       CORBA::Boolean           theUniteIdenticalGroups, 
+					       CORBA::Boolean           theMergeNodesAndElements, 
+					       CORBA::Double            theMergeTolerance)
+  throw ( SALOME::SALOME_Exception )
+{
+  typedef map<int, int> TIDsMap;
+  typedef list<SMESH::SMESH_Group_var> TListOfNewGroups;
+  typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
+  typedef std::set<SMESHDS_GroupBase*> TGroups;
+
+  // create mesh
+  SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
+  
+  if ( !aNewMesh->_is_nil() ) {
+    SMESH_Mesh_i* aNewImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( aNewMesh ).in() );
+    if ( aNewImpl ) {
+      ::SMESH_Mesh& aLocMesh = aNewImpl->GetImpl();
+      SMESHDS_Mesh* aNewMeshDS = aLocMesh.GetMeshDS();
+
+      TGroupsMap aGroupsMap;
+      TListOfNewGroups aListOfNewGroups;
+      SMESH_MeshEditor aNewEditor = ::SMESH_MeshEditor(&aLocMesh);
+      SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
+
+      // loop on meshes
+      for ( int i = 0; i < theMeshesArray.length(); i++) {
+	SMESH::SMESH_Mesh_var anInitMesh = theMeshesArray[i];
+	if ( !anInitMesh->_is_nil() ) {
+	  SMESH_Mesh_i* anInitImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( anInitMesh ).in() );
+	  if ( anInitImpl ) {
+	    ::SMESH_Mesh& aInitLocMesh = anInitImpl->GetImpl();
+	    SMESHDS_Mesh* anInitMeshDS = aInitLocMesh.GetMeshDS();
+
+	    TIDsMap nodesMap;
+	    TIDsMap elemsMap;
+
+	    // loop on elements of mesh
+	    SMDS_ElemIteratorPtr itElems = anInitMeshDS->elementsIterator();
+	    const SMDS_MeshElement* anElem = 0;
+	    const SMDS_MeshElement* aNewElem = 0;
+	    int anElemNbNodes = 0;
+
+	    for ( int j = 0; itElems->more(); j++) {
+	      anElem = itElems->next();
+	      SMDSAbs_ElementType anElemType = anElem->GetType();
+	      anElemNbNodes = anElem->NbNodes();
+	      std::vector<const SMDS_MeshNode*> aNodesArray (anElemNbNodes);
+
+	      // loop on nodes of element
+	      const SMDS_MeshNode* aNode = 0;
+	      const SMDS_MeshNode* aNewNode = 0;
+	      SMDS_ElemIteratorPtr itNodes = anElem->nodesIterator();
+
+	      for ( int k = 0; itNodes->more(); k++) {
+		aNode = static_cast<const SMDS_MeshNode*>(itNodes->next());
+		if ( nodesMap.find(aNode->GetID()) == nodesMap.end() ) {
+		  aNewNode = aNewMeshDS->AddNode(aNode->X(), aNode->Y(), aNode->Z());
+		  nodesMap.insert( make_pair(aNode->GetID(), aNewNode->GetID()) );
+		}
+		else
+		  aNewNode = aNewMeshDS->FindNode( nodesMap.find(aNode->GetID())->second );
+		aNodesArray[k] = aNewNode;
+	      }//nodes loop
+
+	      // creates a corresponding element on existent nodes in new mesh
+	      if ( anElem->IsPoly() && anElemType == SMDSAbs_Volume )
+		{
+		  const SMDS_PolyhedralVolumeOfNodes* aVolume =
+		    dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem);
+		  if ( aVolume ) {
+		    aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray, 
+							       aVolume->GetQuanities());
+		    elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+		  }
+		}
+	      else {
+		
+		aNewElem = aNewEditor.AddElement(aNodesArray,
+						 anElemType,
+						 anElem->IsPoly());
+		elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+	      } 
+	    }//elems loop
+	    
+	    aListOfGroups = anInitImpl->GetGroups();
+	    SMESH::SMESH_GroupBase_ptr aGroup;
+
+	    // loop on groups of mesh
+	    for (int i = 0; i < aListOfGroups->length(); i++) {
+	      aGroup = aListOfGroups[i];
+	      aListOfNewGroups.clear();
+	      SMESH::ElementType aGroupType = aGroup->GetType();
+	      const char* aGroupName = aGroup->GetName();
+	      
+	      TGroupsMap::iterator anIter = aGroupsMap.find(make_pair(aGroupName, aGroupType));
+
+	      // convert a list of IDs
+	      SMESH::long_array_var anInitIDs = aGroup->GetListOfID();
+	      SMESH::long_array_var anNewIDs = new SMESH::long_array();
+	      anNewIDs->length(anInitIDs->length());
+	      if ( aGroupType == SMESH::NODE )
+		for (int j = 0; j < anInitIDs->length(); j++) {
+		  anNewIDs[j] = nodesMap.find(anInitIDs[j])->second;
+		}
+	      else
+		for (int j = 0; j < anInitIDs->length(); j++) {
+		  anNewIDs[j] = elemsMap.find(anInitIDs[j])->second;
+		}
+	      
+	      // check that current group name and type don't have identical ones in union mesh
+	      if ( anIter == aGroupsMap.end() ) {
+		// add a new group in the mesh
+		SMESH::SMESH_Group_var aNewGroup = 
+		  aNewImpl->CreateGroup(aGroupType, aGroupName);
+		// add elements into new group
+		aNewGroup->Add( anNewIDs );
+		
+		aListOfNewGroups.push_back(aNewGroup);
+		aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+	      }
+
+	      else if ( theUniteIdenticalGroups ) {
+		// unite identical groups
+		TListOfNewGroups& aNewGroups = anIter->second;
+		aNewGroups.front()->Add( anNewIDs );
+	      }
+
+	      else {
+		// rename identical groups
+		SMESH::SMESH_Group_var aNewGroup = 
+		  aNewImpl->CreateGroup(aGroupType, aGroupName);
+		aNewGroup->Add( anNewIDs );
+		
+		TListOfNewGroups& aNewGroups = anIter->second;
+
+		if (aNewGroups.size() == 1)
+		  aNewGroups.front()->SetName( strcat(aNewGroup->GetName(), "_1"));
+
+		char aGroupNum[128];
+		sprintf(aGroupNum, "%u", aNewGroups.size()+1);
+ 		aNewGroup->SetName( strcat( strcat(aNewGroup->GetName(), "_"), aGroupNum) );
+		aNewGroups.push_back(aNewGroup);
+	      }
+
+	    }
+	  }
+
+	  if (theMergeNodesAndElements) {
+	    // merge nodes
+  	    set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
+	    SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
+	    aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
+	    aNewEditor.MergeNodes( aGroupsOfNodes );
+	    // merge elements
+	    aNewEditor.MergeEqualElements();
+	  }
+	}
+
+      }//meshes loop
+      
+      return aNewMesh._retn();
+    }
+  }
+
+  return SMESH::SMESH_Mesh::_nil();
+
+
+
+
+
+
+}
 
 //================================================================================
 /*!
