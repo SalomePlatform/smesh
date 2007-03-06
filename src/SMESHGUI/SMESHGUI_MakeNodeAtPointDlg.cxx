@@ -40,6 +40,8 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ActorUtils.h"
+#include "SMESH_NumberFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
 
 #include "GEOMBase.h"
 #include "GeometryGUI.h"
@@ -53,14 +55,15 @@
 #include "SVTK_ViewWindow.h"
 #include "SVTK_ViewModel.h"
 #include "SalomeApp_Tools.h"
+#include "SalomeApp_TypeFilter.h"
 #include "SUIT_ResourceMgr.h"
 #include "SUIT_OverrideCursor.h"
 #include "SUIT_MessageBox.h"
 
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopExp_Explorer.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <BRep_Tool.hxx>
 
 // QT Includes
 #include <qframe.h>
@@ -254,6 +257,7 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
 {
   mySimulation = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
+  myFilter = 0;
 
   // connect signals and slots
   connect(myDlg->myX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
@@ -288,6 +292,15 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
 
   SMESHGUI_SelectionOp::startOperation();
 
+  // SalomeApp_TypeFilter depends on a current study
+  if ( myFilter ) delete myFilter;
+  QPtrList<SUIT_SelectionFilter> filters;
+  filters.append( new SalomeApp_TypeFilter((SalomeApp_Study*)study(), "SMESH" ));
+  TColStd_MapOfInteger vertexType;
+  vertexType.Add( TopAbs_VERTEX );
+  filters.append( new SMESH_NumberFilter("GEOM", TopAbs_VERTEX, 1, vertexType ));
+  myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
+  
   activateSelection(); // set filters
 
   myDlg->myX->SetValue(0);
@@ -323,6 +336,7 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
     SMESH::RepaintCurrentView();
     myMeshActor = 0;
   }
+  selectionMgr()->removeFilter( myFilter );
   SMESHGUI_SelectionOp::stopOperation();
 }
 
@@ -434,10 +448,30 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
       return;
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     SMESH_Actor* aMeshActor = SMESH::FindActorByEntry(anIO->getEntry());
-    if (!aMeshActor)
-      return;
+
+    if (!aMeshActor) { // coord by geom
+      if ( myDlg->myCoordBtn->isOn() ) {
+        GEOM::GEOM_Object_var geom = SMESH::IObjectToInterface<GEOM::GEOM_Object>(anIO);
+        if ( !geom->_is_nil() ) {
+          TopoDS_Vertex aShape;
+          if ( GEOMBase::GetShape(geom, aShape) &&
+               aShape.ShapeType() == TopAbs_VERTEX ) {
+            gp_Pnt P = BRep_Tool::Pnt(aShape);
+            myNoPreview = true;
+            myDlg->myX->SetValue(P.X());
+            myDlg->myY->SetValue(P.Y());
+            myDlg->myZ->SetValue(P.Z());
+            myNoPreview = false;
+            redisplayPreview();
+          }
+        }
+        return;
+      }
+    }
+
     if ( !myMeshActor )
       myMeshActor = aMeshActor;
+
     QString aString;
     int nbElems = SMESH::GetNameOfSelectedElements(selector(),anIO, aString);
     if (nbElems == 1) {
@@ -561,6 +595,7 @@ void SMESHGUI_MakeNodeAtPointOp::activateSelection()
 {
   selectionMgr()->clearFilters();
   SMESH::SetPointRepresentation(false);
+  selectionMgr()->installFilter( myFilter );
   setSelectionMode( NodeSelection );
 }
 
@@ -572,9 +607,9 @@ void SMESHGUI_MakeNodeAtPointOp::activateSelection()
 
 SMESHGUI_MakeNodeAtPointOp::~SMESHGUI_MakeNodeAtPointOp()
 {
-  if ( myDlg )
-    delete myDlg;
-  delete mySimulation;
+  if ( myDlg )        delete myDlg;
+  if ( mySimulation ) delete mySimulation;
+  if ( myFilter )     delete myFilter;
 }
 
 //================================================================================

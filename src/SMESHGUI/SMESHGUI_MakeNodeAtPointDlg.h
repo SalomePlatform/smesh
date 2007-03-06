@@ -80,6 +80,7 @@ private:
 
   SMESHGUI_MakeNodeAtPointDlg*  myDlg;
 
+  SUIT_SelectionFilter*         myFilter;
   int                           myMeshOldDisplayMode;
   SMESHGUI_MeshEditPreview*     mySimulation;
   SMESH_Actor*                  myMeshActor;
