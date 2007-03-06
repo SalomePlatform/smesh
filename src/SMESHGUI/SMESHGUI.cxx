@@ -2485,10 +2485,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 702, meshId, -1 );
   createMenu( 703, meshId, -1 );
   createMenu( 704, meshId, -1 );
+  createMenu( 710, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 701, meshId, -1 );
-  createMenu( separator(), meshId, -1 );
-  createMenu( 710, meshId, -1 );
   createMenu( separator(), meshId, -1 );
   createMenu( 801, meshId, -1 );
   createMenu( 802, meshId, -1 );
@@ -2578,10 +2577,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( 702, meshTb );
   createTool( 703, meshTb );
   createTool( 704, meshTb );
+  createTool( 710, meshTb );
   createTool( separator(), meshTb );
   createTool( 701, meshTb );
-  createTool( separator(), meshTb );
-  createTool( 710, meshTb );
   createTool( separator(), meshTb );
   createTool( 801, meshTb );
   createTool( 802, meshTb );
