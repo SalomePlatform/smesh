@@ -1243,10 +1243,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	}
       }
 
-      // PAL13338 -->
-      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) && !automaticUpdate() )
+      // PAL13338 + PAL15161 -->
+      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) /*&& !automaticUpdate()*/ )
 	SMESH::UpdateView();
-      // PAL13338 <--
+      // PAL13338 + PAL15161 <--
 
       if (anAction == SMESH::eErase) {
 	SALOME_ListIO l1;
