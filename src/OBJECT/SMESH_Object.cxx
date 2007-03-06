@@ -346,6 +346,7 @@ void SMESH_VisualObjDef::buildElemPrs()
         SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
 	switch(aType){
 	case SMDSAbs_Volume:{
+          aConnect.clear();
 	  std::vector<int> aConnectivities;
 	  // Convertions connectivities from SMDS to VTK
 	  if (anElem->IsPoly() && aNbNodes > 3) { // POLYEDRE
