@@ -313,28 +313,24 @@ static void compensateError(double a1, double an,
   int i, nPar = theParams.size();
   if ( a1 + an < length && nPar > 1 )
   {
+    bool reverse = ( U1 > Un );
+    GCPnts_AbscissaPoint Discret(C3d, reverse ? an : -an, Un);
+    if ( !Discret.IsDone() )
+      return;
+    double Utgt = Discret.Parameter(); // target value of the last parameter
     list<double>::reverse_iterator itU = theParams.rbegin();
-    double Ul = *itU++;
-    // dist from the last point to the edge end <Un>, it should be equal to <an>
-    double Ln = GCPnts_AbscissaPoint::Length( C3d, Ul, Un );
-    double dLn = an - Ln; // signed error of <an>
-    if ( Abs( dLn ) <= Precision::Confusion() )
+    double Ul = *itU++; // real value of the last parameter
+    double dUn = Utgt - Ul; // parametric error of <an>
+    if ( Abs(dUn) <= Precision::Confusion() )
       return;
     double dU = Abs( Ul - *itU ); // parametric length of the last but one segment
-    double dUn = dLn * Abs( Un - U1 ) / length; // parametric error of <an>
-    if ( adjustNeighbors2an || dUn < 0.5 * dU ) { // last segment is a bit shorter than it should
-      dUn = -dUn; // move the last parameter to the edge beginning
+    if ( adjustNeighbors2an || Abs(dUn) < 0.5 * dU ) { // last segment is a bit shorter than it should
+      // move the last parameter to the edge beginning
     }
     else {  // last segment is much shorter than it should -> remove the last param and
       theParams.pop_back(); nPar--; // move the rest points toward the edge end
-      Ln = GCPnts_AbscissaPoint::Length( C3d, theParams.back(), Un );
-      dUn = ( an - Ln ) * Abs( Un - U1 ) / length;
-      if ( dUn < 0.5 * dU )
-        dUn = -dUn;
+      dUn = Utgt - theParams.back();
     }
-    bool reverse = ( U1 > Un );
-    if ( reverse )
-      dUn = -dUn;
 
     double q  = dUn / ( nPar - 1 );
     if ( !adjustNeighbors2an ) {
@@ -477,13 +473,30 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
       double vertexLength = hyp->GetLength();
       if ( vertexLength > theLength / 2.0 )
         continue;
-      if ( isEnd1 ) {
+      if ( isEnd1 ) { // to have a segment of interest at end of theParameters
         theParameters.reverse();
         std::swap( f, l );
       }
-      if ( _hypType == NB_SEGMENTS || nPar < 5 )
+      if ( _hypType == NB_SEGMENTS )
       {
         compensateError(0, vertexLength, f, l, theLength, theC3d, theParameters, true );
+      }
+      else if ( nPar <= 3 )
+      {
+        if ( !isEnd1 )
+          vertexLength = -vertexLength;
+        GCPnts_AbscissaPoint Discret(theC3d, vertexLength, l);
+        if ( Discret.IsDone() ) {
+          if ( nPar == 0 )
+            theParameters.push_back( Discret.Parameter());
+          else {
+            double L = GCPnts_AbscissaPoint::Length( theC3d, theParameters.back(), l);
+            if ( vertexLength < L / 2.0 )
+              theParameters.push_back( Discret.Parameter());
+            else
+              compensateError(0, vertexLength, f, l, theLength, theC3d, theParameters, true );
+          }
+        }
       }
       else
       {
