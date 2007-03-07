@@ -392,8 +392,9 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     if (aResult)
     {
       myDlg->myId->setText("");
-      
+
       SALOME_ListIO aList;
+      selectionMgr()->setSelectedObjects(aList,false);
       aList.Append(myMeshActor->getIO());
       selectionMgr()->setSelectedObjects(aList,false);
       SMESH::UpdateView();
@@ -578,7 +579,7 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
     mySimulation->SetData(aMeshPreviewStruct._retn());
   }
   else
-  {
+{
     mySimulation->SetVisibility(false);
   }
 
