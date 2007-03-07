@@ -1173,6 +1173,9 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   // create mesh
   SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
   
+  // to update Python script
+  TPythonDump aPythonDump;
+
   if ( !aNewMesh->_is_nil() ) {
     SMESH_Mesh_i* aNewImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( aNewMesh ).in() );
     if ( aNewImpl ) {
@@ -1248,17 +1251,19 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 	    SMESH::SMESH_GroupBase_ptr aGroup;
 
 	    // loop on groups of mesh
+	    SMESH::long_array_var anInitIDs = new SMESH::long_array();
+	    SMESH::long_array_var anNewIDs = new SMESH::long_array();
+	    SMESH::SMESH_Group_var aNewGroup;
 	    for (int i = 0; i < aListOfGroups->length(); i++) {
 	      aGroup = aListOfGroups[i];
 	      aListOfNewGroups.clear();
 	      SMESH::ElementType aGroupType = aGroup->GetType();
-	      const char* aGroupName = aGroup->GetName();
+	      CORBA::String_var aGroupName = aGroup->GetName();
 	      
 	      TGroupsMap::iterator anIter = aGroupsMap.find(make_pair(aGroupName, aGroupType));
 
 	      // convert a list of IDs
-	      SMESH::long_array_var anInitIDs = aGroup->GetListOfID();
-	      SMESH::long_array_var anNewIDs = new SMESH::long_array();
+	      anInitIDs = aGroup->GetListOfID();
 	      anNewIDs->length(anInitIDs->length());
 	      if ( aGroupType == SMESH::NODE )
 		for (int j = 0; j < anInitIDs->length(); j++) {
@@ -1272,8 +1277,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 	      // check that current group name and type don't have identical ones in union mesh
 	      if ( anIter == aGroupsMap.end() ) {
 		// add a new group in the mesh
-		SMESH::SMESH_Group_var aNewGroup = 
-		  aNewImpl->CreateGroup(aGroupType, aGroupName);
+		aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
 		// add elements into new group
 		aNewGroup->Add( anNewIDs );
 		
@@ -1289,48 +1293,52 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 
 	      else {
 		// rename identical groups
-		SMESH::SMESH_Group_var aNewGroup = 
-		  aNewImpl->CreateGroup(aGroupType, aGroupName);
+		aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
 		aNewGroup->Add( anNewIDs );
 		
 		TListOfNewGroups& aNewGroups = anIter->second;
-
-		if (aNewGroups.size() == 1)
-		  aNewGroups.front()->SetName( strcat(aNewGroup->GetName(), "_1"));
-
+		string aNewGroupName;
+		if (aNewGroups.size() == 1) {
+		  aNewGroupName = string(aGroupName) + "_1";
+		  aNewGroups.front()->SetName(aNewGroupName.c_str());
+		}
 		char aGroupNum[128];
 		sprintf(aGroupNum, "%u", aNewGroups.size()+1);
- 		aNewGroup->SetName( strcat( strcat(aNewGroup->GetName(), "_"), aGroupNum) );
+		aNewGroupName = string(aGroupName) + "_" + string(aGroupNum);
+		aNewGroup->SetName(aNewGroupName.c_str());
 		aNewGroups.push_back(aNewGroup);
 	      }
-
-	    }
-	  }
-
-	  if (theMergeNodesAndElements) {
-	    // merge nodes
-  	    set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
-	    SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
-	    aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
-	    aNewEditor.MergeNodes( aGroupsOfNodes );
-	    // merge elements
-	    aNewEditor.MergeEqualElements();
+	    }//groups loop
 	  }
 	}
-
       }//meshes loop
-      
-      return aNewMesh._retn();
+
+      if (theMergeNodesAndElements) {
+	// merge nodes
+	set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
+	SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
+	aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
+	aNewEditor.MergeNodes( aGroupsOfNodes );
+	// merge elements
+	aNewEditor.MergeEqualElements();
+      }
     }
   }
+  
+  // Update Python script
+  RemoveLastFromPythonScript( GetCurrentStudyID() );
+  aPythonDump << aNewMesh << " = " << this << ".Concatenate(";
+  aPythonDump << "[";
+  for ( int i = 0; i < theMeshesArray.length(); i++) {
+    if (i > 0) aPythonDump << ", ";
+    aPythonDump << theMeshesArray[i];
+  }
+  aPythonDump << "], ";
+  aPythonDump << theUniteIdenticalGroups << ", "
+	       << theMergeNodesAndElements << ", "
+	       << theMergeTolerance << ")";
 
-  return SMESH::SMESH_Mesh::_nil();
-
-
-
-
-
-
+  return aNewMesh._retn();
 }
 
 //================================================================================
