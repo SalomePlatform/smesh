@@ -541,13 +541,16 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Define "SegmentLengthAroundVertex" hypothesis
     #  @param length for the segment length
     #  @param vertex for the length localization: vertex index [0,1] | verext object
-    def LengthNearVertex(self, length, vertex):
+    def LengthNearVertex(self, length, vertex=0):
         import types
-        if type(vertex) is types.IntType:
-            vertex = geompy.SubShapeAllSorted(self.geom,geompy.ShapeType["VERTEX"])[vertex]
-            pass
         store_geom = self.geom
-        self.geom = vertex
+        if vertex:
+            if type(vertex) is types.IntType:
+                vertex = geompy.SubShapeAllSorted(self.geom,geompy.ShapeType["VERTEX"])[vertex]
+                pass
+            self.geom = vertex
+            pass
+        hyp = self.Hypothesis("SegmentAroundVertex_0D")
         hyp = self.Hypothesis("SegmentLengthAroundVertex")
         self.geom = store_geom
         hyp.SetLength( length )
