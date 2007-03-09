@@ -138,7 +138,7 @@ msgid "ICON_DLG_MERGE_ELEMENTS"
 msgstr "mesh_merge_elements.png"
 
 #Build compound
-msgid "ICON_DLG_BUILD_COMPOUND"
+msgid "ICON_DLG_BUILD_COMPOUND_MESH"
 msgstr "mesh_build_compound.png"
 
 #-----------------------------------------------------------
