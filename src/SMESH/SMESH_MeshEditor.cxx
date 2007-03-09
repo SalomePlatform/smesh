@@ -86,10 +86,21 @@ typedef TNodeOfNodeListMap::iterator                                 TNodeOfNode
 typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeListMapItr> > TElemOfVecOfNnlmiMap;
 //typedef map<const SMDS_MeshElement*, vector<TNodeOfNodeVecMapItr> >  TElemOfVecOfMapNodesMap;
 
-typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
-
 struct TNodeXYZ : public gp_XYZ {
   TNodeXYZ( const SMDS_MeshNode* n ):gp_XYZ( n->X(), n->Y(), n->Z() ) {}
+};
+
+typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
+
+/*!
+ * \brief A sorted pair of nodes
+ */
+struct TLink: public NLink
+{
+  TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
+  { if ( n1->GetID() < n2->GetID() ) std::swap( first, second ); }
+  TLink(const NLink& link ):NLink( link )
+  { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
 };
 
 //=======================================================================
@@ -715,9 +726,8 @@ bool getQuadrangleNodes(const SMDS_MeshNode *    theQuadNodes [],
   const SMDS_MeshNode* n4 = 0;
   SMDS_ElemIteratorPtr it = tr2->nodesIterator();
   int i=0;
-  //while ( !n4 && it->more() ) {
   while ( !n4 && i<3 ) {
-    const SMDS_MeshNode * n = static_cast<const SMDS_MeshNode*>( it->next() );
+    const SMDS_MeshNode * n = cast2Node( it->next() );
     i++;
     bool isDiag = ( n == theNode1 || n == theNode2 );
     if ( !isDiag )
@@ -727,9 +737,8 @@ bool getQuadrangleNodes(const SMDS_MeshNode *    theQuadNodes [],
   int iNode = 0, iFirstDiag = -1;
   it = tr1->nodesIterator();
   i=0;
-  //while ( it->more() ) {
   while ( i<3 ) {
-    const SMDS_MeshNode * n = static_cast<const SMDS_MeshNode*>( it->next() );
+    const SMDS_MeshNode * n = cast2Node( it->next() );
     i++;
     bool isDiag = ( n == theNode1 || n == theNode2 );
     if ( isDiag ) {
@@ -1433,27 +1442,19 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     return false;
 
   SMESHDS_Mesh * aMesh = GetMeshDS();
-  //LinkID_Gen aLinkID_Gen( aMesh );
 
   // Prepare data for algo: build
   // 1. map of elements with their linkIDs
   // 2. map of linkIDs with their elements
 
-  //map< long, list< const SMDS_MeshElement* > > mapLi_listEl;
-  //map< long, list< const SMDS_MeshElement* > >::iterator itLE;
-  //map< const SMDS_MeshElement*, set< long > >  mapEl_setLi;
-  //map< const SMDS_MeshElement*, set< long > >::iterator itEL;
-
-  map< NLink, list< const SMDS_MeshElement* > > mapLi_listEl;
-  map< NLink, list< const SMDS_MeshElement* > >::iterator itLE;
-  map< const SMDS_MeshElement*, set< NLink > >  mapEl_setLi;
-  map< const SMDS_MeshElement*, set< NLink > >::iterator itEL;
+  map< TLink, list< const SMDS_MeshElement* > > mapLi_listEl;
+  map< TLink, list< const SMDS_MeshElement* > >::iterator itLE;
+  map< const SMDS_MeshElement*, set< TLink > >  mapEl_setLi;
+  map< const SMDS_MeshElement*, set< TLink > >::iterator itEL;
 
   TIDSortedElemSet::iterator itElem;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
     const SMDS_MeshElement* elem = *itElem;
-    //if ( !elem || elem->NbNodes() != 3 )
-    //  continue;
     if(!elem || elem->GetType() != SMDSAbs_Face ) continue;
     bool IsTria = elem->NbNodes()==3 || (elem->NbNodes()==6 && elem->IsQuadratic());
     if(!IsTria) continue;
@@ -1462,19 +1463,14 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     const SMDS_MeshNode* aNodes [4];
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
     int i = 0;
-    //while ( itN->more() )
     while ( i<3 )
-      aNodes[ i++ ] = static_cast<const SMDS_MeshNode*>( itN->next() );
-    ASSERT( i == 3 );
+      aNodes[ i++ ] = cast2Node( itN->next() );
     aNodes[ 3 ] = aNodes[ 0 ];
 
     // fill maps
     for ( i = 0; i < 3; i++ ) {
-      //long linkID = aLinkID_Gen.GetLinkID( aNodes[ i ], aNodes[ i+1 ] );
-      NLink link(( aNodes[i] < aNodes[i+1] ? aNodes[i] : aNodes[i+1] ),
-                 ( aNodes[i] < aNodes[i+1] ? aNodes[i+1] : aNodes[i] ));
+      TLink link( aNodes[i], aNodes[i+1] );
       // check if elements sharing a link can be fused
-      //itLE = mapLi_listEl.find( linkID );
       itLE = mapLi_listEl.find( link );
       if ( itLE != mapLi_listEl.end() ) {
         if ((*itLE).second.size() > 1 ) // consider only 2 elems adjacent by a link
@@ -1487,10 +1483,8 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
         (*itLE).second.push_back( elem );
       }
       else {
-        //mapLi_listEl[ linkID ].push_back( elem );
         mapLi_listEl[ link ].push_back( elem );
       }
-      //mapEl_setLi [ elem ].insert( linkID );
       mapEl_setLi [ elem ].insert( link );
     }
   }
@@ -1501,8 +1495,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
     int nbElems = (*itLE).second.size();
     if ( nbElems < 2  ) {
       const SMDS_MeshElement* elem = (*itLE).second.front();
-      //long link = (*itLE).first;
-      NLink link = (*itLE).first;
+      TLink link = (*itLE).first;
       mapEl_setLi[ elem ].erase( link );
       if ( mapEl_setLi[ elem ].empty() )
         mapEl_setLi.erase( elem );
@@ -1514,7 +1507,6 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
   while ( ! mapEl_setLi.empty() ) {
     // Look for the start element:
     // the element having the least nb of shared links
-
     const SMDS_MeshElement* startElem = 0;
     int minNbLinks = 4;
     for ( itEL = mapEl_setLi.begin(); itEL != mapEl_setLi.end(); itEL++ ) {
@@ -1529,13 +1521,11 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
 
     // search elements to fuse starting from startElem or links of elements
     // fused earlyer - startLinks
-    //list< long > startLinks;
-    list< NLink > startLinks;
+    list< TLink > startLinks;
     while ( startElem || !startLinks.empty() ) {
       while ( !startElem && !startLinks.empty() ) {
         // Get an element to start, by a link
-        //long linkId = startLinks.front();
-        NLink linkId = startLinks.front();
+        TLink linkId = startLinks.front();
         startLinks.pop_front();
         itLE = mapLi_listEl.find( linkId );
         if ( itLE != mapLi_listEl.end() ) {
@@ -1551,19 +1541,16 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
       if ( startElem ) {
         // Get candidates to be fused
         const SMDS_MeshElement *tr1 = startElem, *tr2 = 0, *tr3 = 0;
-        //long link12, link13;
-        NLink link12, link13;
+        const TLink *link12, *link13;
         startElem = 0;
         ASSERT( mapEl_setLi.find( tr1 ) != mapEl_setLi.end() );
-        //set< long >& setLi = mapEl_setLi[ tr1 ];
-        set< NLink >& setLi = mapEl_setLi[ tr1 ];
+        set< TLink >& setLi = mapEl_setLi[ tr1 ];
         ASSERT( !setLi.empty() );
-        //set< long >::iterator itLi;
-        set< NLink >::iterator itLi;
-        for ( itLi = setLi.begin(); itLi != setLi.end(); itLi++ ) {
-          //long linkID = (*itLi);
-          NLink linkID = (*itLi);
-          itLE = mapLi_listEl.find( linkID );
+        set< TLink >::iterator itLi;
+        for ( itLi = setLi.begin(); itLi != setLi.end(); itLi++ )
+        {
+          const TLink & link = (*itLi);
+          itLE = mapLi_listEl.find( link );
           if ( itLE == mapLi_listEl.end() )
             continue;
 
@@ -1575,50 +1562,36 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
             continue;
           if ( tr2 ) {
             tr3 = elem;
-            link13 = linkID;
+            link13 = &link;
           }
           else {
             tr2 = elem;
-            link12 = linkID;
+            link12 = &link;
           }
 
           // add other links of elem to list of links to re-start from
-          //set< long >& links = mapEl_setLi[ elem ];
-          //set< long >::iterator it;
-          set< NLink >& links = mapEl_setLi[ elem ];
-          set< NLink >::iterator it;
+          set< TLink >& links = mapEl_setLi[ elem ];
+          set< TLink >::iterator it;
           for ( it = links.begin(); it != links.end(); it++ ) {
-            //long linkID2 = (*it);
-            NLink linkID2 = (*it);
-            if ( linkID2 != linkID )
-              startLinks.push_back( linkID2 );
+            const TLink& link2 = (*it);
+            if ( link2 != link )
+              startLinks.push_back( link2 );
           }
         }
 
         // Get nodes of possible quadrangles
         const SMDS_MeshNode *n12 [4], *n13 [4];
         bool Ok12 = false, Ok13 = false;
-        //const SMDS_MeshNode *linkNode1, *linkNode2;
         const SMDS_MeshNode *linkNode1, *linkNode2;
         if(tr2) {
-          //const SMDS_MeshNode *linkNode1 = link12.first;
-          //const SMDS_MeshNode *linkNode2 = link12.second;
-          linkNode1 = link12.first;
-          linkNode2 = link12.second;
-          //if ( tr2 &&
-          //     aLinkID_Gen.GetNodes( link12, linkNode1, linkNode2 ) &&
-          //     getQuadrangleNodes( n12, linkNode1, linkNode2, tr1, tr2 ))
-          //  Ok12 = true;
+          linkNode1 = link12->first;
+          linkNode2 = link12->second;
           if ( tr2 && getQuadrangleNodes( n12, linkNode1, linkNode2, tr1, tr2 ))
             Ok12 = true;
         }
         if(tr3) {
-          linkNode1 = link13.first;
-          linkNode2 = link13.second;
-          //if ( tr3 &&
-          //     aLinkID_Gen.GetNodes( link13, linkNode1, linkNode2 ) &&
-          //     getQuadrangleNodes( n13, linkNode1, linkNode2, tr1, tr3 ))
-          //  Ok13 = true;
+          linkNode1 = link13->first;
+          linkNode2 = link13->second;
           if ( tr3 && getQuadrangleNodes( n13, linkNode1, linkNode2, tr1, tr3 ))
             Ok13 = true;
         }
@@ -1640,7 +1613,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
         mapEl_setLi.erase( tr1 );
         if ( Ok12 ) {
           mapEl_setLi.erase( tr2 );
-          mapLi_listEl.erase( link12 );
+          mapLi_listEl.erase( *link12 );
           if(tr1->NbNodes()==3) {
             if( tr1->GetID() < tr2->GetID() ) {
               aMesh->ChangeElementNodes( tr1, n12, 4 );
@@ -1685,7 +1658,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
         }
         else if ( Ok13 ) {
           mapEl_setLi.erase( tr3 );
-          mapLi_listEl.erase( link13 );
+          mapLi_listEl.erase( *link13 );
           if(tr1->NbNodes()==3) {
             if( tr1->GetID() < tr2->GetID() ) {
               aMesh->ChangeElementNodes( tr1, n13, 4 );
@@ -7169,17 +7142,6 @@ SMESH_MeshEditor::Sew_Error
 
   return aResult;
 }
-
-/*!
- * \brief A sorted pair of nodes
- */
-struct TLink: public NLink
-{
-  TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
-  { if ( n1 < n2 ) std::swap( first, second ); }
-  TLink(const NLink& link ):NLink( link )
-  { if ( first < second ) std::swap( first, second ); }
-};
 
 //================================================================================
   /*!
