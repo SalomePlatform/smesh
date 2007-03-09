@@ -1396,10 +1396,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if (checkLock(aStudy)) break;
       EmitSignalDeactivateDialog();
-      new SMESHGUI_BuildCompoundDlg( this,
-				     tr("SMESH_BUILD_COMPOUND_TITLE"),
-				     tr("ICON_DLG_BUILD_COMPOUND"),
-				     1 );
+      new SMESHGUI_BuildCompoundDlg( this );
     }
     break;
   case 407: // DIAGONAL INVERSION
