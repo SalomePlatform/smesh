@@ -830,6 +830,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   else {
     // Edge is a degenerated Edge : We put n = 5 points on the edge.
     const int NbPoints = 5;
+    BRep_Tool::Range( E, f, l ); // PAL15185
     double du = (l - f) / (NbPoints - 1);
     //MESSAGE("************* Degenerated edge! *****************");
 
