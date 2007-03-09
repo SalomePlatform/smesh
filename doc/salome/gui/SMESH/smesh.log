@@ -120,6 +120,7 @@ adding_quadratic_nodes_and_elements.htm
 aspect_ratio_3d.htm
 borders_at_multi-connection.htm
 borders_at_multiconnection_2d.htm
+building_compounds.htm
 clipping.htm
 constructing_meshes.htm
 convert_to_from_quadratic_mesh.htm
@@ -281,6 +282,7 @@ image84.gif
 image32.jpg
 image40.gif
 i_blue.jpg
+image160.gif
 pics\number_of_layers.png
 pics\netgen2d.png
 pics\mesh_for_extr_along_path.png
@@ -298,6 +300,7 @@ image74.gif
 image63.gif
 image22.jpg
 image41.gif
+image161.gif
 pics\createmesh-inv.png
 pics\image139.gif
 pics\b-art_end_length.png
@@ -311,6 +314,7 @@ image97.gif
 image78.jpg
 image64.gif
 image23.jpg
+pics\buildcompound.png
 pics\projection_3d.png
 image151.gif
 pics\selectionfilterlibrary.png

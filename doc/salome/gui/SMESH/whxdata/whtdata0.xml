@@ -24,6 +24,7 @@
       <item name="Additional Hypotheses" url="files/non_conform_mesh_allowed_hypothesis.htm" />
     </book>
     <item name="Constructing submeshes" url="files/constructing_submeshes.htm" />
+    <item name="Building Compounds" url="building_compounds.htm" />
     <item name="Editing Meshes" url="files/reassigning_hypotheses_and_algorithms.htm" />
   </book>
   <book name="Viewing meshes" >
@@ -87,8 +88,8 @@
     <item name="Pattern mapping" url="pattern_mapping.htm" />
     <item name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
   </book>
-  <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" />
-<book name="TUI Scripts" >
+ <item name="Python Interface smesh.py" url="smeshpy_doc/namespacesmesh.html" />
+ <book name="TUI Scripts" >
     <item name="Creating Meshes" url="constructing_meshes.htm" />
     <item name="Viewing Meshes" url="viewing_meshes.htm" />
     <item name="Defining Hypotheses" url="defining_hypotheses_tui.htm" />
