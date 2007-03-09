@@ -67,20 +67,16 @@
 // name    : SMESHGUI_BuildCompoundDlg
 // Purpose :
 //=================================================================================
-SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule, 
-						      const char* title, 
-						      const char* icon,
-						      int theAction)
+SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule)
   : QDialog(SMESH::GetDesktop(theModule), "SMESHGUI_BuildCompoundDlg", false, WStyle_Customize |
             WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
     mySMESHGUI(theModule),
-    mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-    myAction(theAction)
+    mySelectionMgr(SMESH::GetSelectionMgr(theModule))
 {
-  setCaption(tr(title));
+  setCaption(tr("SMESH_BUILD_COMPOUND_TITLE"));
 
   SUIT_ResourceMgr* aResMgr = SUIT_Session::session()->resourceMgr();
-  QPixmap image0 (aResMgr->loadPixmap("SMESH", tr(icon)));
+  QPixmap image0 (aResMgr->loadPixmap("SMESH", tr("ICON_DLG_BUILD_COMPOUND_MESH")));
   QPixmap image1 (aResMgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   setSizeGripEnabled(TRUE);
@@ -200,7 +196,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule,
   GroupButtonsLayout->addWidget(buttonOk, 0, 0);
   SMESHGUI_BuildCompoundDlgLayout->addWidget(GroupButtons, 3, 0);
 
-  myHelpFileName = "build_compound.htm";
+  myHelpFileName = "building_compounds.htm";
 
   Init(); // Initialisations
 }
@@ -307,8 +303,10 @@ QString SMESHGUI_BuildCompoundDlg::GetDefaultName(const QString& theOperation)
 // function : ClickOnApply()
 // purpose  :
 //=================================================================================
-void SMESHGUI_BuildCompoundDlg::ClickOnApply()
+bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 {
+  if (mySMESHGUI->isActiveStudyLocked())
+    return false;
   if (!myMesh->_is_nil()) {
     try	{
       QApplication::setOverrideCursor(Qt::waitCursor);
@@ -325,13 +323,16 @@ void SMESHGUI_BuildCompoundDlg::ClickOnApply()
       QApplication::restoreOverrideCursor();
       mySMESHGUI->updateObjBrowser();
     } catch(...) {
+      return false;
     }
 
     LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
 
     //mySelectionMgr->clearSelected();
     SMESH::UpdateView();
+    return true;
   }
+  return false;
 }
 
 //=================================================================================
@@ -340,8 +341,8 @@ void SMESHGUI_BuildCompoundDlg::ClickOnApply()
 //=================================================================================
 void SMESHGUI_BuildCompoundDlg::ClickOnOk()
 {
-  ClickOnApply();
-  ClickOnCancel();
+  if (ClickOnApply())
+    ClickOnCancel();
 }
 
 //=================================================================================
