@@ -89,7 +89,7 @@ namespace {
     }
     if ( edgeCounter.Extent() < 3 && !eNext.IsNull() ) {
       GeomAbs_Shape cont = SMESH_Algo::Continuity( edge, eNext );
-      if (cont >= GeomAbs_C1) {
+      if (cont >= GeomAbs_G1) {
         // care of orientation
         bool reverse;
         if ( forward )
