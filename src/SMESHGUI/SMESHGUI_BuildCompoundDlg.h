@@ -25,8 +25,8 @@
 //  Author : Alexander KOVALEV
 //  Module : SMESH
 
-#ifndef DIALOGBOX_BUILD_MESH_H
-#define DIALOGBOX_BUILD_MESH_H
+#ifndef SMESHGUI_BuildCompoundDlg_H
+#define SMESHGUI_BuildCompoundDlg_H
 
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
@@ -67,10 +67,7 @@ class SMESHGUI_BuildCompoundDlg : public QDialog
 
  public:
 
-  SMESHGUI_BuildCompoundDlg (SMESHGUI  * theModule,
-			     const char* title,
-			     const char* icon,
-			     int         theAction);
+  SMESHGUI_BuildCompoundDlg (SMESHGUI  * theModule);
   ~SMESHGUI_BuildCompoundDlg();
 
 public :
@@ -90,8 +87,6 @@ public :
   SMESH::SMESH_Mesh_var   myMesh;
   SUIT_SelectionFilter*   myMeshFilter;
   SMESH::mesh_array_var   myMeshArray;
-
-  int myAction;
 
   // Widgets
   QButtonGroup* GroupConstructors;
@@ -129,7 +124,7 @@ public :
  private slots:
   void ClickOnOk();
   void ClickOnCancel();
-  void ClickOnApply();
+  bool ClickOnApply();
   void ClickOnHelp();
   void SelectionIntoArgument();
   void DeactivateActiveDialog();
@@ -137,4 +132,4 @@ public :
   void onSelectMerge(bool);
 };
 
-#endif // DIALOGBOX_BUILD_MESH_H
+#endif // SMESHGUI_BuildCompoundDlg_H
