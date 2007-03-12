@@ -226,6 +226,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 {
   // there are methods to convert:
   // CreateMesh( shape )
+  // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
 
@@ -268,6 +269,12 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
 
   // smeshgen.Method() --> smesh.smesh.Method()
   theCommand->SetObject( SMESH_2smeshpy::GenName() );
+
+  // Concatenate( [mesh1, ...], ... )
+  if ( theCommand->GetMethod() == "Concatenate" )
+  {
+    AddMeshAccessorMethod( theCommand );
+  }
 }
 
 //================================================================================
@@ -303,12 +310,13 @@ void _pyGen::Flush()
 
 bool _pyGen::AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const
 {
+  bool added = false;
   map< _pyID, Handle(_pyMesh) >::const_iterator id_mesh = myMeshes.begin();
   for ( ; id_mesh != myMeshes.end(); ++id_mesh ) {
     if ( theCmd->AddAccessorMethod( id_mesh->first, id_mesh->second->AccessorMethod() ))
-      return true;
+      added = true;
   }
-  return false;
+  return added;
 }
 
 //================================================================================
@@ -321,13 +329,14 @@ bool _pyGen::AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const
 
 bool _pyGen::AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const
 {
+  bool added = false;
   list< Handle(_pyHypothesis) >::const_iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp ) {
     if ( (*hyp)->IsAlgo() && /*(*hyp)->IsWrapped() &&*/
          theCmd->AddAccessorMethod( (*hyp)->GetID(), (*hyp)->AccessorMethod() ))
-      return true;
+      added = true;
   }
-  return false;
+  return added;
 }
 
 //================================================================================
@@ -1718,6 +1727,7 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
   int beg = GetBegPos( OBJECT_IND );
   if ( beg < 1 || beg > Length() )
     return false;
+  bool added = false;
   while (( beg = myString.Location( theObjectID, beg, Length() )))
   {
     // check that theObjectID is not just a part of a longer ID
@@ -1737,12 +1747,12 @@ bool _pyCommand::AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod 
           if ( myBegPos( i ) > afterEnd )
             myBegPos( i ) += posDelta;
         }
-        return true;
+        added = true;
       }
     }
     beg = afterEnd; // is a part - next search
   }
-  return false;
+  return added;
 }
 
 //================================================================================
