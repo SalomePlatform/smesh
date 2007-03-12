@@ -1170,12 +1170,11 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
   typedef std::set<SMESHDS_GroupBase*> TGroups;
 
+  TPythonDump aPythonDump; // prevent dump of called methods
+
   // create mesh
   SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
   
-  // to update Python script
-  TPythonDump aPythonDump;
-
   if ( !aNewMesh->_is_nil() ) {
     SMESH_Mesh_i* aNewImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( aNewMesh ).in() );
     if ( aNewImpl ) {
@@ -1326,7 +1325,6 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   }
   
   // Update Python script
-  RemoveLastFromPythonScript( GetCurrentStudyID() );
   aPythonDump << aNewMesh << " = " << this << ".Concatenate(";
   aPythonDump << "[";
   for ( int i = 0; i < theMeshesArray.length(); i++) {
@@ -1335,8 +1333,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   }
   aPythonDump << "], ";
   aPythonDump << theUniteIdenticalGroups << ", "
-	       << theMergeNodesAndElements << ", "
-	       << theMergeTolerance << ")";
+              << theMergeNodesAndElements << ", "
+              << theMergeTolerance << ")";
 
   return aNewMesh._retn();
 }
