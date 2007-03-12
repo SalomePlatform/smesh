@@ -757,9 +757,11 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
   if (MYDEBUG) MESSAGE("GetGroups");
 
   SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+
   // Python Dump
   TPythonDump aPythonDump;
-  aPythonDump << "[ ";
+  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+    aPythonDump << "[ ";
 
   try {
     aList->length( _mapGroups.size() );
@@ -779,7 +781,8 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
   }
 
   // Update Python script
-  aPythonDump << " ] = " << _this() << ".GetGroups()";
+  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+    aPythonDump << " ] = " << _this() << ".GetGroups()";
 
   return aList._retn();
 }
