@@ -5038,31 +5038,31 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 }
 
 
-// =================================================
+// ========================================================
 // class   : SortableElement
-// purpose : auxilary
-// =================================================
+// purpose : allow sorting elements basing on their nodes
+// ========================================================
 class SortableElement : public set <const SMDS_MeshElement*>
 {
  public:
 
   SortableElement( const SMDS_MeshElement* theElem )
     {
-      myID = theElem->GetID();
+      myElem = theElem;
       SMDS_ElemIteratorPtr nodeIt = theElem->nodesIterator();
       while ( nodeIt->more() )
         this->insert( nodeIt->next() );
     }
 
-  const long GetID() const
-    { return myID; }
+  const SMDS_MeshElement* Get() const
+    { return myElem; }
 
-  void SetID(const long anID) const
-    { myID = anID; }
+  void Set(const SMDS_MeshElement* e) const
+    { myElem = e; }
 
 
  private:
-  mutable long myID;
+  mutable const SMDS_MeshElement* myElem;
 };
 
 
@@ -5104,14 +5104,18 @@ void SMESH_MeshEditor::MergeEqualElements()
       // check uniqueness
       pair< set<SortableElement>::iterator, bool> pp = setOfNodeSet.insert(SE);
       if( !(pp.second) ) {
-        set<SortableElement>::iterator itSE = pp.first;
-        SortableElement SEold = *itSE;
-        if( SEold.GetID() > SE.GetID() ) {
-          rmElemIds.push_back( SEold.GetID() );
-          (*itSE).SetID(SE.GetID());
+        set<SortableElement>::iterator & itSE = pp.first;
+        const SortableElement & SEold = *itSE;
+        if( SEold.Get()->GetID() > elem->GetID() ) {
+          // keep elem, remove old
+          rmElemIds.push_back( SEold.Get()->GetID() );
+          // add kept elem in groups of removed one (PAL15188)
+          AddToSameGroups( elem, SEold.Get(), GetMeshDS() );
+          SEold.Set( elem );
         }
-        else {
-          rmElemIds.push_back( SE.GetID() );
+          else { // remove elem
+          rmElemIds.push_back( elem->GetID() );
+          AddToSameGroups( SEold.Get(), elem, GetMeshDS() );
         }
       }
     }
