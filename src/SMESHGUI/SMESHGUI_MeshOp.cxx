@@ -1386,8 +1386,8 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess )
     }
   }
 
-  // deselect geometry: next submesh sould be created on other subshape
-  myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
+  // deselect geometry: next submesh should be created on other subshape
+  myDlg->clearSelection( SMESHGUI_MeshDlg::Geom );
   selectObject( _PTR(SObject)() );
   selectionDone();
 
