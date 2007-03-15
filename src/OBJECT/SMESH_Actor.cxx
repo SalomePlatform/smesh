@@ -410,13 +410,16 @@ SMESH_ActorDef::~SMESH_ActorDef()
   //---------------------------------------
   myPointsNumDataSet->Delete();
 
-  myPtsLabeledDataMapper->RemoveAllInputs();
+  // commented: porting to vtk 5.0
+  //  myPtsLabeledDataMapper->RemoveAllInputs();
   myPtsLabeledDataMapper->Delete();
 
-  myPtsSelectVisiblePoints->UnRegisterAllOutputs();
+  // commented: porting to vtk 5.0
+  //  myPtsSelectVisiblePoints->UnRegisterAllOutputs();
   myPtsSelectVisiblePoints->Delete();
 
-  myPtsMaskPoints->UnRegisterAllOutputs();
+  // commented: porting to vtk 5.0
+  //  myPtsMaskPoints->UnRegisterAllOutputs();
   myPtsMaskPoints->Delete();
 
   myPointLabels->Delete();
@@ -429,13 +432,16 @@ SMESH_ActorDef::~SMESH_ActorDef()
   myClsLabeledDataMapper->RemoveAllInputs();
   myClsLabeledDataMapper->Delete();
 
-  myClsSelectVisiblePoints->UnRegisterAllOutputs();
+  // commented: porting to vtk 5.0
+  //  myClsSelectVisiblePoints->UnRegisterAllOutputs();
   myClsSelectVisiblePoints->Delete();
 
-  myClsMaskPoints->UnRegisterAllOutputs();
+  // commented: porting to vtk 5.0
+  //  myClsMaskPoints->UnRegisterAllOutputs();
   myClsMaskPoints->Delete();
 
-  myCellCenters->UnRegisterAllOutputs();
+  // commented: porting to vtk 5.0
+  //  myCellCenters->UnRegisterAllOutputs();
   myCellCenters->Delete();
 
   myCellsLabels->Delete();

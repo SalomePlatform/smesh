@@ -46,7 +46,8 @@ protected:
   SMESH_ExtractGeometry();
   ~SMESH_ExtractGeometry();
 
-  void Execute();
+  // Usual data generation method
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
 
 private:
   bool myStoreMapping;   

@@ -182,7 +182,8 @@ protected:
     myMapper->RemoveAllInputs();
     myMapper->Delete();
 
-    myPlaneSource->UnRegisterAllOutputs();
+    // commented: porting to vtk 5.0
+    //    myPlaneSource->UnRegisterAllOutputs();
     myPlaneSource->Delete();
   };
 

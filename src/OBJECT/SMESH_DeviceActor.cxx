@@ -35,7 +35,6 @@
 
 #include <VTKViewer_Transform.h>
 #include <VTKViewer_TransformFilter.h>
-#include <VTKViewer_PassThroughFilter.h>
 #include <VTKViewer_ExtractUnstructuredGrid.h>
 
 // VTK Includes
@@ -60,6 +59,7 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <vtkImplicitBoolean.h>
+#include <vtkPassThroughFilter.h>
 
 #include "utilities.h"
 
@@ -110,7 +110,7 @@ SMESH_DeviceActor
   myTransformFilter = VTKViewer_TransformFilter::New();
 
   for(int i = 0; i < 6; i++)
-    myPassFilter.push_back(VTKViewer_PassThroughFilter::New());
+    myPassFilter.push_back(vtkPassThroughFilter::New());
 }
 
 
