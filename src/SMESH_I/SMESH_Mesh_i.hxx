@@ -309,7 +309,7 @@ public:
 
   virtual SMESH::long_array* GetIDs();
 
-  CORBA::Long GetMeshPtr();
+  CORBA::LongLong GetMeshPtr();
 
 
   /*!

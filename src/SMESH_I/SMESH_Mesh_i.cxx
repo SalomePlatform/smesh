@@ -1813,9 +1813,11 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
  */
 //=============================================================================
 
-CORBA::Long SMESH_Mesh_i::GetMeshPtr()
+CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
 {
-  return CORBA::Long(size_t(_impl));
+  CORBA::LongLong pointeur = CORBA::LongLong(_impl);
+  cerr << "CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() " << pointeur << endl;
+  return pointeur;
 }
 
 

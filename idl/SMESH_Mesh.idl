@@ -503,7 +503,7 @@ module SMESH
     /*!
      * Get mesh pointer
      */
-    long GetMeshPtr();
+    long long GetMeshPtr();
 
     /*!
      * Get XYZ coordinates of node as list of double

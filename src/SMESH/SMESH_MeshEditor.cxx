@@ -2745,7 +2745,11 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
   // Loop on elem nodes:
   // find new nodes and detect same nodes indices
   int nbNodes = elem->NbNodes();
-  list<const SMDS_MeshNode*>::const_iterator itNN[ nbNodes ];
+  //---PR
+  //list<const SMDS_MeshNode*>::const_iterator itNN[ nbNodes ];
+  vector < list< const SMDS_MeshNode* >::const_iterator > itNN;
+  itNN.reserve(nbNodes);
+  //---PR
   const SMDS_MeshNode* prevNod[ nbNodes ], *nextNod[ nbNodes ], *midlNod[ nbNodes ];
   int iNode, nbSame = 0, iNotSameNode = 0, iSameNode = 0;
   vector<int> sames(nbNodes);
