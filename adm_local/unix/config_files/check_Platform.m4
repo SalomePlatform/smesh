@@ -106,6 +106,12 @@ case $host_os in
 	 ;;
 esac
 
+case $host_cpu in
+    ia64*)
+	MACHINE="PCLINUX64"
+	;;
+esac
+
 PLATFORM_INCLUDES=" -D$MACHINE "
 
 ])dnl
