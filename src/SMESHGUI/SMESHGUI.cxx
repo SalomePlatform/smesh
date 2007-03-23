@@ -57,7 +57,6 @@
 #include "SMESHGUI_RotationDlg.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_SewingDlg.h"
-#include "SMESHGUI_MergeNodesDlg.h"
 #include "SMESHGUI_EditMeshDlg.h"
 #include "SMESHGUI_MeshPatternDlg.h"
 #include "SMESHGUI_Selection.h"
@@ -2151,7 +2150,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       if(vtkwnd) {
 	EmitSignalDeactivateDialog();
-	new SMESHGUI_MergeNodesDlg( this );
+	new SMESHGUI_EditMeshDlg( this, 0 );
       }
       else {
 	SUIT_MessageBox::warn1(desktop(),
@@ -2160,15 +2159,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-  case 4066: // MERGE EQUAL ELEMENTS
+  case 4066:                                   // MERGE EQUAL ELEMENTS
     {
       if (checkLock(aStudy)) break;
       if (vtkwnd) {
 	EmitSignalDeactivateDialog();
-	new SMESHGUI_EditMeshDlg(this,
-                                 "SMESH_MERGE_ELEMENTS_TITLE",
-                                 "ICON_DLG_MERGE_ELEMENTS",
-                                 1); // MergeEqualElemets
+	new SMESHGUI_EditMeshDlg( this, 1 );
       } else {
 	SUIT_MessageBox::warn1(desktop(),
 			      tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"),
