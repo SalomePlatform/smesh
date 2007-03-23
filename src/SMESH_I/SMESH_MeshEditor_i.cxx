@@ -1885,19 +1885,85 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 }
 
 //=======================================================================
+//function : FindEqualElements
+//purpose  :
+//=======================================================================
+void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObject,
+					   SMESH::array_of_long_array_out GroupsOfElementsID)
+{
+  initData();
+  if ( !(!CORBA::is_nil(SMESH::SMESH_GroupBase::_narrow(theObject)) &&
+	 SMESH::SMESH_GroupBase::_narrow(theObject)->GetType() == SMESH::NODE) ) {
+    typedef list<int> TListOfIDs;
+    set<const SMDS_MeshElement*> elems;
+    SMESH::long_array_var aElementsId = theObject->GetIDs();
+    SMESHDS_Mesh* aMesh = GetMeshDS();
+
+    for(int i = 0; i < aElementsId->length(); i++) {
+      CORBA::Long anID = aElementsId[i];
+      const SMDS_MeshElement * elem = aMesh->FindElement(anID);
+      if (elem) {
+	elems.insert(elem);
+      }
+    }
+
+    ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
+    ::SMESH_MeshEditor anEditor( myMesh );
+    anEditor.FindEqualElements( elems, aListOfListOfElementsID );
+
+    GroupsOfElementsID = new SMESH::array_of_long_array;
+    GroupsOfElementsID->length( aListOfListOfElementsID.size() );
+
+    ::SMESH_MeshEditor::TListOfListOfElementsID::iterator arraysIt = aListOfListOfElementsID.begin();
+    for (CORBA::Long j = 0; arraysIt != aListOfListOfElementsID.end(); ++arraysIt, ++j) {
+      SMESH::long_array& aGroup = GroupsOfElementsID[ j ];
+      TListOfIDs& listOfIDs = *arraysIt;
+      aGroup.length( listOfIDs.size() );
+      TListOfIDs::iterator idIt = listOfIDs.begin();
+      for (int k = 0; idIt != listOfIDs.end(); ++idIt, ++k ) {
+	aGroup[ k ] = *idIt;
+      }
+    }
+
+  // Update Python script
+  TPythonDump() << "equal_elements = " << this << ".FindEqualElements( "
+                <<theObject<<" )";
+  }
+}
+
+//=======================================================================
 //function : MergeEqualElements
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::MergeEqualElements()
+void SMESH_MeshEditor_i::MergeEqualElements(const SMESH::array_of_long_array& GroupsOfElementsID)
 {
   initData();
 
+  TPythonDump aTPythonDump;
+  aTPythonDump << this << ".MergeEqualElements( [";
+
+  ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
+
+  for (int i = 0; i < GroupsOfElementsID.length(); i++) {
+    const SMESH::long_array& anElemsIDGroup = GroupsOfElementsID[ i ];
+    aListOfListOfElementsID.push_back( list< int >() );
+    list< int >& aListOfElemsID = aListOfListOfElementsID.back();
+    for ( int j = 0; j < anElemsIDGroup.length(); j++ ) {
+      CORBA::Long id = anElemsIDGroup[ j ];
+      aListOfElemsID.push_back( id );
+    }
+    if ( aListOfElemsID.size() < 2 )
+      aListOfListOfElementsID.pop_back();
+    if ( i > 0 ) aTPythonDump << ", ";
+    aTPythonDump << anElemsIDGroup;
+  }
+
   ::SMESH_MeshEditor anEditor( myMesh );
-  anEditor.MergeEqualElements();
+  anEditor.MergeEqualElements(aListOfListOfElementsID);
 
   // Update Python script
-  TPythonDump() << this << ".MergeEqualElements()";
+  aTPythonDump << "] )";
 }
 
 //================================================================================

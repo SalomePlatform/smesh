@@ -315,7 +315,14 @@ public:
   // In each group, the cdr of nodes are substituted by the first one
   // in all elements.
 
-  void MergeEqualElements();
+  typedef std::list< std::list< int > > TListOfListOfElementsID;
+
+  void FindEqualElements(std::set<const SMDS_MeshElement*> & theElements,
+			 TListOfListOfElementsID &           theGroupsOfElementsID);
+  // Return list of group of elements build on the same nodes.
+  // Search among theElements or in the whole mesh if theElements is empty.
+
+  void MergeEqualElements(TListOfListOfElementsID & theGroupsOfElementsID);
   // Remove all but one of elements built on the same nodes.
   // Return nb of successfully merged groups.
 

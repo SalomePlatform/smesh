@@ -335,7 +335,10 @@ module SMESH
 
     void MergeNodes (in array_of_long_array GroupsOfNodes);
 
-    void MergeEqualElements();
+    void FindEqualElements (in  SMESH_IDSource      MeshOrSubMeshOrGroup,
+			    out array_of_long_array GroupsOfElementsID);
+
+    void MergeEqualElements(in array_of_long_array GroupsOfElementsID);
     /*!
      * If the given ID is a valid node ID (nodeID > 0), just move this node, else
      * move the node closest to the point to point's location and return ID of the node

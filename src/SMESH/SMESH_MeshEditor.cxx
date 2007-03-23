@@ -5069,60 +5069,96 @@ class SortableElement : public set <const SMDS_MeshElement*>
   mutable const SMDS_MeshElement* myElem;
 };
 
+//=======================================================================
+//function : FindEqualElements
+//purpose  : 
+//=======================================================================
+void SMESH_MeshEditor::FindEqualElements(set<const SMDS_MeshElement*> & theElements,
+					 TListOfListOfElementsID &      theGroupsOfElementsID)
+{
+  myLastCreatedElems.Clear();
+  myLastCreatedNodes.Clear();
+
+  typedef set<const SMDS_MeshElement*> TElemsSet;
+  typedef map< SortableElement, int > TMapOfNodeSet;
+  typedef list<int> TGroupOfElems;
+
+  TElemsSet elems;
+  if ( theElements.empty() )
+  { // get all elements in the mesh
+    SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator();
+    while ( eIt->more() )
+      elems.insert( elems.end(), eIt->next());
+  }
+  else
+    elems = theElements;
+
+  vector< TGroupOfElems > arrayOfGroups;
+  TGroupOfElems groupOfElems;
+  TMapOfNodeSet mapOfNodeSet;
+
+  TElemsSet::iterator elemIt = elems.begin();
+  for ( int i = 0, j=0; elemIt != elems.end(); ++elemIt, ++j ) {
+    const SMDS_MeshElement* curElem = *elemIt;
+    SortableElement SE(curElem);
+    int ind = -1;
+    // check uniqueness
+    pair< TMapOfNodeSet::iterator, bool> pp = mapOfNodeSet.insert(make_pair(SE, i));
+    if( !(pp.second) ) {
+      TMapOfNodeSet::iterator& itSE = pp.first;
+      ind = (*itSE).second;
+      arrayOfGroups[ind].push_back(curElem->GetID());
+    }
+    else {
+      groupOfElems.clear();
+      groupOfElems.push_back(curElem->GetID());
+      arrayOfGroups.push_back(groupOfElems);
+      i++;
+    }
+  }
+
+  vector< TGroupOfElems >::iterator groupIt = arrayOfGroups.begin();
+  for ( ; groupIt != arrayOfGroups.end(); ++groupIt ) {
+    groupOfElems = *groupIt;
+    if ( groupOfElems.size() > 1 ) {
+      groupOfElems.sort();
+      theGroupsOfElementsID.push_back(groupOfElems);
+    }
+  }
+}
 
 //=======================================================================
 //function : MergeEqualElements
 //purpose  : Remove all but one of elements built on the same nodes.
 //=======================================================================
 
-void SMESH_MeshEditor::MergeEqualElements()
+void SMESH_MeshEditor::MergeEqualElements(TListOfListOfElementsID & theGroupsOfElementsID)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
+  typedef list<int> TListOfIDs;
+  TListOfIDs rmElemIds; // IDs of elems to remove
+
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
-  SMDS_EdgeIteratorPtr   eIt = aMesh->edgesIterator();
-  SMDS_FaceIteratorPtr   fIt = aMesh->facesIterator();
-  SMDS_VolumeIteratorPtr vIt = aMesh->volumesIterator();
-
-  list< int > rmElemIds; // IDs of elems to remove
-
-  for ( int iDim = 1; iDim <= 3; iDim++ ) {
-
-    set< SortableElement > setOfNodeSet;
-    while ( 1 ) {
-      // get next element
-      const SMDS_MeshElement* elem = 0;
-      if ( iDim == 1 ) {
-        if ( eIt->more() ) elem = eIt->next();
-      } else if ( iDim == 2 ) {
-        if ( fIt->more() ) elem = fIt->next();
-      } else {
-        if ( vIt->more() ) elem = vIt->next();
-      }
-      if ( !elem ) break;
-
-      SortableElement SE(elem);
-
-      // check uniqueness
-      pair< set<SortableElement>::iterator, bool> pp = setOfNodeSet.insert(SE);
-      if( !(pp.second) ) {
-        set<SortableElement>::iterator & itSE = pp.first;
-        const SortableElement & SEold = *itSE;
-        if( SEold.Get()->GetID() > elem->GetID() ) {
-          // keep elem, remove old
-          rmElemIds.push_back( SEold.Get()->GetID() );
-          // add kept elem in groups of removed one (PAL15188)
-          AddToSameGroups( elem, SEold.Get(), GetMeshDS() );
-          SEold.Set( elem );
-        }
-          else { // remove elem
-          rmElemIds.push_back( elem->GetID() );
-          AddToSameGroups( SEold.Get(), elem, GetMeshDS() );
-        }
-      }
+  TListOfListOfElementsID::iterator groupsIt = theGroupsOfElementsID.begin();
+  while ( groupsIt != theGroupsOfElementsID.end() ) {
+    TListOfIDs& aGroupOfElemID = *groupsIt;
+    aGroupOfElemID.sort();
+    int elemIDToKeep = aGroupOfElemID.front();
+    const SMDS_MeshElement* elemToKeep = aMesh->FindElement(elemIDToKeep);
+    aGroupOfElemID.pop_front();
+    TListOfIDs::iterator idIt = aGroupOfElemID.begin();
+    while ( idIt != aGroupOfElemID.end() ) {
+      int elemIDToRemove = *idIt;
+      const SMDS_MeshElement* elemToRemove = aMesh->FindElement(elemIDToRemove);
+      // add the kept element in groups of removed one (PAL15188)
+      AddToSameGroups( elemToKeep, elemToRemove, aMesh );
+      rmElemIds.push_back( elemIDToRemove );
+      ++idIt;
     }
+    ++groupsIt;
   }
 
   Remove( rmElemIds, false );
