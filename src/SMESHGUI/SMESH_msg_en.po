@@ -771,7 +771,7 @@ msgid "SMESH_MERGE_NODES"
 msgstr "Merge nodes"
 
 #Merge elements
-msgid "SMESH_MERGE_ELEMENTS_TITLE"
+msgid "SMESH_MERGE_ELEMENTS"
 msgstr "Merge elements"
 
 #Extrusion
@@ -1820,20 +1820,24 @@ msgstr "Preview"
 #----------------------------------------------------
 
 #Coincident nodes
-msgid "SMESHGUI_MergeNodesDlg::COINCIDENT_NODES"
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_NODES"
 msgstr "Coincident nodes"
 
+#Coincident elements
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_ELEMENTS"
+msgstr "Coincident elements"
+
 #Detect
-msgid "SMESHGUI_MergeNodesDlg::DETECT"
+msgid "SMESHGUI_EditMeshDlg::DETECT"
 msgstr "Detect"
 
 #Select all
-msgid "SMESHGUI_MergeNodesDlg::SELECT_ALL"
+msgid "SMESHGUI_EditMeshDlg::SELECT_ALL"
 msgstr "Select all"
 
-# Edit group of nodes
-msgid "SMESHGUI_MergeNodesDlg::EDIT_GROUP_OF_NODES"
-msgstr "Edit group of nodes"
+# Edit selected group
+msgid "SMESHGUI_EditMeshDlg::EDIT_SELECTED_GROUP"
+msgstr "Edit selected group"
 
 #----------------------------------------------------
 
