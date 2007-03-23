@@ -1349,6 +1349,13 @@ msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
        "       pyramid's elements will be missed"
 
+msgid "SMESH_EXPORT_STL1"
+msgstr "Mesh  - \"%1\" does not contain triangles"
+
+msgid "SMESH_EXPORT_STL2"
+msgstr "Mesh  - \"%1\" contains another than triangles elements,"
+       "     they are ignored during writing to STL"
+
 msgid "SMESH_EXPORT_MED_DUPLICATED_GRP"
 msgstr "There are duplicated group names in mesh \"%1\".\n"
        "You can cancel exporting and rename them,\n"
@@ -2109,6 +2116,9 @@ msgstr "UNV file"
 msgid "MEN_MED"
 msgstr "MED file"
 
+msgid "MEN_STL"
+msgstr "STL file"
+
 msgid "MEN_EXPORT_DAT"
 msgstr "Export to DAT file"
 
@@ -2117,6 +2127,9 @@ msgstr "Export to UNV file"
 
 msgid "MEN_EXPORT_MED"
 msgstr "Export to MED file"
+
+msgid "MEN_EXPORT_STL"
+msgstr "Export to STL file"
 
 msgid "MEN_DELETE"
 msgstr "Delete"
@@ -2480,6 +2493,9 @@ msgstr "Export to UNV file"
 msgid "TOP_EXPORT_MED"
 msgstr "Export to MED file"
 
+msgid "TOP_EXPORT_STL"
+msgstr "Export to STL file"
+
 msgid "TOP_DELETE"
 msgstr "Delete"
 
@@ -2789,6 +2805,9 @@ msgstr "Export to UNV file"
 
 msgid "STB_EXPORT_MED"
 msgstr "Export to MED file"
+
+msgid "STB_EXPORT_STL"
+msgstr "Export to STL file"
 
 msgid "STB_DELETE"
 msgstr "Delete"

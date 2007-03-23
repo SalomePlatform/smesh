@@ -260,6 +260,7 @@ using namespace std;
       if ( !aMesh->_is_nil() ) {
 	QString aFilter, aTitle = QObject::tr("Export mesh");
 	QMap<QString, SMESH::MED_VERSION> aFilterMap;
+	QMap<QString, int> aFilterMapSTL;
 	switch ( theCommandID ) {
 	case 125:
 	case 122:
@@ -299,6 +300,36 @@ using namespace std;
             aFilter = QObject::tr("IDEAS files (*.unv)");
           }
 	  break;
+	case 140:
+	case 141:
+          {
+	    // export STL
+	    /*
+	      there must be check on others mesh elements not equal triangles
+	    */
+	    if (aMesh->NbTriangles() < 1) {
+              int aRet = SUIT_MessageBox::warn1
+                (SMESHGUI::desktop(),
+                 QObject::tr("SMESH_WRN_WARNING"),
+                 QObject::tr("SMESH_EXPORT_STL1").arg(anIObject->getName()),
+                 QObject::tr("SMESH_BUT_OK"));
+	      return;
+            }
+	    if (!(aMesh->NbElements() - aMesh->NbTriangles())) {
+              int aRet = SUIT_MessageBox::warn2
+                (SMESHGUI::desktop(),
+                 QObject::tr("SMESH_WRN_WARNING"),
+                 QObject::tr("SMESH_EXPORT_STL2").arg(anIObject->getName()),
+                 QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+                 0, 1, 0);
+              if (aRet)
+                return;
+            }
+
+            aFilterMapSTL.insert( QObject::tr("STL ASCII  (*.stl)"), 1 ); // 1 - ASCII mode
+            aFilterMapSTL.insert( QObject::tr("STL Binary (*.stl)"), 0 ); // 0 - Binary mode
+          }
+	  break;
 	default:
 	  return;
 	}
@@ -306,13 +337,35 @@ using namespace std;
 	QString aFilename;
 	SMESH::MED_VERSION aFormat;
 	// Init the parameter with the default value
+	bool aIsASCII_STL = true;
 	bool toCreateGroups = false;
 	SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
 	if ( resMgr )
 	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
 
-	if ( theCommandID != 122 && theCommandID != 125 )
+	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141)
+
 	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
+
+	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
+	  QStringList filters;
+          QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
+          for ( ; it != aFilterMapSTL.end(); ++it )
+            filters.push_back( it.key() );
+
+          SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+          fd->setCaption( aTitle );
+          fd->setFilters( filters );
+          fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
+          bool is_ok = false;
+          while (!is_ok) {
+            fd->exec();
+            aFilename = fd->selectedFile();
+            aIsASCII_STL = (aFilterMapSTL[fd->selectedFilter()]) == 1 ? true: false;
+            is_ok = true;
+	  }
+          delete fd;
+	}
 	else {
           QStringList filters;
           QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
@@ -380,6 +433,10 @@ using namespace std;
 	    case 126:
 	    case 123:
 	      aMesh->ExportUNV( aFilename.latin1() );
+	      break;
+	    case 140:
+	    case 141:
+	      aMesh->ExportSTL( aFilename.latin1(), aIsASCII_STL );
 	      break;
 	    default:
 	      break;
@@ -1150,6 +1207,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 124:
   case 125:
   case 126:
+  case 140:
+  case 141:
     {
       ::ExportMeshToFile(theCommandID);
       break;
@@ -2347,9 +2406,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  121, "DAT" );
   createSMESHAction(  122, "MED" );
   createSMESHAction(  123, "UNV" );
+  createSMESHAction(  140, "STL" );
   createSMESHAction(  124, "EXPORT_DAT" );
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
+  createSMESHAction(  141, "EXPORT_STL" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE" );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
   createSMESHAction(  701, "COMPUTE",         "ICON_COMPUTE" );
@@ -2472,6 +2533,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( 121, exportId, -1 );
   createMenu( 122, exportId, -1 );
   createMenu( 123, exportId, -1 );
+  createMenu( 140, exportId, -1 ); // export to stl STL
 
   createMenu( separator(), fileId, 10 );
 
@@ -2693,6 +2755,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
   createPopupItem( 125, OB, mesh, only_one_non_empty );    // EXPORT_MED
   createPopupItem( 126, OB, mesh, only_one_non_empty );    // EXPORT_UNV
+  createPopupItem( 141, OB, mesh, only_one_non_empty );    // EXPORT_STL
   createPopupItem( 33, OB, subMesh + " " + group );        // DELETE
   popupMgr()->insert( separator(), -1, 0 );
 
