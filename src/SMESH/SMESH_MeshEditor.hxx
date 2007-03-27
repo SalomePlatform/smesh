@@ -322,7 +322,10 @@ public:
   // Return list of group of elements build on the same nodes.
   // Search among theElements or in the whole mesh if theElements is empty.
 
-  void MergeEqualElements(TListOfListOfElementsID & theGroupsOfElementsID);
+  void MergeElements(TListOfListOfElementsID & theGroupsOfElementsID);
+  // In each group remove all but first of elements.
+
+  void MergeEqualElements();
   // Remove all but one of elements built on the same nodes.
   // Return nb of successfully merged groups.
 

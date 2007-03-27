@@ -1932,16 +1932,16 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
 }
 
 //=======================================================================
-//function : MergeEqualElements
+//function : MergeElements
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::MergeEqualElements(const SMESH::array_of_long_array& GroupsOfElementsID)
+void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& GroupsOfElementsID)
 {
   initData();
 
   TPythonDump aTPythonDump;
-  aTPythonDump << this << ".MergeEqualElements( [";
+  aTPythonDump << this << ".MergeElements( [";
 
   ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
 
@@ -1960,10 +1960,26 @@ void SMESH_MeshEditor_i::MergeEqualElements(const SMESH::array_of_long_array& Gr
   }
 
   ::SMESH_MeshEditor anEditor( myMesh );
-  anEditor.MergeEqualElements(aListOfListOfElementsID);
+  anEditor.MergeElements(aListOfListOfElementsID);
 
   // Update Python script
   aTPythonDump << "] )";
+}
+
+//=======================================================================
+//function : MergeEqualElements
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::MergeEqualElements()
+{
+  initData();
+
+  ::SMESH_MeshEditor anEditor( myMesh );
+  anEditor.MergeEqualElements();
+
+  // Update Python script
+  TPythonDump() << this << ".MergeEqualElements()";
 }
 
 //================================================================================

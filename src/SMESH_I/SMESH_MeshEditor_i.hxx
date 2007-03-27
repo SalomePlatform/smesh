@@ -210,7 +210,8 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      theObject,
 			 SMESH::array_of_long_array_out GroupsOfElementsID);
-  void MergeEqualElements(const SMESH::array_of_long_array& GroupsOfElementsID);
+  void MergeElements(const SMESH::array_of_long_array& GroupsOfElementsID);
+  void MergeEqualElements();
   CORBA::Long MoveClosestNodeToPoint(CORBA::Double x,
                                      CORBA::Double y,
                                      CORBA::Double z,

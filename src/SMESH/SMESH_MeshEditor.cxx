@@ -5071,7 +5071,8 @@ class SortableElement : public set <const SMDS_MeshElement*>
 
 //=======================================================================
 //function : FindEqualElements
-//purpose  : 
+//purpose  : Return list of group of elements built on the same nodes.
+//           Search among theElements or in the whole mesh if theElements is empty
 //=======================================================================
 void SMESH_MeshEditor::FindEqualElements(set<const SMDS_MeshElement*> & theElements,
 					 TListOfListOfElementsID &      theGroupsOfElementsID)
@@ -5128,11 +5129,11 @@ void SMESH_MeshEditor::FindEqualElements(set<const SMDS_MeshElement*> & theEleme
 }
 
 //=======================================================================
-//function : MergeEqualElements
-//purpose  : Remove all but one of elements built on the same nodes.
+//function : MergeElements
+//purpose  : In each given group, substitute all elements by the first one.
 //=======================================================================
 
-void SMESH_MeshEditor::MergeEqualElements(TListOfListOfElementsID & theGroupsOfElementsID)
+void SMESH_MeshEditor::MergeElements(TListOfListOfElementsID & theGroupsOfElementsID)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
@@ -5162,6 +5163,20 @@ void SMESH_MeshEditor::MergeEqualElements(TListOfListOfElementsID & theGroupsOfE
   }
 
   Remove( rmElemIds, false );
+}
+
+//=======================================================================
+//function : MergeEqualElements
+//purpose  : Remove all but one of elements built on the same nodes.
+//=======================================================================
+
+void SMESH_MeshEditor::MergeEqualElements()
+{
+  set<const SMDS_MeshElement*> aMeshElements; /* empty input -
+						 to merge equal elements in the whole mesh */
+  TListOfListOfElementsID aGroupsOfElementsID;
+  FindEqualElements(aMeshElements, aGroupsOfElementsID);
+  MergeElements(aGroupsOfElementsID);
 }
 
 //=======================================================================
