@@ -1319,10 +1319,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 	aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
 	aNewEditor.MergeNodes( aGroupsOfNodes );
 	// merge elements
-	set<const SMDS_MeshElement*> aMeshElements; // no input elements
-	SMESH_MeshEditor::TListOfListOfElementsID aGroupsOfElementsID;
-	aNewEditor.FindEqualElements(aMeshElements, aGroupsOfElementsID);
-	aNewEditor.MergeEqualElements(aGroupsOfElementsID);
+	aNewEditor.MergeEqualElements();
       }
     }
   }
