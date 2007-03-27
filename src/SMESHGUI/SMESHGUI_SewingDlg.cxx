@@ -561,11 +561,8 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
       }
       aResult = (anError == SMESH::SMESH_MeshEditor::SEW_OK);
 
-      if (toMerge && aResult) {
-	SMESH::array_of_long_array_var aGroupsOfElementsID = new SMESH::array_of_long_array;
-	aMeshEditor->FindEqualElements(myMesh, aGroupsOfElementsID);
-        aMeshEditor->MergeEqualElements(aGroupsOfElementsID.inout());
-      }
+      if (toMerge && aResult)
+        aMeshEditor->MergeEqualElements();
 
       QApplication::restoreOverrideCursor();
 
