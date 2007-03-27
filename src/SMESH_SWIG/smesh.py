@@ -2427,6 +2427,17 @@ class Mesh:
     def MergeNodes (self, GroupsOfNodes):
         self.editor.MergeNodes(GroupsOfNodes)
 
+    ## Find elements built on the same nodes.
+    #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
+    #  @return a list of groups of equal elements
+    def FindEqualElements (self, MeshOrSubMeshOrGroup):
+        return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
+
+    ## Merge elements in each given group.
+    #  @param GroupsOfElementsID groups of elements for merging
+    def MergeElements(self, GroupsOfElementsID):
+        self.editor.MergeElements(GroupsOfElementsID)
+
     ## Remove all but one of elements built on the same nodes.
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
