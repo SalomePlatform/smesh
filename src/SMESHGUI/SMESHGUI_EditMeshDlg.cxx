@@ -641,7 +641,7 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
     if( myAction == 0 )
       aMeshEditor->MergeNodes (aGroupsOfElements.inout());
     else
-      aMeshEditor->MergeEqualElements (aGroupsOfElements.inout());
+      aMeshEditor->MergeElements (aGroupsOfElements.inout());
 
     QApplication::restoreOverrideCursor();
   } catch(...) {
