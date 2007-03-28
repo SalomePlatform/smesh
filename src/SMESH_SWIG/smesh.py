@@ -50,6 +50,9 @@ MEFISTO = 3
 NETGEN  = 4
 GHS3D   = 5
 FULL_NETGEN = 6
+Hexa    = 7
+Hexotic = 8
+BLSURF  = 9
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -568,11 +571,16 @@ class Mesh_Triangle(Mesh_Algorithm):
 
     algoType = 0
     params = 0
-   
+    _angleMeshS = 8
+    _gradation  = 1.1
+
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
         if algoType == MEFISTO:
             self.Create(mesh, geom, "MEFISTO_2D")
+        elif algoType == BLSURF:
+            import BLSURFPlugin
+            self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
         elif algoType == NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module has not been imported."
@@ -607,6 +615,9 @@ class Mesh_Triangle(Mesh_Algorithm):
         elif self.algoType == MEFISTO:
             print "Mefisto algo doesn't support this hypothesis"
             return None
+        elif self.algoType == BLSURF:
+            self.params = self.Hypothesis("BLSURF_Parameters", [], "libBLSURFEngine.so")
+            return self.params
 
     ## Set MaxSize
     def SetMaxSize(self, theSize):
@@ -652,13 +663,55 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Parameters()
         self.params.SetNbSegPerRadius(theVal)
 
+    ## Set PhysicalMesh
+    #  @param thePhysicalMesh is:
+    #  DefaultSize or Custom
+    def SetPhysicalMesh(self, thePhysicalMesh=1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhysicalMesh(thePhysicalMesh)
+
+    ## Set PhySize flag
+    def SetPhySize(self, theVal):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhySize(theVal)
+
+    ## Set GeometricMesh
+    #  @param theGeometricMesh is:
+    #  DefaultGeom or Custom
+    def SetGeometricMesh(self, theGeometricMesh=0):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
+        self.params.SetGeometricMesh(theGeometricMesh)
+
+    ## Set AngleMeshS flag
+    def SetAngleMeshS(self, theVal=_angleMeshS):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+        self.params.SetAngleMeshS(theVal)
+
+    ## Set Gradation flag
+    def SetGradation(self, theVal=_gradation):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetGeometricMesh() == 0: theVal = self._gradation
+        self.params.SetGradation(theVal)
+
     ## Set QuadAllowed flag
-    def SetQuadAllowed(self, toAllow):
+    def SetQuadAllowed(self, toAllow=False):
         if self.params == 0:
             self.Parameters()
         self.params.SetQuadAllowed(toAllow)
-        
-    
+
+    ## Set Decimesh flag
+    def SetDecimesh(self, toAllow=False):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetDecimesh(toAllow)
+
 # Public class: Mesh_Quadrangle
 # -----------------------------
 
@@ -771,8 +824,22 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 class Mesh_Hexahedron(Mesh_Algorithm):
 
     ## Private constructor.
-    def __init__(self, mesh, geom=0):
-        self.Create(mesh, geom, "Hexa_3D")
+    ## def __init__(self, mesh, geom=0):
+    ##    self.Create(mesh, geom, "Hexa_3D")
+    def __init__(self, mesh, algo, geom):
+        if algo == Hexa:
+            self.Create(mesh, geom, "Hexa_3D")
+        elif algo == Hexotic:
+            import HexoticPlugin
+            self.Create(mesh, geom, "Hexotic_3D" , "libHexoticEngine.so")
+
+    ## Define "MinMaxQuad" hypothesis to give the three hexotic parameters
+    def MinMaxQuad(self, min=3, max=8, quad=True):
+        hyp = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
+        hyp.SetHexesMinLevel(min)
+        hyp.SetHexesMaxLevel(max)
+        hyp.SetHexoticQuadrangles(quad)
+        return hyp
 
 # Deprecated, only for compatibility!
 # Public class: Mesh_Netgen
@@ -1174,8 +1241,14 @@ class Mesh:
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
-    def Hexahedron(self, geom=0):
-        return Mesh_Hexahedron(self, geom)
+    ## def Hexahedron(self, geom=0):
+    ##     return Mesh_Hexahedron(self, geom)
+    def Hexahedron(self, algo=Hexa, geom=0):
+        ## if Hexahedron(geom, algo) or Hexahedron(geom) is called by mistake
+        if ( isinstance(algo, geompy.GEOM._objref_GEOM_Object) ):
+            if   geom in [Hexa, Hexotic]: algo, geom = geom, algo
+            elif geom == 0:               algo, geom = Hexa, algo
+        return Mesh_Hexahedron(self, algo, geom)
 
     ## Deprecated, only for compatibility!
     def Netgen(self, is3D, geom=0):
