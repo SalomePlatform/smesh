@@ -34,6 +34,8 @@ from   SMESH import *
 
 import StdMeshers
 
+import SALOME
+
 # import NETGENPlugin module if possible
 noNETGENPlugin = 0
 try:
@@ -1269,7 +1271,16 @@ class Mesh:
                 return 0
             else:
                 geom = self.geom
-        ok = smesh.Compute(self.mesh, geom)
+        ok = False
+        try:
+            ok = smesh.Compute(self.mesh, geom)
+        except SALOME.SALOME_Exception, ex:
+            print "Mesh computation failed, exception cought:"
+            print "    ", ex.details.text
+        except:
+            import traceback
+            print "Mesh computation failed, exception cought:"
+            traceback.print_exc()
         if not ok:
             errors = smesh.GetAlgoState( self.mesh, geom )
             allReasons = ""
@@ -1301,8 +1312,10 @@ class Mesh:
                 allReasons += reason
                 pass
             if allReasons != "":
-                print '"' + GetName(self.mesh) + '"',"not computed:"
+                print '"' + GetName(self.mesh) + '"',"has not been computed:"
                 print allReasons
+            else:
+                print '"' + GetName(self.mesh) + '"',"has not been computed."
                 pass
             pass
         if salome.sg.hasDesktop():
