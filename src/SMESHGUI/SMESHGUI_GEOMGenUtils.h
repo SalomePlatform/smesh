@@ -34,6 +34,9 @@ namespace SMESH
   GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh (_PTR(SObject) theSObject);
 
   GEOM::GEOM_Object_ptr GetGeom (_PTR(SObject) theSO);
+
+  GEOM::GEOM_Object_ptr GetSubShape (GEOM::GEOM_Object_ptr theMainShape,
+                                     long                  theID);
 }
 
 #endif
