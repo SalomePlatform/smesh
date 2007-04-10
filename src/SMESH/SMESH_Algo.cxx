@@ -27,6 +27,7 @@
 //  $Header$
 
 #include "SMESH_Algo.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_HypoFilter.hxx"
@@ -77,6 +78,7 @@ SMESH_Algo::SMESH_Algo(int hypId, int studyId,
 
   _onlyUnaryInput = _requireDescretBoundary = _requireShape = true;
   _quadraticMesh = false;
+  _error = COMPERR_OK;
 }
 
 //=============================================================================
@@ -469,7 +471,60 @@ void SMESH_Algo::SubmeshRestored(SMESH_subMesh* /*subMesh*/)
  */
 //================================================================================
 
-bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* aHelper)
+bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* /*aHelper*/)
 {
-  return false;
+  return error( COMPERR_BAD_INPUT_MESH, "Mesh built on shape expected");
 }
+
+//================================================================================
+/*!
+ * \brief store error and comment and then return ( error == COMPERR_OK )
+ */
+//================================================================================
+
+bool SMESH_Algo::error(int error, const SMESH_Comment& comment)
+{
+  _error   = error;
+  _comment = comment;
+  return ( error == COMPERR_OK );
+}
+
+//================================================================================
+/*!
+ * \brief store error and return ( error == COMPERR_OK )
+ */
+//================================================================================
+
+bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
+{
+  if ( error ) {
+    _error   = error->myName;
+    _comment = error->myComment;
+    return error->IsOK();
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief return compute error
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
+{
+  return SMESH_ComputeError::New( _error, _comment, this );
+}
+
+//================================================================================
+/*!
+ * \brief initialize compute error
+ */
+//================================================================================
+
+void SMESH_Algo::InitComputeError()
+{
+  _error = COMPERR_OK;
+  _comment.clear();
+}
+

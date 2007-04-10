@@ -30,16 +30,15 @@
 #define _SMESH_ALGO_HXX_
 
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_ComputeError.hxx"
 
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
-#include <gp_XY.hxx>
 #include <GeomAbs_Shape.hxx>
 
 #include <string>
 #include <vector>
 #include <list>
-#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
@@ -51,6 +50,8 @@ class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
+class SMESH_Comment;
+
 
 class SMESH_Algo:public SMESH_Hypothesis
 {
@@ -102,6 +103,10 @@ public:
     * \param aMesh - the mesh
     * \param aShape - the shape
     * \retval bool - is a success
+    *
+    * Algorithms that !NeedDescretBoundary() || !OnlyUnaryInput() are
+    * to set SMESH_ComputeError returned by SMESH_submesh::GetComputeError()
+    * to report problematic subshapes
    */
   virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
 
@@ -157,15 +162,19 @@ public:
                                  const bool         ignoreAuxiliary) const;
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
-   * \param theMesh - the built mesh
-   * \param theShape - the geometry of interest
-   * \retval bool - true if parameter values have been successfully defined
    *
    * Just return false as the algorithm does not hold parameters values
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
                                    const TopoDS_Shape& theShape);
-
+  /*!
+   * \brief return compute error
+   */
+  SMESH_ComputeErrorPtr GetComputeError() const;
+  /*!
+   * \brief initialize compute error
+   */
+  void InitComputeError();
 
 public:
   // ==================================================================
@@ -262,7 +271,23 @@ public:
                                          SMESHDS_Mesh*        meshDS);
 
 protected:
-  std::vector<std::string> _compatibleHypothesis;
+
+  /*!
+   * \brief store error and comment and then return ( error == COMPERR_OK )
+   */
+  bool error(int error, const SMESH_Comment& comment = "");
+  /*!
+   * \brief To be used as error in previous method
+   */
+  SMESH_ComputeErrorName dfltErr() const { return COMPERR_ALGO_FAILED; }
+  /*!
+   * \brief store error and return error->IsOK()
+   */
+  bool error(SMESH_ComputeErrorPtr error);
+
+protected:
+
+  std::vector<std::string>              _compatibleHypothesis;
   std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
 
@@ -270,8 +295,12 @@ protected:
   bool _requireDescretBoundary;
   bool _requireShape;
 
-  // quadratic mesh creation required
+  // quadratic mesh creation required,
+  // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
   bool _quadraticMesh;
+
+  int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
+  std::string _comment;  //!< any text explaining what is wrong in Compute()
 };
 
 #endif
