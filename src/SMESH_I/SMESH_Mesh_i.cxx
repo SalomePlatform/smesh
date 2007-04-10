@@ -317,7 +317,7 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
 
 #define RETURNCASE(hyp_stat) case SMESH_Hypothesis::hyp_stat: return SMESH::hyp_stat;
 
-static SMESH::Hypothesis_Status ConvertHypothesisStatus
+SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
                          (SMESH_Hypothesis::Hypothesis_Status theStatus)
 {
   switch (theStatus) {

@@ -288,6 +288,9 @@ public:
   SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
   
+  static SMESH::Hypothesis_Status
+  ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
+
   int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
