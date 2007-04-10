@@ -254,7 +254,7 @@ namespace SMESH{
     return theSObject->GetFather();
   }
 
-  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight)
+  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNotModif, bool isEmptyMesh)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -264,10 +264,12 @@ namespace SMESH{
     _PTR(GenericAttribute) anAttr =
       aBuilder->FindOrCreateAttribute(theSObject,"AttributePixMap");
     _PTR(AttributePixMap) aPixmap = anAttr;
-    if (theIsRight) {
+    if (theIsNotModif) {
       aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-    } else {
+    } else if ( isEmptyMesh ) {
       aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
+    } else {
+      aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
     }
 
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
@@ -279,11 +281,13 @@ namespace SMESH{
 	  _PTR(SObject) aSObj1 = anIter1->Value();
 	  anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
 	  aPixmap = anAttr;
-	  if (theIsRight) {
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-	  } else {
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
-	  }
+          if (theIsNotModif) {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
+          } else if ( isEmptyMesh ) {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
+          } else {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
+          }
 	}
       }
     }

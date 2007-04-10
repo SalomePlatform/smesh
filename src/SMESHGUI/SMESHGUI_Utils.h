@@ -124,7 +124,7 @@ namespace SMESH {
 
   _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject);
 
-  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight);
+  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNot, bool isEmptyMesh=false);
 
   void ShowHelpFile (QString theHelpFileName);
 }
