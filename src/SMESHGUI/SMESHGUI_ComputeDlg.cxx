@@ -575,7 +575,7 @@ void SMESHGUI_ComputeOp::startOperation()
         nbFaces = aMesh->NbFaces();
         nbVolums = aMesh->NbVolumes();
         _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
-        SMESH::ModifiedMesh(aMeshSObj, true, nbNodes == 0);
+        SMESH::ModifiedMesh(aMeshSObj, !computeFailed, nbNodes == 0);
       }
       catch(const SALOME::SALOME_Exception & S_ex){
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
