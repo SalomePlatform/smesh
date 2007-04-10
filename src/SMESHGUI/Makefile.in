@@ -114,7 +114,8 @@ LIB_SRC =	SMESHGUI.cxx \
 		SMESHGUI_ConvToQuadDlg.cxx \
 		SMESHGUI_ConvToQuadOp.cxx \
 		SMESHGUI_MeshEditPreview.cxx \
-		SMESHGUI_MakeNodeAtPointDlg.cxx
+		SMESHGUI_MakeNodeAtPointDlg.cxx \
+		SMESHGUI_ComputeDlg.cxx 
 
 LIB_MOC = \
 		SMESHGUI.h \
@@ -164,7 +165,8 @@ LIB_MOC = \
 		SMESHGUI_AddQuadraticElementDlg.h \
 		SMESHGUI_ConvToQuadDlg.h \
 		SMESHGUI_ConvToQuadOp.h \
-		SMESHGUI_MakeNodeAtPointDlg.h
+		SMESHGUI_MakeNodeAtPointDlg.h \
+		SMESHGUI_ComputeDlg.h 
 
 
 LIB_CLIENT_IDL = SALOME_Exception.idl \
