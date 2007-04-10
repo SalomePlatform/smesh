@@ -234,6 +234,10 @@ msgstr "mesh_quad_hexahedron.png"
 msgid "ICON_SMESH_TREE_MESH"
 msgstr "mesh_tree_mesh.png"	
 
+#mesh_tree_mesh
+msgid "ICON_SMESH_TREE_MESH_PARTIAL"
+msgstr "mesh_tree_mesh_partial.png"	
+
 #mesh_tree_group
 msgid "ICON_SMESH_TREE_GROUP"
 msgstr "mesh_tree_group.png"	
