@@ -1358,7 +1358,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         if (_father->HasShapeToMesh() ) {
           bool subComputed = SubMeshesComputed();
           ret = ( algo->NeedDescretBoundary() ? subComputed :
-                  ( _father->IsNotConformAllowed() || !subComputed ));
+                  ( !subComputed || _father->IsNotConformAllowed() ));
           if (!ret) {
             _computeState = FAILED_TO_COMPUTE;
             if ( !algo->NeedDescretBoundary() )
@@ -1392,7 +1392,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             else
               ret = algo->Compute((*_father), _subShape);
           }
-          _computeError = algo->GetComputeError();
+          if ( !ret )
+            if ( SMESH_ComputeErrorPtr err = algo->GetComputeError())
+              if ( !err->IsOK() ) // avoid overriding the error set by ApplyToCollection()
+                _computeError = err;
         }
         catch (Standard_Failure& exc) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
