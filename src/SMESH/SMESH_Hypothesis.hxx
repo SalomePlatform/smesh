@@ -40,7 +40,7 @@ class SMESH_Hypothesis: public SMESHDS_Hypothesis
 public:
   enum Hypothesis_Status // in the order of severity
   {
-    HYP_OK,
+    HYP_OK = 0,
     HYP_MISSING,      // algo misses a hypothesis
     HYP_CONCURENT,    // several applicable hypotheses
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value

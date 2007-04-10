@@ -414,11 +414,11 @@ SMESH_Hypothesis::Hypothesis_Status
     // check concurent hypotheses on ansestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !isGlobalHyp )
     {
-      const map < int, SMESH_subMesh * >& smMap = subMesh->DependsOn();
-      map < int, SMESH_subMesh * >::const_iterator smIt = smMap.begin();
-      for ( ; smIt != smMap.end(); smIt++ ) {
-        if ( smIt->second->IsApplicableHypotesis( anHyp )) {
-          ret2 = smIt->second->CheckConcurentHypothesis( anHyp->GetType() );
+      SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+      while ( smIt->more() ) {
+        SMESH_subMesh* sm = smIt->next();
+        if ( sm->IsApplicableHypotesis( anHyp )) {
+          ret2 = sm->CheckConcurentHypothesis( anHyp->GetType() );
           if (ret2 > ret) {
             ret = ret2;
             break;
@@ -504,11 +504,11 @@ SMESH_Hypothesis::Hypothesis_Status
     // check concurent hypotheses on ansestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !IsMainShape( aSubShape ) )
     {
-      const map < int, SMESH_subMesh * >& smMap = subMesh->DependsOn();
-      map < int, SMESH_subMesh * >::const_iterator smIt = smMap.begin();
-      for ( ; smIt != smMap.end(); smIt++ ) {
-        if ( smIt->second->IsApplicableHypotesis( anHyp )) {
-          ret2 = smIt->second->CheckConcurentHypothesis( anHyp->GetType() );
+      SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+      while ( smIt->more() ) {
+        SMESH_subMesh* sm = smIt->next();
+        if ( sm->IsApplicableHypotesis( anHyp )) {
+          ret2 = sm->CheckConcurentHypothesis( anHyp->GetType() );
           if (ret2 > ret) {
             ret = ret2;
             break;
@@ -815,11 +815,9 @@ SMESH_Mesh::GetSubMeshUsingHypothesis(SMESHDS_Hypothesis * anHyp)
 //purpose  : Say all submeshes using theChangedHyp that it has been modified
 //=======================================================================
 
-void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* theChangedHyp)
+void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* hyp)
 {
   Unexpect aCatch(SalomeException);
-
-  const SMESH_Hypothesis* hyp = cSMESH_Hyp(theChangedHyp);
 
   const SMESH_Algo *foundAlgo = 0;
   SMESH_HypoFilter algoKind( SMESH_HypoFilter::IsAlgo() );

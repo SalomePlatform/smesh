@@ -62,7 +62,7 @@ public:
                             const int          eventType,
                             SMESH_subMesh*     subMesh,
                             SMESH_subMeshEventListenerData* data,
-                            SMESH_Hypothesis*  hyp = 0);
+                            const SMESH_Hypothesis*         hyp = 0);
 };
 
 // ------------------------------------------------------------------

@@ -32,12 +32,12 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
-#include "Utils_SALOME_Exception.hxx"
-#include <TopoDS_Shape.hxx>
-#include <TColStd_IndexedMapOfTransient.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include "SMESH_ComputeError.hxx"
 
-#include <set>
+#include "Utils_SALOME_Exception.hxx"
+
+#include <TopoDS_Shape.hxx>
+
 #include <list>
 #include <map>
 
@@ -47,9 +47,13 @@ class SMESH_Algo;
 class SMESH_Gen;
 class SMESH_subMeshEventListener;
 class SMESH_subMeshEventListenerData;
+class SMESH_subMesh;
 
 typedef SMESH_subMeshEventListener     EventListener;
 typedef SMESH_subMeshEventListenerData EventListenerData;
+
+typedef boost::shared_ptr< SMDS_Iterator<SMESH_subMesh*> > SMESH_subMeshIteratorPtr;
+
 
 class SMESH_subMesh
 {
@@ -60,9 +64,6 @@ class SMESH_subMesh
 
   int GetId() const;
 
-  //   bool Contains(const TopoDS_Shape & aSubShape)
-  //     throw (SALOME_Exception);
-
   SMESH_Mesh* GetFather() { return _father; }
   
   SMESHDS_SubMesh * GetSubMeshDS();
@@ -72,8 +73,13 @@ class SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
-  const map < int, SMESH_subMesh * >&DependsOn();
+  const map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
+  /*!
+   * \brief Return iterator on the submeshes this one depends on
+   */
+  SMESH_subMeshIteratorPtr getDependsOnIterator(const bool includeSelf,
+                                                const bool complexShapeFirst);
 
   const TopoDS_Shape & GetSubShape() const;
 
@@ -179,6 +185,7 @@ public:
 
   int GetAlgoState() const { return _algoState; }
   int GetComputeState() const { return _computeState; };
+  SMESH_ComputeErrorPtr& GetComputeError() { return _computeError; }
 
   void DumpAlgoState(bool isMain);
 
@@ -211,6 +218,7 @@ public:
    */
   void SetIsAlwaysComputed(bool isAlCo);
 
+
 protected:
   // ==================================================================
   void InsertDependence(const TopoDS_Shape aSubShape);
@@ -227,38 +235,54 @@ protected:
   void CleanDependsOn();
   void SetAlgoState(int state);
 
+  /*!
+   * \brief Return a shape containing all sub-shapes of the MainShape that can be
+   * meshed at once along with _subShape
+   */
   TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
-  // return a shape containing all sub-shapes of the MainShape that can be
-  // meshed at once along with _subShape
 
+  /*!
+   * \brief Apply theAlgo to all subshapes in theCollection
+   */
   bool ApplyToCollection (SMESH_Algo*         theAlgo,
                           const TopoDS_Shape& theCollection);
-  // Apply theAlgo to all subshapes in theCollection
 
+  /*!
+   * \brief Update compute_state by _computeError
+    * \retval bool - false if there are errors
+   */
+  bool CheckComputeError(SMESH_Algo* theAlgo);
+
+  /*!
+   * \brief Return a hypothesis attached to theShape.
+   * 
+   * If theHyp is provided, similar but not same hypotheses
+   * is returned; else an applicable ones having theHypType
+   * is returned
+   */
   const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
-  // return a hypothesis attached to theShape.
-  // If theHyp is provided, similar but not same hypotheses
-  // is returned; else an applicable ones having theHypType
-  // is returned
-  
+  // 
 
-  TopoDS_Shape _subShape;
-  SMESHDS_Mesh * _meshDS;
-  SMESHDS_SubMesh * _subMeshDS;
-  int _Id;
-  SMESH_Mesh *_father;
+protected:
+
+  TopoDS_Shape          _subShape;
+  SMESHDS_SubMesh *     _subMeshDS;
+  SMESH_Mesh *          _father;
+  int                   _Id;
+
   map < int, SMESH_subMesh * >_mapDepend;
-  bool _dependenceAnalysed;
+  bool                  _dependenceAnalysed;
 
-  int _algoState;
-  int _computeState;
+  int                   _algoState;
+  int                   _computeState;
+  SMESH_ComputeErrorPtr _computeError;
 
   // allow algo->Compute() if a subshape of lower dim is meshed but
   // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
   // mesh several edges as a whole and leave some of them  without mesh entities
-  bool _alwaysComputed;
+  bool                  _alwaysComputed;
 
 };
 
