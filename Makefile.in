@@ -108,6 +108,7 @@ mesh_tree_hypo_netgen_2d.png \
 mesh_tree_mesh.png \
 mesh_tree_importedmesh.png \
 mesh_tree_mesh_warn.png \
+mesh_tree_mesh_partial.png \
 mesh_triangle_n.png \
 mesh_triangle.png \
 mesh_update.png \
