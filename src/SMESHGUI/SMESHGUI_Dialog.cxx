@@ -111,7 +111,7 @@ int SMESHGUI_Dialog::prefix( const QString& name )
 // name    : resourceMgr
 // Purpose : Gets resource manager
 //=======================================================================
-SUIT_ResourceMgr* resourceMgr()
+SUIT_ResourceMgr* SMESHGUI_Dialog::resourceMgr()
 {
   return SUIT_Session::session()->resourceMgr();
 }
