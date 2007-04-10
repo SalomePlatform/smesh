@@ -160,6 +160,10 @@ msgstr "Missing parameters"
 msgid "SMESH_WRN_COMPUTE_FAILED"
 msgstr "Mesh computation failed"
 
+#Compute failed
+msgid "SMESH_COMPUTE_SUCCEED"
+msgstr "Mesh computation succeed"
+
 #Study frame with VTK Viewer must be activated
 msgid "SMESH_WRN_VIEWER_VTK"
 msgstr "Study frame with VTK Viewer must be activated"
@@ -1306,18 +1310,22 @@ msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
 msgid "SMESH_HYP_12"
 msgstr "Geomerty mismatches algorithm's expectation"
 
-# AlgoStateErrorName
+# SMESHGUI_HypothesesUtils::GetMessageOnAlgoStateErrors()
+# %1 - algo name
+# %2 - dimension
+# %3 - global/local
+# %4 - hypothesis dim == algoDim
 
-msgid "MISSING_ALGO"
+msgid "STATE_ALGO_MISSING"
 msgstr "%3 %2D algorithm is missing"
 
-msgid "MISSING_HYPO"
+msgid "STATE_HYP_MISSING"
 msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
 
-msgid "BAD_PARAM_VALUE"
+msgid "STATE_HYP_BAD_PARAMETER"
 msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 
-msgid "NOT_CONFORM_MESH"
+msgid "STATE_HYP_NOTCONFORM"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
 
 msgid "GLOBAL_ALGO"
@@ -3381,3 +3389,59 @@ msgstr "Mesh is not selected\nPlease specify it and try again"
 
 msgid "SMESHGUI_ConvToQuadOp::REF_IS_NULL"
 msgstr "No valid mesh object selected"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_ComputeDlg::CAPTION"
+msgstr "Compute mesh failed"
+
+msgid "SMESHGUI_ComputeDlg::CONSTRUCTOR"
+msgstr "Compute mesh"
+
+msgid "SMESHGUI_ComputeDlg::ERRORS"
+msgstr "Compute errors"
+
+msgid "SMESHGUI_ComputeDlg::SHOW_SHAPE"
+msgstr "Show SubShape"
+
+msgid "SMESHGUI_ComputeDlg::PUBLISH_SHAPE"
+msgstr "Publish SubShape"
+
+msgid "COMPERR_OK"
+msgstr "No errors"
+
+msgid "COMPERR_BAD_INPUT_MESH"
+msgstr "Invalid input mesh"
+
+msgid "COMPERR_STD_EXCEPTION"
+msgstr "std::exception"
+
+msgid "COMPERR_OCC_EXCEPTION"
+msgstr "OCC exception"
+
+msgid "COMPERR_SLM_EXCEPTION"
+msgstr "SALOME exception"
+
+msgid "COMPERR_EXCEPTION"
+msgstr "Unknown exception"
+
+msgid "COMPERR_MEMORY_PB"
+msgstr "Memory allocation problem"
+
+msgid "COMPERR_ALGO_FAILED"
+msgstr "Algorithm failed"
+
+msgid "COMPERR_BAD_SHAPE"
+msgstr "Unexpected geometry"
+
+msgid "COL_ALGO_HEADER"
+msgstr "Algorithm"
+
+msgid "COL_SHAPE_HEADER"
+msgstr "SubShape"
+
+msgid "COL_ERROR_HEADER"
+msgstr "Error"
+
+#-----------------------------------------------------------
+
