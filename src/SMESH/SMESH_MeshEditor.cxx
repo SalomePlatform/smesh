@@ -6401,19 +6401,17 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 
   SMESH_MesherHelper aHelper(*myMesh);
   aHelper.SetIsQuadratic( true );
-  const TopoDS_Shape& aShape = meshDS->ShapeToMesh();
 
-  if ( !aShape.IsNull() && GetMesh()->GetSubMeshContaining(aShape) )
+  if ( myMesh->HasShapeToMesh() )
   {
-    SMESH_subMesh *aSubMesh = GetMesh()->GetSubMeshContaining(aShape);
-
-    const map < int, SMESH_subMesh * >& aMapSM = aSubMesh->DependsOn();
-    map < int, SMESH_subMesh * >::const_iterator itsub;
-    for (itsub = aMapSM.begin(); itsub != aMapSM.end(); itsub++)
-    {
-      SMESHDS_SubMesh *sm = ((*itsub).second)->GetSubMeshDS();
-      aHelper.SetSubShape( (*itsub).second->GetSubShape() );
-      ConvertElemToQuadratic(sm, aHelper, theForce3d);
+    SMESH_subMesh *aSubMesh = myMesh->GetSubMesh(myMesh->GetShapeToMesh());
+    SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(false,false);
+    while ( smIt->more() ) {
+      SMESH_subMesh* sm = smIt->next();
+      if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() ) {
+        aHelper.SetSubShape( sm->GetSubShape() );
+        ConvertElemToQuadratic(smDS, aHelper, theForce3d);
+      }
     }
     aHelper.SetSubShape( aSubMesh->GetSubShape() );
     ConvertElemToQuadratic(aSubMesh->GetSubMeshDS(), aHelper, theForce3d);
@@ -6583,29 +6581,20 @@ void SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
 //=======================================================================
 bool  SMESH_MeshEditor::ConvertFromQuadratic()
 {
-  SMESHDS_Mesh* meshDS = GetMeshDS();
-  const TopoDS_Shape& aShape = meshDS->ShapeToMesh();
-
-  if ( !aShape.IsNull() && GetMesh()->GetSubMeshContaining(aShape) )
+  if ( myMesh->HasShapeToMesh() )
   {
-    SMESH_subMesh *aSubMesh = GetMesh()->GetSubMeshContaining(aShape);
-
-    const map < int, SMESH_subMesh * >& aMapSM = aSubMesh->DependsOn();
-    map < int, SMESH_subMesh * >::const_iterator itsub;
-    for (itsub = aMapSM.begin(); itsub != aMapSM.end(); itsub++)
-    {
-      SMESHDS_SubMesh *sm = ((*itsub).second)->GetSubMeshDS();
-      if( sm )
-	RemoveQuadElem( sm, sm->GetElements(), itsub->second->GetId() );
+    SMESH_subMesh *aSubMesh = myMesh->GetSubMesh(myMesh->GetShapeToMesh());
+    SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(true,false);
+    while ( smIt->more() ) {
+      SMESH_subMesh* sm = smIt->next();
+      if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() )
+	RemoveQuadElem( smDS, smDS->GetElements(), sm->GetId() );
     }
-    SMESHDS_SubMesh *Sm = aSubMesh->GetSubMeshDS();
-    if( Sm )
-      RemoveQuadElem( Sm, Sm->GetElements(), aSubMesh->GetId() );
   }
   else
   {
     SMESHDS_SubMesh *aSM = 0;
-    RemoveQuadElem( aSM, meshDS->elementsIterator(), 0 );
+    RemoveQuadElem( aSM, GetMeshDS()->elementsIterator(), 0 );
   }
 
   return true;
