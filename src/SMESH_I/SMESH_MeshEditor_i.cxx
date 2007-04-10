@@ -164,7 +164,7 @@ namespace {
     typedef map < int, SMESH_subMesh * > TDependsOnMap;
     //!< The meshod called by submesh: do my main job
     void ProcessEvent(const int, const int eventType, SMESH_subMesh* sm,
-                      SMESH_subMeshEventListenerData*,SMESH_Hypothesis*)
+                      SMESH_subMeshEventListenerData*,const SMESH_Hypothesis*)
     {
       if ( eventType == SMESH_subMesh::COMPUTE_EVENT ) {
         Delete();
