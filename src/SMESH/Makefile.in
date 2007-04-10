@@ -56,7 +56,9 @@ EXPORT_HEADERS= \
 	SMESH_SequenceOfNode.hxx \
         SMESH_MesherHelper.hxx \
         SMESH_Octree.hxx \
-        SMESH_OctreeNode.hxx
+        SMESH_OctreeNode.hxx \
+	SMESH_ComputeError.hxx \
+	SMESH_Comment.hxx
 
 EXPORT_PYSCRIPTS =
 
