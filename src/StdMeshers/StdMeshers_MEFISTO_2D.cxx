@@ -34,6 +34,7 @@
 #include "SMESH_subMesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_Comment.hxx"
 
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_MaxElementArea.hxx"
@@ -180,8 +181,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
 
   // helper builds quadratic mesh if necessary
-  myTool = new SMESH_MesherHelper(aMesh);
-  auto_ptr<SMESH_MesherHelper> helperDeleter( myTool );
+  SMESH_MesherHelper helper(aMesh);
+  myTool = &helper;
   _quadraticMesh = myTool->IsQuadraticSubMesh(aShape);
   const bool ignoreMediumNodes = _quadraticMesh;
 
@@ -209,10 +210,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     {
       wireEdges.splice(wireEdges.end(), wireEdges,
                        wireEdges.begin(), ++wireEdges.begin());
-      if ( from->IsSame( wireEdges.front() )) {
-        MESSAGE( "No nodes on vertices on wire " << iW+1);
-        return false;
-      }
+      if ( from->IsSame( wireEdges.front() ))
+        return error(COMPERR_BAD_INPUT_MESH,"No nodes on vertices");
     }
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( F, wireEdges, &aMesh,
                                                          true, ignoreMediumNodes);
@@ -222,7 +221,8 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     from = to;
   }
   if ( wires[0]->NbSegments() < 3 ) // ex: a circle with 2 segments
-    return false;
+    return error(COMPERR_BAD_INPUT_MESH,
+                 SMESH_Comment("Too few segments")<<wires[0]->NbSegments());
 
   if (_hypLengthFromEdges && _edgeLength < DBL_MIN )
     _edgeLength = 100;
@@ -283,7 +283,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     }
     else
     {
-      MESSAGE("Error in Triangulation");
+      error(ierr,"Error in Triangulation (aptrte())");
     }
   }
   if (nudslf != NULL) delete[]nudslf;
@@ -512,12 +512,12 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
   {
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct(isXConst,constValue);
     if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
-      MESSAGE("Wrong nb UVPtStruct: "<<uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
-      return false;
+      return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Unexpected nb of points on wire ")
+                   << iW << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
     }
     if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
       MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
-      return false;
+      return error(dfltErr(),"Internal error");
     }
 
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();

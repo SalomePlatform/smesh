@@ -42,7 +42,7 @@
 #include <TColStd_MapOfInteger.hxx>
 
 #include "SMESH_Block.hxx"
-
+#include "SMESH_ComputeError.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
@@ -86,6 +86,8 @@ public:
   bool IsForwadEdge(const int theEdgeID);
 
   int  ErrorStatus() const;
+
+  SMESH_ComputeErrorPtr GetError() const;
 
 
 protected:
@@ -173,6 +175,12 @@ class StdMeshers_Penta_3D {
     bool Compute(SMESH_Mesh& , const TopoDS_Shape& );
     
     int ErrorStatus() const {
+      if (myErrorStatus->IsOK())
+        return 0;
+      return myErrorStatus->myName;
+    }
+
+    SMESH_ComputeErrorPtr GetComputeError() const {
       return myErrorStatus;
     }
    
@@ -244,7 +252,7 @@ class StdMeshers_Penta_3D {
     TopoDS_Shape              myShape;
     StdMeshers_SMESHBlock     myBlock;
     void *                    myMesh;
-    int                       myErrorStatus;
+    SMESH_ComputeErrorPtr     myErrorStatus;
     //
     vector <StdMeshers_TNode> myTNodes;
     int                       myISize;

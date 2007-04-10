@@ -36,6 +36,7 @@
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_Comment.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -57,6 +58,8 @@
 
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
+
+typedef SMESH_Comment TComm;
 
 using namespace std;
 
@@ -164,7 +167,7 @@ namespace {
                       const int          eventType,
                       SMESH_subMesh*     subMesh,
                       EventListenerData* data,
-                      SMESH_Hypothesis*  /*hyp*/)
+                      const SMESH_Hypothesis*  /*hyp*/)
     {
       bool hypRemoved = ( eventType == SMESH_subMesh::ALGO_EVENT &&
                           subMesh->GetAlgoState() != SMESH_subMesh::HYP_OK );
@@ -175,32 +178,35 @@ namespace {
         {
           if ( SMESH_subMesh* sm = *smIt ) {
             sm->SetIsAlwaysComputed( false );
-            if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
-                sm->GetFather()->GetGen()->Compute( *sm );
-            else  // edge
-              sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+            sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
           }
         }
       }
       // at study restoration:
       // check if edge submesh must have _alwaysComputed flag
-      else if ( eventType == SMESH_subMesh::COMPUTE_EVENT &&
-                event     == SMESH_subMesh::SUBMESH_RESTORED )
+      else if ( event     == SMESH_subMesh::SUBMESH_RESTORED &&
+                eventType == SMESH_subMesh::COMPUTE_EVENT )
       {
         if ( !subMesh->GetEventListenerData( this )) { // not yet checked
           SMESHDS_Mesh * meshDS = subMesh->GetFather()->GetMeshDS();
-          TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
-          TopoDS_Vertex V1, V2;
-          TopExp::Vertices( edge, V1, V2 );
-          bool noVertexNode1 = ( !SMESH_Algo::VertexNode( V1, meshDS ));
-          bool noVertexNode2 = ( !SMESH_Algo::VertexNode( V2, meshDS ));
-          if ( noVertexNode1 || noVertexNode2 ) {
-            TopoDS_Face face;
-            auto_ptr< StdMeshers_FaceSide > side
-              ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),
-                                                            edge, face, false ));
-            if ( side->NbSegments() )
-              careOfSubMeshes( *side, this );
+          if ( meshDS->NbNodes() > 0 ) {
+            // check if there are nodes on all vertices
+            bool hasNodesOnVerext = true;
+            SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+            while ( hasNodesOnVerext && smIt->more() ) {
+              SMESH_subMesh* sm = smIt->next();
+              hasNodesOnVerext = ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->NbNodes() );
+            }
+            if ( !hasNodesOnVerext ) {
+              // check if an edge is a part of a complex side
+              TopoDS_Face face;
+              TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
+              auto_ptr< StdMeshers_FaceSide > side
+                ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),
+                                                              edge, face, false ));
+              if ( side->NbEdges() > 1 && side->NbSegments() )
+                careOfSubMeshes( *side, this );
+            }
           }
         }
       }
@@ -343,15 +349,14 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   // Create mesh
 
   const SMDS_MeshNode * nFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
-  if (!nFirst) {
-    MESSAGE (" NO NODE BUILT ON VERTEX ");
-    return false;
-  }
-  const SMDS_MeshNode * nLast = SMESH_Algo::VertexNode( VLast, meshDS );
-  if (!nLast) {
-    MESSAGE (" NO NODE BUILT ON VERTEX ");
-    return false;
-  }
+  const SMDS_MeshNode * nLast  = SMESH_Algo::VertexNode( VLast, meshDS );
+  if (!nFirst) 
+    return error(COMPERR_BAD_INPUT_MESH, TComm("No node on vertex ")
+                 <<meshDS->ShapeToIndex(VFirst));
+  if (!nLast)
+    return error(COMPERR_BAD_INPUT_MESH, TComm("No node on vertex ")
+                 <<meshDS->ShapeToIndex(VLast));
+
   vector<const SMDS_MeshNode*> nodes( nbNodes, (const SMDS_MeshNode*)0 );
   nodes.front() = nFirst;
   nodes.back()  = nLast;
@@ -397,9 +402,9 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   }
 
   // remove nodes on internal vertices
-  for ( int iE = 0; iE < side->NbEdges()-1; ++iE )
+  for ( int iE = 1; iE < side->NbEdges(); ++iE )
   {
-    TopoDS_Vertex V = side->LastVertex( iE );
+    TopoDS_Vertex V = side->FirstVertex( iE );
     while ( const SMDS_MeshNode * n = SMESH_Algo::VertexNode( V, meshDS ))
       meshDS->RemoveNode( n );
   }

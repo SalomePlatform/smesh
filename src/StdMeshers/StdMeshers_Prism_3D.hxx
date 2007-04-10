@@ -35,6 +35,7 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <vector.h>
 #include <map.h>
@@ -113,6 +114,11 @@ public:
     * If there are triangles on one of faces, it becomes 'bottom'
    */
   bool Init(SMESH_MesherHelper* helper, const TopoDS_Shape& shape3D);
+
+  /*!
+   * \brief Return problem description
+   */
+  SMESH_ComputeErrorPtr GetError() const { return myError; }
 
   /*!
    * \brief Return number of nodes on every vertical edge
@@ -342,7 +348,14 @@ private:
   // to find a column for a node by edge SMESHDS Index
   map< int, pair< TParam2ColumnMap*, bool > > myShapeIndex2ColumnMap;
 
-  
+  SMESH_ComputeErrorPtr myError;
+  /*!
+   * \brief store error and comment and then return ( error == COMPERR_OK )
+   */
+  bool error(int error, const SMESH_Comment& comment = "") {
+    myError = SMESH_ComputeError::New(error,comment);
+    return myError->IsOK();
+  }
   //vector< SMESH_subMesh* >           mySubMeshesVec; // submesh by in-block id
 };
 

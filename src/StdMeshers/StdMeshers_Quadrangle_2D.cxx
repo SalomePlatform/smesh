@@ -36,6 +36,7 @@
 #include "SMESH_subMesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Comment.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -74,6 +75,7 @@ DEFINE_ARRAY2(StdMeshers_Array2OfNode,
 using namespace std;
 
 typedef gp_XY gp_UV;
+typedef SMESH_Comment TComm;
 
 //=============================================================================
 /*!
@@ -573,7 +575,7 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
   list< int > nbEdgesInWire;
   int nbWire = SMESH_Block::GetOrderedEdges (F, V, edges, nbEdgesInWire);
   if (nbWire != 1) {
-    INFOS("only 1 wire by face (quadrangles)");
+    error(COMPERR_BAD_SHAPE, TComm("Wrong number of wires: ") << nbWire);
     return 0;
   }
   FaceQuadStruct* quad = new FaceQuadStruct;
@@ -623,9 +625,8 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
       cout << ")";
     }
     cout << endl;
-#else
-    INFOS("face must have 4 edges / quadrangle");
 #endif
+    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 side but not ") << nbSides);
     delete quad;
     quad = 0;
   }
@@ -668,7 +669,6 @@ faceQuadStruct::~faceQuadStruct()
 {
   for (int i = 0; i < side.size(); i++) {
     if (side[i])     delete side[i];
-    //if (uv_edges[i]) delete [] uv_edges[i];
   }
   if (uv_grid)       delete [] uv_grid;
 }
@@ -676,7 +676,7 @@ faceQuadStruct::~faceQuadStruct()
 namespace {
   inline const vector<UVPtStruct>& GetUVPtStructIn(FaceQuadStruct* quad, int i, int nbSeg)
   {
-    bool isXConst = ( i == BOTTOM_SIDE || i == TOP_SIDE );
+    bool   isXConst   = ( i == BOTTOM_SIDE || i == TOP_SIDE );
     double constValue = ( i == BOTTOM_SIDE || i == LEFT_SIDE ) ? 0 : 1;
     return
       quad->isEdgeOut[i] ?
@@ -735,10 +735,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   const vector<UVPtStruct>& uv_e2 = GetUVPtStructIn( quad, 2, nbhoriz - 1 );
   const vector<UVPtStruct>& uv_e3 = GetUVPtStructIn( quad, 3, nbvertic - 1 );
 
-  if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() ) {
-    MESSAGE("Nodes from edges not loaded");
-    return false;
-  }
+  if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
+    return error(dfltErr(), "Can't find nodes on sides");
 
   // nodes Id on "in" edges
   if (! quad->isEdgeOut[0]) {
@@ -876,25 +874,19 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
 
   uv -= (1 - x) * (1 - y) * a0 + x * (1 - y) * a1 + x * y * a2 + (1 - x) * y * a3;
 
-  //cout<<"x0="<<x0<<" x1="<<x1<<" y0="<<y0<<" y1="<<y1<<endl;
-  //cout<<"x="<<x<<" y="<<y<<endl;
-  //cout<<"param_b="<<param_b<<" param_t="<<param_t<<" param_r="<<param_r<<" param_l="<<param_l<<endl;
-  //cout<<"u="<<u<<" v="<<v<<endl;
-
   return uv;
 }
 
 //=======================================================================
-//function : ComputeQuadPref
-//purpose  : 
-//=======================================================================
 /*!
- * Special function for creation only quandrangle faces
+ * Create only quandrangle faces
  */
-bool StdMeshers_Quadrangle_2D::ComputeQuadPref
-                          (SMESH_Mesh &        aMesh,
-                           const TopoDS_Shape& aShape,
-                           FaceQuadStruct*     quad) throw (SALOME_Exception)
+//=======================================================================
+
+bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
+                                                const TopoDS_Shape& aShape,
+                                                FaceQuadStruct*     quad)
+  throw (SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 

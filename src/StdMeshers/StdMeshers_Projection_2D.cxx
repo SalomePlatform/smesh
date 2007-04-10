@@ -41,6 +41,7 @@
 #include "SMESH_Pattern.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMDS_EdgePosition.hxx"
 
 #include "utilities.h"
@@ -223,10 +224,9 @@ namespace {
         // do not break but iterate over DependsOn()
       }
       default:
-        const map< int, SMESH_subMesh * >& subSM = sm->DependsOn();
-        map< int, SMESH_subMesh * >::const_iterator i_sm = subSM.begin();
-        for ( ; i_sm != subSM.end(); ++i_sm )
-          Clean( i_sm->second );
+        SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
+        while ( smIt->more() )
+          Clean( smIt->next() );
       }
     }
   };
@@ -386,7 +386,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcFace, srcMesh,
                                              shape2ShapeMap) )
-    RETURN_BAD_RESULT("FindSubShapeAssociation failed");
+    return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
 
   // ----------------------------------------------
   // Assure that mesh on a source Face is computed
@@ -397,11 +397,11 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   if ( tgtMesh == srcMesh ) {
     if ( !TAssocTool::MakeComputed( srcSubMesh ))
-      RETURN_BAD_RESULT("Impossible to compute the source mesh");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      RETURN_BAD_RESULT("Source mesh is not computed");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
 
   // --------------------
@@ -412,7 +412,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   SMESH_Pattern mapper;
   mapper.Load( srcMesh, srcFace );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    RETURN_BAD_RESULT("SMESH_Pattern::Load() failed");
+    return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
   // Find the first target vertex corresponding to first vertex of the <mapper>
   // and <theReverse> flag needed to call mapper.Apply()
@@ -463,14 +463,14 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   mapper.Apply( tgtFace, tgtV1, reverse );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    RETURN_BAD_RESULT("SMESH_Pattern::Apply() failed");
+    return error(dfltErr(),"Can't apply source mesh pattern to the face");
 
   // Create the mesh
 
   const bool toCreatePolygons = false, toCreatePolyedrs = false;
   mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    RETURN_BAD_RESULT("SMESH_Pattern::MakeMesh() failed");
+    return error(dfltErr(),"Can't make mesh by source mesh pattern");
 
   // it will remove mesh built by pattern mapper on edges and vertices
   // in failure case
@@ -487,11 +487,10 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Make groups of nodes to merge
 
   // loop on edge and vertex submeshes of a target face
-  const map< int, SMESH_subMesh * >& subSM = tgtSubMesh->DependsOn();
-  map< int, SMESH_subMesh * >::const_iterator i_subSM = subSM.begin();
-  for ( ; i_subSM != subSM.end(); ++i_subSM )
+  SMESH_subMeshIteratorPtr smIt = tgtSubMesh->getDependsOnIterator(false,false);
+  while ( smIt->more() )
   {
-    SMESH_subMesh*     sm = i_subSM->second;
+    SMESH_subMesh*     sm = smIt->next();
     SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
 
     // Sort new and old nodes of a submesh separately

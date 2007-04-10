@@ -76,14 +76,14 @@ protected:
                                           double                theFirstU,
                                           double                theLastU,
                                           std::list< double > & theParameters,
-                                          const bool            theReverse) const;
+                                          const bool            theReverse);
 
   virtual void redistributeNearVertices (SMESH_Mesh &          theMesh,
                                          Adaptor3d_Curve &     theC3d,
                                          double                theLength,
                                          std::list< double > & theParameters,
                                          const TopoDS_Vertex & theVf,
-                                         const TopoDS_Vertex & theVl) const;
+                                         const TopoDS_Vertex & theVl);
 
   /*!
    * \brief Return StdMeshers_SegmentLengthAroundVertex assigned to vertex

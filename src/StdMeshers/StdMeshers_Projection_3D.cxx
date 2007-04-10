@@ -42,6 +42,7 @@
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 
@@ -204,13 +205,15 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   for ( nbShell = 0; exp.More(); exp.Next(), ++nbShell )
     srcShell = TopoDS::Shell( exp.Current() );
   if ( nbShell != 1 )
-    RETURN_BAD_RESULT("There must be 1 shell in the source shape");
+    return error(COMPERR_BAD_SHAPE,
+                 SMESH_Comment("Shape must have 1 shell but not") << nbShell);
 
   exp.Init( aShape, TopAbs_SHELL );
   for ( nbShell = 0; exp.More(); exp.Next(), ++nbShell )
     tgtShell = TopoDS::Shell( exp.Current() );
   if ( nbShell != 1 )
-    RETURN_BAD_RESULT("There must be 1 shell in the target shape");
+    return error(COMPERR_BAD_SHAPE,
+                 SMESH_Comment("Shape must have 1 shell but not") << nbShell);
 
   // Assure that mesh on a source shape is computed
 
@@ -219,11 +222,11 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
 
   if ( tgtMesh == srcMesh && !aShape.IsSame( _sourceHypo->GetSource3DShape() )) {
     if ( !TAssocTool::MakeComputed( srcSubMesh ))
-      RETURN_BAD_RESULT("Impossible to compute the source mesh");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      RETURN_BAD_RESULT("Source mesh is not computed");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
 
   // Find 2 pairs of corresponding vertices
@@ -242,18 +245,18 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   {
     if ( !TAssocTool::FindSubShapeAssociation( tgtShell, tgtMesh, srcShell, srcMesh,
                                                shape2ShapeMap) )
-      RETURN_BAD_RESULT("FindSubShapeAssociation() failed");
+      return error(COMPERR_BAD_SHAPE,"Topology of source and target shapes seems different" );
 
     exp.Init( tgtShell, TopAbs_EDGE );
     TopExp::Vertices( TopoDS::Edge( exp.Current() ), tgtV000, tgtV100 );
 
     if ( !shape2ShapeMap.IsBound( tgtV000 ) || !shape2ShapeMap.IsBound( tgtV100 ))
-      RETURN_BAD_RESULT("Shape associating not done");
+      return error(dfltErr(),"Association of subshapes failed" );
     srcV000 = TopoDS::Vertex( shape2ShapeMap( tgtV000 ));
     srcV100 = TopoDS::Vertex( shape2ShapeMap( tgtV100 ));
     if ( !TAssocTool::IsSubShape( srcV000, srcShell ) ||
          !TAssocTool::IsSubShape( srcV100, srcShell ))
-      RETURN_BAD_RESULT("Wrong target vertices");
+      return error(dfltErr(),"Incorrect association of subshapes" );
   }
 
   // Load 2 SMESH_Block's with src and tgt shells
@@ -261,10 +264,10 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
   SMESH_Block srcBlock, tgtBlock;
   TopTools_IndexedMapOfOrientedShape scrShapes, tgtShapes;
   if ( !tgtBlock.LoadBlockShapes( tgtShell, tgtV000, tgtV100, tgtShapes ))
-    RETURN_BAD_RESULT("SMESH_Block::LoadBlockShapes(tgtShell) failed");
+    return error(COMPERR_BAD_SHAPE, "Can't detect block subshapes. Not a block?");
 
   if ( !srcBlock.LoadBlockShapes( srcShell, srcV000, srcV100, scrShapes ))
-    RETURN_BAD_RESULT("SMESH_Block::LoadBlockShapes(srcShell) failed");
+    return error(COMPERR_BAD_SHAPE, "Can't detect block subshapes. Not a block?");
 
   // Find matching nodes of src and tgt shells
 
@@ -293,9 +296,9 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     TNodeNodeMap faceMatchingNodes;
     if ( ! TAssocTool::FindMatchingNodesOnFaces( srcFace, srcMesh, tgtFace, tgtMesh, 
                                                  shape2ShapeMap, faceMatchingNodes ))
-      RETURN_BAD_RESULT("Different mesh on corresponding src and tgt faces: "
-                        << srcMeshDS->ShapeToIndex( srcFace ) << " and "
-                        << tgtMeshDS->ShapeToIndex( tgtFace ));
+    return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
+                 << srcMeshDS->ShapeToIndex( srcFace ) << " and "
+                 << tgtMeshDS->ShapeToIndex( tgtFace ) << " seems different" );
 
     // put found matching nodes of 2 faces to the global map
     src2tgtNodeMap.insert( faceMatchingNodes.begin(), faceMatchingNodes.end() );
@@ -339,11 +342,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
         gp_Pnt srcCoord = gpXYZ( srcNode );
         gp_XYZ srcParam;
         if ( !srcBlock.ComputeParameters( srcCoord, srcParam ))
-          RETURN_BAD_RESULT("srcBlock.ComputeParameters() failed");
+          return error(dfltErr(),SMESH_Comment("Can't compute normalized parameters ")
+                       << "for source node " << srcNode->GetID());
         // compute coordinates of target node by srcParam
         gp_XYZ tgtXYZ;
         if ( !tgtBlock.ShellPoint( srcParam, tgtXYZ ))
-          RETURN_BAD_RESULT("tgtBlock.ShellPoint() failed");
+          return error(dfltErr(),"Can't compute coordinates by normalized parameters");
         // add node
         SMDS_MeshNode* newNode = tgtMeshDS->AddNode( tgtXYZ.X(), tgtXYZ.Y(), tgtXYZ.Z() );
         tgtMeshDS->SetNodeInVolume( newNode, helper.GetSubShapeID() );
@@ -356,20 +360,21 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     // Create a new volume
 
     SMDS_MeshVolume * tgtVol = 0;
+    int id = 0, force3d = false;
     switch ( volType ) {
     case SMDS_VolumeTool::TETRA     :
     case SMDS_VolumeTool::QUAD_TETRA:
       tgtVol = helper.AddVolume( nodes[0],
                                  nodes[1],
                                  nodes[2],
-                                 nodes[3]); break;
+                                 nodes[3], id, force3d); break;
     case SMDS_VolumeTool::PYRAM     :
     case SMDS_VolumeTool::QUAD_PYRAM:
       tgtVol = helper.AddVolume( nodes[0],
                                  nodes[1],
                                  nodes[2],
                                  nodes[3],
-                                 nodes[4]); break;
+                                 nodes[4], id, force3d); break;
     case SMDS_VolumeTool::PENTA     :
     case SMDS_VolumeTool::QUAD_PENTA:
       tgtVol = helper.AddVolume( nodes[0],
@@ -377,7 +382,7 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
                                  nodes[2],
                                  nodes[3],
                                  nodes[4],
-                                 nodes[5]); break;
+                                 nodes[5], id, force3d); break;
     case SMDS_VolumeTool::HEXA      :
     case SMDS_VolumeTool::QUAD_HEXA :
       tgtVol = helper.AddVolume( nodes[0],
@@ -387,16 +392,13 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
                                  nodes[4],
                                  nodes[5],
                                  nodes[6],
-                                 nodes[7]); break;
+                                 nodes[7], id, force3d); break;
     default: // polyhedron
       const SMDS_PolyhedralVolumeOfNodes * poly =
         dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*>( srcVol );
       if ( !poly )
         RETURN_BAD_RESULT("Unexpected volume type");
-      vector<int> quantities( poly->NbFaces(), 0 );
-      for ( int i = 0; i < quantities.size(); ++i )
-        quantities[ i ] = poly->NbFaceNodes( i + 1 );
-      tgtVol = tgtMeshDS->AddPolyhedralVolume( nodes, quantities );
+      tgtVol = tgtMeshDS->AddPolyhedralVolume( nodes, poly->GetQuanities() );
     }
     if ( tgtVol ) {
       tgtMeshDS->SetMeshElementOnShape( tgtVol, helper.GetSubShapeID() );

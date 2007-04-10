@@ -36,6 +36,7 @@
 class StdMeshers_NumberOfLayers;
 class StdMeshers_LayerDistribution;
 class SMESH_MesherHelper;
+class gp_Pnt;
 
 class StdMeshers_RadialPrism_3D: public SMESH_3D_Algo
 {
@@ -58,7 +59,8 @@ protected:
                                const SMDS_MeshNode* outNode,
                                const SMDS_MeshNode* inNode);
 
-  bool computeLayerPositions(gp_Pnt pIn, gp_Pnt pOut);
+  bool computeLayerPositions(const gp_Pnt& pIn,
+                             const gp_Pnt& pOut);
 
 
   const StdMeshers_NumberOfLayers*    myNbLayerHypo;

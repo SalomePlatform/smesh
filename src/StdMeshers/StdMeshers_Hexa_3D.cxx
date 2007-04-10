@@ -36,6 +36,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
+#include "SMESH_Comment.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -47,23 +48,20 @@
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-//#include <TColStd_ListIteratorOfListOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 
 #include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
-// #include <Geom_Curve.hxx>
-// #include <Geom2d_Curve.hxx>
-// #include <Handle_Geom2d_Curve.hxx>
-// #include <Handle_Geom_Curve.hxx>
 #include <gp_Pnt2d.hxx>
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
 
+typedef SMESH_Comment TComm;
+
 using namespace std;
 
-static bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape);
+static SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &);
 
 //=============================================================================
 /*!
@@ -71,8 +69,8 @@ static bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aSha
  */
 //=============================================================================
 
-StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId,
-                                       SMESH_Gen * gen):SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
+  :SMESH_3D_Algo(hypId, studyId, gen)
 {
   MESSAGE("StdMeshers_Hexa_3D::StdMeshers_Hexa_3D");
   _name = "Hexa_3D";
@@ -175,8 +173,8 @@ static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int&
  */
 //=============================================================================
 
-bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
-	const TopoDS_Shape & aShape)throw(SALOME_Exception)
+bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
+                                 const TopoDS_Shape & aShape) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   MESSAGE("StdMeshers_Hexa_3D::Compute");
@@ -184,7 +182,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
   
   // 0.  - shape and face mesh verification
   // 0.1 - shape must be a solid (or a shell) with 6 faces
-  //MESSAGE("---");
 
   vector < SMESH_subMesh * >meshFaces;
   for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next()) {
@@ -192,13 +189,10 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
     ASSERT(aSubMesh);
     meshFaces.push_back(aSubMesh);
   }
-  if (meshFaces.size() != 6) {
-    SCRUTE(meshFaces.size());
-    return false;
-  }
+  if (meshFaces.size() != 6)
+    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in block");
 
   // 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
-  //MESSAGE("---");
 
   // tool for working with quadratic elements
   SMESH_MesherHelper aTool (aMesh);
@@ -231,7 +225,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
   for (int i = 0; i < 6; i++)
     aQuads[i] = 0;
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++)
+  {
     TopoDS_Shape aFace = meshFaces[i]->GetSubShape();
     SMESH_Algo *algo = _gen->GetAlgo(aMesh, aFace);
     string algoName = algo->GetName();
@@ -248,9 +243,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
       }
     }
     if ( ! isAllQuad ) {
-      //modified by NIZNHY-PKV Wed Nov 17 15:31:37 2004 f
-      bool bIsOk = ComputePentahedralMesh(aMesh, aShape);
-      return ClearAndReturn( aQuads, bIsOk );
+      SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape);
+      return ClearAndReturn( aQuads, error(err));
     }
     StdMeshers_Quadrangle_2D *quadAlgo =
       dynamic_cast < StdMeshers_Quadrangle_2D * >(algo);
@@ -259,7 +253,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
       aQuads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aFace, _quadraticMesh);
     }
     catch(SALOME_Exception & S_ex) {
-      return ClearAndReturn( aQuads, false );
+      return ClearAndReturn( aQuads, error(COMPERR_SLM_EXCEPTION,TComm(S_ex.what()) <<
+                                           " Raised by StdMeshers_Quadrangle_2D "
+                                           " on face #" << meshDS->ShapeToIndex( aFace )));
     }
 
     // 0.2.1 - number of points on the opposite edges must be the same
@@ -270,57 +266,29 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
         aQuads[i]->side[2]->NbEdges() != 1 ||
         aQuads[i]->side[3]->NbEdges() != 1*/) {
       MESSAGE("different number of points on the opposite edges of face " << i);
-      //                  ASSERT(0);
-      // \begin{E.A.}
       // Try to go into penta algorithm 'cause it has been improved.
-      // return ClearAndReturn( aQuads, false );
-      bool bIsOk = ComputePentahedralMesh(aMesh, aShape);
-      return ClearAndReturn( aQuads, bIsOk );
-      // \end{E.A.}
+      SMESH_ComputeErrorPtr err = ComputePentahedralMesh(aMesh, aShape);
+      return ClearAndReturn( aQuads, error(err));
     }
   }
 
   // 1.  - identify faces and vertices of the "cube"
   // 1.1 - ancestor maps vertex->edges in the cube
-  //MESSAGE("---");
 
   TopTools_IndexedDataMapOfShapeListOfShape MS;
   TopExp::MapShapesAndAncestors(aShape, TopAbs_VERTEX, TopAbs_EDGE, MS);
 
   // 1.2 - first face is choosen as face Y=0 of the unit cube
-  //MESSAGE("---");
 
   const TopoDS_Shape & aFace = meshFaces[0]->GetSubShape();
   const TopoDS_Face & F = TopoDS::Face(aFace);
 
   // 1.3 - identify the 4 vertices of the face Y=0: V000, V100, V101, V001
-  //MESSAGE("---");
 
   aCube.V000 = aQuads[0]->side[0]->FirstVertex(); // will be (0,0,0) on the unit cube
   aCube.V100 = aQuads[0]->side[0]->LastVertex();  // will be (1,0,0) on the unit cube
   aCube.V001 = aQuads[0]->side[2]->FirstVertex(); // will be (0,0,1) on the unit cube
   aCube.V101 = aQuads[0]->side[2]->LastVertex();  // will be (1,0,1) on the unit cube
-
-  // 1.4 - find edge X=0, Z=0 (ancestor of V000 not in face Y=0)
-  //     - find edge X=1, Z=0 (ancestor of V100 not in face Y=0)
-  //     - find edge X=1, Z=1 (ancestor of V101 not in face Y=0) 
-  //     - find edge X=0, Z=1 (ancestor of V001 not in face Y=0)
-  //MESSAGE("---");
-
-//   TopoDS_Edge E_0Y0 = EdgeNotInFace(aMesh, aShape, F, aCube.V000, MS);
-//   ASSERT(!E_0Y0.IsNull());
-
-//   TopoDS_Edge E_1Y0 = EdgeNotInFace(aMesh, aShape, F, aCube.V100, MS);
-//   ASSERT(!E_1Y0.IsNull());
-
-//   TopoDS_Edge E_1Y1 = EdgeNotInFace(aMesh, aShape, F, aCube.V101, MS);
-//   ASSERT(!E_1Y1.IsNull());
-
-//   TopoDS_Edge E_0Y1 = EdgeNotInFace(aMesh, aShape, F, aCube.V001, MS);
-//   ASSERT(!E_0Y1.IsNull());
-
-  // 1.5 - identify the 4 vertices in face Y=1: V010, V110, V111, V011
-  //MESSAGE("---");
 
   TopTools_IndexedMapOfShape MV0;
   TopExp::MapShapes(F, TopAbs_VERTEX, MV0);
@@ -330,33 +298,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
   aCube.V011 = OppositeVertex( aCube.V001, MV0, aQuads);
   aCube.V111 = OppositeVertex( aCube.V101, MV0, aQuads);
 
-//   TopoDS_Vertex VFirst, VLast;
-//   TopExp::Vertices(E_0Y0, VFirst, VLast);
-//   if (VFirst.IsSame(aCube.V000))
-//     aCube.V010 = VLast;
-//   else
-//     aCube.V010 = VFirst;
-
-//   TopExp::Vertices(E_1Y0, VFirst, VLast);
-//   if (VFirst.IsSame(aCube.V100))
-//     aCube.V110 = VLast;
-//   else
-//     aCube.V110 = VFirst;
-
-//   TopExp::Vertices(E_1Y1, VFirst, VLast);
-//   if (VFirst.IsSame(aCube.V101))
-//     aCube.V111 = VLast;
-//   else
-//     aCube.V111 = VFirst;
-
-//   TopExp::Vertices(E_0Y1, VFirst, VLast);
-//   if (VFirst.IsSame(aCube.V001))
-//     aCube.V011 = VLast;
-//   else
-//     aCube.V011 = VFirst;
-
   // 1.6 - find remaining faces given 4 vertices
-  //MESSAGE("---");
 
   int _indY0 = 0;
   aCube.quad_Y0 = aQuads[_indY0];
@@ -380,8 +322,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
   int _indX1 = GetFaceIndex(aMesh, aShape, meshFaces,
                             aCube.V100, aCube.V101, aCube.V110, aCube.V111);
   aCube.quad_X1 = aQuads[_indX1];
-
-  //MESSAGE("---");
 
   // 1.7 - get convertion coefs from face 2D normalized to 3D normalized
 
@@ -407,7 +347,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
   // 1.8 - create a 3D structure for normalized values
   
-  //MESSAGE("---");
   int nbx = aCube.quad_Z0->side[0]->NbPoints();
   if (cz0.a1 == 0.) nbx = aCube.quad_Z0->side[1]->NbPoints();
  
@@ -734,20 +673,12 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
 
         SMDS_MeshVolume * elt;
         if ( isForw ) {
-          //elt = meshDS->AddVolume(np[n1].node, np[n2].node,
-          //                        np[n3].node, np[n4].node,
-          //                        np[n5].node, np[n6].node,
-          //                        np[n7].node, np[n8].node);
           elt = aTool.AddVolume(np[n1].node, np[n2].node,
                                 np[n3].node, np[n4].node,
                                 np[n5].node, np[n6].node,
                                 np[n7].node, np[n8].node);
         }
         else {
-          //elt = meshDS->AddVolume(np[n1].node, np[n4].node,
-          //                        np[n3].node, np[n2].node,
-          //                        np[n5].node, np[n8].node,
-          //                        np[n7].node, np[n6].node);
           elt = aTool.AddVolume(np[n1].node, np[n4].node,
                                 np[n3].node, np[n2].node,
                                 np[n5].node, np[n8].node,
@@ -759,7 +690,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
     }
   }
   if ( np ) delete [] np;
-  //MESSAGE("End of StdMeshers_Hexa_3D::Compute()");
   return ClearAndReturn( aQuads, true );
 }
 
@@ -769,8 +699,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh,
  */
 //=============================================================================
 
-void StdMeshers_Hexa_3D::GetPoint(Pt3 p, int i, int j, int k, int nbx, int nby,
-	int nbz, Point3DStruct * np, const SMESHDS_Mesh * meshDS)
+void StdMeshers_Hexa_3D::GetPoint(Pt3 p, int i, int j, int k, int nbx, int nby, int nbz,
+                                  Point3DStruct * np, const SMESHDS_Mesh * meshDS)
 {
 	int ijk = k * nbx * nby + j * nbx + i;
 	const SMDS_MeshNode * node = np[ijk].node;
@@ -1050,15 +980,20 @@ TopoDS_Vertex StdMeshers_Hexa_3D::OppositeVertex(const TopoDS_Vertex& aVertex,
 //function : ComputePentahedralMesh
 //purpose  : 
 //=======================================================================
-bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape)
+
+SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &         aMesh,
+                                             const TopoDS_Shape & aShape)
 {
   //printf(" ComputePentahedralMesh HERE\n");
   //
   bool bOK;
+  SMESH_ComputeErrorPtr err = SMESH_ComputeError::New();
   //int iErr;
   StdMeshers_Penta_3D anAlgo;
   //
   bOK=anAlgo.Compute(aMesh, aShape);
+  //
+  err = anAlgo.GetComputeError();
   //
   if ( !bOK && anAlgo.ErrorStatus() == 5 )
   {
@@ -1068,10 +1003,12 @@ bool ComputePentahedralMesh(SMESH_Mesh & aMesh,	const TopoDS_Shape & aShape)
       aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), 0, gen );
     }
     SMESH_Hypothesis::Hypothesis_Status aStatus;
-    if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) )
+    if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) ) {
       bOK = aPrism3D->Compute( aMesh, aShape );
+      err = aPrism3D->GetComputeError();
+    }
   }
-  return bOK;
+  return err;
 }
 
 

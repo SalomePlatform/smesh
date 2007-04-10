@@ -43,6 +43,7 @@
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_Comment.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
@@ -59,11 +60,7 @@
 #include <GCPnts_UniformDeflection.hxx>
 #include <Precision.hxx>
 
-#include <Standard_ErrorHandler.hxx>
-#include <Standard_Failure.hxx>
-
 #include <string>
-//#include <math.h>
 
 using namespace std;
 
@@ -376,25 +373,25 @@ static void compensateError(double a1, double an,
  */
 //================================================================================
 
-struct VertexEventListener : public SMESH_subMeshEventListener
-{
-  VertexEventListener():SMESH_subMeshEventListener(0) // won't be deleted by submesh
-  {}
-  /*!
-   * \brief Clean mesh on edges
-   * \param event - algo_event or compute_event itself (of SMESH_subMesh)
-   * \param eventType - ALGO_EVENT or COMPUTE_EVENT (of SMESH_subMesh)
-   * \param subMesh - the submesh where the event occures
-   */
-  void ProcessEvent(const int event, const int eventType, SMESH_subMesh* subMesh,
-                    EventListenerData*, SMESH_Hypothesis*)
-  {
-    if ( eventType == SMESH_subMesh::ALGO_EVENT) // all algo events
-    {
-      subMesh->ComputeStateEngine( SMESH_subMesh::MODIF_ALGO_STATE );
-    }
-  }
-}; // struct VertexEventListener
+// struct VertexEventListener : public SMESH_subMeshEventListener
+// {
+//   VertexEventListener():SMESH_subMeshEventListener(0) // won't be deleted by submesh
+//   {}
+//   /*!
+//    * \brief Clean mesh on edges
+//    * \param event - algo_event or compute_event itself (of SMESH_subMesh)
+//    * \param eventType - ALGO_EVENT or COMPUTE_EVENT (of SMESH_subMesh)
+//    * \param subMesh - the submesh where the event occures
+//    */
+//   void ProcessEvent(const int event, const int eventType, SMESH_subMesh* subMesh,
+//                     EventListenerData*, const SMESH_Hypothesis*)
+//   {
+//     if ( eventType == SMESH_subMesh::ALGO_EVENT) // all algo events
+//     {
+//       subMesh->ComputeStateEngine( SMESH_subMesh::MODIF_ALGO_STATE );
+//     }
+//   }
+// }; // struct VertexEventListener
 
 //=============================================================================
 /*!
@@ -408,13 +405,11 @@ struct VertexEventListener : public SMESH_subMeshEventListener
 
 void StdMeshers_Regular_1D::SetEventListener(SMESH_subMesh* subMesh)
 {
-  static VertexEventListener listener;
-  const map < int, SMESH_subMesh * >& vSMs = subMesh->DependsOn();
-  map < int, SMESH_subMesh * >::const_iterator itsub;
-  for (itsub = vSMs.begin(); itsub != vSMs.end(); itsub++)
-  {
-    subMesh->SetEventListener( &listener, 0, itsub->second );
-  }
+//   static VertexEventListener listener;
+//   SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
+//   while (smIt->more()) {
+//     subMesh->SetEventListener( &listener, 0, smIt->next() );
+//   }
 }
 
 //=============================================================================
@@ -440,9 +435,15 @@ const StdMeshers_SegmentLengthAroundVertex*
 StdMeshers_Regular_1D::getVertexHyp(SMESH_Mesh &          theMesh,
                                     const TopoDS_Vertex & theV)
 {
-  static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName("SegmentLengthAroundVertex"));
-  const SMESH_Hypothesis * hyp = theMesh.GetHypothesis( theV, filter, true );
-  return static_cast<const StdMeshers_SegmentLengthAroundVertex*>( hyp );
+  static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName("SegmentAroundVertex_0D"));
+  if ( const SMESH_Hypothesis * h = theMesh.GetHypothesis( theV, filter, true ))
+  {
+    SMESH_Algo* algo = const_cast< SMESH_Algo* >( static_cast< const SMESH_Algo* > ( h ));
+    const list <const SMESHDS_Hypothesis *> & hypList = algo->GetUsedHypothesis( theMesh, theV, 0 );
+    if ( !hypList.empty() && string("SegmentLengthAroundVertex") == hypList.front()->GetName() )
+      return static_cast<const StdMeshers_SegmentLengthAroundVertex*>( hypList.front() );
+  }
+  return 0;
 }
 
 //================================================================================
@@ -461,7 +462,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
                                                       double                theLength,
                                                       std::list< double > & theParameters,
                                                       const TopoDS_Vertex & theVf,
-                                                      const TopoDS_Vertex & theVl) const
+                                                      const TopoDS_Vertex & theVl)
 {
   double f = theC3d.FirstParameter(), l = theC3d.LastParameter();
   int nPar = theParameters.size();
@@ -546,7 +547,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
                                                       double           theFirstU,
                                                       double           theLastU,
                                                       list<double> &   theParams,
-                                                      const bool       theReverse) const
+                                                      const bool       theReverse)
 {
   theParams.clear();
 
@@ -626,7 +627,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
     }
     GCPnts_UniformAbscissa Discret(theC3d, eltSize, f, l);
     if ( !Discret.IsDone() )
-      return false;
+      return error( dfltErr(), "GCPnts_UniformAbscissa failed");
 
     int NbPoints = Discret.NbPoints();
     for ( int i = 2; i < NbPoints; i++ )
@@ -731,8 +732,6 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
 
 bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  //MESSAGE("StdMeshers_Regular_1D::Compute");
-
   if ( _hypType == NONE )
     return false;
 
@@ -749,38 +748,25 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   TopExp::Vertices(E, VFirst, VLast);   // Vfirst corresponds to f and Vlast to l
 
   ASSERT(!VFirst.IsNull());
-  const SMDS_MeshNode * idFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
-  if (!idFirst) {
-    MESSAGE (" NO NODE BUILT ON VERTEX ");
-    return false;
-  }
-
   ASSERT(!VLast.IsNull());
+  const SMDS_MeshNode * idFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
   const SMDS_MeshNode * idLast = SMESH_Algo::VertexNode( VLast, meshDS );
-  if (!idLast) {
-    MESSAGE (" NO NODE BUILT ON VERTEX ");
-    return false;
-  }
+  if (!idFirst || !idLast)
+    return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
-  if (!Curve.IsNull()) {
+  if (!Curve.IsNull())
+  {
     list< double > params;
     bool reversed = false;
     if ( !_mainEdge.IsNull() )
       reversed = aMesh.IsReversedInChain( EE, _mainEdge );
+
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
-    try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-      OCC_CATCH_SIGNALS;
-#endif
-      if ( ! computeInternalParameters( C3d, length, f, l, params, reversed )) {
-        return false;
-      }
-      redistributeNearVertices( aMesh, C3d, length, params, VFirst, VLast );
-    }
-    catch ( Standard_Failure ) {
+    if ( ! computeInternalParameters( C3d, length, f, l, params, reversed )) {
       return false;
     }
+    redistributeNearVertices( aMesh, C3d, length, params, VFirst, VLast );
 
     // edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
     // only internal nodes receive an edge position with param on curve

@@ -1238,7 +1238,7 @@ namespace {
     HypModifWaiter():SMESH_subMeshEventListener(0){} // won't be deleted by submesh
 
     void ProcessEvent(const int event, const int eventType, SMESH_subMesh* subMesh,
-                      EventListenerData*, SMESH_Hypothesis*)
+                      EventListenerData*, const SMESH_Hypothesis*)
     {
       if ( event     == SMESH_subMesh::MODIF_HYP &&
            eventType == SMESH_subMesh::ALGO_EVENT)
