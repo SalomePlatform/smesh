@@ -894,6 +894,105 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
 
 //================================================================================
 /*!
+ * \brief  Find SObject for an algo
+ */
+//================================================================================
+
+SALOMEDS::SObject_ptr SMESH_Gen_i::GetAlgoSO(const ::SMESH_Algo* algo)
+{
+  if ( algo ) {
+    if ( !myCurrentStudy->_is_nil() ) {
+      // find algo in the study
+      SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
+        ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+      if ( !father->_is_nil() ) {
+        SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
+        for ( ; itBig->More(); itBig->Next() ) {
+          SALOMEDS::SObject_var gotBranch = itBig->Value();
+          if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
+            SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
+            for ( ; algoIt->More(); algoIt->Next() ) {
+              SALOMEDS::SObject_var algoSO = algoIt->Value();
+              CORBA::Object_var     algoIOR = SObjectToObject( algoSO );
+              if ( !CORBA::is_nil( algoIOR )) {
+                SMESH_Hypothesis_i* impl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
+                if ( impl && impl->GetImpl() == algo )
+                  return algoSO._retn();
+              }
+            } // loop on algo SO's
+            break;
+          } // if algo tag
+        } // SMESH component iterator
+      }
+    }
+  }
+  return SALOMEDS::SObject::_nil();
+}
+
+//================================================================================
+/*!
+ * \brief Return errors of mesh computation
+ */
+//================================================================================
+
+SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr theMesh, 
+                                                           GEOM::GEOM_Object_ptr theSubObject )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetComputeErrors()" );
+
+  if ( CORBA::is_nil( theSubObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  SMESH::compute_error_array_var error_array = new SMESH::compute_error_array;
+  try {
+    if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
+    {
+      TopoDS_Shape shape = GeomObjectToShape( theSubObject );
+      ::SMESH_Mesh& mesh = meshServant->GetImpl();
+
+      error_array->length( mesh.GetMeshDS()->MaxShapeIndex() );
+      int nbErr = 0;
+
+      SMESH_subMesh *sm = mesh.GetSubMesh(shape);
+      const bool includeSelf = true, complexShapeFirst = true;
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(includeSelf,
+                                                               complexShapeFirst);
+      while ( smIt->more() )
+      {
+        sm = smIt->next();
+        if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+          break;
+        SMESH_ComputeErrorPtr error = sm->GetComputeError();
+        if ( error && !error->IsOK() && error->myAlgo )
+        {
+          SMESH::ComputeError & errStruct = error_array[ nbErr++ ];
+          errStruct.code       = -( error->myName < 0 ? error->myName + 1: error->myName ); // -1 -> 0
+          errStruct.comment    = error->myComment.c_str();
+          errStruct.subShapeID = sm->GetId();
+          SALOMEDS::SObject_var algoSO = GetAlgoSO( error->myAlgo );
+          if ( !algoSO->_is_nil() )
+            errStruct.algoName   = algoSO->GetName();
+          else
+            errStruct.algoName   = error->myAlgo->GetName();
+        }
+      }
+      error_array->length( nbErr );
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+
+  return error_array._retn();
+}
+
+//================================================================================
+/*!
  * \brief Returns errors of hypotheses definintion
   * \param theMesh - the mesh
   * \param theSubObject - the main or sub- shape
@@ -929,55 +1028,15 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
       int i = 0;
       for ( error = error_list.begin(); error != error_list.end(); ++error )
       {
-        // error name
-        SMESH::AlgoStateErrorName errName;
-        switch ( error->_name ) {
-        case ::SMESH_Gen::MISSING_ALGO:     errName = SMESH::MISSING_ALGO; break;
-        case ::SMESH_Gen::MISSING_HYPO:     errName = SMESH::MISSING_HYPO; break;
-        case ::SMESH_Gen::NOT_CONFORM_MESH: errName = SMESH::NOT_CONFORM_MESH; break;
-        case ::SMESH_Gen::BAD_PARAM_VALUE:  errName = SMESH::BAD_PARAM_VALUE; break;
-        default:
-          THROW_SALOME_CORBA_EXCEPTION( "bad error name",SALOME::BAD_PARAM );
-        }
-        // algo name
-        CORBA::String_var algoName = "";
-        if ( error->_algo ) {
-          if ( !myCurrentStudy->_is_nil() ) {
-            // find algo in the study
-            SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
-              ( myCurrentStudy->FindComponent( ComponentDataType() ) );
-            if ( !father->_is_nil() ) {
-              SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
-              for ( ; itBig->More(); itBig->Next() ) {
-                SALOMEDS::SObject_var gotBranch = itBig->Value();
-                if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
-                  SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
-                  for ( ; algoIt->More(); algoIt->Next() ) {
-                    SALOMEDS::SObject_var algoSO = algoIt->Value();
-                    CORBA::Object_var    algoIOR = SObjectToObject( algoSO );
-                    if ( !CORBA::is_nil( algoIOR )) {
-                      SMESH_Hypothesis_i* myImpl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
-                      if ( myImpl && myImpl->GetImpl() == error->_algo ) {
-                        algoName = algoSO->GetName();
-                        break;
-                      }
-                    }
-                  } // loop on algo SO's
-                  break;
-                } // if algo tag
-              } // SMESH component iterator
-            }
-          }
-          if ( algoName.in() == 0 )
-            // use algo type name
-            algoName = error->_algo->GetName();
-        }
         // fill AlgoStateError structure
         SMESH::AlgoStateError & errStruct = error_array[ i++ ];
-        errStruct.name         = errName;
-        errStruct.algoName     = algoName;
+        errStruct.state        = SMESH_Mesh_i::ConvertHypothesisStatus( error->_name );
         errStruct.algoDim      = error->_algoDim;
         errStruct.isGlobalAlgo = error->_isGlobalAlgo;
+        errStruct.algoName     = "";
+        SALOMEDS::SObject_var algoSO = GetAlgoSO( error->_algo );
+        if ( !algoSO->_is_nil() )
+          errStruct.algoName   = algoSO->GetName();
       }
     }
   }
@@ -1139,14 +1198,85 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
 
     // try to find the corresponding SObject
-    GeomObjectToShape( geom ); // geom client remembers the found shape
     SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
-    if ( SObj->_is_nil() )
-      // publish a new subshape
+    if ( SObj->_is_nil() ) // submesh can be not found even if published
+    {
+      // try to find published submesh
+      GEOM::ListOfLong_var list = geom->GetSubShapeIndices();
+      if ( !geom->IsMainShape() && list->length() == 1 ) {
+        SALOMEDS::SObject_var mainSO = ObjectToSObject( myCurrentStudy, mainShape );
+        SALOMEDS::ChildIterator_var it;
+        if ( !mainSO->_is_nil() )
+          it = myCurrentStudy->NewChildIterator( mainSO );
+        if ( !it->_is_nil() ) {
+          for ( it->InitEx(true); SObj->_is_nil() && it->More(); it->Next() ) {
+            GEOM::GEOM_Object_var subGeom =
+              GEOM::GEOM_Object::_narrow( SObjectToObject( it->Value() ));
+            if ( !subGeom->_is_nil() ) {
+              GEOM::ListOfLong_var subList = subGeom->GetSubShapeIndices();
+              if ( subList->length() == 1 && list[0] == subList[0] ) {
+                SObj = it->Value();
+                geom = subGeom;
+              }
+            }
+          }
+        }
+      }
+    }
+    if ( SObj->_is_nil() ) // publish a new subshape
       SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
+
     // return only published geometry
     if ( !SObj->_is_nil() )
       return geom._retn();
+  }
+  return GEOM::GEOM_Object::_nil();
+}
+
+//================================================================================
+/*!
+ * \brief Return geometrical object the given element is built on.
+ *  \param theMesh - the mesh the element is in
+ *  \param theElementID - the element ID
+ *  \retval GEOM::GEOM_Object_ptr - the found geom object
+ */
+//================================================================================
+
+GEOM::GEOM_Object_ptr
+SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+                                        CORBA::Long            theElementID)
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
+
+  GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
+  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
+
+  // get a core mesh DS
+  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
+  if ( meshServant && !geomGen->_is_nil() && !mainShape->_is_nil() )
+  {
+    ::SMESH_Mesh & mesh = meshServant->GetImpl();
+    SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
+    // find the element in mesh
+    if ( const SMDS_MeshElement * elem = meshDS->FindElement( theElementID ) )
+      // find a shape id by the element
+      if ( int shapeID = ::SMESH_MeshEditor( &mesh ).FindShape( elem )) {
+        // get a geom object by the shape id
+        GEOM::GEOM_Object_var geom = ShapeToGeomObject( meshDS->IndexToShape( shapeID ));
+        if ( geom->_is_nil() ) {
+          GEOM::GEOM_IShapesOperations_var op =
+            geomGen->GetIShapesOperations( GetCurrentStudyID() );
+          if ( !op->_is_nil() )
+            geom = op->GetSubShape( mainShape, shapeID );
+        }
+        if ( !geom->_is_nil() ) {
+          GeomObjectToShape( geom ); // let geom client remember the found shape
+	  return geom._retn();
+        }
+      }
   }
   return GEOM::GEOM_Object::_nil();
 }
@@ -1159,7 +1289,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
  */
 //================================================================================
 
-SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshesArray, 
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshesArray,
 					       CORBA::Boolean           theUniteIdenticalGroups, 
 					       CORBA::Boolean           theMergeNodesAndElements, 
 					       CORBA::Double            theMergeTolerance)
@@ -1339,52 +1469,6 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   return aNewMesh._retn();
 }
 
-//================================================================================
-/*!
- * \brief Return geometrical object the given element is built on.
- *  \param theMesh - the mesh the element is in
- *  \param theElementID - the element ID
- *  \retval GEOM::GEOM_Object_ptr - the found geom object
- */
-//================================================================================
-
-GEOM::GEOM_Object_ptr
-SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-				    CORBA::Long            theElementID)
-  throw ( SALOME::SALOME_Exception )
-{
-  Unexpect aCatch(SALOME_SalomeException);
-  if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
-
-  GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
-
-  // get a core mesh DS
-  SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
-  if ( meshServant && !geomGen->_is_nil() && !mainShape->_is_nil() )
-  {
-    ::SMESH_Mesh & mesh = meshServant->GetImpl();
-    SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
-    // find the element in mesh
-    if ( const SMDS_MeshElement * elem = meshDS->FindElement( theElementID ) )
-      // find a shape id by the element
-      if ( int shapeID = ::SMESH_MeshEditor( &mesh ).FindShape( elem )) {
-        // get a geom object by the shape id
-        GEOM::GEOM_Object_var geom = ShapeToGeomObject( meshDS->IndexToShape( shapeID ));
-        if ( geom->_is_nil() ) {
-          GEOM::GEOM_IShapesOperations_var op =
-            geomGen->GetIShapesOperations( GetCurrentStudyID() );
-          if ( !op->_is_nil() )
-            geom = op->GetSubShape( mainShape, shapeID );
-        }
-        if ( !geom->_is_nil() )
-	  return geom._retn();
-      }
-  }
-  return GEOM::GEOM_Object::_nil();
-}
-
 //=============================================================================
 /*!
  *  SMESH_Gen_i::Save
@@ -1409,10 +1493,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   SavePython(myCurrentStudy);
 
   StudyContext* myStudyContext = GetCurrentStudyContext();
-  
+
   // Declare a byte stream
   SALOMEDS::TMPFile_var aStreamFile;
-  
+
   // Obtain a temporary dir
   TCollection_AsciiString tmpDir =
     ( isMultiFile ) ? TCollection_AsciiString( ( char* )theURL ) : ( char* )SALOMEDS_Tool::GetTmpDir().c_str();
