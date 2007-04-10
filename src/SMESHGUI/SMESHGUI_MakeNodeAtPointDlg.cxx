@@ -348,6 +348,9 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 
 bool SMESHGUI_MakeNodeAtPointOp::onApply()
 {
+  if( isStudyLocked() )
+    return false;
+
   if ( !myMeshActor ) {
     SUIT_MessageBox::warn1( dlg(), tr( "SMESH_WRN_WARNING" ),
                             tr("INVALID_MESH"), tr( "SMESH_BUT_OK" ) );
