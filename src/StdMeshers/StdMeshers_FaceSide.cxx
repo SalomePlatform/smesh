@@ -354,9 +354,9 @@ void StdMeshers_FaceSide::Reverse()
   int nbEdges = myEdge.size();
   for ( int i = nbEdges-1; i >= 0; --i ) {
     std::swap( myFirst[i], myLast[i] );
-    // at the first loop 1. is overwritten
-    myNormPar[i] = 1 - myNormPar[i-1];
     myEdge[i].Reverse();
+    if ( i > 0 ) // at the first loop 1. is overwritten
+      myNormPar[i] = 1 - myNormPar[i-1];
   }
   if ( nbEdges > 1 ) {
     reverse( myEdge );
