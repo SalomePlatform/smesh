@@ -1720,37 +1720,35 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   // Set new name
   SMESH::SetName( pObj, myDlg->objectText( SMESHGUI_MeshDlg::Obj ).latin1() );
 
-  // Assign new hypotheses and algorithms
+  // First, remove old algos in order to avoid messages on algorithm hiding
+  for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
+  {
+    if ( isAccessibleDim( dim ) && myObjHyps[ dim ][ Algo ].count() > 0 )
+    {
+      SMESH::SMESH_Hypothesis_var anOldAlgo = myObjHyps[ dim ][ Algo ].first();
+      SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( dim );
+      if ( anAlgoVar->_is_nil() || // no new algo selected or
+           strcmp(anOldAlgo->GetName(), anAlgoVar->GetName()) ) // algo change
+      {
+        // remove old algorithm
+        SMESH::RemoveHypothesisOrAlgorithmOnMesh ( pObj, myObjHyps[ dim ][ Algo ].first() );
+        myObjHyps[ dim ][ Algo ].clear();
+      }
+    }
+  }
+
+  // Assign new algorithms and hypotheses
   for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
     if ( !isAccessibleDim( dim )) continue;
 
     // find or create algorithm
-    bool toDelete = false, toAdd = true;
     SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( dim );
-    if ( anAlgoVar->_is_nil() ) {
-      toAdd = false;
-    }
-    if ( myObjHyps[ dim ][ Algo ].count() > 0 ) {
-      SMESH::SMESH_Hypothesis_var anOldAlgo = myObjHyps[ dim ][ Algo ].first();
-      if ( toAdd ) {
-        if ( strcmp(anOldAlgo->GetName(), anAlgoVar->GetName()) == 0 ) {
-          toAdd = false;
-        } else {
-          toDelete = true;
-        }
-      } else {
-        toDelete = true;
-      }
-    }
-    // remove old algorithm
-    if ( toDelete ) {
-      SMESH::RemoveHypothesisOrAlgorithmOnMesh ( pObj, myObjHyps[ dim ][ Algo ].first() );
-      myObjHyps[ dim ][ Algo ].clear();
-    }
 
     // assign new algorithm
-    if ( toAdd ) {
+    if ( !anAlgoVar->_is_nil() && // some algo selected and
+         myObjHyps[ dim ][ Algo ].count() == 0 ) // no algo assigned
+    {
       SMESH::SMESH_Mesh_var aMeshVar =
         SMESH::SMESH_Mesh::_narrow( _CAST(SObject,pObj)->GetObject() );
       bool isMesh = !aMeshVar->_is_nil();
