@@ -31,6 +31,7 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
@@ -50,7 +51,6 @@ class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
 class SMESH_MesherHelper;
-class SMESH_Comment;
 
 
 class SMESH_Algo:public SMESH_Hypothesis
