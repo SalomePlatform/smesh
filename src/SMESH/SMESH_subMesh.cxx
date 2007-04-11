@@ -1372,7 +1372,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         RemoveSubMeshElementsAndNodes();
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
-        _computeError = SMESH_ComputeError::New(COMPERR_EXCEPTION,"",algo);
+        _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
         try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
@@ -1387,15 +1387,16 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
           else
           {
-            if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput())
+            if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput()) {
               ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
-            else
+              break;
+            }
+            else {
               ret = algo->Compute((*_father), _subShape);
+            }
           }
           if ( !ret )
-            if ( SMESH_ComputeErrorPtr err = algo->GetComputeError())
-              if ( !err->IsOK() ) // avoid overriding the error set by ApplyToCollection()
-                _computeError = err;
+            _computeError = algo->GetComputeError();
         }
         catch (Standard_Failure& exc) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
@@ -1418,6 +1419,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_STD_EXCEPTION;
           _computeError->myComment = exc.what();
+        }
+        catch ( ... ) {
+          if ( _computeError )
+            _computeError->myName = COMPERR_EXCEPTION;
         }
         if ( ret && _computeError && !_computeError->IsOK() ) {
           ret = false;
@@ -1655,12 +1660,18 @@ bool SMESH_subMesh::ApplyToCollection (SMESH_Algo*         theAlgo,
     {
       if ( !subMesh->CheckComputeError( theAlgo ))
         localOK = false;
+      else
+        subMesh->UpdateDependantsState( SUBMESH_COMPUTED );
     }
   }
-  if ( !ok && localOK )
-    return false; // store error in this subMesh
+  if ( !ok && localOK ) { // KO but error set to none submesh
+    _computeError = theAlgo->GetComputeError();
+    if ( _computeError->IsOK() )
+      _computeError = SMESH_ComputeError::New(COMPERR_ALGO_FAILED);
+    CheckComputeError( theAlgo );
+  }
 
-  return ( this->_computeState == COMPUTE_OK );
+  return true;
 }
 
 
