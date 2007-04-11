@@ -42,20 +42,16 @@
 #include "OpUtil.hxx"
 
 #include <BRep_Builder.hxx>
-
-#include <TopExp.hxx>
-#include <TopoDS_Compound.hxx>
-#include <TopTools_MapOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-
-#ifdef _DEBUG_
-#include <gp_Pnt.hxx>
 #include <BRep_Tool.hxx>
-#include <TopoDS.hxx>
+#include <TopExp.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
-#endif
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Compound.hxx>
+#include <gp_Pnt.hxx>
 
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
