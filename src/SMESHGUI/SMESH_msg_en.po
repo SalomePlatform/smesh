@@ -3399,7 +3399,7 @@ msgid "SMESHGUI_ComputeDlg::CONSTRUCTOR"
 msgstr "Compute mesh"
 
 msgid "SMESHGUI_ComputeDlg::ERRORS"
-msgstr "Compute errors"
+msgstr "Errors"
 
 msgid "SMESHGUI_ComputeDlg::SHOW_SHAPE"
 msgstr "Show SubShape"
