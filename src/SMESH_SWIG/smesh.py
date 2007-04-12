@@ -1321,7 +1321,7 @@ class Mesh:
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(salome.myStudyId)
-            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok )
+            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (NbNodes()==0) )
             salome.sg.updateObjBrowser(1)
             pass
         return ok
