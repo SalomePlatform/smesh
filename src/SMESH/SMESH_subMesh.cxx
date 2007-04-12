@@ -1626,7 +1626,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo)
     _computeState = COMPUTE_OK;
   }
   // Check state of submeshes
-  if ( !theAlgo->NeedDescretBoundary() && theAlgo->OnlyUnaryInput() ) {
+  if ( !theAlgo->NeedDescretBoundary() /*&& theAlgo->OnlyUnaryInput()*/ ) {
     SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
     while ( smIt->more() )
       if ( !smIt->next()->CheckComputeError( theAlgo ))
