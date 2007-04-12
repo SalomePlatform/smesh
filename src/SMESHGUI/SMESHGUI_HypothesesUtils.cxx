@@ -410,7 +410,7 @@ namespace SMESH{
 	if (res < SMESH::HYP_UNKNOWN_FATAL) {
 	  _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
 	  if (SM && aSH) {
-	    SMESH::ModifiedMesh(SM, false);
+	    SMESH::ModifiedMesh(SM, false, aMesh->NbNodes()==0);
 	  }
 	}
 	if (res > SMESH::HYP_OK) {
@@ -445,7 +445,7 @@ namespace SMESH{
 	  if (res < SMESH::HYP_UNKNOWN_FATAL)  {
             _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
             if (meshSO)
-              SMESH::ModifiedMesh(meshSO, false);
+              SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
 	  }
 	  if (res > SMESH::HYP_OK) {
 	    wc.suspend();
@@ -531,7 +531,7 @@ namespace SMESH{
 	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
-                SMESH::ModifiedMesh(meshSO, false);
+                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
 	    if (res > SMESH::HYP_OK) {
 	      wc.suspend();

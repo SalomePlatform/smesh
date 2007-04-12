@@ -868,7 +868,7 @@ using namespace std;
 
             _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
             if (aMeshSO)
-              SMESH::ModifiedMesh(aMeshSO, false);
+              SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
           }
           else {
             IObject = new SALOME_InteractiveObject

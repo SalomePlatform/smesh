@@ -66,7 +66,7 @@ public:
     * \param Mesh_Entry - entry of a mesh
     * \param isComputed - is mesh computed or not
    */
-  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
 
 private:
   SALOMEDS::Study_var        myStudy;
