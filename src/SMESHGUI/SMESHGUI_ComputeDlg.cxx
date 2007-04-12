@@ -44,6 +44,7 @@
 #include "SALOMEDSClient_SObject.hxx"
 #include "SALOME_ListIO.hxx"
 #include "SVTK_ViewWindow.h"
+#include "SVTK_ViewModel.h"
 #include "SalomeApp_Tools.h"
 #include "SalomeApp_Application.h"
 #include "SUIT_ResourceMgr.h"
@@ -124,12 +125,14 @@ namespace SMESH {
     // -----------------------------------------------------------------------
     void DeleteActors()
     {
-      TActorIterator actorIt = actorIterator();
-      while ( actorIt.more() )
-        if (VTKViewer_Actor* anActor = actorIt.next()) {
-          myViewWindow->RemoveActor( anActor );
-          //anActor->Delete();
-        }
+      if ( hasViewWindow() ) {
+        TActorIterator actorIt = actorIterator();
+        while ( actorIt.more() )
+          if (VTKViewer_Actor* anActor = actorIt.next()) {
+            myViewWindow->RemoveActor( anActor );
+            //anActor->Delete();
+          }
+      }
       myIndexToShape.Clear();
       myActors.clear();
       myShownActors.clear();
@@ -270,6 +273,16 @@ namespace SMESH {
       B.Get(aXmin, aYmin, aZmin, aXmax, aYmax, aZmax);
       double deflection = Max( aXmax-aXmin , Max ( aYmax-aYmin , aZmax-aZmin)) * 0.01 *4;
       BRepMesh_IncrementalMesh MESH(shape,deflection);
+    }
+    // -----------------------------------------------------------------------
+    bool hasViewWindow() const
+    {
+      if ( !myViewWindow ) return false;
+
+      if ( SalomeApp_Application* anApp = SMESHGUI::GetSMESHGUI()->getApp() )
+        return FindVtkViewWindow( anApp->getViewManager(SVTK_Viewer::Type(), false ),
+                                  myViewWindow );
+      return false;
     }
   };
 
