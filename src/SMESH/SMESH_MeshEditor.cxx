@@ -6307,18 +6307,22 @@ void SMESH_MeshEditor::UpdateVolumes (const SMDS_MeshNode*        theBetweenNode
 }
 
 //=======================================================================
-//function : ConvertElemToQuadratic
-//purpose  :
+/*!
+ * \brief Convert elements contained in a submesh to quadratic
+ * \retval int - nb of checked elements
+ */
 //=======================================================================
-void SMESH_MeshEditor::ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
+
+int SMESH_MeshEditor::ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
                                               SMESH_MesherHelper& theHelper,
 					      const bool          theForce3d)
 {
-  if( !theSm ) return;
-  SMESHDS_Mesh* meshDS = GetMeshDS();
+  int nbElem = 0;
+  if( !theSm ) return nbElem;
   SMDS_ElemIteratorPtr ElemItr = theSm->GetElements();
   while(ElemItr->more())
   {
+    nbElem++;
     const SMDS_MeshElement* elem = ElemItr->next();
     if( !elem || elem->IsQuadratic() ) continue;
 
@@ -6333,7 +6337,7 @@ void SMESH_MeshEditor::ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     SMDSAbs_ElementType aType = elem->GetType();
 
     theSm->RemoveElement(elem);
-    meshDS->SMDS_Mesh::RemoveFreeElement(elem);
+    GetMeshDS()->SMDS_Mesh::RemoveFreeElement(elem);
 
     const SMDS_MeshElement* NewElem = 0;
 
@@ -6383,12 +6387,13 @@ void SMESH_MeshEditor::ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     }
     if( NewElem )
     {
-      AddToSameGroups( NewElem, elem, meshDS);
+      AddToSameGroups( NewElem, elem, GetMeshDS());
       theSm->AddElement( NewElem );
     }
     if ( NewElem != elem )
-      RemoveElemFromGroups (elem, meshDS);
+      RemoveElemFromGroups (elem, GetMeshDS());
   }
+  return nbElem;
 }
 
 //=======================================================================
@@ -6402,21 +6407,23 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
   SMESH_MesherHelper aHelper(*myMesh);
   aHelper.SetIsQuadratic( true );
 
+  int nbCheckedElems = 0;
   if ( myMesh->HasShapeToMesh() )
   {
-    SMESH_subMesh *aSubMesh = myMesh->GetSubMesh(myMesh->GetShapeToMesh());
-    SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(false,false);
-    while ( smIt->more() ) {
-      SMESH_subMesh* sm = smIt->next();
-      if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() ) {
-        aHelper.SetSubShape( sm->GetSubShape() );
-        ConvertElemToQuadratic(smDS, aHelper, theForce3d);
+    if ( SMESH_subMesh *aSubMesh = myMesh->GetSubMeshContaining(myMesh->GetShapeToMesh()))
+    {
+      SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(true,false);
+      while ( smIt->more() ) {
+        SMESH_subMesh* sm = smIt->next();
+        if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() ) {
+          aHelper.SetSubShape( sm->GetSubShape() );
+          nbCheckedElems += ConvertElemToQuadratic(smDS, aHelper, theForce3d);
+        }
       }
     }
-    aHelper.SetSubShape( aSubMesh->GetSubShape() );
-    ConvertElemToQuadratic(aSubMesh->GetSubMeshDS(), aHelper, theForce3d);
   }
-  else
+  int totalNbElems = meshDS->NbEdges() + meshDS->NbFaces() + meshDS->NbVolumes();
+  if ( nbCheckedElems < totalNbElems ) // not all elements in submeshes
   {
     SMDS_EdgeIteratorPtr aEdgeItr = meshDS->edgesIterator();
     while(aEdgeItr->more())
@@ -6515,17 +6522,22 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d)
 }
 
 //=======================================================================
-//function : RemoveQuadElem
-//purpose  :
+/*!
+ * \brief Convert quadratic elements to linear ones and remove quadratic nodes
+ * \retval int - nb of checked elements
+ */
 //=======================================================================
-void SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
-				      SMDS_ElemIteratorPtr theItr,
-				      const int            theShapeID)
+
+int SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
+                                     SMDS_ElemIteratorPtr theItr,
+                                     const int            theShapeID)
 {
+  int nbElem = 0;
   SMESHDS_Mesh* meshDS = GetMeshDS();
   while( theItr->more() )
   {
     const SMDS_MeshElement* elem = theItr->next();
+    nbElem++;
     if( elem && elem->IsQuadratic())
     {
       int id = elem->GetID();
@@ -6546,7 +6558,7 @@ void SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
       if( aNds.empty() ) continue;
       SMDSAbs_ElementType aType = elem->GetType();
 
-      //remove old quadratic elements
+      //remove old quadratic element
       meshDS->SMDS_Mesh::RemoveFreeElement( elem );
       if ( theSm )
         theSm->RemoveElement( elem );
@@ -6573,6 +6585,7 @@ void SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
       }
     }
   }
+  return nbElem;
 }
 
 //=======================================================================
@@ -6581,17 +6594,23 @@ void SMESH_MeshEditor::RemoveQuadElem(SMESHDS_SubMesh *    theSm,
 //=======================================================================
 bool  SMESH_MeshEditor::ConvertFromQuadratic()
 {
+  int nbCheckedElems = 0;
   if ( myMesh->HasShapeToMesh() )
   {
-    SMESH_subMesh *aSubMesh = myMesh->GetSubMesh(myMesh->GetShapeToMesh());
-    SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(true,false);
-    while ( smIt->more() ) {
-      SMESH_subMesh* sm = smIt->next();
-      if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() )
-	RemoveQuadElem( smDS, smDS->GetElements(), sm->GetId() );
+    if ( SMESH_subMesh *aSubMesh = myMesh->GetSubMeshContaining(myMesh->GetShapeToMesh()))
+    {
+      SMESH_subMeshIteratorPtr smIt = aSubMesh->getDependsOnIterator(true,false);
+      while ( smIt->more() ) {
+        SMESH_subMesh* sm = smIt->next();
+        if ( SMESHDS_SubMesh *smDS = sm->GetSubMeshDS() )
+          nbCheckedElems += RemoveQuadElem( smDS, smDS->GetElements(), sm->GetId() );
+      }
     }
   }
-  else
+  
+  int totalNbElems =
+    GetMeshDS()->NbEdges() + GetMeshDS()->NbFaces() + GetMeshDS()->NbVolumes();
+  if ( nbCheckedElems < totalNbElems ) // not all elements in submeshes
   {
     SMESHDS_SubMesh *aSM = 0;
     RemoveQuadElem( aSM, GetMeshDS()->elementsIterator(), 0 );

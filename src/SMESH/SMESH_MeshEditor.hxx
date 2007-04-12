@@ -501,17 +501,22 @@ public:
 
 private:
 
-  void ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
-                              SMESH_MesherHelper& theHelper,
-			      const bool          theForce3d);
-  //Auxiliary function for "ConvertToQuadratic" is intended to convert
-  //elements contained in submesh to quadratic
+  /*!
+   * \brief Convert elements contained in a submesh to quadratic
+    * \retval int - nb of checked elements
+   */
+  int ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
+                             SMESH_MesherHelper& theHelper,
+                             const bool          theForce3d);
 
-  void RemoveQuadElem( SMESHDS_SubMesh *    theSm,
-		       SMDS_ElemIteratorPtr theItr,
-		       const int            theShapeID);
-  //Auxiliary function for "ConvertFromQuadratic" is intended to convert quadratic
-  //element to ordinary and for removing quadratic nodes
+  /*!
+   * \brief Convert quadratic elements to linear ones and remove quadratic nodes
+    * \retval int - nb of checked elements
+   */
+  int RemoveQuadElem( SMESHDS_SubMesh *    theSm,
+                      SMDS_ElemIteratorPtr theItr,
+                      const int            theShapeID);
+  //Auxiliary function for "ConvertFromQuadratic" is intended to 
 
 private:
 
