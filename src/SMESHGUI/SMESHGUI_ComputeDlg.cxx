@@ -393,6 +393,24 @@ namespace SMESH {
     }
     return text;
   }
+  // -----------------------------------------------------------------------
+  /*!
+   * \brief Return text describing a subshape
+   */
+  bool getSelectedRows(QTable* table, list< int > & rows)
+  {
+    rows.clear();
+    int nbSel = table->numSelections();
+    for ( int i = 0; i < nbSel; ++i )
+    {
+      QTableSelection selected = table->selection(i);
+      if ( !selected.isActive() ) continue;
+      for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
+        rows.push_back( row );
+    }
+    return !rows.empty();
+  }
+  
 } // namespace SMESH
 
 
@@ -691,25 +709,37 @@ void SMESHGUI_ComputeOp::onPublishShape()
   GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
   SALOMEDS::Study_var study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
 
-  int nbSel = table()->numSelections();
-  for ( int i = 0; i < nbSel; ++i ) {
-    QTableSelection selected = table()->selection(i);
-    if ( !selected.isActive() ) continue;
-    for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
+  list< int > rows;
+  list< int >::iterator row;
+  getSelectedRows( table(), rows );
+  for ( row = rows.begin(); row != rows.end(); ++row )
+  {
+    int curSub = table()->text(*row, COL_SHAPEID).toInt();
+    GEOM::GEOM_Object_var shape = getSubShape( curSub, myMainShape );
+    if ( !shape->_is_nil() && ! getSubShapeSO( curSub, myMainShape ))
     {
-      bool isPublished = ( !table()->text(row, COL_PUBLISHED).isEmpty() );
-      if ( !isPublished ) {
-        int curSub = table()->text(row, COL_SHAPEID).toInt();
-        GEOM::GEOM_Object_var shape = getSubShape( curSub, myMainShape );
-        if ( !shape->_is_nil() && ! getSubShapeSO( curSub, myMainShape ))
-        {
-          QString name = GEOMBase::GetDefaultName( shapeTypeName( shape, "ERROR_SHAPE" ));
-          SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name, myMainShape);
-          if ( !so->_is_nil() ) {
-            table()->setText( row, COL_SHAPE, so->GetName() );
-            table()->setText( row, COL_PUBLISHED, so->GetID() );
+      if ( !getSubShapeSO( 1, myMainShape )) // the main shape not published
+      {
+        QString name = GEOMBase::GetDefaultName( shapeTypeName( myMainShape, "MAIN_SHAPE" ));
+        SALOMEDS::SObject_var so =
+          geomGen->AddInStudy( study, myMainShape, name, GEOM::GEOM_Object::_nil());
+        // look for myMainShape in the table
+        for ( int r = 0, nr = table()->numRows(); r < nr; ++r ) {
+          if ( table()->text(r, COL_SHAPEID) == "1" ) {
+            if ( so->_is_nil() ) {
+              table()->setText( r, COL_SHAPE, so->GetName() );
+              table()->setText( r, COL_PUBLISHED, so->GetID() );
+            }
+            break;
           }
         }
+        if ( curSub == 1 ) continue;
+      }
+      QString name = GEOMBase::GetDefaultName( shapeTypeName( shape, "ERROR_SHAPE" ));
+      SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name, myMainShape);
+      if ( !so->_is_nil() ) {
+        table()->setText( *row, COL_SHAPE, so->GetName() );
+        table()->setText( *row, COL_PUBLISHED, so->GetID() );
       }
     }
   }
@@ -728,27 +758,24 @@ void SMESHGUI_ComputeOp::currentCellChanged()
   myTShapeDisplayer->SetVisibility( false );
 
   bool publishEnable = 0, showEnable = 0, showOnly = 1;
-  int nbSel = table()->numSelections();
-  for ( int i = 0; i < nbSel; ++i )
+  list< int > rows;
+  list< int >::iterator row;
+  getSelectedRows( table(), rows );
+  for ( row = rows.begin(); row != rows.end(); ++row )
   {
-    QTableSelection selected = table()->selection(i);
-    if ( !selected.isActive() ) continue;
-    for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
-    {
-      bool hasData     = ( !table()->text(row, COL_SHAPE).isEmpty() );
-      bool isPublished = ( !table()->text(row, COL_PUBLISHED).isEmpty() );
-      if ( hasData && !isPublished )
-        publishEnable = true;
+    bool hasData     = ( !table()->text(*row, COL_SHAPE).isEmpty() );
+    bool isPublished = ( !table()->text(*row, COL_PUBLISHED).isEmpty() );
+    if ( hasData && !isPublished )
+      publishEnable = true;
 
-      int curSub = table()->text(row, COL_SHAPEID).toInt();
-      bool prsReady = myTShapeDisplayer->HasReadyActorsFor( curSub, myMainShape );
-      if ( prsReady ) {
-        myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
-        showOnly = false;
-      }
-      else {
-        showEnable = true;
-      }
+    int curSub = table()->text(*row, COL_SHAPEID).toInt();
+    bool prsReady = myTShapeDisplayer->HasReadyActorsFor( curSub, myMainShape );
+    if ( prsReady ) {
+      myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
+      showOnly = false;
+    }
+    else {
+      showEnable = true;
     }
   }
   myDlg->myPublishBtn->setEnabled( publishEnable );
@@ -766,19 +793,17 @@ void SMESHGUI_ComputeOp::onPreviewShape()
   if ( myTShapeDisplayer )
   {
     SUIT_OverrideCursor aWaitCursor;
+    list< int > rows;
+    list< int >::iterator row;
+    getSelectedRows( table(), rows );
+
     bool showOnly = true;
-    int nbSel = table()->numSelections();
-    for ( int i = 0; i < nbSel; ++i )
+    for ( row = rows.begin(); row != rows.end(); ++row )
     {
-      QTableSelection selected = table()->selection(i);
-      if ( !selected.isActive() ) continue;
-      for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
-      {
-        int curSub = table()->text(row, COL_SHAPEID).toInt();
-        if ( curSub > 0 ) {
-          myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
-          showOnly = false;
-        }
+      int curSub = table()->text(*row, COL_SHAPEID).toInt();
+      if ( curSub > 0 ) {
+        myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
+        showOnly = false;
       }
     }
     currentCellChanged(); // to update buttons
@@ -788,7 +813,7 @@ void SMESHGUI_ComputeOp::onPreviewShape()
 //================================================================================
 /*!
  * \brief Destructor
-*/
+ */
 //================================================================================
 
 SMESHGUI_ComputeOp::~SMESHGUI_ComputeOp()
