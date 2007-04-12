@@ -35,6 +35,8 @@
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
+#include <qgroupbox.h>
+
 class QFrame;
 class QPushButton;
 class QTable;
@@ -84,6 +86,35 @@ private:
 };
 
 /*!
+ * \brief Box showing mesh info
+ */
+
+class SMESHGUI_MeshInfosBox : public QGroupBox
+{
+  Q_OBJECT
+public:
+
+  SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent);
+  void SetInfoByMesh(SMESH::SMESH_Mesh_var mesh);
+
+private:
+
+  bool    myFull;
+  QLabel* myNbNode;
+  QLabel* myNbEdge,  *myNbLinEdge,  *myNbQuadEdge;
+  QLabel* myNbTrai,  *myNbLinTrai,  *myNbQuadTrai;
+  QLabel* myNbQuad,  *myNbLinQuad,  *myNbQuadQuad;
+  QLabel* myNbFace,  *myNbLinFace,  *myNbQuadFace;
+  QLabel* myNbPolyg;
+  QLabel* myNbHexa,  *myNbLinHexa,  *myNbQuadHexa;
+  QLabel* myNbTetra, *myNbLinTetra, *myNbQuadTetra;
+  QLabel* myNbPyra,  *myNbLinPyra,  *myNbQuadPyra;
+  QLabel* myNbPrism, *myNbLinPrism, *myNbQuadPrism;
+  QLabel* myNbVolum, *myNbLinVolum, *myNbQuadVolum;
+  QLabel* myNbPolyh;
+};
+
+/*!
  * \brief Dialog to compute a mesh and show computation errors
  */
 
@@ -94,22 +125,18 @@ class SMESHGUI_ComputeDlg : public SMESHGUI_Dialog
 public:
                                SMESHGUI_ComputeDlg();
 
-  void                         SetMeshInfo(int nbNodes, int nbEdges, int nbFaces, int nbVolums);
-
 private:
 
   QFrame*                      createMainFrame   (QWidget*);
 
+  QLabel*                      myMeshName;
+  QGroupBox*                   myErrorGroup;
   QTable*                      myTable;
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;
 
-  QLabel*                      myNbNodesLabel;
-  QLabel*                      myNbEdgesLabel;
-  QLabel*                      myNbFacesLabel;
-  QLabel*                      myNbVolumLabel;
-
-  QString                      myHelpFileName;
+  SMESHGUI_MeshInfosBox*       myBriefInfo;
+  SMESHGUI_MeshInfosBox*       myFullInfo;
 
   friend class SMESHGUI_ComputeOp;
 

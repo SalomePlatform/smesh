@@ -75,6 +75,8 @@
 #include <qbuttongroup.h>
 #include <qradiobutton.h>
 #include <qtable.h>
+#include <qhbox.h>
+#include <qhgroupbox.h>
 
 #include <vtkProperty.h>
 
@@ -89,6 +91,17 @@
 
 #define SPACING 5
 #define MARGIN  10
+
+#define COLONIZE(str)   (QString(str).contains(":") > 0 ? QString(str) : QString(str) + " :" )
+
+#define _SEPARATOR(father) \
+{\
+  /*new QLabel(father); new QLabel(father); new QLabel(father)*/;\
+  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
+  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
+  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
+  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
+}
 
 enum TCol { COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, NB_COLUMNS };
 
@@ -410,9 +423,204 @@ namespace SMESH {
     }
     return !rows.empty();
   }
-  
+
 } // namespace SMESH
 
+
+// =========================================================================================
+/*!
+ * \brief Box showing mesh info
+ */
+// =========================================================================================
+
+SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent)
+  :QGroupBox( 4, Qt::Horizontal, tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
+{
+  // title
+  QLabel* lab1 = new QLabel(this);
+  QLabel* lab2 = new QLabel(tr("SMESH_MESHINFO_ORDER0"), this );
+  QLabel* lab3 = new QLabel(tr("SMESH_MESHINFO_ORDER1"), this );
+  QLabel* lab4 = new QLabel(tr("SMESH_MESHINFO_ORDER2"), this );
+
+  QFont italic = lab1->font(); italic.setItalic(true);
+  QFont bold   = lab1->font(); bold.setBold(true);
+
+  lab1->setMinimumWidth(100); lab1->setFont( italic );
+  lab2->setMinimumWidth(100); lab2->setFont( italic );
+  lab3->setMinimumWidth(100); lab3->setFont( italic );
+  lab4->setMinimumWidth(100); lab4->setFont( italic );
+
+  if ( myFull )
+  {
+    // nodes
+    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this ))->setFont( bold );
+    myNbNode = new QLabel( this );
+    new QLabel(this);
+    new QLabel(this);
+
+    _SEPARATOR(this);
+
+    // edges
+    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this ))->setFont( bold );
+    myNbEdge = new QLabel( this );
+    myNbLinEdge = new QLabel( this );
+    myNbQuadEdge = new QLabel( this );
+
+    _SEPARATOR(this);
+
+    // faces
+    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this))->setFont( bold );
+    myNbFace     = new QLabel( this );
+    myNbLinFace  = new QLabel( this );
+    myNbQuadFace = new QLabel( this );
+    // triangles
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), this );
+    myNbTrai     = new QLabel( this );
+    myNbLinTrai  = new QLabel( this );
+    myNbQuadTrai = new QLabel( this );
+    // quadrangles
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), this );
+    myNbQuad     = new QLabel( this );
+    myNbLinQuad  = new QLabel( this );
+    myNbQuadQuad = new QLabel( this );
+    // poligones
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYGONES")), this );
+    myNbPolyg    = new QLabel( this );
+    new QLabel("",this );
+    new QLabel("", this );
+
+    _SEPARATOR(this);
+
+    // volumes
+    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this))->setFont( bold );
+    myNbVolum     = new QLabel( this );
+    myNbLinVolum  = new QLabel( this );
+    myNbQuadVolum = new QLabel( this );
+    // tetras
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), this );
+    myNbTetra     = new QLabel( this );
+    myNbLinTetra  = new QLabel( this );
+    myNbQuadTetra = new QLabel( this );
+    // hexas
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), this );
+    myNbHexa      = new QLabel( this );
+    myNbLinHexa   = new QLabel( this );
+    myNbQuadHexa  = new QLabel( this );
+    // pyras
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), this );
+    myNbPyra      = new QLabel( this );
+    myNbLinPyra   = new QLabel( this );
+    myNbQuadPyra  = new QLabel( this );
+    // prisms
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), this );
+    myNbPrism     = new QLabel( this );
+    myNbLinPrism  = new QLabel( this );
+    myNbQuadPrism = new QLabel( this );
+    // polyedres
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYEDRES")), this );
+    myNbPolyh     = new QLabel( this );
+    new QLabel("", this );
+    new QLabel("", this );
+  }
+  else
+  {
+    // nodes
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
+    myNbNode      = new QLabel( this );
+    new QLabel(this);
+    new QLabel(this);
+
+    // edges
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
+    myNbEdge      = new QLabel( this );
+    myNbLinEdge   = new QLabel( this );
+    myNbQuadEdge  = new QLabel( this );
+
+    // faces
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
+    myNbFace      = new QLabel( this );
+    myNbLinFace   = new QLabel( this );
+    myNbQuadFace  = new QLabel( this );
+
+    // volumes
+    new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
+    myNbVolum     = new QLabel( this );
+    myNbLinVolum  = new QLabel( this );
+    myNbQuadVolum = new QLabel( this );
+  }
+}
+
+// =========================================================================================
+/*!
+ * \brief Set mesh info
+ */
+// =========================================================================================
+
+void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
+{
+  const SMESH::ElementOrder lin = SMESH::ORDER_LINEAR;
+  int nbTot, nbLin;
+
+  // nodes
+  myNbNode     ->setText( QString("%1").arg( mesh->NbNodes() ));
+
+  // edges
+  nbTot = mesh->NbEdges(), nbLin = mesh->NbEdgesOfOrder(lin);
+  myNbEdge     ->setText( QString("%1").arg( nbTot ));
+  myNbLinEdge  ->setText( QString("%1").arg( nbLin ));
+  myNbQuadEdge ->setText( QString("%1").arg( nbTot - nbLin ));
+
+  // faces
+  nbTot = mesh->NbFaces(), nbLin = mesh->NbFacesOfOrder(lin);
+  myNbFace     ->setText( QString("%1").arg( nbTot ));
+  myNbLinFace  ->setText( QString("%1").arg( nbLin ));
+  myNbQuadFace ->setText( QString("%1").arg( nbTot - nbLin ));
+
+  // volumes
+  nbTot = mesh->NbVolumes(), nbLin = mesh->NbVolumesOfOrder(lin);
+  myNbVolum    ->setText( QString("%1").arg( nbTot ));
+  myNbLinVolum ->setText( QString("%1").arg( nbLin ));
+  myNbQuadVolum->setText( QString("%1").arg( nbTot - nbLin ));
+
+  if ( myFull )
+  {
+    // triangles
+    nbTot = mesh->NbTriangles(), nbLin = mesh->NbTrianglesOfOrder(lin);
+    myNbTrai     ->setText( QString("%1").arg( nbTot ));
+    myNbLinTrai  ->setText( QString("%1").arg( nbLin ));
+    myNbQuadTrai ->setText( QString("%1").arg( nbTot - nbLin ));
+    // quadrangles
+    nbTot = mesh->NbQuadrangles(), nbLin = mesh->NbQuadranglesOfOrder(lin);
+    myNbQuad     ->setText( QString("%1").arg( nbTot ));
+    myNbLinQuad  ->setText( QString("%1").arg( nbLin ));
+    myNbQuadQuad ->setText( QString("%1").arg( nbTot - nbLin ));
+    // poligones
+    myNbPolyg    ->setText( QString("%1").arg( mesh->NbPolygons() ));
+
+    // tetras
+    nbTot = mesh->NbTetras(), nbLin = mesh->NbTetrasOfOrder(lin);
+    myNbTetra    ->setText( QString("%1").arg( nbTot ));
+    myNbLinTetra ->setText( QString("%1").arg( nbLin ));
+    myNbQuadTetra->setText( QString("%1").arg( nbTot - nbLin ));
+    // hexas
+    nbTot = mesh->NbHexas(), nbLin = mesh->NbHexasOfOrder(lin);
+    myNbHexa     ->setText( QString("%1").arg( nbTot ));
+    myNbLinHexa  ->setText( QString("%1").arg( nbLin ));
+    myNbQuadHexa ->setText( QString("%1").arg( nbTot - nbLin ));
+    // pyras
+    nbTot = mesh->NbPyramids(), nbLin = mesh->NbPyramidsOfOrder(lin);
+    myNbPyra     ->setText( QString("%1").arg( nbTot ));
+    myNbLinPyra  ->setText( QString("%1").arg( nbLin ));
+    myNbQuadPyra ->setText( QString("%1").arg( nbTot - nbLin ));
+    // prisms
+    nbTot = mesh->NbPrisms(), nbLin = mesh->NbPrismsOfOrder(lin);
+    myNbPrism    ->setText( QString("%1").arg( nbTot ));
+    myNbLinPrism ->setText( QString("%1").arg( nbLin ));
+    myNbQuadPrism->setText( QString("%1").arg( nbTot - nbLin ));
+    // polyedres
+    myNbPolyh    ->setText( QString("%1").arg( mesh->NbPolyhedrons() ));
+  }
+}
 
 // =========================================================================================
 /*!
@@ -420,7 +628,7 @@ namespace SMESH {
  */
 //=======================================================================
 
-SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK | Help )
+SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK/* | Help*/ )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame(), 0, SPACING);
 
@@ -453,25 +661,22 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   aRBut->setPixmap(iconCompute);
   aRBut->setChecked(TRUE);
 
+  // Mesh name
+
+  QHGroupBox* nameBox = new QHGroupBox(tr("SMESH_MESHINFO_NAME"), aFrame );
+  myMeshName = new QLabel(nameBox);
+
   // Mesh Info
 
-  QGroupBox* infoGrp = new QGroupBox( 2, Qt::Horizontal,
-                                      tr("SMESH_MESHINFO_TITLE"), aFrame, "infoGrp" );
-  QLabel* nodeLabel = new QLabel(tr("SMESH_MESHINFO_NODES"), infoGrp );
-  myNbNodesLabel    = new QLabel("0", infoGrp );
-  QLabel* edgeLabel = new QLabel(tr("SMESH_MESHINFO_EDGES"), infoGrp );
-  myNbEdgesLabel    = new QLabel("0", infoGrp );
-  QLabel* faceLabel = new QLabel(tr("SMESH_MESHINFO_FACES"), infoGrp);
-  myNbFacesLabel    = new QLabel("0", infoGrp );
-  QLabel* volumeLbl = new QLabel(tr("SMESH_MESHINFO_VOLUMES"), infoGrp);
-  myNbVolumLabel    = new QLabel("0", infoGrp );
+  myBriefInfo = new SMESHGUI_MeshInfosBox(false, aFrame);
+  myFullInfo  = new SMESHGUI_MeshInfosBox(true,  aFrame);
 
   // errors
 
-  QGroupBox* errorGrp = new QGroupBox(tr("ERRORS"), aFrame, "errorGrBox");
-  myTable      = new QTable( 1, NB_COLUMNS, errorGrp, "myTable");
-  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), errorGrp, "myShowBtn");
-  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), errorGrp, "myPublishBtn");
+  myErrorGroup = new QGroupBox(tr("ERRORS"), aFrame, "errorGrBox");
+  myTable      = new QTable( 1, NB_COLUMNS, myErrorGroup, "myTable");
+  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myErrorGroup, "myShowBtn");
+  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myErrorGroup, "myPublishBtn");
 
   myTable->setReadOnly( TRUE );
   myTable->hideColumn( COL_PUBLISHED );
@@ -489,10 +694,10 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
     myTable->horizontalHeader()->setLabel( col, header );
   }
 
-  errorGrp->setColumnLayout(0, Qt::Vertical);
-  errorGrp->layout()->setSpacing(0);
-  errorGrp->layout()->setMargin(0);
-  QGridLayout* grpLayout = new QGridLayout(errorGrp->layout());
+  myErrorGroup->setColumnLayout(0, Qt::Vertical);
+  myErrorGroup->layout()->setSpacing(0);
+  myErrorGroup->layout()->setMargin(0);
+  QGridLayout* grpLayout = new QGridLayout(myErrorGroup->layout());
   grpLayout->setAlignment(Qt::AlignTop);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
@@ -503,24 +708,13 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget( aPixGrp );
-  aLay->addWidget( infoGrp );
-  aLay->addWidget( errorGrp );
-  aLay->setStretchFactor( errorGrp, 1 );
+  aLay->addWidget( nameBox );
+  aLay->addWidget( myBriefInfo );
+  aLay->addWidget( myFullInfo );
+  aLay->addWidget( myErrorGroup );
+  aLay->setStretchFactor( myErrorGroup, 1 );
 
   return aFrame;
-}
-//================================================================================
-/*!
- * \brief Show mesh info
- */
-//================================================================================
-
-void SMESHGUI_ComputeDlg::SetMeshInfo(int nbNodes, int nbEdges, int nbFaces, int nbVolums)
-{
-  myNbNodesLabel->setText(QString("%1").arg(nbNodes));
-  myNbEdgesLabel->setText(QString("%1").arg(nbEdges));
-  myNbFacesLabel->setText(QString("%1").arg(nbFaces));
-  myNbVolumLabel->setText(QString("%1").arg(nbVolums));
 }
 
 //================================================================================
@@ -533,6 +727,7 @@ SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
 {
   myDlg = new SMESHGUI_ComputeDlg;
   myTShapeDisplayer = new TShapeDisplayer();
+  myHelpFileName = "/files/about_meshes.htm";
 
   // connect signals and slots
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
@@ -601,12 +796,10 @@ void SMESHGUI_ComputeOp::startOperation()
 //             return;
 //           }
         }
-        nbNodes = aMesh->NbNodes();
-        nbEdges = aMesh->NbEdges();
-        nbFaces = aMesh->NbFaces();
-        nbVolums = aMesh->NbVolumes();
-        _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
-        SMESH::ModifiedMesh(aMeshSObj, !computeFailed, nbNodes == 0);
+        if ( _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh)) {
+          SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
+          myDlg->myMeshName->setText( aMeshSObj->GetName() );
+        }
       }
       catch(const SALOME::SALOME_Exception & S_ex){
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
@@ -636,9 +829,6 @@ void SMESHGUI_ComputeOp::startOperation()
     }
   }
 
-  // SHOW Mesh Infos
-
-  myDlg->SetMeshInfo( nbNodes, nbEdges, nbFaces, nbVolums);
   myDlg->setCaption(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
 
   // SHOW ERRORS
@@ -649,10 +839,19 @@ void SMESHGUI_ComputeOp::startOperation()
 
   if ( noError )
   {
-    tbl->setNumRows(0);
+    //tbl->setNumRows(0);
+    myDlg->myFullInfo->SetInfoByMesh( aMesh );
+    myDlg->myFullInfo->show();
+    myDlg->myBriefInfo->hide();
+    myDlg->myErrorGroup->hide();
   }
   else
   {
+    myDlg->myBriefInfo->SetInfoByMesh( aMesh );
+    myDlg->myBriefInfo->show();
+    myDlg->myFullInfo->hide();
+    myDlg->myErrorGroup->show();
+
     // fill table of errors
     tbl->setNumRows( anErrors->length() );
     bool hasShape = aMesh->HasShapeToMesh();
