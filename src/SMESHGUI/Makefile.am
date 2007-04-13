@@ -1,0 +1,195 @@
+#  SMESH SMESHGUI : GUI for SMESH component
+#
+#  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+#  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Nicolas REJNERI
+#  Modified by : Alexander BORODIN (OCN) - autotools usage
+#  Module : SMESH
+#  $Header$
+
+include $(top_srcdir)/adm_local/unix/make_common_starter.am
+
+# header files 
+salomeinclude_HEADERS = \
+	SMESHGUI_Swig.hxx \
+	SMESHGUI_Swig.i \
+	SMESHGUI.h \
+	SMESHGUI_Utils.h \
+	SMESHGUI_Hypotheses.h \
+	SMESHGUI_HypothesesUtils.h \
+	SMESHGUI_SpinBox.h \
+	SMESHGUI_Selection.h \
+	SMESHGUI_VTKUtils.h \
+	SMESH_SMESHGUI.hxx
+
+# Libraries targets
+lib_LTLIBRARIES = libSMESH.la
+dist_libSMESH_la_SOURCES = \
+	SMESHGUI.cxx \
+	SMESHGUI_PatternWidget.cxx \
+	SMESHGUI_CreatePatternDlg.cxx \
+	SMESHGUI_MeshPatternDlg.cxx \
+	SMESHGUI_SpinBox.cxx \
+	SMESHGUI_NodesDlg.cxx \
+	SMESHGUI_TransparencyDlg.cxx \
+	SMESHGUI_ClippingDlg.cxx \
+	SMESHGUI_GroupDlg.cxx \
+	SMESHGUI_RemoveNodesDlg.cxx \
+	SMESHGUI_RemoveElementsDlg.cxx \
+	SMESHGUI_MeshInfosDlg.cxx \
+	SMESHGUI_StandardMeshInfosDlg.cxx \
+	SMESHGUI_Preferences_ColorDlg.cxx \
+	SMESHGUI_Preferences_ScalarBarDlg.cxx \
+	SMESHGUI_Preferences_SelectionDlg.cxx \
+	SMESHGUI_Swig.cxx \
+	SMESHGUI_MoveNodesDlg.cxx \
+	SMESHGUI_AddMeshElementDlg.cxx \
+	SMESHGUI_XmlHandler.cxx \
+	SMESHGUI_Filter.cxx \
+	SMESHGUI_FilterDlg.cxx \
+	SMESHGUI_FilterLibraryDlg.cxx \
+	SMESHGUI_SingleEditDlg.cxx \
+	SMESHGUI_MultiEditDlg.cxx \
+	SMESHGUI_DeleteGroupDlg.cxx \
+	SMESHGUI_GroupOpDlg.cxx \
+	SMESHGUI_SmoothingDlg.cxx \
+	SMESHGUI_RenumberingDlg.cxx \
+	SMESHGUI_ExtrusionDlg.cxx \
+	SMESHGUI_ExtrusionAlongPathDlg.cxx \
+	SMESHGUI_RevolutionDlg.cxx \
+	SMESHGUI_RotationDlg.cxx \
+	SMESHGUI_TranslationDlg.cxx \
+	SMESHGUI_SymmetryDlg.cxx \
+	SMESHGUI_SewingDlg.cxx \
+	SMESHGUI_MergeNodesDlg.cxx \
+	SMESHGUI_EditMeshDlg.cxx \
+	SMESHGUI_Utils.cxx \
+	SMESHGUI_GEOMGenUtils.cxx \
+	SMESHGUI_MeshUtils.cxx \
+	SMESHGUI_GroupUtils.cxx \
+	SMESHGUI_FilterUtils.cxx \
+	SMESHGUI_PatternUtils.cxx \
+	SMESHGUI_HypothesesUtils.cxx \
+	SMESHGUI_VTKUtils.cxx \
+	SMESHGUI_Selection.cxx \
+	SMESHGUI_CreatePolyhedralVolumeDlg.cxx \
+	SMESHGUI_Operation.cxx \
+	SMESHGUI_SelectionOp.cxx \
+	SMESHGUI_Dialog.cxx \
+	SMESHGUI_MeshDlg.cxx \
+	SMESHGUI_MeshOp.cxx \
+	SMESHGUI_Displayer.cxx \
+	SMESHGUI_Hypotheses.cxx \
+	SMESHGUI_ShapeByMeshDlg.cxx \
+	SMESHGUI_AddQuadraticElementDlg.cxx \
+	SMESHGUI_ConvToQuadDlg.cxx \
+	SMESHGUI_ConvToQuadOp.cxx
+
+MOC_FILES = \
+	SMESHGUI_moc.cxx \
+	SMESHGUI_PatternWidget_moc.cxx \
+	SMESHGUI_MeshPatternDlg_moc.cxx \
+	SMESHGUI_CreatePatternDlg_moc.cxx \
+	SMESHGUI_NodesDlg_moc.cxx \
+	SMESHGUI_SpinBox_moc.cxx \
+	SMESHGUI_TransparencyDlg_moc.cxx \
+	SMESHGUI_ClippingDlg_moc.cxx \
+	SMESHGUI_GroupDlg_moc.cxx \
+	SMESHGUI_RemoveNodesDlg_moc.cxx \
+	SMESHGUI_RemoveElementsDlg_moc.cxx \
+	SMESHGUI_MeshInfosDlg_moc.cxx \
+	SMESHGUI_StandardMeshInfosDlg_moc.cxx \
+	SMESHGUI_Preferences_ColorDlg_moc.cxx \
+	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
+	SMESHGUI_Preferences_SelectionDlg_moc.cxx \
+	SMESHGUI_MoveNodesDlg_moc.cxx \
+	SMESHGUI_AddMeshElementDlg_moc.cxx \
+	SMESHGUI_FilterDlg_moc.cxx \
+	SMESHGUI_FilterLibraryDlg_moc.cxx \
+	SMESHGUI_SingleEditDlg_moc.cxx \
+	SMESHGUI_MultiEditDlg_moc.cxx \
+	SMESHGUI_DeleteGroupDlg_moc.cxx \
+	SMESHGUI_GroupOpDlg_moc.cxx \
+	SMESHGUI_SmoothingDlg_moc.cxx \
+	SMESHGUI_RenumberingDlg_moc.cxx \
+	SMESHGUI_ExtrusionDlg_moc.cxx \
+	SMESHGUI_ExtrusionAlongPathDlg_moc.cxx \
+	SMESHGUI_RevolutionDlg_moc.cxx \
+	SMESHGUI_RotationDlg_moc.cxx \
+	SMESHGUI_TranslationDlg_moc.cxx \
+	SMESHGUI_SymmetryDlg_moc.cxx \
+	SMESHGUI_SewingDlg_moc.cxx \
+	SMESHGUI_MergeNodesDlg_moc.cxx \
+	SMESHGUI_EditMeshDlg_moc.cxx \
+	SMESHGUI_CreatePolyhedralVolumeDlg_moc.cxx \
+	SMESHGUI_Operation_moc.cxx \
+	SMESHGUI_SelectionOp_moc.cxx \
+	SMESHGUI_Dialog_moc.cxx \
+	SMESHGUI_MeshDlg_moc.cxx \
+	SMESHGUI_MeshOp_moc.cxx \
+	SMESHGUI_Hypotheses_moc.cxx \
+	SMESHGUI_ShapeByMeshDlg_moc.cxx \
+	SMESHGUI_AddQuadraticElementDlg_moc.cxx \
+	SMESHGUI_ConvToQuadDlg_moc.cxx \
+	SMESHGUI_ConvToQuadOp_moc.cxx
+
+nodist_libSMESH_la_SOURCES= \
+	$(MOC_FILES)
+
+# additionnal information to compil and link file
+libSMESH_la_CPPFLAGS = \
+	$(QT_INCLUDES) \
+	$(VTK_INCLUDES) \
+	$(OGL_INCLUDES) \
+	$(CAS_CPPFLAGS) \
+	$(PYTHON_INCLUDES) \
+	$(KERNEL_CXXFLAGS)  \
+	$(GUI_CXXFLAGS) \
+	$(GEOM_CXXFLAGS) \
+	$(MED_CXXFLAGS) \
+	$(BOOST_CPPFLAGS) \
+	$(CORBA_CXXFLAGS) \
+	$(CORBA_INCLUDES) \
+	-I$(srcdir)/../OBJECT \
+	-I$(srcdir)/../SMESHFiltersSelection \
+	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESH_I \
+	-I$(srcdir)/../Controls \
+	-I$(srcdir)/../SMESHClient \
+	-I$(top_builddir)/idl \
+	-I$(top_builddir)/salome_adm/unix
+
+
+libSMESH_la_LDFLAGS  = \
+	../SMESHFiltersSelection/libSMESHFiltersSelection.la \
+	../SMDS/libSMDS.la \
+	../Controls/libSMESHControls.la \
+	../OBJECT/libSMESHObject.la \
+	$(GEOM_LDFLAGS) \
+	-lGEOMBase
+
+# resources files
+nodist_salomeres_DATA= \
+	SMESH_images.qm \
+	SMESH_msg_en.qm
