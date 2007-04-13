@@ -73,7 +73,7 @@ class SMESH_Swig
 
   void SetName(const char* Entry, const char* Name);
 
-  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
 
   void CreateAndDisplayActor( const char* Mesh_Entry );
 };
