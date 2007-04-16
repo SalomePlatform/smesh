@@ -16,9 +16,15 @@ if (navigator.appName !="Netscape")
 <!--
 img_whs1 { border:none; width:30px; height:30px; float:none; border-style:none; }
 p.whs2 { margin-left:40px; }
-img_whs3 { border:none; width:400px; height:488px; float:none; }
-img_whs4 { border:none; width:341px; height:375px; float:none; border-style:none; }
-img_whs5 { border:none; float:none; width:347px; height:376px; border-style:none; }
+img_whs3 { border:none; width:420px; height:507px; float:none; border-style:none; }
+ul.whs4 { list-style:disc; }
+p.whs5 { margin-left:72px; }
+p.whs6 { margin-left:40px; font-weight:bold; }
+img_whs7 { border:none; width:37px; height:28px; float:none; border-style:none; }
+img_whs8 { border:none; width:38px; height:30px; float:none; border-style:none; }
+img_whs9 { border:none; width:82px; height:27px; float:none; border-style:none; }
+img_whs10 { border:none; width:341px; height:375px; float:none; border-style:none; }
+img_whs11 { border:none; float:none; width:347px; height:376px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
@@ -98,18 +104,58 @@ if (window.writeIntopicBar)
 
 <p>&nbsp;</p>
 
-<p class="whs2"><img src="../pics/mergenodes.png" x-maintain-ratio="TRUE" width="400px" height="488px" border="0" class="img_whs3"></p>
+<p class="whs2"><img src="../pics/mergenodes.png" x-maintain-ratio="TRUE" width="420px" height="507px" border="0" class="img_whs3"></p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2">This dialog box allows to create groups of 
- coincident nodes and to merge them. </p>
+<ul type="disc" class="whs4">
+	
+	<li class=kadov-p><p class="whs2"><span style="font-weight: bold;"><B>Name</B></span> 
+ is the name of the mesh whose nodes will be merged.</p></li>
+	
+	<li class=kadov-p><p class="whs2"><span style="font-weight: bold;"><B>Tolerance</B></span> 
+ is a maximum distance between nodes sufficient for merging.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><span style="font-weight: bold;"><B>Detect</B></span> 
+ button generates the list of coincident nodes for the given <span style="font-weight: bold;"><B>Tolerance</B></span>.</p></li>
+	
+	<li class=kadov-p><p class="whs2"><span style="font-weight: bold;"><B>Coincident 
+ nodes</B></span> is a list of groupes of nodes for merging. All nodes of each 
+ group will form one after the operation. </p></li>
+	
+	<li class=kadov-p><p class="whs5"><span style="font-weight: bold;"><B>Remove</B></span> 
+ button deletes the selected group from the list.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><span style="font-weight: bold;"><B>Add</B></span> 
+ button adds to the list a group of nodes selected in the viewer with pressed 
+ &quot;Shift&quot; key.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><span style="font-weight: bold;"><B>Select 
+ all</B></span> checkbox selects all groups.</p></li>
+	
+	<li class=kadov-p><p class="whs6">Edit 
+ selected group<span style="font-weight: normal;"> list</span> <span style="font-weight: normal;">allows 
+ editing the selected group:</span></p></li>
+	
+	<li class=kadov-p><p class="whs5"><img src="../pics/add.gif" x-maintain-ratio="TRUE" width="37px" height="28px" border="0" class="img_whs7"> adds 
+ to the group the node selected in the viewer.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><img src="../pics/remove.gif" x-maintain-ratio="TRUE" width="38px" height="30px" border="0" class="img_whs8"> removes 
+ from the group the selected node.</p></li>
+	
+	<li class=kadov-p><p class="whs5"><img src="../pics/sort.gif" x-maintain-ratio="TRUE" width="82px" height="27px" border="0" class="img_whs9"> moves 
+ the selected node to the first position in the group. This means that 
+ all other nodes will be merged into this one. </p></li>
+</ul>
+
+<p class="whs5">&nbsp;</p>
+
+<p class="whs5">To confirm your choice click <span style="font-weight: bold;"><B>OK</B></span> 
+ or <span style="font-weight: bold;"><B>Apply</B></span> button.</p>
 
 <p class="whs2">&nbsp;</p>
 
-<p class="whs2"><img src="../pics/merging_nodes1.png" x-maintain-ratio="TRUE" width="341px" height="375px" border="0" class="img_whs4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/merging_nodes2.png" x-maintain-ratio="TRUE" width="347px" height="376px" border="0" class="img_whs5"></p>
-
-<p class="whs2">&nbsp;</p>
+<p class="whs2"><img src="../pics/merging_nodes1.png" x-maintain-ratio="TRUE" width="341px" height="375px" border="0" class="img_whs10"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../pics/merging_nodes2.png" x-maintain-ratio="TRUE" width="347px" height="376px" border="0" class="img_whs11"></p>
 
 <p class="whs2">&nbsp;</p>
 
