@@ -39,6 +39,10 @@
 #include <TopTools_MapOfShape.hxx>
 #include <gp_Pnt2d.hxx>
 #include <ShapeAnalysis.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+
+#include <Standard_Failure.hxx>
+#include <Standard_ErrorHandler.hxx>
 
 #include <utilities.h>
 
@@ -307,11 +311,56 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX)
   {
-    int vertexID = n->GetPosition()->GetShapeId();
-    const TopoDS_Vertex& V = TopoDS::Vertex(GetMeshDS()->IndexToShape(vertexID));
-    uv = BRep_Tool::Parameters( V, F );
-    if ( n2 && mySeamShapeIds.find( vertexID ) != mySeamShapeIds.end() )
-      uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
+    if ( int vertexID = n->GetPosition()->GetShapeId() ) {
+      bool ok = true;
+      const TopoDS_Vertex& V = TopoDS::Vertex(GetMeshDS()->IndexToShape(vertexID));
+      try {
+        uv = BRep_Tool::Parameters( V, F );
+      }
+      catch (Standard_Failure& exc) {
+        ok = false;
+      }
+      if ( !ok ) {
+        for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !ok && vert.More(); vert.Next() )
+          ok = ( V == vert.Current() );
+        if ( !ok ) {
+#ifdef _DEBUG_
+          cout << "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
+               << " not in face " << GetMeshDS()->ShapeToIndex( F ) << endl;
+#endif
+          // get UV of a vertex closest to the node
+          double dist = 1e100;
+          gp_Pnt pn ( n->X(),n->Y(),n->Z() );
+          for ( TopExp_Explorer vert(F,TopAbs_VERTEX); !ok && vert.More(); vert.Next() ) {
+            TopoDS_Vertex curV = TopoDS::Vertex( vert.Current() );
+            gp_Pnt p = BRep_Tool::Pnt( curV );
+            double curDist = p.SquareDistance( pn );
+            if ( curDist < dist ) {
+              dist = curDist;
+              uv = BRep_Tool::Parameters( curV, F );
+              if ( dist < DBL_MIN ) break;
+            }
+          }
+        }
+        else {
+          TopTools_ListIteratorOfListOfShape it( myMesh->GetAncestors( V ));
+          for ( ; it.More(); it.Next() ) {
+            if ( it.Value().ShapeType() == TopAbs_EDGE ) {
+              const TopoDS_Edge & edge = TopoDS::Edge( it.Value() );
+              double f,l;
+              Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface(edge, F, f, l);
+              if ( !C2d.IsNull() ) {
+                double u = ( V == TopExp::FirstVertex( edge ) ) ?  f : l;
+                uv = C2d->Value( u );
+                break;
+              }
+            }
+          }
+        }
+      }
+      if ( n2 && mySeamShapeIds.find( vertexID ) != mySeamShapeIds.end() )
+        uv = GetUVOnSeam( uv, GetNodeUV( F, n2, 0 ));
+    }
   }
   return uv.XY();
 }
