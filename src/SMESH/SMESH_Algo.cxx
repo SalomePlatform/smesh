@@ -404,11 +404,13 @@ GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
   Standard_Real u1 = BRep_Tool::Parameter( V, E1 );
   Standard_Real u2 = BRep_Tool::Parameter( V, E2 );
   BRepAdaptor_Curve C1( E1 ), C2( E2 );
+  Standard_Real tol = BRep_Tool::Tolerance( V );
+  Standard_Real angTol = 1e-3;
   try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
     OCC_CATCH_SIGNALS;
 #endif
-    return BRepLProp::Continuity(C1, C2, u1, u2);
+    return BRepLProp::Continuity(C1, C2, u1, u2, tol, angTol);
   }
   catch (Standard_Failure) {
   }
