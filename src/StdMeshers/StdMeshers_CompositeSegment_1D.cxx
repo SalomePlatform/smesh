@@ -127,7 +127,7 @@ namespace {
       sm->SetEventListener( eListener, listenerData, sm );
       // add edge submesh to the data
       sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      if ( !sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK ) {
+      if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK ) {
         sm->SetIsAlwaysComputed( true );
         listenerData->mySubMeshes.push_back( sm );
       }
@@ -137,7 +137,7 @@ namespace {
         TopoDS_Vertex V = side.FirstVertex( iE );
         sm = side.GetMesh()->GetSubMesh( V );
         sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-        if ( !sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
+        if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK )
           sm->SetIsAlwaysComputed( true );
         listenerData->mySubMeshes.push_back( sm );
       }
