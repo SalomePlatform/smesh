@@ -626,7 +626,9 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
     }
     cout << endl;
 #endif
-    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 side but not ") << nbSides);
+    if ( !nbSides )
+      nbSides = nbEdgesInWire.front();
+    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 sides but not ") << nbSides);
     delete quad;
     quad = 0;
   }
