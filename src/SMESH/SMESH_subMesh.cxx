@@ -559,13 +559,18 @@ SMESH_Hypothesis::Hypothesis_Status
         return SMESH_Hypothesis::HYP_OK;
     }
     // 0D hypothesis
-    else if ( _algoState == HYP_OK ) { // update default _algoState
-      _algoState = NO_ALGO;
-      algo = gen->GetAlgo(*_father, _subShape);
-      if ( algo ) {
-        _algoState = MISSING_HYP;
-        if ( algo->CheckHypothesis(*_father,_subShape, aux_ret))
-          _algoState = HYP_OK;
+    else if ( _algoState == HYP_OK ) {
+      // update default _algoState
+      if ( event != REMOVE_FATHER_ALGO )
+      {
+        _algoState = NO_ALGO;
+        algo = gen->GetAlgo(*_father, _subShape);
+        if ( algo ) {
+          _algoState = MISSING_HYP;
+          if ( event == REMOVE_FATHER_HYP ||
+               algo->CheckHypothesis(*_father,_subShape, aux_ret))
+            _algoState = HYP_OK;
+        }
       }
     }
   }
@@ -705,6 +710,7 @@ SMESH_Hypothesis::Hypothesis_Status
         CleanDependants();
 	ComputeStateEngine( CLEAN );
         CleanDependsOn();
+        ComputeSubMeshStateEngine( CHECK_COMPUTE_STATE );
       }
     }
   }
@@ -1134,7 +1140,7 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis::Hypothesis_Status ret = SMESH_Hypothesis::HYP_OK;
   //EAP: a wire (dim==1) should notify edges (dim==1)
   //EAP: int dim = SMESH_Gen::GetShapeDim(_subShape);
-  if (_subShape.ShapeType() < TopAbs_EDGE ) // wire,face etc
+  //if (_subShape.ShapeType() < TopAbs_EDGE ) // wire,face etc
   {
     SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
     while ( smIt->more() ) {
@@ -1425,7 +1431,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         if ( ret && _computeError && !_computeError->IsOK() ) {
           ret = false;
         }
-        if (ret) { // check if anything was built
+        if (ret && !_alwaysComputed) { // check if anything was built
           ret = ( GetSubMeshDS() && ( GetSubMeshDS()->NbElements() || GetSubMeshDS()->NbNodes() ));
         }
         if (!ret)
