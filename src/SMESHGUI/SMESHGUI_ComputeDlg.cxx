@@ -781,6 +781,7 @@ void SMESHGUI_ComputeOp::startOperation()
         onCancel();
         return;
       }
+      SUIT_OverrideCursor aWaitCursor;
       try {
         if (gen->Compute(aMesh, myMainShape)) {
           computeFailed = false;
@@ -796,15 +797,17 @@ void SMESHGUI_ComputeOp::startOperation()
 //             return;
 //           }
         }
-        if ( _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh)) {
-          SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
-          myDlg->myMeshName->setText( aMeshSObj->GetName() );
-        }
       }
       catch(const SALOME::SALOME_Exception & S_ex){
         SalomeApp_Tools::QtCatchCorbaException(S_ex);
       }
+      if ( _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh)) {
+        myDlg->myMeshName->setText( aMeshSObj->GetName() );
+        SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
+      }
       update( UF_ObjBrowser | UF_Model );
+
+      // SHOW MESH
 
       if ( getSMESHGUI()->automaticUpdate() ) {
         SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
