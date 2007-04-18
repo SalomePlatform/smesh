@@ -67,6 +67,9 @@ public:
   void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Boolean HasShapeToMesh()
+    throw (SALOME::SALOME_Exception);
+
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
@@ -126,6 +129,8 @@ public:
     throw (SALOME::SALOME_Exception);
 
   SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
+
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
 
   void ClearLog()
     throw (SALOME::SALOME_Exception);
@@ -285,6 +290,9 @@ public:
   SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
   
+  static SMESH::Hypothesis_Status
+  ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
+
   int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
@@ -306,7 +314,7 @@ public:
 
   virtual SMESH::long_array* GetIDs();
 
-  CORBA::Long GetMeshPtr();
+  CORBA::LongLong GetMeshPtr();
 
 
   /*!

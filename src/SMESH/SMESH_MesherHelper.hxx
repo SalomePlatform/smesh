@@ -58,6 +58,15 @@ public:
   // ---------- PUBLIC UTILITIES ----------
   
   /*!
+   * \brief Returns true if given node is medium
+    * \param n - node to check
+    * \param typeToCheck - type of elements containing the node to ask about node status
+    * \retval bool - check result
+   */
+  static bool IsMedium(const SMDS_MeshNode*      node,
+                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
+
+  /*!
    * \brief Load nodes bound to face into a map of node columns
     * \param theParam2ColumnMap - map of node columns to fill
     * \param theFace - the face on which nodes are searched for
@@ -97,119 +106,73 @@ public:
   }
 
 public:
-  // ---------- PUBLIC METHODS ----------
+  // ---------- PUBLIC INSTANCE METHODS ----------
 
-  /// Empty constructor
-  SMESH_MesherHelper(SMESH_Mesh& theMesh)
-    { myMesh=(void *)&theMesh; myCreateQuadratic = false; myShapeID=-1;}
+  // constructor
+  SMESH_MesherHelper(SMESH_Mesh& theMesh);
 
-  SMESH_Mesh* GetMesh() const { return (SMESH_Mesh*)myMesh; }
+  SMESH_Mesh* GetMesh() const { return myMesh; }
     
   SMESHDS_Mesh* GetMeshDS() const { return GetMesh()->GetMeshDS(); }
     
-  /// Copy constructor
-  //Standard_EXPORT SMESH_MesherHelper (const SMESH_MesherHelper& theOther);
-
-  /// Destructor
-  //Standard_EXPORT virtual ~SMESH_MesherHelper ();
-
-  /**
-   * Check submesh for given shape
-   * Check if all elements on this shape
-   * are quadratic, if yes => set true to myCreateQuadratic 
-   * (default value is false). Also fill myNLinkNodeMap
-   * Returns myCreateQuadratic
+  /*!
+   * Check submesh for given shape: if all elements on this shape are quadratic,
+   * quadratic elements will be created. Also fill myNLinkNodeMap
    */
   bool IsQuadraticSubMesh(const TopoDS_Shape& theShape);
+  /*!
+   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
+   */
+  void SetIsQuadratic(const bool theBuildQuadratic)
+  { myCreateQuadratic = theBuildQuadratic; }
+  /*!
+   * \brief Return myCreateQuadratic flag
+   */
+  bool GetIsQuadratic() const { return myCreateQuadratic; }
 
   /*!
-   * \brief Returns true if given node is medium
-    * \param n - node to check
-    * \param typeToCheck - type of elements containing the node to ask about node status
-    * \retval bool - check result
+   * \brief To set created elements on the shape set by IsQuadraticSubMesh()
+   *        or the next methods. By defaul elements are set on the shape if
+   *        a mesh has no shape to be meshed
    */
-  static bool IsMedium(const SMDS_MeshNode*      node,
-                       const SMDSAbs_ElementType typeToCheck = SMDSAbs_All);
-
-  /**
-   * Auxilary function for filling myNLinkNodeMap
-   */
-  void AddNLinkNode(const SMDS_MeshNode* n1,
-                    const SMDS_MeshNode* n2,
-                    const SMDS_MeshNode* n12);
-
-  /**
-   * Auxilary function for filling myNLinkNodeMap
-   */
-  void AddNLinkNodeMap(const NLinkNodeMap& aMap)
-    { myNLinkNodeMap.insert(aMap.begin(), aMap.end()); }
-
-  /**
-   * Returns myNLinkNodeMap
-   */
-  const NLinkNodeMap& GetNLinkNodeMap() { return myNLinkNodeMap; }
+  void SetElementsOnShape(bool toSet) { mySetElemOnShape = toSet; }
 
   /*!
-   * \brief Return node UV on face
-    * \param F - the face
-    * \param n - the node
-    * \param inFaceNode - a node of element being created located inside a face
-    * \retval gp_XY - resulting UV
-   * 
-   * Auxilary function called form GetMediumNode()
+   * \brief Set shape to make elements on without calling IsQuadraticSubMesh()
    */
-  gp_XY GetNodeUV(const TopoDS_Face&   F,
-                  const SMDS_MeshNode* n,
-                  const SMDS_MeshNode* inFaceNode=0) const;
+  void SetSubShape(const int           subShapeID);//!==SMESHDS_Mesh::ShapeToIndex(shape)
+  void SetSubShape(const TopoDS_Shape& subShape);
+  /*!
+   * \brief Return ID of the shape set by IsQuadraticSubMesh() or SetSubShape() 
+    * \retval int - shape index in SMESHDS
+   */
+  int GetSubShapeID() const { return myShapeID; }
+  /*!
+   * \brief Return the shape set by IsQuadraticSubMesh() or SetSubShape() 
+   */
+  TopoDS_Shape GetSubShape() const  { return myShape; }
 
   /*!
-   * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
-    * \param F - the face
-    * \retval bool - return true if the face is periodic
-    *
-    * if F is Null, answer about subshape set through IsQuadraticSubMesh() or
-    * SetSubShape()
+   * Creates a node
    */
-  bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
-
+  SMDS_MeshNode* AddNode(double x, double y, double z, int ID = 0);
   /*!
-   * \brief Return  U on edge
-    * \param F - the edge
-    * \param n - the node
-    * \retval double - resulting U
-   * 
-   * Auxilary function called from GetMediumNode()
+   * Creates quadratic or linear edge
    */
-  double GetNodeU(const TopoDS_Edge&  E,
-                  const SMDS_MeshNode* n);
-
-
-  /**
-   * Special function for search or creation medium node
-   */
-  const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
-                                     const SMDS_MeshNode* n2,
-                                     const bool force3d);
-
-  /**
-   * Special function for creation quadratic edge
-   */
-  SMDS_QuadraticEdge* AddQuadraticEdge(const SMDS_MeshNode* n1,
-                                       const SMDS_MeshNode* n2,
-                                       const int id = 0, 
-				       const bool force3d = true);
-
-  /**
-   * Special function for creation quadratic triangle
+  SMDS_MeshEdge* AddEdge(const SMDS_MeshNode* n1,
+                         const SMDS_MeshNode* n2,
+                         const int id = 0, 
+                         const bool force3d = true);
+  /*!
+   * Creates quadratic or linear triangle
    */
   SMDS_MeshFace* AddFace(const SMDS_MeshNode* n1,
                          const SMDS_MeshNode* n2,
                          const SMDS_MeshNode* n3,
                          const int id=0, 
 			 const bool force3d = false);
-
-  /**
-   * Special function for creation quadratic quadrangle
+  /*!
+   * Creates quadratic or linear quadrangle
    */
   SMDS_MeshFace* AddFace(const SMDS_MeshNode* n1,
                          const SMDS_MeshNode* n2,
@@ -217,9 +180,8 @@ public:
                          const SMDS_MeshNode* n4,
                          const int id = 0,
 			 const bool force3d = false);
-
-  /**
-   * Special function for creation quadratic tetraahedron
+  /*!
+   * Creates quadratic or linear tetraahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -227,10 +189,8 @@ public:
                              const SMDS_MeshNode* n4,
                              const int id = 0,
 			     const bool force3d = true);
-
-
-  /**
-   * Special function for creation quadratic pyramid
+  /*!
+   * Creates quadratic or linear pyramid
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -239,9 +199,8 @@ public:
                              const SMDS_MeshNode* n5,
                              const int id = 0,
 			     const bool force3d = true);
-
-  /**
-   * Special function for creation quadratic pentahedron
+  /*!
+   * Creates quadratic or linear pentahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -251,9 +210,8 @@ public:
                              const SMDS_MeshNode* n6,
                              const int id = 0, 
 			     const bool force3d = true);
-
-  /**
-   * Special function for creation quadratic hexahedron
+  /*!
+   * Creates quadratic or linear hexahedron
    */
   SMDS_MeshVolume* AddVolume(const SMDS_MeshNode* n1,
                              const SMDS_MeshNode* n2,
@@ -265,45 +223,26 @@ public:
                              const SMDS_MeshNode* n8,
                              const int id = 0, 
 			     bool force3d = true);
-
-  
   /*!
-   * \brief Set order of elements to create
-    * \param theBuildQuadratic - to build quadratic or not
-   * 
-   * To be used for quadratic elements creation without preceding
-   * IsQuadraticSubMesh() or AddQuadraticEdge() call
+   * \brief Return U of the given node on the edge
    */
-  void SetKeyIsQuadratic(const bool theBuildQuadratic)
-  { myCreateQuadratic = theBuildQuadratic; }
-
+  double GetNodeU(const TopoDS_Edge&   theEdge,
+                  const SMDS_MeshNode* theNode);
   /*!
-   * \brief Return myCreateQuadratic flag
-    * \retval bool - myCreateQuadratic value
+   * \brief Return node UV on face
+    * \param inFaceNode - a node of element being created located inside a face
    */
-  bool GetIsQuadratic() const { return myCreateQuadratic; }
-
+  gp_XY GetNodeUV(const TopoDS_Face&   F,
+                  const SMDS_MeshNode* n,
+                  const SMDS_MeshNode* inFaceNode=0) const;
   /*!
-   * \brief Set shape to make elements on
-    * \param subShape, subShapeID - shape or its ID (==SMESHDS_Mesh::ShapeToIndex(shape))
-   */
-  void SetSubShape(const int           subShapeID);
-  void SetSubShape(const TopoDS_Shape& subShape);
-
-  /*!
-   * \brief Return shape or its ID, on which created elements are added
-    * \retval int - shape index in SMESHDS
+   * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
+    * \retval bool - return true if the face is periodic
     *
-    * Shape is set by calling either IsQuadraticSubMesh() or SetSubShape() 
+    * if F is Null, answer about subshape set through IsQuadraticSubMesh() or
+    * SetSubShape()
    */
-  int GetSubShapeID() const { return myShapeID; }
-  /*!
-   * \brief Return shape or its ID, on which created elements are added
-    * \retval TopoDS_Shape - shape
-    *
-    * Shape is set by calling either IsQuadraticSubMesh() or SetSubShape() 
-   */
-  TopoDS_Shape GetSubShape() const  { return myShape; }
+  bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 
   /*!
    * \brief Check if shape is a seam edge or it's vertex
@@ -323,21 +262,42 @@ public:
    */
   bool IsSeamShape(const TopoDS_Shape& subShape) const
   { return IsSeamShape( GetMeshDS()->ShapeToIndex( subShape )); }
-
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
    *        has a seam edge
     * \retval bool - true if it has
    */
   bool HasSeam() const { return !mySeamShapeIds.empty(); }
-
   /*!
    * \brief Return index of periodic parametric direction of a closed face
     * \retval int - 1 for U, 2 for V direction
    */
   int GetPeriodicIndex() const { return myParIndex; }
 
- protected:
+  /**
+   * Special function for search or creation medium node
+   */
+  const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
+                                     const SMDS_MeshNode* n2,
+                                     const bool force3d);
+  /*!
+   * Auxilary function for filling myNLinkNodeMap
+   */
+  void AddNLinkNode(const SMDS_MeshNode* n1,
+                    const SMDS_MeshNode* n2,
+                    const SMDS_MeshNode* n12);
+  /**
+   * Auxilary function for filling myNLinkNodeMap
+   */
+  void AddNLinkNodeMap(const NLinkNodeMap& aMap)
+    { myNLinkNodeMap.insert(aMap.begin(), aMap.end()); }
+
+  /**
+   * Returns myNLinkNodeMap
+   */
+  const NLinkNodeMap& GetNLinkNodeMap() const { return myNLinkNodeMap; }
+
+protected:
 
   /*!
    * \brief Select UV on either of 2 pcurves of a seam edge, closest to the given UV
@@ -349,20 +309,23 @@ public:
 
  private:
 
-  void* myMesh;
-
-  int myShapeID;
-
-  // Key for creation quadratic faces
-  bool myCreateQuadratic;
+  // Forbiden copy constructor
+  SMESH_MesherHelper (const SMESH_MesherHelper& theOther) {};
 
   // special map for using during creation quadratic faces
-  NLinkNodeMap myNLinkNodeMap;
+  NLinkNodeMap    myNLinkNodeMap;
 
   std::set< int > mySeamShapeIds;
   double          myPar1, myPar2; // bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V)
+
   TopoDS_Shape    myShape;
+  SMESH_Mesh*     myMesh;
+  int             myShapeID;
+
+  // to create quadratic elements
+  bool            myCreateQuadratic;
+  bool            mySetElemOnShape;
 
 };
 

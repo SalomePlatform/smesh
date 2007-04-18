@@ -58,7 +58,7 @@ class SVTK_Selector;
 
 // IDL Headers
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 
 //=================================================================================
@@ -91,9 +91,10 @@ private:
     QWidget*                      myEditCurrentArgument;
 
     SMESH::SMESH_Mesh_var         myMesh;
+    SMESH::SMESH_IDSource_var     mySubMeshOrGroup;
     SMESH_Actor*                  myActor;
     //Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
-    SUIT_SelectionFilter*         myMeshOrSubMeshFilter;
+    SUIT_SelectionFilter*         myMeshOrSubMeshOrGroupFilter;
 
     QButtonGroup*     GroupConstructors;
     QRadioButton*     RadioButton1;

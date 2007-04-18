@@ -44,7 +44,7 @@
 #include <TColStd_MapOfInteger.hxx>
 
 #include "SMESH_Block.hxx"
-
+#include "SMESH_ComputeError.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
@@ -88,6 +88,8 @@ public:
   bool IsForwadEdge(const int theEdgeID);
 
   int  ErrorStatus() const;
+
+  SMESH_ComputeErrorPtr GetError() const;
 
 
 protected:
@@ -175,6 +177,12 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     bool Compute(SMESH_Mesh& , const TopoDS_Shape& );
     
     int ErrorStatus() const {
+      if (myErrorStatus->IsOK())
+        return 0;
+      return myErrorStatus->myName;
+    }
+
+    SMESH_ComputeErrorPtr GetComputeError() const {
       return myErrorStatus;
     }
    
@@ -246,7 +254,7 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     TopoDS_Shape              myShape;
     StdMeshers_SMESHBlock     myBlock;
     void *                    myMesh;
-    int                       myErrorStatus;
+    SMESH_ComputeErrorPtr     myErrorStatus;
     //
     vector <StdMeshers_TNode> myTNodes;
     int                       myISize;
@@ -258,7 +266,7 @@ class STDMESHERS_EXPORT StdMeshers_Penta_3D {
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
     bool myCreateQuadratic;
-    SMESH_MesherHelper* myTool; // toll for working with quadratic elements
+    SMESH_MesherHelper* myTool; // tool building quadratic elements
 };
 
 #endif

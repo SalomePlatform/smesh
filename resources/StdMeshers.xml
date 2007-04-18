@@ -11,6 +11,11 @@
                gui-lib="StdMeshersGUI">
   <hypotheses>
 
+    <hypothesis type="SegmentLengthAroundVertex"
+                label-id="Length Near Vertex"
+                icon-id="mesh_hypo_length.png"
+                dim="0"/>
+
     <hypothesis type="LocalLength"
                 label-id="Average length"
                 icon-id="mesh_hypo_length.png"
@@ -107,8 +112,24 @@
 
   <algorithms>
 
+    <algorithm type="SegmentAroundVertex_0D"
+	       label-id="Segments around vertex"
+	       icon-id="mesh_algo_regular.png"
+               hypos="SegmentLengthAroundVertex"
+               output="VERTEX"
+               dim="0"/>
+
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
+	       icon-id="mesh_algo_regular.png"
+               hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               opt-hypos="Propagation,QuadraticMesh"
+               input="VERTEX"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="CompositeSegment_1D"
+	       label-id="Composite side discretisation"
 	       icon-id="mesh_algo_regular.png"
                hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
                opt-hypos="Propagation,QuadraticMesh"
@@ -161,7 +182,7 @@
                dim="3"/>
 
     <algorithm type="Prism_3D"
-               label-id="Prism 3D"
+               label-id="3D extrusion"
                icon-id="mesh_algo_hexa.png"
                input="QUAD,TRIA"
                dim="3"/>

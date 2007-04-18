@@ -41,6 +41,7 @@
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
@@ -190,7 +191,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcEdge, srcMesh,
                                              shape2ShapeMap) )
-    RETURN_BAD_RESULT("FindSubShapeAssociation failed");
+    return error(dfltErr(),SMESH_Comment("Vertices association failed" ));
 
   // ----------------------------------------------
   // Assure that mesh on a source edge is computed
@@ -201,11 +202,11 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   if ( tgtMesh == srcMesh ) {
     if ( !TAssocTool::MakeComputed( srcSubMesh ))
-      RETURN_BAD_RESULT("Impossible to compute the source mesh");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
   else {
     if ( !srcSubMesh->IsMeshComputed() )
-      RETURN_BAD_RESULT("Source mesh is not computed");
+      return error(COMPERR_BAD_INPUT_MESH,"Source mesh not computed");
   }
   // -----------------------------------------------
   // Find out nodes distribution on the source edge
@@ -216,7 +217,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   
   vector< double > params; // sorted parameters of nodes on the source edge
   if ( !SMESH_Algo::GetNodeParamOnEdge( srcMesh->GetMeshDS(), srcEdge, params ))
-    RETURN_BAD_RESULT("Bad node params on the source edge");
+    return error(COMPERR_BAD_INPUT_MESH,"Bad node parameters on the source edge");
 
   int i, nbNodes = params.size();
 
@@ -248,20 +249,10 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   vector< const SMDS_MeshNode* > nodes ( nbNodes );
 
   // Get the first and last nodes
-  // -----------------------------
-
-  SMESHDS_SubMesh* smV0 = meshDS->MeshElements( tgtV[0] );
-  SMESHDS_SubMesh* smV1 = meshDS->MeshElements( tgtV[1] );
-  if ( !smV0 || !smV1 )
-    RETURN_BAD_RESULT("No submeshes on vertices");
-
-  SMDS_NodeIteratorPtr nItV0 = smV0->GetNodes();
-  SMDS_NodeIteratorPtr nItV1 = smV1->GetNodes();
-  if ( !nItV0->more() || !nItV1->more() )
-    RETURN_BAD_RESULT("No nodes on vertices");
-
-  nodes.front() = nItV0->next();
-  nodes.back()  = nItV1->next();
+  nodes.front() = VertexNode( tgtV[0], meshDS );
+  nodes.back()  = VertexNode( tgtV[1], meshDS );
+  if ( !nodes.front() || !nodes.back() )
+    return error(COMPERR_BAD_INPUT_MESH,"No node on vertex");
 
   // Compute parameters on the target edge and make internal nodes
   // --------------------------------------------------------------
@@ -284,7 +275,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       // from the point at given parameter.
       GCPnts_AbscissaPoint Discret( curveAdaptor, dl * lengths[ i-1 ], tgtParams[ i-1 ] );
       if ( !Discret.IsDone() )
-        RETURN_BAD_RESULT(" GCPnts_AbscissaPoint failed");
+        return error(dfltErr(),"GCPnts_AbscissaPoint failed");
       tgtParams[ i ] = Discret.Parameter();
     }
     // make internal nodes 
@@ -324,7 +315,8 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   }
   // enough nodes to make all edges quadratic?
   if ( quadratic && ( nbNodes < 3 || ( nbNodes % 2 != 1 )))
-    RETURN_BAD_RESULT("Wrong nb nodes to make quadratic mesh");
+    return error(COMPERR_BAD_INPUT_MESH,
+                 SMESH_Comment("Wrong number of nodes to make quadratic mesh: ")<<nbNodes);
 
   // Create edges
   // -------------
@@ -357,19 +349,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
 void StdMeshers_Projection_1D::SetEventListener(SMESH_subMesh* subMesh)
 {
-  if ( _sourceHypo && ! _sourceHypo->GetSourceEdge().IsNull() )
-  {
-    SMESH_Mesh* srcMesh = _sourceHypo->GetSourceMesh();
-    if ( !srcMesh )
-      srcMesh = subMesh->GetFather();
-
-    SMESH_subMesh* srcEdgeSM =
-      srcMesh->GetSubMesh( _sourceHypo->GetSourceEdge() );
-
-    if ( srcEdgeSM != subMesh )
-      subMesh->SetEventListener( new SMESH_subMeshEventListener(true),
-                                 SMESH_subMeshEventListenerData::MakeData( subMesh ),
-                                 srcEdgeSM );
-  }
+  TAssocTool::SetEventListener( subMesh,
+                                _sourceHypo->GetSourceEdge(),
+                                _sourceHypo->GetSourceMesh() );
 }
-  

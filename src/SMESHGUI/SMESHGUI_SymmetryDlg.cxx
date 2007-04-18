@@ -74,6 +74,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -218,6 +219,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SelectPointButton, 0, 1);
 
   TextLabelX = new QLabel(GroupMirror, "TextLabelX");
+  TextLabelX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelX->setText(tr("SMESH_X"));
   GroupMirrorLayout->addWidget(TextLabelX, 0, 2);
 
@@ -225,6 +227,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SpinBox_X, 0, 3);
 
   TextLabelY = new QLabel(GroupMirror, "TextLabelY");
+  TextLabelY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelY->setText(tr("SMESH_Y"));
   GroupMirrorLayout->addWidget(TextLabelY, 0, 4);
 
@@ -232,6 +235,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SpinBox_Y, 0, 5);
 
   TextLabelZ = new QLabel(GroupMirror, "TextLabelZ");
+  TextLabelZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelZ->setText(tr("SMESH_Z"));
   GroupMirrorLayout->addWidget(TextLabelZ, 0, 6);
 
@@ -693,7 +697,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, IO, aString);
       myElementsId = aString;
     }
 
@@ -702,7 +706,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
 
     myNbOkElements = true;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
 

@@ -124,121 +124,64 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 
 //=============================================================================
 /*!
- *
+ * Compute a mesh
  */
 //=============================================================================
 
 bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
   MESSAGE("SMESH_Gen::Compute");
-  //   bool isDone = false;
-  /*
-     Algo : s'appuie ou non sur une geometrie
-     Si geometrie:
-     Vertex : rien à faire (range le point)
-     Edge, Wire, collection d'edge et wire : 1D
-     Face, Shell, collection de Face et Shells : 2D
-     Solid, Collection de Solid : 3D
-     */
-  // *** corriger commentaires
-  // check hypothesis associated to the mesh :
-  // - only one algo : type compatible with the type of the shape
-  // - hypothesis = compatible with algo
-  //    - check if hypothesis are applicable to this algo
-  //    - check contradictions within hypothesis
-  //    (test if enough hypothesis is done further)
 
   bool ret = true;
 
-//   if ( !CheckAlgoState( aMesh, aShape ))
-//   {
-//     INFOS( "ABORT MESHING: some algos or hypothesis are missing");
-//     return false;
-//   }
-
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
-
-  if ( sm->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
-    return true; // already computed
 
   // -----------------------------------------------------------------
   // apply algos that do not require descretized boundaries, starting
   // from the most complex shapes
   // -----------------------------------------------------------------
 
-  // map containing all subshapes in the order: vertices, edges, faces...
-  const map<int, SMESH_subMesh*>& smMap = sm->DependsOn();
-  map<int, SMESH_subMesh*>::const_reverse_iterator revItSub = smMap.rbegin();
+  const bool includeSelf = true;
+  const bool complexShapeFirst = true;
 
-  SMESH_subMesh* smToCompute = sm;
-  while ( smToCompute )
+  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(includeSelf,
+                                                           complexShapeFirst);
+  while ( smIt->more() )
   {
+    SMESH_subMesh* smToCompute = smIt->next();
+
     const TopoDS_Shape& aSubShape = smToCompute->GetSubShape();
     if ( GetShapeDim( aSubShape ) < 1 ) break;
 
     SMESH_Algo* algo = GetAlgo( aMesh, aSubShape );
-    if (algo && !algo->NeedDescretBoundary()) {
-      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE) {
-        ret = smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
-      } else if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE) {
-        // JFA for PAL6524
-        ret = false;
-      } else {
-      }
-    }
-    if (!ret)
-      return false;
-
-    // next subMesh
-    if (revItSub != smMap.rend())
+    if (algo && !algo->NeedDescretBoundary())
     {
-      smToCompute = (*revItSub).second;
-      revItSub++;
+      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+        smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+
+      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
+        ret = false;;
     }
-    else
-      smToCompute = 0;
   }
 
   // -----------------------------------------------
   // mesh the rest subshapes starting from vertices
   // -----------------------------------------------
-
-  int i, nbSub = smMap.size();
-  map<int, SMESH_subMesh*>::const_iterator itSub = smMap.begin();
-  for ( i = 0; i <= nbSub; ++i ) // loop on the whole map plus <sm>
+  smIt = sm->getDependsOnIterator(includeSelf, !complexShapeFirst);
+  while ( smIt->more() )
   {
-    if ( itSub == smMap.end() )
-      smToCompute = sm;
-    else
-      smToCompute = (itSub++)->second;
-    if (smToCompute->GetComputeState() != SMESH_subMesh::READY_TO_COMPUTE) {
-      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
-        ret = false;
-      continue;
-    }
-    TopoDS_Shape subShape = smToCompute->GetSubShape();
-    if ( subShape.ShapeType() != TopAbs_VERTEX )
-    {
-      if ( !smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE) )
-        ret = false;
-    }
-    else
-    {
-      TopoDS_Vertex V1 = TopoDS::Vertex(subShape);
-      gp_Pnt P1 = BRep_Tool::Pnt(V1);
-      SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-      SMDS_MeshNode * node = meshDS->AddNode(P1.X(), P1.Y(), P1.Z());
-      if ( node ) {  // san - increase robustness
-        meshDS->SetNodeOnVertex(node, V1);
-        smToCompute->ComputeStateEngine(SMESH_subMesh::COMPUTE);
-      }
-    }
+    SMESH_subMesh* smToCompute = smIt->next();
+
+    if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+      smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+
+    if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
+      ret = false;
   }
 
   MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
   return ret;
 }
-
 
 //=======================================================================
 //function : checkConformIgnoredAlgos
@@ -301,7 +244,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
                 "> would produce not conform mesh: "
                 "<Not Conform Mesh Allowed> hypotesis is missing");
           theErrors.push_back( SMESH_Gen::TAlgoStateError() );
-          theErrors.back().Set( SMESH_Gen::NOT_CONFORM_MESH, algo, false );
+          theErrors.back().Set( SMESH_Hypothesis::HYP_NOTCONFORM, algo, false );
         }
 
         // sub-algos will be hidden by a local <algo>
@@ -361,7 +304,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
         INFOS( "ERROR: " << shapeDim << "D algorithm is missing" );
         ret = false;
         theErrors.push_back( SMESH_Gen::TAlgoStateError() );
-        theErrors.back().Set( SMESH_Gen::MISSING_ALGO, shapeDim, true );
+        theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, shapeDim, true );
       }
     }
     return ret;
@@ -373,13 +316,13 @@ static bool checkMissing(SMESH_Gen*                aGen,
     bool IsGlobalHypothesis = aGen->IsGlobalHypothesis( algo, aMesh );
     if (!IsGlobalHypothesis || !globalChecked[ algo->GetDim() ])
     {
-      SMESH_Gen::TAlgoStateErrorName errName = SMESH_Gen::MISSING_HYPO;
+      TAlgoStateErrorName errName = SMESH_Hypothesis::HYP_MISSING;
       SMESH_Hypothesis::Hypothesis_Status status;
       algo->CheckHypothesis( aMesh, aSubMesh->GetSubShape(), status );
       if ( status == SMESH_Hypothesis::HYP_BAD_PARAMETER ) {
         INFOS( "ERROR: hypothesis of " << (IsGlobalHypothesis ? "Global " : "Local ")
                << "<" << algo->GetName() << "> has a bad parameter value");
-        errName = SMESH_Gen::BAD_PARAM_VALUE;
+        errName = SMESH_Hypothesis::HYP_BAD_PARAMETER;
       } else {
         INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
                << "<" << algo->GetName() << "> misses some hypothesis");
@@ -496,7 +439,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   // --------------------------------------------------------
 
 
-  // find a global algo possibly hidding sub-algos
+  // find a global algo possibly hiding sub-algos
   int dim;
   const SMESH_Algo* aGlobIgnoAlgo = 0;
   for (dim = 3; dim > 0; dim--)
@@ -564,7 +507,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   aCheckedMap.clear();
   smToCheck = sm;
   revItSub = smMap.rbegin();
-  bool checkNoAlgo = (bool) aTopAlgoDim;
+  bool checkNoAlgo = theMesh.HasShapeToMesh() ? bool( aTopAlgoDim ) : false;
   bool globalChecked[] = { false, false, false, false };
 
   // loop on theShape and its sub-shapes
@@ -597,7 +540,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
     ret = false;
     INFOS( "None algorithm attached" );
     theErrors.push_back( TAlgoStateError() );
-    theErrors.back().Set( MISSING_ALGO, 1, true );
+    theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, 1, true );
   }
 
   return ret;

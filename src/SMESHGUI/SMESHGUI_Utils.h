@@ -146,9 +146,10 @@ SMESHGUI_EXPORT
   _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject);
 
 SMESHGUI_EXPORT
-  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight);
+  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNot, bool isEmptyMesh=false);
 
-//  void UpdateObjBrowser (bool);
+SMESHGUI_EXPORT
+  void ShowHelpFile (QString theHelpFileName);
 }
 
 #endif

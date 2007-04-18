@@ -44,6 +44,18 @@
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
 
+//================================================================================
+/*!
+ * \brief Constructor
+ */
+//================================================================================
+
+SMESH_MesherHelper::SMESH_MesherHelper(SMESH_Mesh& theMesh)
+  : myMesh(&theMesh), myShapeID(-1), myCreateQuadratic(false)
+{
+  mySetElemOnShape = ( ! myMesh->HasShapeToMesh() );
+}
+
 //=======================================================================
 //function : CheckShape
 //purpose  : 
@@ -115,7 +127,7 @@ void SMESH_MesherHelper::SetSubShape(const int aShID)
   if ( aShID == myShapeID )
     return;
   if ( aShID > 1 )
-    SetSubShape( GetMesh()->GetMeshDS()->IndexToShape( aShID ));
+    SetSubShape( GetMeshDS()->IndexToShape( aShID ));
   else
     SetSubShape( TopoDS_Shape() );
 }
@@ -282,7 +294,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
     // edge and recieve value from this pcurve
     const SMDS_EdgePosition* epos =
       static_cast<const SMDS_EdgePosition*>(n->GetPosition().get());
-    SMESHDS_Mesh* meshDS = GetMesh()->GetMeshDS();
+    SMESHDS_Mesh* meshDS = GetMeshDS();
     int edgeID = Pos->GetShapeId();
     TopoDS_Edge E = TopoDS::Edge(meshDS->IndexToShape(edgeID));
     double f, l;
@@ -326,7 +338,7 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
     param =  epos->GetUParameter();
   }
   else if(Pos->GetTypeOfPosition()==SMDS_TOP_VERTEX) {
-    SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+    SMESHDS_Mesh * meshDS = GetMeshDS();
     int vertexID = n->GetPosition()->GetShapeId();
     const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
     param =  BRep_Tool::Parameter( V, E );
@@ -478,68 +490,108 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 }
 
 //=======================================================================
-//function : AddQuadraticEdge
-//purpose  : 
-//=======================================================================
-/**
- * Special function for creation quadratic edge
+/*!
+ * Creates a node
  */
-SMDS_QuadraticEdge* SMESH_MesherHelper::AddQuadraticEdge(const SMDS_MeshNode* n1,
-                                                         const SMDS_MeshNode* n2,
-                                                         const int id,
-							 const bool force3d)
-{
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
-  
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  
-  myCreateQuadratic = true;
+//=======================================================================
 
-  if(id)
-    return  (SMDS_QuadraticEdge*)(meshDS->AddEdgeWithID(n1, n2, n12, id));
+SMDS_MeshNode* SMESH_MesherHelper::AddNode(double x, double y, double z, int ID)
+{
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshNode* node = 0;
+  if ( ID )
+    node = meshDS->AddNodeWithID( x, y, z, ID );
   else
-    return  (SMDS_QuadraticEdge*)(meshDS->AddEdge(n1, n2, n12));
+    node = meshDS->AddNode( x, y, z );
+  if ( mySetElemOnShape && myShapeID > 0 ) {
+    switch ( myShape.ShapeType() ) {
+    case TopAbs_SOLID:  meshDS->SetNodeInVolume( node, myShapeID); break;
+    case TopAbs_SHELL:  meshDS->SetNodeInVolume( node, myShapeID); break;
+    case TopAbs_FACE:   meshDS->SetNodeOnFace(   node, myShapeID); break;
+    case TopAbs_EDGE:   meshDS->SetNodeOnEdge(   node, myShapeID); break;
+    case TopAbs_VERTEX: meshDS->SetNodeOnVertex( node, myShapeID); break;
+    default: ;
+    }
+  }
+  return node;
 }
 
 //=======================================================================
-//function : AddFace
-//purpose  : 
+/*!
+ * Creates quadratic or linear edge
+ */
+//=======================================================================
+
+SMDS_MeshEdge* SMESH_MesherHelper::AddEdge(const SMDS_MeshNode* n1,
+                                                const SMDS_MeshNode* n2,
+                                                const int id,
+                                                const bool force3d)
+{
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  
+  SMDS_MeshEdge* edge = 0;
+  if (myCreateQuadratic) {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    if(id)
+      edge = meshDS->AddEdgeWithID(n1, n2, n12, id);
+    else
+      edge = meshDS->AddEdge(n1, n2, n12);
+  }
+  else {
+    if(id)
+      edge = meshDS->AddEdgeWithID(n1, n2, id);
+    else
+      edge = meshDS->AddEdge(n1, n2);
+  }
+
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( edge, myShapeID );
+
+  return edge;
+}
+
 //=======================================================================
 /*!
- * Special function for creation quadratic triangle
+ * Creates quadratic or linear triangle
  */
+//=======================================================================
+
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
                                            const int id,
 					   const bool force3d)
 {
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshFace* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return  meshDS->AddFaceWithID(n1, n2, n3, id);
+      elem = meshDS->AddFaceWithID(n1, n2, n3, id);
     else
-      return  meshDS->AddFace(n1, n2, n3);
+      elem = meshDS->AddFace(n1, n2, n3);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    if(id)
+      elem = meshDS->AddFaceWithID(n1, n2, n3, n12, n23, n31, id);
+    else
+      elem = meshDS->AddFace(n1, n2, n3, n12, n23, n31);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return  meshDS->AddFaceWithID(n1, n2, n3, n12, n23, n31, id);
-  else
-    return  meshDS->AddFace(n1, n2, n3, n12, n23, n31);
+  return elem;
 }
 
-
-//=======================================================================
-//function : AddFace
-//purpose  : 
 //=======================================================================
 /*!
- * Special function for creation quadratic quadrangle
+ * Creates quadratic or linear quadrangle
  */
+//=======================================================================
+
 SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const SMDS_MeshNode* n2,
                                            const SMDS_MeshNode* n3,
@@ -547,33 +599,37 @@ SMDS_MeshFace* SMESH_MesherHelper::AddFace(const SMDS_MeshNode* n1,
                                            const int id,
 					   const bool force3d)
 {
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshFace* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return  meshDS->AddFaceWithID(n1, n2, n3, n4, id);
+      elem = meshDS->AddFaceWithID(n1, n2, n3, n4, id);
     else
-      return  meshDS->AddFace(n1, n2, n3, n4);
+      elem = meshDS->AddFace(n1, n2, n3, n4);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
+    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-  const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    if(id)
+      elem = meshDS->AddFaceWithID(n1, n2, n3, n4, n12, n23, n34, n41, id);
+    else
+      elem = meshDS->AddFace(n1, n2, n3, n4, n12, n23, n34, n41);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return  meshDS->AddFaceWithID(n1, n2, n3, n4, n12, n23, n34, n41, id);
-  else
-    return  meshDS->AddFace(n1, n2, n3, n4, n12, n23, n34, n41);
+  return elem;
 }
 
-
-//=======================================================================
-//function : AddVolume
-//purpose  : 
 //=======================================================================
 /*!
- * Special function for creation quadratic volume
+ * Creates quadratic or linear volume
  */
+//=======================================================================
+
 SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const SMDS_MeshNode* n2,
                                                const SMDS_MeshNode* n3,
@@ -583,37 +639,43 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const int id,
 					       const bool force3d)
 {
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, id);
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, id);
     else
-      return meshDS->AddVolume(n1, n2, n3, n4, n5, n6);
+      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
+    const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
+    const SMDS_MeshNode* n64 = GetMediumNode(n6,n4,force3d);
 
-  const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
-  const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
-  const SMDS_MeshNode* n64 = GetMediumNode(n6,n4,force3d);
+    const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
+    const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
+    const SMDS_MeshNode* n36 = GetMediumNode(n3,n6,force3d);
 
-  const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
-  const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
-  const SMDS_MeshNode* n36 = GetMediumNode(n3,n6,force3d);
+    if(id)
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, 
+                                     n12, n23, n31, n45, n56, n64, n14, n25, n36, id);
+    else
+      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
+                               n12, n23, n31, n45, n56, n64, n14, n25, n36);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, 
-                                   n12, n23, n31, n45, n56, n64, n14, n25, n36, id);
-  else
-    return meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
-                             n12, n23, n31, n45, n56, n64, n14, n25, n36);
+  return elem;
 }
 
 //=======================================================================
 /*!
- * Special function for creation quadratic volume
+ * Creates quadratic or linear volume
  */
 //=======================================================================
 
@@ -624,31 +686,37 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const int id, 
 					       const bool force3d)
 {
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return meshDS->AddVolumeWithID(n1, n2, n3, n4, id);
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, id);
     else
-      return meshDS->AddVolume(n1, n2, n3, n4);
+      elem = meshDS->AddVolume(n1, n2, n3, n4);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n31 = GetMediumNode(n3,n1,force3d);
+    const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
+    const SMDS_MeshNode* n24 = GetMediumNode(n2,n4,force3d);
+    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
 
-  const SMDS_MeshNode* n14 = GetMediumNode(n1,n4,force3d);
-  const SMDS_MeshNode* n24 = GetMediumNode(n2,n4,force3d);
-  const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
+    if(id)
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n12, n23, n31, n14, n24, n34, id);
+    else
+      elem = meshDS->AddVolume(n1, n2, n3, n4, n12, n23, n31, n14, n24, n34);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return meshDS->AddVolumeWithID(n1, n2, n3, n4, n12, n23, n31, n14, n24, n34, id);
-  else
-    return meshDS->AddVolume(n1, n2, n3, n4, n12, n23, n31, n14, n24, n34);
+  return elem;
 }
 
 //=======================================================================
 /*!
- * Special function for creation quadratic pyramid
+ * Creates quadratic or linear pyramid
  */
 //=======================================================================
 
@@ -660,37 +728,43 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const int id, 
 					       const bool force3d)
 {
+  SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return GetMeshDS()->AddVolumeWithID(n1, n2, n3, n4, n5, id);
+      elem = GetMeshDS()->AddVolumeWithID(n1, n2, n3, n4, n5, id);
     else
-      return GetMeshDS()->AddVolume(n1, n2, n3, n4, n5);
+      elem = GetMeshDS()->AddVolume(n1, n2, n3, n4, n5);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
+    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-  const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
+    const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
+    const SMDS_MeshNode* n35 = GetMediumNode(n3,n5,force3d);
+    const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
 
-  const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
-  const SMDS_MeshNode* n25 = GetMediumNode(n2,n5,force3d);
-  const SMDS_MeshNode* n35 = GetMediumNode(n3,n5,force3d);
-  const SMDS_MeshNode* n45 = GetMediumNode(n4,n5,force3d);
+    if(id)
+      elem = GetMeshDS()->AddVolumeWithID ( n1,  n2,  n3,  n4,  n5,
+                                            n12, n23, n34, n41,
+                                            n15, n25, n35, n45,
+                                            id);
+    else
+      elem = GetMeshDS()->AddVolume( n1,  n2,  n3,  n4,  n5,
+                                     n12, n23, n34, n41,
+                                     n15, n25, n35, n45);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    GetMeshDS()->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return GetMeshDS()->AddVolumeWithID ( n1,  n2,  n3,  n4,  n5,
-                                          n12, n23, n34, n41,
-                                          n15, n25, n35, n45,
-                                          id);
-  else
-    return GetMeshDS()->AddVolume( n1,  n2,  n3,  n4,  n5,
-                                   n12, n23, n34, n41,
-                                   n15, n25, n35, n45);
+  return elem;
 }
 
 //=======================================================================
 /*!
- * Special function for creation of quadratic hexahedron
+ * Creates quadratic or linear hexahedron
  */
 //=======================================================================
 
@@ -705,37 +779,43 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
                                                const int id,
 					       const bool force3d)
 {
-  SMESHDS_Mesh * meshDS = GetMesh()->GetMeshDS();
+  SMESHDS_Mesh * meshDS = GetMeshDS();
+  SMDS_MeshVolume* elem = 0;
   if(!myCreateQuadratic) {
     if(id)
-      return meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8, id);
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8, id);
     else
-      return meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8);
+      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8);
   }
+  else {
+    const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
+    const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
+    const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
+    const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
 
-  const SMDS_MeshNode* n12 = GetMediumNode(n1,n2,force3d);
-  const SMDS_MeshNode* n23 = GetMediumNode(n2,n3,force3d);
-  const SMDS_MeshNode* n34 = GetMediumNode(n3,n4,force3d);
-  const SMDS_MeshNode* n41 = GetMediumNode(n4,n1,force3d);
+    const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
+    const SMDS_MeshNode* n67 = GetMediumNode(n6,n7,force3d);
+    const SMDS_MeshNode* n78 = GetMediumNode(n7,n8,force3d);
+    const SMDS_MeshNode* n85 = GetMediumNode(n8,n5,force3d);
 
-  const SMDS_MeshNode* n56 = GetMediumNode(n5,n6,force3d);
-  const SMDS_MeshNode* n67 = GetMediumNode(n6,n7,force3d);
-  const SMDS_MeshNode* n78 = GetMediumNode(n7,n8,force3d);
-  const SMDS_MeshNode* n85 = GetMediumNode(n8,n5,force3d);
+    const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
+    const SMDS_MeshNode* n26 = GetMediumNode(n2,n6,force3d);
+    const SMDS_MeshNode* n37 = GetMediumNode(n3,n7,force3d);
+    const SMDS_MeshNode* n48 = GetMediumNode(n4,n8,force3d);
 
-  const SMDS_MeshNode* n15 = GetMediumNode(n1,n5,force3d);
-  const SMDS_MeshNode* n26 = GetMediumNode(n2,n6,force3d);
-  const SMDS_MeshNode* n37 = GetMediumNode(n3,n7,force3d);
-  const SMDS_MeshNode* n48 = GetMediumNode(n4,n8,force3d);
+    if(id)
+      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
+                                     n12, n23, n34, n41, n56, n67,
+                                     n78, n85, n15, n26, n37, n48, id);
+    else
+      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
+                               n12, n23, n34, n41, n56, n67,
+                               n78, n85, n15, n26, n37, n48);
+  }
+  if ( mySetElemOnShape && myShapeID > 0 )
+    meshDS->SetMeshElementOnShape( elem, myShapeID );
 
-  if(id)
-    return meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6, n7, n8,
-                                   n12, n23, n34, n41, n56, n67,
-                                   n78, n85, n15, n26, n37, n48, id);
-  else
-    return meshDS->AddVolume(n1, n2, n3, n4, n5, n6, n7, n8,
-                             n12, n23, n34, n41, n56, n67,
-                             n78, n85, n15, n26, n37, n48);
+  return elem;
 }
 
 //=======================================================================
@@ -871,7 +951,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   const SMDS_MeshNode* node;
   while ( nIt->more() ) {
     node = nIt->next();
-    if(IsMedium(node))
+    if(IsMedium(node, SMDSAbs_Edge))
       continue;
     const SMDS_EdgePosition* pos =
       dynamic_cast<const SMDS_EdgePosition*>( node->GetPosition().get() );
@@ -914,12 +994,12 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
   // try to load the rest nodes
 
   // get all faces from theFace
-  map<int,const SMDS_MeshElement*> allFaces, foundFaces;
+  TIDSortedElemSet allFaces, foundFaces;
   eIt = smFace->GetElements();
   while ( eIt->more() ) {
     const SMDS_MeshElement* e = eIt->next();
     if ( e->GetType() == SMDSAbs_Face )
-      allFaces.insert( make_pair(e->GetID(),e) );
+      allFaces.insert( e );
   }
   // Starting from 2 neighbour nodes on theBaseEdge, look for a face
   // the nodes belong to, and between the nodes of the found face,
@@ -967,7 +1047,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
             RETURN_BAD_RESULT( "Too many nodes in column "<< col <<": "<< row+1);
           }
           par_nVec_2->second[ row ] = node;
-          foundFaces.insert( make_pair(face->GetID(),face) );
+          foundFaces.insert( face );
           n2 = node;
           if ( nbFaceNodes==4 ) {
             n1 = par_nVec_1->second[ row ];

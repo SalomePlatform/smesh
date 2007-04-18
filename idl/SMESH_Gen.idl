@@ -38,20 +38,48 @@
 module SMESH
 {
   typedef sequence<GEOM::GEOM_Object> object_array;
-  typedef sequence<SMESH_Mesh> mesh_array;
+  typedef sequence<SMESH_Mesh>        mesh_array;
 
   interface FilterManager;
   interface SMESH_Pattern;
 
-  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH, BAD_PARAM_VALUE };
-  struct AlgoStateError {
-    AlgoStateErrorName name;
+  /*!
+   * Hypothesis definintion error
+   */
+  struct AlgoStateError 
+  {
+    Hypothesis_Status  state;
     string             algoName;
     long               algoDim;
     boolean            isGlobalAlgo;
   };
   typedef sequence<AlgoStateError> algo_error_array;
-    
+
+  /*!
+   * Mesh computation error
+   */
+  enum ComputeErrorName
+  {
+    COMPERR_OK            ,
+    COMPERR_BAD_INPUT_MESH,  // wrong mesh on lower submesh
+    COMPERR_STD_EXCEPTION ,  // some std exception raised
+    COMPERR_OCC_EXCEPTION ,  // OCC exception raised
+    COMPERR_SLM_EXCEPTION ,  // SALOME exception raised
+    COMPERR_EXCEPTION     ,  // other exception raised
+    COMPERR_MEMORY_PB     ,  // memory allocation problem
+    COMPERR_ALGO_FAILED   ,  // computation failed
+    COMPERR_BAD_SHAPE        // bad geometry
+  };
+  struct ComputeError
+  {
+    short  code;       // ComputeErrorName or, if negative, algo specific code
+    string comment;    // textual problem description
+    string algoName;
+    short  subShapeID; // id of subshape of a shape to mesh
+  };
+  typedef sequence<ComputeError> compute_error_array;
+
+
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
 
@@ -170,6 +198,14 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Return errors of mesh computation
+     * compute_error_array is empty if everything is OK
+     */
+    compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh, 
+                                          in GEOM::GEOM_Object theSubObject )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Return indeces of faces, edges and vertices of given subshapes
      * within theMainObject
      */
@@ -193,6 +229,19 @@ module SMESH
      */
     GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
 						 in long        theElementID)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     */
+    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
+			   in boolean    theUniteIdenticalGroups, 
+			   in boolean    theMergeNodesAndElements, 
+			   in double     theMergeTolerance)
       raises ( SALOME::SALOME_Exception );
 
   };

@@ -30,6 +30,7 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include "utilities.h"
 
@@ -241,6 +242,35 @@ SMDS_ElemIteratorPtr SMDS_QuadraticFaceOfNodes::interlacedNodesElemIterator() co
   return SMDS_ElemIteratorPtr
     (new _MyInterlacedNodeElemIterator ( interlacedNodesIterator() ));
 }
+/// ===================================================================
+/*!
+ * \brief Iterator on edges of face
+ */
+/// ===================================================================
+
+class _MyEdgeIterator : public SMDS_ElemIterator
+{
+  vector< const SMDS_MeshElement* > myElems;
+  int myIndex;
+public:
+  _MyEdgeIterator(const SMDS_QuadraticFaceOfNodes* face):myIndex(0) {
+    myElems.reserve( face->NbNodes() );
+    SMDS_ElemIteratorPtr nIt = face->interlacedNodesElemIterator();
+    const SMDS_MeshNode* n0 = face->GetNode( -1 );
+    while ( nIt->more() ) {
+      const SMDS_MeshNode* n1 = static_cast<const SMDS_MeshNode*>( nIt->next() );
+      const SMDS_MeshElement* edge = SMDS_Mesh::FindEdge( n0, n1 );
+      if ( edge )
+        myElems.push_back( edge );
+      n0 = n1;
+    }
+  }
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more() { return myIndex < myElems.size(); }
+
+  /// Return the current object and step to the next one
+  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
+};
 
 //=======================================================================
 //function : elementsIterator
@@ -257,7 +287,7 @@ SMDS_ElemIteratorPtr SMDS_QuadraticFaceOfNodes::elementsIterator
   case SMDSAbs_Node:
     return SMDS_ElemIteratorPtr(new _MyNodeIterator(myNodes));
   case SMDSAbs_Edge:
-    MESSAGE("Error : edge iterator for SMDS_QuadraticFaceOfNodes not implemented");
+    return SMDS_ElemIteratorPtr(new _MyEdgeIterator( this ));
     break;
   default:
     return SMDS_ElemIteratorPtr

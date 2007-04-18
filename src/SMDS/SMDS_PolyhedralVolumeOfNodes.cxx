@@ -25,6 +25,8 @@
 
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "utilities.h"
 
 #include <set>
@@ -36,8 +38,8 @@ using namespace std;
 //purpose  : Create a volume of many faces
 //=======================================================================
 SMDS_PolyhedralVolumeOfNodes::SMDS_PolyhedralVolumeOfNodes
-                                (std::vector<const SMDS_MeshNode *> nodes,
-                                 std::vector<int>                   quantities)
+                                (vector<const SMDS_MeshNode *> nodes,
+                                 vector<int>                   quantities)
 : SMDS_VolumeOfNodes(NULL, NULL, NULL, NULL)
 {
   ChangeNodes(nodes, quantities);
@@ -57,49 +59,34 @@ SMDSAbs_ElementType SMDS_PolyhedralVolumeOfNodes::GetType() const
 //function : ChangeNodes
 //purpose  : 
 //=======================================================================
-bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode *> nodes,
-                                                std::vector<int>                   quantities)
+bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (const vector<const SMDS_MeshNode *>& nodes,
+                                                const vector<int>&                   quantities)
 {
   myNodesByFaces = nodes;
   myQuantities = quantities;
 
-  // Init fields of parent class
-  int aNbNodes = 0;
-  std::set<const SMDS_MeshNode *> aSet;
-  int nodes_len = nodes.size();
-  for (int j = 0; j < nodes_len; j++) {
-    if (aSet.find(nodes[j]) == aSet.end()) {
-      aSet.insert(nodes[j]);
-      aNbNodes++;
-    }
-  }
+  // Init fields of parent class, it allows to get only unique nodes(?)
 
-  int k = 0;
-#ifndef WNT
-  const SMDS_MeshNode* aNodes [aNbNodes];
-#else
-  const SMDS_MeshNode** aNodes = (const SMDS_MeshNode **)new SMDS_MeshNode*[aNbNodes];
-#endif
-  std::set<const SMDS_MeshNode *>::iterator anIter = aSet.begin();
-  for (; anIter != aSet.end(); anIter++, k++) {
-    aNodes[k] = *anIter;
-  }
-
+  set<const SMDS_MeshNode *> aSet;
+  aSet.insert( nodes.begin(), nodes.end());
   //SMDS_VolumeOfNodes::ChangeNodes(aNodes, aNbNodes);
   delete [] myNodes;
-  //myNbNodes = nodes.size();
-  myNbNodes = aNbNodes;
+  myNbNodes = aSet.size();
   myNodes = new const SMDS_MeshNode* [myNbNodes];
-  for (int i = 0; i < myNbNodes; i++) {
-    //myNodes[i] = nodes[i];
-    myNodes[i] = aNodes[i];
-  }
-
-#ifdef WNT
-  delete [] aNodes;
-#endif
+  set<const SMDS_MeshNode *>::iterator anIter = aSet.begin();
+  for (int k=0; anIter != aSet.end(); anIter++, k++)
+    myNodes[k] = *anIter;
 
   return true;
+}
+
+//=======================================================================
+//function : NbEdges
+//purpose  : 
+//=======================================================================
+int SMDS_PolyhedralVolumeOfNodes::NbNodes() const
+{
+  return myNodesByFaces.size();
 }
 
 //=======================================================================
@@ -187,4 +174,88 @@ bool SMDS_PolyhedralVolumeOfNodes::ChangeNodes (const SMDS_MeshNode* nodes[],
                                                 const int            nbNodes)
 {
   return false;
+}
+
+/// ===================================================================
+/*!
+ * \brief Iterator on node of volume
+ */
+/// ===================================================================
+
+struct _MyIterator:public SMDS_NodeVectorElemIterator
+{
+  _MyIterator(const vector<const SMDS_MeshNode *>& nodes):
+    SMDS_NodeVectorElemIterator( nodes.begin(), nodes.end()) {}
+};
+
+/// ===================================================================
+/*!
+ * \brief Iterator on faces or edges of volume
+ */
+/// ===================================================================
+
+class _MySubIterator : public SMDS_ElemIterator
+{
+  vector< const SMDS_MeshElement* > myElems;
+  int myIndex;
+public:
+  _MySubIterator(const SMDS_MeshVolume* vol, SMDSAbs_ElementType type):myIndex(0) {
+    SMDS_VolumeTool vTool(vol);
+    if (type == SMDSAbs_Face)
+      vTool.GetAllExistingFaces( myElems );
+    else
+      vTool.GetAllExistingFaces( myElems );
+  }
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more() { return myIndex < myElems.size(); }
+
+  /// Return the current object and step to the next one
+  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
+};
+
+//================================================================================
+/*!
+ * \brief Return Iterator of sub elements
+ */
+//================================================================================
+
+SMDS_ElemIteratorPtr SMDS_PolyhedralVolumeOfNodes::elementsIterator(SMDSAbs_ElementType type) const
+{
+  switch(type)
+  {
+  case SMDSAbs_Volume:
+    return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
+  case SMDSAbs_Node:
+    return SMDS_ElemIteratorPtr(new _MyIterator(myNodesByFaces));
+  case SMDSAbs_Face:
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Face));
+  case SMDSAbs_Edge:
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Edge));
+  default:
+    MESSAGE("ERROR : Iterator not implemented");
+    return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return iterator on unique nodes
+ */
+//================================================================================
+
+SMDS_ElemIteratorPtr SMDS_PolyhedralVolumeOfNodes::uniqueNodesIterator() const
+{
+  return SMDS_ElemIteratorPtr
+    (new SMDS_NodeArrayElemIterator( myNodes, & myNodes[ myNbNodes ]));
+}
+
+//================================================================================
+/*!
+ * \brief Return node by its index
+ */
+//================================================================================
+
+const SMDS_MeshNode* SMDS_PolyhedralVolumeOfNodes::GetNode(const int ind) const
+{
+  return myNodesByFaces[ WrappedIndex( ind )];
 }

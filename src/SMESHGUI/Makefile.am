@@ -103,7 +103,11 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_ShapeByMeshDlg.cxx \
 	SMESHGUI_AddQuadraticElementDlg.cxx \
 	SMESHGUI_ConvToQuadDlg.cxx \
-	SMESHGUI_ConvToQuadOp.cxx
+	SMESHGUI_ConvToQuadOp.cxx \
+	SMESHGUI_BuildCompoundDlg.cxx \
+	SMESHGUI_ComputeDlg.cxx \
+	SMESHGUI_MakeNodeAtPointDlg.cxx \
+	SMESHGUI_MeshEditPreview.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -151,7 +155,10 @@ MOC_FILES = \
 	SMESHGUI_ShapeByMeshDlg_moc.cxx \
 	SMESHGUI_AddQuadraticElementDlg_moc.cxx \
 	SMESHGUI_ConvToQuadDlg_moc.cxx \
-	SMESHGUI_ConvToQuadOp_moc.cxx
+	SMESHGUI_ConvToQuadOp_moc.cxx \
+	SMESHGUI_BuildCompoundDlg_moc.cxx \
+	SMESHGUI_ComputeDlg_moc.cxx \
+	SMESHGUI_MakeNodeAtPointDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)

@@ -44,8 +44,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Regular_1D_i::StdMeshers_Regular_1D_i( PortableServer::POA_ptr thePOA,
-				        int                     theStudyId,
-				        ::SMESH_Gen*            theGenImpl )
+                                                  int                     theStudyId,
+                                                  ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ), 
        SMESH_Algo_i( thePOA ),
@@ -53,8 +53,8 @@ StdMeshers_Regular_1D_i::StdMeshers_Regular_1D_i( PortableServer::POA_ptr thePOA
 {
   MESSAGE( "StdMeshers_Regular_1D_i::StdMeshers_Regular_1D_i" );
   myBaseImpl = new ::StdMeshers_Regular_1D( theGenImpl->GetANewId(),
-				       theStudyId,
-				       theGenImpl );
+                                            theStudyId,
+                                            theGenImpl );
 }
 
 //=============================================================================

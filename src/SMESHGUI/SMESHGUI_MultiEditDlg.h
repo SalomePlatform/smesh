@@ -38,6 +38,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class SMESHGUI;
 class SMESHGUI_FilterDlg;

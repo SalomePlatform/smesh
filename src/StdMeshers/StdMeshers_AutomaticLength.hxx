@@ -53,7 +53,16 @@ public:
   StdMeshers_AutomaticLength(int hypId, int studyId, SMESH_Gen * gen);
   virtual ~ StdMeshers_AutomaticLength();
 
+  /*!
+   * \brief Computes segment for a given edge
+   */
   double GetLength(const SMESH_Mesh* aMesh, const TopoDS_Shape& anEdge)
+    throw(SALOME_Exception);
+
+  /*!
+   * \brief Computes segment length for an edge of given length
+   */
+  double GetLength(const SMESH_Mesh* aMesh, const double edgeLength)
     throw(SALOME_Exception);
 
   /*!
@@ -91,7 +100,7 @@ public:
 protected:
   std::map<const TopoDS_TShape*, double> _TShapeToLength;
   const SMESH_Mesh* _mesh;
-  double _fineness;
+  double _fineness, _S0, _minLen;
 };
 
 #endif

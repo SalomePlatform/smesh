@@ -72,25 +72,40 @@ class SMESH_Group;
 class TopTools_ListOfShape;
 class SMESH_subMesh;
 class SMESH_HypoFilter;
+class TopoDS_Solid;
 
-//typedef NMTTools_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 typedef SMESH_IndexedDataMapOfShapeIndexedMapOfShape IndexedMapOfChain;
 
 class SMESH_EXPORT SMESH_Mesh
 {
-  SMESH_Mesh();
-  SMESH_Mesh(const SMESH_Mesh&);
 public:
-  SMESH_Mesh(int theLocalId, 
-	     int theStudyId, 
-	     SMESH_Gen* theGen,
-	     bool theIsEmbeddedMode,
+  SMESH_Mesh(int               theLocalId, 
+	     int               theStudyId, 
+	     SMESH_Gen*        theGen,
+	     bool              theIsEmbeddedMode,
 	     SMESHDS_Document* theDocument);
   
   virtual ~SMESH_Mesh();
   
+  /*!
+   * \brief Set geometry to be meshed
+   */
   void ShapeToMesh(const TopoDS_Shape & aShape);
-  
+  /*!
+   * \brief Return geometry to be meshed. (It may be a PseudoShape()!)
+   */
+  TopoDS_Shape GetShapeToMesh() const;
+  /*!
+   * \brief Return true if there is a geometry to be meshed, not PseudoShape()
+   */
+  bool HasShapeToMesh() const { return _isShapeToMesh; }
+  /*!
+   * \brief Return a solid which is returned by GetShapeToMesh() if
+   *        a real geometry to be meshed was not set
+   */
+  static const TopoDS_Solid& PseudoShape();
+
+
   int UNVToMesh(const char* theFileName);
   /*!
    * consult DriverMED_R_SMESHDS_Mesh::ReadStatus for returned value
@@ -124,11 +139,11 @@ public:
   
   void ClearLog() throw(SALOME_Exception);
   
-  int GetId();
+  int GetId()                { return _id; }
   
-  SMESHDS_Mesh * GetMeshDS();
+  SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
   
-  SMESH_Gen *GetGen();
+  SMESH_Gen *GetGen()        { return _gen; }
   
   SMESH_subMesh *GetSubMesh(const TopoDS_Shape & aSubShape)
     throw(SALOME_Exception);
@@ -257,7 +272,7 @@ private:
   void CleanMeshOnPropagationChain(const TopoDS_Shape& theMainEdge);
   //
   
-private:
+protected:
   int                        _id;           // id given by creator (unique within the creator instance)
   int                        _studyId;
   int                        _idDoc;        // id given by SMESHDS_Document
@@ -273,6 +288,10 @@ private:
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 
   IndexedMapOfChain _mapPropagationChains; // Propagation hypothesis management
+
+protected:
+  SMESH_Mesh() {};
+  SMESH_Mesh(const SMESH_Mesh&) {};
 };
 
 #endif

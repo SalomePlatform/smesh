@@ -31,6 +31,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
 #include "SMESH_Actor.h"
@@ -67,7 +68,10 @@
 #include <qlayout.h>
 #include <qpixmap.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
+
 
 //=================================================================================
 // class    : SMESHGUI_SewingDlg()
@@ -777,7 +781,7 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
+  myMesh = SMESH::GetMeshByIO(IO); //@ SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
   myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
 
   if (myMesh->_is_nil() || !myActor)
@@ -788,11 +792,11 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
 
   if (GetConstructorId() != 3 ||
       (myEditCurrentArgument != LineEdit1 && myEditCurrentArgument != LineEdit4)) {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
     if (aNbUnits < 1)
       return;
   }

@@ -32,24 +32,28 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Edge.hxx>
-#include <gp_XY.hxx>
+#include <GeomAbs_Shape.hxx>
 
 #include <string>
 #include <vector>
 #include <list>
-#include <map>
 
 class SMESH_Gen;
 class SMESH_Mesh;
 class SMESH_HypoFilter;
+class TopoDS_Vertex;
 class TopoDS_Face;
 class TopoDS_Shape;
 class SMESHDS_Mesh;
 class SMDS_MeshNode;
 class SMESH_subMesh;
+class SMESH_MesherHelper;
+
 
 class SMESH_EXPORT SMESH_Algo:public SMESH_Hypothesis
 {
@@ -101,8 +105,22 @@ public:
     * \param aMesh - the mesh
     * \param aShape - the shape
     * \retval bool - is a success
+    *
+    * Algorithms that !NeedDescretBoundary() || !OnlyUnaryInput() are
+    * to set SMESH_ComputeError returned by SMESH_submesh::GetComputeError()
+    * to report problematic subshapes
    */
   virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape) = 0;
+
+  /*!
+   * \brief Computes mesh without geometry
+    * \param aMesh - the mesh
+    * \param aHelper - helper that must be used for adding elements to \aaMesh
+    * \retval bool - is a success
+    *
+    * The method is called if ( !aMesh->HasShapeToMesh() )
+   */
+  virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
   /*!
    * \brief Returns a list of compatible hypotheses used to mesh a shape
@@ -146,15 +164,19 @@ public:
                                  const bool         ignoreAuxiliary) const;
   /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
-   * \param theMesh - the built mesh
-   * \param theShape - the geometry of interest
-   * \retval bool - true if parameter values have been successfully defined
    *
    * Just return false as the algorithm does not hold parameters values
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
                                    const TopoDS_Shape& theShape);
-
+  /*!
+   * \brief return compute error
+   */
+  SMESH_ComputeErrorPtr GetComputeError() const;
+  /*!
+   * \brief initialize compute error
+   */
+  void InitComputeError();
 
 public:
   // ==================================================================
@@ -176,6 +198,9 @@ public:
   bool NeedDescretBoundary() const { return _requireDescretBoundary; }
   // 3 - is a Dim-1 mesh prerequisite
 
+  bool NeedShape() const { return _requireShape; }
+  // 4 - is shape existance required
+
 public:
   // ==================================================================
   // Methods to track non hierarchical dependencies between submeshes 
@@ -190,6 +215,14 @@ public:
    * By default non listener is set
    */
   virtual void SetEventListener(SMESH_subMesh* subMesh);
+  
+  /*!
+   * \brief Allow algo to do something after persistent restoration
+    * \param subMesh - restored submesh
+   *
+   * This method is called only if a submesh has HYP_OK algo_state.
+   */
+  virtual void SubmeshRestored(SMESH_subMesh* subMesh);
   
 public:
   // ==================================================================
@@ -221,16 +254,55 @@ public:
    */
   static double EdgeLength(const TopoDS_Edge & E);
 
+  /*!
+   * \brief Return continuity of two edges
+    * \param E1 - the 1st edge
+    * \param E2 - the 2nd edge
+    * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
+   */
+  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1,
+                                  const TopoDS_Edge & E2);
+
+  /*!
+   * \brief Return the node built on a vertex
+    * \param V - the vertex
+    * \param meshDS - mesh
+    * \retval const SMDS_MeshNode* - found node or NULL
+   */
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V,
+                                         SMESHDS_Mesh*        meshDS);
 
 protected:
-  bool _onlyUnaryInput;
-  bool _requireDescretBoundary;
-  std::vector<std::string> _compatibleHypothesis;
+
+  /*!
+   * \brief store error and comment and then return ( error == COMPERR_OK )
+   */
+  bool error(int error, const SMESH_Comment& comment = "");
+  /*!
+   * \brief To be used as error in previous method
+   */
+  SMESH_ComputeErrorName dfltErr() const { return COMPERR_ALGO_FAILED; }
+  /*!
+   * \brief store error and return error->IsOK()
+   */
+  bool error(SMESH_ComputeErrorPtr error);
+
+protected:
+
+  std::vector<std::string>              _compatibleHypothesis;
   std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
 
-  // quadratic mesh creation required
+  bool _onlyUnaryInput;
+  bool _requireDescretBoundary;
+  bool _requireShape;
+
+  // quadratic mesh creation required,
+  // is usually set trough SMESH_MesherHelper::IsQuadraticSubMesh()
   bool _quadraticMesh;
+
+  int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
+  std::string _comment;  //!< any text explaining what is wrong in Compute()
 };
 
 #endif

@@ -34,6 +34,8 @@ from   SMESH import *
 
 import StdMeshers
 
+import SALOME
+
 # import NETGENPlugin module if possible
 noNETGENPlugin = 0
 try:
@@ -43,8 +45,9 @@ except ImportError:
     pass
     
 # Types of algo
-REGULAR = 1
-PYTHON  = 2
+REGULAR    = 1
+PYTHON     = 2
+COMPOSITE  = 3
 
 MEFISTO = 3
 NETGEN  = 4
@@ -244,11 +247,17 @@ def GetCriterion(elementType,
         
     if Compare in [FT_LessThan, FT_MoreThan, FT_EqualTo]:
         aCriterion.Compare = EnumToLong(Compare)
+    elif Compare == "=" or Compare == "==":
+        aCriterion.Compare = EnumToLong(FT_EqualTo)
+    elif Compare == "<":
+        aCriterion.Compare = EnumToLong(FT_LessThan)
+    elif Compare == ">":
+        aCriterion.Compare = EnumToLong(FT_MoreThan)
     else:
         aCriterion.Compare = EnumToLong(FT_EqualTo)
         aTreshold = Compare
 
-    if CritType in [FT_BelongToGeom,     FT_BelongToPlane,
+    if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface, 
                     FT_BelongToCylinder, FT_LyingOnGeom]:
         # Check treshold
         if isinstance(aTreshold, geompy.GEOM._objref_GEOM_Object):
@@ -346,6 +355,43 @@ def GetFunctor(theCriterion):
         print "Error: given parameter is not numerucal functor type."
 
 
+## Print error message if a hypothesis was not assigned.
+def TreatHypoStatus(status, hypName, geomName, isAlgo):
+    if isAlgo:
+        hypType = "algorithm"
+    else:
+        hypType = "hypothesis"
+        pass
+    if status == HYP_UNKNOWN_FATAL :
+        reason = "for unknown reason"
+    elif status == HYP_INCOMPATIBLE :
+        reason = "this hypothesis mismatches algorithm"
+    elif status == HYP_NOTCONFORM :
+        reason = "not conform mesh would be built"
+    elif status == HYP_ALREADY_EXIST :
+        reason = hypType + " of the same dimension already assigned to this shape"
+    elif status == HYP_BAD_DIM :
+        reason = hypType + " mismatches shape"
+    elif status == HYP_CONCURENT :
+        reason = "there are concurrent hypotheses on sub-shapes"
+    elif status == HYP_BAD_SUBSHAPE :
+        reason = "shape is neither the main one, nor its subshape, nor a valid group"
+    elif status == HYP_BAD_GEOMETRY:
+        reason = "geometry mismatches algorithm's expectation"
+    elif status == HYP_HIDDEN_ALGO:
+        reason = "it is hidden by an algorithm of upper dimension generating all-dimensions elements"
+    elif status == HYP_HIDING_ALGO:
+        reason = "it hides algorithm(s) of lower dimension by generating all-dimensions elements"
+    else:
+        return
+    hypName = '"' + hypName + '"'
+    geomName= '"' + geomName+ '"'
+    if status < HYP_UNKNOWN_FATAL:
+        print hypName, "was assigned to",    geomName,"but", reason
+    else:
+        print hypName, "was not assigned to",geomName,":", reason
+        pass
+
     
     
 ## Mother class to define algorithm, recommended to don't use directly.
@@ -388,38 +434,6 @@ class Mesh_Algorithm:
     def GetId(self):
         return self.algo.GetId()
     
-    ## Private method. Print error message if a hypothesis was not assigned.
-    def TreatHypoStatus(self, status, hypName, geomName, isAlgo):
-        if isAlgo:
-            hypType = "algorithm"
-        else:
-            hypType = "hypothesis"
-        if status == HYP_UNKNOWN_FATAL :
-            reason = "for unknown reason"
-        elif status == HYP_INCOMPATIBLE :
-            reason = "this hypothesis mismatches algorithm"
-        elif status == HYP_NOTCONFORM :
-            reason = "not conform mesh would be built"
-        elif status == HYP_ALREADY_EXIST :
-            reason = hypType + " of the same dimension already assigned to this shape"
-        elif status == HYP_BAD_DIM :
-            reason = hypType + " mismatches shape"
-        elif status == HYP_CONCURENT :
-            reason = "there are concurrent hypotheses on sub-shapes"
-        elif status == HYP_BAD_SUBSHAPE :
-            reason = "shape is neither the main one, nor its subshape, nor a valid group"
-        elif status == HYP_BAD_GEOMETRY:
-            reason = "geometry mismatches algorithm's expectation"
-        else:
-            return
-        hypName = '"' + hypName + '"'
-        geomName= '"' + geomName+ '"'
-        if status < HYP_UNKNOWN_FATAL:
-            print hypName, "was assigned to",    geomName,"but", reason
-        else:
-            print hypName, "was not assigned to",geomName,":", reason
-        pass
-        
     ## Private method.
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
@@ -440,7 +454,7 @@ class Mesh_Algorithm:
         self.algo = smesh.CreateHypothesis(hypo, so)
         SetName(self.algo, name + "/" + hypo)
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        self.TreatHypoStatus( status, hypo, name, 1 )
+        TreatHypoStatus( status, hypo, name, 1 )
         
     ## Private method
     def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so"):
@@ -456,7 +470,7 @@ class Mesh_Algorithm:
         name = GetName(self.geom)
         SetName(hypo, name + "/" + hyp + a)
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        self.TreatHypoStatus( status, hyp, name, 0 )
+        TreatHypoStatus( status, hyp, name, 0 )
         return hypo
 
 
@@ -529,6 +543,24 @@ class Mesh_Segment(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
+    ## Define "SegmentLengthAroundVertex" hypothesis
+    #  @param length for the segment length
+    #  @param vertex for the length localization: vertex index [0,1] | verext object
+    def LengthNearVertex(self, length, vertex=0):
+        import types
+        store_geom = self.geom
+        if vertex:
+            if type(vertex) is types.IntType:
+                vertex = geompy.SubShapeAllSorted(self.geom,geompy.ShapeType["VERTEX"])[vertex]
+                pass
+            self.geom = vertex
+            pass
+        hyp = self.Hypothesis("SegmentAroundVertex_0D")
+        hyp = self.Hypothesis("SegmentLengthAroundVertex")
+        self.geom = store_geom
+        hyp.SetLength( length )
+        return hyp
+
     ## Define "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
     #  If the 2D mesher sees that all boundary edges are quadratic ones,
     #  it generates quadratic faces, else it generates linear faces using
@@ -538,6 +570,19 @@ class Mesh_Segment(Mesh_Algorithm):
     def QuadraticMesh(self):
         hyp = self.Hypothesis("QuadraticMesh")
         return hyp
+
+# Public class: Mesh_CompositeSegment
+# --------------------------
+
+## Class to define a segment 1D algorithm for discretization
+#
+#  More details.
+class Mesh_CompositeSegment(Mesh_Segment):
+
+    ## Private constructor.
+    def __init__(self, mesh, geom=0):
+        self.Create(mesh, geom, "CompositeSegment_1D")
+        
 
 # Public class: Mesh_Segment_Python
 # ---------------------------------
@@ -977,7 +1022,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
 # Public class: Mesh_Prism
 # ------------------------
 
-## Class to define a Prism 3D algorithm
+## Class to define a 3D extrusion algorithm
 #
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
@@ -1202,6 +1247,8 @@ class Mesh:
             return Mesh_Segment(self, geom)
         elif algo == PYTHON:
             return Mesh_Segment_Python(self, geom)
+        elif algo == COMPOSITE:
+            return Mesh_CompositeSegment(self, geom)
         else:
             return Mesh_Segment(self, geom)
         
@@ -1276,7 +1323,7 @@ class Mesh:
     def Projection3D(self, geom=0):
         return Mesh_Projection3D(self, geom)
 
-    ## Creates a Prism 3D or RadialPrism 3D algorithm for solids.
+    ## Creates a 3D extrusion (Prism 3D) or RadialPrism 3D algorithm for solids.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
@@ -1298,7 +1345,16 @@ class Mesh:
                 return 0
             else:
                 geom = self.geom
-        ok = smesh.Compute(self.mesh, geom)
+        ok = False
+        try:
+            ok = smesh.Compute(self.mesh, geom)
+        except SALOME.SALOME_Exception, ex:
+            print "Mesh computation failed, exception cought:"
+            print "    ", ex.details.text
+        except:
+            import traceback
+            print "Mesh computation failed, exception cought:"
+            traceback.print_exc()
         if not ok:
             errors = smesh.GetAlgoState( self.mesh, geom )
             allReasons = ""
@@ -1330,14 +1386,16 @@ class Mesh:
                 allReasons += reason
                 pass
             if allReasons != "":
-                print '"' + GetName(self.mesh) + '"',"not computed:"
+                print '"' + GetName(self.mesh) + '"',"has not been computed:"
                 print allReasons
+            else:
+                print '"' + GetName(self.mesh) + '"',"has not been computed."
                 pass
             pass
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(salome.myStudyId)
-            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok )
+            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
             salome.sg.updateObjBrowser(1)
             pass
         return ok
@@ -1371,6 +1429,21 @@ class Mesh:
             self.Hexahedron()            
             pass
         return self.Compute()
+
+    ## Assign hypothesis
+    #  @param hyp is a hypothesis to assign
+    #  @param geom is subhape of mesh geometry
+    def AddHypothesis(self, hyp, geom=0 ):
+        if isinstance( hyp, Mesh_Algorithm ):
+            hyp = hyp.GetAlgorithm()
+            pass
+        if not geom:
+            geom = self.geom
+            pass
+        status = self.mesh.AddHypothesis(geom, hyp)
+        isAlgo = ( hyp._narrow( SMESH.SMESH_Algo ) is not None )
+        TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
+        return status
     
     ## Get the list of hypothesis added on a geom
     #  @param geom is subhape of mesh geometry
@@ -1926,11 +1999,28 @@ class Mesh:
     
     ## Move node with given id
     #  @param NodeID id of the node
-    #  @param x displacing along the X axis
-    #  @param y displacing along the Y axis
-    #  @param z displacing along the Z axis
+    #  @param x new X coordinate
+    #  @param y new Y coordinate
+    #  @param z new Z coordinate
     def MoveNode(self, NodeID, x, y, z):
         return self.editor.MoveNode(NodeID, x, y, z)
+
+    ## Find a node closest to a point
+    #  @param x X coordinate of a point
+    #  @param y Y coordinate of a point
+    #  @param z Z coordinate of a point
+    #  @return id of a node
+    def FindNodeClosestTo(self, x, y, z):
+        preview = self.mesh.GetMeshEditPreviewer()
+        return preview.MoveClosestNodeToPoint(x, y, z, -1)
+
+    ## Find a node closest to a point and move it to a point location
+    #  @param x X coordinate of a point
+    #  @param y Y coordinate of a point
+    #  @param z Z coordinate of a point
+    #  @return id of a moved node
+    def MeshToPassThroughAPoint(self, x, y, z):
+        return self.editor.MoveClosestNodeToPoint(x, y, z, -1)
 
     ## Replace two neighbour triangles sharing Node1-Node2 link
     #  with ones built on the same 4 nodes but having other common link.
@@ -2016,6 +2106,145 @@ class Mesh:
     #          diagonal is better, 0 if error occurs.
     def BestSplit (self, IDOfQuad, theCriterion):
         return self.editor.BestSplit(IDOfQuad, GetFunctor(theCriterion))
+
+    ## Split quafrangle faces near triangular facets of volumes
+    #
+    def SplitQuadsNearTriangularFacets(self):
+        faces_array = self.GetElementsByType(SMESH.FACE)
+        for face_id in faces_array:
+            if self.GetElemNbNodes(face_id) == 4: # quadrangle
+                quad_nodes = self.mesh.GetElemNodes(face_id)
+                node1_elems = self.GetNodeInverseElements(quad_nodes[1 -1])
+                isVolumeFound = False
+                for node1_elem in node1_elems:
+                    if not isVolumeFound:
+                        if self.GetElementType(node1_elem, True) == SMESH.VOLUME:
+                            nb_nodes = self.GetElemNbNodes(node1_elem)
+                            if 3 < nb_nodes and nb_nodes < 7: # tetra or penta, or prism
+                                volume_elem = node1_elem
+                                volume_nodes = self.mesh.GetElemNodes(volume_elem)
+                                if volume_nodes.count(quad_nodes[2 -1]) > 0: # 1,2
+                                    if volume_nodes.count(quad_nodes[4 -1]) > 0: # 1,2,4
+                                        isVolumeFound = True
+                                        if volume_nodes.count(quad_nodes[3 -1]) == 0: # 1,2,4 & !3
+                                            self.SplitQuad([face_id], False) # diagonal 2-4
+                                    elif volume_nodes.count(quad_nodes[3 -1]) > 0: # 1,2,3 & !4
+                                        isVolumeFound = True
+                                        self.SplitQuad([face_id], True) # diagonal 1-3
+                                elif volume_nodes.count(quad_nodes[4 -1]) > 0: # 1,4 & !2
+                                    if volume_nodes.count(quad_nodes[3 -1]) > 0: # 1,4,3 & !2
+                                        isVolumeFound = True
+                                        self.SplitQuad([face_id], True) # diagonal 1-3
+
+    ## @brief Split hexahedrons into tetrahedrons.
+    #
+    #  Use pattern mapping functionality for splitting.
+    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
+    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
+    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
+    #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
+    #         key-point will be mapped into <theNode001>-th node of each volume.
+    #         The (0,0,0) key-point of used pattern corresponds to not split corner.
+    #  @param @return TRUE in case of success, FALSE otherwise.
+    def SplitHexaToTetras (self, theObject, theNode000, theNode001):
+        # Pattern:     5.---------.6
+        #              /|#*      /|
+        #             / | #*    / |
+        #            /  |  # * /  |
+        #           /   |   # /*  |
+        # (0,0,1) 4.---------.7 * |
+        #          |#*  |1   | # *|
+        #          | # *.----|---#.2
+        #          |  #/ *   |   /
+        #          |  /#  *  |  /
+        #          | /   # * | /
+        #          |/      #*|/
+        # (0,0,0) 0.---------.3
+        pattern_tetra = "!!! Nb of points: \n 8 \n\
+        !!! Points: \n\
+        0 0 0  !- 0 \n\
+        0 1 0  !- 1 \n\
+        1 1 0  !- 2 \n\
+        1 0 0  !- 3 \n\
+        0 0 1  !- 4 \n\
+        0 1 1  !- 5 \n\
+        1 1 1  !- 6 \n\
+        1 0 1  !- 7 \n\
+        !!! Indices of points of 6 tetras: \n\
+        0 3 4 1 \n\
+        7 4 3 1 \n\
+        4 7 5 1 \n\
+        6 2 5 7 \n\
+        1 5 2 7 \n\
+        2 3 1 7 \n"
+
+        pattern = GetPattern()
+        isDone  = pattern.LoadFromFile(pattern_tetra)
+        if not isDone:
+            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            return isDone
+
+        pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
+        isDone = pattern.MakeMesh(self.mesh, False, False)
+        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+
+        # split quafrangle faces near triangular facets of volumes
+        self.SplitQuadsNearTriangularFacets()
+
+        return isDone
+
+    ## @brief Split hexahedrons into prisms.
+    #
+    #  Use pattern mapping functionality for splitting.
+    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
+    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
+    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
+    #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
+    #         key-point will be mapped into <theNode001>-th node of each volume.
+    #         The edge (0,0,0)-(0,0,1) of used pattern connects two not split corners.
+    #  @param @return TRUE in case of success, FALSE otherwise.
+    def SplitHexaToPrisms (self, theObject, theNode000, theNode001):
+        # Pattern:     5.---------.6
+        #              /|#       /|
+        #             / | #     / |
+        #            /  |  #   /  |
+        #           /   |   # /   |
+        # (0,0,1) 4.---------.7   |
+        #          |    |    |    |
+        #          |   1.----|----.2
+        #          |   / *   |   /
+        #          |  /   *  |  /
+        #          | /     * | /
+        #          |/       *|/
+        # (0,0,0) 0.---------.3
+        pattern_prism = "!!! Nb of points: \n 8 \n\
+        !!! Points: \n\
+        0 0 0  !- 0 \n\
+        0 1 0  !- 1 \n\
+        1 1 0  !- 2 \n\
+        1 0 0  !- 3 \n\
+        0 0 1  !- 4 \n\
+        0 1 1  !- 5 \n\
+        1 1 1  !- 6 \n\
+        1 0 1  !- 7 \n\
+        !!! Indices of points of 2 prisms: \n\
+        0 1 3 4 5 7 \n\
+        2 3 1 6 7 5 \n"
+
+        pattern = GetPattern()
+        isDone  = pattern.LoadFromFile(pattern_prism)
+        if not isDone:
+            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            return isDone
+
+        pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
+        isDone = pattern.MakeMesh(self.mesh, False, False)
+        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+
+        # split quafrangle faces near triangular facets of volumes
+        self.SplitQuadsNearTriangularFacets()
+
+        return isDone
     
     ## Smooth elements
     #  @param IDsOfElements list if ids of elements to smooth
@@ -2173,12 +2402,14 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
-                           HasAngles, Angles, HasRefPoint, RefPoint):
+                           HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
-            RefPoint = GetPointStruct(RefPoint) 
+            RefPoint = GetPointStruct(RefPoint)
+            pass
         return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape, NodeStart,
                                               HasAngles, Angles, HasRefPoint, RefPoint)
 
@@ -2193,12 +2424,13 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
-                                 HasAngles, Angles, HasRefPoint, RefPoint):
+                                 HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
-                                                    HasAngles, Angles, HasRefPoint, RefPoint)
+                                                    HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation)
     
     ## Symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
@@ -2270,10 +2502,28 @@ class Mesh:
     def FindCoincidentNodes (self, Tolerance):
         return self.editor.FindCoincidentNodes(Tolerance)
 
+    ## Find group of nodes close to each other within Tolerance.
+    #  @param Tolerance tolerance value
+    #  @param SubMeshOrGroup SubMesh or Group
+    #  @param list of group of nodes
+    def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance):
+        return self.editor.FindCoincidentNodesOnPart(SubMeshOrGroup, Tolerance)
+
     ## Merge nodes
     #  @param list of group of nodes
     def MergeNodes (self, GroupsOfNodes):
         self.editor.MergeNodes(GroupsOfNodes)
+
+    ## Find elements built on the same nodes.
+    #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
+    #  @return a list of groups of equal elements
+    def FindEqualElements (self, MeshOrSubMeshOrGroup):
+        return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
+
+    ## Merge elements in each given group.
+    #  @param GroupsOfElementsID groups of elements for merging
+    def MergeElements(self, GroupsOfElementsID):
+        self.editor.MergeElements(GroupsOfElementsID)
 
     ## Remove all but one of elements built on the same nodes.
     def MergeEqualElements(self):

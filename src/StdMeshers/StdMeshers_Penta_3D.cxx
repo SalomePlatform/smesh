@@ -38,6 +38,7 @@
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_Comment.hxx"
 
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
@@ -74,7 +75,7 @@ enum { NB_WALL_FACES = 4 };
 //purpose  : 
 //=======================================================================
 StdMeshers_Penta_3D::StdMeshers_Penta_3D()
-: myErrorStatus(1)
+: myErrorStatus(SMESH_ComputeError::New())
 {
   myTol3D=0.1;
   myWallNodesMaps.resize( SMESH_Block::NbFaces() );
@@ -89,8 +90,6 @@ StdMeshers_Penta_3D::StdMeshers_Penta_3D()
 
 StdMeshers_Penta_3D::~StdMeshers_Penta_3D()
 {
-  if ( myTool )
-    delete myTool;
 }
 
 //=======================================================================
@@ -102,51 +101,45 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
 {
   MESSAGE("StdMeshers_Penta_3D::Compute()");
   //
-  myErrorStatus=0;
-  //
   bool bOK=false;
   //
   myShape=aShape;
   SetMesh(aMesh);
   //
   CheckData();
-  if (myErrorStatus){
+  if (!myErrorStatus->IsOK()) {
     return bOK;
   }
 
-  myTool = new SMESH_MesherHelper(aMesh);
+  SMESH_MesherHelper helper(aMesh);
+  myTool = &helper;
   myCreateQuadratic = myTool->IsQuadraticSubMesh(aShape);
 
   //
   MakeBlock();
-  if (myErrorStatus){
-    delete myTool; myTool = 0;
+  if (!myErrorStatus->IsOK()) {
     return bOK;
   }
   //
   ClearMeshOnFxy1();
-  if (myErrorStatus) {
-    delete myTool; myTool = 0;
+  if (!myErrorStatus->IsOK()) {
     return bOK;
   }
   //
   MakeNodes();
-  if (myErrorStatus){
-    delete myTool; myTool = 0;
+  if (!myErrorStatus->IsOK()) {
     return bOK;
   }
   //
   MakeConnectingMap();
   //
   MakeMeshOnFxy1();
-  if (myErrorStatus) {
-    delete myTool; myTool = 0;
+  if (!myErrorStatus->IsOK()) {
     return bOK;
   }
   //
   MakeVolumeMesh();
   //
-  delete myTool; myTool = 0;
   return !bOK;
 }
 
@@ -156,8 +149,6 @@ bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh,
 //=======================================================================
 void StdMeshers_Penta_3D::MakeNodes()
 {
-  myErrorStatus=0;
-  //
   const int aNbSIDs=9;
   int i, j, k, ij, iNbN, aNodeID, aSize, iErr;
   double aX, aY, aZ;
@@ -261,7 +252,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       if (iErr) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes()," <<
                 "SMESHBlock: ComputeParameters operation failed");
-        myErrorStatus=101; // SMESHBlock: ComputeParameters operation failed
+        myErrorStatus=myBlock.GetError();
         return;
       }
       aTNode.SetNormCoord(aCoords);
@@ -287,8 +278,10 @@ void StdMeshers_Penta_3D::MakeNodes()
                            TopoDS::Edge( myBlock.Shape( baseEdgeID[ i ] )),
                            pMesh->GetMeshDS());
     if ( !ok ) {
-      myErrorStatus = i + 1;
-      MESSAGE(" Cant LoadIJNodes() from a wall face " << myErrorStatus );
+      myErrorStatus->myName = COMPERR_BAD_INPUT_MESH;
+      myErrorStatus->myComment = SMESH_Comment() <<
+        "Can't find regular quadrangle mesh on a side face #" <<
+        pMesh->GetMeshDS()->ShapeToIndex( myBlock.Shape( wallFaceID[ i ]));
       return;
     }
   }
@@ -433,7 +426,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       //
       //   suporting shape ID
       ShapeSupportID(bIsUpperLayer, aBNSSID, aSSID);
-      if (myErrorStatus) {
+      if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
 	return;
       }
@@ -480,7 +473,7 @@ void StdMeshers_Penta_3D::MakeNodes()
           meshDS->SetNodeOnFace((SMDS_MeshNode*)n, topfaceID, aP.X(), aP.Y());
         }
       }
-      if (myErrorStatus) {
+      if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
 	return;
       }
@@ -528,8 +521,6 @@ void StdMeshers_Penta_3D::FindNodeOnShape(const TopoDS_Shape& aS,
                                           const int           z,
 					  StdMeshers_TNode&   aTN)
 {
-  myErrorStatus=0;
-  //
   double aX, aY, aZ, aD, aTol2, minD;
   gp_Pnt aP1, aP2;
   //
@@ -673,8 +664,6 @@ double StdMeshers_Penta_3D::SetHorizEdgeXYZ(const gp_XYZ&                  aBase
 //=======================================================================
 void StdMeshers_Penta_3D::MakeVolumeMesh()
 {
-  myErrorStatus=0;
-  //
   int i, j, ij, ik, i1, i2, aSSID; 
   //
   SMESH_Mesh*   pMesh = GetMesh();
@@ -727,7 +716,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
         continue;
       aID0 = pNode->GetID();
       aJ[k] = GetIndexOnLayer(aID0);
-      if (myErrorStatus) {
+      if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeVolumeMesh");
 	return;
       }
@@ -814,8 +803,6 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
 //=======================================================================
 void StdMeshers_Penta_3D::MakeMeshOnFxy1()
 {
-  myErrorStatus=0;
-  //
   int aID0, aJ, aLevel, ij, aNbNodes, k;
   //
   SMDS_NodeIteratorPtr itn;
@@ -862,14 +849,13 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     k = aNbNodes-1; // reverse a face
     aItNodes = pE0->nodesIterator();
     while (aItNodes->more()) {
-      //const SMDS_MeshElement* pNode = aItNodes->next();
       const SMDS_MeshNode* pNode =
         static_cast<const SMDS_MeshNode*> (aItNodes->next());
       if(myTool->IsMedium(pNode))
         continue;
       aID0 = pNode->GetID();
       aJ = GetIndexOnLayer(aID0);
-      if (myErrorStatus) {
+      if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeMeshOnFxy1() ");
 	return;
       }
@@ -911,8 +897,6 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
 //=======================================================================
 void StdMeshers_Penta_3D::ClearMeshOnFxy1()
 {
-  myErrorStatus=0;
-  //
   SMESH_subMesh* aSubMesh;
   SMESH_Mesh* pMesh=GetMesh();
   //
@@ -928,14 +912,13 @@ void StdMeshers_Penta_3D::ClearMeshOnFxy1()
 //=======================================================================
 int StdMeshers_Penta_3D::GetIndexOnLayer(const int aID)
 {
-  myErrorStatus=0;
-  //
   int j=-1;
   StdMeshers_IteratorOfDataMapOfIntegerInteger aMapIt;
   //
   aMapIt=myConnectingMap.find(aID);
   if (aMapIt==myConnectingMap.end()) {
-    myErrorStatus=200;
+    myErrorStatus->myName    = 200;
+    myErrorStatus->myComment = "Internal error of StdMeshers_Penta_3D";
     return j;
   }
   j=(*aMapIt).second;
@@ -965,9 +948,6 @@ void StdMeshers_Penta_3D::CreateNode(const bool bIsUpperLayer,
 				     const gp_XYZ& aParams,
 				     StdMeshers_TNode& aTN)
 {
-  myErrorStatus=0;
-  //
-  // int iErr;
   double aX, aY, aZ;
   //
   gp_Pnt aP;
@@ -1025,8 +1005,6 @@ void StdMeshers_Penta_3D::ShapeSupportID(const bool bIsUpperLayer,
 					 const SMESH_Block::TShapeID aBNSSID,
 					 SMESH_Block::TShapeID& aSSID)
 {
-  myErrorStatus=0;
-  //
   switch (aBNSSID) {
     case SMESH_Block::ID_V000:
       aSSID=(bIsUpperLayer) ?  SMESH_Block::ID_V001 : SMESH_Block::ID_E00z;
@@ -1057,7 +1035,8 @@ void StdMeshers_Penta_3D::ShapeSupportID(const bool bIsUpperLayer,
       break;   
     default:
       aSSID=SMESH_Block::ID_NONE;
-      myErrorStatus=10; // Can not find supporting shape ID
+      myErrorStatus->myName=10; // Can not find supporting shape ID
+      myErrorStatus->myComment = "Internal error of StdMeshers_Penta_3D";
       break;
   }
   return;
@@ -1068,8 +1047,6 @@ void StdMeshers_Penta_3D::ShapeSupportID(const bool bIsUpperLayer,
 //=======================================================================
 void StdMeshers_Penta_3D::MakeBlock()
 {
-  myErrorStatus=0;
-  //
   bool bFound;
   int i, j, iNbEV, iNbE, iErr, iCnt, iNbNodes, iNbF;
   //
@@ -1266,7 +1243,8 @@ void StdMeshers_Penta_3D::MakeBlock()
       }
     }
     if (!isOK) {
-      myErrorStatus=5; // more than one face has triangulation
+      myErrorStatus->myName=5; // more than one face has triangulation
+      myErrorStatus->myComment="Incorrect input mesh";
       return;
     }
   }
@@ -1281,7 +1259,9 @@ void StdMeshers_Penta_3D::MakeBlock()
   iNbE = aME.Extent();
   if (iNbE!= NB_WALL_FACES ){
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-    myErrorStatus=7; // too few edges are in base face aFTr 
+    myErrorStatus->myName=7; // too few edges are in base face aFTr
+    myErrorStatus->myComment=SMESH_Comment("Not a quadrilateral face #")
+      <<pMesh->GetMeshDS()->ShapeToIndex( aFTr )<<": "<<iNbE<<" edges" ;
     return;
   }
   const TopoDS_Edge& aE1=TopoDS::Edge(aME(1));
@@ -1296,7 +1276,9 @@ void StdMeshers_Penta_3D::MakeBlock()
   iNbEV=aMEV.Extent();
   if (iNbEV!=3){
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-    myErrorStatus=7; // too few edges meet in base vertex 
+    myErrorStatus->myName=7; // too few edges meet in base vertex 
+    myErrorStatus->myComment=SMESH_Comment("3 edges must share vertex #")
+      <<pMesh->GetMeshDS()->ShapeToIndex( aV000 )<<" but there are "<<iNbEV<<" edges";
     return;
   }
   //
@@ -1321,7 +1303,9 @@ void StdMeshers_Penta_3D::MakeBlock()
   //
   if (!bFound) {
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-    myErrorStatus=8; // can not find reper V001 
+    myErrorStatus->myName=8; // can not find reper V001
+    myErrorStatus->myComment=SMESH_Comment("Can't find opposite vertex for vertex #")
+      <<pMesh->GetMeshDS()->ShapeToIndex( aV000 );
     return;
   }
   //DEB
@@ -1338,7 +1322,8 @@ void StdMeshers_Penta_3D::MakeBlock()
   iNbE=aME.Extent();
   if (iNbE!=1) {
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-    myErrorStatus=9; // number of shells in source shape !=1 
+    myErrorStatus->myName=9; // number of shells in source shape !=1
+    myErrorStatus->myComment=SMESH_Comment("Unexpected nb of shells ")<<iNbE;
     return;
   }
   //
@@ -1348,7 +1333,7 @@ void StdMeshers_Penta_3D::MakeBlock()
   iErr = myBlock.ErrorStatus();
   if (iErr) {
     MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
-    myErrorStatus=100; // SMESHBlock: Load operation failed
+    myErrorStatus=myBlock.GetError(); // SMESHBlock: Load operation failed
     return;
   }
 }
@@ -1358,8 +1343,6 @@ void StdMeshers_Penta_3D::MakeBlock()
 //=======================================================================
 void StdMeshers_Penta_3D::CheckData()
 {
-  myErrorStatus=0;
-  //
   int i, iNb;
   int iNbEx[]={8, 12, 6};
   //
@@ -1371,14 +1354,16 @@ void StdMeshers_Penta_3D::CheckData()
   //
   if (myShape.IsNull()){
     MESSAGE("StdMeshers_Penta_3D::CheckData() ");
-    myErrorStatus=2; // null shape
+    myErrorStatus->myName=2; // null shape
+    myErrorStatus->myComment="Null shape";
     return;
   }
   //
   aST=myShape.ShapeType();
   if (!(aST==TopAbs_SOLID || aST==TopAbs_SHELL)) {
     MESSAGE("StdMeshers_Penta_3D::CheckData() ");
-    myErrorStatus=3; // not compatible type of shape
+    myErrorStatus->myName=3; // not compatible type of shape
+    myErrorStatus->myComment=SMESH_Comment("Wrong shape type (TopAbs_ShapeEnum) ")<<aST;
     return;
   }
   //
@@ -1388,7 +1373,8 @@ void StdMeshers_Penta_3D::CheckData()
     iNb=aM.Extent();
     if (iNb!=iNbEx[i]){
       MESSAGE("StdMeshers_Penta_3D::CheckData() ");
-      myErrorStatus=4; // number of subshape is not compatible
+      myErrorStatus->myName=4; // number of subshape is not compatible
+      myErrorStatus->myComment="Wrong number of subshapes of a block";
       return;
     }
   }
@@ -1557,12 +1543,12 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
   // try to load the rest nodes
 
   // get all faces from theFace
-  map<int,const SMDS_MeshElement*> allFaces, foundFaces;
+  TIDSortedElemSet allFaces, foundFaces;
   SMDS_ElemIteratorPtr eIt = smFace->GetElements();
   while ( eIt->more() ) {
     const SMDS_MeshElement* e = eIt->next();
     if ( e->GetType() == SMDSAbs_Face )
-      allFaces.insert( make_pair(e->GetID(),e) );
+      allFaces.insert( e );
   }
   // Starting from 2 neighbour nodes on theBaseEdge, look for a face
   // the nodes belong to, and between the nodes of the found face,
@@ -1609,7 +1595,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
             return false;
           }
           par_nVec_2->second[ row ] = node;
-          foundFaces.insert( make_pair(face->GetID(),face) );
+          foundFaces.insert( face );
           n2 = node;
           if ( nbFaceNodes==4 || (myCreateQuadratic && nbFaceNodes==8) ) {
             n1 = par_nVec_1->second[ row ];
@@ -1685,6 +1671,28 @@ int StdMeshers_SMESHBlock::ErrorStatus() const
   return myErrorStatus;
 }
 
+//================================================================================
+/*!
+ * \brief Return problem description
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr StdMeshers_SMESHBlock::GetError() const
+{
+  SMESH_ComputeErrorPtr err = SMESH_ComputeError::New();
+  string & text = err->myComment;
+  switch ( myErrorStatus ) {
+  case 2:
+  case 3: text = "Internal error of StdMeshers_Penta_3D"; break; 
+  case 4: text = "Can't compute normalized parameters of a point inside a block"; break;
+  case 5: text = "Can't compute coordinates by normalized parameters inside a block"; break;
+  case 6: text = "Can't detect block subshapes. Not a block?"; break;
+  }
+  if (!text.empty())
+    err->myName = myErrorStatus;
+  return err;
+}
+
 //=======================================================================
 //function : Load
 //purpose  : 
@@ -1713,7 +1721,7 @@ void StdMeshers_SMESHBlock::Load(const TopoDS_Shell& theShell,
   myShapeIDMap.Clear();  
   bOk = myTBlock.LoadBlockShapes(myShell, theV000, theV001, myShapeIDMap);
   if (!bOk) {
-    myErrorStatus=2;
+    myErrorStatus=6;
     return;
   }
 }
@@ -1827,7 +1835,7 @@ void StdMeshers_SMESHBlock::ComputeParameters(const double& theU,
     }
   }
   if (!bOk) {
-    myErrorStatus=4; // problems with point computation 
+    myErrorStatus=5; // problems with point computation 
     return;
   }
   aP3D.SetXYZ(aXYZ);

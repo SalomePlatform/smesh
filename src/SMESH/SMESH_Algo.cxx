@@ -27,6 +27,7 @@
 //  $Header$
 
 #include "SMESH_Algo.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_HypoFilter.hxx"
@@ -37,18 +38,26 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 
+#include <BRepAdaptor_Curve.hxx>
+#include <BRepLProp.hxx>
 #include <BRep_Tool.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <Geom_Surface.hxx>
+#include <TopExp.hxx>
 #include <TopLoc_Location.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Pnt2d.hxx>
 #include <gp_Vec.hxx>
+
+#include <Standard_ErrorHandler.hxx>
+#include <Standard_Failure.hxx>
 
 #include "utilities.h"
 
@@ -65,12 +74,11 @@ using namespace std;
 SMESH_Algo::SMESH_Algo(int hypId, int studyId,
 	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
 {
-//   _compatibleHypothesis.push_back("hypothese_bidon");
-	_type = ALGO;
-	gen->_mapAlgo[hypId] = this;
+  gen->_mapAlgo[hypId] = this;
 
-        _onlyUnaryInput = _requireDescretBoundary = true;
-        _quadraticMesh = false;
+  _onlyUnaryInput = _requireDescretBoundary = _requireShape = true;
+  _quadraticMesh = false;
+  _error = COMPERR_OK;
 }
 
 //=============================================================================
@@ -164,8 +172,7 @@ double SMESH_Algo::EdgeLength(const TopoDS_Edge & E)
   TopLoc_Location L;
   Handle(Geom_Curve) C = BRep_Tool::Curve(E, L, UMin, UMax);
   GeomAdaptor_Curve AdaptCurve(C);
-  GCPnts_AbscissaPoint gabs;
-  double length = gabs.Length(AdaptCurve, UMin, UMax);
+  double length = GCPnts_AbscissaPoint::Length(AdaptCurve, UMin, UMax);
   return length;
 }
 
@@ -380,8 +387,58 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
 
 //================================================================================
 /*!
+ * \brief Return continuity of two edges
+ * \param E1 - the 1st edge
+ * \param E2 - the 2nd edge
+ * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
+ */
+//================================================================================
+
+GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge & E1,
+                                     const TopoDS_Edge & E2)
+{
+  TopoDS_Vertex V = TopExp::LastVertex (E1, true);
+  if ( !V.IsSame( TopExp::FirstVertex(E2, true )))
+    if ( !TopExp::CommonVertex( E1, E2, V ))
+      return GeomAbs_C0;
+  Standard_Real u1 = BRep_Tool::Parameter( V, E1 );
+  Standard_Real u2 = BRep_Tool::Parameter( V, E2 );
+  BRepAdaptor_Curve C1( E1 ), C2( E2 );
+  try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+    OCC_CATCH_SIGNALS;
+#endif
+    return BRepLProp::Continuity(C1, C2, u1, u2);
+  }
+  catch (Standard_Failure) {
+  }
+  return GeomAbs_C0;
+}
+
+//================================================================================
+/*!
+ * \brief Return the node built on a vertex
+ * \param V - the vertex
+ * \param meshDS - mesh
+ * \retval const SMDS_MeshNode* - found node or NULL
+ */
+//================================================================================
+
+const SMDS_MeshNode* SMESH_Algo::VertexNode(const TopoDS_Vertex& V,
+                                            SMESHDS_Mesh*        meshDS)
+{
+  if ( SMESHDS_SubMesh* sm = meshDS->MeshElements(V) ) {
+    SMDS_NodeIteratorPtr nIt= sm->GetNodes();
+    if (nIt->more())
+      return nIt->next();
+  }
+  return 0;
+}
+
+//================================================================================
+/*!
  * \brief Sets event listener to submeshes if necessary
-  * \param subMesh - submesh where algo is set
+ * \param subMesh - submesh where algo is set
  * 
  * After being set, event listener is notified on each event of a submesh.
  * By default non listener is set
@@ -391,3 +448,83 @@ bool SMESH_Algo::InitCompatibleHypoFilter( SMESH_HypoFilter & theFilter,
 void SMESH_Algo::SetEventListener(SMESH_subMesh* /*subMesh*/)
 {
 }
+
+//================================================================================
+/*!
+ * \brief Allow algo to do something after persistent restoration
+ * \param subMesh - restored submesh
+ *
+ * This method is called only if a submesh has HYP_OK algo_state.
+ */
+//================================================================================
+
+void SMESH_Algo::SubmeshRestored(SMESH_subMesh* /*subMesh*/)
+{
+}
+
+//================================================================================
+/*!
+ * \brief Computes mesh without geometry
+ * \param aMesh - the mesh
+ * \param aHelper - helper that must be used for adding elements to \aaMesh
+ * \retval bool - is a success
+ */
+//================================================================================
+
+bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* /*aHelper*/)
+{
+  return error( COMPERR_BAD_INPUT_MESH, "Mesh built on shape expected");
+}
+
+//================================================================================
+/*!
+ * \brief store error and comment and then return ( error == COMPERR_OK )
+ */
+//================================================================================
+
+bool SMESH_Algo::error(int error, const SMESH_Comment& comment)
+{
+  _error   = error;
+  _comment = comment;
+  return ( error == COMPERR_OK );
+}
+
+//================================================================================
+/*!
+ * \brief store error and return ( error == COMPERR_OK )
+ */
+//================================================================================
+
+bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
+{
+  if ( error ) {
+    _error   = error->myName;
+    _comment = error->myComment;
+    return error->IsOK();
+  }
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief return compute error
+ */
+//================================================================================
+
+SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
+{
+  return SMESH_ComputeError::New( _error, _comment, this );
+}
+
+//================================================================================
+/*!
+ * \brief initialize compute error
+ */
+//================================================================================
+
+void SMESH_Algo::InitComputeError()
+{
+  _error = COMPERR_OK;
+  _comment.clear();
+}
+

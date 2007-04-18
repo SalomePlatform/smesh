@@ -88,16 +88,28 @@ const SMDS_PositionPtr& SMDS_MeshNode::GetPosition() const
 	return myPosition;
 }
 
+//=======================================================================
+/*!
+ * \brief Iterator on list of elements
+ */
+//=======================================================================
+
 class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 {
   NCollection_List<const SMDS_MeshElement*>::Iterator myIterator;
+  SMDSAbs_ElementType                                 myType;
  public:
-  SMDS_MeshNode_MyInvIterator(const NCollection_List<const SMDS_MeshElement*>& s):
-    myIterator(s)
+  SMDS_MeshNode_MyInvIterator(const NCollection_List<const SMDS_MeshElement*>& s,
+                              SMDSAbs_ElementType type):
+    myIterator(s), myType(type)
   {}
 
   bool more()
   {
+    if ( myType != SMDSAbs_All ) {
+      while ( myIterator.More() && myIterator.Value()->GetType() != myType)
+        myIterator.Next();
+    }
     return myIterator.More() != Standard_False;
   }
 
@@ -110,9 +122,9 @@ class SMDS_MeshNode_MyInvIterator:public SMDS_ElemIterator
 };
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::
-	GetInverseElementIterator() const
+	GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
-  return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(myInverseElements));
+  return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(myInverseElements,type));
 }
 
 // Same as GetInverseElementIterator but the create iterator only return
@@ -226,6 +238,24 @@ void SMDS_MeshNode::ClearInverseElements()
 bool SMDS_MeshNode::emptyInverseElements()
 {
   return myInverseElements.IsEmpty() != Standard_False;
+}
+
+//================================================================================
+/*!
+ * \brief Count inverse elements of given type
+ */
+//================================================================================
+
+int SMDS_MeshNode::NbInverseNodes(SMDSAbs_ElementType type) const
+{
+  if ( type == SMDSAbs_All )
+    return myInverseElements.Extent();
+  int nb = 0;
+  NCollection_List<const SMDS_MeshElement*>::Iterator it( myInverseElements );
+  for ( ; it.More(); it.Next() )
+    if ( it.Value()->GetType() == type )
+      nb++;
+  return nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

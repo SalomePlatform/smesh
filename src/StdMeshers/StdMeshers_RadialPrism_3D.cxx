@@ -48,6 +48,7 @@
 #include <TopoDS_Solid.hxx>
 #include <TopoDS_Shell.hxx>
 #include <BRepTools.hxx>
+#include <BRepAdaptor_Curve.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <gp.hxx>
@@ -166,7 +167,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     if ( !outerShell.IsSame( It.Value() ))
       innerShell = It.Value();
   if ( nbShells != 2 )
-    RETURN_BAD_RESULT("Must be 2 shells");
+    return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not")<<nbShells);
 
   // ----------------------------------
   // Associate subshapes of the shells
@@ -176,7 +177,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   if ( !TAssocTool::FindSubShapeAssociation( outerShell, &aMesh,
                                              innerShell, &aMesh,
                                              shape2ShapeMap) )
-    RETURN_BAD_RESULT("FindSubShapeAssociation failed");
+    return error(COMPERR_BAD_SHAPE,"Topology of inner and outer shells seems different" );
 
   // ------------------
   // Make mesh
@@ -191,7 +192,8 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     TopoDS_Face outFace = TopoDS::Face( exp.Current() );
     TopoDS_Face inFace;
     if ( !shape2ShapeMap.IsBound( outFace )) {
-      RETURN_BAD_RESULT("Association not found for face " << meshDS->ShapeToIndex( outFace ));
+      return error(dfltErr(),SMESH_Comment("Corresponding inner face not found for face #" )
+                   << meshDS->ShapeToIndex( outFace ));
     } else {
       inFace = TopoDS::Face( shape2ShapeMap( outFace ));
     }
@@ -200,9 +202,10 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     TNodeNodeMap nodeIn2OutMap;
     if ( ! TAssocTool::FindMatchingNodesOnFaces( inFace, &aMesh, outFace, &aMesh,
                                                  shape2ShapeMap, nodeIn2OutMap ))
-      RETURN_BAD_RESULT("Different mesh on corresponding out and in faces: "
-                        << meshDS->ShapeToIndex( outFace ) << " and "
-                        << meshDS->ShapeToIndex( inFace ));
+      return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Mesh on faces #")
+                   << meshDS->ShapeToIndex( outFace ) << " and "
+                   << meshDS->ShapeToIndex( inFace ) << " seems different" );
+
     // Create volumes
 
     SMDS_ElemIteratorPtr faceIt = meshDS->MeshElements( inFace )->GetElements();
@@ -251,9 +254,10 @@ TNodeColumn* StdMeshers_RadialPrism_3D::makeNodeColumn( TNode2ColumnMap&     n2C
   SMESHDS_Mesh * meshDS = myHelper->GetMeshDS();
   int shapeID = myHelper->GetSubShapeID();
 
-  if ( myLayerPositions.empty() )
-    computeLayerPositions( gpXYZ( inNode ), gpXYZ( outNode ));
-
+  if ( myLayerPositions.empty() ) {
+    gp_Pnt pIn = gpXYZ( inNode ), pOut = gpXYZ( outNode );
+    computeLayerPositions( pIn, pOut );
+  }
   int nbSegments = myLayerPositions.size() + 1;
 
   TNode2ColumnMap::iterator n_col =
@@ -286,7 +290,7 @@ TNodeColumn* StdMeshers_RadialPrism_3D::makeNodeColumn( TNode2ColumnMap&     n2C
 //================================================================================
 //================================================================================
 
-class TNodeDistributor: private StdMeshers_Regular_1D
+class TNodeDistributor: public StdMeshers_Regular_1D
 {
   list <const SMESHDS_Hypothesis *> myUsedHyps;
 public:
@@ -308,22 +312,24 @@ public:
                 const StdMeshers_LayerDistribution* hyp)
   {
     double len = pIn.Distance( pOut );
-    if ( len <= DBL_MIN ) RETURN_BAD_RESULT("Bad points");
+    if ( len <= DBL_MIN ) return error(dfltErr(),"Too close points of inner and outer shells");
 
     if ( !hyp || !hyp->GetLayerDistribution() )
-      RETURN_BAD_RESULT("Bad StdMeshers_LayerDistribution hypothesis");
+      return error(dfltErr(), "Invalid LayerDistribution hypothesis");
     myUsedHyps.clear();
     myUsedHyps.push_back( hyp->GetLayerDistribution() );
 
     TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
-
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
-      RETURN_BAD_RESULT("StdMeshers_Regular_1D::CheckHypothesis() failed with status "<<aStatus);
+      return error(dfltErr(), "StdMeshers_Regular_1D::CheckHypothesis() failed"
+                   "with LayerDistribution hypothesis");
 
+    BRepAdaptor_Curve C3D(edge);
+    double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( edge, params, false ))
-      RETURN_BAD_RESULT("StdMeshers_Regular_1D::computeInternalParameters() failed");
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
+      return error(dfltErr(),"StdMeshers_Regular_1D failed to compute layers distribution");
 
     positions.clear();
     positions.reserve( params.size() );
@@ -353,7 +359,8 @@ protected:
  */
 //================================================================================
 
-bool StdMeshers_RadialPrism_3D::computeLayerPositions(gp_Pnt pIn, gp_Pnt pOut)
+bool StdMeshers_RadialPrism_3D::computeLayerPositions(const gp_Pnt& pIn,
+                                                      const gp_Pnt& pOut)
 {
   if ( myNbLayerHypo )
   {
@@ -365,8 +372,12 @@ bool StdMeshers_RadialPrism_3D::computeLayerPositions(gp_Pnt pIn, gp_Pnt pOut)
   }
   if ( myDistributionHypo ) {
     SMESH_Mesh * mesh = myHelper->GetMesh();
-    return TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions, pIn, pOut,
-                                                             *mesh, myDistributionHypo );
+    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions, pIn, pOut,
+                                                            *mesh, myDistributionHypo ))
+    {
+      error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
+      return false;
+    }
   }
-  RETURN_BAD_RESULT("Bad hypothesis");  
+  RETURN_BAD_RESULT("Bad hypothesis");
 }

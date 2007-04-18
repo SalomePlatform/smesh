@@ -21,25 +21,27 @@
 
 #include <set>
 
+#include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
-#include <gp_Ax3.hxx>
-#include <gp_Cylinder.hxx>
-#include <gp_Dir.hxx>
-#include <gp_Pnt.hxx>
-#include <gp_Pln.hxx>
-#include <gp_Vec.hxx>
-#include <gp_XYZ.hxx>
-#include <Geom_Plane.hxx>
 #include <Geom_CylindricalSurface.hxx>
+#include <Geom_Plane.hxx>
+#include <Geom_Surface.hxx>
 #include <Precision.hxx>
-#include <TColgp_Array1OfXYZ.hxx>
+#include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColgp_Array1OfXYZ.hxx>
 #include <TopAbs.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <gp_Ax3.hxx>
+#include <gp_Cylinder.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Pln.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Vec.hxx>
+#include <gp_XYZ.hxx>
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_Iterator.hxx"
@@ -2531,6 +2533,7 @@ ElementsOnSurface::ElementsOnSurface()
   myType = SMDSAbs_All;
   mySurf.Nullify();
   myToler = Precision::Confusion();
+  myUseBoundaries = false;
 }
 
 ElementsOnSurface::~ElementsOnSurface()
@@ -2543,7 +2546,6 @@ void ElementsOnSurface::SetMesh( const SMDS_Mesh* theMesh )
   if ( myMesh == theMesh )
     return;
   myMesh = theMesh;
-  myIds.Clear();
   process();
 }
 
@@ -2556,25 +2558,41 @@ SMDSAbs_ElementType ElementsOnSurface::GetType() const
 { return myType; }
 
 void ElementsOnSurface::SetTolerance( const double theToler )
-{ myToler = theToler; }
+{
+  if ( myToler != theToler )
+    myIds.Clear();
+  myToler = theToler;
+}
 
 double ElementsOnSurface::GetTolerance() const
+{ return myToler; }
+
+void ElementsOnSurface::SetUseBoundaries( bool theUse )
 {
-  return myToler;
+  if ( myUseBoundaries != theUse ) {
+    myUseBoundaries = theUse;
+    SetSurface( mySurf, myType );
+  }
 }
 
 void ElementsOnSurface::SetSurface( const TopoDS_Shape& theShape,
                                     const SMDSAbs_ElementType theType )
 {
+  myIds.Clear();
   myType = theType;
   mySurf.Nullify();
   if ( theShape.IsNull() || theShape.ShapeType() != TopAbs_FACE )
-  {
-    mySurf.Nullify();
     return;
-  }
-  TopoDS_Face aFace = TopoDS::Face( theShape );
-  mySurf = BRep_Tool::Surface( aFace );
+  mySurf = TopoDS::Face( theShape );
+  BRepAdaptor_Surface SA( mySurf, myUseBoundaries );
+  Standard_Real
+    u1 = SA.FirstUParameter(),
+    u2 = SA.LastUParameter(),
+    v1 = SA.FirstVParameter(),
+    v2 = SA.LastVParameter();
+  Handle(Geom_Surface) surf = BRep_Tool::Surface( mySurf );
+  myProjector.Init( surf, u1,u2, v1,v2 );
+  process();
 }
 
 void ElementsOnSurface::process()
@@ -2588,6 +2606,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Face || myType == SMDSAbs_All )
   {
+    myIds.ReSize( myMesh->NbFaces() );
     SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2595,6 +2614,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Edge || myType == SMDSAbs_All )
   {
+    myIds.ReSize( myMesh->NbEdges() );
     SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2602,6 +2622,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Node )
   {
+    myIds.ReSize( myMesh->NbNodes() );
     SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2625,32 +2646,34 @@ void ElementsOnSurface::process( const SMDS_MeshElement* theElemPtr )
     myIds.Add( theElemPtr->GetID() );
 }
 
-bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode ) const
+bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
 {
   if ( mySurf.IsNull() )
     return false;
 
   gp_Pnt aPnt( theNode->X(), theNode->Y(), theNode->Z() );
-  double aToler2 = myToler * myToler;
-  if ( mySurf->IsKind(STANDARD_TYPE(Geom_Plane)))
-  {
-    gp_Pln aPln = Handle(Geom_Plane)::DownCast(mySurf)->Pln();
-    if ( aPln.SquareDistance( aPnt ) > aToler2 )
-      return false;
-  }
-  else if ( mySurf->IsKind(STANDARD_TYPE(Geom_CylindricalSurface)))
-  {
-    gp_Cylinder aCyl = Handle(Geom_CylindricalSurface)::DownCast(mySurf)->Cylinder();
-    double aRad = aCyl.Radius();
-    gp_Ax3 anAxis = aCyl.Position();
-    gp_XYZ aLoc = aCyl.Location().XYZ();
-    double aXDist = anAxis.XDirection().XYZ() * ( aPnt.XYZ() - aLoc );
-    double aYDist = anAxis.YDirection().XYZ() * ( aPnt.XYZ() - aLoc );
-    if ( fabs(aXDist*aXDist + aYDist*aYDist - aRad*aRad) > aToler2 )
-      return false;
-  }
-  else
-    return false;
+  //  double aToler2 = myToler * myToler;
+//   if ( mySurf->IsKind(STANDARD_TYPE(Geom_Plane)))
+//   {
+//     gp_Pln aPln = Handle(Geom_Plane)::DownCast(mySurf)->Pln();
+//     if ( aPln.SquareDistance( aPnt ) > aToler2 )
+//       return false;
+//   }
+//   else if ( mySurf->IsKind(STANDARD_TYPE(Geom_CylindricalSurface)))
+//   {
+//     gp_Cylinder aCyl = Handle(Geom_CylindricalSurface)::DownCast(mySurf)->Cylinder();
+//     double aRad = aCyl.Radius();
+//     gp_Ax3 anAxis = aCyl.Position();
+//     gp_XYZ aLoc = aCyl.Location().XYZ();
+//     double aXDist = anAxis.XDirection().XYZ() * ( aPnt.XYZ() - aLoc );
+//     double aYDist = anAxis.YDirection().XYZ() * ( aPnt.XYZ() - aLoc );
+//     if ( fabs(aXDist*aXDist + aYDist*aYDist - aRad*aRad) > aToler2 )
+//       return false;
+//   }
+//   else
+//     return false;
+  myProjector.Perform( aPnt );
+  bool isOn = ( myProjector.IsDone() && myProjector.LowerDistance() <= myToler );
 
-  return true;
+  return isOn;
 }

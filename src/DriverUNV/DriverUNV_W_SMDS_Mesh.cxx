@@ -22,10 +22,10 @@
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
-#include "SMESHDS_GroupBase.hxx"
-//#include "SMESH_Group.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMESHDS_GroupBase.hxx"
 
 #include "utilities.h"
 
@@ -158,9 +158,16 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  TElementLab aLabel = anElem->GetID();
 
 	  int aNbNodes = anElem->NbNodes();
-	  aConnect.resize(aNbNodes);
-
 	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+          if ( anElem->IsPoly() ) {
+            if ( const SMDS_PolyhedralVolumeOfNodes* ph =
+                 dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem))
+            {
+              aNbNodes = ph->NbUniqueNodes();
+              aNodesIter = ph->uniqueNodesIterator();
+            }
+          }
+	  aConnect.resize(aNbNodes);
 	  GetConnect(aNodesIter,aConnect);
 
 	  int anId = -1;

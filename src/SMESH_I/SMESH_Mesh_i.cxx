@@ -90,7 +90,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 			    CORBA::Long studyId )
 : SALOME::GenericObj_i( thePOA )
 {
-  INFOS("SMESH_Mesh_i");
+  MESSAGE("SMESH_Mesh_i");
   _impl = NULL;
   _gen_i = gen_i;
   _id = myIdGenerator++;
@@ -140,6 +140,26 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
+}
+
+//================================================================================
+/*!
+ * \brief return true if mesh has a shape to build a shape on
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  bool res = false;
+  try {
+    res = _impl->HasShapeToMesh();
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  return res;
 }
 
 //=======================================================================
@@ -294,36 +314,28 @@ int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshNam
  */
 //=============================================================================
 
-static SMESH::Hypothesis_Status ConvertHypothesisStatus
+#define RETURNCASE(hyp_stat) case SMESH_Hypothesis::hyp_stat: return SMESH::hyp_stat;
+
+SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
                          (SMESH_Hypothesis::Hypothesis_Status theStatus)
 {
-  SMESH::Hypothesis_Status res;
-  switch (theStatus)
-  {
-  case SMESH_Hypothesis::HYP_OK:
-    res = SMESH::HYP_OK; break;
-  case SMESH_Hypothesis::HYP_MISSING:
-    res = SMESH::HYP_MISSING; break;
-  case SMESH_Hypothesis::HYP_CONCURENT:
-    res = SMESH::HYP_CONCURENT; break;
-  case SMESH_Hypothesis::HYP_BAD_PARAMETER:
-    res = SMESH::HYP_BAD_PARAMETER; break;
-  case SMESH_Hypothesis::HYP_INCOMPATIBLE:
-    res = SMESH::HYP_INCOMPATIBLE; break;
-  case SMESH_Hypothesis::HYP_NOTCONFORM:
-    res = SMESH::HYP_NOTCONFORM; break;
-  case SMESH_Hypothesis::HYP_ALREADY_EXIST:
-    res = SMESH::HYP_ALREADY_EXIST; break;
-  case SMESH_Hypothesis::HYP_BAD_DIM:
-    res = SMESH::HYP_BAD_DIM; break;
-  case SMESH_Hypothesis::HYP_BAD_SUBSHAPE:
-    res = SMESH::HYP_BAD_SUBSHAPE; break;
-  case SMESH_Hypothesis::HYP_BAD_GEOMETRY:
-    res = SMESH::HYP_BAD_GEOMETRY; break;
-  default:
-    res = SMESH::HYP_UNKNOWN_FATAL;
+  switch (theStatus) {
+  RETURNCASE( HYP_OK            );
+  RETURNCASE( HYP_MISSING       );
+  RETURNCASE( HYP_CONCURENT     );
+  RETURNCASE( HYP_BAD_PARAMETER );
+  RETURNCASE( HYP_HIDDEN_ALGO   );
+  RETURNCASE( HYP_HIDING_ALGO   );
+  RETURNCASE( HYP_UNKNOWN_FATAL );
+  RETURNCASE( HYP_INCOMPATIBLE  );
+  RETURNCASE( HYP_NOTCONFORM    );
+  RETURNCASE( HYP_ALREADY_EXIST );
+  RETURNCASE( HYP_BAD_DIM       );
+  RETURNCASE( HYP_BAD_SUBSHAPE  );
+  RETURNCASE( HYP_BAD_GEOMETRY  );
+  default:;
   }
-  return res;
+  return SMESH::HYP_UNKNOWN_FATAL;
 }
 
 //=============================================================================
@@ -744,9 +756,11 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
   if (MYDEBUG) MESSAGE("GetGroups");
 
   SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+
   // Python Dump
   TPythonDump aPythonDump;
-  aPythonDump << "[ ";
+  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+    aPythonDump << "[ ";
 
   try {
     aList->length( _mapGroups.size() );
@@ -766,7 +780,8 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
   }
 
   // Update Python script
-  aPythonDump << " ] = " << _this() << ".GetGroups()";
+  if ( !_mapGroups.empty() ) // (IMP13463) avoid "SyntaxError: can't assign to []"
+    aPythonDump << " ] = " << _this() << ".GetGroups()";
 
   return aList._retn();
 }
@@ -1187,22 +1202,34 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
   return *_impl;
 }
 
-
 //=============================================================================
 /*!
- *
+ * Return mesh editor
  */
 //=============================================================================
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 {
   // Create MeshEditor
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, false );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
 
   // Update Python script
   TPythonDump() << aMeshEditor << " = " << _this() << ".GetMeshEditor()";
 
+  return aMesh._retn();
+}
+
+//=============================================================================
+/*!
+ * Return mesh edition previewer
+ */
+//=============================================================================
+
+SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
+{
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, true );
+  SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
   return aMesh._retn();
 }
 
@@ -1785,9 +1812,11 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
  */
 //=============================================================================
 
-CORBA::Long SMESH_Mesh_i::GetMeshPtr()
+CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
 {
-  return CORBA::Long(size_t(_impl));
+  CORBA::LongLong pointeur = CORBA::LongLong(_impl);
+  cerr << "CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() " << pointeur << endl;
+  return pointeur;
 }
 
 

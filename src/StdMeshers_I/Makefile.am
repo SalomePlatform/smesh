@@ -55,6 +55,9 @@ salomeinclude_HEADERS = \
 	StdMeshers_Projection_1D_2D_3D_i.hxx \
 	StdMeshers_ObjRefUlils.hxx \
 	StdMeshers_LayerDistribution_i.hxx \
+	StdMeshers_CompositeSegment_1D_i.hxx \
+	StdMeshers_SegmentAroundVertex_0D_i.hxx \
+	StdMeshers_SegmentLengthAroundVertex_i.hxx \
 	SMESH_StdMeshers_I.hxx
 
 # Libraries targets
@@ -86,7 +89,10 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_ProjectionSource3D_i.cxx \
 	StdMeshers_Projection_1D_2D_3D_i.cxx \
 	StdMeshers_ObjRefUlils.cxx \
-	StdMeshers_LayerDistribution_i.cxx
+	StdMeshers_LayerDistribution_i.cxx \
+	StdMeshers_CompositeSegment_1D_i.hxx \
+	StdMeshers_SegmentAroundVertex_0D_i.hxx \
+	StdMeshers_SegmentLengthAroundVertex_i.hxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \

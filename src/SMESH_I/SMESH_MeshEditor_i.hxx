@@ -32,7 +32,7 @@
 #include "SMESH.hxx"
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "SMESH_Mesh.hxx"
 
@@ -41,11 +41,9 @@ class SMESH_MeshEditor;
 class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
  public:
-  SMESH_MeshEditor_i(SMESH_Mesh * theMesh);
+  SMESH_MeshEditor_i(SMESH_Mesh * theMesh, bool isPreview);
 
-  virtual ~ SMESH_MeshEditor_i()
-  {
-  };
+  virtual ~ SMESH_MeshEditor_i();
 
   // --- CORBA
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements);
@@ -179,6 +177,10 @@ class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                              CORBA::Boolean              HasRefPoint,
                              const SMESH::PointStruct &  RefPoint);
 
+  SMESH::double_array* LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       PathMesh,
+                                             GEOM::GEOM_Object_ptr       PathShape,
+                                             const SMESH::double_array & Angles);
+
   void Mirror(const SMESH::long_array &           IDsOfElements,
               const SMESH::AxisStruct &           Axis,
               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
@@ -204,8 +206,19 @@ class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
+  void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                                 CORBA::Double                  Tolerance,
+                                 SMESH::array_of_long_array_out GroupsOfNodes);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes);
+  void FindEqualElements(SMESH::SMESH_IDSource_ptr      theObject,
+			 SMESH::array_of_long_array_out GroupsOfElementsID);
+  void MergeElements(const SMESH::array_of_long_array& GroupsOfElementsID);
   void MergeEqualElements();
+  CORBA::Long MoveClosestNodeToPoint(CORBA::Double x,
+                                     CORBA::Double y,
+                                     CORBA::Double z,
+                                     CORBA::Long   nodeID);
+
 
 
   SMESH::SMESH_MeshEditor::Sew_Error
@@ -247,6 +260,11 @@ class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   CORBA::Boolean ChangeElemNodes(CORBA::Long ide, const SMESH::long_array& newIDs);
   
   /*!
+   * Return data of mesh edition preview
+   */
+  SMESH::MeshPreviewStruct* GetPreviewData();
+
+  /*!
    * If during last operation of MeshEditor some nodes were
    * created this method returns list of it's IDs, if new nodes
    * not creared - returns empty list
@@ -265,22 +283,29 @@ class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
   //
 
   /*!
-   * \brief Update myLastCreatedNodes and myLastCreatedElems
+   * \brief Update myLastCreated* or myPreviewData
     * \param anEditor - it contains edition results
    */
-  void UpdateLastResult(::SMESH_MeshEditor& anEditor);
+  void StoreResult(::SMESH_MeshEditor& anEditor);
 
   /*!
    * \brief Return edited mesh ID
     * \retval int - mesh ID
    */
-  int GetMeshId() const { return _myMesh->GetId(); }
+  int GetMeshId() const { return myMesh->GetId(); }
 
  private:
-  SMESHDS_Mesh * GetMeshDS() { return _myMesh->GetMeshDS(); }
-  SMESH_Mesh   *_myMesh;
-  SMESH::long_array* myLastCreatedElems;
-  SMESH::long_array* myLastCreatedNodes;
+
+  SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
+  void initData();
+
+  SMESH_Mesh *          myMesh;
+
+  SMESH::long_array_var myLastCreatedElems;
+  SMESH::long_array_var myLastCreatedNodes;
+
+  SMESH::MeshPreviewStruct_var myPreviewData;
+  bool                         myPreviewMode;
 };
 
 #endif

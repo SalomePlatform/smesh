@@ -88,6 +88,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -219,10 +220,13 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   SelectBasePointButton->setPixmap(selectImage);
 
   XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
+  XLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   XSpin = new SMESHGUI_SpinBox(BasePointGrp);
   YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
+  YLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   YSpin = new SMESHGUI_SpinBox(BasePointGrp);
   ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
+  ZLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   ZSpin = new SMESHGUI_SpinBox(BasePointGrp);
 
   // layouting
@@ -839,7 +843,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
       // try to get selected elements IDs
       QString aString;
       //int aNbUnits = SMESH::GetNameOfSelectedElements(mySelectionMgr, aString);
-      SMESH::GetNameOfSelectedElements(mySelector, myMeshActor->getIO(), aString);
+      SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       ElementsLineEdit->setText(aString);
     }
   } else if (myEditCurrentArgument == PathMeshLineEdit) {

@@ -42,6 +42,8 @@
 
 #include "LightApp_UpdateFlags.h"
        
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 //================================================================================
 /*!
  * \brief Constructor

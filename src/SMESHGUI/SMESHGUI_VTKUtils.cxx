@@ -15,54 +15,56 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_Filter.h"
 
-#include <vtkRenderer.h>
-#include <vtkActorCollection.h>
-
-#include <TColStd_IndexedMapOfInteger.hxx>
+#include "SMESHGUI.h"
+#include "SMESH_Actor.h"
+#include "SMESH_ObjectDef.h"
 
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 #include <SUIT_Study.h>
 
-#include "LightApp_SelectionMgr.h"
+#include <SALOME_ListIO.hxx>
+#include <SALOME_ListIteratorOfListIO.hxx>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
+#include <SVTK_Selector.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 
-#include "utilities.h"
+#include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Application.h>
+#include <SalomeApp_Study.h>
 
-#include "SALOMEconfig.h"
+#include <utilities.h>
+
+#include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Gen)
 #include CORBA_CLIENT_HEADER(SMESH_Mesh)
 #include CORBA_CLIENT_HEADER(SMESH_Group)
 #include CORBA_CLIENT_HEADER(SMESH_Hypothesis)
 
-#include "SMESHGUI.h"
-#include "SMESH_Actor.h"
-#include "SMESH_ObjectDef.h"
-
-#include <SalomeApp_Application.h>
-#include <LightApp_SelectionMgr.h>
-#include <SalomeApp_Study.h>
-
 #include <SALOMEDSClient_Study.hxx>
 #include <SALOMEDSClient_SObject.hxx>
 
-#include <SALOME_ListIO.hxx>
-#include <SALOME_ListIteratorOfListIO.hxx>
+// VTK
+#include <vtkRenderer.h>
+#include <vtkActorCollection.h>
 
+// OCCT
+#include <TColStd_IndexedMapOfInteger.hxx>
+
+// STL
 #include <set>
 using namespace std;
 
-namespace SMESH{
+
+namespace SMESH {
 
   typedef map<TKeyOfVisualObj,TVisualObjPtr> TVisualObjCont;
   static TVisualObjCont VISUAL_OBJ_CONT;
@@ -75,7 +77,8 @@ namespace SMESH{
       if(anIter != VISUAL_OBJ_CONT.end()){
 	aVisualObj = anIter->second;
       }else{
-        SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SMESHGUI::activeStudy()->application() );
+        SalomeApp_Application* app =
+          dynamic_cast<SalomeApp_Application*>( SMESHGUI::activeStudy()->application() );
 	_PTR(Study) aStudy = SMESHGUI::activeStudy()->studyDS();
 	_PTR(SObject) aSObj = aStudy->FindObjectID(theEntry);
 	if(aSObj){
@@ -139,16 +142,41 @@ namespace SMESH{
   }
 
 
-  SVTK_ViewWindow*
-  GetViewWindow(const SalomeApp_Module* theModule)
+  /*! Return active view window, if it instantiates SVTK_ViewWindow class,
+   *  overwise find or create corresponding view window, make it active and return it.
+   *  \note Active VVTK_ViewWindow can be returned, because it inherits SVTK_ViewWindow.
+   */
+  SVTK_ViewWindow* GetViewWindow (const SalomeApp_Module* theModule,
+                                  bool createIfNotFound)
   {
-    if (SalomeApp_Application* anApp = theModule->getApp())
-      return dynamic_cast<SVTK_ViewWindow*>(anApp->desktop()->activeWindow());
+    SalomeApp_Application* anApp;
+    if (theModule)
+      anApp = theModule->getApp();
+    else
+      anApp = dynamic_cast<SalomeApp_Application*>
+        (SUIT_Session::session()->activeApplication());
+
+    if (anApp) {
+      if (SVTK_ViewWindow* aView = dynamic_cast<SVTK_ViewWindow*>(anApp->desktop()->activeWindow()))
+	return aView;
+
+      SUIT_ViewManager* aViewManager =
+        anApp->getViewManager(SVTK_Viewer::Type(), createIfNotFound);
+      if (aViewManager) {
+        if (SUIT_ViewWindow* aViewWindow = aViewManager->getActiveView()) {
+          if (SVTK_ViewWindow* aView = dynamic_cast<SVTK_ViewWindow*>(aViewWindow)) {
+            aViewWindow->raise();
+            aViewWindow->setFocus();
+            return aView;
+          }
+        }
+      }
+    }
     return NULL;
   }
 
-  SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager* theMgr,
-					   SUIT_ViewWindow* theWindow )
+  SVTK_ViewWindow* FindVtkViewWindow (SUIT_ViewManager* theMgr,
+                                      SUIT_ViewWindow * theWindow)
   {
     if( !theMgr )
       return NULL;
@@ -160,11 +188,9 @@ namespace SMESH{
       return NULL;
   }
 
-
   SVTK_ViewWindow* GetVtkViewWindow(SUIT_ViewWindow* theWindow){
     return dynamic_cast<SVTK_ViewWindow*>(theWindow);
   }
-
 
 /*  SUIT_ViewWindow* GetActiveWindow()
   {
@@ -182,8 +208,19 @@ namespace SMESH{
     return GetVtkViewWindow( GetActiveWindow() );
   }
 
+
+  void RepaintCurrentView()
+  {
+    if (SVTK_ViewWindow* wnd = GetCurrentVtkView())
+      {
+	wnd->getRenderer()->Render();
+	wnd->Repaint(false);
+      }
+  }
+
   void RepaintViewWindow(SVTK_ViewWindow* theWindow)
   {
+    theWindow->getRenderer()->Render();
     theWindow->Repaint();
   }
 
@@ -192,6 +229,14 @@ namespace SMESH{
     theWindow->getRenderer()->Render();
     theWindow->Repaint();
   }
+
+  void FitAll(){
+    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() ){
+      wnd->onFitAll();
+      wnd->Repaint();
+    }
+  }
+
 
   SMESH_Actor* FindActorByEntry(SUIT_ViewWindow *theWindow,
 				const char* theEntry)
@@ -285,27 +330,6 @@ namespace SMESH{
     }
   }
 
-
-  void FitAll(){
-    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() ){
-      wnd->onFitAll();
-      wnd->Repaint();
-    }
-  }
-
-  vtkRenderer* GetCurrentRenderer(){
-    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() )
-      return wnd->getRenderer();
-    return NULL;
-  }
-
-  void RepaintCurrentView(){
-    if(SVTK_ViewWindow* wnd = GetCurrentVtkView() )
-      {
-	wnd->getRenderer()->Render();
-	wnd->Repaint(false);
-      }
-  }
 
   void UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
@@ -450,17 +474,17 @@ namespace SMESH{
       // update VTK viewer properties
       if(SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] )){
 	// mesh element selection
-	aVtkView->SetSelectionProp(aSelColor.red()/255., 
+	aVtkView->SetSelectionProp(aSelColor.red()/255.,
 				   aSelColor.green()/255.,
-				   aSelColor.blue()/255., 
+				   aSelColor.blue()/255.,
 				   SW );
 	// tolerances
 	aVtkView->SetSelectionTolerance(SP1, SP2);
 
 	// pre-selection
-	aVtkView->SetPreselectionProp(aPreColor.red()/255., 
+	aVtkView->SetPreselectionProp(aPreColor.red()/255.,
 				      aPreColor.green()/255.,
-				      aPreColor.blue()/255., 
+				      aPreColor.blue()/255.,
 				      PW);
 	// update actors
 	vtkRenderer* aRenderer = aVtkView->getRenderer();
@@ -468,10 +492,10 @@ namespace SMESH{
 	aCollection->InitTraversal();
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	    anActor->SetHighlightColor(aHiColor.red()/255., 
+	    anActor->SetHighlightColor(aHiColor.red()/255.,
 				       aHiColor.green()/255.,
 				       aHiColor.blue()/255.);
-	    anActor->SetPreHighlightColor(aPreColor.red()/255., 
+	    anActor->SetPreHighlightColor(aPreColor.red()/255.,
 					  aPreColor.green()/255.,
 					  aPreColor.blue()/255.);
 	  }
@@ -482,7 +506,7 @@ namespace SMESH{
 
 
   //----------------------------------------------------------------------------
-  SVTK_Selector* 
+  SVTK_Selector*
   GetSelector(SUIT_ViewWindow *theWindow)
   {
     if(SVTK_ViewWindow* aWnd = GetVtkViewWindow(theWindow))

@@ -56,10 +56,13 @@ public:
   void                   setBox(const Bnd_B3d* box);
 
   // Set box to the 3d Bounding Box of the Octree
-  void                   getBox(Bnd_B3d* box);
+  void                   getBox(Bnd_B3d & box);
 
   // Compute the bigger dimension of the box
   static double          maxSize(const Bnd_B3d* box);
+
+  // Return its level
+  int                    level() const { return myLevel; }
 
 protected:
   // Constructor for children (has to be implemented in inherited classes)

@@ -24,6 +24,7 @@
 	 <popup-item item-id="121" pos-id="" label-id="DAT File" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	 <popup-item item-id="122" pos-id="" label-id="MED File" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 	 <popup-item item-id="123" pos-id="" label-id="UNV File" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+	 <popup-item item-id="140" pos-id="" label-id="STL File" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
       </submenu>
       <endsubmenu />
       <separator pos-id="10"/>
@@ -185,6 +186,7 @@
    <separator pos-id=""/>
    <popup-item item-id="122" pos-id="" label-id="Export to MED" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="123" pos-id="" label-id="Export to UNV" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="140" pos-id="" label-id="Export to STL" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
 </popupmenu>
 
 <popupmenu label-id="Popup for ObjectBrowser" context-id="" parent-id="ObjectBrowser" object-id="SubMesh">

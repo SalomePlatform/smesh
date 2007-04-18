@@ -1,6 +1,6 @@
 //  SMESH MEFISTO2 : algorithm for meshing
 //
-//  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+//  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,9 @@
 //
 //
 //  File   : aptrte.h
-//  Author: Alain PERRONNET
+//  Author : Alain PERRONNET
 //  Module : SMESH
+//  Date   : 13 novembre 2006
 
 #ifndef aptrte__h
 #define aptrte__h
@@ -57,10 +58,11 @@
  #define MEFISTO2D_EXPORT
 #endif
 
-  void qualitetrte( R3 *mnpxyd,
-		  Z & mosoar, Z & mxsoar, Z *mnsoar,
-		  Z & moartr, Z & mxartr, Z *mnartr,
-		  Z & nbtria, R & quamoy, R & quamin );
+extern "C" {
+void qualitetrte_( R3 *mnpxyd,
+		   Z & mosoar, Z & mxsoar, Z *mnsoar,
+	  	   Z & moartr, Z & mxartr, Z *mnartr,
+		   Z & nbtria, R & quamoy, R & quamin ); }
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // but :    calculer la qualite moyenne et minimale de la triangulation
 // -----    actuelle definie par les tableaux nosoar et noartr

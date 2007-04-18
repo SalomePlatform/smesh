@@ -27,6 +27,8 @@
 
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_Mesh.hxx"
+
 #include "utilities.h"
 
 using namespace std;
@@ -135,6 +137,33 @@ class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_NodeVectorElemIterator
     SMDS_NodeVectorElemIterator( s.begin(), s.end() ) {}
 };
 
+/// ===================================================================
+/*!
+ * \brief Iterator on edges of face
+ */
+/// ===================================================================
+
+class _MyEdgeIterator : public SMDS_ElemIterator
+{
+  vector< const SMDS_MeshElement* > myElems;
+  int myIndex;
+public:
+  _MyEdgeIterator(const SMDS_MeshFace* face):myIndex(0) {
+    myElems.reserve( face->NbNodes() );
+    for ( int i = 0; i < face->NbNodes(); ++i ) {
+      const SMDS_MeshElement* edge =
+        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNode( i + 1 ));
+      if ( edge )
+        myElems.push_back( edge );
+    }
+  }
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more() { return myIndex < myElems.size(); }
+
+  /// Return the current object and step to the next one
+  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
+};
+
 SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
                                          (SMDSAbs_ElementType type) const
 {
@@ -145,7 +174,7 @@ SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
   case SMDSAbs_Node:
     return SMDS_ElemIteratorPtr(new SMDS_PolygonalFaceOfNodes_MyIterator(myNodes));
   case SMDSAbs_Edge:
-    MESSAGE("Error : edge iterator for SMDS_PolygonalFaceOfNodes not implemented");
+    return SMDS_ElemIteratorPtr(new _MyEdgeIterator( this ));
     break;
   default:
     return SMDS_ElemIteratorPtr

@@ -36,20 +36,18 @@
 #include "SMESH_Controls.hxx"
 #include "SMESH_SequenceOfNode.hxx"
 #include "SMESH_SequenceOfElemPtr.hxx"
-#include "gp_Dir.hxx"
 #include "TColStd_HSequenceOfReal.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMDS_MeshElement.hxx"
 
+#include <gp_Dir.hxx>
+
 #include <list>
 #include <map>
 
-typedef map<const SMDS_MeshElement*,
-            list<const SMDS_MeshElement*> > TElemOfElemListMap;
-typedef map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
-
-typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>           RemoveQuadNodeMap;
-typedef map<const SMDS_MeshNode*, SMESHDS_SubMesh*>::iterator ItRemoveQuadNodeMap;
+typedef std::map<const SMDS_MeshElement*,
+                 std::list<const SMDS_MeshElement*> >        TElemOfElemListMap;
+typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
 class SMDS_MeshFace;
 class SMDS_MeshNode;
@@ -57,30 +55,57 @@ class gp_Ax1;
 class gp_Vec;
 class gp_Pnt;
 
+// ============================================================
+/*!
+ * \brief Set of elements sorted by ID, to be used to assure
+ *  predictability of edition
+ */
+// ============================================================
+
+template < class TMeshElem = SMDS_MeshElement>
+struct TIDCompare {
+  bool operator () (const TMeshElem* e1, const TMeshElem* e2) const
+  { return e1->GetID() < e2->GetID(); }
+};
+typedef std::set< const SMDS_MeshElement*, TIDCompare< SMDS_MeshElement> > TIDSortedElemSet;
+
+// ============================================================
+/*!
+ * \brief Searcher for the node closest to point
+ */
+// ============================================================
+
+struct SMESH_NodeSearcher
+{
+  virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
+};
+
+// ============================================================
+/*!
+ * \brief Editor of a mesh
+ */
+// ============================================================
+
 class SMESH_EXPORT SMESH_MeshEditor {
-public:
 
-  // define a set of elements sorted by ID, to be used to assure
-  // predictability of edition
-  struct TIDCompare {
-    bool operator () (const SMDS_MeshElement* e1, const SMDS_MeshElement* e2)
-    { return e1->GetID() < e2->GetID(); }
-  };
-  typedef set< const SMDS_MeshElement*, TIDCompare > TIDSortedElemSet;
-
-  /*!
-   * \brief Insert element in a map of elements sorted by ID
-    * \param elem - element to insert
-    * \param elemMap - the map to fill in
-   */
-  static void Insert(const SMDS_MeshElement*                 elem,
-                     std::map<int,const SMDS_MeshElement*> & elemMap) {
-    elemMap.insert( make_pair( elem->GetID(), elem ));
-  }
-  
 public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );
+
+  /*!
+   * \brief Add element
+   */
+  SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
+                               const SMDSAbs_ElementType                 type,
+                               const bool                                isPoly,
+                               const int                                 ID = 0);
+  /*!
+   * \brief Add element
+   */
+  SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
+                               const SMDSAbs_ElementType type,
+                               const bool                isPoly,
+                               const int                 ID = 0);
 
   bool Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -116,7 +141,7 @@ public:
    *                       is still performed; theMaxAngle is mesured in radians.
    * \retval bool - Success or not.
    */
-  bool TriToQuad (std::map<int,const SMDS_MeshElement*> & theElems,
+  bool TriToQuad (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion,
                   const double                         theMaxAngle);
 
@@ -126,7 +151,7 @@ public:
    * \param theCriterion - Is used to choose a diagonal for splitting.
    * \retval bool - Success or not.
    */
-  bool QuadToTri (std::map<int,const SMDS_MeshElement*> &  theElems,
+  bool QuadToTri (TIDSortedElemSet &                   theElems,
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
 
   /*!
@@ -135,8 +160,8 @@ public:
    * \param the13Diag - Is used to choose a diagonal for splitting.
    * \retval bool - Success or not.
    */
-  bool QuadToTri (std::map<int,const SMDS_MeshElement*> & theElems,
-                  const bool                          the13Diag);
+  bool QuadToTri (TIDSortedElemSet & theElems,
+                  const bool         the13Diag);
 
   /*!
    * \brief Find better diagonal for splitting.
@@ -150,12 +175,12 @@ public:
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 
-  void Smooth (std::map<int,const SMDS_MeshElement*> & theElements,
-               std::set<const SMDS_MeshNode*> &    theFixedNodes,
-               const SmoothMethod                  theSmoothMethod,
-               const int                           theNbIterations,
-               double                              theTgtAspectRatio = 1.0,
-               const bool                          the2D = true);
+  void Smooth (TIDSortedElemSet &               theElements,
+               std::set<const SMDS_MeshNode*> & theFixedNodes,
+               const SmoothMethod               theSmoothMethod,
+               const int                        theNbIterations,
+               double                           theTgtAspectRatio = 1.0,
+               const bool                       the2D = true);
   // Smooth theElements using theSmoothMethod during theNbIterations
   // or until a worst element has aspect ratio <= theTgtAspectRatio.
   // Aspect Ratio varies in range [1.0, inf].
@@ -166,11 +191,12 @@ public:
   // on geometrical faces
 
 
-  void RotationSweep (std::map<int,const SMDS_MeshElement*> & theElements,
-                      const gp_Ax1&                       theAxis,
-                      const double                        theAngle,
-                      const int                           theNbSteps,
-                      const double                        theToler);
+  void RotationSweep (TIDSortedElemSet & theElements,
+                      const gp_Ax1&      theAxis,
+                      const double       theAngle,
+                      const int          theNbSteps,
+                      const double       theToler,
+                      const bool         theMakeWalls=true);
   // Generate new elements by rotation of theElements around theAxis
   // by theAngle by theNbSteps
 
@@ -216,12 +242,12 @@ public:
    *   EXTRUSION_FLAG_SEW is set
    */
   void ExtrusionSweep
-           (map<int,const SMDS_MeshElement*> & theElems,
-            const gp_Vec&                  theStep,
-            const int                      theNbSteps,
-            TElemOfElemListMap&            newElemsMap,
-            const int                      theFlags = EXTRUSION_FLAG_BOUNDARY,
-            const double                   theTolerance = 1.e-6);
+           (TIDSortedElemSet &  theElems,
+            const gp_Vec&       theStep,
+            const int           theNbSteps,
+            TElemOfElemListMap& newElemsMap,
+            const int           theFlags = EXTRUSION_FLAG_BOUNDARY,
+            const double        theTolerance = 1.e-6);
   
   /*!
    * Generate new elements by extrusion of theElements
@@ -233,11 +259,11 @@ public:
    *   EXTRUSION_FLAG_SEW is set
    * param theParams - special structure for manage of extrusion
    */
-  void ExtrusionSweep (map<int,const SMDS_MeshElement*> & theElems,
-                       ExtrusParam&                   theParams,
-                       TElemOfElemListMap&            newElemsMap,
-                       const int                      theFlags,
-                       const double                   theTolerance);
+  void ExtrusionSweep (TIDSortedElemSet &  theElems,
+                       ExtrusParam&        theParams,
+                       TElemOfElemListMap& newElemsMap,
+                       const int           theFlags,
+                       const double        theTolerance);
 
 
   // Generate new elements by extrusion of theElements 
@@ -253,19 +279,19 @@ public:
     EXTR_CANT_GET_TANGENT
     };
   
-  Extrusion_Error ExtrusionAlongTrack (std::map<int,const SMDS_MeshElement*> & theElements,
-                                       SMESH_subMesh*                      theTrackPattern,
-                                       const SMDS_MeshNode*                theNodeStart,
-                                       const bool                          theHasAngles,
-                                       std::list<double>&                  theAngles,
-                                       const bool                          theHasRefPoint,
-                                       const gp_Pnt&                       theRefPoint);
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+                                       SMESH_subMesh*       theTrackPattern,
+                                       const SMDS_MeshNode* theNodeStart,
+                                       const bool           theHasAngles,
+                                       std::list<double>&   theAngles,
+                                       const bool           theHasRefPoint,
+                                       const gp_Pnt&        theRefPoint);
   // Generate new elements by extrusion of theElements along path given by theTrackPattern,
   // theHasAngles are the rotation angles, base point can be given by theRefPoint
 
-  void Transform (std::map<int,const SMDS_MeshElement*> & theElements,
-                  const gp_Trsf&                      theTrsf,
-                  const bool                          theCopy);
+  void Transform (TIDSortedElemSet & theElements,
+                  const gp_Trsf&     theTrsf,
+                  const bool         theCopy);
   // Move or copy theElements applying theTrsf to their nodes
 
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
@@ -276,6 +302,11 @@ public:
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
+  /*!
+   * \brief Return SMESH_NodeSearcher
+   */
+  SMESH_NodeSearcher* GetNodeSearcher();
+
   int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
                     vector<const SMDS_MeshNode *>&      poly_nodes,
                     vector<int>&                        quantities) const;
@@ -285,6 +316,16 @@ public:
   void MergeNodes (TListOfListOfNodes & theNodeGroups);
   // In each group, the cdr of nodes are substituted by the first one
   // in all elements.
+
+  typedef std::list< std::list< int > > TListOfListOfElementsID;
+
+  void FindEqualElements(std::set<const SMDS_MeshElement*> & theElements,
+			 TListOfListOfElementsID &           theGroupsOfElementsID);
+  // Return list of group of elements build on the same nodes.
+  // Search among theElements or in the whole mesh if theElements is empty.
+
+  void MergeElements(TListOfListOfElementsID & theGroupsOfElementsID);
+  // In each group remove all but first of elements.
 
   void MergeEqualElements();
   // Remove all but one of elements built on the same nodes.
@@ -348,12 +389,12 @@ public:
   // nodes are inserted.
   // Return false, if sewing failed.
 
-  Sew_Error SewSideElements (std::map<int,const SMDS_MeshElement*>& theSide1,
-                             std::map<int,const SMDS_MeshElement*>& theSide2,
-                             const SMDS_MeshNode*               theFirstNode1ToMerge,
-                             const SMDS_MeshNode*               theFirstNode2ToMerge,
-                             const SMDS_MeshNode*               theSecondNode1ToMerge,
-                             const SMDS_MeshNode*               theSecondNode2ToMerge);
+  Sew_Error SewSideElements (TIDSortedElemSet&    theSide1,
+                             TIDSortedElemSet&    theSide2,
+                             const SMDS_MeshNode* theFirstNode1ToMerge,
+                             const SMDS_MeshNode* theFirstNode2ToMerge,
+                             const SMDS_MeshNode* theSecondNode1ToMerge,
+                             const SMDS_MeshNode* theSecondNode2ToMerge);
   // Sew two sides of a mesh. Nodes belonging to theSide1 are
   // merged with nodes of elements of theSide2.
   // Number of elements in theSide1 and in theSide2 must be
@@ -402,13 +443,20 @@ public:
 
   static void RemoveElemFromGroups (const SMDS_MeshElement* removeelem,
                                     SMESHDS_Mesh *          aMesh);
-  // remove elemToAdd from the groups 
+  // remove elemToAdd from the groups
+
+  /*!
+   * \brief Return nodes linked to the given one in elements of the type
+   */
+  static void GetLinkedNodes( const SMDS_MeshNode* node,
+                              TIDSortedElemSet &   linkedNodes,
+                              SMDSAbs_ElementType  type = SMDSAbs_All );
 
   static const SMDS_MeshElement*
-    FindFaceInSet(const SMDS_MeshNode*                     n1,
-                  const SMDS_MeshNode*                     n2,
-                  const std::map<int,const SMDS_MeshElement*>& elemSet,
-                  const std::map<int,const SMDS_MeshElement*>& avoidSet);
+    FindFaceInSet(const SMDS_MeshNode*    n1,
+                  const SMDS_MeshNode*    n2,
+                  const TIDSortedElemSet& elemSet,
+                  const TIDSortedElemSet& avoidSet);
   // Return a face having linked nodes n1 and n2 and which is
   // - not in avoidSet,
   // - in elemSet provided that !elemSet.empty()
@@ -449,23 +497,28 @@ public:
 
   SMESHDS_Mesh * GetMeshDS() { return myMesh->GetMeshDS(); }
 
-  SMESH_SequenceOfElemPtr GetLastCreatedNodes() { return myLastCreatedNodes; }
+  const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
 
-  SMESH_SequenceOfElemPtr GetLastCreatedElems() { return myLastCreatedElems; }
+  const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
 
 private:
 
-  void ConvertElemToQuadratic(SMESHDS_SubMesh *theSm,
-                              SMESH_MesherHelper* theHelper,
-			      const bool theForce3d);
-  //Auxiliary function for "ConvertToQuadratic" is intended to convert
-  //elements contained in submesh to quadratic
+  /*!
+   * \brief Convert elements contained in a submesh to quadratic
+    * \retval int - nb of checked elements
+   */
+  int ConvertElemToQuadratic(SMESHDS_SubMesh *   theSm,
+                             SMESH_MesherHelper& theHelper,
+                             const bool          theForce3d);
 
-  void RemoveQuadElem( SMESHDS_SubMesh *theSm,
-		       SMDS_ElemIteratorPtr theItr,
-		       RemoveQuadNodeMap& theRemoveNodeMap);
-  //Auxiliary function for "ConvertFromQuadratic" is intended to convert quadratic
-  //element to ordinary and for removing quadratic nodes
+  /*!
+   * \brief Convert quadratic elements to linear ones and remove quadratic nodes
+    * \retval int - nb of checked elements
+   */
+  int RemoveQuadElem( SMESHDS_SubMesh *    theSm,
+                      SMDS_ElemIteratorPtr theItr,
+                      const int            theShapeID);
+  //Auxiliary function for "ConvertFromQuadratic" is intended to 
 
 private:
 

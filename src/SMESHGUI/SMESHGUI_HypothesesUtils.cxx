@@ -433,7 +433,7 @@ namespace SMESH{
 	if (res < SMESH::HYP_UNKNOWN_FATAL) {
 	  _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
 	  if (SM && aSH) {
-	    SMESH::ModifiedMesh(SM, false);
+	    SMESH::ModifiedMesh(SM, false, aMesh->NbNodes()==0);
 	  }
 	}
 	if (res > SMESH::HYP_OK) {
@@ -468,7 +468,7 @@ namespace SMESH{
 	  if (res < SMESH::HYP_UNKNOWN_FATAL)  {
             _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
             if (meshSO)
-              SMESH::ModifiedMesh(meshSO, false);
+              SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
 	  }
 	  if (res > SMESH::HYP_OK) {
 	    wc.suspend();
@@ -554,7 +554,7 @@ namespace SMESH{
 	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
-                SMESH::ModifiedMesh(meshSO, false);
+                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
 	    if (res > SMESH::HYP_OK) {
 	      wc.suspend();
@@ -606,25 +606,28 @@ namespace SMESH{
     return listSOmesh;
   }
 
-#define CASE2MESSAGE(enum) case SMESH::enum: msg = QObject::tr( #enum ); break;
+#define CASE2MESSAGE(enum) case SMESH::enum: msg = QObject::tr( "STATE_" #enum ); break;
   QString GetMessageOnAlgoStateErrors(const algo_error_array& errors)
   {
     QString resMsg = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
     for ( int i = 0; i < errors.length(); ++i ) {
       const SMESH::AlgoStateError & error = errors[ i ];
+      const bool hasAlgo = ( strlen( error.algoName ) != 0 );
       QString msg;
-      switch( error.name ) {
-        CASE2MESSAGE( MISSING_ALGO );
-        CASE2MESSAGE( MISSING_HYPO );
-        CASE2MESSAGE( NOT_CONFORM_MESH );
-        CASE2MESSAGE( BAD_PARAM_VALUE );
-      default: continue;
-      }
+      if ( !hasAlgo )
+        msg = QObject::tr( "STATE_ALGO_MISSING" );
+      else 
+        switch( error.state ) {
+          CASE2MESSAGE( HYP_MISSING );
+          CASE2MESSAGE( HYP_NOTCONFORM );
+          CASE2MESSAGE( HYP_BAD_PARAMETER );
+        default: continue;
+        }
       // apply args to message:
       // %1 - algo name
-      if ( error.algoName.in() != 0 )
+      if ( hasAlgo )
         msg = msg.arg( error.algoName.in() );
-      // %2 - dimention
+      // %2 - dimension
       msg = msg.arg( error.algoDim );
       // %3 - global/local
       msg = msg.arg( QObject::tr( error.isGlobalAlgo ? "GLOBAL_ALGO" : "LOCAL_ALGO" ));

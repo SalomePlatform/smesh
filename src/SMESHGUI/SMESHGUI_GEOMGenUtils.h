@@ -36,6 +36,9 @@ namespace SMESH
   SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh (_PTR(SObject) theSObject);
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetGeom (_PTR(SObject) theSO);
+
+  SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetSubShape (GEOM::GEOM_Object_ptr theMainShape,
+                                     long                  theID);
 }
 
 #endif

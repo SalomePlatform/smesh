@@ -222,7 +222,13 @@ public:
 
   // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
-                          GEOM::GEOM_Object_ptr  theShapeObject )
+                          GEOM::GEOM_Object_ptr theShapeObject )
+    throw ( SALOME::SALOME_Exception );
+  /*!
+   * \brief Return errors of mesh computation
+   */
+  SMESH::compute_error_array* GetComputeErrors(SMESH::SMESH_Mesh_ptr theMesh,
+                                               GEOM::GEOM_Object_ptr  theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
   // Returns true if mesh contains enough data to be computed
@@ -250,6 +256,14 @@ public:
   GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 						   CORBA::Long            theElementID)
     throw ( SALOME::SALOME_Exception );
+
+  // Concatenate the given meshes into one mesh
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
+				    CORBA::Boolean           theUniteIdenticalGroups, 
+				    CORBA::Boolean           theMergeNodesAndElements, 
+				    CORBA::Double            theMergeTolerance)
+    throw ( SALOME::SALOME_Exception );
+
 
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)
@@ -428,6 +442,11 @@ public:
   // Get current study ID
   int GetCurrentStudyID()
   { return myCurrentStudy->_is_nil() ? -1 : myCurrentStudy->StudyId(); }
+
+  /*!
+   * \brief Find SObject for an algo
+   */
+  SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
  
 private:
   // Create hypothesis of given type

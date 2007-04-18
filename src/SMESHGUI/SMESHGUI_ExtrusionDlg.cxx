@@ -79,6 +79,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -624,7 +625,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
         aNbElements = anElementsIds->length();
       }
     } else {
-      aNbElements = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+      aNbElements = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
     }
 

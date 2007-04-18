@@ -105,6 +105,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   int GetNodeIndex(const SMDS_MeshNode* theNode) const;
   // Return an index of theNode
 
+  int GetAllExistingEdges(std::vector<const SMDS_MeshElement*> & edges) const;
+  // Fill vector with boundary edges existing in the mesh
+
   // -------------
   // info on faces
   // -------------
@@ -160,6 +163,9 @@ class SMDS_EXPORT SMDS_VolumeTool
   //int GetFaceIndex( const std::set<int>& theFaceNodesIndices );
   // Return index of a face formed by theFaceNodesIndices
   // Return -1 if a face not found
+
+  int GetAllExistingFaces(std::vector<const SMDS_MeshElement*> & faces);
+  // Fill vector with boundary faces existing in the mesh
 
   // ------------------------
   // static methods for faces

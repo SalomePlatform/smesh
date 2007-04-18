@@ -93,6 +93,7 @@
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_SpacePosition.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
@@ -255,7 +256,7 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           const char*               interfaceName )
      : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
 {
-  INFOS( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
+  MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
 
   myOrb = CORBA::ORB::_duplicate(orb);
   myPoa = PortableServer::POA::_duplicate(poa);
@@ -958,6 +959,105 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
 
 //================================================================================
 /*!
+ * \brief  Find SObject for an algo
+ */
+//================================================================================
+
+SALOMEDS::SObject_ptr SMESH_Gen_i::GetAlgoSO(const ::SMESH_Algo* algo)
+{
+  if ( algo ) {
+    if ( !myCurrentStudy->_is_nil() ) {
+      // find algo in the study
+      SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
+        ( myCurrentStudy->FindComponent( ComponentDataType() ) );
+      if ( !father->_is_nil() ) {
+        SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
+        for ( ; itBig->More(); itBig->Next() ) {
+          SALOMEDS::SObject_var gotBranch = itBig->Value();
+          if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
+            SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
+            for ( ; algoIt->More(); algoIt->Next() ) {
+              SALOMEDS::SObject_var algoSO = algoIt->Value();
+              CORBA::Object_var     algoIOR = SObjectToObject( algoSO );
+              if ( !CORBA::is_nil( algoIOR )) {
+                SMESH_Hypothesis_i* impl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
+                if ( impl && impl->GetImpl() == algo )
+                  return algoSO._retn();
+              }
+            } // loop on algo SO's
+            break;
+          } // if algo tag
+        } // SMESH component iterator
+      }
+    }
+  }
+  return SALOMEDS::SObject::_nil();
+}
+
+//================================================================================
+/*!
+ * \brief Return errors of mesh computation
+ */
+//================================================================================
+
+SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr theMesh, 
+                                                           GEOM::GEOM_Object_ptr theSubObject )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetComputeErrors()" );
+
+  if ( CORBA::is_nil( theSubObject ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  SMESH::compute_error_array_var error_array = new SMESH::compute_error_array;
+  try {
+    if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
+    {
+      TopoDS_Shape shape = GeomObjectToShape( theSubObject );
+      ::SMESH_Mesh& mesh = meshServant->GetImpl();
+
+      error_array->length( mesh.GetMeshDS()->MaxShapeIndex() );
+      int nbErr = 0;
+
+      SMESH_subMesh *sm = mesh.GetSubMesh(shape);
+      const bool includeSelf = true, complexShapeFirst = true;
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(includeSelf,
+                                                               complexShapeFirst);
+      while ( smIt->more() )
+      {
+        sm = smIt->next();
+        if ( sm->GetSubShape().ShapeType() == TopAbs_VERTEX )
+          break;
+        SMESH_ComputeErrorPtr error = sm->GetComputeError();
+        if ( error && !error->IsOK() && error->myAlgo )
+        {
+          SMESH::ComputeError & errStruct = error_array[ nbErr++ ];
+          errStruct.code       = -( error->myName < 0 ? error->myName + 1: error->myName ); // -1 -> 0
+          errStruct.comment    = error->myComment.c_str();
+          errStruct.subShapeID = sm->GetId();
+          SALOMEDS::SObject_var algoSO = GetAlgoSO( error->myAlgo );
+          if ( !algoSO->_is_nil() )
+            errStruct.algoName   = algoSO->GetName();
+          else
+            errStruct.algoName   = error->myAlgo->GetName();
+        }
+      }
+      error_array->length( nbErr );
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+
+  return error_array._retn();
+}
+
+//================================================================================
+/*!
  * \brief Returns errors of hypotheses definintion
   * \param theMesh - the mesh
   * \param theSubObject - the main or sub- shape
@@ -993,55 +1093,15 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
       int i = 0;
       for ( error = error_list.begin(); error != error_list.end(); ++error )
       {
-        // error name
-        SMESH::AlgoStateErrorName errName;
-        switch ( error->_name ) {
-        case ::SMESH_Gen::MISSING_ALGO:     errName = SMESH::MISSING_ALGO; break;
-        case ::SMESH_Gen::MISSING_HYPO:     errName = SMESH::MISSING_HYPO; break;
-        case ::SMESH_Gen::NOT_CONFORM_MESH: errName = SMESH::NOT_CONFORM_MESH; break;
-        case ::SMESH_Gen::BAD_PARAM_VALUE:  errName = SMESH::BAD_PARAM_VALUE; break;
-        default:
-          THROW_SALOME_CORBA_EXCEPTION( "bad error name",SALOME::BAD_PARAM );
-        }
-        // algo name
-        CORBA::String_var algoName;
-        if ( error->_algo ) {
-          if ( !myCurrentStudy->_is_nil() ) {
-            // find algo in the study
-            SALOMEDS::SComponent_var father = SALOMEDS::SComponent::_narrow
-              ( myCurrentStudy->FindComponent( ComponentDataType() ) );
-            if ( !father->_is_nil() ) {
-              SALOMEDS::ChildIterator_var itBig = myCurrentStudy->NewChildIterator( father );
-              for ( ; itBig->More(); itBig->Next() ) {
-                SALOMEDS::SObject_var gotBranch = itBig->Value();
-                if ( gotBranch->Tag() == GetAlgorithmsRootTag() ) {
-                  SALOMEDS::ChildIterator_var algoIt = myCurrentStudy->NewChildIterator( gotBranch );
-                  for ( ; algoIt->More(); algoIt->Next() ) {
-                    SALOMEDS::SObject_var algoSO = algoIt->Value();
-                    CORBA::Object_var    algoIOR = SObjectToObject( algoSO );
-                    if ( !CORBA::is_nil( algoIOR )) {
-                      SMESH_Hypothesis_i* myImpl = SMESH::DownCast<SMESH_Hypothesis_i*>( algoIOR );
-                      if ( myImpl && myImpl->GetImpl() == error->_algo ) {
-                        algoName = algoSO->GetName();
-                        break;
-                      }
-                    }
-                  } // loop on algo SO's
-                  break;
-                } // if algo tag
-              } // SMESH component iterator
-            }
-          }
-          if ( algoName.in() == 0 )
-            // use algo type name
-            algoName = CORBA::string_dup( error->_algo->GetName() );
-        }
         // fill AlgoStateError structure
         SMESH::AlgoStateError & errStruct = error_array[ i++ ];
-        errStruct.name         = errName;
-        errStruct.algoName     = algoName;
+        errStruct.state        = SMESH_Mesh_i::ConvertHypothesisStatus( error->_name );
         errStruct.algoDim      = error->_algoDim;
         errStruct.isGlobalAlgo = error->_isGlobalAlgo;
+        errStruct.algoName     = "";
+        SALOMEDS::SObject_var algoSO = GetAlgoSO( error->_algo );
+        if ( !algoSO->_is_nil() )
+          errStruct.algoName   = algoSO->GetName();
       }
     }
   }
@@ -1203,18 +1263,40 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
 
     // try to find the corresponding SObject
-    GeomObjectToShape( geom ); // geom client remembers the found shape
     SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
-    if ( SObj->_is_nil() )
-      // publish a new subshape
+    if ( SObj->_is_nil() ) // submesh can be not found even if published
+    {
+      // try to find published submesh
+      GEOM::ListOfLong_var list = geom->GetSubShapeIndices();
+      if ( !geom->IsMainShape() && list->length() == 1 ) {
+        SALOMEDS::SObject_var mainSO = ObjectToSObject( myCurrentStudy, mainShape );
+        SALOMEDS::ChildIterator_var it;
+        if ( !mainSO->_is_nil() )
+          it = myCurrentStudy->NewChildIterator( mainSO );
+        if ( !it->_is_nil() ) {
+          for ( it->InitEx(true); SObj->_is_nil() && it->More(); it->Next() ) {
+            GEOM::GEOM_Object_var subGeom =
+              GEOM::GEOM_Object::_narrow( SObjectToObject( it->Value() ));
+            if ( !subGeom->_is_nil() ) {
+              GEOM::ListOfLong_var subList = subGeom->GetSubShapeIndices();
+              if ( subList->length() == 1 && list[0] == subList[0] ) {
+                SObj = it->Value();
+                geom = subGeom;
+              }
+            }
+          }
+        }
+      }
+    }
+    if ( SObj->_is_nil() ) // publish a new subshape
       SObj = geomGen->AddInStudy( myCurrentStudy, geom, theGeomName, mainShape );
+
     // return only published geometry
     if ( !SObj->_is_nil() )
       return geom._retn();
   }
   return GEOM::GEOM_Object::_nil();
 }
-
 
 //================================================================================
 /*!
@@ -1227,7 +1309,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 
 GEOM::GEOM_Object_ptr
 SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
-				    CORBA::Long            theElementID)
+                                        CORBA::Long            theElementID)
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -1255,11 +1337,201 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
           if ( !op->_is_nil() )
             geom = op->GetSubShape( mainShape, shapeID );
         }
-        if ( !geom->_is_nil() )
+        if ( !geom->_is_nil() ) {
+          GeomObjectToShape( geom ); // let geom client remember the found shape
 	  return geom._retn();
+        }
       }
   }
   return GEOM::GEOM_Object::_nil();
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::Concatenate
+ *
+ *  Concatenate the given meshes into one mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshesArray,
+					       CORBA::Boolean           theUniteIdenticalGroups, 
+					       CORBA::Boolean           theMergeNodesAndElements, 
+					       CORBA::Double            theMergeTolerance)
+  throw ( SALOME::SALOME_Exception )
+{
+  typedef map<int, int> TIDsMap;
+  typedef list<SMESH::SMESH_Group_var> TListOfNewGroups;
+  typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
+  typedef std::set<SMESHDS_GroupBase*> TGroups;
+
+  TPythonDump aPythonDump; // prevent dump of called methods
+
+  // create mesh
+  SMESH::SMESH_Mesh_var aNewMesh = CreateEmptyMesh();
+  
+  if ( !aNewMesh->_is_nil() ) {
+    SMESH_Mesh_i* aNewImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( aNewMesh ).in() );
+    if ( aNewImpl ) {
+      ::SMESH_Mesh& aLocMesh = aNewImpl->GetImpl();
+      SMESHDS_Mesh* aNewMeshDS = aLocMesh.GetMeshDS();
+
+      TGroupsMap aGroupsMap;
+      TListOfNewGroups aListOfNewGroups;
+      SMESH_MeshEditor aNewEditor = ::SMESH_MeshEditor(&aLocMesh);
+      SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
+
+      // loop on meshes
+      for ( int i = 0; i < theMeshesArray.length(); i++) {
+	SMESH::SMESH_Mesh_var anInitMesh = theMeshesArray[i];
+	if ( !anInitMesh->_is_nil() ) {
+	  SMESH_Mesh_i* anInitImpl = dynamic_cast<SMESH_Mesh_i*>( GetServant( anInitMesh ).in() );
+	  if ( anInitImpl ) {
+	    ::SMESH_Mesh& aInitLocMesh = anInitImpl->GetImpl();
+	    SMESHDS_Mesh* anInitMeshDS = aInitLocMesh.GetMeshDS();
+
+	    TIDsMap nodesMap;
+	    TIDsMap elemsMap;
+
+	    // loop on elements of mesh
+	    SMDS_ElemIteratorPtr itElems = anInitMeshDS->elementsIterator();
+	    const SMDS_MeshElement* anElem = 0;
+	    const SMDS_MeshElement* aNewElem = 0;
+	    int anElemNbNodes = 0;
+
+	    for ( int j = 0; itElems->more(); j++) {
+	      anElem = itElems->next();
+	      SMDSAbs_ElementType anElemType = anElem->GetType();
+	      anElemNbNodes = anElem->NbNodes();
+	      std::vector<const SMDS_MeshNode*> aNodesArray (anElemNbNodes);
+
+	      // loop on nodes of element
+	      const SMDS_MeshNode* aNode = 0;
+	      const SMDS_MeshNode* aNewNode = 0;
+	      SMDS_ElemIteratorPtr itNodes = anElem->nodesIterator();
+
+	      for ( int k = 0; itNodes->more(); k++) {
+		aNode = static_cast<const SMDS_MeshNode*>(itNodes->next());
+		if ( nodesMap.find(aNode->GetID()) == nodesMap.end() ) {
+		  aNewNode = aNewMeshDS->AddNode(aNode->X(), aNode->Y(), aNode->Z());
+		  nodesMap.insert( make_pair(aNode->GetID(), aNewNode->GetID()) );
+		}
+		else
+		  aNewNode = aNewMeshDS->FindNode( nodesMap.find(aNode->GetID())->second );
+		aNodesArray[k] = aNewNode;
+	      }//nodes loop
+
+	      // creates a corresponding element on existent nodes in new mesh
+	      if ( anElem->IsPoly() && anElemType == SMDSAbs_Volume )
+		{
+		  const SMDS_PolyhedralVolumeOfNodes* aVolume =
+		    dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem);
+		  if ( aVolume ) {
+		    aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray, 
+							       aVolume->GetQuanities());
+		    elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+		  }
+		}
+	      else {
+		
+		aNewElem = aNewEditor.AddElement(aNodesArray,
+						 anElemType,
+						 anElem->IsPoly());
+		elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+	      } 
+	    }//elems loop
+	    
+	    aListOfGroups = anInitImpl->GetGroups();
+	    SMESH::SMESH_GroupBase_ptr aGroup;
+
+	    // loop on groups of mesh
+	    SMESH::long_array_var anInitIDs = new SMESH::long_array();
+	    SMESH::long_array_var anNewIDs = new SMESH::long_array();
+	    SMESH::SMESH_Group_var aNewGroup;
+	    for (int i = 0; i < aListOfGroups->length(); i++) {
+	      aGroup = aListOfGroups[i];
+	      aListOfNewGroups.clear();
+	      SMESH::ElementType aGroupType = aGroup->GetType();
+	      CORBA::String_var aGroupName = aGroup->GetName();
+	      
+	      TGroupsMap::iterator anIter = aGroupsMap.find(make_pair(aGroupName, aGroupType));
+
+	      // convert a list of IDs
+	      anInitIDs = aGroup->GetListOfID();
+	      anNewIDs->length(anInitIDs->length());
+	      if ( aGroupType == SMESH::NODE )
+		for (int j = 0; j < anInitIDs->length(); j++) {
+		  anNewIDs[j] = nodesMap.find(anInitIDs[j])->second;
+		}
+	      else
+		for (int j = 0; j < anInitIDs->length(); j++) {
+		  anNewIDs[j] = elemsMap.find(anInitIDs[j])->second;
+		}
+	      
+	      // check that current group name and type don't have identical ones in union mesh
+	      if ( anIter == aGroupsMap.end() ) {
+		// add a new group in the mesh
+		aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+		// add elements into new group
+		aNewGroup->Add( anNewIDs );
+		
+		aListOfNewGroups.push_back(aNewGroup);
+		aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+	      }
+
+	      else if ( theUniteIdenticalGroups ) {
+		// unite identical groups
+		TListOfNewGroups& aNewGroups = anIter->second;
+		aNewGroups.front()->Add( anNewIDs );
+	      }
+
+	      else {
+		// rename identical groups
+		aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+		aNewGroup->Add( anNewIDs );
+		
+		TListOfNewGroups& aNewGroups = anIter->second;
+		string aNewGroupName;
+		if (aNewGroups.size() == 1) {
+		  aNewGroupName = string(aGroupName) + "_1";
+		  aNewGroups.front()->SetName(aNewGroupName.c_str());
+		}
+		char aGroupNum[128];
+		sprintf(aGroupNum, "%u", aNewGroups.size()+1);
+		aNewGroupName = string(aGroupName) + "_" + string(aGroupNum);
+		aNewGroup->SetName(aNewGroupName.c_str());
+		aNewGroups.push_back(aNewGroup);
+	      }
+	    }//groups loop
+	  }
+	}
+      }//meshes loop
+
+      if (theMergeNodesAndElements) {
+	// merge nodes
+	set<const SMDS_MeshNode*> aMeshNodes; // no input nodes
+	SMESH_MeshEditor::TListOfListOfNodes aGroupsOfNodes;
+	aNewEditor.FindCoincidentNodes( aMeshNodes, theMergeTolerance, aGroupsOfNodes );
+	aNewEditor.MergeNodes( aGroupsOfNodes );
+	// merge elements
+	aNewEditor.MergeEqualElements();
+      }
+    }
+  }
+  
+  // Update Python script
+  aPythonDump << aNewMesh << " = " << this << ".Concatenate(";
+  aPythonDump << "[";
+  for ( int i = 0; i < theMeshesArray.length(); i++) {
+    if (i > 0) aPythonDump << ", ";
+    aPythonDump << theMeshesArray[i];
+  }
+  aPythonDump << "], ";
+  aPythonDump << theUniteIdenticalGroups << ", "
+              << theMergeNodesAndElements << ", "
+              << theMergeTolerance << ")";
+
+  return aNewMesh._retn();
 }
 
 //=============================================================================
@@ -2868,7 +3140,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               aDataset->CloseOnDisk();
 
               // get elements sorted by ID
-              ::SMESH_MeshEditor::TIDSortedElemSet elemSet;
+              TIDSortedElemSet elemSet;
               if ( isNode )
                 while ( nIt->more() ) elemSet.insert( nIt->next() );
               else
@@ -2876,7 +3148,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               ASSERT( elemSet.size() == nbElems );
 
               // add elements to submeshes
-              ::SMESH_MeshEditor::TIDSortedElemSet::iterator iE = elemSet.begin();
+              TIDSortedElemSet::iterator iE = elemSet.begin();
               for ( int i = 0; i < nbElems; ++i, ++iE )
               {
                 int smID = smIDs[ i ];
@@ -2900,7 +3172,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   sm->AddElement( elem );
                 }
               }
-              delete smIDs;
+              delete [] smIDs;
             }
           }
         } // end reading submeshes

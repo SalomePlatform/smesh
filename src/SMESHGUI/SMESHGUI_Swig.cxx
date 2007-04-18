@@ -633,20 +633,23 @@ SMESH_Swig::SetName(const char* theEntry,
 //================================================================================
 
 void SMESH_Swig::SetMeshIcon(const char* theMeshEntry, 
-			     const bool theIsComputed)
+			     const bool theIsComputed,
+                             const bool isEmpty)
 {
   class TEvent: public SALOME_Event
   {
     SALOMEDS::Study_var myStudy;
     std::string myMeshEntry;
-    bool myIsComputed;
+    bool myIsComputed, myIsEmpty;
   public:
     TEvent(const SALOMEDS::Study_var& theStudy,
 	   const std::string& theMeshEntry,
-	   const bool theIsComputed):
+	   const bool theIsComputed,
+           const bool isEmpty):
       myStudy(theStudy),
       myMeshEntry(theMeshEntry),
-      myIsComputed(theIsComputed)
+      myIsComputed(theIsComputed),
+      myIsEmpty(isEmpty)
     {}
 
     virtual
@@ -656,11 +659,12 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
       SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
       if(!aMeshSO->_is_nil())
 	if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
-	  SMESH::ModifiedMesh(aMesh,myIsComputed);
+	  SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
     }
   };
 
   ProcessVoidEvent(new TEvent(myStudy,
 			      theMeshEntry,
-			      theIsComputed));
+			      theIsComputed,
+                              isEmpty));
 }

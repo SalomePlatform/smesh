@@ -110,25 +110,18 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 //=======================================================================
 
 bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
-	const SMESHDS_Hypothesis * H)
+                                 const SMESHDS_Hypothesis * H)
 {
-	//list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis[SS];
-  
-  if ( !myShapeToHypothesis.IsBound( SS ) )
-    myShapeToHypothesis.Bind( SS, list<const SMESHDS_Hypothesis *>() );
+  list<const SMESHDS_Hypothesis *>& alist=
+    myShapeToHypothesis[SS.Oriented(TopAbs_FORWARD)]; // ignore orientation of SS
 
-  list<const SMESHDS_Hypothesis *>& alist = myShapeToHypothesis.ChangeFind( SS );
+  //Check if the Hypothesis is still present
+  list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
 
-    
+  if (alist.end() != ith) return false;
 
-	//Check if the Hypothesis is still present
-	list<const SMESHDS_Hypothesis*>::iterator ith=alist.begin();
-
-	for (; ith!=alist.end(); ith++)
-		if (H == *ith) return false;
-
-	alist.push_back(H);
-	return true;
+  alist.push_back(H);
+  return true;
 }
 
 //=======================================================================
@@ -136,34 +129,23 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
 //purpose  : 
 //=======================================================================
 
-bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape & S,
-	const SMESHDS_Hypothesis * H)
+bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape &       S,
+                                    const SMESHDS_Hypothesis * H)
 {
-	/*ShapeToHypothesis::iterator its=myShapeToHypothesis.find(S);
-	if(its!=myShapeToHypothesis.end())
-	{
-		list<const SMESHDS_Hypothesis*>::iterator ith=(*its).second.begin();
+  ShapeToHypothesis::iterator its=
+    myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD)); // ignore orientation of S
 
-		for (; ith!=(*its).second.end(); ith++)
-			if (H == *ith)
-			{
-				(*its).second.erase(ith);
-				return true;
-			}
-	}*/
-  if ( myShapeToHypothesis.IsBound( S ) )
+  if(its!=myShapeToHypothesis.end())
   {
-    list<const SMESHDS_Hypothesis *>& alist = myShapeToHypothesis.ChangeFind( S );
-    list<const SMESHDS_Hypothesis*>::iterator ith = alist.begin();
-
-		for (; ith != alist.end(); ith++)
-			if (H == *ith)
-			{
-				alist.erase(ith);
-				return true;
-			}
+    list<const SMESHDS_Hypothesis *>& alist=(*its).second;
+    list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
+    if (ith != alist.end())
+    {
+      alist.erase(ith);
+      return true;
+    }
   }
-	return false;
+  return false;
 }
 
 //=======================================================================
@@ -1039,14 +1021,16 @@ list<int> SMESHDS_Mesh::SubMeshIndices()
 //purpose  : 
 //=======================================================================
 
-const list<const SMESHDS_Hypothesis*>& SMESHDS_Mesh::GetHypothesis(
-	const TopoDS_Shape & S) const
+const list<const SMESHDS_Hypothesis*>&
+SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape & S) const
 {
-	if ( myShapeToHypothesis.IsBound(S) )
-		return myShapeToHypothesis.Find(S);
+  ShapeToHypothesis::const_iterator its=
+    myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD)); // ignore orientation of S
+  if (its!=myShapeToHypothesis.end())
+    return its->second;
 
-	static list<const SMESHDS_Hypothesis*> empty;
-	return empty;
+  static list<const SMESHDS_Hypothesis*> empty;
+  return empty;
 }
 
 //=======================================================================
@@ -1084,7 +1068,7 @@ bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
 //=======================================================================
 bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 {
-	return myShapeToHypothesis.IsBound(S);
+  return myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD))!=myShapeToHypothesis.end();
 }
 
 //=======================================================================

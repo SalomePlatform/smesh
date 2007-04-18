@@ -1,3 +1,18 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2007-01-19 10:44+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
@@ -23,7 +38,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2006-01-13 13:50+0300\n"
+"PO-Revision-Date: 2006-12-28 12:10+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -144,6 +159,10 @@ msgstr "Missing parameters"
 #Compute failed
 msgid "SMESH_WRN_COMPUTE_FAILED"
 msgstr "Mesh computation failed"
+
+#Compute failed
+msgid "SMESH_COMPUTE_SUCCEED"
+msgstr "Mesh computation succeed"
 
 #Study frame with VTK Viewer must be activated
 msgid "SMESH_WRN_VIEWER_VTK"
@@ -756,7 +775,7 @@ msgid "SMESH_MERGE_NODES"
 msgstr "Merge nodes"
 
 #Merge elements
-msgid "SMESH_MERGE_ELEMENTS_TITLE"
+msgid "SMESH_MERGE_ELEMENTS"
 msgstr "Merge elements"
 
 #Extrusion
@@ -774,6 +793,10 @@ msgstr "Create a copy"
 #Rotation
 msgid "SMESH_ROTATION"
 msgstr "Rotation"
+
+#Build compound
+msgid "SMESH_BUILD_COMPOUND_TITLE"
+msgstr "Create a Compound"
 
 # -------------- Mesh Infos --------------
 
@@ -1139,6 +1162,9 @@ msgstr "Belong to Plane"
 msgid "SMESHGUI_FilterTable::BELONG_TO_CYLINDER"
 msgstr "Belong to Cylinder"
 
+msgid "SMESHGUI_FilterTable::BELONG_TO_GENSURFACE"
+msgstr "Belong to Surface"
+
 msgid "SMESHGUI_FilterTable::LYING_ON_GEOM"
 msgstr "Lying on Geom"
 
@@ -1246,6 +1272,8 @@ msgstr "Can not unassign \"%1\":\n"
 msgid "SMESH_RM_HYP_WRN"
 msgstr "\"%1\" unassigned but:\n"
 
+# Hypothesis_Status:
+
 msgid "SMESH_HYP_1"
 msgstr "Algorithm misses a hypothesis"
 
@@ -1256,36 +1284,48 @@ msgid "SMESH_HYP_3"
 msgstr "Hypothesis has a bad parameter value"
 
 msgid "SMESH_HYP_4"
-msgstr "Unknown fatal error at hypothesis definition"
+msgstr "Algorithm is hidden by an algorithm of upper dimension generating all-dimensions elements"
 
 msgid "SMESH_HYP_5"
-msgstr "Hypothesis is not suitable in the current context"
+msgstr "Algorithm hides algorithm(s) of lower dimension by generating all-dimensions elements"
 
 msgid "SMESH_HYP_6"
-msgstr "Non-conform mesh is produced using applied hypotheses"
+msgstr "Unknown fatal error at hypothesis definition"
 
 msgid "SMESH_HYP_7"
-msgstr "Such dimention hypothesis is already assigned to the shape"
+msgstr "Hypothesis is not suitable in the current context"
 
 msgid "SMESH_HYP_8"
-msgstr "Hypothesis and submesh dimensions mismatch"
+msgstr "Non-conform mesh is produced using applied hypotheses"
 
 msgid "SMESH_HYP_9"
-msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
+msgstr "Such dimention hypothesis is already assigned to the shape"
 
 msgid "SMESH_HYP_10"
+msgstr "Hypothesis and submesh dimensions mismatch"
+
+msgid "SMESH_HYP_11"
+msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
+
+msgid "SMESH_HYP_12"
 msgstr "Geomerty mismatches algorithm's expectation"
 
-msgid "MISSING_ALGO"
+# SMESHGUI_HypothesesUtils::GetMessageOnAlgoStateErrors()
+# %1 - algo name
+# %2 - dimension
+# %3 - global/local
+# %4 - hypothesis dim == algoDim
+
+msgid "STATE_ALGO_MISSING"
 msgstr "%3 %2D algorithm is missing"
 
-msgid "MISSING_HYPO"
+msgid "STATE_HYP_MISSING"
 msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
 
-msgid "BAD_PARAM_VALUE"
+msgid "STATE_HYP_BAD_PARAMETER"
 msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 
-msgid "NOT_CONFORM_MESH"
+msgid "STATE_HYP_NOTCONFORM"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
 
 msgid "GLOBAL_ALGO"
@@ -1316,6 +1356,13 @@ msgstr "      The file is empty,\n"
 msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
        "       pyramid's elements will be missed"
+
+msgid "SMESH_EXPORT_STL1"
+msgstr "Mesh  - \"%1\" does not contain triangles"
+
+msgid "SMESH_EXPORT_STL2"
+msgstr "Mesh  - \"%1\" contains another than triangles elements,"
+       "     they are ignored during writing to STL"
 
 msgid "SMESH_EXPORT_MED_DUPLICATED_GRP"
 msgstr "There are duplicated group names in mesh \"%1\".\n"
@@ -1483,7 +1530,7 @@ msgstr "Maximum bending angle"
 msgid "SMESHGUI_CuttingOfQuadsDlg::CAPTION"
 msgstr "Cutting of quadrangles"
 
-msgid "SMESHGUI_CuttingOfQuadsDlg::PREVIEW"
+msgid "PREVIEW"
 msgstr "Preview"
 
 #----------------------------------------------------
@@ -1491,11 +1538,43 @@ msgstr "Preview"
 msgid "SMESHGUI_MoveNodesDlg::CAPTION"
 msgstr "Move node"
 
-msgid "SMESHGUI_MoveNodesDlg::NODE_ID"
+msgid "NODE_ID"
 msgstr "Node ID"
 
 msgid "SMESHGUI_MoveNodesDlg::NODE_ID_IS_NOT_DEFINED"
 msgstr "Node ID is not defined"
+
+#----------------------------------------------------
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CAPTION"
+msgstr "Mesh to pass through a point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MESH_PASS_THROUGH_POINT"
+msgstr "Make a node at point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::METHOD"
+msgstr "Method"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MOVE_EXISTING_METHOD"
+msgstr "Move a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CREATE_NEW_METHOD"
+msgstr "Create a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE"
+msgstr "Node to move"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE_ID"
+msgstr "ID"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::AUTO_SEARCH"
+msgstr "Automatic search"
+
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_ID"
+msgstr "Node ID is invalid"
+
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_MESH"
+msgstr "Mesh to modify not selected"
 
 #----------------------------------------------------
 
@@ -1696,6 +1775,9 @@ msgstr "Start node"
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
 msgstr "Use Angles"
 
+msgid "SMESHGUI_ExtrusionAlongPathDlg::LINEAR_ANGLES"
+msgstr "Linear variation of the angles"
+
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_ANGLES"
 msgstr "Rotation Angles"
 
@@ -1734,23 +1816,36 @@ msgstr "Revolution of 1D elements"
 msgid "SMESHGUI_RevolutionDlg::REVOLUTION_2D"
 msgstr "Revolution of 2D elements"
 
+msgid "SMESHGUI_RevolutionDlg::ANGLE_BY_STEP"
+msgstr "Use Angle by Step"
+
+msgid "SMESHGUI_RevolutionDlg::TOTAL_ANGLE"
+msgstr "Use Total Angle"
+
+msgid "SMESHGUI_RevolutionDlg::PREVIEW"
+msgstr "Preview"
+
 #----------------------------------------------------
 
 #Coincident nodes
-msgid "SMESHGUI_MergeNodesDlg::COINCIDENT_NODES"
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_NODES"
 msgstr "Coincident nodes"
 
+#Coincident elements
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_ELEMENTS"
+msgstr "Coincident elements"
+
 #Detect
-msgid "SMESHGUI_MergeNodesDlg::DETECT"
+msgid "SMESHGUI_EditMeshDlg::DETECT"
 msgstr "Detect"
 
 #Select all
-msgid "SMESHGUI_MergeNodesDlg::SELECT_ALL"
+msgid "SMESHGUI_EditMeshDlg::SELECT_ALL"
 msgstr "Select all"
 
-# Edit group of nodes
-msgid "SMESHGUI_MergeNodesDlg::EDIT_GROUP_OF_NODES"
-msgstr "Edit group of nodes"
+# Edit selected group
+msgid "SMESHGUI_EditMeshDlg::EDIT_SELECTED_GROUP"
+msgstr "Edit selected group"
 
 #----------------------------------------------------
 
@@ -2033,6 +2128,9 @@ msgstr "UNV file"
 msgid "MEN_MED"
 msgstr "MED file"
 
+msgid "MEN_STL"
+msgstr "STL file"
+
 msgid "MEN_EXPORT_DAT"
 msgstr "Export to DAT file"
 
@@ -2041,6 +2139,9 @@ msgstr "Export to UNV file"
 
 msgid "MEN_EXPORT_MED"
 msgstr "Export to MED file"
+
+msgid "MEN_EXPORT_STL"
+msgstr "Export to STL file"
 
 msgid "MEN_DELETE"
 msgstr "Delete"
@@ -2059,6 +2160,9 @@ msgstr "Compute"
 
 msgid "MEN_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "MEN_BUILD_COMPOUND"
+msgstr "Build Compound"
 
 msgid "MEN_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2218,6 +2322,9 @@ msgstr "Merge elements"
 
 msgid "MEN_MOVE"
 msgstr "Move Node"
+
+msgid "MEN_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
 
 msgid "MEN_INV"
 msgstr "Diagonal Inversion"
@@ -2398,6 +2505,9 @@ msgstr "Export to UNV file"
 msgid "TOP_EXPORT_MED"
 msgstr "Export to MED file"
 
+msgid "TOP_EXPORT_STL"
+msgstr "Export to STL file"
+
 msgid "TOP_DELETE"
 msgstr "Delete"
 
@@ -2415,6 +2525,9 @@ msgstr "Compute"
 
 msgid "TOP_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "TOP_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
 
 msgid "TOP_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2572,6 +2685,9 @@ msgstr "Merge elements"
 msgid "TOP_MOVE"
 msgstr "Move Node"
 
+msgid "TOP_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "TOP_INV"
 msgstr "Diagonal Inversion"
 
@@ -2702,6 +2818,9 @@ msgstr "Export to UNV file"
 msgid "STB_EXPORT_MED"
 msgstr "Export to MED file"
 
+msgid "STB_EXPORT_STL"
+msgstr "Export to STL file"
+
 msgid "STB_DELETE"
 msgstr "Delete"
 
@@ -2719,6 +2838,9 @@ msgstr "Compute"
 
 msgid "STB_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "STB_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
 
 msgid "STB_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2875,6 +2997,9 @@ msgstr "Merge elements"
 
 msgid "STB_MOVE"
 msgstr "Move Node"
+
+msgid "STB_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
 
 msgid "STB_INV"
 msgstr "Diagonal Inversion"
@@ -3103,7 +3228,13 @@ msgstr "Display mode"
 msgid "SMESHGUI::PREF_AUTO_GROUPS"
 msgstr "Automatically create groups for MED export"
 
+msgid "SMESHGUI::PREF_RENUMBER" 
+msgstr "Automatic renumbering"
+
 #-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshDlg::DIM_0D"
+msgstr "0D"
 
 msgid "SMESHGUI_MeshDlg::DIM_1D"
 msgstr "1D"
@@ -3134,6 +3265,31 @@ msgstr "Edit mesh/sub-mesh"
 
 msgid "SMESHGUI_MeshDlg::HYPOTHESES_SETS"
 msgstr "Assign a set of hypotheses"
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND"
+msgstr "Compound"
+
+msgid "SMESHGUI_BuildCompoundDlg::RESULT_NAME"
+msgstr "Result name"
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND_MESH"
+msgstr "Compound_Mesh"
+
+msgid "SMESHGUI_BuildCompoundDlg::MESHES"
+msgstr "Meshes"
+
+msgid "SMESHGUI_BuildCompoundDlg::PROCESSING_IDENTICAL_GROUPS"
+msgstr "Processing identical groups"
+
+msgid "SMESHGUI_BuildCompoundDlg::UNITE"
+msgstr "Unite"
+
+msgid "SMESHGUI_BuildCompoundDlg::RENAME"
+msgstr "Rename"
+
+msgid "SMESHGUI_BuildCompoundDlg::MERGE_NODES_AND_ELEMENTS"
+msgstr "Merge coincident nodes and elements"
 
 #-----------------------------------------------------------
 
@@ -3233,3 +3389,59 @@ msgstr "Mesh is not selected\nPlease specify it and try again"
 
 msgid "SMESHGUI_ConvToQuadOp::REF_IS_NULL"
 msgstr "No valid mesh object selected"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_ComputeDlg::CAPTION"
+msgstr "Compute mesh failed"
+
+msgid "SMESHGUI_ComputeDlg::CONSTRUCTOR"
+msgstr "Compute mesh"
+
+msgid "SMESHGUI_ComputeDlg::ERRORS"
+msgstr "Errors"
+
+msgid "SMESHGUI_ComputeDlg::SHOW_SHAPE"
+msgstr "Show SubShape"
+
+msgid "SMESHGUI_ComputeDlg::PUBLISH_SHAPE"
+msgstr "Publish SubShape"
+
+msgid "COMPERR_OK"
+msgstr "No errors"
+
+msgid "COMPERR_BAD_INPUT_MESH"
+msgstr "Invalid input mesh"
+
+msgid "COMPERR_STD_EXCEPTION"
+msgstr "std::exception"
+
+msgid "COMPERR_OCC_EXCEPTION"
+msgstr "OCC exception"
+
+msgid "COMPERR_SLM_EXCEPTION"
+msgstr "SALOME exception"
+
+msgid "COMPERR_EXCEPTION"
+msgstr "Unknown exception"
+
+msgid "COMPERR_MEMORY_PB"
+msgstr "Memory allocation problem"
+
+msgid "COMPERR_ALGO_FAILED"
+msgstr "Algorithm failed"
+
+msgid "COMPERR_BAD_SHAPE"
+msgstr "Unexpected geometry"
+
+msgid "COL_ALGO_HEADER"
+msgstr "Algorithm"
+
+msgid "COL_SHAPE_HEADER"
+msgstr "SubShape"
+
+msgid "COL_ERROR_HEADER"
+msgstr "Error"
+
+#-----------------------------------------------------------
+

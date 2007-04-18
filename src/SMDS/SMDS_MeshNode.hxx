@@ -46,7 +46,8 @@ class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 	void RemoveInverseElement(const SMDS_MeshElement * parent);
 	void ClearInverseElements();
 	bool emptyInverseElements();
-	SMDS_ElemIteratorPtr GetInverseElementIterator() const;	
+	SMDS_ElemIteratorPtr GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+        int NbInverseNodes(SMDSAbs_ElementType type=SMDSAbs_All) const;
 	void SetPosition(const SMDS_PositionPtr& aPos);
 	const SMDS_PositionPtr& GetPosition() const;
 	SMDSAbs_ElementType GetType() const;

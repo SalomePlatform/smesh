@@ -80,6 +80,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -616,12 +617,12 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
     }
   } else if (myEditCurrentArgument == LineEditNodes && !myMesh->_is_nil() && myActor) {
     myNbOkNodes = 0;
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
   } else {
   }
 

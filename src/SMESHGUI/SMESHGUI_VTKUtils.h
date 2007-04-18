@@ -15,20 +15,30 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 
 #ifndef SMESHGUI_VTKUtils_HeaderFile
 #define SMESHGUI_VTKUtils_HeaderFile
 
 #include "SMESH_SMESHGUI.hxx"
 
-class QString;
-class vtkRenderer;
-class TColStd_IndexedMapOfInteger;
-
 #include "SALOMEDSClient_definitions.hxx"
 #include "SALOME_InteractiveObject.hxx"
 #include "VTKViewer_Filter.h"
+
+#include "SMESH_Object.h"
+#include "SMESHGUI_Utils.h"
+
+#include <CORBA.h>
+
+#include "SALOMEconfig.h"
+#include CORBA_CLIENT_HEADER(SALOMEDS)
+
+#include <boost/shared_ptr.hpp>
+
+class QString;
+
+class TColStd_IndexedMapOfInteger;
 
 class SALOMEDSClient_Study;
 
@@ -40,22 +50,13 @@ class SVTK_ViewWindow;
 class SVTK_Selector;
 
 class LightApp_SelectionMgr;
-class SMESHGUI;
-
-#include <omniORB4/CORBA.h>
-
-#include "SALOMEconfig.h"
-#include CORBA_CLIENT_HEADER(SALOMEDS)
-
-#include <boost/shared_ptr.hpp>
-#include "SMESH_Object.h"
-
-class SMESH_Actor;
-class SALOME_Actor;
-class SVTK_ViewWindow;
 class SalomeApp_Module;
 
-namespace SMESH{
+class SMESHGUI;
+class SMESH_Actor;
+class SALOME_Actor;
+
+namespace SMESH {
 
   //----------------------------------------------------------------------------
   typedef pair<int,string> TKeyOfVisualObj;
@@ -66,25 +67,25 @@ SMESHGUI_EXPORT
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
-  SVTK_ViewWindow* GetViewWindow(const SalomeApp_Module* theModule);
-
+  SVTK_ViewWindow* GetViewWindow(const SalomeApp_Module* theModule = NULL,
+				 bool createIfNotFound = false);
 SMESHGUI_EXPORT
-  SUIT_ViewWindow* GetActiveWindow();
-
+  SVTK_ViewWindow* FindVtkViewWindow(SUIT_ViewManager*, SUIT_ViewWindow*);
 SMESHGUI_EXPORT
-  SVTK_ViewWindow* FindVtkViewWindow( SUIT_ViewManager*,
-				      SUIT_ViewWindow* );
-
-SMESHGUI_EXPORT
-  SVTK_ViewWindow* GetVtkViewWindow( SUIT_ViewWindow* );
+  SVTK_ViewWindow* GetVtkViewWindow(SUIT_ViewWindow*);
 
 SMESHGUI_EXPORT
   SVTK_ViewWindow* GetCurrentVtkView();
 
+  //----------------------------------------------------------------------------
+SMESHGUI_EXPORT
+  void RepaintCurrentView();
 SMESHGUI_EXPORT
   void RepaintViewWindow(SVTK_ViewWindow*);
 SMESHGUI_EXPORT
   void RenderViewWindow(SVTK_ViewWindow*);
+SMESHGUI_EXPORT
+  void FitAll();
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
@@ -106,11 +107,11 @@ SMESHGUI_EXPORT
   //----------------------------------------------------------------------------
   enum EDisplaing {eDisplayAll, eDisplay, eDisplayOnly, eErase, eEraseAll};
 SMESHGUI_EXPORT
-  void UpdateView (SUIT_ViewWindow*, 
-		   EDisplaing theAction, 
-		   const char* theEntry = "");
-SMESHGUI_EXPORT
-  void UpdateView (EDisplaing theAction, 
+  void UpdateView (SUIT_ViewWindow*,
+		   EDisplaing theAction,
+		   const char* theEntry = "" );
+SMESHGUI_EXPORT		   
+  void UpdateView (EDisplaing theAction,
 		   const char* theEntry = "");
 
 SMESHGUI_EXPORT
@@ -122,18 +123,7 @@ SMESHGUI_EXPORT
 
 
   //----------------------------------------------------------------------------
-SMESHGUI_EXPORT
-  void FitAll();
-
-SMESHGUI_EXPORT
-  void RepaintCurrentView();
-
-SMESHGUI_EXPORT
-  vtkRenderer* GetCurrentRenderer();
-
-
-  //----------------------------------------------------------------------------
-SMESHGUI_EXPORT
+SMESHGUI_EXPORT  
   void SetPointRepresentation(bool theIsVisible);
 
 SMESHGUI_EXPORT
@@ -145,24 +135,17 @@ SMESHGUI_EXPORT
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
-  SVTK_Selector* 
-    GetSelector(SUIT_ViewWindow* = GetActiveWindow());
+  SVTK_Selector* GetSelector (SUIT_ViewWindow* = GetActiveWindow());
 
 SMESHGUI_EXPORT
   void SetFilter (const Handle(VTKViewer_Filter)& theFilter,
 		  SVTK_Selector* theSelector = GetSelector());
-
 SMESHGUI_EXPORT
-  Handle(VTKViewer_Filter) 
-    GetFilter (int theId, SVTK_Selector* theSelector = GetSelector());
-
+  Handle(VTKViewer_Filter) GetFilter (int theId, SVTK_Selector* theSelector = GetSelector());
 SMESHGUI_EXPORT
-  bool IsFilterPresent (int theId, 
-			SVTK_Selector* theSelector = GetSelector());
-
+  bool IsFilterPresent (int theId, SVTK_Selector* theSelector = GetSelector());
 SMESHGUI_EXPORT
-  void RemoveFilter (int theId, 
-		     SVTK_Selector* theSelector = GetSelector());
+  void RemoveFilter (int theId, SVTK_Selector* theSelector = GetSelector());
 
 SMESHGUI_EXPORT
   void RemoveFilters (SVTK_Selector* theSelector = GetSelector());
@@ -172,44 +155,38 @@ SMESHGUI_EXPORT
 		SVTK_Selector* theSelector = GetSelector());
 
   //----------------------------------------------------------------------------
-SMESHGUI_EXPORT
-  int GetNameOfSelectedNodes(SVTK_Selector* theSelector, 
-			     const Handle(SALOME_InteractiveObject)& theIO, 
+SMESHGUI_EXPORT  
+  int GetNameOfSelectedNodes(SVTK_Selector* theSelector,
+			     const Handle(SALOME_InteractiveObject)& theIO,
 			     QString& theName);
-  
 SMESHGUI_EXPORT
-  int GetNameOfSelectedElements(SVTK_Selector* theSelector, 
-				const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedElements(SVTK_Selector* theSelector,
+				const Handle(SALOME_InteractiveObject)& theIO,
 				QString& theName);
-  
 SMESHGUI_EXPORT
-  int GetEdgeNodes(SVTK_Selector* theSelector, 
+  int GetEdgeNodes(SVTK_Selector* theSelector,
 		   const TVisualObjPtr& theVisualObj,
-		   int& theId1, 
+		   int& theId1,
 		   int& theId2);
 
   //----------------------------------------------------------------------------
-SMESHGUI_EXPORT
-  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
-			      const Handle(SALOME_InteractiveObject)& theIO, 
+SMESHGUI_EXPORT  
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*,
+			      const Handle(SALOME_InteractiveObject)& theIO,
 			      QString& theName);
-
 SMESHGUI_EXPORT
-  int GetNameOfSelectedNodes (LightApp_SelectionMgr*, 
+  int GetNameOfSelectedNodes (LightApp_SelectionMgr*,
 			      QString& aName);
-
 SMESHGUI_EXPORT
-  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
-				 const Handle(SALOME_InteractiveObject)& theIO, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*,
+				 const Handle(SALOME_InteractiveObject)& theIO,
 				 QString& theName);
-
 SMESHGUI_EXPORT
-  int GetNameOfSelectedElements (LightApp_SelectionMgr*, 
+  int GetNameOfSelectedElements (LightApp_SelectionMgr*,
 				 QString& aName);
-
 SMESHGUI_EXPORT
-  int GetSelected (LightApp_SelectionMgr*, 
-		   TColStd_IndexedMapOfInteger& theMap, 
+  int GetSelected (LightApp_SelectionMgr*,
+		   TColStd_IndexedMapOfInteger& theMap,
 		   const bool theIsElement = true );
 
 SMESHGUI_EXPORT

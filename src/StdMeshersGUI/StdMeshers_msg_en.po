@@ -256,3 +256,15 @@ msgstr "Create"
 msgid "StdMeshersGUI_LayerDistributionParamWdg::EDIT"
 msgstr "Edit"
 
+
+# -------------- Segment Length Around Vertex --------------
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS"
+msgstr "Segment Length Around Vertex"
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_PARAM"
+msgstr "Length"
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_TITLE"
+msgstr "Hypothesis Construction"
+

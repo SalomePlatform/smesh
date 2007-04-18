@@ -89,6 +89,8 @@
 #include <qvalidator.h>
 #include <qevent.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
 
 
@@ -309,13 +311,16 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
   GroupCoordinatesLayout->setSpacing(6);
   GroupCoordinatesLayout->setMargin(11);
   TextLabel_X = new QLabel(GroupCoordinates, "TextLabel_X");
+  TextLabel_X->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   TextLabel_X->setText(tr("SMESH_X" ));
   GroupCoordinatesLayout->addWidget(TextLabel_X, 0, 0);
   TextLabel_Y = new QLabel(GroupCoordinates, "TextLabel_Y");
+  TextLabel_Y->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabel_Y->setText(tr("SMESH_Y" ));
   GroupCoordinatesLayout->addWidget(TextLabel_Y, 0, 2);
 
   TextLabel_Z = new QLabel(GroupCoordinates, "TextLabel_Z");
+  TextLabel_Z->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabel_Z->setText(tr("SMESH_Z" ));
   GroupCoordinatesLayout->addWidget(TextLabel_Z, 0, 4);
 

@@ -25,7 +25,9 @@
 # see salome_shared_modules.py
 # (avoids incomplete import at run time)
 
-print "============== import SMESH ======================="
+from launchConfigureParser import verbose
+
+if verbose(): print "============== import SMESH ======================="
 
 import SMESH
 

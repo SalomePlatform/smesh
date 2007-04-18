@@ -5,6 +5,7 @@
 <topic name="Aspect ratio 3D" url="aspect_ratio_3d.htm" />
 <topic name="Borders at multi-connection" url="borders_at_multi-connection.htm" />
 <topic name="Borders at multiconnection 2D" url="borders_at_multiconnection_2d.htm" />
+<topic name="Building Compounds" url="building_compounds.htm" />
 <topic name="Clipping" url="clipping.htm" />
 <topic name="Constructing Meshes" url="constructing_meshes.htm" />
 <topic name="Convert to/from Quadratic Mesh" url="convert_to_from_quadratic_mesh.htm" />
@@ -61,6 +62,7 @@
 <topic name="Length" url="length.htm" />
 <topic name="Merge Elements" url="merge_elements.htm" />
 <topic name="mesh" url="mesh.htm" />
+<topic name="Mesh through point" url="mesh_through_point.htm" />
 <topic name="Modifying Meshes" url="modifying_meshes.htm" />
 <topic name="SALOME - SMESH - v.version: Package smesh" url="namespacesmesh.html" />
 <topic name="Netgen 2D and 3D hypotheses" url="netgen_2d_and_3d_hypotheses.htm" />
@@ -71,6 +73,7 @@
 <topic name="Quality Controls" url="quality_controls.htm" />
 <topic name="Radial Prism" url="radial_prism.htm" />
 <topic name="Revolution" url="revolution.htm" />
+<topic name="Segments around Vertex Algorithm" url="segments_around_vertex_algorithm.htm" />
 <topic name="Selection filter library" url="selection_filter_library.htm" />
 <topic name="smesh.py_introduction" url="smesh.py_introduction.htm" />
 <topic name="Transforming Meshes" url="transforming_meshes.htm" />

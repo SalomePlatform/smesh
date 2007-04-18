@@ -119,7 +119,7 @@ void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr h, QWi
       if( !aSubMesh->_is_nil() )
 	aMesh = aSubMesh->GetFather();
       _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
-      SMESH::ModifiedMesh( meshSO, false);
+      SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
     }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
 }

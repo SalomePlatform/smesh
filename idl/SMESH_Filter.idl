@@ -55,6 +55,7 @@ module SMESH
     FT_BelongToGeom,
     FT_BelongToPlane,
     FT_BelongToCylinder,
+    FT_BelongToGenSurface,
     FT_LyingOnGeom,
     FT_RangeOfIds,
     FT_BadOrientedVolume,
@@ -158,22 +159,28 @@ module SMESH
 
   /*!
   * Logical functor (predicate) "Belong To Surface".
-  * Base interface for "belong to plane" and "belong to cylinder interfaces"
+  * Base interface for "belong to plane" and "belong to cylinder"
+  * and "Belong To Generic Surface" interfaces
   */
   interface BelongToSurface: Predicate
   {
-    void   SetTolerance( in double theToler );
-    double GetTolerance();
-    void   SetShapeName( in string theName, in ElementType theType );
-    void   SetShape( in string theID, in string theName, in ElementType theType );
-    string GetShapeName();
-    string GetShapeID();
+    void    SetTolerance( in double theToler );
+    double  GetTolerance();
+    void    SetShapeName( in string theName, in ElementType theType );
+    void    SetShape( in string theID, in string theName, in ElementType theType );
+    string  GetShapeName();
+    string  GetShapeID();
+    /*!
+    * Limit surface extent to bounding box of boundaries (edges)
+    * in surface parametric space. Boundaries are ignored by default
+    */
+    void    SetUseBoundaries( in boolean theUseBndRestrictions );
+    boolean GetUseBoundaries();
   };
-
 
   /*!
   * Logical functor (predicate) "Belong To Plane".
-  * Verify whether mesh element lie in pointed Geom planar object
+  * Verify whether mesh element lie on pointed Geom planar object
   */
   interface BelongToPlane: BelongToSurface
   {
@@ -181,12 +188,21 @@ module SMESH
   };
 
   /*!
-  * Logical functor (predicate) "Belong To Culinder".
-  * Verify whether mesh element lie in pointed Geom cylindrical object
+  * Logical functor (predicate) "Belong To Cylinder".
+  * Verify whether mesh element lie on pointed Geom cylindrical object
   */
   interface BelongToCylinder: BelongToSurface
   {
     void   SetCylinder( in GEOM::GEOM_Object theGeom, in ElementType theType );
+  };
+
+  /*!
+  * Logical functor (predicate) "Belong To Generic Surface".
+  * Verify whether mesh element lie in pointed Geom cylindrical object
+  */
+  interface BelongToGenSurface: BelongToSurface
+  {
+    void   SetSurface( in GEOM::GEOM_Object theGeom, in ElementType theType );
   };
 
   /*!
@@ -391,6 +407,7 @@ module SMESH
     BelongToGeom      CreateBelongToGeom();
     BelongToPlane     CreateBelongToPlane();
     BelongToCylinder  CreateBelongToCylinder();
+    BelongToGenSurface CreateBelongToGenSurface();
 
     LyingOnGeom       CreateLyingOnGeom();
 

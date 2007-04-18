@@ -38,6 +38,7 @@ salomeinclude_HEADERS = \
 	SMESH_Hypothesis.hxx \
 	SMESH_HypoFilter.hxx \
 	SMESH_Algo.hxx \
+	SMESH_0D_Algo.hxx \
 	SMESH_1D_Algo.hxx \
 	SMESH_2D_Algo.hxx \
 	SMESH_3D_Algo.hxx \
@@ -50,6 +51,10 @@ salomeinclude_HEADERS = \
 	SMESH_SequenceOfElemPtr.hxx \
 	SMESH_SequenceOfNode.hxx \
 	SMESH_MesherHelper.hxx \
+	SMESH_Octree.hxx \
+	SMESH_OctreeNode.hxx \
+	SMESH_Comment.hxx \
+	SMESH_ComputeError.hxx \
 	SMESH_SMESH.hxx
 
 # Libraries targets
@@ -62,6 +67,7 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_subMesh.cxx \
 	SMESH_Hypothesis.cxx \
 	SMESH_Algo.cxx \
+	SMESH_0D_Algo.cxx \
 	SMESH_1D_Algo.cxx \
 	SMESH_2D_Algo.cxx \
 	SMESH_3D_Algo.cxx \
@@ -70,7 +76,9 @@ dist_libSMESHimpl_la_SOURCES = \
 	SMESH_Block.cxx \
 	SMESH_Pattern.cxx \
 	SMESH_HypoFilter.cxx \
-	SMESH_MesherHelper.cxx
+	SMESH_MesherHelper.cxx \
+	SMESH_Octree.cxx \
+	SMESH_OctreeNode.cxx
 
 # additionnal information to compile and link file
 libSMESHimpl_la_CPPFLAGS = \

@@ -31,6 +31,7 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMDS_Mesh.hxx"
 
 #include "utilities.h"
 
@@ -1111,8 +1112,8 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
     return IsLinked(myVolumeNodes[theNode1Index], myVolumeNodes[theNode2Index]);
   }
 
-  int minInd = theNode1Index < theNode2Index ? theNode1Index : theNode2Index;
-  int maxInd = theNode1Index < theNode2Index ? theNode2Index : theNode1Index;
+  int minInd = min( theNode1Index, theNode2Index );
+  int maxInd = max( theNode1Index, theNode2Index );
 
   if ( minInd < 0 || maxInd > myVolumeNbNodes - 1 || maxInd == minInd )
     return false;
@@ -1217,6 +1218,65 @@ int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
   return -1;
 }
 
+//================================================================================
+/*!
+ * \brief Fill vector with boundary faces existing in the mesh
+  * \param faces - vector of found nodes
+  * \retval int - nb of found faces
+ */
+//================================================================================
+
+int SMDS_VolumeTool::GetAllExistingFaces(vector<const SMDS_MeshElement*> & faces)
+{
+  faces.clear();
+  faces.reserve( NbFaces() );
+  for ( int iF = 0; iF < NbFaces(); ++iF ) {
+    const SMDS_MeshFace* face = 0;
+    const SMDS_MeshNode** nodes = GetFaceNodes( iF );
+    switch ( NbFaceNodes( iF )) {
+    case 3:
+      face = SMDS_Mesh::FindFace( nodes[0], nodes[1], nodes[2] ); break;
+    case 4:
+      face = SMDS_Mesh::FindFace( nodes[0], nodes[1], nodes[2], nodes[3] ); break;
+    case 6:
+      face = SMDS_Mesh::FindFace( nodes[0], nodes[1], nodes[2],
+                                  nodes[3], nodes[4], nodes[5]); break;
+    case 8:
+      face = SMDS_Mesh::FindFace( nodes[0], nodes[1], nodes[2], nodes[3],
+                                  nodes[4], nodes[5], nodes[6], nodes[7]); break;
+    }
+    if ( face )
+      faces.push_back( face );
+  }
+  return faces.size();
+}
+
+
+//================================================================================
+/*!
+ * \brief Fill vector with boundary edges existing in the mesh
+  * \param edges - vector of found edges
+  * \retval int - nb of found faces
+ */
+//================================================================================
+
+int SMDS_VolumeTool::GetAllExistingEdges(vector<const SMDS_MeshElement*> & edges) const
+{
+  edges.clear();
+  edges.reserve( myVolumeNbNodes * 2 );
+  for ( int i = 0; i < myVolumeNbNodes; ++i ) {
+    for ( int j = i + 1; j < myVolumeNbNodes; ++j ) {
+      if ( IsLinked( i, j )) {
+        const SMDS_MeshElement* edge =
+          SMDS_Mesh::FindEdge( myVolumeNodes[i], myVolumeNodes[j] );
+        if ( edge )
+          edges.push_back( edge );
+      }
+    }
+  }
+  return edges.size();
+}
+
 //=======================================================================
 //function : IsFreeFace
 //purpose  : check that only one volume is build on the face nodes
@@ -1276,7 +1336,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
         continue; // opposite side
     }
     // remove a volume from volNbShared map
-    volNbShared.erase( vNbIt );
+    volNbShared.erase( vNbIt-- );
   }
 
   // here volNbShared contains only volumes laying on the

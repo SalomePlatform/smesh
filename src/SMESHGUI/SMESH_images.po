@@ -53,6 +53,10 @@ msgstr "mesh_add_sub.png"
 msgid "ICON_DLG_MOVE_NODE"
 msgstr "mesh_move_node.png"
 
+#Mesh to pass through point
+msgid "ICON_DLG_MESH_THROU_POINT"
+msgstr "mesh_node_to_point.png"
+
 #Remove Node
 msgid "ICON_DLG_REM_NODE"
 msgstr "mesh_rem_node.png"
@@ -132,6 +136,10 @@ msgstr "mesh_merge_nodes.png"
 #Merge elements
 msgid "ICON_DLG_MERGE_ELEMENTS"
 msgstr "mesh_merge_elements.png"
+
+#Build compound
+msgid "ICON_DLG_BUILD_COMPOUND_MESH"
+msgstr "mesh_build_compound.png"
 
 #-----------------------------------------------------------
 # Hypothesis
@@ -226,6 +234,10 @@ msgstr "mesh_quad_hexahedron.png"
 msgid "ICON_SMESH_TREE_MESH"
 msgstr "mesh_tree_mesh.png"	
 
+#mesh_tree_mesh
+msgid "ICON_SMESH_TREE_MESH_PARTIAL"
+msgstr "mesh_tree_mesh_partial.png"	
+
 #mesh_tree_group
 msgid "ICON_SMESH_TREE_GROUP"
 msgstr "mesh_tree_group.png"	
@@ -288,6 +300,9 @@ msgstr "delete.png"
 
 msgid "ICON_COMPUTE"
 msgstr "mesh_compute.png"
+
+msgid "ICON_BUILD_COMPOUND"
+msgstr "mesh_build_compound.png"
 
 msgid "ICON_UNION"
 msgstr "mesh_unionGroups.png"

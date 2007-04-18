@@ -26,7 +26,10 @@
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "utilities.h"
+
+#include <vector>
 
 using namespace std;
 
@@ -171,11 +174,42 @@ int SMDS_VolumeOfNodes::NbEdges() const
         return 0;
 }
 
+/// ===================================================================
+/*!
+ * \brief Iterator on node of volume
+ */
+/// ===================================================================
+
 class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 {
  public:
   SMDS_VolumeOfNodes_MyIterator(const SMDS_MeshNode* const* s, int l):
     SMDS_NodeArrayElemIterator( s, & s[ l ]) {}
+};
+
+/// ===================================================================
+/*!
+ * \brief Iterator on faces or edges of volume
+ */
+/// ===================================================================
+
+class _MySubIterator : public SMDS_ElemIterator
+{
+  vector< const SMDS_MeshElement* > myElems;
+  int myIndex;
+public:
+  _MySubIterator(const SMDS_VolumeOfNodes* vol, SMDSAbs_ElementType type):myIndex(0) {
+    SMDS_VolumeTool vTool(vol);
+    if (type == SMDSAbs_Face)
+      vTool.GetAllExistingFaces( myElems );
+    else
+      vTool.GetAllExistingFaces( myElems );
+  }
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more() { return myIndex < myElems.size(); }
+
+  /// Return the current object and step to the next one
+  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
 };
 
 SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::elementsIterator(SMDSAbs_ElementType type) const
@@ -186,6 +220,10 @@ SMDS_ElemIteratorPtr SMDS_VolumeOfNodes::elementsIterator(SMDSAbs_ElementType ty
     return SMDS_MeshElement::elementsIterator(SMDSAbs_Volume);
   case SMDSAbs_Node:
     return SMDS_ElemIteratorPtr(new SMDS_VolumeOfNodes_MyIterator(myNodes,myNbNodes));
+  case SMDSAbs_Face:
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Face));
+  case SMDSAbs_Edge:
+    return SMDS_ElemIteratorPtr(new _MySubIterator(this,SMDSAbs_Edge));
   default:
     MESSAGE("ERROR : Iterator not implemented");
     return SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL);

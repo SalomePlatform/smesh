@@ -195,6 +195,16 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
   static int Count(const TopoDS_Shape&    shape,
                    const TopAbs_ShapeEnum type,
                    const bool             ignoreSame);
+
+  /*!
+   * \brief Set event listeners to submesh with projection algo
+    * \param subMesh - submesh with projection algo
+    * \param srcShape - source shape
+    * \param srcMesh - source mesh
+   */
+  static void SetEventListener(SMESH_subMesh* subMesh,
+                               TopoDS_Shape   srcShape,
+                               SMESH_Mesh*    srcMesh);
 };
 
 #endif

@@ -33,7 +33,8 @@ BASEIDL_FILES = \
 	SMESH_BasicHypothesis.idl \
 	SMESH_Filter.idl \
 	SMESH_Group.idl \
-	SMESH_Pattern.idl
+	SMESH_Pattern.idl \
+	SMESH_MeshEditor.idl
 
 EXTRA_DIST+= $(BASEIDL_FILES)
 
@@ -51,7 +52,8 @@ nodist_libSalomeIDLSMESH_la_SOURCES = \
 	SMESH_BasicHypothesisSK.cc \
 	SMESH_FilterSK.cc \
 	SMESH_GroupSK.cc \
-	SMESH_PatternSK.cc
+	SMESH_PatternSK.cc \
+	SMESH_MeshEditorSK.cc
 
 # header files must be exported: other modules have to use this library
 nodist_salomeinclude_HEADERS= $(BASEIDL_FILES:%.idl=%.hh)

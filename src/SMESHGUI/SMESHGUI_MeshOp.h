@@ -136,7 +136,7 @@ private:
                                                  //   edited mesh/sub-mesh
 
   // hypdata corresponding to hypotheses present in myDlg
-  THypDataList                   myAvailableHypData[3][NbHypTypes];
+  THypDataList                   myAvailableHypData[4][NbHypTypes];
 
   bool                           myIgnoreAlgoSelection;
 };

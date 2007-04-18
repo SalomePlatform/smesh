@@ -62,6 +62,7 @@ public:
   bool IsEmbeddedMode();
 
   void ShapeToMesh(const TopoDS_Shape & S);
+  TopoDS_Shape ShapeToMesh() const;
   bool AddHypothesis(const TopoDS_Shape & SS, const SMESHDS_Hypothesis * H);
   bool RemoveHypothesis(const TopoDS_Shape & S, const SMESHDS_Hypothesis * H);
   
@@ -401,12 +402,11 @@ public:
 			     const TopoDS_Shape & S);
   void UnSetMeshElementOnShape(const SMDS_MeshElement * anElt,
 			       const TopoDS_Shape & S);
-  TopoDS_Shape ShapeToMesh() const;
   bool HasMeshElements(const TopoDS_Shape & S);
   SMESHDS_SubMesh * MeshElements(const TopoDS_Shape & S) const;
   SMESHDS_SubMesh * MeshElements(const int Index);
   std::list<int> SubMeshIndices();
-  const std::map<int,SMESHDS_SubMesh*>& SubMeshes()
+  const std::map<int,SMESHDS_SubMesh*>& SubMeshes() const
   { return myShapeIndexToSubMesh; }
 
   bool HasHypothesis(const TopoDS_Shape & S);

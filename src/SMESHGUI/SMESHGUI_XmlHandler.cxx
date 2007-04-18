@@ -141,7 +141,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       {
         int aVal = (*anIter).toInt( &isOk );
         if ( isOk )
-          aDim.append( aVal - 1 );
+          aDim.append( aVal );
       }
 
       // for algo
@@ -156,18 +156,18 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
         }
       }
       
-      HypothesisData* aHypLibNames =
+      HypothesisData* aHypData =
         new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
                             aLabel, anIcon, aDim, isAux,
                             attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ]);
 
       if (qName == "algorithm")
       {
-        myAlgorithmsMap[(char*)aHypAlType.latin1()] = aHypLibNames;
+        myAlgorithmsMap[(char*)aHypAlType.latin1()] = aHypData;
       }
       else
       {
-        myHypothesesMap[(char*)aHypAlType.latin1()] = aHypLibNames;
+        myHypothesesMap[(char*)aHypAlType.latin1()] = aHypData;
       }
     }
   }

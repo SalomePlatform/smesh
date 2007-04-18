@@ -392,6 +392,9 @@ namespace SMESH
 
     void                            SetTolerance( CORBA::Double );
     CORBA::Double                   GetTolerance();
+    
+    void                            SetUseBoundaries( CORBA::Boolean theUseBndRestrictions );
+    CORBA::Boolean                  GetUseBoundaries();
 
   protected:
     Controls::ElementsOnSurfacePtr  myElementsOnSurfacePtr;
@@ -426,6 +429,19 @@ namespace SMESH
     FunctorType                     GetFunctorType();
   };
 
+  /*
+    Class       : BelongToGenSurface_i
+    Description : Verify whether mesh element lie on pointed Geom surfasic object
+  */
+  class BelongToGenSurface_i: public virtual POA_SMESH::BelongToGenSurface,
+                              public virtual BelongToSurface_i
+  {
+  public:
+    BelongToGenSurface_i();
+    void                            SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
+    FunctorType                     GetFunctorType();
+  };
+  
   /*
     Class       : LyingOnGeom_i
     Description : Predicate for selection on geometrical support(lying or partially lying)
@@ -772,6 +788,7 @@ namespace SMESH
     BelongToGeom_ptr          CreateBelongToGeom();
     BelongToPlane_ptr         CreateBelongToPlane();
     BelongToCylinder_ptr      CreateBelongToCylinder();
+    BelongToGenSurface_ptr    CreateBelongToGenSurface();
     
     LyingOnGeom_ptr           CreateLyingOnGeom();
     
