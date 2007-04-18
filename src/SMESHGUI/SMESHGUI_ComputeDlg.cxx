@@ -828,6 +828,14 @@ void SMESHGUI_ComputeOp::startOperation()
       }
     }
   }
+  else {
+    SUIT_MessageBox::warn1(desktop(),
+                           tr("SMESH_WRN_WARNING"),
+                           tr("SMESH_WRN_NO_AVAILABLE_DATA"),
+                           tr("SMESH_BUT_OK"));
+    onCancel();
+    return;
+  }
 
   myDlg->setCaption(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
 
