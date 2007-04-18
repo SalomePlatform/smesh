@@ -75,6 +75,8 @@ static int MYDEBUG = 0;
 
 #define cSMESH_Hyp(h) static_cast<const SMESH_Hypothesis*>(h)
 
+typedef SMESH_HypoFilter THypType;
+
 //=============================================================================
 /*!
  * 
@@ -820,8 +822,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   Unexpect aCatch(SalomeException);
 
   const SMESH_Algo *foundAlgo = 0;
-  SMESH_HypoFilter algoKind( SMESH_HypoFilter::IsAlgo() );
-  SMESH_HypoFilter compatibleHypoKind;
+  SMESH_HypoFilter algoKind, compatibleHypoKind;
   list <const SMESHDS_Hypothesis * > usedHyps;
 
 
@@ -834,7 +835,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
 
       if ( !foundAlgo ) // init filter for algo search
-        algoKind.And( algoKind.IsApplicableTo( aSubShape ));
+        algoKind.Init( THypType::IsAlgo() ).And( THypType::IsApplicableTo( aSubShape ));
       
       const SMESH_Algo *algo = static_cast<const SMESH_Algo*>
         ( GetHypothesis( aSubShape, algoKind, true ));
