@@ -80,6 +80,8 @@ dist_SMESHEngine_SOURCES = \
 
 # additionnal information to compil and link file
 libSMESHEngine_la_CPPFLAGS = \
+	$(CORBA_CXXFLAGS) \
+	$(CORBA_INCLUDES) \
 	$(CAS_CPPFLAGS) \
 	$(HDF5_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
