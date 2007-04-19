@@ -258,13 +258,13 @@ namespace SMESH {
       //---------------------------------------
       myPointsNumDataSet->Delete();
       
-      myPtsLabeledDataMapper->RemoveAllInputs();
+      //myPtsLabeledDataMapper->RemoveAllInputs();        //vtk 5.0 porting
       myPtsLabeledDataMapper->Delete();
 
-      myPtsSelectVisiblePoints->UnRegisterAllOutputs();
+      //myPtsSelectVisiblePoints->UnRegisterAllOutputs(); //vtk 5.0 porting
       myPtsSelectVisiblePoints->Delete();
 
-      myPtsMaskPoints->UnRegisterAllOutputs();
+      //myPtsMaskPoints->UnRegisterAllOutputs();	  //vtk 5.0 porting
       myPtsMaskPoints->Delete();
 
       myPointLabels->Delete();

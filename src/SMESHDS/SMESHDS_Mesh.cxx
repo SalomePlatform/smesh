@@ -113,7 +113,7 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
                                  const SMESHDS_Hypothesis * H)
 {
   list<const SMESHDS_Hypothesis *>& alist=
-    myShapeToHypothesis[SS.Oriented(TopAbs_FORWARD)]; // ignore orientation of SS
+    myShapeToHypothesis(SS.Oriented(TopAbs_FORWARD)); // ignore orientation of SS
 
   //Check if the Hypothesis is still present
   list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
@@ -132,12 +132,9 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
 bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape &       S,
                                     const SMESHDS_Hypothesis * H)
 {
-  ShapeToHypothesis::iterator its=
-    myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD)); // ignore orientation of S
-
-  if(its!=myShapeToHypothesis.end())
+  if( myShapeToHypothesis.IsBound( S.Oriented(TopAbs_FORWARD) ) )
   {
-    list<const SMESHDS_Hypothesis *>& alist=(*its).second;
+    list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis.ChangeFind( S.Oriented(TopAbs_FORWARD) );
     list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
     if (ith != alist.end())
     {
@@ -1024,10 +1021,8 @@ list<int> SMESHDS_Mesh::SubMeshIndices()
 const list<const SMESHDS_Hypothesis*>&
 SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape & S) const
 {
-  ShapeToHypothesis::const_iterator its=
-    myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD)); // ignore orientation of S
-  if (its!=myShapeToHypothesis.end())
-    return its->second;
+  if ( myShapeToHypothesis.IsBound( S.Oriented(TopAbs_FORWARD) ) ) // ignore orientation of S
+     return myShapeToHypothesis.Find( S.Oriented(TopAbs_FORWARD) );
 
   static list<const SMESHDS_Hypothesis*> empty;
   return empty;
@@ -1068,7 +1063,7 @@ bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
 //=======================================================================
 bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 {
-  return myShapeToHypothesis.find(S.Oriented(TopAbs_FORWARD))!=myShapeToHypothesis.end();
+  return myShapeToHypothesis.IsBound(S.Oriented(TopAbs_FORWARD));
 }
 
 //=======================================================================

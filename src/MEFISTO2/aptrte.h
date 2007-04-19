@@ -331,7 +331,7 @@ extern "C" {void
 #endif
   terefr( Z & nbarpi, R3 * mnpxyd,
 			    Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
-			    Z & moartr, Z & n1artr, Z * mnartr, Z * mnarst,
+			    Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr, Z * mnarst,
 			    Z & mxarcf, Z * mnarc1, Z * mnarc2,
 			    Z * mnarc3, Z * mnarc4,
 			    Z & n, Z & ierr );
@@ -355,12 +355,12 @@ extern "C" {void
 #ifdef WIN32
               __stdcall
 #endif
-  teamqt( Z & nutysu,
+  teamqt( Z & nutysu, R & aretmx, R & airemx,
 			    Z * mnarst, Z & mosoar, Z & mxsoar, Z & n1soar, Z * mnsoar,
 			    Z & moartr, Z & mxartr, Z & n1artr, Z * mnartr,
 			    Z & mxarcf, Z * mntrcf, Z * mnstbo,
 			    Z * n1arcf, Z * mnarcf, Z * mnarc1,
-			    R3 * comxmi, Z & nbarpi, Z & nbsomm, Z & mxsomm,
+			    Z & nbarpi, Z & nbsomm, Z & mxsomm,
 			    R3 * mnpxyd, Z * mnslig,
 			    Z & ierr );
 }

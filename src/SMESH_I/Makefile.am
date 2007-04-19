@@ -34,7 +34,7 @@ salomeinclude_HEADERS = \
 	SMESH_Gen_i.hxx \
 	SMESH_Algo_i.hxx \
 	SMESH_0D_Algo_i.hxx \
-	SMESH_1D_Algo_i.hxx \	
+	SMESH_1D_Algo_i.hxx \
 	SMESH_2D_Algo_i.hxx \
 	SMESH_3D_Algo_i.hxx \
 	SMESH_subMesh_i.hxx \
