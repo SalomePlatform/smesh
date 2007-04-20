@@ -97,7 +97,7 @@ dist_libStdMeshersEngine_la_SOURCES = \
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
-	$(HDF5_INCLUDES) \
+	@HDF5_INCLUDES@ \
 	$(KERNEL_CXXFLAGS) \
 	$(GEOM_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
@@ -123,5 +123,5 @@ libStdMeshersEngine_la_LDFLAGS  = \
 	../SMESH/libSMESHimpl.la \
 	../SMESHDS/libSMESHDS.la \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lSalomeGenericObj \
-	$(HDF5_LIBS) \
+	@HDF5_LIBS@ \
 	$(CAS_LDPATH) -lTKBRep -lTKG3d
