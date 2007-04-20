@@ -124,4 +124,4 @@ libStdMeshers_la_LDFLAGS  = \
 	../SMESHDS/libSMESHDS.la \
 	../MEFISTO2/libMEFISTO2D.la \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lOpUtil \
-	$(OCC_LDPATH) -lTKAdvTools -lTKTopAlgo -lTKG3d
+	$(CAS_LDPATH) -lTKAdvTools -lTKTopAlgo -lTKG3d

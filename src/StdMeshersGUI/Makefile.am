@@ -86,7 +86,7 @@ libStdMeshersGUI_la_LDFLAGS  = \
 	../SMESHGUI/libSMESH.la \
 	../OBJECT/libSMESHObject.la \
 	$(GUI_LDFLAGS) -lSalomeApp \
-	$(OCC_KERNEL_LIBS) -lTKBO -lTKAdvTools \
+	$(CAS_LDPATH) -lTKernel -lTKBO -lTKAdvTools \
 	$(QWT_LIBS)
 
 # resources files

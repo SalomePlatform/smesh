@@ -56,6 +56,8 @@ libSMESHFiltersSelection_la_CPPFLAGS = \
 	$(PYTHON_INCLUDES) \
 	$(VTK_INCLUDES) \
 	${BOOST_CPPFLAGS} \
+	$(CORBA_CXXFLAGS) \
+	$(CORBA_INCLUDES) \
 	-I$(top_builddir)/idl \
 	-I$(top_builddir)/salome_adm/unix
 
@@ -64,5 +66,4 @@ libSMESHFiltersSelection_la_LDFLAGS  = \
 	$(KERNEL_LDFLAGS) -lSalomeDSClient -lSalomeDS \
 	$(GUI_LDFLAGS) -lSalomeApp -lsuit \
 	$(GEOM_LDFLAGS) -lGEOM \
-	$(OCC_KERNEL_LIBS)
-
+	$(CAS_LDPATH) -lTKernel
