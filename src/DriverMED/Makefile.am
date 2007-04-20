@@ -61,7 +61,7 @@ dist_MED_Test_SOURCES = \
 # additionnal information to compil and link file
 libMeshDriverMED_la_CPPFLAGS = \
 	$(MED_CXXFLAGS) \
-	$(HDF5_INCLUDES) \
+	@HDF5_INCLUDES@ \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
 	$(BOOST_CPPFLAGS) \
