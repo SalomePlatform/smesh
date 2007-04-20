@@ -115,6 +115,25 @@ AC_DEPEND_FLAG
 # AC_CC_WARNINGS([ansi])
 cc_ok=yes
 
+echo
+echo ---------------------------------------------
+echo testing Fortran
+echo ---------------------------------------------
+echo
+
+fortran_ok=no
+AC_PROG_F77
+AC_F77_LIBRARY_LDFLAGS
+AC_PROG_FC
+AC_FC_LIBRARY_LDFLAGS
+if test "X$FC" != "X" ; then
+   fortran_ok=yes
+fi
+
+dnl AM_CONDITIONAL( USE_GFORTRAN, [test "$F77" = "gfortran"])
+
+echo
+
 dnl Library libdl :
 AC_CHECK_LIB(dl,dlopen)
 
@@ -334,8 +353,7 @@ echo
 
 CHECK_MED
 
-
-AM_CONDITIONAL( USE_GFORTRAN, [test "$F77" = "gfortran"])
+CHECK_PLATFORM
 
 echo
 echo ---------------------------------------------
@@ -344,7 +362,7 @@ echo ---------------------------------------------
 echo
 
 echo Configure
-variables="cc_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
+variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
 
 for var in $variables
 do

@@ -115,7 +115,8 @@ libStdMeshers_la_CPPFLAGS = \
 	-I$(srcdir)/../SMESH \
 	-I$(srcdir)/../SMESHDS \
 	-I$(srcdir)/../SMDS \
-	-I$(srcdir)/../Controls
+	-I$(srcdir)/../Controls \
+	@PLATFORM_INCLUDES@
 
 libStdMeshers_la_LDFLAGS  = \
 	../SMESH/libSMESHimpl.la \

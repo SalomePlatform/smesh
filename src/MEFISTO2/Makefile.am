@@ -37,14 +37,16 @@ dist_libMEFISTO2D_la_SOURCES = \
 # additionnal information to compil and link file
 libMEFISTO2D_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
-	$(KERNEL_CXXFLAGS)
+	$(KERNEL_CXXFLAGS) \
+	@PLATFORM_INCLUDES@
 
 libMEFISTO2D_la_LDFLAGS = \
-	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
+	$(KERNEL_LDFLAGS) -lSALOMELocalTrace \
+	$(FCLIBS)
 
-if USE_GFORTRAN
-libMEFISTO2D_la_LDFLAGS += -lgfortran
-else !USE_GFORTRAN
-libMEFISTO2D_la_LDFLAGS += -lg2c
-endif
+#if USE_GFORTRAN
+#libMEFISTO2D_la_LDFLAGS += -lgfortran
+#else !USE_GFORTRAN
+#libMEFISTO2D_la_LDFLAGS += -lg2c
+#endif
 
