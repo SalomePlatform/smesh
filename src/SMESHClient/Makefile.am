@@ -50,6 +50,8 @@ libSMESHClient_la_CPPFLAGS = \
 	$(GEOM_CXXFLAGS) \
 	$(BOOST_CPPFLAGS) \
 	$(CAS_CPPFLAGS) \
+	$(CORBA_CXXFLAGS) \
+	$(CORBA_INCLUDES) \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../DriverDAT \
