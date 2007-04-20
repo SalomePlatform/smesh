@@ -112,7 +112,7 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lSalomeGenericObj \
 	$(GEOM_LDFLAGS) \
 	-lGEOMClient \
-	$(OCC_LDPATH) \
+	$(CAS_LDPATH) \
 	-lTKCDF \
 	-lTKBO \
 	-lTKShHealing \
