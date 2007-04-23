@@ -87,7 +87,7 @@ libSMESHimpl_la_CPPFLAGS = \
 	$(GEOM_CXX_FLAGS) \
 	$(BOOST_CPPFLAGS) \
 	$(CAS_CPPFLAGS) \
-	@HDF5_CPPFLAGS@ \
+	@HDF5_INCLUDES@ \
 	-I$(srcdir)/../Controls \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../DriverDAT \
