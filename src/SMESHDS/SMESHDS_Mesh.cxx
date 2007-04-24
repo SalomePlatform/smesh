@@ -112,11 +112,15 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
                                  const SMESHDS_Hypothesis * H)
 {
-  list<const SMESHDS_Hypothesis *>& alist=
+  if (!myShapeToHypothesis.IsBound(SS.Oriented(TopAbs_FORWARD))) {
+    list<const SMESHDS_Hypothesis *> aList;
+    myShapeToHypothesis.Bind(SS.Oriented(TopAbs_FORWARD), aList);
+  }
+  list<const SMESHDS_Hypothesis *>& alist =
     myShapeToHypothesis(SS.Oriented(TopAbs_FORWARD)); // ignore orientation of SS
 
   //Check if the Hypothesis is still present
-  list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
+  list<const SMESHDS_Hypothesis*>::iterator ith = find(alist.begin(),alist.end(), H );
 
   if (alist.end() != ith) return false;
 
