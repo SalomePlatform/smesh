@@ -626,7 +626,9 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
     }
     cout << endl;
 #endif
-    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 side but not ") << nbSides);
+    if ( !nbSides )
+      nbSides = nbEdgesInWire.front();
+    error(COMPERR_BAD_SHAPE, TComm("Face must have 4 sides but not ") << nbSides);
     delete quad;
     quad = 0;
   }
@@ -894,13 +896,14 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   const TopoDS_Face& F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
   const TopoDS_Wire& W = BRepTools::OuterWire(F);
-  bool WisF = false;
-  if(W.Orientation()==TopAbs_FORWARD) 
-    WisF = true;
+  bool WisF = true;
+//   if(W.Orientation()==TopAbs_FORWARD) 
+//     WisF = true;
   //if(WisF) cout<<"W is FORWARD"<<endl;
   //else cout<<"W is REVERSED"<<endl;
-  bool FisF = (F.Orientation()==TopAbs_FORWARD);
-  if(!FisF) WisF = !WisF;
+//   bool FisF = (F.Orientation()==TopAbs_FORWARD);
+//   if(!FisF) WisF = !WisF;
+//  WisF = FisF;
   int i,j,geomFaceID = meshDS->ShapeToIndex( F );
 
   int nb = quad->side[0]->NbPoints();

@@ -2145,7 +2145,7 @@ class Mesh:
     #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
     #         key-point will be mapped into <theNode001>-th node of each volume.
     #         The (0,0,0) key-point of used pattern corresponds to not split corner.
-    #  @param @return TRUE in case of success, FALSE otherwise.
+    #  @return TRUE in case of success, FALSE otherwise.
     def SplitHexaToTetras (self, theObject, theNode000, theNode001):
         # Pattern:     5.---------.6
         #              /|#*      /|
