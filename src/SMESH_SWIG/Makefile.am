@@ -176,4 +176,4 @@ EXPORT_SHAREDPYSCRIPTS = \
 install-exec-hook: $(libdir)/_libSMESH_Swig.so
 
 $(libdir)/_libSMESH_Swig.so:
-	ln -sf $(libdir)/libSMESH_Swigcmodule.so $@
+	( cd $(libdir); ln -sf libSMESH_Swigcmodule.so _libSMESH_Swig.so; )
