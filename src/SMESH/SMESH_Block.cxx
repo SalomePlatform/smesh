@@ -1067,7 +1067,7 @@ bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
     TFace& tFace = myFace[ iF - ID_FirstF ];
     vector< int > edgeIdVec(4, -1);
     GetFaceEdgesIDs( iF, edgeIdVec );
-    tFace.Set( iF, myEdge[ edgeIdVec [ 0 ]], myEdge[ edgeIdVec [ 1 ]]);
+    tFace.Set( iF, myEdge[ edgeIdVec [ 0 ] - ID_Ex00], myEdge[ edgeIdVec [ 1 ] - ID_Ex00]);
   }
 
   return true;
