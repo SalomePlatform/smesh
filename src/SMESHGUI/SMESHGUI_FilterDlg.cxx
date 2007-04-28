@@ -2534,7 +2534,8 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   if (!anObj->_is_nil())
     {
       myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
-      myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
+      //myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
+      myTable->SetID(aRow, anIO->getEntry());
     }
 }
 
