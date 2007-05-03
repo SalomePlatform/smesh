@@ -1328,6 +1328,9 @@ msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 msgid "STATE_HYP_NOTCONFORM"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
 
+msgid "STATE_HYP_BAD_GEOMETRY"
+msgstr "%3 %2D algorithm \"%1\" is assigned to geometry mismatching its expectation"
+
 msgid "GLOBAL_ALGO"
 msgstr "Global"
 

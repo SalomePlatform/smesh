@@ -5712,7 +5712,7 @@ SMESH_MeshEditor::Sew_Error
     {
       nodeGroupsToMerge.push_back( list<const SMDS_MeshNode*>() );
       nodeGroupsToMerge.back().push_back( *nIt[1] ); // to keep
-      nodeGroupsToMerge.back().push_back( *nIt[0] ); // tp remove
+      nodeGroupsToMerge.back().push_back( *nIt[0] ); // to remove
     }
   }
   else {

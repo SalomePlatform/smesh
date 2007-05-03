@@ -1604,7 +1604,7 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo)
 
     // Show error
     SMESH_Comment text;
-    text << theAlgo->GetName() << " failed on subshape " << _Id << " with error ";
+    text << theAlgo->GetName() << " failed on subshape #" << _Id << " with error ";
     if (_computeError->IsCommon() )
       text << _computeError->CommonName();
     else
@@ -1615,11 +1615,12 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo)
 #ifdef _DEBUG_
     cout << text << endl;
     // Show vertices location of a failed shape
-    cout << "Subshape vertices (first 10):" << endl;
     TopTools_IndexedMapOfShape vMap;
     TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
+    cout << "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") << endl;
     for ( int iv = 1; iv <= vMap.Extent() && iv < 11; ++iv ) {
       gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
+      cout << "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " ";
       cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
     }
 #else

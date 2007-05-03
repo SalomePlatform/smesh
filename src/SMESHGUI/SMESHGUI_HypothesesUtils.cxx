@@ -598,6 +598,7 @@ namespace SMESH{
           CASE2MESSAGE( HYP_MISSING );
           CASE2MESSAGE( HYP_NOTCONFORM );
           CASE2MESSAGE( HYP_BAD_PARAMETER );
+          CASE2MESSAGE( HYP_BAD_GEOMETRY );
         default: continue;
         }
       // apply args to message:

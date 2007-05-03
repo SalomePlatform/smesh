@@ -122,7 +122,9 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
   int nbFaces = 0;
   for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
     if ( ++nbFaces > 6 )
-      return false;
+      break;
+  if ( nbFaces != 6 )
+    return false;
 
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
