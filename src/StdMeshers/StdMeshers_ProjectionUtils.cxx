@@ -146,10 +146,11 @@ namespace {
     * \param edges2 - matching edges of another face
     * \param theMesh1 - mesh 1
     * \param theMesh2 - mesh 2
+    * \retval bool - true if association was fixed
    */
   //================================================================================
 
-  void FixAssocByPropagation( const int             nbEdges,
+  bool FixAssocByPropagation( const int             nbEdges,
                               list< TopoDS_Edge > & edges1,
                               list< TopoDS_Edge > & edges2,
                               SMESH_Mesh*           theMesh1,
@@ -160,9 +161,12 @@ namespace {
       list< TopoDS_Edge >::iterator eIt2 = ++edges2.begin(); // 2nd edge of the 2nd face
       TopoDS_Edge edge2 =
         StdMeshers_ProjectionUtils::GetPropagationEdge( theMesh1, *eIt2, edges1.front() );
-      if ( !edge2.IsNull() ) // propagation found for the second edge
+      if ( !edge2.IsNull() ) { // propagation found for the second edge
         Reverse( edges2, nbEdges );
+        return true;
+      }
     }
+    return false;
   }
 }
 
@@ -330,15 +334,21 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         list< TopoDS_Edge > edges1, edges2;
         int nbE = FindFaceAssociation( face1, VV1, face2, VV2, edges1, edges2 );
         if ( !nbE ) RETURN_BAD_RESULT("FindFaceAssociation() failed");
-        FixAssocByPropagation( nbE, edges1, edges2, theMesh1, theMesh2 );
-        
         InsertAssociation( face1, face2, theMap, bidirect); // assoc faces
+        MESSAGE("Assoc FACE " << theMesh1->GetMeshDS()->ShapeToIndex( face1 )<<
+                " to "        << theMesh2->GetMeshDS()->ShapeToIndex( face2 ));
+        if ( nbE == 2 && (edge1.IsSame( edges1.front())) != (edge2.IsSame( edges2.front())))
+        {
+          Reverse( edges2, nbE );
+        }
         list< TopoDS_Edge >::iterator eIt1 = edges1.begin();
         list< TopoDS_Edge >::iterator eIt2 = edges2.begin();
         for ( ; eIt1 != edges1.end(); ++eIt1, ++eIt2 )
         {
           if ( !boundEdges.Add( *eIt1 )) continue; // already associated
           InsertAssociation( *eIt1, *eIt2, theMap, bidirect);  // assoc edges
+          MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( *eIt1 )<<
+                  " to "        << theMesh2->GetMeshDS()->ShapeToIndex( *eIt2 ));
           VV1[0] = TopExp::FirstVertex( *eIt1, true );
           VV2[0] = TopExp::FirstVertex( *eIt2, true );
           InsertAssociation( VV1[0], VV2[0], theMap, bidirect); // assoc vertices
@@ -568,6 +578,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face& face1,
 
   list< TopoDS_Edge >::iterator eBackIt;
   if ( !VV1[1].IsSame( TopExp::LastVertex( edges1.front(), true ))) {
+    reverse = true;
     eBackIt = --edges1.end();
     // check if the second vertex belongs to the first or last edge in the wire
     if ( !VV1[1].IsSame( TopExp::FirstVertex( *eBackIt, true ))) {
@@ -580,10 +591,10 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face& face1,
       if ( KO )
         RETURN_BAD_RESULT("GetOrderedEdges() failed");
     }
-    reverse = true;
   }
   eBackIt = --edges2.end();
   if ( !VV2[1].IsSame( TopExp::LastVertex( edges2.front(), true ))) {
+    reverse = !reverse;
     // check if the second vertex belongs to the first or last edge in the wire
     if ( !VV2[1].IsSame( TopExp::FirstVertex( *eBackIt, true ))) {
       bool KO = true; // belongs to none
@@ -595,7 +606,6 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face& face1,
       if ( KO )
         RETURN_BAD_RESULT("GetOrderedEdges() failed");
     }
-    reverse = !reverse;
   }
   if ( reverse )
   {
