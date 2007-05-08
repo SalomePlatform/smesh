@@ -222,12 +222,18 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
       vector< const TNodeColumn* > columns( nbNodes );
       for ( int i = 0; i < nbNodes; ++i )
       {
-        const SMDS_MeshNode* n = face->GetNode( i );
-        TNode2ColumnMap::iterator n_col = node2columnMap.find( n );
-        if ( n_col != node2columnMap.end() )
+        const SMDS_MeshNode* nIn = face->GetNode( i );
+        TNode2ColumnMap::iterator n_col = node2columnMap.find( nIn );
+        if ( n_col != node2columnMap.end() ) {
           columns[ i ] = & n_col->second;
-        else
-          columns[ i ] = makeNodeColumn( node2columnMap, n, nodeIn2OutMap[ n ] );
+        }
+        else {
+          TNodeNodeMap::iterator nInOut = nodeIn2OutMap.find( nIn );
+          if ( nInOut == nodeIn2OutMap.end() )
+            RETURN_BAD_RESULT("No matching node for "<< nIn->GetID() <<
+                              " in face "<< face->GetID());
+          columns[ i ] = makeNodeColumn( node2columnMap, nIn, nInOut->second );
+        }
       }
 
       StdMeshers_Prism_3D::AddPrisms( columns, myHelper );
