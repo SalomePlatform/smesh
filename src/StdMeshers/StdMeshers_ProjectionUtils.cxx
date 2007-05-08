@@ -898,33 +898,50 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   // 1. Nodes of corresponding links:
 
-  // get 2 matching edges, not seam ones
-  TopoDS_Edge edge1, edge2;
+  // get 2 matching edges, try to find not seam ones
+  TopoDS_Edge edge1, edge2, seam1, seam2;
   TopExp_Explorer eE( OuterShape( face2, TopAbs_WIRE ), TopAbs_EDGE );
   do {
-    edge2 = TopoDS::Edge( eE.Current() );
+    // edge 2
+    TopoDS_Edge e2 = TopoDS::Edge( eE.Current() );
     eE.Next();
-  } while ( BRep_Tool::IsClosed( edge2, face2 ) && eE.More());
-  if ( !assocMap.IsBound( edge2 ))
-    RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( edge2 ));
-  edge1 = TopoDS::Edge( assocMap( edge2 ));
-  if ( !IsSubShape( edge1, face1 ))
-    RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( edge1 ) <<
-                      " isn't a subshape of face " << meshDS1->ShapeToIndex( face1 ));
+    // edge 1
+    if ( !assocMap.IsBound( e2 ))
+      RETURN_BAD_RESULT("Association not found for edge " << meshDS2->ShapeToIndex( e2 ));
+    TopoDS_Edge e1 = TopoDS::Edge( assocMap( e2 ));
+    if ( !IsSubShape( e1, face1 ))
+      RETURN_BAD_RESULT("Wrong association, edge " << meshDS1->ShapeToIndex( e1 ) <<
+                        " isn't a subshape of face " << meshDS1->ShapeToIndex( face1 ));
+    // check that there are nodes on edges
+    SMESHDS_SubMesh * eSM1 = meshDS1->MeshElements( e1 );
+    SMESHDS_SubMesh * eSM2 = meshDS2->MeshElements( e2 );
+    if ( eSM1 && eSM2 && eSM1->NbNodes() > 0 && eSM2->NbNodes() > 0 )
+    {
+      if ( BRep_Tool::IsClosed( e2, face2 )) {
+        seam1 = e1; seam2 = e2;
+      }
+      else {
+        edge1 = e1; edge2 = e2;
+      }
+    }
+  } while ( edge2.IsNull() && eE.More() );
+  //
+  if ( edge2.IsNull() ) {
+    edge1 = seam1; edge2 = seam2;
+  }
+  if ( edge2.IsNull() ) RETURN_BAD_RESULT("No matching edges with nodes found");
 
   // get 2 matching vertices
-  TopoDS_Shape V2 = TopExp::FirstVertex( TopoDS::Edge( edge2 ));
+  TopoDS_Vertex V2 = TopExp::FirstVertex( TopoDS::Edge( edge2 ));
   if ( !assocMap.IsBound( V2 ))
     RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
-  TopoDS_Shape V1 = assocMap( V2 );
+  TopoDS_Vertex V1 = TopoDS::Vertex( assocMap( V2 ));
 
   // nodes on vertices
-  SMESHDS_SubMesh * vSM1 = meshDS1->MeshElements( V1 );
-  SMESHDS_SubMesh * vSM2 = meshDS2->MeshElements( V2 );
-  if ( !vSM1 || !vSM2 || vSM1->NbNodes() != 1 || vSM2->NbNodes() != 1 )
-    RETURN_BAD_RESULT("Bad node submesh");
-  const SMDS_MeshNode* vNode1 = vSM1->GetNodes()->next();
-  const SMDS_MeshNode* vNode2 = vSM2->GetNodes()->next();
+  const SMDS_MeshNode* vNode1 = SMESH_Algo::VertexNode( V1, meshDS1 );
+  const SMDS_MeshNode* vNode2 = SMESH_Algo::VertexNode( V2, meshDS2 );
+  if ( !vNode1 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS1->ShapeToIndex( V1 ));
+  if ( !vNode2 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS2->ShapeToIndex( V2 ));
 
   // nodes on edges linked with nodes on vertices
   const SMDS_MeshNode* nullNode = 0;
@@ -1030,6 +1047,18 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
         if ( !onBnd )
           elems.insert( f );
       }
+      // add also faces adjacent to faceToKeep
+      int nbNodes = faceToKeep->NbNodes();
+      if ( faceToKeep->IsQuadratic() ) nbNodes /= 2;
+      notInSet.insert( f1 );
+      notInSet.insert( f2 );
+      for ( int i = 0; i < nbNodes; ++i ) {
+        const SMDS_MeshNode* n1 = faceToKeep->GetNode( i );
+        const SMDS_MeshNode* n2 = faceToKeep->GetNode( i+1 );
+        f1 = SMESH_MeshEditor::FindFaceInSet( n1, n2, inSet, notInSet );
+        if ( f1 )
+          elems.insert( f1 );
+      }
     } // case on a sphere
   } // loop on 2 faces
 
@@ -1093,13 +1122,11 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     V2 = TopExp::LastVertex( TopoDS::Edge( edge2 ));
     if ( !assocMap.IsBound( V2 ))
       RETURN_BAD_RESULT("Association not found for vertex " << meshDS2->ShapeToIndex( V2 ));
-    V1 = assocMap( V2 );
-    vSM1 = meshDS1->MeshElements( V1 );
-    vSM2 = meshDS2->MeshElements( V2 );
-    if ( !vSM1 || !vSM2 || vSM1->NbNodes() != 1 || vSM2->NbNodes() != 1 )
-      RETURN_BAD_RESULT("Bad node submesh");
-    vNode1 = vSM1->GetNodes()->next();
-    vNode2 = vSM2->GetNodes()->next();
+    V1 = TopoDS::Vertex( assocMap( V2 ));
+    vNode1 = SMESH_Algo::VertexNode( V1, meshDS1 );
+    vNode2 = SMESH_Algo::VertexNode( V2, meshDS2 );
+    if ( !vNode1 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS1->ShapeToIndex( V1 ));
+    if ( !vNode2 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS2->ShapeToIndex( V2 ));
     node1To2Map.insert( make_pair( vNode1, vNode2 ));
   }
   
