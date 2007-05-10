@@ -53,7 +53,7 @@
 #include <TopoDS_Compound.hxx>
 #include <gp_Pnt.hxx>
 
-#include <Standard_Failure.hxx>
+#include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
 
 using namespace std;
@@ -1400,6 +1400,20 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           if ( !ret )
             _computeError = algo->GetComputeError();
         }
+        catch ( std::bad_alloc& exc ) {
+          if ( _computeError ) {
+            _computeError->myName = COMPERR_MEMORY_PB;
+            //_computeError->myComment = exc.what();
+          }
+          throw exc;
+        }
+        catch ( Standard_OutOfMemory& exc ) {
+          if ( _computeError ) {
+            _computeError->myName    = COMPERR_MEMORY_PB;
+            //_computeError->myComment = exc.what();
+          }
+          throw exc;
+        }
         catch (Standard_Failure& exc) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_OCC_EXCEPTION;
@@ -1409,13 +1423,6 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_SLM_EXCEPTION;
           _computeError->myComment = S_ex.what();
-        }
-        catch ( std::bad_alloc& exc ) {
-          if ( _computeError ) {
-            _computeError->myName    = COMPERR_MEMORY_PB;
-            _computeError->myComment = exc.what();
-          }
-          throw exc;
         }
         catch ( std::exception& exc ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
