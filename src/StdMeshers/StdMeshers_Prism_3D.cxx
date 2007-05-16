@@ -101,7 +101,7 @@ namespace {
                        const SMDS_MeshNode* & node1,
                        const SMDS_MeshNode* & node2)
   {
-    if ( param == 1.0 || column->size() == 1) {
+    if ( param >= 1.0 || column->size() == 1) {
       node1 = node2 = column->back();
       return 0;
     }
@@ -281,11 +281,16 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     // compute top node parameters
     gp_XYZ topParams;
     myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
-    gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
-    if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
-                   << "for node " << column.back()->GetID()
-                   << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
+    if ( column.size() < 3 ) { // only top and bottom nodes in columns
+      topParams = botParams;
+    }
+    else {
+      gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
+      if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE ))
+        return error(dfltErr(),TCom("Can't compute normalized parameters ")
+                     << "for node " << column.back()->GetID()
+                     << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
+    }
 
     // vertical loop
     TNodeColumn::iterator columnNodes = column.begin();
