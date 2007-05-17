@@ -520,9 +520,10 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
       continue; // wall columns are contained in myBlock
     // compute bottom node params
     TNode bN( botNode );
-    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
-                   << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    if ( zSize > 2 )
+      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
+        return error(dfltErr(),TCom("Can't compute normalized parameters ")
+                     << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
     // create node column
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;

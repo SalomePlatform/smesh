@@ -81,7 +81,7 @@ struct TNode
   SMDS_TypeOfPosition GetPositionType() const
   { return myNode ? myNode->GetPosition()->GetTypeOfPosition() : SMDS_TOP_UNSPEC; }
 
-  TNode(const SMDS_MeshNode* node = 0): myNode(node) {}
+  TNode(const SMDS_MeshNode* node = 0): myNode(node), myParams(0,0,0) {}
   bool operator < (const TNode& other) const { return myNode < other.myNode; }
 };
 
