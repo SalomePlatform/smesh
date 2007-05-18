@@ -3410,6 +3410,9 @@ msgstr "Show SubShape"
 msgid "SMESHGUI_ComputeDlg::PUBLISH_SHAPE"
 msgstr "Publish SubShape"
 
+msgid "SMESHGUI_ComputeDlg::MEMORY_LACK"
+msgstr "Memory allocation problem"
+
 msgid "COMPERR_OK"
 msgstr "No errors"
 
