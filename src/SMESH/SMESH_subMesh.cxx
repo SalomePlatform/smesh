@@ -60,6 +60,21 @@ using namespace std;
 
 //=============================================================================
 /*!
+ * \brief Allocate some memory at construction and release it at destruction.
+ * Is used to be able to continue working after mesh generation breaks due to
+ * lack of memory
+ */
+//=============================================================================
+
+struct MemoryReserve
+{
+  char* myBuf;
+  MemoryReserve(): myBuf( new char[1024*1024*2] ){}
+  ~MemoryReserve() { delete [] myBuf; }
+};
+
+//=============================================================================
+/*!
  *  default constructor:
  */
 //=============================================================================
@@ -1379,6 +1394,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
 #endif
+          MemoryReserve aMemoryReserve;
           algo->InitComputeError();
           if ( !_father->HasShapeToMesh() ) // no shape
           {
@@ -1401,18 +1417,22 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
+          printf("std::bad_alloc\n");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
           }
+          cleanSubMesh( this );
           throw exc;
         }
         catch ( Standard_OutOfMemory& exc ) {
+          printf("Standard_OutOfMemory\n");
           if ( _computeError ) {
-            _computeError->myName    = COMPERR_MEMORY_PB;
+            _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
           }
-          throw exc;
+          cleanSubMesh( this );
+          throw std::bad_alloc();
         }
         catch (Standard_Failure& exc) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
