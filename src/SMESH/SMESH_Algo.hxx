@@ -277,9 +277,10 @@ protected:
    */
   bool error(int error, const SMESH_Comment& comment = "");
   /*!
-   * \brief To be used as error in previous method
+   * \brief store COMPERR_ALGO_FAILED error and comment and then return false
    */
-  SMESH_ComputeErrorName dfltErr() const { return COMPERR_ALGO_FAILED; }
+  bool error(const SMESH_Comment& comment = "")
+  { return error(COMPERR_ALGO_FAILED, comment); }
   /*!
    * \brief store error and return error->IsOK()
    */
