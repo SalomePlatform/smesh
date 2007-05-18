@@ -251,12 +251,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     TopExp::Vertices( TopoDS::Edge( exp.Current() ), tgtV000, tgtV100 );
 
     if ( !shape2ShapeMap.IsBound( tgtV000 ) || !shape2ShapeMap.IsBound( tgtV100 ))
-      return error(dfltErr(),"Association of subshapes failed" );
+      return error("Association of subshapes failed" );
     srcV000 = TopoDS::Vertex( shape2ShapeMap( tgtV000 ));
     srcV100 = TopoDS::Vertex( shape2ShapeMap( tgtV100 ));
     if ( !TAssocTool::IsSubShape( srcV000, srcShell ) ||
          !TAssocTool::IsSubShape( srcV100, srcShell ))
-      return error(dfltErr(),"Incorrect association of subshapes" );
+      return error("Incorrect association of subshapes" );
   }
 
   // Load 2 SMESH_Block's with src and tgt shells
@@ -342,12 +342,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
         gp_Pnt srcCoord = gpXYZ( srcNode );
         gp_XYZ srcParam;
         if ( !srcBlock.ComputeParameters( srcCoord, srcParam ))
-          return error(dfltErr(),SMESH_Comment("Can't compute normalized parameters ")
+          return error(SMESH_Comment("Can't compute normalized parameters ")
                        << "for source node " << srcNode->GetID());
         // compute coordinates of target node by srcParam
         gp_XYZ tgtXYZ;
         if ( !tgtBlock.ShellPoint( srcParam, tgtXYZ ))
-          return error(dfltErr(),"Can't compute coordinates by normalized parameters");
+          return error("Can't compute coordinates by normalized parameters");
         // add node
         SMDS_MeshNode* newNode = tgtMeshDS->AddNode( tgtXYZ.X(), tgtXYZ.Y(), tgtXYZ.Z() );
         tgtMeshDS->SetNodeInVolume( newNode, helper.GetSubShapeID() );

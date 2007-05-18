@@ -132,9 +132,10 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
 //=============================================================================
 
 bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
-                                        const TopoDS_Shape& aShape) throw (SALOME_Exception)
+                                        const TopoDS_Shape& aShape)// throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
+  // PAL14921. Enable catching std::bad_alloc and Standard_OutOfMemory outside
+  //Unexpect aCatchSalomeException);
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   aMesh.GetSubMesh(aShape);
@@ -562,10 +563,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
 
 FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMesh,
                                                        const TopoDS_Shape & aShape)
-     throw(SALOME_Exception)
+  //throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   const TopoDS_Face & F = TopoDS::Face(aShape);
   const bool ignoreMediumNodes = _quadraticMesh;
 
@@ -645,10 +644,8 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
                            (SMESH_Mesh &         aMesh,
                             const TopoDS_Shape & aShape,
-                            const bool           CreateQuadratic) throw(SALOME_Exception)
+                            const bool           CreateQuadratic) //throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   _quadraticMesh = CreateQuadratic;
 
   FaceQuadStruct *quad = CheckNbEdges(aMesh, aShape);
@@ -695,9 +692,8 @@ namespace {
 
 bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
                                                   const TopoDS_Shape& aShape,
-                                                  FaceQuadStruct* & quad) throw (SALOME_Exception)
+                                                  FaceQuadStruct* & quad) //throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
   // Algorithme décrit dans "Génération automatique de maillages"
   // P.L. GEORGE, MASSON, § 6.4.1 p. 84-85
   // traitement dans le domaine paramétrique 2d u,v
@@ -738,7 +734,7 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   const vector<UVPtStruct>& uv_e3 = GetUVPtStructIn( quad, 3, nbvertic - 1 );
 
   if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
-    return error(dfltErr(), "Can't find nodes on sides");
+    return error( "Can't find nodes on sides");
 
   // nodes Id on "in" edges
   if (! quad->isEdgeOut[0]) {
@@ -888,10 +884,7 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
 bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
                                                 const TopoDS_Shape& aShape,
                                                 FaceQuadStruct*     quad)
-  throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   const TopoDS_Face& F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);

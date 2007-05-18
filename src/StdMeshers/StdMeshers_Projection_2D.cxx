@@ -458,14 +458,14 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   mapper.Apply( tgtFace, tgtV1, reverse );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't apply source mesh pattern to the face");
+    return error("Can't apply source mesh pattern to the face");
 
   // Create the mesh
 
   const bool toCreatePolygons = false, toCreatePolyedrs = false;
   mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't make mesh by source mesh pattern");
+    return error("Can't make mesh by source mesh pattern");
 
   // it will remove mesh built by pattern mapper on edges and vertices
   // in failure case

@@ -192,7 +192,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     TopoDS_Face outFace = TopoDS::Face( exp.Current() );
     TopoDS_Face inFace;
     if ( !shape2ShapeMap.IsBound( outFace )) {
-      return error(dfltErr(),SMESH_Comment("Corresponding inner face not found for face #" )
+      return error(SMESH_Comment("Corresponding inner face not found for face #" )
                    << meshDS->ShapeToIndex( outFace ));
     } else {
       inFace = TopoDS::Face( shape2ShapeMap( outFace ));
@@ -318,24 +318,24 @@ public:
                 const StdMeshers_LayerDistribution* hyp)
   {
     double len = pIn.Distance( pOut );
-    if ( len <= DBL_MIN ) return error(dfltErr(),"Too close points of inner and outer shells");
+    if ( len <= DBL_MIN ) return error("Too close points of inner and outer shells");
 
     if ( !hyp || !hyp->GetLayerDistribution() )
-      return error(dfltErr(), "Invalid LayerDistribution hypothesis");
+      return error( "Invalid LayerDistribution hypothesis");
     myUsedHyps.clear();
     myUsedHyps.push_back( hyp->GetLayerDistribution() );
 
     TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
-      return error(dfltErr(), "StdMeshers_Regular_1D::CheckHypothesis() failed"
+      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed"
                    "with LayerDistribution hypothesis");
 
     BRepAdaptor_Curve C3D(edge);
     double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
     if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
-      return error(dfltErr(),"StdMeshers_Regular_1D failed to compute layers distribution");
+      return error("StdMeshers_Regular_1D failed to compute layers distribution");
 
     positions.clear();
     positions.reserve( params.size() );

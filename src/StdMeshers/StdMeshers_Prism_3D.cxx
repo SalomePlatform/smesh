@@ -287,7 +287,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     else {
       gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
       if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE ))
-        return error(dfltErr(),TCom("Can't compute normalized parameters ")
+        return error(TCom("Can't compute normalized parameters ")
                      << "for node " << column.back()->GetID()
                      << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
     }
@@ -316,7 +316,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       // compute coords for a new node
       gp_XYZ coords;
       if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
-        return error(dfltErr(),"Can't compute coordinates by normalized parameters");
+        return error("Can't compute coordinates by normalized parameters");
 
       // create a node
       node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
@@ -349,13 +349,13 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
         bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
-          return error(dfltErr(),TCom("No nodes found above node ") << n->GetID() );
+          return error(TCom("No nodes found above node ") << n->GetID() );
         columns[ i ] = & bot_column->second;
       }
       else {
         columns[ i ] = myBlock.GetNodeColumn( n );
         if ( !columns[ i ] )
-          return error(dfltErr(),TCom("No side nodes found above node ") << n->GetID() );
+          return error(TCom("No side nodes found above node ") << n->GetID() );
       }
     }
     // create prisms
@@ -467,7 +467,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   SMESHDS_SubMesh * topSMDS = topSM->GetSubMeshDS();
 
   if ( !botSMDS || botSMDS->NbElements() == 0 )
-    return error(dfltErr(),TCom("No elememts on face #") << botSM->GetId());
+    return error(TCom("No elememts on face #") << botSM->GetId());
 
   bool needProject = false;
   if ( !topSMDS || 
@@ -475,13 +475,13 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
        botSMDS->NbNodes()    != topSMDS->NbNodes())
   {
     if ( myBlock.HasNotQuadElemOnTop() )
-      return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+      return error(TCom("Mesh on faces #") << botSM->GetId()
                    <<" and #"<< topSM->GetId() << " seems different" );
     needProject = true;
   }
 
   if ( 0/*needProject && !myProjectTriangles*/ )
-    return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+    return error(TCom("Mesh on faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
   ///RETURN_BAD_RESULT("Need to project but not allowed");
 
@@ -497,7 +497,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   if ( !TAssocTool::FindSubShapeAssociation( botFace, myBlock.Mesh(),
                                              topFace, myBlock.Mesh(),
                                              shape2ShapeMap) )
-    return error(dfltErr(),TCom("Topology of faces #") << botSM->GetId()
+    return error(TCom("Topology of faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
 
   // Find matching nodes of top and bottom faces
@@ -505,7 +505,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   if ( ! TAssocTool::FindMatchingNodesOnFaces( botFace, myBlock.Mesh(),
                                                topFace, myBlock.Mesh(),
                                                shape2ShapeMap, n2nMap ))
-    return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+    return error(TCom("Mesh on faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
 
   // Fill myBotToColumnMap
@@ -522,7 +522,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
     TNode bN( botNode );
     if ( zSize > 2 )
       if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
-        return error(dfltErr(),TCom("Can't compute normalized parameters ")
+        return error(TCom("Can't compute normalized parameters ")
                      << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
     // create node column
     TNode2ColumnMap::iterator bN_col = 
@@ -570,13 +570,13 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
     // compute bottom node params
     TNode bN( botNode );
     if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
+      return error(TCom("Can't compute normalized parameters ")
                    << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
     // compute top node coords
     gp_XYZ topXYZ; gp_XY topUV;
     if ( !myBlock.FacePoint( ID_TOP_FACE, bN.GetParams(), topXYZ ) ||
          !myBlock.FaceUV   ( ID_TOP_FACE, bN.GetParams(), topUV ))
-      return error(dfltErr(),TCom("Can't compute coordinates ")
+      return error(TCom("Can't compute coordinates ")
                    << "by normalized parameters on the face #"<< topSM->GetId() );
     SMDS_MeshNode * topNode = meshDS->AddNode( topXYZ.X(),topXYZ.Y(),topXYZ.Z() );
     meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
@@ -610,13 +610,13 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
       if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
         TNode2ColumnMap::iterator bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
-          return error(dfltErr(),TCom("No nodes found above node ") << n->GetID() );
+          return error(TCom("No nodes found above node ") << n->GetID() );
         nodes[ i ] = bot_column->second.back();
       }
       else {
         const TNodeColumn* column = myBlock.GetNodeColumn( n );
         if ( !column )
-          return error(dfltErr(),TCom("No side nodes found above node ") << n->GetID() );
+          return error(TCom("No side nodes found above node ") << n->GetID() );
         nodes[ i ] = column->back();
       }
     }

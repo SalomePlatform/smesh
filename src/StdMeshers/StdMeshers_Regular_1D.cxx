@@ -627,7 +627,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
     }
     GCPnts_UniformAbscissa Discret(theC3d, eltSize, f, l);
     if ( !Discret.IsDone() )
-      return error( dfltErr(), "GCPnts_UniformAbscissa failed");
+      return error( "GCPnts_UniformAbscissa failed");
 
     int NbPoints = Discret.NbPoints();
     for ( int i = 2; i < NbPoints; i++ )

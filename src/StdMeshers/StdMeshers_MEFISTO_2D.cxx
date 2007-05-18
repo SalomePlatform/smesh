@@ -517,7 +517,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
     }
     if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
       MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
-      return error(dfltErr(),"Internal error");
+      return error("Internal error");
     }
 
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();
