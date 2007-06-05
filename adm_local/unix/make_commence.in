@@ -42,7 +42,8 @@ CXX_DEPEND_FLAG = @CXX_DEPEND_FLAG@
 # FORTRAN
 
 F77 = @F77@
-FC = @FC@
+#CCRTFC = @FC@
+FC = @F77@
 FFLAGS = @FFLAGS@
 FCFLAGS = @FCFLAGS@
 FLIBS = @FLIBS@
@@ -297,22 +298,36 @@ ACLOCAL_KERNEL = \
     check_boost.m4 \
     check_swig.m4                      
 
+ifeq ($(SMESH_WITH_GUI),yes)
 ACLOCAL_GUI = \
     check_vtk.m4 \
     check_opengl.m4 \
     check_qt.m4 \
     check_GUI.m4 \
     check_corba_in_GUI.m4  
+endif
 
 ACLOCAL_MED =                 check_Med.m4
 ACLOCAL_GEOM =                check_GEOM.m4                      
 
+ifeq ($(SMESH_WITH_GUI),yes)
 $(top_srcdir)/aclocal.m4: $(ACLOCAL_KERNEL:%=@KERNEL_ROOT_DIR@/salome_adm/unix/config_files/%) \
                           $(ACLOCAL_GUI:%=@GUI_ROOT_DIR@/adm_local/unix/config_files/%) \
 			  $(ACLOCAL_MED:%=@MED_ROOT_DIR@/adm_local/unix/config_files/%) \
 			  $(ACLOCAL_GEOM:%=@GEOM_ROOT_DIR@/adm_local/unix/config_files/%)
-	cd $(top_srcdir) ; aclocal -I adm_local/unix/config_files -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files \
-	                                                               -I @GUI_ROOT_DIR@/adm_local/unix/config_files \
-	                                                               -I @MED_ROOT_DIR@/adm_local/unix/config_files \
-								       -I @GEOM_ROOT_DIR@/adm_local/unix/config_files
-	
+	cd $(top_srcdir) ; aclocal -I adm_local/unix/config_files \
+	                           -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files \
+	                           -I @GUI_ROOT_DIR@/adm_local/unix/config_files \
+	                           -I @MED_ROOT_DIR@/adm_local/unix/config_files \
+	                           -I @GEOM_ROOT_DIR@/adm_local/unix/config_files
+endif
+
+ifeq ($(SMESH_WITH_GUI),no)
+$(top_srcdir)/aclocal.m4: $(ACLOCAL_KERNEL:%=@KERNEL_ROOT_DIR@/salome_adm/unix/config_files/%) \
+			  $(ACLOCAL_MED:%=@MED_ROOT_DIR@/adm_local/unix/config_files/%) \
+			  $(ACLOCAL_GEOM:%=@GEOM_ROOT_DIR@/adm_local/unix/config_files/%)
+	cd $(top_srcdir) ; aclocal -I adm_local/unix/config_files \
+	                           -I @KERNEL_ROOT_DIR@/salome_adm/unix/config_files \
+	                           -I @MED_ROOT_DIR@/adm_local/unix/config_files \
+	                           -I @GEOM_ROOT_DIR@/adm_local/unix/config_files
+endif

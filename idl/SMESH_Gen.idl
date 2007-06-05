@@ -83,6 +83,8 @@ module SMESH
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
 
+    GEOM::GEOM_Gen SetGeomEngine( in string containerLoc );
+
     FilterManager CreateFilterManager();
 
     SMESH_Pattern GetPattern();

@@ -34,12 +34,9 @@ VPATH=.:@srcdir@:@top_srcdir@/idl
 
 # Libraries targets
 
-LIB = libSMESH_Swigcmodule.la
 LIB_SRC = 
 
-SWIG_DEF = libSMESH_Swig.i
-EXPORT_PYSCRIPTS = libSMESH_Swig.py \
-		   smesh.py \
+EXPORT_PYSCRIPTS = smesh.py \
 		   batchmode_smesh.py \
 		   batchmode_mefisto.py \
 		   ex00_all.py \
@@ -119,6 +116,5 @@ EXPORT_SHAREDPYSCRIPTS=SMESH_shared_modules.py
 
 CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(KERNEL_CXXFLAGS) -DHAVE_CONFIG_H
 LIBS+= $(PYTHON_LIBS)
-LDFLAGS+= -lSMESH $(KERNEL_LDFLAGS) -lSalomeGenericObj
 
 @CONCLUDE@

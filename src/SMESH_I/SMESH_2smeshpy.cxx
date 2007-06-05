@@ -467,7 +467,7 @@ static bool sameGroupType( const _pyID&                   grpID,
       case GEOM::SOLID:
       case GEOM::SHELL:  type = SMESH::VOLUME; break;
       case GEOM::COMPOUND: {
-        GEOM::GEOM_Gen_var aGeomGen = SMESH_Gen_i::GetSMESHGen()->GetGeomEngine();
+        GEOM::GEOM_Gen_ptr aGeomGen = SMESH_Gen_i::GetSMESHGen()->GetGeomEngine();
         if ( !aGeomGen->_is_nil() ) {
           GEOM::GEOM_IGroupOperations_var aGrpOp =
             aGeomGen->GetIGroupOperations( study->StudyId() );

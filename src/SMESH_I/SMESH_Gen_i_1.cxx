@@ -222,7 +222,7 @@ TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
   TopoDS_Shape S;
   if ( !theGeomObject->_is_nil() ) {
     GEOM_Client* aClient = GetShapeReader();
-    GEOM::GEOM_Gen_var aGeomEngine = GetGeomEngine();
+    GEOM::GEOM_Gen_ptr aGeomEngine = GetGeomEngine();
     if ( aClient && !aGeomEngine->_is_nil () )
       S = aClient->GetShape( aGeomEngine, theGeomObject );
   }

@@ -109,6 +109,7 @@ static int MYDEBUG = 0;
 #endif
 
 // Static variables definition
+GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen = GEOM::GEOM_Gen::_nil();
 CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
@@ -206,9 +207,15 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC() {
  */
 //=============================================================================     
 GEOM::GEOM_Gen_ptr SMESH_Gen_i::GetGeomEngine() {
-  GEOM::GEOM_Gen_var aGeomEngine =
-    GEOM::GEOM_Gen::_narrow( GetLCC()->FindOrLoad_Component("FactoryServer","GEOM") );
-  return aGeomEngine._retn();
+  //CCRT GEOM::GEOM_Gen_var aGeomEngine =
+  //CCRT   GEOM::GEOM_Gen::_narrow( GetLCC()->FindOrLoad_Component("FactoryServer","GEOM") );
+  //CCRT return aGeomEngine._retn();
+  if(CORBA::is_nil(myGeomGen))
+  {
+    Engines::Component_ptr temp=GetLCC()->FindOrLoad_Component("FactoryServer","GEOM");
+    myGeomGen=GEOM::GEOM_Gen::_narrow(temp);
+  }
+  return myGeomGen;
 }
 
 //=============================================================================
@@ -412,6 +419,20 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
     myShapeReader = new GEOM_Client(GetContainerRef());
   ASSERT( myShapeReader );
   return myShapeReader;
+}
+
+//=============================================================================
+/*!
+ *  SMESH_Gen_i::SetGeomEngine
+ *
+ *  Set GEOM::GEOM_Gen reference
+ */
+//=============================================================================
+GEOM::GEOM_Gen_ptr SMESH_Gen_i::SetGeomEngine( const char* containerLoc )
+{
+  Engines::Component_ptr temp=GetLCC()->FindOrLoad_Component(containerLoc,"GEOM");
+  myGeomGen=GEOM::GEOM_Gen::_narrow(temp);
+  return myGeomGen;
 }
 
 //=============================================================================
@@ -1194,7 +1215,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
   GEOM::GEOM_Object_var geom = FindGeometryByMeshElement(theMesh, theElementID);
   if ( !geom->_is_nil() ) {
     GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-    GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
+    GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine();
 
     // try to find the corresponding SObject
     SALOMEDS::SObject_var SObj = ObjectToSObject( myCurrentStudy, geom.in() );
@@ -1251,7 +1272,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
   GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine();
+  GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine();
 
   // get a core mesh DS
   SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );

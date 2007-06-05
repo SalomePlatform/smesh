@@ -20,30 +20,42 @@
 #
 #
 #  File   : Makefile.in
-#  Author : Patrick GOLDBRONN (CEA)
+#  Author : Nicolas REJNERI, Paul RASCLE
 #  Module : SMESH
 #  $Header$
 
 top_srcdir=@top_srcdir@
-top_builddir=..
+top_builddir=../..
 srcdir=@srcdir@
-VPATH=.:@srcdir@
+VPATH=.:@srcdir@:@top_srcdir@/idl
+
 
 @COMMENCE@
 
-MED_CXXFLAGS=@MED_CXXFLAGS@
+# Libraries targets
 
-#SUBDIRS = \
-#	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL \
-#	SMESH SMESH_I SMESHClient OBJECT SMESHFiltersSelection SMESHGUI SMESH_SWIG \
-#	MEFISTO2 StdMeshers StdMeshers_I StdMeshersGUI
+LIB = libSMESH_Swigcmodule.la
+LIB_SRC = 
 
-SUBDIRS = \
-	SMDS SMESHDS Controls Driver DriverMED DriverDAT DriverUNV DriverSTL \
-	SMESH SMESH_I SMESHClient MEFISTO2 SMESH_SWIG StdMeshers StdMeshers_I
+SWIG_DEF = libSMESH_Swig.i
+EXPORT_PYSCRIPTS = libSMESH_Swig.py
 
-ifeq (@WITHIHM@,yes)
-  SUBDIRS+= OBJECT SMESHFiltersSelection SMESHGUI SMESH_SWIG_WITHIHM StdMeshersGUI
-endif
+LIB_CLIENT_IDL = SALOMEDS.idl \
+		 SALOME_Exception.idl \
+		 GEOM_Gen.idl \
+		 SMESH_Gen.idl \
+		 SMESH_Mesh.idl \
+		 SMESH_Hypothesis.idl \
+		 SMESH_BasicHypothesis.idl \
+		 SMESH_Group.idl \
+		 SALOME_ModuleCatalog.idl \
+		 SALOME_Component.idl \
+		 SALOME_GenericObj.idl \
+		 MED.idl \
+		 SALOME_Comm.idl
 
-@MODULE@
+CPPFLAGS+=$(QT_INCLUDES) $(PYTHON_INCLUDES) $(OCC_INCLUDES) $(VTK_INCLUDES) $(OGL_INCLUDES) $(KERNEL_CXXFLAGS) -DHAVE_CONFIG_H
+LIBS+= $(PYTHON_LIBS)
+LDFLAGS+= -lSMESH $(KERNEL_LDFLAGS) -lSalomeGenericObj
+
+@CONCLUDE@

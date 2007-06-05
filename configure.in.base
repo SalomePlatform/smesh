@@ -136,6 +136,14 @@ dnl
 
 AC_CXX_HAVE_SSTREAM
 
+dnl
+dnl ---------------------------------------------
+dnl testing WITHIHM
+dnl ---------------------------------------------
+dnl
+
+CHECK_WITHIHM
+
 
 
 dnl
@@ -226,13 +234,15 @@ AC_SUBST_FILE(CORBA)
 corba=make_$ORB
 CORBA=adm_local/unix/$corba
 
-echo
-echo ---------------------------------------------
-echo testing openGL
-echo ---------------------------------------------
-echo
+if test "X$WITHIHM" = "Xyes"; then
+	echo
+	echo ---------------------------------------------
+	echo testing openGL
+	echo ---------------------------------------------
+	echo
 
-CHECK_OPENGL
+	CHECK_OPENGL
+fi
 
 echo
 echo ---------------------------------------------
@@ -250,13 +260,15 @@ echo
 
 CHECK_MSG2QM
 
-echo
-echo ---------------------------------------------
-echo testing VTK
-echo ---------------------------------------------
-echo
+if test "X$WITHIHM" = "Xyes"; then
+	echo
+	echo ---------------------------------------------
+	echo testing VTK
+	echo ---------------------------------------------
+	echo
 
-CHECK_VTK
+	CHECK_VTK
+fi
 
 echo
 echo ---------------------------------------------
@@ -290,24 +302,26 @@ echo
 
 CHECK_HTML_GENERATORS
 
-echo
-echo ---------------------------------------------
-echo Testing GUI
-echo ---------------------------------------------
-echo
+if test "X$WITHIHM" = "Xyes"; then
+	echo
+	echo ---------------------------------------------
+	echo Testing GUI
+	echo ---------------------------------------------
+	echo
 
-CHECK_SALOME_GUI
+	CHECK_SALOME_GUI
 
-echo
-echo ---------------------------------------------
-echo Testing full GUI
-echo ---------------------------------------------
-echo
+	echo
+	echo ---------------------------------------------
+	echo Testing full GUI
+	echo ---------------------------------------------
+	echo
 
-CHECK_CORBA_IN_GUI
-if test "x${CORBA_IN_GUI}" != "xyes"; then
-  echo "failed : For configure SMESH module necessary full GUI !"
-  exit
+	CHECK_CORBA_IN_GUI
+	if test "x${CORBA_IN_GUI}" != "xyes"; then
+  	echo "failed : For configure SMESH module necessary full GUI !"
+  	exit
+	fi
 fi
 
 echo

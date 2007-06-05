@@ -174,6 +174,7 @@ public:
   // *****************************************
   // Interface methods
   // *****************************************
+  GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
 
   // Set current study
   void SetEmbeddedMode( CORBA::Boolean theMode );
@@ -459,7 +460,7 @@ private:
   static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
   
 private:
-
+  static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference
   static PortableServer::POA_var myPoa;         // POA reference
   static SALOME_NamingService*   myNS;          // Naming Service
