@@ -52,6 +52,7 @@ class SMESHDS_WNT_EXPORT SMESHDS_SubMesh
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
+  int  NbSubMeshes() const { return mySubMeshes.size(); }
 
   // for both types
   int NbElements() const;
