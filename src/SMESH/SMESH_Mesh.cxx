@@ -363,6 +363,10 @@ SMESH_Hypothesis::Hypothesis_Status
       if ( ret < aBestRet )
         aBestRet = ret;
     }
+    // bind hypotheses to a group just to know
+    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
+    GetMeshDS()->AddHypothesis( aSubShape, anHyp );
+
     if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
       return aBestRet;
     return aWorstNotFatal;
