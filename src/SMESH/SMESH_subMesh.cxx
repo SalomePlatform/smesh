@@ -1375,6 +1375,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
+        TopoDS_Shape shape = _subShape;
         try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
@@ -1389,12 +1390,15 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
           else
           {
+            if (!algo->OnlyUnaryInput()) {
+              shape = GetCollection( gen, algo );
+            }
             if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput()) {
-              ret = ApplyToCollection( algo, GetCollection( gen, algo ) );
+              ret = ApplyToCollection( algo, shape );
               break;
             }
             else {
-              ret = algo->Compute((*_father), _subShape);
+              ret = algo->Compute((*_father), shape);
             }
           }
           if ( !ret )
@@ -1445,11 +1449,11 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         else
         {
           _computeError.reset();
-          UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
+          //UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
-        if ( !algo->NeedDescretBoundary() )
-          UpdateSubMeshState( ret ? COMPUTE_OK : FAILED_TO_COMPUTE );
-        CheckComputeError( algo );
+        //if ( !algo->NeedDescretBoundary() )
+        //  UpdateSubMeshState( ret ? COMPUTE_OK : FAILED_TO_COMPUTE );
+        CheckComputeError( algo, shape );
       }
       break;
     case CLEAN:
@@ -1590,11 +1594,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 
 //=======================================================================
 /*!
- * \brief Update compute_state by _computeError
+ * \brief Update compute_state by _computeError and send proper events to
+ * dependent submeshes
  */
 //=======================================================================
 
-bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo)
+bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape)
 {
   bool noErrors = ( !_computeError || _computeError->IsOK() );
   if ( !noErrors )
@@ -1630,13 +1635,24 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo)
   else
   {
     _computeState = COMPUTE_OK;
+    UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
   }
   // Check state of submeshes
-  if ( !theAlgo->NeedDescretBoundary() /*&& theAlgo->OnlyUnaryInput()*/ ) {
+  if ( !theAlgo->NeedDescretBoundary() )
+  {
     SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
     while ( smIt->more() )
       if ( !smIt->next()->CheckComputeError( theAlgo ))
         noErrors = false;
+  }
+  if ( !theAlgo->OnlyUnaryInput() && !theShape.IsNull() &&
+       theShape.ShapeType() == TopAbs_COMPOUND )
+  {
+    for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
+      SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
+      if ( sm != this && !sm->CheckComputeError( theAlgo ))
+        noErrors = false;
+    }
   }
   return noErrors;
 }
@@ -1788,7 +1804,6 @@ void SMESH_subMesh::RemoveSubMeshElementsAndNodes()
 TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo)
 {
   MESSAGE("SMESH_subMesh::GetCollection");
-  ASSERT (!theAlgo->NeedDescretBoundary());
 
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
