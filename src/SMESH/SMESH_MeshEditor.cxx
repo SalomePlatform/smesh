@@ -270,17 +270,17 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
       continue;
 
     // Find sub-meshes to notify about modification
-    SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
-    while ( nodeIt->more() ) {
-      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-      const SMDS_PositionPtr& aPosition = node->GetPosition();
-      if ( aPosition.get() ) {
-        if ( int aShapeID = aPosition->GetShapeId() ) {
-          if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
-            smmap.insert( sm );
-        }
-      }
-    }
+//     SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
+//     while ( nodeIt->more() ) {
+//       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+//       const SMDS_PositionPtr& aPosition = node->GetPosition();
+//       if ( aPosition.get() ) {
+//         if ( int aShapeID = aPosition->GetShapeId() ) {
+//           if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
+//             smmap.insert( sm );
+//         }
+//       }
+//     }
 
     // Do remove
     if ( isNodes )
@@ -290,15 +290,15 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
   }
 
   // Notify sub-meshes about modification
-  if ( !smmap.empty() ) {
-    set< SMESH_subMesh *>::iterator smIt;
-    for ( smIt = smmap.begin(); smIt != smmap.end(); smIt++ )
-      (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
-  }
+//   if ( !smmap.empty() ) {
+//     set< SMESH_subMesh *>::iterator smIt;
+//     for ( smIt = smmap.begin(); smIt != smmap.end(); smIt++ )
+//       (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
+//   }
 
-  // Check if the whole mesh becomes empty
-  if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
-    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+//   // Check if the whole mesh becomes empty
+//   if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
+//     sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
   return true;
 }
@@ -7224,7 +7224,9 @@ SMESH_MeshEditor::Sew_Error
    */
 //================================================================================
 
+#ifdef _DEBUG_
 //#define DEBUG_MATCHING_NODES
+#endif
 
 SMESH_MeshEditor::Sew_Error
 SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
