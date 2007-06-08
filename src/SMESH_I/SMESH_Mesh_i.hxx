@@ -38,13 +38,14 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh_i.hxx"
+//#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
+class SMESH_subMesh_i;
 
 #include <map>
 
@@ -309,6 +310,13 @@ public:
 
   const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
+
+  /*!
+   * \brief Update hypotheses assigned to geom groups if the latter change
+   * 
+   * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+   */
+  void CheckGeomGroupModif();
 
   virtual SMESH::long_array* GetIDs();
 
