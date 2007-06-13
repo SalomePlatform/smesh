@@ -965,14 +965,15 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
  */
 //================================================================================
 
-static bool getGroupItemsFromStudy(CORBA::Object_ptr    theMesh,
-                                   SMESH_Gen_i*         theGen,
-                                   list<TopoDS_Shape> & theItems)
+static GEOM::GEOM_Object_ptr getGroupItemsFromStudy(CORBA::Object_ptr    theMesh,
+                                                    SMESH_Gen_i*         theGen,
+                                                    list<TopoDS_Shape> & theItems)
 {
+  GEOM::GEOM_Object_var groupObj;
   SALOMEDS::Study_var  study = theGen->GetCurrentStudy();
   GEOM::GEOM_Gen_var geomGen = theGen->GetGeomEngine();
   if ( study->_is_nil() || geomGen->_is_nil() )
-    return false;
+    return groupObj._retn();
   
   GEOM::GEOM_IGroupOperations_var groupOp =
     geomGen->GetIGroupOperations( theGen->GetCurrentStudyID() );
@@ -981,32 +982,33 @@ static bool getGroupItemsFromStudy(CORBA::Object_ptr    theMesh,
 
   SALOMEDS::SObject_var meshOS = theGen->ObjectToSObject(study, theMesh);
   if ( meshOS->_is_nil() || groupOp->_is_nil() || shapeOp->_is_nil() )
-    return false;
+    return groupObj._retn();
+  SALOMEDS::SObject_var fatherSO = meshOS->GetFather();
+  if ( fatherSO->_is_nil() || fatherSO->Tag() != theGen->GetSubMeshOnCompoundTag() )
+    return groupObj._retn(); // keep only submeshes on groups
 
-  bool ret = false;
   SALOMEDS::ChildIterator_var anIter = study->NewChildIterator(meshOS);
-  if ( anIter->_is_nil() ) return false;
+  if ( anIter->_is_nil() ) return groupObj._retn();
   for ( ; anIter->More(); anIter->Next())
   {
     SALOMEDS::SObject_var aSObject = anIter->Value();
     SALOMEDS::SObject_var aRefSO;
     if ( !aSObject->_is_nil() && aSObject->ReferencedObject(aRefSO) )
     {
-      GEOM::GEOM_Object_var meshShape = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
-      GEOM::ListOfLong_var  ids = groupOp->GetObjects( meshShape );
-      GEOM::GEOM_Object_var mainShape = meshShape->GetMainShape();
+      groupObj = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
+      if ( groupObj->_is_nil() ) break;
+      GEOM::ListOfLong_var  ids = groupOp->GetObjects( groupObj );
+      GEOM::GEOM_Object_var mainShape = groupObj->GetMainShape();
       for ( int i = 0; i < ids->length(); ++i ) {
         GEOM::GEOM_Object_var subShape = shapeOp->GetSubShape( mainShape, ids[i] );
         TopoDS_Shape S = theGen->GeomObjectToShape( subShape );
-        if ( !S.IsNull() ) {
+        if ( !S.IsNull() )
           theItems.push_back( S );
-          ret = true;
-        }
       }
       break;
     }
   }
-  return ret;
+  return groupObj._retn();
 }
 
 //=============================================================================
@@ -1024,70 +1026,51 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
   SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
   if ( study->_is_nil() ) return;
 
-  // old group shape and list of items of corresponding new group shape
-  typedef list< pair< TopoDS_Shape, list< TopoDS_Shape> > > TGroupAndItemsList;
-  TGroupAndItemsList oldGroupAndNewItems;
-
-  // check main shape
-//   TopoDS_Shape oldGroupShape = _impl->GetShapeToMesh();
-//   SMESH_subMesh * sm = _impl->GetSubMeshContaining(oldGroupShape);
-//   if (!sm) return;
-//   SMESHDS_SubMesh * smDS = sm->GetSubMeshDS();
-//   if ( smDS && smDS->IsComplexSubmesh() )
-//   {
-//     // get a shape current in the study
-//     GEOM::GEOM_Object_var geom = getGeomFromStudy (_this(), study);
-//     TopoDS_Shape studyShape = _gen_i->GeomObjectToShape( geom );
-//     oldGroupAndNewItems.push_back( make_pair( studyShape, oldGroupShape ));
-//   }
-
-  // get shapes of submesh on groups
+  // check if items of groups changed
   map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
   for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
   {
-    SMESHDS_SubMesh * smDS = i_sm->second->GetSubMeshDS();
-    if ( smDS && smDS->IsComplexSubmesh() ) {
-      int shapeID = i_sm->first;
-      map<int, SMESH::SMESH_subMesh_ptr>::iterator i_smIor = _mapSubMeshIor.find( shapeID );
-      if ( i_smIor != _mapSubMeshIor.end() ) {
-        const TopoDS_Shape & oldGroup = i_sm->second->GetSubShape();
-        oldGroupAndNewItems.push_back( make_pair( oldGroup, list< TopoDS_Shape>() ));
-        list< TopoDS_Shape> & newGroupItems = oldGroupAndNewItems.back().second;
-        if ( !getGroupItemsFromStudy ( i_smIor->second, _gen_i, newGroupItems ))
-          oldGroupAndNewItems.pop_back();
+    const TopoDS_Shape & oldGroupShape = i_sm->second->GetSubShape();
+    SMESHDS_SubMesh * oldDS = i_sm->second->GetSubMeshDS();
+    if ( !oldDS /*|| !oldDS->IsComplexSubmesh()*/ )
+      continue;
+    int oldID = i_sm->first;
+    map<int, SMESH::SMESH_subMesh_ptr>::iterator i_smIor = _mapSubMeshIor.find( oldID );
+    if ( i_smIor == _mapSubMeshIor.end() )
+      continue;
+    list< TopoDS_Shape> newItems;
+    GEOM::GEOM_Object_var groupObj = getGroupItemsFromStudy ( i_smIor->second, _gen_i, newItems );
+    if ( groupObj->_is_nil() )
+      continue;
+
+    int nbOldItems = oldDS->IsComplexSubmesh() ? oldDS->NbSubMeshes() : 1;
+    int nbNewItems = newItems.size();
+    bool groupChanged = ( nbOldItems != nbNewItems);
+    if ( !groupChanged ) {
+      if ( !oldDS->IsComplexSubmesh() ) { // old group has one item
+        groupChanged = ( oldGroupShape != newItems.front() );
+      }
+      else {
+        list<TopoDS_Shape>::iterator item = newItems.begin();
+        for ( ; item != newItems.end() && !groupChanged; ++item )
+        {
+          SMESHDS_SubMesh * itemDS = _impl->GetMeshDS()->MeshElements( *item );
+          groupChanged = ( !itemDS || !oldDS->ContainsSubMesh( itemDS ));
+        }
       }
     }
-  }
-
-  // update hypotheses and submeshes if necessary
-  TGroupAndItemsList::iterator oldGAndNewI = oldGroupAndNewItems.begin();
-  for ( ; oldGAndNewI != oldGroupAndNewItems.end(); ++oldGAndNewI)
-  {
-    TopoDS_Shape   oldGroupShape = oldGAndNewI->first;
-    list<TopoDS_Shape>& newItems = oldGAndNewI->second;
-
-    // check if a group changed
-    int oldID = _impl->GetMeshDS()->ShapeToIndex( oldGroupShape );
-    SMESHDS_SubMesh * oldDS = _impl->GetMeshDS()->MeshElements( oldID );
-    bool groupChanged = ( oldDS->NbSubMeshes() != newItems.size() );
-
-    list<TopoDS_Shape>::iterator item = newItems.begin();
-    for ( ; item != newItems.end() && !groupChanged; ++item )
-    {
-      SMESHDS_SubMesh * itemDS = _impl->GetMeshDS()->MeshElements( *item );
-      groupChanged = ( !itemDS || !oldDS->ContainsSubMesh( itemDS ));
-    }
+    // update hypotheses and submeshes if necessary
     if ( groupChanged )
     {
-      // make a new group shape
-      BRep_Builder B;
-      TopoDS_Compound newGroupShape;
-      B.MakeCompound(newGroupShape);
-      for ( item = newItems.begin(); item != newItems.end(); ++item )
-        B.Add( newGroupShape, *item );
+      // get a new group shape
+      GEOM_Client* geomClient = _gen_i->GetShapeReader();
+      if ( !geomClient ) continue;
+      TCollection_AsciiString groupIOR = _gen_i->GetGeomEngine()->GetStringFromIOR( groupObj );
+      geomClient->RemoveShapeFromBuffer( groupIOR );
+      TopoDS_Shape newGroupShape = _gen_i->GeomObjectToShape( groupObj );
       // update hypotheses
-      const list <const SMESHDS_Hypothesis * >& hyps = _impl->GetHypothesisList(oldGroupShape);
-      list <const SMESHDS_Hypothesis * >::const_iterator hypIt;
+      list <const SMESHDS_Hypothesis * > hyps = _impl->GetHypothesisList(oldGroupShape);
+      list <const SMESHDS_Hypothesis * >::iterator hypIt;
       for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
       {
         _impl->RemoveHypothesis( oldGroupShape, (*hypIt)->GetID());
@@ -1096,13 +1079,15 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
       // care of submeshes
       SMESH_subMesh* newSubmesh = _impl->GetSubMesh( newGroupShape );
       int newID = newSubmesh->GetId();
-      _mapSubMesh   [ newID ] = newSubmesh;
-      _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
-      _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
-      _mapSubMesh.erase   (oldID);
-      _mapSubMesh_i.erase (oldID);
-      _mapSubMeshIor.erase(oldID);
-      _mapSubMesh_i [ newID ]->changeLocalId( newID );
+      if ( newID != oldID ) {
+        _mapSubMesh   [ newID ] = newSubmesh;
+        _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+        _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+        _mapSubMesh.erase   (oldID);
+        _mapSubMesh_i.erase (oldID);
+        _mapSubMeshIor.erase(oldID);
+        _mapSubMesh_i [ newID ]->changeLocalId( newID );
+      }
     }
   }
 }
