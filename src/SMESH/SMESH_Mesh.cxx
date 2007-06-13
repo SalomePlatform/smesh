@@ -470,6 +470,9 @@ SMESH_Hypothesis::Hypothesis_Status
       if ( ret < aBestRet )
         aBestRet = ret;
     }
+    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
+    GetMeshDS()->RemoveHypothesis( aSubShape, anHyp );
+
     if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
       return aBestRet;
     return aWorstNotFatal;
