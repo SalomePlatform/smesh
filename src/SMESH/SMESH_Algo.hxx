@@ -258,8 +258,14 @@ public:
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1,
-                                  const TopoDS_Edge & E2);
+  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1, const TopoDS_Edge & E2);
+
+  /*!
+   * \brief Return true if an edge can be considered as a continuation of another
+   */
+  static bool IsContinuous(const TopoDS_Edge & E1, const TopoDS_Edge & E2) {
+    return ( Continuity( E1, E2 ) >= GeomAbs_G1 );
+  }
 
   /*!
    * \brief Return the node built on a vertex
