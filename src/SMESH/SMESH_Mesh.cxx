@@ -153,7 +153,6 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
         i_gr++;
     }
     _mapAncestors.Clear();
-    _mapPropagationChains.Clear();
 
     // clear SMESHDS
     TopoDS_Shape aNullShape;
@@ -866,9 +865,6 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
         {
           aSubMesh->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
                                     const_cast< SMESH_Hypothesis*>( hyp ));
-
-          if ( algo->GetDim() == 1 && IsPropagationHypothesis( aSubShape ))
-            CleanMeshOnPropagationChain( aSubShape );
         }
       }
     }
@@ -1296,279 +1292,6 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
   _mapGroup.erase (theGroupID);
 }
 
-//=============================================================================
-/*!
- *  IsLocal1DHypothesis
- *  Returns a local 1D hypothesis used for theEdge
- */
-//=============================================================================
-const SMESH_Hypothesis* SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
-{
-  SMESH_HypoFilter hypo ( SMESH_HypoFilter::HasDim( 1 ));
-  hypo.AndNot( hypo.IsAlgo() ).AndNot( hypo.IsAssignedTo( GetMeshDS()->ShapeToMesh() ));
-
-  return GetHypothesis( theEdge, hypo, true );
-}
-
-//=============================================================================
-/*!
- *  IsPropagationHypothesis
- */
-//=============================================================================
-bool SMESH_Mesh::IsPropagationHypothesis (const TopoDS_Shape& theEdge)
-{
-  return _mapPropagationChains.Contains(theEdge);
-}
-
-//=============================================================================
-/*!
- *  IsPropagatedHypothesis
- */
-//=============================================================================
-bool SMESH_Mesh::IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
-                                         TopoDS_Shape&       theMainEdge)
-{
-  int nbChains = _mapPropagationChains.Extent();
-  for (int i = 1; i <= nbChains; i++) {
-    //const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
-    const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
-    if (aChain.Contains(theEdge)) {
-      theMainEdge = _mapPropagationChains.FindKey(i);
-      return true;
-    }
-  }
-
-  return false;
-}
-//=============================================================================
-/*!
- *  IsReversedInChain
- */
-//=============================================================================
-
-bool SMESH_Mesh::IsReversedInChain (const TopoDS_Shape& theEdge,
-                                    const TopoDS_Shape& theMainEdge)
-{
-  if ( !theMainEdge.IsNull() && !theEdge.IsNull() &&
-      _mapPropagationChains.Contains( theMainEdge ))
-  {
-    const SMESH_IndexedMapOfShape& aChain =
-      _mapPropagationChains.FindFromKey( theMainEdge );
-    int index = aChain.FindIndex( theEdge );
-    if ( index )
-      return aChain(index).Orientation() == TopAbs_REVERSED;
-  }
-  return false;
-}
-
-//=============================================================================
-/*!
- *  CleanMeshOnPropagationChain
- */
-//=============================================================================
-void SMESH_Mesh::CleanMeshOnPropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromKey(theMainEdge);
-  int i, nbEdges = aChain.Extent();
-  for (i = 1; i <= nbEdges; i++) {
-    TopoDS_Shape anEdge = aChain.FindKey(i);
-    SMESH_subMesh *subMesh = GetSubMesh(anEdge);
-    SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
-    if (subMeshDS && subMeshDS->NbElements() > 0) {
-      subMesh->ComputeStateEngine(SMESH_subMesh::CLEAN);
-    }
-  }
-}
-
-//=============================================================================
-/*!
- *  RebuildPropagationChains
- *  Rebuild all existing propagation chains.
- *  Have to be used, if 1D hypothesis have been assigned/removed to/from any edge
- */
-//=============================================================================
-bool SMESH_Mesh::RebuildPropagationChains()
-{
-  bool ret = true;
-
-  // Clean all chains, because they can be not up-to-date
-  int i, nbChains = _mapPropagationChains.Extent();
-  for (i = 1; i <= nbChains; i++) {
-    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
-    CleanMeshOnPropagationChain(aMainEdge);
-    _mapPropagationChains.ChangeFromIndex(i).Clear();
-  }
-
-  // Build all chains
-  for (i = 1; i <= nbChains; i++) {
-    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
-    if (!BuildPropagationChain(aMainEdge))
-      ret = false;
-    CleanMeshOnPropagationChain(aMainEdge);
-  }
-
-  return ret;
-}
-
-//=============================================================================
-/*!
- *  RemovePropagationChain
- *  Have to be used, if Propagation hypothesis is removed from <theMainEdge>
- */
-//=============================================================================
-bool SMESH_Mesh::RemovePropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  if (!_mapPropagationChains.Contains(theMainEdge))
-    return false;
-
-  // Clean mesh elements and nodes, built on the chain
-  CleanMeshOnPropagationChain(theMainEdge);
-
-  // Clean the chain
-  _mapPropagationChains.ChangeFromKey(theMainEdge).Clear();
-
-  // Remove the chain from the map
-  int i = _mapPropagationChains.FindIndex(theMainEdge);
-  if ( i == _mapPropagationChains.Extent() )
-    _mapPropagationChains.RemoveLast();
-  else {
-    TopoDS_Vertex anEmptyShape;
-    BRep_Builder BB;
-    BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
-    SMESH_IndexedMapOfShape anEmptyMap;
-    _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
-  }
-
-  return true;
-}
-
-//=============================================================================
-/*!
- *  BuildPropagationChain
- */
-//=============================================================================
-bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
-
-  // Add new chain, if there is no
-  if (!_mapPropagationChains.Contains(theMainEdge)) {
-    SMESH_IndexedMapOfShape aNewChain;
-    _mapPropagationChains.Add(theMainEdge, aNewChain);
-  }
-
-  // Check presence of 1D hypothesis to be propagated
-  const SMESH_Hypothesis* aMainHyp = IsLocal1DHypothesis(theMainEdge);
-  if (!aMainHyp) {
-    MESSAGE("Warning: There is no 1D hypothesis to propagate. Please, assign.");
-    return true;
-  }
-
-  // Edges, on which the 1D hypothesis will be propagated from <theMainEdge>
-  SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.ChangeFromKey(theMainEdge);
-  if (aChain.Extent() > 0) {
-    CleanMeshOnPropagationChain(theMainEdge);
-    aChain.Clear();
-  }
-
-  // At first put <theMainEdge> in the chain
-  aChain.Add(theMainEdge);
-
-  // List of edges, added to chain on the previous cycle pass
-  TopTools_ListOfShape listPrevEdges;
-  listPrevEdges.Append(theMainEdge.Oriented( TopAbs_FORWARD ));
-
-//   5____4____3____4____5____6
-//   |    |    |    |    |    |
-//   |    |    |    |    |    |
-//   4____3____2____3____4____5
-//   |    |    |    |    |    |      Number in the each knot of
-//   |    |    |    |    |    |      grid indicates cycle pass,
-//   3____2____1____2____3____4      on which corresponding edge
-//   |    |    |    |    |    |      (perpendicular to the plane
-//   |    |    |    |    |    |      of view) will be found.
-//   2____1____0____1____2____3
-//   |    |    |    |    |    |
-//   |    |    |    |    |    |
-//   3____2____1____2____3____4
-
-  // Collect all edges pass by pass
-  while (listPrevEdges.Extent() > 0) {
-    // List of edges, added to chain on this cycle pass
-    TopTools_ListOfShape listCurEdges;
-
-    // Find the next portion of edges
-    TopTools_ListIteratorOfListOfShape itE (listPrevEdges);
-    for (; itE.More(); itE.Next()) {
-      TopoDS_Shape anE = itE.Value();
-
-      // Iterate on faces, having edge <anE>
-      TopTools_ListIteratorOfListOfShape itA (GetAncestors(anE));
-      for (; itA.More(); itA.Next()) {
-        TopoDS_Shape aW = itA.Value();
-
-        // There are objects of different type among the ancestors of edge
-        if (aW.ShapeType() == TopAbs_WIRE) {
-          TopoDS_Shape anOppE;
-
-          BRepTools_WireExplorer aWE (TopoDS::Wire(aW));
-          Standard_Integer nb = 1, found = 0;
-          TopTools_Array1OfShape anEdges (1,4);
-          for (; aWE.More(); aWE.Next(), nb++) {
-            if (nb > 4) {
-              found = 0;
-              break;
-            }
-            anEdges(nb) = aWE.Current();
-            if (!_mapAncestors.Contains(anEdges(nb))) {
-              MESSAGE("WIRE EXPLORER HAVE GIVEN AN INVALID EDGE !!!");
-              break;
-            }
-            if (anEdges(nb).IsSame(anE)) found = nb;
-          }
-
-          if (nb == 5 && found > 0) {
-            // Quadrangle face found, get an opposite edge
-            Standard_Integer opp = found + 2;
-            if (opp > 4) opp -= 4;
-            anOppE = anEdges(opp);
-
-            // add anOppE to aChain if ...
-            if (!aChain.Contains(anOppE)) { // ... anOppE is not in aChain
-              if (!IsLocal1DHypothesis(anOppE)) { // ... no other 1d hyp on anOppE
-                TopoDS_Shape aMainEdgeForOppEdge; // ... no other hyp is propagated to anOppE
-                if (!IsPropagatedHypothesis(anOppE, aMainEdgeForOppEdge))
-                {
-                  // Add found edge to the chain oriented so that to
-                  // have it co-directed with a forward MainEdge
-                  TopAbs_Orientation ori = anE.Orientation();
-                  if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
-                    ori = TopAbs::Reverse( ori );
-                  anOppE.Orientation( ori );
-                  aChain.Add(anOppE);
-                  listCurEdges.Append(anOppE);
-                }
-                else {
-                  // Collision!
-                  MESSAGE("Error: Collision between propagated hypotheses");
-                  CleanMeshOnPropagationChain(theMainEdge);
-                  aChain.Clear();
-                  return ( aMainHyp == IsLocal1DHypothesis(aMainEdgeForOppEdge) );
-                }
-              }
-            }
-          } // if (nb == 5 && found > 0)
-        } // if (aF.ShapeType() == TopAbs_WIRE)
-      } // for (; itF.More(); itF.Next())
-    } // for (; itE.More(); itE.Next())
-
-    listPrevEdges = listCurEdges;
-  } // while (listPrevEdges.Extent() > 0)
-
-  CleanMeshOnPropagationChain(theMainEdge);
-  return true;
-}
-
 //=======================================================================
 //function : GetAncestors
 //purpose  : return list of ancestors of theSubShape in the order
@@ -1588,6 +1311,7 @@ const TopTools_ListOfShape& SMESH_Mesh::GetAncestors(const TopoDS_Shape& theS) c
 //function : Dump
 //purpose  : dumps contents of mesh to stream [ debug purposes ]
 //=======================================================================
+
 ostream& SMESH_Mesh::Dump(ostream& save)
 {
   int clause = 0;
@@ -1660,6 +1384,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 //function : GetElementType
 //purpose  : Returns type of mesh element with certain id
 //=======================================================================
+
 SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem )
 {
   return _myMeshDS->GetElementType( id, iselem );
