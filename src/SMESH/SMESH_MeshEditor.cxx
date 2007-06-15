@@ -269,6 +269,14 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
     if ( !elem )
       continue;
 
+    // Notify VERTEX sub-meshes about modification
+    if ( isNodes ) {
+      const SMDS_MeshNode* node = cast2Node( elem );
+      if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+        if ( int aShapeID = node->GetPosition()->GetShapeId() )
+          if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
+            smmap.insert( sm );
+    }
     // Find sub-meshes to notify about modification
 //     SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
 //     while ( nodeIt->more() ) {
@@ -290,11 +298,11 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
   }
 
   // Notify sub-meshes about modification
-//   if ( !smmap.empty() ) {
-//     set< SMESH_subMesh *>::iterator smIt;
-//     for ( smIt = smmap.begin(); smIt != smmap.end(); smIt++ )
-//       (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
-//   }
+  if ( !smmap.empty() ) {
+    set< SMESH_subMesh *>::iterator smIt;
+    for ( smIt = smmap.begin(); smIt != smmap.end(); smIt++ )
+      (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
+  }
 
 //   // Check if the whole mesh becomes empty
 //   if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
