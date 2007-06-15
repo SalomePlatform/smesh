@@ -91,8 +91,7 @@ namespace {
         eNext = TopoDS::Edge( ancestor );
     }
     if ( edgeCounter.Extent() < 3 && !eNext.IsNull() ) {
-      GeomAbs_Shape cont = SMESH_Algo::Continuity( edge, eNext );
-      if (cont >= GeomAbs_G1) {
+      if ( SMESH_Algo::IsContinuous( edge, eNext )) {
         // care of orientation
         bool reverse;
         if ( forward )

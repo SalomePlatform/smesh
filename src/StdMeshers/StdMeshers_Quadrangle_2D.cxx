@@ -595,16 +595,14 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
       sideEdges.splice( sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
       bool sameSide = true;
       while ( !edges.empty() && sameSide ) {
-        GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.back(), edges.front() );
-        sameSide = ( cont >= GeomAbs_G1 );
+        sameSide = SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() );
         if ( sameSide )
           sideEdges.splice( sideEdges.end(), edges, edges.begin());
       }
       if ( nbSides == 0 ) { // go backward from the first edge
         sameSide = true;
         while ( !edges.empty() && sameSide ) {
-          GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.front(), edges.back() );
-          sameSide = ( cont >= GeomAbs_G1 );
+          sameSide = SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() );
           if ( sameSide )
             sideEdges.splice( sideEdges.begin(), edges, --edges.end());
         }
