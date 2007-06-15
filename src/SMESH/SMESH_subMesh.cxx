@@ -623,49 +623,6 @@ SMESH_Hypothesis::Hypothesis_Status
 
     if ( !meshDS->AddHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
-
-    // Serve Propagation of 1D hypothesis
-    // NOTE: it is possible to re-implement Propagation using EventListener
-    if (event == ADD_HYP) {
-      bool isPropagationOk = true;
-      bool isPropagationHyp = ( strcmp( "Propagation", anHyp->GetName() ) == 0 );
-
-      if ( isPropagationHyp ) {
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current())) {
-            if (!_father->BuildPropagationChain(exp.Current())) {
-              isPropagationOk = false;
-            }
-          }
-        }
-      }
-      else if (anHyp->GetDim() == 1) { // Only 1D hypothesis can be propagated
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current())) {
-            TopoDS_Shape aMainEdge;
-            if (_father->IsPropagatedHypothesis(exp.Current(), aMainEdge)) {
-              isPropagationOk = _father->RebuildPropagationChains();
-            } else if (_father->IsPropagationHypothesis(exp.Current())) {
-              isPropagationOk = _father->BuildPropagationChain(exp.Current());
-            } else {
-            }
-          }
-        }
-      } else {
-      }
-
-      if ( isPropagationOk ) {
-        if ( isPropagationHyp )
-          return ret; // nothing more to do for "Propagation" hypothesis
-      }
-      else if ( ret < SMESH_Hypothesis::HYP_CONCURENT) {
-        ret = SMESH_Hypothesis::HYP_CONCURENT;
-      }
-    } // Serve Propagation of 1D hypothesis
   }
 
   // --------------------------
@@ -676,45 +633,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if (!meshDS->RemoveHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_OK; // nothing changes
 
-    // Serve Propagation of 1D hypothesis
-    // NOTE: it is possible to re-implement Propagation using EventListener
-    if (event == REMOVE_HYP)
-    {
-      bool isPropagationOk = true;
-      SMESH_HypoFilter propagFilter( SMESH_HypoFilter::HasName( "Propagation" ));
-      bool isPropagationHyp = propagFilter.IsOk( anHyp, _subShape );
-
-      if ( isPropagationHyp )
-      {
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current()) &&
-              !_father->GetHypothesis( exp.Current(), propagFilter, true )) {
-            // no more Propagation on the current edge
-            if (!_father->RemovePropagationChain(exp.Current())) {
-              return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
-            }
-          }
-        }
-        // rebuild propagation chains, because removing one
-        // chain can resolve concurention, existing before
-        isPropagationOk = _father->RebuildPropagationChains();
-      }
-      else if (anHyp->GetDim() == 1) // Only 1D hypothesis can be propagated
-      {
-        isPropagationOk = _father->RebuildPropagationChains();
-      }
-
-      if ( isPropagationOk ) {
-        if ( isPropagationHyp )
-          return ret; // nothing more to do for "Propagation" hypothesis
-      }
-      else if ( ret < SMESH_Hypothesis::HYP_CONCURENT) {
-        ret = SMESH_Hypothesis::HYP_CONCURENT;
-      }
-    } // Serve Propagation of 1D hypothesis
-    else // event == REMOVE_ALGO
+    if (event == REMOVE_ALGO)
     {
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
       if (!algo->NeedDescretBoundary())
@@ -1434,10 +1353,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           cleanSubMesh( this );
           throw std::bad_alloc();
         }
-        catch (Standard_Failure& exc) {
+        catch (Standard_Failure& ex) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_OCC_EXCEPTION;
-          _computeError->myComment = exc.GetMessageString();
+          _computeError->myComment += ex.DynamicType()->Name();
+          if ( ex.GetMessageString() && strlen( ex.GetMessageString() )) {
+            _computeError->myComment += ": ";
+            _computeError->myComment += ex.GetMessageString();
+          }
         }
         catch ( SALOME_Exception& S_ex ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
