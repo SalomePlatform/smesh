@@ -2552,6 +2552,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
       // close hypotheses root HDF group
       aTopGroup->CloseOnDisk();
+      aTopGroup = 0;
     }
 
     // --> then we should read&create algorithms
@@ -2651,6 +2652,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
       // close algorithms root HDF group
       aTopGroup->CloseOnDisk();
+      aTopGroup = 0;
     }
 
     // --> the rest groups should be meshes
@@ -3292,7 +3294,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
     }
     // close mesh group
-    aTopGroup->CloseOnDisk();   
+    if(aTopGroup)
+      aTopGroup->CloseOnDisk();   
   }
   // close HDF file
   aFile->CloseOnDisk();
