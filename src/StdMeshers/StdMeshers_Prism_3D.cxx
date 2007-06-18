@@ -819,11 +819,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   // detect bad cases
   if ( nbNotQuad > 0 && nbNotQuad != 2 )
     return error(COMPERR_BAD_SHAPE,
-                 TCom("More than 2 not quadrilateral faces")
+                 TCom("More than 2 not quadrilateral faces ")
                  <<nbNotQuad);
   if ( nbNotQuadMeshed > 2 )
     return error(COMPERR_BAD_INPUT_MESH,
-                 TCom("More then 2 faces meshed with not quadrangle elements")
+                 TCom("More than 2 faces meshed with not quadrangle elements ")
                  <<nbNotQuadMeshed);
 
   // get found submeshes
@@ -1148,7 +1148,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     SMESH_Block::TFace& tFace = myFace[ fID - ID_FirstF ];
     tFace.Set( fID, sideFace->Surface(), pcurves, isForward );
 
-    SHOWYXZ( endl<<"F "<< iF << " id " << fID << " FRW " << sideFace->IsForward(), );
+    SHOWYXZ( endl<<"F "<< iF << " id " << fID << " FRW " << sideFace->IsForward(), sideFace->Value(0,0));
     // edges 3D geometry
     vector< int > edgeIdVec;
     SMESH_Block::GetFaceEdgesIDs( fID, edgeIdVec );
