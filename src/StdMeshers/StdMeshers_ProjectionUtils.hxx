@@ -137,11 +137,11 @@ class StdMeshers_ProjectionUtils
    * \brief Return an oriented propagation edge
     * \param aMesh - mesh
     * \param fromEdge - start edge for propagation
-    * \retval TopoDS_Edge - found edge
+    * \retval pair<int,TopoDS_Edge> - propagation step and found edge
    */
-  static TopoDS_Edge GetPropagationEdge( SMESH_Mesh*        aMesh,
-                                         const TopoDS_Edge& anEdge,
-                                         const TopoDS_Edge& fromEdge);
+  static std::pair<int,TopoDS_Edge> GetPropagationEdge( SMESH_Mesh*        aMesh,
+                                                        const TopoDS_Edge& anEdge,
+                                                        const TopoDS_Edge& fromEdge);
 
   /*!
    * \brief Find corresponding nodes on two faces
