@@ -109,6 +109,7 @@ CLEANFILES = \
 dist_salomescript_DATA= \
 	libSMESH_Swig.py \
 	smesh.py \
+	smeshDC.py \
 	batchmode_smesh.py \
 	batchmode_mefisto.py \
 	ex00_all.py \
