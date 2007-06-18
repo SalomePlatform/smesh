@@ -458,8 +458,14 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
   try {
     if ( _mesh_i->_mapSubMesh.find( _localId ) != _mesh_i->_mapSubMesh.end()) {
       TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
-      if ( !S.IsNull() )
+      if ( !S.IsNull() ) {
         aShapeObj = _gen_i->ShapeToGeomObject( S );
+	//mzn: N7PAL16232, N7PAL16233
+	//In some cases it's possible that GEOM_Client contains the shape same to S, but
+	//with another orientation.
+	if (aShapeObj->_is_nil())
+	  aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
+      }
     }
   }
   catch(SALOME_Exception & S_ex) {
