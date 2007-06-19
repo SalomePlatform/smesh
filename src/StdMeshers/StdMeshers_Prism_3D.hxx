@@ -78,10 +78,12 @@ struct TNode
   gp_XYZ GetCoords() const { return gp_XYZ( myNode->X(), myNode->Y(), myNode->Z() ); }
   gp_XYZ GetParams() const { return myParams; }
   gp_XYZ& ChangeParams() { return myParams; }
+  bool HasParams() const { return myParams.X() >= 0.0; }
   SMDS_TypeOfPosition GetPositionType() const
   { return myNode ? myNode->GetPosition()->GetTypeOfPosition() : SMDS_TOP_UNSPEC; }
+  bool IsNeighbor( const TNode& other ) const;
 
-  TNode(const SMDS_MeshNode* node = 0): myNode(node), myParams(0,0,0) {}
+  TNode(const SMDS_MeshNode* node = 0): myNode(node), myParams(-1,-1,-1) {}
   bool operator < (const TNode& other) const { return myNode < other.myNode; }
 };
 

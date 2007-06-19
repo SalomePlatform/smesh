@@ -275,18 +275,16 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     TNodeColumn& column = bot_column->second;
 
     // bottom node parameters and coords
-    gp_XYZ botParams          = tBotNode.GetParams();
     myShapeXYZ[ ID_BOT_FACE ] = tBotNode.GetCoords();
+    gp_XYZ botParams          = tBotNode.GetParams();
 
     // compute top node parameters
-    gp_XYZ topParams;
     myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
-    if ( column.size() < 3 ) { // only top and bottom nodes in columns
-      topParams = botParams;
-    }
-    else {
+    gp_XYZ topParams = botParams;
+    topParams.SetZ( 1 );
+    if ( column.size() > 2 ) {
       gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
-      if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE ))
+      if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
         return error(TCom("Can't compute normalized parameters ")
                      << "for node " << column.back()->GetID()
                      << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
@@ -317,6 +315,10 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       gp_XYZ coords;
       if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
         return error("Can't compute coordinates by normalized parameters");
+
+      SHOWYXZ("TOPFacePoint ",myShapeXYZ[ ID_TOP_FACE]);
+      SHOWYXZ("BOT Node "<< tBotNode.myNode->GetID(),gpXYZ(tBotNode.myNode));
+      SHOWYXZ("ShellPoint ",coords);
 
       // create a node
       node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
@@ -511,6 +513,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   // Fill myBotToColumnMap
 
   int zSize = myBlock.VerticalSize();
+  TNode prevTNode;
   TNodeNodeMap::iterator bN_tN = n2nMap.begin();
   for ( ; bN_tN != n2nMap.end(); ++bN_tN )
   {
@@ -520,10 +523,16 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
       continue; // wall columns are contained in myBlock
     // compute bottom node params
     TNode bN( botNode );
-    if ( zSize > 2 )
-      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
+    if ( zSize > 2 ) {
+      gp_XYZ paramHint(-1,-1,-1);
+//       if ( prevTNode.IsNeighbor( bN ))
+//         paramHint = prevTNode.GetParams();
+      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
+                                       ID_BOT_FACE, paramHint ))
         return error(TCom("Can't compute normalized parameters ")
                      << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    }
+    prevTNode = bN;
     // create node column
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
@@ -677,6 +686,23 @@ bool StdMeshers_Prism_3D::setFaceAndEdgesXYZ( const int faceID, const gp_XYZ& pa
   SHOWYXZ("FacePoint "<<faceID, myShapeXYZ[ faceID]);
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if this node and other one belong to one face
+ */
+//================================================================================
+
+bool TNode::IsNeighbor( const TNode& other ) const
+{
+  if ( !other.myNode || !myNode ) return false;
+
+  SMDS_ElemIteratorPtr fIt = other.myNode->GetInverseElementIterator(SMDSAbs_Face);
+  while ( fIt->more() )
+    if ( fIt->next()->GetNodeIndex( myNode ) >= 0 )
+      return true;
+  return false;
 }
 
 //================================================================================
