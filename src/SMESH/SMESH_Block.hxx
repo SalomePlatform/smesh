@@ -146,7 +146,7 @@ class SMESH_Block: public math_FunctionSetWithDerivatives
   // Initialization
   // ---------------
 
-  SMESH_Block (): myNbIterations(0), mySumDist(0.) {}
+  SMESH_Block();
 
   bool LoadBlockShapes(const TopoDS_Shell&         theShell,
                        const TopoDS_Vertex&        theVertex000,
@@ -241,7 +241,8 @@ public:
 
   bool ComputeParameters (const gp_Pnt& thePoint,
                           gp_XYZ&       theParams,
-                          const int     theShapeID = ID_Shell);
+                          const int     theShapeID    = ID_Shell,
+                          const gp_XYZ& theParamsHint = gp_XYZ(-1,-1,-1));
   // compute point parameters in the block.
   // Note: for edges, it is better to use EdgeParameters()
 
@@ -361,14 +362,20 @@ public:
 
   // for param computation
 
+  enum { SQUARE_DIST = 0, DRV_1, DRV_2, DRV_3 };
+  double distance () const { return sqrt( myValues[ SQUARE_DIST ]); }
+  double funcValue(double sqDist) const { return mySquareFunc ? sqDist : sqrt(sqDist); }
+
   int      myFaceIndex;
   double   myFaceParam;
   int      myNbIterations;
   double   mySumDist;
+  double   myTolerance;
+  bool     mySquareFunc;
 
   gp_XYZ   myPoint; // the given point
   gp_XYZ   myParam; // the best parameters guess
-  double   myValues[ 4 ]; // values computed at myParam: function value and 3 derivatives
+  double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
 
   typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
   TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
