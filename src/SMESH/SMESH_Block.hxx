@@ -25,10 +25,6 @@
 #ifndef SMESH_Block_HeaderFile
 #define SMESH_Block_HeaderFile
 
-// #include <Geom2d_Curve.hxx>
-// #include <Geom_Curve.hxx>
-// #include <Geom_Surface.hxx>
-
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <TopoDS_Edge.hxx>
@@ -36,12 +32,8 @@
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
-#include <gp_Trsf.hxx>
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
-#include <math_FunctionSetWithDerivatives.hxx>
-#include <math_Matrix.hxx>
-#include <math_Vector.hxx>
 
 #include <ostream>
 #include <vector>
@@ -58,7 +50,7 @@ class Adaptor3d_Curve;
 // parameters inside the block and vice versa
 // =========================================================
 
-class SMESH_Block: public math_FunctionSetWithDerivatives
+class SMESH_Block
 {
  public:
   enum TShapeID {
@@ -282,17 +274,6 @@ public:
   // theFirstVertex may be NULL.
   // Always try to set a seam edge first
 
- public:
-  // -----------------------------------------------------------
-  // Methods of math_FunctionSetWithDerivatives used internally
-  // to define parameters by coordinates
-  // -----------------------------------------------------------
-  Standard_Integer NbVariables() const;
-  Standard_Integer NbEquations() const;
-  Standard_Boolean Value(const math_Vector& X,math_Vector& F) ;
-  Standard_Boolean Derivatives(const math_Vector& X,math_Matrix& D) ;
-  Standard_Boolean Values(const math_Vector& X,math_Vector& F,math_Matrix& D) ;
-  Standard_Integer GetStateNumber ();
 
  protected:
 
@@ -362,20 +343,8 @@ public:
 
   // for param computation
 
-  enum { SQUARE_DIST = 0, DRV_1, DRV_2, DRV_3 };
-  double distance () const { return sqrt( myValues[ SQUARE_DIST ]); }
-  double funcValue(double sqDist) const { return mySquareFunc ? sqDist : sqrt(sqDist); }
-
-  int      myFaceIndex;
-  double   myFaceParam;
   int      myNbIterations;
-  double   mySumDist;
-  double   myTolerance;
-  bool     mySquareFunc;
-
-  gp_XYZ   myPoint; // the given point
-  gp_XYZ   myParam; // the best parameters guess
-  double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
+  double   mySumDist, myTolerance;
 
   typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
   TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
