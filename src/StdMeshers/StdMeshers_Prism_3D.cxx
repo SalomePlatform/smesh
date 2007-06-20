@@ -525,14 +525,14 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
     TNode bN( botNode );
     if ( zSize > 2 ) {
       gp_XYZ paramHint(-1,-1,-1);
-//       if ( prevTNode.IsNeighbor( bN ))
-//         paramHint = prevTNode.GetParams();
+      if ( prevTNode.IsNeighbor( bN ))
+        paramHint = prevTNode.GetParams();
       if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
                                        ID_BOT_FACE, paramHint ))
         return error(TCom("Can't compute normalized parameters ")
                      << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+      prevTNode = bN;
     }
-    prevTNode = bN;
     // create node column
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
@@ -570,6 +570,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   // Fill myBotToColumnMap
 
   int zSize = myBlock.VerticalSize();
+  TNode prevTNode;
   SMDS_NodeIteratorPtr nIt = botSMDS->GetNodes();
   while ( nIt->more() )
   {
@@ -578,15 +579,20 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
       continue; // strange
     // compute bottom node params
     TNode bN( botNode );
-    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
+    gp_XYZ paramHint(-1,-1,-1);
+    if ( prevTNode.IsNeighbor( bN ))
+      paramHint = prevTNode.GetParams();
+    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
+                                     ID_BOT_FACE, paramHint ))
       return error(TCom("Can't compute normalized parameters ")
                    << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    prevTNode = bN;
     // compute top node coords
     gp_XYZ topXYZ; gp_XY topUV;
     if ( !myBlock.FacePoint( ID_TOP_FACE, bN.GetParams(), topXYZ ) ||
          !myBlock.FaceUV   ( ID_TOP_FACE, bN.GetParams(), topUV ))
-      return error(TCom("Can't compute coordinates ")
-                   << "by normalized parameters on the face #"<< topSM->GetId() );
+      return error(TCom("Can't compute coordinates "
+                        "by normalized parameters on the face #")<< topSM->GetId() );
     SMDS_MeshNode * topNode = meshDS->AddNode( topXYZ.X(),topXYZ.Y(),topXYZ.Z() );
     meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
     // create node column
