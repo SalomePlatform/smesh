@@ -514,6 +514,8 @@ class Mesh_Segment(Mesh_Algorithm):
 
     ## Define "LocalLength" hypothesis to cut an edge in several segments with the same length
     #  @param l for the length of segments that cut an edge
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def LocalLength(self, l, UseExisting=0):
         hyp = self.Hypothesis("LocalLength", [l], UseExisting=UseExisting)
         hyp.SetLength(l)
@@ -522,6 +524,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Define "NumberOfSegments" hypothesis to cut an edge in several fixed number of segments
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def NumberOfSegments(self, n, s=[], UseExisting=0):
         if s == []:
             hyp = self.Hypothesis("NumberOfSegments", [n], UseExisting=UseExisting)
@@ -535,6 +539,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Define "Arithmetic1D" hypothesis to cut an edge in several segments with arithmetic length increasing
     #  @param start for the length of the first segment
     #  @param end   for the length of the last  segment
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def Arithmetic1D(self, start, end, UseExisting=0):
         hyp = self.Hypothesis("Arithmetic1D", [start, end], UseExisting=UseExisting)
         hyp.SetLength(start, 1)
@@ -544,6 +550,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Define "StartEndLength" hypothesis to cut an edge in several segments with geometric length increasing
     #  @param start for the length of the first segment
     #  @param end   for the length of the last  segment
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def StartEndLength(self, start, end, UseExisting=0):
         hyp = self.Hypothesis("StartEndLength", [start, end], UseExisting=UseExisting)
         hyp.SetLength(start, 1)
@@ -552,6 +560,8 @@ class Mesh_Segment(Mesh_Algorithm):
         
     ## Define "Deflection1D" hypothesis
     #  @param d for the deflection
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def Deflection1D(self, d, UseExisting=0):
         hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting)
         hyp.SetDeflection(d)
@@ -559,11 +569,15 @@ class Mesh_Segment(Mesh_Algorithm):
         
     ## Define "Propagation" hypothesis that propagate all other hypothesis on all others edges that are in
     #  the opposite side in the case of quadrangular faces
+    #  @param UseExisting - if ==true (default) - search existing hypothesis
+    #                       created with same parameters, else - create new
     def Propagation(self):
         return self.Hypothesis("Propagation", UseExisting=1)
 
     ## Define "AutomaticLength" hypothesis
     #  @param fineness for the fineness [0-1]
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def AutomaticLength(self, fineness=0, UseExisting=0):
         hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting)
         hyp.SetFineness( fineness )
@@ -572,6 +586,8 @@ class Mesh_Segment(Mesh_Algorithm):
     ## Define "SegmentLengthAroundVertex" hypothesis
     #  @param length for the segment length
     #  @param vertex for the length localization: vertex index [0,1] | verext object
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
         import types
         store_geom = self.geom
@@ -638,6 +654,8 @@ class Mesh_Segment_Python(Mesh_Segment):
     ## Define "PythonSplit1D" hypothesis based on the Erwan Adam patch, awaiting equivalent SALOME functionality
     #  @param n for the number of segments that cut an edge
     #  @param func for the python function that calculate the length of all segments
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def PythonSplit1D(self, n, func, UseExisting=0):
         hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so", UseExisting=UseExisting)
         hyp.SetNumberOfSegments(n)
@@ -683,6 +701,8 @@ class Mesh_Triangle(Mesh_Algorithm):
 
     ## Define "MaxElementArea" hypothesis to give the maximun area of each triangles
     #  @param area for the maximum area of each triangles
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def MaxElementArea(self, area, UseExisting=0):
         if self.algoType == MEFISTO:
             hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting)
@@ -835,6 +855,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 
     ## Define "MaxElementVolume" hypothesis to give the maximun volume of each tetrahedral
     #  @param vol for the maximum volume of each tetrahedral
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def MaxElementVolume(self, vol, UseExisting=0):
         hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting)
         hyp.SetMaxElementVolume(vol)
@@ -987,6 +1009,8 @@ class Mesh_Projection1D(Mesh_Algorithm):
     #  @param srcV is vertex of \a edge to associate with \a tgtV (optional)
     #  @param tgtV is vertex of \a the edge where the algorithm is assigned,
     #  to associate with \a srcV (optional)
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
         hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV], UseExisting=UseExisting)
         hyp.SetSourceEdge( edge )
@@ -1026,6 +1050,8 @@ class Mesh_Projection2D(Mesh_Algorithm):
     #  @param srcV2 is vertex of \a face to associate with \a tgtV1 (optional)
     #  @param tgtV2 is vertex of \a the face where the algorithm is assigned,
     #  to associate with \a srcV2 (optional)
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     #
     #  Note: association vertices must belong to one edge of a face
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
@@ -1068,6 +1094,8 @@ class Mesh_Projection3D(Mesh_Algorithm):
     #  @param srcV2 is vertex of \a solid to associate with \a tgtV1 (optional)
     #  @param tgtV2 is vertex of \a the solid where the algorithm is assigned,
     #  to associate with \a srcV2 (optional)
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     #
     #  Note: association vertices must belong to one edge of a solid
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
@@ -1139,6 +1167,8 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
 
     ## Define "NumberOfLayers" hypothesis, specifying a number of layers of
     #  prisms to build between the inner and outer shells
+    #  @param UseExisting - if ==true - search existing hypothesis created with
+    #                       same parameters, else (default) - create new
     def NumberOfLayers(self, n, UseExisting=0):
         self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
         self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting)
