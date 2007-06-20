@@ -29,6 +29,7 @@
 #define _SMESH_CompositeSegment_1D_HXX_
 
 #include "StdMeshers_Regular_1D.hxx"
+#include "SMESH_StdMeshers.hxx"
 
 class SMESH_subMeshEventListener;
 class SMESH_Mesh;
@@ -36,7 +37,7 @@ class StdMeshers_FaceSide;
 class TopoDS_Edge;
 class TopoDS_Face;
 
-class StdMeshers_CompositeSegment_1D: public StdMeshers_Regular_1D
+class STDMESHERS_EXPORT StdMeshers_CompositeSegment_1D: public StdMeshers_Regular_1D
 {
 public:
   StdMeshers_CompositeSegment_1D(int hypId, int studyId, SMESH_Gen* gen);

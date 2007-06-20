@@ -54,7 +54,7 @@ namespace {
     /*!
      * \brief Return an edge from which hypotheses are propagated from
      */
-    static TopoDS_Edge GetSource(SMESH_subMesh * submesh);
+    static TopoDS_Edge GetSource(SMESH_subMesh * submesh) { return TopoDS_Edge(); };
     /*!
      * \brief Does it's main job
      */

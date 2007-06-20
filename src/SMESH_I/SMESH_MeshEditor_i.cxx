@@ -1835,7 +1835,7 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
   for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
     list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
     list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = GroupsOfNodes[ i ];
+    SMESH::long_array& aGroup = (*GroupsOfNodes)[i];
     aGroup.length( aListOfNodes.size() );
     for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
       aGroup[ j ] = (*lIt)->GetID();
@@ -1917,7 +1917,7 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
 
     ::SMESH_MeshEditor::TListOfListOfElementsID::iterator arraysIt = aListOfListOfElementsID.begin();
     for (CORBA::Long j = 0; arraysIt != aListOfListOfElementsID.end(); ++arraysIt, ++j) {
-      SMESH::long_array& aGroup = GroupsOfElementsID[ j ];
+      SMESH::long_array& aGroup = (*GroupsOfElementsID)[ j ];
       TListOfIDs& listOfIDs = *arraysIt;
       aGroup.length( listOfIDs.size() );
       TListOfIDs::iterator idIt = listOfIDs.begin();
