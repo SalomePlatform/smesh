@@ -28,14 +28,14 @@ dev_docs:
 	cp -fr $(srcdir)/SMESH ./INPUT; \
 	cp -f ./SMESH/doxyfile ./INPUT; \
 	cd INPUT; \
-	sed 's|../../../share/salome|$(root_srcdir)|' ./doxyfile > ./doxyfile1; \
+	sed 's|../../../share/salome|$(top_srcdir)|' ./doxyfile > ./doxyfile1; \
 	sed 's|../../build/salome|$(top_builddir)|' ./doxyfile1 > ./doxyfile2; \
 	mv -f doxyfile2 doxyfile1; \
 	echo "DOXYGEN SUPPORT PYTHON - @DOXYGEN_WITH_PYTHON@"; \
 	if( test "x@DOXYGEN_WITH_PYTHON@" = "xyes"); then \
 	  sed 's|python_extension_must_be_here|*.py|' ./doxyfile1 > ./doxyfile2; \
 	  mv -f doxyfile2 doxyfile1; \
-	  $(doxygen) -u ./doxyfile1; \
+	  $(DOXYGEN) -u ./doxyfile1; \
 	else \
 	  sed 's|python_extension_must_be_here||' ./doxyfile1 > ./doxyfile2; \
 	  mv -f doxyfile2 doxyfile1; \
@@ -46,7 +46,7 @@ dev_docs:
 	fi; \
 	mv -f doxyfile1 doxyfile; \
 	echo "Running doxygen in directory:"`pwd`; \
-	$(doxygen) ./doxyfile; \
+	$(DOXYGEN) ./doxyfile; \
 	cd ../; \
 	cp -fr $(srcdir)/SMESH/sources/ SMESH ; \
 	rm -fr INPUT
