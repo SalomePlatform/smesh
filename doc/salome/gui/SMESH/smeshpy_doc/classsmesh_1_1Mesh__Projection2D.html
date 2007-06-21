@@ -166,7 +166,13 @@ More details.
           <td class="md" nowrap align="right"></td>
           <td class="md"></td>
           <td class="md" nowrap>&nbsp;</td>
-          <td class="mdname" nowrap> <em>tgtV2</em> = <code>None</code></td>
+          <td class="mdname" nowrap> <em>tgtV2</em> = <code>None</code>,</td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>UseExisting</em> = <code>0</code></td>
         </tr>
         <tr>
           <td class="md"></td>
@@ -193,6 +199,8 @@ More details.
     <tr><td valign="top"></td><td valign="top"><em>tgtV1</em>&nbsp;</td><td>is vertex of <em>the</em> face where the algorithm is assigned, to associate with <em>srcV1</em> (optional) </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>srcV2</em>&nbsp;</td><td>is vertex of <em>face</em> to associate with <em>tgtV1</em> (optional) </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>tgtV2</em>&nbsp;</td><td>is vertex of <em>the</em> face where the algorithm is assigned, to associate with <em>srcV2</em> (optional)</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>UseExisting</em>&nbsp;</td><td> if ==true - search existing hypothesis created with</td></tr>
+    <tr><td valign="top"></td><td valign="top">&nbsp;</td><td> same parameters, else (default) - create new</td></tr>
   </table>
 </dl>
 Note: association vertices must belong to one edge of a face     </td>
@@ -668,8 +676,5 @@ Reimplemented in <a class="el" href="classsmesh_1_1Mesh__Segment.html#b6907301d8
     </td>
   </tr>
 </table>
-</DIV>
-<DIV class="div-footer">
-Generated on Wed Jun 20 11:36:36 2007 for SALOME - SMESH - v.3.2.6 by&nbsp;<A href="http://www.doxygen.org/index.html"><img src="doxygen.png" alt="doxygen" align="middle" border="0"></A> 1.4.6</DIV>
 </BODY>
 </HTML>
