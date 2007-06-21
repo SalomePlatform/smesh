@@ -383,12 +383,44 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
   int shapeID = helper->GetSubShapeID();
 
   int nbNodes = columns.size();
+  int nbZ     = columns[0]->size();
+  if ( nbZ < 2 ) return;
+
+  // find out orientation
+  bool isForward = true;
+  SMDS_VolumeTool vTool;
+  int z = 1;
+  switch ( nbNodes ) {
+  case 3: {
+    const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
+                                         (*columns[1])[z-1],
+                                         (*columns[2])[z-1] };
+    const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
+                                         (*columns[1])[z],
+                                         (*columns[2])[z] };
+    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
+                                topNodes[0], topNodes[1], topNodes[2]);
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
+    break;
+  }
+  case 4: {
+    const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
+                                         (*columns[2])[z-1], (*columns[3])[z-1] };
+    const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
+                                         (*columns[2])[z], (*columns[3])[z] };
+    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
+                                topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
+    break;
+  }
+  }
 
   // vertical loop on columns
-  for ( int z = 1; z < columns[0]->size(); ++z)
+  for ( z = 1; z < nbZ; ++z )
   {
     SMDS_MeshElement* vol = 0;
-    SMDS_VolumeTool vTool;
     switch ( nbNodes ) {
 
     case 3: {
@@ -398,11 +430,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
       const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
                                            (*columns[1])[z],
                                            (*columns[2])[z] };
-      // assure good orientation
-      SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
-                                  topNodes[0], topNodes[1], topNodes[2]);
-      vTool.Set( &tmpVol );
-      if ( vTool.IsForward() )
+      if ( isForward )
         vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2],
                                  topNodes[0], topNodes[1], topNodes[2]);
       else
@@ -415,11 +443,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
                                            (*columns[2])[z-1], (*columns[3])[z-1] };
       const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
                                            (*columns[2])[z], (*columns[3])[z] };
-      // assure good orientation
-      SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                  topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-      vTool.Set( &tmpVol );
-      if ( vTool.IsForward() )
+      if ( isForward )
         vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
                                  topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
       else
