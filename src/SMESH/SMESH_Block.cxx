@@ -46,6 +46,8 @@
 #include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
 #include <math_FunctionSetRoot.hxx>
+#include <math_Matrix.hxx>
+#include <math_Vector.hxx>
 
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshVolume.hxx"
@@ -412,6 +414,216 @@ SMESH_Block::SMESH_Block():
 {
 }
 
+
+//=======================================================================
+//function : NbVariables
+//purpose  : 
+//=======================================================================
+
+Standard_Integer SMESH_Block::NbVariables() const
+{
+  return 3;
+}
+
+//=======================================================================
+//function : NbEquations
+//purpose  : 
+//=======================================================================
+
+Standard_Integer SMESH_Block::NbEquations() const
+{
+  return 1;
+}
+
+//=======================================================================
+//function : Value
+//purpose  : 
+//=======================================================================
+
+Standard_Boolean SMESH_Block::Value(const math_Vector& theXYZ, math_Vector& theFxyz) 
+{
+  gp_XYZ P, params( theXYZ(1), theXYZ(2), theXYZ(3) );
+  if ( params.IsEqual( myParam, DBL_MIN )) { // same param
+    theFxyz( 1 ) = funcValue( myValues[ SQUARE_DIST ]);
+  }
+  else {
+    ShellPoint( params, P );
+    gp_Vec dP( P - myPoint );
+    theFxyz(1) = funcValue( dP.SquareMagnitude() );
+  }
+  return true;
+}
+
+//=======================================================================
+//function : Derivatives
+//purpose  : 
+//=======================================================================
+
+Standard_Boolean SMESH_Block::Derivatives(const math_Vector& XYZ,math_Matrix& Df) 
+{
+  math_Vector F(1,3);
+  return Values(XYZ,F,Df);
+}
+
+//=======================================================================
+//function : GetStateNumber
+//purpose  : 
+//=======================================================================
+
+Standard_Integer SMESH_Block::GetStateNumber ()
+{
+  return 0; //myValues[0] < 1e-1;
+}
+
+//=======================================================================
+//function : Values
+//purpose  : 
+//=======================================================================
+
+Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
+                                     math_Vector&       theFxyz,
+                                     math_Matrix&       theDf) 
+{
+  gp_XYZ P, params( theXYZ(1), theXYZ(2), theXYZ(3) );
+  if ( params.IsEqual( myParam, DBL_MIN )) { // same param
+    theFxyz( 1 )      = funcValue( myValues[ SQUARE_DIST ] );
+    theDf( 1, DRV_1 ) = myValues[ DRV_1 ];
+    theDf( 1, DRV_2 ) = myValues[ DRV_2 ];
+    theDf( 1, DRV_3 ) = myValues[ DRV_3 ];
+    return true;
+  }
+#ifdef DEBUG_PARAM_COMPUTE
+  cout << "PARAM GUESS: " << params.X() << " "<< params.Y() << " "<< params.X() << endl;
+  myNbIterations++; // how many times call ShellPoint()
+#endif
+  ShellPoint( params, P );
+
+  gp_Vec dP( myPoint, P );
+  double sqDist = dP.SquareMagnitude();
+  theFxyz(1) = funcValue( sqDist );
+
+  if ( sqDist < myTolerance * myTolerance ) { // a solution found
+    myParam = params;
+    myValues[ SQUARE_DIST ] = sqDist;
+    theFxyz(1)  = theDf( 1,1 ) = theDf( 1,2 ) = theDf( 1,3 ) = 0;
+    return true;
+  }
+
+  if ( sqDist < myValues[ SQUARE_DIST ] ) // a better guess
+  {
+    // 3 partial derivatives
+    gp_Vec drv[ 3 ]; // where we move with a small step in each direction
+    for ( int iP = 1; iP <= 3; iP++ ) {
+      if ( iP == myFaceIndex ) {
+        drv[ iP - 1 ] = gp_Vec(0,0,0);
+        continue;
+      }
+      gp_XYZ Pi;
+      bool onEdge = ( theXYZ( iP ) + 0.001 > 1. );
+      if ( onEdge )
+        params.SetCoord( iP, theXYZ( iP ) - 0.001 );
+      else
+        params.SetCoord( iP, theXYZ( iP ) + 0.001 );
+      ShellPoint( params, Pi );
+      params.SetCoord( iP, theXYZ( iP ) ); // restore params
+      gp_Vec dPi ( P, Pi );
+      if ( onEdge ) dPi *= -1.;
+      double mag = dPi.Magnitude();
+      if ( mag > DBL_MIN )
+        dPi /= mag;
+      drv[ iP - 1 ] = dPi;
+    }
+    for ( int iP = 0; iP < 3; iP++ ) {
+#if 1
+      theDf( 1, iP + 1 ) = dP * drv[iP];
+#else
+      // Distance from P to plane passing through myPoint and defined
+      // by the 2 other derivative directions:
+      // like IntAna_IntConicQuad::Perform (const gp_Lin& L, const gp_Pln& P)
+      // where L is (P -> myPoint), P is defined by the 2 other derivative direction
+      int iPrev = ( iP ? iP - 1 : 2 );
+      int iNext = ( iP == 2 ? 0 : iP + 1 );
+      gp_Vec plnNorm = drv[ iPrev ].Crossed( drv [ iNext ] );
+      double Direc = plnNorm * drv[ iP ];
+      if ( Abs(Direc) <= DBL_MIN )
+        theDf( 1, iP + 1 ) = dP * drv[ iP ];
+      else {
+        double Dis = plnNorm * P - plnNorm * myPoint;
+        theDf( 1, iP + 1 ) = Dis/Direc;
+      }
+#endif
+    }
+#ifdef DEBUG_PARAM_COMPUTE
+    cout << "F = " << theFxyz(1) <<
+      " DRV: " << theDf(1,1) << " " << theDf(1,2) << " " << theDf(1,3)  << endl;
+    myNbIterations +=3; // how many times call ShellPoint()
+#endif
+
+    // store better values
+    myParam              = params;
+    myValues[SQUARE_DIST]= sqDist;
+    myValues[DRV_1]      = theDf(1,DRV_1);
+    myValues[DRV_2]      = theDf(1,DRV_2);
+    myValues[DRV_3]      = theDf(1,DRV_3);
+  }
+
+  return true;
+}
+
+//============================================================================
+//function : computeParameters
+//purpose  : compute point parameters in the block using math_FunctionSetRoot
+//============================================================================
+
+bool SMESH_Block::computeParameters(const gp_Pnt& thePoint,
+                                    gp_XYZ&       theParams,
+                                    const gp_XYZ& theParamsHint)
+{
+  myPoint = thePoint.XYZ();
+
+  myParam.SetCoord( -1,-1,-1 );
+  myValues[ SQUARE_DIST ] = 1e100;
+
+  math_Vector low  ( 1, 3, 0.0 );
+  math_Vector up   ( 1, 3, 1.0 );
+  math_Vector tol  ( 1, 3, 1e-4 );
+  math_Vector start( 1, 3, 0.0 );
+  start( 1 ) = theParamsHint.X();
+  start( 2 ) = theParamsHint.Y();
+  start( 3 ) = theParamsHint.Z();
+
+  math_FunctionSetRoot paramSearch( *this, tol );
+
+  mySquareFunc = 0; // large approaching steps
+  //if ( hasHint ) mySquareFunc = 1; // small approaching steps
+
+  double loopTol = 10 * myTolerance;
+  int nbLoops = 0;
+  while ( distance() > loopTol && nbLoops <= 3 )
+  {
+    paramSearch.Perform ( *static_cast<math_FunctionSetWithDerivatives*>(this),
+                          start, low, up );
+    start( 1 ) = myParam.X();
+    start( 2 ) = myParam.Y();
+    start( 3 ) = myParam.Z();
+    mySquareFunc = !mySquareFunc;
+    nbLoops++;
+  }
+#ifdef DEBUG_PARAM_COMPUTE
+  mySumDist += distance();
+  cout << " ------ SOLUTION: ( "<< myParam.X() <<" "<< myParam.Y() <<" "<< myParam.Z() <<" )"<<endl
+       << " ------ DIST : " << distance() << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << endl
+       << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist << endl;
+#endif
+
+  theParams = myParam;
+
+  if ( myFaceIndex > 0 )
+    theParams.SetCoord( myFaceIndex, myFaceParam );
+
+  return true;
+}
+
 //=======================================================================
 //function : ComputeParameters
 //purpose  : compute point parameters in the block
@@ -514,15 +726,15 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
     start = *bestParam;
   }
 
-  int    faceIndex = -1;
-  double faceParam = 0.;
+  int    myFaceIndex = -1;
+  double myFaceParam = 0.;
   if ( isOnFace ) {
     // put a point on the face
     for ( int iCoord = 0; iCoord < 3; iCoord++ )
       if ( coef[ iCoord ] ) {
-        faceIndex = iCoord;
-        faceParam = ( coef[ faceIndex ] < 0.5 ) ? 0.0 : 1.0;
-        start.SetCoord( iCoord + 1, faceParam );
+        myFaceIndex = iCoord + 1;
+        myFaceParam = ( coef[ iCoord ] < 0.5 ) ? 0.0 : 1.0;
+        start.SetCoord( myFaceIndex, myFaceParam );
       }
   }
 
@@ -537,29 +749,36 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
 
   gp_XYZ solution = start, params = start;
   double sqDistance = 1e100; 
-  int nbLoops = 0;
+  int nbLoops = 0, nbGetWorst = 0;
+
   while ( nbLoops <= 100 )
   {
-    gp_XYZ P;
+    gp_XYZ P, Pi;
     ShellPoint( params, P );
 
     gp_Vec dP( thePoint, P );
     double sqDist = dP.SquareMagnitude();
+
+    if ( sqDist > sqDistance ) { // solution get worse
+      if ( ++nbGetWorst > 2 )
+        return computeParameters( thePoint, theParams, solution );
+    }
 #ifdef DEBUG_PARAM_COMPUTE
     cout << "PARAMS: ( " << params.X() <<" "<< params.Y() <<" "<< params.Z() <<" )"<< endl;
     cout << "DIST: " << sqrt( sqDist ) << endl;
 #endif
-    if ( sqDist > sqDistance ) { // solution get worse
-      break;
+
+    if ( sqDist < sqDistance ) { // get better
+      sqDistance = sqDist;
+      solution   = params;
+      nbGetWorst = 0;
+      if ( sqDistance < sqTolerance ) // a solution found
+        break;
     }
-    sqDistance = sqDist;
-    solution   = params;
-    if ( sqDist < sqTolerance ) { // a solution found
-      break;
-    }
-    // look for a better solution
+
+        // look for a next better solution
     for ( int iP = 1; iP <= 3; iP++ ) {
-      if ( iP - 1 == faceIndex )
+      if ( iP == myFaceIndex )
         continue;
       // see where we move with a small (=parDelta) step in this direction
       gp_XYZ nearParams = params;
@@ -568,7 +787,6 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
         nearParams.SetCoord( iP, params.Coord( iP ) - parDelta );
       else
         nearParams.SetCoord( iP, params.Coord( iP ) + parDelta );
-      gp_XYZ Pi;
       ShellPoint( nearParams, Pi );
       gp_Vec dPi ( P, Pi );
       if ( onEdge ) dPi *= -1.;
@@ -600,8 +818,8 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
 
   theParams = solution;
 
-  if ( faceIndex >= 0 )
-    theParams.SetCoord( faceIndex + 1, faceParam );
+  if ( myFaceIndex > 0 )
+    theParams.SetCoord( myFaceIndex, myFaceParam );
 
   return true;
 }
@@ -1489,4 +1707,3 @@ void SMESH_Block::GetEdgeVertexIDs (const int edgeID, vector< int >& vertexVec )
     MESSAGE(" GetEdgeVertexIDs(), wrong edge ID: " << edgeID );
   }
 }
-

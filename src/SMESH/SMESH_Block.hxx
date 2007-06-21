@@ -31,9 +31,9 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <gp_Pnt.hxx>
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
+#include <math_FunctionSetWithDerivatives.hxx>
 
 #include <ostream>
 #include <vector>
@@ -44,13 +44,14 @@ class SMDS_MeshNode;
 class Adaptor3d_Surface;
 class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
+class gp_Pnt;
 
 // =========================================================
 // class calculating coordinates of 3D points by normalized
 // parameters inside the block and vice versa
 // =========================================================
 
-class SMESH_Block
+class SMESH_Block: public math_FunctionSetWithDerivatives
 {
  public:
   enum TShapeID {
@@ -274,6 +275,17 @@ public:
   // theFirstVertex may be NULL.
   // Always try to set a seam edge first
 
+ public:
+  // -----------------------------------------------------------
+  // Methods of math_FunctionSetWithDerivatives used internally
+  // to define parameters by coordinates
+  // -----------------------------------------------------------
+  Standard_Integer NbVariables() const;
+  Standard_Integer NbEquations() const;
+  Standard_Boolean Value(const math_Vector& X,math_Vector& F) ;
+  Standard_Boolean Derivatives(const math_Vector& X,math_Matrix& D) ;
+  Standard_Boolean Values(const math_Vector& X,math_Vector& F,math_Matrix& D) ;
+  Standard_Integer GetStateNumber ();
 
  protected:
 
@@ -343,8 +355,21 @@ public:
 
   // for param computation
 
+  enum { SQUARE_DIST = 0, DRV_1, DRV_2, DRV_3 };
+  double distance () const { return sqrt( myValues[ SQUARE_DIST ]); }
+  double funcValue(double sqDist) const { return mySquareFunc ? sqDist : sqrt(sqDist); }
+  bool computeParameters(const gp_Pnt& thePoint, gp_XYZ& theParams, const gp_XYZ& theParamsHint);
+
+  int      myFaceIndex;
+  double   myFaceParam;
   int      myNbIterations;
-  double   mySumDist, myTolerance;
+  double   mySumDist;
+  double   myTolerance;
+  bool     mySquareFunc;
+
+  gp_XYZ   myPoint; // the given point
+  gp_XYZ   myParam; // the best parameters guess
+  double   myValues[ 4 ]; // values computed at myParam: square distance and 3 derivatives
 
   typedef pair<gp_XYZ,gp_XYZ> TxyzPair;
   TxyzPair my3x3x3GridNodes[ 27 ]; // to compute the first param guess
