@@ -41,6 +41,7 @@ IMPLEMENT_STANDARD_HANDLE (_pyObject          ,Standard_Transient);
 IMPLEMENT_STANDARD_HANDLE (_pyCommand         ,Standard_Transient);
 IMPLEMENT_STANDARD_HANDLE (_pyGen             ,_pyObject);
 IMPLEMENT_STANDARD_HANDLE (_pyMesh            ,_pyObject);
+IMPLEMENT_STANDARD_HANDLE (_pyMeshEditor      ,_pyObject);
 IMPLEMENT_STANDARD_HANDLE (_pyHypothesis      ,_pyObject);
 IMPLEMENT_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis);
 IMPLEMENT_STANDARD_HANDLE (_pyComplexParamHypo,_pyHypothesis);
@@ -50,6 +51,7 @@ IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
 IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
 IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
 IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
 IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
 IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
 IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
@@ -74,11 +76,39 @@ static TCollection_AsciiString theEmptyString;
 #undef DUMP_CONVERSION
 #endif
 
+namespace {
+
+  //================================================================================
+  /*!
+   * \brief Set of TCollection_AsciiString initialized by C array of C strings
+   */
+  //================================================================================
+
+  struct TStringSet: public set<TCollection_AsciiString>
+  {
+    /*!
+     * \brief Filling. The last string must be ""
+     */
+    void Insert(const char* names[]) {
+      for ( int i = 0; names[i][0] ; ++i )
+        insert( (char*) names[i] );
+    }
+    /*!
+     * \brief Check if a string is in
+     */
+    bool Contains(const TCollection_AsciiString& name ) {
+      return find( name ) != end();
+    }
+  };
+}
+
 //================================================================================
 /*!
  * \brief Convert python script using commands of smesh.py
   * \param theScript - Input script
   * \retval TCollection_AsciiString - Convertion result
+  *
+  * Class SMESH_2smeshpy declared in SMESH_PythonDump.hxx
  */
 //================================================================================
 
@@ -149,6 +179,17 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
 
 //================================================================================
 /*!
+ * \brief name of SMESH_Gen in smesh.py
+ */
+//================================================================================
+
+const char* _pyGen::AccessorMethod() const
+{
+  return SMESH_2smeshpy::GenName();
+}
+
+//================================================================================
+/*!
  * \brief Convert a command using a specific converter
   * \param theCommand - the command to convert
  */
@@ -177,7 +218,19 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   // SMESH_Mesh method?
   map< _pyID, Handle(_pyMesh) >::iterator id_mesh = myMeshes.find( objID );
   if ( id_mesh != myMeshes.end() ) {
+    if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
+      _pyID editorID = aCommand->GetResultValue();
+      Handle(_pyMeshEditor) editor = new _pyMeshEditor( aCommand );
+      myMeshEditors.insert( make_pair( editorID, editor ));
+      return aCommand;
+    }
     id_mesh->second->Process( aCommand );
+    return aCommand;
+  }
+  // SMESH_MeshEditor method?
+  map< _pyID, Handle(_pyMeshEditor) >::iterator id_editor = myMeshEditors.find( objID );
+  if ( id_editor != myMeshEditors.end() ) {
+    id_editor->second->Process( aCommand );
     return aCommand;
   }
   // SMESH_Hypothesis method?
@@ -230,6 +283,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
 
+  // mesh creation
   if ( theCommand->GetMethod() == "CreateMesh" ||
        theCommand->GetMethod() == "CreateEmptyMesh" )
   {
@@ -267,14 +321,29 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     myHasPattern = true;
   }
 
-  // smeshgen.Method() --> smesh.smesh.Method()
-  theCommand->SetObject( SMESH_2smeshpy::GenName() );
-
   // Concatenate( [mesh1, ...], ... )
   if ( theCommand->GetMethod() == "Concatenate" )
   {
     AddMeshAccessorMethod( theCommand );
   }
+
+  // Replace name of SMESH_Gen
+
+  // names of SMESH_Gen methods fully equal to methods defined in smesh.py
+  static TStringSet smeshpyMethods;
+  if ( smeshpyMethods.empty() ) {
+    const char * names[] =
+      { "SetEmbeddedMode","IsEmbeddedMode","SetCurrentStudy","GetCurrentStudy",
+        "GetPattern","GetSubShapesId",
+        "" }; // <- mark of array end
+    smeshpyMethods.Insert( names );
+  }
+  if ( smeshpyMethods.Contains( theCommand->GetMethod() ))
+    // smeshgen.Method() --> smesh.Method()
+    theCommand->SetObject( SMESH_2smeshpy::SmeshpyName() );
+  else
+    // smeshgen.Method() --> smesh.smesh.Method()
+    theCommand->SetObject( SMESH_2smeshpy::GenName() );
 }
 
 //================================================================================
@@ -367,13 +436,13 @@ Handle(_pyHypothesis) _pyGen::FindHyp( const _pyID& theHypID )
 //================================================================================
 
 Handle(_pyHypothesis) _pyGen::FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
-                                      const TCollection_AsciiString& theAlgoType )
+                                        const Handle(_pyHypothesis)& theHypothesis )
 {
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
     if ( !hyp->IsNull() &&
          (*hyp)->IsAlgo() &&
-         (*hyp)->GetType() == theAlgoType &&
+         theHypothesis->CanBeCreatedBy( (*hyp)->GetAlgoType() ) &&
          (*hyp)->GetGeom() == theGeom &&
          (*hyp)->GetMesh() == theMesh )
       return *hyp;
@@ -530,7 +599,8 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd):
 
 void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
 {
-  // smesh.py wraps the following methods:
+  // some methods of SMESH_Mesh interface needs special conversion
+  // to methods of Mesh python class
   //
   // 1. GetSubMesh(geom, name) + AddHypothesis(geom, algo)
   //     --> in Mesh_Algorithm.Create(mesh, geom, hypo, so)
@@ -538,21 +608,16 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   //     --> in Mesh_Algorithm.Hypothesis(hyp, args, so)
   // 3. CreateGroupFromGEOM(type, name, grp)
   //     --> in Mesh.Group(grp, name="")
-  // 4. ExportToMED(f, opt, version)
-  //     --> in Mesh.ExportToMED( f, version, opt=0 )
-  // 5. ExportMED(f, opt)
-  //     --> in Mesh.ExportMED( f,opt=0 )
-  // 6. ExportDAT(f)
-  //     --> in Mesh.ExportDAT( f )
-  // 7. ExportUNV(f)
-  //     --> in Mesh.ExportUNV(f)
-  // 8. ExportSTL(f, ascii)
-  //     --> in Mesh.ExportSTL(f, ascii=1)
+  // 4. ExportToMED(f, auto_groups, version)
+  //     --> in Mesh.ExportMED( f, auto_groups, version )
+  // 5. etc
 
   const TCollection_AsciiString method = theCommand->GetMethod();
+  // ----------------------------------------------------------------------
   if ( method == "GetSubMesh" ) {
     mySubmeshes.push_back( theCommand );
   }
+  // ----------------------------------------------------------------------
   else if ( method == "AddHypothesis" ) { // mesh.AddHypothesis(geom, HYPO )
     myAddHypCmds.push_back( theCommand );
     // set mesh to hypo
@@ -564,6 +629,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         hyp->SetMesh( this->GetID() );
     }
   }
+  // ----------------------------------------------------------------------
   else if ( method == "CreateGroupFromGEOM" ) {// (type, name, grp)
     _pyID grp = theCommand->GetArg( 3 );
     if ( sameGroupType( grp, theCommand->GetArg( 1 )) ) { // --> Group(grp)
@@ -575,16 +641,18 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       AddMeshAccess( theCommand );
     }
   }
-  else if ( method == "ExportToMED" ) {//(f, opt, version)
-    // --> (f, version, opt)
-    _pyID opt = theCommand->GetArg( 2 );
-    _pyID ver = theCommand->GetArg( 3 );
-    theCommand->SetArg( 2, ver );
-    theCommand->SetArg( 3, opt );
+  // ----------------------------------------------------------------------
+  else if ( method == "ExportToMED" ) { // ExportToMED() --> ExportMED()
+    theCommand->SetMethod( "ExportMED" );
   }
+  // ----------------------------------------------------------------------
+  else if ( method == "CreateGroup" ) { // CreateGroup() --> CreateEmptyGroup()
+    theCommand->SetMethod( "CreateEmptyGroup" );
+  }
+  // ----------------------------------------------------------------------
   else if ( method == "RemoveHypothesis" ) // (geom, hyp)
   {
-    const _pyID & hypID = theCommand->GetArg( 2 );
+    _pyID hypID = theCommand->GetArg( 2 );
 
     // check if this mesh still has corresponding addition command
     bool hasAddCmd = false;
@@ -604,62 +672,55 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
     if ( ! hasAddCmd ) { // hypo addition already wrapped
-      // access to wrapped mesh
-      AddMeshAccess( theCommand );
-      // access to wrapped algo
-      if ( !hyp.IsNull() && hyp->IsAlgo() && hyp->IsWrapped() )
-        theCommand->SetArg( 2, theCommand->GetArg( 2 ) + ".GetAlgorithm()" );
+      // RemoveHypothesis(geom, hyp) --> RemoveHypothesis( hyp, geom=0 )
+      _pyID geom = theCommand->GetArg( 1 );
+      theCommand->RemoveArgs();
+      theCommand->SetArg( 1, hypID );
+      if ( geom != GetGeom() )
+        theCommand->SetArg( 2, geom );
     }
     // remove hyp from myHypos
     myHypos.remove( hyp );
   }
-
-  // leave only one "  mesh_editor_<nb> = mesh.GetMeshEditor()"
-  else if ( theCommand->GetMethod() == "GetMeshEditor")
-  {
-    if ( myHasEditor )
-      theCommand->Clear();
-    else
-      AddMeshAccess( theCommand );
-    myHasEditor = true;
-  }
-
-  // apply theCommand to the mesh wrapped by smeshpy mesh
+  // add accessor method if necessary
   else
   {
-    AddMeshAccess( theCommand );
+    if ( NeedMeshAccess( theCommand ))
+      // apply theCommand to the mesh wrapped by smeshpy mesh
+      AddMeshAccess( theCommand );
   }
 }
 
-namespace {
+//================================================================================
+/*!
+ * \brief Return True if addition of accesor method is needed
+ */
+//================================================================================
 
-  //================================================================================
-  /*!
-   * \brief add addition result treatement command
-    * \param addCmd - hypothesis addition command
-   */
-  //================================================================================
-
-  void addErrorTreatmentCmd( Handle(_pyCommand) & addCmd,
-                             const bool           isAlgo)
-  {
-    return; // TO DEBUD - TreatHypoStatus() is not placed right after addCmd
-    // addCmd: status = mesh.AddHypothesis( geom, hypo )
-    // treatement command:
-    //    def TreatHypoStatus(status, hypName, geomName, isAlgo):
-    TCollection_AsciiString status = addCmd->GetResultValue();
-    if ( !status.IsEmpty() ) {
-      const _pyID& geomID = addCmd->GetArg( 1 );
-      const _pyID& hypoID = addCmd->GetArg( 2 );
-      TCollection_AsciiString cmdStr = addCmd->GetIndentation() +
-        SMESH_2smeshpy::SmeshpyName() + ".TreatHypoStatus( " + status + ", " +
-        SMESH_2smeshpy::SmeshpyName() + ".GetName(" + hypoID + "), " +
-        SMESH_2smeshpy::SmeshpyName() + ".GetName(" + geomID + "), " +
-        (char*)( isAlgo ? "True" : "False" ) + " )";
-      Handle(_pyCommand) cmd = theGen->AddCommand( cmdStr );
-      addCmd->AddDependantCmd( cmd, true );
-    }
+bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
+{
+  // names of SMESH_Mesh methods fully equal to methods of class Mesh, so
+  // no conversion is needed for them at all:
+  static TStringSet sameMethods;
+  if ( sameMethods.empty() ) {
+    const char * names[] =
+      { "ExportDAT","ExportUNV","ExportSTL", "RemoveGroup","RemoveGroupWithContents",
+        "GetGroups","UnionGroups","IntersectGroups","CutGroups","GetLog","GetId","ClearLog",
+        "GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
+        "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",
+        "NbTrianglesOfOrder","NbQuadrangles","NbQuadranglesOfOrder","NbPolygons","NbVolumes",
+        "NbVolumesOfOrder","NbTetras","NbTetrasOfOrder","NbHexas","NbHexasOfOrder",
+        "NbPyramids","NbPyramidsOfOrder","NbPrisms","NbPrismsOfOrder","NbPolyhedrons",
+        "NbSubMesh","GetElementsId","GetElementsByType","GetNodesId","GetElementType",
+        "GetSubMeshElementsId","GetSubMeshNodesId","GetSubMeshElementType","Dump","GetNodeXYZ",
+        "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
+        "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
+        "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList",
+        "" }; // <- mark of end
+    sameMethods.Insert( names );
   }
+
+  return !sameMethods.Contains( theCommand->GetMethod() );
 }
 
 //================================================================================
@@ -677,19 +738,19 @@ void _pyMesh::Flush()
   for ( cmd = myAddHypCmds.begin(); cmd != myAddHypCmds.end(); ++cmd )
   {
     Handle(_pyCommand) addCmd = *cmd;
-    const _pyID& algoID = addCmd->GetArg( 2 );
+    _pyID algoID = addCmd->GetArg( 2 );
     Handle(_pyHypothesis) algo = theGen->FindHyp( algoID );
     if ( algo.IsNull() || !algo->IsAlgo() )
       continue;
     // try to convert
     _pyID geom = addCmd->GetArg( 1 );
+    bool isLocalAlgo = ( geom != GetGeom() );
     if ( algo->Addition2Creation( addCmd, this->GetID() )) // OK
     {
       // wrapped algo is created atfer mesh creation
       GetCreationCmd()->AddDependantCmd( addCmd );
 
-      if ( geom != GetGeom() ) // local algo
-      {
+      if ( isLocalAlgo ) {
         // mesh.AddHypothesis(geom, ALGO ) --> mesh.AlgoMethod(geom)
         addCmd->SetArg( addCmd->GetNbArgs() + 1,
                         TCollection_AsciiString( "geom=" ) + geom );
@@ -704,15 +765,13 @@ void _pyMesh::Flush()
         }
       }
     }
-    else // ALGO was already created
+    else // KO - ALGO was already created
     {
-      // mesh.AddHypothesis(geom, ALGO ) --> mesh.GetMesh().AddHypothesis(geom, ALGO )
-      AddMeshAccess( addCmd );
-      // mesh.GetMesh().AddHypothesis(geom, ALGO ) ->
-      // mesh.GetMesh().AddHypothesis(geom, ALGO.GetAlgorithm() )
-      addCmd->SetArg( 2, addCmd->GetArg( 2 ) + ".GetAlgorithm()" );
-      // add addition result treatement cmd
-      addErrorTreatmentCmd( addCmd, true );
+      // mesh.AddHypothesis(geom, ALGO) --> mesh.AddHypothesis(ALGO, geom=0)
+      addCmd->RemoveArgs();
+      addCmd->SetArg( 1, algoID );
+      if ( isLocalAlgo )
+        addCmd->SetArg( 2, geom );
     }
   }
 
@@ -721,24 +780,27 @@ void _pyMesh::Flush()
   for ( cmd = myAddHypCmds.begin(); cmd != myAddHypCmds.end(); ++cmd )
   {
     Handle(_pyCommand) addCmd = *cmd;
-    const _pyID& hypID = addCmd->GetArg( 2 );
+    _pyID hypID = addCmd->GetArg( 2 );
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
     if ( hyp.IsNull() || hyp->IsAlgo() )
       continue;
-    if ( !hyp->Addition2Creation( addCmd, this->GetID() ))
-    {
-      AddMeshAccess( addCmd );
-      // add addition result treatement cmd
-      addErrorTreatmentCmd( addCmd, false );
+    bool converted = hyp->Addition2Creation( addCmd, this->GetID() );
+    if ( !converted ) {
+      // mesh.AddHypothesis(geom, HYP) --> mesh.AddHypothesis(HYP, geom=0)
+      _pyID geom = addCmd->GetArg( 1 );
+      addCmd->RemoveArgs();
+      addCmd->SetArg( 1, hypID );
+      if ( geom != GetGeom() )
+        addCmd->SetArg( 2, geom );
     }
   }
 
   // sm = mesh.GetSubMesh(geom, name) --> sm = mesh.GetMesh().GetSubMesh(geom, name)
-  for ( cmd = mySubmeshes.begin(); cmd != mySubmeshes.end(); ++cmd ) {
-    Handle(_pyCommand) subCmd = *cmd;
-    if ( subCmd->GetNbArgs() > 0 )
-      AddMeshAccess( subCmd );
-  }
+//   for ( cmd = mySubmeshes.begin(); cmd != mySubmeshes.end(); ++cmd ) {
+//     Handle(_pyCommand) subCmd = *cmd;
+//     if ( subCmd->GetNbArgs() > 0 )
+//       AddMeshAccess( subCmd );
+//   }
   myAddHypCmds.clear();
   mySubmeshes.clear();
 
@@ -746,6 +808,61 @@ void _pyMesh::Flush()
   list< Handle(_pyHypothesis) >::iterator hyp = myHypos.begin();
   for ( ; hyp != myHypos.end(); ++hyp )
     (*hyp)->Flush();
+}
+
+//================================================================================
+/*!
+ * \brief MeshEditor convert its commands to ones of mesh
+ */
+//================================================================================
+
+_pyMeshEditor::_pyMeshEditor(const Handle(_pyCommand)& theCreationCmd):
+  _pyObject( theCreationCmd )
+{
+  myMesh = theCreationCmd->GetObject();
+  myCreationCmdStr = theCreationCmd->GetString();
+  theCreationCmd->Clear();
+}
+
+//================================================================================
+/*!
+ * \brief convert its commands to ones of mesh
+ */
+//================================================================================
+
+void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
+{
+  // names of SMESH_MeshEditor methods fully equal to methods of class Mesh, so
+  // commands calling this methods are converted to calls of methods of Mesh
+  static TStringSet sameMethods;
+  if ( sameMethods.empty() ) {
+    const char * names[] = {
+      "RemoveElements","RemoveNodes","AddNode","AddEdge","AddFace","AddPolygonalFace",
+      "AddVolume","AddPolyhedralVolume","AddPolyhedralVolumeByFaces","MoveNode",
+      "InverseDiag","DeleteDiag","Reorient","ReorientObject","SplitQuad","SplitQuadObject",
+      "BestSplit","Smooth","SmoothObject","SmoothParametric","SmoothParametricObject",
+      "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
+      "RotationSweep","RotationSweepObject","ExtrusionSweep","AdvancedExtrusion",
+      "ExtrusionSweepObject","ExtrusionSweepObject1D","ExtrusionSweepObject2D","Mirror",
+      "MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
+      "FindCoincidentNodes","FindCoincidentNodesOnPart","MergeNodes","FindEqualElements",
+      "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
+      "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
+      "GetLastCreatedElems",
+      "" }; // <- mark of end
+    sameMethods.Insert( names );
+  }
+
+  if ( sameMethods.Contains( theCommand->GetMethod() )) {
+    theCommand->SetObject( myMesh );
+  }
+  else {
+    // editor creation command is needed only if any editor function is called
+    if ( !myCreationCmdStr.IsEmpty() ) {
+      GetCreationCmd()->GetString() = myCreationCmdStr;
+      myCreationCmdStr.Clear();
+    }
+  }
 }
 
 //================================================================================
@@ -850,25 +967,37 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetNumberOfSegments");
     hyp->AddArgMethod( "SetPythonLog10RatioFunction");
   }
-  // 2D ----------
-  else if ( hypType == "MEFISTO_2D" ) {
+  // MEFISTO_2D ----------
+  else if ( hypType == "MEFISTO_2D" ) { // MEFISTO_2D
     algo->SetConvMethodAndType( "Triangle", hypType.ToCString());
   }
   else if ( hypType == "MaxElementArea" ) {
     hyp->SetConvMethodAndType( "MaxElementArea", "MEFISTO_2D");
+    hyp->SetConvMethodAndType( "MaxElementArea", "NETGEN_2D_ONLY");
     hyp->AddArgMethod( "SetMaxElementArea");
   }
   else if ( hypType == "LengthFromEdges" ) {
     hyp->SetConvMethodAndType( "LengthFromEdges", "MEFISTO_2D");
+    hyp->SetConvMethodAndType( "LengthFromEdges", "NETGEN_2D_ONLY");
   }
+  // Quadrangle_2D ----------
   else if ( hypType == "Quadrangle_2D" ) {
     algo->SetConvMethodAndType( "Quadrangle" , hypType.ToCString());
   }
   else if ( hypType == "QuadranglePreference" ) {
     hyp->SetConvMethodAndType( "QuadranglePreference", "Quadrangle_2D");
+    hyp->SetConvMethodAndType( "QuadranglePreference", "NETGEN_2D_ONLY");
   }
-  // 3D ----------
-  else if ( hypType == "NETGEN_3D") {
+  // NETGEN ----------
+//   else if ( hypType == "NETGEN_2D") { // 1D-2D
+//     algo->SetConvMethodAndType( "Triangle" , hypType.ToCString());
+//     algo->myArgs.Append( "algo=smesh.NETGEN" );
+//   }
+  else if ( hypType == "NETGEN_2D_ONLY") { // 2D
+    algo->SetConvMethodAndType( "Triangle" , hypType.ToCString());
+    algo->myArgs.Append( "algo=smesh.NETGEN_2D" );
+  }
+  else if ( hypType == "NETGEN_3D") { // 3D
     algo->SetConvMethodAndType( "Tetrahedron" , hypType.ToCString());
     algo->myArgs.Append( "algo=smesh.NETGEN" );
   }
@@ -876,14 +1005,16 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->SetConvMethodAndType( "MaxElementVolume", "NETGEN_3D");
     hyp->AddArgMethod( "SetMaxElementVolume" );
   }
+  // GHS3D_3D ----------
   else if ( hypType == "GHS3D_3D" ) {
     algo->SetConvMethodAndType( "Tetrahedron", hypType.ToCString());
     algo->myArgs.Append( "algo=smesh.GHS3D" );
   }
+  // Hexa_3D ---------
   else if ( hypType == "Hexa_3D" ) {
     algo->SetConvMethodAndType( "Hexahedron", hypType.ToCString());
   }
-  // Repetitive ---------
+  // Repetitive Projection_1D ---------
   else if ( hypType == "Projection_1D" ) {
     algo->SetConvMethodAndType( "Projection1D", hypType.ToCString());
   }
@@ -894,6 +1025,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     // 2 args of SetVertexAssociation() will become the 3-th and 4-th args of hyp creation command
     hyp->AddArgMethod( "SetVertexAssociation", 2 );
   }
+  // Projection_2D ---------
   else if ( hypType == "Projection_2D" ) {
     algo->SetConvMethodAndType( "Projection2D", hypType.ToCString());
   }
@@ -903,6 +1035,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetSourceMesh");
     hyp->AddArgMethod( "SetVertexAssociation", 4 );
   }
+  // Projection_3D ---------
   else if ( hypType == "Projection_3D" ) {
     algo->SetConvMethodAndType( "Projection3D", hypType.ToCString());
   }
@@ -912,9 +1045,11 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->AddArgMethod( "SetSourceMesh");
     hyp->AddArgMethod( "SetVertexAssociation", 4 );
   }
+  // Prism_3D ---------
   else if ( hypType == "Prism_3D" ) {
     algo->SetConvMethodAndType( "Prism", hypType.ToCString());
   }
+  // RadialPrism_3D ---------
   else if ( hypType == "RadialPrism_3D" ) {
     algo->SetConvMethodAndType( "Prism", hypType.ToCString());
   }
@@ -927,7 +1062,7 @@ Handle(_pyHypothesis) _pyHypothesis::NewHypothesis( const Handle(_pyCommand)& th
     hyp->SetConvMethodAndType( "LayerDistribution", "RadialPrism_3D");
   }
 
-  if ( !algo->GetCreationMethod().IsEmpty() ) {
+  if ( algo->IsValid() ) {
     return algo;
   }
   return hyp;
@@ -955,7 +1090,7 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
   Handle(_pyHypothesis) algo;
   if ( !IsAlgo() ) {
     // find algo created on myGeom in theMesh
-    algo = theGen->FindAlgo( myGeom, theMesh, GetType() );
+    algo = theGen->FindAlgo( myGeom, theMesh, this );
     if ( algo.IsNull() )
       return false;
     algo->GetCreationCmd()->AddDependantCmd( theCmd );
@@ -965,7 +1100,7 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
   // mesh.AddHypothesis(geom,hyp) --> hyp = <theMesh or algo>.myCreationMethod(args)
   theCmd->SetResultValue( GetID() );
   theCmd->SetObject( IsAlgo() ? theMesh : algo->GetID());
-  theCmd->SetMethod( myCreationMethod );
+  theCmd->SetMethod( IsAlgo() ? GetAlgoCreationMethod() : GetCreationMethod( algo->GetAlgoType() ));
   // set args
   theCmd->RemoveArgs();
   for ( int i = 1; i <= myArgs.Length(); ++i ) {
@@ -1185,7 +1320,7 @@ bool _pyLayerDistributionHypo::Addition2Creation( const Handle(_pyCommand)& theA
   // Convert my creation => me = RadialPrismAlgo.Get3DHypothesis()
 
   // find RadialPrism algo created on <geom> for theMesh
-  Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMesh, this->GetType() );
+  Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMesh, this );
   if ( !algo.IsNull() ) {
     GetCreationCmd()->SetObject( algo->GetID() );
     GetCreationCmd()->SetMethod( "Get3DHypothesis" );
@@ -1301,7 +1436,7 @@ bool _pySegmentLengthAroundVertexHyp::Addition2Creation( const Handle(_pyCommand
     while ( algo.IsNull() && !geom.IsEmpty()) {
       // try to find geom as a father of <vertex>
       geom = FatherID( geom );
-      algo = theGen->FindAlgo( geom, theMeshID, GetType() );
+      algo = theGen->FindAlgo( geom, theMeshID, this );
     }
     if ( algo.IsNull() )
       return false; // also possible to find geom as brother of veretex...
