@@ -73,6 +73,7 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   // also we have to fill myNLinkNodeMap
   myCreateQuadratic = true;
   mySeamShapeIds.clear();
+  myDegenShapeIds.clear();
   TopAbs_ShapeEnum subType( aSh.ShapeType()==TopAbs_FACE ? TopAbs_EDGE : TopAbs_FACE );
   SMDSAbs_ElementType elemType( subType==TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
 
@@ -150,6 +151,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
 
   myShape = aSh;
   mySeamShapeIds.clear();
+  myDegenShapeIds.clear();
 
   if ( myShape.IsNull() ) {
     myShapeID  = -1;
@@ -165,8 +167,9 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     BRepAdaptor_Surface surface( face );
     if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
     {
-      // look for a seam edge
-      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next()) {
+      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      {
+        // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
         if ( BRep_Tool::IsClosed( edge, face )) {
           // initialize myPar1, myPar2 and myParIndex
@@ -186,9 +189,16 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             }
           }
           // store shapes indices
-          mySeamShapeIds.insert( meshDS->ShapeToIndex( exp.Current() ));
-          for ( TopExp_Explorer v( exp.Current(), TopAbs_VERTEX ); v.More(); v.Next() )
+          mySeamShapeIds.insert( meshDS->ShapeToIndex( edge ));
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
             mySeamShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
+        }
+
+        // look for a degenerated edge
+        if ( BRep_Tool::Degenerated( edge )) {
+          myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
+            myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
         }
       }
     }
