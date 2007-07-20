@@ -119,7 +119,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   aStatus = SMESH_Hypothesis::HYP_OK;
 
   // there is only one compatible Hypothesis so far
-  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape, false);
   myQuadranglePreference = hyps.size() > 0;
 
   return isOk;
@@ -886,7 +886,7 @@ bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   const TopoDS_Face& F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
-  const TopoDS_Wire& W = BRepTools::OuterWire(F);
+//  const TopoDS_Wire& W = BRepTools::OuterWire(F);
   bool WisF = true;
 //   if(W.Orientation()==TopAbs_FORWARD) 
 //     WisF = true;
