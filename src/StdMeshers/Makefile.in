@@ -66,6 +66,7 @@ EXPORT_HEADERS = \
 	StdMeshers_SegmentAroundVertex_0D.hxx \
 	StdMeshers_SegmentLengthAroundVertex.hxx \
 	StdMeshers_CompositeSegment_1D.hxx \
+	StdMeshers_FaceSide.hxx
 
 EXPORT_PYSCRIPTS =
 
