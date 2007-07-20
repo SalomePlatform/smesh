@@ -29,7 +29,6 @@
 import salome
 import geompy
 
-import SMESH
 from   SMESH import *
 
 import StdMeshers
@@ -49,10 +48,14 @@ REGULAR    = 1
 PYTHON     = 2
 COMPOSITE  = 3
 
-MEFISTO = 3
-NETGEN  = 4
-GHS3D   = 5
-FULL_NETGEN = 6
+MEFISTO       = 3
+NETGEN        = 4
+GHS3D         = 5
+FULL_NETGEN   = 6
+NETGEN_2D     = 7
+NETGEN_1D2D   = NETGEN
+NETGEN_1D2D3D = FULL_NETGEN
+NETGEN_FULL   = FULL_NETGEN
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -668,11 +671,14 @@ class Mesh_Segment_Python(Mesh_Segment):
 #  More details.
 class Mesh_Triangle(Mesh_Algorithm):
 
+    # default values
     algoType = 0
     params = 0
-   
-    algoMEF = 0 # algorithm object common for all Mesh_Triangle's
-    algoNET = 0 # algorithm object common for all Mesh_Triangle's
+
+    # algorithm objects common for all instances of Mesh_Triangle
+    algoMEF = 0    
+    algoNET = 0
+    algoNET_2D = 0
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
@@ -686,12 +692,23 @@ class Mesh_Triangle(Mesh_Algorithm):
         
         elif algoType == NETGEN:
             if noNETGENPlugin:
-                print "Warning: NETGENPlugin module has not been imported."
+                print "Warning: NETGENPlugin module unavailable"
                 pass
             if not Mesh_Triangle.algoNET:
                 Mesh_Triangle.algoNET = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             else:
                 self.Assign( Mesh_Triangle.algoNET, mesh, geom)
+                pass
+            pass
+        elif algoType == NETGEN_2D:
+            if noNETGENPlugin:
+                print "Warning: NETGENPlugin module unavailable"
+                pass
+            if not Mesh_Triangle.algoNET_2D:
+                Mesh_Triangle.algoNET_2D = self.Create(mesh, geom,
+                                                      "NETGEN_2D_ONLY", "libNETGENEngine.so")
+            else:
+                self.Assign( Mesh_Triangle.algoNET_2D, mesh, geom)
                 pass
             pass
 
@@ -701,8 +718,10 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  @param area for the maximum area of each triangles
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
+    #
+    #  Only for algoType == MEFISTO || NETGEN_2D
     def MaxElementArea(self, area, UseExisting=0):
-        if self.algoType == MEFISTO:
+        if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
             hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting)
             hyp.SetMaxElementArea(area)
             return hyp
@@ -711,73 +730,105 @@ class Mesh_Triangle(Mesh_Algorithm):
             return None
             
     ## Define "LengthFromEdges" hypothesis to build triangles based on the length of the edges taken from the wire
+    #
+    #  Only for algoType == MEFISTO || NETGEN_2D
     def LengthFromEdges(self):
-        if self.algoType == MEFISTO:
+        if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
             hyp = self.Hypothesis("LengthFromEdges", UseExisting=1)
             return hyp
         elif self.algoType == NETGEN:
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
         
+    ## Set QuadAllowed flag
+    #
+    #  Only for algoType == NETGEN || NETGEN_2D
+    def SetQuadAllowed(self, toAllow=True):
+        if self.algoType == NETGEN_2D:
+            if toAllow: # add QuadranglePreference
+                self.Hypothesis("QuadranglePreference", UseExisting=1)
+            else:       # remove QuadranglePreference
+                for hyp in self.mesh.GetHypothesisList( self.geom ):
+                    if hyp.GetName() == "QuadranglePreference":
+                        self.mesh.RemoveHypothesis( self.geom, hyp )
+                        pass
+                    pass
+                pass
+            return
+        if self.params == 0 and self.Parameters():
+            self.params.SetQuadAllowed(toAllow)
+            return
+        
     ## Define "Netgen 2D Parameters" hypothesis
+    #
+    #  Only for algoType == NETGEN
     def Parameters(self):
         if self.algoType == NETGEN:
             self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
                                           "libNETGENEngine.so", UseExisting=0)
             return self.params
         elif self.algoType == MEFISTO:
-            print "Mefisto algo doesn't support this hypothesis"
+            print "Mefisto algo doesn't support NETGEN_Parameters_2D hypothesis"
             return None
+        elif self.algoType == NETGEN_2D:
+            print "NETGEN_2D_ONLY algo doesn't support 'NETGEN_Parameters_2D' hypothesis"
+            print "NETGEN_2D_ONLY uses 'MaxElementArea' and 'LengthFromEdges' ones"
+            return None
+        return None
 
     ## Set MaxSize
+    #
+    #  Only for algoType == NETGEN
     def SetMaxSize(self, theSize):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetMaxSize(theSize)
+        if self.params == 0 and self.Parameters():
+            self.params.SetMaxSize(theSize)
         
     ## Set SecondOrder flag
-    def SetSecondOrder(seld, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetSecondOrder(theVal)
+    #
+    #  Only for algoType == NETGEN
+    def SetSecondOrder(self, theVal):
+        if self.params == 0 and self.Parameters():
+            self.params.SetSecondOrder(theVal)
+            return
 
     ## Set Optimize flag
+    #
+    #  Only for algoType == NETGEN
     def SetOptimize(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetOptimize(theVal)
+        if self.params == 0 and self.Parameters():
+            self.params.SetOptimize(theVal)
 
     ## Set Fineness
     #  @param theFineness is:
     #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
+    #
+    #  Only for algoType == NETGEN
     def SetFineness(self, theFineness):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetFineness(theFineness)
+        if self.params == 0 and self.Parameters():
+            self.params.SetFineness(theFineness)
         
     ## Set GrowthRate  
+    #
+    #  Only for algoType == NETGEN
     def SetGrowthRate(self, theRate):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetGrowthRate(theRate)
+        if self.params == 0 and self.Parameters():
+            self.params.SetGrowthRate(theRate)
 
     ## Set NbSegPerEdge
+    #
+    #  Only for algoType == NETGEN
     def SetNbSegPerEdge(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetNbSegPerEdge(theVal)
+        if self.params == 0 and self.Parameters():
+            self.params.SetNbSegPerEdge(theVal)
 
     ## Set NbSegPerRadius
+    #
+    #  Only for algoType == NETGEN
     def SetNbSegPerRadius(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetNbSegPerRadius(theVal)
+        if self.params == 0 and self.Parameters():
+            self.params.SetNbSegPerRadius(theVal)
 
-    ## Set QuadAllowed flag
-    def SetQuadAllowed(self, toAllow):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetQuadAllowed(toAllow)
+    pass
         
     
 # Public class: Mesh_Quadrangle
@@ -1344,8 +1395,9 @@ class Mesh:
     #  @param geom If defined, subshape to be meshed
     def Segment(self, algo=REGULAR, geom=0):
         ## if Segment(geom) is called by mistake
-        if ( isinstance( algo, geompy.GEOM._objref_GEOM_Object)):
+        if isinstance( algo, geompy.GEOM._objref_GEOM_Object):
             algo, geom = geom, algo
+            if not algo: algo = REGULAR
             pass
         if algo == REGULAR:
             return Mesh_Segment(self, geom)
@@ -1359,7 +1411,7 @@ class Mesh:
     ## Creates a triangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param algo values are: smesh.MEFISTO or smesh.NETGEN
+    #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D
     #  @param geom If defined, subshape to be meshed
     def Triangle(self, algo=MEFISTO, geom=0):
         ## if Triangle(geom) is called by mistake
@@ -1386,6 +1438,7 @@ class Mesh:
         ## if Tetrahedron(geom) is called by mistake
         if ( isinstance( algo, geompy.GEOM._objref_GEOM_Object)):
             algo, geom = geom, algo
+            if not algo: algo = NETGEN
             pass
         return Mesh_Tetrahedron(self, algo, geom)
         
@@ -1543,6 +1596,19 @@ class Mesh:
         TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
         return status
     
+    ## Unassign hypothesis
+    #  @param hyp is a hypothesis to unassign
+    #  @param geom is subhape of mesh geometry
+    def RemoveHypothesis(self, hyp, geom=0 ):
+        if isinstance( hyp, Mesh_Algorithm ):
+            hyp = hyp.GetAlgorithm()
+            pass
+        if not geom:
+            geom = self.geom
+            pass
+        status = self.mesh.RemoveHypothesis(geom, hyp)
+        return status
+
     ## Get the list of hypothesis added on a geom
     #  @param geom is subhape of mesh geometry
     def GetHypothesisList(self, geom):
@@ -1799,7 +1865,7 @@ class Mesh:
     ## Check group names for duplications.
     #  Consider maximum group name length stored in MED file.
     def HasDuplicatedGroupNamesMED(self):
-        return self.mesh.GetStudyId()
+        return self.mesh.HasDuplicatedGroupNamesMED()
         
     ## Obtain instance of SMESH_MeshEditor
     def GetMeshEditor(self):
@@ -1984,7 +2050,7 @@ class Mesh:
     ## For given element returns ID of result shape after 
     #  FindShape() from SMESH_MeshEditor
     #  \n If there is not element for given ID - returns -1
-    def GetShapeIDForElem(id):
+    def GetShapeIDForElem(self,id):
         return self.mesh.GetShapeIDForElem(id)
     
     ## Returns number of nodes for given element
@@ -1997,6 +2063,10 @@ class Mesh:
     #  \n If there is not node for given index - returns -2
     def GetElemNode(self, id, index):
         return self.mesh.GetElemNode(id, index)
+
+    ## Returns IDs of nodes of given element
+    def GetElemNodes(self, id):
+        return self.mesh.GetElemNodes(id)
 
     ## Returns true if given node is medium node
     #  in given quadratic element
@@ -2377,7 +2447,7 @@ class Mesh:
     #  @param MaxNbOfIterations maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
-    def SmoothParametric(IDsOfElements, IDsOfFixedNodes,
+    def SmoothParametric(self, IDsOfElements, IDsOfFixedNodes,
                          MaxNbOfIterations, MaxAspectRatio, Method):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
