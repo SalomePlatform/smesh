@@ -9,18 +9,13 @@
 #
 
 
-AC_INIT([Salome2 Project SMESH module], [4.0.0], [gboulant@CS], [salome])
+AC_INIT([Salome2 Project SMESH module], [4.0.0], [webmaster.salome@opencascade.com], [salome])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 
-PACKAGE=salome
-AC_SUBST(PACKAGE)
-
-VERSION=4.0.0
-XVERSION=0x040000
-AC_SUBST(VERSION)
+XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
 
 # set up MODULE_NAME variable for dynamic construction of directories (resources, etc.)
