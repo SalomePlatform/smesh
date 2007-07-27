@@ -962,7 +962,13 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
   gp_XY loc1 = uv11 * ( 1 - r1 ) + uv12 * r1;
   gp_XY loc2 = uv21 * ( 1 - r2 ) + uv22 * r2;
   resUV = 0.5 * ( loc1 + loc2 );
-  isDeformed = ( loc1 - loc2 ).SquareModulus() > 1e-8;
+  //isDeformed = ( loc1 - loc2 ).SquareModulus() > 1e-8;
+  // SKL 26.07.2007 for NPAL16567
+  double d1 = (uv11-uv12).Modulus();
+  double d2 = (uv21-uv22).Modulus();
+  double delta = d1*d2*1e-6;
+  isDeformed = ( loc1 - loc2 ).SquareModulus() > delta;
+
 //   double len1 = ( uv11 - uv12 ).Modulus();
 //   double len2 = ( uv21 - uv22 ).Modulus();
 //   resUV = loc1 * len2 / ( len1 + len2 ) + loc2 * len1 / ( len1 + len2 );
