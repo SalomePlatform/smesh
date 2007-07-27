@@ -777,6 +777,11 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     const SMDS_MeshNode * idPrev = idFirst;
     double parPrev = f;
     double parLast = l;
+    if(reversed) {
+      idPrev = idLast;
+      parPrev = l;
+      parLast = f;
+    }
     
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
@@ -812,8 +817,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
     else {
-      SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
-      meshDS->SetMeshElementOnShape(edge, shapeID);
+      if(!reversed) {
+	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
+	meshDS->SetMeshElementOnShape(edge, shapeID);
+      }
+      else {
+	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idFirst);
+	meshDS->SetMeshElementOnShape(edge, shapeID);
+      }
     }
   }
   else
