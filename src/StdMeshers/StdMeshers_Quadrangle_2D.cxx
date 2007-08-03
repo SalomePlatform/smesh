@@ -239,6 +239,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   const vector<UVPtStruct>& uv_e2 = quad->side[2]->GetUVPtStruct(true,1 );
   const vector<UVPtStruct>& uv_e3 = quad->side[3]->GetUVPtStruct(false,0);
 
+  if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
+    return error( COMPERR_BAD_INPUT_MESH );
+
   double eps = Precision::Confusion();
 
   // Boundary quadrangles
