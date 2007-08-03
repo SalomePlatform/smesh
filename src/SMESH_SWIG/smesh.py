@@ -1592,7 +1592,7 @@ class Mesh:
             geom = self.geom
             pass
         status = self.mesh.AddHypothesis(geom, hyp)
-        isAlgo = hyp._narrow( SMESH.SMESH_Algo )
+        isAlgo = hyp._narrow( SMESH_Algo )
         TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
         return status
     
