@@ -4086,7 +4086,7 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
 
   SMESH_subMesh * subMesh;
   if ( !myShape.IsNull() ) {
-    subMesh = theMesh->GetSubMeshContaining( myShape );
+    subMesh = theMesh->GetSubMesh( myShape );
     if ( subMesh )
       subMesh->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
   }

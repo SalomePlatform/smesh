@@ -651,7 +651,12 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
   if(!quad) return 0;
 
   // set normalized grid on unit square in parametric domain
-  SetNormalizedGrid(aMesh, aShape, quad);
+  bool stat = SetNormalizedGrid(aMesh, aShape, quad);
+  if(!stat) {
+    if(!quad)
+      delete quad;
+    quad = 0;
+  }
 
   return quad;
 }
@@ -732,7 +737,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   const vector<UVPtStruct>& uv_e3 = GetUVPtStructIn( quad, 3, nbvertic - 1 );
 
   if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
-    return error( "Can't find nodes on sides");
+    //return error( "Can't find nodes on sides");
+    return error( COMPERR_BAD_INPUT_MESH );
 
   // nodes Id on "in" edges
   if (! quad->isEdgeOut[0]) {

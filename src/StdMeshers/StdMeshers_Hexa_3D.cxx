@@ -254,6 +254,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     ASSERT(quadAlgo);
     try {
       aQuads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aFace, _quadraticMesh);
+      if(!aQuads[i]) {
+	return error( quadAlgo->GetComputeError());
+      }
     }
     catch(SALOME_Exception & S_ex) {
       return ClearAndReturn( aQuads, error(COMPERR_SLM_EXCEPTION,TComm(S_ex.what()) <<
