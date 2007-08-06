@@ -48,7 +48,8 @@ class StdMeshersGUI_LayerDistributionParamWdg : public QHGroupBox
 
 public:
   StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
-                                          QDialog*                    dlg);
+					  const QString& theName,
+                                          QDialog* dlg);
   ~StdMeshersGUI_LayerDistributionParamWdg();
 
   SMESH::SMESH_Hypothesis_var GetHypothesis() { return myHyp; }
@@ -74,6 +75,7 @@ private:
  QPushButton*           myEditButton;
  QPopupMenu*            myHypTypePopup;
  QDialog*               myDlg;
+ QString                myName;
  QString                myParamValue;
 
  QStringList            myHypTypes;

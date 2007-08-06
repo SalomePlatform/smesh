@@ -308,7 +308,7 @@ using namespace std;
 	      there must be check on others mesh elements not equal triangles
 	    */
 	    if (aMesh->NbTriangles() < 1) {
-              int aRet = SUIT_MessageBox::warn1
+              SUIT_MessageBox::warn1
                 (SMESHGUI::desktop(),
                  QObject::tr("SMESH_WRN_WARNING"),
                  QObject::tr("SMESH_EXPORT_STL1").arg(anIObject->getName()),
@@ -1857,17 +1857,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       int nbSel = selected.Extent();
 
       if (nbSel == 1) {
-	SMESH::SMESH_Hypothesis_var Hyp = SMESH::IObjectToInterface<SMESH::SMESH_Hypothesis>(selected.First());
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+	SMESH::SMESH_Hypothesis_var aHypothesis = SMESH::IObjectToInterface<SMESH::SMESH_Hypothesis>(anIObject);
 
         /* Look for all mesh objects that have this hypothesis affected in order to flag as ModifiedMesh */
         /* At end below '...->updateObjBrowser(true)' will change icon of mesh objects                   */
         /* Warning : however by internal mechanism all subMeshes icons are changed !                     */
-        if ( !Hyp->_is_nil() )
+        if ( !aHypothesis->_is_nil() )
         {
-          char* sName = Hyp->GetName();
-          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(sName);
+          CORBA::String_var aHypType = aHypothesis->GetName();
+          SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator(aHypType);
           if (aCreator)
-            aCreator->edit( Hyp.in(), desktop() );
+            aCreator->edit( aHypothesis.in(), anIObject->getName(), desktop() );
           else
           {
             // report error
@@ -3097,7 +3098,7 @@ void SMESHGUI::createPreferences()
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
-  int renumber=addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
+  addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
