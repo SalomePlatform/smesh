@@ -118,6 +118,7 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // check nb of faces in the shape
+/*  PAL16229
   aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
   int nbFaces = 0;
   for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
@@ -125,7 +126,7 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
       break;
   if ( nbFaces != 6 )
     return false;
-
+*/
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
 }
@@ -193,7 +194,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     meshFaces.push_back(aSubMesh);
   }
   if (meshFaces.size() != 6)
-    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in block");
+    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
 
   // 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
 

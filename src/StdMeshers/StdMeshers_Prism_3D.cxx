@@ -185,7 +185,7 @@ bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          a
                                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // Check shape geometry
-
+/*  PAL16229
   aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
 
   // find not quadrangle faces
@@ -216,7 +216,7 @@ bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          a
     if ( nbFace != nbEdge + 2 )
       RETURN_BAD_RESULT("Bad nb of faces: " << nbFace << " but must be " << nbEdge + 2);
   }
-
+*/
   // no hypothesis
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
@@ -553,8 +553,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
         paramHint = prevTNode.GetParams();
       if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
                                        ID_BOT_FACE, paramHint ))
-        return error(TCom("Can't compute normalized parameters ")
-                     << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+        return error(TCom("Can't compute normalized parameters for node ")
+                     << botNode->GetID() << " on the face #"<< botSM->GetId() );
       prevTNode = bN;
     }
     // create node column
@@ -608,8 +608,8 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
       paramHint = prevTNode.GetParams();
     if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
                                      ID_BOT_FACE, paramHint ))
-      return error(TCom("Can't compute normalized parameters ")
-                   << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+      return error(TCom("Can't compute normalized parameters for node ")
+                   << botNode->GetID() << " on the face #"<< botSM->GetId() );
     prevTNode = bN;
     // compute top node coords
     gp_XYZ topXYZ; gp_XY topUV;
@@ -875,11 +875,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   // detect bad cases
   if ( nbNotQuad > 0 && nbNotQuad != 2 )
     return error(COMPERR_BAD_SHAPE,
-                 TCom("More than 2 not quadrilateral faces ")
+                 TCom("More than 2 not quadrilateral faces: ")
                  <<nbNotQuad);
   if ( nbNotQuadMeshed > 2 )
     return error(COMPERR_BAD_INPUT_MESH,
-                 TCom("More than 2 faces meshed with not quadrangle elements ")
+                 TCom("More than 2 faces with not quadrangle elements: ")
                  <<nbNotQuadMeshed);
 
   // get found submeshes

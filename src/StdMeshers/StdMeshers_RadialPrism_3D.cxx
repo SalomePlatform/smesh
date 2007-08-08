@@ -98,13 +98,14 @@ bool StdMeshers_RadialPrism_3D::CheckHypothesis(SMESH_Mesh&                     
                                                 SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // check aShape that must have 2 shells
+/*  PAL16229
   if ( TAssocTool::Count( aShape, TopAbs_SOLID, 0 ) != 1 ||
        TAssocTool::Count( aShape, TopAbs_SHELL, 0 ) != 2 )
   {
     aStatus = HYP_BAD_GEOMETRY;
     return false;
   }
-
+*/
   myNbLayerHypo = 0;
   myDistributionHypo = 0;
 
@@ -167,7 +168,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     if ( !outerShell.IsSame( It.Value() ))
       innerShell = It.Value();
   if ( nbShells != 2 )
-    return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not")<<nbShells);
+    return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not ")<<nbShells);
 
   // ----------------------------------
   // Associate subshapes of the shells
@@ -328,8 +329,8 @@ public:
     TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
-      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed"
-                   "with LayerDistribution hypothesis");
+      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed "
+                    "with LayerDistribution hypothesis");
 
     BRepAdaptor_Curve C3D(edge);
     double f = C3D.FirstParameter(), l = C3D.LastParameter();
