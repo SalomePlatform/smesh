@@ -29,6 +29,7 @@
 import salome
 import geompy
 
+import SMESH # necessary for back compatibility
 from   SMESH import *
 
 import StdMeshers
