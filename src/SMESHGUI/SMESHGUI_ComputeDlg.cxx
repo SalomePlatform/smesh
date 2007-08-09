@@ -839,14 +839,14 @@ void SMESHGUI_ComputeOp::startOperation()
         memoryLack = true;
       }
 
-      if ( !memoryLack )
+      // NPAL16631: if ( !memoryLack )
       {
         SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
         update( UF_ObjBrowser | UF_Model );
 
         // SHOW MESH
-        try {
-          if ( getSMESHGUI()->automaticUpdate() ) {
+        if ( getSMESHGUI()->automaticUpdate() ) {
+          try {
             SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
             if (aVTKView) {
               int anId = study()->id();
@@ -866,9 +866,9 @@ void SMESHGUI_ComputeOp::startOperation()
               }
             }
           }
-        }
-        catch (...) {
-          memoryLack = true;
+          catch (...) {
+            memoryLack = true;
+          }
         }
       }
     }
