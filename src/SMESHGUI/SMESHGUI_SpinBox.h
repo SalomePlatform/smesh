@@ -34,6 +34,7 @@
 // like in GEOM_SRC/src/DlgRef/DlgRef_SpinBox.h
 #define COORD_MIN -1e+15
 #define COORD_MAX +1e+15
+#define DBL_DIGITS_DISPLAY 14
 
 //=================================================================================
 // class    : SMESHGUI_SpinBox

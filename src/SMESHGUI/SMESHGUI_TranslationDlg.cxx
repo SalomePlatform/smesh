@@ -264,12 +264,12 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   SMESHGUI_TranslationDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox1_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox1_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox2_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox2_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  SpinBox2_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox1_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox1_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox1_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox2_1->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox2_2->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  SpinBox2_3->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
 
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
