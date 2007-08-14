@@ -845,7 +845,9 @@ void SMESHGUI_ComputeOp::startOperation()
         update( UF_ObjBrowser | UF_Model );
 
         // SHOW MESH
-        if ( getSMESHGUI()->automaticUpdate() ) {
+        // NPAL16631: if ( getSMESHGUI()->automaticUpdate() ) {
+        if ( !memoryLack && getSMESHGUI()->automaticUpdate() ) // NPAL16631
+        {
           try {
             SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
             if (aVTKView) {
