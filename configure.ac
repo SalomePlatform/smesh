@@ -194,14 +194,22 @@ echo
 
 ENABLE_PTHREADS
 
-if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
 echo
 echo ---------------------------------------------
-echo testing omniORB
+echo testing msg2qm
 echo ---------------------------------------------
 echo
 
-CHECK_OMNIORB
+CHECK_MSG2QM
+
+if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
+    echo
+    echo ---------------------------------------------
+    echo testing omniORB
+    echo ---------------------------------------------
+    echo
+
+    CHECK_OMNIORB
 
 dnl echo
 dnl echo ---------------------------------------------
@@ -211,58 +219,78 @@ dnl echo
 
 dnl CHECK_MICO
 
-echo
-echo ---------------------------------------------
-echo default ORB : omniORB
-echo ---------------------------------------------
-echo
+    echo
+    echo ---------------------------------------------
+    echo default ORB : omniORB
+    echo ---------------------------------------------
+    echo
 
-DEFAULT_ORB=omniORB
+    DEFAULT_ORB=omniORB
 
-echo
-echo ---------------------------------------------
-echo testing Corba
-echo ---------------------------------------------
-echo
+    echo
+    echo ---------------------------------------------
+    echo testing Corba
+    echo ---------------------------------------------
+    echo
 
-CHECK_CORBA
+    CHECK_CORBA
 
-AC_SUBST_FILE(CORBA)
-corba=make_$ORB
-CORBA=adm_local/unix/$corba
+    AC_SUBST_FILE(CORBA)
+    corba=make_$ORB
+    CORBA=adm_local/unix/$corba
 
 fi
-echo
-echo ---------------------------------------------
-echo testing openGL
-echo ---------------------------------------------
-echo
 
-CHECK_OPENGL
 
-echo
-echo ---------------------------------------------
-echo testing QT
-echo ---------------------------------------------
-echo
+SMESH_WITH_GUI=yes
 
-CHECK_QT
+AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
 
-echo
-echo ---------------------------------------------
-echo testing msg2qm
-echo ---------------------------------------------
-echo
+if test "${SMESH_WITH_GUI}" = "yes"; then
+    echo
+    echo ---------------------------------------------
+    echo testing openGL
+    echo ---------------------------------------------
+    echo
 
-CHECK_MSG2QM
+    CHECK_OPENGL
 
-echo
-echo ---------------------------------------------
-echo testing VTK
-echo ---------------------------------------------
-echo
+    echo
+    echo ---------------------------------------------
+    echo testing QT
+    echo ---------------------------------------------
+    echo
 
-CHECK_VTK
+    CHECK_QT
+
+    echo
+    echo ---------------------------------------------
+    echo testing VTK
+    echo ---------------------------------------------
+    echo
+
+    CHECK_VTK
+
+    echo
+    echo ---------------------------------------------
+    echo Testing GUI
+    echo ---------------------------------------------
+    echo
+
+    CHECK_SALOME_GUI
+
+    echo
+    echo ---------------------------------------------
+    echo Testing full GUI
+    echo ---------------------------------------------
+    echo
+
+    CHECK_CORBA_IN_GUI
+    if test "x${CORBA_IN_GUI}" != "xyes"; then
+      echo "failed : For configure SMESH module necessary full GUI !"
+      exit
+    fi
+fi
 
 echo
 echo ---------------------------------------------
@@ -303,26 +331,6 @@ echo ---------------------------------------------
 echo
 
 CHECK_HTML_GENERATORS
-
-echo
-echo ---------------------------------------------
-echo Testing GUI
-echo ---------------------------------------------
-echo
-
-CHECK_SALOME_GUI
-
-echo
-echo ---------------------------------------------
-echo Testing full GUI
-echo ---------------------------------------------
-echo
-
-CHECK_CORBA_IN_GUI
-if test "x${CORBA_IN_GUI}" != "xyes"; then
-  echo "failed : For configure SMESH module necessary full GUI !"
-  exit
-fi
 
 echo
 echo ---------------------------------------------
@@ -458,6 +466,7 @@ AC_OUTPUT([ \
   ./src/SMESHGUI/Makefile \
   ./src/SMESH_I/Makefile \
   ./src/SMESH_SWIG/Makefile \
+  ./src/SMESH_SWIG_WITHIHM/Makefile \
   ./src/StdMeshers/Makefile \
   ./src/StdMeshersGUI/Makefile \
   ./src/StdMeshers_I/Makefile \

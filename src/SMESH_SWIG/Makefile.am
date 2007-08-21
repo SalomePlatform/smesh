@@ -27,87 +27,9 @@
 
 include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
-# ===============================================================
-# Swig targets
-# ===============================================================
-# (cf. http://www.geocities.com/foetsch/python/swig_linux.htm)
-#
-# Step 1: build the wrapping source files with swig
-#
-# libSALOME_LifeCycleCORBA.i -- swig --> swig_wrap.cpp
-#                                        libSALOME_Swig.py
-#
-# Step 2: build the dynamic library from cpp built source files and
-#         dependant libraries.
-#
-# swig_wrap.cpp -- gcc --> swig_wrap.o    |-- link --> _libSALOME_Swig.la
-#                          +              |
-#                          dependant libs |
-#
-# The file libSALOME_Swigcmodule.py will be installed in
-# <prefix>/lib/python<version>/site-package/salome.
-# The library will be installed in the same place.
-#
-
-# this option puts it to dist
-#BUILT_SOURCES = swig_wrap.cpp
-
-SWIG_FLAGS    = \
-	@SWIG_FLAGS@ \
-	-I$(srcdir) \
-	-I$(srcdir)/../SMESHGUI
-
-SWIG_SOURCES  = libSMESH_Swig.i
-
-# Libraries targets
-
-lib_LTLIBRARIES = libSMESH_Swigcmodule.la
-
-nodist_pkgpython_DATA = libSMESH_Swig.py
-libSMESH_Swig.py: swig_wrap.cpp
-
-libSMESH_Swigcmodule_la_SOURCES = \
-	$(BUILT_SOURCES) \
-	$(SWIG_SOURCES) \
-	../SMESHGUI/SMESHGUI_Swig.cxx
-
-nodist_libSMESH_Swigcmodule_la_SOURCES = \
-	swig_wrap.cpp
-
-libSMESH_Swigcmodule_la_CPPFLAGS = \
-	$(QT_INCLUDES) \
-	$(PYTHON_INCLUDES) \
-	$(CAS_CPPFLAGS) \
-	$(VTK_INCLUDES) \
-	$(OGL_INCLUDES) \
-	$(KERNEL_CXXFLAGS) \
-	$(GUI_CXXFLAGS) \
-	$(MED_CXXFLAGS) \
-	$(GEOM_CXXFLAGS) \
-	$(CORBA_CXXFLAGS) \
-	$(CORBA_INCLUDES) \
-	$(BOOST_CPPFLAGS) \
-	-I$(srcdir)/../SMESHGUI \
-	-I$(top_builddir)/idl \
-	-I$(top_builddir)/salome_adm/unix
-
-libSMESH_Swigcmodule_la_LDFLAGS  = \
-	../SMESHGUI/libSMESH.la \
-	$(KERNEL_LDFLAGS) -lSalomeGenericObj -lSALOMELocalTrace \
-	$(GUI_LDFLAGS) -lCAM -lsuit -lqtx -lSalomeApp -lstd -lEvent \
-	$(PYTHON_LIBS) \
-	$(QT_MT_LIBS)
-
-
-swig_wrap.cpp : $(SWIG_SOURCES)
-	$(SWIG) $(SWIG_FLAGS) -o $@ $<
-
-CLEANFILES = \
-	swig_wrap.cpp
 
 # Scripts to be installed.
 dist_salomescript_DATA= \
-	libSMESH_Swig.py \
 	smesh.py \
 	smeshDC.py \
 	batchmode_smesh.py \
@@ -173,8 +95,3 @@ dist_salomescript_DATA= \
 
 EXPORT_SHAREDPYSCRIPTS = \
 	SMESH_shared_modules.py
-
-install-exec-hook: $(libdir)/_libSMESH_Swig.so
-
-$(libdir)/_libSMESH_Swig.so:
-	( cd $(libdir); ln -sf libSMESH_Swigcmodule.so _libSMESH_Swig.so; )

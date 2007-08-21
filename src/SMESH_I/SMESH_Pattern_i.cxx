@@ -40,6 +40,9 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 
+#include <Standard_Failure.hxx>
+#include <Standard_ErrorHandler.hxx>
+
 #include <sstream>
 #include <set>
 
@@ -286,8 +289,24 @@ SMESH::point_array*
     if ( elem && elem->GetType() == SMDSAbs_Face )
       fset.insert( static_cast<const SMDS_MeshFace *>( elem ));
   }
-  if (myPattern.Apply( fset, theNodeIndexOnKeyPoint1, theReverse ) &&
-      myPattern.GetMappedPoints( xyzList ))
+  bool ok = false;
+  try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+    OCC_CATCH_SIGNALS;
+#endif
+    ok = myPattern.Apply( aMesh, fset, theNodeIndexOnKeyPoint1, theReverse );
+  }
+  catch (Standard_Failure& exc) {
+    MESSAGE("OCCT Exception in SMESH_Pattern: " << exc.GetMessageString());
+  }
+  catch ( std::exception& exc ) {
+    MESSAGE("STD Exception in SMESH_Pattern: << exc.what()");
+  }
+  catch ( ... ) {
+    MESSAGE("Unknown Exception in SMESH_Pattern");
+  }
+
+  if ( ok && myPattern.GetMappedPoints( xyzList ))
   {
     points->length( xyzList.size() );
     list<const gp_XYZ *>::iterator xyzIt = xyzList.begin();

@@ -512,7 +512,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     HypothesisData* data = SMESH::GetHypothesisData( hypType() );
     item.myName = tr( "SMESH_NAME" );
-    item.myValue = data ? data->Label : QString();
+    item.myValue = data ? hypName() : QString();
     p.append( item );
     customWidgets()->append(0);
   }
@@ -615,7 +615,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
     customWidgets()->append
-      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), dlg()));
+      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
   }
   else if( hypType()=="ProjectionSource1D" )
   {

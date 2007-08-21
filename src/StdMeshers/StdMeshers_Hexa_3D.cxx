@@ -118,12 +118,15 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // check nb of faces in the shape
+/*  PAL16229
   aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
   int nbFaces = 0;
   for (TopExp_Explorer exp(aShape, TopAbs_FACE); exp.More(); exp.Next())
     if ( ++nbFaces > 6 )
-      return false;
-
+      break;
+  if ( nbFaces != 6 )
+    return false;
+*/
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
 }
@@ -174,9 +177,10 @@ static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int&
 //=============================================================================
 
 bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
-                                 const TopoDS_Shape & aShape) throw(SALOME_Exception)
+                                 const TopoDS_Shape & aShape)// throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
+  // PAL14921. Enable catching std::bad_alloc and Standard_OutOfMemory outside
+  //Unexpect aCatch(SalomeException);
   MESSAGE("StdMeshers_Hexa_3D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   
@@ -190,7 +194,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     meshFaces.push_back(aSubMesh);
   }
   if (meshFaces.size() != 6)
-    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in block");
+    return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
 
   // 0.2 - is each face meshed with Quadrangle_2D? (so, with a wire of 4 edges)
 
@@ -251,6 +255,9 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
     ASSERT(quadAlgo);
     try {
       aQuads[i] = quadAlgo->CheckAnd2Dcompute(aMesh, aFace, _quadraticMesh);
+      if(!aQuads[i]) {
+	return error( quadAlgo->GetComputeError());
+      }
     }
     catch(SALOME_Exception & S_ex) {
       return ClearAndReturn( aQuads, error(COMPERR_SLM_EXCEPTION,TComm(S_ex.what()) <<

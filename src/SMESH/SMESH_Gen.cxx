@@ -322,7 +322,11 @@ static bool checkMissing(SMESH_Gen*                aGen,
       if ( status == SMESH_Hypothesis::HYP_BAD_PARAMETER ) {
         INFOS( "ERROR: hypothesis of " << (IsGlobalHypothesis ? "Global " : "Local ")
                << "<" << algo->GetName() << "> has a bad parameter value");
-        errName = SMESH_Hypothesis::HYP_BAD_PARAMETER;
+        errName = status;
+      } else if ( status == SMESH_Hypothesis::HYP_BAD_GEOMETRY ) {
+        INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
+               << "<" << algo->GetName() << "> assigned to mismatching geometry");
+        errName = status;
       } else {
         INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
                << "<" << algo->GetName() << "> misses some hypothesis");

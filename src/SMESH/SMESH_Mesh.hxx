@@ -237,30 +237,7 @@ public:
   
   void RemoveGroup (const int theGroupID);
 
-  // Propagation hypothesis management
-
-  const SMESH_Hypothesis* IsLocal1DHypothesis (const TopoDS_Shape& theEdge);
-  // Returns a local 1D hypothesis used for theEdge.
-
-  bool IsPropagationHypothesis (const TopoDS_Shape& theEdge);
-  // Returns true, if a local Propagation hypothesis is set directly on <theEdge>
-
-  bool IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
-                               TopoDS_Shape&       theMainEdge);
-  // Returns true, if a local 1D hypothesis is
-  // propagated on <theEdge> from some other edge.
-  // Returns through <theMainEdge> the edge, from
-  // which the 1D hypothesis is propagated on <theEdge>
-
-  bool IsReversedInChain (const TopoDS_Shape& theEdge,
-                          const TopoDS_Shape& theMainEdge);
-  // Returns true if theEdge should be reversed to be
-  // co-directed with theMainEdge
-
-  bool RebuildPropagationChains();
-  bool RemovePropagationChain (const TopoDS_Shape& theMainEdge);
-  bool BuildPropagationChain (const TopoDS_Shape& theMainEdge);
-  
+ 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
   //
@@ -268,9 +245,6 @@ public:
   ostream& Dump(ostream & save);
   
 private:
-  // Propagation hypothesis management
-  void CleanMeshOnPropagationChain(const TopoDS_Shape& theMainEdge);
-  //
   
 protected:
   int                        _id;           // id given by creator (unique within the creator instance)
@@ -286,8 +260,6 @@ protected:
   SMESH_Gen *                _gen;
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
-
-  IndexedMapOfChain _mapPropagationChains; // Propagation hypothesis management
 
 protected:
   SMESH_Mesh() {};

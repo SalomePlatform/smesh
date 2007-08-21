@@ -37,6 +37,7 @@
 #include "StdMeshers_Deflection1D.hxx"
 #include "StdMeshers_AutomaticLength.hxx"
 #include "StdMeshers_SegmentLengthAroundVertex.hxx"
+#include "StdMeshers_Propagation.hxx"
 
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
@@ -85,6 +86,7 @@ StdMeshers_Regular_1D::StdMeshers_Regular_1D(int hypId, int studyId,
 	_compatibleHypothesis.push_back("AutomaticLength");
 
 	_compatibleHypothesis.push_back("QuadraticMesh"); // auxiliary !!!
+	_compatibleHypothesis.push_back("Propagation"); // auxiliary !!!
 }
 
 //=============================================================================
@@ -410,6 +412,7 @@ void StdMeshers_Regular_1D::SetEventListener(SMESH_subMesh* subMesh)
 //   while (smIt->more()) {
 //     subMesh->SetEventListener( &listener, 0, smIt->next() );
 //   }
+  StdMeshers_Propagation::SetPropagationMgr( subMesh );
 }
 
 //=============================================================================
@@ -627,7 +630,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
     }
     GCPnts_UniformAbscissa Discret(theC3d, eltSize, f, l);
     if ( !Discret.IsDone() )
-      return error( dfltErr(), "GCPnts_UniformAbscissa failed");
+      return error( "GCPnts_UniformAbscissa failed");
 
     int NbPoints = Discret.NbPoints();
     for ( int i = 2; i < NbPoints; i++ )
@@ -759,7 +762,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     list< double > params;
     bool reversed = false;
     if ( !_mainEdge.IsNull() )
-      reversed = aMesh.IsReversedInChain( EE, _mainEdge );
+      reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
@@ -774,6 +777,11 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     const SMDS_MeshNode * idPrev = idFirst;
     double parPrev = f;
     double parLast = l;
+    if(reversed) {
+      idPrev = idLast;
+      parPrev = l;
+      parLast = f;
+    }
     
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
@@ -809,16 +817,24 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
     else {
-      SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
-      meshDS->SetMeshElementOnShape(edge, shapeID);
+      if(!reversed) {
+	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
+	meshDS->SetMeshElementOnShape(edge, shapeID);
+      }
+      else {
+	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idFirst);
+	meshDS->SetMeshElementOnShape(edge, shapeID);
+      }
     }
   }
-  else {
+  else
+  {
+    //MESSAGE("************* Degenerated edge! *****************");
+
     // Edge is a degenerated Edge : We put n = 5 points on the edge.
     const int NbPoints = 5;
     BRep_Tool::Range( E, f, l ); // PAL15185
     double du = (l - f) / (NbPoints - 1);
-    //MESSAGE("************* Degenerated edge! *****************");
 
     gp_Pnt P = BRep_Tool::Pnt(VFirst);
 
@@ -879,11 +895,11 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   // get non-auxiliary assigned to aShape
   int nbHyp = aMesh.GetHypotheses( aShape, compatibleFilter, _usedHypList, false );
 
-  if (nbHyp == 0)
+  if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)
   {
     // Check, if propagated from some other edge
-    if (aShape.ShapeType() == TopAbs_EDGE &&
-        aMesh.IsPropagatedHypothesis(aShape, _mainEdge))
+    _mainEdge = StdMeshers_Propagation::GetPropagationSource( aMesh, aShape );
+    if ( !_mainEdge.IsNull() )
     {
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;
       // get non-auxiliary assigned to _mainEdge

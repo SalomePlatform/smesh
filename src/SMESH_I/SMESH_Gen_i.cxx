@@ -126,7 +126,7 @@ static int MYDEBUG = 0;
 #endif
 
 // Static variables definition
-GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen=GEOM::GEOM_Gen::_nil();
+GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen = GEOM::GEOM_Gen::_nil();
 CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
@@ -223,12 +223,14 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC() {
  *  Get GEOM::GEOM_Gen reference
  */
 //=============================================================================     
-GEOM::GEOM_Gen_ptr SMESH_Gen_i::GetGeomEngine()
-{
-  if (CORBA::is_nil(myGeomGen))
+GEOM::GEOM_Gen_ptr SMESH_Gen_i::GetGeomEngine() {
+  //CCRT GEOM::GEOM_Gen_var aGeomEngine =
+  //CCRT   GEOM::GEOM_Gen::_narrow( GetLCC()->FindOrLoad_Component("FactoryServer","GEOM") );
+  //CCRT return aGeomEngine._retn();
+  if(CORBA::is_nil(myGeomGen))
   {
     Engines::Component_ptr temp=GetLCC()->FindOrLoad_Component("FactoryServer","GEOM");
-    myGeomGen = GEOM::GEOM_Gen::_narrow(temp);
+    myGeomGen=GEOM::GEOM_Gen::_narrow(temp);
   }
   return myGeomGen;
 }
@@ -1233,13 +1235,14 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   // Update Python script
   TPythonDump() << "isDone = " << this << ".Compute( "
                 << theMesh << ", " << theShapeObject << ")";
-  TPythonDump() << "if not isDone: print 'Mesh', " << theMesh << ", ': computation failed'";
 
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
     ASSERT( meshServant );
     if ( meshServant ) {
+      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      meshServant->CheckGeomGroupModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape = GeomObjectToShape( theShapeObject );
       // call implementation compute
@@ -1247,9 +1250,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       return myGen.Compute( myLocMesh, myLocShape);
     }
   }
-  catch ( std::bad_alloc& exc ) {
-    THROW_SALOME_CORBA_EXCEPTION( "Memory allocation problem",
-                                  SALOME::INTERNAL_ERROR );
+  catch ( std::bad_alloc ) {
+    INFOS( "Compute(): lack of memory" );
   }
   catch ( SALOME_Exception& S_ex ) {
     INFOS( "Compute(): catch exception "<< S_ex.what() );
@@ -2670,6 +2672,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
       // close hypotheses root HDF group
       aTopGroup->CloseOnDisk();
+      aTopGroup = 0;
     }
 
     // --> then we should read&create algorithms
@@ -2769,6 +2772,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
       // close algorithms root HDF group
       aTopGroup->CloseOnDisk();
+      aTopGroup = 0;
     }
 
     // --> the rest groups should be meshes
@@ -3410,7 +3414,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
     }
     // close mesh group
-    aTopGroup->CloseOnDisk();   
+    if(aTopGroup)
+      aTopGroup->CloseOnDisk();   
   }
   // close HDF file
   aFile->CloseOnDisk();

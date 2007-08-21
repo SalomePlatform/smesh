@@ -482,6 +482,13 @@ public:
   const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
   static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
 
+  /*!
+   * \brief Raise an exception if free memory (ram+swap) too low
+    * \param doNotRaise - if true, suppres exception, just return bool
+    * \retval bool - true if there is enough memory
+   */
+  static bool CheckMemory(const bool doNotRaise=false) throw (std::bad_alloc);
+
   int MaxNodeID() const;
   int MinNodeID() const;
   int MaxElementID() const;

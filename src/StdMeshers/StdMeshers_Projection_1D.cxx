@@ -191,7 +191,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcEdge, srcMesh,
                                              shape2ShapeMap) )
-    return error(dfltErr(),SMESH_Comment("Vertices association failed" ));
+    return error(SMESH_Comment("Vertices association failed" ));
 
   // ----------------------------------------------
   // Assure that mesh on a source edge is computed
@@ -275,7 +275,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       // from the point at given parameter.
       GCPnts_AbscissaPoint Discret( curveAdaptor, dl * lengths[ i-1 ], tgtParams[ i-1 ] );
       if ( !Discret.IsDone() )
-        return error(dfltErr(),"GCPnts_AbscissaPoint failed");
+        return error("GCPnts_AbscissaPoint failed");
       tgtParams[ i ] = Discret.Parameter();
     }
     // make internal nodes 

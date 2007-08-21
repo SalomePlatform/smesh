@@ -64,7 +64,7 @@ class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
   static void SetPropagationMgr(SMESH_subMesh* subMesh);
 
   /*!
-   * \brief Return an edge from which hypotheses are propagated from
+   * \brief Return an edge from which hypotheses are propagated
     * \param theMesh - mesh
     * \param theEdge - edge to which hypotheses are propagated
     * \retval TopoDS_Edge - source edge, also passing orientation

@@ -130,6 +130,7 @@ private:
   QFrame*                      createMainFrame   (QWidget*);
 
   QLabel*                      myMeshName;
+  QGroupBox*                   myMemoryLackGroup;
   QGroupBox*                   myErrorGroup;
   QTable*                      myTable;
   QPushButton*                 myShowBtn;

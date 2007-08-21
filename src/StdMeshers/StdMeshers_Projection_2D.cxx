@@ -439,11 +439,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
     reverse = ( ! srcE1.IsSame( shape2ShapeMap( tgtE1 )));
-    if ( BRep_Tool::IsClosed( tgtE1, tgtFace )) {
-      reverse = ( srcE1.Orientation() == tgtE1.Orientation() );
-      if ( _sourceHypo->GetSourceFace().Orientation() != theShape.Orientation() )
-        reverse = !reverse;
-    }
   }
   else if ( nbEdgesInWires.front() == 1 )
   {
@@ -463,18 +458,18 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   mapper.Apply( tgtFace, tgtV1, reverse );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't apply source mesh pattern to the face");
+    return error("Can't apply source mesh pattern to the face");
 
   // Create the mesh
 
   const bool toCreatePolygons = false, toCreatePolyedrs = false;
   mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't make mesh by source mesh pattern");
+    return error("Can't make mesh by source mesh pattern");
 
   // it will remove mesh built by pattern mapper on edges and vertices
   // in failure case
-  MeshCleaner cleaner( tgtSubMesh );
+  //  MeshCleaner cleaner( tgtSubMesh );
 
   // -------------------------------------------------------------------------
   // mapper doesn't take care of nodes already existing on edges and vertices,
@@ -497,7 +492,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     bool isSeam = helper.IsSeamShape( sm->GetId() );
 
-    enum { NEW_NODES, OLD_NODES };
+    enum { NEW_NODES = 0, OLD_NODES };
     map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
     map< double, const SMDS_MeshNode* >::iterator u_oldNode, u_newNode, u_newOnSeam, newEnd;
     set< const SMDS_MeshNode* > seamNodes;
@@ -518,7 +513,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       }
 
       // sort nodes on edges by its position
-      map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[ isOld ];
+      map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
       switch ( node->GetPosition()->GetTypeOfPosition() )
       {
       case  SMDS_TOP_VERTEX: {
@@ -536,14 +531,22 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
                           node->GetPosition()->GetTypeOfPosition());
       }
     }
-    if ( u2nodesMaps[ OLD_NODES ].size() != u2nodesMaps[ NEW_NODES ].size() )
-      RETURN_BAD_RESULT("Different nb of old and new nodes " <<
+    if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
+    {
+      if ( u2nodesMaps[ NEW_NODES ].size() == 0                 &&
+           sm->GetSubShape().ShapeType() == TopAbs_EDGE         &&
+           BRep_Tool::Degenerated( TopoDS::Edge( sm->GetSubShape() )))
+        // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
+	// does not make segments/nodes on degenerated edges
+        continue;
+      RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
                         u2nodesMaps[ OLD_NODES ].size() << " != " <<
                         u2nodesMaps[ NEW_NODES ].size());
-    if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() )
+    }
+    if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() ) {
       RETURN_BAD_RESULT("Different nb of old and seam nodes " <<
                         u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
-
+    }
     // Make groups of nodes to merge
     u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
     u_newNode = u2nodesMaps[ NEW_NODES ].begin();
@@ -606,7 +609,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     }
   }
 
-  cleaner.Release(); // do not remove mesh
+  //cleaner.Release(); // do not remove mesh
 
   return true;
 }

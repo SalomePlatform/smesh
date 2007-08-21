@@ -53,10 +53,25 @@
 #include <TopoDS_Compound.hxx>
 #include <gp_Pnt.hxx>
 
-#include <Standard_Failure.hxx>
+#include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
 
 using namespace std;
+
+//=============================================================================
+/*!
+ * \brief Allocate some memory at construction and release it at destruction.
+ * Is used to be able to continue working after mesh generation breaks due to
+ * lack of memory
+ */
+//=============================================================================
+
+struct MemoryReserve
+{
+  char* myBuf;
+  MemoryReserve(): myBuf( new char[1024*1024*2] ){}
+  ~MemoryReserve() { delete [] myBuf; }
+};
 
 //=============================================================================
 /*!
@@ -608,49 +623,6 @@ SMESH_Hypothesis::Hypothesis_Status
 
     if ( !meshDS->AddHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
-
-    // Serve Propagation of 1D hypothesis
-    // NOTE: it is possible to re-implement Propagation using EventListener
-    if (event == ADD_HYP) {
-      bool isPropagationOk = true;
-      bool isPropagationHyp = ( strcmp( "Propagation", anHyp->GetName() ) == 0 );
-
-      if ( isPropagationHyp ) {
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current())) {
-            if (!_father->BuildPropagationChain(exp.Current())) {
-              isPropagationOk = false;
-            }
-          }
-        }
-      }
-      else if (anHyp->GetDim() == 1) { // Only 1D hypothesis can be propagated
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current())) {
-            TopoDS_Shape aMainEdge;
-            if (_father->IsPropagatedHypothesis(exp.Current(), aMainEdge)) {
-              isPropagationOk = _father->RebuildPropagationChains();
-            } else if (_father->IsPropagationHypothesis(exp.Current())) {
-              isPropagationOk = _father->BuildPropagationChain(exp.Current());
-            } else {
-            }
-          }
-        }
-      } else {
-      }
-
-      if ( isPropagationOk ) {
-        if ( isPropagationHyp )
-          return ret; // nothing more to do for "Propagation" hypothesis
-      }
-      else if ( ret < SMESH_Hypothesis::HYP_CONCURENT) {
-        ret = SMESH_Hypothesis::HYP_CONCURENT;
-      }
-    } // Serve Propagation of 1D hypothesis
   }
 
   // --------------------------
@@ -661,45 +633,7 @@ SMESH_Hypothesis::Hypothesis_Status
     if (!meshDS->RemoveHypothesis(_subShape, anHyp))
       return SMESH_Hypothesis::HYP_OK; // nothing changes
 
-    // Serve Propagation of 1D hypothesis
-    // NOTE: it is possible to re-implement Propagation using EventListener
-    if (event == REMOVE_HYP)
-    {
-      bool isPropagationOk = true;
-      SMESH_HypoFilter propagFilter( SMESH_HypoFilter::HasName( "Propagation" ));
-      bool isPropagationHyp = propagFilter.IsOk( anHyp, _subShape );
-
-      if ( isPropagationHyp )
-      {
-        TopExp_Explorer exp (_subShape, TopAbs_EDGE);
-        TopTools_MapOfShape aMap;
-        for (; exp.More(); exp.Next()) {
-          if (aMap.Add(exp.Current()) &&
-              !_father->GetHypothesis( exp.Current(), propagFilter, true )) {
-            // no more Propagation on the current edge
-            if (!_father->RemovePropagationChain(exp.Current())) {
-              return SMESH_Hypothesis::HYP_UNKNOWN_FATAL;
-            }
-          }
-        }
-        // rebuild propagation chains, because removing one
-        // chain can resolve concurention, existing before
-        isPropagationOk = _father->RebuildPropagationChains();
-      }
-      else if (anHyp->GetDim() == 1) // Only 1D hypothesis can be propagated
-      {
-        isPropagationOk = _father->RebuildPropagationChains();
-      }
-
-      if ( isPropagationOk ) {
-        if ( isPropagationHyp )
-          return ret; // nothing more to do for "Propagation" hypothesis
-      }
-      else if ( ret < SMESH_Hypothesis::HYP_CONCURENT) {
-        ret = SMESH_Hypothesis::HYP_CONCURENT;
-      }
-    } // Serve Propagation of 1D hypothesis
-    else // event == REMOVE_ALGO
+    if (event == REMOVE_ALGO)
     {
       algo = dynamic_cast<SMESH_Algo*> (anHyp);
       if (!algo->NeedDescretBoundary())
@@ -1365,7 +1299,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             _computeState = FAILED_TO_COMPUTE;
             if ( !algo->NeedDescretBoundary() )
               _computeError =
-                SMESH_ComputeError::New(COMPERR_BAD_INPUT_MESH,"Unexpected submesh",algo);
+                SMESH_ComputeError::New(COMPERR_BAD_INPUT_MESH,
+                                        "Unexpected computed submesh",algo);
             break;
           }
         }
@@ -1380,11 +1315,12 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
 #endif
+          MemoryReserve aMemoryReserve;
           algo->InitComputeError();
           if ( !_father->HasShapeToMesh() ) // no shape
           {
             SMESH_MesherHelper helper( *_father );
-            helper.SetSubShape( _subShape );
+            helper.SetSubShape( shape );
             helper.SetElementsOnShape( true );
             ret = algo->Compute(*_father, &helper );
           }
@@ -1393,33 +1329,42 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             if (!algo->OnlyUnaryInput()) {
               shape = GetCollection( gen, algo );
             }
-            if (!algo->NeedDescretBoundary() && !algo->OnlyUnaryInput()) {
-              ret = ApplyToCollection( algo, shape );
-              break;
-            }
-            else {
-              ret = algo->Compute((*_father), shape);
-            }
+            ret = algo->Compute((*_father), shape);
           }
           if ( !ret )
             _computeError = algo->GetComputeError();
         }
-        catch (Standard_Failure& exc) {
+        catch ( std::bad_alloc& exc ) {
+          printf("std::bad_alloc\n");
+          if ( _computeError ) {
+            _computeError->myName = COMPERR_MEMORY_PB;
+            //_computeError->myComment = exc.what();
+          }
+          cleanSubMesh( this );
+          throw exc;
+        }
+        catch ( Standard_OutOfMemory& exc ) {
+          printf("Standard_OutOfMemory\n");
+          if ( _computeError ) {
+            _computeError->myName = COMPERR_MEMORY_PB;
+            //_computeError->myComment = exc.what();
+          }
+          cleanSubMesh( this );
+          throw std::bad_alloc();
+        }
+        catch (Standard_Failure& ex) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_OCC_EXCEPTION;
-          _computeError->myComment = exc.GetMessageString();
+          _computeError->myComment += ex.DynamicType()->Name();
+          if ( ex.GetMessageString() && strlen( ex.GetMessageString() )) {
+            _computeError->myComment += ": ";
+            _computeError->myComment += ex.GetMessageString();
+          }
         }
         catch ( SALOME_Exception& S_ex ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
           _computeError->myName    = COMPERR_SLM_EXCEPTION;
           _computeError->myComment = S_ex.what();
-        }
-        catch ( std::bad_alloc& exc ) {
-          if ( _computeError ) {
-            _computeError->myName    = COMPERR_MEMORY_PB;
-            _computeError->myComment = exc.what();
-          }
-          throw exc;
         }
         catch ( std::exception& exc ) {
           if ( !_computeError ) _computeError = SMESH_ComputeError::New();
@@ -1432,28 +1377,25 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           else
             ret = false;
         }
-        if ( ret && _computeError && !_computeError->IsOK() ) {
-          ret = false;
-        }
         if (ret && !_alwaysComputed) { // check if anything was built
           ret = ( GetSubMeshDS() && ( GetSubMeshDS()->NbElements() || GetSubMeshDS()->NbNodes() ));
         }
-        if (!ret)
+        bool isComputeErrorSet = !CheckComputeError( algo, shape );
+        if (!ret && !isComputeErrorSet)
         {
           // Set _computeError
           if ( !_computeError )
             _computeError = SMESH_ComputeError::New();
           if ( _computeError->IsOK() )
             _computeError->myName = COMPERR_ALGO_FAILED;
+          _computeState = FAILED_TO_COMPUTE;
         }
-        else
+        if (ret)
         {
           _computeError.reset();
           //UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
-        //if ( !algo->NeedDescretBoundary() )
-        //  UpdateSubMeshState( ret ? COMPUTE_OK : FAILED_TO_COMPUTE );
-        CheckComputeError( algo, shape );
+        UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
       }
       break;
     case CLEAN:
@@ -1596,54 +1538,78 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 /*!
  * \brief Update compute_state by _computeError and send proper events to
  * dependent submeshes
+  * \retval bool - true if _computeError is NOT set
  */
 //=======================================================================
 
 bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape)
 {
-  bool noErrors = ( !_computeError || _computeError->IsOK() );
-  if ( !noErrors )
-  {
-    if ( !_computeError->myAlgo )
-      _computeError->myAlgo = theAlgo;
+  bool noErrors = true;
 
-    // Show error
-    SMESH_Comment text;
-    text << theAlgo->GetName() << " failed on subshape " << _Id << " with error ";
-    if (_computeError->IsCommon() )
-      text << _computeError->CommonName();
+  if ( !theShape.IsNull() )
+  {
+    // Check state of submeshes
+    if ( !theAlgo->NeedDescretBoundary())
+    {
+      SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
+      while ( smIt->more() )
+        if ( !smIt->next()->CheckComputeError( theAlgo ))
+          noErrors = false;
+    }
+
+    // Check state of neighbours
+    if ( !theAlgo->OnlyUnaryInput() &&
+         theShape.ShapeType() == TopAbs_COMPOUND &&
+         !theShape.IsSame( _subShape ))
+    {
+      for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
+        SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
+        if ( sm != this ) {
+          if ( !sm->CheckComputeError( theAlgo ))
+            noErrors = false;
+          UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
+        }
+      }
+    }
+  }
+  {
+    // Check my state
+    if ( !_computeError || _computeError->IsOK() )
+    {
+      _computeState = COMPUTE_OK;
+    }
     else
-      text << _computeError->myName;
-    if ( _computeError->myComment.size() > 0 )
-      text << " \"" << _computeError->myComment << "\"";
+    {
+      if ( !_computeError->myAlgo )
+        _computeError->myAlgo = theAlgo;
+
+      // Show error
+      SMESH_Comment text;
+      text << theAlgo->GetName() << " failed on subshape #" << _Id << " with error ";
+      if (_computeError->IsCommon() )
+        text << _computeError->CommonName();
+      else
+        text << _computeError->myName;
+      if ( _computeError->myComment.size() > 0 )
+        text << " \"" << _computeError->myComment << "\"";
 
 #ifdef _DEBUG_
-    cout << text << endl;
-    // Show vertices location of a failed shape
-    cout << "Subshape vertices (first 10):" << endl;
-    TopTools_IndexedMapOfShape vMap;
-    TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
-    for ( int iv = 1; iv <= vMap.Extent() && iv < 11; ++iv ) {
-      gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
-      cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
-    }
+      cout << text << endl;
+      // Show vertices location of a failed shape
+      TopTools_IndexedMapOfShape vMap;
+      TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
+      cout << "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") << endl;
+      for ( int iv = 1; iv <= vMap.Extent() && iv < 11; ++iv ) {
+        gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
+        cout << "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " ";
+        cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
+      }
 #else
-    INFOS( text );
+      INFOS( text );
 #endif
-    _computeState = FAILED_TO_COMPUTE;
-  }
-  else
-  {
-    _computeState = COMPUTE_OK;
-    UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
-  }
-  // Check state of submeshes
-  if ( !theAlgo->NeedDescretBoundary() )
-  {
-    SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,false);
-    while ( smIt->more() )
-      if ( !smIt->next()->CheckComputeError( theAlgo ))
-        noErrors = false;
+      _computeState = FAILED_TO_COMPUTE;
+      noErrors = false;
+    }
   }
   if ( !theAlgo->OnlyUnaryInput() && !theShape.IsNull() &&
        theShape.ShapeType() == TopAbs_COMPOUND )

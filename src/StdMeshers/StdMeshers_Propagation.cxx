@@ -28,10 +28,18 @@
 
 #include "utilities.h"
 
+#include "SMDS_SetIterator.hxx"
+#include "SMESH_Algo.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMDS_SetIterator.hxx"
+
+#include <TopTools_MapOfShape.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <BRepTools_WireExplorer.hxx>
+
+#define DBGMSG(txt) \
+//  cout << txt << endl;
 
 using namespace std;
 
@@ -54,7 +62,7 @@ namespace {
     /*!
      * \brief Return an edge from which hypotheses are propagated from
      */
-    static TopoDS_Edge GetSource(SMESH_subMesh * submesh) { return TopoDS_Edge(); };
+    static TopoDS_Edge GetSource(SMESH_subMesh * submesh);
     /*!
      * \brief Does it's main job
      */
@@ -106,7 +114,7 @@ TopoDS_Edge StdMeshers_Propagation::GetPropagationSource(SMESH_Mesh& theMesh,
 
 namespace {
 
-  enum SubMeshState { WAIT_PROPAG_HYP, // no propagation hyp in chain
+  enum SubMeshState { WAIT_PROPAG_HYP, // propagation hyp or local 1D hyp is missing
                       HAS_PROPAG_HYP,  // propag hyp on this submesh
                       IN_CHAIN,        // submesh is in propagation chain
                       LAST_IN_CHAIN,   // submesh with local 1D hyp breaking a chain
@@ -115,14 +123,23 @@ namespace {
   struct PropagationMgrData : public EventListenerData
   {
     bool myForward; //!< true if a curve of edge in chain is codirected with one of source edge
-    PropagationMgrData( SubMeshState state ): EventListenerData(true) {
-      myType = state;
+    PropagationMgrData( SubMeshState state=WAIT_PROPAG_HYP ): EventListenerData(true) {
+      myType = state; myForward = true;
+    }
+    void Init() {
+      myType = WAIT_PROPAG_HYP;  mySubMeshes.clear(); myForward = true;
     }
     SubMeshState State() const {
       return (SubMeshState) myType;
     }
+    void SetState(SubMeshState state) {
+      myType = state;
+    }
     void SetSource(SMESH_subMesh* sm ) {
       mySubMeshes.clear(); if ( sm ) mySubMeshes.push_back( sm );
+    }
+    void AddSource(SMESH_subMesh* sm ) {
+      if ( sm ) mySubMeshes.push_back( sm );
     }
     void SetChain(list< SMESH_subMesh* >& chain ) {
       mySubMeshes.clear(); mySubMeshes.splice( mySubMeshes.end(), chain );
@@ -131,16 +148,6 @@ namespace {
     SMESH_subMesh* GetSource() const;
   };
 
-  //=============================================================================
-  /*!
-   * \brief return filter to find Propagation hypothesis
-   */
-  SMESH_HypoFilter & propagHypFilter()
-  {
-    static SMESH_HypoFilter propagHypFilter
-      ( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ()));
-    return propagHypFilter;
-  }
   //=============================================================================
   /*!
    * \brief return static PropagationMgr
@@ -156,9 +163,9 @@ namespace {
   }
   //=============================================================================
   /*!
-   * \brief return PropagationMgrData
+   * \brief return PropagationMgrData found on a submesh
    */
-  PropagationMgrData* getData(SMESH_subMesh* sm)
+  PropagationMgrData* findData(SMESH_subMesh* sm)
   {
     if ( sm )
       return static_cast< PropagationMgrData* >( sm->GetEventListenerData( getListener() ));
@@ -166,57 +173,61 @@ namespace {
   }
   //=============================================================================
   /*!
-   * \brief return PropagationMgrData
+   * \brief return PropagationMgrData found on theEdge submesh
    */
-  PropagationMgrData* getData(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge)
+  PropagationMgrData* findData(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge)
   {
     if ( theEdge.ShapeType() == TopAbs_EDGE )
-      return getData( theMesh.GetSubMeshContaining( theEdge ) );
+      return findData( theMesh.GetSubMeshContaining( theEdge ) );
     return 0;
   }
-  //================================================================================
+  //=============================================================================
   /*!
-   * \brief Return an iterator on a chain
+   * \brief return existing or a new PropagationMgrData
    */
-  SMESH_subMeshIteratorPtr PropagationMgrData::GetChain() const
+  PropagationMgrData* getData(SMESH_subMesh* sm)
   {
-    typedef SMESH_subMesh* TsubMesh;
-    typedef SMDS_SetIterator< TsubMesh, list< TsubMesh >::const_iterator > TIterator;
-    switch ( State() ) {
-    case HAS_PROPAG_HYP:
-      return SMESH_subMeshIteratorPtr
-        ( new TIterator( mySubMeshes.begin(), mySubMeshes.end() ));
-    case IN_CHAIN:
-    case LAST_IN_CHAIN:
-      if ( mySubMeshes.empty() ) break;
-      return getData( mySubMeshes.front() )->GetChain();
-    default:;
+    PropagationMgrData* data = findData( sm );
+    if ( !data && sm ) {
+      data = new PropagationMgrData();
+      sm->SetEventListener( getListener(), data, sm );
     }
-    return SMESH_subMeshIteratorPtr
-      ( new TIterator( mySubMeshes.end(), mySubMeshes.end() ));
-  }
-  //================================================================================
-  /*!
-   * \brief Return a propagation source submesh
-   */
-  SMESH_subMesh* PropagationMgrData::GetSource() const
-  {
-    if ( myType == IN_CHAIN || myType == LAST_IN_CHAIN )
-      if ( !mySubMeshes.empty() ) 
-        return mySubMeshes.front();
-    return 0;
+    return data;
   }
   //=============================================================================
   /*!
    * \brief Returns a local 1D hypothesis used for theEdge
    */
-  const SMESH_Hypothesis* isLocal1DHypothesis (SMESH_Mesh& theMesh,
-                                               const TopoDS_Shape& theEdge)
+  const SMESH_Hypothesis* getLocal1DHyp (SMESH_Mesh&         theMesh,
+                                         const TopoDS_Shape& theEdge)
   {
-    static SMESH_HypoFilter hypo ( SMESH_HypoFilter::HasDim( 1 ));
-    hypo.AndNot( hypo.IsAlgo() ).AndNot( hypo.IsAssignedTo( theMesh.GetMeshDS()->ShapeToMesh() ));
-
+    static SMESH_HypoFilter hypo;
+    hypo.Init( hypo.HasDim( 1 )).
+      AndNot ( hypo.IsAlgo() ).
+      AndNot ( hypo.IsAssignedTo( theMesh.GetMeshDS()->ShapeToMesh() ));
     return theMesh.GetHypothesis( theEdge, hypo, true );
+  }
+  //=============================================================================
+  /*!
+   * \brief Returns a propagation hypothesis assigned to theEdge
+   */
+  const SMESH_Hypothesis* getProagationHyp (SMESH_Mesh&         theMesh,
+                                            const TopoDS_Shape& theEdge)
+  {
+    static SMESH_HypoFilter propagHypFilter
+      ( SMESH_HypoFilter::HasName( StdMeshers_Propagation::GetName ()));
+    return theMesh.GetHypothesis( theEdge, propagHypFilter, true );
+  }
+  //================================================================================
+  /*!
+   * \brief Return an iterator on a list of submeshes
+   */
+  SMESH_subMeshIteratorPtr iterate( list<SMESH_subMesh*>::const_iterator from,
+                                    list<SMESH_subMesh*>::const_iterator to)
+  {
+    typedef SMESH_subMesh* TsubMesh;
+    typedef SMDS_SetIterator< TsubMesh, list< TsubMesh >::const_iterator > TIterator;
+    return SMESH_subMeshIteratorPtr ( new TIterator( from, to ));
   }
   //================================================================================
   /*!
@@ -225,126 +236,212 @@ namespace {
    */
   bool buildPropagationChain ( SMESH_subMesh* theMainSubMesh )
   {
-  //   const TopoDS_Shape& theMainEdge = theMainSubMesh->GetSubShape();
-//     if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
+    DBGMSG( "buildPropagationChain from " << theMainSubMesh->GetId() );
+    const TopoDS_Shape& theMainEdge = theMainSubMesh->GetSubShape();
+    if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
 
-//     SMESH_Mesh* mesh = theMainSubMesh->GetFather();
+    SMESH_Mesh* mesh = theMainSubMesh->GetFather();
 
-//     EventListenerData* chainData = new PropagationMgrData(HAS_PROPAG_HYP);
-//     theMainSubMesh->SetEventListener( getListener(), chainData, theMainSubMesh );
+    PropagationMgrData* chainData = getData( theMainSubMesh );
+    chainData->SetState( HAS_PROPAG_HYP );
 
-//     // Edges submeshes, on which the 1D hypothesis will be propagated from <theMainEdge>
-//     list<SMESH_subMesh*> & chain = chainData->mySubMeshes;
+    // Edge submeshes, to which the 1D hypothesis will be propagated from theMainEdge
+    list<SMESH_subMesh*> & chain = chainData->mySubMeshes;
+    chain.clear();
+    chain.push_back( theMainSubMesh );
 
-//     // List of edges, added to chain on the previous cycle pass
-//     TopTools_ListOfShape listPrevEdges;
-//     listPrevEdges.Append(theMainEdge.Oriented( TopAbs_FORWARD ));
+    TopTools_MapOfShape checkedShapes;
+    checkedShapes.Add( theMainEdge );
 
-//     //   4____3____2____3____4____5
-//     //   |    |    |    |    |    |      Number in the each knot of
-//     //   |    |    |    |    |    |      grid indicates cycle pass,
-//     //   3____2____1____2____3____4      on which corresponding edge
-//     //   |    |    |    |    |    |      (perpendicular to the plane
-//     //   |    |    |    |    |    |      of view) will be found.
-//     //   2____1____0____1____2____3
-//     //   |    |    |    |    |    |
-//     //   |    |    |    |    |    |
-//     //   3____2____1____2____3____4
+    list<SMESH_subMesh*>::iterator smIt = chain.begin();
+    for ( ; smIt != chain.end(); ++smIt )
+    {
+      const TopoDS_Edge& anE = TopoDS::Edge( (*smIt)->GetSubShape() );
+      PropagationMgrData* data = findData( *smIt );
+      if ( !data ) continue;
 
-//     // Collect all edges pass by pass
-//     while (listPrevEdges.Extent() > 0) {
-//       // List of edges, added to chain on this cycle pass
-//       TopTools_ListOfShape listCurEdges;
+      // Iterate on faces, having edge <anE>
+      TopTools_ListIteratorOfListOfShape itA (mesh->GetAncestors(anE));
+      for (; itA.More(); itA.Next())
+      {
+        // there are objects of different type among the ancestors of edge
+        if ( itA.Value().ShapeType() != TopAbs_WIRE || !checkedShapes.Add( itA.Value() ))
+          continue;
 
-//       // Find the next portion of edges
-//       TopTools_ListIteratorOfListOfShape itE (listPrevEdges);
-//       for (; itE.More(); itE.Next()) {
-//         TopoDS_Shape anE = itE.Value();
+        // Get ordered edges and find index of anE in a sequence
+        BRepTools_WireExplorer aWE (TopoDS::Wire(itA.Value()));
+        vector<TopoDS_Edge> edges;
+        edges.reserve(4);
+        int edgeIndex = 0;
+        for (; aWE.More(); aWE.Next()) {
+          TopoDS_Edge edge = aWE.Current();
+          edge.Orientation( aWE.Orientation() );
+          if ( edge.IsSame( anE ))
+            edgeIndex = edges.size();
+          edges.push_back( edge );
+        }
 
-//         // Iterate on faces, having edge <anE>
-//         TopTools_ListIteratorOfListOfShape itA (mesh->GetAncestors(anE));
-//         for (; itA.More(); itA.Next()) {
-//           TopoDS_Shape aW = itA.Value();
+        // Find an edge opposite to anE
+        TopoDS_Edge anOppE;
+        if ( edges.size() < 4 ) {
+          continue; // too few edges
+        }
+        else if ( edges.size() == 4 ) {
+          int oppIndex = edgeIndex + 2;
+          if ( oppIndex > 3 ) oppIndex -= 4;
+          anOppE = edges[ oppIndex ];
+        }
+        else {
+          // count nb sides
+          TopoDS_Edge prevEdge = anE;
+          int nbSide = 0, eIndex = edgeIndex + 1;
+          for ( int i = 0; i < edges.size(); ++i, ++eIndex )
+          {
+            if ( eIndex == edges.size() )
+              eIndex = 0;
+            if ( !SMESH_Algo::IsContinuous( prevEdge, edges[ eIndex ])) {
+              nbSide++;
+            }
+            else {
+              // check that anE is not a part of a composite side
+              if ( anE.IsSame( prevEdge ) || anE.IsSame( edges[ eIndex ])) {
+                anOppE.Nullify(); break;
+              }
+            }
+            if ( nbSide == 2 ) { // opposite side
+              if ( !anOppE.IsNull() ) {
+                // composite opposite side -> stop propagation
+                anOppE.Nullify(); break;
+              }
+              anOppE = edges[ eIndex ];
+            }
+            if ( nbSide == 5 ) {
+              anOppE.Nullify(); break; // too many sides
+            }
+            prevEdge = edges[ eIndex ];
+          }
+          if ( anOppE.IsNull() )
+            continue;
+          if ( nbSide != 4 ) {
+            DBGMSG( nbSide << " sides in wire #" << mesh->GetMeshDS()->ShapeToIndex( itA.Value() ) << " - SKIP" );
+            continue;
+          }
+        }
+        if ( anOppE.IsNull() || !checkedShapes.Add( anOppE ))
+          continue;
+        SMESH_subMesh* oppSM = mesh->GetSubMesh( anOppE );
+        PropagationMgrData* oppData = getData( oppSM );
 
-//           // There are objects of different type among the ancestors of edge
-//           if (aW.ShapeType() == TopAbs_WIRE) {
-//             TopoDS_Shape anOppE;
+        // Add anOppE to aChain if ...
+        if ( oppData->State() == WAIT_PROPAG_HYP ) // ... anOppE is not in any chain
+        {
+          oppData->SetSource( theMainSubMesh );
+          if ( !getLocal1DHyp( *mesh, anOppE )) // ... no 1d hyp on anOppE
+          {
+            oppData->myForward = data->myForward;
+            if ( edges[ edgeIndex ].Orientation() == anOppE.Orientation() )
+              oppData->myForward = !oppData->myForward;
+            chain.push_back( oppSM );
+            oppSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
+            oppData->SetState( IN_CHAIN );
+            DBGMSG( "set IN_CHAIN on " << oppSM->GetId() );
+          }
+          else {
+            oppData->SetState( LAST_IN_CHAIN );
+            DBGMSG( "set LAST_IN_CHAIN on " << oppSM->GetId() );
+          }
+        }
+        else if ( oppData->State() == LAST_IN_CHAIN ) // anOppE breaks other chain
+        {
+          DBGMSG( "encounters LAST_IN_CHAIN on " << oppSM->GetId() );
+          oppData->AddSource( theMainSubMesh );
+        }
+      } // loop on face ancestors
+    } // loop on the chain
 
-//             BRepTools_WireExplorer aWE (TopoDS::Wire(aW));
-//             Standard_Integer nb = 1, found = 0;
-//             TopTools_Array1OfShape anEdges (1,4);
-//             for (; aWE.More(); aWE.Next(), nb++) {
-//               if (nb > 4) {
-//                 found = 0;
-//                 break;
-//               }
-//               anEdges(nb) = aWE.Current();
-//               if (!_mapAncestors.Contains(anEdges(nb))) {
-//                 MESSAGE("WIRE EXPLORER HAVE GIVEN AN INVALID EDGE !!!");
-//                 break;
-//               }
-//               if (anEdges(nb).IsSame(anE)) found = nb;
-//             }
+    // theMainSubMesh must not be in a chain
+    chain.pop_front();
 
-//             if (nb == 5 && found > 0) {
-//               // Quadrangle face found, get an opposite edge
-//               Standard_Integer opp = ( found + 2 ) % 4;
-//               anOppE = anEdges(opp);
-
-//               // add anOppE to aChain if ...
-//               PropagationMgrData* data = getData( *mesh, anOppE );
-//               if ( !data || data->State() == WAIT_PROPAG_HYP ) { // ... anOppE is not in any chain
-//                 if ( !isLocal1DHypothesis( *mesh, anOppE )) { // ... no other 1d hyp on anOppE
-//                   // Add found edge to the chain oriented so that to
-//                   // have it co-directed with a forward MainEdge
-//                     TopAbs_Orientation ori = anE.Orientation();
-//                     if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
-//                       ori = TopAbs::Reverse( ori );
-//                     anOppE.Orientation( ori );
-//                     aChain.Add(anOppE);
-//                     listCurEdges.Append(anOppE);
-//                   }
-//                   else {
-//                     // Collision!
-//                     MESSAGE("Error: Collision between propagated hypotheses");
-//                     CleanMeshOnPropagationChain(theMainEdge);
-//                     aChain.Clear();
-//                     return ( aMainHyp == isLocal1DHypothesis(aMainEdgeForOppEdge) );
-//                   }
-//                 }
-//               }
-//             } // if (nb == 5 && found > 0)
-//           } // if (aF.ShapeType() == TopAbs_WIRE)
-//         } // for (; itF.More(); itF.Next())
-//       } // for (; itE.More(); itE.Next())
-
-//       listPrevEdges = listCurEdges;
-//     } // while (listPrevEdges.Extent() > 0)
-
-//     CleanMeshOnPropagationChain(theMainEdge);
     return true;
   }
   //================================================================================
   /*!
    * \brief Clear propagation chain
    */
-  //================================================================================
-
   bool clearPropagationChain( SMESH_subMesh* subMesh )
   {
-    if ( PropagationMgrData* data = getData( subMesh )) {
-      if ( data->State() == IN_CHAIN )
+    DBGMSG( "clearPropagationChain from " << subMesh->GetId() );
+    if ( PropagationMgrData* data = findData( subMesh ))
+    {
+      switch ( data->State() ) {
+      case IN_CHAIN:
         return clearPropagationChain( data->GetSource() );
+
+      case HAS_PROPAG_HYP: {
+        SMESH_subMeshIteratorPtr smIt = data->GetChain();
+        while ( smIt->more() ) {
+          SMESH_subMesh* sm = smIt->next();
+          getData( sm )->Init();
+          sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        }
+        data->Init();
+        break;
+      }
+      case LAST_IN_CHAIN: {
+        SMESH_subMeshIteratorPtr smIt = iterate( data->mySubMeshes.begin(),
+                                                 data->mySubMeshes.end());
+        while ( smIt->more() )
+          clearPropagationChain( smIt->next() );
+        data->Init();
+        break;
+      }
+      default:;
+      }
       return true;
     }
     return false;
-  }  
+  }
+
+
+  //================================================================================
+  /*!
+   * \brief Return an iterator on chain submeshes
+   */
+  //================================================================================
+
+  SMESH_subMeshIteratorPtr PropagationMgrData::GetChain() const
+  {
+    switch ( State() ) {
+    case HAS_PROPAG_HYP:
+      return iterate( mySubMeshes.begin(), mySubMeshes.end() );
+    case IN_CHAIN:
+      if ( mySubMeshes.empty() ) break;
+      return getData( mySubMeshes.front() )->GetChain();
+    default:;
+    }
+    return iterate( mySubMeshes.end(), mySubMeshes.end() );
+  }
+  //================================================================================
+  /*!
+   * \brief Return a propagation source submesh
+   */
+  //================================================================================
+
+  SMESH_subMesh* PropagationMgrData::GetSource() const
+  {
+    if ( myType == IN_CHAIN )
+      if ( !mySubMeshes.empty() ) 
+        return mySubMeshes.front();
+    return 0;
+  }
 
 
   //================================================================================
   /*!
    * \brief Constructor
    */
+  //================================================================================
+
   PropagationMgr::PropagationMgr()
     : SMESH_subMeshEventListener( false ) // won't be deleted by submesh
   {}
@@ -352,14 +449,16 @@ namespace {
   /*!
    * \brief Set PropagationMgr on a submesh
    */
+  //================================================================================
+
   void PropagationMgr::Set(SMESH_subMesh * submesh)
   {
-    EventListenerData* data = EventListenerData::MakeData(submesh,WAIT_PROPAG_HYP);
-
+    DBGMSG( "PropagationMgr::Set() on  " << submesh->GetId() );
+    EventListenerData* data = new PropagationMgrData();
     submesh->SetEventListener( getListener(), data, submesh );
 
     const SMESH_Hypothesis * propagHyp =
-      submesh->GetFather()->GetHypothesis( submesh->GetSubShape(), propagHypFilter(), true );
+      getProagationHyp( *submesh->GetFather(), submesh->GetSubShape() );
     if ( propagHyp )
       getListener()->ProcessEvent( SMESH_subMesh::ADD_HYP,
                                    SMESH_subMesh::ALGO_EVENT,
@@ -367,7 +466,28 @@ namespace {
                                    data,
                                    propagHyp);
   }
+  //================================================================================
+  /*!
+   * \brief Return an edge from which hypotheses are propagated
+   */
+  //================================================================================
 
+  TopoDS_Edge PropagationMgr::GetSource(SMESH_subMesh * submesh)
+  {
+    if ( PropagationMgrData* data = findData( submesh )) {
+      if ( data->State() == IN_CHAIN ) {
+        if ( SMESH_subMesh* sm = data->GetSource() )
+        {
+          TopoDS_Shape edge = sm->GetSubShape();
+          edge = edge.Oriented( data->myForward ? TopAbs_FORWARD : TopAbs_REVERSED );
+          DBGMSG( " GetSource() = edge " << sm->GetId() << " REV = " << (!data->myForward));
+          if ( edge.ShapeType() == TopAbs_EDGE )
+            return TopoDS::Edge( edge );
+        }
+      }
+    }
+    return TopoDS_Edge();
+  }
   //================================================================================
   /*!
    * \brief React on events on 1D submeshes
@@ -377,31 +497,36 @@ namespace {
   void PropagationMgr::ProcessEvent(const int          event,
                                     const int          eventType,
                                     SMESH_subMesh*     subMesh,
-                                    SMESH_subMeshEventListenerData* data,
+                                    SMESH_subMeshEventListenerData* listenerData,
                                     const SMESH_Hypothesis*         hyp)
   {
-    if ( !data )
+    if ( !listenerData )
       return;
     if ( !hyp || hyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO || hyp->GetDim() != 1 )
       return;
     if ( eventType != SMESH_subMesh::ALGO_EVENT )
       return;
+    DBGMSG( "PropagationMgr::ProcessEvent() on  " << subMesh->GetId() );
 
-    bool isPropagHyp = ( StdMeshers_Propagation::GetName() != hyp->GetName() );
+    bool isPropagHyp = ( StdMeshers_Propagation::GetName() == hyp->GetName() );
 
-    switch ( data->myType ) {
+    PropagationMgrData* data = static_cast<PropagationMgrData*>( listenerData );
+    switch ( data->State() ) {
 
-    case WAIT_PROPAG_HYP: { // no propagation hyp in chain
+    case WAIT_PROPAG_HYP: { // propagation hyp or local 1D hyp is missing
       // --------------------------------------------------------
-      if ( !isPropagHyp )
+      bool hasPropagHyp = ( isPropagHyp ||
+                            getProagationHyp( *subMesh->GetFather(), subMesh->GetSubShape()) );
+      if ( !hasPropagHyp )
         return;
-      if ( !isLocal1DHypothesis( *subMesh->GetFather(), subMesh->GetSubShape()))
+      bool hasLocal1DHyp =  getLocal1DHyp( *subMesh->GetFather(), subMesh->GetSubShape());
+      if ( !hasLocal1DHyp )
         return;
       if ( event == SMESH_subMesh::ADD_HYP ||
-           event == SMESH_subMesh::ADD_FATHER_HYP ) // add propagation hyp
+           event == SMESH_subMesh::ADD_FATHER_HYP ) // add local or propagation hyp
       {
+        DBGMSG( "ADD_HYP propagation to WAIT_PROPAG_HYP " << subMesh->GetId() );
         // build propagation chain
-        clearPropagationChain( subMesh );
         buildPropagationChain( subMesh );
       }
       return;
@@ -411,32 +536,57 @@ namespace {
       switch ( event ) {
       case SMESH_subMesh::REMOVE_HYP:
       case SMESH_subMesh::REMOVE_FATHER_HYP: // remove propagation hyp
-        if ( isPropagHyp )
+        if ( isPropagHyp && !getProagationHyp( *subMesh->GetFather(), subMesh->GetSubShape()) )
         {
+          DBGMSG( "REMOVE_HYP propagation from HAS_PROPAG_HYP " << subMesh->GetId() );
           // clear propagation chain
+          clearPropagationChain( subMesh );
         }
         return;
       case SMESH_subMesh::MODIF_HYP: // hyp modif
         // clear mesh in a chain
+        DBGMSG( "MODIF_HYP on HAS_PROPAG_HYP " << subMesh->GetId() );
+        SMESH_subMeshIteratorPtr smIt = data->GetChain();
+        while ( smIt->more() ) {
+          SMESH_subMesh* smInChain = smIt->next();
+          smInChain->AlgoStateEngine( SMESH_subMesh::MODIF_HYP,
+                                      (SMESH_Hypothesis*) hyp );
+        }
         return;
       }
       return;
     }
     case IN_CHAIN: {       // submesh is in propagation chain
       // --------------------------------------------------------
-      if ( event == SMESH_subMesh::ADD_HYP ) // add local hypothesis
-        if ( isPropagHyp )
-          ; // collision
-        else
-          ; // rebuild propagation chain
-        return;
+      if ( event == SMESH_subMesh::ADD_HYP ) { // add local hypothesis
+        if ( isPropagHyp ) { // propagation hyp added
+          DBGMSG( "ADD_HYP propagation on IN_CHAIN " << subMesh->GetId() );
+          // collision - do nothing
+        }
+        else { // 1D hyp added
+          // rebuild propagation chain
+          DBGMSG( "ADD_HYP 1D on IN_CHAIN " << subMesh->GetId() );
+          SMESH_subMesh* sourceSM = data->GetSource();
+          clearPropagationChain( sourceSM );
+          buildPropagationChain( sourceSM );
+        }
+      }
+      return;
     }
     case LAST_IN_CHAIN: { // submesh with local 1D hyp, breaking a chain
       // --------------------------------------------------------
-      if ( event == SMESH_subMesh::REMOVE_HYP ) // remove local hyp
-        ; // rebuild propagation chain
+      if ( event == SMESH_subMesh::REMOVE_HYP ) { // remove local hyp
+        // rebuild propagation chain
+        DBGMSG( "REMOVE_HYP 1D from LAST_IN_CHAIN " << subMesh->GetId() );
+        list<SMESH_subMesh*> sourceSM = data->mySubMeshes;
+        clearPropagationChain( subMesh );
+        SMESH_subMeshIteratorPtr smIt = iterate( sourceSM.begin(), sourceSM.end());
+        while ( smIt->more() )
+          buildPropagationChain( smIt->next() );
+      }
       return;
     }
     } // switch by SubMeshState
   }
+
 } // namespace

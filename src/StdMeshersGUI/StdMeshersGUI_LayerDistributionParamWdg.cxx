@@ -48,9 +48,11 @@
  */
 //================================================================================
 
-StdMeshersGUI_LayerDistributionParamWdg::StdMeshersGUI_LayerDistributionParamWdg
-( SMESH::SMESH_Hypothesis_ptr hyp,
-  QDialog*                    dlg ): QHGroupBox(), myDlg( dlg )
+StdMeshersGUI_LayerDistributionParamWdg
+::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
+					  const QString& theName,
+                                          QDialog* dlg): 
+  QHGroupBox(), myName(theName), myDlg( dlg )
 {
   init();
   set( hyp );
@@ -204,7 +206,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
   try {
     QWidget* parent = this;
     if ( myDlg ) parent = myDlg->parentWidget();
-    editor->edit( myHyp, parent );
+    editor->edit( myHyp, myName, parent );
   }
   catch(...) {
   }

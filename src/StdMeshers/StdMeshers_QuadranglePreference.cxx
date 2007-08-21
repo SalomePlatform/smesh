@@ -42,7 +42,7 @@ StdMeshers_QuadranglePreference::StdMeshers_QuadranglePreference(int         hyp
      :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = "QuadranglePreference";
-  _param_algo_dim = 2; // is used by StdMeshers_Quadrangle_2D
+  _param_algo_dim = -2; // auxiliary used by StdMeshers_Quadrangle_2D
 }
 
 //=============================================================================

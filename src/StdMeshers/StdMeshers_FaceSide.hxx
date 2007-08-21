@@ -45,6 +45,7 @@ class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
 class TopoDS_Face;
+class SMESH_ComputeError;
 
 typedef struct uvPtStruct
 {
@@ -61,6 +62,8 @@ typedef struct uvPtStruct
 class StdMeshers_FaceSide;
 typedef boost::shared_ptr< StdMeshers_FaceSide > StdMeshers_FaceSidePtr;
 typedef boost::shared_ptr< uvPtStruct > UVPtStructPtr;
+typedef std::vector< StdMeshers_FaceSidePtr > TSideVector;
+typedef boost::shared_ptr< SMESH_ComputeError > TError;
 
 //================================================================================
 /*!
@@ -88,6 +91,15 @@ public:
                       SMESH_Mesh*        theMesh,
                       const bool         theIsForward,
                       const bool         theIgnoreMediumNodes);
+
+  /*!
+   * \brief Return wires of a face as StdMeshers_FaceSide's
+   */
+  static TSideVector GetFaceWires(const TopoDS_Face& theFace,
+                                  SMESH_Mesh &       theMesh,
+                                  const bool         theIgnoreMediumNodes,
+                                  TError &           theError);
+
   /*!
    * \brief Change orientation of side geometry
    */
@@ -115,15 +127,15 @@ public:
     *
     * Missing nodes are allowed only on internal vertices
    */
-  const vector<UVPtStruct>& GetUVPtStruct(bool isXConst, double constValue) const;
+  const vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
    * \brief Simulates detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
    */
   const vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
-                                               bool   isXConst,
-                                               double constValue) const;
+                                               bool   isXConst   = 0,
+                                               double constValue = 0) const;
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
    */

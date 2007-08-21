@@ -32,6 +32,7 @@
 #include "SMESH_Hypothesis_i.hxx"
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Group_i.hxx"
+#include "SMESH_subMesh_i.hxx"
 
 #include "SMESH.hxx"
 

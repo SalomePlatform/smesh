@@ -34,8 +34,9 @@ static int MYDEBUG = 0;
 #endif
 
 
-static string _group_labels[] = {"2417", "2429", "2430", "2432", "2435", "2452", "2467"};
-#define NBGROUP 7
+static string _group_labels[] = {"2417", "2429", "2430", "2432",
+				 "2435", "2452", "2467", "2477"};
+#define NBGROUP 8
 
 static string _label_dataset = "2467";
 
@@ -98,7 +99,10 @@ void UNV2417::ReadGroup(const std::string& myGroupLabel, std::ifstream& in_strea
     for(int j=0; j < n_nodes; j++){
       in_stream>>aElType;
       in_stream>>aElId;
-      if ((myGroupLabel.compare("2435") == 0) || (myGroupLabel.compare("2452") == 0) || (myGroupLabel.compare("2467") == 0)) {
+      if ((myGroupLabel.compare("2435") == 0) ||
+	  (myGroupLabel.compare("2452") == 0) ||
+	  (myGroupLabel.compare("2467") == 0) ||
+	  (myGroupLabel.compare("2477") == 0)) {
 	in_stream>>aTmp;
 	in_stream>>aTmp;
       }

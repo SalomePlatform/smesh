@@ -388,30 +388,21 @@ namespace SMESH{
 					       const bool isAlgo)
   {
     if(MYDEBUG) MESSAGE("Create " << aHypType << " with name " << aHypName);
-
-    SMESH::SMESH_Hypothesis_var Hyp;
-
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
-
     try {
-      Hyp = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType, aServLib);
-      if (!Hyp->_is_nil()) {
-	_PTR(SObject) SHyp = SMESH::FindSObject(Hyp.in());
-	if (SHyp) {
-	  //if (strcmp(aHypName,"") != 0)
+      SMESH::SMESH_Hypothesis_var aHypothesis;
+      aHypothesis = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType, aServLib);
+      if (!aHypothesis->_is_nil()) {
+	_PTR(SObject) aHypSObject = SMESH::FindSObject(aHypothesis.in());
+	if (aHypSObject) {
 	  if (strlen(aHypName) > 0)
-	    SMESH::SetName(SHyp, aHypName);
-	  //SalomeApp_Application* app =
-	  //  dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
-	  //if (app)
-	  //  app->objectBrowser()->updateTree();
-          SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-	  return Hyp._retn();
+	    SMESH::SetName(aHypSObject, aHypName);
+	  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+	  return aHypothesis._retn();
 	}
       }
-    }
-    catch (const SALOME::SALOME_Exception & S_ex) {
+    } catch (const SALOME::SALOME_Exception & S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     }
 
@@ -621,6 +612,7 @@ namespace SMESH{
           CASE2MESSAGE( HYP_MISSING );
           CASE2MESSAGE( HYP_NOTCONFORM );
           CASE2MESSAGE( HYP_BAD_PARAMETER );
+          CASE2MESSAGE( HYP_BAD_GEOMETRY );
         default: continue;
         }
       // apply args to message:

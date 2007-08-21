@@ -396,48 +396,49 @@ static TopoDS_Shape getShapeByName( const char* theName )
   return TopoDS_Shape();
 }
 
-static TopoDS_Shape getShapeByID( const char* theID )
+static TopoDS_Shape getShapeByID (const char* theID)
 {
-  if ( theID != 0 && theID!="" )
-  {
+  if (theID != 0 && theID != "") {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if ( aStudy != 0 )
-    {
-      CORBA::Object_var obj = aStudy->ConvertIORToObject(theID);
-      GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( obj );
+    if (aStudy != 0) {
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
+        SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+        CORBA::String_var aVal = anIOR->Value();
+        CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
       
-      if ( !aGeomObj->_is_nil() )
-        {
-	  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+        if (!aGeomObj->_is_nil()) {
+          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
+      }
     }
   }
   return TopoDS_Shape();
 }
 
-static char* getShapeNameByID ( const char* theID )
+static char* getShapeNameByID (const char* theID)
 {
   char* aName = "";
 
-  if ( theID != 0 && theID!="" )
-    {
-      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      if ( aStudy != 0 )
-	{
-	  SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
-	  SALOMEDS::GenericAttribute_var anAttr;
-	  if ( !aSObj->_is_nil() && aSObj->FindAttribute( anAttr, "AttributeName") )
-	    {
-	      SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow( anAttr );
-	      aName = aNameAttr->Value();        
-	    }
-	}
+  if (theID != 0 && theID != "") {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    if (aStudy != 0) {
+      //SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeName")) {
+        SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow(anAttr);
+        aName = aNameAttr->Value();
+      }
     }
-  
+  }
+
   return aName;
 }
 
@@ -2057,9 +2058,10 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
-    TPythonDump()<<"aCriterion = SMESH.Filter.Criterion("<<
-      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
-      aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
+    TPythonDump() << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
+                  << "," << aThreshold << ",'" << aThresholdStr << "',salome.ObjectToID("
+                  << aThresholdID << ")," << aUnary << "," << aBinary << "," << aTolerance
+                  << "," << aTypeOfElem << "," << aPrecision << ")";
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();

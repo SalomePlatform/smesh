@@ -269,18 +269,26 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
     if ( !elem )
       continue;
 
-    // Find sub-meshes to notify about modification
-    SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
-    while ( nodeIt->more() ) {
-      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
-      const SMDS_PositionPtr& aPosition = node->GetPosition();
-      if ( aPosition.get() ) {
-        if ( int aShapeID = aPosition->GetShapeId() ) {
+    // Notify VERTEX sub-meshes about modification
+    if ( isNodes ) {
+      const SMDS_MeshNode* node = cast2Node( elem );
+      if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+        if ( int aShapeID = node->GetPosition()->GetShapeId() )
           if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
             smmap.insert( sm );
-        }
-      }
     }
+    // Find sub-meshes to notify about modification
+//     SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
+//     while ( nodeIt->more() ) {
+//       const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+//       const SMDS_PositionPtr& aPosition = node->GetPosition();
+//       if ( aPosition.get() ) {
+//         if ( int aShapeID = aPosition->GetShapeId() ) {
+//           if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( aShapeID ) )
+//             smmap.insert( sm );
+//         }
+//       }
+//     }
 
     // Do remove
     if ( isNodes )
@@ -296,9 +304,9 @@ bool SMESH_MeshEditor::Remove (const list< int >& theIDs,
       (*smIt)->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
   }
 
-  // Check if the whole mesh becomes empty
-  if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
-    sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+//   // Check if the whole mesh becomes empty
+//   if ( SMESH_subMesh * sm = GetMesh()->GetSubMeshContaining( 1 ) )
+//     sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
 
   return true;
 }
@@ -5729,7 +5737,7 @@ SMESH_MeshEditor::Sew_Error
     {
       nodeGroupsToMerge.push_back( list<const SMDS_MeshNode*>() );
       nodeGroupsToMerge.back().push_back( *nIt[1] ); // to keep
-      nodeGroupsToMerge.back().push_back( *nIt[0] ); // tp remove
+      nodeGroupsToMerge.back().push_back( *nIt[0] ); // to remove
     }
   }
   else {
@@ -7249,7 +7257,9 @@ SMESH_MeshEditor::Sew_Error
    */
 //================================================================================
 
+#ifdef _DEBUG_
 //#define DEBUG_MATCHING_NODES
+#endif
 
 SMESH_MeshEditor::Sew_Error
 SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,

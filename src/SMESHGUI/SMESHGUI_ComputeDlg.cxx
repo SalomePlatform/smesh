@@ -77,6 +77,7 @@
 #include <qtable.h>
 #include <qhbox.h>
 #include <qhgroupbox.h>
+#include <qvgroupbox.h>
 
 #include <vtkProperty.h>
 
@@ -109,6 +110,21 @@ using namespace SMESH;
 
 namespace SMESH {
   
+  //=============================================================================
+  /*!
+   * \brief Allocate some memory at construction and release it at destruction.
+   * Is used to be able to continue working after mesh generation or visualization
+   * break due to lack of memory
+   */
+  //=============================================================================
+
+  struct MemoryReserve
+  {
+    char* myBuf;
+    MemoryReserve(): myBuf( new char[1024*1024*1] ){} // 1M
+    ~MemoryReserve() { delete [] myBuf; }
+  };
+
   // =========================================================================================
   /*!
    * \brief Class showing shapes without publishing
@@ -573,7 +589,7 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
   // faces
   nbTot = mesh->NbFaces(), nbLin = mesh->NbFacesOfOrder(lin);
   myNbFace     ->setText( QString("%1").arg( nbTot ));
-  myNbLinFace  ->setText( QString("%1").arg( nbLin ));
+  myNbLinFace  ->setText( QString("%1").arg( nbLin )); 
   myNbQuadFace ->setText( QString("%1").arg( nbTot - nbLin ));
 
   // volumes
@@ -706,12 +722,22 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   grpLayout->addWidget         ( myPublishBtn, 1, 1 );
   grpLayout->setRowStretch( 2, 1 );
 
+  // Memory Lack Label
+
+  myMemoryLackGroup = new QVGroupBox(tr("ERRORS"), aFrame, "memlackGrBox");
+  QLabel* memLackLabel = new QLabel(tr("MEMORY_LACK"), myMemoryLackGroup);
+  QFont bold = memLackLabel->font(); bold.setBold(true);
+  memLackLabel->setFont( bold );
+  memLackLabel->setMinimumWidth(300);
+
+  // add all widgets to aFrame
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget( aPixGrp );
   aLay->addWidget( nameBox );
   aLay->addWidget( myBriefInfo );
   aLay->addWidget( myFullInfo );
   aLay->addWidget( myErrorGroup );
+  aLay->addWidget( myMemoryLackGroup );
   aLay->setStretchFactor( myErrorGroup, 1 );
 
   return aFrame;
@@ -751,7 +777,7 @@ void SMESHGUI_ComputeOp::startOperation()
 
   // COMPUTE MESH
 
-  bool computeFailed = true;
+  bool computeFailed = true, memoryLack = false;
   int nbNodes = 0, nbEdges = 0, nbFaces = 0, nbVolums = 0;
 
   LightApp_SelectionMgr *Sel = selectionMgr();
@@ -769,9 +795,14 @@ void SMESHGUI_ComputeOp::startOperation()
 
   Handle(SALOME_InteractiveObject) IObject = selected.First();
   aMesh = SMESH::GetMeshByIO(IObject);
-  if (!aMesh->_is_nil()) {
+  if (!aMesh->_is_nil())
+  {
+    MemoryReserve aMemoryReserve;
+    _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
     myMainShape = aMesh->GetShapeToMesh();
-    if ( !myMainShape->_is_nil() ) {
+    if ( !myMainShape->_is_nil() && aMeshSObj )
+    {
+      myDlg->myMeshName->setText( aMeshSObj->GetName() );
       SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
       SMESH::algo_error_array_var errors = gen->GetAlgoState(aMesh,myMainShape);
       if ( errors->length() > 0 ) {
@@ -783,49 +814,62 @@ void SMESHGUI_ComputeOp::startOperation()
       }
       SUIT_OverrideCursor aWaitCursor;
       try {
-        if (gen->Compute(aMesh, myMainShape)) {
+        if (gen->Compute(aMesh, myMainShape))
           computeFailed = false;
-        }
-        else {
-          anErrors = gen->GetComputeErrors( aMesh, myMainShape );
-//           if ( anErrors->length() == 0 ) {
-//             SUIT_MessageBox::warn1(desktop(),
-//                                    tr("SMESH_WRN_WARNING"),
-//                                    tr("SMESH_WRN_COMPUTE_FAILED"),
-//                                    tr("SMESH_BUT_OK"));
-//             onCancel();
-//             return;
-//           }
-        }
       }
       catch(const SALOME::SALOME_Exception & S_ex){
-        SalomeApp_Tools::QtCatchCorbaException(S_ex);
+        memoryLack = true;
+        //SalomeApp_Tools::QtCatchCorbaException(S_ex);
       }
-      if ( _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh)) {
-        myDlg->myMeshName->setText( aMeshSObj->GetName() );
+      try {
+        anErrors = gen->GetComputeErrors( aMesh, myMainShape );
+        //           if ( anErrors->length() == 0 ) {
+        //             SUIT_MessageBox::warn1(desktop(),
+        //                                    tr("SMESH_WRN_WARNING"),
+        //                                    tr("SMESH_WRN_COMPUTE_FAILED"),
+        //                                    tr("SMESH_BUT_OK"));
+        //             onCancel();
+        //             return;
+        //           }
+        // check if there are memory problems
+        for ( int i = 0; i < anErrors->length() && !memoryLack; ++i )
+          memoryLack = ( anErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
+      }
+      catch(const SALOME::SALOME_Exception & S_ex){
+        memoryLack = true;
+      }
+
+      // NPAL16631: if ( !memoryLack )
+      {
         SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
-      }
-      update( UF_ObjBrowser | UF_Model );
+        update( UF_ObjBrowser | UF_Model );
 
-      // SHOW MESH
-
-      if ( getSMESHGUI()->automaticUpdate() ) {
-        SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
-        if (aVTKView) {
-          int anId = study()->id();
-          TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId, IObject->getEntry());
-          if (aVisualObj) {
-            aVisualObj->Update();
-            SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
-            if (!anActor) {
-              anActor = SMESH::CreateActor(studyDS(), IObject->getEntry());
-              if (anActor) {
-                SMESH::DisplayActor(aVTKView, anActor); //apo
-                SMESH::FitAll();
+        // SHOW MESH
+        // NPAL16631: if ( getSMESHGUI()->automaticUpdate() ) {
+        if ( !memoryLack && getSMESHGUI()->automaticUpdate() ) // NPAL16631
+        {
+          try {
+            SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
+            if (aVTKView) {
+              int anId = study()->id();
+              TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId, IObject->getEntry());
+              if (aVisualObj) {
+                aVisualObj->Update();
+                SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
+                if (!anActor) {
+                  anActor = SMESH::CreateActor(studyDS(), IObject->getEntry());
+                  if (anActor) {
+                    SMESH::DisplayActor(aVTKView, anActor); //apo
+                    SMESH::FitAll();
+                  }
+                }
+                SMESH::RepaintCurrentView();
+                Sel->setSelectedObjects( selected );
               }
             }
-            SMESH::RepaintCurrentView();
-            Sel->setSelectedObjects( selected );
+          }
+          catch (...) {
+            memoryLack = true;
           }
         }
       }
@@ -839,18 +883,22 @@ void SMESHGUI_ComputeOp::startOperation()
     onCancel();
     return;
   }
-
   myDlg->setCaption(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+  myDlg->myMemoryLackGroup->hide();
 
   // SHOW ERRORS
 
   bool noError = ( !anErrors.operator->() || anErrors->length() == 0 );
 
-  QTable* tbl = myDlg->myTable;
-
-  if ( noError )
+  if ( memoryLack )
   {
-    //tbl->setNumRows(0);
+    myDlg->myMemoryLackGroup->show();
+    myDlg->myFullInfo->hide();
+    myDlg->myBriefInfo->hide();
+    myDlg->myErrorGroup->hide();
+  }
+  else if ( noError )
+  {
     myDlg->myFullInfo->SetInfoByMesh( aMesh );
     myDlg->myFullInfo->show();
     myDlg->myBriefInfo->hide();
@@ -858,6 +906,7 @@ void SMESHGUI_ComputeOp::startOperation()
   }
   else
   {
+    QTable* tbl = myDlg->myTable;
     myDlg->myBriefInfo->SetInfoByMesh( aMesh );
     myDlg->myBriefInfo->show();
     myDlg->myFullInfo->hide();
@@ -892,7 +941,6 @@ void SMESHGUI_ComputeOp::startOperation()
     tbl->setCurrentCell(0,0);
     currentCellChanged(); // to update buttons
   }
-
   myDlg->show();
 }
 

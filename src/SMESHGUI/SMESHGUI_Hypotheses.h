@@ -47,18 +47,19 @@ class SMESHGUI_EXPORT SMESHGUI_GenericHypothesisCreator : public QObject
   Q_OBJECT
 
 public:
-  SMESHGUI_GenericHypothesisCreator( const QString& );
+  SMESHGUI_GenericHypothesisCreator( const QString& theHypType );
   virtual ~SMESHGUI_GenericHypothesisCreator();
 
-          void create( const bool isAlgo, QWidget* );
-          void edit( SMESH::SMESH_Hypothesis_ptr, QWidget* );
-          void create( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+  void create( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*);
+  void create( bool isAlgo, const QString&, QWidget*);
+  void edit( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget*);
 
   virtual bool checkParams() const = 0;
   virtual void onReject();
 
-  QString                     hypType() const;
-  bool                        isCreation() const;
+  QString hypType() const;
+  QString hypName() const;
+  bool    isCreation() const;
 
 protected:
   typedef struct
@@ -95,10 +96,11 @@ protected slots:
   virtual void onValueChanged();
 
 private:
-          bool editHypothesis( SMESH::SMESH_Hypothesis_ptr, QWidget* );
+  bool editHypothesis( SMESH::SMESH_Hypothesis_ptr, const QString&, QWidget* );
 
 private:
   SMESH::SMESH_Hypothesis_var  myHypo, myInitParamsHypo;
+  QString                      myHypName;
   QString                      myHypType;
   ListOfWidgets                myParamWidgets;
   bool                         myIsCreate;
@@ -113,9 +115,9 @@ public:
   SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator*, QWidget* );
   virtual ~SMESHGUI_HypothesisDlg();
 
-          void setHIcon( const QPixmap& );
-          void setCustomFrame( QFrame* );
-          void setType( const QString& );
+  void setHIcon( const QPixmap& );
+  void setCustomFrame( QFrame* );
+  void setType( const QString& );
 
 protected slots:
   virtual void accept();
@@ -125,7 +127,8 @@ protected slots:
 private:
   SMESHGUI_GenericHypothesisCreator*   myCreator;
   QVBoxLayout*                         myLayout;
-  QLabel                              *myIconLabel, *myTypeLabel;
+  QLabel*                              myIconLabel;
+  QLabel*                              myTypeLabel;
   QString                              myHelpFileName;
 };
 

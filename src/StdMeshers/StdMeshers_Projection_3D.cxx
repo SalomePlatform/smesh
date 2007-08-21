@@ -92,6 +92,7 @@ bool StdMeshers_Projection_3D::CheckHypothesis(SMESH_Mesh&                      
                                                SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // check aShape that must be a 6 faces block
+/*  PAL16229
   if ( TAssocTool::Count( aShape, TopAbs_SHELL, 1 ) != 1 ||
        TAssocTool::Count( aShape, TopAbs_FACE , 1 ) != 6 ||
        TAssocTool::Count( aShape, TopAbs_EDGE , 1 ) != 12 ||
@@ -100,7 +101,7 @@ bool StdMeshers_Projection_3D::CheckHypothesis(SMESH_Mesh&                      
     aStatus = HYP_BAD_GEOMETRY;
     return false;
   }
-
+*/
   list <const SMESHDS_Hypothesis * >::const_iterator itl;
 
   const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
@@ -206,14 +207,24 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     srcShell = TopoDS::Shell( exp.Current() );
   if ( nbShell != 1 )
     return error(COMPERR_BAD_SHAPE,
-                 SMESH_Comment("Shape must have 1 shell but not") << nbShell);
+                 SMESH_Comment("Source shape must have 1 shell but not ") << nbShell);
 
   exp.Init( aShape, TopAbs_SHELL );
   for ( nbShell = 0; exp.More(); exp.Next(), ++nbShell )
     tgtShell = TopoDS::Shell( exp.Current() );
   if ( nbShell != 1 )
     return error(COMPERR_BAD_SHAPE,
-                 SMESH_Comment("Shape must have 1 shell but not") << nbShell);
+                 SMESH_Comment("Target shape must have 1 shell but not ") << nbShell);
+
+  // Check that shapes are blocks
+  if ( TAssocTool::Count( tgtShell, TopAbs_FACE , 1 ) != 6 ||
+       TAssocTool::Count( tgtShell, TopAbs_EDGE , 1 ) != 12 ||
+       TAssocTool::Count( tgtShell, TopAbs_WIRE , 1 ) != 6 )
+    return error(COMPERR_BAD_SHAPE, "Target shape is not a block");
+  if ( TAssocTool::Count( srcShell, TopAbs_FACE , 1 ) != 6 ||
+       TAssocTool::Count( srcShell, TopAbs_EDGE , 1 ) != 12 ||
+       TAssocTool::Count( srcShell, TopAbs_WIRE , 1 ) != 6 )
+    return error(COMPERR_BAD_SHAPE, "Source shape is not a block");
 
   // Assure that mesh on a source shape is computed
 
@@ -251,12 +262,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
     TopExp::Vertices( TopoDS::Edge( exp.Current() ), tgtV000, tgtV100 );
 
     if ( !shape2ShapeMap.IsBound( tgtV000 ) || !shape2ShapeMap.IsBound( tgtV100 ))
-      return error(dfltErr(),"Association of subshapes failed" );
+      return error("Association of subshapes failed" );
     srcV000 = TopoDS::Vertex( shape2ShapeMap( tgtV000 ));
     srcV100 = TopoDS::Vertex( shape2ShapeMap( tgtV100 ));
     if ( !TAssocTool::IsSubShape( srcV000, srcShell ) ||
          !TAssocTool::IsSubShape( srcV100, srcShell ))
-      return error(dfltErr(),"Incorrect association of subshapes" );
+      return error("Incorrect association of subshapes" );
   }
 
   // Load 2 SMESH_Block's with src and tgt shells
@@ -342,12 +353,12 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
         gp_Pnt srcCoord = gpXYZ( srcNode );
         gp_XYZ srcParam;
         if ( !srcBlock.ComputeParameters( srcCoord, srcParam ))
-          return error(dfltErr(),SMESH_Comment("Can't compute normalized parameters ")
+          return error(SMESH_Comment("Can't compute normalized parameters ")
                        << "for source node " << srcNode->GetID());
         // compute coordinates of target node by srcParam
         gp_XYZ tgtXYZ;
         if ( !tgtBlock.ShellPoint( srcParam, tgtXYZ ))
-          return error(dfltErr(),"Can't compute coordinates by normalized parameters");
+          return error("Can't compute coordinates by normalized parameters");
         // add node
         SMDS_MeshNode* newNode = tgtMeshDS->AddNode( tgtXYZ.X(), tgtXYZ.Y(), tgtXYZ.Z() );
         tgtMeshDS->SetNodeInVolume( newNode, helper.GetSubShapeID() );
