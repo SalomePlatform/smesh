@@ -457,7 +457,7 @@ class Mesh_Algorithm:
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
             raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
-        algo = smesh.CreateHypothesis(hypo, so)
+        algo = self.mesh.smeshpyD.CreateHypothesis(hypo, so)
         self.Assign(algo, mesh, geom)
         return self.algo
 
@@ -489,7 +489,7 @@ class Mesh_Algorithm:
             if hypo!=None: CreateNew = 0
             pass
         if CreateNew:
-            hypo = smesh.CreateHypothesis(hyp, so)
+            hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
             key = "%s %s %s" % (self.__class__.__name__, hyp, args)
             Mesh_Algorithm.hypos[key] = hypo
             a = ""
