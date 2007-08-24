@@ -305,7 +305,6 @@ void SMESHGUI_ExtrusionDlg::Init (bool ResetControls)
   myBusy = false;
 
   LineEditElements->clear();
-  myElementsId = "";
   myNbOkElements = 0;
 
   myActor = 0;
@@ -391,13 +390,6 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     return false;
 
   if (myNbOkElements) {
-    QStringList aListElementsId = QStringList::split(" ", myElementsId, false);
-
-    SMESH::long_array_var anElementsId = new SMESH::long_array;
-
-    anElementsId->length(aListElementsId.count());
-    for (int i = 0; i < aListElementsId.count(); i++)
-      anElementsId[i] = aListElementsId[i].toInt();
 
     SMESH::DirStruct aVector;
     aVector.PS.x = SpinBox_Dx->GetValue();
@@ -409,7 +401,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->ExtrusionSweep(anElementsId.inout(), aVector, aNbSteps);
+      aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
@@ -484,26 +476,37 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
     myNbOkElements = 0;
 
   // hilight entered elements/nodes
-  SMDS_Mesh* aMesh = 0;
-  if (myActor)
-    aMesh = myActor->GetObject()->GetMesh();
 
-  if (aMesh) {
+  if (!myIO.IsNull()) {
     QStringList aListId = QStringList::split(" ", theNewText, false);
 
-    if (send == LineEditElements) {
-      const Handle(SALOME_InteractiveObject)& anIO = myActor->getIO();
+    if (send == LineEditElements)
+    {
+      SMDS_Mesh* aMesh = myActor ? myActor->GetObject()->GetMesh() : 0;
+      SMESH::ElementType SMESHType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;
+      SMDSAbs_ElementType SMDSType = GetConstructorId() ? SMDSAbs_Face: SMDSAbs_Edge;
+
+      myElementsId = new SMESH::long_array;
+      myElementsId->length( aListId.count() );
       TColStd_MapOfInteger newIndices;
       for (int i = 0; i < aListId.count(); i++) {
-	const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-	if (e)
-	  newIndices.Add(e->GetID());
-	myNbOkElements++;
+        int id = aListId[ i ].toInt();
+        bool validId = false;
+        if ( id > 0 ) {
+          if ( aMesh ) {
+            const SMDS_MeshElement * e = aMesh->FindElement( id );
+            validId = ( e && e->GetType() == SMDSType );
+          } else {
+            validId = ( myMesh->GetElementType( id, true ) == SMESHType );
+          }
+        }
+        if ( validId && newIndices.Add( id ))
+          myElementsId[ newIndices.Extent()-1 ] = id;
       }
-      mySelector->AddOrRemoveIndex(anIO, newIndices, false);
+      myElementsId->length( myNbOkElements = newIndices.Extent() );
+      mySelector->AddOrRemoveIndex(myIO, newIndices, false);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	aViewWindow->highlight( anIO, true, true );
-      myElementsId = theNewText;
+	aViewWindow->highlight( myIO, true, true );
     }
   }
 
@@ -526,6 +529,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
 
   // clear
   myActor = 0;
+  myIO.Nullify();
   QString aString = "";
 
   // set busy flag
@@ -546,81 +550,53 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
   myMesh = SMESH::GetMeshByIO(IO);
   if (myMesh->_is_nil())
     return;
-
+  myIO = IO;
   myActor = SMESH::FindActorByObject(myMesh);
-  if (!myActor)
-    return;
 
   if (myEditCurrentArgument == LineEditElements) {
     int aNbElements = 0;
-    myElementsId = "";
 
     if (CheckBoxMesh->isChecked()) {
-      int aConstructorId = GetConstructorId();
+      SMESH::ElementType neededType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;
 
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO)->_is_nil()) { //MESH
-        // get IDs from mesh
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
+      SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
 
-        if (aConstructorId == 0) {
-          SMDS_EdgeIteratorPtr anIter = aSMDSMesh->edgesIterator();
+      if (!mesh->_is_nil()) { //MESH
+        // get elements from mesh
+          myElementsId = mesh->GetElementsByType(neededType);
+          aNbElements = myElementsId->length();
+      } else {
+        SMESH::SMESH_subMesh_var aSubMesh =
+          SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
+        
+        if (!aSubMesh->_is_nil()) { //SUBMESH
+          // get IDs from submesh
+          myElementsId = aSubMesh->GetElementsByType(neededType);
+          aNbElements = myElementsId->length();
+        } else {
+          SMESH::SMESH_GroupBase_var aGroup = 
+            SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
 
-          while (anIter->more()) {
-            const SMDS_MeshEdge * edge = anIter->next();
-            if (edge) {
-              myElementsId += QString(" %1").arg(edge->GetID());
-              aNbElements++;
-            }
-          }
-        } else if (aConstructorId == 1) {
-          SMDS_FaceIteratorPtr anIter = aSMDSMesh->facesIterator();
-          while (anIter->more()) {
-            const SMDS_MeshFace * face = anIter->next();
-            if (face) {
-              myElementsId += QString(" %1").arg(face->GetID());
-              aNbElements++;
-            }
+          if (!aGroup->_is_nil() && aGroup->GetType() == neededType) { // GROUP
+            // get IDs from smesh group
+            myElementsId = aGroup->GetListOfID();
+            aNbElements = myElementsId->length();
           }
         }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        if (aConstructorId == 0)
-          anElementsIds = aSubMesh->GetElementsByType(SMESH::EDGE);
-        else if (aConstructorId == 1)
-          anElementsIds = aSubMesh->GetElementsByType(SMESH::FACE);
-
-        for (int i = 0; i < anElementsIds->length(); i++)
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        aNbElements = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        if ((aConstructorId == 0 && aGroup->GetType() != SMESH::EDGE) ||
-            (aConstructorId == 1 && aGroup->GetType()!= SMESH::FACE))
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++)
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        aNbElements = anElementsIds->length();
       }
     } else {
-      aNbElements = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
-      myElementsId = aString;
+      // get indices of selcted elements
+      TColStd_IndexedMapOfInteger aMapIndex;
+      mySelector->GetIndex(IO,aMapIndex);
+      aNbElements = aMapIndex.Extent();
+
+      myElementsId = new SMESH::long_array;
+      myElementsId->length( aNbElements );
+      aString = "";
+      for ( int i = 0; i < aNbElements; ++i )
+        aString += QString(" %1").arg( myElementsId[ i ] = aMapIndex( i+1 ) );
     }
 
     if (aNbElements < 1)
