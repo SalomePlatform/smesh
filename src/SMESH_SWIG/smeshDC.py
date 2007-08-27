@@ -411,13 +411,16 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
 class Mesh_Algorithm:
     #  @class Mesh_Algorithm
     #  @brief Class Mesh_Algorithm
-    def __init__(self,smesh):
-        self.smesh=smesh
-        self.mesh = 0
-        self.geom = 0
-        self.subm = 0
-        self.algo = 0
-        hypos = {}
+
+    hypos = {}
+
+    #def __init__(self,smesh):
+    #    self.smesh=smesh
+    def __init__(self):
+        self.mesh = None
+        self.geom = None
+        self.subm = None
+        self.algo = None
 
     def FindHypothesis(self,hypname, args):
         key = "%s %s %s" % (self.__class__.__name__, hypname, args)
@@ -457,7 +460,7 @@ class Mesh_Algorithm:
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
             raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
-        algo = self.mesh.smeshpyD.CreateHypothesis(hypo, so)
+        algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
         self.Assign(algo, mesh, geom)
         return self.algo
 
@@ -521,6 +524,8 @@ class Mesh_Segment(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Segment.algo:
             Mesh_Segment.algo = self.Create(mesh, geom, "Regular_1D")
         else:
@@ -694,6 +699,8 @@ class Mesh_Triangle(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if algoType == MEFISTO:
             if not Mesh_Triangle.algoMEF:
                 Mesh_Triangle.algoMEF = self.Create(mesh, geom, "MEFISTO_2D")
@@ -854,6 +861,8 @@ class Mesh_Quadrangle(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Quadrangle.algo:
             Mesh_Quadrangle.algo = self.Create(mesh, geom, "Quadrangle_2D")
         else:
@@ -884,6 +893,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if algoType == NETGEN:
             if not Mesh_Tetrahedron.algoNET:
                 Mesh_Tetrahedron.algoNET = self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
@@ -988,6 +999,8 @@ class Mesh_Hexahedron(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Hexahedron.algo:
             Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
         else:
@@ -1013,6 +1026,8 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if noNETGENPlugin:
             print "Warning: NETGENPlugin module has not been imported."
             
@@ -1055,6 +1070,8 @@ class Mesh_Projection1D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Projection1D.algo:
             Mesh_Projection1D.algo = self.Create(mesh, geom, "Projection_1D")
         else:
@@ -1093,6 +1110,8 @@ class Mesh_Projection2D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Projection2D.algo:
             Mesh_Projection2D.algo = self.Create(mesh, geom, "Projection_2D")
         else:
@@ -1137,6 +1156,8 @@ class Mesh_Projection3D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Projection3D.algo:
             Mesh_Projection3D.algo = self.Create(mesh, geom, "Projection_3D")
         else:
@@ -1183,6 +1204,8 @@ class Mesh_Prism3D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_Prism3D.algo:
             Mesh_Prism3D.algo = self.Create(mesh, geom, "Prism_3D")
         else:
@@ -1201,6 +1224,8 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+
         if not Mesh_RadialPrism3D.algo:
             Mesh_RadialPrism3D.algo = self.Create(mesh, geom, "RadialPrism_3D")
         else:
