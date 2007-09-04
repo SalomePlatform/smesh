@@ -923,7 +923,16 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     // check that there are nodes on edges
     SMESHDS_SubMesh * eSM1 = meshDS1->MeshElements( e1 );
     SMESHDS_SubMesh * eSM2 = meshDS2->MeshElements( e2 );
-    if ( eSM1 && eSM2 && eSM1->NbNodes() > 0 && eSM2->NbNodes() > 0 )
+    bool nodesOnEdges = ( eSM1 && eSM2 && eSM1->NbNodes() && eSM2->NbNodes() );
+    // check that the nodes on edges belong to faces
+    bool nodesOfFaces = false;
+    if ( nodesOnEdges ) {
+      const SMDS_MeshNode* n1 = eSM1->GetNodes()->next();
+      const SMDS_MeshNode* n2 = eSM2->GetNodes()->next();
+      nodesOfFaces = ( n1->GetInverseElementIterator(SMDSAbs_Face)->more() &&
+                       n2->GetInverseElementIterator(SMDSAbs_Face)->more() );
+    }
+    if ( nodesOfFaces )
     {
       if ( BRep_Tool::IsClosed( e2, face2 )) {
         seam1 = e1; seam2 = e2;
@@ -1003,7 +1012,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     }
     else
     {
-      // there is only seam edge in a face, i.e. it is a sphere.
+      // the only suitable edge is seam, i.e. it is a sphere.
       // FindMatchingNodes() will not know which way to go from any edge.
       // So we ignore all faces having nodes on edges or vertices except
       // one of faces sharing current start nodes
@@ -1077,7 +1086,10 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
                                                  node1To2Map);
   if ( res != SMESH_MeshEditor::SEW_OK )
     RETURN_BAD_RESULT("FindMatchingNodes() result " << res );
-
+  if ( node1To2Map.size() < SM1->NbNodes() )
+    RETURN_BAD_RESULT("FindMatchingNodes() failed starting from nodes ("
+                      << vNode1->GetID() << " - " << eNode1[0]->GetID() << ") ("
+                      << vNode2->GetID() << " - " << eNode2[0]->GetID() << ")");
 
   // On a sphere, add matching nodes on the edge
 
