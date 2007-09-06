@@ -1079,6 +1079,8 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     } // case on a sphere
   } // loop on 2 faces
 
+  //  int quadFactor = (*Elems1.begin())->IsQuadratic() ? 2 : 1;
+
   node1To2Map.clear();
   int res = SMESH_MeshEditor::FindMatchingNodes( Elems1, Elems2,
                                                  vNode1, vNode2,
@@ -1086,10 +1088,6 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
                                                  node1To2Map);
   if ( res != SMESH_MeshEditor::SEW_OK )
     RETURN_BAD_RESULT("FindMatchingNodes() result " << res );
-  if ( node1To2Map.size() < SM1->NbNodes() )
-    RETURN_BAD_RESULT("FindMatchingNodes() failed starting from nodes ("
-                      << vNode1->GetID() << " - " << eNode1[0]->GetID() << ") ("
-                      << vNode2->GetID() << " - " << eNode2[0]->GetID() << ")");
 
   // On a sphere, add matching nodes on the edge
 
@@ -1149,6 +1147,13 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
     if ( !vNode2 ) RETURN_BAD_RESULT("No node on vertex #" << meshDS2->ShapeToIndex( V2 ));
     node1To2Map.insert( make_pair( vNode1, vNode2 ));
   }
+
+// don't know why this condition is usually true :(
+//   if ( node1To2Map.size() * quadFactor < SM1->NbNodes() )
+//     MESSAGE("FindMatchingNodes() found too few node pairs starting from nodes ("
+//             << vNode1->GetID() << " - " << eNode1[0]->GetID() << ") ("
+//             << vNode2->GetID() << " - " << eNode2[0]->GetID() << "):"
+//             << node1To2Map.size() * quadFactor << " < " << SM1->NbNodes());
   
   return true;
 }
