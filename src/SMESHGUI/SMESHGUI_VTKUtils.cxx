@@ -374,7 +374,7 @@ namespace SMESH {
 	    _PTR(Study) aDocument = aStudy->studyDS();
 	    if((anActor = CreateActor(aDocument,theEntry,true))) {
 	      DisplayActor(theWnd,anActor);
-	      FitAll();
+	      // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
 	    }
 	    break;
 	  }
