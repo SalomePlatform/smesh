@@ -35,6 +35,7 @@
 #include "SMESHGUI_HypothesesUtils.h"
 
 #include "SMDS_SetIterator.hxx"
+#include <SMDS_Mesh.hxx>
 
 #include "GEOMBase.h"
 #include "GEOM_Actor.h"
@@ -66,6 +67,8 @@
 #include <Bnd_Box.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
+
+#include <Standard_ErrorHandler.hxx>
 
 // QT Includes
 #include <qframe.h>
@@ -814,6 +817,9 @@ void SMESHGUI_ComputeOp::startOperation()
       }
       SUIT_OverrideCursor aWaitCursor;
       try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+          OCC_CATCH_SIGNALS;
+#endif
         if (gen->Compute(aMesh, myMainShape))
           computeFailed = false;
       }
@@ -822,6 +828,9 @@ void SMESHGUI_ComputeOp::startOperation()
         //SalomeApp_Tools::QtCatchCorbaException(S_ex);
       }
       try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+          OCC_CATCH_SIGNALS;
+#endif
         anErrors = gen->GetComputeErrors( aMesh, myMainShape );
         //           if ( anErrors->length() == 0 ) {
         //             SUIT_MessageBox::warn1(desktop(),
@@ -843,33 +852,28 @@ void SMESHGUI_ComputeOp::startOperation()
       {
         SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
         update( UF_ObjBrowser | UF_Model );
+        Sel->setSelectedObjects( selected );
 
         // SHOW MESH
-        // NPAL16631: if ( getSMESHGUI()->automaticUpdate() ) {
-        if ( !memoryLack && getSMESHGUI()->automaticUpdate() ) // NPAL16631
+        // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
+        if ( !memoryLack && getSMESHGUI()->automaticUpdate() )
         {
           try {
-            SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(getSMESHGUI(), true);
-            if (aVTKView) {
-              int anId = study()->id();
-              TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId, IObject->getEntry());
-              if (aVisualObj) {
-                aVisualObj->Update();
-                SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
-                if (!anActor) {
-                  anActor = SMESH::CreateActor(studyDS(), IObject->getEntry());
-                  if (anActor) {
-                    SMESH::DisplayActor(aVTKView, anActor); //apo
-                    SMESH::FitAll();
-                  }
-                }
-                SMESH::RepaintCurrentView();
-                Sel->setSelectedObjects( selected );
-              }
-            }
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+          OCC_CATCH_SIGNALS;
+#endif
+            SMESH::UpdateView(eDisplay, IObject->getEntry());
           }
           catch (...) {
-            memoryLack = true;
+#ifdef _DEBUG_
+            cout << "Exception thrown during mesh visualization" << endl;
+#endif
+            if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
+              SMESH::OnVisuException();
+            }
+            else {
+              memoryLack = true;
+            }
           }
         }
       }
@@ -899,6 +903,7 @@ void SMESHGUI_ComputeOp::startOperation()
   }
   else if ( noError )
   {
+    SUIT_OverrideCursor aWaitCursor;
     myDlg->myFullInfo->SetInfoByMesh( aMesh );
     myDlg->myFullInfo->show();
     myDlg->myBriefInfo->hide();

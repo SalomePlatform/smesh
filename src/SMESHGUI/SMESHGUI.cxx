@@ -1290,22 +1290,27 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       extractContainers( sel_objects, to_process );
 
-      if (vtkwnd) {
-	SALOME_ListIteratorOfListIO It( to_process );
-	for (; It.More(); It.Next()) {
-	  Handle(SALOME_InteractiveObject) IOS = It.Value();
-	  if (IOS->hasEntry()) {
-            SMESH::UpdateView(anAction, IOS->getEntry());
-            if (anAction == SMESH::eDisplayOnly)
-              anAction = SMESH::eDisplay;
-	  }
-	}
-      }
+      try {
+        if (vtkwnd) {
+          SALOME_ListIteratorOfListIO It( to_process );
+          for (; It.More(); It.Next()) {
+            Handle(SALOME_InteractiveObject) IOS = It.Value();
+            if (IOS->hasEntry()) {
+              SMESH::UpdateView(anAction, IOS->getEntry());
+              if (anAction == SMESH::eDisplayOnly)
+                anAction = SMESH::eDisplay;
+            }
+          }
+        }
 
-      // PAL13338 + PAL15161 -->
-      if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy) /*&& !automaticUpdate()*/ )
-	SMESH::UpdateView();
-      // PAL13338 + PAL15161 <--
+        // PAL13338 + PAL15161 -->
+        if ( ( theCommandID==301 || theCommandID==302 ) && !checkLock(aStudy))
+          SMESH::UpdateView();
+        // PAL13338 + PAL15161 <--
+      }
+      catch (...) { // PAL16774 (Crash after display of many groups)
+        SMESH::OnVisuException();
+      }
 
       if (anAction == SMESH::eErase) {
 	SALOME_ListIO l1;
@@ -1364,82 +1369,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (checkLock(aStudy)) break;
 
       startOperation( 701 );
-//       LightApp_SelectionMgr *Sel = selectionMgr();
-//       SALOME_ListIO selected; Sel->selectedObjects( selected );
-
-//       int nbSel = selected.Extent();
-//       if (nbSel != 1) {
-//         SUIT_MessageBox::warn1(desktop(),
-//                                tr("SMESH_WRN_WARNING"),
-//                                tr("SMESH_WRN_NO_AVAILABLE_DATA"),
-//                                tr("SMESH_BUT_OK"));
-//         break;
-//       }
-
-//       SMESH::SMESH_Mesh_var aMesh;
-//       SMESH::SMESH_subMesh_var aSubMesh;
-//       Handle(SALOME_InteractiveObject) IObject = selected.First();
-//       if (IObject->hasEntry()) {
-//         _PTR(SObject) aMeshSObj = aStudy->FindObjectID(IObject->getEntry());
-//         GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh( aMeshSObj );
-//         if ( aShapeObject->_is_nil() ) {
-//           // imported mesh
-//           break;
-//         }
-//         if ( aMeshSObj ) {
-//           aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(aMeshSObj);
-//           aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(aMeshSObj);
-//           if ( !aSubMesh->_is_nil() )
-//             aMesh = aSubMesh->GetFather();
-
-//           if (!aMesh->_is_nil()) {
-//             SMESH::algo_error_array_var errors = GetSMESHGen()->GetAlgoState(aMesh,aShapeObject);
-//             if ( errors->length() > 0 ) {
-//               SUIT_MessageBox::warn1(desktop(),
-//                                      tr("SMESH_WRN_WARNING"),
-//                                      SMESH::GetMessageOnAlgoStateErrors( errors.in() ),
-//                                      tr("SMESH_BUT_OK"));
-//               break;
-//             }
-
-//             try {
-//               if (GetSMESHGen()->Compute(aMesh, aShapeObject))
-//                 SMESH::ModifiedMesh(aMeshSObj, true);
-//               else
-//                 SUIT_MessageBox::warn1(desktop(),
-//                                        tr("SMESH_WRN_WARNING"),
-//                                        tr("SMESH_WRN_COMPUTE_FAILED"),
-//                                        tr("SMESH_BUT_OK"));
-//             }
-//             catch(const SALOME::SALOME_Exception & S_ex){
-//               SalomeApp_Tools::QtCatchCorbaException(S_ex);
-//             }
-
-//             updateObjBrowser();
-
-//             if (automaticUpdate()) {
-//               SVTK_ViewWindow* aVTKView = SMESH::GetViewWindow(this, /*create*/true);
-//               if (aVTKView) {
-//                 CORBA::Long anId = aStudy->StudyId();
-//                 TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId, IObject->getEntry());
-//                 if (aVisualObj) {
-//                   aVisualObj->Update();
-//                   SMESH_Actor* anActor = SMESH::FindActorByEntry(IObject->getEntry());
-//                   if (!anActor) {
-//                     anActor = SMESH::CreateActor(aStudy, IObject->getEntry());
-//                     if (anActor) {
-//                       SMESH::DisplayActor(aVTKView, anActor); //apo
-//                       SMESH::FitAll();
-//                     }
-//                   }
-//                   SMESH::RepaintCurrentView();
-//                   Sel->setSelectedObjects( selected );
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
     }
     break;
 

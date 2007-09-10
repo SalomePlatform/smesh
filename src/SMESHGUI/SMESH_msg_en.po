@@ -1386,6 +1386,13 @@ msgstr "Select an object"
 msgid "SMESH_AUTO_GROUPS"
 msgstr "Automatically create groups"
 
+msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
+msgstr "It seems that there is not enouth memory to show the mesh.\n"
+       "Do you wish to continue visualization?"
+
+msgid "SMESH_VISU_PROBLEM"
+msgstr "Mesh visualization failed, probably due to lack of memory"
+
 #----------------------------------------------------
 
 msgid "SMESHGUI_FilterLibraryDlg::ADD_TO_TLT"

@@ -61,6 +61,7 @@ namespace SMESH {
 
   TVisualObjPtr GetVisualObj(int theStudyId,
 			     const char* theEntry);
+  void OnVisuException(); // PAL16631
 
   //----------------------------------------------------------------------------
   SVTK_ViewWindow* GetViewWindow(const SalomeApp_Module* theModule = NULL,
