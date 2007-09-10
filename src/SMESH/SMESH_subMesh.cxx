@@ -1335,7 +1335,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
-          printf("std::bad_alloc\n");
+          printf("std::bad_alloc thrown inside algo->Compute()\n");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1344,7 +1344,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           throw exc;
         }
         catch ( Standard_OutOfMemory& exc ) {
-          printf("Standard_OutOfMemory\n");
+          printf("Standard_OutOfMemory thrown inside algo->Compute()\n");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
