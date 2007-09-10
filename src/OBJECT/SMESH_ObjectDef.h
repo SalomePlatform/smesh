@@ -61,7 +61,7 @@ public:
                             SMESH_VisualObjDef();
   virtual                   ~SMESH_VisualObjDef();
   
-  virtual void              Update( int theIsClear = true ) = 0;
+  virtual bool              Update( int theIsClear = true ) = 0;
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int               GetElemDimension( const int theObjId ) = 0;
 
@@ -112,7 +112,7 @@ public:
                             SMESH_MeshObj( SMESH::SMESH_Mesh_ptr );
   virtual                   ~SMESH_MeshObj();
   
-  virtual void              Update( int theIsClear = true );
+  virtual bool              Update( int theIsClear = true );
   
   virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
@@ -142,7 +142,7 @@ public:
                             SMESH_SubMeshObj(SMESH_MeshObj* theMeshObj);
   virtual                   ~SMESH_SubMeshObj();
 
-  virtual void              Update( int theIsClear = true );
+  virtual bool              Update( int theIsClear = true );
   
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   virtual int               GetElemDimension( const int theObjId );
