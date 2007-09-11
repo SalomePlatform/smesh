@@ -1335,7 +1335,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
-          printf("std::bad_alloc\n");
+          printf("std::bad_alloc thrown inside algo->Compute()\n");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1344,7 +1344,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           throw exc;
         }
         catch ( Standard_OutOfMemory& exc ) {
-          printf("Standard_OutOfMemory\n");
+          printf("Standard_OutOfMemory thrown inside algo->Compute()\n");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1393,7 +1393,6 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         if (ret)
         {
           _computeError.reset();
-          //UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
         }
         UpdateDependantsState( SUBMESH_COMPUTED ); // send event SUBMESH_COMPUTED
       }
@@ -1609,15 +1608,6 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
 #endif
       _computeState = FAILED_TO_COMPUTE;
       noErrors = false;
-    }
-  }
-  if ( !theAlgo->OnlyUnaryInput() && !theShape.IsNull() &&
-       theShape.ShapeType() == TopAbs_COMPOUND )
-  {
-    for (TopoDS_Iterator subIt( theShape ); subIt.More(); subIt.Next()) {
-      SMESH_subMesh* sm = _father->GetSubMesh( subIt.Value() );
-      if ( sm != this && !sm->CheckComputeError( theAlgo ))
-        noErrors = false;
     }
   }
   return noErrors;
