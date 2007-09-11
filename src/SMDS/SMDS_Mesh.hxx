@@ -484,10 +484,10 @@ public:
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low
-    * \param doNotRaise - if true, suppres exception, just return bool
-    * \retval bool - true if there is enough memory
+    * \param doNotRaise - if true, suppres exception, just return free memory size
+    * \retval int - amount of available memory in MB or negative number in failure case
    */
-  static bool CheckMemory(const bool doNotRaise=false) throw (std::bad_alloc);
+  static int CheckMemory(const bool doNotRaise=false) throw (std::bad_alloc);
 
   int MaxNodeID() const;
   int MinNodeID() const;

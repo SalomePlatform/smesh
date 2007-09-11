@@ -46,27 +46,34 @@ using namespace std;
 //================================================================================
 /*!
  * \brief Raise an exception if free memory (ram+swap) too low
- * \param doNotRaise - if true, suppres exception, just return bool
- * \retval bool - true if there is enough memory
+ * \param doNotRaise - if true, suppres exception, just return free memory size
+ * \retval int - amount of available memory in MB or negative number in failure case
  */
 //================================================================================
 
-bool SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
+int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
 {
 #ifndef WIN32
   struct sysinfo si;
   int err = sysinfo( &si );
   if ( err )
-    return true;
-  
-  int freeMbyte = ( si.freeram + si.freeswap ) * si.mem_unit / 1024 / 1024;
-  if ( freeMbyte > 4 )
-    return true;
+    return -1;
+
+  const unsigned long Mbyte = 1024 * 1024;
+  // compute separately to avoid overflow
+  int freeMb =
+    ( si.freeram  * si.mem_unit ) / Mbyte +
+    ( si.freeswap * si.mem_unit ) / Mbyte;
+
+  if ( freeMb > 4 )
+    return freeMb;
+
   if ( doNotRaise )
-    return false;
+    return 0;
+  cout<<"SMDS_Mesh::CheckMemory() throws std::bad_alloc() as freeMb="<<freeMb<<endl;
   throw std::bad_alloc();
 #else
-  return true;
+  return -1;
 #endif
 }
 
