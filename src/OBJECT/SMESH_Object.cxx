@@ -199,8 +199,10 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
 //=================================================================================
 void SMESH_VisualObjDef::buildPrs()
 {
-  try
-  {
+  // PAL16631(crash after a mesh computation that failed because of lack of memory):
+  // Catch exceptions upper by stack
+//   try 
+//   {
     mySMDS2VTKNodes.clear();
     myVTK2SMDSNodes.clear();
     mySMDS2VTKElems.clear();
@@ -210,15 +212,15 @@ void SMESH_VisualObjDef::buildPrs()
       buildNodePrs();
     else
       buildElemPrs();
-  }
-  catch( const std::exception& exc )
-  {
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
-  }
-  catch(...)
-  {
-    INFOS("Unknown exception was cought !!!");
-  }
+//   }
+//   catch( const std::exception& exc )
+//   {
+//     INFOS("Follow exception was cought:\n\t"<<exc.what());
+//   }
+//   catch(...)
+//   {
+//     INFOS("Unknown exception was cought !!!");
+//   }
   
   if( MYDEBUG ) MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
   if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"/tmp/buildPrs" );
@@ -516,11 +518,14 @@ SMESH_MeshObj::~SMESH_MeshObj()
 // function : Update
 // purpose  : Update mesh and fill grid with new values if necessary 
 //=================================================================================
-void SMESH_MeshObj::Update( int theIsClear )
+bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-  if ( myClient.Update(theIsClear) )
+  if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
     buildPrs();  // Fill unstructured grid
+    return true;
+  }
+  return false;
 }
 
 //=================================================================================
@@ -675,10 +680,11 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 // function : Update
 // purpose  : Update mesh object and fill grid with new values 
 //=================================================================================
-void SMESH_SubMeshObj::Update( int theIsClear )
+bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-  myMeshObj->Update( theIsClear );
+  bool changed = myMeshObj->Update( theIsClear );
   buildPrs();
+  return changed;
 }
 
 
