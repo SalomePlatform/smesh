@@ -121,7 +121,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
   // Add to pop-up hypotheses of "Regular_1D" algo
   myHypTypePopup->clear();
   HypothesisData* algoData = SMESH::GetHypothesisData( "Regular_1D" );
-  myHypTypes = SMESH::GetAvailableHypotheses( false, 0 );
+  myHypTypes = SMESH::GetAvailableHypotheses( false, 1 );
   QStringList::const_iterator anIter = myHypTypes.begin();
   for ( ; anIter != myHypTypes.end(); ++anIter )
   {
