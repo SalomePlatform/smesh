@@ -262,6 +262,9 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
 	if(!aMeshDimension)
 	  aMeshDimension = 3;
+        // PAL16857(SMESH not conform to the MED convention):
+        if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
+          aMeshDimension = 3;
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
