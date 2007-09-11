@@ -51,8 +51,8 @@ msgstr ""
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2002-05-28 10:57:43 AM CEST\n"
-"PO-Revision-Date: 2005-06-07 10:51+0400\n"
+"POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
+"PO-Revision-Date: 2004-10-20 17:25+0400\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -1385,6 +1385,13 @@ msgstr "Select an object"
 
 msgid "SMESH_AUTO_GROUPS"
 msgstr "Automatically create groups"
+
+msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
+msgstr "It seems that there is not enouth memory to show the mesh.\n"
+       "Do you wish to continue visualization?"
+
+msgid "SMESH_VISU_PROBLEM"
+msgstr "Mesh visualization failed, probably due to lack of memory"
 
 #----------------------------------------------------
 

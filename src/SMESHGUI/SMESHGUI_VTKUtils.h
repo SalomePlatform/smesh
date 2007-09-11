@@ -64,6 +64,8 @@ namespace SMESH {
 SMESHGUI_EXPORT
   TVisualObjPtr GetVisualObj(int theStudyId, 
 			     const char* theEntry);
+SMESHGUI_EXPORT
+  void OnVisuException(); // PAL16631
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT
