@@ -3077,6 +3077,7 @@ void SMESHGUI::createPreferences()
 
   addPreference( tr( "PREF_NODES" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_node" );
   addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_element" );
+  addPreference( tr( "PREF_OBJECTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_object" );
 
   int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
@@ -3167,7 +3168,8 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
     if( name=="selection_object_color" || name=="selection_element_color" ||
         name=="selection_width" || name=="highlight_color" || name=="highlight_width" ||
-        name=="selection_precision_node" || name=="selection_precision_element" )
+        name=="selection_precision_node" || name=="selection_precision_element" ||
+	name=="selection_precision_object")
       SMESH::UpdateSelectionProp( this );
     else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
       sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
