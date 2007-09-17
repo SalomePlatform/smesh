@@ -652,7 +652,8 @@ namespace SMESH {
         PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
 
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
-           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 );
+           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
+	   SP3 = mgr->doubleValue( "SMESH", "selection_precision_object", 0.025 );
 
     for ( int i=0, n=views.count(); i<n; i++ ){
       // update VTK viewer properties
@@ -663,7 +664,7 @@ namespace SMESH {
 				   aSelColor.blue()/255.,
 				   SW );
 	// tolerances
-	aVtkView->SetSelectionTolerance(SP1, SP2);
+	aVtkView->SetSelectionTolerance(SP1, SP2, SP3);
 
 	// pre-selection
 	aVtkView->SetPreselectionProp(aPreColor.red()/255.,

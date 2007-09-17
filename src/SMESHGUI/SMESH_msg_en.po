@@ -3232,6 +3232,9 @@ msgstr "Nodes"
 msgid "SMESHGUI::PREF_ELEMENTS"
 msgstr "Elements"
 
+msgid "SMESHGUI::PREF_OBJECTS"
+msgstr "Objects"
+
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
 
