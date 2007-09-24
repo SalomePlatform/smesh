@@ -104,3 +104,11 @@ libSMDS_la_CPPFLAGS = \
 libSMDS_la_LDFLAGS  = \
 	$(KERNEL_LDFLAGS) -lSALOMELocalTrace \
 	$(CAS_KERNEL)
+
+# Executables targets
+bin_PROGRAMS = SMDS_MemoryLimit
+dist_SMDS_MemoryLimit_SOURCES = \
+	SMDS_MemoryLimit.cxx
+
+SMDS_MemoryLimit_LDADD = \
+	$(KERNEL_LDFLAGS) -lSALOMELocalTrace
