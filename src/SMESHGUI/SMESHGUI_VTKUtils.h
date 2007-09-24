@@ -120,7 +120,7 @@ SMESHGUI_EXPORT
   void UpdateView();
 
 SMESHGUI_EXPORT
-  void Update(const Handle(SALOME_InteractiveObject)& theIO,
+  bool Update(const Handle(SALOME_InteractiveObject)& theIO,
 	      bool theDisplay);
 
 

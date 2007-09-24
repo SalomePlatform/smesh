@@ -247,18 +247,31 @@ namespace SMESH {
     }
 
     if ( objModified ) {
-      // PAL16631. Mesurements showed that to show aVisualObj in shading mode,
+      // PAL16631. Mesurements showed that to show aVisualObj in SHADING(default) mode,
       // ~10 times more memory is used than it occupies.
       // Warn the user if there is less free memory than 30 sizes of a grid
+      // TODO: estimate memory usage in other modes and take current mode into account
       int freeMB = SMDS_Mesh::CheckMemory(true);
       int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
       if ( freeMB > 0 && usedMB * 30 > freeMB ) {
-        int continu = SUIT_MessageBox::warn2
-          (SMESHGUI::desktop(),
-           QObject::tr("SMESH_WRN_WARNING"),
-           QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-           QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
-           1, 0, 1);
+#ifdef _DEBUG_
+        cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
+             << ", usedMB=" << usedMB<< endl;
+#endif
+        int continu = 0;
+        if ( usedMB * 10 > freeMB )
+          // even dont try to show
+          SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                                  QObject::tr("SMESH_NO_MESH_VISUALIZATION"),
+                                  QObject::tr("SMESH_BUT_OK"));
+        else
+          // there is a chance to succeed
+          continu = SUIT_MessageBox::warn2
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+             1, 0, 1);
         if ( !continu ) {
           // remove the corresponding actors from all views
           RemoveVisualObjectWithActors( theEntry );
@@ -350,10 +363,10 @@ namespace SMESH {
         wnd->Repaint(false);
       }
       catch (...) {
-        OnVisuException();
 #ifdef _DEBUG_
         cout << "Exception in SMESHGUI_VTKUtils::RepaintCurrentView()" << endl;
 #endif
+        OnVisuException();
       }
     }
   }
@@ -368,10 +381,10 @@ namespace SMESH {
       theWindow->Repaint();
     }
     catch (...) {
-      OnVisuException();
 #ifdef _DEBUG_
         cout << "Exception in SMESHGUI_VTKUtils::RepaintViewWindow(SVTK_ViewWindow)" << endl;
 #endif
+      OnVisuException();
     }
   }
 
@@ -385,10 +398,10 @@ namespace SMESH {
       theWindow->Repaint();
     }
     catch (...) {
-      OnVisuException();
 #ifdef _DEBUG_
         cout << "Exception in SMESHGUI_VTKUtils::RenderViewWindow(SVTK_ViewWindow)" << endl;
 #endif
+      OnVisuException();
     }
   }
 
@@ -402,10 +415,10 @@ namespace SMESH {
         wnd->Repaint();
       }
       catch (...) {
-        OnVisuException();
 #ifdef _DEBUG_
         cout << "Exception in SMESHGUI_VTKUtils::FitAll()" << endl;
 #endif
+        OnVisuException();
       }
     }
   }
@@ -487,10 +500,10 @@ namespace SMESH {
         vtkWnd->Repaint();
       }
       catch (...) {
-        OnVisuException();
 #ifdef _DEBUG_
         cout << "Exception in SMESHGUI_VTKUtils::DisplayActor()" << endl;
 #endif
+        OnVisuException();
       }
     }
   }
@@ -588,14 +601,16 @@ namespace SMESH {
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
 	    if(anActor->hasIO())
-	      Update(anActor->getIO(),anActor->GetVisibility());
+	      if (!Update(anActor->getIO(),anActor->GetVisibility()))
+                break; // avoid multiple warinings if visu failed
 	  }
 	}
       }else{
 	SALOME_ListIteratorOfListIO anIter( selected );
 	for(; anIter.More(); anIter.Next()){
 	  Handle(SALOME_InteractiveObject) anIO = anIter.Value();
-	  Update(anIO,true);
+	  if ( !Update(anIO,true) )
+            break; // avoid multiple warinings if visu failed
 	}
       }
       RepaintCurrentView();
@@ -603,17 +618,17 @@ namespace SMESH {
   }
 
 
-  void Update(const Handle(SALOME_InteractiveObject)& theIO,
+  bool Update(const Handle(SALOME_InteractiveObject)& theIO,
 	      bool theDisplay)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
-      // if( aVisualObj )
-      //    aVisualObj->Update(); -> PAL16631, already done in GetVisualObj()
       if ( theDisplay )
         UpdateView(SMESH::eDisplay,theIO->getEntry());
+      return true;
     }
+    return false;
   }
 
 
