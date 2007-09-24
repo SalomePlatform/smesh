@@ -43,6 +43,7 @@ using namespace std;
 #include <sys/sysinfo.h>
 #endif
 
+
 //================================================================================
 /*!
  * \brief Raise an exception if free memory (ram+swap) too low
@@ -59,18 +60,35 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
   if ( err )
     return -1;
 
+  static int limit = -1;
+  if ( limit < 0 ) {
+    int status = system("SMDS_MemoryLimit"); // it returns lower limit of free RAM
+    if (status >= 0 ) {
+      limit = WEXITSTATUS(status);
+    }
+    if ( limit < 20 )
+      limit = 20;
+    else
+      limit = int( limit * 1.5 );
+#ifdef _DEBUG_
+    cout << "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" << endl;
+#endif
+  }
+
   const unsigned long Mbyte = 1024 * 1024;
   // compute separately to avoid overflow
   int freeMb =
     ( si.freeram  * si.mem_unit ) / Mbyte +
     ( si.freeswap * si.mem_unit ) / Mbyte;
 
-  if ( freeMb > 4 )
-    return freeMb;
+  if ( freeMb > limit )
+    return freeMb - limit;
 
   if ( doNotRaise )
     return 0;
-  cout<<"SMDS_Mesh::CheckMemory() throws std::bad_alloc() as freeMb="<<freeMb<<endl;
+#ifdef _DEBUG_
+  cout<<"SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" << endl;
+#endif
   throw std::bad_alloc();
 #else
   return -1;
