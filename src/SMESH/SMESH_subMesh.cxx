@@ -1315,8 +1315,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
 #endif
-          MemoryReserve aMemoryReserve;
           algo->InitComputeError();
+          MemoryReserve aMemoryReserve;
+          SMDS_Mesh::CheckMemory();
           if ( !_father->HasShapeToMesh() ) // no shape
           {
             SMESH_MesherHelper helper( *_father );
