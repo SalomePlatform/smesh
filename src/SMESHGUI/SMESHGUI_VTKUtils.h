@@ -101,7 +101,7 @@ namespace SMESH {
 
   void UpdateView();
 
-  void Update(const Handle(SALOME_InteractiveObject)& theIO,
+  bool Update(const Handle(SALOME_InteractiveObject)& theIO,
 	      bool theDisplay);
 
 
