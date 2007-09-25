@@ -1561,7 +1561,7 @@ CORBA::Long SMESH_Mesh_i::NbEdgesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbEdges( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbEdges( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
@@ -1597,21 +1597,21 @@ CORBA::Long SMESH_Mesh_i::NbFacesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbFaces( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbFaces( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbTrianglesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbTriangles( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbTriangles( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbQuadranglesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbQuadrangles( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbQuadrangles( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
@@ -1659,35 +1659,35 @@ CORBA::Long SMESH_Mesh_i::NbVolumesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbVolumes( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbVolumes( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbTetrasOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbTetras( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbTetras( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbHexasOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbHexas( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbHexas( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbPyramidsOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbPyramids( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbPyramids( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbPrismsOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbPrisms( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbPrisms( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
