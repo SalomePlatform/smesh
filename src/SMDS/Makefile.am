@@ -61,7 +61,8 @@ salomeinclude_HEADERS = \
 	SMDS_QuadraticFaceOfNodes.hxx \
 	SMDS_QuadraticVolumeOfNodes.hxx \
 	SMDS_SetIterator.hxx \
-	SMESH_SMDS.hxx
+	SMESH_SMDS.hxx \
+	SMDS_MeshInfo.hxx
 
 
 # Libraries targets
