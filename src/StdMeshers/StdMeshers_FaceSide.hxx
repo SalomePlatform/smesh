@@ -35,6 +35,9 @@
 #include <Geom2d_Curve.hxx>
 #include <TopExp.hxx>
 
+#include "SMESH_StdMeshers.hxx"
+#include "SMESH_Algo.hxx"
+
 #include <vector>
 #include <list>
 #include <boost/shared_ptr.hpp>
@@ -72,7 +75,7 @@ typedef boost::shared_ptr< SMESH_ComputeError > TError;
  */
 //================================================================================
 
-class StdMeshers_FaceSide
+class STDMESHERS_EXPORT StdMeshers_FaceSide
 {
 public:
   /*!
@@ -98,7 +101,7 @@ public:
   static TSideVector GetFaceWires(const TopoDS_Face& theFace,
                                   SMESH_Mesh &       theMesh,
                                   const bool         theIgnoreMediumNodes,
-                                  TError &           theError);
+                                  TError &           theError);  
 
   /*!
    * \brief Change orientation of side geometry
