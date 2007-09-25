@@ -189,34 +189,25 @@ public:
   
   int NbNodes() throw(SALOME_Exception);
   
-  /*!
-   * ElementOrder points out entities of what order are requested
-   */
-  enum ElementOrder {
-    ORDER_ANY,          /*! entities of any order */
-    ORDER_LINEAR,       /*! entities of 1st order */
-    ORDER_QUADRATIC     /*! entities of 2nd order */
-  };
-
-  int NbEdges(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbEdges(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbFaces(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbFaces(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbTriangles(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbTriangles(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbQuadrangles(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
 
   int NbPolygons() throw(SALOME_Exception);
   
-  int NbVolumes(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbTetras(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbHexas(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbHexas(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
-  int NbPyramids(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
 
-  int NbPrisms(ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
+  int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) throw(SALOME_Exception);
   
   int NbPolyhedrons() throw(SALOME_Exception);
   

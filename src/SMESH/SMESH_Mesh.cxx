@@ -983,221 +983,156 @@ void SMESH_Mesh::ExportSTL(const char *file, const bool isascii) throw(SALOME_Ex
   myWriter.Perform();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of nodes in the mesh
  */
-//=============================================================================
+//================================================================================
+
 int SMESH_Mesh::NbNodes() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->NbNodes();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief  Return number of edges of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbEdges(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbEdges();
-
-  int Nb = 0;
-  SMDS_EdgeIteratorPtr it = _myMeshDS->edgesIterator();
-  while (it->more()) {
-    const SMDS_MeshEdge* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbEdges(order);
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of faces of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbFaces(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbFaces();
-
-  int Nb = 0;
-  SMDS_FaceIteratorPtr it = _myMeshDS->facesIterator();
-  while (it->more()) {
-    const SMDS_MeshFace* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbFaces(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of 3 nodes faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbTriangles(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Return the number of faces in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  
-  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while (itFaces->more()) {
-    const SMDS_MeshFace* curFace = itFaces->next();
-    int nbnod = curFace->NbNodes();
-    if ( !curFace->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==3 || nbnod==6) ||
-           order == ORDER_LINEAR && nbnod==3 ||
-           order == ORDER_QUADRATIC && nbnod==6 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbTriangles(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of 4 nodes faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbQuadrangles(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Return the number nodes faces in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  
-  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while (itFaces->more()) {
-    const SMDS_MeshFace* curFace = itFaces->next();
-    int nbnod = curFace->NbNodes();
-    if ( !curFace->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==4 || nbnod==8) ||
-           order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_QUADRATIC && nbnod==8 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbQuadrangles(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of polygonal faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
+//================================================================================
+/*!
+ * \brief Return the number of polygonal faces in the mesh
+ */
+//================================================================================
+
 int SMESH_Mesh::NbPolygons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_FaceIteratorPtr itFaces = _myMeshDS->facesIterator();
-  while (itFaces->more())
-    if (itFaces->next()->IsPoly()) Nb++;
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPolygons();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of volumes of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbVolumes(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbVolumes();
-
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr it = _myMeshDS->volumesIterator();
-  while (it->more()) {
-    const SMDS_MeshVolume* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbVolumes(order);
 }
 
-int SMESH_Mesh::NbTetras(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of tetrahedrons of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==4 || nbnod==10) ||
-           order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_QUADRATIC && nbnod==10 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbTetras(order);
 }
 
-int SMESH_Mesh::NbHexas(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of hexahedrons of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==8 || nbnod==20) ||
-           order == ORDER_LINEAR && nbnod==8 ||
-           order == ORDER_QUADRATIC && nbnod==20 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbHexas(order);
 }
 
-int SMESH_Mesh::NbPyramids(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of pyramids of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==5 || nbnod==13) ||
-           order == ORDER_LINEAR && nbnod==5 ||
-           order == ORDER_QUADRATIC && nbnod==13 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPyramids(order);
 }
 
-int SMESH_Mesh::NbPrisms(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of prisms (penthahedrons) of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==6 || nbnod==15) ||
-           order == ORDER_LINEAR && nbnod==6 ||
-           order == ORDER_QUADRATIC && nbnod==15 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPrisms(order);
 }
+
+//================================================================================
+/*!
+ * \brief  Return number of polyhedrons in the mesh
+ */
+//================================================================================
 
 int SMESH_Mesh::NbPolyhedrons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes = _myMeshDS->volumesIterator();
-  while (itVolumes->more())
-    if (itVolumes->next()->IsPoly()) Nb++;
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPolyhedrons();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief  Return number of submeshes in the mesh
  */
-//=============================================================================
+//================================================================================
+
 int SMESH_Mesh::NbSubMesh() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -1213,7 +1148,7 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::IsNotConformAllowed");
 
-  SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
+  static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
   return GetHypothesis( _myMeshDS->ShapeToMesh(), filter, false );
 }
 
@@ -1325,7 +1260,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
   for ( int isQuadratic = 0; isQuadratic < 2; ++isQuadratic )
   {
     string orderStr = isQuadratic ? "quadratic" : "linear";
-    ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
+    SMDSAbs_ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
 
     save << ++clause << ") Total number of " << orderStr << " edges:\t" << NbEdges(order) << endl;
     save << ++clause << ") Total number of " << orderStr << " faces:\t" << NbFaces(order) << endl;
