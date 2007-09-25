@@ -107,7 +107,8 @@ EXPORT_HEADERS= \
 	SMDS_QuadraticEdge.hxx \
 	SMDS_QuadraticFaceOfNodes.hxx \
 	SMDS_QuadraticVolumeOfNodes.hxx \
-	SMDS_SetIterator.hxx
+	SMDS_SetIterator.hxx \
+	SMDS_MeshInfo.hxx
 
 # additionnal information to compil and link file
 CPPFLAGS += $(KERNEL_CXXFLAGS) $(OCC_INCLUDES) $(BOOST_CPPFLAGS)
