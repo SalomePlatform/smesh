@@ -38,4 +38,10 @@ enum SMDSAbs_ElementType
 	SMDSAbs_Volume
 };
 
+enum SMDSAbs_ElementOrder {
+  ORDER_ANY,          /*! entities of any order */
+  ORDER_LINEAR,       /*! entities of 1st order */
+  ORDER_QUADRATIC     /*! entities of 2nd order */
+};
+
 #endif
