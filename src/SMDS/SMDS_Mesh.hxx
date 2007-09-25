@@ -32,6 +32,7 @@
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
+#include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include <NCollection_Map.hxx>
 
@@ -503,6 +504,7 @@ public:
   int MaxElementID() const;
   int MinElementID() const;
 
+  const SMDS_MeshInfo& GetMeshInfo() const { return myInfo; }
 
   int NbNodes() const;
   int NbEdges() const;
@@ -565,15 +567,16 @@ private:
 
   // Fields PRIVATE
   
-  SetOfNodes myNodes;
-  SetOfEdges myEdges;
-  SetOfFaces myFaces;
-  SetOfVolumes myVolumes;
-  SMDS_Mesh *myParent;
+  SetOfNodes             myNodes;
+  SetOfEdges             myEdges;
+  SetOfFaces             myFaces;
+  SetOfVolumes           myVolumes;
+  SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;
   SMDS_MeshElementIDFactory *myNodeIDFactory;
   SMDS_MeshElementIDFactory *myElementIDFactory;
-  
+  SMDS_MeshInfo          myInfo;
+
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;
   bool myHasInverseElements;
