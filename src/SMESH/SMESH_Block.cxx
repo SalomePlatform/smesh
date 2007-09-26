@@ -726,8 +726,8 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
     start = *bestParam;
   }
 
-  int    myFaceIndex = -1;
-  double myFaceParam = 0.;
+  myFaceIndex = -1;
+  myFaceParam = 0.;
   if ( isOnFace ) {
     // put a point on the face
     for ( int iCoord = 0; iCoord < 3; iCoord++ )
