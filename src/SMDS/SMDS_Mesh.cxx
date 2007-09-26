@@ -1057,15 +1057,16 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
 
     SMDS_MeshFace * face = new SMDS_FaceOfEdges(edge1,edge2,edge3);
     myFaces.Add(face);
+    myInfo.myNbTriangles++;
     return face;
   }
   else
   {
     SMDS_MeshFace * face = new SMDS_FaceOfNodes(node1,node2,node3);
     myFaces.Add(face);
+    myInfo.myNbTriangles++;
     return face;
   }
-  myInfo.myNbTriangles++;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1089,15 +1090,16 @@ SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
 
     SMDS_MeshFace * face = new SMDS_FaceOfEdges(edge1,edge2,edge3,edge4);
     myFaces.Add(face);
+    myInfo.myNbQuadrangles++;
     return face;
   }
   else
   {
     SMDS_MeshFace * face = new SMDS_FaceOfNodes(node1,node2,node3,node4);
     myFaces.Add(face);
+    myInfo.myNbQuadrangles++;
     return face;
   }
-  myInfo.myNbTriangles++;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
