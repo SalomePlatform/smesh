@@ -32,6 +32,11 @@ public:
 private:
   friend class SMDS_Mesh;
 
+  // methods to count NOT POLY elements
+  inline void remove(const SMDS_MeshElement* el);
+  inline void add   (const SMDS_MeshElement* el);
+  inline int  index(SMDSAbs_ElementType type, int nbNodes);
+  // methods to remove elements of ANY kind
   inline void RemoveEdge(const SMDS_MeshElement* el);
   inline void RemoveFace(const SMDS_MeshElement* el);
   inline void RemoveVolume(const SMDS_MeshElement* el);
@@ -48,7 +53,9 @@ private:
   int myNbPyramids, myNbQuadPyramids;
   int myNbPrisms  , myNbQuadPrisms  ;
   int myNbPolyhedrons;
-  
+
+  vector<int*> myNb; // pointers to myNb... fields
+  vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
 };
 
 inline SMDS_MeshInfo::SMDS_MeshInfo():
@@ -62,7 +69,83 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbPyramids(0), myNbQuadPyramids(0),
   myNbPrisms  (0), myNbQuadPrisms  (0),
   myNbPolyhedrons(0)
-{}
+{
+  // Number of nodes in standard element types
+  // n   v  f  e
+  // o   o  a  d
+  // d   l  c  g
+  // e      e  e
+  // -----------
+  // 1      
+  // 2         *
+  // 3      *
+  // 4   *  *  *
+  // 5   *  
+  // 6   *  *
+  // 7      
+  // 8   *  *
+  // 9      
+  // 10  *  
+  // 11     
+  // 12     
+  // 13  *  
+  // 14     
+  // 15  *  
+  // 16     
+  // 17     
+  // 18     
+  // 19     
+  // 20  *
+  //
+  // So to have a unique index for each type basing on nb of nodes, we use a shift:
+  myShift.resize(SMDSAbs_Volume + 1, 0);
+  myShift[ SMDSAbs_Face ] = +8; // 3->11, 4->12, 6->14, 8->16
+  myShift[ SMDSAbs_Edge ] = -2; // 2->0, 4->2
+
+  myNb.resize( index( SMDSAbs_Volume,20 ) + 1, NULL);
+  myNb[ index( SMDSAbs_Node,1 )] = & myNbNodes;
+
+  myNb[ index( SMDSAbs_Edge,2 )] = & myNbEdges;
+  myNb[ index( SMDSAbs_Edge,4 )] = & myNbQuadEdges;
+
+  myNb[ index( SMDSAbs_Face,3 )] = & myNbTriangles;
+  myNb[ index( SMDSAbs_Face,4 )] = & myNbQuadrangles;
+  myNb[ index( SMDSAbs_Face,6 )] = & myNbQuadTriangles;
+  myNb[ index( SMDSAbs_Face,8 )] = & myNbQuadQuadrangles;
+
+  myNb[ index( SMDSAbs_Volume, 4)]  = & myNbTetras;
+  myNb[ index( SMDSAbs_Volume, 5)]  = & myNbPyramids;
+  myNb[ index( SMDSAbs_Volume, 6)]  = & myNbPrisms;
+  myNb[ index( SMDSAbs_Volume, 8)]  = & myNbHexas;
+  myNb[ index( SMDSAbs_Volume, 10)] = & myNbQuadTetras;  
+  myNb[ index( SMDSAbs_Volume, 13)] = & myNbQuadPyramids;
+  myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
+  myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
+}
+
+inline int // index
+SMDS_MeshInfo::index(SMDSAbs_ElementType type, int nbNodes)
+{ return nbNodes + myShift[ type ]; }
+
+inline void // remove
+SMDS_MeshInfo::remove(const SMDS_MeshElement* el)
+{ --(*myNb[ index(el->GetType(), el->NbNodes()) ]); }
+
+inline void // add
+SMDS_MeshInfo::add(const SMDS_MeshElement* el)
+{ ++(*myNb[ index(el->GetType(), el->NbNodes()) ]); }
+
+inline void // RemoveEdge
+SMDS_MeshInfo::RemoveEdge(const SMDS_MeshElement* el)
+{ if ( el->IsQuadratic() ) --myNbQuadEdges; else --myNbEdges; }
+
+inline void // RemoveFace
+SMDS_MeshInfo::RemoveFace(const SMDS_MeshElement* el)
+{ if ( el->IsPoly() ) --myNbPolygons; else remove( el ); }
+
+inline void // RemoveVolume
+SMDS_MeshInfo::RemoveVolume(const SMDS_MeshElement* el)
+{ if ( el->IsPoly() ) --myNbPolyhedrons; else remove( el ); }
 
 inline int // NbEdges
 SMDS_MeshInfo::NbEdges      (SMDSAbs_ElementOrder order) const
@@ -99,37 +182,5 @@ SMDS_MeshInfo::NbPyramids(SMDSAbs_ElementOrder order) const
 inline int // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms : order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms; }
-
-// RemoveEdge
-inline void SMDS_MeshInfo::RemoveEdge(const SMDS_MeshElement* el)
-{
-  if ( el->IsQuadratic() ) --myNbQuadEdges; else --myNbEdges;
-}
-
-// RemoveFace
-inline void SMDS_MeshInfo::RemoveFace(const SMDS_MeshElement* el)
-{
-  int nbnode = el->NbNodes();
-  if ( el->IsPoly() )   --myNbPolygons;
-  else if (nbnode == 3) --myNbTriangles;
-  else if (nbnode == 4) --myNbQuadrangles;
-  else if (nbnode == 6) --myNbQuadTriangles;
-  else if (nbnode == 8) --myNbQuadQuadrangles;
-}
-
-// RemoveVolume
-inline void SMDS_MeshInfo::RemoveVolume(const SMDS_MeshElement* el)
-{
-  int nbnode = el->NbNodes();
-  if ( el->IsPoly() )    --myNbPolyhedrons;
-  else if (nbnode == 4)  --myNbTetras;  
-  else if (nbnode == 5)  --myNbPyramids;
-  else if (nbnode == 6)  --myNbPrisms;
-  else if (nbnode == 8)  --myNbHexas;
-  else if (nbnode == 10) --myNbQuadTetras;  
-  else if (nbnode == 13) --myNbQuadPyramids;
-  else if (nbnode == 15) --myNbQuadPrisms;  
-  else if (nbnode == 20) --myNbQuadHexas;   
-}
 
 #endif
