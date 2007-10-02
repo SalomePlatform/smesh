@@ -427,7 +427,7 @@ namespace SMESH {
   }
   // -----------------------------------------------------------------------
   /*!
-   * \brief Return text describing a subshape
+   * \brief Return a list of selected rows
    */
   bool getSelectedRows(QTable* table, list< int > & rows)
   {
@@ -440,6 +440,9 @@ namespace SMESH {
       for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
         rows.push_back( row );
     }
+    if (rows.empty() && table->currentRow() > -1 )
+      rows.push_back( table->currentRow() );
+
     return !rows.empty();
   }
 
@@ -762,6 +765,7 @@ SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
   connect(myDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
   connect(table(),SIGNAL(selectionChanged()), SLOT(currentCellChanged()));
+  connect(table(),SIGNAL(currentChanged(int,int)), SLOT(currentCellChanged()));
 }
 
 //=======================================================================
@@ -781,7 +785,6 @@ void SMESHGUI_ComputeOp::startOperation()
   // COMPUTE MESH
 
   bool computeFailed = true, memoryLack = false;
-  int nbNodes = 0, nbEdges = 0, nbFaces = 0, nbVolums = 0;
 
   LightApp_SelectionMgr *Sel = selectionMgr();
   SALOME_ListIO selected; Sel->selectedObjects( selected );
@@ -841,7 +844,7 @@ void SMESHGUI_ComputeOp::startOperation()
         //             return;
         //           }
         // check if there are memory problems
-        for ( int i = 0; i < anErrors->length() && !memoryLack; ++i )
+        for ( int i = 0; (i < anErrors->length()) && !memoryLack; ++i )
           memoryLack = ( anErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
       }
       catch(const SALOME::SALOME_Exception & S_ex){
@@ -860,9 +863,9 @@ void SMESHGUI_ComputeOp::startOperation()
         {
           try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-          OCC_CATCH_SIGNALS;
+            OCC_CATCH_SIGNALS;
 #endif
-            SMESH::UpdateView(eDisplay, IObject->getEntry());
+            SMESH::Update(IObject, true);
           }
           catch (...) {
 #ifdef _DEBUG_
