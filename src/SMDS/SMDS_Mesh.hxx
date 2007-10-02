@@ -433,12 +433,12 @@ public:
   virtual bool RemoveFromParent();
   virtual bool RemoveSubMesh(const SMDS_Mesh * aMesh);
 
-  static bool ChangeElementNodes(const SMDS_MeshElement * elem,
-                                 const SMDS_MeshNode    * nodes[],
-                                 const int                nbnodes);
-  static bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
-                                    std::vector<const SMDS_MeshNode*> nodes,
-                                    std::vector<int>                  quantities);
+  bool ChangeElementNodes(const SMDS_MeshElement * elem,
+                          const SMDS_MeshNode    * nodes[],
+                          const int                nbnodes);
+  bool ChangePolyhedronNodes(const SMDS_MeshElement *                 elem,
+                             const std::vector<const SMDS_MeshNode*>& nodes,
+                             const std::vector<int> &                 quantities);
 
   virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.

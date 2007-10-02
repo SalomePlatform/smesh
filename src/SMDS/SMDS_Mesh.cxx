@@ -43,7 +43,6 @@ using namespace std;
 #include <sys/sysinfo.h>
 #endif
 
-
 //================================================================================
 /*!
  * \brief Raise an exception if free memory (ram+swap) too low
@@ -1177,73 +1176,52 @@ bool SMDS_Mesh::RemoveSubMesh(const SMDS_Mesh * aMesh)
 //purpose  : 
 //=======================================================================
 
-bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
+bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * element,
                                    const SMDS_MeshNode    * nodes[],
                                    const int                nbnodes)
 {
   // keep current nodes of elem
   set<const SMDS_MeshElement*> oldNodes;
-  SMDS_ElemIteratorPtr itn = elem->nodesIterator();
+  SMDS_ElemIteratorPtr itn = element->nodesIterator();
   while(itn->more())
     oldNodes.insert(  itn->next() );
 
+  if ( !element->IsPoly() )
+    myInfo.remove( element ); // element may change type
+
   // change nodes
   bool Ok = false;
+  SMDS_MeshElement* elem = const_cast<SMDS_MeshElement*>(element);
   switch ( elem->GetType() )
   {
   case SMDSAbs_Edge: {
     if ( nbnodes == 2 ) {
-      const SMDS_MeshEdge* edge = dynamic_cast<const SMDS_MeshEdge*>( elem );
-      if ( edge )
-        Ok = const_cast<SMDS_MeshEdge*>( edge )->ChangeNodes( nodes[0], nodes[1] );
+      if ( SMDS_MeshEdge* edge = dynamic_cast<SMDS_MeshEdge*>( elem ))
+        Ok = edge->ChangeNodes( nodes[0], nodes[1] );
     }
     else if ( nbnodes == 3 ) {
-      const SMDS_QuadraticEdge* edge = dynamic_cast<const SMDS_QuadraticEdge*>( elem );
-      if ( edge )
-        Ok = const_cast<SMDS_QuadraticEdge*>( edge )->ChangeNodes( nodes[0], nodes[1], nodes[2] );
+      if ( SMDS_QuadraticEdge* edge = dynamic_cast<SMDS_QuadraticEdge*>( elem ))
+        Ok = edge->ChangeNodes( nodes[0], nodes[1], nodes[2] );
     }
     break;
   }
   case SMDSAbs_Face: {
-    const SMDS_FaceOfNodes* face = dynamic_cast<const SMDS_FaceOfNodes*>( elem );
-    if ( face ) {
-      Ok = const_cast<SMDS_FaceOfNodes*>( face )->ChangeNodes( nodes, nbnodes );
-    }
-    else {
-      const SMDS_QuadraticFaceOfNodes* QF =
-        dynamic_cast<const SMDS_QuadraticFaceOfNodes*>( elem );
-      if ( QF ) {
-        Ok = const_cast<SMDS_QuadraticFaceOfNodes*>( QF )->ChangeNodes( nodes, nbnodes );
-      }
-      else {
-        /// ??? begin
-        const SMDS_PolygonalFaceOfNodes* face = dynamic_cast<const SMDS_PolygonalFaceOfNodes*>(elem);
-        if (face) {
-          Ok = const_cast<SMDS_PolygonalFaceOfNodes*>(face)->ChangeNodes(nodes, nbnodes);
-        }
-        /// ??? end
-      }
-    }
+    if ( SMDS_FaceOfNodes* face = dynamic_cast<SMDS_FaceOfNodes*>( elem ))
+      Ok = face->ChangeNodes( nodes, nbnodes );
+    else
+      if ( SMDS_QuadraticFaceOfNodes* QF = dynamic_cast<SMDS_QuadraticFaceOfNodes*>( elem ))
+        Ok = QF->ChangeNodes( nodes, nbnodes );
+      else
+        if (SMDS_PolygonalFaceOfNodes* face = dynamic_cast<SMDS_PolygonalFaceOfNodes*>(elem))
+          Ok = face->ChangeNodes(nodes, nbnodes);
     break;
   }
-  //case SMDSAbs_PolygonalFace: {
-  //  const SMDS_PolygonalFaceOfNodes* face = dynamic_cast<const SMDS_PolygonalFaceOfNodes*>(elem);
-  //  if (face) {
-  //    Ok = const_cast<SMDS_PolygonalFaceOfNodes*>(face)->ChangeNodes(nodes, nbnodes);
-  //  }
-  //  break;
-  //}
   case SMDSAbs_Volume: {
-    const SMDS_VolumeOfNodes* vol = dynamic_cast<const SMDS_VolumeOfNodes*>( elem );
-    if ( vol ) {
-      Ok = const_cast<SMDS_VolumeOfNodes*>( vol )->ChangeNodes( nodes, nbnodes );
-    }
-    else {
-      const SMDS_QuadraticVolumeOfNodes* QV = dynamic_cast<const SMDS_QuadraticVolumeOfNodes*>( elem );
-      if ( QV ) {
-        Ok = const_cast<SMDS_QuadraticVolumeOfNodes*>( QV )->ChangeNodes( nodes, nbnodes );
-      }
-    }
+    if ( SMDS_VolumeOfNodes* vol = dynamic_cast<SMDS_VolumeOfNodes*>( elem ))
+      Ok = vol->ChangeNodes( nodes, nbnodes );
+    else 
+      if ( SMDS_QuadraticVolumeOfNodes* QV = dynamic_cast<SMDS_QuadraticVolumeOfNodes*>( elem ))
+        Ok = QV->ChangeNodes( nodes, nbnodes );
     break;
   }
   default:
@@ -1252,18 +1230,19 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 
   if ( Ok ) { // update InverseElements
 
+    set<const SMDS_MeshElement*>::iterator it;
+
     // AddInverseElement to new nodes
-    for ( int i = 0; i < nbnodes; i++ )
-      if ( oldNodes.find( nodes[i] ) == oldNodes.end() )
+    for ( int i = 0; i < nbnodes; i++ ) {
+      it = oldNodes.find( nodes[i] );
+      if ( it == oldNodes.end() )
         // new node
         const_cast<SMDS_MeshNode*>( nodes[i] )->AddInverseElement( elem );
       else
         // remove from oldNodes a node that remains in elem
-        oldNodes.erase( nodes[i] );
-
-
+        oldNodes.erase( it );
+    }
     // RemoveInverseElement from the nodes removed from elem
-    set<const SMDS_MeshElement*>::iterator it;
     for ( it = oldNodes.begin(); it != oldNodes.end(); it++ )
     {
       SMDS_MeshNode * n = static_cast<SMDS_MeshNode *>
@@ -1272,7 +1251,8 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
     }
   }
 
-  //MESSAGE ( "::ChangeNodes() Ok = " << Ok);
+  if ( !element->IsPoly() )
+    myInfo.add( element ); // element may change type
 
   return Ok;
 }
@@ -1281,9 +1261,9 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 //function : ChangePolyhedronNodes
 //purpose  : to change nodes of polyhedral volume
 //=======================================================================
-bool SMDS_Mesh::ChangePolyhedronNodes (const SMDS_MeshElement * elem,
-                                       std::vector<const SMDS_MeshNode*> nodes,
-                                       std::vector<int>                  quantities)
+bool SMDS_Mesh::ChangePolyhedronNodes (const SMDS_MeshElement *            elem,
+                                       const vector<const SMDS_MeshNode*>& nodes,
+                                       const vector<int>                 & quantities)
 {
   if (elem->GetType() != SMDSAbs_Volume) {
     MESSAGE("WRONG ELEM TYPE");
@@ -1312,18 +1292,19 @@ bool SMDS_Mesh::ChangePolyhedronNodes (const SMDS_MeshElement * elem,
 
   // AddInverseElement to new nodes
   int nbnodes = nodes.size();
+  set<const SMDS_MeshElement*>::iterator it;
   for (int i = 0; i < nbnodes; i++) {
-    if (oldNodes.find(nodes[i]) == oldNodes.end()) {
+    it = oldNodes.find(nodes[i]);
+    if (it == oldNodes.end()) {
       // new node
       const_cast<SMDS_MeshNode*>(nodes[i])->AddInverseElement(elem);
     } else {
       // remove from oldNodes a node that remains in elem
-      oldNodes.erase(nodes[i]);
+      oldNodes.erase(it);
     }
   }
 
   // RemoveInverseElement from the nodes removed from elem
-  set<const SMDS_MeshElement*>::iterator it;
   for (it = oldNodes.begin(); it != oldNodes.end(); it++) {
     SMDS_MeshNode * n = static_cast<SMDS_MeshNode *>
       (const_cast<SMDS_MeshElement *>( *it ));
