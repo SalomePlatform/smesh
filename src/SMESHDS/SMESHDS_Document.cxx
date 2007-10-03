@@ -40,6 +40,18 @@ SMESHDS_Document::SMESHDS_Document(int UserID):myUserID(UserID)
 }
 
 //=======================================================================
+//function : Destructor
+//purpose  : 
+//=======================================================================
+
+SMESHDS_Document::~SMESHDS_Document()
+{
+  InitMeshesIterator();
+  while ( MoreMesh() )
+    delete NextMesh();
+}
+
+//=======================================================================
 //function : NewMesh
 //purpose  : 
 //=======================================================================

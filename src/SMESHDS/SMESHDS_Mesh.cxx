@@ -1126,7 +1126,7 @@ int SMESHDS_Mesh::AddCompoundSubmesh(const TopoDS_Shape& S,
 //=======================================================================
 const TopoDS_Shape& SMESHDS_Mesh::IndexToShape(int ShapeIndex) const
 {
-	return myIndexToShape.FindKey(ShapeIndex);
+  return myIndexToShape.FindKey(ShapeIndex);
 }
 
 //=======================================================================
@@ -1198,11 +1198,19 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
   add( anElement, getSubmesh( Index ));
 }
 
+//=======================================================================
+//function : ~SMESHDS_Mesh
+//purpose  : 
+//=======================================================================
 SMESHDS_Mesh::~SMESHDS_Mesh()
 {
+  // myScript
   delete myScript;
+  // submeshes
+  TShapeIndexToSubMesh::iterator i_sm = myShapeIndexToSubMesh.begin();
+  for ( ; i_sm != myShapeIndexToSubMesh.end(); ++i_sm )
+    delete i_sm->second;
 }
-
 
 
 //********************************************************************
