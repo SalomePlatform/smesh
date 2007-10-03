@@ -1388,7 +1388,7 @@ msgstr "Automatically create groups"
 
 msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
 msgstr "It seems that there is not enough memory to show the mesh\n"
-       "so that the application may crash."
+       "so that the application may crash. "
        "Do you wish to continue visualization?"
 
 msgid "SMESH_NO_MESH_VISUALIZATION"
