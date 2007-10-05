@@ -275,7 +275,7 @@ def GetCriterion(elementType,
             print "Error: Treshold should be a string."
             return None
     elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume]:
-        # Here we don't need treshold
+        # Here we do not need treshold
         if aTreshold ==  FT_LogicalNOT:
             aCriterion.UnaryOp = EnumToLong(FT_LogicalNOT)
         elif aTreshold in [FT_LogicalAND, FT_LogicalOR]:
@@ -395,7 +395,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 
     
     
-## Mother class to define algorithm, recommended to don't use directly.
+## Mother class to define algorithm, recommended to do not use directly.
 #
 #  More details.
 class Mesh_Algorithm:
@@ -506,7 +506,7 @@ class Mesh_Algorithm:
 #  More details.
 class Mesh_Segment(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Segment's
+    algo = 0 # algorithm object common for all Mesh_Segments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -623,7 +623,7 @@ class Mesh_Segment(Mesh_Algorithm):
 #  More details.
 class Mesh_CompositeSegment(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_CompositeSegment's
+    algo = 0 # algorithm object common for all Mesh_CompositeSegments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -642,7 +642,7 @@ class Mesh_CompositeSegment(Mesh_Segment):
 #  More details.
 class Mesh_Segment_Python(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_Segment_Python's
+    algo = 0 # algorithm object common for all Mesh_Segment_Pythons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -840,7 +840,7 @@ class Mesh_Triangle(Mesh_Algorithm):
 #  More details.
 class Mesh_Quadrangle(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Quadrangle's
+    algo = 0 # algorithm object common for all Mesh_Quadrangles
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -868,9 +868,9 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     params = 0
     algoType = 0
 
-    algoNET = 0 # algorithm object common for all Mesh_Tetrahedron's
-    algoGHS = 0 # algorithm object common for all Mesh_Tetrahedron's
-    algoFNET = 0 # algorithm object common for all Mesh_Tetrahedron's
+    algoNET = 0 # algorithm object common for all Mesh_Tetrahedrons
+    algoGHS = 0 # algorithm object common for all Mesh_Tetrahedrons
+    algoFNET = 0 # algorithm object common for all Mesh_Tetrahedrons
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
@@ -974,7 +974,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 #  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Hexahedron's
+    algo = 0 # algorithm object common for all Mesh_Hexahedrons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -998,8 +998,8 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     is3D = 0
 
-    algoNET23 = 0 # algorithm object common for all Mesh_Netgen's
-    algoNET2 = 0 # algorithm object common for all Mesh_Netgen's
+    algoNET23 = 0 # algorithm object common for all Mesh_Netgens
+    algoNET2 = 0 # algorithm object common for all Mesh_Netgens
 
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
@@ -1041,7 +1041,7 @@ class Mesh_Netgen(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection1D's
+    algo = 0 # algorithm object common for all Mesh_Projection1Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1079,7 +1079,7 @@ class Mesh_Projection1D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection2D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection2D's
+    algo = 0 # algorithm object common for all Mesh_Projection2Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1123,7 +1123,7 @@ class Mesh_Projection2D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection3D's
+    algo = 0 # algorithm object common for all Mesh_Projection3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1169,7 +1169,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Prism3D's
+    algo = 0 # algorithm object common for all Mesh_Prism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1187,7 +1187,7 @@ class Mesh_Prism3D(Mesh_Algorithm):
 #  More details.
 class Mesh_RadialPrism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_RadialPrism3D's
+    algo = 0 # algorithm object common for all Mesh_RadialPrism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -2739,13 +2739,13 @@ class Mesh:
         return self.editor.ChangeElemNodes(ide, newIDs)
     
     ## If during last operation of MeshEditor some nodes were
-    #  created this method returns list of it's IDs, \n
+    #  created this method returns list of its IDs, \n
     #  if new nodes not created - returns empty list
     def GetLastCreatedNodes(self):
         return self.editor.GetLastCreatedNodes()
 
     ## If during last operation of MeshEditor some elements were
-    #  created this method returns list of it's IDs, \n
+    #  created this method returns list of its IDs, \n
     #  if new elements not creared - returns empty list
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
