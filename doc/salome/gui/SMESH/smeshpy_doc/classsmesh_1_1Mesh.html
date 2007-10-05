@@ -98,6 +98,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#1b0f1c169956e949c4aef9997ae2c8b3">AddHypothesis</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Assign hypothesis.  <a href="#1b0f1c169956e949c4aef9997ae2c8b3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#489052815cd25dcf2b16da040192ac38">RemoveHypothesis</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Unassign hypothesis.  <a href="#489052815cd25dcf2b16da040192ac38"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#9dcaabbf09856c4a4d7465cb12eaf28e">GetHypothesisList</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the list of hypothesis added on a geom.  <a href="#9dcaabbf09856c4a4d7465cb12eaf28e"></a><br></td></tr>
@@ -313,6 +316,9 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns ID of node by given index for given element <br>
  If there is not element for given ID - returns -1 <br>
  If there is not node for given index - returns -2.  <a href="#b962a2eb7fc5b6ee8c50795d185c45d0"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#109b802507f54dc9b5fa440e84a16c3c">GetElemNodes</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns IDs of nodes of given element.  <a href="#109b802507f54dc9b5fa440e84a16c3c"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#e51aaa086dca92d2b7966ae0b49aefd7">IsMediumNode</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns true if given node is medium node in given quadratic element.  <a href="#e51aaa086dca92d2b7966ae0b49aefd7"></a><br></td></tr>
@@ -518,11 +524,11 @@
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set new nodes for given element.  <a href="#f0a5ee1d36cbd2f05f0096a85f013d6a"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#2e52a15f9fa25f6a0dc17b80636b9ef4">GetLastCreatedNodes</a></td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">If during last operation of MeshEditor some nodes were created this method returns list of it's IDs, <br>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">If during last operation of MeshEditor some nodes were created this method returns list of its IDs, <br>
  if new nodes not created - returns empty list.  <a href="#2e52a15f9fa25f6a0dc17b80636b9ef4"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#08160d8eccea10d14367996bb1459b77">GetLastCreatedElems</a></td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">If during last operation of MeshEditor some elements were created this method returns list of it's IDs, <br>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">If during last operation of MeshEditor some elements were created this method returns list of its IDs, <br>
  if new elements not creared - returns empty list.  <a href="#08160d8eccea10d14367996bb1459b77"></a><br></td></tr>
 <tr><td colspan="2"><br><h2>Data Fields</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh.html#eb2e95e036f629d22802fe1caa0dea77">geom</a></td></tr>
@@ -1102,7 +1108,7 @@ If the optional <em>algo</em> parameter is not sets, this algorithm is REGULAR. 
 If the optional <em>geom</em> parameter is not sets, this algorithm is global. <br>
  Otherwise, this algorithm define a submesh based on <em>geom</em> subshape. <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>algo</em>&nbsp;</td><td>values are: <a class="el" href="namespacesmesh.html#4449cc4d5e7910c0afa9a35238736519">smesh.MEFISTO</a> or <a class="el" href="namespacesmesh.html#72b65da5195aa8d71574f95e5533d612">smesh.NETGEN</a> </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>algo</em>&nbsp;</td><td>values are: <a class="el" href="namespacesmesh.html#4449cc4d5e7910c0afa9a35238736519">smesh.MEFISTO</a> || <a class="el" href="namespacesmesh.html#8de7c508f467e290ff54d025b4bd6b83">smesh.NETGEN_1D2D</a> || <a class="el" href="namespacesmesh.html#96b62b5fc8a8c9fd2930e4c086458ab2">smesh.NETGEN_2D</a> </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>geom</em>&nbsp;</td><td>If defined, subshape to be meshed </td></tr>
   </table>
 </dl>
@@ -1610,6 +1616,55 @@ If the optional <em>geom</em> parameter is not sets, this algorithm is global. O
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>hyp</em>&nbsp;</td><td>is a hypothesis to assign </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>geom</em>&nbsp;</td><td>is subhape of mesh geometry </td></tr>
+  </table>
+</dl>
+    </td>
+  </tr>
+</table>
+<a class="anchor" name="489052815cd25dcf2b16da040192ac38"></a><!-- doxytag: member="smesh::Mesh::RemoveHypothesis" ref="489052815cd25dcf2b16da040192ac38" args="" --><p>
+<table class="mdTable" cellpadding="2" cellspacing="0">
+  <tr>
+    <td class="mdRow">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="md" nowrap valign="top">def smesh.Mesh.RemoveHypothesis           </td>
+          <td class="md" valign="top">(&nbsp;</td>
+          <td class="md" nowrap valign="top">&nbsp;</td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>hyp</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>geom</em> = <code>0</code></td>
+        </tr>
+        <tr>
+          <td class="md"></td>
+          <td class="md">)&nbsp;</td>
+          <td class="md" colspan="2"></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table cellspacing="5" cellpadding="0" border="0">
+  <tr>
+    <td>
+      &nbsp;
+    </td>
+    <td>
+
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>hyp</em>&nbsp;</td><td>is a hypothesis to unassign </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>geom</em>&nbsp;</td><td>is subhape of mesh geometry </td></tr>
   </table>
 </dl>
@@ -4122,9 +4177,18 @@ Consider maximum group name length stored in MED file.     </td>
           <td class="md" nowrap valign="top">def smesh.Mesh.GetShapeIDForElem           </td>
           <td class="md" valign="top">(&nbsp;</td>
           <td class="md" nowrap valign="top">&nbsp;</td>
-          <td class="mdname1" valign="top" nowrap> <em>id</em>          </td>
-          <td class="md" valign="top">&nbsp;)&nbsp;</td>
-          <td class="md" nowrap></td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>id</em></td>
+        </tr>
+        <tr>
+          <td class="md"></td>
+          <td class="md">)&nbsp;</td>
+          <td class="md" colspan="2"></td>
         </tr>
       </table>
     </td>
@@ -4200,6 +4264,43 @@ Consider maximum group name length stored in MED file.     </td>
           <td class="md"></td>
           <td class="md" nowrap>&nbsp;</td>
           <td class="mdname" nowrap> <em>index</em></td>
+        </tr>
+        <tr>
+          <td class="md"></td>
+          <td class="md">)&nbsp;</td>
+          <td class="md" colspan="2"></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table cellspacing="5" cellpadding="0" border="0">
+  <tr>
+    <td>
+      &nbsp;
+    </td>
+    <td>
+
+<p>
+    </td>
+  </tr>
+</table>
+<a class="anchor" name="109b802507f54dc9b5fa440e84a16c3c"></a><!-- doxytag: member="smesh::Mesh::GetElemNodes" ref="109b802507f54dc9b5fa440e84a16c3c" args="" --><p>
+<table class="mdTable" cellpadding="2" cellspacing="0">
+  <tr>
+    <td class="mdRow">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="md" nowrap valign="top">def smesh.Mesh.GetElemNodes           </td>
+          <td class="md" valign="top">(&nbsp;</td>
+          <td class="md" nowrap valign="top">&nbsp;</td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>id</em></td>
         </tr>
         <tr>
           <td class="md"></td>
@@ -5893,6 +5994,12 @@ Use pattern mapping functionality for splitting. <dl compact><dt><b>Parameters:<
           <td class="md" nowrap valign="top">def smesh.Mesh.SmoothParametric           </td>
           <td class="md" valign="top">(&nbsp;</td>
           <td class="md" nowrap valign="top">&nbsp;</td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
           <td class="mdname" nowrap> <em>IDsOfElements</em>, </td>
         </tr>
         <tr>
@@ -7908,6 +8015,6 @@ Nodes belonging to Side1 are merged with nodes of elements of Side2. Number of e
 </table>
 </DIV>
 <DIV class="div-footer">
-Generated on Wed Jun 20 11:36:36 2007 for SALOME - SMESH - v.3.2.6 by&nbsp;<A href="http://www.doxygen.org/index.html"><img src="doxygen.png" alt="doxygen" align="middle" border="0"></A> 1.4.6</DIV>
+Generated on Fri Oct 5 13:00:13 2007 for SALOME - SMESH - v.3.2.8 by&nbsp;<A href="http://www.doxygen.org/index.html"><img src="doxygen.png" alt="doxygen" align="middle" border="0"></A> 1.4.6</DIV>
 </BODY>
 </HTML>

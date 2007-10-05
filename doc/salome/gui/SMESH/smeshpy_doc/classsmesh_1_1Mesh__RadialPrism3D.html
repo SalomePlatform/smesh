@@ -51,6 +51,8 @@ Inheritance diagram for smesh.Mesh_RadialPrism3D:<p><center><img src="classsmesh
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__RadialPrism3D.html#b96d5f036ae41b3624d2cf1f2599eafc">AutomaticLength</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Define "AutomaticLength" hypothesis, specifying number of segments to build between the inner and outer shells.  <a href="#b96d5f036ae41b3624d2cf1f2599eafc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#961704b6a89f579ad669510b1443db20">FindHypothesis</a></td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#39dd34eb5db727c1ff2b69a84df18394">GetSubMesh</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">If the algorithm is global, return 0; <br>
@@ -73,6 +75,9 @@ Inheritance diagram for smesh.Mesh_RadialPrism3D:<p><center><img src="classsmesh
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#b0ee92d94d1907fc263864b727685187">Create</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Private method.  <a href="#b0ee92d94d1907fc263864b727685187"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#f2e941430776b0bce570dfedba685fc0">Assign</a></td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Private method.  <a href="#f2e941430776b0bce570dfedba685fc0"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">def&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#e6c4621e95fa72626c26a320a53c5929">Hypothesis</a></td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Private method.  <a href="#e6c4621e95fa72626c26a320a53c5929"></a><br></td></tr>
@@ -87,16 +92,16 @@ Inheritance diagram for smesh.Mesh_RadialPrism3D:<p><center><img src="classsmesh
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#e31641d994477ff6913cef21bc8eed50">subm</a></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#169100dea59b37e7e9a0d155b7208fc8">algo</a></td></tr>
-
 <tr><td colspan="2"><br><h2>Static Public Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__RadialPrism3D.html#66d63bc2b455bf295e6eb2a48ee04510">algo</a> = 0</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#47bfe89357342e4a889d4723518288e1">mesh</a> = 0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#f6608d059606200dce0679f3367112d1">geom</a> = 0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#981bc18824369ac623f4527b7ddddaf5">subm</a> = 0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#ae7e23c67b8497a4b5bbf0cc53ac6693">algo</a> = 0</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">dictionary&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#0f7e56c1fabdaef7a6faa0bef854e18b">hypos</a> = {}</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -238,7 +243,7 @@ Returns the created hypothes     </td>
           <td class="md" nowrap align="right"></td>
           <td class="md"></td>
           <td class="md" nowrap>&nbsp;</td>
-          <td class="mdname" nowrap> <em>n</em>,</td>
+          <td class="mdname" nowrap> <em>n</em>, </td>
         </tr>
         <tr>
           <td class="md" nowrap align="right"></td>
@@ -265,8 +270,7 @@ Returns the created hypothes     </td>
 <p>
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>UseExisting</em>&nbsp;</td><td> if ==true - search existing hypothesis created with</td></tr>
-    <tr><td valign="top"></td><td valign="top">&nbsp;</td><td> same parameters, else (default) - create new</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>UseExisting</em>&nbsp;</td><td>if ==true - search existing hypothesis created with same parameters, else (default) - create new </td></tr>
   </table>
 </dl>
     </td>
@@ -503,6 +507,49 @@ Returns the created hypothes     </td>
     </td>
   </tr>
 </table>
+<a class="anchor" name="961704b6a89f579ad669510b1443db20"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::FindHypothesis" ref="961704b6a89f579ad669510b1443db20" args="" --><p>
+<table class="mdTable" cellpadding="2" cellspacing="0">
+  <tr>
+    <td class="mdRow">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="md" nowrap valign="top">def smesh.Mesh_Algorithm.FindHypothesis           </td>
+          <td class="md" valign="top">(&nbsp;</td>
+          <td class="md" nowrap valign="top">&nbsp;</td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>hypname</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>args</em></td>
+        </tr>
+        <tr>
+          <td class="md"></td>
+          <td class="md">)&nbsp;</td>
+          <td class="md" colspan="2"><code> [inherited]</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table cellspacing="5" cellpadding="0" border="0">
+  <tr>
+    <td>
+      &nbsp;
+    </td>
+    <td>
+
+<p>
+    </td>
+  </tr>
+</table>
 <a class="anchor" name="39dd34eb5db727c1ff2b69a84df18394"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::GetSubMesh" ref="39dd34eb5db727c1ff2b69a84df18394" args="" --><p>
 <table class="mdTable" cellpadding="2" cellspacing="0">
   <tr>
@@ -735,6 +782,55 @@ Returns the created hypothes     </td>
     </td>
   </tr>
 </table>
+<a class="anchor" name="f2e941430776b0bce570dfedba685fc0"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::Assign" ref="f2e941430776b0bce570dfedba685fc0" args="" --><p>
+<table class="mdTable" cellpadding="2" cellspacing="0">
+  <tr>
+    <td class="mdRow">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="md" nowrap valign="top">def smesh.Mesh_Algorithm.Assign           </td>
+          <td class="md" valign="top">(&nbsp;</td>
+          <td class="md" nowrap valign="top">&nbsp;</td>
+          <td class="mdname" nowrap> <em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>algo</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>mesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>geom</em></td>
+        </tr>
+        <tr>
+          <td class="md"></td>
+          <td class="md">)&nbsp;</td>
+          <td class="md" colspan="2"><code> [inherited]</code></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table cellspacing="5" cellpadding="0" border="0">
+  <tr>
+    <td>
+      &nbsp;
+    </td>
+    <td>
+
+<p>
+    </td>
+  </tr>
+</table>
 <a class="anchor" name="e6c4621e95fa72626c26a320a53c5929"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::Hypothesis" ref="e6c4621e95fa72626c26a320a53c5929" args="" --><p>
 <table class="mdTable" cellpadding="2" cellspacing="0">
   <tr>
@@ -762,7 +858,13 @@ Returns the created hypothes     </td>
           <td class="md" nowrap align="right"></td>
           <td class="md"></td>
           <td class="md" nowrap>&nbsp;</td>
-          <td class="mdname" nowrap> <em>so</em> = <code>&quot;libStdMeshersEngine.so&quot;</code></td>
+          <td class="mdname" nowrap> <em>so</em> = <code>&quot;libStdMeshersEngine.so&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="md" nowrap align="right"></td>
+          <td class="md"></td>
+          <td class="md" nowrap>&nbsp;</td>
+          <td class="mdname" nowrap> <em>UseExisting</em> = <code>0</code></td>
         </tr>
         <tr>
           <td class="md"></td>
@@ -785,6 +887,31 @@ Returns the created hypothes     </td>
   </tr>
 </table>
 <hr><h2>Field Documentation</h2>
+<a class="anchor" name="66d63bc2b455bf295e6eb2a48ee04510"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::algo" ref="66d63bc2b455bf295e6eb2a48ee04510" args="" --><p>
+<table class="mdTable" cellpadding="2" cellspacing="0">
+  <tr>
+    <td class="mdRow">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="md" nowrap valign="top">int <a class="el" href="classsmesh_1_1Mesh__RadialPrism3D.html#66d63bc2b455bf295e6eb2a48ee04510">smesh.Mesh_RadialPrism3D.algo</a> = 0<code> [static]</code>          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<table cellspacing="5" cellpadding="0" border="0">
+  <tr>
+    <td>
+      &nbsp;
+    </td>
+    <td>
+
+<p>
+
+<p>
+Reimplemented from <a class="el" href="classsmesh_1_1Mesh__Algorithm.html#ae7e23c67b8497a4b5bbf0cc53ac6693">smesh.Mesh_Algorithm</a>.    </td>
+  </tr>
+</table>
 <a class="anchor" name="fad916e0e29ef3ddb981ad0170b6f550"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::distribHyp" ref="fad916e0e29ef3ddb981ad0170b6f550" args="" --><p>
 <table class="mdTable" cellpadding="2" cellspacing="0">
   <tr>
@@ -973,13 +1100,13 @@ Reimplemented in <a class="el" href="classsmesh_1_1Mesh__Segment.html#b6907301d8
     </td>
   </tr>
 </table>
-<a class="anchor" name="ae7e23c67b8497a4b5bbf0cc53ac6693"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::algo" ref="ae7e23c67b8497a4b5bbf0cc53ac6693" args="" --><p>
+<a class="anchor" name="0f7e56c1fabdaef7a6faa0bef854e18b"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::hypos" ref="0f7e56c1fabdaef7a6faa0bef854e18b" args="" --><p>
 <table class="mdTable" cellpadding="2" cellspacing="0">
   <tr>
     <td class="mdRow">
       <table cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td class="md" nowrap valign="top">int <a class="el" href="classsmesh_1_1Mesh__Algorithm.html#ae7e23c67b8497a4b5bbf0cc53ac6693">smesh.Mesh_Algorithm.algo</a> = 0<code> [static, inherited]</code>          </td>
+          <td class="md" nowrap valign="top">dictionary <a class="el" href="classsmesh_1_1Mesh__Algorithm.html#0f7e56c1fabdaef7a6faa0bef854e18b">smesh.Mesh_Algorithm.hypos</a> = {}<code> [static, inherited]</code>          </td>
         </tr>
       </table>
     </td>
@@ -996,28 +1123,8 @@ Reimplemented in <a class="el" href="classsmesh_1_1Mesh__Segment.html#b6907301d8
     </td>
   </tr>
 </table>
-<a class="anchor" name="169100dea59b37e7e9a0d155b7208fc8"></a><!-- doxytag: member="smesh::Mesh_RadialPrism3D::algo" ref="169100dea59b37e7e9a0d155b7208fc8" args="" --><p>
-<table class="mdTable" cellpadding="2" cellspacing="0">
-  <tr>
-    <td class="mdRow">
-      <table cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td class="md" nowrap valign="top"><a class="el" href="classsmesh_1_1Mesh__Algorithm.html#ae7e23c67b8497a4b5bbf0cc53ac6693">smesh.Mesh_Algorithm.algo</a><code> [inherited]</code>          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
-<table cellspacing="5" cellpadding="0" border="0">
-  <tr>
-    <td>
-      &nbsp;
-    </td>
-    <td>
-
-<p>
-    </td>
-  </tr>
-</table>
+</DIV>
+<DIV class="div-footer">
+Generated on Fri Oct 5 13:00:13 2007 for SALOME - SMESH - v.3.2.8 by&nbsp;<A href="http://www.doxygen.org/index.html"><img src="doxygen.png" alt="doxygen" align="middle" border="0"></A> 1.4.6</DIV>
 </BODY>
 </HTML>
