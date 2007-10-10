@@ -446,6 +446,8 @@ AC_OUTPUT([ \
   ./doc/Makefile \
   ./doc/salome/Makefile \
   ./doc/salome/gui/Makefile \
+  ./doc/salome/gui/SMESH/doxyfile \
+  ./doc/salome/gui/SMESH/doxyfile_py \
   ./doc/salome/tui/Makefile \
   ./doc/salome/tui/SMESH/doxyfile \
   ./doc/salome/tui/SMESH/sources/static/tree.js \
