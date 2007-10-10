@@ -1,0 +1,15 @@
+/*!
+
+\page free_edges_page Free edges
+
+\n This mesh quality control highlights borders of  elements of mesh
+consisting of edges belonging to one element of mesh only.
+
+\image html free_edges.png
+<center>In this picture some elements of mesh have been deleted and
+the "holes" are outlined in red.</center>
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_free_edges "Free Edges quality control" operation.  
+
+*/

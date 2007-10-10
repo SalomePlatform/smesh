@@ -1,0 +1,45 @@
+/*!
+
+\page aspect_ratio_page Aspect Ratio
+
+\n The <b>Aspect Ratio</b> quality criterion for mesh elements reveals
+the degree of conformity of a mesh element to the regular element of
+its type (with all edges having the same length).  The criterion can
+be defined as:
+
+\image html formula3.png
+
+- The <b>Aspect Ratio</b> of a \b triangle 2D element consisting of 3
+nodes is calculated by the formula:
+
+\image html formula4.png
+
+- The <b>Aspect Ratio</b> of a \b quadrangle 2D element consisting of
+ 4 nodes is the worst (i.e. the greatest) value from all triangles
+ which can be built taking three nodes of the quadrangle. There are
+ four triangles to consider:
+
+\image html image138.gif
+
+<em>To apply the Aspect Ratio quality criterion to your mesh:</em>
+<ol>
+<li>Display your mesh in the viewer.</li>
+
+<li>Choose <b>Controls > Aspect Ratio</b> or click <em>"Aspect
+Ratio"</em> button in the toolbar.
+
+\image html image37.gif
+<center><em>"Aspect Ratio" button</em></center>
+
+Your mesh will be displayed in the viewer with its elements colored
+according to the applied mesh quality control criterion:
+
+\image html image94.jpg
+</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of an 
+\ref tui_aspect_ratio "Aspect Ratio quality control" operation.
+
+*/
+

@@ -1,0 +1,49 @@
+/*!
+
+\page a2d_meshing_hypo_page 2D Meshing Hypotheses
+
+<br>
+<ul>
+<li>\ref max_element_area_anchor "Max Element Area"</li>
+<li>\ref length_from_edges_anchor "Length from Edges"</li>
+<li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+</ul>
+
+<br>
+\anchor max_element_area_anchor
+<h2>Max Element Area</h2>
+
+<b>Max Element Area</b> hypothesis is applied for meshing of 2D faces
+composing your geometrical object. Definition of this hypothesis
+consists of setting the <b>maximum area</b> of meshing elements (depending on
+the chosen meshing algorithm it can be <b>triangles</b> or <b>quadrangles</b>),
+which will compose the mesh of these 2D faces.
+
+\image html a-maxelarea.png
+
+\image html max_el_area.png
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_max_element_area "Maximum Element Area" hypothesis
+operation. 
+
+<br>
+\anchor length_from_edges_anchor
+<h2>Length from Edges</h2>
+
+<b>Length from edges</b> hypothesis builds 2D mesh segments having a
+length calculated as an average edge length for a given wire.
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_length_from_edges "Length from Edges" hypothesis operation.
+
+<br>
+\anchor quadrangle_preference_anchor
+<h2>Quadrangle Preference</h2>
+
+This algorithm can be used only together with Quadrangle (Mapping)
+algorithm. It allows to build quadrangular meshes even if the number
+of nodes at the opposite edges of a meshed face is not equal,
+otherwise this mesh will contain some triangular elements.
+
+*/

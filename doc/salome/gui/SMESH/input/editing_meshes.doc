@@ -1,0 +1,31 @@
+/*!
+
+\page editing_meshes_page Editing Meshes
+
+\n After you have created a mesh or submesh with definite applied
+hypotheses and algorithms you can edit your mesh by \b assigning new
+hypotheses and algorithms or \b unassigning the applied hypotheses and
+algorithms. The editing proceeds in the same way as <b>Mesh
+Creation</b>.
+
+\image html createmesh-inv3.png
+
+You can also change values for the current hypothesis by clicking the
+<em>"Edit Hypothesis"</em> button.
+
+\image html image122.gif
+<center><em>"Edit Hypothesis" button</em></center>
+
+See how a mesh constructed on one and the same geometrical object
+changes if we apply different algorithms to it.
+
+\image html edit_mesh1.png
+
+\image html edit_mesh_remove_hyp.png
+
+\image html edit_mesh_change_value_hyp.png
+
+<br><b>See Also</b> a sample TUI Script of an 
+\ref tui_editing_mesh "Edit Mesh" operation.  
+
+*/

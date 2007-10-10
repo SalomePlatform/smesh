@@ -1,0 +1,67 @@
+/*!
+
+\page projection_algos_page Projection Algorithms
+
+\n Projection algorithms allow to define the mesh of a geometrical
+object by the projection of another already meshed geometrical object.
+
+<b>Projection 1D</b> algorithm permits to define the mesh of an edge
+by the projection of another already meshed edge.
+\n To apply this algorithm select the edge to be meshed (indicated in
+the field \b Geometry of <b>Create mesh</b> dialog box),
+<b>Projection1D</b> in the list of 1D algorithms and click the
+<em>"Add Hypothesis"</em> button.
+The following dialog box will appear:
+
+\image html projection_1d.png
+
+In this menu you can define the \b Name of the algorithm, the algeady
+meshed source \b Edge and the \b Mesh (optional, use it if there are several
+different meshes on the same edge). It could also be necessary to
+define the orientation of edges, which is done by indicating the
+<b>Source Vertex</b> being the first point of the Source Edge and the 
+<b>Target Vertex</b> being the first point of the created \b Edge.
+
+\n <b>Projection 2D</b> algorithm permits to define the mesh of a face by the
+projection of another already meshed face. This algorithm works only
+if all edges of the target face have been meshed as 1D Projections of
+the edges of the source face.
+
+To apply this algorithm select the face to be meshed (indicated in the
+field \b Geometry of <b>Create mesh</b> dialog box), <b>Projection 2D</b> in the list
+of 2D algorithms and click the <em>"Add Hypothesis"</em> button. The
+following dialog box will appear:
+
+\image html projection_2d.png
+
+In this menu you can define the \b Name of the algorithm, the algeady
+meshed source \b Face and the \b Mesh (optional, use it if there are several
+different meshes on the same face). It could also be necessary to
+define the orientation of mesh on the face, which is done by
+indicating two <b>Source Vertices</b>, which belong to the same edge of the
+source face, and two <b>Target Vertices</b>, which belong to the same edge of
+the created \b Face.
+
+\n <b>Projection 3D</b> algorithm permits to define the mesh of a shape by
+the projection of another already meshed shape.  This algorithm works
+only if all faces and edges of the target face have been meshed as 1D
+Projections of the faces and edges of the source face. Another
+limitation is that this algorithm currently works only on boxes.
+
+To apply this algorithm select the solid to be meshed (indicated in
+the field \b Geometry of <b>Create mesh</b> dialog box), <b>Projection
+3D</b> in the list of 3D algorithms and click the  button. The
+following dialog box will appear:
+
+\image html projection_3d.png
+
+In this menu you can define the \b Name of the algorithm, the algeady
+meshed source <b>3D shape</b> and the \b Mesh (optional, use it if there are
+several different meshes on the same shape). It could also be
+necessary to define the orientation of mesh on the shape, which is
+done by indicating two <b>Source Vertices</b>, which belong to the same edge
+of the source <b>3D Shape</b>, and two <b>Target Vertices</b>, which belong to the
+same edge of the source <b>3D Shape</b>.
+
+*/
+

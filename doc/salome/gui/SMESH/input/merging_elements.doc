@@ -1,0 +1,19 @@
+/*!
+
+\page merging_elements_page Merging Elements
+
+\n This functionality allows to merge coincident elements of a mesh
+selectable in the dialog box.
+
+\image html mergeelems.png
+
+In this picture you see a triangle which coincides with one of the
+elements of the mesh. After we apply <b>Merge Elements</b> functionality, the
+triangle will be completely merged with the mesh.
+
+\image html meshtrianglemergeelem1.png
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_merging_elements "Merge Elements" operation.  
+
+*/

@@ -1,0 +1,13 @@
+/*!
+
+\page length_page Length
+
+\n Length quality control criterion returns a value of length of
+edge.
+
+\image html length-crit.png
+
+<br><b>See Also</b> a sample TUI Script of a  
+\ref tui_length_1d "Length quality control" operation.  
+
+*/

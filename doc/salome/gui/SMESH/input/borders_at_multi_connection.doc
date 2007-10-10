@@ -1,0 +1,16 @@
+/*!
+
+\page borders_at_multi_connection_page Borders at multi-connection
+
+\n This mesh quality control highlights borders of faces consisting of
+edges belonging to several faces. The amount of faces is specified by
+user.
+
+\image html image151.gif
+
+In this picture the borders at multi-connection are displayed in blue.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_borders_at_multiconnection "Borders at Multi-Connection quality control" operation.
+
+*/

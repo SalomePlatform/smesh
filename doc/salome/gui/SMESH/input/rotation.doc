@@ -1,0 +1,31 @@
+/*!
+
+\page rotation_page Rotation
+
+\n This geometrical operation allows to rotate in space your mesh or
+some of its elements.
+
+<em>To rotate your mesh:</em>
+\par
+From the \b Modification choose \b Transformation and  from its sub-menu
+select the \b Rotation item. The following dialog box shall appear:
+
+\image html rotation.png
+\par 
+In this dialog box you can specify the elements which should be
+rotated and the rotation parameters:
+<ul>
+<li>\b Axis: point and vector</li>
+<li>\b Angle of rotation</li>
+</ul>
+\par
+<b>Create a copy</b> radio button allows to copy the rotated object.
+
+\image html rotation1.png
+
+\image html rotation2.png
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_rotation "Rotation" operation.  
+
+*/

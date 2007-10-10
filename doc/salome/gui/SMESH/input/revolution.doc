@@ -1,0 +1,49 @@
+/*!
+
+\page revolution_page Revolution
+
+\n Revolution is a type of surface meshing by generation from
+discretized lines. It is used to build mesh elements of plus one
+dimension than the swept ones. Each swept 1D element produces one or
+more quadrangles (or triangles if one node of a rotated element lays
+on the revolution axis).
+
+<em>To apply revolution:</em>
+<ol>
+<li>From the \b Modification menu choose the \b Revolution item or click
+<em>"Revolution"</em> button in the toolbar.
+
+\image html image92.gif
+<center><em>"Revolution" button</em></center>
+
+The following dialog box shall appear:
+
+\image html revolution1.png
+
+\image html revolution2.png
+</li>
+
+<li>
+In this dialog box you should specify:
+<ul>
+<li>the type of elements which will be extruded (1D or 2D),</li>
+<li>specify the IDs of the elements which will be revolved by
+selecting them in the 3D viewer or select the whole mesh or
+submesh,</li>
+<li>specify the axis (point and vector) around which the elements will
+be revolved,</li>
+<li>angle of rotation,</li>
+<li>number of steps,</li>
+<li>tolerance of rotation</li>
+</ul>
+</li>
+
+<li>Click the \b Apply or \b OK button.</li>
+</ol>
+
+\image html image78.jpg
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_revolution "Revolution" operation.
+
+*/

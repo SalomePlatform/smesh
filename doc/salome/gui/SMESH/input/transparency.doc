@@ -1,0 +1,11 @@
+/*!
+
+\page transparency_page Transparency
+
+\image html a-transparency.png
+
+Using this slider you can set the transparency of shading. Absolutely
+transparent shading will be invisible. By default it is absolutely
+opaque.
+
+*/

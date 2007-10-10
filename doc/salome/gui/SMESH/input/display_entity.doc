@@ -1,0 +1,12 @@
+/*!
+
+\page display_entity_page Display Entity
+
+\n In this submenu you can choose to display only volumes, faces or
+edges or combine them.
+
+\image html image56.jpg Only Faces
+
+\image html image58.gif Only Edges
+
+*/

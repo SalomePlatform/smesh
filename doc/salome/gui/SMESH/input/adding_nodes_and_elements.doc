@@ -1,0 +1,140 @@
+/*!
+
+\page adding_nodes_and_elements_page Adding nodes and elements
+
+\n In MESH you can add to your mesh different elements such as:
+
+<ul>
+<li>\ref adding_nodes_anchor "Nodes"</li>
+<li>\ref adding_edges_anchor "Edges"</li>
+<li>\ref adding_triangles_anchor "Triangles"</li>
+<li>\ref adding_quadrangles_anchor "Quadrangles"</li>
+<li>\ref adding_polygons_anchor "Polygons"</li>
+<li>\ref adding_tetrahedrons_anchor "Tetrahedrons"</li>
+<li>\ref adding_hexahedrons_anchor "Hexahedrons"</li>
+<li>\ref adding_polyhedrons_anchor "Polyhedrons"</li>
+</ul>
+
+<em>To add a node or an element to your mesh:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the \b Modification menu choose the \b Add item, the
+following associated submenu will appear:</li>
+
+\image html image146.gif
+
+From this submenu select the type of element which you would like to add to your mesh.
+</ol>
+
+<b>See Also</b> sample TUI Scripts of  
+\ref tui_adding_nodes_and_elements "Adding Nodes and Elements"
+operations.  
+
+<br>
+\anchor adding_nodes_anchor
+<h2>Adding nodes</h2>
+
+\image html addnode.png
+
+In this dialog box set coordinates for your node in the \b Coordinates
+set of fields and click the \b Apply or \b OK button. Your node will be
+created:
+
+\image html add_node.png
+
+<br>
+\anchor adding_edges_anchor
+<h2>Adding edges</h2>
+
+\image html addedge.png
+
+In this dialog box specify the nodes which will form your edge by
+selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button. Your edge will be created:
+
+\image html add_edge.png
+
+<br>
+\anchor adding_triangles_anchor
+<h2>Adding triangles</h2>
+
+\image html addtriangle.png
+
+In this dialog box specify the nodes which will form your triangle by
+selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button. Your triangle will be created:
+
+\image html add_triangle.png
+
+<br>
+\anchor adding_quadrangles_anchor
+<h2>Adding quadrangles</h2>
+
+\image html addquadrangle.png
+
+In this dialog box specify the nodes which will form your quadrangle
+by selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button. Your quadrangle will be created:
+
+\image html add_quadrangle.png
+
+<br>
+\anchor adding_polygons_anchor
+<h2>Adding polygons</h2>
+
+\image html addpolygon.png
+
+In this dialog box specify the nodes which will form your polygon by
+selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button.
+
+\image html add_polygone.png
+
+<br>
+\anchor adding_tetrahedrons_anchor
+<h2>Adding tetrahedrons</h2>
+
+\image html addtetrahedron.png
+
+In this dialog box specify the nodes which will form your tetrahedron
+by selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button. Your tetrahedron will be created:
+
+\image html image70.jpg
+
+<br>
+\anchor adding_hexahedrons_anchor
+<h2>Adding hexahedrons</h2>
+
+\image html addhexahedron.png
+
+In this dialog box specify the nodes which will form your hexahedron
+by selecting them in the 3D viewer with pressed Shift button and click
+the \b Apply or \b OK button. Your hexahedron will be created:
+
+\image html image71.jpg
+
+<br>
+\anchor adding_polyhedrons_anchor
+<h2>Adding polyhedrons</h2>
+
+\image html a-createpolyhedralvolume.png
+
+There are two different ways to add polyhedral volumes. 
+\n If you select \b Node as <b>Elements Type</b> you will specify the
+nodes which will form the faces of your polyhedron by selecting the
+nodes in the 3D viewer with pressed Shift button and clicking the \b
+Add button to add the face in the list of Faces by Nodes, which will
+form your polyhedron. Note, that it could be very useful to toggle
+Polyhedron Preview checkbox to see the results of your selection.
+\n The second way is somewhat simpler, however, there are cases when
+it does not provide you with the necessary level of precision. If you
+select \b Face as <b>Elements Type</b>, you will be able to select the faces
+which will form your polyhedron in the 3D viewer with pressed Shift
+button. If you've managed to obtain the necessary result, click the
+\b Apply or \b OK button. Your polyhedron will be created:
+
+\image html add_polyhedron.png
+
+*/

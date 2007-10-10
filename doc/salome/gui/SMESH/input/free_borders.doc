@@ -1,0 +1,15 @@
+/*!
+
+\page free_borders_page Free borders
+
+\n This mesh quality control highlights borders of faces consisting of
+edges belonging to one face only.
+
+\image html free_borders1.png
+
+In this picture the free borders are displayed in white.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_free_borders "Free Borders quality control" operation.  
+
+*/

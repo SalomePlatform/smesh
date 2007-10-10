@@ -1,0 +1,48 @@
+/*!
+
+\page viewing_meshes_overview_page Overview
+
+\n After definition of algorithms and hypotheses a new mesh is listed
+in the Object Browser. Right-click on it and select \b Compute - the
+mesh will be automatically displayed in the <b>VTK 3D Viewer</b>. 
+Alternatively click <b>Display only</b> to hide all other objects at
+the same time.
+
+<b>VTK 3D Viewer</b> is detailly described in the documentation on <b>GUI module</b>.
+\n After the mesh has appeared in the Viewer, you can select it with
+left mouse click and  get information about it, change its
+presentation parameters and access to other useful options by
+right-clicking on the selected mesh.
+
+\image html image15.jpg
+
+<ul>
+<li><b>Erase all</b> - allows to hide all objects in the viewer.</li>
+<li><b>Update</b> - refreshes the presentation of your mesh in the
+Object Browser, applying all recent changes. </li>
+<li>\ref advanced_mesh_infos_anchor "Advanced Mesh Infos" -  provides
+more detailed information about the mesh.</li>
+<li>\ref standard_mesh_infos_anchor "Standard Mesh Infos" - provides
+basic information about the mesh.</li>
+<li>\ref numbering_page "Numbering"  - allows to display the ID
+numbers of all meshing elements or nodes composing your mesh in the
+viewer.</li>
+<li>\ref display_mode_page "Display Mode" - allows to select between
+Wireframe, Shading and Nodes presentation.</li>
+<li>\ref display_entity_page "Display Entity" - allows to display
+Faces, Edges or both.</li>
+<li><b>Colors / Size</b> - allows to select color and size of
+meshes.</li>
+<li>\ref transparency_page "Transparency" - allows to change the
+transparency of mesh elements.</li>
+<li>\ref clipping_page "Clipping" - allows to create cross-sections of the selected objects.</li>
+<li>\ref about_quality_controls_page "Quality Controls" - graphically
+presents various information about meshes.</li>
+<li><b>Erase</b> - allows to hide the selected mesh from the viewer.</li>
+<li><b>Display Only</b> -allows to display only the selected mesh, hiding all other from the viewer.</li>
+<li><b>Dump view</b> - exports an object from the viewer in bmp, png, jpg or jpeg image format.</li>
+<li><b>Change background</b> - allows to redefine the background color. By default it is black.</li>
+</ul>
+
+*/
+

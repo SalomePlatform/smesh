@@ -1,0 +1,52 @@
+/*!
+
+\page about_hypo_page About Hypotheses
+
+\n \b Hypotheses represent boundary conditions which will be taken into
+account at calculations of meshes or submeshes basing on geometrical
+objects. These hypotheses allow you to manage the level of detail of
+the resulting meshes or submeshes: when applying different hypotheses
+with different parameters you can preset the quantity of meshing
+elements which will compose your mesh. So, it will be possible to
+generate a rough or a more refined mesh or submesh.
+
+In \b MESH there are the following Basic Hypotheses (to introduce
+them, you operate numerical values):
+<ul>
+<li>\ref a1d_meshing_hypo_page "1D Hypotheses" (for meshing of 
+<b>edges</b>):</li>
+<ul>
+<li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+<li>\ref average_length_anchor "Average Length"</li>
+<li>\ref deflection_1d_anchor "Deflection 1D"</li>
+<li>\ref number_of_segments_anchor "Number of segments"</li>
+<li>\ref start_and_end_length_anchor "Start and end length"</li>
+<li>\ref automatic_length_anchor "Automatic Length"</li>
+</ul>
+<li>\ref a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
+<ul>
+<li>\ref max_element_area_anchor "Max Element Area"</li>
+<li>\ref length_from_edges_anchor "Length from Edges"</li>
+<li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+</ul>
+<li>3D Hypothesis (for meshing of <b>volumes</b>):</li>
+<ul>
+<li>\ref max_element_volume_hypo_page "Max Element Volume"</li>
+</ul>
+</ul>
+
+There also exist some 
+\ref additional_hypo_page "Additional Hypotheses":
+<ul>
+<li>Propagation of 1D Hypothesis on opposite edges</li>
+<li>Non conform mesh allowed</li>
+<li>Quadratic mesh</li>
+</ul>
+
+The choice of a hypothesis depends on:
+<ul>
+<li>the geometrical object (shape) which will be meshed</li>
+<li>the algorithm, which will be selected for meshing of this geometrical object (shape)</li>
+</ul>
+ 
+*/

@@ -1,0 +1,47 @@
+/*!
+
+\page extrusion_page Extrusion
+
+\n Extrusion is a type of surface meshing by generation from
+discretized lines. It is used to build mesh elements of plus one
+dimension than the swept ones. Each swept 1D element produces one or
+more quadrangles (or triangles if one node of a rotated element lays
+on the revolution axis).
+
+<em>To use extrusion:</em>
+<ol>
+<li>From the \b Modification menu choose the \b Extrusion item or click
+<em>"Extrusion"</em> button in the toolbar. 
+
+\image html image91.gif
+<center><em>"Extrusion" button</em></center>
+
+The following dialog box will appear:
+
+\image html extrusionalongaline1.png
+
+\image html extrusionalongaline2.png
+</li>
+
+<li>In this dialog box you should select:
+<ul>
+<li>the type of elements which will be extruded (1D or 2D),</li>
+<li>specify the IDs of the elements which will be extruded by
+selecting them in the 3D viewer or select the whole mesh or
+submesh,</li>
+<li>specify the vector along which the elements will be extruded,</li>
+<li>number of steps.</li>
+</ul>
+</li>
+
+<li>Click the \b Apply or \b OK button.</li>
+</ol>
+
+\image html image77.jpg
+
+\image html image76.jpg
+
+<br><b>See Also</b> a sample TUI Script of an 
+\ref tui_extrusion "Extrusion" operation. 
+
+*/

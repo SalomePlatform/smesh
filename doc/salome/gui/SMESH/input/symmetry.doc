@@ -1,0 +1,35 @@
+/*!
+
+\page symmetry_page Symmetry
+
+\n This geometrical operation allows to perform a symmetrical copy of
+your mesh or some of its elements.
+
+<em>To apply symmetry to your mesh:</em>
+\par
+From the \b Modification choose \b Transformation and  from its
+sub-menu select the \b Symmetry item. The following dialog box shall
+appear:
+
+\image html symmetry1.png
+
+\image html symmetry2.png
+
+\image html symmetry3.png
+
+\par
+This operation has three options, you can symmetrically copy your mesh
+or some of its elements specifying:
+<ul>
+<li>one point</li>
+<li>one axis (point and vector)</li>
+<li>one plane (point and normal)</li>
+</ul>
+\par
+<b>Create a copy</b> radio button allows to keep the initial elements or
+mesh.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_symmetry "Symmetry" operation.  
+
+*/

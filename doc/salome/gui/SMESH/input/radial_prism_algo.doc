@@ -1,0 +1,24 @@
+/*!
+
+\page radial_prism_algo_page Radial Prism
+
+\n This algorithm applies to the meshing of a hollow 3D shape,
+i.e. such shape should be composed of two meshed shells: an outer
+shell and an internal shell without intersection with the outer
+shell. One of the shells should be a 2D Projection of the other
+shell. The meshes of the shells can consist both of triangles and
+quadrangles.
+
+The Radial Prism algorithm would fill the space between the two shells
+with meshes.
+
+This algorithm also needs the information concerning the number and
+distribution of mesh layers between the inner and the outer shapes.
+
+\image html number_of_layers.png
+
+Distribution of layers can be set with any of 1D Hypotheses.
+
+\image html distribution_of_layers.png
+
+*/

@@ -1,0 +1,32 @@
+/*!
+
+\page translation_page Translation
+
+\n This geometrical operation allows to translate in space your mesh
+or some of its elements.
+
+<em>To translate your mesh:</em>
+\par
+From the \b Modification choose \b Transformation and from its
+sub-menu select the \b Translation item. The following dialog box
+shall appear:
+
+\image html translation1.png
+
+\image html translation2.png
+
+\par
+This operation has two options, you can translate in space your mesh
+or some of its elements specifying:
+<ul>
+<li>two points (starting and ending)</li>
+<li>one vector</li>
+</ul>
+Toggle the corresponding checkbox to <b>Select whole mesh, submesh or
+group</b>.
+<b>Create a copy</b> button allows to copy the translated object.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_translation "Translation" operation.  
+
+*/
