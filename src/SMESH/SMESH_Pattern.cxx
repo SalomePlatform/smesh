@@ -966,8 +966,9 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
   // SKL 26.07.2007 for NPAL16567
   double d1 = (uv11-uv12).Modulus();
   double d2 = (uv21-uv22).Modulus();
-  double delta = d1*d2*1e-6;
-  isDeformed = ( loc1 - loc2 ).SquareModulus() > delta;
+  // double delta = d1*d2*1e-6; PAL17233
+  double delta = min( d1, d2 ) / 10.;
+  isDeformed = ( loc1 - loc2 ).SquareModulus() > delta * delta;
 
 //   double len1 = ( uv11 - uv12 ).Modulus();
 //   double len2 = ( uv21 - uv22 ).Modulus();
@@ -991,6 +992,10 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
   
 //   resUV /= 2.;
 //     }
+  if ( isDeformed ) {
+    MESSAGE("intersectIsolines(), d1 = " << d1 << ", d2 = " << d2 << ", delta = " << delta <<
+            ", " << (loc1 - loc2).SquareModulus() << " > " << delta * delta);
+  }
   return true;
 }
 
