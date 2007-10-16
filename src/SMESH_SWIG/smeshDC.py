@@ -306,7 +306,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface, 
                         FT_BelongToCylinder, FT_LyingOnGeom]:
             # Check treshold
-            if isinstance(aTreshold, self.geompyD.GEOM._objref_GEOM_Object):
+            if isinstance(aTreshold, geompyDC.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aTreshold)
                 aCriterion.ThresholdID = salome.ObjectToID(aTreshold)
             else:
@@ -611,7 +611,7 @@ class Mesh_Segment(Mesh_Algorithm):
         store_geom = self.geom
         if vertex:
             if type(vertex) is types.IntType:
-                vertex = self.mesh.geompyD.SubShapeAllSorted(self.geom,self.mesh.geompyD.ShapeType["VERTEX"])[vertex]
+                vertex = self.mesh.geompyD.SubShapeAllSorted(self.geom, geompyDC.ShapeType["VERTEX"])[vertex]
                 pass
             self.geom = vertex
             pass
