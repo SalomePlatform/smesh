@@ -2490,11 +2490,11 @@ msgstr "Transparency"
 msgid "MEN_CLIP"
 msgstr "Clipping"
 
-msgid "MEN_DISPLAY"
-msgstr "Display"
+msgid "MEN_SHOW"
+msgstr "Show"
 
-msgid "MEN_ERASE"
-msgstr "Erase"
+msgid "MEN_HIDE"
+msgstr "Hide"
 
 msgid "MEN_DISPLAY_ONLY"
 msgstr "Display only"
