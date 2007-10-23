@@ -2339,7 +2339,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(  141, "EXPORT_STL" );
-  createSMESHAction(   33, "DELETE",          "ICON_DELETE" );
+  createSMESHAction(   33, "DELETE",          "ICON_DELETE", Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
   createSMESHAction(  701, "COMPUTE",         "ICON_COMPUTE" );
   createSMESHAction(  702, "CREATE_MESH",     "ICON_DLG_INIT_MESH" );
@@ -2413,7 +2413,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  219, "VOLUMES",        "ICON_DLG_TETRAS", 0, true );
   createSMESHAction(  220, "ALL" );
   createSMESHAction( 1100, "EDIT_HYPO" );
-  createSMESHAction( 1101, "RENAME" );
+  createSMESHAction( 1101, "RENAME", "", Key_F2 );
   createSMESHAction( 1102, "UNASSIGN" );
   createSMESHAction( 9010, "NUM_NODES", "", 0, true );
   createSMESHAction( 9011, "NUM_ELEMENTS", "", 0, true );
@@ -2681,10 +2681,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
-  createPopupItem( 125, OB, mesh, only_one_non_empty );    // EXPORT_MED
-  createPopupItem( 126, OB, mesh, only_one_non_empty );    // EXPORT_UNV
-  createPopupItem( 141, OB, mesh, only_one_non_empty );    // EXPORT_STL
-  createPopupItem( 33, OB, subMesh + " " + group );        // DELETE
+  createPopupItem( 125, OB, mesh, only_one_non_empty );   // EXPORT_MED
+  createPopupItem( 126, OB, mesh, only_one_non_empty );   // EXPORT_UNV
+  createPopupItem( 141, OB, mesh, only_one_non_empty );   // EXPORT_STL
+  //createPopupItem(  33, OB, subMesh + " " + group );      // DELETE
+  createPopupItem(  33, OB, mesh_group + " " + hyp_alg ); // DELETE
   popupMgr()->insert( separator(), -1, 0 );
 
   // popup for viewer
