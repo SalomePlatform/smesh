@@ -2801,11 +2801,11 @@ msgstr "Transparency"
 msgid "TOP_CLIP"
 msgstr "Clipping"
 
-msgid "TOP_DISPLAY"
-msgstr "Display"
+msgid "TOP_SHOW"
+msgstr "Show"
 
-msgid "TOP_ERASE"
-msgstr "Erase"
+msgid "TOP_HIDE"
+msgstr "Hide"
 
 msgid "TOP_DISPLAY_ONLY"
 msgstr "Display only"
@@ -3114,18 +3114,14 @@ msgstr "Transparency"
 msgid "STB_CLIP"
 msgstr "Clipping"
 
-msgid "STB_DISPLAY"
-msgstr "Display"
+msgid "STB_SHOW"
+msgstr "Show"
 
-msgid "STB_ERASE"
-msgstr "Erase"
+msgid "STB_HIDE"
+msgstr "Hide"
 
 msgid "STB_DISPLAY_ONLY"
 msgstr "Display only"
-
-
-
-
 
 msgid "TB_MESH"
 msgstr "Mesh Toolbar"
