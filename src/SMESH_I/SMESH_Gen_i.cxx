@@ -1030,7 +1030,7 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetComputeErrors()" );
 
-  if ( CORBA::is_nil( theSubObject ) )
+  if ( CORBA::is_nil( theSubObject ) && theMesh->HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
@@ -1040,7 +1040,12 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   try {
     if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
     {
-      TopoDS_Shape shape = GeomObjectToShape( theSubObject );
+      TopoDS_Shape shape;
+      if(theMesh->HasShapeToMesh())
+        shape = GeomObjectToShape( theSubObject );
+      else
+        shape = SMESH_Mesh::PseudoShape();
+      
       ::SMESH_Mesh& mesh = meshServant->GetImpl();
 
       error_array->length( mesh.GetMeshDS()->MaxShapeIndex() );
@@ -1095,7 +1100,7 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetAlgoState()" );
 
-  if ( CORBA::is_nil( theSubObject ) )
+  if ( CORBA::is_nil( theSubObject ) && theMesh->HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
@@ -1106,7 +1111,12 @@ SMESH::algo_error_array* SMESH_Gen_i::GetAlgoState( SMESH::SMESH_Mesh_ptr theMes
     SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
     ASSERT( meshServant );
     if ( meshServant ) {
-      TopoDS_Shape myLocShape = GeomObjectToShape( theSubObject );
+      TopoDS_Shape myLocShape;
+      if(theMesh->HasShapeToMesh())
+        myLocShape = GeomObjectToShape( theSubObject );
+      else
+        myLocShape = SMESH_Mesh::PseudoShape();
+      
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       list< ::SMESH_Gen::TAlgoStateError > error_list;
       list< ::SMESH_Gen::TAlgoStateError >::iterator error;
@@ -1224,7 +1234,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
   Unexpect aCatch(SALOME_SalomeException);
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Compute" );
 
-  if ( CORBA::is_nil( theShapeObject ) )
+  if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", 
                                   SALOME::BAD_PARAM );
 
@@ -1244,7 +1254,11 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
       meshServant->CheckGeomGroupModif();
       // get local TopoDS_Shape
-      TopoDS_Shape myLocShape = GeomObjectToShape( theShapeObject );
+      TopoDS_Shape myLocShape;
+      if(theMesh->HasShapeToMesh())
+        myLocShape = GeomObjectToShape( theShapeObject );
+      else
+        myLocShape = SMESH_Mesh::PseudoShape();
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
       return myGen.Compute( myLocMesh, myLocShape);
@@ -1785,6 +1799,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             int id = myStudyContext->findId( string( objStr.in() ) );
             ::SMESH_Mesh& myLocMesh = myImpl->GetImpl();
             SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
+            bool hasShape = myLocMesh.HasShapeToMesh();
 
             // for each mesh open the HDF group basing on its id
             char meshGrpName[ 30 ];
@@ -1830,10 +1845,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // write applied hypotheses if exist
             SALOMEDS::SObject_var myHypBranch;
             found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch );
-            if ( found && !shapeRefFound ) { // remove applied hyps
+            if ( found && !shapeRefFound && hasShape) { // remove applied hyps
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
             }
-            if ( found && shapeRefFound ) {
+            if ( found && (shapeRefFound || !hasShape) ) {
               aGroup = new HDFgroup( "Applied Hypotheses", aTopGroup );
               aGroup->CreateOnDisk();
 
@@ -1873,10 +1888,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // write applied algorithms if exist
             SALOMEDS::SObject_var myAlgoBranch;
             found = gotBranch->FindSubObject( GetRefOnAppliedAlgorithmsTag(), myAlgoBranch );
-            if ( found && !shapeRefFound ) { // remove applied algos
+            if ( found && !shapeRefFound && hasShape) { // remove applied algos
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myAlgoBranch );
             }
-            if ( found && shapeRefFound ) {
+            if ( found && (shapeRefFound || !hasShape)) {
               aGroup = new HDFgroup( "Applied Algorithms", aTopGroup );
               aGroup->CreateOnDisk();
 
@@ -2185,7 +2200,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 	      myWriter.Perform();
 	      
 	      // maybe a shape was deleted in the study
-	      if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() ) {
+	      if ( !shapeRefFound && !mySMESHDSMesh->ShapeToMesh().IsNull() && hasShape) {
 		TopoDS_Shape nullShape;
 		myLocMesh.ShapeToMesh( nullShape ); // remove shape referring data
 	      }
@@ -2911,7 +2926,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
               if ( !CORBA::is_nil( hypObject ) ) {
                 SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-                if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                if ( !anHyp->_is_nil() && (!aShapeObject->_is_nil()
+                                           || !myNewMeshImpl->HasShapeToMesh()) )
                   myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
               }
             }
@@ -2948,7 +2964,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               CORBA::Object_var hypObject = GetORB()->string_to_object( anIOR.c_str() );
               if ( !CORBA::is_nil( hypObject ) ) {
                 SMESH::SMESH_Hypothesis_var anHyp = SMESH::SMESH_Hypothesis::_narrow( hypObject );
-                if ( !anHyp->_is_nil() && !aShapeObject->_is_nil() )
+                if ( !anHyp->_is_nil() && (!aShapeObject->_is_nil()
+                                           || !myNewMeshImpl->HasShapeToMesh()) )
                   myNewMeshImpl->addHypothesis( aShapeObject, anHyp );
               }
             }
@@ -3314,9 +3331,14 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       } // if ( hasData )
 
       // Recompute State (as computed sub-meshes are restored from MED)
-      if ( !aShapeObject->_is_nil() ) {
+      if ( !aShapeObject->_is_nil() || !myNewMeshImpl->HasShapeToMesh()) {
         MESSAGE("Compute State Engine ...");
-        TopoDS_Shape myLocShape = GeomObjectToShape( aShapeObject );
+        TopoDS_Shape myLocShape;
+        if(myNewMeshImpl->HasShapeToMesh())
+          myLocShape = GeomObjectToShape( aShapeObject );
+        else
+          myLocShape = SMESH_Mesh::PseudoShape();
+        
         myNewMeshImpl->GetImpl().GetSubMesh(myLocShape)->ComputeStateEngine
           (SMESH_subMesh::SUBMESH_RESTORED);
         MESSAGE("Compute State Engine finished");

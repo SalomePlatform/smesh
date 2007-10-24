@@ -412,10 +412,12 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   case TopAbs_SOLID:
     {
       //MESSAGE("solid");
-      for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
-           exp.Next())
-      {
-        InsertDependence(exp.Current());
+      if(_father->HasShapeToMesh()) {
+        for (TopExp_Explorer exp(_subShape, TopAbs_FACE); exp.More();
+             exp.Next())
+        {
+          InsertDependence(exp.Current());
+        }
       }
       break;
     }
@@ -496,9 +498,14 @@ const TopoDS_Shape & SMESH_subMesh::GetSubShape() const
 bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) const
 {
   int aHypDim   = theHypothesis->GetDim();
-  int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
-  if ( aHypDim <= aShapeDim )
-    return true;
+  if(_father->HasShapeToMesh()) {
+    int aShapeDim = SMESH_Gen::GetShapeDim(_subShape);
+    if ( aHypDim <= aShapeDim )
+      return true;
+  }
+  else
+    //Only 3D hypothesis may be assigned to the mesh w/o geometry
+    return aHypDim == 3;
 //   if ( aHypDim < aShapeDim )
 //     return ( _father->IsMainShape( _subShape ));
 
@@ -601,8 +608,9 @@ SMESH_Hypothesis::Hypothesis_Status
     // check if a shape needed by algo is present
     // -------------------------------------------
     algo = static_cast< SMESH_Algo* >( anHyp );
-    if ( !_father->HasShapeToMesh() && algo->NeedShape() )
-      return SMESH_Hypothesis::HYP_BAD_GEOMETRY;
+    if(_father->GetShapeToMesh() != SMESH_Mesh::PseudoShape())
+      if ( !_father->HasShapeToMesh() && algo->NeedShape() )
+        return SMESH_Hypothesis::HYP_BAD_GEOMETRY;
     // ----------------------
     // check mesh conformity
     // ----------------------
@@ -618,6 +626,17 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ! CanAddHypothesis( anHyp )) // check dimension
       return SMESH_Hypothesis::HYP_BAD_DIM;
 
+    if(anHyp->GetDim() == 3 && !_father->HasShapeToMesh()
+       && event == ADD_ALGO) {
+      //Only NETGEN_3D and GHS3D_3D can be assigned to the Mesh w/o geometryy
+      bool isNetgen3D = (strcmp( "NETGEN_3D", anHyp->GetName()) == 0);
+      bool  isGhs3d = (strcmp( "GHS3D_3D", anHyp->GetName()) == 0);
+      if( !isNetgen3D && !isGhs3d)
+        return SMESH_Hypothesis::HYP_BAD_DIM;
+    }
+      
+
+    
     if ( /*!anHyp->IsAuxiliary() &&*/ GetSimilarAttached( _subShape, anHyp ) )
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
 

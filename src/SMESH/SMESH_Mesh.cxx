@@ -214,7 +214,7 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverUNV_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
@@ -269,7 +269,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   if(MYDEBUG) MESSAGE("MEDToMesh - theFileName = "<<theFileName<<", mesh name = "<<theMeshName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetMeshId(-1);
@@ -312,7 +312,7 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
   if(MYDEBUG) MESSAGE("STLToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverSTL_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);

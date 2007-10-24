@@ -1138,3 +1138,36 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   return true;
 }
+
+/**
+ * Check mesh without geometry for: if all elements on this shape are quadratic,
+ * quadratic elements will be created.
+ * Used then generated 3D mesh without geometry.
+   */
+SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
+{
+  int NbAllEdgsAndFaces=0;
+  int NbQuadFacesAndEdgs=0;
+  int NbFacesAndEdges=0;
+  //All faces and edges
+  NbAllEdgsAndFaces = myMesh->NbEdges() + myMesh->NbFaces();
+  
+  //Quadratic faces and edges
+  NbQuadFacesAndEdgs = myMesh->NbEdges(ORDER_QUADRATIC) + myMesh->NbFaces(ORDER_QUADRATIC);
+
+  //Linear faces and edges
+  NbFacesAndEdges = myMesh->NbEdges(ORDER_LINEAR) + myMesh->NbFaces(ORDER_LINEAR);
+  
+  if (NbAllEdgsAndFaces == NbQuadFacesAndEdgs) {
+    //Quadratic mesh
+    return SMESH_MesherHelper::QUADRATIC;
+  }
+  else if (NbAllEdgsAndFaces == NbFacesAndEdges) {
+    //Linear mesh
+    return SMESH_MesherHelper::LINEAR;
+  }
+  else
+    //Mesh with both type of elements
+    return SMESH_MesherHelper::COMP;
+}
+

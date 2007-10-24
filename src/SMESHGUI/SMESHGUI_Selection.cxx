@@ -296,8 +296,25 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
         _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
 	//FindSObject( mesh );
         if ( so ) {
-          GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-          return QVariant( !shape->_is_nil(), 0 );
+          CORBA::Object_var obj = SMESH::SObjectToObject(so, SMESH::GetActiveStudyDocument());
+          if(!CORBA::is_nil(obj)){
+            SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+            if (!mesh->_is_nil()){
+              if(mesh->HasShapeToMesh()) {
+                GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+                return QVariant( !shape->_is_nil(), 0 );
+              }
+              else
+              {
+                return QVariant(!mesh->NbFaces()==0, 0);
+              }
+            }
+            else
+            {
+              GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+              return QVariant( !shape->_is_nil(), 0 );
+            }
+          }
         }
 //      }
 //    }

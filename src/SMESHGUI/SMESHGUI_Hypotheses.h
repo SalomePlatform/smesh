@@ -149,7 +149,8 @@ class HypothesisData
                   const QStringList& theNeededHypos,
                   const QStringList& theOptionalHypos,
                   const QStringList& theInputTypes,
-                  const QStringList& theOutputTypes)
+                  const QStringList& theOutputTypes,
+		  const bool theIsNeedGeometry = true)
     : TypeName( theTypeName ),
     PluginName( thePluginName ),
     ServerLibName( theServerLibName ),
@@ -159,7 +160,8 @@ class HypothesisData
     Dim( theDim ),
     IsAux( theIsAux ),
     NeededHypos( theNeededHypos ), OptionalHypos( theOptionalHypos ),
-    InputTypes( theInputTypes ), OutputTypes( theOutputTypes )
+    InputTypes( theInputTypes ), OutputTypes( theOutputTypes ),
+    IsNeedGeometry( theIsNeedGeometry )
     {};
 
  QString TypeName;        //!< hypothesis type name
@@ -170,6 +172,7 @@ class HypothesisData
  QString IconId;          //!< icon identifier
  QValueList<int> Dim;     //!< list of supported dimensions (see SMESH::Dimension enumeration)
  bool IsAux;              //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
+ bool IsNeedGeometry;     //!< TRUE if for given hypothesis need shape, FALSE otherwise
 
  // for algorithm only: dependencies algo <-> algo and algo -> hypos
  QStringList NeededHypos;  //!< list of obligatory hypotheses

@@ -111,6 +111,8 @@ public:
   bool IsEmpty() const { return myString.IsEmpty(); }
   TCollection_AsciiString GetIndentation();
   const TCollection_AsciiString & GetResultValue();
+  const int GetNbResultValues();
+  const TCollection_AsciiString & GetResultValue(int res);
   const TCollection_AsciiString & GetObject();
   const TCollection_AsciiString & GetMethod();
   const TCollection_AsciiString & GetArg( int index );
@@ -210,6 +212,7 @@ class _pyMesh: public _pyObject
   bool                            myHasEditor;
 public:
   _pyMesh(const Handle(_pyCommand) theCreationCmd);
+  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString &);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();

@@ -364,9 +364,14 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
-  TPythonDump() << "status = " << _this() << ".AddHypothesis( "
-                << aSubShapeObject << ", " << anHyp << " )";
-
+  if(_impl->HasShapeToMesh()) {
+    TPythonDump() << "status = " << _this() << ".AddHypothesis( "
+                  << aSubShapeObject << ", " << anHyp << " )";
+  }
+  else {
+    TPythonDump() << "status = " << _this() << ".AddHypothesis( "<< anHyp << " )";
+  }
+  
   return ConvertHypothesisStatus(status);
 }
 
@@ -382,7 +387,7 @@ SMESH_Hypothesis::Hypothesis_Status
 {
   if(MYDEBUG) MESSAGE("addHypothesis");
 
-  if (CORBA::is_nil(aSubShapeObject))
+  if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
                                  SALOME::BAD_PARAM);
 
@@ -394,7 +399,13 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
   try
   {
-    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+    TopoDS_Shape myLocSubShape;
+    //use PseudoShape in case if mesh has no shape
+    if(HasShapeToMesh())
+      myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+    else              
+      myLocSubShape = _impl->GetShapeToMesh();
+    
     int hypId = myHyp->GetId();
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
@@ -432,8 +443,15 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
                                       aSubShapeObject, anHyp );
 
   // Update Python script
+    // Update Python script
+  if(_impl->HasShapeToMesh()) {
   TPythonDump() << "status = " << _this() << ".RemoveHypothesis( "
                 << aSubShapeObject << ", " << anHyp << " )";
+  }
+  else {
+    TPythonDump() << "status = " << _this() << ".RemoveHypothesis( "
+                  << anHyp << " )";
+  }
 
   return ConvertHypothesisStatus(status);
 }
@@ -450,7 +468,7 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 	if(MYDEBUG) MESSAGE("removeHypothesis()");
 	// **** proposer liste de subShape (selection multiple)
 
-	if (CORBA::is_nil(aSubShapeObject))
+	if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
 		THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
 			SALOME::BAD_PARAM);
 
@@ -462,8 +480,14 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 	SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
 	try
 	{
-		TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
-		int hypId = myHyp->GetId();
+                TopoDS_Shape myLocSubShape;
+                //use PseudoShape in case if mesh has no shape
+                if(HasShapeToMesh())
+                  myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+                else
+                  myLocSubShape = _impl->GetShapeToMesh();
+                
+                int hypId = myHyp->GetId();
 		status = _impl->RemoveHypothesis(myLocSubShape, hypId);
                 if ( !SMESH_Hypothesis::IsStatusFatal(status) )
                   _mapHypo.erase( hypId );

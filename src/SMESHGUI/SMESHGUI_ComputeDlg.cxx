@@ -806,7 +806,9 @@ void SMESHGUI_ComputeOp::startOperation()
     MemoryReserve aMemoryReserve;
     _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
     myMainShape = aMesh->GetShapeToMesh();
-    if ( !myMainShape->_is_nil() && aMeshSObj )
+    if ( ((!myMainShape->_is_nil() && aMesh->HasShapeToMesh()) ||
+          (myMainShape->_is_nil() && !aMesh->HasShapeToMesh()))
+         && aMeshSObj )
     {
       myDlg->myMeshName->setText( aMeshSObj->GetName() );
       SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
@@ -919,10 +921,20 @@ void SMESHGUI_ComputeOp::startOperation()
     myDlg->myBriefInfo->show();
     myDlg->myFullInfo->hide();
     myDlg->myErrorGroup->show();
-
+    
+    bool hasShape = aMesh->HasShapeToMesh();
+    if ( !hasShape )
+    {
+      myDlg->myPublishBtn->hide();
+      myDlg->myShowBtn->hide();
+    }
+    else
+    {
+      myDlg->myPublishBtn->show();
+      myDlg->myShowBtn->show();
+    }
     // fill table of errors
     tbl->setNumRows( anErrors->length() );
-    bool hasShape = aMesh->HasShapeToMesh();
     if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
     else             tbl->showColumn( COL_SHAPE );
     tbl->setColumnWidth( COL_ERROR, 200 );

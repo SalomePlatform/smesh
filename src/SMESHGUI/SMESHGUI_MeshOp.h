@@ -137,6 +137,7 @@ private:
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;
   bool                           myIsMesh;
+  bool                           myIsOnGeometry; //!< TRUE if edited mesh accotiated with geometrical object
 
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
   TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current 

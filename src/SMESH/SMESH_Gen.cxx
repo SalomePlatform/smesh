@@ -162,6 +162,14 @@ bool SMESH_Gen::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
       if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
         ret = false;;
     }
+    if ((algo && !aMesh.HasShapeToMesh()))
+    {
+      if (smToCompute->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE)
+        smToCompute->ComputeStateEngine( SMESH_subMesh::COMPUTE );
+      
+      if (smToCompute->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE)
+        ret = false;;
+    }
   }
 
   // -----------------------------------------------

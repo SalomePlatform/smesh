@@ -81,6 +81,7 @@ static TCollection_AsciiString theEmptyString;
 #undef DUMP_CONVERSION
 #endif
 
+
 namespace {
 
   //================================================================================
@@ -250,7 +251,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   AddMeshAccessorMethod( aCommand );
 
   // Add access to a wrapped algorithm
-  AddAlgoAccessorMethod( aCommand ); // ??? what if algo won't be wrapped at all ???
+  //  AddAlgoAccessorMethod( aCommand ); // ??? what if algo won't be wrapped at all ???
 
   // PAL12227. PythonDump was not updated at proper time; result is
   //     aCriteria.append(SMESH.Filter.Criterion(17,26,0,'L1',26,25,1e-07,SMESH.EDGE,-1))
@@ -287,14 +288,24 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   // CreateHypothesis( theHypType, theLibName )
   // Compute( mesh, geom )
-
   // mesh creation
   if ( theCommand->GetMethod() == "CreateMesh" ||
-       theCommand->GetMethod() == "CreateEmptyMesh" )
+       theCommand->GetMethod() == "CreateEmptyMesh" ||
+       theCommand->GetMethod() == "CreateMeshesFromUNV" ||
+       theCommand->GetMethod() == "CreateMeshesFromSTL")
   {
     Handle(_pyMesh) mesh = new _pyMesh( theCommand );
     myMeshes.insert( make_pair( mesh->GetID(), mesh ));
     return;
+  }
+
+  if(theCommand->GetMethod() == "CreateMeshesFromMED")
+  {
+    for(int ind = 0;ind<theCommand->GetNbResultValues();ind++)
+    {
+      Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue(ind));
+      myMeshes.insert( make_pair( theCommand->GetResultValue(ind), mesh ));     
+    }
   }
 
   // CreateHypothesis()
@@ -589,10 +600,30 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd):
 {
   // convert my creation command
   Handle(_pyCommand) creationCmd = GetCreationCmd();
-  creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() );
-  creationCmd->SetMethod( "Mesh" );
+  TCollection_AsciiString str = creationCmd->GetMethod();
+  
+  creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() ); 
+  if(str != "CreateMeshesFromUNV" &&
+     str != "CreateMeshesFromMED" &&
+     str != "CreateMeshesFromSTL")
+    creationCmd->SetMethod( "Mesh" );
 
   theGen->SetAccessorMethod( GetID(), "GetMesh()" );
+}
+
+//================================================================================
+/*!
+ * \brief 
+  * \param theCreationCmd - 
+ */
+//================================================================================
+_pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString& id):
+  _pyObject(theCreationCmd), myHasEditor(false)
+{
+  // convert my creation command
+  Handle(_pyCommand) creationCmd = GetCreationCmd();
+  creationCmd->SetObject( SMESH_2smeshpy::SmeshpyName() ); 
+  theGen->SetAccessorMethod( id, "GetMesh()" );
 }
 
 //================================================================================
@@ -676,7 +707,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       }
     }
     Handle(_pyHypothesis) hyp = theGen->FindHyp( hypID );
-    if ( ! hasAddCmd ) { // hypo addition already wrapped
+    if ( ! hasAddCmd && hypID.Length() != 0 ) { // hypo addition already wrapped
       // RemoveHypothesis(geom, hyp) --> RemoveHypothesis( hyp, geom=0 )
       _pyID geom = theCommand->GetArg( 1 );
       theCommand->RemoveArgs();
@@ -1560,6 +1591,54 @@ const TCollection_AsciiString & _pyCommand::GetResultValue()
     SetBegPos( RESULT_IND, begPos );
   }
   return myRes;
+}
+
+//================================================================================
+/*!
+ * \brief Return number of python command result value ResultValue = Obj.Meth()
+  * \retval const int
+ */
+//================================================================================
+
+const int _pyCommand::GetNbResultValues()
+{
+  int begPos = 1;
+  int Nb=0;
+  int endPos = myString.Location( "=", 1, Length() );
+  TCollection_AsciiString str = "";
+  while ( begPos < endPos) {
+    str = GetWord( myString, begPos, true );
+    begPos = begPos+ str.Length();
+    Nb++;
+  }
+  return (Nb-1);
+}
+
+
+//================================================================================
+/*!
+ * \brief Return substring of python command looking like
+ *  ResultValue1 , ResultValue1,... = Obj.Meth() with res index
+ * \retval const TCollection_AsciiString & - ResultValue with res index substring
+ */
+//================================================================================
+const TCollection_AsciiString & _pyCommand::GetResultValue(int res)
+{
+  int begPos = 1;
+  int Nb=0;
+  int endPos = myString.Location( "=", 1, Length() );
+  while ( begPos < endPos) {
+    myRes = GetWord( myString, begPos, true );
+    begPos = begPos + myRes.Length();
+    Nb++;
+    if(res == Nb){
+      myRes.RemoveAll('[');myRes.RemoveAll(']');
+      return myRes;
+    }
+    if(Nb>res)
+      break;
+  }
+  return theEmptyString;
 }
 
 //================================================================================

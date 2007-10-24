@@ -208,21 +208,27 @@ namespace SMESH{
 
   QStringList GetAvailableHypotheses( const bool isAlgo, 
                                       const int theDim,                          
-                                      const bool isAux )
+                                      const bool isAux,
+                                      const bool isNeedGeometry)
   {
     QStringList aHypList;
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
-
+    bool checkGeometry = !isNeedGeometry;
     // fill list of hypotheses/algorithms
     THypothesisDataMap* pMap = isAlgo ? &myAlgorithmsMap : &myHypothesesMap;
     THypothesisDataMap::iterator anIter;
     for ( anIter = pMap->begin(); anIter != pMap->end(); anIter++ )
     {
       HypothesisData* aData = (*anIter).second;
-      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux )
-        aHypList.append(((*anIter).first).c_str());
+      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux)
+        if (checkGeometry){
+          if (aData->IsNeedGeometry == isNeedGeometry)
+            aHypList.append(((*anIter).first).c_str());
+        }
+        else
+          aHypList.append(((*anIter).first).c_str());
     }
     return aHypList;
   }
@@ -533,27 +539,36 @@ namespace SMESH{
     if (MorSM) {
       try {
         GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-        if (!aShapeObject->_is_nil()) {
-          SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
-	  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-
-	  if (!aSubMesh->_is_nil())
-	    aMesh = aSubMesh->GetFather();
-
-	  if (!aMesh->_is_nil()) {
-	    res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
+        SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
+        SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
+        
+        if (!aSubMesh->_is_nil())
+          aMesh = aSubMesh->GetFather();
+        
+        if (!aMesh->_is_nil()) {    
+          if (aMesh->HasShapeToMesh() && !aShapeObject->_is_nil()) {
+            res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
+            if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
                 SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
-	    if (res > SMESH::HYP_OK) {
-	      wc.suspend();
-	      processHypothesisStatus(res, anHyp, false);
-	      wc.resume();
-	    }
-	  }
-	}
+            
+          }
+          else if(!aMesh->HasShapeToMesh()){
+            res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
+	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
+              _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
+              if (meshSO)
+                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);              
+            }
+          }
+          if (res > SMESH::HYP_OK) {
+            wc.suspend();
+            processHypothesisStatus(res, anHyp, false);
+            wc.resume();
+          }
+        }
       } catch(const SALOME::SALOME_Exception& S_ex) {
 	wc.suspend();
 	SalomeApp_Tools::QtCatchCorbaException(S_ex);

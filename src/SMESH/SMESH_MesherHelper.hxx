@@ -306,6 +306,14 @@ public:
    */
   const NLinkNodeMap& GetNLinkNodeMap() const { return myNLinkNodeMap; }
 
+  /**
+   * Check mesh without geometry for: if all elements on this shape are quadratic,
+   * quadratic elements will be created.
+   * Used then generated 3D mesh without geometry.
+   */
+  enum MType{ LINEAR, QUADRATIC, COMP };
+  MType IsQuadraticMesh();
+  
 protected:
 
   /*!

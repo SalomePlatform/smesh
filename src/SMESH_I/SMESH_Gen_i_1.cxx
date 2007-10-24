@@ -740,10 +740,15 @@ SALOMEDS::SObject_ptr
 {
   if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape")
   SALOMEDS::SObject_var aMeshOrSubMesh;
-  if ( theShape->_is_nil() || theMesh->_is_nil() )
+  if (theMesh->_is_nil() || ( theShape->_is_nil() && theMesh->HasShapeToMesh()))
     return aMeshOrSubMesh._retn();
+  
+  TopoDS_Shape aShape;
+  if(theMesh->HasShapeToMesh())
+    aShape = GeomObjectToShape( theShape );
+  else
+    aShape = SMESH_Mesh::PseudoShape();
 
-  TopoDS_Shape aShape = GeomObjectToShape( theShape );
   SMESH_Mesh_i* mesh_i = objectToServant<SMESH_Mesh_i>( theMesh );
 
   if ( !aShape.IsNull() && mesh_i && mesh_i->GetImpl().GetMeshDS() ) {
@@ -773,7 +778,8 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
 {
   if(MYDEBUG) MESSAGE("AddHypothesisToShape")
   if (theStudy->_is_nil() || theMesh->_is_nil() ||
-      theHyp->_is_nil() || theShape->_is_nil() )
+      theHyp->_is_nil() || (theShape->_is_nil()
+                            && theMesh->HasShapeToMesh()) )
     return false;
 
   SALOMEDS::SObject_var aMeshSO = ObjectToSObject( theStudy, theMesh );
@@ -827,7 +833,8 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
                                             SMESH::SMESH_Hypothesis_ptr theHyp)
 {
   if (theStudy->_is_nil() || theMesh->_is_nil() ||
-      theHyp->_is_nil() || theShape->_is_nil() )
+      theHyp->_is_nil() || (theShape->_is_nil()
+                            && theMesh->HasShapeToMesh()))
     return false;
 
   SALOMEDS::SObject_var aHypSO = ObjectToSObject( theStudy, theHyp );
