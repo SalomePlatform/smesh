@@ -1396,7 +1396,7 @@ bool SMESH_Pattern::
   compUVByElasticIsolines(const list< list< TPoint* > >& theBndPoints,
                           const list< TPoint* >&         thePntToCompute)
 {
-  //return false;
+  return false; // PAL17233
 //cout << "============================== KEY POINTS =============================="<<endl;
 //   list< int >::iterator kpIt = myKeyPointIDs.begin();
 //   for ( ; kpIt != myKeyPointIDs.end(); kpIt++ ) {
