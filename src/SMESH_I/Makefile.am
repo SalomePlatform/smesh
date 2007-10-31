@@ -86,6 +86,7 @@ libSMESHEngine_la_CPPFLAGS = \
 	@HDF5_INCLUDES@ \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
 	$(MED_CXXFLAGS) \
 	$(GEOM_CXXFLAGS) \
 	-I$(srcdir)/../Controls \

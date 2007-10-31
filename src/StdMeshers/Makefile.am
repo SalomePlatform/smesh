@@ -110,6 +110,7 @@ libStdMeshers_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
 	-I$(srcdir)/../SMESHImpl \
 	-I$(srcdir)/../MEFISTO2 \
 	-I$(srcdir)/../SMESH \
