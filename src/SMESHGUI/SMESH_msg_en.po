@@ -986,7 +986,7 @@ msgstr "Color group"
 
 #Check color group
 msgid "SMESH_CHECK_COLOR"
-msgstr "Color number"
+msgstr "Color"
 
 #%1 SubMeshes
 msgid "SMESH_SUBMESH_SELECTED"
@@ -2385,6 +2385,12 @@ msgstr "Shrink"
 msgid "MEN_AUTO_UPD"
 msgstr "Automatic update"
 
+msgid "MEN_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "MEN_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
+
 msgid "MEN_COLORS"
 msgstr "Colors / Size"
 
@@ -2747,6 +2753,12 @@ msgstr "Shrink"
 msgid "TOP_AUTO_UPD"
 msgstr "Automatic update"
 
+msgid "TOP_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "TOP_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
+
 msgid "TOP_COLORS"
 msgstr "Colors / Size"
 
@@ -3059,6 +3071,12 @@ msgstr "Shrink"
 
 msgid "STB_AUTO_UPD"
 msgstr "Automatic update"
+
+msgid "STB_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "STB_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
 
 msgid "STB_COLORS"
 msgstr "Colors / Size"

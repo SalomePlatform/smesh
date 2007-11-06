@@ -174,6 +174,10 @@ public:
   // return list of ancestors of theSubShape in the order
   // that lower dimention shapes come first.
 
+  void SetAutoColor(bool theAutoColor) throw(SALOME_Exception);
+
+  bool GetAutoColor() throw(SALOME_Exception);
+
   /*! Check group names for duplications.
    *  Consider maximum group name length stored in MED file.
    */
@@ -249,6 +253,8 @@ protected:
   map <int, SMESH_subMesh *> _mapSubMesh;
   map <int, SMESH_Group *>   _mapGroup;
   SMESH_Gen *                _gen;
+
+  bool                       _isAutoColor;
   
   TopTools_IndexedDataMapOfShapeListOfShape _mapAncestors;
 

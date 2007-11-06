@@ -100,6 +100,7 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
        if ( p=="client" )        val = QtxValue( globalParam( p ) );
   else if ( p=="type" )          val = QtxValue( myTypes[ind] );
   else if ( p=="elemTypes" )     val = QtxValue( elemTypes( ind ) );
+  else if ( p=="isAutoColor" )   val = QtxValue( isAutoColor( ind ) );
   else if ( p=="numberOfNodes" ) val = QtxValue( numberOfNodes( ind ) );
   else if ( p=="labeledTypes" )  val = QtxValue( labeledTypes( ind ) );
   else if ( p=="shrinkMode" )    val = QtxValue( shrinkMode( ind ) );
@@ -250,6 +251,27 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     }
   }
   return "eNone";
+}
+
+//=======================================================================
+//function : isAutoColor
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_Selection::isAutoColor( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+
+    if ( ! CORBA::is_nil( obj )) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+      if ( ! mesh->_is_nil() )
+        return mesh->GetAutoColor();
+    }
+  }
+  return false;
 }
 
 //=======================================================================

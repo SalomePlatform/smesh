@@ -1822,6 +1822,18 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->WriteOnDisk( ( char* )( strHasData.c_str() ) );
             aDataset->CloseOnDisk();
 
+	    // ouv : NPAL12872
+            // for each mesh open the HDF group basing on its auto color parameter
+	    char meshAutoColorName[ 30 ];
+	    sprintf( meshAutoColorName, "AutoColorMesh %d", id );
+	    int anAutoColor[1];
+	    anAutoColor[0] = myImpl->GetAutoColor();
+	    aSize[ 0 ] = 1;
+	    aDataset = new HDFdataset( meshAutoColorName, aTopGroup, HDF_INT32, aSize, 1 );
+	    aDataset->CreateOnDisk();
+	    aDataset->WriteOnDisk( anAutoColor );
+	    aDataset->CloseOnDisk();
+
             // write reference on a shape if exists
             SALOMEDS::SObject_var myRef;
             bool shapeRefFound = false;
@@ -2145,6 +2157,22 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 		    aDataset = new HDFdataset( grpName, aGroup, HDF_STRING, aSize, 1 );
 		    aDataset->CreateOnDisk();
 		    aDataset->WriteOnDisk( aUserName );
+		    aDataset->CloseOnDisk();
+
+		    // ouv : NPAL12872
+		    // For each group, create a dataset named "Group <group_persistent_id> Color"
+		    // and store the group's color into it
+		    char grpColorName[ 30 ];
+		    sprintf( grpColorName, "ColorGroup %d", anId );
+		    SALOMEDS::Color aColor = myGroupImpl->GetColor();
+		    double anRGB[3];
+		    anRGB[ 0 ] = aColor.R;
+		    anRGB[ 1 ] = aColor.G;
+		    anRGB[ 2 ] = aColor.B;
+		    aSize[ 0 ] = 3;
+		    aDataset = new HDFdataset( grpColorName, aGroup, HDF_FLOAT64, aSize, 1 );
+		    aDataset->CreateOnDisk();
+		    aDataset->WriteOnDisk( anRGB );
 		    aDataset->CloseOnDisk();
 
 		    // Store the group contents into MED file
@@ -2821,6 +2849,21 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 	  int newId = myStudyContext->findId( iorString );
 	  myStudyContext->mapOldToNew( id, newId );
 
+	  // ouv : NPAL12872
+	  // try to read and set auto color flag
+	  char aMeshAutoColorName[ 30 ];
+	  sprintf( aMeshAutoColorName, "AutoColorMesh %d", id);
+	  if( aTopGroup->ExistInternalObject( aMeshAutoColorName ) )
+	  {
+	    aDataset = new HDFdataset( aMeshAutoColorName, aTopGroup );
+	    aDataset->OpenOnDisk();
+	    size = aDataset->GetSize();
+	    int* anAutoColor = new int[ size ];
+	    aDataset->ReadFromDisk( anAutoColor );
+	    aDataset->CloseOnDisk();
+	    myNewMeshImpl->SetAutoColor( (bool)anAutoColor[0] );
+	  }
+
           // try to read and set reference to shape
           GEOM::GEOM_Object_var aShapeObject;
           if ( aTopGroup->ExistInternalObject( "Ref on shape" ) ) {
@@ -3424,6 +3467,25 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
               SMESHDS_GroupBase* aGroupBaseDS = aLocalGroup->GetGroupDS();
               aGroupBaseDS->SetStoreName( name_dataset );
+
+	      // ouv : NPAL12872
+	      // Read color of the group
+              char aGroupColorName[ 30 ];
+              sprintf( aGroupColorName, "ColorGroup %d", subid);
+              if ( aGroup->ExistInternalObject( aGroupColorName ) )
+	      {
+		aDataset = new HDFdataset( aGroupColorName, aGroup );
+		aDataset->OpenOnDisk();
+		size = aDataset->GetSize();
+		double* anRGB = new double[ size ];
+		aDataset->ReadFromDisk( anRGB );
+		aDataset->CloseOnDisk();
+		SALOMEDS::Color aColor;
+		aColor.R = anRGB[0];
+		aColor.G = anRGB[1];
+		aColor.B = anRGB[2];
+		aGroupBaseDS->SetColor( aColor );
+	      }
 
               // Fill group with contents from MED file
               SMESHDS_Group* aGrp = dynamic_cast<SMESHDS_Group*>( aGroupBaseDS );

@@ -33,6 +33,10 @@
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshElement.hxx"
   
+#include "SALOMEconfig.h"
+#include CORBA_SERVER_HEADER(SALOMEDS)
+#include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
+
 class SMESHDS_Mesh;
 
 class SMESHDS_EXPORT SMESHDS_GroupBase
@@ -68,11 +72,11 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   virtual ~SMESHDS_GroupBase() {}
 
-  void SetColorGroup (int theColorGroup)
-  { myColorGroup = theColorGroup;}
+  void SetColor (const SALOMEDS::Color& theColor)
+  { myColor = theColor;}
   
-  int GetColorGroup() const
-  { return myColorGroup;}
+  SALOMEDS::Color GetColor() const
+  { return myColor;}
   
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
@@ -92,7 +96,7 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
-  int                  myColorGroup;
+  SALOMEDS::Color      myColor;
 };
 
 #endif

@@ -51,6 +51,7 @@ typedef std::list<DriverMED_FamilyPtr> DriverMED_FamilyPtrList;
 typedef std::map<int,SMESHDS_SubMesh*> SMESHDS_SubMeshPtrMap;
 typedef std::list<SMESHDS_GroupBase*> SMESHDS_GroupBasePtrList;
 typedef std::set<const SMDS_MeshElement*> ElementsSet;
+typedef std::map<int,SALOMEDS::Color> ColorMap;
 
 class MESHDRIVERMED_EXPORT DriverMED_Family
 {
@@ -107,7 +108,7 @@ class MESHDRIVERMED_EXPORT DriverMED_Family
 
  private:
   //! Initialize the tool by SMESHDS_GroupBase
-  void Init (SMESHDS_GroupBase* group);
+  void Init (SMESHDS_GroupBase* theGroup, const ColorMap& theColorMap);
 
   //! Split <theSubMesh> on some parts (families) on the basis of the elements type.
   static

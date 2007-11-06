@@ -751,7 +751,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetSubMeshElementsId","GetSubMeshNodesId","GetSubMeshElementType","Dump","GetNodeXYZ",
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
-        "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList",
+        "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
         "" }; // <- mark of end
     sameMethods.Insert( names );
   }

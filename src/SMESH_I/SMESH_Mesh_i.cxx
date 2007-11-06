@@ -1394,6 +1394,29 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
 
 //=============================================================================
 /*!
+ *
+ */
+//=============================================================================
+void SMESH_Mesh_i::SetAutoColor(CORBA::Boolean theAutoColor) throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  _impl->SetAutoColor(theAutoColor);
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+CORBA::Boolean SMESH_Mesh_i::GetAutoColor() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->GetAutoColor();
+}
+
+
+//=============================================================================
+/*!
  *  Export in different formats
  */
 //=============================================================================

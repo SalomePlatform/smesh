@@ -500,11 +500,80 @@ using namespace std;
     }
   }
 
-  void SetDisplayMode(int theCommandID){
+  void AutoColor(){
+    SALOME_ListIO selected;
+    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+    if( !app )
+      return;
+
+    LightApp_SelectionMgr* aSel = app->selectionMgr();
+    SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
+    if( !aSel || !appStudy )
+      return;
+
+    aSel->selectedObjects( selected );
+    if( selected.IsEmpty() )
+      return;
+
+    Handle(SALOME_InteractiveObject) anIObject = selected.First();
+
+    _PTR(Study) aStudy = appStudy->studyDS();
+    _PTR(SObject) aMainSObject( aStudy->FindObjectID( anIObject->getEntry() ) );
+    SMESH::SMESH_Mesh_var aMainObject = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
+    if( aMainObject->_is_nil() )
+      return;
+
+    aMainObject->SetAutoColor( true );
+
+    QValueList<SALOMEDS::Color> aReservedColors;
+
+    SMESH::ListOfGroups aListOfGroups = *aMainObject->GetGroups();
+    for( int i = 0, n = aListOfGroups.length(); i < n; i++ )
+    {
+      SMESH::SMESH_GroupBase_var aGroupObject = aListOfGroups[i];
+      SALOMEDS::Color aCurrentColor = aGroupObject->GetColor();
+
+      SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
+      aGroupObject->SetColor( aColor );
+      aReservedColors.append( aColor );
+
+      _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
+      if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str()))
+	anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+    }
+
+    SMESH::RepaintCurrentView();
+  }
+
+  void DisableAutoColor(){
     LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if( aSel )
       aSel->selectedObjects( selected );
+
+    if(selected.Extent()){
+      Handle(SALOME_InteractiveObject) anIObject = selected.First();
+      SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
+      if ( !aMesh->_is_nil() ) {
+	aMesh->SetAutoColor( false );
+      }
+    }
+  }
+
+  void SetDisplayMode(int theCommandID){
+    SALOME_ListIO selected;
+    SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( SUIT_Session::session()->activeApplication() );
+    if( !app )
+      return;
+
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( app->activeStudy() );
+    if( !aSel || !appStudy )
+      return;
+
+    _PTR(Study) aStudy = appStudy->studyDS();
+
+    aSel->selectedObjects( selected );
 
     if(selected.Extent() >= 1){
       switch(theCommandID){
@@ -610,6 +679,16 @@ using namespace std;
 				      vtkFloatingPointType (nodecolor.green()) / 255.,
 				      vtkFloatingPointType (nodecolor.blue()) / 255.);
 		anActor->SetNodeSize(aDlg->GetIntValue(2));
+
+		SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+		if( !aGroupObject->_is_nil() )
+		{
+		  SALOMEDS::Color aColor;
+		  aColor.R = (float)color.red() / 255.0;
+		  aColor.G = (float)color.green() / 255.0;
+		  aColor.B = (float)color.blue() / 255.0;
+		  aGroupObject->SetColor( aColor );
+		}
 
 		delete aDlg;
 	      }
@@ -1236,6 +1315,15 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
       break;
     }
+
+    // Auto-color
+  case 1136:
+    ::AutoColor();
+  break;
+
+  case 1137:
+    ::DisableAutoColor();
+  break;
 
   case 1134: // Clipping
   case 1133: // Tranparency
@@ -2422,6 +2510,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 1133, "TRANSP" );
   createSMESHAction( 1134, "CLIP" );
   createSMESHAction( 1135, "DISP_ENT" );
+  createSMESHAction( 1136, "AUTO_COLOR" );
+  createSMESHAction( 1137, "DISABLE_AUTO_COLOR" );
   createSMESHAction( 2000, "CTRL" );
 
   createSMESHAction( 300, "ERASE" );
@@ -2698,6 +2788,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 902, View, mesh );       // STD_INFO
   popupMgr()->insert( separator(), -1, 0 );
 
+  createPopupItem( 1136, OB + " " + View, mesh, "&& (not isAutoColor)" ); // AUTO_COLOR
+  createPopupItem( 1137, OB + " " + View, mesh, "&& isAutoColor" );       // DISABLE_AUTO_COLOR
+  popupMgr()->insert( separator(), -1, 0 );
+
   int anId;
   QString
     isInvisible("not( isVisible )"),
@@ -2717,6 +2811,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString aType = QString( "%1type in {%2}" ).arg( QtxPopupMgr::Selection::defEquality() );
   aType = aType.arg( mesh_group );
   QString aMeshInVTK = aClient + "&&" + aType;
+
+  aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
+  QString anActiveVTK = QString("activeView = '%1'").arg(SVTK_Viewer::Type());
+  QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
 
   //-------------------------------------------------
   // Numbering
@@ -2885,10 +2983,6 @@ void SMESHGUI::initialize( CAM_Application* app )
   //-------------------------------------------------
   // Display / Erase
   //-------------------------------------------------
-  aClient = "($client in {'VTKViewer' 'ObjectBrowser'})";
-  QString anActiveVTK = QString("activeView = '%1'").arg(SVTK_Viewer::Type());
-  QString aSelCount = QString( "%1 > 0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
-
   QString aRule = "$component={'SMESH'} and ( type='Component' or (" + aClient + " and " +
     aType + " and " + aSelCount + " and " + anActiveVTK + " and " + isNotEmpty + " %1 ) )";
   popupMgr()->insert( action( 301 ), -1, -1 ); // DISPLAY
@@ -3334,4 +3428,62 @@ LightApp_Displayer* SMESHGUI::displayer()
   if( !myDisplayer )
     myDisplayer = new SMESHGUI_Displayer( getApp() );
   return myDisplayer;
+}
+
+SALOMEDS::Color SMESHGUI::getUniqueColor( const QValueList<SALOMEDS::Color>& theReservedColors )
+{
+  int aHue = -1;
+  int aTolerance = 64;
+  int anIterations = 0;
+  int aPeriod = 5;
+
+  while( 1 )
+  {
+    anIterations++;
+    if( anIterations % aPeriod == 0 )
+    {
+      aTolerance /= 2;
+      if( aTolerance < 1 )
+	break;
+    }
+    //cout << "Iteration N" << anIterations << " (tolerance=" << aTolerance << ")"<< endl;
+
+    aHue = (int)( 360.0 * rand() / RAND_MAX );
+    //cout << "Hue = " << aHue << endl;
+
+    //cout << "Auto colors : ";
+    bool ok = true;
+    QValueList<SALOMEDS::Color>::const_iterator it = theReservedColors.constBegin();
+    QValueList<SALOMEDS::Color>::const_iterator itEnd = theReservedColors.constEnd();
+    for( ; it != itEnd; ++it )
+    {
+      SALOMEDS::Color anAutoColor = *it;
+      QColor aQColor( (int)( anAutoColor.R * 255.0 ), (int)( anAutoColor.G * 255.0 ), (int)( anAutoColor.B * 255.0 ) );
+
+      int h, s, v;
+      aQColor.getHsv( &h, &s, &v );
+      //cout << h << " ";
+      if( abs( h - aHue ) < aTolerance )
+      {
+	ok = false;
+	//cout << "break (diff = " << abs( h - aHue ) << ")";
+	break;
+      }
+    }
+    //cout << endl;
+
+    if( ok )
+      break;
+  }
+
+  //cout << "Hue of the returned color = " << aHue << endl;
+  QColor aColor;
+  aColor.setHsv( aHue, 255, 255 );
+
+  SALOMEDS::Color aSColor;
+  aSColor.R = (double)aColor.red() / 255.0;
+  aSColor.G = (double)aColor.green() / 255.0;
+  aSColor.B = (double)aColor.blue() / 255.0;
+
+  return aSColor;
 }

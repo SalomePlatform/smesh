@@ -129,6 +129,16 @@ DriverMED_Family
   return myElements.empty(); 
 }
 
+bool CompareColors( const SALOMEDS::Color& theColor, const SALOMEDS::Color& theRefColor )
+{
+  if( fabs( theColor.R - theRefColor.R ) < 0.01 &&
+      fabs( theColor.G - theRefColor.G ) < 0.01 &&
+      fabs( theColor.B - theRefColor.B ) < 0.01 )
+    return true;
+
+  return false;
+}
+
 //=============================================================================
 /*!
  *  Split each group from list <aGroups> on some parts (families)
@@ -201,11 +211,33 @@ DriverMED_Family
   }
 
   // Process groups
-  SMESHDS_GroupBasePtrList::const_iterator aGroupsIter = theGroups.begin();
-  for (; aGroupsIter != theGroups.end(); aGroupsIter++)
+  SMESHDS_GroupBasePtrList::const_iterator aGroupsIter;
+
+  int id = 0;
+  ColorMap aColorMap;
+  for (aGroupsIter = theGroups.begin(); aGroupsIter != theGroups.end(); aGroupsIter++)
+  {
+    SALOMEDS::Color aColor = (*aGroupsIter)->GetColor();
+
+    bool isFound = false;
+    for (ColorMap::iterator aColorIter = aColorMap.begin(); aColorIter != aColorMap.end(); aColorIter++)
+    {
+      SALOMEDS::Color aRefColor = aColorIter->second;
+      if( CompareColors( aColor, aRefColor ) )
+      {
+	isFound = true;
+	break;
+      }
+    }
+
+    if( !isFound )
+      aColorMap[ id++ ] = aColor;
+  }
+
+  for (aGroupsIter = theGroups.begin(); aGroupsIter != theGroups.end(); aGroupsIter++)
   {
     DriverMED_FamilyPtr aFam2 (new DriverMED_Family);
-    aFam2->Init(*aGroupsIter);
+    aFam2->Init(*aGroupsIter, aColorMap);
 
     DriverMED_FamilyPtrList::iterator aFamsIter = aFamilies.begin();
     while (aFamsIter != aFamilies.end())
@@ -364,7 +396,7 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
  *  Initialize the tool by SMESHDS_GroupBase
  */
 //=============================================================================
-void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
+void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup, const ColorMap& theColorMap)
 {
   // Elements
   myElements.clear();
@@ -383,11 +415,16 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
 
   myGroupAttributVal = 0;
   
-  if (theGroup->GetColorGroup()!=0)
+  ColorMap::const_iterator aColorIter = theColorMap.begin();
+  for (; aColorIter != theColorMap.end(); aColorIter++)
+  {
+    SALOMEDS::Color aColor = aColorIter->second;
+    if( CompareColors( theGroup->GetColor(), aColor ) )
     {
-      myGroupAttributVal = theGroup->GetColorGroup();
+      myGroupAttributVal = aColorIter->first;
+      break;
     }
-
+  }
 }
 
 //=============================================================================

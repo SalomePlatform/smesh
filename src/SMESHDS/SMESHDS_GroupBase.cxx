@@ -41,8 +41,11 @@ SMESHDS_GroupBase::SMESHDS_GroupBase (const int                 theID,
                                       const SMESHDS_Mesh*       theMesh,
                                       const SMDSAbs_ElementType theType):
        myID(theID), myMesh(theMesh), myType(theType), myStoreName(""),
-       myCurIndex(0), myCurID(-1), myColorGroup(0)
+       myCurIndex(0), myCurID(-1)
 {
+  myColor.R = 0.f;
+  myColor.G = 0.f;
+  myColor.B = 0.f;
 }
 
 //=============================================================================

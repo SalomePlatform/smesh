@@ -336,6 +336,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Toggle auto color mode on the object.
+     * @params
+     * - theAutoColor : flag which toggles auto color mode.
+     */
+    void SetAutoColor(in boolean theAutoColor)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get flag of object's auto color mode.
+     */
+    boolean GetAutoColor()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Get the internal Id
      */
     long GetId();

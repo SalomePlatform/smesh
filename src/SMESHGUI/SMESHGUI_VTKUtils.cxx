@@ -24,6 +24,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESH_ObjectDef.h"
 #include <SMDS_Mesh.hxx>
 
@@ -483,6 +484,22 @@ namespace SMESH {
 	  _PTR(AttributeName) aName = anAttr;
 	  std::string aNameVal = aName->Value();
 	  anActor = SMESH_Actor::New(aVisualObj,theEntry,aNameVal.c_str(),theIsClear);
+	}
+
+	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( aSObj ));
+	if(!CORBA::is_nil(aGroup))
+	{
+	  SALOMEDS::Color aColor = aGroup->GetColor();
+	  if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ) )
+	  {
+	    int r = 0, g = 0, b = 0;
+	    SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
+	    aColor.R = (float)r / 255.0;
+	    aColor.G = (float)g / 255.0;
+	    aColor.B = (float)b / 255.0;
+	    aGroup->SetColor( aColor );
+	  }
+	  anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
 	}
       }
     }

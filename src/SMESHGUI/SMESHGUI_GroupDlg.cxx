@@ -40,6 +40,7 @@
 
 #include "SMESH_TypeFilter.hxx"
 #include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 
 #include "GEOMBase.h"
 #include "GEOM_SelectionFilter.h"
@@ -82,6 +83,7 @@
 #include <qpixmap.h>
 #include <qmemarray.h>
 #include <qwidgetstack.h>
+#include <qcolordialog.h>
 
 #include <QtxIntSpinBox.h>
 
@@ -321,16 +323,10 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   QGroupBox* aColorBox = new QGroupBox(2, Qt::Horizontal, this, "color box");
   aColorBox->setTitle(tr("SMESH_SET_COLOR"));
 
-  mySelectColorGroup = new QCheckBox(aColorBox, "color checkbox");
-  mySelectColorGroup->setText(tr("SMESH_CHECK_COLOR"));
-  
-  myColorSpinBox = new QtxIntSpinBox( aColorBox );
-  myColorSpinBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-  myColorSpinBox->setMinValue( 0 );
-  myColorSpinBox->setMaxValue( 9999 );
-  
-  onSelectColorGroup(false);
-  
+  new QLabel( tr("SMESH_CHECK_COLOR"), aColorBox, "color label" );
+  myColorBtn = new QPushButton(aColorBox, "color button");
+  myColorBtn->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
   /***************************************************************/
   
   QFrame* aButtons = new QFrame(this, "button box");
@@ -391,8 +387,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   connect(mySubMeshBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
   connect(myGroupBtn, SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
   connect(myGeomGroupBtn, SIGNAL(toggled(bool)), this, SLOT(onGeomSelectionButton(bool)));
-  connect(mySelectColorGroup, SIGNAL(toggled(bool)), this, SLOT(onSelectColorGroup(bool)));
-  connect(myColorSpinBox, SIGNAL(valueChanged(const QString&)), this, SLOT(onNbColorsChanged(const QString&)));
+  connect(myColorBtn, SIGNAL(clicked()), this, SLOT(onSelectColor()));
   
   connect(aOKBtn, SIGNAL(clicked()), this, SLOT(onOK()));
   connect(aApplyBtn, SIGNAL(clicked()), this, SLOT(onApply()));
@@ -453,6 +448,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
   myActor = SMESH::FindActorByObject(myMesh);
   SMESH::SetPickable(myActor);
 
+  setDefaultGroupColor();
+
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
   if( !aList.IsEmpty() )
@@ -479,7 +476,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   myName->setText(theGroup->GetName());
   myName->home(false);
 
-  myColorSpinBox->setValue( theGroup->GetColorNumber() );
+  SALOMEDS::Color aColor = theGroup->GetColor();
+  setGroupColor( aColor );
   
   myMeshGroupLine->setText(theGroup->GetName());
 
@@ -582,15 +580,6 @@ void SMESHGUI_GroupDlg::onNameChanged (const QString& text)
 }
 
 //=================================================================================
-// function : onNbColorsChanged()
-// purpose  :
-//=================================================================================
-void SMESHGUI_GroupDlg::onNbColorsChanged (const QString& text)
-{
-  updateButtons();
-}
-
-//=================================================================================
 // function : onTypeChanged()
 // purpose  : Group elements type radio button management
 //=================================================================================
@@ -615,6 +604,19 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
     onSelectGeomGroup(id == 1);
   }
   myGrpTypeId = id;
+}
+
+//=================================================================================
+// function : onSelectColor()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onSelectColor()
+{
+  QColor color = getGroupQColor();
+  color = QColorDialog::getColor( color );
+  setGroupQColor( color );
+
+  updateButtons();
 }
 
 //=================================================================================
@@ -713,25 +715,28 @@ bool SMESHGUI_GroupDlg::onApply()
       myGroup = SMESH::AddGroup(myMesh, aType, myName->text());
       myGroup->Add(anIdList.inout());
 
-      int aColorNumber = myColorSpinBox->value();
-      myGroup->SetColorNumber(aColorNumber);
+      SALOMEDS::Color aColor = getGroupColor();
+      myGroup->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
 
-      SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
+      //SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
       SMESH::setFileType ( aMeshGroupSO, "COULEURGROUP" );
 
       /* init for next operation */
       myName->setText("");
-      myColorSpinBox->setValue(0);
       myElements->clear();
       myGroup = SMESH::SMESH_Group::_nil();
 
     } else { // edition
       myGroup->SetName(myName->text());
         
-      int aColorNumber = myColorSpinBox->value();
-      myGroup->SetColorNumber(aColorNumber);
+      SALOMEDS::Color aColor = getGroupColor();
+      myGroup->SetColor(aColor);
+
+      _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroup);
+      if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))
+	anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
 
       QValueList<int> aAddList;
       QValueList<int>::iterator anIt;
@@ -836,25 +841,27 @@ bool SMESHGUI_GroupDlg::onApply()
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType, myName->text(), aGroupVar);
       }
 
-      int aColorNumber = myColorSpinBox->value();
-      myGroupOnGeom->SetColorNumber(aColorNumber);
+      SALOMEDS::Color aColor = getGroupColor();
+      myGroupOnGeom->SetColor(aColor);
 
       _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
 
-      SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
-
+      //SMESH::setFileName ( aMeshGroupSO, QString::number(myColorSpinBox->value()) );
       SMESH::setFileType ( aMeshGroupSO,"COULEURGROUP" );
 
       /* init for next operation */
       myName->setText("");
-      myColorSpinBox->setValue(0);
       myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
     }
     else { // edition
       myGroupOnGeom->SetName(myName->text());
 
-      int aColorNumber = myColorSpinBox->value();
-      myGroupOnGeom->SetColorNumber(aColorNumber);
+      SALOMEDS::Color aColor = getGroupColor();
+      myGroupOnGeom->SetColor(aColor);
+
+      _PTR(SObject) aMeshGroupSO = SMESH::FindSObject(myGroupOnGeom);
+      if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aMeshGroupSO->GetID().c_str()))
+	anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
     }
 
     mySMESHGUI->updateObjBrowser(true);
@@ -1222,17 +1229,6 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
   }
 }
 
-//=================================================================================
-// function : (onSelectColorGroup)
-// purpose  : Called when setting a color on group
-//=================================================================================
-void SMESHGUI_GroupDlg::onSelectColorGroup(bool on)
-{
-  if (!on)
-    myColorSpinBox->setValue(0);
-  
-  myColorSpinBox->setEnabled(on);
-}
 
 //=================================================================================
 // function : setCurrentSelection()
@@ -1853,4 +1849,96 @@ void SMESHGUI_GroupDlg::onCloseShapeByMeshDlg(SUIT_Operation* op)
       show();
       setSelectionMode(7);
     }
+}
+
+//=================================================================================
+// function : setGroupColor()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::setGroupColor( const SALOMEDS::Color& theColor )
+{
+  QColor aQColor( (int)( theColor.R * 255.0 ),
+		  (int)( theColor.G * 255.0 ),
+		  (int)( theColor.B * 255.0 ) );
+  setGroupQColor( aQColor );
+}
+
+//=================================================================================
+// function : getGroupColor()
+// purpose  :
+//=================================================================================
+SALOMEDS::Color SMESHGUI_GroupDlg::getGroupColor() const
+{
+  QColor aQColor = getGroupQColor();
+
+  SALOMEDS::Color aColor;
+  aColor.R = (float)aQColor.red() / 255.0;
+  aColor.G = (float)aQColor.green() / 255.0;
+  aColor.B = (float)aQColor.blue() / 255.0;
+
+  return aColor;
+}
+
+//=================================================================================
+// function : setGroupQColor()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::setGroupQColor( const QColor& theColor )
+{
+  if( theColor.isValid() )
+  {
+    QPalette pal = myColorBtn->palette();
+    pal.setColor(QColorGroup::Button, theColor);
+    myColorBtn->setPalette(pal);
+  }
+}
+
+//=================================================================================
+// function : getGroupQColor()
+// purpose  :
+//=================================================================================
+QColor SMESHGUI_GroupDlg::getGroupQColor() const
+{
+  QColor aColor = myColorBtn->palette().active().button();
+  return aColor;
+}
+
+//=================================================================================
+// function : setDefaultGroupColor()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::setDefaultGroupColor()
+{
+  if( myMesh->_is_nil() )
+    return;
+
+  bool isAutoColor = myMesh->GetAutoColor();
+
+  QColor aQColor;
+  if( !isAutoColor )
+  {
+    int r = 0, g = 0, b = 0;
+    SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
+    aQColor.setRgb( r, g, b );
+  }
+  else
+  {
+    SMESH::ListOfGroups aListOfGroups = *myMesh->GetGroups();
+
+    QValueList<SALOMEDS::Color> aReservedColors;
+    for( int i = 0, n = aListOfGroups.length(); i < n; i++ )
+    {
+      SMESH::SMESH_GroupBase_var aGroupObject = aListOfGroups[i];
+      SALOMEDS::Color aReservedColor = aGroupObject->GetColor();
+      aReservedColors.append( aReservedColor );
+    }
+
+    SALOMEDS::Color aColor = SMESHGUI::getUniqueColor( aReservedColors );
+    aQColor.setRgb( (int)( aColor.R * 255.0 ),
+		    (int)( aColor.G * 255.0 ),
+		    (int)( aColor.B * 255.0 ) );
+
+  }
+
+  setGroupQColor( aQColor );
 }

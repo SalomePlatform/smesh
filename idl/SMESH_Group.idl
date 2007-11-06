@@ -28,6 +28,7 @@
 
 #include "SALOME_Exception.idl"
 #include "SALOME_GenericObj.idl"
+#include "SALOMEDS_Attributes.idl"
 
 #include "SMESH_Mesh.idl"
 
@@ -86,14 +87,14 @@ module SMESH
     SMESH_Mesh GetMesh();
 
     /*!
-     * Sets group color number
+     * Sets group color
      */
-    void SetColorNumber( in long color );
+    void SetColor(in SALOMEDS::Color theColor);
 
     /*!
-     * Returns group color number
+     * Returns group color
      */
-    long GetColorNumber();
+    SALOMEDS::Color GetColor();
   }; 
 
   /*!

@@ -1893,6 +1893,12 @@ class Mesh:
     def ClearLog(self):
         self.mesh.ClearLog()
 
+    def SetAutoColor(self, color):
+        self.mesh.SetAutoColor(color)
+
+    def GetAutoColor(self):
+        return self.mesh.GetAutoColor()
+
     ## Get the internal Id
     def GetId(self):
         return self.mesh.GetId()

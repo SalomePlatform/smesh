@@ -424,13 +424,13 @@ GEOM::GEOM_Object_ptr SMESH_GroupOnGeom_i::GetShape()
  *
  */
 //=============================================================================
-CORBA::Long SMESH_GroupBase_i::GetColorNumber()
+SALOMEDS::Color SMESH_GroupBase_i::GetColor()
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->GetColorGroup();
-  MESSAGE("get color number of a vague group");
-  return 0;
+    return aGroupDS->GetColor();
+  MESSAGE("get color of a group");
+  return SALOMEDS::Color();
 }
 
 //=============================================================================
@@ -438,14 +438,11 @@ CORBA::Long SMESH_GroupBase_i::GetColorNumber()
  *
  */
 //=============================================================================
-void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
+void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->SetColorGroup(color);
-  MESSAGE("set color number of a vague group");
+    return aGroupDS->SetColor(color);
+  MESSAGE("set color of a group");
   return ;
 }
-
-
-

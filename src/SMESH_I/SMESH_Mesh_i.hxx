@@ -160,6 +160,15 @@ public:
   SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
     throw (SALOME::SALOME_Exception);
 
+  /*!
+   *  Auto color
+   */
+  void SetAutoColor(CORBA::Boolean theAutoColor)
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Boolean GetAutoColor()
+    throw (SALOME::SALOME_Exception);
+
   /*! Check group names for duplications.
    *  Consider maximum group name length stored in MED file.
    */

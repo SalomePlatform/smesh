@@ -98,6 +98,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _idDoc         = theDocument->NewMesh(theIsEmbeddedMode);
   _myMeshDS      = theDocument->GetMesh(_idDoc);
   _isShapeToMesh = false;
+  _isAutoColor   = false;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -869,6 +870,23 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       }
     }
   }
+}
+
+//=============================================================================
+/*!
+ *  Auto color functionality
+ */
+//=============================================================================
+void SMESH_Mesh::SetAutoColor(bool theAutoColor) throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  _isAutoColor = theAutoColor;
+}
+
+bool SMESH_Mesh::GetAutoColor() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _isAutoColor;
 }
 
 //=============================================================================
