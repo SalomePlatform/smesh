@@ -44,14 +44,13 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>
 #include <gp_Pnt.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include <Standard_OutOfMemory.hxx>
 #include <Standard_ErrorHandler.hxx>
@@ -1907,8 +1906,9 @@ void SMESH_subMesh::SetEventListener(EventListener* listener, EventListenerData*
   map< EventListener*, EventListenerData* >::iterator l_d =
     myEventListeners.find( listener );
   if ( l_d != myEventListeners.end() ) {
-    if ( l_d->second && l_d->second->IsDeletable() )
-      delete l_d->second;
+    EventListenerData* curData = l_d->second;
+    if ( curData && curData != data && curData->IsDeletable() )
+      delete curData;
     l_d->second = data;
   }
   else 
@@ -2009,13 +2009,17 @@ void SMESH_subMeshEventListener::ProcessEvent(const int          event,
        eventType == SMESH_subMesh::COMPUTE_EVENT)
   {
     ASSERT( data->mySubMeshes.front() != subMesh );
+    list<SMESH_subMesh*>::iterator smIt = data->mySubMeshes.begin();
+    list<SMESH_subMesh*>::iterator smEnd = data->mySubMeshes.end();
     switch ( event ) {
     case SMESH_subMesh::CLEAN:
-      data->mySubMeshes.front()->ComputeStateEngine( event );
+      for ( ; smIt != smEnd; ++ smIt)
+        (*smIt)->ComputeStateEngine( event );
       break;
     case SMESH_subMesh::COMPUTE:
       if ( subMesh->GetComputeState() == SMESH_subMesh::COMPUTE_OK )
-        data->mySubMeshes.front()->ComputeStateEngine( SMESH_subMesh::SUBMESH_COMPUTED );
+        for ( ; smIt != smEnd; ++ smIt)
+          (*smIt)->ComputeStateEngine( SMESH_subMesh::SUBMESH_COMPUTED );
       break;
     default:;
     }

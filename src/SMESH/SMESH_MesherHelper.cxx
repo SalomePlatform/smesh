@@ -35,11 +35,13 @@
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopTools_MapOfShape.hxx>
-#include <gp_Pnt2d.hxx>
 #include <ShapeAnalysis.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>

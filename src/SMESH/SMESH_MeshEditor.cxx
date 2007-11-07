@@ -46,28 +46,31 @@
 
 #include "utilities.h"
 
-#include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <math.h>
-#include <gp_Dir.hxx>
-#include <gp_Vec.hxx>
-#include <gp_Ax1.hxx>
-#include <gp_Trsf.hxx>
-#include <gp_Lin.hxx>
-#include <gp_XYZ.hxx>
-#include <gp_XY.hxx>
-#include <gp.hxx>
-#include <gp_Pln.hxx>
 #include <BRep_Tool.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom_Surface.hxx>
-#include <Geom2d_Curve.hxx>
+#include <ElCLib.hxx>
 #include <Extrema_GenExtPS.hxx>
 #include <Extrema_POnSurf.hxx>
+#include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Surface.hxx>
-#include <ElCLib.hxx>
+#include <Geom_Curve.hxx>
+#include <Geom_Surface.hxx>
 #include <TColStd_ListOfInteger.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <gp.hxx>
+#include <gp_Ax1.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Lin.hxx>
+#include <gp_Pln.hxx>
+#include <gp_Trsf.hxx>
+#include <gp_Vec.hxx>
+#include <gp_XY.hxx>
+#include <gp_XYZ.hxx>
+#include <math.h>
 
 #include <map>
 #include <set>
@@ -2715,8 +2718,8 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
 //           iNotSame is where prevNodes and nextNodes are different
 //=======================================================================
 
-static bool isReverse(const SMDS_MeshNode* prevNodes[],
-                      const SMDS_MeshNode* nextNodes[],
+static bool isReverse(vector<const SMDS_MeshNode*> prevNodes,
+                      vector<const SMDS_MeshNode*> nextNodes,
                       const int            nbNodes,
                       const int            iNotSame)
 {
@@ -2753,16 +2756,16 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
   // Loop on elem nodes:
   // find new nodes and detect same nodes indices
   int nbNodes = elem->NbNodes();
-  //---PR
-  //list<const SMDS_MeshNode*>::const_iterator itNN[ nbNodes ];
-  vector < list< const SMDS_MeshNode* >::const_iterator > itNN;
-  itNN.reserve(nbNodes);
-  //---PR
-  const SMDS_MeshNode* prevNod[ nbNodes ], *nextNod[ nbNodes ], *midlNod[ nbNodes ];
+  vector < list< const SMDS_MeshNode* >::const_iterator > itNN( nbNodes );
+  vector<const SMDS_MeshNode*> prevNod( nbNodes );
+  vector<const SMDS_MeshNode*> nextNod( nbNodes );
+  vector<const SMDS_MeshNode*> midlNod( nbNodes );
+
   int iNode, nbSame = 0, iNotSameNode = 0, iSameNode = 0;
   vector<int> sames(nbNodes);
 
-  bool issimple[nbNodes];
+  //bool issimple[nbNodes];
+  vector<bool> issimple(nbNodes);
 
   for ( iNode = 0; iNode < nbNodes; iNode++ ) {
     TNodeOfNodeListMapItr nnIt = newNodesItVec[ iNode ];
@@ -4093,7 +4096,7 @@ void SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
         const_cast< SMDS_MeshNode* > ( node )->SetPosition
           ( SMDS_SpacePosition::originSpacePosition() );
       }
-      nodeMap.insert( TNodeNodeMap::value_type( node, newNode ));
+      nodeMap.insert( make_pair( node, newNode ));
 
       // keep inverse elements
       if ( !theCopy && needReverse ) {
@@ -4441,7 +4444,8 @@ int SMESH_MeshEditor::SimplifyFace (const vector<const SMDS_MeshNode *> faceNode
   set<const SMDS_MeshNode*> nodeSet;
 
   // get simple seq of nodes
-  const SMDS_MeshNode* simpleNodes[ nbNodes ];
+  //const SMDS_MeshNode* simpleNodes[ nbNodes ];
+  vector<const SMDS_MeshNode*> simpleNodes( nbNodes );
   int iSimple = 0, nbUnique = 0;
 
   simpleNodes[iSimple++] = faceNodes[0];
@@ -4555,8 +4559,9 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
     int aShapeId = FindShape( elem );
 
     set<const SMDS_MeshNode*> nodeSet;
-    const SMDS_MeshNode* curNodes[ nbNodes ], *uniqueNodes[ nbNodes ];
-    int iUnique = 0, iCur = 0, nbRepl = 0, iRepl [ nbNodes ];
+    vector< const SMDS_MeshNode*> curNodes( nbNodes ), uniqueNodes( nbNodes );
+    int iUnique = 0, iCur = 0, nbRepl = 0;
+    vector<int> iRepl( nbNodes );
 
     // get new seq of nodes
     SMDS_ElemIteratorPtr itN = elem->nodesIterator();
@@ -5032,7 +5037,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
       }
       else {
         // Change regular element or polygon
-        aMesh->ChangeElementNodes( elem, uniqueNodes, nbUniqueNodes );
+        aMesh->ChangeElementNodes( elem, & uniqueNodes[0], nbUniqueNodes );
       }
     }
     else {
@@ -5210,7 +5215,9 @@ const SMDS_MeshElement*
       continue;
     // get face nodes and find index of n1
     int i1, nbN = elem->NbNodes(), iNode = 0;
-    const SMDS_MeshNode* faceNodes[ nbN ], *n;
+    //const SMDS_MeshNode* faceNodes[ nbN ], *n;
+    vector<const SMDS_MeshNode*> faceNodes( nbN );
+    const SMDS_MeshNode* n;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() ) {
       faceNodes[ iNode ] = static_cast<const SMDS_MeshNode*>( nIt->next() );
@@ -5327,7 +5334,9 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
       if ( e == curElem || foundElems.insert( e ).second ) {
         // get nodes
         int iNode = 0, nbNodes = e->NbNodes();
-        const SMDS_MeshNode* nodes[nbNodes+1];
+        //const SMDS_MeshNode* nodes[nbNodes+1];
+        vector<const SMDS_MeshNode*> nodes(nbNodes+1);
+        
         if(e->IsQuadratic()) {
           const SMDS_QuadraticFaceOfNodes* F =
             static_cast<const SMDS_QuadraticFaceOfNodes*>(e);
@@ -5594,12 +5603,11 @@ SMESH_MeshEditor::Sew_Error
         const SMDS_MeshElement* elem = invElemIt->next();
         // prepare data for a loop on links coming to prevSideNode, of a face or a volume
         int iPrevNode, iNode = 0, nbNodes = elem->NbNodes();
-        const SMDS_MeshNode* faceNodes[ nbNodes ];
+        vector< const SMDS_MeshNode* > faceNodes( nbNodes, (const SMDS_MeshNode*)0 );
         bool isVolume = volume.Set( elem );
-        const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : faceNodes;
+        const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : & faceNodes[0];
         if ( isVolume ) // --volume
           hasVolumes = true;
-        //else if ( nbNodes > 2 ) { // --face
         else if ( elem->GetType()==SMDSAbs_Face ) { // --face
           // retrieve all face nodes and find iPrevNode - an index of the prevSideNode
           if(elem->IsQuadratic()) {
@@ -5616,7 +5624,7 @@ SMESH_MeshEditor::Sew_Error
           else {
             SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
             while ( nIt->more() ) {
-              nodes[ iNode ] = static_cast<const SMDS_MeshNode*>( nIt->next() );
+              nodes[ iNode ] = cast2Node( nIt->next() );
               if ( nodes[ iNode++ ] == prevSideNode )
                 iPrevNode = iNode - 1;
             }
@@ -5648,7 +5656,7 @@ SMESH_MeshEditor::Sew_Error
             // test a link geometrically
             gp_XYZ nextXYZ ( n->X(), n->Y(), n->Z() );
             bool linkIsBetter = false;
-            double dot, dist;
+            double dot = 0.0, dist = 0.0;
             if ( searchByDir ) { // choose most co-directed link
               dot = bordDir * ( nextXYZ - prevXYZ ).Normalized();
               linkIsBetter = ( dot > maxDot );
@@ -5728,7 +5736,10 @@ SMESH_MeshEditor::Sew_Error
     // insert new nodes into the border and the side to get equal nb of segments
 
     // get normalized parameters of nodes on the borders
-    double param[ 2 ][ maxNbNodes ];
+    //double param[ 2 ][ maxNbNodes ];
+    double* param[ 2 ];
+    param[0] = new double [ maxNbNodes ];
+    param[1] = new double [ maxNbNodes ];
     int iNode, iBord;
     for ( iBord = 0; iBord < 2; iBord++ ) { // loop on 2 borders
       list< const SMDS_MeshNode* >& nodes = nSide[ iBord ];
@@ -5889,6 +5900,8 @@ SMESH_MeshEditor::Sew_Error
       }
     }
 
+    delete param[0];
+    delete param[1];
   } // end: insert new nodes
 
   MergeNodes ( nodeGroupsToMerge );
@@ -5913,7 +5926,8 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
   // find indices of 2 link nodes and of the rest nodes
   int iNode = 0, il1, il2, i3, i4;
   il1 = il2 = i3 = i4 = -1;
-  const SMDS_MeshNode* nodes[ theFace->NbNodes() ];
+  //const SMDS_MeshNode* nodes[ theFace->NbNodes() ];
+  vector<const SMDS_MeshNode*> nodes( theFace->NbNodes() );
 
   if(theFace->IsQuadratic()) {
     const SMDS_QuadraticFaceOfNodes* F =
@@ -6042,7 +6056,8 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
 
     // put aNodesToInsert between theBetweenNode1 and theBetweenNode2
     int nbLinkNodes = 2 + aNodesToInsert.size();
-    const SMDS_MeshNode* linkNodes[ nbLinkNodes ];
+    //const SMDS_MeshNode* linkNodes[ nbLinkNodes ];
+    vector<const SMDS_MeshNode*> linkNodes( nbLinkNodes );
     linkNodes[ 0 ] = nodes[ il1 ];
     linkNodes[ nbLinkNodes - 1 ] = nodes[ il2 ];
     list<const SMDS_MeshNode*>::iterator nIt = aNodesToInsert.begin();
@@ -6209,7 +6224,8 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theFace,
     }
     // create needed triangles using n1,n2,n3 and inserted nodes
     int nbn = 2 + aNodesToInsert.size();
-    const SMDS_MeshNode* aNodes[nbn];
+    //const SMDS_MeshNode* aNodes[nbn];
+    vector<const SMDS_MeshNode*> aNodes(nbn);
     aNodes[0] = nodes[n1];
     aNodes[nbn-1] = nodes[n2];
     list<const SMDS_MeshNode*>::iterator nIt = aNodesToInsert.begin();
