@@ -199,10 +199,8 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
 //=================================================================================
 void SMESH_VisualObjDef::buildPrs()
 {
-  // PAL16631(crash after a mesh computation that failed because of lack of memory):
-  // Catch exceptions upper by stack
-//   try 
-//   {
+  try 
+  {
     mySMDS2VTKNodes.clear();
     myVTK2SMDSNodes.clear();
     mySMDS2VTKElems.clear();
@@ -212,15 +210,20 @@ void SMESH_VisualObjDef::buildPrs()
       buildNodePrs();
     else
       buildElemPrs();
-//   }
-//   catch( const std::exception& exc )
-//   {
-//     INFOS("Follow exception was cought:\n\t"<<exc.what());
-//   }
-//   catch(...)
-//   {
-//     INFOS("Unknown exception was cought !!!");
-//   }
+  }
+  catch(...)
+  {
+    // TODO: catch inside buildNodePrs and buildElemPrs and free
+    // temporarily allocated objects
+    mySMDS2VTKNodes.clear();
+    myVTK2SMDSNodes.clear();
+    mySMDS2VTKElems.clear();
+    myVTK2SMDSElems.clear();
+
+    myGrid->SetPoints( 0 );
+    myGrid->SetCells( 0, 0, 0 );
+    throw;
+  }
   
   if( MYDEBUG ) MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
   if( MYDEBUGWITHFILES ) SMESH::WriteUnstructuredGrid( myGrid,"/tmp/buildPrs" );
