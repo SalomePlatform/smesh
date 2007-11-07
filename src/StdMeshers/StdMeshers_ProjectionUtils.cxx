@@ -45,25 +45,28 @@
 
 #include "utilities.h"
 
-#include <BRepAdaptor_Curve.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
+#include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_Box.hxx>
 #include <TopAbs.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_Array1OfShape.hxx>
-#include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Compound.hxx>
 #include <TopoDS_Shape.hxx>
-#include <gp_Ax3.hxx>
 #include <gp_Pnt.hxx>
-#include <gp_Trsf.hxx>
 #include <gp_Vec.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
+#include <TopTools_DataMapIteratorOfDataMapOfShapeListOfShape.hxx>
 
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define SHOW_VERTEX(v,msg) // { \
 //  if ( v.IsNull() ) cout << msg << " NULL SHAPE" << endl; \
 // else if (v.ShapeType() == TopAbs_VERTEX) {\
@@ -168,6 +171,37 @@ namespace {
     }
     return false;
   }
+
+  //================================================================================
+  /*!
+   * \brief Look for a group containing a target shape and similar to a source group
+    * \param tgtShape - target edge or face
+    * \param tgtMesh1 - target mesh
+    * \param srcGroup - source group
+    * \retval TopoDS_Shape - found target group
+   */
+  //================================================================================
+
+  TopoDS_Shape FindGroupContaining(const TopoDS_Shape& tgtShape,
+                                   const SMESH_Mesh*   tgtMesh1,
+                                   const TopoDS_Shape& srcGroup)
+  {
+    list<SMESH_subMesh*> subMeshes = tgtMesh1->GetGroupSubMeshesContaining(tgtShape);
+    list<SMESH_subMesh*>::iterator sm = subMeshes.begin();
+    int type, last = TopAbs_SHAPE;
+    StdMeshers_ProjectionUtils util;
+    for ( ; sm != subMeshes.end(); ++sm ) {
+      const TopoDS_Shape & group = (*sm)->GetSubShape();
+      // check if group is similar to srcGroup
+      for ( type = srcGroup.ShapeType(); type < last; ++type)
+        if ( util.Count( srcGroup, (TopAbs_ShapeEnum)type, 0) !=
+             util.Count( group,    (TopAbs_ShapeEnum)type, 0))
+          break;
+      if ( type == last )
+        return group;
+    }
+    return TopoDS_Shape();
+  }
 }
 
 //=======================================================================
@@ -189,15 +223,32 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
                                                          SMESH_Mesh*         theMesh2,
                                                          TShapeShapeMap &    theMap)
 {
-  if ( theShape1.ShapeType() != theShape2.ShapeType() )
-    RETURN_BAD_RESULT("Different shape types");
+  if ( theShape1.ShapeType() != theShape2.ShapeType() ) {
+    // is it the case of a group member -> another group? (PAL16202, 16203)
+    TopoDS_Shape group1, group2;
+    if ( theShape1.ShapeType() == TopAbs_COMPOUND ) {
+      group1 = theShape1;
+      group2 = FindGroupContaining( theShape2, theMesh2, group1 );
+    }
+    else if ( theShape2.ShapeType() == TopAbs_COMPOUND ) {
+      group2 = theShape2;
+      group1 = FindGroupContaining( theShape1, theMesh1, group2 );
+    }
+    if ( group1.IsNull() || group2.IsNull() )
+      RETURN_BAD_RESULT("Different shape types");
+    // Associate compounds
+    return FindSubShapeAssociation(group1, theMesh1, group2, theMesh2, theMap );
+  }
 
   bool bidirect = ( !theShape1.IsSame( theShape2 ));
-  if ( !theMap.IsEmpty())
+  if ( !theMap.IsEmpty() )
   {
+    //======================================================================
+    // HAS initial vertex association
+    //======================================================================
     switch ( theShape1.ShapeType() ) {
-
-    case TopAbs_EDGE: {
+      // ----------------------------------------------------------------------
+    case TopAbs_EDGE: { // TopAbs_EDGE
       // ----------------------------------------------------------------------
       if ( theMap.Extent() != 2 )
         RETURN_BAD_RESULT("Wrong map extent " << theMap.Extent() );
@@ -210,10 +261,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       if ( theMap.IsBound( VV1[ i1 ] )) i1 = 1;
       if ( theMap.IsBound( VV2[ i2 ] )) i2 = 1;
       InsertAssociation( VV1[ i1 ], VV2[ i2 ], theMap, bidirect);
+      InsertAssociation( theShape1, theShape2, theMap, bidirect );
       return true;
     }
-
-    case TopAbs_FACE: {
+      // ----------------------------------------------------------------------
+    case TopAbs_FACE: { // TopAbs_FACE
       // ----------------------------------------------------------------------
       TopoDS_Face face1 = TopoDS::Face( theShape1 );
       TopoDS_Face face2 = TopoDS::Face( theShape2 );
@@ -251,10 +303,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         VV2[0] = TopExp::FirstVertex( *eIt2, true );
         InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
       }
+      InsertAssociation( theShape1, theShape2, theMap, bidirect );
       return true;
     }
-
-    case TopAbs_SHELL:
+      // ----------------------------------------------------------------------
+    case TopAbs_SHELL: // TopAbs_SHELL, TopAbs_SOLID
     case TopAbs_SOLID: {
       // ----------------------------------------------------------------------
       TopoDS_Vertex VV1[2], VV2[2];
@@ -276,22 +329,42 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       if ( edge2.IsNull() )
         RETURN_BAD_RESULT("GetEdgeByVertices() failed");
 
-      // get a face sharing edge1
-      TopoDS_Shape F1, F2, FF2[2];
-      TopTools_ListIteratorOfListOfShape ancestIt = theMesh1->GetAncestors( edge1 );
-      for ( ; F1.IsNull() && ancestIt.More(); ancestIt.Next() )
-        if ( ancestIt.Value().ShapeType() == TopAbs_FACE )
-          F1 = ancestIt.Value().Oriented( TopAbs_FORWARD );
+      // build map of edge to faces if shapes are not subshapes of main ones
+      bool isSubOfMain = false;
+      if ( SMESHDS_SubMesh * sm = theMesh1->GetMeshDS()->MeshElements( theShape1 ))
+        isSubOfMain = !sm->IsComplexSubmesh();
+      else
+        isSubOfMain = theMesh1->GetMeshDS()->ShapeToIndex( theShape1 );
+      TAncestorMap e2f1, e2f2;
+      const TAncestorMap& edgeToFace1 = isSubOfMain ? theMesh1->GetAncestorMap() : e2f1;
+      const TAncestorMap& edgeToFace2 = isSubOfMain ? theMesh2->GetAncestorMap() : e2f2;
+      if (!isSubOfMain) {
+        TopExp::MapShapesAndAncestors( theShape1, TopAbs_EDGE, TopAbs_FACE, e2f1 );
+        TopExp::MapShapesAndAncestors( theShape2, TopAbs_EDGE, TopAbs_FACE, e2f2 );
+        if ( !edgeToFace1.Contains( edge1 ))
+          RETURN_BAD_RESULT("edge1 does not belong to theShape1");
+        if ( !edgeToFace2.Contains( edge2 ))
+          RETURN_BAD_RESULT("edge2 does not belong to theShape2");
+      }
+      //
+      // Look for 2 corresponing faces:
+      //
+      TopoDS_Shape F1, F2;
+
+      // get a face sharing edge1 (F1)
+      TopoDS_Shape FF2[2];
+      TopTools_ListIteratorOfListOfShape ancestIt1( edgeToFace1.FindFromKey( edge1 ));
+      for ( ; F1.IsNull() && ancestIt1.More(); ancestIt1.Next() )
+        if ( ancestIt1.Value().ShapeType() == TopAbs_FACE )
+          F1 = ancestIt1.Value().Oriented( TopAbs_FORWARD );
       if ( F1.IsNull() )
         RETURN_BAD_RESULT(" Face1 not found");
 
-      // get 2 faces sharing edge2
-      ancestIt = theMesh2->GetAncestors( edge2 );
-      for ( int i = 0; FF2[1].IsNull() && ancestIt.More(); ancestIt.Next() )
-        if ( ancestIt.Value().ShapeType() == TopAbs_FACE )
-          FF2[ i++ ] = ancestIt.Value().Oriented( TopAbs_FORWARD );
-      if ( FF2[1].IsNull() )
-        RETURN_BAD_RESULT("2 faces not found");
+      // get 2 faces sharing edge2 (one of them is F2)
+      TopTools_ListIteratorOfListOfShape ancestIt2( edgeToFace2.FindFromKey( edge2 ));
+      for ( int i = 0; FF2[1].IsNull() && ancestIt2.More(); ancestIt2.Next() )
+        if ( ancestIt2.Value().ShapeType() == TopAbs_FACE )
+          FF2[ i++ ] = ancestIt2.Value().Oriented( TopAbs_FORWARD );
 
       // get oriented edge1 and edge2 from F1 and FF2[0]
       for ( exp.Init( F1, TopAbs_EDGE ); exp.More(); exp.Next() )
@@ -299,7 +372,6 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           edge1 = TopoDS::Edge( exp.Current() );
           break;
         }
-      
       for ( exp.Init( FF2[ 0 ], TopAbs_EDGE ); exp.More(); exp.Next() )
         if ( edge2.IsSame( exp.Current() )) {
           edge2 = TopoDS::Edge( exp.Current() );
@@ -309,13 +381,16 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       // compare first vertices of edge1 and edge2
       TopExp::Vertices( edge1, VV1[0], VV1[1], true );
       TopExp::Vertices( edge2, VV2[0], VV2[1], true );
-      F2 = FF2[ 0 ];
+      F2 = FF2[ 0 ]; // (F2 !)
       if ( !VV1[ 0 ].IsSame( theMap( VV2[ 0 ]))) {
-        F2 = FF2[ 1 ];
         edge2.Reverse();
+        if ( FF2[ 1 ].IsNull() )
+          F2.Reverse();
+        else
+          F2 = FF2[ 1 ];
       }
 
-      TopTools_MapOfShape boundEdges; 
+      TopTools_MapOfShape boundEdges;
 
       // association of face subshapes and neighbour faces
       list< pair < TopoDS_Face, TopoDS_Edge > > FE1, FE2;
@@ -352,27 +427,262 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           VV1[0] = TopExp::FirstVertex( *eIt1, true );
           VV2[0] = TopExp::FirstVertex( *eIt2, true );
           InsertAssociation( VV1[0], VV2[0], theMap, bidirect); // assoc vertices
+          MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[0] )<<
+                  " to "          << theMesh2->GetMeshDS()->ShapeToIndex( VV2[0] ));
 
           // add adjacent faces to process
-          TopoDS_Face nextFace1 = GetNextFace( theMesh1, *eIt1, face1 );
-          TopoDS_Face nextFace2 = GetNextFace( theMesh2, *eIt2, face2 );
+          TopoDS_Face nextFace1 = GetNextFace( edgeToFace1, *eIt1, face1 );
+          TopoDS_Face nextFace2 = GetNextFace( edgeToFace2, *eIt2, face2 );
           if ( !nextFace1.IsNull() && !nextFace2.IsNull() ) {
             FE1.push_back( make_pair( nextFace1, *eIt1 ));
             FE2.push_back( make_pair( nextFace2, *eIt2 ));
           }
         }
       }
+      InsertAssociation( theShape1, theShape2, theMap, bidirect );
       return true;
     }
+      // ----------------------------------------------------------------------
+    case TopAbs_COMPOUND: { // GROUP
+      // ----------------------------------------------------------------------
+      // Maybe groups contain only one member
+      TopoDS_Iterator it1( theShape1 ), it2( theShape2 );
+      TopAbs_ShapeEnum memberType = it1.Value().ShapeType();
+      int nbMembers = Count( theShape1, memberType, true );
+      if ( nbMembers == 0 ) return true;
+      if ( nbMembers == 1 ) {
+        return FindSubShapeAssociation( it1.Value(), theMesh1, it2.Value(), theMesh2, theMap );
+      }
+      // Try to make shells of faces
+      //
+      BRep_Builder builder;
+      TopoDS_Shell shell1, shell2;
+      builder.MakeShell(shell1); builder.MakeShell(shell2);
+      if ( memberType == TopAbs_FACE ) {
+        // just add faces of groups to shells
+        for (; it1.More(); it1.Next(), it2.Next() )
+          builder.Add( shell1, it1.Value() ), builder.Add( shell2, it2.Value() );
+      }
+      else if ( memberType == TopAbs_EDGE ) {
+        // Try to add faces sharing more than one edge of a group or
+        // sharing all its vertices with the group
+        TopTools_IndexedMapOfShape groupVertices[2];
+        TopExp::MapShapes( theShape1, TopAbs_VERTEX, groupVertices[0]);
+        TopExp::MapShapes( theShape2, TopAbs_VERTEX, groupVertices[1]);
+        //
+        TopTools_MapOfShape groupEdges[2], addedFaces[2];
+        bool hasInitAssoc = (!theMap.IsEmpty()), initAssocOK = !hasInitAssoc;
+        for (; it1.More(); it1.Next(), it2.Next() ) {
+          groupEdges[0].Add( it1.Value() );
+          groupEdges[1].Add( it2.Value() );
+          if ( !initAssocOK ) {
+            // for shell association there must be an edge with both vertices bound
+            TopoDS_Vertex v1, v2;
+            TopExp::Vertices( TopoDS::Edge( it1.Value()), v1, v2 );
+            initAssocOK = ( theMap.IsBound( v1 ) && theMap.IsBound( v2 ));
+          }
+        }
+        for (int is2ndGroup = 0; initAssocOK && is2ndGroup < 2; ++is2ndGroup) {
+          const TopoDS_Shape& group = is2ndGroup ? theShape2: theShape1;
+          SMESH_Mesh*         mesh  = is2ndGroup ? theMesh2 : theMesh1;
+          TopoDS_Shell&       shell = is2ndGroup ? shell2   : shell1;
+          for ( TopoDS_Iterator it( group ); it.More(); it.Next() ) {
+            const TopoDS_Edge& edge = TopoDS::Edge( it.Value() );
+            TopoDS_Face face;
+            for ( int iF = 0; iF < 2; ++iF ) { // loop on 2 faces sharing edge
+              face = GetNextFace(mesh->GetAncestorMap(), edge, face);
+              if ( !face.IsNull() ) {
+                int nbGroupEdges = 0;
+                for ( TopExp_Explorer f( face, TopAbs_EDGE ); f.More(); f.Next())
+                  if ( groupEdges[ is2ndGroup ].Contains( f.Current() ))
+                    if ( ++nbGroupEdges > 1 )
+                      break;
+                bool add = (nbGroupEdges > 1 || Count( face, TopAbs_EDGE, true ) == 1 );
+                if ( !add ) {
+                  add = true;
+                  for ( TopExp_Explorer v( face, TopAbs_VERTEX ); add && v.More(); v.Next())
+                    add = groupVertices[ is2ndGroup ].Contains( v.Current() );
+                }
+                if ( add && addedFaces[ is2ndGroup ].Add( face ))
+                  builder.Add( shell, face );
+              }
+            }
+          }
+        }
+      } else {
+        RETURN_BAD_RESULT("Unexpected group type");
+      }
+      // Associate shells
+      //
+      int nbFaces1 = Count( shell1, TopAbs_FACE, 0 );
+      int nbFaces2 = Count( shell2, TopAbs_FACE, 0 );
+      if ( nbFaces1 != nbFaces2 )
+        RETURN_BAD_RESULT("Different nb of faces found for shells");
+      if ( nbFaces1 > 0 ) {
+        bool ok = false;
+        if ( nbFaces1 == 1 ) {
+          TopoDS_Shape F1 = TopoDS_Iterator( shell1 ).Value();
+          TopoDS_Shape F2 = TopoDS_Iterator( shell2 ).Value();
+          ok = FindSubShapeAssociation( F1, theMesh1, F2, theMesh2, theMap );
+        }
+        else {
+          ok = FindSubShapeAssociation(shell1, theMesh1, shell2, theMesh2, theMap );
+        }
+        // Check if all members are mapped 
+        if ( ok ) {
+          TopTools_MapOfShape boundMembers[2];
+          TopoDS_Iterator mIt;
+          for ( mIt.Initialize( theShape1 ); mIt.More(); mIt.Next())
+            if ( theMap.IsBound( mIt.Value() )) {
+              boundMembers[0].Add( mIt.Value() );
+              boundMembers[1].Add( theMap( mIt.Value() ));
+            }
+          if ( boundMembers[0].Extent() != nbMembers ) {
+            // make compounds of not bound members
+            TopoDS_Compound comp[2];
+            for ( int is2ndGroup = 0; is2ndGroup < 2; ++is2ndGroup ) {
+              builder.MakeCompound( comp[is2ndGroup] );
+              for ( mIt.Initialize( is2ndGroup ? theShape2:theShape1 ); mIt.More(); mIt.Next())
+                if ( ! boundMembers[ is2ndGroup ].Contains( mIt.Value() ))
+                  builder.Add( comp[ is2ndGroup ], mIt.Value() );
+            }
+            // check if theMap contains initial association for the comp's
+            bool hasInitialAssoc = false;
+            if ( memberType == TopAbs_EDGE ) {
+              for ( TopExp_Explorer v( comp[0], TopAbs_VERTEX ); v.More(); v.Next())
+                if ( theMap.IsBound( v.Current() )) {
+                  hasInitialAssoc = true;
+                  break;
+                }
+            }
+            if ( hasInitialAssoc == bool( !theMap.IsEmpty() ))
+              ok = FindSubShapeAssociation( comp[0], theMesh1, comp[1], theMesh2, theMap );
+            else {
+              TShapeShapeMap tmpMap;
+              ok = FindSubShapeAssociation( comp[0], theMesh1, comp[1], theMesh2, tmpMap );
+              if ( ok ) {
+                TopTools_DataMapIteratorOfDataMapOfShapeShape mapIt( tmpMap );
+                for ( ; mapIt.More(); mapIt.Next() )
+                  theMap.Bind( mapIt.Key(), mapIt.Value());
+              }
+            }
+          }
+        }
+        return ok;
+      }
+      // Each edge of an edge group is shared by own faces
+      // ------------------------------------------------------------------
+      //
+      // map vertices to edges sharing them, avoid doubling edges in lists
+      TopTools_DataMapOfShapeListOfShape v2e[2];
+      for (int isFirst = 0; isFirst < 2; ++isFirst ) {
+        const TopoDS_Shape& group = isFirst ? theShape1 : theShape2;
+        TopTools_DataMapOfShapeListOfShape& veMap = v2e[ isFirst ? 0 : 1 ];
+        TopTools_MapOfShape addedEdges;
+        for ( TopExp_Explorer e( group, TopAbs_EDGE ); e.More(); e.Next() ) {
+          const TopoDS_Shape& edge = e.Current();
+          if ( addedEdges.Add( edge )) {
+            for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next()) {
+              const TopoDS_Shape& vertex = v.Current();
+              if ( !veMap.IsBound( vertex )) {
+                TopTools_ListOfShape l;
+                veMap.Bind( vertex, l );
+              }
+              veMap( vertex ).Append( edge );
+            }
+          }
+        }   
+      }
+      while ( !v2e[0].IsEmpty() )
+      {
+        // find a bound vertex
+        TopoDS_Vertex V[2];
+        TopTools_DataMapIteratorOfDataMapOfShapeListOfShape v2eIt( v2e[0] );
+        for ( ; v2eIt.More(); v2eIt.Next())
+          if ( theMap.IsBound( v2eIt.Key() )) {
+            V[0] = TopoDS::Vertex( v2eIt.Key() );
+            V[1] = TopoDS::Vertex( theMap( V[0] ));
+            break;
+          }
+        if ( V[0].IsNull() )
+          RETURN_BAD_RESULT("No more bound vertices");
+
+        while ( !V[0].IsNull() && v2e[0].IsBound( V[0] )) {
+          TopTools_ListOfShape& edges0 = v2e[0]( V[0] );
+          TopTools_ListOfShape& edges1 = v2e[1]( V[1] );
+          int nbE0 = edges0.Extent(), nbE1 = edges1.Extent();
+          if ( nbE0 != nbE1 )
+            RETURN_BAD_RESULT("Different nb of edges: "<< nbE0 << " != " << nbE1);
+
+          if ( nbE0 == 1 )
+          {
+            TopoDS_Edge e0 = TopoDS::Edge( edges0.First() );
+            TopoDS_Edge e1 = TopoDS::Edge( edges1.First() );
+            v2e[0].UnBind( V[0] );
+            v2e[1].UnBind( V[1] );
+            InsertAssociation( e0, e1, theMap, bidirect );
+            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0 )<<
+                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1 ));
+            V[0] = GetNextVertex( e0, V[0] );
+            V[1] = GetNextVertex( e1, V[1] );
+            if ( !V[0].IsNull() ) {
+              InsertAssociation( V[0], V[1], theMap, bidirect );
+              MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( V[0] )<<
+                      " to "          << theMesh2->GetMeshDS()->ShapeToIndex( V[1] ));
+            }
+          }
+          else if ( nbE0 == 2 )
+          {
+            // one of edges must have both ends bound
+            TopoDS_Vertex v0e0 = GetNextVertex( TopoDS::Edge( edges0.First() ), V[0] );
+            TopoDS_Vertex v1e0 = GetNextVertex( TopoDS::Edge( edges0.Last() ),  V[0] );
+            TopoDS_Vertex v0e1 = GetNextVertex( TopoDS::Edge( edges1.First() ), V[1] );
+            TopoDS_Vertex v1e1 = GetNextVertex( TopoDS::Edge( edges1.Last() ),  V[1] );
+            TopoDS_Shape e0b, e1b, e0n, e1n, v1b; // bound and not-bound
+            TopoDS_Vertex v0n, v1n;
+            if ( theMap.IsBound( v0e0 )) {
+              v0n = v1e0; e0b = edges0.First(); e0n = edges0.Last(); v1b = theMap( v0e0 );
+            } else if ( theMap.IsBound( v1e0 )) {
+              v0n = v0e0; e0n = edges0.First(); e0b = edges0.Last(); v1b = theMap( v1e0 );
+            } else {
+              RETURN_BAD_RESULT("None of vertices bound");
+            }
+            if ( v1b.IsSame( v1e1 )) {
+              v1n = v0e1; e1n = edges1.First(); e1b = edges1.Last();
+            } else {
+              v1n = v1e1; e1b = edges1.First(); e1n = edges1.Last();
+            }
+            InsertAssociation( e0b, e1b, theMap, bidirect );
+            InsertAssociation( e0n, e1n, theMap, bidirect );
+            InsertAssociation( v0n, v1n, theMap, bidirect );
+            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0b )<<
+                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1b ));
+            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0n )<<
+                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1n ));
+            MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( v0n )<<
+                    " to "          << theMesh2->GetMeshDS()->ShapeToIndex( v1n ));
+            v2e[0].UnBind( V[0] );
+            v2e[1].UnBind( V[1] );
+            V[0] = v0n;
+            V[1] = v1n;
+          }
+          else {
+            RETURN_BAD_RESULT("Not implemented");
+          }
+        }
+      } //while ( !v2e[0].IsEmpty() )
+      return true;
+    }
+
     default:
       RETURN_BAD_RESULT("Unexpected shape type");
 
     } // end switch by shape type
   } // end case of available initial vertex association
 
-  //----------------------------------------------------------------------
+  //======================================================================
   // NO INITIAL VERTEX ASSOCIATION
-  //----------------------------------------------------------------------
+  //======================================================================
 
   switch ( theShape1.ShapeType() ) {
 
@@ -395,6 +705,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         {
           InsertAssociation( edge1, prpEdge, theMap, bidirect); // insert with a proper orientation
         }
+        InsertAssociation( theShape1, theShape2, theMap, bidirect );
         return true; // done
       }
     }
@@ -404,6 +715,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       InsertAssociation( edge1, edge2, theMap, bidirect); // insert with a proper orientation
       InsertAssociation( TopExp::FirstVertex(edge1), TopExp::FirstVertex(edge2),
                          theMap, bidirect);
+      InsertAssociation( theShape1, theShape2, theMap, bidirect );
       return true; // done
     }
     break; // try by vertex closeness
@@ -454,6 +766,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           VV2[0] = TopExp::FirstVertex( *eIt2, true );
           InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
         }
+        InsertAssociation( theShape1, theShape2, theMap, bidirect );
         return true;
       }
     }
@@ -474,8 +787,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 
   if ( vMap1.Extent() == 1 ) {
     InsertAssociation( vMap1(1), vMap2(1), theMap, bidirect);
-    if ( theShape1.ShapeType() == TopAbs_EDGE )
+    if ( theShape1.ShapeType() == TopAbs_EDGE ) {
+      InsertAssociation( theShape1, theShape2, theMap, bidirect );
       return true;
+    }
     return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
   }
 
@@ -504,14 +819,21 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
   // get 2 linked vertices of shape 1 not belonging to an inner wire of a face
   TopoDS_Shape edge = theShape1;
   TopExp_Explorer expF( theShape1, TopAbs_FACE ), expE;
-  for ( ; expF.More(); expF.Next() ) {
+  if ( expF.More() ) {
+    for ( ; expF.More(); expF.Next() ) {
+      edge.Nullify();
+      TopoDS_Shape wire = OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
+      for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
+        if ( !IsClosedEdge( TopoDS::Edge( expE.Current() )))
+          edge = expE.Current();
+      if ( !edge.IsNull() )
+        break;
+    }
+  } else if (edge.ShapeType() != TopAbs_EDGE) { // no faces
     edge.Nullify();
-    TopoDS_Shape wire = OuterShape( TopoDS::Face( expF.Current() ), TopAbs_WIRE );
-    for ( expE.Init( wire, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
+    for ( expE.Init( theShape1, TopAbs_EDGE ); edge.IsNull() && expE.More(); expE.Next() )
       if ( !IsClosedEdge( TopoDS::Edge( expE.Current() )))
         edge = expE.Current();
-    if ( !edge.IsNull() )
-      break;
   }
   if ( edge.IsNull() || edge.ShapeType() != TopAbs_EDGE )
     RETURN_BAD_RESULT("Edge not found");
@@ -538,10 +860,16 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     }
   }
 
-  InsertAssociation( VV1[ 0 ], VV2 [ 0 ], theMap, bidirect);
-  InsertAssociation( VV1[ 1 ], VV2 [ 1 ], theMap, bidirect);
-  if ( theShape1.ShapeType() == TopAbs_EDGE )
+  InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap, bidirect);
+  InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap, bidirect);
+  MESSAGE("Initial assoc VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 0 ] )<<
+          " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 0 ] )<<
+          "\nand         VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 1 ] )<<
+          " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 1 ] ));
+  if ( theShape1.ShapeType() == TopAbs_EDGE ) {
+    InsertAssociation( theShape1, theShape2, theMap, bidirect );
     return true;
+  }
 
   return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap );
 }
@@ -629,15 +957,15 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face& face1,
 //=======================================================================
 
 void StdMeshers_ProjectionUtils::InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                                        TShapeShapeMap &        theAssociationMap)
+                                                        TShapeShapeMap &        theAssociationMap,
+                                                        const TopoDS_Shape&     theTargetShape)
 {
   string hypName = theHyp->GetName();
   if ( hypName == "ProjectionSource1D" ) {
     const StdMeshers_ProjectionSource1D * hyp =
       static_cast<const StdMeshers_ProjectionSource1D*>( theHyp );
-    if ( hyp->HasVertexAssociation() ) {
+    if ( hyp->HasVertexAssociation() )
       InsertAssociation( hyp->GetSourceVertex(),hyp->GetTargetVertex(),theAssociationMap);
-    }
   }
   else if ( hypName == "ProjectionSource2D" ) {
     const StdMeshers_ProjectionSource2D * hyp =
@@ -680,6 +1008,9 @@ bool StdMeshers_ProjectionUtils::InsertAssociation( const TopoDS_Shape& theShape
       theAssociationMap.Bind( theShape2, theShape1 );
     return isNew;
   }
+  else {
+    throw SALOME_Exception("StdMeshers_ProjectionUtils: attempt to associate NULL shape");
+  }
   return false;
 }
 
@@ -693,7 +1024,10 @@ bool StdMeshers_ProjectionUtils::IsSubShape( const TopoDS_Shape& shape,
 {
   if ( shape.IsNull() || !aMesh )
     return false;
-  return aMesh->GetMeshDS()->ShapeToIndex( shape );
+  return
+    aMesh->GetMeshDS()->ShapeToIndex( shape ) ||
+    // PAL16202
+    shape.ShapeType() == TopAbs_COMPOUND && aMesh->GetMeshDS()->IsGroupOfSubShapes( shape );
 }
 
 //=======================================================================
@@ -749,27 +1083,43 @@ TopoDS_Edge StdMeshers_ProjectionUtils::GetEdgeByVertices( SMESH_Mesh*          
 //================================================================================
 /*!
  * \brief Return another face sharing an edge
- * \param aMesh - mesh
+ * \param edgeToFaces - data map of descendants to ancestors
  * \param edge - edge
  * \param face - face
  * \retval TopoDS_Face - found face
  */
 //================================================================================
 
-TopoDS_Face StdMeshers_ProjectionUtils::GetNextFace( SMESH_Mesh*        mesh,
-                                                     const TopoDS_Edge& edge,
-                                                     const TopoDS_Face& face)
+TopoDS_Face StdMeshers_ProjectionUtils::GetNextFace( const TAncestorMap& edgeToFaces,
+                                                     const TopoDS_Edge&  edge,
+                                                     const TopoDS_Face&  face)
 {
-  if ( mesh && !edge.IsNull() && !face.IsNull() )
+//   if ( !edge.IsNull() && !face.IsNull() && edgeToFaces.Contains( edge ))
+  if ( !edge.IsNull() && edgeToFaces.Contains( edge )) // PAL16202
   {
-    TopTools_ListIteratorOfListOfShape ancestorIt( mesh->GetAncestors( edge ));
+    TopTools_ListIteratorOfListOfShape ancestorIt( edgeToFaces.FindFromKey( edge ));
     for ( ; ancestorIt.More(); ancestorIt.Next() )
       if ( ancestorIt.Value().ShapeType() == TopAbs_FACE &&
            !face.IsSame( ancestorIt.Value() ))
         return TopoDS::Face( ancestorIt.Value() );
   }
   return TopoDS_Face();
-  
+}
+
+//================================================================================
+/*!
+ * \brief Return other vertex of an edge
+ */
+//================================================================================
+
+TopoDS_Vertex StdMeshers_ProjectionUtils::GetNextVertex(const TopoDS_Edge&   edge,
+                                                        const TopoDS_Vertex& vertex)
+{
+  TopoDS_Vertex vF,vL;
+  TopExp::Vertices(edge,vF,vL);
+  if ( vF.IsSame( vL ))
+    return TopoDS_Vertex();
+  return vertex.IsSame( vF ) ? vL : vF; 
 }
 
 //================================================================================
@@ -1362,9 +1712,30 @@ void StdMeshers_ProjectionUtils::SetEventListener(SMESH_subMesh* subMesh,
 
     SMESH_subMesh* srcShapeSM = srcMesh->GetSubMesh( srcShape );
 
-    if ( srcShapeSM != subMesh )
-      subMesh->SetEventListener( GetSrcSubMeshListener(),
-                                 SMESH_subMeshEventListenerData::MakeData( subMesh ),
-                                 srcShapeSM );
+    if ( srcShapeSM != subMesh ) {
+      if ( srcShapeSM->GetSubMeshDS() &&
+           srcShapeSM->GetSubMeshDS()->IsComplexSubmesh() )
+      {  // source shape is a group
+        TopExp_Explorer it(srcShapeSM->GetSubShape(), // explore the group into subshapes...
+                           subMesh->GetSubShape().ShapeType()); // ...of target shape type
+        for (; it.More(); it.Next())
+        {
+          SMESH_subMesh* srcSM = srcMesh->GetSubMesh( it.Current() );
+          SMESH_subMeshEventListenerData* data =
+            srcSM->GetEventListenerData(GetSrcSubMeshListener());
+          if ( data )
+            data->mySubMeshes.push_back( subMesh );
+          else
+            data = SMESH_subMeshEventListenerData::MakeData( subMesh );
+          subMesh->SetEventListener ( GetSrcSubMeshListener(), data, srcSM );
+        }
+      }
+      else
+      {
+        subMesh->SetEventListener( GetSrcSubMeshListener(),
+                                   SMESH_subMeshEventListenerData::MakeData( subMesh ),
+                                   srcShapeSM );
+      }
+    }
   }
 }

@@ -32,7 +32,6 @@
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include <TopoDS_Edge.hxx>
 #include <TopoDS_Vertex.hxx>
 
 class SMESH_Gen;
@@ -60,9 +59,15 @@ public:
     throw ( SALOME_Exception );
 
   /*!
-   * Returns the source edge
+   * Returns the source edge or a group containing edges
    */
-  TopoDS_Edge GetSourceEdge() const { return _sourceEdge; }
+  TopoDS_Shape GetSourceEdge() const { return _sourceEdge; }
+
+  /*!
+   * Returns true the source edge is a group of edges
+   */
+  bool IsCompoundSource() const
+  { return !_sourceEdge.IsNull() && _sourceEdge.ShapeType() == TopAbs_COMPOUND; }
 
   /*!
    * Sets source <mesh> to take a mesh pattern from
@@ -133,7 +138,7 @@ public:
 
 protected:
 
-  TopoDS_Edge   _sourceEdge;
+  TopoDS_Shape  _sourceEdge;
   SMESH_Mesh*   _sourceMesh;
   TopoDS_Vertex _sourceVertex;
   TopoDS_Vertex _targetVertex;

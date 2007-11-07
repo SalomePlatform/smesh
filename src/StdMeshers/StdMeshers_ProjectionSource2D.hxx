@@ -32,7 +32,6 @@
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 
 class SMESH_Gen;
@@ -60,9 +59,15 @@ public:
     throw ( SALOME_Exception );
 
   /*!
-   * Returns the source face
+   * Returns the source face or a group containing faces
    */
-  TopoDS_Face GetSourceFace() const;
+  TopoDS_Shape GetSourceFace() const;
+
+  /*!
+   * Returns true the source face is a group of faces
+   */
+  bool IsCompoundSource() const
+  { return !_sourceFace.IsNull() && _sourceFace.ShapeType() == TopAbs_COMPOUND; }
 
   /*!
    * Sets source <mesh> to take a mesh pattern from
@@ -143,7 +148,7 @@ public:
 
 protected:
 
-  TopoDS_Face   _sourceFace;
+  TopoDS_Shape  _sourceFace;
   SMESH_Mesh*   _sourceMesh;
   TopoDS_Vertex _sourceVertex1;
   TopoDS_Vertex _sourceVertex2;

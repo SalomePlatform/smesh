@@ -46,15 +46,17 @@
 #include <BRepAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
+#include <TopExp.hxx>
 #include <TopoDS.hxx>
 #include <gp_Pnt.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 
 #include "utilities.h"
 
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 
 typedef StdMeshers_ProjectionUtils TAssocTool;
 
@@ -97,13 +99,13 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
   const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
   if ( hyps.size() == 0 )
   {
-    aStatus = SMESH_Hypothesis::HYP_MISSING;
+    aStatus = HYP_MISSING;
     return false;  // can't work with no hypothesis
   }
 
   if ( hyps.size() > 1 )
   {
-    aStatus = SMESH_Hypothesis::HYP_ALREADY_EXIST;
+    aStatus = HYP_ALREADY_EXIST;
     return false;
   }
 
@@ -111,7 +113,7 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
 
   string hypName = theHyp->GetName();
 
-  aStatus = SMESH_Hypothesis::HYP_OK;
+  aStatus = HYP_OK;
 
   if (hypName == "ProjectionSource1D")
   {
@@ -130,16 +132,48 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
       // source and target vertices
       if ( !TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh ) ||
            !TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh ) ||
-           !TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape )  ||
            !TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
                                     _sourceHypo->GetSourceEdge() ))
       {
-        aStatus = SMESH_Hypothesis::HYP_BAD_PARAMETER;
+        aStatus = HYP_BAD_PARAMETER;
         SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(), srcMesh )));
         SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), tgtMesh )));
-        SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape ) ));
         SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetSourceVertex(),
                                         _sourceHypo->GetSourceEdge() )));
+      }
+      // PAL16202
+      else 
+      {
+        bool isSub = TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape );
+        if ( !_sourceHypo->IsCompoundSource() ) {
+          if ( !isSub ) {
+            aStatus = HYP_BAD_PARAMETER;
+            SCRUTE((TAssocTool::IsSubShape( _sourceHypo->GetTargetVertex(), aShape)));
+          }
+        }
+        else if ( isSub ) {
+          // is Ok provided that source vertex is shared only by one edge
+          // of the source group
+          TopoDS_Shape sharingEdge;
+          TopTools_ListIteratorOfListOfShape ancestIt
+            ( aMesh.GetAncestors( _sourceHypo->GetSourceVertex() ));
+          for ( ; ancestIt.More(); ancestIt.Next() )
+          {
+            const TopoDS_Shape& ancestor = ancestIt.Value();
+            if ( ancestor.ShapeType() == TopAbs_EDGE &&
+                 TAssocTool::IsSubShape( ancestor, _sourceHypo->GetSourceEdge() ))
+            {
+              if ( sharingEdge.IsNull() || ancestor.IsSame( sharingEdge ))
+                sharingEdge = ancestor;
+              else {
+                // the second encountered
+                aStatus = HYP_BAD_PARAMETER;
+                MESSAGE("Source vertex is shared by several edges of a group");
+                break;
+              }
+            }
+          }
+        }
       }
     }
     // check source edge
@@ -154,7 +188,7 @@ bool StdMeshers_Projection_1D::CheckHypothesis(SMESH_Mesh&                      
   }
   else
   {
-    aStatus = SMESH_Hypothesis::HYP_INCOMPATIBLE;
+    aStatus = HYP_INCOMPATIBLE;
   }
   return ( aStatus == HYP_OK );
 }
@@ -169,13 +203,6 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !_sourceHypo )
     return false;
 
-  TopoDS_Edge tgtEdge = TopoDS::Edge( theShape.Oriented(TopAbs_FORWARD));
-  TopoDS_Edge srcEdge = TopoDS::Edge( _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD));
-
-  TopoDS_Vertex tgtV[2], srcV[2];
-  TopExp::Vertices( tgtEdge, tgtV[0], tgtV[1] );
-  TopExp::Vertices( srcEdge, srcV[0], srcV[1] );
-
   SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh(); 
   SMESH_Mesh * tgtMesh = & theMesh;
   if ( !srcMesh )
@@ -187,11 +214,23 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Make subshapes association
   // ---------------------------
 
+  TopoDS_Edge srcEdge, tgtEdge = TopoDS::Edge( theShape.Oriented(TopAbs_FORWARD));
+  TopoDS_Shape srcShape = _sourceHypo->GetSourceEdge().Oriented(TopAbs_FORWARD);
+
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
-  if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcEdge, srcMesh,
-                                             shape2ShapeMap) )
-    return error(SMESH_Comment("Vertices association failed" ));
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtEdge );
+  if ( !TAssocTool::FindSubShapeAssociation( tgtEdge, tgtMesh, srcShape, srcMesh,
+                                             shape2ShapeMap) ||
+       !shape2ShapeMap.IsBound( tgtEdge ))
+    return error("Vertices association failed" );
+
+  srcEdge = TopoDS::Edge( shape2ShapeMap( tgtEdge ).Oriented(TopAbs_FORWARD));
+//   cout << " srcEdge #" << srcMesh->GetMeshDS()->ShapeToIndex( srcEdge )
+//        << " tgtEdge #" << tgtMesh->GetMeshDS()->ShapeToIndex( tgtEdge ) << endl;
+
+  TopoDS_Vertex tgtV[2], srcV[2];
+  TopExp::Vertices( tgtEdge, tgtV[0], tgtV[1] );
+  TopExp::Vertices( srcEdge, srcV[0], srcV[1] );
 
   // ----------------------------------------------
   // Assure that mesh on a source edge is computed
@@ -236,7 +275,7 @@ bool StdMeshers_Projection_1D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   }
 
   bool reverse = ( srcV[0].IsSame( shape2ShapeMap( tgtV[1] )));
-  if ( shape2ShapeMap.IsBound( tgtEdge )) // case of closed edge
+  if ( tgtV[0].IsSame( tgtV[1] )) // case of closed edge
     reverse = ( shape2ShapeMap( tgtEdge ).Orientation() == TopAbs_REVERSED );
   if ( reverse ) // reverse lengths of segments
     std::reverse( lengths.begin(), lengths.end() );

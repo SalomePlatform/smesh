@@ -46,16 +46,16 @@
 
 #include "utilities.h"
 
-#include <TopExp.hxx>
-#include <TopoDS.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRep_Tool.hxx>
-
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS.hxx>
 
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 
 typedef StdMeshers_ProjectionUtils TAssocTool;
 
@@ -144,13 +144,17 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
         // target vertices
         edge = TAssocTool::GetEdgeByVertices
           ( tgtMesh, _sourceHypo->GetTargetVertex(1), _sourceHypo->GetTargetVertex(2) );
-        if ( edge.IsNull() ||
-             !TAssocTool::IsSubShape( edge, tgtMesh ) ||
-             !TAssocTool::IsSubShape( edge, theShape ))
+        if ( edge.IsNull() || !TAssocTool::IsSubShape( edge, tgtMesh ))
         {
           theStatus = HYP_BAD_PARAMETER;
           SCRUTE((edge.IsNull()));
           SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
+        }
+        // PAL16203
+        else if ( !_sourceHypo->IsCompoundSource() &&
+                  !TAssocTool::IsSubShape( edge, theShape ))
+        {
+          theStatus = HYP_BAD_PARAMETER;
           SCRUTE((TAssocTool::IsSubShape( edge, theShape )));
         }
       }
@@ -365,9 +369,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !_sourceHypo )
     return false;
 
-  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
-  TopoDS_Face srcFace = TopoDS::Face( _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD));
-
   SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh(); 
   SMESH_Mesh * tgtMesh = & theMesh;
   if ( !srcMesh )
@@ -375,18 +376,21 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
-  SMESH_MesherHelper helper( theMesh );
-  helper.SetSubShape( tgtFace );
-
   // ---------------------------
   // Make subshapes association
   // ---------------------------
 
+  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
+  TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
+
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
-  if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcFace, srcMesh,
-                                             shape2ShapeMap) )
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtFace );
+  if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
+                                             shape2ShapeMap)  ||
+       !shape2ShapeMap.IsBound( tgtFace ))
     return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
+
+  TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
   // ----------------------------------------------
   // Assure that mesh on a source Face is computed
@@ -438,7 +442,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( nbEdgesInWires.front() > 1 ) // possible to find out
   {
     TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
-    reverse = ( ! srcE1.IsSame( shape2ShapeMap( tgtE1 )));
+    TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
+    reverse = ( ! srcE1.IsSame( srcE1bis ));
   }
   else if ( nbEdgesInWires.front() == 1 )
   {
@@ -478,6 +483,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   SMESH_MeshEditor editor( tgtMesh );
   SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
+
+  SMESH_MesherHelper helper( theMesh );
+  helper.SetSubShape( tgtFace );
 
   // Make groups of nodes to merge
 
