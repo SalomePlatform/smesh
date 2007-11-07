@@ -131,7 +131,7 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 
 ::SMESH_Hypothesis* SMESH_Hypothesis_i::GetImpl()
 {
-  MESSAGE( "SMESH_Hypothesis_i::GetImpl" );
+  //MESSAGE( "SMESH_Hypothesis_i::GetImpl" );
   return myBaseImpl;
 }
 

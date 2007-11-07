@@ -37,29 +37,27 @@
 
 #include "SMESHDS_Mesh.hxx"
 
+#include <BRep_Tool.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <Geom_Plane.hxx>
+#include <LDOMParser.hxx>
+#include <LDOMString.hxx>
 #include <LDOM_Document.hxx>
 #include <LDOM_Element.hxx>
 #include <LDOM_Node.hxx>
-#include <LDOMString.hxx>
-#include <LDOMParser.hxx>
 #include <LDOM_XmlWriter.hxx>
-#include <TCollection_HAsciiString.hxx>
+#include <Precision.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
+#include <TColStd_ListIteratorOfListOfReal.hxx>
 #include <TColStd_ListOfInteger.hxx>
 #include <TColStd_ListOfReal.hxx>
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfHAsciiString.hxx>
-#include <TColStd_ListIteratorOfListOfReal.hxx>
-#include <Precision.hxx>
-#include <BRep_Tool.hxx>
-#include <TopoDS_Shape.hxx>
+#include <TCollection_HAsciiString.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
-#include <Geom_Plane.hxx>
-#include <Geom_CylindricalSurface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
+#include <TopoDS_Shape.hxx>
 
 using namespace SMESH;
 using namespace SMESH::Controls;
