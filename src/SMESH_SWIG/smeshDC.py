@@ -482,7 +482,7 @@ class Mesh_Algorithm:
 
         self.algo = algo
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
-        TreatHypoStatus( status, algo.GetName(), GetName(algo), True )
+        TreatHypoStatus( status, algo.GetName(), GetName(self.geom), True )
 
     ## Private method
     def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so", UseExisting=0):
@@ -508,7 +508,7 @@ class Mesh_Algorithm:
             SetName(hypo, hyp + a)
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
-        TreatHypoStatus( status, hyp, GetName(hypo), 0 )
+        TreatHypoStatus( status, GetName(hypo), GetName(self.geom), 0 )
         return hypo
 
 
@@ -1550,22 +1550,25 @@ class Mesh:
             allReasons = ""
             for err in errors:
                 if err.isGlobalAlgo:
-                    glob = " global "
+                    glob = "global"
                 else:
-                    glob = " local "
+                    glob = "local"
                     pass
-                dim = str(err.algoDim)
-                if err.name == MISSING_ALGO:
-                    reason = glob + dim + "D algorithm is missing"
-                elif err.name == MISSING_HYPO:
-                    name = '"' + err.algoName + '"'
-                    reason = glob + dim + "D algorithm " + name + " misses " + dim + "D hypothesis"
-                elif err.name == NOT_CONFORM_MESH:
-                    reason = "Global \"Not Conform mesh allowed\" hypothesis is missing"
-                elif err.name == BAD_PARAM_VALUE:
-                    name = '"' + err.algoName + '"'
-                    reason = "Hypothesis of" + glob + dim + "D algorithm " + name +\
-                             " has a bad parameter value"
+                dim = err.algoDim
+                name = err.algoName
+                if len(name) == 0:
+                    reason = '%s %sD algorithm is missing' % (glob, dim)
+                elif err.state == HYP_MISSING:
+                    reason = ('%s %sD algorithm "%s" misses %sD hypothesis'
+                              % (glob, dim, name, dim))
+                elif err.state == HYP_NOTCONFORM:
+                    reason = 'Global "Not Conform mesh allowed" hypothesis is missing'
+                elif err.state == HYP_BAD_PARAMETER:
+                    reason = ('Hypothesis of %s %sD algorithm "%s" has a bad parameter value'
+                              % ( glob, dim, name ))
+                elif err.state == HYP_BAD_GEOMETRY:
+                    reason = ('%s %sD algorithm "%s" is assigned to geometry mismatching'
+                              'its expectation' % ( glob, dim, name ))
                 else:
                     reason = "For unknown reason."+\
                              " Revise Mesh.Compute() implementation in smesh.py!"
