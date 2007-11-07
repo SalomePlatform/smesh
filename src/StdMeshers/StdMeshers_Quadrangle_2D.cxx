@@ -43,23 +43,16 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 
-#include <BRepAdaptor_Curve.hxx>
-#include <BRep_Tool.hxx>
-#include <BRepLProp.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
+#include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom2d_Curve.hxx>
-#include <GeomAdaptor_Curve.hxx>
-#include <GCPnts_UniformAbscissa.hxx>
-#include <TopExp.hxx>
+#include <NCollection_DefineArray2.hxx>
 #include <Precision.hxx>
-#include <gp_Pnt2d.hxx>
-#include <TColStd_ListIteratorOfListOfInteger.hxx>
 #include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
-#include <NCollection_DefineArray2.hxx>
+#include <TopExp.hxx>
+#include <TopoDS.hxx>
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"

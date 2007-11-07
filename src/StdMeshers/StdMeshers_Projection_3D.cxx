@@ -48,7 +48,11 @@
 
 #include "utilities.h"
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 #define SHOWYXZ(msg, xyz) // {\
 // gp_Pnt p (xyz); \
