@@ -35,6 +35,7 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Script.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESHDS_Document.hxx"
 #include "SMDS_MeshVolume.hxx"
 
 #include "utilities.h"
@@ -48,19 +49,13 @@
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
 
-#include <BRepTools_WireExplorer.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
-#include <BRep_Builder.hxx>
-#include <gp_Pnt.hxx>
-
-#include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_Array1OfShape.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
-
-#include <memory>
+#include <TopoDS_Iterator.hxx>
 
 #include "Utils_ExceptHandlers.hxx"
 
@@ -724,7 +719,7 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
  */
 //=============================================================================
 
-SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
+SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape) const
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -732,13 +727,12 @@ SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
   
   int index = _myMeshDS->ShapeToIndex(aSubShape);
 
-  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(index);
+  map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(index);
   if ( i_sm != _mapSubMesh.end())
     aSubMesh = i_sm->second;
 
   return aSubMesh;
 }
-
 //=============================================================================
 /*!
  * Get the SMESH_subMesh object implementation. Dont create it, return null
@@ -746,17 +740,51 @@ SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
  */
 //=============================================================================
 
-SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const int aShapeID)
+SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const int aShapeID) const
 throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   
-  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(aShapeID);
+  map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(aShapeID);
   if (i_sm == _mapSubMesh.end())
     return NULL;
   return i_sm->second;
 }
+//================================================================================
+/*!
+ * \brief Return submeshes of groups containing the given subshape
+ */
+//================================================================================
 
+list<SMESH_subMesh*>
+SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
+  throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  list<SMESH_subMesh*> found;
+
+  SMESH_subMesh * subMesh = GetSubMeshContaining(aSubShape);
+  if ( !subMesh )
+    return found;
+
+  // submeshes of groups have max IDs, so search from the map end
+  map<int, SMESH_subMesh *>::const_reverse_iterator i_sm;
+  for ( i_sm = _mapSubMesh.rbegin(); i_sm != _mapSubMesh.rend(); ++i_sm) {
+    SMESHDS_SubMesh * ds = i_sm->second->GetSubMeshDS();
+    if ( ds && ds->IsComplexSubmesh() ) {
+      TopExp_Explorer exp( i_sm->second->GetSubShape(), aSubShape.ShapeType() );
+      for ( ; exp.More(); exp.Next() ) {
+        if ( aSubShape.IsSame( exp.Current() )) {
+          found.push_back( i_sm->second );
+          break;
+        }
+      }
+    } else {
+      break;
+    }
+  }
+  return found;
+}
 //=======================================================================
 //function : IsUsedHypothesis
 //purpose  : Return True if anHyp is used to mesh aSubShape
