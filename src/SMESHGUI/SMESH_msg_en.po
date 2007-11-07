@@ -1388,7 +1388,7 @@ msgstr "Automatically create groups"
 
 msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
 msgstr "It seems that there is not enough memory to show the mesh\n"
-       "so that the application may crash."
+       "so that the application may crash. "
        "Do you wish to continue visualization?"
 
 msgid "SMESH_NO_MESH_VISUALIZATION"
@@ -1396,6 +1396,11 @@ msgstr "There is not enough memory to show the mesh"
 
 msgid "SMESH_VISU_PROBLEM"
 msgstr "Mesh visualization failed, probably due to lack of memory"
+
+msgid "SMESH_VISU_PROBLEM_CLEAR"
+msgstr "Mesh visualization failed, no memory even to show a message,\n"
+       "so all visual data have been removed to let the application live.\n"
+       "Consider saving your work before application crash"
 
 #----------------------------------------------------
 
