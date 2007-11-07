@@ -331,7 +331,7 @@ namespace SMESH {
       CASE2TEXT( COMPERR_BAD_INPUT_MESH);
       CASE2TEXT( COMPERR_STD_EXCEPTION );
       CASE2TEXT( COMPERR_OCC_EXCEPTION );
-      CASE2TEXT( COMPERR_SLM_EXCEPTION );
+    case SMESH::COMPERR_SLM_EXCEPTION: break; // avoid double "Salome exception"
       CASE2TEXT( COMPERR_EXCEPTION     );
       CASE2TEXT( COMPERR_MEMORY_PB     );
       CASE2TEXT( COMPERR_BAD_SHAPE     );
@@ -855,7 +855,6 @@ void SMESHGUI_ComputeOp::startOperation()
       {
         SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
         update( UF_ObjBrowser | UF_Model );
-        Sel->setSelectedObjects( selected );
 
         // SHOW MESH
         // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
@@ -879,6 +878,7 @@ void SMESHGUI_ComputeOp::startOperation()
             }
           }
         }
+        Sel->setSelectedObjects( selected );
       }
     }
   }
