@@ -105,15 +105,17 @@ SMESHGUI_EXPORT
   void DisplayActor (SUIT_ViewWindow*, SMESH_Actor* theActor);
 SMESHGUI_EXPORT
   void RemoveActor  (SUIT_ViewWindow*, SMESH_Actor* theActor);
+SMESHGUI_EXPORT
+  void RemoveVisuData(int studyID);
 
   //----------------------------------------------------------------------------
   enum EDisplaing {eDisplayAll, eDisplay, eDisplayOnly, eErase, eEraseAll};
 SMESHGUI_EXPORT
-  void UpdateView (SUIT_ViewWindow*,
+  bool UpdateView (SUIT_ViewWindow*,
 		   EDisplaing theAction,
 		   const char* theEntry = "" );
 SMESHGUI_EXPORT		   
-  void UpdateView (EDisplaing theAction,
+  bool UpdateView (EDisplaing theAction,
 		   const char* theEntry = "");
 
 SMESHGUI_EXPORT
