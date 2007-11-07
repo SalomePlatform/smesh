@@ -41,8 +41,9 @@ class SUIT_DataOwner;
  *                Filter geom objects by number of subshapes of the given type
  *                Parameters of constructor:
  *                * theSubShapeType - Type of subshape
- *                * theNumber       - Number of subshapes. Object is selected if it contains theNumber of
- *                                    theSubShapeType sub-shapes
+ *                * theNumber       - Number of subshapes. Object is selected if it contains
+ *                                    theNumber of theSubShapeType sub-shapes, or at least
+ *                                    one theSubShapeType, provided that theNumber==0
  *                * theShapeType    - This map specifies types of object to be selected
  *                * theMainObject   - Sub-shapes of this object is selected only
  *                * theIsClosedOnly - Closed shapes is selected if this parameter is true
