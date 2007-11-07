@@ -54,12 +54,14 @@
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopExp_Explorer.hxx>
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GCPnts_UniformAbscissa.hxx>
 #include <GCPnts_UniformDeflection.hxx>
 #include <Precision.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 
 #include <string>
 

@@ -45,13 +45,11 @@
 #include "SMDS_VolumeOfNodes.hxx"
 
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TColStd_MapOfInteger.hxx>
-
-#include <BRep_Tool.hxx>
-#include <Geom_Surface.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopoDS.hxx>
 #include <gp_Pnt2d.hxx>
 
 #include "utilities.h"

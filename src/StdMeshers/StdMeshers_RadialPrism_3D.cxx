@@ -45,19 +45,20 @@
 
 #include "utilities.h"
 
-#include <TopoDS_Solid.hxx>
-#include <TopoDS_Shell.hxx>
-#include <BRepTools.hxx>
 #include <BRepAdaptor_Curve.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepTools.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Solid.hxx>
 #include <gp.hxx>
 #include <gp_Pnt.hxx>
 
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 
 typedef StdMeshers_ProjectionUtils TAssocTool;

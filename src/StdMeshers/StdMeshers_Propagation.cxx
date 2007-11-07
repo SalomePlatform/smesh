@@ -34,9 +34,10 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include <TopTools_MapOfShape.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRepTools_WireExplorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
 
 #define DBGMSG(txt) \
 //  cout << txt << endl;
