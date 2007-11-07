@@ -32,8 +32,16 @@ of a mesh then the boundary nodes of an elements set are also
 fixed. Any other nodes may be additionally fixed.</li>
 <li><b>Smoothing Method:</b>
 <ul>
-<li>\b Laplacian smoothing pulls a node toward the center of surrounding nodes directly connected to that node along an element edge. Centroidal smoothing pulls a node toward the element-area-weighted centroid of the surrounding elements. Typically, the Laplacian method will produce the mesh with the least element distortion. It is also the faster method.</li>
-<li>\b Centroidal smoothing usually produces a mesh that has more uniform element sizes. Both methods produce good results with "free" meshes.</li>
+<li>\b Laplacian smoothing pulls a node toward the center of
+surrounding nodes directly connected to that node along an element
+edge. 
+<li>\b Centroidal smoothing pulls a node toward the
+element-area-weighted centroid of the surrounding elements. </li>
+
+Typically, the  Laplacian method will produce the mesh with the least element
+distortion. It is also the faster method.Centroidal smoothing usually
+produces  a mesh that has more uniform element sizes. Both methods
+produce good results with "free" meshes.</li>
 </ul>
 
 \image html image83.gif
@@ -46,7 +54,13 @@ smoothing is reevaluated with the updated nodal locations. This
 process continues until the maximum number of iterations has been
 exceeded, or all elements has aspect ratio less or equal than the
 specified one.</li>
-<li><b>Max. aspect ratio</b>.</li>
+<li><b>Max. aspect ratio</b> allows to define the quality at which the
+smoothing algorithm should stop the iterations as the target of the
+operation has been reached.</li>
+<li>When <b>in parametric space</b> radio button is checked, the
+algorithm tries to improve the shape of faces in the parametric space
+of geometrical surfaces on which they are generated, else the shape of
+faces in the 3D space is improved. </li>   
 </ul>
 
 </li>

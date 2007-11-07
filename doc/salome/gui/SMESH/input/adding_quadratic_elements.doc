@@ -4,7 +4,7 @@
 
 \n MESH modules allows you to work with <b>Quadratic Elements</b>.
 
-Quadratic Edge in not a straight but a broken line and can be defined
+Quadratic Edge is not a straight but a broken line and can be defined
 by three points: first, middle and last. All more complex \b Quadratic
 \b Elements differ from ordinary ones in that they consist of Quadratic
 Edges.

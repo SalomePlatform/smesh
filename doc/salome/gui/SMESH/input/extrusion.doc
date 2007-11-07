@@ -2,11 +2,11 @@
 
 \page extrusion_page Extrusion
 
-\n Extrusion is a type of surface meshing by generation from
-discretized lines. It is used to build mesh elements of plus one
-dimension than the swept ones. Each swept 1D element produces one or
-more quadrangles (or triangles if one node of a rotated element lays
-on the revolution axis).
+\n Extrusion is used to build mesh elements of plus one
+dimension than the input ones. Any line or planar element can be
+extruded. Line elements will extrude into quadrilateral plane elements.
+Triangular and Quadrilateral plane elements extrude into Pentahedron
+and Hexahedron solids respectively.
 
 <em>To use extrusion:</em>
 <ol>

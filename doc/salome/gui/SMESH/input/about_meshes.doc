@@ -15,7 +15,7 @@ The topology of a mesh is described by the relationships between its
 entities including:
 
 <ul>
-<li>\b Node &mdash; 0D element of a mesh presented by a point with coordinates (x, y, z).</li>
+<li>\b Node &mdash; 0D object of a mesh presented by a point with coordinates (x, y, z).</li>
 <li>\b Edge &mdash; 1D element of a mesh defined by two nodes.</li>
 <li>\b Face &mdash; 2D element of a mesh defined by three or four edges (closed contour).</li>
 <li>\b Volume &mdash; 3D element of a mesh defined by several faces.</li>

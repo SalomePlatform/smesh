@@ -26,8 +26,8 @@ triangle will be added to the list. To remove a selected element or
 elements from the list click the \b Remove button. The \b Sort button allows
 to sort the list of IDs. The <b>Set filter</b> button allows to apply a
 definite filter to selection of triangles.</li>
-<li><b>Apply to all</b> radio button allows to modify the orientation of all
-triangles of the currently displayed mesh or submesh.</li>
+<li><b>Apply to all</b> radio button allows to modify connectivity and
+type of all triangles of the currently displayed mesh or submesh.</li>
 <li>\b Criterion menu allows to apply the operation only to those
 object which meet the chosen criterion (from the list of Quality
 Controls, i.e. Skew, Warping, Minimum Angle, etc.)</li>

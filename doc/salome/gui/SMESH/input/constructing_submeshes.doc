@@ -6,7 +6,7 @@
 <ul>
 <li>Selecting a mesh which will encapsulate your submesh</li>
 <li>Selecting a geometrical object for meshing</li>
-<li>Applying one or several previously 
+<li>Applying one or several previously described 
 \ref about_hypo_page "hypotheses" and 
 \ref basic_meshing_algos_page "meshing algorithms" which will be used
 at computation of this submesh</li>

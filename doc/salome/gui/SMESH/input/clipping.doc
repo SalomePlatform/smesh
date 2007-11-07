@@ -14,12 +14,12 @@ Now you can define the parameters of your cross-section: \b Orientation
 object, if it is set to 0.5 the object is split in two halves; and
 \b Rotation (in angle degrees) <b>around X</b> (Y to Z) and <b>around Y</b> (X to
 Z). If the <b>Show preview</b> button is on, you can see the clipping plane
-in the <b>Object window</b>.
+in the <b>3D Viewer</b>.
 
 \image html image79.jpg
 
 If the <b>Auto Apply</b> button is on, you can preview the
-cross-section in the <b>Object window</b>.
+cross-section in the <b>3D Viewer</b>.
 
 \image html image99.gif
 

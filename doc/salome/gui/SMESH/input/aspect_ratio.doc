@@ -4,10 +4,9 @@
 
 \n The <b>Aspect Ratio</b> quality criterion for mesh elements reveals
 the degree of conformity of a mesh element to the regular element of
-its type (with all edges having the same length).  The criterion can
-be defined as:
+its type (with all edges having the same length).
 
-\image html formula3.png
+  
 
 - The <b>Aspect Ratio</b> of a \b triangle 2D element consisting of 3
 nodes is calculated by the formula:

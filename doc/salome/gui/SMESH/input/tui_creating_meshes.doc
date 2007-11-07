@@ -4,8 +4,6 @@
 
 \n First of all see \ref tui_creating_meshes_page "Example of 3d mesh generation",
  which is an example of good python script style for Mesh module.
-\n Other examples of python scripts will be also updated soon to use
- smesh package instead of direct usage of idl interface.
 
 <br>
 <h2>Construction of a Mesh</h2>
