@@ -90,13 +90,14 @@ namespace SMESH {
   SMESH_Actor* CreateActor (_PTR(Study), const char*, int = false);
   void DisplayActor (SUIT_ViewWindow*, SMESH_Actor* theActor);
   void RemoveActor  (SUIT_ViewWindow*, SMESH_Actor* theActor);
+  void RemoveVisuData(int studyID);
 
   //----------------------------------------------------------------------------
   enum EDisplaing {eDisplayAll, eDisplay, eDisplayOnly, eErase, eEraseAll};
-  void UpdateView (SUIT_ViewWindow*,
+  bool UpdateView (SUIT_ViewWindow*,
 		   EDisplaing theAction,
 		   const char* theEntry = "");
-  void UpdateView (EDisplaing theAction,
+  bool UpdateView (EDisplaing theAction,
 		   const char* theEntry = "");
 
   void UpdateView();
