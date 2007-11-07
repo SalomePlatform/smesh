@@ -59,13 +59,13 @@ public:
   virtual ~StdMeshers_ProjectionSource1D_i();
 
   /*!
-   * Sets source <edge> to take a mesh pattern from
+   * Sets source <edge> or a group containing edges to take a mesh pattern from
    */
   void SetSourceEdge(GEOM::GEOM_Object_ptr edge)
     throw ( SALOME::SALOME_Exception );
 
   /*!
-   * Returns the source edge
+   * Returns the source edge or a group containing edges
    */
   GEOM::GEOM_Object_ptr GetSourceEdge();
 

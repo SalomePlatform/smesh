@@ -44,15 +44,17 @@ class SMDS_MeshNode;
 class SMESH_Mesh;
 class SMESH_Hypothesis;
 class SMESH_subMesh;
+class TopTools_IndexedDataMapOfShapeListOfShape;
 
 /*!
  * \brief Class encapsulating methods common to Projection algorithms
  */
-class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
+class StdMeshers_ProjectionUtils
 {
  public:
 
   typedef TopTools_DataMapOfShapeShape                         TShapeShapeMap;
+  typedef TopTools_IndexedDataMapOfShapeListOfShape            TAncestorMap;
   typedef std::map<const SMDS_MeshNode*, const SMDS_MeshNode*> TNodeNodeMap;
 
   /*!
@@ -92,9 +94,11 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
    * \brief Insert vertex association defined by a hypothesis into a map
     * \param theHyp - hypothesis
     * \param theAssociationMap - association map
+    * \param theTargetShape - the shape theHyp assigned to
    */
   static void InitVertexAssociation( const SMESH_Hypothesis* theHyp,
-                                     TShapeShapeMap &        theAssociationMap);
+                                     TShapeShapeMap &        theAssociationMap,
+                                     const TopoDS_Shape&     theTargetShape);
 
   /*!
    * \brief Inserts association theShape1 <-> theShape2 to TShapeShapeMap
@@ -115,10 +119,6 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
 
   /*!
    * \brief Finds an edge by its vertices in a main shape of the mesh
-    * \param aMesh - the mesh
-    * \param V1 - vertex 1
-    * \param V2 - vertex 2
-    * \retval TopoDS_Edge - found edge
    */
   static TopoDS_Edge GetEdgeByVertices( SMESH_Mesh*          aMesh,
                                         const TopoDS_Vertex& V1,
@@ -126,14 +126,16 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
                                         
   /*!
    * \brief Return another face sharing an edge
-    * \param aMesh - mesh
-    * \param edge - edge
-    * \param face - face
-    * \retval TopoDS_Face - found face
+   * \param edgeToFaces - data map of descendants to ancestors
    */
-  static TopoDS_Face GetNextFace( SMESH_Mesh*        aMesh,
-                                  const TopoDS_Edge& edge,
-                                  const TopoDS_Face& face);
+  static TopoDS_Face GetNextFace( const TAncestorMap& edgeToFaces,
+                                  const TopoDS_Edge&  edge,
+                                  const TopoDS_Face&  face);
+  /*!
+   * \brief Return other vertex of an edge
+   */
+  static TopoDS_Vertex GetNextVertex(const TopoDS_Edge&   edge,
+                                     const TopoDS_Vertex& vertex);
 
   /*!
    * \brief Return an oriented propagation edge
@@ -205,6 +207,7 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionUtils
   static void SetEventListener(SMESH_subMesh* subMesh,
                                TopoDS_Shape   srcShape,
                                SMESH_Mesh*    srcMesh);
+
 };
 
 #endif

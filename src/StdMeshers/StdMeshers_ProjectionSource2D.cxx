@@ -79,12 +79,12 @@ void StdMeshers_ProjectionSource2D::SetSourceFace(const TopoDS_Shape& Face)
   if ( Face.IsNull() )
     throw SALOME_Exception(LOCALIZED("Null Face is not allowed"));
 
-  if ( Face.ShapeType() != TopAbs_FACE )
+  if ( Face.ShapeType() != TopAbs_FACE && Face.ShapeType() != TopAbs_COMPOUND )
     throw SALOME_Exception(LOCALIZED("Wrong shape type"));
 
   if ( !_sourceFace.IsSame( Face ) )
   {
-    _sourceFace = TopoDS::Face( Face );
+    _sourceFace = Face;
 
     NotifySubMeshesHypothesisModification();
   }
@@ -150,7 +150,7 @@ void StdMeshers_ProjectionSource2D::SetSourceMesh(SMESH_Mesh* mesh)
  */
 //=============================================================================
 
-TopoDS_Face StdMeshers_ProjectionSource2D::GetSourceFace() const
+TopoDS_Shape StdMeshers_ProjectionSource2D::GetSourceFace() const
 {
   return _sourceFace;
 }
@@ -291,7 +291,7 @@ void StdMeshers_ProjectionSource2D::RestoreParams(const TopoDS_Shape& s1,
                                                   const TopoDS_Shape& s5,
                                                   SMESH_Mesh*         mesh)
 {
-  _sourceFace    = TopoDS::Face( s1 );
+  _sourceFace    = s1;
   _sourceVertex1 = TopoDS::Vertex( s2 );
   _sourceVertex2 = TopoDS::Vertex( s3 );
   _targetVertex1 = TopoDS::Vertex( s4 );
