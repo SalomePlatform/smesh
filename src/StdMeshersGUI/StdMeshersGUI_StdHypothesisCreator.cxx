@@ -244,16 +244,24 @@ namespace {
    */
   //================================================================================
 
-  SUIT_SelectionFilter* filterForShapeOfDim(const int              dim,
-                                            const int              nbSubShapes = 0,
-                                            const TopAbs_ShapeEnum subShapeType = TopAbs_SHAPE,
-                                            const bool             closed = false)
+  SUIT_SelectionFilter* filterForShapeOfDim(const int        dim,
+                                            TopAbs_ShapeEnum subShapeType = TopAbs_SHAPE,
+                                            const int        nbSubShapes = 0,
+                                            bool             closed = false)
   {
     TColStd_MapOfInteger shapeTypes;
     switch ( dim ) {
     case 0: shapeTypes.Add( TopAbs_VERTEX ); break;
-    case 1: shapeTypes.Add( TopAbs_EDGE ); break;
-    case 2: shapeTypes.Add( TopAbs_FACE ); break;
+    case 1:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_EDGE;
+      shapeTypes.Add( TopAbs_EDGE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
+    case 2:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_FACE;
+      shapeTypes.Add( TopAbs_FACE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
     case 3:
       shapeTypes.Add( TopAbs_SHELL );
       shapeTypes.Add( TopAbs_SOLID );
@@ -665,7 +673,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_ProjectionSource3D::_narrow( hyp );
 
     item.myName = tr( "SMESH_SOURCE_3DSHAPE" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3 , 6, TopAbs_FACE, true ),
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3, TopAbs_FACE, 6, true ),
                                                h->GetSource3DShape()));
     item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
     customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
