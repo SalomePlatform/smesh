@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2007-01-19 10:44+0300\n"
+"PO-Revision-Date: 2007-11-07 11:07+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1396,6 +1396,11 @@ msgstr "There is not enough memory to show the mesh"
 
 msgid "SMESH_VISU_PROBLEM"
 msgstr "Mesh visualization failed, probably due to lack of memory"
+
+msgid "SMESH_VISU_PROBLEM_CLEAR"
+msgstr "Mesh visualization failed, no memory even to show a message,\n"
+       "so all visual data have been removed to let the application live.\n"
+       "Consider saving your work before application crash"
 
 #----------------------------------------------------
 
