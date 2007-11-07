@@ -1363,12 +1363,33 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     ::SMESH_Mesh & mesh = meshServant->GetImpl();
     SMESHDS_Mesh* meshDS = mesh.GetMeshDS();
     // find the element in mesh
-    if ( const SMDS_MeshElement * elem = meshDS->FindElement( theElementID ) )
+    if ( const SMDS_MeshElement * elem = meshDS->FindElement( theElementID ) ) {
       // find a shape id by the element
       if ( int shapeID = ::SMESH_MeshEditor( &mesh ).FindShape( elem )) {
         // get a geom object by the shape id
         GEOM::GEOM_Object_var geom = ShapeToGeomObject( meshDS->IndexToShape( shapeID ));
         if ( geom->_is_nil() ) {
+          // try to find a published sub-shape
+          SALOMEDS::SObject_var mainSO = ObjectToSObject( myCurrentStudy, mainShape );
+          SALOMEDS::ChildIterator_var it;
+          if ( !mainSO->_is_nil() )
+            it = myCurrentStudy->NewChildIterator( mainSO );
+          if ( !it->_is_nil() ) {
+            for ( it->InitEx(true); it->More(); it->Next() ) {
+              GEOM::GEOM_Object_var subGeom =
+                GEOM::GEOM_Object::_narrow( SObjectToObject( it->Value() ));
+              if ( !subGeom->_is_nil() ) {
+                GEOM::ListOfLong_var subList = subGeom->GetSubShapeIndices();
+                if ( subList->length() == 1 && shapeID == subList[0] ) {
+                  geom = subGeom;
+                  break;
+                }
+              }
+            }
+          }
+        }
+        if ( geom->_is_nil() ) {
+          // explode
           GEOM::GEOM_IShapesOperations_var op =
             geomGen->GetIShapesOperations( GetCurrentStudyID() );
           if ( !op->_is_nil() )
@@ -1379,6 +1400,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
 	  return geom._retn();
         }
       }
+    }
   }
   return GEOM::GEOM_Object::_nil();
 }
@@ -3570,6 +3592,19 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
     delete myStudyContextMap[ studyId ];
     myStudyContextMap.erase( studyId );
   }
+
+  // delete SMESH_Mesh's
+  StudyContextStruct* context = myGen.GetStudyContext( studyId );
+  map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
+  for ( ; i_mesh != context->mapMesh.end(); ++i_mesh )
+    delete i_mesh->second;
+  // delete SMESHDS_Mesh's
+  // it's too long on big meshes
+//   if ( context->myDocument ) {
+//     delete context->myDocument;
+//     context->myDocument = 0;
+//   }
+  
   return;
 }
 
