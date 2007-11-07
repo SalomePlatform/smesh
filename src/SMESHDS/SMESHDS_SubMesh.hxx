@@ -32,6 +32,10 @@
 #include "SMDS_Mesh.hxx"
 #include <set>
 
+class SMESHDS_SubMesh;
+typedef SMDS_Iterator<const SMESHDS_SubMesh*> SMESHDS_SubMeshIterator;
+typedef boost::shared_ptr< SMESHDS_SubMeshIterator > SMESHDS_SubMeshIteratorPtr;
+
 class SMESHDS_EXPORT SMESHDS_SubMesh
 {
  public:
@@ -49,6 +53,7 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
   int  NbSubMeshes() const { return mySubMeshes.size(); }
+  SMESHDS_SubMeshIteratorPtr GetSubMeshIterator() const;
 
   // for both types
   int NbElements() const;
