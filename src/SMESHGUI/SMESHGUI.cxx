@@ -146,6 +146,8 @@
 #include "SALOMEDSClient_StudyBuilder.hxx"
 #include "SALOMEDSClient_SComponent.hxx"
 
+#include <Standard_ErrorHandler.hxx>
+
 using namespace std;
 
 //namespace{
@@ -1260,7 +1262,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case 214:					// UPDATE
     {
       if(checkLock(aStudy)) break;
-      SMESH::UpdateView();
+      try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
+        SMESH::UpdateView();
+      }
+      catch (std::bad_alloc) { // PAL16774 (Crash after display of many groups)
+        SMESH::OnVisuException();
+      }
+      catch (...) { // PAL16774 (Crash after display of many groups)
+        SMESH::OnVisuException();
+      }
 
       SALOME_ListIO l;
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -1291,12 +1304,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       extractContainers( sel_objects, to_process );
 
       try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
           for (; It.More(); It.Next()) {
             Handle(SALOME_InteractiveObject) IOS = It.Value();
             if (IOS->hasEntry()) {
-              SMESH::UpdateView(anAction, IOS->getEntry());
+              if (!SMESH::UpdateView(anAction, IOS->getEntry()))
+                break; // PAL16774 (Crash after display of many groups)
               if (anAction == SMESH::eDisplayOnly)
                 anAction = SMESH::eDisplay;
             }
@@ -2934,6 +2951,12 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   action(113)->setAccel(QKeySequence()); // Import MED
 
   return SalomeApp_Module::deactivateModule( study );
+}
+
+void SMESHGUI::studyClosed( SUIT_Study* s )
+{
+  SMESH::RemoveVisuData( s->id() );
+  SalomeApp_Module::studyClosed( s );
 }
 
 void SMESHGUI::OnGUIEvent()
