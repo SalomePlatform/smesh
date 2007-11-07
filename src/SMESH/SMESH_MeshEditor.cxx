@@ -46,28 +46,31 @@
 
 #include "utilities.h"
 
-#include <TopTools_ListIteratorOfListOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <math.h>
-#include <gp_Dir.hxx>
-#include <gp_Vec.hxx>
-#include <gp_Ax1.hxx>
-#include <gp_Trsf.hxx>
-#include <gp_Lin.hxx>
-#include <gp_XYZ.hxx>
-#include <gp_XY.hxx>
-#include <gp.hxx>
-#include <gp_Pln.hxx>
 #include <BRep_Tool.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom_Surface.hxx>
-#include <Geom2d_Curve.hxx>
+#include <ElCLib.hxx>
 #include <Extrema_GenExtPS.hxx>
 #include <Extrema_POnSurf.hxx>
+#include <Geom2d_Curve.hxx>
 #include <GeomAdaptor_Surface.hxx>
-#include <ElCLib.hxx>
+#include <Geom_Curve.hxx>
+#include <Geom_Surface.hxx>
 #include <TColStd_ListOfInteger.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
+#include <gp.hxx>
+#include <gp_Ax1.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Lin.hxx>
+#include <gp_Pln.hxx>
+#include <gp_Trsf.hxx>
+#include <gp_Vec.hxx>
+#include <gp_XY.hxx>
+#include <gp_XYZ.hxx>
+#include <math.h>
 
 #include <map>
 #include <set>
@@ -2753,12 +2756,7 @@ static void sweepElement(SMESHDS_Mesh*                         aMesh,
   // Loop on elem nodes:
   // find new nodes and detect same nodes indices
   int nbNodes = elem->NbNodes();
-  //---PR
-  //list<const SMDS_MeshNode*>::const_iterator itNN[ nbNodes ];
-  vector<list<const SMDS_MeshNode*>::const_iterator> itNN( nbNodes );
-  itNN.reserve(nbNodes);
-  //---PR
-  //const SMDS_MeshNode* prevNod[ nbNodes ], *nextNod[ nbNodes ];
+  vector < list< const SMDS_MeshNode* >::const_iterator > itNN( nbNodes );
   vector<const SMDS_MeshNode*> prevNod( nbNodes );
   vector<const SMDS_MeshNode*> nextNod( nbNodes );
   vector<const SMDS_MeshNode*> midlNod( nbNodes );
@@ -4098,7 +4096,7 @@ void SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
         const_cast< SMDS_MeshNode* > ( node )->SetPosition
           ( SMDS_SpacePosition::originSpacePosition() );
       }
-      nodeMap.insert( TNodeNodeMap::value_type( node, newNode ));
+      nodeMap.insert( make_pair( node, newNode ));
 
       // keep inverse elements
       if ( !theCopy && needReverse ) {
@@ -4561,10 +4559,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
     int aShapeId = FindShape( elem );
 
     set<const SMDS_MeshNode*> nodeSet;
-    //const SMDS_MeshNode* curNodes[ nbNodes ], *uniqueNodes[ nbNodes ];
-    const SMDS_MeshNode** curNodes = new const SMDS_MeshNode*[ nbNodes ];
-    const SMDS_MeshNode** uniqueNodes = new const SMDS_MeshNode*[ nbNodes ];
-    
+    vector< const SMDS_MeshNode*> curNodes( nbNodes ), uniqueNodes( nbNodes );
     int iUnique = 0, iCur = 0, nbRepl = 0;
     vector<int> iRepl( nbNodes );
 
@@ -5042,7 +5037,7 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
       }
       else {
         // Change regular element or polygon
-        aMesh->ChangeElementNodes( elem, uniqueNodes, nbUniqueNodes );
+        aMesh->ChangeElementNodes( elem, & uniqueNodes[0], nbUniqueNodes );
       }
     }
     else {
@@ -5050,14 +5045,13 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
       rmElemIds.push_back( elem->GetID() );
     }
 
-    delete curNodes;
-    delete uniqueNodes;
   } // loop on elements
 
   // Remove equal nodes and bad elements
 
   Remove( rmNodeIds, true );
   Remove( rmElemIds, false );
+
 }
 
 
@@ -5609,13 +5603,11 @@ SMESH_MeshEditor::Sew_Error
         const SMDS_MeshElement* elem = invElemIt->next();
         // prepare data for a loop on links coming to prevSideNode, of a face or a volume
         int iPrevNode, iNode = 0, nbNodes = elem->NbNodes();
-        //const SMDS_MeshNode* faceNodes[ nbNodes ];
-        const SMDS_MeshNode** faceNodes = new const SMDS_MeshNode*[ nbNodes ];
+        vector< const SMDS_MeshNode* > faceNodes( nbNodes, (const SMDS_MeshNode*)0 );
         bool isVolume = volume.Set( elem );
-        const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : faceNodes;
+        const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : & faceNodes[0];
         if ( isVolume ) // --volume
           hasVolumes = true;
-        //else if ( nbNodes > 2 ) { // --face
         else if ( elem->GetType()==SMDSAbs_Face ) { // --face
           // retrieve all face nodes and find iPrevNode - an index of the prevSideNode
           if(elem->IsQuadratic()) {
@@ -5632,7 +5624,7 @@ SMESH_MeshEditor::Sew_Error
           else {
             SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
             while ( nIt->more() ) {
-              nodes[ iNode ] = static_cast<const SMDS_MeshNode*>( nIt->next() );
+              nodes[ iNode ] = cast2Node( nIt->next() );
               if ( nodes[ iNode++ ] == prevSideNode )
                 iPrevNode = iNode - 1;
             }
@@ -5682,7 +5674,6 @@ SMESH_MeshEditor::Sew_Error
             }
           }
         }
-        delete faceNodes;
       } // loop on inverse elements of prevSideNode
 
       if ( !sideNode ) {

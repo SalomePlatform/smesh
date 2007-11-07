@@ -29,6 +29,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_HypoFilter.hxx"
+#include "SMESHDS_Document.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
 
@@ -309,7 +310,7 @@ static bool checkMissing(SMESH_Gen*                aGen,
       int shapeDim = SMESH_Gen::GetShapeDim( aSubMesh->GetSubShape() );
       if (aTopAlgoDim > shapeDim)
       {
-        INFOS( "ERROR: " << shapeDim << "D algorithm is missing" );
+        MESSAGE( "ERROR: " << shapeDim << "D algorithm is missing" );
         ret = false;
         theErrors.push_back( SMESH_Gen::TAlgoStateError() );
         theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, shapeDim, true );
@@ -328,16 +329,16 @@ static bool checkMissing(SMESH_Gen*                aGen,
       SMESH_Hypothesis::Hypothesis_Status status;
       algo->CheckHypothesis( aMesh, aSubMesh->GetSubShape(), status );
       if ( status == SMESH_Hypothesis::HYP_BAD_PARAMETER ) {
-        INFOS( "ERROR: hypothesis of " << (IsGlobalHypothesis ? "Global " : "Local ")
-               << "<" << algo->GetName() << "> has a bad parameter value");
+        MESSAGE( "ERROR: hypothesis of " << (IsGlobalHypothesis ? "Global " : "Local ")
+                 << "<" << algo->GetName() << "> has a bad parameter value");
         errName = status;
       } else if ( status == SMESH_Hypothesis::HYP_BAD_GEOMETRY ) {
-        INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
-               << "<" << algo->GetName() << "> assigned to mismatching geometry");
+        MESSAGE( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
+                 << "<" << algo->GetName() << "> assigned to mismatching geometry");
         errName = status;
       } else {
-        INFOS( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
-               << "<" << algo->GetName() << "> misses some hypothesis");
+        MESSAGE( "ERROR: " << (IsGlobalHypothesis ? "Global " : "Local ")
+                 << "<" << algo->GetName() << "> misses some hypothesis");
       }
       if (IsGlobalHypothesis)
         globalChecked[ algo->GetDim() ] = true;

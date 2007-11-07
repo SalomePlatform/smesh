@@ -36,10 +36,12 @@
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
-#include <IntAna2d_AnaIntersection.hxx>
+//#include <IntAna2d_AnaIntersection.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
@@ -47,7 +49,6 @@
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Lin2d.hxx>
 #include <gp_Pnt2d.hxx>
