@@ -1220,11 +1220,19 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
   add( anElement, getSubmesh( Index ));
 }
 
+//=======================================================================
+//function : ~SMESHDS_Mesh
+//purpose  : 
+//=======================================================================
 SMESHDS_Mesh::~SMESHDS_Mesh()
 {
+  // myScript
   delete myScript;
+  // submeshes
+  TShapeIndexToSubMesh::iterator i_sm = myShapeIndexToSubMesh.begin();
+  for ( ; i_sm != myShapeIndexToSubMesh.end(); ++i_sm )
+    delete i_sm->second;
 }
-
 
 
 //********************************************************************
