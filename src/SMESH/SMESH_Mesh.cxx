@@ -37,6 +37,7 @@
 #include "SMESHDS_GroupOnGeom.hxx"
 #include "SMESHDS_Document.hxx"
 #include "SMDS_MeshVolume.hxx"
+#include "SMDS_SetIterator.hxx"
 
 #include "utilities.h"
 
@@ -1228,9 +1229,21 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
   return aGroup;
 }
 
+//================================================================================
+/*!
+ * \brief Return iterator on all existing groups
+ */
+//================================================================================
+
+SMESH_Mesh::GroupIteratorPtr SMESH_Mesh::GetGroups() const
+{
+  typedef map <int, SMESH_Group *> TMap;
+  return GroupIteratorPtr( new SMDS_mapIterator<TMap>( _mapGroup ));
+}
+
 //=============================================================================
 /*!
- *  
+ * \brief Return a group by ID
  */
 //=============================================================================
 
@@ -1244,11 +1257,11 @@ SMESH_Group* SMESH_Mesh::GetGroup (const int theGroupID)
 
 //=============================================================================
 /*!
- *  
+ * \brief Return IDs of all groups
  */
 //=============================================================================
 
-list<int> SMESH_Mesh::GetGroupIds()
+list<int> SMESH_Mesh::GetGroupIds() const
 {
   list<int> anIds;
   for ( map<int, SMESH_Group*>::const_iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )

@@ -217,13 +217,16 @@ public:
 			 int&                      theId,
                          const TopoDS_Shape&       theShape=TopoDS_Shape());
   
+  typedef boost::shared_ptr< SMDS_Iterator<SMESH_Group*> > GroupIteratorPtr;
+  GroupIteratorPtr GetGroups() const;
+  
+  std::list<int> GetGroupIds() const;
+  
   SMESH_Group* GetGroup (const int theGroupID);
-  
-  std::list<int> GetGroupIds();
-  
+
   void RemoveGroup (const int theGroupID);
 
- 
+
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem );
 
   //
