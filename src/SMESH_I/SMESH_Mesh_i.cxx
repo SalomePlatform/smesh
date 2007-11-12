@@ -27,29 +27,30 @@
 //  $Header$
 
 #include "SMESH_Mesh_i.hxx"
-#include "SMESH_subMesh_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
-#include "SMESH_Group_i.hxx"
+
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_MEDMesh_i.hxx"
+#include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_subMesh_i.hxx"
 
-#include "Utils_CorbaException.hxx"
-#include "Utils_ExceptHandlers.hxx"
-#include "utilities.h"
-
-#include "SALOME_NamingService.hxx"
-#include "Utils_SINGLETON.hxx"
-#include "OpUtil.hxx"
-
+#include "DriverMED_R_SMESHDS_Mesh.h"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
-#include "SMESH_MeshEditor_i.hxx"
-#include "SMESH_Gen_i.hxx"
-#include "DriverMED_R_SMESHDS_Mesh.h"
-//#include "SMDS_ElemIterator.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMESH_MesherHelper.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Group.hxx"
 #include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
+
+#include "OpUtil.hxx"
+#include "SALOME_NamingService.hxx"
+#include "Utils_CorbaException.hxx"
+#include "Utils_ExceptHandlers.hxx"
+#include "Utils_SINGLETON.hxx"
+#include "utilities.h"
 
 // OCCT Includes
 #include <BRep_Builder.hxx>
@@ -226,7 +227,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   Unexpect aCatch(SALOME_SalomeException);
   int status;
   try {
-    status = importMEDFile( theFileName, theMeshName );
+    status = _impl->MEDToMesh( theFileName, theMeshName );
   }
   catch( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -235,16 +236,8 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
   }
 
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( !aStudy->_is_nil() ) {
-    // publishing of the groups in the study (sub-meshes are out of scope of MED import)
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
-    for (; it != _mapGroups.end(); it++ ) {
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
-      _gen_i->PublishGroup( aStudy, _this(), aGroup,
-                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
-    }
-  }
+  CreateGroupServants();
+
   return ConvertDriverMEDReadStatus(status);
 }
 
@@ -264,16 +257,6 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
 
   CreateGroupServants();
 
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( !aStudy->_is_nil() ) {
-    // publishing of the groups in the study (sub-meshes are out of scope of UNV import)
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
-    for (; it != _mapGroups.end(); it++ ) {
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
-      _gen_i->PublishGroup( aStudy, _this(), aGroup,
-                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
-    }
-  }
   return 1;
 }
 
@@ -301,14 +284,14 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
  */
 //=============================================================================
 
-int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshName )
-{
-  // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
-  int status = _impl->MEDToMesh( theFileName, theMeshName );
-  CreateGroupServants();
+// int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshName )
+// {
+//   // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
+//   int status = _impl->MEDToMesh( theFileName, theMeshName );
+//   CreateGroupServants();
 
-  return status;
-}
+//   return status;
+// }
 
 //=============================================================================
 /*!
@@ -810,6 +793,17 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
     aPythonDump << " ] = " << _this() << ".GetGroups()";
 
   return aList._retn();
+}
+//=============================================================================
+/*!
+ *  Get number of groups existing in the mesh
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::NbGroups() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _mapGroups.size();
 }
 
 //=============================================================================
@@ -1370,7 +1364,7 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 {
   // Create MeshEditor
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, false );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, false );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
 
   // Update Python script
@@ -1387,7 +1381,7 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
 {
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, true );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, true );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
   return aMesh._retn();
 }
@@ -2313,17 +2307,11 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
     return aResult._retn();
 
   if(elem->GetType()==SMDSAbs_Volume) {
-    // use SMDS_VolumeTool
     SMDS_VolumeTool aTool;
     if(aTool.Set(elem)) {
-      double x=0., y=0., z=0.;
-      if(aTool.GetBaryCenter(x,y,z)) {
-        // add coordinates
-        aResult->length(3);
-        aResult[0] = x;
-        aResult[1] = y;
-        aResult[2] = z;
-      }
+      aResult->length(3);
+      if (!aTool.GetBaryCenter( aResult[0], aResult[1], aResult[2]) )
+        aResult->length(0);
     }
   }
   else {
@@ -2352,27 +2340,75 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
 
 //=============================================================================
 /*!
- *
+ * Create and publish group servants if any groups were imported or created anyhow
  */
 //=============================================================================
+
 void SMESH_Mesh_i::CreateGroupServants() 
 {
-  // Create group servants, if any groups were imported
-  list<int> aGroupIds = _impl->GetGroupIds();
-  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
-    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
 
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+  ::SMESH_Mesh::GroupIteratorPtr groupIt = _impl->GetGroups();
+  while ( groupIt->more() )
+  {
+    ::SMESH_Group* group = groupIt->next();
+    int            anId = group->GetGroupDS()->GetID();
+
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(anId);
+    if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
+      continue;
+
+    SMESH_GroupBase_i* aGroupImpl;
+    TopoDS_Shape       shape;
+    if ( SMESHDS_GroupOnGeom* groupOnGeom =
+         dynamic_cast<SMESHDS_GroupOnGeom*>( group->GetGroupDS() ))
+    {
+      aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
+      shape      = groupOnGeom->GetShape();
+    }
+    else {
+      aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
+    }
+
+    // To ensure correct mapping of servant and correct reference counting in GenericObj_i
     SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
     aGroupImpl->Register();
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
 
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
-    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
+    SMESH::SMESH_GroupBase_var groupVar =
+      SMESH::SMESH_GroupBase::_narrow( aGroupImpl->_this() );
+    _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( groupVar );
 
     // register CORBA object for persistence
-    int nextId = _gen_i->RegisterObject( aGroup );
+    int nextId = _gen_i->RegisterObject( groupVar );
     if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+
+    // publishing of the groups in the study
+    if ( !aStudy->_is_nil() ) {
+      GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
+      _gen_i->PublishGroup( aStudy, _this(), groupVar, shapeVar, groupVar->GetName());
+    }
   }
 }
 
+//=============================================================================
+/*!
+ * \brief Return groups cantained in _mapGroups by their IDs
+ */
+//=============================================================================
+
+SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
+{
+  int nbGroups = groupIDs.size();
+  SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+  aList->length( nbGroups );
+
+  list<int>::const_iterator ids = groupIDs.begin();
+  for ( nbGroups = 0; ids != groupIDs.end(); ++ids )
+  {
+    map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator it = _mapGroups.find( *ids );
+    if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
+      aList[nbGroups++] = SMESH::SMESH_GroupBase::_duplicate( it->second );
+  }
+  aList->length( nbGroups );
+  return aList._retn();
+}
