@@ -247,6 +247,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     *  Get number of groups existing in the mesh
+     */
+    long NbGroups()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Union of two groups
      *    New group is created. All mesh elements that are
      *    present in initial groups are added to the new one
