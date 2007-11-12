@@ -35,7 +35,8 @@ enum SMDSAbs_ElementType
 	SMDSAbs_Node,
 	SMDSAbs_Edge,
 	SMDSAbs_Face,
-	SMDSAbs_Volume
+	SMDSAbs_Volume,
+        SMDSAbs_NbElementTypes
 };
 
 enum SMDSAbs_ElementOrder {
