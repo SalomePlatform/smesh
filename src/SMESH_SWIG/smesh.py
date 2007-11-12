@@ -128,6 +128,13 @@ def GetDirStruct(theVector):
     dir = DirStruct(pnt)
     return dir
 
+## Make DirStruct from a triplet
+#  @param x,y,z are vector components
+#  @return SMESH.DirStruct
+def MakeDirStruct(x,y,z):
+    pnt = PointStruct(x,y,z)
+    return DirStruct(pnt)
+
 ## Get AxisStruct from object
 #  @param theObj is GEOM object(line or plane)
 #  @return SMESH.AxisStruct
@@ -1812,6 +1819,10 @@ class Mesh:
     def GetGroups(self):
         return self.mesh.GetGroups()
 
+    ## Get number of groups existing in the mesh
+    def NbGroups(self):
+        return self.mesh.NbGroups()
+
     ## Get the list of names of groups existing in the mesh
     def GetGroupNames(self):
         groups = self.GetGroups()
@@ -2495,12 +2506,17 @@ class Mesh:
     #  @param AngleInRadians angle of Rotation
     #  @param NbOfSteps number of steps
     #  @param Tolerance tolerance
-    def RotationSweep(self, IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance):
+    #  @param MakeGroups to generate new groups from existing ones
+    def RotationSweep(self, IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axix, geompy.GEOM._objref_GEOM_Object)):
             Axix = GetAxisStruct(Axix)
+        if MakeGroups:
+            return self.editor.RotationSweepMakeGroups(IDsOfElements, Axix,
+                                                       AngleInRadians, NbOfSteps, Tolerance)
         self.editor.RotationSweep(IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance)
+        return []
 
     ## Generate new elements by rotation of the elements of object around the axis
     #  @param theObject object wich elements should be sweeped
@@ -2508,21 +2524,30 @@ class Mesh:
     #  @param AngleInRadians angle of Rotation
     #  @param NbOfSteps number of steps
     #  @param Tolerance tolerance
-    def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance):
+    #  @param MakeGroups to generate new groups from existing ones
+    def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance, MakeGroups=False):
         if ( isinstance( Axix, geompy.GEOM._objref_GEOM_Object)):
             Axix = GetAxisStruct(Axix)
+        if MakeGroups:
+            return self.editor.RotationSweepObjectMakeGroups(theObject, Axix, AngleInRadians,
+                                                             NbOfSteps, Tolerance)
         self.editor.RotationSweepObject(theObject, Axix, AngleInRadians, NbOfSteps, Tolerance)
+        return []
 
     ## Generate new elements by extrusion of the elements with given ids
     #  @param IDsOfElements list of elements ids for extrusion
     #  @param StepVector vector, defining the direction and value of extrusion 
     #  @param NbOfSteps the number of steps
-    def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps):
+    #  @param MakeGroups to generate new groups from existing ones
+    def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
+        if MakeGroups:
+            return self.editor.ExtrusionSweepMakeGroups(IDsOfElements, StepVector, NbOfSteps)
         self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
+        return []
 
     ## Generate new elements by extrusion of the elements with given ids
     #  @param IDsOfElements is ids of elements
@@ -2531,37 +2556,55 @@ class Mesh:
     #  @param ExtrFlags set flags for performing extrusion
     #  @param SewTolerance uses for comparing locations of nodes if flag
     #         EXTRUSION_FLAG_SEW is set
-    def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps, ExtrFlags, SewTolerance):
+    #  @param MakeGroups to generate new groups from existing ones
+    def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps, ExtrFlags, SewTolerance, MakeGroups=False):
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
-        self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps, ExtrFlags, SewTolerance)
+        if MakeGroups:
+            return self.editor.AdvancedExtrusionMakeGroups(IDsOfElements, StepVector, NbOfSteps,
+                                                           ExtrFlags, SewTolerance)
+        self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps,
+                                      ExtrFlags, SewTolerance)
+        return []
 
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion 
     #  @param NbOfSteps the number of steps
-    def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps):
+    #  @param MakeGroups to generate new groups from existing ones
+    def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
+        if MakeGroups:
+            return self.editor.ExtrusionSweepObjectMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
+        return []
 
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion 
     #  @param NbOfSteps the number of steps
-    def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps):
+    #  @param MakeGroups to generate new groups from existing ones
+    def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
+        if MakeGroups:
+            return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
+        return []
     
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion 
     #  @param NbOfSteps the number of steps    
-    def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps):
+    #  @param MakeGroups to generate new groups from existing ones
+    def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
+        if MakeGroups:
+            return self.editor.ExtrusionSweepObject2DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
+        return []
 
     ## Generate new elements by extrusion of the given elements
     #  A path of extrusion must be a meshed edge.
@@ -2574,16 +2617,22 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param MakeGroups to generate new groups from existing ones
     #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
-                           HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
+                           HasAngles, Angles, HasRefPoint, RefPoint,
+                           MakeGroups=False, LinearVariation=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint)
             pass
-        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape, NodeStart,
-                                              HasAngles, Angles, HasRefPoint, RefPoint)
+        if MakeGroups:
+            return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh.GetMesh(),
+                                                            PathShape, NodeStart, HasAngles,
+                                                            Angles, HasRefPoint, RefPoint)
+        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape,
+                                              NodeStart, HasAngles, Angles, HasRefPoint, RefPoint)
 
     ## Generate new elements by extrusion of the elements belong to object
     #  A path of extrusion must be a meshed edge.
@@ -2596,13 +2645,20 @@ class Mesh:
     #  @param HasRefPoint allows to use base point 
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
+    #  @param MakeGroups to generate new groups from existing ones
     #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
-                                 HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation=False):
+                                 HasAngles, Angles, HasRefPoint, RefPoint,
+                                 MakeGroups=False, LinearVariation=False):
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
-        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape, NodeStart,
-                                                    HasAngles, Angles, HasRefPoint, RefPoint, LinearVariation)
+        if MakeGroups:
+            return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh.GetMesh(),
+                                                                  PathShape, NodeStart, HasAngles,
+                                                                  Angles, HasRefPoint, RefPoint)
+        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape,
+                                                    NodeStart, HasAngles, Angles, HasRefPoint,
+                                                    RefPoint)
     
     ## Symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
@@ -2610,12 +2666,16 @@ class Mesh:
     #  @param theMirrorType is  POINT, AXIS or PLANE
     #  If the Mirror is geom object this parameter is unnecessary
     #  @param Copy allows to copy element(Copy is 1) or to replace with its mirroring(Copy is 0)
-    def Mirror(self, IDsOfElements, Mirror, theMirrorType, Copy=0):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def Mirror(self, IDsOfElements, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Mirror, geompy.GEOM._objref_GEOM_Object)):
             Mirror = GetAxisStruct(Mirror)
+        if Copy and MakeGroups:
+            return self.editor.MirrorMakeGroups(IDsOfElements, Mirror, theMirrorType)
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
+        return []
 
     ## Symmetrical copy of object
     #  @param theObject mesh, submesh or group
@@ -2623,50 +2683,72 @@ class Mesh:
     #  @param theMirrorType is  POINT, AXIS or PLANE
     #  If the Mirror is geom object this parameter is unnecessary
     #  @param Copy allows to copy element(Copy is 1) or to replace with its mirroring(Copy is 0)
-    def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if ( isinstance( Mirror, geompy.GEOM._objref_GEOM_Object)):
             Mirror = GetAxisStruct(Mirror)
+        if Copy and MakeGroups:
+            return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
+        return []
 
     ## Translates the elements
     #  @param IDsOfElements list of elements ids
     #  @param Vector direction of translation(DirStruct or vector)
     #  @param Copy allows to copy the translated elements
-    def Translate(self, IDsOfElements, Vector, Copy):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def Translate(self, IDsOfElements, Vector, Copy, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Vector, geompy.GEOM._objref_GEOM_Object)):
             Vector = GetDirStruct(Vector)
+        if Copy and MakeGroups:
+            return self.editor.TranslateMakeGroups(IDsOfElements, Vector)
         self.editor.Translate(IDsOfElements, Vector, Copy)
+        return []
 
     ## Translates the object
     #  @param theObject object to translate(mesh, submesh, or group)
     #  @param Vector direction of translation(DirStruct or geom vector)
     #  @param Copy allows to copy the translated elements
-    def TranslateObject(self, theObject, Vector, Copy):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def TranslateObject(self, theObject, Vector, Copy, MakeGroups=False):
         if ( isinstance( Vector, geompy.GEOM._objref_GEOM_Object)):
             Vector = GetDirStruct(Vector)
+        if Copy and MakeGroups:
+            return self.editor.TranslateObjectMakeGroups(theObject, Vector)
         self.editor.TranslateObject(theObject, Vector, Copy)
+        return []
 
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
     #  @param Axis axis of rotation(AxisStruct or geom line)
     #  @param AngleInRadians angle of rotation(in radians)
     #  @param Copy allows to copy the rotated elements   
-    def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axis, geompy.GEOM._objref_GEOM_Object)):
             Axis = GetAxisStruct(Axis)
+        if Copy and MakeGroups:
+            return self.editor.RotateMakeGroups(IDsOfElements, Axis, AngleInRadians)
         self.editor.Rotate(IDsOfElements, Axis, AngleInRadians, Copy)
+        return []
 
     ## Rotates the object
     #  @param theObject object to rotate(mesh, submesh, or group)
     #  @param Axis axis of rotation(AxisStruct or geom line)
     #  @param AngleInRadians angle of rotation(in radians)
     #  @param Copy allows to copy the rotated elements
-    def RotateObject (self, theObject, Axis, AngleInRadians, Copy):
+    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
+        if ( isinstance( Axis, geompy.GEOM._objref_GEOM_Object)):
+            Axis = GetAxisStruct(Axis)
+        if Copy and MakeGroups:
+            return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
         self.editor.RotateObject(theObject, Axis, AngleInRadians, Copy)
+        return []
 
     ## Find group of nodes close to each other within Tolerance.
     #  @param Tolerance tolerance value
