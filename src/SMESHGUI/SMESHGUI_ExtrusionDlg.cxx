@@ -225,6 +225,12 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   SpinBox_NbSteps = new QSpinBox(GroupArguments, "SpinBox_NbSteps");
   GroupArgumentsLayout->addMultiCellWidget(SpinBox_NbSteps, 3, 3,  2, 7);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(true);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 4, 4,  0, 7);
+
+
   SMESHGUI_ExtrusionDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
@@ -401,12 +407,20 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+        SMESH::ListOfGroups_var groups = 
+          aMeshEditor->ExtrusionSweepMakeGroups(myElementsId.inout(), aVector, aNbSteps);
+      else
+        aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
+
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
     SMESH::UpdateView();
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
@@ -561,6 +575,14 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
 
   if (myEditCurrentArgument == LineEditElements) {
     int aNbElements = 0;
+
+    // MakeGroups is available if there are groups
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    } else {
+      MakeGroupsCheck->setEnabled(true);
+    }
 
     if (CheckBoxMesh->isChecked()) {
       SMESH::ElementType neededType = GetConstructorId() ? SMESH::FACE : SMESH::EDGE;

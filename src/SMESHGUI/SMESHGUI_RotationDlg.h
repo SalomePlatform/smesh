@@ -129,6 +129,7 @@ private:
     QLabel* TextLabelAngle;
     SMESHGUI_SpinBox* SpinBox_Angle;
     QCheckBox* CheckBoxCopy;
+    QCheckBox* MakeGroupsCheck;
 
     QString myHelpFileName;
 
@@ -146,6 +147,7 @@ private slots:
     void onTextChange (const QString&);
     void onSelectMesh (bool toSelectMesh);
     void onVectorChanged();
+    void onCopyChecked(bool isOn);
 
 protected:
     QGridLayout* SMESHGUI_RotationDlgLayout;

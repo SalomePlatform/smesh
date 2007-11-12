@@ -129,6 +129,7 @@ private:
     SMESHGUI_SpinBox* SpinBox_DZ;
     
     QCheckBox* CheckBoxCopy;
+    QCheckBox* MakeGroupsCheck;
 
     QString myHelpFileName;
    
@@ -146,7 +147,8 @@ private:
     void onTextChange(const QString&);
     void onSelectMesh(bool toSelectMesh);
     void onVectorChanged();
-    
+    void onCopyChecked(bool isOn);
+
 protected:
     QGridLayout* SMESHGUI_SymmetryDlgLayout;
     QGridLayout* GroupConstructorsLayout;

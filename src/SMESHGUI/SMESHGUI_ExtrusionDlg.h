@@ -112,6 +112,7 @@ private:
   SMESHGUI_SpinBox* SpinBox_Dz;
   QLabel*           TextLabelNbSteps;
   QSpinBox*         SpinBox_NbSteps;
+  QCheckBox*        MakeGroupsCheck;
 
   QGroupBox*        GroupButtons;
   QPushButton*      buttonOk;

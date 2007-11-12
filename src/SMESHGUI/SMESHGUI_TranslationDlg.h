@@ -124,6 +124,7 @@ private:
     QLabel* TextLabel2_3;
     SMESHGUI_SpinBox* SpinBox2_3;
     QCheckBox* CheckBoxCopy;
+    QCheckBox* MakeGroupsCheck;
 
     QString myHelpFileName;
    
@@ -140,6 +141,7 @@ private:
     void ActivateThisDialog() ;
     void onTextChange(const QString&);
     void onSelectMesh(bool toSelectMesh);
+    void onCopyChecked(bool isOn);
     
 protected:
     QGridLayout* SMESHGUI_TranslationDlgLayout;
