@@ -106,6 +106,9 @@ public:
   SMESH::ListOfGroups* GetGroups()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbGroups()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
@@ -292,7 +295,7 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
-  int importMEDFile( const char* theFileName, const char* theMeshName );
+  //int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
@@ -322,6 +325,15 @@ public:
 
   CORBA::LongLong GetMeshPtr();
 
+  /*!
+   * \brief Assure that all groups are published
+   */
+  void CreateGroupServants();
+
+  /*!
+   * \brief Return groups cantained in _mapGroups by their IDs
+   */
+  SMESH::ListOfGroups* GetGroups(const std::list<int>& groupIDs) const;
 
   /*!
    * Get XYZ coordinates of node as list of double
@@ -409,7 +421,6 @@ public:
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-  void CreateGroupServants();
 
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here
