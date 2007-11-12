@@ -28,7 +28,8 @@
 #ifndef _SMESH_Group_HeaderFile
 #define _SMESH_Group_HeaderFile
 
-#include <SMDSAbs_ElementType.hxx>
+#include "SMDSAbs_ElementType.hxx"
+
 #include <string>
 #include <TopoDS_Shape.hxx>
 
