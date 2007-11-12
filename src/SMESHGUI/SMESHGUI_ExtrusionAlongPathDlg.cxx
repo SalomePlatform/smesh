@@ -270,6 +270,10 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   AnglesGrpLayout->addWidget(         AngleSpin,  0,    2   );
   AnglesGrpLayout->setRowStretch(1, 10);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(true);
+
   // layouting
   GroupArgumentsLayout->addWidget(         ElementsLab,            0,    0   );
   GroupArgumentsLayout->addWidget(         SelectElementsButton,   0,    1   );
@@ -280,6 +284,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   GroupArgumentsLayout->addMultiCellWidget(BasePointGrp,           3, 4, 1, 2);
   GroupArgumentsLayout->addWidget(         AnglesCheck,            5,    0   );
   GroupArgumentsLayout->addMultiCellWidget(AnglesGrp,              5, 6, 1, 2);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck,        7, 7, 0, 2);
   GroupArgumentsLayout->setRowStretch(6, 10);
 
   /***************************************************************/
@@ -599,10 +604,18 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   try {
     SUIT_OverrideCursor wc;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    SMESH::SMESH_MeshEditor::Extrusion_Error retVal =
-      aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh, myPathShape, aNodeStart,
-				       AnglesCheck->isChecked(), anAngles.inout(),
-				       BasePointCheck->isChecked(), aBasePoint);
+    SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      SMESH::ListOfGroups_var groups = 
+        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId.inout(), myPathMesh,
+                                                  myPathShape, aNodeStart,
+                                                  AnglesCheck->isChecked(), anAngles.inout(),
+                                                  BasePointCheck->isChecked(), aBasePoint, retVal);
+    else
+      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh,
+                                               myPathShape, aNodeStart,
+                                               AnglesCheck->isChecked(), anAngles.inout(),
+                                               BasePointCheck->isChecked(), aBasePoint);
 
     //wc.stop();
     wc.suspend();
@@ -652,6 +665,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   //mySelectionMgr->clearSelected();
   SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
+  if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+    mySMESHGUI->updateObjBrowser(true); // new groups may appear
   //SMESH::UpdateView();
   Init(false);
   ConstructorsClicked(GetConstructorId());
@@ -819,6 +834,14 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     myMesh = SMESH::GetMeshByIO(IO);
     if (myMesh->_is_nil())
       return;
+
+    // MakeGroups is available if there are groups
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    } else {
+      MakeGroupsCheck->setEnabled(true);
+    }
     // find actor
     myMeshActor = SMESH::FindActorByObject(myMesh);
     if (!myMeshActor)

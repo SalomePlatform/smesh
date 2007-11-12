@@ -139,6 +139,7 @@ private:
   SMESHGUI_SpinBox* YSpin;
   QLabel*           ZLab;
   SMESHGUI_SpinBox* ZSpin;
+  QCheckBox*        MakeGroupsCheck;
 
   QGroupBox*        GroupButtons;
   QPushButton*      OkButton;

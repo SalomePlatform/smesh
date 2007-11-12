@@ -260,6 +260,10 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   CheckBoxCopy->setText(tr("SMESH_CREATE_COPY"));
   GroupArgumentsLayout->addMultiCellWidget(CheckBoxCopy, 4, 4, 0, 2);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(false);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 5, 5, 0, 2);
 
   SMESHGUI_TranslationDlgLayout->addWidget(GroupArguments, 1, 0);
 
@@ -310,6 +314,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
+  connect(CheckBoxCopy,     SIGNAL(toggled(bool)),                  SLOT(onCopyChecked(bool)));
 
   this->show(); /* displays Dialog */
 
@@ -356,6 +361,8 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
 
     CheckBoxCopy->setChecked(false);
     CheckBoxMesh->setChecked(false);
+    MakeGroupsCheck->setChecked(false);
+    MakeGroupsCheck->setEnabled(false);
     onSelectMesh(false);
   }
 }
@@ -457,12 +464,18 @@ void SMESHGUI_TranslationDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->Translate(anElementsId.inout(), aVector, toCreateCopy);
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+        SMESH::ListOfGroups_var groups = 
+          aMeshEditor->TranslateMakeGroups(anElementsId.inout(), aVector);
+      else
+        aMeshEditor->Translate(anElementsId.inout(), aVector, toCreateCopy);
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
     SMESH::UpdateView();
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
@@ -612,6 +625,15 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     myElementsId = "";
+
+    // MakeGroups is available if there are groups and "Copy"
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    }
+    else if (CheckBoxCopy->isChecked() ) {
+      MakeGroupsCheck->setEnabled(true);
+    }
 
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
@@ -844,6 +866,19 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
   }
 
   SelectionIntoArgument();
+}
+
+//=======================================================================
+//function : onCopyChecked
+//purpose  : slot called when Copy checkBox is checked
+//=======================================================================
+
+void SMESHGUI_TranslationDlg::onCopyChecked(bool isOn)
+{
+  // enable "MakeGroupsCheck"
+  if ( !myMesh->_is_nil() && myMesh->NbGroups() == 0)
+    isOn = false;
+  MakeGroupsCheck->setEnabled(isOn);
 }
 
 //=================================================================================

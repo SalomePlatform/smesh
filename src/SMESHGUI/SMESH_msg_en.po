@@ -196,6 +196,10 @@ msgstr "Polyedron creation error"
 msgid "SMESH_EXPORT_FAILED"
 msgstr "Mesh export failed.\nProbably, there is not enough space on disk."
 
+# Generate groups at mesh transformation
+msgid "SMESH_MAKE_GROUPS"
+msgstr "Generate groups"
+
 #-------------------------------------------------------------------------
 # MEN
 #-------------------------------------------------------------------------
