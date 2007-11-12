@@ -30,7 +30,8 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include <SMDSAbs_ElementType.hxx>
+#include "SMDSAbs_ElementType.hxx"
+
 #include <string>
 #include <TopoDS_Shape.hxx>
 
