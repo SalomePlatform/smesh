@@ -63,6 +63,48 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                   const SMESH::long_array & Quantities);
   CORBA::Long AddPolyhedralVolumeByFaces(const SMESH::long_array & IdsOfFaces);
 
+  /*!
+   * \brief Bind a node to a vertex
+   * \param NodeID - node ID
+   * \param VertexID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+   */
+  void SetNodeOnVertex(CORBA::Long NodeID, CORBA::Long VertexID)
+    throw (SALOME::SALOME_Exception);
+  /*!
+   * \brief Store node position on an edge
+   * \param NodeID - node ID
+   * \param EdgeID - edge ID available through GEOM_Object.GetSubShapeIndices()[0]
+   * \param paramOnEdge - parameter on edge where the node is located
+   */
+  void SetNodeOnEdge(CORBA::Long NodeID, CORBA::Long EdgeID,
+                     CORBA::Double paramOnEdge)
+    throw (SALOME::SALOME_Exception);
+  /*!
+   * \brief Store node position on a face
+   * \param NodeID - node ID
+   * \param FaceID - face ID available through GEOM_Object.GetSubShapeIndices()[0]
+   * \param u - U parameter on face where the node is located
+   * \param v - V parameter on face where the node is located
+   */
+  void SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
+                     CORBA::Double u, CORBA::Double v)
+    throw (SALOME::SALOME_Exception);
+  /*!
+   * \brief Bind a node to a solid
+   * \param NodeID - node ID
+   * \param SolidID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+   */
+  void SetNodeInVolume(CORBA::Long NodeID, CORBA::Long SolidID)
+    throw (SALOME::SALOME_Exception);
+  /*!
+   * \brief Bind an element to a shape
+   * \param ElementID - element ID
+   * \param ShapeID - shape ID available through GEOM_Object.GetSubShapeIndices()[0]
+   */
+  void SetMeshElementOnShape(CORBA::Long ElementID, CORBA::Long ShapeID)
+    throw (SALOME::SALOME_Exception);
+
+
   CORBA::Boolean MoveNode(CORBA::Long NodeID,
                           CORBA::Double x, CORBA::Double y, CORBA::Double z);
 

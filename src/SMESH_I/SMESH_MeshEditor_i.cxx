@@ -37,10 +37,18 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
+
 #include "CASCatch.hxx"
-
 #include "utilities.h"
+#include "Utils_ExceptHandlers.hxx"
+#include "Utils_CorbaException.hxx"
 
+#include <BRepAdaptor_Surface.hxx>
+#include <BRep_Tool.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
 #include <gp_Ax1.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Vec.hxx>
@@ -564,6 +572,185 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces
 
   return 0;
 }
+
+//=============================================================================
+/*!
+ * \brief Bind a node to a vertex
+ * \param NodeID - node ID
+ * \param VertexID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+ * \retval boolean - false if NodeID or VertexID is invalid
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::SetNodeOnVertex(CORBA::Long NodeID, CORBA::Long VertexID)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
+  if ( !node )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+
+  if ( mesh->MaxShapeIndex() < VertexID )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME::BAD_PARAM);
+
+  TopoDS_Shape shape = mesh->IndexToShape( VertexID );
+  if ( shape.ShapeType() != TopAbs_VERTEX )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid VertexID", SALOME::BAD_PARAM);
+
+  mesh->SetNodeOnVertex( node, VertexID );
+}
+
+//=============================================================================
+/*!
+ * \brief Store node position on an edge
+ * \param NodeID - node ID
+ * \param EdgeID - edge ID available through GEOM_Object.GetSubShapeIndices()[0]
+ * \param paramOnEdge - parameter on edge where the node is located
+ * \retval boolean - false if any parameter is invalid
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::SetNodeOnEdge(CORBA::Long NodeID, CORBA::Long EdgeID,
+                                       CORBA::Double paramOnEdge)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
+  if ( !node )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+
+  if ( mesh->MaxShapeIndex() < EdgeID )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME::BAD_PARAM);
+
+  TopoDS_Shape shape = mesh->IndexToShape( EdgeID );
+  if ( shape.ShapeType() != TopAbs_EDGE )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid EdgeID", SALOME::BAD_PARAM);
+
+  Standard_Real f,l;
+  BRep_Tool::Range( TopoDS::Edge( shape ), f,l);
+  if ( paramOnEdge < f || paramOnEdge > l )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid paramOnEdge", SALOME::BAD_PARAM);
+
+  mesh->SetNodeOnEdge( node, EdgeID, paramOnEdge );
+}
+
+//=============================================================================
+/*!
+ * \brief Store node position on a face
+ * \param NodeID - node ID
+ * \param FaceID - face ID available through GEOM_Object.GetSubShapeIndices()[0]
+ * \param u - U parameter on face where the node is located
+ * \param v - V parameter on face where the node is located
+ * \retval boolean - false if any parameter is invalid
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
+                                       CORBA::Double u, CORBA::Double v)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
+  if ( !node )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+
+  if ( mesh->MaxShapeIndex() < FaceID )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME::BAD_PARAM);
+
+  TopoDS_Shape shape = mesh->IndexToShape( FaceID );
+  if ( shape.ShapeType() != TopAbs_FACE )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid FaceID", SALOME::BAD_PARAM);
+
+  BRepAdaptor_Surface surf( TopoDS::Face( shape ));
+  bool isOut = ( u < surf.FirstUParameter() ||
+                 u > surf.LastUParameter()  ||
+                 v < surf.FirstVParameter() ||
+                 v > surf.LastVParameter() );
+
+  if ( isOut ) {
+#ifdef _DEBUG_
+    cout << "FACE " << FaceID << " (" << u << "," << v << ") out of "
+         << " u( " <<  surf.FirstUParameter() 
+         << "," <<  surf.LastUParameter()  
+         << ") v( " <<  surf.FirstVParameter() 
+         << "," <<  surf.LastVParameter()
+         << ")" << endl;
+#endif    
+    THROW_SALOME_CORBA_EXCEPTION("Invalid UV", SALOME::BAD_PARAM);
+  }
+
+  mesh->SetNodeOnFace( node, FaceID, u, v );
+}
+
+//=============================================================================
+/*!
+ * \brief Bind a node to a solid
+ * \param NodeID - node ID
+ * \param SolidID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+ * \retval boolean - false if NodeID or SolidID is invalid
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::SetNodeInVolume(CORBA::Long NodeID, CORBA::Long SolidID)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( mesh->FindNode(NodeID) );
+  if ( !node )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid NodeID", SALOME::BAD_PARAM);
+
+  if ( mesh->MaxShapeIndex() < SolidID )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME::BAD_PARAM);
+
+  TopoDS_Shape shape = mesh->IndexToShape( SolidID );
+  if ( shape.ShapeType() != TopAbs_SOLID &&
+       shape.ShapeType() != TopAbs_SHELL)
+    THROW_SALOME_CORBA_EXCEPTION("Invalid SolidID", SALOME::BAD_PARAM);
+
+  mesh->SetNodeInVolume( node, SolidID );
+}
+
+//=============================================================================
+/*!
+ * \brief Bind an element to a shape
+ * \param ElementID - element ID
+ * \param ShapeID - shape ID available through GEOM_Object.GetSubShapeIndices()[0]
+ * \retval boolean - false if ElementID or ShapeID is invalid
+ */
+//=============================================================================
+
+void SMESH_MeshEditor_i::SetMeshElementOnShape(CORBA::Long ElementID,
+                                               CORBA::Long ShapeID)
+  throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+
+  SMESHDS_Mesh * mesh = GetMeshDS();
+  SMDS_MeshElement* elem = const_cast<SMDS_MeshElement*>(mesh->FindElement(ElementID));
+  if ( !elem )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid ElementID", SALOME::BAD_PARAM);
+
+  if ( mesh->MaxShapeIndex() < ShapeID )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid ShapeID", SALOME::BAD_PARAM);
+
+  TopoDS_Shape shape = mesh->IndexToShape( ShapeID );
+  if ( shape.ShapeType() != TopAbs_EDGE &&
+       shape.ShapeType() != TopAbs_FACE &&
+       shape.ShapeType() != TopAbs_SOLID &&
+       shape.ShapeType() != TopAbs_SHELL )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid shape type", SALOME::BAD_PARAM);
+
+  mesh->SetMeshElementOnShape( elem, ShapeID );
+}
+
 
 //=============================================================================
 /*!
