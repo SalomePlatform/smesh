@@ -58,7 +58,7 @@ using namespace std;
 #include "StdMeshers_Prism_3D_i.hxx"
 #include "StdMeshers_SegmentAroundVertex_0D_i.hxx"
 #include "StdMeshers_CompositeSegment_1D_i.hxx"
-
+#include "StdMeshers_UseExisting_1D2D_i.hxx"
 
 template <class T> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
 {
@@ -143,6 +143,10 @@ extern "C"
       aCreator = new StdHypothesisCreator_i<StdMeshers_SegmentAroundVertex_0D_i>;
     else if (strcmp(aHypName, "CompositeSegment_1D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_CompositeSegment_1D_i>;
+    else if (strcmp(aHypName, "UseExisting_1D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_1D_i>;
+    else if (strcmp(aHypName, "UseExisting_2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_UseExisting_2D_i>;
     else ;
 
     return aCreator;
