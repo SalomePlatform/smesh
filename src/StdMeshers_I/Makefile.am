@@ -92,7 +92,8 @@ dist_libStdMeshersEngine_la_SOURCES = \
 	StdMeshers_LayerDistribution_i.cxx \
 	StdMeshers_CompositeSegment_1D_i.cxx \
 	StdMeshers_SegmentAroundVertex_0D_i.cxx \
-	StdMeshers_SegmentLengthAroundVertex_i.cxx
+	StdMeshers_SegmentLengthAroundVertex_i.cxx \
+	StdMeshers_UseExisting_1D2D_i.cxx
 
 # additionnal information to compil and link file
 libStdMeshersEngine_la_CPPFLAGS = \
