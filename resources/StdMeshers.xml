@@ -196,6 +196,20 @@
                input="QUAD,TRIA"
                dim="3"/>
 
+    <algorithm type="UseExisting_1D"
+               label-id="Use existing edges"
+               icon-id="mesh_algo_regular.png"
+               input="VERTEX"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="UseExisting_2D"
+               label-id="Use existing faces"
+               icon-id="mesh_algo_quad.png"
+               input="EDGE"
+               output="QUAD,TRIA"
+               dim="2"/>
+
   </algorithms>
 </meshers-group>
 
