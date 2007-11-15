@@ -359,6 +359,11 @@ public:
   SMESH::long_array* GetNodeInverseElements(CORBA::Long id);
 
   /*!
+   * \brief Return position of a node on shape
+   */
+  SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
+
+  /*!
    * If given element is node returns IDs of shape from position
    * If there is not node for given ID - returns -1
    */
