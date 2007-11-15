@@ -496,7 +496,7 @@ class Mesh_Algorithm:
         CreateNew = 1
         if UseExisting:
             hypo = self.FindHypothesis(hyp, args)
-            if hypo!=None: CreateNew = 0
+            if hypo: CreateNew = 0
             pass
         if CreateNew:
             hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
@@ -1318,6 +1318,26 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
+# Private class: Mesh_UseExisting
+# -------------------------------
+class Mesh_UseExisting(Mesh_Algorithm):
+
+    algo1D = 0 # StdMeshers_UseExisting_1D object common for all Mesh_UseExisting
+    algo2D = 0 # StdMeshers_UseExisting_2D object common for all Mesh_UseExisting
+
+    def __init__(self, dim, mesh, geom=0):
+        if dim == 1:
+            if not Mesh_UseExisting.algo1D:
+                Mesh_UseExisting.algo1D= self.Create(mesh, geom, "UseExisting_1D")
+            else:
+                self.Assign( Mesh_UseExisting.algo1D, mesh, geom)
+                pass
+        else:
+            if not Mesh_UseExisting.algo2D:
+                Mesh_UseExisting.algo2D= self.Create(mesh, geom, "UseExisting_2D")
+            else:
+                self.Assign( Mesh_UseExisting.algo2D, mesh, geom)
+                pass
 
 # Public class: Mesh
 # ==================
@@ -1454,6 +1474,28 @@ class Mesh:
         else:
             return Mesh_Segment(self, geom)
         
+    ## Enable creation of nodes and segments usable by 2D algoritms.
+    #  Added nodes and segments must be bound to edges and vertices by
+    #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom subshape to be manually meshed
+    #  @return StdMeshers_UseExisting_1D algorithm that generates nothing
+    def UseExistingSegments(self, geom=0):
+        algo = Mesh_UseExisting(1,self,geom)
+        return algo.GetAlgorithm()
+
+    ## Enable creation of nodes and faces usable by 3D algoritms.
+    #  Added nodes and faces must be bound to geom faces by SetNodeOnFace()
+    #  and SetMeshElementOnShape()
+    #  If the optional \a geom parameter is not sets, this algorithm is global.
+    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param geom subshape to be manually meshed
+    #  @return StdMeshers_UseExisting_2D algorithm that generates nothing
+    def UseExistingFaces(self, geom=0):
+        algo = Mesh_UseExisting(2,self,geom)
+        return algo.GetAlgorithm()
+
     ## Creates a triangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
@@ -2069,19 +2111,34 @@ class Mesh:
         return self.mesh.GetElementType(id, iselem)
 
     ## Returns list of submesh elements ids
-    #  @param shapeID is geom object(subshape) IOR
-    def GetSubMeshElementsId(self, shapeID):
-        return self.mesh.GetSubMeshElementsId(shapeID)
+    #  @param Shape is geom object(subshape) IOR
+    #  Shape must be subshape of a ShapeToMesh()
+    def GetSubMeshElementsId(self, Shape):
+        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+            ShapeID = Shape.GetSubShapeIndices()[0]
+        else:
+            ShapeID = Shape
+        return self.mesh.GetSubMeshElementsId(ShapeID)
 
     ## Returns list of submesh nodes ids
-    #  @param shapeID is geom object(subshape) IOR
-    def GetSubMeshNodesId(self, shapeID, all):
-        return self.mesh.GetSubMeshNodesId(shapeID, all)
+    #  @param Shape is geom object(subshape) IOR
+    #  Shape must be subshape of a ShapeToMesh()
+    def GetSubMeshNodesId(self, Shape, all):
+        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+            ShapeID = Shape.GetSubShapeIndices()[0]
+        else:
+            ShapeID = Shape
+        return self.mesh.GetSubMeshNodesId(ShapeID, all)
     
     ## Returns list of ids of submesh elements with given type
-    #  @param shapeID is geom object(subshape) IOR
-    def GetSubMeshElementType(self, shapeID):
-        return self.mesh.GetSubMeshElementType(shapeID)
+    #  @param Shape is geom object(subshape) IOR
+    #  Shape must be subshape of a ShapeToMesh()
+    def GetSubMeshElementType(self, Shape):
+        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+            ShapeID = Shape.GetSubShapeIndices()[0]
+        else:
+            ShapeID = Shape
+        return self.mesh.GetSubMeshElementType(ShapeID)
       
     ## Get mesh description
     def Dump(self):
@@ -2100,6 +2157,11 @@ class Mesh:
     #  \n If there is not node for given ID - returns empty list
     def GetNodeInverseElements(self, id):
         return self.mesh.GetNodeInverseElements(id)
+
+    ## @brief Return position of a node on shape
+    #  @return SMESH::NodePosition
+    def GetNodePosition(self,NodeID):
+        return self.mesh.GetNodePosition(NodeID)
 
     ## If given element is node returns IDs of shape from position
     #  \n If there is not node for given ID - returns -1
@@ -2224,6 +2286,87 @@ class Mesh:
     def AddPolyhedralVolumeByFaces (self, IdsOfFaces):
         return self.editor.AddPolyhedralVolumeByFaces(IdsOfFaces)
     
+
+    ## @brief Bind a node to a vertex
+    # @param NodeID - node ID
+    # @param Vertex - vertex or vertex ID
+    # @return True if succeed else raise an exception
+    def SetNodeOnVertex(self, NodeID, Vertex):
+        if ( isinstance( Vertex, geompy.GEOM._objref_GEOM_Object)):
+            VertexID = Vertex.GetSubShapeIndices()[0]
+        else:
+            VertexID = Vertex
+        try:
+            self.editor.SetNodeOnVertex(NodeID, VertexID)
+        except SALOME.SALOME_Exception, inst:
+            raise ValueError, inst.details.text
+        return True
+        
+
+    ## @brief Store node position on an edge
+    # @param NodeID - node ID
+    # @param Edge - edge or edge ID
+    # @param paramOnEdge - parameter on edge where the node is located
+    # @return True if succeed else raise an exception
+    def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
+        if ( isinstance( Edge, geompy.GEOM._objref_GEOM_Object)):
+            EdgeID = Edge.GetSubShapeIndices()[0]
+        else:
+            EdgeID = Edge
+        try:
+            self.editor.SetNodeOnEdge(NodeID, EdgeID, paramOnEdge)
+        except SALOME.SALOME_Exception, inst:
+            raise ValueError, inst.details.text
+        return True
+
+    ## @brief Store node position on a face
+    # @param NodeID - node ID
+    # @param Face - face or face ID
+    # @param u - U parameter on face where the node is located
+    # @param v - V parameter on face where the node is located
+    # @return True if succeed else raise an exception
+    def SetNodeOnFace(self, NodeID, Face, u, v):
+        if ( isinstance( Face, geompy.GEOM._objref_GEOM_Object)):
+            FaceID = Face.GetSubShapeIndices()[0]
+        else:
+            FaceID = Face
+        try:
+            self.editor.SetNodeOnFace(NodeID, FaceID, u, v)
+        except SALOME.SALOME_Exception, inst:
+            raise ValueError, inst.details.text
+        return True
+
+    ## @brief Bind a node to a solid
+    # @param NodeID - node ID
+    # @param Solid - solid or solid ID
+    # @return True if succeed else raise an exception
+    def SetNodeInVolume(self, NodeID, Solid):
+        if ( isinstance( Solid, geompy.GEOM._objref_GEOM_Object)):
+            SolidID = Solid.GetSubShapeIndices()[0]
+        else:
+            SolidID = Solid
+        try:
+            self.editor.SetNodeInVolume(NodeID, SolidID)
+        except SALOME.SALOME_Exception, inst:
+            raise ValueError, inst.details.text
+        return True
+
+    ## @brief Bind an element to a shape
+    # @param ElementID - element ID
+    # @param Shape - shape or shape ID
+    # @return True if succeed else raise an exception
+    def SetMeshElementOnShape(self, ElementID, Shape):
+        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+            ShapeID = Shape.GetSubShapeIndices()[0]
+        else:
+            ShapeID = Shape
+        try:
+            self.editor.SetMeshElementOnShape(ElementID, ShapeID)
+        except SALOME.SALOME_Exception, inst:
+            raise ValueError, inst.details.text
+        return True
+
+
     ## Move node with given id
     #  @param NodeID id of the node
     #  @param x new X coordinate
