@@ -44,6 +44,8 @@
 #include "SMESH_Group.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
 
 #include "OpUtil.hxx"
 #include "SALOME_NamingService.hxx"
@@ -54,14 +56,15 @@
 
 // OCCT Includes
 #include <BRep_Builder.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
 #include <OSD_Directory.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS_Compound.hxx>
 
 // STL Includes
@@ -2014,6 +2017,56 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
   return aResult._retn();
 }
 
+//=============================================================================
+/*!
+ * \brief Return position of a node on shape
+ */
+//=============================================================================
+
+SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
+{
+  SMESH::NodePosition* aNodePosition = new SMESH::NodePosition();
+  aNodePosition->shapeID = 0;
+  aNodePosition->shapeType = GEOM::SHAPE;
+
+  SMESHDS_Mesh* mesh = _impl->GetMeshDS();
+  if ( !mesh ) return aNodePosition;
+
+  if ( const SMDS_MeshNode* aNode = mesh->FindNode(NodeID) )
+  {
+    if ( SMDS_PositionPtr pos = aNode->GetPosition() )
+    {
+      aNodePosition->shapeID = pos->GetShapeId();
+      switch ( pos->GetTypeOfPosition() ) {
+      case SMDS_TOP_EDGE:
+        aNodePosition->shapeType = GEOM::EDGE;
+        aNodePosition->params.length(1);
+        aNodePosition->params[0] =
+          static_cast<SMDS_EdgePosition*>( pos.get() )->GetUParameter();
+        break;
+      case SMDS_TOP_FACE:
+        aNodePosition->shapeType = GEOM::FACE;
+        aNodePosition->params.length(2);
+        aNodePosition->params[0] =
+          static_cast<SMDS_FacePosition*>( pos.get() )->GetUParameter();
+        aNodePosition->params[1] =
+          static_cast<SMDS_FacePosition*>( pos.get() )->GetVParameter();
+        break;
+      case SMDS_TOP_VERTEX:
+        aNodePosition->shapeType = GEOM::VERTEX;
+        break;
+      case SMDS_TOP_3DSPACE:
+        if ( TopExp_Explorer(_impl->GetShapeToMesh(), TopAbs_SOLID).More() )
+          aNodePosition->shapeType = GEOM::SOLID;
+        else if ( TopExp_Explorer(_impl->GetShapeToMesh(), TopAbs_SHELL).More() )
+          aNodePosition->shapeType = GEOM::SHELL;
+        break;
+      default:;
+      }
+    }
+  }
+  return aNodePosition;
+}
 
 //=============================================================================
 /*!
