@@ -984,6 +984,7 @@ SMESH_Hypothesis::Hypothesis_Status
 
   if ( stateChange && oldAlgoState == HYP_OK ) { // hyp becomes KO
     DeleteOwnListeners();
+    SetIsAlwaysComputed( false );
     if (_subShape.ShapeType() == TopAbs_VERTEX ) {
       // restore default states
       _algoState = HYP_OK;
@@ -1304,8 +1305,8 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
         }
         // compute
-        CleanDependants();
-        RemoveSubMeshElementsAndNodes();
+//         CleanDependants(); for "UseExisting_*D" algos
+//         RemoveSubMeshElementsAndNodes();
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
