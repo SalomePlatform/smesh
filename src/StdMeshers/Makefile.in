@@ -65,8 +65,9 @@ EXPORT_HEADERS = \
 	StdMeshers_LayerDistribution.hxx \
 	StdMeshers_SegmentAroundVertex_0D.hxx \
 	StdMeshers_SegmentLengthAroundVertex.hxx \
+	StdMeshers_FaceSide.hxx \
 	StdMeshers_CompositeSegment_1D.hxx \
-	StdMeshers_FaceSide.hxx
+	StdMeshers_UseExisting_1D2D.hxx
 
 EXPORT_PYSCRIPTS =
 
@@ -108,7 +109,8 @@ LIB_SRC = \
 	StdMeshers_SegmentAroundVertex_0D.cxx \
 	StdMeshers_SegmentLengthAroundVertex.cxx \
 	StdMeshers_FaceSide.cxx \
-	StdMeshers_CompositeSegment_1D.cxx
+	StdMeshers_CompositeSegment_1D.cxx \
+	StdMeshers_UseExisting_1D2D.cxx
 
 LIB_SERVER_IDL = 
 
