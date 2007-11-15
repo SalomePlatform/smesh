@@ -93,6 +93,14 @@ module SMESH
   		       double vy;
   		       double vz; } ;
 
+  /*!
+   * Node location on a shape
+   */
+  struct NodePosition {
+    long             shapeID;
+    GEOM::shape_type shapeType;
+    double_array     params; // [U] on EDGE, [U,V] on FACE, [] on the rest shapes
+  };
 
   /*!
    * Enumeration for element type, like in SMDS
@@ -522,6 +530,11 @@ module SMESH
      * If there is not node for given ID - returns empty list
      */
     long_array GetNodeInverseElements(in long id);
+
+    /*!
+     * \brief Return position of a node on shape
+     */
+    NodePosition GetNodePosition(in long NodeID);
 
     /*!
      * If given element is node returns IDs of shape from position
