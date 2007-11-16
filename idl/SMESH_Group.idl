@@ -95,6 +95,18 @@ module SMESH
      * Returns group color
      */
     SALOMEDS::Color GetColor();
+
+    /*!
+     * Sets group color number
+     * (corresponds to the "hue" parameter of the color - must be in range [0, 360])
+     */
+    void SetColorNumber( in long color );
+
+    /*!
+     * Returns group color number (obsolete - use GetColor instead)
+     * (corresponds to the "hue" parameter of the color - must be in range [0, 360])
+     */
+    long GetColorNumber();
   }; 
 
   /*!
