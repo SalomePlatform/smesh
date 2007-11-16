@@ -62,7 +62,7 @@ salomeinclude_HEADERS = \
 	StdMeshers_SegmentLengthAroundVertex.hxx \
 	StdMeshers_FaceSide.hxx \
 	StdMeshers_CompositeSegment_1D.hxx \
-	StdMeshers_UseExisting_1D2D.hxx
+	StdMeshers_UseExisting_1D2D.hxx \
 	SMESH_StdMeshers.hxx
 
 # Libraries targets
