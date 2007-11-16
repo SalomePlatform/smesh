@@ -38,6 +38,10 @@
 #include <boost/shared_ptr.hpp>
 #include <set>
 
+#include "SALOMEconfig.h"
+#include CORBA_SERVER_HEADER(SALOMEDS)
+#include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
+
 #define REST_NODES_FAMILY 1
 #define REST_EDGES_FAMILY -1
 #define REST_FACES_FAMILY -2

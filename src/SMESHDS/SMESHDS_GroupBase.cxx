@@ -43,9 +43,7 @@ SMESHDS_GroupBase::SMESHDS_GroupBase (const int                 theID,
        myID(theID), myMesh(theMesh), myType(theType), myStoreName(""),
        myCurIndex(0), myCurID(-1)
 {
-  myColor.R = 0.f;
-  myColor.G = 0.f;
-  myColor.B = 0.f;
+  myColor = Quantity_Color( 0.0, 0.0, 0.0, Quantity_TOC_RGB );
 }
 
 //=============================================================================
@@ -151,3 +149,35 @@ void SMESHDS_GroupBase::SetType(SMDSAbs_ElementType theType)
 {
   myType = theType;
 }
+
+//=======================================================================
+//function : SetType
+//purpose  : 
+//=======================================================================
+
+void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
+{
+  if( theColorGroup < 0 || theColorGroup > 360 )
+  {
+    MESSAGE("SMESHDS_GroupBase::SetColorGroup : Value must be in range [0,360]");
+    return;
+  }
+
+  Quantity_Color aColor( (double)theColorGroup, 1.0, 1.0, Quantity_TOC_HLS );
+  SetColor( aColor );
+}
+  
+//=======================================================================
+//function : SetType
+//purpose  : 
+//=======================================================================
+
+int SMESHDS_GroupBase::GetColorGroup() const
+{
+  Quantity_Color aColor = GetColor();
+  double aHue = aColor.Hue();
+  if( aHue < 0 )
+    return 0;
+  return (int)( aHue );
+}
+  

@@ -217,7 +217,11 @@ DriverMED_Family
   ColorMap aColorMap;
   for (aGroupsIter = theGroups.begin(); aGroupsIter != theGroups.end(); aGroupsIter++)
   {
-    SALOMEDS::Color aColor = (*aGroupsIter)->GetColor();
+    Quantity_Color aQColor = (*aGroupsIter)->GetColor();
+    SALOMEDS::Color aColor;
+    aColor.R = aQColor.Red();
+    aColor.G = aQColor.Green();
+    aColor.B = aQColor.Blue();
 
     bool isFound = false;
     for (ColorMap::iterator aColorIter = aColorMap.begin(); aColorIter != aColorMap.end(); aColorIter++)
@@ -418,8 +422,14 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup, const ColorMap& theCol
   ColorMap::const_iterator aColorIter = theColorMap.begin();
   for (; aColorIter != theColorMap.end(); aColorIter++)
   {
+    Quantity_Color aGroupQColor = theGroup->GetColor();
+    SALOMEDS::Color aGroupColor;
+    aGroupColor.R = aGroupQColor.Red();
+    aGroupColor.G = aGroupQColor.Green();
+    aGroupColor.B = aGroupQColor.Blue();
+
     SALOMEDS::Color aColor = aColorIter->second;
-    if( CompareColors( theGroup->GetColor(), aColor ) )
+    if( CompareColors( aGroupColor, aColor ) )
     {
       myGroupAttributVal = aColorIter->first;
       break;

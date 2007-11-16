@@ -61,8 +61,6 @@ dist_libSMESHDS_la_SOURCES = \
 libSMESHDS_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
-	$(CORBA_CXXFLAGS) \
-        $(CORBA_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../SMDS
 

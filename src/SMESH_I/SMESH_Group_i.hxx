@@ -78,6 +78,9 @@ class SMESH_I_EXPORT SMESH_GroupBase_i:
   void SetColor(const SALOMEDS::Color& color);
   SALOMEDS::Color GetColor();
 
+  void SetColorNumber(CORBA::Long color);
+  CORBA::Long GetColorNumber();
+
 private:
   SMESH_Mesh_i* myMeshServant;
   int myLocalID;

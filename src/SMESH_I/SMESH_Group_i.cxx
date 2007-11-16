@@ -428,7 +428,15 @@ SALOMEDS::Color SMESH_GroupBase_i::GetColor()
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->GetColor();
+  {
+    Quantity_Color aQColor = aGroupDS->GetColor();
+    SALOMEDS::Color aColor;
+    aColor.R = aQColor.Red();
+    aColor.G = aQColor.Green();
+    aColor.B = aQColor.Blue();
+
+    return aColor;
+  }
   MESSAGE("get color of a group");
   return SALOMEDS::Color();
 }
@@ -442,7 +450,38 @@ void SMESH_GroupBase_i::SetColor(const SALOMEDS::Color& color)
 {
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
-    return aGroupDS->SetColor(color);
+  {
+    Quantity_Color aQColor( color.R, color.G, color.B, Quantity_TOC_RGB );
+    return aGroupDS->SetColor(aQColor);
+  }
   MESSAGE("set color of a group");
+  return ;
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+CORBA::Long SMESH_GroupBase_i::GetColorNumber()
+{
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->GetColorGroup();
+  MESSAGE("get color number of a group");
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
+{
+  SMESHDS_GroupBase* aGroupDS = GetGroupDS();
+  if (aGroupDS)
+    return aGroupDS->SetColorGroup(color);
+  MESSAGE("set color number of a group");
   return ;
 }

@@ -3502,10 +3502,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 		double* anRGB = new double[ size ];
 		aDataset->ReadFromDisk( anRGB );
 		aDataset->CloseOnDisk();
-		SALOMEDS::Color aColor;
-		aColor.R = anRGB[0];
-		aColor.G = anRGB[1];
-		aColor.B = anRGB[2];
+		Quantity_Color aColor( anRGB[0], anRGB[1], anRGB[2], Quantity_TOC_RGB );
 		aGroupBaseDS->SetColor( aColor );
 	      }
 

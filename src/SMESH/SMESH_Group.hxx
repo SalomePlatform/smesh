@@ -35,10 +35,6 @@
 #include <string>
 #include <TopoDS_Shape.hxx>
 
-#include "SALOMEconfig.h"
-#include CORBA_SERVER_HEADER(SALOMEDS)
-#include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
-
 class SMESHDS_GroupBase;
 class SMESH_Mesh;
 
@@ -59,9 +55,6 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
-  void SetColor (const SALOMEDS::Color& theColor) { myColor = theColor; }
-  SALOMEDS::Color GetColor() const { return myColor; }
-
  private:
   SMESH_Group (const SMESH_Group& theOther);
   // prohibited copy constructor
@@ -70,8 +63,6 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * myGroupDS;
   std::string         myName;
-  int                 myColorNumber;
-  SALOMEDS::Color     myColor;
 };
 
 #endif
