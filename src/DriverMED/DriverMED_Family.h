@@ -38,7 +38,7 @@
 #include <boost/shared_ptr.hpp>
 #include <set>
 
-define REST_NODES_FAMILY 1
+#define REST_NODES_FAMILY 1
 #define REST_EDGES_FAMILY -1
 #define REST_FACES_FAMILY -2
 #define REST_VOLUMES_FAMILY -3
