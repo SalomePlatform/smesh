@@ -129,11 +129,12 @@ DriverMED_Family
   return myElements.empty(); 
 }
 
-bool CompareColors( const SALOMEDS::Color& theColor, const SALOMEDS::Color& theRefColor )
+bool CompareColors( const Quantity_Color& theColor, const Quantity_Color& theRefColor )
 {
-  if( fabs( theColor.R - theRefColor.R ) < 0.01 &&
-      fabs( theColor.G - theRefColor.G ) < 0.01 &&
-      fabs( theColor.B - theRefColor.B ) < 0.01 )
+  float aTolerance = 0.01;
+  if( fabs( theColor.Red() - theRefColor.Red() ) < aTolerance &&
+      fabs( theColor.Green() - theRefColor.Green() ) < aTolerance &&
+      fabs( theColor.Blue() - theRefColor.Blue() ) < aTolerance )
     return true;
 
   return false;
@@ -217,16 +218,12 @@ DriverMED_Family
   ColorMap aColorMap;
   for (aGroupsIter = theGroups.begin(); aGroupsIter != theGroups.end(); aGroupsIter++)
   {
-    Quantity_Color aQColor = (*aGroupsIter)->GetColor();
-    SALOMEDS::Color aColor;
-    aColor.R = aQColor.Red();
-    aColor.G = aQColor.Green();
-    aColor.B = aQColor.Blue();
+    Quantity_Color aColor = (*aGroupsIter)->GetColor();
 
     bool isFound = false;
     for (ColorMap::iterator aColorIter = aColorMap.begin(); aColorIter != aColorMap.end(); aColorIter++)
     {
-      SALOMEDS::Color aRefColor = aColorIter->second;
+      Quantity_Color aRefColor = aColorIter->second;
       if( CompareColors( aColor, aRefColor ) )
       {
 	isFound = true;
@@ -422,14 +419,7 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup, const ColorMap& theCol
   ColorMap::const_iterator aColorIter = theColorMap.begin();
   for (; aColorIter != theColorMap.end(); aColorIter++)
   {
-    Quantity_Color aGroupQColor = theGroup->GetColor();
-    SALOMEDS::Color aGroupColor;
-    aGroupColor.R = aGroupQColor.Red();
-    aGroupColor.G = aGroupQColor.Green();
-    aGroupColor.B = aGroupQColor.Blue();
-
-    SALOMEDS::Color aColor = aColorIter->second;
-    if( CompareColors( aGroupColor, aColor ) )
+    if( CompareColors( theGroup->GetColor(), aColorIter->second ) )
     {
       myGroupAttributVal = aColorIter->first;
       break;
