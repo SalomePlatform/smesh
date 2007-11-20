@@ -325,7 +325,7 @@ SMESHGUI_CreatePolyhedralVolumeDlg::SMESHGUI_CreatePolyhedralVolumeDlg( SMESHGUI
  
   mySMESHGUI->SetActiveDialogBox( (QDialog*)this ) ;
 
-  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons";
+  myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
   
   Init();
 }

@@ -78,15 +78,15 @@ SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode
 
   if (myMode == UNION) {
     setCaption(tr("UNION_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Union";
+    myHelpFileName = "using_operations_on_groups_page.html#union_anchor";
   }
   else if (myMode == INTERSECT) {
     setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Intersection";
+    myHelpFileName = "using_operations_on_groups_page.html#intersection_anchor";
   }
   else {
     setCaption(tr("CUT_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Cut";
+    myHelpFileName = "using_operations_on_groups_page.html#cut_anchor";
   }
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();

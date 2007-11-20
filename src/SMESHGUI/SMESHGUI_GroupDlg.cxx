@@ -165,11 +165,11 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
 
   if (create) {
     setCaption(tr("SMESH_CREATE_GROUP_TITLE"));
-    myHelpFileName = "/files/creating_groups.htm";
+    myHelpFileName = "creating_groups_page.html";
   }
   else {
     setCaption(tr("SMESH_EDIT_GROUP_TITLE"));
-    myHelpFileName = "/files/editing_groups.htm";
+    myHelpFileName = "editing_groups_page.html";
   }
 
   setSizeGripEnabled(TRUE);

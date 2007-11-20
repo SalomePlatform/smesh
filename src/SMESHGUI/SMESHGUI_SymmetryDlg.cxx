@@ -310,7 +310,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/symmetry.htm";
+  myHelpFileName = "symmetry_page.html";
 
   Init();
 

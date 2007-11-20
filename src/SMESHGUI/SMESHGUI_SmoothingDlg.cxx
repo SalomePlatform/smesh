@@ -275,7 +275,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule, const char* n
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/smoothing.htm";
+  myHelpFileName = "smoothing_page.html";
 
   Init();
 

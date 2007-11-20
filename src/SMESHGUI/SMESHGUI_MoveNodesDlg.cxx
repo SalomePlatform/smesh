@@ -118,7 +118,7 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  myHelpFileName = "/files/displacing_nodes.htm";
+  myHelpFileName = "moving_nodes_page.html";
 
   Init();
 }

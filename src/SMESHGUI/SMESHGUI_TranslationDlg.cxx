@@ -293,7 +293,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule, const cha
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/translation.htm";
+  myHelpFileName = "translation_page.html";
 
   Init();
 

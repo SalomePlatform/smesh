@@ -332,7 +332,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "revolution.htm";
+  myHelpFileName = "revolution_page.html";
 
   Init();
 

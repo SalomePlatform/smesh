@@ -759,7 +759,7 @@ SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
 {
   myDlg = new SMESHGUI_ComputeDlg;
   myTShapeDisplayer = new TShapeDisplayer();
-  myHelpFileName = "/files/about_meshes.htm";
+  myHelpFileName = "about_meshes_page.html";
 
   // connect signals and slots
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));

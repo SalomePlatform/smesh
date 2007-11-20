@@ -346,7 +346,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   myElementsFilter = new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
   myPathMeshFilter = new SMESH_TypeFilter (MESH);
 
-  myHelpFileName = "extrusion_along_a_path.htm";
+  myHelpFileName = "extrusion_along_path_page.html";
 
   Init();
 

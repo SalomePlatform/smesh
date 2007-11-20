@@ -178,7 +178,7 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   mySelectionMgr->installFilter(myMeshFilter);
   onSelectionChanged();
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#standard_infos";
+  myHelpFileName = "mesh_infos_page.html#standard_mesh_infos_anchor";
 }
 
 //=================================================================================

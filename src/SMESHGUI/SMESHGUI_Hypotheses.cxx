@@ -414,21 +414,21 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 
   QString aHypType = creator->hypType();
   if ( aHypType == "LocalLength" )
-    myHelpFileName = "/files/arithmetic_1d.htm#Average_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
   else if ( aHypType == "Arithmetic1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#arithmetic_1D";
+    myHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
   else if ( aHypType == "MaxElementArea")
-    myHelpFileName = "/files/max._element_area_hypothesis.htm";
+    myHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
   else if ( aHypType == "MaxElementVolume")
-    myHelpFileName = "/files/max._element_volume_hypothsis.htm";
+    myHelpFileName = "max_element_volume_hypo_page.html";
   else if ( aHypType == "StartEndLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#start_and_end_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
   else if ( aHypType == "Deflection1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#deflection_1D";
+    myHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
   else if ( aHypType == "AutomaticLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#automatic_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
   else if ( aHypType == "NumberOfSegments")
-    myHelpFileName = "/files/arithmetic_1d.htm#Number_of_elements";
+    myHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
   else
     myHelpFileName = "";
 

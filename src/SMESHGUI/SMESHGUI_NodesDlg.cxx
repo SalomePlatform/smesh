@@ -339,7 +339,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 
   SMESHGUI_NodesDlgLayout->addWidget(GroupCoordinates, 1, 0);
 
-  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_nodes";
+  myHelpFileName = "adding_nodes_and_elements_page.html#adding_nodes_anchor";
 
   /* Initialisation and display */
   Init();

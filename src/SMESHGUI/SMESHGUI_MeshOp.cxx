@@ -216,9 +216,9 @@ void SMESHGUI_MeshOp::startOperation()
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
 
     if ( myToCreate )
-      if ( myIsMesh ) myHelpFileName = "/files/constructing_meshes.htm";
-      else myHelpFileName = "/files/constructing_submeshes.htm";
-    else myHelpFileName = "files/reassigning_hypotheses_and_algorithms.htm";
+      if ( myIsMesh ) myHelpFileName = "constructing_meshes_page.html";
+      else myHelpFileName = "constructing_submeshes_page.html";
+    else myHelpFileName = "editing_meshes_page.html";
   }
   SMESHGUI_SelectionOp::startOperation();
 

@@ -260,7 +260,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "extrusion.htm";
+  myHelpFileName = "extrusion_page.html";
 
   Init();
 

@@ -93,7 +93,7 @@ SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
 
   aDlgLay->setStretchFactor(aMainFrame, 1);
 
-  myHelpFileName = "deleting_groups.htm";
+  myHelpFileName = "deleting_groups_page.html";
 
   Init();
 }

@@ -249,32 +249,32 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   QString elemName;
   if (myNbNodes == 2) {
     elemName = "EDGE";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_edges";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
   }
   else if (myNbNodes == 3) {
     elemName = "TRIANGLE";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_triangles";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_triangles_anchor";
   }
   else if (myNbNodes == 4)
     if (myElementType == SMDSAbs_Face) {
       elemName = "QUADRANGLE";
-      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_quadrangles";
+      myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
     }
     else {
       elemName = "TETRAS";
-      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_tetrahedrons";
+      myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
     }
   else if (myNbNodes == 8) {
     elemName = "HEXAS";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_hexahedrons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
   }
   else if (myElementType == SMDSAbs_Face) {
     elemName = "POLYGON";
     myIsPoly = true;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polygons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polygons_anchor";
   }
   else if (myElementType == SMDSAbs_Volume) {
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
   }
   
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName));

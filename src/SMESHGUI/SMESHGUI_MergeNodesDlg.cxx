@@ -308,7 +308,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   // Init Mesh field from selection
   SelectionIntoArgument();
 
-  myHelpFileName = "/files/merging_nodes.htm";
+  myHelpFileName = "merging_nodes_page.html";
 }
 
 //=================================================================================

@@ -318,7 +318,7 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule, const char* nam
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/rotation.htm";
+  myHelpFileName = "rotation_page.html";
 
   Init();
 
