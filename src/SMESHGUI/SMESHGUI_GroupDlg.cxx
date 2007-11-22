@@ -88,6 +88,7 @@
 // STL includes
 #include <vector>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
@@ -421,6 +422,7 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
     myTypeGroup->setButton(0);
 
   updateButtons();
+  //myName->setText(GetDefaultName(tr("SMESH_GROUP")));
 }
 
 //=================================================================================
@@ -436,6 +438,43 @@ SMESHGUI_GroupDlg::~SMESHGUI_GroupDlg()
     delete myFilterDlg;
   }
 }
+
+//=================================================================================
+// function : GetDefaultName()
+// purpose  : Get the Group Name if Create new Group
+//=================================================================================
+QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
+{
+    QString aName = "";
+
+    // collect all object names of SMESH component
+    SalomeApp_Study* appStudy =
+      dynamic_cast<SalomeApp_Study*>( SUIT_Session::session()->activeApplication()->activeStudy() );
+    if ( !appStudy ) return aName;
+    _PTR(Study) aStudy = appStudy->studyDS();
+
+    std::set<std::string> aSet;
+    _PTR(SComponent) aMeshCompo (aStudy->FindComponent("SMESH"));
+    if (aMeshCompo) {
+      _PTR(ChildIterator) it (aStudy->NewChildIterator(aMeshCompo));
+      _PTR(SObject) obj;
+      for (it->InitEx(true); it->More(); it->Next()) {
+	obj = it->Value();
+	aSet.insert(obj->GetName());
+      }
+    }
+
+    // build a unique name
+    int aNumber = 0;
+    bool isUnique = false;
+    while (!isUnique) {
+      aName = theOperation + "_" + QString::number(++aNumber);
+      isUnique = (aSet.count(aName.latin1()) == 0);
+    }
+
+    return aName;
+}
+
 
 //=================================================================================
 // function : Init()
@@ -478,6 +517,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   
   myName->setText(theGroup->GetName());
   myName->home(false);
+  myOldName = myName->text();
 
   myColorSpinBox->setValue( theGroup->GetColorNumber() );
   
@@ -543,6 +583,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 	      aShapeName = aGroupShapeSO->GetName().c_str();
 	    }
 	  myGeomGroupLine->setText( aShapeName );
+	  myName->setText("Group On " + aShapeName);
+	  cout << aShapeName << endl;
 	}
     }
 }
@@ -612,6 +654,8 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
 {
   if (myGrpTypeId != id) {
     myWGStack->raiseWidget( id );
+    if (id == 0)
+      myName->setText(myOldName);
     onSelectGeomGroup(id == 1);
   }
   myGrpTypeId = id;
@@ -1108,6 +1152,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
     }
 
     myCurrentLineEdit->setText(aString);
+    myOldName = myName->text();
+    myName->setText(aString);
     myCurrentLineEdit->home(false);
 
     updateButtons();
