@@ -94,9 +94,12 @@ struct TNodeXYZ : public gp_XYZ {
 
 typedef pair< const SMDS_MeshNode*, const SMDS_MeshNode* > NLink;
 
+//=======================================================================
 /*!
  * \brief A sorted pair of nodes
  */
+//=======================================================================
+
 struct TLink: public NLink
 {
   TLink(const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 ):NLink( n1, n2 )
@@ -110,8 +113,8 @@ struct TLink: public NLink
 //purpose  :
 //=======================================================================
 
-SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh ):
-myMesh( theMesh )
+SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh )
+  :myMesh( theMesh ) // theMesh may be NULL
 {
 }
 
@@ -1171,7 +1174,7 @@ void SMESH_MeshEditor::AddToSameGroups (const SMDS_MeshElement* elemToAdd,
   set<SMESHDS_GroupBase*>::const_iterator grIt = groups.begin();
   for ( ; grIt != groups.end(); grIt++ ) {
     SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *grIt );
-    if ( group && group->SMDSGroup().Contains( elemInGroups ))
+    if ( group && group->Contains( elemInGroups ))
       group->SMDSGroup().Add( elemToAdd );
   }
 }
@@ -4132,7 +4135,8 @@ SMESH_MeshEditor::PGroupIDs
 SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
                              const gp_Trsf&     theTrsf,
                              const bool         theCopy,
-                             const bool         theMakeGroups)
+                             const bool         theMakeGroups,
+                             SMESH_Mesh*        theTargetMesh)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
@@ -4160,7 +4164,10 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
     groupPostfix = "transformed";
   }
 
-  SMESHDS_Mesh* aMesh = GetMeshDS();
+  SMESH_MeshEditor targetMeshEditor( theTargetMesh );
+  SMESHDS_Mesh* aTgtMesh = theTargetMesh ? theTargetMesh->GetMeshDS() : 0;
+  SMESHDS_Mesh* aMesh    = GetMeshDS();
+  
 
   // map old node to new one
   TNodeNodeMap nodeMap;
@@ -4185,9 +4192,9 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
       // check if a node has been already transformed
       const SMDS_MeshNode* node = cast2Node( itN->next() );
-      pair<TNodeNodeMap::iterator,bool> iter_isnew =
+      pair<TNodeNodeMap::iterator,bool> n2n_isnew =
         nodeMap.insert( make_pair ( node, node ));
-      if ( !iter_isnew.second )
+      if ( !n2n_isnew.second )
         continue;
 
       double coord[3];
@@ -4195,9 +4202,15 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
       coord[1] = node->Y();
       coord[2] = node->Z();
       theTrsf.Transforms( coord[0], coord[1], coord[2] );
-      if ( theCopy ) {
+      if ( theTargetMesh ) {
+        const SMDS_MeshNode * newNode = aTgtMesh->AddNode( coord[0], coord[1], coord[2] );
+        n2n_isnew.first->second = newNode;
+        myLastCreatedNodes.Append(newNode);
+        srcNodes.Append( node );
+      }
+      else if ( theCopy ) {
         const SMDS_MeshNode * newNode = aMesh->AddNode( coord[0], coord[1], coord[2] );
-        iter_isnew.first->second = newNode;
+        n2n_isnew.first->second = newNode;
         myLastCreatedNodes.Append(newNode);
         srcNodes.Append( node );
       }
@@ -4209,7 +4222,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
       }
 
       // keep inverse elements
-      if ( !theCopy && needReverse ) {
+      if ( !theCopy && !theTargetMesh && needReverse ) {
         SMDS_ElemIteratorPtr invElemIt = node->GetInverseElementIterator();
         while ( invElemIt->more() ) {
           const SMDS_MeshElement* iel = invElemIt->next();
@@ -4220,7 +4233,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   }
 
   // either create new elements or reverse mirrored ones
-  if ( !theCopy && !needReverse)
+  if ( !theCopy && !needReverse && !theTargetMesh )
     return PGroupIDs();
 
   TIDSortedElemSet::iterator invElemIt = inverseElemSet.begin();
@@ -4280,7 +4293,11 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
           if ( iNode != nbNodes )
             continue; // not all nodes transformed
 
-          if ( theCopy ) {
+          if ( theTargetMesh ) {
+            myLastCreatedElems.Append(aTgtMesh->AddPolygonalFace(poly_nodes));
+            srcElems.Append( elem );
+          }
+          else if ( theCopy ) {
             myLastCreatedElems.Append(aMesh->AddPolygonalFace(poly_nodes));
             srcElems.Append( elem );
           }
@@ -4320,7 +4337,11 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
           if ( !allTransformed )
             continue; // not all nodes transformed
 
-          if ( theCopy ) {
+          if ( theTargetMesh ) {
+            myLastCreatedElems.Append(aTgtMesh->AddPolyhedralVolume(poly_nodes, quantities));
+            srcElems.Append( elem );
+          }
+          else if ( theCopy ) {
             myLastCreatedElems.Append(aMesh->AddPolyhedralVolume(poly_nodes, quantities));
             srcElems.Append( elem );
           }
@@ -4329,18 +4350,18 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
           }
         }
         break;
-      default:;
-      }
-      continue;
+    default:;
     }
+    continue;
+  }
 
-    // Regular elements
-    int* i = index[ FORWARD ];
-    if ( needReverse && nbNodes > 2) // reverse mirrored faces and volumes
-      if ( elemType == SMDSAbs_Face )
-        i = index[ REV_FACE ];
-      else
-        i = index[ nbNodes - 4 ];
+  // Regular elements
+  int* i = index[ FORWARD ];
+  if ( needReverse && nbNodes > 2) // reverse mirrored faces and volumes
+    if ( elemType == SMDSAbs_Face )
+      i = index[ REV_FACE ];
+    else
+      i = index[ nbNodes - 4 ];
 
     if(elem->IsQuadratic()) {
       static int anIds[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
@@ -4392,14 +4413,20 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
     if ( iNode != nbNodes )
       continue; // not all nodes transformed
 
-    if ( theCopy ) {
+    if ( theTargetMesh ) {
+      if ( SMDS_MeshElement* copy =
+           targetMeshEditor.AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
+        myLastCreatedElems.Append( copy );
+        srcElems.Append( elem );
+      }
+    }
+    else if ( theCopy ) {
       if ( SMDS_MeshElement* copy = AddElement( nodes, elem->GetType(), elem->IsPoly() )) {
         myLastCreatedElems.Append( copy );
         srcElems.Append( elem );
       }
     }
-    else
-    {
+    else {
       // reverse element as it was reversed by transformation
       if ( nbNodes > 2 )
         aMesh->ChangeElementNodes( elem, &nodes[0], nbNodes );
@@ -4408,8 +4435,9 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 
   PGroupIDs newGroupIDs;
 
-  if ( theCopy && theMakeGroups )
-    newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix );
+  if ( theMakeGroups && theCopy ||
+       theMakeGroups && theTargetMesh )
+    newGroupIDs = generateGroups( srcNodes, srcElems, groupPostfix, theTargetMesh );
 
   return newGroupIDs;
 }
@@ -4426,24 +4454,27 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
 SMESH_MeshEditor::PGroupIDs
 SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
                                  const SMESH_SequenceOfElemPtr& elemGens,
-                                 const std::string&             postfix)
+                                 const std::string&             postfix,
+                                 SMESH_Mesh*                    targetMesh)
 {
   PGroupIDs newGroupIDs( new list<int> );
+  SMESH_Mesh* mesh = targetMesh ? targetMesh : GetMesh();
+
   // Sort existing groups by types and collect their names
 
-  // store an old group and a generated new one
-  typedef pair< SMESHDS_Group*, SMDS_MeshGroup* > TOldNewGroup;
+  // to store an old group and a generated new one
+  typedef pair< SMESHDS_GroupBase*, SMDS_MeshGroup* > TOldNewGroup;
   vector< list< TOldNewGroup > > groupsByType( SMDSAbs_NbElementTypes );
   // group names
   set< string > groupNames;
-
+  //
   SMDS_MeshGroup* nullNewGroup = (SMDS_MeshGroup*) 0;
   SMESH_Mesh::GroupIteratorPtr groupIt = GetMesh()->GetGroups();
   while ( groupIt->more() ) {
     SMESH_Group * group = groupIt->next();
     if ( !group ) continue;
-    SMESHDS_Group* groupDS = dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() );
-    if ( !groupDS ) continue;
+    SMESHDS_GroupBase* groupDS = group->GetGroupDS();
+    if ( !groupDS || groupDS->IsEmpty() ) continue;
     groupNames.insert( group->GetName() );
     groupDS->SetStoreName( group->GetName() );
     groupsByType[ groupDS->GetType() ].push_back( make_pair( groupDS, nullNewGroup ));
@@ -4470,7 +4501,7 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
       list< TOldNewGroup > & groupsOldNew = groupsByType[ sourceElem->GetType() ];
       if ( groupsOldNew.empty() ) {
         while ( iElem < gens.Length() && gens( iElem+1 ) == sourceElem )
-          ++iElem;
+          ++iElem; // skip all elements made by sourceElem
         continue;
       }
       // collect all elements made by sourceElem
@@ -4491,32 +4522,34 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
       list< TOldNewGroup >::iterator gOldNew, gLast = groupsOldNew.end();
       for ( gOldNew = groupsOldNew.begin(); gOldNew != gLast; ++gOldNew )
       {
-        SMESHDS_Group* oldGroup = gOldNew->first;
-        if ( oldGroup->SMDSGroup().Contains( sourceElem )) // sourceElem in oldGroup
+        SMESHDS_GroupBase* oldGroup = gOldNew->first;
+        if ( oldGroup->Contains( sourceElem )) // sourceElem in oldGroup
         {
           SMDS_MeshGroup* & newGroup = gOldNew->second;
           if ( !newGroup )// create a new group
           {
             // make a name
             string name = oldGroup->GetStoreName();
-            name += "_";
-            name += postfix;
-            int nb = 0;
-            while ( !groupNames.insert( name ).second ) // name exists
-            {
-              if ( nb == 0 ) {
-                name += "_1";
-              }
-              else {
-                TCollection_AsciiString nbStr(++nb);
-                name.resize( name.rfind('_') );
-                name += nbStr.ToCString();
+            if ( !targetMesh ) {
+              name += "_";
+              name += postfix;
+              int nb = 0;
+              while ( !groupNames.insert( name ).second ) // name exists
+              {
+                if ( nb == 0 ) {
+                  name += "_1";
+                }
+                else {
+                  TCollection_AsciiString nbStr(++nb);
+                  name.resize( name.rfind('_') );
+                  name += nbStr.ToCString();
+                }
               }
             }
             // make a group
             int id;
-            SMESH_Group* group = GetMesh()->AddGroup( resultElems.back()->GetType(),
-                                                      name.c_str(), id );
+            SMESH_Group* group = mesh->AddGroup( resultElems.back()->GetType(),
+                                                 name.c_str(), id );
             SMESHDS_Group* groupDS = static_cast<SMESHDS_Group*>(group->GetGroupDS());
             newGroup = & groupDS->SMDSGroup();
             newGroupIDs->push_back( id );

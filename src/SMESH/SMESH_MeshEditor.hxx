@@ -294,7 +294,8 @@ public:
   PGroupIDs Transform (TIDSortedElemSet & theElements,
                        const gp_Trsf&     theTrsf,
                        const bool         theCopy,
-                       const bool         theMakeGroups);
+                       const bool         theMakeGroups,
+                       SMESH_Mesh*        theTargetMesh=0);
   // Move or copy theElements applying theTrsf to their nodes
 
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
@@ -529,7 +530,8 @@ private:
    */
   PGroupIDs generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
                            const SMESH_SequenceOfElemPtr& elemGens,
-                           const std::string&             postfix);
+                           const std::string&             postfix,
+                           SMESH_Mesh*                    targetMesh=0);
 
 
   typedef std::map<const SMDS_MeshNode*, std::list<const SMDS_MeshNode*> > TNodeOfNodeListMap;
