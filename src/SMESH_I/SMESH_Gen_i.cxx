@@ -327,7 +327,9 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   {
     int libNameLen = strlen(theLibName);
     //check for old format "libXXXXXXX.so"
-    if( libNameLen > 7 && !strncmp( theLibName, "lib", 3 ) && !strcmp( theLibName+libNameLen-3, ".so" ) )
+    if( libNameLen > 7 &&
+        !strncmp( theLibName, "lib", 3 ) &&
+        !strcmp( theLibName+libNameLen-3, ".so" ) )
       {
 	//the old format
 #ifdef WNT
@@ -1705,8 +1707,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else
-              if( libname_len > 3 )
-                libname.resize( libname_len - 3 );
+              // PAL17753 (Regresion: missing hypothesis in restored study)
+              // "lib" also should be removed from the beginning
+              //if( libname_len > 3 )
+                //libname.resize( libname_len - 3 );
+              if( libname_len > 6 )
+                libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
               CORBA::String_var objStr = GetORB()->object_to_string( anObject );
               int    id      = myStudyContext->findId( string( objStr.in() ) );
@@ -1770,8 +1776,12 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else
-              if( libname_len > 3 )
-                libname.resize( libname_len - 3 );
+              // PAL17753 (Regresion: missing hypothesis in restored study)
+              // "lib" also should be removed from the beginning
+              //if( libname_len > 3 )
+                //libname.resize( libname_len - 3 );
+              if( libname_len > 6 )
+                libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
               CORBA::String_var objStr = GetORB()->object_to_string( anObject );
               int    id      = myStudyContext->findId( string( objStr.in() ) );
