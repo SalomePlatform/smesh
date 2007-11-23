@@ -25,11 +25,14 @@
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+#include <qstring.h>
+
 
 namespace SMESH{
 
   SMESH_Mesh_var GetMeshByIO(const Handle(SALOME_InteractiveObject)& theIO);
 
+  QString UniqueMeshName(const char* theBaseName, const char* thePostfix);
 }
 
 
