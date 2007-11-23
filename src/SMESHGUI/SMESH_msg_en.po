@@ -196,9 +196,6 @@ msgstr "Polyedron creation error"
 msgid "SMESH_EXPORT_FAILED"
 msgstr "Mesh export failed.\nProbably, there is not enough space on disk."
 
-# Generate groups at mesh transformation
-msgid "SMESH_MAKE_GROUPS"
-msgstr "Generate groups"
 
 #-------------------------------------------------------------------------
 # MEN
@@ -429,6 +426,14 @@ msgstr "Id Elements"
 #Remove
 msgid "SMESH_REMOVE"
 msgstr "Remove"
+
+#Move elements
+msgid "SMESH_MOVE_ELEMENTS"
+msgstr "Move Elements"
+
+#Copy elements
+msgid "SMESH_COPY_ELEMENTS"
+msgstr "Copy Elements"
 
 #Remove Elements
 msgid "SMESH_REMOVE_ELEMENTS_TITLE"
@@ -802,6 +807,10 @@ msgstr "Rotation"
 msgid "SMESH_BUILD_COMPOUND_TITLE"
 msgstr "Create a Compound"
 
+# Create a new mesh
+msgid "SMESH_CREATE_MESH"
+msgstr "Create a new mesh"
+
 # -------------- Mesh Infos --------------
 
 #Mesh Infos
@@ -1000,6 +1009,13 @@ msgstr "%1 SubMeshes"
 msgid "SMESH_GROUP_SELECTED"
 msgstr "%1 Groups"
 
+# Generate groups at mesh transformation
+msgid "SMESH_MAKE_GROUPS"
+msgstr "Generate groups"
+
+# Generate groups at mesh transformation
+msgid "SMESH_COPY_GROUPS"
+msgstr "Copy groups"
 
 # -------------- Preferences - Selection --------------
 msgid "SMESH_PREF_SELECTION"
