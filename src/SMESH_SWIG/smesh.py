@@ -2374,6 +2374,8 @@ class Mesh:
     ## Reorient all elements of the object
     #  @param theObject is mesh, submesh or group
     def ReorientObject(self, theObject):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.ReorientObject(theObject)
 
     ## Fuse neighbour triangles into quadrangles.
@@ -2394,6 +2396,8 @@ class Mesh:
     #                   is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.TriToQuadObject(theObject, GetFunctor(theCriterion), MaxAngle)
 
     ## Split quadrangles into triangles.
@@ -2409,6 +2413,8 @@ class Mesh:
     #  @param theObject object to taking list of elements from, is mesh, submesh or group
     #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
     def QuadToTriObject (self, theObject, theCriterion):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.QuadToTriObject(theObject, GetFunctor(theCriterion))
 
     ## Split quadrangles into triangles.
@@ -2423,6 +2429,8 @@ class Mesh:
     ## Split quadrangles into triangles.
     #  @param theObject is object to taking list of elements from, is mesh, submesh or group
     def SplitQuadObject (self, theObject, Diag13):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.SplitQuadObject(theObject, Diag13)
 
     ## Find better splitting of the given quadrangle.
@@ -2595,6 +2603,8 @@ class Mesh:
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     def SmoothObject(self, theObject, IDsOfFixedNodes, 
                      MaxNbOfIterations, MaxxAspectRatio, Method):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.SmoothObject(theObject, IDsOfFixedNodes, 
                                         MaxNbOfIterations, MaxxAspectRatio, Method)
 
@@ -2621,6 +2631,8 @@ class Mesh:
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     def SmoothParametricObject(self, theObject, IDsOfFixedNodes,
                                MaxNbOfIterations, MaxAspectRatio, Method):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         return self.editor.SmoothParametricObject(theObject, IDsOfFixedNodes,
                                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
@@ -2669,6 +2681,8 @@ class Mesh:
     #  @param Tolerance tolerance
     #  @param MakeGroups to generate new groups from existing ones
     def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( Axix, geompy.GEOM._objref_GEOM_Object)):
             Axix = GetAxisStruct(Axix)
         if MakeGroups:
@@ -2716,6 +2730,8 @@ class Mesh:
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
         if MakeGroups:
@@ -2729,6 +2745,8 @@ class Mesh:
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
         if MakeGroups:
@@ -2742,6 +2760,8 @@ class Mesh:
     #  @param NbOfSteps the number of steps    
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( StepVector, geompy.GEOM._objref_GEOM_Object)):
             StepVector = GetDirStruct(StepVector)
         if MakeGroups:
@@ -2793,6 +2813,8 @@ class Mesh:
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
                                  HasAngles, Angles, HasRefPoint, RefPoint,
                                  MakeGroups=False, LinearVariation=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompy.GEOM._objref_GEOM_Object)):
             RefPoint = GetPointStruct(RefPoint) 
         if MakeGroups:
@@ -2820,6 +2842,22 @@ class Mesh:
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
         return []
 
+    ## Create a new mesh by symmetrical copy of mesh elements
+    #  @param IDsOfElements list of elements ids
+    #  @param Mirror is AxisStruct or geom object(point, line, plane)
+    #  @param theMirrorType is  POINT, AXIS or PLANE
+    #  If the Mirror is geom object this parameter is unnecessary
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def MirrorMakeMesh(self, IDsOfElements, Mirror, theMirrorType, MakeGroups=0, NewMeshName=""):
+        if IDsOfElements == []:
+            IDsOfElements = self.GetElementsId()
+        if ( isinstance( Mirror, geompy.GEOM._objref_GEOM_Object)):
+            Mirror = GetAxisStruct(Mirror)
+        mesh = self.editor.MirrorMakeMesh(IDsOfElements, Mirror, theMirrorType,
+                                          MakeGroups, NewMeshName)
+        return Mesh(mesh)
+
     ## Symmetrical copy of object
     #  @param theObject mesh, submesh or group
     #  @param Mirror is AxisStruct or geom object(point, line, plane)
@@ -2828,12 +2866,30 @@ class Mesh:
     #  @param Copy allows to copy element(Copy is 1) or to replace with its mirroring(Copy is 0)
     #  @param MakeGroups to generate new groups from existing ones (if Copy)
     def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( Mirror, geompy.GEOM._objref_GEOM_Object)):
             Mirror = GetAxisStruct(Mirror)
         if Copy and MakeGroups:
             return self.editor.MirrorObjectMakeGroups(theObject, Mirror, theMirrorType)
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
         return []
+
+    ## Create a new mesh by symmetrical copy of object
+    #  @param theObject mesh, submesh or group
+    #  @param Mirror is AxisStruct or geom object(point, line, plane)
+    #  @param theMirrorType is  POINT, AXIS or PLANE
+    #  If the Mirror is geom object this parameter is unnecessary
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType,MakeGroups=0, NewMeshName=""):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( Mirror, geompy.GEOM._objref_GEOM_Object)):
+            Mirror = GetAxisStruct(Mirror)
+        mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
+                                                MakeGroups, NewMeshName)
+        return Mesh( mesh )
 
     ## Translates the elements
     #  @param IDsOfElements list of elements ids
@@ -2850,18 +2906,46 @@ class Mesh:
         self.editor.Translate(IDsOfElements, Vector, Copy)
         return []
 
+    ## Create a new mesh of translated elements
+    #  @param IDsOfElements list of elements ids
+    #  @param Vector direction of translation(DirStruct or vector)
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def TranslateMakeMesh(self, IDsOfElements, Vector, MakeGroups=False, NewMeshName=""):
+        if IDsOfElements == []:
+            IDsOfElements = self.GetElementsId()
+        if ( isinstance( Vector, geompy.GEOM._objref_GEOM_Object)):
+            Vector = GetDirStruct(Vector)
+        mesh = self.editor.TranslateMakeMesh(IDsOfElements, Vector, MakeGroups, NewMeshName)
+        return Mesh ( mesh )
+
     ## Translates the object
     #  @param theObject object to translate(mesh, submesh, or group)
     #  @param Vector direction of translation(DirStruct or geom vector)
     #  @param Copy allows to copy the translated elements
     #  @param MakeGroups to generate new groups from existing ones (if Copy)
     def TranslateObject(self, theObject, Vector, Copy, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( Vector, geompy.GEOM._objref_GEOM_Object)):
             Vector = GetDirStruct(Vector)
         if Copy and MakeGroups:
             return self.editor.TranslateObjectMakeGroups(theObject, Vector)
         self.editor.TranslateObject(theObject, Vector, Copy)
         return []
+
+    ## Create a new mesh from translated object
+    #  @param theObject object to translate(mesh, submesh, or group)
+    #  @param Vector direction of translation(DirStruct or geom vector)
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def TranslateObjectMakeMesh(self, theObject, Vector, MakeGroups=False, NewMeshName=""):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( Vector, geompy.GEOM._objref_GEOM_Object)):
+            Vector = GetDirStruct(Vector)
+        mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
+        return Mesh( mesh )
 
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
@@ -2879,6 +2963,21 @@ class Mesh:
         self.editor.Rotate(IDsOfElements, Axis, AngleInRadians, Copy)
         return []
 
+    ## Create a new mesh of rotated elements
+    #  @param IDsOfElements list of element ids
+    #  @param Axis axis of rotation(AxisStruct or geom line)
+    #  @param AngleInRadians angle of rotation(in radians)
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def RotateMakeMesh (self, IDsOfElements, Axis, AngleInRadians, MakeGroups=0, NewMeshName=""):
+        if IDsOfElements == []:
+            IDsOfElements = self.GetElementsId()
+        if ( isinstance( Axis, geompy.GEOM._objref_GEOM_Object)):
+            Axis = GetAxisStruct(Axis)
+        mesh = self.editor.RotateMakeMesh(IDsOfElements, Axis, AngleInRadians,
+                                          MakeGroups, NewMeshName)
+        return Mesh( mesh )
+
     ## Rotates the object
     #  @param theObject object to rotate(mesh, submesh, or group)
     #  @param Axis axis of rotation(AxisStruct or geom line)
@@ -2886,12 +2985,29 @@ class Mesh:
     #  @param Copy allows to copy the rotated elements
     #  @param MakeGroups to generate new groups from existing ones (if Copy)
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
         if ( isinstance( Axis, geompy.GEOM._objref_GEOM_Object)):
             Axis = GetAxisStruct(Axis)
         if Copy and MakeGroups:
             return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
         self.editor.RotateObject(theObject, Axis, AngleInRadians, Copy)
         return []
+
+    ## Create a new mesh from a rotated object
+    #  @param theObject object to rotate (mesh, submesh, or group)
+    #  @param Axis axis of rotation(AxisStruct or geom line)
+    #  @param AngleInRadians angle of rotation(in radians)
+    #  @param MakeGroups to generate new groups from existing ones
+    #  @param NewMeshName is a name of new mesh to create
+    def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
+        if ( isinstance( theObject, Mesh )):
+            theObject = theObject.GetMesh()
+        if ( isinstance( Axis, geompy.GEOM._objref_GEOM_Object)):
+            Axis = GetAxisStruct(Axis)
+        mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
+                                                       MakeGroups, NewMeshName)
+        return Mesh( mesh )
 
     ## Find group of nodes close to each other within Tolerance.
     #  @param Tolerance tolerance value

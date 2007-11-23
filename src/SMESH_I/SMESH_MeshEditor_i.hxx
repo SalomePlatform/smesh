@@ -309,6 +309,35 @@ class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
                                               const SMESH::AxisStruct&  Axis,
                                               CORBA::Double             AngleInRadians);
 
+  SMESH::SMESH_Mesh_ptr MirrorMakeMesh(const SMESH::long_array&            IDsOfElements,
+                                       const SMESH::AxisStruct&            Mirror,
+                                       SMESH::SMESH_MeshEditor::MirrorType MirrorType,
+                                       CORBA::Boolean                      CopyGroups,
+                                       const char*                         MeshName);
+  SMESH::SMESH_Mesh_ptr MirrorObjectMakeMesh(SMESH::SMESH_IDSource_ptr           Object,
+                                             const SMESH::AxisStruct&            Mirror,
+                                             SMESH::SMESH_MeshEditor::MirrorType MirrorType,
+                                             CORBA::Boolean                      CopyGroups,
+                                             const char*                         MeshName);
+  SMESH::SMESH_Mesh_ptr TranslateMakeMesh(const SMESH::long_array& IDsOfElements,
+                                          const SMESH::DirStruct&  Vector,
+                                          CORBA::Boolean           CopyGroups,
+                                          const char*              MeshName);
+  SMESH::SMESH_Mesh_ptr TranslateObjectMakeMesh(SMESH::SMESH_IDSource_ptr Object,
+                                                const SMESH::DirStruct&   Vector,
+                                                CORBA::Boolean            CopyGroups,
+                                                const char*               MeshName);
+  SMESH::SMESH_Mesh_ptr RotateMakeMesh(const SMESH::long_array& IDsOfElements,
+                                       const SMESH::AxisStruct& Axis,
+                                       CORBA::Double            AngleInRadians,
+                                       CORBA::Boolean           CopyGroups,
+                                       const char*              MeshName);
+  SMESH::SMESH_Mesh_ptr RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr Object,
+                                             const SMESH::AxisStruct&  Axis,
+                                             CORBA::Double             AngleInRadians,
+                                             CORBA::Boolean            CopyGroups,
+                                             const char*               MeshName);
+
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
                             SMESH::array_of_long_array_out GroupsOfNodes);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
@@ -440,16 +469,21 @@ private: //!< private methods
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
                               CORBA::Boolean                      Copy,
-                              const bool                          MakeGroups);
+                              const bool                          MakeGroups,
+                              ::SMESH_Mesh*                       TargetMesh=0);
   SMESH::ListOfGroups* translate(const SMESH::long_array & IDsOfElements,
                                  const SMESH::DirStruct &  Vector,
                                  CORBA::Boolean            Copy,
-                                 const bool                MakeGroups);
+                                 const bool                MakeGroups,
+                                 ::SMESH_Mesh*             TargetMesh=0);
   SMESH::ListOfGroups* rotate(const SMESH::long_array & IDsOfElements,
                               const SMESH::AxisStruct &  Axis,
                               CORBA::Double             Angle,
                               CORBA::Boolean            Copy,
-                              const bool                MakeGroups);
+                              const bool                MakeGroups,
+                              ::SMESH_Mesh*             TargetMesh=0);
+
+  SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 
 private: //!< fields
 
