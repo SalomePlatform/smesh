@@ -131,12 +131,23 @@ bool SMESHDS_GroupBase::IsEmpty()
 
 bool SMESHDS_GroupBase::Contains (const int theID)
 {
-  SMDS_ElemIteratorPtr it = GetElements();
-  bool contains = false;
-  if ( it )
-    while ( !contains && it->more() )
-      contains = ( it->next()->GetID() == theID );
-  return contains;
+  if ( SMDS_ElemIteratorPtr it = GetElements() ) {
+    while ( it->more() )
+      if ( it->next()->GetID() == theID )
+        return true;
+  }
+  return false;
+}
+
+//=======================================================================
+//function : Contains
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_GroupBase::Contains (const SMDS_MeshElement* elem)
+{
+  if ( elem )
+    return Contains( elem->GetID() );
 }
 
 //=======================================================================
