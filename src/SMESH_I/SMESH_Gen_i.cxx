@@ -3358,6 +3358,10 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
 {
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Close" );
 
+  // set correct current study
+  if (theComponent->GetStudy()->StudyId() != GetCurrentStudyID())
+    SetCurrentStudy(theComponent->GetStudy());
+
   // Clear study contexts data
   int studyId = GetCurrentStudyID();
   if ( myStudyContextMap.find( studyId ) != myStudyContextMap.end() ) {
