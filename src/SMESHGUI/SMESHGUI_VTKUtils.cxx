@@ -675,15 +675,20 @@ namespace SMESH {
 	  switch(theAction){
 	  case eDisplay:
 	  case eDisplayOnly:{
-	    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( theWnd->getViewManager()->study() );
+	    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
 	    _PTR(Study) aDocument = aStudy->studyDS();
-	    if((anActor = CreateActor(aDocument,theEntry,true))) {
-              bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
-	      DisplayActor(theWnd,anActor);
-	      // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
-              if ( needFitAll ) FitAll();
-	    } else {
-              OK = false;
+            // Pass non-visual objects (hypotheses, etc.), return true in this case
+            CORBA::Long anId = aDocument->StudyId();
+            if (TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry))
+            {
+              if ((anActor = CreateActor(aDocument,theEntry,true))) {
+                bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
+                DisplayActor(theWnd,anActor);
+                // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
+                if ( needFitAll ) FitAll();
+              } else {
+                OK = false;
+              }
             }
 	    break;
 	  }
