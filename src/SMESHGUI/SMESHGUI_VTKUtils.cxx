@@ -271,14 +271,14 @@ namespace SMESH {
 	    CORBA::String_var aVal = anIOR->Value().c_str();
 	    CORBA::Object_var anObj = app->orb()->string_to_object( aVal.in() );
 	    if(!CORBA::is_nil(anObj)){
-	      //Try narrow to SMESH_Mesh interafce
+	      //Try narrow to SMESH_Mesh interface
 	      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObj);
 	      if(!aMesh->_is_nil()){
 		aVisualObj.reset(new SMESH_MeshObj(aMesh));
 		TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		VISUAL_OBJ_CONT.insert(aValue);
 	      }
-	      //Try narrow to SMESH_Group interafce
+	      //Try narrow to SMESH_Group interface
 	      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObj);
 	      if(!aGroup->_is_nil()){
 		_PTR(SObject) aFatherSObj = aSObj->GetFather();
@@ -293,7 +293,7 @@ namespace SMESH {
 		  VISUAL_OBJ_CONT.insert(aValue);
 		}
 	      }
-	      //Try narrow to SMESH_subMesh interafce
+	      //Try narrow to SMESH_subMesh interface
 	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObj);
 	      if(!aSubMesh->_is_nil()){
 		_PTR(SObject) aFatherSObj = aSObj->GetFather();
@@ -654,15 +654,20 @@ namespace SMESH {
   bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
   {
     bool OK = false;
-    if(SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd)) {
+    SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
+    if (!aViewWnd)
+      return OK;
+
+    {
       OK = true;
       vtkRenderer *aRenderer = aViewWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
-      switch(theAction) {
+
+      switch (theAction) {
       case eDisplayAll: {
-	while(vtkActor *anAct = aCollection->GetNextActor()){
-	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+	while (vtkActor *anAct = aCollection->GetNextActor()) {
+	  if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
 	    anActor->SetVisibility(true);
 	  }
 	}
@@ -670,15 +675,15 @@ namespace SMESH {
       }
       case eDisplayOnly:
       case eEraseAll: {
-	while(vtkActor *anAct = aCollection->GetNextActor()){
-	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+	while (vtkActor *anAct = aCollection->GetNextActor()) {
+	  if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
 	    anActor->SetVisibility(false);
 	  }
 	}
       }
       default: {
-	if(SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)) {
-	  switch(theAction) {
+	if (SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)) {
+	  switch (theAction) {
 	    case eDisplay:
 	    case eDisplayOnly:
 	      anActor->SetVisibility(true);
@@ -689,21 +694,27 @@ namespace SMESH {
 	      break;
 	  }
 	} else {
-	  switch(theAction){
+	  switch (theAction) {
 	  case eDisplay:
-	  case eDisplayOnly:{
-	    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( theWnd->getViewManager()->study() );
-	    _PTR(Study) aDocument = aStudy->studyDS();
-	    if((anActor = CreateActor(aDocument,theEntry,true))) {
-              bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
-	      DisplayActor(theWnd,anActor);
-	      // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
-              if ( needFitAll ) FitAll();
-	    } else {
-              OK = false;
+	  case eDisplayOnly:
+            {
+              SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
+              _PTR(Study) aDocument = aStudy->studyDS();
+              // Pass non-visual objects (hypotheses, etc.), return true in this case
+              CORBA::Long anId = aDocument->StudyId();
+              if (TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry))
+              {
+                if ((anActor = CreateActor(aDocument,theEntry,true))) {
+                  bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
+                  DisplayActor(theWnd,anActor);
+                  // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
+                  if (needFitAll) FitAll();
+                } else {
+                  OK = false;
+                }
+              }
+              break;
             }
-	    break;
-	  }
 	  }
 	}
       }
