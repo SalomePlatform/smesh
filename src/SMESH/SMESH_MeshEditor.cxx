@@ -4540,10 +4540,11 @@ SMESH_MeshEditor::generateGroups(const SMESH_SequenceOfElemPtr& nodeGens,
                   name += "_1";
                 }
                 else {
-                  TCollection_AsciiString nbStr(++nb);
-                  name.resize( name.rfind('_') );
+                  TCollection_AsciiString nbStr(nb+1);
+                  name.resize( name.rfind('_')+1 );
                   name += nbStr.ToCString();
                 }
+                ++nb;
               }
             }
             // make a group
