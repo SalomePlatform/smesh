@@ -236,7 +236,7 @@ bool StdMeshers_Regular_1D::CheckHypothesis
 }
 
 static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
-                               double length, bool theReverse, 
+                               double length, bool theReverse,
                                int nbSeg, Function& func,
                                list<double>& theParams)
 {
@@ -261,7 +261,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
     sprintf(  buf, "%f\n", float(x[i] ) );
     MESSAGE( buf );
   }
-    
+
 
 
   // apply parameters in range [0,1] to the space of the curve
@@ -662,13 +662,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
       GCPnts_AbscissaPoint Discret( theC3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
-      if ( param > f && param < l )
+      if ( f < param && param < l )
         theParams.push_back( param );
       else
         break;
       eltSize *= q;
     }
     compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+    if (theReverse) theParams.reverse(); // NPAL18025
     return true;
   }
 
@@ -703,6 +704,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
       eltSize += q;
     }
     compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+    if (theReverse) theParams.reverse(); // NPAL18025
 
     return true;
   }
@@ -720,7 +722,6 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
       theParams.push_back( param );
     }
     return true;
-    
   }
 
   default:;
@@ -779,12 +780,17 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
     const SMDS_MeshNode * idPrev = idFirst;
     double parPrev = f;
     double parLast = l;
-    if(reversed) {
+
+    /* NPAL18025
+    if (reversed) {
       idPrev = idLast;
+      idLast = idFirst;
+      idFirst = idPrev;
       parPrev = l;
       parLast = f;
     }
-    
+    */
+
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
       gp_Pnt P = Curve->Value(param);
@@ -819,14 +825,8 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
     else {
-      if(!reversed) {
-	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
-	meshDS->SetMeshElementOnShape(edge, shapeID);
-      }
-      else {
-	SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idFirst);
-	meshDS->SetMeshElementOnShape(edge, shapeID);
-      }
+      SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
+      meshDS->SetMeshElementOnShape(edge, shapeID);
     }
   }
   else
