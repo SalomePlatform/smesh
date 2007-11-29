@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2007-11-07 11:07+0300\n"
+"PO-Revision-Date: 2007-11-23 13:01+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -426,6 +426,14 @@ msgstr "Id Elements"
 msgid "SMESH_REMOVE"
 msgstr "Remove"
 
+#Move elements
+msgid "SMESH_MOVE_ELEMENTS"
+msgstr "Move Elements"
+
+#Copy elements
+msgid "SMESH_COPY_ELEMENTS"
+msgstr "Copy Elements"
+
 #Remove Elements
 msgid "SMESH_REMOVE_ELEMENTS_TITLE"
 msgstr "Remove Elements"
@@ -798,6 +806,10 @@ msgstr "Rotation"
 msgid "SMESH_BUILD_COMPOUND_TITLE"
 msgstr "Create a Compound"
 
+# Create a new mesh
+msgid "SMESH_CREATE_MESH"
+msgstr "Create a new mesh"
+
 # -------------- Mesh Infos --------------
 
 #Mesh Infos
@@ -996,6 +1008,13 @@ msgstr "%1 SubMeshes"
 msgid "SMESH_GROUP_SELECTED"
 msgstr "%1 Groups"
 
+# Generate groups at mesh transformation
+msgid "SMESH_MAKE_GROUPS"
+msgstr "Generate groups"
+
+# Generate groups at mesh transformation
+msgid "SMESH_COPY_GROUPS"
+msgstr "Copy groups"
 
 # -------------- Preferences - Selection --------------
 msgid "SMESH_PREF_SELECTION"
