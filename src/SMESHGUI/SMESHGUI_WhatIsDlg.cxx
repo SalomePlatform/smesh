@@ -95,7 +95,7 @@ SMESHGUI_WhatIsDlg::SMESHGUI_WhatIsDlg( SMESHGUI* theModule, const char* name,
 {
   if (!name)
     setName("SMESHGUI_WhatIsDlg");
-  resize(100, 450);
+  resize(300, 500);
   setCaption(tr("SMESH_WHAT_IS_TITLE"));
   setSizeGripEnabled(TRUE);
   SMESHGUI_WhatIsDlgLayout = new QGridLayout(this);
