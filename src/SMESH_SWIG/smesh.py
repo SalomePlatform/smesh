@@ -788,22 +788,27 @@ class Mesh_Triangle(Mesh_Algorithm):
     #
     #  Only for algoType == NETGEN
     def SetMaxSize(self, theSize):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetMaxSize(theSize)
-        
+
     ## Set SecondOrder flag
     #
     #  Only for algoType == NETGEN
     def SetSecondOrder(self, theVal):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetSecondOrder(theVal)
-            return
 
     ## Set Optimize flag
     #
     #  Only for algoType == NETGEN
     def SetOptimize(self, theVal):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetOptimize(theVal)
 
     ## Set Fineness
@@ -812,33 +817,41 @@ class Mesh_Triangle(Mesh_Algorithm):
     #
     #  Only for algoType == NETGEN
     def SetFineness(self, theFineness):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetFineness(theFineness)
-        
+
     ## Set GrowthRate  
     #
     #  Only for algoType == NETGEN
     def SetGrowthRate(self, theRate):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetGrowthRate(theRate)
 
     ## Set NbSegPerEdge
     #
     #  Only for algoType == NETGEN
     def SetNbSegPerEdge(self, theVal):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetNbSegPerEdge(theVal)
 
     ## Set NbSegPerRadius
     #
     #  Only for algoType == NETGEN
     def SetNbSegPerRadius(self, theVal):
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params is not None:
             self.params.SetNbSegPerRadius(theVal)
 
     pass
-        
-    
+
+
 # Public class: Mesh_Quadrangle
 # -----------------------------
 
