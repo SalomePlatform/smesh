@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2007-01-19 10:44+0300\n"
+"PO-Revision-Date: 2007-11-29 15:55+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -499,6 +499,14 @@ msgstr "Quadrangle"
 msgid "SMESH_EDGE"
 msgstr "Edge"
 
+#Pyramid
+msgid "SMESH_PYRAMID"
+msgstr "Pyramid"
+
+#Prism
+msgid "SMESH_PRISM"
+msgstr "Prism"
+
 #Tetrahedron
 msgid "SMESH_TETRAS"
 msgstr "Tetrahedron"
@@ -506,6 +514,10 @@ msgstr "Tetrahedron"
 #Hexahedron
 msgid "SMESH_HEXAS"
 msgstr "Hexahedron"
+
+#Polyhedron
+msgid "SMESH_POLYEDRON"
+msgstr "Polyhedron"
 
 #Add Triangle
 msgid "SMESH_ADD_TRIANGLE"
@@ -820,6 +832,10 @@ msgstr "Mesh Infos"
 #Standard Mesh Infos
 msgid "SMESH_STANDARD_MESHINFO_TITLE"
 msgstr "Standard Mesh Infos"
+
+#What Is
+msgid "SMESH_WHAT_IS_TITLE"
+msgstr "Mesh Element Info"
 
 #Mesh Infos
 msgid "SMESH_MESHINFO_NAME"
@@ -2239,6 +2255,9 @@ msgstr "Advanced Mesh Infos"
 msgid "MEN_STD_INFO"
 msgstr "Standard Mesh Infos"
 
+msgid "MEN_WHAT_IS"
+msgstr "Mesh Element Info"
+
 msgid "MEN_LENGTH"
 msgstr "Length"
 
@@ -2601,6 +2620,9 @@ msgstr "Advanced Mesh Infos"
 msgid "TOP_STD_INFO"
 msgstr "Standard Mesh Infos"
 
+msgid "TOP_WHAT_IS"
+msgstr "Mesh Element Info"
+
 msgid "TOP_LENGTH"
 msgstr "Length"
 
@@ -2913,6 +2935,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "STB_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "STB_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "STB_LENGTH"
 msgstr "Length"
@@ -3447,6 +3472,12 @@ msgstr "Publish SubShape"
 
 msgid "SMESHGUI_ComputeDlg::MEMORY_LACK"
 msgstr "Memory allocation problem"
+
+msgid "SMESHGUI_WhatIsDlg::ENTITY_TYPE"
+msgstr "Element type"
+
+msgid "SMESHGUI_WhatIsDlg::GRAVITY_CENTER"
+msgstr "Gravity center"
 
 msgid "COMPERR_OK"
 msgstr "No errors"

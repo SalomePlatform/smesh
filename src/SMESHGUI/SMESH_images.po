@@ -322,6 +322,9 @@ msgstr "advanced_mesh_info.png"
 msgid "ICON_STD_INFO"
 msgstr "standard_mesh_info.png"
 
+msgid "ICON_WHAT_IS"
+msgstr "mesh_whatis.png"
+
 msgid "ICON_LENGTH"
 msgstr "mesh_length.png"
 
