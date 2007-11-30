@@ -15,10 +15,11 @@ if (navigator.appName !="Netscape")
 <style type="text/css">
 <!--
 p.whs1 { margin-left:40px; }
-img_whs2 { border:none; width:390px; height:411px; float:none; border-style:none; }
+img_whs2 { border:none; width:402px; height:483px; float:none; border-style:none; }
 ul.whs3 { list-style:disc; }
-img_whs4 { border:none; float:none; width:418px; height:332px; }
-img_whs5 { border:none; width:443px; height:331px; float:none; }
+p.whs4 { margin-left:40px; font-weight:bold; }
+img_whs5 { border:none; float:none; width:418px; height:332px; border-style:none; }
+img_whs6 { border:none; width:443px; height:331px; float:none; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
@@ -99,7 +100,7 @@ if (window.writeIntopicBar)
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1"><img src="../pics/rotation.png" x-maintain-ratio="TRUE" width="390px" height="411px" border="0" class="img_whs2"></p>
+<p class="whs1"><img src="../pics/rotation.png" x-maintain-ratio="TRUE" width="402px" height="483px" border="0" class="img_whs2"></p>
 
 <p class="whs1">&nbsp;</p>
 
@@ -117,8 +118,28 @@ if (window.writeIntopicBar)
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1"><span style="font-weight: bold;"><B>Create a 
- copy </B></span>radio button allows to copy the rotated object.</p>
+<p class="whs1">Toggle the corresponding checkbox to <span 
+ style="font-weight: bold;"><B>Select whole mesh, submesh or group.</B></span></p>
+
+<p class="whs1">When<span style="font-weight: bold;"><B> Move 
+ elements</B></span> radio button is selected, the source mesh (or elements) 
+ is created at the new location and erased from its previous location.</p>
+
+<p class="whs1">When<span style="font-weight: bold;"><B> Copy 
+ elements</B></span> radio button is selected, the source mesh (or elements) 
+ is created at the new location, but it also remains at its previous location 
+ and is considered one and single mesh with the result of the translation.</p>
+
+<p class="whs1">When<span style="font-weight: bold;"><B> Create 
+ as new mesh</B></span> radio button is selected, the source mesh (or elements) 
+ remains at its previous location, and a new mesh is created at the new 
+ location and appears in the Object browser with the default name <span 
+ style="font-style: italic;"><I>MeshName_</I></span>rotated (you can change this 
+ name in the adjacent box).</p>
+
+<p class="whs4">Copy Groups<span style="font-weight: normal;"> 
+ checkbox allows copying the groups of elements of the source mesh to the 
+ newly created one.</span></p>
 
 <p class="whs1">&nbsp;</p>
 
@@ -128,7 +149,7 @@ if (window.writeIntopicBar)
 
 <p>&nbsp;</p>
 
-<p><img src="../pics/rotation1.png" x-maintain-ratio="TRUE" width="418px" height="332px" border="0" class="img_whs4"> &nbsp;&nbsp;<img src="../pics/rotation2.png" x-maintain-ratio="TRUE" width="443px" height="331px" border="0" class="img_whs5"></p>
+<p><img src="../pics/rotation1.png" x-maintain-ratio="TRUE" width="418px" height="332px" border="0" class="img_whs5"> &nbsp;&nbsp;<img src="../pics/rotation2.png" x-maintain-ratio="TRUE" width="443px" height="331px" border="0" class="img_whs6"></p>
 
 <p>&nbsp;</p>
 

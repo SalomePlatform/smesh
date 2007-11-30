@@ -35,12 +35,13 @@ td.whs18 { width:33.333%; padding-right:10px; padding-left:10px; border-right-st
 td.whs19 { width:33.333%; padding-right:10px; padding-left:10px; border-bottom-style:none; border-right-style:none; }
 p.whs20 { font-weight:bold; margin-left:0px; }
 p.whs21 { font-weight:bold; }
-img_whs22 { border:none; width:441px; height:541px; float:none; border-style:none; }
-p.whs23 { margin-left:84px; }
-p.whs24 { margin-left:156px; }
-p.whs25 { margin-left:156px; font-weight:bold; }
-img_whs26 { border:none; width:26px; height:25px; border-style:none; }
-img_whs27 { border:none; width:29px; height:28px; border-style:none; }
+img_whs22 { border:none; width:441px; height:567px; float:none; border-style:none; }
+img_whs23 { border:none; width:441px; height:567px; float:none; }
+p.whs24 { margin-left:84px; }
+p.whs25 { margin-left:156px; }
+p.whs26 { margin-left:156px; font-weight:bold; }
+img_whs27 { border:none; width:26px; height:25px; border-style:none; }
+img_whs28 { border:none; width:29px; height:28px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -291,7 +292,7 @@ if (window.writeIntopicBar)
 <p class="whs12">&nbsp;</p>
 
 <p class=TODO
-	style="margin-left: 80px;"><img src="pics/extrusion1.png" x-maintain-ratio="TRUE" width="441px" height="541px" border="0" class="img_whs22"></p>
+	style="margin-left: 80px;"><img src="pics/extrusion1.png" x-maintain-ratio="TRUE" width="441px" height="567px" border="0" class="img_whs22"> <img src="pics/extrusion2.png" x-maintain-ratio="TRUE" width="441px" height="567px" border="0" class="img_whs23"></p>
 
 <p class="whs12">&nbsp;</p>
 
@@ -299,32 +300,32 @@ if (window.writeIntopicBar)
 
 <ul type="disc" class="whs3">
 	
-	<li class=kadov-p><p class="whs23">select the type of 
+	<li class=kadov-p><p class="whs24">select the type of 
  elements which will be extruded (1D or 2D),</p></li>
 	
-	<li class=kadov-p><p class="whs23">specify the <span style="font-weight: bold;"><B>IDs 
+	<li class=kadov-p><p class="whs24">specify the <span style="font-weight: bold;"><B>IDs 
  of the elements</B></span> which will be extruded by selecting them in the 
  3D viewer or <span style="font-weight: bold;"><B>Select the whole mesh, submesh 
  or group</B></span>,</p></li>
 	
-	<li class=kadov-p><p class="whs23">define the <span style="font-weight: bold;"><B>Path</B></span> 
+	<li class=kadov-p><p class="whs24">define the <span style="font-weight: bold;"><B>Path</B></span> 
  along which the elements will be extruded, </p></li>
 </ul>
 
-<p class="whs24">Path definition consists of several elements 
+<p class="whs25">Path definition consists of several elements 
  </p>
 
 <ul type="disc" class="whs3">
 	
-	<li class=kadov-p><p class="whs25">Mesh 
+	<li class=kadov-p><p class="whs26">Mesh 
  - <span style="font-weight: normal;">containing a 1D sub-mesh on the edge, 
  along which proceeds the extrusion.</span></p></li>
 	
-	<li class=kadov-p><p class="whs25">Shape 
+	<li class=kadov-p><p class="whs26">Shape 
  (edge) - <span style="font-weight: normal;">as the mesh can be complex, 
  the edge is used to define the sub-mesh for the path.</span></p></li>
 	
-	<li class=kadov-p><p class="whs25">Start 
+	<li class=kadov-p><p class="whs26">Start 
  node - <span style="font-weight: normal;">&nbsp;the 
  first or the last node on the edge. It is used to define the direction 
  of extrusion.</span></p></li>
@@ -337,19 +338,25 @@ if (window.writeIntopicBar)
 
 <ul type="disc" class="whs3">
 	
-	<li class=kadov-p><p class="whs23">If the path of extrusion 
+	<li class=kadov-p><p class="whs24">If the path of extrusion 
  is curvilinear, at each iteration the extruded shape is rotated to keep 
  its initial angularity to the curve. By default, the <span style="font-weight: bold;"><B>Base 
  Point</B></span> around which the shape is rotated is the mass center of the 
  shape, however, you can specify any point as the <span style="font-weight: bold;"><B>Base 
  Point</B></span> and the shape will be rotated with respect to this point.</p></li>
 	
-	<li class=kadov-p><p class="whs23">The shape can also 
+	<li class=kadov-p><p class="whs24">The shape can also 
  be rotated around the path to get the resulting mesh in a helical fashion. 
  You can set the values of angles at the right, add them to the list of 
- angles at the left by pressing the <img src="image105.gif" width="26px" height="25px" border="0" class="img_whs26"> button and remove them 
- from the list by pressing the <img src="image106.gif" width="29px" height="28px" border="0" class="img_whs27"> button. </p></li>
+ angles at the left by pressing the <img src="image105.gif" width="26px" height="25px" border="0" class="img_whs27"> button and remove them 
+ from the list by pressing the <img src="image106.gif" width="29px" height="28px" border="0" class="img_whs28"> button. </p></li>
 </ul>
+
+<p class="whs12"><span style="font-weight: bold;"><B>Generate 
+ Groups</B></span> checkbox allows copying the groups of elements of the source 
+ mesh to the newly created one.</p>
+
+<p>&nbsp;</p>
 
 <p class="whs12">4. Click the <span style="font-weight: bold;"><B>Apply 
  </B></span>or <span style="font-weight: bold;"><B>OK </B></span>button. Mesh edges 

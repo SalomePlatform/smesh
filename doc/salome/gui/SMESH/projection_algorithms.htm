@@ -11,9 +11,8 @@ p.whs1 { margin-top:0pt; margin-bottom:0pt; }
 img_whs2 { border:none; width:30px; height:29px; border-style:none; }
 p.whs3 { margin-left:40px; }
 img_whs4 { border:none; width:270px; height:285px; float:none; border-style:none; }
-img_whs5 { border:none; width:30px; height:29px; border-style:none; }
-img_whs6 { border:none; width:280px; height:351px; float:none; }
-p.whs7 { margin-left:0px; }
+img_whs5 { border:none; width:280px; height:351px; float:none; border-style:none; }
+p.whs6 { margin-left:0px; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -21,7 +20,7 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
 {
   var strNSS = "<style type='text/css'>";
   strNSS += "p.whs1 {margin-top:1pt;margin-bottom:1pt; }";
-  strNSS += "p.whs7 {margin-left:1pt; }";
+  strNSS += "p.whs6 {margin-left:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -95,8 +94,8 @@ if (window.writeIntopicBar)
 <p class="whs1">&nbsp;</p>
 
 <p class="whs1"><span style="font-weight: bold;"><B>Projection 
- 1D</B></span> algorithm permits to define the mesh of an edge by the projection 
- of another already meshed edge.</p>
+ 1D</B></span> algorithm permits to define the mesh of an edge(or group of 
+ edges) by the projection of another already meshed edge (or group of edges).</p>
 
 <p class="whs1">To apply this algorithm 
  select the edge to be meshed (indicated in the field <span style="font-weight: bold;"><B>Geometry</B></span> 
@@ -114,21 +113,27 @@ if (window.writeIntopicBar)
  be necessary to define the orientation of edges, which is done by indicating 
  the <span style="font-weight: bold;"><B>Source Vertex</B></span> being the first 
  point of the Source Edge and the <span style="font-weight: bold;"><B>Target 
- Vertex </B></span>being the first point of the created <span style="font-weight: bold;"><B>Edge.</B></span></p>
+ Vertex </B></span>being the first point of the created <span style="font-weight: bold;"><B>Edge. 
+ </B></span>For a group of edges, <span style="font-weight: bold;"><B>Source</B></span> 
+ and <span style="font-weight: bold;"><B>Target</B></span> vertices should be 
+ shared by only one edge of the group. If <span style="font-weight: bold;"><B>Source</B></span> 
+ and <span style="font-weight: bold;"><B>Target</B></span> vectors are specified, 
+ the elements of the group must be adjacent.</p>
 
 <p><span style="font-weight: bold;"><B>Projection 2D</B></span> algorithm<span 
  style="font-weight: bold;"> <B></B></span>permits to define the mesh of a face 
- by the projection of another already meshed face. This algorithm works 
- only if all edges of the<span style="font-weight: bold;"> <B></B></span>target 
- face have been meshed as 1D Projections of the edges of the source face.</p>
+ (or group of faces) by the projection of another already meshed face (or 
+ group of faces). This algorithm works only if all edges of the<span style="font-weight: bold;"> 
+ <B></B></span>target face have been meshed as 1D Projections of the edges of 
+ the source face.</p>
 
 <p>To apply this algorithm select the face to be meshed (indicated in the 
  field <span style="font-weight: bold;"><B>Geometry</B></span> of<span style="font-weight: bold;"><B> 
  Create mesh</B></span> dialog box), <span style="font-weight: bold;"><B>Projection 
- 2D</B></span> in the list of 2D algorithms and click the <img src="image122.gif" width="30px" height="29px" border="0" class="img_whs5"> button. 
+ 2D</B></span> in the list of 2D algorithms and click the <img src="image122.gif" width="30px" height="29px" border="0" class="img_whs2"> button. 
  The following dialog box will appear: </p>
 
-<p class="whs3"><img src="pics/projection_2d.png" x-maintain-ratio="TRUE" width="280px" height="351px" border="0" class="img_whs6"></p>
+<p class="whs3"><img src="pics/projection_2d.png" x-maintain-ratio="TRUE" width="280px" height="351px" border="0" class="img_whs5"></p>
 
 <p>In this menu you can define the <span style="font-weight: bold;"><B>Name</B></span> 
  of the algorithm, the algeady meshed source <span style="font-weight: bold;"><B>Face</B></span> 
@@ -152,12 +157,12 @@ if (window.writeIntopicBar)
 <p>To apply this algorithm select the solid to be meshed (indicated in 
  the field <span style="font-weight: bold;"><B>Geometry</B></span> of<span style="font-weight: bold;"><B> 
  Create mesh</B></span> dialog box), <span style="font-weight: bold;"><B>Projection 
- 3D</B></span> in the list of 3D algorithms and click the <img src="image122.gif" width="30px" height="29px" border="0" class="img_whs5"> button. 
+ 3D</B></span> in the list of 3D algorithms and click the <img src="image122.gif" width="30px" height="29px" border="0" class="img_whs2"> button. 
  The following dialog box will appear: </p>
 
-<p class="whs3"><img src="pics/projection_3d.png" x-maintain-ratio="TRUE" width="280px" height="351px" border="0" class="img_whs6"></p>
+<p class="whs3"><img src="pics/projection_3d.png" x-maintain-ratio="TRUE" width="280px" height="351px" border="0" class="img_whs5"></p>
 
-<p class="whs7">In this menu you can define the <span style="font-weight: bold;"><B>Name</B></span> 
+<p class="whs6">In this menu you can define the <span style="font-weight: bold;"><B>Name</B></span> 
  of the algorithm, the algeady meshed source <span style="font-weight: bold;"><B>3D 
  shape</B></span> and the <span style="font-weight: bold;"><B>Mesh</B></span> (optional, 
  use it if there are several different meshes on the same shape). It could 

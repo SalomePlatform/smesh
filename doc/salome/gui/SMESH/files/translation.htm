@@ -15,9 +15,8 @@ if (navigator.appName !="Netscape")
 <style type="text/css">
 <!--
 p.whs1 { margin-left:40px; }
-img_whs2 { border:none; border-style:none; width:393px; height:353px; float:none; }
-img_whs3 { border:none; width:393px; height:353px; float:none; border-style:none; }
-ul.whs4 { list-style:disc; }
+img_whs2 { border:none; width:400px; height:425px; float:none; border-style:none; }
+ul.whs3 { list-style:disc; }
 -->
 </style><script type="text/javascript" language="JavaScript" title="WebHelpInlineScript">
 <!--
@@ -98,14 +97,14 @@ if (window.writeIntopicBar)
 
 <p class="whs1">&nbsp;</p>
 
-<p class="whs1"><img src="../pics/translation1.png" x-maintain-ratio="TRUE" width="393px" height="353px" border="0" class="img_whs2"> &nbsp;&nbsp;<img src="../pics/translation2.png" x-maintain-ratio="TRUE" width="393px" height="353px" border="0" class="img_whs3"></p>
+<p class="whs1"><img src="../pics/translation1.png" x-maintain-ratio="TRUE" width="400px" height="425px" border="0" class="img_whs2"> &nbsp;&nbsp;<img src="../pics/translation2.png" x-maintain-ratio="TRUE" width="400px" height="425px" border="0" class="img_whs2"></p>
 
 <p class="whs1">&nbsp;</p>
 
 <p class="whs1">This operation has two options, you can translate 
  in space your mesh or some of its elements specifying: </p>
 
-<ul type="disc" class="whs4">
+<ul type="disc" class="whs3">
 	
 	<li class=kadov-p><p class="whs1">two points (starting 
  and ending)</p></li>
@@ -116,10 +115,27 @@ if (window.writeIntopicBar)
 <p class="whs1">Toggle the corresponding checkbox to <span 
  style="font-weight: bold;"><B>Select whole mesh, submesh or group.</B></span></p>
 
-<p class="whs1"><span style="font-weight: bold;"><B>Create a 
- copy </B></span>button allows to copy the translated object.</p>
+<p class="whs1">When<span style="font-weight: bold;"><B> Move 
+ elements</B></span> radio button is selected, the source mesh (or elements) 
+ is created at the new location and erased from its previous location.</p>
 
-<p class="whs1">&nbsp;</p>
+<p class="whs1">When<span style="font-weight: bold;"><B> Copy 
+ elements</B></span> radio button is selected, the source mesh (or elements) 
+ is created at the new location, but it also remains at its previous location 
+ and is considered one and single mesh with the result of the translation.</p>
+
+<p class="whs1">When<span style="font-weight: bold;"><B> Create 
+ as new mesh</B></span> radio button is selected, the source mesh (or elements) 
+ remains at its previous location, and a new mesh is created at the new 
+ location and appears in the Object browser with the default name <span 
+ style="font-style: italic;"><I>MeshName_</I></span>translated (you can change 
+ this name in the adjacent box).</p>
+
+<p class="whs1"><span style="font-weight: bold;"><B>Copy Groups</B></span> 
+ checkbox allows copying the groups of elements of the source mesh to the 
+ newly created one.</p>
+
+<p>&nbsp;</p>
 
 <p>&nbsp;&nbsp;<span style="font-weight: bold;"><B>See 
  Also</B></span> a sample TUI Script of a <a href="../transforming_meshes.htm#bookmark">Translation</a> 
