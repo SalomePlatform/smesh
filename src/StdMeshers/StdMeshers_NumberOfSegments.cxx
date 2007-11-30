@@ -49,8 +49,6 @@
 
 #ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#else
-#include "CASCatch.hxx"
 #endif
 
 using namespace std;
@@ -233,18 +231,12 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const vector<double>& table)
     double val = table[i*2+1];
     if( _convMode==0 )
     {
-#ifdef NO_CAS_CATCH
       try {
+#ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
-#else
-      CASCatch_TRY {
 #endif
 	val = pow( 10.0, val );
-#ifdef NO_CAS_CATCH
       } catch(Standard_Failure) {
-#else
-      } CASCatch_CATCH(Standard_Failure) {
-#endif
 	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	throw SALOME_Exception( LOCALIZED( "invalid value"));
 	return;
@@ -333,19 +325,13 @@ bool process( const TCollection_AsciiString& str, int convMode,
 {
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
-#ifdef NO_CAS_CATCH
   try {
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( str.ToCString() );
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }

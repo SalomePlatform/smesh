@@ -38,7 +38,6 @@
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_PythonDump.hxx"
 
-#include "CASCatch.hxx"
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
 #include "Utils_CorbaException.hxx"
@@ -61,8 +60,6 @@
 
 #ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#else
-#include "CASCatch.hxx"
 #endif
 
 #include <sstream>
@@ -1524,11 +1521,9 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
 {
   initData();
 
-#ifdef NO_CAS_CATCH
   try {   
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     TIDSortedElemSet elements;
     arrayToSet(theIDsOfElements, GetMeshDS(), elements, theElementType);
@@ -1545,11 +1540,7 @@ SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
 
     return theMakeGroups ? getGroups(groupIds.get()) : 0;
 
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();          
     INFOS( "SMESH_MeshEditor_i::ExtrusionSweep fails - "<< aFail->GetMessageString() );
   }
