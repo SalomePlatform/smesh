@@ -978,7 +978,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
     if(myIsCellsLabeled) 
       myCellsLabels->VisibilityOn();
   }
-
+  UpdateHighlight();
   Modified();
 }
 
