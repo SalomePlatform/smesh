@@ -43,7 +43,7 @@ try:
 except ImportError:
     noNETGENPlugin = 1
     pass
-    
+
 # Types of algo
 REGULAR    = 1
 PYTHON     = 2
@@ -60,7 +60,7 @@ NETGEN_FULL   = FULL_NETGEN
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
-AXIS =  SMESH_MeshEditor.AXIS 
+AXIS =  SMESH_MeshEditor.AXIS
 PLANE = SMESH_MeshEditor.PLANE
 
 # Smooth_Method enumeration
@@ -136,10 +136,10 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
 class smeshDC(SMESH._objref_SMESH_Gen):
 
     def init_smesh(self,theStudy,geompyD):
-        self.SetCurrentStudy(theStudy)
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
-            
+        self.SetCurrentStudy(theStudy)
+
     def Mesh(self, obj=0, name=0):
       return Mesh(self,self.geompyD,obj,name)
 
@@ -310,7 +310,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aCriterion.Compare = self.EnumToLong(FT_EqualTo)
             aTreshold = Compare
             
-        if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface, 
+        if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
             # Check treshold
             if isinstance(aTreshold, geompyDC.GEOM._objref_GEOM_Object):
@@ -327,7 +327,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 print "Error: Treshold should be a string."
                 return None
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume]:
-            # Here we don't need treshold
+            # Here we do not need treshold
             if aTreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
             elif aTreshold in [FT_LogicalAND, FT_LogicalOR]:
@@ -412,7 +412,7 @@ import omniORB
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
     
     
-## Mother class to define algorithm, recommended to don't use directly.
+## Mother class to define algorithm, recommended to do not use directly.
 #
 #  More details.
 class Mesh_Algorithm:
@@ -527,7 +527,7 @@ class Mesh_Algorithm:
 #  More details.
 class Mesh_Segment(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Segment's
+    algo = 0 # algorithm object common for all Mesh_Segments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -646,7 +646,7 @@ class Mesh_Segment(Mesh_Algorithm):
 #  More details.
 class Mesh_CompositeSegment(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_CompositeSegment's
+    algo = 0 # algorithm object common for all Mesh_CompositeSegments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -665,7 +665,7 @@ class Mesh_CompositeSegment(Mesh_Segment):
 #  More details.
 class Mesh_Segment_Python(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_Segment_Python's
+    algo = 0 # algorithm object common for all Mesh_Segment_Pythons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -700,7 +700,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     params = 0
 
     # algorithm objects common for all instances of Mesh_Triangle
-    algoMEF = 0    
+    algoMEF = 0
     algoNET = 0
     algoNET_2D = 0
 
@@ -839,7 +839,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetFineness(theFineness)
 
-    ## Set GrowthRate  
+    ## Set GrowthRate
     #
     #  Only for algoType == NETGEN
     def SetGrowthRate(self, theRate):
@@ -877,7 +877,7 @@ class Mesh_Triangle(Mesh_Algorithm):
 #  More details.
 class Mesh_Quadrangle(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Quadrangle's
+    algo = 0 # algorithm object common for all Mesh_Quadrangles
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -907,9 +907,9 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     params = 0
     algoType = 0
 
-    algoNET = 0 # algorithm object common for all Mesh_Tetrahedron's
-    algoGHS = 0 # algorithm object common for all Mesh_Tetrahedron's
-    algoFNET = 0 # algorithm object common for all Mesh_Tetrahedron's
+    algoNET = 0 # algorithm object common for all Mesh_Tetrahedrons
+    algoGHS = 0 # algorithm object common for all Mesh_Tetrahedrons
+    algoFNET = 0 # algorithm object common for all Mesh_Tetrahedrons
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
@@ -961,8 +961,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             return self.params
         else:
             print "Algo doesn't support this hypothesis"
-            return None 
-            
+            return None
+
     ## Set MaxSize
     def SetMaxSize(self, theSize):
         if self.params == 0:
@@ -988,8 +988,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         if self.params == 0:
             self.Parameters()
         self.params.SetFineness(theFineness)
-        
-    ## Set GrowthRate  
+
+    ## Set GrowthRate
     def SetGrowthRate(self, theRate):
         if self.params == 0:
             self.Parameters()
@@ -1015,7 +1015,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 #  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Hexahedron's
+    algo = 0 # algorithm object common for all Mesh_Hexahedrons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1041,8 +1041,8 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     is3D = 0
 
-    algoNET23 = 0 # algorithm object common for all Mesh_Netgen's
-    algoNET2 = 0 # algorithm object common for all Mesh_Netgen's
+    algoNET23 = 0 # algorithm object common for all Mesh_Netgens
+    algoNET2 = 0 # algorithm object common for all Mesh_Netgens
 
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
@@ -1086,7 +1086,7 @@ class Mesh_Netgen(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection1D's
+    algo = 0 # algorithm object common for all Mesh_Projection1Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1126,7 +1126,7 @@ class Mesh_Projection1D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection2D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection2D's
+    algo = 0 # algorithm object common for all Mesh_Projection2Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1172,7 +1172,7 @@ class Mesh_Projection2D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection3D's
+    algo = 0 # algorithm object common for all Mesh_Projection3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1220,7 +1220,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Prism3D's
+    algo = 0 # algorithm object common for all Mesh_Prism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1240,7 +1240,7 @@ class Mesh_Prism3D(Mesh_Algorithm):
 #  More details.
 class Mesh_RadialPrism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_RadialPrism3D's
+    algo = 0 # algorithm object common for all Mesh_RadialPrism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
@@ -1427,8 +1427,8 @@ class Mesh:
     ## Method that associates given shape to the mesh(entails the mesh recreation)
     #  @param geom shape to be meshed(GEOM_Object)
     def SetShape(self, geom):
-        self.mesh = self.smeshpyD.CreateMesh(geom)  
-                
+        self.mesh = self.smeshpyD.CreateMesh(geom)
+
     ## Return true if hypotheses are defined well
     #  @param theMesh is an instance of Mesh class
     #  @param theSubObject subshape of a mesh shape
@@ -1444,7 +1444,7 @@ class Mesh:
         return self.smeshpyD.GetAlgoState(self.mesh, theSubObject)
     
     ## Return geometrical object the given element is built on.
-    #  The returned geometrical object, if not nil, is either found in the 
+    #  The returned geometrical object, if not nil, is either found in the
     #  study or is published by this method with the given name
     #  @param theMesh is an instance of Mesh class
     #  @param theElementID an id of the mesh element
@@ -1681,7 +1681,7 @@ class Mesh:
             self.Quadrangle()
             pass
         if dim > 2 :
-            self.Hexahedron()            
+            self.Hexahedron()
             pass
         return self.Compute()
 
@@ -1729,7 +1729,7 @@ class Mesh:
     ## Create a mesh group based on geometric object \a grp
     #  and give a \a name, \n if this parameter is not defined
     #  the name is the same as the geometric group name \n
-    #  Note: Works like GroupOnGeom(). 
+    #  Note: Works like GroupOnGeom().
     #  @param grp  is a geometric group, a vertex, an edge, a face or a solid
     #  @param name is the name of the mesh group
     #  @return SMESH_GroupOnGeom
@@ -2181,7 +2181,7 @@ class Mesh:
     def GetShapeID(self, id):
         return self.mesh.GetShapeID(id)
 
-    ## For given element returns ID of result shape after 
+    ## For given element returns ID of result shape after
     #  FindShape() from SMESH_MeshEditor
     #  \n If there is not element for given ID - returns -1
     def GetShapeIDForElem(self,id):
@@ -2650,9 +2650,9 @@ class Mesh:
     #  @param MaxNbOfIterations maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
-    def SmoothObject(self, theObject, IDsOfFixedNodes, 
+    def SmoothObject(self, theObject, IDsOfFixedNodes,
                      MaxNbOfIterations, MaxxAspectRatio, Method):
-        return self.editor.SmoothObject(theObject, IDsOfFixedNodes, 
+        return self.editor.SmoothObject(theObject, IDsOfFixedNodes,
                                         MaxNbOfIterations, MaxxAspectRatio, Method)
 
     ## Parametric smooth the given elements
@@ -2681,13 +2681,13 @@ class Mesh:
         return self.editor.SmoothParametricObject(theObject, IDsOfFixedNodes,
                                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
-    ## Converts all mesh to quadratic one, deletes old elements, replacing 
+    ## Converts all mesh to quadratic one, deletes old elements, replacing
     #  them with quadratic ones with the same id.
     def ConvertToQuadratic(self, theForce3d):
         self.editor.ConvertToQuadratic(theForce3d)
 
     ## Converts all mesh from quadratic to ordinary ones,
-    #  deletes old quadratic elements, \n replacing 
+    #  deletes old quadratic elements, \n replacing
     #  them with ordinary mesh elements with the same id.
     def ConvertFromQuadratic(self):
         return self.editor.ConvertFromQuadratic()
@@ -2736,7 +2736,7 @@ class Mesh:
 
     ## Generate new elements by extrusion of the elements with given ids
     #  @param IDsOfElements list of elements ids for extrusion
-    #  @param StepVector vector, defining the direction and value of extrusion 
+    #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False):
@@ -2751,7 +2751,7 @@ class Mesh:
 
     ## Generate new elements by extrusion of the elements with given ids
     #  @param IDsOfElements is ids of elements
-    #  @param StepVector vector, defining the direction and value of extrusion 
+    #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param ExtrFlags set flags for performing extrusion
     #  @param SewTolerance uses for comparing locations of nodes if flag
@@ -2769,7 +2769,7 @@ class Mesh:
 
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
-    #  @param StepVector vector, defining the direction and value of extrusion 
+    #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
@@ -2782,7 +2782,7 @@ class Mesh:
 
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
-    #  @param StepVector vector, defining the direction and value of extrusion 
+    #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
@@ -2795,8 +2795,8 @@ class Mesh:
     
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
-    #  @param StepVector vector, defining the direction and value of extrusion 
-    #  @param NbOfSteps the number of steps    
+    #  @param StepVector vector, defining the direction and value of extrusion
+    #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
     def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
@@ -2814,7 +2814,7 @@ class Mesh:
     #  @param NodeStart the first or the last node on the edge. It is used to define the direction of extrusion
     #  @param HasAngles allows the shape to be rotated around the path to get the resulting mesh in a helical fashion
     #  @param Angles list of angles
-    #  @param HasRefPoint allows to use base point 
+    #  @param HasRefPoint allows to use base point
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
     #  @param MakeGroups to generate new groups from existing ones
@@ -2842,7 +2842,7 @@ class Mesh:
     #  @param NodeStart the first or the last node on the edge. It is used to define the direction of extrusion
     #  @param HasAngles allows the shape to be rotated around the path to get the resulting mesh in a helical fashion
     #  @param Angles list of angles
-    #  @param HasRefPoint allows to use base point 
+    #  @param HasRefPoint allows to use base point
     #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
     #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
     #  @param MakeGroups to generate new groups from existing ones
@@ -2851,7 +2851,7 @@ class Mesh:
                                  HasAngles, Angles, HasRefPoint, RefPoint,
                                  MakeGroups=False, LinearVariation=False):
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
-            RefPoint = self.smeshpyD.GetPointStruct(RefPoint) 
+            RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if MakeGroups:
             return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh.GetMesh(),
                                                                   PathShape, NodeStart, HasAngles,
@@ -2924,7 +2924,7 @@ class Mesh:
     #  @param IDsOfElements list of elements ids
     #  @param Axis axis of rotation(AxisStruct or geom line)
     #  @param AngleInRadians angle of rotation(in radians)
-    #  @param Copy allows to copy the rotated elements   
+    #  @param Copy allows to copy the rotated elements
     #  @param MakeGroups to generate new groups from existing ones (if Copy)
     def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
         if IDsOfElements == []:
@@ -3024,13 +3024,13 @@ class Mesh:
         return self.editor.ChangeElemNodes(ide, newIDs)
     
     ## If during last operation of MeshEditor some nodes were
-    #  created this method returns list of it's IDs, \n
+    #  created this method returns list of its IDs, \n
     #  if new nodes not created - returns empty list
     def GetLastCreatedNodes(self):
         return self.editor.GetLastCreatedNodes()
 
     ## If during last operation of MeshEditor some elements were
-    #  created this method returns list of it's IDs, \n
+    #  created this method returns list of its IDs, \n
     #  if new elements not creared - returns empty list
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
