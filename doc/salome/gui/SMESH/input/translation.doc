@@ -24,7 +24,10 @@ or some of its elements specifying:
 </ul>
 Toggle the corresponding checkbox to <b>Select whole mesh, submesh or
 group</b>.
-<b>Create a copy</b> button allows to copy the translated object.
+<b>Create a Copy</b> checkbox allows creating a new mesh, the source
+mesh (or group of elements remains at its initial location).
+<b>Generate Groups</b> checkbox allows copying the groups of elements
+of the source mesh to the newly created one.
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_translation "Translation" operation.  

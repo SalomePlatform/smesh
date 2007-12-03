@@ -2,12 +2,8 @@
 
 \page mesh_infos_page Mesh infos
 
-\n There are two types of information boxes: <b>Standard Mesh
-Infos</b> and <b>Advanced Mesh Infos</b>.
-<ul>
-<li>\ref standard_mesh_infos_anchor "Standard"</li>
-<li>\ref advanced_mesh_infos_anchor "Advanced"</li>
-</ul>
+\n There are three information boxes: <b>Standard Mesh
+Infos</b>, <b>Advanced Mesh Infos</b> and <b> Mesh Element Info</b>.
 
 <br>
 \anchor standard_mesh_infos_anchor
@@ -33,7 +29,7 @@ The following information will be displayed:
 \anchor advanced_mesh_infos_anchor
 <h2>Advanced Mesh Infos</h2>
 
-The <b>Advanced Mesh Infos</b> gives more information about the mesh,
+The <b>Advanced Mesh Infos</b> box gives more information about the mesh,
 including the total number of faces and volumes and their geometrical
 types.
 \n To view the <b>Advanced Mesh Infos</b>, select your mesh or submesh
@@ -52,5 +48,16 @@ In case you get Mesh Infos via a \ref tui_viewing_mesh_infos "TUI script",
 the information is displayed in Python Console.
 
 \image html b-mesh_infos.png
+
+<br>
+\anchor mesh_element_info_anchor
+<h2>Mesh Element Info</h2> 
+
+The <b>Mesh Element Info</b> box gives basic information about the
+type and the coordinates of the selected mesh element. 
+
+\image html eleminfo1.png
+
+\image html eleminfo2.png 
 
 */

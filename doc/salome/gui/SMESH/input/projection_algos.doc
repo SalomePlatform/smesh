@@ -6,7 +6,8 @@
 object by the projection of another already meshed geometrical object.
 
 <b>Projection 1D</b> algorithm permits to define the mesh of an edge
-by the projection of another already meshed edge.
+(or group of edges)
+by the projection of another already meshed edge (or group of edges).
 \n To apply this algorithm select the edge to be meshed (indicated in
 the field \b Geometry of <b>Create mesh</b> dialog box),
 <b>Projection1D</b> in the list of 1D algorithms and click the
@@ -20,15 +21,21 @@ meshed source \b Edge and the \b Mesh (optional, use it if there are several
 different meshes on the same edge). It could also be necessary to
 define the orientation of edges, which is done by indicating the
 <b>Source Vertex</b> being the first point of the Source Edge and the 
-<b>Target Vertex</b> being the first point of the created \b Edge.
+<b>Target Vertex</b> being the first point of the created \b Edge. For
+a group of edges, <b>Source</b> and <b>Target</b> vertices should be
+shared by only one edge of the group. If <b>Source</b> and
+<b>Target</b> vectors are specified, the elements of the group must be ajacent.
 
-\n <b>Projection 2D</b> algorithm permits to define the mesh of a face by the
-projection of another already meshed face. This algorithm works only
+\n <b>Projection 2D</b> algorithm permits to define the mesh of a face
+(or group of faces) by the
+projection of another already meshed face (or group of faces). This
+algorithm works only
 if all edges of the target face have been meshed as 1D Projections of
 the edges of the source face.
 
 To apply this algorithm select the face to be meshed (indicated in the
-field \b Geometry of <b>Create mesh</b> dialog box), <b>Projection 2D</b> in the list
+field \b Geometry of <b>Create mesh</b> dialog box), <b>Projection
+2D</b> in the list
 of 2D algorithms and click the <em>"Add Hypothesis"</em> button. The
 following dialog box will appear:
 

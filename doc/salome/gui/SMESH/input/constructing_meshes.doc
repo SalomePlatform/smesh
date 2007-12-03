@@ -97,6 +97,13 @@ visualizing the mesh elements that cause it.
 <b>Publish Subshape</b> button allows importing it in a separate MED
 or UNV file.
 
+<b>NOTE</b> It is possible to define a 1D or a 2D mesh in a
+python script and then use such submeshes in the construction of a 3D
+mesh. For this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
+existing faces</b>. They are not entirely usable from the GUI, so a
+mesh created using these algorithms should be exported into a python
+script, edited and then imported into the GUi. 
+
 Consider trying a sample script for construction of a mesh from our 
 \ref tui_creating_meshes_page "TUI Scripts" section.
 </li>

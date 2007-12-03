@@ -25,9 +25,11 @@ or some of its elements specifying:
 <li>one axis (point and vector)</li>
 <li>one plane (point and normal)</li>
 </ul>
+<b>Create a Copy</b> checkbox allows creating a new mesh, the source
+mesh (or group of elements remains at its initial location).  
+<b>Generate Groups</b> checkbox allows copying the groups of elements
+of the source mesh to the newly created one.
 \par
-<b>Create a copy</b> radio button allows to keep the initial elements or
-mesh.
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_symmetry "Symmetry" operation.  

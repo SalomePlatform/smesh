@@ -36,6 +36,8 @@ be revolved,</li>
 <li>number of steps,</li>
 <li>tolerance of rotation</li>
 </ul>
+<li> <b>Generate Groups</b> checkbox allows copying the groups of
+elements of the source mesh to the newly created one. </li>
 </li>
 
 <li>Click the \b Apply or \b OK button.</li>

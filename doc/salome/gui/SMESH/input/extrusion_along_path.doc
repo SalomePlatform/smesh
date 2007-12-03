@@ -91,6 +91,8 @@ path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
 The following dialog box will appear:
 
 \image html extrusion1.png
+
+\image html extrusion2.png
 </li>
 
 <li>In the dialog box you should:
@@ -108,6 +110,8 @@ or group</b>,
 <li><b>Start node</b> - the first or the last node on the edge. It is used to define the direction of extrusion </li>
 </ul>
 </li>
+<li> <b>Generate Groups</b> checkbox allows copying the groups of
+elements of the source mesh to the newly created one. </li>
 </ul>
 </li>
 

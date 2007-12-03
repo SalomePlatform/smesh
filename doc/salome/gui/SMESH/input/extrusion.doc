@@ -32,6 +32,8 @@ submesh,</li>
 <li>specify the vector along which the elements will be extruded,</li>
 <li>number of steps.</li>
 </ul>
+<li> <b>Generate Groups</b> checkbox allows copying the groups of
+elements of the source mesh to the newly created one. </li>
 </li>
 
 <li>Click the \b Apply or \b OK button.</li>
