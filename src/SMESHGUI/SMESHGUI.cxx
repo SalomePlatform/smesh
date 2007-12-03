@@ -541,7 +541,14 @@ using namespace std;
 
       _PTR(SObject) aGroupSObject = SMESH::FindSObject(aGroupObject);
       if(SMESH_Actor *anActor = SMESH::FindActorByEntry(aGroupSObject->GetID().c_str()))
-	anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+      {
+	if( aGroupObject->GetType() == SMESH::NODE )
+	  anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
+	else if( aGroupObject->GetType() == SMESH::EDGE )
+	  anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+	else
+	  anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+      }
     }
 
     SMESH::RepaintCurrentView();

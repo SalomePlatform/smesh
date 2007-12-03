@@ -587,7 +587,12 @@ namespace SMESH {
 	    aColor.B = (float)b / 255.0;
 	    aGroup->SetColor( aColor );
 	  }
-	  anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+	  if( aGroup->GetType() == SMESH::NODE )
+	    anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
+	  else if( aGroup->GetType() == SMESH::EDGE )
+	    anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+	  else
+	    anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
 	}
       }
     }
