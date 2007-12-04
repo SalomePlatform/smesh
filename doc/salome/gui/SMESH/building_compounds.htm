@@ -11,13 +11,14 @@ p.whs1 { font-family:'Arial Black' , sans-serif; font-style:italic; }
 p.whs2 { margin-left:40px; }
 img_whs3 { border:none; width:25px; height:24px; border-style:none; }
 p.whs4 { margin-left:80px; }
-img_whs5 { border:none; width:420px; height:367px; float:none; border-style:none; }
+img_whs5 { border:none; width:420px; height:428px; float:none; }
 ul.whs6 { list-style:disc; }
 p.whs7 { margin-left:80px; margin-top:0pt; margin-bottom:0pt; }
 p.whs8 { margin-top:0pt; margin-bottom:0pt; margin-left:120px; }
-p.whs9 { margin-left:80px; margin-top:0pt; margin-bottom:0pt; font-weight:bold; }
-p.whs10 { margin-top:0pt; margin-bottom:0pt; font-style:italic; margin-left:24px; }
-img_whs11 { border:none; width:245px; height:257px; border-style:none; }
+p.whs9 { margin-left:80px; margin-top:0pt; margin-bottom:0pt; font-weight:normal; }
+p.whs10 { margin-left:80px; margin-top:0pt; margin-bottom:0pt; font-weight:bold; }
+p.whs11 { margin-top:0pt; margin-bottom:0pt; font-style:italic; margin-left:24px; }
+img_whs12 { border:none; width:245px; height:257px; border-style:none; }
 -->
 </style><script type="text/javascript" language="JavaScript">
 <!--
@@ -28,6 +29,7 @@ if ((navigator.appName == "Netscape") && (parseInt(navigator.appVersion) == 4))
   strNSS += "p.whs8 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs9 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS += "p.whs10 {margin-top:1pt;margin-bottom:1pt; }";
+  strNSS += "p.whs11 {margin-top:1pt;margin-bottom:1pt; }";
   strNSS +="</style>";
   document.write(strNSS);
 }
@@ -104,7 +106,7 @@ if (window.writeIntopicBar)
  click <img src="image161.gif" width="25px" height="24px" border="0" class="img_whs3"> button in the toolbar. The following dialog box will 
  appear: </p>
 
-<p class="whs4"><img src="pics/buildcompound.png" x-maintain-ratio="TRUE" width="420px" height="367px" border="0" class="img_whs5"></p>
+<p class="whs4"><img src="pics/buildcompound.png" x-maintain-ratio="TRUE" width="420px" height="428px" border="0" class="img_whs5"></p>
 
 <ul type="disc" class="whs6">
 	
@@ -137,16 +139,21 @@ if (window.writeIntopicBar)
  See <span style="font-weight: bold;"><B><a href="grouping_elements.htm">Creating 
  Groups</a></B></span> for more information about groups. </p></li>
 	
-	<li class=kadov-p><p class="whs9"><span style="font-weight: normal;">You 
+	<li class=kadov-p><p class="whs9"><span style="font-weight: bold;"><B>Create 
+ common groups for initial meshes</B></span> checkbox permits to automatically 
+ create groups of all elements of the same type (nodes, edges, faces and 
+ volumes) for the resulting mesh from the elements of the initial meshes.</p></li>
+	
+	<li class=kadov-p><p class="whs10"><span style="font-weight: normal;">You 
  can simply unite meshes or choose to</span> Merge coincident nodes and 
  elements, <span style="font-weight: normal;">in which case it is possible 
  to define the</span> Tolerance <span style="font-weight: normal;">for 
  this operation.</span> &nbsp;</p></li>
 </ul>
 
-<p class="whs10">Example:</p>
+<p class="whs11">Example:</p>
 
-<p class="whs4"><img src="image160.gif" width="245px" height="257px" border="0" class="img_whs11"></p>
+<p class="whs4"><img src="image160.gif" width="245px" height="257px" border="0" class="img_whs12"></p>
 
 <p>&nbsp;</p>
 
