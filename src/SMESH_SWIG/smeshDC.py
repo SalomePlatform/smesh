@@ -419,7 +419,7 @@ class Mesh_Algorithm:
     #  @class Mesh_Algorithm
     #  @brief Class Mesh_Algorithm
 
-    hypos = {}
+    #17908#hypos = {}
 
     #def __init__(self,smesh):
     #    self.smesh=smesh
@@ -429,11 +429,11 @@ class Mesh_Algorithm:
         self.subm = None
         self.algo = None
 
-    def FindHypothesis(self,hypname, args):
-        key = "%s %s %s" % (self.__class__.__name__, hypname, args)
-        if Mesh_Algorithm.hypos.has_key( key ):
-            return Mesh_Algorithm.hypos[ key ]
-        return None
+    #17908#def FindHypothesis(self,hypname, args):
+    #17908#    key = "%s %s %s" % (self.__class__.__name__, hypname, args)
+    #17908#    if Mesh_Algorithm.hypos.has_key( key ):
+    #17908#        return Mesh_Algorithm.hypos[ key ]
+    #17908#    return None
 
     ## If the algorithm is global, return 0; \n
     #  else return the submesh associated to this algorithm.
@@ -462,7 +462,7 @@ class Mesh_Algorithm:
     ## Get id of algo
     def GetId(self):
         return self.algo.GetId()
-    
+
     ## Private method.
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
@@ -494,14 +494,14 @@ class Mesh_Algorithm:
     ## Private method
     def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so", UseExisting=0):
         CreateNew = 1
-        if UseExisting:
-            hypo = self.FindHypothesis(hyp, args)
-            if hypo: CreateNew = 0
-            pass
+        #17908#if UseExisting:
+        #17908#    hypo = self.FindHypothesis(hyp, args)
+        #17908#    if hypo: CreateNew = 0
+        #17908#    pass
         if CreateNew:
             hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
             key = "%s %s %s" % (self.__class__.__name__, hyp, args)
-            Mesh_Algorithm.hypos[key] = hypo
+            #17908#Mesh_Algorithm.hypos[key] = hypo
             a = ""
             s = "="
             i = 0
@@ -527,17 +527,18 @@ class Mesh_Algorithm:
 #  More details.
 class Mesh_Segment(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Segments
+    #17908#algo = 0 # algorithm object common for all Mesh_Segments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Segment.algo:
-            Mesh_Segment.algo = self.Create(mesh, geom, "Regular_1D")
-        else:
-            self.Assign( Mesh_Segment.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Segment.algo:
+        #17908#    Mesh_Segment.algo = self.Create(mesh, geom, "Regular_1D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Segment.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Regular_1D")
 
     ## Define "LocalLength" hypothesis to cut an edge in several segments with the same length
     #  @param l for the length of segments that cut an edge
@@ -547,7 +548,7 @@ class Mesh_Segment(Mesh_Algorithm):
         hyp = self.Hypothesis("LocalLength", [l], UseExisting=UseExisting)
         hyp.SetLength(l)
         return hyp
-        
+
     ## Define "NumberOfSegments" hypothesis to cut an edge in several fixed number of segments
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
@@ -562,7 +563,7 @@ class Mesh_Segment(Mesh_Algorithm):
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
-        
+
     ## Define "Arithmetic1D" hypothesis to cut an edge in several segments with arithmetic length increasing
     #  @param start for the length of the first segment
     #  @param end   for the length of the last  segment
@@ -646,15 +647,16 @@ class Mesh_Segment(Mesh_Algorithm):
 #  More details.
 class Mesh_CompositeSegment(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_CompositeSegments
+    #17908#algo = 0 # algorithm object common for all Mesh_CompositeSegments
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
-        if not Mesh_CompositeSegment.algo:
-            Mesh_CompositeSegment.algo = self.Create(mesh, geom, "CompositeSegment_1D")
-        else:
-            self.Assign( Mesh_CompositeSegment.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_CompositeSegment.algo:
+        #17908#    Mesh_CompositeSegment.algo = self.Create(mesh, geom, "CompositeSegment_1D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_CompositeSegment.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "CompositeSegment_1D")
 
 
 # Public class: Mesh_Segment_Python
@@ -665,16 +667,17 @@ class Mesh_CompositeSegment(Mesh_Segment):
 #  More details.
 class Mesh_Segment_Python(Mesh_Segment):
 
-    algo = 0 # algorithm object common for all Mesh_Segment_Pythons
+    #17908#algo = 0 # algorithm object common for all Mesh_Segment_Pythons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         import Python1dPlugin
-        if not Mesh_Segment_Python.algo:
-            Mesh_Segment_Python.algo = self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
-        else:
-            self.Assign( Mesh_Segment_Python.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Segment_Python.algo:
+        #17908#    Mesh_Segment_Python.algo = self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Segment_Python.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
     
     ## Define "PythonSplit1D" hypothesis based on the Erwan Adam patch, awaiting equivalent SALOME functionality
     #  @param n for the number of segments that cut an edge
@@ -700,41 +703,44 @@ class Mesh_Triangle(Mesh_Algorithm):
     params = 0
 
     # algorithm objects common for all instances of Mesh_Triangle
-    algoMEF = 0
-    algoNET = 0
-    algoNET_2D = 0
+    #17908#algoMEF = 0
+    #17908#algoNET = 0
+    #17908#algoNET_2D = 0
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
         if algoType == MEFISTO:
-            if not Mesh_Triangle.algoMEF:
-                Mesh_Triangle.algoMEF = self.Create(mesh, geom, "MEFISTO_2D")
-            else:
-                self.Assign( Mesh_Triangle.algoMEF, mesh, geom)
-                pass
+            #17908#if not Mesh_Triangle.algoMEF:
+            #17908#    Mesh_Triangle.algoMEF = self.Create(mesh, geom, "MEFISTO_2D")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Triangle.algoMEF, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "MEFISTO_2D")
             pass
         elif algoType == NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
                 pass
-            if not Mesh_Triangle.algoNET:
-                Mesh_Triangle.algoNET = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Triangle.algoNET, mesh, geom)
-                pass
+            #17908#if not Mesh_Triangle.algoNET:
+            #17908#    Mesh_Triangle.algoNET = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Triangle.algoNET, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
         elif algoType == NETGEN_2D:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
                 pass
-            if not Mesh_Triangle.algoNET_2D:
-                Mesh_Triangle.algoNET_2D = self.Create(mesh, geom,
-                                                      "NETGEN_2D_ONLY", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Triangle.algoNET_2D, mesh, geom)
-                pass
+            #17908#if not Mesh_Triangle.algoNET_2D:
+            #17908#    Mesh_Triangle.algoNET_2D = self.Create(mesh, geom,
+            #17908#                                          "NETGEN_2D_ONLY", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Triangle.algoNET_2D, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
 
         self.algoType = algoType
@@ -877,17 +883,18 @@ class Mesh_Triangle(Mesh_Algorithm):
 #  More details.
 class Mesh_Quadrangle(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Quadrangles
+    #17908#algo = 0 # algorithm object common for all Mesh_Quadrangles
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Quadrangle.algo:
-            Mesh_Quadrangle.algo = self.Create(mesh, geom, "Quadrangle_2D")
-        else:
-            self.Assign( Mesh_Quadrangle.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Quadrangle.algo:
+        #17908#    Mesh_Quadrangle.algo = self.Create(mesh, geom, "Quadrangle_2D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Quadrangle.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Quadrangle_2D")
     
     ## Define "QuadranglePreference" hypothesis, forcing construction
     #  of quadrangles if the number of nodes on opposite edges is not the same
@@ -907,39 +914,43 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     params = 0
     algoType = 0
 
-    algoNET = 0 # algorithm object common for all Mesh_Tetrahedrons
-    algoGHS = 0 # algorithm object common for all Mesh_Tetrahedrons
-    algoFNET = 0 # algorithm object common for all Mesh_Tetrahedrons
+    #17908#algoNET = 0 # algorithm object common for all Mesh_Tetrahedrons
+    #17908#algoGHS = 0 # algorithm object common for all Mesh_Tetrahedrons
+    #17908#algoFNET = 0 # algorithm object common for all Mesh_Tetrahedrons
 
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
         if algoType == NETGEN:
-            if not Mesh_Tetrahedron.algoNET:
-                Mesh_Tetrahedron.algoNET = self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Tetrahedron.algoNET, mesh, geom)
-                pass
+            #17908#if not Mesh_Tetrahedron.algoNET:
+            #17908#    Mesh_Tetrahedron.algoNET = self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Tetrahedron.algoNET, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
             pass
 
         elif algoType == GHS3D:
-            if not Mesh_Tetrahedron.algoGHS:
-                import GHS3DPlugin
-                Mesh_Tetrahedron.algoGHS = self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
-            else:
-                self.Assign( Mesh_Tetrahedron.algoGHS, mesh, geom)
-                pass
+            #17908#if not Mesh_Tetrahedron.algoGHS:
+            #17908#    import GHS3DPlugin
+            #17908#    Mesh_Tetrahedron.algoGHS = self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Tetrahedron.algoGHS, mesh, geom)
+            #17908#    pass
+            import GHS3DPlugin
+            self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
             pass
 
         elif algoType == FULL_NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module has not been imported."
-            if not Mesh_Tetrahedron.algoFNET:
-                Mesh_Tetrahedron.algoFNET = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Tetrahedron.algoFNET, mesh, geom)
-                pass
+            #17908#if not Mesh_Tetrahedron.algoFNET:
+            #17908#    Mesh_Tetrahedron.algoFNET = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Tetrahedron.algoFNET, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
             pass
 
         self.algoType = algoType
@@ -1015,17 +1026,18 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 #  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Hexahedrons
+    #17908#algo = 0 # algorithm object common for all Mesh_Hexahedrons
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Hexahedron.algo:
-            Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
-        else:
-            self.Assign( Mesh_Hexahedron.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Hexahedron.algo:
+        #17908#    Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Hexahedron.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Hexa_3D")
 
 # Deprecated, only for compatibility!
 # Public class: Mesh_Netgen
@@ -1041,8 +1053,8 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     is3D = 0
 
-    algoNET23 = 0 # algorithm object common for all Mesh_Netgens
-    algoNET2 = 0 # algorithm object common for all Mesh_Netgens
+    #17908#algoNET23 = 0 # algorithm object common for all Mesh_Netgens
+    #17908#algoNET2 = 0 # algorithm object common for all Mesh_Netgens
 
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
@@ -1053,19 +1065,21 @@ class Mesh_Netgen(Mesh_Algorithm):
             
         self.is3D = is3D
         if is3D:
-            if not Mesh_Netgen.algoNET23:
-                Mesh_Netgen.algoNET23 = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Netgen.algoNET23, mesh, geom)
-                pass
+            #17908#if not Mesh_Netgen.algoNET23:
+            #17908#    Mesh_Netgen.algoNET23 = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Netgen.algoNET23, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
             pass
 
         else:
-            if not Mesh_Netgen.algoNET2:
-                Mesh_Netgen.algoNET2 = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            else:
-                self.Assign( Mesh_Netgen.algoNET2, mesh, geom)
-                pass
+            #17908#if not Mesh_Netgen.algoNET2:
+            #17908#    Mesh_Netgen.algoNET2 = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
+            #17908#else:
+            #17908#    self.Assign( Mesh_Netgen.algoNET2, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
 
     ## Define hypothesis containing parameters of the algorithm
@@ -1086,17 +1100,18 @@ class Mesh_Netgen(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection1Ds
+    #17908#algo = 0 # algorithm object common for all Mesh_Projection1Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Projection1D.algo:
-            Mesh_Projection1D.algo = self.Create(mesh, geom, "Projection_1D")
-        else:
-            self.Assign( Mesh_Projection1D.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Projection1D.algo:
+        #17908#    Mesh_Projection1D.algo = self.Create(mesh, geom, "Projection_1D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Projection1D.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Projection_1D")
 
     ## Define "Source Edge" hypothesis, specifying a meshed edge to
     #  take a mesh pattern from, and optionally association of vertices
@@ -1126,17 +1141,18 @@ class Mesh_Projection1D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection2D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection2Ds
+    #17908#algo = 0 # algorithm object common for all Mesh_Projection2Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Projection2D.algo:
-            Mesh_Projection2D.algo = self.Create(mesh, geom, "Projection_2D")
-        else:
-            self.Assign( Mesh_Projection2D.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Projection2D.algo:
+        #17908#    Mesh_Projection2D.algo = self.Create(mesh, geom, "Projection_2D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Projection2D.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Projection_2D")
 
     ## Define "Source Face" hypothesis, specifying a meshed face to
     #  take a mesh pattern from, and optionally association of vertices
@@ -1172,17 +1188,18 @@ class Mesh_Projection2D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Projection3Ds
+    #17908#algo = 0 # algorithm object common for all Mesh_Projection3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Projection3D.algo:
-            Mesh_Projection3D.algo = self.Create(mesh, geom, "Projection_3D")
-        else:
-            self.Assign( Mesh_Projection3D.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Projection3D.algo:
+        #17908#    Mesh_Projection3D.algo = self.Create(mesh, geom, "Projection_3D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Projection3D.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Projection_3D")
 
     ## Define "Source Shape 3D" hypothesis, specifying a meshed solid to
     #  take a mesh pattern from, and optionally association of vertices
@@ -1220,17 +1237,18 @@ class Mesh_Projection3D(Mesh_Algorithm):
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_Prism3Ds
+    #17908#algo = 0 # algorithm object common for all Mesh_Prism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_Prism3D.algo:
-            Mesh_Prism3D.algo = self.Create(mesh, geom, "Prism_3D")
-        else:
-            self.Assign( Mesh_Prism3D.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_Prism3D.algo:
+        #17908#    Mesh_Prism3D.algo = self.Create(mesh, geom, "Prism_3D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_Prism3D.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "Prism_3D")
 
 # Public class: Mesh_RadialPrism
 # -------------------------------
@@ -1240,17 +1258,19 @@ class Mesh_Prism3D(Mesh_Algorithm):
 #  More details.
 class Mesh_RadialPrism3D(Mesh_Algorithm):
 
-    algo = 0 # algorithm object common for all Mesh_RadialPrism3Ds
+    #17908#algo = 0 # algorithm object common for all Mesh_RadialPrism3Ds
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        if not Mesh_RadialPrism3D.algo:
-            Mesh_RadialPrism3D.algo = self.Create(mesh, geom, "RadialPrism_3D")
-        else:
-            self.Assign( Mesh_RadialPrism3D.algo, mesh, geom)
-            pass
+        #17908#if not Mesh_RadialPrism3D.algo:
+        #17908#    Mesh_RadialPrism3D.algo = self.Create(mesh, geom, "RadialPrism_3D")
+        #17908#else:
+        #17908#    self.Assign( Mesh_RadialPrism3D.algo, mesh, geom)
+        #17908#    pass
+        self.Create(mesh, geom, "RadialPrism_3D")
+
         self.distribHyp = self.Hypothesis( "LayerDistribution", UseExisting=0)
         self.nbLayers = None
 
@@ -1335,22 +1355,24 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
 # -------------------------------
 class Mesh_UseExisting(Mesh_Algorithm):
 
-    algo1D = 0 # StdMeshers_UseExisting_1D object common for all Mesh_UseExisting
-    algo2D = 0 # StdMeshers_UseExisting_2D object common for all Mesh_UseExisting
+    #17908#algo1D = 0 # StdMeshers_UseExisting_1D object common for all Mesh_UseExisting
+    #17908#algo2D = 0 # StdMeshers_UseExisting_2D object common for all Mesh_UseExisting
 
     def __init__(self, dim, mesh, geom=0):
         if dim == 1:
-            if not Mesh_UseExisting.algo1D:
-                Mesh_UseExisting.algo1D= self.Create(mesh, geom, "UseExisting_1D")
-            else:
-                self.Assign( Mesh_UseExisting.algo1D, mesh, geom)
-                pass
+            #17908#if not Mesh_UseExisting.algo1D:
+            #17908#    Mesh_UseExisting.algo1D= self.Create(mesh, geom, "UseExisting_1D")
+            #17908#else:
+            #17908#    self.Assign( Mesh_UseExisting.algo1D, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "UseExisting_1D")
         else:
-            if not Mesh_UseExisting.algo2D:
-                Mesh_UseExisting.algo2D= self.Create(mesh, geom, "UseExisting_2D")
-            else:
-                self.Assign( Mesh_UseExisting.algo2D, mesh, geom)
-                pass
+            #17908#if not Mesh_UseExisting.algo2D:
+            #17908#    Mesh_UseExisting.algo2D= self.Create(mesh, geom, "UseExisting_2D")
+            #17908#else:
+            #17908#    self.Assign( Mesh_UseExisting.algo2D, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "UseExisting_2D")
 
 # Public class: Mesh
 # ==================
