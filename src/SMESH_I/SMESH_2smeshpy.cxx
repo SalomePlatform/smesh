@@ -338,7 +338,8 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   }
 
   // Concatenate( [mesh1, ...], ... )
-  if ( theCommand->GetMethod() == "Concatenate" )
+  if ( theCommand->GetMethod() == "Concatenate" ||
+       theCommand->GetMethod() == "ConcatenateWithGroups")
   {
     AddMeshAccessorMethod( theCommand );
   }

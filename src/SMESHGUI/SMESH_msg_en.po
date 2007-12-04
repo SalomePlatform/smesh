@@ -3354,6 +3354,9 @@ msgstr "Rename"
 msgid "SMESHGUI_BuildCompoundDlg::MERGE_NODES_AND_ELEMENTS"
 msgstr "Merge coincident nodes and elements"
 
+msgid "SMESHGUI_BuildCompoundDlg::CREATE_COMMON_GROUPS"
+msgstr "Create common groups for initial meshes"
+
 #-----------------------------------------------------------
 
 msgid "SMESHGUI_ShapeByMeshDlg::CAPTION"
