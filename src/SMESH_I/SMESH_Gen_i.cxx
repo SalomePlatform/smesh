@@ -1512,52 +1512,60 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
 		  str += aMeshSObj->GetName();
 		str += "_";
 
+		int anLen = 0;
+
 		switch(aGroupType) {
 		case SMESH::NODE:
-		    str += "Nodes";
-		    anIDsNodes->length(anNbNodes++);
-		    break;
+		  str += "Nodes";
+		  anIDsNodes->length(anNbNodes);
+		  anLen = anNbNodes;
+		  break;
 		case SMESH::EDGE:
-		    str += "Edges";
-		    anIDsEdges->length(anNbEdges++);
-		    break;
+		  str += "Edges";
+		  anIDsEdges->length(anNbEdges);
+		  anLen = anNbEdges;
+		  break;
 		case SMESH::FACE:
-		    str += "Faces";
-		    anIDsFaces->length(anNbFaces++);
-		    break;
+		  str += "Faces";
+		  anIDsFaces->length(anNbFaces);
+		  anLen = anNbFaces;
+		  break;
 		case SMESH::VOLUME:
-		    str += "Volumes";
-		    anIDsVolumes->length(anNbVolumes++);
-		    break;
+		  str += "Volumes";
+		  anIDsVolumes->length(anNbVolumes);
+		  anLen = anNbVolumes;
+		  break;
 		default:
-		    break;
+		  break;
 		}
-		
-		aGroupName = str.c_str();
 
-		// add a new group in the mesh
-		aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+		if(anLen) {
+		  aGroupName = str.c_str();
 
-		switch(aGroupType) {
-		case SMESH::NODE:
+		  // add a new group in the mesh
+		  aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+
+		  switch(aGroupType) {
+		  case SMESH::NODE:
 		    aNewGroup->Add( anIDsNodes );
 		    break;
-		case SMESH::EDGE:
+		  case SMESH::EDGE:
 		    aNewGroup->Add( anIDsEdges );
 		    break;
-		case SMESH::FACE:
+		  case SMESH::FACE:
 		    aNewGroup->Add( anIDsFaces );
 		    break;
-		case SMESH::VOLUME:
+		  case SMESH::VOLUME:
 		    aNewGroup->Add( anIDsVolumes );
 		    break;
-		default:
+		  default:
 		    break;
-		}
+		  }
 		
-		aListOfNewGroups.clear();
-		aListOfNewGroups.push_back(aNewGroup);
-		aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+		  aListOfNewGroups.clear();
+		  aListOfNewGroups.push_back(aNewGroup);
+		  aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+		}
 	      }
 	    }
 
