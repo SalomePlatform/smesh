@@ -260,6 +260,7 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   mySimulation = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
   myFilter = 0;
+  myHelpFileName = "mesh_through_point_page.html";
 
   // connect signals and slots
   connect(myDlg->myX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
