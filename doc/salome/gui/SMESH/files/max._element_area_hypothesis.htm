@@ -153,10 +153,12 @@ if (window.writeIntopicBar)
 
 <h3><a name="quadrangle preference">Quadrangle Preference</a></h3>
 
-<p>This algorithm can be used only together with Quadrangle (Mapping) algorithm. 
+<p>This hypothesis can be used only together with Quadrangle (Mapping) algorithm. 
  It allows to build quadrangular meshes even if the number of nodes at 
  the opposite edges of a meshed face is not equal, otherwise this mesh 
- will contain some triangular elements.</p>
+ will contain some triangular elements.
+<br>This hypothesis has one restriction on its work: the total quantity of
+ segments on all four sides of the face must be even (divisible by 2).</p>
 
 <p>&nbsp;</p>
 
