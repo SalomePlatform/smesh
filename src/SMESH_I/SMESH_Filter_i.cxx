@@ -2056,10 +2056,18 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
-    TPythonDump() << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
-                  << "," << aThreshold << ",'" << aThresholdStr << "',salome.ObjectToID("
-                  << aThresholdID << ")," << aUnary << "," << aBinary << "," << aTolerance
-                  << "," << aTypeOfElem << "," << aPrecision << ")";
+    {
+      TPythonDump pd;
+      pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
+         << "," << aThreshold << ",'" << aThresholdStr;
+      if (strlen(aThresholdID) > 0)
+        pd << "',salome.ObjectToID(" << aThresholdID
+           << ")," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+      else
+        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+    }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
