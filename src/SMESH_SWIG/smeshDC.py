@@ -15,7 +15,7 @@
 #  License along with this library; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 #
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #  File   : smesh.py
 #  Author : Francis KLOSS, OCC
@@ -168,11 +168,11 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         pnt = PointStruct(p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
         dirst = DirStruct(pnt)
         return dirst
-    
+
     ## Make DirStruct from a triplet
     #  @param x,y,z are vector components
     #  @return SMESH.DirStruct
-    def MakeDirStruct(x,y,z):
+    def MakeDirStruct(self,x,y,z):
         pnt = PointStruct(x,y,z)
         return DirStruct(pnt)
 
@@ -203,12 +203,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
     # From SMESH_Gen interface:
     # ------------------------
-    
+
     ## Set the current mode
     def SetEmbeddedMode( self,theMode ):
         #self.SetEmbeddedMode(theMode)
         SMESH._objref_SMESH_Gen.SetEmbeddedMode(self,theMode)
-        
+
     ## Get the current mode
     def IsEmbeddedMode(self):
         #return self.IsEmbeddedMode()
@@ -240,14 +240,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aMesh = Mesh(self,self.geompyD,aSmeshMeshes[iMesh])
             aMeshes.append(aMesh)
         return aMeshes, aStatus
-    
+
     ## Create Mesh object importing data from given STL file
     #  @return an instance of Mesh class
     def CreateMeshesFromSTL( self, theFileName ):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromSTL(self,theFileName)
         aMesh = Mesh(self,self.geompyD,aSmeshMesh)
         return aMesh
-    
+
     ## From SMESH_Gen interface
     def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
         return SMESH._objref_SMESH_Gen.GetSubShapesId(self,theMainObject, theListOfSubObjects)
@@ -255,12 +255,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     ## From SMESH_Gen interface. Creates pattern
     def GetPattern(self):
         return SMESH._objref_SMESH_Gen.GetPattern(self)
-    
-    
-    
+
+
+
     # Filtering. Auxiliary functions:
     # ------------------------------
-    
+
     ## Creates an empty criterion
     #  @return SMESH.Filter.Criterion
     def GetEmptyCriterion(self):
@@ -1739,7 +1739,7 @@ class Mesh:
     #  @param geom is subhape of mesh geometry
     def GetHypothesisList(self, geom):
         return self.mesh.GetHypothesisList( geom )
-                
+
     ## Removes all global hypotheses
     def RemoveGlobalHypotheses(self):
         current_hyps = self.mesh.GetHypothesisList( self.geom )
@@ -1789,8 +1789,8 @@ class Mesh:
     #  @param ascii defined the kind of file contents
     def ExportSTL(self, f, ascii=1):
         self.mesh.ExportSTL(f, ascii)
-   
-        
+
+
     # Operations with groups:
     # ----------------------
 
@@ -1921,7 +1921,7 @@ class Mesh:
         aPredicate.SetMesh(self.mesh)
         aBorders = aPredicate.GetBorders()
         return aBorders
-                
+
     ## Remove a group
     def RemoveGroup(self, group):
         self.mesh.RemoveGroup(group)
@@ -1963,8 +1963,8 @@ class Mesh:
     #  main group but do not present in tool group are added to the new one
     def CutGroups(self, mainGroup, toolGroup, name):
         return self.mesh.CutGroups(mainGroup, toolGroup, name)
-         
-    
+
+
     # Get some info about mesh:
     # ------------------------
 
@@ -2149,7 +2149,7 @@ class Mesh:
     #  @param Shape is geom object(subshape) IOR
     #  Shape must be subshape of a ShapeToMesh()
     def GetSubMeshElementsId(self, Shape):
-        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2159,7 +2159,7 @@ class Mesh:
     #  @param Shape is geom object(subshape) IOR
     #  Shape must be subshape of a ShapeToMesh()
     def GetSubMeshNodesId(self, Shape, all):
-        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2169,7 +2169,7 @@ class Mesh:
     #  @param Shape is geom object(subshape) IOR
     #  Shape must be subshape of a ShapeToMesh()
     def GetSubMeshElementType(self, Shape):
-        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
@@ -2327,7 +2327,7 @@ class Mesh:
     # @param Vertex - vertex or vertex ID
     # @return True if succeed else raise an exception
     def SetNodeOnVertex(self, NodeID, Vertex):
-        if ( isinstance( Vertex, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Vertex, geompyDC.GEOM._objref_GEOM_Object)):
             VertexID = Vertex.GetSubShapeIndices()[0]
         else:
             VertexID = Vertex
@@ -2336,7 +2336,7 @@ class Mesh:
         except SALOME.SALOME_Exception, inst:
             raise ValueError, inst.details.text
         return True
-        
+
 
     ## @brief Store node position on an edge
     # @param NodeID - node ID
@@ -2344,7 +2344,7 @@ class Mesh:
     # @param paramOnEdge - parameter on edge where the node is located
     # @return True if succeed else raise an exception
     def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
-        if ( isinstance( Edge, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Edge, geompyDC.GEOM._objref_GEOM_Object)):
             EdgeID = Edge.GetSubShapeIndices()[0]
         else:
             EdgeID = Edge
@@ -2361,7 +2361,7 @@ class Mesh:
     # @param v - V parameter on face where the node is located
     # @return True if succeed else raise an exception
     def SetNodeOnFace(self, NodeID, Face, u, v):
-        if ( isinstance( Face, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Face, geompyDC.GEOM._objref_GEOM_Object)):
             FaceID = Face.GetSubShapeIndices()[0]
         else:
             FaceID = Face
@@ -2376,7 +2376,7 @@ class Mesh:
     # @param Solid - solid or solid ID
     # @return True if succeed else raise an exception
     def SetNodeInVolume(self, NodeID, Solid):
-        if ( isinstance( Solid, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Solid, geompyDC.GEOM._objref_GEOM_Object)):
             SolidID = Solid.GetSubShapeIndices()[0]
         else:
             SolidID = Solid
@@ -2391,7 +2391,7 @@ class Mesh:
     # @param Shape - shape or shape ID
     # @return True if succeed else raise an exception
     def SetMeshElementOnShape(self, ElementID, Shape):
-        if ( isinstance( Shape, geompy.GEOM._objref_GEOM_Object)):
+        if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
         else:
             ShapeID = Shape
