@@ -104,7 +104,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
      mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
      myIsBusy( false ),
-     myActor( 0 )
+     myActor( 0 ),
+     myOldActorMode( -1 )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
   initDialog(true);
@@ -491,6 +492,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 
   myActor = SMESH::FindActorByObject(myMesh);
   SMESH::SetPickable(myActor);
+  storeMode();
 
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects( aList );
@@ -540,7 +542,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
       if ( !myActor )
 	myActor = SMESH::FindActorByObject(myGroup);
       SMESH::SetPickable(myActor);
-
+      storeMode();
+      
       myGrpTypeGroup->setButton(0);
       onGrpTypeChanged(0);
       
@@ -570,6 +573,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 	  if ( !myActor )
 	    myActor = SMESH::FindActorByObject(myGroup);
 	  SMESH::SetPickable(myActor);
+          storeMode();
 
 	  myGrpTypeGroup->setButton(1);
 	  onGrpTypeChanged(1);
@@ -638,8 +642,27 @@ void SMESHGUI_GroupDlg::onNbColorsChanged (const QString& text)
 //=================================================================================
 void SMESHGUI_GroupDlg::onTypeChanged (int id)
 {
-  if (myTypeId != id) {
+  if (myTypeId != id)
+  {
     myElements->clear();
+    unsigned int aMode = -1;
+    switch( id )
+    {
+    case 0://node
+      aMode = SMESH_Actor::eAllEntity;
+      break;
+    case 1://edge
+      aMode = SMESH_Actor::eEdges;
+      break;
+    case 2://face
+      aMode = SMESH_Actor::eFaces;
+      break;
+    case 3://volume
+      aMode = SMESH_Actor::eVolumes;
+      break;
+    }
+    if( myActor && aMode>=0 )
+      myActor->SetEntityMode( aMode );
     if (myCurrentLineEdit == 0)
       setSelectionMode(id);
   }
@@ -1011,6 +1034,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
         myActor = SMESH::FindActorByObject(myMesh);
         SMESH::SetPickable(myActor);
+        storeMode();
 
         aString = aList.First()->getName();
         myMeshGroupLine->setText(aString) ;
@@ -1185,6 +1209,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       myActor = SMESH::FindActorByObject(myGroupOnGeom);
     else
       myActor = SMESH::FindActorByObject(myMesh);
+    storeMode();
   }
 
   myIsBusy = false;
@@ -1695,7 +1720,8 @@ void SMESHGUI_GroupDlg::onClose()
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
-
+  if( myActor && myOldActorMode>=0 )
+    myActor->SetEntityMode( myOldActorMode );
   reject();
 }
 
@@ -1893,4 +1919,10 @@ void SMESHGUI_GroupDlg::onCloseShapeByMeshDlg(SUIT_Operation* op)
       show();
       setSelectionMode(7);
     }
+}
+
+void SMESHGUI_GroupDlg::storeMode()
+{
+  if( myActor )
+    myOldActorMode = myActor->GetEntityMode();
 }

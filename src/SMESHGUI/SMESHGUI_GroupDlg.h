@@ -130,6 +130,7 @@ private:
     void setSelectionMode(int theMode);
     void updateButtons();
     void updateGeomPopup();
+    void storeMode();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -190,6 +191,7 @@ private:
     bool                          myCreate, myIsBusy;
 
     QString                       myHelpFileName;
+    int                           myOldActorMode;
 };
 
 #endif // DIALOGBOX_GROUP_H
