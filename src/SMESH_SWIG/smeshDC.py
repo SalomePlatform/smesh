@@ -57,6 +57,9 @@ NETGEN_2D     = 7
 NETGEN_1D2D   = NETGEN
 NETGEN_1D2D3D = FULL_NETGEN
 NETGEN_FULL   = FULL_NETGEN
+Hexa    = 8
+Hexotic = 9
+BLSURF  = 10
 
 # MirrorType enumeration
 POINT = SMESH_MeshEditor.POINT
@@ -1026,18 +1029,53 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 #  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Hexahedrons
+#     #17908#algo = 0 # algorithm object common for all Mesh_Hexahedrons
+# 
+#     ## Private constructor.
+#     def __init__(self, mesh, geom=0):
+#         Mesh_Algorithm.__init__(self)
+# 
+#         #17908#if not Mesh_Hexahedron.algo:
+#         #17908#    Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
+#         #17908#else:
+#         #17908#    self.Assign( Mesh_Hexahedron.algo, mesh, geom)
+#         #17908#    pass
+#         self.Create(mesh, geom, "Hexa_3D")
+
+    params = 0
+    algoType = 0
+
+    algoHEXA = 0 # algorithm object common for all Mesh_Hexahedron's
+    algoHEXO = 0 # algorithm object common for all Mesh_Hexahedron's
 
     ## Private constructor.
-    def __init__(self, mesh, geom=0):
+    def __init__(self, mesh, algoType=Hexa, geom=0):
         Mesh_Algorithm.__init__(self)
 
-        #17908#if not Mesh_Hexahedron.algo:
-        #17908#    Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Hexahedron.algo, mesh, geom)
-        #17908#    pass
-        self.Create(mesh, geom, "Hexa_3D")
+        if algoType == Hexa:
+            if not Mesh_Hexahedron.algoHEXA:
+                Mesh_Hexahedron.algoHEXA = self.Create(mesh, geom, "Hexa_3D")
+            else:
+                self.Assign(Mesh_Hexahedron.algoHEXA, mesh, geom)
+                pass
+            pass
+
+        elif algoType == Hexotic:
+            if not Mesh_Hexahedron.algoHEXO:
+                import HexoticPlugin
+                Mesh_Hexahedron.algoHEXO = self.Create(mesh, geom, "Hexotic_3D" , "libHexoticEngine.so")
+            else:
+                self.Assign(Mesh_Hexahedron.algoHEXO, mesh, geom)
+                pass
+            pass
+
+    ## Define "MinMaxQuad" hypothesis to give the three hexotic parameters
+    def MinMaxQuad(self, min=3, max=8, quad=True):
+        self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
+        self.params.SetHexesMinLevel(min)
+        self.params.SetHexesMaxLevel(max)
+        self.params.SetHexoticQuadrangles(quad)
+        return self.params
 
 # Deprecated, only for compatibility!
 # Public class: Mesh_Netgen
@@ -1569,8 +1607,14 @@ class Mesh:
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
     #  @param geom If defined, subshape to be meshed
-    def Hexahedron(self, geom=0):
-        return Mesh_Hexahedron(self,  geom)
+    ## def Hexahedron(self, geom=0):
+    ##     return Mesh_Hexahedron(self,  geom)
+    def Hexahedron(self, algo=Hexa, geom=0):
+        ## if Hexahedron(geom, algo) or Hexahedron(geom) is called by mistake
+        if ( isinstance(algo, geompyDC.GEOM._objref_GEOM_Object) ):
+            if   geom in [Hexa, Hexotic]: algo, geom = geom, algo
+            elif geom == 0:               algo, geom = Hexa, algo
+        return Mesh_Hexahedron(self, algo, geom)
 
     ## Deprecated, only for compatibility!
     def Netgen(self, is3D, geom=0):
