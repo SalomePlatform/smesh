@@ -2,7 +2,7 @@
 
 \page tui_creating_meshes_page Creating Meshes
 
-\n First of all see \ref tui_creating_meshes_page "Example of 3d mesh generation",
+\n First of all see \ref introduction_to_mesh_python_page "Example of 3d mesh generation",
  which is an example of good python script style for Mesh module.
 
 <br>
@@ -171,5 +171,14 @@ tetra.Compute()
 # export the mesh in a MED file
 tetra.ExportMED("/tmp/meshMED.med", 0)
 \endcode
+
+<br>
+<h2>How to mesh a cylinder with hexahedrons?</h2>
+Here you can see an example of python script, creating a hexahedral
+mesh on a cylinder. And a picture below the source code of the script,
+demonstrating the resulting mesh.
+\include /dn20/salome/jfa/V4/SRC/SMESH_SRC/src/SMESH_SWIG/ex24_cylinder.py
+
+\image html mesh_cylinder_hexa.png
 
 */

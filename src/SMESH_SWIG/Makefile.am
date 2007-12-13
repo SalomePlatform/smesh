@@ -55,6 +55,7 @@ dist_salomescript_DATA= \
 	ex18_dome2.py \
 	ex19_sphereINcube.py \
 	ex21_lamp.py \
+	ex24_cylinder.py \
 	SMESH_test.py\
 	SMESH_test0.py\
 	SMESH_test1.py \
