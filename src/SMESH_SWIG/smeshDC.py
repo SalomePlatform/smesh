@@ -717,6 +717,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
+        self.algoType = algoType
         if algoType == MEFISTO:
             #17908#if not Mesh_Triangle.algoMEF:
             #17908#    Mesh_Triangle.algoMEF = self.Create(mesh, geom, "MEFISTO_2D")
@@ -728,6 +729,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         elif algoType == BLSURF:
             import BLSURFPlugin
             self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
+            self.SetPhysicalMesh()
         elif algoType == NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
@@ -751,8 +753,6 @@ class Mesh_Triangle(Mesh_Algorithm):
             #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
-
-        self.algoType = algoType
 
     ## Define "MaxElementArea" hypothesis to give the maximun area of each triangles
     #  @param area for the maximum area of each triangles
