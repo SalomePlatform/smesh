@@ -279,7 +279,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         Precision = -1 ##@1e-07
         return Filter.Criterion(Type, Compare, Threshold, ThresholdStr, ThresholdID,
                                 UnaryOp, BinaryOp, Tolerance, TypeOfElement, Precision)
-      
+
     ## Creates a criterion by given parameters
     #  @param elementType is the type of elements(NODE, EDGE, FACE, VOLUME)
     #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
@@ -298,9 +298,9 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriterion = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
         aCriterion.Type = self.EnumToLong(CritType)
-        
+
         aTreshold = Treshold
-        
+
         if Compare in [FT_LessThan, FT_MoreThan, FT_EqualTo]:
             aCriterion.Compare = self.EnumToLong(Compare)
         elif Compare == "=" or Compare == "==":
@@ -312,7 +312,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         else:
             aCriterion.Compare = self.EnumToLong(FT_EqualTo)
             aTreshold = Compare
-            
+
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
             # Check treshold
@@ -343,13 +343,13 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             except:
                 print "Error: Treshold should be a number."
                 return None
-            
+
         if Treshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
             aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
-            
+
         if Treshold in [FT_LogicalAND, FT_LogicalOR]:
             aCriterion.BinaryOp = self.EnumToLong(Treshold)
-            
+
         if UnaryOp in [FT_LogicalAND, FT_LogicalOR]:
             aCriterion.BinaryOp = self.EnumToLong(UnaryOp)
 
@@ -357,7 +357,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aCriterion.BinaryOp = self.EnumToLong(BinaryOp)
 
         return aCriterion
-    
+
     ## Creates filter by given parameters of criterion
     #  @param elementType is the type of elements in the group
     #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
@@ -377,7 +377,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aCriteria.append(aCriterion)
         aFilter.SetCriteria(aCriteria)
         return aFilter
-    
+
     ## Creates numerical functor by its type
     #  @param theCrierion is FT_...; functor type
     #  @return SMESH_NumericalFunctor
@@ -413,7 +413,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 import omniORB
 #Register the new proxy for SMESH_Gen
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
-    
+
     
 ## Mother class to define algorithm, recommended to do not use directly.
 #
@@ -705,6 +705,9 @@ class Mesh_Triangle(Mesh_Algorithm):
     algoType = 0
     params = 0
 
+    _angleMeshS = 8
+    _gradation  = 1.1
+
     # algorithm objects common for all instances of Mesh_Triangle
     #17908#algoMEF = 0
     #17908#algoNET = 0
@@ -722,6 +725,9 @@ class Mesh_Triangle(Mesh_Algorithm):
             #17908#    pass
             self.Create(mesh, geom, "MEFISTO_2D")
             pass
+        elif algoType == BLSURF:
+            import BLSURFPlugin
+            self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
         elif algoType == NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
@@ -774,6 +780,43 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
+    ## Set PhysicalMesh
+    #  @param thePhysicalMesh is:
+    #  DefaultSize or Custom
+    def SetPhysicalMesh(self, thePhysicalMesh=1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhysicalMesh(thePhysicalMesh)
+
+    ## Set PhySize flag
+    def SetPhySize(self, theVal):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhySize(theVal)
+
+    ## Set GeometricMesh
+    #  @param theGeometricMesh is:
+    #  DefaultGeom or Custom
+    def SetGeometricMesh(self, theGeometricMesh=0):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
+        self.params.SetGeometricMesh(theGeometricMesh)
+
+    ## Set AngleMeshS flag
+    def SetAngleMeshS(self, theVal=_angleMeshS):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+        self.params.SetAngleMeshS(theVal)
+
+    ## Set Gradation flag
+    def SetGradation(self, theVal=_gradation):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetGeometricMesh() == 0: theVal = self._gradation
+        self.params.SetGradation(theVal)
+
     ## Set QuadAllowed flag
     #
     #  Only for algoType == NETGEN || NETGEN_2D
@@ -808,6 +851,9 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "NETGEN_2D_ONLY algo doesn't support 'NETGEN_Parameters_2D' hypothesis"
             print "NETGEN_2D_ONLY uses 'MaxElementArea' and 'LengthFromEdges' ones"
             return None
+        elif self.algoType == BLSURF:
+            self.params = self.Hypothesis("BLSURF_Parameters", [], "libBLSURFEngine.so")
+            return self.params
         return None
 
     ## Set MaxSize
@@ -874,6 +920,12 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Parameters()
         if self.params is not None:
             self.params.SetNbSegPerRadius(theVal)
+
+    ## Set Decimesh flag
+    def SetDecimesh(self, toAllow=False):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetDecimesh(toAllow)
 
     pass
 
@@ -1042,40 +1094,48 @@ class Mesh_Hexahedron(Mesh_Algorithm):
 #         #17908#    pass
 #         self.Create(mesh, geom, "Hexa_3D")
 
-    params = 0
-    algoType = 0
+    #17908#params = 0
+    #17908#algoType = 0
 
-    algoHEXA = 0 # algorithm object common for all Mesh_Hexahedron's
-    algoHEXO = 0 # algorithm object common for all Mesh_Hexahedron's
+    #17908#algoHEXA = 0 # algorithm object common for all Mesh_Hexahedron's
+    #17908#algoHEXO = 0 # algorithm object common for all Mesh_Hexahedron's
 
     ## Private constructor.
     def __init__(self, mesh, algoType=Hexa, geom=0):
         Mesh_Algorithm.__init__(self)
 
         if algoType == Hexa:
-            if not Mesh_Hexahedron.algoHEXA:
-                Mesh_Hexahedron.algoHEXA = self.Create(mesh, geom, "Hexa_3D")
-            else:
-                self.Assign(Mesh_Hexahedron.algoHEXA, mesh, geom)
-                pass
+            #17908#if not Mesh_Hexahedron.algoHEXA:
+            #17908#    Mesh_Hexahedron.algoHEXA = self.Create(mesh, geom, "Hexa_3D")
+            #17908#else:
+            #17908#    self.Assign(Mesh_Hexahedron.algoHEXA, mesh, geom)
+            #17908#    pass
+            self.Create(mesh, geom, "Hexa_3D")
             pass
 
         elif algoType == Hexotic:
-            if not Mesh_Hexahedron.algoHEXO:
-                import HexoticPlugin
-                Mesh_Hexahedron.algoHEXO = self.Create(mesh, geom, "Hexotic_3D" , "libHexoticEngine.so")
-            else:
-                self.Assign(Mesh_Hexahedron.algoHEXO, mesh, geom)
-                pass
+            #17908#if not Mesh_Hexahedron.algoHEXO:
+            #17908#    import HexoticPlugin
+            #17908#    Mesh_Hexahedron.algoHEXO = self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
+            #17908#else:
+            #17908#    self.Assign(Mesh_Hexahedron.algoHEXO, mesh, geom)
+            #17908#    pass
+            import HexoticPlugin
+            self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
             pass
 
     ## Define "MinMaxQuad" hypothesis to give the three hexotic parameters
     def MinMaxQuad(self, min=3, max=8, quad=True):
-        self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
-        self.params.SetHexesMinLevel(min)
-        self.params.SetHexesMaxLevel(max)
-        self.params.SetHexoticQuadrangles(quad)
-        return self.params
+        #17908#self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
+        #17908#self.params.SetHexesMinLevel(min)
+        #17908#self.params.SetHexesMaxLevel(max)
+        #17908#self.params.SetHexoticQuadrangles(quad)
+        #17908#return self.params
+        params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
+        params.SetHexesMinLevel(min)
+        params.SetHexesMaxLevel(max)
+        params.SetHexoticQuadrangles(quad)
+        return params
 
 # Deprecated, only for compatibility!
 # Public class: Mesh_Netgen
@@ -2522,7 +2582,7 @@ class Mesh:
     ## Split quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted.
     #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
-    #  @param @return TRUE in case of success, FALSE otherwise.
+    #  @return TRUE in case of success, FALSE otherwise.
     def QuadToTri (self, IDsOfElements, theCriterion):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
