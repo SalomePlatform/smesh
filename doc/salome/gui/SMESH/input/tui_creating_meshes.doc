@@ -177,7 +177,7 @@ tetra.ExportMED("/tmp/meshMED.med", 0)
 Here you can see an example of python script, creating a hexahedral
 mesh on a cylinder. And a picture below the source code of the script,
 demonstrating the resulting mesh.
-\include /dn20/salome/jfa/V4/SRC/SMESH_SRC/src/SMESH_SWIG/ex24_cylinder.py
+\include ex24_cylinder.py
 
 \image html mesh_cylinder_hexa.png
 
