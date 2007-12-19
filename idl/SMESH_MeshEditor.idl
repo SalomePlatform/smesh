@@ -418,31 +418,49 @@ module SMESH
 
     void Mirror (in long_array IDsOfElements,
                  in AxisStruct Mirror,
-                 in MirrorType theMirrorType,
+                 in MirrorType Type,
                  in boolean    Copy);
     ListOfGroups MirrorMakeGroups (in long_array IDsOfElements,
                                    in AxisStruct Mirror,
-                                   in MirrorType theMirrorType);
+                                   in MirrorType Type);
+    SMESH_Mesh MirrorMakeMesh (in long_array IDsOfElements,
+                               in AxisStruct Mirror,
+                               in MirrorType Type,
+                               in boolean    CopyGroups,
+                               in string     MeshName);
 
     void MirrorObject (in SMESH_IDSource theObject,
 		       in AxisStruct     Mirror,
-		       in MirrorType     theMirrorType,
+		       in MirrorType     Type,
 		       in boolean        Copy);
     ListOfGroups MirrorObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Mirror,
-                                         in MirrorType     theMirrorType);
+                                         in MirrorType     Type);
+    SMESH_Mesh MirrorObjectMakeMesh (in SMESH_IDSource theObject,
+                                     in AxisStruct     Mirror,
+                                     in MirrorType     Type,
+                                     in boolean        CopyGroups,
+                                     in string         MeshName);
 
     void Translate (in long_array IDsOfElements,
                     in DirStruct  Vector,
                     in boolean    Copy);
     ListOfGroups TranslateMakeGroups (in long_array IDsOfElements,
                                       in DirStruct  Vector);
+    SMESH_Mesh TranslateMakeMesh (in long_array IDsOfElements,
+                                  in DirStruct  Vector,
+                                  in boolean    CopyGroups,
+                                  in string     MeshName);
 
     void TranslateObject (in SMESH_IDSource theObject,
 			  in DirStruct      Vector,
 			  in boolean        Copy);
     ListOfGroups TranslateObjectMakeGroups (in SMESH_IDSource theObject,
                                             in DirStruct      Vector);
+    SMESH_Mesh TranslateObjectMakeMesh (in SMESH_IDSource theObject,
+                                        in DirStruct      Vector,
+                                        in boolean        CopyGroups,
+                                        in string         MeshName);
 
     void Rotate (in long_array IDsOfElements,
                  in AxisStruct Axis,
@@ -451,6 +469,11 @@ module SMESH
     ListOfGroups RotateMakeGroups (in long_array IDsOfElements,
                                    in AxisStruct Axis,
                                    in double     AngleInRadians);
+    SMESH_Mesh RotateMakeMesh (in long_array IDsOfElements,
+                               in AxisStruct Axis,
+                               in double     AngleInRadians,
+                               in boolean    CopyGroups,
+                               in string     MeshName);
 
     void RotateObject (in SMESH_IDSource theObject,
 		       in AxisStruct     Axis,
@@ -459,6 +482,11 @@ module SMESH
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
                                          in double         AngleInRadians);
+    SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
+                                     in AxisStruct     Axis,
+                                     in double         AngleInRadians,
+                                     in boolean        CopyGroups,
+                                     in string         MeshName);
 
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes);

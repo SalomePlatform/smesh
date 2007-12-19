@@ -2103,7 +2103,8 @@ SMESH_MeshEditor_i::mirror(const SMESH::long_array &           theIDsOfElements,
                            const SMESH::AxisStruct &           theAxis,
                            SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
                            CORBA::Boolean                      theCopy,
-                           const bool                          theMakeGroups)
+                           const bool                          theMakeGroups,
+                           ::SMESH_Mesh*                       theTargetMesh)
 {
   initData();
 
@@ -2127,7 +2128,7 @@ SMESH_MeshEditor_i::mirror(const SMESH::long_array &           theIDsOfElements,
 
   ::SMESH_MeshEditor anEditor( myMesh );
   ::SMESH_MeshEditor::PGroupIDs groupIds =
-      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups);
+      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
   if(theCopy) {
     storeResult(anEditor);
@@ -2216,6 +2217,71 @@ SMESH_MeshEditor_i::MirrorObjectMakeGroups(SMESH::SMESH_IDSource_ptr           t
   return mirror(anElementsId, theMirror, theMirrorType, true, true);
 }
 
+//=======================================================================
+//function : MirrorMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::MirrorMakeMesh(const SMESH::long_array&            theIDsOfElements,
+                                   const SMESH::AxisStruct&            theMirror,
+                                   SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
+                                   CORBA::Boolean                      theCopyGroups,
+                                   const char*                         theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh ))
+  {
+    mirror(theIDsOfElements, theMirror, theMirrorType,
+           false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".MirrorMakeMesh( "
+           << theIDsOfElements << ", "
+           << theMirror   << ", "
+           << mirrorTypeName(theMirrorType) << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
+}
+
+//=======================================================================
+//function : MirrorObjectMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::MirrorObjectMakeMesh(SMESH::SMESH_IDSource_ptr           theObject,
+                                         const SMESH::AxisStruct&            theMirror,
+                                         SMESH::SMESH_MeshEditor::MirrorType theMirrorType,
+                                         CORBA::Boolean                      theCopyGroups,
+                                         const char*                         theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh ))
+  {
+    SMESH::long_array_var anElementsId = theObject->GetIDs();
+    mirror(anElementsId, theMirror, theMirrorType,
+           false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".MirrorObjectMakeMesh( "
+           << theObject << ", "
+           << theMirror   << ", "
+           << mirrorTypeName(theMirrorType) << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
+}
 
 //=======================================================================
 //function : translate
@@ -2226,7 +2292,8 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::translate(const SMESH::long_array & theIDsOfElements,
                               const SMESH::DirStruct &  theVector,
                               CORBA::Boolean            theCopy,
-                              const bool                theMakeGroups)
+                              const bool                theMakeGroups,
+                              ::SMESH_Mesh*             theTargetMesh)
 {
   initData();
 
@@ -2239,7 +2306,7 @@ SMESH_MeshEditor_i::translate(const SMESH::long_array & theIDsOfElements,
 
   ::SMESH_MeshEditor anEditor( myMesh );
   ::SMESH_MeshEditor::PGroupIDs groupIds =
-      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups);
+      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
   if(theCopy)
     storeResult(anEditor);
@@ -2319,12 +2386,72 @@ SMESH_MeshEditor_i::TranslateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObjec
                                               const SMESH::DirStruct&   theVector)
 {
   if ( !myPreviewMode ) {
+    TPythonDump() << "vector = " << theVector;
     TPythonDump() << this << ".TranslateObjectMakeGroups( "
                   << theObject
                   << ", vector )";
   }
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   return translate(anElementsId, theVector, true, true);
+}
+
+//=======================================================================
+//function : TranslateMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::TranslateMakeMesh(const SMESH::long_array& theIDsOfElements,
+                                      const SMESH::DirStruct&  theVector,
+                                      CORBA::Boolean           theCopyGroups,
+                                      const char*              theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh )) {
+    translate(theIDsOfElements, theVector,
+              false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".TranslateMakeMesh( "
+           << theIDsOfElements << ", "
+           << theVector   << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
+}
+
+//=======================================================================
+//function : TranslateObjectMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_MeshEditor_i::TranslateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
+                                            const SMESH::DirStruct&   theVector,
+                                            CORBA::Boolean            theCopyGroups,
+                                            const char*               theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh )) {
+    SMESH::long_array_var anElementsId = theObject->GetIDs();
+    translate(anElementsId, theVector,
+              false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".TranslateObjectMakeMesh( "
+           << theObject << ", "
+           << theVector   << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
 }
 
 //=======================================================================
@@ -2337,7 +2464,8 @@ SMESH_MeshEditor_i::rotate(const SMESH::long_array & theIDsOfElements,
                            const SMESH::AxisStruct & theAxis,
                            CORBA::Double             theAngle,
                            CORBA::Boolean            theCopy,
-                           const bool                theMakeGroups)
+                           const bool                theMakeGroups,
+                           ::SMESH_Mesh*             theTargetMesh)
 {
   initData();
 
@@ -2352,7 +2480,7 @@ SMESH_MeshEditor_i::rotate(const SMESH::long_array & theIDsOfElements,
 
   ::SMESH_MeshEditor anEditor( myMesh );
   ::SMESH_MeshEditor::PGroupIDs groupIds =
-      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups);
+      anEditor.Transform (elements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
   if(theCopy) {
     storeResult(anEditor);
@@ -2450,6 +2578,69 @@ SMESH_MeshEditor_i::RotateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
   }
   SMESH::long_array_var anElementsId = theObject->GetIDs();
   return rotate(anElementsId,theAxis,theAngle,true,true);
+}
+
+//=======================================================================
+//function : RotateMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr 
+SMESH_MeshEditor_i::RotateMakeMesh(const SMESH::long_array& theIDsOfElements,
+                                   const SMESH::AxisStruct& theAxis,
+                                   CORBA::Double            theAngleInRadians,
+                                   CORBA::Boolean           theCopyGroups,
+                                   const char*              theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh )) {
+    rotate(theIDsOfElements, theAxis, theAngleInRadians,
+           false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".RotateMakeMesh( "
+           << theIDsOfElements << ", "
+           << theAxis << ", "
+           << theAngleInRadians   << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
+}
+
+//=======================================================================
+//function : RotateObjectMakeMesh
+//purpose  : 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr 
+SMESH_MeshEditor_i::RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
+                                         const SMESH::AxisStruct&  theAxis,
+                                         CORBA::Double             theAngleInRadians,
+                                         CORBA::Boolean            theCopyGroups,
+                                         const char*               theMeshName)
+{
+  TPythonDump pydump; // to prevent dump at mesh creation
+  SMESH::SMESH_Mesh_var mesh = makeMesh( theMeshName );
+
+  if ( SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh )) {
+    SMESH::long_array_var anElementsId = theObject->GetIDs();
+    rotate(anElementsId, theAxis, theAngleInRadians,
+           false, theCopyGroups, & mesh_i->GetImpl());
+    mesh_i->CreateGroupServants();
+  }
+  if ( !myPreviewMode ) {
+    pydump << mesh << " = " << this << ".RotateObjectMakeMesh( "
+           << theObject << ", "
+           << theAxis << ", "
+           << theAngleInRadians   << ", "
+           << theCopyGroups << ", '"
+           << theMeshName << "' )";
+  }
+  return mesh._retn();
 }
 
 //=======================================================================
@@ -3190,4 +3381,25 @@ CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
   CORBA::Boolean isDone = anEditor.ConvertFromQuadratic();
   TPythonDump() << this << ".ConvertFromQuadratic()";
   return isDone;
+}
+
+//=======================================================================
+//function : makeMesh
+//purpose  : create a named imported mesh 
+//=======================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
+{
+  SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen();
+  SMESH::SMESH_Mesh_var mesh = gen->CreateEmptyMesh();
+  SALOMEDS::Study_var study = gen->GetCurrentStudy();
+  SALOMEDS::SObject_var meshSO = gen->ObjectToSObject( study, mesh );
+  gen->SetName( meshSO, theMeshName, "Mesh" );
+
+  SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
+  SALOMEDS::GenericAttribute_var anAttr
+    = builder->FindOrCreateAttribute( meshSO, "AttributePixMap" );
+  SALOMEDS::AttributePixMap::_narrow( anAttr )->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
+
+  return mesh._retn();
 }

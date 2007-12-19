@@ -81,6 +81,7 @@ private:
     void hideEvent (QHideEvent*);                       /* ESC key */
     void keyPressEvent(QKeyEvent*);
     bool IsAxisOk();
+    void setNewMeshName();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -128,8 +129,10 @@ private:
 
     QLabel* TextLabelAngle;
     SMESHGUI_SpinBox* SpinBox_Angle;
-    QCheckBox* CheckBoxCopy;
+    //QCheckBox* CheckBoxCopy;
+    QButtonGroup* ActionGroup;
     QCheckBox* MakeGroupsCheck;
+    QLineEdit* LineEditNewMesh;
 
     QString myHelpFileName;
 
@@ -147,7 +150,7 @@ private slots:
     void onTextChange (const QString&);
     void onSelectMesh (bool toSelectMesh);
     void onVectorChanged();
-    void onCopyChecked(bool isOn);
+    void onActionClicked(int button);
 
 protected:
     QGridLayout* SMESHGUI_RotationDlgLayout;
