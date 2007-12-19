@@ -222,6 +222,7 @@ private:
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
 
+  //friend class _pyMeshEditor;
   DEFINE_STANDARD_RTTI (_pyMesh)
 };
 #undef _pyMesh_ACCESS_METHOD 

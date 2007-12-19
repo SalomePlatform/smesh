@@ -387,7 +387,7 @@ void _pyGen::Flush()
 
 //================================================================================
 /*!
- * \brief Add access method to mesh that is an object or an argument
+ * \brief Add access method to mesh that is an argument
   * \param theCmd - command to add access method
   * \retval bool - true if added
  */
@@ -885,12 +885,20 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
-      "" }; // <- mark of end
+      "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh",
+      "" }; // <- mark of the end
     sameMethods.Insert( names );
   }
+  //theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
 
   if ( sameMethods.Contains( theCommand->GetMethod() )) {
     theCommand->SetObject( myMesh );
+
+    // meshes made by *MakeMesh() methods are not wrapped by _pyMesh,
+    // so let _pyMesh care of it (TMP?)
+    if ( theCommand->GetMethod().Search("MakeMesh") != -1 )
+      _pyMesh( new _pyCommand( theCommand->GetString(), 0 )); // for theGen->SetAccessorMethod()
   }
   else {
     // editor creation command is needed only if any editor function is called
