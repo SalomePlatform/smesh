@@ -693,12 +693,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   myBriefInfo = new SMESHGUI_MeshInfosBox(false, aFrame);
   myFullInfo  = new SMESHGUI_MeshInfosBox(true,  aFrame);
 
-  // errors
+  // Computation errors
 
-  myErrorGroup = new QGroupBox(tr("ERRORS"), aFrame, "errorGrBox");
-  myTable      = new QTable( 1, NB_COLUMNS, myErrorGroup, "myTable");
-  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myErrorGroup, "myShowBtn");
-  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myErrorGroup, "myPublishBtn");
+  myCompErrorGroup = new QGroupBox(tr("ERRORS"), aFrame, "myCompErrorGroup");
+  myTable      = new QTable( 1, NB_COLUMNS, myCompErrorGroup, "myTable");
+  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup, "myShowBtn");
+  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup, "myPublishBtn");
 
   myTable->setReadOnly( TRUE );
   myTable->hideColumn( COL_PUBLISHED );
@@ -715,11 +715,11 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
     }
     myTable->horizontalHeader()->setLabel( col, header );
   }
-
-  myErrorGroup->setColumnLayout(0, Qt::Vertical);
-  myErrorGroup->layout()->setSpacing(0);
-  myErrorGroup->layout()->setMargin(0);
-  QGridLayout* grpLayout = new QGridLayout(myErrorGroup->layout());
+  // layouting
+  myCompErrorGroup->setColumnLayout(0, Qt::Vertical);
+  myCompErrorGroup->layout()->setSpacing(0);
+  myCompErrorGroup->layout()->setMargin(0);
+  QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup->layout());
   grpLayout->setAlignment(Qt::AlignTop);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
@@ -727,6 +727,11 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   grpLayout->addWidget         ( myShowBtn,    0, 1 );
   grpLayout->addWidget         ( myPublishBtn, 1, 1 );
   grpLayout->setRowStretch( 2, 1 );
+
+  // Hypothesis definition errors
+
+  myHypErrorGroup = new QGroupBox(1,Qt::Vertical, tr("SMESH_WRN_MISSING_PARAMETERS"),aFrame);
+  myHypErrorLabel = new QLabel(myHypErrorGroup);
 
   // Memory Lack Label
 
@@ -742,9 +747,12 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   aLay->addWidget( nameBox );
   aLay->addWidget( myBriefInfo );
   aLay->addWidget( myFullInfo );
-  aLay->addWidget( myErrorGroup );
+  aLay->addWidget( myHypErrorGroup );
+  aLay->addWidget( myCompErrorGroup );
   aLay->addWidget( myMemoryLackGroup );
-  aLay->setStretchFactor( myErrorGroup, 1 );
+  aLay->setStretchFactor( myCompErrorGroup, 1 );
+
+  ((QPushButton*) button( OK ))->setDefault( true );
 
   return aFrame;
 }
@@ -759,7 +767,8 @@ SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
 {
   myDlg = new SMESHGUI_ComputeDlg;
   myTShapeDisplayer = new TShapeDisplayer();
-  myHelpFileName = "about_meshes_page.html";
+  //myHelpFileName = "/files/about_meshes.htm"; // V3
+  myHelpFileName = "about_meshes_page.html"; // V4
 
   // connect signals and slots
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
@@ -777,14 +786,10 @@ void SMESHGUI_ComputeOp::startOperation()
 {
   SMESHGUI_Operation::startOperation();
 
-  SMESH::SMESH_Mesh_var          aMesh;
-  SMESH::compute_error_array_var anErrors;
+  // check selection
 
+  SMESH::SMESH_Mesh_var aMesh;
   myMainShape = GEOM::GEOM_Object::_nil();
-
-  // COMPUTE MESH
-
-  bool computeFailed = true, memoryLack = false;
 
   LightApp_SelectionMgr *Sel = selectionMgr();
   SALOME_ListIO selected; Sel->selectedObjects( selected );
@@ -801,90 +806,7 @@ void SMESHGUI_ComputeOp::startOperation()
 
   Handle(SALOME_InteractiveObject) IObject = selected.First();
   aMesh = SMESH::GetMeshByIO(IObject);
-  if (!aMesh->_is_nil())
-  {
-    MemoryReserve aMemoryReserve;
-    _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
-    myMainShape = aMesh->GetShapeToMesh();
-    if ( ((!myMainShape->_is_nil() && aMesh->HasShapeToMesh()) ||
-          (myMainShape->_is_nil() && !aMesh->HasShapeToMesh()))
-         && aMeshSObj )
-    {
-      myDlg->myMeshName->setText( aMeshSObj->GetName() );
-      SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
-      SMESH::algo_error_array_var errors = gen->GetAlgoState(aMesh,myMainShape);
-      if ( errors->length() > 0 ) {
-        SUIT_MessageBox::warn1(desktop(), tr("SMESH_WRN_WARNING"),
-                               SMESH::GetMessageOnAlgoStateErrors( errors.in() ),
-                               tr("SMESH_BUT_OK"));
-        onCancel();
-        return;
-      }
-      SUIT_OverrideCursor aWaitCursor;
-      try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-          OCC_CATCH_SIGNALS;
-#endif
-        if (gen->Compute(aMesh, myMainShape))
-          computeFailed = false;
-      }
-      catch(const SALOME::SALOME_Exception & S_ex){
-        memoryLack = true;
-        //SalomeApp_Tools::QtCatchCorbaException(S_ex);
-      }
-      try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-          OCC_CATCH_SIGNALS;
-#endif
-        anErrors = gen->GetComputeErrors( aMesh, myMainShape );
-        //           if ( anErrors->length() == 0 ) {
-        //             SUIT_MessageBox::warn1(desktop(),
-        //                                    tr("SMESH_WRN_WARNING"),
-        //                                    tr("SMESH_WRN_COMPUTE_FAILED"),
-        //                                    tr("SMESH_BUT_OK"));
-        //             onCancel();
-        //             return;
-        //           }
-        // check if there are memory problems
-        for ( int i = 0; (i < anErrors->length()) && !memoryLack; ++i )
-          memoryLack = ( anErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
-      }
-      catch(const SALOME::SALOME_Exception & S_ex){
-        memoryLack = true;
-      }
-
-      // NPAL16631: if ( !memoryLack )
-      {
-        SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
-        update( UF_ObjBrowser | UF_Model );
-
-        // SHOW MESH
-        // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
-        if ( !memoryLack && getSMESHGUI()->automaticUpdate() )
-        {
-          try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-            OCC_CATCH_SIGNALS;
-#endif
-            SMESH::Update(IObject, true);
-          }
-          catch (...) {
-#ifdef _DEBUG_
-            cout << "Exception thrown during mesh visualization" << endl;
-#endif
-            if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
-              SMESH::OnVisuException();
-            }
-            else {
-              memoryLack = true;
-            }
-          }
-        }
-        Sel->setSelectedObjects( selected );
-      }
-    }
-  }
-  else {
+  if (aMesh->_is_nil()) {
     SUIT_MessageBox::warn1(desktop(),
                            tr("SMESH_WRN_WARNING"),
                            tr("SMESH_WRN_NO_AVAILABLE_DATA"),
@@ -892,27 +814,105 @@ void SMESHGUI_ComputeOp::startOperation()
     onCancel();
     return;
   }
+
+  // COMPUTE MESH
+
+  MemoryReserve aMemoryReserve;
+
+  SMESH::compute_error_array_var aCompErrors;
+  QString                        aHypErrors;
+
+  bool computeFailed = true, memoryLack = false;
+
+  _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
+  myMainShape = aMesh->GetShapeToMesh();
+  bool hasShape = aMesh->HasShapeToMesh();
+  bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
+  if ( shapeOK && aMeshSObj )
+  {
+    myDlg->myMeshName->setText( aMeshSObj->GetName() );
+    SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
+    SMESH::algo_error_array_var errors = gen->GetAlgoState(aMesh,myMainShape);
+    if ( errors->length() > 0 ) {
+      aHypErrors = SMESH::GetMessageOnAlgoStateErrors( errors.in() );
+    }
+    SUIT_OverrideCursor aWaitCursor;
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      if (gen->Compute(aMesh, myMainShape))
+        computeFailed = false;
+    }
+    catch(const SALOME::SALOME_Exception & S_ex){
+      memoryLack = true;
+    }
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      aCompErrors = gen->GetComputeErrors( aMesh, myMainShape );
+      // check if there are memory problems
+      for ( int i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
+        memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
+    }
+    catch(const SALOME::SALOME_Exception & S_ex){
+      memoryLack = true;
+    }
+
+    // NPAL16631: if ( !memoryLack )
+    {
+      SMESH::ModifiedMesh(aMeshSObj, !computeFailed, aMesh->NbNodes() == 0);
+      update( UF_ObjBrowser | UF_Model );
+
+      // SHOW MESH
+      // NPAL16631: if ( getSMESHGUI()->automaticUpdate() )
+      if ( !memoryLack && getSMESHGUI()->automaticUpdate() )
+      {
+        try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+          OCC_CATCH_SIGNALS;
+#endif
+          SMESH::Update(IObject, true);
+        }
+        catch (...) {
+#ifdef _DEBUG_
+          cout << "Exception thrown during mesh visualization" << endl;
+#endif
+          if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
+            SMESH::OnVisuException();
+          }
+          else {
+            memoryLack = true;
+          }
+        }
+      }
+      Sel->setSelectedObjects( selected );
+    }
+  }
   myDlg->setCaption(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
   myDlg->myMemoryLackGroup->hide();
 
   // SHOW ERRORS
 
-  bool noError = ( !anErrors.operator->() || anErrors->length() == 0 );
+  bool noCompError = ( !aCompErrors.operator->() || aCompErrors->length() == 0 );
+  bool noHypoError = ( aHypErrors.isEmpty() );
 
   if ( memoryLack )
   {
     myDlg->myMemoryLackGroup->show();
     myDlg->myFullInfo->hide();
     myDlg->myBriefInfo->hide();
-    myDlg->myErrorGroup->hide();
+    myDlg->myHypErrorGroup->hide();
+    myDlg->myCompErrorGroup->hide();
   }
-  else if ( noError )
+  else if ( noCompError && noHypoError )
   {
-    SUIT_OverrideCursor aWaitCursor;
     myDlg->myFullInfo->SetInfoByMesh( aMesh );
     myDlg->myFullInfo->show();
     myDlg->myBriefInfo->hide();
-    myDlg->myErrorGroup->hide();
+    myDlg->myHypErrorGroup->hide();
+    myDlg->myCompErrorGroup->hide();
   }
   else
   {
@@ -920,46 +920,58 @@ void SMESHGUI_ComputeOp::startOperation()
     myDlg->myBriefInfo->SetInfoByMesh( aMesh );
     myDlg->myBriefInfo->show();
     myDlg->myFullInfo->hide();
-    myDlg->myErrorGroup->show();
-    
-    bool hasShape = aMesh->HasShapeToMesh();
-    if ( !hasShape )
-    {
-      myDlg->myPublishBtn->hide();
-      myDlg->myShowBtn->hide();
+
+    if ( noHypoError ) {
+      myDlg->myHypErrorGroup->hide();
     }
-    else
-    {
-      myDlg->myPublishBtn->show();
-      myDlg->myShowBtn->show();
+    else {
+      myDlg->myHypErrorGroup->show();
+      myDlg->myHypErrorLabel->setText( aHypErrors );
     }
-    // fill table of errors
-    tbl->setNumRows( anErrors->length() );
-    if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
-    else             tbl->showColumn( COL_SHAPE );
-    tbl->setColumnWidth( COL_ERROR, 200 );
 
-    for ( int row = 0; row < anErrors->length(); ++row )
-    {
-      SMESH::ComputeError & err = anErrors[ row ];
-      tbl->setText( row, COL_ALGO,    err.algoName.in() );
-      tbl->setText( row, COL_ERROR,   errorText( err.code, err.comment.in() ));
-      tbl->setText( row, COL_SHAPEID, QString("%1").arg( err.subShapeID ));
-
-      QString text = hasShape ? shapeText( err.subShapeID, myMainShape ) : QString("");
-      tbl->setText( row, COL_SHAPE,   text );
-
-      text = ( !hasShape || getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
-      tbl->setText( row, COL_PUBLISHED, text ); // if text=="", "PUBLISH" button enabled
-
-      tbl->item( row, COL_ERROR )->setWordWrap( TRUE );
-      tbl->adjustRow( row );
+    if ( noCompError ) {
+      myDlg->myCompErrorGroup->hide();
     }
-    tbl->adjustColumn( COL_ALGO );
-    tbl->adjustColumn( COL_SHAPE );
+    else {
+      myDlg->myCompErrorGroup->show();
 
-    tbl->setCurrentCell(0,0);
-    currentCellChanged(); // to update buttons
+      if ( !hasShape ) {
+        myDlg->myPublishBtn->hide();
+        myDlg->myShowBtn->hide();
+      }
+      else {
+        myDlg->myPublishBtn->show();
+        myDlg->myShowBtn->show();
+      }
+
+      // fill table of errors
+      tbl->setNumRows( aCompErrors->length() );
+      if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
+      else             tbl->showColumn( COL_SHAPE );
+      tbl->setColumnWidth( COL_ERROR, 200 );
+
+      for ( int row = 0; row < aCompErrors->length(); ++row )
+      {
+        SMESH::ComputeError & err = aCompErrors[ row ];
+        tbl->setText( row, COL_ALGO,    err.algoName.in() );
+        tbl->setText( row, COL_ERROR,   errorText( err.code, err.comment.in() ));
+        tbl->setText( row, COL_SHAPEID, QString("%1").arg( err.subShapeID ));
+
+        QString text = hasShape ? shapeText( err.subShapeID, myMainShape ) : QString("");
+        tbl->setText( row, COL_SHAPE,   text );
+
+        text = ( !hasShape || getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
+        tbl->setText( row, COL_PUBLISHED, text ); // if text=="", "PUBLISH" button enabled
+
+        tbl->item( row, COL_ERROR )->setWordWrap( TRUE );
+        tbl->adjustRow( row );
+      }
+      tbl->adjustColumn( COL_ALGO );
+      tbl->adjustColumn( COL_SHAPE );
+
+      tbl->setCurrentCell(0,0);
+      currentCellChanged(); // to update buttons
+    }
   }
   myDlg->show();
 }

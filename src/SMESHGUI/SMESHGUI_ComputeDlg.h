@@ -131,7 +131,9 @@ private:
 
   QLabel*                      myMeshName;
   QGroupBox*                   myMemoryLackGroup;
-  QGroupBox*                   myErrorGroup;
+  QGroupBox*                   myCompErrorGroup;
+  QGroupBox*                   myHypErrorGroup;
+  QLabel*                      myHypErrorLabel;
   QTable*                      myTable;
   QPushButton*                 myShowBtn;
   QPushButton*                 myPublishBtn;

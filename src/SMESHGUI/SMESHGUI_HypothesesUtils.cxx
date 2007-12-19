@@ -615,7 +615,7 @@ namespace SMESH{
 #define CASE2MESSAGE(enum) case SMESH::enum: msg = QObject::tr( "STATE_" #enum ); break;
   QString GetMessageOnAlgoStateErrors(const algo_error_array& errors)
   {
-    QString resMsg = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
+    QString resMsg; // PAL14861 = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
     for ( int i = 0; i < errors.length(); ++i ) {
       const SMESH::AlgoStateError & error = errors[ i ];
       const bool hasAlgo = ( strlen( error.algoName ) != 0 );
