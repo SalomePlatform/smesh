@@ -47,6 +47,8 @@ class SMESHDS_EXPORT SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
 
   virtual bool Contains (const int theID);
 
+  virtual bool Contains (const SMDS_MeshElement* elem);
+
   virtual SMDS_ElemIteratorPtr GetElements();
 
  private:
