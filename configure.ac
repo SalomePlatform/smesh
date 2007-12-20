@@ -194,6 +194,12 @@ echo
 
 ENABLE_PTHREADS
 
+SMESH_WITH_GUI=yes
+
+AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
+
+if test "${SMESH_WITH_GUI}" = "yes"; then
+
 echo
 echo ---------------------------------------------
 echo testing msg2qm
@@ -201,6 +207,8 @@ echo ---------------------------------------------
 echo
 
 CHECK_MSG2QM
+
+fi
 
 if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
     echo
@@ -241,10 +249,6 @@ dnl CHECK_MICO
 
 fi
 
-
-SMESH_WITH_GUI=yes
-
-AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
 
 if test "${SMESH_WITH_GUI}" = "yes"; then
     echo
@@ -316,6 +320,8 @@ echo
 
 CHECK_CAS
 
+if test "${SMESH_WITH_GUI}" = "yes"; then
+
 echo
 echo ---------------------------------------------
 echo Testing qwt
@@ -323,6 +329,8 @@ echo ---------------------------------------------
 echo
 
 CHECK_QWT
+
+fi
 
 echo
 echo ---------------------------------------------
@@ -365,7 +373,13 @@ echo ---------------------------------------------
 echo
 
 echo Configure
+if test "${SMESH_WITH_GUI}" = "yes"; then
 variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
+fi
+
+if test "${SMESH_WITH_GUI}" = "no"; then
+variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
+fi
 
 for var in $variables
 do
