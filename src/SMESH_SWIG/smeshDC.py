@@ -231,7 +231,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return an instance of Mesh class
     def CreateMeshesFromUNV( self,theFileName ):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromUNV(self,theFileName)
-        aMesh = Mesh(self.smeshpyD, self.geompyD, aSmeshMesh)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
     ## Create Mesh object(s) importing data from given MED file
@@ -240,7 +240,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromMED(self,theFileName)
         aMeshes = []
         for iMesh in range(len(aSmeshMeshes)) :
-            aMesh = Mesh(self.smeshpyD, self.geompyD, aSmeshMeshes[iMesh])
+            aMesh = Mesh(self, self.geompyD, aSmeshMeshes[iMesh])
             aMeshes.append(aMesh)
         return aMeshes, aStatus
 
@@ -248,7 +248,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     #  @return an instance of Mesh class
     def CreateMeshesFromSTL( self, theFileName ):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromSTL(self,theFileName)
-        aMesh = Mesh(self.smeshpyD, self.geompyD, aSmeshMesh)
+        aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
     ## From SMESH_Gen interface
