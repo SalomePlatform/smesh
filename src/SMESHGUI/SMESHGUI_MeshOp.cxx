@@ -44,6 +44,8 @@
 #include "SMESH_TypeFilter.hxx"
 #include "SMESH_NumberFilter.hxx"
 
+#include CORBA_CLIENT_HEADER(SMESH_Gen)
+
 #include "GEOM_SelectionFilter.h"
 #include "GEOMBase.h"
 #include "GeometryGUI.h"
@@ -71,18 +73,6 @@
 
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
-
-enum { GLOBAL_ALGO_TAG        =3,
-       GLOBAL_HYPO_TAG        =2,
-       LOCAL_ALGO_TAG         =2,
-       LOCAL_HYPO_TAG         =1,
-       SUBMESH_ON_VERTEX_TAG  =4,
-       SUBMESH_ON_EDGE_TAG    =5,
-       SUBMESH_ON_WIRE_TAG    =6,
-       SUBMESH_ON_FACE_TAG    =7,
-       SUBMESH_ON_SHELL_TAG   =8,
-       SUBMESH_ON_SOLID_TAG   =9,
-       SUBMESH_ON_COMPOUND_TAG=10 };
 
 //================================================================================
 /*!
@@ -368,13 +358,13 @@ _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
     if ( !geom->_is_nil() ) {
       int tag = -1;
       switch ( geom->GetShapeType() ) {
-      case GEOM::VERTEX:   tag = SUBMESH_ON_VERTEX_TAG  ; break;
-      case GEOM::EDGE:     tag = SUBMESH_ON_EDGE_TAG    ; break;
-      case GEOM::WIRE:     tag = SUBMESH_ON_WIRE_TAG    ; break;
-      case GEOM::FACE:     tag = SUBMESH_ON_FACE_TAG    ; break;
-      case GEOM::SHELL:    tag = SUBMESH_ON_SHELL_TAG   ; break;
-      case GEOM::SOLID:    tag = SUBMESH_ON_SOLID_TAG   ; break;
-      case GEOM::COMPOUND: tag = SUBMESH_ON_COMPOUND_TAG; break;
+      case GEOM::VERTEX:   tag = SMESH::Tag_SubMeshOnVertex  ; break;
+      case GEOM::EDGE:     tag = SMESH::Tag_SubMeshOnEdge    ; break;
+      case GEOM::WIRE:     tag = SMESH::Tag_SubMeshOnWire    ; break;
+      case GEOM::FACE:     tag = SMESH::Tag_SubMeshOnFace    ; break;
+      case GEOM::SHELL:    tag = SMESH::Tag_SubMeshOnShell   ; break;
+      case GEOM::SOLID:    tag = SMESH::Tag_SubMeshOnSolid   ; break;
+      case GEOM::COMPOUND: tag = SMESH::Tag_SubMeshOnCompound; break;
       default:;
       }
       _PTR(GenericAttribute) anAttr;
@@ -760,9 +750,9 @@ void SMESHGUI_MeshOp::existingHyps( const int theDim,
   bool isMesh = !_CAST( SComponent, theFather );
   int aPart = -1;
   if ( isMesh )
-    aPart = theHypType == Algo ? GLOBAL_ALGO_TAG : GLOBAL_HYPO_TAG;
+    aPart = theHypType == Algo ? SMESH::Tag_RefOnAppliedAlgorithms : SMESH::Tag_RefOnAppliedHypothesis;
   else
-    aPart = theHypType == Algo ? LOCAL_ALGO_TAG : LOCAL_HYPO_TAG;
+    aPart = theHypType == Algo ? SMESH::Tag_AlgorithmsRoot : SMESH::Tag_HypothesisRoot;
 
   if ( theFather->FindSubObject( aPart, aHypRoot ) )
   {

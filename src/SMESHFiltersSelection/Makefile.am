@@ -17,7 +17,7 @@
 #  License along with this library; if not, write to the Free Software 
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 # 
-# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 #
 #
@@ -48,14 +48,15 @@ dist_libSMESHFiltersSelection_la_SOURCES = \
 
 # additionnal information to compil and link file
 libSMESHFiltersSelection_la_CPPFLAGS = \
-	$(KERNEL_CXXFLAGS) \
-	$(GUI_CXXFLAGS) \
-	$(GEOM_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
 	$(QT_INCLUDES) \
 	$(PYTHON_INCLUDES) \
 	$(VTK_INCLUDES) \
-	${BOOST_CPPFLAGS} \
+	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
+	$(GEOM_CXXFLAGS) \
+	$(MED_CXXFLAGS) \
+	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
 	-I$(top_builddir)/idl \

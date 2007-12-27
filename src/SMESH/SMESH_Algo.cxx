@@ -71,8 +71,8 @@ using namespace std;
  */
 //=============================================================================
 
-SMESH_Algo::SMESH_Algo(int hypId, int studyId,
-	SMESH_Gen * gen):SMESH_Hypothesis(hypId, studyId, gen)
+SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
+  : SMESH_Hypothesis(hypId, studyId, gen)
 {
   gen->_mapAlgo[hypId] = this;
 
@@ -108,7 +108,7 @@ istream & SMESH_Algo::LoadFrom(istream & load) { return load; }
 
 const vector < string > &SMESH_Algo::GetCompatibleHypothesis()
 {
-	return _compatibleHypothesis;
+  return _compatibleHypothesis;
 }
 
 //=============================================================================
@@ -132,7 +132,7 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   {
     aMesh.GetHypotheses( aShape, filter, _usedHypList, true );
     if ( ignoreAuxiliary && _usedHypList.size() > 1 )
-      _usedHypList.clear();	//only one compatible hypothesis allowed
+      _usedHypList.clear(); //only one compatible hypothesis allowed
   }
   return _usedHypList;
 }

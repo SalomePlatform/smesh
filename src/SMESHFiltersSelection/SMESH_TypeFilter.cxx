@@ -11,12 +11,13 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
 // Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU Lesser General Public  
-// License along with this library; if not, write to the Free Software 
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "SMESH_TypeFilter.hxx"
 
 #include <SUIT_Session.h>
@@ -24,12 +25,15 @@
 #include <SalomeApp_Study.h>
 #include <LightApp_DataOwner.h>
 
-SMESH_TypeFilter::SMESH_TypeFilter (MeshObjectType theType) 
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SMESH_Gen)
+
+SMESH_TypeFilter::SMESH_TypeFilter (MeshObjectType theType)
 {
   myType = theType;
 }
 
-SMESH_TypeFilter::~SMESH_TypeFilter() 
+SMESH_TypeFilter::~SMESH_TypeFilter()
 {
 }
 
@@ -80,90 +84,98 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
       return false;
 
     switch (myType)
-      {
+    {
       case HYPOTHESIS:
 	{
-	  if ( aLevel == 2 && ( objFather->Tag() == 1 )) // hypo definition
+	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_HypothesisRoot))
+            // hypo definition
 	    Ok = true;
-	  else if ( aLevel == 3 && ( objFather->Tag() == 2 )) // applied global hypo
+	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            // applied global hypo
 	    Ok = true;
-	  else if ( aLevel == 5 && ( objFather->Tag() == 2 )) // applied local hypo
+	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedHypothesis))
+            // applied local hypo
 	    Ok = true;
 	  break;
 	}
       case ALGORITHM:
 	{
-	  if ( aLevel == 2 && ( objFather->Tag() == 2 )) // algo definition
+	  if      (aLevel == 2 && (objFather->Tag() == SMESH::Tag_AlgorithmsRoot))
+            // algo definition
 	    Ok = true;
-	  else if ( aLevel == 3 && ( objFather->Tag() == 3 )) // applied global algo
+	  else if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            // applied global algo
 	    Ok = true;
-	  else if ( aLevel == 5 && ( objFather->Tag() == 3 )) // applied local algo
+	  else if (aLevel == 5 && (objFather->Tag() == SMESH::Tag_RefOnAppliedAlgorithms))
+            // applied local algo
 	    Ok = true;
 	  break;
 	}
       case MESH:
 	{
-	  if ( aLevel == 1 && ( obj->Tag() >= 3 ))
+	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH:
 	{
 	  // see SMESH_Gen_i.cxx for tag numbers
-	  if ( aLevel == 3 && ( objFather->Tag() >= 4 && objFather->Tag() <= 10 ))
+	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
+                              objFather->Tag() <= SMESH::Tag_LastSubMesh))
 	    Ok = true;
 	  break;
 	}
       case MESHorSUBMESH:
 	{
-	  if ( aLevel == 1 && ( obj->Tag() >= 3 ))
+	  if (aLevel == 1 && (obj->Tag() >= SMESH::Tag_FirstMeshRoot))
 	    Ok = true; // mesh
-          else if ( aLevel == 3 && ( objFather->Tag() >= 4 && objFather->Tag() <= 10 ))
+          else if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstSubMesh &&
+                                   objFather->Tag() <= SMESH::Tag_LastSubMesh))
 	    Ok = true;
 	  break;
 	}
-      case SUBMESH_VERTEX:  // Label "SubMeshes on vertexes"
+      case SUBMESH_VERTEX: // Label "SubMeshes on vertexes"
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() == 4 ))
+	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnVertex))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_EDGE:
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() == 5 ))
+	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnEdge))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_FACE:
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() == 7 ))
+	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnFace))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_SOLID:
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() == 9 ))
+	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnSolid))
 	    Ok = true;
 	  break;
 	}
       case SUBMESH_COMPOUND:
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() == 10 ))
+	  if (aLevel == 3 && (objFather->Tag() == SMESH::Tag_SubMeshOnCompound))
 	    Ok = true;
 	  break;
 	}
       case GROUP:
 	{
-	  if ( aLevel == 3 && ( objFather->Tag() > 10 ))
+	  if (aLevel == 3 && (objFather->Tag() >= SMESH::Tag_FirstGroup))
 	    Ok = true;
 	  break;
 	}
-      }
+    }
   }
   return Ok;
 }
 
-MeshObjectType SMESH_TypeFilter::type() const 
+MeshObjectType SMESH_TypeFilter::type() const
 {
   return myType;
 }

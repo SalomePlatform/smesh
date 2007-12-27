@@ -327,43 +327,41 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
   {
     int libNameLen = strlen(theLibName);
     //check for old format "libXXXXXXX.so"
-    if( libNameLen > 7 &&
+    if (libNameLen > 7 &&
         !strncmp( theLibName, "lib", 3 ) &&
-        !strcmp( theLibName+libNameLen-3, ".so" ) )
-      {
-	//the old format
+        !strcmp( theLibName+libNameLen-3, ".so" ))
+    {
+      //the old format
 #ifdef WNT
-	aPlatformLibName = new char[libNameLen - 1];
-	aPlatformLibName[0] = '\0';
-	aPlatformLibName = strncat( aPlatformLibName, theLibName+3, libNameLen-6  );
-	aPlatformLibName = strcat( aPlatformLibName, ".dll" );
-  aPlatformLibName[libNameLen - 2] = '\0';
+      aPlatformLibName = new char[libNameLen - 1];
+      aPlatformLibName[0] = '\0';
+      aPlatformLibName = strncat( aPlatformLibName, theLibName+3, libNameLen-6  );
+      aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+      aPlatformLibName[libNameLen - 2] = '\0';
 #else
-	aPlatformLibName = new char[ libNameLen + 1];
-	aPlatformLibName[0] = '\0';
-	aPlatformLibName = strcat( aPlatformLibName, theLibName );
-  aPlatformLibName[libNameLen] = '\0';
+      aPlatformLibName = new char[ libNameLen + 1];
+      aPlatformLibName[0] = '\0';
+      aPlatformLibName = strcat( aPlatformLibName, theLibName );
+      aPlatformLibName[libNameLen] = '\0';
 #endif
-
-      }
+    }
     else
-      {
-	//try to use new format 
+    {
+      //try to use new format 
 #ifdef WNT
-	aPlatformLibName = new char[ libNameLen + 5 ];
-	aPlatformLibName[0] = '\0';
-	aPlatformLibName = strcat( aPlatformLibName, theLibName );
-	aPlatformLibName = strcat( aPlatformLibName, ".dll" );
+      aPlatformLibName = new char[ libNameLen + 5 ];
+      aPlatformLibName[0] = '\0';
+      aPlatformLibName = strcat( aPlatformLibName, theLibName );
+      aPlatformLibName = strcat( aPlatformLibName, ".dll" );
 #else
-	aPlatformLibName = new char[ libNameLen + 7 ];
-	aPlatformLibName[0] = '\0';
-	aPlatformLibName = strcat( aPlatformLibName, "lib" );
-	aPlatformLibName = strcat( aPlatformLibName, theLibName );
-	aPlatformLibName = strcat( aPlatformLibName, ".so" );
+      aPlatformLibName = new char[ libNameLen + 7 ];
+      aPlatformLibName[0] = '\0';
+      aPlatformLibName = strcat( aPlatformLibName, "lib" );
+      aPlatformLibName = strcat( aPlatformLibName, theLibName );
+      aPlatformLibName = strcat( aPlatformLibName, ".so" );
 #endif
-      }
+    }
   }
-  
 
 
   Unexpect aCatch(SALOME_SalomeException);
@@ -418,7 +416,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
     // create a new hypothesis object, store its ref. in studyContext
     if(MYDEBUG) MESSAGE("Create Hypothesis " << theHypName);
     myHypothesis_i =
-      myHypCreatorMap[string(theHypName)]->Create (myPoa, GetCurrentStudyID(), &myGen);
+      myHypCreatorMap[string(theHypName)]->Create(myPoa, GetCurrentStudyID(), &myGen);
     myHypothesis_i->SetLibName(aPlatformLibName/*theLibName*/); // for persistency assurance
   }
   catch (SALOME_Exception& S_ex)
@@ -439,7 +437,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
 
   return hypothesis_i._retn();
 }
-  
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::createMesh
@@ -3708,7 +3706,7 @@ int SMESH_Gen_i::RegisterObject(CORBA::Object_ptr theObject)
  */
 //================================================================================
 
-int SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
+CORBA::Long SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
 {
   StudyContext* myStudyContext = GetCurrentStudyContext();
   if ( myStudyContext && !CORBA::is_nil( theObject )) {

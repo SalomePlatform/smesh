@@ -34,8 +34,6 @@
 #include "SMESH_Group_i.hxx"
 #include "SMESH_subMesh_i.hxx"
 
-#include "SMESH.hxx"
-
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 
 #include "utilities.h"
@@ -59,82 +57,82 @@ static int MYDEBUG = 0;
 
 long SMESH_Gen_i::GetHypothesisRootTag()
 {
-  return Tag_HypothesisRoot;
+  return SMESH::Tag_HypothesisRoot;
 }
 
 long SMESH_Gen_i::GetAlgorithmsRootTag()
 {
-  return Tag_AlgorithmsRoot;
+  return SMESH::Tag_AlgorithmsRoot;
 }
 
 long SMESH_Gen_i::GetRefOnShapeTag()
 {
-  return Tag_RefOnShape;
+  return SMESH::Tag_RefOnShape;
 }
 
 long SMESH_Gen_i::GetRefOnAppliedHypothesisTag()
 {
-  return Tag_RefOnAppliedHypothesis;
+  return SMESH::Tag_RefOnAppliedHypothesis;
 }
 
 long SMESH_Gen_i::GetRefOnAppliedAlgorithmsTag()
 {
-  return Tag_RefOnAppliedAlgorithms;
+  return SMESH::Tag_RefOnAppliedAlgorithms;
 }
 
 long SMESH_Gen_i::GetSubMeshOnVertexTag()
 {
-  return Tag_SubMeshOnVertex;
+  return SMESH::Tag_SubMeshOnVertex;
 }
 
 long SMESH_Gen_i::GetSubMeshOnEdgeTag()
 {
-  return Tag_SubMeshOnEdge;
+  return SMESH::Tag_SubMeshOnEdge;
 }
 
 long SMESH_Gen_i::GetSubMeshOnFaceTag()
 {
-  return Tag_SubMeshOnFace;
+  return SMESH::Tag_SubMeshOnFace;
 }
 
 long SMESH_Gen_i::GetSubMeshOnSolidTag()
 {
-  return Tag_SubMeshOnSolid;
+  return SMESH::Tag_SubMeshOnSolid;
 }
 
 long SMESH_Gen_i::GetSubMeshOnCompoundTag()
 {
-  return Tag_SubMeshOnCompound;
+  return SMESH::Tag_SubMeshOnCompound;
 }
 
 long SMESH_Gen_i::GetSubMeshOnWireTag()
 {
-  return Tag_SubMeshOnWire;
+  return SMESH::Tag_SubMeshOnWire;
 }
 
 long SMESH_Gen_i::GetSubMeshOnShellTag()
 {
-  return Tag_SubMeshOnShell;
+  return SMESH::Tag_SubMeshOnShell;
 }
 
 long SMESH_Gen_i::GetNodeGroupsTag()
 {
-  return Tag_NodeGroups;
+  return SMESH::Tag_NodeGroups;
 }
 
 long SMESH_Gen_i::GetEdgeGroupsTag()
 {
-  return Tag_EdgeGroups;
+  return SMESH::Tag_EdgeGroups;
 }
 
 long SMESH_Gen_i::GetFaceGroupsTag()
 {
-  return Tag_FaceGroups;
+  return SMESH::Tag_FaceGroups;
 }
 
 long SMESH_Gen_i::GetVolumeGroupsTag()
 {
-  return Tag_VolumeGroups;
+  return SMESH::Tag_VolumeGroups;
 }
 
 //=============================================================================

@@ -149,6 +149,7 @@ bool SMESHDS_GroupBase::Contains (const SMDS_MeshElement* elem)
 {
   if ( elem )
     return Contains( elem->GetID() );
+  return false;
 }
 
 //=======================================================================

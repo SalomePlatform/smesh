@@ -36,8 +36,9 @@
 #include "SVTK_RenderWindowInteractor.h"
 #include "SVTK_ViewWindow.h"
 
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_CLIENT_HEADER(SMESH_Gen)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(SMESH_Group)
 
 //=======================================================================
 //function : SMESHGUI_Selection
@@ -82,7 +83,7 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 //=======================================================================
 void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 {
-  const LightApp_SVTKDataOwner* owner = 
+  const LightApp_SVTKDataOwner* owner =
     dynamic_cast<const LightApp_SVTKDataOwner*> ( ow );
   if( owner )
     myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
@@ -313,7 +314,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 /*    Handle(SALOME_InteractiveObject) io =
       static_cast<LightApp_DataOwner*>( myDataOwners[ ind ].get() )->IO();
     if ( !io.IsNull() ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io) ; // m,sm,gr->m
+      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io); // m,sm,gr->m
       if ( !mesh->_is_nil() ) {*/
         _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
 	//FindSObject( mesh );
@@ -402,47 +403,47 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
       anOTag = obj->Tag(),
       res = -1;
 
-  switch( aLevel )
+  switch (aLevel)
   {
   case 1:
-    if( anOTag>=3 )
+    if (anOTag >= SMESH::Tag_FirstMeshRoot)
       res = MESH;
     break;
   case 2:
-    switch( aFTag )
+    switch (aFTag)
     {
-    case 1:
+    case SMESH::Tag_HypothesisRoot:
       res = HYPOTHESIS;
       break;
-    case 2:
+    case SMESH::Tag_AlgorithmsRoot:
       res = ALGORITHM;
       break;
     }
     break;
   case 3:
-    switch( aFTag )
+    switch (aFTag)
     {
-    case 4:
+    case SMESH::Tag_SubMeshOnVertex:
       res = SUBMESH_VERTEX;
       break;
-    case 5:
+    case SMESH::Tag_SubMeshOnEdge:
       res = SUBMESH_EDGE;
       break;
-    case 7:
+    case SMESH::Tag_SubMeshOnFace:
       res = SUBMESH_FACE;
       break;
-    case 9:
+    case SMESH::Tag_SubMeshOnSolid:
       res = SUBMESH_SOLID;
       break;
-    case 10:
+    case SMESH::Tag_SubMeshOnCompound:
       res = SUBMESH_COMPOUND;
       break;
+    default:
+      if (aFTag >= SMESH::Tag_FirstGroup)
+        res = GROUP;
+      else
+        res = SUBMESH;
     }
-    if( aFTag>10 )
-      res = GROUP;
-    else
-      res = SUBMESH;
-
     break;
   }
 

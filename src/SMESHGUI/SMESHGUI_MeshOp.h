@@ -37,8 +37,8 @@
 #include "SMESHGUI_SelectionOp.h"
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(GEOM_Gen)
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(GEOM_Gen)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
 #include <qstringlist.h>
 

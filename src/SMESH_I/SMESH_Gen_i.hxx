@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -427,7 +427,7 @@ public:
   int RegisterObject(CORBA::Object_ptr theObject);
 
   // Return id of registered object
-  int GetObjectId(CORBA::Object_ptr theObject);
+  CORBA::Long GetObjectId(CORBA::Object_ptr theObject);
 
   // Return an object that previously had an oldID
   template<class TInterface> 

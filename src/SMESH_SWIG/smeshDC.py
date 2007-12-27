@@ -78,6 +78,12 @@ Fine = 3
 VeryFine = 4
 Custom = 5
 
+PrecisionConfusion = 1e-07
+
+def IsEqual(val1, val2, tol=PrecisionConfusion):
+    if abs(val1 - val2) < tol:
+        return True
+    return False
 
 NO_NAME = "NoName"
 
@@ -414,15 +420,13 @@ import omniORB
 #Register the new proxy for SMESH_Gen
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
 
-    
+
 ## Mother class to define algorithm, recommended to do not use directly.
 #
 #  More details.
 class Mesh_Algorithm:
     #  @class Mesh_Algorithm
     #  @brief Class Mesh_Algorithm
-
-    #17908#hypos = {}
 
     #def __init__(self,smesh):
     #    self.smesh=smesh
@@ -432,11 +436,84 @@ class Mesh_Algorithm:
         self.subm = None
         self.algo = None
 
-    #17908#def FindHypothesis(self,hypname, args):
-    #17908#    key = "%s %s %s" % (self.__class__.__name__, hypname, args)
-    #17908#    if Mesh_Algorithm.hypos.has_key( key ):
-    #17908#        return Mesh_Algorithm.hypos[ key ]
-    #17908#    return None
+    ## Find hypothesis in study by its type name and parameters.
+    #  Find only those hypothesis, which was created in smeshpyD engine.
+    def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
+        study = smeshpyD.GetCurrentStudy()
+        #to do: find component by smeshpyD object, not by its data type
+        scomp = study.FindComponent(smeshpyD.ComponentDataType())
+        if scomp is not None:
+            res,hypRoot = scomp.FindSubObject(SMESH.Tag_HypothesisRoot)
+            # is hypotheses root label exists?
+            if res and hypRoot is not None:
+                iter = study.NewChildIterator(hypRoot)
+                # check all published hypotheses
+                while iter.More():
+                    hypo_so_i = iter.Value()
+                    attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
+                    if attr is not None:
+                        anIOR = attr.Value()
+                        hypo_o_i = salome.orb.string_to_object(anIOR)
+                        if hypo_o_i is not None:
+                            # is hypothesis?
+                            hypo_i = hypo_o_i._narrow(SMESH.SMESH_Hypothesis)
+                            if hypo_i is not None:
+                                # belongs to this engine?
+                                if smeshpyD.GetObjectId(hypo_i) > 0:
+                                    # is it the needed hypothesis?
+                                    if hypo_i.GetName() == hypname:
+                                        # check args
+                                        if CompareMethod(hypo_i, args):
+                                            # found!!!
+                                            return hypo_i
+                                        pass
+                                    pass
+                                pass
+                            pass
+                        pass
+                    iter.Next()
+                    pass
+                pass
+            pass
+        return None
+
+    ## Find algorithm in study by its type name.
+    #  Find only those algorithm, which was created in smeshpyD engine.
+    def FindAlgorithm (self, algoname, smeshpyD):
+        study = smeshpyD.GetCurrentStudy()
+        #to do: find component by smeshpyD object, not by its data type
+        scomp = study.FindComponent(smeshpyD.ComponentDataType())
+        if scomp is not None:
+            res,hypRoot = scomp.FindSubObject(SMESH.Tag_AlgorithmsRoot)
+            # is algorithms root label exists?
+            if res and hypRoot is not None:
+                iter = study.NewChildIterator(hypRoot)
+                # check all published algorithms
+                while iter.More():
+                    algo_so_i = iter.Value()
+                    attr = algo_so_i.FindAttribute("AttributeIOR")[1]
+                    if attr is not None:
+                        anIOR = attr.Value()
+                        algo_o_i = salome.orb.string_to_object(anIOR)
+                        if algo_o_i is not None:
+                            # is algorithm?
+                            algo_i = algo_o_i._narrow(SMESH.SMESH_Algo)
+                            if algo_i is not None:
+                                # belongs to this engine?
+                                if smeshpyD.GetObjectId(algo_i) > 0:
+                                    # is it the needed algorithm?
+                                    if algo_i.GetName() == algoname:
+                                        # found!!!
+                                        return algo_i
+                                    pass
+                                pass
+                            pass
+                        pass
+                    iter.Next()
+                    pass
+                pass
+            pass
+        return None
 
     ## If the algorithm is global, return 0; \n
     #  else return the submesh associated to this algorithm.
@@ -470,14 +547,17 @@ class Mesh_Algorithm:
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None:
             raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
-        algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
+        algo = self.FindAlgorithm(hypo, mesh.smeshpyD)
+        if algo is None:
+            algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
+            pass
         self.Assign(algo, mesh, geom)
         return self.algo
 
     ## Private method
     def Assign(self, algo, mesh, geom):
         if geom is None:
-            raise RuntimeError, "Attemp to create " + hypo + " algoritm on None shape"
+            raise RuntimeError, "Attemp to create " + algo + " algoritm on None shape"
         self.mesh = mesh
         piece = mesh.geom
         if not geom:
@@ -494,17 +574,23 @@ class Mesh_Algorithm:
         status = mesh.mesh.AddHypothesis(self.geom, self.algo)
         TreatHypoStatus( status, algo.GetName(), GetName(self.geom), True )
 
+    def CompareHyp (self, hyp, args):
+        print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
+        return False
+
+    def CompareEqualHyp (self, hyp, args):
+        return True
+
     ## Private method
-    def Hypothesis(self, hyp, args=[], so="libStdMeshersEngine.so", UseExisting=0):
-        CreateNew = 1
-        #17908#if UseExisting:
-        #17908#    hypo = self.FindHypothesis(hyp, args)
-        #17908#    if hypo: CreateNew = 0
-        #17908#    pass
-        if CreateNew:
+    def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
+                    UseExisting=0, CompareMethod=""):
+        hypo = None
+        if UseExisting:
+            if CompareMethod == "": CompareMethod = self.CompareHyp
+            hypo = self.FindHypothesis(hyp, args, CompareMethod, self.mesh.smeshpyD)
+            pass
+        if hypo is None:
             hypo = self.mesh.smeshpyD.CreateHypothesis(hyp, so)
-            key = "%s %s %s" % (self.__class__.__name__, hyp, args)
-            #17908#Mesh_Algorithm.hypos[key] = hypo
             a = ""
             s = "="
             i = 0
@@ -513,8 +599,7 @@ class Mesh_Algorithm:
                 a = a + s + str(args[i])
                 s = ","
                 i = i + 1
-                name = GetName(self.geom)
-            #SetName(hypo, name + "/" + hyp + a) - NPAL16198
+                pass
             SetName(hypo, hyp + a)
             pass
         status = self.mesh.mesh.AddHypothesis(self.geom, hypo)
@@ -530,17 +615,9 @@ class Mesh_Algorithm:
 #  More details.
 class Mesh_Segment(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Segments
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Segment.algo:
-        #17908#    Mesh_Segment.algo = self.Create(mesh, geom, "Regular_1D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Segment.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Regular_1D")
 
     ## Define "LocalLength" hypothesis to cut an edge in several segments with the same length
@@ -548,9 +625,14 @@ class Mesh_Segment(Mesh_Algorithm):
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def LocalLength(self, l, UseExisting=0):
-        hyp = self.Hypothesis("LocalLength", [l], UseExisting=UseExisting)
+        hyp = self.Hypothesis("LocalLength", [l], UseExisting=UseExisting,
+                              CompareMethod=self.CompareLocalLength)
         hyp.SetLength(l)
         return hyp
+
+    ## Check if the given "LocalLength" hypothesis has the same parameters as given arguments
+    def CompareLocalLength(self, hyp, args):
+        return IsEqual(hyp.GetLength(), args[0])
 
     ## Define "NumberOfSegments" hypothesis to cut an edge in several fixed number of segments
     #  @param n for the number of segments that cut an edge
@@ -559,13 +641,26 @@ class Mesh_Segment(Mesh_Algorithm):
     #                     same parameters, else (default) - create new
     def NumberOfSegments(self, n, s=[], UseExisting=0):
         if s == []:
-            hyp = self.Hypothesis("NumberOfSegments", [n], UseExisting=UseExisting)
+            hyp = self.Hypothesis("NumberOfSegments", [n], UseExisting=UseExisting,
+                                  CompareMethod=self.CompareNumberOfSegments)
         else:
-            hyp = self.Hypothesis("NumberOfSegments", [n,s], UseExisting=UseExisting)
+            hyp = self.Hypothesis("NumberOfSegments", [n,s], UseExisting=UseExisting,
+                                  CompareMethod=self.CompareNumberOfSegments)
             hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
+
+    ## Check if the given "NumberOfSegments" hypothesis has the same parameters as given arguments
+    def CompareNumberOfSegments(self, hyp, args):
+        if hyp.GetNumberOfSegments() == args[0]:
+            if len(args) == 1:
+                return True
+            else:
+                if hyp.GetDistrType() == 1:
+                    if IsEqual(hyp.GetScaleFactor(), args[1]):
+                        return True
+        return False
 
     ## Define "Arithmetic1D" hypothesis to cut an edge in several segments with arithmetic length increasing
     #  @param start for the length of the first segment
@@ -573,64 +668,114 @@ class Mesh_Segment(Mesh_Algorithm):
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def Arithmetic1D(self, start, end, UseExisting=0):
-        hyp = self.Hypothesis("Arithmetic1D", [start, end], UseExisting=UseExisting)
+        hyp = self.Hypothesis("Arithmetic1D", [start, end], UseExisting=UseExisting,
+                              CompareMethod=self.CompareArithmetic1D)
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
-        
+
+    ## Check if the given "Arithmetic1D" hypothesis has the same parameters as given arguments
+    def CompareArithmetic1D(self, hyp, args):
+        if IsEqual(hyp.GetLength(1), args[0]):
+            if IsEqual(hyp.GetLength(0), args[1]):
+                return True
+        return False
+
     ## Define "StartEndLength" hypothesis to cut an edge in several segments with geometric length increasing
     #  @param start for the length of the first segment
     #  @param end   for the length of the last  segment
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def StartEndLength(self, start, end, UseExisting=0):
-        hyp = self.Hypothesis("StartEndLength", [start, end], UseExisting=UseExisting)
+        hyp = self.Hypothesis("StartEndLength", [start, end], UseExisting=UseExisting,
+                              CompareMethod=self.CompareStartEndLength)
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
-        
+
+    ## Check if the given "StartEndLength" hypothesis has the same parameters as given arguments
+    def CompareStartEndLength(self, hyp, args):
+        if IsEqual(hyp.GetLength(1), args[0]):
+            if IsEqual(hyp.GetLength(0), args[1]):
+                return True
+        return False
+
     ## Define "Deflection1D" hypothesis
     #  @param d for the deflection
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def Deflection1D(self, d, UseExisting=0):
-        hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting)
+        hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting,
+                              CompareMethod=self.CompareDeflection1D)
         hyp.SetDeflection(d)
         return hyp
-        
+
+    ## Check if the given "Deflection1D" hypothesis has the same parameters as given arguments
+    def CompareDeflection1D(self, hyp, args):
+        return IsEqual(hyp.GetDeflection(), args[0])
+
     ## Define "Propagation" hypothesis that propagate all other hypothesis on all others edges that are in
     #  the opposite side in the case of quadrangular faces
     def Propagation(self):
-        return self.Hypothesis("Propagation", UseExisting=1)
+        return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
 
     ## Define "AutomaticLength" hypothesis
     #  @param fineness for the fineness [0-1]
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def AutomaticLength(self, fineness=0, UseExisting=0):
-        hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting)
+        hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting,
+                              CompareMethod=self.CompareAutomaticLength)
         hyp.SetFineness( fineness )
         return hyp
 
+    ## Check if the given "AutomaticLength" hypothesis has the same parameters as given arguments
+    def CompareAutomaticLength(self, hyp, args):
+        return IsEqual(hyp.GetFineness(), args[0])
+
     ## Define "SegmentLengthAroundVertex" hypothesis
     #  @param length for the segment length
-    #  @param vertex for the length localization: vertex index [0,1] | verext object
+    #  @param vertex for the length localization: vertex index [0,1] | vertex object.
+    #         Any other integer value means what hypo will be set on the
+    #         whole 1D shape, where Mesh_Segment algorithm is assigned.
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
         import types
         store_geom = self.geom
-        if vertex:
-            if type(vertex) is types.IntType:
+        if type(vertex) is types.IntType:
+            if vertex == 0 or vertex == 1:
                 vertex = self.mesh.geompyD.SubShapeAllSorted(self.geom, geompyDC.ShapeType["VERTEX"])[vertex]
+                self.geom = vertex
                 pass
+            pass
+        else:
             self.geom = vertex
             pass
-        hyp = self.Hypothesis("SegmentAroundVertex_0D",[length],UseExisting=UseExisting)
-        hyp = self.Hypothesis("SegmentLengthAroundVertex",[length],UseExisting=UseExisting)
+        ### 0D algorithm
+        if self.geom is None:
+            raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
+        name = GetName(self.geom)
+        if name == NO_NAME:
+            piece = self.mesh.geom
+            name = self.mesh.geompyD.SubShapeName(self.geom, piece)
+            self.mesh.geompyD.addToStudyInFather(piece, self.geom, name)
+        algo = self.FindAlgorithm("SegmentAroundVertex_0D", self.mesh.smeshpyD)
+        if algo is None:
+            algo = self.mesh.smeshpyD.CreateHypothesis("SegmentAroundVertex_0D", "libStdMeshersEngine.so")
+            pass
+        status = self.mesh.mesh.AddHypothesis(self.geom, algo)
+        TreatHypoStatus(status, "SegmentAroundVertex_0D", name, True)
+        ###
+        hyp = self.Hypothesis("SegmentLengthAroundVertex", [length], UseExisting=UseExisting,
+                              CompareMethod=self.CompareLengthNearVertex)
         self.geom = store_geom
         hyp.SetLength( length )
         return hyp
+
+    ## Check if the given "LengthNearVertex" hypothesis has the same parameters as given arguments
+    def CompareLengthNearVertex(self, hyp, args):
+        return IsEqual(hyp.GetLength(), args[0])
 
     ## Define "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
     #  If the 2D mesher sees that all boundary edges are quadratic ones,
@@ -639,7 +784,7 @@ class Mesh_Segment(Mesh_Algorithm):
     #  The 3D mesher generates quadratic volumes only if all boundary faces
     #  are quadratic ones, else it fails.
     def QuadraticMesh(self):
-        hyp = self.Hypothesis("QuadraticMesh", UseExisting=1)
+        hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
 # Public class: Mesh_CompositeSegment
@@ -650,15 +795,8 @@ class Mesh_Segment(Mesh_Algorithm):
 #  More details.
 class Mesh_CompositeSegment(Mesh_Segment):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_CompositeSegments
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
-        #17908#if not Mesh_CompositeSegment.algo:
-        #17908#    Mesh_CompositeSegment.algo = self.Create(mesh, geom, "CompositeSegment_1D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_CompositeSegment.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "CompositeSegment_1D")
 
 
@@ -670,29 +808,30 @@ class Mesh_CompositeSegment(Mesh_Segment):
 #  More details.
 class Mesh_Segment_Python(Mesh_Segment):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Segment_Pythons
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         import Python1dPlugin
-        #17908#if not Mesh_Segment_Python.algo:
-        #17908#    Mesh_Segment_Python.algo = self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Segment_Python.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
-    
+
     ## Define "PythonSplit1D" hypothesis based on the Erwan Adam patch, awaiting equivalent SALOME functionality
     #  @param n for the number of segments that cut an edge
     #  @param func for the python function that calculate the length of all segments
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def PythonSplit1D(self, n, func, UseExisting=0):
-        hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so", UseExisting=UseExisting)
+        hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so",
+                              UseExisting=UseExisting, CompareMethod=self.ComparePythonSplit1D)
         hyp.SetNumberOfSegments(n)
         hyp.SetPythonLog10RatioFunction(func)
         return hyp
-        
+
+    ## Check if the given "PythonSplit1D" hypothesis has the same parameters as given arguments
+    def ComparePythonSplit1D(self, hyp, args):
+        #if hyp.GetNumberOfSegments() == args[0]:
+        #    if hyp.GetPythonLog10RatioFunction() == args[1]:
+        #        return True
+        return False
+
 # Public class: Mesh_Triangle
 # ---------------------------
 
@@ -708,22 +847,12 @@ class Mesh_Triangle(Mesh_Algorithm):
     _angleMeshS = 8
     _gradation  = 1.1
 
-    # algorithm objects common for all instances of Mesh_Triangle
-    #17908#algoMEF = 0
-    #17908#algoNET = 0
-    #17908#algoNET_2D = 0
-
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
         self.algoType = algoType
         if algoType == MEFISTO:
-            #17908#if not Mesh_Triangle.algoMEF:
-            #17908#    Mesh_Triangle.algoMEF = self.Create(mesh, geom, "MEFISTO_2D")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Triangle.algoMEF, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "MEFISTO_2D")
             pass
         elif algoType == BLSURF:
@@ -734,47 +863,42 @@ class Mesh_Triangle(Mesh_Algorithm):
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
                 pass
-            #17908#if not Mesh_Triangle.algoNET:
-            #17908#    Mesh_Triangle.algoNET = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Triangle.algoNET, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
         elif algoType == NETGEN_2D:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
                 pass
-            #17908#if not Mesh_Triangle.algoNET_2D:
-            #17908#    Mesh_Triangle.algoNET_2D = self.Create(mesh, geom,
-            #17908#                                          "NETGEN_2D_ONLY", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Triangle.algoNET_2D, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
 
-    ## Define "MaxElementArea" hypothesis to give the maximun area of each triangles
-    #  @param area for the maximum area of each triangles
+    ## Define "MaxElementArea" hypothesis to give the maximum area of each triangle
+    #  @param area for the maximum area of each triangle
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     #
     #  Only for algoType == MEFISTO || NETGEN_2D
     def MaxElementArea(self, area, UseExisting=0):
         if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
-            hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting)
+            hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
+                                  CompareMethod=self.CompareMaxElementArea)
             hyp.SetMaxElementArea(area)
             return hyp
         elif self.algoType == NETGEN:
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
-    ## Define "LengthFromEdges" hypothesis to build triangles based on the length of the edges taken from the wire
+    ## Check if the given "MaxElementArea" hypothesis has the same parameters as given arguments
+    def CompareMaxElementArea(self, hyp, args):
+        return IsEqual(hyp.GetMaxElementArea(), args[0])
+
+    ## Define "LengthFromEdges" hypothesis to build triangles
+    #  based on the length of the edges taken from the wire
     #
     #  Only for algoType == MEFISTO || NETGEN_2D
     def LengthFromEdges(self):
         if self.algoType == MEFISTO or self.algoType == NETGEN_2D:
-            hyp = self.Hypothesis("LengthFromEdges", UseExisting=1)
+            hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
             return hyp
         elif self.algoType == NETGEN:
             print "Netgen 1D-2D algo doesn't support this hypothesis"
@@ -823,7 +947,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     def SetQuadAllowed(self, toAllow=True):
         if self.algoType == NETGEN_2D:
             if toAllow: # add QuadranglePreference
-                self.Hypothesis("QuadranglePreference", UseExisting=1)
+                self.Hypothesis("QuadranglePreference", UseExisting=1, CompareMethod=self.CompareEqualHyp)
             else:       # remove QuadranglePreference
                 for hyp in self.mesh.GetHypothesisList( self.geom ):
                     if hyp.GetName() == "QuadranglePreference":
@@ -832,7 +956,9 @@ class Mesh_Triangle(Mesh_Algorithm):
                     pass
                 pass
             return
-        if self.params == 0 and self.Parameters():
+        if self.params == 0:
+            self.Parameters()
+        if self.params:
             self.params.SetQuadAllowed(toAllow)
             return
 
@@ -852,7 +978,8 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "NETGEN_2D_ONLY uses 'MaxElementArea' and 'LengthFromEdges' ones"
             return None
         elif self.algoType == BLSURF:
-            self.params = self.Hypothesis("BLSURF_Parameters", [], "libBLSURFEngine.so")
+            self.params = self.Hypothesis("BLSURF_Parameters", [],
+                                          "libBLSURFEngine.so", UseExisting=0)
             return self.params
         return None
 
@@ -938,26 +1065,19 @@ class Mesh_Triangle(Mesh_Algorithm):
 #  More details.
 class Mesh_Quadrangle(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Quadrangles
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Quadrangle.algo:
-        #17908#    Mesh_Quadrangle.algo = self.Create(mesh, geom, "Quadrangle_2D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Quadrangle.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Quadrangle_2D")
-    
+
     ## Define "QuadranglePreference" hypothesis, forcing construction
     #  of quadrangles if the number of nodes on opposite edges is not the same
     #  in the case where the global number of nodes on edges is even
     def QuadranglePreference(self):
-        hyp = self.Hypothesis("QuadranglePreference", UseExisting=1)
+        hyp = self.Hypothesis("QuadranglePreference", UseExisting=1,
+                              CompareMethod=self.CompareEqualHyp)
         return hyp
-    
+
 # Public class: Mesh_Tetrahedron
 # ------------------------------
 
@@ -969,30 +1089,15 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     params = 0
     algoType = 0
 
-    #17908#algoNET = 0 # algorithm object common for all Mesh_Tetrahedrons
-    #17908#algoGHS = 0 # algorithm object common for all Mesh_Tetrahedrons
-    #17908#algoFNET = 0 # algorithm object common for all Mesh_Tetrahedrons
-
     ## Private constructor.
     def __init__(self, mesh, algoType, geom=0):
         Mesh_Algorithm.__init__(self)
 
         if algoType == NETGEN:
-            #17908#if not Mesh_Tetrahedron.algoNET:
-            #17908#    Mesh_Tetrahedron.algoNET = self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Tetrahedron.algoNET, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
             pass
 
         elif algoType == GHS3D:
-            #17908#if not Mesh_Tetrahedron.algoGHS:
-            #17908#    import GHS3DPlugin
-            #17908#    Mesh_Tetrahedron.algoGHS = self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Tetrahedron.algoGHS, mesh, geom)
-            #17908#    pass
             import GHS3DPlugin
             self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
             pass
@@ -1000,11 +1105,6 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         elif algoType == FULL_NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module has not been imported."
-            #17908#if not Mesh_Tetrahedron.algoFNET:
-            #17908#    Mesh_Tetrahedron.algoFNET = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Tetrahedron.algoFNET, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
             pass
 
@@ -1015,9 +1115,14 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def MaxElementVolume(self, vol, UseExisting=0):
-        hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting)
+        hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting,
+                              CompareMethod=self.CompareMaxElementVolume)
         hyp.SetMaxElementVolume(vol)
         return hyp
+
+    ## Check if the given "MaxElementVolume" hypothesis has the same parameters as given arguments
+    def CompareMaxElementVolume(self, hyp, args):
+        return IsEqual(hyp.GetMaxElementVolume(), args[0])
 
     ## Define "Netgen 3D Parameters" hypothesis
     def Parameters(self):
@@ -1034,7 +1139,7 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
         if self.params == 0:
             self.Parameters()
         self.params.SetMaxSize(theSize)
-        
+
     ## Set SecondOrder flag
     def SetSecondOrder(self, theVal):
         if self.params == 0:
@@ -1081,61 +1186,32 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 #  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
-#     #17908#algo = 0 # algorithm object common for all Mesh_Hexahedrons
-# 
-#     ## Private constructor.
-#     def __init__(self, mesh, geom=0):
-#         Mesh_Algorithm.__init__(self)
-# 
-#         #17908#if not Mesh_Hexahedron.algo:
-#         #17908#    Mesh_Hexahedron.algo = self.Create(mesh, geom, "Hexa_3D")
-#         #17908#else:
-#         #17908#    self.Assign( Mesh_Hexahedron.algo, mesh, geom)
-#         #17908#    pass
-#         self.Create(mesh, geom, "Hexa_3D")
-
-    #17908#params = 0
-    #17908#algoType = 0
-
-    #17908#algoHEXA = 0 # algorithm object common for all Mesh_Hexahedron's
-    #17908#algoHEXO = 0 # algorithm object common for all Mesh_Hexahedron's
+    params = 0
+    algoType = 0
 
     ## Private constructor.
     def __init__(self, mesh, algoType=Hexa, geom=0):
         Mesh_Algorithm.__init__(self)
 
+        self.algoType = algoType
+
         if algoType == Hexa:
-            #17908#if not Mesh_Hexahedron.algoHEXA:
-            #17908#    Mesh_Hexahedron.algoHEXA = self.Create(mesh, geom, "Hexa_3D")
-            #17908#else:
-            #17908#    self.Assign(Mesh_Hexahedron.algoHEXA, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "Hexa_3D")
             pass
 
         elif algoType == Hexotic:
-            #17908#if not Mesh_Hexahedron.algoHEXO:
-            #17908#    import HexoticPlugin
-            #17908#    Mesh_Hexahedron.algoHEXO = self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
-            #17908#else:
-            #17908#    self.Assign(Mesh_Hexahedron.algoHEXO, mesh, geom)
-            #17908#    pass
             import HexoticPlugin
             self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
             pass
 
     ## Define "MinMaxQuad" hypothesis to give the three hexotic parameters
     def MinMaxQuad(self, min=3, max=8, quad=True):
-        #17908#self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
-        #17908#self.params.SetHexesMinLevel(min)
-        #17908#self.params.SetHexesMaxLevel(max)
-        #17908#self.params.SetHexoticQuadrangles(quad)
-        #17908#return self.params
-        params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so")
-        params.SetHexesMinLevel(min)
-        params.SetHexesMaxLevel(max)
-        params.SetHexoticQuadrangles(quad)
-        return params
+        self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so",
+                                      UseExisting=0)
+        self.params.SetHexesMinLevel(min)
+        self.params.SetHexesMaxLevel(max)
+        self.params.SetHexoticQuadrangles(quad)
+        return self.params
 
 # Deprecated, only for compatibility!
 # Public class: Mesh_Netgen
@@ -1151,32 +1227,19 @@ class Mesh_Netgen(Mesh_Algorithm):
 
     is3D = 0
 
-    #17908#algoNET23 = 0 # algorithm object common for all Mesh_Netgens
-    #17908#algoNET2 = 0 # algorithm object common for all Mesh_Netgens
-
     ## Private constructor.
     def __init__(self, mesh, is3D, geom=0):
         Mesh_Algorithm.__init__(self)
 
         if noNETGENPlugin:
             print "Warning: NETGENPlugin module has not been imported."
-            
+
         self.is3D = is3D
         if is3D:
-            #17908#if not Mesh_Netgen.algoNET23:
-            #17908#    Mesh_Netgen.algoNET23 = self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Netgen.algoNET23, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
             pass
 
         else:
-            #17908#if not Mesh_Netgen.algoNET2:
-            #17908#    Mesh_Netgen.algoNET2 = self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
-            #17908#else:
-            #17908#    self.Assign( Mesh_Netgen.algoNET2, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
 
@@ -1198,17 +1261,9 @@ class Mesh_Netgen(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Projection1Ds
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Projection1D.algo:
-        #17908#    Mesh_Projection1D.algo = self.Create(mesh, geom, "Projection_1D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Projection1D.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Projection_1D")
 
     ## Define "Source Edge" hypothesis, specifying a meshed edge to
@@ -1222,13 +1277,20 @@ class Mesh_Projection1D(Mesh_Algorithm):
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
-        hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV], UseExisting=UseExisting)
+        hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
+                              UseExisting=0)
+                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceEdge)
         hyp.SetSourceEdge( edge )
         if not mesh is None and isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV, tgtV )
         return hyp
+
+    ## Check if the given "SourceEdge" hypothesis has the same parameters as given arguments
+    #def CompareSourceEdge(self, hyp, args):
+    #    # seems to be not really useful to reuse existing "SourceEdge" hypothesis
+    #    return False
 
 
 # Public class: Mesh_Projection2D
@@ -1239,17 +1301,9 @@ class Mesh_Projection1D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection2D(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Projection2Ds
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Projection2D.algo:
-        #17908#    Mesh_Projection2D.algo = self.Create(mesh, geom, "Projection_2D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Projection2D.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Projection_2D")
 
     ## Define "Source Face" hypothesis, specifying a meshed face to
@@ -1270,13 +1324,19 @@ class Mesh_Projection2D(Mesh_Algorithm):
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
-                              UseExisting=UseExisting)
+                              UseExisting=0)
+                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceFace)
         hyp.SetSourceFace( face )
         if not mesh is None and isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
+
+    ## Check if the given "SourceFace" hypothesis has the same parameters as given arguments
+    #def CompareSourceFace(self, hyp, args):
+    #    # seems to be not really useful to reuse existing "SourceFace" hypothesis
+    #    return False
 
 # Public class: Mesh_Projection3D
 # ------------------------------
@@ -1286,17 +1346,9 @@ class Mesh_Projection2D(Mesh_Algorithm):
 #  More details.
 class Mesh_Projection3D(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Projection3Ds
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Projection3D.algo:
-        #17908#    Mesh_Projection3D.algo = self.Create(mesh, geom, "Projection_3D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Projection3D.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Projection_3D")
 
     ## Define "Source Shape 3D" hypothesis, specifying a meshed solid to
@@ -1318,13 +1370,19 @@ class Mesh_Projection3D(Mesh_Algorithm):
                       srcV2=0, tgtV2=0, UseExisting=0):
         hyp = self.Hypothesis("ProjectionSource3D",
                               [solid,mesh,srcV1,tgtV1,srcV2,tgtV2],
-                              UseExisting=UseExisting)
+                              UseExisting=0)
+                              #UseExisting=UseExisting, CompareMethod=self.CompareSourceShape3D)
         hyp.SetSource3DShape( solid )
         if not mesh is None and isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
         hyp.SetSourceMesh( mesh )
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
+
+    ## Check if the given "SourceShape3D" hypothesis has the same parameters as given arguments
+    #def CompareSourceShape3D(self, hyp, args):
+    #    # seems to be not really useful to reuse existing "SourceShape3D" hypothesis
+    #    return False
 
 
 # Public class: Mesh_Prism
@@ -1335,17 +1393,9 @@ class Mesh_Projection3D(Mesh_Algorithm):
 #  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_Prism3Ds
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_Prism3D.algo:
-        #17908#    Mesh_Prism3D.algo = self.Create(mesh, geom, "Prism_3D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_Prism3D.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "Prism_3D")
 
 # Public class: Mesh_RadialPrism
@@ -1356,20 +1406,12 @@ class Mesh_Prism3D(Mesh_Algorithm):
 #  More details.
 class Mesh_RadialPrism3D(Mesh_Algorithm):
 
-    #17908#algo = 0 # algorithm object common for all Mesh_RadialPrism3Ds
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
-
-        #17908#if not Mesh_RadialPrism3D.algo:
-        #17908#    Mesh_RadialPrism3D.algo = self.Create(mesh, geom, "RadialPrism_3D")
-        #17908#else:
-        #17908#    self.Assign( Mesh_RadialPrism3D.algo, mesh, geom)
-        #17908#    pass
         self.Create(mesh, geom, "RadialPrism_3D")
 
-        self.distribHyp = self.Hypothesis( "LayerDistribution", UseExisting=0)
+        self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.nbLayers = None
 
     ## Return 3D hypothesis holding the 1D one
@@ -1395,32 +1437,37 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     #                     same parameters, else (default) - create new
     def NumberOfLayers(self, n, UseExisting=0):
         self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
-        self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting)
+        self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting,
+                                        CompareMethod=self.CompareNumberOfLayers)
         self.nbLayers.SetNumberOfLayers( n )
         return self.nbLayers
+
+    ## Check if the given "NumberOfLayers" hypothesis has the same parameters as given arguments
+    def CompareNumberOfLayers(self, hyp, args):
+        return IsEqual(hyp.GetNumberOfLayers(), args[0])
 
     ## Define "LocalLength" hypothesis, specifying segment length
     #  to build between the inner and outer shells
     #  @param l for the length of segments
     def LocalLength(self, l):
-        hyp = self.OwnHypothesis("LocalLength", [l] )
+        hyp = self.OwnHypothesis("LocalLength", [l])
         hyp.SetLength(l)
         return hyp
-        
+
     ## Define "NumberOfSegments" hypothesis, specifying a number of layers of
     #  prisms to build between the inner and outer shells
     #  @param n for the number of segments
     #  @param s for the scale factor (optional)
     def NumberOfSegments(self, n, s=[]):
         if s == []:
-            hyp = self.OwnHypothesis("NumberOfSegments", [n] )
+            hyp = self.OwnHypothesis("NumberOfSegments", [n])
         else:
             hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
             hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
-        
+
     ## Define "Arithmetic1D" hypothesis, specifying distribution of segments
     #  to build between the inner and outer shells as arithmetic length increasing
     #  @param start for the length of the first segment
@@ -1430,7 +1477,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
-        
+
     ## Define "StartEndLength" hypothesis, specifying distribution of segments
     #  to build between the inner and outer shells as geometric length increasing
     #  @param start for the length of the first segment
@@ -1440,7 +1487,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
-        
+
     ## Define "AutomaticLength" hypothesis, specifying number of segments
     #  to build between the inner and outer shells
     #  @param fineness for the fineness [0-1]
@@ -1453,23 +1500,10 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
 # -------------------------------
 class Mesh_UseExisting(Mesh_Algorithm):
 
-    #17908#algo1D = 0 # StdMeshers_UseExisting_1D object common for all Mesh_UseExisting
-    #17908#algo2D = 0 # StdMeshers_UseExisting_2D object common for all Mesh_UseExisting
-
     def __init__(self, dim, mesh, geom=0):
         if dim == 1:
-            #17908#if not Mesh_UseExisting.algo1D:
-            #17908#    Mesh_UseExisting.algo1D= self.Create(mesh, geom, "UseExisting_1D")
-            #17908#else:
-            #17908#    self.Assign( Mesh_UseExisting.algo1D, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "UseExisting_1D")
         else:
-            #17908#if not Mesh_UseExisting.algo2D:
-            #17908#    Mesh_UseExisting.algo2D= self.Create(mesh, geom, "UseExisting_2D")
-            #17908#else:
-            #17908#    self.Assign( Mesh_UseExisting.algo2D, mesh, geom)
-            #17908#    pass
             self.Create(mesh, geom, "UseExisting_2D")
 
 # Public class: Mesh
@@ -1516,7 +1550,7 @@ class Mesh:
     def SetMesh(self, theMesh):
         self.mesh = theMesh
         self.geom = self.mesh.GetShapeToMesh()
-            
+
     ## Method that returns the mesh
     #  @return SMESH_Mesh object
     def GetMesh(self):
@@ -1530,7 +1564,7 @@ class Mesh:
     ## Set name to mesh
     def SetName(self, name):
         SetName(self.GetMesh(), name)
-    
+
     ## Get the subMesh object associated to a subShape. The subMesh object
     #  gives access to nodes and elements IDs.
     #  \n SubMesh will be used instead of SubShape in a next idl version to
@@ -1538,7 +1572,7 @@ class Mesh:
     def GetSubMesh(self, theSubObject, name):
         submesh = self.mesh.GetSubMesh(theSubObject, name)
         return submesh
-        
+
     ## Method that returns the shape associated to the mesh
     #  @return GEOM_Object
     def GetShape(self):
@@ -1562,7 +1596,7 @@ class Mesh:
     #  @return a list of errors
     def GetAlgoState(self, theSubObject):
         return self.smeshpyD.GetAlgoState(self.mesh, theSubObject)
-    
+
     ## Return geometrical object the given element is built on.
     #  The returned geometrical object, if not nil, is either found in the
     #  study or is published by this method with the given name
@@ -1572,7 +1606,7 @@ class Mesh:
     #  @return GEOM::GEOM_Object instance
     def GetGeometryByMeshElement(self, theElementID, theGeomName):
         return self.smeshpyD.GetGeometryByMeshElement( self.mesh, theElementID, theGeomName )
-        
+
     ## Returns mesh dimension depending on shape one
     def MeshDimension(self):
         shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SHELL"] )
@@ -1585,7 +1619,7 @@ class Mesh:
         else:
             return 0;
         pass
-        
+
     ## Creates a segment discretization 1D algorithm.
     #  If the optional \a algo parameter is not sets, this algorithm is REGULAR.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
@@ -1606,7 +1640,7 @@ class Mesh:
             return Mesh_CompositeSegment(self, geom)
         else:
             return Mesh_Segment(self, geom)
-        
+
     ## Enable creation of nodes and segments usable by 2D algoritms.
     #  Added nodes and segments must be bound to edges and vertices by
     #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
@@ -1639,9 +1673,9 @@ class Mesh:
         if ( isinstance( algo, geompyDC.GEOM._objref_GEOM_Object)):
             geom = algo
             algo = MEFISTO
-        
+
         return Mesh_Triangle(self,  algo, geom)
-        
+
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
@@ -1662,7 +1696,7 @@ class Mesh:
             if not algo: algo = NETGEN
             pass
         return Mesh_Tetrahedron(self,  algo, geom)
-        
+
     ## Creates a hexahedron 3D algorithm for solids.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
@@ -1795,7 +1829,7 @@ class Mesh:
             self.Tetrahedron(NETGEN)
             pass
         return self.Compute()
-        
+
     ## Compute hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
     #  The parameter \a fineness [0,-1] defines mesh fineness
     def AutomaticHexahedralization(self, fineness=0):
@@ -1814,7 +1848,7 @@ class Mesh:
     ## Assign hypothesis
     #  @param hyp is a hypothesis to assign
     #  @param geom is subhape of mesh geometry
-    def AddHypothesis(self, hyp, geom=0 ):
+    def AddHypothesis(self, hyp, geom=0):
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
@@ -1825,11 +1859,11 @@ class Mesh:
         isAlgo = hyp._narrow( SMESH_Algo )
         TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
         return status
-    
+
     ## Unassign hypothesis
     #  @param hyp is a hypothesis to unassign
     #  @param geom is subhape of mesh geometry
-    def RemoveHypothesis(self, hyp, geom=0 ):
+    def RemoveHypothesis(self, hyp, geom=0):
         if isinstance( hyp, Mesh_Algorithm ):
             hyp = hyp.GetAlgorithm()
             pass
@@ -1851,7 +1885,7 @@ class Mesh:
             self.mesh.RemoveHypothesis( self.geom, hyp )
             pass
         pass
-        
+
     ## Create a mesh group based on geometric object \a grp
     #  and give a \a name, \n if this parameter is not defined
     #  the name is the same as the geometric group name \n
@@ -1861,14 +1895,14 @@ class Mesh:
     #  @return SMESH_GroupOnGeom
     def Group(self, grp, name=""):
         return self.GroupOnGeom(grp, name)
-       
+
     ## Deprecated, only for compatibility! Please, use ExportMED() method instead.
     #  Export the mesh in a file with the MED format and choice the \a version of MED format
     #  @param f is the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
     def ExportToMED(self, f, version, opt=0):
         self.mesh.ExportToMED(f, opt, version)
-        
+
     ## Export the mesh in a file with the MED format
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
@@ -1877,17 +1911,17 @@ class Mesh:
     #  @param version MED format version(MED_V2_1 or MED_V2_2)
     def ExportMED(self, f, auto_groups=0, version=MED_V2_2):
         self.mesh.ExportToMED(f, auto_groups, version)
-        
+
     ## Export the mesh in a file with the DAT format
     #  @param f is the file name
     def ExportDAT(self, f):
         self.mesh.ExportDAT(f)
-        
+
     ## Export the mesh in a file with the UNV format
     #  @param f is the file name
     def ExportUNV(self, f):
         self.mesh.ExportUNV(f)
-        
+
     ## Export the mesh in a file with the STL format
     #  @param f is the file name
     #  @param ascii defined the kind of file contents
@@ -1904,7 +1938,7 @@ class Mesh:
     #  @return SMESH_Group
     def CreateEmptyGroup(self, elementType, name):
         return self.mesh.CreateGroup(elementType, name)
-    
+
     ## Creates a mesh group based on geometric object \a grp
     #  and give a \a name, \n if this parameter is not defined
     #  the name is the same as the geometric group name
@@ -1956,7 +1990,7 @@ class Mesh:
         group = self.mesh.CreateGroup(elementType, groupName)
         group.Add(elemIDs)
         return group
-    
+
     ## Create a mesh group by the given conditions
     #  @param groupName is the name of the mesh group
     #  @param elementType is the type of elements in the group
@@ -1988,7 +2022,7 @@ class Mesh:
         aFilter.SetCriteria(aCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
-    
+
     ## Create a mesh group by the given criteria(list of criterions)
     #  @param groupName is the name of the mesh group
     #  @param Criteria is the list of criterions
@@ -1999,7 +2033,7 @@ class Mesh:
         aFilter.SetCriteria(theCriteria)
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
-    
+
     ## Create a mesh group by the given filter
     #  @param groupName is the name of the mesh group
     #  @param Criterion is the instance of Filter class
@@ -2033,7 +2067,7 @@ class Mesh:
     ## Remove group with its contents
     def RemoveGroupWithContents(self, group):
         self.mesh.RemoveGroupWithContents(group)
-        
+
     ## Get the list of groups existing in the mesh
     def GetGroups(self):
         return self.mesh.GetGroups()
@@ -2061,7 +2095,7 @@ class Mesh:
     #  present in both initial groups are added to the new one.
     def IntersectGroups(self, group1, group2, name):
         return self.mesh.IntersectGroups(group1, group2, name)
-    
+
     ## Cut of two groups
     #  New group is created. All mesh elements that are present in
     #  main group but do not present in tool group are added to the new one
@@ -2106,7 +2140,7 @@ class Mesh:
     #  Consider maximum group name length stored in MED file.
     def HasDuplicatedGroupNamesMED(self):
         return self.mesh.HasDuplicatedGroupNamesMED()
-        
+
     ## Obtain instance of SMESH_MeshEditor
     def GetMeshEditor(self):
         return self.mesh.GetMeshEditor()
@@ -2114,8 +2148,8 @@ class Mesh:
     ## Get MED Mesh
     def GetMEDMesh(self):
         return self.mesh.GetMEDMesh()
-    
-    
+
+
     # Get informations about mesh contents:
     # ------------------------------------
 
@@ -2136,7 +2170,7 @@ class Mesh:
     #  ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     def NbEdgesOfOrder(self, elementOrder):
         return self.mesh.NbEdgesOfOrder(elementOrder)
-    
+
     ## Returns number of faces in mesh
     def NbFaces(self):
         return self.mesh.NbFaces()
@@ -2241,10 +2275,10 @@ class Mesh:
     ## Returns list of mesh nodes ids
     def GetNodesId(self):
         return self.mesh.GetNodesId()
-    
+
     # Get informations about mesh elements:
     # ------------------------------------
-    
+
     ## Returns type of mesh element
     def GetElementType(self, id, iselem):
         return self.mesh.GetElementType(id, iselem)
@@ -2268,7 +2302,7 @@ class Mesh:
         else:
             ShapeID = Shape
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
-    
+
     ## Returns list of ids of submesh elements with given type
     #  @param Shape is geom object(subshape) IOR
     #  Shape must be subshape of a ShapeToMesh()
@@ -2278,12 +2312,12 @@ class Mesh:
         else:
             ShapeID = Shape
         return self.mesh.GetSubMeshElementType(ShapeID)
-      
+
     ## Get mesh description
     def Dump(self):
         return self.mesh.Dump()
 
-    
+
     # Get information about nodes and elements of mesh by its ids:
     # -----------------------------------------------------------
 
@@ -2312,7 +2346,7 @@ class Mesh:
     #  \n If there is not element for given ID - returns -1
     def GetShapeIDForElem(self,id):
         return self.mesh.GetShapeIDForElem(id)
-    
+
     ## Returns number of nodes for given element
     #  \n If there is not element for given ID - returns -1
     def GetElemNbNodes(self, id):
@@ -2332,7 +2366,7 @@ class Mesh:
     #  in given quadratic element
     def IsMediumNode(self, elementID, nodeID):
         return self.mesh.IsMediumNode(elementID, nodeID)
-    
+
     ## Returns true if given node is medium node
     #  in one of quadratic elements
     def IsMediumNodeOfAnyElem(self, nodeID, elementType):
@@ -2341,7 +2375,7 @@ class Mesh:
     ## Returns number of edges for given element
     def ElemNbEdges(self, id):
         return self.mesh.ElemNbEdges(id)
-        
+
     ## Returns number of faces for given element
     def ElemNbFaces(self, id):
         return self.mesh.ElemNbFaces(id)
@@ -2359,8 +2393,8 @@ class Mesh:
     #  \n If there is not element for given ID - returns empty list
     def BaryCenter(self, id):
         return self.mesh.BaryCenter(id)
-    
-    
+
+
     # Mesh edition (SMESH_MeshEditor functionality):
     # ---------------------------------------------
 
@@ -2378,7 +2412,7 @@ class Mesh:
     def AddNode(self, x, y, z):
         return self.editor.AddNode( x, y, z)
 
-    
+
     ## Create edge both similar and quadratic (this is determed
     #  by number of given nodes).
     #  @param IdsOfNodes List of node IDs for creation of element.
@@ -2396,11 +2430,11 @@ class Mesh:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
     def AddFace(self, IDsOfNodes):
         return self.editor.AddFace(IDsOfNodes)
-    
+
     ## Add polygonal face to mesh by list of nodes ids
     def AddPolygonalFace(self, IdsOfNodes):
         return self.editor.AddPolygonalFace(IdsOfNodes)
-    
+
     ## Create volume both similar and quadratic (this is determed
     #  by number of given nodes).
     #  @param IdsOfNodes List of node IDs for creation of element.
@@ -2424,7 +2458,7 @@ class Mesh:
     #         of the given faces, not to the faces itself.
     def AddPolyhedralVolumeByFaces (self, IdsOfFaces):
         return self.editor.AddPolyhedralVolumeByFaces(IdsOfFaces)
-    
+
 
     ## @brief Bind a node to a vertex
     # @param NodeID - node ID
@@ -2762,7 +2796,7 @@ class Mesh:
         self.SplitQuadsNearTriangularFacets()
 
         return isDone
-    
+
     ## Smooth elements
     #  @param IDsOfElements list if ids of elements to smooth
     #  @param IDsOfFixedNodes list of ids of fixed nodes.
@@ -2776,7 +2810,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
-    
+
     ## Smooth elements belong to given object
     #  @param theObject object to smooth
     #  @param IDsOfFixedNodes list of ids of fixed nodes.
@@ -2788,7 +2822,7 @@ class Mesh:
                      MaxNbOfIterations, MaxxAspectRatio, Method):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        return self.editor.SmoothObject(theObject, IDsOfFixedNodes, 
+        return self.editor.SmoothObject(theObject, IDsOfFixedNodes,
                                         MaxNbOfIterations, MaxxAspectRatio, Method)
 
     ## Parametric smooth the given elements
@@ -2804,7 +2838,7 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
-    
+
     ## Parametric smooth elements belong to given object
     #  @param theObject object to smooth
     #  @param IDsOfFixedNodes list of ids of fixed nodes.
@@ -2936,7 +2970,7 @@ class Mesh:
             return self.editor.ExtrusionSweepObject1DMakeGroups(theObject, StepVector, NbOfSteps)
         self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
         return []
-    
+
     ## Generate new elements by extrusion of the elements belong to object
     #  @param theObject object wich elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion
@@ -3007,7 +3041,7 @@ class Mesh:
         return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape,
                                                     NodeStart, HasAngles, Angles, HasRefPoint,
                                                     RefPoint)
-    
+
     ## Symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
     #  @param Mirror is AxisStruct or geom object(point, line, plane)
@@ -3068,7 +3102,7 @@ class Mesh:
     def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType,MakeGroups=0, NewMeshName=""):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Mirror, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Mirror, geompyDC.GEOM._objref_GEOM_Object)):
             Mirror = GetAxisStruct(Mirror)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
@@ -3123,9 +3157,9 @@ class Mesh:
     #  @param MakeGroups to generate new groups from existing ones
     #  @param NewMeshName is a name of new mesh to create
     def TranslateObjectMakeMesh(self, theObject, Vector, MakeGroups=False, NewMeshName=""):
-        if ( isinstance( theObject, Mesh )):
+        if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
-        if ( isinstance( Vector, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Vector, geompyDC.GEOM._objref_GEOM_Object)):
             Vector = self.smeshpyD.GetDirStruct(Vector)
         mesh = self.editor.TranslateObjectMakeMesh(theObject, Vector, MakeGroups, NewMeshName)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
@@ -3168,9 +3202,9 @@ class Mesh:
     #  @param Copy allows to copy the rotated elements
     #  @param MakeGroups to generate new groups from existing ones (if Copy)
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
-        if ( isinstance( theObject, Mesh )):
+        if (isinstance(theObject, Mesh)):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         if Copy and MakeGroups:
             return self.editor.RotateObjectMakeGroups(theObject, Axis, AngleInRadians)
@@ -3184,9 +3218,9 @@ class Mesh:
     #  @param MakeGroups to generate new groups from existing ones
     #  @param NewMeshName is a name of new mesh to create
     def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
-        if ( isinstance( theObject, Mesh )):
+        if (isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
-        if ( isinstance( Axis, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(Axis, geompyDC.GEOM._objref_GEOM_Object)):
             Axis = self.smeshpyD.GetAxisStruct(Axis)
         mesh = self.editor.RotateObjectMakeMesh(theObject, Axis, AngleInRadians,
                                                        MakeGroups, NewMeshName)
@@ -3224,7 +3258,7 @@ class Mesh:
     ## Remove all but one of elements built on the same nodes.
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
-        
+
     ## Sew free borders
     def SewFreeBorders (self, FirstNodeID1, SecondNodeID1, LastNodeID1,
                         FirstNodeID2, SecondNodeID2, LastNodeID2,
@@ -3238,7 +3272,7 @@ class Mesh:
                                FirstNodeID2, SecondNodeID2):
         return self.editor.SewConformFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
                                                  FirstNodeID2, SecondNodeID2)
-    
+
     ## Sew border to side
     def SewBorderToSide (self, FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,
                          FirstNodeIDOnSide, LastNodeIDOnSide, CreatePolygons, CreatePolyedrs):
@@ -3264,7 +3298,7 @@ class Mesh:
     #  @return If number of nodes is not corresponded to type of element - returns false
     def ChangeElemNodes(self, ide, newIDs):
         return self.editor.ChangeElemNodes(ide, newIDs)
-    
+
     ## If during last operation of MeshEditor some nodes were
     #  created this method returns list of its IDs, \n
     #  if new nodes not created - returns empty list
