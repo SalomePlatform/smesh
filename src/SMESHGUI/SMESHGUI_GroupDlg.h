@@ -80,6 +80,8 @@ public:
 		       bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_GroupDlg();
 
+    static QString GetDefaultName(const QString& theOperation);
+
 public slots:
 
     void onAdd();
@@ -152,6 +154,7 @@ private:
     
     QButtonGroup*                 myTypeGroup;
     QLineEdit*                    myName;
+    QString                       myOldName;
 
     QButtonGroup*                 myGrpTypeGroup;
 
