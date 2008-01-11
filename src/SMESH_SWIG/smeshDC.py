@@ -1421,7 +1421,7 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     ## Private method creating 1D hypothes and storing it in the LayerDistribution
     #  hypothes. Returns the created hypothes
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
-        print "OwnHypothesis",hypType
+        #print "OwnHypothesis",hypType
         if not self.nbLayers is None:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
