@@ -3103,7 +3103,7 @@ class Mesh:
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if (isinstance(Mirror, geompyDC.GEOM._objref_GEOM_Object)):
-            Mirror = GetAxisStruct(Mirror)
+            Mirror = self.smeshpyD.GetAxisStruct(Mirror)
         mesh = self.editor.MirrorObjectMakeMesh(theObject, Mirror, theMirrorType,
                                                 MakeGroups, NewMeshName)
         return Mesh( self.smeshpyD,self.geompyD,mesh )
