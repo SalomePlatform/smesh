@@ -35,6 +35,7 @@
 #include "SMESHGUI_RemoveElementsDlg.h"
 #include "SMESHGUI_MeshInfosDlg.h"
 #include "SMESHGUI_StandardMeshInfosDlg.h"
+#include "SMESHGUI_WhatIsDlg.h"
 #include "SMESHGUI_Preferences_ColorDlg.h"
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 #include "SMESHGUI_Preferences_SelectionDlg.h"
@@ -1886,6 +1887,13 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 903:					// WHAT IS
+    {
+      EmitSignalDeactivateDialog();
+      new SMESHGUI_WhatIsDlg( this, "", false);
+      break;
+    }
+
   case 1100:					// EDIT HYPOTHESIS
     {
       if(checkLock(aStudy)) break;
@@ -2469,6 +2477,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  813, "DEL_GROUP",       "ICON_DEL_GROUP" );
   createSMESHAction(  900, "ADV_INFO",        "ICON_ADV_INFO" );
   createSMESHAction(  902, "STD_INFO",        "ICON_STD_INFO" );
+  createSMESHAction(  903, "WHAT_IS",         "ICON_WHAT_IS" );
   createSMESHAction( 6001, "LENGTH",          "ICON_LENGTH" ,       0, true );
   createSMESHAction( 6002, "FREE_EDGE",       "ICON_FREE_EDGE" ,    0, true );
   createSMESHAction( 6003, "FREE_BORDER",     "ICON_FREE_EDGE_2D" , 0, true );
@@ -2602,6 +2611,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( separator(), meshId, -1 );
   createMenu( 900, meshId, -1 );
   createMenu( 902, meshId, -1 );
+  createMenu( 903, meshId, -1 );
   createMenu( separator(), meshId, -1 );
 
   createMenu( 6003, ctrlId, -1 );
@@ -2688,6 +2698,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), meshTb );
   createTool( 900, meshTb );
   createTool( 902, meshTb );
+  createTool( 903, meshTb );
   createTool( separator(), meshTb );
 
   createTool( 6001, ctrlTb );
@@ -2785,6 +2796,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, OB, mesh_group );                  // UPDATE
   createPopupItem( 900, OB, mesh_group );                  // ADV_INFO
   createPopupItem( 902, OB, mesh );                        // STD_INFO
+  createPopupItem( 903, OB, mesh_group );                  // WHAT_IS
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 802, OB, subMesh );                     // CONSTRUCT_GROUP
@@ -2810,6 +2822,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 214, View, mesh_group ); // UPDATE
   createPopupItem( 900, View, mesh_group ); // ADV_INFO
   createPopupItem( 902, View, mesh );       // STD_INFO
+  createPopupItem( 903, View, mesh_group ); // WHAT_IS
   popupMgr()->insert( separator(), -1, 0 );
 
   createPopupItem( 1136, OB + " " + View, mesh, "&& (not isAutoColor)" ); // AUTO_COLOR
