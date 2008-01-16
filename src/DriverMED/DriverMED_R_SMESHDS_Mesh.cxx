@@ -795,7 +795,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 	theGroup->SMDSGroup().Add(element);
       }
       if ( element )
-        theGroup->SetType( element->GetType() );
+        theGroup->SetType( theGroup->SMDSGroup().GetType() );
     }
   }
 }
