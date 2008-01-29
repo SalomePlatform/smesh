@@ -176,6 +176,10 @@ public:
    *  Consider maximum group name length stored in MED file.
    */
   CORBA::Boolean HasDuplicatedGroupNamesMED();
+  /*!
+   * Return string representation of a MED file version comprising nbDigits
+   */
+  char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
   void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
     throw (SALOME::SALOME_Exception);

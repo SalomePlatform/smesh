@@ -37,6 +37,7 @@
 #include "SMESH_subMesh_i.hxx"
 
 #include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
@@ -242,6 +243,19 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   CreateGroupServants();
 
   return ConvertDriverMEDReadStatus(status);
+}
+
+//================================================================================
+/*!
+ * \brief Return string representation of a MED file version comprising nbDigits
+ */
+//================================================================================
+
+char* SMESH_Mesh_i::GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits)
+{
+  std::string ver = DriverMED_W_SMESHDS_Mesh::GetVersionString(MED::EVersion(version),
+                                                               nbDigits);
+  return CORBA::string_dup( ver.c_str() );
 }
 
 //=============================================================================

@@ -411,6 +411,11 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Return string representation of a MED file version comprising nbDigits
+     */
+    string GetVersionString(in MED_VERSION version, in short nbDigits);
+
+    /*!
      * Export Mesh to DAT, UNV and STL Formats
      * (UNV supported version is I-DEAS 10)
      */
