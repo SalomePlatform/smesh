@@ -113,6 +113,9 @@ namespace SMESH{
       aMsg = QObject::tr(aMsg).arg(aHypName) +
 	QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus));
 
+      if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) // PAL18501
+        aMsg = aMsg.arg( GetHypothesisData(theHyp->GetName())->Dim[0] );
+
       SUIT_MessageBox::warn1(SMESHGUI::desktop(),
 			    QObject::tr("SMESH_WRN_WARNING"),
 			    aMsg,

@@ -1319,7 +1319,7 @@ msgid "SMESH_HYP_3"
 msgstr "Hypothesis has a bad parameter value"
 
 msgid "SMESH_HYP_4"
-msgstr "Algorithm is hidden by an algorithm of upper dimension generating all-dimensions elements"
+msgstr "Submesh is ignored as there is another algorithm of upper dimension generating %1D elements"
 
 msgid "SMESH_HYP_5"
 msgstr "Algorithm hides algorithm(s) of lower dimension by generating all-dimensions elements"
