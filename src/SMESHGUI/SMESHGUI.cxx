@@ -278,9 +278,11 @@ using namespace std;
               if (aRet)
                 return;
             }
-
-            aFilterMap.insert( QObject::tr("MED 2.1 (*.med)"), SMESH::MED_V2_1 );
-            aFilterMap.insert( QObject::tr("MED 2.2 (*.med)"), SMESH::MED_V2_2 );
+            // PAL18696
+            QString v21( aMesh->GetVersionString( SMESH::MED_V2_1, 2));
+            QString v22( aMesh->GetVersionString( SMESH::MED_V2_2, 2));
+            aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
+            aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
           }
 	  break;
 	case 124:
