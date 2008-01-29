@@ -66,6 +66,24 @@ void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
   return SetFile(theFileName,MED::eV2_2);
 }
 
+string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion, int theNbDigits)
+{
+  TInt majeur, mineur, release;
+  majeur =  mineur = release = 0;
+  if ( theVersion == eV2_1 )
+    MED::GetVersionRelease<eV2_1>(majeur, mineur, release);
+  else
+    MED::GetVersionRelease<eV2_2>(majeur, mineur, release);
+  ostringstream name;
+  if ( theNbDigits > 0 )
+    name << majeur;
+  if ( theNbDigits > 1 )
+    name << "." << mineur;
+  if ( theNbDigits > 2 )
+    name << "." << release;
+  return name.str();
+}
+
 void DriverMED_W_SMESHDS_Mesh::SetMeshName(const std::string& theMeshName)
 {
   myMeshName = theMeshName;
