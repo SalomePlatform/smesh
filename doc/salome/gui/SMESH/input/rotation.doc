@@ -18,10 +18,12 @@ rotated and the rotation parameters:
 <li>\b Axis: point and vector</li>
 <li>\b Angle of rotation</li>
 </ul>
-<b>Create a Copy</b> checkbox allows creating a new mesh, the source
-mesh (or group of elements remains at its initial location).
-<b>Generate Groups</b> checkbox allows copying the groups of elements
-of the source mesh to the newly created one.
+
+\n Toggle the corresponding checkbox to <b> Select whole mesh, submesh or group.</b>  
+\n When <b>Move elements</b> radio button is selected, the source mesh (or elements) is created at the new location and erased from its previous location
+\n When <b>Copy elements</b> radio button is selected,the source mesh (or elements) is created at the new location, but it also remains at its previous location and is considered one and single mesh with the result of the rotation.
+\n When <b>Create as new mesh</b> radio button is selected, the source mesh (or elements) remains at its previous location and a new mesh is created at the new location and appears in the Object Browser with the default name MeshName_rotated (you can change this name in the adjacent box).
+\n <b> Copy groups </b> checkbox allows copying the groups of elements of the source mesh to the newly created one.
 \par
 
 
