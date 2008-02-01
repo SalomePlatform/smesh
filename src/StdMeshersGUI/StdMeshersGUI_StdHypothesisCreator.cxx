@@ -708,14 +708,14 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
  */
 //================================================================================
 
-void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int param) const
+void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int) const
 {
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    if (param == 0) // Length
+    if (sb->name() == tr("SMESH_LOCAL_LENGTH_PARAM"))
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
-    else // Precision
+    else if (sb->name() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
       sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
