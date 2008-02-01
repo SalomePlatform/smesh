@@ -119,7 +119,7 @@ namespace {
       return;
     for ( int iE = 0; iE < side.NbEdges(); ++iE )
     {
-      // set listener and its data 
+      // set listener and its data
       EventListenerData * listenerData = new EventListenerData(true);
       const TopoDS_Edge& edge = side.Edge( iE );
       SMESH_subMesh * sm = side.GetMesh()->GetSubMesh( edge );
@@ -333,7 +333,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   auto_ptr< BRepAdaptor_CompCurve > C3d ( side->GetCurve3d() );
   double f = C3d->FirstParameter(), l = C3d->LastParameter();
   list< double > params;
-  if ( !computeInternalParameters ( *C3d, side->Length(), f, l, params, false ))
+  if ( !computeInternalParameters ( aMesh, *C3d, side->Length(), f, l, params, false ))
     return false;
 
   // Redistribute parameters near ends
@@ -349,7 +349,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
 
   const SMDS_MeshNode * nFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
   const SMDS_MeshNode * nLast  = SMESH_Algo::VertexNode( VLast, meshDS );
-  if (!nFirst) 
+  if (!nFirst)
     return error(COMPERR_BAD_INPUT_MESH, TComm("No node on vertex ")
                  <<meshDS->ShapeToIndex(VFirst));
   if (!nLast)
@@ -414,4 +414,3 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
 
   return true;
 }
-

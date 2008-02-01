@@ -388,6 +388,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetPrecision( params[1].myValue.toDouble() );
     }
     else if( hypType()=="SegmentLengthAroundVertex" )
     {
@@ -534,6 +535,9 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
     item.myValue = h->GetLength();
+    p.append( item );
+    item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
+    item.myValue = h->GetPrecision();
     p.append( item );
   }
   else if( hypType()=="SegmentLengthAroundVertex" )
@@ -704,12 +708,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
  */
 //================================================================================
 
-void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int ) const
+void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int param) const
 {
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    if (param == 0) // Length
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    else // Precision
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {

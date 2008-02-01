@@ -43,13 +43,33 @@ module StdMeshers
     /*!
      * Sets <length> parameter value
      */
-    void SetLength(in double length) 
+    void SetLength(in double length)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <precision> parameter value
+     *
+     * Precision parameter is used to allow rounding a number of segments,
+     * calculated from the edge length and average length of segment,
+     * to the lower integer, if this value outstands from it in bounds of the precision.
+     * Otherwise, the number of segments is rounded to the higher integer.
+     * Use value 0.5 to provide rounding to the nearest integer,
+     * 1.0 for the lower integer, 0.0 for the higher integer.
+     * Default value is 1e-07. In old studies, restored from file,
+     * this value will be set to zero, what corresponds to the old behaviour.
+     */
+    void SetPrecision(in double precision)
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Returns <length> parameter value
      */
     double GetLength();
+
+    /*!
+     * Returns <precision> parameter value
+     */
+    double GetPrecision();
   };
 
   /*!
@@ -85,7 +105,7 @@ module StdMeshers
     /*!
      * Sets <number of segments> parameter value
      */
-    void SetNumberOfSegments(in long segmentsNumber) 
+    void SetNumberOfSegments(in long segmentsNumber)
       raises (SALOME::SALOME_Exception);
 
     /*!

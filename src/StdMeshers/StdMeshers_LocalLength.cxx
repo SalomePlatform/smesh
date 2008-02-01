@@ -43,6 +43,7 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
+#include <Precision.hxx>
 
 using namespace std;
 
@@ -56,6 +57,7 @@ StdMeshers_LocalLength::StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen
   :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _length = 1.;
+  _precision = Precision::Confusion();
   _name = "LocalLength";
   _param_algo_dim = 1; // is used by SMESH_Regular_1D
 }
@@ -78,12 +80,13 @@ StdMeshers_LocalLength::~StdMeshers_LocalLength()
 
 void StdMeshers_LocalLength::SetLength(double length) throw(SALOME_Exception)
 {
-	double oldLength = _length;
-	if (length <= 0)
-		throw SALOME_Exception(LOCALIZED("length must be positive"));
-	_length = length;
-	if (oldLength != _length)
-		NotifySubMeshesHypothesisModification();
+  double oldLength = _length;
+  if (length <= 0)
+    throw SALOME_Exception(LOCALIZED("length must be positive"));
+  _length = length;
+  const double precision = 1e-7;
+  if (fabs(oldLength - _length) > precision)
+    NotifySubMeshesHypothesisModification();
 }
 
 //=============================================================================
@@ -94,7 +97,33 @@ void StdMeshers_LocalLength::SetLength(double length) throw(SALOME_Exception)
 
 double StdMeshers_LocalLength::GetLength() const
 {
-	return _length;
+  return _length;
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+void StdMeshers_LocalLength::SetPrecision (double thePrecision) throw(SALOME_Exception)
+{
+  double oldPrecision = _precision;
+  if (_precision < 0)
+    throw SALOME_Exception(LOCALIZED("precision cannot be negative"));
+  _precision = thePrecision;
+  const double precision = 1e-8;
+  if (fabs(oldPrecision - _precision) > precision)
+    NotifySubMeshesHypothesisModification();
+}
+
+//=============================================================================
+/*!
+ *  
+ */
+//=============================================================================
+double StdMeshers_LocalLength::GetPrecision() const
+{
+  return _precision;
 }
 
 //=============================================================================
@@ -105,7 +134,7 @@ double StdMeshers_LocalLength::GetLength() const
 
 ostream & StdMeshers_LocalLength::SaveTo(ostream & save)
 {
-  save << this->_length;
+  save << this->_length << " " << this->_precision;
   return save;
 }
 
@@ -119,11 +148,23 @@ istream & StdMeshers_LocalLength::LoadFrom(istream & load)
 {
   bool isOK = true;
   double a;
+
   isOK = (load >> a);
   if (isOK)
     this->_length = a;
   else
     load.clear(ios::badbit | load.rdstate());
+
+  isOK = (load >> a);
+  if (isOK)
+    this->_precision = a;
+  else
+  {
+    load.clear(ios::badbit | load.rdstate());
+    // old format, without precision
+    _precision = 0.;
+  }
+
   return load;
 }
 
@@ -189,6 +230,8 @@ bool StdMeshers_LocalLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
   }
   if ( nbEdges )
     _length /= nbEdges;
+
+  _precision = Precision::Confusion();
 
   return nbEdges;
 }

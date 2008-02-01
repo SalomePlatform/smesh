@@ -146,7 +146,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     const StdMeshers_LocalLength * hyp =
       dynamic_cast <const StdMeshers_LocalLength * >(theHyp);
     ASSERT(hyp);
-    _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength();
+    //_value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength();
+    _value[ BEG_LENGTH_IND ] = hyp->GetLength();
+    _value[ END_LENGTH_IND ] = hyp->GetPrecision();
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
     _hypType = LOCAL_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
@@ -224,7 +226,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis
     StdMeshers_AutomaticLength * hyp = const_cast<StdMeshers_AutomaticLength *>
       (dynamic_cast <const StdMeshers_AutomaticLength * >(theHyp));
     ASSERT(hyp);
-    _value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+    //_value[ BEG_LENGTH_IND ] = _value[ END_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+    _value[ BEG_LENGTH_IND ] = hyp->GetLength( &aMesh, aShape );
+    _value[ END_LENGTH_IND ] = Precision::Confusion(); // ?? or set to zero?
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
     _hypType = LOCAL_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
@@ -243,7 +247,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
   // never do this way
   //OSD::SetSignal( true );
 
-  if( nbSeg<=0 )
+  if (nbSeg <= 0)
     return false;
 
   MESSAGE( "computeParamByFunc" );
@@ -251,12 +255,12 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
   int nbPnt = 1 + nbSeg;
   vector<double> x(nbPnt, 0.);
 
-  if( !buildDistribution( func, 0.0, 1.0, nbSeg, x, 1E-4 ) )
+  if (!buildDistribution(func, 0.0, 1.0, nbSeg, x, 1E-4))
      return false;
 
   MESSAGE( "Points:\n" );
   char buf[1024];
-  for( int i=0; i<=nbSeg; i++ )
+  for ( int i=0; i<=nbSeg; i++ )
   {
     sprintf(  buf, "%f\n", float(x[i] ) );
     MESSAGE( buf );
@@ -524,7 +528,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
           std::swap( algo._value[ BEG_LENGTH_IND ], algo._value[ END_LENGTH_IND ]);
         }
         list<double> params;
-        if ( algo.computeInternalParameters( theC3d, L, from, to, params, false ))
+        if ( algo.computeInternalParameters( theMesh, theC3d, L, from, to, params, false ))
         {
           if ( isEnd1 ) params.reverse();
           while ( 1 + nHalf-- )
@@ -547,12 +551,14 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
  *  
  */
 //=============================================================================
-bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
+bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
+                                                      Adaptor3d_Curve& theC3d,
                                                       double           theLength,
                                                       double           theFirstU,
                                                       double           theLastU,
                                                       list<double> &   theParams,
-                                                      const bool       theReverse)
+                                                      const bool       theReverse,
+                                                      bool             theConsiderPropagation)
 {
   theParams.clear();
 
@@ -568,6 +574,38 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
     {
       // Local Length hypothesis
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
+
+      // NPAL17873:
+      bool isFound = false;
+      if (theConsiderPropagation && !_mainEdge.IsNull()) // propagated from some other edge
+      {
+        // Advanced processing to assure equal number of segments in case of Propagation
+        SMESH_subMesh* sm = theMesh.GetSubMeshContaining(_mainEdge);
+        if (sm) {
+          bool computed = sm->IsMeshComputed();
+          if (!computed) {
+            if (sm->GetComputeState() == SMESH_subMesh::READY_TO_COMPUTE) {
+              sm->ComputeStateEngine(SMESH_subMesh::COMPUTE);
+              computed = sm->IsMeshComputed();
+            }
+          }
+          if (computed) {
+            SMESHDS_SubMesh* smds = sm->GetSubMeshDS();
+            int nb_segments = smds->NbElements();
+            if (nbseg - 1 <= nb_segments && nb_segments <= nbseg + 1) {
+              isFound = true;
+              nbseg = nb_segments;
+            }
+          }
+        }
+      }
+      if (!isFound) // not found by meshed edge in the propagation chain, use precision
+      {
+        double aPrecision = _value[ END_LENGTH_IND ];
+        double nbseg_prec = ceil((theLength / _value[ BEG_LENGTH_IND ]) - aPrecision);
+        if (nbseg_prec == (nbseg - 1)) nbseg--;
+      }
+
       if (nbseg <= 0)
         nbseg = 1;                        // degenerated edge
       eltSize = theLength / nbseg;
@@ -736,14 +774,14 @@ bool StdMeshers_Regular_1D::computeInternalParameters(Adaptor3d_Curve& theC3d,
  */
 //=============================================================================
 
-bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
+bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & theShape)
 {
   if ( _hypType == NONE )
     return false;
 
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
-  const TopoDS_Edge & EE = TopoDS::Edge(aShape);
+  const TopoDS_Edge & EE = TopoDS::Edge(theShape);
   TopoDS_Edge E = TopoDS::Edge(EE.Oriented(TopAbs_FORWARD));
   int shapeID = meshDS->ShapeToIndex( E );
 
@@ -769,10 +807,10 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
     BRepAdaptor_Curve C3d( E );
     double length = EdgeLength( E );
-    if ( ! computeInternalParameters( C3d, length, f, l, params, reversed )) {
+    if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
       return false;
     }
-    redistributeNearVertices( aMesh, C3d, length, params, VFirst, VLast );
+    redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
 
     // edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
     // only internal nodes receive an edge position with param on curve

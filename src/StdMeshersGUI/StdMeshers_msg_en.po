@@ -37,6 +37,9 @@ msgstr "Average Length"
 msgid "SMESH_LOCAL_LENGTH_PARAM"
 msgstr "Length"
 
+msgid "SMESH_LOCAL_LENGTH_PRECISION"
+msgstr "Precision"
+
 msgid "SMESH_LOCAL_LENGTH_TITLE"
 msgstr "Hypothesis Construction"
 

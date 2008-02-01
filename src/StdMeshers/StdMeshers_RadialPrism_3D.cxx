@@ -160,7 +160,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // to delete helper at exit from Compute()
   std::auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
 
-  // get 2 shells 
+  // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
   TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
   TopoDS_Shape innerShell;
@@ -336,7 +336,7 @@ public:
     BRepAdaptor_Curve C3D(edge);
     double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
       return error("StdMeshers_Regular_1D failed to compute layers distribution");
 
     positions.clear();
