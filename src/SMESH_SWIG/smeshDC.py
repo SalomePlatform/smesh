@@ -1461,9 +1461,11 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     ## Define "LocalLength" hypothesis, specifying segment length
     #  to build between the inner and outer shells
     #  @param l for the length of segments
-    def LocalLength(self, l):
-        hyp = self.OwnHypothesis("LocalLength", [l])
+    #  @param p for the precision of rounding
+    def LocalLength(self, l, p=1e-07):
+        hyp = self.OwnHypothesis("LocalLength", [l,p])
         hyp.SetLength(l)
+        hyp.SetPrecision(p)
         return hyp
 
     ## Define "NumberOfSegments" hypothesis, specifying a number of layers of
