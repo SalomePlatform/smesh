@@ -624,15 +624,27 @@ class Mesh_Segment(Mesh_Algorithm):
     #  @param l for the length of segments that cut an edge
     #  @param UseExisting if ==true - search existing hypothesis created with
     #                     same parameters, else (default) - create new
-    def LocalLength(self, l, UseExisting=0):
-        hyp = self.Hypothesis("LocalLength", [l], UseExisting=UseExisting,
+    #  @param p precision, used for number of segments calculation.
+    #           It must be pozitive, meaningfull values are in range [0,1].
+    #           In general, number of segments is calculated with formula:
+    #           nb = ceil((edge_length / l) - p)
+    #           Function ceil rounds its argument to the higher integer.
+    #           So, p=0 means rounding of (edge_length / l) to the higher integer,
+    #               p=0.5 means rounding of (edge_length / l) to the nearest integer,
+    #               p=1 means rounding of (edge_length / l) to the lower integer.
+    #           Default value is 1e-07.
+    def LocalLength(self, l, UseExisting=0, p=1e-07):
+        hyp = self.Hypothesis("LocalLength", [l,p], UseExisting=UseExisting,
                               CompareMethod=self.CompareLocalLength)
         hyp.SetLength(l)
+        hyp.SetPrecision(p)
         return hyp
 
     ## Check if the given "LocalLength" hypothesis has the same parameters as given arguments
     def CompareLocalLength(self, hyp, args):
-        return IsEqual(hyp.GetLength(), args[0])
+        if IsEqual(hyp.GetLength(), args[0]):
+            return IsEqual(hyp.GetPrecision(), args[1])
+        return False
 
     ## Define "NumberOfSegments" hypothesis to cut an edge in several fixed number of segments
     #  @param n for the number of segments that cut an edge
