@@ -283,6 +283,9 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // PAL16857(SMESH not conform to the MED convention):
         if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
           aMeshDimension = 3;
+        // PAL18941(a saved study with a mesh belong Z is opened and the mesh is belong X)
+        if ( aMeshDimension == 1 && !anIsXDimension ) // 1D only if mesh is along OX
+          aMeshDimension = 3;
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
