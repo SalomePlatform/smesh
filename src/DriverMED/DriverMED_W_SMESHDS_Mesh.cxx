@@ -285,7 +285,12 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           aMeshDimension = 3;
         // PAL18941(a saved study with a mesh belong Z is opened and the mesh is belong X)
         if ( aMeshDimension == 1 && !anIsXDimension ) // 1D only if mesh is along OX
-          aMeshDimension = 3;
+          if ( anIsYDimension ) {
+            aMeshDimension = 2;
+            anIsXDimension = true;
+          } else {
+            aMeshDimension = 3;
+          }
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
