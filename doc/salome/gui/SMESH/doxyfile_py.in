@@ -1,0 +1,137 @@
+#---------------------------------------------------------------------------
+# Project related configuration options
+#---------------------------------------------------------------------------
+PROJECT_NAME      = "Mesh Module Reference Manual v.@VERSION@"
+OUTPUT_DIRECTORY  = ./
+CREATE_SUBDIRS	  = NO
+OUTPUT_LANGUAGE   = English
+USE_WINDOWS_ENCODING   = NO
+BRIEF_MEMBER_DESC      = YES
+REPEAT_BRIEF           = NO
+ALWAYS_DETAILED_SEC    = YES
+INLINE_INHERITED_MEMB  = YES
+FULL_PATH_NAMES        = NO
+SHORT_NAMES            = NO
+JAVADOC_AUTOBRIEF      = YES
+MULTILINE_CPP_IS_BRIEF = NO
+DETAILS_AT_TOP         = NO
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
+TAB_SIZE               = 5
+OPTIMIZE_OUTPUT_FOR_C  = YES
+OPTIMIZE_OUTPUT_JAVA   = YES
+BUILTIN_STL_SUPPORT    = NO
+DISTRIBUTE_GROUP_DOC   = NO
+SUBGROUPING            = YES
+
+#---------------------------------------------------------------------------
+# Build related options
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = NO
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = NO
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+HIDE_IN_BODY_DOCS      = NO
+INTERNAL_DOCS          = YES
+CASE_SENSE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
+SHOW_INCLUDE_FILES     = YES
+INLINE_INFO            = YES
+SORT_MEMBER_DOCS       = NO
+SORT_BRIEF_DOCS        = NO
+SORT_BY_SCOPE_NAME     = NO
+GENERATE_TODOLIST      = YES
+GENERATE_TESTLIST      = YES
+GENERATE_BUGLIST       = YES
+GENERATE_DEPRECATEDLIST= YES
+MAX_INITIALIZER_LINES  = 25
+SHOW_USED_FILES        = NO
+SHOW_DIRECTORIES       = NO
+
+#---------------------------------------------------------------------------
+# configuration options related to source browsing
+#---------------------------------------------------------------------------
+SOURCE_BROWSER         = NO
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = YES
+REFERENCED_BY_RELATION = NO
+REFERENCES_RELATION    = YES
+USE_HTAGS              = NO
+VERBATIM_HEADERS       = YES
+
+#---------------------------------------------------------------------------
+# configuration options related to warning and progress messages
+#---------------------------------------------------------------------------
+QUIET             = NO
+WARNINGS          = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
+EXCLUDE_SYMLINKS       = NO
+EXAMPLE_RECURSIVE      = NO
+
+#---------------------------------------------------------------------------
+#Input related options
+#---------------------------------------------------------------------------
+INPUT             = @top_srcdir@/src/SMESH_SWIG
+FILE_PATTERNS     = smeshDC.py
+IMAGE_PATH        = @srcdir@/images
+RECURSIVE         = NO
+
+#---------------------------------------------------------------------------
+#HTML related options
+#---------------------------------------------------------------------------
+GENERATE_HTML     = YES
+HTML_OUTPUT       = ./smeshpy_doc
+HTML_HEADER       = @srcdir@/static/header.html
+HTML_FOOTER       = @srcdir@/static/footer.html
+#HTML_STYLESHEET  = @srcdir@/static/doxygen.css
+TOC_EXPAND        = YES
+DISABLE_INDEX     = YES
+GENERATE_TREEVIEW = NO
+
+#---------------------------------------------------------------------------
+#LaTeX related option
+#---------------------------------------------------------------------------
+GENERATE_LATEX    = NO
+
+#---------------------------------------------------------------------------
+#RTF related options
+#---------------------------------------------------------------------------
+GENERATE_RTF      = NO
+
+#---------------------------------------------------------------------------
+# Configuration options related to the dot tool   
+#---------------------------------------------------------------------------
+CLASS_DIAGRAMS         = YES
+HIDE_UNDOC_RELATIONS   = NO
+HAVE_DOT               = YES
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = NO
+GROUP_GRAPHS           = NO
+UML_LOOK               = NO
+TEMPLATE_RELATIONS     = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH             = NO
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+DOT_IMAGE_FORMAT       = jpg
+DOT_PATH               = 
+DOTFILE_DIRS           = 
+MAX_DOT_GRAPH_WIDTH    = 1024
+MAX_DOT_GRAPH_HEIGHT   = 1200
+MAX_DOT_GRAPH_DEPTH    = 0
+DOT_TRANSPARENT        = NO
+DOT_MULTI_TARGETS      = NO
+GENERATE_LEGEND        = NO
+DOT_CLEANUP            = YES
+
+#---------------------------------------------------------------------------
+#External reference options
+#---------------------------------------------------------------------------
+GENERATE_TAGFILE  = smeshpy_doc.tag

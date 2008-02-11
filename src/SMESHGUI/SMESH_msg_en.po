@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2007-01-19 10:44+0300\n"
+"PO-Revision-Date: 2007-11-23 13:01+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -51,8 +51,8 @@ msgstr ""
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2002-05-28 10:57:43 AM CEST\n"
-"PO-Revision-Date: 2005-06-07 10:51+0400\n"
+"POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
+"PO-Revision-Date: 2004-10-20 17:25+0400\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -426,6 +426,14 @@ msgstr "Id Elements"
 msgid "SMESH_REMOVE"
 msgstr "Remove"
 
+#Move elements
+msgid "SMESH_MOVE_ELEMENTS"
+msgstr "Move Elements"
+
+#Copy elements
+msgid "SMESH_COPY_ELEMENTS"
+msgstr "Copy Elements"
+
 #Remove Elements
 msgid "SMESH_REMOVE_ELEMENTS_TITLE"
 msgstr "Remove Elements"
@@ -490,6 +498,14 @@ msgstr "Quadrangle"
 msgid "SMESH_EDGE"
 msgstr "Edge"
 
+#Pyramid
+msgid "SMESH_PYRAMID"
+msgstr "Pyramid"
+
+#Prism
+msgid "SMESH_PRISM"
+msgstr "Prism"
+
 #Tetrahedron
 msgid "SMESH_TETRAS"
 msgstr "Tetrahedron"
@@ -497,6 +513,10 @@ msgstr "Tetrahedron"
 #Hexahedron
 msgid "SMESH_HEXAS"
 msgstr "Hexahedron"
+
+#Polyhedron
+msgid "SMESH_POLYEDRON"
+msgstr "Polyhedron"
 
 #Add Triangle
 msgid "SMESH_ADD_TRIANGLE"
@@ -798,6 +818,10 @@ msgstr "Rotation"
 msgid "SMESH_BUILD_COMPOUND_TITLE"
 msgstr "Create a Compound"
 
+# Create a new mesh
+msgid "SMESH_CREATE_MESH"
+msgstr "Create a new mesh"
+
 # -------------- Mesh Infos --------------
 
 #Mesh Infos
@@ -807,6 +831,10 @@ msgstr "Mesh Infos"
 #Standard Mesh Infos
 msgid "SMESH_STANDARD_MESHINFO_TITLE"
 msgstr "Standard Mesh Infos"
+
+#What Is
+msgid "SMESH_WHAT_IS_TITLE"
+msgstr "Mesh Element Info"
 
 #Mesh Infos
 msgid "SMESH_MESHINFO_NAME"
@@ -986,7 +1014,7 @@ msgstr "Color group"
 
 #Check color group
 msgid "SMESH_CHECK_COLOR"
-msgstr "Color number"
+msgstr "Color"
 
 #%1 SubMeshes
 msgid "SMESH_SUBMESH_SELECTED"
@@ -996,6 +1024,13 @@ msgstr "%1 SubMeshes"
 msgid "SMESH_GROUP_SELECTED"
 msgstr "%1 Groups"
 
+# Generate groups at mesh transformation
+msgid "SMESH_MAKE_GROUPS"
+msgstr "Generate groups"
+
+# Generate groups at mesh transformation
+msgid "SMESH_COPY_GROUPS"
+msgstr "Copy groups"
 
 # -------------- Preferences - Selection --------------
 msgid "SMESH_PREF_SELECTION"
@@ -1284,7 +1319,7 @@ msgid "SMESH_HYP_3"
 msgstr "Hypothesis has a bad parameter value"
 
 msgid "SMESH_HYP_4"
-msgstr "Algorithm is hidden by an algorithm of upper dimension generating all-dimensions elements"
+msgstr "Submesh is ignored as there is another algorithm of upper dimension generating %1D elements"
 
 msgid "SMESH_HYP_5"
 msgstr "Algorithm hides algorithm(s) of lower dimension by generating all-dimensions elements"
@@ -1327,6 +1362,9 @@ msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
 
 msgid "STATE_HYP_NOTCONFORM"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
+
+msgid "STATE_HYP_BAD_GEOMETRY"
+msgstr "%3 %2D algorithm \"%1\" is assigned to geometry mismatching its expectation"
 
 msgid "GLOBAL_ALGO"
 msgstr "Global"
@@ -1382,6 +1420,22 @@ msgstr "Select an object"
 
 msgid "SMESH_AUTO_GROUPS"
 msgstr "Automatically create groups"
+
+msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
+msgstr "It seems that there is not enough memory to show the mesh\n"
+       "so that the application may crash. "
+       "Do you wish to continue visualization?"
+
+msgid "SMESH_NO_MESH_VISUALIZATION"
+msgstr "There is not enough memory to show the mesh"
+
+msgid "SMESH_VISU_PROBLEM"
+msgstr "Mesh visualization failed, probably due to lack of memory"
+
+msgid "SMESH_VISU_PROBLEM_CLEAR"
+msgstr "Mesh visualization failed, no memory even to show a message,\n"
+       "so all visual data have been removed to let the application live.\n"
+       "Consider saving your work before application crash"
 
 #----------------------------------------------------
 
@@ -2200,6 +2254,9 @@ msgstr "Advanced Mesh Infos"
 msgid "MEN_STD_INFO"
 msgstr "Standard Mesh Infos"
 
+msgid "MEN_WHAT_IS"
+msgstr "Mesh Element Info"
+
 msgid "MEN_LENGTH"
 msgstr "Length"
 
@@ -2371,6 +2428,12 @@ msgstr "Shrink"
 msgid "MEN_AUTO_UPD"
 msgstr "Automatic update"
 
+msgid "MEN_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "MEN_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
+
 msgid "MEN_COLORS"
 msgstr "Colors / Size"
 
@@ -2476,14 +2539,14 @@ msgstr "Transparency"
 msgid "MEN_CLIP"
 msgstr "Clipping"
 
-msgid "MEN_DISPLAY"
-msgstr "Display"
+msgid "MEN_SHOW"
+msgstr "Show"
 
-msgid "MEN_ERASE"
-msgstr "Erase"
+msgid "MEN_HIDE"
+msgstr "Hide"
 
 msgid "MEN_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 
 #------ TOP -----#
@@ -2561,6 +2624,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "TOP_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "TOP_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "TOP_LENGTH"
 msgstr "Length"
@@ -2733,6 +2799,12 @@ msgstr "Shrink"
 msgid "TOP_AUTO_UPD"
 msgstr "Automatic update"
 
+msgid "TOP_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "TOP_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
+
 msgid "TOP_COLORS"
 msgstr "Colors / Size"
 
@@ -2787,14 +2859,14 @@ msgstr "Transparency"
 msgid "TOP_CLIP"
 msgstr "Clipping"
 
-msgid "TOP_DISPLAY"
-msgstr "Display"
+msgid "TOP_SHOW"
+msgstr "Show"
 
-msgid "TOP_ERASE"
-msgstr "Erase"
+msgid "TOP_HIDE"
+msgstr "Hide"
 
 msgid "TOP_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 
 
@@ -2874,6 +2946,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "STB_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "STB_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "STB_LENGTH"
 msgstr "Length"
@@ -3046,6 +3121,12 @@ msgstr "Shrink"
 msgid "STB_AUTO_UPD"
 msgstr "Automatic update"
 
+msgid "STB_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "STB_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
+
 msgid "STB_COLORS"
 msgstr "Colors / Size"
 
@@ -3100,18 +3181,14 @@ msgstr "Transparency"
 msgid "STB_CLIP"
 msgstr "Clipping"
 
-msgid "STB_DISPLAY"
-msgstr "Display"
+msgid "STB_SHOW"
+msgstr "Show"
 
-msgid "STB_ERASE"
-msgstr "Erase"
+msgid "STB_HIDE"
+msgstr "Hide"
 
 msgid "STB_DISPLAY_ONLY"
-msgstr "Display only"
-
-
-
-
+msgstr "Show only"
 
 msgid "TB_MESH"
 msgstr "Mesh Toolbar"
@@ -3222,6 +3299,9 @@ msgstr "Nodes"
 msgid "SMESHGUI::PREF_ELEMENTS"
 msgstr "Elements"
 
+msgid "SMESHGUI::PREF_OBJECTS"
+msgstr "Objects"
+
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
 
@@ -3290,6 +3370,9 @@ msgstr "Rename"
 
 msgid "SMESHGUI_BuildCompoundDlg::MERGE_NODES_AND_ELEMENTS"
 msgstr "Merge coincident nodes and elements"
+
+msgid "SMESHGUI_BuildCompoundDlg::CREATE_COMMON_GROUPS"
+msgstr "Create common groups for initial meshes"
 
 #-----------------------------------------------------------
 
@@ -3406,6 +3489,15 @@ msgstr "Show SubShape"
 
 msgid "SMESHGUI_ComputeDlg::PUBLISH_SHAPE"
 msgstr "Publish SubShape"
+
+msgid "SMESHGUI_ComputeDlg::MEMORY_LACK"
+msgstr "Memory allocation problem"
+
+msgid "SMESHGUI_WhatIsDlg::ENTITY_TYPE"
+msgstr "Element type"
+
+msgid "SMESHGUI_WhatIsDlg::GRAVITY_CENTER"
+msgstr "Gravity center"
 
 msgid "COMPERR_OK"
 msgstr "No errors"

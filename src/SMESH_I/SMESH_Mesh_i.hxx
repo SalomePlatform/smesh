@@ -40,13 +40,14 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh_i.hxx"
+//#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
+class SMESH_subMesh_i;
 
 #include <map>
 
@@ -107,6 +108,9 @@ public:
   SMESH::ListOfGroups* GetGroups()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbGroups()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
@@ -159,10 +163,23 @@ public:
   SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
     throw (SALOME::SALOME_Exception);
 
+  /*!
+   *  Auto color
+   */
+  void SetAutoColor(CORBA::Boolean theAutoColor)
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Boolean GetAutoColor()
+    throw (SALOME::SALOME_Exception);
+
   /*! Check group names for duplications.
    *  Consider maximum group name length stored in MED file.
    */
   CORBA::Boolean HasDuplicatedGroupNamesMED();
+  /*!
+   * Return string representation of a MED file version comprising nbDigits
+   */
+  char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
   void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
     throw (SALOME::SALOME_Exception);
@@ -293,7 +310,7 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
-  int importMEDFile( const char* theFileName, const char* theMeshName );
+  //int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
@@ -312,10 +329,26 @@ public:
   const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
 
+  /*!
+   * \brief Update hypotheses assigned to geom groups if the latter change
+   * 
+   * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+   */
+  void CheckGeomGroupModif();
+
   virtual SMESH::long_array* GetIDs();
 
   CORBA::LongLong GetMeshPtr();
 
+  /*!
+   * \brief Assure that all groups are published
+   */
+  void CreateGroupServants();
+
+  /*!
+   * \brief Return groups cantained in _mapGroups by their IDs
+   */
+  SMESH::ListOfGroups* GetGroups(const std::list<int>& groupIDs) const;
 
   /*!
    * Get XYZ coordinates of node as list of double
@@ -328,6 +361,11 @@ public:
    * If there is not node for given ID - returns empty list
    */
   SMESH::long_array* GetNodeInverseElements(CORBA::Long id);
+
+  /*!
+   * \brief Return position of a node on shape
+   */
+  SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
 
   /*!
    * If given element is node returns IDs of shape from position
@@ -403,7 +441,6 @@ public:
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-  void CreateGroupServants();
 
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here

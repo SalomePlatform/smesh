@@ -113,6 +113,9 @@ namespace SMESH{
       aMsg = QObject::tr(aMsg).arg(aHypName) +
 	QObject::tr(QString("SMESH_HYP_%1").arg(theHypStatus));
 
+      if ( theHypStatus == SMESH::HYP_HIDDEN_ALGO ) // PAL18501
+        aMsg = aMsg.arg( GetHypothesisData(theHyp->GetName())->Dim[0] );
+
       SUIT_MessageBox::warn1(SMESHGUI::desktop(),
 			    QObject::tr("SMESH_WRN_WARNING"),
 			    aMsg,
@@ -208,21 +211,27 @@ namespace SMESH{
 
   QStringList GetAvailableHypotheses( const bool isAlgo, 
                                       const int theDim,                          
-                                      const bool isAux )
+                                      const bool isAux,
+                                      const bool isNeedGeometry)
   {
     QStringList aHypList;
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
-
+    bool checkGeometry = !isNeedGeometry;
     // fill list of hypotheses/algorithms
     THypothesisDataMap* pMap = isAlgo ? &myAlgorithmsMap : &myHypothesesMap;
     THypothesisDataMap::iterator anIter;
     for ( anIter = pMap->begin(); anIter != pMap->end(); anIter++ )
     {
       HypothesisData* aData = (*anIter).second;
-      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux )
-        aHypList.append(((*anIter).first).c_str());
+      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux)
+        if (checkGeometry){
+          if (aData->IsNeedGeometry == isNeedGeometry)
+            aHypList.append(((*anIter).first).c_str());
+        }
+        else
+          aHypList.append(((*anIter).first).c_str());
     }
     return aHypList;
   }
@@ -388,30 +397,21 @@ namespace SMESH{
 					       const bool isAlgo)
   {
     if(MYDEBUG) MESSAGE("Create " << aHypType << " with name " << aHypName);
-
-    SMESH::SMESH_Hypothesis_var Hyp;
-
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
-
     try {
-      Hyp = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType, aServLib);
-      if (!Hyp->_is_nil()) {
-	_PTR(SObject) SHyp = SMESH::FindSObject(Hyp.in());
-	if (SHyp) {
-	  //if (strcmp(aHypName,"") != 0)
+      SMESH::SMESH_Hypothesis_var aHypothesis;
+      aHypothesis = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType, aServLib);
+      if (!aHypothesis->_is_nil()) {
+	_PTR(SObject) aHypSObject = SMESH::FindSObject(aHypothesis.in());
+	if (aHypSObject) {
 	  if (strlen(aHypName) > 0)
-	    SMESH::SetName(SHyp, aHypName);
-	  //SalomeApp_Application* app =
-	  //  dynamic_cast<SalomeApp_Application*>(SUIT_Session::session()->activeApplication());
-	  //if (app)
-	  //  app->objectBrowser()->updateTree();
-          SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-	  return Hyp._retn();
+	    SMESH::SetName(aHypSObject, aHypName);
+	  SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+	  return aHypothesis._retn();
 	}
       }
-    }
-    catch (const SALOME::SALOME_Exception & S_ex) {
+    } catch (const SALOME::SALOME_Exception & S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
     }
 
@@ -542,27 +542,36 @@ namespace SMESH{
     if (MorSM) {
       try {
         GEOM::GEOM_Object_var aShapeObject = SMESH::GetShapeOnMeshOrSubMesh(MorSM);
-        if (!aShapeObject->_is_nil()) {
-          SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
-	  SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
-
-	  if (!aSubMesh->_is_nil())
-	    aMesh = aSubMesh->GetFather();
-
-	  if (!aMesh->_is_nil()) {
-	    res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
+        SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>(MorSM);
+        SMESH::SMESH_subMesh_var aSubMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>(MorSM);
+        
+        if (!aSubMesh->_is_nil())
+          aMesh = aSubMesh->GetFather();
+        
+        if (!aMesh->_is_nil()) {    
+          if (aMesh->HasShapeToMesh() && !aShapeObject->_is_nil()) {
+            res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
+            if (res < SMESH::HYP_UNKNOWN_FATAL) {
               _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
               if (meshSO)
                 SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
             }
-	    if (res > SMESH::HYP_OK) {
-	      wc.suspend();
-	      processHypothesisStatus(res, anHyp, false);
-	      wc.resume();
-	    }
-	  }
-	}
+            
+          }
+          else if(!aMesh->HasShapeToMesh()){
+            res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
+	    if (res < SMESH::HYP_UNKNOWN_FATAL) {
+              _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
+              if (meshSO)
+                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);              
+            }
+          }
+          if (res > SMESH::HYP_OK) {
+            wc.suspend();
+            processHypothesisStatus(res, anHyp, false);
+            wc.resume();
+          }
+        }
       } catch(const SALOME::SALOME_Exception& S_ex) {
 	wc.suspend();
 	SalomeApp_Tools::QtCatchCorbaException(S_ex);
@@ -609,7 +618,7 @@ namespace SMESH{
 #define CASE2MESSAGE(enum) case SMESH::enum: msg = QObject::tr( "STATE_" #enum ); break;
   QString GetMessageOnAlgoStateErrors(const algo_error_array& errors)
   {
-    QString resMsg = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
+    QString resMsg; // PAL14861 = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
     for ( int i = 0; i < errors.length(); ++i ) {
       const SMESH::AlgoStateError & error = errors[ i ];
       const bool hasAlgo = ( strlen( error.algoName ) != 0 );
@@ -621,6 +630,7 @@ namespace SMESH{
           CASE2MESSAGE( HYP_MISSING );
           CASE2MESSAGE( HYP_NOTCONFORM );
           CASE2MESSAGE( HYP_BAD_PARAMETER );
+          CASE2MESSAGE( HYP_BAD_GEOMETRY );
         default: continue;
         }
       // apply args to message:

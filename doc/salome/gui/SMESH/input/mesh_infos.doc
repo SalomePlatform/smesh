@@ -1,0 +1,63 @@
+/*!
+
+\page mesh_infos_page Mesh infos
+
+\n There are three information boxes: <b>Standard Mesh
+Infos</b>, <b>Advanced Mesh Infos</b> and <b> Mesh Element Info</b>.
+
+<br>
+\anchor standard_mesh_infos_anchor
+<h2>Standard Mesh Infos</h2>
+
+The <b>Standard Mesh Infos</b> box gives only the information on the
+number of elements of maximum dimension and the number of nodes in the
+mesh. However, from this Info you can learn about groups selected on
+this mesh.
+\n To view the <b>Standard Mesh Infos</b>, select your mesh or submesh
+in the <b>Object Browser</b> and select <b>Standard Mesh Infos</b>
+from the \b Mesh menu or click <em>"Standard Mesh Infos"</em> button
+in the toolbar. 
+
+\image html image49.gif
+<center><em>"Standard Mesh Infos" button</em></center>
+
+The following information will be displayed:
+
+\image html a-standmeshinfo.png
+
+<br>
+\anchor advanced_mesh_infos_anchor
+<h2>Advanced Mesh Infos</h2>
+
+The <b>Advanced Mesh Infos</b> box gives more information about the mesh,
+including the total number of faces and volumes and their geometrical
+types.
+\n To view the <b>Advanced Mesh Infos</b>, select your mesh or submesh
+in the <b>Object Browser</b> and select <b>Advanced Mesh Infos</b>
+from the \b Mesh menu or click <em>"Advanced Mesh Infos"</em> button
+in the toolbar.
+
+\image html image50.gif
+<center><em>"Advanced Mesh Infos" button</em></center>
+
+The following information will be displayed:
+
+\image html advanced_mesh_infos.png
+
+In case you get Mesh Infos via a \ref tui_viewing_mesh_infos "TUI script", 
+the information is displayed in Python Console.
+
+\image html b-mesh_infos.png
+
+<br>
+\anchor mesh_element_info_anchor
+<h2>Mesh Element Info</h2> 
+
+The <b>Mesh Element Info</b> box gives basic information about the
+type and the coordinates of the selected mesh element. 
+
+\image html eleminfo1.png
+
+\image html eleminfo2.png 
+
+*/

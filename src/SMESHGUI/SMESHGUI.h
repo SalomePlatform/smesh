@@ -109,9 +109,12 @@ public :
   
   virtual void                update( const int );
 
+  static SALOMEDS::Color      getUniqueColor( const QValueList<SALOMEDS::Color>& );
+
 public slots:
   virtual bool                deactivateModule( SUIT_Study* );
   virtual bool                activateModule( SUIT_Study* );
+  virtual void                studyClosed( SUIT_Study* );
 
 private slots:
   void                        OnGUIEvent();

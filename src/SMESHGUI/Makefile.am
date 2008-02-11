@@ -58,6 +58,7 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_RemoveElementsDlg.cxx \
 	SMESHGUI_MeshInfosDlg.cxx \
 	SMESHGUI_StandardMeshInfosDlg.cxx \
+	SMESHGUI_WhatIsDlg.cxx \
 	SMESHGUI_Preferences_ColorDlg.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg.cxx \
 	SMESHGUI_Preferences_SelectionDlg.cxx \
@@ -123,6 +124,7 @@ MOC_FILES = \
 	SMESHGUI_RemoveElementsDlg_moc.cxx \
 	SMESHGUI_MeshInfosDlg_moc.cxx \
 	SMESHGUI_StandardMeshInfosDlg_moc.cxx \
+	SMESHGUI_WhatIsDlg_moc.cxx \
 	SMESHGUI_Preferences_ColorDlg_moc.cxx \
 	SMESHGUI_Preferences_ScalarBarDlg_moc.cxx \
 	SMESHGUI_Preferences_SelectionDlg_moc.cxx \

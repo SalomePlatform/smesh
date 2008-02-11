@@ -17,14 +17,14 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
 //  File   : SMESH.hxx
 //  Author : Michael ZORIN
 //  Module : SMESH
-//  $Header: 
+//  $Header$
 
 #ifndef _SMESH_I_SMESH_HXX_
 #define _SMESH_I_SMESH_HXX_
@@ -39,28 +39,4 @@
  #define SMESH_I_EXPORT
 #endif
 
-// Tags definition
-enum {
-  // Top level
-  Tag_HypothesisRoot         = 1, // hypotheses root
-  Tag_AlgorithmsRoot         = 2, // algorithms root
-  // Mesh/Submesh
-  Tag_RefOnShape             = 1, // references to shape
-  Tag_RefOnAppliedHypothesis = 2, // applied hypotheses root
-  Tag_RefOnAppliedAlgorithms = 3, // applied algorithms root
-  // Mesh only
-  Tag_SubMeshOnVertex        = 4, // sub-meshes roots by type
-  Tag_SubMeshOnEdge          = 5, // ...
-  Tag_SubMeshOnWire          = 6, // ...
-  Tag_SubMeshOnFace          = 7, // ...
-  Tag_SubMeshOnShell         = 8, // ...
-  Tag_SubMeshOnSolid         = 9, // ...
-  Tag_SubMeshOnCompound      = 10, // ...
-  Tag_NodeGroups             = 11, // Group roots by type
-  Tag_EdgeGroups             = 12, // ...
-  Tag_FaceGroups             = 13, // ...
-  Tag_VolumeGroups           = 14 // ... 
-};
-
 #endif
-

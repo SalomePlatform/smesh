@@ -1,0 +1,64 @@
+/*!
+
+\page introduction_to_mesh_page Introduction to MESH
+
+\n \b MESH module of SALOME is destined for:
+<ul>
+<li>\ref importing_exporting_meshes_page "import and export of meshes in MED format",</li>
+<li>\ref constructing_meshes_page "meshing geometrical models"
+previously created or imported by the GEOM component. MESH module
+allows to apply 1D, 2D, 3D meshing algorithms and a set of hypotheses:
+<ul>
+<li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+<li>\ref average_length_anchor "Average Length"</li>
+<li>\ref deflection_1d_anchor "Deflection 1D"</li>
+<li>\ref number_of_segments_anchor "Number of segments"</li>
+<li>\ref start_and_end_length_anchor "Start and end length"</li>
+<li>\ref automatic_length_anchor "Automatic Length"</li>
+<li>\ref max_element_area_anchor "Max Element Area"</li>
+<li>\ref length_from_edges_anchor "Length from Edges"</li>
+<li>\ref quadrangle_preference_anchor "Quadrangle Preference"</li>
+<li>\ref max_element_volume_hypo_page "Max Element Volume"</li>
+</ul>
+</li>
+<li>modification of locally generated meshes by
+<ul>
+<li>\ref adding_nodes_and_elements_page "Addition" of nodes and elements</li>
+<li>\ref removing_nodes_and_elements_page "Removal" of nodes and elements </li>
+</ul>
+</li>
+<li>\ref creating_groups_page "grouping mesh elements" and 
+\ref using_operations_on_groups_page "performing operations on these groups"</li>
+<li>\ref about_quality_controls_page "quality control" of meshes basing on a set of definite criteria - 
+
+<b>for edges:</b>
+<ul>
+<li>\ref length_page "Length of edges"</li>
+<li>\ref borders_at_multi_connection_page "Borders at multi-connection"</li>
+<li>\ref free_borders_page "Free borders"</li>
+</ul>
+
+<b>for faces:</b>
+<ul>
+<li>\ref area_page "Area"</li>
+<li>\ref free_edges_page "Free edges"</li>
+<li>\ref borders_at_multi_connection_2d_page "Borders at multi-connection 2D"</li>
+<li>\ref length_2d_page "Length 2D"</li>
+<li>\ref minimum_angle_page "Minimum angle"</li>
+<li>\ref taper_page "Taper"</li>
+<li>\ref aspect_ratio_page "Aspect Ratio"</li>
+<li>\ref warping_page "Warping"</li>
+<li>\ref skew_page "Skew"</li>
+</ul>
+
+<b>for solids:</b>
+<ul>
+<li>\ref aspect_ratio_3d_page "Aspect ratio 3D"</li>
+<li>\ref volume_page "Volume"</li>
+</ul>
+</li>
+</ul>
+
+\image html image7.jpg
+
+*/

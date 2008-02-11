@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -32,7 +32,6 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
 
-#include "SMESH.hxx"
 #include "SMESH_TypeFilter.hxx"
 
 #include "SALOMEDSClient_Study.hxx"
@@ -178,7 +177,7 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   mySelectionMgr->installFilter(myMeshFilter);
   onSelectionChanged();
 
-  myHelpFileName = "/files/viewing_mesh_info.htm#standard_infos";
+  myHelpFileName = "mesh_infos_page.html#standard_mesh_infos_anchor";
 }
 
 //=================================================================================
@@ -251,7 +250,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
       bool hasGroup = false;
 
       // info about groups on nodes
-      aMeshSO->FindSubObject(Tag_NodeGroups, anObj);
+      aMeshSO->FindSubObject(SMESH::Tag_NodeGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
 	if (it->More()) {
@@ -284,7 +283,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
 
       // info about groups on edges
       anObj.reset();
-      aMeshSO->FindSubObject(Tag_EdgeGroups, anObj);
+      aMeshSO->FindSubObject(SMESH::Tag_EdgeGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
         if (!hasGroup && it->More()) {
@@ -317,7 +316,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
 
       // info about groups on faces
       anObj.reset();
-      aMeshSO->FindSubObject(Tag_FaceGroups , anObj);
+      aMeshSO->FindSubObject(SMESH::Tag_FaceGroups , anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
 	if (!hasGroup && it->More()) {
@@ -350,7 +349,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
 
       // info about groups on volumes
       anObj.reset();
-      aMeshSO->FindSubObject(Tag_VolumeGroups, anObj);
+      aMeshSO->FindSubObject(SMESH::Tag_VolumeGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
 	if (!hasGroup && it->More())
@@ -458,14 +457,14 @@ void SMESHGUI_StandardMeshInfosDlg::onStartSelection()
 void SMESHGUI_StandardMeshInfosDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  if (app) 
+  if (app)
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").

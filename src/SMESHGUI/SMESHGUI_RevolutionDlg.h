@@ -110,6 +110,7 @@ private:
     QPushButton* SelectElementsButton;
     QLineEdit* LineEditElements;
     QCheckBox* CheckBoxMesh;
+    QCheckBox* MakeGroupsCheck;
 
     QLabel* TextLabelPoint;
     QPushButton* SelectPointButton;

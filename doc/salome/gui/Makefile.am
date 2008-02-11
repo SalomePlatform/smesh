@@ -25,9 +25,16 @@ include $(top_srcdir)/adm_local/unix/make_common_starter.am
 
 EXTRA_DIST+=SMESH
 
+doxygen=@DOXYGEN@
+
 usr_docs:
-	cp -fr $(srcdir)/SMESH ./
-	-find $(PWD) -name CVS -prune -exec rm -rf {} \;
+	cd ./SMESH; \
+	echo "Processing smeshDC.py file: "; \
+	$(doxygen) ./doxyfile_py; \
+	sed 's|../../../share/salome|$(top_srcdir)|' ./doxyfile > ./doxyfile1; \
+	mv -f doxyfile1 doxyfile; \
+	echo "Running doxygen in directory: "`pwd`; \
+	$(doxygen) ./doxyfile;
 
 docs: usr_docs
 
@@ -42,3 +49,10 @@ install-data-local: usr_docs
 
 uninstall-local:
 	rm -rf $(docdir)/gui/SMESH
+
+docguidir=$(docdir)/gui/SMESH
+
+nodist_docgui_DATA= SMESH/doxyfile
+nodist_docgui_DATA+= SMESH/doxyfile_py
+EXTRA_DIST+= SMESH/doxyfile.in
+EXTRA_DIST+= SMESH/doxyfile_py.in

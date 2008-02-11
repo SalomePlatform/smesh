@@ -37,29 +37,27 @@
 
 #include "SMESHDS_Mesh.hxx"
 
+#include <BRep_Tool.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <Geom_Plane.hxx>
+#include <LDOMParser.hxx>
+#include <LDOMString.hxx>
 #include <LDOM_Document.hxx>
 #include <LDOM_Element.hxx>
 #include <LDOM_Node.hxx>
-#include <LDOMString.hxx>
-#include <LDOMParser.hxx>
 #include <LDOM_XmlWriter.hxx>
-#include <TCollection_HAsciiString.hxx>
+#include <Precision.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
+#include <TColStd_ListIteratorOfListOfReal.hxx>
 #include <TColStd_ListOfInteger.hxx>
 #include <TColStd_ListOfReal.hxx>
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfHAsciiString.hxx>
-#include <TColStd_ListIteratorOfListOfReal.hxx>
-#include <Precision.hxx>
-#include <BRep_Tool.hxx>
-#include <TopoDS_Shape.hxx>
+#include <TCollection_HAsciiString.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
-#include <Geom_Plane.hxx>
-#include <Geom_CylindricalSurface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
+#include <TopoDS_Shape.hxx>
 
 using namespace SMESH;
 using namespace SMESH::Controls;
@@ -386,7 +384,7 @@ static TopoDS_Shape getShapeByName( const char* theName )
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
         if ( !aGeomObj->_is_nil() )
         {
-          GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
@@ -396,48 +394,49 @@ static TopoDS_Shape getShapeByName( const char* theName )
   return TopoDS_Shape();
 }
 
-static TopoDS_Shape getShapeByID( const char* theID )
+static TopoDS_Shape getShapeByID (const char* theID)
 {
-  if ( theID != 0 && theID!="" )
-  {
+  if (theID != 0 && theID != "") {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if ( aStudy != 0 )
-    {
-      CORBA::Object_var obj = aStudy->ConvertIORToObject(theID);
-      GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( obj );
+    if (aStudy != 0) {
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
+        SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+        CORBA::String_var aVal = anIOR->Value();
+        CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
       
-      if ( !aGeomObj->_is_nil() )
-        {
-	  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+        if (!aGeomObj->_is_nil()) {
+          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
+      }
     }
   }
   return TopoDS_Shape();
 }
 
-static char* getShapeNameByID ( const char* theID )
+static char* getShapeNameByID (const char* theID)
 {
   char* aName = "";
 
-  if ( theID != 0 && theID!="" )
-    {
-      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      if ( aStudy != 0 )
-	{
-	  SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
-	  SALOMEDS::GenericAttribute_var anAttr;
-	  if ( !aSObj->_is_nil() && aSObj->FindAttribute( anAttr, "AttributeName") )
-	    {
-	      SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow( anAttr );
-	      aName = aNameAttr->Value();        
-	    }
-	}
+  if (theID != 0 && theID != "") {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    if (aStudy != 0) {
+      //SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeName")) {
+        SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow(anAttr);
+        aName = aNameAttr->Value();
+      }
     }
-  
+  }
+
   return aName;
 }
 
@@ -793,7 +792,7 @@ void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myBelongToGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
@@ -872,7 +871,7 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
 
   if ( aLocShape.ShapeType() == TopAbs_FACE )
@@ -1037,7 +1036,7 @@ void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myLyingOnGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
@@ -2057,9 +2056,18 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
-    TPythonDump()<<"aCriterion = SMESH.Filter.Criterion("<<
-      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
-      aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
+    {
+      TPythonDump pd;
+      pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
+         << "," << aThreshold << ",'" << aThresholdStr;
+      if (strlen(aThresholdID) > 0)
+        pd << "',salome.ObjectToID(" << aThresholdID
+           << ")," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+      else
+        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+    }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();

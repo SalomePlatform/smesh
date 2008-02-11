@@ -199,7 +199,7 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
 //=================================================================================
 void SMESH_VisualObjDef::buildPrs()
 {
-  try
+  try 
   {
     mySMDS2VTKNodes.clear();
     myVTK2SMDSNodes.clear();
@@ -211,13 +211,16 @@ void SMESH_VisualObjDef::buildPrs()
     else
       buildElemPrs();
   }
-  catch( const std::exception& exc )
-  {
-    INFOS("Follow exception was cought:\n\t"<<exc.what());
-  }
   catch(...)
   {
-    INFOS("Unknown exception was cought !!!");
+    mySMDS2VTKNodes.clear();
+    myVTK2SMDSNodes.clear();
+    mySMDS2VTKElems.clear();
+    myVTK2SMDSElems.clear();
+
+    myGrid->SetPoints( 0 );
+    myGrid->SetCells( 0, 0, 0 );
+    throw;
   }
   
   if( MYDEBUG ) MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
@@ -230,8 +233,12 @@ void SMESH_VisualObjDef::buildPrs()
 //=================================================================================
 void SMESH_VisualObjDef::buildNodePrs()
 {
+  // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
+  // so check remaining memory size for safety
+  SMDS_Mesh::CheckMemory(); // PAL16631
   vtkPoints* aPoints = vtkPoints::New();
   createPoints( aPoints );
+  SMDS_Mesh::CheckMemory();
   myGrid->SetPoints( aPoints );
   aPoints->Delete();
 
@@ -291,6 +298,10 @@ void SMESH_VisualObjDef::buildElemPrs()
   for ( int i = 0; i <= 2; i++ )
     nbEnts[ aTypes[ i ] ] = GetEntities( aTypes[ i ], anEnts[ aTypes[ i ] ] );
 
+  // PAL16631: without swap, bad_alloc is not thrown but hung up and crash instead,
+  // so check remaining memory size for safety
+  SMDS_Mesh::CheckMemory(); // PAL16631
+
   vtkIdType aCellsSize =  3 * nbEnts[ SMDSAbs_Edge ];
 
   for ( int i = 1; i <= 2; i++ ) // iterate through faces and volumes
@@ -314,15 +325,21 @@ void SMESH_VisualObjDef::buildElemPrs()
   vtkCellArray* aConnectivity = vtkCellArray::New();
   aConnectivity->Allocate( aCellsSize, 0 );
   
+  SMDS_Mesh::CheckMemory(); // PAL16631
+
   vtkUnsignedCharArray* aCellTypesArray = vtkUnsignedCharArray::New();
   aCellTypesArray->SetNumberOfComponents( 1 );
   aCellTypesArray->Allocate( aNbCells * aCellTypesArray->GetNumberOfComponents() );
   
+  SMDS_Mesh::CheckMemory(); // PAL16631
+
   vtkIdList *anIdList = vtkIdList::New();
   vtkIdType iElem = 0;
 
   TConnect aConnect;
   aConnect.reserve(VTK_CELL_SIZE);
+
+  SMDS_Mesh::CheckMemory(); // PAL16631
 
   for ( int i = 0; i <= 2; i++ ) // iterate through edges, faces and volumes
   {
@@ -424,6 +441,7 @@ void SMESH_VisualObjDef::buildElemPrs()
         iElem++;
       }
     }
+    SMDS_Mesh::CheckMemory(); // PAL16631
   }
 
   // Insert cells in grid
@@ -432,6 +450,8 @@ void SMESH_VisualObjDef::buildElemPrs()
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( aNbCells );
   
+  SMDS_Mesh::CheckMemory(); // PAL16631
+
   aConnectivity->InitTraversal();
   for( vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell( npts, pts ); idType++ )
     aCellLocationsArray->SetValue( idType, aConnectivity->GetTraversalLocation( npts ) );
@@ -442,6 +462,8 @@ void SMESH_VisualObjDef::buildElemPrs()
   aCellTypesArray->Delete();
   aConnectivity->Delete();
   anIdList->Delete();
+
+  SMDS_Mesh::CheckMemory(); // PAL16631
 }
 
 //=================================================================================
@@ -516,11 +538,14 @@ SMESH_MeshObj::~SMESH_MeshObj()
 // function : Update
 // purpose  : Update mesh and fill grid with new values if necessary 
 //=================================================================================
-void SMESH_MeshObj::Update( int theIsClear )
+bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-  if ( myClient.Update(theIsClear) )
+  if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
     buildPrs();  // Fill unstructured grid
+    return true;
+  }
+  return false;
 }
 
 //=================================================================================
@@ -675,10 +700,11 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 // function : Update
 // purpose  : Update mesh object and fill grid with new values 
 //=================================================================================
-void SMESH_SubMeshObj::Update( int theIsClear )
+bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-  myMeshObj->Update( theIsClear );
+  bool changed = myMeshObj->Update( theIsClear );
   buildPrs();
+  return changed;
 }
 
 

@@ -1,0 +1,35 @@
+/*!
+
+\page additional_hypo_page Additional Hypotheses
+
+\n <b>Additional Hypotheses</b> can be applied as a supplement to the
+main hypotheses, introducing additional concepts to mesh creation.
+
+To define an <b>Additional Hypothesis</b> simply select it in
+<b>Create Mesh</b> menu. These hypotheses are actually changes in the
+rules of mesh creation and as such don't possess adjustable values.
+
+<h2>Non Conform mesh allowed hypothesis</h2>
+
+<b>Non Conform mesh allowed</b> hypothesis allows to generate non-conform
+meshes (that is, meshes having some edges ending on an edge or face of
+adjacent elements).
+
+<h2>Quadratic Mesh</h2>
+
+Quadratic Mesh hypothesis allows to build a quadratic mesh (whose
+edges are not straight but broken lines and can be defined by three
+points: first, middle and last) instead of an ordinary one.
+
+<h2>Propagation of 1D Hypothesis on opposite edges</h2>
+
+<b>Propagation of 1D Hypothesis on opposite edges</b> allows to propagate a
+hypothesis onto an opposite edge. If a local hypothesis and
+propagation are defined on an edge of a quadrangular face, the
+opposite edge will have the same hypothesis, unless another hypothesis
+has been locally defined on the opposite edge.
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_propagation "Propagation hypothesis" operation.  
+
+*/

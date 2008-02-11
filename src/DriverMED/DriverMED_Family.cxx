@@ -381,13 +381,8 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.clear();
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
-  myGroupAttributVal = 0;
-  
-  if (theGroup->GetColorGroup()!=0)
-    {
-      myGroupAttributVal = theGroup->GetColorGroup();
-    }
-
+  Quantity_Color aColor = theGroup->GetColor();
+  myGroupAttributVal = aColor.Hue();
 }
 
 //=============================================================================

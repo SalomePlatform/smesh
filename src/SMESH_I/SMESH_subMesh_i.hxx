@@ -38,6 +38,7 @@
 #include CORBA_CLIENT_HEADER(MED)
 
 #include "SALOME_GenericObj_i.hh"
+#include "SMESH_Mesh_i.hxx"
 
 class SMESH_Gen_i;
 class SMESH_Mesh_i;
@@ -91,8 +92,11 @@ public:
   SMESH_Mesh_i* _mesh_i; //NRI
 
 protected:
+  void changeLocalId(int localId) { _localId = localId; }
   SMESH_Gen_i* _gen_i;
   int _localId;
+
+  friend void SMESH_Mesh_i::CheckGeomGroupModif();
 };
 
 #endif

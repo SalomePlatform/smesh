@@ -58,40 +58,6 @@
  #define MEFISTO2D_EXPORT
 #endif
 
-extern "C" {
-void qualitetrte_( R3 *mnpxyd,
-		   Z & mosoar, Z & mxsoar, Z *mnsoar,
-	  	   Z & moartr, Z & mxartr, Z *mnartr,
-		   Z & nbtria, R & quamoy, R & quamin ); }
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// but :    calculer la qualite moyenne et minimale de la triangulation
-// -----    actuelle definie par les tableaux nosoar et noartr
-// entrees:
-// --------
-// mnpxyd : tableau des coordonnees 2d des points
-//          par point : x  y  distance_souhaitee
-// mosoar : nombre maximal d'entiers par arete et
-//          indice dans nosoar de l'arete suivante dans le hachage
-// mxsoar : nombre maximal d'aretes stockables dans le tableau nosoar
-//          attention: mxsoar>3*mxsomm obligatoire!
-// nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
-//          chainage des aretes frontalieres, chainage du hachage des aretes
-//          hachage des aretes = nosoar(1)+nosoar(2)*2
-//          avec mxsoar>=3*mxsomm
-//          une arete i de nosoar est vide <=> nosoar(1,i)=0 et
-//          nosoar(2,arete vide)=l'arete vide qui precede
-//          nosoar(3,arete vide)=l'arete vide qui suit
-// moartr : nombre maximal d'entiers par arete du tableau noartr
-// mxartr : nombre maximal de triangles declarables
-// noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
-//          arete1 = 0 si triangle vide => arete2 = triangle vide suivant
-// sorties:
-// --------
-// nbtria : nombre de triangles internes au domaine
-// quamoy : qualite moyenne  des triangles actuels
-// quamin : qualite minimale des triangles actuels
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 MEFISTO2D_EXPORT
   void  aptrte( Z nutysu, R aretmx,
@@ -160,6 +126,7 @@ MEFISTO2D_EXPORT
   #define nusotr   NUSOTR
   #define qutr2d   QUTR2D
   #define surtd2   SURTD2
+  #define qualitetrte	QUALITETRTE
   
   #define areteideale ARETEIDEALE
   
@@ -180,11 +147,49 @@ MEFISTO2D_EXPORT
   #define nusotr   nusotr_
   #define qutr2d   qutr2d_
   #define surtd2   surtd2_
+  #define qualitetrte   qualitetrte_
 
   #define areteideale areteideale_
 
 #endif
 
+
+extern "C" { void
+#ifdef WIN32
+              __stdcall
+#endif
+   qualitetrte( R3 *mnpxyd,
+		   Z & mosoar, Z & mxsoar, Z *mnsoar,
+	  	   Z & moartr, Z & mxartr, Z *mnartr,
+		   Z & nbtria, R & quamoy, R & quamin ); }
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// but :    calculer la qualite moyenne et minimale de la triangulation
+// -----    actuelle definie par les tableaux nosoar et noartr
+// entrees:
+// --------
+// mnpxyd : tableau des coordonnees 2d des points
+//          par point : x  y  distance_souhaitee
+// mosoar : nombre maximal d'entiers par arete et
+//          indice dans nosoar de l'arete suivante dans le hachage
+// mxsoar : nombre maximal d'aretes stockables dans le tableau nosoar
+//          attention: mxsoar>3*mxsomm obligatoire!
+// nosoar : numero des 2 sommets , no ligne, 2 triangles de l'arete,
+//          chainage des aretes frontalieres, chainage du hachage des aretes
+//          hachage des aretes = nosoar(1)+nosoar(2)*2
+//          avec mxsoar>=3*mxsomm
+//          une arete i de nosoar est vide <=> nosoar(1,i)=0 et
+//          nosoar(2,arete vide)=l'arete vide qui precede
+//          nosoar(3,arete vide)=l'arete vide qui suit
+// moartr : nombre maximal d'entiers par arete du tableau noartr
+// mxartr : nombre maximal de triangles declarables
+// noartr : les 3 aretes des triangles +-arete1, +-arete2, +-arete3
+//          arete1 = 0 si triangle vide => arete2 = triangle vide suivant
+// sorties:
+// --------
+// nbtria : nombre de triangles internes au domaine
+// quamoy : qualite moyenne  des triangles actuels
+// quamin : qualite minimale des triangles actuels
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 extern "C" {  void
 #ifdef WIN32

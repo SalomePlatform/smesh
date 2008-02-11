@@ -32,9 +32,11 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Algo.hxx"
+//#include "SMESH_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshEditor.hxx"
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_Block.hxx"
 
 #include <Adaptor2d_Curve2d.hxx>
 #include <BRepAdaptor_CompCurve.hxx>
@@ -464,3 +466,51 @@ gp_Pnt2d StdMeshers_FaceSide::Value2d(double U) const
   }
   return gp_Pnt2d( 1e+100, 1e+100 );
 }
+
+//================================================================================
+/*!
+ * \brief Return wires of a face as StdMeshers_FaceSide's
+ */
+//================================================================================
+
+TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
+                                              SMESH_Mesh &       theMesh,
+                                              const bool         theIgnoreMediumNodes,
+                                              TError &           theError)
+{
+  TopoDS_Vertex V1;
+  list< TopoDS_Edge > edges;
+  list< int > nbEdgesInWires;
+  int nbWires = SMESH_Block::GetOrderedEdges (theFace, V1, edges, nbEdgesInWires);
+
+  // split list of all edges into separate wires
+  TSideVector wires( nbWires );
+  list< int >::iterator nbE = nbEdgesInWires.begin();
+  list< TopoDS_Edge >::iterator from, to;
+  from = to = edges.begin();
+  for ( int iW = 0; iW < nbWires; ++iW )
+  {
+    std::advance( to, *nbE++ );
+    list< TopoDS_Edge > wireEdges( from, to );
+    // assure that there is a node on the first vertex
+    // as StdMeshers_FaceSide::GetUVPtStruct() requires
+    while ( !SMESH_Algo::VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
+                                     theMesh.GetMeshDS()))
+    {
+      wireEdges.splice(wireEdges.end(), wireEdges,
+                       wireEdges.begin(), ++wireEdges.begin());
+      if ( from->IsSame( wireEdges.front() )) {
+        theError = TError
+          ( new SMESH_ComputeError(COMPERR_BAD_INPUT_MESH,"No nodes on vertices"));
+        return TSideVector(0);
+      }
+    }
+    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
+                                                         true, theIgnoreMediumNodes);
+    wires[ iW ] = StdMeshers_FaceSidePtr( wire );
+    from = to;
+  }
+  return wires;
+}
+
+

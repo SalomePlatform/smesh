@@ -1,0 +1,153 @@
+/*!
+
+\page extrusion_along_path_page Extrusion along a path
+
+\n In principle, <b>Extrusion along a path</b> works in the same way
+as \b Extrusion, the main difference is that we define not a vector,
+but a path of extrusion which must be a meshed edge. To get an idea of
+how this algorithm works, examine several examples, starting from the
+most simple case of extrusion along a straight edge. In all examples
+the same mesh will be extruded along different paths and with
+different parameters. This sample 2D mesh has two quadrangle faces and
+seven edges. Look at the picture, where white digits are the node
+numbers and green are the element numbers:
+
+\image html mesh_for_extr_along_path.png
+
+<br><center><h2>Extrusion along a straight edge</h2>(not using base point
+or angles)</center>
+
+\image html straight_before.png
+<center>The image shows a 1D path mesh, built on a linear edge, and the initial 2D mesh.</center>
+
+\image html straight_after.png
+<center> The image shows the result of extrusion of two edges
+(#1 and #2) of the initial mesh along the path. \n Node #1 of path mesh
+has been selected as Start node.</center>
+
+<br><center><h2>Extrusion along a curvilinear edge</h2>(with and
+without angles)</center>
+
+\image html curvi_simple_before.png
+<center>The image shows a 1D path mesh, built on curvilinear edge, and
+the initial  2D mesh.</center>
+
+\image html curvi_simple_after.png
+<center>The central image shows the result of extrusion of one edge
+(#2) of the initial mesh along the path. \n Node #1 of path mesh has
+been selected as <b>Start node</b>.</center>
+
+\image html curvi_angles_after.png
+<center>The same, but using angles {45, 45, 45, 0, -45, -45, -45}</center>
+
+<br><center><h2>Extrusion along a sub-mesh</h2></center>
+
+In this example the path mesh has been built on a wire (polyline with
+six edges). The first edge of the wire was used as <b>Shape (edge)</b>, node
+#1 as <b>Start node</b>. The angles have been defined as {10, 10, 10}. The
+middle edge (#4) of the initial mesh has been extruded.
+
+\image html edge_wire_before.png
+
+\image html edge_wire_after.png
+
+<br><center><h2>Extrusion of 2d elements along a sub-mesh</h2></center>
+
+This extrusion bases on the same path mesh as in the previous example
+but the third edge of the wire was set as <b>Shape (edge)</b> and node
+#4 as <b>Start node</b>. Please note, that the extrusion has been done
+in direction from node #4 to node #3, i.e. against the wire
+direction. In this example both faces of the initial mesh have been
+extruded.
+
+\image html edge_wire_3d_before.png
+
+\image html edge_wire_3d_after.png
+
+<br><center><h2>Extrusion of 2d elements along a closed path</h2></center>
+
+\image html circle_simple_before.png
+<center>The image shows a path mesh built on a closed edge
+(circle).</center>
+
+\image html circle_simple_after.png
+<center>The central image shows the result of extrusion of both faces
+of the initial mesh. \n Note, that no sewing has been done, so, there are
+six coincident nodes and two coincident faces in the resulting
+mesh.</center>
+
+\image html circle_angles_after.png
+<center>The same, but using angles {45, -45, 45, -45, 45, -45, 45,
+-45}</center>
+
+<br><em>To use Extrusion along a path:</em>
+<ol>
+<li>From the \b Modification menu choose the <b>Extrusion along a
+path</b> item or click <em>"Extrusion along a path"</em> button in the toolbar.
+
+\image html image101.gif
+<center><em>"Extrusion along a path" button</em></center>
+
+The following dialog box will appear:
+
+\image html extrusion1.png
+
+\image html extrusion2.png
+</li>
+
+<li>In the dialog box you should:
+<ul>
+<li>select the type of elements which will be extruded (1D or 2D),</li>
+<li>specify the <b>IDs of the elements</b> which will be extruded by
+selecting them in the 3D viewer or <b>Select the whole mesh, submesh
+or group</b>,
+</li>
+<li>define the Path along which the elements will be extruded,
+\n Path definition consists of several elements:
+<ul>
+<li>\b Mesh - containing a 1D sub-mesh on the edge, along which proceeds the extrusion</li>
+<li><b>Shape (edge)</b> - as the mesh can be complex, the edge is used to define the sub-mesh for the path</li>
+<li><b>Start node</b> - the first or the last node on the edge. It is used to define the direction of extrusion </li>
+</ul>
+</li>
+<li> <b>Generate Groups</b> checkbox allows copying the groups of
+elements of the source mesh to the newly created one. </li>
+</ul>
+</li>
+
+<li>There are two optional parameters, which can be very useful:
+<ul>
+<li>If the path of extrusion is curvilinear, at each iteration the
+extruded shape is rotated to keep its initial angularity to the
+curve. By default, the <b>Base Point</b> around which the shape is rotated is
+the mass center of the shape, however, you can specify any point as
+the <b>Base Point</b> and the shape will be rotated with respect to this
+point.
+</li>
+<li>The shape can also be rotated around the path to get the resulting
+mesh in a helical fashion. You can set the values of angles at the
+right, add them to the list of angles at the left by pressing the <em>"Add"</em>
+button and remove them from the list by pressing the <em>"Remove"</em> button. 
+
+\image html image105.gif
+<center><em>"Add" button</em></center>
+
+\image html image106.gif
+<center><em>"Remove" button</em></center>
+
+</li>
+</ul>
+</li>
+
+<li>Click the \b Apply or \b OK button. Mesh edges will be extruded into
+faces, faces into volumes. The external surface of the resulting 3d
+mesh (if faces have been extruded) is covered with faces, and corners
+with edges. If the path is closed, the resulting mesh can contain
+duplicated nodes and faces, because no sewing is done.
+</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of an 
+\ref tui_extrusion_along_path "Extrusion along a Path" operation.  
+
+*/

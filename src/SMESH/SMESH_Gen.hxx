@@ -42,11 +42,11 @@
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include "SMESHDS_Document.hxx"
-
 #include <TopoDS_Shape.hxx>
 
 #include <map>
+
+class SMESHDS_Document;
 
 typedef SMESH_Hypothesis::Hypothesis_Status TAlgoStateErrorName;
 

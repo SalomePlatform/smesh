@@ -27,13 +27,15 @@
 #ifndef _SMESH_SegmentAroundVertex_0D_HXX_
 #define _SMESH_SegmentAroundVertex_0D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_0D_Algo.hxx"
 
 /*!
  * \brief Algorithm existing in order just to enable assignation of
  * StdMeshers_SegmentLengthAroundVertex hypothesis
  */
-class StdMeshers_SegmentAroundVertex_0D: public SMESH_0D_Algo
+class STDMESHERS_EXPORT StdMeshers_SegmentAroundVertex_0D: public SMESH_0D_Algo
 {
 public:
   StdMeshers_SegmentAroundVertex_0D(int hypId, int studyId, SMESH_Gen* gen);

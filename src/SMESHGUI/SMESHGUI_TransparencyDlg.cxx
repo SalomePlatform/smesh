@@ -156,7 +156,7 @@ SMESHGUI_TransparencyDlg::SMESHGUI_TransparencyDlg( SMESHGUI* theModule,
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnOk()));
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()), this, SLOT(onSelectionChanged()));
 
-  myHelpFileName = "transparency.htm";
+  myHelpFileName = "transparency_page.html";
 
   this->show();
 }

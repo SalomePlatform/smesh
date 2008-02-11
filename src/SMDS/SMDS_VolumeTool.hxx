@@ -35,6 +35,7 @@
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMDS_PolyhedralVolumeOfNodes;
+class SMDS_MeshVolume;
 
 #include <vector>
 #include <set>
@@ -61,6 +62,12 @@ class SMDS_EXPORT SMDS_VolumeTool
   bool Set (const SMDS_MeshElement* theVolume);
   // Set volume.
   // Return false if theVolume is not of type SMDSAbs_Volume
+
+  const SMDS_MeshVolume* Get() const;
+  // return element
+
+  int ID() const;
+  // return element ID
 
   // -----------------------
   // general info

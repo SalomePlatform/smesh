@@ -31,8 +31,6 @@
 
 #ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#else
-#include "CASCatch.hxx"
 #endif
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
@@ -251,18 +249,12 @@ void StdMeshersGUI_DistrPreview::update()
   delete[] y;
   x = y = 0;
 
-#ifdef NO_CAS_CATCH
   try {   
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     replot();
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
   }
 }
@@ -302,19 +294,13 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 bool StdMeshersGUI_DistrPreview::init( const QString& str )
 {
   bool parsed_ok = true;
-#ifdef NO_CAS_CATCH
   try {
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString ) str.latin1() );
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
@@ -350,18 +336,12 @@ double StdMeshersGUI_DistrPreview::calc( bool& ok )
   double res = 0.0;
 
   ok = true;
-#ifdef NO_CAS_CATCH
   try {   
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     res = myExpr->Expression()->Evaluate( myVars, myValues );
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
     res = 0.0;
@@ -382,22 +362,16 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
   {
   case EXPONENT:
     {
-#ifdef NO_CAS_CATCH
       try { 
+#ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
-#else
-      CASCatch_TRY {
 #endif
 	// in StdMeshers_NumberOfSegments.cc
 	// const double PRECISION = 1e-7;
 	//
 	if(v < -7) v = -7.0;
 	v = pow( 10.0, v );
-#ifdef NO_CAS_CATCH
       } catch(Standard_Failure) {
-#else
-      } CASCatch_CATCH(Standard_Failure) {
-#endif
 	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	v = 0.0;
 	ok = false;

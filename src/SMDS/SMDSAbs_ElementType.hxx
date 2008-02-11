@@ -35,7 +35,14 @@ enum SMDSAbs_ElementType
 	SMDSAbs_Node,
 	SMDSAbs_Edge,
 	SMDSAbs_Face,
-	SMDSAbs_Volume
+	SMDSAbs_Volume,
+        SMDSAbs_NbElementTypes
+};
+
+enum SMDSAbs_ElementOrder {
+  ORDER_ANY,          /*! entities of any order */
+  ORDER_LINEAR,       /*! entities of 1st order */
+  ORDER_QUADRATIC     /*! entities of 2nd order */
 };
 
 #endif

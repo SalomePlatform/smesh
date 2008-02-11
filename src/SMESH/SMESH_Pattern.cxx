@@ -36,10 +36,12 @@
 #include <GeomAdaptor_Surface.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
-#include <IntAna2d_AnaIntersection.hxx>
+//#include <IntAna2d_AnaIntersection.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
@@ -47,7 +49,6 @@
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <gp_Ax2.hxx>
 #include <gp_Lin2d.hxx>
 #include <gp_Pnt2d.hxx>
@@ -962,7 +963,14 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
   gp_XY loc1 = uv11 * ( 1 - r1 ) + uv12 * r1;
   gp_XY loc2 = uv21 * ( 1 - r2 ) + uv22 * r2;
   resUV = 0.5 * ( loc1 + loc2 );
-  isDeformed = ( loc1 - loc2 ).SquareModulus() > 1e-8;
+  //isDeformed = ( loc1 - loc2 ).SquareModulus() > 1e-8;
+  // SKL 26.07.2007 for NPAL16567
+  double d1 = (uv11-uv12).Modulus();
+  double d2 = (uv21-uv22).Modulus();
+  // double delta = d1*d2*1e-6; PAL17233
+  double delta = min( d1, d2 ) / 10.;
+  isDeformed = ( loc1 - loc2 ).SquareModulus() > delta * delta;
+
 //   double len1 = ( uv11 - uv12 ).Modulus();
 //   double len2 = ( uv21 - uv22 ).Modulus();
 //   resUV = loc1 * len2 / ( len1 + len2 ) + loc2 * len1 / ( len1 + len2 );
@@ -985,6 +993,10 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
   
 //   resUV /= 2.;
 //     }
+  if ( isDeformed ) {
+    MESSAGE("intersectIsolines(), d1 = " << d1 << ", d2 = " << d2 << ", delta = " << delta <<
+            ", " << (loc1 - loc2).SquareModulus() << " > " << delta * delta);
+  }
   return true;
 }
 
@@ -1384,7 +1396,7 @@ bool SMESH_Pattern::
   compUVByElasticIsolines(const list< list< TPoint* > >& theBndPoints,
                           const list< TPoint* >&         thePntToCompute)
 {
-  //return false;
+  return false; // PAL17233
 //cout << "============================== KEY POINTS =============================="<<endl;
 //   list< int >::iterator kpIt = myKeyPointIDs.begin();
 //   for ( ; kpIt != myKeyPointIDs.end(); kpIt++ ) {
@@ -2660,6 +2672,162 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
 }
 
 //=======================================================================
+//function : Apply
+//purpose  : Compute nodes coordinates applying
+//           the loaded pattern to <theFace>. The first key-point
+//           will be mapped into <theNodeIndexOnKeyPoint1>-th node
+//=======================================================================
+
+bool SMESH_Pattern::Apply (SMESH_Mesh*          theMesh,
+                           const SMDS_MeshFace* theFace,
+                           const TopoDS_Shape&  theSurface,
+                           const int            theNodeIndexOnKeyPoint1,
+                           const bool           theReverse)
+{
+//  MESSAGE(" ::Apply(MeshFace) " );
+  if ( theSurface.IsNull() || theSurface.ShapeType() != TopAbs_FACE ) {
+    return Apply( theFace, theNodeIndexOnKeyPoint1, theReverse);
+  }
+  const TopoDS_Face& face = TopoDS::Face( theSurface );
+  TopLoc_Location loc;
+  Handle(Geom_Surface) surface = BRep_Tool::Surface( face, loc );
+  const gp_Trsf & aTrsf = loc.Transformation();
+
+  if ( !IsLoaded() ) {
+    MESSAGE( "Pattern not loaded" );
+    return setErrorCode( ERR_APPL_NOT_LOADED );
+  }
+
+  // check nb of nodes
+  if (theFace->NbNodes() != myNbKeyPntInBoundary.front() ) {
+    MESSAGE( myKeyPointIDs.size() << " != " << theFace->NbNodes() );
+    return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
+  }
+
+  // find points on edges, it fills myNbKeyPntInBoundary
+  if ( !findBoundaryPoints() )
+    return false;
+
+  // check that there are no holes in a pattern
+  if (myNbKeyPntInBoundary.size() > 1 ) {
+    return setErrorCode( ERR_APPL_BAD_NB_VERTICES );
+  }
+
+  // Define the nodes order
+
+  list< const SMDS_MeshNode* > nodes;
+  list< const SMDS_MeshNode* >::iterator n = nodes.end();
+  SMDS_ElemIteratorPtr noIt = theFace->nodesIterator();
+  int iSub = 0;
+  while ( noIt->more() ) {
+    const SMDS_MeshNode* node = smdsNode( noIt->next() );
+    nodes.push_back( node );
+    if ( iSub++ == theNodeIndexOnKeyPoint1 )
+      n = --nodes.end();
+  }
+  if ( n != nodes.end() ) {
+    if ( theReverse ) {
+      if ( n != --nodes.end() )
+        nodes.splice( nodes.begin(), nodes, ++n, nodes.end() );
+      nodes.reverse();
+    }
+    else if ( n != nodes.begin() )
+      nodes.splice( nodes.end(), nodes, nodes.begin(), n );
+  }
+
+  // find a node not on a seam edge, if necessary
+  SMESH_MesherHelper helper( *theMesh );
+  helper.SetSubShape( theSurface );
+  const SMDS_MeshNode* inFaceNode = 0;
+  if ( helper.GetNodeUVneedInFaceNode() )
+  {
+    SMESH_MeshEditor editor( theMesh );
+    for ( n = nodes.begin(); ( !inFaceNode && n != nodes.end()); ++n ) {
+      int shapeID = editor.FindShape( *n );
+      if ( !shapeID )
+        return Apply( theFace, theNodeIndexOnKeyPoint1, theReverse);
+      if ( !helper.IsSeamShape( shapeID ))
+        inFaceNode = *n;
+    }
+  }
+
+  // Set UV of key-points (i.e. of nodes of theFace )
+  vector< gp_XY > keyUV( theFace->NbNodes() );
+  myOrderedNodes.resize( theFace->NbNodes() );
+  for ( iSub = 1, n = nodes.begin(); n != nodes.end(); ++n, ++iSub )
+  {
+    TPoint* p = getShapePoints( iSub ).front();
+    p->myUV  = helper.GetNodeUV( face, *n, inFaceNode );
+    p->myXYZ = gp_XYZ( (*n)->X(), (*n)->Y(), (*n)->Z() );
+
+    keyUV[ iSub-1 ] = p->myUV;
+    myOrderedNodes[ iSub-1 ] = *n;
+  }
+
+  // points on edges to be used for UV computation of in-face points
+  list< list< TPoint* > > edgesPointsList;
+  edgesPointsList.push_back( list< TPoint* >() );
+  list< TPoint* > * edgesPoints = & edgesPointsList.back();
+  list< TPoint* >::iterator pIt;
+
+  // compute UV and XYZ of points on edges
+
+  for ( int i = 0; i < myOrderedNodes.size(); ++i, ++iSub )
+  {
+    gp_XY& uv1 = keyUV[ i ];
+    gp_XY& uv2 = ( i+1 < keyUV.size() ) ? keyUV[ i+1 ] : keyUV[ 0 ];
+
+    list< TPoint* > & ePoints = getShapePoints( iSub );
+    ePoints.back()->myInitU = 1.0;
+    list< TPoint* >::const_iterator pIt = ++ePoints.begin();
+    while ( *pIt != ePoints.back() )
+    {
+      TPoint* p = *pIt++;
+      p->myUV = uv1 * ( 1 - p->myInitU ) + uv2 * p->myInitU;
+      p->myXYZ = surface->Value( p->myUV.X(), p->myUV.Y() );
+      if ( !loc.IsIdentity() )
+        aTrsf.Transforms( p->myXYZ.ChangeCoord() );
+    }
+    // collect on-edge points (excluding the last one)
+    edgesPoints->insert( edgesPoints->end(), ePoints.begin(), --ePoints.end());
+  }
+
+  // Compute UV and XYZ of in-face points
+
+  // try to use a simple algo to compute UV
+  list< TPoint* > & fPoints = getShapePoints( iSub );
+  bool isDeformed = false;
+  for ( pIt = fPoints.begin(); !isDeformed && pIt != fPoints.end(); pIt++ )
+    if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
+                                  (*pIt)->myUV, isDeformed )) {
+      MESSAGE("cant Apply(face)");
+      return false;
+    }
+  // try to use a complex algo if it is a difficult case
+  if ( isDeformed && !compUVByElasticIsolines( edgesPointsList, fPoints ))
+  {
+    for ( ; pIt != fPoints.end(); pIt++ ) // continue with the simple algo
+      if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
+                                    (*pIt)->myUV, isDeformed )) {
+        MESSAGE("cant Apply(face)");
+        return false;
+      }
+  }
+
+  for ( pIt = fPoints.begin(); pIt != fPoints.end(); pIt++ )
+  {
+    TPoint * point = *pIt;
+    point->myXYZ = surface->Value( point->myUV.X(), point->myUV.Y() );
+    if ( !loc.IsIdentity() )
+      aTrsf.Transforms( point->myXYZ.ChangeCoord() );
+  }
+
+  myIsComputed = true;
+
+  return setErrorCode( ERR_OK );
+}
+
+//=======================================================================
 //function : undefinedXYZ
 //purpose  : 
 //=======================================================================
@@ -2687,7 +2855,8 @@ inline static bool isDefined(const gp_XYZ& theXYZ)
 //           will be mapped into <theNodeIndexOnKeyPoint1>-th node
 //=======================================================================
 
-bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*>& theFaces,
+bool SMESH_Pattern::Apply (SMESH_Mesh*                     theMesh,
+                           std::set<const SMDS_MeshFace*>& theFaces,
                            const int                       theNodeIndexOnKeyPoint1,
                            const bool                      theReverse)
 {
@@ -2725,11 +2894,29 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshFace*>& theFaces,
 
   int ind1 = 0; // lowest point index for a face
 
+  // meshed geometry
+  TopoDS_Shape shape;
+//   int          shapeID = 0;
+//   SMESH_MeshEditor editor( theMesh ); 
+
   // apply to each face in theFaces set
   set<const SMDS_MeshFace*>::iterator face = theFaces.begin();
   for ( ; face != theFaces.end(); ++face )
   {
-    if ( !Apply( *face, theNodeIndexOnKeyPoint1, theReverse )) {
+//     int curShapeId = editor.FindShape( *face );
+//     if ( curShapeId != shapeID ) {
+//       if ( curShapeId )
+//         shape = theMesh->GetMeshDS()->IndexToShape( curShapeId );
+//       else
+//         shape.Nullify();
+//       shapeID = curShapeId;
+//     }
+    bool ok;
+    if ( shape.IsNull() )
+      ok = Apply( *face, theNodeIndexOnKeyPoint1, theReverse );
+    else
+      ok = Apply( theMesh, *face, shape, theNodeIndexOnKeyPoint1, theReverse );
+    if ( !ok ) {
       MESSAGE( "Failed on " << *face );
       continue;
     }
@@ -3905,7 +4092,7 @@ void SMESH_Pattern::createElements(SMESH_Mesh*                            theMes
 
   SMESH_subMesh * subMesh;
   if ( !myShape.IsNull() ) {
-    subMesh = theMesh->GetSubMeshContaining( myShape );
+    subMesh = theMesh->GetSubMesh( myShape );
     if ( subMesh )
       subMesh->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
   }

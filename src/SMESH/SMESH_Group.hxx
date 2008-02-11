@@ -30,10 +30,10 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include <SMDSAbs_ElementType.hxx>
+#include "SMDSAbs_ElementType.hxx"
+
 #include <string>
 #include <TopoDS_Shape.hxx>
-
 
 class SMESHDS_GroupBase;
 class SMESH_Mesh;
@@ -55,9 +55,6 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
-  void SetColorNumber (int theColorNumber) { myColorNumber = theColorNumber; }
-  int GetColorNumber() const { return myColorNumber; }
-
  private:
   SMESH_Group (const SMESH_Group& theOther);
   // prohibited copy constructor
@@ -66,7 +63,6 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * myGroupDS;
   std::string         myName;
-  int                 myColorNumber;
 };
 
 #endif

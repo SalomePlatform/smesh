@@ -1,0 +1,16 @@
+/*!
+
+\page running_mesh_module_page Running MESH module
+
+\n To start MESH module in SALOME click "Mesh" icon in the "Modules" toolbar or
+select \b Mesh from the Choose box.
+
+\image html image25.jpg
+<center><em>"Mesh" icon</em></center>
+
+The desktop of the SALOME platform will be updated with additional
+toolbars and menus related to the \b MESH component .
+
+\image html a-viewgeneral.png
+
+*/

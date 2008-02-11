@@ -35,15 +35,17 @@
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class STDMESHERS_EXPORT StdMeshers_LocalLength:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_LocalLength: public SMESH_Hypothesis
 {
  public:
   StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen);
   virtual ~ StdMeshers_LocalLength();
 
   void SetLength(double length) throw(SALOME_Exception);
+  void SetPrecision(double precision) throw(SALOME_Exception);
 
   double GetLength() const;
+  double GetPrecision() const;
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
@@ -60,6 +62,7 @@ class STDMESHERS_EXPORT StdMeshers_LocalLength:public SMESH_Hypothesis
 
  protected:
   double _length;
+  double _precision;
 };
 
 #endif

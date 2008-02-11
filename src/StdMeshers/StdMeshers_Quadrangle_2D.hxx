@@ -47,14 +47,8 @@ enum TSideID { BOTTOM_SIDE=0, RIGHT_SIDE, TOP_SIDE, LEFT_SIDE, NB_SIDES };
 typedef uvPtStruct UVPtStruct;
 typedef struct faceQuadStruct
 {
-  //int nbPts[4];
-  //TopoDS_Edge edge[4];
   vector< StdMeshers_FaceSide*> side;
-  //double first[4];
-  //double last[4];
-  //bool isEdgeForward[4];
   bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
-  //UVPtStruct* uv_edges[4];
   UVPtStruct* uv_grid;
   ~faceQuadStruct();
 } FaceQuadStruct;
@@ -70,32 +64,27 @@ public:
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
   virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+		       const TopoDS_Shape& aShape);
 
   FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
 				    const TopoDS_Shape& aShape,
-                                    const bool CreateQuadratic)
-    throw (SALOME_Exception);
+                                    const bool CreateQuadratic);
 
 protected:
 
   FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
-                               const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+                               const TopoDS_Shape& aShape);
 
   bool SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
-			 FaceQuadStruct*& quad)
-    throw (SALOME_Exception);
+			 FaceQuadStruct*& quad);
 
   /**
    * Special function for creation only quandrangle faces
    */
   bool ComputeQuadPref(SMESH_Mesh& aMesh,
                        const TopoDS_Shape& aShape,
-                       FaceQuadStruct* quad)
-    throw (SALOME_Exception);
+                       FaceQuadStruct* quad);
 
   UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
 			      const TopoDS_Face& F, const TopoDS_Edge& E,

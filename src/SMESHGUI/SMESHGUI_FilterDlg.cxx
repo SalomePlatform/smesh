@@ -1708,7 +1708,7 @@ void SMESHGUI_FilterDlg::construct (const QValueList<int>& theTypes)
 
   aDlgLay->setStretchFactor(myMainFrame, 1);
 
-  myHelpFileName = "selection_filter_library.htm";
+  myHelpFileName = "selection_filter_library_page.html";
 
   Init(myTypes);
 }
@@ -2540,7 +2540,8 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   if (!anObj->_is_nil())
     {
       myTable->SetThreshold(aRow, GEOMBase::GetName(anObj));
-      myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
+      //myTable->SetID( aRow, GEOMBase::GetIORFromObject(anObj));
+      myTable->SetID(aRow, anIO->getEntry());
     }
 }
 

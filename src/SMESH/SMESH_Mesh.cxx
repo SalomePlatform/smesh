@@ -35,7 +35,9 @@
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Script.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESHDS_Document.hxx"
 #include "SMDS_MeshVolume.hxx"
+#include "SMDS_SetIterator.hxx"
 
 #include "utilities.h"
 
@@ -48,19 +50,13 @@
 #include "DriverUNV_R_SMDS_Mesh.h"
 #include "DriverSTL_R_SMDS_Mesh.h"
 
-#include <BRepTools_WireExplorer.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
-#include <BRep_Builder.hxx>
-#include <gp_Pnt.hxx>
-
-#include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
-#include <TopTools_ListOfShape.hxx>
-#include <TopTools_Array1OfShape.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
-
-#include <memory>
+#include <TopoDS_Iterator.hxx>
 
 #include "Utils_ExceptHandlers.hxx"
 
@@ -98,6 +94,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
   _idDoc         = theDocument->NewMesh(theIsEmbeddedMode);
   _myMeshDS      = theDocument->GetMesh(_idDoc);
   _isShapeToMesh = false;
+  _isAutoColor   = false;
   _myMeshDS->ShapeToMesh( PseudoShape() );
 }
 
@@ -153,7 +150,6 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
         i_gr++;
     }
     _mapAncestors.Clear();
-    _mapPropagationChains.Clear();
 
     // clear SMESHDS
     TopoDS_Shape aNullShape;
@@ -215,7 +211,7 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   if(MYDEBUG) MESSAGE("UNVToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverUNV_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
@@ -270,7 +266,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   if(MYDEBUG) MESSAGE("MEDToMesh - theFileName = "<<theFileName<<", mesh name = "<<theMeshName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverMED_R_SMESHDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetMeshId(-1);
@@ -313,7 +309,7 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
   if(MYDEBUG) MESSAGE("STLToMesh - theFileName = "<<theFileName);
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
-  _isShapeToMesh = true;
+  _isShapeToMesh = false;
   DriverSTL_R_SMDS_Mesh myReader;
   myReader.SetMesh(_myMeshDS);
   myReader.SetFile(theFileName);
@@ -363,6 +359,10 @@ SMESH_Hypothesis::Hypothesis_Status
       if ( ret < aBestRet )
         aBestRet = ret;
     }
+    // bind hypotheses to a group just to know
+    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
+    GetMeshDS()->AddHypothesis( aSubShape, anHyp );
+
     if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
       return aBestRet;
     return aWorstNotFatal;
@@ -466,6 +466,9 @@ SMESH_Hypothesis::Hypothesis_Status
       if ( ret < aBestRet )
         aBestRet = ret;
     }
+    SMESH_Hypothesis *anHyp = _gen->GetStudyContext(_studyId)->mapHypothesis[anHypId];
+    GetMeshDS()->RemoveHypothesis( aSubShape, anHyp );
+
     if ( SMESH_Hypothesis::IsStatusFatal( aBestRet ))
       return aBestRet;
     return aWorstNotFatal;
@@ -717,7 +720,7 @@ SMESH_subMesh *SMESH_Mesh::GetSubMesh(const TopoDS_Shape & aSubShape)
  */
 //=============================================================================
 
-SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
+SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape) const
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -725,13 +728,12 @@ SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
   
   int index = _myMeshDS->ShapeToIndex(aSubShape);
 
-  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(index);
+  map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(index);
   if ( i_sm != _mapSubMesh.end())
     aSubMesh = i_sm->second;
 
   return aSubMesh;
 }
-
 //=============================================================================
 /*!
  * Get the SMESH_subMesh object implementation. Dont create it, return null
@@ -739,17 +741,51 @@ SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const TopoDS_Shape & aSubShape)
  */
 //=============================================================================
 
-SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const int aShapeID)
+SMESH_subMesh *SMESH_Mesh::GetSubMeshContaining(const int aShapeID) const
 throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   
-  map <int, SMESH_subMesh *>::iterator i_sm = _mapSubMesh.find(aShapeID);
+  map <int, SMESH_subMesh *>::const_iterator i_sm = _mapSubMesh.find(aShapeID);
   if (i_sm == _mapSubMesh.end())
     return NULL;
   return i_sm->second;
 }
+//================================================================================
+/*!
+ * \brief Return submeshes of groups containing the given subshape
+ */
+//================================================================================
 
+list<SMESH_subMesh*>
+SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
+  throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  list<SMESH_subMesh*> found;
+
+  SMESH_subMesh * subMesh = GetSubMeshContaining(aSubShape);
+  if ( !subMesh )
+    return found;
+
+  // submeshes of groups have max IDs, so search from the map end
+  map<int, SMESH_subMesh *>::const_reverse_iterator i_sm;
+  for ( i_sm = _mapSubMesh.rbegin(); i_sm != _mapSubMesh.rend(); ++i_sm) {
+    SMESHDS_SubMesh * ds = i_sm->second->GetSubMeshDS();
+    if ( ds && ds->IsComplexSubmesh() ) {
+      TopExp_Explorer exp( i_sm->second->GetSubShape(), aSubShape.ShapeType() );
+      for ( ; exp.More(); exp.Next() ) {
+        if ( aSubShape.IsSame( exp.Current() )) {
+          found.push_back( i_sm->second );
+          break;
+        }
+      }
+    } else {
+      break;
+    }
+  }
+  return found;
+}
 //=======================================================================
 //function : IsUsedHypothesis
 //purpose  : Return True if anHyp is used to mesh aSubShape
@@ -859,13 +895,27 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
         {
           aSubMesh->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
                                     const_cast< SMESH_Hypothesis*>( hyp ));
-
-          if ( algo->GetDim() == 1 && IsPropagationHypothesis( aSubShape ))
-            CleanMeshOnPropagationChain( aSubShape );
         }
       }
     }
   }
+}
+
+//=============================================================================
+/*!
+ *  Auto color functionality
+ */
+//=============================================================================
+void SMESH_Mesh::SetAutoColor(bool theAutoColor) throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  _isAutoColor = theAutoColor;
+}
+
+bool SMESH_Mesh::GetAutoColor() throw(SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _isAutoColor;
 }
 
 //=============================================================================
@@ -980,221 +1030,156 @@ void SMESH_Mesh::ExportSTL(const char *file, const bool isascii) throw(SALOME_Ex
   myWriter.Perform();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of nodes in the mesh
  */
-//=============================================================================
+//================================================================================
+
 int SMESH_Mesh::NbNodes() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->NbNodes();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief  Return number of edges of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbEdges(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbEdges(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbEdges();
-
-  int Nb = 0;
-  SMDS_EdgeIteratorPtr it = _myMeshDS->edgesIterator();
-  while (it->more()) {
-    const SMDS_MeshEdge* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbEdges(order);
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of faces of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbFaces(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbFaces(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbFaces();
-
-  int Nb = 0;
-  SMDS_FaceIteratorPtr it = _myMeshDS->facesIterator();
-  while (it->more()) {
-    const SMDS_MeshFace* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbFaces(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of 3 nodes faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbTriangles(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Return the number of faces in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbTriangles(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  
-  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while (itFaces->more()) {
-    const SMDS_MeshFace* curFace = itFaces->next();
-    int nbnod = curFace->NbNodes();
-    if ( !curFace->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==3 || nbnod==6) ||
-           order == ORDER_LINEAR && nbnod==3 ||
-           order == ORDER_QUADRATIC && nbnod==6 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbTriangles(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of 4 nodes faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
-int SMESH_Mesh::NbQuadrangles(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief Return the number nodes faces in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbQuadrangles(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  
-  SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
-  while (itFaces->more()) {
-    const SMDS_MeshFace* curFace = itFaces->next();
-    int nbnod = curFace->NbNodes();
-    if ( !curFace->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==4 || nbnod==8) ||
-           order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_QUADRATIC && nbnod==8 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbQuadrangles(order);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Return the number of polygonal faces in the mesh. This method run in O(n)
-///////////////////////////////////////////////////////////////////////////////
+//================================================================================
+/*!
+ * \brief Return the number of polygonal faces in the mesh
+ */
+//================================================================================
+
 int SMESH_Mesh::NbPolygons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_FaceIteratorPtr itFaces = _myMeshDS->facesIterator();
-  while (itFaces->more())
-    if (itFaces->next()->IsPoly()) Nb++;
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPolygons();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief Return number of volumes of given order in the mesh
  */
-//=============================================================================
-int SMESH_Mesh::NbVolumes(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+
+int SMESH_Mesh::NbVolumes(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  if (order == ORDER_ANY)
-    return _myMeshDS->NbVolumes();
-
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr it = _myMeshDS->volumesIterator();
-  while (it->more()) {
-    const SMDS_MeshVolume* cur = it->next();
-    if ( order == ORDER_LINEAR && !cur->IsQuadratic() ||
-         order == ORDER_QUADRATIC && cur->IsQuadratic() )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbVolumes(order);
 }
 
-int SMESH_Mesh::NbTetras(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of tetrahedrons of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbTetras(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==4 || nbnod==10) ||
-           order == ORDER_LINEAR && nbnod==4 ||
-           order == ORDER_QUADRATIC && nbnod==10 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbTetras(order);
 }
 
-int SMESH_Mesh::NbHexas(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of hexahedrons of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbHexas(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==8 || nbnod==20) ||
-           order == ORDER_LINEAR && nbnod==8 ||
-           order == ORDER_QUADRATIC && nbnod==20 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbHexas(order);
 }
 
-int SMESH_Mesh::NbPyramids(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of pyramids of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbPyramids(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==5 || nbnod==13) ||
-           order == ORDER_LINEAR && nbnod==5 ||
-           order == ORDER_QUADRATIC && nbnod==13 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPyramids(order);
 }
 
-int SMESH_Mesh::NbPrisms(ElementOrder order) throw(SALOME_Exception)
+//================================================================================
+/*!
+ * \brief  Return number of prisms (penthahedrons) of given order in the mesh
+ */
+//================================================================================
+
+int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
-  while (itVolumes->more()) {
-    const SMDS_MeshVolume* curVolume = itVolumes->next();
-    int nbnod = curVolume->NbNodes();
-    if ( !curVolume->IsPoly() && 
-	 ( order == ORDER_ANY && (nbnod==6 || nbnod==15) ||
-           order == ORDER_LINEAR && nbnod==6 ||
-           order == ORDER_QUADRATIC && nbnod==15 ) )
-      Nb++;
-  }
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPrisms(order);
 }
+
+//================================================================================
+/*!
+ * \brief  Return number of polyhedrons in the mesh
+ */
+//================================================================================
 
 int SMESH_Mesh::NbPolyhedrons() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  int Nb = 0;
-  SMDS_VolumeIteratorPtr itVolumes = _myMeshDS->volumesIterator();
-  while (itVolumes->more())
-    if (itVolumes->next()->IsPoly()) Nb++;
-  return Nb;
+  return _myMeshDS->GetMeshInfo().NbPolyhedrons();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  
+ * \brief  Return number of submeshes in the mesh
  */
-//=============================================================================
+//================================================================================
+
 int SMESH_Mesh::NbSubMesh() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -1210,7 +1195,7 @@ bool SMESH_Mesh::IsNotConformAllowed() const
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::IsNotConformAllowed");
 
-  SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
+  static SMESH_HypoFilter filter( SMESH_HypoFilter::HasName( "NotConformAllowed" ));
   return GetHypothesis( _myMeshDS->ShapeToMesh(), filter, false );
 }
 
@@ -1244,9 +1229,21 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
   return aGroup;
 }
 
+//================================================================================
+/*!
+ * \brief Return iterator on all existing groups
+ */
+//================================================================================
+
+SMESH_Mesh::GroupIteratorPtr SMESH_Mesh::GetGroups() const
+{
+  typedef map <int, SMESH_Group *> TMap;
+  return GroupIteratorPtr( new SMDS_mapIterator<TMap>( _mapGroup ));
+}
+
 //=============================================================================
 /*!
- *  
+ * \brief Return a group by ID
  */
 //=============================================================================
 
@@ -1260,11 +1257,11 @@ SMESH_Group* SMESH_Mesh::GetGroup (const int theGroupID)
 
 //=============================================================================
 /*!
- *  
+ * \brief Return IDs of all groups
  */
 //=============================================================================
 
-list<int> SMESH_Mesh::GetGroupIds()
+list<int> SMESH_Mesh::GetGroupIds() const
 {
   list<int> anIds;
   for ( map<int, SMESH_Group*>::const_iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )
@@ -1289,279 +1286,6 @@ void SMESH_Mesh::RemoveGroup (const int theGroupID)
   _mapGroup.erase (theGroupID);
 }
 
-//=============================================================================
-/*!
- *  IsLocal1DHypothesis
- *  Returns a local 1D hypothesis used for theEdge
- */
-//=============================================================================
-const SMESH_Hypothesis* SMESH_Mesh::IsLocal1DHypothesis (const TopoDS_Shape& theEdge)
-{
-  SMESH_HypoFilter hypo ( SMESH_HypoFilter::HasDim( 1 ));
-  hypo.AndNot( hypo.IsAlgo() ).AndNot( hypo.IsAssignedTo( GetMeshDS()->ShapeToMesh() ));
-
-  return GetHypothesis( theEdge, hypo, true );
-}
-
-//=============================================================================
-/*!
- *  IsPropagationHypothesis
- */
-//=============================================================================
-bool SMESH_Mesh::IsPropagationHypothesis (const TopoDS_Shape& theEdge)
-{
-  return _mapPropagationChains.Contains(theEdge);
-}
-
-//=============================================================================
-/*!
- *  IsPropagatedHypothesis
- */
-//=============================================================================
-bool SMESH_Mesh::IsPropagatedHypothesis (const TopoDS_Shape& theEdge,
-                                         TopoDS_Shape&       theMainEdge)
-{
-  int nbChains = _mapPropagationChains.Extent();
-  for (int i = 1; i <= nbChains; i++) {
-    //const TopTools_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
-    const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromIndex(i);
-    if (aChain.Contains(theEdge)) {
-      theMainEdge = _mapPropagationChains.FindKey(i);
-      return true;
-    }
-  }
-
-  return false;
-}
-//=============================================================================
-/*!
- *  IsReversedInChain
- */
-//=============================================================================
-
-bool SMESH_Mesh::IsReversedInChain (const TopoDS_Shape& theEdge,
-                                    const TopoDS_Shape& theMainEdge)
-{
-  if ( !theMainEdge.IsNull() && !theEdge.IsNull() &&
-      _mapPropagationChains.Contains( theMainEdge ))
-  {
-    const SMESH_IndexedMapOfShape& aChain =
-      _mapPropagationChains.FindFromKey( theMainEdge );
-    int index = aChain.FindIndex( theEdge );
-    if ( index )
-      return aChain(index).Orientation() == TopAbs_REVERSED;
-  }
-  return false;
-}
-
-//=============================================================================
-/*!
- *  CleanMeshOnPropagationChain
- */
-//=============================================================================
-void SMESH_Mesh::CleanMeshOnPropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  const SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.FindFromKey(theMainEdge);
-  int i, nbEdges = aChain.Extent();
-  for (i = 1; i <= nbEdges; i++) {
-    TopoDS_Shape anEdge = aChain.FindKey(i);
-    SMESH_subMesh *subMesh = GetSubMesh(anEdge);
-    SMESHDS_SubMesh *subMeshDS = subMesh->GetSubMeshDS();
-    if (subMeshDS && subMeshDS->NbElements() > 0) {
-      subMesh->ComputeStateEngine(SMESH_subMesh::CLEAN);
-    }
-  }
-}
-
-//=============================================================================
-/*!
- *  RebuildPropagationChains
- *  Rebuild all existing propagation chains.
- *  Have to be used, if 1D hypothesis have been assigned/removed to/from any edge
- */
-//=============================================================================
-bool SMESH_Mesh::RebuildPropagationChains()
-{
-  bool ret = true;
-
-  // Clean all chains, because they can be not up-to-date
-  int i, nbChains = _mapPropagationChains.Extent();
-  for (i = 1; i <= nbChains; i++) {
-    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
-    CleanMeshOnPropagationChain(aMainEdge);
-    _mapPropagationChains.ChangeFromIndex(i).Clear();
-  }
-
-  // Build all chains
-  for (i = 1; i <= nbChains; i++) {
-    TopoDS_Shape aMainEdge = _mapPropagationChains.FindKey(i);
-    if (!BuildPropagationChain(aMainEdge))
-      ret = false;
-    CleanMeshOnPropagationChain(aMainEdge);
-  }
-
-  return ret;
-}
-
-//=============================================================================
-/*!
- *  RemovePropagationChain
- *  Have to be used, if Propagation hypothesis is removed from <theMainEdge>
- */
-//=============================================================================
-bool SMESH_Mesh::RemovePropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  if (!_mapPropagationChains.Contains(theMainEdge))
-    return false;
-
-  // Clean mesh elements and nodes, built on the chain
-  CleanMeshOnPropagationChain(theMainEdge);
-
-  // Clean the chain
-  _mapPropagationChains.ChangeFromKey(theMainEdge).Clear();
-
-  // Remove the chain from the map
-  int i = _mapPropagationChains.FindIndex(theMainEdge);
-  if ( i == _mapPropagationChains.Extent() )
-    _mapPropagationChains.RemoveLast();
-  else {
-    TopoDS_Vertex anEmptyShape;
-    BRep_Builder BB;
-    BB.MakeVertex(anEmptyShape, gp_Pnt(0,0,0), 0.1);
-    SMESH_IndexedMapOfShape anEmptyMap;
-    _mapPropagationChains.Substitute(i, anEmptyShape, anEmptyMap);
-  }
-
-  return true;
-}
-
-//=============================================================================
-/*!
- *  BuildPropagationChain
- */
-//=============================================================================
-bool SMESH_Mesh::BuildPropagationChain (const TopoDS_Shape& theMainEdge)
-{
-  if (theMainEdge.ShapeType() != TopAbs_EDGE) return true;
-
-  // Add new chain, if there is no
-  if (!_mapPropagationChains.Contains(theMainEdge)) {
-    SMESH_IndexedMapOfShape aNewChain;
-    _mapPropagationChains.Add(theMainEdge, aNewChain);
-  }
-
-  // Check presence of 1D hypothesis to be propagated
-  const SMESH_Hypothesis* aMainHyp = IsLocal1DHypothesis(theMainEdge);
-  if (!aMainHyp) {
-    MESSAGE("Warning: There is no 1D hypothesis to propagate. Please, assign.");
-    return true;
-  }
-
-  // Edges, on which the 1D hypothesis will be propagated from <theMainEdge>
-  SMESH_IndexedMapOfShape& aChain = _mapPropagationChains.ChangeFromKey(theMainEdge);
-  if (aChain.Extent() > 0) {
-    CleanMeshOnPropagationChain(theMainEdge);
-    aChain.Clear();
-  }
-
-  // At first put <theMainEdge> in the chain
-  aChain.Add(theMainEdge);
-
-  // List of edges, added to chain on the previous cycle pass
-  TopTools_ListOfShape listPrevEdges;
-  listPrevEdges.Append(theMainEdge.Oriented( TopAbs_FORWARD ));
-
-//   5____4____3____4____5____6
-//   |    |    |    |    |    |
-//   |    |    |    |    |    |
-//   4____3____2____3____4____5
-//   |    |    |    |    |    |      Number in the each knot of
-//   |    |    |    |    |    |      grid indicates cycle pass,
-//   3____2____1____2____3____4      on which corresponding edge
-//   |    |    |    |    |    |      (perpendicular to the plane
-//   |    |    |    |    |    |      of view) will be found.
-//   2____1____0____1____2____3
-//   |    |    |    |    |    |
-//   |    |    |    |    |    |
-//   3____2____1____2____3____4
-
-  // Collect all edges pass by pass
-  while (listPrevEdges.Extent() > 0) {
-    // List of edges, added to chain on this cycle pass
-    TopTools_ListOfShape listCurEdges;
-
-    // Find the next portion of edges
-    TopTools_ListIteratorOfListOfShape itE (listPrevEdges);
-    for (; itE.More(); itE.Next()) {
-      TopoDS_Shape anE = itE.Value();
-
-      // Iterate on faces, having edge <anE>
-      TopTools_ListIteratorOfListOfShape itA (GetAncestors(anE));
-      for (; itA.More(); itA.Next()) {
-        TopoDS_Shape aW = itA.Value();
-
-        // There are objects of different type among the ancestors of edge
-        if (aW.ShapeType() == TopAbs_WIRE) {
-          TopoDS_Shape anOppE;
-
-          BRepTools_WireExplorer aWE (TopoDS::Wire(aW));
-          Standard_Integer nb = 1, found = 0;
-          TopTools_Array1OfShape anEdges (1,4);
-          for (; aWE.More(); aWE.Next(), nb++) {
-            if (nb > 4) {
-              found = 0;
-              break;
-            }
-            anEdges(nb) = aWE.Current();
-            if (!_mapAncestors.Contains(anEdges(nb))) {
-              MESSAGE("WIRE EXPLORER HAVE GIVEN AN INVALID EDGE !!!");
-              break;
-            }
-            if (anEdges(nb).IsSame(anE)) found = nb;
-          }
-
-          if (nb == 5 && found > 0) {
-            // Quadrangle face found, get an opposite edge
-            Standard_Integer opp = found + 2;
-            if (opp > 4) opp -= 4;
-            anOppE = anEdges(opp);
-
-            // add anOppE to aChain if ...
-            if (!aChain.Contains(anOppE)) { // ... anOppE is not in aChain
-              if (!IsLocal1DHypothesis(anOppE)) { // ... no other 1d hyp on anOppE
-                TopoDS_Shape aMainEdgeForOppEdge; // ... no other hyp is propagated to anOppE
-                if (!IsPropagatedHypothesis(anOppE, aMainEdgeForOppEdge))
-                {
-                  // Add found edge to the chain oriented so that to
-                  // have it co-directed with a forward MainEdge
-                  TopAbs_Orientation ori = anE.Orientation();
-                  if ( anEdges(opp).Orientation() == anEdges(found).Orientation() )
-                    ori = TopAbs::Reverse( ori );
-                  anOppE.Orientation( ori );
-                  aChain.Add(anOppE);
-                  listCurEdges.Append(anOppE);
-                }
-                else {
-                  // Collision!
-                  MESSAGE("Error: Collision between propagated hypotheses");
-                  CleanMeshOnPropagationChain(theMainEdge);
-                  aChain.Clear();
-                  return ( aMainHyp == IsLocal1DHypothesis(aMainEdgeForOppEdge) );
-                }
-              }
-            }
-          } // if (nb == 5 && found > 0)
-        } // if (aF.ShapeType() == TopAbs_WIRE)
-      } // for (; itF.More(); itF.Next())
-    } // for (; itE.More(); itE.Next())
-
-    listPrevEdges = listCurEdges;
-  } // while (listPrevEdges.Extent() > 0)
-
-  CleanMeshOnPropagationChain(theMainEdge);
-  return true;
-}
-
 //=======================================================================
 //function : GetAncestors
 //purpose  : return list of ancestors of theSubShape in the order
@@ -1581,6 +1305,7 @@ const TopTools_ListOfShape& SMESH_Mesh::GetAncestors(const TopoDS_Shape& theS) c
 //function : Dump
 //purpose  : dumps contents of mesh to stream [ debug purposes ]
 //=======================================================================
+
 ostream& SMESH_Mesh::Dump(ostream& save)
 {
   int clause = 0;
@@ -1594,7 +1319,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
   for ( int isQuadratic = 0; isQuadratic < 2; ++isQuadratic )
   {
     string orderStr = isQuadratic ? "quadratic" : "linear";
-    ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
+    SMDSAbs_ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
 
     save << ++clause << ") Total number of " << orderStr << " edges:\t" << NbEdges(order) << endl;
     save << ++clause << ") Total number of " << orderStr << " faces:\t" << NbFaces(order) << endl;
@@ -1653,6 +1378,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 //function : GetElementType
 //purpose  : Returns type of mesh element with certain id
 //=======================================================================
+
 SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem )
 {
   return _myMeshDS->GetElementType( id, iselem );

@@ -244,16 +244,24 @@ namespace {
    */
   //================================================================================
 
-  SUIT_SelectionFilter* filterForShapeOfDim(const int              dim,
-                                            const int              nbSubShapes = 0,
-                                            const TopAbs_ShapeEnum subShapeType = TopAbs_SHAPE,
-                                            const bool             closed = false)
+  SUIT_SelectionFilter* filterForShapeOfDim(const int        dim,
+                                            TopAbs_ShapeEnum subShapeType = TopAbs_SHAPE,
+                                            const int        nbSubShapes = 0,
+                                            bool             closed = false)
   {
     TColStd_MapOfInteger shapeTypes;
     switch ( dim ) {
     case 0: shapeTypes.Add( TopAbs_VERTEX ); break;
-    case 1: shapeTypes.Add( TopAbs_EDGE ); break;
-    case 2: shapeTypes.Add( TopAbs_FACE ); break;
+    case 1:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_EDGE;
+      shapeTypes.Add( TopAbs_EDGE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
+    case 2:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_FACE;
+      shapeTypes.Add( TopAbs_FACE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
     case 3:
       shapeTypes.Add( TopAbs_SHELL );
       shapeTypes.Add( TopAbs_SOLID );
@@ -380,6 +388,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
+      h->SetPrecision( params[1].myValue.toDouble() );
     }
     else if( hypType()=="SegmentLengthAroundVertex" )
     {
@@ -512,7 +521,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     HypothesisData* data = SMESH::GetHypothesisData( hypType() );
     item.myName = tr( "SMESH_NAME" );
-    item.myValue = data ? data->Label : QString();
+    item.myValue = data ? hypName() : QString();
     p.append( item );
     customWidgets()->append(0);
   }
@@ -526,6 +535,9 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
     item.myValue = h->GetLength();
+    p.append( item );
+    item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
+    item.myValue = h->GetPrecision();
     p.append( item );
   }
   else if( hypType()=="SegmentLengthAroundVertex" )
@@ -615,7 +627,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 
     item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
     customWidgets()->append
-      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), dlg()));
+      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
   }
   else if( hypType()=="ProjectionSource1D" )
   {
@@ -665,7 +677,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_ProjectionSource3D::_narrow( hyp );
 
     item.myName = tr( "SMESH_SOURCE_3DSHAPE" ); p.append( item );
-    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3 , 6, TopAbs_FACE, true ),
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3, TopAbs_FACE, 6, true ),
                                                h->GetSource3DShape()));
     item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
     customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
@@ -696,12 +708,15 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
  */
 //================================================================================
 
-void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int ) const
+void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int) const
 {
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    if (sb->name() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    else if (sb->name() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {

@@ -290,6 +290,12 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   SpinBox_Tolerance = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Tolerance");
   GroupArgumentsLayout->addWidget(SpinBox_Tolerance, 5, 2);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(true);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 6, 6, 0, 3);
+
+
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
@@ -326,7 +332,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "revolution.htm";
+  myHelpFileName = "revolution_page.html";
 
   Init();
 
@@ -479,12 +485,21 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+        SMESH::ListOfGroups_var groups = 
+          aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
+                                               anAngle, aNbSteps, aTolerance);
+      else
+        aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
     SMESH::UpdateView();
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
@@ -639,6 +654,14 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
 
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     myElementsId = "";
+
+    // MakeGroups is available if there are groups
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    } else {
+      MakeGroupsCheck->setEnabled(true);
+    }
 
     if (CheckBoxMesh->isChecked()) {
       int aConstructorId = GetConstructorId();

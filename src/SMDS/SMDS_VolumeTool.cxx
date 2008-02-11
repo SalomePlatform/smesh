@@ -1326,7 +1326,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex )
   if ( IsFaceExternal( faceIndex ))
     intNormal = XYZ( -intNormal.x, -intNormal.y, -intNormal.z );
   XYZ p0 ( nodes[0] ), baryCenter;
-  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end();vNbIt++ ) {
+  for ( vNbIt = volNbShared.begin(); vNbIt != volNbShared.end(); vNbIt++ ) {
     int nbShared = (*vNbIt).second;
     if ( nbShared >= 3 ) {
       SMDS_VolumeTool volume( (*vNbIt).first );
@@ -1651,3 +1651,22 @@ int SMDS_VolumeTool::NbFaceNodes(VolumeType type,
   return 0;
 }
 
+//=======================================================================
+//function : Get
+//purpose  : return element
+//=======================================================================
+
+const SMDS_MeshVolume* SMDS_VolumeTool::Get() const
+{
+  return static_cast<const SMDS_MeshVolume*>( myVolume );
+}
+
+//=======================================================================
+//function : ID
+//purpose  : return element ID
+//=======================================================================
+
+int SMDS_VolumeTool::ID() const
+{
+  return myVolume ? myVolume->GetID() : 0;
+}

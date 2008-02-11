@@ -70,6 +70,7 @@
      <separator pos-id=""/>
      <popup-item item-id="900" pos-id="" label-id="Advanced Mesh Infos" icon-id="advanced_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
      <popup-item item-id="902" pos-id="" label-id="Standard Mesh Infos" icon-id="standard_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
+     <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
 </menu-item>
 
 <!-- ************************** Control  (menubar)  ************************************ -->
@@ -179,6 +180,7 @@
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="900" pos-id="" label-id="Show Advanced Info" icon-id="advanced_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="902" pos-id="" label-id="Show Standard Info" icon-id="standard_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
    <popup-item item-id="801" pos-id="" label-id="Create Group" icon-id="mesh_tree_group.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
@@ -194,6 +196,7 @@
    <separator pos-id=""/>
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="900" pos-id="" label-id="Show Info" icon-id="mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
    <popup-item item-id="802" pos-id="" label-id="Construct Group" icon-id="mesh_make_group.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
@@ -207,6 +210,7 @@
    <separator pos-id=""/>
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="900" pos-id="" label-id="Show Info" icon-id="mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>
    <popup-item item-id="1101" pos-id="" label-id="Rename" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
    <separator pos-id=""/>
@@ -229,6 +233,7 @@
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/> 
    <popup-item item-id="900" pos-id="" label-id="Show Advanced Info" icon-id="advanced_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <popup-item item-id="902" pos-id="" label-id="Show Standard Info" icon-id="standard_mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>   
    <submenu label-id="Numbering" item-id="114" pos-id="">
      <popup-item item-id="9010" pos-id="" label-id="Display Nodes #" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
@@ -284,6 +289,7 @@
 <popupmenu label-id="Popup for Viewer" context-id="" parent-id="Viewer" object-id="SubMesh">
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/> 
    <popup-item item-id="900" pos-id="" label-id="Show Info" icon-id="mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>   
    <submenu label-id="Numbering" item-id="114" pos-id="">
      <popup-item item-id="9010" pos-id="" label-id="Display Nodes #" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
@@ -341,6 +347,7 @@
    <separator pos-id=""/>
    <popup-item item-id="214" pos-id="" label-id="Update" icon-id="mesh_update.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/> 
    <popup-item item-id="900" pos-id="" label-id="Show Info" icon-id="mesh_info.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
+   <popup-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>   
    <separator pos-id=""/>   
    <submenu label-id="Numbering" item-id="114" pos-id="">
      <popup-item item-id="9010" pos-id="" label-id="Display Nodes #" icon-id="" tooltip-id="" accel-id="" toggle-id="" execute-action=""/>
@@ -414,6 +421,7 @@
    <separatorTB/>
    <toolbutton-item item-id="900" pos-id="" label-id="Advanced Mesh Infos" icon-id="advanced_mesh_info.png" tooltip-id="Advanced Mesh Infos" accel-id="" toggle-id="" execute-action=""/>
    <toolbutton-item item-id="902" pos-id="" label-id="Standard Mesh Infos" icon-id="standard_mesh_info.png" tooltip-id="Standard Mesh Infos" accel-id="" toggle-id="" execute-action=""/>    
+   <toolbutton-item item-id="903" pos-id="" label-id="Mesh Element Info" icon-id="mesh_whatis.png" tooltip-id="Mesh Element Info" accel-id="" toggle-id="" execute-action=""/>    
 </toolbar>
 
 <toolbar label-id="Hypotheses Toolbar">

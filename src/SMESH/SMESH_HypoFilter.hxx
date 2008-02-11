@@ -78,9 +78,15 @@ class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
 
+  /*!
+   * \brief check aHyp or/and aShape it is assigned to
+   */
   bool IsOk (const SMESH_Hypothesis* aHyp,
              const TopoDS_Shape&     aShape) const;
-  // check aHyp or/and aShape it is assigned to
+  /*!
+   * \brief return true if contains no predicates
+   */
+  bool IsAny() const { return myPredicates.empty(); }
 
   ~SMESH_HypoFilter();
 

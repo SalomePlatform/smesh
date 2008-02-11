@@ -26,13 +26,15 @@
 //  Module : SMESH
 //  $Header$
 
+using namespace std;
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_Gen.hxx"
-#include <TopExp.hxx>
 
 #include "utilities.h"
 
-using namespace std;
+#include <TopExp_Explorer.hxx>
+#include <TopExp.hxx>
+#include <TopoDS.hxx>
 
 //=============================================================================
 /*!

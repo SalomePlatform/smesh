@@ -28,7 +28,9 @@ if test "x$SMESH_DIR" == "x" ; then
    else
 
     # search SMESH binaries in PATH variable
-      AC_PATH_PROG(TEMP, libSMESH_Swig.py)
+      #CCRTAC_PATH_PROG(TEMP, libSMESH_Swig.py)
+      #AC_PATH_PROG(TEMP, MED_Test)
+      AC_PATH_PROG(TEMP, smesh.py)
       if test "x$TEMP" != "x" ; then
          SMESH_BIN_DIR=`dirname $TEMP`
          SMESH_DIR=`dirname $SMESH_BIN_DIR`
@@ -38,7 +40,9 @@ if test "x$SMESH_DIR" == "x" ; then
 # 
 fi
 
-if test -f ${SMESH_DIR}/bin/salome/libSMESH_Swig.py ; then
+#CCRTif test -f ${SMESH_DIR}/bin/salome/libSMESH_Swig.py ; then
+#if test -f ${SMESH_DIR}/bin/salome/MED_Test ; then
+if test -f ${SMESH_DIR}/bin/salome/smesh.py ; then
    SMesh_ok=yes
    AC_MSG_RESULT(Using SMesh module distribution in ${SMESH_DIR})
 

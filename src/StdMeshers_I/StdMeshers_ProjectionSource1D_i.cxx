@@ -26,6 +26,8 @@
 //  Module : SMESH
 //  $Header$
 
+using namespace std;
+
 #include "StdMeshers_ProjectionSource1D_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
@@ -36,8 +38,6 @@
 #include "utilities.h"
 
 #include "StdMeshers_ObjRefUlils.hxx"
-
-using namespace std;
 
 //=============================================================================
 /*!
@@ -74,7 +74,7 @@ StdMeshers_ProjectionSource1D_i::~StdMeshers_ProjectionSource1D_i()
 
 //=============================================================================
   /*!
-   * Sets source <edge> to take a mesh pattern from
+   * Sets source <edge> or a group containing edges to take a mesh pattern from
    */
 //=============================================================================
 
@@ -165,7 +165,7 @@ SMESH::SMESH_Mesh_ptr StdMeshers_ProjectionSource1D_i::GetSourceMesh()
 
 //=============================================================================
 /*!
- * Returns the source edge
+ * Returns the source edge or a group containing edge
  */
 //=============================================================================
 

@@ -1,0 +1,47 @@
+/*!
+
+\page tui_viewing_meshes_page Viewing Meshes
+
+<br>
+\anchor tui_viewing_mesh_infos
+<h2>Viewing Mesh Infos</h2>
+
+\code
+import geompy
+import smesh
+
+# create a box
+box = geompy.MakeBox(0., 0., 0., 20., 20., 20.)
+geompy.addToStudy(box, "box")
+
+# create a mesh
+tetra = smesh.Mesh(box, "MeshBox")
+
+algo1D = tetra.Segment()
+algo1D.NumberOfSegments(3)
+
+algo2D = tetra.Triangle()
+algo2D.MaxElementArea(10.)
+
+algo3D = tetra.Tetrahedron(smesh.NETGEN)
+algo3D.MaxElementVolume(900.)
+
+# compute the mesh
+tetra.Compute()
+
+# print information about the mesh
+print "Information about mesh:" 
+print "Number of nodes       : ", tetra.NbNodes()
+print "Number of edges       : ", tetra.NbEdges()
+print "Number of faces       : ", tetra.NbFaces()
+print "          triangles   : ", tetra.NbTriangles()
+print "          quadrangles : ", tetra.NbQuadrangles()
+print "          polygons    : ", tetra.NbPolygons()
+print "Number of volumes     : ", tetra.NbVolumes()
+print "          tetrahedrons: ", tetra.NbTetras()
+print "          hexahedrons : ", tetra.NbHexas()
+print "          prisms      : ", tetra.NbPrisms()
+print "          pyramids    : ", tetra.NbPyramids()
+print "          polyhedrons : ", tetra.NbPolyhedrons() 
+\endcode
+*/

@@ -32,8 +32,7 @@
 #include "SMESH_Hypothesis_i.hxx"
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Group_i.hxx"
-
-#include "SMESH.hxx"
+#include "SMESH_subMesh_i.hxx"
 
 #include CORBA_CLIENT_HEADER(SALOME_ModuleCatalog)
 
@@ -58,82 +57,82 @@ static int MYDEBUG = 0;
 
 long SMESH_Gen_i::GetHypothesisRootTag()
 {
-  return Tag_HypothesisRoot;
+  return SMESH::Tag_HypothesisRoot;
 }
 
 long SMESH_Gen_i::GetAlgorithmsRootTag()
 {
-  return Tag_AlgorithmsRoot;
+  return SMESH::Tag_AlgorithmsRoot;
 }
 
 long SMESH_Gen_i::GetRefOnShapeTag()
 {
-  return Tag_RefOnShape;
+  return SMESH::Tag_RefOnShape;
 }
 
 long SMESH_Gen_i::GetRefOnAppliedHypothesisTag()
 {
-  return Tag_RefOnAppliedHypothesis;
+  return SMESH::Tag_RefOnAppliedHypothesis;
 }
 
 long SMESH_Gen_i::GetRefOnAppliedAlgorithmsTag()
 {
-  return Tag_RefOnAppliedAlgorithms;
+  return SMESH::Tag_RefOnAppliedAlgorithms;
 }
 
 long SMESH_Gen_i::GetSubMeshOnVertexTag()
 {
-  return Tag_SubMeshOnVertex;
+  return SMESH::Tag_SubMeshOnVertex;
 }
 
 long SMESH_Gen_i::GetSubMeshOnEdgeTag()
 {
-  return Tag_SubMeshOnEdge;
+  return SMESH::Tag_SubMeshOnEdge;
 }
 
 long SMESH_Gen_i::GetSubMeshOnFaceTag()
 {
-  return Tag_SubMeshOnFace;
+  return SMESH::Tag_SubMeshOnFace;
 }
 
 long SMESH_Gen_i::GetSubMeshOnSolidTag()
 {
-  return Tag_SubMeshOnSolid;
+  return SMESH::Tag_SubMeshOnSolid;
 }
 
 long SMESH_Gen_i::GetSubMeshOnCompoundTag()
 {
-  return Tag_SubMeshOnCompound;
+  return SMESH::Tag_SubMeshOnCompound;
 }
 
 long SMESH_Gen_i::GetSubMeshOnWireTag()
 {
-  return Tag_SubMeshOnWire;
+  return SMESH::Tag_SubMeshOnWire;
 }
 
 long SMESH_Gen_i::GetSubMeshOnShellTag()
 {
-  return Tag_SubMeshOnShell;
+  return SMESH::Tag_SubMeshOnShell;
 }
 
 long SMESH_Gen_i::GetNodeGroupsTag()
 {
-  return Tag_NodeGroups;
+  return SMESH::Tag_NodeGroups;
 }
 
 long SMESH_Gen_i::GetEdgeGroupsTag()
 {
-  return Tag_EdgeGroups;
+  return SMESH::Tag_EdgeGroups;
 }
 
 long SMESH_Gen_i::GetFaceGroupsTag()
 {
-  return Tag_FaceGroups;
+  return SMESH::Tag_FaceGroups;
 }
 
 long SMESH_Gen_i::GetVolumeGroupsTag()
 {
-  return Tag_VolumeGroups;
+  return SMESH::Tag_VolumeGroups;
 }
 
 //=============================================================================
@@ -225,7 +224,7 @@ TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
   TopoDS_Shape S;
   if ( !theGeomObject->_is_nil() ) {
     GEOM_Client* aClient = GetShapeReader();
-    GEOM::GEOM_Gen_var aGeomEngine = GetGeomEngine();
+    GEOM::GEOM_Gen_ptr aGeomEngine = GetGeomEngine();
     if ( aClient && !aGeomEngine->_is_nil () )
       S = aClient->GetShape( aGeomEngine, theGeomObject );
   }
@@ -739,10 +738,15 @@ SALOMEDS::SObject_ptr
 {
   if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape")
   SALOMEDS::SObject_var aMeshOrSubMesh;
-  if ( theShape->_is_nil() || theMesh->_is_nil() )
+  if (theMesh->_is_nil() || ( theShape->_is_nil() && theMesh->HasShapeToMesh()))
     return aMeshOrSubMesh._retn();
+  
+  TopoDS_Shape aShape;
+  if(theMesh->HasShapeToMesh())
+    aShape = GeomObjectToShape( theShape );
+  else
+    aShape = SMESH_Mesh::PseudoShape();
 
-  TopoDS_Shape aShape = GeomObjectToShape( theShape );
   SMESH_Mesh_i* mesh_i = objectToServant<SMESH_Mesh_i>( theMesh );
 
   if ( !aShape.IsNull() && mesh_i && mesh_i->GetImpl().GetMeshDS() ) {
@@ -772,7 +776,8 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
 {
   if(MYDEBUG) MESSAGE("AddHypothesisToShape")
   if (theStudy->_is_nil() || theMesh->_is_nil() ||
-      theHyp->_is_nil() || theShape->_is_nil() )
+      theHyp->_is_nil() || (theShape->_is_nil()
+                            && theMesh->HasShapeToMesh()) )
     return false;
 
   SALOMEDS::SObject_var aMeshSO = ObjectToSObject( theStudy, theMesh );
@@ -826,7 +831,8 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
                                             SMESH::SMESH_Hypothesis_ptr theHyp)
 {
   if (theStudy->_is_nil() || theMesh->_is_nil() ||
-      theHyp->_is_nil() || theShape->_is_nil() )
+      theHyp->_is_nil() || (theShape->_is_nil()
+                            && theMesh->HasShapeToMesh()))
     return false;
 
   SALOMEDS::SObject_var aHypSO = ObjectToSObject( theStudy, theHyp );

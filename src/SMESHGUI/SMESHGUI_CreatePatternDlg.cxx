@@ -108,7 +108,7 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     mySelector = aViewWindow->GetSelector();
 
-  myHelpFileName = "pattern_mapping.htm";
+  myHelpFileName = "pattern_mapping_page.html";
 
   Init(theType);
 }

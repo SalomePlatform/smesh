@@ -103,7 +103,17 @@ class SMESH_EXPORT SMESH_Pattern {
   // the loaded pattern to <theFace>. The first key-point
   // will be mapped into <theNodeIndexOnKeyPoint1>-th node
 
-  bool Apply (std::set<const SMDS_MeshFace*>& theFaces,
+  bool Apply (SMESH_Mesh*          theMesh,
+              const SMDS_MeshFace* theFace,
+              const TopoDS_Shape&  theSurface,
+              const int            theNodeIndexOnKeyPoint1,
+              const bool           theReverse);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theFace>. The first key-point
+  // will be mapped into <theNodeIndexOnKeyPoint1>-th node
+
+  bool Apply (SMESH_Mesh*                     theMesh,
+              std::set<const SMDS_MeshFace*>& theFaces,
               const int                       theNodeIndexOnKeyPoint1,
               const bool                      theReverse);
   // Compute nodes coordinates applying

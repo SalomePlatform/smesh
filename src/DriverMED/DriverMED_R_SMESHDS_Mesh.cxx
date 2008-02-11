@@ -182,9 +182,9 @@ DriverMED_R_SMESHDS_Mesh
 	  for(; aGeom2SizeIter != aGeom2Size.end(); aGeom2SizeIter++){
 	    const EGeometrieElement& aGeom = aGeom2SizeIter->first;
 
-	    switch(aGeom){
-	    case ePOINT1:
-	      break;
+	    switch(aGeom) {
+// 	    case ePOINT1: ## PAL16410
+// 	      break;
 	    case ePOLYGONE: {
               PPolygoneInfo aPolygoneInfo = aMed->GetPPolygoneInfo(aMeshInfo,anEntity,aGeom);
               EBooleen anIsElemNum = takeNumbers ? aPolygoneInfo->IsElemNum() : eFAUX;
@@ -345,6 +345,7 @@ DriverMED_R_SMESHDS_Mesh
                 case ePENTA15: aNbNodes = 15; break;
                 case eHEXA8:   aNbNodes = 8;  break;
                 case eHEXA20:  aNbNodes = 20; break;
+                case ePOINT1:  aNbNodes = 1;  break;
                 default:;
                 }
                 vector<TInt> aNodeIds(aNbNodes);
@@ -378,14 +379,14 @@ DriverMED_R_SMESHDS_Mesh
                   continue;
 
                 bool isRenum = false;
-                SMDS_MeshElement* anElement = NULL;
+                const SMDS_MeshElement* anElement = NULL;
                 TInt aFamNum = aCellInfo->GetFamNum(iElem);
 #ifndef _DEXCEPT_
                 try{
 #endif
                   //MESSAGE("Try to create element # " << iElem << " with id = "
                   //        << aCellInfo->GetElemNum(iElem));
-                  switch(aGeom){
+                  switch(aGeom) {
                   case eSEG2:
                     if(anIsElemNum)
                       anElement = myMesh->AddEdgeWithID(aNodeIds[0],
@@ -671,6 +672,10 @@ DriverMED_R_SMESHDS_Mesh
                       isRenum = anIsElemNum;
                     }
                     break;
+
+                  case ePOINT1:
+                    anElement = FindNode(myMesh,aNodeIds[0]);
+                    break;
                   }
 #ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
@@ -790,7 +795,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 	theGroup->SMDSGroup().Add(element);
       }
       if ( element )
-        theGroup->SetType( element->GetType() );
+        theGroup->SetType( theGroup->SMDSGroup().GetType() );
     }
   }
 }

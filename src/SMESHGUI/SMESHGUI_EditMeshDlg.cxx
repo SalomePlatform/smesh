@@ -567,7 +567,7 @@ void SMESHGUI_EditMeshDlg::Init()
     GroupCoincident->setTitle(tr("COINCIDENT_ELEMENTS"));
   }
     
-  myHelpFileName = "merge_elements.htm";
+  myHelpFileName = "merging_elements_page.html";
 }
 
 //=================================================================================

@@ -79,6 +79,7 @@ private:
     void hideEvent (QHideEvent*);                          /* ESC key */
     void keyPressEvent(QKeyEvent*);
     int GetConstructorId();
+    void setNewMeshName();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -123,7 +124,10 @@ private:
     SMESHGUI_SpinBox* SpinBox2_2;
     QLabel* TextLabel2_3;
     SMESHGUI_SpinBox* SpinBox2_3;
-    QCheckBox* CheckBoxCopy;
+    //QCheckBox* CheckBoxCopy;
+    QButtonGroup* ActionGroup;
+    QCheckBox* MakeGroupsCheck;
+    QLineEdit* LineEditNewMesh;
 
     QString myHelpFileName;
    
@@ -140,6 +144,7 @@ private:
     void ActivateThisDialog() ;
     void onTextChange(const QString&);
     void onSelectMesh(bool toSelectMesh);
+    void onActionClicked(int button);
     
 protected:
     QGridLayout* SMESHGUI_TranslationDlgLayout;

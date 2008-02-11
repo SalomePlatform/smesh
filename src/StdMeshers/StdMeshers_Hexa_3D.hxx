@@ -76,7 +76,7 @@ public:
 
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+    /*throw (SALOME_Exception)*/;
 
   static TopoDS_Vertex OppositeVertex(const TopoDS_Vertex& aVertex,
                                       const TopTools_IndexedMapOfShape& aQuads0Vertices,

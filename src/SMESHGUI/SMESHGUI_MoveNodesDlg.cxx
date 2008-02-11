@@ -118,7 +118,7 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  myHelpFileName = "/files/displacing_nodes.htm";
+  myHelpFileName = "moving_nodes_page.html";
 
   Init();
 }
@@ -184,16 +184,18 @@ QFrame* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   myX = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aYLabel = new QLabel(tr("SMESH_Y"), aCoordGrp);
-  aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  //aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aYLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myY = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
-  aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  //aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aZLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, 3);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget(aPixGrp);

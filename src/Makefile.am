@@ -39,11 +39,16 @@ SUBDIRS = \
 	SMESH \
 	SMESH_I \
 	SMESHClient \
-	OBJECT \
-	SMESHFiltersSelection \
-	SMESHGUI \
 	SMESH_SWIG \
 	MEFISTO2 \
 	StdMeshers \
-	StdMeshers_I \
+	StdMeshers_I
+
+if SMESH_ENABLE_GUI
+  SUBDIRS += \
+	OBJECT \
+	SMESHFiltersSelection \
+	SMESHGUI \
+	SMESH_SWIG_WITHIHM \
 	StdMeshersGUI
+endif

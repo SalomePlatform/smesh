@@ -9,18 +9,13 @@
 #
 
 
-AC_INIT([Salome2 Project SMESH module], [4.0.0], [gboulant@CS], [salome])
+AC_INIT([Salome2 Project SMESH module], [4.1.1], [webmaster.salome@opencascade.com], [salome])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 
-PACKAGE=salome
-AC_SUBST(PACKAGE)
-
-VERSION=4.0.0
-XVERSION=0x040000
-AC_SUBST(VERSION)
+XVERSION=`echo $VERSION | awk -F. '{printf("0x%02x%02x%02x",$1,$2,$3)}'`
 AC_SUBST(XVERSION)
 
 # set up MODULE_NAME variable for dynamic construction of directories (resources, etc.)
@@ -199,59 +194,11 @@ echo
 
 ENABLE_PTHREADS
 
-if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
-echo
-echo ---------------------------------------------
-echo testing omniORB
-echo ---------------------------------------------
-echo
+SMESH_WITH_GUI=yes
 
-CHECK_OMNIORB
+AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
 
-dnl echo
-dnl echo ---------------------------------------------
-dnl echo testing mico
-dnl echo ---------------------------------------------
-dnl echo
-
-dnl CHECK_MICO
-
-echo
-echo ---------------------------------------------
-echo default ORB : omniORB
-echo ---------------------------------------------
-echo
-
-DEFAULT_ORB=omniORB
-
-echo
-echo ---------------------------------------------
-echo testing Corba
-echo ---------------------------------------------
-echo
-
-CHECK_CORBA
-
-AC_SUBST_FILE(CORBA)
-corba=make_$ORB
-CORBA=adm_local/unix/$corba
-
-fi
-echo
-echo ---------------------------------------------
-echo testing openGL
-echo ---------------------------------------------
-echo
-
-CHECK_OPENGL
-
-echo
-echo ---------------------------------------------
-echo testing QT
-echo ---------------------------------------------
-echo
-
-CHECK_QT
+if test "${SMESH_WITH_GUI}" = "yes"; then
 
 echo
 echo ---------------------------------------------
@@ -261,13 +208,93 @@ echo
 
 CHECK_MSG2QM
 
-echo
-echo ---------------------------------------------
-echo testing VTK
-echo ---------------------------------------------
-echo
+fi
 
-CHECK_VTK
+if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
+    echo
+    echo ---------------------------------------------
+    echo testing omniORB
+    echo ---------------------------------------------
+    echo
+
+    CHECK_OMNIORB
+
+dnl echo
+dnl echo ---------------------------------------------
+dnl echo testing mico
+dnl echo ---------------------------------------------
+dnl echo
+
+dnl CHECK_MICO
+
+    echo
+    echo ---------------------------------------------
+    echo default ORB : omniORB
+    echo ---------------------------------------------
+    echo
+
+    DEFAULT_ORB=omniORB
+
+    echo
+    echo ---------------------------------------------
+    echo testing Corba
+    echo ---------------------------------------------
+    echo
+
+    CHECK_CORBA
+
+    AC_SUBST_FILE(CORBA)
+    corba=make_$ORB
+    CORBA=adm_local/unix/$corba
+
+fi
+
+
+if test "${SMESH_WITH_GUI}" = "yes"; then
+    echo
+    echo ---------------------------------------------
+    echo testing openGL
+    echo ---------------------------------------------
+    echo
+
+    CHECK_OPENGL
+
+    echo
+    echo ---------------------------------------------
+    echo testing QT
+    echo ---------------------------------------------
+    echo
+
+    CHECK_QT
+
+    echo
+    echo ---------------------------------------------
+    echo testing VTK
+    echo ---------------------------------------------
+    echo
+
+    CHECK_VTK
+
+    echo
+    echo ---------------------------------------------
+    echo Testing GUI
+    echo ---------------------------------------------
+    echo
+
+    CHECK_SALOME_GUI
+
+    echo
+    echo ---------------------------------------------
+    echo Testing full GUI
+    echo ---------------------------------------------
+    echo
+
+    CHECK_CORBA_IN_GUI
+    if test "x${CORBA_IN_GUI}" != "xyes"; then
+      echo "failed : For configure SMESH module necessary full GUI !"
+      exit
+    fi
+fi
 
 echo
 echo ---------------------------------------------
@@ -293,6 +320,8 @@ echo
 
 CHECK_CAS
 
+if test "${SMESH_WITH_GUI}" = "yes"; then
+
 echo
 echo ---------------------------------------------
 echo Testing qwt
@@ -301,6 +330,8 @@ echo
 
 CHECK_QWT
 
+fi
+
 echo
 echo ---------------------------------------------
 echo Testing html generators
@@ -308,26 +339,6 @@ echo ---------------------------------------------
 echo
 
 CHECK_HTML_GENERATORS
-
-echo
-echo ---------------------------------------------
-echo Testing GUI
-echo ---------------------------------------------
-echo
-
-CHECK_SALOME_GUI
-
-echo
-echo ---------------------------------------------
-echo Testing full GUI
-echo ---------------------------------------------
-echo
-
-CHECK_CORBA_IN_GUI
-if test "x${CORBA_IN_GUI}" != "xyes"; then
-  echo "failed : For configure SMESH module necessary full GUI !"
-  exit
-fi
 
 echo
 echo ---------------------------------------------
@@ -362,7 +373,13 @@ echo ---------------------------------------------
 echo
 
 echo Configure
+if test "${SMESH_WITH_GUI}" = "yes"; then
 variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
+fi
+
+if test "${SMESH_WITH_GUI}" = "no"; then
+variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok Kernel_ok Geom_ok Med_ok"
+fi
 
 for var in $variables
 do
@@ -443,6 +460,8 @@ AC_OUTPUT([ \
   ./doc/Makefile \
   ./doc/salome/Makefile \
   ./doc/salome/gui/Makefile \
+  ./doc/salome/gui/SMESH/doxyfile \
+  ./doc/salome/gui/SMESH/doxyfile_py \
   ./doc/salome/tui/Makefile \
   ./doc/salome/tui/SMESH/doxyfile \
   ./doc/salome/tui/SMESH/sources/static/tree.js \
@@ -463,6 +482,7 @@ AC_OUTPUT([ \
   ./src/SMESHGUI/Makefile \
   ./src/SMESH_I/Makefile \
   ./src/SMESH_SWIG/Makefile \
+  ./src/SMESH_SWIG_WITHIHM/Makefile \
   ./src/StdMeshers/Makefile \
   ./src/StdMeshersGUI/Makefile \
   ./src/StdMeshers_I/Makefile \

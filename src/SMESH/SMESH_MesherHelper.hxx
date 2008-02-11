@@ -245,6 +245,15 @@ public:
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 
   /*!
+   * \brief Check if shape is a degenerated edge or it's vertex
+    * \param subShape - edge or vertex index in SMESHDS
+    * \retval bool - true if subShape is a degenerated shape
+    *
+    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   */
+  bool IsDegenShape(const int subShape) const
+  { return myDegenShapeIds.find( subShape ) != myDegenShapeIds.end(); }
+  /*!
    * \brief Check if shape is a seam edge or it's vertex
     * \param subShape - edge or vertex index in SMESHDS
     * \retval bool - true if subShape is a seam shape
@@ -297,6 +306,14 @@ public:
    */
   const NLinkNodeMap& GetNLinkNodeMap() const { return myNLinkNodeMap; }
 
+  /**
+   * Check mesh without geometry for: if all elements on this shape are quadratic,
+   * quadratic elements will be created.
+   * Used then generated 3D mesh without geometry.
+   */
+  enum MType{ LINEAR, QUADRATIC, COMP };
+  MType IsQuadraticMesh();
+  
 protected:
 
   /*!
@@ -312,9 +329,10 @@ protected:
   // Forbiden copy constructor
   SMESH_MesherHelper (const SMESH_MesherHelper& theOther) {};
 
-  // special map for using during creation quadratic faces
+  // special map for using during creation of quadratic elements
   NLinkNodeMap    myNLinkNodeMap;
 
+  std::set< int > myDegenShapeIds;
   std::set< int > mySeamShapeIds;
   double          myPar1, myPar2; // bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V)

@@ -48,6 +48,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   virtual void SetFile(const std::string& theFileName);
   void SetFile(const std::string& theFileName, MED::EVersion theId);
+  static std::string GetVersionString(const MED::EVersion theVersion, int theNbDigits=2);
 
   /*! sets file name; only for usage with Add(), not Write()
    */

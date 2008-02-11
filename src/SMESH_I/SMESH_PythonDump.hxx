@@ -31,6 +31,37 @@
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
 class TCollection_AsciiString;
+class Resource_DataMapOfAsciiStringAsciiString;
+
+// ===========================================================================================
+/*!
+ * \brief Tool converting SMESH engine calls into commands defined in smesh.py
+ *
+ * Implementation is in SMESH_2smeshpy.cxx
+ */
+// ===========================================================================================
+
+class SMESH_2smeshpy
+{
+public:
+  /*!
+   * \brief Convert a python script using commands of smesh.py
+   * \param theScript - Input script
+   * \param theEntry2AccessorMethod - The returning method names to access to
+   *        objects wrapped with python class
+   * \retval TCollection_AsciiString - Convertion result
+   */
+  static TCollection_AsciiString
+  ConvertScript(const TCollection_AsciiString& theScript,
+                Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
+
+  /*!
+   * \brief Return the name of the python file wrapping IDL API
+    * \retval TCollection_AsciiString - The file name
+   */
+  static char* SmeshpyName() { return "smesh"; }
+  static char* GenName() { return "smesh.smesh"; }
+};
 
 namespace SMESH
 {
@@ -38,6 +69,12 @@ namespace SMESH
   class FilterManager_i;
   class Filter_i;
   class Functor_i;
+
+// ===========================================================================================
+/*!
+ * \brief Utility helping in storing SMESH engine calls as python commands
+ */
+// ===========================================================================================
 
   class SMESH_I_EXPORT TPythonDump
   {
@@ -143,6 +180,5 @@ namespace SMESH
                                    TCollection_AsciiString & theStringType);
   };
 }
-
 
 #endif

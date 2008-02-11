@@ -50,6 +50,7 @@ public:
   virtual void     processOwner( const LightApp_DataOwner* );
 
   // got from object, not from actor
+  virtual bool isAutoColor( int ind ) const;
   virtual int numberOfNodes( int ind ) const;
   virtual QVariant isComputable( int ind ) const;
   virtual QVariant hasReference( int ind ) const;

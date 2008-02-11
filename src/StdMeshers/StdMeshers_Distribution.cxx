@@ -39,8 +39,6 @@
 
 #ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#else
-#include "CASCatch.hxx"
 #endif
 
 Function::Function( const int conv )
@@ -56,18 +54,12 @@ bool Function::value( const double, double& f ) const
 {
   bool ok = true;
   if (myConv == 0) {
-#ifdef NO_CAS_CATCH
     try {
+#ifdef NO_CAS_CATCH
       OCC_CATCH_SIGNALS;
-#else
-    CASCatch_TRY {
 #endif
       f = pow( 10., f );
-#ifdef NO_CAS_CATCH
     } catch(Standard_Failure) {
-#else
-    } CASCatch_CATCH(Standard_Failure) {
-#endif
       Handle(Standard_Failure) aFail = Standard_Failure::Caught();
       f = 0.0;
       ok = false;
@@ -194,19 +186,13 @@ FunctionExpr::FunctionExpr( const char* str, const int conv )
   myValues( 1, 1 )
 {
   bool ok = true;
-#ifdef NO_CAS_CATCH
   try {
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString )str );
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
   }
@@ -236,18 +222,12 @@ bool FunctionExpr::value( const double t, double& f ) const
 
   ( ( TColStd_Array1OfReal& )myValues ).ChangeValue( 1 ) = t;
   bool ok = true;
-#ifdef NO_CAS_CATCH
   try {
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     f = myExpr->Expression()->Evaluate( myVars, myValues );
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     f = 0.0;
     ok = false;
@@ -260,21 +240,15 @@ bool FunctionExpr::value( const double t, double& f ) const
 double FunctionExpr::integral( const double a, const double b ) const
 {
   double res = 0.0;
-#ifdef NO_CAS_CATCH
   try {
+#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#else
-  CASCatch_TRY {
 #endif
     math_GaussSingleIntegration _int
       ( *static_cast<math_Function*>( const_cast<FunctionExpr*> (this) ), a, b, 20 );
     if( _int.IsDone() )
       res = _int.Value();
-#ifdef NO_CAS_CATCH
   } catch(Standard_Failure) {
-#else
-  } CASCatch_CATCH(Standard_Failure) {
-#endif
     res = 0.0;
     MESSAGE( "Exception in integral calculating" );
   }

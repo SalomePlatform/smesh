@@ -1,0 +1,76 @@
+/*!
+
+\page removing_nodes_and_elements_page Removing nodes and elements
+
+\n In MESH you can remove nodes and all types of cells of your mesh.
+
+<ul>
+<li>\ref removing_nodes_anchor "Nodes"</li>
+<li>\ref removing_elements_anchor "Elements"</li>
+</ul>
+
+<br>
+\anchor removing_nodes_anchor
+<h2>Removing nodes</h2>
+
+<em>To remove a node:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the Modification menu choose Remove and from the associated
+submenu select the Remove nodes, or just click <em>"Remove nodes"</em>
+button in the toolbar.
+
+\image html image88.gif
+<center><em>"Remove nodes" button</em></center>
+
+The following dialog box will appear:
+
+\image html removenodes.png
+
+In this dialog box you can specify one or several nodes (with pressed
+Shift button) by choosing them in the 3D viewer.
+</li>
+</ol>
+
+\note Be careful while removing nodes because if you remove a definite
+node of your mesh all adjacent elements will be also deleted.
+
+\image html remove_nodes1.png
+
+\image html remove_nodes2.png
+
+<br>
+\anchor removing_elements_anchor
+<h2>Removing elements</h2>
+
+<em>To remove an element:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the \b Modification menu choose \b Remove and from the
+associated submenu select the Remove elements, or just click
+<em>"Remove elements"</em> button in the toolbar.
+
+\image html remove_elements_icon.png
+<center><em>"Remove elements" button</em></center>
+
+The following dialog box will appear:
+
+\image html removeelements.png
+
+In this dialog box you can specify one or several elements of your
+mesh (with pressed Shift button) by choosing them in the 3D viewer.
+</li>
+<li>Click OK or Apply  to confirm deletion of the specified elements.</li>
+</ol>
+
+\image html remove_elements1.png
+
+\image html remove_elements2.png
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_removing_nodes_and_elements "Removing Nodes and Elements" operation.  
+
+*/
+

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -172,10 +172,12 @@ public:
                const char*               interfaceName );
   // Destructor
   virtual ~SMESH_Gen_i();
-  
+
   // *****************************************
   // Interface methods
   // *****************************************
+  //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
+  void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
 
   // Set current study
   void SetEmbeddedMode( CORBA::Boolean theMode );
@@ -425,7 +427,7 @@ public:
   int RegisterObject(CORBA::Object_ptr theObject);
 
   // Return id of registered object
-  int GetObjectId(CORBA::Object_ptr theObject);
+  CORBA::Long GetObjectId(CORBA::Object_ptr theObject);
 
   // Return an object that previously had an oldID
   template<class TInterface> 
@@ -461,7 +463,7 @@ private:
   static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
   
 private:
-
+  static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference
   static PortableServer::POA_var myPoa;         // POA reference
   static SALOME_NamingService*   myNS;          // Naming Service

@@ -297,7 +297,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myHelpFileName = "/files/sewing_meshes.htm";
+  myHelpFileName = "sewing_meshes_page.html";
 
   Init();
 

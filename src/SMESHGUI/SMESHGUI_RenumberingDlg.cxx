@@ -99,11 +99,11 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const cha
   GroupConstructors = new QButtonGroup(this, "GroupConstructors");
   if (unit == 0) {
     GroupConstructors->setTitle(tr("SMESH_NODES" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_nodes";
+    myHelpFileName = "renumbering_nodes_and_elements_page.html#renumbering_nodes_anchor";
   }
   else if (unit == 1) {
     GroupConstructors->setTitle(tr("SMESH_ELEMENTS" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_elements";
+    myHelpFileName = "renumbering_nodes_and_elements_page.html#renumbering_elements_anchor";
   }
   GroupConstructors->setExclusive(TRUE);
   GroupConstructors->setColumnLayout(0, Qt::Vertical);

@@ -81,6 +81,7 @@ private:
     void keyPressEvent(QKeyEvent*);
     int GetConstructorId();
     bool IsMirrorOk();
+    void setNewMeshName();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -128,7 +129,10 @@ private:
     QLabel* TextLabelDZ;
     SMESHGUI_SpinBox* SpinBox_DZ;
     
-    QCheckBox* CheckBoxCopy;
+    //QCheckBox* CheckBoxCopy;
+    QButtonGroup* ActionGroup;
+    QCheckBox* MakeGroupsCheck;
+    QLineEdit* LineEditNewMesh;
 
     QString myHelpFileName;
    
@@ -146,7 +150,8 @@ private:
     void onTextChange(const QString&);
     void onSelectMesh(bool toSelectMesh);
     void onVectorChanged();
-    
+    void onActionClicked(int button);
+
 protected:
     QGridLayout* SMESHGUI_SymmetryDlgLayout;
     QGridLayout* GroupConstructorsLayout;

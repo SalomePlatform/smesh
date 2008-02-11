@@ -1,0 +1,17 @@
+/*!
+
+\page segments_around_vertex_algo_page Segments around Vertex
+
+\n <b>Segments around Vertex</b> algorithm is considered to be a 0D meshing
+algorithm, but, of course, it doesn't mesh nodes. It allows to define
+the local size of the elements in the neighborhood of a certain
+node. If we choose an object of higher dimension, it applies to all
+its tops, i.e. corners of a box.  The 0D algorithm combines with the
+algorithms of higher dimensions, but it is not necessarily required
+for their successful implementation.
+
+This algorithm allows only one hypothesis.
+
+\image html lengthnearvertex.png
+
+*/

@@ -1,0 +1,23 @@
+/*!
+
+\page quality_controls_page Quality controls
+
+<ul>
+<li>\subpage about_quality_controls_page</li>
+<li>\subpage free_borders_page</li>
+<li>\subpage borders_at_multi_connection_page</li>
+<li>\subpage length_page</li>
+<li>\subpage free_edges_page</li>
+<li>\subpage length_2d_page</li>
+<li>\subpage borders_at_multi_connection_2d_page</li>
+<li>\subpage area_page</li>
+<li>\subpage taper_page</li>
+<li>\subpage aspect_ratio_page</li>
+<li>\subpage minimum_angle_page</li>
+<li>\subpage warping_page</li>
+<li>\subpage skew_page</li>
+<li>\subpage aspect_ratio_3d_page</li>
+<li>\subpage volume_page</li>
+</ul>
+
+*/

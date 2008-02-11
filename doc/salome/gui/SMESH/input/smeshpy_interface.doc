@@ -1,0 +1,10 @@
+/*!
+
+\page smeshpy_interface_page Python interface smesh.py
+
+\n Python package smesh defines several classes, destined for easy and
+clear mesh creation and edition (see the \ref introduction_to_mesh_python_page "example").
+
+\n Also, please see \ref smeshDC "documentation for smesh.py"
+
+*/

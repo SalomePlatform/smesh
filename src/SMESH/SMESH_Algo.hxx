@@ -260,8 +260,14 @@ public:
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1,
-                                  const TopoDS_Edge & E2);
+  static GeomAbs_Shape Continuity(const TopoDS_Edge & E1, const TopoDS_Edge & E2);
+
+  /*!
+   * \brief Return true if an edge can be considered as a continuation of another
+   */
+  static bool IsContinuous(const TopoDS_Edge & E1, const TopoDS_Edge & E2) {
+    return ( Continuity( E1, E2 ) >= GeomAbs_G1 );
+  }
 
   /*!
    * \brief Return the node built on a vertex
@@ -279,9 +285,10 @@ protected:
    */
   bool error(int error, const SMESH_Comment& comment = "");
   /*!
-   * \brief To be used as error in previous method
+   * \brief store COMPERR_ALGO_FAILED error and comment and then return false
    */
-  SMESH_ComputeErrorName dfltErr() const { return COMPERR_ALGO_FAILED; }
+  bool error(const SMESH_Comment& comment = "")
+  { return error(COMPERR_ALGO_FAILED, comment); }
   /*!
    * \brief store error and return error->IsOK()
    */

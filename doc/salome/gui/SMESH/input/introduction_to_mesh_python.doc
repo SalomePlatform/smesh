@@ -1,0 +1,77 @@
+/*!
+
+\page introduction_to_mesh_python_page Introduction to MESH module python interface
+
+\n Package smesh provides a standard API for creation and edition of meshes. 
+\n Below you can see an example of usage of the package smesh for 3d mesh generation. 
+
+<h2>Example of 3d mesh generation with NETGEN:</h2>
+
+\n from geompy import * 
+\n import smesh 
+
+<b># Geometry</b>
+\n <b># an assembly of a box, a cylinder and a truncated cone meshed with tetrahedral</b>. 
+
+<b># Define values</b>
+\n name = "ex21_lamp" 
+\n cote = 60 
+\n section = 20 
+\n size = 200 
+\n radius_1 = 80 
+\n radius_2 = 40 
+\n height = 100 
+
+<b># Build a box</b>
+\n box = MakeBox(-cote, -cote, -cote, +cote, +cote, +cote) 
+
+<b># Build a cylinder</b>
+\n pt1 = MakeVertex(0, 0, cote/3) 
+\n di1 = MakeVectorDXDYDZ(0, 0, 1) 
+\n cyl = MakeCylinder(pt1, di1, section, size) 
+
+<b># Build a truncated cone</b>
+\n pt2 = MakeVertex(0, 0, size) 
+\n cone = MakeCone(pt2, di1, radius_1, radius_2, height) 
+
+<b># Fuse </b>
+\n box_cyl = MakeFuse(box, cyl) 
+\n piece = MakeFuse(box_cyl, cone) 
+
+<b># Add in study</b>
+\n addToStudy(piece, name) 
+
+<b># Create a group of faces</b>
+\n group = CreateGroup(piece, ShapeType["FACE"]) 
+\n group_name = name + "_grp" 
+\n addToStudy(group, group_name) 
+\n group.SetName(group_name) 
+
+<b># Add faces in the group</b>
+\n faces = SubShapeAllIDs(piece, ShapeType["FACE"]) 
+\n UnionIDs(group, faces) 
+
+<b># Create a mesh</b>
+
+<b># Define a mesh on a geometry</b>
+\n tetra = smesh.Mesh(piece, name) 
+
+<b># Define 1D hypothesis</b>
+\n algo1d = tetra.Segment() 
+\n algo1d.LocalLength(10) 
+
+<b># Define 2D hypothesis</b>
+\n algo2d = tetra.Triangle() 
+\n algo2d.LengthFromEdges() 
+
+<b># Define 3D hypothesis</b>
+\n algo3d = tetra.Tetrahedron(smesh.NETGEN) 
+\n algo3d.MaxElementVolume(100) 
+
+<b># Compute the mesh</b>
+\n tetra.Compute() 
+
+<b># Create a groupe of faces</b>
+\n tetra.Group(group)
+
+*/

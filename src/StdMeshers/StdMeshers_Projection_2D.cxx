@@ -46,16 +46,16 @@
 
 #include "utilities.h"
 
-#include <TopExp.hxx>
-#include <TopoDS.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRep_Tool.hxx>
-
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS.hxx>
 
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 
 typedef StdMeshers_ProjectionUtils TAssocTool;
 
@@ -144,13 +144,17 @@ bool StdMeshers_Projection_2D::CheckHypothesis(SMESH_Mesh&                      
         // target vertices
         edge = TAssocTool::GetEdgeByVertices
           ( tgtMesh, _sourceHypo->GetTargetVertex(1), _sourceHypo->GetTargetVertex(2) );
-        if ( edge.IsNull() ||
-             !TAssocTool::IsSubShape( edge, tgtMesh ) ||
-             !TAssocTool::IsSubShape( edge, theShape ))
+        if ( edge.IsNull() || !TAssocTool::IsSubShape( edge, tgtMesh ))
         {
           theStatus = HYP_BAD_PARAMETER;
           SCRUTE((edge.IsNull()));
           SCRUTE((TAssocTool::IsSubShape( edge, tgtMesh )));
+        }
+        // PAL16203
+        else if ( !_sourceHypo->IsCompoundSource() &&
+                  !TAssocTool::IsSubShape( edge, theShape ))
+        {
+          theStatus = HYP_BAD_PARAMETER;
           SCRUTE((TAssocTool::IsSubShape( edge, theShape )));
         }
       }
@@ -187,10 +191,8 @@ namespace {
   {
     // old nodes are shared by edges and new ones are shared
     // only by faces created by mapper
-    bool isOld = false;
-    SMDS_ElemIteratorPtr invElem = node->GetInverseElementIterator();
-    while ( !isOld && invElem->more() )
-      isOld = ( invElem->next()->GetType() == SMDSAbs_Edge );
+    SMDS_ElemIteratorPtr invEdge = node->GetInverseElementIterator(SMDSAbs_Edge);
+    bool isOld = invEdge->more();
     return isOld;
   }
 
@@ -208,12 +210,13 @@ namespace {
     MeshCleaner( SMESH_subMesh* faceSubMesh ): sm(faceSubMesh) {}
     ~MeshCleaner() { Clean(sm); }
     void Release() { sm = 0; } // mesh will not be removed
-    static void Clean( SMESH_subMesh* sm )
+    static void Clean( SMESH_subMesh* sm, bool withSub=true )
     {
       if ( !sm ) return;
-      switch ( sm->GetSubShape().ShapeType() ) {
-      case TopAbs_VERTEX:
-      case TopAbs_EDGE: {
+      // PAL16567, 18920. Remove face nodes as well
+//       switch ( sm->GetSubShape().ShapeType() ) {
+//       case TopAbs_VERTEX:
+//       case TopAbs_EDGE: {
         SMDS_NodeIteratorPtr nIt = sm->GetSubMeshDS()->GetNodes();
         SMESHDS_Mesh* mesh = sm->GetFather()->GetMeshDS();
         while ( nIt->more() ) {
@@ -222,12 +225,13 @@ namespace {
             mesh->RemoveNode( node );
         }
         // do not break but iterate over DependsOn()
-      }
-      default:
+//       }
+//       default:
+        if ( !withSub ) return;
         SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
         while ( smIt->more() )
-          Clean( smIt->next() );
-      }
+          Clean( smIt->next(), false );
+//       }
     }
   };
 
@@ -365,9 +369,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !_sourceHypo )
     return false;
 
-  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
-  TopoDS_Face srcFace = TopoDS::Face( _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD));
-
   SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh(); 
   SMESH_Mesh * tgtMesh = & theMesh;
   if ( !srcMesh )
@@ -375,18 +376,21 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   SMESHDS_Mesh * meshDS = theMesh.GetMeshDS();
 
-  SMESH_MesherHelper helper( theMesh );
-  helper.SetSubShape( tgtFace );
-
   // ---------------------------
   // Make subshapes association
   // ---------------------------
 
+  TopoDS_Face tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
+  TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
+
   TAssocTool::TShapeShapeMap shape2ShapeMap;
-  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
-  if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcFace, srcMesh,
-                                             shape2ShapeMap) )
+  TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap, tgtFace );
+  if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
+                                             shape2ShapeMap)  ||
+       !shape2ShapeMap.IsBound( tgtFace ))
     return error(COMPERR_BAD_SHAPE,"Topology of source and target faces seems different" );
+
+  TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
   // ----------------------------------------------
   // Assure that mesh on a source Face is computed
@@ -438,12 +442,8 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( nbEdgesInWires.front() > 1 ) // possible to find out
   {
     TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
-    reverse = ( ! srcE1.IsSame( shape2ShapeMap( tgtE1 )));
-    if ( BRep_Tool::IsClosed( tgtE1, tgtFace )) {
-      reverse = ( srcE1.Orientation() == tgtE1.Orientation() );
-      if ( _sourceHypo->GetSourceFace().Orientation() != theShape.Orientation() )
-        reverse = !reverse;
-    }
+    TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
+    reverse = ( ! srcE1.IsSame( srcE1bis ));
   }
   else if ( nbEdgesInWires.front() == 1 )
   {
@@ -463,14 +463,14 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   mapper.Apply( tgtFace, tgtV1, reverse );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't apply source mesh pattern to the face");
+    return error("Can't apply source mesh pattern to the face");
 
   // Create the mesh
 
   const bool toCreatePolygons = false, toCreatePolyedrs = false;
   mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
-    return error(dfltErr(),"Can't make mesh by source mesh pattern");
+    return error("Can't make mesh by source mesh pattern");
 
   // it will remove mesh built by pattern mapper on edges and vertices
   // in failure case
@@ -483,6 +483,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   SMESH_MeshEditor editor( tgtMesh );
   SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
+
+  SMESH_MesherHelper helper( theMesh );
+  helper.SetSubShape( tgtFace );
 
   // Make groups of nodes to merge
 
@@ -497,7 +500,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     bool isSeam = helper.IsSeamShape( sm->GetId() );
 
-    enum { NEW_NODES, OLD_NODES };
+    enum { NEW_NODES = 0, OLD_NODES };
     map< double, const SMDS_MeshNode* > u2nodesMaps[2], u2nodesOnSeam;
     map< double, const SMDS_MeshNode* >::iterator u_oldNode, u_newNode, u_newOnSeam, newEnd;
     set< const SMDS_MeshNode* > seamNodes;
@@ -518,7 +521,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       }
 
       // sort nodes on edges by its position
-      map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[ isOld ];
+      map< double, const SMDS_MeshNode* > & pos2nodes = u2nodesMaps[isOld ? OLD_NODES : NEW_NODES];
       switch ( node->GetPosition()->GetTypeOfPosition() )
       {
       case  SMDS_TOP_VERTEX: {
@@ -536,14 +539,22 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
                           node->GetPosition()->GetTypeOfPosition());
       }
     }
-    if ( u2nodesMaps[ OLD_NODES ].size() != u2nodesMaps[ NEW_NODES ].size() )
-      RETURN_BAD_RESULT("Different nb of old and new nodes " <<
+    if ( u2nodesMaps[ NEW_NODES ].size() != u2nodesMaps[ OLD_NODES ].size() )
+    {
+      if ( u2nodesMaps[ NEW_NODES ].size() == 0                 &&
+           sm->GetSubShape().ShapeType() == TopAbs_EDGE         &&
+           BRep_Tool::Degenerated( TopoDS::Edge( sm->GetSubShape() )))
+        // NPAL15894 (tt88bis.py) - project mesh built by NETGEN_1d_2D that
+	// does not make segments/nodes on degenerated edges
+        continue;
+      RETURN_BAD_RESULT("Different nb of old and new nodes on shape #"<< sm->GetId() <<" "<<
                         u2nodesMaps[ OLD_NODES ].size() << " != " <<
                         u2nodesMaps[ NEW_NODES ].size());
-    if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() )
+    }
+    if ( isSeam && u2nodesMaps[ OLD_NODES ].size() != u2nodesOnSeam.size() ) {
       RETURN_BAD_RESULT("Different nb of old and seam nodes " <<
                         u2nodesMaps[ OLD_NODES ].size() << " != " << u2nodesOnSeam.size());
-
+    }
     // Make groups of nodes to merge
     u_oldNode = u2nodesMaps[ OLD_NODES ].begin(); 
     u_newNode = u2nodesMaps[ NEW_NODES ].begin();

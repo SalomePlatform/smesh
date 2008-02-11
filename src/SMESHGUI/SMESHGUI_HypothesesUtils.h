@@ -57,7 +57,8 @@ namespace SMESH{
   SMESHGUI_EXPORT
   QStringList GetAvailableHypotheses( const bool isAlgo, 
                                       const int theDim = -1, 
-                                      const bool isAux = false);
+                                      const bool isAux = false,
+				      const bool isNeedGeometry = true);
   SMESHGUI_EXPORT
   QStringList GetHypothesesSets();
 

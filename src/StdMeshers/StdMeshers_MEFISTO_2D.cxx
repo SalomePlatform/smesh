@@ -50,16 +50,20 @@
 
 #include "utilities.h"
 
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Edge.hxx>
-#include <Geom_Surface.hxx>
-#include <Geom2d_Curve.hxx>
-#include <gp_Pnt2d.hxx>
-#include <BRep_Tool.hxx>
 #include <BRepTools.hxx>
+#include <BRep_Tool.hxx>
+#include <Geom2d_Curve.hxx>
+#include <Geom_Surface.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Iterator.hxx>
+#include <gp_Pnt2d.hxx>
 
 using namespace std;
 
@@ -187,42 +191,29 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   const bool ignoreMediumNodes = _quadraticMesh;
 
   // get all edges of a face
-  TopoDS_Vertex V1;
-  list< TopoDS_Edge > edges;
-  list< int > nbEdgesInWires;
-  int nbWires = SMESH_Block::GetOrderedEdges (F, V1, edges, nbEdgesInWires);
-
-  if (_hypLengthFromEdges) _edgeLength = 0;
-
-  // split list of all edges into separate wires
-  TWireVector wires ( nbWires );
-  list< int >::iterator nbE = nbEdgesInWires.begin();
-  list< TopoDS_Edge >::iterator from, to;
-  from = to = edges.begin();
-  for ( int iW = 0; iW < nbWires; ++iW )
-  {
-    std::advance( to, *nbE++ );
-    list< TopoDS_Edge > wireEdges( from, to );
-    // assure that there is a node on the first vertex
-    // as StdMeshers_FaceSide::GetUVPtStruct() requires
-    while ( !VertexNode( TopExp::FirstVertex( wireEdges.front(), true),
-                         aMesh.GetMeshDS()))
-    {
-      wireEdges.splice(wireEdges.end(), wireEdges,
-                       wireEdges.begin(), ++wireEdges.begin());
-      if ( from->IsSame( wireEdges.front() ))
-        return error(COMPERR_BAD_INPUT_MESH,"No nodes on vertices");
-    }
-    StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( F, wireEdges, &aMesh,
-                                                         true, ignoreMediumNodes);
-    wires[ iW ] = StdMeshers_FaceSidePtr( wire );
-    if (_hypLengthFromEdges && wire->NbSegments() )
-      _edgeLength += wire->Length() / wire->NbSegments();
-    from = to;
-  }
+  TError problem;
+  TWireVector wires = StdMeshers_FaceSide::GetFaceWires( F, aMesh, ignoreMediumNodes, problem );
+  int nbWires = wires.size();
+  if ( problem && !problem->IsOK() ) return error( problem );
+  if ( nbWires == 0 ) return error( "Problem in StdMeshers_FaceSide::GetFaceWires()");
   if ( wires[0]->NbSegments() < 3 ) // ex: a circle with 2 segments
     return error(COMPERR_BAD_INPUT_MESH,
-                 SMESH_Comment("Too few segments")<<wires[0]->NbSegments());
+                 SMESH_Comment("Too few segments: ")<<wires[0]->NbSegments());
+
+  // compute average edge length
+  if (_hypLengthFromEdges)
+  {
+    _edgeLength = 0;
+    int nbSegments = 0;
+    for ( int iW = 0; iW < nbWires; ++iW )
+    {
+      StdMeshers_FaceSidePtr wire = wires[ iW ];
+      _edgeLength += wire->Length();
+      nbSegments  += wire->NbSegments();
+    }
+    if ( nbSegments )
+      _edgeLength /= nbSegments;
+  }
 
   if (_hypLengthFromEdges && _edgeLength < DBL_MIN )
     _edgeLength = 100;
@@ -502,22 +493,19 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
       VWMap.Clear(); // wires have no common vertices
   }
 
-  const bool isXConst = false; // meaningles here
-  const double constValue = 0; // meaningles here
-
   int m = 0;
   list< int > mOnVertex;
 
   for ( int iW = 0; iW < wires.size(); ++iW )
   {
-    const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct(isXConst,constValue);
+    const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct();
     if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Unexpected nb of points on wire ")
                    << iW << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
     }
     if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
       MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
-      return error(dfltErr(),"Internal error");
+      return error("Internal error");
     }
 
     vector<UVPtStruct>::const_iterator uvPt = uvPtVec.begin();

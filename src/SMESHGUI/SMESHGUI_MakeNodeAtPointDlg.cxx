@@ -138,16 +138,18 @@ QFrame* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   myX = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aYLabel = new QLabel(tr("SMESH_Y"), aCoordGrp);
-  aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  //aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aYLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myY = new SMESHGUI_SpinBox(aCoordGrp);
 
   QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
-  aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  //aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aZLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
-  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, DBL_DIGITS_DISPLAY);
 
   // Method selection
 
@@ -258,6 +260,7 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   mySimulation = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
   myFilter = 0;
+  myHelpFileName = "mesh_through_point_page.html";
 
   // connect signals and slots
   connect(myDlg->myX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));

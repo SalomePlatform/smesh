@@ -45,19 +45,20 @@
 
 #include "utilities.h"
 
-#include <TopoDS_Solid.hxx>
-#include <TopoDS_Shell.hxx>
-#include <BRepTools.hxx>
 #include <BRepAdaptor_Curve.hxx>
-#include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepTools.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Solid.hxx>
 #include <gp.hxx>
 #include <gp_Pnt.hxx>
 
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 
 typedef StdMeshers_ProjectionUtils TAssocTool;
@@ -98,13 +99,14 @@ bool StdMeshers_RadialPrism_3D::CheckHypothesis(SMESH_Mesh&                     
                                                 SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // check aShape that must have 2 shells
+/*  PAL16229
   if ( TAssocTool::Count( aShape, TopAbs_SOLID, 0 ) != 1 ||
        TAssocTool::Count( aShape, TopAbs_SHELL, 0 ) != 2 )
   {
     aStatus = HYP_BAD_GEOMETRY;
     return false;
   }
-
+*/
   myNbLayerHypo = 0;
   myDistributionHypo = 0;
 
@@ -158,7 +160,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
   // to delete helper at exit from Compute()
   std::auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
 
-  // get 2 shells 
+  // get 2 shells
   TopoDS_Solid solid = TopoDS::Solid( aShape );
   TopoDS_Shell outerShell = BRepTools::OuterShell( solid );
   TopoDS_Shape innerShell;
@@ -167,7 +169,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     if ( !outerShell.IsSame( It.Value() ))
       innerShell = It.Value();
   if ( nbShells != 2 )
-    return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not")<<nbShells);
+    return error(COMPERR_BAD_SHAPE, SMESH_Comment("Must be 2 shells but not ")<<nbShells);
 
   // ----------------------------------
   // Associate subshapes of the shells
@@ -192,7 +194,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
     TopoDS_Face outFace = TopoDS::Face( exp.Current() );
     TopoDS_Face inFace;
     if ( !shape2ShapeMap.IsBound( outFace )) {
-      return error(dfltErr(),SMESH_Comment("Corresponding inner face not found for face #" )
+      return error(SMESH_Comment("Corresponding inner face not found for face #" )
                    << meshDS->ShapeToIndex( outFace ));
     } else {
       inFace = TopoDS::Face( shape2ShapeMap( outFace ));
@@ -222,12 +224,18 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
       vector< const TNodeColumn* > columns( nbNodes );
       for ( int i = 0; i < nbNodes; ++i )
       {
-        const SMDS_MeshNode* n = face->GetNode( i );
-        TNode2ColumnMap::iterator n_col = node2columnMap.find( n );
-        if ( n_col != node2columnMap.end() )
+        const SMDS_MeshNode* nIn = face->GetNode( i );
+        TNode2ColumnMap::iterator n_col = node2columnMap.find( nIn );
+        if ( n_col != node2columnMap.end() ) {
           columns[ i ] = & n_col->second;
-        else
-          columns[ i ] = makeNodeColumn( node2columnMap, n, nodeIn2OutMap[ n ] );
+        }
+        else {
+          TNodeNodeMap::iterator nInOut = nodeIn2OutMap.find( nIn );
+          if ( nInOut == nodeIn2OutMap.end() )
+            RETURN_BAD_RESULT("No matching node for "<< nIn->GetID() <<
+                              " in face "<< face->GetID());
+          columns[ i ] = makeNodeColumn( node2columnMap, nIn, nInOut->second );
+        }
       }
 
       StdMeshers_Prism_3D::AddPrisms( columns, myHelper );
@@ -312,24 +320,24 @@ public:
                 const StdMeshers_LayerDistribution* hyp)
   {
     double len = pIn.Distance( pOut );
-    if ( len <= DBL_MIN ) return error(dfltErr(),"Too close points of inner and outer shells");
+    if ( len <= DBL_MIN ) return error("Too close points of inner and outer shells");
 
     if ( !hyp || !hyp->GetLayerDistribution() )
-      return error(dfltErr(), "Invalid LayerDistribution hypothesis");
+      return error( "Invalid LayerDistribution hypothesis");
     myUsedHyps.clear();
     myUsedHyps.push_back( hyp->GetLayerDistribution() );
 
     TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
-      return error(dfltErr(), "StdMeshers_Regular_1D::CheckHypothesis() failed"
-                   "with LayerDistribution hypothesis");
+      return error( "StdMeshers_Regular_1D::CheckHypothesis() failed "
+                    "with LayerDistribution hypothesis");
 
     BRepAdaptor_Curve C3D(edge);
     double f = C3D.FirstParameter(), l = C3D.LastParameter();
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( C3D, len, f, l, params, false ))
-      return error(dfltErr(),"StdMeshers_Regular_1D failed to compute layers distribution");
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
+      return error("StdMeshers_Regular_1D failed to compute layers distribution");
 
     positions.clear();
     positions.reserve( params.size() );

@@ -1,0 +1,41 @@
+/*!
+
+\page adding_quadratic_elements_page Adding Quadratic Elements
+
+\n MESH modules allows you to work with <b>Quadratic Elements</b>.
+
+Quadratic Edge is not a straight but a broken line and can be defined
+by three points: first, middle and last. All more complex \b Quadratic
+\b Elements differ from ordinary ones in that they consist of Quadratic
+Edges.
+
+<em>To add a quadratic element to your mesh:</em>
+<ol>
+<li>Select your mesh in the Object Browser or in the 3D viewer.</li>
+
+<li>From the \b Modification menu choose the \b Add item and select
+one of the following:
+
+\image html image152.gif
+
+To create any <b>Quadratic Element</b> specify the nodes which will form your
+triangle by selecting them in the 3D viewer with pressed Shift
+button. Their numbers will appear in the dialog box as <b>Corner Nodes</b>
+(alternatively you can just input numbers in this field without
+selection).The edges formed by the corner nodes will appear in the
+table. To define the middle nodes for each edge double-click on the
+respective field and input the number of the node. All edges and the
+object formed by them will be displayed in the Object browser. When
+all edges are defined you will be able to click \b OK or \b Apply button to
+add the element to the mesh.
+
+\image html aqt.png
+
+\b Reverse button for Quadratic Edges switches the first and the last
+nodes. For all other elements it reverses the element.
+</li>
+</ol>
+
+
+
+*/

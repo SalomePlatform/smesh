@@ -63,6 +63,8 @@ UNV_Test_SOURCES = \
 libMeshDriverUNV_la_CPPFLAGS = \
 	$(KERNEL_CXXFLAGS) \
 	$(CAS_CPPFLAGS) \
+	$(CORBA_CXXFLAGS) \
+        $(CORBA_INCLUDES) \
 	$(BOOST_CPPFLAGS) \
 	-I$(srcdir)/../Driver \
 	-I$(srcdir)/../SMDS \

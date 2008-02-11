@@ -58,10 +58,11 @@ salomeinclude_HEADERS = \
 	StdMeshers_RadialPrism_3D.hxx  \
 	StdMeshers_ProjectionUtils.hxx \
 	StdMeshers_LayerDistribution.hxx \
-	StdMeshers_CompositeSegment_1D.hxx \
-	StdMeshers_FaceSide.hxx \
 	StdMeshers_SegmentAroundVertex_0D.hxx \
 	StdMeshers_SegmentLengthAroundVertex.hxx \
+	StdMeshers_FaceSide.hxx \
+	StdMeshers_CompositeSegment_1D.hxx \
+	StdMeshers_UseExisting_1D2D.hxx \
 	SMESH_StdMeshers.hxx
 
 # Libraries targets
@@ -99,10 +100,11 @@ dist_libStdMeshers_la_SOURCES = \
 	StdMeshers_RadialPrism_3D.cxx \
 	StdMeshers_ProjectionUtils.cxx \
 	StdMeshers_LayerDistribution.cxx \
-	StdMeshers_CompositeSegment_1D.cxx \
-	StdMeshers_FaceSide.cxx \
 	StdMeshers_SegmentAroundVertex_0D.cxx \
-	StdMeshers_SegmentLengthAroundVertex.cxx
+	StdMeshers_SegmentLengthAroundVertex.cxx \
+	StdMeshers_FaceSide.cxx \
+	StdMeshers_CompositeSegment_1D.cxx \
+	StdMeshers_UseExisting_1D2D.cxx
 
 
 # additionnal information to compil and link file
@@ -110,6 +112,7 @@ libStdMeshers_la_CPPFLAGS = \
 	$(CAS_CPPFLAGS) \
 	$(BOOST_CPPFLAGS) \
 	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
 	-I$(srcdir)/../SMESHImpl \
 	-I$(srcdir)/../MEFISTO2 \
 	-I$(srcdir)/../SMESH \

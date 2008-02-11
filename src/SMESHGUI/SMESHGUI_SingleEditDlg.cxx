@@ -570,7 +570,7 @@ SMESHGUI_TrianglesInversionDlg
 : SMESHGUI_SingleEditDlg(theModule,theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/diagonal_iversion_of_elements.htm";
+  myHelpFileName = "diagonal_inversion_of_elements_page.html";
 }
 
 SMESHGUI_TrianglesInversionDlg::~SMESHGUI_TrianglesInversionDlg()
@@ -595,7 +595,7 @@ SMESHGUI_UnionOfTwoTrianglesDlg
 : SMESHGUI_SingleEditDlg(theModule,theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/uniting_two_triangles.htm";
+  myHelpFileName = "uniting_two_triangles_page.html";
 }
 
 SMESHGUI_UnionOfTwoTrianglesDlg::~SMESHGUI_UnionOfTwoTrianglesDlg()

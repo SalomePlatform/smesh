@@ -80,6 +80,8 @@ public:
 		       bool modal = FALSE, WFlags fl = 0 );
     ~SMESHGUI_GroupDlg();
 
+    static QString GetDefaultName(const QString& theOperation);
+
 public slots:
 
     void onAdd();
@@ -103,15 +105,15 @@ private slots:
     void onSelectSubMesh(bool on);
     void onSelectGroup(bool on);
     void onSelectGeomGroup(bool on);
-    void onSelectColorGroup(bool on);
     void setCurrentSelection();
 
     void setFilters();
     void onSort();
 
     void onNameChanged(const QString& text);
-    void onNbColorsChanged(const QString& text);
     void onFilterAccepted();
+
+    void onSelectColor();
 
     void onGeomPopup( int );
     void onGeomSelectionButton( bool );
@@ -131,6 +133,14 @@ private:
     void updateButtons();
     void updateGeomPopup();
 
+    void                          setGroupColor( const SALOMEDS::Color& );
+    SALOMEDS::Color               getGroupColor() const;
+
+    void                          setGroupQColor( const QColor& );
+    QColor                        getGroupQColor() const;
+
+    void                          setDefaultGroupColor();
+
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
     SMESH_Actor*                  myActor;                 /* Current mesh actor */
@@ -144,6 +154,7 @@ private:
     
     QButtonGroup*                 myTypeGroup;
     QLineEdit*                    myName;
+    QString                       myOldName;
 
     QButtonGroup*                 myGrpTypeGroup;
 
@@ -159,8 +170,7 @@ private:
     QPushButton*                  myGroupBtn;
     QLineEdit*                    myGroupLine;
 
-    QCheckBox*                    mySelectColorGroup;
-    QtxIntSpinBox*                myColorSpinBox;
+    QPushButton*                  myColorBtn;
 
     QCheckBox*                    mySelectGeomGroup;
     QToolButton*                  myGeomGroupBtn;

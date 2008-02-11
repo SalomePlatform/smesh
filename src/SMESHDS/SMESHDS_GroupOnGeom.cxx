@@ -110,3 +110,14 @@ bool SMESHDS_GroupOnGeom::Contains (const int theID)
 {
   return mySubMesh->Contains( findInMesh( theID ));
 }
+
+//=======================================================================
+//function : Contains
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_GroupOnGeom::Contains (const SMDS_MeshElement* elem)
+{
+  return mySubMesh->Contains( elem );
+}
+

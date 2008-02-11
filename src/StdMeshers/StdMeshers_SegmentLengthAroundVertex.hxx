@@ -29,6 +29,8 @@
 #ifndef _SMESH_SegmentLengthAroundVertex_HXX_
 #define _SMESH_SegmentLengthAroundVertex_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
@@ -36,7 +38,7 @@
  * \brief This hypothesis specifies length of segments adjacent to the vertex the
  * hypothesis is assigned to
  */
-class StdMeshers_SegmentLengthAroundVertex:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_SegmentLengthAroundVertex:public SMESH_Hypothesis
 {
  public:
   StdMeshers_SegmentLengthAroundVertex(int hypId, int studyId, SMESH_Gen * gen);

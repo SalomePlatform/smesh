@@ -79,12 +79,12 @@ void StdMeshers_ProjectionSource1D::SetSourceEdge(const TopoDS_Shape& edge)
   if ( edge.IsNull() )
     throw SALOME_Exception(LOCALIZED("Null edge is not allowed"));
 
-  if ( edge.ShapeType() != TopAbs_EDGE )
+  if ( edge.ShapeType() != TopAbs_EDGE && edge.ShapeType() != TopAbs_COMPOUND )
     throw SALOME_Exception(LOCALIZED("Wrong shape type"));
 
   if ( !_sourceEdge.IsSame( edge ) )
   {
-    _sourceEdge = TopoDS::Edge( edge );
+    _sourceEdge = edge;
 
     NotifySubMeshesHypothesisModification();
   }
@@ -224,7 +224,7 @@ void StdMeshers_ProjectionSource1D::RestoreParams(const TopoDS_Shape& s1,
                                                   const TopoDS_Shape& s3,
                                                   SMESH_Mesh*         mesh)
 {
-  _sourceEdge   = TopoDS::Edge( s1 );
+  _sourceEdge   = s1;
   _sourceVertex = TopoDS::Vertex( s2 );
   _targetVertex = TopoDS::Vertex( s3 );
   _sourceMesh   = mesh;

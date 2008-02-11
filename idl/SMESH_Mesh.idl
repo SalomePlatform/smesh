@@ -93,6 +93,14 @@ module SMESH
   		       double vy;
   		       double vz; } ;
 
+  /*!
+   * Node location on a shape
+   */
+  struct NodePosition {
+    long             shapeID;
+    GEOM::shape_type shapeType;
+    double_array     params; // [U] on EDGE, [U,V] on FACE, [] on the rest shapes
+  };
 
   /*!
    * Enumeration for element type, like in SMDS
@@ -247,6 +255,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     *  Get number of groups existing in the mesh
+     */
+    long NbGroups()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Union of two groups
      *    New group is created. All mesh elements that are
      *    present in initial groups are added to the new one
@@ -336,6 +350,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Toggle auto color mode on the object.
+     * @params
+     * - theAutoColor : flag which toggles auto color mode.
+     */
+    void SetAutoColor(in boolean theAutoColor)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Get flag of object's auto color mode.
+     */
+    boolean GetAutoColor()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Get the internal Id
      */
     long GetId();
@@ -381,6 +409,11 @@ module SMESH
      */
     void ExportMED( in string file, in boolean auto_groups )
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Return string representation of a MED file version comprising nbDigits
+     */
+    string GetVersionString(in MED_VERSION version, in short nbDigits);
 
     /*!
      * Export Mesh to DAT, UNV and STL Formats
@@ -516,6 +549,11 @@ module SMESH
      * If there is not node for given ID - returns empty list
      */
     long_array GetNodeInverseElements(in long id);
+
+    /*!
+     * \brief Return position of a node on shape
+     */
+    NodePosition GetNodePosition(in long NodeID);
 
     /*!
      * If given element is node returns IDs of shape from position

@@ -27,6 +27,7 @@
 //  Module : SMESH
 //  $Header$
 
+using namespace std;
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -36,8 +37,6 @@
 #include "utilities.h"
 
 #include <TCollection_AsciiString.hxx>
-
-using namespace std;
 
 //=============================================================================
 /*!
@@ -84,7 +83,6 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
 									   CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );
   try
   {
@@ -106,7 +104,6 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const 
 									  CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::BuildDistribution" );
   ASSERT( myBaseImpl );
 
   std::vector<double> tbl( func.length() );
@@ -139,7 +136,6 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const 
 void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegmentsNumber )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetNumberOfSegments" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetNumberOfSegments( theSegmentsNumber );
@@ -163,7 +159,6 @@ void StdMeshers_NumberOfSegments_i::SetNumberOfSegments( CORBA::Long theSegments
 
 CORBA::Long StdMeshers_NumberOfSegments_i::GetNumberOfSegments()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetNumberOfSegments" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetNumberOfSegments();
 }
@@ -176,7 +171,6 @@ CORBA::Long StdMeshers_NumberOfSegments_i::GetNumberOfSegments()
 void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetDistrType" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetDistrType( (::StdMeshers_NumberOfSegments::DistrType) typ );
@@ -197,7 +191,6 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
 
 CORBA::Long StdMeshers_NumberOfSegments_i::GetDistrType()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetDistrType" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetDistrType();
 }
@@ -213,7 +206,6 @@ CORBA::Long StdMeshers_NumberOfSegments_i::GetDistrType()
 void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetScaleFactor" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetScaleFactor( theScaleFactor );
@@ -237,7 +229,6 @@ void StdMeshers_NumberOfSegments_i::SetScaleFactor( CORBA::Double theScaleFactor
 CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetScaleFactor" );
   ASSERT( myBaseImpl );
   double scale;
   try {
@@ -258,7 +249,6 @@ CORBA::Double StdMeshers_NumberOfSegments_i::GetScaleFactor()
 void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& table)
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetTableFunction" );
   ASSERT( myBaseImpl );
   std::vector<double> tbl( table.length() );
   for (int i = 0; i < table.length(); i++)
@@ -282,7 +272,6 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
 SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetTableFunction" );
   ASSERT( myBaseImpl );
   const std::vector<double>* tbl;
   try {
@@ -307,7 +296,6 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
 void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetExpressionFunction" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetExpressionFunction( expr );
@@ -328,7 +316,6 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
 char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetExpressionFunction" );
   ASSERT( myBaseImpl );
   const char* expr;
   try {
@@ -349,7 +336,6 @@ char* StdMeshers_NumberOfSegments_i::GetExpressionFunction()
 void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::SetConversionMode" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetConversionMode( conv );
@@ -370,7 +356,6 @@ void StdMeshers_NumberOfSegments_i::SetConversionMode(CORBA::Long conv )
 CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
   throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::ConversionMode" );
   ASSERT( myBaseImpl );
   int conv;
   try {
@@ -393,7 +378,6 @@ CORBA::Long StdMeshers_NumberOfSegments_i::ConversionMode()
 
 ::StdMeshers_NumberOfSegments* StdMeshers_NumberOfSegments_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetImpl" );
   return ( ::StdMeshers_NumberOfSegments* )myBaseImpl;
 }
 

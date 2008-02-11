@@ -27,39 +27,46 @@
 //  $Header$
 
 #include "SMESH_Mesh_i.hxx"
-#include "SMESH_subMesh_i.hxx"
-#include "SMESH_MEDMesh_i.hxx"
-#include "SMESH_Group_i.hxx"
+
 #include "SMESH_Filter_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_Group_i.hxx"
+#include "SMESH_MEDMesh_i.hxx"
+#include "SMESH_MeshEditor_i.hxx"
 #include "SMESH_PythonDump.hxx"
+#include "SMESH_subMesh_i.hxx"
 
-#include "Utils_CorbaException.hxx"
-#include "Utils_ExceptHandlers.hxx"
-#include "utilities.h"
-
-#include "SALOME_NamingService.hxx"
-#include "Utils_SINGLETON.hxx"
-#include "OpUtil.hxx"
-
+#include "DriverMED_R_SMESHDS_Mesh.h"
+#include "DriverMED_W_SMESHDS_Mesh.h"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
-#include "SMESH_MeshEditor_i.hxx"
-#include "SMESH_Gen_i.hxx"
-#include "DriverMED_R_SMESHDS_Mesh.h"
-//#include "SMDS_ElemIterator.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMESH_MesherHelper.hxx"
+#include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESH_Group.hxx"
 #include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FacePosition.hxx"
+
+#include "OpUtil.hxx"
+#include "SALOME_NamingService.hxx"
+#include "Utils_CorbaException.hxx"
+#include "Utils_ExceptHandlers.hxx"
+#include "Utils_SINGLETON.hxx"
+#include "utilities.h"
 
 // OCCT Includes
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
+#include <BRep_Builder.hxx>
 #include <OSD_Directory.hxx>
+#include <OSD_File.hxx>
+#include <OSD_Path.hxx>
 #include <OSD_Protection.hxx>
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
-#include "TCollection_AsciiString.hxx"
+#include <TCollection_AsciiString.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS_Compound.hxx>
 
 // STL Includes
 #include <string>
@@ -224,7 +231,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   Unexpect aCatch(SALOME_SalomeException);
   int status;
   try {
-    status = importMEDFile( theFileName, theMeshName );
+    status = _impl->MEDToMesh( theFileName, theMeshName );
   }
   catch( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -233,17 +240,22 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
   }
 
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( !aStudy->_is_nil() ) {
-    // publishing of the groups in the study (sub-meshes are out of scope of MED import)
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
-    for (; it != _mapGroups.end(); it++ ) {
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
-      _gen_i->PublishGroup( aStudy, _this(), aGroup,
-                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
-    }
-  }
+  CreateGroupServants();
+
   return ConvertDriverMEDReadStatus(status);
+}
+
+//================================================================================
+/*!
+ * \brief Return string representation of a MED file version comprising nbDigits
+ */
+//================================================================================
+
+char* SMESH_Mesh_i::GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits)
+{
+  std::string ver = DriverMED_W_SMESHDS_Mesh::GetVersionString(MED::EVersion(version),
+                                                               nbDigits);
+  return CORBA::string_dup( ver.c_str() );
 }
 
 //=============================================================================
@@ -262,16 +274,6 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
 
   CreateGroupServants();
 
-  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
-  if ( !aStudy->_is_nil() ) {
-    // publishing of the groups in the study (sub-meshes are out of scope of UNV import)
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.begin();
-    for (; it != _mapGroups.end(); it++ ) {
-      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_duplicate( it->second );
-      _gen_i->PublishGroup( aStudy, _this(), aGroup,
-                           GEOM::GEOM_Object::_nil(), aGroup->GetName());
-    }
-  }
   return 1;
 }
 
@@ -299,14 +301,14 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
  */
 //=============================================================================
 
-int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshName )
-{
-  // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
-  int status = _impl->MEDToMesh( theFileName, theMeshName );
-  CreateGroupServants();
+// int SMESH_Mesh_i::importMEDFile( const char* theFileName, const char* theMeshName )
+// {
+//   // Read mesh with name = <theMeshName> and all its groups into SMESH_Mesh
+//   int status = _impl->MEDToMesh( theFileName, theMeshName );
+//   CreateGroupServants();
 
-  return status;
-}
+//   return status;
+// }
 
 //=============================================================================
 /*!
@@ -362,9 +364,14 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr aSubS
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
   // Update Python script
-  TPythonDump() << "status = " << _this() << ".AddHypothesis( "
-                << aSubShapeObject << ", " << anHyp << " )";
-
+  if(_impl->HasShapeToMesh()) {
+    TPythonDump() << "status = " << _this() << ".AddHypothesis( "
+                  << aSubShapeObject << ", " << anHyp << " )";
+  }
+  else {
+    TPythonDump() << "status = " << _this() << ".AddHypothesis( "<< anHyp << " )";
+  }
+  
   return ConvertHypothesisStatus(status);
 }
 
@@ -380,7 +387,7 @@ SMESH_Hypothesis::Hypothesis_Status
 {
   if(MYDEBUG) MESSAGE("addHypothesis");
 
-  if (CORBA::is_nil(aSubShapeObject))
+  if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
     THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
                                  SALOME::BAD_PARAM);
 
@@ -392,7 +399,13 @@ SMESH_Hypothesis::Hypothesis_Status
   SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
   try
   {
-    TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+    TopoDS_Shape myLocSubShape;
+    //use PseudoShape in case if mesh has no shape
+    if(HasShapeToMesh())
+      myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+    else              
+      myLocSubShape = _impl->GetShapeToMesh();
+    
     int hypId = myHyp->GetId();
     status = _impl->AddHypothesis(myLocSubShape, hypId);
     if ( !SMESH_Hypothesis::IsStatusFatal(status) ) {
@@ -430,8 +443,15 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
                                       aSubShapeObject, anHyp );
 
   // Update Python script
+    // Update Python script
+  if(_impl->HasShapeToMesh()) {
   TPythonDump() << "status = " << _this() << ".RemoveHypothesis( "
                 << aSubShapeObject << ", " << anHyp << " )";
+  }
+  else {
+    TPythonDump() << "status = " << _this() << ".RemoveHypothesis( "
+                  << anHyp << " )";
+  }
 
   return ConvertHypothesisStatus(status);
 }
@@ -448,7 +468,7 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 	if(MYDEBUG) MESSAGE("removeHypothesis()");
 	// **** proposer liste de subShape (selection multiple)
 
-	if (CORBA::is_nil(aSubShapeObject))
+	if (CORBA::is_nil(aSubShapeObject) && HasShapeToMesh())
 		THROW_SALOME_CORBA_EXCEPTION("bad subShape reference",
 			SALOME::BAD_PARAM);
 
@@ -460,8 +480,14 @@ SMESH_Hypothesis::Hypothesis_Status SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Ob
 	SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
 	try
 	{
-		TopoDS_Shape myLocSubShape = _gen_i->GeomObjectToShape(aSubShapeObject);
-		int hypId = myHyp->GetId();
+                TopoDS_Shape myLocSubShape;
+                //use PseudoShape in case if mesh has no shape
+                if(HasShapeToMesh())
+                  myLocSubShape = _gen_i->GeomObjectToShape( aSubShapeObject);
+                else
+                  myLocSubShape = _impl->GetShapeToMesh();
+                
+                int hypId = myHyp->GetId();
 		status = _impl->RemoveHypothesis(myLocSubShape, hypId);
                 if ( !SMESH_Hypothesis::IsStatusFatal(status) )
                   _mapHypo.erase( hypId );
@@ -785,6 +811,17 @@ SMESH::ListOfGroups * SMESH_Mesh_i::GetGroups() throw(SALOME::SALOME_Exception)
 
   return aList._retn();
 }
+//=============================================================================
+/*!
+ *  Get number of groups existing in the mesh
+ */
+//=============================================================================
+
+CORBA::Long SMESH_Mesh_i::NbGroups() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _mapGroups.size();
+}
 
 //=============================================================================
 /*! UnionGroups
@@ -954,6 +991,139 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
                 << theName << "' )";
 
   return aResGrp._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Return group items of a group present in a study
+ */
+//================================================================================
+
+static GEOM::GEOM_Object_ptr getGroupItemsFromStudy(CORBA::Object_ptr    theMesh,
+                                                    SMESH_Gen_i*         theGen,
+                                                    list<TopoDS_Shape> & theItems)
+{
+  GEOM::GEOM_Object_var groupObj;
+  SALOMEDS::Study_var  study = theGen->GetCurrentStudy();
+  GEOM::GEOM_Gen_var geomGen = theGen->GetGeomEngine();
+  if ( study->_is_nil() || geomGen->_is_nil() )
+    return groupObj._retn();
+  
+  GEOM::GEOM_IGroupOperations_var groupOp =
+    geomGen->GetIGroupOperations( theGen->GetCurrentStudyID() );
+  GEOM::GEOM_IShapesOperations_var shapeOp =
+    geomGen->GetIShapesOperations( theGen->GetCurrentStudyID() );
+
+  SALOMEDS::SObject_var meshOS = theGen->ObjectToSObject(study, theMesh);
+  if ( meshOS->_is_nil() || groupOp->_is_nil() || shapeOp->_is_nil() )
+    return groupObj._retn();
+  SALOMEDS::SObject_var fatherSO = meshOS->GetFather();
+  if ( fatherSO->_is_nil() || fatherSO->Tag() != theGen->GetSubMeshOnCompoundTag() )
+    return groupObj._retn(); // keep only submeshes on groups
+
+  SALOMEDS::ChildIterator_var anIter = study->NewChildIterator(meshOS);
+  if ( anIter->_is_nil() ) return groupObj._retn();
+  for ( ; anIter->More(); anIter->Next())
+  {
+    SALOMEDS::SObject_var aSObject = anIter->Value();
+    SALOMEDS::SObject_var aRefSO;
+    if ( !aSObject->_is_nil() && aSObject->ReferencedObject(aRefSO) )
+    {
+      groupObj = GEOM::GEOM_Object::_narrow(aRefSO->GetObject());
+      if ( groupObj->_is_nil() ) break;
+      GEOM::ListOfLong_var  ids = groupOp->GetObjects( groupObj );
+      GEOM::GEOM_Object_var mainShape = groupObj->GetMainShape();
+      for ( int i = 0; i < ids->length(); ++i ) {
+        GEOM::GEOM_Object_var subShape = shapeOp->GetSubShape( mainShape, ids[i] );
+        TopoDS_Shape S = theGen->GeomObjectToShape( subShape );
+        if ( !S.IsNull() )
+          theItems.push_back( S );
+      }
+      break;
+    }
+  }
+  return groupObj._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Update hypotheses assigned to geom groups if the latter change
+ * 
+ * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+ */
+//=============================================================================
+
+void SMESH_Mesh_i::CheckGeomGroupModif()
+{
+  if ( !_impl->HasShapeToMesh() ) return;
+
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  if ( study->_is_nil() ) return;
+
+  // check if items of groups changed
+  map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+  for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
+  {
+    const TopoDS_Shape & oldGroupShape = i_sm->second->GetSubShape();
+    SMESHDS_SubMesh * oldDS = i_sm->second->GetSubMeshDS();
+    if ( !oldDS /*|| !oldDS->IsComplexSubmesh()*/ )
+      continue;
+    int oldID = i_sm->first;
+    map<int, SMESH::SMESH_subMesh_ptr>::iterator i_smIor = _mapSubMeshIor.find( oldID );
+    if ( i_smIor == _mapSubMeshIor.end() )
+      continue;
+    list< TopoDS_Shape> newItems;
+    GEOM::GEOM_Object_var groupObj = getGroupItemsFromStudy ( i_smIor->second, _gen_i, newItems );
+    if ( groupObj->_is_nil() )
+      continue;
+
+    int nbOldItems = oldDS->IsComplexSubmesh() ? oldDS->NbSubMeshes() : 1;
+    int nbNewItems = newItems.size();
+    bool groupChanged = ( nbOldItems != nbNewItems);
+    if ( !groupChanged ) {
+      if ( !oldDS->IsComplexSubmesh() ) { // old group has one item
+        groupChanged = ( oldGroupShape != newItems.front() );
+      }
+      else {
+        list<TopoDS_Shape>::iterator item = newItems.begin();
+        for ( ; item != newItems.end() && !groupChanged; ++item )
+        {
+          SMESHDS_SubMesh * itemDS = _impl->GetMeshDS()->MeshElements( *item );
+          groupChanged = ( !itemDS || !oldDS->ContainsSubMesh( itemDS ));
+        }
+      }
+    }
+    // update hypotheses and submeshes if necessary
+    if ( groupChanged )
+    {
+      // get a new group shape
+      GEOM_Client* geomClient = _gen_i->GetShapeReader();
+      if ( !geomClient ) continue;
+      TCollection_AsciiString groupIOR = _gen_i->GetGeomEngine()->GetStringFromIOR( groupObj );
+      geomClient->RemoveShapeFromBuffer( groupIOR );
+      TopoDS_Shape newGroupShape = _gen_i->GeomObjectToShape( groupObj );
+      // update hypotheses
+      list <const SMESHDS_Hypothesis * > hyps = _impl->GetHypothesisList(oldGroupShape);
+      list <const SMESHDS_Hypothesis * >::iterator hypIt;
+      for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
+      {
+        _impl->RemoveHypothesis( oldGroupShape, (*hypIt)->GetID());
+        _impl->AddHypothesis   ( newGroupShape, (*hypIt)->GetID());
+      }
+      // care of submeshes
+      SMESH_subMesh* newSubmesh = _impl->GetSubMesh( newGroupShape );
+      int newID = newSubmesh->GetId();
+      if ( newID != oldID ) {
+        _mapSubMesh   [ newID ] = newSubmesh;
+        _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+        _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+        _mapSubMesh.erase   (oldID);
+        _mapSubMesh_i.erase (oldID);
+        _mapSubMeshIor.erase(oldID);
+        _mapSubMesh_i [ newID ]->changeLocalId( newID );
+      }
+    }
+  }
 }
 
 //=============================================================================
@@ -1211,7 +1381,7 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 {
   // Create MeshEditor
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, false );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, false );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
 
   // Update Python script
@@ -1228,10 +1398,33 @@ SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditor()
 
 SMESH::SMESH_MeshEditor_ptr SMESH_Mesh_i::GetMeshEditPreviewer()
 {
-  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( _impl, true );
+  SMESH_MeshEditor_i *aMeshEditor = new SMESH_MeshEditor_i( this, true );
   SMESH::SMESH_MeshEditor_var aMesh = aMeshEditor->_this();
   return aMesh._retn();
 }
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESH_Mesh_i::SetAutoColor(CORBA::Boolean theAutoColor) throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  _impl->SetAutoColor(theAutoColor);
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+CORBA::Boolean SMESH_Mesh_i::GetAutoColor() throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  return _impl->GetAutoColor();
+}
+
 
 //=============================================================================
 /*!
@@ -1426,7 +1619,7 @@ CORBA::Long SMESH_Mesh_i::NbEdgesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbEdges( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbEdges( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
@@ -1462,21 +1655,21 @@ CORBA::Long SMESH_Mesh_i::NbFacesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbFaces( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbFaces( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbTrianglesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbTriangles( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbTriangles( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbQuadranglesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbQuadrangles( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbQuadrangles( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
@@ -1524,35 +1717,35 @@ CORBA::Long SMESH_Mesh_i::NbVolumesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbVolumes( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbVolumes( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbTetrasOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbTetras( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbTetras( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbHexasOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbHexas( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbHexas( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbPyramidsOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbPyramids( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbPyramids( (SMDSAbs_ElementOrder) order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbPrismsOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
-  return _impl->NbPrisms( (::SMESH_Mesh::ElementOrder) order);
+  return _impl->NbPrisms( (SMDSAbs_ElementOrder) order);
 }
 
 //=============================================================================
@@ -1884,6 +2077,56 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
   return aResult._retn();
 }
 
+//=============================================================================
+/*!
+ * \brief Return position of a node on shape
+ */
+//=============================================================================
+
+SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
+{
+  SMESH::NodePosition* aNodePosition = new SMESH::NodePosition();
+  aNodePosition->shapeID = 0;
+  aNodePosition->shapeType = GEOM::SHAPE;
+
+  SMESHDS_Mesh* mesh = _impl->GetMeshDS();
+  if ( !mesh ) return aNodePosition;
+
+  if ( const SMDS_MeshNode* aNode = mesh->FindNode(NodeID) )
+  {
+    if ( SMDS_PositionPtr pos = aNode->GetPosition() )
+    {
+      aNodePosition->shapeID = pos->GetShapeId();
+      switch ( pos->GetTypeOfPosition() ) {
+      case SMDS_TOP_EDGE:
+        aNodePosition->shapeType = GEOM::EDGE;
+        aNodePosition->params.length(1);
+        aNodePosition->params[0] =
+          static_cast<SMDS_EdgePosition*>( pos.get() )->GetUParameter();
+        break;
+      case SMDS_TOP_FACE:
+        aNodePosition->shapeType = GEOM::FACE;
+        aNodePosition->params.length(2);
+        aNodePosition->params[0] =
+          static_cast<SMDS_FacePosition*>( pos.get() )->GetUParameter();
+        aNodePosition->params[1] =
+          static_cast<SMDS_FacePosition*>( pos.get() )->GetVParameter();
+        break;
+      case SMDS_TOP_VERTEX:
+        aNodePosition->shapeType = GEOM::VERTEX;
+        break;
+      case SMDS_TOP_3DSPACE:
+        if ( TopExp_Explorer(_impl->GetShapeToMesh(), TopAbs_SOLID).More() )
+          aNodePosition->shapeType = GEOM::SOLID;
+        else if ( TopExp_Explorer(_impl->GetShapeToMesh(), TopAbs_SHELL).More() )
+          aNodePosition->shapeType = GEOM::SHELL;
+        break;
+      default:;
+      }
+    }
+  }
+  return aNodePosition;
+}
 
 //=============================================================================
 /*!
@@ -2131,17 +2374,11 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
     return aResult._retn();
 
   if(elem->GetType()==SMDSAbs_Volume) {
-    // use SMDS_VolumeTool
     SMDS_VolumeTool aTool;
     if(aTool.Set(elem)) {
-      double x=0., y=0., z=0.;
-      if(aTool.GetBaryCenter(x,y,z)) {
-        // add coordinates
-        aResult->length(3);
-        aResult[0] = x;
-        aResult[1] = y;
-        aResult[2] = z;
-      }
+      aResult->length(3);
+      if (!aTool.GetBaryCenter( aResult[0], aResult[1], aResult[2]) )
+        aResult->length(0);
     }
   }
   else {
@@ -2170,27 +2407,75 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
 
 //=============================================================================
 /*!
- *
+ * Create and publish group servants if any groups were imported or created anyhow
  */
 //=============================================================================
+
 void SMESH_Mesh_i::CreateGroupServants() 
 {
-  // Create group servants, if any groups were imported
-  list<int> aGroupIds = _impl->GetGroupIds();
-  for ( list<int>::iterator it = aGroupIds.begin(); it != aGroupIds.end(); it++ ) {
-    SMESH_Group_i* aGroupImpl     = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, *it );
+  SALOMEDS::Study_ptr aStudy = _gen_i->GetCurrentStudy();
 
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
+  ::SMESH_Mesh::GroupIteratorPtr groupIt = _impl->GetGroups();
+  while ( groupIt->more() )
+  {
+    ::SMESH_Group* group = groupIt->next();
+    int            anId = group->GetGroupDS()->GetID();
+
+    map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(anId);
+    if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
+      continue;
+
+    SMESH_GroupBase_i* aGroupImpl;
+    TopoDS_Shape       shape;
+    if ( SMESHDS_GroupOnGeom* groupOnGeom =
+         dynamic_cast<SMESHDS_GroupOnGeom*>( group->GetGroupDS() ))
+    {
+      aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
+      shape      = groupOnGeom->GetShape();
+    }
+    else {
+      aGroupImpl = new SMESH_Group_i( SMESH_Gen_i::GetPOA(), this, anId );
+    }
+
+    // To ensure correct mapping of servant and correct reference counting in GenericObj_i
     SMESH_Gen_i::GetPOA()->activate_object( aGroupImpl );
     aGroupImpl->Register();
-    // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i
 
-    SMESH::SMESH_Group_var aGroup = SMESH::SMESH_Group::_narrow( aGroupImpl->_this() );
-    _mapGroups[*it]               = SMESH::SMESH_Group::_duplicate( aGroup );
+    SMESH::SMESH_GroupBase_var groupVar =
+      SMESH::SMESH_GroupBase::_narrow( aGroupImpl->_this() );
+    _mapGroups[anId] = SMESH::SMESH_GroupBase::_duplicate( groupVar );
 
     // register CORBA object for persistence
-    int nextId = _gen_i->RegisterObject( aGroup );
+    int nextId = _gen_i->RegisterObject( groupVar );
     if(MYDEBUG) MESSAGE( "Add group to map with id = "<< nextId);
+
+    // publishing of the groups in the study
+    if ( !aStudy->_is_nil() ) {
+      GEOM::GEOM_Object_var shapeVar = _gen_i->ShapeToGeomObject( shape );
+      _gen_i->PublishGroup( aStudy, _this(), groupVar, shapeVar, groupVar->GetName());
+    }
   }
 }
 
+//=============================================================================
+/*!
+ * \brief Return groups cantained in _mapGroups by their IDs
+ */
+//=============================================================================
+
+SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
+{
+  int nbGroups = groupIDs.size();
+  SMESH::ListOfGroups_var aList = new SMESH::ListOfGroups();
+  aList->length( nbGroups );
+
+  list<int>::const_iterator ids = groupIDs.begin();
+  for ( nbGroups = 0; ids != groupIDs.end(); ++ids )
+  {
+    map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator it = _mapGroups.find( *ids );
+    if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))
+      aList[nbGroups++] = SMESH::SMESH_GroupBase::_duplicate( it->second );
+  }
+  aList->length( nbGroups );
+  return aList._retn();
+}

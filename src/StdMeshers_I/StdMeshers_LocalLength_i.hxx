@@ -58,8 +58,14 @@ public:
   // Set length
   void SetLength( CORBA::Double theLength )
     throw ( SALOME::SALOME_Exception );
+  // Set precision
+  void SetPrecision( CORBA::Double thePrecision )
+    throw ( SALOME::SALOME_Exception );
+
   // Get length
   CORBA::Double GetLength();
+  // Get precision
+  CORBA::Double GetPrecision();
 
   // Get implementation
   ::StdMeshers_LocalLength* GetImpl();

@@ -1080,7 +1080,7 @@ SMESHGUI_ChangeOrientationDlg
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/changing_orientation_of_elements.htm";
+  myHelpFileName = "changing_orientation_of_elements_page.html";
 }
 
 SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
@@ -1120,7 +1120,7 @@ SMESHGUI_UnionOfTrianglesDlg
 
   myCriterionGrp->show();
 
-  myHelpFileName = "/files/uniting_a_set_of_triangles.htm";
+  myHelpFileName = "uniting_set_of_triangles_page.html";
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -1160,7 +1160,7 @@ SMESHGUI_CuttingOfQuadsDlg
   connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
   connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
 
-  myHelpFileName = "/files/cutting_quadrangles.htm";
+  myHelpFileName = "cutting_quadrangles_page.html";
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()

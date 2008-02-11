@@ -73,12 +73,14 @@ public:
 
 protected:
 
-  virtual bool computeInternalParameters (Adaptor3d_Curve &     theC3d,
-                                          double                theLength,
-                                          double                theFirstU,
-                                          double                theLastU,
-                                          std::list< double > & theParameters,
-                                          const bool            theReverse);
+  virtual bool computeInternalParameters (SMESH_Mesh &        theMesh,
+                                          Adaptor3d_Curve &   theC3d,
+                                          double              theLength,
+                                          double              theFirstU,
+                                          double              theLastU,
+                                          std::list<double> & theParameters,
+                                          const bool          theReverse,
+                                          bool                theConsiderPropagation = false);
 
   virtual void redistributeNearVertices (SMESH_Mesh &          theMesh,
                                          Adaptor3d_Curve &     theC3d,
@@ -101,12 +103,12 @@ protected:
     BEG_LENGTH_IND   = 0,
     END_LENGTH_IND   = 1,
     DEFLECTION_IND   = 0
-    };
+  };
 
   enum IValueIndex {
     NB_SEGMENTS_IND  = 0,
     DISTR_TYPE_IND   = 1,
-    CONV_MODE_IND     = 2
+    CONV_MODE_IND    = 2
   };
 
   enum VValueIndex {

@@ -35,11 +35,13 @@
 #include <Geom2d_Curve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Surface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopTools_MapOfShape.hxx>
-#include <gp_Pnt2d.hxx>
 #include <ShapeAnalysis.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <gp_Pnt2d.hxx>
 
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
@@ -73,6 +75,7 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   // also we have to fill myNLinkNodeMap
   myCreateQuadratic = true;
   mySeamShapeIds.clear();
+  myDegenShapeIds.clear();
   TopAbs_ShapeEnum subType( aSh.ShapeType()==TopAbs_FACE ? TopAbs_EDGE : TopAbs_FACE );
   SMDSAbs_ElementType elemType( subType==TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
 
@@ -150,6 +153,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
 
   myShape = aSh;
   mySeamShapeIds.clear();
+  myDegenShapeIds.clear();
 
   if ( myShape.IsNull() ) {
     myShapeID  = -1;
@@ -165,8 +169,9 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
     BRepAdaptor_Surface surface( face );
     if ( surface.IsUPeriodic() || surface.IsVPeriodic() )
     {
-      // look for a seam edge
-      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next()) {
+      for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next())
+      {
+        // look for a seam edge
         const TopoDS_Edge& edge = TopoDS::Edge( exp.Current() );
         if ( BRep_Tool::IsClosed( edge, face )) {
           // initialize myPar1, myPar2 and myParIndex
@@ -186,9 +191,16 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             }
           }
           // store shapes indices
-          mySeamShapeIds.insert( meshDS->ShapeToIndex( exp.Current() ));
-          for ( TopExp_Explorer v( exp.Current(), TopAbs_VERTEX ); v.More(); v.Next() )
+          mySeamShapeIds.insert( meshDS->ShapeToIndex( edge ));
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
             mySeamShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
+        }
+
+        // look for a degenerated edge
+        if ( BRep_Tool::Degenerated( edge )) {
+          myDegenShapeIds.insert( meshDS->ShapeToIndex( edge ));
+          for ( TopExp_Explorer v( edge, TopAbs_VERTEX ); v.More(); v.Next() )
+            myDegenShapeIds.insert( meshDS->ShapeToIndex( v.Current() ));
         }
       }
     }
@@ -1128,3 +1140,36 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap & theParam2ColumnMap,
 
   return true;
 }
+
+/**
+ * Check mesh without geometry for: if all elements on this shape are quadratic,
+ * quadratic elements will be created.
+ * Used then generated 3D mesh without geometry.
+   */
+SMESH_MesherHelper:: MType SMESH_MesherHelper::IsQuadraticMesh()
+{
+  int NbAllEdgsAndFaces=0;
+  int NbQuadFacesAndEdgs=0;
+  int NbFacesAndEdges=0;
+  //All faces and edges
+  NbAllEdgsAndFaces = myMesh->NbEdges() + myMesh->NbFaces();
+  
+  //Quadratic faces and edges
+  NbQuadFacesAndEdgs = myMesh->NbEdges(ORDER_QUADRATIC) + myMesh->NbFaces(ORDER_QUADRATIC);
+
+  //Linear faces and edges
+  NbFacesAndEdges = myMesh->NbEdges(ORDER_LINEAR) + myMesh->NbFaces(ORDER_LINEAR);
+  
+  if (NbAllEdgsAndFaces == NbQuadFacesAndEdgs) {
+    //Quadratic mesh
+    return SMESH_MesherHelper::QUADRATIC;
+  }
+  else if (NbAllEdgsAndFaces == NbFacesAndEdges) {
+    //Linear mesh
+    return SMESH_MesherHelper::LINEAR;
+  }
+  else
+    //Mesh with both type of elements
+    return SMESH_MesherHelper::COMP;
+}
+

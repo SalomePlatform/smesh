@@ -24,11 +24,14 @@
 
 #include "SMESHGUI.h"
 #include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESH_ObjectDef.h"
+#include <SMDS_Mesh.hxx>
 
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 #include <SUIT_Study.h>
+#include <SUIT_MessageBox.h>
 
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
@@ -55,9 +58,11 @@
 // VTK
 #include <vtkRenderer.h>
 #include <vtkActorCollection.h>
+#include <vtkUnstructuredGrid.h>
 
 // OCCT
 #include <TColStd_IndexedMapOfInteger.hxx>
+#include <Standard_ErrorHandler.hxx>
 
 // STL
 #include <set>
@@ -69,10 +74,188 @@ namespace SMESH {
   typedef map<TKeyOfVisualObj,TVisualObjPtr> TVisualObjCont;
   static TVisualObjCont VISUAL_OBJ_CONT;
 
+  //=============================================================================
+  /*!
+   * \brief Allocate some memory at construction and release it at destruction.
+   * Is used to be able to continue working after mesh generation or visualization
+   * break due to lack of memory
+   */
+  //=============================================================================
+
+  struct MemoryReserve
+  {
+    char* myBuf;
+    MemoryReserve(): myBuf( new char[1024*1024*1] ){} // 1M
+    void Free() { if (myBuf) { delete [] myBuf; myBuf = 0; }}
+    ~MemoryReserve() { Free(); }
+  };
+  static MemoryReserve* theVISU_MemoryReserve = new MemoryReserve;
+
+  //================================================================================
+  /*!
+   * \brief Remove VisualObj and its actor from all views
+   */
+  //================================================================================
+
+  void RemoveVisualObjectWithActors( const char* theEntry )
+  {
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+      ( SUIT_Session::session()->activeApplication() );
+    SUIT_ViewManager* aViewManager =
+      app ? app->getViewManager(SVTK_Viewer::Type(), true) : 0;
+    if ( aViewManager ) {
+      QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+      for ( int iV = 0; iV < views.count(); ++iV ) {
+        if ( SMESH_Actor* actor = FindActorByEntry( views[iV], theEntry)) {
+          if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV]))
+            vtkWnd->RemoveActor(actor);
+          actor->Delete();
+        }
+      }
+      int aStudyId = aViewManager->study()->id();
+      TVisualObjCont::key_type aKey(aStudyId,theEntry);
+      TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
+      if(anIter != VISUAL_OBJ_CONT.end()) {
+        // for unknown reason, object destructor is not called, so clear object manually
+        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+        anIter->second->GetUnstructuredGrid()->SetPoints(0);
+      }
+      VISUAL_OBJ_CONT.erase(aKey);
+    }
+  }
+  //================================================================================
+  /*!
+   * \brief Remove all VisualObjs and their actors from all views
+   */
+  //================================================================================
+
+  void RemoveAllObjectsWithActors()
+  {
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+      ( SUIT_Session::session()->activeApplication() );
+    if (!app) return;
+    ViewManagerList viewMgrs = app->viewManagers();
+    for ( int iM = 0; iM < viewMgrs.count(); ++iM ) {
+      SUIT_ViewManager* aViewManager = viewMgrs.at( iM );
+      if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type()) {
+        QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+        for ( int iV = 0; iV < views.count(); ++iV ) {
+          if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
+            vtkRenderer *aRenderer = vtkWnd->getRenderer();
+            vtkActorCollection *actors = aRenderer->GetActors();
+            for (int i = 0; i < actors->GetNumberOfItems(); ++i ) {
+              // size of actors changes inside the loop
+              while (SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
+              {
+                vtkWnd->RemoveActor(actor);
+                actor->Delete();
+              }
+            }
+          }
+        }
+      }
+    }
+    TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.begin();
+    for ( ; anIter != VISUAL_OBJ_CONT.end(); ++anIter ) {
+      // for unknown reason, object destructor is not called, so clear object manually
+      anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+      anIter->second->GetUnstructuredGrid()->SetPoints(0);
+    }
+    VISUAL_OBJ_CONT.clear();
+  }
+
+  //================================================================================
+  /*!
+   * \brief Remove all VisualObjs of a study
+   */
+  //================================================================================
+
+  void RemoveVisuData(int studyID)
+  {
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+      ( SUIT_Session::session()->activeApplication() );
+    if (!app) return;
+    ViewManagerList viewMgrs = app->viewManagers();
+    for ( int iM = 0; iM < viewMgrs.count(); ++iM ) {
+      SUIT_ViewManager* aViewManager = viewMgrs.at( iM );
+      if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type() &&
+           aViewManager->study()->id() == studyID ) {
+        QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+        for ( int iV = 0; iV < views.count(); ++iV ) {
+          if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
+            vtkRenderer *aRenderer = vtkWnd->getRenderer();
+            vtkActorCollection *actors = aRenderer->GetActors();
+            for (int i = 0; i < actors->GetNumberOfItems(); ++i ) {
+              // size of actors changes inside the loop
+              while(SMESH_Actor *actor = dynamic_cast<SMESH_Actor*>(actors->GetItemAsObject(i)))
+              {
+                vtkWnd->RemoveActor(actor);
+                actor->Delete();
+              }
+            }
+          }
+        }
+      }
+    }
+    TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.begin();
+    for ( ; anIter != VISUAL_OBJ_CONT.end(); ++anIter ) {
+      int curId = anIter->first.first;
+      if ( curId == studyID ) {
+        // for unknown reason, object destructor is not called, so clear object manually
+        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0);
+        anIter->second->GetUnstructuredGrid()->SetPoints(0);
+        VISUAL_OBJ_CONT.erase( anIter-- );  // dercement occures before erase()
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Notify the user on problems during visualization
+   */
+  //================================================================================
+
+  void OnVisuException()
+  {
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      // PAL16774 (Crash after display of many groups). Salome sometimes crashes just
+      // after or at showing this message, so we do an additional check of available memory
+//       char* buf = new char[100*1024];
+//       delete [] buf;
+      SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                              QObject::tr("SMESH_VISU_PROBLEM"),
+                              QObject::tr("SMESH_BUT_OK"));
+    } catch (...) {
+      // no more memory at all: last resort
+      cout<< "SMESHGUI_VTKUtils::OnVisuException(), exception even at showing a message!!!" <<endl;
+      cout<< "Try to remove all visual data..." <<endl;
+      if (theVISU_MemoryReserve) {
+        delete theVISU_MemoryReserve;
+        theVISU_MemoryReserve = 0;
+      }
+      RemoveAllObjectsWithActors();
+      SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                              QObject::tr("SMESH_VISU_PROBLEM_CLEAR"),
+                              QObject::tr("SMESH_BUT_OK"));
+      cout<< "...done" << endl;
+    }
+  }
+  //================================================================================
+  /*!
+   * \brief Returns an updated visual object
+   */
+  //================================================================================
+
   TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry){
     TVisualObjPtr aVisualObj;
+    TVisualObjCont::key_type aKey(theStudyId,theEntry);
     try{
-      TVisualObjCont::key_type aKey(theStudyId,theEntry);
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
       TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
       if(anIter != VISUAL_OBJ_CONT.end()){
 	aVisualObj = anIter->second;
@@ -88,16 +271,14 @@ namespace SMESH {
 	    CORBA::String_var aVal = anIOR->Value().c_str();
 	    CORBA::Object_var anObj = app->orb()->string_to_object( aVal.in() );
 	    if(!CORBA::is_nil(anObj)){
-	      //Try narrow to SMESH_Mesh interafce
+	      //Try narrow to SMESH_Mesh interface
 	      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObj);
 	      if(!aMesh->_is_nil()){
 		aVisualObj.reset(new SMESH_MeshObj(aMesh));
-		aVisualObj->Update();
 		TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		VISUAL_OBJ_CONT.insert(aValue);
-		return aVisualObj;
 	      }
-	      //Try narrow to SMESH_Group interafce
+	      //Try narrow to SMESH_Group interface
 	      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObj);
 	      if(!aGroup->_is_nil()){
 		_PTR(SObject) aFatherSObj = aSObj->GetFather();
@@ -108,13 +289,11 @@ namespace SMESH {
 		TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
 		if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
 		  aVisualObj.reset(new SMESH_GroupObj(aGroup,aMeshObj));
-		  aVisualObj->Update();
 		  TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		  VISUAL_OBJ_CONT.insert(aValue);
-		  return aVisualObj;
 		}
 	      }
-	      //Try narrow to SMESH_subMesh interafce
+	      //Try narrow to SMESH_subMesh interface
 	      SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObj);
 	      if(!aSubMesh->_is_nil()){
 		_PTR(SObject) aFatherSObj = aSObj->GetFather();
@@ -125,10 +304,8 @@ namespace SMESH {
 		TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
 		if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
 		  aVisualObj.reset(new SMESH_subMeshObj(aSubMesh,aMeshObj));
-		  aVisualObj->Update();
 		  TVisualObjCont::value_type aValue(aKey,aVisualObj);
 		  VISUAL_OBJ_CONT.insert(aValue);
-		  return aVisualObj;
 		}
 	      }
 	    }
@@ -137,7 +314,61 @@ namespace SMESH {
       }
     }catch(...){
       INFOS("GetMeshObj - There is no SMESH_Mesh object for the SALOMEDS::Strudy and Entry!!!");
+      return TVisualObjPtr();
     }
+    // Update object
+    bool objModified = false;
+    if ( aVisualObj ) {
+      try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
+        objModified = aVisualObj->Update();
+      }
+      catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::GetVisualObj()" << endl;
+#endif
+        RemoveVisualObjectWithActors( theEntry ); // remove this object
+        OnVisuException();
+        aVisualObj.reset();
+      }
+    }
+
+    if ( objModified ) {
+      // PAL16631. Mesurements showed that to show aVisualObj in SHADING(default) mode,
+      // ~10 times more memory is used than it occupies.
+      // Warn the user if there is less free memory than 30 sizes of a grid
+      // TODO: estimate memory usage in other modes and take current mode into account
+      int freeMB = SMDS_Mesh::CheckMemory(true);
+      int usedMB = aVisualObj->GetUnstructuredGrid()->GetActualMemorySize() / 1024;
+      if ( freeMB > 0 && usedMB * 30 > freeMB ) {
+#ifdef _DEBUG_
+        cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
+             << ", usedMB=" << usedMB<< endl;
+#endif
+        int continu = 0;
+        if ( usedMB * 10 > freeMB )
+          // even dont try to show
+          SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+                                  QObject::tr("SMESH_NO_MESH_VISUALIZATION"),
+                                  QObject::tr("SMESH_BUT_OK"));
+        else
+          // there is a chance to succeed
+          continu = SUIT_MessageBox::warn2
+            (SMESHGUI::desktop(),
+             QObject::tr("SMESH_WRN_WARNING"),
+             QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
+             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
+             1, 0, 1);
+        if ( !continu ) {
+          // remove the corresponding actors from all views
+          RemoveVisualObjectWithActors( theEntry );
+          aVisualObj.reset();
+        }
+      }
+    }
+
     return aVisualObj;
   }
 
@@ -212,28 +443,72 @@ namespace SMESH {
   void RepaintCurrentView()
   {
     if (SVTK_ViewWindow* wnd = GetCurrentVtkView())
-      {
-	wnd->getRenderer()->Render();
-	wnd->Repaint(false);
+    {
+      try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
+        wnd->getRenderer()->Render();
+        wnd->Repaint(false);
       }
+      catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::RepaintCurrentView()" << endl;
+#endif
+        OnVisuException();
+      }
+    }
   }
 
   void RepaintViewWindow(SVTK_ViewWindow* theWindow)
   {
-    theWindow->getRenderer()->Render();
-    theWindow->Repaint();
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      theWindow->getRenderer()->Render();
+      theWindow->Repaint();
+    }
+    catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::RepaintViewWindow(SVTK_ViewWindow)" << endl;
+#endif
+      OnVisuException();
+    }
   }
 
   void RenderViewWindow(SVTK_ViewWindow* theWindow)
   {
-    theWindow->getRenderer()->Render();
-    theWindow->Repaint();
+    try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+      OCC_CATCH_SIGNALS;
+#endif
+      theWindow->getRenderer()->Render();
+      theWindow->Repaint();
+    }
+    catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::RenderViewWindow(SVTK_ViewWindow)" << endl;
+#endif
+      OnVisuException();
+    }
   }
 
   void FitAll(){
     if(SVTK_ViewWindow* wnd = GetCurrentVtkView() ){
-      wnd->onFitAll();
-      wnd->Repaint();
+      try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
+        wnd->onFitAll();
+        wnd->Repaint();
+      }
+      catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::FitAll()" << endl;
+#endif
+        OnVisuException();
+      }
     }
   }
 
@@ -298,6 +573,27 @@ namespace SMESH {
 	  std::string aNameVal = aName->Value();
 	  anActor = SMESH_Actor::New(aVisualObj,theEntry,aNameVal.c_str(),theIsClear);
 	}
+
+	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH::SObjectToObject( aSObj ));
+	if(!CORBA::is_nil(aGroup))
+	{
+	  SALOMEDS::Color aColor = aGroup->GetColor();
+	  if( !( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 ) )
+	  {
+	    int r = 0, g = 0, b = 0;
+	    SMESH::GetColor( "SMESH", "fill_color", r, g, b, QColor( 0, 170, 255 ) );
+	    aColor.R = (float)r / 255.0;
+	    aColor.G = (float)g / 255.0;
+	    aColor.B = (float)b / 255.0;
+	    aGroup->SetColor( aColor );
+	  }
+	  if( aGroup->GetType() == SMESH::NODE )
+	    anActor->SetNodeColor( aColor.R, aColor.G, aColor.B );
+	  else if( aGroup->GetType() == SMESH::EDGE )
+	    anActor->SetEdgeColor( aColor.R, aColor.G, aColor.B );
+	  else
+	    anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B );
+	}
       }
     }
     return anActor;
@@ -306,8 +602,19 @@ namespace SMESH {
 
   void DisplayActor( SUIT_ViewWindow *theWnd, SMESH_Actor* theActor){
     if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(theWnd)){
-      vtkWnd->AddActor(theActor);
-      vtkWnd->Repaint();
+      try {
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+        OCC_CATCH_SIGNALS;
+#endif
+        vtkWnd->AddActor(theActor);
+        vtkWnd->Repaint();
+      }
+      catch (...) {
+#ifdef _DEBUG_
+        cout << "Exception in SMESHGUI_VTKUtils::DisplayActor()" << endl;
+#endif
+        OnVisuException();
+      }
     }
   }
 
@@ -330,17 +637,42 @@ namespace SMESH {
     }
   }
 
+  //================================================================================
+  /*!
+   * \brief Return true if there are no SMESH actors in a view
+   */
+  //================================================================================
 
-  void UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
+  bool noSmeshActors(SUIT_ViewWindow *theWnd)
   {
-    if(SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd)){
+    if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWnd)) {
+      vtkRenderer *aRenderer = aViewWindow->getRenderer();
+      vtkActorCollection *aCollection = aRenderer->GetActors();
+      aCollection->InitTraversal();
+      while(vtkActor *anAct = aCollection->GetNextActor())
+	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct))
+          return false;
+    }
+    return true;
+  }
+
+  bool UpdateView(SUIT_ViewWindow *theWnd, EDisplaing theAction, const char* theEntry)
+  {
+    bool OK = false;
+    SVTK_ViewWindow* aViewWnd = GetVtkViewWindow(theWnd);
+    if (!aViewWnd)
+      return OK;
+
+    {
+      OK = true;
       vtkRenderer *aRenderer = aViewWnd->getRenderer();
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
-      switch(theAction){
+
+      switch (theAction) {
       case eDisplayAll: {
-	while(vtkActor *anAct = aCollection->GetNextActor()){
-	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+	while (vtkActor *anAct = aCollection->GetNextActor()) {
+	  if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
 	    anActor->SetVisibility(true);
 	  }
 	}
@@ -348,15 +680,15 @@ namespace SMESH {
       }
       case eDisplayOnly:
       case eEraseAll: {
-	while(vtkActor *anAct = aCollection->GetNextActor()){
-	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+	while (vtkActor *anAct = aCollection->GetNextActor()) {
+	  if (SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)) {
 	    anActor->SetVisibility(false);
 	  }
 	}
       }
       default: {
-	if(SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)){
-	  switch(theAction) {
+	if (SMESH_Actor *anActor = FindActorByEntry(theWnd,theEntry)) {
+	  switch (theAction) {
 	    case eDisplay:
 	    case eDisplayOnly:
 	      anActor->SetVisibility(true);
@@ -367,30 +699,41 @@ namespace SMESH {
 	      break;
 	  }
 	} else {
-	  switch(theAction){
+	  switch (theAction) {
 	  case eDisplay:
-	  case eDisplayOnly:{
-	    SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( theWnd->getViewManager()->study() );
-	    _PTR(Study) aDocument = aStudy->studyDS();
-	    if((anActor = CreateActor(aDocument,theEntry,true))) {
-	      DisplayActor(theWnd,anActor);
-	      FitAll();
-	    }
-	    break;
-	  }
+	  case eDisplayOnly:
+            {
+              SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
+              _PTR(Study) aDocument = aStudy->studyDS();
+              // Pass non-visual objects (hypotheses, etc.), return true in this case
+              CORBA::Long anId = aDocument->StudyId();
+              if (TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry))
+              {
+                if ((anActor = CreateActor(aDocument,theEntry,true))) {
+                  bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
+                  DisplayActor(theWnd,anActor);
+                  // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
+                  if (needFitAll) FitAll();
+                } else {
+                  OK = false;
+                }
+              }
+              break;
+            }
 	  }
 	}
       }
       }
     }
+    return OK;
   }
 
 
-  void UpdateView(EDisplaing theAction, const char* theEntry){
+  bool UpdateView(EDisplaing theAction, const char* theEntry){
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
     SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
-    UpdateView(aWnd,theAction,theEntry);
+    return UpdateView(aWnd,theAction,theEntry);
   }
 
   void UpdateView(){
@@ -405,14 +748,16 @@ namespace SMESH {
 	while(vtkActor *anAct = aCollection->GetNextActor()){
 	  if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
 	    if(anActor->hasIO())
-	      Update(anActor->getIO(),anActor->GetVisibility());
+	      if (!Update(anActor->getIO(),anActor->GetVisibility()))
+                break; // avoid multiple warinings if visu failed
 	  }
 	}
       }else{
 	SALOME_ListIteratorOfListIO anIter( selected );
 	for(; anIter.More(); anIter.Next()){
 	  Handle(SALOME_InteractiveObject) anIO = anIter.Value();
-	  Update(anIO,true);
+	  if ( !Update(anIO,true) )
+            break; // avoid multiple warinings if visu failed
 	}
       }
       RepaintCurrentView();
@@ -420,16 +765,16 @@ namespace SMESH {
   }
 
 
-  void Update(const Handle(SALOME_InteractiveObject)& theIO,
-	      bool theDisplay)
+  bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
-    TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry());
-    if( aVisualObj )
-      aVisualObj->Update();
-    if ( theDisplay )
-      UpdateView(SMESH::eDisplay,theIO->getEntry());
+    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
+      if ( theDisplay )
+        UpdateView(SMESH::eDisplay,theIO->getEntry());
+      return true;
+    }
+    return false;
   }
 
 
@@ -468,7 +813,8 @@ namespace SMESH {
         PW = mgr->integerValue( "SMESH", "highlight_width", 5 );
 
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
-           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 );
+           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
+	   SP3 = mgr->doubleValue( "SMESH", "selection_precision_object", 0.025 );
 
     for ( int i=0, n=views.count(); i<n; i++ ){
       // update VTK viewer properties
@@ -479,7 +825,7 @@ namespace SMESH {
 				   aSelColor.blue()/255.,
 				   SW );
 	// tolerances
-	aVtkView->SetSelectionTolerance(SP1, SP2);
+	aVtkView->SetSelectionTolerance(SP1, SP2, SP3);
 
 	// pre-selection
 	aVtkView->SetPreselectionProp(aPreColor.red()/255.,

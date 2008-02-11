@@ -38,17 +38,17 @@
 
 #include "utilities.h"
 
-#include <BRepAdaptor_Curve.hxx>
-#include <BRepAdaptor_Curve2d.hxx>
-#include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
 #include <Geom2d_Line.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS.hxx>
 
 using namespace std;
 
-#define RETURN_BAD_RESULT(msg) { MESSAGE(msg); return false; }
+#define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
 #define SHOWYXZ(msg, xyz) // {\
 // gp_Pnt p (xyz); \
@@ -101,7 +101,7 @@ namespace {
                        const SMDS_MeshNode* & node1,
                        const SMDS_MeshNode* & node2)
   {
-    if ( param == 1.0 || column->size() == 1) {
+    if ( param >= 1.0 || column->size() == 1) {
       node1 = node2 = column->back();
       return 0;
     }
@@ -185,7 +185,7 @@ bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          a
                                           SMESH_Hypothesis::Hypothesis_Status& aStatus)
 {
   // Check shape geometry
-
+/*  PAL16229
   aStatus = SMESH_Hypothesis::HYP_BAD_GEOMETRY;
 
   // find not quadrangle faces
@@ -216,7 +216,7 @@ bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          a
     if ( nbFace != nbEdge + 2 )
       RETURN_BAD_RESULT("Bad nb of faces: " << nbFace << " but must be " << nbEdge + 2);
   }
-
+*/
   // no hypothesis
   aStatus = SMESH_Hypothesis::HYP_OK;
   return true;
@@ -275,17 +275,20 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
     TNodeColumn& column = bot_column->second;
 
     // bottom node parameters and coords
-    gp_XYZ botParams          = tBotNode.GetParams();
     myShapeXYZ[ ID_BOT_FACE ] = tBotNode.GetCoords();
+    gp_XYZ botParams          = tBotNode.GetParams();
 
     // compute top node parameters
-    gp_XYZ topParams;
     myShapeXYZ[ ID_TOP_FACE ] = gpXYZ( column.back() );
-    gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
-    if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
-                   << "for node " << column.back()->GetID()
-                   << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
+    gp_XYZ topParams = botParams;
+    topParams.SetZ( 1 );
+    if ( column.size() > 2 ) {
+      gp_Pnt topCoords = myShapeXYZ[ ID_TOP_FACE ];
+      if ( !myBlock.ComputeParameters( topCoords, topParams, ID_TOP_FACE, topParams ))
+        return error(TCom("Can't compute normalized parameters ")
+                     << "for node " << column.back()->GetID()
+                     << " on the face #"<< column.back()->GetPosition()->GetShapeId() );
+    }
 
     // vertical loop
     TNodeColumn::iterator columnNodes = column.begin();
@@ -311,7 +314,11 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       // compute coords for a new node
       gp_XYZ coords;
       if ( !SMESH_Block::ShellPoint( params, myShapeXYZ, coords ))
-        return error(dfltErr(),"Can't compute coordinates by normalized parameters");
+        return error("Can't compute coordinates by normalized parameters");
+
+      SHOWYXZ("TOPFacePoint ",myShapeXYZ[ ID_TOP_FACE]);
+      SHOWYXZ("BOT Node "<< tBotNode.myNode->GetID(),gpXYZ(tBotNode.myNode));
+      SHOWYXZ("ShellPoint ",coords);
 
       // create a node
       node = meshDS->AddNode( coords.X(), coords.Y(), coords.Z() );
@@ -344,13 +351,13 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
         bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
-          return error(dfltErr(),TCom("No nodes found above node ") << n->GetID() );
+          return error(TCom("No nodes found above node ") << n->GetID() );
         columns[ i ] = & bot_column->second;
       }
       else {
         columns[ i ] = myBlock.GetNodeColumn( n );
         if ( !columns[ i ] )
-          return error(dfltErr(),TCom("No side nodes found above node ") << n->GetID() );
+          return error(TCom("No side nodes found above node ") << n->GetID() );
       }
     }
     // create prisms
@@ -376,12 +383,44 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
   int shapeID = helper->GetSubShapeID();
 
   int nbNodes = columns.size();
+  int nbZ     = columns[0]->size();
+  if ( nbZ < 2 ) return;
+
+  // find out orientation
+  bool isForward = true;
+  SMDS_VolumeTool vTool;
+  int z = 1;
+  switch ( nbNodes ) {
+  case 3: {
+    const SMDS_MeshNode* botNodes[3] = { (*columns[0])[z-1],
+                                         (*columns[1])[z-1],
+                                         (*columns[2])[z-1] };
+    const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
+                                         (*columns[1])[z],
+                                         (*columns[2])[z] };
+    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
+                                topNodes[0], topNodes[1], topNodes[2]);
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
+    break;
+  }
+  case 4: {
+    const SMDS_MeshNode* botNodes[4] = { (*columns[0])[z-1], (*columns[1])[z-1],
+                                         (*columns[2])[z-1], (*columns[3])[z-1] };
+    const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
+                                         (*columns[2])[z], (*columns[3])[z] };
+    SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
+                                topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
+    vTool.Set( &tmpVol );
+    isForward  = vTool.IsForward();
+    break;
+  }
+  }
 
   // vertical loop on columns
-  for ( int z = 1; z < columns[0]->size(); ++z)
+  for ( z = 1; z < nbZ; ++z )
   {
     SMDS_MeshElement* vol = 0;
-    SMDS_VolumeTool vTool;
     switch ( nbNodes ) {
 
     case 3: {
@@ -391,11 +430,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
       const SMDS_MeshNode* topNodes[3] = { (*columns[0])[z],
                                            (*columns[1])[z],
                                            (*columns[2])[z] };
-      // assure good orientation
-      SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2],
-                                  topNodes[0], topNodes[1], topNodes[2]);
-      vTool.Set( &tmpVol );
-      if ( vTool.IsForward() )
+      if ( isForward )
         vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2],
                                  topNodes[0], topNodes[1], topNodes[2]);
       else
@@ -408,11 +443,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
                                            (*columns[2])[z-1], (*columns[3])[z-1] };
       const SMDS_MeshNode* topNodes[4] = { (*columns[0])[z], (*columns[1])[z],
                                            (*columns[2])[z], (*columns[3])[z] };
-      // assure good orientation
-      SMDS_VolumeOfNodes tmpVol ( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
-                                  topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
-      vTool.Set( &tmpVol );
-      if ( vTool.IsForward() )
+      if ( isForward )
         vol = helper->AddVolume( botNodes[0], botNodes[1], botNodes[2], botNodes[3],
                                  topNodes[0], topNodes[1], topNodes[2], topNodes[3]);
       else
@@ -462,7 +493,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   SMESHDS_SubMesh * topSMDS = topSM->GetSubMeshDS();
 
   if ( !botSMDS || botSMDS->NbElements() == 0 )
-    return error(dfltErr(),TCom("No elememts on face #") << botSM->GetId());
+    return error(TCom("No elememts on face #") << botSM->GetId());
 
   bool needProject = false;
   if ( !topSMDS || 
@@ -470,13 +501,13 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
        botSMDS->NbNodes()    != topSMDS->NbNodes())
   {
     if ( myBlock.HasNotQuadElemOnTop() )
-      return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+      return error(TCom("Mesh on faces #") << botSM->GetId()
                    <<" and #"<< topSM->GetId() << " seems different" );
     needProject = true;
   }
 
   if ( 0/*needProject && !myProjectTriangles*/ )
-    return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+    return error(TCom("Mesh on faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
   ///RETURN_BAD_RESULT("Need to project but not allowed");
 
@@ -492,7 +523,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   if ( !TAssocTool::FindSubShapeAssociation( botFace, myBlock.Mesh(),
                                              topFace, myBlock.Mesh(),
                                              shape2ShapeMap) )
-    return error(dfltErr(),TCom("Topology of faces #") << botSM->GetId()
+    return error(TCom("Topology of faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
 
   // Find matching nodes of top and bottom faces
@@ -500,12 +531,13 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
   if ( ! TAssocTool::FindMatchingNodesOnFaces( botFace, myBlock.Mesh(),
                                                topFace, myBlock.Mesh(),
                                                shape2ShapeMap, n2nMap ))
-    return error(dfltErr(),TCom("Mesh on faces #") << botSM->GetId()
+    return error(TCom("Mesh on faces #") << botSM->GetId()
                  <<" and #"<< topSM->GetId() << " seems different" );
 
   // Fill myBotToColumnMap
 
   int zSize = myBlock.VerticalSize();
+  TNode prevTNode;
   TNodeNodeMap::iterator bN_tN = n2nMap.begin();
   for ( ; bN_tN != n2nMap.end(); ++bN_tN )
   {
@@ -515,9 +547,16 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top()
       continue; // wall columns are contained in myBlock
     // compute bottom node params
     TNode bN( botNode );
-    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
-                   << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    if ( zSize > 2 ) {
+      gp_XYZ paramHint(-1,-1,-1);
+      if ( prevTNode.IsNeighbor( bN ))
+        paramHint = prevTNode.GetParams();
+      if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
+                                       ID_BOT_FACE, paramHint ))
+        return error(TCom("Can't compute normalized parameters for node ")
+                     << botNode->GetID() << " on the face #"<< botSM->GetId() );
+      prevTNode = bN;
+    }
     // create node column
     TNode2ColumnMap::iterator bN_col = 
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
@@ -555,6 +594,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
   // Fill myBotToColumnMap
 
   int zSize = myBlock.VerticalSize();
+  TNode prevTNode;
   SMDS_NodeIteratorPtr nIt = botSMDS->GetNodes();
   while ( nIt->more() )
   {
@@ -563,15 +603,20 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
       continue; // strange
     // compute bottom node params
     TNode bN( botNode );
-    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(), ID_BOT_FACE ))
-      return error(dfltErr(),TCom("Can't compute normalized parameters ")
-                   << "for node " << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    gp_XYZ paramHint(-1,-1,-1);
+    if ( prevTNode.IsNeighbor( bN ))
+      paramHint = prevTNode.GetParams();
+    if ( !myBlock.ComputeParameters( bN.GetCoords(), bN.ChangeParams(),
+                                     ID_BOT_FACE, paramHint ))
+      return error(TCom("Can't compute normalized parameters for node ")
+                   << botNode->GetID() << " on the face #"<< botSM->GetId() );
+    prevTNode = bN;
     // compute top node coords
     gp_XYZ topXYZ; gp_XY topUV;
     if ( !myBlock.FacePoint( ID_TOP_FACE, bN.GetParams(), topXYZ ) ||
          !myBlock.FaceUV   ( ID_TOP_FACE, bN.GetParams(), topUV ))
-      return error(dfltErr(),TCom("Can't compute coordinates ")
-                   << "by normalized parameters on the face #"<< topSM->GetId() );
+      return error(TCom("Can't compute coordinates "
+                        "by normalized parameters on the face #")<< topSM->GetId() );
     SMDS_MeshNode * topNode = meshDS->AddNode( topXYZ.X(),topXYZ.Y(),topXYZ.Z() );
     meshDS->SetNodeOnFace( topNode, topFaceID, topUV.X(), topUV.Y() );
     // create node column
@@ -604,13 +649,13 @@ bool StdMeshers_Prism_3D::projectBottomToTop()
       if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
         TNode2ColumnMap::iterator bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
-          return error(dfltErr(),TCom("No nodes found above node ") << n->GetID() );
+          return error(TCom("No nodes found above node ") << n->GetID() );
         nodes[ i ] = bot_column->second.back();
       }
       else {
         const TNodeColumn* column = myBlock.GetNodeColumn( n );
         if ( !column )
-          return error(dfltErr(),TCom("No side nodes found above node ") << n->GetID() );
+          return error(TCom("No side nodes found above node ") << n->GetID() );
         nodes[ i ] = column->back();
       }
     }
@@ -671,6 +716,23 @@ bool StdMeshers_Prism_3D::setFaceAndEdgesXYZ( const int faceID, const gp_XYZ& pa
   SHOWYXZ("FacePoint "<<faceID, myShapeXYZ[ faceID]);
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if this node and other one belong to one face
+ */
+//================================================================================
+
+bool TNode::IsNeighbor( const TNode& other ) const
+{
+  if ( !other.myNode || !myNode ) return false;
+
+  SMDS_ElemIteratorPtr fIt = other.myNode->GetInverseElementIterator(SMDSAbs_Face);
+  while ( fIt->more() )
+    if ( fIt->next()->GetNodeIndex( myNode ) >= 0 )
+      return true;
+  return false;
 }
 
 //================================================================================
@@ -813,11 +875,11 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
   // detect bad cases
   if ( nbNotQuad > 0 && nbNotQuad != 2 )
     return error(COMPERR_BAD_SHAPE,
-                 TCom("More than 2 not quadrilateral faces")
+                 TCom("More than 2 not quadrilateral faces: ")
                  <<nbNotQuad);
   if ( nbNotQuadMeshed > 2 )
     return error(COMPERR_BAD_INPUT_MESH,
-                 TCom("More then 2 faces meshed with not quadrangle elements")
+                 TCom("More than 2 faces with not quadrangle elements: ")
                  <<nbNotQuadMeshed);
 
   // get found submeshes
@@ -1142,7 +1204,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper* helper,
     SMESH_Block::TFace& tFace = myFace[ fID - ID_FirstF ];
     tFace.Set( fID, sideFace->Surface(), pcurves, isForward );
 
-    SHOWYXZ( endl<<"F "<< iF << " id " << fID << " FRW " << sideFace->IsForward(), );
+    SHOWYXZ( endl<<"F "<< iF << " id " << fID << " FRW " << sideFace->IsForward(), sideFace->Value(0,0));
     // edges 3D geometry
     vector< int > edgeIdVec;
     SMESH_Block::GetFaceEdgesIDs( fID, edgeIdVec );

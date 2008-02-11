@@ -33,6 +33,7 @@
 
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
+#include "Handle_SALOME_InteractiveObject.hxx"
 
 // QT Includes
 #include <qdialog.h>
@@ -81,13 +82,15 @@ private:
   SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;        /* User shape selection */
   QLineEdit*                    myEditCurrentArgument; /* Current  LineEdit */
-  QString                       myElementsId;
+  //QString                       myElementsId;
   int                           myNbOkElements;        /* to check when elements are defined */
   SVTK_Selector*                mySelector;
 
   bool                          myBusy;
   SMESH::SMESH_Mesh_var         myMesh;
+  SMESH::long_array_var         myElementsId;
   SMESH_Actor*                  myActor;
+  Handle(SALOME_InteractiveObject) myIO;
   SUIT_SelectionFilter*         myMeshOrSubMeshOrGroupFilter;
 
   // widgets
@@ -109,6 +112,7 @@ private:
   SMESHGUI_SpinBox* SpinBox_Dz;
   QLabel*           TextLabelNbSteps;
   QSpinBox*         SpinBox_NbSteps;
+  QCheckBox*        MakeGroupsCheck;
 
   QGroupBox*        GroupButtons;
   QPushButton*      buttonOk;

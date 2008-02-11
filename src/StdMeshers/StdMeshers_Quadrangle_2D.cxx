@@ -43,23 +43,16 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 
-#include <BRepAdaptor_Curve.hxx>
-#include <BRep_Tool.hxx>
-#include <BRepLProp.hxx>
 #include <BRepTools.hxx>
 #include <BRepTools_WireExplorer.hxx>
+#include <BRep_Tool.hxx>
 #include <Geom_Surface.hxx>
-#include <Geom_Curve.hxx>
-#include <Geom2d_Curve.hxx>
-#include <GeomAdaptor_Curve.hxx>
-#include <GCPnts_UniformAbscissa.hxx>
-#include <TopExp.hxx>
+#include <NCollection_DefineArray2.hxx>
 #include <Precision.hxx>
-#include <gp_Pnt2d.hxx>
-#include <TColStd_ListIteratorOfListOfInteger.hxx>
 #include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
-#include <NCollection_DefineArray2.hxx>
+#include <TopExp.hxx>
+#include <TopoDS.hxx>
 
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
@@ -119,7 +112,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   aStatus = SMESH_Hypothesis::HYP_OK;
 
   // there is only one compatible Hypothesis so far
-  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape);
+  const list <const SMESHDS_Hypothesis * >&hyps = GetUsedHypothesis(aMesh, aShape, false);
   myQuadranglePreference = hyps.size() > 0;
 
   return isOk;
@@ -132,9 +125,10 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
 //=============================================================================
 
 bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
-                                        const TopoDS_Shape& aShape) throw (SALOME_Exception)
+                                        const TopoDS_Shape& aShape)// throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
+  // PAL14921. Enable catching std::bad_alloc and Standard_OutOfMemory outside
+  //Unexpect aCatchSalomeException);
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   aMesh.GetSubMesh(aShape);
@@ -237,6 +231,9 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
   const vector<UVPtStruct>& uv_e1 = quad->side[1]->GetUVPtStruct(false,1);
   const vector<UVPtStruct>& uv_e2 = quad->side[2]->GetUVPtStruct(true,1 );
   const vector<UVPtStruct>& uv_e3 = quad->side[3]->GetUVPtStruct(false,0);
+
+  if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
+    return error( COMPERR_BAD_INPUT_MESH );
 
   double eps = Precision::Confusion();
 
@@ -562,10 +559,8 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh& aMesh,
 
 FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMesh,
                                                        const TopoDS_Shape & aShape)
-     throw(SALOME_Exception)
+  //throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   const TopoDS_Face & F = TopoDS::Face(aShape);
   const bool ignoreMediumNodes = _quadraticMesh;
 
@@ -596,16 +591,14 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
       sideEdges.splice( sideEdges.end(), edges, edges.begin()); // edges.front() -> sideEdges.end()
       bool sameSide = true;
       while ( !edges.empty() && sameSide ) {
-        GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.back(), edges.front() );
-        sameSide = ( cont >= GeomAbs_G1 );
+        sameSide = SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() );
         if ( sameSide )
           sideEdges.splice( sideEdges.end(), edges, edges.begin());
       }
       if ( nbSides == 0 ) { // go backward from the first edge
         sameSide = true;
         while ( !edges.empty() && sameSide ) {
-          GeomAbs_Shape cont = SMESH_Algo::Continuity( sideEdges.front(), edges.back() );
-          sameSide = ( cont >= GeomAbs_G1 );
+          sameSide = SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() );
           if ( sameSide )
             sideEdges.splice( sideEdges.begin(), edges, --edges.end());
         }
@@ -645,10 +638,8 @@ FaceQuadStruct* StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMes
 FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
                            (SMESH_Mesh &         aMesh,
                             const TopoDS_Shape & aShape,
-                            const bool           CreateQuadratic) throw(SALOME_Exception)
+                            const bool           CreateQuadratic) //throw(SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   _quadraticMesh = CreateQuadratic;
 
   FaceQuadStruct *quad = CheckNbEdges(aMesh, aShape);
@@ -656,7 +647,12 @@ FaceQuadStruct *StdMeshers_Quadrangle_2D::CheckAnd2Dcompute
   if(!quad) return 0;
 
   // set normalized grid on unit square in parametric domain
-  SetNormalizedGrid(aMesh, aShape, quad);
+  bool stat = SetNormalizedGrid(aMesh, aShape, quad);
+  if(!stat) {
+    if(!quad)
+      delete quad;
+    quad = 0;
+  }
 
   return quad;
 }
@@ -695,9 +691,8 @@ namespace {
 
 bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
                                                   const TopoDS_Shape& aShape,
-                                                  FaceQuadStruct* & quad) throw (SALOME_Exception)
+                                                  FaceQuadStruct* & quad) //throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
   // Algorithme décrit dans "Génération automatique de maillages"
   // P.L. GEORGE, MASSON, § 6.4.1 p. 84-85
   // traitement dans le domaine paramétrique 2d u,v
@@ -738,7 +733,8 @@ bool StdMeshers_Quadrangle_2D::SetNormalizedGrid (SMESH_Mesh & aMesh,
   const vector<UVPtStruct>& uv_e3 = GetUVPtStructIn( quad, 3, nbvertic - 1 );
 
   if ( uv_e0.empty() || uv_e1.empty() || uv_e2.empty() || uv_e3.empty() )
-    return error(dfltErr(), "Can't find nodes on sides");
+    //return error( "Can't find nodes on sides");
+    return error( COMPERR_BAD_INPUT_MESH );
 
   // nodes Id on "in" edges
   if (! quad->isEdgeOut[0]) {
@@ -888,14 +884,11 @@ static gp_UV CalcUV(double x0, double x1, double y0, double y1,
 bool StdMeshers_Quadrangle_2D::ComputeQuadPref (SMESH_Mesh &        aMesh,
                                                 const TopoDS_Shape& aShape,
                                                 FaceQuadStruct*     quad)
-  throw (SALOME_Exception)
 {
-  Unexpect aCatch(SalomeException);
-
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   const TopoDS_Face& F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
-  const TopoDS_Wire& W = BRepTools::OuterWire(F);
+//  const TopoDS_Wire& W = BRepTools::OuterWire(F);
   bool WisF = true;
 //   if(W.Orientation()==TopAbs_FORWARD) 
 //     WisF = true;

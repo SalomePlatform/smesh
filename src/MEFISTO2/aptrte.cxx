@@ -475,7 +475,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( ierr != 0 ) goto ERREUR;
 
   //qualites de la triangulation actuelle
-  qualitetrte_( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
+  qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
 		nbt, quamoy, quamin );
 
   // boucle sur les aretes internes (non sur une ligne de la frontiere)
@@ -494,7 +494,7 @@ void  aptrte( Z   nutysu, R      aretmx,
        << d << " secondes");
 
   //qualites de la triangulation actuelle
-  qualitetrte_( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
+  qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
 		nbt, quamoy, quamin );
 
   // detection des aretes frontalieres initiales perdues
@@ -529,7 +529,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( ierr != 0 ) goto ERREUR;
 
   //qualites de la triangulation actuelle
-  qualitetrte_( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
+  qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
 		nbt, quamoy, quamin );
 
   // fin de la triangulation avec respect des aretes initiales frontalieres
@@ -570,7 +570,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( ierr != 0 ) goto ERREUR;
 
   //qualites de la triangulation actuelle
-  qualitetrte_( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
+  qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
 		nbt, quamoy, quamin );
 
   // amelioration de la qualite de la triangulation par
@@ -585,7 +585,7 @@ void  aptrte( Z   nutysu, R      aretmx,
     cout << "aptrte: MC saturee mnarcf3=" << mnarcf3 << endl;
     goto ERREUR;
   }
-  teamqt_( nutysu,  aretmx,  airemx,
+  teamqt( nutysu,  aretmx,  airemx,
 	   mnarst,  mosoar,  mxsoar, n1soar, mnsoar,
 	   moartr,  mxartr,  n1artr, mnartr,
 	   mxarcf,  mnarcf2, mnarcf3,
@@ -605,7 +605,7 @@ void  aptrte( Z   nutysu, R      aretmx,
   if( ierr !=   0 ) goto ERREUR;
 
   //qualites de la triangulation finale
-  qualitetrte_( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
+  qualitetrte( mnpxyd, mosoar, mxsoar, mnsoar, moartr, mxartr, mnartr,
 		nbt, quamoy, quamin );
 
   // renumerotation des sommets internes: mnarst(i)=numero final du sommet
@@ -734,9 +734,11 @@ void  aptrte( Z   nutysu, R      aretmx,
     goto NETTOYAGE;
   }
 }
-
-
-void qualitetrte_( R3 *mnpxyd,
+void
+#ifdef WIN32
+              __stdcall
+#endif
+ qualitetrte( R3 *mnpxyd,
 		   Z & mosoar, Z & mxsoar, Z *mnsoar,
 		   Z & moartr, Z & mxartr, Z *mnartr,
 		   Z & nbtria, R & quamoy, R & quamin )
@@ -831,7 +833,7 @@ void qualitetrte_( R3 *mnpxyd,
   if( quamin<0.3 )
   {
     //le numero des 3 sommets du triangle ntqmin de qualite minimale
-    nusotr_( ntqmin, mosoar, mnsoar, moartr, mnartr,  nosotr );
+    nusotr(ntqmin, mosoar, mnsoar, moartr, mnartr,  nosotr );
     MESSAGE("Triangle de qualite minimale "<<quamin<<" de sommets:"
             <<nosotr[0]<<" "<<nosotr[1]<<" "<<nosotr[2]<<" ");
     for (int i=0;i<3;i++)

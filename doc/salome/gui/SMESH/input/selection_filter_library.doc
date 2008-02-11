@@ -1,0 +1,46 @@
+/*!
+
+\page selection_filter_library_page Selection filter library
+
+\n Selection filter library is a powerful tool enabling to create
+filters to be used on meshes. You can access to it from the Main Menu
+via <b>Tools / Selection filter library</b>.
+
+\image html selectionfilterlibrary.png
+
+<b>Library file name</b> shows the path and the file name where your
+filters will be stored. By clicking the <em>Browse</em> button you can load an
+existing filter library.
+\n <b>Names of filters</b> lists the filters created or uploaded for
+the current study. You can \b Add or \b Delete filters.
+\n In <b>Filter name</b> box you can specify the name for your
+filter. By default it is prefixed with the corresponding entity type.
+\n Each filter can be applicable to \b Nodes, \b Edges, \b Faces or \b
+Volumes. You can combine many criteria in one filter, but they all
+must be of the same <b>Entity type</b>.
+\n The \b Add button creates a new criterion at the end of the list of
+criteria. The \b Insert button creates a new criterion before the
+selected criterion. The \b Remove button deletes the selected
+criterion. The \b Clear button deletes all criteria.
+\n Each <b>Entity type</b> has its specific list of criteria, however all
+filters have common syntax. For each criterion you should specify the
+<b>Threshold Value</b> and whether we search for the elements that should be
+\b More, \b Less or \b Equal to this \b Value. You should also specify if the
+criterion is \b Unary or \b Binary.   
+\n Some criteria should have the additional parameter of \b Tolerance.
+
+When we create a <b>Standalone Group</b> using filters (for this click
+<b>Set Filters</b> button in the <b>Create Group</b> menu), the menu
+for setting filters looks a bit differently. Toggling <b>Insert filter
+in viewer</b> checkbox enables to preview the group selected with your
+current filter in the viewer.
+\n In the \b Source field you choose if the filter will be applied to
+the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current Group</b>. 
+\n <b>Copy from...</b> button gives you a possibility to load an
+existing filter from <b>Selection filter library</b> and <b>Add
+to...</b> button gives you a possibility to save your current filter
+in the Library.
+
+\image html a-filteronedges.png
+
+*/

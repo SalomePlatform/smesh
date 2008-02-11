@@ -988,7 +988,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
     if(myIsCellsLabeled) 
       myCellsLabels->VisibilityOn();
   }
-
+  UpdateHighlight();
   Modified();
 }
 
@@ -1190,9 +1190,9 @@ void SMESH_ActorDef::UpdateHighlight(){
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::eWireframe);
     }else if(myRepresentation == ePoint || GetPointRepresentation()){
       myHighlitableActor->SetHighlited(anIsVisible);
-      myHighlitableActor->SetVisibility(anIsVisible);
       myHighlitableActor->GetExtractUnstructuredGrid()->
 	SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
+      myHighlitableActor->SetVisibility(anIsVisible);
       myHighlitableActor->SetRepresentation(SMESH_DeviceActor::ePoint);
     }
   }

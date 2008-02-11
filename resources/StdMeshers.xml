@@ -60,6 +60,7 @@
     <hypothesis type="QuadranglePreference"
                 label-id="Quadrangle Preference"
                 icon-id="mesh_algo_quad.png"
+                auxiliary="true"
                 dim="2"/>
 
     <hypothesis type="QuadraticMesh"
@@ -82,6 +83,7 @@
     <hypothesis type="MaxElementVolume"
                 label-id="Max. Element Volume"
                 icon-id="mesh_hypo_volume.png"
+		need-geom = "false"
                 dim="3"/>
 
     <hypothesis type="ProjectionSource3D"
@@ -193,6 +195,20 @@
                hypos="NumberOfLayers, LayerDistribution"
                input="QUAD,TRIA"
                dim="3"/>
+
+    <algorithm type="UseExisting_1D"
+               label-id="Use existing edges"
+               icon-id="mesh_algo_regular.png"
+               input="VERTEX"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="UseExisting_2D"
+               label-id="Use existing faces"
+               icon-id="mesh_algo_quad.png"
+               input="EDGE"
+               output="QUAD,TRIA"
+               dim="2"/>
 
   </algorithms>
 </meshers-group>

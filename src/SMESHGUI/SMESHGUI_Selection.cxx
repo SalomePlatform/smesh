@@ -36,8 +36,9 @@
 #include "SVTK_RenderWindowInteractor.h"
 #include "SVTK_ViewWindow.h"
 
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_CLIENT_HEADER(SMESH_Gen)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(SMESH_Group)
 
 //=======================================================================
 //function : SMESHGUI_Selection
@@ -82,7 +83,7 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 //=======================================================================
 void SMESHGUI_Selection::processOwner( const LightApp_DataOwner* ow )
 {
-  const LightApp_SVTKDataOwner* owner = 
+  const LightApp_SVTKDataOwner* owner =
     dynamic_cast<const LightApp_SVTKDataOwner*> ( ow );
   if( owner )
     myActors.append( dynamic_cast<SMESH_Actor*>( owner->GetActor() ) );
@@ -100,6 +101,7 @@ QtxValue SMESHGUI_Selection::param( const int ind, const QString& p ) const
        if ( p=="client" )        val = QtxValue( globalParam( p ) );
   else if ( p=="type" )          val = QtxValue( myTypes[ind] );
   else if ( p=="elemTypes" )     val = QtxValue( elemTypes( ind ) );
+  else if ( p=="isAutoColor" )   val = QtxValue( isAutoColor( ind ) );
   else if ( p=="numberOfNodes" ) val = QtxValue( numberOfNodes( ind ) );
   else if ( p=="labeledTypes" )  val = QtxValue( labeledTypes( ind ) );
   else if ( p=="shrinkMode" )    val = QtxValue( shrinkMode( ind ) );
@@ -253,6 +255,27 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
 }
 
 //=======================================================================
+//function : isAutoColor
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_Selection::isAutoColor( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+
+    if ( ! CORBA::is_nil( obj )) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+      if ( ! mesh->_is_nil() )
+        return mesh->GetAutoColor();
+    }
+  }
+  return false;
+}
+
+//=======================================================================
 //function : numberOfNodes
 //purpose  : 
 //=======================================================================
@@ -291,13 +314,30 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 /*    Handle(SALOME_InteractiveObject) io =
       static_cast<LightApp_DataOwner*>( myDataOwners[ ind ].get() )->IO();
     if ( !io.IsNull() ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io) ; // m,sm,gr->m
+      SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(io); // m,sm,gr->m
       if ( !mesh->_is_nil() ) {*/
         _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).latin1() );
 	//FindSObject( mesh );
         if ( so ) {
-          GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-          return QVariant( !shape->_is_nil(), 0 );
+          CORBA::Object_var obj = SMESH::SObjectToObject(so, SMESH::GetActiveStudyDocument());
+          if(!CORBA::is_nil(obj)){
+            SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+            if (!mesh->_is_nil()){
+              if(mesh->HasShapeToMesh()) {
+                GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+                return QVariant( !shape->_is_nil(), 0 );
+              }
+              else
+              {
+                return QVariant(!mesh->NbFaces()==0, 0);
+              }
+            }
+            else
+            {
+              GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+              return QVariant( !shape->_is_nil(), 0 );
+            }
+          }
         }
 //      }
 //    }
@@ -363,47 +403,47 @@ int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
       anOTag = obj->Tag(),
       res = -1;
 
-  switch( aLevel )
+  switch (aLevel)
   {
   case 1:
-    if( anOTag>=3 )
+    if (anOTag >= SMESH::Tag_FirstMeshRoot)
       res = MESH;
     break;
   case 2:
-    switch( aFTag )
+    switch (aFTag)
     {
-    case 1:
+    case SMESH::Tag_HypothesisRoot:
       res = HYPOTHESIS;
       break;
-    case 2:
+    case SMESH::Tag_AlgorithmsRoot:
       res = ALGORITHM;
       break;
     }
     break;
   case 3:
-    switch( aFTag )
+    switch (aFTag)
     {
-    case 4:
+    case SMESH::Tag_SubMeshOnVertex:
       res = SUBMESH_VERTEX;
       break;
-    case 5:
+    case SMESH::Tag_SubMeshOnEdge:
       res = SUBMESH_EDGE;
       break;
-    case 7:
+    case SMESH::Tag_SubMeshOnFace:
       res = SUBMESH_FACE;
       break;
-    case 9:
+    case SMESH::Tag_SubMeshOnSolid:
       res = SUBMESH_SOLID;
       break;
-    case 10:
+    case SMESH::Tag_SubMeshOnCompound:
       res = SUBMESH_COMPOUND;
       break;
+    default:
+      if (aFTag >= SMESH::Tag_FirstGroup)
+        res = GROUP;
+      else
+        res = SUBMESH;
     }
-    if( aFTag>10 )
-      res = GROUP;
-    else
-      res = SUBMESH;
-
     break;
   }
 

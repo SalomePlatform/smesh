@@ -40,25 +40,18 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "SMESH_Comment.hxx"
 
-#include <BRepTools.hxx>
-#include <BRepTools_WireExplorer.hxx>
 #include <BRep_Tool.hxx>
-#include <TopAbs_ShapeEnum.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Shell.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
-#include <BRepTools.hxx>
-#include <BRepTools_WireExplorer.hxx>
-#include <TopTools_MapOfShape.hxx>
 
 #include <stdio.h>
 #include <algorithm>

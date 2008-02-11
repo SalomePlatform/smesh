@@ -45,8 +45,8 @@
 
 #include <qapplication.h>
 
-SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& aHypType )
-  : myHypType( aHypType ), myIsCreate( false ), myDlg( 0 )
+SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
+  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
 {
 }
 
@@ -55,63 +55,62 @@ SMESHGUI_GenericHypothesisCreator::~SMESHGUI_GenericHypothesisCreator()
 }
 
 void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr initParamsHyp,
+						const QString& theHypName,
                                                 QWidget* parent)
 {
   MESSAGE( "Creation of hypothesis with initial params" );
 
   if ( !CORBA::is_nil( initParamsHyp ) && hypType() == initParamsHyp->GetName() )
     myInitParamsHypo = SMESH::SMESH_Hypothesis::_duplicate( initParamsHyp );
-  create( false, parent );
+  create( false, theHypName, parent );
 }
 
-void SMESHGUI_GenericHypothesisCreator::create( const bool isAlgo, QWidget* parent )
+void SMESHGUI_GenericHypothesisCreator::create( bool isAlgo,
+						const QString& theHypName,
+						QWidget* theParent )
 {
   MESSAGE( "Creation of hypothesis" );
-
-  // Get default name for hypothesis/algorithm creation
-  HypothesisData* aHypData = SMESH::GetHypothesisData( hypType().latin1() );
-  QString aHypName = aHypData ? aHypData->Label : hypType();
 
   myIsCreate = true;
 
   // Create hypothesis/algorithm
   if (isAlgo)
-    SMESH::CreateHypothesis( hypType(), aHypName, isAlgo );
-
+    SMESH::CreateHypothesis( hypType(), theHypName, isAlgo );
   else
   {
-    SMESH::SMESH_Hypothesis_var newHypo = SMESH::SMESH_Hypothesis::_narrow
-      ( SMESH::CreateHypothesis( hypType(), aHypName, false ) );
-  
-    if( !editHypothesis( newHypo.in(), parent ) )
+    SMESH::SMESH_Hypothesis_var aHypothesis = 
+      SMESH::CreateHypothesis( hypType(), theHypName, false );
+    if( !editHypothesis( aHypothesis.in(), theHypName, theParent ) )
     { //remove just created hypothesis
-      _PTR(SObject) SHyp = SMESH::FindSObject( newHypo.in() );
+      _PTR(SObject) aHypSObject = SMESH::FindSObject( aHypothesis.in() );
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
       if( aStudy && !aStudy->GetProperties()->IsLocked() )
       {
 	_PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
-	aBuilder->RemoveObjectWithChildren( SHyp );
+	aBuilder->RemoveObjectWithChildren( aHypSObject );
       }
     }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
 }
 
-void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr h, QWidget* parent )
+void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr theHypothesis,
+					      const QString& theHypName,
+					      QWidget* theParent )
 {
-  if( CORBA::is_nil( h ) )
+  if( CORBA::is_nil( theHypothesis ) )
     return;
 
   MESSAGE("Edition of hypothesis");
 
   myIsCreate = false;
 
-  if( !editHypothesis( h, parent ) )
+  if( !editHypothesis( theHypothesis, theHypName, theParent ) )
     return;
 
-  SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis( h );
+  SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis( theHypothesis );
   if( listSOmesh.size() > 0 )
-    for( int i=0; i<listSOmesh.size(); i++ )
+    for( int i = 0; i < listSOmesh.size(); i++ )
     {
       _PTR(SObject) submSO = listSOmesh[i];
       SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
@@ -124,29 +123,30 @@ void SMESHGUI_GenericHypothesisCreator::edit( SMESH::SMESH_Hypothesis_ptr h, QWi
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
 }
 
-bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, QWidget* parent )
+bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_ptr h, 
+							const QString& theHypName,
+							QWidget* theParent )
 {
   if( CORBA::is_nil( h ) )
     return false;
 
   bool res = true;
+  myHypName = theHypName;
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
 
-  SMESHGUI_HypothesisDlg* Dlg =
-    new SMESHGUI_HypothesisDlg( const_cast<SMESHGUI_GenericHypothesisCreator*>( this ), parent );
+  SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
   myDlg = Dlg;
   QFrame* fr = buildFrame();
   if( fr )
   {
     Dlg->setCustomFrame( fr );
     Dlg->setCaption( caption() );
+    Dlg->setName( theHypName );
     Dlg->setHIcon( icon() );
     Dlg->setType( type() );
     retrieveParams();
     Dlg->show();
-    //connect(myDlg, SIGNAL( closed() ), this, SLOT( onDlgClosed() ));
     qApp->enter_loop(); // make myDlg not modal
-//     res = myDlg->exec()==QDialog::Accepted;
     res = myDlg->result();
     if( res ) {
       QString paramValues = storeParams();
@@ -332,6 +332,11 @@ QString SMESHGUI_GenericHypothesisCreator::hypType() const
   return myHypType;
 }
 
+QString SMESHGUI_GenericHypothesisCreator::hypName() const
+{
+  return myHypName;
+}
+
 const SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothesisCreator::widgets() const
 {
   return myParamWidgets;
@@ -409,21 +414,21 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 
   QString aHypType = creator->hypType();
   if ( aHypType == "LocalLength" )
-    myHelpFileName = "/files/arithmetic_1d.htm#Average_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
   else if ( aHypType == "Arithmetic1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#arithmetic_1D";
+    myHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
   else if ( aHypType == "MaxElementArea")
-    myHelpFileName = "/files/max._element_area_hypothesis.htm";
+    myHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
   else if ( aHypType == "MaxElementVolume")
-    myHelpFileName = "/files/max._element_volume_hypothsis.htm";
+    myHelpFileName = "max_element_volume_hypo_page.html";
   else if ( aHypType == "StartEndLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#start_and_end_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
   else if ( aHypType == "Deflection1D")
-    myHelpFileName = "/files/arithmetic_1d.htm#deflection_1D";
+    myHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
   else if ( aHypType == "AutomaticLength")
-    myHelpFileName = "/files/arithmetic_1d.htm#automatic_length";
+    myHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
   else if ( aHypType == "NumberOfSegments")
-    myHelpFileName = "/files/arithmetic_1d.htm#Number_of_elements";
+    myHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
   else
     myHelpFileName = "";
 

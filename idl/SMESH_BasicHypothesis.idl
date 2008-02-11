@@ -43,13 +43,33 @@ module StdMeshers
     /*!
      * Sets <length> parameter value
      */
-    void SetLength(in double length) 
+    void SetLength(in double length)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Sets <precision> parameter value
+     *
+     * Precision parameter is used to allow rounding a number of segments,
+     * calculated from the edge length and average length of segment,
+     * to the lower integer, if this value outstands from it in bounds of the precision.
+     * Otherwise, the number of segments is rounded to the higher integer.
+     * Use value 0.5 to provide rounding to the nearest integer,
+     * 1.0 for the lower integer, 0.0 for the higher integer.
+     * Default value is 1e-07. In old studies, restored from file,
+     * this value will be set to zero, what corresponds to the old behaviour.
+     */
+    void SetPrecision(in double precision)
       raises (SALOME::SALOME_Exception);
 
     /*!
      * Returns <length> parameter value
      */
     double GetLength();
+
+    /*!
+     * Returns <precision> parameter value
+     */
+    double GetPrecision();
   };
 
   /*!
@@ -85,7 +105,7 @@ module StdMeshers
     /*!
      * Sets <number of segments> parameter value
      */
-    void SetNumberOfSegments(in long segmentsNumber) 
+    void SetNumberOfSegments(in long segmentsNumber)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -600,6 +620,22 @@ module StdMeshers
    * StdMeshers_Projection_1D: interface of "Projection 1D" algorithm
    */
   interface StdMeshers_Projection_1D : SMESH::SMESH_1D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_UseExisting_2D: interface of "UseExisting 2D" algorithm
+   * doing nothing to allow mesh generation by mesh edition functions in TUI mode
+   */
+  interface StdMeshers_UseExisting_2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_UseExisting_1D: interface of "UseExisting 1D" algorithm
+   * doing nothing to allow mesh generation by mesh edition functions in TUI mode
+   */
+  interface StdMeshers_UseExisting_1D : SMESH::SMESH_1D_Algo
   {
   };
 

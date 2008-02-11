@@ -106,6 +106,46 @@ module SMESH
      */
     long AddPolyhedralVolumeByFaces (in long_array IdsOfFaces);
 
+    /*!
+     * \brief Bind a node to a vertex
+      * \param NodeID - node ID
+      * \param VertexID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+     */
+    void SetNodeOnVertex(in long NodeID, in long VertexID)
+      raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Store node position on an edge
+      * \param NodeID - node ID
+      * \param EdgeID - edge ID available through GEOM_Object.GetSubShapeIndices()[0]
+      * \param paramOnEdge - parameter on edge where the node is located
+     */
+    void SetNodeOnEdge(in long NodeID, in long EdgeID, in double paramOnEdge)
+      raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Store node position on a face
+      * \param NodeID - node ID
+      * \param FaceID - face ID available through GEOM_Object.GetSubShapeIndices()[0]
+      * \param u - U parameter on face where the node is located
+      * \param v - V parameter on face where the node is located
+     */
+    void SetNodeOnFace(in long NodeID, in long FaceID, in double u, in double v)
+      raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Bind a node to a solid
+      * \param NodeID - node ID
+      * \param SolidID - vertex ID available through GEOM_Object.GetSubShapeIndices()[0]
+     */
+    void SetNodeInVolume(in long NodeID, in long SolidID)
+      raises (SALOME::SALOME_Exception);
+    /*!
+     * \brief Bind an element to a shape
+      * \param ElementID - element ID
+      * \param ShapeID - shape ID available through GEOM_Object.GetSubShapeIndices()[0]
+     */
+    void SetMeshElementOnShape(in long ElementID, in long ShapeID)
+      raises (SALOME::SALOME_Exception);
+
+
     boolean MoveNode(in long NodeID, in double x, in double y, in double z);
 
     boolean InverseDiag(in long NodeID1, in long NodeID2);
@@ -215,22 +255,64 @@ module SMESH
 
     void RenumberElements();
 
+    /*!
+     * \brief Genarate dim+1 elements by rotation of given elements around axis
+     * \param IDsOfElements - elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
     void RotationSweep(in long_array       IDsOfElements,
                        in AxisStruct       Axix,
                        in double           AngleInRadians,
                        in long             NbOfSteps,
                        in double           Tolerance);
-
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepMakeGroups(in long_array       IDsOfElements,
+                                         in AxisStruct       Axix,
+                                         in double           AngleInRadians,
+                                         in long             NbOfSteps,
+                                         in double           Tolerance);
+    /*!
+     * \brief Genarate dim+1 elements by rotation of the object around axis
+     * \param theObject - object containing elements to ratate
+     * \param Axix - rotation axis
+     * \param AngleInRadians - rotation angle
+     * \param NbOfSteps - number of elements to generate from one element
+     */
     void RotationSweepObject(in SMESH_IDSource  theObject,
 			     in AxisStruct      Axix,
 			     in double          AngleInRadians,
 			     in long            NbOfSteps,
 			     in double          Tolerance);
-
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups RotationSweepObjectMakeGroups(in SMESH_IDSource  theObject,
+                                               in AxisStruct      Axix,
+                                               in double          AngleInRadians,
+                                               in long            NbOfSteps,
+                                               in double          Tolerance);
+    /*!
+     * \brief Genarate dim+1 elements by extrusion of elements along vector
+     * \param IDsOfElements - elements to sweep
+     * \param StepVector - vector giving direction and distance of an extrusion step
+     * \param NbOfSteps - number of elements to generate from one element
+     */
     void ExtrusionSweep(in long_array      IDsOfElements,
                         in DirStruct       StepVector,
                         in long            NbOfSteps);
-
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups ExtrusionSweepMakeGroups(in long_array      IDsOfElements,
+                                          in DirStruct       StepVector,
+                                          in long            NbOfSteps);
    /*!
     * Generate new elements by extrusion of theElements 
     * by StepVector by NbOfSteps
@@ -243,18 +325,36 @@ module SMESH
                            in long            NbOfSteps,
 			   in long            ExtrFlags,
 			   in double          SewTolerance);
+    /*!
+     * \brief Same as previous but additionally create groups of elements
+     *  generated from elements belonging to preexisting groups
+     */
+    ListOfGroups AdvancedExtrusionMakeGroups(in long_array      IDsOfElements,
+                                             in DirStruct       StepVector,
+                                             in long            NbOfSteps,
+                                             in long            ExtrFlags,
+                                             in double          SewTolerance);
 
     void ExtrusionSweepObject(in SMESH_IDSource  theObject,
 			      in DirStruct       StepVector,
 			      in long            NbOfSteps);
+    ListOfGroups ExtrusionSweepObjectMakeGroups(in SMESH_IDSource  theObject,
+                                                in DirStruct       StepVector,
+                                                in long            NbOfSteps);
 
     void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
 				in DirStruct      StepVector,
 				in long           NbOfSteps);
+    ListOfGroups ExtrusionSweepObject1DMakeGroups(in SMESH_IDSource theObject,
+                                                  in DirStruct      StepVector,
+                                                  in long           NbOfSteps);
 
     void ExtrusionSweepObject2D(in SMESH_IDSource theObject,
 				in DirStruct      StepVector,
 				in long           NbOfSteps);
+    ListOfGroups ExtrusionSweepObject2DMakeGroups(in SMESH_IDSource theObject,
+                                                  in DirStruct      StepVector,
+                                                  in long           NbOfSteps);
 
     enum Extrusion_Error {
       EXTR_OK,
@@ -274,6 +374,15 @@ module SMESH
 				       in double_array      Angles,
 				       in boolean           HasRefPoint,
 				       in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathMakeGroups(in long_array        IDsOfElements,
+                                              in SMESH_Mesh        PathMesh,
+                                              in GEOM::GEOM_Object PathShape,
+                                              in long              NodeStart,
+                                              in boolean           HasAngles,
+                                              in double_array      Angles,
+                                              in boolean           HasRefPoint,
+                                              in PointStruct       RefPoint,
+                                              out Extrusion_Error  Error);
 
     Extrusion_Error ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
 					     in SMESH_Mesh        PathMesh,
@@ -283,6 +392,15 @@ module SMESH
 					     in double_array      Angles,
 					     in boolean           HasRefPoint,
 					     in PointStruct       RefPoint);
+    ListOfGroups ExtrusionAlongPathObjectMakeGroups(in SMESH_IDSource    theObject,
+                                                    in SMESH_Mesh        PathMesh,
+                                                    in GEOM::GEOM_Object PathShape,
+                                                    in long              NodeStart,
+                                                    in boolean           HasAngles,
+                                                    in double_array      Angles,
+                                                    in boolean           HasRefPoint,
+                                                    in PointStruct       RefPoint,
+                                                    out Extrusion_Error  Error);
 
    /*!
     * Compute rotation angles for ExtrusionAlongPath as linear variation
@@ -298,33 +416,77 @@ module SMESH
 
     enum MirrorType { POINT, AXIS, PLANE };
 
-    void Mirror (in long_array       IDsOfElements,
-                 in AxisStruct       Mirror,
-                 in MirrorType       theMirrorType,
-                 in boolean          Copy);
+    void Mirror (in long_array IDsOfElements,
+                 in AxisStruct Mirror,
+                 in MirrorType Type,
+                 in boolean    Copy);
+    ListOfGroups MirrorMakeGroups (in long_array IDsOfElements,
+                                   in AxisStruct Mirror,
+                                   in MirrorType Type);
+    SMESH_Mesh MirrorMakeMesh (in long_array IDsOfElements,
+                               in AxisStruct Mirror,
+                               in MirrorType Type,
+                               in boolean    CopyGroups,
+                               in string     MeshName);
 
-    void MirrorObject (in SMESH_IDSource  theObject,
-		       in AxisStruct      Mirror,
-		       in MirrorType      theMirrorType,
-		       in boolean         Copy);
+    void MirrorObject (in SMESH_IDSource theObject,
+		       in AxisStruct     Mirror,
+		       in MirrorType     Type,
+		       in boolean        Copy);
+    ListOfGroups MirrorObjectMakeGroups (in SMESH_IDSource theObject,
+                                         in AxisStruct     Mirror,
+                                         in MirrorType     Type);
+    SMESH_Mesh MirrorObjectMakeMesh (in SMESH_IDSource theObject,
+                                     in AxisStruct     Mirror,
+                                     in MirrorType     Type,
+                                     in boolean        CopyGroups,
+                                     in string         MeshName);
 
-    void Translate (in long_array      IDsOfElements,
-                    in DirStruct       Vector,
-                    in boolean         Copy);
+    void Translate (in long_array IDsOfElements,
+                    in DirStruct  Vector,
+                    in boolean    Copy);
+    ListOfGroups TranslateMakeGroups (in long_array IDsOfElements,
+                                      in DirStruct  Vector);
+    SMESH_Mesh TranslateMakeMesh (in long_array IDsOfElements,
+                                  in DirStruct  Vector,
+                                  in boolean    CopyGroups,
+                                  in string     MeshName);
 
-    void TranslateObject (in SMESH_IDSource  theObject,
-			  in DirStruct       Vector,
-			  in boolean         Copy);
+    void TranslateObject (in SMESH_IDSource theObject,
+			  in DirStruct      Vector,
+			  in boolean        Copy);
+    ListOfGroups TranslateObjectMakeGroups (in SMESH_IDSource theObject,
+                                            in DirStruct      Vector);
+    SMESH_Mesh TranslateObjectMakeMesh (in SMESH_IDSource theObject,
+                                        in DirStruct      Vector,
+                                        in boolean        CopyGroups,
+                                        in string         MeshName);
 
-    void Rotate (in long_array       IDsOfElements,
-                 in AxisStruct       Axis,
-                 in double           AngleInRadians,
-                 in boolean          Copy);
+    void Rotate (in long_array IDsOfElements,
+                 in AxisStruct Axis,
+                 in double     AngleInRadians,
+                 in boolean    Copy);
+    ListOfGroups RotateMakeGroups (in long_array IDsOfElements,
+                                   in AxisStruct Axis,
+                                   in double     AngleInRadians);
+    SMESH_Mesh RotateMakeMesh (in long_array IDsOfElements,
+                               in AxisStruct Axis,
+                               in double     AngleInRadians,
+                               in boolean    CopyGroups,
+                               in string     MeshName);
 
-    void RotateObject (in SMESH_IDSource  theObject,
-		       in AxisStruct      Axis,
-		       in double          AngleInRadians,
-		       in boolean         Copy);
+    void RotateObject (in SMESH_IDSource theObject,
+		       in AxisStruct     Axis,
+		       in double         AngleInRadians,
+		       in boolean        Copy);
+    ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
+                                         in AxisStruct     Axis,
+                                         in double         AngleInRadians);
+    SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
+                                     in AxisStruct     Axis,
+                                     in double         AngleInRadians,
+                                     in boolean        CopyGroups,
+                                     in string         MeshName);
 
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes);
