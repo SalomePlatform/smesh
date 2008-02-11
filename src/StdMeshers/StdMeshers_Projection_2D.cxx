@@ -191,10 +191,8 @@ namespace {
   {
     // old nodes are shared by edges and new ones are shared
     // only by faces created by mapper
-    bool isOld = false;
-    SMDS_ElemIteratorPtr invElem = node->GetInverseElementIterator();
-    while ( !isOld && invElem->more() )
-      isOld = ( invElem->next()->GetType() == SMDSAbs_Edge );
+    SMDS_ElemIteratorPtr invEdge = node->GetInverseElementIterator(SMDSAbs_Edge);
+    bool isOld = invEdge->more();
     return isOld;
   }
 
@@ -212,12 +210,13 @@ namespace {
     MeshCleaner( SMESH_subMesh* faceSubMesh ): sm(faceSubMesh) {}
     ~MeshCleaner() { Clean(sm); }
     void Release() { sm = 0; } // mesh will not be removed
-    static void Clean( SMESH_subMesh* sm )
+    static void Clean( SMESH_subMesh* sm, bool withSub=true )
     {
       if ( !sm ) return;
-      switch ( sm->GetSubShape().ShapeType() ) {
-      case TopAbs_VERTEX:
-      case TopAbs_EDGE: {
+      // PAL16567, 18920. Remove face nodes as well
+//       switch ( sm->GetSubShape().ShapeType() ) {
+//       case TopAbs_VERTEX:
+//       case TopAbs_EDGE: {
         SMDS_NodeIteratorPtr nIt = sm->GetSubMeshDS()->GetNodes();
         SMESHDS_Mesh* mesh = sm->GetFather()->GetMeshDS();
         while ( nIt->more() ) {
@@ -226,12 +225,13 @@ namespace {
             mesh->RemoveNode( node );
         }
         // do not break but iterate over DependsOn()
-      }
-      default:
+//       }
+//       default:
+        if ( !withSub ) return;
         SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
         while ( smIt->more() )
-          Clean( smIt->next() );
-      }
+          Clean( smIt->next(), false );
+//       }
     }
   };
 
@@ -474,7 +474,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   // it will remove mesh built by pattern mapper on edges and vertices
   // in failure case
-  //  MeshCleaner cleaner( tgtSubMesh );
+  MeshCleaner cleaner( tgtSubMesh );
 
   // -------------------------------------------------------------------------
   // mapper doesn't take care of nodes already existing on edges and vertices,
@@ -617,7 +617,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     }
   }
 
-  //cleaner.Release(); // do not remove mesh
+  cleaner.Release(); // do not remove mesh
 
   return true;
 }
