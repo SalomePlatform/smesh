@@ -1946,12 +1946,12 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID, CO
   SMESHDS_SubMesh* SDSM = SM->GetSubMeshDS();
   if(!SDSM) return aResult._retn();
 
-  map<int,const SMDS_MeshElement*> theElems;
-  if( !all || (SDSM->NbElements()==0 && SDSM->NbNodes()==1) ) {
+  set<int> theElems;
+  if( !all || (SDSM->NbElements()==0) ) { // internal nodes or vertex submesh
     SMDS_NodeIteratorPtr nIt = SDSM->GetNodes();
     while ( nIt->more() ) {
       const SMDS_MeshNode* elem = nIt->next();
-      theElems.insert( make_pair(elem->GetID(),elem) );
+      theElems.insert( elem->GetID() );
     }
   }
   else { // all nodes of submesh elements
@@ -1961,16 +1961,16 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID, CO
       SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
       while ( nIt->more() ) {
         const SMDS_MeshElement* elem = nIt->next();
-        theElems.insert( make_pair(elem->GetID(),elem) );
+        theElems.insert( elem->GetID() );
       }
     }
   }
 
   aResult->length(theElems.size());
-  map<int, const SMDS_MeshElement * >::iterator itElem;
+  set<int>::iterator itElem;
   int i = 0;
   for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
-    aResult[i++] = (*itElem).first;
+    aResult[i++] = *itElem;
 
   return aResult._retn();
 }
