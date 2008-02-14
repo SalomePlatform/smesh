@@ -5,6 +5,25 @@
 \n Python package smesh defines several classes, destined for easy and
 clear mesh creation and edition (see the \ref introduction_to_mesh_python_page "example").
 
-\n Also, please see \ref smeshDC "documentation for smesh.py"
+\n Please draw your attention to the below notes before address to
+the \ref smeshDC "documentation for smesh.py"
+
+\n 1. The main page of the \ref smeshDC "documentation for smesh.py"
+      contains a list of data structures and a list of functions,
+      provided by the package smesh.py. The first item in the data
+      structures list (\ref smeshDC::smeshDC "class smesh") also
+      represents documentation for methods of the package smesh.py itself.
+
+\n 2. Package smesh.py gives interface to create and manage
+      meshes. Please, use it to create an empty mesh or to import
+      it from data file.
+
+\n 3. Once you have created a mesh, you can manage it via its own
+      methods. See \ref smeshDC::Mesh "class Mesh" documentation for
+      them (it is also accessible by the second item "class Mesh" in the
+      data structures list).
+
+\n 4. Class Mesh allows to assign algorithms to a mesh. To add hypotheses,
+      please use interfaces, provided by the assigned algorithms.
 
 */
