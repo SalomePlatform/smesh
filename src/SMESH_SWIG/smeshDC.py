@@ -610,16 +610,16 @@ class Mesh:
     ## Creates a triangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D
+    #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D || smesh.BLSURF
     #  @param geom If defined, subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Triangle algorithm
     def Triangle(self, algo=MEFISTO, geom=0):
         ## if Triangle(geom) is called by mistake
-        if ( isinstance( algo, geompyDC.GEOM._objref_GEOM_Object)):
+        if (isinstance(algo, geompyDC.GEOM._objref_GEOM_Object)):
             geom = algo
             algo = MEFISTO
 
-        return Mesh_Triangle(self,  algo, geom)
+        return Mesh_Triangle(self, algo, geom)
 
     ## Creates a quadrangle 2D algorithm for faces.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
@@ -647,6 +647,7 @@ class Mesh:
     ## Creates a hexahedron 3D algorithm for solids.
     #  If the optional \a geom parameter is not sets, this algorithm is global.
     #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  @param algo possible values are: smesh.Hexa, smesh.Hexotic
     #  @param geom If defined, subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Hexahedron algorithm
     def Hexahedron(self, algo=Hexa, geom=0):
