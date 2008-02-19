@@ -23,7 +23,19 @@ the \ref smeshDC "documentation for smesh.py"
       them (it is also accessible by the second item "class Mesh" in the
       data structures list).
 
-\n 4. Class Mesh allows to assign algorithms to a mesh. To add hypotheses,
-      please use interfaces, provided by the assigned algorithms.
+\n 4. Class Mesh allows to assign algorithms to a mesh.
+\n \t Please note, that there are always available some algorithms,
+      included in standard Salome installation:
+         - REGULAR(1D), COMPOSITE(1D), MEFISTO(2D), Quadrangle(2D), Hexa(3D), etc.
+
+\n Also there are some algorithms, which can be installed optionally,
+\n some of them are based on open-source meshers:
+         - NETGEN(1D-2D,2D,1D-2D-3D,3D),
+
+\n others are based on commercial meshers:
+         - GHS3D(3D).
+
+\n \t To add hypotheses, please use interfaces, provided by the
+      assigned algorithms.
 
 */

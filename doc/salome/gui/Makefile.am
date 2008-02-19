@@ -44,8 +44,6 @@ usr_docs:
 	  mv -f tmp $${filen}; \
 	done; \
 	cd ..; \
-	sed 's|../../../share/salome|$(top_srcdir)|' ./doxyfile > ./doxyfile1; \
-	mv -f doxyfile1 doxyfile; \
 	echo "Running doxygen in directory: "`pwd`; \
 	$(doxygen) ./doxyfile;
 

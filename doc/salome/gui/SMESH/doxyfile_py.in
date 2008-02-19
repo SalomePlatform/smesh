@@ -81,6 +81,7 @@ INPUT             = @top_srcdir@/src/SMESH_SWIG
 FILE_PATTERNS     = smeshDC.py
 IMAGE_PATH        = @srcdir@/images
 RECURSIVE         = NO
+EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------
 #HTML related options
