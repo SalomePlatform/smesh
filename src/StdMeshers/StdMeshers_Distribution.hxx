@@ -29,6 +29,8 @@
 #ifndef _STD_MESHERS_DISTRIBUTION_HXX_
 #define _STD_MESHERS_DISTRIBUTION_HXX_
 
+using namespace std;
+
 #include "SMESH_StdMeshers.hxx"
 
 #include <vector>

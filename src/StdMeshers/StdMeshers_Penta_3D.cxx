@@ -24,6 +24,8 @@
 //  File   : StdMeshers_Penta_3D.cxx
 //  Module : SMESH
 
+using namespace std;
+
 #include "StdMeshers_Penta_3D.hxx"
 
 #include "utilities.h"
