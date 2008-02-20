@@ -21,6 +21,8 @@
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
 
+using namespace std;
+
 #include "SMESH_Block.hxx"
 
 #include <BRepAdaptor_Curve.hxx>
