@@ -2,6 +2,7 @@
 // Created   : Mon Sep 24 18:32:41 2007
 // Author    : Edward AGAPOV (eap)
 
+using namespace std;
 
 #ifndef SMDS_MeshInfo_HeaderFile
 #define SMDS_MeshInfo_HeaderFile
