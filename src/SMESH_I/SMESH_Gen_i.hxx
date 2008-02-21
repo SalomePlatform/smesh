@@ -260,12 +260,27 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
+  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray, 
+					  CORBA::Boolean           theUniteIdenticalGroups, 
+					  CORBA::Boolean           theMergeNodesAndElements, 
+					  CORBA::Double            theMergeTolerance,
+					  CORBA::Boolean           theCommonGroups)
+    throw ( SALOME::SALOME_Exception );
+
+  // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
 				    CORBA::Boolean           theUniteIdenticalGroups, 
 				    CORBA::Boolean           theMergeNodesAndElements, 
 				    CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
+  // Concatenate the given meshes into one mesh
+  // Create the groups of all elements from initial meshes
+  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray, 
+					      CORBA::Boolean           theUniteIdenticalGroups, 
+					      CORBA::Boolean           theMergeNodesAndElements, 
+					      CORBA::Double            theMergeTolerance)
+    throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
   // Interface inherited methods (from SALOMEDS::Driver)

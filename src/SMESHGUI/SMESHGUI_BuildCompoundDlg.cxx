@@ -150,17 +150,21 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule)
   ComboBoxUnion = new QComboBox(GroupArgs, "ComboBoxUnion");
   GroupArgsLayout->addMultiCellWidget(ComboBoxUnion, 1, 1, 3, 3);
 
+  CheckBoxCommon = new QCheckBox(GroupArgs, "CheckBoxCommon");
+  CheckBoxCommon->setText(tr("CREATE_COMMON_GROUPS" ));
+  GroupArgsLayout->addMultiCellWidget(CheckBoxCommon, 2, 2, 0, 3);
+
   CheckBoxMerge = new QCheckBox(GroupArgs, "CheckBoxMerge");
   CheckBoxMerge->setText(tr("MERGE_NODES_AND_ELEMENTS" ));
-  GroupArgsLayout->addMultiCellWidget(CheckBoxMerge, 2, 2, 0, 3);
+  GroupArgsLayout->addMultiCellWidget(CheckBoxMerge, 3, 3, 0, 3);
 
   TextLabelTol = new QLabel (GroupArgs, "TextLabelTol");
   TextLabelTol->setText(tr("SMESH_TOLERANCE"));
   TextLabelTol->setAlignment(Qt::AlignCenter);
-  GroupArgsLayout->addMultiCellWidget(TextLabelTol, 3, 3, 0, 1);
+  GroupArgsLayout->addMultiCellWidget(TextLabelTol, 4, 4, 0, 1);
   SpinBoxTol = new SMESHGUI_SpinBox (GroupArgs, "SpinBoxTol");
   SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.1, 6);
-  GroupArgsLayout->addMultiCellWidget(SpinBoxTol, 3, 3, 2, 3);
+  GroupArgsLayout->addMultiCellWidget(SpinBoxTol, 4, 4, 2, 3);
 
   SMESHGUI_BuildCompoundDlgLayout->addWidget(GroupArgs, 2, 0);
 
@@ -313,12 +317,18 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
-      SMESH::SMESH_Mesh_var aCompoundMesh = 
-	aSMESHGen->Concatenate(myMeshArray, 
-			       !(ComboBoxUnion->currentItem()), 
-			       CheckBoxMerge->isChecked(), 
-			       SpinBoxTol->GetValue());
-      
+      SMESH::SMESH_Mesh_var aCompoundMesh;
+      if(CheckBoxCommon->isChecked())
+	aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
+							 !(ComboBoxUnion->currentItem()), 
+							 CheckBoxMerge->isChecked(), 
+							 SpinBoxTol->GetValue());
+      else
+	aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
+					       !(ComboBoxUnion->currentItem()), 
+					       CheckBoxMerge->isChecked(), 
+					       SpinBoxTol->GetValue());
+     
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text().latin1() );
       QApplication::restoreOverrideCursor();
       mySMESHGUI->updateObjBrowser();

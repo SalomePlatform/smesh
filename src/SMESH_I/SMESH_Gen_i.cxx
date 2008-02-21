@@ -1419,6 +1419,52 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 					       CORBA::Double            theMergeTolerance)
   throw ( SALOME::SALOME_Exception )
 {
+  return ConcatenateCommon(theMeshesArray,
+			   theUniteIdenticalGroups,
+			   theMergeNodesAndElements,
+			   theMergeTolerance,
+			   false);
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::ConcatenateWithGroups
+ *
+ *  Concatenate the given meshes into one mesh
+ *  Create the groups of all elements from initial meshes
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_Gen_i::ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray,
+				   CORBA::Boolean           theUniteIdenticalGroups, 
+                                   CORBA::Boolean           theMergeNodesAndElements, 
+                                   CORBA::Double            theMergeTolerance)
+  throw ( SALOME::SALOME_Exception )
+{
+  return ConcatenateCommon(theMeshesArray,
+                           theUniteIdenticalGroups,
+                           theMergeNodesAndElements,
+                           theMergeTolerance,
+			   true);
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::ConcatenateCommon
+ *
+ *  Concatenate the given meshes into one mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr
+SMESH_Gen_i::ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
+			       CORBA::Boolean           theUniteIdenticalGroups, 
+                               CORBA::Boolean           theMergeNodesAndElements, 
+                               CORBA::Double            theMergeTolerance,
+			       CORBA::Boolean           theCommonGroups)
+  throw ( SALOME::SALOME_Exception )
+{
   typedef map<int, int> TIDsMap;
   typedef list<SMESH::SMESH_Group_var> TListOfNewGroups;
   typedef map< pair<string, SMESH::ElementType>, TListOfNewGroups > TGroupsMap;
@@ -1458,6 +1504,23 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 	    const SMDS_MeshElement* aNewElem = 0;
 	    int anElemNbNodes = 0;
 
+	    int anNbNodes   = 0;
+	    int anNbEdges   = 0;
+	    int anNbFaces   = 0;
+	    int anNbVolumes = 0;
+
+	    SMESH::long_array_var anIDsNodes   = new SMESH::long_array();
+	    SMESH::long_array_var anIDsEdges   = new SMESH::long_array();
+	    SMESH::long_array_var anIDsFaces   = new SMESH::long_array();
+	    SMESH::long_array_var anIDsVolumes = new SMESH::long_array();
+
+	    if( theCommonGroups ) {
+	      anIDsNodes->length(   anInitMeshDS->NbNodes()   );
+	      anIDsEdges->length(   anInitMeshDS->NbEdges()   );
+	      anIDsFaces->length(   anInitMeshDS->NbFaces()   );
+	      anIDsVolumes->length( anInitMeshDS->NbVolumes() );
+	    }
+
 	    for ( int j = 0; itElems->more(); j++) {
 	      anElem = itElems->next();
 	      SMDSAbs_ElementType anElemType = anElem->GetType();
@@ -1474,6 +1537,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 		if ( nodesMap.find(aNode->GetID()) == nodesMap.end() ) {
 		  aNewNode = aNewMeshDS->AddNode(aNode->X(), aNode->Y(), aNode->Z());
 		  nodesMap.insert( make_pair(aNode->GetID(), aNewNode->GetID()) );
+		  if( theCommonGroups )
+		    anIDsNodes[anNbNodes++] = aNewNode->GetID();
 		}
 		else
 		  aNewNode = aNewMeshDS->FindNode( nodesMap.find(aNode->GetID())->second );
@@ -1489,6 +1554,8 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 		    aNewElem = aNewMeshDS->AddPolyhedralVolume(aNodesArray, 
 							       aVolume->GetQuanities());
 		    elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+		    if( theCommonGroups )
+		      anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
 		  }
 		}
 	      else {
@@ -1497,6 +1564,14 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 						 anElemType,
 						 anElem->IsPoly());
 		elemsMap.insert(make_pair(anElem->GetID(), aNewElem->GetID()));
+		if( theCommonGroups ) {
+		  if( anElemType == SMDSAbs_Edge )
+		    anIDsEdges[anNbEdges++] = aNewElem->GetID();
+		  else if( anElemType == SMDSAbs_Face )
+		    anIDsFaces[anNbFaces++] = aNewElem->GetID();
+		  else if( anElemType == SMDSAbs_Volume )
+		    anIDsVolumes[anNbVolumes++] = aNewElem->GetID();
+		}
 	      } 
 	    }//elems loop
 	    
@@ -1507,12 +1582,81 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
 	    SMESH::long_array_var anInitIDs = new SMESH::long_array();
 	    SMESH::long_array_var anNewIDs = new SMESH::long_array();
 	    SMESH::SMESH_Group_var aNewGroup;
+
+	    SMESH::ElementType aGroupType;
+	    CORBA::String_var aGroupName;
+	    if ( theCommonGroups ) {
+	      for(aGroupType=SMESH::NODE;aGroupType<=SMESH::VOLUME;aGroupType=(SMESH::ElementType)(aGroupType+1)) {
+		string str = "Gr";
+		SALOMEDS::SObject_var aMeshSObj = ObjectToSObject( myCurrentStudy, anInitMesh );
+		if(aMeshSObj)
+		  str += aMeshSObj->GetName();
+		str += "_";
+
+		int anLen = 0;
+
+		switch(aGroupType) {
+		case SMESH::NODE:
+		  str += "Nodes";
+		  anIDsNodes->length(anNbNodes);
+		  anLen = anNbNodes;
+		  break;
+		case SMESH::EDGE:
+		  str += "Edges";
+		  anIDsEdges->length(anNbEdges);
+		  anLen = anNbEdges;
+		  break;
+		case SMESH::FACE:
+		  str += "Faces";
+		  anIDsFaces->length(anNbFaces);
+		  anLen = anNbFaces;
+		  break;
+		case SMESH::VOLUME:
+		  str += "Volumes";
+		  anIDsVolumes->length(anNbVolumes);
+		  anLen = anNbVolumes;
+		  break;
+		default:
+		  break;
+		}
+
+		if(anLen) {
+		  aGroupName = str.c_str();
+
+		  // add a new group in the mesh
+		  aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+
+		  switch(aGroupType) {
+		  case SMESH::NODE:
+		    aNewGroup->Add( anIDsNodes );
+		    break;
+		  case SMESH::EDGE:
+		    aNewGroup->Add( anIDsEdges );
+		    break;
+		  case SMESH::FACE:
+		    aNewGroup->Add( anIDsFaces );
+		    break;
+		  case SMESH::VOLUME:
+		    aNewGroup->Add( anIDsVolumes );
+		    break;
+		  default:
+		    break;
+		  }
+		
+		  aListOfNewGroups.clear();
+		  aListOfNewGroups.push_back(aNewGroup);
+		  aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+		}
+	      }
+	    }
+
+	    // check that current group name and type don't have identical ones in union mesh
 	    for (int i = 0; i < aListOfGroups->length(); i++) {
 	      aGroup = aListOfGroups[i];
 	      aListOfNewGroups.clear();
-	      SMESH::ElementType aGroupType = aGroup->GetType();
-	      CORBA::String_var aGroupName = aGroup->GetName();
-	      
+	      aGroupType = aGroup->GetType();
+	      aGroupName = aGroup->GetName();
+
 	      TGroupsMap::iterator anIter = aGroupsMap.find(make_pair(aGroupName, aGroupType));
 
 	      // convert a list of IDs
@@ -1579,7 +1723,11 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   }
   
   // Update Python script
-  aPythonDump << aNewMesh << " = " << this << ".Concatenate(";
+  aPythonDump << aNewMesh << " = " << this;
+  if( !theCommonGroups )
+    aPythonDump << ".Concatenate(";
+  else
+    aPythonDump << ".ConcatenateWithGroups(";
   aPythonDump << "[";
   for ( int i = 0; i < theMeshesArray.length(); i++) {
     if (i > 0) aPythonDump << ", ";
@@ -1587,7 +1735,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::Concatenate(const SMESH::mesh_array& theMeshe
   }
   aPythonDump << "], ";
   aPythonDump << theUniteIdenticalGroups << ", "
-              << theMergeNodesAndElements << ", "
+	      << theMergeNodesAndElements << ", "
               << theMergeTolerance << ")";
 
   return aNewMesh._retn();
