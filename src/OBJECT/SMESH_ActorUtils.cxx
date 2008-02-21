@@ -42,7 +42,7 @@ namespace SMESH
   GetFloat( const QString& theValue, 
 	    vtkFloatingPointType theDefault )
   {
-    int pos = theValue.find( ":" );
+    int pos = theValue.indexOf( ":" );
     vtkFloatingPointType val = theDefault;
     if( pos>=0 ) 
     {

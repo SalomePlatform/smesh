@@ -33,6 +33,8 @@
 #include "SMESH_ControlsDef.hxx"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
 
+#include <SALOME_InteractiveObject.hxx>
+
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
 
