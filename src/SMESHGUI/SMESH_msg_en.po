@@ -1871,10 +1871,10 @@ msgid "SMESHGUI_RevolutionDlg::REVOLUTION_2D"
 msgstr "Revolution of 2D elements"
 
 msgid "SMESHGUI_RevolutionDlg::ANGLE_BY_STEP"
-msgstr "Use Angle by Step"
+msgstr "Angle by Step"
 
 msgid "SMESHGUI_RevolutionDlg::TOTAL_ANGLE"
-msgstr "Use Total Angle"
+msgstr "Total Angle"
 
 msgid "SMESHGUI_RevolutionDlg::PREVIEW"
 msgstr "Preview"

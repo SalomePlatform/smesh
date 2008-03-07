@@ -150,6 +150,11 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         print hypName, "was not assigned to",geomName,":", reason
         pass
 
+## Convert angle in degrees to radians
+def DegreesToRadians(AngleInDegrees):
+    from math import pi
+    return AngleInDegrees * pi / 180.0
+
 ## Methods of package smesh.py: general services of MESH component.
 #
 #  This class has been designed to provide general services of the MESH component.
@@ -1907,12 +1912,17 @@ class Mesh:
     #  @param NbOfSteps number of steps
     #  @param Tolerance tolerance
     #  @param MakeGroups to generate new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an anglular size
+    #  of all steps, else - size of each step
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
-    def RotationSweep(self, IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance, MakeGroups=False):
+    def RotationSweep(self, IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance,
+                      MakeGroups=False, TotalAngle=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         if ( isinstance( Axix, geompyDC.GEOM._objref_GEOM_Object)):
             Axix = self.smeshpyD.GetAxisStruct(Axix)
+        if TotalAngle and NbOfSteps:
+            AngleInRadians /= NbOfSteps
         if MakeGroups:
             return self.editor.RotationSweepMakeGroups(IDsOfElements, Axix,
                                                        AngleInRadians, NbOfSteps, Tolerance)
@@ -1926,12 +1936,17 @@ class Mesh:
     #  @param NbOfSteps number of steps
     #  @param Tolerance tolerance
     #  @param MakeGroups to generate new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an anglular size
+    #  of all steps, else - size of each step
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
-    def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance, MakeGroups=False):
+    def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance,
+                            MakeGroups=False, TotalAngle=False):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         if ( isinstance( Axix, geompyDC.GEOM._objref_GEOM_Object)):
             Axix = self.smeshpyD.GetAxisStruct(Axix)
+        if TotalAngle and NbOfSteps:
+            AngleInRadians /= NbOfSteps
         if MakeGroups:
             return self.editor.RotationSweepObjectMakeGroups(theObject, Axix, AngleInRadians,
                                                              NbOfSteps, Tolerance)
@@ -2044,11 +2059,16 @@ class Mesh:
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
             pass
+        if ( isinstance( PathMesh, Mesh )):
+            PathMesh = PathMesh.GetMesh()
+        if HasAngles and Angles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
         if MakeGroups:
-            return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh.GetMesh(),
+            return self.editor.ExtrusionAlongPathMakeGroups(IDsOfElements, PathMesh,
                                                             PathShape, NodeStart, HasAngles,
                                                             Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh.GetMesh(), PathShape,
+        return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh, PathShape,
                                               NodeStart, HasAngles, Angles, HasRefPoint, RefPoint)
 
     ## Generate new elements by extrusion of the elements belong to object
@@ -2073,11 +2093,16 @@ class Mesh:
             theObject = theObject.GetMesh()
         if ( isinstance( RefPoint, geompyDC.GEOM._objref_GEOM_Object)):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
+        if ( isinstance( PathMesh, Mesh )):
+            PathMesh = PathMesh.GetMesh()
+        if HasAngles and Angles and LinearVariation:
+            Angles = self.editor.LinearAnglesVariation( PathMesh, PathShape, Angles )
+            pass
         if MakeGroups:
-            return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh.GetMesh(),
+            return self.editor.ExtrusionAlongPathObjectMakeGroups(theObject, PathMesh,
                                                                   PathShape, NodeStart, HasAngles,
                                                                   Angles, HasRefPoint, RefPoint)
-        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh.GetMesh(), PathShape,
+        return self.editor.ExtrusionAlongPathObject(theObject, PathMesh, PathShape,
                                                     NodeStart, HasAngles, Angles, HasRefPoint,
                                                     RefPoint)
 
@@ -3228,7 +3253,6 @@ class Mesh_Netgen(Mesh_Algorithm):
 #
 #  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
-
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
@@ -3273,7 +3297,6 @@ class Mesh_Projection2D(Mesh_Algorithm):
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Projection_2D")
-
     ## Define "Source Face" hypothesis, specifying a meshed face to
     #  take a mesh pattern from, and optionally association of vertices
     #  between the source face and a target one (where a hipothesis is assigned to)

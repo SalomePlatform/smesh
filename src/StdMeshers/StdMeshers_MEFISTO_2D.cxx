@@ -113,6 +113,8 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
 {
   _hypMaxElementArea = NULL;
   _hypLengthFromEdges = NULL;
+  _edgeLength = 0;
+  _maxElementArea = 0;
 
   list <const SMESHDS_Hypothesis * >::const_iterator itl;
   const SMESHDS_Hypothesis *theHyp;
@@ -121,8 +123,8 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
   int nbHyp = hyps.size();
   if (!nbHyp)
   {
-    aStatus = SMESH_Hypothesis::HYP_MISSING;
-    return false;  // can't work with no hypothesis
+    aStatus = SMESH_Hypothesis::HYP_OK; //SMESH_Hypothesis::HYP_MISSING;
+    return true;  // (PAL13464) can work with no hypothesis, LengthFromEdges is default one
   }
 
   itl = hyps.begin();
@@ -137,7 +139,6 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
     _hypMaxElementArea = static_cast<const StdMeshers_MaxElementArea *>(theHyp);
     ASSERT(_hypMaxElementArea);
     _maxElementArea = _hypMaxElementArea->GetMaxArea();
-    _edgeLength = 0;
     isOk = true;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
@@ -146,8 +147,6 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
   {
     _hypLengthFromEdges = static_cast<const StdMeshers_LengthFromEdges *>(theHyp);
     ASSERT(_hypLengthFromEdges);
-    _edgeLength = 0;
-    _maxElementArea = 0;
     isOk = true;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
@@ -201,7 +200,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
                  SMESH_Comment("Too few segments: ")<<wires[0]->NbSegments());
 
   // compute average edge length
-  if (_hypLengthFromEdges)
+  if (!_hypMaxElementArea)
   {
     _edgeLength = 0;
     int nbSegments = 0;
@@ -215,7 +214,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
       _edgeLength /= nbSegments;
   }
 
-  if (_hypLengthFromEdges && _edgeLength < DBL_MIN )
+  if (/*_hypLengthFromEdges &&*/ _edgeLength < DBL_MIN )
     _edgeLength = 100;
 
   Z nblf;                 //nombre de lignes fermees (enveloppe en tete)

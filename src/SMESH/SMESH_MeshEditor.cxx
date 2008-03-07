@@ -6871,7 +6871,7 @@ int SMESH_MeshEditor::removeQuadElem(SMESHDS_SubMesh *    theSm,
       vector<const SMDS_MeshNode*>::iterator nIt = mediumNodes.begin();
       for ( ; nIt != mediumNodes.end(); ++nIt ) {
         const SMDS_MeshNode* n = *nIt;
-        if ( n->NbInverseNodes() == 0 ) {
+        if ( n->NbInverseElements() == 0 ) {
           if ( n->GetPosition()->GetShapeId() != theShapeID )
             meshDS->RemoveFreeNode( n, meshDS->MeshElements
                                     ( n->GetPosition()->GetShapeId() ));

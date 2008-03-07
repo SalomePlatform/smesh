@@ -259,6 +259,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   AngleSpin = new SMESHGUI_SpinBox(AnglesGrp);
 
+  LinearAnglesCheck = new QCheckBox(tr("LINEAR_ANGLES"), AnglesGrp);
+
   // layouting
   QVBoxLayout* bLayout = new QVBoxLayout();
   bLayout->addWidget(AddAngleButton);
@@ -268,6 +270,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   AnglesGrpLayout->addMultiCellWidget(AnglesList, 0, 1, 0, 0);
   AnglesGrpLayout->addMultiCellLayout(bLayout,    0, 1, 1, 1);
   AnglesGrpLayout->addWidget(         AngleSpin,  0,    2   );
+  AnglesGrpLayout->addWidget( LinearAnglesCheck,  2,    0   );
   AnglesGrpLayout->setRowStretch(1, 10);
 
   // CheckBox for groups generation
@@ -604,17 +607,20 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   try {
     SUIT_OverrideCursor wc;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+    if ( LinearAnglesCheck->isChecked() )
+      anAngles = aMeshEditor->LinearAnglesVariation( myPathMesh, myPathShape, anAngles );
+
     SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
       SMESH::ListOfGroups_var groups = 
-        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId.inout(), myPathMesh,
+        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
                                                   myPathShape, aNodeStart,
-                                                  AnglesCheck->isChecked(), anAngles.inout(),
+                                                  AnglesCheck->isChecked(), anAngles,
                                                   BasePointCheck->isChecked(), aBasePoint, retVal);
     else
-      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh,
+      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
                                                myPathShape, aNodeStart,
-                                               AnglesCheck->isChecked(), anAngles.inout(),
+                                               AnglesCheck->isChecked(), anAngles,
                                                BasePointCheck->isChecked(), aBasePoint);
 
     //wc.stop();

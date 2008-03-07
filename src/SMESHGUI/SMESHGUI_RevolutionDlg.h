@@ -53,7 +53,8 @@ class SMESH_Actor;
 class SMESHGUI_SpinBox;
 class SVTK_ViewWindow;
 class SVTK_Selector;
-
+class SALOME_Actor;
+class SMESHGUI_MeshEditPreview;
 
 // IDL Headers
 #include <SALOMEconfig.h>
@@ -95,6 +96,8 @@ private:
     SMESH::SMESH_Mesh_var         myMesh;
     SMESH_Actor*                  myActor;
     SMESH_LogicalFilter*          myMeshOrSubMeshOrGroupFilter;
+    SMESHGUI_MeshEditPreview*     mySimulation;
+    SALOME_Actor*                 myPreviewActor;
 
     QButtonGroup* GroupConstructors;
     QRadioButton* RadioButton1;
@@ -111,6 +114,10 @@ private:
     QLineEdit* LineEditElements;
     QCheckBox* CheckBoxMesh;
     QCheckBox* MakeGroupsCheck;
+    QButtonGroup* GroupAngle;
+    QRadioButton* RadioButton3;
+    QRadioButton* RadioButton4;
+    QCheckBox* CheckBoxPreview;
 
     QLabel* TextLabelPoint;
     QPushButton* SelectPointButton;
@@ -152,6 +159,8 @@ private slots:
     void onTextChange (const QString&);
     void onSelectMesh (bool toSelectMesh);
     void onVectorChanged();
+    void toDisplaySimulation();
+    void onDisplaySimulation(bool toDisplayPreview);
 
 protected:
     QGridLayout* SMESHGUI_RevolutionDlgLayout;
