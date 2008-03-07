@@ -31,17 +31,10 @@
 
 import salome
 import geompy
-
-import StdMeshers
-import NETGENPlugin
-
-geom  = salome.lcc.FindOrLoadComponent("FactoryServer", "GEOM")
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
+import smesh
 
 import math
+
 
 # -----------------------------------------------------------------------------
 
@@ -130,86 +123,54 @@ for i in range(8):
 
 ### ---------------------------- SMESH --------------------------------------
 
-# ---- create Hypothesis
+# ---- init a Mesh with the volume
 
-print "-------------------------- create Hypothesis"
+mesh = smesh.Mesh(vol, "meshVolume")
+
+# ---- set Hypothesis and Algorithm to main shape
 
 print "-------------------------- NumberOfSegments the global one"
 
 numberOfSegments = 10
 
-hypNbSeg=smesh.CreateHypothesis("NumberOfSegments","libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(numberOfSegments)
-hypNbSegID = hypNbSeg.GetId()
+regular1D = mesh.Segment()
+regular1D.SetName("Wire Discretisation")
+hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
 print hypNbSeg.GetName()
-print hypNbSegID
+print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
+smesh.SetName(hypNbSeg, "NumberOfSegments")
 
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments")
+
+print "-------------------------- Quadrangle_2D"
+
+quad2D=mesh.Quadrangle()
+quad2D.SetName("Quadrangle_2D")
+
+print "-------------------------- Hexa_3D"
+
+hexa3D=mesh.Hexahedron()
+hexa3D.SetName("Hexa_3D")
+
 
 print "-------------------------- NumberOfSegments in the Z direction"
 
 numberOfSegmentsZ = 40
 
-hypNbSegZ=smesh.CreateHypothesis("NumberOfSegments","libStdMeshersEngine.so")
-hypNbSegZ.SetNumberOfSegments(numberOfSegmentsZ)
-hypNbSegZID = hypNbSegZ.GetId()
-print hypNbSegZ.GetName()
-print hypNbSegZID
-print hypNbSegZ.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSegZ), "NumberOfSegmentsZ")
-
-# ---- create Algorithms
-
-print "-------------------------- create Algorithms"
-
-print "-------------------------- Regular_1D"
-
-regular1D=smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
-
-print "-------------------------- Quadrangle_2D"
-
-quad2D=smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(quad2D), "Quadrangle_2D")
-
-print "-------------------------- Hexa_3D"
-
-hexa3D=smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(hexa3D), "Hexa_3D")
-
-# ---- init a Mesh with the volume
-
-mesh = smesh.CreateMesh(vol)
-smeshgui.SetName(salome.ObjectToID(mesh), "meshVolume")
-
-# ---- add hypothesis to the volume
-
-print "-------------------------- add hypothesis to the volume"
-
-ret=mesh.AddHypothesis(vol,regular1D)
-print ret
-ret=mesh.AddHypothesis(vol,hypNbSeg)
-print ret
-ret=mesh.AddHypothesis(vol,quad2D)
-print ret
-ret=mesh.AddHypothesis(vol,hexa3D)
-print ret
-
 for i in range(8):
     print "-------------------------- add hypothesis to edge in the Z directions", (i+1)
 
-    subMeshEdgeZ = mesh.GetSubMesh(edgeZ[i],"SubMeshEdgeZ_"+str(i+1))
-
-    retZ = mesh.AddHypothesis(edgeZ[i],hypNbSegZ)
-    print " add hyp Z ", retZ
+    algo = mesh.Segment(edgeZ[i])
+    hyp = algo.NumberOfSegments(numberOfSegmentsZ)
+    smesh.SetName(hyp, "NumberOfSegmentsZ")
+    smesh.SetName(algo.GetSubMesh(), "SubMeshEdgeZ_"+str(i+1))
+  
 
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute the mesh of the volume"
 
-ret=smesh.Compute(mesh,vol)
+ret=mesh.Compute()
 
 print ret
 if ret != 0:

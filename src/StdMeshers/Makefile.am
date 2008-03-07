@@ -1,0 +1,130 @@
+#  SMESH StdMeshers : implementaion of SMESH idl descriptions
+#
+#  Copyright (C) 2003  CEA
+# 
+#  This library is free software; you can redistribute it and/or 
+#  modify it under the terms of the GNU Lesser General Public 
+#  License as published by the Free Software Foundation; either 
+#  version 2.1 of the License. 
+# 
+#  This library is distributed in the hope that it will be useful, 
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+#  Lesser General Public License for more details. 
+# 
+#  You should have received a copy of the GNU Lesser General Public 
+#  License along with this library; if not, write to the Free Software 
+#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+# 
+# See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+#
+#
+#
+#  File   : Makefile.in
+#  Author : Julia DOROVSKIKH
+#  Modified by : Alexander BORODIN (OCN) - autotools usage
+#  Module : SMESH
+
+include $(top_srcdir)/adm_local/unix/make_common_starter.am
+
+# header files 
+salomeinclude_HEADERS = \
+	StdMeshers_LocalLength.hxx \
+	StdMeshers_StartEndLength.hxx \
+	StdMeshers_Arithmetic1D.hxx \
+	StdMeshers_NumberOfSegments.hxx \
+	StdMeshers_Deflection1D.hxx \
+	StdMeshers_Propagation.hxx \
+	StdMeshers_LengthFromEdges.hxx \
+	StdMeshers_MaxElementArea.hxx \
+	StdMeshers_MaxElementVolume.hxx \
+	StdMeshers_NotConformAllowed.hxx \
+	StdMeshers_Regular_1D.hxx \
+	StdMeshers_Quadrangle_2D.hxx \
+	StdMeshers_MEFISTO_2D.hxx \
+	StdMeshers_Hexa_3D.hxx \
+	StdMeshers_AutomaticLength.hxx \
+	StdMeshers_Distribution.hxx \
+	StdMeshers_QuadranglePreference.hxx \
+	StdMeshers_QuadraticMesh.hxx \
+	StdMeshers_NumberOfLayers.hxx \
+	StdMeshers_Prism_3D.hxx \
+	StdMeshers_ProjectionSource1D.hxx \
+	StdMeshers_ProjectionSource2D.hxx \
+	StdMeshers_ProjectionSource3D.hxx \
+	StdMeshers_Projection_1D.hxx \
+	StdMeshers_Projection_2D.hxx \
+	StdMeshers_Projection_3D.hxx \
+	StdMeshers_RadialPrism_3D.hxx  \
+	StdMeshers_ProjectionUtils.hxx \
+	StdMeshers_LayerDistribution.hxx \
+	StdMeshers_SegmentAroundVertex_0D.hxx \
+	StdMeshers_SegmentLengthAroundVertex.hxx \
+	StdMeshers_FaceSide.hxx \
+	StdMeshers_CompositeSegment_1D.hxx \
+	StdMeshers_UseExisting_1D2D.hxx \
+	SMESH_StdMeshers.hxx
+
+# Libraries targets
+
+lib_LTLIBRARIES = libStdMeshers.la
+
+dist_libStdMeshers_la_SOURCES = \
+	StdMeshers_LocalLength.cxx \
+	StdMeshers_StartEndLength.cxx \
+	StdMeshers_Arithmetic1D.cxx \
+	StdMeshers_NumberOfSegments.cxx \
+	StdMeshers_Deflection1D.cxx \
+	StdMeshers_Propagation.cxx \
+	StdMeshers_LengthFromEdges.cxx \
+	StdMeshers_MaxElementArea.cxx \
+	StdMeshers_MaxElementVolume.cxx \
+	StdMeshers_NotConformAllowed.cxx \
+	StdMeshers_Regular_1D.cxx \
+	StdMeshers_Quadrangle_2D.cxx \
+	StdMeshers_MEFISTO_2D.cxx \
+	StdMeshers_Penta_3D.cxx \
+	StdMeshers_Hexa_3D.cxx \
+	StdMeshers_AutomaticLength.cxx \
+	StdMeshers_Distribution.cxx \
+	StdMeshers_QuadranglePreference.cxx \
+	StdMeshers_QuadraticMesh.cxx \
+	StdMeshers_NumberOfLayers.cxx \
+	StdMeshers_Prism_3D.cxx \
+	StdMeshers_ProjectionSource1D.cxx \
+	StdMeshers_ProjectionSource2D.cxx \
+	StdMeshers_ProjectionSource3D.cxx \
+	StdMeshers_Projection_1D.cxx \
+	StdMeshers_Projection_2D.cxx \
+	StdMeshers_Projection_3D.cxx \
+	StdMeshers_RadialPrism_3D.cxx \
+	StdMeshers_ProjectionUtils.cxx \
+	StdMeshers_LayerDistribution.cxx \
+	StdMeshers_SegmentAroundVertex_0D.cxx \
+	StdMeshers_SegmentLengthAroundVertex.cxx \
+	StdMeshers_FaceSide.cxx \
+	StdMeshers_CompositeSegment_1D.cxx \
+	StdMeshers_UseExisting_1D2D.cxx
+
+
+# additionnal information to compil and link file
+libStdMeshers_la_CPPFLAGS = \
+	$(CAS_CPPFLAGS) \
+	$(BOOST_CPPFLAGS) \
+	$(KERNEL_CXXFLAGS) \
+	$(GUI_CXXFLAGS) \
+	-I$(srcdir)/../SMESHImpl \
+	-I$(srcdir)/../MEFISTO2 \
+	-I$(srcdir)/../SMESH \
+	-I$(srcdir)/../SMESHDS \
+	-I$(srcdir)/../SMDS \
+	-I$(srcdir)/../Controls \
+	@PLATFORM_INCLUDES@
+
+libStdMeshers_la_LDFLAGS  = \
+	../SMESH/libSMESHimpl.la \
+	../SMESH_I/libSMESHEngine.la \
+	../SMESHDS/libSMESHDS.la \
+	../MEFISTO2/libMEFISTO2D.la \
+	$(KERNEL_LDFLAGS) -lSALOMELocalTrace -lOpUtil \
+	$(CAS_LDPATH) -lTKAdvTools -lTKTopAlgo -lTKG3d

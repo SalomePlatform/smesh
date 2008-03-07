@@ -27,16 +27,16 @@
 #ifndef _SMESHDS_SubMesh_HeaderFile
 #define _SMESHDS_SubMesh_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMDS_Mesh.hxx"
 #include <set>
 
-#if defined WNT && defined WIN32 && defined SMESHDS_EXPORTS
-#define SMESHDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMESHDS_WNT_EXPORT
-#endif
+class SMESHDS_SubMesh;
+typedef SMDS_Iterator<const SMESHDS_SubMesh*> SMESHDS_SubMeshIterator;
+typedef boost::shared_ptr< SMESHDS_SubMeshIterator > SMESHDS_SubMeshIteratorPtr;
 
-class SMESHDS_WNT_EXPORT SMESHDS_SubMesh
+class SMESHDS_EXPORT SMESHDS_SubMesh
 {
  public:
 
@@ -52,6 +52,8 @@ class SMESHDS_WNT_EXPORT SMESHDS_SubMesh
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh );
   bool ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const;
+  int  NbSubMeshes() const { return mySubMeshes.size(); }
+  SMESHDS_SubMeshIteratorPtr GetSubMeshIterator() const;
 
   // for both types
   int NbElements() const;

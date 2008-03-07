@@ -30,6 +30,8 @@
 #ifndef _SMESH_StartEndLength_I_HXX_
 #define _SMESH_StartEndLength_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // ======================================================
 // Local Length hypothesis
 // ======================================================
-class StdMeshers_StartEndLength_i:
+class STDMESHERS_I_EXPORT StdMeshers_StartEndLength_i:
   public virtual POA_StdMeshers::StdMeshers_StartEndLength,
   public virtual SMESH_Hypothesis_i
 {

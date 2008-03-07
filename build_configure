@@ -6,11 +6,13 @@
 #
 # Author : Marc Tajchman - CEA
 # Date : 10/10/2002
+# Modified by : Alexander BORODIN (OCN) - autotools usage
 # $Header$
 #
 
 ORIG_DIR=`pwd`
 CONF_DIR=`echo $0 | sed -e "s,[^/]*$,,;s,/$,,;s,^$,.,"`
+SMESH_WITH_GUI="yes"
 
 ########################################################################
 # Test if the KERNEL_ROOT_DIR is set correctly
@@ -27,12 +29,26 @@ fi
 #    exit
 #fi
 
+for option
+do
+  case $option in
+      -with-ihm | --with-ihm)
+          SMESH_WITH_GUI="yes"
+          break;;
+      -without-ihm | --without-ihm | -with-ihm=no | --with-ihm=no)
+          SMESH_WITH_GUI="no"
+          break;;
+  esac
+done
+
 ########################################################################
 # Test if the GUI_ROOT_DIR is set correctly
 
-if test ! -d "${GUI_ROOT_DIR}"; then
-    echo "failed : GUI_ROOT_DIR variable is not correct !"
-    exit
+if test ${SMESH_WITH_GUI} = yes; then
+    if test ! -d "${GUI_ROOT_DIR}"; then
+        echo "failed : GUI_ROOT_DIR variable is not correct !"
+        exit
+    fi
 fi
 
 ########################################################################
@@ -51,194 +67,91 @@ if test ! -d "${GEOM_ROOT_DIR}"; then
     exit
 fi
 
-########################################################################
-# find_in - utility function
-#
-# usage :  
-#    find_in directory filename 
-#
-# Finds files following the *.in pattern, recursively in the
-# directory (first argument).
-# Results are appended into the file (second argument)
-#
-# Difference from the standard unix find is that files are tested
-# before directories
-# 
-
-find_in()
-{
-  local i
-  local f=$2
-
-# if the first argument is not a directory, returns
-
-  if [ ! -d "$1" ] ; then 
-     return 
-  fi
-
-# dont look in the CVS directories
-
-  case $1 in
-    */CVS) return ;;
-	*/adm_local/*) return ;;
-    *) ;;
-  esac
-
-# for each regular file contained in the directory
-# test if it's a .in file
-
-  for i in "$1"/*
-  do
-     if [ -f "$i" ] ; then
-       case $i in 
-         *.in) echo "	"$i" \\" >> $f;;
-         *) ;;
-        esac
-     fi
-  done
-
-# for each subdirectory of the first argument, proceeds recursively
-
-  for i in "$1"/*
-  do
-     if [ -d "$i" ] ; then
-        find_in "$i" "$f"
-     fi
-  done
-}
-
-
-#######################################################################
-# Generate list of .in files (Makefile.in, config.h.in, etc)
-# appending it in file configure.in
 
 cd ${CONF_DIR}
 ABS_CONF_DIR=`pwd`
 
-#
-# Common part of the configure.in file
-#
-chmod u+w configure.in.base
-if ! \cp -f configure.in.base configure.in_tmp1 
-then
-	echo
-	echo "error : can't create files in" ${CONF_DIR}
-	echo "aborting ..."
-        chmod u-w configure.in.base 
-	exit
-fi
-chmod u-w configure.in.base 
+#######################################################################
+# Update configure.ac script: to set SMESH_WITH_GUI variable
+sed -e s/SMESH_WITH_GUI=[a-z]*/SMESH_WITH_GUI=${SMESH_WITH_GUI}/g configure.ac > configure.tmp
+mv -f configure.tmp configure.ac
 
-if [ -e "${CONF_DIR}/salome_adm" ] ; then
-    \rm -f ${CONF_DIR}/salome_adm
-fi
+mkdir -p salome_adm/unix/config_files
+#cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files/* salome_adm/unix/config_files
+#cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/pythonbe.py salome_adm/unix
 
-# make a link allowing AC_OUTPUT to find the salome_adm/.../*.in  files
-echo "" >> configure.in_tmp1
-echo 'ln -fs ${KERNEL_ROOT_DIR}/salome_adm ${ROOT_SRCDIR}/.' >> configure.in_tmp1
+cp -f ${KERNEL_ROOT_DIR}/salome_adm/unix/SALOMEconfig.h.in salome_adm/unix
 
-echo  "" >> configure.in_tmp1
-echo "AC_OUTPUT([ \\" >> configure.in_tmp1
+#cp -f ${GUI_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
+#cp -f ${MED_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
+#cp -f ${GEOM_ROOT_DIR}/adm_local/unix/config_files/* salome_adm/unix/config_files
 
-#
-# List of .in files in the adm/unix directory
-# These files MUST be on top of AC_OUTPUT list so we
-# put them "manually"
-#
+# remove KERNEL deprecated configure files
+#for deprecated in ac_cc_warnings.m4 ac_cxx_partial_specialization.m4 \
+#  check_mico.m4 config.guess ltmain.sh ac_cxx_bool.m4 ltconfig ac_cxx_typename.m4 \
+#    check_pthreads.m4 config.sub libtool.m4 ac_cxx_mutable.m4 missing
+#    do
+#      rm -f salome_adm/unix/config_files/${deprecated}
+#      done
+      
 
-echo "	./salome_adm/unix/SALOMEconfig.h \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/F77config.h \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/sstream \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/depend \\" >> configure.in_tmp1
-echo "	./adm_local/unix/make_omniorb:${ABS_CONF_DIR}/adm_local/unix/make_omniorb.in \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/envScript \\" >> configure.in_tmp1
-echo "	./adm_local/unix/make_commence:${ABS_CONF_DIR}/adm_local/unix/make_commence.in \\" >> configure.in_tmp1
-echo "	./adm_local/unix/make_conclude:${ABS_CONF_DIR}/adm_local/unix/make_conclude.in \\" >> configure.in_tmp1
-echo "	./salome_adm/unix/make_module \\" >> configure.in_tmp1
+# ____________________________________________________________________
+# aclocal creates the aclocal.m4 file from the standard macro and the
+# custom macro embedded in the directory salome_adm/unix/config_files
+# and KERNEL config_files directory.
+# output:
+#   aclocal.m4
+#   autom4te.cache (directory)
+echo "====================================================== aclocal"
 
-\rm -f configure.in_tmp2 configure.in_tmp3
-touch configure.in_tmp2
-find_in . configure.in_tmp2
-sed -e '/^...salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
-sed -e '/^...adm_local.unix.make_omniorb/d' configure.in_tmp3 > configure.in_tmp2
-sed -e '/^...adm_local.unix.make_commence/d' configure.in_tmp2 > configure.in_tmp3
-sed -e '/configure.in/d' configure.in_tmp3 >  configure.in_tmp2
-sed -e 's/.in / /' configure.in_tmp2 >>  configure.in_tmp1
-#sed '/^.salome_adm/d' configure.in_tmp2 >  configure.in_tmp3
-#sed '/configure.in/d' configure.in_tmp3 >  configure.in_tmp2
-#sed 's/.in / /' configure.in_tmp2 >> configure.in_tmp1
-
-echo  "])" >> configure.in_tmp1
-
-# delete the link created for AC_OUTPUT
-echo "" >> configure.in_tmp1
-#echo 'rm -f ${ROOT_SRCDIR}/salome_adm' >> configure.in_tmp1
-\mv configure.in_tmp1 configure.in_new
-\rm  -f configure.in_tmp2 configure.in_tmp3
-
-
-########################################################################
-# Create new (or replace old) configure.in file
-# Print a message if the file is write protected
-#
-
-echo
-if test ! -f configure.in
-then
-	echo -n "Creating new file 'configure.in' ... "
-	if \mv configure.in_new configure.in >& /dev/null
-	then
-		echo "done"
-	else
-	 	echo "error, check your file permissions"
-	fi
+if test ${SMESH_WITH_GUI} = yes; then
+  aclocal -I adm_local/unix/config_files \
+          -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
+	  -I ${GUI_ROOT_DIR}/adm_local/unix/config_files \
+	  -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
+	  -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
 else
-	echo -n "Updating 'configure.in' file ... "
-	if ! \cp configure.in configure.in_old >& /dev/null
-	then
-		echo
-		echo
-		echo "Can't backup previous configure.in"
-		echo -n "Continue (you will not be able to revert) - (Y/N) ? "
-		read R
-                case "x$R" in
-		    xn*) exit;;
-    		    xN*) exit;;
-		esac
-		echo
-		echo -n "                                 "
-	fi
-	if \cp configure.in_new configure.in >& /dev/null
-	then
-		echo "done"
-	else
-		echo
-		echo "error, can't update previous configure.in"
-	fi
+  aclocal -I adm_local/unix/config_files \
+          -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
+	  -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
+	  -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files || exit 1
 fi
 
-########################################################################
-# Use autoconf to rebuild the configure script
-#
+# ____________________________________________________________________
+# libtoolize creates some configuration files (ltmain.sh,
+# config.guess and config.sub). It only depends on the libtool
+# version. The files are created in the directory specified with the
+# AC_CONFIG_AUX_DIR(<mydir>) tag (see configure.ac).
+# output:
+#   salome_adm/unix/config_files/config.guess
+#   salome_adm/unix/config_files/config.sub
+#   salome_adm/unix/config_files/ltmain.sh
+#echo "====================================================== libtoolize"
 
-if test -f configure
-then
-	echo -n "Updating 'configure' script ...  "
-else
-	echo -n "Creating 'configure' script ...  "
-fi
+libtoolize --force --copy --automake || exit 1
 
-aclocal -I adm_local/unix/config_files -I ${KERNEL_ROOT_DIR}/salome_adm/unix/config_files \
-                                       -I ${GUI_ROOT_DIR}/adm_local/unix/config_files \
-                                       -I ${MED_ROOT_DIR}/adm_local/unix/config_files \
-                                       -I ${GEOM_ROOT_DIR}/adm_local/unix/config_files
-if autoconf
-then
-	echo "done"
-else
-	echo "failed (check file permissions and/or user quotas ...)"
-fi
+# ____________________________________________________________________
+# autoconf creates the configure script from the file configure.ac (or
+# configure.in if configure.ac doesn't exist)
+# output:
+#   configure
+echo "====================================================== autoconf"
 
-cd ${ORIG_DIR}
+autoconf
 
-echo
+# ____________________________________________________________________
+# automake creates some scripts used in building process
+# (install-sh, missing, ...). It only depends on the automake
+# version. The files are created in the directory specified with the
+# AC_CONFIG_AUX_DIR(<mydir>) tag (see configure.ac). This step also
+# creates the Makefile.in files from the Makefile.am files.
+# output:
+#   salome_adm/unix/config_files/compile
+#   salome_adm/unix/config_files/depcomp
+#   salome_adm/unix/config_files/install-sh
+#   salome_adm/unix/config_files/missing
+#   salome_adm/unix/config_files/py-compile
+#   Makefile.in (from Makefile.am)
+echo "====================================================== automake"
+
+automake --copy --gnu --add-missing

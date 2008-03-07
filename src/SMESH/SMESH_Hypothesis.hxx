@@ -29,28 +29,33 @@
 #ifndef _SMESH_HYPOTHESIS_HXX_
 #define _SMESH_HYPOTHESIS_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Hypothesis.hxx"
 
 class SMESH_Gen;
 class TopoDS_Shape;
 class SMESH_Mesh;
 
-class SMESH_Hypothesis: public SMESHDS_Hypothesis
+class SMESH_EXPORT SMESH_Hypothesis: public SMESHDS_Hypothesis
 {
 public:
   enum Hypothesis_Status // in the order of severity
   {
-    HYP_OK,
+    HYP_OK = 0,
     HYP_MISSING,      // algo misses a hypothesis
     HYP_CONCURENT,    // several applicable hypotheses
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
+    HYP_HIDDEN_ALGO,  // an algo is hidden by an upper dim algo generating all-dim elements
+    HYP_HIDING_ALGO,  // an algo hides lower dim algos by generating all-dim elements
     HYP_UNKNOWN_FATAL,//  --- all statuses below should be considered as fatal
                       //      for Add/RemoveHypothesis operations
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
     HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
-    HYP_BAD_SUBSHAPE  // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
+    HYP_BAD_GEOMETRY  // shape geometry mismatches algorithm's expectation
   };
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }
@@ -81,7 +86,7 @@ public:
    * dimention can be assigned to the shape
    */
   virtual bool IsAuxiliary() const
-  { return GetType() == PARAM_ALGO && _param_algo_dim <= 0; }
+  { return GetType() == PARAM_ALGO && _param_algo_dim < 0; }
 
 protected:
   SMESH_Gen* _gen;

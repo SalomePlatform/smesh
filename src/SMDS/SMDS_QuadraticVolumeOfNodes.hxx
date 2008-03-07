@@ -27,9 +27,11 @@
 #ifndef _SMDS_QuadraticVolumeOfNodes_HeaderFile
 #define _SMDS_QuadraticVolumeOfNodes_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshVolume.hxx"
 
-class SMDS_WNT_EXPORT SMDS_QuadraticVolumeOfNodes: public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_QuadraticVolumeOfNodes: public SMDS_MeshVolume
 {
 public:
   // tetrahedron of 10 nodes

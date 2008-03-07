@@ -23,11 +23,13 @@
 #ifndef _SMESH_LogicalFilter_HeaderFile
 #define _SMESH_LogicalFilter_HeaderFile
 
+#include "SMESH_Type.h"
+
 #include <SUIT_SelectionFilter.h>
 
 #include <qptrlist.h>
 
-class SMESH_LogicalFilter : public SUIT_SelectionFilter
+class SMESHFILTERSSELECTION_EXPORT SMESH_LogicalFilter : public SUIT_SelectionFilter
 {
  public:
   enum { LO_OR, LO_AND, LO_NOT, LO_UNDEFINED };

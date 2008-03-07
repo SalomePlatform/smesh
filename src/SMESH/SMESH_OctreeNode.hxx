@@ -27,23 +27,31 @@
 // Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
 // Module    : SMESH
 
+using namespace std;
+
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
 #include "SMESH_Octree.hxx"
 
-//forward declaration
-class SMDS_MeshNode;
-
 #include <list>
 #include <set>
+
+#include "SMDS_ElemIterator.hxx"
+
+//forward declaration
+class SMDS_MeshNode;
+class SMESH_OctreeNode;
+
+typedef SMDS_Iterator<SMESH_OctreeNode*>            SMESH_OctreeNodeIterator;
+typedef boost::shared_ptr<SMESH_OctreeNodeIterator> SMESH_OctreeNodeIteratorPtr;
 
 class SMESH_OctreeNode : public SMESH_Octree{
 
 public:
 
   // Constructor
-  SMESH_OctreeNode (set<const SMDS_MeshNode*>  theNodes, const int maxLevel = -1,
+  SMESH_OctreeNode (const set<const SMDS_MeshNode*>& theNodes, const int maxLevel = -1,
                     const int maxNbNodes = 5 , const double minBoxSize = 0.);
 
 //=============================
@@ -75,8 +83,20 @@ public:
                                            list< list< const SMDS_MeshNode*> >* theGroupsOfNodes,
                                            const double theTolerance = 0.00001, const int maxLevel = -1,
                                            const int maxNbNodes = 5);
+  /*!
+   * \brief Return iterator over children
+   */
+  SMESH_OctreeNodeIteratorPtr GetChildrenIterator();
+  /*!
+   * \brief Return nodes iterator
+   */
+  SMDS_NodeIteratorPtr        GetNodeIterator();
+  /*!
+   * \brief Return nb nodes in a tree
+   */
+  int                         NbNodes() const { return myNbNodes; }
 
-  protected:
+protected:
 
 //=============================
 /*!

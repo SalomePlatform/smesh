@@ -27,6 +27,8 @@
 #ifndef _INCLUDE_DRIVERMED_W_SMESHDS_MESH
 #define _INCLUDE_DRIVERMED_W_SMESHDS_MESH
 
+#include "SMESH_DriverMED.hxx"
+
 #include "Driver_SMESHDS_Mesh.h"
 #include "MED_Factory.hxx"
 
@@ -38,7 +40,7 @@ class SMESHDS_Mesh;
 class SMESHDS_GroupBase;
 class SMESHDS_SubMesh;
 
-class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
+class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
   public:
 
@@ -46,6 +48,7 @@ class DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   virtual void SetFile(const std::string& theFileName);
   void SetFile(const std::string& theFileName, MED::EVersion theId);
+  static std::string GetVersionString(const MED::EVersion theVersion, int theNbDigits=2);
 
   /*! sets file name; only for usage with Add(), not Write()
    */

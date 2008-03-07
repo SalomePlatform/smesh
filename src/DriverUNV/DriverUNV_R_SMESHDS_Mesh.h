@@ -20,9 +20,11 @@
 #ifndef _INCLUDE_DRIVERUNV_R_SMESHDS_MESH
 #define _INCLUDE_DRIVERUNV_R_SMESHDS_MESH
 
+#include "SMESH_DriverUNV.hxx"
+
 #include "Driver_SMESHDS_Mesh.h"
 
-class DriverUNV_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
+class MESHDRIVERUNV_EXPORT DriverUNV_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {};
 
 #endif

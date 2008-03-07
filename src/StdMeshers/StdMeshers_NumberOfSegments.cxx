@@ -33,8 +33,6 @@
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include "CASCatch.hxx"
-
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <Expr_NamedUnknown.hxx>
@@ -42,6 +40,16 @@
 #include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#define NO_CAS_CATCH
+#endif
+
+#include <Standard_Failure.hxx>
+
+#ifdef NO_CAS_CATCH
+#include <Standard_ErrorHandler.hxx>
+#endif
 
 using namespace std;
 
@@ -53,8 +61,9 @@ const double PRECISION = 1e-7;
  */
 //=============================================================================
 
-StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int hypId, int studyId,
-	SMESH_Gen * gen)
+StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int         hypId,
+                                                         int         studyId,
+                                                         SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, studyId, gen),
     _numberOfSegments(1),
     _distrType(DT_Regular),
@@ -80,17 +89,20 @@ StdMeshers_NumberOfSegments::~StdMeshers_NumberOfSegments()
  *  
  */
 //=============================================================================
-const std::vector<double>& StdMeshers_NumberOfSegments::BuildDistributionExpr( const char* expr, int nbSeg, int conv )
-throw ( SALOME_Exception )
+const vector<double>&
+StdMeshers_NumberOfSegments::BuildDistributionExpr( const char* expr,int nbSeg,int conv )
+  throw ( SALOME_Exception )
 {
   if( !buildDistribution( TCollection_AsciiString( ( Standard_CString )expr ), conv, 0.0, 1.0, nbSeg, _distr, 1E-4 ) )
     _distr.resize( 0 );
   return _distr;
 }
 
-const std::vector<double>& StdMeshers_NumberOfSegments::BuildDistributionTab( const std::vector<double>& tab,
-									      int nbSeg, int conv )
-throw ( SALOME_Exception )
+const vector<double>&
+StdMeshers_NumberOfSegments::BuildDistributionTab( const vector<double>& tab,
+                                                   int nbSeg,
+                                                   int conv )
+  throw ( SALOME_Exception )
 {
   if( !buildDistribution( tab, conv, 0.0, 1.0, nbSeg, _distr, 1E-4 ) )
     _distr.resize( 0 );
@@ -106,14 +118,13 @@ throw ( SALOME_Exception )
 void StdMeshers_NumberOfSegments::SetNumberOfSegments(int segmentsNumber)
 throw(SALOME_Exception)
 {
-	int oldNumberOfSegments = _numberOfSegments;
-	if (segmentsNumber <= 0)
-		throw
-			SALOME_Exception(LOCALIZED("number of segments must be positive"));
-	_numberOfSegments = segmentsNumber;
+  int oldNumberOfSegments = _numberOfSegments;
+  if (segmentsNumber <= 0)
+    throw SALOME_Exception(LOCALIZED("number of segments must be positive"));
+  _numberOfSegments = segmentsNumber;
 
-	if (oldNumberOfSegments != _numberOfSegments)
-		NotifySubMeshesHypothesisModification();
+  if (oldNumberOfSegments != _numberOfSegments)
+    NotifySubMeshesHypothesisModification();
 }
 
 //=============================================================================
@@ -124,7 +135,7 @@ throw(SALOME_Exception)
 
 int StdMeshers_NumberOfSegments::GetNumberOfSegments() const
 {
-	return _numberOfSegments;
+  return _numberOfSegments;
 }
 
 //================================================================================
@@ -167,7 +178,8 @@ void StdMeshers_NumberOfSegments::SetScaleFactor(double scaleFactor)
   throw(SALOME_Exception)
 {
   if (_distrType != DT_Scale)
-    throw SALOME_Exception(LOCALIZED("not a scale distribution"));
+    _distrType = DT_Scale;
+    //throw SALOME_Exception(LOCALIZED("not a scale distribution"));
   if (scaleFactor < PRECISION)
     throw SALOME_Exception(LOCALIZED("scale factor must be positive"));
   //if (fabs(scaleFactor - 1.0) < PRECISION)
@@ -200,11 +212,12 @@ double StdMeshers_NumberOfSegments::GetScaleFactor() const
  */
 //================================================================================
 
-void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& table)
+void StdMeshers_NumberOfSegments::SetTableFunction(const vector<double>& table)
   throw(SALOME_Exception)
 {
   if (_distrType != DT_TabFunc)
-    throw SALOME_Exception(LOCALIZED("not a table function distribution"));
+    _distrType = DT_TabFunc;
+  //throw SALOME_Exception(LOCALIZED("not a table function distribution"));
   if ( (table.size() % 2) != 0 )
     throw SALOME_Exception(LOCALIZED("odd size of vector of table function"));
 
@@ -218,12 +231,12 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
     double val = table[i*2+1];
     if( _convMode==0 )
     {
-      CASCatch_TRY
-      {
+      try {
+#ifdef NO_CAS_CATCH
+        OCC_CATCH_SIGNALS;
+#endif
 	val = pow( 10.0, val );
-      }
-      CASCatch_CATCH(Standard_Failure)
-      {
+      } catch(Standard_Failure) {
 	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	throw SALOME_Exception( LOCALIZED( "invalid value"));
 	return;
@@ -266,7 +279,7 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const std::vector<double>& ta
  */
 //================================================================================
 
-const std::vector<double>& StdMeshers_NumberOfSegments::GetTableFunction() const
+const vector<double>& StdMeshers_NumberOfSegments::GetTableFunction() const
   throw(SALOME_Exception)
 {
   if (_distrType != DT_TabFunc)
@@ -312,13 +325,13 @@ bool process( const TCollection_AsciiString& str, int convMode,
 {
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
-  CASCatch_TRY
-  {
+  try {
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( str.ToCString() );
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
@@ -374,7 +387,8 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
   throw(SALOME_Exception)
 {
   if (_distrType != DT_ExprFunc)
-    throw SALOME_Exception(LOCALIZED("not an expression function distribution"));
+    _distrType = DT_ExprFunc;
+    //throw SALOME_Exception(LOCALIZED("not an expression function distribution"));
 
   // remove white spaces
   TCollection_AsciiString str((Standard_CString)expr);
@@ -406,7 +420,7 @@ void StdMeshers_NumberOfSegments::SetExpressionFunction(const char* expr)
     return;
   }
   
-  std::string func = expr;
+  string func = expr;
   if( _func != func )
   {
     _func = func;
@@ -437,8 +451,8 @@ const char* StdMeshers_NumberOfSegments::GetExpressionFunction() const
 void StdMeshers_NumberOfSegments::SetConversionMode( int conv )
   throw(SALOME_Exception)
 {
-  if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
-    throw SALOME_Exception(LOCALIZED("not a functional distribution"));
+//   if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
+//     throw SALOME_Exception(LOCALIZED("not a functional distribution"));
 
   if( conv != _convMode )
   {
@@ -456,8 +470,8 @@ void StdMeshers_NumberOfSegments::SetConversionMode( int conv )
 int StdMeshers_NumberOfSegments::ConversionMode() const
   throw(SALOME_Exception)
 {
-  if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
-    throw SALOME_Exception(LOCALIZED("not a functional distribution"));
+//   if (_distrType != DT_TabFunc && _distrType != DT_ExprFunc)
+//     throw SALOME_Exception(LOCALIZED("not a functional distribution"));
   return _convMode;
 }
 
@@ -653,10 +667,10 @@ bool StdMeshers_NumberOfSegments::SetParametersByMesh(const SMESH_Mesh*   theMes
   int nbEdges = 0;
   TopTools_IndexedMapOfShape edgeMap;
   TopExp::MapShapes( theShape, TopAbs_EDGE, edgeMap );
+  SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
   for ( int i = 1; i <= edgeMap.Extent(); ++i )
   {
     // get current segment length
-    SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
     SMESHDS_SubMesh * eSubMesh = aMeshDS->MeshElements( edgeMap( i ));
     if ( eSubMesh && eSubMesh->NbElements())
       _numberOfSegments += eSubMesh->NbElements();

@@ -1,0 +1,16 @@
+/*!
+
+\page max_element_volume_hypo_page Max Element Volume hypothesis
+
+\n <b>Max Element Volume </b> hypothesis is applied for meshing of 3D objects
+composing your geometrical object. Definition of this hypothesis
+consists of setting the <b>maximum volume</b> of 3D meshing elements
+(depending on the chosen meshing algorithm it can be \b hexahedrons or
+\b tetrahedrons), which will compose the mesh of these 3D objects.
+
+\image html a-maxelvolume.png
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_max_element_volume "Maximum Element Volume hypothesis" operation.  
+
+*/

@@ -28,6 +28,8 @@
 #ifndef _SMESH_FILTER_I_HXX_
 #define _SMESH_FILTER_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 
@@ -50,7 +52,7 @@ namespace SMESH
       Description : Predicate for verifying whether entiy belong to
       specified geometrical support
     */
-    class BelongToGeom: public virtual Predicate
+    class SMESH_I_EXPORT BelongToGeom: public virtual Predicate
     {
     public:
       BelongToGeom();
@@ -78,7 +80,7 @@ namespace SMESH
       Description : Predicate for verifying whether entiy lying or partially lying on
       specified geometrical support
     */
-    class LyingOnGeom: public virtual Predicate
+    class SMESH_I_EXPORT LyingOnGeom: public virtual Predicate
     {
     public:
       LyingOnGeom();
@@ -115,7 +117,7 @@ namespace SMESH
     Class       : Functor_i
     Description : An abstact class for all functors 
   */
-  class Functor_i: public virtual POA_SMESH::Functor,
+  class SMESH_I_EXPORT Functor_i: public virtual POA_SMESH::Functor,
 		   public virtual SALOME::GenericObj_i
   {
   public:
@@ -134,7 +136,7 @@ namespace SMESH
     Class       : NumericalFunctor_i
     Description : Base class for numerical functors 
   */
-  class NumericalFunctor_i: public virtual POA_SMESH::NumericalFunctor,
+  class SMESH_I_EXPORT NumericalFunctor_i: public virtual POA_SMESH::NumericalFunctor,
 			    public virtual Functor_i
   {
   public:
@@ -152,7 +154,7 @@ namespace SMESH
     Class       : SMESH_MinimumAngleFunct
     Description : Functor for calculation of minimum angle
   */
-  class MinimumAngle_i: public virtual POA_SMESH::MinimumAngle,
+  class SMESH_I_EXPORT MinimumAngle_i: public virtual POA_SMESH::MinimumAngle,
 			public virtual NumericalFunctor_i
   {
   public:
@@ -165,7 +167,7 @@ namespace SMESH
     Class       : AspectRatio_i
     Description : Functor for calculating aspect ratio
   */
-  class AspectRatio_i: public virtual POA_SMESH::AspectRatio,
+  class SMESH_I_EXPORT AspectRatio_i: public virtual POA_SMESH::AspectRatio,
 		       public virtual NumericalFunctor_i
   {
   public:
@@ -178,7 +180,7 @@ namespace SMESH
     Class       : AspectRatio3D_i
     Description : Functor for calculating aspect ratio for 3D
   */
-  class AspectRatio3D_i: public virtual POA_SMESH::AspectRatio3D,
+  class SMESH_I_EXPORT AspectRatio3D_i: public virtual POA_SMESH::AspectRatio3D,
 			 public virtual NumericalFunctor_i
   {
   public:
@@ -191,7 +193,7 @@ namespace SMESH
     Class       : Warping_i
     Description : Functor for calculating warping
   */
-  class Warping_i: public virtual POA_SMESH::Warping,
+  class SMESH_I_EXPORT Warping_i: public virtual POA_SMESH::Warping,
 		   public virtual NumericalFunctor_i
   {
   public:
@@ -204,7 +206,7 @@ namespace SMESH
     Class       : Taper_i
     Description : Functor for calculating taper
   */
-  class Taper_i: public virtual POA_SMESH::Taper,
+  class SMESH_I_EXPORT Taper_i: public virtual POA_SMESH::Taper,
 		 public virtual NumericalFunctor_i
   {
   public:
@@ -217,7 +219,7 @@ namespace SMESH
     Class       : Skew_i
     Description : Functor for calculating skew in degrees
   */
-  class Skew_i: public virtual POA_SMESH::Skew,
+  class SMESH_I_EXPORT Skew_i: public virtual POA_SMESH::Skew,
 		public virtual NumericalFunctor_i
   {
   public:
@@ -230,7 +232,7 @@ namespace SMESH
     Class       : Area_i
     Description : Functor for calculating area
   */
-  class Area_i: public virtual POA_SMESH::Area,
+  class SMESH_I_EXPORT Area_i: public virtual POA_SMESH::Area,
 		public virtual NumericalFunctor_i
   {
   public:
@@ -243,7 +245,7 @@ namespace SMESH
     Class       : Volume3D_i
     Description : Functor for calculating volume of 3D element
   */
-  class Volume3D_i: public virtual POA_SMESH::Volume3D,
+  class SMESH_I_EXPORT Volume3D_i: public virtual POA_SMESH::Volume3D,
                     public virtual NumericalFunctor_i
   {
   public:
@@ -256,7 +258,7 @@ namespace SMESH
     Class       : Length_i
     Description : Functor for calculating length of edge
   */
-  class Length_i: public virtual POA_SMESH::Length,
+  class SMESH_I_EXPORT Length_i: public virtual POA_SMESH::Length,
 		  public virtual NumericalFunctor_i
   {
   public:
@@ -268,7 +270,7 @@ namespace SMESH
     Class       : Length2D_i
     Description : Functor for calculating length of edge
   */
-  class Length2D_i: public virtual POA_SMESH::Length2D,
+  class SMESH_I_EXPORT Length2D_i: public virtual POA_SMESH::Length2D,
 		    public virtual NumericalFunctor_i
   {
   public:
@@ -285,7 +287,7 @@ namespace SMESH
     Class       : MultiConnection_i
     Description : Functor for calculating number of faces conneted to the edge
   */
-  class MultiConnection_i: public virtual POA_SMESH::MultiConnection,
+  class SMESH_I_EXPORT MultiConnection_i: public virtual POA_SMESH::MultiConnection,
 			   public virtual NumericalFunctor_i
   {
   public:
@@ -297,7 +299,7 @@ namespace SMESH
     Class       : MultiConnection2D_i
     Description : Functor for calculating number of faces conneted to the edge
   */
-  class MultiConnection2D_i: public virtual POA_SMESH::MultiConnection2D,
+  class SMESH_I_EXPORT MultiConnection2D_i: public virtual POA_SMESH::MultiConnection2D,
 			     public virtual NumericalFunctor_i
   {
   public:
@@ -317,7 +319,7 @@ namespace SMESH
     Class       : Predicate_i
     Description : Base class for all predicates
   */
-  class Predicate_i: public virtual POA_SMESH::Predicate,
+  class SMESH_I_EXPORT Predicate_i: public virtual POA_SMESH::Predicate,
 		     public virtual Functor_i
   {
   public:
@@ -334,7 +336,7 @@ namespace SMESH
     Description : Verify whether a mesh volume is incorrectly oriented from
     the point of view of MED convention
   */
-  class BadOrientedVolume_i: public virtual POA_SMESH::BadOrientedVolume,
+  class SMESH_I_EXPORT BadOrientedVolume_i: public virtual POA_SMESH::BadOrientedVolume,
 			     public virtual Predicate_i
   {
   public:
@@ -346,7 +348,7 @@ namespace SMESH
     Class       : BelongToGeom_i
     Description : Predicate for selection on geometrical support
   */
-  class BelongToGeom_i: public virtual POA_SMESH::BelongToGeom,
+  class SMESH_I_EXPORT BelongToGeom_i: public virtual POA_SMESH::BelongToGeom,
 			public virtual Predicate_i
   {
   public:
@@ -374,7 +376,7 @@ namespace SMESH
     Class       : BelongToSurface_i
     Description : Verify whether mesh element lie in pointed Geom planar object
   */
-  class BelongToSurface_i: public virtual POA_SMESH::BelongToSurface,
+  class SMESH_I_EXPORT BelongToSurface_i: public virtual POA_SMESH::BelongToSurface,
 			   public virtual Predicate_i
   {
   public:
@@ -391,6 +393,9 @@ namespace SMESH
     void                            SetTolerance( CORBA::Double );
     CORBA::Double                   GetTolerance();
     
+    void                            SetUseBoundaries( CORBA::Boolean theUseBndRestrictions );
+    CORBA::Boolean                  GetUseBoundaries();
+
   protected:
     Controls::ElementsOnSurfacePtr  myElementsOnSurfacePtr;
     char*                           myShapeName;
@@ -402,7 +407,7 @@ namespace SMESH
     Class       : BelongToPlane_i
     Description : Verify whether mesh element lie in pointed Geom planar object
   */
-  class BelongToPlane_i: public virtual POA_SMESH::BelongToPlane,
+  class SMESH_I_EXPORT BelongToPlane_i: public virtual POA_SMESH::BelongToPlane,
 			 public virtual BelongToSurface_i
   {
   public:
@@ -415,7 +420,7 @@ namespace SMESH
     Class       : BelongToCylinder_i
     Description : Verify whether mesh element lie in pointed Geom cylindrical object
   */
-  class BelongToCylinder_i: public virtual POA_SMESH::BelongToCylinder,
+  class SMESH_I_EXPORT BelongToCylinder_i: public virtual POA_SMESH::BelongToCylinder,
 			    public virtual BelongToSurface_i
   {
   public:
@@ -423,12 +428,25 @@ namespace SMESH
     void                            SetCylinder( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
     FunctorType                     GetFunctorType();
   };
+
+  /*
+    Class       : BelongToGenSurface_i
+    Description : Verify whether mesh element lie on pointed Geom surfasic object
+  */
+  class BelongToGenSurface_i: public virtual POA_SMESH::BelongToGenSurface,
+                              public virtual BelongToSurface_i
+  {
+  public:
+    BelongToGenSurface_i();
+    void                            SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType );
+    FunctorType                     GetFunctorType();
+  };
   
   /*
     Class       : LyingOnGeom_i
     Description : Predicate for selection on geometrical support(lying or partially lying)
   */
-  class LyingOnGeom_i: public virtual POA_SMESH::LyingOnGeom,
+  class SMESH_I_EXPORT LyingOnGeom_i: public virtual POA_SMESH::LyingOnGeom,
 		       public virtual Predicate_i
   {
   public:
@@ -456,7 +474,7 @@ namespace SMESH
     Class       : FreeBorders_i
     Description : Predicate for free borders
   */
-  class FreeBorders_i: public virtual POA_SMESH::FreeBorders,
+  class SMESH_I_EXPORT FreeBorders_i: public virtual POA_SMESH::FreeBorders,
 		       public virtual Predicate_i
   {
   public:
@@ -469,7 +487,7 @@ namespace SMESH
     Class       : FreeEdges_i
     Description : Predicate for free edges
   */
-  class FreeEdges_i: public virtual POA_SMESH::FreeEdges,
+  class SMESH_I_EXPORT FreeEdges_i: public virtual POA_SMESH::FreeEdges,
 		     public virtual Predicate_i
   {
   public:
@@ -486,7 +504,7 @@ namespace SMESH
     Class       : RangeOfIds_i
     Description : Predicate for Range of Ids
   */
-  class RangeOfIds_i: public virtual POA_SMESH::RangeOfIds,
+  class SMESH_I_EXPORT RangeOfIds_i: public virtual POA_SMESH::RangeOfIds,
 		      public virtual Predicate_i
   {
   public:
@@ -506,7 +524,7 @@ namespace SMESH
     Class       : Comparator_i
     Description : Base class for comparators
   */
-  class Comparator_i: public virtual POA_SMESH::Comparator,
+  class SMESH_I_EXPORT Comparator_i: public virtual POA_SMESH::Comparator,
 		      public virtual Predicate_i
   {
   public:
@@ -531,7 +549,7 @@ namespace SMESH
     Class       : LessThan_i
     Description : Comparator "<"
   */
-  class LessThan_i: public virtual POA_SMESH::LessThan,
+  class SMESH_I_EXPORT LessThan_i: public virtual POA_SMESH::LessThan,
 		    public virtual Comparator_i
   {
   public:
@@ -544,7 +562,7 @@ namespace SMESH
     Class       : MoreThan_i
     Description : Comparator ">"
   */
-  class MoreThan_i: public virtual POA_SMESH::MoreThan,
+  class SMESH_I_EXPORT MoreThan_i: public virtual POA_SMESH::MoreThan,
 		    public virtual Comparator_i
   {
   public:
@@ -557,7 +575,7 @@ namespace SMESH
     Class       : EqualTo_i
     Description : Comparator "="
   */
-  class EqualTo_i: public virtual POA_SMESH::EqualTo,
+  class SMESH_I_EXPORT EqualTo_i: public virtual POA_SMESH::EqualTo,
 		   public virtual Comparator_i
   {
   public:
@@ -575,7 +593,7 @@ namespace SMESH
     Class       : LogicalNOT_i
     Description : Logical NOT predicate
   */
-  class LogicalNOT_i: public virtual POA_SMESH::LogicalNOT,
+  class SMESH_I_EXPORT LogicalNOT_i: public virtual POA_SMESH::LogicalNOT,
 		      public virtual Predicate_i
   {
   public:
@@ -596,7 +614,7 @@ namespace SMESH
     Class       : LogicalBinary_i
     Description : Base class for binary logical predicate
   */
-  class LogicalBinary_i: public virtual POA_SMESH::LogicalBinary,
+  class SMESH_I_EXPORT LogicalBinary_i: public virtual POA_SMESH::LogicalBinary,
 			 public virtual Predicate_i
   {
   public:
@@ -622,7 +640,7 @@ namespace SMESH
     Class       : LogicalAND_i
     Description : Logical AND
   */
-  class LogicalAND_i: public virtual POA_SMESH::LogicalAND,
+  class SMESH_I_EXPORT LogicalAND_i: public virtual POA_SMESH::LogicalAND,
 		      public virtual LogicalBinary_i
   {
   public:
@@ -635,7 +653,7 @@ namespace SMESH
     Class       : LogicalOR_i
     Description : Logical OR
   */
-  class LogicalOR_i: public virtual POA_SMESH::LogicalOR,
+  class SMESH_I_EXPORT LogicalOR_i: public virtual POA_SMESH::LogicalOR,
 		     public virtual LogicalBinary_i
   {
   public:
@@ -647,7 +665,7 @@ namespace SMESH
   /*
     FILTER
   */
-  class Filter_i: public virtual POA_SMESH::Filter,
+  class SMESH_I_EXPORT Filter_i: public virtual POA_SMESH::Filter,
 		  public virtual SALOME::GenericObj_i
   {
   public:
@@ -709,7 +727,7 @@ namespace SMESH
   /*
     FILTER LIBRARY
   */
-  class FilterLibrary_i: public virtual POA_SMESH::FilterLibrary,
+  class SMESH_I_EXPORT FilterLibrary_i: public virtual POA_SMESH::FilterLibrary,
 			 public virtual SALOME::GenericObj_i
   {
   public:
@@ -747,7 +765,7 @@ namespace SMESH
     FILTER MANAGER
   */
   
-  class FilterManager_i: public virtual POA_SMESH::FilterManager,
+  class SMESH_I_EXPORT FilterManager_i: public virtual POA_SMESH::FilterManager,
 			 public virtual SALOME::GenericObj_i
   {
   public:
@@ -770,6 +788,7 @@ namespace SMESH
     BelongToGeom_ptr          CreateBelongToGeom();
     BelongToPlane_ptr         CreateBelongToPlane();
     BelongToCylinder_ptr      CreateBelongToCylinder();
+    BelongToGenSurface_ptr    CreateBelongToGenSurface();
     
     LyingOnGeom_ptr           CreateLyingOnGeom();
     

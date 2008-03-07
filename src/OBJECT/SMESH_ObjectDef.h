@@ -52,7 +52,7 @@ class SMDS_MeshElement;
   Class       : SMESH_VisualObj
   Description : Base class for all mesh objects to be visuilised
 */
-class SMESH_VisualObjDef: public SMESH_VisualObj
+class SMESHOBJECT_EXPORT SMESH_VisualObjDef: public SMESH_VisualObj
 {
 public:
   typedef std::list<const SMDS_MeshElement*>   TEntityList;
@@ -61,7 +61,7 @@ public:
                             SMESH_VisualObjDef();
   virtual                   ~SMESH_VisualObjDef();
   
-  virtual void              Update( int theIsClear = true ) = 0;
+  virtual bool              Update( int theIsClear = true ) = 0;
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;
   virtual int               GetElemDimension( const int theObjId ) = 0;
 
@@ -105,14 +105,14 @@ private:
   Description : Class for visualisation of mesh
 */
 
-class SMESH_MeshObj: public SMESH_VisualObjDef
+class SMESHOBJECT_EXPORT SMESH_MeshObj: public SMESH_VisualObjDef
 {
 public:
 
                             SMESH_MeshObj( SMESH::SMESH_Mesh_ptr );
   virtual                   ~SMESH_MeshObj();
   
-  virtual void              Update( int theIsClear = true );
+  virtual bool              Update( int theIsClear = true );
   
   virtual int               GetNbEntities( const SMDSAbs_ElementType) const;
   virtual int               GetEntities( const SMDSAbs_ElementType, TEntityList& ) const;
@@ -135,14 +135,14 @@ protected:
   Description : Base class for visualisation of submeshes and groups
 */
 
-class SMESH_SubMeshObj: public SMESH_VisualObjDef
+class SMESHOBJECT_EXPORT SMESH_SubMeshObj: public SMESH_VisualObjDef
 {
 public:
 
                             SMESH_SubMeshObj(SMESH_MeshObj* theMeshObj);
   virtual                   ~SMESH_SubMeshObj();
 
-  virtual void              Update( int theIsClear = true );
+  virtual bool              Update( int theIsClear = true );
   
   virtual void              UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor );
   virtual int               GetElemDimension( const int theObjId );
@@ -159,7 +159,7 @@ protected:
   Description : Class for visualisation of groups
 */
 
-class SMESH_GroupObj: public SMESH_SubMeshObj
+class SMESHOBJECT_EXPORT SMESH_GroupObj: public SMESH_SubMeshObj
 {
 public:
                             SMESH_GroupObj( SMESH::SMESH_GroupBase_ptr, SMESH_MeshObj* );
@@ -180,7 +180,7 @@ private:
   Description : Class for visualisation of submeshes
 */
 
-class SMESH_subMeshObj : public SMESH_SubMeshObj
+class SMESHOBJECT_EXPORT SMESH_subMeshObj : public SMESH_SubMeshObj
 {
 public:
 

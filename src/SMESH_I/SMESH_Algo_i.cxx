@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Algo.hxx"
 
@@ -34,6 +33,8 @@ using namespace std;
 
 #include <string>
 #include <vector>
+
+using namespace std;
 
 //=============================================================================
 /*!

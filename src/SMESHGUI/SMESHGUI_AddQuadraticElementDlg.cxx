@@ -46,6 +46,8 @@
 
 #include "utilities.h"
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
@@ -496,37 +498,37 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case QUAD_EDGE:
     aNumRows = 1;
     myNbCorners = 2;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_edges
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_edges
     break;
   case QUAD_TRIANGLE:
     aNumRows = 3;
     myNbCorners = 3;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_triangles
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_triangles
     break;
   case QUAD_QUADRANGLE:
     aNumRows = 4;
     myNbCorners = 4;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_quadrangles
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_quadrangles
     break;
   case QUAD_TETRAHEDRON:
     aNumRows = 6;
     myNbCorners = 4;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_tetrahedrons
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_tetrahedrons
     break;
   case QUAD_PYRAMID:
     aNumRows = 8;
     myNbCorners = 5;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pyramids
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pyramids
     break;
   case QUAD_PENTAHEDRON:
     aNumRows = 9;
     myNbCorners = 6;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_pentahedrons
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pentahedrons
     break; 
   case QUAD_HEXAHEDRON:
     aNumRows = 12;
     myNbCorners = 8;
-    myHelpFileName = "/adding_quadratic_nodes_and_elements.htm#?"; //Adding_hexahedrons
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_hexahedrons
     break;
   }
     
@@ -694,9 +696,15 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -1098,4 +1106,21 @@ QWidget* SMESHGUI_IdEditItem::createEditor() const
   QLineEdit *aLineEdit = new QLineEdit(text(), table()->viewport());
   aLineEdit->setValidator( new SMESHGUI_IdValidator(table()->viewport(), "validator", 1) );
   return aLineEdit;
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

@@ -71,6 +71,8 @@
 
 using namespace std;
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 //=================================================================================
 // class    : SMESHGUI_RemoveElementsDlg()
 // purpose  :
@@ -184,7 +186,7 @@ SMESHGUI_RemoveElementsDlg
     GroupC1Layout->addWidget(LineEditC1A1, 0, 2);
     SMESHGUI_RemoveElementsDlgLayout->addWidget(GroupC1, 1, 0);
 
-    myHelpFileName = "/files/removing_nodes_and_elements.htm#remove_an_element";
+    myHelpFileName = "removing_nodes_and_elements_page.html#removing_elements_anchor";
 
     Init(); /* Initialisations */
 }
@@ -316,9 +318,15 @@ void SMESHGUI_RemoveElementsDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -512,4 +520,21 @@ void SMESHGUI_RemoveElementsDlg::hideEvent (QHideEvent * e)
 {
   if (!isMinimized())
     ClickOnCancel();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveElementsDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

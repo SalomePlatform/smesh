@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_REMOVE_NODES_H
 #define DIALOGBOX_REMOVE_NODES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 // QT Includes
@@ -61,7 +63,7 @@ class SVTK_ViewWindow;
 // class    : SMESHGUI_RemoveNodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_RemoveNodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RemoveNodesDlg : public QDialog
 {
     Q_OBJECT
 
@@ -78,6 +80,7 @@ private:
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                         /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                       /* ESC key */
+    void keyPressEvent( QKeyEvent* e );
 
     LightApp_SelectionMgr*        mySelectionMgr;
     SVTK_Selector*                mySelector;

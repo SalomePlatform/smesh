@@ -34,49 +34,30 @@
 #include <list>
 #include <map>
 
+// ===========================================================================================
 /*!
- * \brief Tool converting SMESH engine calls into commands defined in smesh.py
- *
  * This file was created in order to respond to requirement of bug PAL10494:
  * SMESH python dump uses idl interface.
  *
  * The creation reason is that smesh.py commands defining hypotheses encapsulate
  * several SMESH engine method calls. As well, the dependencies between smesh.py
- * classes differ from ones between SMESH IDL interfaces.
+ * classes differ from ones between corresponding SMESH IDL interfaces.
  * 
- * The only API method here is SMESH_2smeshpy::ConvertScript(), the rest ones are
- * for internal usage
+ * Everything here is for internal usage by SMESH_2smeshpy::ConvertScript()
+ * declared in SMESH_PythonDump.hxx
  *
- * See comments to _pyHypothesis class to know how to assure convertion of a new hypothesis
+ * See comments to _pyHypothesis class to know how to assure convertion of a new
+ * type of hypothesis
  */
+// ===========================================================================================
 
 class Resource_DataMapOfAsciiStringAsciiString;
 
-class SMESH_2smeshpy
-{
-public:
-  /*!
-   * \brief Convert a python script using commands of smesh.py
-   * \param theScript - Input script
-   * \param theEntry2AccessorMethod - The returning method names to access to
-   *        objects wrapped with python class
-   * \retval TCollection_AsciiString - Convertion result
-   */
-  static TCollection_AsciiString
-  ConvertScript(const TCollection_AsciiString& theScript,
-                Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
-
-  /*!
-   * \brief Return the name of the python file wrapping IDL API
-    * \retval TCollection_AsciiString - The file name
-   */
-  static char* SmeshpyName() { return "smesh"; }
-  static char* GenName() { return "smesh.smesh"; }
-};
-
+// ===========================================================================================
 // =====================
 //    INTERNAL STUFF
 // =====================
+// ===========================================================================================
 
 class _pyCommand;
 class _pyObject;
@@ -89,6 +70,7 @@ DEFINE_STANDARD_HANDLE (_pyCommand   ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyObject    ,Standard_Transient);
 DEFINE_STANDARD_HANDLE (_pyGen       ,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyMesh      ,_pyObject);
+DEFINE_STANDARD_HANDLE (_pyMeshEditor,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyHypothesis,_pyObject);
 DEFINE_STANDARD_HANDLE (_pyAlgorithm ,_pyHypothesis);
 
@@ -127,7 +109,10 @@ public:
   int Length() { return myString.Length(); }
   void Clear() { myString.Clear(); myBegPos.Clear(); }
   bool IsEmpty() const { return myString.IsEmpty(); }
+  TCollection_AsciiString GetIndentation();
   const TCollection_AsciiString & GetResultValue();
+  const int GetNbResultValues();
+  const TCollection_AsciiString & GetResultValue(int res);
   const TCollection_AsciiString & GetObject();
   const TCollection_AsciiString & GetMethod();
   const TCollection_AsciiString & GetArg( int index );
@@ -145,8 +130,8 @@ public:
   static TCollection_AsciiString GetWord( const TCollection_AsciiString & theSring,
                                           int & theStartPos, const bool theForward,
                                           const bool dotIsWord = false);
-  void AddDependantCmd( Handle(_pyCommand) cmd)
-  { return myDependentCmds.push_back( cmd ); }
+  void AddDependantCmd( Handle(_pyCommand) cmd, bool prepend = false)
+  { if (prepend) myDependentCmds.push_front( cmd ); else myDependentCmds.push_back( cmd ); }
   bool SetDependentCmdsAfter() const;
 
   bool AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod );
@@ -154,9 +139,11 @@ public:
   DEFINE_STANDARD_RTTI (_pyCommand)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Root of all objects
  */
+// -------------------------------------------------------------------------------------
 
 class _pyObject: public Standard_Transient
 {
@@ -164,6 +151,7 @@ class _pyObject: public Standard_Transient
 public:
   _pyObject(const Handle(_pyCommand)& theCreationCmd): myCreationCmd(theCreationCmd) {}
   const _pyID& GetID() { return myCreationCmd->GetResultValue(); }
+  static _pyID FatherID(const _pyID & childID);
   const Handle(_pyCommand)& GetCreationCmd() { return myCreationCmd; }
   void  SetCreationCmd( Handle(_pyCommand) cmd ) { myCreationCmd = cmd; }
   int GetCommandNb() { return myCreationCmd->GetOrderNb(); }
@@ -174,40 +162,47 @@ public:
   DEFINE_STANDARD_RTTI (_pyObject)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class corresponding to SMESH_Gen. It holds info on existing
  *        meshes and hypotheses
  */
+// -------------------------------------------------------------------------------------
 class _pyGen: public _pyObject
 {
 public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod);
   //~_pyGen();
-  void AddCommand( const TCollection_AsciiString& theCommand );
+  Handle(_pyCommand) AddCommand( const TCollection_AsciiString& theCommand );
   void Process( const Handle(_pyCommand)& theCommand );
   void Flush();
   Handle(_pyHypothesis) FindHyp( const _pyID& theHypID );
   Handle(_pyHypothesis) FindAlgo( const _pyID& theGeom, const _pyID& theMesh,
-                                 const TCollection_AsciiString& theAlgoType);
+                                  const Handle(_pyHypothesis)& theHypothesis);
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
   void SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theAfterCmd );
   std::list< Handle(_pyCommand) >& GetCommands() { return myCommands; }
   void SetAccessorMethod(const _pyID& theID, const char* theMethod );
-  const char* AccessorMethod() const { return SMESH_2smeshpy::GenName(); }
+  bool AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const;
+  bool AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const;
+  const char* AccessorMethod() const;
 private:
-  std::map< _pyID, Handle(_pyMesh) > myMeshes;
-  std::list< Handle(_pyHypothesis) > myHypos;
-  std::list< Handle(_pyCommand) >    myCommands;
-  int                                myNbCommands;
-  bool                               myHasPattern;
+  std::map< _pyID, Handle(_pyMesh) >       myMeshes;
+  std::map< _pyID, Handle(_pyMeshEditor) > myMeshEditors;
+  std::list< Handle(_pyHypothesis) >       myHypos;
+  std::list< Handle(_pyCommand) >          myCommands;
+  int                                      myNbCommands;
+  bool                                     myHasPattern;
   Resource_DataMapOfAsciiStringAsciiString& myID2AccessorMethod;
 
   DEFINE_STANDARD_RTTI (_pyGen)
 };
 
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Contains commands concerning mesh substructures
  */
+// -------------------------------------------------------------------------------------
 #define _pyMesh_ACCESS_METHOD "GetMesh()"
 class _pyMesh: public _pyObject
 {
@@ -217,70 +212,122 @@ class _pyMesh: public _pyObject
   bool                            myHasEditor;
 public:
   _pyMesh(const Handle(_pyCommand) theCreationCmd);
+  _pyMesh(const Handle(_pyCommand) theCreationCmd, const TCollection_AsciiString &);
   const _pyID& GetGeom() { return GetCreationCmd()->GetArg(1); }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
   const char* AccessorMethod() const { return _pyMesh_ACCESS_METHOD; }
 private:
+  static bool NeedMeshAccess( const Handle(_pyCommand)& theCommand );
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
 
+  //friend class _pyMeshEditor;
   DEFINE_STANDARD_RTTI (_pyMesh)
 };
 #undef _pyMesh_ACCESS_METHOD 
 
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief MeshEditor convert its commands to ones of mesh
+ */
+// -------------------------------------------------------------------------------------
+class _pyMeshEditor: public _pyObject
+{
+  _pyID myMesh;
+  TCollection_AsciiString myCreationCmdStr;
+public:
+  _pyMeshEditor(const Handle(_pyCommand)& theCreationCmd);
+  void Process( const Handle(_pyCommand)& theCommand);
+  virtual void Flush() {}
+
+  DEFINE_STANDARD_RTTI (_pyMesh)
+};
+
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Root class for hypothesis
  *
- * HOWTO assure convertion of a new hypothesis
- * In NewHypothesis():
- * 1. add a case for the name of the new hypothesis and
- * 2. initialize _pyHypothesis fields:
- *    . myDim - hypothesis dimention;
- *    . myType - type name of the algorithm creating the hypothesis;
- *    . myCreationMethod - method name of the algorithm creating the hypothesis;
- *    . append to myArgMethods interface methods setting param values in the
- *    order they are used when myCreationMethod is called. It is supposed that
- *    each interface method sets only one parameter, if it is not so, you are
+ * HOWTO assure convertion of a new type of hypothesis
+ * In _pyHypothesis::NewHypothesis():
+ * 1. add a case for the name of the new hypothesis
+ * 2. use SetConvMethodAndType() to set
+ *    . for algo: algorithm name and method of Mesh creating the algo
+ *    . for hypo: name of the algorithm and method creating the hypothesis
+ * 3. append to myArgMethods interface methods setting param values in the
+ *    order they are used when creation method is called. If arguments of
+ *    the creation method can't be easily got from calls of hypothesis methods, you are
  *    to derive a specific class from _pyHypothesis that would redefine Process(),
  *    see _pyComplexParamHypo for example
  */
+// -------------------------------------------------------------------------------------
 class _pyHypothesis: public _pyObject
 {
 protected:
-  bool    myIsAlgo, /*myIsLocal, */myIsWrapped, myIsConverted;
-  int     myDim, myAdditionCmdNb;
-  _pyID    myGeom, myMesh;
-  TCollection_AsciiString       myCreationMethod, myType;
-  TColStd_SequenceOfAsciiString myArgs;
-  TColStd_SequenceOfAsciiString myArgMethods;
+  bool    myIsAlgo, myIsWrapped;
+  _pyID   myGeom,   myMesh;
+  // a hypothesis can be used and created by different algos by different methods
+  std::map<TCollection_AsciiString, TCollection_AsciiString > myType2CreationMethod;
+  //TCollection_AsciiString       myCreationMethod, myType;
+  TColStd_SequenceOfAsciiString myArgs;           // creation arguments
+  TColStd_SequenceOfAsciiString myArgMethods;     // hypo methods setting myArgs
+  TColStd_SequenceOfInteger     myNbArgsByMethod; // nb args set by each method
   std::list<Handle(_pyCommand)>  myArgCommands;
   std::list<Handle(_pyCommand)>  myUnknownCommands;
 public:
   _pyHypothesis(const Handle(_pyCommand)& theCreationCmd);
+  void SetConvMethodAndType(const char* creationMethod, const char* type)
+  { myType2CreationMethod[ (char*)type ] = (char*)creationMethod; }
+  void AddArgMethod(const char* method, const int nbArgs = 1)
+  { myArgMethods.Append( (char*)method ); myNbArgsByMethod.Append( nbArgs ); }
+  const TColStd_SequenceOfAsciiString& GetArgs() const { return myArgs; }
+  const std::list<Handle(_pyCommand)>& GetArgCommands() const { return myArgCommands; }
+  void ClearAllCommands();
   virtual bool IsAlgo() const { return myIsAlgo; }
+  bool IsValid() const { return !myType2CreationMethod.empty(); }
   bool IsWrapped() const { return myIsWrapped; }
-  bool & IsConverted() { return myIsConverted; }
-  int GetDim() const { return myDim; }
   const _pyID & GetGeom() const { return myGeom; }
   void SetMesh( const _pyID& theMeshId) { if ( myMesh.IsEmpty() ) myMesh = theMeshId; }
   const _pyID & GetMesh() const { return myMesh; }
-  const TCollection_AsciiString GetType() { return myType; }
+  const TCollection_AsciiString& GetAlgoType() const
+  { return myType2CreationMethod.begin()->first; }
+  const TCollection_AsciiString& GetAlgoCreationMethod() const
+  { return myType2CreationMethod.begin()->second; }
+  bool CanBeCreatedBy(const TCollection_AsciiString& algoType ) const
+  { return myType2CreationMethod.find( algoType ) != myType2CreationMethod.end(); }
+  const TCollection_AsciiString& GetCreationMethod(const TCollection_AsciiString& algoType) const
+  { return myType2CreationMethod.find( algoType )->second; }
   bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped && myMesh == theMesh; }
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
   static Handle(_pyHypothesis) NewHypothesis( const Handle(_pyCommand)& theCreationCmd);
-  //     bool HasMesh() const { return !myMesh.IsEmpty(); }
-  //     void SetGeom( const _pyID& theGeomID ) { myGeom = theGeomID; }
   void Process( const Handle(_pyCommand)& theCommand);
   void Flush();
 
   DEFINE_STANDARD_RTTI (_pyHypothesis)
 };
 
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Class representing smesh.Mesh_Algorithm
+ */
+// -------------------------------------------------------------------------------------
+class _pyAlgorithm: public _pyHypothesis
+{
+public:
+  _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
+  virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                                  const _pyID&              theMesh);
+  const char* AccessorMethod() const { return "GetAlgorithm()"; }
+
+  DEFINE_STANDARD_RTTI (_pyAlgorithm)
+};
+
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class for hypotheses having several parameters modified by one method
  */
+// -------------------------------------------------------------------------------------
 class _pyComplexParamHypo: public _pyHypothesis
 {
 public:
@@ -291,10 +338,31 @@ public:
 };
 DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 
+// -------------------------------------------------------------------------------------
+/*!
+ * \brief Class for LayerDistribution hypothesis conversion
+ */
+// -------------------------------------------------------------------------------------
+class _pyLayerDistributionHypo: public _pyHypothesis
+{
+  Handle(_pyHypothesis) my1dHyp;
+public:
+  _pyLayerDistributionHypo(const Handle(_pyCommand)& theCreationCmd):
+    _pyHypothesis(theCreationCmd) {}
+  void Process( const Handle(_pyCommand)& theCommand);
+  void Flush();
+  bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
+                          const _pyID&              theMesh);
 
+  DEFINE_STANDARD_RTTI (_pyLayerDistributionHypo)
+};
+DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis);
+
+// -------------------------------------------------------------------------------------
 /*!
  * \brief Class representing NumberOfSegments hypothesis
  */
+// -------------------------------------------------------------------------------------
 class _pyNumberOfSegmentsHyp: public _pyHypothesis
 {
 public:
@@ -307,18 +375,19 @@ public:
 };
 DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
 
+// -------------------------------------------------------------------------------------
 /*!
- * \brief Class representing smesh.Mesh_Algorithm
+ * \brief Class representing SegmentLengthAroundVertex hypothesis
  */
-class _pyAlgorithm: public _pyHypothesis
+// -------------------------------------------------------------------------------------
+class _pySegmentLengthAroundVertexHyp: public _pyHypothesis
 {
 public:
-  _pyAlgorithm(const Handle(_pyCommand)& theCreationCmd);
+  _pySegmentLengthAroundVertexHyp(const Handle(_pyCommand)& theCrCmd): _pyHypothesis(theCrCmd) {}
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
-  const char* AccessorMethod() const { return "GetAlgorithm()"; }
-
-  DEFINE_STANDARD_RTTI (_pyAlgorithm)
+  DEFINE_STANDARD_RTTI (_pySegmentLengthAroundVertexHyp)
 };
+DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 
 #endif

@@ -75,6 +75,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -208,6 +209,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SelectPointButton, 0, 1);
 
   TextLabelX = new QLabel(GroupAxis, "TextLabelX");
+  TextLabelX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelX->setText(tr("SMESH_X"));
   GroupAxisLayout->addWidget(TextLabelX, 0, 2);
 
@@ -215,6 +217,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_X, 0, 3);
 
   TextLabelY = new QLabel(GroupAxis, "TextLabelY");
+  TextLabelY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelY->setText(tr("SMESH_Y"));
   GroupAxisLayout->addWidget(TextLabelY, 0, 4);
 
@@ -222,6 +225,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_Y, 0, 5);
 
   TextLabelZ = new QLabel(GroupAxis, "TextLabelZ");
+  TextLabelZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelZ->setText(tr("SMESH_Z"));
   GroupAxisLayout->addWidget(TextLabelZ, 0, 6);
 
@@ -237,6 +241,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SelectVectorButton, 1, 1);
 
   TextLabelDX = new QLabel(GroupAxis, "TextLabelDX");
+  TextLabelDX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDX->setText(tr("SMESH_DX"));
   GroupAxisLayout->addWidget(TextLabelDX, 1, 2);
 
@@ -244,6 +249,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_DX, 1, 3);
 
   TextLabelDY = new QLabel(GroupAxis, "TextLabelDY");
+  TextLabelDY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDY->setText(tr("SMESH_DY"));
   GroupAxisLayout->addWidget(TextLabelDY, 1, 4);
 
@@ -251,6 +257,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   GroupAxisLayout->addWidget(SpinBox_DY, 1, 5);
 
   TextLabelDZ = new QLabel(GroupAxis, "TextLabelDZ");
+  TextLabelDZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelDZ->setText(tr("SMESH_DZ"));
   GroupAxisLayout->addWidget(TextLabelDZ, 1, 6);
 
@@ -283,23 +290,29 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   SpinBox_Tolerance = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Tolerance");
   GroupArgumentsLayout->addWidget(SpinBox_Tolerance, 5, 2);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(true);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 6, 6, 0, 3);
+
+
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Y->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Z->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DX->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DY->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DZ->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
-  SpinBox_Angle->RangeStepAndValidator(-999999.999, +999999.999, 5.0, 3);
+  SpinBox_Angle->RangeStepAndValidator(COORD_MIN, COORD_MAX, 5.0, 3);
 
   QIntValidator* anIntValidator = new QIntValidator(SpinBox_NbSteps);
   SpinBox_NbSteps->setValidator(anIntValidator);
   SpinBox_NbSteps->setRange(1, 999999);
 
-  SpinBox_Tolerance->RangeStepAndValidator(0.0, +999999.999, 0.1, 6);
+  SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.1, 6);
 
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
@@ -319,7 +332,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "revolution.htm";
+  myHelpFileName = "revolution_page.html";
 
   Init();
 
@@ -472,12 +485,21 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+
+      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+        SMESH::ListOfGroups_var groups = 
+          aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
+                                               anAngle, aNbSteps, aTolerance);
+      else
+        aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
+
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
     SMESH::UpdateView();
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
@@ -520,9 +542,15 @@ void SMESHGUI_RevolutionDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -627,6 +655,14 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     myElementsId = "";
 
+    // MakeGroups is available if there are groups
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    } else {
+      MakeGroupsCheck->setEnabled(true);
+    }
+
     if (CheckBoxMesh->isChecked()) {
       int aConstructorId = GetConstructorId();
 
@@ -692,7 +728,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       myElementsId = aString;
     }
 
@@ -701,7 +737,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
 
     myNbOkElements = true;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
 
@@ -932,4 +968,21 @@ void SMESHGUI_RevolutionDlg::onVectorChanged()
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
   }
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

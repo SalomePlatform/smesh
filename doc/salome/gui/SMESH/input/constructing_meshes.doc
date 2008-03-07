@@ -1,0 +1,112 @@
+/*!
+
+\page constructing_meshes_page Constructing meshes
+
+\n Construction of a mesh consists of:
+<ul>
+<li>Selecting a geometrical object for meshing</li>
+<li>Applying \ref basic_meshing_algos_page "meshing algorithms" and
+\ref about_hypo_page "hypotheses" which will be used at computation of
+this mesh.</li>
+</ul>
+
+<em>To construct a mesh:</em>
+<ol>
+<li>In the \b Mesh menu select <b>Create Mesh</b> or click <em>"Create
+Mesh"</em> button in the toolbar. 
+
+\image html image32.gif
+<center><em>"Create Mesh" button</em></center>
+
+The following dialog box will appear: 
+
+\image html createmesh-inv.png
+</li>
+<li>For example, you need to mesh a 3d object.
+\n First, type the name for your mesh in the "Name" box, by default,
+it is "Mesh_1". Then select the object you wish to mesh in the Object
+Browser and click the "Add" button.
+
+\image html image120.gif
+<center><em>"Add" button</em></center>
+
+Now you can define 1d Algorithm and 1d Hypotheses, which will be
+applied to the edges of your object. (Note that any object has edges,
+even if their existence is not apparent, for example, a sphere has 4
+edges). Click the <em>"Add Hypothesis"</em>  button to add a hypothesis.
+
+\image html image121.gif
+<center><em>"Add Hypothesis" button</em></center>
+
+Click the <em>"Edit Hypothesis"</em> button to define values for the
+current hypothesis.
+
+\image html image122.gif
+<center><em>"Edit Hypothesis" button</em></center>
+
+The use of additional hypotheses is optional (i.e. you may leave
+"None" in this box).
+
+Proceed in the same way with 2d and 3d Algorithms and Hypotheses, note
+that the choice of hypotheses depends on the algorithm. There must be
+one Algorithm and one or several Hypotheses for each dimension of your
+object, otherwise you will not get any mesh at all. Of course, if you
+wish to mesh a face, which is a 2d object, you don't need to define 3d
+Algorithm and Hypotheses.
+\n In the <b>Object Browser</b> the structure of the new mesh will be
+displayed as follows:
+
+\image html image88.jpg
+
+It contains:
+<ul>
+<li>a reference to the geometrical object on the basis of which the mesh has been constructed;</li>
+<li><b>Applied hypotheses</b> folder containing the references to the
+hypotheses applied to the construction of the mesh;</li>
+<li><b>Applied algorithms</b> folder containing the references to the
+algorithms applied to the construction of the mesh.</li>
+</ul>
+
+There is an alternative way to create a mesh on an object simply by
+clicking <b>Assign a set of hypotheses</b> button and selecting between
+Automatic Tetrahedralization or Hexahedralization.  The program will
+automatically generate a 3D mesh with the most appropriate
+settings. In the same way you can apply this functionality for meshing
+2D objects, in which case 3D algorithms are not applied.</li>
+<li>Now, when everything is ready, select your mesh in the <b>Object
+Browser</b>. From the \b Mesh menu select \b Compute or click "Compute" button of the
+toolbar. 
+
+\image html image28.gif
+<center><em>"Compute" button</em></center>
+
+The Mesh Computation information box appears.
+
+\image html meshcomputationsucceed.png
+
+If the mesh computation failed, the information about the cause of the
+failure is provided.
+
+\image html meshcomputationfail.png
+
+After you select the error, <b>Show Subshape</b> button allows
+visualizing the mesh elements that cause it.
+
+\image html failed_computation.png
+
+<b>Publish Subshape</b> button allows importing it in a separate MED
+or UNV file.
+
+<b>NOTE</b> It is possible to define a 1D or a 2D mesh in a
+python script and then use such submeshes in the construction of a 3D
+mesh. For this, there exist two algorithms: <b>Use existing edges</b> and <b>Use
+existing faces</b>. They are not entirely usable from the GUI, so a
+mesh created using these algorithms should be exported into a python
+script, edited and then imported into the GUi. 
+
+Consider trying a sample script for construction of a mesh from our 
+\ref tui_creating_meshes_page "TUI Scripts" section.
+</li>
+</ol>
+
+*/

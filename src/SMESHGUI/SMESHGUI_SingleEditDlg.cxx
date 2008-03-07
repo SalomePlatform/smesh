@@ -283,9 +283,15 @@ void SMESHGUI_SingleEditDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -535,6 +541,23 @@ bool SMESHGUI_SingleEditDlg::onApply()
   return aResult;
 }
 
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SingleEditDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}
+
 /*!
  *  Class       : SMESHGUI_TrianglesInversionDlg
  *  Description : Inversion of the diagonal of a pseudo-quadrangle formed by
@@ -547,7 +570,7 @@ SMESHGUI_TrianglesInversionDlg
 : SMESHGUI_SingleEditDlg(theModule,theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/diagonal_iversion_of_elements.htm";
+  myHelpFileName = "diagonal_inversion_of_elements_page.html";
 }
 
 SMESHGUI_TrianglesInversionDlg::~SMESHGUI_TrianglesInversionDlg()
@@ -572,7 +595,7 @@ SMESHGUI_UnionOfTwoTrianglesDlg
 : SMESHGUI_SingleEditDlg(theModule,theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/uniting_two_triangles.htm";
+  myHelpFileName = "uniting_two_triangles_page.html";
 }
 
 SMESHGUI_UnionOfTwoTrianglesDlg::~SMESHGUI_UnionOfTwoTrianglesDlg()

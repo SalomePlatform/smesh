@@ -77,6 +77,18 @@ bool SMESHDS_Group::Contains (const int theID)
   return false;
 }
 
+//=======================================================================
+//function : Contains
+//purpose  : 
+//=======================================================================
+
+bool SMESHDS_Group::Contains (const SMDS_MeshElement* elem)
+{
+  if (elem)
+    return myGroup.Contains(elem);
+  return false;
+}
+
 //=============================================================================
 /*!
  *  

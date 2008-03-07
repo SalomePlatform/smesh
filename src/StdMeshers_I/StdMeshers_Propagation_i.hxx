@@ -27,6 +27,8 @@
 #ifndef _SMESH_PROPAGATION_I_HXX_
 #define _SMESH_PROPAGATION_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -38,7 +40,7 @@ class SMESH_Gen;
 // ======================================================
 // Propagation hypothesis
 // ======================================================
-class StdMeshers_Propagation_i:
+class STDMESHERS_I_EXPORT StdMeshers_Propagation_i:
   public virtual POA_StdMeshers::StdMeshers_Propagation,
   public virtual SMESH_Hypothesis_i
 {

@@ -28,6 +28,8 @@
 #ifndef StdMesherGUI_DistrTable_Header
 #define StdMesherGUI_DistrTable_Header
 
+#include "SMESH_StdMeshersGUI.hxx"
+
 #include <qtable.h>
 
 #include <SALOMEconfig.h>
@@ -45,7 +47,7 @@ typedef enum { INSERT_ROW, REMOVE_ROW } TableButton;
  *  \brief This class represents custom table. It has only double values and
     editor for every cell has validator
  */
-class StdMeshersGUI_DistrTable : public QTable
+class STDMESHERSGUI_EXPORT StdMeshersGUI_DistrTable : public QTable
 {
   Q_OBJECT
   
@@ -86,7 +88,7 @@ private:
 /*!
  *  \brief This class represents frame for table and buttons
  */
-class StdMeshersGUI_DistrTableFrame : public QFrame
+class STDMESHERSGUI_EXPORT StdMeshersGUI_DistrTableFrame : public QFrame
 {
   Q_OBJECT
 

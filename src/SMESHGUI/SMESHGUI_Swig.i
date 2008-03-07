@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -29,6 +29,23 @@
 %{
 #include "SMESHGUI_Swig.hxx"
 %}
+
+/* Exception handler for all functions */
+%exception {
+  class PyAllowThreadsGuard {
+   public:
+    // Py_BEGIN_ALLOW_THREADS
+    PyAllowThreadsGuard() { _save = PyEval_SaveThread(); }
+    // Py_END_ALLOW_THREADS
+    ~PyAllowThreadsGuard() { PyEval_RestoreThread(_save); }
+   private:
+    PyThreadState *_save;
+  };
+
+  PyAllowThreadsGuard guard;
+
+  $action
+}
 
 %include "typemaps.i"
 
@@ -56,5 +73,7 @@ class SMESH_Swig
 
   void SetName(const char* Entry, const char* Name);
 
-  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
+
+  void CreateAndDisplayActor( const char* Mesh_Entry );
 };

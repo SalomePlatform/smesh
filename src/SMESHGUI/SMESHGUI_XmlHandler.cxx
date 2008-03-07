@@ -90,6 +90,21 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       myPluginName = atts.value("name");
       myServerLib  = atts.value("server-lib");
       myClientLib  = atts.value("gui-lib");
+/* It's Need to tranlate lib name for WIN32 or X platform
+ * (only client lib, because server lib translates in SMESH_Gen_i::createHypothesis
+ *  for normal work of *.py files )
+ */
+      if( !myClientLib.isEmpty() )
+      {
+#ifdef WNT
+      //myServerLib += ".dll";
+        myClientLib += ".dll";
+#else
+      //myServerLib = "lib" + myServerLib + ".so";
+        myClientLib = "lib" + myClientLib + ".so";
+#endif
+      }
+
 
       QString aResName = atts.value("resources");
       if (aResName != "")
@@ -115,6 +130,10 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aLabel = atts.value("label-id");
       QString anIcon = atts.value("icon-id");
       bool isAux = atts.value("auxiliary") == "true";
+      bool isNeedGeom = true;
+      QString aNeedGeom = atts.value("need-geom");
+      if ( !aNeedGeom.isEmpty() )
+        isNeedGeom = (aNeedGeom == "true");
       
       QString aDimStr = atts.value("dim");
       aDimStr = aDimStr.remove( ' ' );
@@ -126,7 +145,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       {
         int aVal = (*anIter).toInt( &isOk );
         if ( isOk )
-          aDim.append( aVal - 1 );
+          aDim.append( aVal );
       }
 
       // for algo
@@ -141,18 +160,18 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
         }
       }
       
-      HypothesisData* aHypLibNames =
+      HypothesisData* aHypData =
         new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
                             aLabel, anIcon, aDim, isAux,
-                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ]);
+                            attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ], isNeedGeom );
 
       if (qName == "algorithm")
       {
-        myAlgorithmsMap[(char*)aHypAlType.latin1()] = aHypLibNames;
+        myAlgorithmsMap[(char*)aHypAlType.latin1()] = aHypData;
       }
       else
       {
-        myHypothesesMap[(char*)aHypAlType.latin1()] = aHypLibNames;
+        myHypothesesMap[(char*)aHypAlType.latin1()] = aHypData;
       }
     }
   }

@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -28,6 +28,8 @@
 
 #ifndef _SMESH_GEN_I_HXX_
 #define _SMESH_GEN_I_HXX_
+
+#include "SMESH.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
@@ -58,7 +60,7 @@ class SALOME_LifeCycleCORBA;
 // ===========================================================
 // Study context - stores study-connected objects references
 // ==========================================================
-class StudyContext
+class SMESH_I_EXPORT StudyContext
 {
 public:
   // constructor
@@ -104,6 +106,15 @@ public:
   void mapOldToNew( const int oldId, const int newId ) {
     mapIdToId[ oldId ] = newId;
   }
+  // get old id by a new one
+  int getOldId( const int newId ) {
+    map<int, int>::iterator imap;
+    for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
+      if ( imap->second == newId )
+        return imap->first;
+    }
+    return 0;
+  }
     
 private:
   // get next free object identifier
@@ -122,7 +133,7 @@ private:
 // ===========================================================
 // SMESH module's engine
 // ==========================================================
-class SMESH_Gen_i:
+class SMESH_I_EXPORT SMESH_Gen_i:
   public virtual POA_SMESH::SMESH_Gen,
   public virtual Engines_Component_i 
 {
@@ -161,10 +172,12 @@ public:
                const char*               interfaceName );
   // Destructor
   virtual ~SMESH_Gen_i();
-  
+
   // *****************************************
   // Interface methods
   // *****************************************
+  //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
+  void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
 
   // Set current study
   void SetEmbeddedMode( CORBA::Boolean theMode );
@@ -211,7 +224,13 @@ public:
 
   // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
-                          GEOM::GEOM_Object_ptr  theShapeObject )
+                          GEOM::GEOM_Object_ptr theShapeObject )
+    throw ( SALOME::SALOME_Exception );
+  /*!
+   * \brief Return errors of mesh computation
+   */
+  SMESH::compute_error_array* GetComputeErrors(SMESH::SMESH_Mesh_ptr theMesh,
+                                               GEOM::GEOM_Object_ptr  theShapeObject )
     throw ( SALOME::SALOME_Exception );
 
   // Returns true if mesh contains enough data to be computed
@@ -229,10 +248,38 @@ public:
                                      const SMESH::object_array& theListOfSubShape )
     throw ( SALOME::SALOME_Exception );
 
-  // Return geometrical object the given element is built on
+  // Return geometrical object the given element is built on. Publish it in study.
   GEOM::GEOM_Object_ptr GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
                                                   CORBA::Long            theElementID,
                                                   const char*            theGeomName)
+    throw ( SALOME::SALOME_Exception );
+
+  // Return geometrical object the given element is built on. Don't publish it in study.
+  GEOM::GEOM_Object_ptr FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
+						   CORBA::Long            theElementID)
+    throw ( SALOME::SALOME_Exception );
+
+  // Concatenate the given meshes into one mesh
+  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray, 
+					  CORBA::Boolean           theUniteIdenticalGroups, 
+					  CORBA::Boolean           theMergeNodesAndElements, 
+					  CORBA::Double            theMergeTolerance,
+					  CORBA::Boolean           theCommonGroups)
+    throw ( SALOME::SALOME_Exception );
+
+  // Concatenate the given meshes into one mesh
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray, 
+				    CORBA::Boolean           theUniteIdenticalGroups, 
+				    CORBA::Boolean           theMergeNodesAndElements, 
+				    CORBA::Double            theMergeTolerance)
+    throw ( SALOME::SALOME_Exception );
+
+  // Concatenate the given meshes into one mesh
+  // Create the groups of all elements from initial meshes
+  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray, 
+					      CORBA::Boolean           theUniteIdenticalGroups, 
+					      CORBA::Boolean           theMergeNodesAndElements, 
+					      CORBA::Double            theMergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // ****************************************************
@@ -394,9 +441,29 @@ public:
   // Register an object in a StudyContext; return object id
   int RegisterObject(CORBA::Object_ptr theObject);
 
+  // Return id of registered object
+  CORBA::Long GetObjectId(CORBA::Object_ptr theObject);
+
+  // Return an object that previously had an oldID
+  template<class TInterface> 
+  typename TInterface::_var_type GetObjectByOldId( const int oldID )
+  {
+    if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
+      string ior = myStudyContext->getIORbyOldId( oldID );
+      if ( !ior.empty() )
+        return TInterface::_narrow(GetORB()->string_to_object( ior.c_str() ));
+    }
+    return TInterface::_nil();
+  }
+
   // Get current study ID
   int GetCurrentStudyID()
   { return myCurrentStudy->_is_nil() ? -1 : myCurrentStudy->StudyId(); }
+
+  /*!
+   * \brief Find SObject for an algo
+   */
+  SALOMEDS::SObject_ptr GetAlgoSO(const ::SMESH_Algo* algo);
  
 private:
   // Create hypothesis of given type
@@ -411,7 +478,7 @@ private:
   static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
   
 private:
-
+  static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference
   static PortableServer::POA_var myPoa;         // POA reference
   static SALOME_NamingService*   myNS;          // Naming Service

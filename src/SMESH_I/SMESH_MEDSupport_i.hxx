@@ -27,6 +27,8 @@
 #ifndef _MED_SMESH_MEDSUPPORT_I_HXX_
 #define _MED_SMESH_MEDSUPPORT_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(MED)
 #include <string>
@@ -40,7 +42,7 @@
 #include "SALOME_GenericObj_i.hh"
 class SMESH_subMesh_i;
 
-class SMESH_MEDSupport_i:
+class SMESH_I_EXPORT SMESH_MEDSupport_i:
 	public virtual POA_SALOME_MED::SUPPORT, public virtual SALOME::GenericObj_i
 {
   public:
@@ -64,6 +66,13 @@ class SMESH_MEDSupport_i:
 
 	SALOME_MED::long_array *
 	getNumber(SALOME_MED::medGeometryElement geomElement)
+	  throw(SALOME::SALOME_Exception);
+
+  /*!
+   * Same function as getNumber.
+   */
+	SALOME_MED::long_array *
+	getNumberFromFile(SALOME_MED::medGeometryElement geomElement)
 	  throw(SALOME::SALOME_Exception);
 
 	SALOME_MED::long_array * getNumberIndex()

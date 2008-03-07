@@ -130,9 +130,11 @@ DriverMED_R_SMESHDS_Mesh
 
         // Reading MED nodes to the corresponding SMDS structure
 	//------------------------------------------------------
-      PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
-	if(!aNodeInfo)
+        PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
+	if (!aNodeInfo) {
+          aResult = DRS_FAIL;
 	  continue;
+        }
 
 	PCoordHelper aCoordHelper = GetCoordHelper(aNodeInfo);
 
@@ -180,9 +182,9 @@ DriverMED_R_SMESHDS_Mesh
 	  for(; aGeom2SizeIter != aGeom2Size.end(); aGeom2SizeIter++){
 	    const EGeometrieElement& aGeom = aGeom2SizeIter->first;
 
-	    switch(aGeom){
-	    case ePOINT1:
-	      break;
+	    switch(aGeom) {
+// 	    case ePOINT1: ## PAL16410
+// 	      break;
 	    case ePOLYGONE: {
               PPolygoneInfo aPolygoneInfo = aMed->GetPPolygoneInfo(aMeshInfo,anEntity,aGeom);
               EBooleen anIsElemNum = takeNumbers ? aPolygoneInfo->IsElemNum() : eFAUX;
@@ -343,6 +345,7 @@ DriverMED_R_SMESHDS_Mesh
                 case ePENTA15: aNbNodes = 15; break;
                 case eHEXA8:   aNbNodes = 8;  break;
                 case eHEXA20:  aNbNodes = 20; break;
+                case ePOINT1:  aNbNodes = 1;  break;
                 default:;
                 }
                 vector<TInt> aNodeIds(aNbNodes);
@@ -376,14 +379,14 @@ DriverMED_R_SMESHDS_Mesh
                   continue;
 
                 bool isRenum = false;
-                SMDS_MeshElement* anElement = NULL;
+                const SMDS_MeshElement* anElement = NULL;
                 TInt aFamNum = aCellInfo->GetFamNum(iElem);
 #ifndef _DEXCEPT_
                 try{
 #endif
                   //MESSAGE("Try to create element # " << iElem << " with id = "
                   //        << aCellInfo->GetElemNum(iElem));
-                  switch(aGeom){
+                  switch(aGeom) {
                   case eSEG2:
                     if(anIsElemNum)
                       anElement = myMesh->AddEdgeWithID(aNodeIds[0],
@@ -669,6 +672,10 @@ DriverMED_R_SMESHDS_Mesh
                       isRenum = anIsElemNum;
                     }
                     break;
+
+                  case ePOINT1:
+                    anElement = FindNode(myMesh,aNodeIds[0]);
+                    break;
                   }
 #ifndef _DEXCEPT_
                 }catch(const std::exception& exc){
@@ -788,7 +795,7 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 	theGroup->SMDSGroup().Add(element);
       }
       if ( element )
-        theGroup->SetType( element->GetType() );
+        theGroup->SetType( theGroup->SMDSGroup().GetType() );
     }
   }
 }
@@ -915,18 +922,17 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
     for(MED::TInt iDim=0;iDim<aMeshDim;iDim++)
       aCoords[(int)iDim] = aMEDNodeCoord[(int)iDim];
     aNode = myMesh->AddNodeWithID(aCoords[0],aCoords[1],aCoords[2],(int)iNode);
-  }
 
-  /* not implemented FAMILY
-     
-  TInt aFamNum = aNodeInfo->GetFamNum(iElem);
-  if ( checkFamilyID ( aFamily, aFamNum ))
-    {
-      aFamily->AddElement(aNode);
-      aFamily->SetType(SMDSAbs_Node);
+    if((aGrilleInfo->myFamNumNode).size() > 0){
+      TInt aFamNum = aGrilleInfo->GetFamNumNode(iNode);
+      if ( checkFamilyID ( aFamily, aFamNum ))
+	{
+	  aFamily->AddElement(aNode);
+	  aFamily->SetType(SMDSAbs_Node);
+	}
     }
     
-  */
+  }
 
   SMDS_MeshElement* anElement = NULL;
   MED::TIntVector aNodeIds;
@@ -970,6 +976,14 @@ bool DriverMED_R_SMESHDS_Mesh::buildMeshGrille(const MED::PWrapper& theWrapper,
       break;
     default:
       break;
+    }
+    
+    if((aGrilleInfo->myFamNum).size() > 0){
+      TInt aFamNum = aGrilleInfo->GetFamNum(iCell);
+      if ( checkFamilyID ( aFamily, aFamNum )){
+	aFamily->AddElement(anElement);
+	aFamily->SetType(anElement->GetType());
+      }
     }
   }
 

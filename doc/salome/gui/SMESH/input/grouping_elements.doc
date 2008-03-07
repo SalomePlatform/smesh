@@ -1,0 +1,14 @@
+/*!
+
+\page grouping_elements_page Grouping elements
+
+<ul>
+<li>\subpage creating_groups_page</li>
+<li>\subpage editing_groups_page</li>
+<li>\subpage using_operations_on_groups_page</li>
+<li>\subpage constructing_groups_of_specific_elements_page</li>
+<li>\subpage deleting_groups_page</li>
+<li>\subpage selection_filter_library_page</li>
+</ul>
+
+*/

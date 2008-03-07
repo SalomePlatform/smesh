@@ -29,6 +29,8 @@
 #ifndef _SMESH_MESH_I_HXX_
 #define _SMESH_MESH_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -38,17 +40,18 @@
 
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh_i.hxx"
+//#include "SMESH_subMesh_i.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "SALOME_GenericObj_i.hh"
 
 class SMESH_Gen_i;
 class SMESH_GroupBase_i;
+class SMESH_subMesh_i;
 
 #include <map>
 
-class SMESH_Mesh_i:
+class SMESH_I_EXPORT SMESH_Mesh_i:
   public virtual POA_SMESH::SMESH_Mesh,
   public virtual SALOME::GenericObj_i
 {
@@ -63,6 +66,9 @@ public:
 
   // --- CORBA
   void SetShape( GEOM::GEOM_Object_ptr theShapeObject )
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Boolean HasShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
   GEOM::GEOM_Object_ptr GetShapeToMesh()
@@ -102,6 +108,9 @@ public:
   SMESH::ListOfGroups* GetGroups()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbGroups()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_Group_ptr UnionGroups( SMESH::SMESH_GroupBase_ptr theGroup1, 
                                       SMESH::SMESH_GroupBase_ptr theGroup2, 
                                       const char* theName )
@@ -124,6 +133,8 @@ public:
     throw (SALOME::SALOME_Exception);
 
   SMESH::SMESH_MeshEditor_ptr GetMeshEditor();
+
+  SMESH::SMESH_MeshEditor_ptr GetMeshEditPreviewer();
 
   void ClearLog()
     throw (SALOME::SALOME_Exception);
@@ -152,10 +163,23 @@ public:
   SMESH::DriverMED_ReadStatus ImportMEDFile( const char* theFileName, const char* theMeshName )
     throw (SALOME::SALOME_Exception);
 
+  /*!
+   *  Auto color
+   */
+  void SetAutoColor(CORBA::Boolean theAutoColor)
+    throw (SALOME::SALOME_Exception);
+
+  CORBA::Boolean GetAutoColor()
+    throw (SALOME::SALOME_Exception);
+
   /*! Check group names for duplications.
    *  Consider maximum group name length stored in MED file.
    */
   CORBA::Boolean HasDuplicatedGroupNamesMED();
+  /*!
+   * Return string representation of a MED file version comprising nbDigits
+   */
+  char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
   void ExportToMED( const char* file, CORBA::Boolean auto_groups, SMESH::MED_VERSION theVersion )
     throw (SALOME::SALOME_Exception);
@@ -166,7 +190,7 @@ public:
     throw (SALOME::SALOME_Exception);
   void ExportUNV( const char* file )
     throw (SALOME::SALOME_Exception);
-  void ExportSTL( const char* file, const bool isascii )
+  void ExportSTL( const char* file, bool isascii )
     throw (SALOME::SALOME_Exception);
 
   SALOME_MED::MESH_ptr GetMEDMesh()
@@ -250,13 +274,13 @@ public:
   SMESH::long_array* GetNodesId()
     throw (SALOME::SALOME_Exception);
   
-  SMESH::ElementType GetElementType( const CORBA::Long id, const bool iselem )
+  SMESH::ElementType GetElementType( CORBA::Long id, bool iselem )
     throw (SALOME::SALOME_Exception);
   
   /*!
    * Returns ID of elements for given submesh
    */
-  SMESH::long_array* GetSubMeshElementsId(const CORBA::Long ShapeID)
+  SMESH::long_array* GetSubMeshElementsId(CORBA::Long ShapeID)
     throw (SALOME::SALOME_Exception);
 
   /*!
@@ -264,13 +288,13 @@ public:
    * If param all==true - returns all nodes, else -
    * returns only nodes on shapes.
    */
-  SMESH::long_array* GetSubMeshNodesId(const CORBA::Long ShapeID, CORBA::Boolean all)
+  SMESH::long_array* GetSubMeshNodesId(CORBA::Long ShapeID, CORBA::Boolean all)
     throw (SALOME::SALOME_Exception);
   
   /*!
    * Returns type of elements for given submesh
    */
-  SMESH::ElementType GetSubMeshElementType(const CORBA::Long ShapeID)
+  SMESH::ElementType GetSubMeshElementType(CORBA::Long ShapeID)
     throw (SALOME::SALOME_Exception);
   
   char* Dump();
@@ -283,7 +307,10 @@ public:
   SMESH_Hypothesis::Hypothesis_Status removeHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                                        SMESH::SMESH_Hypothesis_ptr anHyp);
   
-  int importMEDFile( const char* theFileName, const char* theMeshName );
+  static SMESH::Hypothesis_Status
+  ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
+
+  //int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
 
@@ -302,88 +329,118 @@ public:
   const map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return an existing group object.
 
+  /*!
+   * \brief Update hypotheses assigned to geom groups if the latter change
+   * 
+   * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+   */
+  void CheckGeomGroupModif();
+
   virtual SMESH::long_array* GetIDs();
 
-  CORBA::Long GetMeshPtr();
+  CORBA::LongLong GetMeshPtr();
 
+  /*!
+   * \brief Assure that all groups are published
+   */
+  void CreateGroupServants();
+
+  /*!
+   * \brief Return groups cantained in _mapGroups by their IDs
+   */
+  SMESH::ListOfGroups* GetGroups(const std::list<int>& groupIDs) const;
 
   /*!
    * Get XYZ coordinates of node as list of double
    * If there is not node for given ID - returns empty list
    */
-  SMESH::double_array* GetNodeXYZ(const CORBA::Long id);
+  SMESH::double_array* GetNodeXYZ(CORBA::Long id);
   
   /*!
    * For given node returns list of IDs of inverse elements
    * If there is not node for given ID - returns empty list
    */
-  SMESH::long_array* GetNodeInverseElements(const CORBA::Long id);
+  SMESH::long_array* GetNodeInverseElements(CORBA::Long id);
+
+  /*!
+   * \brief Return position of a node on shape
+   */
+  SMESH::NodePosition* GetNodePosition(CORBA::Long NodeID);
 
   /*!
    * If given element is node returns IDs of shape from position
-   * else - return ID of result shape after ::FindShape()
-   * from SMESH_MeshEditor
+   * If there is not node for given ID - returns -1
+   */
+  CORBA::Long GetShapeID(CORBA::Long id);
+
+  /*!
+   * For given element returns ID of result shape after 
+   * ::FindShape() from SMESH_MeshEditor
    * If there is not element for given ID - returns -1
    */
-  CORBA::Long GetShapeID(const CORBA::Long id);
+  CORBA::Long GetShapeIDForElem(CORBA::Long id);
 
   /*!
    * Returns number of nodes for given element
    * If there is not element for given ID - returns -1
    */
-  CORBA::Long GetElemNbNodes(const CORBA::Long id);
+  CORBA::Long GetElemNbNodes(CORBA::Long id);
+
+  /*!
+   * Returns IDs of nodes of given element
+   */
+  SMESH::long_array* GetElemNodes(CORBA::Long id);
 
   /*!
    * Returns ID of node by given index for given element
    * If there is not element for given ID - returns -1
    * If there is not node for given index - returns -2
    */
-  CORBA::Long GetElemNode(const CORBA::Long id, const CORBA::Long index);
+  CORBA::Long GetElemNode(CORBA::Long id, CORBA::Long index);
   
   /*!
    * Returns true if given node is medium node
    * in given quadratic element
    */
-  CORBA::Boolean IsMediumNode(const CORBA::Long ide, const CORBA::Long idn);
+  CORBA::Boolean IsMediumNode(CORBA::Long ide, CORBA::Long idn);
   
   /*!
    * Returns true if given node is medium node
    * in one of quadratic elements
    */
-  CORBA::Boolean IsMediumNodeOfAnyElem(const CORBA::Long idn,
+  CORBA::Boolean IsMediumNodeOfAnyElem(CORBA::Long idn,
                                        SMESH::ElementType theElemType);
   
   /*!
    * Returns number of edges for given element
    */
-  CORBA::Long ElemNbEdges(const CORBA::Long id);
+  CORBA::Long ElemNbEdges(CORBA::Long id);
   
   /*!
    * Returns number of faces for given element
    */
-  CORBA::Long ElemNbFaces(const CORBA::Long id);
+  CORBA::Long ElemNbFaces(CORBA::Long id);
   
   /*!
    * Returns true if given element is polygon
    */
-  CORBA::Boolean IsPoly(const CORBA::Long id);
+  CORBA::Boolean IsPoly(CORBA::Long id);
   
   /*!
    * Returns true if given element is quadratic
    */
-  CORBA::Boolean IsQuadratic(const CORBA::Long id);
+  CORBA::Boolean IsQuadratic(CORBA::Long id);
   
   /*!
    * Returns bary center for given element
    */
-  SMESH::double_array* BaryCenter(const CORBA::Long id);
+  SMESH::double_array* BaryCenter(CORBA::Long id);
 
 
   map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
 
 private:
-  void CreateGroupServants();
 
   static int myIdGenerator;
   ::SMESH_Mesh* _impl;  // :: force no namespace here

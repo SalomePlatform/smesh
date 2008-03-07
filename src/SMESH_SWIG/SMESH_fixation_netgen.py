@@ -23,8 +23,6 @@
 # The new Netgen algorithm is used that discretizes baoundaries itself
 #
 
-import StdMeshers
-import NETGENPlugin
 import SMESH_fixation
 import smesh
 
@@ -50,12 +48,11 @@ print " check status ", status
 print "-------------------------- create Mesh, algorithm, hypothesis"
 
 mesh = smesh.Mesh(compshell, "MeshcompShel");
-netgen = mesh.Netgen(1)
-hyp = netgen.Parameters()
-hyp.SetMaxSize( 50 )
-#hyp.SetSecondOrder( 0 )
-hyp.SetFineness( 3 )
-#hyp.SetOptimize( 1 )
+netgen = mesh.Tetrahedron(smesh.FULL_NETGEN)
+netgen.SetMaxSize( 50 )
+#netgen.SetSecondOrder( 0 )
+netgen.SetFineness( smesh.Fine )
+#netgen.SetOptimize( 1 )
 
 salome.sg.updateObjBrowser(1)
 

@@ -45,16 +45,16 @@ class vtkUnstructuredGrid;
 class vtkScalarBarActor;
 class vtkLookupTable;
 class vtkImplicitBoolean;
+class vtkPassThroughFilter;
 
 class VTKViewer_Transform;
 class VTKViewer_TransformFilter;
-class VTKViewer_PassThroughFilter;
 class VTKViewer_ExtractUnstructuredGrid;
 
 class SMESH_ExtractGeometry;
 
 
-class SMESH_DeviceActor: public vtkLODActor{
+class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   friend class SMESH_ActorDef;
 
  public:
@@ -127,7 +127,7 @@ class SMESH_DeviceActor: public vtkLODActor{
   bool myStoreClippingMapping;
   VTKViewer_GeometryFilter *myGeomFilter;
   VTKViewer_TransformFilter *myTransformFilter;
-  std::vector<VTKViewer_PassThroughFilter*> myPassFilter;
+  std::vector<vtkPassThroughFilter*> myPassFilter;
 
   vtkShrinkFilter* myShrinkFilter;
   bool myIsShrinkable;

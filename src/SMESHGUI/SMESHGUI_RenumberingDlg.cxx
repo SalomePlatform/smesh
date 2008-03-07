@@ -59,6 +59,8 @@
 
 using namespace std;
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 //=================================================================================
 // class    : SMESHGUI_RenumberingDlg()
 // purpose  :
@@ -97,11 +99,11 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const cha
   GroupConstructors = new QButtonGroup(this, "GroupConstructors");
   if (unit == 0) {
     GroupConstructors->setTitle(tr("SMESH_NODES" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_nodes";
+    myHelpFileName = "renumbering_nodes_and_elements_page.html#renumbering_nodes_anchor";
   }
   else if (unit == 1) {
     GroupConstructors->setTitle(tr("SMESH_ELEMENTS" ));
-    myHelpFileName = "/files/renumbering_nodes_and_elements.htm#renumber_elements";
+    myHelpFileName = "renumbering_nodes_and_elements_page.html#renumbering_elements_anchor";
   }
   GroupConstructors->setExclusive(TRUE);
   GroupConstructors->setColumnLayout(0, Qt::Vertical);
@@ -320,9 +322,15 @@ void SMESHGUI_RenumberingDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -443,4 +451,21 @@ void SMESHGUI_RenumberingDlg::hideEvent (QHideEvent * e)
 {
   if (!isMinimized())
     ClickOnCancel();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RenumberingDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

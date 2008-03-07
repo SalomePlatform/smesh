@@ -1,0 +1,40 @@
+/*!
+
+\page convert_to_from_quadratic_mesh_page Convert to/from Quadratic Mesh
+
+\n This functionality allows you to transtorm standard meshes to
+quadratic and vice versa. See \ref adding_quadratic_elements_page "Adding quadratic elements" 
+for more information about quadratic meshes.
+
+<em>To produce a conversion:</em>
+<ol>
+<li>From the Modification menu choose the Convert to/from Quadratic
+Mesh item, or click <em>"Convert to/from quadratic"</em> button in the
+toolbar.
+
+\image html image154.gif
+<center><em>"Convert to/from quadratic" button</em></center>
+
+The following dialog box will appear:
+
+\image html convert.png
+
+</li>
+<li>In this dialog box you should select:
+
+<ul>
+<li>if you wish to convert standard mesh to quadratic or quadratic to standard;</li>
+<li>if you wish to place medium nodes of the quadratic mesh on the geometry (meshed object).</li>
+</ul>
+
+\image html image156.gif
+<center>Standard mesh (coarse mesh on a torus)</center>
+
+\image html image155.gif
+<center>Quadratic mesh</center>
+
+</li>
+<li>Click the \b Apply or \b OK button.</li>
+</ol>
+
+*/

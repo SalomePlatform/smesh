@@ -30,6 +30,8 @@
 #ifndef _SMESH_NUMBEROFSEGMENTS_I_HXX_
 #define _SMESH_NUMBEROFSEGMENTS_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
@@ -40,7 +42,7 @@
 // ======================================================
 // Number of segments hypothesis
 // ======================================================
-class StdMeshers_NumberOfSegments_i:
+class STDMESHERS_I_EXPORT StdMeshers_NumberOfSegments_i:
   public virtual POA_StdMeshers::StdMeshers_NumberOfSegments,
   public virtual SMESH_Hypothesis_i
 {

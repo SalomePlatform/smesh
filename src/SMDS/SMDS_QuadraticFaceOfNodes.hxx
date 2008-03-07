@@ -27,9 +27,11 @@
 #ifndef _SMDS_QuadraticFaceOfNodes_HeaderFile
 #define _SMDS_QuadraticFaceOfNodes_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshFace.hxx"
 
-class SMDS_WNT_EXPORT SMDS_QuadraticFaceOfNodes:public SMDS_MeshFace
+class SMDS_EXPORT SMDS_QuadraticFaceOfNodes:public SMDS_MeshFace
 {
 public:
   SMDS_QuadraticFaceOfNodes (const SMDS_MeshNode * n1,

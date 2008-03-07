@@ -29,6 +29,8 @@
 #ifndef _SMESH_AutomaticLength_HXX_
 #define _SMESH_AutomaticLength_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
@@ -45,13 +47,22 @@ class TopoDS_TShape;
  * S = S0 * f(L/Lmin) where f(x) = 1 + (2/Pi * 7 * atan(x/5) )
  */
 
-class StdMeshers_AutomaticLength:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_AutomaticLength:public SMESH_Hypothesis
 {
 public:
   StdMeshers_AutomaticLength(int hypId, int studyId, SMESH_Gen * gen);
   virtual ~ StdMeshers_AutomaticLength();
 
+  /*!
+   * \brief Computes segment for a given edge
+   */
   double GetLength(const SMESH_Mesh* aMesh, const TopoDS_Shape& anEdge)
+    throw(SALOME_Exception);
+
+  /*!
+   * \brief Computes segment length for an edge of given length
+   */
+  double GetLength(const SMESH_Mesh* aMesh, const double edgeLength)
     throw(SALOME_Exception);
 
   /*!
@@ -89,7 +100,7 @@ public:
 protected:
   std::map<const TopoDS_TShape*, double> _TShapeToLength;
   const SMESH_Mesh* _mesh;
-  double _fineness;
+  double _fineness, _S0, _minLen;
 };
 
 #endif

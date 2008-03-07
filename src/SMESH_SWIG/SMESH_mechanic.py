@@ -28,6 +28,7 @@
 
 import salome
 import geompy
+import smesh
 
 import StdMeshers
 
@@ -120,130 +121,55 @@ Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
 
-# ---- launch SMESH, init a Mesh with shape 'mechanic'
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
-smesh.SetCurrentStudy(salome.myStudy)
 
-mesh = smesh.CreateMesh(shape_mesh)
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-idmesh = salome.ObjectToID(mesh)
-smeshgui.SetName( idmesh, "Mesh_mechanic" )
+mesh = smesh.Mesh(shape_mesh, "Mesh_mechanic")
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegment = 10
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
-hypNbSeg.SetNumberOfSegments( numberOfSegment )
+algo = mesh.Segment()
+hypNbSeg = algo.NumberOfSegments(numberOfSegment)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
+smesh.SetName(hypNbSeg, "NumberOfSegments_10")
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 25
 
-hypArea25 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hypArea25.SetMaxElementArea( maxElementArea )
+algo = mesh.Triangle()
+hypArea25 = algo.MaxElementArea(maxElementArea)
 print hypArea25.GetName()
 print hypArea25.GetId()
 print hypArea25.GetMaxElementArea()
+smesh.SetName(hypArea25, "MaxElementArea_25")
 
-smeshgui.SetName(salome.ObjectToID(hypArea25), "MaxElementArea_25")
+# Create submesh on sub_face1 - sub_face4
+# ---------------------------------------
 
-print "-------------------------- MaxElementArea"
+# Set 2D algorithm to submesh on sub_face1
+algo = mesh.Quadrangle(sub_face1)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace1")
 
-maxElementArea = 35
+# Set 2D algorithm to submesh on sub_face2
+algo = mesh.Quadrangle(sub_face2)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace2")
 
-hypArea35 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hypArea35.SetMaxElementArea( maxElementArea )
-print hypArea35.GetName()
-print hypArea35.GetId()
-print hypArea35.GetMaxElementArea()
+# Set 2D algorithm to submesh on sub_face3
+algo = mesh.Quadrangle(sub_face3)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace3")
 
-smeshgui.SetName(salome.ObjectToID(hypArea35), "MaxElementArea_35")
-
-print "-------------------------- Regular_1D"
-
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
-listHyp = algoReg1D.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoReg1D.GetName()
-print algoReg1D.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoReg1D), "Regular_1D")
-
-print "-------------------------- MEFISTO_2D"
-
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
-listHyp = algoMef.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoMef.GetName()
-print algoMef.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoMef), "MEFISTO_2D")
-
-print "-------------------------- SMESH_Quadrangle_2D"
-
-algoQuad = smesh.CreateHypothesis( "Quadrangle_2D", "libStdMeshersEngine.so" )
-listHyp = algoQuad.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoQuad.GetName()
-print algoQuad.GetId()
-
-smeshgui.SetName(salome.ObjectToID(algoQuad), "SMESH_Quadrangle_2D")
-
-print "-------------------------- add hypothesis to main shape"
-
-mesh.AddHypothesis( shape_mesh, hypNbSeg )   # nb segments
-mesh.AddHypothesis( shape_mesh, hypArea25 )  # max area
-
-mesh.AddHypothesis( shape_mesh, algoReg1D )  # Regular 1D/wire discretisation
-mesh.AddHypothesis( shape_mesh, algoMef )    # MEFISTO 2D
-
-print "-------------------------- add hypothesis and algorithm to sub face 1"
-
-submesh = mesh.GetSubMesh(sub_face1, "SubMeshFace1")
-
-mesh.AddHypothesis( sub_face1, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face1, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorithm to sub face 2"
-
-submesh = mesh.GetSubMesh(sub_face2, "SubMeshFace2")
-
-mesh.AddHypothesis( sub_face2, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face2, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorith to sub face 3"
-
-submesh = mesh.GetSubMesh(sub_face3, "SubMeshFace3")
-
-mesh.AddHypothesis( sub_face3, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face3, hypArea35 )  # max area
-
-print "-------------------------- add hypothesis and algorith to sub face 4"
-
-submesh = mesh.GetSubMesh(sub_face4, "SubMeshFace4")
-
-mesh.AddHypothesis( sub_face4, algoQuad )   # Quadrangle 2D
-mesh.AddHypothesis( sub_face4, hypArea35 )  # max area
+# Set 2D algorithm to submesh on sub_face4
+algo = mesh.Quadrangle(sub_face4)
+smesh.SetName(algo.GetSubMesh(), "SubMeshFace4")
 
 print "-------------------------- compute the mesh of the mechanic piece"
 
-smesh.Compute(mesh, shape_mesh)
+mesh.Compute()
 
 print "Information about the Mesh_mechanic:"
 print "Number of nodes       : ", mesh.NbNodes()

@@ -26,16 +26,9 @@
 
 import salome
 import geompy
+import smesh
 from math import sqrt
 
-import StdMeshers
-import NETGENPlugin
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
 
 #---------------------------------------------------------------
 
@@ -78,7 +71,9 @@ colis_cc_multi = geompy.MultiRotate1D(colis_cc, vz, 4)
 
 # --
 
-alveole = geompy.MakePartition([colis_cc_multi, barier])
+Compound1 = geompy.MakeCompound([colis_cc_multi, barier])
+SubShape_theShape = geompy.SubShapeAll(Compound1,geompy.ShapeType["SOLID"])
+alveole = geompy.MakePartition(SubShape_theShape)
 
 print "Analysis of the geometry to mesh (right after the Partition) :"
 
@@ -125,82 +120,48 @@ print " check status ", status
 
 # ---- launch SMESH
 
+# ---- init a Mesh with the alveole
+shape_mesh = salome.IDToObject( idalveole )
+
+mesh = smesh.Mesh(shape_mesh, "MeshAlveole")
+
 print "-------------------------- create Hypothesis (In this case global hypothesis are used)"
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 10
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(numberOfSegments)
+regular1D = mesh.Segment()
+hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 0.1
 
-hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypArea.SetMaxElementArea(maxElementArea)
+mefisto2D = mesh.Triangle()
+hypArea = mefisto2D.MaxElementArea(maxElementArea)
 print hypArea.GetName()
 print hypArea.GetId()
 print hypArea.GetMaxElementArea()
-
-smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_0.1")
+smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
 print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 0.5
 
-hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
-hypVolume.SetMaxElementVolume(maxElementVolume)
+netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
-
-smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_0.5")
-
-print "-------------------------- create Algorithms"
-
-print "-------------------------- Regular_1D"
-
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
-
-print "-------------------------- MEFISTO_2D"
-
-mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
-
-print "-------------------------- NETGEN_3D"
-
-netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
-smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
-
-# ---- init a Mesh with the alveole
-shape_mesh = salome.IDToObject( idalveole )
-
-mesh = smesh.CreateMesh(shape_mesh)
-smeshgui.SetName(salome.ObjectToID(mesh), "MeshAlveole")
-
-# ---- add hypothesis to alveole
-
-print "-------------------------- add hypothesis to alveole"
-
-mesh.AddHypothesis(shape_mesh,regular1D)
-mesh.AddHypothesis(shape_mesh,hypNbSeg)
-
-mesh.AddHypothesis(shape_mesh,mefisto2D)
-mesh.AddHypothesis(shape_mesh,hypArea)
-
-mesh.AddHypothesis(shape_mesh,netgen3D)
-mesh.AddHypothesis(shape_mesh,hypVolume)
+smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
 print "-------------------------- compute the mesh of alveole "
-ret = smesh.Compute(mesh,shape_mesh)
+ret = mesh.Compute()
 
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace

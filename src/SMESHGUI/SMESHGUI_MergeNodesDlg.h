@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_MERGENODES_H
 #define DIALOGBOX_MERGENODES_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
@@ -56,14 +58,14 @@ class SVTK_Selector;
 
 // IDL Headers
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 
 //=================================================================================
 // class    : SMESHGUI_MergeNodesDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_MergeNodesDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MergeNodesDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -79,6 +81,7 @@ private:
     void closeEvent( QCloseEvent* e );
     void enterEvent ( QEvent * );                           /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
+    void keyPressEvent( QKeyEvent* e );
     void onEditNodesGroup();
 
     SMESHGUI*                     mySMESHGUI;               /* Current SMESHGUI object */
@@ -88,9 +91,10 @@ private:
     QWidget*                      myEditCurrentArgument;
 
     SMESH::SMESH_Mesh_var         myMesh;
+    SMESH::SMESH_IDSource_var     mySubMeshOrGroup;
     SMESH_Actor*                  myActor;
     //Handle(SMESH_TypeFilter)      myMeshOrSubMeshFilter;
-    SUIT_SelectionFilter*         myMeshOrSubMeshFilter;
+    SUIT_SelectionFilter*         myMeshOrSubMeshOrGroupFilter;
 
     QButtonGroup*     GroupConstructors;
     QRadioButton*     RadioButton1;

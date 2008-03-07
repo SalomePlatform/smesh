@@ -29,6 +29,8 @@
 #ifndef _SMESH_HYPOTHESIS_I_HXX_
 #define _SMESH_HYPOTHESIS_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
 
@@ -40,7 +42,7 @@
 // ======================================================
 // Generic hypothesis
 // ======================================================
-class SMESH_Hypothesis_i:
+class SMESH_I_EXPORT SMESH_Hypothesis_i:
   public virtual POA_SMESH::SMESH_Hypothesis,
   public virtual SALOME::GenericObj_i
 {
@@ -67,25 +69,18 @@ public:
   // Get implementation
   ::SMESH_Hypothesis* GetImpl();
   
-  // _CS_gbo_ Activate the object using the POA
-  void Activate();
-
   // Persistence
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
   
 protected:
   ::SMESH_Hypothesis* myBaseImpl;    // base hypothesis implementation
-
-  // _CS_gbo_070505 To keep the reference and delayed the activation
-  // in the methode Activate().
-  PortableServer::POA_ptr myPOA;
 };
 
 // ======================================================
 // Generic hypothesis creator
 // ======================================================
-class GenericHypothesisCreator_i
+class SMESH_I_EXPORT GenericHypothesisCreator_i
 {
 public:
   // Create a hypothesis

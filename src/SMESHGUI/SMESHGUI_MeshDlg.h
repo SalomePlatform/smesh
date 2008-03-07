@@ -33,6 +33,8 @@
 #ifndef SMESHGUI_MeshDlg_H
 #define SMESHGUI_MeshDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_Dialog.h"
 #include <qframe.h>
 #include <qstringlist.h>
@@ -51,7 +53,7 @@ class QPopupMenu;
  *
  *  This dialog is used for mech creation or editing. 
 */
-class SMESHGUI_MeshDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_MeshDlg : public SMESHGUI_Dialog
 { 
   Q_OBJECT       
       
@@ -60,7 +62,7 @@ public:
   enum Controls { Obj, Mesh, Geom };
   
   /*! Describes dimensions */
-  enum Dimensions { Dim1D = 0, Dim2D, Dim3D };      
+  enum Dimensions { Dim0D = 0, Dim1D, Dim2D, Dim3D };      
   
 public:
   SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh );
@@ -72,6 +74,9 @@ public:
   void                         setMaxHypoDim( const int );
   void                         setHypoSets( const QStringList& );
   void                         setGeomPopupEnabled( const bool );
+  void                         disableTab(const int);
+  void                         enableTab(const int);
+
 
 signals:
 
@@ -98,7 +103,7 @@ private:
  * algorithms and hypotheses
 */ 
 
-class SMESHGUI_MeshTab : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_MeshTab : public QFrame
 {
   Q_OBJECT
       

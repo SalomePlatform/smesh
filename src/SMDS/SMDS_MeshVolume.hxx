@@ -27,9 +27,11 @@
 #ifndef _SMDS_MeshVolume_HeaderFile
 #define _SMDS_MeshVolume_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshElement.hxx"
 
-class SMDS_MeshVolume:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshVolume:public SMDS_MeshElement
 {
 	
   public:

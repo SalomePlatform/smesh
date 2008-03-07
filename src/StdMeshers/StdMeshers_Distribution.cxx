@@ -27,10 +27,19 @@
 //  $Header$
 
 #include "StdMeshers_Distribution.hxx"
-#include "CASCatch.hxx"
 
 #include <math_GaussSingleIntegration.hxx>
 #include <utilities.h>
+
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#define NO_CAS_CATCH
+#endif
+
+#include <Standard_Failure.hxx>
+
+#ifdef NO_CAS_CATCH
+#include <Standard_ErrorHandler.hxx>
+#endif
 
 Function::Function( const int conv )
 : myConv( conv )
@@ -44,14 +53,13 @@ Function::~Function()
 bool Function::value( const double, double& f ) const
 {
   bool ok = true;
-  if( myConv==0 )
-  {
-    CASCatch_TRY
-    {
-      f = pow( 10, f );
-    }
-    CASCatch_CATCH(Standard_Failure)
-    {
+  if (myConv == 0) {
+    try {
+#ifdef NO_CAS_CATCH
+      OCC_CATCH_SIGNALS;
+#endif
+      f = pow( 10., f );
+    } catch(Standard_Failure) {
       Handle(Standard_Failure) aFail = Standard_Failure::Caught();
       f = 0.0;
       ok = false;
@@ -101,6 +109,12 @@ bool FunctionTable::value( const double t, double& f ) const
   if( !findBounds( t, i1, i2 ) )
     return false;
 
+  if( i1==i2 ) {
+    f = myData[ 2*i1+1 ];
+    Function::value( t, f );
+    return true;
+  }
+      
   double
     x1 = myData[2*i1], y1 = myData[2*i1+1],
     x2 = myData[2*i2], y2 = myData[2*i2+1];
@@ -124,8 +138,10 @@ double FunctionTable::integral( const int i, const double d ) const
 {
   double f1,f2, res = 0.0;
   if( value( myData[2*i]+d, f1 ) )
-    if(!value(myData[2*i], f2))
+    if(!value(myData[2*i], f2)) {
       f2 = myData[2*i+1];
+      Function::value( 1, f2 );
+    }
   res = (f2+f1) * d / 2.0;
   return res;
 }
@@ -145,7 +161,7 @@ double FunctionTable::integral( const double a, const double b ) const
 
 bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) const
 {
-  int n = myData.size();
+  int n = myData.size() / 2;
   if( n==0 || x<myData[0] )
   {
     x_ind_1 = x_ind_2 = 0;
@@ -153,7 +169,7 @@ bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) con
   }
 
   for( int i=0; i<n-1; i++ )
-    if( myData[2*i]<=x && x<=myData[2*(i+1)] )
+    if( myData[2*i]<=x && x<myData[2*(i+1)] )
     {
       x_ind_1 = i;
       x_ind_2 = i+1;
@@ -161,7 +177,7 @@ bool FunctionTable::findBounds( const double x, int& x_ind_1, int& x_ind_2 ) con
     }
   x_ind_1 = n-1;
   x_ind_2 = n-1;
-  return false;
+  return ( fabs( x - myData[2*x_ind_2] ) < 1.e-10 );
 }
 
 FunctionExpr::FunctionExpr( const char* str, const int conv )
@@ -170,13 +186,13 @@ FunctionExpr::FunctionExpr( const char* str, const int conv )
   myValues( 1, 1 )
 {
   bool ok = true;
-  CASCatch_TRY
-  {
+  try {
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString )str );
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
   }
@@ -191,7 +207,7 @@ FunctionExpr::~FunctionExpr()
 {
 }
 
-Standard_Boolean FunctionExpr::Value( Standard_Real T, Standard_Real& F )
+Standard_Boolean FunctionExpr::Value( const Standard_Real T, Standard_Real& F )
 {
   double f;
   Standard_Boolean res = value( T, f );
@@ -206,10 +222,12 @@ bool FunctionExpr::value( const double t, double& f ) const
 
   ( ( TColStd_Array1OfReal& )myValues ).ChangeValue( 1 ) = t;
   bool ok = true;
-  CASCatch_TRY {
+  try {
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     f = myExpr->Expression()->Evaluate( myVars, myValues );
-  }
-  CASCatch_CATCH(Standard_Failure) {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     f = 0.0;
     ok = false;
@@ -222,14 +240,15 @@ bool FunctionExpr::value( const double t, double& f ) const
 double FunctionExpr::integral( const double a, const double b ) const
 {
   double res = 0.0;
-  CASCatch_TRY
-  {
-    math_GaussSingleIntegration _int( ( math_Function& )*this, a, b, 20 );
+  try {
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
+    math_GaussSingleIntegration _int
+      ( *static_cast<math_Function*>( const_cast<FunctionExpr*> (this) ), a, b, 20 );
     if( _int.IsDone() )
       res = _int.Value();
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+  } catch(Standard_Failure) {
     res = 0.0;
     MESSAGE( "Exception in integral calculating" );
   }

@@ -28,8 +28,6 @@ import geompy
 
 geom  = geompy.geom
 
-import StdMeshers
-import NETGENPlugin
 import smesh
 
 # ---------------------------- GEOM --------------------------------------
@@ -109,13 +107,12 @@ print "number of Edges in mechanic : ",len(subEdgeList)
 print "-------------------------- create Mesh, algorithm, hypothesis"
 
 mesh = smesh.Mesh(mechanic, "Mesh_mechanic");
-netgen = mesh.Netgen(0)
-hyp = netgen.Parameters()
-hyp.SetMaxSize( 50 )
-#hyp.SetSecondOrder( 0 )
-hyp.SetFineness( 3 )
-hyp.SetQuadAllowed( 1 )
-#hyp.SetOptimize( 1 )
+netgen = mesh.Triangle(smesh.NETGEN)
+netgen.SetMaxSize( 50 )
+#netgen.SetSecondOrder( 0 )
+netgen.SetFineness( smesh.Fine )
+netgen.SetQuadAllowed( 1 )
+#netgen.SetOptimize( 1 )
 
 salome.sg.updateObjBrowser(1)
 
@@ -124,13 +121,13 @@ ret = mesh.Compute()
 print ret
 if ret != 0:
     print "Information about the MeshcompShel:"
-    print "Number of nodes        : ", mesh.GetMesh().NbNodes()
-    print "Number of edges        : ", mesh.GetMesh().NbEdges()
-    print "Number of faces        : ", mesh.GetMesh().NbFaces()
-    print "Number of triangles    : ", mesh.GetMesh().NbTriangles()
-    print "Number of quadrangles  : ", mesh.GetMesh().NbQuadrangles()
-    print "Number of volumes      : ", mesh.GetMesh().NbVolumes()
-    print "Number of tetrahedrons : ", mesh.GetMesh().NbTetras()
+    print "Number of nodes        : ", mesh.NbNodes()
+    print "Number of edges        : ", mesh.NbEdges()
+    print "Number of faces        : ", mesh.NbFaces()
+    print "Number of triangles    : ", mesh.NbTriangles()
+    print "Number of quadrangles  : ", mesh.NbQuadrangles()
+    print "Number of volumes      : ", mesh.NbVolumes()
+    print "Number of tetrahedrons : ", mesh.NbTetras()
     
 else:
     print "problem when computing the mesh"

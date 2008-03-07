@@ -20,9 +20,11 @@
 #ifndef _INCLUDE_DRIVERDAT_W_SMESHDS_DOCUMENT
 #define _INCLUDE_DRIVERDAT_W_SMESHDS_DOCUMENT
 
+#include "SMESH_DriverDAT.hxx"
+
 #include "Driver_Document.h"
 
-class DriverDAT_W_SMESHDS_Document: public Driver_Document 
+class MESHDRIVERDAT_EXPORT DriverDAT_W_SMESHDS_Document: public Driver_Document 
 {};
 
 #endif

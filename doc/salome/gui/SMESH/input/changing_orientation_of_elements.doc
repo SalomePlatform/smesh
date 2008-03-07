@@ -1,0 +1,44 @@
+/*!
+
+\page changing_orientation_of_elements_page Changing orientation of elements
+
+\n Orientation of an element is changed by reverting the order of
+nodes of the selected elements.
+
+<em>To change orientation of elements:</em>
+<ol>
+<li>Display a mesh or a submesh in the 3D viewer.</li>
+<li>In the \b Modification menu select the \b Orientation item or click
+<em>Orientation</em> button in the toolbar.
+
+\image html image79.gif
+<center><em>"Orientation" button</em></center>
+
+The following dialog box will appear:
+
+\image html orientaation1.png
+
+<ul>
+<li><b>The main list</b> shall contain the elements which will be
+reoriented. You can click on an element in the 3D viewer and it will
+be highlighted. After that click the \b Add button and the ID of this
+element will be added to the list. To remove a selected element or
+elements from the list click the \b Remove button. The \b Sort button
+allows to sort the list of elements IDs. The <b>Set filter</b> button
+allows to apply a definite filter to selection of elements of your
+group.</li>
+<li><b>Apply to all</b> radio button allows to modify the orientation
+of all elements of the currently displayed mesh or submesh.</li>
+<li><b>Select from</b> set of fields allows to choose a submesh or an
+existing group whose elements will be automatically added to the
+list.</li>
+</ul>
+
+</li>
+<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_orientation "Change Orientation" operation. 
+
+*/

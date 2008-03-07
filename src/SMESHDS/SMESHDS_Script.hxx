@@ -27,13 +27,15 @@
 #ifndef _SMESHDS_Script_HeaderFile
 #define _SMESHDS_Script_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMESHDS_Command.hxx"
 
 #include <list>
 #include <vector>
 
 
-class SMESHDS_Script
+class SMESHDS_EXPORT SMESHDS_Script
 {
   public:
 	SMESHDS_Script(bool theIsEmbeddedMode);

@@ -52,6 +52,7 @@
 #include "SVTK_Selector.h"
 #include "SVTK_Selection.h"
 #include "SALOME_ListIO.hxx"
+#include "SALOMEDSClient_SObject.hxx"
 
 #include "utilities.h"
 
@@ -74,13 +75,17 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
+
+enum { MOVE_ELEMS_BUTTON = 0, COPY_ELEMS_BUTTON, MAKE_MESH_BUTTON }; //!< action type
 
 //=================================================================================
 // class    : SMESHGUI_SymmetryDlg()
 // purpose  :
 //=================================================================================
+
 SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* name,
                                             bool modal, WFlags fl)
      : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
@@ -181,8 +186,9 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   // Controls for elements selection
   TextLabelElements  = new QLabel(GroupArguments, "TextLabelElements");
   TextLabelElements->setText(tr("SMESH_ID_ELEMENTS" ));
-  TextLabelElements->setFixedWidth(74);
+  //TextLabelElements->setFixedWidth(74);
   GroupArgumentsLayout->addWidget(TextLabelElements, 0, 0);
+  //GroupArgumentsLayout->addMultiCellWidget(TextLabelElements, 0, 0, 0, 1);
 
   SelectElementsButton  = new QPushButton(GroupArguments, "SelectElementsButton");
   SelectElementsButton->setText(tr("" ));
@@ -190,14 +196,15 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   SelectElementsButton->setToggleButton(FALSE);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
 
-  LineEditElements  = new QLineEdit(GroupArguments, "LineEditElements");
+  LineEditElements = new QLineEdit(GroupArguments, "LineEditElements");
   LineEditElements->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-  GroupArgumentsLayout->addWidget(LineEditElements, 0, 2);
+  //GroupArgumentsLayout->addWidget(LineEditElements, 0, 3);
+  GroupArgumentsLayout->addMultiCellWidget(LineEditElements, 0, 0, 2, 4);
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(GroupArguments, "CheckBoxMesh");
   CheckBoxMesh->setText(tr("SMESH_SELECT_WHOLE_MESH" ));
-  GroupArgumentsLayout->addMultiCellWidget(CheckBoxMesh, 1, 1, 0, 2);
+  GroupArgumentsLayout->addMultiCellWidget(CheckBoxMesh, 1, 1, 0, 4);
 
   // Controls for mirror selection
   GroupMirror = new QGroupBox(GroupArguments, "GroupMirror");
@@ -218,6 +225,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SelectPointButton, 0, 1);
 
   TextLabelX = new QLabel(GroupMirror, "TextLabelX");
+  TextLabelX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelX->setText(tr("SMESH_X"));
   GroupMirrorLayout->addWidget(TextLabelX, 0, 2);
 
@@ -225,6 +233,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SpinBox_X, 0, 3);
 
   TextLabelY = new QLabel(GroupMirror, "TextLabelY");
+  TextLabelY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelY->setText(tr("SMESH_Y"));
   GroupMirrorLayout->addWidget(TextLabelY, 0, 4);
 
@@ -232,6 +241,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   GroupMirrorLayout->addWidget(SpinBox_Y, 0, 5);
 
   TextLabelZ = new QLabel(GroupMirror, "TextLabelZ");
+  TextLabelZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   TextLabelZ->setText(tr("SMESH_Z"));
   GroupMirrorLayout->addWidget(TextLabelZ, 0, 6);
 
@@ -247,6 +257,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
 
   TextLabelDX = new QLabel(GroupMirror, "TextLabelDX");
   TextLabelDX->setText(tr("SMESH_DX"));
+  TextLabelDX->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupMirrorLayout->addWidget(TextLabelDX, 1, 2);
 
   SpinBox_DX = new SMESHGUI_SpinBox(GroupMirror, "SpinBox_DX");
@@ -254,6 +265,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
 
   TextLabelDY = new QLabel(GroupMirror, "TextLabelDY");
   TextLabelDY->setText(tr("SMESH_DY"));
+  TextLabelDY->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupMirrorLayout->addWidget(TextLabelDY, 1, 4);
 
   SpinBox_DY = new SMESHGUI_SpinBox(GroupMirror, "SpinBox_DY");
@@ -261,28 +273,40 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
 
   TextLabelDZ = new QLabel(GroupMirror, "TextLabelDZ");
   TextLabelDZ->setText(tr("SMESH_DZ"));
+  TextLabelDZ->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   GroupMirrorLayout->addWidget(TextLabelDZ, 1, 6);
 
   SpinBox_DZ = new SMESHGUI_SpinBox(GroupMirror, "SpinBox_DZ");
   GroupMirrorLayout->addWidget(SpinBox_DZ, 1, 7);
 
-  GroupArgumentsLayout->addMultiCellWidget(GroupMirror, 2, 2, 0, 2);
+  GroupArgumentsLayout->addMultiCellWidget(GroupMirror, 2, 2, 0, 4);
 
-  // Controls for "Create a copy" option
-  CheckBoxCopy = new QCheckBox(GroupArguments, "CheckBoxCopy");
-  CheckBoxCopy->setText(tr("SMESH_CREATE_COPY"));
-  GroupArgumentsLayout->addMultiCellWidget(CheckBoxCopy, 3, 3, 0, 2);
+  // switch of action type
+  ActionGroup = new QButtonGroup(1, Qt::Horizontal, GroupArguments, "ActionGroup");
+  ActionGroup->setExclusive(true);
+  ActionGroup->insert(new QRadioButton(tr("SMESH_MOVE_ELEMENTS"),ActionGroup), MOVE_ELEMS_BUTTON);
+  ActionGroup->insert(new QRadioButton(tr("SMESH_COPY_ELEMENTS"),ActionGroup), COPY_ELEMS_BUTTON);
+  ActionGroup->insert(new QRadioButton(tr("SMESH_CREATE_MESH"  ),ActionGroup), MAKE_MESH_BUTTON);
+  GroupArgumentsLayout->addMultiCellWidget(ActionGroup, 3, 5, 0, 3);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(false);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck, 4, 4);
+
+  // Name of a mesh to create
+  LineEditNewMesh = new QLineEdit(GroupArguments, "LineEditNewMesh");
+  GroupArgumentsLayout->addWidget(LineEditNewMesh, 5, 4);
 
   SMESHGUI_SymmetryDlgLayout->addWidget(GroupArguments, 1, 0);
 
   /* Initialisations */
-  SpinBox_X->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Y->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_Z->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DX->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DY->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  SpinBox_DZ->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
   GroupArguments->show();
   RadioButton1->setChecked(TRUE);
@@ -302,7 +326,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "/files/symmetry.htm";
+  myHelpFileName = "symmetry_page.html";
 
   Init();
 
@@ -327,11 +351,13 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule, const char* nam
   connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                 SLOT(onSelectMesh(bool)));
+  connect(ActionGroup,      SIGNAL(clicked(int)),                   SLOT(onActionClicked(int)));
 
   this->show(); /* displays Dialog */
 
   ConstructorsClicked(0);
   SelectionIntoArgument();
+  onActionClicked(MOVE_ELEMS_BUTTON);
   resize(0,0); // ??
 }
 
@@ -371,8 +397,10 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
     SpinBox_DY->SetValue(0.0);
     SpinBox_DZ->SetValue(0.0);
 
-    CheckBoxCopy->setChecked(false);
+    ((QRadioButton*) ActionGroup->find( MOVE_ELEMS_BUTTON ))->setChecked(TRUE);
     CheckBoxMesh->setChecked(false);
+//     MakeGroupsCheck->setChecked(false);
+//     MakeGroupsCheck->setEnabled(false);
     onSelectMesh(false);
   }
 }
@@ -474,7 +502,6 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
       aMirror.vz = SpinBox_DZ->GetValue();
     }
 
-    bool toCreateCopy = CheckBoxCopy->isChecked();
 
     SMESH::SMESH_MeshEditor::MirrorType aMirrorType;
 
@@ -485,15 +512,36 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
     if (GetConstructorId() == 2)
       aMirrorType = SMESH::SMESH_MeshEditor::PLANE;
 
+    int actionButton = ActionGroup->id( ActionGroup->selected() );
+    bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
+
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       QApplication::setOverrideCursor(Qt::waitCursor);
-      aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, toCreateCopy);
+      switch ( actionButton ) {
+      case MOVE_ELEMS_BUTTON:
+        aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
+        break;
+      case COPY_ELEMS_BUTTON:
+        if ( makeGroups )
+          SMESH::ListOfGroups_var groups = 
+            aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
+        else
+          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
+        break;
+      case MAKE_MESH_BUTTON:
+        SMESH::SMESH_Mesh_var mesh = 
+          aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
+                                      LineEditNewMesh->text().latin1());
+      }
       QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
     SMESH::UpdateView();
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ||
+         actionButton == MAKE_MESH_BUTTON )
+      mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
     ConstructorsClicked(GetConstructorId());
     SelectionIntoArgument();
@@ -536,9 +584,15 @@ void SMESHGUI_SymmetryDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -644,6 +698,14 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
   if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     myElementsId = "";
 
+    // MakeGroups is available if there are groups and "Copy"
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    }
+    else if ( ActionGroup->id( ActionGroup->selected() ) != MOVE_ELEMS_BUTTON ) {
+      MakeGroupsCheck->setEnabled(true);
+    }
     if (CheckBoxMesh->isChecked()) {
       SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
@@ -687,7 +749,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
         aNbUnits = anElementsIds->length();
       }
     } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, myActor->getIO(), aString);
+      aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, IO, aString);
       myElementsId = aString;
     }
 
@@ -696,7 +758,7 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
 
     myNbOkElements = true;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
 
@@ -724,8 +786,10 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
   }
 
   myBusy = true;
-  if (myEditCurrentArgument == (QWidget*)LineEditElements)
+  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
     LineEditElements->setText(aString);
+    setNewMeshName();
+  }
   myBusy = false;
 
   // OK
@@ -915,4 +979,75 @@ void SMESHGUI_SymmetryDlg::onVectorChanged()
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
   }
+}
+
+//=======================================================================
+//function : onActionClicked
+//purpose  : slot called when an action type changed
+//=======================================================================
+
+void SMESHGUI_SymmetryDlg::onActionClicked(int button)
+{
+  switch ( button ) {
+  case MOVE_ELEMS_BUTTON:
+    MakeGroupsCheck->setEnabled(false);
+    LineEditNewMesh->setEnabled(false);
+    break;
+  case COPY_ELEMS_BUTTON:
+    LineEditNewMesh->setEnabled(false);
+    MakeGroupsCheck->setText( tr("SMESH_MAKE_GROUPS"));
+    if ( myMesh->_is_nil() || myMesh->NbGroups() > 0)
+      MakeGroupsCheck->setEnabled(true);
+    else
+      MakeGroupsCheck->setEnabled(false);
+    break;
+  case MAKE_MESH_BUTTON:
+    LineEditNewMesh->setEnabled(true);
+    MakeGroupsCheck->setText( tr("SMESH_COPY_GROUPS"));
+    if ( myMesh->_is_nil() || myMesh->NbGroups() > 0)
+      MakeGroupsCheck->setEnabled(true);
+    else
+      MakeGroupsCheck->setEnabled(false);
+    break;
+  }
+  setNewMeshName();
+}
+
+//=======================================================================
+//function : setNewMeshName
+//purpose  : update contents of LineEditNewMesh
+//=======================================================================
+
+void SMESHGUI_SymmetryDlg::setNewMeshName()
+{
+  LineEditNewMesh->setText("");
+  if ( LineEditNewMesh->isEnabled() && !myMesh->_is_nil() ) {
+    QString name;
+    if ( CheckBoxMesh->isChecked() ) {
+      name = LineEditElements->text();
+    }
+    else {
+      _PTR(SObject) meshSO = SMESH::FindSObject( myMesh );
+      name = meshSO->GetName();
+    }
+    if ( !name.isEmpty() )
+      LineEditNewMesh->setText( SMESH::UniqueMeshName( name.latin1(), "mirrored"));
+  }
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SymmetryDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

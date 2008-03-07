@@ -20,11 +20,13 @@
 #ifndef _INCLUDE_DRIVER_DOCUMENT
 #define _INCLUDE_DRIVER_DOCUMENT
 
+#include "Driver_Mesh.h"
+
 #include <string>
 
 class SMESHDS_Document;
 
-class Driver_Document
+class MESHDRIVER_EXPORT Driver_Document
 {
  public:
   Driver_Document();

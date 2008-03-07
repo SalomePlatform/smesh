@@ -26,6 +26,8 @@
 #ifndef SMESHGUI_Operation_H
 #define SMESHGUI_Operation_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <LightApp_Operation.h>
 #include <SALOMEDSClient.hxx>
 
@@ -36,7 +38,7 @@ class SMESHGUI;
   Description : Base class for all SMESH operations
 */
 
-class SMESHGUI_Operation : public LightApp_Operation
+class SMESHGUI_EXPORT SMESHGUI_Operation : public LightApp_Operation
 {
   Q_OBJECT
 

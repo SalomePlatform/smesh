@@ -23,6 +23,8 @@
 #ifndef _SMESH_NumberFilter_HeaderFile
 #define _SMESH_NumberFilter_HeaderFile
 
+#include "SMESH_Type.h"
+
 #include "SUIT_SelectionFilter.h"
 
 #include <TopAbs_ShapeEnum.hxx>
@@ -30,6 +32,8 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
+
+#include <string>
 
 class SUIT_DataOwner;
 
@@ -39,13 +43,14 @@ class SUIT_DataOwner;
  *                Filter geom objects by number of subshapes of the given type
  *                Parameters of constructor:
  *                * theSubShapeType - Type of subshape
- *                * theNumber       - Number of subshapes. Object is selected if it contains theNumber of
- *                                    theSubShapeType sub-shapes
+ *                * theNumber       - Number of subshapes. Object is selected if it contains
+ *                                    theNumber of theSubShapeType sub-shapes, or at least
+ *                                    one theSubShapeType, provided that theNumber==0
  *                * theShapeType    - This map specifies types of object to be selected
  *                * theMainObject   - Sub-shapes of this object is selected only
  *                * theIsClosedOnly - Closed shapes is selected if this parameter is true
  */
-class SMESH_NumberFilter : public SUIT_SelectionFilter
+class SMESHFILTERSSELECTION_EXPORT SMESH_NumberFilter : public SUIT_SelectionFilter
 {
  public:
   SMESH_NumberFilter (const char*            theKind,
@@ -77,7 +82,7 @@ class SMESH_NumberFilter : public SUIT_SelectionFilter
   GEOM::GEOM_Object_ptr getGeom (const SUIT_DataOwner*, const bool extractReference = true ) const;
 
  private:
-  char*                 myKind;
+  std::string           myKind;
   TopAbs_ShapeEnum      mySubShapeType;
   int                   myNumber;
   bool                  myIsClosedOnly;

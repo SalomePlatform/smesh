@@ -28,10 +28,12 @@
 #ifndef _STDMESHERS_STARTENDLENGTH_HXX_
 #define _STDMESHERS_STARTENDLENGTH_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_StartEndLength:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_StartEndLength:public SMESH_Hypothesis
 {
  public:
   StdMeshers_StartEndLength(int hypId, int studyId, SMESH_Gen * gen);

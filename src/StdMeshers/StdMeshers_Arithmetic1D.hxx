@@ -29,10 +29,12 @@
 #ifndef _SMESH_ARITHMETIC1D_HXX_
 #define _SMESH_ARITHMETIC1D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_Arithmetic1D:
+class STDMESHERS_EXPORT StdMeshers_Arithmetic1D:
   public SMESH_Hypothesis
 {
 public:

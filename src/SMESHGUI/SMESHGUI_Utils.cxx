@@ -21,12 +21,14 @@
 #include <qstring.h>
 
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI.h"
 
 #include "OB_Browser.h"
 
 #include "SUIT_Desktop.h"
 #include "SUIT_Application.h"
 #include "SUIT_Session.h"
+#include "SUIT_MessageBox.h"
 
 #include "LightApp_SelectionMgr.h"
 #include "SalomeApp_Application.h"
@@ -252,7 +254,7 @@ namespace SMESH{
     return theSObject->GetFather();
   }
 
-  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsRight)
+  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNotModif, bool isEmptyMesh)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -262,10 +264,12 @@ namespace SMESH{
     _PTR(GenericAttribute) anAttr =
       aBuilder->FindOrCreateAttribute(theSObject,"AttributePixMap");
     _PTR(AttributePixMap) aPixmap = anAttr;
-    if (theIsRight) {
+    if (theIsNotModif) {
       aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-    } else {
+    } else if ( isEmptyMesh ) {
       aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
+    } else {
+      aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
     }
 
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
@@ -277,14 +281,32 @@ namespace SMESH{
 	  _PTR(SObject) aSObj1 = anIter1->Value();
 	  anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
 	  aPixmap = anAttr;
-	  if (theIsRight) {
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
-	  } else {
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
-	  }
+          if (theIsNotModif) {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH");
+          } else if ( isEmptyMesh ) {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_WARN");
+          } else {
+            aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_PARTIAL");
+          }
 	}
       }
     }
+  }
+
+  void ShowHelpFile (QString theHelpFileName)
+  {
+    LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+    if (app) {
+      SMESHGUI* gui = SMESHGUI::GetSMESHGUI();
+      app->onHelpContextModule(gui ? app->moduleName(gui->moduleName()) : QString(""),
+                               theHelpFileName);
+    }
+    else {
+      SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
+                             QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(theHelpFileName),
+                             QObject::tr("BUT_OK"));
+      }
   }
 
 //  void UpdateObjBrowser (bool)

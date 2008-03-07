@@ -1,0 +1,159 @@
+/*!
+
+\page sewing_meshes_page Sewing meshes
+
+\n In SMESH you can sew elements of  different meshes. The current
+functionality allows you to sew:
+<ul>
+<li>\ref free_borders_anchor "Free borders"</li>
+<li>\ref conform_free_borders_anchor "Conform free borders"</li>
+<li>\ref border_to_side_anchor "Border to side"</li>
+<li>\ref side_elements_anchor "Side elements"</li>
+</ul>
+
+<em>To sew elements of different meshes:</em>
+<ol>
+<li>From the \b Modification menu choose the \b Transformation item
+and from its sub-menu select the \b Sewing item.</li>
+<li>Check in the dialog box one of the radio buttons corresponding to
+the type of sewing operation you would like to perform.</li>
+<li>Fill the other fields available in the dialog box.</li>
+<li>Click the \b OK or \b Apply button to perform the operation of sewing.</li>
+</ol>
+
+<br>
+\anchor free_borders_anchor
+<h2>Sew free borders</h2>
+
+This functionality allows you to unite two free borders of a 2D mesh.
+
+\image html sewing1.png
+
+For sewing free borders you should define three points on each border:
+first, second and the last node:
+<ul>
+<li>the first node specifies beginning of the border;</li>
+<li>the second node specifies the part of the border which should be
+considered (as far as the free border usually forms a closed
+contour);</li>
+<li>the last node specifies the end of the border.</li>
+</ul>
+
+You can select these nodes in the 3D viewer or define by its id.
+
+The first and the second nodes should belong to the same link of a
+face. The second and the last nodes of a border can be the same. The
+first and the last nodes of two borders can be the same. The
+corresponding end nodes of two borders will be merged. Intermediate
+nodes of two borders will be either merged or inserted into faces of
+the opposite border.
+
+The sewing algorithm is as follows:
+<ol>
+<li>The parameter (U) of each node within a border is computed. So
+that the first node has U=0.0, the last node has U=1.0, for the rest
+nodes 0.0 < U < 1.0;</li>
+<li>Compare node parameters of the two borders. If two nodes of the
+opposite borders have close parameters, they are merged, i.e. a node
+of the first border is replaced in all elements by a node of the
+second border. If a node has no node with a close parameter in the
+opposite border, it is inserted into an edge of element of the
+opposite border, an element is split. Two nodes are considered close
+enough to merge, if difference of their parameters is less than one
+fifth of minimum length of adjacent face edges on the borders.</li>
+</ol>
+
+\image html image22.jpg
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_sew_free_borders "Sew Free Borders" operation.
+
+<br>
+\anchor conform_free_borders_anchor
+<h2>Sew conform free borders</h2>
+
+This functionality can be used to unite two free borders of a 2D mesh.
+
+\image html sewing2.png
+
+The borders of meshes for sewing are defined as for "Sew free borders"
+except that the second free border is not limited and can be defined
+by the first and the second nodes only. The first nodes of two borders
+can be the same.
+
+The algorithm is following: counting nodes starting at the first ones,
+the n-th node of the first border is merged with the n-th node of the
+other border, until the end of either of borders. Nodes of the first
+border are replaced in all elements with corresponding nodes of the
+second border.
+\n For sewing conform free borders you should define three points on
+the first border and two points on the second one. User can select
+these nodes in 3D viewer or define node by its id.
+
+\image html image22.jpg
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_sew_conform_free_borders "Sew Conform Free Borders"
+operation.
+
+<br>
+\anchor border_to_side_anchor
+<h2>Sew border to side</h2>
+
+"Sew border to side" is intended to sew a free border to a mesh
+surface.
+\n The free border is defined as for "Sewing of free borders". The
+place where to sew the border is defined by two nodes, between which
+the border faces are placed, so that the first border node is merged
+with the first node on the side and the last node of the border is
+merged with the second specified node on the side.
+
+\image html sewing3.png
+
+The algorithm is following.
+<ol>
+<li>Find a sequence of linked nodes on the side such that the found
+links to be most co-directed with the links of the free border.</li>
+<li>Sew two sequences of nodes using algorithm of "Sewing of free berders".
+\n For sewing border to side you should define three points on the
+border and two points on the side. User can select these nodes in 3D
+viewer or define node by its id.</li>
+</ol>
+
+\image html image30.jpg
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_sew_meshes_border_to_side "Sew Border to Side" operation.  
+
+<br>
+\anchor side_elements_anchor
+<h2>Sew side elements</h2>
+
+This operation is intended to unite two mesh surfaces.
+
+\image html sewing4.png 
+
+Surfaces may be defined by either 2d or 3d elements. The number of
+given elements of the sides must be the same. The sets of given
+elements must be topologically equal, i.e. each node of one element
+set must have a corresponding node in the other element set and
+corresponding nodes must be equally linked. If there are 3d elements
+in a set, only their free faces must obey to that rule.
+\n Two corresponding nodes on each side must be specified. They must
+belong to one element and must be located on an element set boundary.
+
+Sewing algorithm finds and merges the corresponding nodes starting
+from the specified ones.
+
+\image html image31.jpg
+
+\image html image32.jpg
+
+For sewing side elements you should define elements for sewing and two
+nodes for merging on the each side. User can select these elements and
+nodes in 3D viewer or define them by its id.
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_sew_side_elements "Sew Side Elements" operation.  
+
+*/

@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_PREFERENCES_SELECTIONDLG_H
 #define SMESHGUI_PREFERENCES_SELECTIONDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 
 // QT Includes
 #include <qdialog.h>
@@ -40,7 +42,7 @@ class QSpinBox;
 class QColor;
 class SMESHGUI;
 
-class SMESHGUI_LineEdit : public QLineEdit
+class SMESHGUI_EXPORT SMESHGUI_LineEdit : public QLineEdit
 {
   Q_OBJECT
 
@@ -54,7 +56,7 @@ class SMESHGUI_LineEdit : public QLineEdit
     void focusOutEvent(QFocusEvent* e);
 };
 
-class SMESHGUI_DoubleValidator : public QDoubleValidator
+class SMESHGUI_EXPORT SMESHGUI_DoubleValidator : public QDoubleValidator
 {
   Q_OBJECT
 
@@ -68,7 +70,7 @@ class SMESHGUI_DoubleValidator : public QDoubleValidator
     void fixup(QString& text) const;
 };
 
-class SMESHGUI_Preferences_SelectionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_Preferences_SelectionDlg : public QDialog
 { 
     Q_OBJECT
 

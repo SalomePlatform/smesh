@@ -30,41 +30,30 @@
 #ifndef _SMESH_QUADRANGLE_2D_HXX_
 #define _SMESH_QUADRANGLE_2D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_2D_Algo.hxx"
-#include "SMESH_Mesh.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include "gp_XY.hxx"
-
-#include "SMESH_MesherHelper.hxx"
+class SMESH_Mesh;
+class SMESH_MesherHelper;
+class StdMeshers_FaceSide;
+struct uvPtStruct;
 
 //class SMDS_MeshNode;
 
-typedef struct uvPtStruct
-{
-  double param;
-  double normParam;
-  double u; // original 2d parameter
-  double v;
-  double x; // 2d parameter, normalized [0,1]
-  double y; 
-  const SMDS_MeshNode * node;
-} UVPtStruct;
+enum TSideID { BOTTOM_SIDE=0, RIGHT_SIDE, TOP_SIDE, LEFT_SIDE, NB_SIDES };
 
+typedef uvPtStruct UVPtStruct;
 typedef struct faceQuadStruct
 {
-  int nbPts[4];
-  TopoDS_Edge edge[4];
-  double first[4];
-  double last[4];
-  bool isEdgeForward[4];
+  vector< StdMeshers_FaceSide*> side;
   bool isEdgeOut[4]; // true, if an edge has more nodes, than the opposite
-  UVPtStruct* uv_edges[4];
   UVPtStruct* uv_grid;
+  ~faceQuadStruct();
 } FaceQuadStruct;
 
-class StdMeshers_Quadrangle_2D:
-  public SMESH_2D_Algo
+class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 {
 public:
   StdMeshers_Quadrangle_2D(int hypId, int studyId, SMESH_Gen* gen);
@@ -75,44 +64,27 @@ public:
                                SMESH_Hypothesis::Hypothesis_Status& aStatus);
 
   virtual bool Compute(SMESH_Mesh& aMesh,
-		       const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+		       const TopoDS_Shape& aShape);
 
   FaceQuadStruct* CheckAnd2Dcompute(SMESH_Mesh& aMesh,
 				    const TopoDS_Shape& aShape,
-                                    const bool CreateQuadratic)
-    throw (SALOME_Exception);
-
-  static void QuadDelete(FaceQuadStruct* quad);
-
-  /**
-   * Returns NLinkNodeMap from myTool
-   */
-  const NLinkNodeMap& GetNLinkNodeMap() { return myTool->GetNLinkNodeMap(); }
-
-  ostream & SaveTo(ostream & save);
-  istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_Quadrangle_2D & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_Quadrangle_2D & hyp);
+                                    const bool CreateQuadratic);
 
 protected:
 
   FaceQuadStruct* CheckNbEdges(SMESH_Mesh& aMesh,
-                               const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+                               const TopoDS_Shape& aShape);
 
-  void SetNormalizedGrid(SMESH_Mesh& aMesh,
+  bool SetNormalizedGrid(SMESH_Mesh& aMesh,
 			 const TopoDS_Shape& aShape,
-			 FaceQuadStruct* quad)
-    throw (SALOME_Exception);
+			 FaceQuadStruct*& quad);
 
   /**
    * Special function for creation only quandrangle faces
    */
   bool ComputeQuadPref(SMESH_Mesh& aMesh,
                        const TopoDS_Shape& aShape,
-                       FaceQuadStruct* quad)
-    throw (SALOME_Exception);
+                       FaceQuadStruct* quad);
 
   UVPtStruct* LoadEdgePoints2(SMESH_Mesh& aMesh,
 			      const TopoDS_Face& F, const TopoDS_Edge& E,
@@ -131,7 +103,7 @@ protected:
   // is not the same in the case where the global number of nodes on edges is even
   bool myQuadranglePreference;
 
-  SMESH_MesherHelper* myTool; // toll for working with quadratic elements
+  SMESH_MesherHelper* myTool; // tool for working with quadratic elements
 };
 
 #endif

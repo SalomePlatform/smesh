@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_PREFERENCES_COLORDLG_H
 #define SMESHGUI_PREFERENCES_COLORDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 // SALOME Includes
 //#include "SUIT_Config.h"
 //#include "SUIT_Settings.h"
@@ -48,7 +50,7 @@ class QSpinBox;
 class QColor;
 class SMESHGUI;
 
-class SMESHGUI_Preferences_ColorDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_Preferences_ColorDlg : public QDialog
 { 
     Q_OBJECT
 

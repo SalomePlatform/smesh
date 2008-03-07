@@ -26,11 +26,12 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include <iostream>
 #include <sstream>
 #include "SMESH_Hypothesis_i.hxx"
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -45,24 +46,9 @@ SMESH_Hypothesis_i::SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA )
 {
   MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i / Début" );
   myBaseImpl = 0;
-  // _CS_gbo This instruction fails
-  // thePOA->activate_object( this );
-  // _CS_gbo I keep the POA reference to activate the object in the future.
-  myPOA = thePOA;
   
   MESSAGE( "SMESH_Hypothesis_i::SMESH_Hypothesis_i / Fin" );
 };
-
-//=============================================================================
-/*!
- *  SMESH_Hypothesis_i::Activate()
- *
- *  Activation of the object
- */
-//=============================================================================
-void SMESH_Hypothesis_i::Activate() {
-  myPOA->activate_object( this );
-}
 
 //=============================================================================
 /*!
@@ -145,7 +131,7 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 
 ::SMESH_Hypothesis* SMESH_Hypothesis_i::GetImpl()
 {
-  MESSAGE( "SMESH_Hypothesis_i::GetImpl" );
+  //MESSAGE( "SMESH_Hypothesis_i::GetImpl" );
   return myBaseImpl;
 }
 

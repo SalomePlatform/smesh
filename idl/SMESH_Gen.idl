@@ -15,7 +15,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -38,22 +38,81 @@
 module SMESH
 {
   typedef sequence<GEOM::GEOM_Object> object_array;
-  typedef sequence<SMESH_Mesh> mesh_array;
+  typedef sequence<SMESH_Mesh>        mesh_array;
 
   interface FilterManager;
   interface SMESH_Pattern;
 
-  enum AlgoStateErrorName { MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
-  struct AlgoStateError {
-    AlgoStateErrorName name;
+  /*!
+   * Tags definition
+   */
+  // Top level
+  const long Tag_HypothesisRoot = 1; // hypotheses root
+  const long Tag_AlgorithmsRoot = 2; // algorithms root
+  const long Tag_FirstMeshRoot  = 3; // first mesh root
+  // Mesh/Submesh
+  const long Tag_RefOnShape             = 1; // references to shape
+  const long Tag_RefOnAppliedHypothesis = 2; // applied hypotheses root
+  const long Tag_RefOnAppliedAlgorithms = 3; // applied algorithms root
+  // Mesh only: sub-meshes roots by type
+  const long Tag_FirstSubMesh           =  4;
+  const long Tag_SubMeshOnVertex        =  4;
+  const long Tag_SubMeshOnEdge          =  5;
+  const long Tag_SubMeshOnWire          =  6;
+  const long Tag_SubMeshOnFace          =  7;
+  const long Tag_SubMeshOnShell         =  8;
+  const long Tag_SubMeshOnSolid         =  9;
+  const long Tag_SubMeshOnCompound      = 10;
+  const long Tag_LastSubMesh            = 10;
+  // Mesh only: group roots by type
+  const long Tag_FirstGroup             = 11;
+  const long Tag_NodeGroups             = 11;
+  const long Tag_EdgeGroups             = 12;
+  const long Tag_FaceGroups             = 13;
+  const long Tag_VolumeGroups           = 14;
+  const long Tag_LastGroup              = 14;
+
+  /*!
+   * Hypothesis definintion error
+   */
+  struct AlgoStateError 
+  {
+    Hypothesis_Status  state;
     string             algoName;
     long               algoDim;
     boolean            isGlobalAlgo;
   };
   typedef sequence<AlgoStateError> algo_error_array;
-    
+
+  /*!
+   * Mesh computation error
+   */
+  enum ComputeErrorName
+  {
+    COMPERR_OK            ,
+    COMPERR_BAD_INPUT_MESH,  // wrong mesh on lower submesh
+    COMPERR_STD_EXCEPTION ,  // some std exception raised
+    COMPERR_OCC_EXCEPTION ,  // OCC exception raised
+    COMPERR_SLM_EXCEPTION ,  // SALOME exception raised
+    COMPERR_EXCEPTION     ,  // other exception raised
+    COMPERR_MEMORY_PB     ,  // memory allocation problem
+    COMPERR_ALGO_FAILED   ,  // computation failed
+    COMPERR_BAD_SHAPE        // bad geometry
+  };
+  struct ComputeError
+  {
+    short  code;       // ComputeErrorName or, if negative, algo specific code
+    string comment;    // textual problem description
+    string algoName;
+    short  subShapeID; // id of subshape of a shape to mesh
+  };
+  typedef sequence<ComputeError> compute_error_array;
+
+
   interface SMESH_Gen : Engines::Component, SALOMEDS::Driver
   {
+    //GEOM::GEOM_Gen SetGeomEngine( in string containerLoc );
+    void SetGeomEngine( in GEOM::GEOM_Gen geomcompo );
 
     FilterManager CreateFilterManager();
 
@@ -121,6 +180,7 @@ module SMESH
     
     /*!
      * Create Mesh object importing data from given UNV file
+     * (UNV supported version is I-DEAS 10)
      */
     SMESH_Mesh CreateMeshesFromUNV( in string theFileName )
       raises ( SALOME::SALOME_Exception );
@@ -169,7 +229,16 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * 
+     * Return errors of mesh computation
+     * compute_error_array is empty if everything is OK
+     */
+    compute_error_array GetComputeErrors( in SMESH_Mesh        theMesh, 
+                                          in GEOM::GEOM_Object theSubObject )
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Return indeces of faces, edges and vertices of given subshapes
+     * within theMainObject
      */
     long_array GetSubShapesId( in GEOM::GEOM_Object theMainObject,
                                in object_array      theListOfSubObjects )
@@ -185,6 +254,47 @@ module SMESH
                                                 in string      theGeomName)
       raises ( SALOME::SALOME_Exception );
 
+    /*!
+     * Return geometrical object the given element is built on.
+     * The returned geometrical object not published in study by this method.
+     */
+    GEOM::GEOM_Object FindGeometryByMeshElement( in SMESH_Mesh  theMesh,
+						 in long        theElementID)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     */
+    SMESH_Mesh Concatenate(in mesh_array theMeshesArray, 
+			   in boolean    theUniteIdenticalGroups, 
+			   in boolean    theMergeNodesAndElements, 
+			   in double     theMergeTolerance)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * Concatenate the given meshes into one mesh.
+     * Union groups with the same name and type if
+     * theUniteIdenticalGroups flag is true.
+     * Merge coincident nodes and elements if 
+     * theMergeNodesAndElements flag is true.
+     * Create the groups of all elements from initial meshes.
+     */
+    SMESH_Mesh ConcatenateWithGroups(in mesh_array theMeshesArray, 
+				     in boolean    theUniteIdenticalGroups, 
+                                     in boolean    theMergeNodesAndElements, 
+                                     in double     theMergeTolerance)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
+     * \brief Return id of object, registered in current study context
+     *
+     * Can be used to check if the object was created in the same container, as this engine.
+     */
+    long GetObjectId(in Object theObject);
   };
 
 };

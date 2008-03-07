@@ -39,7 +39,7 @@ class vtkScalarBarActor;
 class vtkPlane;
 class vtkImplicitBoolean;
 
-class SMESH_Actor: public SALOME_Actor
+class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
 {
   static SMESH_Actor* New() { return NULL;}
 

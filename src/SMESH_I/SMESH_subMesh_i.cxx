@@ -26,7 +26,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "SMESH_subMesh_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
@@ -36,9 +35,10 @@ using namespace std;
 #include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
-#include <BRepTools.hxx>
-#include <TopoDS.hxx>
 #include <TopoDS_Iterator.hxx>
+#include <TopExp_Explorer.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -69,7 +69,6 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
   _gen_i = gen_i;
   _mesh_i = mesh_i;
   _localId = localId;
-  thePOA->activate_object( this );
   // ****
 }
 //=============================================================================
@@ -210,12 +209,18 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
     for ( ; sm != smList.end(); ++sm )
     {
       SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
-      while ( eIt->more() ) {
-        const SMDS_MeshElement* anElem = eIt->next();
-        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+      if ( eIt->more() ) {
+        while ( eIt->more() ) {
+          const SMDS_MeshElement* anElem = eIt->next();
+          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+          while ( nIt->more() )
+            nodeIds.insert( nIt->next()->GetID() );
+        }
+      } else {
+        SMDS_NodeIteratorPtr nIt = (*sm)->GetNodes();
         while ( nIt->more() )
           nodeIds.insert( nIt->next()->GetID() );
-      }
+      }      
     }
     return nodeIds.size();
   }
@@ -225,15 +230,21 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
 
   if ( all ) { // all nodes of submesh elements
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-    while ( eIt->more() ) {
-      const SMDS_MeshElement* anElem = eIt->next();
-      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+    if ( eIt->more() ) {
+      while ( eIt->more() ) {
+        const SMDS_MeshElement* anElem = eIt->next();
+        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        while ( nIt->more() )
+          nodeIds.insert( nIt->next()->GetID() );
+      }
+    } else {
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
       while ( nIt->more() )
         nodeIds.insert( nIt->next()->GetID() );
     }
     return nodeIds.size();
   }
-    
+
   return aSubMeshDS->NbNodes();
 }
 
@@ -242,7 +253,7 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
  *  
  */
 //=============================================================================
-  
+
 SMESH::long_array* SMESH_subMesh_i::GetElementsId()
   throw (SALOME::SALOME_Exception)
 {
@@ -317,9 +328,15 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
       if ( theElemType == SMESH::NODE )
       {
         SMDS_ElemIteratorPtr eIt = (*sm)->GetElements();
-        while ( eIt->more() ) {
-          const SMDS_MeshElement* anElem = eIt->next();
-          SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        if ( eIt->more() ) {
+          while ( eIt->more() ) {
+            const SMDS_MeshElement* anElem = eIt->next();
+            SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+            while ( nIt->more() )
+              nodeIds.insert( nIt->next()->GetID() );
+          }
+        } else {
+          SMDS_NodeIteratorPtr nIt = (*sm)->GetNodes();
           while ( nIt->more() )
             nodeIds.insert( nIt->next()->GetID() );
         }
@@ -340,9 +357,15 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
   if ( theElemType == SMESH::NODE && aSubMeshDS )
   {
     SMDS_ElemIteratorPtr eIt = aSubMeshDS->GetElements();
-    while ( eIt->more() ) {
-      const SMDS_MeshElement* anElem = eIt->next();
-      SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+    if ( eIt->more() ) {
+      while ( eIt->more() ) {
+        const SMDS_MeshElement* anElem = eIt->next();
+        SMDS_ElemIteratorPtr nIt = anElem->nodesIterator();
+        while ( nIt->more() )
+          nodeIds.insert( nIt->next()->GetID() );
+      }
+    } else {
+      SMDS_NodeIteratorPtr nIt = aSubMeshDS->GetNodes();
       while ( nIt->more() )
         nodeIds.insert( nIt->next()->GetID() );
     }
@@ -434,8 +457,14 @@ GEOM::GEOM_Object_ptr SMESH_subMesh_i::GetSubShape()
   try {
     if ( _mesh_i->_mapSubMesh.find( _localId ) != _mesh_i->_mapSubMesh.end()) {
       TopoDS_Shape S = _mesh_i->_mapSubMesh[ _localId ]->GetSubShape();
-      if ( !S.IsNull() )
+      if ( !S.IsNull() ) {
         aShapeObj = _gen_i->ShapeToGeomObject( S );
+	//mzn: N7PAL16232, N7PAL16233
+	//In some cases it's possible that GEOM_Client contains the shape same to S, but
+	//with another orientation.
+	if (aShapeObj->_is_nil())
+	  aShapeObj = _gen_i->ShapeToGeomObject( S.Reversed() );
+      }
     }
   }
   catch(SALOME_Exception & S_ex) {

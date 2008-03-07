@@ -22,10 +22,10 @@
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
-#include "SMESHDS_GroupBase.hxx"
-//#include "SMESH_Group.hxx"
 #include "SMDS_QuadraticEdge.hxx"
 #include "SMDS_QuadraticFaceOfNodes.hxx"
+#include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMESHDS_GroupBase.hxx"
 
 #include "utilities.h"
 
@@ -35,6 +35,7 @@
 #include "UNV_Utilities.hxx"
 
 using namespace std;
+using namespace UNV;
 
 namespace{
   typedef std::vector<size_t> TConnect;
@@ -157,9 +158,16 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 	  TElementLab aLabel = anElem->GetID();
 
 	  int aNbNodes = anElem->NbNodes();
-	  aConnect.resize(aNbNodes);
-
 	  SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+          if ( anElem->IsPoly() ) {
+            if ( const SMDS_PolyhedralVolumeOfNodes* ph =
+                 dynamic_cast<const SMDS_PolyhedralVolumeOfNodes*> (anElem))
+            {
+              aNbNodes = ph->NbUniqueNodes();
+              aNodesIter = ph->uniqueNodesIterator();
+            }
+          }
+	  aConnect.resize(aNbNodes);
 	  GetConnect(aNodesIter,aConnect);
 
 	  int anId = -1;
@@ -292,12 +300,19 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2417::Write(out_stream,aDataSet2417);
       }*/
+
+    out_stream.flush();
+    out_stream.close();
+    if (!check_file(myFile))
+      EXCEPTION(runtime_error,"ERROR: Output file not good.");
   }
   catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
+    throw;
   }
   catch(...){
     INFOS("Unknown exception was cought !!!");
+    throw;
   }
   return aResult;
 }

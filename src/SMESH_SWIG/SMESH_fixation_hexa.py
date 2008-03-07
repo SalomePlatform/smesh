@@ -24,8 +24,7 @@
 #
 
 import SMESH_fixation
-
-import StdMeshers
+import smesh
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp
@@ -45,65 +44,42 @@ status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
+# ---- init a Mesh with the compshell
+shape_mesh = salome.IDToObject( idcomp  )
 
-print "-------------------------- create Hypothesis"
+mesh = smesh.Mesh(shape_mesh, "MeshCompShell")
+
+
+# ---- set Hypothesis and Algorithm
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 5
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(numberOfSegments)
-
+regular1D = mesh.Segment()
+regular1D.SetName("Wire Discretisation")
+hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_5")
-
-print "-------------------------- create Algorithms"
-
-print "-------------------------- Regular_1D"
-
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-
-smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
 print "-------------------------- Quadrangle_2D"
 
-quad2D = smesh.CreateHypothesis("Quadrangle_2D", "libStdMeshersEngine.so")
-
-smeshgui.SetName(salome.ObjectToID(quad2D), "Quadrangle_2D")
+quad2D = mesh.Quadrangle()
+quad2D.SetName("Quadrangle_2D")
 
 print "-------------------------- Hexa_3D"
 
-hexa3D = smesh.CreateHypothesis("Hexa_3D", "libStdMeshersEngine.so")
+hexa3D = mesh.Hexahedron()
+hexa3D.SetName("Hexa_3D")
 
-smeshgui.SetName(salome.ObjectToID(hexa3D), "Hexa_3D")
-
-# ---- init a Mesh with the compshell
-shape_mesh = salome.IDToObject( idcomp  )
-
-mesh = smesh.CreateMesh(shape_mesh)
-smeshgui.SetName(salome.ObjectToID(mesh), "MeshCompShell")
-
-
-print "-------------------------- add hypothesis to compshell"
-
-mesh.AddHypothesis(shape_mesh,regular1D)
-mesh.AddHypothesis(shape_mesh,hypNbSeg)
-
-mesh.AddHypothesis(shape_mesh,quad2D)
-mesh.AddHypothesis(shape_mesh,hexa3D)
 
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute compshell"
-ret = smesh.Compute(mesh, shape_mesh)
+ret = mesh.Compute()
 print ret
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace

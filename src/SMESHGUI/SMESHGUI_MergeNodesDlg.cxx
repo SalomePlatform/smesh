@@ -36,6 +36,8 @@
 
 #include "SMESH_Actor.h"
 #include "SMESH_TypeFilter.hxx"
+#include "SMESH_LogicalFilter.hxx"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMDS_Mesh.hxx"
 
 #include "GEOMBase.h"
@@ -71,6 +73,9 @@
 #include <qlayout.h>
 #include <qpixmap.h>
 #include <qheader.h>
+
+//IDL Headers
+#include CORBA_SERVER_HEADER(SMESH_Group)
 
 using namespace std;
 
@@ -158,7 +163,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
 
   // Controls for mesh defining
   GroupMesh = new QGroupBox(this, "GroupMesh");
-  GroupMesh->setTitle(tr("SMESH_MESH"));
+  GroupMesh->setTitle(tr("SMESH_SELECT_WHOLE_MESH"));
   GroupMesh->setColumnLayout(0, Qt::Vertical);
   GroupMesh->layout()->setSpacing(0);
   GroupMesh->layout()->setMargin(0);
@@ -246,7 +251,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   SMESHGUI_MergeNodesDlgLayout->addWidget(GroupEdit, 3, 0);
 
   /* Initialisations */
-  SpinBoxTolerance->RangeStepAndValidator(0.0, 999999.999, 0.1, 3);
+  SpinBoxTolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.1, 3);
   SpinBoxTolerance->SetValue(1e-05);
 
   RadioButton1->setChecked(TRUE);
@@ -254,12 +259,24 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   myEditCurrentArgument = (QWidget*)LineEditMesh; 
 
   myActor = 0;
+  mySubMeshOrGroup = SMESH::SMESH_subMesh::_nil();
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
+  
+  // Costruction of the logical filter
+  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
+  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
+  
+  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
+  if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
-  myMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
+  myMeshOrSubMeshOrGroupFilter =
+    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
+  
+  //myMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
 
   /* signals and slots connections */
   connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
@@ -291,7 +308,7 @@ SMESHGUI_MergeNodesDlg::SMESHGUI_MergeNodesDlg( SMESHGUI* theModule, const char*
   // Init Mesh field from selection
   SelectionIntoArgument();
 
-  myHelpFileName = "/files/merging_nodes.htm";
+  myHelpFileName = "merging_nodes_page.html";
 }
 
 //=================================================================================
@@ -385,9 +402,15 @@ void SMESHGUI_MergeNodesDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -462,7 +485,10 @@ void SMESHGUI_MergeNodesDlg::onDetect()
     ListEdit->clear();
 
     SMESH::array_of_long_array_var aNodeGroups;
-    aMeshEditor->FindCoincidentNodes(SpinBoxTolerance->GetValue(), aNodeGroups);
+    if(!mySubMeshOrGroup->_is_nil())
+      aMeshEditor->FindCoincidentNodesOnPart(mySubMeshOrGroup, SpinBoxTolerance->GetValue(), aNodeGroups);
+    else
+      aMeshEditor->FindCoincidentNodes(SpinBoxTolerance->GetValue(), aNodeGroups);
 
     for (int i = 0; i < aNodeGroups->length(); i++) {
       SMESH::long_array& aGroup = aNodeGroups[i];
@@ -624,7 +650,7 @@ void SMESHGUI_MergeNodesDlg::SetEditCurrentArgument()
     SMESH::SetPointRepresentation(false);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(myMeshOrSubMeshFilter);
+    mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
   }
 
   myEditCurrentArgument->setFocus();
@@ -641,23 +667,37 @@ void SMESHGUI_MergeNodesDlg::SelectionIntoArgument()
   if (myEditCurrentArgument == (QWidget*)LineEditMesh) {
     QString aString = "";
     LineEditMesh->setText(aString);
-
+    
     ListCoincident->clear();
     ListEdit->clear();
-
+    myActor = 0;
+    
     int nbSel = SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
     if (nbSel != 1)
       return;
 
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects(aList,SVTK_Viewer::Type());
-
+    
     Handle(SALOME_InteractiveObject) IO = aList.First();
-    myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
-    myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
-    if (myMesh->_is_nil() || !myActor)
+    myMesh = SMESH::GetMeshByIO(IO);
+    
+    if (myMesh->_is_nil())
       return;
-
+    
+    myActor = SMESH::FindActorByEntry(IO->getEntry());
+    if (!myActor)
+      myActor = SMESH::FindActorByObject(myMesh);
+    if(!myActor)
+      return;
+    
+    mySubMeshOrGroup = SMESH::SMESH_IDSource::_nil();
+    
+    if ((!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil() || //SUBMESH OR GROUP
+         !SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO)->_is_nil()) &&
+        !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
+      mySubMeshOrGroup = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
+     
     LineEditMesh->setText(aString);
   }
 }
@@ -726,4 +766,21 @@ void SMESHGUI_MergeNodesDlg::hideEvent (QHideEvent*)
 {
   if (!isMinimized())
     ClickOnCancel();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MergeNodesDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

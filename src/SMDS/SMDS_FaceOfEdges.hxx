@@ -22,6 +22,8 @@
 #ifndef _SMDS_FaceOfEdges_HeaderFile
 #define _SMDS_FaceOfEdges_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_Iterator.hxx"
@@ -29,7 +31,7 @@
 #include <iostream>
 
 
-class SMDS_FaceOfEdges:public SMDS_MeshFace
+class SMDS_EXPORT SMDS_FaceOfEdges:public SMDS_MeshFace
 {
   public:
 	void Print(std::ostream & OS) const;

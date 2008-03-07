@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_CLIPPING_H
 #define DIALOGBOX_CLIPPING_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <SMESHGUI_SpinBox.h>
 
 #include <vtkSmartPointer.h>
@@ -68,7 +70,7 @@ namespace SMESH {
 // class    : SMESHGUI_ClippingDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_ClippingDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ClippingDlg : public QDialog
 {
     Q_OBJECT
 
@@ -84,6 +86,8 @@ public:
     double getRotation2() { return SpinBoxRot2->GetValue(); }
     void   setRotation (const double theRot1, const double theRot2);
     void   Sinchronize();
+
+    void   keyPressEvent(QKeyEvent*);
 
     ~SMESHGUI_ClippingDlg();
 

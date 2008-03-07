@@ -27,12 +27,14 @@
 #ifndef _SMESHDS_GroupOnGeom_HeaderFile
 #define _SMESHDS_GroupOnGeom_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include "SMESHDS_GroupBase.hxx"
 #include <TopoDS_Shape.hxx>
   
 class SMESHDS_SubMesh;
 
-class SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
 {
  public:
 
@@ -44,6 +46,8 @@ class SMESHDS_GroupOnGeom: public SMESHDS_GroupBase
   TopoDS_Shape GetShape() const { return myShape; }
 
   virtual bool Contains (const int theID);
+
+  virtual bool Contains (const SMDS_MeshElement* elem);
 
   virtual SMDS_ElemIteratorPtr GetElements();
 

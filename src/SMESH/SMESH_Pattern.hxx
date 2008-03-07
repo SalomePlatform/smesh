@@ -21,8 +21,12 @@
 // Created   : Mon Aug  2 10:30:00 2004
 // Author    : Edward AGAPOV (eap)
 
+using namespace std;
+
 #ifndef SMESH_Pattern_HeaderFile
 #define SMESH_Pattern_HeaderFile
+
+#include "SMESH_SMESH.hxx"
 
 #include <vector>
 #include <list>
@@ -53,7 +57,7 @@ class TopoDS_Edge;
 // of 6 faces.
 //
 
-class SMESH_Pattern {
+class SMESH_EXPORT SMESH_Pattern {
  public:
   
   SMESH_Pattern ();
@@ -66,7 +70,7 @@ class SMESH_Pattern {
 
   bool Load (SMESH_Mesh*        theMesh,
              const TopoDS_Face& theFace,
-             bool               theProject);
+             bool               theProject = false);
   // Create a pattern from the mesh built on <theFace>.
   // <theProject>==true makes override nodes positions
   // on <theFace> computed by mesher
@@ -101,7 +105,17 @@ class SMESH_Pattern {
   // the loaded pattern to <theFace>. The first key-point
   // will be mapped into <theNodeIndexOnKeyPoint1>-th node
 
-  bool Apply (std::set<const SMDS_MeshFace*>& theFaces,
+  bool Apply (SMESH_Mesh*          theMesh,
+              const SMDS_MeshFace* theFace,
+              const TopoDS_Shape&  theSurface,
+              const int            theNodeIndexOnKeyPoint1,
+              const bool           theReverse);
+  // Compute nodes coordinates applying
+  // the loaded pattern to <theFace>. The first key-point
+  // will be mapped into <theNodeIndexOnKeyPoint1>-th node
+
+  bool Apply (SMESH_Mesh*                     theMesh,
+              std::set<const SMDS_MeshFace*>& theFaces,
               const int                       theNodeIndexOnKeyPoint1,
               const bool                      theReverse);
   // Compute nodes coordinates applying
@@ -135,8 +149,9 @@ class SMESH_Pattern {
   // Create nodes and elements in <theMesh> using nodes
   // coordinates computed by either of Apply...() methods
 
-
+  // ----------
   // Inquiries
+  // ----------
 
   enum ErrorCode {
     ERR_OK,
@@ -201,8 +216,18 @@ class SMESH_Pattern {
   void DumpPoints() const;
   // Debug
 
+  // -----------------------------
+  // Utilities for advanced usage
+  // -----------------------------
 
- private:
+  TopoDS_Shape GetSubShape( const int i ) const {
+    if ( i < 1 || i > myShapeIDMap.Extent() ) return TopoDS_Shape();
+    return myShapeIDMap( i );
+  }
+  // Return a shape from myShapeIDMap where shapes are indexed so that first go
+  // ordered vertices, then ordered edge, then faces and maybe a shell
+
+private:
   // private methods
 
   struct TPoint {

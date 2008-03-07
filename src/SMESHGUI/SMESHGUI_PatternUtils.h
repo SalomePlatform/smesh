@@ -20,12 +20,15 @@
 #ifndef SMESHGUI_PatternUtils_HeaderFile
 #define SMESHGUI_PatternUtils_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Pattern)
 
 
 namespace SMESH{
 
+SMESHGUI_EXPORT
   SMESH::SMESH_Pattern_var GetPattern();
 
 }

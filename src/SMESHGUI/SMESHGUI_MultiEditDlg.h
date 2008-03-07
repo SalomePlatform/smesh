@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_MultiEditDlg_H
 #define SMESHGUI_MultiEditDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 #include "SUIT_SelectionFilter.h"
@@ -36,6 +38,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class SMESHGUI;
 class SMESHGUI_FilterDlg;
@@ -64,7 +67,7 @@ class QButtonGroup;
  *               union of two neighboring triangles
  */
 
-class SMESHGUI_MultiEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog
 {
   Q_OBJECT
 
@@ -108,6 +111,7 @@ protected:
   void                      closeEvent( QCloseEvent* e ) ;
   void                      enterEvent ( QEvent * ) ;
   void                      hideEvent ( QHideEvent * );                        /* ESC key */
+  void                      keyPressEvent( QKeyEvent* );
   QFrame*                   createButtonFrame( QWidget* );
   QFrame*                   createMainFrame  ( QWidget*, const bool );
   bool                      isValid( const bool ) const;

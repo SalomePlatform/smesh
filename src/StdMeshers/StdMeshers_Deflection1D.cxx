@@ -25,8 +25,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-
 #include "StdMeshers_Deflection1D.hxx"
 #include "utilities.h"
 
@@ -43,6 +41,8 @@ using namespace std;
 #include <TopoDS_Edge.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pnt.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!

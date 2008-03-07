@@ -321,7 +321,7 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
 
   MED::PFamilyInfo anInfo;
   string aValue = aStr.str();
-  if(myId == 0){
+  if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 				      aValue,
 				      myId,
@@ -329,8 +329,7 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   }else{
     MED::TStringVector anAttrDescs (1, "");  // 1 attribute with empty description,
     MED::TIntVector anAttrIds (1, myId);        // Id=0,
-    MED::TIntVector anAttrVals (1);
-    anAttrVals[0] = myGroupAttributVal != 0? myGroupAttributVal: myId;
+    MED::TIntVector anAttrVals (1, myGroupAttributVal);
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 				      aValue,
 				      myId,
@@ -382,13 +381,8 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.clear();
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
-  myGroupAttributVal = 0;
-  
-  if (theGroup->GetColorGroup()!=0)
-    {
-      myGroupAttributVal = theGroup->GetColorGroup();
-    }
-
+  Quantity_Color aColor = theGroup->GetColor();
+  myGroupAttributVal = aColor.Hue();
 }
 
 //=============================================================================

@@ -27,13 +27,17 @@
 #ifndef _SMESHDS_GroupBase_HeaderFile
 #define _SMESHDS_GroupBase_HeaderFile
 
+#include "SMESH_SMESHDS.hxx"
+
 #include <string>
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshElement.hxx"
+
+#include <Quantity_Color.hxx>
   
 class SMESHDS_Mesh;
 
-class SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_GroupBase
 {
  public:
 
@@ -59,6 +63,8 @@ class SMESHDS_GroupBase
 
   virtual bool Contains (const int theID);
 
+  virtual bool Contains (const SMDS_MeshElement* elem);
+
   virtual SMDS_ElemIteratorPtr GetElements() = 0;
 
   int GetID (const int theIndex);
@@ -66,11 +72,15 @@ class SMESHDS_GroupBase
 
   virtual ~SMESHDS_GroupBase() {}
 
-  void SetColorGroup (int theColorGroup)
-  { myColorGroup = theColorGroup;}
+  void SetColor (const Quantity_Color& theColor)
+  { myColor = theColor;}
   
-  int GetColorGroup() const
-  { return myColorGroup;}
+  Quantity_Color GetColor() const
+  { return myColor;}
+
+  void SetColorGroup (int theColorGroup);
+
+  int GetColorGroup() const;
   
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
@@ -90,7 +100,7 @@ class SMESHDS_GroupBase
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
-  int                  myColorGroup;
+  Quantity_Color       myColor;
 };
 
 #endif

@@ -27,10 +27,13 @@
 #ifndef SMESHGUI_SingleEditDlg_H
 #define SMESHGUI_SingleEditDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class QCloseEvent;
 class QFrame;
@@ -49,7 +52,7 @@ class LightApp_SelectionMgr;
  *  Description : Base class for dialogs of diagonal inversion and 
  *                union of two neighboring triangles
  */
-class SMESHGUI_SingleEditDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SingleEditDlg : public QDialog
 { 
   Q_OBJECT
 
@@ -75,6 +78,7 @@ protected:
   void                    closeEvent (QCloseEvent*);
   void                    enterEvent (QEvent*);
   void                    hideEvent (QHideEvent*);                        /* ESC key */
+  void                    keyPressEvent(QKeyEvent*);
   QFrame*                 createButtonFrame (QWidget*);
   QFrame*                 createMainFrame (QWidget*);
   bool                    isValid (const bool) const;

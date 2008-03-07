@@ -231,6 +231,7 @@ namespace SMESH
       case FT_BelongToGeom:     myStream<< "aBelongToGeom";     break;
       case FT_BelongToPlane:    myStream<< "aBelongToPlane";    break;
       case FT_BelongToCylinder: myStream<< "aBelongToCylinder"; break;
+      case FT_BelongToGenSurface:myStream<<"aBelongToGenSurface";break;
       case FT_LyingOnGeom:      myStream<< "aLyingOnGeom";      break;
       case FT_RangeOfIds:       myStream<< "aRangeOfIds";       break;
       case FT_BadOrientedVolume:myStream<< "aBadOrientedVolume";break;
@@ -747,6 +748,53 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   // add final part of aScript
   if (aSeq->Value(aLen) < aScriptLength)
     anUpdatedScript += aScript.SubString(aSeq->Value(aLen) + 1, aScriptLength);
+
+
+  SMESH_Gen_i* aSMESHGenI = SMESH_Gen_i::GetSMESHGen();
+  SALOMEDS::Study_ptr aStudy = aSMESHGenI->GetCurrentStudy();
+  if( !CORBA::is_nil(aStudy) )
+  {
+    SALOMEDS::SObject_var aComp = aStudy->FindComponent(ComponentDataType());
+    if( !CORBA::is_nil(aComp) )
+    {
+      SALOMEDS::ChildIterator_var Itr = aStudy->NewChildIterator(aComp);
+      for( Itr->InitEx(true); Itr->More(); Itr->Next() )
+      {
+	SALOMEDS::SObject_var aSObj = Itr->Value();
+	CORBA::String_var aName = aSObj->GetName();
+
+	SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH_Gen_i::SObjectToObject( aSObj ) );
+	if( !CORBA::is_nil(aMesh) )
+	{
+	  bool isAutoColor = aMesh->GetAutoColor();
+	  if( isAutoColor )
+	  {
+	    anUpdatedScript += "\n\t";
+	    anUpdatedScript += (char*)aName.in();
+	    anUpdatedScript += ".SetAutoColor(1)";
+	  }
+	}
+ 
+	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( SMESH_Gen_i::SObjectToObject( aSObj ) );
+	if( !CORBA::is_nil(aGroup) )
+	{
+	  SALOMEDS::Color aColor = aGroup->GetColor();
+	  if ( aColor.R > 0 || aColor.G > 0 || aColor.B > 0 )
+	  {
+	    anUpdatedScript += "\n\t";
+	    anUpdatedScript += (char*)aName.in();
+	    anUpdatedScript += ".SetColor(SALOMEDS.Color(";
+	    anUpdatedScript += aColor.R;
+	    anUpdatedScript += ",";
+	    anUpdatedScript += aColor.G;
+	    anUpdatedScript += ",";
+	    anUpdatedScript += aColor.B;
+	    anUpdatedScript += "))";
+	  }
+	}
+      }
+    }
+  }
 
   // Remove removed objects
   if ( seqRemoved.Length() > 0 ) {

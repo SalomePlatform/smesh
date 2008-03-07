@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_EXTRUSION_PATH_H
 #define DIALOGBOX_EXTRUSION_PATH_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
 
@@ -60,7 +62,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_ExtrusionAlongPathDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_ExtrusionAlongPathDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog
 {
   Q_OBJECT
 
@@ -83,6 +85,7 @@ public:
 private:
   void Init (bool ResetControls = true);
   void enterEvent (QEvent*);                           /* mouse enter the QWidget */
+  void keyPressEvent(QKeyEvent*);
   int  GetConstructorId();
   void SetEditCurrentArgument (QToolButton* button);
 
@@ -122,6 +125,7 @@ private:
   QLabel*           StartPointLab;
   QToolButton*      SelectStartPointButton;
   QLineEdit*        StartPointLineEdit;
+  QCheckBox*        LinearAnglesCheck;
   QCheckBox*        AnglesCheck;
   QGroupBox*        AnglesGrp;
   QListBox*         AnglesList;
@@ -137,6 +141,7 @@ private:
   SMESHGUI_SpinBox* YSpin;
   QLabel*           ZLab;
   SMESHGUI_SpinBox* ZSpin;
+  QCheckBox*        MakeGroupsCheck;
 
   QGroupBox*        GroupButtons;
   QPushButton*      OkButton;

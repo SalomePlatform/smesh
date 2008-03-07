@@ -55,6 +55,8 @@
 
 #include "utilities.h"
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 // OCCT Includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
@@ -247,32 +249,32 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   QString elemName;
   if (myNbNodes == 2) {
     elemName = "EDGE";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_edges";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
   }
   else if (myNbNodes == 3) {
     elemName = "TRIANGLE";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_triangles";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_triangles_anchor";
   }
   else if (myNbNodes == 4)
     if (myElementType == SMDSAbs_Face) {
       elemName = "QUADRANGLE";
-      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_quadrangles";
+      myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
     }
     else {
       elemName = "TETRAS";
-      myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_tetrahedrons";
+      myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
     }
   else if (myNbNodes == 8) {
     elemName = "HEXAS";
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_hexahedrons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
   }
   else if (myElementType == SMDSAbs_Face) {
     elemName = "POLYGON";
     myIsPoly = true;
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polygons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polygons_anchor";
   }
   else if (myElementType == SMDSAbs_Volume) {
-    myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_polyhedrons";
+    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polyhedrons_anchor";
   }
   
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName));
@@ -535,9 +537,15 @@ void SMESHGUI_AddMeshElementDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -796,4 +804,21 @@ void SMESHGUI_AddMeshElementDlg::CheckBox (int state)
     mySimulation->SetVisibility(false);
     displaySimulation();
   }
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+  
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

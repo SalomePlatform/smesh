@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "POT-Creation-Date: 2002-05-28 10:46:48 AM CEST\n"
-"PO-Revision-Date: YYYY-MM-DD\n"
+"PO-Revision-Date: 2006-11-14 16:17+0300\n"
 "Last-Translator: FULLNAME <EMAIL@ADDRESS>\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 
@@ -36,6 +36,9 @@ msgstr "Average Length"
 
 msgid "SMESH_LOCAL_LENGTH_PARAM"
 msgstr "Length"
+
+msgid "SMESH_LOCAL_LENGTH_PRECISION"
+msgstr "Precision"
 
 msgid "SMESH_LOCAL_LENGTH_TITLE"
 msgstr "Hypothesis Construction"
@@ -175,3 +178,96 @@ msgstr "Fineness"
 
 msgid "SMESH_AUTOMATIC_LENGTH_TITLE"
 msgstr "Hypothesis Construction"
+
+
+# -------------- PROJECTION_SOURCE_... --------------
+
+msgid "SMESH_PROJECTION_SOURCE_1D_HYPOTHESIS"
+msgstr "Projection Source 1D"
+msgid "SMESH_PROJECTION_SOURCE_2D_HYPOTHESIS"
+msgstr "Projection Source 2D"
+msgid "SMESH_PROJECTION_SOURCE_3D_HYPOTHESIS"
+msgstr "Projection Source 3D"
+
+msgid "SMESH_PROJECTION_SOURCE_1D_TITLE"
+msgstr "Hypothesis Construction"
+msgid "SMESH_PROJECTION_SOURCE_2D_TITLE"
+msgstr "Hypothesis Construction"
+msgid "SMESH_PROJECTION_SOURCE_3D_TITLE"
+msgstr "Hypothesis Construction"
+
+msgid "SMESH_SOURCE_MESH"
+msgstr "Mesh"
+
+msgid "SMESH_SOURCE_EDGE"
+msgstr "Edge"
+
+msgid "SMESH_SOURCE_FACE"
+msgstr "Face"
+
+msgid "SMESH_SOURCE_3DSHAPE"
+msgstr "3D shape"
+
+msgid "SMESH_SOURCE_VERTEX"
+msgstr "Source Vertex"
+
+msgid "SMESH_TARGET_VERTEX"
+msgstr "Target Vertex"
+
+msgid "SMESH_SOURCE_VERTEX1"
+msgstr "Source Vertex 1"
+
+msgid "SMESH_TARGET_VERTEX1"
+msgstr "Target Vertex 1"
+
+msgid "SMESH_SOURCE_VERTEX2"
+msgstr "Source Vertex 2"
+
+msgid "SMESH_TARGET_VERTEX2"
+msgstr "Target Vertex 2"
+
+
+# ---------------- NUMBER_OF_LAYERS ----------------
+
+msgid "SMESH_NUMBER_OF_LAYERS_HYPOTHESIS"
+msgstr "Radial Prism Parameter"
+
+msgid "SMESH_NUMBER_OF_LAYERS"
+msgstr "Number of Layers"
+
+msgid "SMESH_NUMBER_OF_LAYERS_TITLE"
+msgstr "Hypothesis Construction"
+
+
+# ---------------- LAYER_DISTRIBUTION ----------------
+
+msgid "SMESH_LAYER_DISTRIBUTION_HYPOTHESIS"
+msgstr "Distribution of Layers"
+
+msgid "SMESH_LAYERS_DISTRIBUTION"
+msgstr "1D Hypothesis"
+
+msgid "SMESH_LAYER_DISTRIBUTION_TITLE"
+msgstr "Hypothesis Construction"
+
+msgid "StdMeshersGUI_LayerDistributionParamWdg::CHANGE_TYPE"
+msgstr "Change Type"
+
+msgid "StdMeshersGUI_LayerDistributionParamWdg::CREATE"
+msgstr "Create"
+
+msgid "StdMeshersGUI_LayerDistributionParamWdg::EDIT"
+msgstr "Edit"
+
+
+# -------------- Segment Length Around Vertex --------------
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_HYPOTHESIS"
+msgstr "Segment Length Around Vertex"
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_PARAM"
+msgstr "Length"
+
+msgid "SMESH_SEGMENT_LENGTH_AROUND_VERTEX_TITLE"
+msgstr "Hypothesis Construction"
+

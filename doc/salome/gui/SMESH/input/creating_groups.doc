@@ -1,0 +1,84 @@
+/*!
+
+\page creating_groups_page Creating groups
+
+\n In MESH you can create groups of elements of different types. To
+create a group of elements in the \b Mesh menu select <b>Create
+Group</b>.
+\n To create any group you should define the following:
+<ul>
+<li><b>Mesh</b> - the name of the mesh whose elements will form your
+group. You can select your mesh in the Objet Browser or in the 3D
+viewer.</li>
+<li><b>Elements Type</b> - set of radio buttons allows to select the type of
+elements which will form your group:</li>
+<ul>
+<li><b>Nodes</b></li>
+<li><b>Edges</b></li>
+<li><b>Faces</b></li>
+<li><b>Volumes</b></li>
+</ul>
+<li><b>Name</b> field allows to enter the name of your new group.</li>
+</ul>
+SALOME Platform distinguishes between the two Group types:
+<b>Standalone Group</b> and <b>Group on Geometry</b>.
+
+<br><h2>Standalone Group</h2>
+
+<b>Standalone Group</b> consists of mesh elements, which you can define in
+two possible ways.
+<ul>
+<li>Choosing them manually with the mouse in the 3D Viewer. You can
+click on an element in the 3D viewer and it will be highlighted. After
+that click the \b Add button and the ID of this element will be added to
+the list.</li>
+<li>Applying Filters. The <b>Set filter</b> button allows to apply a
+definite filter to selection of the elements of your group. See more
+about filters on the
+\ref selection_filter_library_page "Selection filter library" page.</li>
+</ul>
+To remove a selected element or elements from the list click the
+\b Remove button. The <b>Sort List</b> button allows to sort the list of IDs of
+mesh elements.
+\n <b>Select from</b> set of fields allows to choose a submesh or an existing
+group whose elements of the previously defined type will be added to
+the list of elements which will form your group.
+\n <b>Color Number</b> (integer only, ranging from 0 to 9999) - allows to
+assign to the group a certain index, for example, defining boundary
+conditions. This feature introduces a useful element of preprocessing
+in Mesh module. Note that <b>Color number</b> attribute has nothing to do
+with the colors used for the display of the elements of the group.
+
+\image html creategroup.png
+
+\image html image130.gif
+<center>In this picture the brown cells belong to a group defined manually.</center>
+
+\image html image131.gif
+<center>In this picture the brown cells belong to the group defined by the criterion 
+<b>Taper > 0</b>.</center>
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_create_standalone_group "Create a Standalone Group"
+operation.  
+
+<br><h2>Group on Geometry</h2>
+
+To create a group on geometry check <b>Group on geometry</b> in the \b Group
+\b type field. <b>Group on geometry</b> contains the elements of a certain type
+belonging to the selected geometrical object. To define a group select
+in the Objet Browser or in the 3D viewer a geometrical object from
+which the elements will be taken. After confirmation of the operation
+a new group of mesh elements will be created.
+
+\image html a-creategroup.png
+
+\image html image132.gif
+<center>In this picture the cells which belong to a certain face are
+selected in green.</center>
+
+<b>See Also</b> a sample TUI Script of a 
+\ref tui_create_group_on_geometry "Create a Group on Geometry"
+operation.
+
+*/

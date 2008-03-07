@@ -27,10 +27,12 @@
 #ifndef _SMDS_QuadraticEdge_HeaderFile
 #define _SMDS_QuadraticEdge_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshEdge.hxx"
 #include <iostream>
 
-class SMDS_WNT_EXPORT SMDS_QuadraticEdge: public SMDS_MeshEdge
+class SMDS_EXPORT SMDS_QuadraticEdge: public SMDS_MeshEdge
 {
 
 public:

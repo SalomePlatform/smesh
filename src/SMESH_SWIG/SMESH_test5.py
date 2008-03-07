@@ -19,11 +19,11 @@
 #
 #
 #
-#  File   : SMESH_test1.py
+#  File   : SMESH_test5.py
 #  Module : SMESH
 
 import salome
-import SMESH
+import smesh
 import SALOMEDS
 import CORBA
 import os
@@ -43,26 +43,21 @@ def ConvertMED2UNV(thePath,theFile) :
 
     for iMesh in range(len(aMeshes)) :
         aMesh = aMeshes[iMesh]
-        anSObj = salome.ObjectToSObject(aMesh)
-        print anSObj.GetName(),
+        print aMesh.GetName(),
         aFileName = anInitFileName
         aFileName = os.path.basename(aFileName)
-        SetSObjName(anSObj,aFileName)
-        print anSObj.GetName()
+        aMesh.SetName(aFileName)
+        print aMesh.GetName()
 
         aOutPath = '/tmp/'
         aFileName = aOutPath + theFile + "." + str(iMesh) + ".unv"
         aMesh.ExportUNV(aFileName)
         aMesh = smesh.CreateMeshesFromUNV(aFileName)
-        anSObj = salome.ObjectToSObject(aMesh)
-        print anSObj.GetName(),
+        print aMesh.GetName(),
         os.remove(aFileName)
         aFileName = os.path.basename(aFileName)
-        SetSObjName(anSObj,aFileName)
-        print anSObj.GetName()
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
+        aMesh.SetName(aFileName)
+        print aMesh.GetName()
 
 aPath = os.getenv('DATA_DIR') + '/MedFiles/'
 aListDir = os.listdir(aPath)

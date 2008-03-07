@@ -31,6 +31,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
 #include "SMESH_Actor.h"
@@ -67,7 +68,10 @@
 #include <qlayout.h>
 #include <qpixmap.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
+
 
 //=================================================================================
 // class    : SMESHGUI_SewingDlg()
@@ -293,7 +297,7 @@ SMESHGUI_SewingDlg::SMESHGUI_SewingDlg( SMESHGUI* theModule, const char* name,
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myHelpFileName = "/files/sewing_meshes.htm";
+  myHelpFileName = "sewing_meshes_page.html";
 
   Init();
 
@@ -621,9 +625,15 @@ void SMESHGUI_SewingDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -771,7 +781,7 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
+  myMesh = SMESH::GetMeshByIO(IO); //@ SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
   myActor = SMESH::FindActorByEntry(aList.First()->getEntry());
 
   if (myMesh->_is_nil() || !myActor)
@@ -782,11 +792,11 @@ void SMESHGUI_SewingDlg::SelectionIntoArgument (bool isSelectionChanged)
 
   if (GetConstructorId() != 3 ||
       (myEditCurrentArgument != LineEdit1 && myEditCurrentArgument != LineEdit4)) {
-    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
   } else {
-    aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aString);
+    aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
     if (aNbUnits < 1)
       return;
   }
@@ -949,4 +959,21 @@ int SMESHGUI_SewingDlg::GetConstructorId()
 bool SMESHGUI_SewingDlg::IsValid()
 {
   return (myOk1 && myOk2 && myOk3 && myOk4 && myOk5 && myOk6);
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SewingDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

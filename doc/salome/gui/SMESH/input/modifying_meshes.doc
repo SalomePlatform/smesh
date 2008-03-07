@@ -1,0 +1,34 @@
+/*!
+
+\page modifying_meshes_page Modifying meshes
+
+<ul>
+<li>\subpage adding_nodes_and_elements_page</li>
+<li>\subpage adding_quadratic_elements_page</li>
+<li>\subpage removing_nodes_and_elements_page</li>
+<li>\subpage renumbering_nodes_and_elements_page</li>
+<li>\subpage transforming_meshes_page</li>
+<ul>
+<li>\ref translation_page</li>
+<li>\ref rotation_page</li>
+<li>\ref symmetry_page</li>
+<li>\ref sewing_meshes_page</li>
+<li>\ref merging_nodes_page</li>
+<li>\ref merging_elements_page</li>
+</ul>
+<li>\subpage moving_nodes_page</li>
+<li>\subpage mesh_through_point_page</li>
+<li>\subpage diagonal_inversion_of_elements_page</li>
+<li>\subpage uniting_two_triangles_page</li>
+<li>\subpage uniting_set_of_triangles_page</li>
+<li>\subpage changing_orientation_of_elements_page</li>
+<li>\subpage cutting_quadrangles_page</li>
+<li>\subpage smoothing_page</li>
+<li>\subpage extrusion_page</li>
+<li>\subpage extrusion_along_path_page</li>
+<li>\subpage revolution_page</li>
+<li>\subpage pattern_mapping_page</li>
+<li>\subpage convert_to_from_quadratic_mesh_page</li>
+</ul>
+
+*/

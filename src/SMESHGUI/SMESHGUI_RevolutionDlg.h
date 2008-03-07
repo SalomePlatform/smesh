@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_REVOLUTION_H
 #define DIALOGBOX_REVOLUTION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -62,7 +64,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_RevolutionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_RevolutionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RevolutionDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -78,6 +80,7 @@ private:
     void closeEvent (QCloseEvent*);
     void enterEvent (QEvent*);                          /* mouse enter the QWidget */
     void hideEvent (QHideEvent*);                       /* ESC key */
+    void keyPressEvent(QKeyEvent*);
     int  GetConstructorId();
     bool IsAxisOk();
 
@@ -107,6 +110,7 @@ private:
     QPushButton* SelectElementsButton;
     QLineEdit* LineEditElements;
     QCheckBox* CheckBoxMesh;
+    QCheckBox* MakeGroupsCheck;
 
     QLabel* TextLabelPoint;
     QPushButton* SelectPointButton;

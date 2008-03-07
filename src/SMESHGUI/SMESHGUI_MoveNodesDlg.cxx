@@ -82,6 +82,7 @@
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #define MARGIN  10
 #define SPACING 5
@@ -117,7 +118,7 @@ SMESHGUI_MoveNodesDlg::SMESHGUI_MoveNodesDlg (SMESHGUI* theModule,
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  myHelpFileName = "/files/displacing_nodes.htm";
+  myHelpFileName = "moving_nodes_page.html";
 
   Init();
 }
@@ -178,16 +179,23 @@ QFrame* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   myId->setValidator(new SMESHGUI_IdValidator(this, "validator", 1));
 
   QGroupBox* aCoordGrp = new QGroupBox(1, Qt::Vertical, tr("SMESH_COORDINATES"), aFrame);
-  new QLabel(tr("SMESH_X"), aCoordGrp);
+  QLabel* aXLabel = new QLabel(tr("SMESH_X"), aCoordGrp);
+  aXLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myX = new SMESHGUI_SpinBox(aCoordGrp);
-  new QLabel(tr("SMESH_Y"), aCoordGrp);
+
+  QLabel* aYLabel = new QLabel(tr("SMESH_Y"), aCoordGrp);
+  //aYLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aYLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myY = new SMESHGUI_SpinBox(aCoordGrp);
-  new QLabel(tr("SMESH_Z"), aCoordGrp);
+
+  QLabel* aZLabel = new QLabel(tr("SMESH_Z"), aCoordGrp);
+  //aZLabel->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  aZLabel->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   myZ = new SMESHGUI_SpinBox(aCoordGrp);
 
-  myX->RangeStepAndValidator(-999999.999, +999999.999, 25.0, 3);
-  myY->RangeStepAndValidator(-999999.999, +999999.999, 25.0, 3);
-  myZ->RangeStepAndValidator(-999999.999, +999999.999, 25.0, 3);
+  myX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
+  myZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 25.0, DBL_DIGITS_DISPLAY);
 
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
   aLay->addWidget(aPixGrp);
@@ -349,9 +357,15 @@ void SMESHGUI_MoveNodesDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -584,5 +598,22 @@ void SMESHGUI_MoveNodesDlg::redisplayPreview()
     {
       aViewWindow->AddActor(myPreviewActor);
       aViewWindow->Repaint();
+    }
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MoveNodesDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
     }
 }

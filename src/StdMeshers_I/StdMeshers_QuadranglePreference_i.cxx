@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_QuadranglePreference_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -36,6 +35,8 @@ using namespace std;
 #include "utilities.h"
 
 #include <TCollection_AsciiString.hxx>
+
+using namespace std;
 
 //=============================================================================
 /*!

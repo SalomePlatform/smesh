@@ -1,0 +1,63 @@
+/*!
+
+\page cutting_quadrangles_page Cutting quadrangles
+
+\n This operation allows to cut one or several quadrangle elements by
+addition of a supplementary edge which will connect two opposite
+corners.
+
+<em>To cut quadrangles:</em>
+<ol>
+<li>Display a mesh or a submesh in the 3D viewer.</li>
+<li>In the \b Modification menu select the <b>Cutting of quadrangles</b> item or
+click <em>"Cutting of quadrangles"</em> button in the toolbar.
+
+\image html image82.gif
+<center><em>"Cutting of quadrangles" button</em></center>
+
+The following dialog box will appear:
+
+\image html a-cuttingofquadrangles.png
+
+\par
+<ul>
+<li>The main list contains the list of quadrangles. You can click on
+an quadrangle in the 3D viewer and it will be highlighted (lock Shift
+keyboard button to select several quadrangles). Click \b Add button and
+the ID of this quadrangle will be added to the list. To remove a
+selected element or elements from the list click \b Remove button. <b>Sort
+list</b> button allows to sort the list of IDs. \b Filter button allows to
+apply a definite filter to the selection of quadrangles.</li>
+<li><b>Apply to all</b> radio button allows to modify the orientation of all
+quadrangles of the currently displayed mesh or submesh.</li>
+<li>\b Preview - provides a preview of cutting in the viewer.</li>
+</ul>
+
+<ul>
+<li>\b Criterion
+<ul>
+<li><b>Use diagonal 1-3</b> and <b>Use diagonal 2-4</b> allows to
+specify the opposite corners which will be connected by the cutting
+edge.</li>
+<li><b>Use numeric factor</b> - allows to apply the operation only to
+those objects which meet the chosen criterion (from the list of
+Quality Controls, i.e. Skew, Warping, Minimum Angle, etc.)</li>
+</ul>
+</li>
+<li><b>Select from</b> - allows to choose a submesh or an existing
+group whose quadrangle elements will be automatically added to the
+list.</li>
+</ul>
+
+</li>
+<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+</ol>
+
+\image html image52.jpg
+
+\image html image51.jpg
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_cutting_quadrangles "Cutting Quadrangles" operation.  
+
+*/

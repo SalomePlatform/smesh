@@ -27,6 +27,8 @@
 #ifndef _MED_SMESH_MESH_I_HXX_
 #define _MED_SMESH_MESH_I_HXX_
 
+#include "SMESH.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(MED)
 #include <string>
@@ -44,7 +46,7 @@
 
 class SMESH_Mesh_i;
 
-class SMESH_MEDMesh_i:
+class SMESH_I_EXPORT SMESH_MEDMesh_i:
   public virtual POA_SALOME_MED::MESH, 
   public virtual SALOME::GenericObj_i
 {

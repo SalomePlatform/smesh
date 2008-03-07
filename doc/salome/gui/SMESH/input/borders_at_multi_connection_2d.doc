@@ -1,0 +1,13 @@
+/*!
+
+\page borders_at_multi_connection_2d_page Borders at multi-connection 2D
+
+\n This mesh quality control highlights borders of elements of mesh,
+consisting of edges belonging to several elements of mesh.
+
+\image html image127.gif
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_borders_at_multiconnection_2d "Borders at Multi-Connection quality control" operation.
+
+*/

@@ -23,6 +23,7 @@
 from geompy import *
 
 import smesh
+import geompy
 
 # Geometrie
 # =========
@@ -59,13 +60,30 @@ blocs = [boite]
 
 sphere_troue = MakeCut(sphere_pleine, boite)
 
-sphere_outils = []
-sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0,  1), plan_trim))
-sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0, -1), plan_trim))
-sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 1,  0), plan_trim))
-sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ(-1, 1,  0), plan_trim))
+#sphere_outils = []
+#sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0,  1), plan_trim))
+#sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0, -1), plan_trim))
+#sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 1,  0), plan_trim))
+#sphere_outils.append(MakePlane(sphere_centre, MakeVectorDXDYDZ(-1, 1,  0), plan_trim))
 
-sphere_decoupee = MakePartition([sphere_troue], sphere_outils, [], [], ShapeType["SOLID"])
+f1 = MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0,  1), plan_trim)
+f2 = MakePlane(sphere_centre, MakeVectorDXDYDZ(-1, 1,  0), plan_trim)
+f3 = MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 1,  0), plan_trim)
+f4 = MakePlane(sphere_centre, MakeVectorDXDYDZ( 1, 0, -1), plan_trim)
+
+
+#sphere_decoupee = MakePartition(solids, sphere_outils, [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(sphere_troue,geompy.ShapeType["SOLID"])
+sphere_decoupee = MakePartition(solids, [f1], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
+sphere_decoupee = MakePartition(solids, [f2], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
+sphere_decoupee = MakePartition(solids, [f3], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
+sphere_decoupee = MakePartition(solids, [f4], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(sphere_decoupee,geompy.ShapeType["SOLID"])
+
+sphere_partie = geompy.MakeCompound(solids)
 
 sphere_partie   = GetBlockNearPoint(sphere_decoupee, MakeVertex(-sphere_rayon, 0, 0))
 sphere_bloc     = RemoveExtraEdges(sphere_partie)
@@ -90,7 +108,21 @@ blocs.append(MakeMirrorByPoint(sphere_bloc, sphere_centre))
 
 cube_plein   = MakeBox(-cube_cote, -cube_cote, -cube_cote,  +cube_cote, +cube_cote, +cube_cote)
 cube_trou    = MakeCut(cube_plein, sphere_pleine)
-cube_decoupe = MakePartition([cube_trou], sphere_outils, [], [], ShapeType["SOLID"])
+#cube_decoupe = MakePartition([cube_trou], sphere_outils, [], [], ShapeType["SOLID"])
+
+solids = geompy.SubShapeAll(cube_trou,geompy.ShapeType["SOLID"])
+cube_decoupe = MakePartition(solids, [f1], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
+cube_decoupe = MakePartition(solids, [f2], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
+cube_decoupe = MakePartition(solids, [f3], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
+cube_decoupe = MakePartition(solids, [f4], [], [], ShapeType["SOLID"])
+solids = geompy.SubShapeAll(cube_decoupe,geompy.ShapeType["SOLID"])
+
+cube_decoupe = geompy.MakeCompound(solids)
+
+
 cube_partie  = GetBlockNearPoint(cube_decoupe, MakeVertex(-cube_cote, 0, 0))
 cube_bloc    = RemoveExtraEdges(cube_partie)
 

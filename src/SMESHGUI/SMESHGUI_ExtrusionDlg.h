@@ -29,8 +29,11 @@
 #ifndef DIALOGBOX_EXTRUSION_H
 #define DIALOGBOX_EXTRUSION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 #include "SUIT_SelectionFilter.h"
+#include "Handle_SALOME_InteractiveObject.hxx"
 
 // QT Includes
 #include <qdialog.h>
@@ -59,7 +62,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_ExtrusionDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_ExtrusionDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_ExtrusionDlg : public QDialog
 {
   Q_OBJECT
 
@@ -71,6 +74,7 @@ public:
 private:
   void Init (bool ResetControls = true);
   void enterEvent (QEvent*);                           /* mouse enter the QWidget */
+  void keyPressEvent(QKeyEvent*);
   int  GetConstructorId();
   //void closeEvent (QCloseEvent*);
   //void hideEvent (QHideEvent*);                        /* ESC key */
@@ -78,13 +82,15 @@ private:
   SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
   LightApp_SelectionMgr*        mySelectionMgr;        /* User shape selection */
   QLineEdit*                    myEditCurrentArgument; /* Current  LineEdit */
-  QString                       myElementsId;
+  //QString                       myElementsId;
   int                           myNbOkElements;        /* to check when elements are defined */
   SVTK_Selector*                mySelector;
 
   bool                          myBusy;
   SMESH::SMESH_Mesh_var         myMesh;
+  SMESH::long_array_var         myElementsId;
   SMESH_Actor*                  myActor;
+  Handle(SALOME_InteractiveObject) myIO;
   SUIT_SelectionFilter*         myMeshOrSubMeshOrGroupFilter;
 
   // widgets
@@ -106,6 +112,7 @@ private:
   SMESHGUI_SpinBox* SpinBox_Dz;
   QLabel*           TextLabelNbSteps;
   QSpinBox*         SpinBox_NbSteps;
+  QCheckBox*        MakeGroupsCheck;
 
   QGroupBox*        GroupButtons;
   QPushButton*      buttonOk;

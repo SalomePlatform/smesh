@@ -27,10 +27,22 @@
 #ifndef _SMESH_PROPAGATION_HXX_
 #define _SMESH_PROPAGATION_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_subMeshEventListener.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_Propagation:public SMESH_Hypothesis
+#include <TopoDS_Edge.hxx>
+
+
+// =======================================================================
+/*!
+ * \brief Propagation hypothesis
+ */
+// =======================================================================
+
+class STDMESHERS_EXPORT StdMeshers_Propagation:public SMESH_Hypothesis
 {
  public:
   StdMeshers_Propagation(int hypId, int studyId, SMESH_Gen * gen);
@@ -44,6 +56,22 @@ class StdMeshers_Propagation:public SMESH_Hypothesis
   static std::string GetName ();
 
   /*!
+   * \brief Set EventListener managing propagation of hypotheses
+    * \param subMesh - edge submesh to set event listener on
+   * 
+   * 1D algo is expected to call this method from it's SetEventListener()
+   */
+  static void SetPropagationMgr(SMESH_subMesh* subMesh);
+
+  /*!
+   * \brief Return an edge from which hypotheses are propagated
+    * \param theMesh - mesh
+    * \param theEdge - edge to which hypotheses are propagated
+    * \retval TopoDS_Edge - source edge, also passing orientation
+   */
+  static TopoDS_Edge GetPropagationSource(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge);
+
+  /*!
    * \brief Initialize my parameter values by the mesh built on the geometry
     * \param theMesh - the built mesh
     * \param theShape - the geometry of interest
@@ -53,5 +81,4 @@ class StdMeshers_Propagation:public SMESH_Hypothesis
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 };
-
 #endif

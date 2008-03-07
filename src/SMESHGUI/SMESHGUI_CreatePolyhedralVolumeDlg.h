@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_CREATEPOLYHEDRAL_H
 #define DIALOGBOX_CREATEPOLYHEDRAL_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -59,7 +61,7 @@ namespace SMESH{
 // class    : SMESHGUI_CreatePolyhedralVolumeDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_CreatePolyhedralVolumeDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_CreatePolyhedralVolumeDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -73,6 +75,7 @@ private:
     void closeEvent( QCloseEvent* e ) ;
     void enterEvent ( QEvent * ) ;                          /* mouse enter the QWidget */
     void hideEvent ( QHideEvent * );                        /* ESC key */
+    void keyPressEvent( QKeyEvent* e );
     int  GetConstructorId();
     void displaySimulation();
     

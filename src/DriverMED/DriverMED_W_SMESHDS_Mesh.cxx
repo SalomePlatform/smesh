@@ -66,6 +66,24 @@ void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
   return SetFile(theFileName,MED::eV2_2);
 }
 
+string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion, int theNbDigits)
+{
+  TInt majeur, mineur, release;
+  majeur =  mineur = release = 0;
+  if ( theVersion == eV2_1 )
+    MED::GetVersionRelease<eV2_1>(majeur, mineur, release);
+  else
+    MED::GetVersionRelease<eV2_2>(majeur, mineur, release);
+  ostringstream name;
+  if ( theNbDigits > 0 )
+    name << majeur;
+  if ( theNbDigits > 1 )
+    name << "." << mineur;
+  if ( theNbDigits > 2 )
+    name << "." << release;
+  return name.str();
+}
+
 void DriverMED_W_SMESHDS_Mesh::SetMeshName(const std::string& theMeshName)
 {
   myMeshName = theMeshName;
@@ -262,6 +280,17 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 	aMeshDimension = anIsXDimension + anIsYDimension + anIsZDimension;
 	if(!aMeshDimension)
 	  aMeshDimension = 3;
+        // PAL16857(SMESH not conform to the MED convention):
+        if ( aMeshDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
+          aMeshDimension = 3;
+        // PAL18941(a saved study with a mesh belong Z is opened and the mesh is belong X)
+        if ( aMeshDimension == 1 && !anIsXDimension ) // 1D only if mesh is along OX
+          if ( anIsYDimension ) {
+            aMeshDimension = 2;
+            anIsXDimension = true;
+          } else {
+            aMeshDimension = 3;
+          }
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
@@ -295,17 +324,21 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
     // Storing SMDS groups and sub-meshes
     //-----------------------------------
-    int myNodesDefaultFamilyId = 0;
-    int myEdgesDefaultFamilyId = 0;
-    int myFacesDefaultFamilyId = 0;
+    int myNodesDefaultFamilyId   = 0;
+    int myEdgesDefaultFamilyId   = 0;
+    int myFacesDefaultFamilyId   = 0;
     int myVolumesDefaultFamilyId = 0;
-    if (myDoGroupOfNodes)
+    int nbNodes   = myMesh->NbNodes();
+    int nbEdges   = myMesh->NbEdges();
+    int nbFaces   = myMesh->NbFaces();
+    int nbVolumes = myMesh->NbVolumes();
+    if (myDoGroupOfNodes && nbNodes)
       myNodesDefaultFamilyId = REST_NODES_FAMILY;
-    if (myDoGroupOfEdges)
+    if (myDoGroupOfEdges && nbEdges)
       myEdgesDefaultFamilyId = REST_EDGES_FAMILY;
-    if (myDoGroupOfFaces)
+    if (myDoGroupOfFaces && nbFaces)
       myFacesDefaultFamilyId = REST_FACES_FAMILY;
-    if (myDoGroupOfVolumes)
+    if (myDoGroupOfVolumes && nbVolumes)
       myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
 
     MESSAGE("Perform - aFamilyInfo");
@@ -314,11 +347,17 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if (myAllSubMeshes) {
       aFamilies = DriverMED_Family::MakeFamilies
         (myMesh->SubMeshes(), myGroups,
-         myDoGroupOfNodes, myDoGroupOfEdges, myDoGroupOfFaces, myDoGroupOfVolumes);
+         myDoGroupOfNodes   && nbNodes,
+         myDoGroupOfEdges   && nbEdges,
+         myDoGroupOfFaces   && nbFaces,
+         myDoGroupOfVolumes && nbVolumes);
     } else {
       aFamilies = DriverMED_Family::MakeFamilies
         (mySubMeshes, myGroups,
-         myDoGroupOfNodes, myDoGroupOfEdges, myDoGroupOfFaces, myDoGroupOfVolumes);
+         myDoGroupOfNodes   && nbNodes,
+         myDoGroupOfEdges   && nbEdges,
+         myDoGroupOfFaces   && nbFaces,
+         myDoGroupOfVolumes && nbVolumes);
     }
     list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
 
@@ -454,7 +493,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         if ( edge_fam != anElemFamMap.end() )
           aFamilyNums->push_back( edge_fam->second );
         else
-          aFamilyNums->push_back( myFacesDefaultFamilyId );
+          aFamilyNums->push_back( myEdgesDefaultFamilyId );
       }
       
       if ( aNbSeg2 ) {
@@ -987,9 +1026,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
   }
   catch(const std::exception& exc) {
     INFOS("Follow exception was cought:\n\t"<<exc.what());
+    throw;
   }
   catch(...) {
     INFOS("Unknown exception was cought !!!");
+    throw;
   }
 
   myMeshId = -1;

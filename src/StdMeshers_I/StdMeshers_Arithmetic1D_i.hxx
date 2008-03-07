@@ -29,6 +29,8 @@
 #ifndef _SMESH_ARITHMETIC1D_I_HXX_
 #define _SMESH_ARITHMETIC1D_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -38,7 +40,7 @@
 // ======================================================
 // Arithmetic 1D hypothesis
 // ======================================================
-class StdMeshers_Arithmetic1D_i:
+class STDMESHERS_I_EXPORT StdMeshers_Arithmetic1D_i:
   public virtual POA_StdMeshers::StdMeshers_Arithmetic1D,
   public virtual SMESH_Hypothesis_i
 {

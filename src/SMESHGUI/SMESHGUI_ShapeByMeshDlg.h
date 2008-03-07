@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_ShapeByMeshDlg_H
 #define SMESHGUI_ShapeByMeshDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_SelectionOp.h"
 
@@ -49,7 +51,7 @@ class SMESHGUI;
  *        by selecting mesh elements
  */
 
-class SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
+class SMESHGUI_EXPORT SMESHGUI_ShapeByMeshDlg : public SMESHGUI_Dialog
 {
   Q_OBJECT
 
@@ -59,37 +61,28 @@ public:
 
 private:
 
-//   void                     closeEvent (QCloseEvent* e);
-//   void                     enterEvent (QEvent*);
-
-private:
-
-  //QFrame*                  createButtonFrame (QWidget*);
   QFrame*                  createMainFrame   (QWidget*);
-  //void                     displayPreview();
-  //void                     erasePreview();
-private:
 
   QButtonGroup*            myElemTypeGroup;
   QLineEdit*               myElementId;
   QLineEdit*               myGeomName;
 
-//   QPushButton*             myOkBtn;
-//   QPushButton*             myCloseBtn;
-
-//   SMESHGUI*                mySMESHGUI;
-//   LightApp_SelectionMgr*   mySelectionMgr;
-//   SVTK_ViewWindow*         myViewWindow;
+  bool                     myIsMultipleAllowed;
+  void                     setMultipleAllowed(bool isAllowed) {myIsMultipleAllowed = isAllowed;};
 
   friend class SMESHGUI_ShapeByMeshOp;
 };
 
+/*!
+ * \brief Operation to publish a sub-shape of the mesh main shape
+ *        by selecting mesh elements
+ */
 class SMESHGUI_ShapeByMeshOp: public SMESHGUI_SelectionOp
 {
   Q_OBJECT
 
 public:
-  SMESHGUI_ShapeByMeshOp();
+  SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed = false);
   virtual ~SMESHGUI_ShapeByMeshOp();
 
   virtual LightApp_Dialog*       dlg() const;  
@@ -103,34 +96,15 @@ protected:
 
   virtual void                   commitOperation();
   virtual void                   startOperation();
-  //virtual void                   selectionDone();
-  //virtual SUIT_SelectionFilter*  createFilter( const int ) const;
-  //virtual bool                   isValid( SUIT_Operation* ) const;
 
   void                     activateSelection();
   void                     setElementID(const QString&);
 
-/* signals: */
-
-/*   void                     PublishShape(); */
-/*   void                     Close(); */
-
 protected slots:
 
   virtual bool                   onApply() { return true; }
-/*   void                           onCreateHyp( const int theHypType, const int theIndex ); */
-/*   void                           onEditHyp( const int theHypType, const int theIndex ); */
-/*   void                           onHypoSet( const QString& theSetName ); */
-/*   void                           onGeomSelectionByMesh( bool ); */
-/*   void                           onPublishShapeByMeshDlg(); */
-/*   void                           onCloseShapeByMeshDlg(); */
 
 private slots:
-
-//   void                     onOk();
-//   void                     onClose();
-
-//   void                     onDeactivate();
 
   void                     onSelectionDone();
   void                     onTypeChanged (int);
@@ -144,6 +118,7 @@ private:
 
   bool                     myIsManualIdEnter;
   bool                     myHasSolids;
+  bool                     myIsMultipleAllowed;
 };
 
 #endif

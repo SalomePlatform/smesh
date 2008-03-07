@@ -1,0 +1,28 @@
+/*!
+
+\page clipping_page Clipping
+
+\n Using this menu you can create cross-section views (clipping planes)
+of your mesh.
+
+To start, click on the \em New button.
+
+\image html a-clipping2.png
+
+Now you can define the parameters of your cross-section: \b Orientation
+(X-Y, X-Z or Y-Z); \b Distance between the opposite extremities of the
+object, if it is set to 0.5 the object is split in two halves; and
+\b Rotation (in angle degrees) <b>around X</b> (Y to Z) and <b>around Y</b> (X to
+Z). If the <b>Show preview</b> button is on, you can see the clipping plane
+in the <b>3D Viewer</b>.
+
+\image html image79.jpg
+
+If the <b>Auto Apply</b> button is on, you can preview the
+cross-section in the <b>3D Viewer</b>.
+
+\image html image99.gif
+
+To get a new object from \b Clipping, click \b Ok.
+
+*/

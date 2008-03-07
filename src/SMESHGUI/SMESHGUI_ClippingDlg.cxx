@@ -182,7 +182,8 @@ protected:
     myMapper->RemoveAllInputs();
     myMapper->Delete();
 
-    myPlaneSource->UnRegisterAllOutputs();
+    // commented: porting to vtk 5.0
+    //    myPlaneSource->UnRegisterAllOutputs();
     myPlaneSource->Delete();
   };
 
@@ -349,7 +350,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
   myIsSelectPlane = false;
   onSelectionChanged();
 
-  myHelpFileName = "clipping.htm";
+  myHelpFileName = "clipping_page.html";
 
   // signals and slots connections :
   connect(ComboBoxPlanes, SIGNAL(activated(int)), this, SLOT(onSelectPlane(int)));
@@ -443,9 +444,15 @@ void SMESHGUI_ClippingDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -768,4 +775,21 @@ void SMESHGUI_ClippingDlg::OnPreviewToggle (bool theIsToggled)
 {
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(theIsToggled));
   SMESH::RenderViewWindow(SMESH::GetCurrentVtkView());
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ClippingDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

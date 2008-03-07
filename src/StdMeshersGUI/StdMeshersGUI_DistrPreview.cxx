@@ -18,11 +18,22 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
+using namespace std;
+
 #include "StdMeshersGUI_DistrPreview.h"
-#include "CASCatch.hxx"
 
 #include <Expr_NamedUnknown.hxx>
 #include <Expr_GeneralExpression.hxx>
+
+#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
+#define NO_CAS_CATCH
+#endif
+
+#include <Standard_Failure.hxx>
+
+#ifdef NO_CAS_CATCH
+#include <Standard_ErrorHandler.hxx>
+#endif
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
 : QwtPlot( p ),
@@ -240,12 +251,12 @@ void StdMeshersGUI_DistrPreview::update()
   delete[] y;
   x = y = 0;
 
-  CASCatch_TRY
-  {   
+  try {   
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     replot();
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
   }
 }
@@ -285,13 +296,13 @@ bool isCorrectArg( const Handle( Expr_GeneralExpression )& expr )
 bool StdMeshersGUI_DistrPreview::init( const QString& str )
 {
   bool parsed_ok = true;
-  CASCatch_TRY
-  {
+  try {
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString ) str.latin1() );
-  }
-  CASCatch_CATCH(Standard_Failure)
-  {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
@@ -327,10 +338,12 @@ double StdMeshersGUI_DistrPreview::calc( bool& ok )
   double res = 0.0;
 
   ok = true;
-  CASCatch_TRY {   
+  try {   
+#ifdef NO_CAS_CATCH
+    OCC_CATCH_SIGNALS;
+#endif
     res = myExpr->Expression()->Evaluate( myVars, myValues );
-  }
-  CASCatch_CATCH(Standard_Failure) {
+  } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
     res = 0.0;
@@ -351,16 +364,16 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
   {
   case EXPONENT:
     {
-      CASCatch_TRY
-      { 
+      try { 
+#ifdef NO_CAS_CATCH
+        OCC_CATCH_SIGNALS;
+#endif
 	// in StdMeshers_NumberOfSegments.cc
 	// const double PRECISION = 1e-7;
 	//
 	if(v < -7) v = -7.0;
 	v = pow( 10.0, v );
-      }
-      CASCatch_CATCH(Standard_Failure)
-      {
+      } catch(Standard_Failure) {
 	Handle(Standard_Failure) aFail = Standard_Failure::Caught();
 	v = 0.0;
 	ok = false;

@@ -28,8 +28,10 @@
 // Module    : SMESH
 
 #include "SMESH_OctreeNode.hxx"
+
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_SetIterator.hxx"
 #include <gp_Pnt.hxx>
-#include <SMDS_MeshNode.hxx>
 
 using namespace std;
 
@@ -42,7 +44,7 @@ using namespace std;
  * \param minBoxSize - Minimal size of the Octree Box
  */
 //================================================================
-SMESH_OctreeNode::SMESH_OctreeNode (set<const SMDS_MeshNode*> theNodes, const int maxLevel,
+SMESH_OctreeNode::SMESH_OctreeNode (const set<const SMDS_MeshNode*> & theNodes, const int maxLevel,
                                     const int maxNbNodes , const double minBoxSize )
   :SMESH_Octree(maxLevel,minBoxSize),
   myMaxNbNodes(maxNbNodes),
@@ -119,11 +121,10 @@ const bool SMESH_OctreeNode::isInside(const SMDS_MeshNode * Node, const double p
   bool Out = 1 ;
   if (precision<=0.)
      return !(myBox->IsOut(gp_XYZ(X,Y,Z)));
-  Bnd_B3d * BoxWithPrecision = new Bnd_B3d();
+  Bnd_B3d BoxWithPrecision;
   getBox(BoxWithPrecision);
-  BoxWithPrecision->Enlarge(precision);
-  Out=BoxWithPrecision->IsOut(gp_XYZ(X,Y,Z));
-  delete BoxWithPrecision;
+  BoxWithPrecision.Enlarge(precision);
+  Out=BoxWithPrecision.IsOut(gp_XYZ(X,Y,Z));
   return !(Out);
 }
 
@@ -325,3 +326,28 @@ void SMESH_OctreeNode::FindCoincidentNodes( const SMDS_MeshNode * Node,
   }
 }
 
+//================================================================================
+/*!
+ * \brief Return iterator over children
+ */
+//================================================================================
+
+SMESH_OctreeNodeIteratorPtr SMESH_OctreeNode::GetChildrenIterator()
+{
+  return SMESH_OctreeNodeIteratorPtr
+    ( new SMDS_SetIterator< SMESH_OctreeNode*, SMESH_Octree** >
+      ( myChildren, ( isLeaf() ? myChildren : &myChildren[ 8 ] )));
+}
+
+//================================================================================
+/*!
+ * \brief Return nodes iterator
+ */
+//================================================================================
+
+SMDS_NodeIteratorPtr SMESH_OctreeNode::GetNodeIterator()
+{
+  return SMDS_NodeIteratorPtr
+    ( new SMDS_SetIterator< SMDS_pNode, set< SMDS_pNode >::const_iterator >
+      ( myNodes.begin(), myNodes.end() ));
+}

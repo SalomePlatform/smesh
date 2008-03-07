@@ -1,0 +1,54 @@
+#
+# ============================================================
+# This file defines the common definitions used in several
+# Makefile. This file must be included, if needed, by the file
+# Makefile.am.
+# ============================================================
+#
+
+# Standard directory for installation
+salomeincludedir   = $(includedir)/@PACKAGE@
+libdir             = $(prefix)/lib@LIB_LOCATION_SUFFIX@/@PACKAGE@
+bindir             = $(prefix)/bin/@PACKAGE@
+salomescriptdir    = $(bindir)
+
+# Directory for installing idl files
+salomeidldir       = $(prefix)/idl/@PACKAGE@
+
+# Directory for installing resource files
+salomeresdir       = $(prefix)/share/@PACKAGE@/resources/@MODULE_NAME@
+
+# Directories for installing admin files
+admlocaldir       = $(prefix)/adm_local
+admlocalunixdir     = $(admlocaldir)/unix
+admlocalm4dir        = $(admlocaldir)/unix/config_files
+
+# Shared modules installation directory
+sharedpkgpythondir =$(pkgpythondir)/shared_modules
+
+# Documentation directory
+docdir             = $(datadir)/doc/@PACKAGE@
+
+# common rules
+
+# moc-files generation
+%_moc.cxx: %.h
+	$(MOC) $< -o $@
+
+# qm-files generation
+%.qm: %.po
+	$(MSG2QM) $< $@
+
+EXTRA_DIST=$(MOC_FILES:%_moc.cxx=%.h) $(nodist_salomeres_DATA:%.qm=%.po)
+
+mostlyclean-local:
+	rm -f @builddir@/*_moc.cxx
+	rm -f @builddir@/*.qm
+
+# tests
+tests: unittest
+
+unittest: $(UNIT_TEST_PROG)
+	@if test "x$(UNIT_TEST_PROG)" != "x"; then \
+	    $(UNIT_TEST_PROG);                     \
+	fi;

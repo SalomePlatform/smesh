@@ -24,10 +24,9 @@
 
 import geompy
 import salome
+import smesh
 import os
 import math
-import StdMeshers
-import SMESH
 
 #Sketcher_1 creation
 print "Sketcher creation..."
@@ -94,79 +93,43 @@ Cut_1 = geompy.MakeBoolean(Chamfer_2, theShapeForCut, 2)
 Cut_1_ID = geompy.addToStudy(Cut_1, "Cut_1")
 
 #Mesh creation
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
 # -- Init --
 shape_mesh = salome.IDToObject( Cut_1_ID )
-smesh.SetCurrentStudy(salome.myStudy)
-mesh = smesh.CreateMesh(shape_mesh)
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-idmesh = salome.ObjectToID(mesh)
-smeshgui.SetName( idmesh, "Nut" )
+
+mesh = smesh.Mesh(shape_mesh, "Nut")
 
 #HYPOTHESIS CREATION
 print "-------------------------- Average length"
 theAverageLength = 5
-hAvLength = smesh.CreateHypothesis( "LocalLength", "libStdMeshersEngine.so" )
-hAvLength.SetLength( theAverageLength )
+algoReg1D = mesh.Segment()
+hAvLength = algoReg1D.LocalLength(theAverageLength)
 print hAvLength.GetName()
 print hAvLength.GetId()
-smeshgui.SetName(salome.ObjectToID(hAvLength), "AverageLength_5")
+print hAvLength.GetLength()
+smesh.SetName(hAvLength, "AverageLength_"+str(theAverageLength))
 
 print "-------------------------- MaxElementArea"
 theMaxElementArea = 20
-hArea20 = smesh.CreateHypothesis( "MaxElementArea", "libStdMeshersEngine.so" )
-hArea20.SetMaxElementArea( theMaxElementArea )
-print hArea20.GetName()
-print hArea20.GetId()
-print hArea20.GetMaxElementArea()
-smeshgui.SetName(salome.ObjectToID(hArea20), "MaxElementArea_20")
+algoMef = mesh.Triangle(smesh.MEFISTO)
+hArea = algoMef.MaxElementArea( theMaxElementArea )
+print hArea.GetName()
+print hArea.GetId()
+print hArea.GetMaxElementArea()
+smesh.SetName(hArea, "MaxElementArea_"+str(theMaxElementArea))
 
 print "-------------------------- MaxElementVolume"
 theMaxElementVolume = 150
-hVolume150 = smesh.CreateHypothesis( "MaxElementVolume", "libStdMeshersEngine.so" )
-hVolume150.SetMaxElementVolume( theMaxElementVolume )
-print hVolume150.GetName()
-print hVolume150.GetId()
-print hVolume150.GetMaxElementVolume()
-smeshgui.SetName(salome.ObjectToID(hVolume150), "MaxElementVolume_150")
+algoNg = mesh.Tetrahedron(smesh.NETGEN)
+hVolume = algoNg.MaxElementVolume( theMaxElementVolume )
+print hVolume.GetName()
+print hVolume.GetId()
+print hVolume.GetMaxElementVolume()
+smesh.SetName(hVolume, "MaxElementVolume_"+str(theMaxElementVolume))
 
-mesh.AddHypothesis(shape_mesh, hAvLength)
-mesh.AddHypothesis(shape_mesh, hArea20)
-mesh.AddHypothesis(shape_mesh, hVolume150)
-
-print "-------------------------- Regular_1D"
-
-algoReg1D = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
-listHyp = algoReg1D.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoReg1D.GetName()
-print algoReg1D.GetId()
-smeshgui.SetName(salome.ObjectToID(algoReg1D), "Wire discretisation")
-
-print "-------------------------- MEFISTO_2D"
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
-listHyp = algoMef.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algoMef.GetName()
-print algoMef.GetId()
-smeshgui.SetName(salome.ObjectToID(algoMef), "Triangle (Mefisto)")
-
-print "-------------------------- NETGEN_3D"
-
-algoNg = smesh.CreateHypothesis( "NETGEN_3D", "libNETGENEngine.so" )
-print algoNg.GetName()
-print algoNg.GetId()
-smeshgui.SetName(salome.ObjectToID(algoNg), "Tetrahedron (NETGEN)")
-mesh.AddHypothesis(shape_mesh, algoReg1D)
-mesh.AddHypothesis(shape_mesh, algoMef)
-mesh.AddHypothesis(shape_mesh, algoNg)
 
 print "-------------------------- compute the mesh of the mechanic piece"
-smesh.Compute(mesh,shape_mesh)
+mesh.Compute()
 
 print "Information about the Nut:"
 print "Number of nodes       : ", mesh.NbNodes()

@@ -27,10 +27,11 @@
 #ifndef _SMDS_VolumeOfNodes_HeaderFile
 #define _SMDS_VolumeOfNodes_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshVolume.hxx"
 
-
-class SMDS_VolumeOfNodes:public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
 {
 	
   public:

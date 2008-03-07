@@ -17,10 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-import geompy
 import salome
+import geompy
+import smesh
 
-import StdMeshers
 
 #-----------------------------GEOM----------------------------------------
 
@@ -51,72 +51,48 @@ Id_face1 = geompy.addToStudy(face1,"Face1")
 
 
 #-----------------------------SMESH-------------------------------------------
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
-# -- Init --
+
+# -- Init mesh --
 plane_mesh = salome.IDToObject( Id_face1)
-smesh.SetCurrentStudy(salome.myStudy)
 
-mesh = smesh.CreateMesh(plane_mesh)
+mesh = smesh.Mesh(plane_mesh, "Mesh_1")
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-
-id_mesh = salome.ObjectToID(mesh)
-smeshgui.SetName( id_mesh, "Mesh_1")
-
-
-print"---------------------Hypothesis"
-
+print"---------------------Hypothesis and Algorithms"
 
 #---------------- NumberOfSegments
+
 numberOfSegment = 9
 
-hypNbSeg = smesh.CreateHypothesis( "NumberOfSegments", "libStdMeshersEngine.so" )
-hypNbSeg.SetNumberOfSegments( numberOfSegment )
+algoWireDes = mesh.Segment()
+listHyp = algoWireDes.GetCompatibleHypothesis()
+print algoWireDes.GetName()
+algoWireDes.SetName("Ware descritisation")
 
+hypNbSeg = algoWireDes.NumberOfSegments(numberOfSegment)
 print hypNbSeg.GetName()
 print hypNbSeg.GetNumberOfSegments()
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "Nb. Segments")
+smesh.SetName(hypNbSeg, "Nb. Segments")
 
 
 #--------------------------Max. Element Area
 maxElementArea = 200
 
-hypArea200 = smesh.CreateHypothesis("MaxElementArea","libStdMeshersEngine.so")
-hypArea200.SetMaxElementArea( maxElementArea )
+algoMef = mesh.Triangle()
+listHyp = algoMef.GetCompatibleHypothesis()
+print algoMef.GetName()
+algoMef.SetName("Triangle (Mefisto)")
+
+hypArea200 = algoMef.MaxElementArea(maxElementArea)
 print hypArea200.GetName()
 print hypArea200.GetMaxElementArea()
+smesh.SetName(hypArea200, "Max. Element Area")
 
-smeshgui.SetName(salome.ObjectToID(hypArea200), "Max. Element Area")
-
-print"---------------------Algorithms"
-
-#----------------------------Wire discretisation
-algoWireDes = smesh.CreateHypothesis( "Regular_1D", "libStdMeshersEngine.so" )
-listHyp = algoWireDes.GetCompatibleHypothesis()
-
-print algoWireDes.GetName()
-smeshgui.SetName(salome.ObjectToID(algoWireDes), "Ware descritisation")
-
-#----------------------------Triangle (Mefisto)
-algoMef = smesh.CreateHypothesis( "MEFISTO_2D", "libStdMeshersEngine.so" )
-listHyp = algoMef.GetCompatibleHypothesis()
-
-print algoMef.GetName()
-
-#----------------------------Add hipothesis to the plane
-mesh.AddHypothesis( plane_mesh, hypNbSeg )     # nb segments
-mesh.AddHypothesis( plane_mesh, hypArea200 )   # max area
-
-mesh.AddHypothesis( plane_mesh, algoWireDes )  # Regular 1D/wire discretisation
-mesh.AddHypothesis( plane_mesh, algoMef )      # MEFISTO 2D
-
-smeshgui.SetName(salome.ObjectToID(algoMef), "Triangle (Mefisto)")
 
 print "---------------------Compute the mesh"
 
-smesh.Compute(mesh, plane_mesh)
+ret = mesh.Compute()
+print ret
 
 salome.sg.updateObjBrowser(1)
 

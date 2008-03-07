@@ -1,0 +1,53 @@
+/*!
+
+\page constructing_submeshes_page Constructing submeshes
+
+\n Construction of a submesh consists of:
+<ul>
+<li>Selecting a mesh which will encapsulate your submesh</li>
+<li>Selecting a geometrical object for meshing</li>
+<li>Applying one or several previously described 
+\ref about_hypo_page "hypotheses" and 
+\ref basic_meshing_algos_page "meshing algorithms" which will be used
+at computation of this submesh</li>
+</ul>
+
+<br><em>To construct a submesh:</em>
+\par
+From the \b Mesh menu select <b>Local Hyp.</b> or click <em>"Create
+Sum-mesh"</em> button in the toolbar.
+
+\image html image33.gif
+<center><em>"Create Sum-mesh" button</em></center>
+
+\par
+The following dialog box will appear:
+
+\image html createmesh-inv2.png
+
+\par
+It allows to define the \b Name, the parent \b Mesh and the \b
+Geometry (e.g. a face if the parent mesh has been built on box) of the
+submesh. You can define algorithms and hypotheses in the same way as
+in \ref constructing_meshes_page "Create mesh" menu.
+
+\par
+In the Object Browser the structure of the new submesh will be
+displayed as follows:
+
+\image html image10.jpg
+
+\par
+It contains:
+<ul>
+<li>a reference to the geometrical object on the basis of which the submesh has been constructed;</li>
+<li><b>Applied hypotheses</b> folder containing the references to the
+hypotheses applied to the construction of the submesh;</li>
+<li><b>Applied algorithms</b> folder containing the references to the
+algorithms applied to the construction of the submesh.</li>
+</ul>
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_construction_submesh "Construct Submesh" operation.
+
+*/

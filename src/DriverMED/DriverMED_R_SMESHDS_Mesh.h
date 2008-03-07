@@ -27,6 +27,8 @@
 #ifndef _INCLUDE_DRIVERMED_R_SMESHDS_MESH
 #define _INCLUDE_DRIVERMED_R_SMESHDS_MESH
 
+#include "SMESH_DriverMED.hxx"
+
 #include "Driver_SMESHDS_Mesh.h"
 #include "DriverMED_Family.h"
 
@@ -38,7 +40,7 @@ class SMESHDS_SubMesh;
 
 typedef std::pair< std::string, SMDSAbs_ElementType > TNameAndType;
 
-class DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
+class MESHDRIVERMED_EXPORT DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
  public:
   virtual Status Perform();

@@ -16,6 +16,7 @@
     <parameter name="selection_object_color"       value="255, 255, 255"/>
     <parameter name="selection_precision_element"  value="0.005"/>
     <parameter name="selection_precision_node"     value="0.005"/>
+    <parameter name="selection_precision_object"   value="0.005"/>
     <parameter name="selection_width"              value="5"/>
     <parameter name="highlight_width"              value="5"/>
     <parameter name="controls_precision"           value="0"/>
@@ -41,7 +42,15 @@
   </section>
   <section name="resources">
     <!-- Module resources -->
-    <parameter name="SMESH"      value="${SMESH_ROOT_DIR}/share/salome/resources"/>
-    <parameter name="StdMeshers" value="${SMESH_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="SMESH"        value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
+    <parameter name="StdMeshers"   value="${SMESH_ROOT_DIR}/share/salome/resources/smesh"/>
+    <!-- NETGENPlugin and GHS3DPlugin -->
+    <!-- Here the environment variables are used as case-sensitive, -->
+    <!-- In GUI/src/SalomeApp/resources/SalomeApp.xml upper-case notation is used. -->
+    <!-- As a result, both variants are acceptable. -->
+    <parameter name="NETGENPlugin" value="${NETGENPlugin_ROOT_DIR}/share/salome/resources/netgenplugin"/>
+    <parameter name="GHS3DPlugin"  value="${GHS3DPlugin_ROOT_DIR}/share/salome/resources/ghs3dplugin"/>
+    <parameter name="BLSURFPlugin" value="${BLSURFPlugin_ROOT_DIR}/share/salome/resources"/>
+    <parameter name="HexoticPLUGIN" value="${HexoticPlugin_ROOT_DIR}/share/salome/resources"/>
   </section>
 </document>

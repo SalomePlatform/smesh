@@ -78,15 +78,15 @@ SMESHGUI_GroupOpDlg::SMESHGUI_GroupOpDlg( SMESHGUI* theModule, const int theMode
 
   if (myMode == UNION) {
     setCaption(tr("UNION_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Union";
+    myHelpFileName = "using_operations_on_groups_page.html#union_anchor";
   }
   else if (myMode == INTERSECT) {
     setCaption(tr("INTERSECTION_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Intersection";
+    myHelpFileName = "using_operations_on_groups_page.html#intersection_anchor";
   }
   else {
     setCaption(tr("CUT_OF_TWO_GROUPS"));
-    myHelpFileName = "/files/using_operations_on_groups.htm#Cut";
+    myHelpFileName = "using_operations_on_groups_page.html#cut_anchor";
   }
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
@@ -317,9 +317,15 @@ void SMESHGUI_GroupOpDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -411,4 +417,21 @@ void SMESHGUI_GroupOpDlg::reset()
   myEdit2->setText("");
   myFocusWg = myEdit1;
   myNameEdit->setFocus();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
 }

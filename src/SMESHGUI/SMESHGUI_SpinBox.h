@@ -29,13 +29,20 @@
 #ifndef  SMESH_SPINBOX_H
 #define  SMESH_SPINBOX_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <QtxDblSpinBox.h>
+
+// like in GEOM_SRC/src/DlgRef/DlgRef_SpinBox.h
+#define COORD_MIN -1e+15
+#define COORD_MAX +1e+15
+#define DBL_DIGITS_DISPLAY 14
 
 //=================================================================================
 // class    : SMESHGUI_SpinBox
 // purpose  : Derivated from QtxDblSpinBox class 
 //=================================================================================
-class SMESHGUI_SpinBox : public QtxDblSpinBox
+class SMESHGUI_EXPORT SMESHGUI_SpinBox : public QtxDblSpinBox
 {
   Q_OBJECT
 

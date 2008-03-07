@@ -27,30 +27,22 @@
 #ifndef _SMDS_Mesh_HeaderFile
 #define _SMDS_Mesh_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
+#include "SMDS_MeshInfo.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include <NCollection_Map.hxx>
-
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
 
 #include <boost/shared_ptr.hpp>
 #include <set>
 #include <list>
 
-class SMDS_WNT_EXPORT SMDS_Mesh:public SMDS_MeshObject{
+class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject{
 public:
   
   SMDS_Mesh();
@@ -441,12 +433,12 @@ public:
   virtual bool RemoveFromParent();
   virtual bool RemoveSubMesh(const SMDS_Mesh * aMesh);
 
-  static bool ChangeElementNodes(const SMDS_MeshElement * elem,
-                                 const SMDS_MeshNode    * nodes[],
-                                 const int                nbnodes);
-  static bool ChangePolyhedronNodes(const SMDS_MeshElement * elem,
-                                    std::vector<const SMDS_MeshNode*> nodes,
-                                    std::vector<int>                  quantities);
+  bool ChangeElementNodes(const SMDS_MeshElement * elem,
+                          const SMDS_MeshNode    * nodes[],
+                          const int                nbnodes);
+  bool ChangePolyhedronNodes(const SMDS_MeshElement *                 elem,
+                             const std::vector<const SMDS_MeshNode*>& nodes,
+                             const std::vector<int> &                 quantities);
 
   virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
@@ -491,11 +483,19 @@ public:
   const SMDS_MeshFace *FindFace(std::vector<int> nodes_ids) const;
   static const SMDS_MeshFace* FindFace(std::vector<const SMDS_MeshNode *> nodes);
 
+  /*!
+   * \brief Raise an exception if free memory (ram+swap) too low
+    * \param doNotRaise - if true, suppres exception, just return free memory size
+    * \retval int - amount of available memory in MB or negative number in failure case
+   */
+  static int CheckMemory(const bool doNotRaise=false) throw (std::bad_alloc);
+
   int MaxNodeID() const;
   int MinNodeID() const;
   int MaxElementID() const;
   int MinElementID() const;
 
+  const SMDS_MeshInfo& GetMeshInfo() const { return myInfo; }
 
   int NbNodes() const;
   int NbEdges() const;
@@ -558,15 +558,16 @@ private:
 
   // Fields PRIVATE
   
-  SetOfNodes myNodes;
-  SetOfEdges myEdges;
-  SetOfFaces myFaces;
-  SetOfVolumes myVolumes;
-  SMDS_Mesh *myParent;
+  SetOfNodes             myNodes;
+  SetOfEdges             myEdges;
+  SetOfFaces             myFaces;
+  SetOfVolumes           myVolumes;
+  SMDS_Mesh *            myParent;
   std::list<SMDS_Mesh *> myChildren;
   SMDS_MeshElementIDFactory *myNodeIDFactory;
   SMDS_MeshElementIDFactory *myElementIDFactory;
-  
+  SMDS_MeshInfo          myInfo;
+
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;
   bool myHasInverseElements;

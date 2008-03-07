@@ -27,10 +27,12 @@
 #ifndef _SMDS_MeshEdge_HeaderFile
 #define _SMDS_MeshEdge_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshElement.hxx"
 #include <iostream>
 
-class SMDS_MeshEdge:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshEdge:public SMDS_MeshElement
 {
 
   public:

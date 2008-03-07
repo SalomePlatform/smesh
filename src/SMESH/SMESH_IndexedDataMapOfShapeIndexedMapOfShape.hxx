@@ -26,15 +26,13 @@
 #ifndef SMESH_IndexedMapOfShape_HeaderFile
 #define SMESH_IndexedMapOfShape_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
+#include "SMESHDS_DataMapOfShape.hxx"
+
 #include <NCollection_DefineIndexedMap.hxx>
 
 #include <TopoDS_Shape.hxx>
-
-inline Standard_Boolean IsEqual(const TopoDS_Shape& S1,
-                                const TopoDS_Shape& S2)
-{
-  return S1.IsSame(S2);
-}
 
 ///  Class SMESH_IndexedMapOfShape
 

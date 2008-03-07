@@ -26,10 +26,7 @@
 
 import salome
 import geompy
-import smeshpy
-
-import SMESH
-import StdMeshers
+import smesh
 
 # ---- define a box
 
@@ -57,94 +54,46 @@ edge = edgeList[0];
 name = geompy.SubShapeName(edge, face)
 ide = geompy.addToStudyInFather(face, edge, name)
 
-# ---- launch SMESH, init a Mesh with the box
+# ---- SMESH
 
-gen = smeshpy.smeshpy()
-mesh = gen.CreateMesh(idb)
+box = salome.IDToObject(idb)
+mesh = smesh.Mesh(box, "Meshbox")
 
-print "-------------------------- create Hypothesis"
+print "-------------------------- add hypothesis to box"
 
-print "-------------------------- LocalLength"
+algo_1 = mesh.Segment(box)
+hyp = algo_1.LocalLength(100)
+print hyp.GetName()
+print hyp.GetId()
+print hyp.GetLength()
 
-hypo1 = gen.CreateHypothesis("LocalLength", "libStdMeshersEngine.so")
-print hypo1.GetName()
-print hypo1.GetId()
-print hypo1.GetLength()
-hypo1.SetLength(100)
-print hypo1.GetLength()
+algo_2 = mesh.Triangle(smesh.MEFISTO, box)
+hyp = algo_2.MaxElementArea(5000)
+print hyp.GetName()
+print hyp.GetId()
+print hyp.GetMaxElementArea()
 
-print "-------------------------- bidon"
+smesh.SetName(algo_2.GetSubMesh(), "SubMeshBox")
 
-hyp3 = gen.CreateHypothesis("bidon", "")
-
-print "-------------------------- NumberOfSegments"
-
-hypo3 = gen.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypo3.SetNumberOfSegments(7)
-print hypo3.GetName()
-print hypo3.GetNumberOfSegments()
-print hypo3.GetId()
-
-print "-------------------------- MaxElementArea"
-
-hypo4 = gen.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypo4.SetMaxElementArea(5000)
-print hypo4.GetName()
-print hypo4.GetMaxElementArea()
-print hypo4.GetId()
-
-print "-------------------------- Regular_1D"
-
-algo_1 = gen.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-print algo_1.GetName()
-print algo_1.GetId()
-listHyp = algo_1.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algo_1.GetId()
-
-print "-------------------------- MEFISTO_2D"
-
-algo_2 = gen.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-print algo_2.GetName()
-print algo_2.GetId()
-listHyp = algo_2.GetCompatibleHypothesis()
-for hyp in listHyp:
-    print hyp
-print algo_2.GetId()
 
 print "-------------------------- add hypothesis to edge"
 
 edge = salome.IDToObject(ide)
-submesh = mesh.GetSubMesh(edge, "SubMeshEdge")
-ret = mesh.AddHypothesis(edge,algo_1)
-print ret
-ret = mesh.AddHypothesis(edge,hypo1)
-print ret
 
-##print "-------------------------- compute edge"
-##ret=gen.Compute(mesh,ide)
-##print ret
-##log=mesh.GetLog(1);
-##for a in log:
-##    print a
+algo_3 = mesh.Segment(edge)
+hyp = algo_3.LocalLength(100)
+print hyp.GetName()
+print hyp.GetId()
+print hyp.GetLength()
 
-print "-------------------------- add hypothesis to box"
+smesh.SetName(algo_3.GetSubMesh(), "SubMeshEdge")
 
-box = salome.IDToObject(idb)
-submesh = mesh.GetSubMesh(box, "SubMeshBox")
-ret = mesh.AddHypothesis(box,algo_1)
-print ret
-ret = mesh.AddHypothesis(box,hypo1)
-print ret
-ret = mesh.AddHypothesis(box,algo_2)
-print ret
-ret = mesh.AddHypothesis(box,hypo4)
-print ret
 
 print "-------------------------- compute face"
 
-ret = gen.Compute(mesh,idf)
+face = salome.IDToObject(idf)
+
+ret = mesh.Compute(face)
 print ret
 log = mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
 for a in log:
@@ -183,18 +132,3 @@ for a in log:
             i3 = a.indexes[ii]
             ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)
-
-##print "-------------------------- compute box"
-##ret=gen.Compute(mesh,idb)
-##print ret
-##log=mesh.GetLog(1);
-##print log
-
-##shell=salome.IDToObject(ids)
-##submesh=mesh.GetElementsOnShape(shell)
-##ret=mesh.AddHypothesis(shell,algo_1)
-##print ret
-##ret=mesh.AddHypothesis(shell,hypo1)
-##print ret
-##ret=gen.Compute(mesh,ids)
-##print ret

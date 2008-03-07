@@ -27,6 +27,8 @@
 #ifndef SMESHGUI_MeshPatternDlg_H
 #define SMESHGUI_MeshPatternDlg_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <qdialog.h>
 
 // IDL Headers
@@ -60,7 +62,7 @@ class SMESHGUI;
   Description : Dialog to specify filters for VTK viewer
 */
 
-class SMESHGUI_MeshPatternDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MeshPatternDlg : public QDialog
 {
   Q_OBJECT
 
@@ -114,6 +116,7 @@ private:
   QString                             autoExtension( const QString& theFileName ) const;
   void                                closeEvent( QCloseEvent* e ) ;
   void                                enterEvent ( QEvent * ) ;
+  void                                keyPressEvent(QKeyEvent*);
   bool                                isValid( const bool theMess = true );
   void                                resetSelInput();
   bool                                isRefine() const;

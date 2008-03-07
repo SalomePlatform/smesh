@@ -30,6 +30,8 @@
 #ifndef _SMESH_HEXA_3D_I_HXX_
 #define _SMESH_HEXA_3D_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // ======================================================
 // Hexaedron 3d algorithm
 // ======================================================
-class StdMeshers_Hexa_3D_i:
+class STDMESHERS_I_EXPORT StdMeshers_Hexa_3D_i:
   public virtual POA_StdMeshers::StdMeshers_Hexa_3D,
   public virtual SMESH_3D_Algo_i
 {

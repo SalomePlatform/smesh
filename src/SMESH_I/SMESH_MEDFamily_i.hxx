@@ -27,11 +27,13 @@
 #ifndef SMESH_MED_FAMILY_I_HXX_
 #define SMESH_MED_FAMILY_I_HXX_
 
+#include "SMESH.hxx"
+
 #include "SMESH_MEDSupport_i.hxx"
 
 #include<string>
 
-class SMESH_MEDFamily_i:
+class SMESH_I_EXPORT SMESH_MEDFamily_i:
   public virtual POA_SALOME_MED::FAMILY,
   public virtual SMESH_MEDSupport_i
 {

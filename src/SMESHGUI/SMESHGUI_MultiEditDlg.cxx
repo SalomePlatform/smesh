@@ -490,9 +490,15 @@ void SMESHGUI_MultiEditDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -1046,6 +1052,23 @@ int SMESHGUI_MultiEditDlg::entityType()
   return myEntityType;
 }
 
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
+}
+
 /*!
  *  Class       : SMESHGUI_ChangeOrientationDlg
  *  Description : Modification of orientation of faces
@@ -1057,7 +1080,7 @@ SMESHGUI_ChangeOrientationDlg
   SMESHGUI_MultiEditDlg(theModule, SMESHGUI_FaceFilter, true, theName)
 {
   setCaption(tr("CAPTION"));
-  myHelpFileName = "/files/changing_orientation_of_elements.htm";
+  myHelpFileName = "changing_orientation_of_elements_page.html";
 }
 
 SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
@@ -1097,7 +1120,7 @@ SMESHGUI_UnionOfTrianglesDlg
 
   myCriterionGrp->show();
 
-  myHelpFileName = "/files/uniting_a_set_of_triangles.htm";
+  myHelpFileName = "uniting_set_of_triangles_page.html";
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -1137,7 +1160,7 @@ SMESHGUI_CuttingOfQuadsDlg
   connect(myComboBoxFunctor, SIGNAL(activated(int))      , this, SLOT(onPreviewChk()));
   connect(this             , SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
 
-  myHelpFileName = "/files/cutting_quadrangles.htm";
+  myHelpFileName = "cutting_quadrangles_page.html";
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()

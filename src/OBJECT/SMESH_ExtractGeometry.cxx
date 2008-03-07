@@ -28,6 +28,8 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 
 using namespace std;
 
@@ -74,8 +76,21 @@ vtkIdType SMESH_ExtractGeometry::GetNodeObjId(int theVtkID){
 }
 
 
-void SMESH_ExtractGeometry::Execute()
+int SMESH_ExtractGeometry::RequestData(
+  vtkInformation *vtkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector)
 {
+  // get the info objects
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+  // get the input and ouptut
+  vtkDataSet *input = vtkDataSet::SafeDownCast(
+    inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
   vtkIdType ptId, numPts, numCells, i, cellId, newCellId, newId, *pointMap;
   vtkIdList *cellPts;
   vtkCell *cell;
@@ -84,10 +99,8 @@ void SMESH_ExtractGeometry::Execute()
   vtkFloatingPointType multiplier;
   vtkPoints *newPts;
   vtkIdList *newCellPts;
-  vtkDataSet *input = this->GetInput();
   vtkPointData *pd = input->GetPointData();
   vtkCellData *cd = input->GetCellData();
-  vtkUnstructuredGrid *output = this->GetOutput();
   vtkPointData *outputPD = output->GetPointData();
   vtkCellData *outputCD = output->GetCellData();
   int npts;
@@ -99,7 +112,7 @@ void SMESH_ExtractGeometry::Execute()
   if ( ! this->ImplicitFunction )
     {
     vtkErrorMacro(<<"No implicit function specified");
-    return;
+    return 0;
     }
 
   newCellPts = vtkIdList::New();
@@ -251,4 +264,5 @@ void SMESH_ExtractGeometry::Execute()
     }
 
   output->Squeeze();
+  return 1;
 }

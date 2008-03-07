@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_MESHINFOSDLG_H
 #define SMESHGUI_MESHINFOSDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 // QT Includes
 #include <qdialog.h>
 
@@ -40,7 +42,7 @@ class QWidgetStack;
 class LightApp_SelectionMgr;
 class SMESHGUI;
 
-class SMESHGUI_MeshInfosDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_MeshInfosDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -53,6 +55,7 @@ public:
 
 protected:
     void closeEvent( QCloseEvent* e );
+    void keyPressEvent( QKeyEvent* e );
     void windowActivationChange( bool oldActive );
     void DumpMeshInfos();
 

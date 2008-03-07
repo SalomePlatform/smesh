@@ -32,7 +32,9 @@
 #include "SMDS_VertexPosition.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
+#include "SMDS_SpacePosition.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+
 #include <TopExp_Explorer.hxx>
 #include <TopExp.hxx>
 #include <TopoDS_Iterator.hxx>
@@ -40,6 +42,11 @@
 #include "utilities.h"
 
 using namespace std;
+
+/*Standard_Boolean IsEqual( const TopoDS_Shape& S1, const TopoDS_Shape& S2 ) 
+  {
+    return S1.IsSame( S2 );
+  }*/
 
 //=======================================================================
 //function : Create
@@ -70,7 +77,7 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
   {
     // removal of a shape to mesh, delete ...
     // - hypotheses
-    myShapeToHypothesis.clear();
+    myShapeToHypothesis.Clear();
     // - shape indices in SMDS_Position of nodes
     map<int,SMESHDS_SubMesh*>::iterator i_sub = myShapeIndexToSubMesh.begin();
     for ( ; i_sub != myShapeIndexToSubMesh.end(); i_sub++ ) {
@@ -105,18 +112,22 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 //=======================================================================
 
 bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
-	const SMESHDS_Hypothesis * H)
+                                 const SMESHDS_Hypothesis * H)
 {
-	list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis[SS];
+  if (!myShapeToHypothesis.IsBound(SS.Oriented(TopAbs_FORWARD))) {
+    list<const SMESHDS_Hypothesis *> aList;
+    myShapeToHypothesis.Bind(SS.Oriented(TopAbs_FORWARD), aList);
+  }
+  list<const SMESHDS_Hypothesis *>& alist =
+    myShapeToHypothesis(SS.Oriented(TopAbs_FORWARD)); // ignore orientation of SS
 
-	//Check if the Hypothesis is still present
-	list<const SMESHDS_Hypothesis*>::iterator ith=alist.begin();
+  //Check if the Hypothesis is still present
+  list<const SMESHDS_Hypothesis*>::iterator ith = find(alist.begin(),alist.end(), H );
 
-	for (; ith!=alist.end(); ith++)
-		if (H == *ith) return false;
+  if (alist.end() != ith) return false;
 
-	alist.push_back(H);
-	return true;
+  alist.push_back(H);
+  return true;
 }
 
 //=======================================================================
@@ -124,22 +135,20 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
 //purpose  : 
 //=======================================================================
 
-bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape & S,
-	const SMESHDS_Hypothesis * H)
+bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape &       S,
+                                    const SMESHDS_Hypothesis * H)
 {
-	ShapeToHypothesis::iterator its=myShapeToHypothesis.find(S);
-	if(its!=myShapeToHypothesis.end())
-	{
-		list<const SMESHDS_Hypothesis*>::iterator ith=(*its).second.begin();
-
-		for (; ith!=(*its).second.end(); ith++)
-			if (H == *ith)
-			{
-				(*its).second.erase(ith);
-				return true;
-			}
-	}
-	return false;
+  if( myShapeToHypothesis.IsBound( S.Oriented(TopAbs_FORWARD) ) )
+  {
+    list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis.ChangeFind( S.Oriented(TopAbs_FORWARD) );
+    list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
+    if (ith != alist.end())
+    {
+      alist.erase(ith);
+      return true;
+    }
+  }
+  return false;
 }
 
 //=======================================================================
@@ -843,6 +852,22 @@ bool SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
   return false;
 }
 
+namespace {
+
+  //================================================================================
+  /*!
+   * \brief Creates a node position in volume
+   */
+  //================================================================================
+
+  inline SMDS_PositionPtr volumePosition(int volId)
+  {
+    SMDS_SpacePosition* pos = new SMDS_SpacePosition();
+    pos->SetShapeId( volId );
+    return SMDS_PositionPtr(pos);
+  }
+}
+
 //=======================================================================
 //function : SetNodeOnVolume
 //purpose  : 
@@ -851,7 +876,7 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Shell & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( myCurSubID );
+    aNode->SetPosition ( volumePosition( myCurSubID ));
 }
 //=======================================================================
 //function : SetNodeOnVolume
@@ -861,7 +886,7 @@ void SMESHDS_Mesh::SetNodeInVolume(SMDS_MeshNode *      aNode,
                                    const TopoDS_Solid & S)
 {
   if ( add( aNode, getSubmesh(S) ))
-    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( myCurSubID );
+    aNode->SetPosition ( volumePosition( myCurSubID ));
 }
 
 //=======================================================================
@@ -1015,14 +1040,14 @@ list<int> SMESHDS_Mesh::SubMeshIndices()
 //purpose  : 
 //=======================================================================
 
-const list<const SMESHDS_Hypothesis*>& SMESHDS_Mesh::GetHypothesis(
-	const TopoDS_Shape & S) const
+const list<const SMESHDS_Hypothesis*>&
+SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape & S) const
 {
-	if (myShapeToHypothesis.find(S)!=myShapeToHypothesis.end())
-		return myShapeToHypothesis.find(S)->second;
+  if ( myShapeToHypothesis.IsBound( S.Oriented(TopAbs_FORWARD) ) ) // ignore orientation of S
+     return myShapeToHypothesis.Find( S.Oriented(TopAbs_FORWARD) );
 
-	static list<const SMESHDS_Hypothesis*> empty;
-	return empty;
+  static list<const SMESHDS_Hypothesis*> empty;
+  return empty;
 }
 
 //=======================================================================
@@ -1060,7 +1085,7 @@ bool SMESHDS_Mesh::HasMeshElements(const TopoDS_Shape & S)
 //=======================================================================
 bool SMESHDS_Mesh::HasHypothesis(const TopoDS_Shape & S)
 {
-	return myShapeToHypothesis.find(S)!=myShapeToHypothesis.end();
+  return myShapeToHypothesis.IsBound(S.Oriented(TopAbs_FORWARD));
 }
 
 //=======================================================================
@@ -1147,7 +1172,7 @@ int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 {
   if ( add( aNode, getSubmesh( Index )))
-    const_cast<SMDS_Position*>( aNode->GetPosition().get() )->SetShapeId( Index );
+    ((SMDS_MeshNode*) aNode)->SetPosition( volumePosition( Index ));
 }
 
 //=======================================================================
@@ -1195,11 +1220,19 @@ void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement* anElement,
   add( anElement, getSubmesh( Index ));
 }
 
+//=======================================================================
+//function : ~SMESHDS_Mesh
+//purpose  : 
+//=======================================================================
 SMESHDS_Mesh::~SMESHDS_Mesh()
 {
+  // myScript
   delete myScript;
+  // submeshes
+  TShapeIndexToSubMesh::iterator i_sm = myShapeIndexToSubMesh.begin();
+  for ( ; i_sm != myShapeIndexToSubMesh.end(); ++i_sm )
+    delete i_sm->second;
 }
-
 
 
 //********************************************************************

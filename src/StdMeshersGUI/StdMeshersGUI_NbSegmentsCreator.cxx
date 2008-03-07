@@ -251,8 +251,7 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromHypo( NbSegmentsHypothesisDa
   StdMeshers::StdMeshers_NumberOfSegments_var h =
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( initParamsHypothesis() );
 
-  HypothesisData* data = SMESH::GetHypothesisData( hypType() );
-  h_data.myName = isCreation() && data ? data->Label : "";
+  h_data.myName = hypName();
 
   h_data.myNbSeg = (int) h->GetNumberOfSegments();
   int distr = (int) h->GetDistrType();

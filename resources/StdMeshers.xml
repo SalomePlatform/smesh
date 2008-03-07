@@ -7,9 +7,14 @@
 
 <meshers-group name="Standard Meshers"
                resources="StdMeshers"
-               server-lib="libStdMeshersEngine.so"
-               gui-lib="libStdMeshersGUI.so">
+               server-lib="StdMeshersEngine"
+               gui-lib="StdMeshersGUI">
   <hypotheses>
+
+    <hypothesis type="SegmentLengthAroundVertex"
+                label-id="Length Near Vertex"
+                icon-id="mesh_hypo_length.png"
+                dim="0"/>
 
     <hypothesis type="LocalLength"
                 label-id="Average length"
@@ -55,6 +60,7 @@
     <hypothesis type="QuadranglePreference"
                 label-id="Quadrangle Preference"
                 icon-id="mesh_algo_quad.png"
+                auxiliary="true"
                 dim="2"/>
 
     <hypothesis type="QuadraticMesh"
@@ -77,16 +83,59 @@
     <hypothesis type="MaxElementVolume"
                 label-id="Max. Element Volume"
                 icon-id="mesh_hypo_volume.png"
+		need-geom = "false"
+                dim="3"/>
+
+    <hypothesis type="ProjectionSource3D"
+                label-id="Source Shape 3D"
+                icon-id="mesh_hypo_volume.png"
+                dim="3"/>
+
+    <hypothesis type="ProjectionSource2D"
+                label-id="Source Face"
+                icon-id="mesh_hypo_area.png"
+                dim="2"/>
+
+    <hypothesis type="ProjectionSource1D"
+                label-id="Source Edge"
+                icon-id="mesh_hypo_length.png"
+                dim="1"/>
+
+    <hypothesis type="NumberOfLayers"
+                label-id="Number of Layers"
+                icon-id="mesh_hypo_length.png"
+                dim="3"/>
+
+    <hypothesis type="LayerDistribution"
+                label-id="Distribution of Layers"
+                icon-id="mesh_hypo_length.png"
                 dim="3"/>
   </hypotheses>
 
   <algorithms>
+
+    <algorithm type="SegmentAroundVertex_0D"
+	       label-id="Segments around vertex"
+	       icon-id="mesh_algo_regular.png"
+               hypos="SegmentLengthAroundVertex"
+               output="VERTEX"
+               dim="0"/>
 
     <algorithm type="Regular_1D"
 	       label-id="Wire discretisation"
 	       icon-id="mesh_algo_regular.png"
                hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
                opt-hypos="Propagation,QuadraticMesh"
+               input="VERTEX"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="CompositeSegment_1D"
+	       label-id="Composite side discretisation"
+	       icon-id="mesh_algo_regular.png"
+               hypos="LocalLength,Arithmetic1D,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength"
+               opt-hypos="Propagation,QuadraticMesh"
+               input="VERTEX"
                output="EDGE"
                dim="1"/>
 
@@ -111,6 +160,56 @@
                icon-id="mesh_algo_hexa.png"
                input="QUAD"
                dim="3"/>
+
+    <algorithm type="Projection_1D"
+               label-id="Projection 1D"
+               icon-id="mesh_algo_regular.png"
+               hypos="ProjectionSource1D"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="Projection_2D"
+               label-id="Projection 2D"
+               icon-id="mesh_algo_quad.png"
+               input="EDGE"
+               hypos="ProjectionSource2D"
+               output="QUAD,TRIA"
+               dim="2"/>
+
+    <algorithm type="Projection_3D"
+               label-id="Projection 3D"
+               icon-id="mesh_algo_hexa.png"
+               hypos="ProjectionSource3D"
+               input="QUAD,TRIA"
+               dim="3"/>
+
+    <algorithm type="Prism_3D"
+               label-id="3D extrusion"
+               icon-id="mesh_algo_hexa.png"
+               input="QUAD,TRIA"
+               dim="3"/>
+
+    <algorithm type="RadialPrism_3D"
+               label-id="Radial Prism 3D"
+               icon-id="mesh_algo_hexa.png"
+               hypos="NumberOfLayers, LayerDistribution"
+               input="QUAD,TRIA"
+               dim="3"/>
+
+    <algorithm type="UseExisting_1D"
+               label-id="Use existing edges"
+               icon-id="mesh_algo_regular.png"
+               input="VERTEX"
+               output="EDGE"
+               dim="1"/>
+
+    <algorithm type="UseExisting_2D"
+               label-id="Use existing faces"
+               icon-id="mesh_algo_quad.png"
+               input="EDGE"
+               output="QUAD,TRIA"
+               dim="2"/>
+
   </algorithms>
 </meshers-group>
 

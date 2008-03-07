@@ -17,10 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-from smesh import *
+import smesh
 
 def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
-    aFilterMgr = smesh.CreateFilterManager()
+    aFilterMgr = smesh.smesh.CreateFilterManager()
     aFilter = aFilterMgr.CreateFilter()
    
     aLyingOnGeom = aFilterMgr.CreateLyingOnGeom()
@@ -36,7 +36,12 @@ def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
 #Example
 from SMESH_test1 import *
 
-smesh.Compute(mesh, box)
-BuildGroupLyingOn(mesh, SMESH.FACE, "Group of faces lying on edge", edge )
+mesh.Compute()
+
+# First way
+BuildGroupLyingOn(mesh.GetMesh(), smesh.FACE, "Group of faces lying on edge #1", edge )
+
+# Second way
+mesh.MakeGroup("Group of faces lying on edge #2", smesh.FACE, smesh.FT_LyingOnGeom, edge)
 
 salome.sg.updateObjBrowser(1);

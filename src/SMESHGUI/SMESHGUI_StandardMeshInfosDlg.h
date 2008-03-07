@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_STANDARDMESHINFOSDLG_H
 #define SMESHGUI_STANDARDMESHINFOSDLG_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 //#include "SMESH_TypeFilter.hxx"
 #include "SUIT_SelectionFilter.h"
 
@@ -44,7 +46,7 @@ class LightApp_SelectionMgr;
 class SMESHGUI;
 
 
-class SMESHGUI_StandardMeshInfosDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_StandardMeshInfosDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -54,6 +56,7 @@ public:
 
 protected:
     void closeEvent( QCloseEvent* e );
+    void keyPressEvent( QKeyEvent* e );
     void windowActivationChange( bool oldActive );
     void DumpMeshInfos();
 

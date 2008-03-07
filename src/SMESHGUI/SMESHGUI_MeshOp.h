@@ -32,12 +32,15 @@
 #ifndef SMESHGUI_MeshOp_H
 #define SMESHGUI_MeshOp_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "SMESHGUI_SelectionOp.h"
-#include <qstringlist.h>
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(GEOM_Gen)
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_CLIENT_HEADER(GEOM_Gen)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
+
+#include <qstringlist.h>
 
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
@@ -48,13 +51,22 @@ class HypothesisData;
  *
  *  This operation is used for mech creation or editing. 
 */
-class SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
+class SMESHGUI_EXPORT SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
 { 
   Q_OBJECT
       
 public:
 
   enum HypType{ Algo = 0, MainHyp, AddHyp, NbHypTypes };
+
+  typedef std::pair<SMESH::SMESH_Hypothesis_var, QString> THypItem;
+  typedef QValueList< THypItem > THypList;
+
+  typedef int THypType;
+  typedef QMap< THypType, THypList > TType2HypList;
+
+  typedef int THypDim;
+  typedef QMap< THypDim, TType2HypList > TDim2Type2HypList;
 
   SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh = true );
   virtual ~SMESHGUI_MeshOp();
@@ -92,7 +104,7 @@ private:
                                                const int     theHypType, 
                                                _PTR(SObject) theFather,
                                                QStringList&  theHyps, 
-                                               QValueList<SMESH::SMESH_Hypothesis_var>& theHypVars,
+                                               THypList& theHypList,
                                                HypothesisData* theAlgoData = 0);
   HypothesisData*                hypData( const int theDim,
                                           const int theHypType,
@@ -113,7 +125,7 @@ private:
   void                           readMesh();
   QString                        name( _PTR(SObject) ) const;
   int                            find( const SMESH::SMESH_Hypothesis_var&,
-                                       const QValueList<SMESH::SMESH_Hypothesis_var>& ) const;
+                                       const THypList& theHypList) const;
   SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString& aHypType,
                                                           const QString& aServerLib ) const;
   bool                           isSubshapeOk() const;
@@ -121,20 +133,18 @@ private:
   void                           selectObject( _PTR(SObject) ) const;
 
 private:
-  typedef QMap< int, QValueList<SMESH::SMESH_Hypothesis_var> > IdToHypListMap;
-  typedef QMap< int, IdToHypListMap > DimToHypMap;
-
   SMESHGUI_MeshDlg*              myDlg;
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;
   bool                           myIsMesh;
+  bool                           myIsOnGeometry; //!< TRUE if edited mesh accotiated with geometrical object
 
-  DimToHypMap                    myExistingHyps; //!< all hypothesis of SMESH module
-  DimToHypMap                    myObjHyps;      //!< hypothesis assigned to the current 
+  TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
+  TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current 
                                                  //   edited mesh/sub-mesh
 
   // hypdata corresponding to hypotheses present in myDlg
-  THypDataList                   myAvailableHypData[3][NbHypTypes];
+  THypDataList                   myAvailableHypData[4][NbHypTypes];
 
   bool                           myIgnoreAlgoSelection;
 };

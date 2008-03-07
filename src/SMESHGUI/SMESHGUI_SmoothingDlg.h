@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_SMOOTHING_H
 #define DIALOGBOX_SMOOTHING_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -62,7 +64,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_SmoothingDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_SmoothingDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_SmoothingDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -79,6 +81,7 @@ private:
     void closeEvent(QCloseEvent*);
     void enterEvent (QEvent*);                             /* mouse enter the QWidget */
     void hideEvent (QHideEvent*);                          /* ESC key */
+    void keyPressEvent(QKeyEvent*);
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */

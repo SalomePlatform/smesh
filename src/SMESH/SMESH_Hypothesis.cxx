@@ -26,12 +26,12 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
-using namespace std;
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_subMesh.hxx"
 #include "utilities.h"
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -126,14 +126,6 @@ void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
     {
       SMESH_Mesh* mesh = (*itm).second;
       mesh->NotifySubMeshesHypothesisModification( this );
-//       const list<SMESH_subMesh*>& subMeshes =
-// 	 mesh->GetSubMeshUsingHypothesis(this);
-
-//       //for all subMeshes using hypothesis
-	
-//       list<SMESH_subMesh*>::const_iterator its;
-//       for (its = subMeshes.begin(); its != subMeshes.end(); its++)
-// 	(*its)->ComputeStateEngine(SMESH_subMesh::MODIF_HYP);
     }
 }
 
@@ -145,9 +137,6 @@ void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
 
 const char* SMESH_Hypothesis::GetLibName() const
 {
-//   MESSAGE("SMESHDS_Hypothesis::GetLibName");
-//   SCRUTE(_LibName);
-//   SCRUTE(&_LibName);
   return _libName.c_str();
 }
 
@@ -159,6 +148,5 @@ const char* SMESH_Hypothesis::GetLibName() const
 
 void SMESH_Hypothesis::SetLibName(const char* theLibName)
 {
-//   MESSAGE("SMESHDS_Hypothesis::SetLibName");
   _libName = string(theLibName);
 }

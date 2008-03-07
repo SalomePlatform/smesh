@@ -20,6 +20,8 @@
 #ifndef UNV2412_Structure_HeaderFile
 #define UNV2412_Structure_HeaderFile
 
+#include "SMESH_DriverUNV.hxx"
+
 #include <map>
 #include <vector>
 #include <fstream>	
@@ -29,7 +31,7 @@ namespace UNV2412{
   
   typedef std::vector<int> TNodeLabels; // Nodal connectivities
 
-  struct TRecord{
+  struct MESHDRIVERUNV_EXPORT TRecord{
     TRecord();
 
     int fe_descriptor_id;  // FE descriptor id
@@ -47,13 +49,18 @@ namespace UNV2412{
   typedef int TElementLab; // type of element label
   typedef std::map<TElementLab,TRecord> TDataSet;
 
-  void Read(std::ifstream& in_stream, TDataSet& theDataSet);
+  MESHDRIVERUNV_EXPORT void
+    Read(std::ifstream& in_stream, TDataSet& theDataSet);
 
-  void Write(std::ofstream& out_stream, const TDataSet& theDataSet);
+  MESHDRIVERUNV_EXPORT void
+    Write(std::ofstream& out_stream, const TDataSet& theDataSet);
 
-  bool IsBeam(int theFeDescriptorId);
-  bool IsFace(int theFeDescriptorId);
-  bool IsVolume(int theFeDescriptorId);
+  MESHDRIVERUNV_EXPORT bool
+    IsBeam(int theFeDescriptorId);
+  MESHDRIVERUNV_EXPORT bool
+    IsFace(int theFeDescriptorId);
+  MESHDRIVERUNV_EXPORT bool
+    IsVolume(int theFeDescriptorId);
 
 };
 

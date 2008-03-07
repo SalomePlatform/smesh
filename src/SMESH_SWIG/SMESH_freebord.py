@@ -19,11 +19,8 @@
 #
 import salome
 import geompy
-import SMESH
-import StdMeshers
+import smesh
 
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-smesh.SetCurrentStudy(salome.myStudy)
 
 # Create box without one plane
 
@@ -37,49 +34,34 @@ for i in range( 5 ):
 aComp = geompy.MakeCompound( FaceList )
 aBox = geompy.Sew( aComp, 1. )
 idbox = geompy.addToStudy( aBox, "box" )
-  
+
 aBox  = salome.IDToObject( idbox )
 
 # Create mesh
 
-hyp1 = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hyp1.SetNumberOfSegments(5)
-hyp2 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hyp2.SetMaxElementArea(20)
-hyp3 = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hyp3.SetMaxElementArea(50)
+mesh = smesh.Mesh(aBox, "Mesh_freebord")
 
-algo1 = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-algo2 = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
+algoReg = mesh.Segment()
+hypNbSeg = algoReg.NumberOfSegments(5)
 
-mesh = smesh.CreateMesh(aBox)
-mesh.AddHypothesis(aBox,hyp1)
-mesh.AddHypothesis(aBox,hyp2)
-mesh.AddHypothesis(aBox,algo1)
-mesh.AddHypothesis(aBox,algo2)
+algoMef = mesh.Triangle()
+hypArea = algoMef.MaxElementArea(20)
 
-smesh.Compute(mesh,aBox)
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
-smeshgui.SetName( salome.ObjectToID( mesh ), "Mesh_freebord" );
+mesh.Compute()
 
-# Criterion : Free edges
-aFilterMgr = smesh.CreateFilterManager()
-aPredicate = aFilterMgr.CreateFreeBorders()
-aFilter = aFilterMgr.CreateFilter()
-aFilter.SetPredicate( aPredicate )
 
-anIds = aFilter.GetElementsId( mesh )
+# Criterion : Free edges. Create group.
+
+aCriterion = smesh.GetCriterion(smesh.EDGE, smesh.FT_FreeEdges)
+
+aGroup = mesh.MakeGroupByCriterion("Free edges", aCriterion)
+
+anIds = aGroup.GetIDs()
 
 # print result
 print "Criterion: Free edges Nb = ", len( anIds )
 for i in range( len( anIds ) ):
   print anIds[ i ]
-
-# create group
-aGroup = mesh.CreateGroup( SMESH.EDGE, "Free edges" )
-aGroup.Add( anIds )
-
 
 salome.sg.updateObjBrowser(1)

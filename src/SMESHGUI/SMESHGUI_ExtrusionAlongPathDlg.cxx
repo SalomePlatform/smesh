@@ -88,6 +88,7 @@
 // IDL Headers
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 using namespace std;
 
@@ -219,10 +220,13 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   SelectBasePointButton->setPixmap(selectImage);
 
   XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
+  XLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   XSpin = new SMESHGUI_SpinBox(BasePointGrp);
   YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
+  YLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   YSpin = new SMESHGUI_SpinBox(BasePointGrp);
   ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
+  ZLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
   ZSpin = new SMESHGUI_SpinBox(BasePointGrp);
 
   // layouting
@@ -266,6 +270,10 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   AnglesGrpLayout->addWidget(         AngleSpin,  0,    2   );
   AnglesGrpLayout->setRowStretch(1, 10);
 
+  // CheckBox for groups generation
+  MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
+  MakeGroupsCheck->setChecked(true);
+
   // layouting
   GroupArgumentsLayout->addWidget(         ElementsLab,            0,    0   );
   GroupArgumentsLayout->addWidget(         SelectElementsButton,   0,    1   );
@@ -276,6 +284,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   GroupArgumentsLayout->addMultiCellWidget(BasePointGrp,           3, 4, 1, 2);
   GroupArgumentsLayout->addWidget(         AnglesCheck,            5,    0   );
   GroupArgumentsLayout->addMultiCellWidget(AnglesGrp,              5, 6, 1, 2);
+  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck,        7, 7, 0, 2);
   GroupArgumentsLayout->setRowStretch(6, 10);
 
   /***************************************************************/
@@ -317,10 +326,10 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   /***************************************************************/
   // Initialisations
-  XSpin->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  YSpin->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  ZSpin->RangeStepAndValidator(-999999.999, +999999.999, 10.0, 3);
-  AngleSpin->RangeStepAndValidator(-999999.999, +999999.999, 5.0, 3);
+  XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
+  AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, 3);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -337,7 +346,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   myElementsFilter = new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
   myPathMeshFilter = new SMESH_TypeFilter (MESH);
 
-  myHelpFileName = "extrusion_along_a_path.htm";
+  myHelpFileName = "extrusion_along_path_page.html";
 
   Init();
 
@@ -595,10 +604,18 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   try {
     SUIT_OverrideCursor wc;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-    SMESH::SMESH_MeshEditor::Extrusion_Error retVal =
-      aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh, myPathShape, aNodeStart,
-				       AnglesCheck->isChecked(), anAngles.inout(),
-				       BasePointCheck->isChecked(), aBasePoint);
+    SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
+    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+      SMESH::ListOfGroups_var groups = 
+        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId.inout(), myPathMesh,
+                                                  myPathShape, aNodeStart,
+                                                  AnglesCheck->isChecked(), anAngles.inout(),
+                                                  BasePointCheck->isChecked(), aBasePoint, retVal);
+    else
+      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh,
+                                               myPathShape, aNodeStart,
+                                               AnglesCheck->isChecked(), anAngles.inout(),
+                                               BasePointCheck->isChecked(), aBasePoint);
 
     //wc.stop();
     wc.suspend();
@@ -648,6 +665,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   //mySelectionMgr->clearSelected();
   SMESH::Update( myMeshActor->getIO(), myMeshActor->GetVisibility() );
+  if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+    mySMESHGUI->updateObjBrowser(true); // new groups may appear
   //SMESH::UpdateView();
   Init(false);
   ConstructorsClicked(GetConstructorId());
@@ -674,9 +693,15 @@ void SMESHGUI_ExtrusionAlongPathDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -815,6 +840,14 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     myMesh = SMESH::GetMeshByIO(IO);
     if (myMesh->_is_nil())
       return;
+
+    // MakeGroups is available if there are groups
+    if ( myMesh->NbGroups() == 0 ) {
+      MakeGroupsCheck->setChecked(false);
+      MakeGroupsCheck->setEnabled(false);
+    } else {
+      MakeGroupsCheck->setEnabled(true);
+    }
     // find actor
     myMeshActor = SMESH::FindActorByObject(myMesh);
     if (!myMeshActor)
@@ -833,7 +866,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
       // try to get selected elements IDs
       QString aString;
       //int aNbUnits = SMESH::GetNameOfSelectedElements(mySelectionMgr, aString);
-      SMESH::GetNameOfSelectedElements(mySelector, myMeshActor->getIO(), aString);
+      SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
       ElementsLineEdit->setText(aString);
     }
   } else if (myEditCurrentArgument == PathMeshLineEdit) {
@@ -1195,4 +1228,21 @@ bool SMESHGUI_ExtrusionAlongPathDlg::eventFilter (QObject* object, QEvent* event
     }
   }
   return QDialog::eventFilter(object, event);
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

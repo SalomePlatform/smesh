@@ -1,6 +1,6 @@
 c  MEFISTO : library to compute 2D triangulation from segmented boundaries
 c
-c  Copyright (C) 2003  Laboratoire J.-L. Lions UPMC Paris
+c  Copyright (C) 2006  Laboratoire J.-L. Lions UPMC Paris
 c
 c  This library is free software; you can redistribute it and/or
 c  modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,8 @@ c
 c
 c  File   : areteideale.f
 c  Module : SMESH
-c  Author: Alain PERRONNET
+c  Author : Alain PERRONNET
+c  Date   : 13 novembre 2006
 
       double precision function areteideale( xyz, direction )
       double precision xyz(3), direction(3)

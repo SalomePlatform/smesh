@@ -23,9 +23,8 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 
-import StdMeshers
-import NETGENPlugin
 import SMESH_fixation
+import smesh
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp
@@ -45,94 +44,65 @@ status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
 
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
+# ---- init a Mesh with the compshell
 
-print "-------------------------- create Hypothesis"
+mesh = smesh.Mesh(compshell, "MeshcompShell")
+
+
+# ---- set Hypothesis and Algorithm
 
 print "-------------------------- NumberOfSegments"
 
 numberOfSegments = 5
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(numberOfSegments)
-
+regular1D = mesh.Segment()
+regular1D.SetName("Wire Discretisation")
+hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_5")
-
-print "-------------------------- MaxElementArea"
+## print "-------------------------- MaxElementArea"
 
 ## maxElementArea = 80
 
-## hypArea=smesh.CreateHypothesis("MaxElementArea")
-## hypArea.SetMaxElementArea(maxElementArea)
+## mefisto2D = mesh.Triangle()
+## mefisto2D.SetName("MEFISTO_2D")
+## hypArea = mefisto2D.MaxElementArea(maxElementArea)
 ## print hypArea.GetName()
 ## print hypArea.GetId()
 ## print hypArea.GetMaxElementArea()
-## smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_160")
+## smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
-hypLengthFromEdges = smesh.CreateHypothesis("LengthFromEdges", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(hypLengthFromEdges), "LengthFromEdges")
+print "-------------------------- LengthFromEdges"
+
+mefisto2D = mesh.Triangle()
+mefisto2D.SetName("MEFISTO_2D")
+hypLengthFromEdges = mefisto2D.LengthFromEdges()
+print hypLengthFromEdges.GetName()
+print hypLengthFromEdges.GetId()
+smesh.SetName(hypLengthFromEdges, "LengthFromEdges")
 
 
 print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 1000
 
-hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
-hypVolume.SetMaxElementVolume(maxElementVolume)
-
+netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+netgen3D.SetName("NETGEN_3D")
+hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
+smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
-smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_1000")
-
-print "-------------------------- create Algorithms"
-
-print "-------------------------- Regular_1D"
-
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-
-smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
-
-print "-------------------------- MEFISTO_2D"
-
-mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-
-smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
-
-print "-------------------------- NETGEN_3D"
-
-netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
-
-smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
-
-# ---- init a Mesh with the compshell
-
-mesh = smesh.CreateMesh(compshell)
-smeshgui.SetName(salome.ObjectToID(mesh), "MeshcompShel")
-
-print "-------------------------- add hypothesis to compshell"
-
-mesh.AddHypothesis(compshell,regular1D)
-mesh.AddHypothesis(compshell,hypNbSeg)
-
-mesh.AddHypothesis(compshell,mefisto2D)
-mesh.AddHypothesis(compshell,hypLengthFromEdges)
-
-mesh.AddHypothesis(compshell,netgen3D)
-mesh.AddHypothesis(compshell,hypVolume)
 
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute compshell"
-ret = smesh.Compute(mesh,compshell)
+ret = mesh.Compute(mesh)
 print ret
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace

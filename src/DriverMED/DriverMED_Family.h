@@ -28,6 +28,8 @@
 #ifndef _INCLUDE_DRIVERMED_FAMILY
 #define _INCLUDE_DRIVERMED_FAMILY
 
+#include "SMESH_DriverMED.hxx"
+
 #include "SMDS_Mesh.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_SubMesh.hxx"
@@ -50,7 +52,7 @@ typedef std::map<int,SMESHDS_SubMesh*> SMESHDS_SubMeshPtrMap;
 typedef std::list<SMESHDS_GroupBase*> SMESHDS_GroupBasePtrList;
 typedef std::set<const SMDS_MeshElement*> ElementsSet;
 
-class DriverMED_Family
+class MESHDRIVERMED_EXPORT DriverMED_Family
 {
  public:
 

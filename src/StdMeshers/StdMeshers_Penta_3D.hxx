@@ -27,6 +27,8 @@
 #ifndef StdMeshers_Penta_3D_HeaderFile
 #define StdMeshers_Penta_3D_HeaderFile
 
+#include "SMESH_StdMeshers.hxx"
+
 #include <map>
 
 ////////////////////////////////////////////////////////////////////////
@@ -42,12 +44,12 @@
 #include <TColStd_MapOfInteger.hxx>
 
 #include "SMESH_Block.hxx"
-
+#include "SMESH_ComputeError.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 typedef std::map< double, std::vector<const SMDS_MeshNode*> > StdMeshers_IJNodeMap;
 
-class StdMeshers_SMESHBlock {
+class STDMESHERS_EXPORT StdMeshers_SMESHBlock {
  
 public:
   //
@@ -87,6 +89,8 @@ public:
 
   int  ErrorStatus() const;
 
+  SMESH_ComputeErrorPtr GetError() const;
+
 
 protected:
   TopoDS_Shell                       myShell;
@@ -105,7 +109,7 @@ protected:
 ////////////////////////////////////////////////////////////////////////
 #include "SMDS_MeshNode.hxx"
 
-class StdMeshers_TNode {
+class STDMESHERS_EXPORT StdMeshers_TNode {
 
 public:
   
@@ -163,7 +167,7 @@ private:
 #include "SMESH_Mesh.hxx"
 #include <TopoDS_Shape.hxx>
 //
-class StdMeshers_Penta_3D {
+class STDMESHERS_EXPORT StdMeshers_Penta_3D {
 //
   public: // methods
     StdMeshers_Penta_3D();
@@ -173,6 +177,12 @@ class StdMeshers_Penta_3D {
     bool Compute(SMESH_Mesh& , const TopoDS_Shape& );
     
     int ErrorStatus() const {
+      if (myErrorStatus->IsOK())
+        return 0;
+      return myErrorStatus->myName;
+    }
+
+    SMESH_ComputeErrorPtr GetComputeError() const {
       return myErrorStatus;
     }
    
@@ -244,7 +254,7 @@ class StdMeshers_Penta_3D {
     TopoDS_Shape              myShape;
     StdMeshers_SMESHBlock     myBlock;
     void *                    myMesh;
-    int                       myErrorStatus;
+    SMESH_ComputeErrorPtr     myErrorStatus;
     //
     vector <StdMeshers_TNode> myTNodes;
     int                       myISize;
@@ -256,7 +266,7 @@ class StdMeshers_Penta_3D {
     vector<gp_XYZ>            myShapeXYZ; // point on each sub-shape
 
     bool myCreateQuadratic;
-    SMESH_MesherHelper* myTool; // toll for working with quadratic elements
+    SMESH_MesherHelper* myTool; // tool building quadratic elements
 };
 
 #endif

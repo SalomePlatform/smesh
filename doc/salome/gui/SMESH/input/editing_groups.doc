@@ -1,0 +1,27 @@
+/*!
+
+\page editing_groups_page Editing groups
+
+\n <em>To edit an existing group of elements:</em>
+<ol>
+<li>Select your group in the Object Browser and in the \b Mesh menu click
+the <b>Edit Group</b> item or <em>"Edit Group"</em> button in the toolbar.</li>
+
+\image html image74.gif
+<center><em>"Edit Group" button</em></center>
+
+The following dialog box will appear:
+
+\image html editgroup.png
+
+In this dialog box you can modify the name of your group and add or
+remove the elements forming it. For more information see 
+\ref creating_groups_page "Creating Groups" page.
+<li>Click the \b OK or \b Apply button to confirm modification of the
+group.</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of an 
+\ref tui_edit_group "Edit Group" operation.  
+
+*/

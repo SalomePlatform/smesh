@@ -27,11 +27,13 @@
 #ifndef _SMDS_MeshIDFactory_HeaderFile
 #define _SMDS_MeshIDFactory_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshObject.hxx"
 #include <set>
 
 
-class SMDS_MeshIDFactory:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_MeshIDFactory:public SMDS_MeshObject
 {
   public:
 	virtual int GetFreeID();

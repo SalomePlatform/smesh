@@ -21,25 +21,27 @@
 
 #include <set>
 
+#include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
-#include <gp_Ax3.hxx>
-#include <gp_Cylinder.hxx>
-#include <gp_Dir.hxx>
-#include <gp_Pnt.hxx>
-#include <gp_Pln.hxx>
-#include <gp_Vec.hxx>
-#include <gp_XYZ.hxx>
-#include <Geom_Plane.hxx>
 #include <Geom_CylindricalSurface.hxx>
+#include <Geom_Plane.hxx>
+#include <Geom_Surface.hxx>
 #include <Precision.hxx>
-#include <TColgp_Array1OfXYZ.hxx>
+#include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfAsciiString.hxx>
-#include <TColStd_MapIteratorOfMapOfInteger.hxx>
+#include <TColgp_Array1OfXYZ.hxx>
 #include <TopAbs.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
+#include <gp_Ax3.hxx>
+#include <gp_Cylinder.hxx>
+#include <gp_Dir.hxx>
+#include <gp_Pln.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Vec.hxx>
+#include <gp_XYZ.hxx>
 
 #include "SMDS_Mesh.hxx"
 #include "SMDS_Iterator.hxx"
@@ -350,36 +352,49 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   if ( nbNodes < 3 )
     return 0;
 
-  // Compute lengths of the sides
-
-  vector< double > aLen (nbNodes);
-
-  for ( int i = 0; i < nbNodes - 1; i++ )
-    aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
-  aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
-
   // Compute aspect ratio
 
-  if ( nbNodes == 3 )
-  {
+  if ( nbNodes == 3 ) {
+    // Compute lengths of the sides
+    vector< double > aLen (nbNodes);
+    for ( int i = 0; i < nbNodes - 1; i++ )
+      aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
+    aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
     // Q = alfa * h * p / S, where
     //
     // alfa = sqrt( 3 ) / 6
     // h - length of the longest edge
     // p - half perimeter
     // S - triangle surface
-
     const double alfa = sqrt( 3. ) / 6.;
     double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
     double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
     double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
     if ( anArea <= Precision::Confusion() )
       return 0.;
-
     return alfa * maxLen * half_perimeter / anArea;
   }
-  else
-  {
+  else if ( nbNodes == 6 ) { // quadratic triangles
+    // Compute lengths of the sides
+    vector< double > aLen (3);
+    aLen[0] = getDistance( P(1), P(3) );
+    aLen[1] = getDistance( P(3), P(5) );
+    aLen[2] = getDistance( P(5), P(1) );
+    // Q = alfa * h * p / S, where
+    //
+    // alfa = sqrt( 3 ) / 6
+    // h - length of the longest edge
+    // p - half perimeter
+    // S - triangle surface
+    const double alfa = sqrt( 3. ) / 6.;
+    double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
+    double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
+    double anArea = getArea( P(1), P(3), P(5) );
+    if ( anArea <= Precision::Confusion() )
+      return 0.;
+    return alfa * maxLen * half_perimeter / anArea;
+  }
+  else if( nbNodes == 4 ) { // quadrangle
     // return aspect ratio of the worst triange which can be built
     // taking three nodes of the quadrangle
     TSequenceOfXYZ triaPnts(3);
@@ -396,6 +411,27 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     ar = Max ( ar, GetValue( triaPnts ));
     // triangle on nodes 3 2 4
     triaPnts(1) = P(3);
+    ar = Max ( ar, GetValue( triaPnts ));
+
+    return ar;
+  }
+  else { // nbNodes==8 - quadratic quadrangle
+    // return aspect ratio of the worst triange which can be built
+    // taking three nodes of the quadrangle
+    TSequenceOfXYZ triaPnts(3);
+    // triangle on nodes 1 3 2
+    triaPnts(1) = P(1);
+    triaPnts(2) = P(5);
+    triaPnts(3) = P(3);
+    double ar = GetValue( triaPnts );
+    // triangle on nodes 1 3 4
+    triaPnts(3) = P(7);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 1 2 4
+    triaPnts(2) = P(3);
+    ar = Max ( ar, GetValue( triaPnts ));
+    // triangle on nodes 3 2 4
+    triaPnts(1) = P(5);
     ar = Max ( ar, GetValue( triaPnts ));
 
     return ar;
@@ -486,7 +522,17 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 {
   double aQuality = 0.0;
   if(myCurrElement->IsPoly()) return aQuality;
+
   int nbNodes = P.size();
+
+  if(myCurrElement->IsQuadratic()) {
+    if(nbNodes==10) nbNodes=4; // quadratic tetrahedron
+    else if(nbNodes==13) nbNodes=5; // quadratic pyramid
+    else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
+    else if(nbNodes==20) nbNodes=8; // quadratic hexahedron
+    else return aQuality;
+  }
+
   switch(nbNodes){
   case 4:{
     double aLen[6] = {
@@ -520,7 +566,8 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
     //double aVolume = getVolume(aLen);
     double aHeight = getMaxHeight(aLen);
     static double aCoeff = sqrt(2.0)/12.0;
-    aQuality = aCoeff*aHeight*aSumArea/aVolume;
+    if ( aVolume > DBL_MIN )
+      aQuality = aCoeff*aHeight*aSumArea/aVolume;
     break;
   }
   case 5:{
@@ -746,7 +793,7 @@ double Warping::GetValue( const TSequenceOfXYZ& P )
   if ( P.size() != 4 )
     return 0;
 
-  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4;
+  gp_XYZ G = ( P( 1 ) + P( 2 ) + P( 3 ) + P( 4 ) ) / 4.;
 
   double A1 = ComputeA( P( 1 ), P( 2 ), P( 3 ), G );
   double A2 = ComputeA( P( 2 ), P( 3 ), P( 4 ), G );
@@ -777,7 +824,7 @@ double Warping::ComputeA( const gp_XYZ& thePnt1,
   N.Normalize();
 
   double H = ( thePnt2 - theG ).Dot( N );
-  return asin( fabs( H / L ) ) * 180 / PI;
+  return asin( fabs( H / L ) ) * 180. / PI;
 }
 
 double Warping::GetBadRate( double Value, int /*nbNodes*/ ) const
@@ -801,13 +848,13 @@ SMDSAbs_ElementType Warping::GetType() const
 double Taper::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
-    return 0;
+    return 0.;
 
   // Compute taper
-  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2;
-  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2;
-  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2;
-  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2;
+  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2.;
+  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2.;
+  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2.;
+  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
   if ( JA <= Precision::Confusion() )
@@ -841,42 +888,46 @@ SMDSAbs_ElementType Taper::GetType() const
 */
 static inline double skewAngle( const gp_XYZ& p1, const gp_XYZ& p2, const gp_XYZ& p3 )
 {
-  gp_XYZ p12 = ( p2 + p1 ) / 2;
-  gp_XYZ p23 = ( p3 + p2 ) / 2;
-  gp_XYZ p31 = ( p3 + p1 ) / 2;
+  gp_XYZ p12 = ( p2 + p1 ) / 2.;
+  gp_XYZ p23 = ( p3 + p2 ) / 2.;
+  gp_XYZ p31 = ( p3 + p1 ) / 2.;
 
   gp_Vec v1( p31 - p2 ), v2( p12 - p23 );
 
-  return v1.Magnitude() < gp::Resolution() || v2.Magnitude() < gp::Resolution() ? 0 : v1.Angle( v2 );
+  return v1.Magnitude() < gp::Resolution() || v2.Magnitude() < gp::Resolution() ? 0. : v1.Angle( v2 );
 }
 
 double Skew::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 3 && P.size() != 4 )
-    return 0;
+    return 0.;
 
   // Compute skew
-  static double PI2 = PI / 2;
+  static double PI2 = PI / 2.;
   if ( P.size() == 3 )
   {
     double A0 = fabs( PI2 - skewAngle( P( 3 ), P( 1 ), P( 2 ) ) );
     double A1 = fabs( PI2 - skewAngle( P( 1 ), P( 2 ), P( 3 ) ) );
     double A2 = fabs( PI2 - skewAngle( P( 2 ), P( 3 ), P( 1 ) ) );
 
-    return Max( A0, Max( A1, A2 ) ) * 180 / PI;
+    return Max( A0, Max( A1, A2 ) ) * 180. / PI;
   }
   else
   {
-    gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2;
-    gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2;
-    gp_XYZ p34 = ( P( 3 ) + P( 4 ) ) / 2;
-    gp_XYZ p41 = ( P( 4 ) + P( 1 ) ) / 2;
+    gp_XYZ p12 = ( P( 1 ) + P( 2 ) ) / 2.;
+    gp_XYZ p23 = ( P( 2 ) + P( 3 ) ) / 2.;
+    gp_XYZ p34 = ( P( 3 ) + P( 4 ) ) / 2.;
+    gp_XYZ p41 = ( P( 4 ) + P( 1 ) ) / 2.;
 
     gp_Vec v1( p34 - p12 ), v2( p23 - p41 );
     double A = v1.Magnitude() <= gp::Resolution() || v2.Magnitude() <= gp::Resolution()
-      ? 0 : fabs( PI2 - v1.Angle( v2 ) );
+      ? 0. : fabs( PI2 - v1.Angle( v2 ) );
 
-    return A * 180 / PI;
+    //BUG SWP12743
+    if ( A < Precision::Angular() )
+      return 0.;
+
+    return A * 180. / PI;
   }
 }
 
@@ -2482,6 +2533,7 @@ ElementsOnSurface::ElementsOnSurface()
   myType = SMDSAbs_All;
   mySurf.Nullify();
   myToler = Precision::Confusion();
+  myUseBoundaries = false;
 }
 
 ElementsOnSurface::~ElementsOnSurface()
@@ -2494,7 +2546,6 @@ void ElementsOnSurface::SetMesh( const SMDS_Mesh* theMesh )
   if ( myMesh == theMesh )
     return;
   myMesh = theMesh;
-  myIds.Clear();
   process();
 }
 
@@ -2507,25 +2558,41 @@ SMDSAbs_ElementType ElementsOnSurface::GetType() const
 { return myType; }
 
 void ElementsOnSurface::SetTolerance( const double theToler )
-{ myToler = theToler; }
+{
+  if ( myToler != theToler )
+    myIds.Clear();
+  myToler = theToler;
+}
 
 double ElementsOnSurface::GetTolerance() const
+{ return myToler; }
+
+void ElementsOnSurface::SetUseBoundaries( bool theUse )
 {
-  return myToler;
+  if ( myUseBoundaries != theUse ) {
+    myUseBoundaries = theUse;
+    SetSurface( mySurf, myType );
+  }
 }
 
 void ElementsOnSurface::SetSurface( const TopoDS_Shape& theShape,
                                     const SMDSAbs_ElementType theType )
 {
+  myIds.Clear();
   myType = theType;
   mySurf.Nullify();
   if ( theShape.IsNull() || theShape.ShapeType() != TopAbs_FACE )
-  {
-    mySurf.Nullify();
     return;
-  }
-  TopoDS_Face aFace = TopoDS::Face( theShape );
-  mySurf = BRep_Tool::Surface( aFace );
+  mySurf = TopoDS::Face( theShape );
+  BRepAdaptor_Surface SA( mySurf, myUseBoundaries );
+  Standard_Real
+    u1 = SA.FirstUParameter(),
+    u2 = SA.LastUParameter(),
+    v1 = SA.FirstVParameter(),
+    v2 = SA.LastVParameter();
+  Handle(Geom_Surface) surf = BRep_Tool::Surface( mySurf );
+  myProjector.Init( surf, u1,u2, v1,v2 );
+  process();
 }
 
 void ElementsOnSurface::process()
@@ -2539,6 +2606,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Face || myType == SMDSAbs_All )
   {
+    myIds.ReSize( myMesh->NbFaces() );
     SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2546,6 +2614,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Edge || myType == SMDSAbs_All )
   {
+    myIds.ReSize( myMesh->NbEdges() );
     SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2553,6 +2622,7 @@ void ElementsOnSurface::process()
 
   if ( myType == SMDSAbs_Node )
   {
+    myIds.ReSize( myMesh->NbNodes() );
     SMDS_NodeIteratorPtr anIter = myMesh->nodesIterator();
     for(; anIter->more(); )
       process( anIter->next() );
@@ -2576,32 +2646,34 @@ void ElementsOnSurface::process( const SMDS_MeshElement* theElemPtr )
     myIds.Add( theElemPtr->GetID() );
 }
 
-bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode ) const
+bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
 {
   if ( mySurf.IsNull() )
     return false;
 
   gp_Pnt aPnt( theNode->X(), theNode->Y(), theNode->Z() );
-  double aToler2 = myToler * myToler;
-  if ( mySurf->IsKind(STANDARD_TYPE(Geom_Plane)))
-  {
-    gp_Pln aPln = Handle(Geom_Plane)::DownCast(mySurf)->Pln();
-    if ( aPln.SquareDistance( aPnt ) > aToler2 )
-      return false;
-  }
-  else if ( mySurf->IsKind(STANDARD_TYPE(Geom_CylindricalSurface)))
-  {
-    gp_Cylinder aCyl = Handle(Geom_CylindricalSurface)::DownCast(mySurf)->Cylinder();
-    double aRad = aCyl.Radius();
-    gp_Ax3 anAxis = aCyl.Position();
-    gp_XYZ aLoc = aCyl.Location().XYZ();
-    double aXDist = anAxis.XDirection().XYZ() * ( aPnt.XYZ() - aLoc );
-    double aYDist = anAxis.YDirection().XYZ() * ( aPnt.XYZ() - aLoc );
-    if ( fabs(aXDist*aXDist + aYDist*aYDist - aRad*aRad) > aToler2 )
-      return false;
-  }
-  else
-    return false;
+  //  double aToler2 = myToler * myToler;
+//   if ( mySurf->IsKind(STANDARD_TYPE(Geom_Plane)))
+//   {
+//     gp_Pln aPln = Handle(Geom_Plane)::DownCast(mySurf)->Pln();
+//     if ( aPln.SquareDistance( aPnt ) > aToler2 )
+//       return false;
+//   }
+//   else if ( mySurf->IsKind(STANDARD_TYPE(Geom_CylindricalSurface)))
+//   {
+//     gp_Cylinder aCyl = Handle(Geom_CylindricalSurface)::DownCast(mySurf)->Cylinder();
+//     double aRad = aCyl.Radius();
+//     gp_Ax3 anAxis = aCyl.Position();
+//     gp_XYZ aLoc = aCyl.Location().XYZ();
+//     double aXDist = anAxis.XDirection().XYZ() * ( aPnt.XYZ() - aLoc );
+//     double aYDist = anAxis.YDirection().XYZ() * ( aPnt.XYZ() - aLoc );
+//     if ( fabs(aXDist*aXDist + aYDist*aYDist - aRad*aRad) > aToler2 )
+//       return false;
+//   }
+//   else
+//     return false;
+  myProjector.Perform( aPnt );
+  bool isOn = ( myProjector.IsDone() && myProjector.LowerDistance() <= myToler );
 
-  return true;
+  return isOn;
 }

@@ -29,6 +29,8 @@
 #ifndef SMESHGUI_HeaderFile
 #define SMESHGUI_HeaderFile
 
+#include "SMESH_SMESHGUI.hxx"
+
 // SALOME Includes
 #include <SalomeApp_Module.h>
 #include <SALOME_InteractiveObject.hxx>
@@ -55,7 +57,7 @@ class SMESHGUI_FilterLibraryDlg;
 // class    : SMESHGUI
 // purpose  :
 //=================================================================================
-class SMESHGUI : public SalomeApp_Module
+class SMESHGUI_EXPORT SMESHGUI : public SalomeApp_Module
 {
   Q_OBJECT;
 
@@ -107,9 +109,12 @@ public :
   
   virtual void                update( const int );
 
+  static SALOMEDS::Color      getUniqueColor( const QValueList<SALOMEDS::Color>& );
+
 public slots:
   virtual bool                deactivateModule( SUIT_Study* );
   virtual bool                activateModule( SUIT_Study* );
+  virtual void                studyClosed( SUIT_Study* );
 
 private slots:
   void                        OnGUIEvent();

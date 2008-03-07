@@ -42,6 +42,8 @@
 
 #include "LightApp_UpdateFlags.h"
        
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 //================================================================================
 /*!
  * \brief Constructor
@@ -92,6 +94,8 @@ void SMESHGUI_ConvToQuadOp::startOperation()
     myDlg = new SMESHGUI_ConvToQuadDlg( );
   }
   connect( myDlg, SIGNAL( onClicked( int ) ), SLOT( ConnectRadioButtons( int ) ) );
+
+  myHelpFileName = "convert_to_from_quadratic_mesh_page.html";
 
   SMESHGUI_SelectionOp::startOperation();
 

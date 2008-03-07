@@ -27,12 +27,16 @@
 
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
-#include <SMESHGUI.h>
-#include <SMESHGUI_SpinBox.h>
-#include <SMESHGUI_HypothesesUtils.h>
-#include <SMESHGUI_Utils.h>
+#include "SMESHGUI.h"
+#include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_HypothesesUtils.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESH_TypeFilter.hxx"
+#include "SMESH_NumberFilter.hxx"
+#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
+#include "StdMeshersGUI_LayerDistributionParamWdg.h"
 
-#include <SUIT_ResourceMgr.h>
+#include "SUIT_ResourceMgr.h"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
@@ -51,29 +55,318 @@ const double VALUE_MAX = 1.0e+15, // COORD_MAX
              VALUE_SMALL_2 = VALUE_SMALL * VALUE_SMALL,
              VALUE_SMALL_3 = VALUE_SMALL_2 * VALUE_SMALL;
 
+//================================================================================
+/*!
+ * \brief Constructor
+  * \param type - hypothesis type
+ */
+//================================================================================
+
 StdMeshersGUI_StdHypothesisCreator::StdMeshersGUI_StdHypothesisCreator( const QString& type )
 : SMESHGUI_GenericHypothesisCreator( type )
 {
 }
 
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
 StdMeshersGUI_StdHypothesisCreator::~StdMeshersGUI_StdHypothesisCreator()
 {
 }
+
+//================================================================================
+/*!
+ * \brief Return widget for i-th hypothesis parameter (got from myParamWidgets)
+  * \param i - index of hypothesis parameter
+  * \retval QWidget* - found widget
+ */
+//================================================================================
+
+QWidget* StdMeshersGUI_StdHypothesisCreator::getWidgetForParam( int i ) const
+{
+  QWidget* w = 0;
+  if ( isCreation() ) ++i; // skip widget of 'name' parameter
+
+  if ( i < myCustomWidgets.count() ) {
+    QPtrList<QWidget>::const_iterator anIt  = myCustomWidgets.begin();
+    QPtrList<QWidget>::const_iterator aLast = myCustomWidgets.end();
+    for ( int j = 0 ; !w && anIt != aLast; ++anIt )
+      if ( i == j )
+        w = *anIt;
+  }
+  if ( !w ) {
+    // list has no at() const, so we iterate
+    QPtrList<QWidget>::const_iterator anIt  = widgets().begin();
+    QPtrList<QWidget>::const_iterator aLast = widgets().end();
+    for( int j = 0; !w && anIt!=aLast; anIt++, ++j ) {
+      if ( i == j )
+        w = *anIt;
+    }
+  }
+  return w;
+}
+
+//================================================================================
+/*!
+ * \brief Allow modifing myCustomWidgets in const methods
+  * \retval ListOfWidgets* - non-const pointer to myCustomWidgets
+ */
+//================================================================================
+
+StdMeshersGUI_StdHypothesisCreator::ListOfWidgets*
+StdMeshersGUI_StdHypothesisCreator::customWidgets() const
+{
+  return const_cast< ListOfWidgets* >( & myCustomWidgets );
+}
+
+//================================================================================
+/*!
+ * \brief Builds dlg layout
+  * \retval QFrame* - the built widget
+ */
+//================================================================================
 
 QFrame* StdMeshersGUI_StdHypothesisCreator::buildFrame()
 {
   return buildStdFrame();
 }
 
-bool StdMeshersGUI_StdHypothesisCreator::checkParams() const
-{
-  return true;
-}
+//================================================================================
+/*!
+ * \brief Initialise parameter values in controls
+ */
+//================================================================================
 
 void StdMeshersGUI_StdHypothesisCreator::retrieveParams() const
 {
-  //here this method must be empty because buildStdParam sets values itself
+  // buildStdFrame() sets values itself calling stdParams()
+
+  if ( hypType().startsWith("ProjectionSource" ))
+  {
+    // we use this method to connect depending custom widgets
+    StdMeshersGUI_ObjectReferenceParamWdg* widgetToActivate = 0;
+    ListOfWidgets::const_iterator anIt = myCustomWidgets.begin();
+    for ( ; anIt != myCustomWidgets.end(); anIt++)
+    {
+      if ( *anIt && (*anIt)->inherits("StdMeshersGUI_ObjectReferenceParamWdg"))
+      {
+        StdMeshersGUI_ObjectReferenceParamWdg * w1 =
+          ( StdMeshersGUI_ObjectReferenceParamWdg* ) ( *anIt );
+        ListOfWidgets::const_iterator anIt2 = anIt;
+        for ( ++anIt2; anIt2 != myCustomWidgets.end(); anIt2++)
+          if ( *anIt2 && (*anIt2)->inherits("StdMeshersGUI_ObjectReferenceParamWdg"))
+          {
+            StdMeshersGUI_ObjectReferenceParamWdg * w2 =
+              ( StdMeshersGUI_ObjectReferenceParamWdg* ) ( *anIt2 );
+            w1->AvoidSimultaneousSelection( w2 );
+          }
+        if ( !widgetToActivate )
+          widgetToActivate = w1;
+      }
+    }
+    if ( widgetToActivate )
+      widgetToActivate->activateSelection();
+  }
 }
+
+namespace {
+
+  //================================================================================
+  /*!
+   * \brief Widget: slider with left and right labels
+   */
+  //================================================================================
+
+  class TDoubleSliderWith2Lables: public QHBox
+  {
+  public:
+    TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
+                              const double   initValue, const double   bottom,
+                              const double   top      , const double   precision,
+                              QWidget *      parent=0 , const char *   name=0 )
+      :QHBox(parent,name), _bottom(bottom), _precision(precision)
+    {
+      if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
+      _slider = new QSlider( Horizontal, this );
+      _slider->setRange( 0, toInt( top ));
+      _slider->setValue( toInt( initValue ));
+      if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
+    }
+    double value() const { return _bottom + _slider->value() * _precision; }
+    QSlider * getSlider() const { return _slider; }
+    int toInt( double val ) const { return (int) ceil(( val - _bottom ) / _precision ); }
+  private:
+    double _bottom, _precision;
+    QSlider * _slider;
+  };
+
+  //================================================================================
+  /*!
+   * \brief Retrieve GEOM_Object held by widget
+   */
+  //================================================================================
+
+  inline GEOM::GEOM_Object_var geomFromWdg(const QWidget* wdg)
+  {
+    const StdMeshersGUI_ObjectReferenceParamWdg * objRefWdg =
+      dynamic_cast<const StdMeshersGUI_ObjectReferenceParamWdg*>( wdg );
+    if ( objRefWdg )
+      return objRefWdg->GetObject< GEOM::GEOM_Object >();
+
+    return GEOM::GEOM_Object::_nil();
+  }
+  //================================================================================
+  /*!
+   * \brief Retrieve SMESH_Mesh held by widget
+   */
+  //================================================================================
+
+  inline SMESH::SMESH_Mesh_var meshFromWdg(const QWidget* wdg)
+  {
+    const StdMeshersGUI_ObjectReferenceParamWdg * objRefWdg =
+      dynamic_cast<const StdMeshersGUI_ObjectReferenceParamWdg*>( wdg );
+    if ( objRefWdg )
+      return objRefWdg->GetObject< SMESH::SMESH_Mesh >();
+
+    return SMESH::SMESH_Mesh::_nil();
+  }
+  //================================================================================
+  /*!
+   * \brief creates a filter for selection of shapes of given dimension
+    * \param dim - dimension
+    * \param subShapeType - required type of subshapes, number of which must be \a nbSubShapes
+    * \param nbSubShapes - number of subshapes of given type
+    * \param closed - required closeness flag of a shape
+    * \retval SUIT_SelectionFilter* - created filter
+   */
+  //================================================================================
+
+  SUIT_SelectionFilter* filterForShapeOfDim(const int        dim,
+                                            TopAbs_ShapeEnum subShapeType = TopAbs_SHAPE,
+                                            const int        nbSubShapes = 0,
+                                            bool             closed = false)
+  {
+    TColStd_MapOfInteger shapeTypes;
+    switch ( dim ) {
+    case 0: shapeTypes.Add( TopAbs_VERTEX ); break;
+    case 1:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_EDGE;
+      shapeTypes.Add( TopAbs_EDGE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
+    case 2:
+      if ( subShapeType == TopAbs_SHAPE ) subShapeType = TopAbs_FACE;
+      shapeTypes.Add( TopAbs_FACE );
+      shapeTypes.Add( TopAbs_COMPOUND ); // for a group
+      break;
+    case 3:
+      shapeTypes.Add( TopAbs_SHELL );
+      shapeTypes.Add( TopAbs_SOLID );
+      shapeTypes.Add( TopAbs_COMPSOLID );
+      shapeTypes.Add( TopAbs_COMPOUND );
+      break;
+    }
+    return new SMESH_NumberFilter("GEOM", subShapeType, nbSubShapes,
+                                  shapeTypes, GEOM::GEOM_Object::_nil(), closed);
+  }
+
+  //================================================================================
+  /*!
+   * \brief Create a widget for object selection
+    * \param object - initial object
+    * \param filter - selection filter
+    * \retval QWidget* - created widget
+   */
+  //================================================================================
+
+  QWidget* newObjRefParamWdg( SUIT_SelectionFilter* filter,
+                              CORBA::Object_var     object)
+  {
+    StdMeshersGUI_ObjectReferenceParamWdg* w =
+      new StdMeshersGUI_ObjectReferenceParamWdg( filter, 0);
+    w->SetObject( object.in() );
+    return w;
+  }
+
+  //================================================================================
+  /*!
+   * \brief calls deactivateSelection() for StdMeshersGUI_ObjectReferenceParamWdg
+    * \param widgetList - list of widgets
+   */
+  //================================================================================
+
+  void deactivateObjRefParamWdg( QPtrList<QWidget>* widgetList )
+  {
+    StdMeshersGUI_ObjectReferenceParamWdg* w = 0;
+    QPtrList<QWidget>::iterator anIt  = widgetList->begin();
+    QPtrList<QWidget>::iterator aLast = widgetList->end();
+    for ( ; anIt != aLast; anIt++ ) {
+      if ( (*anIt) && (*anIt)->inherits( "StdMeshersGUI_ObjectReferenceParamWdg" ))
+      {
+        w = (StdMeshersGUI_ObjectReferenceParamWdg* )( *anIt );
+        w->deactivateSelection();
+      }
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Check parameter values before accept()
+  * \retval bool - true if OK
+ */
+//================================================================================
+
+bool StdMeshersGUI_StdHypothesisCreator::checkParams() const
+{
+  // check if object reference parameter is set, as it has no default value
+  bool ok = true;
+  if ( hypType().startsWith("ProjectionSource" ))
+  {
+    StdMeshersGUI_ObjectReferenceParamWdg* w =
+      widget< StdMeshersGUI_ObjectReferenceParamWdg >( 0 );
+    ok = ( w->IsObjectSelected() );
+    if ( !ok ) w->SetObject( CORBA::Object::_nil() );
+    int nbAssocVert = ( hypType() == "ProjectionSource1D" ? 1 : 2 );
+    for ( int i = 0; ok && i < nbAssocVert; i += 2)
+    {
+      QString srcV, tgtV;
+      StdMeshersGUI_ObjectReferenceParamWdg* w1 =
+        widget< StdMeshersGUI_ObjectReferenceParamWdg >( i+2 );
+      StdMeshersGUI_ObjectReferenceParamWdg* w2 =
+        widget< StdMeshersGUI_ObjectReferenceParamWdg >( i+3 );
+      srcV = w1->GetValue();
+      tgtV = w2->GetValue();
+      ok = (( srcV.isEmpty()  && tgtV.isEmpty() ) ||
+            ( !srcV.isEmpty() && !tgtV.isEmpty() && srcV != tgtV ));
+      if ( !ok ) {
+        w1->SetObject( CORBA::Object::_nil() );
+        w2->SetObject( CORBA::Object::_nil() );
+      }
+    }
+
+    // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
+    if ( ok )
+      deactivateObjRefParamWdg( customWidgets() );
+  }
+  else if ( hypType() == "LayerDistribution" )
+  {
+    StdMeshersGUI_LayerDistributionParamWdg* w = 
+      widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
+    ok = ( w && w->IsOk() );
+  }
+  return ok;
+}
+
+//================================================================================
+/*!
+ * \brief Store params from GUI controls to a hypothesis
+  * \retval QString - text representation of parameters
+ */
+//================================================================================
 
 QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 {
@@ -93,6 +386,14 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
     {
       StdMeshers::StdMeshers_LocalLength_var h =
 	StdMeshers::StdMeshers_LocalLength::_narrow( hypothesis() );
+
+      h->SetLength( params[0].myValue.toDouble() );
+      h->SetPrecision( params[1].myValue.toDouble() );
+    }
+    else if( hypType()=="SegmentLengthAroundVertex" )
+    {
+      StdMeshers::StdMeshers_SegmentLengthAroundVertex_var h =
+	StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hypothesis() );
 
       h->SetLength( params[0].myValue.toDouble() );
     }
@@ -140,9 +441,74 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
 
       h->SetFineness( params[0].myValue.toDouble() );
     }
+    else if( hypType()=="NumberOfLayers" )
+    {
+      StdMeshers::StdMeshers_NumberOfLayers_var h =
+	StdMeshers::StdMeshers_NumberOfLayers::_narrow( hypothesis() );
+
+      h->SetNumberOfLayers( params[0].myValue.toInt() );
+    }
+    else if( hypType()=="LayerDistribution" )
+    {
+      StdMeshers::StdMeshers_LayerDistribution_var h =
+	StdMeshers::StdMeshers_LayerDistribution::_narrow( hypothesis() );
+      StdMeshersGUI_LayerDistributionParamWdg* w = 
+        widget< StdMeshersGUI_LayerDistributionParamWdg >( 0 );
+
+      h->SetLayerDistribution( w->GetHypothesis() );
+    }
+    else if( hypType()=="ProjectionSource1D" )
+    {
+      StdMeshers::StdMeshers_ProjectionSource1D_var h =
+	StdMeshers::StdMeshers_ProjectionSource1D::_narrow( hypothesis() );
+
+      h->SetSourceEdge       ( geomFromWdg ( getWidgetForParam( 0 )));
+      h->SetSourceMesh       ( meshFromWdg ( getWidgetForParam( 1 )));
+      h->SetVertexAssociation( geomFromWdg ( getWidgetForParam( 2 )),
+                               geomFromWdg ( getWidgetForParam( 3 )));
+    }
+    else if( hypType()=="ProjectionSource2D" )
+    {
+      StdMeshers::StdMeshers_ProjectionSource2D_var h =
+	StdMeshers::StdMeshers_ProjectionSource2D::_narrow( hypothesis() );
+
+      h->SetSourceFace       ( geomFromWdg ( getWidgetForParam( 0 )));
+      h->SetSourceMesh       ( meshFromWdg ( getWidgetForParam( 1 )));
+      h->SetVertexAssociation( geomFromWdg ( getWidgetForParam( 2 )), // src1
+                               geomFromWdg ( getWidgetForParam( 4 )), // src2
+                               geomFromWdg ( getWidgetForParam( 3 )), // tgt1
+                               geomFromWdg ( getWidgetForParam( 5 ))); // tgt2
+    }
+    else if( hypType()=="ProjectionSource3D" )
+    {
+      StdMeshers::StdMeshers_ProjectionSource3D_var h =
+	StdMeshers::StdMeshers_ProjectionSource3D::_narrow( hypothesis() );
+
+      h->SetSource3DShape    ( geomFromWdg ( getWidgetForParam( 0 )));
+      h->SetSourceMesh       ( meshFromWdg ( getWidgetForParam( 1 )));
+      h->SetVertexAssociation( geomFromWdg ( getWidgetForParam( 2 )), // src1
+                               geomFromWdg ( getWidgetForParam( 4 )), // src2
+                               geomFromWdg ( getWidgetForParam( 3 )), // tgt1
+                               geomFromWdg ( getWidgetForParam( 5 ))); // tgt2
+    }
   }
   return valueStr;
 }
+
+//================================================================================
+/*!
+ * \brief Return parameter values as SMESHGUI_GenericHypothesisCreator::StdParam
+  * \param p - list of parameters
+  * \retval bool - success flag
+  *
+  * Is called from SMESHGUI_GenericHypothesisCreator::buildStdFrame().
+  * Parameters will be shown using "standard" controls:
+  *   Int by QtxIntSpinBox
+  *   Double by SMESHGUI_SpinBox
+  *   String by QLineEdit
+  * getCustomWidget() allows to redefine control for a parameter
+ */
+//================================================================================
 
 bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
 {
@@ -150,12 +516,14 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   SMESHGUI_GenericHypothesisCreator::StdParam item;
 
   p.clear();
+  customWidgets()->clear();
   if( isCreation() )
   {
     HypothesisData* data = SMESH::GetHypothesisData( hypType() );
     item.myName = tr( "SMESH_NAME" );
-    item.myValue = data ? data->Label : QString();
+    item.myValue = data ? hypName() : QString();
     p.append( item );
+    customWidgets()->append(0);
   }
 
   SMESH::SMESH_Hypothesis_var hyp = initParamsHypothesis();
@@ -164,6 +532,18 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
   {
     StdMeshers::StdMeshers_LocalLength_var h =
       StdMeshers::StdMeshers_LocalLength::_narrow( hyp );
+
+    item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
+    item.myValue = h->GetLength();
+    p.append( item );
+    item.myName = tr("SMESH_LOCAL_LENGTH_PRECISION");
+    item.myValue = h->GetPrecision();
+    p.append( item );
+  }
+  else if( hypType()=="SegmentLengthAroundVertex" )
+  {
+    StdMeshers::StdMeshers_SegmentLengthAroundVertex_var h =
+      StdMeshers::StdMeshers_SegmentLengthAroundVertex::_narrow( hyp );
 
     item.myName = tr("SMESH_LOCAL_LENGTH_PARAM");
     item.myValue = h->GetLength();
@@ -226,20 +606,117 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       StdMeshers::StdMeshers_AutomaticLength::_narrow( hyp );
 
     item.myName = tr( "SMESH_FINENESS_PARAM" );
-    item.myValue = h->GetFineness();
+    //item.myValue = h->GetFineness();
     p.append( item );
+    customWidgets()->append
+      ( new TDoubleSliderWith2Lables( "0 ", " 1", h->GetFineness(), 0, 1, 0.01, 0 ));
+  }
+  else if( hypType()=="NumberOfLayers" )
+  {
+    StdMeshers::StdMeshers_NumberOfLayers_var h =
+      StdMeshers::StdMeshers_NumberOfLayers::_narrow( hyp );
+
+    item.myName = tr( "SMESH_NUMBER_OF_LAYERS" );
+    item.myValue = (int) h->GetNumberOfLayers();
+    p.append( item );
+  }
+  else if( hypType()=="LayerDistribution" )
+  {
+    StdMeshers::StdMeshers_LayerDistribution_var h =
+      StdMeshers::StdMeshers_LayerDistribution::_narrow( hyp );
+
+    item.myName = tr( "SMESH_LAYERS_DISTRIBUTION" ); p.append( item );
+    customWidgets()->append
+      ( new StdMeshersGUI_LayerDistributionParamWdg( h->GetLayerDistribution(), hypName(), dlg()));
+  }
+  else if( hypType()=="ProjectionSource1D" )
+  {
+    StdMeshers::StdMeshers_ProjectionSource1D_var h =
+      StdMeshers::StdMeshers_ProjectionSource1D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_SOURCE_EDGE" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 1 ),
+                                               h->GetSourceEdge()));
+    item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+                                               h->GetSourceMesh()));
+    item.myName = tr( "SMESH_SOURCE_VERTEX" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetSourceVertex()));
+    item.myName = tr( "SMESH_TARGET_VERTEX" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetTargetVertex()));
+  }
+  else if( hypType()=="ProjectionSource2D" )
+  {
+    StdMeshers::StdMeshers_ProjectionSource2D_var h =
+      StdMeshers::StdMeshers_ProjectionSource2D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_SOURCE_FACE" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 2 ),
+                                               h->GetSourceFace()));
+    item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+                                               h->GetSourceMesh()));
+    item.myName = tr( "SMESH_SOURCE_VERTEX1" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetSourceVertex( 1 )));
+    item.myName = tr( "SMESH_TARGET_VERTEX1" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetTargetVertex( 1 )));
+    item.myName = tr( "SMESH_SOURCE_VERTEX2" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetSourceVertex( 2 )));
+    item.myName = tr( "SMESH_TARGET_VERTEX2" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetTargetVertex( 2 )));
+  }
+  else if( hypType()=="ProjectionSource3D" )
+  {
+    StdMeshers::StdMeshers_ProjectionSource3D_var h =
+      StdMeshers::StdMeshers_ProjectionSource3D::_narrow( hyp );
+
+    item.myName = tr( "SMESH_SOURCE_3DSHAPE" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 3, TopAbs_FACE, 6, true ),
+                                               h->GetSource3DShape()));
+    item.myName = tr( "SMESH_SOURCE_MESH" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( new SMESH_TypeFilter( MESH ),
+                                               h->GetSourceMesh()));
+    item.myName = tr( "SMESH_SOURCE_VERTEX1" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetSourceVertex( 1 )));
+    item.myName = tr( "SMESH_TARGET_VERTEX1" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetTargetVertex( 1 )));
+    item.myName = tr( "SMESH_SOURCE_VERTEX2" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetSourceVertex( 2 )));
+    item.myName = tr( "SMESH_TARGET_VERTEX2" ); p.append( item );
+    customWidgets()->append( newObjRefParamWdg( filterForShapeOfDim( 0 ),
+                                               h->GetTargetVertex( 2 )));
   }
   else
     res = false;
   return res;
 }
 
-void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int ) const
+//================================================================================
+/*!
+ * \brief tune "standard" control
+  * \param w - control widget
+  * \param int - parameter index
+ */
+//================================================================================
+
+void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int) const
 {
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    if (sb->name() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+      sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
+    else if (sb->name() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {
@@ -267,10 +744,24 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget( QWidget* w, const int 
   }
 }
 
+//================================================================================
+/*!
+ * \brief Return dlg title
+  * \retval QString - title string
+ */
+//================================================================================
+
 QString StdMeshersGUI_StdHypothesisCreator::caption() const
 {
   return tr( QString( "SMESH_%1_TITLE" ).arg( hypTypeName( hypType() ) ) );
 }
+
+//================================================================================
+/*!
+ * \brief return pixmap for dlg icon
+  * \retval QPixmap - 
+ */
+//================================================================================
 
 QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
 {
@@ -278,10 +769,26 @@ QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
   return SMESHGUI::resourceMgr()->loadPixmap( "SMESH", hypIconName );
 }
 
+//================================================================================
+/*!
+ * \brief Return hypothesis type name to show in dlg
+  * \retval QString - 
+ */
+//================================================================================
+
 QString StdMeshersGUI_StdHypothesisCreator::type() const
 {
   return tr( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeName( hypType() ) ) );
 }
+
+//================================================================================
+/*!
+ * \brief String to insert in "SMESH_%1_HYPOTHESIS" to get hypothesis type name
+ * from message resouce file
+  * \param t - hypothesis type
+  * \retval QString - result string
+ */
+//================================================================================
 
 QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) const
 {
@@ -296,6 +803,12 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
     types.insert( "Deflection1D", "DEFLECTION1D" );
     types.insert( "Arithmetic1D", "ARITHMETIC_1D" );
     types.insert( "AutomaticLength", "AUTOMATIC_LENGTH" );
+    types.insert( "ProjectionSource1D", "PROJECTION_SOURCE_1D" );
+    types.insert( "ProjectionSource2D", "PROJECTION_SOURCE_2D" );
+    types.insert( "ProjectionSource3D", "PROJECTION_SOURCE_3D" );
+    types.insert( "NumberOfLayers", "NUMBER_OF_LAYERS" );
+    types.insert( "LayerDistribution", "LAYER_DISTRIBUTION" );
+    types.insert( "SegmentLengthAroundVertex", "SEGMENT_LENGTH_AROUND_VERTEX" );
   }
 
   QString res;
@@ -305,54 +818,35 @@ QString StdMeshersGUI_StdHypothesisCreator::hypTypeName( const QString& t ) cons
   return res;
 }
 
-//================================================================================
-/*!
- * \brief Widget: slider with left and right labels
- */
-//================================================================================
-
-class TDoubleSliderWith2Lables: public QHBox
-{
-public:
-  TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
-                            const double   initValue, const double   bottom,
-                            const double   top      , const double   precision,
-                            QWidget *      parent=0 , const char *   name=0 )
-    :QHBox(parent,name), _bottom(bottom), _precision(precision)
-  {
-    if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
-    _slider = new QSlider( Horizontal, this );
-    _slider->setRange( 0, toInt( top ));
-    _slider->setValue( toInt( initValue ));
-    if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
-  }
-  double value() const { return _bottom + _slider->value() * _precision; }
-  QSlider * getSlider() const { return _slider; }
-  int toInt( double val ) const { return (int) ceil(( val - _bottom ) / _precision ); }
-private:
-  double _bottom, _precision;
-  QSlider * _slider;
-};
 
 //=======================================================================
 //function : getCustomWidget
-//purpose  : 
+//purpose  : is called from buildStdFrame()
 //=======================================================================
 
 QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & param,
-                                                              QWidget*         parent) const
+                                                              QWidget*         parent,
+                                                              const int        index) const
 {
-  if ( hypType()=="AutomaticLength" && param.myValue.type() == QVariant::Double )
-    return new TDoubleSliderWith2Lables( "0 ", " 1", param.myValue.toDouble(),
-                                         0, 1, 0.01, parent );
-
-  return 0;
+  QWidget* w = 0;
+  if ( index < customWidgets()->count() ) {
+    w = customWidgets()->at( index );
+    if ( w )
+      w->reparent( parent, QPoint( 0, 0 ));
+  }
+  return w;
 }
 
-//=======================================================================
-//function : getParamFromCustomWidget
-//purpose  : 
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Set param value taken from a custom widget
+  * \param param - SMESHGUI_GenericHypothesisCreator::StdParam structure
+  * \param widget - widget presenting param
+  * \retval bool - success flag
+ * 
+ * this method is called from getStdParamFromDlg()
+ */
+//================================================================================
 
 bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & param,
                                                                    QWidget*   widget) const
@@ -364,5 +858,37 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
       return true;
     }
   }
+  if ( widget->inherits( "StdMeshersGUI_ObjectReferenceParamWdg" ))
+  {
+    // show only 1st reference value
+    if ( true /*widget == getWidgetForParam( 0 )*/) {
+      const StdMeshersGUI_ObjectReferenceParamWdg * w =
+        static_cast<const StdMeshersGUI_ObjectReferenceParamWdg*>( widget );
+      param.myValue = w->GetValue();
+    }
+    return true;
+  }
+  if ( widget->inherits( "StdMeshersGUI_LayerDistributionParamWdg" ))
+  {
+    const StdMeshersGUI_LayerDistributionParamWdg * w =
+      static_cast<const StdMeshersGUI_LayerDistributionParamWdg*>( widget );
+    param.myValue = w->GetValue();
+    return true;
+  }
   return false;
+}
+
+//================================================================================
+/*!
+ * \brief called when operation cancelled
+ */
+//================================================================================
+
+void StdMeshersGUI_StdHypothesisCreator::onReject()
+{
+  if ( hypType().startsWith("ProjectionSource" ))
+  {
+    // Uninstall filters of StdMeshersGUI_ObjectReferenceParamWdg
+    deactivateObjRefParamWdg( customWidgets() );
+  }
 }

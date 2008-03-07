@@ -28,6 +28,8 @@
 #ifndef _StdMeshers_QuadraticMesh_HXX_
 #define _StdMeshers_QuadraticMesh_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
@@ -39,7 +41,7 @@
  * The 3D mesher generates quadratic volumes only if all boundary faces
  * are quadratic ones, else it fails.
  */
-class StdMeshers_QuadraticMesh:public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_QuadraticMesh:public SMESH_Hypothesis
 {
  public:
   StdMeshers_QuadraticMesh(int hypId, int studyId, SMESH_Gen * gen);

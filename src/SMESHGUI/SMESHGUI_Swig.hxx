@@ -29,12 +29,14 @@
 #ifndef _SMESHGUI_SWIG_HXX_
 #define _SMESHGUI_SWIG_HXX_
 
+#include "SMESH_SMESHGUI.hxx"
+
 // IDL Headers
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SALOMEDS)
 #include CORBA_SERVER_HEADER(SALOMEDS_Attributes)
 
-class SMESH_Swig
+class SMESHGUI_EXPORT SMESH_Swig
 {
 public:
   SMESH_Swig();
@@ -66,7 +68,7 @@ public:
     * \param Mesh_Entry - entry of a mesh
     * \param isComputed - is mesh computed or not
    */
-  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed);
+  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
 
 private:
   SALOMEDS::Study_var        myStudy;

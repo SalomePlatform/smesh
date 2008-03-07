@@ -27,7 +27,6 @@
 //  Module : SMESH
 //  $Header$
 
-using namespace std;
 #include "StdMeshers_LocalLength_i.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Gen.hxx"
@@ -38,6 +37,8 @@ using namespace std;
 
 #include <TCollection_AsciiString.hxx>
 
+using namespace std;
+
 //=============================================================================
 /*!
  *  StdMeshers_LocalLength_i::StdMeshers_LocalLength_i
@@ -47,15 +48,15 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_LocalLength_i::StdMeshers_LocalLength_i( PortableServer::POA_ptr thePOA,
-					  int                     theStudyId,
-					  ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
+                                                    int                     theStudyId,
+                                                    ::SMESH_Gen*            theGenImpl )
+     : SALOME::GenericObj_i( thePOA ),
        SMESH_Hypothesis_i( thePOA )
 {
   MESSAGE( "StdMeshers_LocalLength_i::StdMeshers_LocalLength_i" );
   myBaseImpl = new ::StdMeshers_LocalLength( theGenImpl->GetANewId(),
-				        theStudyId,
-				        theGenImpl );
+                                             theStudyId,
+                                             theGenImpl );
 }
 
 //=============================================================================
@@ -78,7 +79,6 @@ StdMeshers_LocalLength_i::~StdMeshers_LocalLength_i()
  *  Set length
  */
 //=============================================================================
-
 void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
      throw ( SALOME::SALOME_Exception )
 {
@@ -98,12 +98,35 @@ void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
 
 //=============================================================================
 /*!
+ *  StdMeshers_LocalLength_i::SetPrecision
+ *
+ *  Set length
+ */
+//=============================================================================
+void StdMeshers_LocalLength_i::SetPrecision( CORBA::Double thePrecision )
+     throw ( SALOME::SALOME_Exception )
+{
+  MESSAGE( "StdMeshers_LocalLength_i::SetPrecision" );
+  ASSERT( myBaseImpl );
+  try {
+    this->GetImpl()->SetPrecision( thePrecision );
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+				  SALOME::BAD_PARAM );
+  }
+
+  // Update Python script
+  SMESH::TPythonDump() << _this() << ".SetPrecision( " << thePrecision << " )";
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_LocalLength_i::GetLength
  *
  *  Get length
  */
 //=============================================================================
-
 CORBA::Double StdMeshers_LocalLength_i::GetLength()
 {
   MESSAGE( "StdMeshers_LocalLength_i::GetLength" );
@@ -113,12 +136,25 @@ CORBA::Double StdMeshers_LocalLength_i::GetLength()
 
 //=============================================================================
 /*!
+ *  StdMeshers_LocalLength_i::GetPrecision
+ *
+ *  Get precision
+ */
+//=============================================================================
+CORBA::Double StdMeshers_LocalLength_i::GetPrecision()
+{
+  MESSAGE( "StdMeshers_LocalLength_i::GetPrecision" );
+  ASSERT( myBaseImpl );
+  return this->GetImpl()->GetPrecision();
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_LocalLength_i::GetImpl
  *
  *  Get implementation
  */
 //=============================================================================
-
 ::StdMeshers_LocalLength* StdMeshers_LocalLength_i::GetImpl()
 {
   MESSAGE( "StdMeshers_LocalLength_i::GetImpl" );
@@ -138,4 +174,3 @@ CORBA::Boolean StdMeshers_LocalLength_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_1D;
 }
-

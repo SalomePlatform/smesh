@@ -30,12 +30,15 @@
 #ifndef _SMESH_REGULAR_1D_HXX_
 #define _SMESH_REGULAR_1D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_1D_Algo.hxx"
 
-class TopoDS_Edge;
+class Adaptor3d_Curve;
+class TopoDS_Vertex;
+class StdMeshers_SegmentLengthAroundVertex;
 
-class StdMeshers_Regular_1D:
-  public SMESH_1D_Algo
+class STDMESHERS_EXPORT StdMeshers_Regular_1D: public SMESH_1D_Algo
 {
 public:
   StdMeshers_Regular_1D(int hypId, int studyId, SMESH_Gen* gen);
@@ -51,16 +54,47 @@ public:
   virtual const std::list <const SMESHDS_Hypothesis *> &
     GetUsedHypothesis(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, const bool=true);
 
-  ostream & SaveTo(ostream & save);
-  istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_Regular_1D & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_Regular_1D & hyp);
+  /*!
+   * \brief Sets event listener to submeshes if necessary
+    * \param subMesh - submesh where algo is set
+   *
+   * This method is called when a submesh gets HYP_OK algo_state.
+   * After being set, event listener is notified on each event of a submesh.
+   */
+  virtual void SetEventListener(SMESH_subMesh* subMesh);
+
+  /*!
+   * \brief Allow algo to do something after persistent restoration
+   * \param subMesh - restored submesh
+   *
+   * This method is called only if a submesh has HYP_OK algo_state.
+   */
+  void SubmeshRestored(SMESH_subMesh* subMesh);
 
 protected:
 
-  virtual bool computeInternalParameters (const TopoDS_Edge&    theEdge,
-                                          std::list< double > & theParameters,
-                                          const bool            theReverse) const;
+  virtual bool computeInternalParameters (SMESH_Mesh &        theMesh,
+                                          Adaptor3d_Curve &   theC3d,
+                                          double              theLength,
+                                          double              theFirstU,
+                                          double              theLastU,
+                                          std::list<double> & theParameters,
+                                          const bool          theReverse,
+                                          bool                theConsiderPropagation = false);
+
+  virtual void redistributeNearVertices (SMESH_Mesh &          theMesh,
+                                         Adaptor3d_Curve &     theC3d,
+                                         double                theLength,
+                                         std::list< double > & theParameters,
+                                         const TopoDS_Vertex & theVf,
+                                         const TopoDS_Vertex & theVl);
+
+  /*!
+   * \brief Return StdMeshers_SegmentLengthAroundVertex assigned to vertex
+   */
+  static const
+  StdMeshers_SegmentLengthAroundVertex* getVertexHyp(SMESH_Mesh &          theMesh,
+                                                     const TopoDS_Vertex & theV);
 
   enum HypothesisType { LOCAL_LENGTH, NB_SEGMENTS, BEG_END_LENGTH, DEFLECTION, ARITHMETIC_1D, NONE };
 
@@ -69,12 +103,12 @@ protected:
     BEG_LENGTH_IND   = 0,
     END_LENGTH_IND   = 1,
     DEFLECTION_IND   = 0
-    };
+  };
 
   enum IValueIndex {
     NB_SEGMENTS_IND  = 0,
     DISTR_TYPE_IND   = 1,
-    CONV_MODE_IND     = 2
+    CONV_MODE_IND    = 2
   };
 
   enum VValueIndex {

@@ -35,8 +35,9 @@
 #include "SALOMEDSClient_SObject.hxx"
 #include "SALOMEDS_SObject.hxx"
 
-#include <TopTools_MapOfShape.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopExp.hxx>
 
 /*!
  *  Class       : SMESH_NumberFilter
@@ -135,12 +136,13 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
   if (mySubShapeType == TopAbs_SHAPE);
     return true;
 
-  TopExp_Explorer anExp2 (aShape, mySubShapeType);
-  TopTools_MapOfShape aMap;
-  for (; anExp2.More(); anExp2.Next())
-    aMap.Add(anExp2.Current());
+  TopTools_IndexedMapOfShape aMap;
+  TopExp::MapShapes(aShape, mySubShapeType, aMap);
 
-  return myNumber == aMap.Extent();
+  if ( myNumber )
+    return myNumber == aMap.Extent(); // given number
+
+  return aMap.Extent(); // at least one?
 }
 
 //=======================================================================
@@ -176,24 +178,26 @@ GEOM::GEOM_Object_ptr SMESH_NumberFilter::getGeom
     return anObj._retn();
 
   // Get geom object corresponding to the mesh
-  _PTR(ChildIterator) anIter = study->NewChildIterator(aSO);
-  for (; anIter->More(); anIter->Next()) {
-    _PTR(SObject) aSO = anIter->Value();
-    if (!aSO)
-      continue;
-    _PTR(SObject) aRefSO;
-    _PTR(SObject) anObj;
-    if (aSO->ReferencedObject(aRefSO))
-      anObj = aRefSO;
+  if ( myKind == "SMESH" ) {
+    _PTR(ChildIterator) anIter = study->NewChildIterator(aSO);
+    for (; anIter->More(); anIter->Next()) {
+      _PTR(SObject) aSO = anIter->Value();
+      if (!aSO)
+        continue;
+      _PTR(SObject) aRefSO;
+      _PTR(SObject) anObj;
+      if (aSO->ReferencedObject(aRefSO))
+        anObj = aRefSO;
 
-    if (!anObj)
-      anObj = aSO;
+      if (!anObj)
+        anObj = aSO;
 
-    anObject = _CAST(SObject,anObj)->GetObject();
-    GEOM::GEOM_Object_var aMeshShape = GEOM::GEOM_Object::_narrow(anObject);
+      anObject = _CAST(SObject,anObj)->GetObject();
+      GEOM::GEOM_Object_var aMeshShape = GEOM::GEOM_Object::_narrow(anObject);
 
-    if (!aMeshShape->_is_nil())
-      return aMeshShape._retn();
+      if (!aMeshShape->_is_nil())
+        return aMeshShape._retn();
+    }
   }
 
   return GEOM::GEOM_Object::_nil();

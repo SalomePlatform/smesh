@@ -29,12 +29,16 @@
 #ifndef _SMESH_HEXA_3D_HXX_
 #define _SMESH_HEXA_3D_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 #include "StdMeshers_Quadrangle_2D.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
 #include "SMESH_MesherHelper.hxx"
+
+class TopTools_IndexedMapOfShape;
 
 typedef struct point3Dstruct
 {
@@ -59,7 +63,7 @@ typedef struct conv2dstruct
   int jc;
 } Conv2DStruct;
 
-class StdMeshers_Hexa_3D:
+class STDMESHERS_EXPORT StdMeshers_Hexa_3D:
   public SMESH_3D_Algo
 {
 public:
@@ -72,12 +76,11 @@ public:
 
   virtual bool Compute(SMESH_Mesh& aMesh,
 		       const TopoDS_Shape& aShape)
-    throw (SALOME_Exception);
+    /*throw (SALOME_Exception)*/;
 
-  ostream & SaveTo(ostream & save);
-  istream & LoadFrom(istream & load);
-  friend ostream & operator << (ostream & save, StdMeshers_Hexa_3D & hyp);
-  friend istream & operator >> (istream & load, StdMeshers_Hexa_3D & hyp);
+  static TopoDS_Vertex OppositeVertex(const TopoDS_Vertex& aVertex,
+                                      const TopTools_IndexedMapOfShape& aQuads0Vertices,
+                                      FaceQuadStruct* aQuads[6]);
 
 protected:
   TopoDS_Edge

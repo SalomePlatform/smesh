@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_ROTATION_H
 #define DIALOGBOX_ROTATION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -61,7 +63,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_RotationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_RotationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_RotationDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -77,7 +79,9 @@ private:
     void closeEvent (QCloseEvent*);
     void enterEvent (QEvent*);                          /* mouse enter the QWidget */
     void hideEvent (QHideEvent*);                       /* ESC key */
+    void keyPressEvent(QKeyEvent*);
     bool IsAxisOk();
+    void setNewMeshName();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -125,7 +129,10 @@ private:
 
     QLabel* TextLabelAngle;
     SMESHGUI_SpinBox* SpinBox_Angle;
-    QCheckBox* CheckBoxCopy;
+    //QCheckBox* CheckBoxCopy;
+    QButtonGroup* ActionGroup;
+    QCheckBox* MakeGroupsCheck;
+    QLineEdit* LineEditNewMesh;
 
     QString myHelpFileName;
 
@@ -143,6 +150,7 @@ private slots:
     void onTextChange (const QString&);
     void onSelectMesh (bool toSelectMesh);
     void onVectorChanged();
+    void onActionClicked(int button);
 
 protected:
     QGridLayout* SMESHGUI_RotationDlgLayout;

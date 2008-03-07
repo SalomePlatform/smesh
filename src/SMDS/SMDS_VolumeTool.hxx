@@ -30,24 +30,15 @@
 #ifndef SMDS_VolumeTool_HeaderFile
 #define SMDS_VolumeTool_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMDS_PolyhedralVolumeOfNodes;
+class SMDS_MeshVolume;
 
 #include <vector>
 #include <set>
-
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
 
 // =========================================================================
 //
@@ -57,7 +48,7 @@ class SMDS_PolyhedralVolumeOfNodes;
 //
 // =========================================================================
 
-class SMDS_WNT_EXPORT SMDS_VolumeTool
+class SMDS_EXPORT SMDS_VolumeTool
 {
  public:
 
@@ -71,6 +62,12 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
   bool Set (const SMDS_MeshElement* theVolume);
   // Set volume.
   // Return false if theVolume is not of type SMDSAbs_Volume
+
+  const SMDS_MeshVolume* Get() const;
+  // return element
+
+  int ID() const;
+  // return element ID
 
   // -----------------------
   // general info
@@ -114,6 +111,9 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
 
   int GetNodeIndex(const SMDS_MeshNode* theNode) const;
   // Return an index of theNode
+
+  int GetAllExistingEdges(std::vector<const SMDS_MeshElement*> & edges) const;
+  // Fill vector with boundary edges existing in the mesh
 
   // -------------
   // info on faces
@@ -171,6 +171,9 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
   // Return index of a face formed by theFaceNodesIndices
   // Return -1 if a face not found
 
+  int GetAllExistingFaces(std::vector<const SMDS_MeshElement*> & faces);
+  // Fill vector with boundary faces existing in the mesh
+
   // ------------------------
   // static methods for faces
   // ------------------------
@@ -193,7 +196,10 @@ class SMDS_WNT_EXPORT SMDS_VolumeTool
                          int        faceIndex );
   // Return number of nodes in the array of face nodes
 
- private:
+  static int NbCornerNodes(VolumeType type);
+  // Useful to know nb of corner nodes of a quadratic volume
+
+private:
 
   bool setFace( int faceIndex );
 

@@ -37,29 +37,27 @@
 
 #include "SMESHDS_Mesh.hxx"
 
+#include <BRep_Tool.hxx>
+#include <Geom_CylindricalSurface.hxx>
+#include <Geom_Plane.hxx>
+#include <LDOMParser.hxx>
+#include <LDOMString.hxx>
 #include <LDOM_Document.hxx>
 #include <LDOM_Element.hxx>
 #include <LDOM_Node.hxx>
-#include <LDOMString.hxx>
-#include <LDOMParser.hxx>
 #include <LDOM_XmlWriter.hxx>
-#include <TCollection_HAsciiString.hxx>
+#include <Precision.hxx>
 #include <TColStd_ListIteratorOfListOfInteger.hxx>
+#include <TColStd_ListIteratorOfListOfReal.hxx>
 #include <TColStd_ListOfInteger.hxx>
 #include <TColStd_ListOfReal.hxx>
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_SequenceOfHAsciiString.hxx>
-#include <TColStd_ListIteratorOfListOfReal.hxx>
-#include <Precision.hxx>
-#include <BRep_Tool.hxx>
-#include <TopoDS_Shape.hxx>
+#include <TCollection_HAsciiString.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
-#include <Geom_Plane.hxx>
-#include <Geom_CylindricalSurface.hxx>
-#include <TopExp_Explorer.hxx>
-#include <OSD_Path.hxx>
-#include <OSD_File.hxx>
+#include <TopoDS_Shape.hxx>
 
 using namespace SMESH;
 using namespace SMESH::Controls;
@@ -386,7 +384,7 @@ static TopoDS_Shape getShapeByName( const char* theName )
         GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( aList[ 0 ]->GetObject() );
         if ( !aGeomObj->_is_nil() )
         {
-          GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
@@ -396,48 +394,49 @@ static TopoDS_Shape getShapeByName( const char* theName )
   return TopoDS_Shape();
 }
 
-static TopoDS_Shape getShapeByID( const char* theID )
+static TopoDS_Shape getShapeByID (const char* theID)
 {
-  if ( theID != 0 && theID!="" )
-  {
+  if (theID != 0 && theID != "") {
     SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-    if ( aStudy != 0 )
-    {
-      CORBA::Object_var obj = aStudy->ConvertIORToObject(theID);
-      GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow( obj );
+    if (aStudy != 0) {
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeIOR")) {
+        SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
+        CORBA::String_var aVal = anIOR->Value();
+        CORBA::Object_var obj = aStudy->ConvertIORToObject(aVal);
+        GEOM::GEOM_Object_var aGeomObj = GEOM::GEOM_Object::_narrow(obj);
       
-      if ( !aGeomObj->_is_nil() )
-        {
-	  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+        if (!aGeomObj->_is_nil()) {
+          GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
           TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, aGeomObj );
           return aLocShape;
         }
+      }
     }
   }
   return TopoDS_Shape();
 }
 
-static char* getShapeNameByID ( const char* theID )
+static char* getShapeNameByID (const char* theID)
 {
   char* aName = "";
 
-  if ( theID != 0 && theID!="" )
-    {
-      SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
-      if ( aStudy != 0 )
-	{
-	  SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
-	  SALOMEDS::GenericAttribute_var anAttr;
-	  if ( !aSObj->_is_nil() && aSObj->FindAttribute( anAttr, "AttributeName") )
-	    {
-	      SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow( anAttr );
-	      aName = aNameAttr->Value();        
-	    }
-	}
+  if (theID != 0 && theID != "") {
+    SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+    SALOMEDS::Study_ptr aStudy = aSMESHGen->GetCurrentStudy();
+    if (aStudy != 0) {
+      //SALOMEDS::SObject_var aSObj = aStudy->FindObjectIOR( theID );
+      SALOMEDS::SObject_var aSObj = aStudy->FindObjectID(theID);
+      SALOMEDS::GenericAttribute_var anAttr;
+      if (!aSObj->_is_nil() && aSObj->FindAttribute(anAttr, "AttributeName")) {
+        SALOMEDS::AttributeName_var aNameAttr = SALOMEDS::AttributeName::_narrow(anAttr);
+        aName = aNameAttr->Value();
+      }
     }
-  
+  }
+
   return aName;
 }
 
@@ -452,8 +451,9 @@ static char* getShapeNameByID ( const char* theID )
 Functor_i::Functor_i():
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId =
-    SMESH_Gen_i::GetPOA()->activate_object( this );
+  //Base class Salome_GenericObject do it inmplicitly by overriding PortableServer::POA_ptr _default_POA() method  
+  //PortableServer::ObjectId_var anObjectId =
+  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 Functor_i::~Functor_i()
@@ -792,7 +792,7 @@ void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myBelongToGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
@@ -871,7 +871,7 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
 
   if ( aLocShape.ShapeType() == TopAbs_FACE )
@@ -885,7 +885,6 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
   }
 
   myElementsOnSurfacePtr->SetSurface( TopoDS_Shape(), (SMDSAbs_ElementType)theType );
-  TPythonDump()<<this<<".SetSurface("<<theGeom<<",'"<<theType<<"')";
 }
 
 void BelongToSurface_i::SetShapeName( const char* theName, ElementType theType )
@@ -933,6 +932,18 @@ CORBA::Double BelongToSurface_i::GetTolerance()
   return myElementsOnSurfacePtr->GetTolerance();
 }
 
+void BelongToSurface_i::SetUseBoundaries( CORBA::Boolean theUseBndRestrictions )
+{
+  myElementsOnSurfacePtr->SetUseBoundaries( theUseBndRestrictions );
+  TPythonDump()<<this<<".SetUseBoundaries( " << theUseBndRestrictions << " )";
+}
+
+CORBA::Boolean BelongToSurface_i::GetUseBoundaries()
+{
+  return myElementsOnSurfacePtr->GetUseBoundaries();
+}
+
+
 /*
   Class       : BelongToPlane_i
   Description : Verify whether mesh element lie in pointed Geom planar object
@@ -976,6 +987,33 @@ FunctorType BelongToCylinder_i::GetFunctorType()
 }
 
 /*
+  Class       : BelongToGenSurface_i
+  Description : Verify whether mesh element lie in pointed Geom planar object
+*/
+
+BelongToGenSurface_i::BelongToGenSurface_i()
+: BelongToSurface_i( STANDARD_TYPE( Geom_CylindricalSurface ) )
+{
+}
+
+void BelongToGenSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType theType )
+{
+  if ( theGeom->_is_nil() )
+    return;
+  TopoDS_Shape aLocShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theGeom );
+  if ( !aLocShape.IsNull() && aLocShape.ShapeType() != TopAbs_FACE )
+    aLocShape.Nullify();
+  
+  BelongToSurface_i::myElementsOnSurfacePtr->SetSurface( aLocShape, (SMDSAbs_ElementType)theType );
+  TPythonDump()<<this<<".SetGenSurface("<<theGeom<<","<<theType<<")";
+}
+
+FunctorType BelongToGenSurface_i::GetFunctorType()
+{
+  return FT_BelongToGenSurface;
+}
+
+/*
   Class       : LyingOnGeom_i
   Description : Predicate for selection on geometrical support
 */
@@ -998,7 +1036,7 @@ void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
   if ( theGeom->_is_nil() )
     return;
   SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_var aGEOMGen = SMESH_Gen_i::GetGeomEngine();
+  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
   TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
   myLyingOnGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
@@ -1417,8 +1455,9 @@ FunctorType LogicalOR_i::GetFunctorType()
 FilterManager_i::FilterManager_i()
 : SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )
 {
-  PortableServer::ObjectId_var anObjectId =
-    SMESH_Gen_i::GetPOA()->activate_object( this );
+  //Base class Salome_GenericObject do it inmplicitly by overriding PortableServer::POA_ptr _default_POA() method
+  //PortableServer::ObjectId_var anObjectId =
+  //  SMESH_Gen_i::GetPOA()->activate_object( this );
 }
 
 
@@ -1553,6 +1592,14 @@ BelongToCylinder_ptr FilterManager_i::CreateBelongToCylinder()
   SMESH::BelongToCylinder_i* aServant = new SMESH::BelongToCylinder_i();
   SMESH::BelongToCylinder_var anObj = aServant->_this();
   TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToCylinder()";
+  return anObj._retn();
+}
+
+BelongToGenSurface_ptr FilterManager_i::CreateBelongToGenSurface()
+{
+  SMESH::BelongToGenSurface_i* aServant = new SMESH::BelongToGenSurface_i();
+  SMESH::BelongToGenSurface_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateBelongToGenSurface()";
   return anObj._retn();
 }
 
@@ -1784,7 +1831,8 @@ GetElementsId( Predicate_i* thePredicate,
                const SMDS_Mesh* theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate)
+    Controls::Filter::GetElementsId(theMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 void
@@ -1793,8 +1841,9 @@ GetElementsId( Predicate_i* thePredicate,
                SMESH_Mesh_ptr theMesh,
                Controls::Filter::TIdSequence& theSequence )
 {
-  if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
-    Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
+  if (thePredicate) 
+    if(const SMDS_Mesh* aMesh = MeshPtr2SMDSMesh(theMesh))
+      Controls::Filter::GetElementsId(aMesh,thePredicate->GetPredicate(),theSequence);
 }
 
 SMESH::long_array*
@@ -1802,7 +1851,7 @@ Filter_i::
 GetElementsId( SMESH_Mesh_ptr theMesh )
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
-  if(!CORBA::is_nil(theMesh)){
+  if(!CORBA::is_nil(theMesh) && myPredicate){
     Controls::Filter::TIdSequence aSequence;
     GetElementsId(myPredicate,theMesh,aSequence);
     long i = 0, iEnd = aSequence.size();
@@ -1854,6 +1903,7 @@ static inline bool getCriteria( Predicate_i*                thePred,
     }
   case FT_BelongToPlane:
   case FT_BelongToCylinder:
+  case FT_BelongToGenSurface:
     {
       BelongToSurface_i* aPred = dynamic_cast<BelongToSurface_i*>( thePred );
 
@@ -2006,9 +2056,18 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     ElementType aTypeOfElem   = theCriteria[ i ].TypeOfElement;
     long        aPrecision    = theCriteria[ i ].Precision;
 
-    TPythonDump()<<"aCriteria.append(SMESH.Filter.Criterion("<<
-      aCriterion<<","<<aCompare<<","<<aThreshold<<",'"<<aThresholdStr<<"','"<<aThresholdID<<"',"<<
-      aUnary<<","<<aBinary<<","<<aTolerance<<","<<aTypeOfElem<<","<<aPrecision<<"))";
+    {
+      TPythonDump pd;
+      pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
+         << "," << aThreshold << ",'" << aThresholdStr;
+      if (strlen(aThresholdID) > 0)
+        pd << "',salome.ObjectToID(" << aThresholdID
+           << ")," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+      else
+        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+           << "," << aTypeOfElem << "," << aPrecision << ")";
+    }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
     SMESH::NumericalFunctor_ptr aFunctor = SMESH::NumericalFunctor::_nil();
@@ -2072,12 +2131,17 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_BelongToPlane:
       case SMESH::FT_BelongToCylinder:
+      case SMESH::FT_BelongToGenSurface:
         {
           SMESH::BelongToSurface_ptr tmpPred;
-          if ( aCriterion == SMESH::FT_BelongToPlane )
-            tmpPred = aFilterMgr->CreateBelongToPlane();
-          else
-            tmpPred = aFilterMgr->CreateBelongToCylinder();
+          switch ( aCriterion ) {
+          case SMESH::FT_BelongToPlane:
+            tmpPred = aFilterMgr->CreateBelongToPlane(); break;
+          case SMESH::FT_BelongToCylinder:
+            tmpPred = aFilterMgr->CreateBelongToCylinder(); break;
+          default:
+            tmpPred = aFilterMgr->CreateBelongToGenSurface();
+          }
           tmpPred->SetShape( aThresholdID, aThresholdStr, aTypeOfElem );
           tmpPred->SetTolerance( aTolerance );
           aPredicate = tmpPred;
@@ -2148,6 +2212,7 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
     // logical op
     aPredicates.push_back( aPredicate );
     aBinaries.push_back( aBinary );
+    TPythonDump()<<"aCriteria.append(aCriterion)";
 
   } // end of for
   TPythonDump()<<this<<".SetCriteria(aCriteria)";
@@ -2308,6 +2373,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_BelongToGeom    : return "Belong to Geom";
     case FT_BelongToPlane   : return "Belong to Plane";
     case FT_BelongToCylinder: return "Belong to Cylinder";
+    case FT_BelongToGenSurface: return "Belong to Generic Surface";
     case FT_LyingOnGeom     : return "Lying on Geom";
     case FT_BadOrientedVolume: return "Bad Oriented Volume";
     case FT_RangeOfIds      : return "Range of IDs";
@@ -2344,6 +2410,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Belong to Geom"               ) ) return FT_BelongToGeom;
   else if ( theStr.equals( "Belong to Plane"              ) ) return FT_BelongToPlane;
   else if ( theStr.equals( "Belong to Cylinder"           ) ) return FT_BelongToCylinder;
+  else if ( theStr.equals( "Belong to Generic Surface"    ) ) return FT_BelongToGenSurface;
   else if ( theStr.equals( "Lying on Geom"                ) ) return FT_LyingOnGeom;
   else if ( theStr.equals( "Free borders"                 ) ) return FT_FreeBorders;
   else if ( theStr.equals( "Free edges"                   ) ) return FT_FreeEdges;

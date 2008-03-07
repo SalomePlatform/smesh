@@ -70,6 +70,7 @@
 #define SPACING 5
 #define MARGIN  10
 
+
 enum { EDGE = 0, FACE, VOLUME };
 
 /*!
@@ -114,7 +115,10 @@ QFrame* SMESHGUI_ShapeByMeshDlg::createMainFrame (QWidget* theParent)
   QLabel* anIdLabel = new QLabel( aMainGrp, "element id label");
   anIdLabel->setText( tr("ELEMENT_ID") );
   myElementId = new QLineEdit( aMainGrp, "element id");
-  myElementId->setValidator( new SMESHGUI_IdValidator( theParent, "id validator", 1 ));
+  if (!myIsMultipleAllowed)
+    myElementId->setValidator( new SMESHGUI_IdValidator( theParent, "id validator", 1 ));
+  else
+    myElementId->setValidator( new SMESHGUI_IdValidator( theParent, "id validator" ));
 
   // shape name
   QLabel* aNameLabel = new QLabel( aMainGrp, "geom name label");
@@ -142,18 +146,16 @@ SMESHGUI_ShapeByMeshDlg::~SMESHGUI_ShapeByMeshDlg()
 //================================================================================
 /*!
  * \brief Constructor
-  * \param theToCreate - if this parameter is true then operation is used for creation,
-  * for editing otherwise
- *
- * Initialize operation
 */
 //================================================================================
-SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp()
+SMESHGUI_ShapeByMeshOp::SMESHGUI_ShapeByMeshOp(bool isMultipleAllowed):
+  myIsMultipleAllowed(isMultipleAllowed)
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
 
   myDlg = new SMESHGUI_ShapeByMeshDlg;
+  myDlg->setMultipleAllowed(myIsMultipleAllowed);
 
   connect(myDlg->myElemTypeGroup, SIGNAL(clicked(int)), SLOT(onTypeChanged(int)));
   connect(myDlg->myElementId, SIGNAL(textChanged(const QString&)), SLOT(onElemIdChanged(const QString&)));
@@ -282,9 +284,85 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 {
   SMESHGUI_SelectionOp::commitOperation();
   try {
-    int elemID = myDlg->myElementId->text().toInt();
-    myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-      ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1());
+    QStringList aListId = QStringList::split( " ", myDlg->myElementId->text(), false);
+    if (aListId.count() == 1)
+      {
+	int elemID = (aListId.first()).toInt();
+	myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+	  ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1());
+      }
+    else
+      {
+	GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+	_PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+	
+	if (geomGen->_is_nil() || !aStudy)
+	  return;
+	
+	GEOM::GEOM_IShapesOperations_var aShapesOp =
+	  geomGen->GetIShapesOperations(aStudy->StudyId());
+	if (aShapesOp->_is_nil() )
+	  return;
+	
+	TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
+	
+	std::map<double, GEOM::GEOM_Object_var> aGeomObjectsMap;
+	GEOM::GEOM_Object_var aGeomObject;
+
+	GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
+	
+	for ( int i = 0; i < aListId.count(); i++ )
+	  {
+	    aGeomObject =
+	      SMESHGUI::GetSMESHGen()->FindGeometryByMeshElement(myMesh.in(), aListId[i].toInt());
+
+	    if (aGeomObject->_is_nil()) continue;
+	    
+	    double anId = aShapesOp->GetSubShapeIndex(aMeshShape, aGeomObject);
+	    if (aShapesOp->IsDone() && aGeomObjectsMap.find(anId) == aGeomObjectsMap.end())
+	      {
+		aGeomObjectsMap[anId] = aGeomObject;
+
+		TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)aGeomObject->GetShapeType();
+		if (i == 0)
+		  aGroupType = aSubShapeType;
+		else if (aSubShapeType != aGroupType)
+		  aGroupType = TopAbs_SHAPE;
+	      }
+	  }
+	
+	int aNumberOfGO = aGeomObjectsMap.size();
+	if (aNumberOfGO == 1)
+	  myGeomObj = (*aGeomObjectsMap.begin()).second;
+	else if (aNumberOfGO > 1)
+	  {
+	    GEOM::GEOM_IGroupOperations_var aGroupOp =
+	      geomGen->GetIGroupOperations(aStudy->StudyId());
+	    if(aGroupOp->_is_nil())
+	      return;
+	    
+	    GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
+	    aGeomObjects->length( aNumberOfGO );
+
+	    int i = 0;
+	    std::map<double, GEOM::GEOM_Object_var>::iterator anIter;
+	    for (anIter = aGeomObjectsMap.begin(); anIter!=aGeomObjectsMap.end(); anIter++)
+	      aGeomObjects[i++] = (*anIter).second;
+	  
+	    //create geometry group
+	    myGeomObj = aGroupOp->CreateGroup(aMeshShape, aGroupType);
+	    aGroupOp->UnionList(myGeomObj, aGeomObjects);
+
+	    if (!aGroupOp->IsDone())
+	      return;
+	  }
+	
+	// publish the GEOM object in study
+	QString aNewGeomGroupName ( myDlg->myGeomName->text().latin1() );
+	  
+	SALOMEDS::SObject_var aNewGroupSO =
+	  geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, aNewGeomGroupName, aMeshShape);
+      }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
@@ -306,7 +384,7 @@ void SMESHGUI_ShapeByMeshOp::onSelectionDone()
   try {
     SALOME_ListIO aList;
     selectionMgr()->selectedObjects(aList, SVTK_Viewer::Type());
-    if (aList.Extent() != 1)
+    if (!myIsMultipleAllowed && aList.Extent() != 1)
       return;
 
     SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(aList.First());
@@ -316,7 +394,9 @@ void SMESHGUI_ShapeByMeshOp::onSelectionDone()
     QString aString;
     int nbElems = SMESH::GetNameOfSelectedElements(selector(),//myViewWindow->GetSelector(),
                                                    aList.First(), aString);
-    if ( nbElems == 1 ) {
+    if (nbElems > 0) {
+      if (!myIsMultipleAllowed && nbElems != 1 )
+	return;
       setElementID( aString );
       myDlg->setButtonEnabled( true, QtxDialog::OK );
     }
@@ -392,12 +472,16 @@ void SMESHGUI_ShapeByMeshOp::onElemIdChanged(const QString& theNewText)
               newIndices.Add( e->GetID() );
         }
 
-        if ( !newIndices.IsEmpty() && newIndices.Extent() == 1 )
-          if ( SVTK_Selector* s = selector() ) {
-            s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
-            viewWindow()->highlight( actor->getIO(), true, true );
-            myDlg->setButtonEnabled( true, QtxDialog::OK );
-          }
+	if ( !newIndices.IsEmpty() )
+	  {
+	    if (!myIsMultipleAllowed && newIndices.Extent() != 1)
+	      return;
+	    if ( SVTK_Selector* s = selector() ) {
+	      s->AddOrRemoveIndex( actor->getIO(), newIndices, false );
+	      viewWindow()->highlight( actor->getIO(), true, true );
+	      myDlg->setButtonEnabled( true, QtxDialog::OK );
+	    }
+	  }
       }
 }
 

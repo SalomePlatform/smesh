@@ -20,8 +20,11 @@
 #ifndef MED_Utilities_HeaderFile
 #define MED_Utilities_HeaderFile
 
+#include "SMESH_DriverUNV.hxx"
+
 #include <iostream>	
 #include <sstream>	
+#include <fstream>
 #include <string>
 #include <stdexcept>
 #include <cassert>
@@ -29,7 +32,7 @@
 namespace UNV{
   using namespace std;
 
-  class PrefixPrinter{
+  class MESHDRIVERUNV_EXPORT PrefixPrinter{
     static int myCounter;
   public:
     PrefixPrinter();
@@ -86,6 +89,24 @@ namespace UNV{
       number.replace(position, 1, "e"); 
     }
     return atof (number.c_str());
+  }
+  
+  /**
+   * @returns \p false when file is incorrect, \p true otherwise.
+   * Check file with name \p theFileName for correct terminate
+   * string, i.e. the next to the last line is equal to "    -1",
+   */
+  inline bool check_file(const std::string theFileName)
+  {
+    std::ifstream in_stream(theFileName.c_str());
+    if (!in_stream)
+      return false;
+    std::string olds, news;
+    while (!in_stream.eof()){
+      olds = news;
+      std::getline(in_stream, news, '\n');
+    }
+    return (olds == "    -1");
   }
 
 };

@@ -147,7 +147,7 @@ void SMESHGUI_FilterLibraryDlg::construct (const QValueList<int>& theTypes,
 
   aDlgLay->setStretchFactor(myMainFrame, 1);
 
-  myHelpFileName = "selection_filter_library.htm";
+  myHelpFileName = "selection_filter_library_page.html";
   
   Init(myTypes, myMode);
 }
@@ -478,9 +478,15 @@ void SMESHGUI_FilterLibraryDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -1150,4 +1156,21 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
       myLibrary->Replace(myCurrFilterName.latin1(), myName->text().latin1(), aFilter);
     }
   }
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterLibraryDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
 }

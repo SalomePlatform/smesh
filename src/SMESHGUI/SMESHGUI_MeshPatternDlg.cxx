@@ -132,7 +132,7 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI*   theModule,
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  myHelpFileName = "pattern_mapping.htm";
+  myHelpFileName = "pattern_mapping_page.html";
 
   Init();
 }
@@ -383,6 +383,13 @@ bool SMESHGUI_MeshPatternDlg::isValid (const bool theMess)
     return false;
   }
 
+  if ( myName->text()=="" ) {
+    if (theMess)
+      QMessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
+                               tr("SMESHGUI_INVALID_PARAMETERS"), QMessageBox::Ok);
+    return false;
+  }
+
   return true;
 }
 
@@ -491,9 +498,15 @@ void SMESHGUI_MeshPatternDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -1360,4 +1373,21 @@ bool SMESHGUI_MeshPatternDlg::getIds (QValueList<int>& ids) const
 int SMESHGUI_MeshPatternDlg::getNode (bool second) const
 {
   return second ? myNode2->value() - 1 : myNode1->value() - 1;
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshPatternDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      onHelp();
+    }
 }

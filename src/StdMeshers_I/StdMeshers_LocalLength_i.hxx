@@ -30,6 +30,8 @@
 #ifndef _SMESH_LOCALLENGTH_I_HXX_
 #define _SMESH_LOCALLENGTH_I_HXX_
 
+#include "SMESH_StdMeshers_I.hxx"
+
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
@@ -41,7 +43,7 @@ class SMESH_Gen;
 // ======================================================
 // Local Length hypothesis
 // ======================================================
-class StdMeshers_LocalLength_i:
+class STDMESHERS_I_EXPORT StdMeshers_LocalLength_i:
   public virtual POA_StdMeshers::StdMeshers_LocalLength,
   public virtual SMESH_Hypothesis_i
 {
@@ -56,8 +58,14 @@ public:
   // Set length
   void SetLength( CORBA::Double theLength )
     throw ( SALOME::SALOME_Exception );
+  // Set precision
+  void SetPrecision( CORBA::Double thePrecision )
+    throw ( SALOME::SALOME_Exception );
+
   // Get length
   CORBA::Double GetLength();
+  // Get precision
+  CORBA::Double GetPrecision();
 
   // Get implementation
   ::StdMeshers_LocalLength* GetImpl();

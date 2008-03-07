@@ -391,12 +391,14 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   // Create tab widget
   
   myTabWg = new QTabWidget( mainFrame() );
+  myTabs[ Dim0D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim1D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim2D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim3D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabWg->addTab( myTabs[ Dim3D ], tr( "DIM_3D" ) );
   myTabWg->addTab( myTabs[ Dim2D ], tr( "DIM_2D" ) );
   myTabWg->addTab( myTabs[ Dim1D ], tr( "DIM_1D" ) );
+  myTabWg->addTab( myTabs[ Dim0D ], tr( "DIM_0D" ) );
 
   // Hypotheses Sets
   myHypoSetPopup = new QPopupMenu();
@@ -454,7 +456,7 @@ SMESHGUI_MeshDlg::~SMESHGUI_MeshDlg()
 //================================================================================
 SMESHGUI_MeshTab* SMESHGUI_MeshDlg::tab( const int theId ) const
 {
-  return ( theId >= Dim1D && theId <= Dim3D ? myTabs[ theId ] : 0 );
+  return ( theId >= Dim0D && theId <= Dim3D ? myTabs[ theId ] : 0 );
 }
 
 //================================================================================
@@ -465,6 +467,7 @@ SMESHGUI_MeshTab* SMESHGUI_MeshDlg::tab( const int theId ) const
 void SMESHGUI_MeshDlg::reset()
 {
   clearSelection();
+  myTabs[ Dim0D ]->reset();
   myTabs[ Dim1D ]->reset();
   myTabs[ Dim2D ]->reset();
   myTabs[ Dim3D ]->reset();
@@ -489,8 +492,8 @@ void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 
 void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
 {
-  const int DIM = maxDim - 1;
-  for ( int dim = Dim1D; dim <= Dim3D; ++dim ) {
+  const int DIM = maxDim;
+  for ( int dim = Dim0D; dim <= Dim3D; ++dim ) {
     bool enable = ( dim <= DIM );
     if ( !enable )
       myTabs[ dim ]->reset();
@@ -564,6 +567,27 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
       connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
     }
   }
+}
+
+
+//================================================================================
+/*!
+ * \brief Disable tab
+ * \param int - tab ID
+ */
+//================================================================================
+void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
+  myTabWg->setTabEnabled( myTabs[ theTabId ], false );
+}
+
+//================================================================================
+/*!
+ * \brief Enable tabs
+ * \param int - tab ID
+ */
+//================================================================================
+void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
+  myTabWg->setTabEnabled( myTabs[ theTabId ], true );
 }
 
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)

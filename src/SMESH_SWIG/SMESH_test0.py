@@ -26,7 +26,6 @@ import salome
 import geompy
 from geompy import geom
 
-import SMESH
 
 myBuilder = salome.myStudy.NewBuilder()
 

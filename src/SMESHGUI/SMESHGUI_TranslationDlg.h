@@ -29,6 +29,8 @@
 #ifndef DIALOGBOX_TRANSLATION_H
 #define DIALOGBOX_TRANSLATION_H
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include "LightApp_SelectionMgr.h"
 
 #include "SMESH_LogicalFilter.hxx"
@@ -59,7 +61,7 @@ class SVTK_Selector;
 // class    : SMESHGUI_TranslationDlg
 // purpose  :
 //=================================================================================
-class SMESHGUI_TranslationDlg : public QDialog
+class SMESHGUI_EXPORT SMESHGUI_TranslationDlg : public QDialog
 { 
     Q_OBJECT
 
@@ -75,7 +77,9 @@ private:
     void closeEvent (QCloseEvent*);
     void enterEvent (QEvent*);                             /* mouse enter the QWidget */
     void hideEvent (QHideEvent*);                          /* ESC key */
+    void keyPressEvent(QKeyEvent*);
     int GetConstructorId();
+    void setNewMeshName();
 
     SMESHGUI*                     mySMESHGUI;              /* Current SMESHGUI object */
     LightApp_SelectionMgr*        mySelectionMgr;          /* User shape selection */
@@ -120,7 +124,10 @@ private:
     SMESHGUI_SpinBox* SpinBox2_2;
     QLabel* TextLabel2_3;
     SMESHGUI_SpinBox* SpinBox2_3;
-    QCheckBox* CheckBoxCopy;
+    //QCheckBox* CheckBoxCopy;
+    QButtonGroup* ActionGroup;
+    QCheckBox* MakeGroupsCheck;
+    QLineEdit* LineEditNewMesh;
 
     QString myHelpFileName;
    
@@ -137,6 +144,7 @@ private:
     void ActivateThisDialog() ;
     void onTextChange(const QString&);
     void onSelectMesh(bool toSelectMesh);
+    void onActionClicked(int button);
     
 protected:
     QGridLayout* SMESHGUI_TranslationDlgLayout;

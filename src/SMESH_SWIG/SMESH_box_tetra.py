@@ -24,14 +24,8 @@
 
 import salome
 import geompy
+import smesh
 
-import StdMeshers
-import NETGENPlugin
-
-smesh = salome.lcc.FindOrLoadComponent("FactoryServer", "SMESH")
-
-smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId);
 
 # ---- define a boxe
 
@@ -51,90 +45,48 @@ print "number of Edges  in box : ", len(subEdgeList)
 
 ### ---------------------------- SMESH --------------------------------------
 
-# ---- create Hypothesis
+# ---- init a Mesh with the boxe
 
-print "-------------------------- create Hypothesis"
+mesh = smesh.Mesh(box, "MeshBox")
+
+# ---- set Hypothesis and Algorithm
 
 print "-------------------------- NumberOfSegments"
-
 numberOfSegments = 10
 
-hypNbSeg = smesh.CreateHypothesis("NumberOfSegments", "libStdMeshersEngine.so")
-hypNbSeg.SetNumberOfSegments(numberOfSegments)
-
+regular1D = mesh.Segment()
+hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
 print hypNbSeg.GetName()
 print hypNbSeg.GetId()
 print hypNbSeg.GetNumberOfSegments()
-
-smeshgui.SetName(salome.ObjectToID(hypNbSeg), "NumberOfSegments_10")
+smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
 print "-------------------------- MaxElementArea"
 
 maxElementArea = 500
 
-hypArea = smesh.CreateHypothesis("MaxElementArea", "libStdMeshersEngine.so")
-hypArea.SetMaxElementArea(maxElementArea)
-
+mefisto2D = mesh.Triangle()
+hypArea = mefisto2D.MaxElementArea(maxElementArea)
 print hypArea.GetName()
 print hypArea.GetId()
 print hypArea.GetMaxElementArea()
-
-smeshgui.SetName(salome.ObjectToID(hypArea), "MaxElementArea_500")
+smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
 print "-------------------------- MaxElementVolume"
 
 maxElementVolume = 500
 
-hypVolume = smesh.CreateHypothesis("MaxElementVolume", "libStdMeshersEngine.so")
-hypVolume.SetMaxElementVolume(maxElementVolume)
-
+netgen3D = mesh.Tetrahedron(smesh.NETGEN)
+hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
 print hypVolume.GetName()
 print hypVolume.GetId()
 print hypVolume.GetMaxElementVolume()
-
-smeshgui.SetName(salome.ObjectToID(hypVolume), "MaxElementVolume_500")
-
-# ---- create Algorithms
-
-print "-------------------------- create Algorithms"
-
-print "-------------------------- Regular_1D"
-
-regular1D = smesh.CreateHypothesis("Regular_1D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(regular1D), "Wire Discretisation")
-
-print "-------------------------- MEFISTO_2D"
-
-mefisto2D = smesh.CreateHypothesis("MEFISTO_2D", "libStdMeshersEngine.so")
-smeshgui.SetName(salome.ObjectToID(mefisto2D), "MEFISTO_2D")
-
-print "-------------------------- NETGEN_3D"
-
-netgen3D = smesh.CreateHypothesis("NETGEN_3D", "libNETGENEngine.so")
-smeshgui.SetName(salome.ObjectToID(netgen3D), "NETGEN_3D")
-
-# ---- init a Mesh with the boxe
-
-mesh = smesh.CreateMesh(box)
-smeshgui.SetName(salome.ObjectToID(mesh), "MeshBox")
-
-# ---- add hypothesis to the boxe
-
-print "-------------------------- add hypothesis to the box"
-
-mesh.AddHypothesis(box,regular1D)
-mesh.AddHypothesis(box,hypNbSeg)
-
-mesh.AddHypothesis(box,mefisto2D)
-mesh.AddHypothesis(box,hypArea)
-
-mesh.AddHypothesis(box,netgen3D)
-mesh.AddHypothesis(box,hypVolume)
+smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
 salome.sg.updateObjBrowser(1)
 
 print "-------------------------- compute the mesh of the boxe"
-ret = smesh.Compute(mesh,box)
+ret = mesh.Compute()
 print ret
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace

@@ -1,0 +1,52 @@
+/*!
+
+\page building_compounds_page Building Compounds
+
+\n Compound Mesh is a combination of several meshes.
+
+<em>To Build a compound:</em>
+
+\par
+From the \b Mesh menu select <b>Build Compound</b> or click <em>"Build
+Compound Mesh"</em> button in the toolbar.
+
+\image html image161.gif
+<center><em>"Build Compound Mesh" button</em></center>
+
+\par
+The following dialog box will appear:
+
+\image html buildcompound.png
+
+\par
+<ul>
+<li>\b Name - allows selecting the name of the resulting \b Compound.</li>
+<li>\b Meshes - allows selecting the meshes which will be
+concatenated. They can be chosen in the Object Browser while holding
+\b Ctrl button.</li>
+<li><b>Processing identical groups</b> - allows selecting the method
+of processing the namesake existing on the united meshes.
+\n They can be either</li>
+<ul>
+<li>\b United - all elements of Group1 on Mesh_1 and Group1 on Mesh_2
+become the elements of Group1 on the Compound_Mesh, or</li>
+<li>\b Renamed - Group1 on Mesh_1 becomes Group1_1 and Group1 on Mesh_2
+becomes Group1_2. See \ref grouping_elements_page "Creating Groups"
+for more information about groups.</li>
+</ul>
+<li><b>Create common groups for initial meshes</b> checkbox permits to
+automatically create groups of all elements of the same type
+(nodes, edges, faces and volumes) for the resulting mesh from the
+elements
+of the initial meshes.
+</li>
+<li>You can simply unite meshes or choose to <b>Merge coincident nodes
+and elements</b>, in which case it is possible to define the \b Tolerance
+for this operation.</li>
+</ul>
+
+\n <b>Example:</b>
+
+\image html image160.gif
+
+*/

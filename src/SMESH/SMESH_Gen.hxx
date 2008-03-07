@@ -29,39 +29,43 @@
 #ifndef _SMESH_GEN_HXX_
 #define _SMESH_GEN_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "Utils_SALOME_Exception.hxx"
 
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_ComputeError.hxx"
 #include "SMESH_Algo.hxx"
+#include "SMESH_0D_Algo.hxx"
 #include "SMESH_1D_Algo.hxx"
 #include "SMESH_2D_Algo.hxx"
 #include "SMESH_3D_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 
-#include "SMESHDS_Document.hxx"
-
 #include <TopoDS_Shape.hxx>
 
 #include <map>
 
+class SMESHDS_Document;
+
+typedef SMESH_Hypothesis::Hypothesis_Status TAlgoStateErrorName;
 
 typedef struct studyContextStruct
 {
-	std::map < int, SMESH_Hypothesis * >mapHypothesis;
-	  std::map < int, SMESH_Mesh * >mapMesh;
-	  SMESHDS_Document * myDocument;
+  std::map < int, SMESH_Hypothesis * >mapHypothesis;
+  std::map < int, SMESH_Mesh * >mapMesh;
+  SMESHDS_Document * myDocument;
 } StudyContextStruct;
 
-class SMESH_Gen
+class SMESH_EXPORT  SMESH_Gen
 {
  public:
   SMESH_Gen();
   ~SMESH_Gen();
 
-//  SMESH_Hypothesis *CreateHypothesis(const char *anHyp, int studyId)
-//    throw(SALOME_Exception);
   SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
     throw(SALOME_Exception);
+
   bool Compute(::SMESH_Mesh & aMesh, const TopoDS_Shape & aShape);
 
   bool CheckAlgoState(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
@@ -69,7 +73,6 @@ class SMESH_Gen
   // if Compute() would fail because of some algo bad state
 
   
-  enum TAlgoStateErrorName { NONE=0, MISSING_ALGO, MISSING_HYPO, NOT_CONFORM_MESH };
   struct TAlgoStateError
   {
     TAlgoStateErrorName _name;
@@ -77,7 +80,7 @@ class SMESH_Gen
     int                 _algoDim;
     bool                _isGlobalAlgo;
 
-    TAlgoStateError(): _algoDim(0),_algo(0),_name(NONE) {}
+    TAlgoStateError(): _algoDim(0),_algo(0),_name(SMESH_Hypothesis::HYP_OK) {}
     void Set(TAlgoStateErrorName name, const SMESH_Algo* algo, bool isGlobal)
     { _name = name; _algo = algo; _algoDim = algo->GetDim(); _isGlobalAlgo = isGlobal; }
     void Set(TAlgoStateErrorName name, const int algoDim,      bool isGlobal)
@@ -89,7 +92,6 @@ class SMESH_Gen
   // notify on bad state of attached algos, return false
   // if Compute() would fail because of some algo bad state
   // theErrors list contains problems description
-
 
   StudyContextStruct *GetStudyContext(int studyId);
 
@@ -112,6 +114,7 @@ class SMESH_Gen
   int GetANewId();
 
   std::map < int, SMESH_Algo * >_mapAlgo;
+  std::map < int, SMESH_0D_Algo * >_map0D_Algo;
   std::map < int, SMESH_1D_Algo * >_map1D_Algo;
   std::map < int, SMESH_2D_Algo * >_map2D_Algo;
   std::map < int, SMESH_3D_Algo * >_map3D_Algo;

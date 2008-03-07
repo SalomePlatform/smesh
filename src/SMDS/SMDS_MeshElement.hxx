@@ -26,23 +26,13 @@
 
 #ifndef _SMDS_MeshElement_HeaderFile
 #define _SMDS_MeshElement_HeaderFile
+
+#include "SMESH_SMDS.hxx"
 	
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshObject.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_MeshElementIDFactory.hxx"
-
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
 
 #include <vector>
 #include <iostream>
@@ -54,7 +44,7 @@ class SMDS_MeshFace;
 ///////////////////////////////////////////////////////////////////////////////
 /// Base class for elements
 ///////////////////////////////////////////////////////////////////////////////
-class SMDS_WNT_EXPORT SMDS_MeshElement:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
 {
 public:
 
@@ -75,8 +65,8 @@ public:
 
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
 
-  friend std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
-  friend bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
+  friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
+  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement*elem);
 
   // ===========================
   //  Access to nodes by index
@@ -103,7 +93,7 @@ public:
     * \retval int - valid node index
    */
   int WrappedIndex(const int ind) const {
-    if ( ind < 0 ) return -( ind % NbNodes());
+    if ( ind < 0 ) return NbNodes() + ind % NbNodes();
     if ( ind >= NbNodes() ) return ind % NbNodes();
     return ind;
   }

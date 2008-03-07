@@ -29,6 +29,16 @@
 #ifndef SMESH_TYPE_HEADER
 #define SMESH_TYPE_HEADER
 
+#ifdef WNT
+ #if defined SMESHFILTERSSELECTION_EXPORTS
+  #define SMESHFILTERSSELECTION_EXPORT __declspec( dllexport )
+ #else
+  #define SMESHFILTERSSELECTION_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define SMESHFILTERSSELECTION_EXPORT
+#endif
+
 enum MeshObjectType {
   HYPOTHESIS,
   ALGORITHM,

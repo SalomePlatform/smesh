@@ -1,3 +1,18 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2007-11-23 13:01+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #  Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 #  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 #
@@ -23,7 +38,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2006-01-13 13:50+0300\n"
+"PO-Revision-Date: 2006-12-28 12:10+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -145,6 +160,10 @@ msgstr "Missing parameters"
 msgid "SMESH_WRN_COMPUTE_FAILED"
 msgstr "Mesh computation failed"
 
+#Compute failed
+msgid "SMESH_COMPUTE_SUCCEED"
+msgstr "Mesh computation succeed"
+
 #Study frame with VTK Viewer must be activated
 msgid "SMESH_WRN_VIEWER_VTK"
 msgstr "Study frame with VTK Viewer must be activated"
@@ -165,9 +184,17 @@ msgstr "Activate Link Selection Mode"
 msgid "SMESH_WRN_EMPTY_NAME" 
 msgstr "Empty name is not valid"
 
+#Not available data
+msgid "SMESH_WRN_NO_AVAILABLE_DATA" 
+msgstr "No available data in selection"
+
 #Smesh polyedre cretion error
 msgid "SMESH_POLYEDRE_CREATE_ERROR"
 msgstr "Polyedron creation error"
+
+#Export mesh
+msgid "SMESH_EXPORT_FAILED"
+msgstr "Mesh export failed.\nProbably, there is not enough space on disk."
 
 #-------------------------------------------------------------------------
 # MEN
@@ -399,6 +426,14 @@ msgstr "Id Elements"
 msgid "SMESH_REMOVE"
 msgstr "Remove"
 
+#Move elements
+msgid "SMESH_MOVE_ELEMENTS"
+msgstr "Move Elements"
+
+#Copy elements
+msgid "SMESH_COPY_ELEMENTS"
+msgstr "Copy Elements"
+
 #Remove Elements
 msgid "SMESH_REMOVE_ELEMENTS_TITLE"
 msgstr "Remove Elements"
@@ -463,6 +498,14 @@ msgstr "Quadrangle"
 msgid "SMESH_EDGE"
 msgstr "Edge"
 
+#Pyramid
+msgid "SMESH_PYRAMID"
+msgstr "Pyramid"
+
+#Prism
+msgid "SMESH_PRISM"
+msgstr "Prism"
+
 #Tetrahedron
 msgid "SMESH_TETRAS"
 msgstr "Tetrahedron"
@@ -470,6 +513,10 @@ msgstr "Tetrahedron"
 #Hexahedron
 msgid "SMESH_HEXAS"
 msgstr "Hexahedron"
+
+#Polyhedron
+msgid "SMESH_POLYEDRON"
+msgstr "Polyhedron"
 
 #Add Triangle
 msgid "SMESH_ADD_TRIANGLE"
@@ -748,7 +795,7 @@ msgid "SMESH_MERGE_NODES"
 msgstr "Merge nodes"
 
 #Merge elements
-msgid "SMESH_MERGE_ELEMENTS_TITLE"
+msgid "SMESH_MERGE_ELEMENTS"
 msgstr "Merge elements"
 
 #Extrusion
@@ -767,6 +814,14 @@ msgstr "Create a copy"
 msgid "SMESH_ROTATION"
 msgstr "Rotation"
 
+#Build compound
+msgid "SMESH_BUILD_COMPOUND_TITLE"
+msgstr "Create a Compound"
+
+# Create a new mesh
+msgid "SMESH_CREATE_MESH"
+msgstr "Create a new mesh"
+
 # -------------- Mesh Infos --------------
 
 #Mesh Infos
@@ -776,6 +831,10 @@ msgstr "Mesh Infos"
 #Standard Mesh Infos
 msgid "SMESH_STANDARD_MESHINFO_TITLE"
 msgstr "Standard Mesh Infos"
+
+#What Is
+msgid "SMESH_WHAT_IS_TITLE"
+msgstr "Mesh Element Info"
 
 #Mesh Infos
 msgid "SMESH_MESHINFO_NAME"
@@ -955,7 +1014,7 @@ msgstr "Color group"
 
 #Check color group
 msgid "SMESH_CHECK_COLOR"
-msgstr "Color number"
+msgstr "Color"
 
 #%1 SubMeshes
 msgid "SMESH_SUBMESH_SELECTED"
@@ -965,6 +1024,13 @@ msgstr "%1 SubMeshes"
 msgid "SMESH_GROUP_SELECTED"
 msgstr "%1 Groups"
 
+# Generate groups at mesh transformation
+msgid "SMESH_MAKE_GROUPS"
+msgstr "Generate groups"
+
+# Generate groups at mesh transformation
+msgid "SMESH_COPY_GROUPS"
+msgstr "Copy groups"
 
 # -------------- Preferences - Selection --------------
 msgid "SMESH_PREF_SELECTION"
@@ -1131,6 +1197,9 @@ msgstr "Belong to Plane"
 msgid "SMESHGUI_FilterTable::BELONG_TO_CYLINDER"
 msgstr "Belong to Cylinder"
 
+msgid "SMESHGUI_FilterTable::BELONG_TO_GENSURFACE"
+msgstr "Belong to Surface"
+
 msgid "SMESHGUI_FilterTable::LYING_ON_GEOM"
 msgstr "Lying on Geom"
 
@@ -1238,6 +1307,8 @@ msgstr "Can not unassign \"%1\":\n"
 msgid "SMESH_RM_HYP_WRN"
 msgstr "\"%1\" unassigned but:\n"
 
+# Hypothesis_Status:
+
 msgid "SMESH_HYP_1"
 msgstr "Algorithm misses a hypothesis"
 
@@ -1248,31 +1319,52 @@ msgid "SMESH_HYP_3"
 msgstr "Hypothesis has a bad parameter value"
 
 msgid "SMESH_HYP_4"
-msgstr "Unknown fatal error at hypothesis definition"
+msgstr "Submesh is ignored as there is another algorithm of upper dimension generating %1D elements"
 
 msgid "SMESH_HYP_5"
-msgstr "Hypothesis is not suitable in the current context"
+msgstr "Algorithm hides algorithm(s) of lower dimension by generating all-dimensions elements"
 
 msgid "SMESH_HYP_6"
-msgstr "Non-conform mesh is produced using applied hypotheses"
+msgstr "Unknown fatal error at hypothesis definition"
 
 msgid "SMESH_HYP_7"
-msgstr "Such dimention hypothesis is already assigned to the shape"
+msgstr "Hypothesis is not suitable in the current context"
 
 msgid "SMESH_HYP_8"
-msgstr "Hypothesis and submesh dimensions mismatch"
+msgstr "Non-conform mesh is produced using applied hypotheses"
 
 msgid "SMESH_HYP_9"
+msgstr "Such dimention hypothesis is already assigned to the shape"
+
+msgid "SMESH_HYP_10"
+msgstr "Hypothesis and submesh dimensions mismatch"
+
+msgid "SMESH_HYP_11"
 msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
 
-msgid "MISSING_ALGO"
+msgid "SMESH_HYP_12"
+msgstr "Geomerty mismatches algorithm's expectation"
+
+# SMESHGUI_HypothesesUtils::GetMessageOnAlgoStateErrors()
+# %1 - algo name
+# %2 - dimension
+# %3 - global/local
+# %4 - hypothesis dim == algoDim
+
+msgid "STATE_ALGO_MISSING"
 msgstr "%3 %2D algorithm is missing"
 
-msgid "MISSING_HYPO"
+msgid "STATE_HYP_MISSING"
 msgstr "%3 %2D algorithm \"%1\" misses %4D hypothesis"
 
-msgid "NOT_CONFORM_MESH"
+msgid "STATE_HYP_BAD_PARAMETER"
+msgstr "Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value"
+
+msgid "STATE_HYP_NOTCONFORM"
 msgstr "%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing"
+
+msgid "STATE_HYP_BAD_GEOMETRY"
+msgstr "%3 %2D algorithm \"%1\" is assigned to geometry mismatching its expectation"
 
 msgid "GLOBAL_ALGO"
 msgstr "Global"
@@ -1303,6 +1395,13 @@ msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
        "       pyramid's elements will be missed"
 
+msgid "SMESH_EXPORT_STL1"
+msgstr "Mesh  - \"%1\" does not contain triangles"
+
+msgid "SMESH_EXPORT_STL2"
+msgstr "Mesh  - \"%1\" contains another than triangles elements,"
+       "     they are ignored during writing to STL"
+
 msgid "SMESH_EXPORT_MED_DUPLICATED_GRP"
 msgstr "There are duplicated group names in mesh \"%1\".\n"
        "You can cancel exporting and rename them,\n"
@@ -1321,6 +1420,22 @@ msgstr "Select an object"
 
 msgid "SMESH_AUTO_GROUPS"
 msgstr "Automatically create groups"
+
+msgid "SMESH_CONTINUE_MESH_VISUALIZATION"
+msgstr "It seems that there is not enough memory to show the mesh\n"
+       "so that the application may crash. "
+       "Do you wish to continue visualization?"
+
+msgid "SMESH_NO_MESH_VISUALIZATION"
+msgstr "There is not enough memory to show the mesh"
+
+msgid "SMESH_VISU_PROBLEM"
+msgstr "Mesh visualization failed, probably due to lack of memory"
+
+msgid "SMESH_VISU_PROBLEM_CLEAR"
+msgstr "Mesh visualization failed, no memory even to show a message,\n"
+       "so all visual data have been removed to let the application live.\n"
+       "Consider saving your work before application crash"
 
 #----------------------------------------------------
 
@@ -1469,7 +1584,7 @@ msgstr "Maximum bending angle"
 msgid "SMESHGUI_CuttingOfQuadsDlg::CAPTION"
 msgstr "Cutting of quadrangles"
 
-msgid "SMESHGUI_CuttingOfQuadsDlg::PREVIEW"
+msgid "PREVIEW"
 msgstr "Preview"
 
 #----------------------------------------------------
@@ -1477,11 +1592,43 @@ msgstr "Preview"
 msgid "SMESHGUI_MoveNodesDlg::CAPTION"
 msgstr "Move node"
 
-msgid "SMESHGUI_MoveNodesDlg::NODE_ID"
+msgid "NODE_ID"
 msgstr "Node ID"
 
 msgid "SMESHGUI_MoveNodesDlg::NODE_ID_IS_NOT_DEFINED"
 msgstr "Node ID is not defined"
+
+#----------------------------------------------------
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CAPTION"
+msgstr "Mesh to pass through a point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MESH_PASS_THROUGH_POINT"
+msgstr "Make a node at point"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::METHOD"
+msgstr "Method"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::MOVE_EXISTING_METHOD"
+msgstr "Move a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::CREATE_NEW_METHOD"
+msgstr "Create a node"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE"
+msgstr "Node to move"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::NODE_2MOVE_ID"
+msgstr "ID"
+
+msgid "SMESHGUI_MakeNodeAtPointDlg::AUTO_SEARCH"
+msgstr "Automatic search"
+
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_ID"
+msgstr "Node ID is invalid"
+
+msgid "SMESHGUI_MakeNodeAtPointOp::INVALID_MESH"
+msgstr "Mesh to modify not selected"
 
 #----------------------------------------------------
 
@@ -1674,13 +1821,16 @@ msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_MESH"
 msgstr "Mesh"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_SHAPE"
-msgstr "Shape (edge or wire)"
+msgstr "Shape (edge)"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_PATH_START"
-msgstr "Start point"
+msgstr "Start node"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_USE_ANGLES"
 msgstr "Use Angles"
+
+msgid "SMESHGUI_ExtrusionAlongPathDlg::LINEAR_ANGLES"
+msgstr "Linear variation of the angles"
 
 msgid "SMESHGUI_ExtrusionAlongPathDlg::SMESH_ANGLES"
 msgstr "Rotation Angles"
@@ -1720,23 +1870,36 @@ msgstr "Revolution of 1D elements"
 msgid "SMESHGUI_RevolutionDlg::REVOLUTION_2D"
 msgstr "Revolution of 2D elements"
 
+msgid "SMESHGUI_RevolutionDlg::ANGLE_BY_STEP"
+msgstr "Use Angle by Step"
+
+msgid "SMESHGUI_RevolutionDlg::TOTAL_ANGLE"
+msgstr "Use Total Angle"
+
+msgid "SMESHGUI_RevolutionDlg::PREVIEW"
+msgstr "Preview"
+
 #----------------------------------------------------
 
 #Coincident nodes
-msgid "SMESHGUI_MergeNodesDlg::COINCIDENT_NODES"
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_NODES"
 msgstr "Coincident nodes"
 
+#Coincident elements
+msgid "SMESHGUI_EditMeshDlg::COINCIDENT_ELEMENTS"
+msgstr "Coincident elements"
+
 #Detect
-msgid "SMESHGUI_MergeNodesDlg::DETECT"
+msgid "SMESHGUI_EditMeshDlg::DETECT"
 msgstr "Detect"
 
 #Select all
-msgid "SMESHGUI_MergeNodesDlg::SELECT_ALL"
+msgid "SMESHGUI_EditMeshDlg::SELECT_ALL"
 msgstr "Select all"
 
-# Edit group of nodes
-msgid "SMESHGUI_MergeNodesDlg::EDIT_GROUP_OF_NODES"
-msgstr "Edit group of nodes"
+# Edit selected group
+msgid "SMESHGUI_EditMeshDlg::EDIT_SELECTED_GROUP"
+msgstr "Edit selected group"
 
 #----------------------------------------------------
 
@@ -2019,6 +2182,9 @@ msgstr "UNV file"
 msgid "MEN_MED"
 msgstr "MED file"
 
+msgid "MEN_STL"
+msgstr "STL file"
+
 msgid "MEN_EXPORT_DAT"
 msgstr "Export to DAT file"
 
@@ -2027,6 +2193,9 @@ msgstr "Export to UNV file"
 
 msgid "MEN_EXPORT_MED"
 msgstr "Export to MED file"
+
+msgid "MEN_EXPORT_STL"
+msgstr "Export to STL file"
 
 msgid "MEN_DELETE"
 msgstr "Delete"
@@ -2045,6 +2214,9 @@ msgstr "Compute"
 
 msgid "MEN_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "MEN_BUILD_COMPOUND"
+msgstr "Build Compound"
 
 msgid "MEN_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2081,6 +2253,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "MEN_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "MEN_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "MEN_LENGTH"
 msgstr "Length"
@@ -2205,6 +2380,9 @@ msgstr "Merge elements"
 msgid "MEN_MOVE"
 msgstr "Move Node"
 
+msgid "MEN_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "MEN_INV"
 msgstr "Diagonal Inversion"
 
@@ -2249,6 +2427,12 @@ msgstr "Shrink"
 
 msgid "MEN_AUTO_UPD"
 msgstr "Automatic update"
+
+msgid "MEN_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "MEN_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
 
 msgid "MEN_COLORS"
 msgstr "Colors / Size"
@@ -2355,14 +2539,14 @@ msgstr "Transparency"
 msgid "MEN_CLIP"
 msgstr "Clipping"
 
-msgid "MEN_DISPLAY"
-msgstr "Display"
+msgid "MEN_SHOW"
+msgstr "Show"
 
-msgid "MEN_ERASE"
-msgstr "Erase"
+msgid "MEN_HIDE"
+msgstr "Hide"
 
 msgid "MEN_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 
 #------ TOP -----#
@@ -2384,6 +2568,9 @@ msgstr "Export to UNV file"
 msgid "TOP_EXPORT_MED"
 msgstr "Export to MED file"
 
+msgid "TOP_EXPORT_STL"
+msgstr "Export to STL file"
+
 msgid "TOP_DELETE"
 msgstr "Delete"
 
@@ -2401,6 +2588,9 @@ msgstr "Compute"
 
 msgid "TOP_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "TOP_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
 
 msgid "TOP_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2434,6 +2624,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "TOP_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "TOP_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "TOP_LENGTH"
 msgstr "Length"
@@ -2558,6 +2751,9 @@ msgstr "Merge elements"
 msgid "TOP_MOVE"
 msgstr "Move Node"
 
+msgid "TOP_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "TOP_INV"
 msgstr "Diagonal Inversion"
 
@@ -2602,6 +2798,12 @@ msgstr "Shrink"
 
 msgid "TOP_AUTO_UPD"
 msgstr "Automatic update"
+
+msgid "TOP_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "TOP_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
 
 msgid "TOP_COLORS"
 msgstr "Colors / Size"
@@ -2657,14 +2859,14 @@ msgstr "Transparency"
 msgid "TOP_CLIP"
 msgstr "Clipping"
 
-msgid "TOP_DISPLAY"
-msgstr "Display"
+msgid "TOP_SHOW"
+msgstr "Show"
 
-msgid "TOP_ERASE"
-msgstr "Erase"
+msgid "TOP_HIDE"
+msgstr "Hide"
 
 msgid "TOP_DISPLAY_ONLY"
-msgstr "Display only"
+msgstr "Show only"
 
 
 
@@ -2688,6 +2890,9 @@ msgstr "Export to UNV file"
 msgid "STB_EXPORT_MED"
 msgstr "Export to MED file"
 
+msgid "STB_EXPORT_STL"
+msgstr "Export to STL file"
+
 msgid "STB_DELETE"
 msgstr "Delete"
 
@@ -2705,6 +2910,9 @@ msgstr "Compute"
 
 msgid "STB_CREATE_SUBMESH"
 msgstr "Create Sub-mesh"
+
+msgid "STB_BUILD_COMPOUND"
+msgstr "Build Compound Mesh"
 
 msgid "STB_GLOBAL_HYPO"
 msgstr "Global Hypothesis"
@@ -2738,6 +2946,9 @@ msgstr "Advanced Mesh Infos"
 
 msgid "STB_STD_INFO"
 msgstr "Standard Mesh Infos"
+
+msgid "STB_WHAT_IS"
+msgstr "Mesh Element Info"
 
 msgid "STB_LENGTH"
 msgstr "Length"
@@ -2862,6 +3073,9 @@ msgstr "Merge elements"
 msgid "STB_MOVE"
 msgstr "Move Node"
 
+msgid "STB_MESH_THROU_POINT"
+msgstr "Mesh to pass through a point"
+
 msgid "STB_INV"
 msgstr "Diagonal Inversion"
 
@@ -2906,6 +3120,12 @@ msgstr "Shrink"
 
 msgid "STB_AUTO_UPD"
 msgstr "Automatic update"
+
+msgid "STB_AUTO_COLOR"
+msgstr "Auto color"
+
+msgid "STB_DISABLE_AUTO_COLOR"
+msgstr "Disable auto color"
 
 msgid "STB_COLORS"
 msgstr "Colors / Size"
@@ -2961,18 +3181,14 @@ msgstr "Transparency"
 msgid "STB_CLIP"
 msgstr "Clipping"
 
-msgid "STB_DISPLAY"
-msgstr "Display"
+msgid "STB_SHOW"
+msgstr "Show"
 
-msgid "STB_ERASE"
-msgstr "Erase"
+msgid "STB_HIDE"
+msgstr "Hide"
 
 msgid "STB_DISPLAY_ONLY"
-msgstr "Display only"
-
-
-
-
+msgstr "Show only"
 
 msgid "TB_MESH"
 msgstr "Mesh Toolbar"
@@ -3035,6 +3251,12 @@ msgstr "Elements"
 msgid "SMESHGUI::PREF_COLOR"
 msgstr "Color"
 
+msgid "SMESHGUI::PREF_TITLE_COLOR"
+msgstr "Title color"
+
+msgid "SMESHGUI::PREF_LABELS_COLOR"
+msgstr "Labels color"
+
 msgid "SMESHGUI::PREF_SIZE"
 msgstr "Size"
 
@@ -3077,13 +3299,22 @@ msgstr "Nodes"
 msgid "SMESHGUI::PREF_ELEMENTS"
 msgstr "Elements"
 
+msgid "SMESHGUI::PREF_OBJECTS"
+msgstr "Objects"
+
 msgid "SMESHGUI::PREF_DISPLAY_MODE"
 msgstr "Display mode"
 
 msgid "SMESHGUI::PREF_AUTO_GROUPS"
 msgstr "Automatically create groups for MED export"
 
+msgid "SMESHGUI::PREF_RENUMBER" 
+msgstr "Automatic renumbering"
+
 #-----------------------------------------------------------
+
+msgid "SMESHGUI_MeshDlg::DIM_0D"
+msgstr "0D"
 
 msgid "SMESHGUI_MeshDlg::DIM_1D"
 msgstr "1D"
@@ -3114,6 +3345,34 @@ msgstr "Edit mesh/sub-mesh"
 
 msgid "SMESHGUI_MeshDlg::HYPOTHESES_SETS"
 msgstr "Assign a set of hypotheses"
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND"
+msgstr "Compound"
+
+msgid "SMESHGUI_BuildCompoundDlg::RESULT_NAME"
+msgstr "Result name"
+
+msgid "SMESHGUI_BuildCompoundDlg::COMPOUND_MESH"
+msgstr "Compound_Mesh"
+
+msgid "SMESHGUI_BuildCompoundDlg::MESHES"
+msgstr "Meshes"
+
+msgid "SMESHGUI_BuildCompoundDlg::PROCESSING_IDENTICAL_GROUPS"
+msgstr "Processing identical groups"
+
+msgid "SMESHGUI_BuildCompoundDlg::UNITE"
+msgstr "Unite"
+
+msgid "SMESHGUI_BuildCompoundDlg::RENAME"
+msgstr "Rename"
+
+msgid "SMESHGUI_BuildCompoundDlg::MERGE_NODES_AND_ELEMENTS"
+msgstr "Merge coincident nodes and elements"
+
+msgid "SMESHGUI_BuildCompoundDlg::CREATE_COMMON_GROUPS"
+msgstr "Create common groups for initial meshes"
 
 #-----------------------------------------------------------
 
@@ -3213,3 +3472,68 @@ msgstr "Mesh is not selected\nPlease specify it and try again"
 
 msgid "SMESHGUI_ConvToQuadOp::REF_IS_NULL"
 msgstr "No valid mesh object selected"
+
+#-----------------------------------------------------------
+
+msgid "SMESHGUI_ComputeDlg::CAPTION"
+msgstr "Compute mesh failed"
+
+msgid "SMESHGUI_ComputeDlg::CONSTRUCTOR"
+msgstr "Compute mesh"
+
+msgid "SMESHGUI_ComputeDlg::ERRORS"
+msgstr "Errors"
+
+msgid "SMESHGUI_ComputeDlg::SHOW_SHAPE"
+msgstr "Show SubShape"
+
+msgid "SMESHGUI_ComputeDlg::PUBLISH_SHAPE"
+msgstr "Publish SubShape"
+
+msgid "SMESHGUI_ComputeDlg::MEMORY_LACK"
+msgstr "Memory allocation problem"
+
+msgid "SMESHGUI_WhatIsDlg::ENTITY_TYPE"
+msgstr "Element type"
+
+msgid "SMESHGUI_WhatIsDlg::GRAVITY_CENTER"
+msgstr "Gravity center"
+
+msgid "COMPERR_OK"
+msgstr "No errors"
+
+msgid "COMPERR_BAD_INPUT_MESH"
+msgstr "Invalid input mesh"
+
+msgid "COMPERR_STD_EXCEPTION"
+msgstr "std::exception"
+
+msgid "COMPERR_OCC_EXCEPTION"
+msgstr "OCC exception"
+
+msgid "COMPERR_SLM_EXCEPTION"
+msgstr "SALOME exception"
+
+msgid "COMPERR_EXCEPTION"
+msgstr "Unknown exception"
+
+msgid "COMPERR_MEMORY_PB"
+msgstr "Memory allocation problem"
+
+msgid "COMPERR_ALGO_FAILED"
+msgstr "Algorithm failed"
+
+msgid "COMPERR_BAD_SHAPE"
+msgstr "Unexpected geometry"
+
+msgid "COL_ALGO_HEADER"
+msgstr "Algorithm"
+
+msgid "COL_SHAPE_HEADER"
+msgstr "SubShape"
+
+msgid "COL_ERROR_HEADER"
+msgstr "Error"
+
+#-----------------------------------------------------------
+

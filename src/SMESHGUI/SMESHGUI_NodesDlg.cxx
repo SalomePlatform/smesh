@@ -89,6 +89,8 @@
 #include <qvalidator.h>
 #include <qevent.h>
 
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
 using namespace std;
 
 
@@ -153,7 +155,7 @@ namespace SMESH {
       aCellLocationsArray->SetNumberOfTuples(1);
 
       aCells->InitTraversal();
-      vtkIdType npts;
+      vtkIdType npts = 0;
       aCellLocationsArray->SetValue(0, aCells->GetTraversalLocation(npts));
 
       aGrid->SetCells(aCellTypesArray, aCellLocationsArray, aCells);
@@ -308,14 +310,21 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
   GroupCoordinatesLayout->setAlignment(Qt::AlignTop);
   GroupCoordinatesLayout->setSpacing(6);
   GroupCoordinatesLayout->setMargin(11);
+
   TextLabel_X = new QLabel(GroupCoordinates, "TextLabel_X");
+  TextLabel_X->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   TextLabel_X->setText(tr("SMESH_X" ));
   GroupCoordinatesLayout->addWidget(TextLabel_X, 0, 0);
+
   TextLabel_Y = new QLabel(GroupCoordinates, "TextLabel_Y");
+  //TextLabel_Y->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  TextLabel_Y->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   TextLabel_Y->setText(tr("SMESH_Y" ));
   GroupCoordinatesLayout->addWidget(TextLabel_Y, 0, 2);
 
   TextLabel_Z = new QLabel(GroupCoordinates, "TextLabel_Z");
+  //TextLabel_Z->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  TextLabel_Z->setSizePolicy( QSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed ) );
   TextLabel_Z->setText(tr("SMESH_Z" ));
   GroupCoordinatesLayout->addWidget(TextLabel_Z, 0, 4);
 
@@ -330,7 +339,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg (SMESHGUI* theModule,
 
   SMESHGUI_NodesDlgLayout->addWidget(GroupCoordinates, 1, 0);
 
-  myHelpFileName = "/files/adding_nodes_and_elements.htm#Adding_nodes";
+  myHelpFileName = "adding_nodes_and_elements_page.html#adding_nodes_anchor";
 
   /* Initialisation and display */
   Init();
@@ -358,9 +367,9 @@ void SMESHGUI_NodesDlg::Init ()
   step = 25.0;
 
   /* min, max, step and decimals for spin boxes */
-  SpinBox_X->RangeStepAndValidator(-999.999, +999.999, step, 3);
-  SpinBox_Y->RangeStepAndValidator(-999.999, +999.999, step, 3);
-  SpinBox_Z->RangeStepAndValidator(-999.999, +999.999, step, 3);
+  SpinBox_X->RangeStepAndValidator(COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY);
+  SpinBox_Y->RangeStepAndValidator(COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY);
+  SpinBox_Z->RangeStepAndValidator(COORD_MIN, COORD_MAX, step, DBL_DIGITS_DISPLAY);
   SpinBox_X->SetValue(0.0);
   SpinBox_Y->SetValue(0.0);
   SpinBox_Z->SetValue(0.0);
@@ -493,9 +502,15 @@ void SMESHGUI_NodesDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
+		QString platform;
+#ifdef WIN32
+		platform = "winapplication";
+#else
+		platform = "application";
+#endif
     SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
 			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(myHelpFileName),
+			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
 			   QObject::tr("BUT_OK"));
   }
 }
@@ -598,4 +613,21 @@ void SMESHGUI_NodesDlg::ActivateThisDialog()
     aViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
+}
+
+//=================================================================================
+// function : keyPressEvent()
+// purpose  :
+//=================================================================================
+void SMESHGUI_NodesDlg::keyPressEvent( QKeyEvent* e )
+{
+  QDialog::keyPressEvent( e );
+  if ( e->isAccepted() )
+    return;
+
+  if ( e->key() == Key_F1 )
+    {
+      e->accept();
+      ClickOnHelp();
+    }
 }

@@ -29,15 +29,17 @@
 #ifndef _SMESH_SUBMESH_HXX_
 #define _SMESH_SUBMESH_HXX_
 
+#include "SMESH_SMESH.hxx"
+
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Hypothesis.hxx"
-#include "Utils_SALOME_Exception.hxx"
-#include <TopoDS_Shape.hxx>
-#include <TColStd_IndexedMapOfTransient.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include "SMESH_ComputeError.hxx"
 
-#include <set>
+#include "Utils_SALOME_Exception.hxx"
+
+#include <TopoDS_Shape.hxx>
+
 #include <list>
 #include <map>
 
@@ -45,8 +47,17 @@ class SMESH_Mesh;
 class SMESH_Hypothesis;
 class SMESH_Algo;
 class SMESH_Gen;
+class SMESH_subMeshEventListener;
+class SMESH_subMeshEventListenerData;
+class SMESH_subMesh;
 
-class SMESH_subMesh
+typedef SMESH_subMeshEventListener     EventListener;
+typedef SMESH_subMeshEventListenerData EventListenerData;
+
+typedef boost::shared_ptr< SMDS_Iterator<SMESH_subMesh*> > SMESH_subMeshIteratorPtr;
+
+
+class SMESH_EXPORT SMESH_subMesh
 {
  public:
   SMESH_subMesh(int Id, SMESH_Mesh * father, SMESHDS_Mesh * meshDS,
@@ -54,9 +65,6 @@ class SMESH_subMesh
   virtual ~ SMESH_subMesh();
 
   int GetId() const;
-
-  //   bool Contains(const TopoDS_Shape & aSubShape)
-  //     throw (SALOME_Exception);
 
   SMESH_Mesh* GetFather() { return _father; }
   
@@ -67,12 +75,15 @@ class SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
-  const map < int, SMESH_subMesh * >&DependsOn();
+  const map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
+  /*!
+   * \brief Return iterator on the submeshes this one depends on
+   */
+  SMESH_subMeshIteratorPtr getDependsOnIterator(const bool includeSelf,
+                                                const bool complexShapeFirst);
 
   const TopoDS_Shape & GetSubShape() const;
-
-//  bool _vertexSet;			// only for vertex subMesh, set to false for dim > 0
 
   enum compute_state
   {
@@ -85,17 +96,88 @@ class SMESH_subMesh
     };
   enum algo_event
   {
-    ADD_HYP, ADD_ALGO,
-    REMOVE_HYP, REMOVE_ALGO,
-    ADD_FATHER_HYP, ADD_FATHER_ALGO,
-    REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO
+    ADD_HYP          , ADD_ALGO,
+    REMOVE_HYP       , REMOVE_ALGO,
+    ADD_FATHER_HYP   , ADD_FATHER_ALGO,
+    REMOVE_FATHER_HYP, REMOVE_FATHER_ALGO,
+    MODIF_HYP
     };
   enum compute_event
   {
-    MODIF_HYP, MODIF_ALGO_STATE, COMPUTE,
+    MODIF_ALGO_STATE, COMPUTE,
     CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
     };
+  enum event_type
+  {
+    ALGO_EVENT, COMPUTE_EVENT
+  };
+
+  // ==================================================================
+  // Members to track non hierarchical dependencies between submeshes 
+  // ==================================================================
+
+  /*!
+   * \brief Sets an event listener and its data to a submesh
+    * \param listener - the listener to store
+    * \param data - the listener data to store
+    * \param where - the submesh to store the listener and it's data
+   * 
+   * The method remembers the submesh \awhere it puts the listener in order to delete
+   * them when HYP_OK algo_state is lost
+   * After being set, event listener is notified on each event of \awhere submesh.
+   */
+  void SetEventListener(EventListener*     listener,
+                        EventListenerData* data,
+                        SMESH_subMesh*     where);
+
+  /*!
+   * \brief Return an event listener data
+    * \param listener - the listener whose data is
+    * \retval EventListenerData* - found data, maybe NULL
+   */
+  EventListenerData* GetEventListenerData(EventListener* listener) const;
+
+  /*!
+   * \brief Unregister the listener and delete it and it's data
+    * \param listener - the event listener to delete
+   */
+  void DeleteEventListener(EventListener* listener);
+
+protected:
+
+  //!< event listeners to notify
+  std::map< EventListener*, EventListenerData* >           myEventListeners;
+  //!< event listeners to delete when HYP_OK algo_state is lost
+  std::list< std::pair< SMESH_subMesh*, EventListener* > > myOwnListeners;
+
+  /*!
+   * \brief Sets an event listener and its data to a submesh
+    * \param listener - the listener to store
+    * \param data - the listener data to store
+   * 
+   * After being set, event listener is notified on each event of a submesh.
+   */
+  void SetEventListener(EventListener* listener, EventListenerData* data);
+
+  /*!
+   * \brief Notify stored event listeners on the occured event
+   * \param event - algo_event or compute_event itself
+   * \param eventType - algo_event or compute_event
+   * \param hyp - hypothesis, if eventType is algo_event
+   */
+  void NotifyListenersOnEvent( const int         event,
+                               const event_type  eventType,
+                               SMESH_Hypothesis* hyp = 0);
+
+  /*!
+   * \brief Delete event listeners depending on algo of this submesh
+   */
+  void DeleteOwnListeners();
+
+  // ==================================================================
+
+public:
 
   SMESH_Hypothesis::Hypothesis_Status
     AlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
@@ -105,6 +187,7 @@ class SMESH_subMesh
 
   int GetAlgoState() const { return _algoState; }
   int GetComputeState() const { return _computeState; };
+  SMESH_ComputeErrorPtr& GetComputeError() { return _computeError; }
 
   void DumpAlgoState(bool isMain);
 
@@ -128,7 +211,18 @@ class SMESH_subMesh
   SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
- protected:
+  bool IsMeshComputed() const;
+  // check if _subMeshDS contains mesh elements
+
+  /*!
+   * \brief Allow algo->Compute() if a subshape of lower dim is meshed but
+   *        none mesh entity is bound to it
+   */
+  void SetIsAlwaysComputed(bool isAlCo);
+
+
+protected:
+  // ==================================================================
   void InsertDependence(const TopoDS_Shape aSubShape);
 
   bool SubMeshesComputed();
@@ -143,35 +237,54 @@ class SMESH_subMesh
   void CleanDependsOn();
   void SetAlgoState(int state);
 
-  bool IsMeshComputed() const;
-  // check if _subMeshDS contains mesh elements
-
+  /*!
+   * \brief Return a shape containing all sub-shapes of the MainShape that can be
+   * meshed at once along with _subShape
+   */
   TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
-  // return a shape containing all sub-shapes of the MainShape that can be
-  // meshed at once along with _subShape
 
+  /*!
+   * \brief Apply theAlgo to all subshapes in theCollection
+   */
   bool ApplyToCollection (SMESH_Algo*         theAlgo,
                           const TopoDS_Shape& theCollection);
-  // Apply theAlgo to all subshapes in theCollection
 
+  /*!
+   * \brief Update compute_state by _computeError
+    * \retval bool - false if there are errors
+   */
+  bool CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& theShape=TopoDS_Shape());
+
+  /*!
+   * \brief Return a hypothesis attached to theShape.
+   * 
+   * If theHyp is provided, similar but not same hypotheses
+   * is returned; else an applicable ones having theHypType
+   * is returned
+   */
   const SMESH_Hypothesis* GetSimilarAttached(const TopoDS_Shape&      theShape,
                                              const SMESH_Hypothesis * theHyp,
                                              const int                theHypType = 0);
-  // return a hypothesis attached to theShape.
-  // If theHyp is provided, similar but not same hypotheses
-  // is returned; else an applicable ones having theHypType
-  // is returned
-  
-  TopoDS_Shape _subShape;
-  SMESHDS_Mesh * _meshDS;
-  SMESHDS_SubMesh * _subMeshDS;
-  int _Id;
-  SMESH_Mesh *_father;
-  map < int, SMESH_subMesh * >_mapDepend;
-  bool _dependenceAnalysed;
+  // 
 
-  int _algoState;
-  int _computeState;
+protected:
+
+  TopoDS_Shape          _subShape;
+  SMESHDS_SubMesh *     _subMeshDS;
+  SMESH_Mesh *          _father;
+  int                   _Id;
+
+  map < int, SMESH_subMesh * >_mapDepend;
+  bool                  _dependenceAnalysed;
+
+  int                   _algoState;
+  int                   _computeState;
+  SMESH_ComputeErrorPtr _computeError;
+
+  // allow algo->Compute() if a subshape of lower dim is meshed but
+  // none mesh entity is bound to it. Eg StdMeshers_CompositeSegment_1D can
+  // mesh several edges as a whole and leave some of them  without mesh entities
+  bool                  _alwaysComputed;
 
 };
 

@@ -1,0 +1,53 @@
+/*!
+
+\page uniting_set_of_triangles_page Uniting a set of triangles
+
+\n In contrast to the previous operation this one allows to unite at
+once many triangles if they have adjacent edges.
+
+<em>To union several triangles:</em>
+<ol>
+<li>Display a mesh or a submesh in the 3D viewer.</li>
+<li>In the \b Modification menu select the <b>Union of triangles</b>
+item or click <em>"Union of triangles"</em> button in the toolbar.
+
+\image html image80.gif
+<center><em>"Union of triangles" button</em></center>
+
+The following dialog box will appear:
+
+\image html a-unionoftriangles.png
+
+<ul>
+<li><b>The main list</b> shall contain the triangles which will be
+united. You can click on an triangle in the 3D viewer and it will be
+highlighted. After that click the \b Add button and the ID of this
+triangle will be added to the list. To remove a selected element or
+elements from the list click the \b Remove button. The \b Sort button allows
+to sort the list of IDs. The <b>Set filter</b> button allows to apply a
+definite filter to selection of triangles.</li>
+<li><b>Apply to all</b> radio button allows to modify connectivity and
+type of all triangles of the currently displayed mesh or submesh.</li>
+<li>\b Criterion menu allows to apply the operation only to those
+object which meet the chosen criterion (from the list of Quality
+Controls, i.e. Skew, Warping, Minimum Angle, etc.)</li>
+<li><b>Select from</b> set of fields allows to choose a submesh or an
+existing group whose triangle elements will be automatically added to
+the list.</li>
+</ul>
+
+</li>
+<li>Click the \b Apply or \b OK button to confirm the operation.</li>
+</ol>
+
+If some selected triangle elements have no adjacent edges with one of
+the others, the operation on these elements shall take no effect.
+
+\image html uniting_a_set_of_triangles1.png
+
+\image html uniting_a_set_of_triangles2.png
+
+<br><b>See Also</b> a sample TUI Script of a 
+\ref tui_uniting_set_of_triangles "Uniting a Set of Triangles" operation.  
+
+*/

@@ -26,10 +26,13 @@
 #ifndef SMESH_DataMapOfElemPtrSequenceOfElemPtr_HeaderFile
 #define SMESH_DataMapOfElemPtrSequenceOfElemPtr_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 #include <SMESH_SequenceOfElemPtr.hxx>
 
 #include <NCollection_DefineDataMap.hxx>
 
+SMESH_EXPORT 
 inline Standard_Integer HashCode(SMDS_MeshElementPtr theElem,
                                  const Standard_Integer theUpper)
 {
@@ -37,6 +40,7 @@ inline Standard_Integer HashCode(SMDS_MeshElementPtr theElem,
   return HashCode(anElem,theUpper);
 }
 
+SMESH_EXPORT 
 inline Standard_Boolean IsEqual(SMDS_MeshElementPtr theOne,
                                 SMDS_MeshElementPtr theTwo)
 {

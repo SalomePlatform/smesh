@@ -20,6 +20,7 @@
 
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_Utils.h"
+#include "SALOMEDSClient_Study.hxx"
 
 #include "SALOMEconfig.h"
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -42,6 +43,29 @@ namespace SMESH
 	return aSubMesh->GetFather();
     }
     return SMESH_Mesh::_nil();
+  }
+
+  QString UniqueMeshName(const char* theBaseName, const char* thePostfix)
+  {
+    QString baseName = theBaseName;
+    if ( thePostfix/* && !name.contains( postfix )*/) { // add postfix
+      baseName += "_";
+      baseName += thePostfix;
+    }
+    if(_PTR(Study) aStudy = GetActiveStudyDocument()) {
+      QString name = baseName;
+      while ( !aStudy->FindObjectByName( name.latin1(), "SMESH" ).empty() ) {
+        int nb = 0;
+        if ( name[ name.length()-1 ].isNumber() ) {
+          int nbBeg = name.findRev("_");
+          nb = name.right( name.length() - nbBeg - 1 ).toInt();
+          name = name.left( nbBeg );
+        }
+        name += QString("_%1").arg( nb+1 );
+      }
+      return name;
+    }
+    return QString("");
   }
 
 }

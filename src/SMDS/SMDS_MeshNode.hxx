@@ -27,23 +27,13 @@
 #ifndef _SMDS_MeshNode_HeaderFile
 #define _SMDS_MeshNode_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Position.hxx"
 #include <NCollection_List.hxx>
 
-//#ifdef WNT
-//#include <SALOME_WNT.hxx>
-//#else
-//#define SALOME_WNT_EXPORT
-//#endif
-
-#if defined WNT && defined WIN32 && defined SMDS_EXPORTS
-#define SMDS_WNT_EXPORT __declspec( dllexport )
-#else
-#define SMDS_WNT_EXPORT
-#endif
-
-class SMDS_WNT_EXPORT SMDS_MeshNode:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 {
 
   public:
@@ -56,7 +46,8 @@ class SMDS_WNT_EXPORT SMDS_MeshNode:public SMDS_MeshElement
 	void RemoveInverseElement(const SMDS_MeshElement * parent);
 	void ClearInverseElements();
 	bool emptyInverseElements();
-	SMDS_ElemIteratorPtr GetInverseElementIterator() const;	
+	SMDS_ElemIteratorPtr GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
+        int NbInverseNodes(SMDSAbs_ElementType type=SMDSAbs_All) const;
 	void SetPosition(const SMDS_PositionPtr& aPos);
 	const SMDS_PositionPtr& GetPosition() const;
 	SMDSAbs_ElementType GetType() const;

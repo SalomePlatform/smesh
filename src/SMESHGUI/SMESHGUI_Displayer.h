@@ -29,12 +29,14 @@
 #ifndef SMESHGUI_DISPLAYER_HEADER
 #define SMESHGUI_DISPLAYER_HEADER
 
+#include "SMESH_SMESHGUI.hxx"
+
 #include <LightApp_Displayer.h>
 
 class SalomeApp_Application;
 class SalomeApp_Study;
 
-class SMESHGUI_Displayer : public LightApp_Displayer
+class SMESHGUI_EXPORT SMESHGUI_Displayer : public LightApp_Displayer
 {
 public:
   SMESHGUI_Displayer( SalomeApp_Application* );

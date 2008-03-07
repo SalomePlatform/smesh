@@ -29,6 +29,8 @@
 #ifndef SMESH_HypoFilter_HeaderFile
 #define SMESH_HypoFilter_HeaderFile
 
+#include "SMESH_SMESH.hxx"
+
 // ===========================
 // Filter of SMESH_Hypothesis
 // ===========================
@@ -40,7 +42,7 @@
 class SMESH_HypoFilter;
 class SMESH_Hypothesis;
 
-class SMESH_HypoPredicate {
+class SMESH_EXPORT SMESH_HypoPredicate {
  public:
   virtual bool IsOk(const SMESH_Hypothesis* aHyp,
                     const TopoDS_Shape&     aShape) const = 0;
@@ -51,7 +53,7 @@ class SMESH_HypoPredicate {
   friend class SMESH_HypoFilter;
 };
 
-class SMESH_HypoFilter: public SMESH_HypoPredicate
+class SMESH_EXPORT SMESH_HypoFilter: public SMESH_HypoPredicate
 {
  public:
   // Create and add predicates.
@@ -76,9 +78,15 @@ class SMESH_HypoFilter: public SMESH_HypoPredicate
   static SMESH_HypoPredicate* HasDim(const int theDim);
   static SMESH_HypoPredicate* HasType(const int theHypType);
 
+  /*!
+   * \brief check aHyp or/and aShape it is assigned to
+   */
   bool IsOk (const SMESH_Hypothesis* aHyp,
              const TopoDS_Shape&     aShape) const;
-  // check aHyp or/and aShape it is assigned to
+  /*!
+   * \brief return true if contains no predicates
+   */
+  bool IsAny() const { return myPredicates.empty(); }
 
   ~SMESH_HypoFilter();
 

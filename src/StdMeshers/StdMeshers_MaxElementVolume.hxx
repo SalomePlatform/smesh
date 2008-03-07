@@ -30,10 +30,12 @@
 #ifndef _SMESH_MAXELEMENTVOLUME_HXX_
 #define _SMESH_MAXELEMENTVOLUME_HXX_
 
+#include "SMESH_StdMeshers.hxx"
+
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-class StdMeshers_MaxElementVolume:
+class STDMESHERS_EXPORT StdMeshers_MaxElementVolume:
   public SMESH_Hypothesis
 {
 public:

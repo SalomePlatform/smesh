@@ -20,6 +20,8 @@
 #ifndef _INCLUDE_DRIVERUNV_R_SMDS_MESH
 #define _INCLUDE_DRIVERUNV_R_SMDS_MESH
 
+#include "SMESH_DriverUNV.hxx"
+
 #include "Driver_SMDS_Mesh.h"
 #include <map>
 #include <string>
@@ -32,7 +34,10 @@ class SMDS_MeshGroup;
 typedef std::map<SMDS_MeshGroup*, std::string> TGroupNamesMap;
 typedef std::map<SMDS_MeshGroup*, int> TGroupIdMap;
 
-class DriverUNV_R_SMDS_Mesh: public Driver_SMDS_Mesh
+typedef std::map<SMDS_MeshGroup*, std::string> TGroupNamesMap;
+typedef std::map<SMDS_MeshGroup*, int> TGroupIdMap;
+
+class MESHDRIVERUNV_EXPORT DriverUNV_R_SMDS_Mesh: public Driver_SMDS_Mesh
 {
  public:
   DriverUNV_R_SMDS_Mesh():Driver_SMDS_Mesh(),myGroup(0) {};

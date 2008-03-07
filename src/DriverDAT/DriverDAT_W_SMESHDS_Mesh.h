@@ -27,9 +27,11 @@
 #ifndef _INCLUDE_DRIVERDAT_W_SMESHDS_MESH
 #define _INCLUDE_DRIVERDAT_W_SMESHDS_MESH
 
+#include "SMESH_DriverDAT.hxx"
+
 #include "Driver_SMESHDS_Mesh.h"
 
-class DriverDAT_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
+class MESHDRIVERDAT_EXPORT DriverDAT_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {};
 
 #endif

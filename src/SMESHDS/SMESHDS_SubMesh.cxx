@@ -29,6 +29,7 @@
 #include "SMESHDS_SubMesh.hxx"
 
 #include "utilities.h"
+#include "SMDS_SetIterator.hxx"
 
 using namespace std;
 
@@ -296,4 +297,17 @@ bool SMESHDS_SubMesh::RemoveSubMesh( const SMESHDS_SubMesh* theSubMesh )
 bool SMESHDS_SubMesh::ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const
 {
   return mySubMeshes.find( theSubMesh ) != mySubMeshes.end();
+}
+
+//=======================================================================
+//function : GetSubMeshIterator
+//purpose  : 
+//=======================================================================
+
+SMESHDS_SubMeshIteratorPtr SMESHDS_SubMesh::GetSubMeshIterator() const
+{
+  typedef set<const SMESHDS_SubMesh*>::const_iterator TIterator;
+  return SMESHDS_SubMeshIteratorPtr
+    ( new SMDS_SetIterator< const SMESHDS_SubMesh*, TIterator >( mySubMeshes.begin(),
+                                                                 mySubMeshes.end()));
 }

@@ -621,7 +621,11 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
     if ( MYDEBUG )
       MESSAGE("Info: The same process, update mesh by pointer ");
     // just set client mesh pointer to server mesh pointer
-    SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
+    //SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
+    CORBA::LongLong pointeur = theMesh->GetMeshPtr();
+    cerr <<"SMESH_Client::SMESH_Client pointeur " << pointeur << endl;
+    SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
+    cerr <<"SMESH_Client::SMESH_Client aMesh " << aMesh << endl;
     if(aMesh->GetMeshDS()->IsEmbeddedMode()){
       mySMESHDSMesh = aMesh->GetMeshDS();
       mySMDSMesh = mySMESHDSMesh;
@@ -749,11 +753,11 @@ SMESH_Client::Update(bool theIsClear)
             int nbNodes = anIndexes[i++];
             // nodes
             //ASSERT( nbNodes < 9 );
-            const SMDS_MeshNode* aNodes[ nbNodes ];
+            vector<const SMDS_MeshNode*> aNodes( nbNodes );
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( mySMDSMesh, anIndexes[i++] );
             // change
-            mySMDSMesh->ChangeElementNodes( elem, aNodes, nbNodes );
+            mySMDSMesh->ChangeElementNodes( elem, &aNodes[0], nbNodes );
           }
           break;
 

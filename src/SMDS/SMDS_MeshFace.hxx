@@ -27,9 +27,11 @@
 #ifndef _SMDS_MeshFace_HeaderFile
 #define _SMDS_MeshFace_HeaderFile
 
+#include "SMESH_SMDS.hxx"
+
 #include "SMDS_MeshElement.hxx"
 
-class SMDS_MeshFace:public SMDS_MeshElement
+class SMDS_EXPORT SMDS_MeshFace:public SMDS_MeshElement
 {
   public:
 	SMDSAbs_ElementType GetType() const;
