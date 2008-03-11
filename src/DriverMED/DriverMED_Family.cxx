@@ -382,7 +382,17 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   myGroupNames.insert(string(theGroup->GetStoreName()));
 
   Quantity_Color aColor = theGroup->GetColor();
-  myGroupAttributVal = aColor.Hue();
+  double aRed = aColor.Red();
+  double aGreen = aColor.Green();
+  double aBlue = aColor.Blue();
+  int aR = aRed*255;
+  int aG = aGreen*255;
+  int aB = aBlue*255;
+  cout << "aRed = " << aR << endl;
+  cout << "aGreen = " << aG << endl;
+  cout << "aBlue = " << aB << endl;
+  myGroupAttributVal = (int)(aR*1000000 + aG*1000 + aB);
+  cout << "myGroupAttributVal = " << myGroupAttributVal << endl;
 }
 
 //=============================================================================
