@@ -1,52 +1,50 @@
-//  SMESH StdMeshersGUI : GUI for plugged-in meshers
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  Copyright (C) 2003  CEA
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_StdHypothesisCreator.cxx
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 //
-//
-//  File   : StdMeshersGUI_StdHypothesisCreator.cxx
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/StdMeshersGUI/StdMeshersGUI_StdHypothesisCreator.cxx
 
+// SMESH includes
 #include "StdMeshersGUI_StdHypothesisCreator.h"
 
-#include "SMESHGUI.h"
-#include "SMESHGUI_SpinBox.h"
-#include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_NumberFilter.hxx"
-#include "StdMeshersGUI_ObjectReferenceParamWdg.h"
-#include "StdMeshersGUI_LayerDistributionParamWdg.h"
+#include <SMESHGUI.h>
+#include <SMESHGUI_SpinBox.h>
+#include <SMESHGUI_HypothesesUtils.h>
+#include <SMESHGUI_Utils.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_NumberFilter.hxx>
+#include <StdMeshersGUI_ObjectReferenceParamWdg.h>
+#include <StdMeshersGUI_LayerDistributionParamWdg.h>
 
-#include "SUIT_ResourceMgr.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-#include <qpixmap.h>
-#include <qhbox.h>
-#include <qslider.h>
-#include <qlabel.h>
-
+// Qt includes
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QLabel>
 
 const double VALUE_MAX = 1.0e+15, // COORD_MAX
              VALUE_MAX_2  = VALUE_MAX * VALUE_MAX,
@@ -91,16 +89,16 @@ QWidget* StdMeshersGUI_StdHypothesisCreator::getWidgetForParam( int i ) const
   if ( isCreation() ) ++i; // skip widget of 'name' parameter
 
   if ( i < myCustomWidgets.count() ) {
-    QPtrList<QWidget>::const_iterator anIt  = myCustomWidgets.begin();
-    QPtrList<QWidget>::const_iterator aLast = myCustomWidgets.end();
+    QList<QWidget*>::const_iterator anIt  = myCustomWidgets.begin();
+    QList<QWidget*>::const_iterator aLast = myCustomWidgets.end();
     for ( int j = 0 ; !w && anIt != aLast; ++anIt )
       if ( i == j )
         w = *anIt;
   }
   if ( !w ) {
     // list has no at() const, so we iterate
-    QPtrList<QWidget>::const_iterator anIt  = widgets().begin();
-    QPtrList<QWidget>::const_iterator aLast = widgets().end();
+    QList<QWidget*>::const_iterator anIt  = widgets().begin();
+    QList<QWidget*>::const_iterator aLast = widgets().end();
     for( int j = 0; !w && anIt!=aLast; anIt++, ++j ) {
       if ( i == j )
         w = *anIt;
@@ -180,20 +178,37 @@ namespace {
    */
   //================================================================================
 
-  class TDoubleSliderWith2Lables: public QHBox
+  class TDoubleSliderWith2Lables: public QWidget
   {
   public:
     TDoubleSliderWith2Lables( const QString& leftLabel, const QString& rightLabel,
                               const double   initValue, const double   bottom,
                               const double   top      , const double   precision,
                               QWidget *      parent=0 , const char *   name=0 )
-      :QHBox(parent,name), _bottom(bottom), _precision(precision)
+      :QWidget(parent), _bottom(bottom), _precision(precision)
     {
-      if ( !leftLabel.isEmpty() ) (new QLabel( this ))->setText( leftLabel );
-      _slider = new QSlider( Horizontal, this );
+      setObjectName(name);
+
+      QHBoxLayout* aHBoxL = new QHBoxLayout(this);
+      
+      if ( !leftLabel.isEmpty() ) {
+	QLabel* aLeftLabel = new QLabel( this );
+	aLeftLabel->setText( leftLabel );
+	aHBoxL->addWidget( aLeftLabel );
+      }
+
+      _slider = new QSlider( Qt::Horizontal, this );
       _slider->setRange( 0, toInt( top ));
       _slider->setValue( toInt( initValue ));
-      if ( !rightLabel.isEmpty() ) (new QLabel( this ))->setText( rightLabel );
+      aHBoxL->addWidget( _slider );
+
+      if ( !rightLabel.isEmpty() ) {
+	QLabel* aRightLabel = new QLabel( this );
+	aRightLabel->setText( rightLabel );
+	aHBoxL->addWidget( aRightLabel );
+      }
+
+      setLayout( aHBoxL );
     }
     double value() const { return _bottom + _slider->value() * _precision; }
     QSlider * getSlider() const { return _slider; }
@@ -298,11 +313,11 @@ namespace {
    */
   //================================================================================
 
-  void deactivateObjRefParamWdg( QPtrList<QWidget>* widgetList )
+  void deactivateObjRefParamWdg( QList<QWidget*>* widgetList )
   {
     StdMeshersGUI_ObjectReferenceParamWdg* w = 0;
-    QPtrList<QWidget>::iterator anIt  = widgetList->begin();
-    QPtrList<QWidget>::iterator aLast = widgetList->end();
+    QList<QWidget*>::iterator anIt  = widgetList->begin();
+    QList<QWidget*>::iterator aLast = widgetList->end();
     for ( ; anIt != aLast; anIt++ ) {
       if ( (*anIt) && (*anIt)->inherits( "StdMeshersGUI_ObjectReferenceParamWdg" ))
       {
@@ -374,8 +389,8 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
   bool res = getStdParamFromDlg( params );
   if( isCreation() )
   {
-    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().latin1() );
-    params.remove( params.begin() );
+    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().toLatin1().data() );
+    params.erase( params.begin() );
   }
 
   QString valueStr = stdParamValues( params );
@@ -713,9 +728,9 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
   SMESHGUI_SpinBox* sb = w->inherits( "SMESHGUI_SpinBox" ) ? ( SMESHGUI_SpinBox* )w : 0;
   if( hypType()=="LocalLength" &&  sb )
   {
-    if (sb->name() == tr("SMESH_LOCAL_LENGTH_PARAM"))
+    if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
-    else if (sb->name() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
+    else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
       sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
@@ -753,7 +768,7 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
 
 QString StdMeshersGUI_StdHypothesisCreator::caption() const
 {
-  return tr( QString( "SMESH_%1_TITLE" ).arg( hypTypeName( hypType() ) ) );
+  return tr( QString( "SMESH_%1_TITLE" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
 }
 
 //================================================================================
@@ -765,7 +780,7 @@ QString StdMeshersGUI_StdHypothesisCreator::caption() const
 
 QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
 {
-  QString hypIconName = tr( QString( "ICON_DLG_%1" ).arg( hypTypeName( hypType() ) ) );
+  QString hypIconName = tr( QString( "ICON_DLG_%1" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
   return SMESHGUI::resourceMgr()->loadPixmap( "SMESH", hypIconName );
 }
 
@@ -778,7 +793,7 @@ QPixmap StdMeshersGUI_StdHypothesisCreator::icon() const
 
 QString StdMeshersGUI_StdHypothesisCreator::type() const
 {
-  return tr( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeName( hypType() ) ) );
+  return tr( QString( "SMESH_%1_HYPOTHESIS" ).arg( hypTypeName( hypType() ) ).toLatin1().data() );
 }
 
 //================================================================================
@@ -831,8 +846,10 @@ QWidget* StdMeshersGUI_StdHypothesisCreator::getCustomWidget( const StdParam & p
   QWidget* w = 0;
   if ( index < customWidgets()->count() ) {
     w = customWidgets()->at( index );
-    if ( w )
-      w->reparent( parent, QPoint( 0, 0 ));
+    if ( w ) {
+      w->setParent( parent );
+      w->move( QPoint( 0, 0 ) );
+    }
   }
   return w;
 }

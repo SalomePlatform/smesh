@@ -1,22 +1,29 @@
+// SMESH SMESHGUI : GUI for SMESH component
+//
 // Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_AddMeshElementDlg.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+//
+
+// SMESH includes
 #include "SMESHGUI_AddQuadraticElementDlg.h"
 
 #include "SMESHGUI.h"
@@ -24,69 +31,63 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
-#include "SMESH_ActorUtils.h"
 
-#include "SMDS_Mesh.hxx"
-#include "SMESH_Actor.h"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
-#include "LightApp_Application.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_ViewManager.h>
 
-#include "SVTK_Selection.h"
-#include "SVTK_Selector.h"
-#include "SALOME_ListIO.hxx"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include <LightApp_SelectionMgr.h>
 
-#include "SalomeApp_Study.h"
-#include "SalomeApp_Application.h"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
+#include <SalomeApp_Application.h>
 
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// VTK Includes
-#include <vtkCell.h>
+// VTK includes
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
-#include <vtkCellArray.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
+#include <vtkCellType.h>
 
-#include <vtkQuadraticEdge.h>
-#include <vtkQuadraticTriangle.h>
-#include <vtkQuadraticQuad.h>
-#include <vtkQuadraticHexahedron.h>
-#include <vtkQuadraticTetra.h>
-
-// QT Includes
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qlayout.h>
-#include <qpixmap.h>
-#include <qcheckbox.h>
+// Qt includes
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QCheckBox>
+#include <QTableWidget>
+#include <QKeyEvent>
 
 // STL includes
-#include <list>
+#include <vector>
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
-namespace SMESH {
-
-  void ReverseConnectivity( vector<int> & ids, int type )
+namespace SMESH
+{
+  void ReverseConnectivity( std::vector<int> & ids, int type )
   {
     // for reverse connectivity of other types keeping the first id, see
     // void SMESH_VisualObjDef::buildElemPrs() in SMESH_Object.cxx:900
@@ -134,7 +135,7 @@ namespace SMESH {
       reverse( ids.begin(), ids.end() );
     }
     else {
-      vector<int> aRevIds( ids.size() );
+      std::vector<int> aRevIds( ids.size() );
       for ( int i = 0; i < ids.size(); i++)
         aRevIds[ i ] = ids[ conn[ i ]];
       ids = aRevIds;
@@ -317,20 +318,37 @@ static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
 
 
 
+class SMESHGUI_IdEditItem: public QTableWidgetItem
+{
+public:
+    SMESHGUI_IdEditItem(const QString& text ):
+      QTableWidgetItem(text, QTableWidgetItem::UserType+100) {};
+  ~SMESHGUI_IdEditItem() {};
+
+  QWidget* createEditor() const;
+};
+
+QWidget* SMESHGUI_IdEditItem::createEditor() const
+{
+  QLineEdit *aLineEdit = new QLineEdit(text(), tableWidget());
+  aLineEdit->setValidator( new SMESHGUI_IdValidator(tableWidget(), 1) );
+  return aLineEdit;
+}
+
 //=================================================================================
 // function : SMESHGUI_AddQuadraticElementDlg()
 // purpose  : constructor
 //=================================================================================
 SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theModule,
-								  const int theType,
-						                  const char* name,
-                                                                  bool modal, WFlags fl)
-     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-                WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-     myType( theType )
+								  const int theType )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+    myType( theType )
 {
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>
     (SUIT_Session::session()->activeApplication());
   
@@ -366,105 +384,82 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
     anElementName = QString("QUADRATIC_EDGE");
   }
 
-  QString iconName           = tr(QString("ICON_DLG_%1").arg(anElementName));
-  QString caption            = tr(QString("SMESH_ADD_%1_TITLE").arg(anElementName));
-  QString argumentsGrTitle   = tr(QString("SMESH_ADD_%1").arg(anElementName));
-  QString constructorGrTitle = tr(QString("SMESH_%1").arg(anElementName));
+  QString iconName           = tr(QString("ICON_DLG_%1").arg(anElementName).toLatin1().data());
+  QString caption            = tr(QString("SMESH_ADD_%1_TITLE").arg(anElementName).toLatin1().data());
+  QString argumentsGrTitle   = tr(QString("SMESH_ADD_%1").arg(anElementName).toLatin1().data());
+  QString constructorGrTitle = tr(QString("SMESH_%1").arg(anElementName).toLatin1().data());
   
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", iconName));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  if (!name)
-    setName("SMESHGUI_AddQuadraticElementDlg");
-  setCaption(caption);
+  setWindowTitle(caption);
   
-  setSizeGripEnabled(TRUE);
-  QGridLayout* aDialogLayout = new QGridLayout(this);
-  aDialogLayout->setSpacing(6);
-  aDialogLayout->setMargin(11);
+  setSizeGripEnabled(true);
+
+  QVBoxLayout* aDialogLayout = new QVBoxLayout(this);
+  aDialogLayout->setSpacing(SPACING);
+  aDialogLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  GroupConstructors = new QButtonGroup(this, "GroupConstructors");
-  GroupConstructors->setTitle(constructorGrTitle);
+  GroupConstructors = new QGroupBox(constructorGrTitle, this);
+  QHBoxLayout* aGroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
+  aGroupConstructorsLayout->setSpacing(SPACING);
+  aGroupConstructorsLayout->setMargin(MARGIN);
 
-  GroupConstructors->setExclusive(TRUE);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  GroupConstructors->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-  QGridLayout* aGroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  aGroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  aGroupConstructorsLayout->setSpacing(6);
-  aGroupConstructorsLayout->setMargin(11);
-  myRadioButton1 = new QRadioButton(GroupConstructors, "myRadioButton1");
-  myRadioButton1->setText(tr("" ));
-  myRadioButton1->setPixmap(image0);
-  myRadioButton1->setChecked(TRUE);
-  myRadioButton1->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)1, (QSizePolicy::SizeType)0, myRadioButton1->sizePolicy().hasHeightForWidth()));
-  aGroupConstructorsLayout->addWidget(myRadioButton1, 0, 0);
-  aGroupConstructorsLayout->addItem( new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 1);
-  aDialogLayout->addWidget(GroupConstructors, 0, 0);
+  myRadioButton1 = new QRadioButton(GroupConstructors);
+  myRadioButton1->setIcon(image0);
+  aGroupConstructorsLayout->addWidget(myRadioButton1);
+  aGroupConstructorsLayout->addStretch();
 
   /***************************************************************/
-  GroupArguments = new QGroupBox(this, "GroupArguments");
-  GroupArguments->setTitle(argumentsGrTitle);
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0);
-  GroupArguments->layout()->setMargin(0);
-  GroupArguments->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding));
-  QGridLayout* aGroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  aGroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  aGroupArgumentsLayout->setSpacing(6);
-  aGroupArgumentsLayout->setMargin(11);
-  QLabel* aCornerNodesLabel = new QLabel(GroupArguments, "aCornerNodesLabel");
-  aCornerNodesLabel->setText(tr("SMESH_CORNER_NODES" ));
+  GroupArguments = new QGroupBox(argumentsGrTitle, this);
+  QGridLayout* aGroupArgumentsLayout = new QGridLayout(GroupArguments);
+  aGroupArgumentsLayout->setSpacing(SPACING);
+  aGroupArgumentsLayout->setMargin(MARGIN);
+
+  QLabel* aCornerNodesLabel = new QLabel(tr("SMESH_CORNER_NODES"), GroupArguments);
+  mySelectButton = new QPushButton(GroupArguments);
+  mySelectButton->setIcon(image1);
+  myCornerNodes = new QLineEdit(GroupArguments);
+
+  myTable = new QTableWidget(GroupArguments);
+
+  myReverseCB = new QCheckBox(tr("SMESH_REVERSE"), GroupArguments);
+
   aGroupArgumentsLayout->addWidget(aCornerNodesLabel, 0, 0);
-  mySelectButton = new QPushButton(GroupArguments, "mySelectButton");
-  mySelectButton->setPixmap(image1);
-  aGroupArgumentsLayout->addWidget(mySelectButton, 0, 1);
-  myCornerNodes = new QLineEdit(GroupArguments, "myCornerNodes");
-  aGroupArgumentsLayout->addWidget(myCornerNodes, 0, 2);
-
-  myTable = new QTable(GroupArguments);
-  aGroupArgumentsLayout->addMultiCellWidget(myTable, 1, 1, 0, 2);
- 
-  myReverseCB = new QCheckBox(GroupArguments, "myReverseCB");
-  myReverseCB->setText(tr("SMESH_REVERSE" ));
-  aGroupArgumentsLayout->addWidget(myReverseCB, 2, 0);
- 
-  aDialogLayout->addWidget(GroupArguments, 1, 0);
-
+  aGroupArgumentsLayout->addWidget(mySelectButton,    0, 1);
+  aGroupArgumentsLayout->addWidget(myCornerNodes,     0, 2);
+  aGroupArgumentsLayout->addWidget(myTable,           1, 0, 1, 3); 
+  aGroupArgumentsLayout->addWidget(myReverseCB,       2, 0, 1, 3);
   
   /***************************************************************/
-  GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  GroupButtons->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
-  QGridLayout* aGroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  aGroupButtonsLayout->setAlignment(Qt::AlignTop);
-  aGroupButtonsLayout->setSpacing(6);
-  aGroupButtonsLayout->setMargin(11);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-  buttonCancel->setAutoDefault(TRUE);
-  aGroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-  buttonApply->setAutoDefault(TRUE);
-  aGroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  aGroupButtonsLayout->addItem( new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum), 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  aGroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  aGroupButtonsLayout->addWidget(buttonHelp, 0, 4);
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* aGroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  aGroupButtonsLayout->setSpacing(SPACING);
+  aGroupButtonsLayout->setMargin(MARGIN);
 
-  aDialogLayout->addWidget(GroupButtons, 2, 0);
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  aGroupButtonsLayout->addWidget(buttonOk);
+  aGroupButtonsLayout->addSpacing(10);
+  aGroupButtonsLayout->addWidget(buttonApply);
+  aGroupButtonsLayout->addSpacing(10);
+  aGroupButtonsLayout->addStretch();
+  aGroupButtonsLayout->addWidget(buttonCancel);
+  aGroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  aDialogLayout->addWidget(GroupConstructors);
+  aDialogLayout->addWidget(GroupArguments);
+  aDialogLayout->addWidget(GroupButtons);
 
   Init(); /* Initialisations */
 }
@@ -475,7 +470,6 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
 //=================================================================================
 SMESHGUI_AddQuadraticElementDlg::~SMESHGUI_AddQuadraticElementDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
   delete mySimulation;
 }
 
@@ -485,8 +479,7 @@ SMESHGUI_AddQuadraticElementDlg::~SMESHGUI_AddQuadraticElementDlg()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::Init()
 {
-  GroupArguments->show();
-  myRadioButton1->setChecked(TRUE);
+  myRadioButton1->setChecked(true);
   myIsEditCorners = true;
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
   
@@ -532,38 +525,38 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
     break;
   }
     
-  myCornerNodes->setValidator(new SMESHGUI_IdValidator(this, "validator", myNbCorners));
+  myCornerNodes->setValidator(new SMESHGUI_IdValidator(this, myNbCorners));
 
   /* initialize table */
-  myTable->setNumCols(3);
-  myTable->setNumRows(aNumRows);
+  myTable->setColumnCount(3);
+  myTable->setRowCount(aNumRows);
 
   QStringList aColLabels;
   aColLabels.append(tr("SMESH_FIRST"));
   aColLabels.append(tr("SMESH_MIDDLE"));
   aColLabels.append(tr("SMESH_LAST"));
-  myTable->setColumnLabels(aColLabels);
+  myTable->setHorizontalHeaderLabels(aColLabels);
   
-  for ( int col = 0; col < myTable->numCols(); col++ )
+  for ( int col = 0; col < myTable->columnCount(); col++ )
     myTable->setColumnWidth(col, 80);
 
-  myTable->setColumnReadOnly(0, true);
-  myTable->setColumnReadOnly(2, true);
+  //myTable->setColumnReadOnly(0, true); // VSR: TODO
+  //myTable->setColumnReadOnly(2, true); // VSR: TODO
 
   myTable->setEnabled( false );
   
-  for ( int row = 0; row < myTable->numRows(); row++ )
-    {
-      SMESHGUI_IdEditItem* anEditItem = new SMESHGUI_IdEditItem( myTable, QTableItem::OnTyping, "" );
-      anEditItem->setReplaceable(false);
-      myTable->setItem(row, 1, anEditItem);
-    }
+  for ( int row = 0; row < myTable->rowCount(); row++ )
+  {
+    SMESHGUI_IdEditItem* anEditItem = new SMESHGUI_IdEditItem( "" );
+    anEditItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
+    myTable->setItem(row, 1, anEditItem);
+  }
   
   /* signals and slots connections */
   connect(mySelectButton, SIGNAL(clicked()), SLOT(SetEditCorners()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(SelectionIntoArgument()));
-  connect(myTable,        SIGNAL(doubleClicked(int, int, int, const QPoint&)), SLOT(onCellDoubleClicked(int, int, int, const QPoint&)));
-  connect(myTable,        SIGNAL(valueChanged (int, int)), SLOT(onCellTextChange(int, int)));
+  connect(myTable,        SIGNAL(cellDoubleClicked(int, int)), SLOT(onCellDoubleClicked(int, int)));
+  connect(myTable,        SIGNAL(cellChanged (int, int)), SLOT(onCellTextChange(int, int)));
   connect(myCornerNodes,  SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
   connect(myReverseCB,    SIGNAL(stateChanged(int)), SLOT(onReverse(int)));
 
@@ -574,8 +567,6 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
 
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL (SignalStudyFrameChanged()), SLOT(ClickOnCancel()));
-
-  this->show(); // displays Dialog
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
@@ -597,13 +588,13 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   if (IsValid() && !mySMESHGUI->isActiveStudyLocked()) {
     myBusy = true;
     
-    vector<int> anIds;
+    std::vector<int> anIds;
 
     switch (myType) {
     case QUAD_EDGE:
-      anIds.push_back(myTable->text(0, 0).toInt());
-      anIds.push_back(myTable->text(0, 2).toInt());
-      anIds.push_back(myTable->text(0, 1).toInt());
+      anIds.push_back(myTable->item(0, 0)->text().toInt());
+      anIds.push_back(myTable->item(0, 2)->text().toInt());
+      anIds.push_back(myTable->item(0, 1)->text().toInt());
       break;
     case QUAD_TRIANGLE:
     case QUAD_QUADRANGLE:
@@ -612,9 +603,9 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     case QUAD_PENTAHEDRON:
     case QUAD_HEXAHEDRON:
       for ( int row = 0; row < myNbCorners; row++ )
-	anIds.push_back(myTable->text(row, 0).toInt());
-      for ( int row = 0; row < myTable->numRows(); row++ )
-	anIds.push_back(myTable->text(row, 1).toInt());
+	anIds.push_back(myTable->item(row, 0)->text().toInt());
+      for ( int row = 0; row < myTable->rowCount(); row++ )
+	anIds.push_back(myTable->item(row, 1)->text().toInt());
       break;
     }
     if ( myReverseCB->isChecked())
@@ -666,7 +657,6 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnOk()
 {
   ClickOnApply();
   ClickOnCancel();
-  return;
 }
 
 //=================================================================================
@@ -683,7 +673,6 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnCancel()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   reject();
-  return;
 }
 
 //=================================================================================
@@ -696,16 +685,17 @@ void SMESHGUI_AddQuadraticElementDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -731,7 +721,7 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
   if (aMesh) {
     TColStd_MapOfInteger newIndices;
     
-    QStringList aListId = QStringList::split(" ", theNewText, false);
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
     bool allOk = true;
     for (int i = 0; i < aListId.count(); i++) {
       if( const SMDS_MeshNode * n = aMesh->FindNode( aListId[ i ].toInt() ) )
@@ -826,7 +816,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
       myBusy = true;
       int theRow = myTable->currentRow(), theCol = myTable->currentColumn();
       if ( theCol == 1 )
-	myTable->setText(theRow, 1, aString);
+	myTable->item(theRow, 1)->setText(aString);
       myBusy = false;
     }
   
@@ -855,23 +845,23 @@ void SMESHGUI_AddQuadraticElementDlg::displaySimulation()
 
     if ( myType == QUAD_EDGE )
       {
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->text(0, 0).toInt() ) );
-	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->text(0, 2).toInt() ) );
-	anID = (myTable->text(0, 1)).toInt(&ok);
-	if (!ok) anID = (myTable->text(0, 0)).toInt();
+	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 0)->text().toInt() ) );
+	anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(0, 2)->text().toInt() ) );
+	anID = myTable->item(0, 1)->text().toInt(&ok);
+	if (!ok) anID = myTable->item(0, 0)->text().toInt();
 	anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
 	aDisplayMode = VTK_WIREFRAME;
       }
     else
       {
 	for ( int row = 0; row < myNbCorners; row++ )
-	  anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->text(row, 0).toInt() ) );
+	  anIds.push_back( myActor->GetObject()->GetNodeVTKId( myTable->item(row, 0)->text().toInt() ) );
 	
-	for ( int row = 0; row < myTable->numRows(); row++ )
+	for ( int row = 0; row < myTable->rowCount(); row++ )
 	  {
-	    anID = (myTable->text(row, 1)).toInt(&ok);
+	    anID = myTable->item(row, 1)->text().toInt(&ok);
 	    if (!ok) {
-	      anID = (myTable->text(row, 0)).toInt();
+	      anID = myTable->item(row, 0)->text().toInt();
 	      aDisplayMode = VTK_WIREFRAME;
 	    }
 	    anIds.push_back( myActor->GetObject()->GetNodeVTKId(anID) );
@@ -940,7 +930,6 @@ void SMESHGUI_AddQuadraticElementDlg::enterEvent (QEvent*)
   if (GroupConstructors->isEnabled())
     return;
   ActivateThisDialog();
-  return;
 }
 
 //=================================================================================
@@ -951,7 +940,6 @@ void SMESHGUI_AddQuadraticElementDlg::closeEvent (QCloseEvent*)
 {
   /* same than click on cancel button */
   ClickOnCancel();
-  return;
 }
 
 //=================================================================================
@@ -994,9 +982,9 @@ bool SMESHGUI_AddQuadraticElementDlg::IsValid()
 
   bool ok;
   
-  for ( int row = 0; row < myTable->numRows(); row++ )
+  for ( int row = 0; row < myTable->rowCount(); row++ )
     {
-      int anID =  (myTable->text(row, 1)).toInt(&ok);
+      int anID =  myTable->item(row, 1)->text().toInt(&ok);
       if ( !ok )
 	return false;
       
@@ -1014,15 +1002,15 @@ bool SMESHGUI_AddQuadraticElementDlg::IsValid()
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 {
-  QStringList aListCorners = QStringList::split(" ", myCornerNodes->text(), false);
+  QStringList aListCorners = myCornerNodes->text().split(" ", QString::SkipEmptyParts);
   
   if ( aListCorners.count() == myNbCorners && theConersValidity )
     {
       myTable->setEnabled( true );
       
       // clear the Middle column 
-      for ( int row = 0; row < myTable->numRows(); row++ )
-	myTable->setText( row, 1, "");
+      for ( int row = 0; row < myTable->rowCount(); row++ )
+	myTable->item( row, 1 )->setText("");
       
       int* aFirstColIds;
       int* aLastColIds;
@@ -1059,18 +1047,18 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
       }
       
       // fill the First and the Last columns
-      for (int i = 0, iEnd = myTable->numRows(); i < iEnd; i++)
-	myTable->setText( i, 0, aListCorners[ aFirstColIds[i] ] );
+      for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
+	myTable->item( i, 0 )->setText( aListCorners[ aFirstColIds[i] ] );
       
-      for (int i = 0, iEnd = myTable->numRows(); i < iEnd; i++)
-	myTable->setText( i, 2, aListCorners[ aLastColIds[i] ] );
+      for (int i = 0, iEnd = myTable->rowCount(); i < iEnd; i++)
+	myTable->item( i, 2 )->setText( aListCorners[ aLastColIds[i] ] );
     }
   else
     {
       // clear table
-      for ( int row = 0; row < myTable->numRows(); row++ )
-        for ( int col = 0; col < myTable->numCols(); col++ )
-	  myTable->setText(row, col, "");
+      for ( int row = 0; row < myTable->rowCount(); row++ )
+        for ( int col = 0; col < myTable->columnCount(); col++ )
+	  myTable->item(row, col)->setText("");
       
       myTable->setEnabled( false );
     }
@@ -1081,13 +1069,12 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
 // function : onTableActivate()
 // purpose  :
 //=================================================================================
-void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol, int theButton, const QPoint& theMousePos )
+void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCol )
 {
-  if ( theButton == 1 && theCol == 1 )
+  if ( theCol == 1 )
     myIsEditCorners = false;
   
   displaySimulation();
-  return;
 }
 
 
@@ -1097,15 +1084,7 @@ void SMESHGUI_AddQuadraticElementDlg::onCellDoubleClicked( int theRow, int theCo
 //=================================================================================
 void SMESHGUI_AddQuadraticElementDlg::onCellTextChange(int theRow, int theCol)
 {
-  onTextChange( myTable->text(theRow, theCol) );
-}
-
-
-QWidget* SMESHGUI_IdEditItem::createEditor() const
-{
-  QLineEdit *aLineEdit = new QLineEdit(text(), table()->viewport());
-  aLineEdit->setValidator( new SMESHGUI_IdValidator(table()->viewport(), "validator", 1) );
-  return aLineEdit;
+  onTextChange( myTable->item(theRow, theCol)->text() );
 }
 
 //=================================================================================
@@ -1118,9 +1097,8 @@ void SMESHGUI_AddQuadraticElementDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

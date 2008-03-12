@@ -1,37 +1,46 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_VTKUtils.cxx
+// Author : Open CASCADE S.A.S.
+//
 
-
+// SMESH includes
 #include "SMESHGUI_VTKUtils.h"
+
+#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_Filter.h"
 
-#include "SMESHGUI.h"
-#include "SMESH_Actor.h"
-#include "SMESH_ActorUtils.h"
-#include "SMESH_ObjectDef.h"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+#include <SMESH_ObjectDef.h>
 #include <SMDS_Mesh.hxx>
 
+// SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
-#include <SUIT_Study.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_ViewManager.h>
+#include <SUIT_ResourceMgr.h>
 
 #include <SALOME_ListIO.hxx>
 #include <SALOME_ListIteratorOfListIO.hxx>
@@ -44,34 +53,26 @@
 #include <SalomeApp_Application.h>
 #include <SalomeApp_Study.h>
 
+// SALOME KERNEL includes
 #include <utilities.h>
 
+// IDL includes
 #include <SALOMEconfig.h>
-#include CORBA_CLIENT_HEADER(SMESH_Gen)
 #include CORBA_CLIENT_HEADER(SMESH_Mesh)
 #include CORBA_CLIENT_HEADER(SMESH_Group)
-#include CORBA_CLIENT_HEADER(SMESH_Hypothesis)
 
-#include <SALOMEDSClient_Study.hxx>
-#include <SALOMEDSClient_SObject.hxx>
-
-// VTK
+// VTK includes
 #include <vtkRenderer.h>
 #include <vtkActorCollection.h>
 #include <vtkUnstructuredGrid.h>
 
-// OCCT
+// OCCT includes
 #include <TColStd_IndexedMapOfInteger.hxx>
 #include <Standard_ErrorHandler.hxx>
 
-// STL
-#include <set>
-using namespace std;
-
-
-namespace SMESH {
-
-  typedef map<TKeyOfVisualObj,TVisualObjPtr> TVisualObjCont;
+namespace SMESH
+{
+  typedef std::map<TKeyOfVisualObj,TVisualObjPtr> TVisualObjCont;
   static TVisualObjCont VISUAL_OBJ_CONT;
 
   //=============================================================================
@@ -104,7 +105,7 @@ namespace SMESH {
     SUIT_ViewManager* aViewManager =
       app ? app->getViewManager(SVTK_Viewer::Type(), true) : 0;
     if ( aViewManager ) {
-      QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+      QVector<SUIT_ViewWindow*> views = aViewManager->getViews();
       for ( int iV = 0; iV < views.count(); ++iV ) {
         if ( SMESH_Actor* actor = FindActorByEntry( views[iV], theEntry)) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV]))
@@ -138,7 +139,7 @@ namespace SMESH {
     for ( int iM = 0; iM < viewMgrs.count(); ++iM ) {
       SUIT_ViewManager* aViewManager = viewMgrs.at( iM );
       if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type()) {
-        QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+        QVector<SUIT_ViewWindow*> views = aViewManager->getViews();
         for ( int iV = 0; iV < views.count(); ++iV ) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
             vtkRenderer *aRenderer = vtkWnd->getRenderer();
@@ -180,7 +181,7 @@ namespace SMESH {
       SUIT_ViewManager* aViewManager = viewMgrs.at( iM );
       if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type() &&
            aViewManager->study()->id() == studyID ) {
-        QPtrVector<SUIT_ViewWindow> views = aViewManager->getViews();
+        QVector<SUIT_ViewWindow*> views = aViewManager->getViews();
         for ( int iV = 0; iV < views.count(); ++iV ) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
             vtkRenderer *aRenderer = vtkWnd->getRenderer();
@@ -225,9 +226,8 @@ namespace SMESH {
       // after or at showing this message, so we do an additional check of available memory
 //       char* buf = new char[100*1024];
 //       delete [] buf;
-      SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-                              QObject::tr("SMESH_VISU_PROBLEM"),
-                              QObject::tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+			       QObject::tr("SMESH_VISU_PROBLEM"));
     } catch (...) {
       // no more memory at all: last resort
       cout<< "SMESHGUI_VTKUtils::OnVisuException(), exception even at showing a message!!!" <<endl;
@@ -237,9 +237,8 @@ namespace SMESH {
         theVISU_MemoryReserve = 0;
       }
       RemoveAllObjectsWithActors();
-      SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-                              QObject::tr("SMESH_VISU_PROBLEM_CLEAR"),
-                              QObject::tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+			       QObject::tr("SMESH_VISU_PROBLEM_CLEAR"));
       cout<< "...done" << endl;
     }
   }
@@ -347,20 +346,19 @@ namespace SMESH {
         cout << "SMESHGUI_VTKUtils::GetVisualObj(), freeMB=" << freeMB
              << ", usedMB=" << usedMB<< endl;
 #endif
-        int continu = 0;
+        bool continu = false;
         if ( usedMB * 10 > freeMB )
           // even dont try to show
-          SUIT_MessageBox::warn1 (SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
-                                  QObject::tr("SMESH_NO_MESH_VISUALIZATION"),
-                                  QObject::tr("SMESH_BUT_OK"));
+          SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
+				   QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
         else
           // there is a chance to succeed
-          continu = SUIT_MessageBox::warn2
+          continu = SUIT_MessageBox::warning
             (SMESHGUI::desktop(),
              QObject::tr("SMESH_WRN_WARNING"),
              QObject::tr("SMESH_CONTINUE_MESH_VISUALIZATION"),
-             QObject::tr("SMESH_BUT_YES"),  QObject::tr("SMESH_BUT_NO"),
-             1, 0, 1);
+             SUIT_MessageBox::Yes | SUIT_MessageBox::No, 
+	     SUIT_MessageBox::Yes ) == SUIT_MessageBox::Yes;
         if ( !continu ) {
           // remove the corresponding actors from all views
           RemoveVisualObjectWithActors( theEntry );
@@ -412,8 +410,8 @@ namespace SMESH {
     if( !theMgr )
       return NULL;
 
-    QPtrVector<SUIT_ViewWindow> views = theMgr->getViews();
-    if( views.containsRef( theWindow ) )
+    QVector<SUIT_ViewWindow*> views = theMgr->getViews();
+    if( views.contains( theWindow ) )
       return GetVtkViewWindow( theWindow );
     else
       return NULL;
@@ -650,7 +648,7 @@ namespace SMESH {
       vtkActorCollection *aCollection = aRenderer->GetActors();
       aCollection->InitTraversal();
       while(vtkActor *anAct = aCollection->GetNextActor())
-	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct))
+	if(dynamic_cast<SMESH_Actor*>(anAct))
           return false;
     }
     return true;
@@ -754,7 +752,7 @@ namespace SMESH {
 	}
       }else{
 	SALOME_ListIteratorOfListIO anIter( selected );
-	for(; anIter.More(); anIter.Next()){
+	for( ; anIter.More(); anIter.Next()){
 	  Handle(SALOME_InteractiveObject) anIO = anIter.Value();
 	  if ( !Update(anIO,true) )
             break; // avoid multiple warinings if visu failed
@@ -796,7 +794,7 @@ namespace SMESH {
       return;
     }
 
-    QPtrVector<SUIT_ViewWindow> views = vm->getViews();
+    QVector<SUIT_ViewWindow*> views = vm->getViews();
 
     SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( theModule );
     if( !mgr )
@@ -885,7 +883,7 @@ namespace SMESH {
 
   void RemoveFilters(SVTK_Selector* theSelector)
   {
-    for ( int id = SMESHGUI_NodeFilter; theSelector && id < SMESHGUI_LastFilter; id++ )
+    for ( int id = SMESH::NodeFilter; theSelector && id < SMESH::LastFilter; id++ )
       theSelector->RemoveFilter( id );
   }
 
@@ -963,7 +961,7 @@ namespace SMESH {
       anIdContainer.insert(aMapIndex(i));
 
     TIdContainer::const_iterator anIter = anIdContainer.begin();
-    for(; anIter != anIdContainer.end(); anIter++)
+    for( ; anIter != anIdContainer.end(); anIter++)
       theName += QString(" %1").arg(*anIter);
 
     return aMapIndex.Extent();
@@ -1048,7 +1046,7 @@ namespace SMESH {
 	for( int i = 1; i <= aMapIndex.Extent(); i++)
 	  anIdContainer.insert(aMapIndex(i));
 	TIdContainer::const_iterator anIter = anIdContainer.begin();
-	for(; anIter != anIdContainer.end(); anIter++){
+	for( ; anIter != anIdContainer.end(); anIter++){
 	  theName += QString(" %1").arg(*anIter);
 	}
 	return aMapIndex.Extent();
@@ -1142,4 +1140,4 @@ namespace SMESH {
 
     }
   }
-}
+} // end of namespace SMESH

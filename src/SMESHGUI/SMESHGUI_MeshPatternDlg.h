@@ -1,61 +1,56 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_MeshPatternDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_MeshPatternDlg.h
-//  Author : Sergey LITONIN
-//  Module : SMESH
 
+#ifndef SMESHGUI_MESHPATTERNDLG_H
+#define SMESHGUI_MESHPATTERNDLG_H
 
-#ifndef SMESHGUI_MeshPatternDlg_H
-#define SMESHGUI_MeshPatternDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qdialog.h>
+// Qt includes
+#include <QDialog>
+#include <QMap>
 
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(GEOM_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Pattern)
 
-class QCloseEvent;
 class QFrame;
 class QLineEdit;
-class SMESHGUI_SpinBox;
 class QPushButton;
-class LightApp_SelectionMgr;
 class QRadioButton;
 class QCheckBox;
 class QButtonGroup;
 class QLabel;
 class QSpinBox;
-class QGroupBox;
-class SMESHGUI_CreatePatternDlg;
-class SMESHGUI_PatternWidget;
 class vtkUnstructuredGrid;
 class SALOME_Actor;
-class SVTK_ViewWindow;
 class SVTK_Selector;
+class LightApp_SelectionMgr;
 class SMESHGUI;
+class SMESHGUI_CreatePatternDlg;
+class SMESHGUI_PatternWidget;
 
 /*
   Class       : SMESHGUI_MeshPatternDlg
@@ -73,14 +68,12 @@ class SMESHGUI_EXPORT SMESHGUI_MeshPatternDlg : public QDialog
   enum { Mesh, Object, Vertex1, Vertex2, Ids };
 
 public:
-                                      SMESHGUI_MeshPatternDlg( SMESHGUI*,
-                                                               const char* = 0 );
-  virtual                             ~SMESHGUI_MeshPatternDlg();
+  SMESHGUI_MeshPatternDlg( SMESHGUI* );
+  virtual ~SMESHGUI_MeshPatternDlg();
 
   void                                Init();
   
 private slots:
-
   void                                onOk();
   bool                                onApply();
   void                                onClose();
@@ -100,12 +93,11 @@ private slots:
   void                                onOkCreationDlg();
   void                                onCloseCreationDlg();
   void                                onTextChanged( const QString& );
-  void                                onNodeChanged( int value );
+  void                                onNodeChanged( int );
 
 private:
-
-  QFrame*                             createButtonFrame( QWidget* );
-  QFrame*                             createMainFrame  ( QWidget* );
+  QWidget*                            createButtonFrame( QWidget* );
+  QWidget*                            createMainFrame( QWidget* );
   void                                displayPreview();
   vtkUnstructuredGrid*                getGrid();
   void                                erasePreview();
@@ -113,19 +105,18 @@ private:
   bool                                loadFromFile( const QString& );
   void                                activateSelection();
   QStringList                         prepareFilters() const;
-  QString                             autoExtension( const QString& theFileName ) const;
-  void                                closeEvent( QCloseEvent* e ) ;
-  void                                enterEvent ( QEvent * ) ;
-  void                                keyPressEvent(QKeyEvent*);
-  bool                                isValid( const bool theMess = true );
+  QString                             autoExtension( const QString& ) const;
+  void                                closeEvent( QCloseEvent* );
+  void                                enterEvent( QEvent* );
+  void                                keyPressEvent( QKeyEvent* );
+  bool                                isValid( const bool = true );
   void                                resetSelInput();
   bool                                isRefine() const;
 
-  bool                                getIds( QValueList<int>& ) const;
+  bool                                getIds( QList<int>& ) const;
   int                                 getNode( bool = false ) const;
 
 private:
-
   QPushButton*                        myOkBtn;
   QPushButton*                        myApplyBtn;
   QPushButton*                        myCloseBtn;
@@ -142,10 +133,10 @@ private:
   QSpinBox*                           myNode2;
   QLabel*                             myNode2Lbl;
 
-  QGroupBox*                          myGeomGrp;
-  QMap< int, QPushButton* >           mySelBtn;
-  QMap< int, QLineEdit* >             mySelEdit;
-  QMap< int, QLabel* >                mySelLbl;
+  QFrame*                             myGeomGrp;
+  QMap<int, QPushButton*>             mySelBtn;
+  QMap<int, QLineEdit*>               mySelEdit;
+  QMap<int, QLabel*>                  mySelLbl;
 
   QLineEdit*                          myName;
   QPushButton*                        myOpenBtn;
@@ -155,8 +146,7 @@ private:
   QCheckBox*                          myCreatePolygonsChk;
   QCheckBox*                          myCreatePolyedrsChk;
   SMESHGUI_PatternWidget*             myPicture2d;
-  QFrame*                             myPicture3d;
-  QLabel*                             myPreview3d;
+  QLabel*                             myPicture3d;
 
   QCheckBox*                          myPreviewChk;
 
@@ -171,7 +161,7 @@ private:
 
   SMESH::SMESH_Mesh_var               myMesh;
   GEOM::GEOM_Object_var               myMeshShape;
-  QMap< int, GEOM::GEOM_Object_var >  myGeomObj;
+  QMap<int, GEOM::GEOM_Object_var>    myGeomObj;
   
   SMESHGUI_CreatePatternDlg*          myCreationDlg;
   SMESH::SMESH_Pattern_var            myPattern;
@@ -180,4 +170,4 @@ private:
   QString                             myHelpFileName;
 };
 
-#endif
+#endif // SMESHGUI_MESHPATTERNDLG_H

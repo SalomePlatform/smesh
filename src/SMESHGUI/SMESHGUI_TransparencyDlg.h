@@ -1,44 +1,41 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 // 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 // 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 // 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_TransparencyDlg.h
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_TransparencyDlg.h
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
 
-#ifndef DIALOGBOX_TRANSPARENCYDLG_H
-#define DIALOGBOX_TRANSPARENCYDLG_H
+#ifndef SMESHGUI_TRANSPARENCYDLG_H
+#define SMESHGUI_TRANSPARENCYDLG_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-// QT Includes
-#include <qdialog.h>
+// Qt includes
+#include <QDialog>
 
 class QLabel;
 class QPushButton;
 class QSlider;
 class LightApp_SelectionMgr;
-class SVTK_Selector;
 class SVTK_ViewWindow;
 class SMESHGUI;
 
@@ -48,41 +45,35 @@ class SMESHGUI;
 //=================================================================================
 class SMESHGUI_EXPORT SMESHGUI_TransparencyDlg : public QDialog
 { 
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    SMESHGUI_TransparencyDlg( SMESHGUI*,
-			      const char* name = 0,
-			      bool modal = false,
-			      WFlags fl = 0 );
-
-    ~SMESHGUI_TransparencyDlg();
+  SMESHGUI_TransparencyDlg( SMESHGUI* );
+  ~SMESHGUI_TransparencyDlg();
 
 private:
-    void keyPressEvent(QKeyEvent*);
+  void                    keyPressEvent( QKeyEvent* );
 
-private :
-
+private:
   SMESHGUI*               mySMESHGUI;
   LightApp_SelectionMgr*  mySelectionMgr;
   SVTK_ViewWindow*        myViewWindow;
 
-  QPushButton*      buttonOk;
-  QPushButton*      buttonHelp;
-  QLabel*           TextLabelOpaque;
-  QLabel*           ValueLab;
-  QLabel*           TextLabelTransparent;
-  QSlider*          Slider1;
+  QPushButton*            buttonOk;
+  QPushButton*            buttonHelp;
+  QLabel*                 TextLabelOpaque;
+  QLabel*                 ValueLab;
+  QLabel*                 TextLabelTransparent;
+  QSlider*                Slider1;
 
-  QString           myHelpFileName;
+  QString                 myHelpFileName;
 
 public slots:
-      
-    void ClickOnOk();
-    void ClickOnHelp();
-    void ValueHasChanged();
-    void SetTransparency();
-    void onSelectionChanged();
+  void                    ClickOnOk();
+  void                    ClickOnHelp();
+  void                    ValueHasChanged();
+  void                    SetTransparency();
+  void                    onSelectionChanged();
 };
 
-#endif // DIALOGBOX_TRANSPARENCYDLG_H
+#endif // SMESHGUI_TRANSPARENCYDLG_H

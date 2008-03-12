@@ -1,50 +1,49 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
+// SMESH SMESHGUI : GUI for SMESH component
+//
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
 // License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
 // but WITHOUT ANY WARRANTY; without even the implied warranty of 
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public  
+// You should have received a copy of the GNU Lesser General Public 
 // License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-/**
-*  SMESH SMESHGUI
-*
-*  Copyright (C) 2005  CEA/DEN, EDF R&D
-*
-*
-*
-*  File   : SMESHGUI_MeshDlg.cxx
-*  Author : Sergey LITONIN
-*  Module : SMESH
-*/
+// File   : SMESHGUI_MeshDlg.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "SMESHGUI_MeshDlg.h"
 
+// SALOME GUI includes
 #include <SUIT_Session.h>
+#include <SUIT_ResourceMgr.h>
 
-#include <qlayout.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qtabwidget.h>
-#include <qgroupbox.h>
-#include <qtoolbutton.h>
-#include <qiconset.h>
-#include <qstring.h>
-#include <qcombobox.h>
-#include <qpopupmenu.h>
-#include <qcursor.h>
-#include <qpushbutton.h>
+// Qt includes
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QTabWidget>
+#include <QGroupBox>
+#include <QToolButton>
+#include <QComboBox>
+#include <QMenu>
+#include <QCursor>
+#include <QPushButton>
+
+#define SPACING 6
+#define MARGIN  11
 
 /*!
  * \brief Tab for tab widget containing controls for definition of 
@@ -60,12 +59,11 @@
  */
 //================================================================================ 
 SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
-: QFrame( theParent ),
-  myPopup( 0 )
+  : QFrame( theParent )
 {
   SUIT_ResourceMgr* aResMgr = SUIT_Session::session()->resourceMgr();
-  QIconSet aCreateIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO" ) ) );
-  QIconSet aEditIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO_EDIT" ) ) );
+  QIcon aCreateIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO" ) ) );
+  QIcon aEditIcon( aResMgr->loadPixmap( "SMESH", tr( "ICON_HYPO_EDIT" ) ) );
   
   // Algorifm
   QLabel* anAlgoLbl = new QLabel( tr( "ALGORITHM" ), this );
@@ -76,9 +74,9 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   myHyp[ MainHyp ] = new QComboBox( this );
   myHyp[ MainHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myCreateHyp[ MainHyp ] = new QToolButton( this );
-  myCreateHyp[ MainHyp ]->setIconSet( aCreateIcon );
+  myCreateHyp[ MainHyp ]->setIcon( aCreateIcon );
   myEditHyp[ MainHyp ] = new QToolButton( this );
-  myEditHyp[ MainHyp ]->setIconSet( aEditIcon );
+  myEditHyp[ MainHyp ]->setIcon( aEditIcon );
   
   // Line
   QFrame* aLine = new QFrame( this );
@@ -89,19 +87,22 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   myHyp[ AddHyp ] = new QComboBox( this );
   myHyp[ AddHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myCreateHyp[ AddHyp ] = new QToolButton( this );
-  myCreateHyp[ AddHyp ]->setIconSet( aCreateIcon );
+  myCreateHyp[ AddHyp ]->setIcon( aCreateIcon );
   myEditHyp[ AddHyp ] = new QToolButton( this );
-  myEditHyp[ AddHyp ]->setIconSet( aEditIcon );
+  myEditHyp[ AddHyp ]->setIcon( aEditIcon );
   
   // Fill layout
-  QGridLayout* aLay = new QGridLayout( this, 5, 4, 5, 5 );
+  QGridLayout* aLay = new QGridLayout( this );
+  aLay->setMargin( MARGIN );
+  aLay->setSpacing( SPACING );
+
   aLay->addWidget( anAlgoLbl, 0, 0 );
   aLay->addWidget( myHyp[ Algo ], 0, 1 );
   aLay->addWidget( aHypLbl, 1, 0 );
   aLay->addWidget( myHyp[ MainHyp ], 1, 1 );
   aLay->addWidget( myCreateHyp[ MainHyp ], 1, 2 );
   aLay->addWidget( myEditHyp[ MainHyp ], 1, 3 );
-  aLay->addMultiCellWidget( aLine, 2, 2, 0, 3 );
+  aLay->addWidget( aLine, 2, 0, 1, 4 );
   aLay->addWidget( anAddHypLbl, 3, 0 );
   aLay->addWidget( myHyp[ AddHyp ], 3, 1 );
   aLay->addWidget( myCreateHyp[ AddHyp ], 3, 2 );
@@ -124,10 +125,13 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   setAvailableHyps( AddHyp, QStringList() );
 }
 
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================ 
 SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
 {
-  if ( myPopup )
-    delete myPopup;
 }
 
 //================================================================================
@@ -147,9 +151,9 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
   if ( theId == Algo )
   {
     myHyp[ Algo ]->clear();
-    myHyp[ Algo ]->insertItem( tr( "NONE" ) );
-    myHyp[ Algo ]->insertStringList( theHyps );
-    myHyp[ Algo ]->setCurrentItem( 0 );
+    myHyp[ Algo ]->addItem( tr( "NONE" ) );
+    myHyp[ Algo ]->addItems( theHyps );
+    myHyp[ Algo ]->setCurrentIndex( 0 );
   }
   else {
     myCreateHyp[ theId ]->setEnabled( enable );
@@ -172,9 +176,9 @@ void SMESHGUI_MeshTab::setExistingHyps( const int theId, const QStringList& theH
   if ( theId != Algo )
   {
     myHyp[ theId ]->clear();
-    myHyp[ theId ]->insertItem( tr( "NONE" ) );
-    myHyp[ theId ]->insertStringList( theHyps );
-    myHyp[ theId ]->setCurrentItem( 0 );
+    myHyp[ theId ]->addItem( tr( "NONE" ) );
+    myHyp[ theId ]->addItems( theHyps );
+    myHyp[ theId ]->setCurrentIndex( 0 );
     myHyp[ theId ]->setEnabled( !theHyps.isEmpty() );
     myEditHyp[ theId ]->setEnabled( false );
   }
@@ -192,8 +196,8 @@ void SMESHGUI_MeshTab::setExistingHyps( const int theId, const QStringList& theH
 //================================================================================
 void SMESHGUI_MeshTab::addHyp( const int theId, const QString& theHyp )
 {
-  myHyp[ theId ]->insertItem( theHyp );
-  myHyp[ theId ]->setCurrentItem( myHyp[ theId ]->count() - 1 );
+  myHyp[ theId ]->addItem( theHyp );
+  myHyp[ theId ]->setCurrentIndex( myHyp[ theId ]->count() - 1 );
   myEditHyp[ theId ]->setEnabled( true );
   myHyp[ theId ]->setEnabled( true );
 }
@@ -213,7 +217,7 @@ void SMESHGUI_MeshTab::renameHyp( const int theId,
                                   const QString& theNewName )
 {
   if ( theIndex > 0 && theIndex < myHyp[ theId ]->count() )
-    myHyp[ theId ]->changeItem( theNewName, theIndex );
+    myHyp[ theId ]->setItemText( theIndex, theNewName );
 }                                  
 
 //================================================================================
@@ -229,7 +233,7 @@ void SMESHGUI_MeshTab::setCurrentHyp( const int theId, const int theIndex )
 {
   if ( theIndex >= 0 && theIndex < myHyp[ theId ]->count() )
   {
-    myHyp[ theId ]->setCurrentItem( theIndex );
+    myHyp[ theId ]->setCurrentIndex( theIndex );
     if ( myEditHyp[ theId ] )
       myEditHyp[ theId ]->setEnabled( theIndex > 0 );
   }
@@ -246,7 +250,7 @@ void SMESHGUI_MeshTab::setCurrentHyp( const int theId, const int theIndex )
 //================================================================================
 int SMESHGUI_MeshTab::currentHyp( const int theId ) const
 {
-  return myHyp[ theId ]->currentItem();
+  return myHyp[ theId ]->currentIndex();
 }
 
 //================================================================================
@@ -259,31 +263,20 @@ int SMESHGUI_MeshTab::currentHyp( const int theId ) const
 //================================================================================
 void SMESHGUI_MeshTab::onCreateHyp()
 {
-  const QObject* aSender = sender();
-    
-  if ( !myPopup )
-  {
-    myPopup = new QPopupMenu( 0 );
-    connect( myPopup, SIGNAL( activated( int ) ), SLOT( onPopupItem( int ) ) );
-  }
-  
-  QStringList aHypNames;
-  if ( aSender == myCreateHyp[ MainHyp ] )
-  {
-    aHypNames = myAvailableHyps[ MainHyp ];
-    myPopup->setName( "MainHypPopup" );
-  }
-  else
-  {
-    aHypNames = myAvailableHyps[ AddHyp ];
-    myPopup->setName( "AddHypPopup" );
-  }
- 
-  myPopup->clear();
-  for ( int i = 0, n = aHypNames.count(); i < n; i++ )
-    myPopup->insertItem( aHypNames[ i ], i );
+  bool isMainHyp = sender() == myCreateHyp[ MainHyp ];
 
-  myPopup->exec( QCursor::pos() );
+  QMenu aPopup( this );
+  
+  QStringList aHypNames = isMainHyp ? 
+    myAvailableHyps[ MainHyp ] : aHypNames = myAvailableHyps[ AddHyp ];
+
+  QList<QAction*> actions;
+  for ( int i = 0, n = aHypNames.count(); i < n; i++ )
+    actions.append( aPopup.addAction( aHypNames[ i ] ) );
+
+  QAction* a = aPopup.exec( QCursor::pos() );
+  if ( a )
+    emit createHyp( isMainHyp ? MainHyp : AddHyp, actions.indexOf( a ) );
 }
 
 //================================================================================
@@ -298,7 +291,7 @@ void SMESHGUI_MeshTab::onEditHyp()
 {
   const QObject* aSender = sender();
   int aHypType = aSender == myEditHyp[ MainHyp ] ? MainHyp : AddHyp;
-  emit editHyp( aHypType, myHyp[ aHypType ]->currentItem() - 1 );  // - 1 because there is NONE on the top
+  emit editHyp( aHypType, myHyp[ aHypType ]->currentIndex() - 1 );  // - 1 because there is NONE on the top
 }
 
 //================================================================================
@@ -323,21 +316,6 @@ void SMESHGUI_MeshTab::onHyp( int theIndex )
 
 //================================================================================
 /*!
- * \brief Emits createHyp signal
- * 
- * SLOT called when item of popup for hypothesis creation is activated. Emits 
- * createHyp signal to notify operation obout this event
- */
-//================================================================================
-void SMESHGUI_MeshTab::onPopupItem( int theId )
-{
-  const QObject* aSender = sender();
-  if ( aSender )
-    emit createHyp( strcmp( aSender->name(),  "MainHypPopup" ) == 0 ? MainHyp : AddHyp, theId );
-}
-
-//================================================================================
-/*!
  * \brief Resets all tab fields
  *
  * Resets all tab fields
@@ -347,7 +325,7 @@ void SMESHGUI_MeshTab::reset()
 {
   for ( int i = Algo; i <= AddHyp; i++ )
   {
-    myHyp[ i ]->setCurrentItem( 0 );
+    myHyp[ i ]->setCurrentIndex( 0 );
     if ( myEditHyp[ i ] )
       myEditHyp[ i ]->setEnabled( false );
   }
@@ -374,18 +352,15 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
 : SMESHGUI_Dialog( 0, false, true )
 {
   // Create top controls
-  
-  QGroupBox* aGrp = new QGroupBox( 3, Qt::Horizontal, mainFrame() );
-  aGrp->setFrameStyle( QFrame::NoFrame );
-  aGrp->setInsideMargin( 0 );
+
   // name 
-  createObject( tr( "NAME" ), aGrp, Obj );
+  createObject( tr( "NAME" ), mainFrame(), Obj );
   setNameIndication( Obj, OneName );
   setReadOnly( Obj, false );
   // mesh
-  createObject( tr( "MESH" ), aGrp, Mesh );
+  createObject( tr( "MESH" ), mainFrame(), Mesh );
   // geometry
-  createObject( tr( "GEOMETRY" ), aGrp, Geom );
+  createObject( tr( "GEOMETRY" ), mainFrame(), Geom );
   myGeomPopup = 0;
   
   // Create tab widget
@@ -401,47 +376,52 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myTabWg->addTab( myTabs[ Dim0D ], tr( "DIM_0D" ) );
 
   // Hypotheses Sets
-  myHypoSetPopup = new QPopupMenu();
-  QButton* aHypoSetButton = new QPushButton( mainFrame(), "aHypoSetButton");
-  aHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
+  myHypoSetButton = new QToolButton( mainFrame() );
+  myHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
+  myHypoSetButton->setEnabled( false );
   
   // Fill layout
-  QVBoxLayout* aLay = new QVBoxLayout( mainFrame(), 0, 5 );
-  aLay->addWidget( aGrp );
-  aLay->addItem( new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum) );
-  aLay->addWidget( myTabWg );
-  aLay->addWidget( aHypoSetButton );
+  QGridLayout* aLay = new QGridLayout( mainFrame() );
+  aLay->setMargin( 0 );
+  aLay->setSpacing( SPACING );
+
+  aLay->addWidget( objectWg( Obj,  Label ),   0, 0 );
+  aLay->addWidget( objectWg( Obj,  Btn ),     0, 1 );
+  aLay->addWidget( objectWg( Obj,  Control ), 0, 2 );
+  aLay->addWidget( objectWg( Mesh, Label ),   1, 0 );
+  aLay->addWidget( objectWg( Mesh, Btn ),     1, 1 );
+  aLay->addWidget( objectWg( Mesh, Control ), 1, 2 );
+  aLay->addWidget( objectWg( Geom, Label ),   2, 0 );
+  aLay->addWidget( objectWg( Geom, Btn ),     2, 1 );
+  aLay->addWidget( objectWg( Geom, Control ), 2, 2 );
+  aLay->addWidget( myTabWg,                   4, 0, 1, 3 );
+  aLay->addWidget( myHypoSetButton,           5, 0, 1, 3 );
+  aLay->setRowMinimumHeight( 3, 20 );
 
   // Disable controls if necessary
   setObjectShown( Mesh, false );
   if ( theToCreate )
   {
-    setCaption( tr( "CREATE_MESH" ) );
+    setWindowTitle( tr( "CREATE_MESH" ) );
     objectWg( Obj, Btn )->hide();
     if ( theIsMesh )
-      setCaption( tr( "CREATE_MESH" ) );
+      setWindowTitle( tr( "CREATE_MESH" ) );
     else
     {
-      setCaption( tr( "CREATE_SUBMESH" ) );
+      setWindowTitle( tr( "CREATE_SUBMESH" ) );
       setObjectShown( Mesh, true );
     }
   }
   else
   {
-    setCaption( tr( "EDIT_MESH_SUBMESH" ) );
+    setWindowTitle( tr( "EDIT_MESH_SUBMESH" ) );
     objectWg( Mesh, Btn )->hide();
     objectWg( Geom, Btn )->hide();
   }
-
-  // Connect signals and slots
-  connect( aHypoSetButton, SIGNAL( clicked() ), SLOT( onHypoSetButton() ) );
-  connect( myHypoSetPopup, SIGNAL( activated( int ) ), SLOT( onHypoSetPopup( int ) ) );
 }
 
 SMESHGUI_MeshDlg::~SMESHGUI_MeshDlg()
 {
-  if ( myHypoSetPopup )
-    delete myHypoSetPopup;
 }
 
 //================================================================================
@@ -480,7 +460,7 @@ void SMESHGUI_MeshDlg::reset()
 //================================================================================    
 void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 {
-  myTabWg->setCurrentPage( Dim3D - theId );
+  myTabWg->setCurrentIndex( Dim3D - theId );
 }
 
 //================================================================================
@@ -497,10 +477,10 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
     bool enable = ( dim <= DIM );
     if ( !enable )
       myTabs[ dim ]->reset();
-    myTabWg->setTabEnabled( myTabs[ dim ], enable );
+    myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ dim ] ), enable );
   }
   // deselect desabled tab
-  if ( !myTabWg->isTabEnabled( myTabWg->currentPage() ))
+  if ( !myTabWg->isTabEnabled( myTabWg->currentIndex() ) )
     setCurrentTab( DIM - 1 );
 }
 
@@ -512,10 +492,18 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
 
 void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
 {
-  myHypoSetPopup->clear();
-  for ( int i = 0, n = theSets.count(); i < n; i++ ) {
-    myHypoSetPopup->insertItem( theSets[ i ], i );
+  QMenu* aHypoSetPopup = myHypoSetButton->menu();
+  if ( !aHypoSetPopup ) {
+    aHypoSetPopup = new QMenu( myHypoSetButton );
+    connect( aHypoSetPopup, SIGNAL( triggered( QAction* ) ), SLOT( onHypoSetPopup( QAction* ) ) );
+    myHypoSetButton->setMenu( aHypoSetPopup );
+    myHypoSetButton->setPopupMode( QToolButton::InstantPopup );
   }
+  aHypoSetPopup->clear();
+  for ( int i = 0, n = theSets.count(); i < n; i++ ) {
+    aHypoSetPopup->addAction( theSets[ i ] );
+  }
+  myHypoSetButton->setEnabled( !aHypoSetPopup->isEmpty() );
 }
 
 //================================================================================
@@ -527,22 +515,11 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
  */
 //================================================================================
 
-void SMESHGUI_MeshDlg::onHypoSetPopup( int theIndex )
+void SMESHGUI_MeshDlg::onHypoSetPopup( QAction* a )
 {
-  emit hypoSet( myHypoSetPopup->text( theIndex ));
+  emit hypoSet( a->text() );
 }
   
-//================================================================================
-/*!
- * \brief Shows myHypoSetPopup
- */
-//================================================================================
-
-void SMESHGUI_MeshDlg::onHypoSetButton()
-{
-  myHypoSetPopup->exec( QCursor::pos() );
-}
-
 //================================================================================
 /*!
  * \brief Enable showing of the popup when Geometry selection btn is clicked
@@ -554,15 +531,15 @@ enum { DIRECT_GEOM_INDEX = 0, GEOM_BY_MESH_INDEX };
 
 void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
 {
-  if ( QButton* selBtn = dynamic_cast<QButton*>( objectWg( Geom, Btn )))
+  if ( QToolButton* selBtn = qobject_cast<QToolButton*>( objectWg( Geom, Btn )))
   {
     disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
     if ( enable ) {
       if ( ! myGeomPopup ) {
-        myGeomPopup = new QPopupMenu();
-        myGeomPopup->insertItem( tr("DIRECT_GEOM_SELECTION"), DIRECT_GEOM_INDEX );
-        myGeomPopup->insertItem( tr("GEOM_BY_MESH_ELEM_SELECTION"), GEOM_BY_MESH_INDEX );
-        connect( myGeomPopup, SIGNAL( activated( int ) ), SLOT( onGeomPopup( int ) ) );
+        myGeomPopup = new QMenu();
+        myGeomPopup->addAction( tr("DIRECT_GEOM_SELECTION") )->setData( DIRECT_GEOM_INDEX );
+        myGeomPopup->addAction( tr("GEOM_BY_MESH_ELEM_SELECTION") )->setData( GEOM_BY_MESH_INDEX );
+        connect( myGeomPopup, SIGNAL( triggered( QAction* ) ), SLOT( onGeomPopup( QAction* ) ) );
       }
       connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
     }
@@ -577,7 +554,7 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
  */
 //================================================================================
 void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
-  myTabWg->setTabEnabled( myTabs[ theTabId ], false );
+  myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), false );
 }
 
 //================================================================================
@@ -587,7 +564,7 @@ void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
  */
 //================================================================================
 void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
-  myTabWg->setTabEnabled( myTabs[ theTabId ], true );
+  myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), true );
 }
 
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
@@ -596,7 +573,7 @@ void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
     myGeomPopup->exec( QCursor::pos() );
 }
 
-void SMESHGUI_MeshDlg::onGeomPopup( int index )
+void SMESHGUI_MeshDlg::onGeomPopup( QAction* a )
 {
-  emit geomSelectionByMesh( index == GEOM_BY_MESH_INDEX );
+  emit geomSelectionByMesh( a->data().toInt() == GEOM_BY_MESH_INDEX );
 }

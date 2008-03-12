@@ -27,7 +27,7 @@
 // Purpose : Constructor
 //=======================================================================
 SMESH_LogicalFilter::SMESH_LogicalFilter (const QList<SUIT_SelectionFilter*>& theFilters,
-                                          const int                             theLogOp)
+                                          const int                           theLogOp)
 {
   setFilters(theFilters);
   setOperation(theLogOp);
@@ -47,10 +47,9 @@ SMESH_LogicalFilter::~SMESH_LogicalFilter()
 //=======================================================================
 bool SMESH_LogicalFilter::isOk (const SUIT_DataOwner* owner) const
 {
-  bool res = true;
-  for ( QList<SUIT_SelectionFilter*>::const_iterator it = myFilters.begin(); it != myFilters.end() && res; ++it )
+  SUIT_SelectionFilter* filter;
+  foreach( filter, myFilters )
   {
-    SUIT_SelectionFilter* filter = *it;
     if (myOperation == LO_OR && filter->isOk(owner))
       return true;
     if (myOperation == LO_AND && !filter->isOk(owner))

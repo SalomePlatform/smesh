@@ -1,46 +1,56 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_NbSegmentsCreator.cxx
+// Author : Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "StdMeshersGUI_NbSegmentsCreator.h"
 #include "StdMeshersGUI_DistrTable.h"
 #include "StdMeshersGUI_DistrPreview.h"
 
 #include <SMESHGUI_Utils.h>
 #include <SMESHGUI_HypothesesUtils.h>
-
-#include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
-
-#include <SalomeApp_Tools.h>
-
-#include <QtxIntSpinBox.h>
-#include <QtxComboBox.h>
-#include <QtxDblValidator.h>
 #include <SMESHGUI_SpinBox.h>
 
-#include <qlabel.h>
-#include <qgroupbox.h>
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
+// IDL includes
+#include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
+
+// SALOME GUI includes
+#include <SalomeApp_Tools.h>
+#include <QtxIntSpinBox.h>
+#include <QtxComboBox.h>
+
+// Qt includes
+#include <QLabel>
+#include <QGroupBox>
+#include <QFrame>
+#include <QLineEdit>
+#include <QButtonGroup>
+#include <QRadioButton>
+#include <QGridLayout>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
+#define SPACING 6
+#define MARGIN  11
 
 StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
 : StdMeshersGUI_StdHypothesisCreator( "NumberOfSegments" ),
@@ -50,11 +60,11 @@ StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
   myTable( 0 ),
   myPreview( 0 ),
   myExpr( 0 ),
+  myConvBox( 0 ),
   myConv( 0 ),
   myLScale( 0 ),
   myLTable( 0 ),
   myLExpr( 0 ),
-  myLConv( 0 ),
   myInfo( 0 ),
   myGroupLayout( 0 ),
   myTableRow( 0 ),
@@ -78,26 +88,24 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams() const
 
 QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
 {
-  QFrame* fr = new QFrame( 0, "myframe" );
-  QVBoxLayout* lay = new QVBoxLayout( fr, 5, 0 );
+  QFrame* fr = new QFrame();
 
-  QGroupBox* GroupC1 = new QGroupBox( fr, "GroupC1" );
+  QVBoxLayout* lay = new QVBoxLayout( fr );
+  lay->setMargin( 0 );
+  lay->setSpacing( 0 );
+
+  QGroupBox* GroupC1 = new QGroupBox( tr( "SMESH_ARGUMENTS" ), fr );
   lay->addWidget( GroupC1 );
 
   StdMeshers::StdMeshers_NumberOfSegments_var h =
     StdMeshers::StdMeshers_NumberOfSegments::_narrow( hypothesis() );
   myPreview = new StdMeshersGUI_DistrPreview( GroupC1, h.in() );
 
-  GroupC1->setTitle( tr( "SMESH_ARGUMENTS"  ) );
-  GroupC1->setColumnLayout(0, Qt::Vertical );
-  GroupC1->layout()->setSpacing( 0 );
-  GroupC1->layout()->setMargin( 0 );
-  myGroupLayout = new QGridLayout( GroupC1->layout() );
-  myGroupLayout->setAlignment( Qt::AlignTop );
-  myGroupLayout->setSpacing( 6 );
-  myGroupLayout->setMargin( 11 );
-  myGroupLayout->setColStretch( 0, 0 );
-  myGroupLayout->setColStretch( 1, 1 );
+  myGroupLayout = new QGridLayout( GroupC1 );
+  myGroupLayout->setSpacing( SPACING );
+  myGroupLayout->setMargin( MARGIN );
+  myGroupLayout->setColumnStretch( 0, 0 );
+  myGroupLayout->setColumnStretch( 1, 1 );
 
   int row = 0;
   // 0)  name
@@ -113,8 +121,8 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   // 1)  number of segments
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_NB_SEGMENTS_PARAM" ), GroupC1 ), row, 0 );
   myNbSeg = new QtxIntSpinBox( GroupC1 );
-  myNbSeg->setMinValue( 1 );
-  myNbSeg->setMaxValue( 9999 );
+  myNbSeg->setMinimum( 1 );
+  myNbSeg->setMaximum( 9999 );
   myGroupLayout->addWidget( myNbSeg, row, 1 );
   row++;
 
@@ -122,11 +130,11 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   myGroupLayout->addWidget( new QLabel( tr( "SMESH_DISTR_TYPE" ), GroupC1 ), row, 0 );
   myDistr = new QtxComboBox( GroupC1 );
   QStringList types;
-  types.append( QObject::tr( "SMESH_DISTR_REGULAR" ) );
-  types.append( QObject::tr( "SMESH_DISTR_SCALE"   ) );
-  types.append( QObject::tr( "SMESH_DISTR_TAB"     ) );
-  types.append( QObject::tr( "SMESH_DISTR_EXPR"    ) );
-  myDistr->insertStringList( types );
+  types.append( tr( "SMESH_DISTR_REGULAR" ) );
+  types.append( tr( "SMESH_DISTR_SCALE"   ) );
+  types.append( tr( "SMESH_DISTR_TAB"     ) );
+  types.append( tr( "SMESH_DISTR_EXPR"    ) );
+  myDistr->addItems( types );
   myGroupLayout->addWidget( myDistr, row, 1 );
   row++;
 
@@ -138,7 +146,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   row++;
 
   myInfo = new QLabel( tr( "SMESH_FUNC_DOMAIN" ), GroupC1 );
-  myGroupLayout->addMultiCellWidget( myInfo, row, row, 0, 1 );
+  myGroupLayout->addWidget( myInfo, row, 0, 1, 2 );
   row++;
   
   // 4)  table
@@ -156,18 +164,26 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   row++;
 
   // 6)  conversion (radiogroup)
-  myGroupLayout->addWidget( myLConv = new QLabel( tr( "SMESH_CONV_MODE" ), GroupC1 ), row, 0 );
+  myConvBox = new QGroupBox( tr( "SMESH_CONV_MODE" ), GroupC1 );
   myConv = new QButtonGroup( GroupC1 );
-  myConv->setExclusive( true );
-  myConv->setColumnLayout( 0, Qt::Vertical );
-  QGridLayout* convLay = new QGridLayout( myConv->layout() );
-  convLay->addWidget( new QRadioButton( tr( "SMESH_EXP_MODE" ), myConv ), 0, 0 );
-  convLay->addWidget( myCutNeg = new QRadioButton( tr( "SMESH_CUT_NEG_MODE" ), myConv ), 1, 0 );
-  myGroupLayout->addWidget( myConv, row, 1 );
+
+  QHBoxLayout* convLay = new QHBoxLayout( myConvBox );
+  convLay->setMargin( MARGIN );
+  convLay->setSpacing( SPACING );
+
+  QRadioButton* rbExp = new QRadioButton( tr( "SMESH_EXP_MODE" ), myConvBox );
+  QRadioButton* myCutNeg = new QRadioButton( tr( "SMESH_CUT_NEG_MODE" ), myConvBox );
+
+  convLay->addWidget( rbExp );
+  convLay->addWidget( myCutNeg );
+  myConv->addButton( rbExp, 0 );
+  myConv->addButton( myCutNeg, 1 );
+
+  myGroupLayout->addWidget( myConvBox, row, 0, 1, 2 );
   row++;
 
   // 7) distribution preview
-  myGroupLayout->addMultiCellWidget( myPreview, row, row, 0, 1 );
+  myGroupLayout->addWidget( myPreview, row, 0, 1, 2 );
   myGroupLayout->setRowStretch( row, 1 );
   myPreviewRow = row;
   row++;
@@ -176,7 +192,7 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
   connect( myExpr,  SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
-  connect( myConv,  SIGNAL( clicked( int ) ), this, SLOT( onValueChanged() ) );
+  connect( myConv,  SIGNAL( cuttonClicked( int ) ), this, SLOT( onValueChanged() ) );
 
   return fr;
 }
@@ -189,11 +205,11 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
   if( myName )
     myName->setText( data.myName );
   myNbSeg->setValue( data.myNbSeg );
-  myDistr->setCurrentItem( data.myDistrType );
+  myDistr->setCurrentIndex( data.myDistrType );
   myScale->setValue( data.myScale );
-  myConv->setButton( data.myConv );
-  myTable->table()->funcValidator()->setBottom(myConv->id( myConv->selected() )==0 ? -1E20 : 0);
-  myTable->table()->setData( data.myTable );
+  myConv->button( data.myConv )->setChecked( true );
+  myTable->setFuncMinValue(myConv->checkedId()==0 ? -1E20 : 0);
+  myTable->setData( data.myTable );
   myExpr->setText( data.myExpr );
 }
 
@@ -287,7 +303,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
   try
   {
     if( isCreation() )
-      SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.latin1() );
+      SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.toLatin1().data() );
 
     h->SetNumberOfSegments( h_data.myNbSeg );
     int distr = h_data.myDistrType;
@@ -303,7 +319,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
       h->SetTableFunction( h_data.myTable );
 
     if( distr==3 )
-      h->SetExpressionFunction( h_data.myExpr.latin1() );
+      h->SetExpressionFunction( h_data.myExpr.toLatin1().data() );
     //setting of function must follow after setConversionMode, because otherwise
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user
@@ -320,17 +336,17 @@ bool StdMeshersGUI_NbSegmentsCreator::readParamsFromWidgets( NbSegmentsHypothesi
 {
   h_data.myName      = myName ? myName->text() : "";
   h_data.myNbSeg     = myNbSeg->value();
-  h_data.myDistrType = myDistr->currentItem();
-  h_data.myConv      = myConv->id( myConv->selected() );
+  h_data.myDistrType = myDistr->currentIndex();
+  h_data.myConv      = myConv->checkedId();
   h_data.myScale     = myScale->value();
-  myTable->table()->data( h_data.myTable );
+  myTable->data( h_data.myTable );
   h_data.myExpr      = myExpr->text();
   return true;
 }
 
 void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 {
-  int distr = myDistr->currentItem();
+  int distr = myDistr->currentIndex();
 
 /*  if( distr==2 ) //table func
     myCutNeg->setText( tr( "SMESH_NO_CONV" ) );
@@ -339,10 +355,10 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   if( distr==2 && sender()==myConv ) //table func
   {
-    myTable->table()->funcValidator()->setBottom( myConv->id( myConv->selected() )==0 ? -1E20 : 0 );
+    myTable->setFuncMinValue( myConv->checkedId()==0 ? -1E20 : 0 );
     SMESH::double_array arr;
-    myTable->table()->data( arr );
-    myTable->table()->setData( arr ); //update data in table
+    myTable->data( arr );
+    myTable->setData( arr ); //update data in table
   }
 
   myScale->setShown( distr==1 );
@@ -352,8 +368,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   myPreview->setShown( isFunc );
   myGroupLayout->setRowStretch( myPreviewRow, isFunc ? 1 : 0 );
 
-  myConv->setShown( isFunc );
-  myLConv->setShown( isFunc );
+  myConvBox->setShown( isFunc );
 
   if( distr==2 )
     myTable->show();
@@ -371,12 +386,12 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   if( distr==2 ) //preview for table-described function
   {
     SMESH::double_array a;
-    myTable->table()->data( a );
+    myTable->data( a );
     myPreview->setParams( a, nbSeg, false );
   }
   else if( distr==3 ) //preview for analytic-described function
     myPreview->setParams( myExpr->text(), nbSeg, 100, false );
 
   if( isFunc )
-    myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->id( myConv->selected() ) ) );
+    myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
 }

@@ -1,50 +1,45 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_SingleEditDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_SingleEditDlg.h
-//  Author : Sergey LITONIN
-//  Module : SMESH
 
+#ifndef SMESHGUI_SINGLEEDITDLG_H
+#define SMESHGUI_SINGLEEDITDLG_H
 
-#ifndef SMESHGUI_SingleEditDlg_H
-#define SMESHGUI_SingleEditDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qdialog.h>
+// Qt includes
+#include <QDialog>
 
+// IDL includes
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-class QCloseEvent;
-class QFrame;
 class QLineEdit;
-class SMESHGUI_SpinBox;
 class QPushButton;
 
 class SMESHGUI;
 class SMESH_Actor;
 class SVTK_Selector;
-class SVTK_ViewWindow;
 class LightApp_SelectionMgr;
 
 /*!
@@ -57,11 +52,10 @@ class SMESHGUI_EXPORT SMESHGUI_SingleEditDlg : public QDialog
   Q_OBJECT
 
 public:
-  SMESHGUI_SingleEditDlg(SMESHGUI* theModule, 
-			 const char* theName = 0);
+  SMESHGUI_SingleEditDlg( SMESHGUI* );
   virtual ~SMESHGUI_SingleEditDlg();
 
-  void Init();
+  void                    Init();
 
 protected slots:
   void                    onOk();
@@ -72,18 +66,18 @@ protected slots:
   void                    onDeactivate();
 
   void                    onSelectionDone();
-  void                    onTextChange (const QString&);
+  void                    onTextChange( const QString& );
 
 protected:
-  void                    closeEvent (QCloseEvent*);
-  void                    enterEvent (QEvent*);
-  void                    hideEvent (QHideEvent*);                        /* ESC key */
-  void                    keyPressEvent(QKeyEvent*);
-  QFrame*                 createButtonFrame (QWidget*);
-  QFrame*                 createMainFrame (QWidget*);
-  bool                    isValid (const bool) const;
-  bool                    getNodeIds (const QString&, int&, int&) const;
-  virtual bool            process (SMESH::SMESH_MeshEditor_ptr, const int, const int) = 0;
+  void                    closeEvent( QCloseEvent* );
+  void                    enterEvent( QEvent* );
+  void                    hideEvent( QHideEvent* );                        /* ESC key */
+  void                    keyPressEvent( QKeyEvent* );
+  QWidget*                createButtonFrame( QWidget* );
+  QWidget*                createMainFrame( QWidget* );
+  bool                    isValid( const bool ) const;
+  bool                    getNodeIds( const QString&, int&, int& ) const;
+  virtual bool            process( SMESH::SMESH_MeshEditor_ptr, const int, const int ) = 0;
 
 protected:
   bool                    myBusy;
@@ -111,12 +105,11 @@ class SMESHGUI_TrianglesInversionDlg : public SMESHGUI_SingleEditDlg
   Q_OBJECT
 
 public:
-  SMESHGUI_TrianglesInversionDlg(SMESHGUI* theModule, 
-				 const char* theName = 0);
+  SMESHGUI_TrianglesInversionDlg( SMESHGUI* );
   virtual ~SMESHGUI_TrianglesInversionDlg();
 
 protected:
-  virtual bool process (SMESH::SMESH_MeshEditor_ptr, const int, const int);
+  virtual bool process( SMESH::SMESH_MeshEditor_ptr, const int, const int );
 };
 
 /*!
@@ -129,12 +122,11 @@ class SMESHGUI_UnionOfTwoTrianglesDlg : public SMESHGUI_SingleEditDlg
   Q_OBJECT
 
 public:
-  SMESHGUI_UnionOfTwoTrianglesDlg(SMESHGUI* theModule, 
-				  const char* theName = 0);
+  SMESHGUI_UnionOfTwoTrianglesDlg( SMESHGUI* );
   virtual ~SMESHGUI_UnionOfTwoTrianglesDlg();
 
 protected:
-  virtual bool process (SMESH::SMESH_MeshEditor_ptr, const int, const int);
+  virtual bool process( SMESH::SMESH_MeshEditor_ptr, const int, const int );
 };
 
-#endif
+#endif // SMESHGUI_SINGLEEDITDLG_H

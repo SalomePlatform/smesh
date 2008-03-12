@@ -32,13 +32,10 @@
 #include "SMESH_DeviceActor.h"
 #include "SMESH_ControlsDef.hxx"
 #include "VTKViewer_ExtractUnstructuredGrid.h"
-
-#include <SALOME_InteractiveObject.hxx>
+#include "SALOME_InteractiveObject.hxx"
 
 #include "SUIT_Session.h"
 #include "SUIT_ResourceMgr.h"
-
-#include <qstringlist.h>
 
 #include <vtkProperty.h>
 #include <vtkTimeStamp.h>

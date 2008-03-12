@@ -1,46 +1,35 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
+// SMESH SMESHGUI : GUI for SMESH component
+//
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
 // License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
 // but WITHOUT ANY WARRANTY; without even the implied warranty of 
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public  
+// You should have received a copy of the GNU Lesser General Public 
 // License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-/**
-*  SMESH SMESHGUI
-*
-*  Copyright (C) 2005  CEA/DEN, EDF R&D
-*
-*
-*
-*  File   : SMESHGUI_MeshOp.h
-*  Author : Sergey LITONIN
-*  Module : SMESHGUI
-*/
+// File   : SMESHGUI_MeshOp.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+//
 
-#ifndef SMESHGUI_MeshOp_H
-#define SMESHGUI_MeshOp_H
+#ifndef SMESHGUI_MESHOP_H
+#define SMESHGUI_MESHOP_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
 #include "SMESHGUI_SelectionOp.h"
-
-#include <SALOMEconfig.h>
-#include CORBA_CLIENT_HEADER(GEOM_Gen)
-#include CORBA_CLIENT_HEADER(SMESH_Mesh)
-
-#include <qstringlist.h>
 
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
@@ -56,11 +45,10 @@ class SMESHGUI_EXPORT SMESHGUI_MeshOp : public SMESHGUI_SelectionOp
   Q_OBJECT
       
 public:
-
   enum HypType{ Algo = 0, MainHyp, AddHyp, NbHypTypes };
 
   typedef std::pair<SMESH::SMESH_Hypothesis_var, QString> THypItem;
-  typedef QValueList< THypItem > THypList;
+  typedef QList< THypItem > THypList;
 
   typedef int THypType;
   typedef QMap< THypType, THypList > TType2HypList;
@@ -68,7 +56,8 @@ public:
   typedef int THypDim;
   typedef QMap< THypDim, TType2HypList > TDim2Type2HypList;
 
-  SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh = true );
+public:
+  SMESHGUI_MeshOp( const bool, const bool = true );
   virtual ~SMESHGUI_MeshOp();
   
   virtual LightApp_Dialog*       dlg() const;  
@@ -81,37 +70,35 @@ protected:
 
 protected slots:
   virtual bool                   onApply();
-  void                           onCreateHyp( const int theHypType, const int theIndex );
-  void                           onEditHyp( const int theHypType, const int theIndex );
-  void                           onHypoSet( const QString& theSetName );
+  void                           onCreateHyp( const int, const int );
+  void                           onEditHyp( const int, const int );
+  void                           onHypoSet( const QString& );
   void                           onGeomSelectionByMesh( bool );
-  void                           onPublishShapeByMeshDlg(SUIT_Operation*);
-  void                           onCloseShapeByMeshDlg(SUIT_Operation*);
-  void                           onAlgoSelected( const int theIndex,
-                                                 const int theDim = -1);
+  void                           onPublishShapeByMeshDlg( SUIT_Operation* );
+  void                           onCloseShapeByMeshDlg( SUIT_Operation* );
+  void                           onAlgoSelected( const int, const int = -1 );
 
 private:
-
-  typedef QValueList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
+  typedef QList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
 
   bool                           isValid( QString& ) const;
-  void                           availableHyps( const int       theDim, 
-                                                const int       theHypType,
-                                                QStringList&    theHyps,
-                                                THypDataList&   theDataList,
-                                                HypothesisData* theAlgoData = 0 ) const;
-  void                           existingHyps( const int     theDim, 
-                                               const int     theHypType, 
-                                               _PTR(SObject) theFather,
-                                               QStringList&  theHyps, 
-                                               THypList& theHypList,
-                                               HypothesisData* theAlgoData = 0);
-  HypothesisData*                hypData( const int theDim,
-                                          const int theHypType,
-                                          const int theIndex); // access to myAvailableHypData
+  void                           availableHyps( const int, 
+                                                const int,
+                                                QStringList&,
+                                                THypDataList&,
+                                                HypothesisData* = 0 ) const;
+  void                           existingHyps( const int, 
+                                               const int, 
+                                               _PTR(SObject),
+                                               QStringList&, 
+                                               THypList&,
+                                               HypothesisData* = 0 );
+  HypothesisData*                hypData( const int,
+                                          const int,
+                                          const int ); // access to myAvailableHypData
 
-  void                           createHypothesis(const int theDim, const int theType,
-						  const QString& theTypeName);
+  void                           createHypothesis( const int, const int,
+						   const QString& );
 
   bool                           createMesh( QString& );
   bool                           createSubMesh( QString& );
@@ -125,9 +112,9 @@ private:
   void                           readMesh();
   QString                        name( _PTR(SObject) ) const;
   int                            find( const SMESH::SMESH_Hypothesis_var&,
-                                       const THypList& theHypList) const;
-  SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString& aHypType,
-                                                          const QString& aServerLib ) const;
+                                       const THypList& ) const;
+  SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString&,
+                                                          const QString& ) const;
   bool                           isSubshapeOk() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
   void                           selectObject( _PTR(SObject) ) const;
@@ -149,4 +136,4 @@ private:
   bool                           myIgnoreAlgoSelection;
 };
 
-#endif
+#endif // SMESHGUI_MESHOP_H

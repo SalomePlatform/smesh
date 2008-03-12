@@ -1,101 +1,95 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_MeshInfosDlg.cxx
+// Author : Nicolas BARBEROU
 //
-//
-//  File   : SMESHGUI_MeshInfosDlg.cxx
-//  Author : Nicolas BARBEROU
-//  Module : SMESH
-//  $Header$
 
+// SMESH includes
 #include "SMESHGUI_MeshInfosDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 
-#include "SUIT_Desktop.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "LightApp_Application.h"
-#include "SALOMEDSClient_Study.hxx"
-#include "SALOME_ListIO.hxx"
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_Application.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
+// SALOME KERNEL includes
+#include <SALOMEDSClient_Study.hxx>
 
-// QT Includes
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qframe.h>
-#include <qwidgetstack.h>
-#include <qlayout.h>
-#include <qmap.h>
-#include <qpushbutton.h>
+// Qt includes
+#include <QGroupBox>
+#include <QLabel>
+#include <QFrame>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QPushButton>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
-using namespace std;
-
 #define COLONIZE(str)   (QString(str).contains(":") > 0 ? QString(str) : QString(str) + " :" )
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // function : SMESHGUI_MeshInfosDlg()
 // purpose  : Constructor
 //=================================================================================
-SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule, 
-					      const char* name, 
-					      bool modal, 
-					      WFlags fl): 
-  QDialog(SMESH::GetDesktop(theModule), 
-	  name, 
-	  modal, 
-	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose),
+SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule): 
+  QDialog(SMESH::GetDesktop(theModule)),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
 {
-  if (!name)
-      setName("SMESHGUI_MeshInfosDlg");
-  setCaption(tr("SMESH_MESHINFO_TITLE"));
-  setSizeGripEnabled(TRUE);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("SMESH_MESHINFO_TITLE"));
+  setSizeGripEnabled(true);
 
   myStartSelection = true;
   myIsActiveWindow = true;
 
   QVBoxLayout* aTopLayout = new QVBoxLayout(this);
-  aTopLayout->setSpacing(6);  aTopLayout->setMargin(11);
+  aTopLayout->setSpacing(SPACING);  aTopLayout->setMargin(MARGIN);
 
   // select button & label
   QPixmap image0(SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH",tr("ICON_SELECT")));
-  mySelectBtn = new QPushButton(this, "mySelectBtn");
-  mySelectBtn->setPixmap(image0);
-  mySelectBtn->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  mySelectBtn = new QPushButton(this);
+  mySelectBtn->setIcon(image0);
 
-  mySelectLab = new QLabel(this, "mySelectLab");
-  mySelectLab->setAlignment(AlignCenter);
+  mySelectLab = new QLabel(this);
+  mySelectLab->setAlignment(Qt::AlignCenter);
   QFont fnt = mySelectLab->font(); fnt.setBold(true);
   mySelectLab->setFont(fnt);
 
@@ -105,95 +99,92 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   aSelectLayout->addWidget(mySelectLab);
 
   // top widget stack
-  myWGStack = new QWidgetStack(this);
+  myWGStack = new QStackedWidget(this);
 
   // no valid selection
   QWidget* myBadWidget = new QWidget(myWGStack);
   QVBoxLayout* aBadLayout = new QVBoxLayout(myBadWidget);
-  QLabel* myBadLab = new QLabel(tr("SMESH_BAD_SELECTION"), myBadWidget, "myBadLab");
+  QLabel* myBadLab = new QLabel(tr("SMESH_BAD_SELECTION"), myBadWidget);
   myBadLab->setAlignment(Qt::AlignCenter);
   myBadLab->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   aBadLayout->addWidget(myBadLab);
-  myWGStack->addWidget(myBadWidget, 0);
+  myWGStack->addWidget(myBadWidget);
 
   // mesh
   myMeshWidget = new QWidget(myWGStack);
   QGridLayout* aMeshLayout = new QGridLayout(myMeshWidget);
-  aMeshLayout->setSpacing(6);  aMeshLayout->setMargin(0);
+  aMeshLayout->setSpacing(SPACING);  aMeshLayout->setMargin(0);
   myWGStack->addWidget(myMeshWidget);
 
   // --> name
-  QLabel* myMeshNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), myMeshWidget, "myMeshNameLab");
-  myMeshName    = new QLabel(myMeshWidget, "myMeshName");
+  QLabel* myMeshNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), myMeshWidget);
+  myMeshName    = new QLabel(myMeshWidget);
   myMeshName->setMinimumWidth(100);
   QFrame* line1 = new QFrame(myMeshWidget);
   line1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
 
   // --> nodes
-  QLabel* myMeshNbNodesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), myMeshWidget, "myMeshNbNodesLab");
-  myMeshNbNodes    = new QLabel(myMeshWidget, "myMeshNbNodes");
+  QLabel* myMeshNbNodesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), myMeshWidget);
+  myMeshNbNodes    = new QLabel(myMeshWidget);
   myMeshNbNodes->setMinimumWidth(100);
 
   // --> header with orders
-  QLabel* myMeshOrder0Lab = new QLabel(tr("SMESH_MESHINFO_ORDER0"), myMeshWidget, "myMeshOrder0Lab");
-  QLabel* myMeshOrder1Lab = new QLabel(tr("SMESH_MESHINFO_ORDER1"), myMeshWidget, "myMeshOrder1Lab");
-  QLabel* myMeshOrder2Lab = new QLabel(tr("SMESH_MESHINFO_ORDER2"), myMeshWidget, "myMeshOrder2Lab");
+  QLabel* myMeshOrder0Lab = new QLabel(tr("SMESH_MESHINFO_ORDER0"), myMeshWidget);
+  QLabel* myMeshOrder1Lab = new QLabel(tr("SMESH_MESHINFO_ORDER1"), myMeshWidget);
+  QLabel* myMeshOrder2Lab = new QLabel(tr("SMESH_MESHINFO_ORDER2"), myMeshWidget);
   QFont fnti = myMeshOrder0Lab->font(); fnti.setItalic(true);
   myMeshOrder0Lab->setFont(fnti);
   myMeshOrder1Lab->setFont(fnti);
   myMeshOrder2Lab->setFont(fnti);
 
   // --> edges
-  QLabel* myMeshNbEdgesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), myMeshWidget, "myMeshNbEdgesLab");
-  myMeshNbEdges    = new QLabel(myMeshWidget, "myMeshNbEdges");
+  QLabel* myMeshNbEdgesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), myMeshWidget);
+  myMeshNbEdges    = new QLabel(myMeshWidget);
   myMeshNbEdges->setMinimumWidth(100);
-  myMeshNbEdges1   = new QLabel(myMeshWidget, "myMeshNbEdges1");
+  myMeshNbEdges1   = new QLabel(myMeshWidget);
   myMeshNbEdges1->setMinimumWidth(100);
-  myMeshNbEdges2   = new QLabel(myMeshWidget, "myMeshNbEdges2");
+  myMeshNbEdges2   = new QLabel(myMeshWidget);
   myMeshNbEdges2->setMinimumWidth(100);
 
   // --> faces
-  myMeshFacesGroup = new QGroupBox(tr("SMESH_MESHINFO_FACES"), myMeshWidget, "myMeshFacesGroup");
-  myMeshFacesGroup->setColumnLayout(0, Qt::Vertical);
-  myMeshFacesGroup->layout()->setSpacing(0);  myMeshFacesGroup->layout()->setMargin(0);
-  QGridLayout* myMeshFacesGroupLayout = new QGridLayout(myMeshFacesGroup->layout());
-  myMeshFacesGroupLayout->setAlignment(Qt::AlignTop);
-  myMeshFacesGroupLayout->setSpacing(6);  myMeshFacesGroupLayout->setMargin(11);
+  myMeshFacesGroup = new QGroupBox(tr("SMESH_MESHINFO_FACES"), myMeshWidget);
+  QGridLayout* myMeshFacesGroupLayout = new QGridLayout(myMeshFacesGroup);
+  myMeshFacesGroupLayout->setSpacing(SPACING);  myMeshFacesGroupLayout->setMargin(MARGIN);
 
   // --> faces --> total
-  QLabel* myMeshNbFacesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), myMeshFacesGroup, "myMeshNbFacesLab");
+  QLabel* myMeshNbFacesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), myMeshFacesGroup);
   myMeshNbFacesLab->setFont(fnt);
-  myMeshNbFaces    = new QLabel(myMeshFacesGroup, "myMeshNbFaces");
+  myMeshNbFaces    = new QLabel(myMeshFacesGroup);
   myMeshNbFaces->setMinimumWidth(100);
   myMeshNbFaces->setFont(fnt);
-  myMeshNbFaces1   = new QLabel(myMeshFacesGroup, "myMeshNbFaces1");
+  myMeshNbFaces1   = new QLabel(myMeshFacesGroup);
   myMeshNbFaces1->setMinimumWidth(100);
   myMeshNbFaces1->setFont(fnt);
-  myMeshNbFaces2   = new QLabel(myMeshFacesGroup, "myMeshNbFaces2");
+  myMeshNbFaces2   = new QLabel(myMeshFacesGroup);
   myMeshNbFaces2->setMinimumWidth(100);
   myMeshNbFaces2->setFont(fnt);
 
   // --> faces --> triangles
-  QLabel* myMeshNbTrianglesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), myMeshFacesGroup, "myMeshNbTrianglesLab");
-  myMeshNbTriangles    = new QLabel(myMeshFacesGroup, "myMeshNbTriangles");
+  QLabel* myMeshNbTrianglesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), myMeshFacesGroup);
+  myMeshNbTriangles    = new QLabel(myMeshFacesGroup);
   myMeshNbTriangles->setMinimumWidth(100);
-  myMeshNbTriangles1   = new QLabel(myMeshFacesGroup, "myMeshNbTriangles1");
+  myMeshNbTriangles1   = new QLabel(myMeshFacesGroup);
   myMeshNbTriangles1->setMinimumWidth(100);
-  myMeshNbTriangles2   = new QLabel(myMeshFacesGroup, "myMeshNbTriangles2");
+  myMeshNbTriangles2   = new QLabel(myMeshFacesGroup);
   myMeshNbTriangles2->setMinimumWidth(100);
 
   // --> faces --> quadrangles
-  QLabel* myMeshNbQuadranglesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), myMeshFacesGroup, "myMeshNbQuadranglesLab");
-  myMeshNbQuadrangles    = new QLabel(myMeshFacesGroup, "myMeshNbQuadrangles");
+  QLabel* myMeshNbQuadranglesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), myMeshFacesGroup);
+  myMeshNbQuadrangles    = new QLabel(myMeshFacesGroup);
   myMeshNbQuadrangles->setMinimumWidth(100);
-  myMeshNbQuadrangles1   = new QLabel(myMeshFacesGroup, "myMeshNbQuadrangles1");
+  myMeshNbQuadrangles1   = new QLabel(myMeshFacesGroup);
   myMeshNbQuadrangles1->setMinimumWidth(100);
-  myMeshNbQuadrangles2   = new QLabel(myMeshFacesGroup, "myMeshNbQuadrangles2");
+  myMeshNbQuadrangles2   = new QLabel(myMeshFacesGroup);
   myMeshNbQuadrangles2->setMinimumWidth(100);
 
   // --> faces --> polygons
-  QLabel* myMeshNbPolygonesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYGONES" ) ), myMeshFacesGroup, "myMeshNbPolygonesLab" );
-  myMeshNbPolygones      = new QLabel( myMeshFacesGroup, "myMeshNbPolygones" );
+  QLabel* myMeshNbPolygonesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYGONES" ) ), myMeshFacesGroup );
+  myMeshNbPolygones      = new QLabel( myMeshFacesGroup );
   myMeshNbPolygones->setMinimumWidth( 100 );
 
   myMeshFacesGroupLayout->addWidget(myMeshNbFacesLab,       0, 0);
@@ -208,156 +199,150 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   myMeshFacesGroupLayout->addWidget(myMeshNbQuadrangles,    2, 1);
   myMeshFacesGroupLayout->addWidget(myMeshNbQuadrangles1,   2, 2);
   myMeshFacesGroupLayout->addWidget(myMeshNbQuadrangles2,   2, 3);
-  myMeshFacesGroupLayout->addWidget( myMeshNbPolygonesLab,   3, 0 );
-  myMeshFacesGroupLayout->addWidget( myMeshNbPolygones,      3, 1 );
+  myMeshFacesGroupLayout->addWidget(myMeshNbPolygonesLab,   3, 0);
+  myMeshFacesGroupLayout->addWidget(myMeshNbPolygones,      3, 1);
   
   // --> volumes
-  myMeshVolumesGroup = new QGroupBox(tr("SMESH_MESHINFO_VOLUMES"), myMeshWidget, "myMeshVolumesGroup");
-  myMeshVolumesGroup->setColumnLayout(0, Qt::Vertical);
-  myMeshVolumesGroup->layout()->setSpacing(0);  myMeshVolumesGroup->layout()->setMargin(0);
-  QGridLayout* myMeshVolumesGroupLayout = new QGridLayout(myMeshVolumesGroup->layout());
-  myMeshVolumesGroupLayout->setAlignment(Qt::AlignTop);
-  myMeshVolumesGroupLayout->setSpacing(6);  myMeshVolumesGroupLayout->setMargin(11);
+  myMeshVolumesGroup = new QGroupBox(tr("SMESH_MESHINFO_VOLUMES"), myMeshWidget);
+  QGridLayout* myMeshVolumesGroupLayout = new QGridLayout(myMeshVolumesGroup);
+  myMeshVolumesGroupLayout->setSpacing(SPACING);  myMeshVolumesGroupLayout->setMargin(MARGIN);
 
   // --> volumes --> total
-  QLabel* myMeshNbVolumesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), myMeshVolumesGroup, "myMeshNbVolumesLab");
+  QLabel* myMeshNbVolumesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), myMeshVolumesGroup);
   myMeshNbVolumesLab->setFont(fnt);
-  myMeshNbVolumes    = new QLabel(myMeshVolumesGroup, "myMeshNbVolumes");
+  myMeshNbVolumes    = new QLabel(myMeshVolumesGroup);
   myMeshNbVolumes->setMinimumWidth(100);
   myMeshNbVolumes->setFont(fnt);
-  myMeshNbVolumes1   = new QLabel(myMeshVolumesGroup, "myMeshNbVolumes1");
+  myMeshNbVolumes1   = new QLabel(myMeshVolumesGroup);
   myMeshNbVolumes1->setMinimumWidth(100);
   myMeshNbVolumes1->setFont(fnt);
-  myMeshNbVolumes2   = new QLabel(myMeshVolumesGroup, "myMeshNbVolumes2");
+  myMeshNbVolumes2   = new QLabel(myMeshVolumesGroup);
   myMeshNbVolumes2->setMinimumWidth(100);
   myMeshNbVolumes2->setFont(fnt);
 
   // --> volumes --> tetrahedrons
-  QLabel* myMeshNbTetraLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), myMeshVolumesGroup, "myMeshNbTetraLab");
-  myMeshNbTetra    = new QLabel(myMeshVolumesGroup, "myMeshNbTetra");
+  QLabel* myMeshNbTetraLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), myMeshVolumesGroup);
+  myMeshNbTetra    = new QLabel(myMeshVolumesGroup);
   myMeshNbTetra->setMinimumWidth(100);
-  myMeshNbTetra1   = new QLabel(myMeshVolumesGroup, "myMeshNbTetra1");
+  myMeshNbTetra1   = new QLabel(myMeshVolumesGroup);
   myMeshNbTetra1->setMinimumWidth(100);
-  myMeshNbTetra2   = new QLabel(myMeshVolumesGroup, "myMeshNbTetra2");
+  myMeshNbTetra2   = new QLabel(myMeshVolumesGroup);
   myMeshNbTetra2->setMinimumWidth(100);
 
   // --> volumes --> hexahedrons
-  QLabel* myMeshNbHexaLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), myMeshVolumesGroup, "myMeshNbHexaLab");
-  myMeshNbHexa    = new QLabel(myMeshVolumesGroup, "myMeshNbHexa");
+  QLabel* myMeshNbHexaLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), myMeshVolumesGroup);
+  myMeshNbHexa    = new QLabel(myMeshVolumesGroup);
   myMeshNbHexa->setMinimumWidth(100);
-  myMeshNbHexa1   = new QLabel(myMeshVolumesGroup, "myMeshNbHexa1");
+  myMeshNbHexa1   = new QLabel(myMeshVolumesGroup);
   myMeshNbHexa1->setMinimumWidth(100);
-  myMeshNbHexa2   = new QLabel(myMeshVolumesGroup, "myMeshNbHexa2");
+  myMeshNbHexa2   = new QLabel(myMeshVolumesGroup);
   myMeshNbHexa2->setMinimumWidth(100);
 
   // --> volumes --> prisms
-  QLabel* myMeshNbPrismLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), myMeshVolumesGroup, "myMeshNbPrismLab");
-  myMeshNbPrism    = new QLabel(myMeshVolumesGroup, "myMeshNbPrism");
+  QLabel* myMeshNbPrismLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), myMeshVolumesGroup);
+  myMeshNbPrism    = new QLabel(myMeshVolumesGroup);
   myMeshNbPrism->setMinimumWidth(100);
-  myMeshNbPrism1   = new QLabel(myMeshVolumesGroup, "myMeshNbPrism1");
+  myMeshNbPrism1   = new QLabel(myMeshVolumesGroup);
   myMeshNbPrism1->setMinimumWidth(100);
-  myMeshNbPrism2   = new QLabel(myMeshVolumesGroup, "myMeshNbPrism2");
+  myMeshNbPrism2   = new QLabel(myMeshVolumesGroup);
   myMeshNbPrism2->setMinimumWidth(100);
 
   // --> volumes --> pyramids
-  QLabel* myMeshNbPyraLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), myMeshVolumesGroup, "myMeshNbPyraLab");
-  myMeshNbPyra    = new QLabel(myMeshVolumesGroup, "myMeshNbPyra");
+  QLabel* myMeshNbPyraLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), myMeshVolumesGroup);
+  myMeshNbPyra    = new QLabel(myMeshVolumesGroup);
   myMeshNbPyra->setMinimumWidth(100);
-  myMeshNbPyra1   = new QLabel(myMeshVolumesGroup, "myMeshNbPyra1");
+  myMeshNbPyra1   = new QLabel(myMeshVolumesGroup);
   myMeshNbPyra1->setMinimumWidth(100);
-  myMeshNbPyra2   = new QLabel(myMeshVolumesGroup, "myMeshNbPyra2");
+  myMeshNbPyra2   = new QLabel(myMeshVolumesGroup);
   myMeshNbPyra2->setMinimumWidth(100);
 
   // --> volumes --> polyherones
-  QLabel* myMeshNbPolyhedronesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYEDRES" ) ), myMeshVolumesGroup, "myMeshNbPolyhedronLab" );
-  myMeshNbPolyhedrones = new QLabel( myMeshVolumesGroup, "myMeshNbPolyhedrones" );
+  QLabel* myMeshNbPolyhedronesLab = new QLabel( COLONIZE( tr( "SMESH_MESHINFO_POLYEDRES" ) ), myMeshVolumesGroup );
+  myMeshNbPolyhedrones = new QLabel( myMeshVolumesGroup );
   myMeshNbPolyhedrones->setMinimumWidth( 100 );
 
-  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumesLab, 0, 0);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes,    0, 1);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes1,   0, 2);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes2,   0, 3);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbTetraLab,   1, 0);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra,      1, 1);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra1,     1, 2);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra2,     1, 3);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbHexaLab,    2, 0);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa,       2, 1);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa1,      2, 2);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa2,      2, 3);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPrismLab,   3, 0);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism,      3, 1);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism1,     3, 2);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism2,     3, 3);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPyraLab,    4, 0);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra,       4, 1);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra1,      4, 2);
-  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra2,      4, 3);
-  myMeshVolumesGroupLayout->addWidget( myMeshNbPolyhedronesLab,    5, 0 );
-  myMeshVolumesGroupLayout->addWidget( myMeshNbPolyhedrones,       5, 1 );
+  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumesLab,      0, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes,         0, 1);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes1,        0, 2);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbVolumes2,        0, 3);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbTetraLab,        1, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra,           1, 1);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra1,          1, 2);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbTetra2,          1, 3);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbHexaLab,         2, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa,            2, 1);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa1,           2, 2);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbHexa2,           2, 3);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPrismLab,        3, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism,           3, 1);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism1,          3, 2);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPrism2,          3, 3);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPyraLab,         4, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra,            4, 1);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra1,           4, 2);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPyra2,           4, 3);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPolyhedronesLab, 5, 0);
+  myMeshVolumesGroupLayout->addWidget(myMeshNbPolyhedrones,    5, 1);
 
-  aMeshLayout->addWidget(myMeshNameLab,          0, 0);
-  aMeshLayout->addWidget(myMeshName,             0, 1);
-  aMeshLayout->addMultiCellWidget(line1,   1, 1, 0, 1);
-  aMeshLayout->addWidget(myMeshNbNodesLab,       2, 0);
-  aMeshLayout->addWidget(myMeshNbNodes,          2, 1);
-  aMeshLayout->addWidget(myMeshOrder0Lab,        3, 1);
-  aMeshLayout->addWidget(myMeshOrder1Lab,        3, 2);
-  aMeshLayout->addWidget(myMeshOrder2Lab,        3, 3);
-  aMeshLayout->addWidget(myMeshNbEdgesLab,       4, 0);
-  aMeshLayout->addWidget(myMeshNbEdges,          4, 1);
-  aMeshLayout->addWidget(myMeshNbEdges1,         4, 2);
-  aMeshLayout->addWidget(myMeshNbEdges2,         4, 3);
-  aMeshLayout->addMultiCellWidget(myMeshFacesGroup,   5, 5, 0, 3);
-  aMeshLayout->addMultiCellWidget(myMeshVolumesGroup, 6, 6, 0, 3);
-  aMeshLayout->addItem(new QSpacerItem(6, 6, QSizePolicy::Minimum, QSizePolicy::Expanding), 7, 0);
+  aMeshLayout->addWidget(myMeshNameLab,      0, 0);
+  aMeshLayout->addWidget(myMeshName,         0, 1);
+  aMeshLayout->addWidget(line1,              1, 0, 1, 2);
+  aMeshLayout->addWidget(myMeshNbNodesLab,   2, 0);
+  aMeshLayout->addWidget(myMeshNbNodes,      2, 1);
+  aMeshLayout->addWidget(myMeshOrder0Lab,    3, 1);
+  aMeshLayout->addWidget(myMeshOrder1Lab,    3, 2);
+  aMeshLayout->addWidget(myMeshOrder2Lab,    3, 3);
+  aMeshLayout->addWidget(myMeshNbEdgesLab,   4, 0);
+  aMeshLayout->addWidget(myMeshNbEdges,      4, 1);
+  aMeshLayout->addWidget(myMeshNbEdges1,     4, 2);
+  aMeshLayout->addWidget(myMeshNbEdges2,     4, 3);
+  aMeshLayout->addWidget(myMeshFacesGroup,   5, 0, 1, 4);
+  aMeshLayout->addWidget(myMeshVolumesGroup, 6, 0, 1, 4);
+  aMeshLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 7, 0);
 
   // submesh
   mySubMeshWidget = new QWidget(myWGStack);
   QGridLayout* aSubMeshLayout = new QGridLayout(mySubMeshWidget);
-  aSubMeshLayout->setSpacing(6);  aSubMeshLayout->setMargin(0);
+  aSubMeshLayout->setSpacing(SPACING);  aSubMeshLayout->setMargin(0);
   myWGStack->addWidget(mySubMeshWidget);
 
   // --> name
-  QLabel* mySubMeshNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), mySubMeshWidget, "mySubMeshNameLab");
-  mySubMeshName    = new QLabel(mySubMeshWidget, "mySubMeshName");
+  QLabel* mySubMeshNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), mySubMeshWidget);
+  mySubMeshName    = new QLabel(mySubMeshWidget);
   mySubMeshName->setMinimumWidth(100);
   QFrame* line2 = new QFrame(mySubMeshWidget);
   line2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
 
   // --> nodes
-  QLabel* mySubMeshNbNodesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), mySubMeshWidget, "mySubMeshNbNodesLab");
-  mySubMeshNbNodes    = new QLabel(mySubMeshWidget, "mySubMeshNbNodes");
+  QLabel* mySubMeshNbNodesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), mySubMeshWidget);
+  mySubMeshNbNodes    = new QLabel(mySubMeshWidget);
   mySubMeshNbNodes->setMinimumWidth(100);
 
   // --> elements
-  mySubMeshElementsGroup = new QGroupBox(tr("SMESH_MESHINFO_ELEMENTS"), mySubMeshWidget, "mySubMeshElementsGroup");
-  mySubMeshElementsGroup->setColumnLayout(0, Qt::Vertical);
-  mySubMeshElementsGroup->layout()->setSpacing(0);  mySubMeshElementsGroup->layout()->setMargin(0);
-  QGridLayout* mySubMeshElementsGroupLayout = new QGridLayout(mySubMeshElementsGroup->layout());
-  mySubMeshElementsGroupLayout->setAlignment(Qt::AlignTop);
-  mySubMeshElementsGroupLayout->setSpacing(6);  mySubMeshElementsGroupLayout->setMargin(11);
+  mySubMeshElementsGroup = new QGroupBox(tr("SMESH_MESHINFO_ELEMENTS"), mySubMeshWidget);
+  QGridLayout* mySubMeshElementsGroupLayout = new QGridLayout(mySubMeshElementsGroup);
+  mySubMeshElementsGroupLayout->setSpacing(SPACING);  mySubMeshElementsGroupLayout->setMargin(MARGIN);
 
   // --> elements --> total
-  QLabel* mySubMeshNbElementsLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), mySubMeshElementsGroup, "mySubMeshNbElementsLab");
+  QLabel* mySubMeshNbElementsLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TOTAL")), mySubMeshElementsGroup);
   mySubMeshNbElementsLab->setFont(fnt);
-  mySubMeshNbElements    = new QLabel(mySubMeshElementsGroup, "mySubMeshNbElements");
+  mySubMeshNbElements    = new QLabel(mySubMeshElementsGroup);
   mySubMeshNbElements->setMinimumWidth(100);
   mySubMeshNbElements->setFont(fnt);
 
   // --> elements --> edges
-  QLabel* mySubMeshNbEdgesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), mySubMeshElementsGroup, "mySubMeshNbEdgesLab");
-  mySubMeshNbEdges    = new QLabel(mySubMeshElementsGroup, "mySubMeshNbEdges");
+  QLabel* mySubMeshNbEdgesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), mySubMeshElementsGroup);
+  mySubMeshNbEdges    = new QLabel(mySubMeshElementsGroup);
   mySubMeshNbEdges->setMinimumWidth(100);
 
   // --> elements --> faces
-  QLabel* mySubMeshNbFacesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), mySubMeshElementsGroup, "mySubMeshNbFacesLab");
-  mySubMeshNbFaces    = new QLabel(mySubMeshElementsGroup, "mySubMeshNbFaces");
+  QLabel* mySubMeshNbFacesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), mySubMeshElementsGroup);
+  mySubMeshNbFaces    = new QLabel(mySubMeshElementsGroup);
   mySubMeshNbFaces->setMinimumWidth(100);
 
   // --> elements --> volumes
-  QLabel* mySubMeshNbVolumesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), mySubMeshElementsGroup, "mySubMeshNbVolumesLab");
-  mySubMeshNbVolumes    = new QLabel(mySubMeshElementsGroup, "mySubMeshNbVolumes");
+  QLabel* mySubMeshNbVolumesLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), mySubMeshElementsGroup);
+  mySubMeshNbVolumes    = new QLabel(mySubMeshElementsGroup);
   mySubMeshNbVolumes->setMinimumWidth(100);
 
   mySubMeshElementsGroupLayout->addWidget(mySubMeshNbElementsLab, 0, 0);
@@ -369,61 +354,59 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumesLab,  3, 0);
   mySubMeshElementsGroupLayout->addWidget(mySubMeshNbVolumes,     3, 1);
 
-  aSubMeshLayout->addWidget(mySubMeshNameLab,          0, 0);
-  aSubMeshLayout->addWidget(mySubMeshName,             0, 1);
-  aSubMeshLayout->addMultiCellWidget(line2,      1, 1, 0, 1);
-  aSubMeshLayout->addWidget(mySubMeshNbNodesLab,       2, 0);
-  aSubMeshLayout->addWidget(mySubMeshNbNodes,          2, 1);
-  aSubMeshLayout->addMultiCellWidget(mySubMeshElementsGroup, 3, 3, 0, 1);
-  aSubMeshLayout->addItem(new QSpacerItem(5, 5, QSizePolicy::Minimum, QSizePolicy::Expanding), 4, 0);
+  aSubMeshLayout->addWidget(mySubMeshNameLab,       0, 0);
+  aSubMeshLayout->addWidget(mySubMeshName,          0, 1);
+  aSubMeshLayout->addWidget(line2,                  1, 0, 1, 2);
+  aSubMeshLayout->addWidget(mySubMeshNbNodesLab,    2, 0);
+  aSubMeshLayout->addWidget(mySubMeshNbNodes,       2, 1);
+  aSubMeshLayout->addWidget(mySubMeshElementsGroup, 3, 0, 1, 2);
+  aSubMeshLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 4, 0);
 
   // group
   myGroupWidget = new QWidget(myWGStack);
   QGridLayout* myGroupWidgetLayout = new QGridLayout(myGroupWidget);
-  myGroupWidgetLayout->setSpacing(6);  myGroupWidgetLayout->setMargin(0);
+  myGroupWidgetLayout->setSpacing(SPACING);  myGroupWidgetLayout->setMargin(0);
   myWGStack->addWidget(myGroupWidget);
 
   // --> name
-  QLabel* myGroupNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), myGroupWidget, "myGroupNameLab");
-  myGroupName = new QLabel(myGroupWidget, "myGroupName");
+  QLabel* myGroupNameLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NAME")), myGroupWidget);
+  myGroupName = new QLabel(myGroupWidget);
   myGroupName->setMinimumWidth(100);
   QFrame* line3 = new QFrame(myGroupWidget);
   line3->setFrameStyle(QFrame::HLine | QFrame::Sunken);
 
   // --> type
-  QLabel* myGroupTypeLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TYPE")), myGroupWidget, "myGroupTypeLab");
-  myGroupType = new QLabel(myGroupWidget, "myGroupType");
+  QLabel* myGroupTypeLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TYPE")), myGroupWidget);
+  myGroupType = new QLabel(myGroupWidget);
   myGroupType->setMinimumWidth(100);
 
   // --> number of entities
-  QLabel* myGroupNbLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_ENTITIES")), myGroupWidget, "myGroupNbLab");
-  myGroupNb = new QLabel(myGroupWidget, "myGroupNb");
+  QLabel* myGroupNbLab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_ENTITIES")), myGroupWidget);
+  myGroupNb = new QLabel(myGroupWidget);
   myGroupNb->setMinimumWidth(100);
 
-  myGroupWidgetLayout->addWidget(myGroupNameLab,       0, 0);
-  myGroupWidgetLayout->addWidget(myGroupName,          0, 1);
-  myGroupWidgetLayout->addMultiCellWidget(line3, 1, 1, 0, 1);
-  myGroupWidgetLayout->addWidget(myGroupTypeLab,       2, 0);
-  myGroupWidgetLayout->addWidget(myGroupType,          2, 1);
-  myGroupWidgetLayout->addWidget(myGroupNbLab,         3, 0);
-  myGroupWidgetLayout->addWidget(myGroupNb,            3, 1);
-  myGroupWidgetLayout->addItem(new QSpacerItem(5, 5, QSizePolicy::Minimum, QSizePolicy::Expanding), 4, 0);
+  myGroupWidgetLayout->addWidget(myGroupNameLab, 0, 0);
+  myGroupWidgetLayout->addWidget(myGroupName,    0, 1);
+  myGroupWidgetLayout->addWidget(line3,          1, 0, 1, 2);
+  myGroupWidgetLayout->addWidget(myGroupTypeLab, 2, 0);
+  myGroupWidgetLayout->addWidget(myGroupType,    2, 1);
+  myGroupWidgetLayout->addWidget(myGroupNbLab,   3, 0);
+  myGroupWidgetLayout->addWidget(myGroupNb,      3, 1);
+  myGroupWidgetLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 4, 0);
 
   // buttons
-  myButtonsGroup = new QGroupBox(this, "myButtonsGroup");
-  myButtonsGroup->setColumnLayout(0, Qt::Vertical);
-  myButtonsGroup->layout()->setSpacing(0);  myButtonsGroup->layout()->setMargin(0);
-  QHBoxLayout* myButtonsGroupLayout = new QHBoxLayout(myButtonsGroup->layout());
-  myButtonsGroupLayout->setAlignment(Qt::AlignTop);
-  myButtonsGroupLayout->setSpacing(6); myButtonsGroupLayout->setMargin(11);
+  myButtonsGroup = new QGroupBox(this);
+  QHBoxLayout* myButtonsGroupLayout = new QHBoxLayout(myButtonsGroup);
+  myButtonsGroupLayout->setSpacing(SPACING); myButtonsGroupLayout->setMargin(MARGIN);
 
   // buttons --> OK and Help buttons
-  myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup, "myOkBtn");
-  myOkBtn->setAutoDefault(TRUE); myOkBtn->setDefault(TRUE);
-  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup, "myHelpBtn");
-  myHelpBtn->setAutoDefault(TRUE);
+  myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup);
+  myOkBtn->setAutoDefault(true); myOkBtn->setDefault(true);
+  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup);
+  myHelpBtn->setAutoDefault(true);
 
   myButtonsGroupLayout->addWidget(myOkBtn);
+  myButtonsGroupLayout->addSpacing(10);
   myButtonsGroupLayout->addStretch();
   myButtonsGroupLayout->addWidget(myHelpBtn);
 
@@ -440,8 +423,6 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg (SMESHGUI* theModule,
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr,          SIGNAL(currentSelectionChanged()),      this, SLOT(onSelectionChanged()));
-
-  this->show();
 
   // init dialog with current selection
   onSelectionChanged();
@@ -480,8 +461,8 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
       if (!CORBA::is_nil(anObject)) {
 	SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObject);
 	if (!aMesh->_is_nil()) {
-	  myWGStack->raiseWidget(myMeshWidget);
-	  setCaption(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
+	  myWGStack->setCurrentWidget(myMeshWidget);
+	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_OBJECT_MESH") + "]");
 	  myMeshName->setText(aSO->GetName().c_str());
 	  myMeshNbNodes->setNum((int)aMesh->NbNodes());
 	  myMeshNbEdges->setNum((int)aMesh->NbEdges());
@@ -517,8 +498,8 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	}
 	SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObject);
 	if (!aSubMesh->_is_nil()) {
-	  myWGStack->raiseWidget(mySubMeshWidget);
-	  setCaption(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_SUBMESH") + "]");
+	  myWGStack->setCurrentWidget(mySubMeshWidget);
+	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_SUBMESH") + "]");
 	  mySubMeshName->setText(aSO->GetName().c_str());
 	  mySubMeshNbNodes->setNum((int)aSubMesh->GetNumberOfNodes(true));
 	  mySubMeshNbElements->setNum((int)aSubMesh->GetNumberOfElements());
@@ -529,8 +510,8 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	}
 	SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
 	if (!aGroup->_is_nil()) {
-	  myWGStack->raiseWidget(myGroupWidget);
-	  setCaption(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_GROUP") + "]");
+	  myWGStack->setCurrentWidget(myGroupWidget);
+	  setWindowTitle(tr("SMESH_MESHINFO_TITLE") + " [" + tr("SMESH_GROUP") + "]");
 	  myGroupName->setText(aSO->GetName().c_str());
 	  int aType = aGroup->GetType();
 	  QString strType;
@@ -547,15 +528,15 @@ void SMESHGUI_MeshInfosDlg::DumpMeshInfos()
 	    strType = "SMESH_MESHINFO_ALL_TYPES"; break;
 	  }
 
-	  myGroupType->setText(tr(strType));
+	  myGroupType->setText(tr(strType.toLatin1().data()));
 	  myGroupNb->setNum((int)aGroup->Size());
 	  return;
 	}
       }
     }
   }
-  myWGStack->raiseWidget(0);
-  setCaption(tr("SMESH_MESHINFO_TITLE"));
+  myWGStack->setCurrentIndex(0);
+  setWindowTitle(tr("SMESH_MESHINFO_TITLE"));
 }
 
 //=================================================================================
@@ -572,7 +553,7 @@ void SMESHGUI_MeshInfosDlg::onSelectionChanged()
 // function : closeEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_MeshInfosDlg::closeEvent (QCloseEvent* e)
+void SMESHGUI_MeshInfosDlg::closeEvent(QCloseEvent* e)
 {
   mySMESHGUI->ResetState();
   QDialog::closeEvent(e);
@@ -582,7 +563,7 @@ void SMESHGUI_MeshInfosDlg::closeEvent (QCloseEvent* e)
 // function : windowActivationChange()
 // purpose  : called when window is activated/deactivated
 //=================================================================================
-void SMESHGUI_MeshInfosDlg::windowActivationChange (bool oldActive)
+void SMESHGUI_MeshInfosDlg::windowActivationChange(bool oldActive)
 {
   QDialog::windowActivationChange(oldActive);
   if (isActiveWindow() && myIsActiveWindow != isActiveWindow())
@@ -632,16 +613,17 @@ void SMESHGUI_MeshInfosDlg::onHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -655,9 +637,8 @@ void SMESHGUI_MeshInfosDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }

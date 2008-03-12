@@ -1,51 +1,48 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_Utils.cxx
+// Author : Open CASCADE S.A.S.
+//
 
-
-#include <qstring.h>
-
+// SMESH includes
 #include "SMESHGUI_Utils.h"
+
 #include "SMESHGUI.h"
 
-#include "OB_Browser.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
 
-#include "SUIT_Desktop.h"
-#include "SUIT_Application.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+#include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Application.h>
+#include <SalomeApp_Module.h>
+#include <SalomeApp_Study.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "SalomeApp_Application.h"
-#include "SalomeApp_Module.h"
-#include "SalomeApp_Study.h"
+#include <SALOME_ListIO.hxx>
 
-#include "SALOME_ListIO.hxx"
-
-#include "SALOMEconfig.h"
-#include CORBA_CLIENT_HEADER(GEOM_Gen)
-
-#include "utilities.h"
-
-//using namespace std;
-
-namespace SMESH{
-
+namespace SMESH
+{
   SUIT_Desktop*
   GetDesktop(const CAM_Module* theModule)
   {
@@ -86,7 +83,6 @@ namespace SMESH{
     }
     return anObj;
   }
-
 
   SUIT_Study* GetActiveStudy()
   {
@@ -130,7 +126,7 @@ namespace SMESH{
     return _PTR(SObject)();
   }
 
-  void SetName (_PTR(SObject) theSObject, const char* theName)
+  void SetName (_PTR(SObject) theSObject, const QString& theName)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -140,10 +136,10 @@ namespace SMESH{
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeName");
     _PTR(AttributeName) aName = anAttr;
     if (aName)
-      aName->SetValue(theName);
+      aName->SetValue(theName.toLatin1().data());
   }
 
-  void SetValue (_PTR(SObject) theSObject, const char* theValue)
+  void SetValue (_PTR(SObject) theSObject, const QString& theValue)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -153,10 +149,10 @@ namespace SMESH{
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeComment");
     _PTR(AttributeComment) aComment = anAttr;
     if (aComment)
-      aComment->SetValue(theValue);
+      aComment->SetValue(theValue.toLatin1().data());
   }
   
-  void setFileName (_PTR(SObject) theSObject, const char* theValue)
+  void setFileName (_PTR(SObject) theSObject, const QString& theValue)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -166,10 +162,10 @@ namespace SMESH{
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeExternalFileDef");
     _PTR(AttributeExternalFileDef) aFileName = anAttr;
     if (aFileName)
-      aFileName->SetValue(theValue);
+      aFileName->SetValue(theValue.toLatin1().data());
   }
   
-  void setFileType (_PTR(SObject) theSObject, const char* theValue)
+  void setFileType (_PTR(SObject) theSObject, const QString& theValue)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
     if (aStudy->GetProperties()->IsLocked())
@@ -179,7 +175,7 @@ namespace SMESH{
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeFileType");
     _PTR(AttributeFileType) aFileType = anAttr;
     if (aFileType)
-      aFileType->SetValue(theValue);
+      aFileType->SetValue(theValue.toLatin1().data());
   }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
@@ -216,11 +212,11 @@ namespace SMESH{
     return CORBA::Object::_nil();
   }
 
-  CORBA::Object_var IORToObject (const char* theIOR)
+  CORBA::Object_var IORToObject (const QString& theIOR)
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
-    return app->orb()->string_to_object(theIOR);
+    return app->orb()->string_to_object(theIOR.toLatin1().data());
   }
 
   int GetNameOfSelectedIObjects(LightApp_SelectionMgr* theMgr, QString& theName)
@@ -277,7 +273,7 @@ namespace SMESH{
       _PTR(SObject) aSObj = anIter->Value();
       if (i >= 4) {
 	_PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
-	for (; anIter1->More(); anIter1->Next()) {
+	for ( ; anIter1->More(); anIter1->Next()) {
 	  _PTR(SObject) aSObj1 = anIter1->Value();
 	  anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
 	  aPixmap = anAttr;
@@ -293,7 +289,7 @@ namespace SMESH{
     }
   }
 
-  void ShowHelpFile (QString theHelpFileName)
+  void ShowHelpFile (const QString& theHelpFileName)
   {
     LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
     if (app) {
@@ -302,19 +298,11 @@ namespace SMESH{
                                theHelpFileName);
     }
     else {
-      SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-                             QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", "application")).arg(theHelpFileName),
-                             QObject::tr("BUT_OK"));
-      }
+      SUIT_MessageBox::warning(0, QObject::tr("WRN_WARNING"),
+			       QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			       arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								   "application")).
+			       arg(theHelpFileName));
+    }
   }
-
-//  void UpdateObjBrowser (bool)
-//  {
-//    //SMESHGUI::activeStudy()->updateObjBrowser(true);
-//    //SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>
-//    //  (SUIT_Session::session()->activeApplication());
-//    //if (anApp) anApp->objectBrowser()->updateTree();
-//    SMESHGUI::GetSMESHGUI()->updateObjBrowser();
-//  }
-}
+} // end of namespace SMESH

@@ -1,71 +1,70 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_StandardMeshInfosDlg.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_StandardMeshInfosDlg.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header$
 
+// SMESH includes
 #include "SMESHGUI_StandardMeshInfosDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
 
-#include "SMESH_TypeFilter.hxx"
+#include <SMESH_TypeFilter.hxx>
 
-#include "SALOMEDSClient_Study.hxx"
-#include "SALOMEDSClient_SObject.hxx"
+// SALOME KERNEL includes 
+#include <SALOMEDSClient_Study.hxx>
+#include <SALOMEDSClient_SObject.hxx>
 
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "SALOME_ListIO.hxx"
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
+// Qt includes
+#include <QGroupBox>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QTextBrowser>
+#include <QPushButton>
+#include <QKeyEvent>
 
-// QT Includes
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qtextbrowser.h>
-#include <qmap.h>
-#include <qpushbutton.h>
-
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Group)
-#include CORBA_SERVER_HEADER(GEOM_Gen)
 
-using namespace std;
-
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 /*!
@@ -74,89 +73,75 @@ using namespace std;
  *  Constructor
  */
 //=================================================================================
-SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModule, const char* name,
-                                                              bool modal, WFlags fl)
-     : QDialog( SMESH::GetDesktop( theModule ), name, modal, WStyle_Customize | WStyle_NormalBorder |
-                WStyle_Title | WStyle_SysMenu | WDestructiveClose),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-  if (!name)
-      setName("SMESHGUI_StandardMeshInfosDlg");
-  setCaption(tr("SMESH_STANDARD_MESHINFO_TITLE" ));
-  setSizeGripEnabled(TRUE);
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setWindowTitle(tr("SMESH_STANDARD_MESHINFO_TITLE"));
+  setSizeGripEnabled(true);
 
   myStartSelection = true;
   myIsActiveWindow = true;
 
   // dialog layout
-  QGridLayout* aDlgLayout = new QGridLayout(this);
-  aDlgLayout->setSpacing(6);
-  aDlgLayout->setMargin(11);
+  QVBoxLayout* aDlgLayout = new QVBoxLayout(this);
+  aDlgLayout->setSpacing(SPACING);
+  aDlgLayout->setMargin(MARGIN);
 
   // mesh group box
-  myMeshGroup = new QGroupBox(this, "myMeshGroup");
-  myMeshGroup->setTitle(tr("SMESH_MESH"));
-  myMeshGroup->setColumnLayout(0, Qt::Vertical);
-  myMeshGroup->layout()->setSpacing(0);
-  myMeshGroup->layout()->setMargin(0);
-  QGridLayout* myMeshGroupLayout = new QGridLayout(myMeshGroup->layout());
-  myMeshGroupLayout->setAlignment(Qt::AlignTop);
-  myMeshGroupLayout->setSpacing(6);
-  myMeshGroupLayout->setMargin(11);
+  myMeshGroup = new QGroupBox(tr("SMESH_MESH"), this);
+  QHBoxLayout* myMeshGroupLayout = new QHBoxLayout(myMeshGroup);
+  myMeshGroupLayout->setSpacing(SPACING);
+  myMeshGroupLayout->setMargin(MARGIN);
 
   // select button, label and line edit with mesh name
-  myNameLab = new QLabel(myMeshGroup, "myNameLab");
-  myNameLab->setText(tr("SMESH_NAME" ));
-  myMeshGroupLayout->addWidget(myNameLab, 0, 0);
+  myNameLab = new QLabel(tr("SMESH_NAME"), myMeshGroup);
+  myMeshGroupLayout->addWidget(myNameLab);
 
   QPixmap image0(SUIT_Session::session()->resourceMgr()->loadPixmap("SMESH",tr("ICON_SELECT")));
-  mySelectBtn = new QPushButton(myMeshGroup, "mySelectBtn");
-  mySelectBtn->setPixmap(image0);
-  mySelectBtn->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-  myMeshGroupLayout->addWidget(mySelectBtn, 0, 1);
+  mySelectBtn = new QPushButton(myMeshGroup);
+  mySelectBtn->setIcon(image0);
+  myMeshGroupLayout->addWidget(mySelectBtn);
 
-  myMeshLine = new QLineEdit(myMeshGroup, "myMeshLine");
-  myMeshGroupLayout->addWidget(myMeshLine, 0, 2);
+  myMeshLine = new QLineEdit(myMeshGroup);
+  myMeshGroupLayout->addWidget(myMeshLine);
 
-  aDlgLayout->addWidget(myMeshGroup, 0, 0);
+  aDlgLayout->addWidget(myMeshGroup);
 
   // information group box
-  myInfoGroup  = new QGroupBox(this, "myInfoGroup");
-  myInfoGroup->setTitle(tr("SMESH_INFORMATION"));
-  myInfoGroup->setColumnLayout(0, Qt::Vertical);
-  myInfoGroup->layout()->setSpacing(0);
-  myInfoGroup->layout()->setMargin(0);
-  QGridLayout* myInfoGroupLayout = new QGridLayout(myInfoGroup->layout());
-  myInfoGroupLayout->setAlignment(Qt::AlignTop);
-  myInfoGroupLayout->setSpacing(6);
-  myInfoGroupLayout->setMargin(11);
+  myInfoGroup  = new QGroupBox(tr("SMESH_INFORMATION"), this);
+  QVBoxLayout* myInfoGroupLayout = new QVBoxLayout(myInfoGroup);
+  myInfoGroupLayout->setSpacing(SPACING);
+  myInfoGroupLayout->setMargin(MARGIN);
 
   // information text browser
-  myInfo = new QTextBrowser(myInfoGroup, "myInfo");
-  myInfoGroupLayout->addWidget(myInfo, 0, 0);
+  myInfo = new QTextBrowser(myInfoGroup);
+  myInfo->setMinimumSize(200, 150);
+  myInfoGroupLayout->addWidget(myInfo);
 
-  aDlgLayout->addWidget(myInfoGroup, 1, 0);
+  aDlgLayout->addWidget(myInfoGroup);
 
   // buttons group
-  myButtonsGroup = new QGroupBox(this, "myButtonsGroup");
-  myButtonsGroup->setColumnLayout(0, Qt::Vertical);
-  myButtonsGroup->layout()->setSpacing(0);  myButtonsGroup->layout()->setMargin(0);
-  QHBoxLayout* myButtonsGroupLayout = new QHBoxLayout(myButtonsGroup->layout());
-  myButtonsGroupLayout->setAlignment(Qt::AlignTop);
-  myButtonsGroupLayout->setSpacing(6); myButtonsGroupLayout->setMargin(11);
+  myButtonsGroup = new QGroupBox(this);
+  QHBoxLayout* myButtonsGroupLayout = new QHBoxLayout(myButtonsGroup);
+  myButtonsGroupLayout->setSpacing(SPACING);
+  myButtonsGroupLayout->setMargin(MARGIN);
 
   // buttons --> OK and Help buttons
-  myOkBtn = new QPushButton(tr("SMESH_BUT_OK" ), myButtonsGroup, "myOkBtn");
-  myOkBtn->setAutoDefault(TRUE); myOkBtn->setDefault(TRUE);
-  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP" ), myButtonsGroup, "myHelpBtn");
-  myHelpBtn->setAutoDefault(TRUE);
+  myOkBtn = new QPushButton(tr("SMESH_BUT_OK"), myButtonsGroup);
+  myOkBtn->setAutoDefault(true); myOkBtn->setDefault(true);
+  myHelpBtn = new QPushButton(tr("SMESH_BUT_HELP"), myButtonsGroup);
+  myHelpBtn->setAutoDefault(true);
 
   myButtonsGroupLayout->addWidget(myOkBtn);
+  myButtonsGroupLayout->addSpacing(10);
   myButtonsGroupLayout->addStretch();
   myButtonsGroupLayout->addWidget(myHelpBtn);
 
-  aDlgLayout->addWidget(myButtonsGroup, 2, 0);
+  aDlgLayout->addWidget(myButtonsGroup);
 
   mySMESHGUI->SetActiveDialogBox(this);
 
@@ -167,10 +152,6 @@ SMESHGUI_StandardMeshInfosDlg::SMESHGUI_StandardMeshInfosDlg( SMESHGUI* theModul
   connect( mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),        this, SLOT(close()));
   connect( mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect( mySelectionMgr,  SIGNAL(currentSelectionChanged()),      this, SLOT(onSelectionChanged()));
-
-  // resize and move dialog, then show
-  this->setMinimumSize(270, 428);
-  this->show();
 
   // init dialog with current selection
   myMeshFilter = new SMESH_TypeFilter (MESH);
@@ -257,7 +238,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for (; it->More(); it->Next()) {
+	for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
 	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
@@ -290,7 +271,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for (; it->More(); it->Next()) {
+	for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
 	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
@@ -316,14 +297,14 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
 
       // info about groups on faces
       anObj.reset();
-      aMeshSO->FindSubObject(SMESH::Tag_FaceGroups , anObj);
+      aMeshSO->FindSubObject(SMESH::Tag_FaceGroups, anObj);
       if (anObj) {
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
 	if (!hasGroup && it->More()) {
           anInfo.append(QString("Groups:<br><br>"));
           hasGroup = true;
         }
-	for (; it->More(); it->Next()) {
+	for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
 	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
@@ -354,7 +335,7 @@ void SMESHGUI_StandardMeshInfosDlg::DumpMeshInfos()
         _PTR(ChildIterator) it = aStudy->NewChildIterator(anObj);
 	if (!hasGroup && it->More())
           anInfo.append(QString("Groups:<br>"));
-	for (; it->More(); it->Next()) {
+	for ( ; it->More(); it->Next()) {
           _PTR(SObject) subObj = it->Value();
           CORBA::Object_var anObject = SMESH::SObjectToObject(subObj);
 	  SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(anObject);
@@ -466,10 +447,11 @@ void SMESHGUI_StandardMeshInfosDlg::onHelp()
 #else
     platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser",
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -483,9 +465,8 @@ void SMESHGUI_StandardMeshInfosDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    onHelp();
+  }
 }

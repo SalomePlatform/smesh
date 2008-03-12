@@ -1,82 +1,74 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-//
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+// 
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+// 
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+// 
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+// 
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ClippingDlg.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ClippingDlg.cxx
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
 
+// SMESH includes
 #include "SMESHGUI_ClippingDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_SpinBox.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_ActorUtils.h"
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
 
-#include "SUIT_Session.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
 
-#include "SALOME_ListIO.hxx"
-#include "SALOME_InteractiveObject.hxx"
-#include "SALOME_ListIteratorOfListIO.hxx"
+#include <SALOME_ListIO.hxx>
 
-#include "LightApp_Application.h"
-#include "LightApp_SelectionMgr.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewWindow.h"
+#include <SVTK_ViewWindow.h>
 
-// QT Includes
-#include <qlabel.h>
-#include <qpushbutton.h>
-#include <qcombobox.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qgroupbox.h>
+// Qt includes
+#include <QLabel>
+#include <QPushButton>
+#include <QComboBox>
+#include <QCheckBox>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QKeyEvent>
 
-// VTK Includes
+// VTK includes
 #include <vtkMath.h>
-#include <vtkCamera.h>
-#include <vtkRenderer.h>
-#include <vtkImplicitBoolean.h>
-#include <vtkImplicitFunctionCollection.h>
-#include <vtkObjectFactory.h>
-
+#include <vtkPlane.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkPlaneSource.h>
-#include <vtkPolyData.h>
-#include <vtkRenderer.h>
 #include <vtkProperty.h>
 
-// STL includes
-#include <algorithm>
-
-using namespace std;
-
+#define SPACING 6
+#define MARGIN  11
 
 class OrientedPlane: public vtkPlane
 {
@@ -207,142 +199,112 @@ struct TSetVisiblity {
 // purpose  :
 //
 //=================================================================================
-SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg (SMESHGUI* theModule,
-					    const char* name,
-					    bool modal,
-					    WFlags fl):
-  QDialog(SMESH::GetDesktop(theModule),
-	  name, 
-	  modal, 
-	  WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | WDestructiveClose),
+SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule ):
+  QDialog( SMESH::GetDesktop(theModule) ),
   mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
   mySMESHGUI(theModule)
 {
-  if (!name)
-    setName("SMESHGUI_ClippingDlg");
-  setCaption(tr("SMESH_CLIPPING_TITLE"));
-  setSizeGripEnabled(TRUE);
-  QGridLayout* SMESHGUI_ClippingDlgLayout = new QGridLayout(this);
-  SMESHGUI_ClippingDlgLayout->setSpacing(6);
-  SMESHGUI_ClippingDlgLayout->setMargin(11);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("SMESH_CLIPPING_TITLE"));
+  setSizeGripEnabled(true);
+
+  QVBoxLayout* SMESHGUI_ClippingDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_ClippingDlgLayout->setSpacing(SPACING);
+  SMESHGUI_ClippingDlgLayout->setMargin(MARGIN);
 
   // Controls for selecting, creating, deleting planes
-  QGroupBox* GroupPlanes = new QGroupBox (this, "GroupPlanes");
-  GroupPlanes->setTitle(tr("Clipping planes"));
-  GroupPlanes->setColumnLayout(0, Qt::Vertical);
-  GroupPlanes->layout()->setSpacing(0);
-  GroupPlanes->layout()->setMargin(0);
-  QGridLayout* GroupPlanesLayout = new QGridLayout (GroupPlanes->layout());
-  GroupPlanesLayout->setAlignment(Qt::AlignTop);
-  GroupPlanesLayout->setSpacing(6);
-  GroupPlanesLayout->setMargin(11);
+  QGroupBox* GroupPlanes = new QGroupBox(tr("Clipping planes"), this);
+  QHBoxLayout* GroupPlanesLayout = new QHBoxLayout(GroupPlanes);
+  GroupPlanesLayout->setSpacing(SPACING);
+  GroupPlanesLayout->setMargin(MARGIN);
 
-  ComboBoxPlanes = new QComboBox(GroupPlanes, "ComboBoxPlanes");
-  GroupPlanesLayout->addWidget(ComboBoxPlanes, 0, 0);
+  ComboBoxPlanes = new QComboBox(GroupPlanes);
 
-  QSpacerItem* spacerGP = new QSpacerItem (20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupPlanesLayout->addItem(spacerGP, 0, 1);
+  buttonNew = new QPushButton(tr("SMESH_BUT_NEW"), GroupPlanes);
 
-  buttonNew = new QPushButton (GroupPlanes, "buttonNew");
-  buttonNew->setText(tr("SMESH_BUT_NEW"));
-  GroupPlanesLayout->addWidget(buttonNew, 0, 2);
+  buttonDelete = new QPushButton(tr("SMESH_BUT_DELETE"), GroupPlanes);
 
-  buttonDelete = new QPushButton (GroupPlanes, "buttonDelete");
-  buttonDelete->setText(tr("SMESH_BUT_DELETE"));
-  GroupPlanesLayout->addWidget(buttonDelete, 0, 3);
+  GroupPlanesLayout->addWidget(ComboBoxPlanes);
+  GroupPlanesLayout->addStretch();
+  GroupPlanesLayout->addWidget(buttonNew);
+  GroupPlanesLayout->addWidget(buttonDelete);
 
   // Controls for defining plane parameters
-  QGroupBox* GroupParameters = new QGroupBox (this, "GroupParameters");
-  GroupParameters->setTitle(tr("SMESH_PARAMETERS"));
-  GroupParameters->setColumnLayout(0, Qt::Vertical);
-  GroupParameters->layout()->setSpacing(0);
-  GroupParameters->layout()->setMargin(0);
-  QGridLayout* GroupParametersLayout = new QGridLayout (GroupParameters->layout());
-  GroupParametersLayout->setAlignment(Qt::AlignTop);
-  GroupParametersLayout->setSpacing(6);
-  GroupParametersLayout->setMargin(11);
+  QGroupBox* GroupParameters = new QGroupBox(tr("SMESH_PARAMETERS"), this);
+  QGridLayout* GroupParametersLayout = new QGridLayout(GroupParameters);
+  GroupParametersLayout->setSpacing(SPACING);
+  GroupParametersLayout->setMargin(MARGIN);
 
-  TextLabelOrientation = new QLabel(GroupParameters, "TextLabelOrientation");
-  TextLabelOrientation->setText(tr("SMESH_ORIENTATION"));
-  GroupParametersLayout->addWidget(TextLabelOrientation, 0, 0);
+  TextLabelOrientation = new QLabel(tr("SMESH_ORIENTATION"), GroupParameters);
 
-  ComboBoxOrientation = new QComboBox(GroupParameters, "ComboBoxOrientation");
-  GroupParametersLayout->addWidget(ComboBoxOrientation, 0, 1);
+  ComboBoxOrientation = new QComboBox(GroupParameters);
 
-  TextLabelDistance = new QLabel(GroupParameters, "TextLabelDistance");
-  TextLabelDistance->setText(tr("SMESH_DISTANCE"));
-  GroupParametersLayout->addWidget(TextLabelDistance, 1, 0);
+  TextLabelDistance = new QLabel(tr("SMESH_DISTANCE"), GroupParameters);
 
-  SpinBoxDistance = new SMESHGUI_SpinBox(GroupParameters, "SpinBoxDistance");
-  GroupParametersLayout->addWidget(SpinBoxDistance, 1, 1);
+  SpinBoxDistance = new SMESHGUI_SpinBox(GroupParameters);
 
-  TextLabelRot1 = new QLabel(GroupParameters, "TextLabelRot1");
-  TextLabelRot1->setText(tr("Rotation around X (Y to Z):"));
-  GroupParametersLayout->addWidget(TextLabelRot1, 2, 0);
+  TextLabelRot1 = new QLabel(tr("Rotation around X (Y to Z):"), GroupParameters);
 
-  SpinBoxRot1 = new SMESHGUI_SpinBox(GroupParameters, "SpinBoxRot1");
-  GroupParametersLayout->addWidget(SpinBoxRot1, 2, 1);
+  SpinBoxRot1 = new SMESHGUI_SpinBox(GroupParameters);
 
-  TextLabelRot2 = new QLabel(GroupParameters, "TextLabelRot2");
-  TextLabelRot2->setText(tr("Rotation around Y (X to Z):"));
-  GroupParametersLayout->addWidget(TextLabelRot2, 3, 0);
+  TextLabelRot2 = new QLabel(tr("Rotation around Y (X to Z):"), GroupParameters);
 
-  SpinBoxRot2 = new SMESHGUI_SpinBox(GroupParameters, "SpinBoxRot2");
-  GroupParametersLayout->addWidget(SpinBoxRot2, 3, 1);
+  SpinBoxRot2 = new SMESHGUI_SpinBox(GroupParameters);
 
   PreviewCheckBox = new QCheckBox(tr("Show preview"), GroupParameters);
   PreviewCheckBox->setChecked(true);
-  GroupParametersLayout->addWidget(PreviewCheckBox, 4, 0);
 
   AutoApplyCheckBox = new QCheckBox(tr("Auto Apply"), GroupParameters);
   AutoApplyCheckBox->setChecked(false);
-  GroupParametersLayout->addWidget(AutoApplyCheckBox, 4, 1);
+
+  GroupParametersLayout->addWidget(TextLabelOrientation, 0, 0);
+  GroupParametersLayout->addWidget(ComboBoxOrientation,  0, 1);
+  GroupParametersLayout->addWidget(TextLabelDistance,    1, 0);
+  GroupParametersLayout->addWidget(SpinBoxDistance,      1, 1);
+  GroupParametersLayout->addWidget(TextLabelRot1,        2, 0);
+  GroupParametersLayout->addWidget(SpinBoxRot1,          2, 1);
+  GroupParametersLayout->addWidget(TextLabelRot2,        3, 0);
+  GroupParametersLayout->addWidget(SpinBoxRot2,          3, 1);
+  GroupParametersLayout->addWidget(PreviewCheckBox,      4, 0);
+  GroupParametersLayout->addWidget(AutoApplyCheckBox,    4, 1);
 
   // Controls for "Ok", "Apply" and "Close" button
-  QGroupBox* GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)7, (QSizePolicy::SizeType)0, 0, 0, GroupButtons->sizePolicy().hasHeightForWidth()));
-  GroupButtons->setGeometry(QRect(10, 10, 281, 48));
-  GroupButtons->setTitle(tr("" ));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  QGridLayout* GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-  buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-  buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
+  QGroupBox* GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
+  
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
 
-  SMESHGUI_ClippingDlgLayout->addWidget(GroupPlanes,      0, 0);
-  SMESHGUI_ClippingDlgLayout->addWidget(GroupParameters,  1, 0);
-  SMESHGUI_ClippingDlgLayout->addWidget(GroupButtons,     2, 0);
+  SMESHGUI_ClippingDlgLayout->addWidget(GroupPlanes);
+  SMESHGUI_ClippingDlgLayout->addWidget(GroupParameters);
+  SMESHGUI_ClippingDlgLayout->addWidget(GroupButtons);
 
   // Initial state
   SpinBoxDistance->RangeStepAndValidator(0.0, 1.0, 0.01, 3);
   SpinBoxRot1->RangeStepAndValidator(-180.0, 180.0, 1, 3);
   SpinBoxRot2->RangeStepAndValidator(-180.0, 180.0, 1, 3);
 
-  ComboBoxOrientation->insertItem(tr("|| X-Y"));
-  ComboBoxOrientation->insertItem(tr("|| Y-Z"));
-  ComboBoxOrientation->insertItem(tr("|| Z-X"));
+  ComboBoxOrientation->addItem(tr("|| X-Y"));
+  ComboBoxOrientation->addItem(tr("|| Y-Z"));
+  ComboBoxOrientation->addItem(tr("|| Z-X"));
 
   SpinBoxDistance->SetValue(0.5);
 
@@ -385,6 +347,26 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
   SMESH::RenderViewWindow(SMESH::GetViewWindow(mySMESHGUI));
 }
 
+double SMESHGUI_ClippingDlg::getDistance() const
+{
+  return SpinBoxDistance->GetValue();
+}
+
+void SMESHGUI_ClippingDlg::setDistance( const double theDistance )
+{
+  SpinBoxDistance->SetValue( theDistance );
+}
+
+double SMESHGUI_ClippingDlg::getRotation1() const
+{
+  return SpinBoxRot1->GetValue();
+}
+
+double SMESHGUI_ClippingDlg::getRotation2() const
+{
+  return SpinBoxRot2->GetValue();
+}
+
 //=======================================================================
 // function : ClickOnApply()
 // purpose  :
@@ -404,7 +386,7 @@ void SMESHGUI_ClippingDlg::ClickOnApply()
     myActor->RemoveAllClippingPlanes();
 
     SMESH::TPlanes::iterator anIter = myPlanes.begin();
-    for (; anIter != myPlanes.end(); anIter++) {
+    for ( ; anIter != myPlanes.end(); anIter++) {
       OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
       anOrientedPlane->ShallowCopy(anIter->GetPointer());
       myActor->AddClippingPlane(anOrientedPlane);
@@ -450,10 +432,11 @@ void SMESHGUI_ClippingDlg::ClickOnHelp()
 #else
 		platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -473,7 +456,7 @@ void SMESHGUI_ClippingDlg::onSelectionChanged()
 	myPlanes.clear();
 
 	vtkIdType anId = 0, anEnd = myActor->GetNumberOfClippingPlanes();
-	for (; anId < anEnd; anId++) {
+	for ( ; anId < anEnd; anId++) {
 	  if (vtkImplicitFunction* aFunction = myActor->GetClippingPlane(anId)) {
 	    if(OrientedPlane* aPlane = OrientedPlane::SafeDownCast(aFunction)){
 	      OrientedPlane* anOrientedPlane = OrientedPlane::New(aViewWindow);
@@ -517,15 +500,15 @@ void SMESHGUI_ClippingDlg::onSelectPlane (int theIndex)
   setRotation(aRot[0], aRot[1]);
   switch (anOrientation) {
   case SMESH::XY:
-    ComboBoxOrientation->setCurrentItem(0);
+    ComboBoxOrientation->setCurrentIndex(0);
     onSelectOrientation(0);
     break;
   case SMESH::YZ:
-    ComboBoxOrientation->setCurrentItem(1);
+    ComboBoxOrientation->setCurrentIndex(1);
     onSelectOrientation(1);
     break;
   case SMESH::ZX:
-    ComboBoxOrientation->setCurrentItem(2);
+    ComboBoxOrientation->setCurrentIndex(2);
     onSelectOrientation(2);
     break;
   }
@@ -563,7 +546,7 @@ void SMESHGUI_ClippingDlg::ClickOnDelete()
   if (!myActor || myPlanes.empty())
     return;
 
-  int aPlaneIndex = ComboBoxPlanes->currentItem();
+  int aPlaneIndex = ComboBoxPlanes->currentIndex();
 
   SMESH::TPlanes::iterator anIter = myPlanes.begin() + aPlaneIndex;
   anIter->GetPointer()->myActor->SetVisibility(false);
@@ -614,17 +597,17 @@ void SMESHGUI_ClippingDlg::Sinchronize()
   QString aName;
   for(int i = 1; i<=aNbPlanes; i++) {
     aName = QString(tr("Plane# %1")).arg(i);
-    ComboBoxPlanes->insertItem(aName);
+    ComboBoxPlanes->addItem(aName);
   }
 
   int aPos = ComboBoxPlanes->count() - 1;
-  ComboBoxPlanes->setCurrentItem(aPos);
+  ComboBoxPlanes->setCurrentIndex(aPos);
 
   bool anIsControlsEnable = (aPos >= 0);
   if (anIsControlsEnable) {
     onSelectPlane(aPos);
   } else {
-    ComboBoxPlanes->insertItem(tr("No planes"));
+    ComboBoxPlanes->addItem(tr("No planes"));
     SpinBoxRot1->SetValue(0.0);
     SpinBoxRot2->SetValue(0.0);
     SpinBoxDistance->SetValue(0.5);
@@ -659,7 +642,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   if (myPlanes.empty() || myIsSelectPlane)
     return;
 
-  int aCurPlaneIndex = ComboBoxPlanes->currentItem();
+  int aCurPlaneIndex = ComboBoxPlanes->currentIndex();
 
   OrientedPlane* aPlane = myPlanes[aCurPlaneIndex].GetPointer();
 
@@ -678,7 +661,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
     aV[0] = aRot[0] > 0? aV[0]: -aV[0];
     aV[1] = aRot[1] > 0? aV[1]: -aV[1];
 
-    switch (ComboBoxOrientation->currentItem()) {
+    switch (ComboBoxOrientation->currentIndex()) {
     case 0:
       anOrientation = SMESH::XY;
 
@@ -787,9 +770,8 @@ void SMESHGUI_ClippingDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

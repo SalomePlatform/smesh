@@ -100,6 +100,7 @@ libSMESHEngine_la_CPPFLAGS = \
 
 
 libSMESHEngine_la_LDFLAGS  = \
+	$(CORBA_LIBS) \
 	../../idl/libSalomeIDLSMESH.la \
 	../SMESH/libSMESHimpl.la \
 	../Controls/libSMESHControls.la \
@@ -111,16 +112,15 @@ libSMESHEngine_la_LDFLAGS  = \
 	-lSalomeLifeCycleCORBA \
 	-lTOOLSDS \
 	-lSalomeGenericObj \
-	$(GEOM_LDFLAGS) \
-	-lGEOMClient \
 	$(MED_LDFLAGS) \
 	-lMEDWrapper_V2_2 \
 	$(CAS_LDPATH) \
 	-lTKCDF \
 	-lTKBO \
-	-lTKShHealing \
-	$(CORBA_LIBS)
+	-lTKShHealing
 
+#	$(GEOM_LDFLAGS) \
+#	-lGEOMClient
 
 SMESHEngine_CPPFLAGS = \
 	$(libSMESHEngine_la_CPPFLAGS)

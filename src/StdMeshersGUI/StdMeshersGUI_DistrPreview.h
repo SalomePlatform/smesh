@@ -17,19 +17,31 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_DistrPreview.h
+// Author : Open CASCADE S.A.S.
+//
 
-#ifndef STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
-#define STD_MESHERS_GUI_DISTR_PREVIEW_HEADER
+#ifndef STDMESHERSGUI_DISTRPREVIEW_H
+#define STDMESHERSGUI_DISTRPREVIEW_H
 
+// SMESH includes
 #include "SMESH_StdMeshersGUI.hxx"
 
+// Qwt includes
 #include <qwt_plot.h>
+
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
+
+// OCCT includes
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
+
+class QwtPlotCurve;
+class QwtPlotMarker;
 
 class STDMESHERSGUI_EXPORT StdMeshersGUI_DistrPreview : public QwtPlot
 {
@@ -69,7 +81,9 @@ private:
   bool                      myIsTable;
   Conversion                myConv;
   SMESH::double_array       myTableFunc;
-  long                      myDensity, myDistr, myMsg;
+  QwtPlotCurve*             myDensity;
+  QwtPlotCurve*             myDistr;
+  QwtPlotMarker*            myMsg;
   Handle(ExprIntrp_GenExp)  myExpr;
   Expr_Array1OfNamedUnknown myVars;
   TColStd_Array1OfReal      myValues;
@@ -77,4 +91,4 @@ private:
   StdMeshers::StdMeshers_NumberOfSegments_var  myHypo;
 };
 
-#endif
+#endif // STDMESHERSGUI_DISTRPREVIEW_H

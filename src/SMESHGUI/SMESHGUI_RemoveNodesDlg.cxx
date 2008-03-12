@@ -1,31 +1,29 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_RemoveNodesDlg.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_RemoveNodesDlg.cxx
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
 
+// SMESH includes
 #include "SMESHGUI_RemoveNodesDlg.h"
 
 #include "SMESHGUI.h"
@@ -34,161 +32,129 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Tools.h>
 
-#include "SVTK_Selector.h"
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_Selector.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qlayout.h>
-#include <qvariant.h>
-#include <qtooltip.h>
-#include <qwhatsthis.h>
-#include <qimage.h>
-#include <qpixmap.h>
+// Qt includes
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 
-using namespace std;
-
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // class    : SMESHGUI_RemoveNodesDlg()
 // purpose  :
 //=================================================================================
 SMESHGUI_RemoveNodesDlg
-::SMESHGUI_RemoveNodesDlg(SMESHGUI* theModule, 
-			  const char* name,
-			  bool modal, 
-			  WFlags fl)
-  : QDialog(SMESH::GetDesktop(theModule), 
-	    name, 
-	    modal, 
-	    WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+::SMESHGUI_RemoveNodesDlg(SMESHGUI* theModule)
+  : QDialog(SMESH::GetDesktop(theModule)),
     mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
     mySMESHGUI(theModule),
     myBusy(false)
 {
-    QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_REM_NODE")));
-    QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("SMESH_REMOVE_NODES_TITLE"));
+  setSizeGripEnabled(true);
+  
+  QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_REM_NODE")));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-    if (!name)
-	setName("SMESHGUI_RemoveNodesDlg");
-    resize(303, 185);
-    setCaption(tr("SMESH_REMOVE_NODES_TITLE" ));
-    setSizeGripEnabled(TRUE);
-    SMESHGUI_RemoveNodesDlgLayout = new QGridLayout(this);
-    SMESHGUI_RemoveNodesDlgLayout->setSpacing(6);
-    SMESHGUI_RemoveNodesDlgLayout->setMargin(11);
+  QVBoxLayout* SMESHGUI_RemoveNodesDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_RemoveNodesDlgLayout->setSpacing(SPACING);
+  SMESHGUI_RemoveNodesDlgLayout->setMargin(MARGIN);
 
-    /***************************************************************/
-    GroupConstructors = new QButtonGroup(this, "GroupConstructors");
-    GroupConstructors->setTitle(tr("SMESH_NODES" ));
-    GroupConstructors->setExclusive(TRUE);
-    GroupConstructors->setColumnLayout(0, Qt::Vertical);
-    GroupConstructors->layout()->setSpacing(0);
-    GroupConstructors->layout()->setMargin(0);
-    GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-    GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-    GroupConstructorsLayout->setSpacing(6);
-    GroupConstructorsLayout->setMargin(11);
-    Constructor1 = new QRadioButton(GroupConstructors, "Constructor1");
-    Constructor1->setText(tr("" ));
-    Constructor1->setPixmap(image0);
-    Constructor1->setChecked(TRUE);
-    Constructor1->setSizePolicy(QSizePolicy((QSizePolicy::SizeType)1, (QSizePolicy::SizeType)0, Constructor1->sizePolicy().hasHeightForWidth()));
-    Constructor1->setMinimumSize(QSize(50, 0));
-    GroupConstructorsLayout->addWidget(Constructor1, 0, 0);
-    QSpacerItem* spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    GroupConstructorsLayout->addItem(spacer, 0, 1);
-    SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupConstructors, 0, 0);
+  /***************************************************************/
+  GroupConstructors = new QGroupBox(tr("SMESH_NODES"), this);
+  QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
+  GroupConstructorsLayout->setSpacing(SPACING);
+  GroupConstructorsLayout->setMargin(MARGIN);
 
-    /***************************************************************/
-    GroupButtons = new QGroupBox(this, "GroupButtons");
-    GroupButtons->setGeometry(QRect(10, 10, 281, 48));
-    GroupButtons->setTitle(tr("" ));
-    GroupButtons->setColumnLayout(0, Qt::Vertical);
-    GroupButtons->layout()->setSpacing(0);
-    GroupButtons->layout()->setMargin(0);
-    GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-    GroupButtonsLayout->setAlignment(Qt::AlignTop);
-    GroupButtonsLayout->setSpacing(6);
-    GroupButtonsLayout->setMargin(11);
-    buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-    buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-    buttonHelp->setAutoDefault(TRUE);
-    GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
-    buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-    buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-    buttonCancel->setAutoDefault(TRUE);
-    GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-    buttonApply = new QPushButton(GroupButtons, "buttonApply");
-    buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-    buttonApply->setAutoDefault(TRUE);
-    GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-    QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    GroupButtonsLayout->addItem(spacer_9, 0, 2);
-    buttonOk = new QPushButton(GroupButtons, "buttonOk");
-    buttonOk->setText(tr("SMESH_BUT_OK" ));
-    buttonOk->setAutoDefault(TRUE);
-    buttonOk->setDefault(TRUE);
-    GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-    SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupButtons, 2, 0);
+  Constructor1 = new QRadioButton(GroupConstructors);
+  Constructor1->setIcon(image0);
+  Constructor1->setChecked(true);
 
-    /***************************************************************/
-    GroupC1 = new QGroupBox(this, "GroupC1");
-    GroupC1->setTitle(tr("SMESH_REMOVE" ));
-    GroupC1->setMinimumSize(QSize(0, 0));
-    GroupC1->setFrameShape(QGroupBox::Box);
-    GroupC1->setFrameShadow(QGroupBox::Sunken);
-    GroupC1->setColumnLayout(0, Qt::Vertical);
-    GroupC1->layout()->setSpacing(0);
-    GroupC1->layout()->setMargin(0);
-    GroupC1Layout = new QGridLayout(GroupC1->layout());
-    GroupC1Layout->setAlignment(Qt::AlignTop);
-    GroupC1Layout->setSpacing(6);
-    GroupC1Layout->setMargin(11);
-    TextLabelC1A1 = new QLabel(GroupC1, "TextLabelC1A1");
-    TextLabelC1A1->setText(tr("SMESH_ID_NODES" ));
-    TextLabelC1A1->setMinimumSize(QSize(50, 0));
-    TextLabelC1A1->setFrameShape(QLabel::NoFrame);
-    TextLabelC1A1->setFrameShadow(QLabel::Plain);
-    GroupC1Layout->addWidget(TextLabelC1A1, 0, 0);
-    SelectButtonC1A1 = new QPushButton(GroupC1, "SelectButtonC1A1");
-    SelectButtonC1A1->setText(tr("" ));
-    SelectButtonC1A1->setPixmap(image1);
-    SelectButtonC1A1->setToggleButton(FALSE);
-    GroupC1Layout->addWidget(SelectButtonC1A1, 0, 1);
-    LineEditC1A1 = new QLineEdit(GroupC1, "LineEditC1A1");
-    LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-    GroupC1Layout->addWidget(LineEditC1A1, 0, 2);
-    SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupC1, 1, 0);
+  GroupConstructorsLayout->addWidget(Constructor1);
+  GroupConstructorsLayout->addStretch();
 
-    myHelpFileName = "removing_nodes_and_elements_page.html#removing_nodes_anchor";
+  /***************************************************************/
+  GroupC1 = new QGroupBox(tr("SMESH_REMOVE"), this);
+  QHBoxLayout* GroupC1Layout = new QHBoxLayout(GroupC1);
+  GroupC1Layout->setSpacing(SPACING);
+  GroupC1Layout->setMargin(MARGIN);
 
-    Init(); /* Initialisations */
+  TextLabelC1A1 = new QLabel(tr("SMESH_ID_NODES"), GroupC1);
+  SelectButtonC1A1 = new QPushButton(GroupC1);
+  SelectButtonC1A1->setIcon(image1);
+  LineEditC1A1 = new QLineEdit(GroupC1);
+  LineEditC1A1->setValidator(new SMESHGUI_IdValidator(this));
+
+  GroupC1Layout->addWidget(TextLabelC1A1);
+  GroupC1Layout->addWidget(SelectButtonC1A1);
+  GroupC1Layout->addWidget(LineEditC1A1);
+
+  /***************************************************************/
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
+
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupConstructors);
+  SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupC1);
+  SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupButtons);
+
+  myHelpFileName = "removing_nodes_and_elements_page.html#removing_nodes_anchor";
+
+  Init(); /* Initialisations */
 }
 
 //=================================================================================
@@ -197,7 +163,6 @@ SMESHGUI_RemoveNodesDlg
 //=================================================================================
 SMESHGUI_RemoveNodesDlg::~SMESHGUI_RemoveNodesDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
 }
 
 //=================================================================================
@@ -206,9 +171,8 @@ SMESHGUI_RemoveNodesDlg::~SMESHGUI_RemoveNodesDlg()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::Init()
 {
-  GroupC1->show();
   myConstructorId = 0;
-  Constructor1->setChecked(TRUE);
+  Constructor1->setChecked(true);
   myEditCurrentArgument = LineEditC1A1;
 
   myNbOkNodes = 0;
@@ -217,11 +181,10 @@ void SMESHGUI_RemoveNodesDlg::Init()
   myBusy = false;
 
   /* signals and slots connections */
-  connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
+  connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
-  connect(buttonApply, SIGNAL(clicked()), this, SLOT(ClickOnApply()));
-  connect(buttonHelp, SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
+  connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   connect(SelectButtonC1A1, SIGNAL (clicked()),   this, SLOT(SetEditCurrentArgument()));
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
@@ -231,22 +194,12 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
 	  SLOT(onTextChange(const QString&)));
   
-  this->show(); /* displays Dialog */
-
   SMESH::SetPointRepresentation(true);
   
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(NodeSelection);
 
   SelectionIntoArgument();
-}
-
-//=================================================================================
-// function : ConstructorsClicked()
-// purpose  : Radio button management
-//=================================================================================
-void SMESHGUI_RemoveNodesDlg::ConstructorsClicked (int)
-{
 }
 
 //=================================================================================
@@ -259,7 +212,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
     return;
 
   if (myNbOkNodes) {
-    QStringList aListId = QStringList::split(" ", myEditCurrentArgument->text(), false);
+    QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
     SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
     anArrayOfIdeces->length(aListId.count());
     for (int i = 0; i < aListId.count(); i++)
@@ -269,7 +222,11 @@ void SMESHGUI_RemoveNodesDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aResult = aMeshEditor->RemoveNodes(anArrayOfIdeces.inout());
-    } catch(...) {
+    } catch (const SALOME::SALOME_Exception& S_ex) {
+      SalomeApp_Tools::QtCatchCorbaException(S_ex);
+      myEditCurrentArgument->clear();
+    } catch (...){
+      myEditCurrentArgument->clear();
     }
 
     if (aResult) {
@@ -317,16 +274,17 @@ void SMESHGUI_RemoveNodesDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -334,7 +292,7 @@ void SMESHGUI_RemoveNodesDlg::ClickOnHelp()
 //function : onTextChange
 //purpose  :
 //=======================================================================
-void SMESHGUI_RemoveNodesDlg::onTextChange (const QString& theNewText)
+void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
 {
   if (myBusy) return;
   myBusy = true;
@@ -351,7 +309,7 @@ void SMESHGUI_RemoveNodesDlg::onTextChange (const QString& theNewText)
            
       TColStd_MapOfInteger newIndices;
       
-      QStringList aListId = QStringList::split(" ", theNewText, false);
+      QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       for (int i = 0; i < aListId.count(); i++) {
 	if (const SMDS_MeshNode *aNode = aMesh->FindNode(aListId[i].toInt())) {
 	  newIndices.Add(aNode->GetID());
@@ -438,19 +396,17 @@ void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
 void SMESHGUI_RemoveNodesDlg::SetEditCurrentArgument()
 {
   QPushButton* send = (QPushButton*)sender();
-  switch (myConstructorId)
+  switch (myConstructorId) {
+  case 0: /* default constructor */
     {
-    case 0: /* default constructor */
-      {
-	if(send == SelectButtonC1A1) {
-	  LineEditC1A1->setFocus();
-	  myEditCurrentArgument = LineEditC1A1;
-	}
-	SelectionIntoArgument();
-	break;
+      if(send == SelectButtonC1A1) {
+	LineEditC1A1->setFocus();
+	myEditCurrentArgument = LineEditC1A1;
       }
+      SelectionIntoArgument();
+      break;
     }
-  return;
+  }
 }
 
 //=================================================================================
@@ -494,7 +450,7 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
 // function : enterEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RemoveNodesDlg::enterEvent (QEvent*)
+void SMESHGUI_RemoveNodesDlg::enterEvent(QEvent*)
 {
   if (!GroupConstructors->isEnabled())
     ActivateThisDialog();
@@ -504,18 +460,17 @@ void SMESHGUI_RemoveNodesDlg::enterEvent (QEvent*)
 // function : closeEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_RemoveNodesDlg::closeEvent (QCloseEvent*)
+void SMESHGUI_RemoveNodesDlg::closeEvent(QCloseEvent*)
 {
   /* same than click on cancel button */
-  this->ClickOnCancel();
-  return;
+  ClickOnCancel();
 }
 
 //=======================================================================
 //function : hideEvent
 //purpose  : caused by ESC key
 //=======================================================================
-void SMESHGUI_RemoveNodesDlg::hideEvent (QHideEvent * e)
+void SMESHGUI_RemoveNodesDlg::hideEvent( QHideEvent* )
 {
   if (!isMinimized())
     ClickOnCancel();
@@ -531,9 +486,8 @@ void SMESHGUI_RemoveNodesDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

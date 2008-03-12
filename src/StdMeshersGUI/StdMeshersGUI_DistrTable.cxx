@@ -1,374 +1,606 @@
-//  SMESH StdMeshersGUI
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_DistrTable.cxx
+// Author : Open CASCADE S.A.S.
 //
-//
-//  File   : StdMeshersGUI_DistrTable.cxx
-//  Module : SMESH
-//  $Header$
 
+// SMESH includes
 #include "StdMeshersGUI_DistrTable.h"
-#include <QtxDblValidator.h>
 
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlineedit.h>
+// Qt incldues
+#include <QItemDelegate>
+#include <QTableWidget>
+#include <QDoubleSpinBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
-//=================================================================================
-// class    : StdMeshersGUI_DistrTable
-// purpose  :
-//=================================================================================
-StdMeshersGUI_DistrTable::StdMeshersGUI_DistrTable( const int rows, QWidget* parent, const char* name )
-: QTable( rows, 2, parent, name )
+#define SPACING 6
+
+/*!
+  \brief Sort list of points by ascending order.
+  \internal
+*/
+static void sortData( QList<double>& d )
 {
-  horizontalHeader()->setLabel( 0, "t" );
-  horizontalHeader()->setLabel( 1, "f(t)" );
-  myArgV = new QtxDblValidator( 0.0, 1.0, 3, this );
-  myFuncV = new QtxDblValidator( 0.0, 1E20, 3, this );
+  typedef QPair<double, double> Pair;
+  QList<Pair> pairs;
+  for ( int i = 0; i < d.count() / 2; i++ )
+    pairs.append( Pair( d[i*2], d[i*2+1] ) );
+  
+  qSort( pairs );
+
+  d.clear();
+
+  Pair p;
+  double prevX = 0.0, prevY = 0.0;
+
+  d.append( prevX );
+  d.append( pairs.count() > 0 ? pairs[0].second : prevY );
+
+  foreach( p, pairs ) {
+    if ( p.first > prevX ) {
+      d.append( p.first  );
+      d.append( p.second );
+      prevY = p.second;
+    }
+    prevX = p.first;
+  }
+
+  if ( prevX < 1.0 ) {
+    d.append( 1.0 );
+    d.append( prevY );
+  }
 }
 
-StdMeshersGUI_DistrTable::~StdMeshersGUI_DistrTable()
+/*!
+  \class StdMeshersGUI_DistrTableFrame::SpinBoxDelegate
+  \brief Custom item delegate (uses double spin box to edit table item)
+  \internal
+*/
+
+class StdMeshersGUI_DistrTableFrame::SpinBoxDelegate : public QItemDelegate
+{
+public:
+  SpinBoxDelegate( StdMeshersGUI_DistrTableFrame::Table* );
+  ~SpinBoxDelegate();
+
+  QWidget* createEditor( QWidget*,
+			 const QStyleOptionViewItem&,
+			 const QModelIndex& ) const;
+  void     setEditorData( QWidget*, const QModelIndex&) const;
+  void     setModelData( QWidget*, QAbstractItemModel*, 
+			 const QModelIndex& ) const;
+  void     updateEditorGeometry( QWidget*,
+				 const QStyleOptionViewItem&, 
+				 const QModelIndex& ) const;
+
+private:
+  StdMeshersGUI_DistrTableFrame::Table* myTable;
+};
+
+/*!
+  \class StdMeshersGUI_DistrTableFrame::Table
+  \brief Table function widget
+  \internal
+*/
+
+class StdMeshersGUI_DistrTableFrame::Table : public QTableWidget
+{
+private:
+  struct EditorData
+  { 
+    int r, c;
+    QDoubleSpinBox* sb;
+    EditorData() { reset(); }
+    void reset() { r = -1; c = -1; sb = 0; }
+  };
+
+public:
+  Table( QWidget*, int = 2 );
+  ~Table();
+
+  QList<double> data();
+  void          setData( const QList<double>& );
+
+  double        value( int, int ) const;
+  void          setValue( int, int, double );
+
+  double        argMinimum( int ) const;
+  double        argMaximum( int ) const;
+  double        argStep( int ) const;
+  double        funcMinimum( int ) const;
+  double        funcMaximum( int ) const;
+  double        funcStep( int ) const;
+
+  void          setFuncMinValue( double );
+
+  QSize         sizeHint() const;
+
+  void          addRow();
+  void          deleteRow();
+
+  void          setEditor( int, int, QDoubleSpinBox* );
+
+protected:
+  void          closeEditor( QWidget*, QAbstractItemDelegate::EndEditHint );
+
+private:
+  void          setUpRows( bool = false );
+  QSize         cachedSizeHint() const;
+  void          setCachedSizeHint( const QSize& ) const;
+  QList<int>    selectedRows();
+
+private:
+  double        myFuncMin;
+  QSize         myCachedSizeHint;
+  EditorData    myEditorData;
+};
+
+// ---
+// StdMeshersGUI_DistrTableFrame::SpinBoxDelegate implementation
+// ---
+
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+SpinBoxDelegate( StdMeshersGUI_DistrTableFrame::Table* parent )
+  : QItemDelegate( parent ), myTable( parent )
 {
 }
 
-QSize StdMeshersGUI_DistrTable::sizeHint() const
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+~SpinBoxDelegate()
+{
+}
+
+QWidget* 
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+createEditor( QWidget* parent,
+	      const QStyleOptionViewItem& /*option*/,
+	      const QModelIndex& index ) const
+{
+  QDoubleSpinBox* sb = new QDoubleSpinBox( parent );
+  sb->setFrame(false);
+  sb->setMinimum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+		  myTable->argMinimum( index.row() ) : 
+		  myTable->funcMinimum( index.row() ) );
+  sb->setMaximum( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+		  myTable->argMaximum( index.row() ) : 
+		  myTable->funcMaximum( index.row() ) );
+  sb->setSingleStep( index.column() == StdMeshersGUI_DistrTableFrame::ArgColumn ? 
+		     myTable->argStep( index.row() ) : 
+		     myTable->funcStep( index.row() ) );
+  myTable->setEditor( index.row(), index.column(), sb );
+  return sb;
+}
+
+void 
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+setEditorData( QWidget* editor, const QModelIndex& index ) const
+{
+  QString value = index.model()->data(index, Qt::DisplayRole).toString();
+  QDoubleSpinBox* sb = static_cast<QDoubleSpinBox*>(editor);
+
+  bool bOk = false;
+  double v = value.toDouble( &bOk );
+  if ( !bOk ) v = sb->minimum();
+
+  sb->setValue( v );
+}
+
+void
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+setModelData( QWidget* editor, QAbstractItemModel* model, 
+	      const QModelIndex& index ) const
+{
+  QDoubleSpinBox* sb = static_cast<QDoubleSpinBox*>(editor);
+  model->setData( index, QString::number( sb->value() ), Qt::DisplayRole );
+}
+
+void 
+StdMeshersGUI_DistrTableFrame::SpinBoxDelegate::
+updateEditorGeometry( QWidget* editor,
+		      const QStyleOptionViewItem& option, 
+		      const QModelIndex& /*index*/ ) const
+{
+  editor->setGeometry( option.rect );
+}
+
+// ---
+// StdMeshersGUI_DistrTableFrame::Table implementation
+// ---
+
+StdMeshersGUI_DistrTableFrame::Table::
+Table( QWidget* parent, int rows )
+  : QTableWidget( parent ), myFuncMin( 0.0 )
+{
+  setItemDelegate( new StdMeshersGUI_DistrTableFrame::SpinBoxDelegate( this ) );
+
+  setColumnCount( 2 );
+
+  QStringList labs;
+  labs << "t" << "f(t)";
+  setHorizontalHeaderLabels( labs );
+
+  while( rows-- )
+    addRow();
+
+  setUpRows( true );
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setEditor( int r, int c, QDoubleSpinBox* sb )
+{
+  myEditorData.r  = r;
+  myEditorData.c  = c;
+  myEditorData.sb = sb;
+}
+
+StdMeshersGUI_DistrTableFrame::Table::
+~Table()
+{
+}
+
+QList<double>
+StdMeshersGUI_DistrTableFrame::Table::
+data()
+{
+  closePersistentEditor( currentItem() );
+
+  QList<double> d;
+  for ( int r = 0; r < rowCount(); r++ ) {
+    d.append( value( r, ArgColumn ) );
+    d.append( value( r, FuncColumn ) );
+  }
+  return d;
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setData( const QList<double>& d )
+{
+  closePersistentEditor( currentItem() );
+
+  setRowCount( d.count() / 2 );
+  for ( int r = 0; r < rowCount(); r++ ) {
+    setValue( r, ArgColumn,  d[r*2]   );
+    setValue( r, FuncColumn, d[r*2+1] );
+  }
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+value( int r, int c ) const
+{
+  if ( r < 0 || r > rowCount() || c < 0 || c > columnCount() || !item( r, c ) )
+    return 0.0;
+
+  return item( r, c )->text().toDouble();
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setValue( int r, int c, double v )
+{
+  if ( r < 0 || r > rowCount() || c < 0 || c > columnCount() )
+    return;
+
+  if ( c == FuncColumn && v < funcMinimum( r ) )
+    v = funcMinimum( r ); // correct func value according to the valid min value
+  if ( c == FuncColumn && v < funcMaximum( r ) )
+    v = funcMaximum( r ); // correct func value according to the valid max value
+  else if ( r == ArgColumn && v < argMinimum( r ) )
+    v = argMinimum( r );  // correct arg  value according to the valid min value
+  else if ( r == ArgColumn && v > argMaximum( r ) )
+    v = argMaximum( r );  // correct arg  value according to the valid max value
+
+  if ( !item( r, c ) )
+    setItem( r, c, new QTableWidgetItem );
+  item( r, c )->setText( QString::number( v ) );
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+argMinimum( int r ) const
+{
+  // for the first row the minimum value is always 0.0
+  // for the other rows the minumum value is the above row's value
+  double val = 0.0;
+  if ( r > 0 && r < rowCount() )
+    val = value( r-1, ArgColumn );
+  return val;
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+argMaximum( int r ) const
+{
+  // for the last row the maximum value is always 1.0
+  // for the other rows the maxumum value is the below row's value
+  double val = 1.0;
+  if ( r >= 0 && r < rowCount()-1 ) {
+    val = value( r+1, ArgColumn );
+  }
+  return val;
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+argStep( int /*r*/ ) const
+{
+  // correct this to provide more smart behaviour if needed
+  return 0.1;
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+funcMinimum( int /*r*/ ) const
+{
+  // correct this to provide more smart behaviour if needed
+  return myFuncMin;
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+funcMaximum( int /*r*/ ) const
+{
+  // correct this to provide more smart behaviour if needed
+  return 1e20;
+}
+
+double
+StdMeshersGUI_DistrTableFrame::Table::
+funcStep( int /*r*/ ) const
+{
+  // correct this to provide more smart behaviour if needed
+  return 1.0;
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setFuncMinValue( double val )
+{
+  myFuncMin = val;
+
+  QTableWidgetItem* i = currentItem();
+  if ( i && 
+       i->row()    == myEditorData.r && 
+       i->column() == myEditorData.c && 
+       i->column() == FuncColumn     &&
+       myEditorData.sb ) {
+    myEditorData.sb->setMinimum( myFuncMin );
+  }
+  else {
+    closePersistentEditor( currentItem() );
+  }
+
+  for ( int r = 0; r < rowCount(); r++ ) {
+    double v = item( r, FuncColumn )->text().toDouble();
+    if ( v < myFuncMin ) 
+      item( r, FuncColumn )->setText( QString::number( myFuncMin ) );
+  }
+}
+
+QSize
+StdMeshersGUI_DistrTableFrame::Table::
+sizeHint() const
 {
   if( cachedSizeHint().isValid() )
     return cachedSizeHint();
 
-  constPolish();
-
-  QSize sh = QScrollView::sizeHint();
-  if( sh.width()<400 )
+  QSize sh = QTableWidget::sizeHint();
+  if( sh.width() < 400 )
     sh.setWidth( 400 );
-  if( sh.height()<200 )
+  if( sh.height() < 200 )
     sh.setHeight( 200 );
 
   setCachedSizeHint( sh );
   return sh;
 }
 
-void StdMeshersGUI_DistrTable::stopEditing( const bool accept )
+void
+StdMeshersGUI_DistrTableFrame::Table::
+addRow()
 {
-  endEdit( currEditRow(), currEditCol(), accept, false );
-}
+  int r = currentRow() >= 0 ? currentRow() : ( rowCount() > 0 ? rowCount() - 1 : 0 );
+  insertRow( r );
 
-QWidget* StdMeshersGUI_DistrTable::beginEdit( int row, int col, bool replace )
-{
-  QWidget* w = QTable::beginEdit( row, col, replace );
-  if( w && w->inherits( "QLineEdit" ) )
-    ( ( QLineEdit* )w )->selectAll();
-  return w;
-}
-
-void StdMeshersGUI_DistrTable::edit( const int r, const int c )
-{
-  if( isEditing() )
-    endEdit( currEditRow(), currEditCol(), true, false );
-  clearSelection();
-  setCurrentCell( r, c );
-  if( beginEdit( r, c, false ) )
-    setEditMode( Editing, r, c );
-  QTableSelection sel;
-  sel.init( r, c );
-  sel.expandTo( r, c );
-  addSelection( sel );
-}
-
-bool StdMeshersGUI_DistrTable::eventFilter( QObject* o, QEvent* e )
-{
-  if( e && e->type()==QEvent::KeyPress )
-  {
-    QKeyEvent* ke = ( QKeyEvent* )e;
-    int k = ke->key();
-    if( k==Qt::Key_Tab || k==Qt::Key_BackTab || k==Qt::Key_Return || k==Qt::Key_Up || k==Qt::Key_Down )
-    {
-      keyPressEvent( ke );
-      return true;
-    }
-  }
-  return QTable::eventFilter( o, e );
-}
-
-void StdMeshersGUI_DistrTable::keyPressEvent( QKeyEvent* e )
-{
-  if( e )
-  {
-    int r = currentRow(), c = currentColumn(), nr, nc;
-    bool shift = e->state() & Qt::ShiftButton, cr = false;
-    switch( e->key() )
-    {
-    case Qt::Key_Tab:
-      nc = c+1;
-      nr = r;
-      break;
-
-    case Qt::Key_BackTab:
-      nc = c-1;
-      nr = r;
-      break;
-
-    case Qt::Key_Return:
-      nc = 0;
-      nr = shift ? r-1 : r+1;
-      cr = true;
-      break;
-
-    case Qt::Key_Up:
-      nc = c;
-      nr = r-1;
-      break;
-
-    case Qt::Key_Down:
-      nc = c;
-      nr = r+1;
-      break;
-
-    default:
-      QTable::keyPressEvent( e );
-      return;
-    }
-
-    if( nc<0 )
-    {
-      nc=1; nr--;
-    }
-    if( nc>1 )
-    {
-      nc=0; nr++;
-    }
-
-    if( nr>=numRows() && cr )
-    {
-      if( isEditing() )
-	endEdit( currEditRow(), currEditCol(), true, false );
-      onEdit( INSERT_ROW, nr );
-    }
-
-    else if( nr<0 || nr>=numRows() )
-    {
-      nr = r; nc = c;	
-    }
-    edit( nr, nc );
-    e->accept();
-  }
-}
-
-QWidget* StdMeshersGUI_DistrTable::createEditor( int r, int c, bool init ) const
-{
-  QWidget* w = QTable::createEditor( r, c, init );
-  if( w )
-  {
-    //w->installEventFilter( this );
-    if( w->inherits( "QLineEdit" ) )
-    {
-      QLineEdit* le = ( QLineEdit* )w;
-      le->setValidator( c==0 ? myArgV : myFuncV );
-    }
-  }
+  double argMin  = argMinimum( r );
+  double funcMin = funcMinimum( r );
   
-  return w;
+  setItem( r, ArgColumn,  new QTableWidgetItem( QString::number( argMin ) ) );
+  setItem( r, FuncColumn, new QTableWidgetItem( QString::number( funcMin ) ) );
 }
 
-void StdMeshersGUI_DistrTable::onEdit( TableButton b, int cur )
+void
+StdMeshersGUI_DistrTableFrame::Table::
+deleteRow()
 {
-  switch( b )
-  {     
-  case INSERT_ROW:
-    setNumRows( numRows()+1 );
-    for( int i=numRows()-1; i>=cur; i-- )
-      for( int j=0; j<numCols(); j++ )
-	if( i>cur )
-	  setText( i, j, text( i-1, j ) );
-        else
-	  setText( i, j, "0" );
-    emit( valueChanged( cur, 0 ) );
-    break;
-      
-  case REMOVE_ROW:
-    if( numRows()>1 )
-    {
-      for( int i=cur; i<numRows(); i++ )
-	for( int j=0; j<numCols(); j++ )
-	  setText( i, j, text( i+1, j ) );
-      setNumRows( numRows()-1 );
-    }
-    emit( valueChanged( cur, 0 ) );
-    break;
+  QList<int> selRows = selectedRows();
+  for ( int r = selRows.count()-1; r >= 0; r-- )
+    removeRow( r );
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+closeEditor( QWidget* editor, QAbstractItemDelegate::EndEditHint hint )
+{
+  myEditorData.reset();
+  QTableWidget::closeEditor( editor, hint );
+}
+
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setUpRows( bool autoset )
+{
+  if ( rowCount() < 1 )
+    return;
+  if ( autoset ) {
+    double s = argMaximum( rowCount()-1 ) / rowCount();
+    for ( int r = 0; r < rowCount()-1; r++ )
+      setValue( r, ArgColumn, r * s );
+    setValue( rowCount()-1, ArgColumn, argMaximum( rowCount()-1 ) );
+  }
+  else {
+    // TODO
   }
 }
 
-void StdMeshersGUI_DistrTable::sortData( SMESH::double_array& arr )
+QSize
+StdMeshersGUI_DistrTableFrame::Table::
+cachedSizeHint() const
 {
-  QValueList< QPair<double,double> > aData;
-  if( arr.length()%2==1 )
-    arr.length( arr.length()-1 );
-
-  int aLen = arr.length();
-  for( int i=0; i<aLen/2; i++ )
-    aData.append( QPair<double,double>( arr[2*i], arr[2*i+1] ) );
-
-  qHeapSort( aData );
-
-  QValueList< QPair<double,double> >::const_iterator anIt = aData.begin(), aLast = aData.end();
-  QValueList<double> unique_values;
-  double prev; int i=0;
-  if( (*anIt).first>0.0 )
-  {
-    unique_values.append( 0.0 );
-    unique_values.append( (*anIt).second );
-    i++; prev = 0.0;
-  }
-  for( ; anIt!=aLast; anIt++ )
-  {
-    if( i==0 || (*anIt).first>prev )
-    {
-      unique_values.append( (*anIt).first );
-      unique_values.append( (*anIt).second );
-      i++;
-    }
-    prev = (*anIt).first;
-  }
-  if( prev<1.0 )
-  {
-    unique_values.append( 1.0 );
-    anIt--;
-    unique_values.append( (*anIt).second );
-  }
-
-  arr.length( unique_values.count() );
-  QValueList<double>::const_iterator anIt1 = unique_values.begin(), aLast1 = unique_values.end();
-  for( int j=0; anIt1!=aLast1; anIt1++, j++ )
-    arr[j] = *anIt1;
+  return myCachedSizeHint;
 }
 
-void StdMeshersGUI_DistrTable::data( SMESH::double_array& v )
+void
+StdMeshersGUI_DistrTableFrame::Table::
+setCachedSizeHint( const QSize& s ) const
 {
-  stopEditing( true );
-  v.length( 2*numRows() );
-  for( int i=0; i<numRows(); i++ )
-    for( int j=0; j<numCols(); j++ )
-      v[numCols()*i+j] = text( i, j ).toDouble();
-  sortData( v );
+  Table* that = const_cast<Table*>( this );
+  that->myCachedSizeHint = s;
 }
 
-void StdMeshersGUI_DistrTable::setData( const SMESH::double_array& d )
+QList<int>
+StdMeshersGUI_DistrTableFrame::Table::
+selectedRows()
 {
-  stopEditing( false );
-  setNumRows( d.length()/2 );
-  QString val;
-  for( int i=0; i<d.length(); i++ )
-  {
-    QtxDblValidator* v = i%2==0 ? myArgV : myFuncV;
-    val = QString::number( d[i] );
-    v->fixup( val );
-    setText( i/2, i%2, val );
-  }
+  QList<int> l;
+  QList<QTableWidgetItem*> selItems = selectedItems();
+  QTableWidgetItem* i;
+  foreach( i, selItems )
+    if ( !l.contains( i->row() ) ) l.append( i->row() );
+  qSort( l );
+  return l;
 }
 
-QtxDblValidator* StdMeshersGUI_DistrTable::argValidator() const
-{
-  return myArgV;
-}
+/*!
+  \class StdMeshersGUI_DistrTableFrame
+  \brief Distribution table widget
+*/
 
-QtxDblValidator* StdMeshersGUI_DistrTable::funcValidator() const
+StdMeshersGUI_DistrTableFrame::
+StdMeshersGUI_DistrTableFrame( QWidget* parent )
+  : QWidget( parent )
 {
-  return myFuncV;
-}
+  QVBoxLayout* main = new QVBoxLayout( this );
+  main->setMargin( 0 );
+  main->setSpacing( 0 );
 
-//=================================================================================
-// class    : StdMeshersGUI_DistrTableFrame
-// purpose  :
-//=================================================================================
-StdMeshersGUI_DistrTableFrame::StdMeshersGUI_DistrTableFrame( QWidget* parent )
-: QFrame( parent )
-{
-  QVBoxLayout* main = new QVBoxLayout( this, 0, 0 );
-
-  myTable = new StdMeshersGUI_DistrTable( 1, this );
+  // ---
+  myTable = new Table( this );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SIGNAL( valueChanged( int, int ) ) );
-  connect( this, SIGNAL( toEdit( TableButton, int ) ), myTable, SLOT( onEdit( TableButton, int ) ) );
   
-  QFrame* aButFrame = new QFrame( this );
-  QHBoxLayout* butLay = new QHBoxLayout( aButFrame, 5, 5 );
+  // ---
+  QWidget* aButFrame = new QWidget( this );
+  QHBoxLayout* butLay = new QHBoxLayout( aButFrame );
+  butLay->setContentsMargins( 0, SPACING, 0, SPACING );
+  butLay->setSpacing( SPACING );
 
-  myInsertRow = new QPushButton( tr( "SMESH_INSERT_ROW" ), aButFrame );
-  myRemoveRow = new QPushButton( tr( "SMESH_REMOVE_ROW" ), aButFrame );
+  myButtons[ InsertRowBtn ] = new QPushButton( tr( "SMESH_INSERT_ROW" ), aButFrame );
+  myButtons[ RemoveRowBtn ] = new QPushButton( tr( "SMESH_REMOVE_ROW" ), aButFrame );
 
-  butLay->addWidget( myInsertRow, 0 );
-  butLay->addWidget( myRemoveRow, 0 );
-  butLay->addStretch( 1 );
+  butLay->addWidget( myButtons[ InsertRowBtn ] );
+  butLay->addWidget( myButtons[ RemoveRowBtn ] );
+  butLay->addStretch();
 
-  main->addWidget( myTable, 1 );
-  main->addWidget( aButFrame, 0 );
-
-  connect( myInsertRow, SIGNAL( clicked() ), this, SLOT( onButtonClicked() ) );
-  connect( myRemoveRow, SIGNAL( clicked() ), this, SLOT( onButtonClicked() ) );
+  // ---
+  main->addWidget( myTable );
+  main->addWidget( aButFrame );
+  
+  // ---
+  connect( myButtons[ InsertRowBtn ], SIGNAL( clicked() ), this, SLOT( onInsert() ) );
+  connect( myButtons[ RemoveRowBtn ], SIGNAL( clicked() ), this, SLOT( onRemove() ) );
+  connect( myTable, SIGNAL( currentCellChanged( int, int, int, int ) ),
+	   this,    SIGNAL( currentChanged( int, int ) ) );
+  connect( myTable, SIGNAL( cellChanged( int, int ) ),
+	   this,    SIGNAL( valueChanged( int, int ) ) );
 }
 
-StdMeshersGUI_DistrTableFrame::~StdMeshersGUI_DistrTableFrame()
+StdMeshersGUI_DistrTableFrame::
+~StdMeshersGUI_DistrTableFrame()
 {
 }
 
-StdMeshersGUI_DistrTable* StdMeshersGUI_DistrTableFrame::table() const
+void
+StdMeshersGUI_DistrTableFrame::
+showButton( const TableButton b, const bool on )
 {
-  return myTable;
+  if ( button( b ) ) button( b )->setVisible( on );
 }
 
-void StdMeshersGUI_DistrTableFrame::setShown( const TableButton b, const bool sh )
+bool
+StdMeshersGUI_DistrTableFrame::
+isButtonShown( const TableButton b ) const
 {
-  if( button( b ) )
-    button( b )->setShown( sh );
+  return button( b ) ? button( b )->isVisible() : false;
+}
+  
+void
+StdMeshersGUI_DistrTableFrame::
+data( DataArray& array ) const
+{
+  QList<double> d = myTable->data();
+  sortData( d );
+
+  array.length( d.count() );
+  for ( int i = 0; i < d.count(); i++ )
+    array[i] = d[i];
 }
 
-bool StdMeshersGUI_DistrTableFrame::isShown( const TableButton b ) const
+void
+StdMeshersGUI_DistrTableFrame::
+setData( const DataArray& array )
 {
-  bool res = false;
-  if( button( b ) )
-    res = button( b )->isShown();
-  return res;
+  QList<double> d;
+  for ( int i = 0; i < array.length(); i++ )
+    d.append( array[i] );
+
+  sortData( d );
+  myTable->setData( d );
 }
 
-QButton* StdMeshersGUI_DistrTableFrame::button( const TableButton b ) const
+void
+StdMeshersGUI_DistrTableFrame::
+setFuncMinValue( double v )
 {
-  QButton* res = 0;
-  switch( b )
-  {
-    case INSERT_ROW:
-      res = myInsertRow;
-      break;
-
-    case REMOVE_ROW:
-      res = myRemoveRow;
-      break;
-  }
-  return res;
+  myTable->setFuncMinValue( v );
 }
 
-void StdMeshersGUI_DistrTableFrame::onButtonClicked()
+QPushButton*
+StdMeshersGUI_DistrTableFrame::
+button( const TableButton b ) const
 {
-  if( sender()==button( INSERT_ROW ) )
-    emit toEdit( INSERT_ROW, table()->currentRow() );
-    
-  else if( sender()==button( REMOVE_ROW ) )
-    emit toEdit( REMOVE_ROW, table()->currentRow() );
+  return myButtons.contains( b ) ? myButtons[ b ] : 0;
 }
 
+void
+StdMeshersGUI_DistrTableFrame::
+onInsert()
+{
+  myTable->addRow();
+}
+
+void
+StdMeshersGUI_DistrTableFrame::
+onRemove()
+{
+  myTable->deleteRow();
+}

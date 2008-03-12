@@ -1,34 +1,43 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_Utils.h
+// Author : Open CASCADE S.A.S.
+//
 
-#ifndef SMESHGUI_Utils_HeaderFile
-#define SMESHGUI_Utils_HeaderFile
+#ifndef SMESHGUI_UTILS_H
+#define SMESHGUI_UTILS_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
+// CORBA includes
 #include <omniORB4/CORBA.h>
 
-#include "SALOMEDSClient_definitions.hxx"
-#include "SALOME_InteractiveObject.hxx"
-#include "LightApp_DataOwner.h"
+// SALOME KERNEL includes
+#include <SALOMEDSClient_definitions.hxx>
 
-class QString;
+// SALOME GUI includes
+#include <SALOME_InteractiveObject.hxx>
+#include <LightApp_DataOwner.h>
 
 class SUIT_ViewWindow;
 class SUIT_Desktop;
@@ -44,19 +53,19 @@ class SalomeApp_Study;
 class SalomeApp_Module;
 class LightApp_SelectionMgr;
 
-namespace SMESH {
-
+namespace SMESH
+{
 SMESHGUI_EXPORT
   SUIT_Desktop*
-  GetDesktop(const CAM_Module* theModule);
+  GetDesktop( const CAM_Module* );
 
 SMESHGUI_EXPORT
   LightApp_SelectionMgr*
-  GetSelectionMgr(const SalomeApp_Module* theModule);
+  GetSelectionMgr( const SalomeApp_Module* );
 
 SMESHGUI_EXPORT
   SalomeApp_Study*
-  GetAppStudy(const CAM_Module* theModule);
+  GetAppStudy( const CAM_Module* );
 
 SMESHGUI_EXPORT
   SUIT_ResourceMgr*
@@ -64,20 +73,19 @@ SMESHGUI_EXPORT
   
 SMESHGUI_EXPORT
   _PTR(Study)
-  GetCStudy(const SalomeApp_Study* theStudy);
+  GetCStudy( const SalomeApp_Study* );
 
 SMESHGUI_EXPORT
-  CORBA::Object_var DataOwnerToObject(const LightApp_DataOwnerPtr& theOwner);
+  CORBA::Object_var DataOwnerToObject( const LightApp_DataOwnerPtr& );
 
   template<class TInterface> typename TInterface::_var_type
-    DataOwnerToInterface(const LightApp_DataOwnerPtr& theDataOwner)
+    DataOwnerToInterface( const LightApp_DataOwnerPtr& theDataOwner )
     {
       CORBA::Object_var anObj = DataOwnerToObject(theDataOwner);
       if(!CORBA::is_nil(anObj))
 	return TInterface::_narrow(anObj);
       return TInterface::_nil();
     }
-
 
 SMESHGUI_EXPORT
   SUIT_Study* GetActiveStudy();
@@ -89,25 +97,25 @@ SMESHGUI_EXPORT
   _PTR(Study) GetActiveStudyDocument();
 
 SMESHGUI_EXPORT
-  _PTR(SObject) FindSObject(CORBA::Object_ptr theObject);
+  _PTR(SObject) FindSObject( CORBA::Object_ptr );
 
 SMESHGUI_EXPORT
-  void SetName  (_PTR(SObject) theSObject, const char* theName);
+  void SetName( _PTR(SObject), const QString& );
 
 SMESHGUI_EXPORT
-  void SetValue (_PTR(SObject) theSObject, const char* theValue);
-  void setFileType (_PTR(SObject) theSObject, const char* theValue);
-  void setFileName (_PTR(SObject) theSObject, const char* theValue);
+  void SetValue( _PTR(SObject), const QString& );
+  void setFileType( _PTR(SObject), const QString& );
+  void setFileName( _PTR(SObject), const QString& );
 
 SMESHGUI_EXPORT
-  CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
-				     _PTR(Study) theStudy);
+  CORBA::Object_var SObjectToObject( _PTR(SObject),
+				     _PTR(Study) );
 
 SMESHGUI_EXPORT
-  CORBA::Object_var SObjectToObject(_PTR(SObject) theSObject);
+  CORBA::Object_var SObjectToObject( _PTR(SObject) );
 
   template<class TInterface> typename TInterface::_var_type
-    SObjectToInterface(_PTR(SObject) theSObject)
+    SObjectToInterface( _PTR(SObject) theSObject )
     {
       CORBA::Object_var anObj = SObjectToObject(theSObject);
       if(!CORBA::is_nil(anObj))
@@ -116,10 +124,10 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
-  CORBA::Object_var IObjectToObject(const Handle(SALOME_InteractiveObject)& theIO);
+  CORBA::Object_var IObjectToObject( const Handle(SALOME_InteractiveObject)& );
 
   template<class TInterface> typename TInterface::_var_type
-    IObjectToInterface(const Handle(SALOME_InteractiveObject)& theIO)
+    IObjectToInterface( const Handle(SALOME_InteractiveObject)& theIO )
     {
       CORBA::Object_var anObj = IObjectToObject(theIO);
       if(!CORBA::is_nil(anObj))
@@ -128,28 +136,28 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
-  CORBA::Object_var IORToObject(const char* theIOR);
+  CORBA::Object_var IORToObject( const QString& );
 
   template<class TInterface> typename TInterface::_var_type
-    IORToInterface(const char* theIOR)
+    IORToInterface( const QString& theIOR )
     {
-      CORBA::Object_var anObj = IORToObject(theIOR);
-      if(!CORBA::is_nil(anObj))
-	return TInterface::_narrow(anObj);
+      CORBA::Object_var anObj = IORToObject( theIOR );
+      if ( !CORBA::is_nil( anObj ) )
+	return TInterface::_narrow( anObj );
       return TInterface::_nil();
     }
 
 SMESHGUI_EXPORT
-  int GetNameOfSelectedIObjects (LightApp_SelectionMgr*, QString& theName);
+  int GetNameOfSelectedIObjects( LightApp_SelectionMgr*, QString& );
 
 SMESHGUI_EXPORT
-  _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject);
+  _PTR(SObject) GetMeshOrSubmesh( _PTR(SObject) );
 
 SMESHGUI_EXPORT
-  void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNot, bool isEmptyMesh=false);
+  void ModifiedMesh( _PTR(SObject), bool, bool = false );
 
 SMESHGUI_EXPORT
-  void ShowHelpFile (QString theHelpFileName);
+  void ShowHelpFile( const QString& );
 }
 
-#endif
+#endif // SMESHGUI_UTILS_H

@@ -1,45 +1,44 @@
-//  SMESH StdMeshersGUI
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_LayerDistributionParamWdg.cxx
+// Author : Open CASCADE S.A.S.
 //
-//
-//  File   : StdMeshersGUI_LayerDistributionParamWdg.cxx
-//  Module : SMESH
 
+// SMESH includes
 #include "StdMeshersGUI_LayerDistributionParamWdg.h"
 
-#include <qpushbutton.h>
-#include <qcursor.h>
-#include <qpopupmenu.h>
-#include <qdialog.h>
+#include <SMESHGUI.h>
+#include <SMESHGUI_HypothesesUtils.h>
+#include <SMESHGUI_Hypotheses.h>
 
-#include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_Hypotheses.h"
-// #include "SUIT_ResourceMgr.h"
-// #include "LightApp_SelectionMgr.h"
-#include "SALOMEDSClient_SObject.hxx"
-#include "SALOMEDS_Study.hxx"
-#include "SalomeApp_Tools.h"
+// SALOME GUI includes
+#include <SalomeApp_Tools.h>
+
+// Qt includes
+#include <QPushButton>
+#include <QCursor>
+#include <QMenu>
+#include <QDialog>
+#include <QHBoxLayout>
+
+#define SPACING 6
 
 //================================================================================
 /*!
@@ -52,7 +51,7 @@ StdMeshersGUI_LayerDistributionParamWdg
 ::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr hyp,
 					  const QString& theName,
                                           QDialog* dlg): 
-  QHGroupBox(), myName(theName), myDlg( dlg )
+  QWidget(), myName(theName), myDlg( dlg )
 {
   init();
   set( hyp );
@@ -91,8 +90,6 @@ void StdMeshersGUI_LayerDistributionParamWdg::set(SMESH::SMESH_Hypothesis_ptr hy
 
 StdMeshersGUI_LayerDistributionParamWdg::~StdMeshersGUI_LayerDistributionParamWdg()
 {
-  if ( myHypTypePopup )
-    delete myHypTypePopup;
 }
 
 //================================================================================
@@ -103,23 +100,21 @@ StdMeshersGUI_LayerDistributionParamWdg::~StdMeshersGUI_LayerDistributionParamWd
 
 void StdMeshersGUI_LayerDistributionParamWdg::init()
 {
-  setFrameStyle(QFrame::NoFrame);
-  setInsideMargin(0);
+  QHBoxLayout* aHBox = new QHBoxLayout( this );
+  aHBox->setMargin( 0 );
+  aHBox->setSpacing( SPACING );
 
   mySMESHGUI = SMESHGUI::GetSMESHGUI();
 
-  myCreateButton = new QPushButton( this, "createBut");
-  myEditButton   = new QPushButton( tr("EDIT"), this, "createBut");
+  myCreateButton = new QPushButton( this );
+  myCreateButton->setObjectName( "createBut" );
 
-//   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
-//   QPixmap iconSlct ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
-//   mySelButton->setPixmap(iconSlct);
-//   mySelButton->setToggleButton( true );
+  myEditButton   = new QPushButton( tr("EDIT"), this );
+  myEditButton->setObjectName( "editBut" );
 
-  myHypTypePopup = new QPopupMenu();
+  myHypTypePopup = new QMenu( this );
 
   // Add to pop-up hypotheses of "Regular_1D" algo
-  myHypTypePopup->clear();
   HypothesisData* algoData = SMESH::GetHypothesisData( "Regular_1D" );
   myHypTypes = SMESH::GetAvailableHypotheses( false, 1 );
   QStringList::const_iterator anIter = myHypTypes.begin();
@@ -128,12 +123,16 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
     HypothesisData* hypData = SMESH::GetHypothesisData( *anIter );
     bool bidon;
     if ( SMESH::IsAvailableHypothesis( algoData, hypData->TypeName, bidon ))
-      myHypTypePopup->insertItem( hypData->Label );
+      myHypTypePopup->addAction( hypData->Label );
   }
+
+  aHBox->addWidget( myCreateButton );
+  aHBox->addWidget( myEditButton );
+  aHBox->addStretch();
 
   connect( myCreateButton, SIGNAL(clicked()), SLOT(onCreate()));
   connect( myEditButton,   SIGNAL(clicked()), SLOT(onEdit()));
-  connect( myHypTypePopup, SIGNAL( activated( int ) ), SLOT( onHypTypePopup( int ) ) );
+  connect( myHypTypePopup, SIGNAL(triggered( QAction* ) ), SLOT( onHypTypePopup( QAction* ) ) );
 }
 
 //================================================================================
@@ -143,7 +142,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
  */
 //================================================================================
 
-void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( int theIndex )
+void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( QAction* a )
 {
   SMESH::SMESH_Gen_var gen = mySMESHGUI->GetSMESHGen();
 
@@ -153,16 +152,17 @@ void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( int theIndex )
   // create a hyp
   HypothesisData* aHypData = 0;
   QStringList::const_iterator anIter = myHypTypes.begin();
+
   for ( ; !aHypData && anIter != myHypTypes.end(); ++anIter )
   {
     HypothesisData* hypData = SMESH::GetHypothesisData( *anIter );
-    if ( myHypTypePopup->text( theIndex ) == hypData->Label )
+    if ( a->text() == hypData->Label )
       aHypData = hypData;
   }
   QString aServLib = aHypData->ServerLibName;
   QString aHypType = aHypData->TypeName;
   try {
-    set( gen->CreateHypothesis(aHypType, aServLib));
+    set( gen->CreateHypothesis(aHypType.toLatin1().data(), aServLib.toLatin1().data()));
   }
   catch (const SALOME::SALOME_Exception & S_ex) {
     SalomeApp_Tools::QtCatchCorbaException(S_ex);

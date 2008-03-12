@@ -1,52 +1,47 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
+// SMESH SMESHGUI : GUI for SMESH component
+//
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
 // License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
 // but WITHOUT ANY WARRANTY; without even the implied warranty of 
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public  
+// You should have received a copy of the GNU Lesser General Public 
 // License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-/**
-*  SMESH SMESHGUI
-*
-*  Copyright (C) 2005  CEA/DEN, EDF R&D
-*
-*
-*
-*  File   : SMESHGUI_MeshDlg.h
-*  Author : Sergey LITONIN
-*  Module : SMESH
-*/
+// File   : SMESHGUI_MeshDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+//
 
+#ifndef SMESHGUI_MESHDLG_H
+#define SMESHGUI_MESHDLG_H
 
-#ifndef SMESHGUI_MeshDlg_H
-#define SMESHGUI_MeshDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
 #include "SMESHGUI_Dialog.h"
-#include <qframe.h>
-#include <qstringlist.h>
-#include <qmap.h>
+
+// Qt includes
+#include <QFrame>
+#include <QStringList>
+#include <QMap>
 
 class SMESHGUI_MeshTab;
 class QTabWidget;
-class QLineEdit;
 class QComboBox;
 class QToolButton;
-class QString;
-class QPopupMenu;
+class QMenu;
+class QAction;
 
 /*!
  * \brief Dialog for mech creation or editing
@@ -65,7 +60,7 @@ public:
   enum Dimensions { Dim0D = 0, Dim1D, Dim2D, Dim3D };      
   
 public:
-  SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh );
+  SMESHGUI_MeshDlg( const bool, const bool );
   virtual ~SMESHGUI_MeshDlg();
   
   SMESHGUI_MeshTab*            tab( const int ) const;
@@ -79,23 +74,19 @@ public:
 
 
 signals:
-
   void                         hypoSet( const QString& );
   void                         geomSelectionByMesh( bool );
 
 private slots:  
-
-  void                         onHypoSetPopup( int );
-  void                         onHypoSetButton();
-  void                         onGeomPopup( int );
+  void                         onHypoSetPopup( QAction* );
+  void                         onGeomPopup( QAction* );
   void                         onGeomSelectionButton( bool );
 
 private:
-
-  QMap< int, SMESHGUI_MeshTab* > myTabs;
-  QTabWidget*                    myTabWg;
-  QPopupMenu*                    myHypoSetPopup;
-  QPopupMenu*                    myGeomPopup;
+  QMap<int, SMESHGUI_MeshTab*> myTabs;
+  QTabWidget*                  myTabWg;
+  QToolButton*                 myHypoSetButton;
+  QMenu*                       myGeomPopup;
 };
 
 /*!
@@ -129,31 +120,26 @@ public:
   void                         reset();
 
 signals:  
-
-  void                         createHyp( const int theHypType, const int theIndex );
+  void                         createHyp( const int, const int );
   //!< Emited when "Create hypothesis" button clicked
-  void                         editHyp( const int theHypType, const int theIndex );
+  void                         editHyp( const int, const int );
   //!< Emited when "Edit hypothesis" button clicked
-  void                         selectAlgo( const int theIndex );
+  void                         selectAlgo( const int );
   //!< Emited when an algorithm is selected
   
 private slots:  
-
   void                         onCreateHyp();  
   void                         onEditHyp();
   void                         onHyp( int );
   void                         onPopupItem( int );
   
 private:  
+  QMap<int, QComboBox*>        myHyp;
+  QMap<int, QToolButton*>      myCreateHyp;
+  QMap<int, QToolButton*>      myEditHyp;
   
-  QMap< int, QComboBox* >      myHyp;
-  QMap< int, QToolButton* >    myCreateHyp;
-  QMap< int, QToolButton* >    myEditHyp;
-  
-  QMap< int, QStringList >     myAvailableHyps;
-  QMap< int, QStringList >     myExistingHyps;
-  
-  QPopupMenu*                  myPopup;
+  QMap<int, QStringList>       myAvailableHyps;
+  QMap<int, QStringList>       myExistingHyps;
 };
 
-#endif
+#endif // SMESHGUI_MESHDLG_H

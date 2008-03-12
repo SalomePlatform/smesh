@@ -1,41 +1,40 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ExtrusionAlongPathDlg.h
+// Author : Vadim SANDLER, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ExtrusionAlongPathDlg.h
-//  Author : Vadim SANDLER
-//  Module : SMESH
-//  $Header: 
 
-#ifndef DIALOGBOX_EXTRUSION_PATH_H
-#define DIALOGBOX_EXTRUSION_PATH_H
+#ifndef SMESHGUI_EXTRUSIONALONGPATHDLG_H
+#define SMESHGUI_EXTRUSIONALONGPATHDLG_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include "LightApp_SelectionMgr.h"
-#include "SUIT_SelectionFilter.h"
+// Qt includes
+#include <QDialog>
 
-// QT Includes
-#include <qdialog.h>
+// IDL includes
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 class QButtonGroup;
 class QRadioButton;
@@ -44,19 +43,15 @@ class QLabel;
 class QToolButton;
 class QLineEdit;
 class QCheckBox;
-class QListBox;
+class QListWidget;
 class QPushButton;
 
 class SMESHGUI;
 class SMESH_Actor;
 class SMESHGUI_SpinBox;
-class SVTK_ViewWindow;
 class SVTK_Selector;
-
-
-// IDL Headers
-#include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
+class LightApp_SelectionMgr;
+class SUIT_SelectionFilter;
 
 //=================================================================================
 // class    : SMESHGUI_ExtrusionAlongPathDlg
@@ -66,109 +61,92 @@ class SMESHGUI_EXPORT SMESHGUI_ExtrusionAlongPathDlg : public QDialog
 {
   Q_OBJECT
 
-  class SetBusy {
-    public:
-      SetBusy (SMESHGUI_ExtrusionAlongPathDlg* _dlg) { myDlg = _dlg; myDlg->myBusy = true; }
-      ~SetBusy() { myDlg->myBusy = false; }
-    private:
-      SMESHGUI_ExtrusionAlongPathDlg* myDlg;
-  };
+  class SetBusy;
   friend class SetBusy;
 
 public:
-  SMESHGUI_ExtrusionAlongPathDlg (SMESHGUI*,
-				  bool modal = FALSE);
+  SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* );
   ~SMESHGUI_ExtrusionAlongPathDlg();
 
-  bool eventFilter (QObject* object, QEvent* event);
+  bool                      eventFilter( QObject*, QEvent* );
 
 private:
-  void Init (bool ResetControls = true);
-  void enterEvent (QEvent*);                           /* mouse enter the QWidget */
-  void keyPressEvent(QKeyEvent*);
-  int  GetConstructorId();
-  void SetEditCurrentArgument (QToolButton* button);
+  void                      Init( bool = true );
+  void                      enterEvent( QEvent* );                           /* mouse enter the QWidget */
+  void                      keyPressEvent( QKeyEvent* );
+  int                       GetConstructorId();
+  void                      SetEditCurrentArgument( QToolButton* );
 
-  SMESHGUI*                     mySMESHGUI;            /* Current SMESHGUI object */
-  LightApp_SelectionMgr*        mySelectionMgr;        /* User shape selection */
-  SVTK_Selector*                mySelector;
+  SMESHGUI*                 mySMESHGUI;            /* Current SMESHGUI object */
+  LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
+  SVTK_Selector*            mySelector;
 
-  QWidget*                      myEditCurrentArgument; /* Current  argument */
+  QWidget*                  myEditCurrentArgument; /* Current  argument */
 
-  bool                          myBusy;
-  SMESH::SMESH_Mesh_var         myMesh;
-  SMESH_Actor*                  myMeshActor;
-  SMESH::SMESH_IDSource_var     myIDSource;
-  SMESH::SMESH_Mesh_var         myPathMesh;
-  GEOM::GEOM_Object_var         myPathShape;
-  SUIT_SelectionFilter*         myElementsFilter;
-  SUIT_SelectionFilter*         myPathMeshFilter;
-  int                           myType;
+  bool                      myBusy;
+  SMESH::SMESH_Mesh_var     myMesh;
+  SMESH_Actor*              myMeshActor;
+  SMESH::SMESH_IDSource_var myIDSource;
+  SMESH::SMESH_Mesh_var     myPathMesh;
+  GEOM::GEOM_Object_var     myPathShape;
+  SUIT_SelectionFilter*     myElementsFilter;
+  SUIT_SelectionFilter*     myPathMeshFilter;
+  int                       myType;
 
   // widgets
-  QButtonGroup*     GroupConstructors;
-  QRadioButton*     Elements1dRB;
-  QRadioButton*     Elements2dRB;
+  QGroupBox*                ConstructorsBox;
+  QButtonGroup*             GroupConstructors;
+  QRadioButton*             Elements1dRB;
+  QRadioButton*             Elements2dRB;
 
-  QGroupBox*        GroupArguments;
-  QLabel*           ElementsLab;
-  QToolButton*      SelectElementsButton;
-  QLineEdit*        ElementsLineEdit;
-  QCheckBox*        MeshCheck;
-  QGroupBox*        PathGrp;
-  QLabel*           PathMeshLab;
-  QToolButton*      SelectPathMeshButton;
-  QLineEdit*        PathMeshLineEdit;
-  QLabel*           PathShapeLab;
-  QToolButton*      SelectPathShapeButton;
-  QLineEdit*        PathShapeLineEdit;
-  QLabel*           StartPointLab;
-  QToolButton*      SelectStartPointButton;
-  QLineEdit*        StartPointLineEdit;
-  QCheckBox*        LinearAnglesCheck;
-  QCheckBox*        AnglesCheck;
-  QGroupBox*        AnglesGrp;
-  QListBox*         AnglesList;
-  QToolButton*      AddAngleButton;
-  QToolButton*      RemoveAngleButton;
-  SMESHGUI_SpinBox* AngleSpin;
-  QCheckBox*        BasePointCheck;
-  QGroupBox*        BasePointGrp;
-  QToolButton*      SelectBasePointButton;
-  QLabel*           XLab;
-  SMESHGUI_SpinBox* XSpin;
-  QLabel*           YLab;
-  SMESHGUI_SpinBox* YSpin;
-  QLabel*           ZLab;
-  SMESHGUI_SpinBox* ZSpin;
-  QCheckBox*        MakeGroupsCheck;
+  QGroupBox*                GroupArguments;
+  QLabel*                   ElementsLab;
+  QToolButton*              SelectElementsButton;
+  QLineEdit*                ElementsLineEdit;
+  QCheckBox*                MeshCheck;
+  QGroupBox*                PathGrp;
+  QToolButton*              SelectPathMeshButton;
+  QLineEdit*                PathMeshLineEdit;
+  QToolButton*              SelectPathShapeButton;
+  QLineEdit*                PathShapeLineEdit;
+  QToolButton*              SelectStartPointButton;
+  QLineEdit*                StartPointLineEdit;
+  QGroupBox*                AnglesGrp;
+  QListWidget*              AnglesList;
+  QToolButton*              AddAngleButton;
+  QToolButton*              RemoveAngleButton;
+  SMESHGUI_SpinBox*         AngleSpin;
+  QGroupBox*                BasePointGrp;
+  QToolButton*              SelectBasePointButton;
+  SMESHGUI_SpinBox*         XSpin;
+  SMESHGUI_SpinBox*         YSpin;
+  SMESHGUI_SpinBox*         ZSpin;
+  QCheckBox*                MakeGroupsCheck;
 
-  QGroupBox*        GroupButtons;
-  QPushButton*      OkButton;
-  QPushButton*      ApplyButton;
-  QPushButton*      CloseButton;
-  QPushButton*      HelpButton;
+  QGroupBox*                GroupButtons;
+  QPushButton*              OkButton;
+  QPushButton*              ApplyButton;
+  QPushButton*              CloseButton;
+  QPushButton*              HelpButton;
 
-  QString           myHelpFileName;
+  QString                   myHelpFileName;
 
 protected slots:
-  void reject();
+  void                      reject();
 
 private slots:
-  void ConstructorsClicked (int);
-  void ClickOnOk();
-  bool ClickOnApply();
-  void ClickOnHelp();
-  void SetEditCurrentArgument();
-  void SelectionIntoArgument();
-  void DeactivateActiveDialog();
-  void ActivateThisDialog();
-  void onTextChange (const QString&);
-  void onSelectMesh();
-  void onAnglesCheck();
-  void onBasePointCheck();
-  void OnAngleAdded();
-  void OnAngleRemoved();
+  void                      ConstructorsClicked( int );
+  void                      ClickOnOk();
+  bool                      ClickOnApply();
+  void                      ClickOnHelp();
+  void                      SetEditCurrentArgument();
+  void                      SelectionIntoArgument();
+  void                      DeactivateActiveDialog();
+  void                      ActivateThisDialog();
+  void                      onTextChange( const QString& );
+  void                      onSelectMesh();
+  void                      OnAngleAdded();
+  void                      OnAngleRemoved();
 };
 
-#endif // DIALOGBOX_EXTRUSION_PATH_H
+#endif // SMESHGUI_EXTRUSIONALONGPATHDLG_H

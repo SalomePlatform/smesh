@@ -9,7 +9,7 @@
 #
 
 
-AC_INIT([Salome2 Project SMESH module], [4.1.1], [webmaster.salome@opencascade.com], [salome])
+AC_INIT([Salome2 Project SMESH module], [5.0.0], [webmaster.salome@opencascade.com], [salome])
 AC_CONFIG_AUX_DIR(salome_adm/unix/config_files)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -198,18 +198,6 @@ SMESH_WITH_GUI=yes
 
 AM_CONDITIONAL(SMESH_ENABLE_GUI, [test "${SMESH_WITH_GUI}" = "yes"])
 
-if test "${SMESH_WITH_GUI}" = "yes"; then
-
-echo
-echo ---------------------------------------------
-echo testing msg2qm
-echo ---------------------------------------------
-echo
-
-CHECK_MSG2QM
-
-fi
-
 if test "x${GUI_DISABLE_CORBA}" != "xyes" ; then
     echo
     echo ---------------------------------------------
@@ -374,7 +362,7 @@ echo
 
 echo Configure
 if test "${SMESH_WITH_GUI}" = "yes"; then
-variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok"
+variables="cc_ok fortran_ok boost_ok lex_yacc_ok python_ok swig_ok threads_ok OpenGL_ok qt_ok vtk_ok hdf5_ok omniORB_ok occ_ok doxygen_ok graphviz_ok qwt_ok Kernel_ok Geom_ok Med_ok SalomeGUI_ok"
 fi
 
 if test "${SMESH_WITH_GUI}" = "no"; then

@@ -1,40 +1,41 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_MeshEditPreview.cxx
+// Author : Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_MeshEditPreview.cxx
-//  Module : SMESH
-//  $Header:
 
+// SMESH includes
 #include "SMESHGUI_MeshEditPreview.h"
 
-#include "VTKViewer_CellLocationsArray.h"
-#include "SVTK_ViewWindow.h"
-
-#include "SMESH_Actor.h"
-#include "SMESH_ActorUtils.h"
 #include "SMESHGUI_VTKUtils.h"
 
-// VTK Includes
+#include <SMESH_Actor.h>
+#include <SMESH_ActorUtils.h>
+
+// SALOME GUI includes
+#include <VTKViewer_CellLocationsArray.h>
+#include <SVTK_ViewWindow.h>
+
+// VTK includes
 #include <vtkPoints.h>
 #include <vtkIdList.h>
 #include <vtkCellArray.h>
@@ -44,14 +45,12 @@
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
-// QT Includes
-#include <qcolor.h>
+// Qt includes
+#include <QColor>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
-
-using namespace SMESH;
 
 //================================================================================
 /*!
@@ -74,7 +73,7 @@ SMESHGUI_MeshEditPreview::SMESHGUI_MeshEditPreview(SVTK_ViewWindow* theViewWindo
   myPreviewActor->PickableOff();
 
   vtkFloatingPointType anRGB[3];
-  GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
+  SMESH::GetColor( "SMESH", "selection_element_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 170, 255 ) );
   SetColor( anRGB[0], anRGB[1], anRGB[2] );
 
   myPreviewActor->SetMapper( aMapper );
@@ -184,7 +183,7 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
   int aNodePos = 0;
 
   for ( int i = 0; i < anElemTypes.length(); i++ ) {
-    const ElementSubType& anElementSubType = anElemTypes[i];
+    const SMESH::ElementSubType& anElementSubType = anElemTypes[i];
     SMDSAbs_ElementType aType = SMDSAbs_ElementType(anElementSubType.SMDS_ElementType);
     vtkIdType aNbNodes = anElementSubType.nbNodesInElement;
     anIdList->SetNumberOfIds( aNbNodes );
@@ -230,7 +229,7 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
 void SMESHGUI_MeshEditPreview::SetVisibility (bool theVisibility)
 {
   myPreviewActor->SetVisibility(theVisibility);
-  RepaintCurrentView();
+  SMESH::RepaintCurrentView();
 }
 
 //================================================================================
@@ -242,4 +241,14 @@ void SMESHGUI_MeshEditPreview::SetVisibility (bool theVisibility)
 void SMESHGUI_MeshEditPreview::SetColor(double R, double G, double B)
 {
   myPreviewActor->SetColor( R, G, B );
+}
+
+//================================================================================
+/*!
+ * \brief Get preview actor
+ */
+//================================================================================
+SALOME_Actor* SMESHGUI_MeshEditPreview::GetActor() const
+{ 
+  return myPreviewActor;
 }

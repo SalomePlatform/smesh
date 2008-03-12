@@ -1,47 +1,42 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_DeleteGroupDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_DeleteGroupDlg.h
-//  Author : Sergey LITONIN
-//  Module : SMESH
-
 
 #ifndef SMESHGUI_DELETEGROUPDLG_H
 #define SMESHGUI_DELETEGROUPDLG_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qdialog.h>
-#include <qlist.h>
+// Qt includes
+#include <QDialog>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
-class QCloseEvent;
-class QFrame;
 class QPushButton;
-class QListBox;
-
+class QListWidget;
 class SMESHGUI;
-class SVTK_ViewWindow;
 class LightApp_SelectionMgr;
 
 /*!
@@ -54,19 +49,17 @@ class SMESHGUI_EXPORT SMESHGUI_DeleteGroupDlg : public QDialog
   Q_OBJECT
 
 public:
-                          SMESHGUI_DeleteGroupDlg( SMESHGUI* );
-  virtual                 ~SMESHGUI_DeleteGroupDlg();
+  SMESHGUI_DeleteGroupDlg( SMESHGUI* );
+  virtual ~SMESHGUI_DeleteGroupDlg();
 
   void                    Init ();
 
 private:
-
-  void                    closeEvent (QCloseEvent*);
-  void                    enterEvent (QEvent*);
-  void                    keyPressEvent(QKeyEvent*);
+  void                    closeEvent( QCloseEvent* );
+  void                    enterEvent( QEvent* );
+  void                    keyPressEvent( QKeyEvent* );
 
 private slots:
-
   void                    onOk();
   bool                    onApply();
   void                    onClose();
@@ -77,26 +70,24 @@ private slots:
   void                    onSelectionDone();
 
 private:
-
-  QFrame*                 createButtonFrame (QWidget*);
-  QFrame*                 createMainFrame   (QWidget*);
+  QWidget*                createButtonFrame( QWidget* );
+  QWidget*                createMainFrame( QWidget* );
   bool                    isValid();
 
 private:
-
   QPushButton*            myOkBtn;
   QPushButton*            myApplyBtn;
   QPushButton*            myCloseBtn;
   QPushButton*            myHelpBtn;
-  QListBox*               myListBox;
+  QListWidget*            myListBox;
 
   SMESHGUI*               mySMESHGUI;
   LightApp_SelectionMgr*  mySelectionMgr;
 
-  QValueList<SMESH::SMESH_GroupBase_var> myListGrp;
-  bool                                   myBlockSelection;
+  QList<SMESH::SMESH_GroupBase_var> myListGrp;
+  bool                    myBlockSelection;
 
   QString                 myHelpFileName;
 };
 
-#endif
+#endif // SMESHGUI_DELETEGROUPDLG_H

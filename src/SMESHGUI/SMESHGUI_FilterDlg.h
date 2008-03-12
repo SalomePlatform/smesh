@@ -1,68 +1,61 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_FilterDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_FilterDlg.h
-//  Author : Sergey LITONIN      
-//  Module : SMESH
 
+#ifndef SMESHGUI_FILTERDLG_H
+#define SMESHGUI_FILTERDLG_H
 
-#ifndef SMESHGUI_FilterDlg_H
-#define SMESHGUI_FilterDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qdialog.h>
-#include <qframe.h>
-#include <qmap.h>
-#include <qvaluelist.h>
+// Qt includes
+#include <QWidget>
+#include <QDialog>
+#include <QMap>
+#include <QList>
 
-#include "LightApp_SelectionMgr.h"
-#include "SALOME_InteractiveObject.hxx"
-#include "SALOME_DataMapOfIOMapOfInteger.hxx"
-#include "SVTK_Selection.h"
+// SALOME GUI includes
+#include <SALOME_DataMapOfIOMapOfInteger.hxx>
+#include <SVTK_Selection.h>
 
-#include <TColStd_IndexedMapOfInteger.hxx>
-
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class QFrame;
 class QButtonGroup;
 class QCheckBox;
-class QCloseEvent;
-class QComboBox;
-class QEvent;
 class QGroupBox;
 class QPushButton;
-class QStringList;
-class QTable;
-class QTableItem;
-class QWidgetStack;
+class QTableWidget;
+class QTableWidgetItem;
+class QStackedWidget;
 class LightApp_SelectionMgr;
 class SMESHGUI;
 class SMESHGUI_FilterLibraryDlg;
 class SVTK_Selector;
-class SVTK_ViewWindow;
 
 /*!
  *  Class       : SMESHGUI_FilterTable
@@ -72,113 +65,107 @@ class SVTK_ViewWindow;
  *                  - Buttons for editing table
  */
 
-class SMESHGUI_EXPORT SMESHGUI_FilterTable : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_FilterTable : public QWidget
 {
   Q_OBJECT
 
   class Table;
   class ComboItem;
+  class CheckItem;
   class AdditionalWidget;
+  class ComboDelegate;
 
   typedef QMap<int, Table*> TableMap;
 
 public:  
-                            SMESHGUI_FilterTable( SMESHGUI*,
-						  QWidget* parent, 
-                                                  const int type);
-                            SMESHGUI_FilterTable( SMESHGUI*,
-						  QWidget* parent, 
-                                                  const QValueList<int>& type);
-  virtual                   ~SMESHGUI_FilterTable();
+  SMESHGUI_FilterTable( SMESHGUI*, QWidget*, const int );
+  SMESHGUI_FilterTable( SMESHGUI*, QWidget*, const QList<int>& );
+  virtual ~SMESHGUI_FilterTable();
 
-  void                      Init (const int type);
-  void                      Init (const QValueList<int>& types);
+  void                      Init( const QList<int>& );
 
   QGroupBox*                GetTableGrp();
 
-  bool                      IsValid (const bool = true, const int theEntityType = -1) const;
+  bool                      IsValid( const bool = true, const int = -1 ) const;
   int                       GetType() const;
-  void                      SetType (const int);
+  void                      SetType(const int);
   void                      RestorePreviousEntityType();
-  int                       NumRows (const int theEntityType = -1) const;
-  void                      Clear (const int theEntityType = -1);
-  void                      SetEditable (const bool);
-  void                      SetEnabled (const bool);
-  void                      SetLibsEnabled (const bool);
+  int                       NumRows( const int = -1 ) const;
+  void                      Clear( const int = -1 );
+  void                      SetEditable( const bool );
+  void                      SetEnabled( const bool );
+  void                      SetLibsEnabled( const bool );
   bool                      IsEditable() const;
 
-  int                       GetCriterionType (const int theRow, const int theType = -1) const;
+  int                       GetCriterionType( const int, const int = -1 ) const;
 
-  void                      GetCriterion (const int                 theRow,
-                                          SMESH::Filter::Criterion& theCriterion,
-                                          const int                 theEntityType = -1) const;
+  void                      GetCriterion( const int,
+                                          SMESH::Filter::Criterion&,
+                                          const int = -1 ) const;
 
-  void                      SetCriterion (const int                       theRow,
-                                          const SMESH::Filter::Criterion& theCriterion,
-                                          const int                       theEntityType = -1);
+  void                      SetCriterion( const int,
+                                          const SMESH::Filter::Criterion&,
+                                          const int = -1 );
 
-  void                      AddCriterion (const SMESH::Filter::Criterion& theCriterion,
-                                          const int    theEntityType = -1);
+  void                      AddCriterion( const SMESH::Filter::Criterion&,
+                                          const int = -1 );
 
-  void                      Copy (const SMESHGUI_FilterTable*);
-  void                      SetValidity (const bool);
+  void                      Copy( const SMESHGUI_FilterTable* );
+  void                      SetValidity( const bool );
 
-  bool                      CurrentCell (int& theRow, int& theCol) const;
-  void                      SetThreshold (const int      theRow,
-                                          const QString& theText,
-                                          const int      theEntityType = -1);
+  bool                      CurrentCell( int&, int& ) const;
+  void                      SetThreshold( const int,
+                                          const QString&,
+                                          const int = -1 );
 
-  bool                      GetThreshold (const int      theRow,
-                                          QString&       theText,
-                                          const int      theEntityType = -1);
+  bool                      GetThreshold( const int,
+                                          QString&,
+                                          const int = -1 );
 
-  void                      SetID( const int      theRow,
-				   const QString& theText,
-				   const int      theEntityType = -1 ); 
+  void                      SetID( const int,
+				   const QString&,
+				   const int = -1 ); 
   
-  bool                      GetID( const int      theRow,
-				   QString&       theText,
-				   const int      theEntityType = -1 );
+  bool                      GetID( const int,
+				   QString&,
+				   const int = -1 );
 
   void                      Update();
 
 signals:
-
   void                      CopyFromClicked();
   void                      AddToClicked();
-  void                      EntityTypeChanged (const int);
+  void                      EntityTypeChanged( const int );
   void                      NeedValidation();
-  void                      CriterionChanged (const int theRow, const int theEntityType);
-  void                      CurrentChanged (int, int);
+  void                      CriterionChanged( const int, const int );
+  void                      CurrentChanged( int, int );
 
 private slots:
-
   void                      onAddBtn();
   void                      onInsertBtn();
   void                      onRemoveBtn();
   void                      onClearBtn();
   void                      onCopyFromBtn();
   void                      onAddToBtn();
-  void                      onCriterionChanged (int, int);
-  void                      onEntityType (int);
-  void                      onCurrentChanged (int, int);
+  void                      onCriterionChanged( int, int );
+  void                      onEntityType( int );
+  void                      onCurrentChanged( int, int );
 
 private:
-
-  void                      addRow (Table*, const int, const bool toTheEnd = true);
-  QTableItem*               getCriterionItem (QTable*, const int);
-  QTableItem*               getCompareItem (QTable*);
-  QTableItem*               getUnaryItem (QTable*);
-  QTableItem*               getBinaryItem (QTable*);
-  const QMap<int, QString>& getCriteria (const int theType) const;
+  void                      addRow( Table*, const int, const bool = true );
+  QTableWidgetItem*         getCriterionItem( const int ) const;
+  QTableWidgetItem*         getCompareItem() const;
+  QTableWidgetItem*         getUnaryItem() const;
+  QTableWidgetItem*         getBinaryItem() const;
+  const QMap<int, QString>& getCriteria( const int ) const;
   const QMap<int, QString>& getCompare() const;
-  Table*                    createTable (QWidget*, const int);
-  QWidget*                  createAdditionalFrame (QWidget* theParent);
+  Table*                    createTable( QWidget*, const int );
+  QWidget*                  createAdditionalFrame( QWidget* );
   int                       getFirstSelectedRow() const;
-  void                      onCriterionChanged (const int, const int, const int);
+  void                      onCriterionChanged( const int, const int, const int );
 
   void                      updateBtnState();
-  void                      removeAdditionalWidget (QTable* theTable, const int theRow);
+  void                      removeAdditionalWidget( QTableWidget*, const int );
   void                      updateAdditionalWidget();
 
   const QMap<int, QString>& getSupportedTypes() const;
@@ -187,7 +174,7 @@ private:
   SMESHGUI*                 mySMESHGUI;
 
   QGroupBox*                myTableGrp;
-  QGroupBox*                mySwitchTableGrp;
+  QWidget*                  mySwitchTableGrp;
 
   TableMap                  myTables;
   QPushButton*              myAddBtn;
@@ -197,6 +184,7 @@ private:
   QPushButton*              myCopyFromBtn;  
   QPushButton*              myAddToBtn;
 
+  QGroupBox*                myEntityTypeBox;
   QButtonGroup*             myEntityTypeGrp;
   int                       myEntityType;
   int                       myIsValid;
@@ -204,9 +192,9 @@ private:
 
   SMESHGUI_FilterLibraryDlg* myLibDlg;
 
-  QWidgetStack*              myWgStack;
+  QStackedWidget*           myWgStack;
 
-  QMap<QTableItem*, AdditionalWidget*> myAddWidgets;
+  QMap<QTableWidgetItem*, AdditionalWidget*> myAddWidgets;
 };
 
 
@@ -226,21 +214,16 @@ class SMESHGUI_FilterDlg : public QDialog
   enum { BTN_OK, BTN_Cancel, BTN_Apply, BTN_Close, BTN_Help };
 
 public:
-                            SMESHGUI_FilterDlg( SMESHGUI*,
-                                                const QValueList<int>& types,
-                                                const char*            name = 0);
+  SMESHGUI_FilterDlg( SMESHGUI*, const QList<int>& );
+  SMESHGUI_FilterDlg( SMESHGUI*, const int );
+  virtual ~SMESHGUI_FilterDlg();
 
-                            SMESHGUI_FilterDlg( SMESHGUI*,
-                                                const int              type,
-                                                const char*            name = 0);
-  virtual                   ~SMESHGUI_FilterDlg();
-
-  void                      Init (const QValueList<int>& types);
-  void                      Init (const int type);
+  void                      Init( const QList<int>& );
+  void                      Init( const int );
 
   void                      SetSelection();
-  void                      SetMesh (SMESH::SMESH_Mesh_ptr);
-  void                      SetSourceWg (QWidget*);
+  void                      SetMesh( SMESH::SMESH_Mesh_ptr );
+  void                      SetSourceWg( QWidget* );
 
   static SMESH::Filter::Criterion createCriterion();
 
@@ -256,42 +239,38 @@ private slots:
   void                      onHelp();
   void                      onDeactivate();
   void                      onSelectionDone();
-  void                      onCriterionChanged (const int, const int);
-  void                      onCurrentChanged (int, int);
+  void                      onCriterionChanged( const int, const int );
+  void                      onCurrentChanged( int, int );
 
 private:
 
-  void                      construct (const QValueList<int>& types); 
+  void                      construct( const QList<int>& ); 
 
-  void                      closeEvent (QCloseEvent*);
-  void                      enterEvent (QEvent*);
-  void                      keyPressEvent(QKeyEvent*);
+  void                      closeEvent( QCloseEvent* );
+  void                      enterEvent( QEvent* );
+  void                      keyPressEvent( QKeyEvent* );
 
   // dialog creation
-  QFrame*                   createButtonFrame (QWidget*);
-  QFrame*                   createMainFrame (QWidget*);
-  QButtonGroup*             createSourceGroup (QWidget*);
+  QWidget*                  createButtonFrame( QWidget* );
+  QWidget*                  createMainFrame( QWidget* );
+  QWidget*                  createSourceGroup( QWidget* );
   void                      updateMainButtons();
 
   // execution
   bool                      isValid() const;
-  bool                      createFilter (const int theType);
+  bool                      createFilter( const int );
   void                      insertFilterInViewer();
-  void                      selectInViewer (const int              theType,
-                                            const QValueList<int>& theIds);
-  void                      filterSource (const int        theType,
-                                          QValueList<int>& theResIds);
-  void                      filterSelectionSource (const int        theType,
-                                                   QValueList<int>& theResIds);
-  void                      getIdsFromWg (const QWidget*, QValueList<int>&) const;
-  void                      setIdsToWg (QWidget*, const QValueList<int>&);
-  Selection_Mode            getSelMode (const int) const;
+  void                      selectInViewer( const int, const QList<int>& );
+  void                      filterSource( const int, QList<int>& );
+  void                      filterSelectionSource( const int, QList<int>& );
+  void                      getIdsFromWg( const QWidget*, QList<int>& ) const;
+  void                      setIdsToWg( QWidget*, const QList<int>& );
+  Selection_Mode            getSelMode( const int ) const;
   void                      updateSelection();
 
 private:
-
   // widgets
-  QFrame*                   myMainFrame;
+  QWidget*                  myMainFrame;
   QButtonGroup*             mySourceGrp;
 
   QCheckBox*                mySetInViewer;
@@ -301,7 +280,7 @@ private:
   SMESHGUI_FilterTable*     myTable;
 
   // initial fields
-  QValueList<int>           myTypes;
+  QList<int>                myTypes;
   SMESHGUI*                 mySMESHGUI;
   LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
@@ -317,4 +296,4 @@ private:
   QString                   myHelpFileName;
 };
 
-#endif
+#endif // SMESHGUI_FILTERDLG_H

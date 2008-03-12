@@ -19,12 +19,12 @@ salomeidldir       = $(prefix)/idl/@PACKAGE@
 salomeresdir       = $(prefix)/share/@PACKAGE@/resources/@MODULE_NAME@
 
 # Directories for installing admin files
-admlocaldir       = $(prefix)/adm_local
-admlocalunixdir     = $(admlocaldir)/unix
-admlocalm4dir        = $(admlocaldir)/unix/config_files
+admlocaldir        = $(prefix)/adm_local
+admlocalunixdir    = $(admlocaldir)/unix
+admlocalm4dir      = $(admlocaldir)/unix/config_files
 
 # Shared modules installation directory
-sharedpkgpythondir =$(pkgpythondir)/shared_modules
+sharedpkgpythondir = $(pkgpythondir)/shared_modules
 
 # Documentation directory
 docdir             = $(datadir)/doc/@PACKAGE@
@@ -36,8 +36,8 @@ docdir             = $(datadir)/doc/@PACKAGE@
 	$(MOC) $< -o $@
 
 # qm-files generation
-%.qm: %.po
-	$(MSG2QM) $< $@
+%.qm: %.ts
+	$(LRELEASE) $< -qm $@
 
 EXTRA_DIST=$(MOC_FILES:%_moc.cxx=%.h) $(nodist_salomeres_DATA:%.qm=%.po)
 

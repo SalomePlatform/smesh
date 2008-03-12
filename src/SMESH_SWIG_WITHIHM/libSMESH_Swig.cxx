@@ -1,67 +1,58 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESH : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  File   : SMESH_Swig.cxx
-//  Author : Nicolas REJNERI
-//  Module : SMESH
-//  $Header$
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : libSMESH_Swig.cxx
+// Author : Nicolas REJNERI, Open CASCADE S.A.S.
+//
 
-#include "SMESHGUI_Swig.hxx"
+// SMESH includes
+#include "libSMESH_Swig.h"
 
-#include "Utils_ORB_INIT.hxx"
-#include "Utils_SINGLETON.hxx"
+#include <SMESHGUI.h>
+#include <SMESHGUI_Utils.h>
+#include <SMESHGUI_Displayer.h>
 
-#include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_GEOMGenUtils.h"
-#include "SMESHGUI_Displayer.h"
+// SALOME KERNEL includes
+#include <Utils_ORB_INIT.hxx>
+#include <Utils_SINGLETON.hxx>
+#include <SALOMEDSClient_ClientFactory.hxx>
 
-// SALOME Includes
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Session.h"
-#include "SUIT_ViewModel.h"
-#include "VTKViewer_ViewModel.h"
+#include <utilities.h>
 
-#include "SALOME_Event.hxx"
-#include "SALOME_NamingService.hxx"
-#include "SalomeApp_Application.h"
-#include "SALOMEDSClient_ClientFactory.hxx"
+// SALOME GUI includes
+#include <SUIT_Session.h>
+#include <VTKViewer_ViewModel.h>
+#include <SALOME_Event.h>
+#include <SalomeApp_Application.h>
 
-#include "utilities.h"
+// OCCT includes
+#include <TopAbs.hxx>
 
-// Open CASCADE Includes
-#include <TopoDS.hxx>
+// Qt includes
+#include <QApplication>
 
-// QT Includes
-#include <qapplication.h>
-
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
-
-using namespace std;
 
 static CORBA::ORB_var anORB;
 
@@ -90,10 +81,10 @@ namespace
       aDomainRoot = theStudyBuilder->NewObjectToTag(theSComponentMesh,theDomainRootTag);
       SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(theName.latin1());
+      aName->SetValue(theName.toLatin1().data());
       anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributePixMap");
       SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-      aPixmap->SetPixMap(thePixmap.latin1());
+      aPixmap->SetPixMap(thePixmap.toLatin1().data());
       anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeSelectable");
       SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
       aSelAttr->SetSelectable(false);
@@ -154,7 +145,7 @@ namespace
     SMESH::SMESH_Hypothesis_var aDomainItem = SMESH::SMESH_Hypothesis::_narrow(anObject.in());
     CORBA::String_var aType = aDomainItem->GetName();
     QString aPixmapName = theDomainPixmap + "_" + aType.in();
-    aPixmap->SetPixMap(aPixmapName.latin1());
+    aPixmap->SetPixMap(aPixmapName.toLatin1().data());
     anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeIOR");
     SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
     anIOR->SetValue(theIOR.c_str());
@@ -214,13 +205,13 @@ namespace
 	SALOMEDS::GenericAttribute_var anAttr =
 	  theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
 	SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-	aName->SetValue(theAppliedDomainMEN.latin1());
+	aName->SetValue(theAppliedDomainMEN.toLatin1().data());
 	anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
 	SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
 	aSelAttr->SetSelectable(false);
 	anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributePixMap");
 	SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-	aPixmap->SetPixMap(theAppliedDomainICON.latin1());
+	aPixmap->SetPixMap(theAppliedDomainICON.toLatin1().data());
       }
       SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(anAppliedDomainSO);
       theStudyBuilder->Addreference(aSObject,aHypothesisSO);
@@ -282,7 +273,7 @@ SMESH_Swig::SMESH_Swig()
       try {
 	ORB_INIT &anORBInit = *SINGLETON_<ORB_INIT>::Instance();
 	ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting());
-	myORB = anORBInit( 0 , 0 );
+	myORB = anORBInit( 0, 0 );
       } catch (...) {
 	INFOS("internal error : orb not found");
       }
@@ -358,7 +349,7 @@ SMESH_Swig::Init(int theStudyID)
 	      aModule = anApp->loadModule("Mesh");
 	  aSMESHGUI = dynamic_cast<SMESHGUI*>(aModule);
 	} //SRN: BugID IPAL9186: end of a fix
-	aName->SetValue(aSMESHGUI->moduleName());
+	aName->SetValue(aSMESHGUI->moduleName().toLatin1().data());
 	anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributePixMap");
 	aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
 	aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
@@ -524,7 +515,7 @@ const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
       aSubMeshesRoot = myStudyBuilder->NewObjectToTag(aMeshSO,aShapeTag);
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(aSubMeshName.latin1());
+      aName->SetValue(aSubMeshName.toLatin1().data());
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeSelectable");
       SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
       aSelAttr->SetSelectable(false);
@@ -577,7 +568,7 @@ void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
       SUIT_Session* aSession = SUIT_Session::session();
       SUIT_Application* anApplication = aSession->activeApplication();
       SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>(anApplication);
-      SUIT_ViewManager* vman = anApp->getViewManager(VTKViewer_Viewer::Type(),true);
+      /*SUIT_ViewManager* vman = */anApp->getViewManager(VTKViewer_Viewer::Type(),true);
       SMESHGUI_Displayer* aDisp = new SMESHGUI_Displayer(anApp);
       aDisp->Display(_entry,1);
     }

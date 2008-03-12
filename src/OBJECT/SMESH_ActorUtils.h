@@ -22,10 +22,7 @@
 
 #include "SMESH_Object.h"
 
-#include <qcolor.h>
-#include <qstring.h>
-
-#include "VTKViewer.h"
+#include <QColor>
 
 class vtkUnstructuredGrid;
 
@@ -46,7 +43,7 @@ SMESHOBJECT_EXPORT
   QColor 
   GetColor( const QString& theSect, 
 	    const QString& theName, 
-	    const QColor&t = QColor() );
+	    const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void
@@ -55,7 +52,7 @@ SMESHOBJECT_EXPORT
 	    int&, 
 	    int&, 
 	    int&, 
-	    const QColor&t = QColor() );
+	    const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void
@@ -64,7 +61,7 @@ SMESHOBJECT_EXPORT
 	    vtkFloatingPointType&, 
 	    vtkFloatingPointType&, 
 	    vtkFloatingPointType&, 
-	    const QColor&t = QColor() );
+	    const QColor& = QColor() );
 
 SMESHOBJECT_EXPORT
   void 

@@ -1,48 +1,47 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_PatternWidget.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_PatternWidget.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header:
 
+// SMESH includes
 #include "SMESHGUI_PatternWidget.h"
 
-//Qt includes
-#include <qpainter.h>
-#include <qpoint.h>
+// Qt includes
+#include <QPainter>
 
+const int Shift  = 4;  // shift of the point number from point
+const int Border = 20; // border size
+const int Radius = 3;  // radius of a point
 
 //=================================================================================
 // class    : SMESHGUI_PatternWidget()
 // purpose  :
 //=================================================================================
-SMESHGUI_PatternWidget::SMESHGUI_PatternWidget (QWidget* parent, const char* name, WFlags fl)
-     : QFrame(parent, name, WStyle_Customize)
+SMESHGUI_PatternWidget::SMESHGUI_PatternWidget( QWidget* parent )
+  : QFrame( parent )
 {
-  myMinU =  myMinV =  myMaxU =  myMaxV = 0;
-  setMinimumHeight(150);
-  repaint();
+  myMinU = myMinV = myMaxU = myMaxV = 0;
+  setMinimumHeight( 150 );
 }
 
 //=================================================================================
@@ -57,109 +56,96 @@ SMESHGUI_PatternWidget::~SMESHGUI_PatternWidget()
 // function : SetPoints()
 // purpose  :
 //=================================================================================
-void SMESHGUI_PatternWidget::SetPoints (PointVector thePoints,
-                                        QValueVector<int> theKeys,
-                                        ConnectivityVector theConnections)
+void SMESHGUI_PatternWidget::SetPoints( const PointVector&        thePoints,
+                                        const QVector<int>&       theKeys,
+                                        const ConnectivityVector& theConnections )
 {
-  myPoints = thePoints;
-  myKeys = theKeys;
-  myConnections  = theConnections;
+  myPoints      = thePoints;
+  myKeys        = theKeys;
+  myConnections = theConnections;
 
-  if (!thePoints.size())
+  if ( myPoints.isEmpty() )
     return;
 
-  myMinU = myMaxU = (thePoints[0]).x;
-  myMinV = myMaxV = (thePoints[0]).y;
-  double x, y;
+  myMinU = myMaxU = myPoints[0].x;
+  myMinV = myMaxV = myPoints[0].y;
 
-  for (int i = 1; i < thePoints.size(); i++) {
-    x = (thePoints[i]).x;
-    y = (thePoints[i]).y;
-
-    if (myMinU > x)
-      myMinU = x;
-    if (myMaxU < x)
-      myMaxU = x;
-    if (myMinV > y)
-      myMinV = y;
-    if (myMaxV < y)
-      myMaxV = y;
+  for ( int i = 1; i < myPoints.size(); i++ ) {
+    myMinU = qMin( myPoints[i].x, myMinU );
+    myMaxU = qMax( myPoints[i].x, myMaxU );
+    myMinV = qMin( myPoints[i].y, myMinV );
+    myMaxV = qMax( myPoints[i].y, myMaxV );
   }
 
   repaint();
 }
 
-static const int Shift  = 4; // shift of the point number from point
-static const int Border = 20;
-
 //=================================================================================
 // function : paintEvent()
 // purpose  :
 //=================================================================================
-void SMESHGUI_PatternWidget::paintEvent (QPaintEvent*)
+void SMESHGUI_PatternWidget::paintEvent( QPaintEvent* )
 {
-  QPainter paint (this);
-  paint.setBrush(Qt::SolidPattern);
+  QPainter painter( this );
+  painter.setBrush( Qt::SolidPattern );
 
-  //Draw points
-  const int aRadius = 3; // radius of a point
-
-  for (int i = 0; i < myKeys.size() && i < myPoints.size(); i++) {
+  // Draw points
+  for ( int i = 0; i < myKeys.size() && i < myPoints.size(); i++ ) {
     SMESH::PointStruct aPoint = myPoints[ myKeys[i] ];
-    QPoint aQPnt = MapCoords(aPoint.x, aPoint.y);
+    QPoint aQPnt = mapCoords( aPoint.x, aPoint.y );
 
-    paint.drawPie(aQPnt.x() - aRadius, aQPnt.y() - aRadius, aRadius*2, aRadius*2, 5760, 5760);
-    paint.drawText(aQPnt.x() +  Shift, aQPnt.y() -   Shift, QString::number(i+1));
+    painter.drawPie( aQPnt.x() - Radius, aQPnt.y() - Radius, 
+		     Radius * 2, Radius * 2, 0, 360 * 16 );
+    painter.drawText( aQPnt.x() + Shift, aQPnt.y() - Shift, 
+		      QString::number( i+1 ) );
   }
 
-  //Draw lines
-  for (int i = 0; i < myConnections.size(); i++) {
-    QValueVector<int> aCVector = myConnections[i];
+  // Draw lines
+  for ( int i = 0; i < myConnections.size(); i++ ) {
+    QVector<int> aCVector = myConnections[i];
 
-    if (aCVector.size() == 0)
+    if ( aCVector.isEmpty() )
       continue;
 
     SMESH::PointStruct aPoint = myPoints[ aCVector[0] ];
-    const QPoint aBeginPnt = MapCoords(aPoint.x, aPoint.y);
+    const QPoint aBeginPnt = mapCoords( aPoint.x, aPoint.y );
     QPoint aFirstPnt = aBeginPnt, aSecondPnt;
 
-    for (int j = 1; j < aCVector.size(); j++) {
+    for ( int j = 1; j < aCVector.size(); j++ ) {
       aPoint = myPoints[ aCVector[j] ];
-      aSecondPnt = MapCoords(aPoint.x, aPoint.y);
-      paint.drawLine(aFirstPnt, aSecondPnt);
+      aSecondPnt = mapCoords( aPoint.x, aPoint.y );
+      painter.drawLine( aFirstPnt, aSecondPnt );
       aFirstPnt = aSecondPnt;
     }
 
-    paint.drawLine(aBeginPnt, aSecondPnt);
+    painter.drawLine( aBeginPnt, aSecondPnt );
   }
 }
 
 //=================================================================================
-// function : MapCoords()
+// function : mapCoords()
 // purpose  :
 //=================================================================================
-QPoint SMESHGUI_PatternWidget::MapCoords (const double u, const double v)
+QPoint SMESHGUI_PatternWidget::mapCoords( const double u, const double v )
 {
-  int aWidth  = width()  - 2*Border;
-  int aHeight = height() - 2*Border;
+  int aWidth  = width()  - 2 * Border;
+  int aHeight = height() - 2 * Border;
 
   double aUBound = myMaxU - myMinU;
   double aVBound = myMaxV - myMinV;
 
-  double aUScale = aWidth/aUBound;
-  double aVScale = aHeight/aVBound;
+  double aUScale = aWidth  / aUBound;
+  double aVScale = aHeight / aVBound;
 
   double aScale;
   aUScale <= aVScale ? aScale = aUScale : aScale = aVScale;
 
-  double aUMiddle = (myMaxU + myMinU)/2;
-  double aVMiddle = (myMaxV + myMinV)/2;
+  double aUMiddle = ( myMaxU + myMinU ) / 2;
+  double aVMiddle = ( myMaxV + myMinV ) / 2;
 
-  int x = int(aWidth/2  + (u - aUMiddle)*aScale + Border - Shift);
+  int x = int( aWidth  / 2 + ( u - aUMiddle ) * aScale + Border - Shift );
 
-  int y = int(aHeight/2 + (aVMiddle - v)*aScale + Border + Shift);
+  int y = int( aHeight / 2 + ( aVMiddle - v ) * aScale + Border + Shift );
 
-  QPoint aPoint = QPoint(x, y);
-
-  return aPoint;
+  return QPoint( x, y );
 }

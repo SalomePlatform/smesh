@@ -1,52 +1,59 @@
-// Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// SMESH SMESHGUI : GUI for SMESH component
 //
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License.
+// Copyright (C) 2003  CEA
 //
-// This library is distributed in the hope that it will be useful
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_Hypotheses.cxx
+// Author : Julia DOROVSKIKH, Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "SMESHGUI_Hypotheses.h"
+
 #include "SMESHGUI.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_SpinBox.h"
 
+// SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
 #include <utilities.h>
 
-#include <SMESHGUI.h>
-
+// SALOME GUI includes
 #include <QtxIntSpinBox.h>
-
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
-
+#include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
 
-#include <qframe.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlabel.h>
-#include <qpixmap.h>
-#include <qgroupbox.h>
+// Qt includes
+#include <QFrame>
+#include <QLineEdit>
+#include <QLabel>
+#include <QGroupBox>
+#include <QVBoxLayout>
+#include <QEventLoop>
 
-#include <qapplication.h>
+#define SPACING 6
+#define MARGIN  11
 
 SMESHGUI_GenericHypothesisCreator::SMESHGUI_GenericHypothesisCreator( const QString& theHypType )
-  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 )
+  : myHypType( theHypType ), myIsCreate( false ), myDlg( 0 ), myEventLoop( 0 )
 {
 }
 
@@ -135,18 +142,21 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   myHypo = SMESH::SMESH_Hypothesis::_duplicate( h );
 
   SMESHGUI_HypothesisDlg* Dlg = new SMESHGUI_HypothesisDlg( this, theParent );
+  connect( Dlg, SIGNAL( finished( int ) ), this, SLOT( onDialogFinished( int ) ) );
   myDlg = Dlg;
   QFrame* fr = buildFrame();
   if( fr )
   {
     Dlg->setCustomFrame( fr );
-    Dlg->setCaption( caption() );
-    Dlg->setName( theHypName );
+    Dlg->setWindowTitle( caption() );
+    Dlg->setObjectName( theHypName );
     Dlg->setHIcon( icon() );
     Dlg->setType( type() );
     retrieveParams();
     Dlg->show();
-    qApp->enter_loop(); // make myDlg not modal
+    if ( !myEventLoop )
+      myEventLoop = new QEventLoop( this );
+    myEventLoop->exec(); // make myDlg not modal
     res = myDlg->result();
     if( res ) {
       QString paramValues = storeParams();
@@ -172,20 +182,17 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
   if( !stdParams( params ) || params.isEmpty() )
     return 0;
 
-  QFrame* fr = new QFrame( 0, "myframe" );
-  QVBoxLayout* lay = new QVBoxLayout( fr, 5, 0 );
+  QFrame* fr = new QFrame( 0 );
+  QVBoxLayout* lay = new QVBoxLayout( fr );
+  lay->setMargin( 5 );
+  lay->setSpacing( 0 );
 
-  QGroupBox* GroupC1 = new QGroupBox( fr, "GroupC1" );
+  QGroupBox* GroupC1 = new QGroupBox( tr( "SMESH_ARGUMENTS" ), fr );
   lay->addWidget( GroupC1 );
 
-  GroupC1->setTitle( tr( "SMESH_ARGUMENTS"  ) );
-  GroupC1->setColumnLayout(0, Qt::Vertical );
-  GroupC1->layout()->setSpacing( 0 );
-  GroupC1->layout()->setMargin( 0 );
-  QGridLayout* GroupC1Layout = new QGridLayout( GroupC1->layout() );
-  GroupC1Layout->setAlignment( Qt::AlignTop );
-  GroupC1Layout->setSpacing( 6 );
-  GroupC1Layout->setMargin( 11 );
+  QGridLayout* GroupC1Layout = new QGridLayout( GroupC1 );
+  GroupC1Layout->setSpacing( SPACING );
+  GroupC1Layout->setMargin( MARGIN );
 
   ListOfStdParams::const_iterator anIt = params.begin(), aLast = params.end();
   for( int i=0; anIt!=aLast; anIt++, i++ )
@@ -199,7 +206,8 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       {
       case QVariant::Int:
         {
-          QtxIntSpinBox* sb = new QtxIntSpinBox( GroupC1, (*anIt).myName.latin1() );
+          QtxIntSpinBox* sb = new QtxIntSpinBox( GroupC1 );
+	  sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toInt() );
           connect( sb, SIGNAL( valueChanged( int ) ), this, SLOT( onValueChanged() ) );
@@ -208,7 +216,8 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::Double:
         {
-          QtxDblSpinBox* sb = new SMESHGUI_SpinBox( GroupC1, (*anIt).myName.latin1() );
+          QtxDoubleSpinBox* sb = new SMESHGUI_SpinBox( GroupC1 );
+	  sb->setObjectName( (*anIt).myName );
           attuneStdWidget( sb, i );
           sb->setValue( (*anIt).myValue.toDouble() );
           connect( sb, SIGNAL( valueChanged( double ) ), this, SLOT( onValueChanged() ) );
@@ -217,7 +226,8 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
         break;
       case QVariant::String:
         {
-          QLineEdit* le = new QLineEdit( GroupC1, (*anIt).myName.latin1() );
+          QLineEdit* le = new QLineEdit( GroupC1 );
+	  le->setObjectName( (*anIt).myName );
           attuneStdWidget( le, i );
           le->setText( (*anIt).myValue.toString() );
           connect( le, SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
@@ -240,6 +250,12 @@ void SMESHGUI_GenericHypothesisCreator::onValueChanged()
 {
 }
 
+void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int /*result*/ )
+{
+  if ( myEventLoop )
+    myEventLoop->exit();
+}
+
 bool SMESHGUI_GenericHypothesisCreator::stdParams( ListOfStdParams& ) const
 {
   return false;
@@ -252,7 +268,7 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
   ListOfWidgets::const_iterator anIt = widgets().begin(), aLast = widgets().end();
   for( ; anIt!=aLast; anIt++ )
   {
-    item.myName = (*anIt)->name();
+    item.myName = (*anIt)->objectName();
     if( (*anIt)->inherits( "QtxIntSpinBox" ) )
     {
       QtxIntSpinBox* sb = ( QtxIntSpinBox* )( *anIt );
@@ -260,9 +276,9 @@ bool SMESHGUI_GenericHypothesisCreator::getStdParamFromDlg( ListOfStdParams& par
       params.append( item );
     }
     
-    else if( (*anIt)->inherits( "QtxDblSpinBox" ) )
+    else if( (*anIt)->inherits( "QtxDoubleSpinBox" ) )
     {
-      QtxDblSpinBox* sb = ( QtxDblSpinBox* )( *anIt );
+      QtxDoubleSpinBox* sb = ( QtxDoubleSpinBox* )( *anIt );
       item.myValue = sb->value();
       params.append( item );
     }
@@ -309,7 +325,7 @@ QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams
       break;
     default:
       QVariant valCopy = (*param).myValue;
-      valueStr += valCopy.asString();
+      valueStr += valCopy.toString();
     }
   }
   return valueStr;
@@ -347,6 +363,11 @@ SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothesisCrea
   return myParamWidgets;
 }
 
+QtxDialog* SMESHGUI_GenericHypothesisCreator:: dlg() const
+{ 
+  return myDlg;
+}
+
 bool SMESHGUI_GenericHypothesisCreator::isCreation() const
 {
   return myIsCreate;
@@ -376,7 +397,7 @@ QWidget* SMESHGUI_GenericHypothesisCreator::getCustomWidget( const StdParam & /*
 {
   return 0;
 }
-bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam& , QWidget* ) const
+bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWidget* ) const
 {
   return false;
 }
@@ -389,15 +410,19 @@ void SMESHGUI_GenericHypothesisCreator::onReject()
 
 
 SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator* creator, QWidget* parent )
-: QtxDialog( parent, "", false, true ),
+: QtxDialog( parent, false, true ),
   myCreator( creator )
 {
   setMinimumSize( 300, height() );
 //  setFixedSize( 300, height() );
-  myLayout = new QVBoxLayout( mainFrame(), 0, 0 );
+  QVBoxLayout* topLayout = new QVBoxLayout( mainFrame() );
+  topLayout->setMargin( 0 );
+  topLayout->setSpacing( 0 );
 
   QFrame* titFrame = new QFrame( mainFrame() );
-  QHBoxLayout* titLay = new QHBoxLayout( titFrame, 0, 5 );
+  QHBoxLayout* titLay = new QHBoxLayout( titFrame );
+  titLay->setMargin( 0 );
+  titLay->setSpacing( SPACING );
   
   myIconLabel = new QLabel( titFrame );
   myIconLabel->setScaledContents( false );
@@ -410,7 +435,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
   titLay->addWidget( myTypeLabel, 0 );
   titLay->addStretch( 1 );
 
-  myLayout->addWidget( titFrame, 0 );
+  topLayout->addWidget( titFrame, 0 );
 
   QString aHypType = creator->hypType();
   if ( aHypType == "LocalLength" )
@@ -443,8 +468,8 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 {
   if( f )
   {
-    f->reparent( mainFrame(), QPoint( 0, 0 ) );
-    myLayout->insertWidget( 1, f, 1 );
+    f->setParent( mainFrame() );
+    qobject_cast<QVBoxLayout*>( layout() )->insertWidget( 1, f, 1 );
   }
 }
 
@@ -453,14 +478,12 @@ void SMESHGUI_HypothesisDlg::accept()
   if ( myCreator && !myCreator->checkParams() )
     return;
   QtxDialog::accept();
-  qApp->exit_loop();
 }
 
 void SMESHGUI_HypothesisDlg::reject()
 {
   if ( myCreator ) myCreator->onReject();
   QtxDialog::reject();
-  qApp->exit_loop();
 }
 
 void SMESHGUI_HypothesisDlg::onHelp()
@@ -471,16 +494,17 @@ void SMESHGUI_HypothesisDlg::onHelp()
     app->onHelpContextModule(aSMESHGUI ? app->moduleName(aSMESHGUI->moduleName()) : QString(""), myHelpFileName);
   }
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -492,4 +516,47 @@ void SMESHGUI_HypothesisDlg::setHIcon( const QPixmap& p )
 void SMESHGUI_HypothesisDlg::setType( const QString& t )
 {
   myTypeLabel->setText( t );
+}
+
+HypothesisData::HypothesisData( const QString& theTypeName,
+				const QString& thePluginName,
+				const QString& theServerLibName,
+				const QString& theClientLibName,
+				const QString& theLabel,
+				const QString& theIconId,
+				const QList<int>& theDim,
+				const bool theIsAux,
+				const QStringList& theNeededHypos,
+				const QStringList& theOptionalHypos,
+				const QStringList& theInputTypes,
+				const QStringList& theOutputTypes,
+				const bool theIsNeedGeometry )
+  : TypeName( theTypeName ),
+    PluginName( thePluginName ),
+    ServerLibName( theServerLibName ),
+    ClientLibName( theClientLibName ),
+    Label( theLabel ),
+    IconId( theIconId ),
+    Dim( theDim ),
+    IsAux( theIsAux ),
+    NeededHypos( theNeededHypos ), 
+    OptionalHypos( theOptionalHypos ),
+    InputTypes( theInputTypes ),
+    OutputTypes( theOutputTypes ),
+    IsNeedGeometry( theIsNeedGeometry )
+{
+}
+
+HypothesesSet::HypothesesSet( const QString& theSetName ) 
+  : HypoSetName( theSetName )
+{
+}
+
+HypothesesSet::HypothesesSet( const QString&     theSetName,
+			      const QStringList& theHypoList,
+			      const QStringList& theAlgoList )
+  : HypoSetName( theSetName ), 
+    HypoList( theHypoList ), 
+    AlgoList( theAlgoList )
+{
 }

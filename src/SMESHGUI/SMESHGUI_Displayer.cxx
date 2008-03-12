@@ -1,36 +1,37 @@
-//  SMESH SMESHGUI : Displayer for SMESH module
+// SMESH SMESHGUI : Displayer for SMESH module
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_Displayer.cxx
+// Author : Alexander SOLOVYOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_Displayer.cxx
-//  Author : Alexander SOLOVYOV
-//  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/SMESHGUI/SMESHGUI_Displayer.cxx
 
+// SMESH includes
 #include "SMESHGUI_Displayer.h"
+
 #include "SMESHGUI_VTKUtils.h"
 
+// SALOME GUI includes
 #include <SalomeApp_Study.h>
 #include <SalomeApp_Application.h>
+#include <SUIT_ViewManager.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
 
@@ -56,13 +57,13 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
     if( vtk_viewer )
     {
       SUIT_ViewWindow* wnd = vtk_viewer->getViewManager()->getActiveView();
-      SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.latin1() );
+      SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.toLatin1().data() );
       if( !anActor )
-	anActor = SMESH::CreateActor( study()->studyDS(), entry.latin1(), true );
+	anActor = SMESH::CreateActor( study()->studyDS(), entry.toLatin1().data(), true );
       if( anActor )
       {
 	SMESH::DisplayActor( wnd, anActor );
-        prs = LightApp_Displayer::buildPresentation( entry.latin1(), aViewFrame );
+        prs = LightApp_Displayer::buildPresentation( entry.toLatin1().data(), aViewFrame );
       }
       if( prs )
 	UpdatePrs( prs );

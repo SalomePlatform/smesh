@@ -17,9 +17,20 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : StdMeshersGUI_DistrPreview.cxx
+// Author : Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "StdMeshersGUI_DistrPreview.h"
 
+// Qwt includes
+#include <qwt_plot_curve.h>
+#include <qwt_plot_marker.h>
+#include <qwt_symbol.h>
+#include <qwt_legend.h>
+
+// OCCT includes
 #include <Expr_NamedUnknown.hxx>
 #include <Expr_GeneralExpression.hxx>
 
@@ -45,25 +56,34 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
 {
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );
   myVars.ChangeValue( 1 ) = new Expr_NamedUnknown( "t" );
-  myDensity = insertCurve( QString() );
-  myDistr = insertCurve( QString() );
-  myMsg = insertMarker( new QwtPlotMarker( this ) );
-  setMarkerPos( myMsg, 0.5, 0.5 );
-  setMarkerLabelPen( myMsg, QPen( Qt::red, 1 ) );
-  QFont f = markerFont( myMsg );
-  f.setPointSize( 14 );
-  f.setBold( true );
-  setMarkerFont( myMsg, f );
-  setCurvePen( myDensity, QPen( Qt::red, 1 ) );
+  myDensity = new QwtPlotCurve( QString() );
+  myDensity->attach( this );
+  myDistr = new QwtPlotCurve( QString() );
+  myDistr->attach( this );
+  myMsg = new QwtPlotMarker();
+  myMsg->attach( this );
+  myMsg->setValue( 0.5, 0.5 );
+  QwtText mt = myMsg->label();
+  mt.setBackgroundPen( QPen( Qt::red, 1 ) );
+  QFont f = mt.font();
+  f.setPointSize( 14 ); f.setBold( true );
+  mt.setFont( f );
+  myMsg->setLabel( mt );
+  myDensity->setPen( QPen( Qt::red, 1 ) );
 
   QColor dc = Qt::blue;
-  setCurvePen( myDistr, QPen( dc, 1 ) );
-  setCurveSymbol( myDistr, QwtSymbol( QwtSymbol::XCross, QBrush( dc ), QPen( dc ), QSize( 5, 5 ) ) );
-  setAutoLegend( true );
-  enableLegend( true );
-  setLegendPos( Qwt::Bottom );
-  setCurveTitle( myDensity, tr( "SMESH_DENSITY_FUNC" ) );
-  setCurveTitle( myDistr, tr( "SMESH_DISTR" ) );
+  myDistr->setPen( QPen( dc, 1 ) );
+  myDistr->setSymbol( QwtSymbol( QwtSymbol::XCross, QBrush( dc ), QPen( dc ), QSize( 5, 5 ) ) );
+
+  QwtLegend* l = legend();
+  if ( !l ) {
+    l = new QwtLegend( this );
+    l->setFrameStyle( QFrame::Box | QFrame::Sunken );
+  }
+  insertLegend( l, QwtPlot::BottomLegend );
+
+  myDensity->setTitle( tr( "SMESH_DENSITY_FUNC" ) );
+  myDistr->setTitle( tr( "SMESH_DISTR" ) );
 }
 
 StdMeshersGUI_DistrPreview::~StdMeshersGUI_DistrPreview()
@@ -184,7 +204,7 @@ void StdMeshersGUI_DistrPreview::update()
       if( isTableFunc() )
 	arr = h->BuildDistributionTab( myTableFunc, myNbSeg, ( int )myConv );
       else
-	arr = h->BuildDistributionExpr( myFunction.latin1(), myNbSeg, ( int )myConv );
+	arr = h->BuildDistributionExpr( myFunction.toLatin1().data(), myNbSeg, ( int )myConv );
       if( arr )
       {
 	distr = *arr;
@@ -200,7 +220,11 @@ void StdMeshersGUI_DistrPreview::update()
     return;
   }
   else
-    setMarkerLabel( myMsg, QString() );
+  {
+    QwtText mt = myMsg->label();
+    mt.setText( QString() );
+    myMsg->setLabel( mt );
+  }
 
   int size = graph.length()/2;
   double* x = new double[size], *y = new double[size];
@@ -227,9 +251,9 @@ void StdMeshersGUI_DistrPreview::update()
       max_x = x[i];
   }
 
-  setAxisScale( curveXAxis( myDensity ), min_x, max_x );
-  setAxisScale( curveYAxis( myDensity ), min( 0.0, min_y ), max( 0.0, max_y ) );
-  setCurveData( myDensity, x, y, size );
+  setAxisScale( myDensity->xAxis(), min_x, max_x );
+  setAxisScale( myDensity->yAxis(), min( 0.0, min_y ), max( 0.0, max_y ) );
+  myDensity->setData( x, y, size );
   if( x )
     delete[] x;
   if( y )
@@ -244,7 +268,7 @@ void StdMeshersGUI_DistrPreview::update()
     x[i] = distr[i];
     y[i] = 0;
   }
-  setCurveData( myDistr, x, y, size );
+  myDistr->setData( x, y, size );
   delete[] x;
   delete[] y;
   x = y = 0;
@@ -261,11 +285,13 @@ void StdMeshersGUI_DistrPreview::update()
 
 void StdMeshersGUI_DistrPreview::showError()
 {
-  setAxisScale( curveXAxis( myDensity ), 0.0, 1.0 );
-  setAxisScale( curveYAxis( myDensity ), 0.0, 1.0 );
-  setCurveData( myDensity, 0, 0, 0 );
-  setCurveData( myDistr, 0, 0, 0 );
-  setMarkerLabel( myMsg, tr( "SMESH_INVALID_FUNCTION" ) );
+  setAxisScale( myDensity->xAxis(), 0.0, 1.0 );
+  setAxisScale( myDensity->yAxis(), 0.0, 1.0 );
+  myDensity->setData( 0, 0, 0 );
+  myDistr->setData( 0, 0, 0 );
+  QwtText mt = myMsg->label();
+  mt.setText( tr( "SMESH_INVALID_FUNCTION" ) );
+  myMsg->setLabel( mt );
   replot();
 }
 
@@ -299,7 +325,7 @@ bool StdMeshersGUI_DistrPreview::init( const QString& str )
     OCC_CATCH_SIGNALS;
 #endif
     myExpr = ExprIntrp_GenExp::Create();
-    myExpr->Process( ( Standard_CString ) str.latin1() );
+    myExpr->Process( ( Standard_CString ) str.toLatin1().data() );
   } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;

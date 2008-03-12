@@ -1,62 +1,65 @@
+// SMESH SMESHGUI : GUI for SMESH component
+//
 // Copyright (C) 2005  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
-// 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
 // License as published by the Free Software Foundation; either 
-// version 2.1 of the License.
-// 
-// This library is distributed in the hope that it will be useful 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
 // but WITHOUT ANY WARRANTY; without even the implied warranty of 
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-// Lesser General Public License for more details.
+// Lesser General Public License for more details. 
 //
-// You should have received a copy of the GNU Lesser General Public  
+// You should have received a copy of the GNU Lesser General Public 
 // License along with this library; if not, write to the Free Software 
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_EditMeshDlg.cxx
+// Author : Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "SMESHGUI_EditMeshDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_SpinBox.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_LogicalFilter.hxx"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMDS_Mesh.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_LogicalFilter.hxx>
+#include <SMDS_Mesh.hxx>
 
-#include "GEOMBase.h"
+// SALOME GUI includes
+#include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_Session.h"
-#include "SUIT_MessageBox.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "LightApp_Application.h"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SALOME_ListIO.hxx>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SVTK_Selection.h"
-#include "SALOME_ListIO.hxx"
-
-#include "utilities.h"
-
-// OCCT Includes
-#include <gp_XYZ.hxx>
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
-//IDL Headers
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-// VTK Includes
+// VTK includes
 #include <vtkUnstructuredGrid.h>
 #include <vtkRenderer.h>
 #include <vtkActor2D.h>
@@ -67,29 +70,30 @@
 #include <vtkLabeledDataMapper.h>
 #include <vtkTextProperty.h>
 #include <vtkIntArray.h>
-#include <vtkPolyData.h>
 #include <vtkProperty2D.h>
 #include <vtkPointData.h>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qlistbox.h>
-#include <qlistview.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlayout.h>
-#include <qpixmap.h>
-#include <qheader.h>
+// Qt includes
+#include <QApplication>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QKeyEvent>
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
-namespace SMESH {
-  class TIdPreview { // to display in the viewer IDs of the selected elements
+namespace SMESH
+{
+  class TIdPreview
+  { // to display in the viewer IDs of the selected elements
     SVTK_ViewWindow* myViewWindow;
 
     vtkUnstructuredGrid* myIdGrid;
@@ -295,13 +299,14 @@ static const char * IconFirst[] = {
 //=================================================================================
 SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule, 
 					    int theAction)
-  : QDialog(SMESH::GetDesktop(theModule), "SMESHGUI_EditMeshDlg", false, WStyle_Customize |
-            WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
+  : QDialog(SMESH::GetDesktop(theModule)),
     mySMESHGUI(theModule),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
     myAction(theAction)
 {
-  setCaption(tr("SMESH_MERGE_NODES"));
+  setModal(false);
+  setAttribute(Qt::WA_DeleteOnClose, true);
+  setWindowTitle(myAction == 1 ? tr("SMESH_MERGE_ELEMENTS") : tr("SMESH_MERGE_NODES"));
 
   myIdPreview = new SMESH::TIdPreview(SMESH::GetViewWindow( mySMESHGUI ));
 
@@ -312,175 +317,143 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   QPixmap IconAdd        (aResMgr->loadPixmap("SMESH", tr("ICON_APPEND")));
   QPixmap IconRemove     (aResMgr->loadPixmap("SMESH", tr("ICON_REMOVE")));
 
-  setSizeGripEnabled(TRUE);
-  DlgLayout = new QGridLayout (this);
-  DlgLayout->setSpacing(6);
-  DlgLayout->setMargin(11);
+  setSizeGripEnabled(true);
+
+  QVBoxLayout* DlgLayout = new QVBoxLayout(this);
+  DlgLayout->setSpacing(SPACING);
+  DlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  GroupConstructors = new QButtonGroup (this, "GroupConstructors");
-  GroupConstructors->setTitle(tr("SMESH_MERGE_NODES"));
-  GroupConstructors->setExclusive(TRUE);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  GroupConstructorsLayout->setSpacing(6);
-  GroupConstructorsLayout->setMargin(11);
-  RadioButton = new QRadioButton(GroupConstructors, "RadioButton");
-  RadioButton->setPixmap(IconMergeNodes);
-  if (myAction == 1) RadioButton->setPixmap(IconMergeElems);
-  RadioButton->setChecked(TRUE);
-  GroupConstructorsLayout->addWidget(RadioButton, 0, 0);
-  DlgLayout->addWidget(GroupConstructors, 0, 0);
+  GroupConstructors = new QGroupBox(myAction == 1 ? 
+				    tr("SMESH_MERGE_ELEMENTS") : 
+				    tr("SMESH_MERGE_NODES"), 
+				    this);
+
+  QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
+  GroupConstructorsLayout->setSpacing(SPACING);
+  GroupConstructorsLayout->setMargin(MARGIN);
+
+  RadioButton = new QRadioButton(GroupConstructors);
+  RadioButton->setIcon(myAction == 1 ? IconMergeElems : IconMergeNodes);
+  RadioButton->setChecked(true);
+  GroupConstructorsLayout->addWidget(RadioButton);
+  GroupConstructorsLayout->addStretch();
 
   /***************************************************************/
-  GroupButtons = new QGroupBox (this, "GroupButtons");
-  GroupButtons->setTitle(tr("" ));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-  buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-  buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  QSpacerItem* spacer3 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer3, 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  DlgLayout->addWidget(GroupButtons, 4, 0);
-
-  /***************************************************************/
-
   // Controls for mesh defining
-  GroupMesh = new QGroupBox(this, "GroupMesh");
-  GroupMesh->setTitle(tr("SMESH_SELECT_WHOLE_MESH"));
-  GroupMesh->setColumnLayout(0, Qt::Vertical);
-  GroupMesh->layout()->setSpacing(0);
-  GroupMesh->layout()->setMargin(0);
-  GroupMeshLayout = new QGridLayout(GroupMesh->layout());
-  GroupMeshLayout->setAlignment(Qt::AlignTop);
-  GroupMeshLayout->setSpacing(6);
-  GroupMeshLayout->setMargin(11);
+  GroupMesh = new QGroupBox(tr("SMESH_SELECT_WHOLE_MESH"), this);
+  QHBoxLayout* GroupMeshLayout = new QHBoxLayout(GroupMesh);
+  GroupMeshLayout->setSpacing(SPACING);
+  GroupMeshLayout->setMargin(MARGIN);
 
-  TextLabelName = new QLabel(GroupMesh, "TextLabelName");
-  TextLabelName->setText(tr("SMESH_NAME"));
-  GroupMeshLayout->addWidget(TextLabelName, 0, 0);
-
-  SelectMeshButton = new QPushButton(GroupMesh, "SelectMeshButton");
-  SelectMeshButton->setPixmap(IconSelect);
-  GroupMeshLayout->addWidget(SelectMeshButton, 0, 1);
-
-  LineEditMesh = new QLineEdit(GroupMesh, "LineEditMesh");
+  TextLabelName = new QLabel(tr("SMESH_NAME"), GroupMesh);
+  SelectMeshButton = new QPushButton(GroupMesh);
+  SelectMeshButton->setIcon(IconSelect);
+  LineEditMesh = new QLineEdit(GroupMesh);
   LineEditMesh->setReadOnly(true);
-  GroupMeshLayout->addWidget(LineEditMesh, 0, 2);
 
-  DlgLayout->addWidget(GroupMesh, 1, 0);
+  GroupMeshLayout->addWidget(TextLabelName);
+  GroupMeshLayout->addWidget(SelectMeshButton);
+  GroupMeshLayout->addWidget(LineEditMesh);
 
   /***************************************************************/
-
   // Controls for coincident elements detecting
-  GroupCoincident = new QGroupBox(this, "GroupCoincident");
-  GroupCoincident->setTitle(tr("COINCIDENT_NODES"));
-  GroupCoincident->setColumnLayout(0, Qt::Vertical);
-  GroupCoincident->layout()->setSpacing(0);
-  GroupCoincident->layout()->setMargin(0);
-  GroupCoincidentLayout = new QGridLayout(GroupCoincident->layout());
-  GroupCoincidentLayout->setAlignment(Qt::AlignTop);
-  GroupCoincidentLayout->setSpacing(6);
-  GroupCoincidentLayout->setMargin(11);
+  GroupCoincident = new QGroupBox(myAction == 1 ? 
+				  tr("COINCIDENT_ELEMENTS") : 
+				  tr("COINCIDENT_NODES"), 
+				  this);
+
+  QGridLayout* GroupCoincidentLayout = new QGridLayout(GroupCoincident);
+  GroupCoincidentLayout->setSpacing(SPACING);
+  GroupCoincidentLayout->setMargin(MARGIN);
   
   if (myAction == 0) { // case merge nodes
-    TextLabelTolerance = new QLabel(GroupCoincident, "TextLabelTolerance");
-    TextLabelTolerance->setText(tr("SMESH_TOLERANCE"));
-    TextLabelTolerance->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred));
-    GroupCoincidentLayout->addWidget(TextLabelTolerance, 0, 0);
+    TextLabelTolerance = new QLabel(tr("SMESH_TOLERANCE"), GroupCoincident);
+    SpinBoxTolerance = new SMESHGUI_SpinBox(GroupCoincident);
+    SpinBoxTolerance->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 
-    SpinBoxTolerance = new SMESHGUI_SpinBox(GroupCoincident, "SpinBoxTolerance");
-    GroupCoincidentLayout->addWidget(SpinBoxTolerance, 0, 1);
+    GroupCoincidentLayout->addWidget(TextLabelTolerance, 0, 0);
+    GroupCoincidentLayout->addWidget(SpinBoxTolerance,   0, 1);
+  }
+  else {
+    TextLabelTolerance = 0;
+    SpinBoxTolerance = 0;
   }
 
-  DetectButton = new QPushButton(GroupCoincident, "DetectButton");
-  DetectButton->setText(tr("DETECT"));
-  DetectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum));
-  GroupCoincidentLayout->addWidget(DetectButton, 0, 2);
+  int row = GroupCoincidentLayout->rowCount();
 
-  ListCoincident = new QListBox(GroupCoincident, "ListCoincident");
-  ListCoincident->setSelectionMode(QListBox::Extended);
-  if (myAction == 0) // case merge nodes
-    GroupCoincidentLayout->addMultiCellWidget(ListCoincident, 1, 3, 0, 1);
-  else // case merge elements
-    GroupCoincidentLayout->addMultiCellWidget(ListCoincident, 0, 3, 0, 1);
+  ListCoincident = new QListWidget(GroupCoincident);
+  ListCoincident->setSelectionMode(QListWidget::ExtendedSelection);
 
-  QSpacerItem* spacer1 = new QSpacerItem(20, 21, QSizePolicy::Minimum, QSizePolicy::Expanding);
-  GroupCoincidentLayout->addItem(spacer1, 1, 2);
+  DetectButton      = new QPushButton(tr("DETECT"),           GroupCoincident);
+  AddGroupButton    = new QPushButton(tr("SMESH_BUT_ADD"),    GroupCoincident);
+  RemoveGroupButton = new QPushButton(tr("SMESH_BUT_REMOVE"), GroupCoincident);
 
-  AddGroupButton = new QPushButton(GroupCoincident, "AddGroupButton");
-  AddGroupButton->setText(tr("SMESH_BUT_ADD"));
-  GroupCoincidentLayout->addWidget(AddGroupButton, 2, 2);
+  SelectAllCB = new QCheckBox(tr("SELECT_ALL"), GroupCoincident);
 
-  RemoveGroupButton = new QPushButton(GroupCoincident, "RemoveGroupButton");
-  RemoveGroupButton->setText(tr("SMESH_BUT_REMOVE"));
-  GroupCoincidentLayout->addWidget(RemoveGroupButton, 3, 2);
-
-  SelectAllCB = new QCheckBox(GroupCoincident, "SelectAllCB");
-  SelectAllCB->setText(tr("SELECT_ALL"));
-  GroupCoincidentLayout->addWidget(SelectAllCB, 4, 0);
-
-  DlgLayout->addWidget(GroupCoincident, 2, 0);
+  GroupCoincidentLayout->addWidget(ListCoincident,    row,   0, 4, 2);
+  GroupCoincidentLayout->addWidget(DetectButton,      row,   2);
+  GroupCoincidentLayout->addWidget(AddGroupButton,    row+2, 2);
+  GroupCoincidentLayout->addWidget(RemoveGroupButton, row+3, 2);
+  GroupCoincidentLayout->addWidget(SelectAllCB,       row+4, 0, 1, 3);
+  GroupCoincidentLayout->setRowMinimumHeight(row+1, 10);
+  GroupCoincidentLayout->setRowStretch(row+1, 5);
 
   /***************************************************************/
-
   // Controls for editing the selected group
-  GroupEdit = new QGroupBox(this, "GroupEdit");
-  GroupEdit->setTitle(tr("EDIT_SELECTED_GROUP"));
-  GroupEdit->setColumnLayout(0, Qt::Vertical);
-  GroupEdit->layout()->setSpacing(0);
-  GroupEdit->layout()->setMargin(0);
-  GroupEditLayout = new QGridLayout(GroupEdit->layout());
-  GroupEditLayout->setAlignment(Qt::AlignTop);
-  GroupEditLayout->setSpacing(6);
-  GroupEditLayout->setMargin(11);
+  GroupEdit = new QGroupBox(tr("EDIT_SELECTED_GROUP"), this);
+  QGridLayout* GroupEditLayout = new QGridLayout(GroupEdit);
+  GroupEditLayout->setSpacing(SPACING);
+  GroupEditLayout->setMargin(MARGIN);
 
-  ListEdit = new QListBox(GroupEdit, "ListEdit");
-  ListEdit->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
-  ListEdit->setRowMode(QListBox::FixedNumber);
-  ListEdit->setMinimumHeight(ListEdit->sizeHint().height());
-  ListEdit->setHScrollBarMode(QScrollView::AlwaysOn);
-  ListEdit->setVScrollBarMode(QScrollView::AlwaysOff);
-  ListEdit->setSelectionMode(QListBox::Extended);
-  GroupEditLayout->addMultiCellWidget(ListEdit, 0, 1, 0, 0);
+  ListEdit = new QListWidget(GroupEdit);
+  //ListEdit->setRowMode(QListBox::FixedNumber);
+  //ListEdit->setHScrollBarMode(QScrollView::AlwaysOn);
+  //ListEdit->setVScrollBarMode(QScrollView::AlwaysOff);
+  ListEdit->setSelectionMode(QListWidget::ExtendedSelection);
 
-  AddElemButton = new QPushButton(GroupEdit, "AddElemButton");
-  AddElemButton->setPixmap(IconAdd);
-  GroupEditLayout->addWidget(AddElemButton, 0, 1);
+  AddElemButton = new QPushButton(GroupEdit);
+  AddElemButton->setIcon(IconAdd);
+  RemoveElemButton = new QPushButton(GroupEdit);
+  RemoveElemButton->setIcon(IconRemove);
+  SetFirstButton = new QPushButton(GroupEdit);
+  SetFirstButton->setIcon(QPixmap(IconFirst));
 
-  RemoveElemButton = new QPushButton(GroupEdit, "RemoveElemButton");
-  RemoveElemButton->setPixmap(IconRemove);
+  GroupEditLayout->addWidget(ListEdit,         0, 0, 2, 1);
+  GroupEditLayout->addWidget(AddElemButton,    0, 1);
   GroupEditLayout->addWidget(RemoveElemButton, 0, 2);
+  GroupEditLayout->addWidget(SetFirstButton,   1, 1, 1, 2);
 
-  SetFirstButton = new QPushButton(GroupEdit, "SetFirstButton");
-  SetFirstButton->setIconSet(QPixmap(IconFirst));
-  SetFirstButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed));
-  GroupEditLayout->addMultiCellWidget(SetFirstButton, 1, 1, 1, 2);
+  /***************************************************************/
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
 
-  DlgLayout->addWidget(GroupEdit, 3, 0);
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  DlgLayout->addWidget(GroupConstructors);
+  DlgLayout->addWidget(GroupMesh);
+  DlgLayout->addWidget(GroupCoincident);
+  DlgLayout->addWidget(GroupEdit);
+  DlgLayout->addWidget(GroupButtons);
 
   Init(); // Initialisations
 }
@@ -491,7 +464,6 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
 //=================================================================================
 SMESHGUI_EditMeshDlg::~SMESHGUI_EditMeshDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
   delete myIdPreview;
 }
 
@@ -506,7 +478,7 @@ void SMESHGUI_EditMeshDlg::Init()
     SpinBoxTolerance->SetValue(1e-05);
   }
 
-  RadioButton->setChecked(TRUE);
+  RadioButton->setChecked(true);
 
   myEditCurrentArgument = (QWidget*)LineEditMesh; 
 
@@ -522,7 +494,7 @@ void SMESHGUI_EditMeshDlg::Init()
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
   
-  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
@@ -551,8 +523,6 @@ void SMESHGUI_EditMeshDlg::Init()
   /* to close dialog if study change */
   connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
 
-  this->show(); /* displays Dialog */
-  
   SetFirstButton->setEnabled(false);
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
@@ -560,13 +530,6 @@ void SMESHGUI_EditMeshDlg::Init()
   // Init Mesh field from selection
   SelectionIntoArgument();
 
-  // dialog customization
-  if (myAction == 1) {
-    setCaption(tr("SMESH_MERGE_ELEMENTS"));
-    GroupConstructors->setTitle(tr("SMESH_MERGE_ELEMENTS"));
-    GroupCoincident->setTitle(tr("COINCIDENT_ELEMENTS"));
-  }
-    
   myHelpFileName = "merging_elements_page.html";
 }
 
@@ -575,7 +538,7 @@ void SMESHGUI_EditMeshDlg::Init()
 // purpose  :
 //=================================================================================
 void SMESHGUI_EditMeshDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap, 
-					     list< gp_XYZ > & theGrCentersXYZ)
+					     std::list< gp_XYZ > & theGrCentersXYZ)
 {
   if (!myActor)
     return;
@@ -617,25 +580,22 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
   try {
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-    QApplication::setOverrideCursor(Qt::waitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
     SMESH::long_array_var anIds = new SMESH::long_array;
     SMESH::array_of_long_array_var aGroupsOfElements = new SMESH::array_of_long_array;
 
     aGroupsOfElements->length(ListCoincident->count());
-    QListBoxItem* item = ListCoincident->firstItem();
 
     int anArrayNum = 0;
-    while (item) {
-      QStringList aListIds = QStringList("");
-      aListIds = QStringList::split(" ", item->text(), false);
+    for (int i = 0; i < ListCoincident->count(); i++) {
+      QStringList aListIds = ListCoincident->item(i)->text().split(" ", QString::SkipEmptyParts);
 
       anIds->length(aListIds.count());
       for (int i = 0; i < aListIds.count(); i++)
         anIds[i] = aListIds[i].toInt();
 
       aGroupsOfElements[anArrayNum++] = anIds.inout();
-      item = item->next();
     }
 
     if( myAction == 0 )
@@ -690,16 +650,17 @@ void SMESHGUI_EditMeshDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -709,29 +670,19 @@ void SMESHGUI_EditMeshDlg::ClickOnHelp()
 //=================================================================================
 void SMESHGUI_EditMeshDlg::onEditGroup()
 {
-  int nbSel = 0;
-  for (int i = 0; i < ListCoincident->count(); i++) {
-    if (ListCoincident->isSelected(i))
-      nbSel++;
-    if (nbSel > 1) {
-      ListEdit->clear();
-      return;
-    }
-  }
-  if (nbSel == 0) {
+  QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
+  if ( selItems.count() != 1 ) {
     ListEdit->clear();
     return;
   }
 
-  QString aNewIds = "";
+  QStringList aNewIds;
 
-  QListBoxItem* anItem;
-  for (anItem = ListEdit->firstItem(); anItem != 0; anItem = anItem->next())
-    aNewIds+=QString(" %1").arg(anItem->text());
+  for (int i = 0; i < ListEdit->count(); i++ )
+    aNewIds.append(ListEdit->item(i)->text());
 
-  ListCoincident->changeItem(aNewIds, ListCoincident->currentItem());
-  ListCoincident->setSelected(ListCoincident->currentItem(), true);
-  
+  ListCoincident->currentItem()->setText(aNewIds.join(" "));
+  ListCoincident->currentItem()->setSelected(true);
 }
 
 //=================================================================================
@@ -759,7 +710,7 @@ void SMESHGUI_EditMeshDlg::onDetect()
   try {
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-    QApplication::setOverrideCursor(Qt::waitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     ListCoincident->clear();
     ListEdit->clear();
 
@@ -780,22 +731,20 @@ void SMESHGUI_EditMeshDlg::onDetect()
       break;
     }
     
-    QListBoxItem* anItem = 0;
     for (int i = 0; i < aGroupsArray->length(); i++) {
       SMESH::long_array& aGroup = aGroupsArray[i];
 
-      QString anIDs;
+      QStringList anIDs;
       for (int j = 0; j < aGroup.length(); j++)
-        anIDs+=QString(" %1").arg(aGroup[j]);
+	anIDs.append(QString::number(aGroup[j]));
 
-      anItem = new QListBoxText(anIDs);
-      ListCoincident->insertItem(anItem);
+      ListCoincident->addItem(anIDs.join(" "));
     }
     QApplication::restoreOverrideCursor();
   } catch(...) {
   }
 
-  ListCoincident->selectAll(true);
+  ListCoincident->selectAll();
   updateControls();
 }
 
@@ -812,22 +761,23 @@ void SMESHGUI_EditMeshDlg::onSelectGroup()
   ListEdit->clear();
   
   TColStd_MapOfInteger anIndices;
-  QListBoxItem* anItem;
-  int NbOfSelected = 0;
-  for (anItem = ListCoincident->firstItem(); anItem != 0; anItem = anItem->next()) {
-    if (anItem->isSelected()) {
-      QStringList aListIds = QStringList("");
-      aListIds = QStringList::split(" ", anItem->text(), false);
-      for (int i = 0; i < aListIds.count(); i++)
-	anIndices.Add(aListIds[i].toInt());
-      NbOfSelected++;
-      ListEdit->clear();
-      if (NbOfSelected == 1) {
-	ListEdit->insertStringList(aListIds);
-	ListEdit->selectAll(true);
-      }
-    }
+  QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
+  QListWidgetItem* anItem;
+  QStringList aListIds;
+
+  ListEdit->clear();
+
+  foreach(anItem, selItems) {
+    aListIds = anItem->text().split(" ", QString::SkipEmptyParts);
+    for (int i = 0; i < aListIds.count(); i++)
+      anIndices.Add(aListIds[i].toInt());
   }
+  
+  if (selItems.count() == 1) {
+    ListEdit->addItems(aListIds);
+    ListEdit->selectAll();
+  }
+
   mySelector->AddOrRemoveIndex(myActor->getIO(), anIndices, false);
   SALOME_ListIO aList;
   aList.Append(myActor->getIO());
@@ -853,7 +803,10 @@ void SMESHGUI_EditMeshDlg::onSelectGroup()
 //=================================================================================
 void SMESHGUI_EditMeshDlg::onSelectAll (bool isToggled)
 {
-  ListCoincident->selectAll(isToggled);
+  if ( isToggled )
+    ListCoincident->selectAll();
+  else
+    ListCoincident->clearSelection();
 }
 
 //=================================================================================
@@ -865,20 +818,14 @@ void SMESHGUI_EditMeshDlg::onSelectElementFromGroup()
   if (myIsBusy || !myActor)
     return;
 
-  int nbSel = 0;
   TColStd_MapOfInteger anIndices;
-  QListBoxItem* anItem;
-  for (anItem = ListEdit->firstItem(); anItem != 0; anItem = anItem->next()) {
-    if (anItem->isSelected()) {
-      int anId = anItem->text().toInt();
-      anIndices.Add(anId);
-      nbSel++;
-      if (nbSel == 1)
-	SetFirstButton->setEnabled(true);
-    }
-  }
-  if (nbSel == 0 || nbSel > 1)
-    SetFirstButton->setEnabled(false);
+  QList<QListWidgetItem*> selItems = ListEdit->selectedItems();
+  QListWidgetItem* anItem;
+
+  foreach(anItem, selItems)
+    anIndices.Add(anItem->text().toInt());
+
+  SetFirstButton->setEnabled(selItems.count() == 1);
 
   mySelector->AddOrRemoveIndex(myActor->getIO(), anIndices, false);
   SALOME_ListIO aList;
@@ -910,16 +857,16 @@ void SMESHGUI_EditMeshDlg::onAddGroup()
   SMESH::GetNameOfSelectedNodes(mySelector, myActor->getIO(), anIDs);
   
   ListCoincident->clearSelection();
-  QListBoxItem* anItem = new QListBoxText(anIDs);
-  ListCoincident->insertItem(anItem);
+  ListCoincident->addItem(anIDs);
   int nbGroups = ListCoincident->count();
   if (nbGroups) {
-    ListCoincident->setCurrentItem(nbGroups-1);
-    ListCoincident->setSelected(nbGroups-1, true);
+    ListCoincident->setCurrentRow(nbGroups-1);
+    ListCoincident->item(nbGroups-1)->setSelected(true);
   }
   else {
-    ListCoincident->setCurrentItem(0);
-    ListCoincident->setSelected(0, true);
+    // VSR ? this code seems to be never executed!!!
+    ListCoincident->setCurrentRow(0);
+    //ListCoincident->setSelected(0, true); // VSR: no items - no selection
   }
 
   updateControls();
@@ -935,9 +882,11 @@ void SMESHGUI_EditMeshDlg::onRemoveGroup()
     return;
   myIsBusy = true;
 
-  for (int i = ListCoincident->count(); i > 0; i--)
-    if (ListCoincident->isSelected(i-1))
-      ListCoincident->removeItem(i-1);
+  QList<QListWidgetItem*> selItems = ListCoincident->selectedItems();
+  QListWidgetItem* anItem;
+
+  foreach(anItem, selItems)
+    delete anItem;
 
   ListEdit->clear();
   updateControls();
@@ -962,16 +911,19 @@ void SMESHGUI_EditMeshDlg::onAddElement()
   if (aNbNnodes < 1)
     return;
 
-  QStringList aNodes = QStringList::split(" ", aListStr);
-  QListBoxItem* anItem = 0;
+  QStringList aNodes = aListStr.split(" ", QString::SkipEmptyParts);
 
   for (QStringList::iterator it = aNodes.begin(); it != aNodes.end(); ++it) {
-    anItem = ListEdit->findItem(*it, Qt::ExactMatch);
-    if (!anItem) {
-      anItem = new QListBoxText(*it);
-      ListEdit->insertItem(anItem);
+    QList<QListWidgetItem*> found = ListEdit->findItems(*it, Qt::MatchExactly);
+    if ( found.count() == 0 ) {
+      QListWidgetItem* anItem = new QListWidgetItem(*it);
+      ListEdit->addItem(anItem);
+      anItem->setSelected(true);
     }
-    ListEdit->setSelected(anItem, true);
+    else {
+      QListWidgetItem* anItem;
+      foreach(anItem, found) anItem->setSelected(true);
+    }
   }
 
   myIsBusy = false;
@@ -988,10 +940,12 @@ void SMESHGUI_EditMeshDlg::onRemoveElement()
     return;
   myIsBusy = true;
 
-  for (int i = ListEdit->count(); i > 0; i--)
-    if (ListEdit->isSelected(i-1))
-      ListEdit->removeItem(i-1);
+  QList<QListWidgetItem*> selItems = ListEdit->selectedItems();
+  QListWidgetItem* anItem;
 
+  foreach(anItem, selItems)
+    delete anItem;
+  
   myIsBusy = false;
   onEditGroup();
 }
@@ -1006,12 +960,12 @@ void SMESHGUI_EditMeshDlg::onSetFirst()
     return;
   myIsBusy = true;
   
-  QListBoxItem* anItem;
-  for (anItem = ListEdit->firstItem(); anItem != 0; anItem = anItem->next()) {
-    if (anItem->isSelected()) {
-      ListEdit->takeItem(anItem);
-      ListEdit->insertItem(anItem, 0);
-    }
+  QList<QListWidgetItem*> selItems = ListEdit->selectedItems();
+  QListWidgetItem* anItem;
+  
+  foreach(anItem, selItems) {
+    ListEdit->takeItem(ListEdit->row(anItem));
+    ListEdit->insertItem(0, anItem);
   }
 
   myIsBusy = false;
@@ -1148,7 +1102,7 @@ void SMESHGUI_EditMeshDlg::enterEvent(QEvent*)
 void SMESHGUI_EditMeshDlg::closeEvent(QCloseEvent*)
 {
   /* same than click on cancel button */
-  this->ClickOnCancel();
+  ClickOnCancel();
 }
 
 //=======================================================================
@@ -1171,9 +1125,8 @@ void SMESHGUI_EditMeshDlg::keyPressEvent( QKeyEvent* e)
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

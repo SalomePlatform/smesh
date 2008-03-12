@@ -1,31 +1,29 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ExtrusionDlg.cxx
+// Author : Michael ZORIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ExtrusionDlg.cxx
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header:
 
+// SMESH includes
 #include "SMESHGUI_ExtrusionDlg.h"
 
 #include "SMESHGUI.h"
@@ -35,215 +33,181 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_IdValidator.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_NumberFilter.hxx"
-#include "SMESH_LogicalFilter.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_LogicalFilter.hxx>
 
-#include "SMDS_Mesh.hxx"
+#include <SMDS_Mesh.hxx>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_MessageBox.h"
-#include "SUIT_Session.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_Session.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SVTK_Selection.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qspinbox.h>
-#include <qlayout.h>
-#include <qvalidator.h>
-#include <qpixmap.h>
+// Qt includes
+#include <QApplication>
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
 
 //=================================================================================
 // function : SMESHGUI_ExtrusionDlg()
 // purpose  : constructor
 //=================================================================================
-SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
-					      bool modal)
-     : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_ExtrusionDlg", modal, WStyle_Customize |
-                WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
   QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
 
-  resize(303, 185);
-  setCaption(tr("EXTRUSION_ALONG_LINE"));
-  setSizeGripEnabled(TRUE);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("EXTRUSION_ALONG_LINE"));
+  setSizeGripEnabled(true);
 
-  QGridLayout* SMESHGUI_ExtrusionDlgLayout = new QGridLayout(this);
-  SMESHGUI_ExtrusionDlgLayout->setSpacing(6);
-  SMESHGUI_ExtrusionDlgLayout->setMargin(11);
-
-  /***************************************************************/
-  GroupConstructors = new QButtonGroup("GroupConstructors", this);
-  GroupConstructors->setTitle(tr("SMESH_EXTRUSION"));
-  GroupConstructors->setExclusive(TRUE);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  QGridLayout* GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  GroupConstructorsLayout->setSpacing(6);
-  GroupConstructorsLayout->setMargin(11);
-  RadioButton1= new QRadioButton(GroupConstructors, "RadioButton1");
-  RadioButton1->setText(tr(""));
-  RadioButton1->setPixmap(image0);
-  GroupConstructorsLayout->addWidget(RadioButton1, 0, 0);
-  RadioButton2= new QRadioButton(GroupConstructors, "RadioButton2");
-  RadioButton2->setText(tr(""));
-  RadioButton2->setPixmap(image1);
-  GroupConstructorsLayout->addWidget(RadioButton2, 0, 2);
-  SMESHGUI_ExtrusionDlgLayout->addWidget(GroupConstructors, 0, 0);
+  QVBoxLayout* SMESHGUI_ExtrusionDlgLayout = new QVBoxLayout(this);
+  SMESHGUI_ExtrusionDlgLayout->setSpacing(SPACING);
+  SMESHGUI_ExtrusionDlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  GroupButtons = new QGroupBox(this, "GroupButtons");
-  GroupButtons->setGeometry(QRect(10, 10, 281, 48));
-  GroupButtons->setTitle(tr(""));
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  QGridLayout* GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6);
-  GroupButtonsLayout->setMargin(11);
-  buttonHelp = new QPushButton(GroupButtons, "buttonHelp");
-  buttonHelp->setText(tr("SMESH_BUT_HELP" ));
-  buttonHelp->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonHelp, 0, 4);
-  buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
-  buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
-  buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
-  buttonApply = new QPushButton(GroupButtons, "buttonApply");
-  buttonApply->setText(tr("SMESH_BUT_APPLY" ));
-  buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
-  QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 2);
-  buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
-  buttonOk->setAutoDefault(TRUE);
-  buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
-  SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons, 2, 0);
+  ConstructorsBox = new QGroupBox(tr("SMESH_EXTRUSION"), this);
+  GroupConstructors = new QButtonGroup(this);
+  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
+  ConstructorsBoxLayout->setSpacing(SPACING);
+  ConstructorsBoxLayout->setMargin(MARGIN);
+
+  RadioButton1= new QRadioButton(ConstructorsBox);
+  RadioButton1->setIcon(image0);
+  RadioButton2= new QRadioButton(ConstructorsBox);
+  RadioButton2->setIcon(image1);
+
+  ConstructorsBoxLayout->addWidget(RadioButton1);
+  ConstructorsBoxLayout->addWidget(RadioButton2);
+
+  GroupConstructors->addButton(RadioButton1, 0);
+  GroupConstructors->addButton(RadioButton2, 1);
 
   /***************************************************************/
-  GroupArguments = new QGroupBox(this, "GroupArguments");
-  GroupArguments->setTitle(tr("EXTRUSION_1D"));
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0);
-  GroupArguments->layout()->setMargin(0);
-  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  GroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  GroupArgumentsLayout->setSpacing(6);
-  GroupArgumentsLayout->setMargin(11);
+  GroupButtons = new QGroupBox(this);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING);
+  GroupButtonsLayout->setMargin(MARGIN);
+
+  buttonOk = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  buttonOk->setAutoDefault(true);
+  buttonOk->setDefault(true);
+  buttonApply = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  buttonApply->setAutoDefault(true);
+  buttonCancel = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
+  buttonCancel->setAutoDefault(true);
+  buttonHelp = new QPushButton(tr("SMESH_BUT_HELP"), GroupButtons);
+  buttonHelp->setAutoDefault(true);
+
+  GroupButtonsLayout->addWidget(buttonOk);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(buttonApply);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(buttonCancel);
+  GroupButtonsLayout->addWidget(buttonHelp);
+
+  /***************************************************************/
+  GroupArguments = new QGroupBox(tr("EXTRUSION_1D"), this);
+  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
+  GroupArgumentsLayout->setSpacing(SPACING);
+  GroupArgumentsLayout->setMargin(MARGIN);
 
   // Controls for elements selection
-  TextLabelElements  = new QLabel(GroupArguments, "TextLabelElements");
-  TextLabelElements->setText(tr("SMESH_ID_ELEMENTS" ));
-  TextLabelElements->setFixedWidth(74);
-  GroupArgumentsLayout->addWidget(TextLabelElements, 0, 0);
+  TextLabelElements = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
 
-  SelectElementsButton  = new QPushButton(GroupArguments, "SelectElementsButton");
-  SelectElementsButton->setText(tr("" ));
-  SelectElementsButton->setPixmap(image2);
-  SelectElementsButton->setToggleButton(FALSE);
-  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
+  SelectElementsButton = new QPushButton(GroupArguments);
+  SelectElementsButton->setIcon(image2);
 
-  LineEditElements  = new QLineEdit(GroupArguments, "LineEditElements");
-  LineEditElements->setValidator(new SMESHGUI_IdValidator(this, "validator"));
-  GroupArgumentsLayout->addMultiCellWidget(LineEditElements, 0, 0, 2, 7);
+  LineEditElements = new QLineEdit(GroupArguments);
+  LineEditElements->setValidator(new SMESHGUI_IdValidator(this));
 
   // Control for the whole mesh selection
-  CheckBoxMesh = new QCheckBox(GroupArguments, "CheckBoxMesh");
-  CheckBoxMesh->setText(tr("SMESH_SELECT_WHOLE_MESH" ));
-  GroupArgumentsLayout->addMultiCellWidget(CheckBoxMesh, 1, 1, 0, 7);
+  CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
 
   // Controls for vector selection
-  TextLabelVector = new QLabel(GroupArguments, "TextLabelVector");
-  TextLabelVector->setText(tr("SMESH_VECTOR"));
-  GroupArgumentsLayout->addWidget(TextLabelVector, 2, 0);
+  TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
 
-  TextLabelDx = new QLabel(GroupArguments, "TextLabelDx");
-  TextLabelDx->setText(tr("SMESH_DX"));
-  GroupArgumentsLayout->addWidget(TextLabelDx, 2, 2);
+  TextLabelDx = new QLabel(tr("SMESH_DX"), GroupArguments);
+  SpinBox_Dx = new SMESHGUI_SpinBox(GroupArguments);
 
-  SpinBox_Dx = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Dx");
-  GroupArgumentsLayout->addWidget(SpinBox_Dx, 2, 3);
+  TextLabelDy = new QLabel(tr("SMESH_DY"), GroupArguments);
+  SpinBox_Dy = new SMESHGUI_SpinBox(GroupArguments);
 
-  TextLabelDy = new QLabel(GroupArguments, "TextLabelDy");
-  TextLabelDy->setText(tr("SMESH_DY"));
-  GroupArgumentsLayout->addWidget(TextLabelDy, 2, 4);
-
-  SpinBox_Dy = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Dy");
-  GroupArgumentsLayout->addWidget(SpinBox_Dy, 2, 5);
-
-  TextLabelDz = new QLabel(GroupArguments, "TextLabelDz");
-  TextLabelDz->setText(tr("SMESH_DZ"));
-  GroupArgumentsLayout->addWidget(TextLabelDz, 2, 6);
-
-  SpinBox_Dz = new SMESHGUI_SpinBox(GroupArguments, "SpinBox_Dz");
-  GroupArgumentsLayout->addWidget(SpinBox_Dz, 2, 7);
+  TextLabelDz = new QLabel(tr("SMESH_DZ"), GroupArguments);
+  SpinBox_Dz = new SMESHGUI_SpinBox(GroupArguments);
 
   // Controls for nb. steps defining
-  TextLabelNbSteps = new QLabel(GroupArguments, "TextLabelNbSteps");
-  TextLabelNbSteps->setText(tr("SMESH_NUMBEROFSTEPS" ));
-  GroupArgumentsLayout->addMultiCellWidget(TextLabelNbSteps, 3, 3, 0, 1);
-
-  SpinBox_NbSteps = new QSpinBox(GroupArguments, "SpinBox_NbSteps");
-  GroupArgumentsLayout->addMultiCellWidget(SpinBox_NbSteps, 3, 3,  2, 7);
+  TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupArguments);
+  SpinBox_NbSteps = new QSpinBox(GroupArguments);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
-  MakeGroupsCheck->setChecked(true);
-  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck, 4, 4,  0, 7);
 
+  GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
+  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
+  GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 6);
+  GroupArgumentsLayout->addWidget(CheckBoxMesh,         0, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(TextLabelVector,      2, 0);
+  GroupArgumentsLayout->addWidget(TextLabelDx,          2, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Dx,           2, 3);
+  GroupArgumentsLayout->addWidget(TextLabelDy,          2, 4);
+  GroupArgumentsLayout->addWidget(SpinBox_Dy,           2, 5);
+  GroupArgumentsLayout->addWidget(TextLabelDz,          2, 6);
+  GroupArgumentsLayout->addWidget(SpinBox_Dz,           2, 7);
+  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     3, 0);
+  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      3, 2, 1, 6);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      4, 0, 1, 8);
 
-  SMESHGUI_ExtrusionDlgLayout->addWidget(GroupArguments, 1, 0);
+  /***************************************************************/
+  SMESHGUI_ExtrusionDlgLayout->addWidget(ConstructorsBox);
+  SMESHGUI_ExtrusionDlgLayout->addWidget(GroupArguments);
+  SMESHGUI_ExtrusionDlgLayout->addWidget(GroupButtons);
 
   /* Initialisations */
   SpinBox_Dx->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   SpinBox_Dy->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   SpinBox_Dz->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
-  QIntValidator* anIntValidator = new QIntValidator(SpinBox_NbSteps);
-  SpinBox_NbSteps->setValidator(anIntValidator);
   SpinBox_NbSteps->setRange(1, 999999);
 
-  GroupArguments->show();
-  RadioButton1->setChecked(TRUE);
+  RadioButton1->setChecked(true);
+  MakeGroupsCheck->setChecked(true);
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
@@ -253,7 +217,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
 
-  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
@@ -266,29 +230,27 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
 
   /***************************************************************/
   // signals and slots connections
-  connect(buttonOk, SIGNAL(clicked()),     this, SLOT(ClickOnOk()));
+  connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(ClickOnCancel()));
-  connect(buttonApply, SIGNAL(clicked()),  this, SLOT(ClickOnApply()));
-  connect(buttonHelp, SIGNAL(clicked()),  this, SLOT(ClickOnHelp()));
+  connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
+  connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
   // to update state of the Ok & Apply buttons
   connect(SpinBox_Dx, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
   connect(SpinBox_Dy, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
   connect(SpinBox_Dz, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
 
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
-  connect(SelectElementsButton, SIGNAL (clicked()),            this, SLOT(SetEditCurrentArgument()));
-  connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   this, SLOT(SelectionIntoArgument()));
+  connect(GroupConstructors,    SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
+  connect(SelectElementsButton, SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
+  connect(mySMESHGUI,           SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
+  connect(mySelectionMgr,       SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(ClickOnCancel()));
-  connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
-  connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
+  connect(mySMESHGUI,           SIGNAL(SignalCloseAllDialogs()),   this, SLOT(ClickOnCancel()));
+  connect(LineEditElements,     SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
+  connect(CheckBoxMesh,         SIGNAL(toggled(bool)),               SLOT(onSelectMesh(bool)));
 
   /***************************************************************/
   
-  this->show(); // displays Dialog
-
   ConstructorsClicked(0);
   SelectionIntoArgument();
 }
@@ -299,7 +261,6 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule,
 //=================================================================================
 SMESHGUI_ExtrusionDlg::~SMESHGUI_ExtrusionDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
 }
 
 //=================================================================================
@@ -406,7 +367,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
 
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::waitCursor);
+      QApplication::setOverrideCursor(Qt::WaitCursor);
 
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
         SMESH::ListOfGroups_var groups = 
@@ -465,16 +426,17 @@ void SMESHGUI_ExtrusionDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -498,7 +460,7 @@ void SMESHGUI_ExtrusionDlg::onTextChange (const QString& theNewText)
   // hilight entered elements/nodes
 
   if (!myIO.IsNull()) {
-    QStringList aListId = QStringList::split(" ", theNewText, false);
+    QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 
     if (send == LineEditElements)
     {
@@ -685,8 +647,8 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::DeactivateActiveDialog()
 {
-  if (GroupConstructors->isEnabled()) {
-    GroupConstructors->setEnabled(false);
+  if (ConstructorsBox->isEnabled()) {
+    ConstructorsBox->setEnabled(false);
     GroupArguments->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySMESHGUI->ResetState();
@@ -702,7 +664,7 @@ void SMESHGUI_ExtrusionDlg::ActivateThisDialog()
 {
   // Emit a signal to deactivate the active dialog
   mySMESHGUI->EmitSignalDeactivateDialog();
-  GroupConstructors->setEnabled(true);
+  ConstructorsBox->setEnabled(true);
   GroupArguments->setEnabled(true);
   GroupButtons->setEnabled(true);
 
@@ -718,29 +680,9 @@ void SMESHGUI_ExtrusionDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
 }
-
-//=================================================================================
-// function : closeEvent()
-// purpose  :
-//=================================================================================
-//void SMESHGUI_ExtrusionDlg::closeEvent (QCloseEvent*)
-//{
-//  /* same than click on cancel button */
-//  this->ClickOnCancel();
-//}
-//
-//=================================================================================
-// function : hideEvent()
-// purpose  : caused by ESC key
-//=================================================================================
-//void SMESHGUI_ExtrusionDlg::hideEvent (QHideEvent*)
-//{
-//  if (!isMinimized())
-//    ClickOnCancel();
-//}
 
 //=================================================================================
 // function : onSelectMesh()
@@ -791,9 +733,7 @@ void SMESHGUI_ExtrusionDlg::onSelectMesh (bool toSelectMesh)
 //=================================================================================
 int SMESHGUI_ExtrusionDlg::GetConstructorId()
 {
-  if (GroupConstructors != NULL && GroupConstructors->selected() != NULL)
-    return GroupConstructors->id(GroupConstructors->selected());
-  return -1;
+  return GroupConstructors->checkedId();
 }
 
 //=================================================================================
@@ -806,9 +746,8 @@ void SMESHGUI_ExtrusionDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }

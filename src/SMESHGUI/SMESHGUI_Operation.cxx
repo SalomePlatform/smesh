@@ -1,39 +1,44 @@
-//  SMESH SMDS : implementaion of Salome mesh data structure
+// SMESH SMDS : implementaion of Salome mesh data structure
 //
-//  Copyright (C) 2003  OPEN CASCADE
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
-//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+// Copyright (C) 2003  OPEN CASCADE
 //
-//  File   : SMESHGUI_Operation.h
-//  Author : Sergey LITONIN
-//  Module : SALOME
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_Operation.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
+//
 
+// SMESH includes
 #include "SMESHGUI_Operation.h"
-#include <SMESHGUI.h>
-#include <SMESHGUI_Dialog.h>
 
+#include "SMESHGUI.h"
+#include "SMESHGUI_Dialog.h"
+
+// SALOME GUI includes
 #include <SalomeApp_Study.h>
 #include <LightApp_Application.h>
 
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_Desktop.h>
+#include <SUIT_ResourceMgr.h>
 
-#include <qstringlist.h>
+// Qt includes
+#include <QStringList>
 
 /*
   Class       : SMESHGUI_Operation
@@ -113,8 +118,8 @@ bool SMESHGUI_Operation::isReadyToStart() const
     return false;
   else if ( getSMESHGUI() == 0 )
   {
-    SUIT_MessageBox::warn1( desktop(), tr( "SMESH_WRN_WARNING" ),
-      tr( "NO_MODULE" ), tr( "SMESH_BUT_OK" ) );
+    SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
+			      tr( "NO_MODULE" ) );
     return false;
   }
   else if ( isStudyLocked() )
@@ -187,16 +192,17 @@ void SMESHGUI_Operation::onHelp()
   if (app) 
     app->onHelpContextModule(getSMESHGUI() ? app->moduleName(getSMESHGUI()->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning( desktop(), tr("WRN_WARNING"),
+			      tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			      arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								  platform)).
+			      arg(myHelpFileName) );
   }
 }
 
@@ -223,8 +229,8 @@ bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
     if ( studyDS()->GetProperties()->IsLocked() )
     {
       if ( theMess )
-        SUIT_MessageBox::warn1 ( SMESHGUI::desktop(), QObject::tr( "WRN_WARNING" ),
-          QObject::tr( "WRN_STUDY_LOCKED" ), QObject::tr( "BUT_OK" ) );
+        SUIT_MessageBox::warning( SMESHGUI::desktop(), tr( "WRN_WARNING" ),
+				  tr( "WRN_STUDY_LOCKED" ) );
       return true;
     }
   }
@@ -252,19 +258,8 @@ bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const
   }
 
   return theOtherOp && theOtherOp->inherits( "SMESHGUI_Operation" ) &&
-         ( !anOps.contains( theOtherOp->className() ) || anOps.contains( className() ) );
+         ( !anOps.contains( theOtherOp->metaObject()->className() ) || 
+	   anOps.contains( metaObject()->className() ) );
 
   return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-

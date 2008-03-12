@@ -1,47 +1,44 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
-// 
-//  This library is free software; you can redistribute it and/or 
-//  modify it under the terms of the GNU Lesser General Public 
-//  License as published by the Free Software Foundation; either 
-//  version 2.1 of the License. 
-// 
-//  This library is distributed in the hope that it will be useful, 
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of 
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
-//  Lesser General Public License for more details. 
-// 
-//  You should have received a copy of the GNU Lesser General Public 
-//  License along with this library; if not, write to the Free Software 
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
-// 
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
+//
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
+//
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
+//
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_PatternWidget.h
+// Author : Michael ZORIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_PatternWidget.h
-//  Author : Michael ZORIN
-//  Module : SMESH
-//  $Header: 
 
-#ifndef WIDGET_PATTERN_H
-#define WIDGET_PATTERN_H
+#ifndef SMESHGUI_PATTERNWIDGET_H
+#define SMESHGUI_PATTERNWIDGET_H
 
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qframe.h>
-#include <qvaluevector.h>
+// Qt includes
+#include <QFrame>
+#include <QVector>
 
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-typedef QValueVector<SMESH::PointStruct> PointVector;
-typedef QValueVector< QValueVector<int> >  ConnectivityVector;
-
-class QPoint;
+typedef QVector<SMESH::PointStruct> PointVector;
+typedef QVector< QVector<int> >     ConnectivityVector;
 
 //=================================================================================
 // class    : SMESHGUI_PatternWidget
@@ -49,28 +46,28 @@ class QPoint;
 //=================================================================================
 class SMESHGUI_EXPORT SMESHGUI_PatternWidget : public QFrame
 { 
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    SMESHGUI_PatternWidget( QWidget* parent = 0, const char* name = 0, WFlags fl = 0 );
+  SMESHGUI_PatternWidget( QWidget* = 0 );
+  ~SMESHGUI_PatternWidget();
+  
+  void               SetPoints( const PointVector&,
+				const QVector<int>&,
+				const ConnectivityVector& );
 
-    ~SMESHGUI_PatternWidget();
-
-    void SetPoints( PointVector thePoints,  QValueVector<int> theKeys, ConnectivityVector theConnections );
-
-private :
-    PointVector myPoints;
-    QValueVector<int> myKeys;
-    ConnectivityVector myConnections;
-
-    double myMinU, myMaxU, myMinV, myMaxV;
-      
-private slots:
-
+private:
+  PointVector        myPoints;
+  QVector<int>       myKeys;
+  ConnectivityVector myConnections;
+  
+  double             myMinU, myMaxU, myMinV, myMaxV;
+  
 protected:
-    void paintEvent( QPaintEvent * );
-    QPoint MapCoords( const double u, const double v );
+  void               paintEvent( QPaintEvent* );
+
+private:
+  QPoint             mapCoords( const double, const double );
 };
 
-#endif // WIDGET_PATTERN_H
-
+#endif // SMESHGUI_PATTERNWIDGET_H

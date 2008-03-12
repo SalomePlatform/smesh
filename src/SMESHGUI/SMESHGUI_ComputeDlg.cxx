@@ -1,61 +1,58 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ComputeDlg.cxx
+// Author : Edward AGAPOV, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ComputeDlg.cxx
-//  Author : Edward AGAPOV
-//  Module : SMESH
 
+// SMESH includes
 #include "SMESHGUI_ComputeDlg.h"
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_HypothesesUtils.h"
 
-#include "SMDS_SetIterator.hxx"
+#include <SMDS_SetIterator.hxx>
 #include <SMDS_Mesh.hxx>
 
-#include "GEOMBase.h"
-#include "GEOM_Actor.h"
+// SALOME GEOM includes
+#include <GEOMBase.h>
+#include <GEOM_Actor.h>
 
-#include "LightApp_SelectionMgr.h"
-#include "LightApp_UpdateFlags.h"
-#include "SALOMEDSClient_SObject.hxx"
-#include "SALOME_ListIO.hxx"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_ViewModel.h"
-#include "SalomeApp_Tools.h"
-#include "SalomeApp_Application.h"
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_MessageBox.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_Study.h"
-#include "OB_Browser.h"
+// SALOME GUI includes
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_UpdateFlags.h>
+#include <SALOME_ListIO.hxx>
+#include <SVTK_ViewWindow.h>
+#include <SVTK_ViewModel.h>
+#include <SalomeApp_Application.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_Desktop.h>
 
-// OCCT Includes
+// SALOME KERNEL includes
+#include <SALOMEDSClient_SObject.hxx>
+
+// OCCT includes
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
@@ -70,49 +67,51 @@
 
 #include <Standard_ErrorHandler.hxx>
 
-// QT Includes
-#include <qframe.h>
-#include <qlayout.h>
-#include <qpushbutton.h>
-#include <qlabel.h>
-#include <qbuttongroup.h>
-#include <qradiobutton.h>
-#include <qtable.h>
-#include <qhbox.h>
-#include <qhgroupbox.h>
-#include <qvgroupbox.h>
+// Qt includes
+#include <QFrame>
+#include <QPushButton>
+#include <QLabel>
+#include <QRadioButton>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
+// VTK includes
 #include <vtkProperty.h>
 
-// IDL Headers
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+// STL includes
 #include <vector>
 #include <set>
 
-
-#define SPACING 5
-#define MARGIN  10
+#define SPACING 6
+#define MARGIN  11
 
 #define COLONIZE(str)   (QString(str).contains(":") > 0 ? QString(str) : QString(str) + " :" )
 
-#define _SEPARATOR(father) \
-{\
-  /*new QLabel(father); new QLabel(father); new QLabel(father)*/;\
-  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
-  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
-  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
-  (new QFrame(father))->setFrameStyle(QFrame::HLine | QFrame::Sunken);\
+static void addSeparator( QWidget* parent )
+{
+  QGridLayout* l = qobject_cast<QGridLayout*>( parent->layout() );
+  int row  = l->rowCount();
+  int cols = l->columnCount();
+  for ( int i = 0; i < cols; i++ ) {
+    QFrame* hline = new QFrame( parent );
+    hline->setFrameStyle( QFrame::HLine | QFrame::Sunken );
+    l->addWidget( hline, row, i );
+  }
 }
 
 enum TCol { COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, NB_COLUMNS };
 
-using namespace SMESH;
+//using namespace SMESH;
 
-namespace SMESH {
-  
+namespace SMESH
+{
   //=============================================================================
   /*!
    * \brief Allocate some memory at construction and release it at destruction.
@@ -286,7 +285,7 @@ namespace SMESH {
       Standard_Boolean alreadymesh = Standard_True;
       TopExp_Explorer ex(shape, TopAbs_FACE);
       if ( ex.More() )
-        for (; ex.More(); ex.Next()) {
+        for ( ; ex.More(); ex.Next()) {
           const TopoDS_Face& aFace = TopoDS::Face(ex.Current());
           Handle(Poly_Triangulation) aPoly = BRep_Tool::Triangulation(aFace,aLoc);
           if(aPoly.IsNull()) { alreadymesh = Standard_False; break; }
@@ -303,7 +302,7 @@ namespace SMESH {
       BRepBndLib::Add(shape, B);
       Standard_Real aXmin, aYmin, aZmin, aXmax, aYmax, aZmax;
       B.Get(aXmin, aYmin, aZmin, aXmax, aYmax, aZmax);
-      double deflection = Max( aXmax-aXmin , Max ( aYmax-aYmin , aZmax-aZmin)) * 0.01 *4;
+      double deflection = Max( aXmax-aXmin, Max ( aYmax-aYmin, aZmax-aZmin)) * 0.01 *4;
       BRepMesh_IncrementalMesh MESH(shape,deflection);
     }
     // -----------------------------------------------------------------------
@@ -416,7 +415,7 @@ namespace SMESH {
   {
     QString text;
     if ( _PTR(SObject) aSO = getSubShapeSO( subShapeID, aMainShape ))
-      text = aSO->GetName();
+      text = aSO->GetName().c_str();
     else {
       text = QString("#%1").arg( subShapeID );
       QString typeName = shapeTypeName( getSubShape( subShapeID, aMainShape ));
@@ -429,21 +428,20 @@ namespace SMESH {
   /*!
    * \brief Return a list of selected rows
    */
-  bool getSelectedRows(QTable* table, list< int > & rows)
+  bool getSelectedRows(QTableWidget* table, QList<int>& rows)
   {
     rows.clear();
-    int nbSel = table->numSelections();
-    for ( int i = 0; i < nbSel; ++i )
+    QList<QTableWidgetSelectionRange> selRanges = table->selectedRanges();
+    QTableWidgetSelectionRange range;
+    foreach( range, selRanges )
     {
-      QTableSelection selected = table->selection(i);
-      if ( !selected.isActive() ) continue;
-      for ( int row = selected.topRow(); row <= selected.bottomRow(); ++row )
-        rows.push_back( row );
+      for ( int row = range.topRow(); row <= range.bottomRow(); ++row )
+        rows.append( row );
     }
-    if (rows.empty() && table->currentRow() > -1 )
-      rows.push_back( table->currentRow() );
+    if ( rows.isEmpty() && table->currentRow() > -1 )
+      rows.append( table->currentRow() );
 
-    return !rows.empty();
+    return !rows.isEmpty();
   }
 
 } // namespace SMESH
@@ -456,119 +454,255 @@ namespace SMESH {
 // =========================================================================================
 
 SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent)
-  :QGroupBox( 4, Qt::Horizontal, tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
+  : QGroupBox( tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
 {
+  QGridLayout* l = new QGridLayout(this);
+  l->setMargin( 0 );
+  l->setSpacing( 0 );
+
+  QFont italic = font(); italic.setItalic(true);
+  QFont bold   = font(); bold.setBold(true);
+
+  QLabel* lab;
+  int row = 0;
+
   // title
-  QLabel* lab1 = new QLabel(this);
-  QLabel* lab2 = new QLabel(tr("SMESH_MESHINFO_ORDER0"), this );
-  QLabel* lab3 = new QLabel(tr("SMESH_MESHINFO_ORDER1"), this );
-  QLabel* lab4 = new QLabel(tr("SMESH_MESHINFO_ORDER2"), this );
-
-  QFont italic = lab1->font(); italic.setItalic(true);
-  QFont bold   = lab1->font(); bold.setBold(true);
-
-  lab1->setMinimumWidth(100); lab1->setFont( italic );
-  lab2->setMinimumWidth(100); lab2->setFont( italic );
-  lab3->setMinimumWidth(100); lab3->setFont( italic );
-  lab4->setMinimumWidth(100); lab4->setFont( italic );
+  lab = new QLabel( this );
+  lab->setMinimumWidth(100); lab->setFont( italic );
+  l->addWidget( lab, row, 0 );
+  // --
+  lab = new QLabel(tr("SMESH_MESHINFO_ORDER0"), this );
+  lab->setMinimumWidth(100); lab->setFont( italic );
+  l->addWidget( lab, row, 1 );
+  // --
+  lab = new QLabel(tr("SMESH_MESHINFO_ORDER1"), this );
+  lab->setMinimumWidth(100); lab->setFont( italic );
+  l->addWidget( lab, row, 2 );
+  // --
+  lab = new QLabel(tr("SMESH_MESHINFO_ORDER2"), this );
+  lab->setMinimumWidth(100); lab->setFont( italic );
+  l->addWidget( lab, row, 3 );
 
   if ( myFull )
   {
     // nodes
-    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this ))->setFont( bold );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
+    lab->setFont( bold );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbNode = new QLabel( this );
-    new QLabel(this);
-    new QLabel(this);
+    l->addWidget( myNbNode,      row, 1 );
 
-    _SEPARATOR(this);
+    addSeparator(this);          // add separator
 
     // edges
-    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this ))->setFont( bold );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
+    lab->setFont( bold );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbEdge = new QLabel( this );
+    l->addWidget( myNbEdge,      row, 1 );
+    // --
     myNbLinEdge = new QLabel( this );
+    l->addWidget( myNbLinEdge,   row, 2 );
+    // --
     myNbQuadEdge = new QLabel( this );
+    l->addWidget( myNbQuadEdge,  row, 3 );
 
-    _SEPARATOR(this);
+    addSeparator(this);          // add separator
 
     // faces
-    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this))->setFont( bold );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
+    lab->setFont( bold );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbFace     = new QLabel( this );
+    l->addWidget( myNbFace,      row, 1 );
+    // --
     myNbLinFace  = new QLabel( this );
+    l->addWidget( myNbLinFace,   row, 2 );
+    // --
     myNbQuadFace = new QLabel( this );
-    // triangles
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), this );
+    l->addWidget( myNbQuadFace,  row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... triangles
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TRIANGLES")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbTrai     = new QLabel( this );
+    l->addWidget( myNbTrai,      row, 1 );
+    // --
     myNbLinTrai  = new QLabel( this );
+    l->addWidget( myNbLinTrai,   row, 2 );
+    // --
     myNbQuadTrai = new QLabel( this );
-    // quadrangles
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), this );
+    l->addWidget( myNbQuadTrai,  row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... quadrangles
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_QUADRANGLES")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbQuad     = new QLabel( this );
+    l->addWidget( myNbQuad,      row, 1 );
+    // --
     myNbLinQuad  = new QLabel( this );
+    l->addWidget( myNbLinQuad,   row, 2 );
+    // --
     myNbQuadQuad = new QLabel( this );
-    // poligones
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYGONES")), this );
+    l->addWidget( myNbQuadQuad,  row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... poligones
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYGONES")), this );
+    l->addWidget( lab,           row, 0 );
     myNbPolyg    = new QLabel( this );
-    new QLabel("",this );
-    new QLabel("", this );
+    l->addWidget( myNbPolyg,     row, 1 );
 
-    _SEPARATOR(this);
+    addSeparator(this);          // add separator
 
     // volumes
-    (new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this))->setFont( bold );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
+    lab->setFont( bold );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbVolum     = new QLabel( this );
+    l->addWidget( myNbVolum,     row, 1 );
+    // --
     myNbLinVolum  = new QLabel( this );
+    l->addWidget( myNbLinVolum,  row, 2 );
+    // --
     myNbQuadVolum = new QLabel( this );
-    // tetras
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), this );
+    l->addWidget( myNbQuadVolum, row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... tetras
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_TETRAS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbTetra     = new QLabel( this );
+    l->addWidget( myNbTetra,     row, 1 );
+    // --
     myNbLinTetra  = new QLabel( this );
+    l->addWidget( myNbLinTetra,  row, 2 );
+    // --
     myNbQuadTetra = new QLabel( this );
-    // hexas
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), this );
+    l->addWidget( myNbQuadTetra, row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... hexas
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbHexa      = new QLabel( this );
+    l->addWidget( myNbHexa,      row, 1 );
+    // --
     myNbLinHexa   = new QLabel( this );
+    l->addWidget( myNbLinHexa,   row, 2 );
+    // --
     myNbQuadHexa  = new QLabel( this );
-    // pyras
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), this );
+    l->addWidget( myNbQuadHexa,  row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... pyras
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PYRAS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbPyra      = new QLabel( this );
+    l->addWidget( myNbPyra,      row, 1 );
+    // --
     myNbLinPyra   = new QLabel( this );
+    l->addWidget( myNbLinPyra,   row, 2 );
+    // --
     myNbQuadPyra  = new QLabel( this );
-    // prisms
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), this );
+    l->addWidget( myNbQuadPyra,  row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... prisms
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_PRISMS")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbPrism     = new QLabel( this );
+    l->addWidget( myNbPrism,     row, 1 );
+    // --
     myNbLinPrism  = new QLabel( this );
+    l->addWidget( myNbLinPrism,  row, 2 );
+    // --
     myNbQuadPrism = new QLabel( this );
-    // polyedres
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYEDRES")), this );
+    l->addWidget( myNbQuadPrism, row, 3 );
+    // --
+    row++;                       // increment row count
+    // ... polyedres
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYEDRES")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbPolyh     = new QLabel( this );
-    new QLabel("", this );
-    new QLabel("", this );
+    l->addWidget( myNbPolyh,     row, 1 );
   }
   else
   {
     // nodes
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_NODES")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbNode      = new QLabel( this );
-    new QLabel(this);
-    new QLabel(this);
+    l->addWidget( myNbNode,      row, 1 );
 
     // edges
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_EDGES")), this );
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbEdge      = new QLabel( this );
+    l->addWidget( myNbEdge,      row, 1 );
+    // --
     myNbLinEdge   = new QLabel( this );
+    l->addWidget( myNbLinEdge,   row, 2 );
+    // --
     myNbQuadEdge  = new QLabel( this );
+    l->addWidget( myNbQuadEdge,  row, 3 );
 
     // faces
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_FACES")), this);
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbFace      = new QLabel( this );
+    l->addWidget( myNbFace,      row, 1 );
+    // --
     myNbLinFace   = new QLabel( this );
+    l->addWidget( myNbLinFace,   row, 2 );
+    // --
     myNbQuadFace  = new QLabel( this );
+    l->addWidget( myNbQuadFace,  row, 3 );
 
     // volumes
-    new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
+    row = l->rowCount();         // retrieve current row count
+    // --
+    lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_VOLUMES")), this);
+    l->addWidget( lab,           row, 0 );
+    // --
     myNbVolum     = new QLabel( this );
+    l->addWidget( myNbVolum,     row, 1 );
+    // --
     myNbLinVolum  = new QLabel( this );
+    l->addWidget( myNbLinVolum,  row, 2 );
+    // --
     myNbQuadVolum = new QLabel( this );
+    l->addWidget( myNbQuadVolum, row, 3 );
   }
 }
 
@@ -595,7 +729,7 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
   // faces
   nbTot = mesh->NbFaces(), nbLin = mesh->NbFacesOfOrder(lin);
   myNbFace     ->setText( QString("%1").arg( nbTot ));
-  myNbLinFace  ->setText( QString("%1").arg( nbLin )); 
+  myNbLinFace  ->setText( QString("%1").arg( nbLin ));
   myNbQuadFace ->setText( QString("%1").arg( nbTot - nbLin ));
 
   // volumes
@@ -652,7 +786,9 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
 
 SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK/* | Help*/ )
 {
-  QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame(), 0, SPACING);
+  QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
+  aDlgLay->setMargin( 0 );
+  aDlgLay->setSpacing( SPACING );
 
   QFrame* aMainFrame = createMainFrame  (mainFrame());
 
@@ -666,8 +802,6 @@ SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK/
 // purpose  : Create frame containing dialog's fields
 //=======================================================================
 
-#define CASE2HEADER(enum) case enum: header = QObject::tr( #enum "_HEADER" ); break;
-
 QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 {
   QFrame* aFrame = new QFrame(theParent);
@@ -677,16 +811,23 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 
   // constructor
 
-  QButtonGroup* aPixGrp = new QButtonGroup(1, Qt::Vertical, tr("CONSTRUCTOR"), aFrame);
-  aPixGrp->setExclusive(TRUE);
+  QGroupBox* aPixGrp = new QGroupBox(tr("CONSTRUCTOR"), aFrame);
+  QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
+  aPixGrpLayout->setMargin(MARGIN); aPixGrpLayout->setSpacing(SPACING);
+
   QRadioButton* aRBut = new QRadioButton(aPixGrp);
-  aRBut->setPixmap(iconCompute);
-  aRBut->setChecked(TRUE);
+  aRBut->setIcon(iconCompute);
+  aRBut->setChecked(true);
+  aPixGrpLayout->addWidget(aRBut);
+  aPixGrpLayout->addStretch();
 
   // Mesh name
 
-  QHGroupBox* nameBox = new QHGroupBox(tr("SMESH_MESHINFO_NAME"), aFrame );
+  QGroupBox* nameBox = new QGroupBox(tr("SMESH_MESHINFO_NAME"), aFrame );
+  QHBoxLayout* nameBoxLayout = new QHBoxLayout(nameBox);
+  nameBoxLayout->setMargin(MARGIN); nameBoxLayout->setSpacing(SPACING);
   myMeshName = new QLabel(nameBox);
+  nameBoxLayout->addWidget(myMeshName);
 
   // Mesh Info
 
@@ -695,54 +836,60 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 
   // Computation errors
 
-  myCompErrorGroup = new QGroupBox(tr("ERRORS"), aFrame, "myCompErrorGroup");
-  myTable      = new QTable( 1, NB_COLUMNS, myCompErrorGroup, "myTable");
-  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup, "myShowBtn");
-  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup, "myPublishBtn");
+  myCompErrorGroup = new QGroupBox(tr("ERRORS"), aFrame);
+  myTable      = new QTableWidget( 1, NB_COLUMNS, myCompErrorGroup);
+  myShowBtn    = new QPushButton(tr("SHOW_SHAPE"), myCompErrorGroup);
+  myPublishBtn = new QPushButton(tr("PUBLISH_SHAPE"), myCompErrorGroup);
 
-  myTable->setReadOnly( TRUE );
+  //myTable->setReadOnly( true ); // VSR: check
+  myTable->setEditTriggers( QAbstractItemView::NoEditTriggers );
   myTable->hideColumn( COL_PUBLISHED );
   myTable->hideColumn( COL_SHAPEID );
-  myTable->setColumnStretchable( COL_ERROR, 1 );
-  for ( int col = 0; col < NB_COLUMNS; ++col ) {
-    QString header;
-    switch ( col ) {
-    CASE2HEADER( COL_ALGO     );
-    CASE2HEADER( COL_SHAPE    );
-    CASE2HEADER( COL_ERROR    );
-    CASE2HEADER( COL_SHAPEID  );
-    CASE2HEADER( COL_PUBLISHED);
-    }
-    myTable->horizontalHeader()->setLabel( col, header );
-  }
+  myTable->horizontalHeader()->setResizeMode( COL_ERROR, QHeaderView::Interactive );
+
+  QStringList headers;
+  headers << tr( "COL_ALGO_HEADER" );
+  headers << tr( "COL_SHAPE_HEADER" );
+  headers << tr( "COL_ERROR_HEADER" );
+  headers << tr( "COL_SHAPEID_HEADER" );
+  headers << tr( "COL_PUBLISHED_HEADER" );
+
+  myTable->setHorizontalHeaderLabels( headers );
+
   // layouting
-  myCompErrorGroup->setColumnLayout(0, Qt::Vertical);
-  myCompErrorGroup->layout()->setSpacing(0);
-  myCompErrorGroup->layout()->setMargin(0);
-  QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup->layout());
-  grpLayout->setAlignment(Qt::AlignTop);
+  QGridLayout* grpLayout = new QGridLayout(myCompErrorGroup);
   grpLayout->setSpacing(SPACING);
   grpLayout->setMargin(MARGIN);
-  grpLayout->addMultiCellWidget( myTable,   0, 2, 0, 0 );
-  grpLayout->addWidget         ( myShowBtn,    0, 1 );
-  grpLayout->addWidget         ( myPublishBtn, 1, 1 );
+  grpLayout->addWidget( myTable,      0, 0, 3, 1 );
+  grpLayout->addWidget( myShowBtn,    0, 1 );
+  grpLayout->addWidget( myPublishBtn, 1, 1 );
   grpLayout->setRowStretch( 2, 1 );
 
   // Hypothesis definition errors
 
-  myHypErrorGroup = new QGroupBox(1,Qt::Vertical, tr("SMESH_WRN_MISSING_PARAMETERS"),aFrame);
+  myHypErrorGroup = new QGroupBox(tr("SMESH_WRN_MISSING_PARAMETERS"), aFrame);
+  QHBoxLayout* myHypErrorGroupLayout = new QHBoxLayout(myHypErrorGroup);
+  myHypErrorGroupLayout->setMargin(MARGIN);
+  myHypErrorGroupLayout->setSpacing(SPACING);
   myHypErrorLabel = new QLabel(myHypErrorGroup);
+  myHypErrorGroupLayout->addWidget(myHypErrorLabel);
 
   // Memory Lack Label
 
-  myMemoryLackGroup = new QVGroupBox(tr("ERRORS"), aFrame, "memlackGrBox");
+  myMemoryLackGroup = new QGroupBox(tr("ERRORS"), aFrame);
+  QVBoxLayout* myMemoryLackGroupLayout = new QVBoxLayout(myMemoryLackGroup);
+  myMemoryLackGroupLayout->setMargin(MARGIN);
+  myMemoryLackGroupLayout->setSpacing(SPACING);
   QLabel* memLackLabel = new QLabel(tr("MEMORY_LACK"), myMemoryLackGroup);
   QFont bold = memLackLabel->font(); bold.setBold(true);
   memLackLabel->setFont( bold );
   memLackLabel->setMinimumWidth(300);
+  myMemoryLackGroupLayout->addWidget(memLackLabel);
 
   // add all widgets to aFrame
   QVBoxLayout* aLay = new QVBoxLayout(aFrame);
+  aLay->setMargin( 0 );
+  aLay->setSpacing( 0 );
   aLay->addWidget( aPixGrp );
   aLay->addWidget( nameBox );
   aLay->addWidget( myBriefInfo );
@@ -766,15 +913,15 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
 SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
 {
   myDlg = new SMESHGUI_ComputeDlg;
-  myTShapeDisplayer = new TShapeDisplayer();
+  myTShapeDisplayer = new SMESH::TShapeDisplayer();
   //myHelpFileName = "/files/about_meshes.htm"; // V3
   myHelpFileName = "about_meshes_page.html"; // V4
 
   // connect signals and slots
   connect(myDlg->myShowBtn,    SIGNAL (clicked()), SLOT(onPreviewShape()));
   connect(myDlg->myPublishBtn, SIGNAL (clicked()), SLOT(onPublishShape()));
-  connect(table(),SIGNAL(selectionChanged()), SLOT(currentCellChanged()));
-  connect(table(),SIGNAL(currentChanged(int,int)), SLOT(currentCellChanged()));
+  connect(table(), SIGNAL(itemSelectionChanged()), SLOT(currentCellChanged()));
+  connect(table(), SIGNAL(currentCellChanged(int,int,int,int)), SLOT(currentCellChanged()));
 }
 
 //=======================================================================
@@ -796,10 +943,9 @@ void SMESHGUI_ComputeOp::startOperation()
 
   int nbSel = selected.Extent();
   if (nbSel != 1) {
-    SUIT_MessageBox::warn1(desktop(),
-                           tr("SMESH_WRN_WARNING"),
-                           tr("SMESH_WRN_NO_AVAILABLE_DATA"),
-                           tr("SMESH_BUT_OK"));
+    SUIT_MessageBox::warning(desktop(),
+			     tr("SMESH_WRN_WARNING"),
+			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
     return;
   }
@@ -807,17 +953,16 @@ void SMESHGUI_ComputeOp::startOperation()
   Handle(SALOME_InteractiveObject) IObject = selected.First();
   aMesh = SMESH::GetMeshByIO(IObject);
   if (aMesh->_is_nil()) {
-    SUIT_MessageBox::warn1(desktop(),
-                           tr("SMESH_WRN_WARNING"),
-                           tr("SMESH_WRN_NO_AVAILABLE_DATA"),
-                           tr("SMESH_BUT_OK"));
+    SUIT_MessageBox::warning(desktop(),
+			     tr("SMESH_WRN_WARNING"),
+			     tr("SMESH_WRN_NO_AVAILABLE_DATA"));
     onCancel();
     return;
   }
 
   // COMPUTE MESH
 
-  MemoryReserve aMemoryReserve;
+  SMESH::MemoryReserve aMemoryReserve;
 
   SMESH::compute_error_array_var aCompErrors;
   QString                        aHypErrors;
@@ -830,7 +975,7 @@ void SMESHGUI_ComputeOp::startOperation()
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
   if ( shapeOK && aMeshSObj )
   {
-    myDlg->myMeshName->setText( aMeshSObj->GetName() );
+    myDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
     SMESH::algo_error_array_var errors = gen->GetAlgoState(aMesh,myMainShape);
     if ( errors->length() > 0 ) {
@@ -890,7 +1035,7 @@ void SMESHGUI_ComputeOp::startOperation()
       Sel->setSelectedObjects( selected );
     }
   }
-  myDlg->setCaption(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+  myDlg->setWindowTitle(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
   myDlg->myMemoryLackGroup->hide();
 
   // SHOW ERRORS
@@ -916,7 +1061,7 @@ void SMESHGUI_ComputeOp::startOperation()
   }
   else
   {
-    QTable* tbl = myDlg->myTable;
+    QTableWidget* tbl = myDlg->myTable;
     myDlg->myBriefInfo->SetInfoByMesh( aMesh );
     myDlg->myBriefInfo->show();
     myDlg->myFullInfo->hide();
@@ -945,7 +1090,7 @@ void SMESHGUI_ComputeOp::startOperation()
       }
 
       // fill table of errors
-      tbl->setNumRows( aCompErrors->length() );
+      tbl->setRowCount( aCompErrors->length() );
       if ( !hasShape ) tbl->hideColumn( COL_SHAPE );
       else             tbl->showColumn( COL_SHAPE );
       tbl->setColumnWidth( COL_ERROR, 200 );
@@ -953,21 +1098,21 @@ void SMESHGUI_ComputeOp::startOperation()
       for ( int row = 0; row < aCompErrors->length(); ++row )
       {
         SMESH::ComputeError & err = aCompErrors[ row ];
-        tbl->setText( row, COL_ALGO,    err.algoName.in() );
-        tbl->setText( row, COL_ERROR,   errorText( err.code, err.comment.in() ));
-        tbl->setText( row, COL_SHAPEID, QString("%1").arg( err.subShapeID ));
+        tbl->item( row, COL_ALGO )->setText( err.algoName.in() );
+        tbl->item( row, COL_ERROR )->setText( SMESH::errorText( err.code, err.comment.in() ));
+        tbl->item( row, COL_SHAPEID )->setText( QString("%1").arg( err.subShapeID ));
 
-        QString text = hasShape ? shapeText( err.subShapeID, myMainShape ) : QString("");
-        tbl->setText( row, COL_SHAPE,   text );
+        QString text = hasShape ? SMESH::shapeText( err.subShapeID, myMainShape ) : QString("");
+        tbl->item( row, COL_SHAPE )->setText( text );
 
-        text = ( !hasShape || getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
-        tbl->setText( row, COL_PUBLISHED, text ); // if text=="", "PUBLISH" button enabled
+        text = ( !hasShape || SMESH::getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
+        tbl->item( row, COL_PUBLISHED )->setText( text ); // if text=="", "PUBLISH" button enabled
 
-        tbl->item( row, COL_ERROR )->setWordWrap( TRUE );
-        tbl->adjustRow( row );
+        //tbl->item( row, COL_ERROR )->setWordWrap( true ); // VSR: TODO ???
+        tbl->resizeRowToContents( row );
       }
-      tbl->adjustColumn( COL_ALGO );
-      tbl->adjustColumn( COL_SHAPE );
+      tbl->resizeColumnToContents( COL_ALGO );
+      tbl->resizeColumnToContents( COL_SHAPE );
 
       tbl->setCurrentCell(0,0);
       currentCellChanged(); // to update buttons
@@ -999,37 +1144,37 @@ void SMESHGUI_ComputeOp::onPublishShape()
   GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
   SALOMEDS::Study_var study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
 
-  list< int > rows;
-  list< int >::iterator row;
-  getSelectedRows( table(), rows );
-  for ( row = rows.begin(); row != rows.end(); ++row )
+  QList<int> rows;
+  SMESH::getSelectedRows( table(), rows );
+  int row;
+  foreach ( row, rows )
   {
-    int curSub = table()->text(*row, COL_SHAPEID).toInt();
-    GEOM::GEOM_Object_var shape = getSubShape( curSub, myMainShape );
-    if ( !shape->_is_nil() && ! getSubShapeSO( curSub, myMainShape ))
+    int curSub = table()->item(row, COL_SHAPEID)->text().toInt();
+    GEOM::GEOM_Object_var shape = SMESH::getSubShape( curSub, myMainShape );
+    if ( !shape->_is_nil() && ! SMESH::getSubShapeSO( curSub, myMainShape ))
     {
-      if ( !getSubShapeSO( 1, myMainShape )) // the main shape not published
+      if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
-        QString name = GEOMBase::GetDefaultName( shapeTypeName( myMainShape, "MAIN_SHAPE" ));
+        QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
         SALOMEDS::SObject_var so =
-          geomGen->AddInStudy( study, myMainShape, name, GEOM::GEOM_Object::_nil());
+          geomGen->AddInStudy( study, myMainShape, name.toLatin1().data(), GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
-        for ( int r = 0, nr = table()->numRows(); r < nr; ++r ) {
-          if ( table()->text(r, COL_SHAPEID) == "1" ) {
+        for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
+          if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
             if ( so->_is_nil() ) {
-              table()->setText( r, COL_SHAPE, so->GetName() );
-              table()->setText( r, COL_PUBLISHED, so->GetID() );
+              table()->item( r, COL_SHAPE )->setText( so->GetName() );
+              table()->item( r, COL_PUBLISHED )->setText( so->GetID() );
             }
             break;
           }
         }
         if ( curSub == 1 ) continue;
       }
-      QString name = GEOMBase::GetDefaultName( shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name, myMainShape);
+      QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
+      SALOMEDS::SObject_var so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
-        table()->setText( *row, COL_SHAPE, so->GetName() );
-        table()->setText( *row, COL_PUBLISHED, so->GetID() );
+        table()->item( row, COL_SHAPE )->setText( so->GetName() );
+        table()->item( row, COL_PUBLISHED )->setText( so->GetID() );
       }
     }
   }
@@ -1048,17 +1193,17 @@ void SMESHGUI_ComputeOp::currentCellChanged()
   myTShapeDisplayer->SetVisibility( false );
 
   bool publishEnable = 0, showEnable = 0, showOnly = 1;
-  list< int > rows;
-  list< int >::iterator row;
-  getSelectedRows( table(), rows );
-  for ( row = rows.begin(); row != rows.end(); ++row )
+  QList<int> rows;
+  SMESH::getSelectedRows( table(), rows );
+  int row;
+  foreach ( row, rows )
   {
-    bool hasData     = ( !table()->text(*row, COL_SHAPE).isEmpty() );
-    bool isPublished = ( !table()->text(*row, COL_PUBLISHED).isEmpty() );
+    bool hasData     = ( !table()->item( row, COL_SHAPE )->text().isEmpty() );
+    bool isPublished = ( !table()->item( row, COL_PUBLISHED )->text().isEmpty() );
     if ( hasData && !isPublished )
       publishEnable = true;
 
-    int curSub = table()->text(*row, COL_SHAPEID).toInt();
+    int curSub = table()->item( row, COL_SHAPEID )->text().toInt();
     bool prsReady = myTShapeDisplayer->HasReadyActorsFor( curSub, myMainShape );
     if ( prsReady ) {
       myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
@@ -1083,14 +1228,14 @@ void SMESHGUI_ComputeOp::onPreviewShape()
   if ( myTShapeDisplayer )
   {
     SUIT_OverrideCursor aWaitCursor;
-    list< int > rows;
-    list< int >::iterator row;
-    getSelectedRows( table(), rows );
+    QList<int> rows;
+    SMESH::getSelectedRows( table(), rows );
 
     bool showOnly = true;
-    for ( row = rows.begin(); row != rows.end(); ++row )
+    int row;
+    foreach ( row, rows )
     {
-      int curSub = table()->text(*row, COL_SHAPEID).toInt();
+      int curSub = table()->item( row, COL_SHAPEID )->text().toInt();
       if ( curSub > 0 ) {
         myTShapeDisplayer->Show( curSub, myMainShape, showOnly );
         showOnly = false;
@@ -1140,7 +1285,7 @@ bool SMESHGUI_ComputeOp::onApply()
  */
 //================================================================================
 
-QTable* SMESHGUI_ComputeOp::table()
+QTableWidget* SMESHGUI_ComputeOp::table()
 {
   return myDlg->myTable;
 }

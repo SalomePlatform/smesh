@@ -1,46 +1,36 @@
-//  SMESHGUI_PredicateFilter : Filters for VTK viewer
+// SMESHGUI_Filter : Filters for VTK viewer
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_Filter.cxx
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_Filter.cxx
-//  Author : Sergey LITONIN
-//  Module : SMESH
 
+// SMESH includes
 #include "SMESHGUI_Filter.h"
 
-#include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 
-#include "SMESH_Actor.h"
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshElement.hxx"
-#include "SMDSAbs_ElementType.hxx"
-
-// OCCT Includes
-#include <gp_Vec.hxx>
-#include <Precision.hxx>
-
-// VTK Includes
-#include <vtkCell.h>
+#include <SMESH_Actor.h>
+#include <SMDS_Mesh.hxx>
+#include <SMDSAbs_ElementType.hxx>
 
 IMPLEMENT_STANDARD_HANDLE(SMESHGUI_Filter, VTKViewer_Filter)
 IMPLEMENT_STANDARD_RTTIEXT(SMESHGUI_Filter, VTKViewer_Filter)
@@ -138,7 +128,7 @@ bool SMESHGUI_PredicateFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 bool SMESHGUI_PredicateFilter::IsNodeFilter() const
 {
-  return GetId() == SMESHGUI_NodeFilter;
+  return GetId() == SMESH::NodeFilter;
 }
 
 //=======================================================================
@@ -182,12 +172,12 @@ void SMESHGUI_PredicateFilter::SetActor( SALOME_Actor* theActor )
 //=======================================================================
 int SMESHGUI_PredicateFilter::GetId() const
 {
-  if      ( myPred->GetElementType() == SMESH::NODE   ) return SMESHGUI_NodeFilter;
-  else if ( myPred->GetElementType() == SMESH::EDGE   ) return SMESHGUI_EdgeFilter;
-  else if ( myPred->GetElementType() == SMESH::FACE   ) return SMESHGUI_FaceFilter;
-  else if ( myPred->GetElementType() == SMESH::VOLUME ) return SMESHGUI_VolumeFilter;
-  else if ( myPred->GetElementType() == SMESH::ALL    ) return SMESHGUI_AllElementsFilter;
-  else                                                  return SMESHGUI_UnknownFilter;
+  if      ( myPred->GetElementType() == SMESH::NODE   ) return SMESH::NodeFilter;
+  else if ( myPred->GetElementType() == SMESH::EDGE   ) return SMESH::EdgeFilter;
+  else if ( myPred->GetElementType() == SMESH::FACE   ) return SMESH::FaceFilter;
+  else if ( myPred->GetElementType() == SMESH::VOLUME ) return SMESH::VolumeFilter;
+  else if ( myPred->GetElementType() == SMESH::ALL    ) return SMESH::AllElementsFilter;
+  else                                                  return SMESH::UnknownFilter;
 }
 
 
@@ -256,7 +246,7 @@ bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_QuadrangleFilter::GetId() const
 {
-  return SMESHGUI_QuadFilter;
+  return SMESH::QuadFilter;
 }
 
 //=======================================================================
@@ -335,7 +325,7 @@ bool SMESHGUI_TriangleFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_TriangleFilter::GetId() const
 {
-  return SMESHGUI_TriaFilter;
+  return SMESH::TriaFilter;
 }
 
 //=======================================================================
@@ -411,7 +401,7 @@ bool SMESHGUI_FacesFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_FacesFilter::GetId() const
 {
-  return SMESHGUI_FaceFilter;
+  return SMESH::FaceFilter;
 }
 
 //=======================================================================
@@ -488,7 +478,7 @@ bool SMESHGUI_VolumesFilter::IsObjValid( const int theObjId ) const
 //=======================================================================
 int SMESHGUI_VolumesFilter::GetId() const
 {
-  return SMESHGUI_VolumeFilter;
+  return SMESH::VolumeFilter;
 }
 
 //=======================================================================

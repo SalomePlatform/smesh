@@ -1,38 +1,44 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
+//
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+// File   : SMESHGUI_GEOMGenUtils.cxx
+// Author : Open CASCADE S.A.S.
+//
 
-#include <boost/shared_ptr.hpp>
-
+// SMESH includes
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_Utils.h"
 
+// SALOME GEOM includes
 #include <GeometryGUI.h>
 
-#include <SALOMEDSClient_SObject.hxx>
-#include <SALOMEDSClient_ChildIterator.hxx>
+// SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
 
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
-
-namespace SMESH {
-
+namespace SMESH
+{
   GEOM::GEOM_Gen_var GetGEOMGen()
   {
     static GEOM::GEOM_Gen_var aGEOMGen;
@@ -74,7 +80,7 @@ namespace SMESH {
       return GEOM::GEOM_Object::_nil();
 
     _PTR(ChildIterator) anIter (aStudy->NewChildIterator(theSO));
-    for (; anIter->More(); anIter->Next()) {
+    for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
       GEOM::GEOM_Object_var aMeshShape;
@@ -106,4 +112,4 @@ namespace SMESH {
     GEOM::GEOM_Object_var subShape = aShapesOp->GetSubShape (theMainShape,theID);
     return subShape._retn();
   }
-}
+} // end of namespace SMESH

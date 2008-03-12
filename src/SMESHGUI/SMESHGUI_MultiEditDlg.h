@@ -1,43 +1,41 @@
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License.
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_MultiEditDlg.h
+// Author : Sergey LITONIN, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_MultiEditDlg.h
-//  Author : Sergey LITONIN
-//  Module : SMESH
 
+#ifndef SMESHGUI_MULTIEDITDLG_H
+#define SMESHGUI_MULTIEDITDLG_H
 
-#ifndef SMESHGUI_MultiEditDlg_H
-#define SMESHGUI_MultiEditDlg_H
-
+// SMESH includes
 #include "SMESH_SMESHGUI.hxx"
 
-#include <qdialog.h>
+// Qt includes 
+#include <QDialog>
 
-#include "SUIT_SelectionFilter.h"
-
+// OCCT includes
 #include <TColStd_MapOfInteger.hxx>
 
+// IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Filter)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class SMESHGUI;
@@ -49,11 +47,8 @@ class SMESH_Actor;
 class LightApp_SelectionMgr;
 class SALOME_Actor;
 class SVTK_Selector;
-class SVTK_ViewWindow;
 
-class QFrame;
-class QObject;
-class QListBox;
+class QListWidget;
 class QComboBox;
 class QCheckBox;
 class QGroupBox;
@@ -72,15 +67,12 @@ class SMESHGUI_EXPORT SMESHGUI_MultiEditDlg : public QDialog
   Q_OBJECT
 
 public:
-                            SMESHGUI_MultiEditDlg(SMESHGUI* theModule,
-						  const int,
-						  const bool = false,
-						  const char* = 0 );
-  virtual                   ~SMESHGUI_MultiEditDlg();
+  SMESHGUI_MultiEditDlg( SMESHGUI*, const int, const bool = false );
+  virtual ~SMESHGUI_MultiEditDlg();
 
   void                      Init();
 
-  bool                      eventFilter( QObject* object, QEvent* event );
+  bool                      eventFilter( QObject*, QEvent* );
 
 signals:
   void                      ListContensChanged();
@@ -108,18 +100,19 @@ protected slots:
   SMESH::NumericalFunctor_ptr getNumericalFunctor();
 
 protected:
-  void                      closeEvent( QCloseEvent* e ) ;
-  void                      enterEvent ( QEvent * ) ;
-  void                      hideEvent ( QHideEvent * );                        /* ESC key */
+  void                      closeEvent( QCloseEvent* );
+  void                      enterEvent( QEvent * );
+  void                      hideEvent( QHideEvent* );                        /* ESC key */
   void                      keyPressEvent( QKeyEvent* );
-  QFrame*                   createButtonFrame( QWidget* );
-  QFrame*                   createMainFrame  ( QWidget*, const bool );
+  QWidget*                  createButtonFrame( QWidget* );
+  QWidget*                  createMainFrame( QWidget*, const bool );
   bool                      isValid( const bool ) const;
   SMESH::long_array_var     getIds();
   void                      updateButtons();
   void                      setSelectionMode();
-  virtual bool              isIdValid( const int theID ) const;
-  virtual bool              process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& ) = 0;
+  virtual bool              isIdValid( const int ) const;
+  virtual bool              process( SMESH::SMESH_MeshEditor_ptr, 
+				     const SMESH::long_array& ) = 0;
   int                       entityType();
 
 protected:
@@ -137,10 +130,11 @@ protected:
   QGroupBox*                mySelGrp;
   QGroupBox*                myCriterionGrp;
 
+  QWidget*                  myChoiceWidget;
   QButtonGroup*             myGroupChoice;
   QComboBox*                myComboBoxFunctor;
 
-  QListBox*                 myListBox;
+  QListWidget*              myListBox;
   QPushButton*              myFilterBtn;
   QPushButton*              myAddBtn;
   QPushButton*              myRemoveBtn;
@@ -175,9 +169,8 @@ class  SMESHGUI_ChangeOrientationDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-               SMESHGUI_ChangeOrientationDlg(SMESHGUI* theModule,
-					     const char* = 0);
-  virtual      ~SMESHGUI_ChangeOrientationDlg();
+  SMESHGUI_ChangeOrientationDlg( SMESHGUI* );
+  virtual ~SMESHGUI_ChangeOrientationDlg();
 
 protected:
   virtual bool process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
@@ -192,12 +185,11 @@ class  SMESHGUI_UnionOfTrianglesDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-               SMESHGUI_UnionOfTrianglesDlg(SMESHGUI* theModule,
-					    const char* = 0);
-  virtual      ~SMESHGUI_UnionOfTrianglesDlg();
+  SMESHGUI_UnionOfTrianglesDlg( SMESHGUI* );
+  virtual ~SMESHGUI_UnionOfTrianglesDlg();
 
 protected:
-  virtual bool process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
+  virtual bool      process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
 
 private:
   SMESHGUI_SpinBox* myMaxAngleSpin;
@@ -212,9 +204,8 @@ class  SMESHGUI_CuttingOfQuadsDlg : public SMESHGUI_MultiEditDlg
   Q_OBJECT
 
 public:
-                SMESHGUI_CuttingOfQuadsDlg(SMESHGUI* theModule,
-					   const char* = 0);
-  virtual       ~SMESHGUI_CuttingOfQuadsDlg();
+  SMESHGUI_CuttingOfQuadsDlg( SMESHGUI* );
+  virtual ~SMESHGUI_CuttingOfQuadsDlg();
 
 protected:
   virtual bool  process( SMESH::SMESH_MeshEditor_ptr, const SMESH::long_array& );
@@ -233,4 +224,4 @@ private:
   QCheckBox*    myPreviewChk;
 };
 
-#endif
+#endif // SMESHGUI_MULTIEDITDLG_H

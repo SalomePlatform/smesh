@@ -1,31 +1,29 @@
-//  SMESH SMESHGUI : GUI for SMESH component
+// SMESH SMESHGUI : GUI for SMESH component
 //
-//  Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
-//  CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
+// Copyright (C) 2003  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
+// CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS 
 //
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License.
+// This library is free software; you can redistribute it and/or 
+// modify it under the terms of the GNU Lesser General Public 
+// License as published by the Free Software Foundation; either 
+// version 2.1 of the License. 
 //
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
+// This library is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
+// Lesser General Public License for more details. 
 //
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public 
+// License along with this library; if not, write to the Free Software 
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+// File   : SMESHGUI_ExtrusionAlongPathDlg.cxx
+// Author : Vadim SANDLER, Open CASCADE S.A.S.
 //
-//
-//  File   : SMESHGUI_ExtrusionAlongPathDlg.cxx
-//  Author : Vadim SANDLER
-//  Module : SMESH
-//  $Header:
 
+// SMESH includes
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 
 #include "SMESHGUI.h"
@@ -35,73 +33,83 @@
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_IdValidator.h"
 
-#include "SMESH_Actor.h"
-#include "SMESH_TypeFilter.hxx"
-#include "SMESH_NumberFilter.hxx"
-#include "SMESH_LogicalFilter.hxx"
+#include <SMESH_Actor.h>
+#include <SMESH_TypeFilter.hxx>
+#include <SMESH_NumberFilter.hxx>
+#include <SMESH_LogicalFilter.hxx>
 
-#include "SMDS_Mesh.hxx"
+#include <SMDS_Mesh.hxx>
 
-#include "GEOMBase.h"
+// SALOME GEOM includes
+#include <GEOMBase.h>
 
-#include "SUIT_ResourceMgr.h"
-#include "SUIT_OverrideCursor.h"
-#include "SUIT_Desktop.h"
-#include "SUIT_MessageBox.h"
-#include "SUIT_Session.h"
+// SALOME GUI includes
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_Session.h>
 
-#include "LightApp_Application.h"
+#include <LightApp_Application.h>
+#include <LightApp_SelectionMgr.h>
 
-#include "SVTK_ViewModel.h"
-#include "SVTK_ViewWindow.h"
-#include "SVTK_Selector.h"
-#include "SVTK_Selection.h"
-#include "SALOME_ListIO.hxx"
+#include <SVTK_ViewWindow.h>
 
-#include "utilities.h"
-
-// OCCT Includes
+// OCCT includes
 #include <BRep_Tool.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopoDS.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
 #include <TColStd_MapOfInteger.hxx>
-#include <TColStd_IndexedMapOfInteger.hxx>
 
-// QT Includes
-#include <qapplication.h>
-#include <qbuttongroup.h>
-#include <qgroupbox.h>
-#include <qlabel.h>
-#include <qlineedit.h>
-#include <qpushbutton.h>
-#include <qtoolbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlistbox.h>
-#include <qlayout.h>
-#include <qvalidator.h>
-#include <qptrlist.h>
-#include <qpixmap.h>
+// Qt includes
+#include <QButtonGroup>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QToolButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QListWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QKeyEvent>
 
-// IDL Headers
-#include "SALOMEconfig.h"
+// IDL includes
+#include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
-using namespace std;
+#define SPACING 6
+#define MARGIN  11
+
+class SMESHGUI_ExtrusionAlongPathDlg::SetBusy
+{
+public:
+  SetBusy( SMESHGUI_ExtrusionAlongPathDlg* _dlg )
+  {
+    myDlg = _dlg; 
+    myDlg->myBusy = true;
+  }
+  
+  ~SetBusy()
+  { 
+    myDlg->myBusy = false;
+  }
+  
+private:
+  SMESHGUI_ExtrusionAlongPathDlg* myDlg;
+};
 
 //=================================================================================
 // function : SMESHGUI_ExtrusionAlongPathDlg()
 // purpose  : constructor
 //=================================================================================
-SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theModule,
-                                                                bool modal )
-     : QDialog( SMESH::GetDesktop( theModule ), "SMESHGUI_ExtrusionAlongPathDlg", modal,
-                WStyle_Customize | WStyle_NormalBorder | WStyle_Title | WStyle_SysMenu | Qt::WDestructiveClose),
-     mySMESHGUI( theModule ),
-     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
+SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theModule )
+  : QDialog( SMESH::GetDesktop( theModule ) ),
+    mySMESHGUI( theModule ),
+    mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap edgeImage   ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
@@ -112,47 +120,45 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   myType = -1;
 
-  setCaption(tr("EXTRUSION_ALONG_PATH"));
-  setSizeGripEnabled(TRUE);
+  setModal( false );
+  setAttribute( Qt::WA_DeleteOnClose, true );
+  setWindowTitle(tr("EXTRUSION_ALONG_PATH"));
+  setSizeGripEnabled(true);
 
-  QGridLayout* topLayout = new QGridLayout(this);
-  topLayout->setSpacing(6);
-  topLayout->setMargin(11);
+  QVBoxLayout* topLayout = new QVBoxLayout(this);
+  topLayout->setSpacing(SPACING);
+  topLayout->setMargin(MARGIN);
 
   /***************************************************************/
   // Elements type group box (1d / 2d elements)
-  GroupConstructors = new QButtonGroup(tr("SMESH_EXTRUSION"), this);
-  GroupConstructors->setColumnLayout(0, Qt::Vertical);
-  GroupConstructors->layout()->setSpacing(0);
-  GroupConstructors->layout()->setMargin(0);
-  QGridLayout* GroupConstructorsLayout = new QGridLayout(GroupConstructors->layout());
-  GroupConstructorsLayout->setAlignment(Qt::AlignTop);
-  GroupConstructorsLayout->setSpacing(6); GroupConstructorsLayout->setMargin(11);
+  ConstructorsBox = new QGroupBox(tr("SMESH_EXTRUSION"), this);
+  GroupConstructors = new QButtonGroup(this);
+  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
+  ConstructorsBoxLayout->setSpacing(SPACING); ConstructorsBoxLayout->setMargin(MARGIN);
 
-  Elements1dRB = new QRadioButton(GroupConstructors);
-  Elements1dRB->setPixmap(edgeImage);
-  Elements2dRB = new QRadioButton(GroupConstructors);
-  Elements2dRB->setPixmap(faceImage);
+  Elements1dRB = new QRadioButton(ConstructorsBox);
+  Elements1dRB->setIcon(edgeImage);
+  Elements2dRB = new QRadioButton(ConstructorsBox);
+  Elements2dRB->setIcon(faceImage);
   Elements1dRB->setChecked(true);
 
   // layouting
-  GroupConstructorsLayout->addWidget(Elements1dRB, 0, 0);
-  GroupConstructorsLayout->addWidget(Elements2dRB, 0, 2);
+  ConstructorsBoxLayout->addWidget(Elements1dRB);
+  ConstructorsBoxLayout->addWidget(Elements2dRB);
+  GroupConstructors->addButton(Elements1dRB,  0);
+  GroupConstructors->addButton(Elements2dRB, 1);
 
   /***************************************************************/
   // Arguments group box
   GroupArguments = new QGroupBox(tr("EXTRUSION_1D"), this);
-  GroupArguments->setColumnLayout(0, Qt::Vertical);
-  GroupArguments->layout()->setSpacing(0); GroupArguments->layout()->setMargin(0);
-  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments->layout());
-  GroupArgumentsLayout->setAlignment(Qt::AlignTop);
-  GroupArgumentsLayout->setSpacing(6); GroupArgumentsLayout->setMargin(11);
+  QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
+  GroupArgumentsLayout->setSpacing(SPACING); GroupArgumentsLayout->setMargin(MARGIN);
 
   // Controls for elements selection
   ElementsLab = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
 
   SelectElementsButton = new QToolButton(GroupArguments);
-  SelectElementsButton->setPixmap(selectImage);
+  SelectElementsButton->setIcon(selectImage);
 
   ElementsLineEdit = new QLineEdit(GroupArguments);
   ElementsLineEdit->setValidator(new SMESHGUI_IdValidator(this));
@@ -162,35 +168,32 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   // Controls for path selection
   PathGrp = new QGroupBox(tr("SMESH_PATH"), GroupArguments);
-  PathGrp->setColumnLayout(0, Qt::Vertical);
-  PathGrp->layout()->setSpacing(0); PathGrp->layout()->setMargin(0);
-  QGridLayout* PathGrpLayout = new QGridLayout(PathGrp->layout());
-  PathGrpLayout->setAlignment(Qt::AlignTop);
-  PathGrpLayout->setSpacing(6); PathGrpLayout->setMargin(11);
+  QGridLayout* PathGrpLayout = new QGridLayout(PathGrp);
+  PathGrpLayout->setSpacing(SPACING); PathGrpLayout->setMargin(MARGIN);
 
   // Controls for path mesh selection
-  PathMeshLab = new QLabel(tr("SMESH_PATH_MESH"), PathGrp);
+  QLabel* PathMeshLab = new QLabel(tr("SMESH_PATH_MESH"), PathGrp);
 
   SelectPathMeshButton = new QToolButton(PathGrp);
-  SelectPathMeshButton->setPixmap(selectImage);
+  SelectPathMeshButton->setIcon(selectImage);
 
   PathMeshLineEdit = new QLineEdit(PathGrp);
   PathMeshLineEdit->setReadOnly(true);
 
   // Controls for path shape selection
-  PathShapeLab = new QLabel(tr("SMESH_PATH_SHAPE"), PathGrp);
+  QLabel* PathShapeLab = new QLabel(tr("SMESH_PATH_SHAPE"), PathGrp);
 
   SelectPathShapeButton = new QToolButton(PathGrp);
-  SelectPathShapeButton->setPixmap(selectImage);
+  SelectPathShapeButton->setIcon(selectImage);
 
   PathShapeLineEdit = new QLineEdit(PathGrp);
   PathShapeLineEdit->setReadOnly(true);
 
   // Controls for path starting point selection
-  StartPointLab = new QLabel(tr("SMESH_PATH_START"), PathGrp);
+  QLabel* StartPointLab = new QLabel(tr("SMESH_PATH_START"), PathGrp);
 
   SelectStartPointButton = new QToolButton(PathGrp);
-  SelectStartPointButton->setPixmap(selectImage);
+  SelectStartPointButton->setIcon(selectImage);
 
   StartPointLineEdit = new QLineEdit(PathGrp);
   StartPointLineEdit->setValidator(new QIntValidator(this));
@@ -206,96 +209,75 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   PathGrpLayout->addWidget(SelectStartPointButton, 2, 1);
   PathGrpLayout->addWidget(StartPointLineEdit,     2, 2);
 
-  // Controls for base point defining
-  BasePointCheck = new QCheckBox(tr("SMESH_USE_BASE_POINT"), GroupArguments);
-
   BasePointGrp = new QGroupBox(tr("SMESH_BASE_POINT"), GroupArguments);
-  BasePointGrp->setColumnLayout(0, Qt::Vertical);
-  BasePointGrp->layout()->setSpacing(0); BasePointGrp->layout()->setMargin(0);
-  QGridLayout* BasePointGrpLayout = new QGridLayout(BasePointGrp->layout());
-  BasePointGrpLayout->setAlignment(Qt::AlignTop);
-  BasePointGrpLayout->setSpacing(6); BasePointGrpLayout->setMargin(11);
+  BasePointGrp->setCheckable(true);
+  BasePointGrp->setChecked(false);
+  QHBoxLayout* BasePointGrpLayout = new QHBoxLayout(BasePointGrp);
+  BasePointGrpLayout->setSpacing(SPACING); BasePointGrpLayout->setMargin(MARGIN);
 
   SelectBasePointButton = new QToolButton(BasePointGrp);
-  SelectBasePointButton->setPixmap(selectImage);
+  SelectBasePointButton->setIcon(selectImage);
 
-  XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
-  XLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  QLabel* XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
   XSpin = new SMESHGUI_SpinBox(BasePointGrp);
-  YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
-  YLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  QLabel* YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
   YSpin = new SMESHGUI_SpinBox(BasePointGrp);
-  ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
-  ZLab->setAlignment( Qt::AlignRight | Qt::AlignVCenter | Qt::ExpandTabs );
+  QLabel* ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
   ZSpin = new SMESHGUI_SpinBox(BasePointGrp);
 
   // layouting
-  BasePointGrpLayout->addWidget(SelectBasePointButton, 0, 0);
-  BasePointGrpLayout->addWidget(XLab,                  0, 1);
-  BasePointGrpLayout->addWidget(XSpin,                 0, 2);
-  BasePointGrpLayout->addWidget(YLab,                  0, 3);
-  BasePointGrpLayout->addWidget(YSpin,                 0, 4);
-  BasePointGrpLayout->addWidget(ZLab,                  0, 5);
-  BasePointGrpLayout->addWidget(ZSpin,                 0, 6);
-
-  // Controls for angles defining
-  AnglesCheck = new QCheckBox(tr("SMESH_USE_ANGLES"), GroupArguments);
+  BasePointGrpLayout->addWidget(SelectBasePointButton);
+  BasePointGrpLayout->addWidget(XLab);
+  BasePointGrpLayout->addWidget(XSpin);
+  BasePointGrpLayout->addWidget(YLab);
+  BasePointGrpLayout->addWidget(YSpin);
+  BasePointGrpLayout->addWidget(ZLab);
+  BasePointGrpLayout->addWidget(ZSpin);
 
   AnglesGrp = new QGroupBox(tr("SMESH_ANGLES"), GroupArguments);
-  AnglesGrp->setColumnLayout(0, Qt::Vertical);
-  AnglesGrp->layout()->setSpacing(0); AnglesGrp->layout()->setMargin(0);
-  QGridLayout* AnglesGrpLayout = new QGridLayout(AnglesGrp->layout());
-  AnglesGrpLayout->setAlignment(Qt::AlignTop);
-  AnglesGrpLayout->setSpacing(6); AnglesGrpLayout->setMargin(11);
+  AnglesGrp->setCheckable(true);
+  AnglesGrp->setChecked(false);
+  QGridLayout* AnglesGrpLayout = new QGridLayout(AnglesGrp);
+  AnglesGrpLayout->setSpacing(SPACING); AnglesGrpLayout->setMargin(MARGIN);
 
-  AnglesList = new QListBox(AnglesGrp);
-  AnglesList->setSelectionMode(QListBox::Extended);
+  AnglesList = new QListWidget(AnglesGrp);
+  AnglesList->setSelectionMode(QListWidget::ExtendedSelection);
 
   AddAngleButton = new QToolButton(AnglesGrp);
-  AddAngleButton->setPixmap(addImage);
+  AddAngleButton->setIcon(addImage);
 
   RemoveAngleButton = new QToolButton(AnglesGrp);
-  RemoveAngleButton->setPixmap(removeImage);
+  RemoveAngleButton->setIcon(removeImage);
 
   AngleSpin = new SMESHGUI_SpinBox(AnglesGrp);
 
   // layouting
-  QVBoxLayout* bLayout = new QVBoxLayout();
-  bLayout->addWidget(AddAngleButton);
-  bLayout->addSpacing(6);
-  bLayout->addWidget(RemoveAngleButton);
-  bLayout->addStretch();
-  AnglesGrpLayout->addMultiCellWidget(AnglesList, 0, 1, 0, 0);
-  AnglesGrpLayout->addMultiCellLayout(bLayout,    0, 1, 1, 1);
-  AnglesGrpLayout->addWidget(         AngleSpin,  0,    2   );
-  AnglesGrpLayout->setRowStretch(1, 10);
+  AnglesGrpLayout->addWidget(AnglesList,        0, 0, 4, 1);
+  AnglesGrpLayout->addWidget(AddAngleButton,    0, 1);
+  AnglesGrpLayout->addWidget(RemoveAngleButton, 2, 1);
+  AnglesGrpLayout->addWidget(AngleSpin,         0, 2);
+  AnglesGrpLayout->setRowMinimumHeight(1, 10);
+  AnglesGrpLayout->setRowStretch(3, 10);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   MakeGroupsCheck->setChecked(true);
 
   // layouting
-  GroupArgumentsLayout->addWidget(         ElementsLab,            0,    0   );
-  GroupArgumentsLayout->addWidget(         SelectElementsButton,   0,    1   );
-  GroupArgumentsLayout->addWidget(         ElementsLineEdit,       0,    2   );
-  GroupArgumentsLayout->addMultiCellWidget(MeshCheck,              1, 1, 0, 2);
-  GroupArgumentsLayout->addMultiCellWidget(PathGrp,                2, 2, 0, 2);
-  GroupArgumentsLayout->addWidget(         BasePointCheck,         3,    0   );
-  GroupArgumentsLayout->addMultiCellWidget(BasePointGrp,           3, 4, 1, 2);
-  GroupArgumentsLayout->addWidget(         AnglesCheck,            5,    0   );
-  GroupArgumentsLayout->addMultiCellWidget(AnglesGrp,              5, 6, 1, 2);
-  GroupArgumentsLayout->addMultiCellWidget(MakeGroupsCheck,        7, 7, 0, 2);
-  GroupArgumentsLayout->setRowStretch(6, 10);
+  GroupArgumentsLayout->addWidget(ElementsLab,          0, 0);
+  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
+  GroupArgumentsLayout->addWidget(ElementsLineEdit,     0, 2);
+  GroupArgumentsLayout->addWidget(MeshCheck,            1, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(PathGrp,              2, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(BasePointGrp,         3, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(AnglesGrp,            4, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 3);
 
   /***************************************************************/
   // common buttons group box
   GroupButtons = new QGroupBox(this);
-  GroupButtons->setColumnLayout(0, Qt::Vertical);
-  GroupButtons->layout()->setSpacing(0);
-  GroupButtons->layout()->setMargin(0);
-  QGridLayout* GroupButtonsLayout = new QGridLayout(GroupButtons->layout());
-  GroupButtonsLayout->setAlignment(Qt::AlignTop);
-  GroupButtonsLayout->setSpacing(6); GroupButtonsLayout->setMargin(11);
+  QHBoxLayout* GroupButtonsLayout = new QHBoxLayout(GroupButtons);
+  GroupButtonsLayout->setSpacing(SPACING); GroupButtonsLayout->setMargin(MARGIN);
 
   OkButton = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
   OkButton->setAutoDefault(true);
@@ -311,18 +293,19 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   HelpButton->setAutoDefault(true);
 
   // layouting
-  GroupButtonsLayout->addWidget(OkButton,    0, 0);
-  GroupButtonsLayout->addWidget(ApplyButton, 0, 1);
-  GroupButtonsLayout->addWidget(CloseButton, 0, 3);
-  GroupButtonsLayout->addWidget(HelpButton, 0, 4);
-  GroupButtonsLayout->addColSpacing(2, 10);
-  GroupButtonsLayout->setColStretch(2, 10);
+  GroupButtonsLayout->addWidget(OkButton);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addWidget(ApplyButton);
+  GroupButtonsLayout->addSpacing(10);
+  GroupButtonsLayout->addStretch();
+  GroupButtonsLayout->addWidget(CloseButton);
+  GroupButtonsLayout->addWidget(HelpButton);
 
   /***************************************************************/
   // layouting
-  topLayout->addWidget(GroupConstructors, 0, 0);
-  topLayout->addWidget(GroupArguments,    1, 0);
-  topLayout->addWidget(GroupButtons,      2, 0);
+  topLayout->addWidget(ConstructorsBox);
+  topLayout->addWidget(GroupArguments);
+  topLayout->addWidget(GroupButtons);
 
   /***************************************************************/
   // Initialisations
@@ -339,7 +322,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (MESHorSUBMESH);
   SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (GROUP);
 
-  QPtrList<SUIT_SelectionFilter> aListOfFilters;
+  QList<SUIT_SelectionFilter*> aListOfFilters;
   if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
   if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
 
@@ -360,7 +343,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(AddAngleButton,    SIGNAL(clicked()), this, SLOT(OnAngleAdded()));
   connect(RemoveAngleButton, SIGNAL(clicked()), this, SLOT(OnAngleRemoved()));
 
-  connect(GroupConstructors, SIGNAL(clicked(int)), SLOT(ConstructorsClicked(int)));
+  connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
 
   connect(SelectElementsButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectPathMeshButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
@@ -373,13 +356,11 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(mySMESHGUI,  SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
 
   connect(ElementsLineEdit, SIGNAL(textChanged(const QString&)),
-	   SLOT(onTextChange(const QString&)));
+	  SLOT(onTextChange(const QString&)));
   connect(StartPointLineEdit, SIGNAL(textChanged(const QString&)),
-	   SLOT(onTextChange(const QString&)));
+	  SLOT(onTextChange(const QString&)));
 
   connect(MeshCheck,      SIGNAL(toggled(bool)), SLOT(onSelectMesh()));
-  connect(AnglesCheck,    SIGNAL(toggled(bool)), SLOT(onAnglesCheck()));
-  connect(BasePointCheck, SIGNAL(toggled(bool)), SLOT(onBasePointCheck()));
 
   AnglesList->installEventFilter(this);
   ElementsLineEdit->installEventFilter(this);
@@ -387,10 +368,6 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   XSpin->editor()->installEventFilter(this);
   YSpin->editor()->installEventFilter(this);
   ZSpin->editor()->installEventFilter(this);
-
-  /***************************************************************/
-  
-  this->show(); // displays Dialog
 }
 
 //=================================================================================
@@ -431,8 +408,6 @@ void SMESHGUI_ExtrusionAlongPathDlg::Init (bool ResetControls)
     MeshCheck->setChecked(false);
     ConstructorsClicked(0);
     onSelectMesh();
-    onAnglesCheck();
-    onBasePointCheck();
   }
   SetEditCurrentArgument(0);
 }
@@ -535,7 +510,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       // get IDs from group
       // 1d elements or 2d elements
       if (Elements1dRB->isChecked() && aGroup->GetType() == SMESH::EDGE ||
-	   Elements2dRB->isChecked() && aGroup->GetType() == SMESH::FACE)
+	  Elements2dRB->isChecked() && aGroup->GetType() == SMESH::FACE)
 	anElementsId = aGroup->GetListOfID();
     }
   } else {
@@ -544,7 +519,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
     SMDS_Mesh* aMesh = myMeshActor->GetObject()->GetMesh();
     if (aMesh) {
-      QStringList aListElementsId = QStringList::split(" ", ElementsLineEdit->text(), false);
+      QStringList aListElementsId = ElementsLineEdit->text().split(" ", QString::SkipEmptyParts);
       anElementsId = new SMESH::long_array;
       anElementsId->length(aListElementsId.count());
       bool bOk;
@@ -569,7 +544,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
     return false;
   }
 
-  if (StartPointLineEdit->text().stripWhiteSpace().isEmpty()) {
+  if (StartPointLineEdit->text().trimmed().isEmpty()) {
     return false;
   }
 
@@ -581,12 +556,12 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   // get angles
   SMESH::double_array_var anAngles = new SMESH::double_array;
-  if (AnglesCheck->isChecked()) {
+  if (AnglesGrp->isChecked()) {
     anAngles->length(AnglesList->count());
     int j = 0;
     bool bOk;
     for (int i = 0; i < AnglesList->count(); i++) {
-      double angle = AnglesList->text(i).toDouble(&bOk);
+      double angle = AnglesList->item(i)->text().toDouble(&bOk);
       if  (bOk)
 	anAngles[ j++ ] = angle*PI/180;
     }
@@ -595,7 +570,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
   // get base point
   SMESH::PointStruct aBasePoint;
-  if (BasePointCheck->isChecked()) {
+  if (BasePointGrp->isChecked()) {
     aBasePoint.x = XSpin->GetValue();
     aBasePoint.y = YSpin->GetValue();
     aBasePoint.z = ZSpin->GetValue();
@@ -609,52 +584,46 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
       SMESH::ListOfGroups_var groups = 
         aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId.inout(), myPathMesh,
                                                   myPathShape, aNodeStart,
-                                                  AnglesCheck->isChecked(), anAngles.inout(),
-                                                  BasePointCheck->isChecked(), aBasePoint, retVal);
+                                                  AnglesGrp->isChecked(), anAngles.inout(),
+                                                  BasePointGrp->isChecked(), aBasePoint, retVal);
     else
       retVal = aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh,
                                                myPathShape, aNodeStart,
-                                               AnglesCheck->isChecked(), anAngles.inout(),
-                                               BasePointCheck->isChecked(), aBasePoint);
+                                               AnglesGrp->isChecked(), anAngles.inout(),
+                                               BasePointGrp->isChecked(), aBasePoint);
 
     //wc.stop();
     wc.suspend();
     switch (retVal) {
     case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("NO_ELEMENTS_SELECTED"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("NO_ELEMENTS_SELECTED"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("SELECTED_PATH_IS_NOT_EDGE"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("SELECTED_PATH_IS_NOT_EDGE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("BAD_SHAPE_TYPE"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("BAD_SHAPE_TYPE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("EXTR_BAD_STARTING_NODE"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("EXTR_BAD_STARTING_NODE"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_BAD_ANGLES_NUMBER:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("WRONG_ANGLES_NUMBER"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("WRONG_ANGLES_NUMBER"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_CANT_GET_TANGENT:
-      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-			     tr("SMESH_ERROR"),
-			     tr("CANT_GET_TANGENT"),
-			     tr("SMESH_BUT_OK"));
+      SUIT_MessageBox::warning(this,
+			       tr("SMESH_ERROR"),
+			       tr("CANT_GET_TANGENT"));
       return false; break;
     case SMESH::SMESH_MeshEditor::EXTR_OK:
       break;
@@ -693,16 +662,17 @@ void SMESHGUI_ExtrusionAlongPathDlg::ClickOnHelp()
   if (app) 
     app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
   else {
-		QString platform;
+    QString platform;
 #ifdef WIN32
-		platform = "winapplication";
+    platform = "winapplication";
 #else
-		platform = "application";
+    platform = "application";
 #endif
-    SUIT_MessageBox::warn1(0, QObject::tr("WRN_WARNING"),
-			   QObject::tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-			   arg(app->resourceMgr()->stringValue("ExternalBrowser", platform)).arg(myHelpFileName),
-			   QObject::tr("BUT_OK"));
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
   }
 }
 
@@ -753,7 +723,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onTextChange (const QString& theNewText)
       aList.Append(myMeshActor->getIO());
       mySelectionMgr->setSelectedObjects(aList, false);
 
-      QStringList aListId = QStringList::split(" ", theNewText, false);
+      QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
       bool bOk;
       const Handle(SALOME_InteractiveObject)& anIO = myMeshActor->getIO();
       TColStd_MapOfInteger newIndices;
@@ -926,14 +896,14 @@ void SMESHGUI_ExtrusionAlongPathDlg::SelectionIntoArgument()
     QString aString;
     int aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, aPathActor->getIO(), aString);
     if (aNbUnits == 1)
-      StartPointLineEdit->setText(aString.stripWhiteSpace());
+      StartPointLineEdit->setText(aString.trimmed());
 
   } else if (myEditCurrentArgument == XSpin) {
     // we are now selecting base point
     // reset is not performed here!
 
     // return if is not enabled
-    if (!BasePointGrp->isEnabled())
+    if (!BasePointGrp->isChecked())
       return;
 
     // try to get shape from selection
@@ -1072,7 +1042,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
     SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter(GROUP);
     SMESH_NumberFilter* aVertexFilter      = new SMESH_NumberFilter ("GEOM", TopAbs_SHAPE,
                                                                      -1, TopAbs_VERTEX);
-    QPtrList<SUIT_SelectionFilter> aListOfFilters;
+    QList<SUIT_SelectionFilter*> aListOfFilters;
     if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
     if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
     if (aVertexFilter)        aListOfFilters.append(aVertexFilter);
@@ -1094,8 +1064,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QToolButton* button
 //=================================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::DeactivateActiveDialog()
 {
-  if (GroupConstructors->isEnabled()) {
-    GroupConstructors->setEnabled(false);
+  if (ConstructorsBox->isEnabled()) {
+    ConstructorsBox->setEnabled(false);
     GroupArguments->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySMESHGUI->ResetState();
@@ -1111,7 +1081,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::ActivateThisDialog()
 {
   // Emit a signal to deactivate the active dialog
   mySMESHGUI->EmitSignalDeactivateDialog();
-  GroupConstructors->setEnabled(true);
+  ConstructorsBox->setEnabled(true);
   GroupArguments->setEnabled(true);
   GroupButtons->setEnabled(true);
 
@@ -1127,7 +1097,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::enterEvent (QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!ConstructorsBox->isEnabled())
     ActivateThisDialog();
 }
 
@@ -1152,27 +1122,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onSelectMesh()
 //=================================================================================
 int SMESHGUI_ExtrusionAlongPathDlg::GetConstructorId()
 {
-  if (GroupConstructors != NULL && GroupConstructors->selected() != NULL)
-    return GroupConstructors->id(GroupConstructors->selected());
-  return -1;
-}
-
-//=======================================================================
-// function : onAnglesCheck()
-// purpose  : called when "Use Angles" check box is switched
-//=======================================================================
-void SMESHGUI_ExtrusionAlongPathDlg::onAnglesCheck()
-{
-  AnglesGrp->setEnabled(AnglesCheck->isChecked());
-}
-
-//=======================================================================
-// function : onBasePointCheck()
-// purpose  : called when "Use Base Point" check box is switched
-//=======================================================================
-void SMESHGUI_ExtrusionAlongPathDlg::onBasePointCheck()
-{
-  BasePointGrp->setEnabled(BasePointCheck->isChecked());
+  return GroupConstructors->checkedId();
 }
 
 //=======================================================================
@@ -1181,7 +1131,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onBasePointCheck()
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 {
-  AnglesList->insertItem(QString::number(AngleSpin->GetValue()));
+  AnglesList->addItem(QString::number(AngleSpin->GetValue()));
 }
 
 //=======================================================================
@@ -1190,14 +1140,9 @@ void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleRemoved()
 {
-  QList<QListBoxItem> aList;
-  aList.setAutoDelete(false);
-  for (int i = 0; i < AnglesList->count(); i++)
-    if (AnglesList->isSelected(i))
-      aList.append(AnglesList->item(i));
-
-  for (int i = 0; i < aList.count(); i++)
-    delete aList.at(i);
+  QList<QListWidgetItem*> aList = AnglesList->selectedItems();
+  QListWidgetItem* anItem;
+  foreach(anItem, aList) delete anItem;
 }
 
 //=================================================================================
@@ -1209,7 +1154,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::eventFilter (QObject* object, QEvent* event
   if (event->type() == QEvent::KeyPress) {
     QKeyEvent* ke = (QKeyEvent*)event;
     if (object == AnglesList) {
-      if (ke->key() == Key_Delete)
+      if (ke->key() == Qt::Key_Delete)
 	OnAngleRemoved();
     }
   }
@@ -1240,9 +1185,8 @@ void SMESHGUI_ExtrusionAlongPathDlg::keyPressEvent( QKeyEvent* e )
   if ( e->isAccepted() )
     return;
 
-  if ( e->key() == Key_F1 )
-    {
-      e->accept();
-      ClickOnHelp();
-    }
+  if ( e->key() == Qt::Key_F1 ) {
+    e->accept();
+    ClickOnHelp();
+  }
 }
