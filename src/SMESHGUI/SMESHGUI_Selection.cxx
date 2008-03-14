@@ -119,7 +119,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
 SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
 {
   if( ind >= 0 && ind < count() )
-    return myActors.at( ind );
+    return myActors.isEmpty() ? 0 : myActors.at( ind );
   else
     return 0;
 }
