@@ -307,9 +307,6 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myButtonGrpLayout->setAlignment( Qt::AlignTop );
   myButtonGrpLayout->setSpacing( SPACING_SIZE ); myButtonGrpLayout->setMargin( MARGIN_SIZE );
 
-  myOkBtn = new QPushButton( tr( "SMESH_BUT_OK" ), myButtonGrp, "myOkBtn" );
-  myOkBtn->setAutoDefault( TRUE ); myOkBtn->setDefault( TRUE );
-  myButtonGrpLayout->addWidget( myOkBtn );
   if ( mySelectionMgr ) {
     myApplyBtn = new QPushButton( tr( "SMESH_BUT_APPLY" ), myButtonGrp, "myApplyBtn" );
     myApplyBtn->setAutoDefault( TRUE );
@@ -317,6 +314,9 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   }
   myButtonGrpLayout->addStretch();
   myCancelBtn = new QPushButton( tr( "SMESH_BUT_CANCEL" ), myButtonGrp, "myCancelBtn" );
+  myOkBtn = new QPushButton( tr( "SMESH_BUT_APPLY_AND_CLOSE" ), myButtonGrp, "myOkBtn" );
+  myOkBtn->setAutoDefault( TRUE ); myOkBtn->setDefault( TRUE );
+  myButtonGrpLayout->addWidget( myOkBtn );
   if ( mySelectionMgr )
     myCancelBtn->setText( tr( "SMESH_BUT_CLOSE" ) );
   myCancelBtn->setAutoDefault( TRUE );

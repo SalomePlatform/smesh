@@ -300,7 +300,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   GroupButtonsLayout->setAlignment(Qt::AlignTop);
   GroupButtonsLayout->setSpacing(6); GroupButtonsLayout->setMargin(11);
 
-  OkButton = new QPushButton(tr("SMESH_BUT_OK"), GroupButtons);
+  OkButton = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"), GroupButtons);
   OkButton->setAutoDefault(true);
   OkButton->setDefault(true);
 
@@ -314,9 +314,9 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   HelpButton->setAutoDefault(true);
 
   // layouting
-  GroupButtonsLayout->addWidget(OkButton,    0, 0);
-  GroupButtonsLayout->addWidget(ApplyButton, 0, 1);
-  GroupButtonsLayout->addWidget(CloseButton, 0, 3);
+  GroupButtonsLayout->addWidget(OkButton,    0, 2);
+  GroupButtonsLayout->addWidget(ApplyButton, 0, 0);
+  GroupButtonsLayout->addWidget(CloseButton, 0, 1);
   GroupButtonsLayout->addWidget(HelpButton, 0, 4);
   GroupButtonsLayout->addColSpacing(2, 10);
   GroupButtonsLayout->setColStretch(2, 10);

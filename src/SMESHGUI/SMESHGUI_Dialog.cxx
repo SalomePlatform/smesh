@@ -43,6 +43,7 @@ SMESHGUI_Dialog::SMESHGUI_Dialog( QWidget* parent, const bool modal,
   typeName( pr + MESH ) = tr( "DLG_MESH" );
   typeName( pr + HYPOTHESIS ) = tr( "DLG_HYPO" );
   typeName( pr + ALGORITHM ) = tr( "DLG_ALGO" );
+  setButtonText(1, "A&pply and Close"); //rename OK to Apply and Close
   if ( flags & Close )
     setButtonPosition( Right, Close );
 }

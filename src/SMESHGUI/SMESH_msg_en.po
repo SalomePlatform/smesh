@@ -72,6 +72,10 @@ msgstr "&Close"
 msgid "SMESH_BUT_OK"
 msgstr "&Ok"
 
+#Ok
+msgid "SMESH_BUT_APPLY_AND_CLOSE"
+msgstr "A&pply and Close"
+
 #Yes
 msgid "SMESH_BUT_YES"
 msgstr "&Yes"

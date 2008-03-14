@@ -233,19 +233,19 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
   QFrame* aFrame = new QFrame (theParent);
   aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton (tr("SMESH_BUT_OK"   ), aFrame);
   myApplyBtn  = new QPushButton (tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton (tr("SMESH_BUT_CLOSE"), aFrame);
+  myOkBtn     = new QPushButton (tr("SMESH_BUT_APPLY_AND_CLOSE"), aFrame);
   myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
 
   QSpacerItem* aSpacer = new QSpacerItem (0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
   QHBoxLayout* aLay = new QHBoxLayout (aFrame, MARGIN, SPACING);
 
-  aLay->addWidget(myOkBtn);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myOkBtn);
+  aLay->addItem(aSpacer);
   aLay->addWidget(myHelpBtn);
 
   return aFrame;

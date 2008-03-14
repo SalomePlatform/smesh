@@ -335,24 +335,24 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   QHBoxLayout* aBtnLayout = new QHBoxLayout(aButtons, 11, 6);
   aBtnLayout->setAutoAdd(false);
 
-  QPushButton* aOKBtn = new QPushButton(aButtons, "ok");
-  aOKBtn->setText(tr("SMESH_BUT_OK"));
-  aOKBtn->setAutoDefault(true);
-  aOKBtn->setDefault(true);
   QPushButton* aApplyBtn = new QPushButton(aButtons, "apply");
   aApplyBtn->setText(tr("SMESH_BUT_APPLY"));
   aApplyBtn->setAutoDefault(true);
   QPushButton* aCloseBtn = new QPushButton(aButtons, "close");
   aCloseBtn->setText(tr("SMESH_BUT_CLOSE"));
   aCloseBtn->setAutoDefault(true);
+  QPushButton* aOKBtn = new QPushButton(aButtons, "ok");
+  aOKBtn->setText(tr("SMESH_BUT_APPLY_AND_CLOSE"));
+  aOKBtn->setAutoDefault(true);
+  aOKBtn->setDefault(true);
   QPushButton* aHelpBtn = new QPushButton(aButtons, "help");
   aHelpBtn->setText(tr("SMESH_BUT_HELP"));
   aHelpBtn->setAutoDefault(true);
 
-  aBtnLayout->addWidget(aOKBtn);
   aBtnLayout->addWidget(aApplyBtn);
-  aBtnLayout->addStretch();
   aBtnLayout->addWidget(aCloseBtn);
+  aBtnLayout->addWidget(aOKBtn);
+  aBtnLayout->addStretch();
   aBtnLayout->addWidget(aHelpBtn);
 
   /***************************************************************/

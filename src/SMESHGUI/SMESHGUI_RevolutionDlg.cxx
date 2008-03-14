@@ -149,18 +149,18 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule, const char*
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
+  GroupButtonsLayout->addWidget(buttonCancel, 0, 1);
   buttonApply = new QPushButton(GroupButtons, "buttonApply");
   buttonApply->setText(tr("SMESH_BUT_APPLY" ));
   buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
+  GroupButtonsLayout->addWidget(buttonApply, 0, 0);
   QSpacerItem* spacer_9 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer_9, 0, 2);
+  GroupButtonsLayout->addItem(spacer_9, 0, 3);
   buttonOk = new QPushButton(GroupButtons, "buttonOk");
-  buttonOk->setText(tr("SMESH_BUT_OK" ));
+  buttonOk->setText(tr("SMESH_BUT_APPLY_AND_CLOSE" ));
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
+  GroupButtonsLayout->addWidget(buttonOk, 0, 2);
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupButtons, 2, 0);
 
   /***************************************************************/

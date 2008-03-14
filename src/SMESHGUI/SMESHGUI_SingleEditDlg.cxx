@@ -157,7 +157,7 @@ QFrame* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
   QFrame* aFrame = new QFrame(theParent);
   aFrame->setFrameStyle(QFrame::Box | QFrame::Sunken);
 
-  myOkBtn     = new QPushButton(tr("SMESH_BUT_OK"   ), aFrame);
+  myOkBtn     = new QPushButton(tr("SMESH_BUT_APPLY_AND_CLOSE"   ), aFrame);
   myApplyBtn  = new QPushButton(tr("SMESH_BUT_APPLY"), aFrame);
   myCloseBtn  = new QPushButton(tr("SMESH_BUT_CLOSE"), aFrame);
   myHelpBtn   = new QPushButton (tr("SMESH_BUT_HELP"), aFrame);
@@ -166,10 +166,10 @@ QFrame* SMESHGUI_SingleEditDlg::createButtonFrame (QWidget* theParent)
 
   QHBoxLayout* aLay = new QHBoxLayout(aFrame, MARGIN, SPACING);
 
-  aLay->addWidget(myOkBtn);
   aLay->addWidget(myApplyBtn);
-  aLay->addItem(aSpacer);
   aLay->addWidget(myCloseBtn);
+  aLay->addWidget(myOkBtn);
+  aLay->addItem(aSpacer);
   aLay->addWidget(myHelpBtn);
 
   return aFrame;
