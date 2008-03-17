@@ -81,7 +81,7 @@ void SMESHGUI_Operation::startOperation()
     disconnect( dlg(), SIGNAL( dlgClose() ), this, SLOT( onCancel() ) );
     disconnect( dlg(), SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
 
-    setButtonText(1, "&Ok"); //rename Apply and Close to OK
+    dlg()->setButtonText(1, "&Ok"); //rename Apply and Close to OK
     
     if( dlg()->testButtonFlags( QtxDialog::OK ) )
       connect( dlg(), SIGNAL( dlgOk() ), this, SLOT( onOk() ) );
