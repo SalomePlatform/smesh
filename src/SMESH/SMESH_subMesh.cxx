@@ -625,16 +625,16 @@ SMESH_Hypothesis::Hypothesis_Status
     if ( ! CanAddHypothesis( anHyp )) // check dimension
       return SMESH_Hypothesis::HYP_BAD_DIM;
 
-    if(anHyp->GetDim() == 3 && !_father->HasShapeToMesh()
-       && event == ADD_ALGO) {
-      //Only NETGEN_3D and GHS3D_3D can be assigned to the Mesh w/o geometryy
-      bool isNetgen3D = (strcmp( "NETGEN_3D", anHyp->GetName()) == 0);
-      bool  isGhs3d = (strcmp( "GHS3D_3D", anHyp->GetName()) == 0);
-      if( !isNetgen3D && !isGhs3d)
-        return SMESH_Hypothesis::HYP_BAD_DIM;
-    }
-      
-
+    // EAP: __NOT__ Only NETGEN_3D and GHS3D_3D can be assigned to the Mesh w/o geometryy,
+    // but any algo which !NeedShape()
+//     if(anHyp->GetDim() == 3 && !_father->HasShapeToMesh()
+//        && event == ADD_ALGO) {
+//       //Only NETGEN_3D and GHS3D_3D can be assigned to the Mesh w/o geometryy
+//       bool isNetgen3D = (strcmp( "NETGEN_3D", anHyp->GetName()) == 0);
+//       bool  isGhs3d = (strcmp( "GHS3D_3D", anHyp->GetName()) == 0);
+//       if( !isNetgen3D && !isGhs3d)
+//         return SMESH_Hypothesis::HYP_BAD_DIM;
+//     }
     
     if ( /*!anHyp->IsAuxiliary() &&*/ GetSimilarAttached( _subShape, anHyp ) )
       return SMESH_Hypothesis::HYP_ALREADY_EXIST;
@@ -1223,7 +1223,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     _computeState = READY_TO_COMPUTE;
     SMESHDS_SubMesh* smDS = GetSubMeshDS();
     if ( smDS && smDS->NbNodes() ) {
-      _computeState = COMPUTE_OK;
+      if ( event == CLEAN ) // this occures for algo which !NeedDescretBoundary() (PAL19272)
+        cleanSubMesh( this );
+      else
+        _computeState = COMPUTE_OK;
     }
     else if ( event == COMPUTE && !_alwaysComputed ) {
       const TopoDS_Vertex & V = TopoDS::Vertex( _subShape );
