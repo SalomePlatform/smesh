@@ -182,7 +182,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
   GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2, 1, 6);
-  GroupArgumentsLayout->addWidget(CheckBoxMesh,         0, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 8);
   GroupArgumentsLayout->addWidget(TextLabelVector,      2, 0);
   GroupArgumentsLayout->addWidget(TextLabelDx,          2, 2);
   GroupArgumentsLayout->addWidget(SpinBox_Dx,           2, 3);
