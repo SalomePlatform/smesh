@@ -102,8 +102,9 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       {
         MESSAGE("Loading Resources " << aResName.toLatin1().data());
         SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
-        resMgr->loadTranslator("resources",aResName+"_msg_en.qm");
-	resMgr->loadTranslator("resources",aResName+"_images.qm");
+	QString lang = resMgr->stringValue( resMgr->langSection(), "language", "en" );
+        resMgr->loadTranslator( "resources", QString( "%1_msg_%2.qm" ).arg( aResName, lang ) );
+        resMgr->loadTranslator( "resources", QString( "%1_images.qm" ).arg( aResName, lang ) );
       }
     }
   }
