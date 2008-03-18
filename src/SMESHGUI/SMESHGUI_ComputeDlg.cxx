@@ -457,8 +457,8 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
   : QGroupBox( tr("SMESH_MESHINFO_TITLE"), theParent ), myFull( full )
 {
   QGridLayout* l = new QGridLayout(this);
-  l->setMargin( 0 );
-  l->setSpacing( 0 );
+  l->setMargin( MARGIN );
+  l->setSpacing( SPACING );
 
   QFont italic = font(); italic.setItalic(true);
   QFont bold   = font(); bold.setBold(true);
@@ -819,7 +819,6 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   aRBut->setIcon(iconCompute);
   aRBut->setChecked(true);
   aPixGrpLayout->addWidget(aRBut);
-  aPixGrpLayout->addStretch();
 
   // Mesh name
 
