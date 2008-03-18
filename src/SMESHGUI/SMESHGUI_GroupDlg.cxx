@@ -316,6 +316,8 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
 
   QLabel* aColorLab = new QLabel(tr("SMESH_CHECK_COLOR"), aColorBox );
   myColorBtn = new QtxColorButton(aColorBox);
+  myColorBtn->setSizePolicy( QSizePolicy::MinimumExpanding, 
+			     myColorBtn->sizePolicy().verticalPolicy() );
 
   aColorBoxLayout->addWidget(aColorLab);
   aColorBoxLayout->addWidget(myColorBtn);
