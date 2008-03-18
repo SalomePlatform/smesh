@@ -400,7 +400,7 @@ void SMESHGUI_MultiEditDlg::Init()
   if (myEntityTypeGrp)
     connect(myEntityTypeGrp, SIGNAL(buttonClicked(int)), SLOT(on3d2dChanged(int)));
 
-  connect(myListBox, SIGNAL(selectionChanged()), SLOT(onListSelectionChanged()));
+  connect(myListBox, SIGNAL(itemSelectionChanged()), SLOT(onListSelectionChanged()));
 
   onSelectionDone();
 

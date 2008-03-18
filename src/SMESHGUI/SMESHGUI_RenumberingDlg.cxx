@@ -54,6 +54,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -99,6 +100,7 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
     "renumbering_nodes_and_elements_page.html#renumbering_nodes_anchor" :
     "renumbering_nodes_and_elements_page.html#renumbering_elements_anchor";
 
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -108,7 +110,7 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
   Constructor1->setChecked(true);
 
   GroupConstructorsLayout->addWidget(Constructor1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(Constructor1, 0);
 
   /***************************************************************/
   GroupMesh = new QGroupBox(tr("SMESH_RENUMBERING"), this);

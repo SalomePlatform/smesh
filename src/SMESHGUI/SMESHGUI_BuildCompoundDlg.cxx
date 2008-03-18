@@ -56,6 +56,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // STL includes
 #include <set>
@@ -88,6 +89,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(tr("COMPOUND"), this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -96,7 +98,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   Constructor1->setIcon(image0);
   Constructor1->setChecked(true);
   GroupConstructorsLayout->addWidget(Constructor1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(Constructor1, 0);
 
   /***************************************************************/
   GroupName = new QGroupBox(tr("RESULT_NAME"), this);

@@ -67,6 +67,7 @@
 #include <QLabel>
 #include <QRadioButton>
 #include <QCheckBox>
+#include <QButtonGroup>
 
 // VTK includes
 #include <vtkProperty.h>
@@ -114,6 +115,7 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   // constructor
 
   QGroupBox* aPixGrp = new QGroupBox(tr("MESH_PASS_THROUGH_POINT"), aFrame);
+  QButtonGroup* aBtnGrp = new QButtonGroup(this);
   QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
   aPixGrpLayout->setMargin(MARGIN);
   aPixGrpLayout->setSpacing(SPACING);
@@ -122,6 +124,7 @@ QWidget* SMESHGUI_MakeNodeAtPointDlg::createMainFrame (QWidget* theParent)
   aRBut->setIcon(iconMoveNode);
   aRBut->setChecked(true);
   aPixGrpLayout->addWidget(aRBut);
+  aBtnGrp->addButton(aRBut, 0);
 
   // coordinates
 

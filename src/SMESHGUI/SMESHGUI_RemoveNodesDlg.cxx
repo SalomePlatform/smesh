@@ -62,6 +62,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -96,6 +97,7 @@ SMESHGUI_RemoveNodesDlg
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(tr("SMESH_NODES"), this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -105,7 +107,7 @@ SMESHGUI_RemoveNodesDlg
   Constructor1->setChecked(true);
 
   GroupConstructorsLayout->addWidget(Constructor1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(Constructor1, 0);
 
   /***************************************************************/
   GroupC1 = new QGroupBox(tr("SMESH_REMOVE"), this);

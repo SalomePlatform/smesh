@@ -104,6 +104,7 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(tr("SMESH_ROTATION"), this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -112,7 +113,7 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   RadioButton1->setIcon(image0);
 
   GroupConstructorsLayout->addWidget(RadioButton1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(RadioButton1, 0);
 
   /***************************************************************/
   GroupArguments = new QGroupBox(tr("SMESH_ARGUMENTS"), this);
@@ -180,7 +181,7 @@ SMESHGUI_RotationDlg::SMESHGUI_RotationDlg( SMESHGUI* theModule )
   SpinBox_Angle = new SMESHGUI_SpinBox(GroupArguments);
 
   // action switch
-  ActionBox = new QGroupBox(tr("ACTION"), GroupArguments);
+  ActionBox = new QGroupBox(GroupArguments);
   ActionGroup = new QButtonGroup(GroupArguments);
   QVBoxLayout* ActionBoxLayout = new QVBoxLayout(ActionBox);
   ActionBoxLayout->setSpacing(SPACING);

@@ -70,9 +70,10 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGridLayout>
-#include <qvariant.h>
+#include <QVariant>
 #include <QCheckBox>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 #define SPACING 6
 #define MARGIN  11
@@ -281,6 +282,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(buttonGrTitle, this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -290,7 +292,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI* theModule,
   Constructor1->setChecked(true);
 
   GroupConstructorsLayout->addWidget(Constructor1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton( Constructor1, 0 );
 
   /***************************************************************/
   GroupC1 = new QGroupBox(grBoxTitle, this);

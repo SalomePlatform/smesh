@@ -78,6 +78,7 @@
 #include <QCheckBox>
 #include <QTableWidget>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // STL includes
 #include <vector>
@@ -402,6 +403,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(constructorGrTitle, this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* aGroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   aGroupConstructorsLayout->setSpacing(SPACING);
   aGroupConstructorsLayout->setMargin(MARGIN);
@@ -409,7 +411,7 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   myRadioButton1 = new QRadioButton(GroupConstructors);
   myRadioButton1->setIcon(image0);
   aGroupConstructorsLayout->addWidget(myRadioButton1);
-  aGroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(myRadioButton1, 0);
 
   /***************************************************************/
   GroupArguments = new QGroupBox(argumentsGrTitle, this);
@@ -1058,7 +1060,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
       // clear table
       for ( int row = 0; row < myTable->rowCount(); row++ )
         for ( int col = 0; col < myTable->columnCount(); col++ )
-	  myTable->item(row, col)->setText("");
+	  if ( QTableWidgetItem* aTWI = myTable->item(row, col) ) aTWI->setText("");
       
       myTable->setEnabled( false );
     }

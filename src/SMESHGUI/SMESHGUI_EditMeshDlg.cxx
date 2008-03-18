@@ -86,6 +86,7 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 #define SPACING 6
 #define MARGIN  11
@@ -329,6 +330,7 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
 				    tr("SMESH_MERGE_NODES"), 
 				    this);
 
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -337,7 +339,7 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   RadioButton->setIcon(myAction == 1 ? IconMergeElems : IconMergeNodes);
   RadioButton->setChecked(true);
   GroupConstructorsLayout->addWidget(RadioButton);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(RadioButton, 0);
 
   /***************************************************************/
   // Controls for mesh defining

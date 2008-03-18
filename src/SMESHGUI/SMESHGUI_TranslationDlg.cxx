@@ -161,7 +161,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   SpinBox2_3 = new SMESHGUI_SpinBox(GroupArguments);
 
   // switch of action type
-  ActionBox = new QGroupBox(tr("ACTION"), GroupArguments);
+  ActionBox = new QGroupBox(GroupArguments);
   ActionGroup = new QButtonGroup(GroupArguments);
   QVBoxLayout* ActionBoxLayout = new QVBoxLayout(ActionBox);
   ActionBoxLayout->addSpacing(SPACING);

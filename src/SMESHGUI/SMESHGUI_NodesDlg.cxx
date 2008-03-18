@@ -76,6 +76,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -226,7 +227,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
-  setWindowTitle( "MESH_NODE_TITLE" );
+  setWindowTitle( tr("MESH_NODE_TITLE") );
   setSizeGripEnabled( true );
   
   mySimulation = new SMESH::TNodeSimulation( SMESH::GetViewWindow( mySMESHGUI ) );
@@ -240,6 +241,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
 
   /***************************************************************/
   GroupConstructors = new QGroupBox( tr( "MESH_NODE" ), this );
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout( GroupConstructors );
   GroupConstructorsLayout->setSpacing( SPACING );
   GroupConstructorsLayout->setMargin( MARGIN );
@@ -247,9 +249,9 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   Constructor1 = new QRadioButton( GroupConstructors );
   Constructor1->setIcon( image0 );
   Constructor1->setChecked( true );
-
+  
   GroupConstructorsLayout->addWidget( Constructor1 );
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton( Constructor1, 0 );
 
   /***************************************************************/
   GroupCoordinates = new QGroupBox( tr( "SMESH_COORDINATES" ), this );

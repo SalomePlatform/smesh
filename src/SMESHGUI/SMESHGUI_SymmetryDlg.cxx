@@ -188,7 +188,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   GroupMirrorLayout->addWidget(SpinBox_DZ,         1, 7);
 
   // switch of action type
-  ActionBox = new QGroupBox(tr("ACTION"), GroupArguments);
+  ActionBox = new QGroupBox(GroupArguments);
   ActionGroup = new QButtonGroup(GroupArguments);
   QVBoxLayout* ActionBoxLayout = new QVBoxLayout(ActionBox);
   ActionBoxLayout->addSpacing(SPACING);

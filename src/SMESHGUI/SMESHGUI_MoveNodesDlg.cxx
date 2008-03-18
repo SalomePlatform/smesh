@@ -70,6 +70,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -158,6 +159,7 @@ QWidget* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
 
   //------------------------------------------------------------
   QGroupBox* aPixGrp = new QGroupBox(tr("MESH_NODE"), aFrame);
+  QButtonGroup* aBtnGrp = new QButtonGroup(this);
   QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
   aPixGrpLayout->setSpacing(SPACING);
   aPixGrpLayout->setMargin(MARGIN);
@@ -167,7 +169,7 @@ QWidget* SMESHGUI_MoveNodesDlg::createMainFrame (QWidget* theParent)
   aRBut->setChecked(true);
 
   aPixGrpLayout->addWidget(aRBut);
-  aPixGrpLayout->addStretch();
+  aBtnGrp->addButton(aRBut, 0);
 
   //------------------------------------------------------------
   QGroupBox* anIdGrp = new QGroupBox(tr("SMESH_MOVE"), aFrame);

@@ -77,6 +77,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QButtonGroup>
 
 // VTK includes
 #include <vtkProperty.h>
@@ -812,6 +813,7 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   // constructor
 
   QGroupBox* aPixGrp = new QGroupBox(tr("CONSTRUCTOR"), aFrame);
+  QButtonGroup* aBtnGrp = new QButtonGroup(this);
   QHBoxLayout* aPixGrpLayout = new QHBoxLayout(aPixGrp);
   aPixGrpLayout->setMargin(MARGIN); aPixGrpLayout->setSpacing(SPACING);
 
@@ -819,6 +821,7 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent)
   aRBut->setIcon(iconCompute);
   aRBut->setChecked(true);
   aPixGrpLayout->addWidget(aRBut);
+  aBtnGrp->addButton(aRBut, 0);
 
   // Mesh name
 
