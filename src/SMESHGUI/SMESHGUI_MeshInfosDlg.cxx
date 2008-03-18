@@ -87,6 +87,7 @@ SMESHGUI_MeshInfosDlg::SMESHGUI_MeshInfosDlg(SMESHGUI* theModule):
   QPixmap image0(SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH",tr("ICON_SELECT")));
   mySelectBtn = new QPushButton(this);
   mySelectBtn->setIcon(image0);
+  mySelectBtn->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 
   mySelectLab = new QLabel(this);
   mySelectLab->setAlignment(Qt::AlignCenter);
