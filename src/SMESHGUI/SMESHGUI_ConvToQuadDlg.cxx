@@ -47,6 +47,7 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
   // Create top controls  
 
   // mesh
+  setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
   createObject( tr( "MESH" ), mainFrame(), 0 );
 
   //Create check box
