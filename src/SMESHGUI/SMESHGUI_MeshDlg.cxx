@@ -353,6 +353,7 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
 {
   // Create top controls
 
+  setObjectPixmap( "SMESH", tr( "ICON_SELECT" ) );
   // name 
   createObject( tr( "NAME" ), mainFrame(), Obj );
   setNameIndication( Obj, OneName );
@@ -379,6 +380,8 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   myHypoSetButton = new QToolButton( mainFrame() );
   myHypoSetButton->setText( tr( "HYPOTHESES_SETS" ) );
   myHypoSetButton->setEnabled( false );
+  myHypoSetButton->setSizePolicy( QSizePolicy::MinimumExpanding, 
+				  myHypoSetButton->sizePolicy().verticalPolicy() );
   
   // Fill layout
   QGridLayout* aLay = new QGridLayout( mainFrame() );
