@@ -204,7 +204,7 @@ public:
     if (type == SMDSAbs_Face)
       vTool.GetAllExistingFaces( myElems );
     else
-      vTool.GetAllExistingFaces( myElems );
+      vTool.GetAllExistingEdges( myElems );
   }
   /// Return true if and only if there are other object in this iterator
   virtual bool more() { return myIndex < myElems.size(); }
