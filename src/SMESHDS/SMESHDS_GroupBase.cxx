@@ -169,21 +169,12 @@ void SMESHDS_GroupBase::SetType(SMDSAbs_ElementType theType)
 
 void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
 {
-  cout << "theColorGroup = " << theColorGroup << endl;
-
   int aRed = ( theColorGroup/1000000 );
   int aGreen = ( theColorGroup -aRed*1000000)/1000;
   int aBlue = ( theColorGroup - aRed*1000000 - aGreen*1000 );
-  cout << "aRed = " << aRed << endl;
-  cout << "aGreen = " << aGreen << endl;
-  cout << "aBlue = " << aBlue << endl;
   double aR = aRed/255.0;
   double aG = aGreen/255.0;
   double aB = aBlue/255.0;
-  cout << "aR = " << aR << endl;
-  cout << "aG = " << aG << endl;
-  cout << "aB = " << aB << endl;
-
   Quantity_Color aColor( aR, aG, aB, Quantity_TOC_RGB );
   SetColor( aColor );
 }
@@ -202,9 +193,6 @@ int SMESHDS_GroupBase::GetColorGroup() const
   int aR = aRed*255;
   int aG = aGreen*255;
   int aB = aBlue*255;
-  cout << "aRed = " << aR << endl;
-  cout << "aGreen = " << aG << endl;
-  cout << "aBlue = " << aB << endl;
   int aRet = (int)(aR*1000000 + aG*1000 + aB);
 
   return aRet;
