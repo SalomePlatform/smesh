@@ -130,32 +130,66 @@ bool StdMeshers_Hexa_3D::CheckHypothesis
 }
 
 //=======================================================================
+//function : isCloser
+//purpose  : 
+//=======================================================================
+
+inline bool isCloser(const int i, const int j, const int nbhoriz,
+                     const FaceQuadStruct* quad, const gp_Pnt2d uv,
+                     double & minDist)
+{
+  int ij = j * nbhoriz + i;
+  gp_Pnt2d uv2( quad->uv_grid[ij].u, quad->uv_grid[ij].v );
+  double dist = uv.SquareDistance( uv2 );
+  if ( dist < minDist ) {
+    minDist = dist;
+    return true;
+  }
+  return false;
+}
+
+//=======================================================================
 //function : findIJ
 //purpose  : return i,j of the node
 //=======================================================================
 
 static bool findIJ (const SMDS_MeshNode* node, const FaceQuadStruct * quad, int& I, int& J)
 {
-  I = J = 0;
   const SMDS_FacePosition* fpos =
     static_cast<const SMDS_FacePosition*>(node->GetPosition().get());
   if ( ! fpos ) return false;
   gp_Pnt2d uv( fpos->GetUParameter(), fpos->GetVParameter() );
 
   double minDist = DBL_MAX;
-  int nbhoriz  = Min(quad->side[0]->NbPoints(), quad->side[2]->NbPoints());
-  int nbvertic = Min(quad->side[1]->NbPoints(), quad->side[3]->NbPoints());
-  for (int i = 1; i < nbhoriz - 1; i++) {
-    for (int j = 1; j < nbvertic - 1; j++) {
-      int ij = j * nbhoriz + i;
-      gp_Pnt2d uv2( quad->uv_grid[ij].u, quad->uv_grid[ij].v );
-      double dist = uv.SquareDistance( uv2 );
-      if ( dist < minDist ) {
-        minDist = dist;
-        I = i;
-        J = j;
-      }
-    }
+  const int nbhoriz  = quad->side[0]->NbPoints();
+  const int nbvertic = quad->side[1]->NbPoints();
+  I = nbhoriz/2; J = nbvertic/2;
+  int oldI, oldJ;
+  do {
+    oldI = I; oldJ = J;
+    while ( I + 2 < nbhoriz &&  isCloser( I + 1, J, nbhoriz, quad, uv, minDist ))
+      I += 1;
+    if ( I == oldI )
+      while ( I - 1 > 0     &&  isCloser( I - 1, J, nbhoriz, quad, uv, minDist ))
+        I -= 1;
+    if ( minDist < DBL_MIN )
+      break;
+
+    while ( J + 2 < nbvertic && isCloser( I, J + 1, nbhoriz, quad, uv, minDist ))
+      J += 1;
+    if ( J == oldJ )
+      while ( J - 1 > 0      && isCloser( I, J - 1, nbhoriz, quad, uv, minDist ))
+        J -= 1;
+    if ( minDist < DBL_MIN )
+      break;
+
+  } while ( I != oldI || J != oldJ );
+
+  if ( minDist > DBL_MIN ) {
+    for (int i = 1; i < nbhoriz - 1; i++)
+      for (int j = 1; j < nbvertic - 1; j++)
+        if ( isCloser( i, j, nbhoriz, quad, uv, minDist ))
+          I = i, J = j;
   }
   return true;
 }
