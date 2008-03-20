@@ -469,7 +469,7 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
   if( f )
   {
     f->setParent( mainFrame() );
-    qobject_cast<QVBoxLayout*>( layout() )->insertWidget( 1, f, 1 );
+    qobject_cast<QVBoxLayout*>( mainFrame()->layout() )->insertWidget( 1, f, 1 );
   }
 }
 
