@@ -183,10 +183,10 @@ using namespace std;
       filter.append(QObject::tr("DAT files (*.dat)"));
     }
     QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
-						"",
-						filter,
-						QObject::tr("Import mesh"),
-						true);
+						 QDir::currentDirPath(),
+						 filter,
+						 QObject::tr("Import mesh"),
+						 true);
     if(!filename.isEmpty()) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
