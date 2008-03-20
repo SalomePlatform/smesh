@@ -59,7 +59,7 @@ class SALOME_Actor;
 namespace SMESH
 {
   //----------------------------------------------------------------------------
-  typedef pair<int,string> TKeyOfVisualObj;
+  typedef std::pair<int,std::string> TKeyOfVisualObj;
   
 SMESHGUI_EXPORT
   TVisualObjPtr GetVisualObj( int, const char* );
