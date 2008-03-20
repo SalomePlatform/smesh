@@ -75,7 +75,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   SMESH_subMesh *GetFirstToCompute();
 
-  const map < int, SMESH_subMesh * >& DependsOn();
+  const std::map < int, SMESH_subMesh * >& DependsOn();
   //const map < int, SMESH_subMesh * >&Dependants();
   /*!
    * \brief Return iterator on the submeshes this one depends on
@@ -274,7 +274,7 @@ protected:
   SMESH_Mesh *          _father;
   int                   _Id;
 
-  map < int, SMESH_subMesh * >_mapDepend;
+  std::map < int, SMESH_subMesh * >_mapDepend;
   bool                  _dependenceAnalysed;
 
   int                   _algoState;

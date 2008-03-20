@@ -313,9 +313,9 @@ public:
    */
   SMESH_NodeSearcher* GetNodeSearcher();
 
-  int SimplifyFace (const vector<const SMDS_MeshNode *> faceNodes,
-                    vector<const SMDS_MeshNode *>&      poly_nodes,
-                    vector<int>&                        quantities) const;
+  int SimplifyFace (const std::vector<const SMDS_MeshNode *> faceNodes,
+                    std::vector<const SMDS_MeshNode *>&      poly_nodes,
+                    std::vector<int>&                        quantities) const;
   // Split face, defined by <faceNodes>, into several faces by repeating nodes.
   // Is used by MergeNodes()
 
@@ -478,8 +478,8 @@ public:
     * \param nReplaceMap - output map of corresponding nodes
     * \retval Sew_Error  - is a success or not
    */
-  static Sew_Error FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
-                                     set<const SMDS_MeshElement*>& theSide2,
+  static Sew_Error FindMatchingNodes(std::set<const SMDS_MeshElement*>& theSide1,
+                                     std::set<const SMDS_MeshElement*>& theSide2,
                                      const SMDS_MeshNode*          theFirstNode1,
                                      const SMDS_MeshNode*          theFirstNode2,
                                      const SMDS_MeshNode*          theSecondNode1,

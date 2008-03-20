@@ -244,8 +244,8 @@ protected:
   std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
-  map <int, SMESH_subMesh *> _mapSubMesh;
-  map <int, SMESH_Group *>   _mapGroup;
+  std::map <int, SMESH_subMesh*> _mapSubMesh;
+  std::map <int, SMESH_Group*>   _mapGroup;
   SMESH_Gen *                _gen;
 
   bool                       _isAutoColor;

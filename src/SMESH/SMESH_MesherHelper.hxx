@@ -36,9 +36,9 @@
 
 #include <map>
 
-typedef pair<const SMDS_MeshNode*, const SMDS_MeshNode*> NLink;
-typedef map<NLink, const SMDS_MeshNode*> NLinkNodeMap;
-typedef map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
+typedef std::pair<const SMDS_MeshNode*, const SMDS_MeshNode*> NLink;
+typedef std::map<NLink, const SMDS_MeshNode*> NLinkNodeMap;
+typedef std::map<NLink, const SMDS_MeshNode*>::iterator ItNLinkNode;
 
 /*!
  * \brief It helps meshers to add elements
