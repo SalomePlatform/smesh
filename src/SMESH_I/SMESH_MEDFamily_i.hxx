@@ -48,16 +48,16 @@ protected :
   int       _numberOfAttribute;
   int    *  _attributeIdentifier;
   int    *  _attributeValue;
-  string *  _attributeDescription;
+  std::string *  _attributeDescription;
   int       _numberOfGroup ;
-  string *  _groupName ;
+  std::string *  _groupName ;
   
 
 public :
   
   // Constructors and associated internal methods
   SMESH_MEDFamily_i(int identifier, SMESH_subMesh_i* sm,
-		    string name, string description, SALOME_MED::medEntityMesh entity );
+		    std::string name, std::string description, SALOME_MED::medEntityMesh entity );
   SMESH_MEDFamily_i(const SMESH_MEDFamily_i & f);
   
   // IDL Methods

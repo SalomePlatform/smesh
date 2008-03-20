@@ -55,22 +55,22 @@ protected:
   ::SMESH_Mesh_i * _mesh_i;
   SMESHDS_Mesh *_meshDS;
   
-  string _meshId;
+  std::string _meshId;
   bool _compte;
   bool _creeFamily;
   int _indexElts;
   int _indexEnts;
   int _famIdent;
   
-  map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
+  std::map < SALOME_MED::medGeometryElement, int >_mapIndToSeqElts;
   SALOME_MED::long_array_var _seq_elemId[MED_NBR_GEOMETRIE_MAILLE];
   
-  map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
-  map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
-  vector < SALOME_MED::medGeometryElement >
+  std::map < SALOME_MED::medEntityMesh, int >_mapNbTypes;
+  std::map < SALOME_MED::medEntityMesh, int >_mapIndToVectTypes;
+  std::vector < SALOME_MED::medGeometryElement >
   _TypesId[MED_NBR_GEOMETRIE_MAILLE];
   
-  vector < SALOME_MED::FAMILY_ptr > _families;
+  std::vector < SALOME_MED::FAMILY_ptr > _families;
 public:
   
   // Constructors and associated internal methods
