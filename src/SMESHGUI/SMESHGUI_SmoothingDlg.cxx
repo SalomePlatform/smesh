@@ -72,6 +72,7 @@
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QKeyEvent>
+#include <QButtonGroup>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -105,6 +106,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
 
   /***************************************************************/
   GroupConstructors = new QGroupBox(tr("SMESH_SMOOTHING"), this);
+  QButtonGroup* ButtonGroup = new QButtonGroup(this);
   QHBoxLayout* GroupConstructorsLayout = new QHBoxLayout(GroupConstructors);
   GroupConstructorsLayout->setSpacing(SPACING);
   GroupConstructorsLayout->setMargin(MARGIN);
@@ -113,7 +115,7 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   Constructor1->setIcon(image0);
   Constructor1->setChecked(true);
   GroupConstructorsLayout->addWidget(Constructor1);
-  GroupConstructorsLayout->addStretch();
+  ButtonGroup->addButton(Constructor1, 0);
 
   /***************************************************************/
   GroupArguments = new QGroupBox(tr("SMESH_ARGUMENTS"), this);
