@@ -56,8 +56,8 @@ private:
   int myNbPrisms  , myNbQuadPrisms  ;
   int myNbPolyhedrons;
 
-  vector<int*> myNb; // pointers to myNb... fields
-  vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
+  std::vector<int*> myNb; // pointers to myNb... fields
+  std::vector<int>  myShift; // shift to get an index in myNb by elem->NbNodes()
 };
 
 inline SMDS_MeshInfo::SMDS_MeshInfo():

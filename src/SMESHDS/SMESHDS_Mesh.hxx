@@ -438,9 +438,9 @@ private:
   void addNodeToSubmesh( const SMDS_MeshNode* aNode, int Index )
   {
     //Update or build submesh
-    map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
+    std::map<int,SMESHDS_SubMesh*>::iterator it = myShapeIndexToSubMesh.find( Index );
     if ( it == myShapeIndexToSubMesh.end() )
-      it = myShapeIndexToSubMesh.insert( make_pair(Index, new SMESHDS_SubMesh() )).first;
+      it = myShapeIndexToSubMesh.insert( std::make_pair(Index, new SMESHDS_SubMesh() )).first;
     it->second->AddNode( aNode ); // add aNode to submesh
     }
   
