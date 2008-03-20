@@ -90,7 +90,7 @@ public:
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
   StdMeshers_FaceSide(const TopoDS_Face& theFace,
-                      list<TopoDS_Edge>& theEdges,
+                      std::list<TopoDS_Edge>& theEdges,
                       SMESH_Mesh*        theMesh,
                       const bool         theIsForward,
                       const bool         theIgnoreMediumNodes);
@@ -130,13 +130,13 @@ public:
     *
     * Missing nodes are allowed only on internal vertices
    */
-  const vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
+  const std::vector<UVPtStruct>& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
   /*!
    * \brief Simulates detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
     * \param constValue - constant parameter value
    */
-  const vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
+  const std::vector<UVPtStruct>& SimulateUVPtStruct(int    nbSeg,
                                                bool   isXConst   = 0,
                                                double constValue = 0) const;
   /*!
@@ -194,15 +194,15 @@ public:
   
 
 protected:
-  vector<uvPtStruct>           myPoints, myFalsePoints;
-  vector<TopoDS_Edge>          myEdge;
-  vector<Handle(Geom2d_Curve)> myC2d;
-  vector<double>               myFirst, myLast;
-  vector<double>               myNormPar;
-  double                       myLength;
-  int                          myNbPonits, myNbSegments;
-  SMESH_Mesh*                  myMesh;
-  bool                         myMissingVertexNodes, myIgnoreMediumNodes;
+  std::vector<uvPtStruct>           myPoints, myFalsePoints;
+  std::vector<TopoDS_Edge>          myEdge;
+  std::vector<Handle(Geom2d_Curve)> myC2d;
+  std::vector<double>               myFirst, myLast;
+  std::vector<double>               myNormPar;
+  double                            myLength;
+  int                               myNbPonits, myNbSegments;
+  SMESH_Mesh*                       myMesh;
+  bool                              myMissingVertexNodes, myIgnoreMediumNodes;
 };
 
 

@@ -41,6 +41,8 @@
 #include <Standard_ErrorHandler.hxx>
 #endif
 
+using namespace std;
+
 Function::Function( const int conv )
 : myConv( conv )
 {

@@ -87,8 +87,8 @@ class StdMeshers_ProjectionUtils
                                  TopoDS_Vertex         VV1[2],
                                  const TopoDS_Face&    face2,
                                  TopoDS_Vertex         VV2[2],
-                                 list< TopoDS_Edge > & edges1,
-                                 list< TopoDS_Edge > & edges2);
+                                 std::list< TopoDS_Edge > & edges1,
+                                 std::list< TopoDS_Edge > & edges2);
 
   /*!
    * \brief Insert vertex association defined by a hypothesis into a map

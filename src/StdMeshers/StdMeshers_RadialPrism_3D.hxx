@@ -54,8 +54,8 @@ public:
 
 protected:
 
-  typedef vector<const SMDS_MeshNode* >            TNodeColumn;
-  typedef map< const SMDS_MeshNode*, TNodeColumn > TNode2ColumnMap;
+  typedef std::vector<const SMDS_MeshNode* >            TNodeColumn;
+  typedef std::map< const SMDS_MeshNode*, TNodeColumn > TNode2ColumnMap;
 
   TNodeColumn* makeNodeColumn( TNode2ColumnMap&     n2ColMap,
                                const SMDS_MeshNode* outNode,
@@ -68,7 +68,7 @@ protected:
   const StdMeshers_NumberOfLayers*    myNbLayerHypo;
   const StdMeshers_LayerDistribution* myDistributionHypo;
   SMESH_MesherHelper*                 myHelper;
-  vector< double >                    myLayerPositions;
+  std::vector< double >               myLayerPositions;
 };
 
 #endif
