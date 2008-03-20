@@ -92,10 +92,10 @@ SMESHGUI_RenumberingDlg::SMESHGUI_RenumberingDlg( SMESHGUI* theModule, const int
   SMESHGUI_RenumberingDlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  QGroupBox* GroupConstructors = new QGroupBox(unit == 0 ? 
-					       tr("SMESH_NODES") :
-					       tr("SMESH_ELEMENTS"), 
-					       this);
+  GroupConstructors = new QGroupBox(unit == 0 ? 
+				    tr("SMESH_NODES") :
+				    tr("SMESH_ELEMENTS"), 
+				    this);
   myHelpFileName = unit == 0 ? 
     "renumbering_nodes_and_elements_page.html#renumbering_nodes_anchor" :
     "renumbering_nodes_and_elements_page.html#renumbering_elements_anchor";
