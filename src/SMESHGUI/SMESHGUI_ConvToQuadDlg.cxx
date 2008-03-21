@@ -71,8 +71,8 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
 
   // Fill layout
   QGridLayout* aLay = new QGridLayout( mainFrame() );
-  aLay->setMargin( 0 );
-  aLay->setSpacing( SPACING );
+  aLay->setMargin( 5 );
+  aLay->setSpacing( 5 );
 
   aLay->addWidget( objectWg( 0,  Label ),   0, 0 );
   aLay->addWidget( objectWg( 0,  Btn ),     0, 1 );
