@@ -321,7 +321,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
       while(1) {
         if (mainObj->_is_nil())
           return false;
-        if (string(mainObj->GetEntry()) == string(mainGeom->GetEntry()))
+        if (std::string(mainObj->GetEntry()) == std::string(mainGeom->GetEntry()))
           return true;
         mainObj = op->GetMainShape(mainObj);
       }

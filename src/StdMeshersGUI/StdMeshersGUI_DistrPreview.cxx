@@ -252,7 +252,7 @@ void StdMeshersGUI_DistrPreview::update()
   }
 
   setAxisScale( myDensity->xAxis(), min_x, max_x );
-  setAxisScale( myDensity->yAxis(), min( 0.0, min_y ), max( 0.0, max_y ) );
+  setAxisScale( myDensity->yAxis(), std::min( 0.0, min_y ), std::max( 0.0, max_y ) );
   myDensity->setData( x, y, size );
   if( x )
     delete[] x;

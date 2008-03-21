@@ -239,7 +239,7 @@ namespace SMESH
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
     for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
       {
 	HypothesesSet* aSet = *hypoSet;
@@ -253,7 +253,7 @@ namespace SMESH
 
   HypothesesSet* GetHypothesesSet(const QString& theSetName)
   {
-    list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
     for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
       {
 	HypothesesSet* aSet = *hypoSet;

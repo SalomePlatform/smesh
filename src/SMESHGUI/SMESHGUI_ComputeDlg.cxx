@@ -182,7 +182,7 @@ namespace SMESH
     // -----------------------------------------------------------------------
     bool HasReadyActorsFor (int subShapeID, GEOM::GEOM_Object_var aMainShape )
     {
-      string mainEntry;
+      std::string mainEntry;
       if ( !aMainShape->_is_nil() )
         mainEntry = aMainShape->GetStudyEntry();
       return ( myMainEntry == mainEntry &&
@@ -192,7 +192,7 @@ namespace SMESH
     void Show( int subShapeID, GEOM::GEOM_Object_var aMainShape, bool only = false)
     {
       SVTK_ViewWindow* aViewWindow  = SMESH::GetViewWindow( SMESHGUI::GetSMESHGUI() );
-      string mainEntry;
+      std::string mainEntry;
       if ( !aMainShape->_is_nil() )
         mainEntry = aMainShape->GetStudyEntry();
       if ( myMainEntry != mainEntry || aViewWindow != myViewWindow ) { // remove actors
@@ -243,7 +243,7 @@ namespace SMESH
     TActorVec                  myActors;
     TActorVec                  myShownActors;
     TopTools_IndexedMapOfShape myIndexToShape;
-    string                     myMainEntry;
+    std::string                myMainEntry;
     SVTK_ViewWindow*           myViewWindow;
     vtkProperty*               myProperty;
     std::set<int>              myBuiltSubs;

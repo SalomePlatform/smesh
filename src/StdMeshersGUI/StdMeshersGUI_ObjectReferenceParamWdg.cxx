@@ -190,7 +190,7 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObject(CORBA::Object_ptr obj)
   if ( !CORBA::is_nil( obj ))
     sobj = SMESH::FindSObject (obj);
   if ( sobj ) {
-    string name = sobj->GetName();
+    std::string name = sobj->GetName();
     myObjNameLineEdit->setText( name.c_str() );
     myObject = CORBA::Object::_duplicate( obj );
     myParamValue = sobj->GetID().c_str();

@@ -239,13 +239,13 @@ void SMESHGUI_ShapeByMeshOp::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
   myGeomObj = GEOM::GEOM_Object::_nil();
   myHasSolids = false;
 
-  vector< bool > hasElement (myDlg->myElemTypeGroup->buttons().count(), false);
+  std::vector< bool > hasElement (myDlg->myElemTypeGroup->buttons().count(), false);
   if (!myMesh->_is_nil() )
     {
       //     _PTR(SObject) aSobj = SMESH::FindSObject(myMesh.in());
       //     SUIT_DataOwnerPtr anIObj (new LightApp_DataOwner(aSobj->GetID().c_str()));
 
-      vector< int > nbShapes( TopAbs_SHAPE, 0 );
+      std::vector< int > nbShapes( TopAbs_SHAPE, 0 );
       int shapeDim = 0; // max dim with several shapes
       //if ( /*mySelectionMgr*/ selectionMgr()->isOk(anIObj) ) // check that the mesh has a valid shape
       {

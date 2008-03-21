@@ -1041,7 +1041,7 @@ namespace SMESH
       if(FindActorByEntry(theIO->getEntry())){
 	TColStd_IndexedMapOfInteger aMapIndex;
 	theMgr->GetIndexes(theIO,aMapIndex);
-	typedef set<int> TIdContainer;
+	typedef std::set<int> TIdContainer;
 	TIdContainer anIdContainer;
 	for( int i = 1; i <= aMapIndex.Extent(); i++)
 	  anIdContainer.insert(aMapIndex(i));
