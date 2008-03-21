@@ -108,7 +108,7 @@ namespace SMESH
     bool myIsPointsLabeled;
     vtkActor2D* myPointLabels;
 
-    vector<int> myIDs;
+    std::vector<int> myIDs;
 
   public:
     TIdPreview(SVTK_ViewWindow* theViewWindow):
@@ -189,7 +189,7 @@ namespace SMESH
     }
 
     void SetElemsData( TColStd_MapOfInteger & theElemsIdMap, 
-		       list<gp_XYZ> & aGrCentersXYZ )
+		       std::list<gp_XYZ> & aGrCentersXYZ )
     {
       vtkPoints* aPoints = vtkPoints::New();
       aPoints->SetNumberOfPoints(theElemsIdMap.Extent());
@@ -201,7 +201,7 @@ namespace SMESH
       }
 
       gp_XYZ aXYZ;
-      list<gp_XYZ>::iterator coordIt = aGrCentersXYZ.begin();
+      std::list<gp_XYZ>::iterator coordIt = aGrCentersXYZ.begin();
       for( int i = 0; coordIt != aGrCentersXYZ.end(); coordIt++, i++ ) {
 	aXYZ = *coordIt;
 	aPoints->SetPoint( i, aXYZ.X(), aXYZ.Y(), aXYZ.Z() );
@@ -790,7 +790,7 @@ void SMESHGUI_EditMeshDlg::onSelectGroup()
     myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
   }
   else {
-    list< gp_XYZ > aGrCentersXYZ;
+    std::list< gp_XYZ > aGrCentersXYZ;
     FindGravityCenter(anIndices, aGrCentersXYZ);
     myIdPreview->SetElemsData( anIndices, aGrCentersXYZ);
     myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
@@ -839,7 +839,7 @@ void SMESHGUI_EditMeshDlg::onSelectElementFromGroup()
     myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());
   }
   else {
-    list< gp_XYZ > aGrCentersXYZ;
+    std::list< gp_XYZ > aGrCentersXYZ;
     FindGravityCenter(anIndices, aGrCentersXYZ);
     myIdPreview->SetElemsData(anIndices, aGrCentersXYZ);
     myIdPreview->SetPointsLabeled(!anIndices.IsEmpty(), myActor->GetVisibility());

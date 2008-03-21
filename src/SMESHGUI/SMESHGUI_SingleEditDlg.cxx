@@ -310,7 +310,7 @@ static bool findTriangles (const SMDS_MeshNode *    theNode1,
 
   theTria1 = theTria2 = 0;
 
-  set< const SMDS_MeshElement* > emap;
+  std::set< const SMDS_MeshElement* > emap;
   SMDS_ElemIteratorPtr it = theNode1->GetInverseElementIterator();
   while (it->more()) {
     const SMDS_MeshElement* elem = it->next();

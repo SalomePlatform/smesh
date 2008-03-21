@@ -151,7 +151,7 @@
 			    int theCommandID)
   {
     QStringList filter;
-    string myExtension;
+    std::string myExtension;
 
     if(theCommandID == 113){
       filter.append(QObject::tr("MED files (*.med)"));
@@ -889,9 +889,9 @@
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
 
-        list< _PTR(SObject) > listSO;
+        std::list< _PTR(SObject) > listSO;
         listSO.push_back( aSO );
-        list< _PTR(SObject) >::iterator itSO = listSO.begin();
+        std::list< _PTR(SObject) >::iterator itSO = listSO.begin();
         for ( ; itSO != listSO.end(); ++itSO ) {
           _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
           for (it->InitEx(false); it->More(); it->Next())
@@ -900,11 +900,11 @@
 
         // treat SO's in the list starting from the back
 
-        list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
+        std::list< _PTR(SObject) >::reverse_iterator ritSO = listSO.rbegin();
         for ( ; ritSO != listSO.rend(); ++ritSO ) {
           _PTR(SObject) SO = *ritSO;
           if ( !SO ) continue;
-          string anEntry = SO->GetID();
+          std::string anEntry = SO->GetID();
 
           /** Erase graphical object **/
 	  if(SO->FindAttribute(anAttr, "AttributeIOR")){
