@@ -479,7 +479,9 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
   mySelectionMgr->installFilter(myMeshFilter);
 
   /* init data from current selection */
+  restoreShowEntityMode();
   myMesh = SMESH::SMESH_Mesh::_duplicate(theMesh);
+  setShowEntityMode();
   myGroup = SMESH::SMESH_Group::_nil();
   myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
 
@@ -509,7 +511,9 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_Mesh_ptr theMesh)
 //=================================================================================
 void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
 {
+  restoreShowEntityMode();
   myMesh = theGroup->GetMesh();
+  setShowEntityMode();
   
   myName->setText(theGroup->GetName());
   myName->home(false);
@@ -629,8 +633,9 @@ void SMESHGUI_GroupDlg::onTypeChanged (int id)
     myElements->clear();
     if (myCurrentLineEdit == 0)
       setSelectionMode(id);
+    myTypeId = id;
+    setShowEntityMode();
   }
-  myTypeId = id;
 }
 
 //=================================================================================
@@ -994,7 +999,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       if (aNbSel != 1 ) {
         myGroup = SMESH::SMESH_Group::_nil();
-	myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil(); 
+        myGroupOnGeom = SMESH::SMESH_GroupOnGeom::_nil();
+        restoreShowEntityMode();
         myMesh = SMESH::SMESH_Mesh::_nil();
 	updateGeomPopup();
         updateButtons();
@@ -1004,7 +1010,9 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       Handle(SALOME_InteractiveObject) IO = aList.First();
 
       if (myCreate) {
+        restoreShowEntityMode();
         myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
+        setShowEntityMode();
 	updateGeomPopup();
         if (myMesh->_is_nil())
 	{
@@ -1682,6 +1690,7 @@ void SMESHGUI_GroupDlg::onClose()
     SMESH::RemoveFilters(); // PAL6938 -- clean all mesh entity filters
     SMESH::SetPointRepresentation(false);
     SMESH::SetPickable();
+    restoreShowEntityMode();
   }
 
   mySelectionMgr->clearSelected();
@@ -1985,4 +1994,40 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
   }
 
   setGroupQColor( aQColor );
+}
+
+//=======================================================================
+//function : setShowEntityMode
+//purpose  : make shown only entity corresponding to my type
+//=======================================================================
+
+void SMESHGUI_GroupDlg::setShowEntityMode()
+{
+  if ( !myMesh->_is_nil() ) {
+    if ( SMESH_Actor* actor = SMESH::FindActorByObject(myMesh) ) {
+      if (!myStoredShownEntity)
+        myStoredShownEntity = actor->GetEntityMode();
+      switch ( myTypeId ) {
+      case 0: restoreShowEntityMode(); break;
+      case 1: actor->SetEntityMode( SMESH_Actor::eEdges ); break;
+      case 2: actor->SetEntityMode( SMESH_Actor::eFaces ); break;
+      case 3: actor->SetEntityMode( SMESH_Actor::eVolumes ); break;
+      }
+    }
+  }
+}
+
+//=======================================================================
+//function : restoreShowEntityMode
+//purpose  : restore ShowEntity mode of myActor
+//=======================================================================
+
+void SMESHGUI_GroupDlg::restoreShowEntityMode()
+{
+  if ( myStoredShownEntity && !myMesh->_is_nil() ) {
+    if ( SMESH_Actor* actor = SMESH::FindActorByObject(myMesh) ) {
+      actor->SetEntityMode(myStoredShownEntity);
+    }
+  }
+  myStoredShownEntity = 0;
 }

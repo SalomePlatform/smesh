@@ -132,6 +132,8 @@ private:
     void setSelectionMode(int theMode);
     void updateButtons();
     void updateGeomPopup();
+    void setShowEntityMode();
+    void restoreShowEntityMode();
 
     void                          setGroupColor( const SALOMEDS::Color& );
     SALOMEDS::Color               getGroupColor() const;
@@ -146,6 +148,7 @@ private:
     SMESH_Actor*                  myActor;                 /* Current mesh actor */
     int                           myGrpTypeId; /* Current group type id : standalone or group on geometry */
     int                           myTypeId;                /* Current type id = radio button id */
+    int                           myStoredShownEntity;     /* Store ShowEntity mode of myMesh */
     QLineEdit*                    myCurrentLineEdit;       /* Current  LineEdit */
     SVTK_Selector*                mySelector;
 
