@@ -56,7 +56,7 @@ SMESHGUI_ConvToQuadDlg::SMESHGUI_ConvToQuadDlg()
   //Create RadioButtons
   myBGBox = new QGroupBox( mainFrame() );
   myBG = new QButtonGroup( mainFrame() );
-  QHBoxLayout* aBGLayout = new QHBoxLayout( myBGBox );
+  QVBoxLayout* aBGLayout = new QVBoxLayout( myBGBox );
   aBGLayout->setMargin(MARGIN);
   aBGLayout->setSpacing(SPACING);
   

@@ -251,12 +251,12 @@ QWidget* SMESHGUI_MultiEditDlg::createMainFrame (QWidget* theParent, const bool 
   myGroup->setReadOnly(true);
   myGroupBtn->setIcon(aPix);
 
-  aGrpLayout->addWidget(mySubmeshChk);
-  aGrpLayout->addWidget(mySubmeshBtn);
-  aGrpLayout->addWidget(mySubmesh);
-  aGrpLayout->addWidget(myGroupChk);
-  aGrpLayout->addWidget(myGroupBtn);
-  aGrpLayout->addWidget(myGroup);
+  aGrpLayout->addWidget(mySubmeshChk,0,0);
+  aGrpLayout->addWidget(mySubmeshBtn,0,1);
+  aGrpLayout->addWidget(mySubmesh,0,2);
+  aGrpLayout->addWidget(myGroupChk,1,0);
+  aGrpLayout->addWidget(myGroupBtn,1,1);
+  aGrpLayout->addWidget(myGroup,1,2);
   
   aMainGrpLayout->addWidget(mySelGrp);
   aMainGrpLayout->addWidget(myCriterionGrp);
@@ -1158,7 +1158,7 @@ SMESHGUI_UnionOfTrianglesDlg
   aMaxAngleGrpLayout->addWidget(aLab);
   aMaxAngleGrpLayout->addWidget(myMaxAngleSpin);
 
-  ((QVBoxLayout*)aMaxAngleGrpLayout->layout())->addWidget(aMaxAngleGrp);
+  ((QVBoxLayout*)(myCriterionGrp->layout()))->addWidget(aMaxAngleGrp);
   myCriterionGrp->show();
 
   myHelpFileName = "uniting_set_of_triangles_page.html";
