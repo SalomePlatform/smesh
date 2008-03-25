@@ -1595,12 +1595,14 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
   QString aCoStr;
   aCoStr.fill(' ', 10);
 
-  aTable->horizontalHeaderItem(0)->setText(tr("CRITERION") + aCrStr);
-  aTable->horizontalHeaderItem(1)->setText(tr("COMPARE")   + aCoStr);
-  aTable->horizontalHeaderItem(2)->setText(tr("THRESHOLD_VALUE"));
-  aTable->horizontalHeaderItem(3)->setText(tr("UNARY"));
-  aTable->horizontalHeaderItem(4)->setText(tr("BINARY") + "  ");
-  aTable->horizontalHeaderItem(5)->setText(tr("ID"));
+  QStringList aHeaderLabels;
+  aHeaderLabels.append( tr("CRITERION") + aCrStr );
+  aHeaderLabels.append( tr("COMPARE")   + aCoStr );
+  aHeaderLabels.append( tr("THRESHOLD_VALUE") );
+  aHeaderLabels.append( tr("UNARY") );
+  aHeaderLabels.append( tr("BINARY") + "  " );
+  aHeaderLabels.append( tr("ID") );
+  aTable->setHorizontalHeaderLabels( aHeaderLabels );
 
   // set geometry of the table
   for (int i = 0; i <= 4; i++)
