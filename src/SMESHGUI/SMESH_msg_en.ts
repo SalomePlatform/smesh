@@ -616,7 +616,8 @@
         </message>
         <message>
             <source>MESH_IS_NOT_SELECTED</source>
-            <translation>There is no selected mesh\nPlease, select a mesh and try again</translation>
+            <translation>There is no selected mesh
+Please, select a mesh and try again</translation>
         </message>
         <message>
             <source>MESH_NODE</source>
@@ -656,7 +657,8 @@
         </message>
         <message>
             <source>SMESHGUI_INVALID_PARAMETERS</source>
-            <translation>Parameters are not correctly specified\nPlease enter correct values and try again</translation>
+            <translation>Parameters are not correctly specified
+Please enter correct values and try again</translation>
         </message>
         <message>
             <source>SMESH_ADD_ALGORITHM</source>
@@ -692,7 +694,8 @@
         </message>
         <message>
             <source>SMESH_ADD_HYP_WRN</source>
-            <translation>\"%1\" assigned but:\n</translation>
+            <translation>\"%1\" assigned but:
+</translation>
         </message>
         <message>
             <source>SMESH_ADD_POLYGON</source>
@@ -856,11 +859,13 @@
         </message>
         <message>
             <source>SMESH_CANT_ADD_HYP</source>
-            <translation>Can not assign \"%1\":\n</translation>
+            <translation>Can not assign \"%1\":
+</translation>
         </message>
         <message>
             <source>SMESH_CANT_RM_HYP</source>
-            <translation>Can not unassign \"%1\":\n</translation>
+            <translation>Can not unassign \"%1\":
+</translation>
         </message>
         <message>
             <source>SMESH_CHECK_COLOR</source>
@@ -888,7 +893,8 @@
         </message>
         <message>
             <source>SMESH_CONTINUE_MESH_VISUALIZATION</source>
-            <translation>It seems that there is not enough memory to show the mesh\n</translation>
+            <translation>It seems that there is not enough memory to show the mesh
+</translation>
         </message>
         <message>
             <source>SMESH_COORDINATES</source>
@@ -952,11 +958,13 @@
         </message>
         <message>
             <source>SMESH_DRS_4</source>
-            <translation>    The file is incorrect,\n</translation>
+            <translation>    The file is incorrect,
+</translation>
         </message>
         <message>
             <source>SMESH_DRS_EMPTY</source>
-            <translation>      The file is empty,\n</translation>
+            <translation>      The file is empty,
+</translation>
         </message>
         <message>
             <source>SMESH_DX</source>
@@ -1016,15 +1024,18 @@
         </message>
         <message>
             <source>SMESH_EXPORT_FAILED</source>
-            <translation>Mesh export failed.\nProbably, there is not enough space on disk.</translation>
+            <translation>Mesh export failed.
+Probably, there is not enough space on disk.</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
-            <translation>There are duplicated group names in mesh \"%1\".\n</translation>
+            <translation>There are duplicated group names in mesh \"%1\".
+</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_MED_V2_1</source>
-            <translation>During export mesh with name - \"%1\" to MED 2.1\n</translation>
+            <translation>During export mesh with name - \"%1\" to MED 2.1
+</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_STL1</source>
@@ -1036,7 +1047,8 @@
         </message>
         <message>
             <source>SMESH_EXPORT_UNV</source>
-            <translation>During export mesh with name - \"%1\" to UNV\n</translation>
+            <translation>During export mesh with name - \"%1\" to UNV
+</translation>
         </message>
         <message>
             <source>SMESH_EXTRUSION</source>
@@ -1604,7 +1616,8 @@
         </message>
         <message>
             <source>SMESH_RM_HYP_WRN</source>
-            <translation>\"%1\" unassigned but:\n</translation>
+            <translation>\"%1\" unassigned but:
+</translation>
         </message>
         <message>
             <source>SMESH_ROTATION</source>
@@ -1716,7 +1729,8 @@
         </message>
         <message>
             <source>SMESH_VISU_PROBLEM_CLEAR</source>
-            <translation>Mesh visualization failed, no memory even to show a message,\n</translation>
+            <translation>Mesh visualization failed, no memory even to show a message,
+</translation>
         </message>
         <message>
             <source>SMESH_VOLUME</source>
@@ -2711,7 +2725,8 @@
         <name>SMESHGUI</name>
         <message>
             <source>NOT_A_VTK_VIEWER</source>
-            <translation>This command is available in VTK viewer only\nPlease, create VTK viewer and try again</translation>
+            <translation>This command is available in VTK viewer only
+Please, create VTK viewer and try again</translation>
         </message>
         <message>
             <source>PREF_AUTO_GROUPS</source>
@@ -2993,7 +3008,8 @@
         <name>SMESHGUI_ConvToQuadOp</name>
         <message>
             <source>MESH_IS_NOT_SELECTED</source>
-            <translation>Mesh is not selected\nPlease specify it and try again</translation>
+            <translation>Mesh is not selected
+Please specify it and try again</translation>
         </message>
         <message>
             <source>REF_IS_NULL</source>
@@ -3016,11 +3032,13 @@
         </message>
         <message>
             <source>ERROR_OF_CREATION</source>
-            <translation>Internal error occurs during pattern creation\nPlease verify validity of entered information</translation>
+            <translation>Internal error occurs during pattern creation
+Please verify validity of entered information</translation>
         </message>
         <message>
             <source>ERROR_OF_SAVING</source>
-            <translation>Internal error occurs during pattern saving. Please verify\n\free disk space and your write permission to this file</translation>
+            <translation>Internal error occurs during pattern saving. Please verify
+\free disk space and your write permission to this file</translation>
         </message>
         <message>
             <source>ERR_LOADF_CANT_PROJECT</source>
@@ -3109,7 +3127,8 @@
         </message>
         <message>
             <source>NO_SELECTED_GROUPS</source>
-            <translation>There are no selected groups\nPlease select a groups and try again</translation>
+            <translation>There are no selected groups
+Please select a groups and try again</translation>
         </message>
         <message>
             <source>SELECTED_GROUPS</source>
@@ -3233,7 +3252,8 @@
         <name>SMESHGUI_FilterDlg</name>
         <message>
             <source>BAD_SHAPE_NAME</source>
-            <translation>There is no \"%1\" geometrical object in the current study\nPlease select valid object and try again</translation>
+            <translation>There is no \"%1\" geometrical object in the current study
+Please select valid object and try again</translation>
         </message>
         <message>
             <source>CURRENT_GROUP</source>
@@ -3265,15 +3285,18 @@
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_CYLINDER</source>
-            <translation>\"%1\" is not a cylinderical face\nPlease select a cylindrical face and try again</translation>
+            <translation>\"%1\" is not a cylinderical face
+Please select a cylindrical face and try again</translation>
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_FACE</source>
-            <translation>\"%1\" is not a face\nPlease select a face and try again</translation>
+            <translation>\"%1\" is not a face
+Please select a face and try again</translation>
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_PLANE</source>
-            <translation>\"%1\" is not a plane\nPlease select a plane and try again</translation>
+            <translation>\"%1\" is not a plane
+Please select a plane and try again</translation>
         </message>
         <message>
             <source>SOURCE</source>
@@ -3304,7 +3327,8 @@
         </message>
         <message>
             <source>ASSIGN_NEW_NAME</source>
-            <translation>Library already contains filter with name \"%1\"\nNew name \"%2\" is assigned to added filter</translation>
+            <translation>Library already contains filter with name \"%1\"
+New name \"%2\" is assigned to added filter</translation>
         </message>
         <message>
             <source>COPY_FROM_TLT</source>
@@ -3328,35 +3352,43 @@
         </message>
         <message>
             <source>EMPTY_FILTER_NAME</source>
-            <translation>Name of the filter is empty\nPlease enter a non-empty name</translation>
+            <translation>Name of the filter is empty
+Please enter a non-empty name</translation>
         </message>
         <message>
             <source>ERROR_FILTER_NAME</source>
-            <translation>Name of the filter is not unique\nPlease enter other name</translation>
+            <translation>Name of the filter is not unique
+Please enter other name</translation>
         </message>
         <message>
             <source>ERROR_LOAD</source>
-            <translation>It is impossible to load library\nPlease check library file name and attributes</translation>
+            <translation>It is impossible to load library
+Please check library file name and attributes</translation>
         </message>
         <message>
             <source>ERROR_OF_ADDING</source>
-            <translation>Internal error occurs during adiing new filter in library.\nPlease verify validity of entered information</translation>
+            <translation>Internal error occurs during adiing new filter in library.
+Please verify validity of entered information</translation>
         </message>
         <message>
             <source>ERROR_OF_COPYING</source>
-            <translation>Internal error occurs during copying filter from library.\nPlease verify validity of entered information</translation>
+            <translation>Internal error occurs during copying filter from library.
+Please verify validity of entered information</translation>
         </message>
         <message>
             <source>ERROR_OF_DELETING</source>
-            <translation>Internal error occurs during deleting filter from library.\nPlease verify validity of entered information</translation>
+            <translation>Internal error occurs during deleting filter from library.
+Please verify validity of entered information</translation>
         </message>
         <message>
             <source>ERROR_OF_EDITING</source>
-            <translation>Internal error occurs during editing filter library.\nPlease verify validity of entered information</translation>
+            <translation>Internal error occurs during editing filter library.
+Please verify validity of entered information</translation>
         </message>
         <message>
             <source>ERROR_OF_SAVING</source>
-            <translation>Internal error occurs during saving filter library\nPlease check input data and try again</translation>
+            <translation>Internal error occurs during saving filter library
+Please check input data and try again</translation>
         </message>
         <message>
             <source>FACE</source>
@@ -3495,7 +3527,8 @@
         </message>
         <message>
             <source>ERROR</source>
-            <translation>Threshold value is not correctly specified\nPlease enter correct value and try again</translation>
+            <translation>Threshold value is not correctly specified
+Please enter correct value and try again</translation>
         </message>
         <message>
             <source>FACES</source>
@@ -3543,7 +3576,8 @@
         </message>
         <message>
             <source>MULTIEDGES_ERROR</source>
-            <translation>Threshold value of borders at multi-connections can not be equal 1\nPlease enter correct value and try again</translation>
+            <translation>Threshold value of borders at multi-connections can not be equal 1
+Please enter correct value and try again</translation>
         </message>
         <message>
             <source>MULTI_BORDERS</source>
@@ -3610,19 +3644,25 @@
         </message>
         <message>
             <source>DIFF_MESHES</source>
-            <translation>Arguments of operation are not correctly specified\nGroups correspond to a different meshes\nPlease specify valid arguments and try again</translation>
+            <translation>Arguments of operation are not correctly specified
+Groups correspond to a different meshes
+Please specify valid arguments and try again</translation>
         </message>
         <message>
             <source>DIFF_TYPES</source>
-            <translation>Arguments of operation are not correctly specified\nGroups contain elements of different types\nPlease specify valid arguments and try again</translation>
+            <translation>Arguments of operation are not correctly specified
+Groups contain elements of different types
+Please specify valid arguments and try again</translation>
         </message>
         <message>
             <source>EMPTY_NAME</source>
-            <translation>Name of group to be created is not valid\nPlease specify non-empty name and try again</translation>
+            <translation>Name of group to be created is not valid
+Please specify non-empty name and try again</translation>
         </message>
         <message>
             <source>INCORRECT_ARGUMENTS</source>
-            <translation>Arguments of operation are not specified\nPlease specify them and try again</translation>
+            <translation>Arguments of operation are not specified
+Please specify them and try again</translation>
         </message>
         <message>
             <source>INTERSECTION_OF_TWO_GROUPS</source>
@@ -3758,11 +3798,13 @@
         </message>
         <message>
             <source>EDIT_SUBMESH_QUESTION</source>
-            <translation>A submesh on the selected geometry already exists.\n Do you want to edit this submesh?</translation>
+            <translation>A submesh on the selected geometry already exists.
+ Do you want to edit this submesh?</translation>
         </message>
         <message>
             <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
-            <translation>Geometry object is not defined\nPlease specify it and try again</translation>
+            <translation>Geometry object is not defined
+Please specify it and try again</translation>
         </message>
         <message>
             <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -3786,7 +3828,8 @@
         </message>
         <message>
             <source>MESH_IS_NOT_DEFINED</source>
-            <translation>Mesh is not defined\nPlease specify it and try again</translation>
+            <translation>Mesh is not defined
+Please specify it and try again</translation>
         </message>
         <message>
             <source>MESH_IS_NULL</source>
@@ -3794,15 +3837,18 @@
         </message>
         <message>
             <source>NAME_OF_MESH_IS_EMPTY</source>
-            <translation>Name of mesh is empty\nPlease enter valid name and try again</translation>
+            <translation>Name of mesh is empty
+Please enter valid name and try again</translation>
         </message>
         <message>
             <source>NAME_OF_SUBMESH_IS_EMPTY</source>
-            <translation>Name of submesh is empty\nPlease enter valid name and try again</translation>
+            <translation>Name of submesh is empty
+Please enter valid name and try again</translation>
         </message>
         <message>
             <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
-            <translation>There is no object for editing. Please\nselect mesh or sub-mesh and try again</translation>
+            <translation>There is no object for editing. Please
+select mesh or sub-mesh and try again</translation>
         </message>
     </context>
     <context>
@@ -3825,51 +3871,63 @@
         </message>
         <message>
             <source>ERROR_OF_LOADING</source>
-            <translation>Loading of pattern from file failed. Probably file\nis corrupted or contains pattern of the other type</translation>
+            <translation>Loading of pattern from file failed. Probably file
+is corrupted or contains pattern of the other type</translation>
         </message>
         <message>
             <source>ERROR_OF_OPENING</source>
-            <translation>It is impossible to open file. Please verify whether\nfile exists and your permission to this file</translation>
+            <translation>It is impossible to open file. Please verify whether
+file exists and your permission to this file</translation>
         </message>
         <message>
             <source>ERROR_OF_READING</source>
-            <translation>It is impossible to load pattern\nPlease verify file's contents</translation>
+            <translation>It is impossible to load pattern
+Please verify file's contents</translation>
         </message>
         <message>
             <source>ERR_READ_3D_COORD</source>
-            <translation>It is impossible to load pattern\nCoordinates of 3D points out of [0,1] range</translation>
+            <translation>It is impossible to load pattern
+Coordinates of 3D points out of [0,1] range</translation>
         </message>
         <message>
             <source>ERR_READ_BAD_INDEX</source>
-            <translation>It is impossible to load pattern\nInvalid index of point detected</translation>
+            <translation>It is impossible to load pattern
+Invalid index of point detected</translation>
         </message>
         <message>
             <source>ERR_READ_BAD_KEY_POINT</source>
-            <translation>It is impossible to load pattern\nKey-point not on a boundary</translation>
+            <translation>It is impossible to load pattern
+Key-point not on a boundary</translation>
         </message>
         <message>
             <source>ERR_READ_ELEM_POINTS</source>
-            <translation>It is impossible to load pattern\ninvalid number of points in element</translation>
+            <translation>It is impossible to load pattern
+invalid number of points in element</translation>
         </message>
         <message>
             <source>ERR_READ_NB_POINTS</source>
-            <translation>It is impossible to load pattern\nIt is impossible to read number of points from file</translation>
+            <translation>It is impossible to load pattern
+It is impossible to read number of points from file</translation>
         </message>
         <message>
             <source>ERR_READ_NO_ELEMS</source>
-            <translation>It is impossible to load pattern\nThere are no elements in it</translation>
+            <translation>It is impossible to load pattern
+There are no elements in it</translation>
         </message>
         <message>
             <source>ERR_READ_NO_KEYPOINT</source>
-            <translation>It is impossible to load pattern\nThere are no key-points in 2D one</translation>
+            <translation>It is impossible to load pattern
+There are no key-points in 2D one</translation>
         </message>
         <message>
             <source>ERR_READ_POINT_COORDS</source>
-            <translation>It is impossible to load pattern\nIt is impossible to read point coordinates from file</translation>
+            <translation>It is impossible to load pattern
+It is impossible to read point coordinates from file</translation>
         </message>
         <message>
             <source>ERR_READ_TOO_FEW_POINTS</source>
-            <translation>It is impossible to load pattern. There are\n too few points in the file for pattern loading</translation>
+            <translation>It is impossible to load pattern. There are
+ too few points in the file for pattern loading</translation>
         </message>
         <message>
             <source>FACE</source>
