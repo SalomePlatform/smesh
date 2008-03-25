@@ -32,10 +32,10 @@ fi
 for option
 do
   case $option in
-      -with-ihm | --with-ihm)
+      -with-gui | --with-gui)
           SMESH_WITH_GUI="yes"
           break;;
-      -without-ihm | --without-ihm | -with-ihm=no | --with-ihm=no)
+      -without-gui | --without-gui | -with-gui=no | --with-gui=no)
           SMESH_WITH_GUI="no"
           break;;
   esac
