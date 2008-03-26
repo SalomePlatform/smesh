@@ -379,6 +379,7 @@ SMESHGUI_FilterTable::CheckItem::CheckItem( bool value )
   Qt::ItemFlags f = flags();
   f = f | Qt::ItemIsUserCheckable;
   f = f & ~Qt::ItemIsTristate;
+  f = f & ~Qt::ItemIsEditable;
   setFlags( f );
   setChecked(value);
 }
@@ -389,6 +390,7 @@ SMESHGUI_FilterTable::CheckItem::CheckItem( const QString& text, bool value )
   Qt::ItemFlags f = flags();
   f = f | Qt::ItemIsUserCheckable;
   f = f & ~Qt::ItemIsTristate;
+  f = f & ~Qt::ItemIsEditable;
   setFlags( f );
   setChecked( value );
   setText( text );
@@ -459,7 +461,7 @@ void SMESHGUI_FilterTable::ComboDelegate::setEditorData( QWidget* editor,
 							 const QModelIndex& index ) const
 {
   QString value = index.model()->data( index, Qt::DisplayRole ).toString();
-  QComboBox* cb = static_cast<QComboBox*>( editor );
+  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
   bool bOk = false;
   if ( cb ) {
     int i = cb->findText( value );
@@ -475,7 +477,7 @@ void SMESHGUI_FilterTable::ComboDelegate::setModelData( QWidget* editor,
 							QAbstractItemModel* model,
 							const QModelIndex& index) const
 {
-  QComboBox* cb = static_cast<QComboBox*>( editor );
+  QComboBox* cb = dynamic_cast<QComboBox*>( editor );
   if ( cb ) model->setData( index, cb->currentText(), Qt::DisplayRole );
   else QItemDelegate::setModelData( editor, model, index );
 }
@@ -566,11 +568,11 @@ bool SMESHGUI_FilterTable::Table::isEditable (int row, int col) const
 void SMESHGUI_FilterTable::Table::setReadOnly( bool on )
 {
   setEditTriggers( on ? 
+		   QAbstractItemView::NoEditTriggers  :
 		   QAbstractItemView::DoubleClicked   |
 		   QAbstractItemView::SelectedClicked |
 		   QAbstractItemView::EditKeyPressed  |
-		   QAbstractItemView::AnyKeyPressed   :
-		   QAbstractItemView::NoEditTriggers );
+		   QAbstractItemView::AnyKeyPressed );
 }
 
 bool SMESHGUI_FilterTable::Table::isReadOnly() const
@@ -887,9 +889,10 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
       }
     } else {
       bool aRes = false;
+      bool isSignalsBlocked = aTable->signalsBlocked();
       aTable->blockSignals(true);
       double  aThreshold = (int)aTable->text(i, 2).toDouble(&aRes);
-      aTable->blockSignals(false);
+      aTable->blockSignals(isSignalsBlocked);
 
       if (!aRes && aTable->isEditable(i, 2)) {
         if (theMess)
@@ -1359,6 +1362,10 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   }
   myIsLocked = false;
 
+  // IPAL19372 - to prevent calling onCriterionChaged() slot before completion of setItem()
+  bool isSignalsBlocked = theTable->signalsBlocked();
+  theTable->blockSignals( true );
+
   // Criteria
   theTable->setItem(aCurrRow, 0, getCriterionItem(theType));
 
@@ -1366,10 +1373,15 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   theTable->setItem(aCurrRow, 1, getCompareItem());
 
   // Threshold
-  //theTable->setItem(aCurrRow, 2, new QTableWidgetItem());
+  theTable->setItem(aCurrRow, 2, new QTableWidgetItem());
 
-  //Logical operation NOT
+  // Logical operation NOT
   theTable->setItem(aCurrRow, 3, getUnaryItem());
+
+  // Logical operation AND / OR
+  theTable->setItem(aCurrRow, 4, new QTableWidgetItem());
+
+  theTable->blockSignals( isSignalsBlocked );
 
   // Logical binary operation for previous value
   int anAddBinOpStr = -1;
