@@ -124,7 +124,7 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame (QWidget* theParent)
   myNameEdit = new QLineEdit(aNameGrp);
 
   aNameGrpLayout->addWidget(aNameLab);
-  aNameGrpLayout->addWidget(aNameGrp);
+  aNameGrpLayout->addWidget(myNameEdit);
 
   // ------------------------------------------------------
   QGroupBox* anArgGrp = new QGroupBox(tr("ARGUMENTS"), aMainGrp);
@@ -149,12 +149,12 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame (QWidget* theParent)
   myBtn1->setIcon(aPix);
   myBtn2->setIcon(aPix);
 
-  anArgGrpLayout->addWidget(aObj1Lab);
-  anArgGrpLayout->addWidget(myBtn1);
-  anArgGrpLayout->addWidget(myEdit1);
-  anArgGrpLayout->addWidget(aObj2Lab);
-  anArgGrpLayout->addWidget(myBtn2);
-  anArgGrpLayout->addWidget(myEdit2);
+  anArgGrpLayout->addWidget(aObj1Lab, 0, 0);
+  anArgGrpLayout->addWidget(myBtn1,   0, 1);
+  anArgGrpLayout->addWidget(myEdit1,  0, 2);
+  anArgGrpLayout->addWidget(aObj2Lab, 1, 0);
+  anArgGrpLayout->addWidget(myBtn2,   1, 1);
+  anArgGrpLayout->addWidget(myEdit2,  1, 2);
 
   // ------------------------------------------------------
   aLay->addWidget(aNameGrp);
