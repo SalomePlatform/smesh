@@ -303,8 +303,6 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   mySimulation->GetActor()->SetProperty(aProp);
   aProp->Delete();
 
-  SMESHGUI_SelectionOp::startOperation();
-
   // SalomeApp_TypeFilter depends on a current study
   if ( myFilter ) delete myFilter;
   QList<SUIT_SelectionFilter*> filters;
@@ -313,8 +311,10 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   vertexType.Add( TopAbs_VERTEX );
   filters.append( new SMESH_NumberFilter("GEOM", TopAbs_VERTEX, 1, vertexType ));
   myFilter = new SMESH_LogicalFilter( filters, SMESH_LogicalFilter::LO_OR );
-  
-  activateSelection(); // set filters
+
+  // IPAL19360
+  SMESHGUI_SelectionOp::startOperation(); // this method should be called only after filter creation
+  //activateSelection(); // set filters   // called inside of previous statement
 
   myDlg->myX->SetValue(0);
   myDlg->myY->SetValue(0);
