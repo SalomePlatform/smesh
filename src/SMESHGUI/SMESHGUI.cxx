@@ -3055,9 +3055,9 @@ QString SMESHGUI::engineIOR() const
   return QString( anIOR.in() );
 }
 
-LightApp_Selection* SMESHGUI::createSelection( const QString& client, LightApp_SelectionMgr* mgr ) const
+LightApp_Selection* SMESHGUI::createSelection() const
 {
-  return new SMESHGUI_Selection( client, mgr );
+  return new SMESHGUI_Selection();
 }
 
 void SMESHGUI::windows( QMap<int, int>& aMap ) const

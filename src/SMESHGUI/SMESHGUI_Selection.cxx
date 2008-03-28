@@ -48,9 +48,27 @@
 //function : SMESHGUI_Selection
 //purpose  : 
 //=======================================================================
-SMESHGUI_Selection::SMESHGUI_Selection( const QString& client, LightApp_SelectionMgr* mgr )
-: LightApp_Selection( client, mgr )
+SMESHGUI_Selection::SMESHGUI_Selection()
+: LightApp_Selection()
 {
+}
+
+//=======================================================================
+//function : ~SMESHGUI_Selection
+//purpose  : 
+//=======================================================================
+SMESHGUI_Selection::~SMESHGUI_Selection()
+{
+}
+
+//=======================================================================
+//function : init
+//purpose  : 
+//=======================================================================
+void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr )
+{
+  LightApp_Selection::init( client, mgr );
+
   if( mgr && study() )
   {
     SalomeApp_Study* aSStudy = dynamic_cast<SalomeApp_Study*>(study());
@@ -61,14 +79,6 @@ SMESHGUI_Selection::SMESHGUI_Selection( const QString& client, LightApp_Selectio
     for( int i=0, n=count(); i<n; i++ )
       myTypes.append( typeName( type( entry( i ), aStudy ) ) );
   }
-}
-
-//=======================================================================
-//function : ~SMESHGUI_Selection
-//purpose  : 
-//=======================================================================
-SMESHGUI_Selection::~SMESHGUI_Selection()
-{
 }
 
 //=======================================================================

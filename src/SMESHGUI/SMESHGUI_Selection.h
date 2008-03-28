@@ -43,9 +43,10 @@ class SMESH_Actor;
 class SMESHGUI_EXPORT SMESHGUI_Selection : public LightApp_Selection
 {
 public:
-  SMESHGUI_Selection( const QString&, LightApp_SelectionMgr* );
+  SMESHGUI_Selection();
   virtual ~SMESHGUI_Selection();
 
+  virtual void            init( const QString&, LightApp_SelectionMgr* );
   virtual QVariant        parameter( const int, const QString& ) const;
   virtual void            processOwner( const LightApp_DataOwner* );
 

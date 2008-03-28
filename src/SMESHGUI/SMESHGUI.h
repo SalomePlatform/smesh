@@ -93,7 +93,7 @@ public :
   virtual bool                    OnMouseMove( QMouseEvent*, SUIT_ViewWindow* );
   virtual bool                    OnKeyPress( QKeyEvent*, SUIT_ViewWindow* );
 
-  virtual LightApp_Selection*     createSelection( const QString&, LightApp_SelectionMgr* ) const;
+  virtual LightApp_Selection*     createSelection() const;
 
   virtual void                    BuildPresentation ( const Handle(SALOME_InteractiveObject)&,
 						      SUIT_ViewWindow* = 0 );
