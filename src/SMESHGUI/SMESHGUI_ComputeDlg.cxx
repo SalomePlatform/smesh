@@ -1100,15 +1100,26 @@ void SMESHGUI_ComputeOp::startOperation()
       for ( int row = 0; row < aCompErrors->length(); ++row )
       {
         SMESH::ComputeError & err = aCompErrors[ row ];
-        tbl->item( row, COL_ALGO )->setText( err.algoName.in() );
-        tbl->item( row, COL_ERROR )->setText( SMESH::errorText( err.code, err.comment.in() ));
-        tbl->item( row, COL_SHAPEID )->setText( QString("%1").arg( err.subShapeID ));
 
-        QString text = hasShape ? SMESH::shapeText( err.subShapeID, myMainShape ) : QString("");
-        tbl->item( row, COL_SHAPE )->setText( text );
+	QString text = err.algoName.in();
+	if ( !tbl->item( row, COL_ALGO ) ) tbl->setItem( row, COL_ALGO, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_ALGO )->setText( text );
+
+	text = SMESH::errorText( err.code, err.comment.in() );
+	if ( !tbl->item( row, COL_ERROR ) ) tbl->setItem( row, COL_ERROR, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_ERROR )->setText( text );
+
+	text = QString("%1").arg( err.subShapeID );
+	if ( !tbl->item( row, COL_SHAPEID ) ) tbl->setItem( row, COL_SHAPEID, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_SHAPEID )->setText( text );
+
+        text = hasShape ? SMESH::shapeText( err.subShapeID, myMainShape ) : QString("");
+	if ( !tbl->item( row, COL_SHAPE ) ) tbl->setItem( row, COL_SHAPE, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_SHAPE )->setText( text );
 
         text = ( !hasShape || SMESH::getSubShapeSO( err.subShapeID, myMainShape )) ? "PUBLISHED" : "";
-        tbl->item( row, COL_PUBLISHED )->setText( text ); // if text=="", "PUBLISH" button enabled
+	if ( !tbl->item( row, COL_PUBLISHED ) ) tbl->setItem( row, COL_PUBLISHED, new QTableWidgetItem( text ) );
+	else tbl->item( row, COL_PUBLISHED )->setText( text ); // if text=="", "PUBLISH" button enabled
 
         //tbl->item( row, COL_ERROR )->setWordWrap( true ); // VSR: TODO ???
         tbl->resizeRowToContents( row );
