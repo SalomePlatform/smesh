@@ -27,6 +27,7 @@
 // Qwt includes
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
+#include <qwt_plot_grid.h>
 #include <qwt_symbol.h>
 #include <qwt_legend.h>
 
@@ -84,6 +85,16 @@ StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::
 
   myDensity->setTitle( tr( "SMESH_DENSITY_FUNC" ) );
   myDistr->setTitle( tr( "SMESH_DISTR" ) );
+  
+  QwtPlotGrid* aGrid = new QwtPlotGrid();
+  QPen aMajPen = aGrid->majPen();
+  aMajPen.setStyle( Qt::DashLine );
+  aGrid->setPen( aMajPen );
+
+  aGrid->enableX( true );
+  aGrid->enableY( true );
+
+  aGrid->attach( this );
 }
 
 StdMeshersGUI_DistrPreview::~StdMeshersGUI_DistrPreview()
