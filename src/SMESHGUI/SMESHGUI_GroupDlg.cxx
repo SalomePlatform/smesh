@@ -1146,12 +1146,21 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	aNbItems = SMESH::GetNameOfSelectedElements(mySelector, myActor->getIO(), aListStr);
       }
       if (aNbItems > 0) {
+	QListWidgetItem* anItem;
+	QList<QListWidgetItem*> listItemsToSel;
 	QStringList anElements = aListStr.split(" ", QString::SkipEmptyParts);
 	for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
 	  QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
-	  QListWidgetItem* anItem;
-	  foreach(anItem, found) anItem->setSelected(true);
+	  foreach(anItem, found)
+	    if (!anItem->isSelected())
+	      listItemsToSel.push_back(anItem);
 	}
+	bool blocked = myElements->signalsBlocked();
+	myElements->blockSignals(true);
+	foreach(anItem, listItemsToSel) anItem->setSelected(true);
+	myElements->blockSignals(blocked);
+	onListSelectionChanged();
+	listItemsToSel.clear();
       }
     }
   }
@@ -1357,6 +1366,8 @@ void SMESHGUI_GroupDlg::onAdd()
     mySelector->SetSelectionMode(ActorSelection);
   }
 
+  QListWidgetItem* anItem = 0;
+  QList<QListWidgetItem*> listItemsToSel;
 
   if (myCurrentLineEdit == 0) {
     //if (aNbSel != 1) { myIsBusy = false; return; }
@@ -1372,16 +1383,24 @@ void SMESHGUI_GroupDlg::onAdd()
       QStringList anElements = aListStr.split(" ", QString::SkipEmptyParts);
       for (QStringList::iterator it = anElements.begin(); it != anElements.end(); ++it) {
 	QList<QListWidgetItem*> found = myElements->findItems(*it, Qt::MatchExactly);
-	QListWidgetItem* anItem;
 	if (found.count() == 0) {
 	  anItem = new QListWidgetItem(*it);
 	  myElements->addItem(anItem);
-	  anItem->setSelected(true);
+	  if (!anItem->isSelected())
+	    listItemsToSel.push_back(anItem);
 	}
 	else {
-	  foreach(anItem, found) anItem->setSelected(true);
+	  foreach(anItem, found)
+	    if (!anItem->isSelected())
+	      listItemsToSel.push_back(anItem);
 	}
       }
+      bool blocked = myElements->signalsBlocked();
+      myElements->blockSignals(true);
+      foreach(anItem, listItemsToSel) anItem->setSelected(true);
+      myElements->blockSignals(blocked);
+      onListSelectionChanged();
+      listItemsToSel.clear();
     }
   } else if (myCurrentLineEdit == mySubMeshLine) {
     //SALOME_ListIteratorOfListIO anIt (mySelectionMgr->StoredIObjects());
@@ -1402,16 +1421,24 @@ void SMESHGUI_GroupDlg::onAdd()
             for (int i = 0; i < k; i++) {
               QString aText = QString::number(anElements[i]);
               QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
-	      QListWidgetItem* anItem = 0;
               if (found.count() == 0) {
                 anItem = new QListWidgetItem(aText);
                 myElements->addItem(anItem);
-		anItem->setSelected(true);
+		if (!anItem->isSelected())
+		  listItemsToSel.push_back(anItem);
               }
 	      else {
-		foreach(anItem, found) anItem->setSelected(true);
+		foreach(anItem, found)
+		  if (!anItem->isSelected())
+		    listItemsToSel.push_back(anItem);
 	      }
             }
+	    bool blocked = myElements->signalsBlocked();
+	    myElements->blockSignals(true);
+	    foreach(anItem, listItemsToSel) anItem->setSelected(true);
+	    myElements->blockSignals(blocked);
+	    onListSelectionChanged();
+	    listItemsToSel.clear();
           }
           catch (const SALOME::SALOME_Exception& ex) {
             SalomeApp_Tools::QtCatchCorbaException(ex);
@@ -1440,16 +1467,24 @@ void SMESHGUI_GroupDlg::onAdd()
 	  for (int i = 0; i < k; i++) {
 	    QString aText = QString::number(anElements[i]);
 	    QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
-	    QListWidgetItem* anItem = 0;
 	    if (found.count() == 0) {
 	      anItem = new QListWidgetItem(aText);
 	      myElements->addItem(anItem);
-	      anItem->setSelected(true);
+	      if (!anItem->isSelected())
+		listItemsToSel.push_back(anItem);
 	    }
 	    else {
-	      foreach(anItem, found) anItem->setSelected(true);
+	      foreach(anItem, found)
+		if (!anItem->isSelected())
+		  listItemsToSel.push_back(anItem);
 	    }
 	  }
+	  bool blocked = myElements->signalsBlocked();
+	  myElements->blockSignals(true);
+	  foreach(anItem, listItemsToSel) anItem->setSelected(true);
+	  myElements->blockSignals(blocked);
+	  onListSelectionChanged();
+	  listItemsToSel.clear();
 	}
       }
     }
@@ -1490,16 +1525,24 @@ void SMESHGUI_GroupDlg::onAdd()
       for (int i = 0; i < k; i++) {
 	QString aText = QString::number(anElements[i]);
 	QList<QListWidgetItem*> found = myElements->findItems(aText, Qt::MatchExactly);
-	QListWidgetItem* anItem = 0;
 	if (found.count() == 0) {
 	  anItem = new QListWidgetItem(aText);
 	  myElements->addItem(anItem);
-	  anItem->setSelected(true);
+	  if (!anItem->isSelected())
+	    listItemsToSel.push_back(anItem);
 	}
 	else {
-	  foreach(anItem, found) anItem->setSelected(true);
+	  foreach(anItem, found)
+	    if (!anItem->isSelected())
+	      listItemsToSel.push_back(anItem);
 	}
       }
+      bool blocked = myElements->signalsBlocked();
+      myElements->blockSignals(true);
+      foreach(anItem, listItemsToSel) anItem->setSelected(true);
+      myElements->blockSignals(blocked);
+      onListSelectionChanged();
+      listItemsToSel.clear();
     }
 
     //VSR: mySelectGeomGroup->setChecked(false);
@@ -1638,11 +1681,19 @@ void SMESHGUI_GroupDlg::onSort()
     std::sort(anArray.begin(), anArray.end());
     //    anArray.sort();
     myElements->clear();
+    QListWidgetItem* anItem;
+    QList<QListWidgetItem*> listItemsToSel;
     for (i = 0; i < k; i++) {
-      QListWidgetItem* anItem = new QListWidgetItem(QString::number(anArray[i]));
+      anItem = new QListWidgetItem(QString::number(anArray[i]));
       myElements->addItem(anItem);
-      anItem->setSelected(aSelected.contains(anArray[i]));
+      if (aSelected.contains(anArray[i]))
+	listItemsToSel.push_back(anItem);
     }
+    bool blocked = myElements->signalsBlocked();
+    myElements->blockSignals(true);
+    foreach(anItem, listItemsToSel) anItem->setSelected(true);
+    myElements->blockSignals(blocked);
+    listItemsToSel.clear();
     myIsBusy = false;
   }
 }
