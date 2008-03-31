@@ -152,7 +152,6 @@ bool SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     Dlg->setObjectName( theHypName );
     Dlg->setHIcon( icon() );
     Dlg->setType( type() );
-    Dlg->setMinimumSize( Dlg->minimumSizeHint().width(), Dlg->minimumSizeHint().height() );
     retrieveParams();
     Dlg->show();
     if ( !myEventLoop )

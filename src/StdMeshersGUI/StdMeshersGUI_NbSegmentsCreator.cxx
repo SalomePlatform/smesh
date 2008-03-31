@@ -48,6 +48,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QApplication>
 
 #define SPACING 6
 #define MARGIN  11
@@ -211,6 +212,9 @@ void StdMeshersGUI_NbSegmentsCreator::retrieveParams() const
   myTable->setFuncMinValue(myConv->checkedId()==0 ? -1E20 : 0);
   myTable->setData( data.myTable );
   myExpr->setText( data.myExpr );
+
+  if ( dlg() )
+    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
 }
 
 QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
@@ -394,4 +398,11 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   if( isFunc )
     myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
+
+  if ( dlg() ) {
+    QApplication::instance()->processEvents();
+    dlg()->updateGeometry();
+    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
+    dlg()->resize( dlg()->minimumSize() );
+  }
 }

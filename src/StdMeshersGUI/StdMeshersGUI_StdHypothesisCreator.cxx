@@ -168,6 +168,9 @@ void StdMeshersGUI_StdHypothesisCreator::retrieveParams() const
     if ( widgetToActivate )
       widgetToActivate->activateSelection();
   }
+
+  if ( dlg() )
+    dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
 }
 
 namespace {
