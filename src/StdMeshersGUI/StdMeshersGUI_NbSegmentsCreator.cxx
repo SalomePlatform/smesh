@@ -399,7 +399,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   if( isFunc )
     myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
 
-  if ( dlg() ) {
+  if ( (QtxComboBox*)sender() == myDistr && dlg() ) {
     QApplication::instance()->processEvents();
     dlg()->updateGeometry();
     dlg()->setMinimumSize( dlg()->minimumSizeHint().width(), dlg()->minimumSizeHint().height() );
