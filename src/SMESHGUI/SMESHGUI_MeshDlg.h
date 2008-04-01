@@ -131,7 +131,6 @@ private slots:
   void                         onCreateHyp();  
   void                         onEditHyp();
   void                         onHyp( int );
-  void                         onPopupItem( int );
   
 private:  
   QMap<int, QComboBox*>        myHyp;
