@@ -724,7 +724,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
       TPythonDump() << _this() << ".RemoveGroup( " << aGroupSO << " )";
 
       // Remove group's SObject
-      aStudy->NewBuilder()->RemoveObject( aGroupSO );
+      aStudy->NewBuilder()->RemoveObjectWithChildren( aGroupSO );
     }
   }
 
