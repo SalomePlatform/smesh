@@ -511,11 +511,11 @@ void SMESHGUI_EditMeshDlg::Init()
 
   connect(SelectMeshButton, SIGNAL (clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(DetectButton, SIGNAL (clicked()), this, SLOT(onDetect()));
-  connect(ListCoincident, SIGNAL (selectionChanged()), this, SLOT(onSelectGroup()));
+  connect(ListCoincident, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectGroup()));
   connect(AddGroupButton, SIGNAL (clicked()), this, SLOT(onAddGroup()));
   connect(RemoveGroupButton, SIGNAL (clicked()), this, SLOT(onRemoveGroup()));
   connect(SelectAllCB, SIGNAL(toggled(bool)), this, SLOT(onSelectAll(bool)));
-  connect(ListEdit, SIGNAL (selectionChanged()), this, SLOT(onSelectElementFromGroup()));
+  connect(ListEdit, SIGNAL (itemSelectionChanged()), this, SLOT(onSelectElementFromGroup()));
   connect(AddElemButton, SIGNAL (clicked()), this, SLOT(onAddElement()));
   connect(RemoveElemButton, SIGNAL (clicked()), this, SLOT(onRemoveElement()));
   connect(SetFirstButton, SIGNAL( clicked() ), this, SLOT( onSetFirst() ) );
