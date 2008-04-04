@@ -694,7 +694,7 @@ Please enter correct values and try again</translation>
         </message>
         <message>
             <source>SMESH_ADD_HYP_WRN</source>
-            <translation>\"%1\" assigned but:
+            <translation>"%1" assigned but:
 </translation>
         </message>
         <message>
@@ -859,12 +859,12 @@ Please enter correct values and try again</translation>
         </message>
         <message>
             <source>SMESH_CANT_ADD_HYP</source>
-            <translation>Can not assign \"%1\":
+            <translation>Can not assign "%1":
 </translation>
         </message>
         <message>
             <source>SMESH_CANT_RM_HYP</source>
-            <translation>Can not unassign \"%1\":
+            <translation>Can not unassign "%1":
 </translation>
         </message>
         <message>
@@ -894,7 +894,7 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_CONTINUE_MESH_VISUALIZATION</source>
             <translation>It seems that there is not enough memory to show the mesh
-</translation>
+so that the application may crash. Do you wish to continue visualization?</translation>
         </message>
         <message>
             <source>SMESH_COORDINATES</source>
@@ -950,7 +950,8 @@ Please enter correct values and try again</translation>
         </message>
         <message>
             <source>SMESH_DRS_2</source>
-            <translation></translation>
+            <translation>MED file has overlapped ranges of element numbers,
+     the numbers from the file are ignored</translation>
         </message>
         <message>
             <source>SMESH_DRS_3</source>
@@ -959,12 +960,12 @@ Please enter correct values and try again</translation>
         <message>
             <source>SMESH_DRS_4</source>
             <translation>    The file is incorrect,
-</translation>
+some information will be missed</translation>
         </message>
         <message>
             <source>SMESH_DRS_EMPTY</source>
             <translation>      The file is empty,
-</translation>
+there is nothing to be published</translation>
         </message>
         <message>
             <source>SMESH_DX</source>
@@ -1029,26 +1030,31 @@ Probably, there is not enough space on disk.</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
-            <translation>There are duplicated group names in mesh \"%1\".
-</translation>
+            <translation>There are duplicated group names in mesh "%1".
+You can cancel exporting and rename them,
+otherwise some group names in the resulting MED file
+will not match ones in the study.
+Do you want to continue ?</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_MED_V2_1</source>
-            <translation>During export mesh with name - \"%1\" to MED 2.1
-</translation>
+            <translation>During export mesh with name - "%1" to MED 2.1
+polygons and polyhedrons elements will be missed
+For correct export use MED 2.2
+Are you sure want to export to MED 2.1 ?</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_STL1</source>
-            <translation>Mesh  - \"%1\" does not contain triangles</translation>
+            <translation>Mesh  - "%1" does not contain triangles</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_STL2</source>
-            <translation>Mesh  - \"%1\" contains another than triangles elements,</translation>
+            <translation>Mesh  - "%1" contains another than triangles elements,     they are ignored during writing to STL</translation>
         </message>
         <message>
             <source>SMESH_EXPORT_UNV</source>
-            <translation>During export mesh with name - \"%1\" to UNV
-</translation>
+            <translation>During export mesh with name - "%1" to UNV
+       pyramid's elements will be missed</translation>
         </message>
         <message>
             <source>SMESH_EXTRUSION</source>
@@ -1616,7 +1622,7 @@ Probably, there is not enough space on disk.</translation>
         </message>
         <message>
             <source>SMESH_RM_HYP_WRN</source>
-            <translation>\"%1\" unassigned but:
+            <translation>"%1" unassigned but:
 </translation>
         </message>
         <message>
@@ -1730,7 +1736,8 @@ Probably, there is not enough space on disk.</translation>
         <message>
             <source>SMESH_VISU_PROBLEM_CLEAR</source>
             <translation>Mesh visualization failed, no memory even to show a message,
-</translation>
+so all visual data have been removed to let the application live.
+Consider saving your work before application crash</translation>
         </message>
         <message>
             <source>SMESH_VOLUME</source>
@@ -1822,19 +1829,19 @@ Probably, there is not enough space on disk.</translation>
         </message>
         <message>
             <source>STATE_HYP_BAD_GEOMETRY</source>
-            <translation>%3 %2D algorithm \"%1\" is assigned to geometry mismatching its expectation</translation>
+            <translation>%3 %2D algorithm "%1" is assigned to geometry mismatching its expectation</translation>
         </message>
         <message>
             <source>STATE_HYP_BAD_PARAMETER</source>
-            <translation>Hypothesis of %3 %2D algorithm \"%1\" has a bad parameter value</translation>
+            <translation>Hypothesis of %3 %2D algorithm "%1" has a bad parameter value</translation>
         </message>
         <message>
             <source>STATE_HYP_MISSING</source>
-            <translation>%3 %2D algorithm \"%1\" misses %4D hypothesis</translation>
+            <translation>%3 %2D algorithm "%1" misses %4D hypothesis</translation>
         </message>
         <message>
             <source>STATE_HYP_NOTCONFORM</source>
-            <translation>%3 %2D algorithm \"%1\" would produce not conform mesh: global \"Not Conform Mesh Allowed\" hypotesis is missing</translation>
+            <translation>%3 %2D algorithm "%1" would produce not conform mesh: global "Not Conform Mesh Allowed" hypotesis is missing</translation>
         </message>
         <message>
             <source>STB_ADV_INFO</source>
@@ -3252,7 +3259,7 @@ Please select a groups and try again</translation>
         <name>SMESHGUI_FilterDlg</name>
         <message>
             <source>BAD_SHAPE_NAME</source>
-            <translation>There is no \"%1\" geometrical object in the current study
+            <translation>There is no "%1" geometrical object in the current study
 Please select valid object and try again</translation>
         </message>
         <message>
@@ -3285,17 +3292,17 @@ Please select valid object and try again</translation>
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_CYLINDER</source>
-            <translation>\"%1\" is not a cylinderical face
+            <translation>"%1" is not a cylinderical face
 Please select a cylindrical face and try again</translation>
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_FACE</source>
-            <translation>\"%1\" is not a face
+            <translation>"%1" is not a face
 Please select a face and try again</translation>
         </message>
         <message>
             <source>SHAPE_IS_NOT_A_PLANE</source>
-            <translation>\"%1\" is not a plane
+            <translation>"%1" is not a plane
 Please select a plane and try again</translation>
         </message>
         <message>
@@ -3327,8 +3334,8 @@ Please select a plane and try again</translation>
         </message>
         <message>
             <source>ASSIGN_NEW_NAME</source>
-            <translation>Library already contains filter with name \"%1\"
-New name \"%2\" is assigned to added filter</translation>
+            <translation>Library already contains filter with name "%1"
+New name "%2" is assigned to added filter</translation>
         </message>
         <message>
             <source>COPY_FROM_TLT</source>
