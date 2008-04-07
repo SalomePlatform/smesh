@@ -932,7 +932,7 @@ void SMESHGUI_GroupDlg::onListSelectionChanged()
 void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 {
   if ( myIsBusy || !isEnabled()) return;
-  if (myCurrentLineEdit == myGeomGroupLine && !myGeomGroupBtn->isDown()) return;
+  if (myCurrentLineEdit == myGeomGroupLine && !myGeomGroupBtn->isChecked()) return;
 
   myIsBusy = true;
 
@@ -958,8 +958,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
       myGeomObjects = new GEOM::ListOfGO();
       myGeomObjects->length(0);
 
-      if (myGeomGroupBtn->isDown())
-	myGeomGroupBtn->setDown(false);
+      if (myGeomGroupBtn->isChecked())
+	myGeomGroupBtn->setChecked(false);
       if (!myCreate)
         myName->setText("");
 
@@ -1246,7 +1246,7 @@ void SMESHGUI_GroupDlg::onSelectGeomGroup(bool on)
     setSelectionMode(8);
   }
   else {
-    myGeomGroupBtn->setDown(false);
+    myGeomGroupBtn->setChecked(false);
     myGeomObjects->length(0);
     myGeomGroupLine->setText("");
     myCurrentLineEdit = 0;
