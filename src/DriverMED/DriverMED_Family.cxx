@@ -385,9 +385,9 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   double aRed = aColor.Red();
   double aGreen = aColor.Green();
   double aBlue = aColor.Blue();
-  int aR = (int) aRed*255;
-  int aG = (int) aGreen*255;
-  int aB = (int) aBlue*255;
+  int aR = int( aRed*255   );
+  int aG = int( aGreen*255 );
+  int aB = int( aBlue*255  );
 //   cout << "aRed = " << aR << endl;
 //   cout << "aGreen = " << aG << endl;
 //   cout << "aBlue = " << aB << endl;
