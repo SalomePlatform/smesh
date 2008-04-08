@@ -790,7 +790,7 @@ void SMESHGUI_MeshPatternDlg::onOpen()
   }
 
   QByteArray aDataArray = aFile.readAll();
-  if (aDataArray.size() > 0) {
+  if (aDataArray.isEmpty()) {
     SUIT_MessageBox::information(this, tr("SMESH_ERROR"),
 				 tr("ERROR_OF_READING"));
     return;
