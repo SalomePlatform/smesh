@@ -548,10 +548,15 @@ void SMESHGUI_FilterTable::Table::setEditable (bool isEditable,
 {
   QTableWidgetItem* anItem = item( row, col );
   if ( anItem ) {
+    bool isSignalsBlocked = signalsBlocked();
+    blockSignals( true );
+
     Qt::ItemFlags f = anItem->flags();
     if ( !isEditable ) f = f & ~Qt::ItemIsEditable;
     else f = f | Qt::ItemIsEditable;
     anItem->setFlags( f );
+    
+    blockSignals( isSignalsBlocked );
   }
 }
 
@@ -1402,7 +1407,7 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   }
 
   theTable->setEditable(false, theTable->rowCount() - 1, 4);
-
+  
   if (aCurrRow >=0 && aCurrRow < theTable->rowCount() &&
        aCurrCol >=0 && aCurrCol < theTable->rowCount())
   theTable->setCurrentCell(aCurrRow, aCurrCol);
