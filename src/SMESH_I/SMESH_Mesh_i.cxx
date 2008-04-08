@@ -121,6 +121,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
       // this method is colled from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
 
+      removeGroup( aGroup->GetLocalID() );
       aGroup->Destroy();
     }
   }
