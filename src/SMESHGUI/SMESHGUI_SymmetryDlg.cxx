@@ -219,8 +219,8 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 4);
   GroupArgumentsLayout->addWidget(GroupMirror,          2, 0, 1, 4);
   GroupArgumentsLayout->addWidget(ActionBox,            3, 0, 3, 3);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      4, 4);
-  GroupArgumentsLayout->addWidget(LineEditNewMesh,      5, 4);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      4, 3);
+  GroupArgumentsLayout->addWidget(LineEditNewMesh,      5, 3);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
