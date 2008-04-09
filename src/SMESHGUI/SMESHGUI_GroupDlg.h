@@ -81,6 +81,7 @@ public slots:
 private slots:
   void                          onTypeChanged( int );
   void                          onGrpTypeChanged( int );
+  void                          onColorChanged( QColor );
   
   void                          onOK();
   void                          onClose();

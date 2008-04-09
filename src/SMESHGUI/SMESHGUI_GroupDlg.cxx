@@ -379,6 +379,8 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   connect(myGroupBtn,      SIGNAL(clicked()), this, SLOT(setCurrentSelection()));
   connect(myGeomGroupBtn,  SIGNAL(toggled(bool)), this, SLOT(onGeomSelectionButton(bool)));
 
+  connect(myColorBtn, SIGNAL(changed( QColor )), this, SLOT(onColorChanged( QColor )));
+
   connect(myOKBtn,    SIGNAL(clicked()), this, SLOT(onOK()));
   connect(myApplyBtn, SIGNAL(clicked()), this, SLOT(onApply()));
   connect(myCloseBtn, SIGNAL(clicked()), this, SLOT(onClose()));
@@ -631,6 +633,15 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
     onSelectGeomGroup(id == 1);
   }
   myGrpTypeId = id;
+}
+
+//=================================================================================
+// function : onColorChanged()
+// purpose  : Color button management
+//=================================================================================
+void SMESHGUI_GroupDlg::onColorChanged(QColor theColor)
+{
+  updateButtons();
 }
 
 //=================================================================================
