@@ -1283,9 +1283,14 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
        aType == SMESH::FACE && aCriterionType == SMESH::FT_FreeEdges ||
        aType == SMESH::VOLUME && aCriterionType == SMESH::FT_BadOrientedVolume)
   {
+    bool isSignalsBlocked = aTable->signalsBlocked();
+    aTable->blockSignals( true );
+
     if (aCompareItem->count() > 0)
       aCompareItem->clear();
     aTable->setEditable(false, row, 2);
+
+    aTable->blockSignals( isSignalsBlocked );
   }
   else if (aCriterionType == SMESH::FT_RangeOfIds ||
            aCriterionType == SMESH::FT_BelongToGeom ||
