@@ -335,7 +335,9 @@ void SMESHGUI_FilterLibraryDlg::Init (const QList<int>& theTypes,
   myTable->Init(theTypes);
   myCurrFilterName = "";
   myCurrFilter = -1;
+  myListBox->blockSignals(true);
   myListBox->clear();
+  myListBox->blockSignals(false);
   myName->clear();
   myTable->Clear();
 
@@ -694,7 +696,9 @@ void SMESHGUI_FilterLibraryDlg::updateList()
   SMESH::string_array_var aNames = myLibrary->GetNames((SMESH::ElementType)myTable->GetType());
   for (int i = 0, n = aNames->length(); i < n; i++)
     aList.append(QString(aNames[ i ]));
+  myListBox->blockSignals(true);
   myListBox->clear();
+  myListBox->blockSignals(false);
   myListBox->addItems(aList);
   if (myListBox->count() == 0)
   {
