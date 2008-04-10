@@ -50,6 +50,7 @@ class QPushButton;
 
 class SMESHGUI;
 class SMESH_Actor;
+class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SVTK_Selector;
 class LightApp_SelectionMgr;
@@ -74,6 +75,7 @@ private:
   int                              GetConstructorId();
 
   SMESHGUI*                        mySMESHGUI;            /* Current SMESHGUI object */
+  SMESHGUI_IdValidator*            myIdValidator;
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
   QLineEdit*                       myEditCurrentArgument; /* Current  LineEdit */
   int                              myNbOkElements;        /* to check when elements are defined */

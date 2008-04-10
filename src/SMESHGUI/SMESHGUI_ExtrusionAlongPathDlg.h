@@ -48,6 +48,7 @@ class QPushButton;
 
 class SMESHGUI;
 class SMESH_Actor;
+class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SVTK_Selector;
 class LightApp_SelectionMgr;
@@ -78,6 +79,7 @@ private:
   void                      SetEditCurrentArgument( QToolButton* );
 
   SMESHGUI*                 mySMESHGUI;            /* Current SMESHGUI object */
+  SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
   SVTK_Selector*            mySelector;
 

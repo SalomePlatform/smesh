@@ -154,6 +154,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
   GroupArgumentsLayout->setSpacing(SPACING); GroupArgumentsLayout->setMargin(MARGIN);
 
+  myIdValidator = new SMESHGUI_IdValidator(this);
+
   // Controls for elements selection
   ElementsLab = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
 
@@ -161,7 +163,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   SelectElementsButton->setIcon(selectImage);
 
   ElementsLineEdit = new QLineEdit(GroupArguments);
-  ElementsLineEdit->setValidator(new SMESHGUI_IdValidator(this));
+  ElementsLineEdit->setValidator(myIdValidator);
 
   // Controls for the whole mesh selection
   MeshCheck = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -1110,6 +1112,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onSelectMesh()
   bool toSelectMesh = MeshCheck->isChecked();
 
   ElementsLineEdit->setReadOnly(toSelectMesh);
+  ElementsLineEdit->setValidator(toSelectMesh ? 0 : myIdValidator);
   ElementsLab->setText(toSelectMesh ? tr("SMESH_NAME") : tr("SMESH_ID_ELEMENTS"));
   ElementsLineEdit->clear();
 

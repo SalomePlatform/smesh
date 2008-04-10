@@ -123,6 +123,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->setSpacing(SPACING);
   GroupArgumentsLayout->setMargin(MARGIN);
 
+  myIdValidator = new SMESHGUI_IdValidator(this);
+
   // Controls for elements selection
   TextLabelElements = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
 
@@ -130,7 +132,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   SelectElementsButton->setIcon(image2);
 
   LineEditElements  = new QLineEdit(GroupArguments);
-  LineEditElements->setValidator(new SMESHGUI_IdValidator(this));
+  LineEditElements->setValidator(myIdValidator);
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -852,6 +854,7 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
+    LineEditElements->setValidator(0);
   } else {
     int aConstructorId = GetConstructorId();
     if (aConstructorId == 0)
@@ -866,6 +869,7 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
       }
 
     LineEditElements->setReadOnly(false);
+    LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
   }
 

@@ -44,6 +44,7 @@ class QPushButton;
 class QRadioButton;
 class QCheckBox;
 class QSpinBox;
+class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SMESHGUI;
 class SMESH_Actor;
@@ -73,6 +74,7 @@ private:
   bool                    IsAxisOk();
   
   SMESHGUI*               mySMESHGUI;              /* Current SMESHGUI object */
+  SMESHGUI_IdValidator*   myIdValidator;
   LightApp_SelectionMgr*  mySelectionMgr;          /* User shape selection */
   int                     myNbOkElements;          /* to check when elements are defined */
   QString                 myElementsId;

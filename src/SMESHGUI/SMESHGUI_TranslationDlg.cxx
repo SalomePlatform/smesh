@@ -127,12 +127,14 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->setSpacing(SPACING);
   GroupArgumentsLayout->setMargin(MARGIN);
 
+  myIdValidator = new SMESHGUI_IdValidator(this);
+
   // Controls for elements selection
   TextLabelElements = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
   SelectElementsButton = new QPushButton(GroupArguments);
   SelectElementsButton->setIcon(image2);
   LineEditElements = new QLineEdit(GroupArguments);
-  LineEditElements->setValidator(new SMESHGUI_IdValidator(this));
+  LineEditElements->setValidator(myIdValidator);
 
   // Control for the whole mesh selection
   CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
@@ -851,10 +853,12 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode( ActorSelection );
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
+    LineEditElements->setValidator(0);
   } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
+    LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
   }
 

@@ -44,6 +44,7 @@ class QPushButton;
 class QRadioButton;
 class QCheckBox;
 class SMESHGUI;
+class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
 class SVTK_Selector;
@@ -72,6 +73,7 @@ private:
   void                   setNewMeshName();
 
   SMESHGUI*              mySMESHGUI;              /* Current SMESHGUI object */
+  SMESHGUI_IdValidator*  myIdValidator;
   LightApp_SelectionMgr* mySelectionMgr;          /* User shape selection */
   QString                myElementsId;
   int                    myNbOkElements;          /* to check when elements are defined */
