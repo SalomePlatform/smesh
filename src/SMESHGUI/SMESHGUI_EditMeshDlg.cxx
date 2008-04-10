@@ -412,6 +412,7 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   //ListEdit->setRowMode(QListBox::FixedNumber);
   //ListEdit->setHScrollBarMode(QScrollView::AlwaysOn);
   //ListEdit->setVScrollBarMode(QScrollView::AlwaysOff);
+  ListEdit->setFlow( QListView::LeftToRight );
   ListEdit->setSelectionMode(QListWidget::ExtendedSelection);
 
   AddElemButton = new QPushButton(GroupEdit);
