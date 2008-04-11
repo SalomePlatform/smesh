@@ -268,7 +268,7 @@ void SMESHGUI_MeshTab::onCreateHyp()
   QMenu aPopup( this );
   
   QStringList aHypNames = isMainHyp ? 
-    myAvailableHyps[ MainHyp ] : aHypNames = myAvailableHyps[ AddHyp ];
+    myAvailableHyps[ MainHyp ] : myAvailableHyps[ AddHyp ];
 
   QList<QAction*> actions;
   for ( int i = 0, n = aHypNames.count(); i < n; i++ )
