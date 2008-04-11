@@ -35,7 +35,10 @@
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SUIT_MessageBox.h>
 
+#include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
 
@@ -278,6 +281,8 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myApplyBtn->setAutoDefault( true );
   myCancelBtn = new QPushButton( tr( "SMESH_BUT_CLOSE" ), myButtonGrp );
   myCancelBtn->setAutoDefault( true );
+  myHelpBtn = new QPushButton( tr("SMESH_BUT_HELP"), myButtonGrp );
+  myHelpBtn->setAutoDefault(true);
 
   myButtonGrpLayout->addWidget( myOkBtn );
   myButtonGrpLayout->addSpacing( 10 );
@@ -285,6 +290,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   myButtonGrpLayout->addSpacing( 10 );
   myButtonGrpLayout->addStretch();
   myButtonGrpLayout->addWidget( myCancelBtn );
+  myButtonGrpLayout->addWidget( myHelpBtn );
 
   aTopLayout->addWidget( myButtonGrp );
 
@@ -367,11 +373,14 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   connect( myOkBtn,             SIGNAL( clicked() ), this, SLOT( onOk() ) );
   connect( myApplyBtn,          SIGNAL( clicked() ), this, SLOT( onApply() ) );
   connect( myCancelBtn,         SIGNAL( clicked() ), this, SLOT( onCancel() ) );
+  connect( myHelpBtn,           SIGNAL(clicked()),   this, SLOT( onHelp() ) );
   connect( myXSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( myYSpin,             SIGNAL( valueChanged( double ) ), this, SLOT( onXYChanged() ) );
   connect( aOrientationGrp,     SIGNAL( buttonClicked( int ) ),   this, SLOT( onOrientationChanged() ) );
   connect( mySelectionMgr,      SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
   connect( mySMESHGUI,          SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( onCancel() ) );
+
+  myHelpFileName = "about_quality_controls_page.html";
 }
 
 //=================================================================================================
@@ -473,6 +482,33 @@ bool SMESHGUI_Preferences_ScalarBarDlg::onApply()
 void SMESHGUI_Preferences_ScalarBarDlg::onCancel()
 {
   close();
+}
+
+//=================================================================================================
+/*!
+ *  SMESHGUI_Preferences_ScalarBarDlg::onHelp
+ *
+ *  Help button slot
+ */
+//=================================================================================================
+void SMESHGUI_Preferences_ScalarBarDlg::onHelp()
+{
+  LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
+  if (app) 
+    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString(""), myHelpFileName);
+  else {
+    QString platform;
+#ifdef WIN32
+    platform = "winapplication";
+#else
+    platform = "application";
+#endif
+    SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
+			     tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
+			     arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+								 platform)).
+			     arg(myHelpFileName));
+  }
 }
 
 //=================================================================================================

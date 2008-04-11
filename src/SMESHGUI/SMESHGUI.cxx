@@ -3085,11 +3085,12 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_AUTO_UPDATE" ), updateGroup, LightApp_Preferences::Bool, "SMESH", "auto_update" );
 
   int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
+  setPreferenceProperty( qaGroup, "columns", 2 );
   addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "display_entity" );
   addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "use_precision" );
 
   int precGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), genTab );
-  setPreferenceProperty( precGroup, "columns", 1 );
+  setPreferenceProperty( precGroup, "columns", 2 );
 
   int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), precGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
 
@@ -3097,6 +3098,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( prec, "max", 16 );
 
   int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
+  setPreferenceProperty( dispgroup, "columns", 2 );
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
   modes.append( "Wireframe" );
@@ -3112,11 +3114,13 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispmode, "indexes", indices );
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
+  setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
   addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int meshTab = addPreference( tr( "PREF_TAB_MESH" ) );
   int nodeGroup = addPreference( tr( "PREF_GROUP_NODES" ), meshTab );
+  setPreferenceProperty( nodeGroup, "columns", 2 );
 
   addPreference( tr( "PREF_COLOR" ), nodeGroup, LightApp_Preferences::Color, "SMESH", "node_color" );
   int nodeSz = addPreference( tr( "PREF_SIZE" ), nodeGroup, LightApp_Preferences::IntSpin, "SMESH", "node_size" );
@@ -3125,6 +3129,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( nodeSz, "max", 5 );
 
   int elemGroup = addPreference( tr( "PREF_GROUP_ELEMENTS" ), meshTab );
+  setPreferenceProperty( elemGroup, "columns", 2 );
 
   addPreference( tr( "PREF_FILL" ), elemGroup, LightApp_Preferences::Color, "SMESH", "fill_color" );
   addPreference( tr( "PREF_OUTLINE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
@@ -3143,6 +3148,7 @@ void SMESHGUI::createPreferences()
   int selTab = addPreference( tr( "PREF_TAB_SELECTION" ) );
 
   int selGroup = addPreference( tr( "PREF_GROUP_SELECTION" ), selTab );
+  setPreferenceProperty( selGroup, "columns", 2 );
 
   addPreference( tr( "PREF_OBJECT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_object_color" );
   addPreference( tr( "PREF_ELEMENT_COLOR" ), selGroup, LightApp_Preferences::Color, "SMESH", "selection_element_color" );
@@ -3152,6 +3158,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( selW, "max", 5 );
 
   int preGroup = addPreference( tr( "PREF_GROUP_PRESELECTION" ), selTab );
+  setPreferenceProperty( preGroup, "columns", 2 );
 
   addPreference( tr( "PREF_HIGHLIGHT_COLOR" ), preGroup, LightApp_Preferences::Color, "SMESH", "highlight_color" );
   int preW = addPreference( tr( "PREF_WIDTH" ), preGroup, LightApp_Preferences::IntSpin, "SMESH", "highlight_width" );
@@ -3160,6 +3167,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( preW, "max", 5 );
 
   int precSelGroup = addPreference( tr( "PREF_GROUP_PRECISION" ), selTab );
+  setPreferenceProperty( precSelGroup, "columns", 2 );
 
   addPreference( tr( "PREF_NODES" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_node" );
   addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_element" );
@@ -3167,6 +3175,7 @@ void SMESHGUI::createPreferences()
 
   int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
+  setPreferenceProperty( fontGr, "columns", 4 );
 
   int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
   addPreference( tr( "PREF_TITLE_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
@@ -3187,6 +3196,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( lfont, "widget_flags", wflag );
 
   int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
+  setPreferenceProperty( colorsLabelsGr, "columns", 4 );
 
   int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, LightApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
   setPreferenceProperty( numcol, "min", 2 );
@@ -3197,6 +3207,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( numlab, "max", 65 );
 
   int orientGr = addPreference( tr( "SMESH_ORIENTATION" ), sbarTab );
+  setPreferenceProperty( orientGr, "columns", 2 );
   int orient = addPreference( tr( "SMESH_ORIENTATION" ), orientGr, LightApp_Preferences::Selector, "SMESH", "scalar_bar_orientation" );
   QStringList orients;
   orients.append( tr( "SMESH_VERTICAL" ) );
@@ -3206,6 +3217,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( orient, "indexes", indices );
 
   int posVSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_VERTICAL" ), sbarTab );
+  setPreferenceProperty( posVSizeGr, "columns", 4 );
   int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
   int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );
   int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
@@ -3224,6 +3236,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( hv, "step", 0.1 );
 
   int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
+  setPreferenceProperty( posHSizeGr, "columns", 4 );
   int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
   int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
   int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );

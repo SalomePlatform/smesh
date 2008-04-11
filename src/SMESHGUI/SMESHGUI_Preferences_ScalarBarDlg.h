@@ -72,6 +72,7 @@ protected slots:
   void                     onOk();
   bool                     onApply();
   void                     onCancel();
+  void                     onHelp();
   void                     onSelectionChanged();
   void                     onXYChanged();
   void                     onOrientationChanged();
@@ -119,6 +120,9 @@ private:
   QPushButton*             myOkBtn;
   QPushButton*             myApplyBtn;
   QPushButton*             myCancelBtn;
+  QPushButton*             myHelpBtn;
+
+  QString                  myHelpFileName;
 };
 
 #endif // SMESHGUI_PREFERENCES_SCALARBARDLG_H
