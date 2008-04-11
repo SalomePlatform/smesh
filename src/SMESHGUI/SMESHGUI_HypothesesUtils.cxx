@@ -44,8 +44,11 @@
 #include <utilities.h>
 
 // STL includes
-#include <map>
 #include <string>
+
+// Qt includes
+#include <QMap>
+//#include <QList>
 
 // Other includes
 #ifdef WNT
@@ -74,14 +77,15 @@ static int MYDEBUG = 0;
 
 namespace SMESH
 {
-  typedef std::map<std::string,HypothesisData*> THypothesisDataMap;
+  typedef QMap<std::string,HypothesisData*> THypothesisDataMap;
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
 
-  typedef std::map<std::string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
+  typedef QMap<std::string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
   THypCreatorMap myHypCreatorMap;
 
   std::list<HypothesesSet*> myListOfHypothesesSets;
+  //QList<HypothesesSet*> myListOfHypothesesSets;
 
   void processHypothesisStatus(const int theHypStatus,
 			       SMESH::SMESH_Hypothesis_ptr theHyp,
@@ -169,10 +173,8 @@ namespace SMESH
 	  bool ok = reader.parse(source);
 	  file.close();
 	  if (ok) {
-            myHypothesesMap.insert( aXmlHandler->myHypothesesMap.begin(),
-                                    aXmlHandler->myHypothesesMap.end() );
-            myAlgorithmsMap.insert( aXmlHandler->myAlgorithmsMap.begin(),
-                                    aXmlHandler->myAlgorithmsMap.end() );
+	    myHypothesesMap = QMap<std::string,HypothesisData*>( aXmlHandler->myHypothesesMap );
+            myAlgorithmsMap = QMap<std::string,HypothesisData*>( aXmlHandler->myAlgorithmsMap );
             myListOfHypothesesSets.splice( myListOfHypothesesSets.begin(),
                                            aXmlHandler->myListOfHypothesesSets );
 	  }
@@ -219,14 +221,14 @@ namespace SMESH
     THypothesisDataMap::iterator anIter;
     for ( anIter = pMap->begin(); anIter != pMap->end(); anIter++ )
       {
-	HypothesisData* aData = (*anIter).second;
+	HypothesisData* aData = anIter.value();
 	if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux)
 	  if (checkGeometry){
 	    if (aData->IsNeedGeometry == isNeedGeometry)
-	      aHypList.append(((*anIter).first).c_str());
+	      aHypList.append(anIter.key().c_str());
 	  }
 	  else
-	    aHypList.append(((*anIter).first).c_str());
+	    aHypList.append(anIter.key().c_str());
       }
     return aHypList;
   }
@@ -240,6 +242,7 @@ namespace SMESH
     InitAvailableHypotheses();
 
     std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    //QList<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
     for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
       {
 	HypothesesSet* aSet = *hypoSet;
@@ -254,6 +257,7 @@ namespace SMESH
   HypothesesSet* GetHypothesesSet(const QString& theSetName)
   {
     std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
+    //QList<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
     for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
       {
 	HypothesesSet* aSet = *hypoSet;
@@ -272,12 +276,12 @@ namespace SMESH
 
     THypothesisDataMap::iterator type_data = myHypothesesMap.find(aHypType.toLatin1().data());
     if (type_data != myHypothesesMap.end()) {
-      aHypData = type_data->second;
+      aHypData = type_data.value();
     }
     else {
       type_data = myAlgorithmsMap.find(aHypType.toLatin1().data());
       if (type_data != myAlgorithmsMap.end())
-        aHypData = type_data->second;
+	aHypData = type_data.value();
     }
     return aHypData;
   }
