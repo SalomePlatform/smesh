@@ -3131,11 +3131,23 @@ QString SMESHGUI::engineIOR() const
   return QString( anIOR.in() );
 }
 
-void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QString& /*title*/ )
+void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QString& title )
 {
   SMESHGUI_Selection sel;
   sel.init( client, selectionMgr() );
   popupMgr()->updatePopup( menu, &sel );
+
+  SalomeApp_Module::contextMenuPopup( client, menu, title );
+  SALOME_ListIO lst;
+  getApp()->selectionMgr()->selectedObjects( lst );
+  if ( ( client == "OCCViewer" || client == "VTKViewer" ) && lst.Extent() == 1 ) {
+    Handle(SALOME_InteractiveObject) io = lst.First();
+    SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() );
+    _PTR(Study) study = appStudy->studyDS();
+    _PTR(SObject) obj = study->FindObjectID( io->getEntry() );
+    if ( obj )
+      title = QString( obj->GetName().c_str() );
+  }
 }
 
 void SMESHGUI::windows( QMap<int, int>& aMap ) const
