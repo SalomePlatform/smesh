@@ -136,6 +136,8 @@ protected:
   
   virtual LightApp_Operation*      createOperation( const int ) const;
 
+  virtual bool                     isSelectionCompatible();
+
 private:
   void OnEditDelete();
 

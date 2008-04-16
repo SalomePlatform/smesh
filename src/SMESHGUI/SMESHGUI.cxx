@@ -3039,6 +3039,30 @@ void SMESHGUI::initialize( CAM_Application* app )
 	   this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
 }
 
+//================================================================================
+/*!
+ * \brief Return true if SMESH or GEOM objects are selected.
+ * Is called form LightApp_Module::activateModule() which clear selection if
+ * not isSelectionCompatible()
+ */
+//================================================================================
+
+bool SMESHGUI::isSelectionCompatible()
+{
+  bool isCompatible = true;
+  SALOME_ListIO selected;
+  if ( LightApp_SelectionMgr *Sel = selectionMgr() )
+    Sel->selectedObjects( selected );
+
+  SALOME_ListIteratorOfListIO It( selected );
+  for ( ; isCompatible && It.More(); It.Next())
+    isCompatible =
+      ( strcmp("GEOM", It.Value()->getComponentDataType()) == 0 ) ||
+      ( strcmp("SMESH", It.Value()->getComponentDataType()) == 0 );
+
+  return isCompatible;
+}
+
 bool SMESHGUI::activateModule( SUIT_Study* study )
 {
   bool res = SalomeApp_Module::activateModule( study );
