@@ -27,8 +27,9 @@
 """
 
 ## \package smeshDC
-#  To get started, please look at smeshDC::smeshDC documentation for general services of smesh package.
-#  You can find the smeshDC::smeshDC documentation also by the first
+#  To get started, please, have a look at smeshDC::smeshDC documentation
+#  for general services of smesh package
+#  You can also find the smeshDC::smeshDC documentation by the first
 #  item in the Data Structures list on this page.
 #  See also the list of Data Structures and the list of Functions
 #  for other classes and methods of smesh python interface.
@@ -37,7 +38,7 @@
 import salome
 import geompyDC
 
-import SMESH # necessary for back compatibility
+import SMESH # This is necessary for back compatibility
 from   SMESH import *
 
 import StdMeshers
@@ -52,7 +53,7 @@ except ImportError:
     noNETGENPlugin = 1
     pass
 
-# Types of algo
+# Types of algorithms
 REGULAR    = 1
 PYTHON     = 2
 COMPOSITE  = 3
@@ -78,7 +79,7 @@ PLANE = SMESH_MeshEditor.PLANE
 LAPLACIAN_SMOOTH = SMESH_MeshEditor.LAPLACIAN_SMOOTH
 CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
 
-# Fineness enumeration(for NETGEN)
+# Fineness enumeration (for NETGEN)
 VeryCoarse = 0
 Coarse = 1
 Moderate = 2
@@ -105,7 +106,7 @@ def GetName(obj):
         attr = sobj.FindAttribute("AttributeName")[1]
         return attr.Value()
 
-## Sets name to object
+## Sets a name to the object
 def SetName(obj, name):
     ior  = salome.orb.object_to_string(obj)
     sobj = salome.myStudy.FindObjectIOR(ior)
@@ -113,7 +114,7 @@ def SetName(obj, name):
         attr = sobj.FindAttribute("AttributeName")[1]
         attr.SetValue(name)
 
-## Print error message if a hypothesis was not assigned.
+## Prints error message if a hypothesis was not assigned.
 def TreatHypoStatus(status, hypName, geomName, isAlgo):
     if isAlgo:
         hypType = "algorithm"
@@ -123,23 +124,23 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
     if status == HYP_UNKNOWN_FATAL :
         reason = "for unknown reason"
     elif status == HYP_INCOMPATIBLE :
-        reason = "this hypothesis mismatches algorithm"
+        reason = "this hypothesis mismatches the algorithm"
     elif status == HYP_NOTCONFORM :
-        reason = "not conform mesh would be built"
+        reason = "a non-conform mesh would be built"
     elif status == HYP_ALREADY_EXIST :
-        reason = hypType + " of the same dimension already assigned to this shape"
+        reason = hypType + " of the same dimension is already assigned to this shape"
     elif status == HYP_BAD_DIM :
-        reason = hypType + " mismatches shape"
+        reason = hypType + " mismatches the shape"
     elif status == HYP_CONCURENT :
         reason = "there are concurrent hypotheses on sub-shapes"
     elif status == HYP_BAD_SUBSHAPE :
-        reason = "shape is neither the main one, nor its subshape, nor a valid group"
+        reason = "the shape is neither the main one, nor its subshape, nor a valid group"
     elif status == HYP_BAD_GEOMETRY:
-        reason = "geometry mismatches algorithm's expectation"
+        reason = "geometry mismatches the expectation of the algorithm"
     elif status == HYP_HIDDEN_ALGO:
-        reason = "it is hidden by an algorithm of upper dimension generating all-dimensions elements"
+        reason = "it is hidden by an algorithm of an upper dimension, which generates elements of all dimensions"
     elif status == HYP_HIDING_ALGO:
-        reason = "it hides algorithm(s) of lower dimension by generating all-dimensions elements"
+        reason = "it hides algorithms of lower dimensions by generating elements of all dimensions"
     else:
         return
     hypName = '"' + hypName + '"'
@@ -150,47 +151,46 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         print hypName, "was not assigned to",geomName,":", reason
         pass
 
-## Convert angle in degrees to radians
+## Converts an angle from degrees to radians
 def DegreesToRadians(AngleInDegrees):
     from math import pi
     return AngleInDegrees * pi / 180.0
 
-## Methods of package smesh.py: general services of MESH component.
+## Methods of the package smesh.py provide general services of MESH component.
 #
-#  This class has been designed to provide general services of the MESH component.
 #  All methods of this class are accessible directly from the smesh.py package.
-#  Use these methods to create an empty mesh, to import mesh from a file,
-#  and also to create patterns and filtering criteria.
+#  Use these methods to create an empty mesh, to import the mesh from file,
+#  and to create patterns and filtering criteria.
 class smeshDC(SMESH._objref_SMESH_Gen):
 
-    ## To set current study and Geometry component
+    ## Sets the current study and Geometry component
     def init_smesh(self,theStudy,geompyD):
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
         self.SetCurrentStudy(theStudy)
 
-    ## Create an empty Mesh. This mesh can have underlying geometry.
-    #  @param obj Geometrical object to build the mesh on. If not defined,
-    #             the mesh will not have underlying geometry.
-    #  @param name A name for the new mesh.
-    #  @return instance of Mesh class.
+    ## Creates an empty Mesh. This mesh can have an underlying geometry.
+    #  @param obj the Geometrical object on which the mesh is built. If not defined,
+    #             the mesh will have no underlying geometry.
+    #  @param name the name for the new mesh.
+    #  @return an instance of Mesh class.
     def Mesh(self, obj=0, name=0):
       return Mesh(self,self.geompyD,obj,name)
 
-    ## Returns long value from enumeration
-    #  To be used for SMESH.FunctorType enumeration
+    ## Returns a long value from enumeration
+    #  Should be used for SMESH.FunctorType enumeration
     def EnumToLong(self,theItem):
         return theItem._v
 
-    ## Get PointStruct from vertex
-    #  @param theVertex is GEOM object(vertex)
+    ## Gets PointStruct from vertex
+    #  @param theVertex a GEOM object(vertex)
     #  @return SMESH.PointStruct
     def GetPointStruct(self,theVertex):
         [x, y, z] = self.geompyD.PointCoordinates(theVertex)
         return PointStruct(x,y,z)
 
-    ## Get DirStruct from vector
-    #  @param theVector is GEOM object(vector)
+    ## Gets DirStruct from vector
+    #  @param theVector a GEOM object(vector)
     #  @return SMESH.DirStruct
     def GetDirStruct(self,theVector):
         vertices = self.geompyD.SubShapeAll( theVector, geompyDC.ShapeType["VERTEX"] )
@@ -203,15 +203,15 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         dirst = DirStruct(pnt)
         return dirst
 
-    ## Make DirStruct from a triplet
-    #  @param x,y,z are vector components
+    ## Makes DirStruct from a triplet
+    #  @param x,y,z vector components
     #  @return SMESH.DirStruct
     def MakeDirStruct(self,x,y,z):
         pnt = PointStruct(x,y,z)
         return DirStruct(pnt)
 
     ## Get AxisStruct from object
-    #  @param theObj is GEOM object(line or plane)
+    #  @param theObj a GEOM object (line or plane)
     #  @return SMESH.AxisStruct
     def GetAxisStruct(self,theObj):
         edges = self.geompyD.SubShapeAll( theObj, geompyDC.ShapeType["EDGE"] )
@@ -238,34 +238,34 @@ class smeshDC(SMESH._objref_SMESH_Gen):
     # From SMESH_Gen interface:
     # ------------------------
 
-    ## Set the current mode
+    ## Sets the current mode
     def SetEmbeddedMode( self,theMode ):
         #self.SetEmbeddedMode(theMode)
         SMESH._objref_SMESH_Gen.SetEmbeddedMode(self,theMode)
 
-    ## Get the current mode
+    ## Gets the current mode
     def IsEmbeddedMode(self):
         #return self.IsEmbeddedMode()
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
 
-    ## Set the current study
+    ## Sets the current study
     def SetCurrentStudy( self, theStudy ):
         #self.SetCurrentStudy(theStudy)
         SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
 
-    ## Get the current study
+    ## Gets the current study
     def GetCurrentStudy(self):
         #return self.GetCurrentStudy()
         return SMESH._objref_SMESH_Gen.GetCurrentStudy(self)
 
-    ## Create Mesh object importing data from given UNV file
+    ## Creates a Mesh object importing data from the given UNV file
     #  @return an instance of Mesh class
     def CreateMeshesFromUNV( self,theFileName ):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromUNV(self,theFileName)
         aMesh = Mesh(self, self.geompyD, aSmeshMesh)
         return aMesh
 
-    ## Create Mesh object(s) importing data from given MED file
+    ## Creates a Mesh object(s) importing data from the given MED file
     #  @return a list of Mesh class instances
     def CreateMeshesFromMED( self,theFileName ):
         aSmeshMeshes, aStatus = SMESH._objref_SMESH_Gen.CreateMeshesFromMED(self,theFileName)
@@ -275,7 +275,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             aMeshes.append(aMesh)
         return aMeshes, aStatus
 
-    ## Create Mesh object importing data from given STL file
+    ## Creates a Mesh object importing data from the given STL file
     #  @return an instance of Mesh class
     def CreateMeshesFromSTL( self, theFileName ):
         aSmeshMesh = SMESH._objref_SMESH_Gen.CreateMeshesFromSTL(self,theFileName)
@@ -283,11 +283,11 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         return aMesh
 
     ## From SMESH_Gen interface
-    #  @return list of integer values
+    #  @return the list of integer values
     def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
         return SMESH._objref_SMESH_Gen.GetSubShapesId(self,theMainObject, theListOfSubObjects)
 
-    ## From SMESH_Gen interface. Creates pattern
+    ## From SMESH_Gen interface. Creates a pattern
     # @return an instance of SMESH_Pattern
     def GetPattern(self):
         return SMESH._objref_SMESH_Gen.GetPattern(self)
@@ -312,14 +312,14 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         return Filter.Criterion(Type, Compare, Threshold, ThresholdStr, ThresholdID,
                                 UnaryOp, BinaryOp, Tolerance, TypeOfElement, Precision)
 
-    ## Creates a criterion by given parameters
-    #  @param elementType is the type of elements(NODE, EDGE, FACE, VOLUME)
-    #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
-    #  @param Compare belong to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold is threshold value (range of ids as string, shape, numeric)
-    #  @param UnaryOp is FT_LogicalNOT or FT_Undefined
-    #  @param BinaryOp is binary logical operation FT_LogicalAND, FT_LogicalOR or
-    #                  FT_Undefined(must be for the last criterion in criteria)
+    ## Creates a criterion by the given parameters
+    #  @param elementType the type of elements(NODE, EDGE, FACE, VOLUME)
+    #  @param CritType the type of criterion (FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc.)
+    #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
+    #  @param Treshold the threshold value (range of ids as string, shape, numeric)
+    #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
+    #  @param BinaryOp a binary logical operation FT_LogicalAND, FT_LogicalOR or
+    #                  FT_Undefined (must be for the last criterion of all criteria)
     #  @return SMESH.Filter.Criterion
     def GetCriterion(self,elementType,
                      CritType,
@@ -347,22 +347,22 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
                         FT_BelongToCylinder, FT_LyingOnGeom]:
-            # Check treshold
+            # Checks the treshold
             if isinstance(aTreshold, geompyDC.GEOM._objref_GEOM_Object):
                 aCriterion.ThresholdStr = GetName(aTreshold)
                 aCriterion.ThresholdID = salome.ObjectToID(aTreshold)
             else:
-                print "Error: Treshold should be a shape."
+                print "Error: The treshold should be a shape."
                 return None
         elif CritType == FT_RangeOfIds:
-            # Check treshold
+            # Checks the treshold
             if isinstance(aTreshold, str):
                 aCriterion.ThresholdStr = aTreshold
             else:
-                print "Error: Treshold should be a string."
+                print "Error: The treshold should be a string."
                 return None
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_BadOrientedVolume]:
-            # Here we do not need treshold
+            # At this point the treshold is unnecessary
             if aTreshold ==  FT_LogicalNOT:
                 aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
             elif aTreshold in [FT_LogicalAND, FT_LogicalOR]:
@@ -373,7 +373,7 @@ class smeshDC(SMESH._objref_SMESH_Gen):
                 aTreshold = float(aTreshold)
                 aCriterion.Threshold = aTreshold
             except:
-                print "Error: Treshold should be a number."
+                print "Error: The treshold should be a number."
                 return None
 
         if Treshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
@@ -390,12 +390,12 @@ class smeshDC(SMESH._objref_SMESH_Gen):
 
         return aCriterion
 
-    ## Creates filter by given parameters of criterion
-    #  @param elementType is the type of elements in the group
-    #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
-    #  @param Compare belong to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold is threshold value (range of id ids as string, shape, numeric)
-    #  @param UnaryOp is FT_LogicalNOT or FT_Undefined
+    ## Creates a filter with the given parameters
+    #  @param elementType the type of elements in the group
+    #  @param CritType the type of criterion ( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
+    #  @param Compare  belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
+    #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
+    #  @param UnaryOp  FT_LogicalNOT or FT_Undefined
     #  @return SMESH_Filter
     def GetFilter(self,elementType,
                   CritType=FT_Undefined,
@@ -410,8 +410,8 @@ class smeshDC(SMESH._objref_SMESH_Gen):
         aFilter.SetCriteria(aCriteria)
         return aFilter
 
-    ## Creates numerical functor by its type
-    #  @param theCrierion is FT_...; functor type
+    ## Creates a numerical functor by its type
+    #  @param theCriterion FT_...; functor type
     #  @return SMESH_NumericalFunctor
     def GetFunctor(self,theCriterion):
         aFilterMgr = self.CreateFilterManager()
@@ -443,19 +443,17 @@ class smeshDC(SMESH._objref_SMESH_Gen):
             print "Error: given parameter is not numerucal functor type."
 
 import omniORB
-#Register the new proxy for SMESH_Gen
+#Registering the new proxy for SMESH_Gen
 omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshDC)
 
 
 # Public class: Mesh
 # ==================
 
-## Class to define a mesh
-#
-#  This class allows to define and manage a mesh.
-#  It has a set of methods to build a mesh on the given geometry, including definition of sub-meshes.
-#  Also it has methods to define groups of mesh elements, to modify a mesh (by addition of
-#  new nodes and elements and by changind of existing entities), to take information
+## This class allows defining and managing a mesh.
+#  It has a set of methods to build a mesh on the given geometry, including the definition of sub-meshes.
+#  It also has methods to define groups of mesh elements, to modify a mesh (by addition of
+#  new nodes and elements and by changing the existing entities), to get information
 #  about a mesh and to export a mesh into different formats.
 class Mesh:
 
@@ -465,8 +463,8 @@ class Mesh:
 
     ## Constructor
     #
-    #  Creates mesh on the shape \a obj (or the empty mesh if obj is equal to 0),
-    #  sets GUI name of this mesh to \a name.
+    #  Creates a mesh on the shape \a obj (or an empty mesh if \a obj is equal to 0) and
+    #  sets the GUI name of this mesh to \a name.
     #  @param obj Shape to be meshed or SMESH_Mesh object
     #  @param name Study name of the mesh
     def __init__(self, smeshpyD, geompyD, obj=0, name=0):
@@ -489,69 +487,69 @@ class Mesh:
 
         self.editor = self.mesh.GetMeshEditor()
 
-    ## Method that inits the Mesh object from instance of SMESH_Mesh interface
-    #  @param theMesh is SMESH_Mesh object
+    ## Initializes the Mesh object from an instance of SMESH_Mesh interface
+    #  @param theMesh a SMESH_Mesh object
     def SetMesh(self, theMesh):
         self.mesh = theMesh
         self.geom = self.mesh.GetShapeToMesh()
 
-    ## Method that returns the mesh, that is instance of SMESH_Mesh interface
-    #  @return SMESH_Mesh object
+    ## Returns the mesh, that is an instance of SMESH_Mesh interface
+    #  @return a SMESH_Mesh object
     def GetMesh(self):
         return self.mesh
 
-    ## Get mesh name
-    #  @return name of the mesh as a string
+    ## Gets the name of the mesh
+    #  @return the name of the mesh as a string
     def GetName(self):
         name = GetName(self.GetMesh())
         return name
 
-    ## Set name to mesh
-    #  @param name a new name for the mesh
+    ## Sets a name to the mesh
+    #  @param name a new name of the mesh
     def SetName(self, name):
         SetName(self.GetMesh(), name)
 
-    ## Get the subMesh object associated to \a theSubObject geometrical object.
-    #  The subMesh object gives access to nodes and elements IDs.
-    #  @param theSubObject A geometrical object (shape)
-    #  @return object of type SMESH_SubMesh, representing part of mesh, which lays on the given shape
+    ## Gets the subMesh object associated to a \a theSubObject geometrical object.
+    #  The subMesh object gives access to the IDs of nodes and elements.
+    #  @param theSubObject a geometrical object (shape)
+    #  @return an object of type SMESH_SubMesh, representing a part of mesh, which lies on the given shape
     def GetSubMesh(self, theSubObject, name):
         submesh = self.mesh.GetSubMesh(theSubObject, name)
         return submesh
 
-    ## Method that returns the shape associated to the mesh
-    #  @return GEOM_Object
+    ## Returns the shape associated to the mesh
+    #  @return a GEOM_Object
     def GetShape(self):
         return self.geom
 
-    ## Method that associates given shape to the mesh(entails the mesh recreation)
-    #  @param geom shape to be meshed (GEOM_Object)
+    ## Associates the given shape to the mesh (entails the recreation of the mesh)
+    #  @param geom the shape to be meshed (GEOM_Object)
     def SetShape(self, geom):
         self.mesh = self.smeshpyD.CreateMesh(geom)
 
-    ## Return true if hypotheses are defined well
-    #  @param theSubObject subshape of a mesh shape
+    ## Returns true if the hypotheses are defined well
+    #  @param theSubObject a subshape of a mesh shape
     #  @return True or False
     def IsReadyToCompute(self, theSubObject):
         return self.smeshpyD.IsReadyToCompute(self.mesh, theSubObject)
 
-    ## Return errors of hypotheses definition.
-    #  Errors list is empty if everything is OK.
-    #  @param theSubObject subshape of a mesh shape
+    ## Returns errors of hypotheses definition.
+    #  The list of errors is empty if everything is OK.
+    #  @param theSubObject a subshape of a mesh shape
     #  @return a list of errors
     def GetAlgoState(self, theSubObject):
         return self.smeshpyD.GetAlgoState(self.mesh, theSubObject)
 
-    ## Return geometrical object the given element is built on.
+    ## Returns a geometrical object on which the given element was built.
     #  The returned geometrical object, if not nil, is either found in the
-    #  study or is published by this method with the given name
-    #  @param theElementID an id of the mesh element
-    #  @param theGeomName user defined name of geometrical object
+    #  study or published by this method with the given name
+    #  @param theElementID the id of the mesh element
+    #  @param theGeomName the user-defined name of the geometrical object
     #  @return GEOM::GEOM_Object instance
     def GetGeometryByMeshElement(self, theElementID, theGeomName):
         return self.smeshpyD.GetGeometryByMeshElement( self.mesh, theElementID, theGeomName )
 
-    ## Returns mesh dimension depending on that of the underlying shape
+    ## Returns the mesh dimension depending on the dimension of the underlying shape
     #  @return mesh dimension as an integer value [0,3]
     def MeshDimension(self):
         shells = self.geompyD.SubShapeAllIDs( self.geom, geompyDC.ShapeType["SHELL"] )
@@ -568,13 +566,13 @@ class Mesh:
     ## Creates a segment discretization 1D algorithm.
     #  If the optional \a algo parameter is not set, this algorithm is REGULAR.
     #  \n If the optional \a geom parameter is not set, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param algo type of desired algorithm. Possible values are:
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param algo the type of the required algorithm. Possible values are:
     #     - smesh.REGULAR,
-    #     - smesh.PYTHON for discretization via python function,
+    #     - smesh.PYTHON for discretization via a python function,
     #     - smesh.COMPOSITE for meshing a set of edges on one face side as a whole.
-    #  @param geom If defined, subshape to be meshed
-    #  @return instance of Mesh_Segment or Mesh_Segment_Python, or Mesh_CompositeSegment class
+    #  @param geom If defined is the subshape to be meshed
+    #  @return an instance of Mesh_Segment or Mesh_Segment_Python, or Mesh_CompositeSegment class
     def Segment(self, algo=REGULAR, geom=0):
         ## if Segment(geom) is called by mistake
         if isinstance( algo, geompyDC.GEOM._objref_GEOM_Object):
@@ -590,33 +588,33 @@ class Mesh:
         else:
             return Mesh_Segment(self, geom)
 
-    ## Enable creation of nodes and segments usable by 2D algoritms.
-    #  Added nodes and segments must be bound to edges and vertices by
+    ## Enables creation of nodes and segments usable by 2D algoritms.
+    #  The added nodes and segments must be bound to edges and vertices by
     #  SetNodeOnVertex(), SetNodeOnEdge() and SetMeshElementOnShape()
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom subshape to be manually meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom the subshape to be manually meshed
     #  @return StdMeshers_UseExisting_1D algorithm that generates nothing
     def UseExistingSegments(self, geom=0):
         algo = Mesh_UseExisting(1,self,geom)
         return algo.GetAlgorithm()
 
-    ## Enable creation of nodes and faces usable by 3D algoritms.
-    #  Added nodes and faces must be bound to geom faces by SetNodeOnFace()
+    ## Enables creation of nodes and faces usable by 3D algoritms.
+    #  The added nodes and faces must be bound to geom faces by SetNodeOnFace()
     #  and SetMeshElementOnShape()
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom subshape to be manually meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom the subshape to be manually meshed
     #  @return StdMeshers_UseExisting_2D algorithm that generates nothing
     def UseExistingFaces(self, geom=0):
         algo = Mesh_UseExisting(2,self,geom)
         return algo.GetAlgorithm()
 
     ## Creates a triangle 2D algorithm for faces.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param algo values are: smesh.MEFISTO || smesh.NETGEN_1D2D || smesh.NETGEN_2D || smesh.BLSURF
-    #  @param geom If defined, subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Triangle algorithm
     def Triangle(self, algo=MEFISTO, geom=0):
         ## if Triangle(geom) is called by mistake
@@ -627,19 +625,19 @@ class Mesh:
         return Mesh_Triangle(self, algo, geom)
 
     ## Creates a quadrangle 2D algorithm for faces.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom If defined, subshape to be meshed (GEOM_Object)
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Quadrangle algorithm
     def Quadrangle(self, geom=0):
         return Mesh_Quadrangle(self,  geom)
 
     ## Creates a tetrahedron 3D algorithm for solids.
-    #  The parameter \a algo permits to choice the algorithm: NETGEN or GHS3D
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  The parameter \a algo permits to choose the algorithm: NETGEN or GHS3D
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param algo values are: smesh.NETGEN, smesh.GHS3D, smesh.FULL_NETGEN
-    #  @param geom If defined, subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Tetrahedron algorithm
     def Tetrahedron(self, algo=NETGEN, geom=0):
         ## if Tetrahedron(geom) is called by mistake
@@ -650,10 +648,10 @@ class Mesh:
         return Mesh_Tetrahedron(self,  algo, geom)
 
     ## Creates a hexahedron 3D algorithm for solids.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  \n Otherwise, this algorithm define a submesh based on \a geom subshape.
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  \n Otherwise, this algorithm defines a submesh based on \a geom subshape.
     #  @param algo possible values are: smesh.Hexa, smesh.Hexotic
-    #  @param geom If defined, subshape to be meshed (GEOM_Object)
+    #  @param geom If defined, the subshape to be meshed (GEOM_Object)
     #  @return an instance of Mesh_Hexahedron algorithm
     def Hexahedron(self, algo=Hexa, geom=0):
         ## if Hexahedron(geom, algo) or Hexahedron(geom) is called by mistake
@@ -662,39 +660,39 @@ class Mesh:
             elif geom == 0:               algo, geom = Hexa, algo
         return Mesh_Hexahedron(self, algo, geom)
 
-    ## Deprecated, only for compatibility!
+    ## Deprecated, used only for compatibility!
     #  @return an instance of Mesh_Netgen algorithm
     def Netgen(self, is3D, geom=0):
         return Mesh_Netgen(self,  is3D, geom)
 
     ## Creates a projection 1D algorithm for edges.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom If defined, subshape to be meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed
     #  @return an instance of Mesh_Projection1D algorithm
     def Projection1D(self, geom=0):
         return Mesh_Projection1D(self,  geom)
 
     ## Creates a projection 2D algorithm for faces.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom If defined, subshape to be meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed
     #  @return an instance of Mesh_Projection2D algorithm
     def Projection2D(self, geom=0):
         return Mesh_Projection2D(self,  geom)
 
     ## Creates a projection 3D algorithm for solids.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom If defined, subshape to be meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed
     #  @return an instance of Mesh_Projection3D algorithm
     def Projection3D(self, geom=0):
         return Mesh_Projection3D(self,  geom)
 
     ## Creates a 3D extrusion (Prism 3D) or RadialPrism 3D algorithm for solids.
-    #  If the optional \a geom parameter is not sets, this algorithm is global.
-    #  Otherwise, this algorithm define a submesh based on \a geom subshape.
-    #  @param geom If defined, subshape to be meshed
+    #  If the optional \a geom parameter is not set, this algorithm is global.
+    #  Otherwise, this algorithm defines a submesh based on \a geom subshape.
+    #  @param geom If defined, the subshape to be meshed
     #  @return an instance of Mesh_Prism3D or Mesh_RadialPrism3D algorithm
     def Prism(self, geom=0):
         shape = geom
@@ -706,7 +704,7 @@ class Mesh:
             return Mesh_Prism3D(self,  geom)
         return Mesh_RadialPrism3D(self,  geom)
 
-    ## Compute the mesh and return the status of the computation
+    ## Computes the mesh and returns the status of the computation
     #  @return True or False
     def Compute(self, geom=0):
         if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
@@ -747,8 +745,8 @@ class Mesh:
                     reason = ('Hypothesis of %s %sD algorithm "%s" has a bad parameter value'
                               % ( glob, dim, name ))
                 elif err.state == HYP_BAD_GEOMETRY:
-                    reason = ('%s %sD algorithm "%s" is assigned to geometry mismatching'
-                              'its expectation' % ( glob, dim, name ))
+                    reason = ('%s %sD algorithm "%s" is assigned to mismatching'
+                              'geometry' % ( glob, dim, name ))
                 else:
                     reason = "For unknown reason."+\
                              " Revise Mesh.Compute() implementation in smeshDC.py!"
@@ -773,7 +771,7 @@ class Mesh:
             pass
         return ok
 
-    ## Compute tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
+    ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
     #  The parameter \a fineness [0,-1] defines mesh fineness
     #  @return True or False
     def AutomaticTetrahedralization(self, fineness=0):
@@ -789,12 +787,12 @@ class Mesh:
             pass
         return self.Compute()
 
-    ## Compute hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
+    ## Computes an hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
     #  The parameter \a fineness [0,-1] defines mesh fineness
     #  @return True or False
     def AutomaticHexahedralization(self, fineness=0):
         dim = self.MeshDimension()
-        # assign hypotheses
+        # assign the hypotheses
         self.RemoveGlobalHypotheses()
         self.Segment().AutomaticLength(fineness)
         if dim > 1 :
@@ -805,9 +803,9 @@ class Mesh:
             pass
         return self.Compute()
 
-    ## Assign hypothesis
-    #  @param hyp is a hypothesis to assign
-    #  @param geom is subhape of mesh geometry
+    ## Assigns a hypothesis
+    #  @param hyp a hypothesis to assign
+    #  @param geom a subhape of mesh geometry
     #  @return SMESH.Hypothesis_Status
     def AddHypothesis(self, hyp, geom=0):
         if isinstance( hyp, Mesh_Algorithm ):
@@ -821,9 +819,9 @@ class Mesh:
         TreatHypoStatus( status, GetName( hyp ), GetName( geom ), isAlgo )
         return status
 
-    ## Unassign hypothesis
-    #  @param hyp is a hypothesis to unassign
-    #  @param geom is subhape of mesh geometry
+    ## Unassigns a hypothesis
+    #  @param hyp a hypothesis to unassign
+    #  @param geom a subshape of mesh geometry
     #  @return SMESH.Hypothesis_Status
     def RemoveHypothesis(self, hyp, geom=0):
         if isinstance( hyp, Mesh_Algorithm ):
@@ -835,9 +833,9 @@ class Mesh:
         status = self.mesh.RemoveHypothesis(geom, hyp)
         return status
 
-    ## Get the list of hypothesis added on a geom
-    #  @param geom is subhape of mesh geometry
-    #  @return sequence of SMESH_Hypothesis
+    ## Gets the list of hypotheses added on a geometry
+    #  @param geom a subshape of mesh geometry
+    #  @return the sequence of SMESH_Hypothesis
     def GetHypothesisList(self, geom):
         return self.mesh.GetHypothesisList( geom )
 
@@ -849,24 +847,24 @@ class Mesh:
             pass
         pass
 
-    ## Create a mesh group based on geometric object \a grp
-    #  and give a \a name, \n if this parameter is not defined
+    ## Creates a mesh group based on the geometric object \a grp
+    #  and gives a \a name, \n if this parameter is not defined
     #  the name is the same as the geometric group name \n
     #  Note: Works like GroupOnGeom().
-    #  @param grp  is a geometric group, a vertex, an edge, a face or a solid
-    #  @param name is the name of the mesh group
+    #  @param grp  a geometric group, a vertex, an edge, a face or a solid
+    #  @param name the name of the mesh group
     #  @return SMESH_GroupOnGeom
     def Group(self, grp, name=""):
         return self.GroupOnGeom(grp, name)
 
-    ## Deprecated, only for compatibility! Please, use ExportMED() method instead.
-    #  Export the mesh in a file with the MED format and choice the \a version of MED format
-    #  @param f is the file name
+    ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
+    #  Exports the mesh in a file in MED format and chooses the \a version of MED format
+    #  @param f the file name
     #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
     def ExportToMED(self, f, version, opt=0):
         self.mesh.ExportToMED(f, opt, version)
 
-    ## Export the mesh in a file with the MED format
+    ## Exports the mesh in a file in MED format
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
@@ -875,19 +873,19 @@ class Mesh:
     def ExportMED(self, f, auto_groups=0, version=MED_V2_2):
         self.mesh.ExportToMED(f, auto_groups, version)
 
-    ## Export the mesh in a file with the DAT format
-    #  @param f is the file name
+    ## Exports the mesh in a file in DAT format
+    #  @param f the file name
     def ExportDAT(self, f):
         self.mesh.ExportDAT(f)
 
-    ## Export the mesh in a file with the UNV format
-    #  @param f is the file name
+    ## Exports the mesh in a file in UNV format
+    #  @param f the file name
     def ExportUNV(self, f):
         self.mesh.ExportUNV(f)
 
-    ## Export the mesh in a file with the STL format
-    #  @param f is the file name
-    #  @param ascii defined the kind of file contents
+    ## Export the mesh in a file in STL format
+    #  @param f the file name
+    #  @param ascii defines the file encoding
     def ExportSTL(self, f, ascii=1):
         self.mesh.ExportSTL(f, ascii)
 
@@ -896,17 +894,17 @@ class Mesh:
     # ----------------------
 
     ## Creates an empty mesh group
-    #  @param elementType is the type of elements in the group
-    #  @param name is the name of the mesh group
+    #  @param elementType the type of elements in the group
+    #  @param name the name of the mesh group
     #  @return SMESH_Group
     def CreateEmptyGroup(self, elementType, name):
         return self.mesh.CreateGroup(elementType, name)
 
-    ## Creates a mesh group based on geometric object \a grp
-    #  and give a \a name, \n if this parameter is not defined
-    #  the name is the same as the geometric group name
-    #  @param grp  is a geometric group, a vertex, an edge, a face or a solid
-    #  @param name is the name of the mesh group
+    ## Creates a mesh group based on the geometrical object \a grp
+    #  and gives a \a name, \n if this parameter is not defined
+    #  the name is the same as the geometrical group name
+    #  @param grp  a geometrical group, a vertex, an edge, a face or a solid
+    #  @param name the name of the mesh group
     #  @return SMESH_GroupOnGeom
     def GroupOnGeom(self, grp, name="", typ=None):
         if name == "":
@@ -944,23 +942,23 @@ class Mesh:
         else:
             return self.mesh.CreateGroupFromGEOM(typ, name, grp)
 
-    ## Create a mesh group by the given ids of elements
-    #  @param groupName is the name of the mesh group
-    #  @param elementType is the type of elements in the group
-    #  @param elemIDs is the list of ids
+    ## Creates a mesh group by the given ids of elements
+    #  @param groupName the name of the mesh group
+    #  @param elementType the type of elements in the group
+    #  @param elemIDs the list of ids
     #  @return SMESH_Group
     def MakeGroupByIds(self, groupName, elementType, elemIDs):
         group = self.mesh.CreateGroup(elementType, groupName)
         group.Add(elemIDs)
         return group
 
-    ## Create a mesh group by the given conditions
-    #  @param groupName is the name of the mesh group
-    #  @param elementType is the type of elements in the group
-    #  @param CritType is type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
-    #  @param Compare belong to {FT_LessThan, FT_MoreThan, FT_EqualTo}
-    #  @param Treshold is threshold value (range of id ids as string, shape, numeric)
-    #  @param UnaryOp is FT_LogicalNOT or FT_Undefined
+    ## Creates a mesh group by the given conditions
+    #  @param groupName the name of the mesh group
+    #  @param elementType the type of elements in the group
+    #  @param CritType the type of criterion( FT_Taper, FT_Area, FT_RangeOfIds, FT_LyingOnGeom etc. )
+    #  @param Compare belongs to {FT_LessThan, FT_MoreThan, FT_EqualTo}
+    #  @param Treshold the threshold value (range of id ids as string, shape, numeric)
+    #  @param UnaryOp FT_LogicalNOT or FT_Undefined
     #  @return SMESH_Group
     def MakeGroup(self,
                   groupName,
@@ -973,9 +971,9 @@ class Mesh:
         group = self.MakeGroupByCriterion(groupName, aCriterion)
         return group
 
-    ## Create a mesh group by the given criterion
-    #  @param groupName is the name of the mesh group
-    #  @param Criterion is the instance of Criterion class
+    ## Creates a mesh group by the given criterion
+    #  @param groupName the name of the mesh group
+    #  @param Criterion the instance of Criterion class
     #  @return SMESH_Group
     def MakeGroupByCriterion(self, groupName, Criterion):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
@@ -986,9 +984,9 @@ class Mesh:
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
 
-    ## Create a mesh group by the given criteria(list of criterions)
-    #  @param groupName is the name of the mesh group
-    #  @param Criteria is the list of criterions
+    ## Creates a mesh group by the given criteria (list of criteria)
+    #  @param groupName the name of the mesh group
+    #  @param Criteria the list of criteria
     #  @return SMESH_Group
     def MakeGroupByCriteria(self, groupName, theCriteria):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
@@ -997,9 +995,9 @@ class Mesh:
         group = self.MakeGroupByFilter(groupName, aFilter)
         return group
 
-    ## Create a mesh group by the given filter
-    #  @param groupName is the name of the mesh group
-    #  @param Criterion is the instance of Filter class
+    ## Creates a mesh group by the given filter
+    #  @param groupName  the name of the mesh group
+    #  @param Criterion  the instance of Filter class
     #  @return SMESH_Group
     def MakeGroupByFilter(self, groupName, theFilter):
         anIds = theFilter.GetElementsId(self.mesh)
@@ -1007,15 +1005,15 @@ class Mesh:
         group = self.MakeGroupByIds(groupName, anElemType, anIds)
         return group
 
-    ## Pass mesh elements through the given filter and return ids
-    #  @param theFilter is SMESH_Filter
-    #  @return list of ids
+    ## Passes mesh elements through the given filter and return IDs of fitting elements
+    #  @param theFilter SMESH_Filter
+    #  @return a list of ids
     def GetIdsFromFilter(self, theFilter):
         return theFilter.GetElementsId(self.mesh)
 
-    ## Verify whether 2D mesh element has free edges(edges connected to one face only)\n
-    #  Returns list of special structures(borders).
-    #  @return list of SMESH.FreeEdges.Border structure: edge id and two its nodes ids.
+    ## Verifies whether a 2D mesh element has free edges (edges connected to one face only)\n
+    #  Returns a list of special structures (borders).
+    #  @return a list of SMESH.FreeEdges.Border structure: edge id and ids of two its nodes.
     def GetFreeBorders(self):
         aFilterMgr = self.smeshpyD.CreateFilterManager()
         aPredicate = aFilterMgr.CreateFreeEdges()
@@ -1023,25 +1021,25 @@ class Mesh:
         aBorders = aPredicate.GetBorders()
         return aBorders
 
-    ## Remove a group
+    ## Removes a group
     def RemoveGroup(self, group):
         self.mesh.RemoveGroup(group)
 
-    ## Remove group with its contents
+    ## Removes a group with its contents
     def RemoveGroupWithContents(self, group):
         self.mesh.RemoveGroupWithContents(group)
 
-    ## Get the list of groups existing in the mesh
-    #  @return sequence of SMESH_GroupBase
+    ## Gets the list of groups existing in the mesh
+    #  @return a sequence of SMESH_GroupBase
     def GetGroups(self):
         return self.mesh.GetGroups()
 
-    ## Get number of groups existing in the mesh
-    #  @return quantity of groups as an integer value
+    ## Gets the number of groups existing in the mesh
+    #  @return the quantity of groups as an integer value
     def NbGroups(self):
         return self.mesh.NbGroups()
 
-    ## Get the list of names of groups existing in the mesh
+    ## Gets the list of names of groups existing in the mesh
     #  @return list of strings
     def GetGroupNames(self):
         groups = self.GetGroups()
@@ -1050,23 +1048,23 @@ class Mesh:
             names.append(group.GetName())
         return names
 
-    ## Union of two groups
-    #  New group is created. All mesh elements that are
-    #  present in initial groups are added to the new one
+    ## Produces a union of two groups
+    #  A new group is created. All mesh elements that are
+    #  present in the initial groups are added to the new one
     #  @return an instance of SMESH_Group
     def UnionGroups(self, group1, group2, name):
         return self.mesh.UnionGroups(group1, group2, name)
 
-    ## Intersection of two groups
-    #  New group is created. All mesh elements that are
-    #  present in both initial groups are added to the new one.
+    ## Prodices an intersection of two groups
+    #  A new group is created. All mesh elements that are common
+    #  for the two initial groups are added to the new one.
     #  @return an instance of SMESH_Group
     def IntersectGroups(self, group1, group2, name):
         return self.mesh.IntersectGroups(group1, group2, name)
 
-    ## Cut of two groups
-    #  New group is created. All mesh elements that are present in
-    #  main group but do not present in tool group are added to the new one
+    ## Produces a cut of two groups
+    #  A new group is created. All mesh elements that are present in
+    #  the main group but are not present in the tool group are added to the new one
     #  @return an instance of SMESH_Group
     def CutGroups(self, mainGroup, toolGroup, name):
         return self.mesh.CutGroups(mainGroup, toolGroup, name)
@@ -1075,8 +1073,8 @@ class Mesh:
     # Get some info about mesh:
     # ------------------------
 
-    ## Get the log of nodes and elements added or removed since previous
-    #  clear of the log.
+    ## Returns the log of nodes and elements added or removed
+    #  since the previous clear of the log.
     #  @param clearAfterGet log is emptied after Get (safe if concurrents access)
     #  @return list of log_block structures:
     #                                        commandType
@@ -1086,22 +1084,22 @@ class Mesh:
     def GetLog(self, clearAfterGet):
         return self.mesh.GetLog(clearAfterGet)
 
-    ## Clear the log of nodes and elements added or removed since previous
+    ## Clears the log of nodes and elements added or removed since the previous
     #  clear. Must be used immediately after GetLog if clearAfterGet is false.
     def ClearLog(self):
         self.mesh.ClearLog()
 
-    ## Toggle auto color mode on the object.
-    #  @param theAutoColor flag which toggles auto color mode.
+    ## Toggles auto color mode on the object.
+    #  @param theAutoColor the flag which toggles auto color mode.
     def SetAutoColor(self, theAutoColor):
         self.mesh.SetAutoColor(theAutoColor)
 
-    ## Get flag of object auto color mode.
+    ## Gets flag of object auto color mode.
     #  @return True or False
     def GetAutoColor(self):
         return self.mesh.GetAutoColor()
 
-    ## Get the internal Id
+    ## Gets the internal ID
     #  @return integer value, which is the internal Id of the mesh
     def GetId(self):
         return self.mesh.GetId()
@@ -1111,18 +1109,18 @@ class Mesh:
     def GetStudyId(self):
         return self.mesh.GetStudyId()
 
-    ## Check group names for duplications.
-    #  Consider maximum group name length stored in MED file.
+    ## Checks the group names for duplications.
+    #  Consider the maximum group name length stored in MED file.
     #  @return True or False
     def HasDuplicatedGroupNamesMED(self):
         return self.mesh.HasDuplicatedGroupNamesMED()
 
-    ## Obtain mesh editor tool
+    ## Obtains the mesh editor tool
     #  @return an instance of SMESH_MeshEditor
     def GetMeshEditor(self):
         return self.mesh.GetMeshEditor()
 
-    ## Get MED Mesh
+    ## Gets MED Mesh
     #  @return an instance of SALOME_MED::MESH
     def GetMEDMesh(self):
         return self.mesh.GetMEDMesh()
@@ -1131,167 +1129,167 @@ class Mesh:
     # Get informations about mesh contents:
     # ------------------------------------
 
-    ## Returns number of nodes in mesh
+    ## Returns the number of nodes in the mesh
     #  @return an integer value
     def NbNodes(self):
         return self.mesh.NbNodes()
 
-    ## Returns number of elements in mesh
+    ## Returns the number of elements in the mesh
     #  @return an integer value
     def NbElements(self):
         return self.mesh.NbElements()
 
-    ## Returns number of edges in mesh
+    ## Returns the number of edges in the mesh
     #  @return an integer value
     def NbEdges(self):
         return self.mesh.NbEdges()
 
-    ## Returns number of edges with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of edges with the given order in the mesh
+    #  @param elementOrder the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbEdgesOfOrder(self, elementOrder):
         return self.mesh.NbEdgesOfOrder(elementOrder)
 
-    ## Returns number of faces in mesh
+    ## Returns the number of faces in the mesh
     #  @return an integer value
     def NbFaces(self):
         return self.mesh.NbFaces()
 
-    ## Returns number of faces with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of faces with the given order in the mesh
+    #  @param elementOrder the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbFacesOfOrder(self, elementOrder):
         return self.mesh.NbFacesOfOrder(elementOrder)
 
-    ## Returns number of triangles in mesh
+    ## Returns the number of triangles in the mesh
     #  @return an integer value
     def NbTriangles(self):
         return self.mesh.NbTriangles()
 
-    ## Returns number of triangles with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of triangles with the given order in the mesh
+    #  @param elementOrder is the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbTrianglesOfOrder(self, elementOrder):
         return self.mesh.NbTrianglesOfOrder(elementOrder)
 
-    ## Returns number of quadrangles in mesh
+    ## Returns the number of quadrangles in the mesh
     #  @return an integer value
     def NbQuadrangles(self):
         return self.mesh.NbQuadrangles()
 
-    ## Returns number of quadrangles with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of quadrangles with the given order in the mesh
+    #  @param elementOrder the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbQuadranglesOfOrder(self, elementOrder):
         return self.mesh.NbQuadranglesOfOrder(elementOrder)
 
-    ## Returns number of polygons in mesh
+    ## Returns the number of polygons in the mesh
     #  @return an integer value
     def NbPolygons(self):
         return self.mesh.NbPolygons()
 
-    ## Returns number of volumes in mesh
+    ## Returns the number of volumes in the mesh
     #  @return an integer value
     def NbVolumes(self):
         return self.mesh.NbVolumes()
 
-    ## Returns number of volumes with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of volumes with the given order in the mesh
+    #  @param elementOrder  the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbVolumesOfOrder(self, elementOrder):
         return self.mesh.NbVolumesOfOrder(elementOrder)
 
-    ## Returns number of tetrahedrons in mesh
+    ## Returns the number of tetrahedrons in the mesh
     #  @return an integer value
     def NbTetras(self):
         return self.mesh.NbTetras()
 
-    ## Returns number of tetrahedrons with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of tetrahedrons with the given order in the mesh
+    #  @param elementOrder  the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbTetrasOfOrder(self, elementOrder):
         return self.mesh.NbTetrasOfOrder(elementOrder)
 
-    ## Returns number of hexahedrons in mesh
+    ## Returns the number of hexahedrons in the mesh
     #  @return an integer value
     def NbHexas(self):
         return self.mesh.NbHexas()
 
-    ## Returns number of hexahedrons with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of hexahedrons with the given order in the mesh
+    #  @param elementOrder  the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbHexasOfOrder(self, elementOrder):
         return self.mesh.NbHexasOfOrder(elementOrder)
 
-    ## Returns number of pyramids in mesh
+    ## Returns the number of pyramids in the mesh
     #  @return an integer value
     def NbPyramids(self):
         return self.mesh.NbPyramids()
 
-    ## Returns number of pyramids with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of pyramids with the given order in the mesh
+    #  @param elementOrder  the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbPyramidsOfOrder(self, elementOrder):
         return self.mesh.NbPyramidsOfOrder(elementOrder)
 
-    ## Returns number of prisms in mesh
+    ## Returns the number of prisms in the mesh
     #  @return an integer value
     def NbPrisms(self):
         return self.mesh.NbPrisms()
 
-    ## Returns number of prisms with given order in mesh
-    #  @param elementOrder is order of elements:
+    ## Returns the number of prisms with the given order in the mesh
+    #  @param elementOrder  the order of elements:
     #         ORDER_ANY, ORDER_LINEAR or ORDER_QUADRATIC
     #  @return an integer value
     def NbPrismsOfOrder(self, elementOrder):
         return self.mesh.NbPrismsOfOrder(elementOrder)
 
-    ## Returns number of polyhedrons in mesh
+    ## Returns the number of polyhedrons in the mesh
     #  @return an integer value
     def NbPolyhedrons(self):
         return self.mesh.NbPolyhedrons()
 
-    ## Returns number of submeshes in mesh
+    ## Returns the number of submeshes in the mesh
     #  @return an integer value
     def NbSubMesh(self):
         return self.mesh.NbSubMesh()
 
-    ## Returns list of mesh elements ids
-    #  @return list of integer values
+    ## Returns the list of mesh elements IDs
+    #  @return the list of integer values
     def GetElementsId(self):
         return self.mesh.GetElementsId()
 
-    ## Returns list of ids of mesh elements with given type
-    #  @param elementType is required type of elements
+    ## Returns the list of IDs of mesh elements with the given type
+    #  @param elementType  the required type of elements
     #  @return list of integer values
     def GetElementsByType(self, elementType):
         return self.mesh.GetElementsByType(elementType)
 
-    ## Returns list of mesh nodes ids
-    #  @return list of integer values
+    ## Returns the list of mesh nodes IDs
+    #  @return the list of integer values
     def GetNodesId(self):
         return self.mesh.GetNodesId()
 
-    # Get informations about mesh elements:
+    # Get the information about mesh elements:
     # ------------------------------------
 
-    ## Returns type of mesh element
-    #  @return value from SMESH::ElementType enumeration
+    ## Returns the type of mesh element
+    #  @return the value from SMESH::ElementType enumeration
     def GetElementType(self, id, iselem):
         return self.mesh.GetElementType(id, iselem)
 
-    ## Returns list of submesh elements ids
-    #  @param Shape is geom object(subshape) IOR
-    #         Shape must be subshape of a ShapeToMesh()
-    #  @return list of integer values
+    ## Returns the list of submesh elements IDs
+    #  @param Shape a geom object(subshape) IOR
+    #         Shape must be the subshape of a ShapeToMesh()
+    #  @return the list of integer values
     def GetSubMeshElementsId(self, Shape):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
@@ -1299,10 +1297,10 @@ class Mesh:
             ShapeID = Shape
         return self.mesh.GetSubMeshElementsId(ShapeID)
 
-    ## Returns list of submesh nodes ids
-    #  @param Shape is geom object(subshape) IOR
-    #         Shape must be subshape of a ShapeToMesh()
-    #  @return list of integer values
+    ## Returns the list of submesh nodes IDs
+    #  @param Shape a geom object(subshape) IOR
+    #         Shape must be the subshape of a ShapeToMesh()
+    #  @return the list of integer values
     def GetSubMeshNodesId(self, Shape, all):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
@@ -1310,10 +1308,10 @@ class Mesh:
             ShapeID = Shape
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
 
-    ## Returns list of ids of submesh elements with given type
-    #  @param Shape is geom object(subshape) IOR
-    #         Shape must be subshape of a ShapeToMesh()
-    #  @return list of integer values
+    ## Returns the list of IDs of submesh elements with the given type
+    #  @param Shape a geom object(subshape) IOR
+    #         Shape must be a subshape of a ShapeToMesh()
+    #  @return the list of integer values
     def GetSubMeshElementType(self, Shape):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
@@ -1321,89 +1319,89 @@ class Mesh:
             ShapeID = Shape
         return self.mesh.GetSubMeshElementType(ShapeID)
 
-    ## Get mesh description
+    ## Gets the mesh description
     #  @return string value
     def Dump(self):
         return self.mesh.Dump()
 
 
-    # Get information about nodes and elements of mesh by its ids:
+    # Get the information about nodes and elements of a mesh by its IDs:
     # -----------------------------------------------------------
 
-    ## Get XYZ coordinates of node
-    #  \n If there is not node for given ID - returns empty list
+    ## Gets XYZ coordinates of a node
+    #  \n If there is no nodes for the given ID - returns an empty list
     #  @return a list of double precision values
     def GetNodeXYZ(self, id):
         return self.mesh.GetNodeXYZ(id)
 
-    ## For given node returns list of IDs of inverse elements
-    #  \n If there is not node for given ID - returns empty list
-    #  @return list of integer values
+    ## Returns list of IDs of inverse elements for the given node
+    #  \n If there is no node for the given ID - returns an empty list
+    #  @return a list of integer values
     def GetNodeInverseElements(self, id):
         return self.mesh.GetNodeInverseElements(id)
 
-    ## @brief Return position of a node on shape
+    ## @brief Returns the position of a node on the shape
     #  @return SMESH::NodePosition
     def GetNodePosition(self,NodeID):
         return self.mesh.GetNodePosition(NodeID)
 
-    ## If given element is node returns IDs of shape from position
-    #  \n If there is not node for given ID - returns -1
-    #  @return integer value
+    ## If the given element is a node, returns the ID of shape
+    #  \n If there is no node for the given ID - returns -1
+    #  @return an integer value
     def GetShapeID(self, id):
         return self.mesh.GetShapeID(id)
 
-    ## For given element returns ID of result shape after
-    #  FindShape() from SMESH_MeshEditor
-    #  \n If there is not element for given ID - returns -1
-    #  @return integer value
+    ## Returns the ID of the result shape after
+    #  FindShape() from SMESH_MeshEditor for the given element
+    #  \n If there is no element for the given ID - returns -1
+    #  @return an integer value
     def GetShapeIDForElem(self,id):
         return self.mesh.GetShapeIDForElem(id)
 
-    ## Returns number of nodes for given element
-    #  \n If there is not element for given ID - returns -1
-    #  @return integer value
+    ## Returns the number of nodes for the given element
+    #  \n If there is no element for the given ID - returns -1
+    #  @return an integer value
     def GetElemNbNodes(self, id):
         return self.mesh.GetElemNbNodes(id)
 
-    ## Returns ID of node by given index for given element
-    #  \n If there is not element for given ID - returns -1
-    #  \n If there is not node for given index - returns -2
-    #  @return integer value
+    ## Returns the node ID the given index for the given element
+    #  \n If there is no element for the given ID - returns -1
+    #  \n If there is no node for the given index - returns -2
+    #  @return an integer value
     def GetElemNode(self, id, index):
         return self.mesh.GetElemNode(id, index)
 
-    ## Returns IDs of nodes of given element
-    #  @return list of integer values
+    ## Returns the IDs of nodes of the given element
+    #  @return a list of integer values
     def GetElemNodes(self, id):
         return self.mesh.GetElemNodes(id)
 
-    ## Returns true if given node is medium node in given quadratic element
+    ## Returns true if the given node is the medium node in the given quadratic element
     def IsMediumNode(self, elementID, nodeID):
         return self.mesh.IsMediumNode(elementID, nodeID)
 
-    ## Returns true if given node is medium node in one of quadratic elements
+    ## Returns true if the given node is the medium node in one of quadratic elements
     def IsMediumNodeOfAnyElem(self, nodeID, elementType):
         return self.mesh.IsMediumNodeOfAnyElem(nodeID, elementType)
 
-    ## Returns number of edges for given element
+    ## Returns the number of edges for the given element
     def ElemNbEdges(self, id):
         return self.mesh.ElemNbEdges(id)
 
-    ## Returns number of faces for given element
+    ## Returns the number of faces for the given element
     def ElemNbFaces(self, id):
         return self.mesh.ElemNbFaces(id)
 
-    ## Returns true if given element is polygon
+    ## Returns true if the given element is a polygon
     def IsPoly(self, id):
         return self.mesh.IsPoly(id)
 
-    ## Returns true if given element is quadratic
+    ## Returns true if the given element is quadratic
     def IsQuadratic(self, id):
         return self.mesh.IsQuadratic(id)
 
-    ## Returns XYZ coordinates of bary center for given element
-    #  \n If there is not element for given ID - returns empty list
+    ## Returns XYZ coordinates of the barycenter of the given element
+    #  \n If there is no element for the given ID - returns an empty list
     #  @return a list of three double values
     def BaryCenter(self, id):
         return self.mesh.BaryCenter(id)
@@ -1412,81 +1410,81 @@ class Mesh:
     # Mesh edition (SMESH_MeshEditor functionality):
     # ---------------------------------------------
 
-    ## Removes elements from mesh by ids
-    #  @param IDsOfElements is list of ids of elements to remove
+    ## Removes the elements from the mesh by ids
+    #  @param IDsOfElements is a list of ids of elements to remove
     #  @return True or False
     def RemoveElements(self, IDsOfElements):
         return self.editor.RemoveElements(IDsOfElements)
 
     ## Removes nodes from mesh by ids
-    #  @param IDsOfNodes is list of ids of nodes to remove
+    #  @param IDsOfNodes is a list of ids of nodes to remove
     #  @return True or False
     def RemoveNodes(self, IDsOfNodes):
         return self.editor.RemoveNodes(IDsOfNodes)
 
-    ## Add node to mesh by coordinates
+    ## Add a node to the mesh by coordinates
     #  @return Id of the new node
     def AddNode(self, x, y, z):
         return self.editor.AddNode( x, y, z)
 
 
-    ## Create edge either linear or quadratic (this is determined
-    #  by number of given nodes).
-    #  @param IdsOfNodes List of node IDs for creation of element.
-    #  Needed order of nodes in this list corresponds to description
+    ## Creates a linear or quadratic edge (this is determined
+    #  by the number of given nodes).
+    #  @param IdsOfNodes the list of node IDs for creation of the element.
+    #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
-    #  @return Id of the new edge
+    #  @return the Id of the new edge
     def AddEdge(self, IDsOfNodes):
         return self.editor.AddEdge(IDsOfNodes)
 
-    ## Create face either linear or quadratic (this is determined
-    #  by number of given nodes).
-    #  @param IdsOfNodes List of node IDs for creation of element.
-    #  Needed order of nodes in this list corresponds to description
+    ## Creates a linear or quadratic face (this is determined
+    #  by the number of given nodes).
+    #  @param IdsOfNodes the list of node IDs for creation of the element.
+    #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
-    #  @return Id of the new face
+    #  @return the Id of the new face
     def AddFace(self, IDsOfNodes):
         return self.editor.AddFace(IDsOfNodes)
 
-    ## Add polygonal face to mesh by list of nodes ids
-    #  @return Id of the new face
+    ## Adds a polygonal face to the mesh by the list of node IDs
+    #  @return the Id of the new face
     def AddPolygonalFace(self, IdsOfNodes):
         return self.editor.AddPolygonalFace(IdsOfNodes)
 
-    ## Create volume both similar and quadratic (this is determed
-    #  by number of given nodes).
-    #  @param IdsOfNodes List of node IDs for creation of element.
-    #  Needed order of nodes in this list corresponds to description
+    ## Creates both simple and quadratic volume (this is determined
+    #  by the number of given nodes).
+    #  @param IdsOfNodes the list of node IDs for creation of the element.
+    #  The order of nodes in this list should correspond to the description
     #  of MED. \n This description is located by the following link:
     #  http://www.salome-platform.org/salome2/web_med_internet/logiciels/medV2.2.2_doc_html/html/modele_de_donnees.html#3.
-    #  @return Id of the new volumic element
+    #  @return the Id of the new volumic element
     def AddVolume(self, IDsOfNodes):
         return self.editor.AddVolume(IDsOfNodes)
 
-    ## Create volume of many faces, giving nodes for each face.
-    #  @param IdsOfNodes List of node IDs for volume creation face by face.
-    #  @param Quantities List of integer values, Quantities[i]
-    #         gives quantity of nodes in face number i.
-    #  @return Id of the new volumic element
+    ## Creates a volume of many faces, giving nodes for each face.
+    #  @param IdsOfNodes the list of node IDs for volume creation face by face.
+    #  @param Quantities the list of integer values, Quantities[i]
+    #         gives the quantity of nodes in face number i.
+    #  @return the Id of the new volumic element
     def AddPolyhedralVolume (self, IdsOfNodes, Quantities):
         return self.editor.AddPolyhedralVolume(IdsOfNodes, Quantities)
 
-    ## Create volume of many faces, giving IDs of existing faces.
-    #  @param IdsOfFaces List of face IDs for volume creation.
+    ## Creates a volume of many faces, giving the IDs of the existing faces.
+    #  @param IdsOfFaces the list of face IDs for volume creation.
     #
-    #  Note:  The created volume will refer only to nodes
-    #         of the given faces, not to the faces itself.
-    #  @return Id of the new volumic element
+    #  Note:  The created volume will refer only to the nodes
+    #         of the given faces, not to the faces themselves.
+    #  @return the Id of the new volumic element
     def AddPolyhedralVolumeByFaces (self, IdsOfFaces):
         return self.editor.AddPolyhedralVolumeByFaces(IdsOfFaces)
 
 
-    ## @brief Bind a node to a vertex
-    # @param NodeID - node ID
-    # @param Vertex - vertex or vertex ID
-    # @return True if succeed else raise an exception
+    ## @brief Binds a node to a vertex
+    # @param NodeID a node ID
+    # @param Vertex a vertex or vertex ID
+    # @return True if succeed else raises an exception
     def SetNodeOnVertex(self, NodeID, Vertex):
         if ( isinstance( Vertex, geompyDC.GEOM._objref_GEOM_Object)):
             VertexID = Vertex.GetSubShapeIndices()[0]
@@ -1499,11 +1497,11 @@ class Mesh:
         return True
 
 
-    ## @brief Store node position on an edge
-    # @param NodeID - node ID
-    # @param Edge - edge or edge ID
-    # @param paramOnEdge - parameter on edge where the node is located
-    # @return True if succeed else raise an exception
+    ## @brief Stores the node position on an edge
+    # @param NodeID a node ID
+    # @param Edge an edge or edge ID
+    # @param paramOnEdge a parameter on the edge where the node is located
+    # @return True if succeed else raises an exception
     def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
         if ( isinstance( Edge, geompyDC.GEOM._objref_GEOM_Object)):
             EdgeID = Edge.GetSubShapeIndices()[0]
@@ -1515,12 +1513,12 @@ class Mesh:
             raise ValueError, inst.details.text
         return True
 
-    ## @brief Store node position on a face
-    # @param NodeID - node ID
-    # @param Face - face or face ID
-    # @param u - U parameter on face where the node is located
-    # @param v - V parameter on face where the node is located
-    # @return True if succeed else raise an exception
+    ## @brief Stores node position on a face
+    # @param NodeID a node ID
+    # @param Face a face or face ID
+    # @param u U parameter on the face where the node is located
+    # @param v V parameter on the face where the node is located
+    # @return True if succeed else raises an exception
     def SetNodeOnFace(self, NodeID, Face, u, v):
         if ( isinstance( Face, geompyDC.GEOM._objref_GEOM_Object)):
             FaceID = Face.GetSubShapeIndices()[0]
@@ -1532,10 +1530,10 @@ class Mesh:
             raise ValueError, inst.details.text
         return True
 
-    ## @brief Bind a node to a solid
-    # @param NodeID - node ID
-    # @param Solid - solid or solid ID
-    # @return True if succeed else raise an exception
+    ## @brief Binds a node to a solid
+    # @param NodeID a node ID
+    # @param Solid  a solid or solid ID
+    # @return True if succeed else raises an exception
     def SetNodeInVolume(self, NodeID, Solid):
         if ( isinstance( Solid, geompyDC.GEOM._objref_GEOM_Object)):
             SolidID = Solid.GetSubShapeIndices()[0]
@@ -1548,9 +1546,9 @@ class Mesh:
         return True
 
     ## @brief Bind an element to a shape
-    # @param ElementID - element ID
-    # @param Shape - shape or shape ID
-    # @return True if succeed else raise an exception
+    # @param ElementID an element ID
+    # @param Shape a shape or shape ID
+    # @return True if succeed else raises an exception
     def SetMeshElementOnShape(self, ElementID, Shape):
         if ( isinstance( Shape, geompyDC.GEOM._objref_GEOM_Object)):
             ShapeID = Shape.GetSubShapeIndices()[0]
@@ -1563,68 +1561,68 @@ class Mesh:
         return True
 
 
-    ## Move node with given id
-    #  @param NodeID id of the node
-    #  @param x new X coordinate
-    #  @param y new Y coordinate
-    #  @param z new Z coordinate
+    ## Moves the node with the given id
+    #  @param NodeID the id of the node
+    #  @param x  a new X coordinate
+    #  @param y  a new Y coordinate
+    #  @param z  a new Z coordinate
     #  @return True if succeed else False
     def MoveNode(self, NodeID, x, y, z):
         return self.editor.MoveNode(NodeID, x, y, z)
 
-    ## Find a node closest to a point
-    #  @param x X coordinate of a point
-    #  @param y Y coordinate of a point
-    #  @param z Z coordinate of a point
-    #  @return id of a node
+    ## Finds the node closest to a point
+    #  @param x  the X coordinate of a point
+    #  @param y  the Y coordinate of a point
+    #  @param z  the Z coordinate of a point
+    #  @return the ID of a node
     def FindNodeClosestTo(self, x, y, z):
         preview = self.mesh.GetMeshEditPreviewer()
         return preview.MoveClosestNodeToPoint(x, y, z, -1)
 
-    ## Find a node closest to a point and move it to a point location
-    #  @param x X coordinate of a point
-    #  @param y Y coordinate of a point
-    #  @param z Z coordinate of a point
-    #  @return id of a moved node
+    ## Finds the node closest to a point and moves it to a point location
+    #  @param x  the X coordinate of a point
+    #  @param y  the Y coordinate of a point
+    #  @param z  the Z coordinate of a point
+    #  @return the ID of a moved node
     def MeshToPassThroughAPoint(self, x, y, z):
         return self.editor.MoveClosestNodeToPoint(x, y, z, -1)
 
-    ## Replace two neighbour triangles sharing Node1-Node2 link
-    #  with ones built on the same 4 nodes but having other common link.
-    #  @param NodeID1 first node id
-    #  @param NodeID2 second node id
-    #  @return false if proper faces not found
+    ## Replaces two neighbour triangles sharing Node1-Node2 link
+    #  with the triangles built on the same 4 nodes but having other common link.
+    #  @param NodeID1  the ID of the first node
+    #  @param NodeID2  the ID of the second node
+    #  @return false if proper faces were not found
     def InverseDiag(self, NodeID1, NodeID2):
         return self.editor.InverseDiag(NodeID1, NodeID2)
 
-    ## Replace two neighbour triangles sharing Node1-Node2 link
+    ## Replaces two neighbour triangles sharing Node1-Node2 link
     #  with a quadrangle built on the same 4 nodes.
-    #  @param NodeID1 first node id
-    #  @param NodeID2 second node id
-    #  @return false if proper faces not found
+    #  @param NodeID1  the ID of the first node
+    #  @param NodeID2  the ID of the second node
+    #  @return false if proper faces were not found
     def DeleteDiag(self, NodeID1, NodeID2):
         return self.editor.DeleteDiag(NodeID1, NodeID2)
 
-    ## Reorient elements by ids
-    #  @param IDsOfElements if undefined reorient all mesh elements
+    ## Reorients elements by ids
+    #  @param IDsOfElements if undefined reorients all mesh elements
     #  @return True if succeed else False
     def Reorient(self, IDsOfElements=None):
         if IDsOfElements == None:
             IDsOfElements = self.GetElementsId()
         return self.editor.Reorient(IDsOfElements)
 
-    ## Reorient all elements of the object
-    #  @param theObject is mesh, submesh or group
+    ## Reorients all elements of the object
+    #  @param theObject mesh, submesh or group
     #  @return True if succeed else False
     def ReorientObject(self, theObject):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         return self.editor.ReorientObject(theObject)
 
-    ## Fuse neighbour triangles into quadrangles.
+    ## Fuses the neighbouring triangles into quadrangles.
     #  @param IDsOfElements The triangles to be fused,
-    #  @param theCriterion     is FT_...; used to choose a neighbour to fuse with.
-    #  @param MaxAngle      is a max angle between element normals at which fusion
+    #  @param theCriterion  is FT_...; used to choose a neighbour to fuse with.
+    #  @param MaxAngle      is the maximum angle between element normals at which the fusion
     #                       is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
     def TriToQuad(self, IDsOfElements, theCriterion, MaxAngle):
@@ -1632,10 +1630,10 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         return self.editor.TriToQuad(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
 
-    ## Fuse neighbour triangles of the object into quadrangles
+    ## Fuses the neighbouring triangles of the object into quadrangles
     #  @param theObject is mesh, submesh or group
     #  @param theCriterion is FT_...; used to choose a neighbour to fuse with.
-    #  @param MaxAngle  is a max angle between element normals at which fusion
+    #  @param MaxAngle   a max angle between element normals at which the fusion
     #                   is still performed; theMaxAngle is mesured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
@@ -1643,26 +1641,26 @@ class Mesh:
             theObject = theObject.GetMesh()
         return self.editor.TriToQuadObject(theObject, self.smeshpyD.GetFunctor(theCriterion), MaxAngle)
 
-    ## Split quadrangles into triangles.
+    ## Splits quadrangles into triangles.
     #  @param IDsOfElements the faces to be splitted.
-    #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
+    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     def QuadToTri (self, IDsOfElements, theCriterion):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
         return self.editor.QuadToTri(IDsOfElements, self.smeshpyD.GetFunctor(theCriterion))
 
-    ## Split quadrangles into triangles.
-    #  @param theObject object to taking list of elements from, is mesh, submesh or group
-    #  @param theCriterion  is FT_...; used to choose a diagonal for splitting.
+    ## Splits quadrangles into triangles.
+    #  @param theObject  the object from which the list of elements is taken, this is mesh, submesh or group
+    #  @param theCriterion   FT_...; used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     def QuadToTriObject (self, theObject, theCriterion):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         return self.editor.QuadToTriObject(theObject, self.smeshpyD.GetFunctor(theCriterion))
 
-    ## Split quadrangles into triangles.
-    #  @param theElems  The faces to be splitted
+    ## Splits quadrangles into triangles.
+    #  @param theElems  the faces to be splitted
     #  @param the13Diag is used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     def SplitQuad (self, IDsOfElements, Diag13):
@@ -1670,23 +1668,23 @@ class Mesh:
             IDsOfElements = self.GetElementsId()
         return self.editor.SplitQuad(IDsOfElements, Diag13)
 
-    ## Split quadrangles into triangles.
-    #  @param theObject is object to taking list of elements from, is mesh, submesh or group
+    ## Splits quadrangles into triangles.
+    #  @param theObject  the object from which the list of elements is taken, this is mesh, submesh or group
     #  @return TRUE in case of success, FALSE otherwise.
     def SplitQuadObject (self, theObject, Diag13):
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
         return self.editor.SplitQuadObject(theObject, Diag13)
 
-    ## Find better splitting of the given quadrangle.
-    #  @param IDOfQuad  ID of the quadrangle to be splitted.
-    #  @param theCriterion is FT_...; a criterion to choose a diagonal for splitting.
+    ## Finds a better splitting of the given quadrangle.
+    #  @param IDOfQuad   the ID of the quadrangle to be splitted.
+    #  @param theCriterion  FT_...; a criterion to choose a diagonal for splitting.
     #  @return 1 if 1-3 diagonal is better, 2 if 2-4
     #          diagonal is better, 0 if error occurs.
     def BestSplit (self, IDOfQuad, theCriterion):
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
 
-    ## Split quadrangle faces near triangular facets of volumes
+    ## Splits quadrangle faces near triangular facets of volumes
     #
     def SplitQuadsNearTriangularFacets(self):
         faces_array = self.GetElementsByType(SMESH.FACE)
@@ -1715,15 +1713,15 @@ class Mesh:
                                         isVolumeFound = True
                                         self.SplitQuad([face_id], True) # diagonal 1-3
 
-    ## @brief Split hexahedrons into tetrahedrons.
+    ## @brief Splits hexahedrons into tetrahedrons.
     #
-    #  Use pattern mapping functionality for splitting.
-    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
-    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
-    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
+    #  This operation uses pattern mapping functionality for splitting.
+    #  @param theObject the object from which the list of hexahedrons is taken; this is mesh, submesh or group.
+    #  @param theNode000,theNode001 within the range [0,7]; gives the orientation of the
+    #         pattern relatively each hexahedron: the (0,0,0) key-point of the pattern
     #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
     #         key-point will be mapped into <theNode001>-th node of each volume.
-    #         The (0,0,0) key-point of used pattern corresponds to not split corner.
+    #         The (0,0,0) key-point of the used pattern corresponds to a non-split corner.
     #  @return TRUE in case of success, FALSE otherwise.
     def SplitHexaToTetras (self, theObject, theNode000, theNode001):
         # Pattern:     5.---------.6
@@ -1774,13 +1772,13 @@ class Mesh:
 
     ## @brief Split hexahedrons into prisms.
     #
-    #  Use pattern mapping functionality for splitting.
-    #  @param theObject object to take list of hexahedrons from; is mesh, submesh or group.
-    #  @param theNode000,theNode001 is in range [0,7]; give an orientation of the
-    #         pattern relatively each hexahedron: the (0,0,0) key-point of pattern
-    #         will be mapped into <theNode000>-th node of each volume, the (0,0,1)
-    #         key-point will be mapped into <theNode001>-th node of each volume.
-    #         The edge (0,0,0)-(0,0,1) of used pattern connects two not split corners.
+    #  Uses the pattern mapping functionality for splitting.
+    #  @param theObject the object (mesh, submesh or group) from where the list of hexahedrons is taken;
+    #  @param theNode000,theNode001 (within the range [0,7]) gives the orientation of the
+    #         pattern relatively each hexahedron: keypoint (0,0,0) of the pattern
+    #         will be mapped into the <theNode000>-th node of each volume, keypoint (0,0,1)
+    #         will be mapped into the <theNode001>-th node of each volume.
+    #         Edge (0,0,0)-(0,0,1) of used pattern connects two not split corners.
     #  @return TRUE in case of success, FALSE otherwise.
     def SplitHexaToPrisms (self, theObject, theNode000, theNode001):
         # Pattern:     5.---------.6
@@ -1820,16 +1818,16 @@ class Mesh:
         isDone = pattern.MakeMesh(self.mesh, False, False)
         if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
 
-        # split quafrangle faces near triangular facets of volumes
+        # Splits quafrangle faces near triangular facets of volumes
         self.SplitQuadsNearTriangularFacets()
 
         return isDone
 
-    ## Smooth elements
-    #  @param IDsOfElements list if ids of elements to smooth
-    #  @param IDsOfFixedNodes list of ids of fixed nodes.
+    ## Smoothes elements
+    #  @param IDsOfElements the list if ids of elements to smooth
+    #  @param IDsOfFixedNodes the list of ids of fixed nodes.
     #  Note that nodes built on edges and boundary nodes are always fixed.
-    #  @param MaxNbOfIterations maximum number of iterations
+    #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
@@ -1840,11 +1838,11 @@ class Mesh:
         return self.editor.Smooth(IDsOfElements, IDsOfFixedNodes,
                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
-    ## Smooth elements belong to given object
-    #  @param theObject object to smooth
-    #  @param IDsOfFixedNodes list of ids of fixed nodes.
+    ## Smoothes elements which belong to the given object
+    #  @param theObject the object to smooth
+    #  @param IDsOfFixedNodes the list of ids of fixed nodes.
     #  Note that nodes built on edges and boundary nodes are always fixed.
-    #  @param MaxNbOfIterations maximum number of iterations
+    #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
@@ -1855,11 +1853,11 @@ class Mesh:
         return self.editor.SmoothObject(theObject, IDsOfFixedNodes,
                                         MaxNbOfIterations, MaxxAspectRatio, Method)
 
-    ## Parametric smooth the given elements
-    #  @param IDsOfElements list if ids of elements to smooth
-    #  @param IDsOfFixedNodes list of ids of fixed nodes.
+    ## Parametrically smoothes the given elements
+    #  @param IDsOfElements the list if ids of elements to smooth
+    #  @param IDsOfFixedNodes the list of ids of fixed nodes.
     #  Note that nodes built on edges and boundary nodes are always fixed.
-    #  @param MaxNbOfIterations maximum number of iterations
+    #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
     #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
@@ -1870,13 +1868,13 @@ class Mesh:
         return self.editor.SmoothParametric(IDsOfElements, IDsOfFixedNodes,
                                             MaxNbOfIterations, MaxAspectRatio, Method)
 
-    ## Parametric smooth elements belong to given object
-    #  @param theObject object to smooth
-    #  @param IDsOfFixedNodes list of ids of fixed nodes.
+    ## Parametrically smoothes the elements which belong to the given object
+    #  @param theObject the object to smooth
+    #  @param IDsOfFixedNodes the list of ids of fixed nodes.
     #  Note that nodes built on edges and boundary nodes are always fixed.
-    #  @param MaxNbOfIterations maximum number of iterations
+    #  @param MaxNbOfIterations the maximum number of iterations
     #  @param MaxAspectRatio varies in range [1.0, inf]
-    #  @param Method is Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
+    #  @param Method Laplacian(LAPLACIAN_SMOOTH) or Centroidal(CENTROIDAL_SMOOTH)
     #  @return TRUE in case of success, FALSE otherwise.
     def SmoothParametricObject(self, theObject, IDsOfFixedNodes,
                                MaxNbOfIterations, MaxAspectRatio, Method):
@@ -1885,12 +1883,12 @@ class Mesh:
         return self.editor.SmoothParametricObject(theObject, IDsOfFixedNodes,
                                                   MaxNbOfIterations, MaxAspectRatio, Method)
 
-    ## Converts all mesh to quadratic one, deletes old elements, replacing
-    #  them with quadratic ones with the same id.
+    ## Converts the mesh to quadratic, deletes old elements, replacing
+    #  them with quadratic with the same id.
     def ConvertToQuadratic(self, theForce3d):
         self.editor.ConvertToQuadratic(theForce3d)
 
-    ## Converts all mesh from quadratic to ordinary ones,
+    ## Converts the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
     #  them with ordinary mesh elements with the same id.
     #  @return TRUE in case of success, FALSE otherwise.
@@ -1905,16 +1903,16 @@ class Mesh:
     def RenumberElements(self):
         self.editor.RenumberElements()
 
-    ## Generate new elements by rotation of the elements around the axis
-    #  @param IDsOfElements list of ids of elements to sweep
-    #  @param Axix axis of rotation, AxisStruct or line(geom object)
-    #  @param AngleInRadians angle of Rotation
-    #  @param NbOfSteps number of steps
+    ## Generates new elements by rotation of the elements around the axis
+    #  @param IDsOfElements the list of ids of elements to sweep
+    #  @param Axix the axis of rotation, AxisStruct or line(geom object)
+    #  @param AngleInRadians the angle of Rotation
+    #  @param NbOfStep  the number of steps
     #  @param Tolerance tolerance
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an anglular size
-    #  of all steps, else - size of each step
-    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an angular size
+    #                    of all steps, else - size of each step
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def RotationSweep(self, IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance,
                       MakeGroups=False, TotalAngle=False):
         if IDsOfElements == []:
@@ -1929,16 +1927,16 @@ class Mesh:
         self.editor.RotationSweep(IDsOfElements, Axix, AngleInRadians, NbOfSteps, Tolerance)
         return []
 
-    ## Generate new elements by rotation of the elements of object around the axis
-    #  @param theObject object wich elements should be sweeped
-    #  @param Axix axis of rotation, AxisStruct or line(geom object)
-    #  @param AngleInRadians angle of Rotation
+    ## Generates new elements by rotation of the elements of object around the axis
+    #  @param theObject object which elements should be sweeped
+    #  @param Axix the axis of rotation, AxisStruct or line(geom object)
+    #  @param AngleInRadians the angle of Rotation
     #  @param NbOfSteps number of steps
     #  @param Tolerance tolerance
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an anglular size
-    #  of all steps, else - size of each step
-    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param TotalAngle gives meaning of AngleInRadians: if True then it is an angular size
+    #                    of all steps, else - size of each step
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def RotationSweepObject(self, theObject, Axix, AngleInRadians, NbOfSteps, Tolerance,
                             MakeGroups=False, TotalAngle=False):
         if ( isinstance( theObject, Mesh )):
@@ -1953,12 +1951,12 @@ class Mesh:
         self.editor.RotationSweepObject(theObject, Axix, AngleInRadians, NbOfSteps, Tolerance)
         return []
 
-    ## Generate new elements by extrusion of the elements with given ids
-    #  @param IDsOfElements list of elements ids for extrusion
+    ## Generates new elements by extrusion of the elements with given ids
+    #  @param IDsOfElements the list of elements ids for extrusion
     #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False):
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
@@ -1969,14 +1967,14 @@ class Mesh:
         self.editor.ExtrusionSweep(IDsOfElements, StepVector, NbOfSteps)
         return []
 
-    ## Generate new elements by extrusion of the elements with given ids
+    ## Generates new elements by extrusion of the elements with given ids
     #  @param IDsOfElements is ids of elements
     #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
-    #  @param ExtrFlags set flags for performing extrusion
+    #  @param ExtrFlags sets flags for extrusion
     #  @param SewTolerance uses for comparing locations of nodes if flag
     #         EXTRUSION_FLAG_SEW is set
-    #  @param MakeGroups to generate new groups from existing ones
+    #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def AdvancedExtrusion(self, IDsOfElements, StepVector, NbOfSteps, ExtrFlags, SewTolerance, MakeGroups=False):
         if ( isinstance( StepVector, geompyDC.GEOM._objref_GEOM_Object)):
@@ -1988,11 +1986,11 @@ class Mesh:
                                       ExtrFlags, SewTolerance)
         return []
 
-    ## Generate new elements by extrusion of the elements belong to object
-    #  @param theObject object wich elements should be processed
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  @param theObject the object which elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
-    #  @param MakeGroups to generate new groups from existing ones
+    #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
@@ -2004,8 +2002,8 @@ class Mesh:
         self.editor.ExtrusionSweepObject(theObject, StepVector, NbOfSteps)
         return []
 
-    ## Generate new elements by extrusion of the elements belong to object
-    #  @param theObject object wich elements should be processed
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  @param theObject object which elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups to generate new groups from existing ones
@@ -2020,11 +2018,11 @@ class Mesh:
         self.editor.ExtrusionSweepObject1D(theObject, StepVector, NbOfSteps)
         return []
 
-    ## Generate new elements by extrusion of the elements belong to object
-    #  @param theObject object wich elements should be processed
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  @param theObject object which elements should be processed
     #  @param StepVector vector, defining the direction and value of extrusion
     #  @param NbOfSteps the number of steps
-    #  @param MakeGroups to generate new groups from existing ones
+    #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
@@ -2036,19 +2034,21 @@ class Mesh:
         self.editor.ExtrusionSweepObject2D(theObject, StepVector, NbOfSteps)
         return []
 
-    ## Generate new elements by extrusion of the given elements
-    #  A path of extrusion must be a meshed edge.
-    #  @param IDsOfElements is ids of elements
+    ## Generates new elements by extrusion of the given elements
+    #  The path of extrusion must be a meshed edge.
+    #  @param IDsOfElements ids of elements
     #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which proceeds the extrusion
-    #  @param PathShape is shape(edge); as the mesh can be complex, the edge is used to define the sub-mesh for the path
-    #  @param NodeStart the first or the last node on the edge. It is used to define the direction of extrusion
-    #  @param HasAngles allows the shape to be rotated around the path to get the resulting mesh in a helical fashion
+    #  @param PathShape shape(edge) defines the sub-mesh for the path
+    #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
     #  @param Angles list of angles
-    #  @param HasRefPoint allows to use base point
-    #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
-    #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #         The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
@@ -2071,19 +2071,21 @@ class Mesh:
         return self.editor.ExtrusionAlongPath(IDsOfElements, PathMesh, PathShape,
                                               NodeStart, HasAngles, Angles, HasRefPoint, RefPoint)
 
-    ## Generate new elements by extrusion of the elements belong to object
-    #  A path of extrusion must be a meshed edge.
+    ## Generates new elements by extrusion of the elements which belong to the object
+    #  The path of extrusion must be a meshed edge.
     #  @param IDsOfElements is ids of elements
-    #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which proceeds the extrusion
-    #  @param PathShape is shape(edge); as the mesh can be complex, the edge is used to define the sub-mesh for the path
-    #  @param NodeStart the first or the last node on the edge. It is used to define the direction of extrusion
-    #  @param HasAngles allows the shape to be rotated around the path to get the resulting mesh in a helical fashion
+    #  @param PathMesh mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
+    #  @param PathShape shape(edge) defines the sub-mesh for the path
+    #  @param NodeStart the first or the last node on the edge. Defines the direction of extrusion
+    #  @param HasAngles allows the shape to be rotated around the path
+    #                   to get the resulting mesh in a helical fashion
     #  @param Angles list of angles
-    #  @param HasRefPoint allows to use base point
-    #  @param RefPoint point around which the shape is rotated(the mass center of the shape by default).
-    #         User can specify any point as the Base Point and the shape will be rotated with respect to this point.
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param LinearVariation makes compute rotation angles as linear variation of given Angles along path steps
+    #  @param HasRefPoint allows using the reference point
+    #  @param RefPoint the point around which the shape is rotated (the mass center of the shape by default).
+    #         The User can specify any point as the Reference Point.
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param LinearVariation forces the computation of rotation angles as linear
+    #                         variation of the given Angles along path steps
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
@@ -2106,13 +2108,13 @@ class Mesh:
                                                     NodeStart, HasAngles, Angles, HasRefPoint,
                                                     RefPoint)
 
-    ## Symmetrical copy of mesh elements
+    ## Creates a symmetrical copy of mesh elements
     #  @param IDsOfElements list of elements ids
     #  @param Mirror is AxisStruct or geom object(point, line, plane)
     #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is geom object this parameter is unnecessary
-    #  @param Copy allows to copy element(Copy is 1) or to replace with its mirroring(Copy is 0)
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param Copy allows to copy element (Copy is 1) or to replace with its mirroring (Copy is 0)
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def Mirror(self, IDsOfElements, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if IDsOfElements == []:
@@ -2124,13 +2126,13 @@ class Mesh:
         self.editor.Mirror(IDsOfElements, Mirror, theMirrorType, Copy)
         return []
 
-    ## Create a new mesh by symmetrical copy of mesh elements
-    #  @param IDsOfElements list of elements ids
-    #  @param Mirror is AxisStruct or geom object(point, line, plane)
+    ## Creates a new mesh by a symmetrical copy of mesh elements
+    #  @param IDsOfElements the list of elements ids
+    #  @param Mirror is AxisStruct or geom object (point, line, plane)
     #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is geom object this parameter is unnecessary
+    #  If the Mirror is a geom object this parameter is unnecessary
     #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    #  @param NewMeshName a name of the new mesh to create
     #  @return instance of Mesh class
     def MirrorMakeMesh(self, IDsOfElements, Mirror, theMirrorType, MakeGroups=0, NewMeshName=""):
         if IDsOfElements == []:
@@ -2141,13 +2143,13 @@ class Mesh:
                                           MakeGroups, NewMeshName)
         return Mesh(self.smeshpyD,self.geompyD,mesh)
 
-    ## Symmetrical copy of object
+    ## Creates a symmetrical copy of the object
     #  @param theObject mesh, submesh or group
-    #  @param Mirror is AxisStruct or geom object(point, line, plane)
+    #  @param Mirror AxisStruct or geom object (point, line, plane)
     #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is geom object this parameter is unnecessary
-    #  @param Copy allows to copy element(Copy is 1) or to replace with its mirroring(Copy is 0)
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param Copy allows copying the element (Copy is 1) or replacing it with its mirror (Copy is 0)
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def MirrorObject (self, theObject, Mirror, theMirrorType, Copy=0, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
@@ -2159,13 +2161,13 @@ class Mesh:
         self.editor.MirrorObject(theObject, Mirror, theMirrorType, Copy)
         return []
 
-    ## Create a new mesh by symmetrical copy of object
+    ## Creates a new mesh by a symmetrical copy of the object
     #  @param theObject mesh, submesh or group
-    #  @param Mirror is AxisStruct or geom object(point, line, plane)
-    #  @param theMirrorType is  POINT, AXIS or PLANE
-    #  If the Mirror is geom object this parameter is unnecessary
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    #  @param Mirror AxisStruct or geom object (point, line, plane)
+    #  @param theMirrorType POINT, AXIS or PLANE
+    #  If the Mirror is a geom object this parameter is unnecessary
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of the new mesh to create
     #  @return instance of Mesh class
     def MirrorObjectMakeMesh (self, theObject, Mirror, theMirrorType,MakeGroups=0, NewMeshName=""):
         if ( isinstance( theObject, Mesh )):
@@ -2178,9 +2180,9 @@ class Mesh:
 
     ## Translates the elements
     #  @param IDsOfElements list of elements ids
-    #  @param Vector direction of translation(DirStruct or vector)
-    #  @param Copy allows to copy the translated elements
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  @param Vector the direction of translation (DirStruct or vector)
+    #  @param Copy allows copying the translated elements
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def Translate(self, IDsOfElements, Vector, Copy, MakeGroups=False):
         if IDsOfElements == []:
@@ -2192,11 +2194,11 @@ class Mesh:
         self.editor.Translate(IDsOfElements, Vector, Copy)
         return []
 
-    ## Create a new mesh of translated elements
+    ## Creates a new mesh of translated elements
     #  @param IDsOfElements list of elements ids
-    #  @param Vector direction of translation(DirStruct or vector)
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    #  @param Vector the direction of translation (DirStruct or vector)
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     def TranslateMakeMesh(self, IDsOfElements, Vector, MakeGroups=False, NewMeshName=""):
         if IDsOfElements == []:
@@ -2207,10 +2209,10 @@ class Mesh:
         return Mesh ( self.smeshpyD, self.geompyD, mesh )
 
     ## Translates the object
-    #  @param theObject object to translate(mesh, submesh, or group)
-    #  @param Vector direction of translation(DirStruct or geom vector)
-    #  @param Copy allows to copy the translated elements
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  @param theObject the object to translate (mesh, submesh, or group)
+    #  @param Vector direction of translation (DirStruct or geom vector)
+    #  @param Copy allows copying the translated elements
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def TranslateObject(self, theObject, Vector, Copy, MakeGroups=False):
         if ( isinstance( theObject, Mesh )):
@@ -2222,11 +2224,11 @@ class Mesh:
         self.editor.TranslateObject(theObject, Vector, Copy)
         return []
 
-    ## Create a new mesh from translated object
-    #  @param theObject object to translate(mesh, submesh, or group)
-    #  @param Vector direction of translation(DirStruct or geom vector)
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    ## Creates a new mesh from the translated object
+    #  @param theObject the object to translate (mesh, submesh, or group)
+    #  @param Vector the direction of translation (DirStruct or geom vector)
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     def TranslateObjectMakeMesh(self, theObject, Vector, MakeGroups=False, NewMeshName=""):
         if (isinstance(theObject, Mesh)):
@@ -2238,10 +2240,10 @@ class Mesh:
 
     ## Rotates the elements
     #  @param IDsOfElements list of elements ids
-    #  @param Axis axis of rotation(AxisStruct or geom line)
-    #  @param AngleInRadians angle of rotation(in radians)
-    #  @param Copy allows to copy the rotated elements
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  @param Axis the axis of rotation (AxisStruct or geom line)
+    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param Copy allows copying the rotated elements
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def Rotate (self, IDsOfElements, Axis, AngleInRadians, Copy, MakeGroups=False):
         if IDsOfElements == []:
@@ -2253,12 +2255,12 @@ class Mesh:
         self.editor.Rotate(IDsOfElements, Axis, AngleInRadians, Copy)
         return []
 
-    ## Create a new mesh of rotated elements
+    ## Creates a new mesh of rotated elements
     #  @param IDsOfElements list of element ids
-    #  @param Axis axis of rotation(AxisStruct or geom line)
-    #  @param AngleInRadians angle of rotation(in radians)
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    #  @param Axis the axis of rotation (AxisStruct or geom line)
+    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     def RotateMakeMesh (self, IDsOfElements, Axis, AngleInRadians, MakeGroups=0, NewMeshName=""):
         if IDsOfElements == []:
@@ -2270,11 +2272,11 @@ class Mesh:
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
     ## Rotates the object
-    #  @param theObject object to rotate(mesh, submesh, or group)
-    #  @param Axis axis of rotation(AxisStruct or geom line)
-    #  @param AngleInRadians angle of rotation(in radians)
-    #  @param Copy allows to copy the rotated elements
-    #  @param MakeGroups to generate new groups from existing ones (if Copy)
+    #  @param theObject the object to rotate( mesh, submesh, or group)
+    #  @param Axis the axis of rotation (AxisStruct or geom line)
+    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param Copy allows copying the rotated elements
+    #  @param MakeGroups forces the generation of new groups from existing ones (if Copy)
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     def RotateObject (self, theObject, Axis, AngleInRadians, Copy, MakeGroups=False):
         if (isinstance(theObject, Mesh)):
@@ -2286,12 +2288,12 @@ class Mesh:
         self.editor.RotateObject(theObject, Axis, AngleInRadians, Copy)
         return []
 
-    ## Create a new mesh from a rotated object
-    #  @param theObject object to rotate (mesh, submesh, or group)
-    #  @param Axis axis of rotation(AxisStruct or geom line)
-    #  @param AngleInRadians angle of rotation(in radians)
-    #  @param MakeGroups to generate new groups from existing ones
-    #  @param NewMeshName is a name of new mesh to create
+    ## Creates a new mesh from the rotated object
+    #  @param theObject the object to rotate (mesh, submesh, or group)
+    #  @param Axis the axis of rotation (AxisStruct or geom line)
+    #  @param AngleInRadians the angle of rotation (in radians)
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of the newly created mesh
     #  @return instance of Mesh class
     def RotateObjectMakeMesh(self, theObject, Axis, AngleInRadians, MakeGroups=0,NewMeshName=""):
         if (isinstance( theObject, Mesh )):
@@ -2302,40 +2304,40 @@ class Mesh:
                                                        MakeGroups, NewMeshName)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
-    ## Find group of nodes close to each other within Tolerance.
-    #  @param Tolerance tolerance value
-    #  @return list of group of nodes
+    ## Finds groups of ajacent nodes within Tolerance.
+    #  @param Tolerance the value of tolerance
+    #  @return the list of groups of nodes
     def FindCoincidentNodes (self, Tolerance):
         return self.editor.FindCoincidentNodes(Tolerance)
 
-    ## Find group of nodes close to each other within Tolerance.
-    #  @param Tolerance tolerance value
+    ## Finds groups of ajacent nodes within Tolerance.
+    #  @param Tolerance the value of tolerance
     #  @param SubMeshOrGroup SubMesh or Group
-    #  @return list of group of nodes
+    #  @return the list of groups of nodes
     def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance):
         return self.editor.FindCoincidentNodesOnPart(SubMeshOrGroup, Tolerance)
 
-    ## Merge nodes
-    #  @param GroupsOfNodes list of group of nodes
+    ## Merges nodes
+    #  @param GroupsOfNodes the list of groups of nodes
     def MergeNodes (self, GroupsOfNodes):
         self.editor.MergeNodes(GroupsOfNodes)
 
-    ## Find elements built on the same nodes.
+    ## Finds the elements built on the same nodes.
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
     #  @return a list of groups of equal elements
     def FindEqualElements (self, MeshOrSubMeshOrGroup):
         return self.editor.FindEqualElements(MeshOrSubMeshOrGroup)
 
-    ## Merge elements in each given group.
+    ## Merges elements in each given group.
     #  @param GroupsOfElementsID groups of elements for merging
     def MergeElements(self, GroupsOfElementsID):
         self.editor.MergeElements(GroupsOfElementsID)
 
-    ## Remove all but one of elements built on the same nodes.
+    ## Leaves one element and removes all other elements built on the same nodes.
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
 
-    ## Sew free borders
+    ## Sews free borders
     #  @return SMESH::Sew_Error
     def SewFreeBorders (self, FirstNodeID1, SecondNodeID1, LastNodeID1,
                         FirstNodeID2, SecondNodeID2, LastNodeID2,
@@ -2344,25 +2346,25 @@ class Mesh:
                                           FirstNodeID2, SecondNodeID2, LastNodeID2,
                                           CreatePolygons, CreatePolyedrs)
 
-    ## Sew conform free borders
+    ## Sews conform free borders
     #  @return SMESH::Sew_Error
     def SewConformFreeBorders (self, FirstNodeID1, SecondNodeID1, LastNodeID1,
                                FirstNodeID2, SecondNodeID2):
         return self.editor.SewConformFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
                                                  FirstNodeID2, SecondNodeID2)
 
-    ## Sew border to side
+    ## Sews border to side
     #  @return SMESH::Sew_Error
     def SewBorderToSide (self, FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,
                          FirstNodeIDOnSide, LastNodeIDOnSide, CreatePolygons, CreatePolyedrs):
         return self.editor.SewBorderToSide(FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,
                                            FirstNodeIDOnSide, LastNodeIDOnSide, CreatePolygons, CreatePolyedrs)
 
-    ## Sew two sides of a mesh. Nodes belonging to Side1 are
-    #  merged with nodes of elements of Side2.
-    #  Number of elements in theSide1 and in theSide2 must be
-    #  equal and they should have similar node connectivity.
-    #  The nodes to merge should belong to sides borders and
+    ## Sews two sides of a mesh. The nodes belonging to Side1 are
+    #  merged with the nodes of elements of Side2.
+    #  The number of elements in theSide1 and in theSide2 must be
+    #  equal and they should have similar nodal connectivity.
+    #  The nodes to merge should belong to side borders and
     #  the first node should be linked to the second.
     #  @return SMESH::Sew_Error
     def SewSideElements (self, IDsOfSide1Elements, IDsOfSide2Elements,
@@ -2372,28 +2374,28 @@ class Mesh:
                                            NodeID1OfSide1ToMerge, NodeID1OfSide2ToMerge,
                                            NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge)
 
-    ## Set new nodes for given element.
+    ## Sets new nodes for the given element.
     #  @param ide the element id
     #  @param newIDs nodes ids
-    #  @return If number of nodes is not corresponded to type of element - returns false
+    #  @return If the number of nodes does not correspond to the type of element - returns false
     def ChangeElemNodes(self, ide, newIDs):
         return self.editor.ChangeElemNodes(ide, newIDs)
 
-    ## If during last operation of MeshEditor some nodes were
-    #  created this method returns list of its IDs, \n
-    #  if new nodes not created - returns empty list
-    #  @return list of integer values (can be empty)
+    ## If during the last operation of MeshEditor some nodes were
+    #  created, this method returns the list of their IDs, \n
+    #  if new nodes were not created - returns empty list
+    #  @return the list of integer values (can be empty)
     def GetLastCreatedNodes(self):
         return self.editor.GetLastCreatedNodes()
 
-    ## If during last operation of MeshEditor some elements were
-    #  created this method returns list of its IDs, \n
-    #  if new elements not creared - returns empty list
-    #  @return list of integer values (can be empty)
+    ## If during the last operation of MeshEditor some elements were
+    #  created this method returns the list of their IDs, \n
+    #  if new elements were not created - returns empty list
+    #  @return the list of integer values (can be empty)
     def GetLastCreatedElems(self):
         return self.editor.GetLastCreatedElems()
 
-## Mother class to define algorithm, recommended to do not use directly.
+## The mother class to define algorithm, it is not recommended to use it directly.
 #
 #  More details.
 class Mesh_Algorithm:
@@ -2408,8 +2410,8 @@ class Mesh_Algorithm:
         self.subm = None
         self.algo = None
 
-    ## Find hypothesis in study by its type name and parameters.
-    #  Find only those hypothesis, which was created in smeshpyD engine.
+    ## Finds a hypothesis in the study by its type name and parameters.
+    #  Finds only the hypotheses created in smeshpyD engine.
     #  @return SMESH.SMESH_Hypothesis
     def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
         study = smeshpyD.GetCurrentStudy()
@@ -2417,10 +2419,10 @@ class Mesh_Algorithm:
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
         if scomp is not None:
             res,hypRoot = scomp.FindSubObject(SMESH.Tag_HypothesisRoot)
-            # is hypotheses root label exists?
+            # Check if the root label of the hypotheses exists
             if res and hypRoot is not None:
                 iter = study.NewChildIterator(hypRoot)
-                # check all published hypotheses
+                # Check all published hypotheses
                 while iter.More():
                     hypo_so_i = iter.Value()
                     attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
@@ -2428,14 +2430,14 @@ class Mesh_Algorithm:
                         anIOR = attr.Value()
                         hypo_o_i = salome.orb.string_to_object(anIOR)
                         if hypo_o_i is not None:
-                            # is hypothesis?
+                            # Check if this is a hypothesis
                             hypo_i = hypo_o_i._narrow(SMESH.SMESH_Hypothesis)
                             if hypo_i is not None:
-                                # belongs to this engine?
+                                # Check if the hypothesis belongs to current engine
                                 if smeshpyD.GetObjectId(hypo_i) > 0:
-                                    # is it the needed hypothesis?
+                                    # Check if this is the required hypothesis
                                     if hypo_i.GetName() == hypname:
-                                        # check args
+                                        # Check arguments
                                         if CompareMethod(hypo_i, args):
                                             # found!!!
                                             return hypo_i
@@ -2450,8 +2452,8 @@ class Mesh_Algorithm:
             pass
         return None
 
-    ## Find algorithm in study by its type name.
-    #  Find only those algorithm, which was created in smeshpyD engine.
+    ## Finds the algorithm in the study by its type name.
+    #  Finds only the algorithms, which have been created in smeshpyD engine.
     #  @return SMESH.SMESH_Algo
     def FindAlgorithm (self, algoname, smeshpyD):
         study = smeshpyD.GetCurrentStudy()
@@ -2459,10 +2461,10 @@ class Mesh_Algorithm:
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
         if scomp is not None:
             res,hypRoot = scomp.FindSubObject(SMESH.Tag_AlgorithmsRoot)
-            # is algorithms root label exists?
+            # Check if the root label of the algorithms exists
             if res and hypRoot is not None:
                 iter = study.NewChildIterator(hypRoot)
-                # check all published algorithms
+                # Check all published algorithms
                 while iter.More():
                     algo_so_i = iter.Value()
                     attr = algo_so_i.FindAttribute("AttributeIOR")[1]
@@ -2470,12 +2472,12 @@ class Mesh_Algorithm:
                         anIOR = attr.Value()
                         algo_o_i = salome.orb.string_to_object(anIOR)
                         if algo_o_i is not None:
-                            # is algorithm?
+                            # Check if this is an algorithm
                             algo_i = algo_o_i._narrow(SMESH.SMESH_Algo)
                             if algo_i is not None:
-                                # belongs to this engine?
+                                # Checks if the algorithm belongs to the current engine
                                 if smeshpyD.GetObjectId(algo_i) > 0:
-                                    # is it the needed algorithm?
+                                    # Check if this is the required algorithm
                                     if algo_i.GetName() == algoname:
                                         # found!!!
                                         return algo_i
@@ -2489,31 +2491,31 @@ class Mesh_Algorithm:
             pass
         return None
 
-    ## If the algorithm is global, return 0; \n
-    #  else return the submesh associated to this algorithm.
+    ## If the algorithm is global, returns 0; \n
+    #  else returns the submesh associated to this algorithm.
     def GetSubMesh(self):
         return self.subm
 
-    ## Return the wrapped mesher.
+    ## Returns the wrapped mesher.
     def GetAlgorithm(self):
         return self.algo
 
-    ## Get list of hypothesis that can be used with this algorithm
+    ## Gets the list of hypothesis that can be used with this algorithm
     def GetCompatibleHypothesis(self):
         mylist = []
         if self.algo:
             mylist = self.algo.GetCompatibleHypothesis()
         return mylist
 
-    ## Get name of algo
+    ## Gets the name of the algorithm
     def GetName(self):
         GetName(self.algo)
 
-    ## Set name to algo
+    ## Sets the name to the algorithm
     def SetName(self, name):
         SetName(self.algo, name)
 
-    ## Get id of algo
+    ## Gets the id of the algorithm
     def GetId(self):
         return self.algo.GetId()
 
@@ -2594,13 +2596,13 @@ class Mesh_Segment(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Regular_1D")
 
-    ## Define "LocalLength" hypothesis to cut an edge in several segments with the same length
+    ## Defines "LocalLength" hypothesis to cut an edge in several segments with the same length
     #  @param l for the length of segments that cut an edge
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
-    #  @param p precision, used for number of segments calculation.
-    #           It must be pozitive, meaningfull values are in range [0,1].
-    #           In general, number of segments is calculated with formula:
+    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
+    #                    the same parameters, else (default) - creates a new one
+    #  @param p precision, used for calculation of the number of segments.
+    #           The precision should be a positive, meaningful value within the range [0,1].
+    #           In general, the number of segments is calculated with the formula:
     #           nb = ceil((edge_length / l) - p)
     #           Function ceil rounds its argument to the higher integer.
     #           So, p=0 means rounding of (edge_length / l) to the higher integer,
@@ -2616,17 +2618,17 @@ class Mesh_Segment(Mesh_Algorithm):
         return hyp
 
     ## Private method
-    ## Check if the given "LocalLength" hypothesis has the same parameters as given arguments
+    ## Checks if the given "LocalLength" hypothesis has the same parameters as the given arguments
     def CompareLocalLength(self, hyp, args):
         if IsEqual(hyp.GetLength(), args[0]):
             return IsEqual(hyp.GetPrecision(), args[1])
         return False
 
-    ## Define "NumberOfSegments" hypothesis to cut an edge in several fixed number of segments
+    ## Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
     #  @param n for the number of segments that cut an edge
     #  @param s for the scale factor (optional)
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - create a new one
     #  @return an instance of StdMeshers_NumberOfSegments hypothesis
     def NumberOfSegments(self, n, s=[], UseExisting=0):
         if s == []:
@@ -2641,7 +2643,7 @@ class Mesh_Segment(Mesh_Algorithm):
         return hyp
 
     ## Private method
-    ## Check if the given "NumberOfSegments" hypothesis has the same parameters as given arguments
+    ## Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
     def CompareNumberOfSegments(self, hyp, args):
         if hyp.GetNumberOfSegments() == args[0]:
             if len(args) == 1:
@@ -2652,11 +2654,11 @@ class Mesh_Segment(Mesh_Algorithm):
                         return True
         return False
 
-    ## Define "Arithmetic1D" hypothesis to cut an edge in several segments with arithmetic length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with increasing arithmetic length
+    #  @param start defines the length of the first segment
+    #  @param end   defines the length of the last  segment
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_Arithmetic1D hypothesis
     def Arithmetic1D(self, start, end, UseExisting=0):
         hyp = self.Hypothesis("Arithmetic1D", [start, end], UseExisting=UseExisting,
@@ -2666,18 +2668,18 @@ class Mesh_Segment(Mesh_Algorithm):
         return hyp
 
     ## Private method
-    ## Check if the given "Arithmetic1D" hypothesis has the same parameters as given arguments
+    ## Check if the given "Arithmetic1D" hypothesis has the same parameters as the given arguments
     def CompareArithmetic1D(self, hyp, args):
         if IsEqual(hyp.GetLength(1), args[0]):
             if IsEqual(hyp.GetLength(0), args[1]):
                 return True
         return False
 
-    ## Define "StartEndLength" hypothesis to cut an edge in several segments with geometric length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
+    #  @param start defines the length of the first segment
+    #  @param end   defines the length of the last  segment
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
     #  @return an instance of StdMeshers_StartEndLength hypothesis
     def StartEndLength(self, start, end, UseExisting=0):
         hyp = self.Hypothesis("StartEndLength", [start, end], UseExisting=UseExisting,
@@ -2686,53 +2688,53 @@ class Mesh_Segment(Mesh_Algorithm):
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Check if the given "StartEndLength" hypothesis has the same parameters as given arguments
+    ## Check if the given "StartEndLength" hypothesis has the same parameters as the given arguments
     def CompareStartEndLength(self, hyp, args):
         if IsEqual(hyp.GetLength(1), args[0]):
             if IsEqual(hyp.GetLength(0), args[1]):
                 return True
         return False
 
-    ## Define "Deflection1D" hypothesis
+    ## Defines "Deflection1D" hypothesis
     #  @param d for the deflection
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with
+    #                     the same parameters, else (default) - create a new one
     def Deflection1D(self, d, UseExisting=0):
         hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting,
                               CompareMethod=self.CompareDeflection1D)
         hyp.SetDeflection(d)
         return hyp
 
-    ## Check if the given "Deflection1D" hypothesis has the same parameters as given arguments
+    ## Check if the given "Deflection1D" hypothesis has the same parameters as the given arguments
     def CompareDeflection1D(self, hyp, args):
         return IsEqual(hyp.GetDeflection(), args[0])
 
-    ## Define "Propagation" hypothesis that propagate all other hypothesis on all others edges that are in
-    #  the opposite side in the case of quadrangular faces
+    ## Defines "Propagation" hypothesis that propagates all other hypotheses on all other edges that are at
+    #  the opposite side in case of quadrangular faces
     def Propagation(self):
         return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
 
-    ## Define "AutomaticLength" hypothesis
+    ## Defines "AutomaticLength" hypothesis
     #  @param fineness for the fineness [0-1]
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for an existing hypothesis created with the
+    #                     same parameters, else (default) - create a new one
     def AutomaticLength(self, fineness=0, UseExisting=0):
         hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting,
                               CompareMethod=self.CompareAutomaticLength)
         hyp.SetFineness( fineness )
         return hyp
 
-    ## Check if the given "AutomaticLength" hypothesis has the same parameters as given arguments
+    ## Checks if the given "AutomaticLength" hypothesis has the same parameters as the given arguments
     def CompareAutomaticLength(self, hyp, args):
         return IsEqual(hyp.GetFineness(), args[0])
 
-    ## Define "SegmentLengthAroundVertex" hypothesis
+    ## Defines "SegmentLengthAroundVertex" hypothesis
     #  @param length for the segment length
-    #  @param vertex for the length localization: vertex index [0,1] | vertex object.
-    #         Any other integer value means what hypo will be set on the
+    #  @param vertex for the length localization: the vertex index [0,1] | vertex object.
+    #         Any other integer value means that the hypothesis will be set on the
     #         whole 1D shape, where Mesh_Segment algorithm is assigned.
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
+    #                   the same parameters, else (default) - creates a new one
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
         import types
         store_geom = self.geom
@@ -2766,16 +2768,16 @@ class Mesh_Segment(Mesh_Algorithm):
         hyp.SetLength( length )
         return hyp
 
-    ## Check if the given "LengthNearVertex" hypothesis has the same parameters as given arguments
+    ## Checks if the given "LengthNearVertex" hypothesis has the same parameters as the given arguments
     def CompareLengthNearVertex(self, hyp, args):
         return IsEqual(hyp.GetLength(), args[0])
 
-    ## Define "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
-    #  If the 2D mesher sees that all boundary edges are quadratic ones,
+    ## Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
+    #  If the 2D mesher sees that all boundary edges are quadratic,
     #  it generates quadratic faces, else it generates linear faces using
-    #  medium nodes as if they were vertex ones.
+    #  medium nodes as if they are vertices.
     #  The 3D mesher generates quadratic volumes only if all boundary faces
-    #  are quadratic ones, else it fails.
+    #  are quadratic, else it fails.
     def QuadraticMesh(self):
         hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
@@ -2783,9 +2785,8 @@ class Mesh_Segment(Mesh_Algorithm):
 # Public class: Mesh_CompositeSegment
 # --------------------------
 
-## Class to define a segment 1D algorithm for discretization
-#
-#  More details.
+## Defines a segment 1D algorithm for discretization
+#  
 class Mesh_CompositeSegment(Mesh_Segment):
 
     ## Private constructor.
@@ -2796,9 +2797,8 @@ class Mesh_CompositeSegment(Mesh_Segment):
 # Public class: Mesh_Segment_Python
 # ---------------------------------
 
-## Class to define a segment 1D algorithm for discretization with python function
+## Defines a segment 1D algorithm for discretization with python function
 #
-#  More details.
 class Mesh_Segment_Python(Mesh_Segment):
 
     ## Private constructor.
@@ -2806,11 +2806,11 @@ class Mesh_Segment_Python(Mesh_Segment):
         import Python1dPlugin
         self.Create(mesh, geom, "Python_1D", "libPython1dEngine.so")
 
-    ## Define "PythonSplit1D" hypothesis based on the Erwan Adam patch, awaiting equivalent SALOME functionality
+    ## Defines "PythonSplit1D" hypothesis
     #  @param n for the number of segments that cut an edge
-    #  @param func for the python function that calculate the length of all segments
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param func for the python function that calculates the length of all segments
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
     def PythonSplit1D(self, n, func, UseExisting=0):
         hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so",
                               UseExisting=UseExisting, CompareMethod=self.ComparePythonSplit1D)
@@ -2818,7 +2818,7 @@ class Mesh_Segment_Python(Mesh_Segment):
         hyp.SetPythonLog10RatioFunction(func)
         return hyp
 
-    ## Check if the given "PythonSplit1D" hypothesis has the same parameters as given arguments
+    ## Checks if the given "PythonSplit1D" hypothesis has the same parameters as the given arguments
     def ComparePythonSplit1D(self, hyp, args):
         #if hyp.GetNumberOfSegments() == args[0]:
         #    if hyp.GetPythonLog10RatioFunction() == args[1]:
@@ -2828,9 +2828,8 @@ class Mesh_Segment_Python(Mesh_Segment):
 # Public class: Mesh_Triangle
 # ---------------------------
 
-## Class to define a triangle 2D algorithm
+## Defines a triangle 2D algorithm
 #
-#  More details.
 class Mesh_Triangle(Mesh_Algorithm):
 
     # default values
@@ -2865,10 +2864,10 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Create(mesh, geom, "NETGEN_2D_ONLY", "libNETGENEngine.so")
             pass
 
-    ## Define "MaxElementArea" hypothesis to give the maximum area of each triangle
+    ## Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
     #  @param area for the maximum area of each triangle
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for an  existing hypothesis created with the
+    #                     same parameters, else (default) - creates a new one
     #
     #  Only for algoType == MEFISTO || NETGEN_2D
     def MaxElementArea(self, area, UseExisting=0):
@@ -2881,11 +2880,11 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
-    ## Check if the given "MaxElementArea" hypothesis has the same parameters as given arguments
+    ## Checks if the given "MaxElementArea" hypothesis has the same parameters as the given arguments
     def CompareMaxElementArea(self, hyp, args):
         return IsEqual(hyp.GetMaxElementArea(), args[0])
 
-    ## Define "LengthFromEdges" hypothesis to build triangles
+    ## Defines "LengthFromEdges" hypothesis to build triangles
     #  based on the length of the edges taken from the wire
     #
     #  Only for algoType == MEFISTO || NETGEN_2D
@@ -2897,7 +2896,7 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
-    ## Set PhysicalMesh
+    ## Sets PhysicalMesh
     #  @param thePhysicalMesh is:
     #  DefaultSize or Custom
     def SetPhysicalMesh(self, thePhysicalMesh=1):
@@ -2905,13 +2904,13 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Parameters()
         self.params.SetPhysicalMesh(thePhysicalMesh)
 
-    ## Set PhySize flag
+    ## Sets PhySize flag
     def SetPhySize(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetPhySize(theVal)
 
-    ## Set GeometricMesh
+    ## Sets GeometricMesh
     #  @param theGeometricMesh is:
     #  DefaultGeom or Custom
     def SetGeometricMesh(self, theGeometricMesh=0):
@@ -2920,21 +2919,21 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
         self.params.SetGeometricMesh(theGeometricMesh)
 
-    ## Set AngleMeshS flag
+    ## Sets AngleMeshS flag
     def SetAngleMeshS(self, theVal=_angleMeshS):
         if self.params == 0:
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshS(theVal)
 
-    ## Set Gradation flag
+    ## Sets Gradation flag
     def SetGradation(self, theVal=_gradation):
         if self.params == 0:
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._gradation
         self.params.SetGradation(theVal)
 
-    ## Set QuadAllowed flag
+    ## Sets QuadAllowed flag
     #
     #  Only for algoType == NETGEN || NETGEN_2D
     def SetQuadAllowed(self, toAllow=True):
@@ -2955,7 +2954,7 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.params.SetQuadAllowed(toAllow)
             return
 
-    ## Define "Netgen 2D Parameters" hypothesis
+    ## Defines "Netgen 2D Parameters" hypothesis
     #
     #  Only for algoType == NETGEN
     def Parameters(self):
@@ -2976,7 +2975,7 @@ class Mesh_Triangle(Mesh_Algorithm):
             return self.params
         return None
 
-    ## Set MaxSize
+    ## Sets MaxSize
     #
     #  Only for algoType == NETGEN
     def SetMaxSize(self, theSize):
@@ -2985,7 +2984,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetMaxSize(theSize)
 
-    ## Set SecondOrder flag
+    ## Sets SecondOrder flag
     #
     #  Only for algoType == NETGEN
     def SetSecondOrder(self, theVal):
@@ -2994,7 +2993,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetSecondOrder(theVal)
 
-    ## Set Optimize flag
+    ## Sets Optimize flag
     #
     #  Only for algoType == NETGEN
     def SetOptimize(self, theVal):
@@ -3003,7 +3002,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetOptimize(theVal)
 
-    ## Set Fineness
+    ## Sets Fineness
     #  @param theFineness is:
     #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
     #
@@ -3014,7 +3013,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetFineness(theFineness)
 
-    ## Set GrowthRate
+    ## Sets GrowthRate
     #
     #  Only for algoType == NETGEN
     def SetGrowthRate(self, theRate):
@@ -3023,7 +3022,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetGrowthRate(theRate)
 
-    ## Set NbSegPerEdge
+    ## Sets NbSegPerEdge
     #
     #  Only for algoType == NETGEN
     def SetNbSegPerEdge(self, theVal):
@@ -3032,7 +3031,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetNbSegPerEdge(theVal)
 
-    ## Set NbSegPerRadius
+    ## Sets NbSegPerRadius
     #
     #  Only for algoType == NETGEN
     def SetNbSegPerRadius(self, theVal):
@@ -3041,7 +3040,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetNbSegPerRadius(theVal)
 
-    ## Set Decimesh flag
+    ## Sets Decimesh flag
     def SetDecimesh(self, toAllow=False):
         if self.params == 0:
             self.Parameters()
@@ -3053,9 +3052,8 @@ class Mesh_Triangle(Mesh_Algorithm):
 # Public class: Mesh_Quadrangle
 # -----------------------------
 
-## Class to define a quadrangle 2D algorithm
+## Defines a quadrangle 2D algorithm
 #
-#  More details.
 class Mesh_Quadrangle(Mesh_Algorithm):
 
     ## Private constructor.
@@ -3063,9 +3061,9 @@ class Mesh_Quadrangle(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Quadrangle_2D")
 
-    ## Define "QuadranglePreference" hypothesis, forcing construction
-    #  of quadrangles if the number of nodes on opposite edges is not the same
-    #  in the case where the global number of nodes on edges is even
+    ## Defines "QuadranglePreference" hypothesis, forcing construction
+    #  of quadrangles if the number of nodes on the opposite edges is not the same
+    #  while the total number of nodes on edges is even
     def QuadranglePreference(self):
         hyp = self.Hypothesis("QuadranglePreference", UseExisting=1,
                               CompareMethod=self.CompareEqualHyp)
@@ -3074,9 +3072,8 @@ class Mesh_Quadrangle(Mesh_Algorithm):
 # Public class: Mesh_Tetrahedron
 # ------------------------------
 
-## Class to define a tetrahedron 3D algorithm
+## Defines a tetrahedron 3D algorithm
 #
-#  More details.
 class Mesh_Tetrahedron(Mesh_Algorithm):
 
     params = 0
@@ -3103,21 +3100,21 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 
         self.algoType = algoType
 
-    ## Define "MaxElementVolume" hypothesis to give the maximun volume of each tetrahedral
-    #  @param vol for the maximum volume of each tetrahedral
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    ## Defines "MaxElementVolume" hypothesis to give the maximun volume of each tetrahedron
+    #  @param vol for the maximum volume of each tetrahedron
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                   the same parameters, else (default) - creates a new one
     def MaxElementVolume(self, vol, UseExisting=0):
         hyp = self.Hypothesis("MaxElementVolume", [vol], UseExisting=UseExisting,
                               CompareMethod=self.CompareMaxElementVolume)
         hyp.SetMaxElementVolume(vol)
         return hyp
 
-    ## Check if the given "MaxElementVolume" hypothesis has the same parameters as given arguments
+    ## Checks if the given "MaxElementVolume" hypothesis has the same parameters as the given arguments
     def CompareMaxElementVolume(self, hyp, args):
         return IsEqual(hyp.GetMaxElementVolume(), args[0])
 
-    ## Define "Netgen 3D Parameters" hypothesis
+    ## Defines "Netgen 3D Parameters" hypothesis
     def Parameters(self):
         if (self.algoType == FULL_NETGEN):
             self.params = self.Hypothesis("NETGEN_Parameters", [],
@@ -3127,25 +3124,25 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             print "Algo doesn't support this hypothesis"
             return None
 
-    ## Set MaxSize
+    ## Sets MaxSize
     def SetMaxSize(self, theSize):
         if self.params == 0:
             self.Parameters()
         self.params.SetMaxSize(theSize)
 
-    ## Set SecondOrder flag
+    ## Sets SecondOrder flag
     def SetSecondOrder(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetSecondOrder(theVal)
 
-    ## Set Optimize flag
+    ## Sets Optimize flag
     def SetOptimize(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetOptimize(theVal)
 
-    ## Set Fineness
+    ## Sets Fineness
     #  @param theFineness is:
     #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
     def SetFineness(self, theFineness):
@@ -3153,19 +3150,19 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             self.Parameters()
         self.params.SetFineness(theFineness)
 
-    ## Set GrowthRate
+    ## Sets GrowthRate
     def SetGrowthRate(self, theRate):
         if self.params == 0:
             self.Parameters()
         self.params.SetGrowthRate(theRate)
 
-    ## Set NbSegPerEdge
+    ## Sets NbSegPerEdge
     def SetNbSegPerEdge(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetNbSegPerEdge(theVal)
 
-    ## Set NbSegPerRadius
+    ## Sets NbSegPerRadius
     def SetNbSegPerRadius(self, theVal):
         if self.params == 0:
             self.Parameters()
@@ -3174,9 +3171,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
 # Public class: Mesh_Hexahedron
 # ------------------------------
 
-## Class to define a hexahedron 3D algorithm
+## Defines a hexahedron 3D algorithm
 #
-#  More details.
 class Mesh_Hexahedron(Mesh_Algorithm):
 
     params = 0
@@ -3197,7 +3193,7 @@ class Mesh_Hexahedron(Mesh_Algorithm):
             self.Create(mesh, geom, "Hexotic_3D", "libHexoticEngine.so")
             pass
 
-    ## Define "MinMaxQuad" hypothesis to give the three hexotic parameters
+    ## Defines "MinMaxQuad" hypothesis to give three hexotic parameters
     def MinMaxQuad(self, min=3, max=8, quad=True):
         self.params = self.Hypothesis("Hexotic_Parameters", [], "libHexoticEngine.so",
                                       UseExisting=0)
@@ -3210,8 +3206,8 @@ class Mesh_Hexahedron(Mesh_Algorithm):
 # Public class: Mesh_Netgen
 # ------------------------------
 
-## Class to define a NETGEN-based 2D or 3D algorithm
-#  that need no discrete boundary (i.e. independent)
+## Defines a NETGEN-based 2D or 3D algorithm
+#  that needs no discrete boundary (i.e. independent)
 #
 #  This class is deprecated, only for compatibility!
 #
@@ -3236,7 +3232,7 @@ class Mesh_Netgen(Mesh_Algorithm):
             self.Create(mesh, geom, "NETGEN_2D", "libNETGENEngine.so")
             pass
 
-    ## Define hypothesis containing parameters of the algorithm
+    ## Defines the hypothesis containing parameters of the algorithm
     def Parameters(self):
         if self.is3D:
             hyp = self.Hypothesis("NETGEN_Parameters", [],
@@ -3249,25 +3245,25 @@ class Mesh_Netgen(Mesh_Algorithm):
 # Public class: Mesh_Projection1D
 # ------------------------------
 
-## Class to define a projection 1D algorithm
+## Defines a projection 1D algorithm
 #
-#  More details.
 class Mesh_Projection1D(Mesh_Algorithm):
+
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Projection_1D")
 
-    ## Define "Source Edge" hypothesis, specifying a meshed edge to
-    #  take a mesh pattern from, and optionally association of vertices
-    #  between the source edge and a target one (where a hipothesis is assigned to)
-    #  @param edge to take nodes distribution from
-    #  @param mesh to take nodes distribution from (optional)
-    #  @param srcV is vertex of \a edge to associate with \a tgtV (optional)
-    #  @param tgtV is vertex of \a the edge where the algorithm is assigned,
+    ## Defines "Source Edge" hypothesis, specifying a meshed edge, from where
+    #  a mesh pattern is taken, and, optionally, the association of vertices
+    #  between the source edge and a target edge (to which a hypothesis is assigned)
+    #  @param edge from which nodes distribution is taken
+    #  @param mesh from which nodes distribution is taken (optional)
+    #  @param srcV a vertex of \a edge to associate with \a tgtV (optional)
+    #  @param tgtV a vertex of \a the edge to which the algorithm is assigned,
     #  to associate with \a srcV (optional)
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
         hyp = self.Hypothesis("ProjectionSource1D", [edge,mesh,srcV,tgtV],
                               UseExisting=0)
@@ -3279,39 +3275,39 @@ class Mesh_Projection1D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV, tgtV )
         return hyp
 
-    ## Check if the given "SourceEdge" hypothesis has the same parameters as given arguments
+    ## Checks if the given "SourceEdge" hypothesis has the same parameters as the given arguments
     #def CompareSourceEdge(self, hyp, args):
-    #    # seems to be not really useful to reuse existing "SourceEdge" hypothesis
+    #    # it does not seem to be useful to reuse the existing "SourceEdge" hypothesis
     #    return False
 
 
 # Public class: Mesh_Projection2D
 # ------------------------------
 
-## Class to define a projection 2D algorithm
+## Defines a projection 2D algorithm
 #
-#  More details.
 class Mesh_Projection2D(Mesh_Algorithm):
 
     ## Private constructor.
     def __init__(self, mesh, geom=0):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Projection_2D")
-    ## Define "Source Face" hypothesis, specifying a meshed face to
-    #  take a mesh pattern from, and optionally association of vertices
-    #  between the source face and a target one (where a hipothesis is assigned to)
-    #  @param face to take mesh pattern from
-    #  @param mesh to take mesh pattern from (optional)
-    #  @param srcV1 is vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV1 is vertex of \a the face where the algorithm is assigned,
-    #  to associate with \a srcV1 (optional)
-    #  @param srcV2 is vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV2 is vertex of \a the face where the algorithm is assigned,
-    #  to associate with \a srcV2 (optional)
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+
+    ## Defines "Source Face" hypothesis, specifying a meshed face, from where
+    #  a mesh pattern is taken, and, optionally, the association of vertices
+    #  between the source face and the target face (to which a hypothesis is assigned)
+    #  @param face from which the mesh pattern is taken
+    #  @param mesh from which the mesh pattern is taken (optional)
+    #  @param srcV1 a vertex of \a face to associate with \a tgtV1 (optional)
+    #  @param tgtV1 a vertex of \a the face to which the algorithm is assigned,
+    #               to associate with \a srcV1 (optional)
+    #  @param srcV2 a vertex of \a face to associate with \a tgtV1 (optional)
+    #  @param tgtV2 a vertex of \a the face to which the algorithm is assigned,
+    #               to associate with \a srcV2 (optional)
+    #  @param UseExisting if ==true - forces the search for the existing hypothesis created with
+    #                     the same parameters, else (default) - forces the creation a new one
     #
-    #  Note: association vertices must belong to one edge of a face
+    #  Note: all association vertices must belong to one edge of a face
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
         hyp = self.Hypothesis("ProjectionSource2D", [face,mesh,srcV1,tgtV1,srcV2,tgtV2],
@@ -3324,17 +3320,16 @@ class Mesh_Projection2D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
 
-    ## Check if the given "SourceFace" hypothesis has the same parameters as given arguments
+    ## Checks if the given "SourceFace" hypothesis has the same parameters as the given arguments
     #def CompareSourceFace(self, hyp, args):
-    #    # seems to be not really useful to reuse existing "SourceFace" hypothesis
+    #    # it does not seem to be useful to reuse the existing "SourceFace" hypothesis
     #    return False
 
 # Public class: Mesh_Projection3D
 # ------------------------------
 
-## Class to define a projection 3D algorithm
+## Defines a projection 3D algorithm
 #
-#  More details.
 class Mesh_Projection3D(Mesh_Algorithm):
 
     ## Private constructor.
@@ -3342,19 +3337,19 @@ class Mesh_Projection3D(Mesh_Algorithm):
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, "Projection_3D")
 
-    ## Define "Source Shape 3D" hypothesis, specifying a meshed solid to
-    #  take a mesh pattern from, and optionally association of vertices
-    #  between the source solid and a target one (where a hipothesis is assigned to)
-    #  @param solid to take mesh pattern from
-    #  @param mesh to take mesh pattern from (optional)
-    #  @param srcV1 is vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV1 is vertex of \a the solid where the algorithm is assigned,
+    ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where 
+    #  the mesh pattern is taken, and, optionally, the  association of vertices
+    #  between the source and the target solid  (to which a hipothesis is assigned)
+    #  @param solid from where the mesh pattern is taken
+    #  @param mesh from where the mesh pattern is taken (optional)
+    #  @param srcV1 a vertex of \a solid to associate with \a tgtV1 (optional)
+    #  @param tgtV1 a vertex of \a the solid where the algorithm is assigned,
     #  to associate with \a srcV1 (optional)
-    #  @param srcV2 is vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV2 is vertex of \a the solid where the algorithm is assigned,
+    #  @param srcV2 a vertex of \a solid to associate with \a tgtV1 (optional)
+    #  @param tgtV2 a vertex of \a the solid to which the algorithm is assigned,
     #  to associate with \a srcV2 (optional)
-    #  @param UseExisting - if ==true - search existing hypothesis created with
-    #                       same parameters, else (default) - create new
+    #  @param UseExisting - if ==true - searches for the existing hypothesis created with
+    #                     the same parameters, else (default) - creates a new one
     #
     #  Note: association vertices must belong to one edge of a solid
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
@@ -3370,7 +3365,7 @@ class Mesh_Projection3D(Mesh_Algorithm):
         hyp.SetVertexAssociation( srcV1, srcV2, tgtV1, tgtV2 )
         return hyp
 
-    ## Check if the given "SourceShape3D" hypothesis has the same parameters as given arguments
+    ## Checks if the given "SourceShape3D" hypothesis has the same parameters as given arguments
     #def CompareSourceShape3D(self, hyp, args):
     #    # seems to be not really useful to reuse existing "SourceShape3D" hypothesis
     #    return False
@@ -3379,9 +3374,8 @@ class Mesh_Projection3D(Mesh_Algorithm):
 # Public class: Mesh_Prism
 # ------------------------
 
-## Class to define a 3D extrusion algorithm
+## Defines a 3D extrusion algorithm
 #
-#  More details.
 class Mesh_Prism3D(Mesh_Algorithm):
 
     ## Private constructor.
@@ -3392,9 +3386,8 @@ class Mesh_Prism3D(Mesh_Algorithm):
 # Public class: Mesh_RadialPrism
 # -------------------------------
 
-## Class to define a Radial Prism 3D algorithm
+## Defines a Radial Prism 3D algorithm
 #
-#  More details.
 class Mesh_RadialPrism3D(Mesh_Algorithm):
 
     ## Private constructor.
@@ -3409,23 +3402,23 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
     def Get3DHypothesis(self):
         return self.distribHyp
 
-    ## Private method creating 1D hypothes and storing it in the LayerDistribution
-    #  hypothes. Returns the created hypothes
+    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
+    #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
         #print "OwnHypothesis",hypType
         if not self.nbLayers is None:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevent publishing of own 1D hypothesis
+        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # anable publishing
+        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
-    ## Define "NumberOfLayers" hypothesis, specifying a number of layers of
+    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers of
     #  prisms to build between the inner and outer shells
-    #  @param UseExisting if ==true - search existing hypothesis created with
-    #                     same parameters, else (default) - create new
+    #  @param UseExisting if ==true - searches for the existing hypothesis created with
+    #                    the same parameters, else (default) - creates a new one
     def NumberOfLayers(self, n, UseExisting=0):
         self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
         self.nbLayers = self.Hypothesis("NumberOfLayers", [n], UseExisting=UseExisting,
@@ -3433,24 +3426,24 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         self.nbLayers.SetNumberOfLayers( n )
         return self.nbLayers
 
-    ## Check if the given "NumberOfLayers" hypothesis has the same parameters as given arguments
+    ## Checks if the given "NumberOfLayers" hypothesis has the same parameters as the given arguments
     def CompareNumberOfLayers(self, hyp, args):
         return IsEqual(hyp.GetNumberOfLayers(), args[0])
 
-    ## Define "LocalLength" hypothesis, specifying segment length
-    #  to build between the inner and outer shells
-    #  @param l for the length of segments
-    #  @param p for the precision of rounding
+    ## Defines "LocalLength" hypothesis, specifying the segment length
+    #  to build between the inner and the outer shells
+    #  @param l the length of segments
+    #  @param p the precision of rounding
     def LocalLength(self, l, p=1e-07):
         hyp = self.OwnHypothesis("LocalLength", [l,p])
         hyp.SetLength(l)
         hyp.SetPrecision(p)
         return hyp
 
-    ## Define "NumberOfSegments" hypothesis, specifying a number of layers of
-    #  prisms to build between the inner and outer shells
-    #  @param n for the number of segments
-    #  @param s for the scale factor (optional)
+    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers of
+    #  prisms to build between the inner and the outer shells.
+    #  @param n the number of layers
+    #  @param s the scale factor (optional)
     def NumberOfSegments(self, n, s=[]):
         if s == []:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
@@ -3461,18 +3454,18 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp.SetNumberOfSegments(n)
         return hyp
 
-    ## Define "Arithmetic1D" hypothesis, specifying distribution of segments
-    #  to build between the inner and outer shells as arithmetic length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
+    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
+    #  to build between the inner and the outer shells with a length that changes in arithmetic progression
+    #  @param start  the length of the first segment
+    #  @param end    the length of the last  segment
     def Arithmetic1D(self, start, end ):
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Define "StartEndLength" hypothesis, specifying distribution of segments
-    #  to build between the inner and outer shells as geometric length increasing
+    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
+    #  to build between the inner and the outer shells as geometric length increasing
     #  @param start for the length of the first segment
     #  @param end   for the length of the last  segment
     def StartEndLength(self, start, end):
@@ -3481,9 +3474,9 @@ class Mesh_RadialPrism3D(Mesh_Algorithm):
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Define "AutomaticLength" hypothesis, specifying number of segments
+    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
     #  to build between the inner and outer shells
-    #  @param fineness for the fineness [0-1]
+    #  @param fineness defines the quality of the mesh within the range [0-1]
     def AutomaticLength(self, fineness=0):
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
