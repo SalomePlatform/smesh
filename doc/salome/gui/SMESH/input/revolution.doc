@@ -32,10 +32,22 @@ selecting them in the 3D viewer or select the whole mesh or
 submesh,</li>
 <li>specify the axis (point and vector) around which the elements will
 be revolved,</li>
-<li>angle of rotation,</li>
-<li>number of steps,</li>
+<li>angle of rotation and number of steps,</li>
+<ul> <li> Angle by Step - the elements are extruded by the specified angle at each step (i.e. for Angle=30 and Number of Steps=2, the elements will be extruded 
+ by 30 degrees twice for a total of 30*2=60)</li>
+
+\image html revolutionsn2.png
+
+<li> Total Angle - the elements are extruded by the specified angle only once and the number of steps defines the number of iterations 
+(i.e.for Angle=30 and Number of Steps=2, the elements will be extruded by 30/2=15 degrees twice for a total of 30). </li>
+
+\image html revolutionsn1.png
+
+</ul>
 <li>tolerance of rotation</li>
 </ul>
+
+<li> <b>Preview</b> checkbox allows showing the results of parameter-setting in the viewer </li>
 <li> <b>Generate Groups</b> checkbox allows copying the groups of
 elements of the source mesh to the newly created one. </li>
 </li>
@@ -43,7 +55,6 @@ elements of the source mesh to the newly created one. </li>
 <li>Click the \b Apply or \b OK button.</li>
 </ol>
 
-\image html image78.jpg
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_revolution "Revolution" operation.
