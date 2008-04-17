@@ -714,6 +714,10 @@ SALOMEDS::SObject_ptr
     // Add New Hypothesis
     string aPmName = isAlgo ? "ICON_SMESH_TREE_ALGO_" : "ICON_SMESH_TREE_HYPO_";
     aPmName += theHyp->GetName();
+    // prepend plugin name to pixmap name
+    string pluginName = myHypCreatorMap[string(theHyp->GetName())]->GetModuleName();
+    if ( pluginName != "StdMeshers" )
+      aPmName = pluginName + "::" + aPmName;
     aHypSO = publish( theStudy, theHyp, aRootSO, 0, aPmName.c_str() );
   }
 
