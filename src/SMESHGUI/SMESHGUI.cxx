@@ -3137,9 +3137,8 @@ void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QStrin
   sel.init( client, selectionMgr() );
   popupMgr()->updatePopup( menu, &sel );
 
-  SalomeApp_Module::contextMenuPopup( client, menu, title );
   SALOME_ListIO lst;
-  getApp()->selectionMgr()->selectedObjects( lst );
+  selectionMgr()->selectedObjects( lst );
   if ( ( client == "OCCViewer" || client == "VTKViewer" ) && lst.Extent() == 1 ) {
     Handle(SALOME_InteractiveObject) io = lst.First();
     SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() );
