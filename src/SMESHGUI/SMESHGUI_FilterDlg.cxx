@@ -1004,9 +1004,9 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
   }
   else
   {
-    theCriterion.ThresholdStr = aTable->text(theRow, 2).toLatin1().data();
+    theCriterion.ThresholdStr = CORBA::string_dup( aTable->text(theRow, 2).toLatin1().constData() );
     if ( aCriterionType != SMESH::FT_RangeOfIds )
-      theCriterion.ThresholdID = aTable->text( theRow, 5 ).toLatin1().data();
+      theCriterion.ThresholdID = CORBA::string_dup( aTable->text( theRow, 5 ).toLatin1().constData() );
   }
 
   QTableWidgetItem* anItem = aTable->item(theRow, 0);
