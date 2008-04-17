@@ -88,15 +88,11 @@ dist_salomeres_DATA = \
 	mesh_tree_algo_quad.png \
 	mesh_tree_algo_regular.png \
 	mesh_tree_algo_tetra.png \
-	mesh_tree_algo_netgen_2d3d.png \
-	mesh_tree_algo_netgen_2d.png \
 	mesh_tree_hypo_area.png \
 	mesh_tree_hypo_length.png \
 	mesh_tree_hypo.png \
 	mesh_tree_hypo_segment.png \
 	mesh_tree_hypo_volume.png \
-	mesh_tree_hypo_netgen.png \
-	mesh_tree_hypo_netgen_2d.png \
 	mesh_tree_mesh.png \
 	mesh_tree_importedmesh.png \
 	mesh_tree_mesh_warn.png \
