@@ -61,14 +61,14 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theM
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  MESSAGE("SMESH_Group_i; this = "<<this );
+  //MESSAGE("SMESH_Group_i; this = "<<this );
 }
 
 SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_Mesh_i* theMeshServant, const int theLocalID )
      : SALOME::GenericObj_i( thePOA ),
        SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
+  //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
 
 //=============================================================================
