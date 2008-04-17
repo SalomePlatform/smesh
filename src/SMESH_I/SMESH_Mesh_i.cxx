@@ -1437,7 +1437,7 @@ CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
   return _impl->HasDuplicatedGroupNamesMED();
 }
 
-static void PrepareForWriting (const char* file)
+void SMESH_Mesh_i::PrepareForWriting (const char* file)
 {
   TCollection_AsciiString aFullName ((char*)file);
   OSD_Path aPath (aFullName);

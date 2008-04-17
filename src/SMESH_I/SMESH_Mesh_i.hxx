@@ -310,6 +310,8 @@ public:
   static SMESH::Hypothesis_Status
   ConvertHypothesisStatus (SMESH_Hypothesis::Hypothesis_Status theStatus);
 
+  static void PrepareForWriting (const char* file);
+
   //int importMEDFile( const char* theFileName, const char* theMeshName );
 
   SMESH::SMESH_subMesh_ptr createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject );
