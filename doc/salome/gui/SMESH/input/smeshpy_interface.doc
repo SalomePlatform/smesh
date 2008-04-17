@@ -33,7 +33,7 @@ the \ref smeshDC "documentation for smesh.py"
          - NETGEN(1D-2D,2D,1D-2D-3D,3D),
 
 \n others are based on commercial meshers:
-         - GHS3D(3D).
+         - GHS3D(3D), BLSURF(2D).
 
 \n \t To add hypotheses, please use interfaces, provided by the
       assigned algorithms.

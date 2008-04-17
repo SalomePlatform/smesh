@@ -1,0 +1,53 @@
+/*!
+
+\page blsurf_hypo_page BLSURF Parameters hypothesis
+
+\n BLSURF Parameters hypothesis works only with <b>BLSURF</b> 2d
+algorithm. This algorithm is a commercial software.
+
+\image html blsurf_parameters.png
+
+<ul>
+<li><b>Name</b> - allows to define the name of the hypothesis (BLSURF
+Parameters by default).</li>
+
+<li><b>Topology</b> - allows creation of a conform mesh on a shell of
+not sewed faces. 
+<ul>
+  <li>"From CAD" means that mesh conformity is assured by conformity
+  of a shape.</li>
+  <li>"Pre-process" and "Pre-process++" let BLSURF software
+  pre-process the geometrical model to eventually produce a conform
+  mesh. </li>
+</ul>
+
+<li><b>Physical Mesh</b> - if is set to "Custom", allows to set size
+of mesh elements to generate.
+</li>
+
+<li><b>User size</b> - size of mesh elements to generate. </li>
+
+<li><b>Geometrical mesh</b> - if is set to "Custom", allows to set
+mesh element deflection from curves and surfaces and element
+size change rate. </li>
+
+<li><b>Angle Mesh S</b> - maximal allowed angle in degrees at a mesh
+  node between
+<ul>
+  <li> the mesh edge and the tangent to the geometrical curve. </li>
+  <li> the mesh face and the tangent to the geometrical surface. </li>
+</ul>
+</li>
+
+<li><b>Gradation</b> - maximal allowed ratio between the lengths of
+two adjacent edges. </li>
+
+<li><b>Allow Quadrangles</b> - to create quadrilateral elements.</li>
+
+<li><b>Patch independent</b> - if this box is checked on, geometrical
+edges are not respected and all geometrical faces are meshed as one
+hyper-face.</li>
+
+
+</ul>
+*/

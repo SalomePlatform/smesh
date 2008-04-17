@@ -21,7 +21,7 @@ shape of a mesh.</li>
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li>Triangle meshing algorithms (Mefisto and Netgen 1D-2D ) - Faces
+<li>Triangle meshing algorithms (Mefisto, Netgen 1D-2D and BLSUFR ) - Faces
 are split into triangular elements.</li>
 <li>Quadrangle meshing algorithm (Mapping) - Faces are split into
 quadrangular elements.</li>
@@ -36,7 +36,7 @@ quadrangular elements.</li>
 <ul>
 <li>Hexahedron meshing algorithm (i,j,k) - Volumes are split into
 hexahedral (cubic) elements.</li>
-<li>Tetrahedron (Netgen) meshing algorithm - Volumes are split into
+<li>Tetrahedron (Netgen and GHS3D) meshing algorithms - Volumes are split into
 tetrahedral (pyramidal) elements.</li>
 </ul>
 
@@ -44,6 +44,8 @@ tetrahedral (pyramidal) elements.</li>
 
 \image html image126.gif
 </ul>
+
+Note that BLSURF and GHS3D are commercial meshers.\n
 
 There also is a number of more specific algorithms:
 <ul>
