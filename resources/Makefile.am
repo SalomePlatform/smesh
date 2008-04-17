@@ -40,10 +40,8 @@ dist_salomeres_DATA = \
 	mesh_aspect.png \
 	mesh_aspect_3d.png \
 	mesh_compute.png \
-	mesh_connectivity.png \
 	mesh_diagonal.png \
 	mesh_edit.png \
-	mesh_hexa_n.png \
 	mesh_hexa.png \
 	mesh_hypo_area.png \
 	mesh_hypo_length.png \
@@ -74,13 +72,10 @@ dist_salomeres_DATA = \
 	mesh_quad.png \
 	mesh_rem_element.png \
 	mesh_rem_node.png \
-	mesh_set_algo.png \
-	mesh_set_hypo.png \
 	mesh_shading.png \
 	mesh_shrink.png \
 	mesh_skew.png \
 	mesh_taper.png \
-	mesh_tetra_n.png \
 	mesh_tetra.png \
 	mesh_tree_algo_hexa.png \
 	mesh_tree_algo_mefisto.png \
@@ -109,6 +104,7 @@ dist_salomeres_DATA = \
 	mesh_wireframe.png \
 	mesh_points.png \
 	mesh_wrap.png \
+	mesh_group.png \
 	mesh_tree_group.png \
 	mesh_edit_group.png \
 	mesh_make_group.png \
@@ -159,7 +155,6 @@ dist_salomeres_DATA = \
 	mesh_conv_to_quad.png \
 	mesh_tree_hypo_layers_distribution.png \
 	mesh_tree_algo_radial_prism.png \
-	mesh_tree_algo_projection_3d.png \
 	mesh_tree_algo_projection_2d.png \
 	mesh_hypo_source_edge.png \
 	mesh_hypo_source_3d.png \

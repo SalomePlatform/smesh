@@ -42,6 +42,10 @@
             <source>ICON_CONNECTION_2D</source>
             <translation>mesh_multi_edges_2d.png</translation>
         </message>
+	<message>
+            <source>ICON_CREATE_GROUP</source>
+            <translation>mesh_group.png</translation>
+        </message>
         <message>
             <source>ICON_CONSTRUCT_GROUP</source>
             <translation>mesh_make_group.png</translation>
@@ -67,24 +71,12 @@
             <translation>mesh_deleteGroups.png</translation>
         </message>
         <message>
-            <source>ICON_DLG_ADD_ALGORITHM</source>
-            <translation>mesh_set_algo.png</translation>
-        </message>
-        <message>
-            <source>ICON_DLG_ADD_HYPOTHESIS</source>
-            <translation>mesh_set_hypo.png</translation>
-        </message>
-        <message>
             <source>ICON_DLG_ADD_SUBMESH</source>
             <translation>mesh_add_sub.png</translation>
         </message>
         <message>
             <source>ICON_DLG_BUILD_COMPOUND_MESH</source>
             <translation>mesh_build_compound.png</translation>
-        </message>
-        <message>
-            <source>ICON_DLG_CONNECTIVITY</source>
-            <translation>mesh_connectivity.png</translation>
         </message>
         <message>
             <source>ICON_DLG_EDGE</source>

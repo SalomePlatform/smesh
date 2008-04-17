@@ -79,10 +79,6 @@
             <translation>mesh_tree_algo_mefisto.png</translation>
         </message>
         <message>
-            <source>ICON_SMESH_TREE_ALGO_Prism_3D</source>
-            <translation>mesh_tree_algo_projection_3d.png</translation>
-        </message>
-        <message>
             <source>ICON_SMESH_TREE_ALGO_Projection_1D</source>
             <translation>mesh_tree_algo_regular.png</translation>
         </message>
