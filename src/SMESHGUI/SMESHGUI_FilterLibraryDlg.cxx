@@ -225,8 +225,8 @@ QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   connect(myFileName, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
   connect(myOpenBtn, SIGNAL(clicked()), this, SLOT(onBrowse()));
 
-  connect(myListBox, SIGNAL(currentTextChanged(const QString&)),
-	  this, SLOT(onFilterChanged(const QString&)));
+  connect(myListBox, SIGNAL( currentItemChanged( QListWidgetItem*, QListWidgetItem* ) ),
+	  this, SLOT( onFilterChanged( QListWidgetItem*, QListWidgetItem* ) ) );
 
   connect(myAddBtn, SIGNAL(clicked()), this, SLOT(onAddBtnPressed()));
   connect(myDeleteBtn, SIGNAL(clicked()), this, SLOT(onDeleteBtnPressed()));
@@ -647,7 +647,8 @@ void SMESHGUI_FilterLibraryDlg::onBrowse()
 
   setFileName(fName);
 
-  QString aName = myListBox->item(myListBox->count() - 1)->text();
+  QListWidgetItem* item = myListBox->item( myListBox->count()-1 );
+  QString aName = item ? item->text() : QString::null;
   processNewLibrary();
 
   if (myMode == ADD_TO)
@@ -812,8 +813,9 @@ bool SMESHGUI_FilterLibraryDlg::isValid(const bool theMess) const
 // name    : SMESHGUI_FilterLibraryDlg::onFilterChanged
 // Purpose : SLOT. Called when selected filter of library  changed
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
+void SMESHGUI_FilterLibraryDlg::onFilterChanged( QListWidgetItem* item, QListWidgetItem* )
 {
+  QString theName = item->text();
   if (myLibrary->_is_nil())
     return;
 
@@ -847,7 +849,7 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
 
   myTable->Clear(myTable->GetType());
 
-  if (!aFilter->GetCriteria(aCriteria))
+  if (CORBA::is_nil( aFilter ) || !aFilter->GetCriteria(aCriteria))
     return;
 
   for (int i = 0, n = aCriteria->length(); i < n; i++)
@@ -863,7 +865,8 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged(const QString& theName)
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onReturnPressed()
 {
-  QString aName = myListBox->item(myListBox->count() - 1)->text();
+  QListWidgetItem* item = myListBox->item( myListBox->count()-1 );
+  QString aName = item ? item->text() : QString::null;
 
   processNewLibrary();
 
@@ -933,10 +936,11 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
   {
     if (!isValid(true))
       return;
-
+  }
+  {
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.toLatin1().data(), 
-		       myName->text().toLatin1().data(), 
+    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
+		       myName->text().toLatin1().constData(), 
 		       aFilter);
   }
 

@@ -39,6 +39,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 
 class QListWidget;
+class QListWidgetItem;
 class QLineEdit;
 class QPushButton;
 class SMESHGUI;
@@ -89,7 +90,7 @@ private slots:
   
   void                        onBrowse();
   void                        onReturnPressed();
-  void                        onFilterChanged( const QString& );
+  void                        onFilterChanged( QListWidgetItem*, QListWidgetItem* );
   void                        onAddBtnPressed();
   void                        onDeleteBtnPressed();
   void                        onFilterNameChanged( const QString& );
