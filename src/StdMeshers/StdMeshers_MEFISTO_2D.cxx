@@ -500,7 +500,8 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct();
     if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Unexpected nb of points on wire ")
-                   << iW << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints());
+                   << iW << ": " << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints()
+                   << ", probably because of invalid node parameters on geom edges");
     }
     if ( m + uvPtVec.size()-1 > mefistoToDS.size() ) {
       MESSAGE("Wrong mefistoToDS.size: "<<mefistoToDS.size()<<" < "<<m + uvPtVec.size()-1);
