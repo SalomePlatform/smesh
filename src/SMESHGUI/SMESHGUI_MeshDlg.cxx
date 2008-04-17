@@ -536,15 +536,21 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
 {
   if ( QToolButton* selBtn = qobject_cast<QToolButton*>( objectWg( Geom, Btn )))
   {
-    disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
     if ( enable ) {
       if ( ! myGeomPopup ) {
         myGeomPopup = new QMenu();
         myGeomPopup->addAction( tr("DIRECT_GEOM_SELECTION") )->setData( DIRECT_GEOM_INDEX );
         myGeomPopup->addAction( tr("GEOM_BY_MESH_ELEM_SELECTION") )->setData( GEOM_BY_MESH_INDEX );
         connect( myGeomPopup, SIGNAL( triggered( QAction* ) ), SLOT( onGeomPopup( QAction* ) ) );
+	connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
       }
-      connect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+    }
+    else {
+      disconnect( selBtn, SIGNAL( toggled(bool) ), this, SLOT( onGeomSelectionButton(bool) ));
+      if ( myGeomPopup ) {
+	delete myGeomPopup;
+	myGeomPopup = 0;
+      }
     }
   }
 }
