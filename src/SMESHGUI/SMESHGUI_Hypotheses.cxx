@@ -385,7 +385,30 @@ void SMESHGUI_GenericHypothesisCreator::onReject()
 {
 }
 
-
+QString SMESHGUI_GenericHypothesisCreator::helpPage() const
+{
+  QString aHypType = hypType();
+  QString aHelpFileName;
+  if ( aHypType == "LocalLength" )
+    aHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
+  else if ( aHypType == "Arithmetic1D")
+    aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
+  else if ( aHypType == "MaxElementArea")
+    aHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
+  else if ( aHypType == "MaxElementVolume")
+    aHelpFileName = "max_element_volume_hypo_page.html";
+  else if ( aHypType == "StartEndLength")
+    aHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
+  else if ( aHypType == "Deflection1D")
+    aHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
+  else if ( aHypType == "AutomaticLength")
+    aHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
+  else if ( aHypType == "NumberOfSegments")
+    aHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
+  else
+    aHelpFileName = "";
+  return aHelpFileName;
+}
 
 
 SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreator* creator, QWidget* parent )
@@ -412,25 +435,7 @@ SMESHGUI_HypothesisDlg::SMESHGUI_HypothesisDlg( SMESHGUI_GenericHypothesisCreato
 
   myLayout->addWidget( titFrame, 0 );
 
-  QString aHypType = creator->hypType();
-  if ( aHypType == "LocalLength" )
-    myHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
-  else if ( aHypType == "Arithmetic1D")
-    myHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
-  else if ( aHypType == "MaxElementArea")
-    myHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
-  else if ( aHypType == "MaxElementVolume")
-    myHelpFileName = "max_element_volume_hypo_page.html";
-  else if ( aHypType == "StartEndLength")
-    myHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
-  else if ( aHypType == "Deflection1D")
-    myHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
-  else if ( aHypType == "AutomaticLength")
-    myHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
-  else if ( aHypType == "NumberOfSegments")
-    myHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
-  else
-    myHelpFileName = "";
+  myHelpFileName = creator->helpPage();
 
   connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
 }
