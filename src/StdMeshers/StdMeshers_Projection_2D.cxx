@@ -47,6 +47,7 @@
 #include "utilities.h"
 
 #include <BRep_Tool.hxx>
+#include <Bnd_B2d.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -369,7 +370,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !_sourceHypo )
     return false;
 
-  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh(); 
+  SMESH_Mesh * srcMesh = _sourceHypo->GetSourceMesh();
   SMESH_Mesh * tgtMesh = & theMesh;
   if ( !srcMesh )
     srcMesh = tgtMesh;
@@ -412,9 +413,28 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // Prepare to mapping 
   // --------------------
 
+  SMESH_MesherHelper helper( theMesh );
+  helper.SetSubShape( tgtFace );
+
+  // Check if node projection to a face is needed
+  Bnd_B2d uvBox;
+  SMDS_ElemIteratorPtr faceIt = srcSubMesh->GetSubMeshDS()->GetElements();
+  for ( int nbN = 0; nbN < 3 && faceIt->more();  ) {
+    const SMDS_MeshElement* face = faceIt->next();
+    SMDS_ElemIteratorPtr nodeIt = face->nodesIterator();
+    while ( nodeIt->more() ) {
+      const SMDS_MeshNode* node = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+      if ( node->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+        nbN++;
+        uvBox.Add( helper.GetNodeUV( srcFace, node ));
+      }
+    }
+  }
+  const bool toProjectNodes = ( uvBox.IsVoid() || uvBox.SquareExtent() < DBL_MIN );
+
   // Load pattern from the source face
   SMESH_Pattern mapper;
-  mapper.Load( srcMesh, srcFace );
+  mapper.Load( srcMesh, srcFace, toProjectNodes );
   if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
     return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
@@ -483,9 +503,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   SMESH_MeshEditor editor( tgtMesh );
   SMESH_MeshEditor::TListOfListOfNodes groupsOfNodes;
-
-  SMESH_MesherHelper helper( theMesh );
-  helper.SetSubShape( tgtFace );
 
   // Make groups of nodes to merge
 
@@ -571,7 +588,11 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
   // Merge
 
+  int nbFaceBeforeMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
   editor.MergeNodes( groupsOfNodes );
+  int nbFaceAtferMerge = tgtSubMesh->GetSubMeshDS()->NbElements();
+  if ( nbFaceBeforeMerge != nbFaceAtferMerge )
+    return error(COMPERR_BAD_INPUT_MESH, "Probably invalid node parameters on geom faces");
 
   // ---------------------------
   // Check elements orientation
