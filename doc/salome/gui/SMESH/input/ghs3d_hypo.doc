@@ -34,7 +34,7 @@ software will be started with 100 Megabytes of working space. </li>
 files of ghs3d software, which are files starting with "GHS3D_" prefix. </li>
 
 <li><b>To keep working files</b> - allows to check input and output files
-of ghs3d software, while usually these files are remove after mesher launch </li>
+of ghs3d software, while usually these files are removed after mesher launch </li>
 
 </ul>
 
