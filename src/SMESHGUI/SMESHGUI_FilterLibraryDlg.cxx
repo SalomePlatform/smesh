@@ -431,7 +431,7 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
   }
 
   if (myFileName->text() != myLibrary->GetFileName())
-    myLibrary->SetFileName(myFileName->text().toLatin1().data());
+    myLibrary->SetFileName( myFileName->text().toLatin1().constData() );
 
   bool aResult = false;
 
@@ -439,8 +439,8 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     aResult = true;
   } else if (myMode == EDIT || myMode == ADD_TO) {
     SMESH::Filter_var aFilter = createFilter();
-    if (!myLibrary->Replace(myCurrFilterName.toLatin1().data(),
-			    myName->text().toLatin1().data(),
+    if (!myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+			    myName->text().toLatin1().constData(),
 			    aFilter.in())) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
 				   tr("ERROR_OF_EDITING"));
@@ -672,7 +672,7 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
   if (aFilterMgr->_is_nil())
     return;
 
-  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()).toLatin1().data());
+  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()).toLatin1().constData());
   if (myLibrary->_is_nil()) {
     if (myMode == COPY_FROM) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
@@ -680,7 +680,7 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
       return;
     } else {
       myLibrary = aFilterMgr->CreateLibrary();
-      myLibrary->SetFileName(getFileName().toLatin1().data());
+      myLibrary->SetFileName(getFileName().toLatin1().constData());
     }
   }
 
@@ -815,7 +815,7 @@ bool SMESHGUI_FilterLibraryDlg::isValid(const bool theMess) const
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onFilterChanged( QListWidgetItem* item, QListWidgetItem* )
 {
-  QString theName = item->text();
+  QString theName = item ? item->text() : QString::null;
   if (myLibrary->_is_nil())
     return;
 
@@ -832,14 +832,14 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged( QListWidgetItem* item, QListWid
     }
 
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.toLatin1().data(), 
-		       myName->text().toLatin1().data(), 
+    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
+		       myName->text().toLatin1().constData(), 
 		       aFilter);
   }
 
   // Fill table with filter parameters
 
-  SMESH::Filter_var aFilter = myLibrary->Copy(theName.toLatin1().data());
+  SMESH::Filter_var aFilter = myLibrary->Copy(theName.toLatin1().constData());
   myCurrFilterName = theName;
   myCurrFilter = myListBox->currentRow();
   myName->setText(theName);
@@ -975,8 +975,8 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 
   // add new filter in library
   bool aResult = !aFilter->GetPredicate()->_is_nil()
-    ? myLibrary->Add(aName.toLatin1().data(), aFilter)
-    : myLibrary->AddEmpty(aName.toLatin1().data(), (SMESH::ElementType)myTable->GetType());
+    ? myLibrary->Add(aName.toLatin1().constData(), aFilter)
+    : myLibrary->AddEmpty(aName.toLatin1().constData(), (SMESH::ElementType)myTable->GetType());
 
   if (!aResult) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
@@ -1096,7 +1096,7 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 
   int anIndex = getIndex(myCurrFilterName);
 
-  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toLatin1().data())) {
+  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toLatin1().constData())) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
 				 tr("ERROR_OF_DELETING"));
   } else {
@@ -1188,8 +1188,8 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
     if (valid)
     {
       SMESH::Filter_var aFilter = createFilter(myTable->GetType());
-      myLibrary->Replace(myCurrFilterName.toLatin1().data(),
-			 myName->text().toLatin1().data(),
+      myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+			 myName->text().toLatin1().constData(),
 			 aFilter);
     }
   }

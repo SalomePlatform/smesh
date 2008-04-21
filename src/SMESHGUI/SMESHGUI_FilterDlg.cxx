@@ -1004,9 +1004,9 @@ void SMESHGUI_FilterTable::GetCriterion (const int                 theRow,
   }
   else
   {
-    theCriterion.ThresholdStr = CORBA::string_dup( aTable->text(theRow, 2).toLatin1().constData() );
+    theCriterion.ThresholdStr = aTable->text(theRow, 2).toLatin1().constData();
     if ( aCriterionType != SMESH::FT_RangeOfIds )
-      theCriterion.ThresholdID = CORBA::string_dup( aTable->text( theRow, 5 ).toLatin1().constData() );
+      theCriterion.ThresholdID = aTable->text( theRow, 5 ).toLatin1().constData();
   }
 
   QTableWidgetItem* anItem = aTable->item(theRow, 0);
@@ -1391,6 +1391,8 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   // Logical operation AND / OR
   theTable->setItem(aCurrRow, 4, new QTableWidgetItem());
 
+  theTable->setItem(aCurrRow, 5, new QTableWidgetItem());
+    
   theTable->blockSignals( isSignalsBlocked );
 
   // Logical binary operation for previous value
@@ -2375,7 +2377,7 @@ bool SMESHGUI_FilterDlg::isValid() const
       myTable->GetThreshold(i, aName);
 
       std::vector<_PTR(SObject)> aList =
-        SMESH::GetActiveStudyDocument()->FindObjectByName(aName.toLatin1().data(), "GEOM");
+        SMESH::GetActiveStudyDocument()->FindObjectByName(aName.toLatin1().constData(), "GEOM");
       if (aList.size() == 0) {
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
 				     tr("BAD_SHAPE_NAME").arg(aName));
