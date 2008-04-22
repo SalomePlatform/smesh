@@ -81,11 +81,20 @@ CENTROIDAL_SMOOTH = SMESH_MeshEditor.CENTROIDAL_SMOOTH
 
 # Fineness enumeration (for NETGEN)
 VeryCoarse = 0
-Coarse = 1
-Moderate = 2
-Fine = 3
-VeryFine = 4
-Custom = 5
+Coarse     = 1
+Moderate   = 2
+Fine       = 3
+VeryFine   = 4
+Custom     = 5
+
+# Optimization level of GHS3D
+None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization = 0,1,2,3
+
+# Topology treatment way of BLSURF
+FromCAD, PreProcess, PreProcessPlus = 0,1,2
+
+# Element size flag of BLSURF
+DefaultSize, DefaultGeom, Custom = 0,0,1
 
 PrecisionConfusion = 1e-07
 
@@ -2896,46 +2905,66 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
-    ## Sets PhysicalMesh
-    #  @param thePhysicalMesh is:
-    #  DefaultSize or Custom
-    def SetPhysicalMesh(self, thePhysicalMesh=1):
+    ## Sets a way to define size of mesh elements to generate
+    #  @param thePhysicalMesh is: DefaultSize or Custom
+    #  Parameter of BLSURF algo
+    def SetPhysicalMesh(self, thePhysicalMesh=DefaultSize):
         if self.params == 0:
             self.Parameters()
         self.params.SetPhysicalMesh(thePhysicalMesh)
 
-    ## Sets PhySize flag
+    ## Sets size of mesh elements to generate
+    #  Parameter of BLSURF algo
     def SetPhySize(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetPhySize(theVal)
 
-    ## Sets GeometricMesh
-    #  @param theGeometricMesh is:
-    #  DefaultGeom or Custom
+    ## Sets a way to define maximum angular deflection of mesh from CAD model
+    #  @param theGeometricMesh is: DefaultGeom or Custom
+    #  Parameter of BLSURF algo
     def SetGeometricMesh(self, theGeometricMesh=0):
         if self.params == 0:
             self.Parameters()
         if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
         self.params.SetGeometricMesh(theGeometricMesh)
 
-    ## Sets AngleMeshS flag
+    ## Sets angular deflection (in degrees) of mesh from CAD model
+    #  Parameter of BLSURF algo
     def SetAngleMeshS(self, theVal=_angleMeshS):
         if self.params == 0:
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshS(theVal)
 
-    ## Sets Gradation flag
+    ## Sets maximal allowed ratio between the lengths of two adjacent edges
+    #  Parameter of BLSURF algo
     def SetGradation(self, theVal=_gradation):
         if self.params == 0:
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._gradation
         self.params.SetGradation(theVal)
 
+    ## Sets topology usage way defining how mesh conformity is assured:
+    # FromCAD, PreProcess or PreProcessPlus
+    # FromCAD - mesh conformity is assured by conformity of a shape
+    # PreProcess or PreProcessPlus - by pre-processing a CAD model
+    #  Parameter of BLSURF algo
+    def SetTopology(self, way):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetTopology(way)
+
+    ## To respect geometrical edges or not
+    #  Parameter of BLSURF algo
+    def SetDecimesh(self, toIgnoreEdges=False):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetDecimesh(toIgnoreEdges)
+
     ## Sets QuadAllowed flag
     #
-    #  Only for algoType == NETGEN || NETGEN_2D
+    #  Only for algoType == NETGEN || NETGEN_2D || BLSURF
     def SetQuadAllowed(self, toAllow=True):
         if self.algoType == NETGEN_2D:
             if toAllow: # add QuadranglePreference
@@ -2958,6 +2987,8 @@ class Mesh_Triangle(Mesh_Algorithm):
     #
     #  Only for algoType == NETGEN
     def Parameters(self):
+        if self.params:
+            return self.params
         if self.algoType == NETGEN:
             self.params = self.Hypothesis("NETGEN_Parameters_2D", [],
                                           "libNETGENEngine.so", UseExisting=0)
@@ -3040,12 +3071,6 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params is not None:
             self.params.SetNbSegPerRadius(theVal)
 
-    ## Sets Decimesh flag
-    def SetDecimesh(self, toAllow=False):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetDecimesh(toAllow)
-
     pass
 
 
@@ -3087,15 +3112,15 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             self.Create(mesh, geom, "NETGEN_3D", "libNETGENEngine.so")
             pass
 
-        elif algoType == GHS3D:
-            import GHS3DPlugin
-            self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
-            pass
-
         elif algoType == FULL_NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module has not been imported."
             self.Create(mesh, geom, "NETGEN_2D3D", "libNETGENEngine.so")
+            pass
+
+        elif algoType == GHS3D:
+            import GHS3DPlugin
+            self.Create(mesh, geom, "GHS3D_3D" , "libGHS3DEngine.so")
             pass
 
         self.algoType = algoType
@@ -3120,23 +3145,30 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
             self.params = self.Hypothesis("NETGEN_Parameters", [],
                                           "libNETGENEngine.so", UseExisting=0)
             return self.params
-        else:
-            print "Algo doesn't support this hypothesis"
-            return None
+        if (self.algoType == GHS3D):
+            self.params = self.Hypothesis("GHS3D_Parameters", [],
+                                          "libGHS3DEngine.so", UseExisting=0)
+            return self.params
+        
+        print "Algo doesn't support this hypothesis"
+        return None
 
     ## Sets MaxSize
+    #  Parameter of FULL_NETGEN
     def SetMaxSize(self, theSize):
         if self.params == 0:
             self.Parameters()
         self.params.SetMaxSize(theSize)
 
     ## Sets SecondOrder flag
+    #  Parameter of FULL_NETGEN
     def SetSecondOrder(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetSecondOrder(theVal)
 
     ## Sets Optimize flag
+    #  Parameter of FULL_NETGEN
     def SetOptimize(self, theVal):
         if self.params == 0:
             self.Parameters()
@@ -3145,28 +3177,71 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     ## Sets Fineness
     #  @param theFineness is:
     #  VeryCoarse, Coarse, Moderate, Fine, VeryFine or Custom
+    #  Parameter of FULL_NETGEN
     def SetFineness(self, theFineness):
         if self.params == 0:
             self.Parameters()
         self.params.SetFineness(theFineness)
 
     ## Sets GrowthRate
+    #  Parameter of FULL_NETGEN
     def SetGrowthRate(self, theRate):
         if self.params == 0:
             self.Parameters()
         self.params.SetGrowthRate(theRate)
 
     ## Sets NbSegPerEdge
+    #  Parameter of FULL_NETGEN
     def SetNbSegPerEdge(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetNbSegPerEdge(theVal)
 
     ## Sets NbSegPerRadius
+    #  Parameter of FULL_NETGEN
     def SetNbSegPerRadius(self, theVal):
         if self.params == 0:
             self.Parameters()
         self.params.SetNbSegPerRadius(theVal)
+
+    ## To mesh "holes" in a solid or not. Default is to mesh.
+    #  Parameter of GHS3D
+    def SetToMeshHoles(self, toMesh):
+        if self.params == 0: self.Parameters()
+        self.params.SetToMeshHoles(toMesh)
+
+    ## Set Optimization level:
+    #   None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization.
+    #  Default is Medium_Optimization
+    #  Parameter of GHS3D
+    def SetOptimizationLevel(self, level):
+        if self.params == 0: self.Parameters()
+        self.params.SetOptimizationLevel(level)
+
+    ## Maximal size of memory to be used by the algorithm (in Megabytes).
+    #  Advanced parameter of GHS3D
+    def SetMaximumMemory(self, MB):
+        if self.params == 0: self.Parameters()
+        self.params.SetMaximumMemory(MB)
+
+    ## Initial size of memory to be used by the algorithm (in Megabytes) in
+    #  automatic memory adjustment mode
+    #  Advanced parameter of GHS3D
+    def SetInitialMemory(self, MB):
+        if self.params == 0: self.Parameters()
+        self.params.SetInitialMemory(MB)
+
+    ## Path to working directory
+    #  Advanced parameter of GHS3D
+    def SetWorkingDirectory(self, path):
+        if self.params == 0: self.Parameters()
+        self.params.SetWorkingDirectory(path)
+
+    ## To keep working files or remove them. Log file remains in case of errors anyway
+    #  Advanced parameter of GHS3D
+    def SetKeepFiles(self, toKeep):
+        if self.params == 0: self.Parameters()
+        self.params.SetKeepFiles(toKeep)
 
 # Public class: Mesh_Hexahedron
 # ------------------------------
