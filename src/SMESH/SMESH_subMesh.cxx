@@ -1312,9 +1312,14 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           SetAlgoState(MISSING_HYP);
           break;
         }
+        TopoDS_Shape shape = _subShape;
         // check submeshes needed
         if (_father->HasShapeToMesh() ) {
-          bool subComputed = SubMeshesComputed();
+          bool subComputed = false;
+          if (!algo->OnlyUnaryInput())
+            shape = GetCollection( gen, algo, subComputed );
+          else
+            subComputed = SubMeshesComputed();
           ret = ( algo->NeedDescretBoundary() ? subComputed :
                   ( !subComputed || _father->IsNotConformAllowed() ));
           if (!ret) {
@@ -1332,7 +1337,6 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
         ret = false;
         _computeState = FAILED_TO_COMPUTE;
         _computeError = SMESH_ComputeError::New(COMPERR_OK,"",algo);
-        TopoDS_Shape shape = _subShape;
         try {
 #if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
           OCC_CATCH_SIGNALS;
@@ -1349,9 +1353,6 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           }
           else
           {
-            if (!algo->OnlyUnaryInput()) {
-              shape = GetCollection( gen, algo );
-            }
             ret = algo->Compute((*_father), shape);
           }
           if ( !ret )
@@ -1508,6 +1509,9 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     switch (event)
     {
     case MODIF_ALGO_STATE:
+      algo = gen->GetAlgo((*_father), _subShape);
+      if (algo && !algo->NeedDescretBoundary())
+        CleanDependsOn(); // clean sub-meshes with event CLEAN
       if (_algoState == HYP_OK)
         _computeState = READY_TO_COMPUTE;
       else
@@ -1780,9 +1784,13 @@ void SMESH_subMesh::RemoveSubMeshElementsAndNodes()
 //           meshed at once along with _subShape
 //=======================================================================
 
-TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo)
+TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen,
+                                          SMESH_Algo* theAlgo,
+                                          bool &      theSubComputed)
 {
   MESSAGE("SMESH_subMesh::GetCollection");
+
+  theSubComputed = SubMeshesComputed();
 
   TopoDS_Shape mainShape = _father->GetMeshDS()->ShapeToMesh();
 
@@ -1815,6 +1823,8 @@ TopoDS_Shape SMESH_subMesh::GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlg
       if (anAlgo == theAlgo &&
           anAlgo->GetUsedHypothesis( *_father, S, ignoreAuxiliaryHyps ) == aUsedHyp)
         aBuilder.Add( aCompound, S );
+      if ( !subMesh->SubMeshesComputed() )
+        theSubComputed = false;
     }
   }
 

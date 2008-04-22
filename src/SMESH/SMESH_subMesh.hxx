@@ -241,7 +241,9 @@ protected:
    * \brief Return a shape containing all sub-shapes of the MainShape that can be
    * meshed at once along with _subShape
    */
-  TopoDS_Shape GetCollection(SMESH_Gen * theGen, SMESH_Algo* theAlgo);
+  TopoDS_Shape GetCollection(SMESH_Gen * theGen,
+                             SMESH_Algo* theAlgo,
+                             bool &      theSubComputed);
 
   /*!
    * \brief Apply theAlgo to all subshapes in theCollection
