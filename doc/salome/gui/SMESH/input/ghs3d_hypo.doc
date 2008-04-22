@@ -2,7 +2,7 @@
 
 \page ghs3d_hypo_page GHS3D Parameters hypothesis
 
-\n GHS3D Parameters hypothesis works only with <b>Tetrahedron (GHS3d)</b> 
+\n GHS3D Parameters hypothesis works only with <b>Tetrahedron (GHS3D)</b> 
 algorithm. This algorithm is a commercial software.
 
 \image html ghs3d_parameters_basic.png
@@ -30,10 +30,10 @@ checked off, the software will be launched with 0.7 * total RAM space. </li>
 specified Megabytes of work space. If this option is checked off, the
 software will be started with 100 Megabytes of working space. </li>
 
-<li><b>Working directory</b> - Defines folder for input and output
+<li><b>Working directory</b> - defines folder for input and output
 files of ghs3d software, which are files starting with "GHS3D_" prefix. </li>
 
-<li><b>To keep working files</b> - allows to check input and output files
+<li><b>Keep working files</b> - allows to check input and output files
 of ghs3d software, while usually these files are removed after mesher launch </li>
 
 </ul>
