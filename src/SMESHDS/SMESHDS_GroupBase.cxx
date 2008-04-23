@@ -175,6 +175,13 @@ void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
   double aR = aRed/255.0;
   double aG = aGreen/255.0;
   double aB = aBlue/255.0;
+  if ( aR < 0. || aR > 1. || // PAL19395
+       aG < 0. || aG > 1. ||
+       aB < 0. || aB > 1. )
+#ifdef _DEBUG_
+    cout << "SMESHDS_GroupBase::SetColorGroup("<<theColorGroup<<"), invalid color ignored"<<endl;
+#endif
+    return;
   Quantity_Color aColor( aR, aG, aB, Quantity_TOC_RGB );
   SetColor( aColor );
 }
@@ -190,9 +197,9 @@ int SMESHDS_GroupBase::GetColorGroup() const
   double aRed = aColor.Red();
   double aGreen = aColor.Green();
   double aBlue = aColor.Blue();
-  int aR = aRed*255;
-  int aG = aGreen*255;
-  int aB = aBlue*255;
+  int aR = int( aRed  *255 );
+  int aG = int( aGreen*255 );
+  int aB = int( aBlue *255 );
   int aRet = (int)(aR*1000000 + aG*1000 + aB);
 
   return aRet;
