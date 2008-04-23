@@ -159,11 +159,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
 
       if (qName == "algorithm")
       {
-        myAlgorithmsMap[aHypAlType.toLatin1().data()] = aHypData;
+        myAlgorithmsMap[aHypAlType] = aHypData;
       }
       else
       {
-        myHypothesesMap[aHypAlType.toLatin1().data()] = aHypData;
+        myHypothesesMap[aHypAlType] = aHypData;
       }
     }
   }
@@ -175,7 +175,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
     if (atts.value("name") != "")
     {
       HypothesesSet* aHypoSet = new HypothesesSet ( atts.value("name") );
-      myListOfHypothesesSets.push_back( aHypoSet );
+      myListOfHypothesesSets.append( aHypoSet );
 
       for ( int isHypo = 0; isHypo < 2; ++isHypo )
       {

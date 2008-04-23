@@ -30,11 +30,8 @@
 
 // Qt includes
 #include <QXmlDefaultHandler>
-
-// STL includes
-#include <string>
-#include <map>
-#include <list>
+#include <QMap>
+#include <QList>
 
 class HypothesisData;
 class HypothesesSet;
@@ -56,10 +53,10 @@ public:
   bool     fatalError( const QXmlParseException& );
 
 public:
-  std::map<std::string, HypothesisData*> myHypothesesMap;
-  std::map<std::string, HypothesisData*> myAlgorithmsMap;
+  QMap<QString, HypothesisData*>         myHypothesesMap;
+  QMap<QString, HypothesisData*>         myAlgorithmsMap;
 
-  std::list<HypothesesSet*>              myListOfHypothesesSets;
+  QList<HypothesesSet*>                  myListOfHypothesesSets;
 
 private:
   QString                                myErrorProt;

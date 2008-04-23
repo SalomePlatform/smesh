@@ -77,22 +77,20 @@ static int MYDEBUG = 0;
 
 namespace SMESH
 {
-  typedef QMap<std::string,HypothesisData*> THypothesisDataMap;
+  typedef QMap<QString,HypothesisData*> THypothesisDataMap;
   THypothesisDataMap myHypothesesMap;
   THypothesisDataMap myAlgorithmsMap;
 
-  typedef QMap<std::string,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
+  typedef QMap<QString,SMESHGUI_GenericHypothesisCreator*> THypCreatorMap;
   THypCreatorMap myHypCreatorMap;
 
-  std::list<HypothesesSet*> myListOfHypothesesSets;
-  //QList<HypothesesSet*> myListOfHypothesesSets;
+  QList<HypothesesSet*> myListOfHypothesesSets;
 
   void processHypothesisStatus(const int theHypStatus,
 			       SMESH::SMESH_Hypothesis_ptr theHyp,
 			       const bool theIsAddition)
   {
     if (theHypStatus > SMESH::HYP_OK) {
-
       // get Hyp name
       QString aHypName ("NULL Hypothesis");
       if (!CORBA::is_nil(theHyp)) {
@@ -141,13 +139,12 @@ namespace SMESH
 	HypsXml.sprintf("%s", cenv);
 
       QStringList HypsXmlList = HypsXml.split(":", QString::SkipEmptyParts);
-      if (HypsXmlList.count() == 0)
-	{
-	  SUIT_MessageBox::critical(SMESHGUI::desktop(),
-				    QObject::tr("SMESH_WRN_WARNING"),
-				    QObject::tr("MESHERS_FILE_NO_VARIABLE"));
-	  return;
-	}
+      if (HypsXmlList.count() == 0) {
+	SUIT_MessageBox::critical(SMESHGUI::desktop(),
+				  QObject::tr("SMESH_WRN_WARNING"),
+				  QObject::tr("MESHERS_FILE_NO_VARIABLE"));
+	return;
+      }
 
       // loop on files in HypsXml
       QString aNoAccessFiles;
@@ -173,10 +170,14 @@ namespace SMESH
 	  bool ok = reader.parse(source);
 	  file.close();
 	  if (ok) {
-	    myHypothesesMap.unite( QMap<std::string,HypothesisData*>( aXmlHandler->myHypothesesMap ) );
-            myAlgorithmsMap.unite( QMap<std::string,HypothesisData*>( aXmlHandler->myAlgorithmsMap ) );
-            myListOfHypothesesSets.splice( myListOfHypothesesSets.begin(),
-                                           aXmlHandler->myListOfHypothesesSets );
+	    myHypothesesMap.unite( aXmlHandler->myHypothesesMap );
+            myAlgorithmsMap.unite( aXmlHandler->myAlgorithmsMap );
+	    QList<HypothesesSet*>::iterator it, pos = myListOfHypothesesSets.begin();
+	    for ( it = aXmlHandler->myListOfHypothesesSets.begin(); 
+		  it != aXmlHandler->myListOfHypothesesSets.end();
+		  ++it ) {
+	      myListOfHypothesesSets.insert( pos, *it );
+	    }
 	  }
 	  else {
 	    SUIT_MessageBox::critical(SMESHGUI::desktop(),
@@ -217,19 +218,20 @@ namespace SMESH
     InitAvailableHypotheses();
     bool checkGeometry = !isNeedGeometry;
     // fill list of hypotheses/algorithms
-    THypothesisDataMap* pMap = isAlgo ? &myAlgorithmsMap : &myHypothesesMap;
+    THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
     THypothesisDataMap::iterator anIter;
-    for ( anIter = pMap->begin(); anIter != pMap->end(); anIter++ )
-      {
-	HypothesisData* aData = anIter.value();
-	if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux)
-	  if (checkGeometry){
-	    if (aData->IsNeedGeometry == isNeedGeometry)
-	      aHypList.append(anIter.key().c_str());
-	  }
-	  else
-	    aHypList.append(anIter.key().c_str());
+    for ( anIter = pMap.begin(); anIter != pMap.end(); anIter++ ) {
+      HypothesisData* aData = anIter.value();
+      if ( ( theDim < 0 || aData->Dim.contains( theDim ) ) && aData->IsAux == isAux) {
+	if (checkGeometry) {
+	  if (aData->IsNeedGeometry == isNeedGeometry)
+	    aHypList.append(anIter.key());
+	}
+	else {
+	  aHypList.append(anIter.key());
+	}
       }
+    }
     return aHypList;
   }
 
@@ -241,29 +243,29 @@ namespace SMESH
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
-    //QList<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
-    for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
-      {
-	HypothesesSet* aSet = *hypoSet;
-	if ( aSet && aSet->AlgoList.count() ) {
-	  aSetNameList.append( aSet->HypoSetName );
-	}
+    QList<HypothesesSet*>::iterator hypoSet;
+    for ( hypoSet  = myListOfHypothesesSets.begin(); 
+	  hypoSet != myListOfHypothesesSets.end();
+	  ++hypoSet ) {
+      HypothesesSet* aSet = *hypoSet;
+      if ( aSet && aSet->AlgoList.count() ) {
+	aSetNameList.append( aSet->HypoSetName );
       }
-
+    }
+    
     return aSetNameList;
   }
 
   HypothesesSet* GetHypothesesSet(const QString& theSetName)
   {
-    std::list<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
-    //QList<HypothesesSet*>::iterator hypoSet = myListOfHypothesesSets.begin();
-    for ( ; hypoSet != myListOfHypothesesSets.end(); ++hypoSet )
-      {
-	HypothesesSet* aSet = *hypoSet;
-	if ( aSet && aSet->HypoSetName == theSetName )
-	  return aSet;
-      }
+    QList<HypothesesSet*>::iterator hypoSet;
+    for ( hypoSet  = myListOfHypothesesSets.begin(); 
+	  hypoSet != myListOfHypothesesSets.end();
+	  ++hypoSet ) {
+      HypothesesSet* aSet = *hypoSet;
+      if ( aSet && aSet->HypoSetName == theSetName )
+	return aSet;
+    }
     return 0;
   }
 
@@ -274,14 +276,11 @@ namespace SMESH
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
 
-    THypothesisDataMap::iterator type_data = myHypothesesMap.find(aHypType.toLatin1().data());
-    if (type_data != myHypothesesMap.end()) {
-      aHypData = type_data.value();
+    if (myHypothesesMap.find(aHypType) != myHypothesesMap.end()) {
+      aHypData = myHypothesesMap[aHypType];
     }
-    else {
-      type_data = myAlgorithmsMap.find(aHypType.toLatin1().data());
-      if (type_data != myAlgorithmsMap.end())
-	aHypData = type_data.value();
+    else if (myAlgorithmsMap.find(aHypType) != myAlgorithmsMap.end()) {
+      aHypData = myAlgorithmsMap[aHypType];
     }
     return aHypData;
   }
@@ -326,8 +325,8 @@ namespace SMESH
     SMESHGUI_GenericHypothesisCreator* aCreator = 0;
 
     // check, if creator for this hypothesis type already exists
-    if (myHypCreatorMap.find(aHypType.toLatin1().data()) != myHypCreatorMap.end()) {
-      aCreator = myHypCreatorMap[aHypType.toLatin1().data()];
+    if (myHypCreatorMap.find(aHypType) != myHypCreatorMap.end()) {
+      aCreator = myHypCreatorMap[aHypType];
     }
     else {
       // 1. Init list of available hypotheses, if needed
@@ -347,15 +346,14 @@ namespace SMESH
 	LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
 	if (!libHandle) {
 	  // report any error, if occured
-	  if ( MYDEBUG )
-	    {
+	  if ( MYDEBUG ) {
 #ifdef WIN32
-	      const char* anError = "Can't load client meshers plugin library";
+	    const char* anError = "Can't load client meshers plugin library";
 #else
-	      const char* anError = dlerror();	  
+	    const char* anError = dlerror();	  
 #endif
-	      MESSAGE(anError);
-	    }
+	    MESSAGE(anError);
+	  }
 	}
 	else {
 	  // get method, returning hypothesis creator
@@ -377,7 +375,7 @@ namespace SMESH
 	    }
 	    else {
 	      // map hypothesis creator to a hypothesis name
-	      myHypCreatorMap[aHypType.toLatin1().data()] = aCreator;
+	      myHypCreatorMap[aHypType] = aCreator;
 	    }
 	  }
 	}
