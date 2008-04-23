@@ -732,7 +732,7 @@ class Mesh:
             import traceback
             print "Mesh computation failed, exception caught:"
             traceback.print_exc()
-        if not ok:
+        if True:#not ok:
             errors = self.smeshpyD.GetAlgoState( self.mesh, geom )
             allReasons = ""
             for err in errors:
@@ -768,7 +768,8 @@ class Mesh:
             if allReasons != "":
                 print '"' + GetName(self.mesh) + '"',"has not been computed:"
                 print allReasons
-            else:
+                ok = False
+            elif not ok:
                 print '"' + GetName(self.mesh) + '"',"has not been computed."
                 pass
             pass
