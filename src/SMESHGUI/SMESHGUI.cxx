@@ -338,8 +338,8 @@
           fd->selectFilter( QObject::tr("STL ASCII  (*.stl)") );
           bool is_ok = false;
           while (!is_ok) {
-            fd->exec();
-            aFilename = fd->selectedFile();
+	    if ( fd->exec() )
+	      aFilename = fd->selectedFile();
             aIsASCII_STL = (aFilterMapSTL[fd->selectedFilter()]) == 1 ? true: false;
             is_ok = true;
 	  }
@@ -356,12 +356,13 @@
             ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS"), true, true );
           fd->setWindowTitle( aTitle );
           fd->setFilters( filters );
-          fd->selectFilter( QObject::tr("MED 2.2 (*.med)") );
+          //fd->selectFilter( QObject::tr("MED 2.2 (*.med)") );
+          fd->selectFilter( filters.last() );
           fd->SetChecked(toCreateGroups);
           bool is_ok = false;
           while (!is_ok) {
-            fd->exec();
-            aFilename = fd->selectedFile();
+	    if ( fd->exec() )
+	      aFilename = fd->selectedFile();
             aFormat = aFilterMap[fd->selectedFilter()];
             is_ok = true;
             if ( !aFilename.isEmpty()
