@@ -173,8 +173,8 @@ namespace SMESH
 	  bool ok = reader.parse(source);
 	  file.close();
 	  if (ok) {
-	    myHypothesesMap = QMap<std::string,HypothesisData*>( aXmlHandler->myHypothesesMap );
-            myAlgorithmsMap = QMap<std::string,HypothesisData*>( aXmlHandler->myAlgorithmsMap );
+	    myHypothesesMap.unite( QMap<std::string,HypothesisData*>( aXmlHandler->myHypothesesMap ) );
+            myAlgorithmsMap.unite( QMap<std::string,HypothesisData*>( aXmlHandler->myAlgorithmsMap ) );
             myListOfHypothesesSets.splice( myListOfHypothesesSets.begin(),
                                            aXmlHandler->myListOfHypothesesSets );
 	  }
