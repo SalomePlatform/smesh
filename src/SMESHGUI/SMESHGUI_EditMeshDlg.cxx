@@ -684,8 +684,9 @@ void SMESHGUI_EditMeshDlg::onEditGroup()
   for (int i = 0; i < ListEdit->count(); i++ )
     aNewIds.append(ListEdit->item(i)->text());
 
-  ListCoincident->currentItem()->setText(aNewIds.join(" "));
-  ListCoincident->currentItem()->setSelected(true);
+  ListCoincident->clearSelection();
+  selItems.first()->setText(aNewIds.join(" "));
+  selItems.first()->setSelected(true);
 }
 
 //=================================================================================
