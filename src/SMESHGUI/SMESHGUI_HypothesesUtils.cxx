@@ -218,7 +218,7 @@ namespace SMESH{
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
-    bool checkGeometry = !isNeedGeometry;
+    bool checkGeometry = ( !isNeedGeometry && isAlgo );
     // fill list of hypotheses/algorithms
     THypothesisDataMap* pMap = isAlgo ? &myAlgorithmsMap : &myHypothesesMap;
     THypothesisDataMap::iterator anIter;
