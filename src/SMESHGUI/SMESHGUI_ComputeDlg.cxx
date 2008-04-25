@@ -266,8 +266,8 @@ namespace SMESH {
       if ( !actor ) {
         actor = GEOM_Actor::New();
         if ( actor ) {
-          actor->setInputShape(shape,0,0);
-          //actor->SetProperty(myProperty);
+          actor->SetShape(shape,0,0);
+          actor->SetProperty(myProperty);
           actor->SetShadingProperty(myProperty);
           actor->SetWireframeProperty(myProperty);
           actor->SetPreviewProperty(myProperty);
