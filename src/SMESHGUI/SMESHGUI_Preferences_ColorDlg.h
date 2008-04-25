@@ -34,6 +34,7 @@
 
 class QSpinBox;
 class SMESHGUI;
+class QtxIntSpinBox;
 class QtxColorButton;
 
 class SMESHGUI_EXPORT SMESHGUI_Preferences_ColorDlg : public QDialog
@@ -65,7 +66,7 @@ private:
   QtxColorButton*       btnBackFaceColor;
   QtxColorButton*       btnOutlineColor;
   QSpinBox*             SpinBox_Width;
-  QSpinBox*             SpinBox_Shrink;
+  QtxIntSpinBox*        SpinBox_Shrink;
   QtxColorButton*       btnNodeColor;
   QSpinBox*             SpinBox_Nodes_Size;
 };

@@ -32,6 +32,7 @@
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <QtxColorButton.h>
+#include <QtxIntSpinBox.h>
 
 // Qt includes
 #include <QGroupBox>
@@ -88,7 +89,7 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
   SpinBox_Width->setButtonSymbols( QSpinBox::PlusMinus );
 
   QLabel* TextLabel_ShrinkCoeff = new QLabel( tr( "Shrink coef." ), ButtonGroup1 );
-  SpinBox_Shrink = new QSpinBox( ButtonGroup1 );
+  SpinBox_Shrink = new QtxIntSpinBox( ButtonGroup1 );
   SpinBox_Shrink->setRange( 20, 100 );
   SpinBox_Shrink->setSingleStep( 1 );
   SpinBox_Shrink->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
@@ -96,14 +97,14 @@ SMESHGUI_Preferences_ColorDlg::SMESHGUI_Preferences_ColorDlg( SMESHGUI* theModul
 
   ButtonGroup1Layout->addWidget( TextLabel_Fill,        0, 0 );
   ButtonGroup1Layout->addWidget( btnFillColor,          0, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_BackFace,    1, 0 );
-  ButtonGroup1Layout->addWidget( btnBackFaceColor,      1, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_Outine,      2, 0 );
-  ButtonGroup1Layout->addWidget( btnOutlineColor,       2, 1 );
-  ButtonGroup1Layout->addWidget( TextLabel_Width,       0, 2 );
-  ButtonGroup1Layout->addWidget( SpinBox_Width,         0, 3 );
-  ButtonGroup1Layout->addWidget( TextLabel_ShrinkCoeff, 1, 2 );
-  ButtonGroup1Layout->addWidget( SpinBox_Shrink,        1, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_BackFace,    0, 2 );
+  ButtonGroup1Layout->addWidget( btnBackFaceColor,      0, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_Outine,      1, 0 );
+  ButtonGroup1Layout->addWidget( btnOutlineColor,       1, 1 );
+  ButtonGroup1Layout->addWidget( TextLabel_Width,       1, 2 );
+  ButtonGroup1Layout->addWidget( SpinBox_Width,         1, 3 );
+  ButtonGroup1Layout->addWidget( TextLabel_ShrinkCoeff, 2, 0 );
+  ButtonGroup1Layout->addWidget( SpinBox_Shrink,        2, 1, 1, 3 );
 
   // -------------------------------
   QGroupBox* ButtonGroup2 = new QGroupBox( tr( "Nodes" ), this );
