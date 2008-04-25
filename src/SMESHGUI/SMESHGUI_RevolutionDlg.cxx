@@ -256,7 +256,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   SpinBox_NbSteps->setRange(1, 999999);
 
-  SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.1, 6);
+  SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, 6);
 
   RadioButton1->setChecked(true);
 
