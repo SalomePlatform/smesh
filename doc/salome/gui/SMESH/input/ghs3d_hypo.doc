@@ -13,7 +13,8 @@ Parameters by default).</li>
 
 <li><b>To mesh holes</b> - if this box is checked, the algorithm will 
 create mesh also in holes inside a solid shape, else only the outermost
-shape will be meshed.</li>
+shape will be meshed. Volumic elements created within holes are bound
+to the solid.</li>
 
 <li><b>Optimization level</b> - sets the desired optimization level.
 Optimization levels are: none, light, medium, strong, in increasing 
@@ -34,7 +35,7 @@ software will be started with 100 Megabytes of working space. </li>
 files of ghs3d software, which are files starting with "GHS3D_" prefix. </li>
 
 <li><b>Keep working files</b> - allows to check input and output files
-of ghs3d software, while usually these files are removed after mesher launch </li>
+of ghs3d software, while usually these files are removed after mesher launch.</li>
 
 </ul>
 
