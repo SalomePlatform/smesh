@@ -182,8 +182,13 @@ using namespace std;
     }else if (theCommandID == 111){
       filter.append(QObject::tr("DAT files (*.dat)"));
     }
+
+    QString anInitialPath = "";
+    if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+      anInitialPath = QDir::currentDirPath();
+
     QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
-						 QDir::currentDirPath(),
+						 anInitialPath,
 						 filter,
 						 QObject::tr("Import mesh"),
 						 true);
