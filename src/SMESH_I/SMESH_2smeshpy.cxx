@@ -17,7 +17,7 @@
 //  License along with this library; if not, write to the Free Software 
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA 
 // 
-// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//  See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 //
 //
@@ -891,7 +891,6 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "" }; // <- mark of the end
     sameMethods.Insert( names );
   }
-  //theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
 
   if ( sameMethods.Contains( theCommand->GetMethod() )) {
     theCommand->SetObject( myMesh );
@@ -903,6 +902,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
   }
   else {
     // editor creation command is needed only if any editor function is called
+    theGen->AddMeshAccessorMethod( theCommand ); // for *Object()
     if ( !myCreationCmdStr.IsEmpty() ) {
       GetCreationCmd()->GetString() = myCreationCmdStr;
       myCreationCmdStr.Clear();
