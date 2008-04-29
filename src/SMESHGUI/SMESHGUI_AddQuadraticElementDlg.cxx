@@ -549,9 +549,13 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   
   for ( int row = 0; row < myTable->rowCount(); row++ )
   {
+    myTable->setItem( row, 0, new QTableWidgetItem( "" ) );
+
     SMESHGUI_IdEditItem* anEditItem = new SMESHGUI_IdEditItem( "" );
     anEditItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled);
     myTable->setItem(row, 1, anEditItem);
+
+    myTable->setItem( row, 2, new QTableWidgetItem( "" ) );
   }
   
   /* signals and slots connections */
