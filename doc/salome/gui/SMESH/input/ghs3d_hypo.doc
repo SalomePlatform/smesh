@@ -37,6 +37,32 @@ files of ghs3d software, which are files starting with "GHS3D_" prefix. </li>
 <li><b>Keep working files</b> - allows to check input and output files
 of ghs3d software, while usually these files are removed after mesher launch.</li>
 
+<li><b>Verbose level</b> - to choose verbosity level in the range 0 to 10.
+<ul> <li>0, no standard output,
+</li><li>2, prints the data, quality statistics of the skin and final
+meshes and indicates when the final mesh is being saved. In addition
+the software gives indication regarding the CPU time.
+</li><li>10, same as 2 plus the main steps in the computation, quality
+statistics histogram of the skin mesh, quality statistics histogram
+together with the characteristics of the final mesh.
+</li></ul></li>
+
+<li><b>To create new nodes</b> - if this option is checked off, ghs3d
+tries to create tetrahedrons using only nodes of 2D mesh.</li>
+
+<li><b>To use boundary recovery version</b> - enables using a
+boundary recovery module which tries to
+create volume meshes starting from very poor quality surface meshes
+(almost flat triangles on the surface, high density propagation,
+extreme aspect ratios, etc.) which fails with the standard version. The
+resulting volume mesh will however most likely have a very poor
+quality (poor aspect ratio of elements, tetrahedra with a very small
+positive volume).</li>
+
+<li><b>Option as text</b> - allows entering any text that will be
+used as command line option of ghs3d. This is for giving
+hidden/undocumented/advanced options </li>
+
 </ul>
 
 */

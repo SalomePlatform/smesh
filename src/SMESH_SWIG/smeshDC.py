@@ -2860,7 +2860,7 @@ class Mesh_Triangle(Mesh_Algorithm):
         elif algoType == BLSURF:
             import BLSURFPlugin
             self.Create(mesh, geom, "BLSURF", "libBLSURFEngine.so")
-            self.SetPhysicalMesh()
+            #self.SetPhysicalMesh() - PAL19680
         elif algoType == NETGEN:
             if noNETGENPlugin:
                 print "Warning: NETGENPlugin module unavailable"
@@ -3243,6 +3243,38 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     def SetKeepFiles(self, toKeep):
         if self.params == 0: self.Parameters()
         self.params.SetKeepFiles(toKeep)
+
+    ## To set verbose level [0-10]
+    #  0 - no standard output,
+    #  2 - prints the data, quality statistics of the skin and final meshes and
+    #     indicates when the final mesh is being saved. In addition the software
+    #     gives indication regarding the CPU time.
+    # 10 - same as 2 plus the main steps in the computation, quality statistics
+    #     histogram of the skin mesh, quality statistics histogram together with
+    #     the characteristics of the final mesh.
+    #  Advanced parameter of GHS3D
+    def SetVerboseLevel(self, level):
+        if self.params == 0: self.Parameters()
+        self.params.SetVerboseLevel(level)
+
+    ## To create new nodes
+    #  Advanced parameter of GHS3D
+    def SetToCreateNewNodes(self, toCreate):
+        if self.params == 0: self.Parameters()
+        self.params.SetToCreateNewNodes(toCreate)
+
+    ## To use boundary recovery version which tries to create mesh on a very poor
+    #  quality surface mesh
+    #  Advanced parameter of GHS3D
+    def SetToUseBoundaryRecoveryVersion(self, toUse):
+        if self.params == 0: self.Parameters()
+        self.params.SetToUseBoundaryRecoveryVersion(toUse)
+
+    ## To set hidden/undocumented/advanced options
+    #  Advanced parameter of GHS3D
+    def SetTextOption(self, option):
+        if self.params == 0: self.Parameters()
+        self.params.SetTextOption(option)
 
 # Public class: Mesh_Hexahedron
 # ------------------------------
