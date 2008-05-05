@@ -2921,6 +2921,20 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Parameters()
         self.params.SetPhySize(theVal)
 
+    ## Sets lower boundary of mesh element size (PhySize)
+    #  Parameter of BLSURF algo
+    def SetPhyMin(self, theVal=-1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhyMin(theVal)
+
+    ## Sets upper boundary of mesh element size (PhySize)
+    #  Parameter of BLSURF algo
+    def SetPhyMax(self, theVal=-1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetPhyMax(theVal)
+
     ## Sets a way to define maximum angular deflection of mesh from CAD model
     #  @param theGeometricMesh is: DefaultGeom or Custom
     #  Parameter of BLSURF algo
@@ -2945,6 +2959,20 @@ class Mesh_Triangle(Mesh_Algorithm):
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshC(theVal)
+
+    ## Sets lower boundary of mesh element size computed to respect angular deflection
+    #  Parameter of BLSURF algo
+    def SetGeoMin(self, theVal=-1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetGeoMin(theVal)
+
+    ## Sets upper boundary of mesh element size computed to respect angular deflection
+    #  Parameter of BLSURF algo
+    def SetGeoMax(self, theVal=-1):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetGeoMax(theVal)
 
     ## Sets maximal allowed ratio between the lengths of two adjacent edges
     #  Parameter of BLSURF algo
