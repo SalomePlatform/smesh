@@ -2930,13 +2930,21 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
         self.params.SetGeometricMesh(theGeometricMesh)
 
-    ## Sets angular deflection (in degrees) of mesh from CAD model
+    ## Sets angular deflection (in degrees) of a mesh face from CAD surface
     #  Parameter of BLSURF algo
     def SetAngleMeshS(self, theVal=_angleMeshS):
         if self.params == 0:
             self.Parameters()
         if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshS(theVal)
+
+    ## Sets angular deflection (in degrees) of a mesh edge from CAD curve
+    #  Parameter of BLSURF algo
+    def SetAngleMeshC(self, theVal=_angleMeshS):
+        if self.params == 0:
+            self.Parameters()
+        if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+        self.params.SetAngleMeshC(theVal)
 
     ## Sets maximal allowed ratio between the lengths of two adjacent edges
     #  Parameter of BLSURF algo
@@ -2962,6 +2970,20 @@ class Mesh_Triangle(Mesh_Algorithm):
         if self.params == 0:
             self.Parameters()
         self.params.SetDecimesh(toIgnoreEdges)
+
+    ## Sets verbosity level in the range 0 to 100.
+    #  Parameter of BLSURF algo
+    def SetVerbosity(self, level):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetVerbosity(level)
+
+    ## Sets advanced option value
+    #  Parameter of BLSURF algo
+    def SetOptionValue(self, optionName, value):
+        if self.params == 0:
+            self.Parameters()
+        self.params.SetOptionValue(optionName,level)
 
     ## Sets QuadAllowed flag
     #
