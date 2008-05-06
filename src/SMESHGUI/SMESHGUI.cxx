@@ -212,9 +212,9 @@ using namespace std;
 	    if ( res != SMESH::DRS_OK ) {
 	      wc.suspend();
 	      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-				    QObject::tr("SMESH_WRN_WARNING"),
-				    QObject::tr(QString("SMESH_DRS_%1").arg(res)),
-				    QObject::tr("SMESH_BUT_OK"));
+                                     QObject::tr("SMESH_WRN_WARNING"),
+                                     QObject::tr(QString("SMESH_DRS_%1").arg(res)),
+                                     QObject::tr("SMESH_BUT_OK"));
 	      aMeshes->length( 0 );
 	      wc.resume();
 	    }
@@ -238,9 +238,9 @@ using namespace std;
 	if ( isEmpty ) {
 	  wc.suspend();
 	  SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-				QObject::tr("SMESH_WRN_WARNING"),
-				QObject::tr("SMESH_DRS_EMPTY"),
-				QObject::tr("SMESH_BUT_OK"));
+                                 QObject::tr("SMESH_WRN_WARNING"),
+                                 QObject::tr("SMESH_DRS_EMPTY"),
+                                 QObject::tr("SMESH_BUT_OK"));
 	  wc.resume();
 	}
 
@@ -376,18 +376,23 @@ using namespace std;
 	  }
           delete fd;
 	}
-	else {
+	else { // Export to MED
           QStringList filters;
+          QString aDefaultFilter;
           QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
-          for ( ; it != aFilterMap.end(); ++it )
+          for ( ; it != aFilterMap.end(); ++it ) {
             filters.push_back( it.key() );
+            if (it.data() == SMESH::MED_V2_2)
+              aDefaultFilter = it.key();
+          }
 
           //SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
           SalomeApp_CheckFileDlg* fd = new SalomeApp_CheckFileDlg
             ( SMESHGUI::desktop(), false, QObject::tr("SMESH_AUTO_GROUPS") ,true, true );
           fd->setCaption( aTitle );
           fd->setFilters( filters );
-          fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+          //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
+          fd->setSelectedFilter(aDefaultFilter);
           fd->SetChecked(toCreateGroups);
           bool is_ok = false;
           while (!is_ok) {
@@ -3080,6 +3085,9 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   action(112)->setAccel(QKeySequence(CTRL + Key_U)); // Import UNV
   action(113)->setAccel(QKeySequence(CTRL + Key_M)); // Import MED
 
+  action(  33)->setEnabled(true); // Delete: Key_Delete
+  action(1101)->setEnabled(true); // Rename: Key_F2
+
   return res;
 }
 
@@ -3094,6 +3102,9 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   action(111)->setAccel(QKeySequence()); // Import DAT
   action(112)->setAccel(QKeySequence()); // Import UNV
   action(113)->setAccel(QKeySequence()); // Import MED
+
+  action(  33)->setEnabled(false); // Delete: Key_Delete
+  action(1101)->setEnabled(false); // Rename: Key_F2
 
   return SalomeApp_Module::deactivateModule( study );
 }
