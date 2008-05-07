@@ -349,10 +349,10 @@ void SMESHGUI_GroupDlg::initDialog(bool create)
   aHelpBtn->setText(tr("SMESH_BUT_HELP"));
   aHelpBtn->setAutoDefault(true);
 
-  aBtnLayout->addWidget(aApplyBtn);
-  aBtnLayout->addWidget(aCloseBtn);
   aBtnLayout->addWidget(aOKBtn);
+  aBtnLayout->addWidget(aApplyBtn);
   aBtnLayout->addStretch();
+  aBtnLayout->addWidget(aCloseBtn);
   aBtnLayout->addWidget(aHelpBtn);
 
   /***************************************************************/

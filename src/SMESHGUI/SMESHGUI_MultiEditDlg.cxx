@@ -242,10 +242,10 @@ QFrame* SMESHGUI_MultiEditDlg::createButtonFrame (QWidget* theParent)
 
   QHBoxLayout* aLay = new QHBoxLayout (aFrame, MARGIN, SPACING);
 
-  aLay->addWidget(myApplyBtn);
-  aLay->addWidget(myCloseBtn);
   aLay->addWidget(myOkBtn);
+  aLay->addWidget(myApplyBtn);
   aLay->addItem(aSpacer);
+  aLay->addWidget(myCloseBtn);
   aLay->addWidget(myHelpBtn);
 
   return aFrame;

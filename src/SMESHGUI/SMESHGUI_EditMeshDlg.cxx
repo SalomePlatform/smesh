@@ -352,18 +352,18 @@ SMESHGUI_EditMeshDlg::SMESHGUI_EditMeshDlg (SMESHGUI* theModule,
   buttonCancel = new QPushButton(GroupButtons, "buttonCancel");
   buttonCancel->setText(tr("SMESH_BUT_CLOSE" ));
   buttonCancel->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonCancel, 0, 1);
+  GroupButtonsLayout->addWidget(buttonCancel, 0, 3);
   buttonApply = new QPushButton(GroupButtons, "buttonApply");
   buttonApply->setText(tr("SMESH_BUT_APPLY" ));
   buttonApply->setAutoDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonApply, 0, 0);
+  GroupButtonsLayout->addWidget(buttonApply, 0, 1);
   QSpacerItem* spacer3 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-  GroupButtonsLayout->addItem(spacer3, 0, 3);
+  GroupButtonsLayout->addItem(spacer3, 0, 2);
   buttonOk = new QPushButton(GroupButtons, "buttonOk");
   buttonOk->setText(tr("SMESH_BUT_APPLY_AND_CLOSE" ));
   buttonOk->setAutoDefault(TRUE);
   buttonOk->setDefault(TRUE);
-  GroupButtonsLayout->addWidget(buttonOk, 0, 2);
+  GroupButtonsLayout->addWidget(buttonOk, 0, 0);
   DlgLayout->addWidget(GroupButtons, 4, 0);
 
   /***************************************************************/
