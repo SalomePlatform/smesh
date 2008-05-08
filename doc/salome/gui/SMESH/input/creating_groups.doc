@@ -43,11 +43,10 @@ mesh elements.
 \n <b>Select from</b> set of fields allows to choose a submesh or an existing
 group whose elements of the previously defined type will be added to
 the list of elements which will form your group.
-\n <b>Color Number</b> (integer only, ranging from 0 to 9999) - allows to
-assign to the group a certain index, for example, defining boundary
-conditions. This feature introduces a useful element of preprocessing
-in Mesh module. Note that <b>Color number</b> attribute has nothing to do
-with the colors used for the display of the elements of the group.
+\n <b>Color</b> - allows to assign to the group a certain color, for
+example, defining boundary conditions. This feature introduces a
+useful element of preprocessing in Mesh module. Note that <b>Color</b> attribute defines
+the colors used for the display of the elements of the group.
 
 \image html creategroup.png
 

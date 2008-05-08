@@ -62,7 +62,7 @@ The following dialog box will appear:
 In this dialog box you can specify one or several elements of your
 mesh (with pressed Shift button) by choosing them in the 3D viewer.
 </li>
-<li>Click OK or Apply  to confirm deletion of the specified elements.</li>
+<li>Click \b Apply or <b>Apply and Close</b> to confirm deletion of the specified elements.</li>
 </ol>
 
 \image html remove_elements1.png

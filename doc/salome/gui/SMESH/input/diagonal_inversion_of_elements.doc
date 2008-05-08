@@ -20,7 +20,7 @@ The following dialog box shall appear:
 </li>
 <li>Enter the ID of the required edge in the \b Edge field or select
 this edge in the 3D viewer.</li>
-<li>Click the \b Apply or \b OK button.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
 \image html image38.jpg

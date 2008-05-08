@@ -29,7 +29,7 @@ The following dialog box will appear:
 
 <li>Fill the \b Mesh field by selecting your mesh in the Object
 Browser or in the 3D viewer.</li>
-<li>Click the \b Apply or \b OK button to perform the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation.</li>
 </ol>
 
 <br>
@@ -52,7 +52,7 @@ The following dialog box will appear:
 
 <li>Fill the \b Mesh field by selecting your mesh in the Object
 Browser or in the 3D viewer.</li>
-<li>Click the \b Apply or \b OK button to perform the operation.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button to perform the operation.</li>
 </ol>
 
 <br><b>See Also</b> a sample TUI Script of a 
