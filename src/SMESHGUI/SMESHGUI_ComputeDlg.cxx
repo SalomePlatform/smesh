@@ -650,7 +650,7 @@ void SMESHGUI_MeshInfosBox::SetInfoByMesh(SMESH::SMESH_Mesh_var mesh)
  */
 //=======================================================================
 
-SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, OK/* | Help*/ )
+SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg(): SMESHGUI_Dialog( 0, false, true, Close/* | Help*/ )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame(), 0, SPACING);
 
