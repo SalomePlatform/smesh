@@ -1118,8 +1118,8 @@ msgstr "Borders at multi-connections"
 msgid "SMESHGUI_FilterTable::LENGTH"
 msgstr "Length"
 
-#msgid "SMESHGUI_FilterTable::LENGTH2D"
-#msgstr "Length2D"
+msgid "SMESHGUI_FilterTable::LENGTH2D"
+msgstr "Length 2D"
 
 msgid "SMESHGUI_FilterTable::ASPECT_RATIO"
 msgstr "Aspect ratio"
