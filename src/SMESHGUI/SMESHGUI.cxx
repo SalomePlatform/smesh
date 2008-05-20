@@ -184,8 +184,8 @@ using namespace std;
     }
 
     QString anInitialPath = "";
-    if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
-      anInitialPath = QDir::currentDirPath();
+    //if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+    //  anInitialPath = QDir::currentDirPath();
 
     QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
 						 anInitialPath,
@@ -284,8 +284,8 @@ using namespace std;
                 return;
             }
             // PAL18696
-            QString v21( aMesh->GetVersionString( SMESH::MED_V2_1, 2));
-            QString v22( aMesh->GetVersionString( SMESH::MED_V2_2, 2));
+            QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+            QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
             aFilterMap.insert( QString("MED ") +  v21 + " (*.med)", SMESH::MED_V2_1 );
             aFilterMap.insert( QString("MED ") +  v22 + " (*.med)", SMESH::MED_V2_2 );
           }
@@ -1950,6 +1950,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if( aSel )
         aSel->selectedObjects( selected );
 
+      bool isAny = false; // iss there any appropriate object selected
+
       SALOME_ListIteratorOfListIO It( selected );
       for ( ; It.More(); It.Next() )
       {
@@ -1963,22 +1965,40 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           {
             aName = anAttr;
             QString newName = QString(aName->Value().c_str());
-            newName = LightApp_NameDlg::getName(desktop(), newName);
-            if ( !newName.isEmpty() )
+
+            // check type to prevent renaming of inappropriate objects
+            int aType = SMESHGUI_Selection::type(IObject->getEntry(), aStudy);
+            if (aType == MESH || aType == GROUP ||
+                aType == SUBMESH || aType == SUBMESH_COMPOUND ||
+                aType == SUBMESH_SOLID || aType == SUBMESH_FACE ||
+                aType == SUBMESH_EDGE || aType == SUBMESH_VERTEX ||
+                aType == HYPOTHESIS || aType == ALGORITHM)
             {
-              //old source: aStudy->renameIObject( IObject, newName );
-	      aName->SetValue( newName.latin1() );
+              isAny = true;
+              newName = LightApp_NameDlg::getName(desktop(), newName);
+              if ( !newName.isEmpty() )
+              {
+                //old source: aStudy->renameIObject( IObject, newName );
+                aName->SetValue( newName.latin1() );
 
-              // if current object is group update group's name
-	      SMESH::SMESH_GroupBase_var aGroup =
-                SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
-              if (!aGroup->_is_nil() )
-                aGroup->SetName( newName.latin1() );
+                // if current object is group update group's name
+                SMESH::SMESH_GroupBase_var aGroup =
+                  SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
+                if (!aGroup->_is_nil() )
+                  aGroup->SetName( newName.latin1() );
 
-	      updateObjBrowser();
+                updateObjBrowser();
+              }
             }
           }
         }
+      } // for
+
+      if (!isAny) {
+        SUIT_MessageBox::warn1(desktop(),
+                               QObject::tr("SMESH_WRN_WARNING"),
+                               QObject::tr("SMESH_WRN_NO_APPROPRIATE_SELECTION"),
+                               QObject::tr("SMESH_BUT_OK"));
       }
       break;
     }

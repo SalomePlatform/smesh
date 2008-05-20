@@ -188,6 +188,10 @@ msgstr "Activate Link Selection Mode"
 msgid "SMESH_WRN_EMPTY_NAME" 
 msgstr "Empty name is not valid"
 
+#No appropriate objects
+msgid "SMESH_WRN_NO_APPROPRIATE_SELECTION" 
+msgstr "No appropriate objects selected"
+
 #Not available data
 msgid "SMESH_WRN_NO_AVAILABLE_DATA" 
 msgstr "No available data in selection"
