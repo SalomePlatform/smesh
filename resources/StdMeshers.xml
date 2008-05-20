@@ -236,7 +236,7 @@
 <hypotheses-set-group>
 
     <hypotheses-set name="Automatic Tetrahedralization"
-                    hypos="AutomaticLength, LengthFromEdges"
+                    hypos="AutomaticLength"
                     algos="Regular_1D, MEFISTO_2D, NETGEN_3D"/>
 
     <hypotheses-set name="Automatic Hexahedralization"
