@@ -80,9 +80,8 @@ SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA, SMESH_
 SMESH_GroupBase_i::~SMESH_GroupBase_i()
 {
   MESSAGE("~SMESH_GroupBase_i; this = "<<this );
-  // akl: removeGroup() is called from SMESH_Mesh_i() destructor
-  // if ( myMeshServant )
-  //   myMeshServant->removeGroup(myLocalID);
+  if ( myMeshServant )
+    myMeshServant->removeGroup(myLocalID);
 }
 
 //=======================================================================

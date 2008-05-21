@@ -117,15 +117,14 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
   for ( it = _mapGroups.begin(); it != _mapGroups.end(); it++ ) {
     SMESH_GroupBase_i* aGroup = dynamic_cast<SMESH_GroupBase_i*>( SMESH_Gen_i::GetServant( it->second ).in() );
     if ( aGroup ) {
-
       // this method is colled from destructor of group (PAL6331)
       //_impl->RemoveGroup( aGroup->GetLocalID() );
-
-      removeGroup( aGroup->GetLocalID() );
+      
       aGroup->Destroy();
     }
   }
   _mapGroups.clear();
+  delete _impl;
 }
 
 //=============================================================================

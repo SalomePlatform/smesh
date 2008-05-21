@@ -3603,10 +3603,16 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   }
 
   // delete SMESH_Mesh's
-  StudyContextStruct* context = myGen.GetStudyContext( studyId );
-  map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
-  for ( ; i_mesh != context->mapMesh.end(); ++i_mesh )
-    delete i_mesh->second;
+//   See bug IPAL19437.
+//
+//   StudyContextStruct* context = myGen.GetStudyContext( studyId );
+//   map< int, SMESH_Mesh* >::iterator i_mesh = context->mapMesh.begin();
+//   for ( ; i_mesh != context->mapMesh.end(); ++i_mesh ) {
+//     printf( "--------------------------- SMESH_Gen_i::Close, delete aGroup = %p \n", i_mesh->second );
+//     delete i_mesh->second;
+//   }
+  
+
   // delete SMESHDS_Mesh's
   // it's too long on big meshes
 //   if ( context->myDocument ) {
