@@ -93,14 +93,6 @@ void UNV2417::ReadGroup(const std::string& myGroupLabel, std::ifstream& in_strea
     std::getline(in_stream, aRec.GroupName, '\n'); // Finalise previous reading
     std::getline(in_stream, aRec.GroupName, '\n');
 
-    //Erase special char '\r' if needs
-    std::string aName = aRec.GroupName;
-    int i = aName.find( "\r" );
-    if (i) {
-      aName.erase (i, 2);
-      aRec.GroupName = aName;
-    }
-
     int aElType;
     int aElId;
     int aNum;
