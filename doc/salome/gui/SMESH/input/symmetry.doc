@@ -33,7 +33,7 @@ or some of its elements specifying:
 \n When <b>Create as new mesh</b> radio button is selected, the source mesh (or elements) remains at its previous location and a new mesh is created at the new location and appears in the Object Browser with the default name MeshName_mirrored (you can change this name in the adjacent box).
 \n <b> Copy groups </b> checkbox allows copying the groups of elements of the source mesh to the newly created one.
 
-.
+
 \par
 
 <br><b>See Also</b> a sample TUI Script of a 
