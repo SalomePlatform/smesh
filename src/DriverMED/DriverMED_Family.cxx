@@ -318,9 +318,17 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
   for(; aGrIter != myGroupNames.end(); aGrIter++){
     aStr << "_" << *aGrIter;
   }
+  string aValue = aStr.str();
+  // PAL19785 - med forbids whitespace to be the last char in the name
+  MED::TInt maxSize;
+  if ( theWrapper->GetVersion() == MED::eV2_1 )
+    maxSize = MED::GetNOMLength<MED::eV2_1>();
+  else
+    maxSize = MED::GetNOMLength<MED::eV2_2>();
+  if ( aValue.size() >= maxSize && aValue[ maxSize-1 ] == ' ' )
+    aValue[ maxSize-1 ] = '_';
 
   MED::PFamilyInfo anInfo;
-  string aValue = aStr.str();
   if(myId == 0 || myGroupAttributVal == 0){
     anInfo = theWrapper->CrFamilyInfo(theMeshInfo,
 				      aValue,
