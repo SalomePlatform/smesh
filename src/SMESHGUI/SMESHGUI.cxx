@@ -3180,8 +3180,12 @@ void SMESHGUI::contextMenuPopup( const QString& client, QPopupMenu* menu, QStrin
     SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() );
     _PTR(Study) study = appStudy->studyDS();
     _PTR(SObject) obj = study->FindObjectID( io->getEntry() );
-    if ( obj )
-      title = QString( obj->GetName().c_str() );
+    if ( obj ) {
+      QString aName = QString( obj->GetName().c_str() );
+      while ( aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
+	  aName.remove( (aName.length() - 1), 1 );
+      title = aName;
+    }
   }
 }
 
