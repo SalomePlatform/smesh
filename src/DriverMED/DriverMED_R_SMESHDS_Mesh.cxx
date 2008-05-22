@@ -133,7 +133,7 @@ DriverMED_R_SMESHDS_Mesh
         }
 
 	if (aMeshInfo->GetType() == MED::eSTRUCTURE){
-	  bool aRes = buildMeshGrille(aMed,aMeshInfo);
+	  /*bool aRes = */buildMeshGrille(aMed,aMeshInfo);
 	  continue;
 	}
 
