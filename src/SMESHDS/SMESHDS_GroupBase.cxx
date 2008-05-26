@@ -178,9 +178,9 @@ void SMESHDS_GroupBase::SetColorGroup(int theColorGroup)
   if ( aR < 0. || aR > 1. || // PAL19395
        aG < 0. || aG > 1. ||
        aB < 0. || aB > 1. )
-#ifdef _DEBUG_
-    cout << "SMESHDS_GroupBase::SetColorGroup("<<theColorGroup<<"), invalid color ignored"<<endl;
-#endif
+// #ifdef _DEBUG_
+//     cout << "SMESHDS_GroupBase::SetColorGroup("<<theColorGroup<<"), invalid color ignored"<<endl;
+// #endif
     return;
   Quantity_Color aColor( aR, aG, aB, Quantity_TOC_RGB );
   SetColor( aColor );
