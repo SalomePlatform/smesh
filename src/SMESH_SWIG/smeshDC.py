@@ -885,8 +885,18 @@ class Mesh:
             pass
         return ok
 
+    ## Removes all nodes and elements
+    #  @ingroup l2_construct
+    def Clear(self):
+        self.mesh.Clear()
+        if salome.sg.hasDesktop():
+            smeshgui = salome.ImportComponentGUI("SMESH")
+            smeshgui.Init(salome.myStudyId)
+            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
+            salome.sg.updateObjBrowser(1)
+
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + NETGEN
-    #  The parameter \a fineness [0,-1] defines mesh fineness
+    #  @param fineness [0,-1] defines mesh fineness
     #  @return True or False
     #  @ingroup l3_algos_basic
     def AutomaticTetrahedralization(self, fineness=0):
@@ -903,7 +913,7 @@ class Mesh:
         return self.Compute()
 
     ## Computes an hexahedral mesh using AutomaticLength + Quadrangle + Hexahedron
-    #  The parameter \a fineness [0,-1] defines mesh fineness
+    #  @param fineness [0,-1] defines mesh fineness
     #  @return True or False
     #  @ingroup l3_algos_basic
     def AutomaticHexahedralization(self, fineness=0):
@@ -3193,129 +3203,100 @@ class Mesh_Triangle(Mesh_Algorithm):
             print "Netgen 1D-2D algo doesn't support this hypothesis"
             return None
 
-    ## Sets a way to define size of mesh elements to generate
-    #  @param thePhysicalMesh is: DefaultSize or Custom
-    #  Parameter of BLSURF algo
+    ## Sets a way to define size of mesh elements to generate.
+    #  @param thePhysicalMesh is: DefaultSize or Custom.
     #  @ingroup l3_hypos_blsurf
     def SetPhysicalMesh(self, thePhysicalMesh=DefaultSize):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetPhysicalMesh(thePhysicalMesh)
+        # Parameter of BLSURF algo
+        self.Parameters().SetPhysicalMesh(thePhysicalMesh)
 
-    ## Sets size of mesh elements to generate
-    #  Parameter of BLSURF algo
+    ## Sets size of mesh elements to generate.
     #  @ingroup l3_hypos_blsurf
     def SetPhySize(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetPhySize(theVal)
+        # Parameter of BLSURF algo
+        self.Parameters().SetPhySize(theVal)
 
-    ## Sets lower boundary of mesh element size (PhySize)
-    #  Parameter of BLSURF algo
+    ## Sets lower boundary of mesh element size (PhySize).
     #  @ingroup l3_hypos_blsurf
     def SetPhyMin(self, theVal=-1):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetPhyMin(theVal)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetPhyMin(theVal)
 
-    ## Sets upper boundary of mesh element size (PhySize)
-    #  Parameter of BLSURF algo
+    ## Sets upper boundary of mesh element size (PhySize).
     #  @ingroup l3_hypos_blsurf
     def SetPhyMax(self, theVal=-1):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetPhyMax(theVal)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetPhyMax(theVal)
 
-    ## Sets a way to define maximum angular deflection of mesh from CAD model
+    ## Sets a way to define maximum angular deflection of mesh from CAD model.
     #  @param theGeometricMesh is: DefaultGeom or Custom
-    #  Parameter of BLSURF algo
     #  @ingroup l3_hypos_blsurf
     def SetGeometricMesh(self, theGeometricMesh=0):
-        if self.params == 0:
-            self.Parameters()
-        if self.params.GetPhysicalMesh() == 0: theGeometricMesh = 1
+        #  Parameter of BLSURF algo
+        if self.Parameters().GetPhysicalMesh() == 0: theGeometricMesh = 1
         self.params.SetGeometricMesh(theGeometricMesh)
 
-    ## Sets angular deflection (in degrees) of a mesh face from CAD surface
-    #  Parameter of BLSURF algo
+    ## Sets angular deflection (in degrees) of a mesh face from CAD surface.
     #  @ingroup l3_hypos_blsurf
     def SetAngleMeshS(self, theVal=_angleMeshS):
-        if self.params == 0:
-            self.Parameters()
-        if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+        #  Parameter of BLSURF algo
+        if self.Parameters().GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshS(theVal)
 
-    ## Sets angular deflection (in degrees) of a mesh edge from CAD curve
-    #  Parameter of BLSURF algo
+    ## Sets angular deflection (in degrees) of a mesh edge from CAD curve.
     #  @ingroup l3_hypos_blsurf
     def SetAngleMeshC(self, theVal=_angleMeshS):
-        if self.params == 0:
-            self.Parameters()
-        if self.params.GetGeometricMesh() == 0: theVal = self._angleMeshS
+        #  Parameter of BLSURF algo
+        if self.Parameters().GetGeometricMesh() == 0: theVal = self._angleMeshS
         self.params.SetAngleMeshC(theVal)
 
-    ## Sets lower boundary of mesh element size computed to respect angular deflection
-    #  Parameter of BLSURF algo
+    ## Sets lower boundary of mesh element size computed to respect angular deflection.
     #  @ingroup l3_hypos_blsurf
     def SetGeoMin(self, theVal=-1):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetGeoMin(theVal)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetGeoMin(theVal)
 
-    ## Sets upper boundary of mesh element size computed to respect angular deflection
-    #  Parameter of BLSURF algo
+    ## Sets upper boundary of mesh element size computed to respect angular deflection.
     #  @ingroup l3_hypos_blsurf
     def SetGeoMax(self, theVal=-1):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetGeoMax(theVal)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetGeoMax(theVal)
 
-    ## Sets maximal allowed ratio between the lengths of two adjacent edges
-    #  Parameter of BLSURF algo
+    ## Sets maximal allowed ratio between the lengths of two adjacent edges.
     #  @ingroup l3_hypos_blsurf
     def SetGradation(self, theVal=_gradation):
-        if self.params == 0:
-            self.Parameters()
-        if self.params.GetGeometricMesh() == 0: theVal = self._gradation
+        #  Parameter of BLSURF algo
+        if self.Parameters().GetGeometricMesh() == 0: theVal = self._gradation
         self.params.SetGradation(theVal)
 
-    ## Sets topology usage way defining how mesh conformity is assured:
-    # FromCAD, PreProcess or PreProcessPlus
-    # FromCAD - mesh conformity is assured by conformity of a shape
-    # PreProcess or PreProcessPlus - by pre-processing a CAD model
-    #  Parameter of BLSURF algo
+    ## Sets topology usage way.
+    # @param way defines how mesh conformity is assured <ul>
+    # <li>FromCAD - mesh conformity is assured by conformity of a shape</li>
+    # <li>PreProcess or PreProcessPlus - by pre-processing a CAD model</li></ul>
     #  @ingroup l3_hypos_blsurf
     def SetTopology(self, way):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetTopology(way)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetTopology(way)
 
-    ## To respect geometrical edges or not
-    #  Parameter of BLSURF algo
+    ## To respect geometrical edges or not.
     #  @ingroup l3_hypos_blsurf
     def SetDecimesh(self, toIgnoreEdges=False):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetDecimesh(toIgnoreEdges)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetDecimesh(toIgnoreEdges)
 
     ## Sets verbosity level in the range 0 to 100.
-    #  Parameter of BLSURF algo
     #  @ingroup l3_hypos_blsurf
     def SetVerbosity(self, level):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetVerbosity(level)
+        #  Parameter of BLSURF algo
+        self.Parameters().SetVerbosity(level)
 
-    ## Sets advanced option value
-    #  Parameter of BLSURF algo
+    ## Sets advanced option value.
     #  @ingroup l3_hypos_blsurf
-    def SetOptionValue(self, optionName, value):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetOptionValue(optionName,level)
+    def SetOptionValue(self, optionName, level):
+        #  Parameter of BLSURF algo
+        self.Parameters().SetOptionValue(optionName,level)
 
-    ## Sets QuadAllowed flag
-    #
+    ## Sets QuadAllowed flag.
     #  Only for algoType == NETGEN || NETGEN_2D || BLSURF
     #  @ingroup l3_hypos_netgen l3_hypos_blsurf
     def SetQuadAllowed(self, toAllow=True):
@@ -3330,17 +3311,15 @@ class Mesh_Triangle(Mesh_Algorithm):
                     pass
                 pass
             return
-        if self.params == 0:
-            self.Parameters()
-        if self.params:
+        if self.Parameters():
             self.params.SetQuadAllowed(toAllow)
             return
 
     ## Defines "Netgen 2D Parameters" hypothesis
     #
-    #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def Parameters(self):
+        #  Only for algoType == NETGEN
         if self.params:
             return self.params
         if self.algoType == NETGEN:
@@ -3365,9 +3344,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetMaxSize(self, theSize):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetMaxSize(theSize)
 
     ## Sets SecondOrder flag
@@ -3375,9 +3352,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetSecondOrder(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetSecondOrder(theVal)
 
     ## Sets Optimize flag
@@ -3385,9 +3360,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetOptimize(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetOptimize(theVal)
 
     ## Sets Fineness
@@ -3397,9 +3370,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetFineness(self, theFineness):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetFineness(theFineness)
 
     ## Sets GrowthRate
@@ -3407,9 +3378,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetGrowthRate(self, theRate):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetGrowthRate(theRate)
 
     ## Sets NbSegPerEdge
@@ -3417,9 +3386,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetNbSegPerEdge(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetNbSegPerEdge(theVal)
 
     ## Sets NbSegPerRadius
@@ -3427,9 +3394,7 @@ class Mesh_Triangle(Mesh_Algorithm):
     #  Only for algoType == NETGEN
     #  @ingroup l3_hypos_netgen
     def SetNbSegPerRadius(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        if self.params is not None:
+        if self.Parameters():
             self.params.SetNbSegPerRadius(theVal)
 
     pass
@@ -3508,6 +3473,8 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     ## Defines "Netgen 3D Parameters" hypothesis
     #  @ingroup l3_hypos_netgen
     def Parameters(self):
+        if self.params:
+            return self.params
         if (self.algoType == FULL_NETGEN):
             self.params = self.Hypothesis("NETGEN_Parameters", [],
                                           "libNETGENEngine.so", UseExisting=0)
@@ -3524,25 +3491,19 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetMaxSize(self, theSize):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetMaxSize(theSize)
+        self.Parameters().SetMaxSize(theSize)
 
     ## Sets SecondOrder flag
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetSecondOrder(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetSecondOrder(theVal)
+        self.Parameters().SetSecondOrder(theVal)
 
     ## Sets Optimize flag
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetOptimize(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetOptimize(theVal)
+        self.Parameters().SetOptimize(theVal)
 
     ## Sets Fineness
     #  @param theFineness is:
@@ -3550,114 +3511,96 @@ class Mesh_Tetrahedron(Mesh_Algorithm):
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetFineness(self, theFineness):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetFineness(theFineness)
+        self.Parameters().SetFineness(theFineness)
 
     ## Sets GrowthRate
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetGrowthRate(self, theRate):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetGrowthRate(theRate)
+        self.Parameters().SetGrowthRate(theRate)
 
     ## Sets NbSegPerEdge
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetNbSegPerEdge(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetNbSegPerEdge(theVal)
+        self.Parameters().SetNbSegPerEdge(theVal)
 
     ## Sets NbSegPerRadius
     #  Parameter of FULL_NETGEN
     #  @ingroup l3_hypos_netgen
     def SetNbSegPerRadius(self, theVal):
-        if self.params == 0:
-            self.Parameters()
-        self.params.SetNbSegPerRadius(theVal)
+        self.Parameters().SetNbSegPerRadius(theVal)
 
     ## To mesh "holes" in a solid or not. Default is to mesh.
-    #  Parameter of GHS3D
     #  @ingroup l3_hypos_ghs3dh
     def SetToMeshHoles(self, toMesh):
-        if self.params == 0: self.Parameters()
-        self.params.SetToMeshHoles(toMesh)
+        #  Parameter of GHS3D
+        self.Parameters().SetToMeshHoles(toMesh)
 
     ## Set Optimization level:
     #   None_Optimization, Light_Optimization, Medium_Optimization, Strong_Optimization.
     #  Default is Medium_Optimization
-    #  Parameter of GHS3D
     #  @ingroup l3_hypos_ghs3dh
     def SetOptimizationLevel(self, level):
-        if self.params == 0: self.Parameters()
-        self.params.SetOptimizationLevel(level)
+        #  Parameter of GHS3D
+        self.Parameters().SetOptimizationLevel(level)
 
     ## Maximal size of memory to be used by the algorithm (in Megabytes).
-    #  Advanced parameter of GHS3D
     #  @ingroup l3_hypos_ghs3dh
     def SetMaximumMemory(self, MB):
-        if self.params == 0: self.Parameters()
-        self.params.SetMaximumMemory(MB)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetMaximumMemory(MB)
 
     ## Initial size of memory to be used by the algorithm (in Megabytes) in
-    #  automatic memory adjustment mode
-    #  Advanced parameter of GHS3D
+    #  automatic memory adjustment mode.
     #  @ingroup l3_hypos_ghs3dh
     def SetInitialMemory(self, MB):
-        if self.params == 0: self.Parameters()
-        self.params.SetInitialMemory(MB)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetInitialMemory(MB)
 
-    ## Path to working directory
-    #  Advanced parameter of GHS3D
+    ## Path to working directory.
     #  @ingroup l3_hypos_ghs3dh
     def SetWorkingDirectory(self, path):
-        if self.params == 0: self.Parameters()
-        self.params.SetWorkingDirectory(path)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetWorkingDirectory(path)
 
-    ## To keep working files or remove them. Log file remains in case of errors anyway
-    #  Advanced parameter of GHS3D
+    ## To keep working files or remove them. Log file remains in case of errors anyway.
     #  @ingroup l3_hypos_ghs3dh
     def SetKeepFiles(self, toKeep):
-        if self.params == 0: self.Parameters()
-        self.params.SetKeepFiles(toKeep)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetKeepFiles(toKeep)
 
-    ## To set verbose level [0-10]
-    #  0 - no standard output,
-    #  2 - prints the data, quality statistics of the skin and final meshes and
+    ## To set verbose level [0-10]. <ul>
+    #<li> 0 - no standard output,
+    #<li> 2 - prints the data, quality statistics of the skin and final meshes and
     #     indicates when the final mesh is being saved. In addition the software
     #     gives indication regarding the CPU time.
-    # 10 - same as 2 plus the main steps in the computation, quality statistics
+    #<li>10 - same as 2 plus the main steps in the computation, quality statistics
     #     histogram of the skin mesh, quality statistics histogram together with
-    #     the characteristics of the final mesh.
-    #  Advanced parameter of GHS3D
+    #     the characteristics of the final mesh.</ul>
     #  @ingroup l3_hypos_ghs3dh
     def SetVerboseLevel(self, level):
-        if self.params == 0: self.Parameters()
-        self.params.SetVerboseLevel(level)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetVerboseLevel(level)
 
-    ## To create new nodes
-    #  Advanced parameter of GHS3D
+    ## To create new nodes.
     #  @ingroup l3_hypos_ghs3dh
     def SetToCreateNewNodes(self, toCreate):
-        if self.params == 0: self.Parameters()
-        self.params.SetToCreateNewNodes(toCreate)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetToCreateNewNodes(toCreate)
 
     ## To use boundary recovery version which tries to create mesh on a very poor
-    #  quality surface mesh
-    #  Advanced parameter of GHS3D
+    #  quality surface mesh.
     #  @ingroup l3_hypos_ghs3dh
     def SetToUseBoundaryRecoveryVersion(self, toUse):
-        if self.params == 0: self.Parameters()
-        self.params.SetToUseBoundaryRecoveryVersion(toUse)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetToUseBoundaryRecoveryVersion(toUse)
 
-    ## To set hidden/undocumented/advanced options
-    #  Advanced parameter of GHS3D
+    ## Sets command line option as text. 
     #  @ingroup l3_hypos_ghs3dh
     def SetTextOption(self, option):
-        if self.params == 0: self.Parameters()
-        self.params.SetTextOption(option)
+        #  Advanced parameter of GHS3D
+        self.Parameters().SetTextOption(option)
 
 # Public class: Mesh_Hexahedron
 # ------------------------------

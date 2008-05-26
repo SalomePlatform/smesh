@@ -39,6 +39,7 @@ dist_salomeres_DATA = \
 	mesh_area.png \
 	mesh_aspect.png \
 	mesh_aspect_3d.png \
+	mesh_clear.png \
 	mesh_compute.png \
 	mesh_connectivity.png \
 	mesh_diagonal.png \

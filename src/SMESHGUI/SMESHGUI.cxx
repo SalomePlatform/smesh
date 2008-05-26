@@ -1513,6 +1513,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       new SMESHGUI_BuildCompoundDlg( this );
     }
     break;
+
   case 407: // DIAGONAL INVERSION
   case 408: // Delete diagonal
     {
@@ -2143,6 +2144,38 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 	}
       break;
     }
+  case 4043: {                                // CLEAR_MESH
+
+    if(checkLock(aStudy)) break;
+    
+    SALOME_ListIO selected;
+    if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+      aSel->selectedObjects( selected );
+
+    SUIT_OverrideCursor wc;
+    SALOME_ListIteratorOfListIO It (selected);
+    for ( ; It.More(); It.Next() )
+    {
+      Handle(SALOME_InteractiveObject) IOS = It.Value();
+      SMESH::SMESH_Mesh_var aMesh =
+        SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IOS);
+      if ( aMesh->_is_nil()) continue;
+      try {
+        SMESH::UpdateView(SMESH::eErase, IOS->getEntry());
+        aMesh->Clear();
+        _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
+        SMESH::ModifiedMesh( aMeshSObj, false, true);
+      }
+      catch (const SALOME::SALOME_Exception& S_ex){
+	wc.suspend();
+	SalomeApp_Tools::QtCatchCorbaException(S_ex);
+	wc.resume();
+      }
+    }
+    SMESH::UpdateView();
+    updateObjBrowser();
+    break;
+  }
   case 4051:					// RENUMBERING NODES
     {
       if(checkLock(aStudy)) break;
@@ -2533,6 +2566,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( 4032, "HEXA",            "ICON_DLG_HEXAS" );
   createSMESHAction( 4041, "REMOVE_NODES",    "ICON_DLG_REM_NODE" );
   createSMESHAction( 4042, "REMOVE_ELEMENTS", "ICON_DLG_REM_ELEMENT" );
+  createSMESHAction( 4043, "CLEAR_MESH"    ,  "ICON_CLEAR_MESH" );
   createSMESHAction( 4051, "RENUM_NODES",     "ICON_DLG_RENUMBERING_NODES" );
   createSMESHAction( 4052, "RENUM_ELEMENTS",  "ICON_DLG_RENUMBERING_ELEMENTS" );
   createSMESHAction( 4061, "TRANS",           "ICON_SMESH_TRANSLATION_VECTOR" );
@@ -2624,7 +2658,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 5105, toolsId, -1 );
 
-  createMenu( 702, meshId, -1 );
+  createMenu( 702, meshId, -1 ); // "Mesh" menu
   createMenu( 703, meshId, -1 );
   createMenu( 704, meshId, -1 );
   createMenu( 710, meshId, -1 );
@@ -2683,6 +2717,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( 4041, removeId, -1 );
   createMenu( 4042, removeId, -1 );
+  createMenu( 4043, removeId, -1 );
 
   createMenu( 4051, renumId, -1 );
   createMenu( 4052, renumId, -1 );
@@ -2770,6 +2805,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( separator(), addRemTb );
   createTool( 4041, addRemTb );
   createTool( 4042, addRemTb );
+  createTool( 4043, addRemTb );
   createTool( separator(), addRemTb );
   createTool( 4051, addRemTb );
   createTool( 4052, addRemTb );
@@ -2833,12 +2869,16 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( 801, OB, mesh );                        // CREATE_GROUP
   createPopupItem( 802, OB, subMesh );                     // CONSTRUCT_GROUP
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( 1100, OB, hypo, "" /*"&& $hasReference={false}"*/ );   // EDIT HYPOTHESIS
+  createPopupItem( 1100, OB, hypo);                        // EDIT HYPOTHESIS
   createPopupItem( 1102, OB, hyp_alg ); // REMOVE HYPOTHESIS / ALGORITHMS
-  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg, "" /*"&& $hasReference={false}"*/ ); // RENAME
+  createPopupItem( 1101, OB, mesh_group + " " + hyp_alg ); // RENAME
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( 4043, OB, mesh );                       // CLEAR_MESH
   popupMgr()->insert( separator(), -1, 0 );
 
-  QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( QtxPopupMgr::Selection::defSelCountParam() );
+  QString         nbSelected = QtxPopupMgr::Selection::defSelCountParam();
+  QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( nbSelected );
+
   createPopupItem( 125, OB, mesh, only_one_non_empty );   // EXPORT_MED
   createPopupItem( 126, OB, mesh, only_one_non_empty );   // EXPORT_UNV
   createPopupItem( 141, OB, mesh, only_one_non_empty );   // EXPORT_STL

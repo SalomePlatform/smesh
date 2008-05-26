@@ -753,6 +753,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetNodeInverseElements","GetShapeID","GetShapeIDForElem","GetElemNbNodes",
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
+        "Clear"
         "" }; // <- mark of end
     sameMethods.Insert( names );
   }

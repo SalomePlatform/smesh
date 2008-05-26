@@ -74,6 +74,9 @@ public:
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
+  void Clear()
+    throw (SALOME::SALOME_Exception);
+
   SMESH::Hypothesis_Status AddHypothesis(GEOM::GEOM_Object_ptr aSubShapeObject,
                                          SMESH::SMESH_Hypothesis_ptr anHyp)
     throw (SALOME::SALOME_Exception);

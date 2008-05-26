@@ -82,6 +82,10 @@ public:
    */
   static const TopoDS_Solid& PseudoShape();
 
+  /*!
+   * \brief Remove all nodes and elements
+   */
+  void Clear();
 
   int UNVToMesh(const char* theFileName);
   /*!

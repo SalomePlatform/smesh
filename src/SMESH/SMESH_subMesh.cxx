@@ -1223,8 +1223,10 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
     _computeState = READY_TO_COMPUTE;
     SMESHDS_SubMesh* smDS = GetSubMeshDS();
     if ( smDS && smDS->NbNodes() ) {
-      if ( event == CLEAN ) // this occures for algo which !NeedDescretBoundary() (PAL19272)
+      if ( event == CLEAN ) {
+        CleanDependants();
         cleanSubMesh( this );
+      }
       else
         _computeState = COMPUTE_OK;
     }

@@ -204,6 +204,11 @@ module SMESH
     GEOM::GEOM_Object GetShapeToMesh()
       raises (SALOME::SALOME_Exception);
 
+    /*!
+     * Remove all nodes and elements
+     */
+    void Clear()
+      raises (SALOME::SALOME_Exception);
 
     /*!
      * Get the subMesh object associated to a subShape. The subMesh object

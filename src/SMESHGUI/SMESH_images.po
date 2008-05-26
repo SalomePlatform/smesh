@@ -304,6 +304,9 @@ msgstr "mesh_compute.png"
 msgid "ICON_BUILD_COMPOUND"
 msgstr "mesh_build_compound.png"
 
+msgid "ICON_CLEAR_MESH"
+msgstr "mesh_clear.png"
+
 msgid "ICON_UNION"
 msgstr "mesh_unionGroups.png"
 

@@ -175,7 +175,7 @@ CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
 //=======================================================================
 
 GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
-    throw (SALOME::SALOME_Exception)
+  throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   GEOM::GEOM_Object_var aShapeObj;
@@ -188,6 +188,24 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
   return aShapeObj._retn();
+}
+
+//================================================================================
+/*!
+ * \brief Remove all nodes and elements
+ */
+//================================================================================
+
+void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  try {
+    _impl->Clear();
+  }
+  catch(SALOME_Exception & S_ex) {
+    THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
+  }
+  TPythonDump() <<  _this() << ".Clear()";
 }
 
 //=============================================================================
