@@ -823,8 +823,7 @@ class Mesh:
     def Compute(self, geom=0):
         if geom == 0 or not isinstance(geom, geompyDC.GEOM._objref_GEOM_Object):
             if self.geom == 0:
-                print "Compute impossible: mesh is not constructed on geom shape."
-                return 0
+                geom = self.mesh.GetShapeToMesh()
             else:
                 geom = self.geom
         ok = False
@@ -931,6 +930,8 @@ class Mesh:
             pass
         if not geom:
             geom = self.geom
+            if not geom:
+                geom = self.mesh.GetShapeToMesh()
             pass
         status = self.mesh.AddHypothesis(geom, hyp)
         isAlgo = hyp._narrow( SMESH_Algo )
