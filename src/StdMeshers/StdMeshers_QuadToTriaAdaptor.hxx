@@ -29,11 +29,13 @@
 
 #include <SMESH_Mesh.hxx>
 #include <SMESH_StdMeshers.hxx>
-#include <gp_Pnt.hxx>
 #include <SMDS_FaceOfNodes.hxx>
 #include <TColgp_HArray1OfPnt.hxx>
 #include <TColgp_HArray1OfVec.hxx>
 
+#include <map>
+#include <list>
+#include <vector>
 
 class STDMESHERS_EXPORT StdMeshers_QuadToTriaAdaptor
 {
