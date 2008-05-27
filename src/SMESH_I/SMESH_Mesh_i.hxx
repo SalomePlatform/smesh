@@ -441,6 +441,10 @@ public:
    */
   SMESH::double_array* BaryCenter(CORBA::Long id);
 
+  /*!
+   * Returns information about imported MED file
+   */
+  virtual SALOME_MED::MedFileInfo* GetMEDFileInfo();
 
   map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
@@ -455,6 +459,7 @@ private:
   map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
+  string myFile;
 };
 
 #endif

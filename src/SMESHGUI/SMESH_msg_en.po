@@ -3554,3 +3554,17 @@ msgstr "Error"
 
 #-----------------------------------------------------------
 
+msgid "MEN_FILE_INFO"
+msgstr "MED file information"
+
+msgid "SMESHGUI_FileInfoDlg::CAPTION"
+msgstr "File information"
+
+msgid "SMESHGUI_FileInfoDlg::FILE_NAME"
+msgstr "File name"
+
+msgid "SMESHGUI_FileInfoDlg::FILE_SIZE"
+msgstr "File size (bytes)"
+
+msgid "SMESHGUI_FileInfoDlg::MED_VERSION"
+msgstr "MED version"

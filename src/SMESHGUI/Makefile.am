@@ -108,7 +108,8 @@ dist_libSMESH_la_SOURCES = \
 	SMESHGUI_BuildCompoundDlg.cxx \
 	SMESHGUI_ComputeDlg.cxx \
 	SMESHGUI_MakeNodeAtPointDlg.cxx \
-	SMESHGUI_MeshEditPreview.cxx
+	SMESHGUI_MeshEditPreview.cxx \
+	SMESHGUI_FileInfoDlg.cxx
 
 MOC_FILES = \
 	SMESHGUI_moc.cxx \
@@ -160,7 +161,8 @@ MOC_FILES = \
 	SMESHGUI_ConvToQuadOp_moc.cxx \
 	SMESHGUI_BuildCompoundDlg_moc.cxx \
 	SMESHGUI_ComputeDlg_moc.cxx \
-	SMESHGUI_MakeNodeAtPointDlg_moc.cxx
+	SMESHGUI_MakeNodeAtPointDlg_moc.cxx \
+	SMESHGUI_FileInfoDlg_moc.cxx
 
 nodist_libSMESH_la_SOURCES= \
 	$(MOC_FILES)
@@ -179,6 +181,8 @@ libSMESH_la_CPPFLAGS = \
 	$(BOOST_CPPFLAGS) \
 	$(CORBA_CXXFLAGS) \
 	$(CORBA_INCLUDES) \
+	$(MED2_INCLUDES) \
+	$(HDF5_INCLUDES) \
 	-I$(srcdir)/../OBJECT \
 	-I$(srcdir)/../SMESHFiltersSelection \
 	-I$(srcdir)/../SMDS \
