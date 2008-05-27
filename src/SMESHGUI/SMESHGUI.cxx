@@ -2165,6 +2165,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         aMesh->Clear();
         _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
         SMESH::ModifiedMesh( aMeshSObj, false, true);
+        // hide groups and submeshes
+        _PTR(ChildIterator) anIter =
+          SMESH::GetActiveStudyDocument()->NewChildIterator( aMeshSObj );
+        for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
+        {
+          _PTR(SObject) so = anIter->Value();
+          SMESH::UpdateView(SMESH::eErase, so->GetID().c_str());
+        }
       }
       catch (const SALOME::SALOME_Exception& S_ex){
 	wc.suspend();
