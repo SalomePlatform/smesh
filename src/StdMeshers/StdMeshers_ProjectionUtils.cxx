@@ -774,8 +774,9 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     break; // try by vertex closeness
   }
   case TopAbs_COMPOUND: {
+    // ----------------------------------------------------------------------
     if ( IsPropagationPossible( theMesh1, theMesh2 )) {
-      // find boundary(for theShape1) edge
+      // find a boundary edge for theShape1
       TopoDS_Edge E;
       for(TopExp_Explorer exp(theShape1, TopAbs_EDGE); exp.More(); exp.Next() ) {
         E = TopoDS::Edge( exp.Current() );
@@ -794,9 +795,12 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         }
         if(NbFacesFromShape1==1) break;
       }
-      // find association for vertices from edge E
+      // find association for vertices of edge E
+      TopoDS_Vertex VV1[2], VV2[2];
       for(TopExp_Explorer eexp(E, TopAbs_VERTEX); eexp.More(); eexp.Next()) {
         TopoDS_Vertex V1 = TopoDS::Vertex( eexp.Current() );
+        // look for an edge ending in E whose one vertex is in theShape1
+        // and the other, in theShape2
         const TopTools_ListOfShape& Ancestors = theMesh1->GetAncestors(V1);
         TopTools_ListIteratorOfListOfShape ita(Ancestors);
         for(; ita.More(); ita.Next()) {
@@ -810,19 +814,35 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
             }
           }
           if(!FromShape1) {
-            // it is an edge between theShape1 and theShape2
+            // is it an edge between theShape1 and theShape2?
             TopExp_Explorer expv(edge, TopAbs_VERTEX);
             TopoDS_Vertex V2 = TopoDS::Vertex( expv.Current() );
             if(V2.IsSame(V1)) {
               expv.Next();
               V2 = TopoDS::Vertex( expv.Current() );
             }
-            InsertAssociation( V1, V2, theMap, bidirect);
-            break;
+            bool FromShape2 = false;
+            for ( expv.Init( theShape2, TopAbs_VERTEX ); expv.More(); expv.Next()) {
+              if ( V2.IsSame( expv.Current() )) {
+                FromShape2 = true;
+                break;
+              }
+            }
+            if ( FromShape2 ) {
+              if ( VV1[0].IsNull() )
+                VV1[0] = V1, VV2[0] = V2;
+              else
+                VV1[1] = V1, VV2[1] = V2;
+              break; // from loop on ancestors of V1
+            }
           }
         }
       }
-      return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
+      if ( !VV1[1].IsNull() ) {
+        InsertAssociation( VV1[0], VV2[0], theMap, bidirect);
+        InsertAssociation( VV1[1], VV2[1], theMap, bidirect);
+        return FindSubShapeAssociation( theShape1, theMesh1, theShape2, theMesh2, theMap);
+      }
     }
     break; // try by vertex closeness
   }
