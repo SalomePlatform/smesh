@@ -102,9 +102,7 @@ length, you define only the <b>Number of Segments</b>.
 
 \image html b-mberofsegments.png
 
-<br><b>Scale Distribution</b> - each next segment differs from the
-previous according to the formula: <b>A</b>i+1 = <b>A</b>i * k, where \b k is a
-<b>Scale Factor</b>.
+<br><b>Scale Distribution</b> - length of segments gradually changes depending on the <b>Scale Factor</b>, which is a ratio of the first segment length to the last segment length.
 
 \image html a-nbsegments2.png
 
