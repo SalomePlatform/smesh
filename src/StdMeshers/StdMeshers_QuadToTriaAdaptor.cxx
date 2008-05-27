@@ -810,6 +810,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh& aMesh)
   // check intersections between created pyramids
   int NbPyram = myMapFPyram.size();
   //cout<<"NbPyram = "<<NbPyram<<endl;
+  if(NbPyram==0)
+    return true;
+
   std::vector< const SMDS_MeshElement* > Pyrams(NbPyram);
   std::vector< const SMDS_MeshElement* > Faces(NbPyram);
   std::map< const SMDS_MeshElement*,
