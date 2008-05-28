@@ -114,6 +114,7 @@ SMESH_Mesh::~SMESH_Mesh()
     SMESH_Group *aGroup = (*itg).second;
     delete aGroup;
   }
+  _mapGroup.clear();
 }
 
 //=============================================================================
