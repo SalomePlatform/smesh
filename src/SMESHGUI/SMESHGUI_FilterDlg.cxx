@@ -2189,7 +2189,7 @@ void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg)
 // name    : SMESHGUI_FilterDlg::SetGroupIds
 // Purpose : Set mesh
 //=======================================================================
-void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_ptr theMesh)
+void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
   myMesh = theMesh;
 }
