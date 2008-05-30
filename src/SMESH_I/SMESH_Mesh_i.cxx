@@ -258,8 +258,17 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
   }
 
-  myFile = theFileName;
   CreateGroupServants();
+
+  int major, minor, release;
+  if( !MED::getMEDVersion( theFileName, major, minor, release ) )
+    major = minor = release = -1;
+  myFileInfo           = new SALOME_MED::MedFileInfo();
+  myFileInfo->fileName = theFileName;
+  myFileInfo->fileSize = 0;
+  myFileInfo->major    = major;
+  myFileInfo->minor    = minor;
+  myFileInfo->release  = release;
 
   return ConvertDriverMEDReadStatus(status);
 }
@@ -2504,22 +2513,14 @@ SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
  * \brief Return information about imported file
  */
 //=============================================================================
+
 SALOME_MED::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
 {
-  SALOME_MED::MedFileInfo_var res = new SALOME_MED::MedFileInfo();
-
-  const char* name = myFile.c_str();
-  res->fileName = name;
-  res->fileSize = 0;//myFileInfo.size();
-  int major, minor, release;
-  if( !MED::getMEDVersion( name, major, minor, release ) )
-  {
-    major = -1;
-    minor = -1;
-    release = -1;
+  SALOME_MED::MedFileInfo_var res( myFileInfo );
+  if ( !res.operator->() ) {
+    res = new SALOME_MED::MedFileInfo;
+    res->fileName = "";
+    res->fileSize = res->major = res->minor = res->release = -1;
   }
-  res->major = major;
-  res->minor = minor;
-  res->release = release;
   return res._retn();
 }

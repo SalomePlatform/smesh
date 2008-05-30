@@ -459,7 +459,7 @@ private:
   map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
-  string myFile;
+  SALOME_MED::MedFileInfo_var myFileInfo;
 };
 
 #endif
