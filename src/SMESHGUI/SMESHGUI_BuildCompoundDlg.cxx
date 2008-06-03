@@ -39,6 +39,8 @@
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
 #include <SalomeApp_Study.h>
+#include <SUIT_OverrideCursor.h>
+
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
@@ -281,8 +283,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
     return false;
   if (!myMesh->_is_nil()) {
     try	{
-      QApplication::setOverrideCursor(Qt::WaitCursor);
-      
+      SUIT_OverrideCursor aWaitCursor;
+
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
       SMESH::SMESH_Mesh_var aCompoundMesh = 
@@ -292,7 +294,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 			       SpinBoxTol->GetValue());
       
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
-      QApplication::restoreOverrideCursor();
       mySMESHGUI->updateObjBrowser();
     } catch(...) {
       return false;

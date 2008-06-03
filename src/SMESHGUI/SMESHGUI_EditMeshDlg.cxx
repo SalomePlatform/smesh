@@ -42,6 +42,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -581,9 +582,8 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
     return false;
 
   try {
+    SUIT_OverrideCursor aWaitCursor;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-
-    QApplication::setOverrideCursor(Qt::WaitCursor);
 
     SMESH::long_array_var anIds = new SMESH::long_array;
     SMESH::array_of_long_array_var aGroupsOfElements = new SMESH::array_of_long_array;
@@ -606,7 +606,6 @@ bool SMESHGUI_EditMeshDlg::ClickOnApply()
     else
       aMeshEditor->MergeElements (aGroupsOfElements.inout());
 
-    QApplication::restoreOverrideCursor();
   } catch(...) {
   }
   
@@ -712,9 +711,9 @@ void SMESHGUI_EditMeshDlg::onDetect()
     return;
 
   try {
+    SUIT_OverrideCursor aWaitCursor;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-    QApplication::setOverrideCursor(Qt::WaitCursor);
     ListCoincident->clear();
     ListEdit->clear();
 
@@ -744,8 +743,7 @@ void SMESHGUI_EditMeshDlg::onDetect()
 
       ListCoincident->addItem(anIDs.join(" "));
     }
-    QApplication::restoreOverrideCursor();
-  } catch(...) {
+   } catch(...) {
   }
 
   ListCoincident->selectAll();

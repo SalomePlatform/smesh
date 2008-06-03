@@ -38,6 +38,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -226,7 +227,7 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
 	if (isUnitsLabeled)  anActor->SetCellsLabeled(false);
       }
       
-      QApplication::setOverrideCursor(Qt::WaitCursor);
+      SUIT_OverrideCursor aWaitCursor;
       if (myUnit == 0) {
 	aMeshEditor->RenumberNodes();
 	if (isUnitsLabeled && anActor) anActor->SetPointsLabeled(true);
@@ -235,7 +236,6 @@ void SMESHGUI_RenumberingDlg::ClickOnApply()
 	aMeshEditor->RenumberElements();
 	if (isUnitsLabeled && anActor) anActor->SetCellsLabeled(true);
       }
-      QApplication::restoreOverrideCursor();
     }
     catch(...) {
     }

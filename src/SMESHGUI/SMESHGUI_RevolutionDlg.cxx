@@ -43,6 +43,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_Desktop.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -423,17 +424,15 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     double aTolerance = SpinBox_Tolerance->GetValue();
 
     try {
+      SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::WaitCursor);
-
+      
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
         SMESH::ListOfGroups_var groups = 
           aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
                                                anAngle, aNbSteps, aTolerance);
       else
         aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
-
-      QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 

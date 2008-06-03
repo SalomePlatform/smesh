@@ -42,6 +42,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ViewManager.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <SalomeApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -450,10 +451,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	    anIdsOfNodes[aNbIdsOfNodes++] = It.Value();
 	    
 	  try{
+	    SUIT_OverrideCursor aWaitCursor;
 	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-	    QApplication::setOverrideCursor(Qt::WaitCursor);
 	    aMeshEditor->AddPolyhedralVolume(anIdsOfNodes, aQuantities);
-	    QApplication::restoreOverrideCursor();
 	  }catch(SALOME::SALOME_Exception& exc){
 	    INFOS("Follow exception was cought:\n\t"<<exc.details.text);
 	  }catch(std::exception& exc){
@@ -472,10 +472,9 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
 	    anIdsOfFaces[i] = aListId[i].toInt();
 	  
 	  try{
+	    SUIT_OverrideCursor aWaitCursor;
 	    SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-	    QApplication::setOverrideCursor(Qt::WaitCursor);
 	    aMeshEditor->AddPolyhedralVolumeByFaces(anIdsOfFaces);
-	    QApplication::restoreOverrideCursor();
 	  }catch(SALOME::SALOME_Exception& exc){
 	    INFOS("Follow exception was cought:\n\t"<<exc.details.text);
 	  }catch(std::exception& exc){

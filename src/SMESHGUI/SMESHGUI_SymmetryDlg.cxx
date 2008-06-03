@@ -43,6 +43,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -468,8 +469,9 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
     bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
 
     try {
+      SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::WaitCursor);
+
       switch ( actionButton ) {
       case MOVE_ELEMS_BUTTON:
         aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
@@ -486,7 +488,6 @@ void SMESHGUI_SymmetryDlg::ClickOnApply()
           aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
                                       LineEditNewMesh->text().toLatin1().data());
       }
-      QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 

@@ -44,6 +44,7 @@
 #include <SUIT_Desktop.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_Session.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -368,8 +369,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     long aNbSteps = (long)SpinBox_NbSteps->value();
 
     try {
+      SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      QApplication::setOverrideCursor(Qt::WaitCursor);
 
       if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
         SMESH::ListOfGroups_var groups = 
@@ -377,7 +378,6 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       else
         aMeshEditor->ExtrusionSweep(myElementsId.inout(), aVector, aNbSteps);
 
-      QApplication::restoreOverrideCursor();
     } catch (...) {
     }
 
