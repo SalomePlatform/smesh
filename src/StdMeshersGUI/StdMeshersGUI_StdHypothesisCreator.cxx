@@ -734,7 +734,7 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PARAM"))
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, 6 );
     else if (sb->objectName() == tr("SMESH_LOCAL_LENGTH_PRECISION"))
-      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 6 );
+      sb->RangeStepAndValidator( 0.0, 1.0, 0.05, 7 );
   }
   else if( hypType()=="Arithmetic1D" && sb )
   {
