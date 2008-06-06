@@ -90,7 +90,7 @@ private slots:
   
   void                        onBrowse();
   void                        onReturnPressed();
-  void                        onFilterChanged( QListWidgetItem*, QListWidgetItem* );
+  void                        onFilterChanged();
   void                        onAddBtnPressed();
   void                        onDeleteBtnPressed();
   void                        onFilterNameChanged( const QString& );

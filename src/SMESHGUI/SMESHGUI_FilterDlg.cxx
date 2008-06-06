@@ -582,7 +582,7 @@ void SMESHGUI_FilterTable::Table::setReadOnly( bool on )
 
 bool SMESHGUI_FilterTable::Table::isReadOnly() const
 {
-  return editTriggers() != QAbstractItemView::NoEditTriggers;
+  return editTriggers() == QAbstractItemView::NoEditTriggers;
 }
 
 //=======================================================================
@@ -733,7 +733,7 @@ void SMESHGUI_FilterTable::Init (const QList<int>& theTypes)
 
     // layout widgets
     QGridLayout* aLay = new QGridLayout(myTableGrp);
-    aLay->setMargin(0);
+    aLay->setMargin(MARGIN);
     aLay->setSpacing(SPACING);
 
     aLay->addWidget(mySwitchTableGrp, 0, 0, 7, 1);

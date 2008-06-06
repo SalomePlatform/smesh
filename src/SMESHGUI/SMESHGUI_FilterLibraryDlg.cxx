@@ -225,8 +225,8 @@ QWidget* SMESHGUI_FilterLibraryDlg::createMainFrame (QWidget* theParent)
   connect(myFileName, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
   connect(myOpenBtn, SIGNAL(clicked()), this, SLOT(onBrowse()));
 
-  connect(myListBox, SIGNAL( currentItemChanged( QListWidgetItem*, QListWidgetItem* ) ),
-	  this, SLOT( onFilterChanged( QListWidgetItem*, QListWidgetItem* ) ) );
+  connect(myListBox, SIGNAL(itemSelectionChanged()),
+	  this, SLOT(onFilterChanged()));
 
   connect(myAddBtn, SIGNAL(clicked()), this, SLOT(onAddBtnPressed()));
   connect(myDeleteBtn, SIGNAL(clicked()), this, SLOT(onDeleteBtnPressed()));
@@ -809,11 +809,11 @@ bool SMESHGUI_FilterLibraryDlg::isValid(const bool theMess) const
 
 //=======================================================================
 // name    : SMESHGUI_FilterLibraryDlg::onFilterChanged
-// Purpose : SLOT. Called when selected filter of library  changed
+// Purpose : SLOT. Called when selected filter of library is changed
 //=======================================================================
-void SMESHGUI_FilterLibraryDlg::onFilterChanged( QListWidgetItem* item, QListWidgetItem* )
+void SMESHGUI_FilterLibraryDlg::onFilterChanged()
 {
-  QString theName = item ? item->text() : QString::null;
+  QString theName = myListBox->currentItem() ? myListBox->currentItem()->text() : QString::null;
   if (myLibrary->_is_nil())
     return;
 
@@ -934,13 +934,13 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
   {
     if (!isValid(true))
       return;
-  }
-  {
+
     SMESH::Filter_var aFilter = createFilter();
     myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
 		       myName->text().toLatin1().constData(), 
 		       aFilter);
   }
+  myTable->Clear(myTable->GetType());
 
   addFilterToLib(getDefaultFilterName());
 }
