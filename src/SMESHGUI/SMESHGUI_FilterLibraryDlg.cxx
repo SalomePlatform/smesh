@@ -436,7 +436,8 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
     aResult = true;
   } else if (myMode == EDIT || myMode == ADD_TO) {
     SMESH::Filter_var aFilter = createFilter();
-    if (!myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
+    if (!myListBox->selectedItems().empty() && 
+	!myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
 			    myName->text().toLatin1().constData(),
 			    aFilter.in())) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
