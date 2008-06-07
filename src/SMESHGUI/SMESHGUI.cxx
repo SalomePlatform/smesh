@@ -370,7 +370,7 @@ using namespace std;
           fd->setCaption( aTitle );
           fd->setFilters( filters );
           fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
-	  if ( anInitialPath.isEmpty() )
+	  if ( !anInitialPath.isEmpty() )
 	    fd->setDir( anInitialPath );
           bool is_ok = false;
           while (!is_ok) {
@@ -399,7 +399,7 @@ using namespace std;
           //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
           fd->setSelectedFilter(aDefaultFilter);
           fd->SetChecked(toCreateGroups);
-	  if ( anInitialPath.isEmpty() )
+	  if ( !anInitialPath.isEmpty() )
 	    fd->setDir( anInitialPath );
           bool is_ok = false;
           while (!is_ok) {
