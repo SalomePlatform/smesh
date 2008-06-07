@@ -185,8 +185,8 @@ using namespace std;
     }
 
     QString anInitialPath = "";
-    //if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
-    //  anInitialPath = QDir::currentDirPath();
+    if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+      anInitialPath = QDir::currentDirPath();
 
     QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
 						 anInitialPath,
@@ -354,10 +354,12 @@ using namespace std;
 	if ( resMgr )
 	  toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
 
+	QString anInitialPath = "";
+	if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
+	  anInitialPath = QDir::currentDirPath();
+
 	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141)
-
-	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), "", aFilter, aTitle, false);
-
+	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath, aFilter, aTitle, false);
 	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
 	  QStringList filters;
           QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
@@ -368,6 +370,8 @@ using namespace std;
           fd->setCaption( aTitle );
           fd->setFilters( filters );
           fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
+	  if ( anInitialPath.isEmpty() )
+	    fd->setDir( anInitialPath );
           bool is_ok = false;
           while (!is_ok) {
             fd->exec();
@@ -395,6 +399,8 @@ using namespace std;
           //fd->setSelectedFilter( QObject::tr("MED 2.2 (*.med)") );
           fd->setSelectedFilter(aDefaultFilter);
           fd->SetChecked(toCreateGroups);
+	  if ( anInitialPath.isEmpty() )
+	    fd->setDir( anInitialPath );
           bool is_ok = false;
           while (!is_ok) {
             fd->exec();
