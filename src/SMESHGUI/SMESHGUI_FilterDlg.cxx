@@ -501,6 +501,8 @@ public:
   Table( int, int, QWidget* = 0 );
   virtual ~Table();
 
+  QSize                   minimumSizeHint() const;
+
   void                    setEditable( bool, int, int );
   bool                    isEditable( int, int ) const;
 
@@ -526,6 +528,10 @@ SMESHGUI_FilterTable::Table::Table (QWidget* parent)
   setReadOnly( false );
 }
 
+//=======================================================================
+// name    : SMESHGUI_FilterTable::Table::Table
+// Purpose : Constructor
+//=======================================================================
 SMESHGUI_FilterTable::Table::Table (int numRows, int numCols, QWidget* parent)
 : QTableWidget(numRows, numCols, parent)
 {
@@ -535,8 +541,25 @@ SMESHGUI_FilterTable::Table::Table (int numRows, int numCols, QWidget* parent)
   setReadOnly( false );
 }
 
+//=======================================================================
+// name    : SMESHGUI_FilterTable::Table::~Table
+// Purpose : Destructor
+//=======================================================================
 SMESHGUI_FilterTable::Table::~Table()
 {
+}
+
+//=======================================================================
+// name    : SMESHGUI_FilterTable::Table::minimumSizeHint
+// Purpose : Get minimum size for the table
+//=======================================================================
+QSize SMESHGUI_FilterTable::Table::minimumSizeHint() const
+{
+  QSize s = QTableWidget::minimumSizeHint();
+  QHeaderView* hv = horizontalHeader();
+  if ( hv )
+    s.setWidth( qMax( s.width(), hv->length() ) );
+  return s;
 }
 
 //=======================================================================
@@ -574,10 +597,7 @@ void SMESHGUI_FilterTable::Table::setReadOnly( bool on )
 {
   setEditTriggers( on ? 
 		   QAbstractItemView::NoEditTriggers  :
-		   QAbstractItemView::DoubleClicked   |
-		   QAbstractItemView::SelectedClicked |
-		   QAbstractItemView::EditKeyPressed  |
-		   QAbstractItemView::AnyKeyPressed );
+		   QAbstractItemView::AllEditTriggers );
 }
 
 bool SMESHGUI_FilterTable::Table::isReadOnly() const
@@ -1627,7 +1647,7 @@ SMESHGUI_FilterTable::Table* SMESHGUI_FilterTable::createTable (QWidget*  thePar
   aHeaderLabels.append( tr("BINARY") + "  " );
   aHeaderLabels.append( tr("ID") );
   aTable->setHorizontalHeaderLabels( aHeaderLabels );
-
+  
   // set geometry of the table
   for (int i = 0; i <= 4; i++)
     aTable->resizeColumnToContents(i);
