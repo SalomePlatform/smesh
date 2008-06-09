@@ -319,14 +319,15 @@ DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper,
     aStr << "_" << *aGrIter;
   }
   string aValue = aStr.str();
-  // PAL19785 - med forbids whitespace to be the last char in the name
-  MED::TInt maxSize;
+  // PAL19785,0019867 - med forbids whitespace to be the last char in the name
+  int maxSize;
   if ( theWrapper->GetVersion() == MED::eV2_1 )
     maxSize = MED::GetNOMLength<MED::eV2_1>();
   else
     maxSize = MED::GetNOMLength<MED::eV2_2>();
-  if ( aValue.size() >= maxSize && aValue[ maxSize-1 ] == ' ' )
-    aValue[ maxSize-1 ] = '_';
+  int lastCharPos = min( maxSize, (int) aValue.size() ) - 1;
+  while ( isspace( aValue[ lastCharPos ] ))
+    aValue.resize( lastCharPos-- );
 
   MED::PFamilyInfo anInfo;
   if(myId == 0 || myGroupAttributVal == 0){
