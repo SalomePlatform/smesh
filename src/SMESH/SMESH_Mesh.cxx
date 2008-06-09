@@ -223,6 +223,8 @@ void SMESH_Mesh::Clear()
       if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
         // all other shapes depends on vertices so they are already cleaned
         sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+      // to recompute even if failed
+      sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
   }
 
