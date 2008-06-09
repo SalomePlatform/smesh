@@ -72,6 +72,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <sys/stat.h>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -266,6 +267,14 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
   myFileInfo           = new SALOME_MED::MedFileInfo();
   myFileInfo->fileName = theFileName;
   myFileInfo->fileSize = 0;
+#ifdef WIN32
+  struct _stati64 d;
+  if ( ::_stati64( theFileName, &d ) != -1 )
+#else
+  struct stat64 d;
+  if ( ::stat64( theFileName, &d ) != -1 )
+#endif
+    myFileInfo->fileSize = d.st_size;
   myFileInfo->major    = major;
   myFileInfo->minor    = minor;
   myFileInfo->release  = release;
