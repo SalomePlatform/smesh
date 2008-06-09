@@ -33,9 +33,10 @@
 #include <qlineedit.h>
 
 SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SALOME_MED::MedFileInfo* inf )
-  : QtxDialog( parent, 0, true, false, QtxDialog::OK )
+  : QtxDialog( parent, 0, true, true, QtxDialog::OK )
 {
   setCaption( tr( "CAPTION" ) );
+  setSizeGripEnabled( true );
   
   QLineEdit* fname = new QLineEdit( mainFrame() );
   fname->setReadOnly( true );
@@ -43,6 +44,7 @@ SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SALOME_MED::MedFile
   fsize->setReadOnly( true );
   QLineEdit* medversion = new QLineEdit( mainFrame() );
   medversion->setReadOnly( true );
+  fname->setMinimumWidth( 300 );
   
   QGridLayout* lay = new QGridLayout( mainFrame(), 4, 2, 5, 5 );
   lay->addWidget( new QLabel( tr( "FILE_NAME" ), mainFrame() ), 0, 0 );
@@ -53,6 +55,7 @@ SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SALOME_MED::MedFile
   lay->addWidget( medversion, 2, 1 );
 
   fname->setText( (char*)inf->fileName );
+  fname->home( false );
   fsize->setText( QString::number( inf->fileSize ) );
 
   QString version;
@@ -67,7 +70,6 @@ SMESHGUI_FileInfoDlg::SMESHGUI_FileInfoDlg( QWidget* parent, SALOME_MED::MedFile
     }
   }
   medversion->setText( version );
-  setFixedSize( 640, 480 );
 }
 
 SMESHGUI_FileInfoDlg::~SMESHGUI_FileInfoDlg()
