@@ -46,7 +46,9 @@ the list of elements which will form your group.
 \n <b>Color</b> - allows to assign to the group a certain color, for
 example, defining boundary conditions. This feature introduces a
 useful element of preprocessing in Mesh module. Note that <b>Color</b> attribute defines
-the colors used for the display of the elements of the group.
+the colors used for the display of the elements of the group. 
+\n <b>Warning</b> The Med Color group interface may change in future versions of Salome.
+
 
 \image html creategroup.png
 
