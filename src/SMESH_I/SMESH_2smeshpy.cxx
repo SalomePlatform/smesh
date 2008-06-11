@@ -754,7 +754,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
         "GetElemNode","IsMediumNode","IsMediumNodeOfAnyElem","ElemNbEdges","ElemNbFaces",
         "IsPoly","IsQuadratic","BaryCenter","GetHypothesisList", "SetAutoColor", "GetAutoColor",
         "Clear"
-        "" }; // <- mark of end
+        ,"" }; // <- mark of end
     sameMethods.Insert( names );
   }
 
@@ -888,8 +888,8 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh",
-      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh",
-      "" }; // <- mark of the end
+      "TranslateObjectMakeMesh","RotateMakeMesh","RotateObjectMakeMesh"
+      ,"" }; // <- mark of the end
     sameMethods.Insert( names );
   }
 
