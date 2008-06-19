@@ -883,15 +883,32 @@ using namespace std;
     LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected; aSel->selectedObjects( selected, QString::null, false );
 
+    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
+    _PTR(GenericAttribute) anAttr;
+    _PTR(AttributeIOR) anIOR;
+
+    int objectCount = 0;
     QString aParentComponent = QString::null;
     for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
     {
+      _PTR(SObject) aSO = aStudy->FindObjectID(anIt.Value()->getEntry());
+      if (aSO) {
+	// check if object is not reference
+	_PTR(SObject) refobj;
+	if ( !aSO->ReferencedObject( refobj ) )
+	  objectCount++;
+      }
+
       QString cur = anIt.Value()->getComponentDataType();
       if( aParentComponent.isNull() )
         aParentComponent = cur;
       else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
         aParentComponent = "";
     }
+
+    if ( objectCount == 0 )
+      return; // No Valid Objects Selected
 
     if ( aParentComponent != SMESHGUI::GetSMESHGUI()->name() )  {
       SUIT_MessageBox::warn1 ( SMESHGUI::desktop(),
@@ -912,11 +929,6 @@ using namespace std;
     SUIT_ViewManager* vm = anApp->activeViewManager();
     int nbSf = vm->getViewsCount();
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    _PTR(StudyBuilder) aStudyBuilder = aStudy->NewBuilder();
-    _PTR(GenericAttribute) anAttr;
-    _PTR(AttributeIOR) anIOR;
-
     SALOME_ListIteratorOfListIO It(selected);
 
     aStudyBuilder->NewCommand();  // There is a transaction
@@ -931,6 +943,10 @@ using namespace std;
 	  if ( !strcmp( (char*)anIOR->Value().c_str(), engineIOR().latin1() ) )
 	    continue;
 	}
+
+	_PTR(SObject) refobj;
+	if ( aSO && aSO->ReferencedObject( refobj ) )
+	  continue; // skip references 
 
         // put the whole hierarchy of sub-objects of the selected SO into a list and
         // then treat them all starting from the deepest objects (at list back)
