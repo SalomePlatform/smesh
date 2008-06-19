@@ -70,7 +70,7 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
     else
       limit = int( limit * 1.5 );
 #ifdef _DEBUG_
-    cout << "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" << endl;
+    MESSAGE ( "SMDS_Mesh::CheckMemory() memory limit = " << limit << " MB" );
 #endif
   }
 
@@ -86,7 +86,7 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
   if ( doNotRaise )
     return 0;
 #ifdef _DEBUG_
-  cout<<"SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" << endl;
+  MESSAGE ("SMDS_Mesh::CheckMemory() throws as free memory too low: " << freeMb <<" MB" );
 #endif
   throw std::bad_alloc();
 #else

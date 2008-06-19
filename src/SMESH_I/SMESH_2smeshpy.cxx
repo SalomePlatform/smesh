@@ -136,7 +136,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   // finish conversion
   theGen->Flush();
 #ifdef DUMP_CONVERSION
-  cout << endl << " ######## RESULT ######## " << endl<< endl;
+  MESSAGE_BEGIN ( std::endl << " ######## RESULT ######## " << std::endl<< std::endl );
 #endif
   // reorder commands after conversion
   list< Handle(_pyCommand) >::iterator cmd;
@@ -153,7 +153,7 @@ SMESH_2smeshpy::ConvertScript(const TCollection_AsciiString& theScript,
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
-    cout << "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << endl;
+    MESSAGE_ADD ( "## COM " << (*cmd)->GetOrderNb() << ": "<< (*cmd)->GetString() << std::endl );
 #endif
     if ( !(*cmd)->IsEmpty() ) {
       aScript += "\n";
@@ -208,7 +208,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
 
   Handle(_pyCommand) aCommand = myCommands.back();
 #ifdef DUMP_CONVERSION
-  cout << "## COM " << myNbCommands << ": "<< aCommand->GetString() << endl;
+  MESSAGE ( "## COM " << myNbCommands << ": "<< aCommand->GetString() );
 #endif
 
   _pyID objID = aCommand->GetObject();

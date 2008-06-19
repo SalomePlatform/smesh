@@ -2114,8 +2114,8 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
   bndBox.Get( minPar[0], minPar[1], maxPar[0], maxPar[1] );
   eBndBox.Get( eMinPar[0], eMinPar[1], eMaxPar[0], eMaxPar[1] );
 #ifdef DBG_SETFIRSTEDGE
-  cout << "EDGES: X: " << eMinPar[0] << " - " << eMaxPar[0] << " Y: "
-    << eMinPar[1] << " - " << eMaxPar[1] << endl;
+  MESSAGE ( "EDGES: X: " << eMinPar[0] << " - " << eMaxPar[0] << " Y: "
+         << eMinPar[1] << " - " << eMaxPar[1] );
 #endif
   for ( int iC = 1, i = 0; i < 2; iC++, i++ ) // loop on 2 coordinates
   {
@@ -2141,7 +2141,7 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
   for ( iE = 0 ; iE < nbEdges; iE++ )
   {
 #ifdef DBG_SETFIRSTEDGE
-    cout << " VARIANT " << iE << endl;
+    MESSAGE ( " VARIANT " << iE );
 #endif
     // evaluate the distance between UV computed by the 2 methods:
     // by isos intersection ( myXYZ ) and by edge p-curves ( myUV )
@@ -2155,13 +2155,13 @@ double SMESH_Pattern::setFirstEdge (list< TopoDS_Edge > & theWire, int theFirstE
         TPoint* p = (*pIt);
         dist += ( p->myUV - gp_XY( p->myXYZ.X(), p->myXYZ.Y() )).SquareModulus();
 #ifdef DBG_SETFIRSTEDGE
-        cout << " ISO : ( " << p->myXYZ.X() << ", "<< p->myXYZ.Y() << " ) PCURVE : ( " <<
-          p->myUV.X() << ", " << p->myUV.Y() << ") " << endl;
+        MESSAGE ( " ISO : ( " << p->myXYZ.X() << ", "<< p->myXYZ.Y() << " ) PCURVE : ( " <<
+                  p->myUV.X() << ", " << p->myUV.Y() << ") " );
 #endif
       }
     }
 #ifdef DBG_SETFIRSTEDGE
-    cout << "dist -- " << dist << endl;
+    MESSAGE ( "dist -- " << dist );
 #endif
     if ( dist < minDist ) {
       minDist = dist;
@@ -4655,7 +4655,7 @@ void SMESH_Pattern::DumpPoints() const
 #ifdef _DEBUG_
   vector< TPoint >::const_iterator pVecIt = myPoints.begin();
   for ( int i = 0; pVecIt != myPoints.end(); pVecIt++, i++ )
-    cout << i << ": " << *pVecIt;
+    MESSAGE_ADD ( std::endl << i << ": " << *pVecIt );
 #endif
 }
 

@@ -877,7 +877,7 @@ void SMESHGUI_ComputeOp::startOperation()
         }
         catch (...) {
 #ifdef _DEBUG_
-          cout << "Exception thrown during mesh visualization" << endl;
+          MESSAGE ( "Exception thrown during mesh visualization" );
 #endif
           if ( SMDS_Mesh::CheckMemory(true) ) { // has memory to show warning?
             SMESH::OnVisuException();

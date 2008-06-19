@@ -672,12 +672,11 @@ void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
 
   if ( isOut ) {
 #ifdef _DEBUG_
-    cout << "FACE " << FaceID << " (" << u << "," << v << ") out of "
-         << " u( " <<  surf.FirstUParameter() 
-         << "," <<  surf.LastUParameter()  
-         << ") v( " <<  surf.FirstVParameter() 
-         << "," <<  surf.LastVParameter()
-         << ")" << endl;
+    MESSAGE ( "FACE " << FaceID << " (" << u << "," << v << ") out of "
+           << " u( " <<  surf.FirstUParameter() 
+           << "," <<  surf.LastUParameter()  
+           << ") v( " <<  surf.FirstVParameter() 
+           << "," <<  surf.LastVParameter() << ")" );
 #endif    
     THROW_SALOME_CORBA_EXCEPTION("Invalid UV", SALOME::BAD_PARAM);
   }

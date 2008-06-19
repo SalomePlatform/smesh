@@ -495,7 +495,7 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
     return true;
   }
 #ifdef DEBUG_PARAM_COMPUTE
-  cout << "PARAM GUESS: " << params.X() << " "<< params.Y() << " "<< params.X() << endl;
+  MESSAGE ( "PARAM GUESS: " << params.X() << " "<< params.Y() << " "<< params.X() );
   myNbIterations++; // how many times call ShellPoint()
 #endif
   ShellPoint( params, P );
@@ -556,8 +556,7 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
 #endif
     }
 #ifdef DEBUG_PARAM_COMPUTE
-    cout << "F = " << theFxyz(1) <<
-      " DRV: " << theDf(1,1) << " " << theDf(1,2) << " " << theDf(1,3)  << endl;
+    MESSAGE ( "F = " << theFxyz(1) << " DRV: " << theDf(1,1) << " " << theDf(1,2) << " " << theDf(1,3) );
     myNbIterations +=3; // how many times call ShellPoint()
 #endif
 
@@ -613,9 +612,9 @@ bool SMESH_Block::computeParameters(const gp_Pnt& thePoint,
   }
 #ifdef DEBUG_PARAM_COMPUTE
   mySumDist += distance();
-  cout << " ------ SOLUTION: ( "<< myParam.X() <<" "<< myParam.Y() <<" "<< myParam.Z() <<" )"<<endl
-       << " ------ DIST : " << distance() << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << endl
-       << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist << endl;
+  MESSAGE ( " ------ SOLUTION: ( "<< myParam.X() <<" "<< myParam.Y() <<" "<< myParam.Z() <<" )"<<endl
+         << " ------ DIST : " << distance() << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << endl
+         << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist );
 #endif
 
   theParams = myParam;
@@ -741,7 +740,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
   }
 
 #ifdef DEBUG_PARAM_COMPUTE
-  cout << " #### POINT " <<thePoint.X()<<" "<<thePoint.Y()<<" "<<thePoint.Z()<<" ####"<< endl;
+  MESSAGE ( " #### POINT " <<thePoint.X()<<" "<<thePoint.Y()<<" "<<thePoint.Z()<<" ####" );
 #endif
 
   if ( myTolerance < 0 ) myTolerance = 1e-6;
@@ -766,8 +765,8 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
         return computeParameters( thePoint, theParams, solution );
     }
 #ifdef DEBUG_PARAM_COMPUTE
-    cout << "PARAMS: ( " << params.X() <<" "<< params.Y() <<" "<< params.Z() <<" )"<< endl;
-    cout << "DIST: " << sqrt( sqDist ) << endl;
+    MESSAGE ( "PARAMS: ( " << params.X() <<" "<< params.Y() <<" "<< params.Z() <<" )" );
+    MESSAGE ( "DIST: " << sqrt( sqDist ) );
 #endif
 
     if ( sqDist < sqDistance ) { // get better
@@ -813,9 +812,9 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
 #ifdef DEBUG_PARAM_COMPUTE
   myNbIterations += nbLoops*4; // how many times ShellPoint called
   mySumDist += sqrt( sqDistance );
-  cout << " ------ SOLUTION: ( "<<solution.X()<<" "<<solution.Y()<<" "<<solution.Z()<<" )"<<endl
-       << " ------ DIST : " << sqrt( sqDistance ) << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << endl
-       << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist << endl;
+  MESSAGE ( " ------ SOLUTION: ( "<<solution.X()<<" "<<solution.Y()<<" "<<solution.Z()<<" )"<< std::endl
+         << " ------ DIST : " << sqrt( sqDistance ) << "\t Tol=" << myTolerance << "\t Nb LOOPS=" << nbLoops << std::endl
+         << " ------ NB IT: " << myNbIterations << ",  SUM DIST: " << mySumDist );
 #endif
 
   theParams = solution;
@@ -1024,10 +1023,10 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
           if ( iE++ > theNbVertexInWires.back() ) {
 #ifdef _DEBUG_
             gp_Pnt p = BRep_Tool::Pnt( theFirstVertex );
-            cout << " : Warning : vertex "<< theFirstVertex.TShape().operator->()
-                 << " ( " << p.X() << " " << p.Y() << " " << p.Z() << " )" 
-                 << " not found in outer wire of face "<< theFace.TShape().operator->()
-                 << " with vertices: " <<  endl;
+            MESSAGE ( " : Warning : vertex "<< theFirstVertex.TShape().operator->()
+                   << " ( " << p.X() << " " << p.Y() << " " << p.Z() << " )" 
+                   << " not found in outer wire of face "<< theFace.TShape().operator->()
+                   << " with vertices: " );
             wExp.Init( *wlIt, theFace );
             for ( int i = 0; wExp.More(); wExp.Next(), i++ )
             {
@@ -1035,8 +1034,8 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
               edge = TopoDS::Edge( edge.Oriented( wExp.Orientation() ));
               TopoDS_Vertex v = TopExp::FirstVertex( edge, true );
               gp_Pnt p = BRep_Tool::Pnt( v );
-              cout << i << " " << v.TShape().operator->() << " "
-                   << p.X() << " " << p.Y() << " " << p.Z() << " " << endl;
+              MESSAGE_ADD ( i << " " << v.TShape().operator->() << " "
+                            << p.X() << " " << p.Y() << " " << p.Z() << " " << std::endl );
             }
 #endif
             break; // break infinite loop

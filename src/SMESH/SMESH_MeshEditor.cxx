@@ -7633,10 +7633,9 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
         return SEW_TOPO_DIFF_SETS_OF_ELEMENTS;
       }
 #ifdef DEBUG_MATCHING_NODES
-      cout << " Link 1: " << link[0].first->GetID() <<" "<< link[0].second->GetID()
-           << " F 1: " << face[0];
-      cout << "| Link 2: " << link[1].first->GetID() <<" "<< link[1].second->GetID()
-           << " F 2: " << face[1] << " | Bind: "<<endl ;
+      MESSAGE ( " Link 1: " << link[0].first->GetID() <<" "<< link[0].second->GetID()
+             << " F 1: " << face[0] << "| Link 2: " << link[1].first->GetID() <<" "
+	     << link[1].second->GetID() << " F 2: " << face[1] << " | Bind: " ) ;
 #endif
       int nbN = nbNodes[0];
       {
@@ -7644,7 +7643,7 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
         list<const SMDS_MeshNode*>::iterator n2 = notLinkNodes[1].begin();
         for ( int i = 0 ; i < nbN - 2; ++i ) {
 #ifdef DEBUG_MATCHING_NODES
-          cout << (*n1)->GetID() << " to " << (*n2)->GetID() << endl;
+          MESSAGE ( (*n1)->GetID() << " to " << (*n2)->GetID() );
 #endif
           nReplaceMap.insert( make_pair( *(n1++), *(n2++) ));
         }
@@ -7666,8 +7665,8 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
         else // new in set == encountered for the first time: add
         {
 #ifdef DEBUG_MATCHING_NODES
-          cout << "Add link 1: " << n1->GetID() << " " << n2->GetID() << " ";
-          cout << " | link 2: " << nReplaceMap[n1]->GetID() << " " << nReplaceMap[n2]->GetID() << " " << endl;
+          MESSAGE ( "Add link 1: " << n1->GetID() << " " << n2->GetID() << " "
+	  << " | link 2: " << nReplaceMap[n1]->GetID() << " " << nReplaceMap[n2]->GetID() << " " );
 #endif
           linkList[0].push_back ( NLink( n1, n2 ));
           linkList[1].push_back ( NLink( nReplaceMap[n1], nReplaceMap[n2] ));

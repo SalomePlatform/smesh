@@ -1361,7 +1361,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
             _computeError = algo->GetComputeError();
         }
         catch ( std::bad_alloc& exc ) {
-          printf("std::bad_alloc thrown inside algo->Compute()\n");
+          MESSAGE("std::bad_alloc thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1370,7 +1370,7 @@ bool SMESH_subMesh::ComputeStateEngine(int event)
           throw exc;
         }
         catch ( Standard_OutOfMemory& exc ) {
-          printf("Standard_OutOfMemory thrown inside algo->Compute()\n");
+          MESSAGE("Standard_OutOfMemory thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
             //_computeError->myComment = exc.what();
@@ -1622,15 +1622,15 @@ bool SMESH_subMesh::CheckComputeError(SMESH_Algo* theAlgo, const TopoDS_Shape& t
         text << " \"" << _computeError->myComment << "\"";
 
 #ifdef _DEBUG_
-      cout << text << endl;
+      MESSAGE_BEGIN ( text );
       // Show vertices location of a failed shape
       TopTools_IndexedMapOfShape vMap;
       TopExp::MapShapes( _subShape, TopAbs_VERTEX, vMap );
-      cout << "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") << endl;
+      MESSAGE_ADD ( "Subshape vertices " << ( vMap.Extent()>10 ? "(first 10):" : ":") );
       for ( int iv = 1; iv <= vMap.Extent() && iv < 11; ++iv ) {
         gp_Pnt P( BRep_Tool::Pnt( TopoDS::Vertex( vMap( iv ) )));
-        cout << "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " ";
-        cout << P.X() << " " << P.Y() << " " << P.Z() << " " << endl;
+        MESSAGE_ADD ( "#" << _father->GetMeshDS()->ShapeToIndex( vMap( iv )) << " "
+                   << P.X() << " " << P.Y() << " " << P.Z() << " " );
       }
 #else
       INFOS( text );
