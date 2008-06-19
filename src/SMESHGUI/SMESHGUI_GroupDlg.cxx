@@ -1159,15 +1159,22 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 	  aString = tr("SMESH_GROUP_SELECTED").arg(aNbSel);
 	else if(myCurrentLineEdit == myGeomGroupLine)
 	  aString = tr("%1 Objects").arg(aNbSel);
-      } else {
+      }
+      else {
 	aString = aList.First()->getName();
       }
     }
 
     myCurrentLineEdit->setText(aString);
-    myOldName = myName->text();
-    myName->setText(aString);
     myCurrentLineEdit->home(false);
+    // 07.06.2008 skl for IPAL19574:
+    // change name of group only if it is empty
+    QString tmp = myName->text();
+    tmp.stripWhiteSpace();
+    if(tmp.isEmpty()) {
+      myOldName = myName->text();
+      myName->setText(aString);
+    }
 
     updateButtons();
 
