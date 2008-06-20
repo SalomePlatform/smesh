@@ -71,6 +71,7 @@ private:
     void displaySimulation();
     void UpdateTable( bool theConersValidity = true );
     bool IsValid();
+    void updateButtons();
 
     SMESHGUI*                   mySMESHGUI;       /* Current SMESHGUI object */
     LightApp_SelectionMgr*      mySelectionMgr;   /* User shape selection */
@@ -118,16 +119,5 @@ private slots:
     void DeactivateActiveDialog() ;
     void ActivateThisDialog() ;
 };
-
-class SMESHGUI_IdEditItem: public QTableItem
-{
-public:
-    SMESHGUI_IdEditItem(QTable* table, EditType et, const QString& text ):
-      QTableItem(table, et, text) {};
-    ~SMESHGUI_IdEditItem() {};
-
-    QWidget* createEditor() const;
-};
-
 
 #endif // DIALOGBOX_ADD_QUADRATIC_ELEMENT_H
