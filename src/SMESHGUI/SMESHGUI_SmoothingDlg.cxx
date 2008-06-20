@@ -358,8 +358,7 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
   if (mySMESHGUI->isActiveStudyLocked())
     return;
 
-  if (myNbOkElements &&
-      (myNbOkNodes || LineEditNodes->text().stripWhiteSpace().isEmpty())) {
+  if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().stripWhiteSpace().isEmpty())) {
     QStringList aListElementsId = QStringList::split(" ", myElementsId, false);
     QStringList aListNodesId    = QStringList::split(" ", LineEditNodes->text(), false);
 
@@ -370,7 +369,7 @@ void SMESHGUI_SmoothingDlg::ClickOnApply()
     for (int i = 0; i < aListElementsId.count(); i++)
       anElementsId[i] = aListElementsId[i].toInt();
 
-    if (myNbOkNodes) {
+    if ( myNbOkNodes && aListNodesId.count() > 0 ) {
       aNodesId->length(aListNodesId.count());
       for (int i = 0; i < aListNodesId.count(); i++)
         aNodesId[i] = aListNodesId[i].toInt();
@@ -538,7 +537,6 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   if (myBusy) return;
 
   // clear
-  myActor = 0;
   QString aString = "";
 
   myBusy = true;
@@ -547,6 +545,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
     myNbOkElements = 0;
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
+    myActor = 0;
   }
   myBusy = false;
 
@@ -639,7 +638,7 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   else if (myEditCurrentArgument == LineEditNodes)
     myNbOkNodes = true;
 
-  if (myNbOkElements) {
+  if (myNbOkElements && (myNbOkNodes || LineEditNodes->text().stripWhiteSpace().isEmpty())) {
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
@@ -671,10 +670,12 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
 	    aViewWindow->SetSelectionMode(CellSelection);
 	}
       }	else if (send == SelectNodesButton) {
+	LineEditNodes->clear();
         myEditCurrentArgument = LineEditNodes;
         SMESH::SetPointRepresentation(true);
-	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI )) {
 	  aViewWindow->SetSelectionMode(NodeSelection);
+	}
       }
 
       myEditCurrentArgument->setFocus();
