@@ -42,6 +42,9 @@ the whole \b Mesh, the <b>Initial Selection</b> or the <b>Current Group</b>.
 existing filter from <b>Selection filter library</b> and <b>Add
 to...</b> button gives you a possibility to save your current filter
 in the Library.
+\n <b>Note:</b> If button <b>Apply and Close</b> is disabled, there
+is no selected mesh in Object Browser and the filter can not be
+created. You have to select the mesh and the button will be enabled.
 
 \image html a-filteronedges.png
 

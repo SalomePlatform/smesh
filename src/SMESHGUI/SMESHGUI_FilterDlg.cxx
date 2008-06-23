@@ -2192,6 +2192,10 @@ void SMESHGUI_FilterDlg::SetSourceWg (QWidget* theWg)
 void SMESHGUI_FilterDlg::SetMesh (SMESH::SMESH_Mesh_var theMesh)
 {
   myMesh = theMesh;
+  if ( myMesh->_is_nil() ) {
+    myButtons[BTN_OK]->setEnabled(false);
+    myButtons[BTN_Apply]->setEnabled(false);
+  }
 }
 
 //=======================================================================
@@ -2526,6 +2530,14 @@ void SMESHGUI_FilterDlg::onSelectionDone()
   int aRow, aCol;
   const SALOME_ListIO& aList = mySelector->StoredIObjects();
 
+  if ( myMesh->_is_nil() && aList.Extent()>0 ) {
+    myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(aList.First());
+    if ( !(myMesh->_is_nil()) ) {
+      myButtons[BTN_OK]->setEnabled(true);
+      myButtons[BTN_Apply]->setEnabled(true);
+    }
+  }
+
   if (aList.Extent() != 1 ||
       !myTable->CurrentCell(aRow, aCol) ||
       myTable->GetCriterionType(aRow) != FT_BelongToGeom &&
@@ -2544,6 +2556,7 @@ void SMESHGUI_FilterDlg::onSelectionDone()
       myTable->SetID(aRow, anIO->getEntry());
     }
 }
+
 
 //=======================================================================
 // name    : SMESHGUI_FilterDlg::onCriterionChanged
