@@ -663,13 +663,15 @@ void SMESHGUI_SmoothingDlg::SetEditCurrentArgument()
         myEditCurrentArgument = LineEditElements;
         SMESH::SetPointRepresentation(false);
         if (CheckBoxMesh->isChecked()) {
-          mySelectionMgr->setSelectionModes(ActorSelection);
-          mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
+	  //          mySelectionMgr->setSelectionModes(ActorSelection);
+	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+	    aViewWindow->SetSelectionMode(ActorSelection);
+	  mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
         } else {
 	  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-	    aViewWindow->SetSelectionMode(CellSelection);
+	    aViewWindow->SetSelectionMode(FaceSelection);
 	}
-      }	else if (send == SelectNodesButton) {
+      } else if (send == SelectNodesButton) {
 	LineEditNodes->clear();
         myEditCurrentArgument = LineEditNodes;
         SMESH::SetPointRepresentation(true);
@@ -715,7 +717,8 @@ void SMESHGUI_SmoothingDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox(this);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-    aViewWindow->SetSelectionMode(CellSelection);
+      aViewWindow->SetSelectionMode(FaceSelection);
+
   SelectionIntoArgument();
 }
 
@@ -769,12 +772,14 @@ void SMESHGUI_SmoothingDlg::onSelectMesh (bool toSelectMesh)
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
-    mySelectionMgr->setSelectionModes(ActorSelection);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(ActorSelection);
+    //    mySelectionMgr->setSelectionModes(ActorSelection);
     mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
     LineEditElements->setReadOnly(true);
   } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(CellSelection);
+      aViewWindow->SetSelectionMode(FaceSelection);
     LineEditElements->setReadOnly(false);
     onTextChange(LineEditElements->text());
   }
