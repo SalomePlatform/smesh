@@ -2060,13 +2060,13 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       TPythonDump pd;
       pd << "aCriterion = SMESH.Filter.Criterion(" << aCriterion << "," << aCompare
          << "," << aThreshold << ",'" << aThresholdStr;
-      if (strlen(aThresholdID) > 0)
-        pd << "',salome.ObjectToID(" << aThresholdID
-           << ")," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
+      if (aThresholdID)
+	pd << "',salome.ObjectToID(" << aThresholdID
+	   << ")," << aUnary << "," << aBinary << "," << aTolerance
+	   << "," << aTypeOfElem << "," << aPrecision << ")";
       else
-        pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
-           << "," << aTypeOfElem << "," << aPrecision << ")";
+	pd << "',''," << aUnary << "," << aBinary << "," << aTolerance
+	   << "," << aTypeOfElem << "," << aPrecision << ")";
     }
 
     SMESH::Predicate_ptr aPredicate = SMESH::Predicate::_nil();
