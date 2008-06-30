@@ -359,7 +359,8 @@ using namespace std;
 	  anInitialPath = QDir::currentDirPath();
 
 	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141)
-	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath, aFilter, aTitle, false);
+	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
+						aFilter, aTitle, false);
 	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
 	  QStringList filters;
           QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
@@ -372,6 +373,7 @@ using namespace std;
           fd->setSelectedFilter( QObject::tr("STL ASCII  (*.stl)") );
 	  if ( !anInitialPath.isEmpty() )
 	    fd->setDir( anInitialPath );
+	  fd->setSelection(anIObject->getName());
           bool is_ok = false;
           while (!is_ok) {
             fd->exec();
@@ -401,6 +403,7 @@ using namespace std;
           fd->SetChecked(toCreateGroups);
 	  if ( !anInitialPath.isEmpty() )
 	    fd->setDir( anInitialPath );
+	  fd->setSelection(anIObject->getName());
           bool is_ok = false;
           while (!is_ok) {
             fd->exec();
