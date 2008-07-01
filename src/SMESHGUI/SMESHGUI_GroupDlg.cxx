@@ -517,7 +517,6 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   
   myName->setText(theGroup->GetName());
   myName->home(false);
-  myOldName = myName->text();
 
   SALOMEDS::Color aColor = theGroup->GetColor();
   setGroupColor( aColor );
@@ -620,6 +619,7 @@ void SMESHGUI_GroupDlg::updateButtons()
 //=================================================================================
 void SMESHGUI_GroupDlg::onNameChanged (const QString& text)
 {
+  myOldName = myName->text();
   updateButtons();
 }
 
@@ -646,8 +646,7 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
 {
   if (myGrpTypeId != id) {
     myWGStack->raiseWidget( id );
-    if (id == 0)
-      myName->setText(myOldName);
+    myName->setText(myOldName);
     onSelectGeomGroup(id == 1);
   }
   myGrpTypeId = id;
