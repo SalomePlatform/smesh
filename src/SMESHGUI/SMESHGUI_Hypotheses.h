@@ -57,6 +57,7 @@ public:
 
   virtual bool                 checkParams() const = 0;
   virtual void                 onReject();
+  virtual QString              helpPage() const;
 
   QString                      hypType() const;
   QString                      hypName() const;
