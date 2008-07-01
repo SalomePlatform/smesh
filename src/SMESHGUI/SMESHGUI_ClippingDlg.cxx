@@ -382,7 +382,9 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
 {
   // no need to delete child widgets, Qt does it all for us
   std::for_each(myPlanes.begin(),myPlanes.end(),TSetVisiblity(false));
-  SMESH::RenderViewWindow(SMESH::GetViewWindow(mySMESHGUI));
+
+  if (SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow(mySMESHGUI))
+    SMESH::RenderViewWindow(aViewWindow);
 }
 
 //=======================================================================
