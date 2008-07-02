@@ -169,92 +169,112 @@ using namespace std;
 
   // Definitions
   //=============================================================
-  void ImportMeshesFromFile(SMESH::SMESH_Gen_ptr theComponentMesh,
-			    int theCommandID)
+  void ImportMeshesFromFile( SMESH::SMESH_Gen_ptr theComponentMesh,
+			     int theCommandID )
   {
     QStringList filter;
     string myExtension;
 
-    if(theCommandID == 113){
-      filter.append(QObject::tr("MED files (*.med)"));
-      filter.append(QObject::tr("All files (*)"));
-    }else if (theCommandID == 112){
-      filter.append(QObject::tr("IDEAS files (*.unv)"));
-    }else if (theCommandID == 111){
-      filter.append(QObject::tr("DAT files (*.dat)"));
+    if ( theCommandID == 113 ) {
+      filter.append( QObject::tr( "MED files (*.med)" ) );
+      filter.append( QObject::tr( "All files (*)" ) );
+    }
+    else if ( theCommandID == 112 ) {
+      filter.append( QObject::tr( "IDEAS files (*.unv)" ) );
+    }
+    else if ( theCommandID == 111 ) {
+      filter.append( QObject::tr( "DAT files (*.dat)" ) );
     }
 
     QString anInitialPath = "";
     if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
       anInitialPath = QDir::currentDirPath();
 
-    QString filename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(),
-						 anInitialPath,
-						 filter,
-						 QObject::tr("Import mesh"),
-						 true);
-    if(!filename.isEmpty()) {
+    QStringList filenames = SUIT_FileDlg::getOpenFileNames( SMESHGUI::desktop(),
+							    anInitialPath,
+							    filter,
+							    QObject::tr( "SMESH_IMPORT_MESH" ) );
+    if ( filenames.count() > 0 ) {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
-      try {
+      QStringList errors;
+      bool isEmpty = false;
+      for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it ) {
+	QString filename = *it;
 	SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
-	switch ( theCommandID ) {
-	case 112:
-	  {
-	    aMeshes->length( 1 );
-	    aMeshes[0] = theComponentMesh->CreateMeshesFromUNV(filename.latin1());
-	    break;
-	  }
-	case 113:
-	  {
-	    SMESH::DriverMED_ReadStatus res;
-	    aMeshes = theComponentMesh->CreateMeshesFromMED(filename.latin1(),res);
-	    if ( res != SMESH::DRS_OK ) {
-	      wc.suspend();
-	      SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-                                     QObject::tr("SMESH_WRN_WARNING"),
-                                     QObject::tr(QString("SMESH_DRS_%1").arg(res)),
-                                     QObject::tr("SMESH_BUT_OK"));
-	      aMeshes->length( 0 );
-	      wc.resume();
+	try {
+	  switch ( theCommandID ) {
+	  case 111:
+	    {
+	      // DAT format (currently unsupported)
+	      errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			     arg( QObject::tr( "SMESH_ERR_NOT_SUPPORTED_FORMAT" ) ) );
+	      break;
 	    }
-	    break;
+	  case 112:
+	    {
+	      // UNV format
+	      aMeshes->length( 1 );
+	      aMeshes[0] = theComponentMesh->CreateMeshesFromUNV( filename.latin1() );
+	      if ( aMeshes[0]->_is_nil() )
+		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			       arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+	      break;
+	    }
+	  case 113:
+	    {
+	      // MED format
+	      SMESH::DriverMED_ReadStatus res;
+	      aMeshes = theComponentMesh->CreateMeshesFromMED( filename.latin1(), res );
+	      if ( res != SMESH::DRS_OK ) {
+		errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			       arg( QObject::tr( QString( "SMESH_DRS_%1" ).arg( res ) ) ) );
+	      }
+	      break;
+	    }
 	  }
 	}
+	catch ( const SALOME::SALOME_Exception& S_ex ) {
+	  errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
+			 arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
+	}
 
-	bool isEmpty = false;
 	for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ ) {
 	  _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
 	  if ( aMeshSO ) {
 	    _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
 	    _PTR(AttributePixMap) aPixmap = aBuilder->FindOrCreateAttribute( aMeshSO, "AttributePixMap" );
-	    aPixmap->SetPixMap("ICON_SMESH_TREE_MESH_IMPORTED");
+	    aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH_IMPORTED" );
 	    if ( theCommandID == 112 ) // mesh names aren't taken from the file for UNV import
 	      SMESH::SetName( aMeshSO, QFileInfo(filename).fileName() );
-	  } else
+	  }
+	  else {
 	    isEmpty = true;
+	  }
 	}
-
-	if ( isEmpty ) {
-	  wc.suspend();
-	  SUIT_MessageBox::warn1(SMESHGUI::desktop(),
-                                 QObject::tr("SMESH_WRN_WARNING"),
-                                 QObject::tr("SMESH_DRS_EMPTY"),
-                                 QObject::tr("SMESH_BUT_OK"));
-	  wc.resume();
-	}
-
-	SMESHGUI::GetSMESHGUI()->updateObjBrowser();
       }
-      catch (const SALOME::SALOME_Exception& S_ex){
-	wc.suspend();
-	SalomeApp_Tools::QtCatchCorbaException(S_ex);
-	wc.resume();
+
+      // update Object browser
+      SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+      
+      // show Error message box if there were errors
+      if ( errors.count() > 0 ) {
+	SUIT_MessageBox::error1( SMESHGUI::desktop(),
+				 QObject::tr( "SMESH_ERROR" ),
+				 QObject::tr( "SMESH_IMPORT_ERRORS" ) + "\n" + errors.join( "\n" ),
+				 QObject::tr( "SMESH_BUT_OK" ) );
+      }
+      
+      // show warning message box, if some imported mesh is empty
+      if ( isEmpty ) {
+	  SUIT_MessageBox::warn1( SMESHGUI::desktop(),
+				  QObject::tr( "SMESH_WRN_WARNING" ),
+				  QObject::tr( "SMESH_DRS_SOME_EMPTY" ),
+				  QObject::tr( "SMESH_BUT_OK" ) );
       }
     }
   }
-
 
   void ExportMeshToFile( int theCommandID )
   {

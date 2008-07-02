@@ -1384,20 +1384,16 @@ msgid "SMESH_DRS_1"
 msgstr "MED file contains no mesh with the given name"
 
 msgid "SMESH_DRS_2"
-msgstr ""
-"MED file has overlapped ranges of element numbers,\n"
-"     the numbers from the file are ignored"
+msgstr "MED file has overlapped ranges of element numbers, the numbers from the file are ignored"
 
 msgid "SMESH_DRS_3"
 msgstr "Some elements were skipped due to incorrect file data"
 
 msgid "SMESH_DRS_4"
-msgstr "    The file is incorrect,\n"
-       "some information will be missed"
+msgstr "The file is incorrect, some data is missed"
 
 msgid "SMESH_DRS_EMPTY"
-msgstr "      The file is empty,\n"
-       "there is nothing to be published"
+msgstr "The file is empty, there is nothing to be published"
 
 msgid "SMESH_EXPORT_UNV"
 msgstr "During export mesh with name - \"%1\" to UNV\n"
@@ -3568,3 +3564,18 @@ msgstr "File size (bytes)"
 
 msgid "SMESHGUI_FileInfoDlg::MED_VERSION"
 msgstr "MED version"
+
+msgid "SMESH_IMPORT_MESH"
+msgstr "Import mesh data from files"
+
+msgid "SMESH_ERR_NOT_SUPPORTED_FORMAT"
+msgstr "Unsupported file format"
+
+msgid "SMESH_ERR_UNKNOWN_IMPORT_ERROR"
+msgstr "Unknown error"
+
+msgid "SMESH_IMPORT_ERRORS"
+msgstr "Import operation has finished with errors:"
+
+msgid "SMESH_DRS_SOME_EMPTY"
+msgstr "One or more mesh files were empty, data has not been published"
