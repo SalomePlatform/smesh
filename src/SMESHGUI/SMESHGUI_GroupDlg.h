@@ -132,6 +132,7 @@ private:
     void setSelectionMode(int theMode);
     void updateButtons();
     void updateGeomPopup();
+    bool SetAppropriateActor();
     void setShowEntityMode();
     void restoreShowEntityMode();
 
