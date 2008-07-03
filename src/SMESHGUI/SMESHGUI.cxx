@@ -378,9 +378,11 @@ using namespace std;
 	if ( SUIT_FileDlg::getLastVisitedPath().isEmpty() )
 	  anInitialPath = QDir::currentDirPath();
 
-	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141)
+	if ( theCommandID != 122 && theCommandID != 125 && theCommandID != 140 && theCommandID != 141) {
+	  if ( anInitialPath.isEmpty() ) anInitialPath = SUIT_FileDlg::getLastVisitedPath();
 	  aFilename = SUIT_FileDlg::getFileName(SMESHGUI::desktop(), anInitialPath + QString("/") + anIObject->getName(),
 						aFilter, aTitle, false);
+	}
 	else if(theCommandID == 140 || theCommandID == 141) { // Export to STL
 	  QStringList filters;
           QMap<QString, int>::const_iterator it = aFilterMapSTL.begin();
