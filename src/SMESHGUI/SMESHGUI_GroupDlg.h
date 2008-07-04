@@ -203,6 +203,8 @@ private:
     bool                          myCreate, myIsBusy;
 
     QString                       myHelpFileName;
+
+    bool                          myNameChanged; //added by skl for IPAL19574
 };
 
 #endif // DIALOGBOX_GROUP_H

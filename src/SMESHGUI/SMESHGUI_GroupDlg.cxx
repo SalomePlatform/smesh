@@ -110,6 +110,7 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
      mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
      myIsBusy( false ),
+     myNameChanged(false),
      myActor( 0 )
 {
   if (!name) setName("SMESHGUI_GroupDlg");
@@ -135,7 +136,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule, const char* name,
      mySMESHGUI( theModule ),
      mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
      mySelector(SMESH::GetViewWindow( theModule )->GetSelector()),
-     myIsBusy( false )
+     myIsBusy( false ),
+     myNameChanged(false)
 {
   if (!name) setName("SMESHGUI_GroupDlg");
 
@@ -521,7 +523,10 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
   myMesh = theGroup->GetMesh();
   setShowEntityMode();
 
+  myNameChanged = true;
+  myName->blockSignals(true);
   myName->setText(theGroup->GetName());
+  myName->blockSignals(false);
   myName->home(false);
 
   SALOMEDS::Color aColor = theGroup->GetColor();
@@ -603,7 +608,10 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup)
         aShapeName = aGroupShapeSO->GetName().c_str();
       }
       myGeomGroupLine->setText( aShapeName );
+      myNameChanged = true;
+      myName->blockSignals(true);
       myName->setText("Group On " + aShapeName);
+      myName->blockSignals(false);
     }
   }
 }
@@ -641,6 +649,12 @@ void SMESHGUI_GroupDlg::onNameChanged (const QString& text)
 {
   myOldName = myName->text();
   updateButtons();
+  QString tmp = myName->text();
+  tmp.stripWhiteSpace();
+  if( !tmp.isEmpty() )
+    myNameChanged = true;
+  else
+    myNameChanged = false;
 }
 
 //=================================================================================
@@ -666,7 +680,9 @@ void SMESHGUI_GroupDlg::onGrpTypeChanged (int id)
 {
   if (myGrpTypeId != id) {
     myWGStack->raiseWidget( id );
+    myName->blockSignals(true);
     myName->setText(myOldName);
+    myName->blockSignals(false);
     onSelectGeomGroup(id == 1);
   }
   myGrpTypeId = id;
@@ -1193,9 +1209,11 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
     // change name of group only if it is empty
     QString tmp = myName->text();
     tmp.stripWhiteSpace();
-    if(tmp.isEmpty()) {
+    if( tmp.isEmpty() || !myNameChanged ) {
       myOldName = myName->text();
+      myName->blockSignals(true);
       myName->setText(aString);
+      myName->blockSignals(false);
     }
 
     updateButtons();
