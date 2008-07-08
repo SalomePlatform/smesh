@@ -288,7 +288,8 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   //Fix for Bug 13314:
   //Incorrect "Min value" in Scalar Bar in Mesh:
-  myScalarBarActor->SetLabelFormat("%.4g");
+  //  myScalarBarActor->SetLabelFormat("%.4g");
+  // changes was commented because of regression bug IPAL 19981
 
   mgr = SUIT_Session::session()->resourceMgr();
   if( !mgr )
