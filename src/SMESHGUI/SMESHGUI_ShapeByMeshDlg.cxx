@@ -288,8 +288,9 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
     if (aListId.count() == 1)
       {
 	int elemID = (aListId.first()).toInt();
-	myGeomObj = SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-	  ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1());
+	myGeomObj = GEOM::GEOM_Object::_duplicate(
+	    SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
+	  ( myMesh.in(), elemID, myDlg->myGeomName->text().latin1()) );
       }
     else
       {
@@ -361,7 +362,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 	QString aNewGeomGroupName ( myDlg->myGeomName->text().latin1() );
 	  
 	SALOMEDS::SObject_var aNewGroupSO =
-	  geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, aNewGeomGroupName, aMeshShape);
+	geomGen->AddInStudy(SMESHGUI::GetSMESHGen()->GetCurrentStudy(), myGeomObj, aNewGeomGroupName, aMeshShape);
       }
   }
   catch (const SALOME::SALOME_Exception& S_ex) {
