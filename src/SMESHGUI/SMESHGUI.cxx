@@ -3135,7 +3135,10 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_FILL" ), elemGroup, LightApp_Preferences::Color, "SMESH", "fill_color" );
   addPreference( tr( "PREF_OUTLINE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "outline_color" );
   addPreference( tr( "PREF_BACKFACE" ), elemGroup, LightApp_Preferences::Color, "SMESH", "backface_color" );
-  addPreference( "", elemGroup, LightApp_Preferences::Space );
+  int sp = addPreference( "", elemGroup, LightApp_Preferences::Space );
+
+  setPreferenceProperty( sp, "hstretch", 0 );
+  setPreferenceProperty( sp, "vstretch", 0 );
 
   int elemW = addPreference( tr( "PREF_WIDTH" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "element_width" );
   int shrink = addPreference( tr( "PREF_SHRINK_COEFF" ), elemGroup, LightApp_Preferences::IntSpin, "SMESH", "shrink_coeff" );
@@ -3176,7 +3179,7 @@ void SMESHGUI::createPreferences()
 
   int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
-  setPreferenceProperty( fontGr, "columns", 4 );
+  setPreferenceProperty( fontGr, "columns", 2 );
 
   int tfont = addPreference( tr( "SMESH_TITLE" ), fontGr, LightApp_Preferences::Font, "SMESH", "scalar_bar_title_font" );
   addPreference( tr( "PREF_TITLE_COLOR" ), fontGr, LightApp_Preferences::Color, "SMESH", "scalar_bar_title_color" );
@@ -3197,7 +3200,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( lfont, "widget_flags", wflag );
 
   int colorsLabelsGr = addPreference( tr( "SMESH_LABELS_COLORS_SCALARBAR" ), sbarTab );
-  setPreferenceProperty( colorsLabelsGr, "columns", 4 );
+  setPreferenceProperty( colorsLabelsGr, "columns", 2 );
 
   int numcol = addPreference( tr( "SMESH_NUMBEROFCOLORS" ), colorsLabelsGr, LightApp_Preferences::IntSpin, "SMESH", "scalar_bar_num_colors" );
   setPreferenceProperty( numcol, "min", 2 );
@@ -3218,7 +3221,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( orient, "indexes", indices );
 
   int posVSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_VERTICAL" ), sbarTab );
-  setPreferenceProperty( posVSizeGr, "columns", 4 );
+  setPreferenceProperty( posVSizeGr, "columns", 2 );
   int xv = addPreference( tr( "SMESH_X_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_x" );
   int yv = addPreference( tr( "SMESH_Y_SCALARBAR" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_y" );
   int wv = addPreference( tr( "SMESH_WIDTH" ), posVSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_vertical_width" );
@@ -3237,7 +3240,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( hv, "step", 0.1 );
 
   int posHSizeGr = addPreference( tr( "SMESH_POSITION_SIZE_SCALARBAR" ) + " " + tr( "SMESH_HORIZONTAL" ), sbarTab );
-  setPreferenceProperty( posHSizeGr, "columns", 4 );
+  setPreferenceProperty( posHSizeGr, "columns", 2 );
   int xh = addPreference( tr( "SMESH_X_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_x" );
   int yh = addPreference( tr( "SMESH_Y_SCALARBAR" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_y" );
   int wh = addPreference( tr( "SMESH_WIDTH" ), posHSizeGr, LightApp_Preferences::DblSpin, "SMESH", "scalar_bar_horizontal_width" );
