@@ -30,22 +30,6 @@
 module SMESH
 {
   /*!
-   * Structure used in mesh edit preview data
-   */
-  struct ElementSubType { ElementType SMDS_ElementType;
-                          boolean     isPoly;
-                          long        nbNodesInElement; };
-
-  typedef sequence<ElementSubType> types_array;
-
-  /*!
-   * Structure containing mesh edit preview data
-   */
-  struct MeshPreviewStruct { nodes_array nodesXYZ;
-                             long_array  elementConnectivities;
-                             types_array elementTypes; };
-
-  /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
   interface NumericalFunctor;
