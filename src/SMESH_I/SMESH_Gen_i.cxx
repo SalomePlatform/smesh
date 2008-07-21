@@ -97,6 +97,7 @@
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "DriverMED_R_SMESHDS_Mesh.h"
@@ -1069,9 +1070,10 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
           errStruct.subShapeID = sm->GetId();
           SALOMEDS::SObject_var algoSO = GetAlgoSO( error->myAlgo );
           if ( !algoSO->_is_nil() )
-            errStruct.algoName   = algoSO->GetName();
+            errStruct.algoName = algoSO->GetName();
           else
-            errStruct.algoName   = error->myAlgo->GetName();
+            errStruct.algoName = error->myAlgo->GetName();
+          errStruct.hasBadMesh = !error->myBadElements.empty();
         }
       }
       error_array->length( nbErr );
@@ -1084,12 +1086,98 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
   return error_array._retn();
 }
 
+// 
+//================================================================================
+/*!
+ * \brief Return mesh elements preventing computation of a subshape
+ */
+//================================================================================
+
+SMESH::MeshPreviewStruct*
+SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                  CORBA::Short          theSubShapeID )
+  throw ( SALOME::SALOME_Exception )
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if(MYDEBUG) MESSAGE( "SMESH_Gen_i::GetBadInputElements()" );
+
+  if ( CORBA::is_nil( theMesh ) )
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",SALOME::BAD_PARAM );
+
+  SMESH::MeshPreviewStruct_var result = new SMESH::MeshPreviewStruct;
+  try {
+    // mesh servant
+    if ( SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh ))
+    {
+      // mesh implementation
+      ::SMESH_Mesh& mesh = meshServant->GetImpl();
+      // submesh by subshape id
+      if ( SMESH_subMesh * sm = mesh.GetSubMeshContaining( theSubShapeID ))
+      {
+        // compute error
+        SMESH_ComputeErrorPtr error = sm->GetComputeError();
+        if ( error && !error->myBadElements.empty())
+        {
+          typedef map<const SMDS_MeshElement*, int > TNode2LocalIDMap;
+          typedef TNode2LocalIDMap::iterator         TNodeLocalID;
+
+          // get nodes of elements and count elements
+          TNode2LocalIDMap mapNode2LocalID;
+          list< TNodeLocalID > connectivity;
+          int i, nbElements = 0, nbConnNodes = 0;
+
+          list<const SMDS_MeshElement*>::iterator elemIt  = error->myBadElements.begin();
+          list<const SMDS_MeshElement*>::iterator elemEnd = error->myBadElements.end();
+          for ( ; elemIt != elemEnd; ++elemIt, ++nbElements )
+          {
+            SMDS_ElemIteratorPtr nIt = (*elemIt)->nodesIterator();
+            while ( nIt->more() )
+              connectivity.push_back
+                ( mapNode2LocalID.insert( make_pair( nIt->next(), ++nbConnNodes)).first );
+          }
+          // fill node coords and assign local ids to the nodes
+          int nbNodes = mapNode2LocalID.size();
+          result->nodesXYZ.length( nbNodes );
+          TNodeLocalID node2ID = mapNode2LocalID.begin();
+          for ( i = 0; i < nbNodes; ++i, ++node2ID ) {
+            node2ID->second = i;
+            const SMDS_MeshNode* node = (const SMDS_MeshNode*) node2ID->first;
+            result->nodesXYZ[i].x = node->X();
+            result->nodesXYZ[i].y = node->Y();
+            result->nodesXYZ[i].z = node->Z();
+          }
+          // fill connectivity
+          result->elementConnectivities.length( nbConnNodes );
+          list< TNodeLocalID >::iterator connIt = connectivity.begin();
+          for ( i = 0; i < nbConnNodes; ++i, ++connIt ) {
+            result->elementConnectivities[i] = (*connIt)->second;
+          }
+          // fill element types
+          result->elementTypes.length( nbElements );
+          for ( i = 0, elemIt = error->myBadElements.begin(); i <nbElements; ++i, ++elemIt )
+          {
+            const SMDS_MeshElement* elem = *elemIt;
+            result->elementTypes[i].SMDS_ElementType = (SMESH::ElementType) elem->GetType();
+            result->elementTypes[i].isPoly           = elem->IsPoly();
+            result->elementTypes[i].nbNodesInElement = elem->NbNodes();
+          }
+        }
+      }
+    }
+  }
+  catch ( SALOME_Exception& S_ex ) {
+    INFOS( "catch exception "<< S_ex.what() );
+  }
+
+  return result._retn();
+}
+
 //================================================================================
 /*!
  * \brief Returns errors of hypotheses definintion
-  * \param theMesh - the mesh
-  * \param theSubObject - the main or sub- shape
-  * \retval SMESH::algo_error_array* - sequence of errors
+ * \param theMesh - the mesh
+ * \param theSubObject - the main or sub- shape
+ * \retval SMESH::algo_error_array* - sequence of errors
  */
 //================================================================================
 

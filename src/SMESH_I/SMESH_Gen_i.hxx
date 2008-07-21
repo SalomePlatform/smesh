@@ -243,6 +243,11 @@ public:
                                          GEOM::GEOM_Object_ptr theSubObject )
       throw ( SALOME::SALOME_Exception );
 
+  // Return mesh elements preventing computation of a subshape
+  SMESH::MeshPreviewStruct* GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
+                                                 CORBA::Short          theSubShapeID )
+    throw ( SALOME::SALOME_Exception );
+
   // Get sub-shapes unique ID's list
   SMESH::long_array* GetSubShapesId( GEOM::GEOM_Object_ptr      theMainShapeObject,
                                      const SMESH::object_array& theListOfSubShape )
