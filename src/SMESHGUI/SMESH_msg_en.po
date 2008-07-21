@@ -1353,6 +1353,9 @@ msgstr "Shape is neither the main one, nor its subshape, nor a valid group"
 msgid "SMESH_HYP_12"
 msgstr "Geomerty mismatches algorithm's expectation"
 
+msgid "SMESH_HYP_13"
+msgstr "Algorithm can't work without shape"
+
 # SMESHGUI_HypothesesUtils::GetMessageOnAlgoStateErrors()
 # %1 - algo name
 # %2 - dimension
@@ -3496,6 +3499,9 @@ msgstr "Compute mesh"
 
 msgid "SMESHGUI_ComputeDlg::ERRORS"
 msgstr "Errors"
+
+msgid "SMESHGUI_ComputeDlg::SHOW_BAD_MESH"
+msgstr "Show bad Mesh"
 
 msgid "SMESHGUI_ComputeDlg::SHOW_SHAPE"
 msgstr "Show SubShape"
