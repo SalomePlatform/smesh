@@ -205,6 +205,8 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo):
         reason = "it is hidden by an algorithm of an upper dimension, which generates elements of all dimensions"
     elif status == HYP_HIDING_ALGO:
         reason = "it hides algorithms of lower dimensions by generating elements of all dimensions"
+    elif status == HYP_NEED_SHAPE:
+        reason = "Algorithm can't work without shape"
     else:
         return
     hypName = '"' + hypName + '"'
@@ -573,6 +575,9 @@ class Mesh:
             SetName(self.mesh, name)
         elif obj != 0:
             SetName(self.mesh, GetName(obj))
+
+        if not self.geom:
+            self.geom = self.mesh.GetShapeToMesh()
 
         self.editor = self.mesh.GetMeshEditor()
 
