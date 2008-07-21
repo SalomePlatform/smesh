@@ -141,7 +141,8 @@ module SMESH
     HYP_ALREADY_EXIST,// such hypothesis already exist
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its subshape, nor a group
-    HYP_BAD_GEOMETRY  // geometry mismatches algorithm's expectation
+    HYP_BAD_GEOMETRY, // geometry mismatches algorithm's expectation
+    HYP_NEED_SHAPE    // algorithm can work on shape only
   };
 
   /*!
@@ -177,6 +178,22 @@ module SMESH
   const long EXTRUSION_FLAG_BOUNDARY = 1;
   const long EXTRUSION_FLAG_SEW = 2;
   
+  /*!
+   * Structure used in mesh edit preview data (MeshPreviewStruct)
+   */
+  struct ElementSubType { ElementType SMDS_ElementType;
+                          boolean     isPoly;
+                          long        nbNodesInElement; };
+
+  typedef sequence<ElementSubType> types_array;
+
+  /*!
+   * Structure containing mesh edit preview data
+   */
+  struct MeshPreviewStruct { nodes_array nodesXYZ;
+                             long_array  elementConnectivities;
+                             types_array elementTypes; };
+
   interface SMESH_IDSource
   {
     /*!
