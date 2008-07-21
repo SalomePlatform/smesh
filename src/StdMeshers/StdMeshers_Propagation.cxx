@@ -543,8 +543,9 @@ namespace {
           // clear propagation chain
           clearPropagationChain( subMesh );
         }
-        return;
-      case SMESH_subMesh::MODIF_HYP: // hyp modif
+        // return; -- hyp is modified any way
+      default:
+        //case SMESH_subMesh::MODIF_HYP: // hyp modif
         // clear mesh in a chain
         DBGMSG( "MODIF_HYP on HAS_PROPAG_HYP " << subMesh->GetId() );
         SMESH_subMeshIteratorPtr smIt = data->GetChain();
