@@ -372,6 +372,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
   RETURNCASE( HYP_BAD_DIM       );
   RETURNCASE( HYP_BAD_SUBSHAPE  );
   RETURNCASE( HYP_BAD_GEOMETRY  );
+  RETURNCASE( HYP_NEED_SHAPE    );
   default:;
   }
   return SMESH::HYP_UNKNOWN_FATAL;
