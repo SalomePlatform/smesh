@@ -502,6 +502,7 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
   if ( error ) {
     _error   = error->myName;
     _comment = error->myComment;
+    _badInputElements = error->myBadElements;
     return error->IsOK();
   }
   return true;
@@ -515,7 +516,11 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
 
 SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
 {
-  return SMESH_ComputeError::New( _error, _comment, this );
+  SMESH_ComputeErrorPtr err = SMESH_ComputeError::New( _error, _comment, this );
+  // hope this method is called by only SMESH_subMesh after this->Compute()
+  err->myBadElements.splice( err->myBadElements.end(),
+                             (list<const SMDS_MeshElement*>&) _badInputElements );
+  return err;
 }
 
 //================================================================================
@@ -528,5 +533,23 @@ void SMESH_Algo::InitComputeError()
 {
   _error = COMPERR_OK;
   _comment.clear();
+  list<const SMDS_MeshElement*>::iterator elem = _badInputElements.begin();
+  for ( ; elem != _badInputElements.end(); ++elem )
+    if ( (*elem)->GetID() < 1 )
+      delete *elem;
+  _badInputElements.clear();
 }
 
+//================================================================================
+/*!
+ * \brief store a bad input element preventing computation,
+ *        which may be a temporary one i.e. not residing the mesh,
+ *        then it will be deleted by InitComputeError()
+ */
+//================================================================================
+
+void SMESH_Algo::addBadInputElement(const SMDS_MeshElement* elem)
+{
+  if ( elem )
+    _badInputElements.push_back( elem );
+}

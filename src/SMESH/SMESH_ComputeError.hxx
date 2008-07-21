@@ -30,9 +30,11 @@
 #define SMESH_ComputeError_HeaderFile
 
 #include <string>
+#include <list>
 #include <boost/shared_ptr.hpp>
 
 class SMESH_Algo;
+class SMDS_MeshElement;
 struct SMESH_ComputeError;
 
 typedef boost::shared_ptr<SMESH_ComputeError> SMESH_ComputeErrorPtr;
@@ -66,6 +68,8 @@ struct SMESH_ComputeError
   std::string       myComment;
   const SMESH_Algo* myAlgo;
 
+  std::list<const SMDS_MeshElement*> myBadElements; //!< to explain COMPERR_BAD_INPUT_MESH
+
   static SMESH_ComputeErrorPtr New( int               error   = COMPERR_OK,
                                     std::string       comment = "",
                                     const SMESH_Algo* algo    = 0)
@@ -82,19 +86,19 @@ struct SMESH_ComputeError
 
 };
 
-#define case2char(err) case err: return #err;
+#define _case2char(err) case err: return #err;
 
 std::string SMESH_ComputeError::CommonName() const
 {
   switch( myName ) {
-  case2char(COMPERR_OK            );
-  case2char(COMPERR_BAD_INPUT_MESH);
-  case2char(COMPERR_STD_EXCEPTION );
-  case2char(COMPERR_OCC_EXCEPTION );
-  case2char(COMPERR_SLM_EXCEPTION );
-  case2char(COMPERR_EXCEPTION     );
-  case2char(COMPERR_MEMORY_PB     );
-  case2char(COMPERR_ALGO_FAILED   );
+  _case2char(COMPERR_OK            );
+  _case2char(COMPERR_BAD_INPUT_MESH);
+  _case2char(COMPERR_STD_EXCEPTION );
+  _case2char(COMPERR_OCC_EXCEPTION );
+  _case2char(COMPERR_SLM_EXCEPTION );
+  _case2char(COMPERR_EXCEPTION     );
+  _case2char(COMPERR_MEMORY_PB     );
+  _case2char(COMPERR_ALGO_FAILED   );
   default:;
   }
   return "";

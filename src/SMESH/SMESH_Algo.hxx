@@ -293,6 +293,12 @@ protected:
    * \brief store error and return error->IsOK()
    */
   bool error(SMESH_ComputeErrorPtr error);
+  /*!
+   * \brief store a bad input element preventing computation,
+   *        which may be a temporary one i.e. not residing the mesh,
+   *        then it will be deleted by InitComputeError()
+   */
+  void addBadInputElement(const SMDS_MeshElement* elem);
 
 protected:
 
@@ -310,6 +316,7 @@ protected:
 
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
   std::string _comment;  //!< any text explaining what is wrong in Compute()
+  std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
 };
 
 #endif
