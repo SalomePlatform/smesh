@@ -385,7 +385,7 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
   int NbNodes = IDsOfNodes.length();
   if (NbNodes < 3)
   {
-    return false;
+    return 0;
   }
 
   std::vector<const SMDS_MeshNode*> nodes (NbNodes);
