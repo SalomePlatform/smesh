@@ -83,7 +83,7 @@ protected:
 
   std::list<const SMDS_MeshNode*> myNodesOnCommonV;
 
-  SMESH_MesherHelper* myTool; // toll for working with quadratic elements
+  SMESH_MesherHelper* myTool; // tool for working with quadratic elements
 };
 
 #endif

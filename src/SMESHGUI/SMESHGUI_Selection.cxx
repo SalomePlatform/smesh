@@ -114,6 +114,8 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="displayMode" )   val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )  val = QVariant( isComputable( ind ) );
   else if ( p=="hasReference" )  val = QVariant( hasReference( ind ) );
+  else if ( p=="isImported" )    val = QVariant( isImported( ind ) );
+
 
   if( val.isValid() )
     return val;
@@ -485,4 +487,21 @@ QString SMESHGUI_Selection::typeName( const int t )
   default:
     return "Unknown";
   }
+}
+
+bool SMESHGUI_Selection::isImported( const int ind ) const
+{
+  QString e = entry( ind );
+  _PTR(SObject) SO = SMESH::GetActiveStudyDocument()->FindObjectID( e.toLatin1().constData() );
+  bool res = false;
+  if( SO )
+  {
+    SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( SO ) );
+    if( !aMesh->_is_nil() )
+    {
+      SALOME_MED::MedFileInfo* inf = aMesh->GetMEDFileInfo();
+      res = strlen( (char*)inf->fileName ) > 0;
+    }
+  }
+  return res;
 }

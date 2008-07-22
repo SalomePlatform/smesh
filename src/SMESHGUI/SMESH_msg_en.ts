@@ -2727,6 +2727,10 @@ Consider saving your work before application crash</translation>
             <source>WARP_ELEMENTS</source>
             <translation>Warping</translation>
         </message>
+        <message>
+            <source>MEN_FILE_INFO</source>
+            <translation>MED file information</translation>
+        </message>
     </context>
     <context>
         <name>SMESHGUI</name>
@@ -4093,7 +4097,7 @@ It is impossible to read point coordinates from file</translation>
         <name>SMESHGUI_RevolutionDlg</name>
         <message>
             <source>ANGLE_BY_STEP</source>
-            <translation>Use Angle by Step</translation>
+            <translation>Angle by Step</translation>
         </message>
         <message>
             <source>PREVIEW</source>
@@ -4113,7 +4117,7 @@ It is impossible to read point coordinates from file</translation>
         </message>
         <message>
             <source>TOTAL_ANGLE</source>
-            <translation>Use Total Angle</translation>
+            <translation>Total Angle</translation>
         </message>
     </context>
     <context>
@@ -4306,6 +4310,25 @@ It is impossible to read point coordinates from file</translation>
         <message>
             <source>GRAVITY_CENTER</source>
             <translation>Gravity center</translation>
+        </message>
+    </context>
+    <context>
+        <name>SMESHGUI_FileInfoDlg</name>
+        <message>
+            <source>CAPTION</source>
+            <translation>File information</translation>
+        </message>
+        <message>
+            <source>FILE_NAME</source>
+            <translation>File name</translation>
+        </message>
+        <message>
+            <source>FILE_SIZE</source>
+            <translation>File size (bytes)</translation>
+        </message>
+        <message>
+            <source>MED_VERSION</source>
+            <translation>MED version</translation>
         </message>
     </context>
 </TS>

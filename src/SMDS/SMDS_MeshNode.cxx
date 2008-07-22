@@ -246,7 +246,7 @@ bool SMDS_MeshNode::emptyInverseElements()
  */
 //================================================================================
 
-int SMDS_MeshNode::NbInverseNodes(SMDSAbs_ElementType type) const
+int SMDS_MeshNode::NbInverseElements(SMDSAbs_ElementType type) const
 {
   if ( type == SMDSAbs_All )
     return myInverseElements.Extent();

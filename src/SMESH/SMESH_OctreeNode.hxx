@@ -27,6 +27,8 @@
 // Author    : Nicolas Geimer & Aurélien Motteux  (OCC)
 // Module    : SMESH
 
+using namespace std;
+
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 

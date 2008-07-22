@@ -27,12 +27,23 @@ EXTRA_DIST+=SMESH
 
 doxygen=@DOXYGEN@
 
+# Below command replaces "smeshDC" by "smesh" except cases
+# "ssmeshDC", "1smeshDC" and "esmeshDC" (these sequences
+# can be found in file names and must not be replaces):
+#
+# sed 's/\([^s1e]\)smeshDC\|^smeshDC/\1smesh/g' $${filen} > ./tmp;
+#
 usr_docs:
 	cd ./SMESH; \
 	echo "Processing smeshDC.py file: "; \
 	$(doxygen) ./doxyfile_py; \
-	sed 's|../../../share/salome|$(top_srcdir)|' ./doxyfile > ./doxyfile1; \
-	mv -f doxyfile1 doxyfile; \
+	cd ./smeshpy_doc; \
+	filesl=`find .`; \
+	for filen in $${filesl}; do \
+	  sed 's/\([^s1e]\)smeshDC\|^smeshDC/\1smesh/g' $${filen} > ./tmp; \
+	  mv -f tmp $${filen}; \
+	done; \
+	cd ..; \
 	echo "Running doxygen in directory: "`pwd`; \
 	$(doxygen) ./doxyfile;
 

@@ -240,6 +240,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
     THROW_SALOME_CORBA_EXCEPTION("ImportMEDFile(): unknown exception", SALOME::BAD_PARAM);
   }
 
+  myFile = theFileName;
   CreateGroupServants();
 
   return ConvertDriverMEDReadStatus(status);
@@ -2478,4 +2479,29 @@ SMESH::ListOfGroups* SMESH_Mesh_i::GetGroups(const list<int>& groupIDs) const
   }
   aList->length( nbGroups );
   return aList._retn();
+}
+
+//=============================================================================
+/*!
+ * \brief Return information about imported file
+ */
+//=============================================================================
+SALOME_MED::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
+{
+  SALOME_MED::MedFileInfo_var res = new SALOME_MED::MedFileInfo();
+
+  const char* name = myFile.c_str();
+  res->fileName = name;
+  res->fileSize = 0;//myFileInfo.size();
+  int major, minor, release;
+  if( !MED::getMEDVersion( name, major, minor, release ) )
+  {
+    major = -1;
+    minor = -1;
+    release = -1;
+  }
+  res->major = major;
+  res->minor = minor;
+  res->release = release;
+  return res._retn();
 }

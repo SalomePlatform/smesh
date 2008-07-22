@@ -253,11 +253,14 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   AngleSpin = new SMESHGUI_SpinBox(AnglesGrp);
 
+  LinearAnglesCheck = new QCheckBox(tr("LINEAR_ANGLES"), AnglesGrp);
+
   // layouting
   AnglesGrpLayout->addWidget(AnglesList,        0, 0, 4, 1);
   AnglesGrpLayout->addWidget(AddAngleButton,    0, 1);
   AnglesGrpLayout->addWidget(RemoveAngleButton, 2, 1);
   AnglesGrpLayout->addWidget(AngleSpin,         0, 2);
+  AnglesGrpLayout->addWidget(LinearAnglesCheck, 4, 0);
   AnglesGrpLayout->setRowMinimumHeight(1, 10);
   AnglesGrpLayout->setRowStretch(3, 10);
 
@@ -581,17 +584,20 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   try {
     SUIT_OverrideCursor wc;
     SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
+    if ( LinearAnglesCheck->isChecked() )
+      anAngles = aMeshEditor->LinearAnglesVariation( myPathMesh, myPathShape, anAngles );
+
     SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
     if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
       SMESH::ListOfGroups_var groups = 
-        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId.inout(), myPathMesh,
+        aMeshEditor->ExtrusionAlongPathMakeGroups(anElementsId, myPathMesh,
                                                   myPathShape, aNodeStart,
-                                                  AnglesGrp->isChecked(), anAngles.inout(),
+                                                  AnglesGrp->isChecked(), anAngles,
                                                   BasePointGrp->isChecked(), aBasePoint, retVal);
     else
-      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId.inout(), myPathMesh,
+      retVal = aMeshEditor->ExtrusionAlongPath(anElementsId, myPathMesh,
                                                myPathShape, aNodeStart,
-                                               AnglesGrp->isChecked(), anAngles.inout(),
+                                               AnglesGrp->isChecked(), anAngles,
                                                BasePointGrp->isChecked(), aBasePoint);
 
     //wc.stop();

@@ -113,6 +113,7 @@ private:
   QLineEdit*                PathShapeLineEdit;
   QToolButton*              SelectStartPointButton;
   QLineEdit*                StartPointLineEdit;
+  QCheckBox*                LinearAnglesCheck;
   QGroupBox*                AnglesGrp;
   QListWidget*              AnglesList;
   QToolButton*              AddAngleButton;

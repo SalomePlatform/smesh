@@ -123,11 +123,14 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   TextLabelMeshes = new QLabel(tr("MESHES"), GroupArgs);
   SelectButton = new QPushButton(GroupArgs);
   SelectButton->setIcon(image1);
+  SelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
   LineEditMeshes = new QLineEdit(GroupArgs);
   LineEditMeshes->setReadOnly(true);
 
   TextLabelUnion = new QLabel(tr("PROCESSING_IDENTICAL_GROUPS"), GroupArgs);
   ComboBoxUnion = new QComboBox(GroupArgs);
+
+  CheckBoxCommon = new QCheckBox(tr("CREATE_COMMON_GROUPS"), GroupArgs);
 
   CheckBoxMerge = new QCheckBox(tr("MERGE_NODES_AND_ELEMENTS"), GroupArgs);
 
@@ -141,9 +144,10 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   GroupArgsLayout->addWidget(LineEditMeshes,  0, 2, 1, 2);
   GroupArgsLayout->addWidget(TextLabelUnion,  1, 0, 1, 3); 
   GroupArgsLayout->addWidget(ComboBoxUnion,   1, 3);
-  GroupArgsLayout->addWidget(CheckBoxMerge,   2, 0, 1, 4);
-  GroupArgsLayout->addWidget(TextLabelTol,    3, 0, 1, 2);
-  GroupArgsLayout->addWidget(SpinBoxTol,      3, 2, 1, 2);
+  GroupArgsLayout->addWidget(CheckBoxCommon,  2, 0, 1, 4);
+  GroupArgsLayout->addWidget(CheckBoxMerge,   3, 0, 1, 4);
+  GroupArgsLayout->addWidget(TextLabelTol,    4, 0, 1, 2);
+  GroupArgsLayout->addWidget(SpinBoxTol,      4, 2, 1, 2);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -287,12 +291,18 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
-      SMESH::SMESH_Mesh_var aCompoundMesh = 
-	aSMESHGen->Concatenate(myMeshArray, 
-			       !(ComboBoxUnion->currentIndex()), 
-			       CheckBoxMerge->isChecked(), 
-			       SpinBoxTol->GetValue());
-      
+      SMESH::SMESH_Mesh_var aCompoundMesh;
+      if(CheckBoxCommon->isChecked())
+	aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray, 
+							 !(ComboBoxUnion->currentIndex()), 
+							 CheckBoxMerge->isChecked(), 
+							 SpinBoxTol->GetValue());
+      else
+	aCompoundMesh = aSMESHGen->Concatenate(myMeshArray, 
+					       !(ComboBoxUnion->currentIndex()), 
+					       CheckBoxMerge->isChecked(), 
+					       SpinBoxTol->GetValue());
+     
       SMESH::SetName( SMESH::FindSObject( aCompoundMesh ), LineEditName->text() );
       mySMESHGUI->updateObjBrowser();
     } catch(...) {

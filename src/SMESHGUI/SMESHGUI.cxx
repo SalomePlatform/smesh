@@ -65,6 +65,7 @@
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
 #include "SMESHGUI_BuildCompoundDlg.h"
 #include "SMESHGUI_ComputeDlg.h"
+#include "SMESHGUI_FileInfoDlg.h"
 
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_MeshUtils.h"
@@ -110,7 +111,7 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
-#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+#include CORBA_CLIENT_HEADER(SMESH_MeshEditor)
 
 // Qt includes
 // #define	 INCLUDE_MENUITEM_DEF // VSR commented ????????
@@ -1263,6 +1264,25 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case 150:    //MED FILE INFORMATION
+    {
+      SALOME_ListIO selected;
+      LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+      if( aSel )
+        aSel->selectedObjects( selected );
+      if( selected.Extent() )
+      {
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+        SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(anIObject);
+        if ( !aMesh->_is_nil() )
+        {
+          SMESHGUI_FileInfoDlg dlg( desktop(), aMesh->GetMEDFileInfo() );
+          dlg.exec();
+        }
+      }
+      break;
+    }
+
   case 122:					// EXPORT MED
   case 121:
   case 123:
@@ -2409,6 +2429,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction(  125, "EXPORT_MED" );
   createSMESHAction(  126, "EXPORT_UNV" );
   createSMESHAction(  141, "EXPORT_STL" );
+  createSMESHAction(  150, "FILE_INFO" );
   createSMESHAction(   33, "DELETE",          "ICON_DELETE", Qt::Key_Delete );
   createSMESHAction( 5105, "SEL_FILTER_LIB" );
   createSMESHAction(  701, "COMPUTE",         "ICON_COMPUTE" );
@@ -2740,6 +2761,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // popup for object browser
 
+  createPopupItem( 150, OB, mesh, "&& selcount=1 && isImported" );      // FILE INFORMATION
   createPopupItem( 704, OB, mesh, "&& isComputable");      // EDIT_MESHSUBMESH
   createPopupItem( 704, OB, subMesh, "&& isComputable" );  // EDIT_MESHSUBMESH
   createPopupItem( 803, OB, group );                       // EDIT_GROUP

@@ -625,6 +625,8 @@ module SMESH
      */
     double_array BaryCenter(in long id);
 
+    /*! Gets information about imported MED file */
+    SALOME_MED::MedFileInfo GetMEDFileInfo();
   };
 
   interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource

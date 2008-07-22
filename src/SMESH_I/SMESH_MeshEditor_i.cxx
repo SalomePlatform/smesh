@@ -2089,6 +2089,57 @@ SMESH_MeshEditor_i::LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       thePathMes
                                           const SMESH::double_array & theAngles)
 {
   SMESH::double_array_var aResult = new SMESH::double_array();
+  int nbAngles = theAngles.length();
+  if ( nbAngles > 0 && !thePathMesh->_is_nil() && !thePathShape->_is_nil() )
+  {
+    SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( thePathMesh );
+    TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
+    SMESH_subMesh* aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
+    if ( !aSubMesh || !aSubMesh->GetSubMeshDS())
+      return aResult._retn();
+    int nbSteps = aSubMesh->GetSubMeshDS()->NbElements();
+    if ( nbSteps == nbAngles )
+    {
+      aResult.inout() = theAngles;
+    }
+    else
+    {
+      aResult->length( nbSteps );
+      double rAn2St = double( nbAngles ) / double( nbSteps );
+      double angPrev = 0, angle;
+      for ( int iSt = 0; iSt < nbSteps; ++iSt )
+      {
+        double angCur = rAn2St * ( iSt+1 );
+        double angCurFloor  = floor( angCur );
+        double angPrevFloor = floor( angPrev );
+        if ( angPrevFloor == angCurFloor )
+          angle = rAn2St * theAngles[ int( angCurFloor ) ];
+        else
+        {
+          int iP = int( angPrevFloor );
+          double angPrevCeil = ceil(angPrev);
+          angle = ( angPrevCeil - angPrev ) * theAngles[ iP ];
+          
+          int iC = int( angCurFloor );
+          if ( iC < nbAngles )
+            angle += ( angCur - angCurFloor ) * theAngles[ iC ];
+
+          iP = int( angPrevCeil );
+          while ( iC-- > iP )
+            angle += theAngles[ iC ];
+        }
+        aResult[ iSt ] = angle;
+        angPrev = angCur;
+      }
+    }
+  }
+  // Update Python script
+  TPythonDump() << "rotAngles = " << theAngles;
+  TPythonDump() << "rotAngles = " << this << ".LinearAnglesVariation( "
+                << thePathMesh  << ", "
+                << thePathShape << ", "
+                << "rotAngles )";
+
   return aResult._retn();
 }
 

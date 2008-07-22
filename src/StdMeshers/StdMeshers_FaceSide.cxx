@@ -44,6 +44,7 @@
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
 #include <TopoDS_Wire.hxx>
@@ -505,12 +506,20 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face& theFace,
         return TSideVector(0);
       }
     }
+    // find out side orientation, which is important if there are several wires (PAL19080) 
+    bool isForward = true;
+    if ( nbWires > 1 ) {
+      TopExp_Explorer e( theFace, TopAbs_EDGE );
+      while ( ! e.Current().IsSame( wireEdges.back() ))
+        e.Next();
+      isForward = ( e.Current().Orientation() == wireEdges.back().Orientation() );
+    }
+
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
-                                                         true, theIgnoreMediumNodes);
+                                                         isForward, theIgnoreMediumNodes);
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     from = to;
   }
   return wires;
 }
-
 

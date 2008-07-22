@@ -19,7 +19,7 @@ WARNINGS          = YES
 INPUT             = @srcdir@/input		  
 FILE_PATTERNS     = *.doc
 IMAGE_PATH        = @srcdir@/images
-EXAMPLE_PATH      = ../../../share/salome/src/SMESH_SWIG
+EXAMPLE_PATH      = @top_srcdir@/src/SMESH_SWIG
 #---------------------------------------------------------------------------
 #HTML related options
 #---------------------------------------------------------------------------

@@ -70,6 +70,8 @@ public:
   static int              type( const QString&, _PTR(Study) );
   static QString          typeName( const int );
 
+  bool                    isImported( const int ) const;
+
 private:
   QStringList             myTypes;
   QList<SMESH_Actor*>     myActors;

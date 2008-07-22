@@ -100,6 +100,7 @@ private:
   QLineEdit*              LineEditMeshes;
   QLabel*                 TextLabelUnion;
   QComboBox*              ComboBoxUnion;
+  QCheckBox*              CheckBoxCommon;
   QCheckBox*              CheckBoxMerge;
   QLabel*                 TextLabelTol;
   SMESHGUI_SpinBox*       SpinBoxTol;

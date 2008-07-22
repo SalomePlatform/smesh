@@ -32,6 +32,7 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -47,10 +48,12 @@
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
+#include <SalomeApp_Application.h>
 
 #include <SVTK_ViewWindow.h>
 #include <SVTK_Selector.h>
 #include <SALOME_ListIO.hxx>
+#include <VTKViewer_CellLocationsArray.h>
 
 // OCCT includes
 #include <TColStd_MapOfInteger.hxx>
@@ -87,6 +90,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
+  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QPixmap image0 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
   QPixmap image1 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
@@ -187,17 +192,37 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   GroupAxisLayout->addWidget(TextLabelDZ,        1, 6);
   GroupAxisLayout->addWidget(SpinBox_DZ,         1, 7);
 
-  // Controls for angle defining
-  TextLabelAngle = new QLabel(tr("SMESH_ANGLE"), GroupArguments);
-  SpinBox_Angle = new SMESHGUI_SpinBox(GroupArguments);
+  // Controls for angle defining & number of steps defining
+  GroupAngleBox = new QGroupBox(tr("SMESH_ANGLE"), GroupArguments);
+  GroupAngle = new QButtonGroup(GroupAngleBox);
+  QGridLayout* GroupAngleLayout = new QGridLayout(GroupAngleBox);
+  GroupAngleLayout->setSpacing(6);
+  GroupAngleLayout->setMargin(11);
 
-  // Controls for nb. steps defining
-  TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupArguments);
-  SpinBox_NbSteps = new QSpinBox(GroupArguments);
+  RadioButton3 = new QRadioButton(tr("ANGLE_BY_STEP"), GroupAngleBox);
+  RadioButton4 = new QRadioButton(tr("TOTAL_ANGLE"),   GroupAngleBox);
+  GroupAngle->addButton(RadioButton3, 0);
+  GroupAngle->addButton(RadioButton4, 1);
+
+  TextLabelAngle = new QLabel(tr("SMESH_ANGLE"), GroupAngleBox);
+  SpinBox_Angle = new SMESHGUI_SpinBox(GroupAngleBox);
+
+  TextLabelNbSteps = new QLabel(tr("SMESH_NUMBEROFSTEPS"), GroupAngleBox);
+  SpinBox_NbSteps = new QSpinBox(GroupAngleBox);
+
+  GroupAngleLayout->addWidget(RadioButton3,     0, 0);
+  GroupAngleLayout->addWidget(RadioButton4,     0, 1);
+  GroupAngleLayout->addWidget(TextLabelAngle,   1, 0);
+  GroupAngleLayout->addWidget(SpinBox_Angle,    1, 1);
+  GroupAngleLayout->addWidget(TextLabelNbSteps, 2, 0);
+  GroupAngleLayout->addWidget(SpinBox_NbSteps,  2, 1);
 
   // Controls for tolerance defining
   TextLabelTolerance = new QLabel(tr("SMESH_TOLERANCE"), GroupArguments);
   SpinBox_Tolerance = new SMESHGUI_SpinBox(GroupArguments);
+
+  // Control for mesh preview
+  CheckBoxPreview = new QCheckBox(tr("PREVIEW"), GroupArguments);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
@@ -208,12 +233,10 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(LineEditElements,     0, 2);
   GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 3);
   GroupArgumentsLayout->addWidget(GroupAxis,            2, 0, 1, 3);
-  GroupArgumentsLayout->addWidget(TextLabelAngle,       3, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Angle,        3, 2);
-  GroupArgumentsLayout->addWidget(TextLabelNbSteps,     4, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_NbSteps,      4, 2);
-  GroupArgumentsLayout->addWidget(TextLabelTolerance,   5, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    5, 2);
+  GroupArgumentsLayout->addWidget(GroupAngleBox,        3, 0, 1, 3);
+  GroupArgumentsLayout->addWidget(TextLabelTolerance,   4, 0, 1, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    4, 2);
+  GroupArgumentsLayout->addWidget(CheckBoxPreview,      5, 0, 1, 3);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      6, 0, 1, 3);
 
   /***************************************************************/
@@ -253,6 +276,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   SpinBox_DY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
   SpinBox_DZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, 3);
 
+  RadioButton3->setChecked(true);
+
   SpinBox_Angle->RangeStepAndValidator(COORD_MIN, COORD_MAX, 5.0, 3);
 
   SpinBox_NbSteps->setRange(1, 999999);
@@ -291,6 +316,10 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(SelectPointButton,    SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectVectorButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
 
+  connect(SpinBox_X,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Y,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Z,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+
   connect(SpinBox_DX, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
   connect(SpinBox_DY, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
   connect(SpinBox_DZ, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
@@ -302,6 +331,12 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                 SLOT(onSelectMesh(bool)));
 
+  connect(GroupAngle,        SIGNAL(buttonClicked(int)),   this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Angle,     SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_NbSteps,   SIGNAL(valueChanged(int)),    this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_Tolerance, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(CheckBoxPreview,   SIGNAL(toggled(bool)),        this, SLOT(onDisplaySimulation(bool)));
+
   ConstructorsClicked(0);
   SelectionIntoArgument();
 }
@@ -312,7 +347,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 //=================================================================================
 SMESHGUI_RevolutionDlg::~SMESHGUI_RevolutionDlg()
 {
-  // no need to delete child widgets, Qt does it all for us
+  delete mySimulation;
 }
 
 //=================================================================================
@@ -345,6 +380,8 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
 
     CheckBoxMesh->setChecked(false);
     onSelectMesh(false);
+    CheckBoxPreview->setChecked(false);
+    onDisplaySimulation(false);
   }
 }
 
@@ -354,7 +391,17 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
 //=================================================================================
 void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
 {
-  disconnect(mySelectionMgr, 0, this, 0);
+  //disconnect(mySelectionMgr, 0, this, 0);
+
+  SALOME_ListIO io;
+  mySelectionMgr->selectedObjects( io );
+  SALOME_ListIO aList;
+  mySelectionMgr->setSelectedObjects( aList );
+//   LineEditElements->clear();
+  myNbOkElements = 0;
+  buttonApply->setEnabled(false);
+  buttonOk->setEnabled(false);
+  mySimulation->SetVisibility(false);
 
   Selection_Mode aSelMode = ActorSelection;
 
@@ -389,7 +436,8 @@ void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
   if (CheckBoxMesh->isChecked())
     onSelectMesh(true);
 
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  //connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
+  mySelectionMgr->setSelectedObjects( io );
 }
 
 //=================================================================================
@@ -422,6 +470,9 @@ void SMESHGUI_RevolutionDlg::ClickOnApply()
     double anAngle = (SpinBox_Angle->GetValue())*PI/180;
     long aNbSteps = (long)SpinBox_NbSteps->value();
     double aTolerance = SpinBox_Tolerance->GetValue();
+
+    if ( GroupAngle->checkedId() == 1 )
+      anAngle = anAngle/aNbSteps;
 
     try {
       SUIT_OverrideCursor aWaitCursor;
@@ -544,6 +595,7 @@ void SMESHGUI_RevolutionDlg::onTextChange (const QString& theNewText)
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
+  onDisplaySimulation(true);
 
   myBusy = false;
 }
@@ -714,6 +766,8 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     buttonOk->setEnabled(true);
     buttonApply->setEnabled(true);
   }
+
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -729,6 +783,7 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
   mySelectionMgr->clearFilters();
 
   if (send == SelectElementsButton) {
+    mySimulation->SetVisibility(false);
     myEditCurrentArgument = (QWidget*)LineEditElements;
     SMESH::SetPointRepresentation(false);
     if (CheckBoxMesh->isChecked()) {
@@ -842,6 +897,7 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
 
   if (myEditCurrentArgument != LineEditElements) {
     LineEditElements->clear();
+    mySimulation->SetVisibility(false);
     return;
   }
 
@@ -870,6 +926,7 @@ void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
     onTextChange(LineEditElements->text());
+    mySimulation->SetVisibility(false);
   }
 
   SelectionIntoArgument();
@@ -908,6 +965,7 @@ void SMESHGUI_RevolutionDlg::onVectorChanged()
     buttonOk->setEnabled(false);
     buttonApply->setEnabled(false);
   }
+  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -923,5 +981,73 @@ void SMESHGUI_RevolutionDlg::keyPressEvent( QKeyEvent* e )
   if ( e->key() == Qt::Key_F1 ) {
     e->accept();
     ClickOnHelp();
+  }
+}
+
+//=================================================================================
+// function : toDisplaySimulation()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::toDisplaySimulation()
+{
+  onDisplaySimulation(true);
+}
+
+//=================================================================================
+// function : onDisplaySimulation()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
+{
+  if (CheckBoxPreview->isChecked() && toDisplayPreview)
+  {
+    //display preview
+    if (myNbOkElements && IsAxisOk())
+    {
+      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+      
+      SMESH::long_array_var anElementsId = new SMESH::long_array;
+      
+      anElementsId->length(aListElementsId.count());
+      for (int i = 0; i < aListElementsId.count(); i++)
+	anElementsId[i] = aListElementsId[i].toInt();
+      
+      SMESH::AxisStruct anAxis;
+      
+      anAxis.x =  SpinBox_X->GetValue();
+      anAxis.y =  SpinBox_Y->GetValue();
+      anAxis.z =  SpinBox_Z->GetValue();
+      anAxis.vx = SpinBox_DX->GetValue();
+      anAxis.vy = SpinBox_DY->GetValue();
+      anAxis.vz = SpinBox_DZ->GetValue();
+      
+      double anAngle = (SpinBox_Angle->GetValue())*PI/180;
+      long aNbSteps = (long)SpinBox_NbSteps->value();
+      double aTolerance = SpinBox_Tolerance->GetValue();
+      
+      if (GroupAngle->checkedId() == 1)
+	anAngle = anAngle/aNbSteps;
+      
+      try {
+	SUIT_OverrideCursor aWaitCursor;
+	SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
+	aMeshEditor->RotationSweep(anElementsId.inout(), 
+				   anAxis, 
+				   anAngle, 
+				   aNbSteps, 
+				   aTolerance);
+	SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
+	mySimulation->SetData(aMeshPreviewStruct._retn());
+      } catch (...) {}
+    }
+    else
+    {
+      mySimulation->SetVisibility(false);
+    }
+  }
+  else
+  {
+    //erase preview
+    mySimulation->SetVisibility(false);
   }
 }

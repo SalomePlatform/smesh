@@ -34,6 +34,12 @@ become the elements of Group1 on the Compound_Mesh, or</li>
 becomes Group1_2. See \ref grouping_elements_page "Creating Groups"
 for more information about groups.</li>
 </ul>
+<li><b>Create common groups for initial meshes</b> checkbox permits to
+automatically create groups of all elements of the same type
+(nodes, edges, faces and volumes) for the resulting mesh from the
+elements
+of the initial meshes.
+</li>
 <li>You can simply unite meshes or choose to <b>Merge coincident nodes
 and elements</b>, in which case it is possible to define the \b Tolerance
 for this operation.</li>

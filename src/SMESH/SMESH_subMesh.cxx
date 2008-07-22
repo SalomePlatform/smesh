@@ -1195,7 +1195,7 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
       while (itn->more()) {
         const SMDS_MeshNode * node = itn->next();
         //MESSAGE( " RM node: "<<node->GetID());
-        if ( node->NbInverseNodes() == 0 )
+        if ( node->NbInverseElements() == 0 )
           meshDS->RemoveFreeNode(node, subMeshDS);
         else // for StdMeshers_CompositeSegment_1D: node in one submesh, edge in another
           meshDS->RemoveNode(node);
